@@ -121,8 +121,15 @@ do {									\
 } while (0)
 
 /* Override default elf definition.  */
-#undef	TARGET_ASM_SELECT_RTX_SECTION
-#define TARGET_ASM_SELECT_RTX_SECTION  ia64_select_rtx_section
+/* ??? This is slight overkill.  We should check for static relocations
+   and allow those in .rodata.  */
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  ia64_rwreloc_select_section
+#undef  TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION  ia64_rwreloc_unique_section
+#undef  TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION  ia64_rwreloc_select_rtx_section
+#define TARGET_RWRELOC  true
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_sbss

@@ -1,3 +1,11 @@
+2006-02-03  Richard Henderson  <rth@redhat.com>
+
+	PR target/26090
+	* config/ia64/sysv4.h (TARGET_ASM_SELECT_RTX_SECTION,
+	TARGET_ASM_SELECT_SECTION, TARGET_ASM_UNIQUE_SECTION,
+	TARGET_ASM_SELECT_RTX_SECTION, TARGET_RWRELOC): Copy from
+	the hpux definition.
+
 2006-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25979
@@ -25,7 +33,7 @@
 	* config/rs6000/darwin-ldouble.c (__gcc_qadd): Preserve -0.0 result.
 
 2006-02-03  Andreas Krebbel  <krebbel1@de.ibm.com>
-            Ulrich Weigand  <uweigand@de.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/25864
 	* config/s390/2084.md ("x_fsimptf", "x_fmultf", "x_fdivtf",
@@ -66,7 +74,7 @@
 	("*mul<mode>3"): Changed <dee> to <xdee>. R constraint replaced by 
 	<Rf>.
 	("fix_trunc<FPR:mode>di2"): 'FPR:' removed.
-        ("*fmadd<mode>", "*fmsub<mode>"): FPR mode replaced by DSF.
+	("*fmadd<mode>", "*fmsub<mode>"): FPR mode replaced by DSF.
 	("*movtf_64", "*movtf_31"): New insn definitions followed by 5 
 	splitters.
 	("movtf", "reload_outtf", "reload_intf", "trunctfdf2", "trunctfsf2", 
@@ -343,24 +351,24 @@
 	PR tree-optimization/24123
 
 	* Makefile.in (tree-ssa-math-opts.o): Adjust dependencies.
-        * tree-cfg.c (single_noncomplex_succ): New.
-        * tree-flow.h (single_noncomplex_succ): Declare it.
-        * tree-ssa-math-opts.c (enum place_reciprocal): Remove.
-        * tree-ssa-math-opts.c (enum place_reciprocal): Remove.
-        (struct occurrence, occ_head, occ_pool, is_divide_by, compute_merit,
+	* tree-cfg.c (single_noncomplex_succ): New.
+	* tree-flow.h (single_noncomplex_succ): Declare it.
+	* tree-ssa-math-opts.c (enum place_reciprocal): Remove.
+	* tree-ssa-math-opts.c (enum place_reciprocal): Remove.
+	(struct occurrence, occ_head, occ_pool, is_divide_by, compute_merit,
 	insert_bb, register_division_in, insert_reciprocals,
 	replace_reciprocal, free_bb): New.
-        (execute_cse_reciprocals_1): Rewritten.
-        (execute_cse_reciprocals): Adjust calls to execute_cse_reciprocals_1.
-        Do not commit any edge insertion.  Always compute dominators and
-        create the allocation pool.
-        * target-def.h (TARGET_MIN_DIVISIONS_FOR_RECIP_MUL): New.
+	(execute_cse_reciprocals_1): Rewritten.
+	(execute_cse_reciprocals): Adjust calls to execute_cse_reciprocals_1.
+	Do not commit any edge insertion.  Always compute dominators and
+	create the allocation pool.
+	* target-def.h (TARGET_MIN_DIVISIONS_FOR_RECIP_MUL): New.
 	* target.h (struct gcc_target): Add min_divistions_for_recip_mul.
 	* targhooks.c (default_min_divistions_for_recip_mul): New.
 	* targhooks.h (default_min_divistions_for_recip_mul): New prototype.
-        * passes.c (init_optimization_passes): Run recip after tree loop
-        optimizations.
-        * doc/tm.texi (Misc): Document TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.
+	* passes.c (init_optimization_passes): Run recip after tree loop
+	optimizations.
+	* doc/tm.texi (Misc): Document TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.
 
 2006-01-11  Jan Hubicka  <jh@suse.cz>
 
@@ -401,11 +409,11 @@
 	is signed.
 
 2006-01-08  Ian Lance Taylor  <ian@airs.com>
-            David Edelsohn  <edelsohn@gnu.org>
+	    David Edelsohn  <edelsohn@gnu.org>
 
-        PR rtl-optimization/25662
-        * optabs.c (simplify_expand_binop): Use simplify_binary_operation
-        for constant operands instead of simplify_gen_binary.
+	PR rtl-optimization/25662
+	* optabs.c (simplify_expand_binop): Use simplify_binary_operation
+	for constant operands instead of simplify_gen_binary.
 
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
@@ -572,11 +580,11 @@
 2005-12-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/25180
-        * config/rs6000/predicates.md (logical_const_operand): Split
-        out of logical_operand.
-        (logical_operand): Use it.
-        * config/rs6000/rs6000.md (cmp -> xor peephole2): Use
-        logical_const_operand.
+	* config/rs6000/predicates.md (logical_const_operand): Split
+	out of logical_operand.
+	(logical_operand): Use it.
+	* config/rs6000/rs6000.md (cmp -> xor peephole2): Use
+	logical_const_operand.
 
 2005-12-19  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -904,7 +912,7 @@
 	* c-typeck.c (build_c_cast): ... here.
 
 2005-12-08  Andreas Krebbel  <krebbel1@de.ibm.com>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25268
 	* config/s390/s390.c (s390_decompose_shift_count): Remove BITS
@@ -955,9 +963,9 @@
 2005-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
        PR C++/24138
-        * tree.c (integer_all_onesp): Always return true if all bits on.
+	* tree.c (integer_all_onesp): Always return true if all bits on.
 
-        * testsuite/g++.dg/init/array0.C: New.
+	* testsuite/g++.dg/init/array0.C: New.
 
 2005-12-06  Andreas Schwab  <schwab@suse.de>
 
@@ -1002,7 +1010,7 @@
 	* optabs.c (expand_vec_cond_expr): Use EXPAND_NORMAL.
 
 2005-11-30  Dale Johannesen  <dalej@apple.com>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR rtl-opt/24930
 	* combine.c (find_split_point):  Sign extend bitmask
