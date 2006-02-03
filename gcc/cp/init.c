@@ -324,7 +324,7 @@ perform_member_init (tree member, tree init)
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
   if (warn_ecpp && !explicit && TREE_CODE (type) != ARRAY_TYPE)
-    warning (0, "%J%qD should be initialized in the member initialization "
+    warning (OPT_Weffc__, "%J%qD should be initialized in the member initialization "
 	     "list", current_function_decl, member);
 
   if (init == void_type_node)
@@ -524,16 +524,16 @@ sort_mem_initializers (tree t, tree mem_inits)
       if (warn_reorder && !subobject_init)
 	{
 	  if (TREE_CODE (TREE_PURPOSE (next_subobject)) == FIELD_DECL)
-	    warning (0, "%q+D will be initialized after",
+	    warning (OPT_Wreorder, "%q+D will be initialized after",
 		     TREE_PURPOSE (next_subobject));
 	  else
-	    warning (0, "base %qT will be initialized after",
+	    warning (OPT_Wreorder, "base %qT will be initialized after",
 		     TREE_PURPOSE (next_subobject));
 	  if (TREE_CODE (subobject) == FIELD_DECL)
-	    warning (0, "  %q+#D", subobject);
+	    warning (OPT_Wreorder, "  %q+#D", subobject);
 	  else
-	    warning (0, "  base %qT", subobject);
-	  warning (0, "%J  when initialized here", current_function_decl);
+	    warning (OPT_Wreorder, "  base %qT", subobject);
+	  warning (OPT_Wreorder, "%J  when initialized here", current_function_decl);
 	}
 
       /* Look again, from the beginning of the list.  */
@@ -681,7 +681,7 @@ emit_mem_initializers (tree mem_inits)
       if (extra_warnings && !arguments
 	  && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
 	  && TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (subobject)))
-	warning (0, "%Jbase class %q#T should be explicitly initialized in the "
+	warning (OPT_Wextra, "%Jbase class %q#T should be explicitly initialized in the "
 		 "copy constructor",
 		 current_function_decl, BINFO_TYPE (subobject));
 

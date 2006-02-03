@@ -1499,8 +1499,8 @@ string_conv_p (tree totype, tree exp, int warn)
     }
 
   /* This warning is not very useful, as it complains about printf.  */
-  if (warn && warn_write_strings)
-    warning (0, "deprecated conversion from string constant to %qT'", totype);
+  if (warn)
+    warning (OPT_Wwrite_strings, "deprecated conversion from string constant to %qT'", totype);
 
   return 1;
 }
@@ -2306,7 +2306,7 @@ build_array_ref (tree array, tree idx)
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
 	  if (TREE_CODE (foo) == VAR_DECL && DECL_REGISTER (foo))
-	    warning (0, "subscripting array declared %<register%>");
+	    warning (OPT_Wextra, "subscripting array declared %<register%>");
 	}
 
       type = TREE_TYPE (TREE_TYPE (array));
@@ -4438,9 +4438,9 @@ cxx_mark_addressable (tree exp)
 		  ("address of explicit register variable %qD requested", x);
 		return false;
 	      }
-	    else if (extra_warnings)
+	    else
 	      warning
-		(0, "address requested for %qD, which is declared %<register%>", x);
+		(OPT_Wextra, "address requested for %qD, which is declared %<register%>", x);
 	  }
 	TREE_ADDRESSABLE (x) = 1;
 	return true;
@@ -6378,7 +6378,7 @@ check_return_expr (tree retval, bool *no_warning)
 	}
 
       if (warn)
-	warning (0, "%<operator=%> should return a reference to %<*this%>");
+	warning (OPT_Weffc__, "%<operator=%> should return a reference to %<*this%>");
     }
 
   /* The fabled Named Return Value optimization, as per [class.copy]/15:

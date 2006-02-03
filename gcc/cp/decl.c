@@ -361,8 +361,8 @@ pop_label (tree label, tree old_value)
 	  /* Avoid crashing later.  */
 	  define_label (location, DECL_NAME (label));
 	}
-      else if (warn_unused_label && !TREE_USED (label))
-	warning (0, "label %q+D defined but not used", label);
+      else if (!TREE_USED (label))
+	warning (OPT_Wunused_label, "label %q+D defined but not used", label);
     }
 
   SET_IDENTIFIER_LABEL_VALUE (DECL_NAME (label), old_value);
@@ -556,7 +556,7 @@ poplevel (int keep, int reverse, int functionbody)
 	  && ! TREE_USED (decl)
 	  && ! DECL_IN_SYSTEM_HEADER (decl)
 	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
-	warning (0, "unused variable %q+D", decl);
+	warning (OPT_Wunused_variable, "unused variable %q+D", decl);
 
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
@@ -1119,10 +1119,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	     bad choice of name.  */
 	  if (! TREE_PUBLIC (newdecl))
 	    {
-	      if (warn_shadow)
-		warning (0, "shadowing %s function %q#D",
-			 DECL_BUILT_IN (olddecl) ? "built-in" : "library",
-			 olddecl);
+	      warning (OPT_Wshadow, "shadowing %s function %q#D",
+		       DECL_BUILT_IN (olddecl) ? "built-in" : "library",
+		       olddecl);
 	      /* Discard the old built-in function.  */
 	      return NULL_TREE;
 	    }
@@ -1192,8 +1191,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		  warning (0, "ambiguates built-in declaration %q#D",
 			   olddecl);
 		}
-	      else if (warn_shadow)
-		warning (0, "shadowing %s function %q#D",
+	      else
+		warning (OPT_Wshadow, "shadowing %s function %q#D",
 			 DECL_BUILT_IN (olddecl) ? "built-in" : "library",
 			 olddecl);
 	    }
@@ -1504,8 +1503,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  /* Don't warn about friends, let add_friend take care of it.  */
 	  && ! (newdecl_is_friend || DECL_FRIEND_P (olddecl)))
 	{
-	  warning (0, "redundant redeclaration of %qD in same scope", newdecl);
-	  warning (0, "previous declaration of %q+D", olddecl);
+	  warning (OPT_Wredundant_decls, "redundant redeclaration of %qD in same scope", newdecl);
+	  warning (OPT_Wredundant_decls, "previous declaration of %q+D", olddecl);
 	}
     }
 
@@ -9012,7 +9011,7 @@ grok_op_properties (tree decl, bool complain)
 	    }
 
 	  if (what)
-	    warning (0, "conversion to %s%s will never use a type "
+	    warning (OPT_Wconversion, "conversion to %s%s will never use a type "
 		     "conversion operator",
 		     ref ? "a reference to " : "", what);
 	}
@@ -9103,13 +9102,13 @@ grok_op_properties (tree decl, bool complain)
 		  if (TREE_CODE (ret) != REFERENCE_TYPE
 		      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
 				       arg))
-		    warning (0, "prefix %qD should return %qT", decl,
+		    warning (OPT_Weffc__, "prefix %qD should return %qT", decl,
 			     build_reference_type (arg));
 		}
 	      else
 		{
 		  if (!same_type_p (TYPE_MAIN_VARIANT (ret), arg))
-		    warning (0, "postfix %qD should return %qT", decl, arg);
+		    warning (OPT_Weffc__, "postfix %qD should return %qT", decl, arg);
 		}
 	    }
 	}
@@ -9138,7 +9137,7 @@ grok_op_properties (tree decl, bool complain)
 	      && (operator_code == TRUTH_ANDIF_EXPR
 		  || operator_code == TRUTH_ORIF_EXPR
 		  || operator_code == COMPOUND_EXPR))
-	    warning (0, "user-defined %qD always evaluates both arguments",
+	    warning (OPT_Weffc__, "user-defined %qD always evaluates both arguments",
 		     decl);
 	}
 
@@ -9152,7 +9151,7 @@ grok_op_properties (tree decl, bool complain)
 	      || operator_code == MULT_EXPR
 	      || operator_code == TRUNC_MOD_EXPR)
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
-	warning (0, "%qD should return by value", decl);
+	warning (OPT_Weffc__, "%qD should return by value", decl);
 
       /* [over.oper]/8 */
       for (; argtypes && argtypes != void_list_node;
@@ -10183,7 +10182,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (warn_ecpp
       && DECL_OVERLOADED_OPERATOR_P (decl1) == NOP_EXPR
       && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
-    warning (0, "%<operator=%> should return a reference to %<*this%>");
+    warning (OPT_Weffc__, "%<operator=%> should return a reference to %<*this%>");
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
@@ -10940,7 +10939,7 @@ finish_function (int flags)
       /* Structor return values (if any) are set by the compiler.  */
       && !DECL_CONSTRUCTOR_P (fndecl)
       && !DECL_DESTRUCTOR_P (fndecl))
-    warning (0, "no return statement in function returning non-void");
+    warning (OPT_Wreturn_type, "no return statement in function returning non-void");
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
