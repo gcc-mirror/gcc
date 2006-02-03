@@ -117,8 +117,12 @@ __gcc_qadd (double a, double aa, double c, double cc)
     {
       q = a - z;
       zz = q + c + (a - (q + z)) + aa + cc;
-      xh = z + zz;
 
+      /* Keep -0 result.  */
+      if (zz == 0.0)
+	return z;
+
+      xh = z + zz;
       if (nonfinite (xh))
 	return xh;
 
