@@ -767,6 +767,7 @@ _Jv_ThrowNoSuchMethodError ()
   throw new java::lang::NoSuchMethodError;
 }
 
+#ifdef USE_LIBFFI
 // A function whose invocation is prepared using libffi. It gets called
 // whenever a static method of a missing class is invoked. The data argument
 // holds a reference to a String denoting the missing class.
@@ -777,14 +778,18 @@ _Jv_ThrowNoClassDefFoundErrorTrampoline(ffi_cif *,
                                         void **,
                                         void *data)
 {
-  throw new java::lang::NoClassDefFoundError((jstring) data);
+  throw new java::lang::NoClassDefFoundError(
+    _Jv_NewStringUtf8Const( (_Jv_Utf8Const *) data));
 }
-
+#else
+// A variant of the NoClassDefFoundError throwing method that can
+// be used without libffi.
 void
 _Jv_ThrowNoClassDefFoundError()
 {
   throw new java::lang::NoClassDefFoundError();
 }
+#endif
 
 // Throw a NoSuchFieldError.  Called by compiler-generated code when
 // an otable entry is zero.  OTABLE_INDEX is the index in the caller's
@@ -949,6 +954,51 @@ _Jv_Linker::find_iindex (jclass *ifaces, jshort *offsets, jshort num)
   return i;
 }
 
+
+void *
+_Jv_Linker::create_error_method (_Jv_Utf8Const *class_name)
+{
+#ifdef USE_LIBFFI
+  // TODO: The following structs/objects are heap allocated are
+  // unreachable by the garbage collector:
+  // - cif, arg_types
+
+  ffi_closure *closure = (ffi_closure *) _Jv_Malloc( sizeof( ffi_closure ));
+  ffi_cif *cif = (ffi_cif *) _Jv_Malloc( sizeof( ffi_cif ));
+
+  // Pretends that we want to call a void (*) (void) function via
+  // ffi_call.
+  ffi_type **arg_types = (ffi_type **) _Jv_Malloc( sizeof( ffi_type * ));
+  arg_types[0] = &ffi_type_void;
+
+  // Initializes the cif and the closure. If that worked the closure is
+  // returned and can be used as a function pointer in a class' atable.
+  if (ffi_prep_cif (
+        cif, FFI_DEFAULT_ABI, 1, &ffi_type_void, arg_types) == FFI_OK
+      && (ffi_prep_closure (
+            closure, cif, _Jv_ThrowNoClassDefFoundErrorTrampoline,
+            class_name) == FFI_OK))
+    {
+      return closure;
+    }
+    else
+    {
+      java::lang::StringBuffer *buffer = new java::lang::StringBuffer();
+      buffer->append(
+        JvNewStringLatin1("Error setting up FFI closure"
+                          " for static method of missing class: "));
+      
+      buffer->append (_Jv_NewStringUtf8Const(class_name));
+
+      throw new java::lang::InternalError(buffer->toString());
+    }
+#else
+  // Codepath for platforms which do not support (or want) libffi.
+  // You have to accept that it is impossible to provide the name
+  // of the missing class then.
+  return _Jv_ThrowNoClassDefFoundError;
+#endif
+}
 
 // Functions for indirect dispatch (symbolic virtual binding) support.
 
@@ -1118,46 +1168,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
       // code in classes where the missing class is part of the
       // execution environment as long as it is never referenced.
       if (target_class == NULL)
-        {
-          // TODO: The following structs/objects are heap allocated are
-          // unreachable by the garbage collector:
-          // - cif, arg_types
-          // - the Java string inside the if-statement
-
-          ffi_closure *closure =
-            (ffi_closure *) _Jv_Malloc( sizeof( ffi_closure ));
-          ffi_cif *cif = (ffi_cif *) _Jv_Malloc( sizeof( ffi_cif ));
-
-          // Pretends that we want to call a void (*) (void) function via
-          // ffi_call.
-          ffi_type **arg_types = (ffi_type **) _Jv_Malloc( sizeof( ffi_type * ));
-          arg_types[0] = &ffi_type_void;
-
-          // Initializes the cif and the closure. If that worked the closure is
-          // stored as a function pointer in the atable.
-          if ( ffi_prep_cif(cif, FFI_DEFAULT_ABI, 1,
-                            &ffi_type_void, arg_types) == FFI_OK
-               && (ffi_prep_closure 
-                   (closure, cif,
-                   _Jv_ThrowNoClassDefFoundErrorTrampoline,
-                   (void *) _Jv_NewStringUtf8Const(sym.class_name))
-                   == FFI_OK))
-            {
-              klass->atable->addresses[index] = (void *) closure;
-            }
-          else
-            {
-              // If you land here it is possible that your architecture does
-              // not support the Closure API yet. Let's port it!
-              java::lang::StringBuffer *buffer = new java::lang::StringBuffer();
-              buffer->append 
-                (JvNewStringLatin1("Error setting up FFI closure"
-                                   " for static method of missing class: "));
-              buffer->append (_Jv_NewStringUtf8Const(sym.class_name));
-
-              throw new java::lang::InternalError(buffer->toString());
-            }
-        }
+        klass->atable->addresses[index] = create_error_method(sym.class_name);
       // We're looking for a static field or a static method, and we
       // can tell which is needed by looking at the signature.
       else if (signature->first() == '(' && signature->len() >= 2)
@@ -1198,10 +1209,8 @@ _Jv_Linker::link_symbol_table (jclass klass)
 		}
 	    }
 	  else
-            // TODO: Use _Jv_ThrowNoClassDefFoundErrorTrampoline to be able
-            // to print the class name.
 	    klass->atable->addresses[index]
-		= (void *) _Jv_ThrowNoClassDefFoundError;
+              = create_error_method(sym.class_name);
 
 	  continue;
 	}
