@@ -1,3 +1,11 @@
+2006-02-03  Robert Schuster  <robertschuster@fsfe.org>
+
+	* include/jvm.h:
+	(_Jv_Linker::create_error_method): New method declaration.
+	* link.cc:
+	(_Jv_Linker::create_error_method): New method.
+	(_Jv_Linker::link_symbol_table): Use new method above.
+
 2006-02-01  Robert Schuster  <robertschuster@fsfe.org>
 
 	* link.cc:

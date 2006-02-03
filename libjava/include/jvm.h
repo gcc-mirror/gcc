@@ -264,6 +264,7 @@ private:
   static _Jv_Method *search_method_in_class (jclass, jclass,
 					     _Jv_Utf8Const *,
 					     _Jv_Utf8Const *);
+  static void *create_error_method(_Jv_Utf8Const *);
 
 public:
 
