@@ -5,7 +5,7 @@
 	* include/tr1/wchar.h: Likewise.
 	* include/tr1/wctype.h: Likewise.
 	* include/Makefile.am: Add.
-	* testsuite/tr1/8_c_compatibility/cinttypes/functions: New.
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: New.
 	* testsuite/tr1/8_c_compatibility/cwctype/functions.cc: Likewise.
 	* testsuite/tr1/headers.cc: Update.
 	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add <wchar.h> and
