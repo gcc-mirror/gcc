@@ -1,3 +1,11 @@
+2006-02-02  Zdenek Dvorak <dvorakz@suse.cz>
+	    Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-tailcall.c (arg_needs_copy_p): New function.
+	(eliminate_tail_call): Use arg_needs_copy_p.
+	(tree_optimize_tail_calls_1): Ditto. Also call add_virtual_phis.
+	(add_virtual_phis): New function.
+
 2006-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (sparc_output_scratch_registers): Use
