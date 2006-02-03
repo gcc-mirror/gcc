@@ -4483,11 +4483,12 @@ resolve_symbol (gfc_symbol * sym)
   int formal_ns_save, check_constant, mp_flag;
   int i, flag;
   gfc_namelist *nl;
-  gfc_symtree * symtree;
-  gfc_symtree * this_symtree;
-  gfc_namespace * ns;
-  gfc_component * c;
-  gfc_formal_arglist * arg;
+  gfc_symtree *symtree;
+  gfc_symtree *this_symtree;
+  gfc_namespace *ns;
+  gfc_component *c;
+  gfc_formal_arglist *arg;
+  gfc_expr *constructor_expr;
 
   if (sym->attr.flavor == FL_UNKNOWN)
     {
@@ -4826,6 +4827,26 @@ resolve_symbol (gfc_symbol * sym)
 	  else
 	    gfc_error ("Automatic array '%s' at %L cannot have an initializer",
 		       sym->name, &sym->declared_at);
+	  return;
+	}
+
+     /* 4th constraint in section 11.3:  "If an object of a type for which
+	component-initialization is specified (R429) appears in the
+	specification-part of a module and does not have the ALLOCATABLE
+	or POINTER attribute, the object shall have the SAVE attribute."  */
+
+      if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
+        constructor_expr = gfc_default_initializer (&sym->ts);
+
+      if (sym->ns->proc_name
+	  && sym->ns->proc_name->attr.flavor == FL_MODULE
+	  && constructor_expr
+	  && !sym->ns->save_all && !sym->attr.save
+	  && !sym->attr.pointer && !sym->attr.allocatable)
+	{
+	  gfc_error("Object '%s' at %L must have the SAVE attribute %s",
+ 	 	     sym->name, &sym->declared_at,
+		     "for default initialization of a component");
 	  return;
 	}
 

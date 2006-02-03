@@ -1,3 +1,19 @@
+2006-02-03  Steven G. Kargl  <kargls@comcast>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20845
+	* resolve.c (resolve_symbol): Default initialization of derived type
+	component reguires the SAVE attribute.
+
+2006-02-02  Steven G. Kargl  <kargls@comcast>
+
+	PR fortran/24958
+	match.c (gfc_match_nullify):  Free the list from head not tail.
+
+	PR fortran/25072
+	* match.c (match_forall_header): Fix internal error caused by bogus
+	gfc_epxr pointers.
+
 2005-01-31  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24266

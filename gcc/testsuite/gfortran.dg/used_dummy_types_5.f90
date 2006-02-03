@@ -14,7 +14,7 @@ module global
   TYPE :: nonseq_type1
     integer :: i = 44
   end type nonseq_type1
-  type (nonseq_type1) :: ns1
+  type (nonseq_type1), save :: ns1
 
 end module global
 

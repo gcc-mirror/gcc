@@ -1,3 +1,14 @@
+2006-02-03  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24958
+	* gfortran.dg/nullify_2.f90
+
+	PR fortran/20845
+	* gfortran.dg/char_result_11.f90: Add SAVE.
+	* gfortran.dg/der_pointer_4.f90: Ditto.
+	* gfortran.dg/used_dummy_types_5.f90
+	* gfortran.dg/default_initialization.f90: New test.
+
 2006-01-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/26001
