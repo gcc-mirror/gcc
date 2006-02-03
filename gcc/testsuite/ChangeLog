@@ -1,5 +1,6 @@
 2006-02-03  Steven G. Kargl  <kargls@comcast.net>
 
+	PR fortran/20845
 	* gfortran.dg/char_result_11.f90: Add SAVE.
 	* gfortran.dg/der_pointer_4.f90: Ditto.
 	* gfortran.dg/default_initialization.f90: New test.
