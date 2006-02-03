@@ -1014,7 +1014,7 @@ build_class_ref (tree type)
 	      else if (type == void_type_node)
                 prim_class_name = "java.lang.Void";
 	      else
-		abort ();
+		gcc_unreachable ();
 
 	      prim_class = lookup_class (get_identifier (prim_class_name));
 	      /* We wrap the class in a NOP_EXPR, because it is a
@@ -1207,7 +1207,7 @@ get_access_flags_from_decl (tree decl)
 	access_flags |= ACC_INVISIBLE;
       return access_flags;
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 static GTY (()) int alias_labelno = 0;
@@ -2313,8 +2313,7 @@ get_interface_method_index (tree method, tree interface)
     {
       if (meth == method)
 	return i;
-      if (meth == NULL_TREE)
-	abort ();
+      gcc_assert (meth != NULL_TREE);
     }
 }
 

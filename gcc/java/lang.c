@@ -335,7 +335,7 @@ java_handle_option (size_t scode, const char *arg, int value)
     default:
       if (cl_options[code].flags & CL_Java)
 	break;
-      abort();
+      gcc_unreachable ();
     }
 
   return 1;
@@ -781,8 +781,7 @@ merge_init_test_initialization (void **entry, void *x)
   /* See if we have remapped this declaration.  If we haven't there's
      a bug in the inliner.  */
   n = splay_tree_lookup (decl_map, (splay_tree_key) ite->value);
-  if (! n)
-    abort ();
+  gcc_assert (n);
 
   /* Create a new entry for the class and its remapped boolean
      variable.  If we already have a mapping for this class we've

@@ -3178,7 +3178,7 @@ collapse_type (type *t)
       return vfy_object_type ();
     }
 
-  abort ();
+  gcc_unreachable ();
 }
 
 static void
@@ -3220,8 +3220,7 @@ verify_instructions (void)
 				   vfy_unsuitable_type ());
 	    }
 	}
-      if (slot != curr->stackdepth)
-	abort ();
+      gcc_assert (slot == curr->stackdepth);
     }
 }
 

@@ -146,7 +146,7 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
     case CONDITIONAL_EXPR:
     case INSTANCEOF_EXPR:
     case CLASS_LITERAL:
-      abort ();
+      gcc_unreachable ();
 
     default:
       /* Java insists on strict left-to-right evaluation of expressions.

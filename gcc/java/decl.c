@@ -163,8 +163,7 @@ update_aliases (tree decl, int index, int pc)
   tree decl_type = TREE_TYPE (decl);
   tree tmp;
 
-  if (debug_variable_p (decl))
-    abort ();
+  gcc_assert (! debug_variable_p (decl));
 
   for (tmp = TREE_VEC_ELT (decl_map, index); 
        tmp != NULL_TREE; 
@@ -188,8 +187,7 @@ update_aliases (tree decl, int index, int pc)
 		  && TREE_CODE (decl_type) == POINTER_TYPE)))
 	{
 	  tree src = build1 (NOP_EXPR, tmp_type, decl);
-	  if (LOCAL_VAR_OUT_OF_SCOPE_P (tmp))
-	    abort ();
+	  gcc_assert (! LOCAL_VAR_OUT_OF_SCOPE_P (tmp));
 	  java_add_stmt (build2 (MODIFY_EXPR, tmp_type, tmp, src));
 	}
     }
@@ -269,8 +267,7 @@ check_local_unnamed_variable (tree best, tree decl, tree type)
 {
   tree decl_type = TREE_TYPE (decl);
   
-  if (LOCAL_VAR_OUT_OF_SCOPE_P (decl))
-    abort ();
+  gcc_assert (! LOCAL_VAR_OUT_OF_SCOPE_P (decl));
 
   /* Use the same decl for all integer types <= 32 bits.  This is
      necessary because sometimes a value is stored as (for example)
@@ -411,9 +408,7 @@ java_replace_reference (tree var_decl, bool want_lvalue)
 	  int index = DECL_LOCAL_SLOT_NUMBER (var_decl);
 	  tree base_decl = TREE_VEC_ELT (base_decl_map, index); 
 
-	  if (! base_decl)
-	    abort ();
-
+	  gcc_assert (base_decl);
 	  if (! want_lvalue)
 	    base_decl = build1 (NOP_EXPR, decl_type, base_decl);
 
@@ -2010,8 +2005,7 @@ start_java_method (tree fndecl)
     {
       tree parm_name = NULL_TREE, parm_decl;
       tree parm_type = TREE_VALUE (tem);
-      if (i >= DECL_MAX_LOCALS (fndecl))
-	abort ();
+      gcc_assert (i < DECL_MAX_LOCALS (fndecl));
 
       parm_decl = build_decl (PARM_DECL, parm_name, parm_type);
       DECL_CONTEXT (parm_decl) = fndecl;
@@ -2277,8 +2271,7 @@ get_stmts (void)
 void
 register_exception_range (struct eh_range *range, int pc, int end_pc)
 {
-  if (current_binding_level->exception_range)
-    abort ();
+  gcc_assert (! current_binding_level->exception_range);
   current_binding_level->exception_range = range;
   current_binding_level->end_pc = end_pc;
   current_binding_level->start_pc = pc;      
