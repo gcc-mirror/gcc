@@ -2768,7 +2768,7 @@ do_class_using_decl (tree scope, tree name)
 
   scope_dependent_p = dependent_type_p (scope);
   name_dependent_p = (scope_dependent_p 
-		      || (IDENTIFIER_OPNAME_P (name)
+		      || (IDENTIFIER_TYPENAME_P (name)
 			  && dependent_type_p (TREE_TYPE (name))));
 
   bases_dependent_p = false;
