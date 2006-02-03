@@ -361,7 +361,7 @@ gimplify_expr_stmt (tree *stmt_p)
 	  if (!IS_EMPTY_STMT (stmt)
 	      && !VOID_TYPE_P (TREE_TYPE (stmt))
 	      && !TREE_NO_WARNING (stmt))
-	    warning (0, "statement with no effect");
+	    warning (OPT_Wextra, "statement with no effect");
 	}
       else if (warn_unused_value)
 	warn_if_unused_value (stmt, input_location);

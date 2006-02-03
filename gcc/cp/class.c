@@ -2935,9 +2935,8 @@ check_field_decls (tree t, tree *access_decls,
 	     members.  */
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
-	      && extra_warnings)
-	    warning (0, "non-static reference %q+#D in class without a constructor", x);
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t))
+	    warning (OPT_Wextra, "non-static reference %q+#D in class without a constructor", x);
 	}
 
       type = strip_array_types (type);
@@ -2982,9 +2981,8 @@ check_field_decls (tree t, tree *access_decls,
 	     members.  */
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
-	      && extra_warnings)
-	    warning (0, "non-static const member %q+#D in class without a constructor", x);
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t))
+	    warning (OPT_Wextra, "non-static const member %q+#D in class without a constructor", x);
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
       else if (CLASS_TYPE_P (type))
@@ -3032,7 +3030,7 @@ check_field_decls (tree t, tree *access_decls,
 	&& TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	&& !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
-      warning (0, "%q#T has pointer data members", t);
+      warning (OPT_Weffc__, "%q#T has pointer data members", t);
 
       if (! TYPE_HAS_INIT_REF (t))
 	{
@@ -4469,7 +4467,7 @@ warn_about_ambiguous_bases (tree t)
 	basetype = BINFO_TYPE (binfo);
 
 	if (!lookup_base (t, basetype, ba_unique | ba_quiet, NULL))
-	  warning (0, "virtual base %qT inaccessible in %qT due to ambiguity",
+	  warning (OPT_Wextra, "virtual base %qT inaccessible in %qT due to ambiguity",
 		   basetype, t);
       }
 }

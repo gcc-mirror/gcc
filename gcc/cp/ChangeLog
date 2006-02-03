@@ -1,3 +1,31 @@
+2006-02-03  Lee Millward  <lee.millward@gmail.com>
+
+       * typeck.c (string_conv_p): Pass appropiate
+       OPT_Wxxxx values when calling warning().
+       (build_array_ref, cxx_mark_addressable): Likewise.
+       (check_return_expr): Likewise.
+
+       * init.c (perform_member_init): Likewise.
+       (sort_mem_initializers, emit_mem_initializers): Likewise.
+
+       * class.c (check_field_decls): Likewise.
+       (warn_about_ambiguous_bases): Likewise.
+
+       * decl.c (pop_label, poplevel): Likewise.
+       (duplicate_decls, grok_op_properties): Likewise.
+       (start_preparsed_function, finish_function): Likewise.
+
+       * name-lookup.c (pushdecl_maybe_friend): Likewise.
+       (pushdecl_maybe_friend): Likewise.
+
+       * parser.c (cp_parser_warn_min_max): Likewise.
+       (cp_parser_cast_expression): Likewise.
+
+       * method.c (lazily_declare_fn): Likewise.
+       * cvt.c (convert_to_void): Likewise.
+       * mangle.c (finish_mangling): Likewise.
+       * cp-gimplify.c (gimplify_expr_stmt): Likewise.
+
 2006-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* name-lookup.c (do_class_using_decl): Use IDENTIFIER_TYPENAME_P,
@@ -286,7 +314,7 @@
 	(cp_parser_asm_definition): Call cgraph_add_asm_node rather than
 	assemble_asm.
 
-2006-01-16  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2006-01-16  Rafael ï¿½ila de Espï¿½dola  <rafael.espindola@gmail.com>
 
 	* g++spec.c (lang_specific_spec_functions): Remove.
 
@@ -558,7 +586,7 @@
 	* mangle.c (write_bare_function_type): Mangle return type for
 	methods of Java classes
 
-2005-12-08  Théodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+2005-12-08  Thï¿½dore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* call.c (build_conditional_expr): Print types in error messages.
 
@@ -570,11 +598,11 @@
 
 	* cp-gimplify.c (gimplify_cp_loop): Use fold_build3.
 
-2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael ï¿½ila de Espï¿½dola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (c++.all.build, c++.install-normal): Remove.
 
-2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael ï¿½ila de Espï¿½dola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove all dependencies on s-gtype.
 

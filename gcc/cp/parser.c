@@ -1850,7 +1850,7 @@ static inline void
 cp_parser_warn_min_max (void)
 {
   if (warn_deprecated && !in_system_header)
-    warning (0, "minimum/maximum operators are deprecated");
+    warning (OPT_Wdeprecated, "minimum/maximum operators are deprecated");
 }
 
 /* If not parsing tentatively, issue a diagnostic of the form
@@ -5416,7 +5416,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
 	      && !in_system_header
 	      && !VOID_TYPE_P (type)
 	      && current_lang_name != lang_name_c)
-	    warning (0, "use of old-style cast");
+	    warning (OPT_Wold_style_cast, "use of old-style cast");
 
 	  /* Only type conversions to integral or enumeration types
 	     can be used in constant-expressions.  */
