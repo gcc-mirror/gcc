@@ -1,3 +1,62 @@
+2006-02-03  Andreas Krebbel  <krebbel1@de.ibm.com>
+            Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/25864
+	* config/s390/2084.md ("x_fsimptf", "x_fmultf", "x_fdivtf",
+	"x_floadtf", "x_ftrunctf", "x_ftruncdf"): New insn reservations.
+	* config/s390/fixdfdi.h (__fixunstfdi, __fixtfdi): New functions.
+	* config/s390/s390.c (struct processor_costs): Add mxbr, sqxbr, dxbr 
+	and dxr fields.
+	(z900_cost, z990_cost, z9_109_cost): Values for the new fields added.
+	(s390_rtx_costs): Use the new fields to calculate rtx costs.
+	(s390_secondary_input_reload_class, s390_secondary_output_reload_class):
+	Define secondary reloads for TFmode moves.
+	(constant_modes): Add TFmode.
+	(NR_C_MODES): Set to 8.
+	* config/s390/s390.h (TARGET_CPU_CPP_BUILTINS): Add __LONG_DOUBLE_128__
+	builtin define.
+	(LONG_DOUBLE_TYPE_SIZE): Set to 128 or 64.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE, WIDEST_HARDWARE_FP_SIZE): Define.
+	(HARD_REGNO_NREGS, HARD_REGNO_MODE_OK, CLASS_MAX_NREGS, 
+	CANNOT_CHANGE_MODE_CLASS): Consider TFmode.
+	* config/s390/s390.md ("type" attribute): Add fsimptf, floadtf, fmultf, 
+	fdivtf, fsqrttf, ftrunctf, ftruncdf as possible values.
+	(FPR mode macro): Add TFmode.
+	(DSF mode macro): New.
+	(<de>, <dee> mode attributes): Removed.
+	(<xde>, <xdee>, <RRe>, <RXe>, <Rf> mode attributes): New.
+	("*cmp<mode>_ccs_0", "*cmp<mode>_ccs_0_ibm", "*cmp<mode>_ccs", 
+	"*cmp<mode>_ccs_ibm", "fix_trunc<FPR:mode><GPR:mode>2_ieee", 
+	"floatdi<mode>2", "floatsi<mode>2_ieee", "*add<mode>3", 
+	"*add<mode>3_cc", "*add<mode>3_cconly", "*add<mode>3_ibm", 
+	"*sub<mode>3", "*sub<mode>3_cc", "*sub<mode>3_cconly", 
+	"*sub<mode>3_ibm", "*mul<mode>3_ibm", "*fmadd<mode>", "*fmsub<mode>",
+	"*div<mode>3", "*div<mode>3_ibm", "*neg<mode>2_cc", 
+	"*neg<mode>2_cconly", "*neg<mode>2", "*neg<mode>2_ibm", 
+	"*abs<mode>2_cc", "*abs<mode>2_cconly", "*abs<mode>2",
+	"*abs<mode>2_ibm", "*negabs<mode>2_cc", "*negabs<mode>2_cconly", 
+	"*negabs<mode>2", "sqrt<mode>2"):
+	Changed <de> to <xde>. R constraint replaced by <Rf>.
+	("*mul<mode>3"): Changed <dee> to <xdee>. R constraint replaced by 
+	<Rf>.
+	("fix_trunc<FPR:mode>di2"): 'FPR:' removed.
+        ("*fmadd<mode>", "*fmsub<mode>"): FPR mode replaced by DSF.
+	("*movtf_64", "*movtf_31"): New insn definitions followed by 5 
+	splitters.
+	("movtf", "reload_outtf", "reload_intf", "trunctfdf2", "trunctfsf2", 
+	"extenddftf2", "extendsftf2"): New expanders.
+	("*trunctfdf2_ieee", "*trunctfdf2_ibm", "*trunctfsf2_ieee", 
+	"*trunctfsf2_ibm", "*extenddftf2_ieee", "*extenddftf2_ibm",
+	"*extendsftf2_ieee", "*extendsftf2_ibm"): New insn patterns.
+	* config/s390/s390.opt (mlong-double-128, mlong-double-64):
+	New options.
+	* config/s390/t-crtstuff (TARGET_LIBGCC2_CFLAGS): Macro defined.
+	* config/s390/libgcc-glibc.ver (__divtc3, __multc3, __powitf2, 
+	__fixtfti, __fixunstfti, __floattitf, __fixtfdi, __fixunstfdi,
+	__floatditf): Add a GCC_4.1.0 symbol version tag.
+	* doc/invoke.texi (-mlong-double-128, -mlong-double-64): Document
+	the new options.
+
 2006-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.c (init_alignment_context): Set
