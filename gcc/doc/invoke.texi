@@ -674,8 +674,8 @@ See RS/6000 and PowerPC Options.
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
--mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
--mpacked-stack  -mno-packed-stack @gol
+-mhard-float  -msoft-float -mlong-double-64 -mlong-double-128 @gol
+-mbackchain  -mno-backchain -mpacked-stack  -mno-packed-stack @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
@@ -11710,6 +11710,14 @@ for floating-point operations.  When @option{-msoft-float} is specified,
 functions in @file{libgcc.a} will be used to perform floating-point
 operations.  When @option{-mhard-float} is specified, the compiler
 generates IEEE floating-point instructions.  This is the default.
+
+@item -mlong-double-64
+@itemx -mlong-double-128
+@opindex mlong-double-64
+@opindex mlong-double-128
+These switches control the size of @code{long double} type. A size
+of 64bit makes the @code{long double} type equivalent to the @code{double}
+type. This is the default.
 
 @item -mbackchain
 @itemx -mno-backchain

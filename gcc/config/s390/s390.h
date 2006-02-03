@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
@@ -93,6 +93,8 @@ extern enum processor_flags s390_arch_flags;
       builtin_define ("__s390__");			\
       if (TARGET_64BIT)					\
         builtin_define ("__s390x__");			\
+      if (TARGET_LONG_DOUBLE_128)			\
+        builtin_define ("__LONG_DOUBLE_128__");		\
     }							\
   while (0)
 
@@ -216,7 +218,18 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 #define LONG_LONG_TYPE_SIZE 64
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE 64  /* ??? Should support extended format.  */
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
+
+/* Define this to set long double type size to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#ifdef __LONG_DOUBLE_128__
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#endif
+
+/* Work around target_flags dependency in ada/targtyps.c.  */
+#define WIDEST_HARDWARE_FP_SIZE 64
 
 /* We use "unsigned char" as default.  */
 #define DEFAULT_SIGNED_CHAR 0
@@ -334,28 +347,34 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    Floating point modes <= word size fit into any FPR or GPR.
    Floating point modes > word size (i.e. DFmode on 32-bit) fit
    into any FPR, or an even-odd GPR pair.
+   TFmode fits only into an even-odd FPR pair.
 
    Complex floating point modes fit either into two FPRs, or into
    successive GPRs (again starting with an even number).
+   TCmode fits only into two successive even-odd FPR pairs.
 
    Condition code modes fit only into the CC register.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)                           \
   (FP_REGNO_P(REGNO)?                                           \
-    (GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ? 2 : 1) :      \
+   (GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ?                \
+    2 * ((GET_MODE_SIZE(MODE) / 2 + 8 - 1) / 8) : 		\
+    ((GET_MODE_SIZE(MODE) + 8 - 1) / 8)) :			\
    GENERAL_REGNO_P(REGNO)?                                      \
     ((GET_MODE_SIZE(MODE)+UNITS_PER_WORD-1) / UNITS_PER_WORD) : \
    ACCESS_REGNO_P(REGNO)?					\
-    ((GET_MODE_SIZE(MODE)+4-1) / 4) : 				\
+    ((GET_MODE_SIZE(MODE) + 4 - 1) / 4) : 			\
    1)
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)                             \
   (FP_REGNO_P(REGNO)?                                               \
-   ((MODE) == SImode || (MODE) == DImode ||                         \
-    GET_MODE_CLASS(MODE) == MODE_FLOAT ||                           \
-    GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT) :                   \
+   (((MODE) == SImode || (MODE) == DImode                           \
+     || GET_MODE_CLASS(MODE) == MODE_FLOAT                          \
+     || GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT)                 \
+    && (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1))) :    \
    GENERAL_REGNO_P(REGNO)?                                          \
-    (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1)) :        \
+   ((HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1))	    \
+    && (((MODE) != TFmode && (MODE) != TCmode) || TARGET_64BIT)) :  \
    CC_REGNO_P(REGNO)?                                               \
      GET_MODE_CLASS (MODE) == MODE_CC :                             \
    FRAME_REGNO_P(REGNO)?                                            \
@@ -376,7 +395,9 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
      ((CLASS) == FP_REGS ? 						\
-      (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT ? 2 : 1) :  		\
+      (GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ?                     \
+       2 * (GET_MODE_SIZE (MODE) / 2 + 8 - 1) / 8 :		        \
+       (GET_MODE_SIZE (MODE) + 8 - 1) / 8) :				\
       (CLASS) == ACCESS_REGS ?						\
       (GET_MODE_SIZE (MODE) + 4 - 1) / 4 :				\
       (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -386,10 +407,11 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    cannot use SUBREGs to switch between modes in FP registers.
    Likewise for access registers, since they have only half the
    word size on 64-bit.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
-   ? reg_classes_intersect_p (FP_REGS, CLASS)			\
-     || reg_classes_intersect_p (ACCESS_REGS, CLASS) : 0)
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		        \
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			        \
+   ? ((reg_classes_intersect_p (FP_REGS, CLASS)				\
+       && (GET_MODE_SIZE (FROM) < 8 || GET_MODE_SIZE (TO) < 8))		\
+      || reg_classes_intersect_p (ACCESS_REGS, CLASS)) : 0)
 
 /* Register classes.  */
 

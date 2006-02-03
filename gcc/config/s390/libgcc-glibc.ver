@@ -39,3 +39,36 @@ GLIBC_2.2 {
 }
 %endif
 
+# With GCC 4.1.0 long double 128 bit support was introduced. The
+# following symbols coming from libgcc are enabled when -mlong-double-128
+# is specified. These lines make the symbols to get a @@GCC_4.1.0 attached.
+
+%exclude {
+  __divtc3
+  __multc3
+  __powitf2
+  __fixtfti
+  __fixunstfti
+  __floattitf
+
+  __fixtfdi
+  __fixunstfdi
+  __floatditf
+}
+
+GCC_4.1.0 {
+  __divtc3
+  __multc3
+  __powitf2
+
+%ifdef __s390x__
+  __fixtfti
+  __fixunstfti
+  __floattitf
+
+%else
+  __fixtfdi
+  __fixunstfdi
+  __floatditf
+%endif
+}
