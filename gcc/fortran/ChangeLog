@@ -1,6 +1,7 @@
 2006-02-03  Steven G. Kargl  <kargls@comcast>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/20845
 	* resolve.c (resolve_symbol): Default initialization of derived type
 	component reguires the SAVE attribute.
 
