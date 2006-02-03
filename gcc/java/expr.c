@@ -273,8 +273,7 @@ push_type_0 (tree type)
 void
 push_type (tree type)
 {
-  if (! push_type_0 (type))
-    abort ();
+  gcc_assert (push_type_0 (type));
 }
 
 static void
@@ -606,15 +605,13 @@ java_stack_pop (int count)
     {
       tree type, val;
 
-      if (stack_pointer == 0)
-	abort ();
+      gcc_assert (stack_pointer != 0);
 
       type = stack_type_map[stack_pointer - 1];
       if (type == TYPE_SECOND)
 	{
 	  count--;
-	  if (stack_pointer == 1 || count <= 0)
-	    abort ();
+	  gcc_assert (stack_pointer != 1 && count > 0);
 
 	  type = stack_type_map[stack_pointer - 2];
 	}
@@ -632,13 +629,12 @@ java_stack_swap (void)
   tree temp;
   tree decl1, decl2;
 
-  if (stack_pointer < 2
-      || (type1 = stack_type_map[stack_pointer - 1]) == TYPE_UNKNOWN
-      || (type2 = stack_type_map[stack_pointer - 2]) == TYPE_UNKNOWN
-      || type1 == TYPE_SECOND || type2 == TYPE_SECOND
-      || TYPE_IS_WIDE (type1) || TYPE_IS_WIDE (type2))
-    /* Bad stack swap.  */
-    abort ();
+  /* Bad stack swap.  */
+  gcc_assert (stack_pointer >= 2
+	      && (type1 = stack_type_map[stack_pointer - 1]) != TYPE_UNKNOWN
+	      && (type2 = stack_type_map[stack_pointer - 2]) != TYPE_UNKNOWN
+	      && (type1 != TYPE_SECOND && type2 != TYPE_SECOND)
+	      && (! TYPE_IS_WIDE (type1) && ! TYPE_IS_WIDE (type2)));
 
   flush_quick_stack ();
   decl1 = find_stack_slot (stack_pointer - 1, type1);
@@ -678,18 +674,16 @@ java_stack_dup (int size, int offset)
       type = stack_type_map [src_index];
       if (type == TYPE_SECOND)
 	{
-	  if (src_index <= low_index)
-	    /* Dup operation splits 64-bit number.  */
-	    abort ();
+	  /* Dup operation splits 64-bit number.  */
+	  gcc_assert (src_index > low_index);
 
 	  stack_type_map[dst_index] = type;
 	  src_index--;  dst_index--;
 	  type = stack_type_map[src_index];
-	  if (! TYPE_IS_WIDE (type))
-	    abort ();
+	  gcc_assert (TYPE_IS_WIDE (type));
 	}
-      else if (TYPE_IS_WIDE (type))
-	abort ();
+      else
+	gcc_assert (! TYPE_IS_WIDE (type));
 
       if (src_index != dst_index)
 	{
@@ -785,7 +779,7 @@ encode_newarray_type (tree type)
   else if (type == long_type_node)
     return 11;
   else
-    abort ();
+    gcc_unreachable ();
 }
 
 /* Build a call to _Jv_ThrowBadArrayIndex(), the
@@ -942,17 +936,15 @@ build_java_arraystore_check (tree array, tree object)
     }
   else
     {
-      if (! is_array_type_p (array_type_p))
-	abort ();
+      gcc_assert (is_array_type_p (array_type_p));
 
       /* Get the TYPE_DECL for ARRAY's element type. */
       element_type
 	= TYPE_NAME (TREE_TYPE (TREE_TYPE (TREE_TYPE (array_type_p))));
     }
 
-  if (TREE_CODE (element_type) != TYPE_DECL   
-      || TREE_CODE (object_type) != TYPE_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (element_type) == TYPE_DECL
+	      && TREE_CODE (object_type) == TYPE_DECL);
 
   if (!flag_store_check)
     return build1 (NOP_EXPR, array_type_p, array);
@@ -1235,7 +1227,7 @@ expand_java_pushc (int ival, tree type)
       value = build_real (type, x);
     }
   else
-    abort ();
+    gcc_unreachable ();
 
   push_value (value);
 }
@@ -1492,9 +1484,7 @@ build_java_soft_divmod (enum tree_code op, tree type, tree op1, tree op2)
 	}
     }
 
-  if (! call)
-    abort ();
-		  
+  gcc_assert (call);
   call = build3 (CALL_EXPR, type,
 		 build_address_of (call),
 		 tree_cons (NULL_TREE, arg1,
@@ -1890,7 +1880,7 @@ pop_arguments (tree arg_types)
 	arg = convert (integer_type_node, arg);
       return tree_cons (NULL_TREE, arg, tail);
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Attach to PTR (a block) the declaration found in ENTRY. */
@@ -2151,8 +2141,7 @@ build_invokevirtual (tree dtable, tree method)
 
   if (flag_indirect_dispatch)
     {
-      if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))))
-	abort ();
+      gcc_assert (! CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))));
 
       otable_index 
 	= build_int_cst (NULL_TREE, get_symbol_table_index 
@@ -2205,8 +2194,7 @@ build_invokeinterface (tree dtable, tree method)
 		   lookup_field (&dtable_type, class_ident), NULL_TREE);
 
   interface = DECL_CONTEXT (method);
-  if (! CLASS_INTERFACE (TYPE_NAME (interface)))
-    abort ();
+  gcc_assert (CLASS_INTERFACE (TYPE_NAME (interface)));
   layout_class_methods (interface);
   
   if (flag_indirect_dispatch)
@@ -2447,8 +2435,7 @@ build_jni_stub (tree method)
   int from_class = ! CLASS_FROM_SOURCE_P (klass);
   klass = build_class_ref (klass);
 
-  if (! METHOD_NATIVE (method) || ! flag_jni)
-    abort ();
+  gcc_assert (METHOD_NATIVE (method) && flag_jni);
 
   DECL_ARTIFICIAL (method) = 1;
   DECL_EXTERNAL (method) = 0;
@@ -2602,8 +2589,7 @@ build_jni_stub (tree method)
   if (res_var != NULL_TREE)
     {
       tree drt;
-      if (! DECL_RESULT (method))
-	abort ();
+      gcc_assert (DECL_RESULT (method));
       /* Make sure we copy the result variable to the actual
 	 result.  We use the type of the DECL_RESULT because it
 	 might be different from the return type of the function:
@@ -3482,8 +3468,7 @@ force_evaluation_order (tree node)
 	return node;
 
       /* Not having a list of arguments here is an error. */ 
-      if (TREE_CODE (arg) != TREE_LIST)
-        abort ();
+      gcc_assert (TREE_CODE (arg) == TREE_LIST);
 
       /* This reverses the evaluation order. This is a desired effect. */
       for (cmp = NULL_TREE; arg; arg = TREE_CHAIN (arg))

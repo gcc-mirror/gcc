@@ -80,7 +80,7 @@ const char *jcf_write_base_directory = NULL;
 /* Macro to call each time we pop I words from the JVM stack. */
 
 #define NOTE_POP(I) \
-  do { state->code_SP -= (I); if (state->code_SP < 0) abort(); } while (0)
+  do { state->code_SP -= (I); gcc_assert (state->code_SP >= 0); } while (0)
 
 /* A chunk or segment of a .class file. */
 
@@ -356,10 +356,8 @@ static int CHECK_PUT (void *, struct jcf_partial *, int);
 static int
 CHECK_PUT (void *ptr, struct jcf_partial *state, int i)
 {
-  if ((unsigned char *) ptr < state->chunk->data
-      || (unsigned char *) ptr + i > state->chunk->data + state->chunk->size)
-    abort ();
-
+  gcc_assert ((unsigned char *) ptr >= state->chunk->data
+	      && (unsigned char *) ptr + i <= state->chunk->data + state->chunk->size);
   return 0;
 }
 #else
@@ -406,9 +404,7 @@ static int CHECK_OP (struct jcf_partial *);
 static int
 CHECK_OP (struct jcf_partial *state)
 {
-  if (state->bytecode.ptr > state->bytecode.limit)
-    abort ();
-
+  gcc_assert (state->bytecode.ptr <= state->bytecode.limit);
   return 0;
 }
 #else
@@ -609,15 +605,13 @@ maybe_free_localvar (tree decl, struct jcf_partial *state, int really)
 
   info->end_label = end_label;
 
-  if (info->decl != decl)
-    abort ();
+  gcc_assert (info->decl == decl);
   if (! really)
     return;
   ptr[0] = NULL;
   if (wide)
     {
-      if (ptr[1] !=  (struct localvar_info *)(~0))
-	abort ();
+      gcc_assert (ptr[1] == (struct localvar_info *) (~0));
       ptr[1] = NULL;
     }
 }
@@ -667,7 +661,7 @@ get_access_flags (tree decl)
 	flags |= ACC_STRICT;
     }
   else
-    abort ();
+    gcc_unreachable ();
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -827,7 +821,7 @@ find_constant_index (tree value, struct jcf_partial *state)
     return find_string_constant (&state->cpool, value);
 
   else
-    abort ();
+    gcc_unreachable ();
 }
 
 /* Push 64-bit long constant on VM stack.
@@ -902,7 +896,7 @@ adjust_typed_op (tree type, int max)
     default:
       break;
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 static void
@@ -942,7 +936,7 @@ emit_dup (int size, int offset, struct jcf_partial *state)
   else if (offset == 2)
     kind = size == 1 ? OPCODE_dup_x2 : OPCODE_dup2_x2;
   else
-    abort();
+    gcc_unreachable ();
   OP1 (kind);
   NOTE_PUSH (size);
 }
@@ -1134,8 +1128,7 @@ generate_bytecode_conditional (tree exp,
 	generate_bytecode_conditional (TREE_OPERAND (exp, 2),
 				       true_label, false_label,
 				       true_branch_first, state);
-	if (state->code_SP != save_SP_after)
-	  abort ();
+	gcc_assert (state->code_SP == save_SP_after);
       }
       break;
     case TRUTH_NOT_EXPR:
@@ -1243,7 +1236,8 @@ generate_bytecode_conditional (tree exp,
 	    {
 	    case EQ_EXPR:  op = OPCODE_if_acmpeq;  break;
 	    case NE_EXPR:  op = OPCODE_if_acmpne;  break;
-	    default:  abort();
+	    default:
+	      gcc_unreachable ();
 	    }
 	  if (integer_zerop (exp1) || integer_zerop (exp0))
 	    {
@@ -1333,8 +1327,7 @@ generate_bytecode_conditional (tree exp,
 	}
       break;
     }
-  if (save_SP != state->code_SP)
-    abort ();
+  gcc_assert (save_SP == state->code_SP);
 }
 
 /* Call pending cleanups i.e. those for surrounding TRY_FINALLY_EXPRs.
@@ -1496,8 +1489,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
       if (target == IGNORE_TARGET) ; /* do nothing */
       else if (TREE_CODE (type) == POINTER_TYPE)
 	{
-	  if (! integer_zerop (exp))
-	    abort();
+	  gcc_assert (integer_zerop (exp));
 	  RESERVE(1);
 	  OP1 (OPCODE_aconst_null);
 	  NOTE_PUSH (1);
@@ -1834,7 +1826,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
       if (exp == NULL_TREE)
 	exp = build_java_empty_stmt ();
       else if (TREE_CODE (exp) != MODIFY_EXPR) 
-	abort ();
+	gcc_unreachable ();
       else
 	exp = TREE_OPERAND (exp, 1);
       generate_bytecode_return (exp, state);
@@ -1848,8 +1840,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	end_label->u.labeled_block = exp;
 	if (LABELED_BLOCK_BODY (exp))
 	  generate_bytecode_insns (LABELED_BLOCK_BODY (exp), target, state);
-	if (state->labeled_blocks != end_label)
-	  abort();
+	gcc_assert (state->labeled_blocks == end_label);
 	state->labeled_blocks = end_label->next;
 	define_jcf_label (end_label, state);
       }
@@ -1957,7 +1948,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	  offset = 0;
 	}
       else
-	abort ();
+	gcc_unreachable ();
 
       if (target != IGNORE_TARGET && post_op)
 	emit_dup (size, offset, state);
@@ -2081,7 +2072,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 		NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (lhs)) ? 2 : 1);
 	      }
 	    else
-	      abort ();
+	      gcc_unreachable ();
 
 	    /* This function correctly handles the case where the LHS
 	       of a binary expression is NULL_TREE.  */
@@ -2127,7 +2118,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	  NOTE_POP (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 4 : 3);
 	}
       else
-	abort ();
+	gcc_unreachable ();
       break;
     case PLUS_EXPR:
       jopcode = OPCODE_iadd;
@@ -2313,8 +2304,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	struct jcf_block *end_label;  /* End of try clause. */
 	struct jcf_block *finished_label = gen_jcf_label (state);
 	tree clause = TREE_OPERAND (exp, 1);
-	if (target != IGNORE_TARGET)
-	  abort ();
+	gcc_assert (target == IGNORE_TARGET);
 	generate_bytecode_insns (try_clause, IGNORE_TARGET, state);
 	end_label = get_jcf_label_here (state);
 	if (end_label == start_label)
@@ -2369,8 +2359,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 
 	if (CAN_COMPLETE_NORMALLY (finally))
 	  {
-	    if (state->labeled_blocks != finally_label)
-	      abort();
+	    gcc_assert (state->labeled_blocks == finally_label);
 	    state->labeled_blocks = finally_label->next;
 	  }
 	end_label = get_jcf_label_here (state);
@@ -2517,8 +2506,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	tree op0 = TREE_OPERAND (exp, 0);
 	tree op1 = TREE_OPERAND (exp, 1);
 	tree x;
-	if (TREE_SIDE_EFFECTS (op0) || TREE_SIDE_EFFECTS (op1))
-	  abort ();
+	gcc_assert (! TREE_SIDE_EFFECTS (op0) && ! TREE_SIDE_EFFECTS (op1));
 	x = build3 (COND_EXPR, TREE_TYPE (exp), 
 		    build2 (code, boolean_type_node, op0, op1), 
 		    op0, op1);	  
@@ -2645,9 +2633,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	    OP2 (index);
 	    if (interface)
 	      {
-		if (nargs <= 0)
-		  abort ();
-
+		gcc_assert (nargs > 0);
 		OP1 (nargs);
 		OP1 (0);
 	      }
@@ -2863,8 +2849,7 @@ perform_relocations (struct jcf_partial *state)
 	      *--new_ptr = - reloc->kind;
 	    }
 	}
-      if (new_ptr != chunk->data)
-	abort ();
+      gcc_assert (new_ptr == chunk->data);
     }
   state->code_length = pc;
 }
@@ -3125,8 +3110,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
 	  generate_bytecode_insns (body, IGNORE_TARGET, state);
 	  if (CAN_COMPLETE_NORMALLY (body))
 	    {
-	      if (TREE_CODE (TREE_TYPE (type)) != VOID_TYPE)
-		abort();
+	      gcc_assert (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE);
 	      RESERVE (1);
 	      OP1 (OPCODE_return);
 	    }

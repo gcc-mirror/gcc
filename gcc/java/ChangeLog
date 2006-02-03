@@ -1,3 +1,20 @@
+2006-02-03  Ben Elliston  <bje@au.ibm.com>
+
+	* java-gimplify.c: Use gcc_assert and gcc_unreachable throughout.
+	* typeck.c: Likewise.
+	* verify-impl.c: Likewise.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* constants.c: Likewise.
+	* check-init.c: Likewise.
+	* jcf-write.c: Likewise.
+	* verify-glue.c: Likewise.
+	* mangle.c: Likewise.
+	* expr.c: Likewise.
+	* lang.c: Likewise.
+	* boehm.c: Likewise.
+
 2006-02-01  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (end_java_method): Kill hack disabling unit-at-a-time.

@@ -55,8 +55,7 @@ set_local_type (int slot, tree type)
   int max_locals = DECL_MAX_LOCALS(current_function_decl);
   int nslots = TYPE_IS_WIDE (type) ? 2 : 1;
 
-  if (slot < 0 || slot + nslots - 1 >= max_locals)
-    abort ();
+  gcc_assert (slot >= 0 && (slot + nslots - 1 < max_locals));
 
   type_map[slot] = type;
   while (--nslots > 0)
@@ -458,9 +457,7 @@ static tree
 parse_signature_type (const unsigned char **ptr, const unsigned char *limit)
 {
   tree type;
-
-  if (*ptr >= limit)
-    abort ();
+  gcc_assert (*ptr < limit);
 
   switch (**ptr)
     {
@@ -484,8 +481,7 @@ parse_signature_type (const unsigned char **ptr, const unsigned char *limit)
 	const unsigned char *str = start;
 	for ( ; ; str++)
 	  {
-	    if (str >= limit)
-	      abort ();
+	    gcc_assert (str < limit);
 	    if (*str == ';')
 	      break;
 	  }
@@ -494,7 +490,7 @@ parse_signature_type (const unsigned char **ptr, const unsigned char *limit)
 	break;
       }
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return promote_type (type);
 }
@@ -662,7 +658,7 @@ build_java_signature (tree type)
 	  break;
 	bad_type:
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       TYPE_SIGNATURE (type) = sig;
     }

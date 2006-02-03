@@ -672,8 +672,7 @@ check_init (tree exp, words before)
 	DECLARE_BUFFERS(when_true, 2);
 	words when_false = when_true + num_current_words;
 #ifdef ENABLE_JC1_CHECKING
-	if (TREE_CODE (alt->block) != LOOP_EXPR)
-	  abort ();
+	gcc_assert (TREE_CODE (alt->block) == LOOP_EXPR);
 #endif
 	check_bool_init (TREE_OPERAND (exp, 0), before, when_false, when_true);
 	done_alternative (when_true, alt);

@@ -313,8 +313,7 @@ write_constant_pool (CPool *cpool, unsigned char *buffer, int length)
 	}
     }
 
-  if (ptr != buffer + length)
-    abort ();
+  gcc_assert (ptr == buffer + length);
 }
 
 static GTY(()) tree tag_nodes[13];

@@ -101,8 +101,7 @@ mark_reference_fields (tree field,
 
 	  /* If this reference slot appears to overlay a slot we think
 	     we already covered, then we are doomed.  */
-	  if (offset <= *last_view_index)
-	    abort ();
+	  gcc_assert (offset > *last_view_index);
 
 	  count = offset * BITS_PER_UNIT / POINTER_SIZE;
 	  size_words = size_bytes * BITS_PER_UNIT / POINTER_SIZE;

@@ -120,7 +120,7 @@ handle_deprecated (void)
   else
     {
       /* Shouldn't happen.  */
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -285,12 +285,12 @@ set_source_filename (JCF *jcf, int index)
 tree
 parse_signature (JCF *jcf, int sig_index)
 {
-  if (sig_index <= 0 || sig_index >= JPOOL_SIZE (jcf)
-      || JPOOL_TAG (jcf, sig_index) != CONSTANT_Utf8)
-    abort ();
-  else
-    return parse_signature_string (JPOOL_UTF_DATA (jcf, sig_index),
-				   JPOOL_UTF_LENGTH (jcf, sig_index));
+  gcc_assert (sig_index > 0
+	      && sig_index < JPOOL_SIZE (jcf)
+	      && JPOOL_TAG (jcf, sig_index) == CONSTANT_Utf8);
+
+  return parse_signature_string (JPOOL_UTF_DATA (jcf, sig_index),
+				 JPOOL_UTF_LENGTH (jcf, sig_index));
 }
 
 tree
@@ -395,10 +395,7 @@ tree
 get_name_constant (JCF *jcf, int index)
 {
   tree name = get_constant (jcf, index);
-
-  if (TREE_CODE (name) != IDENTIFIER_NODE)
-    abort ();
-
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
   return name;
 }
 
@@ -445,10 +442,10 @@ handle_innerclass_attribute (int count, JCF *jcf)
 static tree
 give_name_to_class (JCF *jcf, int i)
 {
-  if (i <= 0 || i >= JPOOL_SIZE (jcf)
-      || JPOOL_TAG (jcf, i) != CONSTANT_Class)
-    abort ();
-  else
+  gcc_assert (i > 0
+	      && i < JPOOL_SIZE (jcf)
+	      && JPOOL_TAG (jcf, i) == CONSTANT_Class);
+
     {
       tree package_name = NULL_TREE, tmp;
       tree this_class;
@@ -489,9 +486,9 @@ tree
 get_class_constant (JCF *jcf, int i)
 {
   tree type;
-  if (i <= 0 || i >= JPOOL_SIZE (jcf)
-      || (JPOOL_TAG (jcf, i) & ~CONSTANT_ResolvedFlag) != CONSTANT_Class)
-    abort ();
+  gcc_assert (i > 0
+	      && i < JPOOL_SIZE (jcf)
+	      && (JPOOL_TAG (jcf, i) & ~CONSTANT_ResolvedFlag) == CONSTANT_Class);
 
   if (JPOOL_TAG (jcf, i) != CONSTANT_ResolvedClass)
     {
@@ -1421,12 +1418,9 @@ parse_zip_file_entries (void)
 	    
 	    CLASS_FROM_CURRENTLY_COMPILED_P (current_class) = 1;
 
-	    if (TYPE_DUMMY (class))
-	      {
-		/* This is a dummy class, and now we're compiling it
-		   for real.  */
-		abort ();
-	      }
+	    /* This is a dummy class, and now we're compiling it for
+	       real.  */
+	    gcc_assert (! TYPE_DUMMY (class));
 
 	    /* This is for a corner case where we have a superclass
 	       but no superclass fields.  
@@ -1501,7 +1495,7 @@ parse_zip_file_entries (void)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
