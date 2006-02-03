@@ -1,3 +1,22 @@
+2006-02-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cwchar: New.
+	* include/tr1/cwctype: Likewise.
+	* include/tr1/wchar.h: Likewise.
+	* include/tr1/wctype.h: Likewise.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/8_c_compatibility/cinttypes/functions: New.
+	* testsuite/tr1/8_c_compatibility/cwctype/functions.cc: Likewise.
+	* testsuite/tr1/headers.cc: Update.
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add <wchar.h> and
+	<wctype.h> checks.
+	* docs/html/ext/tr1.html: Update.
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
+	* testsuite/tr1/8_c_compatibility/cctype/functions.cc: Cosmetic tweak.
+
 2006-02-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cfloat: New.

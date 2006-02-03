@@ -711,6 +711,8 @@ tr1_headers = \
 	${tr1_srcdir}/cstdarg \
 	${tr1_srcdir}/cstdint \
 	${tr1_srcdir}/ctype.h \
+	${tr1_srcdir}/cwchar \
+	${tr1_srcdir}/cwctype \
 	${tr1_srcdir}/fenv.h \
 	${tr1_srcdir}/float.h \
 	${tr1_srcdir}/functional \
@@ -731,7 +733,9 @@ tr1_headers = \
 	${tr1_srcdir}/type_traits_fwd.h \
 	${tr1_srcdir}/unordered_set \
 	${tr1_srcdir}/unordered_map \
-	${tr1_srcdir}/utility
+	${tr1_srcdir}/utility \
+	${tr1_srcdir}/wchar.h \
+	${tr1_srcdir}/wctype.h
 
 
 # This is the common subset of files that all three "C" header models use.
