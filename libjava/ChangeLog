@@ -1,5 +1,10 @@
 2006-02-03  Robert Schuster  <robertschuster@fsfe.org>
 
+	* link.cc:
+	(_Jv_Linker::create_error_method): Added missing (void *) cast.
+
+2006-02-03  Robert Schuster  <robertschuster@fsfe.org>
+
 	* include/jvm.h:
 	(_Jv_Linker::create_error_method): New method declaration.
 	* link.cc:
