@@ -1,3 +1,12 @@
+2006-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25979
+	* gimplify.c (gimplify_modify_expr_rhs): Disable *& optimization for now.
+
+	PR middle-end/25977
+	* gimplify.c (gimplify_modify_expr_rhs): It's not always safe to do RVO
+	on the return slot if it's an NRV.
+
 2006-01-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/26001
