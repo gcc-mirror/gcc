@@ -1190,13 +1190,10 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	           [intmax_t i, numer, denom, base;
 	            const char* s;
 	            char** endptr;
-	            intmax_t ret;
-	            uintmax_t uret;
-	            imaxdiv_t dret;
-	            ret = imaxabs(i);
-	            dret = imaxdiv(numer, denom);
+	            intmax_t ret = imaxabs(i);
+	            imaxdiv_t dret = imaxdiv(numer, denom);
 	            ret = strtoimax(s, endptr, base);
-	            uret = strtoumax(s, endptr, base);
+	            uintmax_t uret = strtoumax(s, endptr, base);
         	   ],[ac_c99_inttypes_tr1=yes], [ac_c99_inttypes_tr1=no])
   fi
   AC_MSG_RESULT($ac_c99_inttypes_tr1)
@@ -1204,6 +1201,50 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
     AC_DEFINE(_GLIBCXX_USE_C99_INTTYPES_TR1, 1,
               [Define if C99 functions in <inttypes.h> should be imported in
               <tr1/cinttypes> in namespace std::tr1.])
+  fi
+
+  # Check for the existence of <wchar.h> functions.
+  AC_MSG_CHECKING([for ISO C99 support to TR1 in <wchar.h>])
+  AC_CACHE_VAL(ac_c99_wchar_tr1, [
+  AC_TRY_COMPILE([#include <wchar.h>
+	          #include <stdio.h>
+	          #include <stdarg.h>],
+	         [const wchar_t* nptr;
+	          const wchar_t* format;
+	          const wchar_t* s;
+	          wchar_t** endptr;
+	          FILE* stream;
+	          va_list arg;
+	          int base;
+	          float fret = wcstof(nptr, endptr);
+	          long double ldret = wcstold(nptr, endptr);
+	          int ret = vfwscanf(stream, format, arg);
+  	          ret = vswscanf(s, format, arg);
+  	          ret = vwscanf(format, arg);
+	          long long llret = wcstoll(nptr, endptr, base);
+  	          unsigned long long ullret = wcstoull(nptr, endptr, base);
+		 ],[ac_c99_wchar_tr1=yes], [ac_c99_wchar_tr1=no])
+  ])
+  AC_MSG_RESULT($ac_c99_wchar_tr1)
+  if test x"$ac_c99_wchar_tr1" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_WCHAR_TR1, 1,
+              [Define if C99 functions in <wchar.h> should be imported in
+	      <tr1/cwchar> in namespace std::tr1.])
+  fi
+
+  # Check for the existence of <wctype.h> functions.
+  AC_MSG_CHECKING([for ISO C99 support to TR1 in <wctype.h>])
+  AC_CACHE_VAL(ac_c99_wctype_tr1, [
+  AC_TRY_COMPILE([#include <wctype.h>],
+	         [wint_t ch;
+	          int ret = iswblank(ch);
+		 ],[ac_c99_wctype_tr1=yes], [ac_c99_wctype_tr1=no])
+  ])
+  AC_MSG_RESULT($ac_c99_wctype_tr1)
+  if test x"$ac_c99_wctype_tr1" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_WCTYPE_TR1, 1,
+              [Define if C99 functions in <wctype.h> should be imported in
+	      <tr1/cwctype> in namespace std::tr1.])
   fi
 
   AC_LANG_RESTORE

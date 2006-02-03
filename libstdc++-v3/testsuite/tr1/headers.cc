@@ -30,6 +30,8 @@
 #include <tr1/cstdarg>
 #include <tr1/cstdint>
 #include <tr1/ctype.h>
+#include <tr1/cwchar>
+#include <tr1/cwctype>
 #include <tr1/fenv.h>
 #include <tr1/float.h>
 #include <tr1/functional>
@@ -44,3 +46,5 @@
 #include <tr1/unordered_set>
 #include <tr1/unordered_map>
 #include <tr1/utility>
+#include <tr1/wchar.h>
+#include <tr1/wctype.h>
