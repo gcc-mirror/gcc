@@ -40,7 +40,6 @@ if [info exists TOOL_OPTIONS] {
 } else {
     set multilibs [get_multilibs]
 }
-set blddir [lookfor_file $multilibs libgomp]
 
 proc libgomp_init { args } {
     global srcdir blddir objdir tool_root_dir
@@ -57,6 +56,8 @@ proc libgomp_init { args } {
     global lang_test_file
     global lang_library_path
     global lang_link_flags
+
+    set blddir [lookfor_file [get_multilibs] libgomp]
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
