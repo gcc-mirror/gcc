@@ -1,3 +1,9 @@
+2006-02-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/25377
+	* config/i386/i386.c (ix86_function_ok_for_sibcall):
+	Use targetm.binds_local_p instead of TREE_PUBLIC.
+
 2006-02-02  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h (TYPE_STRING_FLAG): Document that this field may be used
