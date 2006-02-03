@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
@@ -71,13 +71,17 @@ struct processor_costs
   const int msgr;     /* cost of an MSGR instruction.  */
   const int msr;      /* cost of an MSR instruction.  */
   const int mult_df;  /* cost of multiplication in DFmode.  */
+  const int mxbr;
   /* square root */
+  const int sqxbr;    /* cost of square root in TFmode.  */
   const int sqdbr;    /* cost of square root in DFmode.  */
   const int sqebr;    /* cost of square root in SFmode.  */
   /* multiply and add */
   const int madbr;    /* cost of multiply and add in DFmode.  */
   const int maebr;    /* cost of multiply and add in SFmode.  */
   /* division */
+  const int dxbr;
+  const int dxr;
   const int ddbr;
   const int ddr;
   const int debr;
@@ -107,10 +111,14 @@ struct processor_costs z900_cost =
   COSTS_N_INSNS (10),    /* MSGR  */
   COSTS_N_INSNS (4),     /* MSR   */
   COSTS_N_INSNS (7),     /* multiplication in DFmode */
+  COSTS_N_INSNS (13),    /* MXBR */
+  COSTS_N_INSNS (136),   /* SQXBR */
   COSTS_N_INSNS (44),    /* SQDBR */
   COSTS_N_INSNS (35),    /* SQEBR */
   COSTS_N_INSNS (18),    /* MADBR */
   COSTS_N_INSNS (13),    /* MAEBR */
+  COSTS_N_INSNS (134),   /* DXBR */
+  COSTS_N_INSNS (135),   /* DXR */
   COSTS_N_INSNS (30),    /* DDBR */
   COSTS_N_INSNS (30),    /* DDR  */
   COSTS_N_INSNS (27),    /* DEBR */
@@ -138,10 +146,14 @@ struct processor_costs z990_cost =
   COSTS_N_INSNS (4),     /* MSGR  */
   COSTS_N_INSNS (4),     /* MSR   */
   COSTS_N_INSNS (1),     /* multiplication in DFmode */
+  COSTS_N_INSNS (28),    /* MXBR */
+  COSTS_N_INSNS (130),   /* SQXBR */
   COSTS_N_INSNS (66),    /* SQDBR */
   COSTS_N_INSNS (38),    /* SQEBR */
   COSTS_N_INSNS (1),     /* MADBR */
   COSTS_N_INSNS (1),     /* MAEBR */
+  COSTS_N_INSNS (60),    /* DXBR */
+  COSTS_N_INSNS (72),    /* DXR */
   COSTS_N_INSNS (40),    /* DDBR */
   COSTS_N_INSNS (44),    /* DDR  */
   COSTS_N_INSNS (26),    /* DDBR */
@@ -169,10 +181,14 @@ struct processor_costs z9_109_cost =
   COSTS_N_INSNS (4),     /* MSGR  */
   COSTS_N_INSNS (4),     /* MSR   */
   COSTS_N_INSNS (1),     /* multiplication in DFmode */
+  COSTS_N_INSNS (28),    /* MXBR */
+  COSTS_N_INSNS (130),   /* SQXBR */
   COSTS_N_INSNS (66),    /* SQDBR */
   COSTS_N_INSNS (38),    /* SQEBR */
   COSTS_N_INSNS (1),     /* MADBR */
   COSTS_N_INSNS (1),     /* MAEBR */
+  COSTS_N_INSNS (60),    /* DXBR */
+  COSTS_N_INSNS (72),    /* DXR */
   COSTS_N_INSNS (40),    /* DDBR */
   COSTS_N_INSNS (37),    /* DDR  */
   COSTS_N_INSNS (26),    /* DDBR */
@@ -2159,6 +2175,9 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	case DFmode:
 	  *total = s390_cost->mult_df;
 	  break;
+	case TFmode:
+	  *total = s390_cost->mxbr;
+	  break;
 	default:
 	  return false;
 	}
@@ -2209,13 +2228,22 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  else /* TARGET_IBM_FLOAT */
 	    *total = s390_cost->ddr;
 	}
+      else if (GET_MODE (x) == TFmode)
+	{
+	  if (TARGET_IEEE_FLOAT)
+	    *total = s390_cost->dxbr;
+	  else /* TARGET_IBM_FLOAT */
+	    *total = s390_cost->dxr;
+	}
       return false;
 
     case SQRT:
       if (GET_MODE (x) == SFmode)
 	*total = s390_cost->sqebr;
-      else /* DFmode */
+      else if (GET_MODE (x) == DFmode)
 	*total = s390_cost->sqdbr;
+      else /* TFmode */
+	*total = s390_cost->sqxbr;
       return false;
 
     case SIGN_EXTEND:
@@ -2570,6 +2598,15 @@ s390_secondary_input_reload_class (enum reg_class class,
   if (s390_plus_operand (in, mode))
     return ADDR_REGS;
 
+  if (reg_classes_intersect_p (FP_REGS, class)
+      && mode == TFmode
+      && GET_CODE (in) == MEM
+      && GET_CODE (XEXP (in, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (in, 0), 1)) == CONST_INT
+      && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (in, 0), 1))
+			 + GET_MODE_SIZE (mode) - 1))
+    return ADDR_REGS;
+
   if (reg_classes_intersect_p (CC_REGS, class))
     return GENERAL_REGS;
 
@@ -2586,12 +2623,21 @@ enum reg_class
 s390_secondary_output_reload_class (enum reg_class class,
 				    enum machine_mode mode, rtx out)
 {
-  if ((TARGET_64BIT ? mode == TImode
+  if ((TARGET_64BIT ? (mode == TImode || mode == TFmode)
                     : (mode == DImode || mode == DFmode))
       && reg_classes_intersect_p (GENERAL_REGS, class)
       && GET_CODE (out) == MEM
       && GET_CODE (XEXP (out, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (out, 0), 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (out, 0), 1)) == CONST_INT
+      && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (out, 0), 1))
+			 + GET_MODE_SIZE (mode) - 1))
+    return ADDR_REGS;
+
+  if (reg_classes_intersect_p (FP_REGS, class)
+      && mode == TFmode
+      && GET_CODE (out) == MEM
+      && GET_CODE (XEXP (out, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (out, 0), 1)) == CONST_INT
       && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (out, 0), 1))
 			 + GET_MODE_SIZE (mode) - 1))
@@ -5169,10 +5215,10 @@ replace_ltrel_base (rtx *x)
 /* We keep a list of constants which we have to add to internal
    constant tables in the middle of large functions.  */
 
-#define NR_C_MODES 7
+#define NR_C_MODES 8
 enum machine_mode constant_modes[NR_C_MODES] =
 {
-  TImode,
+  TFmode, TImode,
   DFmode, DImode,
   SFmode, SImode,
   HImode,

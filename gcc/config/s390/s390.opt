@@ -1,6 +1,6 @@
 ; Options for the S/390 / zSeries port of the compiler.
 
-; Copyright (C) 2005 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -50,6 +50,14 @@ Enable fused multiply/add instructions
 mhard-float
 Target Report RejectNegative Mask(HARD_FLOAT)
 Use hardware fp
+
+mlong-double-128
+Target Report RejectNegative Mask(LONG_DOUBLE_128)
+Use 128-bit long double
+
+mlong-double-64
+Target Report RejectNegative InverseMask(LONG_DOUBLE_128)
+Use 64-bit long double
 
 mpacked-stack
 Target Report Mask(PACKED_STACK)
