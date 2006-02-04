@@ -2324,7 +2324,7 @@ finish_template_type (tree name, tree args, int entering_scope)
 
   decl = lookup_template_class (name, args,
 				NULL_TREE, NULL_TREE, entering_scope,
-				tf_error | tf_warning | tf_user);
+				tf_warn_or_error | tf_user);
   if (decl != error_mark_node)
     decl = TYPE_STUB_DECL (decl);
 

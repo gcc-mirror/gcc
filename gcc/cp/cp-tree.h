@@ -3108,10 +3108,12 @@ typedef enum tsubst_flags_t {
 				   instantiate_type use) */
   tf_user = 1 << 5,		/* found template must be a user template
 				   (lookup_template_class use) */
-  tf_conv = 1 << 6		/* We are determining what kind of
+  tf_conv = 1 << 6,		/* We are determining what kind of
 				   conversion might be permissible,
 				   not actually performing the
 				   conversion.  */
+  /* Convenient substitution flags combinations.  */
+  tf_warn_or_error = tf_warning | tf_error
 } tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */
@@ -4274,7 +4276,7 @@ extern tree make_ptrmem_cst			(tree, tree);
 extern tree cp_build_type_attribute_variant     (tree, tree);
 extern tree cp_build_qualified_type_real	(tree, int, tsubst_flags_t);
 #define cp_build_qualified_type(TYPE, QUALS) \
-  cp_build_qualified_type_real ((TYPE), (QUALS), tf_error | tf_warning)
+  cp_build_qualified_type_real ((TYPE), (QUALS), tf_warn_or_error)
 extern special_function_kind special_function_p (tree);
 extern int count_trees				(tree);
 extern int char_type_p				(tree);

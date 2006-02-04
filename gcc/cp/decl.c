@@ -2672,7 +2672,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 					TREE_OPERAND (fullname, 1),
 					NULL_TREE, context,
 					/*entering_scope=*/0,
-					tf_error | tf_warning | tf_user);
+					tf_warn_or_error | tf_user);
 	}
       else
 	{
@@ -7113,7 +7113,7 @@ grokdeclarator (const cp_declarator *declarator,
   type_quals |= cp_type_quals (type);
   type = cp_build_qualified_type_real
     (type, type_quals, ((typedef_decl && !DECL_ARTIFICIAL (typedef_decl)
-			 ? tf_ignore_bad_quals : 0) | tf_error | tf_warning));
+			 ? tf_ignore_bad_quals : 0) | tf_warn_or_error));
   /* We might have ignored or rejected some of the qualifiers.  */
   type_quals = cp_type_quals (type);
 

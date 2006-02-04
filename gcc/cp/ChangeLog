@@ -1,3 +1,23 @@
+2006-02-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (tf_warn_or_error): New substituion flag.
+	(cp_build_qualified_type): Use it.
+	* call.c (convert_like_real): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_reference): Likewise.
+	* decl.c (make_typename_type): Likewise.
+	(grokdeclarator): Likewise.
+	* pt.c (tsubst_friend_function): Likewise.
+	(tsubst_friend_class): Likewise.
+	(instantiate_class_template): Likewise.
+	(tsubst_default_argument): Likewise.
+	(instantiate_decl): Likewise.
+	(tsubst_initializer_list): Likewise.
+	(tsubst_enum): Likewise.
+	* semantics.c (finish_template_type): Likewise.
+	* typeck.c (build_ptrmemfunc): Likewise.
+	(convert_for_assignment): Likewise.
+
 2006-02-03  Lee Millward  <lee.millward@gmail.com>
 
        * typeck.c (string_conv_p): Pass appropiate
