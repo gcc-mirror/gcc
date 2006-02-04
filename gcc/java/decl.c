@@ -538,6 +538,7 @@ push_promoted_type (const char *name, tree actual_type)
   TYPE_MAX_VALUE (type) = copy_node (in_max);
   TREE_TYPE (TYPE_MAX_VALUE (type)) = type;
   TYPE_PRECISION (type) = TYPE_PRECISION (int_type_node);
+  TYPE_STRING_FLAG (type) = TYPE_STRING_FLAG (actual_type);
   layout_type (type);
   pushdecl (build_decl (TYPE_DECL, get_identifier (name), type));
   return type;
@@ -738,7 +739,8 @@ java_init_decl_processing (void)
      initializations of __FUNCTION__ and __PRETTY_FUNCTION__.  */
   short_array_type_node = build_prim_array_type (short_type_node, 200);
 #endif
-  char_type_node = make_node (CHAR_TYPE);
+  char_type_node = make_node (INTEGER_TYPE);
+  TYPE_STRING_FLAG (char_type_node) = 1;
   TYPE_PRECISION (char_type_node) = 16;
   fixup_unsigned_type (char_type_node);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("char"), char_type_node));

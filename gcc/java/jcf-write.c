@@ -875,9 +875,9 @@ adjust_typed_op (tree type, int max)
     case RECORD_TYPE:   return 4;
     case BOOLEAN_TYPE:
       return TYPE_PRECISION (type) == 32 || max < 5 ? 0 : 5;
-    case CHAR_TYPE:
-      return TYPE_PRECISION (type) == 32 || max < 6 ? 0 : 6;
     case INTEGER_TYPE:
+      if (type == char_type_node || type == promoted_char_type_node)
+	return TYPE_PRECISION (type) == 32 || max < 6 ? 0 : 6;
       switch (TYPE_PRECISION (type))
 	{
 	case  8:       return max < 5 ? 0 : 5;

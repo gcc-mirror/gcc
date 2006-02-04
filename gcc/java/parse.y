@@ -13331,8 +13331,7 @@ static tree
 do_unary_numeric_promotion (tree arg)
 {
   tree type = TREE_TYPE (arg);
-  if ((TREE_CODE (type) == INTEGER_TYPE && TYPE_PRECISION (type) < 32)
-      || TREE_CODE (type) == CHAR_TYPE)
+  if (TREE_CODE (type) == INTEGER_TYPE && TYPE_PRECISION (type) < 32)
     arg = convert (int_type_node, arg);
   return arg;
 }

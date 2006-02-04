@@ -1,3 +1,17 @@
+2006-02-04  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (java_init_decl_processing): Create char_type_node as a
+	regular INTEGER_TYPE node.
+	(push_promoted_type): Preserve TYPE_STRING_FLAG on types.
+	* typeck.c (convert): No longer check for CHAR_TYPEs but instead
+	test for char_type_node and promoted_char_type_node as special
+	instances of INTEGER_TYPE tree codes.
+	(promote_type,build_java_signature): Likewise.
+	* jcf-write.c (adjust_typed_op): Likewise.
+	* mangle.c (mangle_type): Likewise.
+	* parse.y (do_unary_numeric_promotion): No longer handle CHAR_TYPE.
+	* parse.h (JINTEGRAL_TYPE_P): Likewise.
+
 2006-02-04  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* expr.c (java_stack_swap): Revert gcc_assert patch.
