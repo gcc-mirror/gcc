@@ -1,3 +1,8 @@
+2006-02-04  Alan Modra  <amodra@bigpond.net.au>
+
+	* include/private/gc_locks.h (GC_test_and_set <POWERPC>): Don't
+	use broken 64-bit version.
+
 2006-01-25  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* darwin_stop_world.c: Change inline asm instruction to ld as ldz

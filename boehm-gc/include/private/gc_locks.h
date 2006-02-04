@@ -139,7 +139,7 @@
 #      define GC_TEST_AND_SET_DEFINED
 #    endif
 #    if defined(POWERPC)
-#     if CPP_WORDSZ == 64
+#     if 0 /* CPP_WORDSZ == 64  totally broken to use int locks with ldarx */
         inline static int GC_test_and_set(volatile unsigned int *addr) {
           unsigned long oldval;
           unsigned long temp = 1; /* locked value */
