@@ -1,3 +1,9 @@
+2006-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/25926
+	* pa/x-ada (X_ADA_CFLAGS): Define _X_HPUX10 on HP-UX 10.
+	* pa/t-pa (TARGET_LIBGCC2_CFLAGS): Define _T_HPUX10 on HP-UX 10.
+
 2006-02-03  Richard Henderson  <rth@redhat.com>
 
 	PR target/26090

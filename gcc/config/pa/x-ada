@@ -1,4 +1,10 @@
 # The ada virtual array implementation requires that indexing be disabled on
 # hosts such as hpux that use a segmented memory architecture.  Both the c
 # and ada files need to be compiled with this option for correct operation.
-X_ADA_CFLAGS=-mdisable-indexing
+# On HP-UX 10 hosts, we define _X_HPUX10 to cause __main () to be called at
+# startup.
+ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
+  X_ADA_CFLAGS = -mdisable-indexing -D_X_HPUX10
+else
+  X_ADA_CFLAGS = -mdisable-indexing
+endif
