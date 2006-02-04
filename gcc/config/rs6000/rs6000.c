@@ -1,7 +1,7 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
-   Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -17409,6 +17409,14 @@ rs6000_mangle_fundamental_type (tree type)
   if (type == bool_short_type_node) return "U6__bools";
   if (type == pixel_type_node) return "u7__pixel";
   if (type == bool_int_type_node) return "U6__booli";
+
+  /* Mangle IBM extended float long double as `g' (__float128) on
+     powerpc*-linux where long-double-64 previously was the default.  */
+  if (TYPE_MAIN_VARIANT (type) == long_double_type_node
+      && TARGET_ELF
+      && TARGET_LONG_DOUBLE_128
+      && !TARGET_IEEEQUAD)
+    return "g";
 
   /* For all other types, use normal C++ mangling.  */
   return NULL;
