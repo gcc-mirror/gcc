@@ -246,6 +246,7 @@ build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@
 datadir = @datadir@
+dbexecdir = @dbexecdir@
 exec_prefix = @exec_prefix@
 extra_ldflags_libjava = @extra_ldflags_libjava@
 gxx_include_dir = @gxx_include_dir@
