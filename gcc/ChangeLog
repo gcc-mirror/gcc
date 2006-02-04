@@ -1,3 +1,9 @@
+2006-02-04  David Edelsohn  <edelsohn@gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_mangle_fundamental_type): Mangle
+	IBM extended float format long double as "g" on powerpc*-linux.
+
 2006-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25926
