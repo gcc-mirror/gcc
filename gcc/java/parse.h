@@ -196,8 +196,7 @@ extern void parse_error_context (tree cl, const char *gmsgid, ...) ATTRIBUTE_GCC
 /* Types classification, according to the JLS, section 4.2 */
 #define JFLOAT_TYPE_P(TYPE)      (TYPE && TREE_CODE ((TYPE)) == REAL_TYPE)
 #define JINTEGRAL_TYPE_P(TYPE)   ((TYPE) 				   \
-				  && (TREE_CODE ((TYPE)) == INTEGER_TYPE   \
-				      || TREE_CODE ((TYPE)) == CHAR_TYPE))
+				  && (TREE_CODE ((TYPE)) == INTEGER_TYPE))
 #define JNUMERIC_TYPE_P(TYPE)    ((TYPE)				\
 				  && (JFLOAT_TYPE_P ((TYPE))		\
 				      || JINTEGRAL_TYPE_P ((TYPE))))

@@ -125,10 +125,12 @@ convert (tree type, tree expr)
     return error_mark_node;
   if (code == VOID_TYPE)
     return build1 (CONVERT_EXPR, type, expr);
-  if (code == BOOLEAN_TYPE || code ==  CHAR_TYPE)
+  if (code == BOOLEAN_TYPE)
     return fold_convert (type, expr);
   if (code == INTEGER_TYPE)
     {
+      if (type == char_type_node || type == promoted_char_type_node)
+	return fold_convert (type, expr);
       if ((really_constant_p (expr)
 	   || (! flag_unsafe_math_optimizations
 	       && ! flag_emit_class_files))
@@ -430,11 +432,9 @@ promote_type (tree type)
       if (type == boolean_type_node)
 	return promoted_boolean_type_node;
       goto handle_int;
-    case CHAR_TYPE:
+    case INTEGER_TYPE:
       if (type == char_type_node)
 	return promoted_char_type_node;
-      goto handle_int;
-    case INTEGER_TYPE:
     handle_int:
       if (TYPE_PRECISION (type) < TYPE_PRECISION (int_type_node))
 	{
@@ -601,9 +601,13 @@ build_java_signature (tree type)
       switch (TREE_CODE (type))
 	{
 	case BOOLEAN_TYPE: sg[0] = 'Z';  goto native;
-	case CHAR_TYPE:    sg[0] = 'C';  goto native;
 	case VOID_TYPE:    sg[0] = 'V';  goto native;
 	case INTEGER_TYPE:
+          if (type == char_type_node || type == promoted_char_type_node)
+	    {
+	      sg[0] = 'C';
+	      goto native;
+	    }
 	  switch (TYPE_PRECISION (type))
 	    {
 	    case  8:       sg[0] = 'B';  goto native;

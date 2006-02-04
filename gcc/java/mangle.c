@@ -243,9 +243,13 @@ mangle_type (tree type)
     {
       char code;
     case BOOLEAN_TYPE: code = 'b';  goto primitive;
-    case CHAR_TYPE:    code = 'w';  goto primitive;
     case VOID_TYPE:    code = 'v';  goto primitive;
     case INTEGER_TYPE:
+      if (type == char_type_node || type == promoted_char_type_node)
+	{
+	  code = 'w';
+	  goto primitive;
+	}
       /* Get the original type instead of the arguments promoted type.
 	 Avoid symbol name clashes. Should call a function to do that.
 	 FIXME.  */
