@@ -670,10 +670,10 @@ public class Collections
 		for ( ; i != pos; i--, o = itr.previous());
 		forward = false;
 	      }
-	    final int d = compare(key, o, c);
+	    final int d = compare(o, key, c);
 	    if (d == 0)
               return pos;
-	    else if (d < 0)
+	    else if (d > 0)
               hi = pos - 1;
 	    else
               // This gets the insertion point right on the last loop
@@ -685,10 +685,10 @@ public class Collections
 	while (low <= hi)
 	  {
 	    pos = (low + hi) >> 1;
-	    final int d = compare(key, l.get(pos), c);
+	    final int d = compare(l.get(pos), key, c);
 	    if (d == 0)
               return pos;
-	    else if (d < 0)
+	    else if (d > 0)
               hi = pos - 1;
 	    else
               // This gets the insertion point right on the last loop

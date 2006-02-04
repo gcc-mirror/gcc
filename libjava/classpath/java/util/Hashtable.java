@@ -1,6 +1,7 @@
 /* Hashtable.java -- a class providing a basic hashtable data structure,
    mapping Object --> Object
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -333,20 +334,19 @@ public class Hashtable extends Dictionary
    */
   public synchronized boolean contains(Object value)
   {
+    if (value == null)
+      throw new NullPointerException();
+
     for (int i = buckets.length - 1; i >= 0; i--)
       {
         HashEntry e = buckets[i];
         while (e != null)
           {
-            if (value.equals(e.value))
+            if (e.value.equals(value))
               return true;
             e = e.next;
           }
       }
-
-    // Must throw on null argument even if the table is empty
-    if (value == null)
-      throw new NullPointerException();
  
     return false;  
   }
@@ -385,7 +385,7 @@ public class Hashtable extends Dictionary
     HashEntry e = buckets[idx];
     while (e != null)
       {
-        if (key.equals(e.key))
+        if (e.key.equals(key))
           return true;
         e = e.next;
       }
@@ -408,7 +408,7 @@ public class Hashtable extends Dictionary
     HashEntry e = buckets[idx];
     while (e != null)
       {
-        if (key.equals(e.key))
+        if (e.key.equals(key))
           return e.value;
         e = e.next;
       }
@@ -438,7 +438,7 @@ public class Hashtable extends Dictionary
 
     while (e != null)
       {
-        if (key.equals(e.key))
+        if (e.key.equals(key))
           {
             // Bypass e.setValue, since we already know value is non-null.
             Object r = e.value;
@@ -484,7 +484,7 @@ public class Hashtable extends Dictionary
 
     while (e != null)
       {
-        if (key.equals(e.key))
+        if (e.key.equals(key))
           {
             modCount++;
             if (last == null)
@@ -844,7 +844,7 @@ public class Hashtable extends Dictionary
     HashEntry e = buckets[idx];
     while (e != null)
       {
-        if (o.equals(e))
+        if (e.equals(o))
           return e;
         e = e.next;
       }

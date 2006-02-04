@@ -182,7 +182,9 @@ public class DecimalFormat extends NumberFormat
       {
 	groupingUsed = saw_group;
 	groupingSize = (byte) countSinceGroup;
-	minimumIntegerDigits = zeroCount;
+	// Checking "zeroCount > 0" avoids 0 being formatted into "" with "#".
+	if (zeroCount > 0)
+	  minimumIntegerDigits = zeroCount;
       }
 
     // Early termination.

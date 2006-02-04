@@ -1,3 +1,48 @@
+2006-02-04  Mark Wielaard  <mark@klomp.org>
+
+	Backports from trunk/0.20.
+
+	2005-12-25  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/Collections.java
+	(binarySearch(List,Object,Comparator)): Changed comparison order
+	for improved compatibility.
+
+	2005-12-07  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #25273
+	* java/text/DecimalFormat.java(scanFormat): Don't set
+	minimumIntegerDigits to 0.
+
+	2006-01-10  Jeroen Frijters  <jeroen@frijters.net>
+
+	PR classpath/25727
+	* java/util/Hashtable.java
+	(contains): Call equals on existing value.
+	(containsKey, get, put, remove): Call equals on existing key.
+	(getEntry): Call equals on existing entry.
+
+	2006-01-10  Jeroen Frijters  <jeroen@frijters.net>
+
+	PR classpath/24618
+	* java/util/AbstractMap.java
+	(equals(Object,Object)): Test for identity first.
+	* java/util/WeakHashMap.java
+	(WeakBucket.WeakEntry.equals): Use helper method to determine equality.
+	(WeakBucket.WeakEntry.toString): Fixed string representation of
+	null key.
+	(internalGet): Use helper method to determine equality.
+
+	2005-12-04  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/net/URL.java (URL): Check whether context is null before
+	accessing ph.
+
+	2005-11-29  Tom Tromey  <tromey@redhat.com>
+
+	PR classpath/25141:
+	* java/net/URL.java (URL): Use context's stream handler.
+
 2006-01-06  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/23499:

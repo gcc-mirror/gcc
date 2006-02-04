@@ -594,13 +594,13 @@ public abstract class AbstractMap implements Map
    *
    * @param o1 the first object
    * @param o2 the second object
-   * @return o1 == null ? o2 == null : o1.equals(o2)
+   * @return o1 == o2 || (o1 != null && o1.equals(o2))
    */
   // Package visible for use throughout java.util.
   // It may be inlined since it is final.
   static final boolean equals(Object o1, Object o2)
   {
-    return o1 == null ? o2 == null : o1.equals(o2);
+    return o1 == o2 || (o1 != null && o1.equals(o2));
   }
 
   /**

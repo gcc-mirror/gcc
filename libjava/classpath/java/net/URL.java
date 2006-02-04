@@ -342,7 +342,7 @@ public final class URL implements Serializable
    */
   public URL(URL context, String spec) throws MalformedURLException
   {
-    this(context, spec, (URLStreamHandler) null);
+    this(context, spec, (context == null) ? (URLStreamHandler)null : context.ph);
   }
 
   /**
