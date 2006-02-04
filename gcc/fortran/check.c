@@ -354,6 +354,34 @@ dim_rank_check (gfc_expr * dim, gfc_expr * array, int allow_assumed)
   return SUCCESS;
 }
 
+/* Compare the size of a along dimension ai with the size of b along
+   dimension bi, returning 0 if they are known not to be identical,
+   and 1 if they are identical, or if this cannot be determined.  */
+
+static int
+identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
+{
+  mpz_t a_size, b_size;
+  int ret;
+
+  gcc_assert (a->rank > ai);
+  gcc_assert (b->rank > bi);
+
+  ret = 1;
+
+  if (gfc_array_dimen_size (a, ai, &a_size) == SUCCESS)
+    {
+      if (gfc_array_dimen_size (b, bi, &b_size) == SUCCESS)
+	{
+	  if (mpz_cmp (a_size, b_size) != 0)
+	    ret = 0;
+  
+	  mpz_clear (b_size);
+	}
+      mpz_clear (a_size);
+    }
+  return ret;
+}
 
 /***** Check functions *****/
 
@@ -801,6 +829,16 @@ gfc_check_dot_product (gfc_expr * vector_a, gfc_expr * vector_b)
 
   if (rank_check (vector_b, 1, 1) == FAILURE)
     return FAILURE;
+
+  if (! identical_dimen_shape (vector_a, 0, vector_b, 0))
+    {
+      gfc_error ("different shape for arguments '%s' and '%s' "
+		 "at %L for intrinsic 'dot_product'",
+		 gfc_current_intrinsic_arg[0],
+		 gfc_current_intrinsic_arg[1],
+		 &vector_a->where);
+      return FAILURE;
+    }
 
   return SUCCESS;
 }
@@ -1461,13 +1499,35 @@ gfc_check_matmul (gfc_expr * matrix_a, gfc_expr * matrix_b)
     case 1:
       if (rank_check (matrix_b, 1, 2) == FAILURE)
 	return FAILURE;
+      /* Check for case matrix_a has shape(m), matrix_b has shape (m, k).  */
+      if (! identical_dimen_shape (matrix_a, 0, matrix_b, 0))
+	{
+	  gfc_error ("different shape on dimension 1 for arguments '%s' "
+		     "and '%s' at %L for intrinsic matmul",
+		     gfc_current_intrinsic_arg[0],
+		     gfc_current_intrinsic_arg[1],
+		     &matrix_a->where);
+	  return FAILURE;
+	}
       break;
 
     case 2:
-      if (matrix_b->rank == 2)
-	break;
-      if (rank_check (matrix_b, 1, 1) == FAILURE)
-	return FAILURE;
+      if (matrix_b->rank != 2)
+	{
+	  if (rank_check (matrix_b, 1, 1) == FAILURE)
+	    return FAILURE;
+	}
+      /* matrix_b has rank 1 or 2 here. Common check for the cases
+	 - matrix_a has shape (n,m) and matrix_b has shape (m, k)
+	 - matrix_a has shape (n,m) and matrix_b has shape (m).  */
+      if (! identical_dimen_shape (matrix_a, 1, matrix_b, 0))
+	{
+	  gfc_error ("different shape on dimension 2 for argument '%s' and "
+		     "dimension 1 for argument '%s' at %L for intrinsic "
+		     "matmul", gfc_current_intrinsic_arg[0],
+		     gfc_current_intrinsic_arg[1], &matrix_a->where);
+	  return FAILURE;
+	}
       break;
 
     default:
@@ -1621,10 +1681,24 @@ gfc_check_product_sum (gfc_actual_arglist * ap)
 try
 gfc_check_merge (gfc_expr * tsource, gfc_expr * fsource, gfc_expr * mask)
 {
+  char buffer[80];
+
   if (same_type_check (tsource, 0, fsource, 1) == FAILURE)
     return FAILURE;
 
   if (type_check (mask, 2, BT_LOGICAL) == FAILURE)
+    return FAILURE;
+
+  snprintf(buffer, sizeof(buffer), "arguments '%s' and '%s' for intrinsic '%s'",
+	   gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[1],
+	   gfc_current_intrinsic);
+  if (gfc_check_conformance (buffer, tsource, fsource) == FAILURE)
+    return FAILURE;
+
+  snprintf(buffer, sizeof(buffer), "arguments '%s' and '%s' for intrinsic '%s'",
+	   gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[2],
+	   gfc_current_intrinsic);
+  if (gfc_check_conformance (buffer, tsource, mask) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1672,20 +1746,19 @@ gfc_check_null (gfc_expr * mold)
 try
 gfc_check_pack (gfc_expr * array, gfc_expr * mask, gfc_expr * vector)
 {
+  char buffer[80];
+
   if (array_check (array, 0) == FAILURE)
     return FAILURE;
 
   if (type_check (mask, 1, BT_LOGICAL) == FAILURE)
     return FAILURE;
 
-  if (mask->rank != 0 && mask->rank != array->rank)
-    {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be conformable "
-		 "with '%s' argument", gfc_current_intrinsic_arg[0],
-		 gfc_current_intrinsic, &array->where,
-		 gfc_current_intrinsic_arg[1]);
-      return FAILURE;
-    }
+  snprintf(buffer, sizeof(buffer), "arguments '%s' and '%s' for intrinsic '%s'",
+	   gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[1],
+	   gfc_current_intrinsic);
+  if (gfc_check_conformance (buffer, array, mask) == FAILURE)
+    return FAILURE;
 
   if (vector != NULL)
     {
