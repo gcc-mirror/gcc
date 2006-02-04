@@ -5149,13 +5149,13 @@ tsubst_friend_function (tree decl, tree args)
 	 current cless with same name.  */
       push_nested_namespace (ns);
       fns = tsubst_expr (DECL_TI_TEMPLATE (decl), args,
-			 tf_error | tf_warning, NULL_TREE);
+			 tf_warn_or_error, NULL_TREE);
       pop_nested_namespace (ns);
       arglist = tsubst (DECL_TI_ARGS (decl), args,
-			tf_error | tf_warning, NULL_TREE);
+			tf_warn_or_error, NULL_TREE);
       template_id = lookup_template_function (fns, arglist);
 
-      new_friend = tsubst (decl, args, tf_error | tf_warning, NULL_TREE);
+      new_friend = tsubst (decl, args, tf_warn_or_error, NULL_TREE);
       tmpl = determine_specialization (template_id, new_friend,
 				       &new_args,
 				       /*need_member_template=*/0,
@@ -5163,7 +5163,7 @@ tsubst_friend_function (tree decl, tree args)
       return instantiate_template (tmpl, new_args, tf_error);
     }
 
-  new_friend = tsubst (decl, args, tf_error | tf_warning, NULL_TREE);
+  new_friend = tsubst (decl, args, tf_warn_or_error, NULL_TREE);
 
   /* The NEW_FRIEND will look like an instantiation, to the
      compiler, but is not an instantiation from the point of view of
@@ -5416,7 +5416,7 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	{
 	  tree parms;
 	  parms = tsubst_template_parms (DECL_TEMPLATE_PARMS (friend_tmpl),
-					 args, tf_error | tf_warning);
+					 args, tf_warn_or_error);
 	  redeclare_class_template (TREE_TYPE (tmpl), parms);
 	}
 
@@ -5427,7 +5427,7 @@ tsubst_friend_class (tree friend_tmpl, tree args)
       /* The friend template has not already been declared.  In this
 	 case, the instantiation of the template class will cause the
 	 injection of this template into the global scope.  */
-      tmpl = tsubst (friend_tmpl, args, tf_error | tf_warning, NULL_TREE);
+      tmpl = tsubst (friend_tmpl, args, tf_warn_or_error, NULL_TREE);
 
       /* The new TMPL is not an instantiation of anything, so we
 	 forget its origins.  We don't reset CLASSTYPE_TI_TEMPLATE for
@@ -5719,7 +5719,7 @@ instantiate_class_template (tree type)
 
 		  if (TREE_CODE (t) == TEMPLATE_DECL)
 		    ++processing_template_decl;
-		  r = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
+		  r = tsubst (t, args, tf_warn_or_error, NULL_TREE);
 		  if (TREE_CODE (t) == TEMPLATE_DECL)
 		    --processing_template_decl;
 		  if (TREE_CODE (r) == VAR_DECL)
@@ -5793,7 +5793,7 @@ instantiate_class_template (tree type)
 		{
 		  /* template <class T> friend class C::D;  */
 		  friend_type = tsubst (friend_type, args,
-					tf_error | tf_warning, NULL_TREE);
+					tf_warn_or_error, NULL_TREE);
 		  if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 		    friend_type = TREE_TYPE (friend_type);
 		  adjust_processing_template_decl = true;
@@ -5810,7 +5810,7 @@ instantiate_class_template (tree type)
 
 		     otherwise.  */
 		  friend_type = tsubst (friend_type, args,
-					tf_error | tf_warning, NULL_TREE);
+					tf_warn_or_error, NULL_TREE);
 		  /* Bump processing_template_decl for correct
 		     dependent_type_p calculation.  */
 		  ++processing_template_decl;
@@ -5839,7 +5839,7 @@ instantiate_class_template (tree type)
 	      else if (uses_template_parms (friend_type))
 		/* friend class C<T>;  */
 		friend_type = tsubst (friend_type, args,
-				      tf_error | tf_warning, NULL_TREE);
+				      tf_warn_or_error, NULL_TREE);
 	      /* Otherwise it's
 
 		   friend class C;
@@ -6148,7 +6148,7 @@ tsubst_default_argument (tree fn, tree type, tree arg)
 
   push_deferring_access_checks(dk_no_deferred);
   arg = tsubst_expr (arg, DECL_TI_ARGS (fn),
-		     tf_error | tf_warning, NULL_TREE);
+		     tf_warn_or_error, NULL_TREE);
   pop_deferring_access_checks();
 
   /* Restore the "this" pointer.  */
@@ -11606,16 +11606,16 @@ instantiate_decl (tree d, int defer_ok,
 
       if (TREE_CODE (gen) == FUNCTION_DECL)
 	{
-	  tsubst (DECL_ARGUMENTS (gen), gen_args, tf_error | tf_warning, d);
+	  tsubst (DECL_ARGUMENTS (gen), gen_args, tf_warn_or_error, d);
 	  tsubst (TYPE_RAISES_EXCEPTIONS (type), gen_args,
-		  tf_error | tf_warning, d);
+		  tf_warn_or_error, d);
 	  /* Don't simply tsubst the function type, as that will give
 	     duplicate warnings about poor parameter qualifications.
 	     The function arguments are the same as the decl_arguments
 	     without the top level cv qualifiers.  */
 	  type = TREE_TYPE (type);
 	}
-      tsubst (type, gen_args, tf_error | tf_warning, d);
+      tsubst (type, gen_args, tf_warn_or_error, d);
 
       pop_access_scope (d);
     }
@@ -11661,7 +11661,7 @@ instantiate_decl (tree d, int defer_ok,
 	  push_nested_class (DECL_CONTEXT (d));
 	  init = tsubst_expr (DECL_INITIAL (code_pattern), 
 			      args,
-			      tf_error | tf_warning, NULL_TREE);
+			      tf_warn_or_error, NULL_TREE);
 	  DECL_INITIAL (d) = init;
 	  cp_finish_decl (d, init, /*asmspec_tree=*/NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
@@ -11783,7 +11783,7 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Substitute into the body of the function.  */
       tsubst_expr (DECL_SAVED_TREE (code_pattern), args,
-		   tf_error | tf_warning, tmpl);
+		   tf_warn_or_error, tmpl);
 
       /* We don't need the local specializations any more.  */
       htab_delete (local_specializations);
@@ -11930,13 +11930,13 @@ tsubst_initializer_list (tree t, tree argvec)
       tree decl;
       tree init;
 
-      decl = tsubst_copy (TREE_PURPOSE (t), argvec, tf_error | tf_warning,
+      decl = tsubst_copy (TREE_PURPOSE (t), argvec, tf_warn_or_error,
 			  NULL_TREE);
       decl = expand_member_init (decl);
       if (decl && !DECL_P (decl))
 	in_base_initializer = 1;
 
-      init = tsubst_expr (TREE_VALUE (t), argvec, tf_error | tf_warning,
+      init = tsubst_expr (TREE_VALUE (t), argvec, tf_warn_or_error,
 			  NULL_TREE);
       in_base_initializer = 0;
 
@@ -11981,8 +11981,7 @@ tsubst_enum (tree tag, tree newtag, tree args)
       /* Note that in a template enum, the TREE_VALUE is the
 	 CONST_DECL, not the corresponding INTEGER_CST.  */
       value = tsubst_expr (DECL_INITIAL (decl),
-			   args, tf_error | tf_warning,
-			   NULL_TREE);
+			   args, tf_warn_or_error, NULL_TREE);
 
       /* Give this enumeration constant the correct access.  */
       set_current_access_from_decl (decl);

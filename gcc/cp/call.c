@@ -4279,7 +4279,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       }
     case ck_identity:
       if (type_unknown_p (expr))
-	expr = instantiate_type (totype, expr, tf_error | tf_warning);
+	expr = instantiate_type (totype, expr, tf_warn_or_error);
       /* Convert a constant to its underlying value, unless we are
 	 about to bind it to a reference, in which case we need to
 	 leave it as an lvalue.  */
