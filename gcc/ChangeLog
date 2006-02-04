@@ -1,3 +1,36 @@
+2006-02-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/24444
+	* config/ia64/ia64.c: Include debug.h.
+	(MAX_ARTIFICIAL_LABEL_BYTES): New.
+	(ia64_label_after_insn, ia64_dwarf2out_def_steady_cfa): New.
+	(IA64_CHANGE_CFA_IN_EPILOGUE): Define to 0.
+	(process_epilogue, process_set, process_for_unwind_directive):
+	Output unwind info only if requested.  Add CFA info if requested.
+	Add new arguments as needed.  Adjust callers.
+	* config/ia64/ia64.h (ARG_POINTER_CFA_OFFSET): Override
+	incorrect default.
+	(DWARF2_FRAME_INFO): Define to zero.
+	* config/ia64/unwind-ia64.c: Remove code that compensated for
+	the CFA offset error fixed above.
+	* config/ia64/t-ia64 (ia64.o): Depend on debug.h.
+	* dwarf2out.c (DWARF2_FRAME_INFO): Define default.
+	(dwarf2out_do_frame): Require nonzero DWARF2_UNWIND_INFO for
+	-funwind-tables and -fexceptions to enable frame info.
+	(dwarf2out_frame_init): Define initial CFA even if
+	DWARF2_UNWIND_INFO is disabled.  Call initial_return_save if
+	DWARF2_UNWIND_INFO is nonzero, not just defined.
+	(dwarf2out_frame_finish): Output non-EH call frame info only
+	if DWARF2_FRAME_INFO is nonzero.
+	(convert_cfa_to_loc_list,
+	compute_frame_pointer_to_cfa_displacement): Define even if
+	unwind info is not supported.
+	(gen_subprogram_die): Use the above unconditionally.  Remove
+	legacy alternate code.
+	* toplev.c (compile_file): Compile in call to
+	dwarf2out_frame_finish if DWARF2_DEBUGGING_INFO is defined.
+	(lang_dependent_init): Ditto for dwarf2out_frame_init.
+
 2006-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25926

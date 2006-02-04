@@ -1,6 +1,6 @@
 /* Subroutines needed for unwinding IA-64 standard format stack frame
    info for exception handling.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@cygnus.com>
 	          Andrew Haley  <aph@cygnus.com>
@@ -2067,7 +2067,7 @@ uw_advance_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 }
 
 /* Fill in CONTEXT for top-of-stack.  The only valid registers at this
-   level will be the return address and the CFA.  Note that CFA = SP+16.  */
+   level will be the return address and the CFA.  */
    
 #define uw_init_context(CONTEXT)					\
   do {									\
@@ -2083,7 +2083,7 @@ uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
 {
   void *rp = __builtin_extract_return_addr (__builtin_return_address (0));
   /* Set psp to the caller's stack pointer.  */
-  void *psp = __builtin_dwarf_cfa () - 16;
+  void *psp = __builtin_dwarf_cfa ();
   _Unwind_FrameState fs;
   unsigned long rnat, tmp1, tmp2;
 

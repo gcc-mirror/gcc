@@ -1,6 +1,7 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1020,7 +1021,7 @@ compile_file (void)
   /* Do dbx symbols.  */
   timevar_push (TV_SYMOUT);
 
-#ifdef DWARF2_UNWIND_INFO
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
   if (dwarf2out_do_frame ())
     dwarf2out_frame_finish ();
 #endif
@@ -1860,7 +1861,7 @@ lang_dependent_init (const char *name)
      predefined types.  */
   timevar_push (TV_SYMOUT);
 
-#ifdef DWARF2_UNWIND_INFO
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
   if (dwarf2out_do_frame ())
     dwarf2out_frame_init ();
 #endif

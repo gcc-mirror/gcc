@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
@@ -53,6 +53,7 @@ Boston, MA 02110-1301, USA.  */
 #include "cfglayout.h"
 #include "tree-gimple.h"
 #include "intl.h"
+#include "debug.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -190,8 +191,8 @@ static void final_emit_insn_group_barriers (FILE *);
 static void emit_predicate_relation_info (void);
 static void ia64_reorg (void);
 static bool ia64_in_small_data_p (tree);
-static void process_epilogue (void);
-static int process_set (FILE *, rtx);
+static void process_epilogue (FILE *, rtx, bool, bool);
+static int process_set (FILE *, rtx, rtx, bool, bool);
 
 static bool ia64_assemble_integer (rtx, unsigned int, int);
 static void ia64_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -7971,29 +7972,84 @@ static bool last_block;
 
 static bool need_copy_state;
 
+#ifndef MAX_ARTIFICIAL_LABEL_BYTES
+# define MAX_ARTIFICIAL_LABEL_BYTES 30
+#endif
+
+/* Emit a debugging label after a call-frame-related insn.  We'd
+   rather output the label right away, but we'd have to output it
+   after, not before, the instruction, and the instruction has not
+   been output yet.  So we emit the label after the insn, delete it to
+   avoid introducing basic blocks, and mark it as preserved, such that
+   it is still output, given that it is referenced in debug info.  */
+
+static const char *
+ia64_emit_deleted_label_after_insn (rtx insn)
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  rtx lb = gen_label_rtx ();
+  rtx label_insn = emit_label_after (lb, insn);
+
+  LABEL_PRESERVE_P (lb) = 1;
+
+  delete_insn (label_insn);
+
+  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (label_insn));
+
+  return xstrdup (label);
+}
+
+/* Define the CFA after INSN with the steady-state definition.  */
+
+static void
+ia64_dwarf2out_def_steady_cfa (rtx insn)
+{
+  rtx fp = frame_pointer_needed
+    ? hard_frame_pointer_rtx
+    : stack_pointer_rtx;
+
+  dwarf2out_def_cfa
+    (ia64_emit_deleted_label_after_insn (insn),
+     REGNO (fp),
+     ia64_initial_elimination_offset
+     (REGNO (arg_pointer_rtx), REGNO (fp))
+     + ARG_POINTER_CFA_OFFSET (current_function_decl));
+}
+
+/* The generic dwarf2 frame debug info generator does not define a
+   separate region for the very end of the epilogue, so refrain from
+   doing so in the IA64-specific code as well.  */
+
+#define IA64_CHANGE_CFA_IN_EPILOGUE 0
+
 /* The function emits unwind directives for the start of an epilogue.  */
 
 static void
-process_epilogue (void)
+process_epilogue (FILE *asm_out_file, rtx insn, bool unwind, bool frame)
 {
   /* If this isn't the last block of the function, then we need to label the
      current state, and copy it back in at the start of the next block.  */
 
   if (!last_block)
     {
-      fprintf (asm_out_file, "\t.label_state %d\n",
-	       ++cfun->machine->state_num);
+      if (unwind)
+	fprintf (asm_out_file, "\t.label_state %d\n",
+		 ++cfun->machine->state_num);
       need_copy_state = true;
     }
 
-  fprintf (asm_out_file, "\t.restore sp\n");
+  if (unwind)
+    fprintf (asm_out_file, "\t.restore sp\n");
+  if (IA64_CHANGE_CFA_IN_EPILOGUE && frame)
+    dwarf2out_def_cfa (ia64_emit_deleted_label_after_insn (insn),
+		       STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
 }
 
 /* This function processes a SET pattern looking for specific patterns
    which result in emitting an assembly directive required for unwinding.  */
 
 static int
-process_set (FILE *asm_out_file, rtx pat)
+process_set (FILE *asm_out_file, rtx pat, rtx insn, bool unwind, bool frame)
 {
   rtx src = SET_SRC (pat);
   rtx dest = SET_DEST (pat);
@@ -8009,8 +8065,11 @@ process_set (FILE *asm_out_file, rtx pat)
       /* If this is the final destination for ar.pfs, then this must
 	 be the alloc in the prologue.  */
       if (dest_regno == current_frame_info.reg_save_ar_pfs)
-	fprintf (asm_out_file, "\t.save ar.pfs, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+	{
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save ar.pfs, r%d\n",
+		     ia64_dbx_register_number (dest_regno));
+	}
       else
 	{
 	  /* This must be an alloc before a sibcall.  We must drop the
@@ -8021,8 +8080,9 @@ process_set (FILE *asm_out_file, rtx pat)
 	     sp" now.  */
 	  if (current_frame_info.total_size == 0 && !frame_pointer_needed)
 	    /* if haven't done process_epilogue() yet, do it now */
-	    process_epilogue ();
-	  fprintf (asm_out_file, "\t.prologue\n");
+	    process_epilogue (asm_out_file, insn, unwind, frame);
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.prologue\n");
 	}
       return 1;
     }
@@ -8038,16 +8098,22 @@ process_set (FILE *asm_out_file, rtx pat)
 	  gcc_assert (op0 == dest && GET_CODE (op1) == CONST_INT);
 	  
 	  if (INTVAL (op1) < 0)
-	    fprintf (asm_out_file, "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
-		     -INTVAL (op1));
+	    {
+	      gcc_assert (!frame_pointer_needed);
+	      if (unwind)
+		fprintf (asm_out_file, "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
+			 -INTVAL (op1));
+	      if (frame)
+		ia64_dwarf2out_def_steady_cfa (insn);
+	    }
 	  else
-	    process_epilogue ();
+	    process_epilogue (asm_out_file, insn, unwind, frame);
 	}
       else
 	{
 	  gcc_assert (GET_CODE (src) == REG
 		      && REGNO (src) == HARD_FRAME_POINTER_REGNUM);
-	  process_epilogue ();
+	  process_epilogue (asm_out_file, insn, unwind, frame);
 	}
 
       return 1;
@@ -8064,33 +8130,40 @@ process_set (FILE *asm_out_file, rtx pat)
 	case BR_REG (0):
 	  /* Saving return address pointer.  */
 	  gcc_assert (dest_regno == current_frame_info.reg_save_b0);
-	  fprintf (asm_out_file, "\t.save rp, r%d\n",
-		   ia64_dbx_register_number (dest_regno));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save rp, r%d\n",
+		     ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case PR_REG (0):
 	  gcc_assert (dest_regno == current_frame_info.reg_save_pr);
-	  fprintf (asm_out_file, "\t.save pr, r%d\n",
-		   ia64_dbx_register_number (dest_regno));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save pr, r%d\n",
+		     ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case AR_UNAT_REGNUM:
 	  gcc_assert (dest_regno == current_frame_info.reg_save_ar_unat);
-	  fprintf (asm_out_file, "\t.save ar.unat, r%d\n",
-		   ia64_dbx_register_number (dest_regno));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save ar.unat, r%d\n",
+		     ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case AR_LC_REGNUM:
 	  gcc_assert (dest_regno == current_frame_info.reg_save_ar_lc);
-	  fprintf (asm_out_file, "\t.save ar.lc, r%d\n",
-		   ia64_dbx_register_number (dest_regno));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save ar.lc, r%d\n",
+		     ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case STACK_POINTER_REGNUM:
 	  gcc_assert (dest_regno == HARD_FRAME_POINTER_REGNUM
 		      && frame_pointer_needed);
-	  fprintf (asm_out_file, "\t.vframe r%d\n",
-		   ia64_dbx_register_number (dest_regno));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.vframe r%d\n",
+		     ia64_dbx_register_number (dest_regno));
+	  if (frame)
+	    ia64_dwarf2out_def_steady_cfa (insn);
 	  return 1;
 
 	default:
@@ -8135,35 +8208,41 @@ process_set (FILE *asm_out_file, rtx pat)
 	{
 	case BR_REG (0):
 	  gcc_assert (!current_frame_info.reg_save_b0);
-	  fprintf (asm_out_file, "\t%s rp, %ld\n", saveop, off);
+	  if (unwind)
+	    fprintf (asm_out_file, "\t%s rp, %ld\n", saveop, off);
 	  return 1;
 
 	case PR_REG (0):
 	  gcc_assert (!current_frame_info.reg_save_pr);
-	  fprintf (asm_out_file, "\t%s pr, %ld\n", saveop, off);
+	  if (unwind)
+	    fprintf (asm_out_file, "\t%s pr, %ld\n", saveop, off);
 	  return 1;
 
 	case AR_LC_REGNUM:
 	  gcc_assert (!current_frame_info.reg_save_ar_lc);
-	  fprintf (asm_out_file, "\t%s ar.lc, %ld\n", saveop, off);
+	  if (unwind)
+	    fprintf (asm_out_file, "\t%s ar.lc, %ld\n", saveop, off);
 	  return 1;
 
 	case AR_PFS_REGNUM:
 	  gcc_assert (!current_frame_info.reg_save_ar_pfs);
-	  fprintf (asm_out_file, "\t%s ar.pfs, %ld\n", saveop, off);
+	  if (unwind)
+	    fprintf (asm_out_file, "\t%s ar.pfs, %ld\n", saveop, off);
 	  return 1;
 
 	case AR_UNAT_REGNUM:
 	  gcc_assert (!current_frame_info.reg_save_ar_unat);
-	  fprintf (asm_out_file, "\t%s ar.unat, %ld\n", saveop, off);
+	  if (unwind)
+	    fprintf (asm_out_file, "\t%s ar.unat, %ld\n", saveop, off);
 	  return 1;
 
 	case GR_REG (4):
 	case GR_REG (5):
 	case GR_REG (6):
 	case GR_REG (7):
-	  fprintf (asm_out_file, "\t.save.g 0x%x\n",
-		   1 << (src_regno - GR_REG (4)));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save.g 0x%x\n",
+		     1 << (src_regno - GR_REG (4)));
 	  return 1;
 
 	case BR_REG (1):
@@ -8171,24 +8250,27 @@ process_set (FILE *asm_out_file, rtx pat)
 	case BR_REG (3):
 	case BR_REG (4):
 	case BR_REG (5):
-	  fprintf (asm_out_file, "\t.save.b 0x%x\n",
-		   1 << (src_regno - BR_REG (1)));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save.b 0x%x\n",
+		     1 << (src_regno - BR_REG (1)));
 	  return 1;
 
 	case FR_REG (2):
 	case FR_REG (3):
 	case FR_REG (4):
 	case FR_REG (5):
-	  fprintf (asm_out_file, "\t.save.f 0x%x\n",
-		   1 << (src_regno - FR_REG (2)));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save.f 0x%x\n",
+		     1 << (src_regno - FR_REG (2)));
 	  return 1;
 
 	case FR_REG (16): case FR_REG (17): case FR_REG (18): case FR_REG (19):
 	case FR_REG (20): case FR_REG (21): case FR_REG (22): case FR_REG (23):
 	case FR_REG (24): case FR_REG (25): case FR_REG (26): case FR_REG (27):
 	case FR_REG (28): case FR_REG (29): case FR_REG (30): case FR_REG (31):
-	  fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
-		   1 << (src_regno - FR_REG (12)));
+	  if (unwind)
+	    fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
+		     1 << (src_regno - FR_REG (12)));
 	  return 1;
 
 	default:
@@ -8205,8 +8287,11 @@ process_set (FILE *asm_out_file, rtx pat)
 void
 process_for_unwind_directive (FILE *asm_out_file, rtx insn)
 {
-  if (flag_unwind_tables
-      || (flag_exceptions && !USING_SJLJ_EXCEPTIONS))
+  bool unwind = (flag_unwind_tables
+		 || (flag_exceptions && !USING_SJLJ_EXCEPTIONS));
+  bool frame = dwarf2out_do_frame ();
+
+  if (unwind || frame)
     {
       rtx pat;
 
@@ -8218,9 +8303,14 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
 	  /* Restore unwind state from immediately before the epilogue.  */
 	  if (need_copy_state)
 	    {
-	      fprintf (asm_out_file, "\t.body\n");
-	      fprintf (asm_out_file, "\t.copy_state %d\n",
-		       cfun->machine->state_num);
+	      if (unwind)
+		{
+		  fprintf (asm_out_file, "\t.body\n");
+		  fprintf (asm_out_file, "\t.copy_state %d\n",
+			   cfun->machine->state_num);
+		}
+	      if (IA64_CHANGE_CFA_IN_EPILOGUE && frame)
+		ia64_dwarf2out_def_steady_cfa (insn);
 	      need_copy_state = false;
 	    }
 	}
@@ -8237,7 +8327,7 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
       switch (GET_CODE (pat))
         {
 	case SET:
-	  process_set (asm_out_file, pat);
+	  process_set (asm_out_file, pat, insn, unwind, frame);
 	  break;
 
 	case PARALLEL:
@@ -8248,7 +8338,7 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
 	      {
 		rtx x = XVECEXP (pat, 0, par_index);
 		if (GET_CODE (x) == SET)
-		  process_set (asm_out_file, x);
+		  process_set (asm_out_file, x, insn, unwind, frame);
 	      }
 	    break;
 	  }

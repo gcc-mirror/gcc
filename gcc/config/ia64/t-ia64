@@ -50,3 +50,5 @@ ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
 
 # genattrtab generates very long string literals.
 insn-attrtab.o-warn = -Wno-error
+
+ia64.o: debug.h
