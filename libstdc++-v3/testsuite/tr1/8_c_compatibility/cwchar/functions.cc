@@ -28,7 +28,7 @@
 
 #if _GLIBCXX_USE_WCHAR_T
 
-void test01()
+void test01(int dummy, ...)
 {
 #if _GLIBCXX_USE_C99_WCHAR_TR1
 
@@ -37,7 +37,8 @@ void test01()
   const wchar_t* s = 0;
   wchar_t** endptr = 0;
   FILE* stream = 0;
-  std::va_list arg = 0;
+  std::va_list arg;
+  va_start(arg, dummy);
 
   float fret;
   long double ldret;

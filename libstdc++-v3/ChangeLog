@@ -1,5 +1,9 @@
 2006-02-04  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: Fix.
+
+2006-02-04  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/27_io/basic_stringbuf/in_avail/char/21955.cc: Avoid
 	warning on string constant.
 
