@@ -1028,7 +1028,7 @@ compile_file (void)
   /* Do dbx symbols.  */
   timevar_push (TV_SYMOUT);
 
-#ifdef DWARF2_UNWIND_INFO
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
   if (dwarf2out_do_frame ())
     dwarf2out_frame_finish ();
 #endif
@@ -1868,7 +1868,7 @@ lang_dependent_init (const char *name)
      predefined types.  */
   timevar_push (TV_SYMOUT);
 
-#ifdef DWARF2_UNWIND_INFO
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
   if (dwarf2out_do_frame ())
     dwarf2out_frame_init ();
 #endif
