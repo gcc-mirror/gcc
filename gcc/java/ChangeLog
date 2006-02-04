@@ -1,3 +1,7 @@
+2006-02-04  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* expr.c (java_stack_swap): Revert gcc_assert patch.
+
 2006-02-03  Ben Elliston  <bje@au.ibm.com>
 
 	* java-gimplify.c: Use gcc_assert and gcc_unreachable throughout.

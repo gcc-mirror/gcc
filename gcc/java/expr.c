@@ -629,12 +629,14 @@ java_stack_swap (void)
   tree temp;
   tree decl1, decl2;
 
+  if (stack_pointer < 2
+      || (type1 = stack_type_map[stack_pointer - 1]) == TYPE_UNKNOWN
+      || (type2 = stack_type_map[stack_pointer - 2]) == TYPE_UNKNOWN
+      || type1 == TYPE_SECOND || type2 == TYPE_SECOND
+      || TYPE_IS_WIDE (type1) || TYPE_IS_WIDE (type2))
+    /* Bad stack swap.  */
+    abort ();
   /* Bad stack swap.  */
-  gcc_assert (stack_pointer >= 2
-	      && (type1 = stack_type_map[stack_pointer - 1]) != TYPE_UNKNOWN
-	      && (type2 = stack_type_map[stack_pointer - 2]) != TYPE_UNKNOWN
-	      && (type1 != TYPE_SECOND && type2 != TYPE_SECOND)
-	      && (! TYPE_IS_WIDE (type1) && ! TYPE_IS_WIDE (type2)));
 
   flush_quick_stack ();
   decl1 = find_stack_slot (stack_pointer - 1, type1);
