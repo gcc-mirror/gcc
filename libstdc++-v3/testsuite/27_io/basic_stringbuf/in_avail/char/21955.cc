@@ -1,6 +1,6 @@
 // 2005-06-07 Benjamin Kosnik
 
-// Copyright (C) 2005
+// Copyright (C) 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -27,7 +27,7 @@ double
 test_stringstream()
 {
   double result;
-  char* source = "1918"; 
+  const char* source = "1918"; 
   std::stringstream s;
   s << source;
 

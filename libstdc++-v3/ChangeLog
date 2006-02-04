@@ -1,3 +1,8 @@
+2006-02-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_stringbuf/in_avail/char/21955.cc: Avoid
+	warning on string constant.
+
 2006-02-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cwchar: New.
