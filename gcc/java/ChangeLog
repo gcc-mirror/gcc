@@ -1,3 +1,8 @@
+2006-02-04  Tom Tromey  <tromey@redhat.com>
+
+	PR java/26097:
+	* expr.c (push_type): Avoid side effect in gcc_assert.
+
 2006-02-04  Roger Sayle  <roger@eyesopen.com>
 
 	* decl.c (java_init_decl_processing): Create char_type_node as a
