@@ -1,3 +1,14 @@
+2006-02-04  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/25075
+	check.c (identical_dimen_shape):  New function.
+	(check_dot_product):  Use identical_dimen_shape() to check sizes
+	for dot_product.
+	(gfc_check_matmul):  Likewise.
+	(gfc_check_merge):  Check conformance between tsource and fsource
+	and between tsource and mask.
+	(gfc_check_pack):  Check conformance between array and mask.
+
 2006-02-03  Steven G. Kargl  <kargls@comcast>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
