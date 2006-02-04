@@ -981,6 +981,12 @@ enum reg_class
    On some machines it may depend on the data type of the function.  */
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
+/* The CFA is defined as the SP at the call site, so we have to take
+   into account that the first argument pointer is
+   STACK_POINTER_OFFSET bytes off the stack pointer.  */
+#define ARG_POINTER_CFA_OFFSET(FNDECL) \
+  (FIRST_PARM_OFFSET (FNDECL) - STACK_POINTER_OFFSET)
+
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame, after the
    prologue.  */
@@ -1866,6 +1872,12 @@ do {									\
    output in response to the `-g' option.  */
 
 #define DWARF2_DEBUGGING_INFO 1
+
+/* We do not want call-frame info to be output, since debuggers are
+   supposed to use the target unwind info.  Leave this undefined it
+   TARGET_UNWIND_INFO might ever be false.  */
+
+#define DWARF2_FRAME_INFO 0
 
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DWARF2_ASM)
 
