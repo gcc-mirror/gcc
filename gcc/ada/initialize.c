@@ -170,6 +170,20 @@ __gnat_initialize (void *eh)
 #endif
 }
 
+#elif defined(_T_HPUX10) || (!defined(IN_RTS) && defined(_X_HPUX10))
+
+/************************************************/
+/* __gnat_initialize (PA-RISC HP-UX 10 Version) */
+/************************************************/
+
+extern void __main (void);
+
+void
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
+{
+  __main ();
+}
+
 #else
 
 /* For all other versions of GNAT, the initialize routine and handler
