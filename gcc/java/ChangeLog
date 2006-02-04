@@ -1,5 +1,12 @@
 2006-02-04  Tom Tromey  <tromey@redhat.com>
 
+	PR java/25676:
+	* builtins.c (max_builtin): Skip floating point 'max'.
+	(min_builtin): Skip floating point 'min'.
+	(check_for_builtin): Never return NULL_TREE.
+
+2006-02-04  Tom Tromey  <tromey@redhat.com>
+
 	PR java/26097:
 	* expr.c (push_type): Avoid side effect in gcc_assert.
 
