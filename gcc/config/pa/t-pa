@@ -8,4 +8,8 @@ quadlib.c: $(srcdir)/config/pa/quadlib.c
 	rm -f quadlib.c
 	cp $(srcdir)/config/pa/quadlib.c .
 
-TARGET_LIBGCC2_CFLAGS = -fPIC
+ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
+  TARGET_LIBGCC2_CFLAGS = -fPIC -D_T_HPUX10
+else
+  TARGET_LIBGCC2_CFLAGS = -fPIC
+endif
