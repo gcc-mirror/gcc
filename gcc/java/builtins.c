@@ -1,5 +1,5 @@
 /* Built-in and inline functions for gcj
-   Copyright (C) 2001, 2003, 2004, 2005
+   Copyright (C) 2001, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -94,6 +94,9 @@ static GTY(()) struct builtin_record java_builtins[] =
 static tree
 max_builtin (tree method_return_type, tree method_arguments)
 {
+  /* MAX_EXPR does not handle -0.0 in the Java style.  */
+  if (TREE_CODE (method_return_type) == REAL_TYPE)
+    return NULL_TREE;
   return fold_build2 (MAX_EXPR, method_return_type,
 		      TREE_VALUE (method_arguments),
 		      TREE_VALUE (TREE_CHAIN (method_arguments)));
@@ -102,6 +105,9 @@ max_builtin (tree method_return_type, tree method_arguments)
 static tree
 min_builtin (tree method_return_type, tree method_arguments)
 {
+  /* MIN_EXPR does not handle -0.0 in the Java style.  */
+  if (TREE_CODE (method_return_type) == REAL_TYPE)
+    return NULL_TREE;
   return fold_build2 (MIN_EXPR, method_return_type,
 		      TREE_VALUE (method_arguments),
 		      TREE_VALUE (TREE_CHAIN (method_arguments)));
@@ -265,11 +271,15 @@ check_for_builtin (tree method, tree call)
 	      tree fn;
 
 	      if (java_builtins[i].creator != NULL)
-		return (*java_builtins[i].creator) (method_return_type,
-						    method_arguments);
+		{
+		  tree result
+		    = (*java_builtins[i].creator) (method_return_type,
+						   method_arguments);
+		  return result == NULL_TREE ? call : result;
+		}
 	      fn = built_in_decls[java_builtins[i].builtin_code];
 	      if (fn == NULL_TREE)
-		return NULL_TREE;
+		return call;
 	      return java_build_function_call_expr (fn, method_arguments);
 	    }
 	}

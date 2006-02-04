@@ -1,3 +1,9 @@
+2006-02-04  Tom Tromey  <tromey@redhat.com>
+
+	PR java/25676:
+	* testsuite/libjava.lang/pr25676.out: New file.
+	* testsuite/libjava.lang/pr25676.java: New file.
+
 2006-02-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (src.zip): Update src.zip file search to look in
