@@ -30,32 +30,51 @@
 
 void test01(int dummy, ...)
 {
-#if _GLIBCXX_USE_C99_WCHAR_TR1
-
-  const wchar_t* nptr = 0;
-  const wchar_t* format = 0;
-  const wchar_t* s = 0;
-  wchar_t** endptr = 0;
-  FILE* stream = 0;
   std::va_list arg;
   va_start(arg, dummy);
 
+#if _GLIBCXX_HAVE_WCSTOF
+  const wchar_t* nptr1 = 0;
+  wchar_t** endptr1 = 0;
   float fret;
-  long double ldret;
-  int ret;
+  fret = std::tr1::wcstof(nptr1, endptr1);
+#endif
 
-  fret = std::tr1::wcstof(nptr, endptr);
-  ldret = std::tr1::wcstold(nptr, endptr);
-  ret = std::tr1::vfwscanf(stream, format, arg);
-  ret = std::tr1::vswscanf(s, format, arg);
-  ret = std::tr1::vwscanf(format, arg);
+#if _GLIBCXX_HAVE_VFWSCANF
+  FILE* stream = 0;
+  const wchar_t* format1 = 0;
+  int ret1;
+  ret1 = std::tr1::vfwscanf(stream, format1, arg);
+#endif
+
+#if _GLIBCXX_HAVE_VSWSCANF
+  const wchar_t* s = 0;
+  const wchar_t* format2 = 0;
+  int ret2;
+  ret2 = std::tr1::vswscanf(s, format2, arg);
+#endif
+
+#if _GLIBCXX_HAVE_VWSCANF
+  const wchar_t* format3 = 0;
+  int ret3;
+  ret3 = std::tr1::vwscanf(format3, arg);
+#endif
+
+#if _GLIBCXX_USE_C99
+
+  const wchar_t* nptr2 = 0;
+  wchar_t** endptr2 = 0;
+  long double ldret;
+  ldret = std::tr1::wcstold(nptr2, endptr2);
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+  const wchar_t* nptr3 = 0;
+  wchar_t** endptr3 = 0;
   int base = 0;
   long long llret;
   unsigned long long ullret;
-  llret = std::tr1::wcstoll(nptr, endptr, base);
-  ullret = std::tr1::wcstoull(nptr, endptr, base);
+  llret = std::tr1::wcstoll(nptr3, endptr3, base);
+  ullret = std::tr1::wcstoull(nptr3, endptr3, base);
 #endif
 
 #endif

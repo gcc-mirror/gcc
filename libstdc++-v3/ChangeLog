@@ -1,3 +1,24 @@
+2006-02-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cstdio: New.
+	* include/tr1/stdio.h: Likewise.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/8_c_compatibility/cstdio/functions.cc: New.
+	* testsuite/tr1/headers.cc: Update.	
+	* docs/html/ext/tr1.html: Update.
+
+	* include/tr1/cwchar: Simplify, use _GLIBCXX_USE_C99, consistently
+	with the facilities in std::.
+	* include/tr1/cwctype: Likewise.
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: Tweak.
+	* testsuite/tr1/8_c_compatibility/cwctype/functions.cc: Likewise.
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Remove <wchar.h> and
+	<wctype.h> checks.
+
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
 2006-02-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: Fix.

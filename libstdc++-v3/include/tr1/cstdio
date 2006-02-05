@@ -1,4 +1,4 @@
-// TR1 cwctype -*- C++ -*-
+// TR1 cstdio -*- C++ -*-
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -31,27 +31,27 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CWCTYPE
-#define _TR1_CWCTYPE 1
+#ifndef _TR1_CSTDIO
+#define _TR1_CSTDIO 1
 
 #include <bits/c++config.h>
-
-#if _GLIBCXX_USE_WCHAR_T
-
-#include <cwctype>
+#include <cstdio>
 
 // namespace std::tr1
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
-#if _GLIBCXX_HAVE_ISWBLANK
-  using std::iswblank;
-#endif  
+#if _GLIBCXX_USE_C99
+  using std::snprintf;
+  using std::vsnprintf;
+
+  using std::vfscanf;
+  using std::vscanf;
+  using std::vsscanf;
+#endif
 
 _GLIBCXX_END_NAMESPACE
 }
-
-#endif
 
 #endif

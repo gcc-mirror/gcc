@@ -29,6 +29,7 @@
 #include <tr1/complex>
 #include <tr1/cstdarg>
 #include <tr1/cstdint>
+#include <tr1/cstdio>
 #include <tr1/ctype.h>
 #include <tr1/cwchar>
 #include <tr1/cwctype>
@@ -41,6 +42,7 @@
 #include <tr1/memory>
 #include <tr1/stdarg.h>
 #include <tr1/stdint.h>
+#include <tr1/stdio.h>
 #include <tr1/tuple>
 #include <tr1/type_traits>
 #include <tr1/unordered_set>

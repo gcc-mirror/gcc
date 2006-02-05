@@ -40,56 +40,32 @@
 
 #include <cwchar>
 
-#if _GLIBCXX_USE_C99_WCHAR_TR1
-
-#undef wcstof
-#undef wcstold
-#undef wcstoll
-#undef wcstoull
-#undef vfwscanf
-#undef vswscanf
-#undef vwscanf
-
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
-#if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
-  extern "C" long double
-    (wcstold)(const wchar_t * restrict, wchar_t ** restrict);
-#endif
-#if !_GLIBCXX_USE_C99_DYNAMIC
-  using ::wcstold;
-#endif
-#if _GLIBCXX_USE_C99_LONG_LONG_CHECK || _GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-  extern "C" long long int
-    (wcstoll)(const wchar_t * restrict, wchar_t ** restrict, int);
-  extern "C" unsigned long long int
-    (wcstoull)(const wchar_t * restrict, wchar_t ** restrict, int);
-#endif
-#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-  using ::wcstoll;
-  using ::wcstoull;
-#endif
-
-_GLIBCXX_END_NAMESPACE
-
 // namespace std::tr1
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
-  using ::wcstof;
-  using ::__gnu_cxx::wcstold;
-  using ::__gnu_cxx::wcstoll;
-  using ::__gnu_cxx::wcstoull;
+#if _GLIBCXX_HAVE_WCSTOF
+  using std::wcstof;
+#endif
+#if _GLIBCXX_HAVE_VFWSCANF
+  using std::vfwscanf;
+#endif
+#if _GLIBCXX_HAVE_VSWSCANF
+  using std::vswscanf;
+#endif
+#if _GLIBCXX_HAVE_VWSCANF
+  using std::vwscanf;
+#endif
 
-  using ::vfwscanf;
-  using ::vswscanf;
-  using ::vwscanf;
+#if _GLIBCXX_USE_C99
+  using std::wcstold;
+  using std::wcstoll;
+  using std::wcstoull;
+#endif
 
 _GLIBCXX_END_NAMESPACE
 }
-
-#endif
 
 #endif
 
