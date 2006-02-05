@@ -4835,6 +4835,7 @@ resolve_symbol (gfc_symbol * sym)
 	specification-part of a module and does not have the ALLOCATABLE
 	or POINTER attribute, the object shall have the SAVE attribute."  */
 
+      constructor_expr = NULL;
       if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
         constructor_expr = gfc_default_initializer (&sym->ts);
 
