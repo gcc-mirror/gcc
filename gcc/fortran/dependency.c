@@ -259,10 +259,10 @@ gfc_check_argument_var_dependency (gfc_expr * var, sym_intent intent,
     {
     case EXPR_VARIABLE:
       return (gfc_ref_needs_temporary_p (expr->ref)
-	      || gfc_check_dependency (var, expr, NULL, 0));
+	      || gfc_check_dependency (var, expr, 1));
 
     case EXPR_ARRAY:
-      return gfc_check_dependency (var, expr, NULL, 0);
+      return gfc_check_dependency (var, expr, 1);
 
     case EXPR_FUNCTION:
       if (intent != INTENT_IN && expr->inline_noncopying_intrinsic)
@@ -339,15 +339,14 @@ gfc_check_fncall_dependency (gfc_expr * other, sym_intent intent,
 
 /* Return true if the statement body redefines the condition.  Returns
    true if expr2 depends on expr1.  expr1 should be a single term
-   suitable for the lhs of an assignment.  The symbols listed in VARS
-   must be considered to have all possible values. All other scalar
-   variables may be considered constant.  Used for forall and where
+   suitable for the lhs of an assignment.  The IDENTICAL flag indicates
+   whether array references to the same symbol with identical range
+   references count as a dependency or not.  Used for forall and where
    statements.  Also used with functions returning arrays without a
    temporary.  */
 
 int
-gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, gfc_expr ** vars,
-		      int nvars)
+gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
 {
   gfc_ref *ref;
   int n;
@@ -367,11 +366,11 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, gfc_expr ** vars,
   switch (expr2->expr_type)
     {
     case EXPR_OP:
-      n = gfc_check_dependency (expr1, expr2->value.op.op1, vars, nvars);
+      n = gfc_check_dependency (expr1, expr2->value.op.op1, identical);
       if (n)
 	return n;
       if (expr2->value.op.op2)
-	return gfc_check_dependency (expr1, expr2->value.op.op2, vars, nvars);
+	return gfc_check_dependency (expr1, expr2->value.op.op2, identical);
       return 0;
 
     case EXPR_VARIABLE:
@@ -387,15 +386,25 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, gfc_expr ** vars,
       if (expr1->symtree->n.sym != expr2->symtree->n.sym)
 	return 0;
 
-      for (ref = expr2->ref; ref; ref = ref->next)
-	{
-	  /* Identical ranges return 0, overlapping ranges return 1.  */
-	  if (ref->type == REF_ARRAY)
-	    return 1;
-	}
+      if (identical)
+	return 1;
+
+      /* Identical ranges return 0, overlapping ranges return 1.  */
+
+      /* Return zero if we refer to the same full arrays.  */
+      if (expr1->ref->type == REF_ARRAY
+	  && expr2->ref->type == REF_ARRAY
+	  && expr1->ref->u.ar.type == AR_FULL
+	  && expr2->ref->u.ar.type == AR_FULL
+	  && !expr1->ref->next
+	  && !expr2->ref->next)
+	return 0;
+
       return 1;
 
     case EXPR_FUNCTION:
+      if (expr2->inline_noncopying_intrinsic)
+	identical = 1;
       /* Remember possible differences between elemental and
          transformational functions.  All functions inside a FORALL
          will be pure.  */
@@ -404,7 +413,7 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, gfc_expr ** vars,
 	{
 	  if (!actual->expr)
 	    continue;
-	  n = gfc_check_dependency (expr1, actual->expr, vars, nvars);
+	  n = gfc_check_dependency (expr1, actual->expr, identical);
 	  if (n)
 	    return n;
 	}

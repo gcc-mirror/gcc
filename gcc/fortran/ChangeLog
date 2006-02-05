@@ -1,3 +1,18 @@
+2006-02-04  Roger Sayle  <roger@eyesopen.com>
+
+	* dependency.c (gfc_check_dependency): Remove unused vars and nvars
+	arguments.  Replace with an "identical" argument.  A full array
+	reference to the same symbol is a dependency if identical is true.
+	* dependency.h (gfc_check_dependency): Update prototype.
+	* trans-array.h (gfc_check_dependency): Delete duplicate prototype.
+	* trans-stmt.c: #include dependency.h for gfc_check_dependency.
+	(gfc_trans_forall_1): Update calls to gfc_check_dependency.
+	(gfc_trans_where_2): Likewise.  Remove unneeded variables.
+	(gfc_trans_where_3): New function for simple non-dependent WHEREs.
+	(gfc_trans_where): Call gfc_trans_where_3 to translate simple
+	F90-style WHERE statements without internal dependencies.
+	* Make-lang.in (trans-stmt.o): Depend upon dependency.h.
+
 2006-02-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/26041
