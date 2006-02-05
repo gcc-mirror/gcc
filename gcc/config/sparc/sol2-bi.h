@@ -1,9 +1,11 @@
 /* Definitions of target machine for GCC, for bi-arch SPARC
    running Solaris 2 using the system assembler and linker.  */
 
-/* The default code model.  */
+/* The default code model used to be CM_MEDANY on Solaris
+   but even Sun eventually found it to be quite wasteful
+   and changed it to CM_MEDMID in the Studio 9 compiler.  */
 #undef SPARC_DEFAULT_CMODEL
-#define SPARC_DEFAULT_CMODEL CM_MEDANY
+#define SPARC_DEFAULT_CMODEL CM_MEDMID
 
 #define AS_SPARC64_FLAG	"-xarch=v9"
 
