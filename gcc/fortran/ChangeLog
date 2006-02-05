@@ -1,3 +1,11 @@
+2006-02-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/26041
+	PR fortran/26064
+	* resolve.c (resolve_types): New function.
+	(resolve_codes): Likewise.
+	(gfc_resolve): Use them.
+
 2006-02-05  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-stmt.c (gfc_evaluate_where_mask): Use LOGICAL*1 for WHERE
