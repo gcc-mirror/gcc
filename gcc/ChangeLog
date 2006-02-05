@@ -1,3 +1,9 @@
+2006-02-04  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/26087
+	* rtlanal.c (canonicalize_condition): Do not cross basic block
+	boundaries.
+
 2006-02-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/24444
