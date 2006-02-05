@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -O2 -std=c99" } */
 
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 typedef struct {
   int _flags;

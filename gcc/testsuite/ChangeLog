@@ -1,3 +1,8 @@
+2006-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/pr25990.c: Use __SIZE_TYPE__ instead of unsigned int
+	in size_t typedef.
+
 2006-02-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* g++.dg/charset/extern2.cc (foo): Declare as of type cost char*.
