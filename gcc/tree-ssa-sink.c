@@ -522,7 +522,7 @@ sink_code_in_bb (basic_block bb)
 static void
 execute_sink_code (void)
 {
-  struct loops *loops = loop_optimizer_init (dump_file);
+  struct loops *loops = loop_optimizer_init (dump_file, LOOPS_NORMAL);
   connect_infinite_loops_to_exit ();
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);

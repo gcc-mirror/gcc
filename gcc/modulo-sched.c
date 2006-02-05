@@ -894,44 +894,6 @@ canon_loop (struct loop *loop)
     }
 }
 
-/* Build the loop information without loop
-   canonization, the loop canonization will
-   be performed if the loop is SMSable.  */
-static struct loops *
-build_loops_structure (FILE *dumpfile)
-{
-  struct loops *loops = XCNEW (struct loops);
-
-  /* Find the loops.  */
-
-  if (flow_loops_find (loops) <= 1)
-    {
-      /* No loops.  */
-      flow_loops_free (loops);
-      free (loops);
-
-      return NULL;
-    }
-
-  /* Not going to update these.  */
-  free (loops->cfg.rc_order);
-  loops->cfg.rc_order = NULL;
-  free (loops->cfg.dfs_order);
-  loops->cfg.dfs_order = NULL;
-
-  create_preheaders (loops, CP_SIMPLE_PREHEADERS);
-  mark_single_exit_loops (loops);
-  /* Dump loops.  */
-  flow_loops_dump (loops, dumpfile, NULL, 1);
-
-#ifdef ENABLE_CHECKING
-  verify_dominators (CDI_DOMINATORS);
-  verify_loop_structure (loops);
-#endif
-
-  return loops;
-}
-
 /* Main entry point, perform SMS scheduling on the loops of the function
    that consist of single basic blocks.  */
 static void
@@ -953,9 +915,10 @@ sms_schedule (FILE *dump_file)
   edge latch_edge;
   gcov_type trip_count = 0;
 
-  if (! (loops = build_loops_structure (dump_file)))
+  loops = loop_optimizer_init (dump_file, (LOOPS_HAVE_PREHEADERS
+					   | LOOPS_HAVE_MARKED_SINGLE_EXITS));
+  if (!loops)
     return;  /* There is no loops to schedule.  */
-
 
   stats_file = dump_file;
 

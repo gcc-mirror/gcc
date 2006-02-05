@@ -48,7 +48,10 @@ struct loops *current_loops = NULL;
 static struct loops *
 tree_loop_optimizer_init (FILE *dump)
 {
-  struct loops *loops = loop_optimizer_init (dump);
+  struct loops *loops;
+ 
+  loops = loop_optimizer_init (dump, (LOOPS_NORMAL
+				      | LOOPS_HAVE_MARKED_SINGLE_EXITS));
 
   if (!loops)
     return NULL;
@@ -91,9 +94,6 @@ tree_ssa_loop_init (void)
   current_loops = tree_loop_optimizer_init (dump_file);
   if (!current_loops)
     return;
-
-  /* Find the loops that are exited just through a single edge.  */
-  mark_single_exit_loops (current_loops);
 
   scev_initialize (current_loops);
 }

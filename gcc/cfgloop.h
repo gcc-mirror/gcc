@@ -185,6 +185,9 @@ enum
   LOOPS_HAVE_MARKED_SINGLE_EXITS = 8
 };
 
+#define LOOPS_NORMAL (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES \
+		      | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+
 /* Structure to hold CFG information about natural loops within a function.  */
 struct loops
 {
@@ -434,7 +437,7 @@ extern unsigned global_cost_for_size (unsigned, unsigned, unsigned);
 extern void init_set_costs (void);
 
 /* Loop optimizer initialization.  */
-extern struct loops *loop_optimizer_init (FILE *);
+extern struct loops *loop_optimizer_init (FILE *, unsigned);
 extern void loop_optimizer_finalize (struct loops *, FILE *);
 
 /* Optimization passes.  */
