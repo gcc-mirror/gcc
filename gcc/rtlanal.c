@@ -4508,6 +4508,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
   rtx op0, op1;
   int reverse_code = 0;
   enum machine_mode mode;
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   code = GET_CODE (cond);
   mode = GET_MODE (cond);
@@ -4569,7 +4570,11 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 
       if ((prev = prev_nonnote_insn (prev)) == 0
 	  || !NONJUMP_INSN_P (prev)
-	  || FIND_REG_INC_NOTE (prev, NULL_RTX))
+	  || FIND_REG_INC_NOTE (prev, NULL_RTX)
+	  /* In cfglayout mode, there do not have to be labels at the
+	     beginning of a block, or jumps at the end, so the previous
+	     conditions would not stop us when we reach bb boundary.  */
+	  || BLOCK_FOR_INSN (prev) != bb)
 	break;
 
       set = set_of (op0, prev);
