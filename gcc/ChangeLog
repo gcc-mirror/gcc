@@ -1,3 +1,10 @@
+2006-02-04  Ben Elliston  <bje@au.ibm.com>
+
+	* dfp.c (decimal_real_arithmetic): Change second argument type
+	from int to enum tree_code. Do not always return true, but now
+	return result of any call to decimal_do helper functions.
+	* dfp.h (decimal_real_arithmetic): Update prototype.
+
 2006-02-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2-bi.h (SPARC_DEFAULT_CMODEL): Set to CM_MEDMID.
@@ -934,11 +941,11 @@
 
 	PR ada/25900
 	* tree-vrp.c (extract_range_from_assert): When merging a VR_RANGE
-	with a VR_ANTI_RANGE and the VR_ANTI_RANGEis completely contained
+	with a VR_ANTI_RANGE and the VR_ANTI_RANGE is completely contained
 	within the VR_RANGE, use the VR_RANGE as the result, not the
 	VR_ANTI_RANGE.
-	(adjust_range_with_scev): Reject ranges from SCEV which are out
-	of bounds for the type.
+	(adjust_range_with_scev): Reject ranges from SCEV which are out of
+	bounds for the type.
 
 2006-01-26  Daniel Berlin  <dberlin@dberlin.org>
 
