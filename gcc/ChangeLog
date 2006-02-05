@@ -1,3 +1,17 @@
+2006-02-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/x-ada-hpux10, pa/t-pa-hpux10, pa/t-pa-hpux11: New files.
+	* config.gcc (hppa[12]*-*-hpux10*): Use pa/t-pa-hpux10 instead of
+	pa/t-pa.
+	* config.gcc (hppa[12]*-*-hpux11*): Use pa/t-pa-hpux11 instead of
+	pa/t-pa.
+	* config.host (hppa*-*-hpux10*): Use pa/x-ada-hpux10 instead of
+	pa/x-ada.
+	* pa/t-pa-hpux: Add lib2funcs.asm and quadlib.c rules.
+	* pa/t-pa64: Delete quadlib.c rule.
+	* pa/x-ada: Revert last change.
+	* pa/t-pa: Revert last change.  Delete quadlib.c rule.
+
 2006-02-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/24444

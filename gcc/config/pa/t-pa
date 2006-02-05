@@ -1,15 +1,7 @@
-LIB2FUNCS_EXTRA=lib2funcs.asm quadlib.c
+TARGET_LIBGCC2_CFLAGS = -fPIC
+
+LIB2FUNCS_EXTRA=lib2funcs.asm
 
 lib2funcs.asm: $(srcdir)/config/pa/lib2funcs.asm
 	rm -f lib2funcs.asm
 	cp $(srcdir)/config/pa/lib2funcs.asm .
-
-quadlib.c: $(srcdir)/config/pa/quadlib.c
-	rm -f quadlib.c
-	cp $(srcdir)/config/pa/quadlib.c .
-
-ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
-  TARGET_LIBGCC2_CFLAGS = -fPIC -D_T_HPUX10
-else
-  TARGET_LIBGCC2_CFLAGS = -fPIC
-endif

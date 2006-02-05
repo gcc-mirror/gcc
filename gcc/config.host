@@ -119,7 +119,10 @@ case ${host} in
   hppa1.1-*-bsd*)
     host_xmake_file="pa/x-ada"
     ;;
-  hppa1.0-*-hpux10* | hppa1.1-*-hpux10* | hppa2*-*-hpux10* | \
+  hppa1.0-*-hpux10* | hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
+    out_host_hook_obj=host-hpux.o
+    host_xmake_file="pa/x-ada-hpux10 x-hpux"
+    ;;
   hppa1.0-*-hpux11* | hppa1.1-*-hpux11* | hppa2*-*-hpux11* | \
   hppa*64*-*-hpux11*)
     out_host_hook_obj=host-hpux.o
