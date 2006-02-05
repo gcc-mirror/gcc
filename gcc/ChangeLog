@@ -1,3 +1,24 @@
+2006-02-04  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-vrp.c (cfg_loops): Removed.
+	(adjust_range_with_scev, vrp_visit_assignment, execute_vrp):
+	Use current_loops instead of cfg_loops.  Pass flags to
+	loop_optimizer_init.
+	* cfgloopmanip.c (fix_loop_structure): Update only available
+	information.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Pass flags to
+	loop_optimizer_init.
+	* modulo-sched.c (build_loops_structure): Removed.
+	(sms_schedule): Use loop_optimizer_init.
+	* loop-init.c (loop_optimizer_init): Use flags to determine
+	which properties of loops to prepare.
+	(rtl_loop_init): Pass flags to loop_optimizer_init.
+	* tree-ssa-sink.c (execute_sink_code): Ditto.
+	* tree-ssa-loop.c (tree_loop_optimizer_init): Ditto.
+	* tree-ssa-pre.c (init_pre): Ditto.
+	* cfgloop.h (LOOPS_NORMAL): New.
+	(loop_optimizer_init): Declaration changed.
+
 2006-02-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/x-ada-hpux10, pa/t-pa-hpux10, pa/t-pa-hpux11: New files.

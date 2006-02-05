@@ -1617,6 +1617,8 @@ fix_loop_structure (struct loops *loops, bitmap changed_bbs)
       bb->aux = NULL;
     }
 
-  mark_single_exit_loops (loops);
-  mark_irreducible_loops (loops);
+  if (loops->state & LOOPS_HAVE_MARKED_SINGLE_EXITS)
+    mark_single_exit_loops (loops);
+  if (loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+    mark_irreducible_loops (loops);
 }

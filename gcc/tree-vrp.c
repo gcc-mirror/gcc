@@ -41,10 +41,6 @@ Boston, MA 02110-1301, USA.  */
    sub-graph in find_assert_locations.  */
 static sbitmap found_in_subgraph;
 
-/* Loop structure of the program.  Used to analyze scalar evolutions
-   inside adjust_range_with_scev.  */
-static struct loops *cfg_loops;
-
 /* Local functions.  */
 static int compare_values (tree val1, tree val2);
 
@@ -1909,7 +1905,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 
   /* Do not adjust ranges when chrec may wrap.  */
   if (scev_probably_wraps_p (chrec_type (chrec), init, step, stmt,
-			     cfg_loops->parray[CHREC_VARIABLE (chrec)],
+			     current_loops->parray[CHREC_VARIABLE (chrec)],
 			     &init_is_max, &unknown_max)
       || unknown_max)
     return;
@@ -3278,7 +3274,7 @@ vrp_visit_assignment (tree stmt, tree *output_p)
       /* If STMT is inside a loop, we may be able to know something
 	 else about the range of LHS by examining scalar evolution
 	 information.  */
-      if (cfg_loops && (l = loop_containing_stmt (stmt)))
+      if (current_loops && (l = loop_containing_stmt (stmt)))
 	adjust_range_with_scev (&new_vr, l, stmt, lhs);
 
       if (update_value_range (lhs, &new_vr))
@@ -4312,18 +4308,18 @@ execute_vrp (void)
 {
   insert_range_assertions ();
 
-  cfg_loops = loop_optimizer_init (NULL);
-  if (cfg_loops)
-    scev_initialize (cfg_loops);
+  current_loops = loop_optimizer_init (NULL, LOOPS_NORMAL);
+  if (current_loops)
+    scev_initialize (current_loops);
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize ();
 
-  if (cfg_loops)
+  if (current_loops)
     {
       scev_finalize ();
-      loop_optimizer_finalize (cfg_loops, NULL);
+      loop_optimizer_finalize (current_loops, NULL);
       current_loops = NULL;
     }
 

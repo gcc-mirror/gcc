@@ -34,10 +34,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 
 /* Initialize loop optimizer.  This is used by the tree and RTL loop
-   optimizers.  */
+   optimizers.  FLAGS specify what properties to compute and/or ensure for
+   loops.  */
 
 struct loops *
-loop_optimizer_init (FILE *dumpfile)
+loop_optimizer_init (FILE *dumpfile, unsigned flags)
 {
   struct loops *loops = XCNEW (struct loops);
   edge e;
@@ -77,13 +78,19 @@ loop_optimizer_init (FILE *dumpfile)
   loops->cfg.dfs_order = NULL;
 
   /* Create pre-headers.  */
-  create_preheaders (loops, CP_SIMPLE_PREHEADERS);
+  if (flags & LOOPS_HAVE_PREHEADERS)
+    create_preheaders (loops, CP_SIMPLE_PREHEADERS);
 
   /* Force all latches to have only single successor.  */
-  force_single_succ_latches (loops);
+  if (flags & LOOPS_HAVE_SIMPLE_LATCHES)
+    force_single_succ_latches (loops);
 
   /* Mark irreducible loops.  */
-  mark_irreducible_loops (loops);
+  if (flags & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+    mark_irreducible_loops (loops);
+
+  if (flags & LOOPS_HAVE_MARKED_SINGLE_EXITS)
+    mark_single_exit_loops (loops);
 
   /* Dump loops.  */
   flow_loops_dump (loops, dumpfile, NULL, 1);
@@ -166,7 +173,7 @@ rtl_loop_init (void)
   /* Initialize structures for layout changes.  */
   cfg_layout_initialize (0);
 
-  current_loops = loop_optimizer_init (dump_file);
+  current_loops = loop_optimizer_init (dump_file, LOOPS_NORMAL);
 }
 
 struct tree_opt_pass pass_rtl_loop_init =

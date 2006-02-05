@@ -3441,7 +3441,7 @@ init_pre (bool do_fre)
 
   vn_init ();
   if (!do_fre)
-    current_loops = loop_optimizer_init (dump_file);
+    current_loops = loop_optimizer_init (dump_file, LOOPS_NORMAL);
 
   connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
