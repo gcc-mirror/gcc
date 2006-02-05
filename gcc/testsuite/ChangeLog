@@ -1,3 +1,65 @@
+2006-02-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* g++.dg/charset/extern2.cc (foo): Declare as of type cost char*.
+	* g++.dg/charset/string.c (foo): Likewise.
+	* g++.dg/ext/builtin1.C (printf): Change first parameter type to
+	const char*
+	* g++.dg/ext/builtin2.C (printf): Likewise.
+	* g++.dg/init/new15.C (printf): Likewise.
+	* g++.dg/opt/pr17697-1.C (foo): Likewise.
+	* g++.dg/opt/pr17697-2.C (foo): Likewise.
+	* g++.dg/opt/pr17697-3.C (foo): Likewise.
+	* g++.dg/template/non-dependent4.C (temp): Likewise.
+	* g++.dg/opt/strength-reduce.C (C::a): Change type to const char*.
+	* g++.old-deja/g++.brendan/crash66.C (getopt): Change last
+	parameter type to const char*.
+	* g++.old-deja/g++.brendan/ptolemy1.C (InterpTableEntry::name):
+	Change type to const char*.
+	* g++.old-deja/g++.brendan/ptolemy2.C (InterpTableEntry::name):
+	Likewise. 
+	* g++.old-deja/g++.jason/default2.C (bar::memberfunction): Change
+	second parameter type to const char*.
+	* g++.old-deja/g++.jason/opeq.C (X::X): Likewise.
+	(Y::Y): Change parameter type to const char*.
+	* g++.old-deja/g++.jason/ref12.C (f): Likewise.
+	* g++.old-deja/g++.jason/report.C: Apply const correctness.
+	* g++.old-deja/g++.jason/rfg6.C (single, array): Likewise.
+	* g++.old-deja/g++.jason/rvalue1.C (main): Cast string literal to
+	(char*).
+	* g++.old-deja/g++.jason/scoping4.C (A::Ptr): Make a typedef to
+	const char*.
+	* g++.old-deja/g++.law/ctors17.C (X::X): Change last parameter
+	type to const char*.
+	* g++.old-deja/g++.law/ctors7.C (base_t::name, d1_t, d2_t): Change
+	return type to const char*.
+	* g++.old-deja/g++.law/dtors2.C (bla::bla): Change parameter type
+	to const char*.
+	* g++.old-deja/g++.law/operators3.C: Adjust for const correctness.
+	* g++.old-deja/g++.law/refs1.C: Likewise.
+	* g++.old-deja/g++.law/visibility1.C: Likewise.
+	* g++.old-deja/g++.law/visibility2.C: Likewise.
+	* g++.old-deja/g++.law/union1.C (op_to_charp::s): Change type to
+	const char*.
+	* g++.old-deja/g++.mike/bool2.C: Adjust for const correctness..
+	* g++.old-deja/g++.mike/net48.C: Likewise.
+	* g++.old-deja/g++.mike/p646.C: Likewise.
+	* g++.old-deja/g++.mike/p6746.C: Likewise.
+	* g++.old-deja/g++.mike/p700.C (mystrcpy): Change last parameter
+	type to const char*.
+	* g++.old-deja/g++.mike/p811.C (X::stringify): Match for
+	deprecated conversion warning.
+	* g++.old-deja/g++.other/init15.C (A::name): Change type to const
+	char*. 
+	* g++.old-deja/g++.other/inline12.C: Adjust for const correctness.
+	* g++.old-deja/g++.other/sibcall1.C (foo): Likewise.
+	* g++.old-deja/g++.pt/explicit8.C: Likewise.
+	* g++.old-deja/g++.pt/m6.C (xx): Likewise.
+	* g++.old-deja/g++.pt/m7.C (xx): Likewise.
+	* g++.old-deja/g++.pt/nontype3.C: Likewise.
+	* g++.old-deja/g++.pt/t39.C: Likewise.
+	* g++.old-deja/g++.robertl/eb106.C: Likewise.
+	* g++.old-deja/g++.robertl/ice990323-2.C: Likewise.
+
 2006-02-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/25075

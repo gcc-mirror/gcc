@@ -62,10 +62,10 @@ class ShBop
  public:
   inline ShBop(const ShBe* theBe);
   void            shWw(bool,
-                                char* a1 = "",
-                                char* a2 = "",
+                                const char* a1 = "",
+                                const char* a2 = "",
                                 int   a3 = -1,
-                                char* a4 = "foo");
+                                const char* a4 = "foo");
   typedef enum { shOk,
                  shFailed,
                  shDone,

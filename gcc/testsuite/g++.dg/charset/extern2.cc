@@ -2,4 +2,4 @@
 /* { dg-do compile }
    { dg-require-iconv "IBM1047" }
    { dg-final { scan-assembler-not "foobar" } } */
-extern "C" { char *foo = "foobar"; }
+extern "C" { const char* foo = "foobar"; }

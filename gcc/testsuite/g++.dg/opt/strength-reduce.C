@@ -10,7 +10,7 @@ struct C
 {
   int foo (char ch, int offset = __INT_MAX__) const;
   int bar (int offset, char c) const;
-  char *a;
+   const char *a;
 };
 
 int C::bar (int offset, char c) const

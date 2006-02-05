@@ -93,7 +93,7 @@ ulong memsize;
 ulong compression_quality;		 
 char *compressfile;			 
 int debug_level;			 
-extern "C" int getopt (int, char**, char*);
+extern "C" int getopt (int, char**, const char*);
 int
 main(int argc, char** argv)
 {

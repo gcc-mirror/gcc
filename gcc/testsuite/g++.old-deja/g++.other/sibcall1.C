@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-std::ostream& foo (char *x, std::ostream &y)
+std::ostream& foo (const char *x, std::ostream &y)
 {
   return y << "" << x;
 }

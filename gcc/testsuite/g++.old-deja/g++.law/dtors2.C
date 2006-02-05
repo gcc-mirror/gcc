@@ -8,7 +8,7 @@ class bla {
 
 public:
 
-        inline bla(char * jim) { ; };
+        inline bla(const char * jim) { ; };
 
         inline ~bla() { destruct++; if (destruct == 2) printf ("PASS\n");};
 };

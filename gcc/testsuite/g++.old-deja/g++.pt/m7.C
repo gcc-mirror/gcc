@@ -2,7 +2,7 @@
 
 struct B { struct A { A(); int a; }; A aa; };
 B::A::A () { a = 37; }
-char *xx[]= {"/*",
+const char *xx[]= {"/*",
 "../tests/m7.cc:1: warning: return type specification for constructor invalid",
 "../tests/m7.cc: In function struct A A ():",
 "../tests/m7.cc:2: `a' undeclared (first use this function)",

@@ -8,7 +8,7 @@
 
 class base_t {
 public:
-   virtual char *name () { return "base_t"; }
+   virtual const char* name () { return "base_t"; }
 
    base_t ();
    virtual ~base_t ();
@@ -16,7 +16,7 @@ public:
 
 class d1_t : public base_t {
 public:
-   virtual char *name () { return "d1_t"; }
+   virtual const char* name () { return "d1_t"; }
 
    //   The const keyword on this constructor is an error,  but  it shouldn't
    // cause the compiler to crash.
@@ -27,7 +27,7 @@ public:
 
 class d2_t : public base_t {
 public:
-   virtual char *name () { return "d2_t"; }
+   virtual const char* name () { return "d2_t"; }
 
    d2_t (int);
    virtual ~d2_t ();
