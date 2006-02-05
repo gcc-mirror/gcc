@@ -1,3 +1,9 @@
+2006-02-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/25251
+	* tree-cfg.c (cleanup_dead_labels): Also don't remove
+	forced labels.
+
 2006-02-04  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-vrp.c (cfg_loops): Removed.

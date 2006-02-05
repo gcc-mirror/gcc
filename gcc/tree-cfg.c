@@ -1108,7 +1108,8 @@ cleanup_dead_labels (void)
   for_each_eh_region (update_eh_label);
 
   /* Finally, purge dead labels.  All user-defined labels and labels that
-     can be the target of non-local gotos are preserved.  */
+     can be the target of non-local gotos and labels which have their
+     address taken are preserved.  */
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator i;
@@ -1128,7 +1129,8 @@ cleanup_dead_labels (void)
 
 	  if (label == label_for_this_bb
 	      || ! DECL_ARTIFICIAL (label)
-	      || DECL_NONLOCAL (label))
+	      || DECL_NONLOCAL (label)
+	      || FORCED_LABEL (label))
 	    bsi_next (&i);
 	  else
 	    bsi_remove (&i, true);
