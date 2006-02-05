@@ -2639,6 +2639,7 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
   tree inner_size, size;
   stmtblock_t body, body1, inner_size_body;
   gfc_se lse, rse;
+  tree mask_type;
   tree count;
   tree tmpexpr;
 
@@ -2652,9 +2653,12 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
   size = compute_overall_iter_number (nested_forall_info, inner_size,
 				      &inner_size_body, block);
 
+  /* As the mask array can be very big, prefer compact boolean types.  */
+  mask_type = gfc_get_logical_type (gfc_logical_kinds[0].kind);
+
   /* Allocate temporary for where mask.  */
-  tmp = allocate_temp_for_forall_nest_1 (boolean_type_node, size, block,
-					 &ptemp1);
+  tmp = allocate_temp_for_forall_nest_1 (mask_type, size, block, &ptemp1);
+
   /* Record the temporary address in order to free it later.  */
   if (ptemp1)
     {
@@ -2666,8 +2670,8 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
     }
 
   /* Allocate temporary for !mask.  */
-  ntmp = allocate_temp_for_forall_nest_1 (boolean_type_node, size, block,
-					  &ptemp2);
+  ntmp = allocate_temp_for_forall_nest_1 (mask_type, size, block, &ptemp2);
+
   /* Record the temporary  in order to free it later.  */
   if (ptemp2)
     {
