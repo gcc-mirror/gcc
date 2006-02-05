@@ -115,9 +115,6 @@ tree gfc_conv_descriptor_stride (tree, tree);
 tree gfc_conv_descriptor_lbound (tree, tree);
 tree gfc_conv_descriptor_ubound (tree, tree);
 
-/* Dependency checking for WHERE and FORALL.  */
-int gfc_check_dependency (gfc_expr *, gfc_expr *, gfc_expr **, int);
-
 /* Add pre-loop scalarization code for intrinsic functions which require
    special handling.  */
 void gfc_add_intrinsic_ss_code (gfc_loopinfo *, gfc_ss *);

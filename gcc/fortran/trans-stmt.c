@@ -37,6 +37,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-array.h"
 #include "trans-const.h"
 #include "arith.h"
+#include "dependency.h"
 
 typedef struct iter_info
 {
@@ -2503,7 +2504,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 	{
 	case EXEC_ASSIGN:
           /* A scalar or array assignment.  */
-	  need_temp = gfc_check_dependency (c->expr, c->expr2, varexpr, nvar);
+	  need_temp = gfc_check_dependency (c->expr, c->expr2, 0);
           /* Temporaries due to array assignment data dependencies introduce
              no end of problems.  */
 	  if (need_temp)
@@ -2546,7 +2547,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 
         /* Pointer assignment inside FORALL.  */
 	case EXEC_POINTER_ASSIGN:
-          need_temp = gfc_check_dependency (c->expr, c->expr2, varexpr, nvar);
+          need_temp = gfc_check_dependency (c->expr, c->expr2, 0);
           if (need_temp)
             gfc_trans_pointer_assign_need_temp (c->expr, c->expr2,
                                                 nested_forall_info, &block);
@@ -3062,14 +3063,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
               expr2 = cnext->expr2;
               if (nested_forall_info != NULL)
                 {
-                  int nvar;
-                  gfc_expr **varexpr;
-
-                  nvar = nested_forall_info->nvar;
-                  varexpr = (gfc_expr **)
-                            gfc_getmem (nvar * sizeof (gfc_expr *));
-                  need_temp = gfc_check_dependency (expr1, expr2, varexpr,
-                                                    nvar);
+                  need_temp = gfc_check_dependency (expr1, expr2, 0);
                   if (need_temp)
                     gfc_trans_assign_need_temp (expr1, expr2, mask,
                                                 nested_forall_info, block);
@@ -3124,6 +3118,137 @@ gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
   }
 }
 
+/* Translate a simple WHERE construct or statement without dependencies.
+   CBLOCK is the "then" clause of the WHERE statement, where CBLOCK->EXPR
+   is the mask condition, and EBLOCK if non-NULL is the "else" clause.
+   Currently both CBLOCK and EBLOCK are restricted to single assignments.  */
+
+static tree
+gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
+{
+  stmtblock_t block, body;
+  gfc_expr *cond, *tdst, *tsrc, *edst, *esrc;
+  tree tmp, cexpr, tstmt, estmt;
+  gfc_ss *css, *tdss, *tsss;
+  gfc_se cse, tdse, tsse, edse, esse;
+  gfc_loopinfo loop;
+  gfc_ss *edss = 0;
+  gfc_ss *esss = 0;
+
+  cond = cblock->expr;
+  tdst = cblock->next->expr;
+  tsrc = cblock->next->expr2;
+  edst = eblock ? eblock->next->expr : NULL;
+  esrc = eblock ? eblock->next->expr2 : NULL;
+
+  gfc_start_block (&block);
+  gfc_init_loopinfo (&loop);
+
+  /* Handle the condition.  */
+  gfc_init_se (&cse, NULL);
+  css = gfc_walk_expr (cond);
+  gfc_add_ss_to_loop (&loop, css);
+
+  /* Handle the then-clause.  */
+  gfc_init_se (&tdse, NULL);
+  gfc_init_se (&tsse, NULL);
+  tdss = gfc_walk_expr (tdst);
+  tsss = gfc_walk_expr (tsrc);
+  if (tsss == gfc_ss_terminator)
+    {
+      tsss = gfc_get_ss ();
+      tsss->next = gfc_ss_terminator;
+      tsss->type = GFC_SS_SCALAR;
+      tsss->expr = tsrc;
+    }
+  gfc_add_ss_to_loop (&loop, tdss);
+  gfc_add_ss_to_loop (&loop, tsss);
+
+  if (eblock)
+    {
+      /* Handle the else clause.  */
+      gfc_init_se (&edse, NULL);
+      gfc_init_se (&esse, NULL);
+      edss = gfc_walk_expr (edst);
+      esss = gfc_walk_expr (esrc);
+      if (esss == gfc_ss_terminator)
+	{
+	  esss = gfc_get_ss ();
+	  esss->next = gfc_ss_terminator;
+	  esss->type = GFC_SS_SCALAR;
+	  esss->expr = esrc;
+	}
+      gfc_add_ss_to_loop (&loop, edss);
+      gfc_add_ss_to_loop (&loop, esss);
+    }
+
+  gfc_conv_ss_startstride (&loop);
+  gfc_conv_loop_setup (&loop);
+
+  gfc_mark_ss_chain_used (css, 1);
+  gfc_mark_ss_chain_used (tdss, 1);
+  gfc_mark_ss_chain_used (tsss, 1);
+  if (eblock)
+    {
+      gfc_mark_ss_chain_used (edss, 1);
+      gfc_mark_ss_chain_used (esss, 1);
+    }
+
+  gfc_start_scalarized_body (&loop, &body);
+
+  gfc_copy_loopinfo_to_se (&cse, &loop);
+  gfc_copy_loopinfo_to_se (&tdse, &loop);
+  gfc_copy_loopinfo_to_se (&tsse, &loop);
+  cse.ss = css;
+  tdse.ss = tdss;
+  tsse.ss = tsss;
+  if (eblock)
+    {
+      gfc_copy_loopinfo_to_se (&edse, &loop);
+      gfc_copy_loopinfo_to_se (&esse, &loop);
+      edse.ss = edss;
+      esse.ss = esss;
+    }
+
+  gfc_conv_expr (&cse, cond);
+  gfc_add_block_to_block (&body, &cse.pre);
+  cexpr = cse.expr;
+
+  gfc_conv_expr (&tsse, tsrc);
+  if (tdss != gfc_ss_terminator && loop.temp_ss != NULL)
+    {
+      gfc_conv_tmp_array_ref (&tdse);
+      gfc_advance_se_ss_chain (&tdse);
+    }
+  else
+    gfc_conv_expr (&tdse, tdst);
+
+  if (eblock)
+    {
+      gfc_conv_expr (&esse, esrc);
+      if (edss != gfc_ss_terminator && loop.temp_ss != NULL)
+        {
+          gfc_conv_tmp_array_ref (&edse);
+          gfc_advance_se_ss_chain (&edse);
+        }
+      else
+        gfc_conv_expr (&edse, edst);
+    }
+
+  tstmt = gfc_trans_scalar_assign (&tdse, &tsse, tdst->ts.type);
+  estmt = eblock ? gfc_trans_scalar_assign (&edse, &esse, edst->ts.type)
+		 : build_empty_stmt ();
+  tmp = build3_v (COND_EXPR, cexpr, tstmt, estmt);
+  gfc_add_expr_to_block (&body, tmp);
+  gfc_add_block_to_block (&body, &cse.post);
+
+  gfc_trans_scalarizing_loops (&loop, &body);
+  gfc_add_block_to_block (&block, &loop.pre);
+  gfc_add_block_to_block (&block, &loop.post);
+  gfc_cleanup_loop (&loop);
+
+  return gfc_finish_block (&block);
+}
 
 /* As the WHERE or WHERE construct statement can be nested, we call
    gfc_trans_where_2 to do the translation, and pass the initial
@@ -3134,8 +3259,54 @@ gfc_trans_where (gfc_code * code)
 {
   stmtblock_t block;
   temporary_list *temp, *p;
+  gfc_code *cblock;
+  gfc_code *eblock;
   tree args;
   tree tmp;
+
+  cblock = code->block;
+  if (cblock->next
+      && cblock->next->op == EXEC_ASSIGN
+      && !cblock->next->next)
+    {
+      eblock = cblock->block;
+      if (!eblock)
+	{
+          /* A simple "WHERE (cond) x = y" statement or block is
+	     dependence free if cond is not dependent upon writing x,
+	     and the source y is unaffected by the destination x.  */
+	  if (!gfc_check_dependency (cblock->next->expr,
+				     cblock->expr, 0)
+	      && !gfc_check_dependency (cblock->next->expr,
+					cblock->next->expr2, 0))
+	    return gfc_trans_where_3 (cblock, NULL);
+	}
+      else if (!eblock->expr
+	       && !eblock->block
+	       && eblock->next
+	       && eblock->next->op == EXEC_ASSIGN
+	       && !eblock->next->next)
+	{
+          /* A simple "WHERE (cond) x1 = y1 ELSEWHERE x2 = y2 ENDWHERE"
+	     block is dependence free if cond is not dependent on writes
+	     to x1 and x2, y1 is not dependent on writes to x2, and y2
+	     is not dependent on writes to x1, and both y's are not
+	     dependent upon their own x's.  */
+	  if (!gfc_check_dependency(cblock->next->expr,
+				    cblock->expr, 0)
+	      && !gfc_check_dependency(eblock->next->expr,
+				       cblock->expr, 0)
+	      && !gfc_check_dependency(cblock->next->expr,
+				       eblock->next->expr2, 0)
+	      && !gfc_check_dependency(eblock->next->expr,
+				       cblock->next->expr2, 0)
+	      && !gfc_check_dependency(cblock->next->expr,
+				       cblock->next->expr2, 0)
+	      && !gfc_check_dependency(eblock->next->expr,
+				       eblock->next->expr2, 0))
+	    return gfc_trans_where_3 (cblock, eblock);
+	}
+    }
 
   gfc_start_block (&block);
   temp = NULL;
