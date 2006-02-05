@@ -1,3 +1,9 @@
+2006-02-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/24685
+	* io/write.c (write_real): Widen the default format for real(10)
+	variables output.
+
 2006-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25835
