@@ -1,5 +1,5 @@
 /* Decimal floating point support.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -597,49 +597,42 @@ decimal_real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
   real_to_integer2 (plow, phigh, &to);
 }
 
-/* Perform the decimal floating point operation described by COODE.
-   For a unary operation, leave OP1 NULL.  This function returns true
-   if the result may be inexact due to loss of precision.  */
+/* Perform the decimal floating point operation described by CODE.
+   For a unary operation, OP1 will be NULL.  This function returns
+   true if the result may be inexact due to loss of precision.  */
 
 bool
-decimal_real_arithmetic (REAL_VALUE_TYPE *r, int icode,
+decimal_real_arithmetic (REAL_VALUE_TYPE *r, enum tree_code code,
 			 const REAL_VALUE_TYPE *op0,
 			 const REAL_VALUE_TYPE *op1)
 {
-  enum tree_code code = icode;
-  REAL_VALUE_TYPE a1;
-  REAL_VALUE_TYPE b1;
+  REAL_VALUE_TYPE a, b;
 
-  /* If either op is not a decimal, create a temporary decimal
-     versions.  */
+  /* If either operand is non-decimal, create temporaries.  */
   if (!op0->decimal)
     {
-      decimal_from_binary (&a1, op0);
-      op0 = &a1;
+      decimal_from_binary (&a, op0);
+      op0 = &a;
     }
   if (op1 && !op1->decimal)
     {
-      decimal_from_binary (&b1, op1);
-      op1 = &b1;
+      decimal_from_binary (&b, op1);
+      op1 = &b;
     }
 
   switch (code)
     {
     case PLUS_EXPR:
-      (void) decimal_do_add (r, op0, op1, 0);
-      break;
+      return decimal_do_add (r, op0, op1, 0);
 
     case MINUS_EXPR:
-      (void) decimal_do_add (r, op0, op1, 1);
-      break;
+      return decimal_do_add (r, op0, op1, 1);
 
     case MULT_EXPR:
-      (void) decimal_do_multiply (r, op0, op1);
-      break;
+      return decimal_do_multiply (r, op0, op1);
 
     case RDIV_EXPR:
-      (void) decimal_do_divide (r, op0, op1);
-      break;
+      return decimal_do_divide (r, op0, op1);
 
     case MIN_EXPR:
       if (op1->cl == rvc_nan)
@@ -648,7 +641,7 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, int icode,
         *r = *op0;
       else
         *r = *op1;
-      break;
+      return false;
 
     case MAX_EXPR:
       if (op1->cl == rvc_nan)
@@ -657,7 +650,7 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, int icode,
         *r = *op1;
       else
         *r = *op0;
-      break;
+      return false;
 
     case NEGATE_EXPR:
       {
@@ -669,7 +662,7 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, int icode,
 	/* Keep sign field in sync.  */
 	r->sign ^= 1;
       }
-      break;
+      return false;
 
     case ABS_EXPR:
       {
@@ -681,19 +674,15 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, int icode,
 	/* Keep sign field in sync.  */
 	r->sign = 0;
       }
-      break;
+      return false;
 
     case FIX_TRUNC_EXPR:
       decimal_do_fix_trunc (r, op0);
-      break;
+      return false;
 
     default:
       gcc_unreachable ();
     }
-
-  /* FIXME: Indicate all operations as inexact for now due to unknown
-     working precision.  */
-  return true;
 }
 
 /* Fills R with the largest finite value representable in mode MODE.
