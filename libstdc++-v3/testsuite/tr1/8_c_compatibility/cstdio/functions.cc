@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2006-02-03  Paolo Carlini  <pcarlini@suse.de>
+// 2006-02-05  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,21 +20,33 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 8.32 Additions to header <cwctype>
+// 8.24 Additions to header <cstdio>
 
-#include <tr1/cwctype>
+#include <tr1/cstdio>
+#include <cstdarg>
+#include <cstddef>
 
-#if _GLIBCXX_USE_WCHAR_T
-
-void test01()
+void test01(int dummy, ...)
 {
-#if _GLIBCXX_HAVE_ISWBLANK
+  std::va_list ap;
+  va_start(ap, dummy);
 
-  std::wint_t ch = 0;
+#if _GLIBCXX_USE_C99
+
+  char* s = 0;
+  const char* cs = 0;
+  const char* format = "%i";
+  FILE* stream = 0;
+  std::size_t n = 0;
+
   int ret;
-  ret = std::tr1::iswblank(ch);
 
+  ret = std::tr1::snprintf(s, n, format, dummy);
+  ret = std::tr1::vsnprintf(s, n, format, ap);
+
+  ret = std::tr1::vfscanf(stream, format, ap); 
+  ret = std::tr1::vscanf(format, ap);
+  ret = std::tr1::vsscanf(cs, format, ap);
+  
 #endif
 }
-
-#endif
