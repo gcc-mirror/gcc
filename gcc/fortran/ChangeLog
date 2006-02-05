@@ -1,3 +1,8 @@
+2006-02-05  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-stmt.c (gfc_evaluate_where_mask): Use LOGICAL*1 for WHERE
+	masks instead of LOGICAL*4.
+
 2006-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* resolve.c (resolve_symbol): Initialize constructor_expr to NULL.
