@@ -6,7 +6,7 @@
 // { dg-options "" }
 // { dg-final { scan-assembler "fancy_printf" } }
 
-extern "C" int printf(char*, ...) __asm("_fancy_printf");
+extern "C" int printf(const char*, ...) __asm("_fancy_printf");
 
 namespace std { using ::printf; }
 

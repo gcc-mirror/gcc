@@ -2,7 +2,7 @@
 
 struct B { struct A { A(); int a; } aa; };
 B::A::A () { a = 37; }
-char* xx[] = {
+const char* xx[] = {
 "../tests/m6.cc:1: warning: return type specification for constructor invalid",
 "../tests/m6.cc:2: semicolon missing after declaration of `A'",
 "../tests/m6.cc:2: warning: empty declaration",

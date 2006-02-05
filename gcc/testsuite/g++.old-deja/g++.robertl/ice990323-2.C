@@ -5,7 +5,7 @@ extern "C" void exit (int);
 
 template <class T, int n, class U> struct A {
 	A() {}
-	A(char*) {}
+	A(const char*) {}
 };
 
 void f1()

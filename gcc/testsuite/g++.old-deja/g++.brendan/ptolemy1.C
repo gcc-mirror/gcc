@@ -12,7 +12,7 @@ public:
 typedef int (PTcl::*InterpFuncP)(int,char**);
 
 struct InterpTableEntry {
-	char* name;
+	const char* name;
 	InterpFuncP func;
 };
 

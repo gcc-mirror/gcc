@@ -21,14 +21,14 @@ struct A
   operator int () { return a; }
 };
 
-extern "C" int atoi (char *);
+extern "C" int atoi (const char *);
 
-int (*fee)(char *) = atoi;
-int (**bar)(char *) = &fee;
+int (*fee)(const char *) = atoi;
+int (**bar)(const char *) = &fee;
 
-char *s = "4";
-char **sp = &s;
-char ***spp = &sp;
+const char* s = "4";
+const char** sp = &s;
+const char*** spp = &sp;
 
 int foo (int a = (**bar) (s))
 {

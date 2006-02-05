@@ -7,20 +7,20 @@
 class base {
 //==========
 
-    void base_priv(char * n) 		
+    void base_priv(const char * n) 		
 	{ std::cout << "base_priv called from: " << n << "\n";  };
 
 protected:
 
-    void base_prot(char * n) 
+    void base_prot(const char * n) 
 	{ std::cout << "base_prot called from: " << n << "\n"; };
 
 public:
 
-    void base_publ(char * n) 
+    void base_publ(const char * n) 
 	{ std::cout << "base_publ called from: " << n << "\n"; };
 
-    void test(char * n) { base_publ(n); base_prot(n); base_priv(n); }
+    void test(const char * n) { base_publ(n); base_prot(n); base_priv(n); }
 
 }; // class base
  
@@ -33,7 +33,7 @@ friend void derived_friend();
 
 public :
 
-    void test(char * n) { base_publ(n); base_prot(n);}
+    void test(const char * n) { base_publ(n); base_prot(n);}
 
 }; // class derived
 

@@ -8,7 +8,7 @@ extern "C" int printf (const char *, ...);
 class Y 
 {
 public:
-    Y(char*) {}
+    Y(const char*) {}
     Y& operator = (const Y&) { return *this; }
 };
     
@@ -16,7 +16,7 @@ public:
 class X
 {
 public:
-    X(int v, char* m) : _v(v), _m (m) {}
+    X(int v, const char* m) : _v(v), _m (m) {}
     X () : _v(0), _m("Unknown") {}
     // Defining our own op= here makes things work correctly.
 

@@ -15,7 +15,7 @@ class bar
 {
  public:
   bar();
-  int memberfunction(int i, char *j, double k, foo foo1 = foo(0));
+  int memberfunction(int i, const char *j, double k, foo foo1 = foo(0));
 };
 
 int

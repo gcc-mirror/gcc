@@ -11,7 +11,7 @@
 
 class X : public std::ifstream { // { dg-error "" } candidate
     public:
-      X(int a, char *b) {} // { dg-error "" } candidate
+      X(int a, const char *b) {} // { dg-error "" } candidate
 };
 int main()
 {

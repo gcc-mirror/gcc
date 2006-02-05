@@ -1,5 +1,5 @@
 // { dg-do run  }
-void f (char *const &) { }
+void f (const char *const &) { }
 int main ()
 {
   f ("hi");

@@ -7,7 +7,7 @@
 // to fall over.
 
 struct A {
-  char *name;
+  const char *name;
   int reserved;
   int a;
   int b;

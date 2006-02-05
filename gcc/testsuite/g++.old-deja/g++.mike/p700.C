@@ -2097,7 +2097,7 @@ Enumeration Func1(CapitalLetter	CharPar1, CapitalLetter	CharPar2);
 boolean Func2(String30	StrParI1, String30	StrParI2);
 boolean Func3(Enumeration	EnumParIn);
 
-void mystrcpy(String30 s, char* t)
+void mystrcpy(String30 s, const char* t)
 {
   for (; *t != '\0'; ++s, ++t) *s = *t;
   *s = '\0';

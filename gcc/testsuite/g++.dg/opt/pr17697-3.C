@@ -16,7 +16,7 @@ A::strcmp (const char *s, const char *t)
 }
 
 int
-foo (char *x)
+foo (const char *x)
 {
   return A::strcmp ("", x);
 }

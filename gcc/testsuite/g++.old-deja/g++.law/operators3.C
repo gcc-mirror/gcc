@@ -10,13 +10,13 @@ class BUG1
 {
   public:
 
-    operator char*() const { return myData; }
-    char* myData;
+    operator const char*() const { return myData; }
+    const char* myData;
 };
 
 void bug1()
 {
   BUG1 bug1;
   bug1.myData = "0123456789";
-  char* s = bug1 + 1;
+  const char* s = bug1 + 1;
 }

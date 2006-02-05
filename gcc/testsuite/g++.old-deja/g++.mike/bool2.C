@@ -14,7 +14,7 @@ public:
 } a1;
 class A2 {
 public:
-  operator char * () {
+  operator const char * () {
     return "";
   }
 } a2;
@@ -26,7 +26,7 @@ public:
 } a3;
 class A4 {
 public:
-  operator char * () {
+  operator const char * () {
     return "";
   }
   operator unsigned long long int () {

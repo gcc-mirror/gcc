@@ -525,7 +525,7 @@ public:
 char *
 X::stringify() const  // { dg-error "does not match" }
 {
-    return "stringify";
+    return "stringify";         // { dg-warning "deprecated" }
 }
 
 const char *

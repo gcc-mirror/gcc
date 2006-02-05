@@ -90,7 +90,7 @@ foo_parm_returns_foo (foo f)
 }
 
 void
-abort_because (char *str)
+abort_because (const char *str)
 {
   printf ("aborting because %s\n", str);
   abort ();

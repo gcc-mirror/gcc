@@ -5,7 +5,7 @@ enum E { e };
 template <const E* ep>
 struct S1
 {
-  static char* s;
+  static const char* s;
 };
 
 template <int D>
@@ -25,4 +25,4 @@ struct S3
 E S2<1>::es[1] = {e};
 
 template <>
-char* S1<S2<1>::es>::s = "abc";
+const char* S1<S2<1>::es>::s = "abc";
