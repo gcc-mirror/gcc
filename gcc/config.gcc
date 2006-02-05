@@ -890,7 +890,7 @@ hppa[12]*-*-hpux10*)
 		extra_options="${extra_options} pa/pa-hpux1010.opt"
 		;;
 	esac
-	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
+	tmake_file="pa/t-pa-hpux10 pa/t-pa-hpux pa/t-hpux-shlib"
 	case ${enable_threads} in
 	  "")
 	    if test x$have_pthread_h = xyes ; then
@@ -967,7 +967,7 @@ hppa[12]*-*-hpux11*)
 		extra_options="${extra_options} pa/pa-hpux1111.opt"
 		;;
 	esac
-	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
+	tmake_file="pa/t-pa-hpux11 pa/t-pa-hpux pa/t-hpux-shlib"
 	# Set the libgcc version number
 	if test x$sjlj = x1; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
