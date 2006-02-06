@@ -30,6 +30,8 @@ foo (void)
   abort ();
 }
 
+/* There are some reloaded loads of *cell, and cell->common.chain on various
+   branches.  */
 void __attribute__((noinline))
 remove_useless_vars (tree *unexpanded_var_list, int dump_file)
 {
@@ -69,6 +71,6 @@ main (void)
   remove_useless_vars (&unexpanded_var_list, 0);
   return 0;
 }
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
 

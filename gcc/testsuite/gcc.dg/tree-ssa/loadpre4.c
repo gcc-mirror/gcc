@@ -7,8 +7,6 @@ int main(int *a, int argc)
   int i;
   int d, e;
 
-  /* With smarter load PRE, we'd be able to recompute the value at the 
-     kill point.  arguably not worth it.  */
   for (i = 0; i < argc; i++)
     {
       e = *a;
@@ -17,5 +15,5 @@ int main(int *a, int argc)
   return d + e;
 }
 
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"  } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
