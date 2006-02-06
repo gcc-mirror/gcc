@@ -1,3 +1,108 @@
+2006-02-06  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-vrp.c (execute_vrp): Do not pass dump argument to.
+	loop_optimizer_init and loop_optimizer_finalize
+	* tree-ssa-sink.c (execute_sink_code): Ditto.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Ditto.
+	* tree-ssa-loop.c (tree_loop_optimizer_init, tree_ssa_loop_init,
+	tree_ssa_loop_done): Ditto.
+	* tree-ssa-pre.c (init_pre, fini_pre): Ditto.
+	* sched-ebb.c: Include output.h.
+	(schedule_ebbs): Do not use dump argument.
+	* value-prof.h (struct profile_hooks): Remove profile_dump_file.
+	* loop.c (loop_dump_stream): Removed.
+	(loop_optimize, rest_of_handle_loop_optimize): Do not use dump
+	argument.
+	(scan_loop, move_movables, find_and_verify_loops, mark_loop_jump,
+	emit_prefetch_instructions, loop_bivs_find, loop_bivs_check,
+	final_biv_value, loop_biv_eliminable_p, loop_givs_rescan,
+	loop_iterations, strength_reduce, record_biv, record_giv,
+	final_giv_value, check_final_value, check_ext_dependent_givs,
+	combine_givs, check_dbra_loop, maybe_eliminate_biv, load_mems,
+	try_copy_prop, loop_delete_insns, try_swap_copy_prop): Use
+	dump_file instead of loop_dump_stream.
+	* ddg.c (print_ddg_edge, print_ddg, vcg_print_ddg): Do not call
+	argument dump_file.
+	* reorg.c (dbr_schedule, rest_of_handle_delay_slots): Do not use
+	dump argument.
+	* flow.c (life_analysis, rest_of_handle_life): Ditto.
+	* haifa-sched.c: Include output.h
+	(schedule_insns, sched_init): Do not use dump argument.
+	* mode-switching.c (optimize_mode_switching): Ditto.
+	* modulo-sched.c (stats_file): Removed.
+	(print_node_sched_params): Do not call argument dump_file.
+	(sms_schedule_by_order, loop_canon_p, sms_schedule,
+	rest_of_handle_sms): Do not use dump argument.  Use dump_file instead
+	of stats_file.
+	* cse.c (cse_main, rest_of_handle_cse, rest_of_handle_cse2): Do not
+	use dump argument.
+	* loop-init.c (loop_optimizer_init, loop_optimizer_finalize,
+	rtl_loop_init, rtl_loop_done): Ditto.
+	* global.c (global_alloc, rest_of_handle_global_alloc): Ditto.
+	* predict.c (combine_predictions_for_bb, tree_estimate_probability):
+	Ditto.
+	* recog.c (peephole2_optimize, rest_of_handle_peephole2): Ditto.
+	* lcm.c (pre_edge_lcm, pre_edge_rev_lcm): Ditto.
+	* regmove.c (fixup_match_1, fixup_match_2, regmove_optimize,
+	rest_of_handle_regmove, rest_of_handle_stack_adjustments): Ditto.
+	* emit-rtl.c (renumber_insns): Ditto.
+	* cfgexpand.c (add_reg_br_prob_note, expand_gimple_cond_expr,
+	expand_gimple_basic_block, tree_expand_cfg): Ditto.
+	* regclass.c (regclass): Ditto.
+	* tree-outof-ssa.c (analyze_edges_for_bb, perform_edge_inserts,
+	remove_ssa_form, rewrite_out_of_ssa): Ditto.
+	* reg-stack.c (compensate_edge, compensate_edges, convert_regs_1,
+	convert_regs_2, convert_regs, reg_to_stack, rest_of_handle_stack_regs):
+	Ditto.
+	* sched-rgn.c (schedule_insns, rest_of_handle_sched): Ditto.
+	* local-alloc.c (rest_of_handle_local_alloc): Do not pass dump_file
+	to regclass.
+	* gcse.c (gcse_file, debug_stderr): Removed.
+	(gcse_main, bypass_jumps, rest_of_handle_jump_bypass,
+	rest_of_handle_gcse): Do not use dump argument.
+	(cprop_jump, cprop_insn, do_local_cprop, cprop, find_implicit_sets,
+	one_cprop_pass, bypass_block, compute_pre_data, insert_insn_end_bb,
+	pre_edge_insert, pre_insert_copy_insn, pre_delete, one_pre_gcse_pass,
+	compute_code_hoist_vbeinout, compute_code_hoist_data,
+	one_code_hoisting_pass, trim_ld_motion_mems, update_ld_motion_stores,
+	compute_store_table, build_store_vectors, insert_insn_start_bb,
+	insert_store, remove_reachable_equiv_notes, replace_store_insn,
+	store_motion): Use dump_file instead of gcse_file.
+	* ipa-type-escape.c (type_escape_execute): Remove debugging comments.
+	* profile.c (profile_dump_file): Removed.
+	(branch_prob): Use dump_file instead of profile_dump_file.
+	* ipa.c (cgraph_remove_unreachable_nodes): Do not call argument
+	dump_file.
+	* tree-ssa-copy.c (dump_copy_of): Ditto.
+	* rtl-factoring.c (rtl_seqabstr, rest_of_rtl_seqabstr): Do not pass
+	dump file to life_analysis.
+	* bt-load.c (branch_target_load_optimize): Ditto.
+	* cfgcleanup.c (rest_of_handle_jump2): Do not pass dump_file to
+	renumber_insns.
+	* rtl.h (cse_main, renumber_insns, schedule_insns, schedule_ebbs,
+	regclass, dbr_schedule): Declaration changed.
+	* sched-int.h (sched_init): Declaration changed.
+	* tree-profile.c (tree_profile_dump_file): Removed.
+	(tree_profile_hooks): Removed profile_dump_file hook.
+	* rtl-profile (rtl_profile_dump_file): Removed.
+	(rtl_profile_hooks): emoved profile_dump_file hook.
+	* cfgloop.h (loop_optimizer_init, loop_optimizer_finalize): Declaration
+	changed.
+	* c-gimplify.c (c_genericize): Do not call local variable dump_file.
+	* tree-cfg.c (build_tree_cfg): Ditto.
+	* Makefile.in (haifa-sched.o, sched-ebb.o): Add output.h dependency.
+	* basic-block.h (life_analysis, pre_edge_lcm, pre_edge_rev_lcm):
+	Declaration changed.
+	* config/sh/sh.c (sh_output_mi_thunk): Do not pass dump_file to
+	life_analysis and schedule_insns.
+	* config/m68hc11/m68hc11.c (m68hc11_reorg): Do not pass dump_file to
+	life_analysis.
+	* config/mt/mt.c (mt_machine_reorg): Do not pass dump_file to
+	dbr_schedule.
+	* config/mips/mips.c (mips_reorg): Ditto.
+	* config/ia64/ia64.c (ia64_reorg): Do not pass dump_file to
+	schedule_ebbs.
+
 2006-02-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/s390/s390.c (TARGET_MANGLE_FUNDAMENTAL_TYPE): Define.

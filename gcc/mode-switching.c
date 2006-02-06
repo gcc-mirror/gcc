@@ -383,7 +383,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
    necessary mode switches.  Return true if we did work.  */
 
 static int
-optimize_mode_switching (FILE *file)
+optimize_mode_switching (void)
 {
   rtx insn;
   int e;
@@ -563,7 +563,7 @@ optimize_mode_switching (FILE *file)
 
       FOR_EACH_BB (bb)
 	sbitmap_not (kill[bb->index], transp[bb->index]);
-      edge_list = pre_edge_lcm (file, n_entities, transp, comp, antic,
+      edge_list = pre_edge_lcm (n_entities, transp, comp, antic,
 				kill, &insert, &delete);
 
       for (j = n_entities - 1; j >= 0; j--)
@@ -740,7 +740,7 @@ rest_of_handle_mode_switching (void)
 {
 #ifdef OPTIMIZE_MODE_SWITCHING
   no_new_pseudos = 0;
-  optimize_mode_switching (NULL);
+  optimize_mode_switching ();
   no_new_pseudos = 1;
 #endif /* OPTIMIZE_MODE_SWITCHING */
 }

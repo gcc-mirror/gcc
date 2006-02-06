@@ -2811,7 +2811,7 @@ get_max_uid (void)
 /* Renumber instructions so that no instruction UIDs are wasted.  */
 
 void
-renumber_insns (FILE *stream)
+renumber_insns (void)
 {
   rtx insn;
 
@@ -2828,8 +2828,8 @@ renumber_insns (FILE *stream)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (stream)
-	fprintf (stream, "Renumbering insn %d to %d\n",
+      if (dump_file)
+	fprintf (dump_file, "Renumbering insn %d to %d\n",
 		 INSN_UID (insn), cur_insn_uid);
       INSN_UID (insn) = cur_insn_uid++;
     }

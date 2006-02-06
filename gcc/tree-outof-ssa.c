@@ -2052,11 +2052,10 @@ fini_analyze_edges_for_bb (void)
 
 
 /* Look at all the incoming edges to block BB, and decide where the best place
-   to insert the stmts on each edge are, and perform those insertions.   Output
-   any debug information to DEBUG_FILE.  */
+   to insert the stmts on each edge are, and perform those insertions.  */
 
 static void
-analyze_edges_for_bb (basic_block bb, FILE *debug_file)
+analyze_edges_for_bb (basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -2180,8 +2179,8 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
     }
 
 
-  if (debug_file)
-    fprintf (debug_file, "\nOpportunities in BB %d for stmt/block reduction:\n",
+  if (dump_file)
+    fprintf (dump_file, "\nOpportunities in BB %d for stmt/block reduction:\n",
 	     bb->index);
 
   
@@ -2207,19 +2206,19 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
         new_edge = make_forwarder_block (leader->dest, same_stmt_list_p, 
 					 NULL);
 	bb = new_edge->dest;
-	if (debug_file)
+	if (dump_file)
 	  {
-	    fprintf (debug_file, "Splitting BB %d for Common stmt list.  ", 
+	    fprintf (dump_file, "Splitting BB %d for Common stmt list.  ", 
 		     leader->dest->index);
-	    fprintf (debug_file, "Original block is now BB%d.\n", bb->index);
-	    print_generic_stmt (debug_file, curr_stmt_list, TDF_VOPS);
+	    fprintf (dump_file, "Original block is now BB%d.\n", bb->index);
+	    print_generic_stmt (dump_file, curr_stmt_list, TDF_VOPS);
 	  }
 
 	FOR_EACH_EDGE (e, ei, new_edge->src->preds)
 	  {
 	    e->aux = NULL;
-	    if (debug_file)
-	      fprintf (debug_file, "  Edge (%d->%d) lands here.\n", 
+	    if (dump_file)
+	      fprintf (dump_file, "  Edge (%d->%d) lands here.\n", 
 		       e->src->index, e->dest->index);
 	  }
 
@@ -2246,11 +2245,10 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
 /* This function will analyze the insertions which were performed on edges,
    and decide whether they should be left on that edge, or whether it is more
    efficient to emit some subset of them in a single block.  All stmts are
-   inserted somewhere, and if non-NULL, debug information is printed via 
-   DUMP_FILE.  */
+   inserted somewhere.  */
 
 static void
-perform_edge_inserts (FILE *dump_file)
+perform_edge_inserts (void)
 {
   basic_block bb;
 
@@ -2268,9 +2266,9 @@ perform_edge_inserts (FILE *dump_file)
   init_analyze_edges_for_bb ();
 
   FOR_EACH_BB (bb)
-    analyze_edges_for_bb (bb, dump_file);
+    analyze_edges_for_bb (bb);
 
-  analyze_edges_for_bb (EXIT_BLOCK_PTR, dump_file);
+  analyze_edges_for_bb (EXIT_BLOCK_PTR);
 
   /* Free data structures used in analyze_edges_for_bb.   */
   fini_analyze_edges_for_bb ();
@@ -2311,20 +2309,16 @@ perform_edge_inserts (FILE *dump_file)
 }
 
 
-/* Remove the variables specified in MAP from SSA form.  Any debug information
-   is sent to DUMP.  FLAGS indicate what options should be used.  */
+/* Remove the variables specified in MAP from SSA form.  FLAGS indicate what
+   options should be used.  */
 
 static void
-remove_ssa_form (FILE *dump, var_map map, int flags)
+remove_ssa_form (var_map map, int flags)
 {
   tree_live_info_p liveinfo;
   basic_block bb;
   tree phi, next;
-  FILE *save;
   tree *values = NULL;
-
-  save = dump_file;
-  dump_file = dump;
 
   /* If we are not combining temps, don't calculate live ranges for variables
      with only one SSA version.  */
@@ -2396,9 +2390,7 @@ remove_ssa_form (FILE *dump, var_map map, int flags)
   fini_ssa_operands ();
 
   /* If any copies were inserted on edges, analyze and insert them now.  */
-  perform_edge_inserts (dump_file);
-
-  dump_file = save;
+  perform_edge_inserts ();
 }
 
 /* Search every PHI node for arguments associated with backedges which
@@ -2527,7 +2519,7 @@ rewrite_out_of_ssa (void)
   if (flag_tree_ter && !flag_mudflap)
     ssa_flags |= SSANORM_PERFORM_TER;
 
-  remove_ssa_form (dump_file, map, ssa_flags);
+  remove_ssa_form (map, ssa_flags);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_tree_cfg (dump_file, dump_flags & ~TDF_DETAILS);

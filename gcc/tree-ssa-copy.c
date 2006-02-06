@@ -479,15 +479,15 @@ set_copy_of_val (tree dest, tree first, tree mem_ref)
 }
 
 
-/* Dump the copy-of value for variable VAR to DUMP_FILE.  */
+/* Dump the copy-of value for variable VAR to FILE.  */
 
 static void
-dump_copy_of (FILE *dump_file, tree var)
+dump_copy_of (FILE *file, tree var)
 {
   tree val;
   sbitmap visited;
 
-  print_generic_expr (dump_file, var, dump_flags);
+  print_generic_expr (file, var, dump_flags);
 
   if (TREE_CODE (var) != SSA_NAME)
     return;
@@ -496,17 +496,17 @@ dump_copy_of (FILE *dump_file, tree var)
   sbitmap_zero (visited);
   SET_BIT (visited, SSA_NAME_VERSION (var));
   
-  fprintf (dump_file, " copy-of chain: ");
+  fprintf (file, " copy-of chain: ");
 
   val = var;
-  print_generic_expr (dump_file, val, 0);
-  fprintf (dump_file, " ");
+  print_generic_expr (file, val, 0);
+  fprintf (file, " ");
   while (copy_of[SSA_NAME_VERSION (val)].value)
     {
-      fprintf (dump_file, "-> ");
+      fprintf (file, "-> ");
       val = copy_of[SSA_NAME_VERSION (val)].value;
-      print_generic_expr (dump_file, val, 0);
-      fprintf (dump_file, " ");
+      print_generic_expr (file, val, 0);
+      fprintf (file, " ");
       if (TEST_BIT (visited, SSA_NAME_VERSION (val)))
         break;
       SET_BIT (visited, SSA_NAME_VERSION (val));
@@ -514,11 +514,11 @@ dump_copy_of (FILE *dump_file, tree var)
 
   val = get_copy_of_val (var)->value;
   if (val == NULL_TREE)
-    fprintf (dump_file, "[UNDEFINED]");
+    fprintf (file, "[UNDEFINED]");
   else if (val != var)
-    fprintf (dump_file, "[COPY]");
+    fprintf (file, "[COPY]");
   else
-    fprintf (dump_file, "[NOT A COPY]");
+    fprintf (file, "[NOT A COPY]");
   
   sbitmap_free (visited);
 }

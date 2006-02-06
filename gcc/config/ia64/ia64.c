@@ -7796,7 +7796,7 @@ ia64_reorg (void)
 	  _1mfb_ = get_cpu_unit_code ("1b_1mfb.");
 	  _1mlx_ = get_cpu_unit_code ("1b_1mlx.");
 	}
-      schedule_ebbs (dump_file);
+      schedule_ebbs ();
       finish_bundle_states ();
       if (ia64_tune == PROCESSOR_ITANIUM)
 	{

@@ -38,7 +38,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    loops.  */
 
 struct loops *
-loop_optimizer_init (FILE *dumpfile, unsigned flags)
+loop_optimizer_init (unsigned flags)
 {
   struct loops *loops = XCNEW (struct loops);
   edge e;
@@ -93,7 +93,7 @@ loop_optimizer_init (FILE *dumpfile, unsigned flags)
     mark_single_exit_loops (loops);
 
   /* Dump loops.  */
-  flow_loops_dump (loops, dumpfile, NULL, 1);
+  flow_loops_dump (loops, dump_file, NULL, 1);
 
 #ifdef ENABLE_CHECKING
   verify_dominators (CDI_DOMINATORS);
@@ -105,7 +105,7 @@ loop_optimizer_init (FILE *dumpfile, unsigned flags)
 
 /* Finalize loop optimizer.  */
 void
-loop_optimizer_finalize (struct loops *loops, FILE *dumpfile)
+loop_optimizer_finalize (struct loops *loops)
 {
   unsigned i;
 
@@ -115,9 +115,6 @@ loop_optimizer_finalize (struct loops *loops, FILE *dumpfile)
   for (i = 1; i < loops->num; i++)
     if (loops->parray[i])
       free_simple_loop_desc (loops->parray[i]);
-
-  /* Another dump.  */
-  flow_loops_dump (loops, dumpfile, NULL, 1);
 
   /* Clean up.  */
   flow_loops_free (loops);
@@ -173,7 +170,7 @@ rtl_loop_init (void)
   /* Initialize structures for layout changes.  */
   cfg_layout_initialize (0);
 
-  current_loops = loop_optimizer_init (dump_file, LOOPS_NORMAL);
+  current_loops = loop_optimizer_init (LOOPS_NORMAL);
 }
 
 struct tree_opt_pass pass_rtl_loop_init =
@@ -201,7 +198,7 @@ rtl_loop_done (void)
   basic_block bb;
 
   if (current_loops)
-    loop_optimizer_finalize (current_loops, dump_file);
+    loop_optimizer_finalize (current_loops);
 
   free_dominance_info (CDI_DOMINATORS);
 

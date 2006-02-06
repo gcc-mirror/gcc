@@ -9820,11 +9820,11 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
       if (flag_schedule_insns_after_reload)
 	{
-	  life_analysis (dump_file, PROP_FINAL);
+	  life_analysis (PROP_FINAL);
 
 	  split_all_insns (1);
 
-	  schedule_insns (dump_file);
+	  schedule_insns ();
 	}
       /* We must split jmp insn in PIC case.  */
       else if (flag_pic)
@@ -9834,7 +9834,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   sh_reorg ();
 
   if (optimize > 0 && flag_delayed_branch)
-    dbr_schedule (insns, dump_file);
+    dbr_schedule (insns);
 
   shorten_branches (insns);
   final_start_function (insns, file, 1);

@@ -207,11 +207,11 @@ build_tree_cfg (tree *tp)
   /* Write the flowgraph to a VCG file.  */
   {
     int local_dump_flags;
-    FILE *dump_file = dump_begin (TDI_vcg, &local_dump_flags);
-    if (dump_file)
+    FILE *vcg_file = dump_begin (TDI_vcg, &local_dump_flags);
+    if (vcg_file)
       {
-	tree_cfg2vcg (dump_file);
-	dump_end (TDI_vcg, dump_file);
+	tree_cfg2vcg (vcg_file);
+	dump_end (TDI_vcg, vcg_file);
       }
   }
 

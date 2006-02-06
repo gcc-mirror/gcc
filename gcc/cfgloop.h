@@ -437,8 +437,8 @@ extern unsigned global_cost_for_size (unsigned, unsigned, unsigned);
 extern void init_set_costs (void);
 
 /* Loop optimizer initialization.  */
-extern struct loops *loop_optimizer_init (FILE *, unsigned);
-extern void loop_optimizer_finalize (struct loops *, FILE *);
+extern struct loops *loop_optimizer_init (unsigned);
+extern void loop_optimizer_finalize (struct loops *);
 
 /* Optimization passes.  */
 extern void unswitch_loops (struct loops *);

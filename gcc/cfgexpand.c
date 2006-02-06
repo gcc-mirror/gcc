@@ -46,7 +46,7 @@ Boston, MA 02110-1301, USA.  */
    re-distribute it when the conditional expands into multiple conditionals.
    This is however difficult to do.  */
 static void
-add_reg_br_prob_note (FILE *dump_file, rtx last, int probability)
+add_reg_br_prob_note (rtx last, int probability)
 {
   if (profile_status == PROFILE_ABSENT)
     return;
@@ -1113,7 +1113,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
   if (TREE_CODE (then_exp) == GOTO_EXPR && IS_EMPTY_STMT (else_exp))
     {
       jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
-      add_reg_br_prob_note (dump_file, last, true_edge->probability);
+      add_reg_br_prob_note (last, true_edge->probability);
       maybe_dump_rtl_for_tree_stmt (stmt, last);
       if (EXPR_LOCUS (then_exp))
 	emit_line_note (*(EXPR_LOCUS (then_exp)));
@@ -1122,7 +1122,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
   if (TREE_CODE (else_exp) == GOTO_EXPR && IS_EMPTY_STMT (then_exp))
     {
       jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_exp)));
-      add_reg_br_prob_note (dump_file, last, false_edge->probability);
+      add_reg_br_prob_note (last, false_edge->probability);
       maybe_dump_rtl_for_tree_stmt (stmt, last);
       if (EXPR_LOCUS (else_exp))
 	emit_line_note (*(EXPR_LOCUS (else_exp)));
@@ -1132,7 +1132,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
 	      && TREE_CODE (else_exp) == GOTO_EXPR);
 
   jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
-  add_reg_br_prob_note (dump_file, last, true_edge->probability);
+  add_reg_br_prob_note (last, true_edge->probability);
   last = get_last_insn ();
   expand_expr (else_exp, const0_rtx, VOIDmode, 0);
 
@@ -1272,7 +1272,7 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 /* Expand basic block BB from GIMPLE trees to RTL.  */
 
 static basic_block
-expand_gimple_basic_block (basic_block bb, FILE * dump_file)
+expand_gimple_basic_block (basic_block bb)
 {
   block_stmt_iterator bsi = bsi_start (bb);
   tree stmt = NULL;
@@ -1621,7 +1621,7 @@ tree_expand_cfg (void)
   init_block = construct_init_block ();
 
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR, next_bb)
-    bb = expand_gimple_basic_block (bb, dump_file);
+    bb = expand_gimple_basic_block (bb);
 
   construct_exit_block ();
 

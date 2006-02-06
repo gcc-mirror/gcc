@@ -2511,11 +2511,10 @@ init_regions (void)
     count_or_remove_death_notes (NULL, 1);
 }
 
-/* The one entry point in this file.  DUMP_FILE is the dump file for
-   this pass.  */
+/* The one entry point in this file.  */
 
 void
-schedule_insns (FILE *dump_file)
+schedule_insns (void)
 {
   sbitmap large_region_blocks, blocks;
   int rgn;
@@ -2529,7 +2528,7 @@ schedule_insns (FILE *dump_file)
 
   nr_inter = 0;
   nr_spec = 0;
-  sched_init (dump_file);
+  sched_init ();
 
   init_regions ();
 
@@ -2656,7 +2655,7 @@ rest_of_handle_sched (void)
   /* Do control and data sched analysis,
      and write some of the results to dump file.  */
 
-  schedule_insns (dump_file);
+  schedule_insns ();
 #endif
 }
 
@@ -2682,14 +2681,14 @@ rest_of_handle_sched2 (void)
 
   if (flag_sched2_use_superblocks || flag_sched2_use_traces)
     {
-      schedule_ebbs (dump_file);
+      schedule_ebbs ();
       /* No liveness updating code yet, but it should be easy to do.
          reg-stack recomputes the liveness when needed for now.  */
       count_or_remove_death_notes (NULL, 1);
       cleanup_cfg (CLEANUP_EXPENSIVE);
     }
   else
-    schedule_insns (dump_file);
+    schedule_insns ();
 #endif
 }
 

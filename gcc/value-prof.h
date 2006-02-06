@@ -94,7 +94,6 @@ struct profile_hooks {
   /* Insert code to find the most common value of a difference between two
      evaluations of an expression.  */
   void (*gen_const_delta_profiler) (histogram_value, unsigned, unsigned);
-  FILE * (*profile_dump_file) (void);
 };
 
 /* In profile.c.  */

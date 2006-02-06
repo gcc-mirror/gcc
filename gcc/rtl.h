@@ -1908,7 +1908,7 @@ extern int rtx_to_tree_code (enum rtx_code);
 
 /* In cse.c */
 extern int delete_trivially_dead_insns (rtx, int);
-extern int cse_main (rtx, int, FILE *);
+extern int cse_main (rtx, int);
 extern int exp_equiv_p (rtx, rtx, int, bool);
 extern unsigned hash_rtx (rtx x, enum machine_mode, int *, int *, bool);
 
@@ -1974,7 +1974,7 @@ extern void add_insn_after (rtx, rtx);
 extern void remove_insn (rtx);
 extern void emit_insn_after_with_line_notes (rtx, rtx, rtx);
 extern rtx emit (rtx);
-extern void renumber_insns (FILE *);
+extern void renumber_insns (void);
 extern void remove_unnecessary_notes (void);
 extern rtx delete_insn (rtx);
 extern rtx entry_of_function (void);
@@ -2001,10 +2001,10 @@ extern void dump_insn_slim (FILE *f, rtx x);
 extern void debug_insn_slim (rtx x);
 
 /* In sched-rgn.c.  */
-extern void schedule_insns (FILE *);
+extern void schedule_insns (void);
 
 /* In sched-ebb.c.  */
-extern void schedule_ebbs (FILE *);
+extern void schedule_ebbs (void);
 
 /* In haifa-sched.c.  */
 extern void fix_sched_param (const char *, const char *);
@@ -2077,7 +2077,7 @@ extern void init_regs (void);
 extern void init_fake_stack_mems (void);
 extern void init_reg_sets (void);
 extern void regclass_init (void);
-extern void regclass (rtx, int, FILE *);
+extern void regclass (rtx, int);
 extern void reg_scan (rtx, unsigned int);
 extern void reg_scan_update (rtx, rtx, unsigned int);
 extern void fix_register (const char *, int, int);
@@ -2091,7 +2091,7 @@ extern bool invalid_mode_change_p (unsigned int, enum reg_class,
 				   enum machine_mode);
 
 /* In reorg.c */
-extern void dbr_schedule (rtx, FILE *);
+extern void dbr_schedule (rtx);
 
 /* In local-alloc.c */
 extern void dump_local_alloc (FILE *);

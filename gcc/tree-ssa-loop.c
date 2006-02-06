@@ -42,16 +42,15 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 struct loops *current_loops = NULL;
 
-/* Initializes the loop structures.  DUMP is the file to that the details
-   about the analysis should be dumped.  */
+/* Initializes the loop structures.  */
 
 static struct loops *
-tree_loop_optimizer_init (FILE *dump)
+tree_loop_optimizer_init (void)
 {
   struct loops *loops;
  
-  loops = loop_optimizer_init (dump, (LOOPS_NORMAL
-				      | LOOPS_HAVE_MARKED_SINGLE_EXITS));
+  loops = loop_optimizer_init (LOOPS_NORMAL
+			       | LOOPS_HAVE_MARKED_SINGLE_EXITS);
 
   if (!loops)
     return NULL;
@@ -91,7 +90,7 @@ struct tree_opt_pass pass_tree_loop =
 static void
 tree_ssa_loop_init (void)
 {
-  current_loops = tree_loop_optimizer_init (dump_file);
+  current_loops = tree_loop_optimizer_init ();
   if (!current_loops)
     return;
 
@@ -448,8 +447,7 @@ tree_ssa_loop_done (void)
 
   free_numbers_of_iterations_estimates (current_loops);
   scev_finalize ();
-  loop_optimizer_finalize (current_loops,
-			   (dump_flags & TDF_DETAILS ? dump_file : NULL));
+  loop_optimizer_finalize (current_loops);
   current_loops = NULL;
 }
   

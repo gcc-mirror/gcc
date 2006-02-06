@@ -6803,7 +6803,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
    in conditional jump instructions.  */
 
 int
-cse_main (rtx f, int nregs, FILE *file)
+cse_main (rtx f, int nregs)
 {
   struct cse_basic_block_data val;
   rtx insn = f;
@@ -6869,8 +6869,8 @@ cse_main (rtx f, int nregs, FILE *file)
       cse_basic_block_end = val.high_cuid;
       max_qty = val.nsets * 2;
 
-      if (file)
-	fprintf (file, ";; Processing block from %d to %d, %d sets.\n",
+      if (dump_file)
+	fprintf (dump_file, ";; Processing block from %d to %d, %d sets.\n",
 		 INSN_UID (insn), val.last ? INSN_UID (val.last) : 0,
 		 val.nsets);
 
@@ -7848,7 +7848,7 @@ rest_of_handle_cse (void)
 
   reg_scan (get_insns (), max_reg_num ());
 
-  tem = cse_main (get_insns (), max_reg_num (), dump_file);
+  tem = cse_main (get_insns (), max_reg_num ());
   if (tem)
     rebuild_jump_labels (get_insns ());
   if (purge_all_dead_edges ())
@@ -7901,7 +7901,7 @@ rest_of_handle_cse2 (void)
   if (dump_file)
     dump_flow_info (dump_file);
 
-  tem = cse_main (get_insns (), max_reg_num (), dump_file);
+  tem = cse_main (get_insns (), max_reg_num ());
 
   /* Run a pass to eliminate duplicated assignments to condition code
      registers.  We have to run this after bypass_jumps, because it
