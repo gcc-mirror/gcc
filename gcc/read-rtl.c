@@ -886,7 +886,7 @@ read_name (char *str, FILE *infile)
   p = str;
   while (1)
     {
-      if (c == ' ' || c == '\n' || c == '\t' || c == '\f' || c == '\r')
+      if (c == ' ' || c == '\n' || c == '\t' || c == '\f' || c == '\r' || c == EOF)
 	break;
       if (c == ':' || c == ')' || c == ']' || c == '"' || c == '/'
 	  || c == '(' || c == '[')
