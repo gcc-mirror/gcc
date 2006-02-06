@@ -1,5 +1,10 @@
 2006-02-06  Ben Elliston  <bje@au.ibm.com>
 
+	* configure.ac: Unconditionally disable decimal float by default.
+	* configure: Regenerate.
+
+2006-02-06  Ben Elliston  <bje@au.ibm.com>
+
 	* read-rtl.c (read_name): Terminate reading on EOF.
 
 2006-02-06  Ben Elliston  <bje@au.ibm.com>
