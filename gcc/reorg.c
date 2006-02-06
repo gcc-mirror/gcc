@@ -3532,7 +3532,7 @@ make_return_insns (rtx first)
 /* Try to find insns to place in delay slots.  */
 
 void
-dbr_schedule (rtx first, FILE *file)
+dbr_schedule (rtx first)
 {
   rtx insn, next, epilogue_insn = 0;
   int i;
@@ -3779,7 +3779,7 @@ static void
 rest_of_handle_delay_slots (void)
 {
 #ifdef DELAY_SLOTS
-  dbr_schedule (get_insns (), dump_file);
+  dbr_schedule (get_insns ());
 #endif
 }   
 

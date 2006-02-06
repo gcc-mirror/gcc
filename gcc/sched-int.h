@@ -359,7 +359,7 @@ extern int insn_cost (rtx, rtx, rtx);
 extern int set_priorities (rtx, rtx);
 
 extern void schedule_block (int, int);
-extern void sched_init (FILE *);
+extern void sched_init (void);
 extern void sched_finish (void);
 
 extern void ready_add (struct ready_list *, rtx);

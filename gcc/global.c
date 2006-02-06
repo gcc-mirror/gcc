@@ -326,14 +326,12 @@ static void make_accurate_live_analysis (void);
 
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
-   FILE is a file to output debugging information on,
-   or zero if such output is not desired.
 
    Return value is nonzero if reload failed
    and we must not do any more for this function.  */
 
 static int
-global_alloc (FILE *file)
+global_alloc (void)
 {
   int retval;
 #ifdef ELIMINABLE_REGS
@@ -590,8 +588,8 @@ global_alloc (FILE *file)
 
       prune_preferences ();
 
-      if (file)
-	dump_conflicts (file);
+      if (dump_file)
+	dump_conflicts (dump_file);
 
       /* Try allocating them, one by one, in that order,
 	 except for parameters marked with reg_live_length[regno] == -2.  */
@@ -2510,7 +2508,7 @@ rest_of_handle_global_alloc (void)
      pass fixing up any insns that are invalid.  */
 
   if (optimize)
-    failure = global_alloc (dump_file);
+    failure = global_alloc ();
   else
     {
       build_insn_chain (get_insns ());

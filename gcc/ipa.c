@@ -94,7 +94,7 @@ cgraph_postorder (struct cgraph_node **order)
    removes unneeded bodies of extern inline functions.  */
 
 bool
-cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *dump_file)
+cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
   struct cgraph_node *first = (void *) 1;
   struct cgraph_node *node;
@@ -104,8 +104,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *dump_file)
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif
-  if (dump_file)
-    fprintf (dump_file, "\nReclaiming functions:");
+  if (file)
+    fprintf (file, "\nReclaiming functions:");
 #ifdef ENABLE_CHECKING
   for (node = cgraph_nodes; node; node = node->next)
     gcc_assert (!node->aux);
@@ -163,8 +163,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *dump_file)
 	    local_insns = node->local.self_insns;
 	  else
 	    local_insns = 0;
-	  if (dump_file)
-	    fprintf (dump_file, " %s", cgraph_node_name (node));
+	  if (file)
+	    fprintf (file, " %s", cgraph_node_name (node));
 	  if (!node->analyzed || !DECL_EXTERNAL (node->decl)
 	      || before_inlining_p)
 	    cgraph_remove_node (node);
@@ -203,7 +203,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *dump_file)
     }
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
-  if (dump_file)
-    fprintf (dump_file, "\nReclaimed %i insns", insns);
+  if (file)
+    fprintf (file, "\nReclaimed %i insns", insns);
   return changed;
 }

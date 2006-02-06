@@ -1773,9 +1773,6 @@ type_escape_execute (void)
       result = splay_tree_successor (all_canon_types, (splay_tree_key) key);
     }
 
-/*   { */
-/*     FILE * tmp = dump_file; */
-/*     dump_file = stderr; */
   if (dump_file)
     { 
       EXECUTE_IF_SET_IN_BITMAP (global_types_seen, 0, i, bi)
@@ -1792,8 +1789,6 @@ type_escape_execute (void)
 	    fprintf(dump_file, " contained\n");
 	}
     }
-/*   dump_file = tmp; */
-/*   } */
 
   /* Get rid of uid_to_addressof_up_map and its bitmaps.  */
   result = splay_tree_min (uid_to_addressof_up_map);

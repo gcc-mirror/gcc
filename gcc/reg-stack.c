@@ -2624,7 +2624,7 @@ propagate_stack (edge e)
    should have been defined by now.  */
 
 static bool
-compensate_edge (edge e, FILE *file)
+compensate_edge (edge e)
 {
   basic_block source = e->src, target = e->dest;
   stack target_stack = &BLOCK_INFO (target)->stack_in;
@@ -2632,8 +2632,8 @@ compensate_edge (edge e, FILE *file)
   struct stack_def regstack;
   int reg;
 
-  if (file)
-    fprintf (file, "Edge %d->%d: ", source->index, target->index);
+  if (dump_file)
+    fprintf (dump_file, "Edge %d->%d: ", source->index, target->index);
 
   gcc_assert (target_stack->top != -2);
 
@@ -2646,16 +2646,16 @@ compensate_edge (edge e, FILE *file)
 
       if (reg == -1)
 	{
-	  if (file)
-	    fprintf (file, "no changes needed\n");
+	  if (dump_file)
+	    fprintf (dump_file, "no changes needed\n");
 	  return false;
 	}
     }
 
-  if (file)
+  if (dump_file)
     {
-      fprintf (file, "correcting stack to ");
-      print_stack (file, target_stack);
+      fprintf (dump_file, "correcting stack to ");
+      print_stack (dump_file, target_stack);
     }
 
   /* Abnormal calls may appear to have values live in st(0), but the
@@ -2724,7 +2724,7 @@ compensate_edge (edge e, FILE *file)
    source block to the stack_in of the destination block.  */
 
 static bool
-compensate_edges (FILE *file)
+compensate_edges (void)
 {
   bool inserted = false;
   basic_block bb;
@@ -2738,7 +2738,7 @@ compensate_edges (FILE *file)
         edge_iterator ei;
 
         FOR_EACH_EDGE (e, ei, bb->succs)
-	  inserted |= compensate_edge (e, file);
+	  inserted |= compensate_edge (e);
       }
   return inserted;
 }
@@ -2777,7 +2777,7 @@ better_edge (edge e1, edge e2)
 /* Convert stack register references in one block.  */
 
 static void
-convert_regs_1 (FILE *file, basic_block block)
+convert_regs_1 (basic_block block)
 {
   struct stack_def regstack;
   block_info bi = BLOCK_INFO (block);
@@ -2811,10 +2811,10 @@ convert_regs_1 (FILE *file, basic_block block)
 	}
     }
 
-  if (file)
+  if (dump_file)
     {
-      fprintf (file, "\nBasic block %d\nInput stack: ", block->index);
-      print_stack (file, &bi->stack_in);
+      fprintf (dump_file, "\nBasic block %d\nInput stack: ", block->index);
+      print_stack (dump_file, &bi->stack_in);
     }
 
   /* Process all insns in this block.  Keep track of NEXT so that we
@@ -2839,11 +2839,11 @@ convert_regs_1 (FILE *file, basic_block block)
       if (stack_regs_mentioned (insn)
 	  || CALL_P (insn))
 	{
-	  if (file)
+	  if (dump_file)
 	    {
-	      fprintf (file, "  insn %d input stack: ",
+	      fprintf (dump_file, "  insn %d input stack: ",
 		       INSN_UID (insn));
-	      print_stack (file, &regstack);
+	      print_stack (dump_file, &regstack);
 	    }
 	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
 	  starting_stack_p = false;
@@ -2851,14 +2851,14 @@ convert_regs_1 (FILE *file, basic_block block)
     }
   while (next);
 
-  if (file)
+  if (dump_file)
     {
-      fprintf (file, "Expected live registers [");
+      fprintf (dump_file, "Expected live registers [");
       for (reg = FIRST_STACK_REG; reg <= LAST_STACK_REG; ++reg)
 	if (TEST_HARD_REG_BIT (bi->out_reg_set, reg))
-	  fprintf (file, " %d", reg);
-      fprintf (file, " ]\nOutput stack: ");
-      print_stack (file, &regstack);
+	  fprintf (dump_file, " %d", reg);
+      fprintf (dump_file, " ]\nOutput stack: ");
+      print_stack (dump_file, &regstack);
     }
 
   insn = BB_END (block);
@@ -2876,8 +2876,8 @@ convert_regs_1 (FILE *file, basic_block block)
 	{
 	  rtx set;
 
-	  if (file)
-	    fprintf (file, "Emitting insn initializing reg %d\n", reg);
+	  if (dump_file)
+	    fprintf (dump_file, "Emitting insn initializing reg %d\n", reg);
 
 	  set = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, SFmode), not_a_num);
 	  insn = emit_insn_after (set, insn);
@@ -2918,7 +2918,7 @@ convert_regs_1 (FILE *file, basic_block block)
 /* Convert registers in all blocks reachable from BLOCK.  */
 
 static void
-convert_regs_2 (FILE *file, basic_block block)
+convert_regs_2 (basic_block block)
 {
   basic_block *stack, *sp;
 
@@ -2959,7 +2959,7 @@ convert_regs_2 (FILE *file, basic_block block)
 	      *sp++ = e->dest;
 	  }
 
-      convert_regs_1 (file, block);
+      convert_regs_1 (block);
     }
   while (sp != stack);
 
@@ -2971,7 +2971,7 @@ convert_regs_2 (FILE *file, basic_block block)
    to the stack-like registers the 387 uses.  */
 
 static void
-convert_regs (FILE *file)
+convert_regs (void)
 {
   int inserted;
   basic_block b;
@@ -2991,7 +2991,7 @@ convert_regs (FILE *file)
 
   /* Process all blocks reachable from all entry points.  */
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    convert_regs_2 (file, e->dest);
+    convert_regs_2 (e->dest);
 
   /* ??? Process all unreachable blocks.  Though there's no excuse
      for keeping these even when not optimizing.  */
@@ -3000,10 +3000,10 @@ convert_regs (FILE *file)
       block_info bi = BLOCK_INFO (b);
 
       if (! bi->done)
-	convert_regs_2 (file, b);
+	convert_regs_2 (b);
     }
 
-  inserted |= compensate_edges (file);
+  inserted |= compensate_edges ();
 
   clear_aux_for_blocks ();
 
@@ -3011,8 +3011,8 @@ convert_regs (FILE *file)
   if (inserted)
     commit_edge_insertions ();
 
-  if (file)
-    fputc ('\n', file);
+  if (dump_file)
+    fputc ('\n', dump_file);
 }
 
 /* Convert register usage from "flat" register file usage to a "stack
@@ -3024,7 +3024,7 @@ convert_regs (FILE *file)
    the edges.  */
 
 static bool
-reg_to_stack (FILE *file)
+reg_to_stack (void)
 {
   basic_block bb;
   int i;
@@ -3050,7 +3050,7 @@ reg_to_stack (FILE *file)
 	  && flag_schedule_insns_after_reload))
     {
       count_or_remove_death_notes (NULL, 1);
-      life_analysis (file, PROP_DEATH_NOTES);
+      life_analysis (PROP_DEATH_NOTES);
     }
   mark_dfs_back_edges ();
 
@@ -3117,7 +3117,7 @@ reg_to_stack (FILE *file)
   VARRAY_CHAR_INIT (stack_regs_mentioned_data, max_uid + 1,
 		    "stack_regs_mentioned cache");
 
-  convert_regs (file);
+  convert_regs ();
 
   free_aux_for_blocks ();
   return true;
@@ -3140,7 +3140,7 @@ static void
 rest_of_handle_stack_regs (void)
 {
 #ifdef STACK_REGS
-  if (reg_to_stack (dump_file) && optimize)
+  if (reg_to_stack () && optimize)
     {
       if (cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
                        | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))

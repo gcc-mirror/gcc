@@ -2452,7 +2452,7 @@ mt_machine_reorg (void)
     mt_reorg_loops (dump_file);
 
   if (mt_flag_delayed_branch)
-    dbr_schedule (get_insns (), dump_file);
+    dbr_schedule (get_insns ());
   
   if (TARGET_MS2)
     {

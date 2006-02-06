@@ -590,8 +590,6 @@ struct movable
 };
 
 
-static FILE *loop_dump_stream;
-
 /* Forward declarations.  */
 
 static void invalidate_loops_containing_label (rtx);
@@ -799,20 +797,16 @@ compute_luids (rtx start, rtx end, int prev_luid)
 }
 
 /* Entry point of this file.  Perform loop optimization
-   on the current function.  F is the first insn of the function
-   and DUMPFILE is a stream for output of a trace of actions taken
-   (or 0 if none should be output).  */
+   on the current function.  F is the first insn of the function.  */
 
 static void
-loop_optimize (rtx f, FILE *dumpfile, int flags)
+loop_optimize (rtx f, int flags)
 {
   rtx insn;
   int i;
   struct loops loops_data;
   struct loops *loops = &loops_data;
   struct loop_info *loops_info;
-
-  loop_dump_stream = dumpfile;
 
   init_recog_no_volatile ();
 
@@ -1091,8 +1085,8 @@ scan_loop (struct loop *loop, int flags)
   if (INSN_UID (loop->scan_start) >= max_uid_for_loop
       || !LABEL_P (loop->scan_start))
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "\nLoop from %d to %d is phony.\n\n",
+      if (dump_file)
+	fprintf (dump_file, "\nLoop from %d to %d is phony.\n\n",
 		 INSN_UID (loop_start), INSN_UID (loop_end));
       return;
     }
@@ -1103,8 +1097,8 @@ scan_loop (struct loop *loop, int flags)
   loop_regs_scan (loop, loop_info->mems_idx + 16);
   insn_count = count_insns_in_loop (loop);
 
-  if (loop_dump_stream)
-    fprintf (loop_dump_stream, "\nLoop from %d to %d: %d real insns.\n",
+  if (dump_file)
+    fprintf (dump_file, "\nLoop from %d to %d: %d real insns.\n",
 	     INSN_UID (loop_start), INSN_UID (loop_end), insn_count);
 
   /* Scan through the loop finding insns that are safe to move.
@@ -2195,27 +2189,27 @@ move_movables (struct loop *loop, struct loop_movables *movables,
     {
       /* Describe this movable insn.  */
 
-      if (loop_dump_stream)
+      if (dump_file)
 	{
-	  fprintf (loop_dump_stream, "Insn %d: regno %d (life %d), ",
+	  fprintf (dump_file, "Insn %d: regno %d (life %d), ",
 		   INSN_UID (m->insn), m->regno, m->lifetime);
 	  if (m->consec > 0)
-	    fprintf (loop_dump_stream, "consec %d, ", m->consec);
+	    fprintf (dump_file, "consec %d, ", m->consec);
 	  if (m->cond)
-	    fprintf (loop_dump_stream, "cond ");
+	    fprintf (dump_file, "cond ");
 	  if (m->force)
-	    fprintf (loop_dump_stream, "force ");
+	    fprintf (dump_file, "force ");
 	  if (m->global)
-	    fprintf (loop_dump_stream, "global ");
+	    fprintf (dump_file, "global ");
 	  if (m->done)
-	    fprintf (loop_dump_stream, "done ");
+	    fprintf (dump_file, "done ");
 	  if (m->move_insn)
-	    fprintf (loop_dump_stream, "move-insn ");
+	    fprintf (dump_file, "move-insn ");
 	  if (m->match)
-	    fprintf (loop_dump_stream, "matches %d ",
+	    fprintf (dump_file, "matches %d ",
 		     INSN_UID (m->match->insn));
 	  if (m->forces)
-	    fprintf (loop_dump_stream, "forces %d ",
+	    fprintf (dump_file, "forces %d ",
 		     INSN_UID (m->forces->insn));
 	}
 
@@ -2243,11 +2237,11 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 	  p = m->insn;
 	  regno = m->regno;
 
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "savings %d ", savings);
+	  if (dump_file)
+	    fprintf (dump_file, "savings %d ", savings);
 
-	  if (regs->array[regno].moved_once && loop_dump_stream)
-	    fprintf (loop_dump_stream, "halved since already moved ");
+	  if (regs->array[regno].moved_once && dump_file)
+	    fprintf (dump_file, "halved since already moved ");
 
 	  /* An insn MUST be moved if we already moved something else
 	     which is safe only if this one is moved too: that is,
@@ -2305,8 +2299,8 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 		  if (new_start == 0)
 		    new_start = i1;
 
-		  if (loop_dump_stream)
-		    fprintf (loop_dump_stream, " moved to %d", INSN_UID (i1));
+		  if (dump_file)
+		    fprintf (dump_file, " moved to %d", INSN_UID (i1));
 		}
 	      /* If we are to re-generate the item being moved with a
 		 new move insn, first delete what we have and then emit
@@ -2377,8 +2371,8 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 					 m->is_equiv ? REG_EQUIV : REG_EQUAL,
 					 m->set_src);
 
-		  if (loop_dump_stream)
-		    fprintf (loop_dump_stream, " moved to %d", INSN_UID (i1));
+		  if (dump_file)
+		    fprintf (dump_file, " moved to %d", INSN_UID (i1));
 
 		  /* The more regs we move, the less we like moving them.  */
 		  threshold -= 3;
@@ -2566,8 +2560,8 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 		      if (new_start == 0)
 			new_start = i1;
 
-		      if (loop_dump_stream)
-			fprintf (loop_dump_stream, " moved to %d",
+		      if (dump_file)
+			fprintf (dump_file, " moved to %d",
 				 INSN_UID (i1));
 
 		      /* If library call, now fix the REG_NOTES that contain
@@ -2679,14 +2673,14 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			}
 		    }
 	    }
-	  else if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "not desirable");
+	  else if (dump_file)
+	    fprintf (dump_file, "not desirable");
 	}
-      else if (loop_dump_stream && !m->match)
-	fprintf (loop_dump_stream, "not safe");
+      else if (dump_file && !m->match)
+	fprintf (dump_file, "not safe");
 
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "\n");
+      if (dump_file)
+	fprintf (dump_file, "\n");
     }
 
   if (new_start == 0)
@@ -3102,8 +3096,8 @@ find_and_verify_loops (rtx f, struct loops *loops)
 	  for (loop = current_loop; loop; loop = loop->outer)
 	    {
 	      loop->invalid = 1;
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "\nLoop at %d ignored due to setjmp.\n",
 			 INSN_UID (loop->start));
 	    }
@@ -3464,8 +3458,8 @@ mark_loop_jump (rtx x, struct loop *loop)
 	      return;
 
 	  /* If we get here, we know we need to invalidate a loop.  */
-	  if (loop_dump_stream && ! dest_loop->invalid)
-	    fprintf (loop_dump_stream,
+	  if (dump_file && ! dest_loop->invalid)
+	    fprintf (dump_file,
 		     "\nLoop at %d ignored due to multiple entry points.\n",
 		     INSN_UID (dest_loop->start));
 
@@ -3504,8 +3498,8 @@ mark_loop_jump (rtx x, struct loop *loop)
 	{
 	  for (outer_loop = loop; outer_loop; outer_loop = outer_loop->outer)
 	    {
-	      if (loop_dump_stream && ! outer_loop->invalid)
-		fprintf (loop_dump_stream,
+	      if (dump_file && ! outer_loop->invalid)
+		fprintf (dump_file,
 			 "\nLoop at %d ignored due to unknown exit jump.\n",
 			 INSN_UID (outer_loop->start));
 	      outer_loop->invalid = 1;
@@ -4143,8 +4137,8 @@ emit_prefetch_instructions (struct loop *loop)
      slow enough to read the memory.  */
   if (PREFETCH_NO_CALL && LOOP_INFO (loop)->has_call)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "Prefetch: ignoring loop: has call.\n");
+      if (dump_file)
+	fprintf (dump_file, "Prefetch: ignoring loop: has call.\n");
 
       return;
     }
@@ -4154,8 +4148,8 @@ emit_prefetch_instructions (struct loop *loop)
       && LOOP_INFO (loop)->n_iterations
       && LOOP_INFO (loop)->n_iterations <= PREFETCH_LOW_LOOPCNT)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Prefetch: ignoring loop: not enough iterations.\n");
       return;
     }
@@ -4180,26 +4174,26 @@ emit_prefetch_instructions (struct loop *loop)
 	     heuristics more conservative.  */
 	  if (GET_CODE (biv->add_val) != CONST_INT)
 	    {
-	      if (loop_dump_stream)
+	      if (dump_file)
 		{
-		  fprintf (loop_dump_stream,
+		  fprintf (dump_file,
 		    "Prefetch: ignoring biv %d: non-constant addition at insn %d:",
 			   REGNO (biv->src_reg), INSN_UID (biv->insn));
-		  print_rtl (loop_dump_stream, biv->add_val);
-		  fprintf (loop_dump_stream, "\n");
+		  print_rtl (dump_file, biv->add_val);
+		  fprintf (dump_file, "\n");
 		}
 	      break;
 	    }
 
 	  if (biv->maybe_multiple)
 	    {
-	      if (loop_dump_stream)
+	      if (dump_file)
 		{
-		  fprintf (loop_dump_stream,
+		  fprintf (dump_file,
 			   "Prefetch: ignoring biv %d: maybe_multiple at insn %i:",
 			   REGNO (biv->src_reg), INSN_UID (biv->insn));
-		  print_rtl (loop_dump_stream, biv->add_val);
-		  fprintf (loop_dump_stream, "\n");
+		  print_rtl (dump_file, biv->add_val);
+		  fprintf (dump_file, "\n");
 		}
 	      break;
 	    }
@@ -4266,8 +4260,8 @@ emit_prefetch_instructions (struct loop *loop)
 
 	  if (ignore_reason != NULL)
 	    {
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "Prefetch: ignoring giv at %d: %s.\n",
 			 INSN_UID (iv->insn), ignore_reason);
 	      continue;
@@ -4290,8 +4284,8 @@ emit_prefetch_instructions (struct loop *loop)
 	    note_stores (PATTERN (iv->insn), check_store, &d);
 	  else
 	    {
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream, "Prefetch: Ignoring giv at %d: %s\n",
+	      if (dump_file)
+		fprintf (dump_file, "Prefetch: Ignoring giv at %d: %s\n",
 			 INSN_UID (iv->insn), "in conditional code.");
 	      continue;
 	    }
@@ -4345,8 +4339,8 @@ emit_prefetch_instructions (struct loop *loop)
 	      num_prefetches++;
 	      if (num_prefetches >= MAX_PREFETCHES)
 		{
-		  if (loop_dump_stream)
-		    fprintf (loop_dump_stream,
+		  if (dump_file)
+		    fprintf (dump_file,
 			     "Maximal number of prefetches exceeded.\n");
 		  return;
 		}
@@ -4383,8 +4377,8 @@ emit_prefetch_instructions (struct loop *loop)
 	else
 	  {
 	    info[i].prefetch_in_loop = 0, info[i].prefetch_before_loop = 0;
-	    if (loop_dump_stream)
-	      fprintf (loop_dump_stream,
+	    if (dump_file)
+	      fprintf (dump_file,
 		  "Prefetch: ignoring giv at %d: %d%% density is too low.\n",
 		       INSN_UID (info[i].giv->insn), density);
 	  }
@@ -4408,8 +4402,8 @@ emit_prefetch_instructions (struct loop *loop)
     {
       if ((ahead = SIMULTANEOUS_PREFETCHES / num_real_prefetches) == 0)
 	{
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Prefetch: ignoring prefetches within loop: ahead is zero; %d < %d\n",
 		     SIMULTANEOUS_PREFETCHES, num_real_prefetches);
 	  num_real_prefetches = 0, num_real_write_prefetches = 0;
@@ -4438,27 +4432,27 @@ emit_prefetch_instructions (struct loop *loop)
 	    num_write_prefetches_before += n;
 	}
 
-      if (loop_dump_stream)
+      if (dump_file)
 	{
 	  if (info[i].prefetch_in_loop == 0
 	      && info[i].prefetch_before_loop == 0)
 	    continue;
-	  fprintf (loop_dump_stream, "Prefetch insn: %d",
+	  fprintf (dump_file, "Prefetch insn: %d",
 		   INSN_UID (info[i].giv->insn));
-	  fprintf (loop_dump_stream,
+	  fprintf (dump_file,
 		   "; in loop: %d; before: %d; %s\n",
 		   info[i].prefetch_in_loop,
 		   info[i].prefetch_before_loop,
 		   info[i].write ? "read/write" : "read only");
-	  fprintf (loop_dump_stream,
+	  fprintf (dump_file,
 		   " density: %d%%; bytes_accessed: %u; total_bytes: %u\n",
 		   (int) (info[i].bytes_accessed * 100 / info[i].stride),
 		   info[i].bytes_accessed, info[i].total_bytes);
-	  fprintf (loop_dump_stream, " index: " HOST_WIDE_INT_PRINT_DEC
+	  fprintf (dump_file, " index: " HOST_WIDE_INT_PRINT_DEC
 		   "; stride: " HOST_WIDE_INT_PRINT_DEC "; address: ",
 		   info[i].index, info[i].stride);
-	  print_rtl (loop_dump_stream, info[i].base_address);
-	  fprintf (loop_dump_stream, "\n");
+	  print_rtl (dump_file, info[i].base_address);
+	  fprintf (dump_file, "\n");
 	}
     }
 
@@ -4467,11 +4461,11 @@ emit_prefetch_instructions (struct loop *loop)
       /* Record that this loop uses prefetch instructions.  */
       LOOP_INFO (loop)->has_prefetch = 1;
 
-      if (loop_dump_stream)
+      if (dump_file)
 	{
-	  fprintf (loop_dump_stream, "Real prefetches needed within loop: %d (write: %d)\n",
+	  fprintf (dump_file, "Real prefetches needed within loop: %d (write: %d)\n",
 		   num_real_prefetches, num_real_write_prefetches);
-	  fprintf (loop_dump_stream, "Real prefetches needed before loop: %d (write: %d)\n",
+	  fprintf (dump_file, "Real prefetches needed before loop: %d (write: %d)\n",
 		   num_prefetches_before, num_write_prefetches_before);
 	}
     }
@@ -4811,8 +4805,8 @@ loop_bivs_find (struct loop *loop)
 	     move.  So leave it alone.  */
 	  || ! bl->incremented)
 	{
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Biv %d: discarded, %s\n",
+	  if (dump_file)
+	    fprintf (dump_file, "Biv %d: discarded, %s\n",
 		     bl->regno,
 		     (REG_IV_TYPE (ivs, bl->regno) != BASIC_INDUCT
 		      ? "not induction variable"
@@ -4826,8 +4820,8 @@ loop_bivs_find (struct loop *loop)
 	{
 	  backbl = &bl->next;
 
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Biv %d: verified\n", bl->regno);
+	  if (dump_file)
+	    fprintf (dump_file, "Biv %d: verified\n", bl->regno);
 	}
     }
 }
@@ -4916,8 +4910,8 @@ loop_bivs_check (struct loop *loop)
       else
 	src = SET_SRC (bl->init_set);
 
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Biv %d: initialized at insn %d: initial value ",
 		 bl->regno, INSN_UID (bl->init_insn));
 
@@ -4929,16 +4923,16 @@ loop_bivs_check (struct loop *loop)
 	{
 	  bl->initial_value = src;
 
-	  if (loop_dump_stream)
+	  if (dump_file)
 	    {
-	      print_simple_rtl (loop_dump_stream, src);
-	      fputc ('\n', loop_dump_stream);
+	      print_simple_rtl (dump_file, src);
+	      fputc ('\n', dump_file);
 	    }
 	}
       /* If we can't make it a giv,
 	 let biv keep initial value of "itself".  */
-      else if (loop_dump_stream)
-	fprintf (loop_dump_stream, "is complex\n");
+      else if (dump_file)
+	fprintf (dump_file, "is complex\n");
     }
 }
 
@@ -5152,8 +5146,8 @@ final_biv_value (const struct loop *loop, struct iv_class *bl)
      no other loop exits, so we can return any value.  */
   if (bl->reversed)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Final biv value for %d, reversed biv.\n", bl->regno);
 
       return const0_rtx;
@@ -5182,8 +5176,8 @@ final_biv_value (const struct loop *loop, struct iv_class *bl)
 	  loop_iv_add_mult_sink (loop, increment, GEN_INT (n_iterations),
 				 bl->initial_value, tem);
 
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Final biv value for %d, calculated.\n", bl->regno);
 
 	  return tem;
@@ -5193,8 +5187,8 @@ final_biv_value (const struct loop *loop, struct iv_class *bl)
   /* Check to see if the biv is dead at all loop exits.  */
   if (reg_dead_after_loop (loop, bl->biv->src_reg))
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Final biv value for %d, biv dead after loop exit.\n",
 		 bl->regno);
 
@@ -5220,8 +5214,8 @@ loop_biv_eliminable_p (struct loop *loop, struct iv_class *bl,
 #ifdef HAVE_decrement_and_branch_until_zero
   if (bl->nonneg)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Cannot eliminate nonneg biv %d.\n", bl->regno);
       return 0;
     }
@@ -5242,12 +5236,12 @@ loop_biv_eliminable_p (struct loop *loop, struct iv_class *bl,
       || (bl->final_value = final_biv_value (loop, bl)))
     return maybe_eliminate_biv (loop, bl, 0, threshold,	insn_count);
 
-  if (loop_dump_stream)
+  if (dump_file)
     {
-      fprintf (loop_dump_stream,
+      fprintf (dump_file,
 	       "Cannot eliminate biv %d.\n",
 	       bl->regno);
-      fprintf (loop_dump_stream,
+      fprintf (dump_file,
 	       "First use: insn %d, last use: insn %d.\n",
 	       REGNO_FIRST_UID (bl->regno),
 	       REGNO_LAST_UID (bl->regno));
@@ -5537,8 +5531,8 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 	      else
 		{
 		  end_sequence ();
-		  if (loop_dump_stream)
-		    fprintf (loop_dump_stream,
+		  if (dump_file)
+		    fprintf (dump_file,
 			     "unable to reduce iv in insn %d\n",
 			     INSN_UID (v->insn));
 		  bl->all_reduced = 0;
@@ -5585,12 +5579,12 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 				gen_load_of_final_value (v->dest_reg,
 							 v->final_value));
 
-      if (loop_dump_stream)
+      if (dump_file)
 	{
-	  fprintf (loop_dump_stream, "giv at %d reduced to ",
+	  fprintf (dump_file, "giv at %d reduced to ",
 		   INSN_UID (v->insn));
-	  print_simple_rtl (loop_dump_stream, v->new_reg);
-	  fprintf (loop_dump_stream, "\n");
+	  print_simple_rtl (dump_file, v->new_reg);
+	  fprintf (dump_file, "\n");
 	}
     }
 }
@@ -5826,8 +5820,8 @@ loop_iterations (struct loop *loop)
      the last loop insn is a jump to the top of the loop.  */
   if (!JUMP_P (last_loop_insn))
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: No final conditional branch found.\n");
       return 0;
     }
@@ -5836,8 +5830,8 @@ loop_iterations (struct loop *loop)
      we cannot (easily) determine the iteration count.  */
   if (LABEL_NUSES (JUMP_LABEL (last_loop_insn)) > 1)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: Loop has multiple back edges.\n");
       return 0;
     }
@@ -5849,8 +5843,8 @@ loop_iterations (struct loop *loop)
   comparison = get_condition_for_loop (loop, last_loop_insn);
   if (comparison == 0)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: No final comparison found.\n");
       return 0;
     }
@@ -5864,8 +5858,8 @@ loop_iterations (struct loop *loop)
 
   if (!REG_P (iteration_var))
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: Comparison not against register.\n");
       return 0;
     }
@@ -5895,8 +5889,8 @@ loop_iterations (struct loop *loop)
      reg_iv_type entry for it.  */
   if ((unsigned) REGNO (iteration_var) >= ivs->n_regs)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: No reg_iv_type entry for iteration var.\n");
       return 0;
     }
@@ -5907,15 +5901,15 @@ loop_iterations (struct loop *loop)
   else if ((GET_MODE_BITSIZE (GET_MODE (iteration_var))
 	    > HOST_BITS_PER_WIDE_INT))
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: Iteration var rejected because mode too large.\n");
       return 0;
     }
   else if (GET_MODE_CLASS (GET_MODE (iteration_var)) != MODE_INT)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: Iteration var not an integer.\n");
       return 0;
     }
@@ -5941,8 +5935,8 @@ loop_iterations (struct loop *loop)
       initial_value = bl->initial_value;
       if (!bl->biv->always_executed || bl->biv->maybe_multiple)
 	{
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Loop iterations: Basic induction var not set once in each iteration.\n");
 	  return 0;
 	}
@@ -5959,8 +5953,8 @@ loop_iterations (struct loop *loop)
 
       if (!v->always_executed || v->maybe_multiple)
 	{
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Loop iterations: General induction var not set once in each iteration.\n");
 	  return 0;
 	}
@@ -5989,8 +5983,8 @@ loop_iterations (struct loop *loop)
 		{
 		  if (REG_P (biv_inc->add_val))
 		    {
-		      if (loop_dump_stream)
-			fprintf (loop_dump_stream,
+		      if (dump_file)
+			fprintf (dump_file,
 				 "Loop iterations: Basic induction var add_val is REG %d.\n",
 				 REGNO (biv_inc->add_val));
 			return 0;
@@ -6004,8 +5998,8 @@ loop_iterations (struct loop *loop)
 		}
 	    }
 	}
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: Giv iterator, initial value bias %ld.\n",
 		 (long) offset);
 
@@ -6019,8 +6013,8 @@ loop_iterations (struct loop *loop)
     }
   else
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: Not basic or general induction var.\n");
       return 0;
     }
@@ -6165,8 +6159,8 @@ loop_iterations (struct loop *loop)
 
   if (increment == 0)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Loop iterations: Increment value can't be calculated.\n");
       return 0;
     }
@@ -6181,12 +6175,12 @@ loop_iterations (struct loop *loop)
 
       if (GET_CODE (increment) != CONST_INT)
 	{
-	  if (loop_dump_stream)
+	  if (dump_file)
 	    {
-	      fprintf (loop_dump_stream,
+	      fprintf (dump_file,
 		       "Loop iterations: Increment value not constant ");
-	      print_simple_rtl (loop_dump_stream, increment);
-	      fprintf (loop_dump_stream, ".\n");
+	      print_simple_rtl (dump_file, increment);
+	      fprintf (dump_file, ".\n");
 	    }
 	  return 0;
 	}
@@ -6195,23 +6189,23 @@ loop_iterations (struct loop *loop)
 
   if (GET_CODE (initial_value) != CONST_INT)
     {
-      if (loop_dump_stream)
+      if (dump_file)
 	{
-	  fprintf (loop_dump_stream,
+	  fprintf (dump_file,
 		   "Loop iterations: Initial value not constant ");
-	  print_simple_rtl (loop_dump_stream, initial_value);
-	  fprintf (loop_dump_stream, ".\n");
+	  print_simple_rtl (dump_file, initial_value);
+	  fprintf (dump_file, ".\n");
 	}
       return 0;
     }
   else if (GET_CODE (final_value) != CONST_INT)
     {
-      if (loop_dump_stream)
+      if (dump_file)
 	{
-	  fprintf (loop_dump_stream,
+	  fprintf (dump_file,
 		   "Loop iterations: Final value not constant ");
-	  print_simple_rtl (loop_dump_stream, final_value);
-	  fprintf (loop_dump_stream, ".\n");
+	  print_simple_rtl (dump_file, final_value);
+	  fprintf (dump_file, ".\n");
 	}
       return 0;
     }
@@ -6219,8 +6213,8 @@ loop_iterations (struct loop *loop)
     {
       rtx inc_once;
 
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "Loop iterations: EQ comparison loop.\n");
+      if (dump_file)
+	fprintf (dump_file, "Loop iterations: EQ comparison loop.\n");
 
       inc_once = gen_int_mode (INTVAL (initial_value) + INTVAL (increment),
 			       GET_MODE (iteration_var));
@@ -6304,8 +6298,8 @@ loop_iterations (struct loop *loop)
     ;
   else
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "Loop iterations: Not normal loop.\n");
+      if (dump_file)
+	fprintf (dump_file, "Loop iterations: Not normal loop.\n");
       return 0;
     }
 
@@ -6477,8 +6471,8 @@ strength_reduce (struct loop *loop, int flags)
 	  if (v->lifetime * threshold * benefit < insn_count
 	      && ! bl->reversed)
 	    {
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "giv of insn %d not worth while, %d vs %d.\n",
 			 INSN_UID (v->insn),
 			 v->lifetime * threshold * benefit, insn_count);
@@ -6489,8 +6483,8 @@ strength_reduce (struct loop *loop, int flags)
 		   && (may_trap_or_fault_p (v->add_val)
 		       || may_trap_or_fault_p (v->mult_val)))
 	    {
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "giv of insn %d: not always computable.\n",
 			 INSN_UID (v->insn));
 	      v->ignore = 1;
@@ -6505,8 +6499,8 @@ strength_reduce (struct loop *loop, int flags)
 		if (tv->mult_val == const1_rtx
 		    && ! product_cheap_p (tv->add_val, v->mult_val))
 		  {
-		    if (loop_dump_stream)
-		      fprintf (loop_dump_stream,
+		    if (dump_file)
+		      fprintf (dump_file,
 			       "giv of insn %d: would need a multiply.\n",
 			       INSN_UID (v->insn));
 		    v->ignore = 1;
@@ -6589,8 +6583,8 @@ strength_reduce (struct loop *loop, int flags)
 				      gen_load_of_final_value (bl->biv->dest_reg,
 							       bl->final_value));
 
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Reg %d: biv eliminated\n",
+	  if (dump_file)
+	    fprintf (dump_file, "Reg %d: biv eliminated\n",
 		     bl->regno);
 	}
       /* See above note wrt final_value.  But since we couldn't eliminate
@@ -6611,8 +6605,8 @@ strength_reduce (struct loop *loop, int flags)
 	INSN_CODE (p) = -1;
       }
 
-  if (loop_dump_stream)
-    fprintf (loop_dump_stream, "\n");
+  if (dump_file)
+    fprintf (dump_file, "\n");
 
   loop_ivs_free (loop);
   if (reg_map)
@@ -6947,8 +6941,8 @@ record_biv (struct loop *loop, struct induction *v, rtx insn, rtx dest_reg,
   if (mult_val == const1_rtx)
     bl->incremented = 1;
 
-  if (loop_dump_stream)
-    loop_biv_dump (v, loop_dump_stream, 0);
+  if (dump_file)
+    loop_biv_dump (v, dump_file, 0);
 }
 
 /* Fill in the data about one giv.
@@ -7155,8 +7149,8 @@ record_giv (const struct loop *loop, struct induction *v, rtx insn,
       }
   }
 
-  if (loop_dump_stream)
-    loop_giv_dump (v, loop_dump_stream, 0);
+  if (dump_file)
+    loop_giv_dump (v, dump_file, 0);
 }
 
 /* Try to calculate the final value of the giv, the value it will have at
@@ -7181,8 +7175,8 @@ final_giv_value (const struct loop *loop, struct induction *v)
      and there are no other loop exits, so we can return any value.  */
   if (bl->reversed)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Final giv value for %d, depends on reversed biv\n",
 		 REGNO (v->dest_reg));
       return const0_rtx;
@@ -7258,8 +7252,8 @@ final_giv_value (const struct loop *loop, struct induction *v)
 	  /* Now calculate the giv's final value.  */
 	  loop_iv_add_mult_sink (loop, tem, v->mult_val, v->add_val, tem);
 
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Final giv value for %d, calc from biv's value.\n",
 		     REGNO (v->dest_reg));
 
@@ -7273,8 +7267,8 @@ final_giv_value (const struct loop *loop, struct induction *v)
   /* Check to see if the biv is dead at all loop exits.  */
   if (reg_dead_after_loop (loop, v->dest_reg))
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
+      if (dump_file)
+	fprintf (dump_file,
 		 "Final giv value for %d, giv dead after loop exit.\n",
 		 REGNO (v->dest_reg));
 
@@ -7407,8 +7401,8 @@ check_final_value (const struct loop *loop, struct induction *v)
 		  v->replaceable = 0;
 		  v->not_replaceable = 1;
 
-		  if (loop_dump_stream)
-		    fprintf (loop_dump_stream,
+		  if (dump_file)
+		    fprintf (dump_file,
 			     "Found branch outside giv lifetime.\n");
 
 		  break;
@@ -7421,8 +7415,8 @@ check_final_value (const struct loop *loop, struct induction *v)
 	v->final_value = final_value;
     }
 
-  if (loop_dump_stream && v->replaceable)
-    fprintf (loop_dump_stream, "Insn %d: giv reg %d final_value replaceable\n",
+  if (dump_file && v->replaceable)
+    fprintf (dump_file, "Insn %d: giv reg %d final_value replaceable\n",
 	     INSN_UID (v->insn), REGNO (v->dest_reg));
 }
 
@@ -8935,15 +8929,15 @@ check_ext_dependent_givs (const struct loop *loop, struct iv_class *bl)
 	if (incr != 0
 	    && extension_within_bounds_p (loop, bl, incr, v->ext_dependent))
 	  {
-	    if (loop_dump_stream)
-	      fprintf (loop_dump_stream,
+	    if (dump_file)
+	      fprintf (dump_file,
 		       "Verified ext dependent giv at %d of reg %d\n",
 		       INSN_UID (v->insn), bl->regno);
 	  }
 	else
 	  {
-	    if (loop_dump_stream)
-	      fprintf (loop_dump_stream,
+	    if (dump_file)
+	      fprintf (dump_file,
 		       "Failed ext dependent giv at %d\n",
 		       INSN_UID (v->insn));
 
@@ -9069,18 +9063,18 @@ combine_givs (struct loop_regs *regs, struct iv_class *bl)
 restart:
   qsort (stats, giv_count, sizeof (*stats), cmp_combine_givs_stats);
 
-  if (loop_dump_stream)
+  if (dump_file)
     {
-      fprintf (loop_dump_stream, "Sorted combine statistics:\n");
+      fprintf (dump_file, "Sorted combine statistics:\n");
       for (k = 0; k < giv_count; k++)
 	{
 	  g1 = giv_array[stats[k].giv_number];
 	  if (!g1->combined_with && !g1->same)
-	    fprintf (loop_dump_stream, " {%d, %d}",
+	    fprintf (dump_file, " {%d, %d}",
 		     INSN_UID (giv_array[stats[k].giv_number]->insn),
 		     stats[k].total_benefit);
 	}
-      putc ('\n', loop_dump_stream);
+      putc ('\n', dump_file);
     }
 
   for (k = 0; k < giv_count; k++)
@@ -9132,8 +9126,8 @@ restart:
 		    stats[l].total_benefit -= g2->benefit + extra_benefit;
 		}
 
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "giv at %d combined with giv at %d; new benefit %d + %d, lifetime %d\n",
 			 INSN_UID (g2->insn), INSN_UID (g1->insn),
 			 g1->benefit, g1_add_benefit, g1->lifetime);
@@ -9694,8 +9688,8 @@ check_dbra_loop (struct loop *loop, int insn_count)
 	  rtx tem;
 
 	  /* Loop can be reversed.  */
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Can reverse loop\n");
+	  if (dump_file)
+	    fprintf (dump_file, "Can reverse loop\n");
 
 	  /* Now check other conditions:
 
@@ -9989,13 +9983,13 @@ check_dbra_loop (struct loop *loop, int insn_count)
 
 	      bl->reversed = 1;
 
-	      if (loop_dump_stream)
+	      if (dump_file)
 		{
-		  fprintf (loop_dump_stream, "Reversed loop");
+		  fprintf (dump_file, "Reversed loop");
 		  if (bl->nonneg)
-		    fprintf (loop_dump_stream, " and added reg_nonneg\n");
+		    fprintf (dump_file, " and added reg_nonneg\n");
 		  else
-		    fprintf (loop_dump_stream, "\n");
+		    fprintf (dump_file, "\n");
 		}
 
 	      return 1;
@@ -10061,8 +10055,8 @@ maybe_eliminate_biv (const struct loop *loop, struct iv_class *bl,
 	  && ! maybe_eliminate_biv_1 (loop, PATTERN (p), p, bl,
 				      eliminate_p, where_bb, where_insn))
 	{
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Cannot eliminate biv %d: biv used in insn %d.\n",
 		     bl->regno, INSN_UID (p));
 	  break;
@@ -10077,8 +10071,8 @@ maybe_eliminate_biv (const struct loop *loop, struct iv_class *bl,
 
   if (p == loop->end)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "biv %d %s eliminated.\n",
+      if (dump_file)
+	fprintf (dump_file, "biv %d %s eliminated.\n",
 		 bl->regno, eliminate_p ? "was" : "can be");
       return 1;
     }
@@ -11016,12 +11010,12 @@ load_mems (const struct loop *loop)
 	      loop_insn_emit_after (loop, 0, label, set);
 	    }
 
-	  if (loop_dump_stream)
+	  if (dump_file)
 	    {
-	      fprintf (loop_dump_stream, "Hoisted regno %d %s from ",
+	      fprintf (dump_file, "Hoisted regno %d %s from ",
 		       REGNO (reg), (written ? "r/w" : "r/o"));
-	      print_rtl (loop_dump_stream, mem);
-	      fputc ('\n', loop_dump_stream);
+	      print_rtl (dump_file, mem);
+	      fputc ('\n', dump_file);
 	    }
 
 	  /* Attempt a bit of copy propagation.  This helps untangle the
@@ -11142,8 +11136,8 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
   gcc_assert (init_insn);
   if (apply_change_group ())
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "  Replaced reg %d", regno);
+      if (dump_file)
+	fprintf (dump_file, "  Replaced reg %d", regno);
       if (store_is_first && replaced_last)
 	{
 	  rtx first;
@@ -11162,8 +11156,8 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
 	  /* Delete the instructions.  */
 	  loop_delete_insns (first, init_insn);
 	}
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, ".\n");
+      if (dump_file)
+	fprintf (dump_file, ".\n");
     }
 }
 
@@ -11175,8 +11169,8 @@ loop_delete_insns (rtx first, rtx last)
 {
   while (1)
     {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, ", deleting init_insn (%d)",
+      if (dump_file)
+	fprintf (dump_file, ", deleting init_insn (%d)",
 		 INSN_UID (first));
       delete_insn (first);
 
@@ -11256,8 +11250,8 @@ try_swap_copy_prop (const struct loop *loop, rtx replacement,
 
 	  if (apply_change_group ())
 	    {
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "  Swapped set of reg %d at %d with reg %d at %d.\n",
 			 regno, INSN_UID (insn),
 			 new_regno, INSN_UID (prev_insn));
@@ -11793,7 +11787,7 @@ rest_of_handle_loop_optimize (void)
       cleanup_barriers ();
       
       /* We only want to perform unrolling once.  */
-      loop_optimize (get_insns (), dump_file, 0);
+      loop_optimize (get_insns (), 0);
       
       /* The first call to loop_optimize makes some instructions
          trivially dead.  We delete those instructions now in the
@@ -11806,7 +11800,7 @@ rest_of_handle_loop_optimize (void)
       reg_scan (get_insns (), max_reg_num ());
     } 
   cleanup_barriers ();
-  loop_optimize (get_insns (), dump_file, do_prefetch);
+  loop_optimize (get_insns (), do_prefetch);
       
   /* Loop can create trivially dead instructions.  */
   delete_trivially_dead_insns (get_insns (), max_reg_num ());

@@ -478,7 +478,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
    Remove now useless prediction entries.  */
 
 static void
-combine_predictions_for_bb (FILE *file, basic_block bb)
+combine_predictions_for_bb (basic_block bb)
 {
   int best_probability = PROB_EVEN;
   int best_predictor = END_PREDICTORS;
@@ -512,14 +512,14 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
       if (!bb->count)
 	set_even_probabilities (bb);
       bb->predictions = NULL;
-      if (file)
-	fprintf (file, "%i edges in bb %i predicted to even probabilities\n",
+      if (dump_file)
+	fprintf (dump_file, "%i edges in bb %i predicted to even probabilities\n",
 		 nedges, bb->index);
       return;
     }
 
-  if (file)
-    fprintf (file, "Predictions for bb %i\n", bb->index);
+  if (dump_file)
+    fprintf (dump_file, "Predictions for bb %i\n", bb->index);
 
   /* We implement "first match" heuristics and use probability guessed
      by predictor with smallest index.  */
@@ -556,18 +556,18 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
     first_match = true;
 
   if (!found)
-    dump_prediction (file, PRED_NO_PREDICTION, combined_probability, bb, true);
+    dump_prediction (dump_file, PRED_NO_PREDICTION, combined_probability, bb, true);
   else
     {
-      dump_prediction (file, PRED_DS_THEORY, combined_probability, bb,
+      dump_prediction (dump_file, PRED_DS_THEORY, combined_probability, bb,
 		       !first_match);
-      dump_prediction (file, PRED_FIRST_MATCH, best_probability, bb,
+      dump_prediction (dump_file, PRED_FIRST_MATCH, best_probability, bb,
 		       first_match);
     }
 
   if (first_match)
     combined_probability = best_probability;
-  dump_prediction (file, PRED_COMBINED, combined_probability, bb, true);
+  dump_prediction (dump_file, PRED_COMBINED, combined_probability, bb, true);
 
   for (pred = bb->predictions; pred; pred = pred->ep_next)
     {
@@ -576,7 +576,7 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
 
       if (pred->ep_edge != EDGE_SUCC (bb, 0))
 	probability = REG_BR_PROB_BASE - probability;
-      dump_prediction (file, predictor, probability, bb,
+      dump_prediction (dump_file, predictor, probability, bb,
 		       !first_match || best_predictor == predictor);
     }
   bb->predictions = NULL;
@@ -1385,7 +1385,7 @@ tree_estimate_probability (void)
       tree_predict_by_opcode (bb);
     }
   FOR_EACH_BB (bb)
-    combine_predictions_for_bb (dump_file, bb);
+    combine_predictions_for_bb (bb);
 
   if (!flag_loop_optimize)
     strip_builtin_expect ();

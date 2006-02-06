@@ -1394,9 +1394,8 @@ rtl_seqabstr (void)
       /* Update notes.  */
       count_or_remove_death_notes (NULL, 1);
 
-      life_analysis (dump_file, PROP_DEATH_NOTES |
-                                PROP_SCAN_DEAD_CODE |
-                                PROP_KILL_DEAD_CODE);
+      life_analysis (PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
+		     | PROP_KILL_DEAD_CODE);
 
       /* Extra cleanup.  */
       cleanup_cfg (CLEANUP_EXPENSIVE |
@@ -1418,9 +1417,7 @@ gate_rtl_seqabstr (void)
 static void
 rest_of_rtl_seqabstr (void)
 {
-  life_analysis (dump_file, PROP_DEATH_NOTES |
-                            PROP_SCAN_DEAD_CODE |
-                            PROP_KILL_DEAD_CODE);
+  life_analysis (PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
 
   cleanup_cfg (CLEANUP_EXPENSIVE |
                CLEANUP_UPDATE_LIFE |

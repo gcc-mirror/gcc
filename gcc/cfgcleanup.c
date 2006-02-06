@@ -2356,7 +2356,7 @@ rest_of_handle_jump2 (void)
      future passes, allocate arrays whose dimensions involve the
      maximum instruction UID, so if we can reduce the maximum UID
      we'll save big on memory.  */
-  renumber_insns (dump_file);
+  renumber_insns ();
 }
 
 

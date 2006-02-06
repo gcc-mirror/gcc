@@ -142,6 +142,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "recog.h"
 #include "sched-int.h"
 #include "target.h"
+#include "output.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -501,7 +502,7 @@ struct sched_info *current_sched_info;
 
 #ifndef INSN_SCHEDULING
 void
-schedule_insns (FILE *dump_file ATTRIBUTE_UNUSED)
+schedule_insns (void)
 {
 }
 #else
@@ -2210,11 +2211,10 @@ set_priorities (rtx head, rtx tail)
   return n_insn;
 }
 
-/* Initialize some global state for the scheduler.  DUMP_FILE is to be used
-   for debugging output.  */
+/* Initialize some global state for the scheduler.  */
 
 void
-sched_init (FILE *dump_file)
+sched_init (void)
 {
   int luid;
   basic_block b;

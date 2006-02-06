@@ -358,11 +358,6 @@ rtl_gen_const_delta_profiler (histogram_value value, unsigned tag, unsigned base
   safe_insert_insn_on_edge (sequence, e);
 }
 
-/* Return the file on which profile dump output goes, if any.  */
-
-static FILE *rtl_profile_dump_file (void) {
-  return dump_file;
-}
 
 struct profile_hooks rtl_profile_hooks =
 {
@@ -371,6 +366,5 @@ struct profile_hooks rtl_profile_hooks =
   rtl_gen_interval_profiler,
   rtl_gen_pow2_profiler,
   rtl_gen_one_value_profiler,
-  rtl_gen_const_delta_profiler,
-  rtl_profile_dump_file
+  rtl_gen_const_delta_profiler
 };

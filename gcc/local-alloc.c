@@ -2542,7 +2542,7 @@ rest_of_handle_local_alloc (void)
 
   allocate_initial_values (reg_equiv_memory_loc);
 
-  regclass (get_insns (), max_reg_num (), dump_file);
+  regclass (get_insns (), max_reg_num ());
   rebuild_notes = local_alloc ();
 
   /* Local allocation may have turned an indirect jump into a direct

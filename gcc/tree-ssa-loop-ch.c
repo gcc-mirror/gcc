@@ -132,8 +132,8 @@ copy_loop_headers (void)
   unsigned n_bbs;
   unsigned bbs_size;
 
-  loops = loop_optimizer_init (dump_file, (LOOPS_HAVE_PREHEADERS
-					   | LOOPS_HAVE_SIMPLE_LATCHES));
+  loops = loop_optimizer_init (LOOPS_HAVE_PREHEADERS
+			       | LOOPS_HAVE_SIMPLE_LATCHES);
   if (!loops)
     return;
 
@@ -213,7 +213,7 @@ copy_loop_headers (void)
   free (bbs);
   free (copied_bbs);
 
-  loop_optimizer_finalize (loops, NULL);
+  loop_optimizer_finalize (loops);
 }
 
 static bool

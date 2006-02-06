@@ -3023,7 +3023,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 /* Perform the peephole2 optimization pass.  */
 
 static void
-peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
+peephole2_optimize (void)
 {
   rtx insn, prev;
   regset live;
@@ -3446,7 +3446,7 @@ static void
 rest_of_handle_peephole2 (void)
 {
 #ifdef HAVE_peephole2
-  peephole2_optimize (dump_file);
+  peephole2_optimize ();
 #endif
 }
 

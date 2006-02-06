@@ -77,29 +77,29 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 void
 c_genericize (tree fndecl)
 {
-  FILE *dump_file;
+  FILE *dump_orig;
   int local_dump_flags;
   struct cgraph_node *cgn;
 
   /* Dump the C-specific tree IR.  */
-  dump_file = dump_begin (TDI_original, &local_dump_flags);
-  if (dump_file)
+  dump_orig = dump_begin (TDI_original, &local_dump_flags);
+  if (dump_orig)
     {
-      fprintf (dump_file, "\n;; Function %s",
+      fprintf (dump_orig, "\n;; Function %s",
 	       lang_hooks.decl_printable_name (fndecl, 2));
-      fprintf (dump_file, " (%s)\n",
+      fprintf (dump_orig, " (%s)\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)));
-      fprintf (dump_file, ";; enabled by -%s\n", dump_flag_name (TDI_original));
-      fprintf (dump_file, "\n");
+      fprintf (dump_orig, ";; enabled by -%s\n", dump_flag_name (TDI_original));
+      fprintf (dump_orig, "\n");
 
       if (local_dump_flags & TDF_RAW)
 	dump_node (DECL_SAVED_TREE (fndecl),
-		   TDF_SLIM | local_dump_flags, dump_file);
+		   TDF_SLIM | local_dump_flags, dump_orig);
       else
-	print_c_tree (dump_file, DECL_SAVED_TREE (fndecl));
-      fprintf (dump_file, "\n");
+	print_c_tree (dump_orig, DECL_SAVED_TREE (fndecl));
+      fprintf (dump_orig, "\n");
 
-      dump_end (TDI_original, dump_file);
+      dump_end (TDI_original, dump_orig);
     }
 
   /* Go ahead and gimplify for now.  */

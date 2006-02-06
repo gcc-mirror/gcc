@@ -852,7 +852,7 @@ enum update_life_extent
 					     to match only full blocks  */
 #define STRUCT_EQUIV_MATCH_JUMPS 8192	/* Also include the jumps at the end of the block in the comparison.  */
 
-extern void life_analysis (FILE *, int);
+extern void life_analysis (int);
 extern int update_life_info (sbitmap, enum update_life_extent, int);
 extern int update_life_info_in_dirty_blocks (enum update_life_extent, int);
 extern int count_or_remove_death_notes (sbitmap, int);
@@ -865,10 +865,10 @@ extern struct propagate_block_info *init_propagate_block_info
 extern void free_propagate_block_info (struct propagate_block_info *);
 
 /* In lcm.c */
-extern struct edge_list *pre_edge_lcm (FILE *, int, sbitmap *, sbitmap *,
+extern struct edge_list *pre_edge_lcm (int, sbitmap *, sbitmap *,
 				       sbitmap *, sbitmap *, sbitmap **,
 				       sbitmap **);
-extern struct edge_list *pre_edge_rev_lcm (FILE *, int, sbitmap *,
+extern struct edge_list *pre_edge_rev_lcm (int, sbitmap *,
 					   sbitmap *, sbitmap *,
 					   sbitmap *, sbitmap **,
 					   sbitmap **);

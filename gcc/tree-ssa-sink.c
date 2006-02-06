@@ -522,7 +522,8 @@ sink_code_in_bb (basic_block bb)
 static void
 execute_sink_code (void)
 {
-  struct loops *loops = loop_optimizer_init (dump_file, LOOPS_NORMAL);
+  struct loops *loops = loop_optimizer_init (LOOPS_NORMAL);
+
   connect_infinite_loops_to_exit ();
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);
@@ -531,7 +532,7 @@ execute_sink_code (void)
     fprintf (dump_file, "Sunk statements:%d\n", sink_stats.sunk);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
-  loop_optimizer_finalize (loops, dump_file);
+  loop_optimizer_finalize (loops);
 }
 
 /* Gate and execute functions for PRE.  */
