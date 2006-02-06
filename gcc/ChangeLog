@@ -1,4 +1,8 @@
-2006-02-04  Ben Elliston  <bje@au.ibm.com>
+2006-02-06  Ben Elliston  <bje@au.ibm.com>
+
+	* read-rtl.c (read_name): Terminate reading on EOF.
+
+2006-02-06  Ben Elliston  <bje@au.ibm.com>
 
 	* dfp.c (decimal_real_arithmetic): Change second argument type
 	from int to enum tree_code. Do not always return true, but now
