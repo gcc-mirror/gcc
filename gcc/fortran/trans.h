@@ -320,6 +320,8 @@ tree gfc_conv_string_tmp (gfc_se *, tree, tree);
 tree gfc_get_expr_charlen (gfc_expr *);
 /* Initialize a string length variable.  */
 void gfc_trans_init_string_length (gfc_charlen *, stmtblock_t *);
+/* Ensure type sizes can be gimplified.  */
+void gfc_trans_vla_type_sizes (gfc_symbol *, stmtblock_t *);
 
 /* Add an expression to the end of a block.  */
 void gfc_add_expr_to_block (stmtblock_t *, tree);

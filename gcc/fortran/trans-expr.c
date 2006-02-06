@@ -2656,7 +2656,7 @@ gfc_conv_expr_lhs (gfc_se * se, gfc_expr * expr)
 }
 
 /* Like gfc_conv_expr, but the POST block is guaranteed to be empty for
-   numeric expressions.  Used for scalar values whee inserting cleanup code
+   numeric expressions.  Used for scalar values where inserting cleanup code
    is inconvenient.  */
 void
 gfc_conv_expr_val (gfc_se * se, gfc_expr * expr)
