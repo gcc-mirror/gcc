@@ -4293,6 +4293,21 @@ s390_output_dwarf_dtprel (FILE *file, int size, rtx x)
   fputs ("@DTPOFF", file);
 }
 
+#ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
+/* Implement TARGET_MANGLE_FUNDAMENTAL_TYPE.  */
+
+static const char *
+s390_mangle_fundamental_type (tree type)
+{
+  if (TYPE_MAIN_VARIANT (type) == long_double_type_node
+      && TARGET_LONG_DOUBLE_128)
+    return "g";
+
+  /* For all other types, use normal C++ mangling.  */
+  return NULL;
+}
+#endif
+
 /* In the name of slightly smaller debug output, and to cater to
    general assembler lossage, recognize various UNSPEC sequences
    and turn them back into a direct symbol reference.  */
@@ -9183,6 +9198,11 @@ s390_reorg (void)
 #ifdef HAVE_AS_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL s390_output_dwarf_dtprel
+#endif
+
+#ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
+#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
+#define TARGET_MANGLE_FUNDAMENTAL_TYPE s390_mangle_fundamental_type
 #endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;

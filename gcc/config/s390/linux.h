@@ -95,4 +95,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define TARGET_THREAD_SSP_OFFSET        (TARGET_64BIT ? 0x28 : 0x14)
 #endif
 
+/* Define if long doubles should be mangled as 'g'.  */
+#define TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
+
 #endif
