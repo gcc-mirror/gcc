@@ -2,9 +2,9 @@
 
 	* trans-stmt.c (gfc_evaluate_where_mask): Allow the NMASK argument
 	to be NULL to indicate that the not mask isn't required.
-	* trans-stmt.c (gfc_trans_where_2): Remove PMASK argument.  Avoid
-	calculating the pending mask for the last clause of a WHERE chain.
-	Update call to trans_where
+	(gfc_trans_where_2): Remove PMASK argument.  Avoid calculating the
+	pending mask for the last clause of a WHERE chain.  Update recursive
+	call.
 	(gfc_trans_forall_1): Update call to gfc_trans_where_2.
 	(gfc_trans_where): Likewise.
 
