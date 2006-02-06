@@ -1,3 +1,10 @@
+2006-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.gcc (s390-*-linux*): Add s390/t-linux to tmake_file.
+	(s390x-*-linux*): Likewise.
+	* config/s390/t-linux64 (SHLIB_MAPFILES): Removed.
+	* config/s390/t-linux: New file.
+
 2006-02-02  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/i386/sync.md (sync_add<mode>, sync_sub<mode>, sync_ior<mode>,
