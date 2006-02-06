@@ -1,3 +1,10 @@
+2006-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.gcc (s390-*-linux*): Add s390/t-linux to tmake_file.
+	(s390x-*-linux*): Likewise.
+	* config/s390/t-linux64 (SHLIB_MAPFILES): Removed.
+	* config/s390/t-linux: New file.
+
 2006-02-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2-bi.h (SPARC_DEFAULT_CMODEL): Set to CM_MEDMID.
