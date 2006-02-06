@@ -1,5 +1,5 @@
 /* Definitions for Sun SPARC64 running FreeBSD using the ELF format
-   Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
 This file is part of GCC.
@@ -150,9 +150,9 @@ Boston, MA 02110-1301, USA.  */
 /* #define DWARF_OFFSET_SIZE PTR_SIZE */
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  	"%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}" \
-	FBSD_ENDFILE_SPEC
+#define ENDFILE_SPEC						\
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} "	\
+  FBSD_ENDFILE_SPEC
 
 /* We use GNU ld so undefine this so that attribute((init_priority)) works.  */
 #undef CTORS_SECTION_ASM_OP
