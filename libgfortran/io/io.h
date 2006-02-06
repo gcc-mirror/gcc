@@ -207,7 +207,7 @@ typedef enum
 unit_mode;
 
 typedef enum
-{ CONVERT_NATIVE, CONVERT_SWAP, CONVERT_BIG, CONVERT_LITTLE }
+{ CONVERT_NONE=-1, CONVERT_NATIVE, CONVERT_SWAP, CONVERT_BIG, CONVERT_LITTLE }
 unit_convert;
 
 #define CHARACTER1(name) \
@@ -884,3 +884,8 @@ dec_waiting_unlocked (gfc_unit *u)
 }
 
 #endif
+
+/* ../runtime/environ.c  This is here because we return unit_convert.  */
+
+unit_convert get_unformatted_convert (int);
+internal_proto(get_unformatted_convert);

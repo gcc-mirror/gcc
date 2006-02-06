@@ -61,8 +61,9 @@ typedef struct variable
 }
 variable;
 
+static void init_unformatted (variable *);
 
-/* print_spaces()-- Print a particular number of spaces */
+/* print_spaces()-- Print a particular number of spaces.  */
 
 static void
 print_spaces (int n)
@@ -533,6 +534,11 @@ static variable variable_table[] = {
    show_precision,
    "Precision of intermediate results.  Values are 24, 53 and 64.", 0},
 
+  /* GFORTRAN_CONVERT_UNIT - Set the default data conversion for
+   unformatted I/O.  */
+  {"GFORTRAN_CONVERT_UNIT", 0, 0, init_unformatted, show_string,
+   "Set format for unformatted files", 0},
+
   {NULL, 0, NULL, NULL, NULL, NULL, 0}
 };
 
@@ -622,4 +628,435 @@ show_variables (void)
   /* st_printf("  --resume <dropfile>  Resume program execution from dropfile\n"); */
 
   sys_exit (0);
+}
+
+/* This is the handling of the GFORTRAN_CONVERT_UNITS environment variable.
+   It is called from environ.c to parse this variable, and from
+   open.c to determine if the user specified a default for an
+   unformatted file.
+   The syntax of the environment variable is, in bison grammar:
+
+   GFORTRAN_CONVERT_UNITS: mode | mode ';' exception ;
+   mode: 'native' | 'swap' | 'big_endian' | 'little_endian' ;
+   exception: mode ':' unit_list | unit_list ;
+   unit_list: unit_spec | unit_list unit_spec ;
+   unit_spec: INTEGER | INTEGER '-' INTEGER ;
+*/
+
+/* Defines for the tokens.  Other valid tokens are ',', ':', '-'.  */
+
+
+#define NATIVE   257
+#define SWAP     258
+#define BIG      259
+#define LITTLE   260
+/* Some space for additional tokens later.  */
+#define INTEGER  273
+#define END      (-1)
+#define ILLEGAL  (-2)
+
+typedef struct
+{
+  int unit;
+  unit_convert conv;
+} exception_t;
+
+
+static char *p;            /* Main character pointer for parsing.  */
+static char *lastpos;      /* Auxiliary pointer, for backing up.  */
+static int unit_num;       /* The last unit number read.  */
+static int unit_count;     /* The number of units found. */
+static int do_count;       /* Parsing is done twice - first to count the number
+			      of units, then to fill in the table.  This
+			      variable controls what to do.  */
+static exception_t *elist; /* The list of exceptions to the default. This is
+			      sorted according to unit number.  */
+static int n_elist;        /* Number of exceptions to the default.  */
+
+static unit_convert endian; /* Current endianness.  */
+
+static unit_convert def; /* Default as specified (if any).  */
+
+/* Search for a unit number, using a binary search.  The
+   first argument is the unit number to search for.  The second argument
+   is a pointer to an index.
+   If the unit number is found, the function returns 1, and the index
+   is that of the element.
+   If the unit number is not found, the function returns 0, and the
+   index is the one where the element would be inserted.  */
+
+static int
+search_unit (int unit, int *ip)
+{
+  int low, high, mid;
+
+  low = -1;
+  high = n_elist;
+  while (high - low > 1)
+    {
+      mid = (low + high) / 2;
+      if (unit <= elist[mid].unit)
+	high = mid;
+      else
+	low = mid;
+    }
+  *ip = high;
+  if (elist[high].unit == unit)
+    return 1;
+  else
+    return 0;
+}
+
+/* This matches a keyword.  If it is found, return the token supplied,
+   otherwise return ILLEGAL.  */
+
+static int
+match_word (const char *word, int tok)
+{
+  int res;
+
+  if (strncasecmp (p, word, strlen (word)) == 0)
+    {
+      p += strlen (word);
+      res = tok;
+    }
+  else
+    res = ILLEGAL;
+  return res;
+
+}
+
+/* Match an integer and store its value in unit_num.  This only works
+   if p actually points to the start of an integer.  The caller has
+   to ensure this.  */
+
+static int
+match_integer (void)
+{
+  unit_num = 0;
+  while (isdigit (*p))
+    unit_num = unit_num * 10 + (*p++ - '0');
+  return INTEGER;
+
+}
+
+/* This reads the next token from the GFORTRAN_CONVERT_UNITS variable.
+   Returned values are the different tokens.  */
+
+static int
+next_token (void)
+{
+  int result;
+
+  lastpos = p;
+  switch (*p)
+    {
+    case '\0':
+      result = END;
+      break;
+      
+    case ':':
+    case ',': 
+    case '-':
+    case ';':
+      result = *p;
+      p++;
+      break;
+
+    case 'b':
+    case 'B':
+      result = match_word ("big_endian", BIG);
+      break;
+
+    case 'l':
+    case 'L':
+      result = match_word ("little_endian", LITTLE);
+      break;
+
+    case 'n':
+    case 'N':
+      result = match_word ("native", NATIVE);
+      break;
+
+    case 's':
+    case 'S':
+      result = match_word ("swap", SWAP);
+      break;
+
+    case '1': case '2': case '3': case '4': case '5':
+    case '6': case '7': case '8': case '9':
+      result = match_integer ();
+      break;
+
+    default:
+      result = ILLEGAL;
+      break;
+    }
+  return result;
+}
+
+/* Back up the last token by setting back the character pointer.  */
+
+static void
+push_token (void)
+{
+  p = lastpos;
+}
+
+/* This is called when a unit is identified.  If do_count is nonzero,
+   increment the number of units by one.  If do_count is zero,
+   put the unit into the table.  */
+
+static void
+mark_single (int unit)
+{
+  int i,j;
+
+  if (do_count)
+    {
+      unit_count++;
+      return;
+    }
+  if (search_unit (unit, &i))
+    {
+      elist[unit].conv = endian;
+    }
+  else
+    {
+      for (j=n_elist; j>=i; j--)
+	elist[j+1] = elist[j];
+    
+      n_elist += 1;
+      elist[i].unit = unit;
+      elist[i].conv = endian;
+    }
+}
+
+/* This is called when a unit range is identified.  If do_count is
+   nonzero, increase the number of units.  If do_count is zero,
+   put the unit into the table.  */
+
+static void
+mark_range (int unit1, int unit2)
+{
+  int i;
+  if (do_count)
+    unit_count += abs (unit2 - unit1) + 1;
+  else
+    {
+      if (unit2 < unit1)
+	for (i=unit2; i<=unit1; i++)
+	  mark_single (i);
+      else
+	for (i=unit1; i<=unit2; i++)
+	  mark_single (i);
+    }
+}
+
+/* Parse the GFORTRAN_CONVERT_UNITS variable.  This is called
+   twice, once to count the units and once to actually mark them in
+   the table.  When counting, we don't check for double occurences
+   of units.  */
+
+static int
+do_parse (void)
+{
+  int tok, def;
+  int unit1;
+  int continue_ulist;
+  char *start;
+
+  unit_count = 0;
+
+  def = 0;
+  start = p;
+
+  /* Parse the string.  First, let's look for a default.  */
+  tok = next_token ();
+  switch (tok)
+    {
+    case NATIVE:
+      endian = CONVERT_NATIVE;
+      break;
+
+    case SWAP:
+      endian = CONVERT_SWAP;
+      break;
+
+    case BIG:
+      endian = CONVERT_BIG;
+      break;
+
+    case LITTLE:
+      endian = CONVERT_LITTLE;
+      break;
+
+    case INTEGER:
+      /* A leading digit means that we are looking at an exception.
+	 Reset the position to the beginning, and continue processing
+	 at the exception list.  */
+      p = start;
+      goto exceptions;
+      break;
+
+    case END:
+      goto end;
+      break;
+
+    default:
+      goto error;
+      break;
+    }
+
+  tok = next_token ();
+  switch (tok)
+    {
+    case ';':
+      def = endian;
+      break;
+
+    case ':':
+      /* This isn't a default after all.  Reset the position to the
+	 beginning, and continue processing at the exception list.  */
+      p = start;
+      goto exceptions;
+      break;
+
+    case END:
+      goto end;
+      break;
+
+    default:
+      goto error;
+      break;
+    }
+
+ exceptions:
+
+  /* Loop over all exceptions.  */
+  while(1)
+    {
+      tok = next_token ();
+      switch (tok)
+	{
+	case LITTLE:
+	  if (next_token () != ':')
+	    goto error;
+	  endian = CONVERT_LITTLE;
+	  break;
+
+	case BIG:
+	  if (next_token () != ':')
+	    goto error;
+	  endian = CONVERT_BIG;
+	  break;
+
+	case INTEGER:
+	  push_token ();
+	  break;
+
+	case END:
+	  goto end;
+	  break;
+
+	default:
+	  goto error;
+	  break;
+	}
+      /* We arrive here when we want to parse a list of
+	 numbers.  */
+      continue_ulist = 1;
+      do
+	{
+	  tok = next_token ();
+	  if (tok != INTEGER)
+	    goto error;
+
+	  unit1 = unit_num;
+	  tok = next_token ();
+	  /* The number can be followed by a - and another number,
+	     which means that this is a unit range, a comma
+	     or a semicolon.  */
+	  if (tok == '-')
+	    {
+	      if (next_token () != INTEGER)
+		goto error;
+
+	      mark_range (unit1, unit_num);
+	      tok = next_token ();
+	      if (tok == END)
+		goto end;
+	      else if (tok == ';')
+		continue_ulist = 0;
+	      else if (tok != ',')
+		goto error;
+	    }
+	  else
+	    {
+	      mark_single (unit1);
+	      switch (tok)
+		{
+		case ';':
+		  continue_ulist = 0;
+		  break;
+
+		case ',':
+		  break;
+
+		case END:
+		  goto end;
+		  break;
+
+		default:
+		  goto error;
+		}
+	    }
+	} while (continue_ulist);
+    }
+ end:
+  return 0;
+ error:
+  def = CONVERT_NONE;
+  return -1;
+}
+
+void init_unformatted (variable * v)
+{
+  char *val;
+  val = getenv (v->name);
+  def = CONVERT_NONE;
+  n_elist = 0;
+
+  if (val == NULL)
+    return;
+  do_count = 1;
+  p = val;
+  do_parse ();
+  if (do_count <= 0)
+    {
+      n_elist = 0;
+      elist = NULL;
+    }
+  else
+    {
+      elist = get_mem (unit_count * sizeof (exception_t));
+      do_count = 0;
+      p = val;
+      do_parse ();
+    }
+}
+
+/* Get the default conversion for for an unformatted unit.  */
+
+unit_convert
+get_unformatted_convert (int unit)
+{
+  int i;
+
+  if (elist == NULL)
+    return def;
+  else if (search_unit (unit, &i))
+    return elist[i].conv;
+  else
+    return def;
 }
