@@ -1,3 +1,7 @@
+2006-02-06  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (gnat_substitute_in_type): Don't handle CHAR_TYPE.
+
 2006-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25926
