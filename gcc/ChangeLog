@@ -1,3 +1,8 @@
+2006-02-02  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/i386/sync.md (sync_add<mode>, sync_sub<mode>, sync_ior<mode>,
+	sync_and<mode>, sync_xor<mode>): Operand 0 is in-out.
+
 2006-02-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (bb_value_sets_t): Add antic_safe_loads.
