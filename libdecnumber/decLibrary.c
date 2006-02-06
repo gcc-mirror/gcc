@@ -1,5 +1,5 @@
 /* Temporary library support for decimal floating point.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -81,13 +81,13 @@ __dfp_raise (int exception __attribute__ ((unused)))
   raise (SIGFPE);
 }
 
-unsigned long
-__dec_byte_swap (unsigned long in)
+uint32_t
+__dec_byte_swap (uint32_t in)
 {
-  unsigned long out;
+  uint32_t out = 0;
   unsigned char *p = (unsigned char *) &out;
   union {
-    unsigned long i;
+    uint32_t i;
     unsigned char b[4];
   } u;
 
