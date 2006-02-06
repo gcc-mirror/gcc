@@ -352,6 +352,15 @@ So instead we use the macro below and test it against specific values.  */
 # endif /* GNUC >= 3.5 */
 #endif /* ATTRIBUTE_SENTINEL */
 
+
+#ifndef ATTRIBUTE_ALIGNED_ALIGNOF
+# if (GCC_VERSION >= 3000)
+#  define ATTRIBUTE_ALIGNED_ALIGNOF(m) __attribute__ ((__aligned__ (__alignof__ (m))))
+# else
+#  define ATTRIBUTE_ALIGNED_ALIGNOF(m)
+# endif /* GNUC >= 3.0 */
+#endif /* ATTRIBUTE_ALIGNED_ALIGNOF */
+
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before
    gcc 2.8.  */

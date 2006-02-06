@@ -1,3 +1,17 @@
+2006-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2006-01-18  DJ Delorie  <dj@redhat.com>
+
+	* md5.h: Include ansidecl.h
+	
+	2005-07-03  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/13906
+	* ansidecl.h (ATTRIBUTE_ALIGNED_ALIGNOF): New.
+	* md5.h (md5_uintptr): New.
+	(md5_ctx): Align buffer field.
+
 2005-11-15  Kean Johnston  <jkj@sco.com>
 
 	* ansidecl.h: Back-ported ATTRIBUTE_FPTR_PRINTF macros from head.

@@ -27,6 +27,8 @@
 # include <limits.h>
 #endif
 
+#include "ansidecl.h"
+
 /* The following contortions are an attempt to use the C preprocessor
    to determine an unsigned integral type that is 32 bits wide.  An
    alternative approach is to use autoconf's AC_CHECK_SIZEOF macro, but
@@ -37,6 +39,7 @@
 #ifdef _LIBC
 # include <sys/types.h>
 typedef u_int32_t md5_uint32;
+typedef uintptr_t md5_uintptr;
 #else
 #  define INT_MAX_32_BITS 2147483647
 
@@ -64,6 +67,9 @@ typedef u_int32_t md5_uint32;
 #   endif
 #  endif
 # endif
+/* We have to make a guess about the integer type equivalent in size
+   to pointers which should always be correct.  */
+typedef unsigned long int md5_uintptr;
 #endif
 
 #undef __P
@@ -83,7 +89,7 @@ struct md5_ctx
 
   md5_uint32 total[2];
   md5_uint32 buflen;
-  char buffer[128];
+  char buffer[128] ATTRIBUTE_ALIGNED_ALIGNOF(md5_uint32);
 };
 
 /*
