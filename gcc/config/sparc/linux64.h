@@ -364,3 +364,6 @@ do {									\
    sparc64 glibc provides it at [%g7 + 0x28].  */
 #define TARGET_THREAD_SSP_OFFSET	(TARGET_ARCH64 ? 0x28 : 0x14)
 #endif
+
+/* Define if long doubles should be mangled as 'g'.  */
+#define TARGET_ALTERNATE_LONG_DOUBLE_MANGLING

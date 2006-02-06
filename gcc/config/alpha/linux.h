@@ -77,3 +77,6 @@ Boston, MA 02110-1301, USA.  */
 #endif
 
 #define MD_UNWIND_SUPPORT "config/alpha/linux-unwind.h"
+
+/* Define if long doubles should be mangled as 'g'.  */
+#define TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
