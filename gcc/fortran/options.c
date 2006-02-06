@@ -573,6 +573,22 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_fshort_enums:
       gfc_option.fshort_enums = 1;
       break;
+
+    case OPT_fconvert_little_endian:
+      gfc_option.convert = CONVERT_LITTLE;
+      break;
+
+    case OPT_fconvert_big_endian:
+      gfc_option.convert = CONVERT_BIG;
+      break;
+
+    case OPT_fconvert_native:
+      gfc_option.convert = CONVERT_NATIVE;
+      break;
+
+    case OPT_fconvert_swap:
+      gfc_option.convert = CONVERT_SWAP;
+      break;
     }
 
   return result;

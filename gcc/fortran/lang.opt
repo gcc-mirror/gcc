@@ -205,4 +205,20 @@ fshort-enums
 Fortran
 Use the narrowest integer type possible for enumeration types
 
+fconvert=little-endian
+Fortran RejectNegative
+Use little-endian format for unformatted files
+
+fconvert=big-endian
+Fortran RejectNegative
+Use big-endian format for unformatted files
+
+fconvert=native
+Fortran RejectNegative
+Use native format for unformatted files
+
+fconvert=swap
+Fortran RejectNegative
+Swap endianness for unformatted files
+
 ; This comment is to ensure we retain the blank line above.
