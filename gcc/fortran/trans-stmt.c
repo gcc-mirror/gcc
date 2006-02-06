@@ -69,7 +69,7 @@ typedef struct forall_info
 }
 forall_info;
 
-static void gfc_trans_where_2 (gfc_code *, tree, tree, forall_info *,
+static void gfc_trans_where_2 (gfc_code *, tree, forall_info *,
                                stmtblock_t *, temporary_list **temp);
 
 /* Translate a F95 label number to a LABEL_EXPR.  */
@@ -2526,7 +2526,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 
 	  /* Translate WHERE or WHERE construct nested in FORALL.  */
           temp = NULL;
-	  gfc_trans_where_2 (c, NULL, NULL, nested_forall_info, &block, &temp);
+	  gfc_trans_where_2 (c, NULL, nested_forall_info, &block, &temp);
 
           while (temp)
             {
@@ -2622,10 +2622,10 @@ tree gfc_trans_forall (gfc_code * code)
    needed by the WHERE mask expression multiplied by the iterator number of
    the nested forall.
    ME is the WHERE mask expression.
-   MASK is the temporary which value is mask's value.
-   NMASK is another temporary which value is !mask.
-   TEMP records the temporary's address allocated in this function in order to
-   free them outside this function.
+   MASK is the temporary whose value is mask's value.
+   NMASK is another temporary whose value is !mask, or NULL if not required.
+   TEMP records the temporary's address allocated in this function in order
+   to free them outside this function.
    MASK, NMASK and TEMP are all OUT arguments.  */
 
 static tree
@@ -2670,18 +2670,23 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
       *temp = tempo;
     }
 
-  /* Allocate temporary for !mask.  */
-  ntmp = allocate_temp_for_forall_nest_1 (mask_type, size, block, &ptemp2);
-
-  /* Record the temporary  in order to free it later.  */
-  if (ptemp2)
+  if (nmask)
     {
-      temporary_list *tempo;
-      tempo = (temporary_list *) gfc_getmem (sizeof (temporary_list));
-      tempo->temporary = ptemp2;
-      tempo->next = *temp;
-      *temp = tempo;
+      /* Allocate temporary for !mask.  */
+      ntmp = allocate_temp_for_forall_nest_1 (mask_type, size, block, &ptemp2);
+
+      /* Record the temporary  in order to free it later.  */
+      if (ptemp2)
+	{
+	  temporary_list *tempo;
+	  tempo = (temporary_list *) gfc_getmem (sizeof (temporary_list));
+	  tempo->temporary = ptemp2;
+	  tempo->next = *temp;
+	  *temp = tempo;
+	}
     }
+  else
+    ntmp = NULL_TREE;
 
   /* Variable to index the temporary.  */
   count = gfc_create_var (gfc_array_index_type, "count");
@@ -2720,15 +2725,18 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
     }
   /* Form the expression of the temporary.  */
   lse.expr = gfc_build_array_ref (tmp, count);
-  tmpexpr = gfc_build_array_ref (ntmp, count);
 
   /* Use the scalar assignment to fill temporary TMP.  */
   tmp1 = gfc_trans_scalar_assign (&lse, &rse, me->ts.type);
   gfc_add_expr_to_block (&body1, tmp1);
 
-  /* Fill temporary NTMP.  */
-  tmp1 = build1 (TRUTH_NOT_EXPR, TREE_TYPE (lse.expr), lse.expr);
-  gfc_add_modify_expr (&body1, tmpexpr, tmp1);
+  if (nmask)
+    {
+      /* Fill temporary NTMP.  */
+      tmp1 = build1 (TRUTH_NOT_EXPR, TREE_TYPE (lse.expr), lse.expr);
+      tmpexpr = gfc_build_array_ref (ntmp, count);
+      gfc_add_modify_expr (&body1, tmpexpr, tmp1);
+    }
 
  if (lss == gfc_ss_terminator)
     {
@@ -2760,7 +2768,8 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
   gfc_add_expr_to_block (block, tmp1);
 
   *mask = tmp;
-  *nmask = ntmp;
+  if (nmask)
+    *nmask = ntmp;
 
   return tmp1;
 }
@@ -2990,12 +2999,12 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
 /* Translate the WHERE construct or statement.
    This function can be called iteratively to translate the nested WHERE
    construct or statement.
-   MASK is the control mask, and PMASK is the pending control mask.
+   MASK is the control mask.
    TEMP records the temporary address which must be freed later.  */
 
 static void
-gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
-                   forall_info * nested_forall_info, stmtblock_t * block,
+gfc_trans_where_2 (gfc_code * code, tree mask,
+		   forall_info * nested_forall_info, stmtblock_t * block,
                    temporary_list ** temp)
 {
   gfc_expr *expr1;
@@ -3006,6 +3015,10 @@ gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
   tree count1, count2;
   tree mask_copy;
   int need_temp;
+  tree *tmp1_ptr;
+  tree pmask;
+
+  pmask = NULL_TREE;
 
   /* the WHERE statement or the WHERE construct statement.  */
   cblock = code->block;
@@ -3014,9 +3027,20 @@ gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
       /* Has mask-expr.  */
       if (cblock->expr)
         {
+	  /* If this is the last clause of the WHERE construct, then
+	     we don't need to allocate/populate/deallocate a complementary
+	     pending control mask (pmask).  */
+	  if (! cblock->block)
+	    {
+	      tmp1 = NULL_TREE;
+	      tmp1_ptr = NULL;
+	    }
+	  else
+	    tmp1_ptr = &tmp1;
+
           /* Ensure that the WHERE mask be evaluated only once.  */
           tmp2 = gfc_evaluate_where_mask (cblock->expr, nested_forall_info,
-                                          &tmp, &tmp1, temp, block);
+                                          &tmp, tmp1_ptr, temp, block);
 
           /* Set the control mask and the pending control mask.  */
           /* It's a where-stmt.  */
@@ -3102,7 +3126,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
             case EXEC_WHERE:
               /* Ensure that MASK is not modified by next gfc_trans_where_2.  */
               mask_copy = copy_list (mask);
-              gfc_trans_where_2 (cnext, mask_copy, NULL, nested_forall_info,
+              gfc_trans_where_2 (cnext, mask_copy, nested_forall_info,
                                  block, temp);
               break;
 
@@ -3311,7 +3335,7 @@ gfc_trans_where (gfc_code * code)
   gfc_start_block (&block);
   temp = NULL;
 
-  gfc_trans_where_2 (code, NULL, NULL, NULL, &block, &temp);
+  gfc_trans_where_2 (code, NULL, NULL, &block, &temp);
 
   /* Add calls to free temporaries which were dynamically allocated.  */
   while (temp)
