@@ -1,3 +1,24 @@
+2006-02-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (bb_value_sets_t): Add antic_safe_loads.
+	(ANTIC_SAFE_LOADS): New macro.
+	(find_or_generate_expression): Add prototype.
+	(set_contains_value): Allow null set for sake of not always having
+	to allocate ANTIC_SAFE_LOADS.
+	(phi_translate): Move placement of AGGREGATE_TYPE_P check.
+	Allow COMPONENT_REF too.
+	(valid_in_set): Allow COMPONENT_REF.
+	Check ANTIC_SAFE_LOADS too.
+	(compute_antic_aux): Print out ANTIC_SAFE_LOADS.
+	(compute_rvuse_and_antic_safe): Add ANTIC_SAFE computation, and
+	rename.
+	(can_PRE_operation): Add COMPONENT_REF.
+	(create_component_ref_by_pieces): New function.
+	(create_expression_by_pieces): Use create_component_ref_by_pieces.
+	(insert_aux): Move AGGREGATE_TYPE_P check here.
+	(compute_avail): Set bb local stmt uids.
+	(pass_pre): Use TODO_update_ssa_only_virtuals.
+	
 2006-02-06  Ben Elliston  <bje@au.ibm.com>
 
 	* configure.ac: Unconditionally disable decimal float by default.

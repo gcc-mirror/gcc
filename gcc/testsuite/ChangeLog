@@ -1,3 +1,10 @@
+2006-02-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.dg/tree-ssa/loadpre10.c: New test.
+	* gcc.dg/tree-ssa/loadpre11.c: Ditto.
+	* gcc.dg/tree-ssa/loadpre6.c: Expect one more elimination.
+	* gcc.dg/tree-ssa/loadpre4.c: This should pass now.
+
 2006-02-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/24685
