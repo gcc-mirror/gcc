@@ -3638,7 +3638,7 @@ dbr_schedule (rtx first)
   /* It is not clear why the line below is needed, but it does seem to be.  */
   unfilled_firstobj = obstack_alloc (&unfilled_slots_obstack, 0);
 
-  if (file)
+  if (dump_file)
     {
       int i, j, need_comma;
       int total_delay_slots[MAX_DELAY_HISTOGRAM + 1];
@@ -3648,25 +3648,25 @@ dbr_schedule (rtx first)
 	   reorg_pass_number < MAX_REORG_PASSES;
 	   reorg_pass_number++)
 	{
-	  fprintf (file, ";; Reorg pass #%d:\n", reorg_pass_number + 1);
+	  fprintf (dump_file, ";; Reorg pass #%d:\n", reorg_pass_number + 1);
 	  for (i = 0; i < NUM_REORG_FUNCTIONS; i++)
 	    {
 	      need_comma = 0;
-	      fprintf (file, ";; Reorg function #%d\n", i);
+	      fprintf (dump_file, ";; Reorg function #%d\n", i);
 
-	      fprintf (file, ";; %d insns needing delay slots\n;; ",
+	      fprintf (dump_file, ";; %d insns needing delay slots\n;; ",
 		       num_insns_needing_delays[i][reorg_pass_number]);
 
 	      for (j = 0; j < MAX_DELAY_HISTOGRAM + 1; j++)
 		if (num_filled_delays[i][j][reorg_pass_number])
 		  {
 		    if (need_comma)
-		      fprintf (file, ", ");
+		      fprintf (dump_file, ", ");
 		    need_comma = 1;
-		    fprintf (file, "%d got %d delays",
+		    fprintf (dump_file, "%d got %d delays",
 			     num_filled_delays[i][j][reorg_pass_number], j);
 		  }
-	      fprintf (file, "\n");
+	      fprintf (dump_file, "\n");
 	    }
 	}
       memset (total_delay_slots, 0, sizeof total_delay_slots);
@@ -3692,35 +3692,35 @@ dbr_schedule (rtx first)
 		total_delay_slots[0]++;
 	    }
 	}
-      fprintf (file, ";; Reorg totals: ");
+      fprintf (dump_file, ";; Reorg totals: ");
       need_comma = 0;
       for (j = 0; j < MAX_DELAY_HISTOGRAM + 1; j++)
 	{
 	  if (total_delay_slots[j])
 	    {
 	      if (need_comma)
-		fprintf (file, ", ");
+		fprintf (dump_file, ", ");
 	      need_comma = 1;
-	      fprintf (file, "%d got %d delays", total_delay_slots[j], j);
+	      fprintf (dump_file, "%d got %d delays", total_delay_slots[j], j);
 	    }
 	}
-      fprintf (file, "\n");
+      fprintf (dump_file, "\n");
 #if defined (ANNUL_IFTRUE_SLOTS) || defined (ANNUL_IFFALSE_SLOTS)
-      fprintf (file, ";; Reorg annuls: ");
+      fprintf (dump_file, ";; Reorg annuls: ");
       need_comma = 0;
       for (j = 0; j < MAX_DELAY_HISTOGRAM + 1; j++)
 	{
 	  if (total_annul_slots[j])
 	    {
 	      if (need_comma)
-		fprintf (file, ", ");
+		fprintf (dump_file, ", ");
 	      need_comma = 1;
-	      fprintf (file, "%d got %d delays", total_annul_slots[j], j);
+	      fprintf (dump_file, "%d got %d delays", total_annul_slots[j], j);
 	    }
 	}
-      fprintf (file, "\n");
+      fprintf (dump_file, "\n");
 #endif
-      fprintf (file, "\n");
+      fprintf (dump_file, "\n");
     }
 
   /* For all JUMP insns, fill in branch prediction notes, so that during
