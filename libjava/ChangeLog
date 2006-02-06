@@ -1,3 +1,10 @@
+2006-02-06  Tom Tromey  <tromey@redhat.com>
+
+	* gij.cc (version): Use 2006.
+	* gnu/java/rmi/rmic/RMIC.java (parseOptions): Use 2006.
+	* gnu/gcj/convert/Convert.java (version): Use 2006.
+	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Use 2006.
+
 2006-02-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (src.zip): Update src.zip file search to look in

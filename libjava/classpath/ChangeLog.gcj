@@ -1,3 +1,9 @@
+2006-02-06  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/rmi/registry/RegistryImpl.java (version): Use 2006.
+	* gnu/CORBA/NamingService/NamingServiceTransient.java (main): Use
+	2006.
+
 2006-02-06  Anthony Green  <green@redhat.com>
 
 	* gnu/xml/aelfred2/XmlParser.java: Add missing break;.
