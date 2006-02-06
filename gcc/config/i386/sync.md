@@ -1,5 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005
+;; Copyright (C) 2005, 2006
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -230,7 +230,7 @@
   "xchg{<modesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_add<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "=m")
+  [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(plus:IMODE (match_dup 0)
 	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
@@ -240,7 +240,7 @@
   "lock\;add{<modesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_sub<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "=m")
+  [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(minus:IMODE (match_dup 0)
 	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
@@ -250,7 +250,7 @@
   "lock\;sub{<modesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_ior<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "=m")
+  [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(ior:IMODE (match_dup 0)
 	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
@@ -260,7 +260,7 @@
   "lock\;or{<modesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_and<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "=m")
+  [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(and:IMODE (match_dup 0)
 	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
@@ -270,7 +270,7 @@
   "lock\;and{<modesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_xor<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "=m")
+  [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(xor:IMODE (match_dup 0)
 	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
