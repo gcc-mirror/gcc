@@ -1,3 +1,70 @@
+2006-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from gomp-20050608-branch
+	* trans-decl.c (create_function_arglist): Handle dummy functions.
+
+	* trans-decl.c (gfc_get_symbol_decl): Revert explicit setting of
+	TYPE_SIZE_UNIT.
+	(gfc_trans_vla_type_sizes): Also "gimplify"
+	GFC_TYPE_ARRAY_DATAPTR_TYPE for GFC_DESCRIPTOR_TYPE_P types.
+	* trans-array.c (gfc_trans_deferred_array): Call
+	gfc_trans_vla_type_sizes.
+
+	* trans-decl.c (saved_function_decls, saved_parent_function_decls):
+	Remove unnecessary initialization.
+	(create_function_arglist): Make sure __result has complete type.
+	(gfc_get_fake_result_decl): Change current_fake_result_decl into
+	a tree chain.  For entry master, create a separate variable
+	for each result name.  For BT_CHARACTER results, call
+	gfc_finish_var_decl on length even if it has been already created,
+	but not pushdecl'ed.
+	(gfc_trans_vla_type_sizes): For function/entry result, adjust
+	result value type, not the FUNCTION_TYPE.
+	(gfc_generate_function_code): Adjust for current_fake_result_decl
+	changes.
+	(gfc_trans_deferred_vars): Likewise.  Call gfc_trans_vla_type_sizes
+	even on result if it is assumed-length character.
+
+	* trans-decl.c (gfc_trans_dummy_character): Add SYM argument.
+	Call gfc_trans_vla_type_sizes.
+	(gfc_trans_auto_character_variable): Call gfc_trans_vla_type_sizes.
+	(gfc_trans_vla_one_sizepos, gfc_trans_vla_type_sizes_1,
+	gfc_trans_vla_type_sizes): New functions.
+	(gfc_trans_deferred_vars): Adjust gfc_trans_dummy_character
+	callers.  Call gfc_trans_vla_type_sizes on assumed-length
+	character parameters.
+	* trans-array.c (gfc_trans_array_bounds,
+	gfc_trans_auto_array_allocation, gfc_trans_dummy_array_bias): Call
+	gfc_trans_vla_type_sizes.
+	* trans.h (gfc_trans_vla_type_sizes): New prototype.
+
+	* trans-decl.c (gfc_build_qualified_array): For non-assumed-size
+	arrays without constant size, create also an index var for
+	GFC_TYPE_ARRAY_SIZE (type).  If the type is incomplete, complete
+	it as 0..size-1.
+	(gfc_create_string_length): Don't call gfc_defer_symbol_init
+	if just creating DECL_ARGUMENTS.
+	(gfc_get_symbol_decl): Call gfc_finish_var_decl and
+	gfc_defer_symbol_init even if ts.cl->backend_decl is already
+	set to a VAR_DECL that doesn't have DECL_CONTEXT yet.
+	(create_function_arglist): Rework, so that hidden length
+	arguments for CHARACTER parameters are created together with
+	the parameters.  Resolve ts.cl->backend_decl for CHARACTER
+	parameters.  If the argument is a non-constant length array
+	or CHARACTER, ensure PARM_DECL has different type than
+	its DECL_ARG_TYPE.
+	(generate_local_decl): Call gfc_get_symbol_decl even
+	for non-referenced non-constant length CHARACTER parameters
+	after optionally issuing warnings.
+	* trans-array.c (gfc_trans_array_bounds): Set last stride
+	to GFC_TYPE_ARRAY_SIZE (type) to initialize it as well.
+	(gfc_trans_dummy_array_bias): Initialize GFC_TYPE_ARRAY_SIZE (type)
+	variable as well.
+
+	* trans-expr.c (gfc_conv_expr_val): Fix comment typo.
+
+	* trans-stmt.c (gfc_trans_simple_do): Fix comment.
+
 2006-02-04  Roger Sayle  <roger@eyesopen.com>
 
 	* dependency.c (gfc_check_dependency): Remove unused vars and nvars
