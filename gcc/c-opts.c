@@ -431,10 +431,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->warn_deprecated = value;
       break;
 
-    case OPT_Wdiv_by_zero:
-      warn_div_by_zero = value;
-      break;
-
     case OPT_Wendif_labels:
       cpp_opts->warn_endif_labels = value;
       break;

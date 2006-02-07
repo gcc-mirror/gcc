@@ -166,7 +166,7 @@ C++ ObjC++ Var(warn_deprecated) Init(1)
 Warn about deprecated compiler features
 
 Wdiv-by-zero
-C ObjC Var(warn_div_by_zero) Init(1)
+C ObjC C++ Var(warn_div_by_zero) Init(1)
 Warn about compile-time integer division by zero
 
 Weffc++

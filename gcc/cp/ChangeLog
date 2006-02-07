@@ -1,3 +1,8 @@
+2006-02-07  Dirk Mueller  <dmueller@suse.com>
+
+	* typeck.c (build_binary_op): Annotate div-by-zero
+	warnings to make -Wno-div-by-zero have an effect.
+
 2006-02-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9737
