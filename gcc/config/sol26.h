@@ -21,7 +21,7 @@ Boston, MA 02110-1301, USA.  */
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\
-%{pthreads:-D_REENTRANT -D_PTHREADS95} \
-%{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
+%{pthreads|pthread:-D_REENTRANT -D_PTHREADS95} \
+%{!pthreads:%{!pthread:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}}} \
 %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
 "
