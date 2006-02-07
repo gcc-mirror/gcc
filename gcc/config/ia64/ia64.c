@@ -3816,7 +3816,7 @@ hfa_element_mode (tree type, bool nested)
   switch (code)
     {
     case VOID_TYPE:	case INTEGER_TYPE:	case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:	case CHAR_TYPE:		case POINTER_TYPE:
+    case BOOLEAN_TYPE:	case POINTER_TYPE:
     case OFFSET_TYPE:	case REFERENCE_TYPE:	case METHOD_TYPE:
     case LANG_TYPE:		case FUNCTION_TYPE:
       return VOIDmode;

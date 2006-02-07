@@ -1,3 +1,7 @@
+2006-02-06  Roger Sayle  <roger@eyesopen.com>
+
+	* config/ia64/ia64.c (hfa_element_mode): Don't handle CHAR_TYPE.
+
 2006-02-07  Ben Elliston  <bje@au.ibm.com>
 
 	* config/i386/i386.c (ix86_scalar_mode_supported_p): New.
