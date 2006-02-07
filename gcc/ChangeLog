@@ -1,5 +1,12 @@
 2006-02-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* config/sol26.h (CPP_SUBTARGET_SPEC): Accept -pthread.
+	* config/sol2.h (CPP_SUBTARGET_SPEC): Likewise.
+	(LIB_SPEC): Likewise.
+	* doc/invoke.texi (SPARC options): Document -pthread.
+
+2006-02-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* configure.ac (TLS assembler check): Do not enable TLS by
 	default on SPARC/Solaris before version 10.
 	* configure: Regenerate.

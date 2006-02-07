@@ -700,7 +700,7 @@ See RS/6000 and PowerPC Options.
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis
--threads -pthreads}
+-threads -pthreads -pthread}
 
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
@@ -12260,6 +12260,10 @@ Add support for multithreading using the POSIX threads library.  This
 option sets flags for both the preprocessor and linker.  This option does
 not affect the thread safety of object code produced  by the compiler or
 that of libraries supplied with it.
+
+@item -pthread
+@opindex pthread
+This is a synonym for @option{-pthreads}.
 @end table
 
 @node System V Options
