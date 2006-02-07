@@ -90,7 +90,10 @@ GLIBCXX_3.4 {
       std::locale::_S_normalize_category*;
       std::locale::_[T-Za-z]*;
 #     std::[A-Zm-r]*;
-      std::[A-Zm-n]*;
+      std::[A-Zm]*;
+      std::n[^u]*;
+      std::nu[^m]*;
+      std::num[^e]*;
       std::[p-r]*;
       std::ostrstream*;
       std::out_of_range*;
@@ -254,7 +257,7 @@ GLIBCXX_3.4 {
     _ZNSi[0-9][a-h]*;
     _ZNSi[0-9][j-z]*;
     _ZNSi6ignoreE[il][il];
-    _ZNSirsE*;
+    _ZNSirsE*[^g];
 
     # std::basic_istream<wchar_t>
     _ZNSt13basic_istreamIwSt11char_traitsIwEEC*;
@@ -263,7 +266,7 @@ GLIBCXX_3.4 {
     _ZNSt13basic_istreamIwSt11char_traitsIwEE[0-9][a-h]*;
     _ZNSt13basic_istreamIwSt11char_traitsIwEE[0-9][j-z]*;
     _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreE[il][ijlm];
-    _ZNSt13basic_istreamIwSt11char_traitsIwEErsE*;
+    _ZNSt13basic_istreamIwSt11char_traitsIwEErsE*[^g];
 
     # std::istream operators and extractors
     _ZSt7getlineI[cw]St11char_traitsI[cw]ESaI[cw]EERSt13basic_istream*;
@@ -281,7 +284,7 @@ GLIBCXX_3.4 {
     _ZNKSo6sentrycvbEv;
     _ZNSo8_M_write*;
     _ZNSo[0-9][a-z]*;
-    _ZNSolsE*;
+    _ZNSolsE*[^g];
 
     # std::basic_ostream<wchar_t>
     _ZNSt13basic_ostreamIwSt11char_traitsIwEEC*;
@@ -294,7 +297,7 @@ GLIBCXX_3.4 {
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE5writeEPKw*;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE6sentry*;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE8_M_write*;
-    _ZNSt13basic_ostreamIwSt11char_traitsIwEElsE*;
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEElsE*[^g];
 
     # std::ostream operators and inserters
     _ZSt4end[ls]I[cw]St11char_traitsI[cw]EERSt13basic_ostream*;
@@ -321,7 +324,7 @@ GLIBCXX_3.4 {
     _ZNSt8ios_base4InitD*;
 
     # bool std::has_facet 
-    _ZSt9has_facet*;
+    _ZSt9has_facetIS*;
 
     # std::num_get
     _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
@@ -334,6 +337,9 @@ GLIBCXX_3.4 {
 
     # std::money_put
     _ZNKSt9money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
+
+    # std::numeric_limits
+    _ZNSt14numeric_limitsI[^g]*;
 
     # std::_Rb_tree
     _ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base;
@@ -362,7 +368,7 @@ GLIBCXX_3.4 {
     _ZNSt12__basic_fileIcED*;
 
     # std::__convert_to_v
-    _ZSt14__convert_to_v*;
+    _ZSt14__convert_to_vI[^g]*;
 
     # __gnu_cxx::stdio_sync_filebuf
     _ZTVN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
@@ -455,7 +461,8 @@ GLIBCXX_3.4 {
     _ZTSN9__gnu_cxx13stdio_filebufI[cw]St11char_traitsI[cw]EEE;
 
     # function-scope static objects requires a guard variable.
-    _ZGVNSt*;
+    _ZGVNSt[^1]*;
+    _ZGVNSt1[^7]*;
 
     # virtual function thunks
     _ZThn8_NS*;
@@ -661,10 +668,10 @@ GLIBCXX_3.4.7 {
     _ZNSt11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv;
     _ZNSt11__gnu_debug19_Safe_sequence_base7_M_swapERS0_;
 
-    _ZNSo9_M_insertI*;
-    _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertI*;
-    _ZNSi10_M_extractI*;
-    _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractI*;
+    _ZNSo9_M_insertI[^g]*;
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertI[^g]*;
+    _ZNSi10_M_extractI[^g]*;
+    _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractI[^g]*;
 
 } GLIBCXX_3.4.6;
 
@@ -740,9 +747,9 @@ CXXABI_1.3 {
     _ZTVN10__cxxabiv121__vmi_class_type_infoE;
 
     # typeinfo structure (and some names)
-    _ZTI[a-z];
-    _ZTIP[a-z];
-    _ZTIPK[a-z];
+    _ZTI[a-fh-z];
+    _ZTIP[a-fh-z];
+    _ZTIPK[a-fh-z];
     _ZTIN10__cxxabiv117__array_type_infoE;
     _ZTIN10__cxxabiv117__class_type_infoE;
     _ZTIN10__cxxabiv116__enum_type_infoE;
@@ -755,9 +762,9 @@ CXXABI_1.3 {
     _ZTIN10__cxxabiv121__vmi_class_type_infoE;
 
     # typeinfo name
-    _ZTS[a-z];
-    _ZTSP[a-z];
-    _ZTSPK[a-z];
+    _ZTS[a-fh-z];
+    _ZTSP[a-fh-z];
+    _ZTSPK[a-fh-z];
     _ZTSN10__cxxabiv117__array_type_infoE;
     _ZTSN10__cxxabiv117__class_type_infoE;
     _ZTSN10__cxxabiv116__enum_type_infoE;

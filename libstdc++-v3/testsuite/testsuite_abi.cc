@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -186,8 +186,11 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.5");
       known_versions.push_back("GLIBCXX_3.4.6");
       known_versions.push_back("GLIBCXX_3.4.7");
+      known_versions.push_back("GLIBCXX_LDBL_3.4");
+      known_versions.push_back("GLIBCXX_LDBL_3.4.7");
       known_versions.push_back("CXXABI_1.3");
       known_versions.push_back("CXXABI_1.3.1");
+      known_versions.push_back("CXXABI_LDBL_1.3");
     }
   compat_list::iterator begin = known_versions.begin();
   compat_list::iterator end = known_versions.end();
@@ -223,9 +226,7 @@ check_version(symbol& test, bool added)
 	  // New version labels are ok. The rest are not.
 	  compat_list::iterator it2 = find(begin, end, test.name);
 	  if (it2 != end)
-	    {
-	      test.version_status = symbol::compatible;
-	    }
+	    test.version_status = symbol::compatible;
 	  else
 	    test.version_status = symbol::incompatible;
 	}
@@ -369,13 +370,14 @@ compare_symbols(const char* baseline_file, const char* test_file,
 	  added_names.erase(it);
 	}
       else
-	  missing_names.push_back(what);
+	missing_names.push_back(what);
     }
 
   // Check missing names for compatibility.
   typedef pair<symbol, symbol> symbol_pair;
   vector<symbol_pair> incompatible;
-  for (size_t j = 0; j < missing_names.size(); ++j)
+  const symbol_names::size_type missing_size = missing_names.size();
+  for (size_t j = 0; j < missing_size; ++j)
     {
       symbol& base = baseline_objects[missing_names[j]];
       base.status = symbol::subtracted;
@@ -383,7 +385,8 @@ compare_symbols(const char* baseline_file, const char* test_file,
     }
 
   // Check shared names for compatibility.
-  for (size_t k = 0; k < shared_names.size(); ++k)
+  const symbol_names::size_type shared_size = shared_names.size();
+  for (size_t k = 0; k < shared_size; ++k)
     {
       symbol& base = baseline_objects[shared_names[k]];
       symbol& test = test_objects[shared_names[k]];
@@ -393,7 +396,8 @@ compare_symbols(const char* baseline_file, const char* test_file,
     }
 
   // Check added names for compatibility.
-  for (size_t l = 0; l < added_names.size(); ++l)
+  const symbol_names::size_type added_size = added_names.size();
+  for (size_t l = 0; l < added_size; ++l)
     {
       symbol& test = test_objects[added_names[l]];
       test.status = symbol::added;
@@ -459,7 +463,8 @@ create_symbols(const char* file)
   ifstream ifs(file);
   if (ifs.is_open())
     {
-      // Organize file data into container of symbol objects.
+      // Organize file data into container of symbol objects, and a
+      // container of mangled names without versioning information.
       symbol_names& names = s.first;
       symbol_objects& objects = s.second;
       const string empty;
@@ -468,8 +473,8 @@ create_symbols(const char* file)
 	{
 	  symbol tmp;
 	  tmp.init(line);
-	  objects[tmp.raw_name] = tmp;
-	  names.push_back(tmp.raw_name);
+	  objects[tmp.name] = tmp;
+	  names.push_back(tmp.name);
 	  line = empty;
 	}
     }

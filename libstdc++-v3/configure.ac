@@ -284,6 +284,25 @@ fi
 # This depends on GLIBCXX CHECK_LINKER_FEATURES, but without it assumes no.
 GLIBCXX_ENABLE_SYMVERS([yes])
 
+ac_ldbl_compat=no
+case "$target" in
+  powerpc*-*-*gnu* | \
+  sparc*-*-linux* | \
+  s390*-*-linux* | \
+  alpha*-*-linux*)
+  AC_TRY_COMPILE(, [
+#if !defined __LONG_DOUBLE_128__ || (defined(__sparc__) && defined(__arch64__))
+#error no need for long double compatibility
+#endif
+  ], [ac_ldbl_compat=yes], [ac_ldbl_compat=no])
+  if test "$ac_ldbl_compat" = yes; then
+    AC_DEFINE([_GLIBCXX_LONG_DOUBLE_COMPAT],1,
+	      [Define if compatibility should be provided for -mlong-double-64.])
+    port_specific_symbol_files="\$(top_srcdir)/config/os/gnu-linux/ldbl-extra.ver"
+  fi
+esac
+GLIBCXX_CONDITIONAL(GLIBCXX_LDBL_COMPAT, test $ac_ldbl_compat = yes)
+
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
 

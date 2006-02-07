@@ -59,11 +59,27 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
+am__libstdc___la_SOURCES_DIST = bitmap_allocator.cc pool_allocator.cc \
+	mt_allocator.cc codecvt.cc compatibility.cc complex_io.cc \
+	ctype.cc debug.cc debug_list.cc functexcept.cc \
+	globals_locale.cc globals_io.cc ios.cc ios_failure.cc \
+	ios_init.cc ios_locale.cc limits.cc list.cc locale.cc \
+	locale_init.cc locale_facets.cc localename.cc stdexcept.cc \
+	strstream.cc tree.cc allocator-inst.cc concept-inst.cc \
+	fstream-inst.cc ext-inst.cc ios-inst.cc iostream-inst.cc \
+	istream-inst.cc istream.cc locale-inst.cc locale-misc-inst.cc \
+	misc-inst.cc ostream-inst.cc sstream-inst.cc streambuf-inst.cc \
+	streambuf.cc string-inst.cc valarray-inst.cc wlocale-inst.cc \
+	wstring-inst.cc atomicity.cc codecvt_members.cc \
+	collate_members.cc ctype_members.cc messages_members.cc \
+	monetary_members.cc numeric_members.cc time_members.cc \
+	basic_file.cc c++locale.cc compatibility-ldbl.cc
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
 	numeric_members.lo time_members.lo
 am__objects_2 = basic_file.lo c++locale.lo
-am__objects_3 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
+@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_3 = compatibility-ldbl.lo
+am__objects_4 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	codecvt.lo compatibility.lo complex_io.lo ctype.lo debug.lo \
 	debug_list.lo functexcept.lo globals_locale.lo globals_io.lo \
 	ios.lo ios_failure.lo ios_init.lo ios_locale.lo limits.lo \
@@ -74,8 +90,9 @@ am__objects_3 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	locale-inst.lo locale-misc-inst.lo misc-inst.lo \
 	ostream-inst.lo sstream-inst.lo streambuf-inst.lo streambuf.lo \
 	string-inst.lo valarray-inst.lo wlocale-inst.lo \
-	wstring-inst.lo $(am__objects_1) $(am__objects_2)
-am_libstdc___la_OBJECTS = $(am__objects_3)
+	wstring-inst.lo $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3)
+am_libstdc___la_OBJECTS = $(am__objects_4)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp =
@@ -84,7 +101,7 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 SOURCES = $(libstdc___la_SOURCES)
-DIST_SOURCES = $(libstdc___la_SOURCES)
+DIST_SOURCES = $(am__libstdc___la_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -156,6 +173,8 @@ GLIBCXX_C_HEADERS_C_TRUE = @GLIBCXX_C_HEADERS_C_TRUE@
 GLIBCXX_HOSTED_FALSE = @GLIBCXX_HOSTED_FALSE@
 GLIBCXX_HOSTED_TRUE = @GLIBCXX_HOSTED_TRUE@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
+GLIBCXX_LDBL_COMPAT_FALSE = @GLIBCXX_LDBL_COMPAT_FALSE@
+GLIBCXX_LDBL_COMPAT_TRUE = @GLIBCXX_LDBL_COMPAT_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -308,6 +327,8 @@ host_sources_extra = \
 	basic_file.cc \
 	c++locale.cc
 
+@GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
+@GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
 
 # Sources present in the src directory.
 sources = \
@@ -356,7 +377,8 @@ sources = \
 	wlocale-inst.cc \
 	wstring-inst.cc \
 	${host_sources} \
-	${host_sources_extra}
+	${host_sources_extra} \
+	${ldbl_compat_sources}
 
 libstdc___la_SOURCES = $(sources)
 libstdc___la_LIBADD = \
@@ -681,10 +703,15 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 @ENABLE_SYMVERS_TRUE@		$(port_specific_symbol_files)
 @ENABLE_SYMVERS_TRUE@	cp ${glibcxx_srcdir}/$(SYMVER_FILE) ./libstdc++-symbols.ver
 @ENABLE_SYMVERS_TRUE@	if test "x$(port_specific_symbol_files)" != x; then \
-@ENABLE_SYMVERS_TRUE@	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
-@ENABLE_SYMVERS_TRUE@	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-@ENABLE_SYMVERS_TRUE@	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
-@ENABLE_SYMVERS_TRUE@	  rm tmp.top tmp.bottom; \
+@ENABLE_SYMVERS_TRUE@	  if grep '^# Appended to version file.' \
+@ENABLE_SYMVERS_TRUE@	       $(port_specific_symbol_files) /dev/null > /dev/null 2>&1; then \
+@ENABLE_SYMVERS_TRUE@	    cat $(port_specific_symbol_files) >> $@; \
+@ENABLE_SYMVERS_TRUE@	  else \
+@ENABLE_SYMVERS_TRUE@	    sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
+@ENABLE_SYMVERS_TRUE@	    sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
+@ENABLE_SYMVERS_TRUE@	    cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
+@ENABLE_SYMVERS_TRUE@	    rm tmp.top tmp.bottom; \
+@ENABLE_SYMVERS_TRUE@	  fi; \
 @ENABLE_SYMVERS_TRUE@	fi
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.explist : libstdc++-symbols.ver \
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@		${glibcxx_srcdir}/scripts/make_exports.pl \
@@ -736,6 +763,13 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
+
+# Use special rules for compatibility-ldbl.cc compilation, as we need to
+# pass -mlong-double-64.
+@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.lo: compatibility-ldbl.cc
+@GLIBCXX_LDBL_COMPAT_TRUE@	$(LTCXXCOMPILE) -mlong-double-64 -c $<
+@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.o: compatibility-ldbl.cc
+@GLIBCXX_LDBL_COMPAT_TRUE@	$(CXXCOMPILE) -mlong-double-64 -c $<
 
 # Added bits to build debug library.
 @GLIBCXX_BUILD_DEBUG_TRUE@all-local: build_debug

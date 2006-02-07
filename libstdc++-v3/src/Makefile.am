@@ -33,10 +33,15 @@ libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 		$(port_specific_symbol_files)
 	cp ${glibcxx_srcdir}/$(SYMVER_FILE) ./libstdc++-symbols.ver
 	if test "x$(port_specific_symbol_files)" != x; then \
-	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
-	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
-	  rm tmp.top tmp.bottom; \
+	  if grep '^# Appended to version file.' \
+	       $(port_specific_symbol_files) /dev/null > /dev/null 2>&1; then \
+	    cat $(port_specific_symbol_files) >> $@; \
+	  else \
+	    sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
+	    sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
+	    cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
+	    rm tmp.top tmp.bottom; \
+	  fi; \
 	fi
 
 if ENABLE_SYMVERS_GNU
@@ -115,6 +120,12 @@ c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
+if GLIBCXX_LDBL_COMPAT
+ldbl_compat_sources = compatibility-ldbl.cc
+else
+ldbl_compat_sources =
+endif
+
 # Sources present in the src directory.
 sources = \
 	bitmap_allocator.cc \
@@ -162,7 +173,8 @@ sources = \
 	wlocale-inst.cc \
 	wstring-inst.cc \
 	${host_sources} \
-	${host_sources_extra}
+	${host_sources_extra} \
+	${ldbl_compat_sources}
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 
@@ -192,6 +204,15 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
+
+if GLIBCXX_LDBL_COMPAT
+# Use special rules for compatibility-ldbl.cc compilation, as we need to
+# pass -mlong-double-64.
+compatibility-ldbl.lo: compatibility-ldbl.cc
+	$(LTCXXCOMPILE) -mlong-double-64 -c $<
+compatibility-ldbl.o: compatibility-ldbl.cc
+	$(CXXCOMPILE) -mlong-double-64 -c $<
+endif
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
