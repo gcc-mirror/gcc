@@ -1,3 +1,9 @@
+2006-02-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure.ac (TLS assembler check): Do not enable TLS by
+	default on SPARC/Solaris before version 10.
+	* configure: Regenerate.
+
 2006-02-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/invoke.texi (xl-compat): Document conversion and support
@@ -37,6 +43,24 @@
 	* tree-ssa-threadedge.c: New file.
 	* passes.c (init_optimization_passes): Merge PHIs before
 	calling VRP.  Run VRP again late in the SSA optimization pipeline.
+
+2006-02-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* df-core.c (df_set_blocks): Do not dereference function pointers.
+	(df_finish1): Likewise.
+	(df_hybrid_search_forward): Likewise.
+	(df_hybrid_search_backward): Likewise.
+	(df_iterative_dataflow): Likewise.
+	(df_analyze_problem): Likewise.
+	(df_compact_blocks): Likewise.
+	(df_dump): Likewise.
+	* df-scan.c (df_rescan_blocks): Likewise.
+	(df_record_entry_block_defs): Likewise.
+
+	* genconditions.c (write_conditions): Guard the definition of
+	'insn_conditions' with the check on GCC version.
+	(write_writer): Guard the traversal 'insn_conditions' with
+	the check on GCC version.
 
 2006-02-07  Richard Guenther  <rguenther@suse.de>
 
