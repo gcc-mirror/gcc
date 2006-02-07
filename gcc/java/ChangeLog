@@ -1,3 +1,13 @@
+2006-02-07  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (expand_invoke): (BC mode.)  If we find a method in a
+	class other than the one in which we expected to find it, ignore
+	the result.
+
+	PR java/25535
+	* constants.c (build_constants_constructor): move initializer into
+	first halfword on a 6-bit big-endian machine.
+ 
 2006-02-04  Tom Tromey  <tromey@redhat.com>
 
 	PR java/25676:
