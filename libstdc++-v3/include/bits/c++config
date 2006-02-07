@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -129,6 +129,24 @@ namespace std
 #endif
 #endif
 
+/* Define if compatibility should be provided for -mlong-double-64. */
+#undef _GLIBCXX_LONG_DOUBLE_COMPAT
+
+// XXX GLIBCXX_ABI Deprecated
+// Namespace associations for long double 128 mode.
+_GLIBCXX_BEGIN_NAMESPACE(std)
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+# define _GLIBCXX_LDBL_NAMESPACE __gnu_cxx_ldbl128::
+# define _GLIBCXX_BEGIN_LDBL_NAMESPACE namespace __gnu_cxx_ldbl128 {
+# define _GLIBCXX_END_LDBL_NAMESPACE }
+  namespace __gnu_cxx_ldbl128 { }
+  using namespace __gnu_cxx_ldbl128 __attribute__((__strong__));
+#else
+# define _GLIBCXX_LDBL_NAMESPACE
+# define _GLIBCXX_BEGIN_LDBL_NAMESPACE
+# define _GLIBCXX_END_LDBL_NAMESPACE
+#endif
+_GLIBCXX_END_NAMESPACE
 
 // Allow use of "export template." This is currently not a feature
 // that g++ supports.

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1910,6 +1910,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ~numpunct_byname() { }
     };
 
+_GLIBCXX_BEGIN_LDBL_NAMESPACE
   /**
    *  @brief  Facet for parsing number strings.
    *
@@ -2176,13 +2177,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     double&) const;
 
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      __do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
+	       double&) const;
+#else
       virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     long double&) const;
+#endif
 
       virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     void*&) const;
+
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
+	     long double&) const;
+#endif
       //@}
     };
 
@@ -2438,17 +2453,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, double __v) const;
 
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      __do_put(iter_type, ios_base&, char_type __fill, double __v) const;
+#else
       virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, long double __v) const;
+#endif
 
       virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, const void* __v) const;
+
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      do_put(iter_type, ios_base&, char_type __fill, long double __v) const;
+#endif
       //@}
     };
 
   template <typename _CharT, typename _OutIter>
     locale::id num_put<_CharT, _OutIter>::id;
 
+_GLIBCXX_END_LDBL_NAMESPACE
 
   /**
    *  @brief  Facet for localized string comparison.
@@ -3953,6 +3981,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, bool _Intl>
     const bool moneypunct_byname<_CharT, _Intl>::intl;
 
+_GLIBCXX_BEGIN_LDBL_NAMESPACE
   /**
    *  @brief  Facet for parsing monetary amounts.
    *
@@ -4064,9 +4093,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  value.  This function is a hook for derived classes to change the
        *  value returned.  @see get() for details.
        */
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      __do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
+	       ios_base::iostate& __err, double& __units) const;
+#else
       virtual iter_type
       do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, long double& __units) const;
+#endif
 
       /**
        *  @brief  Read and parse a monetary value.
@@ -4078,6 +4114,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       virtual iter_type
       do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, string_type& __digits) const;
+
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
+	     ios_base::iostate& __err, long double& __units) const;
+#endif
 
       template<bool _Intl>
         iter_type
@@ -4191,9 +4234,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  units  Place to store result of parsing.
        *  @return  Iterator after writing.
        */
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      __do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	       double __units) const;
+#else
       virtual iter_type
       do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     long double __units) const;
+#endif
 
       /**
        *  @brief  Format and output a monetary value.
@@ -4217,6 +4267,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     const string_type& __digits) const;
 
+      // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+      virtual iter_type
+      do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	     long double __units) const;
+#endif
+
       template<bool _Intl>
         iter_type
         _M_insert(iter_type __s, ios_base& __io, char_type __fill,
@@ -4225,6 +4282,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, typename _OutIter>
     locale::id money_put<_CharT, _OutIter>::id;
+
+_GLIBCXX_END_LDBL_NAMESPACE
 
   /**
    *  @brief  Messages facet base class providing catalog typedef.

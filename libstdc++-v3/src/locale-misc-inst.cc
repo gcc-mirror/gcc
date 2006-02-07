@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -47,3 +47,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		     const __c_locale&, int);
 
 _GLIBCXX_END_NAMESPACE
+
+// XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT
+
+#define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
+  extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))
+
+# if _GLIBCXX_C_LOCALE_GNU
+_GLIBCXX_LDBL_COMPAT(_ZSt16__convert_from_vIdEiPciPKcT_RKP15__locale_structi,
+		     _ZSt16__convert_from_vIeEiPciPKcT_RKP15__locale_structi);
+# else
+_GLIBCXX_LDBL_COMPAT(_ZSt16__convert_from_vIdEiPciPKcT_RKPii,
+		     _ZSt16__convert_from_vIeEiPciPKcT_RKPii);
+# endif
+
+#endif // _GLIBCXX_LONG_DOUBLE_COMPAT

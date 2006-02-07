@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions -*- C++ -*-
 
-// Copyright (C) 2005
+// Copyright (C) 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -51,6 +51,7 @@
 #include <istream>
 #include <fstream>
 #include <sstream>
+#include <cmath>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -467,11 +468,113 @@ _GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter15_M_print_stringEPKc
 _ZNK11__gnu_debug16_Error_formatter15_M_print_stringEPKc, \
 GLIBCXX_3.4)
 
+// gcc-4.1.0
+#ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
+#define _GLIBCXX_MATHL_WRAPPER(name, argdecl, args, ver) \
+extern "C" double						\
+__ ## name ## l_wrapper argdecl					\
+{								\
+  return name args;						\
+}								\
+asm (".symver __" #name "l_wrapper, " #name "l@" #ver)
+
+#define _GLIBCXX_MATHL_WRAPPER1(name, ver) \
+  _GLIBCXX_MATHL_WRAPPER (name, (double x), (x), ver)
+
+#define _GLIBCXX_MATHL_WRAPPER2(name, ver) \
+  _GLIBCXX_MATHL_WRAPPER (name, (double x, double y), (x, y), ver)
+
+#ifdef _GLIBCXX_HAVE_ACOSL
+_GLIBCXX_MATHL_WRAPPER1 (acos, GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_ASINL
+_GLIBCXX_MATHL_WRAPPER1 (asin, GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_ATAN2L
+_GLIBCXX_MATHL_WRAPPER2 (atan2, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_ATANL
+_GLIBCXX_MATHL_WRAPPER1 (atan, GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_CEILL
+_GLIBCXX_MATHL_WRAPPER1 (ceil, GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_COSHL
+_GLIBCXX_MATHL_WRAPPER1 (cosh, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_COSL
+_GLIBCXX_MATHL_WRAPPER1 (cos, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_EXPL
+_GLIBCXX_MATHL_WRAPPER1 (exp, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_FLOORL
+_GLIBCXX_MATHL_WRAPPER1 (floor, GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_FMODL
+_GLIBCXX_MATHL_WRAPPER2 (fmod, GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_FREXPL
+_GLIBCXX_MATHL_WRAPPER (frexp, (double x, int *y), (x, y), GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_HYPOTL
+_GLIBCXX_MATHL_WRAPPER2 (hypot, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_LDEXPL
+_GLIBCXX_MATHL_WRAPPER (ldexp, (double x, int y), (x, y), GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_LOG10L
+_GLIBCXX_MATHL_WRAPPER1 (log10, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_LOGL
+_GLIBCXX_MATHL_WRAPPER1 (log, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_MODFL
+_GLIBCXX_MATHL_WRAPPER (modf, (double x, double *y), (x, y), GLIBCXX_3.4.3);
+#endif
+#ifdef _GLIBCXX_HAVE_POWL
+_GLIBCXX_MATHL_WRAPPER2 (pow, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_SINHL
+_GLIBCXX_MATHL_WRAPPER1 (sinh, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_SINL
+_GLIBCXX_MATHL_WRAPPER1 (sin, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_SQRTL
+_GLIBCXX_MATHL_WRAPPER1 (sqrt, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_TANHL
+_GLIBCXX_MATHL_WRAPPER1 (tanh, GLIBCXX_3.4);
+#endif
+#ifdef _GLIBCXX_HAVE_TANL
+_GLIBCXX_MATHL_WRAPPER1 (tan, GLIBCXX_3.4);
+#endif
+#endif // _GLIBCXX_LONG_DOUBLE_COMPAT
 
 #endif
 
+#ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
+extern void *_ZTVN10__cxxabiv123__fundamental_type_infoE[];
+extern void *_ZTVN10__cxxabiv119__pointer_type_infoE[];
+extern __attribute__((used, weak)) const char _ZTSe[2] = "e";
+extern __attribute__((used, weak)) const char _ZTSPe[3] = "Pe";
+extern __attribute__((used, weak)) const char _ZTSPKe[4] = "PKe";
+extern __attribute__((used, weak)) const void *_ZTIe[2]
+  = { (void *) &_ZTVN10__cxxabiv123__fundamental_type_infoE[2],
+      (void *) _ZTSe };
+extern __attribute__((used, weak)) const void *_ZTIPe[4]
+  = { (void *) &_ZTVN10__cxxabiv119__pointer_type_infoE[2],
+      (void *) _ZTSPe, (void *) 0L, (void *) _ZTIe };
+extern __attribute__((used, weak)) const void *_ZTIPKe[4]
+  = { (void *) &_ZTVN10__cxxabiv119__pointer_type_infoE[2],
+      (void *) _ZTSPKe, (void *) 1L, (void *) _ZTIe };
+#endif // _GLIBCXX_LONG_DOUBLE_COMPAT
+
+
+
 #ifdef _GLIBCXX_SYMVER_DARWIN
-#if (defined(__ppc__) || defined (__ppc64__)) && defined (PIC)
+#if (defined(__ppc__) || defined(__ppc64__)) && defined(PIC)
 /* __eprintf shouldn't have been made visible from libstdc++, or
    anywhere, but on Mac OS X 10.4 it was defined in
    libstdc++.6.0.3.dylib; so on that platform we have to keep defining

@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -97,3 +97,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
 
 _GLIBCXX_END_NAMESPACE
+
+// XXX GLIBCXX_ABI Deprecated
+#ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
+
+#define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
+  extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))
+_GLIBCXX_LDBL_COMPAT (_ZNSolsEd, _ZNSolsEe);
+_GLIBCXX_LDBL_COMPAT (_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEd,
+		      _ZNSt13basic_ostreamIwSt11char_traitsIwEElsEe);
+_GLIBCXX_LDBL_COMPAT (_ZNSo9_M_insertIdEERSoT_,
+		      _ZNSo9_M_insertIeEERSoT_);
+_GLIBCXX_LDBL_COMPAT (_ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertIdEERS2_T_,
+		      _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertIeEERS2_T_);
+
+#endif // _GLIBCXX_LONG_DOUBLE_COMPAT
