@@ -5,6 +5,8 @@
 
 2006-02-07  Jeff Law  <law@redhat.com>
 
+	* gcc.dg/tree-ssa/pr21559.c: New test.
+
 	* gcc.dg/tree-ssa/vrp01.c: Update dumpfile names now that we have
 	multiple VRP passes.
 	* gcc.dg/tree-ssa/vrp09.c: Likewise.
