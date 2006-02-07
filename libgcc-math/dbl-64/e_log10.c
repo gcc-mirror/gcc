@@ -75,7 +75,7 @@ static double zero   =  0.0;
 {
 	double y,z;
 	int32_t i,k,hx;
-	u_int32_t lx;
+	uint32_t lx;
 
 	EXTRACT_WORDS(hx,lx,x);
 
@@ -89,7 +89,7 @@ static double zero   =  0.0;
         }
 	if (hx >= 0x7ff00000) return x+x;
 	k += (hx>>20)-1023;
-	i  = ((u_int32_t)k&0x80000000)>>31;
+	i  = ((uint32_t)k&0x80000000)>>31;
         hx = (hx&0x000fffff)|((0x3ff-i)<<20);
         y  = (double)(k+i);
 	SET_HIGH_WORD(x,hx);

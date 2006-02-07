@@ -93,7 +93,7 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	double z,w,t,r,fn;
 	double tx[3];
 	int32_t e0,i,j,nx,n,ix,hx;
-	u_int32_t low;
+	uint32_t low;
 
 	GET_HIGH_WORD(hx,x);		/* high word of x */
 	ix = hx&0x7fffffff;
@@ -133,7 +133,7 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	    if(n<32&&ix!=npio2_hw[n-1]) {	
 		y[0] = r-w;	/* quick check no cancellation */
 	    } else {
-	        u_int32_t high;
+	        uint32_t high;
 	        j  = ix>>20;
 	        y[0] = r-w; 
 		GET_HIGH_WORD(high,y[0]);

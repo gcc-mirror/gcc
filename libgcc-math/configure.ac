@@ -123,6 +123,7 @@ else
   multilib_arg=
 fi
 
+GCC_HEADER_STDINT(gstdint.h)
 
 # Check for target library dependencies
 cannot_build=no

@@ -43,7 +43,7 @@ static float huge = 1.0e30;
 #endif
 {
 	int32_t i0,j0;
-	u_int32_t i;
+	uint32_t i;
 	GET_FLOAT_WORD(i0,x);
 	j0 = ((i0>>23)&0xff)-0x7f;
 	if(j0<23) {

@@ -1,3 +1,25 @@
+2006-02-07  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/26050
+	* configure.ac: Generate _stdint.h using GCC_HEADER_STDINT.
+	* configure: Re-generate.
+	* Makefile.in: Likewise. 
+	* aclocal.m4: Likewise.
+	* i386/Makefile.am: Adjust include path.
+	* i386/Makefile.in: Re-generate.
+	* include/math_private.h: Do not include sys/types.h.
+	Include _stdint.h.  Use uint32_t instead of u_int32_t.
+	* flt-32/e_expf.c: Do not include inttypes.h
+	* flt-32/e_sqrtf.c: Use uint32_t instead of u_int32_t.
+	* flt-32/s_floorf.c: Likewise.
+	* flt-32/e_atan2f.c: Likewise.
+	* flt-32/e_powf.c: Likewise.
+	* flt-32/e_rem_pio2f.c: Likewise.
+	* flt-32/e_log10f.c: Likewise.
+	* dbl-64/s_floor.c: Likewise.
+	* dbl-64/e_log10.c: Likewise.
+	* dbl-64/e_rem_pio2.c: Likewise.
+
 2006-02-01  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/26059
