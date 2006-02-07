@@ -6627,6 +6627,29 @@ _ACEOF
 
 fi
 
+symver=
+case "$target" in
+  *-*-linux* )
+    cat > conftest.c <<EOF
+#include <pthread.h>
+void *tf (void *arg) { (void) arg; return NULL; }
+int main (void) { pthread_t th; pthread_create (&th, NULL, tf, NULL); return 0; }
+EOF
+    if $CC $CFLAGS -pthread -o conftest conftest.c > /dev/null 2>&1; then
+      symver=`readelf -s conftest 2> /dev/null | sed -n '/UND pthread_create@/{s/^.*@//;s/ .*$//;p;q}'`
+    fi
+    rm -f conftest conftest.c
+    ;;
+esac
+if test -n "$symver"; then
+
+cat >>confdefs.h <<_ACEOF
+#define GC_PTHREAD_SYM_VERSION "$symver"
+_ACEOF
+
+fi
+
+
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   toolexecdir='$(exec_prefix)/$(target_noncanonical)'
