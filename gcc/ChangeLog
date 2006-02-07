@@ -1,3 +1,12 @@
+2006-02-07  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/26140
+	Revert
+	2006-01-30  Richard Guenther  <rguenther@suse.de>
+ 	PR c++/23372
+ 	* gimplify.c (gimplify_target_expr): Handle easy cases
+ 	without creating a temporary.
+
 2006-02-07  Pete Steinmetz  <steinmtz@us.ibm.com>
 
         * sched-rgn.c (compute_dom_prob_ps, compute_trg_info): Eradicate
