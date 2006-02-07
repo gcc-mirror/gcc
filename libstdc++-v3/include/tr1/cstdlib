@@ -1,4 +1,4 @@
-// TR1 cinttypes -*- C++ -*-
+// TR1 cstdlib -*- C++ -*-
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -31,49 +31,44 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CINTTYPES
-#define _TR1_CINTTYPES 1
+#ifndef _TR1_CSTDLIB
+#define _TR1_CSTDLIB 1
 
 #include <bits/c++config.h>
 
-#include <tr1/cstdint>
+#if _GLIBCXX_HOSTED
 
-#if _GLIBCXX_HAVE_INTTYPES_H
-// For 8.11.1/1 (see C99, Note 184) 
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-#endif
-
-#if _GLIBCXX_USE_C99_INTTYPES_TR1
+#include <cstdlib>
 
 // namespace std::tr1
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
+#if _GLIBCXX_USE_C99
+
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   // types
-  using ::imaxdiv_t;
+  using std::lldiv_t;
 
   // functions
-  using ::imaxabs;
+  using std::llabs;
+  using std::lldiv;
+#endif
 
-  // May collide with _Longlong abs(_Longlong), and is not described
-  // anywhere outside the synopsis.  Likely, a defect.
-  //
-  // intmax_t abs(intmax_t)
+  using std::atoll;
+  using std::strtoll;
+  using std::strtoull;
 
-  using ::imaxdiv;
+  using std::strtof;
+  using std::strtold;
 
-  // Likewise, with lldiv_t div(_Longlong, _Longlong).
-  //
-  // imaxdiv_t div(intmax_t, intmax_t)
+  // overloads
+  using std::abs;
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
+  using std::div;
+#endif
 
-  using ::strtoimax;
-  using ::strtoumax;
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  using ::wcstoimax;
-  using ::wcstoumax;
 #endif
 
 _GLIBCXX_END_NAMESPACE

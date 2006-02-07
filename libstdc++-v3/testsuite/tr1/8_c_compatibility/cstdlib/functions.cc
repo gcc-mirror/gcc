@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2006-02-02  Paolo Carlini  <pcarlini@suse.de>
+// 2006-02-07  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,38 +20,47 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-#include <tr1/array>
-#include <tr1/cctype>
-#include <tr1/cfenv>
-#include <tr1/cfloat>
-#include <tr1/cinttypes>
-#include <tr1/climits>
-#include <tr1/cmath>
-#include <tr1/complex>
-#include <tr1/cstdarg>
-#include <tr1/cstdint>
-#include <tr1/cstdio>
+// 8.25 Additions to header <cstdlib>
+
 #include <tr1/cstdlib>
-#include <tr1/ctime>
-#include <tr1/ctype.h>
-#include <tr1/cwchar>
-#include <tr1/cwctype>
-#include <tr1/fenv.h>
-#include <tr1/float.h>
-#include <tr1/functional>
-#include <tr1/hashtable>
-#include <tr1/inttypes.h>
-#include <tr1/limits.h>
-#include <tr1/math.h>
-#include <tr1/memory>
-#include <tr1/stdarg.h>
-#include <tr1/stdint.h>
-#include <tr1/stdio.h>
-#include <tr1/stdlib.h>
-#include <tr1/tuple>
-#include <tr1/type_traits>
-#include <tr1/unordered_set>
-#include <tr1/unordered_map>
-#include <tr1/utility>
-#include <tr1/wchar.h>
-#include <tr1/wctype.h>
+
+#if _GLIBCXX_HOSTED
+
+void test01()
+{
+#if _GLIBCXX_USE_C99
+
+  long long i = 0;
+  const char* s = 0;
+  char** endptr = 0;
+  int base = 0;
+
+  long long ret;
+  unsigned long long uret;
+  float fret;
+  long double ldret;
+
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
+  long long numer = 0, denom = 0;
+  std::tr1::lldiv_t dret;
+
+  ret = std::tr1::llabs(i);
+  dret = std::tr1::lldiv(numer, denom);
+#endif
+
+  ret = std::tr1::atoll(s);
+  ret = std::tr1::strtoll(s, endptr, base);
+  uret = std::tr1::strtoull(s, endptr, base);
+
+  fret = std::tr1::strtof(s, endptr);
+  ldret = std::tr1::strtold(s, endptr);
+
+  ret = std::tr1::abs(i);
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
+  dret = std::tr1::div(numer, denom);
+#endif
+
+#endif
+}
+
+#endif

@@ -67,15 +67,11 @@ void test01(int dummy, ...)
   long double ldret;
   ldret = std::tr1::wcstold(nptr2, endptr2);
 
-#ifdef _GLIBCXX_USE_LONG_LONG
-  const wchar_t* nptr3 = 0;
-  wchar_t** endptr3 = 0;
   int base = 0;
   long long llret;
   unsigned long long ullret;
-  llret = std::tr1::wcstoll(nptr3, endptr3, base);
-  ullret = std::tr1::wcstoull(nptr3, endptr3, base);
-#endif
+  llret = std::tr1::wcstoll(nptr2, endptr2, base);
+  ullret = std::tr1::wcstoull(nptr2, endptr2, base);
 
 #endif
 }

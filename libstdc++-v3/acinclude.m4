@@ -1181,6 +1181,124 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	      <tr1/cstdint> in namespace std::tr1.])
   fi
 
+  # Check for the existence of <math.h> functions.
+  AC_MSG_CHECKING([for ISO C99 support to TR1 in <math.h>])
+  AC_CACHE_VAL(ac_c99_math_tr1, [
+  AC_TRY_COMPILE([#include <math.h>],
+	         [acosh(0.0);
+	          acoshf(0.0f);
+	          acoshl(0.0l);
+	          asinh(0.0);
+	          asinhf(0.0f);
+	          asinhl(0.0l);
+	          atanh(0.0);
+	          atanhf(0.0f);
+	          atanhl(0.0l);
+	          cbrt(0.0);
+	          cbrtf(0.0f);
+	          cbrtl(0.0l);
+	          copysign(0.0, 0.0);
+	          copysignf(0.0f, 0.0f);
+	          copysignl(0.0l, 0.0l);
+	          erf(0.0);
+	          erff(0.0f);
+	          erfl(0.0l);
+	          erfc(0.0);
+	          erfcf(0.0f);
+	          erfcl(0.0l);
+	          exp2(0.0);
+	          exp2f(0.0f);
+	          exp2l(0.0l);
+	          expm1(0.0);
+	          expm1f(0.0f);
+	          expm1l(0.0l);
+	          fdim(0.0, 0.0);
+	          fdimf(0.0f, 0.0f);
+	          fdiml(0.0l, 0.0l);
+	          fma(0.0, 0.0, 0.0);
+	          fmaf(0.0f, 0.0f, 0.0f);
+	          fmal(0.0l, 0.0l, 0.0l);
+	          fmax(0.0, 0.0);
+	          fmaxf(0.0f, 0.0f);
+	          fmaxl(0.0l, 0.0l);
+	          fmin(0.0, 0.0);
+	          fminf(0.0f, 0.0f);
+	          fminl(0.0l, 0.0l);
+	          hypot(0.0, 0.0);
+	          hypotf(0.0f, 0.0f);
+	          hypotl(0.0l, 0.0l);
+	          ilogb(0.0);
+	          ilogbf(0.0f);
+	          ilogbl(0.0l);
+	          lgamma(0.0);
+	          lgammaf(0.0f);
+	          lgammal(0.0l);
+	          llrint(0.0);
+	          llrintf(0.0f);
+	          llrintl(0.0l);
+	          llround(0.0);
+	          llroundf(0.0f);
+	          llroundl(0.0l);
+	          log1p(0.0);
+	          log1pf(0.0f);
+	          log1pl(0.0l);
+	          log2(0.0);
+	          log2f(0.0f);
+	          log2l(0.0l);
+	          logb(0.0);
+	          logbf(0.0f);
+	          logbl(0.0l);
+	          lrint(0.0);
+	          lrintf(0.0f);
+	          lrintl(0.0l);
+	          lround(0.0);
+	          lroundf(0.0f);
+	          lroundl(0.0l);
+	          nan(0);
+	          nanf(0);
+	          nanl(0);
+	          nearbyint(0.0);
+	          nearbyintf(0.0f);
+	          nearbyintl(0.0l);
+	          nextafter(0.0, 0.0);
+	          nextafterf(0.0f, 0.0f);
+	          nextafterl(0.0l, 0.0l);
+	          nexttoward(0.0, 0.0);
+	          nexttowardf(0.0f, 0.0f);
+	          nexttowardl(0.0l, 0.0l);
+	          remainder(0.0, 0.0);
+	          remainderf(0.0f, 0.0f);
+	          remainderl(0.0l, 0.0l);
+	          remquo(0.0, 0.0, 0);
+	          remquo(0.0f, 0.0f, 0);
+	          remquo(0.0l, 0.0l, 0);
+	          rint(0.0);
+	          rintf(0.0f);
+	          rintl(0.0l);
+	          round(0.0);
+	          roundf(0.0f);
+	          roundl(0.0l);
+	          scalbln(0.0, 0l);
+	          scalblnf(0.0f, 0l);
+	          scalblnl(0.0l, 0l);
+	          scalbn(0.0, 0);
+	          scalbnf(0.0f, 0);
+	          scalbnl(0.0l, 0);
+	          tgamma(0.0);
+	          tgammaf(0.0f);
+	          tgammal(0.0l);
+	          trunc(0.0);
+	          truncf(0.0f);
+	          truncl(0.0l);
+		 ],[ac_c99_math_tr1=yes], [ac_c99_math_tr1=no])
+  ])
+  AC_MSG_RESULT($ac_c99_math_tr1)
+  if test x"$ac_c99_math_tr1" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
+              [Define if C99 functions or macros in <math.h> should be imported
+              in <tr1/cmath> in namespace std::tr1.])
+  fi
+
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
   # sense if the previous check fails, per C99, 7.8/1).
   ac_c99_inttypes_tr1=no;

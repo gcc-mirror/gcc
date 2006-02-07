@@ -1,4 +1,4 @@
-// TR1 cinttypes -*- C++ -*-
+// TR1 ctime -*- C++ -*-
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -31,54 +31,9 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CINTTYPES
-#define _TR1_CINTTYPES 1
+#ifndef _TR1_CTIME
+#define _TR1_CTIME 1
 
-#include <bits/c++config.h>
-
-#include <tr1/cstdint>
-
-#if _GLIBCXX_HAVE_INTTYPES_H
-// For 8.11.1/1 (see C99, Note 184) 
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-#endif
-
-#if _GLIBCXX_USE_C99_INTTYPES_TR1
-
-// namespace std::tr1
-namespace std
-{
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
-
-  // types
-  using ::imaxdiv_t;
-
-  // functions
-  using ::imaxabs;
-
-  // May collide with _Longlong abs(_Longlong), and is not described
-  // anywhere outside the synopsis.  Likely, a defect.
-  //
-  // intmax_t abs(intmax_t)
-
-  using ::imaxdiv;
-
-  // Likewise, with lldiv_t div(_Longlong, _Longlong).
-  //
-  // imaxdiv_t div(intmax_t, intmax_t)
-
-  using ::strtoimax;
-  using ::strtoumax;
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  using ::wcstoimax;
-  using ::wcstoumax;
-#endif
-
-_GLIBCXX_END_NAMESPACE
-}
-
-#endif
+#include <ctime>
 
 #endif

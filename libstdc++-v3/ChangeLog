@@ -1,3 +1,30 @@
+2006-02-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cmath: New.
+	* include/tr1/cstdlib: Likewise.
+	* include/tr1/ctime: Likewise.
+	* include/tr1/math.h: Likewise.	
+	* include/tr1/stdlib.h: Likewise.
+	* include/Makefile.am: Add.
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add <math.h> checks.
+	* testsuite/tr1/8_c_compatibility/cmath/functions.cc: New.
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cstdlib/types.cc: Likewise.
+	* testsuite/tr1/headers.cc: Update.	
+
+	* include/tr1/cinttypes: Do not provide abs and div, conflicting
+	with the above overloads for _Longlong types.
+	* include/tr1/inttypes.h: Adjust.
+	* testsuite/tr1/8_c_compatibility/cinttypes/functions.cc: Adjust.
+
+	* docs/html/ext/tr1.html: Update.
+	
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: Tweak.
+
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
 2006-02-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/testsuite_tr1.h (test_property): New function.

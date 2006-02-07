@@ -1,0 +1,298 @@
+// TR1 cmath -*- C++ -*-
+
+// Copyright (C) 2006 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+// USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+/** @file 
+ *  This is a TR1 C++ Library header. 
+ */
+
+#ifndef _TR1_CMATH
+#define _TR1_CMATH 1
+
+#include <bits/c++config.h>
+#include <cmath>
+
+#if _GLIBCXX_USE_C99_MATH_TR1
+
+#undef acosh
+#undef acoshf
+#undef acoshl
+#undef asinh
+#undef asinhf
+#undef asinhl
+#undef atanh
+#undef atanhf
+#undef atanhl
+#undef cbrt
+#undef cbrtf
+#undef cbrtl
+#undef copysign
+#undef copysignf
+#undef copysignl
+#undef erf
+#undef erff
+#undef erfl
+#undef erfc
+#undef erfcf
+#undef erfcl
+#undef exp2
+#undef exp2f
+#undef exp2l
+#undef expm1
+#undef expm1f
+#undef expm1l
+#undef fdim
+#undef fdimf
+#undef fdiml
+#undef fma
+#undef fmaf
+#undef fmal
+#undef fmax
+#undef fmaxf
+#undef fmaxl
+#undef fmin
+#undef fminf
+#undef fminl
+#undef hypot
+#undef hypotf
+#undef hypotl
+#undef ilogb
+#undef ilogbf
+#undef ilogbl
+#undef lgamma
+#undef lgammaf
+#undef lgammal
+#undef llrint
+#undef llrintf
+#undef llrintl
+#undef llround
+#undef llroundf
+#undef llroundl
+#undef log1p
+#undef log1pf
+#undef log1pl
+#undef log2
+#undef log2f
+#undef log2l
+#undef logb
+#undef logbf
+#undef logbl
+#undef lrint
+#undef lrintf
+#undef lrintl
+#undef lround
+#undef lroundf
+#undef lroundl
+#undef nan
+#undef nanf
+#undef nanl
+#undef nearbyint
+#undef nearbyintf
+#undef nearbyintl
+#undef nextafter
+#undef nextafterf
+#undef nextafterl
+#undef nexttoward
+#undef nexttowardf
+#undef nexttowardl
+#undef remainder
+#undef remainderf
+#undef remainderl
+#undef remquo
+#undef remquo
+#undef remquo
+#undef rint
+#undef rintf
+#undef rintl
+#undef round
+#undef roundf
+#undef roundl
+#undef scalbln
+#undef scalblnf
+#undef scalblnl
+#undef scalbn
+#undef scalbnf
+#undef scalbnl
+#undef tgamma
+#undef tgammaf
+#undef tgammal
+#undef trunc
+#undef truncf
+#undef truncl
+
+// namespace std::tr1
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
+  using ::acosh;
+  using ::acoshf;
+  using ::acoshl;
+
+  using ::asinh;
+  using ::asinhf;
+  using ::asinhl;
+
+  using ::atanh;
+  using ::atanhf;
+  using ::atanhl;
+
+  using ::cbrt;
+  using ::cbrtf;
+  using ::cbrtl;
+
+  using ::copysign;
+  using ::copysignf;
+  using ::copysignl;
+
+  using ::erf;
+  using ::erff;
+  using ::erfl;
+
+  using ::erfc;
+  using ::erfcf;
+  using ::erfcl;
+
+  using ::exp2;
+  using ::exp2f;
+  using ::exp2l;
+
+  using ::expm1;
+  using ::expm1f;
+  using ::expm1l;
+
+  using ::fdim;
+  using ::fdimf;
+  using ::fdiml;
+
+  using ::fma;
+  using ::fmaf;
+  using ::fmal;
+
+  using ::fmax;
+  using ::fmaxf;
+  using ::fmaxl;
+
+  using ::fmin;
+  using ::fminf;
+  using ::fminl;
+
+  using ::hypot;
+  using ::hypotf;
+  using ::hypotl;
+
+  using ::ilogb;
+  using ::ilogbf;
+  using ::ilogbl;
+
+  using ::lgamma;
+  using ::lgammaf;
+  using ::lgammal;
+
+  using ::llrint;
+  using ::llrintf;
+  using ::llrintl;
+
+  using ::llround;
+  using ::llroundf;
+  using ::llroundl;
+
+  using ::log1p;
+  using ::log1pf;
+  using ::log1pl;
+
+  using ::log2;
+  using ::log2f;
+  using ::log2l;
+
+  using ::logb;
+  using ::logbf;
+  using ::logbl;
+
+  using ::lrint;
+  using ::lrintf;
+  using ::lrintl;
+
+  using ::lround;
+  using ::lroundf;
+  using ::lroundl;
+
+  using ::nan;
+  using ::nanf;
+  using ::nanl;
+
+  using ::nearbyint;
+  using ::nearbyintf;
+  using ::nearbyintl;
+
+  using ::nextafter;
+  using ::nextafterf;
+  using ::nextafterl;
+
+  using ::nexttoward;
+  using ::nexttowardf;
+  using ::nexttowardl;
+
+  using ::remainder;
+  using ::remainderf;
+  using ::remainderl;
+
+  using ::remquo;
+  using ::remquo;
+  using ::remquo;
+
+  using ::rint;
+  using ::rintf;
+  using ::rintl;
+
+  using ::round;
+  using ::roundf;
+  using ::roundl;
+
+  using ::scalbln;
+  using ::scalblnf;
+  using ::scalblnl;
+
+  using ::scalbn;
+  using ::scalbnf;
+  using ::scalbnl;
+
+  using ::tgamma;
+  using ::tgammaf;
+  using ::tgammal;
+
+  using ::trunc;
+  using ::truncf;
+  using ::truncl;
+
+_GLIBCXX_END_NAMESPACE
+}
+
+#endif
+
+#endif

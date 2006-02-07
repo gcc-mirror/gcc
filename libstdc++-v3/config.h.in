@@ -715,6 +715,10 @@
    in namespace std. */
 #undef _GLIBCXX_USE_C99_MATH
 
+/* Define if C99 functions or macros in <math.h> should be imported in
+   <tr1/cmath> in namespace std::tr1. */
+#undef _GLIBCXX_USE_C99_MATH_TR1
+
 /* Define if C99 types in <stdint.h> should be imported in <tr1/cstdint> in
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_STDINT_TR1

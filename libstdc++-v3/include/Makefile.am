@@ -489,11 +489,14 @@ tr1_headers = \
 	${tr1_srcdir}/cfloat \
 	${tr1_srcdir}/cinttypes \
 	${tr1_srcdir}/climits \
+	${tr1_srcdir}/cmath \
 	${tr1_srcdir}/common.h \
 	${tr1_srcdir}/complex \
 	${tr1_srcdir}/cstdarg \
 	${tr1_srcdir}/cstdint \
 	${tr1_srcdir}/cstdio \
+	${tr1_srcdir}/cstdlib \
+	${tr1_srcdir}/ctime \
 	${tr1_srcdir}/ctype.h \
 	${tr1_srcdir}/cwchar \
 	${tr1_srcdir}/cwctype \
@@ -504,6 +507,7 @@ tr1_headers = \
 	${tr1_srcdir}/hashtable \
 	${tr1_srcdir}/inttypes.h \
 	${tr1_srcdir}/limits.h \
+	${tr1_srcdir}/math.h \
 	${tr1_srcdir}/memory \
 	${tr1_srcdir}/mu_iterate.h \
 	${tr1_srcdir}/ref_fwd.h \
@@ -512,6 +516,7 @@ tr1_headers = \
 	${tr1_srcdir}/stdarg.h \
 	${tr1_srcdir}/stdint.h \
 	${tr1_srcdir}/stdio.h \
+	${tr1_srcdir}/stdlib.h \
 	${tr1_srcdir}/tuple \
 	${tr1_srcdir}/tuple_iterate.h \
 	${tr1_srcdir}/type_traits \
