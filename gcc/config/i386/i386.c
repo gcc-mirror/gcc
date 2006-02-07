@@ -1099,6 +1099,7 @@ static tree ix86_build_builtin_va_list (void);
 static void ix86_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static tree ix86_gimplify_va_arg (tree, tree, tree *, tree *);
+static bool ix86_scalar_mode_supported_p (enum machine_mode);
 static bool ix86_vector_mode_supported_p (enum machine_mode);
 
 static int ix86_address_cost (rtx);
@@ -1326,6 +1327,9 @@ static section *x86_64_elf_select_section (tree decl, int reloc,
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P ix86_scalar_mode_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
@@ -3070,6 +3074,14 @@ classify_argument (enum machine_mode mode, tree type,
   /* Classification of atomic types.  */
   switch (mode)
     {
+    case SDmode:
+    case DDmode:
+      classes[0] = X86_64_SSE_CLASS;
+      return 1;
+    case TDmode:
+      classes[0] = X86_64_SSE_CLASS;
+      classes[1] = X86_64_SSEUP_CLASS;
+      return 2;
     case DImode:
     case SImode:
     case HImode:
@@ -3813,6 +3825,9 @@ ix86_return_in_memory (tree type)
   if (mode == XFmode)
     return 0;
 
+  if (mode == TDmode)
+    return 1;
+
   if (size > 12)
     return 1;
   return 0;
@@ -3878,6 +3893,9 @@ ix86_libcall_value (enum machine_mode mode)
 	case DFmode:
 	case DCmode:
 	case TFmode:
+	case SDmode:
+	case DDmode:
+	case TDmode:
 	  return gen_rtx_REG (mode, FIRST_SSE_REG);
 	case XFmode:
 	case XCmode:
@@ -3908,6 +3926,10 @@ ix86_value_regno (enum machine_mode mode, tree func, tree fntype)
      we prevent this case when sse is not available.  */
   if (mode == TImode || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
     return FIRST_SSE_REG;
+
+  /* Decimal floating point values can go in %eax, unlike other float modes.  */
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return 0;
 
   /* Most things go in %eax, except (unless -mno-fp-ret-in-387) fp values.  */
   if (!SCALAR_FLOAT_MODE_P (mode) || !TARGET_FLOAT_RETURNS_IN_80387)
@@ -18441,6 +18463,16 @@ ix86_expand_reduc_v4sf (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
   emit_insn (fn (dest, tmp2, tmp3));
 }
 
+/* Target hook for scalar_mode_supported_p.  */
+static bool
+ix86_scalar_mode_supported_p (enum machine_mode mode)
+{
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return true;
+  else
+    return default_scalar_mode_supported_p (mode);
+}
+
 /* Implements target hook vector_mode_supported_p.  */
 static bool
 ix86_vector_mode_supported_p (enum machine_mode mode)

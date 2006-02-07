@@ -1,3 +1,12 @@
+2006-02-07  Ben Elliston  <bje@au.ibm.com>
+
+	* config/i386/i386.c (ix86_scalar_mode_supported_p): New.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Define hook.
+	(classify_argument): Handle SDmode, DDmode, TDmode for 64-bit.
+	(ix86_return_in_memory): Handle TDmode.
+	(ix86_libcall_value): Handle SDmode, DDmode, TDmode.
+	(ix86_value_regno): Return non-TDmode decimal float modes in %eax.
+
 2006-02-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* reorg.c (dbr_schedule): Use dump_file instead of file.
