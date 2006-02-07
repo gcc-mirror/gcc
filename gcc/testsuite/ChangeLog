@@ -1,3 +1,28 @@
+2006-02-07  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2006-03-09  Ben Elliston <bje@au.ibm.com>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Remove trailing semicolons.
+	* gcc.target/xstormy16/xstormy16.exp: Likewise.
+	* g++.dg/gcov/gcov.exp: Likewise.
+	* lib/c-torture.exp: Likewise.
+	* lib/gcc-dg.exp: Likewise.
+	* lib/profopt.exp: Likewise.
+	* lib/gcc.exp: Likewise.
+	* lib/gcov.exp: Likewise.
+	* lib/mike-g++.exp: Likewise.
+	* lib/treelang.exp: Likewise.
+	* lib/target-libpath.exp: Likewise.
+	* lib/gcc-defs.exp: Likewise.
+	* lib/g++.exp: Likewise.
+	* lib/fortran-torture.exp: Likewise.
+	* lib/objc.exp: Likewise.
+	* lib/mike-gcc.exp: Likewise.
+	* lib/objc-torture.exp: Likewise.
+	* lib/wrapper.exp: Likewise.
+	* lib/gfortran.exp: Likewise.
+
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25999

@@ -40,22 +40,22 @@ load_lib gcc-defs.exp
 proc default_gcc_version { } {
     global GCC_UNDER_TEST
 
-    gcc_init;
+    gcc_init
 
     # ignore any arguments after the command
     set compiler [lindex $GCC_UNDER_TEST 0]
 
     if ![is_remote host] {
-	set compiler_name [which $compiler];
+	set compiler_name [which $compiler]
     } else {
-	set compiler_name $compiler;
+	set compiler_name $compiler
     }
 
     # verify that the compiler exists
     if { $compiler_name != 0 } then {
 	set tmp [remote_exec host "$compiler -v"]
-	set status [lindex $tmp 0];
-	set output [lindex $tmp 1];
+	set status [lindex $tmp 0]
+	set output [lindex $tmp 1]
 	regexp " version \[^\n\r\]*" $output version
 	if { $status == 0 && [info exists version] } then {
 	    clone_output "$compiler_name $version\n"
@@ -73,7 +73,7 @@ proc default_gcc_version { } {
 #
 
 proc gcc_version { } {
-    default_gcc_version;
+    default_gcc_version
 }
 
 #
@@ -97,7 +97,7 @@ proc gcc_init { args } {
 
     if ![info exists GCC_UNDER_TEST] {
 	if [info exists TOOL_EXECUTABLE] {
-	    set GCC_UNDER_TEST $TOOL_EXECUTABLE;
+	    set GCC_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
 	    set GCC_UNDER_TEST "[find_gcc]"
 	}
@@ -115,8 +115,8 @@ proc gcc_init { args } {
 #
 
 proc gcc_target_compile { source dest type options } {
-    global tmpdir;
-    global gluefile wrap_flags;
+    global tmpdir
+    global gluefile wrap_flags
     global GCC_UNDER_TEST
     global TOOL_OPTIONS
 	
@@ -139,7 +139,7 @@ proc gcc_target_compile { source dest type options } {
     # TOOL_OPTIONS must come first, so that it doesn't override testcase
     # specific options.
     if [info exists TOOL_OPTIONS] {
-	set options [concat "additional_flags=$TOOL_OPTIONS" $options];
+	set options [concat "additional_flags=$TOOL_OPTIONS" $options]
     }
     if [target_info exists gcc,timeout] {
 	lappend options "timeout=[target_info gcc,timeout]"

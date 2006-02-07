@@ -47,22 +47,22 @@ load_lib target-libpath.exp
 proc default_treelang_version { } {
     global TREELANG_UNDER_TEST
 
-    treelang_init;
+    treelang_init
 
     # ignore any arguments after the command
     set compiler [lindex $TREELANG_UNDER_TEST 0]
 
     if ![is_remote host] {
-	set compiler_name [which $compiler];
+	set compiler_name [which $compiler]
     } else {
-	set compiler_name $compiler;
+	set compiler_name $compiler
     }
 
     # verify that the compiler exists
     if { $compiler_name != 0 } then {
 	set tmp [remote_exec host "$compiler -v"]
-	set status [lindex $tmp 0];
-	set output [lindex $tmp 1];
+	set status [lindex $tmp 0]
+	set output [lindex $tmp 1]
 	regexp " version \[^\n\r\]*" $output version
 	if { $status == 0 && [info exists version] } then {
 	    clone_output "$compiler_name $version\n"
@@ -102,7 +102,7 @@ proc treelang_init { args } {
 
     if ![info exists TREELANG_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
-	    set TREELANG_UNDER_TEST $TOOL_EXECUTABLE;
+	    set TREELANG_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
 	    set TREELANG_UNDER_TEST [find_gcc]
 	}
@@ -119,9 +119,9 @@ proc treelang_init { args } {
 }
 
 proc treelang_target_compile { source dest type options } {
-    global rootme;
-    global tmpdir;
-    global gluefile wrap_flags;
+    global rootme
+    global tmpdir
+    global gluefile wrap_flags
     global srcdir
     global TREELANG_UNDER_TEST
     global TOOL_OPTIONS
@@ -139,7 +139,7 @@ proc treelang_target_compile { source dest type options } {
     # TOOL_OPTIONS must come first, so that it doesn't override testcase
     # specific options.
     if [info exists TOOL_OPTIONS] {
-	set options [concat "additional_flags=$TOOL_OPTIONS" $options];
+	set options [concat "additional_flags=$TOOL_OPTIONS" $options]
     }
 
     # If we have built libtreelang along with the compiler (which usually
@@ -183,7 +183,7 @@ proc treelang_fail { testcase cflags } {
 
 proc treelang_finish { } {
     # The testing harness apparently requires this.
-    global errorInfo;
+    global errorInfo
 
     if [info exists errorInfo] then {
 	unset errorInfo
@@ -197,11 +197,11 @@ proc treelang_finish { } {
 }
 
 proc treelang_exit { } {
-    global gluefile;
+    global gluefile
 
     if [info exists gluefile] {
-	file_on_build delete $gluefile;
-	unset gluefile;
+	file_on_build delete $gluefile
+	unset gluefile
     }
 }
     

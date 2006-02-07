@@ -103,7 +103,7 @@ proc ${tool}_fail { testcase cflags } {
 
 proc ${tool}_finish { } {
     # The testing harness apparently requires this.
-    global errorInfo;
+    global errorInfo
 
     if [info exists errorInfo] then {
 	unset errorInfo
@@ -121,11 +121,11 @@ proc ${tool}_finish { } {
 #
 
 proc ${tool}_exit { } {
-    global gluefile;
+    global gluefile
 
     if [info exists gluefile] {
-	file_on_build delete $gluefile;
-	unset gluefile;
+	file_on_build delete $gluefile
+	unset gluefile
     }
 }
     

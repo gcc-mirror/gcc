@@ -165,7 +165,7 @@ proc profopt-execute { src } {
 	set options ""
 	lappend options "additional_flags=$option $profile_option"
 	set optstr "$option $profile_option"
-	set comp_output [${tool}_target_compile "$src" "$execname1" executable $options];
+	set comp_output [${tool}_target_compile "$src" "$execname1" executable $options]
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname1 $comp_output] {
  	    unresolved "$testcase execution,   $optstr"
  	    unresolved "$testcase compilation, $option $feedback_option"
@@ -204,7 +204,7 @@ proc profopt-execute { src } {
 	set options ""
 	lappend options "additional_flags=$option $feedback_option"
 	set optstr "$option $feedback_option"
-	set comp_output [${tool}_target_compile "$src" "$execname2" "executable" $options];
+	set comp_output [${tool}_target_compile "$src" "$execname2" "executable" $options]
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname2 $comp_output] {
  	    unresolved "$testcase execution,   $optstr"
 	    continue
@@ -243,7 +243,7 @@ proc profopt-execute { src } {
 	set options ""
 	lappend options "additional_flags=$option"
 	set optstr "$option"
-	set comp_output [${tool}_target_compile "$src" "$execname3" "executable" $options];
+	set comp_output [${tool}_target_compile "$src" "$execname3" "executable" $options]
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname3 $comp_output] {
  	    unresolved "$testcase execution,   $optstr"
 	    unresolved "$testcase perf check,  $optstr"

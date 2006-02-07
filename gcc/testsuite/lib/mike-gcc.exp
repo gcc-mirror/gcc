@@ -20,7 +20,7 @@
 # mike_cleanup -- remove any files that are created by the testcase
 #
 proc mike_cleanup { src_code output_file assembly_file } {
-    remote_file build delete $output_file $assembly_file;
+    remote_file build delete $output_file $assembly_file
 }
 
 #
@@ -79,7 +79,7 @@ proc postbase  { src_code run groups args } {
     }
 
     if { [llength $args] > 0 } {
-	set comp_options [lindex $args 0];
+	set comp_options [lindex $args 0]
     } else {
 	set comp_options ""
     }
@@ -106,29 +106,29 @@ proc postbase  { src_code run groups args } {
     case $actions {
 	compile
 	{
-	    set compile_type "assembly";
-	    set output_file $assembly_file;
+	    set compile_type "assembly"
+	    set output_file $assembly_file
 	}
 	assemble
 	{
-	    set compile_type "object";
-	    append output_file ".o";
+	    set compile_type "object"
+	    append output_file ".o"
 	}
 	link
 	{
-	    set compile_type "executable";
-	    append output_file ".exe";
+	    set compile_type "executable"
+	    append output_file ".exe"
 	}
 	run
 	{
-	    set compile_type "executable";
-	    append output_file ".exe";
-	    set run yes;
+	    set compile_type "executable"
+	    append output_file ".exe"
+	    set run yes
 	}
 	default
 	{
-	    set output_file "";
-	    set compile_type "none";
+	    set output_file ""
+	    set compile_type "none"
 	}
     }
 
@@ -140,7 +140,7 @@ proc postbase  { src_code run groups args } {
 	lappend options "additional_flags=$comp_options"
     }
 
-    set comp_output [gcc_target_compile $src_file $output_file $compile_type $options];
+    set comp_output [gcc_target_compile $src_file $output_file $compile_type $options]
 
     set pass no
 
@@ -215,11 +215,11 @@ proc postbase  { src_code run groups args } {
 	}
 	if [string match $run yes] {
 	    set result [gcc_load $output_file]
-	    set status [lindex $result 0];
-	    set output [lindex $result 1];
+	    set status [lindex $result 0]
+	    set output [lindex $result 1]
 	    if { $status == -1 } {
-		mike_cleanup $src_code $output_file $assembly_file;
-		return;
+		mike_cleanup $src_code $output_file $assembly_file
+		return
 	    }
 	    if { $verbose > 1 } {
 		send_user "Checking:\n$program_output\nto see if it matches:\n$output\n\n"
