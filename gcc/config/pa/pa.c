@@ -7533,7 +7533,8 @@ attr_length_indirect_call (rtx insn)
 
   if (TARGET_FAST_INDIRECT_CALLS
       || (!TARGET_PORTABLE_RUNTIME
-	  && ((TARGET_PA_20 && distance < 7600000) || distance < 240000)))
+	  && ((TARGET_PA_20 && !TARGET_SOM && distance < 7600000)
+	      || distance < 240000)))
     return 8;
 
   if (flag_pic)
@@ -7570,10 +7571,10 @@ output_indirect_call (rtx insn, rtx call_dest)
      the remaining cases.  */
   if (attr_length_indirect_call (insn) == 8)
     {
-      /* The HP linker substitutes a BLE for millicode calls using
-	 the short PIC PCREL form.  Thus, we must use %r31 as the
-	 link register when generating PA 1.x code.  */
-      if (TARGET_PA_20)
+      /* The HP linker sometimes substitutes a BLE for BL/B,L calls to
+	 $$dyncall.  Since BLE uses %r31 as the link register, the 22-bit
+	 variant of the B,L instruction can't be used on the SOM target.  */
+      if (TARGET_PA_20 && !TARGET_SOM)
 	return ".CALL\tARGW0=GR\n\tb,l $$dyncall,%%r2\n\tcopy %%r2,%%r31";
       else
 	return ".CALL\tARGW0=GR\n\tbl $$dyncall,%%r31\n\tcopy %%r31,%%r2";

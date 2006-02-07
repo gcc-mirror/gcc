@@ -1,3 +1,9 @@
+	PR target/26109
+	* pa.c (attr_length_indirect_call): Don't return length 8 for distances
+	>= 240000 when generating code for SOM runtime.
+	(output_indirect_call): Don't use "b,l" instruction for indirect calls
+	to $$dyncall when generating code for SOM runtime..
+
 2006-02-02  Nick Clifton  <nickc@redhat.com>
 
 	PR 24376
