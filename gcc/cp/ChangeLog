@@ -1,3 +1,10 @@
+2006-02-06  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (grokdeclarator): Don't bother checking for CHAR_TYPE.
+	* rtti.c (typeinfo_in_lib_p): Likewise.
+	* cp-tree.h (INTEGRAL_CODE_P, CP_INTEGRAL_TYPE_P): Likewise.
+	* name-lookup.c (arg_assoc_type): Likewise.
+
 2006-02-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (tf_warn_or_error): New substituion flag.
