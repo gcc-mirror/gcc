@@ -369,9 +369,9 @@ df_set_blocks (struct df *df, bitmap blocks)
 	  for (p = df->num_problems_defined - 1; p >= 0 ;p--)
 	    {
 	      struct dataflow *dflow = df->problems_in_order[p];
-	      if (*dflow->problem->reset_fun)
-		(*dflow->problem->reset_fun) (dflow, df->blocks_to_analyze);
-	      else if (*dflow->problem->free_bb_fun)
+	      if (dflow->problem->reset_fun)
+		dflow->problem->reset_fun (dflow, df->blocks_to_analyze);
+	      else if (dflow->problem->free_bb_fun)
 		{
 		  bitmap_iterator bi;
 		  unsigned int bb_index;
@@ -381,7 +381,7 @@ df_set_blocks (struct df *df, bitmap blocks)
 		      basic_block bb = BASIC_BLOCK (bb_index);
 		      if (bb)
 			{
-			  (*dflow->problem->free_bb_fun) 
+			  dflow->problem->free_bb_fun
 			    (dflow, bb, df_get_bb_info (dflow, bb_index));
 			  df_set_bb_info (dflow, bb_index, NULL); 
 			}
@@ -403,7 +403,7 @@ df_set_blocks (struct df *df, bitmap blocks)
 	      for (p = df->num_problems_defined - 1; p >= 0 ;p--)
 		{
 		  struct dataflow *dflow = df->problems_in_order[p];
-		  if (*dflow->problem->reset_fun)
+		  if (dflow->problem->reset_fun)
 		    {
 		      if (!blocks_to_reset)
 			{
@@ -414,7 +414,7 @@ df_set_blocks (struct df *df, bitmap blocks)
 			      bitmap_set_bit (blocks_to_reset, bb->index); 
 			    }
 			}
-		      (*dflow->problem->reset_fun) (dflow, blocks_to_reset);
+		      dflow->problem->reset_fun (dflow, blocks_to_reset);
 		    }
 		}
 	      if (blocks_to_reset)
@@ -444,7 +444,7 @@ df_finish1 (struct df *df)
   int i;
 
   for (i = 0; i < df->num_problems_defined; i++)
-    (*df->problems_in_order[i]->problem->free_fun) (df->problems_in_order[i]); 
+    df->problems_in_order[i]->problem->free_fun (df->problems_in_order[i]); 
 
   free (df);
 }
@@ -479,12 +479,12 @@ df_hybrid_search_forward (basic_block bb,
 	if (!TEST_BIT (dataflow->considered, e->src->index))
 	  continue;
 	
-	(*dataflow->problem->con_fun_n) (dataflow, e);
+	dataflow->problem->con_fun_n (dataflow, e);
       }
-  else if (*dataflow->problem->con_fun_0)
-    (*dataflow->problem->con_fun_0) (dataflow, bb);
+  else if (dataflow->problem->con_fun_0)
+    dataflow->problem->con_fun_0 (dataflow, bb);
   
-  result_changed = (*dataflow->problem->trans_fun) (dataflow, i);
+  result_changed = dataflow->problem->trans_fun (dataflow, i);
   
   if (!result_changed || single_pass)
     return;
@@ -531,12 +531,12 @@ df_hybrid_search_backward (basic_block bb,
 	if (!TEST_BIT (dataflow->considered, e->dest->index))		
 	  continue;							
 	
-	(*dataflow->problem->con_fun_n) (dataflow, e);
+	dataflow->problem->con_fun_n (dataflow, e);
       }								
-  else if (*dataflow->problem->con_fun_0)
-    (*dataflow->problem->con_fun_0) (dataflow, bb);
+  else if (dataflow->problem->con_fun_0)
+    dataflow->problem->con_fun_0 (dataflow, bb);
 
-  result_changed = (*dataflow->problem->trans_fun) (dataflow, i);
+  result_changed = dataflow->problem->trans_fun (dataflow, i);
   
   if (!result_changed || single_pass)
     return;
@@ -605,7 +605,7 @@ df_iterative_dataflow (struct dataflow *dataflow,
       SET_BIT (pending, idx);
     };
 
-  (*dataflow->problem->init_fun) (dataflow, blocks_to_init);
+  dataflow->problem->init_fun (dataflow, blocks_to_init);
 
   while (1)
     {
@@ -704,24 +704,24 @@ df_analyze_problem (struct dataflow *dflow,
 		    int *postorder, int n_blocks, bool single_pass)
 {
   /* (Re)Allocate the datastructures necessary to solve the problem.  */ 
-  if (*dflow->problem->alloc_fun)
-    (*dflow->problem->alloc_fun) (dflow, blocks_to_scan);
+  if (dflow->problem->alloc_fun)
+    dflow->problem->alloc_fun (dflow, blocks_to_scan);
 
   /* Set up the problem and compute the local information.  This
      function is passed both the blocks_to_consider and the
      blocks_to_scan because the RD and RU problems require the entire
      function to be rescanned if they are going to be updated.  */
-  if (*dflow->problem->local_compute_fun)
-    (*dflow->problem->local_compute_fun) (dflow, blocks_to_consider, blocks_to_scan);
+  if (dflow->problem->local_compute_fun)
+    dflow->problem->local_compute_fun (dflow, blocks_to_consider, blocks_to_scan);
 
   /* Solve the equations.  */
-  if (*dflow->problem->dataflow_fun)
-    (*dflow->problem->dataflow_fun) (dflow, blocks_to_consider, blocks_to_init,
-				    postorder, n_blocks, single_pass);
+  if (dflow->problem->dataflow_fun)
+    dflow->problem->dataflow_fun (dflow, blocks_to_consider, blocks_to_init,
+				  postorder, n_blocks, single_pass);
 
   /* Massage the solution.  */
-  if (*dflow->problem->finalize_fun)
-    (*dflow->problem->finalize_fun) (dflow, blocks_to_consider);
+  if (dflow->problem->finalize_fun)
+    dflow->problem->finalize_fun (dflow, blocks_to_consider);
 }
 
 
@@ -825,7 +825,7 @@ df_compact_blocks (struct df *df)
   for (p = 0; p < df->num_problems_defined; p++)
     {
       struct dataflow *dflow = df->problems_in_order[p];
-      if (*dflow->problem->free_bb_fun)
+      if (dflow->problem->free_bb_fun)
 	{
 	  df_grow_bb_info (dflow);
 	  memcpy (problem_temps, dflow->block_info, size);
@@ -849,7 +849,7 @@ df_compact_blocks (struct df *df)
 	    {
 	      basic_block bb = BASIC_BLOCK (i); 
 	      if (problem_temps[i] && bb)
-		(*dflow->problem->free_bb_fun) 
+		dflow->problem->free_bb_fun
 		  (dflow, bb, problem_temps[i]);
 	    }
 	}
@@ -1063,7 +1063,7 @@ df_dump (struct df *df, FILE *file)
 	   df->def_info.bitmap_size, df->use_info.bitmap_size);
 
   for (i = 0; i < df->num_problems_defined; i++)
-    (*df->problems_in_order[i]->problem->dump_fun) (df->problems_in_order[i], file); 
+    df->problems_in_order[i]->problem->dump_fun (df->problems_in_order[i], file); 
 
   fprintf (file, "\n");
 }
