@@ -1,6 +1,6 @@
 /* Definitions for C++ parsing and type checking.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2358,12 +2358,12 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define DECL_EXTERNAL_LINKAGE_P(DECL) \
   (decl_linkage (DECL) == lk_external)
 
-/* Keep these codes in ascending code order.  CHAR_TYPE is used here
-   to completely fill the range.  */
+/* Keep these codes in ascending code order.  */
 
-#define INTEGRAL_CODE_P(CODE)				\
-  ((CODE) == ENUMERAL_TYPE || (CODE) == BOOLEAN_TYPE	\
-   || (CODE) == CHAR_TYPE || (CODE) == INTEGER_TYPE)
+#define INTEGRAL_CODE_P(CODE)	\
+  ((CODE) == ENUMERAL_TYPE	\
+   || (CODE) == BOOLEAN_TYPE	\
+   || (CODE) == INTEGER_TYPE)
 
 /* [basic.fundamental]
 
@@ -2372,11 +2372,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
    Note that INTEGRAL_TYPE_P, as defined in tree.h, allows enumeration
    types as well, which is incorrect in C++.  Keep these checks in
-   ascending code order.  CHAR_TYPE is added to complete the interval of
-   values.  */
+   ascending code order.  */
 #define CP_INTEGRAL_TYPE_P(TYPE)		\
   (TREE_CODE (TYPE) == BOOLEAN_TYPE		\
-   || TREE_CODE (TYPE) == CHAR_TYPE		\
    || TREE_CODE (TYPE) == INTEGER_TYPE)
 
 /* Returns true if TYPE is an integral or enumeration name.  Keep

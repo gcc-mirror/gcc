@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -4445,7 +4445,6 @@ arg_assoc_type (struct arg_lookup *k, tree type)
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
-    case CHAR_TYPE:
     case BOOLEAN_TYPE:
       return false;
     case RECORD_TYPE:
