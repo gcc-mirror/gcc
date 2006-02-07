@@ -94,14 +94,29 @@ proc libgomp_init { args } {
     # Compute what needs to be put into LD_LIBRARY_PATH
     set ld_library_path ".:${blddir}/.libs"
 
-    if {$gccdir != ""} {
-	append ld_library_path ":${gccdir}"
-    }
-
     if { [info exists lang_test_file] && [file exists "${blddir}/"] } {
 	append ld_library_path ":${blddir}/${lang_library_path}"
     }
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+
+    # Compute what needs to be added to the existing LD_LIBRARY_PATH.
+    if {$gccdir != ""} {
+	append ld_library_path ":${gccdir}"
+	set compiler [lindex $GCC_UNDER_TEST 0]
+
+	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	  foreach i "[exec $compiler --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+	      continue
+	    }
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+	      append ld_library_path ":${gccdir}/${mldir}"
+	    }
+	  }
+	}
+    }
     set_ld_library_path_env_vars
 
     set ALWAYS_CFLAGS ""
