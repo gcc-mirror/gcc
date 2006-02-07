@@ -981,12 +981,6 @@ enum reg_class
    On some machines it may depend on the data type of the function.  */
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
-/* The CFA is defined as the SP at the call site, so we have to take
-   into account that the first argument pointer is
-   STACK_POINTER_OFFSET bytes off the stack pointer.  */
-#define ARG_POINTER_CFA_OFFSET(FNDECL) \
-  (FIRST_PARM_OFFSET (FNDECL) - STACK_POINTER_OFFSET)
-
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame, after the
    prologue.  */
@@ -1022,7 +1016,9 @@ enum reg_class
    beginning of any function, before the prologue.  The top of the frame is
    defined to be the value of the stack pointer in the previous frame, just
    before the call instruction.  */
-#define INCOMING_FRAME_SP_OFFSET 0
+/* The CFA is past the red zone, not at the entry-point stack
+   pointer.  */
+#define INCOMING_FRAME_SP_OFFSET STACK_POINTER_OFFSET
 
 
 /* Register That Address the Stack Frame.  */

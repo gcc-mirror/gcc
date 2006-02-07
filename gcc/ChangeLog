@@ -1,3 +1,10 @@
+2006-02-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/24444
+	* config/ia64/unwind-ia64.c: Revert last change.
+	* config/ia64/ia64.h (ARG_POINTER_CFA_OFFSET): Removed.
+	(INCOMING_FRAME_SP_OFFSET): Define.
+
 2006-02-06  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* config/sparc/freebsd.h (ENDFILE_SPEC): Add space to separate
