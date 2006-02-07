@@ -5878,7 +5878,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p)
     }
 
   if (type_unknown_p (pfn))
-    return instantiate_type (type, pfn, tf_warn_or_error);
+    return instantiate_type (type, pfn, tf_warning_or_error);
 
   fn = TREE_OPERAND (pfn, 0);
   gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
@@ -6069,7 +6069,7 @@ convert_for_assignment (tree type, tree rhs,
 	     overloaded function.  Call instantiate_type to get error
 	     messages.  */
 	  if (rhstype == unknown_type_node)
-	    instantiate_type (type, rhs, tf_warn_or_error);
+	    instantiate_type (type, rhs, tf_warning_or_error);
 	  else if (fndecl)
 	    error ("cannot convert %qT to %qT for argument %qP to %qD",
 		   rhstype, type, parmnum, fndecl);

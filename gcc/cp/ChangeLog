@@ -1,3 +1,16 @@
+2006-02-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (tf_warning_or_error): Renamed from tf_warn_or_error.
+	(cp_build_qualified_type): Propogate renaming.
+	* call.c (convert_like_real): Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_reference): Likewise.
+	* decl.c (make_typename_type, grokdeclarator): Likewise.
+	* pt.c (tsubst_friend_function, instantiate_class_template,
+	tsubst_default_argument, instantiate_decl,
+	tsubst_initializer_list, tsubst_enum): Likewise.
+	* semantics.c (finish_template_type): Likewise.
+	* typeck.c (build_ptrmemfunc, convert_for_assignment): Likewise.
+
 2006-02-07  Dirk Mueller  <dmueller@suse.com>
 
 	* typeck.c (build_binary_op): Annotate div-by-zero
