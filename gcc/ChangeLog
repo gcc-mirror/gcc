@@ -1,3 +1,8 @@
+2006-02-07  Roger Sayle  <roger@eyesopen.com>
+
+	* config/sparc/sparc.c (sparc_type_code): Don't handle CHAR_TYPE.
+	Correct comment describing BOOLEAN_TYPE.
+
 2006-02-07  Dirk Mueller  <dmueller@suse.com>
 
 	* c.opt: C++ frontend supports -Wdiv-by-zero.
