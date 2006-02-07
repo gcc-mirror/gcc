@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 typedef struct {
   int code;
@@ -26,5 +26,5 @@ can_combine_p (rtx insn, rtx elt)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate.*to 0" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate.*to 0" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

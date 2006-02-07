@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp-details" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 
 struct rtx_def;
@@ -84,6 +84,6 @@ L7:
 /* The n_sets > 0 test can be simplified into n_sets == 1 since the
    only way to reach the test is when n_sets <= 1, and the only value
    which satisfies both conditions is n_sets == 1.  */
-/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp-details" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 
 extern void abort (void) __attribute__ ((__noreturn__));
@@ -18,6 +18,6 @@ nonlocal_mentioned_p (rtx x)
 	abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate .*to 0" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate .*to 0" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

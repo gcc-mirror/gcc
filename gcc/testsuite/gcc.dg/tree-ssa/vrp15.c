@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 
 extern void abort (void) __attribute__ ((__noreturn__));
@@ -29,6 +29,6 @@ blah (tree t)
 
 }
 
-/* { dg-final { scan-tree-dump-times "tree_code_length.42." 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "tree_code_length.42." 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

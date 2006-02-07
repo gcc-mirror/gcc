@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
      
 
 void
@@ -39,5 +39,5 @@ foo4 (distance, i, j)
 }
 
 /* There should be no ABS_EXPR.  */
-/* { dg-final { scan-tree-dump-times "ABS_EXPR " 0 "vrp"} } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "ABS_EXPR " 0 "vrp1"} } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

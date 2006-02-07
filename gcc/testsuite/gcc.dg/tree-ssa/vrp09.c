@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 foo (int *p)
 {
@@ -27,5 +27,5 @@ L78:
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.. != 0B to 1" 2 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.. != 0B to 1" 2 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

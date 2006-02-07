@@ -749,6 +749,11 @@ tree expand_simple_operations (tree);
 void substitute_in_loop_info (struct loop *, tree, tree);
 edge single_dom_exit (struct loop *);
 
+/* In tree-ssa-threadedge.c */
+extern bool potentially_threadable_block (basic_block);
+extern void thread_across_edge (tree, edge, bool,
+				VEC(tree, heap) **, tree (*) (tree));
+
 /* In tree-ssa-loop-im.c  */
 /* The possibilities of statement movement.  */
 

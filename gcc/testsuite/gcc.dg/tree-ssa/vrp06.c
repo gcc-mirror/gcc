@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 foo (int i, int j, int a)
 {
@@ -25,7 +25,7 @@ foo (int i, int j, int a)
   return i + a + j;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate i_.*to 0" 1 "vrp" } } */
-/* { dg-final { scan-tree-dump-times "Folding predicate j_.*to 1" 1 "vrp" } } */
-/* { dg-final { scan-tree-dump-times "Folding predicate i_.*to 0" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate i_.*to 0" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate j_.*to 1" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate i_.*to 0" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

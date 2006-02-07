@@ -4,7 +4,7 @@
    immediate successors of the basic block.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-vrp-details" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-vrp1-details" } */
 
 extern void bar (int);
 
@@ -25,5 +25,5 @@ foo (int *p, int b)
   return a;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate" 1 "vrp"} } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate" 1 "vrp1"} } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

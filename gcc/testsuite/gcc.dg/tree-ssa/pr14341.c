@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 void fn_call (int);
 int h(int, int);
@@ -12,5 +12,5 @@ void t()
     }
 }
 
-/* { dg-final { scan-tree-dump-times "fn_call \\(1\\)" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "fn_call \\(1\\)" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
