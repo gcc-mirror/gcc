@@ -1,7 +1,7 @@
 /* PR tree-optimization/25485
    VRP did not fold TRUTH_AND_EXPR.  Make sure it does now.  */
 
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 int
 foo (int a, int b)
@@ -13,5 +13,5 @@ foo (int a, int b)
   return 31;
 }
 
-/* { dg-final { scan-tree-dump-times "if" 1 "vrp"} } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "if" 1 "vrp1"} } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

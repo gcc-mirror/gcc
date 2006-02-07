@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp-details" } */
+/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1-details" } */
 
 /* Compile with -fno-tree-fre -O2 to prevent CSEing *p.  */
 foo (int a, int *p)
@@ -18,6 +18,6 @@ foo (int a, int *p)
   return a;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp" } } */
-/* { dg-final { scan-tree-dump-times "PREDICATE: p_. ne_expr 0" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "PREDICATE: p_. ne_expr 0" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

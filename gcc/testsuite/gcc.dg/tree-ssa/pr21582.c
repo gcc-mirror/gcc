@@ -1,5 +1,5 @@
 /* { dg-do link }  */
-/* { dg-options "-O2 -fdump-tree-vrp" }  */
+/* { dg-options "-O2 -fdump-tree-vrp1" }  */
 
 static inline void do_thing(char *s, int *p, char *q)
 {
@@ -24,5 +24,5 @@ main()
   do_other_thing ("xxx", &i, "yyy");
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.*" 0 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*" 0 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

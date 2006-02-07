@@ -1,3 +1,47 @@
+2006-02-07  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp01.c: Update dumpfile names now that we have
+	multiple VRP passes.
+	* gcc.dg/tree-ssa/vrp09.c: Likewise.
+	* gcc.dg/tree-ssa/vrp18.c: Likewise.
+	* gcc.dg/tree-ssa/pr21582.c: Likewise.
+	* gcc.dg/tree-ssa/pr20657.c: Likewise.
+	* gcc.dg/tree-ssa/pr21001.c: Likewise.
+	* gcc.dg/tree-ssa/vrp02.c: Likewise
+	* gcc.dg/tree-ssa/vrp11.c: Likewise
+	* gcc.dg/tree-ssa/pr14341.c: Likewise
+	* gcc.dg/tree-ssa/vrp19.c: Likewise
+	* gcc.dg/tree-ssa/vrp20.c: Likewise
+	* gcc.dg/tree-ssa/vrp03.c: Likewise
+	* gcc.dg/tree-ssa/pr21086.c: Likewise
+	* gcc.dg/tree-ssa/pr21959.c: Likewise
+	* gcc.dg/tree-ssa/vrp21.c: Likewise
+	* gcc.dg/tree-ssa/vrp04.c: Likewise 
+	* gcc.dg/tree-ssa/pr25485.c: Likewise
+	* gcc.dg/tree-ssa/pr22026.c: Likewise
+	* gcc.dg/tree-ssa/vrp22.c: Likewise
+	* gcc.dg/tree-ssa/vrp05.c: Likewise
+	* gcc.dg/tree-ssa/20030807-10.c: Likewise
+	* gcc.dg/tree-ssa/pr20701.c: Likewise
+	* gcc.dg/tree-ssa/vrp23.c: Likewise
+	* gcc.dg/tree-ssa/vrp06.c: Likewise
+	* gcc.dg/tree-ssa/pr22117.c: Likewise
+	* gcc.dg/tree-ssa/pr20702.c: Likewise
+	* gcc.dg/tree-ssa/vrp15.c: Likewise
+	* gcc.dg/tree-ssa/pr21090.c: Likewise
+	* gcc.dg/tree-ssa/pr21294.c: Likewise
+	* gcc.dg/tree-ssa/vrp24.c: Likewise
+	* gcc.dg/tree-ssa/vrp07.c: Likewise
+	* gcc.dg/tree-ssa/pr21563.c: Likewise
+	* gcc.dg/tree-ssa/pr25382.c: Likewise
+	* gcc.dg/tree-ssa/vrp16.c: Likewise
+	* gcc.dg/tree-ssa/vrp25.c: Likewise
+	* gcc.dg/tree-ssa/vrp08.c: Likewise
+	* gcc.dg/tree-ssa/20030807-6.c: Likewise
+	* gcc.dg/tree-ssa/vrp17.c: Likewise
+	* gcc.dg/tree-ssa/pr21458.c: Likewise
+	* g++.dg/tree-ssa/pr18178.C: Likewise
+
 2006-02-07  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/26140

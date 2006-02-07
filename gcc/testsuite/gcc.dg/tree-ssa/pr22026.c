@@ -3,7 +3,7 @@
    same applies to subtraction and unsigned multiplication.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 int
 plus (int x, int y)
@@ -45,5 +45,5 @@ mult (unsigned x, unsigned y)
 }
 
 /* None of the predicates can be folded in these functions.  */
-/* { dg-final { scan-tree-dump-times "Folding predicate" 0 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate" 0 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

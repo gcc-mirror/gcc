@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fwrapv -O1 -ftree-vrp -fdump-tree-vrp" } */
+/* { dg-options "-fwrapv -O1 -ftree-vrp -fdump-tree-vrp1" } */
 
 #include <limits.h>
 extern void abort ();
@@ -22,6 +22,6 @@ int g (int b) {
 	}
 	return 1;
 }
-/* { dg-final { scan-tree-dump "Folding predicate a_. < 0 to 0" "vrp" } } */
-/* { dg-final { scan-tree-dump "Folding predicate b_. >= 0 to 1" "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump "Folding predicate a_. < 0 to 0" "vrp1" } } */
+/* { dg-final { scan-tree-dump "Folding predicate b_. >= 0 to 1" "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 // Define this to see it work.
 // #define WORK_WORK_WORK
@@ -43,5 +43,5 @@ void doit (array *a)
 
 /* VRP should remove all but 1 if() in the loop.  */
 
-/* { dg-final { scan-tree-dump-times "if " 1 "vrp"} } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "if " 1 "vrp1"} } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

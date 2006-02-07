@@ -961,7 +961,7 @@ OBJS-common = \
  tree-ssa-dom.o domwalk.o tree-tailcall.o gimple-low.o tree-iterator.o	   \
  omp-low.o tree-phinodes.o tree-ssanames.o tree-sra.o tree-complex.o	   \
  tree-vect-generic.o tree-ssa-loop.o tree-ssa-loop-niter.o		   \
- tree-ssa-loop-manip.o tree-ssa-threadupdate.o				   \
+ tree-ssa-loop-manip.o tree-ssa-threadupdate.o tree-ssa-threadedge.o	   \
  tree-vectorizer.o tree-vect-analyze.o tree-vect-transform.o		   \
  tree-vect-patterns.o                                                      \
  tree-ssa-loop-ivcanon.o tree-ssa-propagate.o tree-ssa-address.o	   \
@@ -1860,6 +1860,10 @@ tree-ssa-uncprop.o : tree-ssa-uncprop.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(BASIC_BLOCK_H) domwalk.h real.h tree-pass.h $(FLAGS_H) \
    langhooks.h tree-ssa-propagate.h
+tree-ssa-threadedge.o : tree-ssa-threadedge.c $(TREE_FLOW_H) $(CONFIG_H) \
+   $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h \
+   $(DIAGNOSTIC_H) $(FUNCTION_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
+   $(BASIC_BLOCK_H) $(FLAGS_H) tree-pass.h $(CFGLOOP_H)
 tree-ssa-threadupdate.o : tree-ssa-threadupdate.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \

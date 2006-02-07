@@ -1,3 +1,38 @@
+2006-02-07  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (find_conditional_asserts): Update comments.
+	(simplify_stmt_for_jump_threading): New.
+	(identify_jump_threads, finalize_jump_threads): New.
+	(vrp_finalize): Call identify_jump_threads.
+	(execute_vrp): Call finalize_jump_threads.
+	* tree-ssa-dom.c (struct opt_stats_d): Remove num_iterations field.
+	(vrp_element, vrp_data, vrp_element_p): Remove.
+	(vrp_hash_elt, vrp_variables_stack): Remove.
+	(vrp_hash, vrp_eq, record_range): Remove.
+	(simplify_cond_and_lookup_avail_expr): Remove.
+	(extract_range_from_cond): Remove.
+	(thread_across_edge): Relocated into tree-ssa-threadedge.c.
+	(simplify_stmt_for_jump_threading): New.
+	(dom_thread_across_edge): New wrapper.
+	(tree_ssa_dominator_optimize): No longer initialize or
+	finalize any of the VRP datastructures.  Remove iteration
+	step and simplify as a result of removal of iteration step.
+	(pass_dominator): Perform a cfg cleanup after DOM.
+	(dom_opt_finalize_block): Use the new common routines
+	for threading jumps.  Simplify stack management slightly.
+	No longer need to unwind VRP state.
+	(record_equivalences_from_incoming_edge): No longer record
+	VRP information.
+	(eliminate_redundant_computations): No longer call
+	simplify_cond_and_lookup_avail_expr.
+	* tree-flow.h (potentially_threadable_block): Prototype.
+	(thread_across_edge): Likewise.
+	* Makefile.in (OBJS-common):  Add tree-ssa-threadedge.o
+	(tree-ssa-threadedge.o): Add dependencies.
+	* tree-ssa-threadedge.c: New file.
+	* passes.c (init_optimization_passes): Merge PHIs before
+	calling VRP.  Run VRP again late in the SSA optimization pipeline.
+
 2006-02-07  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/26140

@@ -4,7 +4,7 @@
    allows us to eliminate the second "if" statement.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-vrp-details" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-vrp1-details" } */
 
 struct f {
   int i;
@@ -19,5 +19,5 @@ foo (struct f *p)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate" 1 "vrp"} } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate" 1 "vrp1"} } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

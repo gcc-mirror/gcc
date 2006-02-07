@@ -3,7 +3,7 @@
    known to be zero after entering the first two "if" statements.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 void
 foo (int *p, int q)
@@ -19,5 +19,5 @@ foo (int *p, int q)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate r_.* != 0B to 0" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate r_.* != 0B to 0" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

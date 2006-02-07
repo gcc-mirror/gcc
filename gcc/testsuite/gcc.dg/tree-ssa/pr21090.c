@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 int g, h;
 
@@ -19,5 +19,5 @@ foo (int a)
     return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

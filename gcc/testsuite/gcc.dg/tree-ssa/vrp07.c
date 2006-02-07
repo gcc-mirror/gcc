@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp-details" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 foo (int i, int *p)
 {
@@ -30,7 +30,7 @@ foo (int i, int *p)
   return i;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp" } } */
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 0" 1 "vrp" } } */
-/* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\] ne_expr 0B" 2 "vrp" } } */
-/* { dg-final { cleanup-tree-dump "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 0" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\] ne_expr 0B" 2 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
