@@ -93,7 +93,7 @@ pi_lo   = -8.7422776573e-08; /* 0xb3bbbd2e */
 	switch (m) {
 	    case 0: return       z  ;	/* atan(+,+) */
 	    case 1: {
-	    	      u_int32_t zh;
+	    	      uint32_t zh;
 		      GET_FLOAT_WORD(zh,z);
 		      SET_FLOAT_WORD(z,zh ^ 0x80000000);
 		    }

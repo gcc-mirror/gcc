@@ -53,7 +53,6 @@
 #include <float.h>
 #include <ieee754.h>
 #include <math.h>
-#include <inttypes.h>
 #include <math_private.h>
 
 extern const float __exp_deltatable[178];

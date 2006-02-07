@@ -10,7 +10,7 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 noinst_LTLIBRARIES = libsse2.la
 
-libsse2_la_CFLAGS = -I@srcdir@/../include -include @srcdir@/sse2.h \
+libsse2_la_CFLAGS = -I@srcdir@/../include -I.. -include @srcdir@/sse2.h \
   -Wall -O2 -g -msse2 -msseregparm -mfpmath=sse -march=pentium3 \
   -fno-math-errno -fno-trapping-math -ffinite-math-only \
   -fno-rounding-math -fno-signaling-nans -D__NO_MATH_INLINES

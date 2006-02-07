@@ -133,7 +133,7 @@ ivln2_l  =  7.0526075433e-06; /* 0x36eca570 =1/ln2 tail*/
 	}
 
     /* (x<0)**(non-int) is NaN */
-	if(((((u_int32_t)hx>>31)-1)|yisint)==0) return (x-x)/(x-x);
+	if(((((uint32_t)hx>>31)-1)|yisint)==0) return (x-x)/(x-x);
 
     /* |y| is huge */
 	if(iy>0x4d000000) { /* if |y| > 2**27 */
@@ -204,7 +204,7 @@ ivln2_l  =  7.0526075433e-06; /* 0x36eca570 =1/ln2 tail*/
 	}
 
 	s = one; /* s (sign of result -ve**odd) = -1 else = 1 */
-	if(((((u_int32_t)hx>>31)-1)|(yisint-1))==0)
+	if(((((uint32_t)hx>>31)-1)|(yisint-1))==0)
 	    s = -one;	/* (-ve)**(odd int) */
 
     /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
@@ -221,7 +221,7 @@ ivln2_l  =  7.0526075433e-06; /* 0x36eca570 =1/ln2 tail*/
 	}
 	else if ((j&0x7fffffff)>0x43160000)		/* z <= -150 */
 	    return s*tiny*tiny;				/* underflow */
-	else if ((u_int32_t) j==0xc3160000){		/* z == -150 */
+	else if ((uint32_t) j==0xc3160000){		/* z == -150 */
 	    if(p_l<=z-p_h) return s*tiny*tiny;		/* underflow */
 	}
     /*

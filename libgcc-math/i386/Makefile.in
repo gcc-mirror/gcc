@@ -42,7 +42,8 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/stdint.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -112,6 +113,7 @@ DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -197,7 +199,7 @@ toolexeclibdir = @toolexeclibdir@
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 noinst_LTLIBRARIES = libsse2.la
-libsse2_la_CFLAGS = -I@srcdir@/../include -include @srcdir@/sse2.h \
+libsse2_la_CFLAGS = -I@srcdir@/../include -I.. -include @srcdir@/sse2.h \
   -Wall -O2 -g -msse2 -msseregparm -mfpmath=sse -march=pentium3 \
   -fno-math-errno -fno-trapping-math -ffinite-math-only \
   -fno-rounding-math -fno-signaling-nans -D__NO_MATH_INLINES
