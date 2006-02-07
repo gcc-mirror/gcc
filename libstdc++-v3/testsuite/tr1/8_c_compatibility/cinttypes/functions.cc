@@ -41,10 +41,10 @@ void test01()
   std::tr1::imaxdiv_t dret;
 
   ret = std::tr1::imaxabs(i);
-  ret = std::tr1::abs(i);
+  // ret = std::tr1::abs(i);
 
   dret = std::tr1::imaxdiv(numer, denom);
-  dret = std::tr1::div(numer, denom);
+  // dret = std::tr1::div(numer, denom);
 
   ret = std::tr1::strtoimax(s, endptr, base);
   uret = std::tr1::strtoumax(s, endptr, base);
