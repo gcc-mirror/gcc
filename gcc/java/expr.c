@@ -2280,6 +2280,14 @@ expand_invoke (int opcode, int method_ref_index, int nargs ATTRIBUTE_UNUSED)
   else
     method = lookup_java_method (self_type, method_name, method_signature);
 
+  /* We've found a method in a class other than the one in which it
+     was wanted.  This can happen if, for instance, we're trying to
+     compile invokespecial super.equals().  */
+  if (! flag_verify_invocations
+      && method
+      && self_type != DECL_CONTEXT (method))
+    method = NULL_TREE;
+
   /* We've found a method in an interface, but this isn't an interface
      call.  */
   if (opcode != OPCODE_invokeinterface

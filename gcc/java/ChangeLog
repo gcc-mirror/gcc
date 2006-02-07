@@ -1,3 +1,9 @@
+2006-02-07  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (expand_invoke): (BC mode.)  If we find a method in a
+	class other than the one in which we expected to find it, ignore
+	the result.
+
 2006-01-30  Andrew Haley  <aph@redhat.com>
 
 	PR java/21428
