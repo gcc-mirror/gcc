@@ -14775,6 +14775,15 @@ foo:	.long	25
 	;;
   sparc*-*-*)
     case "$target" in
+      sparc*-sun-solaris2.[56789]*)
+	# TLS was introduced in the Solaris 9 4/04 release but
+	# we do not enable it by default on Solaris 9 either.
+	if test "x$enable_tls" = xyes ; then
+	  on_solaris=yes
+	else
+	  enable_tls=no;
+	fi
+	;;
       sparc*-sun-solaris2.*)
 	on_solaris=yes
 	;;

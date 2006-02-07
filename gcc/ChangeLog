@@ -1,3 +1,9 @@
+2006-02-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure.ac (TLS assembler check): Do not enable TLS by
+	default on SPARC/Solaris before version 10.
+	* configure: Regenerate.
+
 2006-02-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/24444
