@@ -453,7 +453,7 @@ df_rescan_blocks (struct df *df, bitmap blocks)
       for (i = df->num_problems_defined; i; i--)
 	{
 	  bitmap blocks_to_reset = NULL;
-	  if (*dflow->problem->reset_fun)
+	  if (dflow->problem->reset_fun)
 	    {
 	      if (!blocks_to_reset)
 		{
@@ -462,7 +462,7 @@ df_rescan_blocks (struct df *df, bitmap blocks)
 		  if (df->blocks_to_scan)
 		    bitmap_ior_into (blocks_to_reset, df->blocks_to_scan);
 		}
-	      (*dflow->problem->reset_fun) (dflow, blocks_to_reset);
+	      dflow->problem->reset_fun (dflow, blocks_to_reset);
 	    }
 	  if (blocks_to_reset)
 	    BITMAP_FREE (blocks_to_reset);
@@ -1804,7 +1804,7 @@ df_record_entry_block_defs (struct dataflow * dflow)
 #endif
     }
 
-  (*targetm.live_on_entry) (df->entry_block_defs);
+  targetm.live_on_entry (df->entry_block_defs);
 
   EXECUTE_IF_SET_IN_BITMAP (df->entry_block_defs, 0, i, bi)
     {
