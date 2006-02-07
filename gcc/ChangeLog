@@ -1,3 +1,8 @@
+2006-02-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/i386/i386.c (ix86_delegitimize_address): Support Darwin
+	PIC addresses.
+
 2006-02-07  Roger Sayle  <roger@eyesopen.com>
 
 	* config/sparc/sparc.c (sparc_type_code): Don't handle CHAR_TYPE.

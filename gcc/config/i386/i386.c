@@ -7152,6 +7152,14 @@ ix86_delegitimize_address (rtx orig_x)
       return x;
     }
 
+  if (TARGET_MACHO && darwin_local_data_pic (x)
+      && GET_CODE (orig_x) != MEM)
+    {
+      x = XEXP (x, 0);
+      if (y)
+	return gen_rtx_PLUS (Pmode, y, x);
+      return x;
+    }
   return orig_x;
 }
 
