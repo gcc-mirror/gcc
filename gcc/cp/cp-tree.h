@@ -3111,7 +3111,7 @@ typedef enum tsubst_flags_t {
 				   not actually performing the
 				   conversion.  */
   /* Convenient substitution flags combinations.  */
-  tf_warn_or_error = tf_warning | tf_error
+  tf_warning_or_error = tf_warning | tf_error
 } tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */
@@ -4274,7 +4274,7 @@ extern tree make_ptrmem_cst			(tree, tree);
 extern tree cp_build_type_attribute_variant     (tree, tree);
 extern tree cp_build_qualified_type_real	(tree, int, tsubst_flags_t);
 #define cp_build_qualified_type(TYPE, QUALS) \
-  cp_build_qualified_type_real ((TYPE), (QUALS), tf_warn_or_error)
+  cp_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
 extern special_function_kind special_function_p (tree);
 extern int count_trees				(tree);
 extern int char_type_p				(tree);
