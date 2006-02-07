@@ -1,3 +1,20 @@
+2006-02-07  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9737
+	* g++.dg/template/ttp15.C: New test.
+	* g++.dg/template/ttp16.C: Likewise.
+	* g++.dg/template/ttp17.C: Likewise.
+	* g++.old-deja/g++.pt/ttp36.C: Remove.
+	* g++.old-deja/g++.pt/ttp19.C: Likewise.
+	* g++.old-deja/g++.pt/ttp37.C: Likewise.
+	* g++.old-deja/g++.pt/ttp38.C: Likewise.
+	* g++.old-deja/g++.pt/ttp39.C: Likewise.
+	* g++.old-deja/g++.pt/ttp9.C: Likewise.
+	* g++.old-deja/g++.pt/ttp40.C: Likewise.
+	* g++.old-deja/g++.pt/ttp51.C: Likewise.
+	* g++.old-deja/g++.pt/ttp26.C: Likewise.
+	* g++.old-deja/g++.pt/ttp36.C: Likewise.
+
 2005-02-06  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23815
