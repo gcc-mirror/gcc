@@ -45,6 +45,9 @@
 /* support for Tru64 pthreads */
 #undef GC_OSF1_THREADS
 
+/* symbol version of pthread_create */
+#undef GC_PTHREAD_SYM_VERSION
+
 /* support for Solaris pthreads */
 #undef GC_SOLARIS_PTHREADS
 
