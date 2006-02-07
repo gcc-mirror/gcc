@@ -1,3 +1,13 @@
+2006-02-07  Pete Steinmetz  <steinmtz@us.ibm.com>
+
+        * sched-rgn.c (compute_dom_prob_ps, compute_trg_info): Eradicate
+	use of float in probability computations.  Use edge probabilities
+	in place of statically computed probabilities.
+	(min_spec_prob): New static variable.
+	(schedule_insns): Initialize it.
+	(GET_SRC_PROB): Removed.
+	* doc/invoke.texi (min-sched-prob): Renamed to min-spec-prob.
+
 2006-02-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/24444
