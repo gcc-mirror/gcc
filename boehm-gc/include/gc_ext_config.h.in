@@ -3,3 +3,5 @@ external clients that do not want to include the full gc.h.  Currently this
 is used by libjava/include/boehm-gc.h. */
 
 #undef THREAD_LOCAL_ALLOC
+
+#undef GC_PTHREAD_SYM_VERSION

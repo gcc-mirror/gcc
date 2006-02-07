@@ -1,3 +1,17 @@
+2006-02-06  Jakub Jelinek  <jakub@redhat.com>
+	    Anthony Green  <green@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* include/gc_ext_config.h.in: Added GC_PTHREAD_SYM_VERSION.
+	* include/gc_config.h.in: Rebuilt.
+	* include/gc_pthread_redirects.h (pthread_create): Conditionally
+	define.
+	* pthread_support.c (pthread_create_): New global.
+	(constr): New function.
+	(pthread_create): Conditionally renamed.
+	* configure: Rebuilt.
+	* configure.ac (GC_PTHREAD_SYM_VERSION): Define.
+
 2005-11-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/private/gc_priv.h: Increase MAX_ROOT_SETS to 1024.
