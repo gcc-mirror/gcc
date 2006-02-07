@@ -2078,6 +2078,41 @@ add_branch_dependences (rtx head, rtx tail)
       insn = PREV_INSN (insn);
     }
 
+#ifdef HAVE_cc0
+  /* There may be other cc0 setters earlier on in this block.
+     Look for them and include them in the set not to be disturbed.  */
+  if (insn != head && last != NULL_RTX)
+    {
+      rtx earlier_cc0_setter = NULL_RTX;
+
+      for (insn = last; insn != NULL_RTX && insn != head;)
+	{
+	  insn = prev_nonnote_insn (insn);
+	  if (sets_cc0_p (insn))
+	    earlier_cc0_setter = insn;
+	}
+
+      if (earlier_cc0_setter != NULL_RTX)      
+	{
+	  insn = last;
+	  do
+	    {
+	      insn = prev_nonnote_insn (insn);
+
+	      if (last != 0 && ! find_insn_list (insn, LOG_LINKS (last)))
+		{
+		  add_dependence (last, insn, REG_DEP_ANTI);
+		  INSN_REF_COUNT (insn)++;
+		}
+	      
+	      CANT_MOVE (insn) = 1;
+	      
+	      last = insn;
+	    }
+	  while (insn != earlier_cc0_setter);
+	}
+    }
+#endif
 
   /* Make sure these insns are scheduled last in their block.  */
   insn = last;
