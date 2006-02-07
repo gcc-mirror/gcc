@@ -1,3 +1,15 @@
+2006-02-07  Paolo Carlini  <pcarlini@suse.de>	
+
+	* include/tr1/hashtable: Trivial formatting fixes.
+
+2006-02-07  Paolo Carlini  <pcarlini@suse.de>
+	    Zak Kipling  <zak@transversal.com>
+
+	PR libstdc++/26127
+	* include/tr1/hashtable (hashtable<>::key_equal): Define.
+	(hashtable<>::bucket, rehash_base<>::max_load_factor): Fix.
+	* testsuite/tr1/6_containers/unordered/hashtable/26127.cc: New.
+
 2006-02-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cmath: New.

@@ -653,7 +653,7 @@ namespace Internal
       max_load_factor() const
       {
 	const Hashtable* This = static_cast<const Hashtable*>(this);
-	return This->rehash_policy()->max_load_factor();
+	return This->rehash_policy().max_load_factor();
       }
 
       void
@@ -836,7 +836,7 @@ namespace Internal
       typedef std::size_t hash_code_t;
   
       hash_code_t
-      m_hash_code (const Key& k) const
+      m_hash_code(const Key& k) const
       { return m_h1(k); }
   
       std::size_t
@@ -1081,6 +1081,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       max_size() const
       { return m_node_allocator.max_size(); }
 
+    public:                             // Observers
+      key_equal
+      key_eq() const
+      { return this->m_eq; }
+
+      // hash_function, if present, comes from hash_code_base.
+
     public:				// Bucket operations
       size_type
       bucket_count() const
@@ -1094,9 +1101,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       bucket_size(size_type n) const
       { return std::distance(begin(n), end(n)); }
   
-      size_type bucket(const key_type& k) const
+      size_type
+      bucket(const key_type& k) const
       { 
-	return this->bucket_index(k, this->m_hash_code, this->m_bucket_count);
+	return this->bucket_index(k, this->m_hash_code(k),
+				  this->m_bucket_count);
       }
 
       local_iterator
@@ -1477,9 +1486,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     find(const key_type& k)
     {
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
-      node* p = find_node (m_buckets[n], k, code);
+      node* p = find_node(m_buckets[n], k, code);
       return p ? iterator(p, m_buckets + n) : this->end();
     }
   
@@ -1491,9 +1500,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     find(const key_type& k) const
     {
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
-      node* p = find_node (m_buckets[n], k, code);
+      node* p = find_node(m_buckets[n], k, code);
       return p ? const_iterator(p, m_buckets + n) : this->end();
     }
   
@@ -1505,11 +1514,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     count(const key_type& k) const
     {
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
-      std::size_t n = this->bucket_index (k, code, this->bucket_count());
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
+      std::size_t n = this->bucket_index(k, code, this->bucket_count());
       size_t result = 0;
       for (node* p = m_buckets[n]; p ; p = p->m_next)
-	if (this->compare (k, code, p))
+	if (this->compare(k, code, p))
 	  ++result;
       return result;
     }
@@ -1525,7 +1534,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     equal_range(const key_type& k)
     {
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
       node** head = m_buckets + n;
       node* p = find_node (*head, k, code);
@@ -1558,16 +1567,16 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     equal_range(const key_type& k) const
     {
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
       node** head = m_buckets + n;
-      node* p = find_node (*head, k, code);
+      node* p = find_node(*head, k, code);
 
       if (p)
 	{
 	  node* p1 = p->m_next;
 	  for (; p1 ; p1 = p1->m_next)
-	    if (!this->compare (k, code, p1))
+	    if (!this->compare(k, code, p1))
 	      break;
 
 	  const_iterator first(p, head);
@@ -1608,7 +1617,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     insert(const value_type& v, std::tr1::true_type)
     {
       const key_type& k = this->m_extract(v);
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
       size_type n = this->bucket_index(k, code, m_bucket_count);
       
       if (node* p = find_node(m_buckets[n], k, code))
@@ -1657,7 +1666,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	m_rehash(do_rehash.second);
 
       const key_type& k = this->m_extract(v);
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
       size_type n = this->bucket_index(k, code, m_bucket_count);
       
       node* new_node = m_allocate_node (v);
@@ -1760,15 +1769,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     erase(const key_type& k)
     {
-      typename hashtable::hash_code_t code = this->m_hash_code (k);
+      typename hashtable::hash_code_t code = this->m_hash_code(k);
       size_type n = this->bucket_index(k, code, m_bucket_count);
       size_type result = 0;
       
       node** slot = m_buckets + n;
-      while (*slot && ! this->compare (k, code, *slot))
+      while (*slot && ! this->compare(k, code, *slot))
 	slot = &((*slot)->m_next);
 
-      while (*slot && this->compare (k, code, *slot))
+      while (*slot && this->compare(k, code, *slot))
 	{
 	  node* n = *slot;
 	  *slot = n->m_next;
