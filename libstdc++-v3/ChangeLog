@@ -1,3 +1,9 @@
+2006-02-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/testsuite_tr1.h (test_property): New function.
+	* testsuite/tr1/4_metaprogramming/type_properties/extent/extent.cc 
+	(test01) 
+
 2006-02-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cstdio: New.

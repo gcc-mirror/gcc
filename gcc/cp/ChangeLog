@@ -1,3 +1,17 @@
+2006-02-07  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9737
+	* pt.c (coerce_template_template_parms): Do not templates with
+	excess default arguments to match template template parameters
+	with fewer parameters.
+	(coerce_template_parms): Add use_default_args parameter; use
+	default arguments only when true.
+	(lookup_template_class): Adjust call to coerce_template_parms.
+	(fn_type_unification): Likewise.
+	(unify): Likewise.
+	(get_bindings): Likewise.
+	(dependent_type_p): Add assertions.
+
 2006-02-06  Roger Sayle  <roger@eyesopen.com>
 
 	* decl.c (grokdeclarator): Don't bother checking for CHAR_TYPE.

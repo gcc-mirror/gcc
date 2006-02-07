@@ -102,7 +102,8 @@ static tree classtype_mangled_name (tree);
 static char* mangle_class_name_for_template (const char *, tree, tree);
 static tree tsubst_initializer_list (tree, tree);
 static tree get_class_bindings (tree, tree, tree);
-static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t, int);
+static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t, 
+				   bool, bool);
 static void tsubst_enum	(tree, tree, tree);
 static tree add_to_template_args (tree, tree);
 static tree add_outermost_template_args (tree, tree);
@@ -3718,17 +3719,12 @@ convert_nontype_argument (tree type, tree expr)
    vectors of TREE_LIST nodes containing TYPE_DECL, TEMPLATE_DECL
    or PARM_DECL.
 
-   ARG_PARMS may contain more parameters than PARM_PARMS.  If this is
-   the case, then extra parameters must have default arguments.
-
    Consider the example:
-     template <class T, class Allocator = allocator> class vector;
-     template<template <class U> class TT> class C;
+     template <class T> class A;
+     template<template <class U> class TT> class B;
 
-   C<vector> is a valid instantiation.  PARM_PARMS for the above code
-   contains a TYPE_DECL (for U),  ARG_PARMS contains two TYPE_DECLs (for
-   T and Allocator) and OUTER_ARGS contains the argument that is used to
-   substitute the TT parameter.  */
+   For B<A>, PARM_PARMS are the parameters to TT, while ARG_PARMS are
+   the parameters to A, and OUTER_ARGS contains A.  */
 
 static int
 coerce_template_template_parms (tree parm_parms,
@@ -3746,10 +3742,7 @@ coerce_template_template_parms (tree parm_parms,
   nparms = TREE_VEC_LENGTH (parm_parms);
   nargs = TREE_VEC_LENGTH (arg_parms);
 
-  /* The rule here is opposite of coerce_template_parms.  */
-  if (nargs < nparms
-      || (nargs > nparms
-	  && TREE_PURPOSE (TREE_VEC_ELT (arg_parms, nparms)) == NULL_TREE))
+  if (nargs != nparms)
     return 0;
 
   for (i = 0; i < nparms; ++i)
@@ -3988,17 +3981,20 @@ convert_template_argument (tree parm,
    arguments.  If any error occurs, return error_mark_node. Error and
    warning messages are issued under control of COMPLAIN.
 
-   If REQUIRE_ALL_ARGUMENTS is nonzero, all arguments must be
-   provided in ARGLIST, or else trailing parameters must have default
-   values.  If REQUIRE_ALL_ARGUMENTS is zero, we will attempt argument
-   deduction for any unspecified trailing arguments.  */
+   If REQUIRE_ALL_ARGS is false, argument deduction will be performed
+   for arugments not specified in ARGS.  Otherwise, if
+   USE_DEFAULT_ARGS is true, default arguments will be used to fill in
+   unspecified arguments.  If REQUIRE_ALL_ARGS is true, but
+   USE_DEFAULT_ARGS is false, then all arguments must be specified in
+   ARGS.  */
 
 static tree
 coerce_template_parms (tree parms,
 		       tree args,
 		       tree in_decl,
 		       tsubst_flags_t complain,
-		       int require_all_arguments)
+		       bool require_all_args,
+		       bool use_default_args)
 {
   int nparms, nargs, i, lost = 0;
   tree inner_args;
@@ -4011,8 +4007,9 @@ coerce_template_parms (tree parms,
 
   if (nargs > nparms
       || (nargs < nparms
-	  && require_all_arguments
-	  && TREE_PURPOSE (TREE_VEC_ELT (parms, nargs)) == NULL_TREE))
+	  && require_all_args
+	  && (!use_default_args
+	      || !TREE_PURPOSE (TREE_VEC_ELT (parms, nargs)))))
     {
       if (complain & tf_error)
 	{
@@ -4039,7 +4036,7 @@ coerce_template_parms (tree parms,
       /* Calculate the Ith argument.  */
       if (i < nargs)
 	arg = TREE_VEC_ELT (inner_args, i);
-      else if (require_all_arguments)
+      else if (require_all_args)
 	/* There must be a default arg in this case.  */
 	arg = tsubst_template_arg (TREE_PURPOSE (parm), new_args,
 				   complain, in_decl);
@@ -4444,7 +4441,9 @@ lookup_template_class (tree d1,
 	arglist = add_to_template_args (current_template_args (), arglist);
 
       arglist2 = coerce_template_parms (parmlist, arglist, template,
-					complain, /*require_all_args=*/1);
+					complain, 
+					/*require_all_args=*/true,
+					/*use_default_args=*/true);
       if (arglist2 == error_mark_node
 	  || (!uses_template_parms (arglist2)
 	      && check_instantiated_args (template, arglist2, complain)))
@@ -4513,7 +4512,9 @@ lookup_template_class (tree d1,
 	    {
 	      tree a = coerce_template_parms (TREE_VALUE (t),
 					      arglist, template,
-					      complain, /*require_all_args=*/1);
+					      complain, 
+					      /*require_all_args=*/true,
+					      /*use_default_args=*/true);
 
 	      /* Don't process further if one of the levels fails.  */
 	      if (a == error_mark_node)
@@ -4542,7 +4543,9 @@ lookup_template_class (tree d1,
 	  = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parmlist),
 				   INNERMOST_TEMPLATE_ARGS (arglist),
 				   template,
-				   complain, /*require_all_args=*/1);
+				   complain, 
+				   /*require_all_args=*/true,
+				   /*use_default_args=*/true);
 
       if (arglist == error_mark_node)
 	/* We were unable to bind the arguments.  */
@@ -9237,7 +9240,8 @@ fn_type_unification (tree fn,
       converted_args
 	= (coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 				  explicit_targs, NULL_TREE, tf_none,
-				  /*require_all_arguments=*/0));
+				  /*require_all_args=*/false,
+				  /*use_default_args=*/false));
       if (converted_args == error_mark_node)
 	return 1;
 
@@ -10003,21 +10007,44 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	    return 1;
 
 	  {
-	    tree parmtmpl = TYPE_TI_TEMPLATE (parm);
 	    tree parmvec = TYPE_TI_ARGS (parm);
 	    tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
 	    tree argtmplvec
 	      = DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (arg));
 	    int i;
 
-	    /* The parameter and argument roles have to be switched here
-	       in order to handle default arguments properly.  For example,
-	       template<template <class> class TT> void f(TT<int>)
-	       should be able to accept vector<int> which comes from
-	       template <class T, class Allocator = allocator>
-	       class vector.  */
+	    /* The resolution to DR150 makes clear that default
+	       arguments for an N-argument may not be used to bind T
+	       to a template template parameter with fewer than N
+	       parameters.  It is not safe to permit the binding of
+	       default arguments as an extension, as that may change
+	       the meaning of a conforming program.  Consider:
 
-	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 0, 1)
+		  struct Dense { static const unsigned int dim = 1; };
+
+		  template <template <typename> class View,
+			    typename Block>
+		  void operator+(float, View<Block> const&);
+
+		  template <typename Block, 
+		            unsigned int Dim = Block::dim>
+		  struct Lvalue_proxy { operator float() const; };
+
+		  void
+		  test_1d (void) {
+		    Lvalue_proxy<Dense> p;
+		    float b;
+		    b + p;
+		  }
+
+	      Here, if Lvalue_proxy is permitted to bind to View, then
+	      the global operator+ will be used; if they are not, the
+	      Lvalue_proxy will be converted to float.  */	  
+	    if (coerce_template_parms (argtmplvec, parmvec, 
+				       TYPE_TI_TEMPLATE (parm),
+				       tf_none,
+				       /*require_all_args=*/true,
+				       /*use_default_args=*/false)
 		== error_mark_node)
 	      return 1;
 
@@ -10733,9 +10760,11 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
 	return NULL_TREE;
 
       converted_args
-	= (coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
-				  explicit_args, NULL_TREE,
-				  tf_none, /*require_all_arguments=*/0));
+	= coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
+				 explicit_args, NULL_TREE,
+				 tf_none, 
+				 /*require_all_args=*/false,
+				 /*use_default_args=*/false);
       if (converted_args == error_mark_node)
 	return NULL_TREE;
 
@@ -12215,7 +12244,13 @@ dependent_type_p (tree type)
   /* If there are no template parameters in scope, then there can't be
      any dependent types.  */
   if (!processing_template_decl)
-    return false;
+    {
+      /* If we are not processing a template, then nobody should be
+	 providing us with a dependent type.  */
+      gcc_assert (type);
+      gcc_assert (TREE_CODE (type) != TEMPLATE_TYPE_PARM);
+      return false;
+    }
 
   /* If the type is NULL, we have not computed a type for the entity
      in question; in that case, the type is dependent.  */

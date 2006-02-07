@@ -30,19 +30,19 @@ void test01()
   using std::tr1::extent;
   using namespace __gnu_test;
 
-  VERIFY( (test_property<extent, int>(0)) );
-  VERIFY( (test_property<extent, int[2]>(2)) );
-  VERIFY( (test_property<extent, int[2][4]>(2)) );
-  VERIFY( (test_property<extent, int[][4]>(0)) );
+  VERIFY( (test_property<extent, int, 0>(0)) );
+  VERIFY( (test_property<extent, int[2], 0>(2)) );
+  VERIFY( (test_property<extent, int[2][4], 0>(2)) );
+  VERIFY( (test_property<extent, int[][4], 0>(0)) );
   VERIFY( (extent<int, 1>::value == 0) );
   VERIFY( (extent<int[2], 1>::value == 0) );
   VERIFY( (extent<int[2][4], 1>::value == 4) );
   VERIFY( (extent<int[][4], 1>::value == 4) );
   VERIFY( (extent<int[10][4][6][8][12][2], 4>::value == 12) );
-  VERIFY( (test_property<extent, ClassType>(0)) );
-  VERIFY( (test_property<extent, ClassType[2]>(2)) );
-  VERIFY( (test_property<extent, ClassType[2][4]>(2)) );
-  VERIFY( (test_property<extent, ClassType[][4]>(0)) );
+  VERIFY( (test_property<extent, ClassType, 0>(0)) );
+  VERIFY( (test_property<extent, ClassType[2], 0>(2)) );
+  VERIFY( (test_property<extent, ClassType[2][4], 0>(2)) );
+  VERIFY( (test_property<extent, ClassType[][4], 0>(0)) );
   VERIFY( (extent<ClassType, 1>::value == 0) );
   VERIFY( (extent<ClassType[2], 1>::value == 0) );
   VERIFY( (extent<ClassType[2][4], 1>::value == 4) );

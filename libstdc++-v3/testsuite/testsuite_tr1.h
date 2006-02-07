@@ -64,6 +64,20 @@ namespace __gnu_test
       return ret;
     }
 
+  // For testing tr1/type_traits/extent, which has a second template
+  // parameter.
+  template<template<typename, unsigned> class Property,
+           typename Type,
+	   unsigned Uint>
+    bool
+    test_property(typename Property<Type, Uint>::value_type value)
+    {
+      bool ret = true;
+      ret &= Property<Type, Uint>::value == value;
+      ret &= Property<Type, Uint>::type::value == value;
+      return ret;
+    }
+
   template<template<typename, typename> class Relationship,
            typename Type1, typename Type2>
     bool
