@@ -1,6 +1,6 @@
 /* Fold a constant sub-tree into a single node for C-compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1995,7 +1995,7 @@ fold_convert (tree type, tree arg)
 
   switch (TREE_CODE (type))
     {
-    case INTEGER_TYPE: case CHAR_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
+    case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
     case POINTER_TYPE: case REFERENCE_TYPE:
     case OFFSET_TYPE:
       if (TREE_CODE (arg) == INTEGER_CST)
@@ -2032,7 +2032,7 @@ fold_convert (tree type, tree arg)
 
       switch (TREE_CODE (orig))
 	{
-	case INTEGER_TYPE: case CHAR_TYPE:
+	case INTEGER_TYPE:
 	case BOOLEAN_TYPE: case ENUMERAL_TYPE:
 	case POINTER_TYPE: case REFERENCE_TYPE:
 	  return fold_build1 (FLOAT_EXPR, type, arg);
@@ -2051,7 +2051,7 @@ fold_convert (tree type, tree arg)
     case COMPLEX_TYPE:
       switch (TREE_CODE (orig))
 	{
-	case INTEGER_TYPE: case CHAR_TYPE:
+	case INTEGER_TYPE:
 	case BOOLEAN_TYPE: case ENUMERAL_TYPE:
 	case POINTER_TYPE: case REFERENCE_TYPE:
 	case REAL_TYPE:
@@ -4101,7 +4101,6 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 	{
 	case INTEGER_TYPE:
 	case ENUMERAL_TYPE:
-	case CHAR_TYPE:
 	  /* There is no requirement that LOW be within the range of ETYPE
 	     if the latter is a subtype.  It must, however, be within the base
 	     type of ETYPE.  So be sure we do the subtraction in that type.  */
@@ -4280,7 +4279,6 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 		      break;
 		    /* FALLTHROUGH */
 		  case INTEGER_TYPE:
-		  case CHAR_TYPE:
 		    if (tree_int_cst_equal (low0,
 					    TYPE_MIN_VALUE (TREE_TYPE (low0))))
 		      low0 = 0;
@@ -4304,7 +4302,6 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 		      break;
 		    /* FALLTHROUGH */
 		  case INTEGER_TYPE:
-		  case CHAR_TYPE:
 		    if (tree_int_cst_equal (high1,
 					    TYPE_MAX_VALUE (TREE_TYPE (high1))))
 		      high1 = 0;

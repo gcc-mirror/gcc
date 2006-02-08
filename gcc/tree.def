@@ -124,8 +124,8 @@ DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
 
 /* The ordering of the following codes is optimized for the checking
    macros in tree.h.  Changing the order will degrade the speed of the
-   compiler.  OFFSET_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, CHAR_TYPE,
-   INTEGER_TYPE, REAL_TYPE, POINTER_TYPE.  */
+   compiler.  OFFSET_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, INTEGER_TYPE,
+   REAL_TYPE, POINTER_TYPE.  */
      
 /* An offset is a pointer relative to an object.
    The TREE_TYPE field is the type of the object at the offset.
@@ -150,16 +150,13 @@ DEFTREECODE (ENUMERAL_TYPE, "enumeral_type", tcc_type, 0)
    INTEGRAL_TYPE.  */
 DEFTREECODE (BOOLEAN_TYPE, "boolean_type", tcc_type, 0)
 
-/* CHAR in Java; not used in C.  Looks like an INTEGRAL_TYPE.  */
-DEFTREECODE (CHAR_TYPE, "char_type", tcc_type, 0)
-
 /* Integer types in all languages, including char in C.
    Also used for sub-ranges of other discrete types.
    Has components TYPE_MIN_VALUE, TYPE_MAX_VALUE (expressions, inclusive)
    and TYPE_PRECISION (number of bits used by this type).
    In the case of a subrange type in Pascal, the TREE_TYPE
    of this will point at the supertype (another INTEGER_TYPE,
-   or an ENUMERAL_TYPE, CHAR_TYPE, or BOOLEAN_TYPE).
+   or an ENUMERAL_TYPE or BOOLEAN_TYPE).
    Otherwise, the TREE_TYPE is zero.  */
 DEFTREECODE (INTEGER_TYPE, "integer_type", tcc_type, 0)
 

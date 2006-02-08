@@ -266,7 +266,6 @@ remap_type_1 (tree type, copy_body_data *id)
     case REAL_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       t = TYPE_MIN_VALUE (new);
       if (t && TREE_CODE (t) != INTEGER_CST)
         walk_tree (&TYPE_MIN_VALUE (new), copy_body_r, id, NULL);

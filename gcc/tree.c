@@ -1,6 +1,7 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -823,7 +824,6 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
       break;
 
     case INTEGER_TYPE:
-    case CHAR_TYPE:
     case OFFSET_TYPE:
       if (TYPE_UNSIGNED (type))
 	{
@@ -2179,7 +2179,6 @@ type_contains_placeholder_1 (tree type)
     case COMPLEX_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
     case POINTER_TYPE:
     case OFFSET_TYPE:
     case REFERENCE_TYPE:
@@ -4058,7 +4057,6 @@ type_hash_eq (const void *va, const void *vb)
     case INTEGER_TYPE:
     case REAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       return ((TYPE_MAX_VALUE (a->type) == TYPE_MAX_VALUE (b->type)
 	       || tree_int_cst_equal (TYPE_MAX_VALUE (a->type),
 				      TYPE_MAX_VALUE (b->type)))
@@ -5008,9 +5006,8 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
 }
 
 /* Create a range of some discrete type TYPE (an INTEGER_TYPE,
-   ENUMERAL_TYPE, BOOLEAN_TYPE, or CHAR_TYPE), with
-   low bound LOWVAL and high bound HIGHVAL.
-   if TYPE==NULL_TREE, sizetype is used.  */
+   ENUMERAL_TYPE or BOOLEAN_TYPE), with low bound LOWVAL and
+   high bound HIGHVAL.  If TYPE is NULL, sizetype is used.  */
 
 tree
 build_range_type (tree type, tree lowval, tree highval)
@@ -5675,7 +5672,6 @@ variably_modified_type_p (tree type, tree fn)
     case REAL_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       /* Scalar types are variably modified if their end points
 	 aren't constant.  */
       RETURN_TRUE_IF_VAR (TYPE_MIN_VALUE (type));
@@ -7261,7 +7257,6 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
     case BOOLEAN_TYPE:
     case ENUMERAL_TYPE:
     case INTEGER_TYPE:
-    case CHAR_TYPE:
     case REAL_TYPE:
       WALK_SUBTREE (TYPE_MIN_VALUE (type));
       WALK_SUBTREE (TYPE_MAX_VALUE (type));
