@@ -1,3 +1,8 @@
+2006-02-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc/config/m68k/lb1sf68.asm (__divsf3, __divdf3, __mulsf3,
+	__muldf3): Return a correctly signed zero.
+
 2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	* passes.c (register_one_dump_file): Accept the current properties
@@ -7,8 +12,9 @@
 	(register_dump_files_1): ... this one.  Do not modify the pass
 	structure.
 	(next_pass_1): Cosmetic fix.
-	(execute_todo): Keep second parameter only.  Use curr_properties instead
-	of fetching it from the pass structure.  Check and set last_verified.
+	(execute_todo): Keep second parameter only.  Use curr_properties
+	instead of fetching it from the pass structure.  Check and set
+	last_verified.
 	(execute_one_pass): Handle TODO_set_props.  Use curr_properties
 	instead of fetching it from the pass structure.  Fix calls to
 	execute_todo.  Update curr_properties and initialize .vcg RTL dump
