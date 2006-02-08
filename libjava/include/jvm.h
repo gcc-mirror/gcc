@@ -1,6 +1,6 @@
 // jvm.h - Header file for private implementation information. -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -72,6 +72,7 @@ struct _Jv_VTable
   {
     return (2 * sizeof (void *)) + (index * vtable_elt_size ());
   }
+
   static _Jv_VTable *new_vtable (int count);
 };
 
@@ -374,16 +375,12 @@ void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
 void _Jv_RunMain (struct _Jv_VMInitArgs *vm_args, jclass klass,
                   const char *name, int argc, const char **argv, bool is_jar);
 
-// Delayed until after _Jv_AllocBytes is declared.
-//
-// Note that we allocate this as unscanned memory -- the vtables
-// are handled specially by the GC.
-
+// Delayed until after _Jv_AllocRawObj is declared.
 inline _Jv_VTable *
 _Jv_VTable::new_vtable (int count)
 {
   size_t size = sizeof(_Jv_VTable) + (count - 1) * vtable_elt_size ();
-  return (_Jv_VTable *) _Jv_AllocBytes (size);
+  return (_Jv_VTable *) _Jv_AllocRawObj (size);
 }
 
 // Determine if METH gets an entry in a VTable.

@@ -1,6 +1,6 @@
 // execution.h - Execution engines. -*- c++ -*-
 
-/* Copyright (C) 2004  Free Software Foundation
+/* Copyright (C) 2004, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -23,7 +23,7 @@ struct _Jv_ExecutionEngine
   // interpreter does it.
   bool (*need_resolve_string_fields) ();
   void (*verify) (jclass);
-  void (*allocate_static_fields) (jclass, int);
+  void (*allocate_static_fields) (jclass, int, int);
   void (*create_ncode) (jclass);
   _Jv_ResolvedMethod *(*resolve_method) (_Jv_Method *, jclass,
 					 jboolean, jint);
@@ -55,7 +55,7 @@ struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
     return NULL;
   }
 
-  static void do_allocate_static_fields (jclass, int)
+  static void do_allocate_static_fields (jclass, int, int)
   {
     // Compiled classes don't need this.
   }
@@ -99,7 +99,7 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
  public:
 
   static void do_verify (jclass);
-  static void do_allocate_static_fields (jclass, int);
+  static void do_allocate_static_fields (jclass, int, int);
   static void do_create_ncode (jclass);
   static _Jv_ResolvedMethod *do_resolve_method (_Jv_Method *, jclass,
 						jboolean, jint);
