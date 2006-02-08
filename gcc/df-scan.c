@@ -1116,9 +1116,8 @@ df_def_record_1 (struct dataflow *dflow, rtx x,
     loc = &SET_DEST (x);
   dst = *loc;
 
-  /* Some targets place small structures in registers for
-     return values of functions.  */
-  if (GET_CODE (dst) == PARALLEL && GET_MODE (dst) == BLKmode)
+  /* It is legal to have a set destination be a parallel. */
+  if (GET_CODE (dst) == PARALLEL)
     {
       int i;
 
