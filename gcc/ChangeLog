@@ -1,3 +1,9 @@
+2006-02-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/26169
+	* tree-vrp.c (execute_vrp): Perform any queued SSA updates before
+	threading jumps.
+
 2006-02-08  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* df.h (DF_REG_SIZE): Return the length of the initialized
