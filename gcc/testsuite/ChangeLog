@@ -1,3 +1,9 @@
+2006-02-07  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/26159
+	* gcc.dg/gomp/critical-3.c: Call cleanup-tree-dump.
+	* gcc.dg/tree-ssa/pr23382.c: Ditto.
+
 2006-02-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/25577
