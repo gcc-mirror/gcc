@@ -6,7 +6,7 @@ MULTILIB_OSDIRNAMES=../lib32 ../lib ../lib64
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
-LIB2FUNCS_EXTRA = $(srcdir)/config/mips/_tilib.c
+LIB2FUNCS_EXTRA = $(srcdir)/config/fixtfdi.c $(srcdir)/config/fixunstfdi.c $(srcdir)/config/floatditf.c $(srcdir)/config/floatunditf.c
 
 TPBIT = tp-bit.c
 
