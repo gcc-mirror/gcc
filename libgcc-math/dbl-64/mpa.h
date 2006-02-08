@@ -66,6 +66,7 @@ typedef union { int i[2]; double d; } number;
 #define  EZ  z->e
 
 #define ABS(x)   ((x) <  0  ? -(x) : (x))
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
 int __acr(const mp_no *, const mp_no *, int);
 int  __cr(const mp_no *, const mp_no *, int);

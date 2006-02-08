@@ -47,7 +47,7 @@
 #include "endian.h"
 #include "mpa.h"
 #include "mpa2.h"
-#include <sys/param.h>	/* For MIN() */
+
 /* mcr() compares the sizes of the mantissas of two multiple precision  */
 /* numbers. Mantissas are compared regardless of the signs of the       */
 /* numbers, even if x->d[0] or y->d[0] are zero. Exponents are also     */
