@@ -1,3 +1,9 @@
+2006-02-07  Uttam Pawar  <uttamp@us.ibm.com>
+
+	PR tree-optimization/26145
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Free
+	bbs pointer.
+
 2006-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/26109
