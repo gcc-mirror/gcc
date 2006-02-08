@@ -1,5 +1,8 @@
 2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/26071
+	* g++.dg/other/virtual2.C: New test.
+
 	PR c++/26070
 	* g++.dg/other/virtual1.C: New test.
 
