@@ -1,3 +1,20 @@
+2006-02-08  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* link.cc (_Jv_Linker::print_class_loaded): Declare string constants
+	as "const char *".
+	* verify.cc (verify_fail): Likewise.
+	* gnu/classpath/natSystemProperties.cc (file_encoding): Likewise.
+	* interpret.cc (throw_internal_error, throw_class_format_error):
+	Likewise.
+	* gcj/javaprims.h (_Jv_hashUtf8String, _Jv_Utf8Const::space_needed, 
+	_Jv_Utf8Const::init, _Jv_makeUtf8Const): Likewise.
+	* java/lang/Class.h (_Jv_InitPrimClass): Likewise.
+	* include/jvm.h (_Jv_strLengthUtf8, _Jv_makeUtf8Const): Likewise.
+	* defineclass.cc (throw_internal_error, throw_no_class_def_found_error,
+	is_attribute_name): Likewise.
+	* prims.cc (_Jv_strLengthUtf8, _Jv_hashUtf8String, _Jv_Utf8Const::init,
+	_Jv_makeUtf8Const, _Jv_InitPrimClass): Likewise.
+	
 2006-02-08  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26063, PR libgcj/17978, PR libgcj/10598:

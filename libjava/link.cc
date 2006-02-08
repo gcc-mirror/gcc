@@ -1848,9 +1848,9 @@ _Jv_Linker::print_class_loaded (jclass klass)
 	}
     }
   if (codesource == NULL)
-    codesource = "<no code source>";
+    codesource = (char *) "<no code source>";
 
-  char *abi;
+  const char *abi;
   if (_Jv_IsInterpretedClass (klass))
     abi = "bytecode";
   else if (_Jv_IsBinaryCompatibilityABI (klass))

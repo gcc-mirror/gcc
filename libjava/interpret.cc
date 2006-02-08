@@ -47,7 +47,7 @@ _Jv_InterpreterEngine _Jv_soleInterpreterEngine;
 
 using namespace gcj;
 
-static void throw_internal_error (char *msg)
+static void throw_internal_error (const char *msg)
   __attribute__ ((__noreturn__));
 static void throw_incompatible_class_change_error (jstring msg)
   __attribute__ ((__noreturn__));
@@ -58,7 +58,7 @@ static void throw_null_pointer_exception ()
 
 static void throw_class_format_error (jstring msg)
 	__attribute__ ((__noreturn__));
-static void throw_class_format_error (char *msg)
+static void throw_class_format_error (const char *msg)
 	__attribute__ ((__noreturn__));
 
 #ifdef DIRECT_THREADED
@@ -3294,7 +3294,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 }
 
 static void
-throw_internal_error (char *msg)
+throw_internal_error (const char *msg)
 {
   throw new java::lang::InternalError (JvNewStringLatin1 (msg));
 }
@@ -3817,7 +3817,7 @@ throw_class_format_error (jstring msg)
 }
 
 static void
-throw_class_format_error (char *msg)
+throw_class_format_error (const char *msg)
 {
   throw_class_format_error (JvNewStringLatin1 (msg));
 }

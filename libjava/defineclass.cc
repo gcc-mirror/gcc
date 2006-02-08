@@ -47,11 +47,11 @@ using namespace gcj;
 
 // these go in some separate functions, to avoid having _Jv_InitClass
 // inserted all over the place.
-static void throw_internal_error (char *msg)
+static void throw_internal_error (const char *msg)
 	__attribute__ ((__noreturn__));
 static void throw_no_class_def_found_error (jstring msg)
 	__attribute__ ((__noreturn__));
-static void throw_no_class_def_found_error (char *msg)
+static void throw_no_class_def_found_error (const char *msg)
 	__attribute__ ((__noreturn__));
 static void throw_class_format_error (jstring msg)
 	__attribute__ ((__noreturn__));
@@ -258,10 +258,10 @@ struct _Jv_ClassReader
   void read_one_method_attribute (int method);
   void read_one_code_attribute (int method);
   void read_one_field_attribute (int field);
-  void throw_class_format_error (char *msg);
+  void throw_class_format_error (const char *msg);
 
   /** check an utf8 entry, without creating a Utf8Const object */
-  bool is_attribute_name (int index, char *name);
+  bool is_attribute_name (int index, const char *name);
 
   /** here goes the class-loader members defined out-of-line */
   void handleConstantPool ();
@@ -469,7 +469,7 @@ void _Jv_ClassReader::read_fields ()
 }
 
 bool
-_Jv_ClassReader::is_attribute_name (int index, char *name)
+_Jv_ClassReader::is_attribute_name (int index, const char *name)
 {
   check_tag (index, JV_CONSTANT_Utf8);
   int len = get2u (bytes+offsets[index]);
@@ -1418,7 +1418,7 @@ void _Jv_ClassReader::handleMethodsEnd ()
     }
 }
 
-void _Jv_ClassReader::throw_class_format_error (char *msg)
+void _Jv_ClassReader::throw_class_format_error (const char *msg)
 {
   jstring str;
   if (def->name != NULL)
@@ -1460,7 +1460,7 @@ throw_no_class_def_found_error (jstring msg)
 }
 
 static void
-throw_no_class_def_found_error (char *msg)
+throw_no_class_def_found_error (const char *msg)
 {
   throw_no_class_def_found_error (JvNewStringLatin1 (msg));
 }
@@ -1474,7 +1474,7 @@ throw_class_format_error (jstring msg)
 }
 
 static void
-throw_internal_error (char *msg)
+throw_internal_error (const char *msg)
 {
   throw new java::lang::InternalError (JvNewStringLatin1 (msg));
 }

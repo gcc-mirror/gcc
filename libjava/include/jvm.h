@@ -132,10 +132,10 @@ union _Jv_value
    ? (((PTR)[-3]&0x0F) << 12) + (((PTR)[-2]&0x3F) << 6) + ((PTR)[-1]&0x3F) \
    : ((PTR)++, -1))
 
-extern int _Jv_strLengthUtf8(char* str, int len);
+extern int _Jv_strLengthUtf8(const char* str, int len);
 
 typedef struct _Jv_Utf8Const Utf8Const;
-_Jv_Utf8Const *_Jv_makeUtf8Const (char *s, int len);
+_Jv_Utf8Const *_Jv_makeUtf8Const (const char *s, int len);
 _Jv_Utf8Const *_Jv_makeUtf8Const (jstring string);
 extern jboolean _Jv_equalUtf8Consts (const _Jv_Utf8Const *, const _Jv_Utf8Const *);
 extern jboolean _Jv_equal (_Jv_Utf8Const *, jstring, jint);
