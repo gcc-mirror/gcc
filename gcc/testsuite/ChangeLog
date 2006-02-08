@@ -1,3 +1,12 @@
+2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	* lib/scantree.exp (scan-tree-dump, scan-tree-dump-times,
+	scan-tree-dump-not, scan-tree-dump-dem): Likewise.
+
+2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	* lib/scanrtl.exp: New.
+
 2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26071
@@ -8,14 +17,8 @@
 
 2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
 
-	* lib/scanrtl.exp: New.
-
-2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
-
 	* lib/gcc-dg.exp (cleanup-rtl-dump, cleanup-tree-dump,
 	cleanup-ipa-dump): Update dump file glob patterns.
-	* lib/scantree.exp (scan-tree-dump, scan-tree-dump-times,
-	scan-tree-dump-not, scan-tree-dump-dem): Likewise.
 	* lib/scanipa.exp (scan-ipa-dump, scan-ipa-dump-times,
 	scan-ipa-dump-not, scan-ipa-dump-dem): Likewise.
 
