@@ -1,3 +1,8 @@
+2006-02-08  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* df.h (DF_REG_SIZE): Return the length of the initialized
+	part of the array.
+
 2006-02-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc/config/m68k/lb1sf68.asm (__divsf3, __divdf3, __mulsf3,
@@ -32,7 +37,6 @@
 	* gimple-low.c (pass_lower_cf): Do not destroy PROP_gimple_lcf.
 	* tree-eh.c (pass_lower_eh): Do not destroy PROP_gimple_leh.
 	* cfgexpand.c (pass_expand): Destroy PROP_trees.
-
 
 2006-02-08  Jakub Jelinek  <jakub@redhat.com>
 

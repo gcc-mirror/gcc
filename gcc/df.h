@@ -395,7 +395,7 @@ struct df
 
 /* Macros to access the register information from scan dataflow record.  */
 
-#define DF_REG_SIZE(DF) ((DF)->def_info.regs_size)
+#define DF_REG_SIZE(DF) ((DF)->def_info.regs_inited)
 #define DF_REG_DEF_GET(DF, REG) ((DF)->def_info.regs[(REG)])
 #define DF_REG_DEF_SET(DF, REG, VAL) ((DF)->def_info.regs[(REG)]=(VAL))
 #define DF_REG_USE_GET(DF, REG) ((DF)->use_info.regs[(REG)])
