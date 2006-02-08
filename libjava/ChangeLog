@@ -1,5 +1,39 @@
 2006-02-08  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/26063, PR libgcj/17978, PR libgcj/10598:
+	* defineclass.cc (parse): Use _Jv_AllocRawObj.
+	(read_constpool): Likewise.
+	(read_one_code_attribute): Use internal function name.
+	(handleConstantPool): Use _Jv_AllocRawObj.
+	(handleInterfacesBegin): Likewise.
+	(handleFieldsBegin): Likewise.
+	(handleMethodsBegin): Likewise.
+	(handleCodeAttribute): Likewise.
+	(handleMethodsEnd): Likewise.
+	* include/jvm.h (new_vtable): Use _Jv_AllocRawObj.
+	* interpret.cc (do_allocate_static_fields): Use _Jv_AllocRawObj.
+	Allocate reference fields separately.
+	* link.cc (prepare_constant_time_tables): Use _Jv_AllocRawObj.
+	(add_miranda_methods): Likewise.
+	(generate_itable): Use _Jv_AllocBytes.
+	(find_iindex): Likewise.
+	(struct method_closure): New structure.
+	(create_error_method): Use struct method_closure; allocate with
+	_Jv_AllocBytes.
+	(ensure_fields_laid_out): Separate reference fields from
+	non-reference fields.
+	* boehm.cc (_Jv_MarkObj): Mark vtable.  Only mark direct fields
+	of Class.
+	(_Jv_MarkArray): Mark vtable.
+	(_Jv_AllocRawObj): Don't allocate objects of size 0.
+	* include/execution.h
+	(_Jv_ExecutionEngine::allocate_static_fields): Added 'int'
+	parameter.
+	(struct _Jv_CompiledEngine): Updated.
+	(class _Jv_InterpreterEngine): Updated.
+
+2006-02-08  Tom Tromey  <tromey@redhat.com>
+
 	PR java/22578:
 	* gcj/javaprims.h: Updated.
 	* sources.am, Makefile.in: Rebuilt.

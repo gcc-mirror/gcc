@@ -1,6 +1,6 @@
 // boehm.cc - interface between libjava and Boehm GC.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation
 
    This file is part of libgcj.
@@ -85,6 +85,9 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
   jclass klass = dt->clas;
   GC_PTR p;
 
+  p = (GC_PTR) dt;
+  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj);
+
 # ifndef JV_HASH_SYNCHRONIZATION
     // Every object has a sync_info pointer.
     p = (GC_PTR) obj->sync_info;
@@ -114,25 +117,10 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
       p = (GC_PTR) c->superclass;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-      for (int i = 0; i < c->constants.size; ++i)
-	{
-	  /* FIXME: We could make this more precise by using the tags -KKT */
-	  p = (GC_PTR) c->constants.data[i].p;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-	}
 
-#ifdef INTERPRETER
-      if (_Jv_IsInterpretedClass (c))
-	{
-	  p = (GC_PTR) c->constants.tags;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-	  p = (GC_PTR) c->constants.data;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-	}
-#endif
-
-      // The vtable might be allocated even for compiled code.
-      p = (GC_PTR) c->vtable;
+      p = (GC_PTR) c->constants.tags;
+      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
+      p = (GC_PTR) c->constants.data;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
 
       // If the class is an array, then the methods field holds a
@@ -141,101 +129,24 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
       p = (GC_PTR) c->methods;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
 
-      // The vtable might have been set, but the rest of the class
-      // could still be uninitialized.  If this is the case, then
-      // c.isArray will SEGV.  We check for this, and if it is the
-      // case we just return.
-      if (__builtin_expect (c->name == NULL, false))
-	return mark_stack_ptr;
-
-      if (! c->isArray() && ! c->isPrimitive())
-	{
-	  // Scan each method in the cases where `methods' really
-	  // points to a methods structure.
-	  for (int i = 0; i < c->method_count; ++i)
-	    {
-	      p = (GC_PTR) c->methods[i].name;
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-	      p = (GC_PTR) c->methods[i].signature;
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-
-	      // Note that we don't have to mark each individual throw
-	      // separately, as these are stored in the constant pool.
-	      p = (GC_PTR) c->methods[i].throws;
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-	    }
-	}
-
-      // Mark all the fields.
       p = (GC_PTR) c->fields;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-      for (int i = 0; i < c->field_count; ++i)
-	{
-	  _Jv_Field* field = &c->fields[i];
 
-	  p = (GC_PTR) field->name;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-	  p = (GC_PTR) field->type;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-
-	  // For the interpreter, we also need to mark the memory
-	  // containing static members
-	  if ((field->flags & java::lang::reflect::Modifier::STATIC))
-	    {
-	      p = (GC_PTR) field->u.addr;
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-
-	      // also, if the static member is a reference,
-	      // mark also the value pointed to.  We check for isResolved
-	      // since marking can happen before memory is allocated for
-	      // static members.
-	      // Note that field->u.addr may be null if the class c is
-	      // JV_STATE_LOADED but not JV_STATE_PREPARED (initialized).
-	      // Note also that field->type could be NULL in some
-	      // situations, for instance if the class has state
-	      // JV_STATE_ERROR.
-	      if (field->type && JvFieldIsRef (field)
-		  && p && field->isResolved()) 
-		{
-		  jobject val = *(jobject*) p;
-		  p = (GC_PTR) val;
-		  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-		}
-	    }
-	}
-
+      // The vtable might be allocated even for compiled code.
       p = (GC_PTR) c->vtable;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
+
       p = (GC_PTR) c->interfaces;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-      for (int i = 0; i < c->interface_count; ++i)
-	{
-	  p = (GC_PTR) c->interfaces[i];
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-	}
       p = (GC_PTR) c->loader;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
 
       // The dispatch tables can be allocated at runtime.
       p = (GC_PTR) c->ancestors;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-      if (c->idt)
-	{
-	  p = (GC_PTR) c->idt;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
 
-	  if (c->isInterface())
-	    {
-	      p = (GC_PTR) c->idt->iface.ioffsets;
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c->idt);
-	    }
-	  else if (! c->isPrimitive())
-	    {
-	      // This field is only valid for ordinary classes.
-	      p = (GC_PTR) c->idt->cls.itable;
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c->idt);
-	    }
-	}
+      p = (GC_PTR) c->idt;
+      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
 
       p = (GC_PTR) c->arrayclass;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
@@ -245,73 +156,6 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
       p = (GC_PTR) c->aux_info;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-
-#ifdef INTERPRETER
-      if (_Jv_IsInterpretedClass (c) && c->aux_info)
-	{
-	  _Jv_InterpClass* ic = (_Jv_InterpClass*) c->aux_info;
-
-	  p = (GC_PTR) ic->interpreted_methods;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
-
-	  p = (GC_PTR) ic->source_file_name;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
-
-	  for (int i = 0; i < c->method_count; i++)
-	    {
-	      // The interpreter installs a heap-allocated trampoline
-	      // here, so we'll mark it.
-	      p = (GC_PTR) c->methods[i].ncode;
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
-
-	      using namespace java::lang::reflect;
-
-	      // Mark the direct-threaded code.  Note a subtlety here:
-	      // when we add Miranda methods to a class, we don't
-	      // resize its interpreted_methods array.  If we try to
-	      // reference one of these methods, we may crash.
-	      // However, we know these are all abstract, and we know
-	      // that abstract methods have nothing useful in this
-	      // array.  So, we skip all abstract methods to avoid the
-	      // problem.  FIXME: this is pretty obscure, it may be
-	      // better to add a methods to the execution engine and
-	      // resize the array.
-	      if ((c->methods[i].accflags & Modifier::ABSTRACT) != 0)
-		continue;
-
-	      p = (GC_PTR) ic->interpreted_methods[i];
-	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
-
-	      if ((c->methods[i].accflags & Modifier::NATIVE) != 0)
-		{
-		  _Jv_JNIMethod *jm
-		    = (_Jv_JNIMethod *) ic->interpreted_methods[i];
-		  if (jm)
-		    {
-		      p = (GC_PTR) jm->jni_arg_types;
-		      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, p);
-		    }
-		}
-	      else
-		{
-		  _Jv_InterpMethod *im
-		    = (_Jv_InterpMethod *) ic->interpreted_methods[i];
-		  if (im)
-		    {
-                      p = (GC_PTR) im->line_table;
-                      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
-		      p = (GC_PTR) im->prepared;
-		      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
-		    }
-		}
-	    }
-
-	  p = (GC_PTR) ic->field_initializers;
-	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
-	  
-	}
-#endif
-
     }
   else
     {
@@ -366,6 +210,9 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void *env)
     return mark_stack_ptr;
   jclass klass = dt->clas;
   GC_PTR p;
+
+  p = (GC_PTR) dt;
+  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, array);
 
 # ifndef JV_HASH_SYNCHRONIZATION
     // Every object has a sync_info pointer.
@@ -515,7 +362,7 @@ _Jv_AllocArray (jsize size, jclass klass)
 void *
 _Jv_AllocRawObj (jsize size)
 {
-  return (void *) GC_MALLOC (size);
+  return (void *) GC_MALLOC (size ? size : 1);
 }
 
 static void
