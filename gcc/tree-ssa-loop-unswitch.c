@@ -255,6 +255,7 @@ tree_unswitch_single_loop (struct loops *loops, struct loop *loop, int num)
   if (!nloop)
     {
       free_original_copy_tables ();
+      free (bbs);
       return changed;
     }
 
@@ -265,6 +266,7 @@ tree_unswitch_single_loop (struct loops *loops, struct loop *loop, int num)
   /* Invoke itself on modified loops.  */
   tree_unswitch_single_loop (loops, nloop, num + 1);
   tree_unswitch_single_loop (loops, loop, num + 1);
+  free (bbs);
   return true;
 }
 
