@@ -568,7 +568,7 @@ alpha*-*-unicosmk*)
 alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
+	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee alpha/t-linux"
 	;;
 alpha*-*-gnu*)
 	target_cpu_default="MASK_GAS"
@@ -2055,7 +2055,7 @@ sparc-*-elf*)
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
-	tmake_file="${tmake_file} sparc/t-crtfm"
+	tmake_file="${tmake_file} sparc/t-linux sparc/t-crtfm"
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp-elf.h sparc/rtemself.h rtems.h"
@@ -2174,7 +2174,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
-	tmake_file="${tmake_file} sparc/t-linux64 sparc/t-crtfm"
+	tmake_file="${tmake_file} sparc/t-linux sparc/t-linux64 sparc/t-crtfm"
 	;;
 sparc64-*-netbsd*)
 	tm_file="sparc/biarch64.h ${tm_file}"

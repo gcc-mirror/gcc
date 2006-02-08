@@ -1,3 +1,25 @@
+2006-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.gcc (sparc-*-linux*): Add sparc/t-linux to tmake_file.
+	(sparc64-*-linux*): Likewise.
+	* config/sparc/t-linux64 (SHLIB_MAPFILES): Removed.
+	* config/sparc/t-linux: New file.
+	* config/sparc/libgcc-sparc-glibc.ver (__fixtfdi, __fixunstfdi,
+	__floatditf): Export at GCC_LDBL_3.0 if -m32 -mlong-double-128.
+	(__divtc3, __multc3, __powitf2): Export at GCC_LDBL_4.0.0 if
+	-m32 -mlong-double-128.
+
+	* config.gcc (alpha*-*-linux*): Add alpha/t-linux to tmake_file.
+	* config/alpha/t-linux: New file.
+	* config/alpha/libgcc-alpha-ldbl.ver: New file.
+
+	* config/sparc/linux.h (TARGET_OS_CPP_BUILTINS): Define
+	__LONG_DOUBLE_128__ if TARGET_LONG_DOUBLE_128.
+	(CPP_SUBTARGET_SPEC): Don't add -D__LONG_DOUBLE_128__ here.
+	* config/sparc/linux64.h (TARGET_OS_CPP_BUILTINS): Define
+	__LONG_DOUBLE_128__ if TARGET_LONG_DOUBLE_128 and TARGET_ARCH32.
+	(CPP_ARCH32_SPEC): Remove.
+
 2006-02-07  Uttam Pawar  <uttamp@us.ibm.com>
 
 	PR tree-optimization/26145

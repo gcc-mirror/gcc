@@ -23,12 +23,14 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define_std ("unix");		\
-	builtin_define_std ("linux");		\
-	builtin_define ("__gnu_linux__");	\
-	builtin_assert ("system=linux");	\
-	builtin_assert ("system=unix");		\
-	builtin_assert ("system=posix");	\
+      builtin_define_std ("unix");		\
+      builtin_define_std ("linux");		\
+      builtin_define ("__gnu_linux__");		\
+      builtin_assert ("system=linux");		\
+      builtin_assert ("system=unix");		\
+      builtin_assert ("system=posix");		\
+      if (TARGET_LONG_DOUBLE_128)       	\
+	builtin_define ("__LONG_DOUBLE_128__");	\
     }						\
   while (0)
 
@@ -95,8 +97,7 @@ Boston, MA 02110-1301, USA.  */
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC \
-"%{posix:-D_POSIX_SOURCE} \
-%{pthread:-D_REENTRANT} %{mlong-double-128:-D__LONG_DOUBLE_128__}"
+"%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 #undef LIB_SPEC
 #define LIB_SPEC \

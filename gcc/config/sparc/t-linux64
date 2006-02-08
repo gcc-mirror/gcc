@@ -8,12 +8,6 @@ INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 	crtfastmath.o
 
-# Override t-slibgcc-elf-ver to export some libgcc symbols with
-# the symbol versions that glibc used.
-# Avoid the t-linux version file.
-SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver \
-		 $(srcdir)/config/sparc/libgcc-sparc-glibc.ver
-
 CRTSTUFF_T_CFLAGS = `if test x$$($(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) \
 				 -print-multi-os-directory) \
 			= x../lib64; then echo -mcmodel=medany; fi`
