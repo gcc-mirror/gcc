@@ -1,3 +1,20 @@
+2006-02-08  Tom Tromey  <tromey@redhat.com>
+
+	PR java/22578:
+	* gcj/javaprims.h: Updated.
+	* sources.am, Makefile.in: Rebuilt.
+	* java/lang/natDouble.cc (doubleToLongBits): Moved to VMDouble.
+	(doubleToRawLongBits): Likewise.
+	(longBitsToDouble): Likewise.
+	(toString): Likewise.
+	(parseDouble): Likewise.
+	* java/lang/natFloat.cc (floatToIntBits): Moved to VMFloat.
+	(floatToRawIntBits): Likewise.
+	(intBitsToFloat): Likewise.
+	* java/lang/VMDouble.java: New file.
+	* java/lang/VMFloat.java: New file.
+	* java/lang/Float.java, java/lang/Double.java: Removed.
+
 2006-02-06  Tom Tromey  <tromey@redhat.com>
 
 	* gij.cc (version): Use 2006.

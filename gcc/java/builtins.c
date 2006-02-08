@@ -39,6 +39,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 static tree max_builtin (tree, tree);
 static tree min_builtin (tree, tree);
 static tree abs_builtin (tree, tree);
+static tree convert_real (tree, tree);
 
 static tree java_build_function_call_expr (tree, tree);
 
@@ -85,6 +86,10 @@ static GTY(()) struct builtin_record java_builtins[] =
   { { "java.lang.Math" }, { "sin" }, NULL, BUILT_IN_SIN },
   { { "java.lang.Math" }, { "sqrt" }, NULL, BUILT_IN_SQRT },
   { { "java.lang.Math" }, { "tan" }, NULL, BUILT_IN_TAN },
+  { { "java.lang.Float" }, { "intBitsToFloat" }, convert_real, 0 },
+  { { "java.lang.Double" }, { "longBitsToDouble" }, convert_real, 0 },
+  { { "java.lang.Float" }, { "floatToRawIntBits" }, convert_real, 0 },
+  { { "java.lang.Double" }, { "doubleToRawLongBits" }, convert_real, 0 },
   { { NULL }, { NULL }, NULL, END_BUILTINS }
 };
 
@@ -129,6 +134,13 @@ java_build_function_call_expr (tree fn, tree arglist)
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
   return fold_build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 		      call_expr, arglist, NULL_TREE);
+}
+
+static tree
+convert_real (tree method_return_type, tree method_arguments)
+{
+  return build1 (VIEW_CONVERT_EXPR, method_return_type,
+		 TREE_VALUE (method_arguments));
 }
 
 

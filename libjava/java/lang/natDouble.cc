@@ -1,4 +1,4 @@
-// natDouble.cc - Implementation of java.lang.Double native methods.
+// natDouble.cc - Implementation of java.lang.VMDouble native methods.
 
 /* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2006  Free Software Foundation
 
@@ -15,6 +15,7 @@ details.  */
 #include <gcj/cni.h>
 #include <java/lang/String.h>
 #include <java/lang/Double.h>
+#include <java/lang/VMDouble.h>
 #include <java/lang/Character.h>
 #include <java/lang/NumberFormatException.h>
 #include <jvm.h>
@@ -31,7 +32,7 @@ union u
 };
 
 jlong 
-java::lang::Double::doubleToLongBits(jdouble value)
+java::lang::VMDouble::doubleToLongBits(jdouble value)
 {
   union u u;
   u.d = value;
@@ -46,7 +47,7 @@ java::lang::Double::doubleToLongBits(jdouble value)
 }
 
 jlong 
-java::lang::Double::doubleToRawLongBits(jdouble value)
+java::lang::VMDouble::doubleToRawLongBits(jdouble value)
 {
   union u u;
   u.d = value;
@@ -54,7 +55,7 @@ java::lang::Double::doubleToRawLongBits(jdouble value)
 }
 
 jdouble 
-java::lang::Double::longBitsToDouble(jlong bits)
+java::lang::VMDouble::longBitsToDouble(jlong bits)
 {
   union u u;
   u.l = bits;
@@ -62,15 +63,15 @@ java::lang::Double::longBitsToDouble(jlong bits)
 }
 
 jstring 
-java::lang::Double::toString(jdouble value, jboolean isFloat)
+java::lang::VMDouble::toString(jdouble value, jboolean isFloat)
 {
-  if (isNaN (value))
+  if (Double::isNaN (value))
     return JvNewStringLatin1 ("NaN", sizeof ("NaN") - 1);
     
-  if (value == POSITIVE_INFINITY)
+  if (value == Double::POSITIVE_INFINITY)
     return JvNewStringLatin1 ("Infinity", sizeof ("Infinity") - 1);
     
-  if (value == NEGATIVE_INFINITY)
+  if (value == Double::NEGATIVE_INFINITY)
     return JvNewStringLatin1 ("-Infinity", sizeof ("-Infinity") - 1);
     
   char buffer[50], result[50];
@@ -158,7 +159,7 @@ java::lang::Double::toString(jdouble value, jboolean isFloat)
 }
 
 jdouble 
-java::lang::Double::parseDouble(jstring str)
+java::lang::VMDouble::parseDouble(jstring str)
 {
   int length = str->length();
 
@@ -194,11 +195,11 @@ java::lang::Double::parseDouble(jstring str)
 	{
 	  if (! strcmp (data, "NaN") || ! strcmp (data, "+NaN")
 	      || ! strcmp (data, "-NaN"))
-	    return NaN;
+	    return Double::NaN;
 	  else if (! strcmp (data, "Infinity") || ! strcmp (data, "+Infinity"))
-	    return POSITIVE_INFINITY;
+	    return Double::POSITIVE_INFINITY;
 	  else if (! strcmp (data, "-Infinity"))
-	    return NEGATIVE_INFINITY;
+	    return Double::NEGATIVE_INFINITY;
 	}
 
       struct _Jv_reent reent;  
