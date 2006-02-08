@@ -1,5 +1,6 @@
 2006-02-08  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR libgcj/26113:
 	* link.cc (_Jv_Linker::print_class_loaded): Declare string constants
 	as "const char *".
 	* verify.cc (verify_fail): Likewise.
