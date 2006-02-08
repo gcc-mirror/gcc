@@ -4146,7 +4146,6 @@ static void gen_inlined_subroutine_die (tree, dw_die_ref, int);
 static void gen_field_die (tree, dw_die_ref);
 static void gen_ptr_to_mbr_type_die (tree, dw_die_ref);
 static dw_die_ref gen_compile_unit_die (const char *);
-static void gen_string_type_die (tree, dw_die_ref);
 static void gen_inheritance_die (tree, tree, dw_die_ref);
 static void gen_member_die (tree, dw_die_ref);
 static void gen_struct_or_union_type_die (tree, dw_die_ref);
@@ -8105,7 +8104,6 @@ base_type_die (tree type)
 
   switch (TREE_CODE (type))
     {
-    case CHAR_TYPE:
     case INTEGER_TYPE:
       if (TYPE_STRING_FLAG (type))
 	{
@@ -8201,7 +8199,6 @@ is_base_type (tree type)
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       return 1;
 
     case ARRAY_TYPE:
@@ -12187,24 +12184,6 @@ gen_compile_unit_die (const char *filename)
   return die;
 }
 
-/* Generate a DIE for a string type.  */
-
-static void
-gen_string_type_die (tree type, dw_die_ref context_die)
-{
-  dw_die_ref type_die
-    = new_die (DW_TAG_string_type, scope_die_for (type, context_die), type);
-
-  equate_type_number_to_die (type, type_die);
-
-  /* ??? Fudge the string length attribute for now.
-     TODO: add string length info.  */
-#if 0
-  string_length_attribute (TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
-  bound_representation (upper_bound, 0, 'u');
-#endif
-}
-
 /* Generate the DIE for a base class.  */
 
 static void
@@ -12506,13 +12485,7 @@ gen_type_die (tree type, dw_die_ref context_die)
       break;
 
     case ARRAY_TYPE:
-      if (TYPE_STRING_FLAG (type) && TREE_CODE (TREE_TYPE (type)) == CHAR_TYPE)
-	{
-	  gen_type_die (TREE_TYPE (type), context_die);
-	  gen_string_type_die (type, context_die);
-	}
-      else
-	gen_array_type_die (type, context_die);
+      gen_array_type_die (type, context_die);
       break;
 
     case VECTOR_TYPE:
@@ -12567,7 +12540,6 @@ gen_type_die (tree type, dw_die_ref context_die)
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       /* No DIEs needed for fundamental types.  */
       break;
 

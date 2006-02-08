@@ -508,7 +508,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case VECTOR_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       {
 	unsigned int quals = TYPE_QUALS (node);
 	enum tree_code_class class;

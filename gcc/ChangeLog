@@ -1,3 +1,31 @@
+2006-02-08  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.def (CHAR_TYPE): Remove.
+	* dbxout.c (dbxout_type): Delete dead handling of CHAR_TYPE.
+	* dwarf2out.c (base_type_die, is_base_type): Likewise.
+	(gen_type_die) <ARRAY_TYPE>: Remove handling of CHAR_TYPE arrays.
+	(gen_string_type_die): Delete unreachable function.
+
+	* tree-pretty-print.c (dump_generic_node): Don't handle CHAR_TYPE.
+	* tree.c (build_int_cst_wide, type_contains_placeholder_1,
+	type_hash_eq, variably_modified_type_p, walk_type_fields): Likewise.
+	* tree.h (NUMERICAL_TYPE_CHECK, INTEGRAL_TYPE_P): Likewise.
+	* builtins.c (type_to_class): Likewise.
+	* fold-const.c (fold_convert, build_range_check,
+	merge_ranges): Likewise.
+	* expr.c (count_type_elements): Likewise.
+	* c-pretty-print.c (pp_c_type_specifier): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* ipa-type-escape.c (type_to_consider): Likewise.
+	* gimplify.c (omp_firstprivatize_type_sizes,
+	gimplify_type_sizes): Likewise.
+	* explow.c (promote_mode): Likewise.
+	* tree-sra.c (is_sra_scalar_type): Likewise.
+	* varasm.c (output_constant): Likewise.
+	* tree-inline.c (remap_type_1): Likewise.
+	* convert.c (convert_to_pointer, convert_to_real,
+	convert_to_integer, convert_to_complex): Likewise.
+
 2006-02-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	* df-scan.c (df_def_record_1): A set destination may

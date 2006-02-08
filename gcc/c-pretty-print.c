@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -311,7 +311,6 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 
     case VOID_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
       if (TYPE_NAME (t))

@@ -1,6 +1,6 @@
 /* Front-end tree definitions for GNU compiler.
    Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -853,8 +853,7 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
   TREE_NOT_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
 
 #define NUMERICAL_TYPE_CHECK(T)					\
-  TREE_CHECK5 (T, INTEGER_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE,	\
-	       CHAR_TYPE, REAL_TYPE)
+  TREE_CHECK4 (T, INTEGER_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, REAL_TYPE)
 
 /* In all nodes that are expressions, this is the data type of the expression.
    In POINTER_TYPE nodes, this is the type that the pointer points to.
@@ -931,7 +930,6 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
 #define INTEGRAL_TYPE_P(TYPE)  \
   (TREE_CODE (TYPE) == ENUMERAL_TYPE  \
    || TREE_CODE (TYPE) == BOOLEAN_TYPE \
-   || TREE_CODE (TYPE) == CHAR_TYPE \
    || TREE_CODE (TYPE) == INTEGER_TYPE)
 
 /* Nonzero if TYPE represents a scalar floating-point type.  */

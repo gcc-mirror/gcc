@@ -1585,7 +1585,6 @@ type_to_class (tree type)
     {
     case VOID_TYPE:	   return void_type_class;
     case INTEGER_TYPE:	   return integer_type_class;
-    case CHAR_TYPE:	   return char_type_class;
     case ENUMERAL_TYPE:	   return enumeral_type_class;
     case BOOLEAN_TYPE:	   return boolean_type_class;
     case POINTER_TYPE:	   return pointer_type_class;

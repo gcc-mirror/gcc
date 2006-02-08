@@ -1,6 +1,7 @@
 /* C-compiler utilities for types and variables storage layout
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1996, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1592,7 +1593,6 @@ layout_type (tree type)
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-    case CHAR_TYPE:
       if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
 	  && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
 	TYPE_UNSIGNED (type) = 1;
@@ -1998,8 +1998,8 @@ set_sizetype (tree type)
     }
 }
 
-/* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE,
-   BOOLEAN_TYPE, or CHAR_TYPE.  Set TYPE_MIN_VALUE and TYPE_MAX_VALUE
+/* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE
+   or BOOLEAN_TYPE.  Set TYPE_MIN_VALUE and TYPE_MAX_VALUE
    for TYPE, based on the PRECISION and whether or not the TYPE
    IS_UNSIGNED.  PRECISION need not correspond to a width supported
    natively by the hardware; for example, on a machine with 8-bit,

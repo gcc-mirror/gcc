@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -165,7 +165,7 @@ is_sra_scalar_type (tree type)
   enum tree_code code = TREE_CODE (type);
   return (code == INTEGER_TYPE || code == REAL_TYPE || code == VECTOR_TYPE
 	  || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE
-	  || code == CHAR_TYPE || code == POINTER_TYPE || code == OFFSET_TYPE
+	  || code == POINTER_TYPE || code == OFFSET_TYPE
 	  || code == REFERENCE_TYPE);
 }
 

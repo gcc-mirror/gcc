@@ -1,5 +1,5 @@
 /* Type based alias analysis.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -267,7 +267,6 @@ type_to_consider (tree type)
   switch (TREE_CODE (type))
     {
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
     case COMPLEX_TYPE:
     case ENUMERAL_TYPE:
     case INTEGER_TYPE:

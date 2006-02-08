@@ -1,6 +1,6 @@
 /* Utility routines for data type conversion for GCC.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1997, 1998,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,7 +53,6 @@ convert_to_pointer (tree type, tree expr)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       if (TYPE_PRECISION (TREE_TYPE (expr)) != POINTER_SIZE)
 	expr = fold_build1 (NOP_EXPR,
                             lang_hooks.types.type_for_size (POINTER_SIZE, 0),
@@ -313,7 +312,6 @@ convert_to_real (tree type, tree expr)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       return build1 (FLOAT_EXPR, type, expr);
 
     case COMPLEX_TYPE:
@@ -447,7 +445,6 @@ convert_to_integer (tree type, tree expr)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       /* If this is a logical operation, which just returns 0 or 1, we can
 	 change the type of the expression.  */
 
@@ -729,7 +726,6 @@ convert_to_complex (tree type, tree expr)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
       return build2 (COMPLEX_EXPR, type, convert (subtype, expr),
 		     convert (subtype, integer_zero_node));
 

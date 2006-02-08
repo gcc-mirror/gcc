@@ -4648,7 +4648,6 @@ count_type_elements (tree type, bool allow_flexarr)
     case REAL_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-    case CHAR_TYPE:
     case POINTER_TYPE:
     case OFFSET_TYPE:
     case REFERENCE_TYPE:
