@@ -8,6 +8,10 @@
 
 2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
 
+	* lib/scanrtl.exp: New.
+
+2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
+
 	* lib/gcc-dg.exp (cleanup-rtl-dump, cleanup-tree-dump,
 	cleanup-ipa-dump): Update dump file glob patterns.
 	* lib/scantree.exp (scan-tree-dump, scan-tree-dump-times,
@@ -15,7 +19,6 @@
 	* lib/scanipa.exp (scan-ipa-dump, scan-ipa-dump-times,
 	scan-ipa-dump-not, scan-ipa-dump-dem): Likewise.
 
-	* lib/scanrtl.exp: New.
 	* lib/gcc-dg.exp: Load it.
 	* objc.dg/stubify-2.m: Use scan-rtl-dump-not.
 
