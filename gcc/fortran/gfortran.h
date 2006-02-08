@@ -111,6 +111,12 @@ mstring;
 #define GFC_FPE_UNDERFLOW  (1<<4)
 #define GFC_FPE_PRECISION  (1<<5)
 
+/* Keep this in sync with libgfortran/io/io.h ! */
+
+typedef enum
+  { CONVERT_NATIVE=0, CONVERT_SWAP, CONVERT_BIG, CONVERT_LITTLE }
+options_convert;
+
 
 /*************************** Enums *****************************/
 
@@ -1527,6 +1533,7 @@ typedef struct
   int allow_std;
   int warn_nonstd_intrinsics;
   int fshort_enums;
+  int convert;
 }
 gfc_option_t;
 

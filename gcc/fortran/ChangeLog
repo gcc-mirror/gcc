@@ -1,3 +1,19 @@
+2005-02-08  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/23815
+	* gfortran.texi: Document the GFORTRAN_CONVERT_UNIT environment
+	variable.
+	* invoke.texi:  Mention the "Runtime" chapter.
+	Document the -fconvert= option.
+	* gfortran.h:  Add options_convert.
+	* lang.opt:  Add fconvert=little-endian, fconvert=big-endian,
+	fconvert=native and fconvert=swap.
+	* trans-decl.c (top level):  Add gfor_fndecl_set_convert.
+	(gfc_build_builtin_function_decls):  Set gfor_fndecl_set_convert.
+	(gfc_generate_function_code):  If -fconvert was specified,
+	and this is the main program, add a call to set_convert().
+	* options.c:  Handle the -fconvert options.
+
 2006-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* resolve.c (resolve_symbol): Initialize constructor_expr to NULL.

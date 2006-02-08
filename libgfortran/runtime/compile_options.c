@@ -59,3 +59,15 @@ init_compile_options (void)
   compile_options.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
     | GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU | GFC_STD_LEGACY;
 }
+
+/* Function called by the front-end to tell us the
+   default for unformatted data conversion.  */
+
+extern void set_convert (int);
+export_proto (set_convert);
+
+void
+set_convert (int conv)
+{
+  compile_options.convert = conv;
+}

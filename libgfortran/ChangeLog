@@ -1,3 +1,30 @@
+2005-02-08  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/23815
+	* runtime/environ.c (init_unformatted):  Add GFORTRAN_CONVERT_UNIT
+	environment variable.
+	(top level):  Add defines, type and static variables for
+	GFORTRAN_CONVERT_UNIT handling.
+	(search_unit):  New function.
+	(match_word): New function.
+	(match_integer): New function.
+	(next_token): New function.
+	(push_token): New function.
+	(mark_single): New function.
+	(mark_range): New funciton.
+	(do_parse): New function.
+	(init_unformatted): New function.
+	(get_unformatted_convert): New function.
+	* runtime/compile_options.c:  Add set_convert().
+	* libgfortran.h:  Add convert to compile_options_t.
+	* io/open.c (st_open): Call get_unformatted_convert to get
+	unit default; if CONVERT_NONE is returned, check for
+	the presence of a CONVERT specifier and use it.
+	As default, use compile_options.convert.
+	* io/io.h (top level): Add CONVERT_NONE to unit_convert, to signal
+	"nothing has been set".
+	(top level): Add prototype for get_unformatted_convert.
+
 2006-02-07  Dale Ranta  <dir@lanl.gov>
 
 	PR fortran/25577

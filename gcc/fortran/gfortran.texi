@@ -125,6 +125,7 @@ not accurately reflect the status of the most recent @command{gfortran}.
 * Project Status::       Status of @command{gfortran}, roadmap, proposed extensions.
 * Contributing::         How you can help.
 * Standards::	         Standards supported by @command{gfortran}
+* Runtime::              Influencing runtime behavior with environment variables.
 * Extensions::           Language extensions implemented by @command{gfortran}
 * Intrinsic Procedures:: Intrinsic procedures supported by @command{gfortran}
 * Copying::              GNU General Public License says
@@ -545,12 +546,81 @@ Environment variable for temporary file directory.
 @item
 Environment variable forcing standard output to be line buffered (unix).
 
-@item
-Variable for swapping endianness during unformatted read.
-
-@item
-Variable for swapping Endianness during unformatted write.
 @end itemize
+
+@node Runtime
+@chapter Runtime:  Influencing runtime behavior with environment variables
+@cindex Runtime
+
+The behaviour of the @command{gfortran} can be influenced by
+environment variables.
+@menu
+* GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
+@end menu
+
+@node GFORTRAN_CONVERT_UNIT
+@section GFORTRAN_CONVERT_UNIT --- Set endianness for unformatted I/O
+
+By setting the @code{GFORTRAN_CONVERT_UNIT variable}, it is possible
+to change the representation of data for unformatted files.
+The syntax for the @code{GFORTRAN_CONVERT_UNIT} variable is:
+@smallexample
+GFORTRAN_CONVERT_UNIT: mode | mode ';' exception ;
+mode: 'native' | 'swap' | 'big_endian' | 'little_endian' ;
+exception: mode ':' unit_list | unit_list ;
+unit_list: unit_spec | unit_list unit_spec ;
+unit_spec: INTEGER | INTEGER '-' INTEGER ;
+@end smallexample
+The variable consists of an optional default mode, followed by
+a list of optional exceptions, which are separated by semicolons
+from the preceding default and each other.  Each exception consists
+of a format and a comma-separated list of units.  Valid values for
+the modes are the same as for the @code{CONVERT} specifier:
+
+@itemize @w{}
+@item @code{NATIVE} Use the native format.  This is the default.
+@item @code{SWAP} Swap between little- and big-endian.
+@item @code{LITTLE_ENDIAN} Use the little-endian format
+        for unformatted files.
+@item @code{BIG_ENDIAN} Use the big-endian format for unformatted files.
+@end itemize
+A missing mode for an exception is taken to mean @code{BIG_ENDIAN}.
+Examples of values for @code{GFORTRAN_CONVERT_UNIT} are:
+@itemize @w{}
+@item @code{'big_endian'}  Do all unformatted I/O in big_endian mode.
+@item @code{'little_endian;native:10-20,25'}  Do all unformatted I/O 
+in little_endian mode, except for units 10 to 20 and 25, which are in
+native format.
+@item @code{'10-20'}  Units 10 to 20 are big-endian, the rest is native.
+@end itemize
+
+Setting the environment variables should be done on the command
+line or via the @code{export}
+command for @code{sh}-compatible shells and via @code{setenv}
+for @code{csh}-compatible shells.
+
+Example for @code{sh}:
+@smallexample
+$ gfortran foo.f90
+$ GFORTRAN_CONVERT_UNIT='big_endian;native:10-20' ./a.out
+@end smallexample
+
+Example code for @code{csh}:
+@smallexample
+% gfortran foo.f90
+% setenv GFORTRAN_CONVERT_UNIT 'big_endian;native:10-20'
+% ./a.out
+@end smallexample
+
+Using anything but the native representation for unformatted data
+carries a significant speed overhead.  If speed in this area matters
+to you, it is best if you use this only for data that needs to be
+portable.
+
+@xref{CONVERT specifier}, for an alternative way to specify the
+data representation for unformatted files.  @xref{Runtime Options}, for
+setting a default data representation for the whole program.  The
+@code{CONVERT} specifier overrides the @code{-fconvert} compile options.
 
 @c ---------------------------------------------------------------------
 @c Extensions
@@ -937,16 +1007,18 @@ will not change the base address of the array that was passed.
 
 gfortran allows the conversion of unformatted data between little-
 and big-endian representation to facilitate moving of data
-between different systems.  The conversion is indicated with
+between different systems.  The conversion can be indicated with
 the @code{CONVERT} specifier on the @code{OPEN} statement.
+@xref{GFORTRAN_CONVERT_UNIT}, for an alternative way of specifying
+the data format via an environment variable.
 
 Valid values for @code{CONVERT} are:
 @itemize @w{}
 @item @code{CONVERT='NATIVE'} Use the native format.  This is the default.
 @item @code{CONVERT='SWAP'} Swap between little- and big-endian.
-@item @code{CONVERT='LITTLE_ENDIAN'} Use the little-endian format
+@item @code{CONVERT='LITTLE_ENDIAN'} Use the little-endian representation
         for unformatted files.
-@item @code{CONVERT='BIG_ENDIAN'} Use the big-endian format for
+@item @code{CONVERT='BIG_ENDIAN'} Use the big-endian representation for
         unformatted files.
 @end itemize
 
@@ -966,6 +1038,16 @@ on IEEE sytems of kinds 4 and 8.  Conversion between different
 ``extended double'' types on different architectures such as
 m68k and x86_64, which gfortran
 supports as @code{REAL(KIND=10)} will probably not work.
+
+@emph{Note that the values specified via the GFORTRAN_CONVERT_UNIT
+environment variable will override the CONVERT specifier in the
+open statement}.  This is to give control over data formats to
+a user who does not have the source code of his program available.
+
+Using anything but the native representation for unformatted data
+carries a significant speed overhead.  If speed in this area matters
+to you, it is best if you use this only for data that needs to be
+portable.
 
 @c ---------------------------------------------------------------------
 @include intrinsic.texi

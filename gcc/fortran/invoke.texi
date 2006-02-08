@@ -98,6 +98,7 @@ one is not the default.
 * Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
+* Runtime Options::     Influencing runtime behavior
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
 * Environment Variables:: Env vars that affect GNU Fortran.
@@ -141,6 +142,11 @@ by type.  Explanations are in the following sections.
 @gccoptlist{
 -I@var{dir}  -M@var{dir}}
 
+@item Runtime Options
+@xref{Runtime Options,,Options for influencing runtime behavior}.
+@gccoptlist{
+-fconvert=@var{conversion}}
+
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
@@ -155,6 +161,7 @@ by type.  Explanations are in the following sections.
 * Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
+* Runtime Options::     Influencing runtime behavior
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
 @end menu
@@ -557,6 +564,25 @@ The default is the current directory.
 GCC options.
 @end table
 
+@node Runtime Options
+@section Influencing runtime behavior
+@cindex runtime, options
+
+These options affect the runtime behavior of @command{gfortran}.
+@table @gcctabopt
+@cindex -fconvert=@var{conversion} option
+@item -fconvert=@var{conversion}
+Specify the representation of data for unformatted files.  Valid
+values for conversion are: @samp{native}, the default; @samp{swap},
+swap between big- and little-endian; @samp{big-endian}, use big-endian
+representation for unformatted files; @samp{little-endian}, use little-endian
+representation for unformatted files.
+
+@emph{This option has an effect only when used in the main program.
+The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment
+variable override the default specified by -fconvert.}
+@end table
+
 @node Code Gen Options
 @section Options for Code Generation Conventions
 @cindex code generation, conventions
@@ -796,4 +822,6 @@ that affect the operation of @command{gcc}.
 gcc,Using the GNU Compiler Collection (GCC)}, for information on environment
 variables.
 
+@xref{Runtime}, for environment variables that affect the
+run-time behavior of @command{gfortran} programs.
 @c man end
