@@ -63,6 +63,7 @@
 #define ACTION_EXTRACT 2
 #define ACTION_UPDATE 3
 #define ACTION_LIST 4
+#define ACTION_INDEX 5
 
 #define TRUE 1
 #define FALSE 0
