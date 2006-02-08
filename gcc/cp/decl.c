@@ -7188,8 +7188,8 @@ grokdeclarator (tree declarator,
 
   if (virtualp && staticp == 2)
     {
-      error ("member `%D' cannot be declared both virtual and static",
-		dname);
+      error ("member `%D' cannot be declared both virtual and static", dname);
+      RIDBIT_RESET (RID_STATIC, specbits);
       staticp = 0;
     }
   friendp = RIDBIT_SETP (RID_FRIEND, specbits);

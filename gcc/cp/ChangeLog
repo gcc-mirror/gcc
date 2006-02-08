@@ -1,3 +1,8 @@
+2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/26070
+	* decl.c (grokdeclarator): Clear RID_STATIC together with staticp.
+
 2006-02-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:
