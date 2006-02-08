@@ -1,6 +1,6 @@
 /* Implementation of the MVBITS intrinsic
-   Copyright (C) 2004 Free Software Foundation, Inc.
-   Contributed by Tobias SchlÃ¼ter
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+   Contributed by Tobias Schlüter
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -48,7 +48,7 @@ SUB_NAME (const TYPE *from, const GFC_INTEGER_4 *frompos,
 {
   TYPE oldbits, newbits, lenmask;
 
-  lenmask = (*len == sizeof (TYPE)*8) ? ~(TYPE)0 : (1 << *len) - 1;
+  lenmask = (*len == sizeof (TYPE)*8) ? ~(TYPE)0 : ((TYPE)1 << *len) - 1;
   newbits = (((UTYPE)(*from) >> *frompos) & lenmask) << *topos;
   oldbits = *to & (~(lenmask << *topos));
 

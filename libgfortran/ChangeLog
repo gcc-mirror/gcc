@@ -1,3 +1,8 @@
+2006-02-07  Dale Ranta  <dir@lanl.gov>
+
+	PR fortran/25577
+	* intrinsics/mvbits.c: Shift '(TYPE)1' type when building 'lenmask'.
+
 2006-02-07  Rainer Emrich <r.emrich@de.tecosim.com>
 
 	* intrinsics/c99_functions.c: Work around incompatible
