@@ -1,3 +1,8 @@
+2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/26070
+	* decl.c (grokdeclarator): Clear storage_class together with staticp.
+
 2006-02-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (tf_warning_or_error): Renamed from tf_warn_or_error.
