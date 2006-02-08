@@ -721,22 +721,23 @@ dump_node (tree t, int flags, FILE *stream)
 
 
 /* Table of tree dump switches. This must be consistent with the
-   TREE_DUMP_INDEX enumeration in tree.h */
+   TREE_DUMP_INDEX enumeration in tree.h.  */
 static struct dump_file_info dump_files[TDI_end] =
 {
   {NULL, NULL, NULL, 0, 0, 0, 0},
-  {".tu", "translation-unit", NULL, TDF_TREE, 0, 0, 0},
-  {".class", "class-hierarchy", NULL, TDF_TREE, 0, 1, 0},
-  {".original", "tree-original", NULL, TDF_TREE, 0, 2, 0},
-  {".gimple", "tree-gimple", NULL, TDF_TREE, 0, 3, 0},
-  {".nested", "tree-nested", NULL, TDF_TREE, 0, 4, 0},
-  {".inlined", "tree-inlined", NULL, TDF_TREE, 0, 5, 0},
-  {".vcg", "tree-vcg", NULL, TDF_TREE, 0, 6, 0},
+  {".cgraph", "ipa-cgraph", NULL, TDF_IPA, 0,  0, 0},
+  {".tu", "translation-unit", NULL, TDF_TREE, 0, 1, 0},
+  {".class", "class-hierarchy", NULL, TDF_TREE, 0, 2, 0},
+  {".original", "tree-original", NULL, TDF_TREE, 0, 3, 0},
+  {".gimple", "tree-gimple", NULL, TDF_TREE, 0, 4, 0},
+  {".nested", "tree-nested", NULL, TDF_TREE, 0, 5, 0},
+  {".inlined", "tree-inlined", NULL, TDF_TREE, 0, 6, 0},
+  {".vcg", "tree-vcg", NULL, TDF_TREE, 0, 7, 0},
+#define FIRST_AUTO_NUMBERED_DUMP 8
+
   {NULL, "tree-all", NULL, TDF_TREE, 0, 0, 0},
   {NULL, "rtl-all", NULL, TDF_RTL, 0, 0, 0},
   {NULL, "ipa-all", NULL, TDF_IPA, 0, 0, 0},
-
-  { ".cgraph", "ipa-cgraph", NULL,	TDF_IPA, 0,  0, 0},
 };
 
 /* Dynamically registered tree dump files and switches.  */
@@ -772,8 +773,11 @@ static const struct dump_option_value_info dump_options[] =
 
 unsigned int
 dump_register (const char *suffix, const char *swtch, const char *glob,
-	       int flags, unsigned int num, int letter)
+	       int flags, int letter)
 {
+  static int next_dump = FIRST_AUTO_NUMBERED_DUMP;
+  int num = next_dump++;
+
   size_t this = extra_dump_files_in_use++;
 
   if (this >= extra_dump_files_alloced)
@@ -819,7 +823,7 @@ get_dump_file_info (enum tree_dump_index phase)
 char *
 get_dump_file_name (enum tree_dump_index phase)
 {
-  char dump_id[7];
+  char dump_id[10];
   struct dump_file_info *dfi;
 
   if (phase == TDI_none)
@@ -833,15 +837,15 @@ get_dump_file_name (enum tree_dump_index phase)
     dump_id[0] = '\0';
   else
     {
-      const char *template;
+      char suffix;
       if (dfi->flags & TDF_TREE)
-	template = ".t%02d";
+	suffix = 't';
       else if (dfi->flags & TDF_IPA)
-	template = ".i%02d";
+	suffix = 'i';
       else
-	template = ".%02d";
+	suffix = 'r';
 
-      if (snprintf (dump_id, sizeof (dump_id), template, dfi->num) < 0)
+      if (snprintf (dump_id, sizeof (dump_id), ".%03d%c", dfi->num, suffix) < 0)
 	dump_id[0] = '\0';
     }
 

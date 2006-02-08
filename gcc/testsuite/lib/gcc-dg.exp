@@ -1,4 +1,5 @@
-#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2006
+#   Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@ load_lib file-format.exp
 load_lib target-supports.exp
 load_lib target-supports-dg.exp
 load_lib scanasm.exp
+load_lib scanrtl.exp
 load_lib scantree.exp
 load_lib scanipa.exp
 load_lib prune.exp
@@ -344,21 +346,21 @@ proc cleanup-repo-files { } {
 #
 # SUFFIX is the filename suffix pattern.
 proc cleanup-rtl-dump { suffix } {
-  cleanup-dump "\[0-9\]\*.$suffix"
+  cleanup-dump "\[0-9\]\[0-9\]\[0-9\]r.$suffix"
 }
 
 # Remove a specific tree dump file for the current test.
 #
 # SUFFIX is the tree dump file suffix pattern.
 proc cleanup-tree-dump { suffix } {
-  cleanup-dump "t\[0-9\]\*.$suffix"
+  cleanup-dump "\[0-9\]\[0-9\]\[0-9\]t.$suffix"
 }
 
 # Remove a specific ipa dump file for the current test.
 #
 # SUFFIX is the ipa dump file suffix pattern.
 proc cleanup-ipa-dump { suffix } {
-  cleanup-dump "i\[0-9\]\*.$suffix"
+  cleanup-dump "\[0-9\]\[0-9\]\[0-9\]i.$suffix"
 }
 
 # Remove all dump files with the provided suffix.

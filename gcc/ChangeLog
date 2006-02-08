@@ -1,3 +1,33 @@
+2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	* passes.c (register_one_dump_file): Accept the current properties
+	instead of pass number.  Adjust call to dump_register.  Remove
+	duplicated code.
+	(register_dump_files): Now a wrapper around...
+	(register_dump_files_1): ... this one.  Do not modify the pass
+	structure.
+	(next_pass_1): Cosmetic fix.
+	(execute_todo): Keep second parameter only.  Use curr_properties instead
+	of fetching it from the pass structure.  Check and set last_verified.
+	(execute_one_pass): Handle TODO_set_props.  Use curr_properties
+	instead of fetching it from the pass structure.  Fix calls to
+	execute_todo.  Update curr_properties and initialize .vcg RTL dump
+	after running the pass.  Reset last_verified.
+	* tree-dump.c (dump_files): Renumber consecutively.  Put .cgraph dump
+	at the beginning.
+	(FIRST_AUTO_NUMBERED_DUMP): New.
+	(dump_register): Remove "num" parameter, assign it within the
+	function.
+	(get_dump_file_name): Modify template for dumps.
+	* tree-dump.h (dump_register): Adjust prototype.
+	* tree-pass.h (enum tree_dump_index): Move cgraph at the beginning.
+	(PROP_trees): Add PROP_gimple_lomp.
+	(TODO_set_props): New.
+	* gimple-low.c (pass_lower_cf): Do not destroy PROP_gimple_lcf.
+	* tree-eh.c (pass_lower_eh): Do not destroy PROP_gimple_leh.
+	* cfgexpand.c (pass_expand): Destroy PROP_trees.
+
+
 2006-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.gcc (sparc-*-linux*): Add sparc/t-linux to tmake_file.
