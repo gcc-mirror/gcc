@@ -1,3 +1,8 @@
+2006-02-08  Daniel Berlin  <dberlin@dberlin.org>
+
+	* df-scan.c (df_def_record_1): A set destination may
+	be a parallel regardless of mode.
+
 2006-02-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/22209
