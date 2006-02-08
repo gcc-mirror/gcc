@@ -206,7 +206,7 @@ private:
     return r;
   }
 
-  __attribute__ ((__noreturn__)) void verify_fail (char *s, jint pc = -1)
+  __attribute__ ((__noreturn__)) void verify_fail (const char *s, jint pc = -1)
   {
     using namespace java::lang;
     StringBuffer *buf = new StringBuffer ();

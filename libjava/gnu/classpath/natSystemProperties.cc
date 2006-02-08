@@ -62,11 +62,11 @@ _Jv_SetDLLSearchPath (const char *)
 #if ! defined (DEFAULT_FILE_ENCODING) && defined (HAVE_ICONV) \
     && defined (HAVE_NL_LANGINFO)
 
-static char *
+static const char *
 file_encoding ()
 {
   setlocale (LC_CTYPE, "");
-  char *e = nl_langinfo (CODESET);
+  const char *e = nl_langinfo (CODESET);
   if (e == NULL || *e == '\0')
     e = "8859_1";
   return e;
@@ -80,7 +80,7 @@ file_encoding ()
 #define DEFAULT_FILE_ENCODING "8859_1"
 #endif
 
-static char *default_file_encoding = DEFAULT_FILE_ENCODING;
+static const char *default_file_encoding = DEFAULT_FILE_ENCODING;
 
 #if HAVE_GETPWUID_R
 /* Use overload resolution to find out the signature of getpwuid_r.  */

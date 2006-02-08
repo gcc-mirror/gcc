@@ -261,7 +261,7 @@ jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 void _Jv_InitNewClassFields (jclass klass);
 
 // Friend functions and classes in prims.cc
-void _Jv_InitPrimClass (jclass, char *, char, int);
+void _Jv_InitPrimClass (jclass, const char *, char, int);
 jstring _Jv_GetMethodString (jclass, _Jv_Method *, jclass = NULL);
 
 jboolean _Jv_CheckAccess (jclass self_klass, jclass other_klass,
@@ -494,7 +494,7 @@ private:
   friend void ::_Jv_InitNewClassFields (jclass klass);
 
   // in prims.cc
-  friend void ::_Jv_InitPrimClass (jclass, char *, char, int);
+  friend void ::_Jv_InitPrimClass (jclass, const char *, char, int);
 
   friend jstring (::_Jv_GetMethodString) (jclass, _Jv_Method *, jclass);
 

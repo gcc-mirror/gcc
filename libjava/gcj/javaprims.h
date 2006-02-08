@@ -489,7 +489,7 @@ extern "C" jstring _Jv_NewStringLatin1(const char*, jsize)
   __attribute__((__malloc__));
 extern "C" jsize _Jv_GetStringUTFLength (jstring);
 extern "C" jsize _Jv_GetStringUTFRegion (jstring, jsize, jsize, char *);
-extern "C" jint _Jv_hashUtf8String (char*, int);
+extern "C" jint _Jv_hashUtf8String (const char*, int);
 
 struct _Jv_VMOption
 {
@@ -561,17 +561,17 @@ class _Jv_Utf8Const
   jstring toString() { return _Jv_NewStringUTF(data); }
   /** Given an UTF8 string, how many bytes needed for a UTF8Const,
       including struct header, and final NUL.  I.e. what to pas to malloc. */
-  static int space_needed (char *, int len)
+  static int space_needed (const char *, int len)
   { return sizeof (_Jv_Utf8Const) + len + 1; }
   /** Given an allocated _Jv_Utf8Const, copy / fill it in. */
-  void init (char *s, int len);
+  void init (const char *s, int len);
   friend jboolean _Jv_equalUtf8Consts (const _Jv_Utf8Const*, const _Jv_Utf8Const *);
   friend jboolean _Jv_equal (_Jv_Utf8Const*, jstring, jint);
   friend jboolean _Jv_equaln (_Jv_Utf8Const*, jstring, jint);
   friend jboolean _Jv_equalUtf8Classnames (const _Jv_Utf8Const*,
                                              const _Jv_Utf8Const*);
   friend jboolean _Jv_isPrimitiveOrDerived (const _Jv_Utf8Const*);
-  friend _Jv_Utf8Const *_Jv_makeUtf8Const (char*, int);
+  friend _Jv_Utf8Const *_Jv_makeUtf8Const (const char*, int);
   friend _Jv_Utf8Const *_Jv_makeUtf8Const (jstring);
   friend jstring _Jv_NewStringUtf8Const (_Jv_Utf8Const*);
 };

@@ -353,7 +353,7 @@ _Jv_equalUtf8Classnames (const Utf8Const *a, const Utf8Const *b)
 
 /* Count the number of Unicode chars encoded in a given Ut8 string. */
 int
-_Jv_strLengthUtf8(char* str, int len)
+_Jv_strLengthUtf8(const char* str, int len)
 {
   unsigned char* ptr;
   unsigned char* limit;
@@ -374,7 +374,7 @@ _Jv_strLengthUtf8(char* str, int len)
  * This returns the same hash value as specified or java.lang.String.hashCode.
  */
 jint
-_Jv_hashUtf8String (char* str, int len)
+_Jv_hashUtf8String (const char* str, int len)
 {
   unsigned char* ptr = (unsigned char*) str;
   unsigned char* limit = ptr + len;
@@ -391,7 +391,7 @@ _Jv_hashUtf8String (char* str, int len)
 }
 
 void
-_Jv_Utf8Const::init(char *s, int len)
+_Jv_Utf8Const::init(const char *s, int len)
 {
   ::memcpy (data, s, len);
   data[len] = 0;
@@ -400,7 +400,7 @@ _Jv_Utf8Const::init(char *s, int len)
 }
 
 _Jv_Utf8Const *
-_Jv_makeUtf8Const (char* s, int len)
+_Jv_makeUtf8Const (const char* s, int len)
 {
   if (len < 0)
     len = strlen (s);
@@ -794,7 +794,7 @@ DECLARE_PRIM_TYPE(double)
 DECLARE_PRIM_TYPE(void)
 
 void
-_Jv_InitPrimClass (jclass cl, char *cname, char sig, int len)
+_Jv_InitPrimClass (jclass cl, const char *cname, char sig, int len)
 {    
   using namespace java::lang::reflect;
 
