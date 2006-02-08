@@ -1699,7 +1699,7 @@ struct tree_opt_pass pass_expand =
   /* ??? If TER is enabled, we actually receive GENERIC.  */
   PROP_gimple_leh | PROP_cfg,           /* properties_required */
   PROP_rtl,                             /* properties_provided */
-  PROP_gimple_leh,			/* properties_destroyed */
+  PROP_trees,				/* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func,                       /* todo_flags_finish */
   'r'					/* letter */

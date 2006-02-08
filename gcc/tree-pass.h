@@ -30,6 +30,7 @@ Boston, MA 02110-1301, USA.  */
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
+  TDI_cgraph,                   /* dump function call graph.  */
   TDI_tu,			/* dump the whole translation unit.  */
   TDI_class,			/* dump class hierarchy.  */
   TDI_original,			/* dump each function before optimizing it */
@@ -43,7 +44,6 @@ enum tree_dump_index
   TDI_rtl_all,                  /* enable all the RTL dumps.  */
   TDI_ipa_all,                  /* enable all the IPA dumps.  */
 
-  TDI_cgraph,                   /* dump function call graph.  */
   TDI_end
 };
 
@@ -154,7 +154,7 @@ struct dump_file_info
 #define PROP_gimple_lomp	(1 << 10)	/* lowered OpenMP directives */
 
 #define PROP_trees \
-  (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh)
+  (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
 
 /* To-do flags.  */
 #define TODO_dump_func			(1 << 0)
@@ -207,6 +207,10 @@ struct dump_file_info
    cfun->unexpanded_var_list.  This reduces the size of dump files and
    the memory footprint for VAR_DECLs.  */
 #define TODO_remove_unused_locals	(1 << 11)
+
+/* Internally used for the first in a sequence of passes.  It is set
+   for the passes that are handed to register_dump_files.  */
+#define TODO_set_props			(1 << 12)
 
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
