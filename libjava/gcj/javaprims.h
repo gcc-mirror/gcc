@@ -1,7 +1,7 @@
 // javaprims.h - Main external header file for libgcj.  -*- c++ -*-
 
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation
 
    This file is part of libgcj.
@@ -218,6 +218,8 @@ extern "Java"
       class UnsupportedOperationException;
       class VMClassLoader;
       class VMCompiler;
+      class VMDouble;
+      class VMFloat;
       class VMSecurityManager;
       class VMThrowable;
       class VerifyError;

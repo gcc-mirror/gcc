@@ -2884,12 +2884,12 @@ classpath/java/lang/Cloneable.java \
 classpath/java/lang/Comparable.java \
 classpath/java/lang/Compiler.java \
 java/lang/ConcreteProcess.java \
-java/lang/Double.java \
+classpath/java/lang/Double.java \
 classpath/java/lang/EnumConstantNotPresentException.java \
 classpath/java/lang/Error.java \
 classpath/java/lang/Exception.java \
 classpath/java/lang/ExceptionInInitializerError.java \
-java/lang/Float.java \
+classpath/java/lang/Float.java \
 classpath/java/lang/IllegalAccessError.java \
 classpath/java/lang/IllegalAccessException.java \
 classpath/java/lang/IllegalArgumentException.java \
@@ -2947,6 +2947,8 @@ classpath/java/lang/UnsupportedClassVersionError.java \
 classpath/java/lang/UnsupportedOperationException.java \
 java/lang/VMClassLoader.java \
 java/lang/VMCompiler.java \
+java/lang/VMDouble.java \
+java/lang/VMFloat.java \
 java/lang/VMSecurityManager.java \
 java/lang/VMThrowable.java \
 classpath/java/lang/VerifyError.java \

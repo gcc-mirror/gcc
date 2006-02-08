@@ -1,5 +1,5 @@
 /* Code to test for "definitive [un]assignment".
-   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005 Free Software Foundation,
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2006 Free Software Foundation,
    Inc.
 
 This file is part of GCC.
@@ -806,6 +806,7 @@ check_init (tree exp, words before)
     case TRUTH_NOT_EXPR:
     case BIT_NOT_EXPR:
     case CONVERT_EXPR:
+    case VIEW_CONVERT_EXPR:
     case BIT_FIELD_REF:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
