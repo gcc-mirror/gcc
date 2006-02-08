@@ -413,6 +413,13 @@
         However, no specification is given what this constructor should do.
     </dd>
 
+    <dt><a href="lwg-defects.html#241">241</a>:
+        <em>Does unique_copy() require CopyConstructible and Assignable?</em>
+    </dt>
+    <dd>Add an helper for forward_iterator/output_iterator, fix the existing
+        one for input_iterator/output_iterator not to rely on Assignability.
+    </dd>
+
     <dt><a href="lwg-defects.html#243">243</a>:
         <em>get and getline when sentry reports failure</em>
     </dt>

@@ -1,3 +1,20 @@
+2006-02-08  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/26133  (DR 241, [WP])
+	* include/bits/stl_algo.h (__unique_copy(,,, forward_iterator_tag,
+	output_iterator_tag), __unique_copy(,,, input_iterator_tag,
+	output_iterator_tag), __unique_copy(,,, input_iterator_tag,
+	forward_iterator_tag), and predicated counterparts): Add.
+	(__unique_copy(,,, output_iterator_tag), __unique_copy(,,,
+	forward_iterator_tag), and predicated counterparts): Remove.
+	(unique_copy): Adjust, dispatch to the three helpers above.
+	* testsuite/25_algorithms/unique_copy/2.cc: New.
+	* testsuite/25_algorithms/unique_copy/26133.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/3.cc: Likewise.	
+	* docs/html/ext/howto.html: Add an entry for DR 241.
+
+	* testsuite/25_algorithms/unique_copy/1.cc: Minor cosmetic changes.
+
 2006-02-07  Jakub Jelinek  <jakub@redhat.com>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 

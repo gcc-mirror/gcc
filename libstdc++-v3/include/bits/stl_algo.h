@@ -1,6 +1,7 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1294,23 +1295,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @if maint
    *  This is an uglified unique_copy(_InputIterator, _InputIterator,
    *                                  _OutputIterator)
-   *  overloaded for output iterators.
+   *  overloaded for forward iterators and output iterator as result.
    *  @endif
   */
-  template<typename _InputIterator, typename _OutputIterator>
+  template<typename _ForwardIterator, typename _OutputIterator>
     _OutputIterator
-    __unique_copy(_InputIterator __first, _InputIterator __last,
+    __unique_copy(_ForwardIterator __first, _ForwardIterator __last,
 		  _OutputIterator __result,
-		  output_iterator_tag)
+		  forward_iterator_tag, output_iterator_tag)
     {
       // concept requirements -- taken care of in dispatching function
-      typename iterator_traits<_InputIterator>::value_type __value = *__first;
-      *__result = __value;
-      while (++__first != __last)
-	if (!(__value == *__first))
+      _ForwardIterator __next = __first;
+      *__result = *__first;
+      while (++__next != __last)
+	if (!(*__first == *__next))
 	  {
-	    __value = *__first;
-	    *++__result = __value;
+	    __first = __next;
+	    *++__result = *__first;
 	  }
       return ++__result;
     }
@@ -1319,14 +1320,43 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @if maint
    *  This is an uglified unique_copy(_InputIterator, _InputIterator,
    *                                  _OutputIterator)
-   *  overloaded for forward iterators.
+   *  overloaded for input iterators and output iterator as result.
+   *  @endif
+  */
+  template<typename _InputIterator, typename _OutputIterator>
+    _OutputIterator
+    __unique_copy(_InputIterator __first, _InputIterator __last,
+		  _OutputIterator __result,
+		  input_iterator_tag, output_iterator_tag)
+    {
+      // concept requirements -- taken care of in dispatching function
+      *__result = *__first;
+      while (true)
+	{
+	  typename
+	    iterator_traits<_InputIterator>::value_type __value = *__first;
+
+	  if (++__first == __last)
+	    break;
+	  
+	  if (!(__value == *__first))
+	    *++__result = *__first;
+	}
+      return ++__result;
+    }
+
+  /**
+   *  @if maint
+   *  This is an uglified unique_copy(_InputIterator, _InputIterator,
+   *                                  _OutputIterator)
+   *  overloaded for input iterators and forward iterator as result.
    *  @endif
   */
   template<typename _InputIterator, typename _ForwardIterator>
     _ForwardIterator
     __unique_copy(_InputIterator __first, _InputIterator __last,
 		  _ForwardIterator __result,
-		  forward_iterator_tag)
+		  input_iterator_tag, forward_iterator_tag)
     {
       // concept requirements -- taken care of in dispatching function
       *__result = *__first;
@@ -1341,29 +1371,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  This is an uglified
    *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
    *              _BinaryPredicate)
-   *  overloaded for output iterators.
+   *  overloaded for forward iterators and output iterator as result.
    *  @endif
   */
-  template<typename _InputIterator, typename _OutputIterator,
+  template<typename _ForwardIterator, typename _OutputIterator,
 	   typename _BinaryPredicate>
     _OutputIterator
-    __unique_copy(_InputIterator __first, _InputIterator __last,
-		  _OutputIterator __result,
-		  _BinaryPredicate __binary_pred,
-		  output_iterator_tag)
+    __unique_copy(_ForwardIterator __first, _ForwardIterator __last,
+		  _OutputIterator __result, _BinaryPredicate __binary_pred,
+		  forward_iterator_tag, output_iterator_tag)
     {
       // concept requirements -- iterators already checked
       __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	  typename iterator_traits<_InputIterator>::value_type,
-	  typename iterator_traits<_InputIterator>::value_type>)
+	  typename iterator_traits<_ForwardIterator>::value_type,
+	  typename iterator_traits<_ForwardIterator>::value_type>)
 
-      typename iterator_traits<_InputIterator>::value_type __value = *__first;
-      *__result = __value;
-      while (++__first != __last)
-	if (!__binary_pred(__value, *__first))
+      _ForwardIterator __next = __first;
+      *__result = *__first;
+      while (++__next != __last)
+	if (!__binary_pred(*__first, *__next))
 	  {
-	    __value = *__first;
-	    *++__result = __value;
+	    __first = __next;
+	    *++__result = *__first;
 	  }
       return ++__result;
     }
@@ -1373,25 +1402,60 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  This is an uglified
    *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
    *              _BinaryPredicate)
-   *  overloaded for forward iterators.
+   *  overloaded for input iterators and output iterator as result.
+   *  @endif
+  */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryPredicate>
+    _OutputIterator
+    __unique_copy(_InputIterator __first, _InputIterator __last,
+		  _OutputIterator __result, _BinaryPredicate __binary_pred,
+		  input_iterator_tag, output_iterator_tag)
+    {
+      // concept requirements -- iterators already checked
+      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
+	  typename iterator_traits<_InputIterator>::value_type,
+	  typename iterator_traits<_InputIterator>::value_type>)
+
+      *__result = *__first;
+      while (true)
+	{
+	  typename
+	    iterator_traits<_InputIterator>::value_type __value = *__first;
+
+	  if (++__first == __last)
+	    break;
+	  
+	  if (!__binary_pred(__value, *__first))
+	    *++__result = *__first;
+	}
+      return ++__result;
+    }
+
+  /**
+   *  @if maint
+   *  This is an uglified
+   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
+   *              _BinaryPredicate)
+   *  overloaded for input iterators and forward iterator as result.
    *  @endif
   */
   template<typename _InputIterator, typename _ForwardIterator,
 	   typename _BinaryPredicate>
     _ForwardIterator
     __unique_copy(_InputIterator __first, _InputIterator __last,
-		  _ForwardIterator __result,
-		  _BinaryPredicate __binary_pred,
-		  forward_iterator_tag)
+		  _ForwardIterator __result, _BinaryPredicate __binary_pred,
+		  input_iterator_tag, forward_iterator_tag)
     {
       // concept requirements -- iterators already checked
       __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	    typename iterator_traits<_ForwardIterator>::value_type,
-	    typename iterator_traits<_InputIterator>::value_type>)
+	  typename iterator_traits<_ForwardIterator>::value_type,
+	  typename iterator_traits<_InputIterator>::value_type>)
 
       *__result = *__first;
       while (++__first != __last)
-	if (!__binary_pred(*__result, *__first)) *++__result = *__first;
+	if (!__binary_pred(*__result, *__first))
+	  *++__result = *__first;
       return ++__result;
     }
 
@@ -1407,6 +1471,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  from groups of consecutive elements that compare equal.
    *  unique_copy() is stable, so the relative order of elements that are
    *  copied is unchanged.
+   *
+   *  @if maint
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 241. Does unique_copy() require CopyConstructible and Assignable?
+   *  @endif
   */
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
@@ -1421,11 +1490,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      typedef typename iterator_traits<_OutputIterator>::iterator_category
-	_IterType;
-
-      if (__first == __last) return __result;
-      return std::__unique_copy(__first, __last, __result, _IterType());
+      if (__first == __last)
+	return __result;
+      return std::__unique_copy(__first, __last, __result,
+				std::__iterator_category(__first),
+				std::__iterator_category(__result));
     }
 
   /**
@@ -1442,6 +1511,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  true.
    *  unique_copy() is stable, so the relative order of elements that are
    *  copied is unchanged.
+   *
+   *  @if maint
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 241. Does unique_copy() require CopyConstructible and Assignable?
+   *  @endif
   */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryPredicate>
@@ -1456,12 +1530,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      typedef typename iterator_traits<_OutputIterator>::iterator_category
-	_IterType;
-
-      if (__first == __last) return __result;
-      return std::__unique_copy(__first, __last, __result,
-				__binary_pred, _IterType());
+      if (__first == __last)
+	return __result;
+      return std::__unique_copy(__first, __last, __result, __binary_pred,
+				std::__iterator_category(__first),
+				std::__iterator_category(__result));
     }
 
   /**

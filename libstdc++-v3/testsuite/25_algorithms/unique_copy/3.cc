@@ -1,4 +1,4 @@
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,18 +24,25 @@
 
 using __gnu_test::test_container;
 using __gnu_test::input_iterator_wrapper;
-using __gnu_test::forward_iterator_wrapper;
 using __gnu_test::output_iterator_wrapper;
 using std::unique_copy;
+using std::equal_to;
 
-typedef test_container<int, input_iterator_wrapper> Icontainer;
-typedef test_container<int, forward_iterator_wrapper> Fcontainer;
+struct no_assign
+{
+  int const x;
+  no_assign() : x(23) { }
+  no_assign(int val) : x(val) { }
+  operator int() const { return x; }
+};
+
+typedef test_container<no_assign, input_iterator_wrapper> Icontainer;
 typedef test_container<int, output_iterator_wrapper> Ocontainer;
 
-int array1[] = {0, 0, 0, 1, 1, 1};
+no_assign array1[] = {0, 0, 0, 1, 1, 1};
 int array2[2];
 
-void 
+void
 test1()
 {
   bool test __attribute__((unused)) = true;
@@ -50,7 +57,7 @@ test2()
   bool test __attribute__((unused)) = true;
   Icontainer con1(array1, array1 + 6);
   Ocontainer con2(array2, array2 + 2);
-  VERIFY( unique_copy(con1.begin(), con1.end(), con2.begin()).ptr 
+  VERIFY( unique_copy(con1.begin(), con1.end(), con2.begin()).ptr
 	  == array2 + 2 );
   VERIFY( array2[0] == 0 && array2[1] == 1 );
 }
@@ -60,8 +67,9 @@ test3()
 {
   bool test __attribute__((unused)) = true;
   Icontainer con1(array1, array1);
-  Fcontainer con2(array2, array2);
-  VERIFY( unique_copy(con1.begin(), con1.end(), con2.begin()).ptr == array2 );
+  Ocontainer con2(array2, array2);
+  VERIFY( unique_copy(con1.begin(), con1.end(), con2.begin(),
+		      equal_to<int>()).ptr == array2 );
 }
 
 void
@@ -69,9 +77,9 @@ test4()
 {
   bool test __attribute__((unused)) = true;
   Icontainer con1(array1, array1 + 6);
-  Fcontainer con2(array2, array2 + 2);
-  VERIFY( unique_copy(con1.begin(), con1.end(), con2.begin()).ptr
-	  == array2 + 2 );
+  Ocontainer con2(array2, array2 + 2);
+  VERIFY( unique_copy(con1.begin(), con1.end(), con2.begin(),
+		      equal_to<int>()).ptr == array2 + 2 );
   VERIFY( array2[0] == 0 && array2[1] == 1 );
 }
 
