@@ -52,4 +52,4 @@ echo exec $host_gnatmake '"$@"' >> host_gnatmake
 
 chmod +x host_gnatmake
 
-exec $testdir/run_all.sh "$@"
+exec $testdir/run_all.sh ${1+"$@"}

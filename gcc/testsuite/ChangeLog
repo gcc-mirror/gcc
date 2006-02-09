@@ -1,3 +1,7 @@
+2006-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* ada/acats/run_acats: Use portable variant of "$@".
+
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/25251

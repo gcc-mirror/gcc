@@ -1,3 +1,7 @@
+2006-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (check-gnat): Run run_acats with $(SHELL).
+
 2006-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25926
