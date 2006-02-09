@@ -1,5 +1,10 @@
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/26179
+	* g++.dg/opt/pr26179.C: New test.
+
+2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/26134
 	* gcc.dg/tree-ssa/complex-3.c: New test.
 

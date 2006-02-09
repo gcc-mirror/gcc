@@ -2161,6 +2161,7 @@ create_component_ref_by_pieces (basic_block block, tree expr, tree stmts)
       break;
     case VAR_DECL:
     case PARM_DECL:
+    case RESULT_DECL:
     case SSA_NAME:
       return genop;
     default:

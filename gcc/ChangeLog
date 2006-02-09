@@ -1,5 +1,11 @@
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/26179
+	* tree-ssa-pre.c (create_component_ref_by_pieces):
+	Handle RETURN_DECL like VAR_DECL.
+
+2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/26134
 	* fold-const.c (fold_indirect_ref_1): Fold 
 	"*(foo *)&complexfoo" to "__real__ complexfoo"
