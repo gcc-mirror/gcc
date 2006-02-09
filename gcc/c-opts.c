@@ -225,7 +225,6 @@ c_common_init_options (unsigned int argc, const char **argv)
      before passing on command-line options to cpplib.  */
   cpp_opts->warn_dollars = 0;
 
-  flag_const_strings = c_dialect_cxx ();
   flag_exceptions = c_dialect_cxx ();
   warn_pointer_arith = c_dialect_cxx ();
 
@@ -531,10 +530,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wwrite_strings:
-      if (!c_dialect_cxx ())
-	flag_const_strings = value;
-      else
-	warn_write_strings = value;
+      warn_write_strings = value;
       break;
 
     case OPT_Weffc__:
@@ -650,10 +646,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fconserve_space:
       flag_conserve_space = value;
-      break;
-
-    case OPT_fconst_strings:
-      flag_const_strings = value;
       break;
 
     case OPT_fconstant_string_class_:

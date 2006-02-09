@@ -261,11 +261,6 @@ int flag_ms_extensions;
 
 int flag_no_asm;
 
-/* Nonzero means give string constants the type `const char *', as mandated
-   by the standard.  */
-
-int flag_const_strings;
-
 /* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
 
 int flag_signed_bitfields = 1;
@@ -869,10 +864,14 @@ fix_string_type (tree value)
 		 nchars - 1, nchars_max, relevant_std);
     }
 
-  /* Create the array type for the string constant.  flag_const_strings
-     says make the string constant an array of const char so that
-     copying it to a non-const pointer will get a warning.  For C++,
-     this is the standard behavior.
+  /* Create the array type for the string constant.  The ISO C++
+     standard says that a string literal has type `const char[N]' or
+     `const wchar_t[N]'.  We use the same logic when invoked as a C
+     front-end with -Wwrite-strings.
+     ??? We should change the type of an expression depending on the
+     state of a warning flag.  We should just be warning -- see how
+     this is handled in the C++ front-end for the deprecated implicit
+     conversion from string literals to `char*' or `wchar_t*'.
 
      The C++ front end relies on TYPE_MAIN_VARIANT of a cv-qualified
      array type being the unqualified version of that type.
@@ -883,7 +882,7 @@ fix_string_type (tree value)
   e_type = wide_flag ? wchar_type_node : char_type_node;
   i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1));
   a_type = build_array_type (e_type, i_type);
-  if (flag_const_strings)
+  if (c_dialect_cxx() || warn_write_strings)
     a_type = c_build_qualified_type (a_type, TYPE_QUAL_CONST);
 
   TREE_TYPE (value) = a_type;

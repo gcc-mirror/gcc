@@ -175,7 +175,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control  -fcheck-new @gol
--fconserve-space  -ffriend-injection  -fno-const-strings @gol
+-fconserve-space  -ffriend-injection @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
@@ -1449,17 +1449,6 @@ earlier releases.
 
 This option is for compatibility, and may be removed in a future
 release of G++.
-
-@item -fno-const-strings
-@opindex fno-const-strings
-Give string constants type @code{char *} instead of type @code{const
-char *}.  By default, G++ uses type @code{const char *} as required by
-the standard.  Even if you use @option{-fno-const-strings}, you cannot
-actually modify the value of a string constant.
-
-This option might be removed in a future release of G++.  For maximum
-portability, you should structure your code so that it works with
-string constants that have type @code{const char *}.
 
 @item -fno-elide-constructors
 @opindex fno-elide-constructors

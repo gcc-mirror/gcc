@@ -1,3 +1,7 @@
+2006-02-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* typeck.c (string_conv_p): Don't test for flag_const_strings.
+
 2006-02-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25979
