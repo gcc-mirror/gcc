@@ -2285,6 +2285,7 @@ expand_invoke (int opcode, int method_ref_index, int nargs ATTRIBUTE_UNUSED)
      compile invokespecial super.equals().  */
   if (! flag_verify_invocations
       && method
+      && ! TYPE_ARRAY_P (self_type)
       && self_type != DECL_CONTEXT (method))
     method = NULL_TREE;
 

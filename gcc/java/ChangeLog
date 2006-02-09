@@ -1,3 +1,9 @@
+2006-02-09  Andrew Haley  <aph@redhat.com>
+
+	PR java/26192
+	* expr.c (expand_invoke): Allow methods in arrays to be resolved
+	in their superclass.
+
 2006-02-07  Andrew Haley  <aph@redhat.com>
 
 	* expr.c (expand_invoke): (BC mode.)  If we find a method in a
