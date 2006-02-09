@@ -1487,6 +1487,10 @@ get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
 static inline bool
 var_can_have_subvars (tree v)
 {
+  /* Volatile variables should never have subvars.  */
+  if (TREE_THIS_VOLATILE (v))
+    return false;
+
   return (AGGREGATE_TYPE_P (TREE_TYPE (v)) &&
 	  TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE);
 }
