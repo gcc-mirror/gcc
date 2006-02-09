@@ -231,15 +231,6 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       if (IS_EMPTY_STMT (stmt) || TREE_CODE (stmt) == LABEL_EXPR)
 	continue;
 
-      /* Safely handle threading across loop backedges.  Only allowing
-	 a conditional at the target of the backedge is over conservative,
-	 but still allows us to capture the majority of the cases where
-	 we can thread across a loop backedge.  */
-      if ((e->flags & EDGE_DFS_BACK) != 0
-	  && TREE_CODE (stmt) != COND_EXPR
-	  && TREE_CODE (stmt) != SWITCH_EXPR)
-	return NULL;
-
       /* If the statement has volatile operands, then we assume we
 	 can not thread through this block.  This is overly
 	 conservative in some ways.  */
@@ -496,6 +487,27 @@ thread_across_edge (tree dummy_cond,
 {
   tree stmt;
 
+  /* If E is a backedge, then we want to verify that the COND_EXPR,
+     SWITCH_EXPR or GOTO_EXPR at the end of e->dest is not affected
+     by any statements in e->dest.  If it is affected, then it is not
+     safe to thread this edge.  */
+  if (e->flags & EDGE_DFS_BACK)
+    {
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      tree last = bsi_stmt (bsi_last (e->dest));
+
+      FOR_EACH_SSA_USE_OPERAND (use_p, last, iter, SSA_OP_USE | SSA_OP_VUSE)
+	{
+	  tree use = USE_FROM_PTR (use_p);
+
+          if (TREE_CODE (use) == SSA_NAME
+	      && TREE_CODE (SSA_NAME_DEF_STMT (use)) != PHI_NODE
+	      && bb_for_stmt (SSA_NAME_DEF_STMT (use)) == e->dest)
+	    goto fail;
+	}
+    }
+     
   stmt_count = 0;
 
   /* PHIs create temporary equivalences.  */

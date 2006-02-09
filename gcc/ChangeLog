@@ -1,5 +1,12 @@
 2006-02-08  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/21417
+	* tree-ssa-threadedge.c (thread_across_edge): Reject threading
+	across a backedge if the control statement at the end of the
+	block is data dependent on other statements in the same block.
+	(record_temporary_equivalences_from_stmts): Remove over-conservative
+	test for threading across backedges.
+
 	* tree-ssa-dce.c (remove_dead_statement): When removing a dead
 	control statement, handle all three special cases in the same
 	manner as they all have the same desired solution.  No longer
