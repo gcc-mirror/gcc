@@ -1,3 +1,8 @@
+2006-02-09  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 26180
+	* gcc.dg/tree-ssa/pr26180.c: New test.
+
 2005-02-08  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23815

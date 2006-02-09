@@ -1,3 +1,10 @@
+2006-02-09  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 26180
+	* tree-vrp.c (vrp_int_const_binop): Detect overflow when
+	multiplying unsigned values.
+	Tidy comments.
+
 2006-02-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (tls_call_delay): Fix oversight.
