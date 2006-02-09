@@ -121,12 +121,6 @@ struct version_info
   bool preserve_biv;	/* For the original biv, whether to preserve it.  */
 };
 
-/* Information attached to loop.  */
-struct loop_data
-{
-  unsigned regs_used;	/* Number of registers used.  */
-};
-
 /* Types of uses.  */
 enum use_type
 {
@@ -208,6 +202,9 @@ struct ivopts_data
 {
   /* The currently optimized loop.  */
   struct loop *current_loop;
+
+  /* Number of registers used in it.  */
+  unsigned regs_used;
 
   /* Numbers of iterations for all exits of the current loop.  */
   htab_t niters;
@@ -345,14 +342,6 @@ static inline struct iv_cand *
 iv_cand (struct ivopts_data *data, unsigned i)
 {
   return VEC_index (iv_cand_p, data->iv_candidates, i);
-}
-
-/* The data for LOOP.  */
-
-static inline struct loop_data *
-loop_data (struct loop *loop)
-{
-  return loop->aux;
 }
 
 /* The single loop exit if it dominates the latch, NULL otherwise.  */
@@ -736,24 +725,17 @@ niter_for_single_dom_exit (struct ivopts_data *data)
 }
 
 /* Initializes data structures used by the iv optimization pass, stored
-   in DATA.  LOOPS is the loop tree.  */
+   in DATA.  */
 
 static void
-tree_ssa_iv_optimize_init (struct loops *loops, struct ivopts_data *data)
+tree_ssa_iv_optimize_init (struct ivopts_data *data)
 {
-  unsigned i;
-
   data->version_info_size = 2 * num_ssa_names;
   data->version_info = XCNEWVEC (struct version_info, data->version_info_size);
   data->relevant = BITMAP_ALLOC (NULL);
   data->important_candidates = BITMAP_ALLOC (NULL);
   data->max_inv_id = 0;
   data->niters = htab_create (10, nfe_hash, nfe_eq, free);
-
-  for (i = 1; i < loops->num; i++)
-    if (loops->parray[i])
-      loops->parray[i]->aux = xcalloc (1, sizeof (struct loop_data));
-
   data->iv_uses = VEC_alloc (iv_use_p, heap, 20);
   data->iv_candidates = VEC_alloc (iv_cand_p, heap, 20);
   decl_rtl_to_reset = VEC_alloc (tree, heap, 20);
@@ -4227,9 +4209,7 @@ if (dump_file && (dump_flags & TDF_DETAILS))
 static unsigned
 ivopts_global_cost_for_size (struct ivopts_data *data, unsigned size)
 {
-  return global_cost_for_size (size,
-			       loop_data (data->current_loop)->regs_used,
-			       n_iv_uses (data));
+  return global_cost_for_size (size, data->regs_used, n_iv_uses (data));
 }
 
 /* For each size of the induction variable set determine the penalty.  */
@@ -4293,7 +4273,7 @@ determine_set_costs (struct ivopts_data *data)
 	n++;
     }
 
-  loop_data (loop)->regs_used = n;
+  data->regs_used = n;
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  regs_used %d\n", n);
 
@@ -5718,17 +5698,8 @@ free_loop_data (struct ivopts_data *data)
    loop tree.  */
 
 static void
-tree_ssa_iv_optimize_finalize (struct loops *loops, struct ivopts_data *data)
+tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
 {
-  unsigned i;
-
-  for (i = 1; i < loops->num; i++)
-    if (loops->parray[i])
-      {
-	free (loops->parray[i]->aux);
-	loops->parray[i]->aux = NULL;
-      }
-
   free_loop_data (data);
   free (data->version_info);
   BITMAP_FREE (data->relevant);
@@ -5820,7 +5791,7 @@ tree_ssa_iv_optimize (struct loops *loops)
   struct loop *loop;
   struct ivopts_data data;
 
-  tree_ssa_iv_optimize_init (loops, &data);
+  tree_ssa_iv_optimize_init (&data);
 
   /* Optimize the loops starting with the innermost ones.  */
   loop = loops->tree_root;
@@ -5845,5 +5816,5 @@ tree_ssa_iv_optimize (struct loops *loops)
 	loop = loop->outer;
     }
 
-  tree_ssa_iv_optimize_finalize (loops, &data);
+  tree_ssa_iv_optimize_finalize (&data);
 }
