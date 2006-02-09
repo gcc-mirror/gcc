@@ -1,5 +1,10 @@
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/26134
+	* gcc.dg/tree-ssa/complex-3.c: New test.
+
+2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* gcc.c-torture/compile/volatile-1.c: New test.
 
 2006-02-09  Diego Novillo  <dnovillo@redhat.com>
