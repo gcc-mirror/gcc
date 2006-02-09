@@ -46,6 +46,7 @@ proc gcc_target_object_format { } {
         close $open_file
         
         ${tool}_target_compile objfmtst.c objfmtst.o object ""
+	file delete objfmtst.c       
         
 	catch {
           set output [exec $objdump_name --file-headers objfmtst.o ]

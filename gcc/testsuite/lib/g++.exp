@@ -1,5 +1,5 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002, 2003, 2004
-# Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002, 2003,
+# 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -100,11 +100,15 @@ proc g++_link_flags { paths } {
     global srcdir
     global ld_library_path
     global GXX_UNDER_TEST
+    global shlib_ext
 
     set gccpath ${paths}
     set libio_dir ""
     set flags ""
     set ld_library_path "."
+
+    set shlib_ext [get_shlib_extension]
+    verbose "shared lib extension: $shlib_ext"
 
     if { $gccpath != "" } {
       if [file exists "${gccpath}/lib/libstdc++.a"] {
@@ -122,6 +126,12 @@ proc g++_link_flags { paths } {
           append flags " -L${gccpath}/libstdc++-v3/src/.libs "
           append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
+      # Look for libstdc++.${shlib_ext}.
+      if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] {
+	  append flags " -L${gccpath}/libstdc++-v3/src/.libs "
+	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+      }
+
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags "-L${gccpath}/libiberty "
       }

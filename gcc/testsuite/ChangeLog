@@ -1,3 +1,98 @@
+2006-02-09  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2005-12-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* lib/gfortran-dg.exp: Remove trailing whitespace.
+
+	2005-12-14  David Billinghurst  (David.Billinghurst@riotinto.com)
+
+	* lib/fortran-torture.exp: Catch remaining uses of
+	remote_file build delete.
+
+	2005-12-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (cleanup-dump): Remove options from test name.
+
+	2005-11-30  Uros Bizjak  <uros@kss-loka.si>
+
+	* lib/gcov.exp (clean-gcov): Also remove $base.h.gcov files.
+
+	2005-11-11  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* lib/target-libpath.exp (get_shlib_extension): New proc.
+	* lib/g++.exp (g++_link_flags): Add flags in case of shared only build.
+	* lib/gfortran.exp (gfortran_link_flags): Likewise.
+	* lib/objc.exp (objc_target_compile): Likewise.
+	* lib/obj-c++.exp (obj-c++_link_flags): Likewise. Fix multilib libgcc
+	detection.
+
+	2005-09-13  Josh Conner  <jconner@apple.com>
+
+	* lib/gcc-dg.exp: (cleanup-dump): New procedure.
+	(cleanup-rtl-dump, cleanup-tree-dump, cleanup-ipa-dump): Use it.
+	* lib/scandump.exp: New file.
+	* lib/scantree.exp: Use it.
+
+	2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* lib/objc.exp (objc_target_compile): Check for -fgnu-runtime
+	in ${options} instead of [target_info name].
+
+	2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	part of PR testsuite/23348
+	* lib/objc-torture.exp: Add -fgnu-runtime and/or -fnext-runtime to each
+	of the torture options.
+
+	2005-07-25  Adam Nemet  <anemet@lnxw.com>
+
+	* lib/profopt.exp (profopt-execute): Check for profiling data
+	files on the target.
+
+	2005-06-07  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	PR testsuite/21945
+	* lib/gcc-dg.exp (gcc-dg-test-1): Catch error if file can't be deleted.
+
+	2005-05-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/profopt.exp (dg-final-generate, dg-final-use,
+	profopt-final-code, profopt-get-options): New.
+	(profopt-execute): Process test directives.
+
+	2005-05-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (cleanup-coverage-files, cleanup-repo-files,
+	cleanup-rtl-dump, cleanup-tree-dump, cleanup-saved-temps): Update
+	comments.
+
+	2005-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/wrapper.exp (${tool}_maybe_build_wrapper): Don't unset gluefile.
+
+	2005-03-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/file-format.exp: Remove temporary file.
+	* g++.dg/special/ecos.exp: Ditto.
+
+	2005-03-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/profopt.exp: Treat prof_ext as a list.
+	* gcc.misc-tests/bprob.exp: Ditto.
+	* g++.dg/bprob/bprob.exp: Ditto.
+
+	2005-03-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (remove-build-file): New.
+	(cleanup-coverage-files, cleanup-repo-files, cleanup-rtl-dump,
+	cleanup-tree-dump, cleanup-saved-temps): New.
+
+	2005-03-08  Ben Ellison  <bje@au1.ibm.com>
+
+	* lib/gcc.exp: Syntax cleanup.
+	* lib/treelang.exp: Likewise.
+
 2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26071

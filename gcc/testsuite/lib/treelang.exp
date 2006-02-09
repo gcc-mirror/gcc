@@ -139,7 +139,7 @@ proc treelang_target_compile { source dest type options } {
     # TOOL_OPTIONS must come first, so that it doesn't override testcase
     # specific options.
     if [info exists TOOL_OPTIONS] {
-	set options [concat "additional_flags=$TOOL_OPTIONS" $options]
+	set options [concat "{additional_flags=$TOOL_OPTIONS}" $options]
     }
 
     # If we have built libtreelang along with the compiler (which usually

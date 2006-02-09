@@ -122,7 +122,7 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 	    set output_file "./[file rootname [file tail $prog]].exe"
 	    # This is the only place where we care if an executable was
 	    # created or not.  If it was, dg.exp will try to run it.
-	    remote_file build delete $output_file
+	    catch { remote_file build delete $output_file }
 	}
 	default {
 	    perror "$do_what: not a valid dg-do keyword"
@@ -293,6 +293,112 @@ proc dg-prune-output { args } {
     }
 
     lappend additional_prunes [lindex $args 1]
+}
+
+# Remove files matching the pattern from the build machine.
+proc remove-build-file { pat } {
+    verbose "remove-build-file `$pat'" 2
+    set file_list "[glob -nocomplain $pat]"
+    verbose "remove-build-file `$file_list'" 2
+    foreach output_file $file_list {
+	remote_file build delete $output_file
+    }
+}
+
+# Remove compiler-generated coverage files for the current test.
+proc cleanup-coverage-files { } {
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file rootname [file tail $testcase]].gc??"
+
+    # Clean up coverage files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file rootname [file tail $srcfile]].gc??"
+	}
+    }
+}
+
+# Remove compiler-generated files from -repo for the current test.
+proc cleanup-repo-files { } {
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file rootname [file tail $testcase]].o"
+    remove-build-file "[file rootname [file tail $testcase]].rpo"
+
+    # Clean up files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file rootname [file tail $srcfile]].o"
+	    remove-build-file "[file rootname [file tail $srcfile]].rpo"
+	}
+    }
+}
+
+# Remove compiler-generated RTL dump files for the current test.
+#
+# SUFFIX is the filename suffix pattern.
+proc cleanup-rtl-dump { suffix } {
+  cleanup-dump "\[0-9\]\[0-9\].$suffix"
+}
+
+# Remove a specific tree dump file for the current test.
+#
+# SUFFIX is the tree dump file suffix pattern.
+proc cleanup-tree-dump { suffix } {
+  cleanup-dump "t\[0-9\]\[0-9\].$suffix"
+}
+
+# Remove a specific ipa dump file for the current test.
+#
+# SUFFIX is the ipa dump file suffix pattern.
+proc cleanup-ipa-dump { suffix } {
+  cleanup-dump "i\[0-9\]\[0-9\].$suffix"
+}
+
+# Remove all dump files with the provided suffix.
+proc cleanup-dump { suffix } {
+    # This assumes that we are three frames down from dg-test or some other
+    # proc that stores the filename of the testcase in a local variable
+    # "name".  A cleaner solution would require a new DejaGnu release.
+    upvar 3 name testcase
+    # The name might include a list of options; extract the file name.
+    set src [file tail [lindex $testcase 0]]
+    remove-build-file "[file tail $src].$suffix"
+
+    # Clean up dump files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file tail $srcfile].$suffix"
+	}
+    }
+}
+
+# Remove files kept by --save-temps for the current test.
+#
+# Currently this is only .i files, but more can be added if there are
+# tests generating them.
+proc cleanup-saved-temps { } {
+    global additional_sources
+
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file rootname [file tail $testcase]].ii"
+    remove-build-file "[file rootname [file tail $testcase]].i"
+
+    # Clean up saved temp files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+            remove-build-file "[file rootname [file tail $srcfile]].ii"
+            remove-build-file "[file rootname [file tail $srcfile]].i"
+	}
+    }
 }
 
 # We need to make sure that additional_* are cleared out after every

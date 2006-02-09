@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,16 +76,23 @@ proc gfortran_link_flags { paths } {
     global srcdir
     global ld_library_path
     global GFORTRAN_UNDER_TEST
+    global shlib_ext
 
     set gccpath ${paths}
     set libio_dir ""
     set flags ""
     set ld_library_path "."
+    set shlib_ext [get_shlib_extension]
+    verbose "shared lib extension: $shlib_ext"
 
     if { $gccpath != "" } {
       if [file exists "${gccpath}/libgfortran/.libs/libgfortran.a"] {
           append flags "-L${gccpath}/libgfortran/.libs "
           append ld_library_path ":${gccpath}/libgfortran/.libs"
+      }
+      if [file exists "${gccpath}/libgfortran/.libs/libgfortran.${shlib_ext}"] {
+	  append flags "-L${gccpath}/libgfortran/.libs "
+	  append ld_library_path ":${gccpath}/libgfortran/.libs"
       }
       if [file exists "${gccpath}/libgfortran/libgforbegin.a"] {
           append flags "-L${gccpath}/libgfortran "
@@ -189,6 +196,5 @@ proc gfortran_target_compile { source dest type options } {
 
     set options [concat "$ALWAYS_GFORTRANFLAGS" $options]
     set options [dg-additional-files-options $options $source]
-
     return [target_compile $source $dest $type $options]
 }

@@ -29,6 +29,7 @@ load_lib g++-dg.exp
 
 set comp_output [g++_target_compile \
 		"$srcdir/$subdir/initp1.C" "initp1.S" assembly ""]
+remove-build-file "initp1.S"
 if { [string match "*init_priority*" $comp_output] } {
   return 0
 }

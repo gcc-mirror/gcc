@@ -27,7 +27,8 @@ global GCOV
 proc clean-gcov { testcase } {
     set basename [file tail $testcase]
     set base [file rootname $basename]
-    remote_file host delete $base.gcno $base.gcda $basename.gcov
+    remote_file host delete $base.gcno $base.gcda \
+	$basename.gcov $base.h.gcov
 }
 
 #
