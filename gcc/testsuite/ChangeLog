@@ -1,5 +1,10 @@
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/25251
+	* gfortran.dg/assign_7.f: New test.
+
+2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* gcc.c-torture/compile/volatile-1.c: New test.
 
 2006-02-09  Diego Novillo  <dnovillo@redhat.com>

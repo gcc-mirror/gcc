@@ -1,5 +1,11 @@
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/25251
+	* tree-cfg.c (cleanup_dead_labels): Also don't remove
+	forced labels.
+
+2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* tree-flow-inline.h (var_can_have_subvars): 
 	Volatile variables should not have subvariables.
 
