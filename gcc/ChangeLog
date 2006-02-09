@@ -1,3 +1,7 @@
+2006-02-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (FUNCTION_VALUE): Don't handle CHAR_TYPE.
+
 2006-02-09  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/26141
