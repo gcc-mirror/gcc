@@ -1,3 +1,8 @@
+2006-02-09  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload1.c (emit_input_reload_insns): Delete code that tries to
+	inherit using find_equiv_reg.
+
 2006-02-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-common.h (flag_const_strings): Don't declare.

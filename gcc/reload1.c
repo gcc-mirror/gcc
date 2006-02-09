@@ -1,6 +1,7 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -6327,71 +6328,11 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
   if (mode == VOIDmode)
     mode = rl->inmode;
 
-  /* If we need a secondary register for this operation, see if
-     the value is already in a register in that class.  Don't
-     do this if the secondary register will be used as a scratch
-     register.  */
-
-  if (rl->secondary_in_reload >= 0
-      && rl->secondary_in_icode == CODE_FOR_nothing
-      && optimize)
-    oldequiv
-      = find_equiv_reg (old, insn,
-			rld[rl->secondary_in_reload].class,
-			-1, NULL, 0, mode);
-
-  /* If reloading from memory, see if there is a register
-     that already holds the same value.  If so, reload from there.
-     We can pass 0 as the reload_reg_p argument because
-     any other reload has either already been emitted,
-     in which case find_equiv_reg will see the reload-insn,
-     or has yet to be emitted, in which case it doesn't matter
-     because we will use this equiv reg right away.  */
-
-  if (oldequiv == 0 && optimize
-      && (MEM_P (old)
-	  || (REG_P (old)
-	      && REGNO (old) >= FIRST_PSEUDO_REGISTER
-	      && reg_renumber[REGNO (old)] < 0)))
-    oldequiv = find_equiv_reg (old, insn, ALL_REGS, -1, NULL, 0, mode);
-
-  if (oldequiv)
-    {
-      unsigned int regno = true_regnum (oldequiv);
-
-      /* Don't use OLDEQUIV if any other reload changes it at an
-	 earlier stage of this insn or at this stage.  */
-      if (! free_for_value_p (regno, rl->mode, rl->opnum, rl->when_needed,
-			      rl->in, const0_rtx, j, 0))
-	oldequiv = 0;
-
-      /* If it is no cheaper to copy from OLDEQUIV into the
-	 reload register than it would be to move from memory,
-	 don't use it. Likewise, if we need a secondary register
-	 or memory.  */
-
-      if (oldequiv != 0
-	  && (((enum reg_class) REGNO_REG_CLASS (regno) != rl->class
-	       && (REGISTER_MOVE_COST (mode, REGNO_REG_CLASS (regno),
-				       rl->class)
-		   >= MEMORY_MOVE_COST (mode, rl->class, 1)))
-	      || (secondary_reload_class (1, rl->class, mode, oldequiv)
-		  != NO_REGS)
-#ifdef SECONDARY_MEMORY_NEEDED
-	      || SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (regno),
-					  rl->class,
-					  mode)
-#endif
-	      ))
-	oldequiv = 0;
-    }
-
   /* delete_output_reload is only invoked properly if old contains
      the original pseudo register.  Since this is replaced with a
      hard reg when RELOAD_OVERRIDE_IN is set, see if we can
      find the pseudo in RELOAD_IN_REG.  */
-  if (oldequiv == 0
-      && reload_override_in[j]
+  if (reload_override_in[j]
       && REG_P (rl->in_reg))
     {
       oldequiv = old;
