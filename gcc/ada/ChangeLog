@@ -1,3 +1,7 @@
+2006-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (check-gnat): Run run_acats with $(SHELL).
+
 2006-02-06  Roger Sayle  <roger@eyesopen.com>
 
 	* decl.c (gnat_substitute_in_type): Don't handle CHAR_TYPE.
