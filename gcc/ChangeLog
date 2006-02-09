@@ -1,5 +1,11 @@
 2006-02-09  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR rtl-optimization/24762
+	* df-scan.c (df_bb_refs_record): Record correct registers defined on
+	eh edges.
+
+2006-02-09  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* tree-ssa-loop-ivopts.c (struct loop_data, loop_data): Removed.
 	(struct ivopts_data): Add regs_used field.
 	(tree_ssa_iv_optimize_init): Do not allocate aux fields for loops.
