@@ -1,6 +1,6 @@
 // Bitset reference invalidation tests
 
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,7 @@
 #include <debug/bitset>
 #include <testsuite_hooks.h>
 
-using debug::bitset;
+using __gnu_debug::bitset;
 
 bool test = true;
 

@@ -1,6 +1,6 @@
 // List iterator invalidation tests
 
-// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-using debug::list;
+using __gnu_debug::list;
 using std::advance;
 
 bool test = true;
