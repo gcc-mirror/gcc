@@ -552,7 +552,7 @@ _Jv_Linker::search_method_in_class (jclass cls, jclass klass,
 #define INITIAL_IOFFSETS_LEN 4
 #define INITIAL_IFACES_LEN 4
 
-static _Jv_IDispatchTable null_idt = { {SHRT_MAX, 0, NULL} };
+static _Jv_IDispatchTable null_idt = {SHRT_MAX, 0, {}};
 
 // Generate tables for constant-time assignment testing and interface
 // method lookup. This implements the technique described by Per Bothner
@@ -611,9 +611,6 @@ _Jv_Linker::prepare_constant_time_tables (jclass klass)
       return;
     }
 
-  klass->idt = 
-    (_Jv_IDispatchTable *) _Jv_AllocRawObj (sizeof (_Jv_IDispatchTable));
-
   _Jv_ifaces ifaces;
   ifaces.count = 0;
   ifaces.len = INITIAL_IFACES_LEN;
@@ -625,9 +622,10 @@ _Jv_Linker::prepare_constant_time_tables (jclass klass)
     {
       // The classes pointed to by the itable will always be reachable
       // via other paths.
-      klass->idt->cls.itable = 
-	(void **) _Jv_AllocBytes (itable_size * sizeof (void *));
-      klass->idt->cls.itable_length = itable_size;
+      int idt_bytes = sizeof (_Jv_IDispatchTable) + (itable_size 
+						     * sizeof (void *));
+      klass->idt = (_Jv_IDispatchTable *) _Jv_AllocBytes (idt_bytes);
+      klass->idt->itable_length = itable_size;
 
       jshort *itable_offsets = 
 	(jshort *) _Jv_Malloc (ifaces.count * sizeof (jshort));
@@ -639,18 +637,17 @@ _Jv_Linker::prepare_constant_time_tables (jclass klass)
 
       for (int i = 0; i < ifaces.count; i++)
 	{
-	  ifaces.list[i]->idt->iface.ioffsets[cls_iindex] =
-	    itable_offsets[i];
+	  ifaces.list[i]->ioffsets[cls_iindex] = itable_offsets[i];
 	}
 
-      klass->idt->cls.iindex = cls_iindex;	    
+      klass->idt->iindex = cls_iindex;	    
 
       _Jv_Free (ifaces.list);
       _Jv_Free (itable_offsets);
     }
   else 
     {
-      klass->idt->cls.iindex = SHRT_MAX;
+      klass->idt->iindex = SHRT_MAX;
     }
 }
 
@@ -713,7 +710,7 @@ void
 _Jv_Linker::generate_itable (jclass klass, _Jv_ifaces *ifaces,
 			       jshort *itable_offsets)
 {
-  void **itable = klass->idt->cls.itable;
+  void **itable = klass->idt->itable;
   jshort itable_pos = 0;
 
   for (int i = 0; i < ifaces->count; i++)
@@ -722,12 +719,9 @@ _Jv_Linker::generate_itable (jclass klass, _Jv_ifaces *ifaces,
       itable_offsets[i] = itable_pos;
       itable_pos = append_partial_itable (klass, iface, itable, itable_pos);
 
-      /* Create interface dispatch table for iface */
-      if (iface->idt == NULL)
+      /* Create ioffsets table for iface */
+      if (iface->ioffsets == NULL)
 	{
-	  iface->idt
-	    = (_Jv_IDispatchTable *) _Jv_AllocRawObj (sizeof (_Jv_IDispatchTable));
-
 	  // The first element of ioffsets is its length (itself included).
 	  jshort *ioffsets = (jshort *) _Jv_AllocBytes (INITIAL_IOFFSETS_LEN
 							* sizeof (jshort));
@@ -735,7 +729,7 @@ _Jv_Linker::generate_itable (jclass klass, _Jv_ifaces *ifaces,
 	  for (int i = 1; i < INITIAL_IOFFSETS_LEN; i++)
 	    ioffsets[i] = -1;
 
-	  iface->idt->iface.ioffsets = ioffsets;	    
+	  iface->ioffsets = ioffsets;
 	}
     }
 }
@@ -881,8 +875,8 @@ static bool iindex_mutex_initialized = false;
 // Interface Dispatch Table, we just compare the first element to see if it 
 // matches the desired interface. So how can we find the correct offset?  
 // Our solution is to keep a vector of candiate offsets in each interface 
-// (idt->iface.ioffsets), and in each class we have an index 
-// (idt->cls.iindex) used to select the correct offset from ioffsets.
+// (ioffsets), and in each class we have an index (idt->iindex) used to
+// select the correct offset from ioffsets.
 //
 // Calculate and return iindex for a new class. 
 // ifaces is a vector of num interfaces that the class implements.
@@ -913,9 +907,9 @@ _Jv_Linker::find_iindex (jclass *ifaces, jshort *offsets, jshort num)
         {
 	  if (j >= num)
 	    goto found;
-	  if (i >= ifaces[j]->idt->iface.ioffsets[0])
+	  if (i >= ifaces[j]->ioffsets[0])
 	    continue;
-	  int ioffset = ifaces[j]->idt->iface.ioffsets[i];
+	  int ioffset = ifaces[j]->ioffsets[i];
 	  /* We can potentially share this position with another class. */
 	  if (ioffset >= 0 && ioffset != offsets[j])
 	    break; /* Nope. Try next i. */	  
@@ -924,14 +918,15 @@ _Jv_Linker::find_iindex (jclass *ifaces, jshort *offsets, jshort num)
   found:
   for (j = 0; j < num; j++)
     {
-      int len = ifaces[j]->idt->iface.ioffsets[0];
+      int len = ifaces[j]->ioffsets[0];
       if (i >= len) 
 	{
 	  // Resize ioffsets.
 	  int newlen = 2 * len;
 	  if (i >= newlen)
 	    newlen = i + 3;
-	  jshort *old_ioffsets = ifaces[j]->idt->iface.ioffsets;
+
+	  jshort *old_ioffsets = ifaces[j]->ioffsets;
 	  jshort *new_ioffsets = (jshort *) _Jv_AllocBytes (newlen
 							    * sizeof(jshort));
 	  memcpy (&new_ioffsets[1], &old_ioffsets[1],
@@ -941,9 +936,9 @@ _Jv_Linker::find_iindex (jclass *ifaces, jshort *offsets, jshort num)
 	  while (len < newlen)
 	    new_ioffsets[len++] = -1;
 	  
-	  ifaces[j]->idt->iface.ioffsets = new_ioffsets;
+	  ifaces[j]->ioffsets = new_ioffsets;
 	}
-      ifaces[j]->idt->iface.ioffsets[i] = offsets[j];
+      ifaces[j]->ioffsets[i] = offsets[j];
     }
 
   _Jv_MutexUnlock (&iindex_mutex);

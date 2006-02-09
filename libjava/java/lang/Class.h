@@ -120,23 +120,14 @@ struct _Jv_Method
   { return this + 1; }
 };
 
-// Interface Dispatch Tables 
-union _Jv_IDispatchTable
+// The table used to resolve interface calls.
+struct _Jv_IDispatchTable
 {
-  struct
-  {
-    // Index into interface's ioffsets.
-    jshort iindex;
-    jshort itable_length;
-    // Class Interface dispatch table.
-    void **itable;
-  } cls;
-
-  struct
-  {
-    // Offsets into implementation class itables.
-    jshort *ioffsets;
-  } iface;
+  // Index into interface's ioffsets.
+  jshort iindex;
+  jshort itable_length;
+  // Class Interface dispatch table.
+  void *itable[0];
 };
 
 // Used by _Jv_Linker::get_interfaces ()
@@ -600,8 +591,13 @@ private:
   jshort depth;
   // Vector of this class's superclasses, ordered by decreasing depth.
   jclass *ancestors;
-  // Interface Dispatch Table.
-  _Jv_IDispatchTable *idt;
+  // In a regular class, this field points to the Class Interface Dispatch 
+  // Table. In an interface, it points to the ioffsets table.
+  union 
+  {
+    _Jv_IDispatchTable *idt;
+    jshort *ioffsets;
+  };
   // Pointer to the class that represents an array of this class.
   jclass arrayclass;
   // Security Domain to which this class belongs (or null).
