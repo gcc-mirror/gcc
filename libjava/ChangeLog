@@ -1,3 +1,17 @@
+2006-02-09  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/lang/Class.h (_Jv_IDispatchTable): Make it a struct. Put 
+	'itable' inline, instead of as a pointer.
+	(java::lang::Class): Put 'idt' in anonymous union with 'ioffsets'.
+	* link.cc (null_idt): Update definition.
+	(_Jv_Linker::prepare_constant_time_tables): Allocate klass->idt
+	as a single struct. Use _Jv_AllocBytes, not _Jv_AllocRawObj.
+	(_Jv_Linker::generate_itable): Update to use 'ioffsets'.
+	(_Jv_Linker::find_iindex): Likewise. Update comment.
+	* java/lang/natClass.cc	(_Jv_LookupInterfaceMethodIdx): Update for
+	_Jv_IDispatchTable change.
+	(_Jv_IsAssignableFrom): Likewise.
+
 2006-02-08  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/25187:

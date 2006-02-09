@@ -985,8 +985,8 @@ void *
 _Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, int method_idx)
 {
   _Jv_IDispatchTable *cldt = klass->idt;
-  int idx = iface->idt->iface.ioffsets[cldt->cls.iindex] + method_idx;
-  return cldt->cls.itable[idx];
+  int idx = iface->ioffsets[cldt->iindex] + method_idx;
+  return cldt->itable[idx];
 }
 
 jboolean
@@ -1013,16 +1013,15 @@ _Jv_IsAssignableFrom (jclass source, jclass target)
         return _Jv_InterfaceAssignableFrom (source, target);
 
       _Jv_IDispatchTable *cl_idt = source->idt;
-      _Jv_IDispatchTable *if_idt = target->idt;
 
-      if (__builtin_expect ((if_idt == NULL), false))
+      if (__builtin_expect ((target->ioffsets == NULL), false))
 	return false; // No class implementing TARGET has been loaded.    
-      jshort cl_iindex = cl_idt->cls.iindex;
-      if (cl_iindex < if_idt->iface.ioffsets[0])
+      jshort cl_iindex = cl_idt->iindex;
+      if (cl_iindex < target->ioffsets[0])
         {
-	  jshort offset = if_idt->iface.ioffsets[cl_iindex];
-	  if (offset != -1 && offset < cl_idt->cls.itable_length
-	      && cl_idt->cls.itable[offset] == target)
+	  jshort offset = target->ioffsets[cl_iindex];
+	  if (offset != -1 && offset < cl_idt->itable_length
+	      && cl_idt->itable[offset] == target)
 	    return true;
 	}
       return false;
