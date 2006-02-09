@@ -1,3 +1,7 @@
+2006-02-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (tls_call_delay): Fix oversight.
+
 2006-02-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25979
