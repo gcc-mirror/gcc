@@ -22,6 +22,8 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
+#include <java/lang/Thread.h>
+#include <gnu/gcj/RawData.h>
 
 // Define this to get the direct-threaded interpreter.  If undefined,
 // we revert to a basic bytecode interpreter.  The former is faster
@@ -290,22 +292,22 @@ public:
 struct _Jv_InterpFrame
 {
   _Jv_InterpMethod *self;
-  _Jv_InterpFrame **ptr;
+  java::lang::Thread *thread;
   _Jv_InterpFrame *next;
   pc_t pc;
 
-  _Jv_InterpFrame (_Jv_InterpMethod *s, _Jv_InterpFrame **n)
+  _Jv_InterpFrame (_Jv_InterpMethod *s, java::lang::Thread *thr)
   {
     self = s;
-    ptr = n;
-    next = *n;
-    *n = this;
+    thread = thr;
+    next = (_Jv_InterpFrame *) thr->interp_frame;
+    thr->interp_frame = (gnu::gcj::RawData *) this;
     pc = NULL;
   }
 
   ~_Jv_InterpFrame ()
   {
-    *ptr = next;
+    thread->interp_frame = (gnu::gcj::RawData *) next;
   }
 };
 

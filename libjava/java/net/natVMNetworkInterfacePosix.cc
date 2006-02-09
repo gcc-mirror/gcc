@@ -75,7 +75,7 @@ java::net::VMNetworkInterface::getInterfaces ()
       if (::ioctl (fd, SIOCGIFCONF, &if_data) < 0)
         throw new java::net::SocketException;
     }
-  while (if_data.ifc_len >= (sizeof (struct ifreq) * num_interfaces));
+  while (if_data.ifc_len >= (int) (sizeof (struct ifreq) * num_interfaces));
 
   // Get addresses of all interfaces.
   if_record = if_data.ifc_req;

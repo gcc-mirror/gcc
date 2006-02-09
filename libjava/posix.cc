@@ -98,7 +98,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
   SET ("file.separator", "/");
   SET ("path.separator", ":");
   SET ("line.separator", "\n");
-  char *tmpdir = ::getenv("TMPDIR");
+  const char *tmpdir = ::getenv("TMPDIR");
   if (! tmpdir)
     tmpdir = "/tmp";
   SET ("java.io.tmpdir", tmpdir);

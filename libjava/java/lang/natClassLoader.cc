@@ -458,7 +458,7 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
     = java::lang::Object::class$.vtable_method_count;
 
   // Stash the pointer to the element type.
-  array_class->methods = (_Jv_Method *) element;
+  array_class->element_type = element;
 
   // Register our interfaces.
   static jclass interfaces[] =

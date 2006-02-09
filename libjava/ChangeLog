@@ -1,5 +1,33 @@
 2006-02-08  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR libgcj/25187:
+	* gnu/gcj/io/natSimpleSHSStream.cc
+	(gnu::gcj::io::SimpleSHSStream::shsFinal): Remove bogus cast.
+	* interpret.cc (_Jv_InterpMethod::run): Simplify arguments to
+	_Jv_InterpFrame(). 
+	* boehm.cc: #undef some autoconf macros before including gc-config.h.
+	(_Jv_MarkObject): Don't mark the class, it is reachable via the vtable.
+	(_Jv_MarkArray): Likewise.
+	* java/lang/ref/natReference.cc (java::lang::ref::Reference::create):
+	Simplify _Jv_GCRegisterDisappearingLink() call.
+	* java/lang/Class.h (getComponentType): Use element_type.
+	(element_type): New field declaration, as a union with "methods".
+	* java/lang/natClassLoader.cc (_Jv_NewArrayClass): Use "element_type".
+	* java/net/natVMNetworkInterfacePosix.cc
+	(java::net::VMNetworkInterface::getInterfaces): Add "int" cast to
+	avoid sign comparison warning.	
+	* include/java-interp.h (_Jv_InterpFrame): Take thread as second
+	argument, not parent call frame.
+	* include/x86_64-signal.h (MAKE_THROW_FRAME): Use "gregs" directly,
+	without a cast.
+	(restore_rt): Declare with hidden visibility, not "static".
+	* posix.cc (_Jv_platform_initProperties): Make "tmpdir" a string
+	constant.
+	* jni.cc (_Jv_JNI_DestroyJavaVM): Use a union to avoid strict alias
+	warning.
+
+2006-02-08  Bryce McKinlay  <mckinlay@redhat.com>
+
 	PR libgcj/26113:
 	* link.cc (_Jv_Linker::print_class_loaded): Declare string constants
 	as "const char *".

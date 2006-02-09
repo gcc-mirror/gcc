@@ -807,8 +807,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
   // destructor so it cleans up automatically when the interpreter
   // returns.
   java::lang::Thread *thread = java::lang::Thread::currentThread();
-  _Jv_InterpFrame frame_desc (meth,
-			      (_Jv_InterpFrame **) &thread->interp_frame);
+  _Jv_InterpFrame frame_desc (meth, thread);
 
   _Jv_word stack[meth->max_stack];
   _Jv_word *sp = stack;
