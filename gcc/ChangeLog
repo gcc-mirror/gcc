@@ -1,3 +1,9 @@
+2006-02-09  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.md (tlobits_cbranch): New pattern.
+	* arm.h (arm_select_cc_mode): For thumb, only return CC_Nmode if
+	testing a single bit.
+
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/26179
