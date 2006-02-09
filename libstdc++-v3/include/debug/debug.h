@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005
+// Copyright (C) 2003, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,14 +39,24 @@
  *  standard library algorithms.
 */
 
-
 namespace std 
 { 
   namespace __gnu_debug_def { } 
   namespace __gnu_debug { using namespace __gnu_debug_def; } 
+  namespace debug = __gnu_debug;
 }
 
-namespace debug = std::__gnu_debug;
+namespace __gnu_cxx
+{ 
+  namespace __gnu_debug { };
+  namespace debug = __gnu_debug;
+}
+
+namespace __gnu_debug
+{
+  using namespace std::debug;
+  using namespace __gnu_cxx::debug;
+}
 
 #ifdef _GLIBCXX_DEBUG
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 // libstdc++/16813
 void test01()
 {
-  using debug::map;
+  using __gnu_debug::map;
   bool test __attribute__((unused)) = true;
 
   map<int, float> m1, m2;

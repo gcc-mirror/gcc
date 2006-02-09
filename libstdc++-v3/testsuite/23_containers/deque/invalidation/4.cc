@@ -1,6 +1,6 @@
 // Deque iterator invalidation tests
 
-// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,7 @@
 #include <debug/deque>
 #include <testsuite_hooks.h>
 
-using debug::deque;
+using __gnu_debug::deque;
 
 bool test = true;
 

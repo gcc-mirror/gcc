@@ -1,3 +1,44 @@
+2006-02-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/26142
+	* include/debug/debug.h: Move debug alias inside namespace std,
+	same with namespace __gnu_cxx. Add top-level __gnu_debug
+	namespace.	
+	* include/debug/hash_multimap.h: Nest within __gnu_cxx, not
+	std. Also, change nesting namespace name from __gnu_debug_def to
+	__gnu_debug.	
+	* include/debug/hash_map.h: Same.
+	* include/debug/hash_multiset.h: Same.
+	* include/debug/hash_set.h: Same.
+	* docs/html/debug.html: Same.
+	* testsuite/23_containers/vector/26412.cc: New.
+	* testsuite/23_containers/vector/invalidation/1.cc:  Correct
+	qualifications for debug namespace change.
+	* testsuite/23_containers/vector/invalidation/2.cc: Same.
+	* testsuite/23_containers/vector/invalidation/3.cc: Same.
+	* testsuite/23_containers/vector/invalidation/4.cc: Same.
+	* testsuite/23_containers/deque/invalidation/1.cc: Same.
+	* testsuite/23_containers/deque/invalidation/2.cc: Same.
+	* testsuite/23_containers/deque/invalidation/3.cc: Same.
+	* testsuite/23_containers/deque/invalidation/4.cc: Same.
+	* testsuite/23_containers/multiset/invalidation/1.cc: Same.
+	* testsuite/23_containers/multiset/invalidation/2.cc: Same.
+	* testsuite/23_containers/multimap/invalidation/1.cc: Same.
+	* testsuite/23_containers/multimap/invalidation/2.cc: Same.
+	* testsuite/23_containers/bitset/invalidation/1.cc: Same.
+	* testsuite/23_containers/bitset/cons/16020.cc: Same.
+	* testsuite/23_containers/bitset/operations/13838.cc: Same.
+	* testsuite/23_containers/list/invalidation/1.cc: Same.
+	* testsuite/23_containers/list/invalidation/2.cc: Same.
+	* testsuite/23_containers/list/invalidation/3.cc: Same.
+	* testsuite/23_containers/list/invalidation/4.cc: Same.
+	* testsuite/23_containers/set/invalidation/1.cc: Same.
+	* testsuite/23_containers/set/invalidation/2.cc: Same.
+	* testsuite/23_containers/map/invalidation/1.cc: Same.
+	* testsuite/23_containers/map/invalidation/2.cc: Same.
+	* testsuite/23_containers/map/modifiers/insert/16813.cc: Same.
+	* testsuite/21_strings/basic_string/2.cc: Same.
+
 2006-02-08  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/26133  (DR 241, [WP])

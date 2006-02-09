@@ -1,6 +1,6 @@
 // Debugging hash_map implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005
+// Copyright (C) 2003, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,9 +34,9 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
-namespace std
+namespace __gnu_cxx
 {
-namespace __gnu_debug_def
+namespace __gnu_debug
 {
   template<typename _Value, typename _Tp,
 	   typename _HashFcn  = __gnu_cxx::hash<_Value>,
@@ -267,7 +267,7 @@ namespace __gnu_debug_def
     swap(hash_map<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>& __x,
 	 hash_map<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>& __y)
     { __x.swap(__y); }
-} // namespace __gnu_debug_def
-} // namespace std
+} // namespace __gnu_debug
+} // namespace __gnu_cxx
 
 #endif
