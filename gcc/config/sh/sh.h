@@ -1802,7 +1802,6 @@ extern enum reg_class reg_class_from_letter[];
 	     && (TREE_CODE (VALTYPE) == INTEGER_TYPE			\
 		 || TREE_CODE (VALTYPE) == ENUMERAL_TYPE		\
 		 || TREE_CODE (VALTYPE) == BOOLEAN_TYPE			\
-		 || TREE_CODE (VALTYPE) == CHAR_TYPE			\
 		 || TREE_CODE (VALTYPE) == REAL_TYPE			\
 		 || TREE_CODE (VALTYPE) == OFFSET_TYPE))		\
              && sh_promote_prototypes (VALTYPE)				\
