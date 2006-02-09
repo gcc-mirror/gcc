@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-error "" "unrecognizable insn" { target sparc*-*-* } 0 } */
 
 extern void abort (void);
 extern void *memset (void *, int, __SIZE_TYPE__);
