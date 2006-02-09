@@ -1463,6 +1463,10 @@ get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
 static inline bool
 var_can_have_subvars (tree v)
 {
+  /* Volatile variables should never have subvars.  */
+  if (TREE_THIS_VOLATILE (v))
+    return false;
+
   /* Non decls or memory tags can never have subvars.  */
   if (!DECL_P (v) || MTAG_P (v))
     return false;
