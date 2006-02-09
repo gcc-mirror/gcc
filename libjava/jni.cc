@@ -2426,7 +2426,12 @@ _Jv_JNI_DestroyJavaVM (JavaVM *vm)
 {
   JvAssert (the_vm && vm == the_vm);
 
-  JNIEnv *env;
+  union
+  {
+    JNIEnv *env;
+    void *env_p;
+  };
+
   if (_Jv_ThreadCurrent () != NULL)
     {
       jstring main_name;
@@ -2440,8 +2445,7 @@ _Jv_JNI_DestroyJavaVM (JavaVM *vm)
 	  return JNI_ERR;
 	}
 
-      jint r = _Jv_JNI_AttachCurrentThread (vm, main_name,
-					    reinterpret_cast<void **> (&env),
+      jint r = _Jv_JNI_AttachCurrentThread (vm, main_name, &env_p,
 					    NULL, false);
       if (r < 0)
 	return r;

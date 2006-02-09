@@ -29,7 +29,7 @@ gnu::gcj::io::SimpleSHSStream::shsFinal (jbyteArray shs_info)
   ::shsFinal (info);
 
   jbyteArray buffer = JvNewByteArray (SHS_DIGESTSIZE);
-  memcpy (elements (buffer), (jbyte *)&info->digest, SHS_DIGESTSIZE);
+  memcpy (elements (buffer), &info->digest, SHS_DIGESTSIZE);
   return buffer;
 }
     

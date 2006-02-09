@@ -41,8 +41,7 @@ do									     \
      instruction:  the x86_64 exception handler expects			     \
      the PC to point to the instruction after a call. */		     \
   struct ucontext *_uc = (struct ucontext *)_p;				     \
-  volatile struct sigcontext *_sc = (struct sigcontext *) &_uc->uc_mcontext; \
-  _sc->rip += 2;							     \
+  _uc->uc_mcontext.gregs[REG_RIP] += 2;				     	     \
 }									     \
 while (0)
 
@@ -60,7 +59,8 @@ asm						\
 
 /* The return code for realtime-signals.  */
 RESTORE (restore_rt, __NR_rt_sigreturn)
-static void restore_rt (void) asm ("__restore_rt");
+void restore_rt (void) asm ("__restore_rt")
+  __attribute__ ((visibility ("hidden")));
 
 #define INIT_SEGV						\
 do								\

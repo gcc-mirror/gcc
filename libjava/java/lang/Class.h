@@ -368,7 +368,7 @@ public:
 
   inline jclass getComponentType (void)
     {
-      return isArray () ? (* (jclass *) &methods) : 0;
+      return isArray () ? element_type : 0;
     }
 
   jboolean isAssignableFrom (jclass cls);
@@ -554,7 +554,11 @@ private:
   _Jv_Constants constants;
   // Methods.  If this is an array class, then this field holds a
   // pointer to the element type.
-  _Jv_Method *methods;
+  union
+  {
+    _Jv_Method *methods;
+    jclass element_type;
+  };
   // Number of methods.  If this class is primitive, this holds the
   // character used to represent this type in a signature.
   jshort method_count;

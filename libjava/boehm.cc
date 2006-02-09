@@ -26,6 +26,12 @@ details.  */
 #undef TRUE
 #undef FALSE
 
+// We include two autoconf headers. Avoid multiple definition warnings.
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+
 extern "C"
 {
 #include <gc_config.h>
@@ -93,9 +99,6 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
     p = (GC_PTR) obj->sync_info;
     MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj);
 # endif
-  // Mark the object's class.
-  p = (GC_PTR) klass;
-  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj);
 
   if (__builtin_expect (klass == &java::lang::Class::class$, false))
     {
@@ -208,7 +211,6 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void *env)
   // we may need to round up the size.
   if (__builtin_expect (! dt || !(dt -> get_finalizer()), false))
     return mark_stack_ptr;
-  jclass klass = dt->clas;
   GC_PTR p;
 
   p = (GC_PTR) dt;
@@ -219,9 +221,6 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void *env)
     p = (GC_PTR) array->sync_info;
     MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, array);
 # endif
-  // Mark the object's class.
-  p = (GC_PTR) klass;
-  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, &(dt -> clas));
 
   for (int i = 0; i < JvGetArrayLength (array); ++i)
     {
