@@ -3462,7 +3462,7 @@ cris_md_asm_clobbers (tree outputs, tree inputs, tree in_clobbers)
 	 impossible constraints.  */
       if (strchr (TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t))),
 		  'h') != NULL
-	  || decl_overlaps_hard_reg_set_p (val, mof_set))
+	  || tree_overlaps_hard_reg_set (val, &mof_set) != NULL_TREE)
 	return clobbers;
     }
 
@@ -3472,7 +3472,7 @@ cris_md_asm_clobbers (tree outputs, tree inputs, tree in_clobbers)
 
       if (strchr (TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t))),
 		  'h') != NULL
-	  || decl_overlaps_hard_reg_set_p (val, mof_set))
+	  || tree_overlaps_hard_reg_set (val, &mof_set) != NULL_TREE)
 	return clobbers;
     }
 
