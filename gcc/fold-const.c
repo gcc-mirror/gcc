@@ -11721,8 +11721,32 @@ fold_indirect_ref_1 (tree type, tree op0)
 	    min_val = TYPE_MIN_VALUE (type_domain);
 	  return build4 (ARRAY_REF, type, op, min_val, NULL_TREE, NULL_TREE);
 	}
+      /* *(foo *)&complexfoo => __real__ complexfoo */
+      else if (TREE_CODE (optype) == COMPLEX_TYPE
+	       && type == TREE_TYPE (optype))
+	return fold_build1 (REALPART_EXPR, type, op);
     }
 
+  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
+  if (TREE_CODE (sub) == PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
+    {
+      tree op00 = TREE_OPERAND (sub, 0);
+      tree op01 = TREE_OPERAND (sub, 1);
+      tree op00type;
+
+      STRIP_NOPS (op00);
+      op00type = TREE_TYPE (op00);
+      if (TREE_CODE (op00) == ADDR_EXPR
+ 	  && TREE_CODE (TREE_TYPE (op00type)) == COMPLEX_TYPE
+	  && type == TREE_TYPE (TREE_TYPE (op00type)))
+	{
+	  tree size = TYPE_SIZE_UNIT (type);
+	  if (tree_int_cst_equal (size, op01))
+	    return fold_build1 (IMAGPART_EXPR, type, TREE_OPERAND (op00, 0));
+	}
+    }
+  
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
       && type == TREE_TYPE (TREE_TYPE (subtype)))
