@@ -385,9 +385,11 @@ build_java_array_type (tree element_type, HOST_WIDE_INT length)
     else
       strcpy (suffix, "[]");
     TYPE_NAME (t) 
+      = TYPE_STUB_DECL (t)
       = build_decl (TYPE_DECL,
 		    identifier_subst (el_name, "", '.', '.', suffix),
                              t);
+    TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (t)) = true;
   }
 
   set_java_signature (t, sig);
