@@ -469,10 +469,6 @@ fconserve-space
 C++ ObjC++
 Reduce the size of object files
 
-fconst-strings
-C++ ObjC++
-Make string literals \"const char[]\" not \"char[]\"
-
 fconstant-string-class=
 ObjC ObjC++ Joined
 -fconst-string-class=<name>	Use class <name> for constant strings

@@ -1,3 +1,13 @@
+2006-02-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-common.h (flag_const_strings): Don't declare.
+	* c-common.c (flag_const_strings): Remove.
+	* c.opt (fconst_strings): Remove.
+	* c-opts.c (c_common_handle_option): Remove <OPT_fconst_strings>.
+	<OPT_Wwrite_strings>: Don't set flag_const_strings.
+	(c_common_init_options): Don't set flag_const_strings.
+	* doc/invoke.texi (-fno-const-strings): Remove documentation.
+
 2006-02-09  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.md (tlobits_cbranch): New pattern.
