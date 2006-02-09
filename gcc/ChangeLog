@@ -1,3 +1,14 @@
+2006-02-09  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (struct loop_data, loop_data): Removed.
+	(struct ivopts_data): Add regs_used field.
+	(tree_ssa_iv_optimize_init): Do not allocate aux fields for loops.
+	(ivopts_global_cost_for_size, determine_set_costs): Use data->regs_used
+	instead of loop_data->regs_used;
+	(free_loop_data): Do not free aux fields for loops.
+	(tree_ssa_iv_optimize): Do not pass loops to tree_ssa_iv_optimize_init
+	and tree_ssa_iv_optimize_finalize.
+
 2006-02-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (FUNCTION_VALUE): Don't handle CHAR_TYPE.
