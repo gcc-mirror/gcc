@@ -1,3 +1,11 @@
+2006-02-08  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dce.c (remove_dead_statement): When removing a dead
+	control statement, handle all three special cases in the same
+	manner as they all have the same desired solution.  No longer
+	special case edge flag updating when the post dominator is
+	the exit block.
+
 2006-02-08  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.def (CHAR_TYPE): Remove.

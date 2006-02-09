@@ -734,23 +734,27 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
       gcc_assert (dom_computed[CDI_POST_DOMINATORS] == DOM_OK);
       /* Get the immediate post dominator of bb.  */
       post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
-      /* Some blocks don't have an immediate post dominator.  This can happen
-	 for example with infinite loops.  Removing an infinite loop is an
-	 inappropriate transformation anyway...  */
-      if (! post_dom_bb)
-	{
-	  bsi_next (i);
-	  return;
-	}
 
-      /* If the post dominator block has PHI nodes, we might be unable
-	 to compute the right PHI args for them.  Since the control
-	 statement is unnecessary, all edges can be regarded as
-	 equivalent, but we have to get rid of the condition, since it
-	 might reference a variable that was determined to be
-	 unnecessary and thus removed.  */
-      if (phi_nodes (post_dom_bb))
-	post_dom_bb = EDGE_SUCC (bb, 0)->dest;
+      /* There are three particularly problematical cases.
+
+	 1. Blocks that do not have an immediate post dominator.  This
+	    can happen with infinite loops.
+
+	 2. Blocks that are only post dominated by the exit block.  These
+	    can also happen for infinite loops as we create fake edges
+	    in the dominator tree.
+
+	 3. If the post dominator has PHI nodes we may be able to compute
+	    the right PHI args for them.
+
+
+	 In each of these cases we must remove the control statement
+	 as it may reference SSA_NAMEs which are going to be removed and
+	 we remove all but one outgoing edge from the block.  */
+      if (! post_dom_bb
+	  || post_dom_bb == EXIT_BLOCK_PTR
+	  || phi_nodes (post_dom_bb))
+	;
       else
 	{
 	  /* Redirect the first edge out of BB to reach POST_DOM_BB.  */
@@ -764,13 +768,8 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 	 not have TRUE/FALSE flags.  */
       EDGE_SUCC (bb, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
 
-      /* If the edge reaches any block other than the exit, then it is a
-	 fallthru edge; if it reaches the exit, then it is not a fallthru
-	 edge.  */
-      if (post_dom_bb != EXIT_BLOCK_PTR)
-	EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
-      else
-	EDGE_SUCC (bb, 0)->flags &= ~EDGE_FALLTHRU;
+      /* The lone outgoing edge from BB will be a fallthru edge.  */
+      EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
 
       /* Remove the remaining the outgoing edges.  */
       while (!single_succ_p (bb))
