@@ -1,3 +1,7 @@
+2006-02-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (tls_call_delay): Fix oversight.
+
 2006-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/26109
