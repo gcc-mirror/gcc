@@ -1571,7 +1571,8 @@ df_bb_refs_record (struct dataflow *dflow, basic_block bb)
 	  unsigned regno = EH_RETURN_DATA_REGNO (i);
 	  if (regno == INVALID_REGNUM)
 	    break;
-	  df_ref_record (dflow, regno_reg_rtx[i], &regno_reg_rtx[i], bb, NULL,
+	  df_ref_record (dflow, regno_reg_rtx[regno], &regno_reg_rtx[regno],
+			 bb, NULL,
 			 DF_REF_REG_DEF, DF_REF_ARTIFICIAL | DF_REF_AT_TOP,
 			 false);
 	}
