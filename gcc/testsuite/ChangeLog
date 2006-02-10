@@ -1,5 +1,7 @@
 2006-02-10  Janis Johnson  <janis187@us.ibm.com>
 
+	* objc/compile/trivial.m: New.
+
 	* gcc.misc-tests/bprob.exp: Revert inadvertent change.
 	* g++.dg/bprob/bprob.exp: Ditto.
 
