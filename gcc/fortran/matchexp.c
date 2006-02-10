@@ -128,6 +128,8 @@ static match
 match_primary (gfc_expr ** result)
 {
   match m;
+  gfc_expr *e;
+  locus where;
 
   m = gfc_match_literal_constant (result, 0);
   if (m != MATCH_NO)
@@ -141,11 +143,13 @@ match_primary (gfc_expr ** result)
   if (m != MATCH_NO)
     return m;
 
-  /* Match an expression in parenthesis.  */
+  /* Match an expression in parentheses.  */
+  where = gfc_current_locus;
+
   if (gfc_match_char ('(') != MATCH_YES)
     return MATCH_NO;
 
-  m = gfc_match_expr (result);
+  m = gfc_match_expr (&e);
   if (m == MATCH_NO)
     goto syntax;
   if (m == MATCH_ERROR)
@@ -154,6 +158,26 @@ match_primary (gfc_expr ** result)
   m = gfc_match_char (')');
   if (m == MATCH_NO)
     gfc_error ("Expected a right parenthesis in expression at %C");
+
+  /* Now we have the expression inside the parentheses, build the
+     expression pointing to it. By 7.1.7.2 the integrity of
+     parentheses is only conserved in numerical calculations, so we
+     don't bother to keep the parentheses otherwise.  */
+  if(!gfc_numeric_ts(&e->ts))
+    *result = e;
+  else
+    {
+      gfc_expr *e2 = gfc_get_expr();
+
+      e2->expr_type = EXPR_OP;
+      e2->ts = e->ts;
+      e2->rank = e->rank;
+      e2->where = where;
+      e2->value.op.operator = INTRINSIC_PARENTHESES;
+      e2->value.op.op1 = e;
+      e2->value.op.op2 = NULL;
+      *result = e2;
+    }
 
   if (m != MATCH_YES)
     {

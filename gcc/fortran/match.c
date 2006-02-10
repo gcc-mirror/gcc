@@ -58,6 +58,7 @@ mstring intrinsic_operators[] = {
     minit (".gt.", INTRINSIC_GT),
     minit (">", INTRINSIC_GT),
     minit (".not.", INTRINSIC_NOT),
+    minit ("parens", INTRINSIC_PARENTHESES),
     minit (NULL, INTRINSIC_NONE)
 };
 
