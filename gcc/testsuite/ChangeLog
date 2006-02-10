@@ -1,3 +1,8 @@
+2006-02-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.misc-tests/bprob.exp: Revert inadvertent change.
+	* g++.dg/bprob/bprob.exp: Ditto.
+
 2006-02-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
         * gcc.dg/tls/opt-11.c: XFAIL on SPARC.
