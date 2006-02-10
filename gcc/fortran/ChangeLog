@@ -1,3 +1,10 @@
+2006-02-10  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/14771
+	* arith.c (eval_intrinsic): Accept INTRINSIC_PARENTHESES.
+	* expr.c (check_intrinsic_op): Likewise.
+	* module.c (mio_expr): Likewise.
+
 2006-02-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* dump-parse-tree.c: Update copyright years.

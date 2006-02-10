@@ -2514,6 +2514,7 @@ mio_expr (gfc_expr ** ep)
 	case INTRINSIC_UPLUS:
 	case INTRINSIC_UMINUS:
 	case INTRINSIC_NOT:
+	case INTRINSIC_PARENTHESES:
 	  mio_expr (&e->value.op.op1);
 	  break;
 
