@@ -441,10 +441,14 @@ simplify_control_stmt_condition (edge e,
     {
       cached_lhs = cond;
 
-      /* Get the variable's current value from the equivalency chains.  */
-      while (cached_lhs
-	     && TREE_CODE (cached_lhs) == SSA_NAME
-	     && SSA_NAME_VALUE (cached_lhs))
+      /* Get the variable's current value from the equivalency chains.
+
+	 It is possible to get loops in the SSA_NAME_VALUE chains
+	 (consider threading the backedge of a loop where we have
+	 a loop invariant SSA_NAME used in the condition.  */
+      if (cached_lhs
+	  && TREE_CODE (cached_lhs) == SSA_NAME
+	  && SSA_NAME_VALUE (cached_lhs))
 	cached_lhs = SSA_NAME_VALUE (cached_lhs);
 
       /* If we're dominated by a suitable ASSERT_EXPR, then
