@@ -1,5 +1,9 @@
 2006-02-09  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* dump-parse-tree.c: Update copyright years.
+	* matchexp.c: Likewise.
+	* module.c: Likewise.
+
 	PR fortran/14771
 	* gfortran.h (gfc_intrinsic_op): Add INTRINSIC_PARENTHESES.
 	* dump-parse-tree (gfc_show_expr): Handle INTRINSIC_PARENTHESES.
