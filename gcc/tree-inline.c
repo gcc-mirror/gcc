@@ -1600,15 +1600,6 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case LOOP_EXPR:
     case PHI_NODE:
     case WITH_SIZE_EXPR:
-    case OMP_PARALLEL:
-    case OMP_FOR:
-    case OMP_SECTIONS:
-    case OMP_SINGLE:
-    case OMP_SECTION:
-    case OMP_MASTER:
-    case OMP_ORDERED:
-    case OMP_CRITICAL:
-    case OMP_ATOMIC:
     case OMP_CLAUSE:
     case OMP_RETURN_EXPR:
       break;
@@ -1797,6 +1788,20 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 	*count += PARAM_VALUE (PARAM_INLINE_CALL_COST);
 	break;
       }
+
+    case OMP_PARALLEL:
+    case OMP_FOR:
+    case OMP_SECTIONS:
+    case OMP_SINGLE:
+    case OMP_SECTION:
+    case OMP_MASTER:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
+    case OMP_ATOMIC:
+      /* OpenMP directives are generally very expensive.  */
+      *count += 40;
+      break;
+
     default:
       gcc_unreachable ();
     }
