@@ -864,8 +864,10 @@ combine_blocks (struct loop *loop)
   unsigned int orig_loop_num_nodes = loop->num_nodes;
   unsigned int i;
   unsigned int n_exits;
+  edge *exits;
 
-  get_loop_exit_edges (loop, &n_exits);
+  exits = get_loop_exit_edges (loop, &n_exits);
+  free (exits);
   /* Process phi nodes to prepare blocks for merge.  */
   process_phi_nodes (loop);
 
