@@ -6514,7 +6514,7 @@ dump_class_hierarchy_1 (FILE *stream, int flags, tree t)
 
 /* Debug interface to hierarchy dumping.  */
 
-extern void
+void
 debug_class (tree t)
 {
   dump_class_hierarchy_1 (stderr, TDF_SLIM, t);
@@ -6644,7 +6644,7 @@ dump_thunk (FILE *stream, int indent, tree thunk)
 
 /* Dump the thunks for FN.  */
 
-extern void
+void
 debug_thunks (tree fn)
 {
   dump_thunk (stderr, 0, fn);
