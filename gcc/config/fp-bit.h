@@ -87,7 +87,9 @@ Boston, MA 02110-1301, USA.  */
 #endif /* ! FINE_GRAINED_LIBRARIES */
 
 #if __LDBL_MANT_DIG__ == 113 || __LDBL_MANT_DIG__ == 106
-# define TMODES
+# if defined(TFLOAT) || defined(L_sf_to_tf) || defined(L_df_to_tf)
+#  define TMODES
+# endif
 #endif
 
 typedef float SFtype __attribute__ ((mode (SF)));

@@ -67,7 +67,9 @@ SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver $(srcdir)/config/rs6000/libgcc-ppc64.v
 SHLIB_NM_FLAGS = -Bpg -X32_64
 
 # GCC 128-bit long double support routines.
-LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/darwin-ldouble.c
+LIB2FUNCS_EXTRA =  $(srcdir)/config/rs6000/ppc64-fp.c \
+	$(srcdir)/config/rs6000/darwin-ldouble.c
+TARGET_LIBGCC2_CFLAGS = -mlong-double-128
 
 # Either 32-bit and 64-bit objects in archives.
 AR_FLAGS_FOR_TARGET = -X32_64

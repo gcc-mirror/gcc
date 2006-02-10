@@ -1,5 +1,6 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,7 +49,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    This code currently assumes big-endian.  */
 
-#if !_SOFT_FLOAT && (defined (__MACH__) || defined (__powerpc64__) || defined (_AIX))
+#if !_SOFT_FLOAT && (defined (__MACH__) || defined (__powerpc64__) || defined (__powerpc__) || defined (_AIX))
 
 #define fabs(x) __builtin_fabs(x)
 #define isless(x, y) __builtin_isless (x, y)
@@ -67,7 +68,8 @@ extern long double __gcc_qsub (double, double, double, double);
 extern long double __gcc_qmul (double, double, double, double);
 extern long double __gcc_qdiv (double, double, double, double);
 
-#if defined __ELF__ && defined SHARED
+#if defined __ELF__ && defined SHARED \
+    && (defined __powerpc64__ || !(defined __linux__ || defined __gnu_hurd__))
 /* Provide definitions of the old symbol names to satisfy apps and
    shared libs built against an older libgcc.  To access the _xlq
    symbols an explicit version reference is needed, so these won't

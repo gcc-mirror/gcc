@@ -315,6 +315,7 @@ for ml in $MULTILIBS; do
 
   if [ "$FPBIT" ]; then
     for name in $FPBIT_FUNCS; do
+      [ "$name" = _sf_to_tf -a -z "$TPBIT" ] && continue
       if [ "$libgcc_s_so" ]; then
 	out="libgcc/${dir}/${name}${objext}"
 	outS="libgcc/${dir}/${name}_s${objext}"
@@ -345,6 +346,7 @@ for ml in $MULTILIBS; do
 
   if [ "$DPBIT" ]; then
     for name in $DPBIT_FUNCS; do
+      [ "$name" = _df_to_tf -a -z "$TPBIT" ] && continue
       if [ "$libgcc_s_so" ]; then
 	out="libgcc/${dir}/${name}${objext}"
 	outS="libgcc/${dir}/${name}_s${objext}"

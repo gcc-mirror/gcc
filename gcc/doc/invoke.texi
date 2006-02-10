@@ -11023,16 +11023,6 @@ enhancements.
 @opindex mno-vrsave
 Generate VRSAVE instructions when generating AltiVec code.
 
-@item -mabi=spe
-@opindex mabi=spe
-Extend the current ABI with SPE ABI extensions.  This does not change
-the default ABI, instead it adds the SPE ABI extensions to the current
-ABI@.
-
-@item -mabi=no-spe
-@opindex mabi=no-spe
-Disable Booke SPE ABI extensions for the current ABI@.
-
 @item -msecure-plt
 @opindex msecure-plt
 Generate code that allows ld and ld.so to build executables and shared
@@ -11386,7 +11376,27 @@ SVR4 ABI)@.
 @opindex mabi
 Extend the current ABI with a particular extension, or remove such extension.
 Valid values are @var{altivec}, @var{no-altivec}, @var{spe},
-@var{no-spe}@.
+@var{no-spe}, @var{ibmlongdouble}, @var{ieeelongdouble}@.
+
+@item -mabi=spe
+@opindex mabi=spe
+Extend the current ABI with SPE ABI extensions.  This does not change
+the default ABI, instead it adds the SPE ABI extensions to the current
+ABI@.
+
+@item -mabi=no-spe
+@opindex mabi=no-spe
+Disable Booke SPE ABI extensions for the current ABI@.
+
+@item -mabi=ibmlongdouble
+@opindex mabi=ibmlongdouble
+Change the current ABI to use IBM extended precision long double.
+This is a PowerPC 32-bit SYSV ABI option.
+
+@item -mabi=ieeelongdouble
+@opindex mabi=ieeelongdouble
+Change the current ABI to use IEEE extended precision long double.
+This is a PowerPC 32-bit Linux ABI option.
 
 @item -mprototype
 @itemx -mno-prototype

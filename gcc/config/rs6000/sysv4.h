@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005 Free Software Foundation, Inc.
+   2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -214,6 +214,10 @@ do {									\
     {									\
       error ("-msecure-plt not supported by your assembler");		\
     }									\
+									\
+  if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128			\
+      && rs6000_explicit_options.long_double)				\
+    warning (0, "-msoft-float and -mlong-double-128 not supported");	\
 									\
   /* Treat -fPIC the same as -mrelocatable.  */				\
   if (flag_pic > 1 && DEFAULT_ABI != ABI_AIX)				\
