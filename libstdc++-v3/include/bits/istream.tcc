@@ -183,8 +183,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  try
 	    {
-	      if (!__copy_streambufs(this->rdbuf(), __sbout))
+	      bool __ineof;
+	      if (!__copy_streambufs_eof(this->rdbuf(), __sbout, __ineof))
 		__err |= ios_base::failbit;
+	      if (__ineof)
+		__err |= ios_base::eofbit;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::failbit); }

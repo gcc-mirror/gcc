@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,11 +37,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<>
     streamsize
-    __copy_streambufs(basic_streambuf<char>* __sbin,
-		      basic_streambuf<char>* __sbout)
+    __copy_streambufs_eof(basic_streambuf<char>* __sbin,
+			  basic_streambuf<char>* __sbout, bool& __ineof)
     {
       typedef basic_streambuf<char>::traits_type traits_type;
       streamsize __ret = 0;
+      __ineof = true;
       traits_type::int_type __c = __sbin->sgetc();
       while (!traits_type::eq_int_type(__c, traits_type::eof()))
 	{
@@ -52,14 +53,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      __sbin->gbump(__wrote);
 	      __ret += __wrote;
 	      if (__wrote < __n)
-		break;
+		{
+		  __ineof = false;
+		  break;
+		}
 	      __c = __sbin->underflow();
 	    }
 	  else
 	    {
 	      __c = __sbout->sputc(traits_type::to_char_type(__c));
 	      if (traits_type::eq_int_type(__c, traits_type::eof()))
-		break;
+		{
+		  __ineof = false;
+		  break;
+		}
 	      ++__ret;
 	      __c = __sbin->snextc();
 	    }
@@ -70,11 +77,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     streamsize
-    __copy_streambufs(basic_streambuf<wchar_t>* __sbin,
-		      basic_streambuf<wchar_t>* __sbout)
+    __copy_streambufs_eof(basic_streambuf<wchar_t>* __sbin,
+			  basic_streambuf<wchar_t>* __sbout, bool& __ineof)
     {
       typedef basic_streambuf<wchar_t>::traits_type traits_type;
       streamsize __ret = 0;
+      __ineof = true;
       traits_type::int_type __c = __sbin->sgetc();
       while (!traits_type::eq_int_type(__c, traits_type::eof()))
 	{
@@ -85,14 +93,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      __sbin->gbump(__wrote);
 	      __ret += __wrote;
 	      if (__wrote < __n)
-		break;
+		{
+		  __ineof = false;
+		  break;
+		}
 	      __c = __sbin->underflow();
 	    }
 	  else
 	    {
 	      __c = __sbout->sputc(traits_type::to_char_type(__c));
 	      if (traits_type::eq_int_type(__c, traits_type::eof()))
-		break;
+		{
+		  __ineof = false;
+		  break;
+		}
 	      ++__ret;
 	      __c = __sbin->snextc();
 	    }

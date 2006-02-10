@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -55,8 +55,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   */
   template<typename _CharT, typename _Traits>
     streamsize
-    __copy_streambufs(basic_streambuf<_CharT, _Traits>* __sbin,
-		      basic_streambuf<_CharT, _Traits>* __sbout);
+    __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>* __sbin,
+			  basic_streambuf<_CharT, _Traits>* __sbout,
+			  bool& __ineof);
   
   /**
    *  @brief  The actual work of input and output (interface).
@@ -151,8 +152,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       friend class ostreambuf_iterator<char_type, traits_type>;
 
       friend streamsize
-      __copy_streambufs<>(__streambuf_type* __sbin,
-			  __streambuf_type* __sbout);
+      __copy_streambufs_eof<>(__streambuf_type* __sbin,
+			      __streambuf_type* __sbout, bool& __ineof);
       
       template<typename _CharT2, typename _Traits2>
         friend basic_istream<_CharT2, _Traits2>&
@@ -792,13 +793,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Explicit specialization declarations, defined in src/streambuf.cc.
   template<>
     streamsize
-    __copy_streambufs(basic_streambuf<char>* __sbin,
-		      basic_streambuf<char>* __sbout);
+    __copy_streambufs_eof(basic_streambuf<char>* __sbin,
+			  basic_streambuf<char>* __sbout, bool& __ineof);
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     streamsize
-    __copy_streambufs(basic_streambuf<wchar_t>* __sbin,
-		      basic_streambuf<wchar_t>* __sbout);
+    __copy_streambufs_eof(basic_streambuf<wchar_t>* __sbin,
+			  basic_streambuf<wchar_t>* __sbout, bool& __ineof);
 #endif
 
 _GLIBCXX_END_NAMESPACE

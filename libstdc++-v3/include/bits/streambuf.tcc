@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -117,20 +117,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // standard.
   template<typename _CharT, typename _Traits>
     streamsize
-    __copy_streambufs(basic_streambuf<_CharT, _Traits>* __sbin,
-		      basic_streambuf<_CharT, _Traits>* __sbout)
+    __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>* __sbin,
+			  basic_streambuf<_CharT, _Traits>* __sbout,
+			  bool& __ineof)
     {
       streamsize __ret = 0;
+      __ineof = true;
       typename _Traits::int_type __c = __sbin->sgetc();
       while (!_Traits::eq_int_type(__c, _Traits::eof()))
 	{
 	  __c = __sbout->sputc(_Traits::to_char_type(__c));
 	  if (_Traits::eq_int_type(__c, _Traits::eof()))
-	    break;
+	    {
+	      __ineof = false;
+	      break;
+	    }
 	  ++__ret;
 	  __c = __sbin->snextc();
 	}
       return __ret;
+    }
+
+  template<typename _CharT, typename _Traits>
+    inline streamsize
+    __copy_streambufs(basic_streambuf<_CharT, _Traits>* __sbin,
+		      basic_streambuf<_CharT, _Traits>* __sbout)
+    {
+      bool __ineof;
+      return __copy_streambufs_eof(__sbin, __sbout, __ineof);
     }
 
   // Inhibit implicit instantiations for required instantiations,
@@ -140,13 +154,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template class basic_streambuf<char>;
   extern template
     streamsize
-    __copy_streambufs(basic_streambuf<char>*, basic_streambuf<char>*);
+    __copy_streambufs(basic_streambuf<char>*,
+		      basic_streambuf<char>*);
+  extern template
+    streamsize
+    __copy_streambufs_eof(basic_streambuf<char>*,
+			  basic_streambuf<char>*, bool&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_streambuf<wchar_t>;
   extern template
     streamsize
-    __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*);
+    __copy_streambufs(basic_streambuf<wchar_t>*,
+		      basic_streambuf<wchar_t>*);
+  extern template
+    streamsize
+    __copy_streambufs_eof(basic_streambuf<wchar_t>*,
+			  basic_streambuf<wchar_t>*, bool&);
 #endif
 #endif
 

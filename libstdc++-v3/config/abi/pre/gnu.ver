@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+## Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -672,6 +672,8 @@ GLIBCXX_3.4.7 {
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertI[^g]*;
     _ZNSi10_M_extractI[^g]*;
     _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractI[^g]*;
+
+    _ZSt21__copy_streambufs_eofI[cw]St11char_traitsI[cw]EEiPSt15basic_streambuf*;
 
 } GLIBCXX_3.4.6;
 
