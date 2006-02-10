@@ -47,8 +47,12 @@
 /*#define DEBUG_THREADS 1*/
 /*#define GC_ASSERTIONS*/
 
+#include "gc_config.h"
+
+#ifdef GC_PTHREAD_SYM_VERSION
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#endif
 
 # include "gc.h"
 # include "private/pthread_support.h"
