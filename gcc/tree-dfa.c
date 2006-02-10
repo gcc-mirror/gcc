@@ -913,6 +913,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   HOST_WIDE_INT maxsize = -1;
   tree size_tree = NULL_TREE;
   tree bit_offset = bitsize_zero_node;
+  bool seen_variable_array_ref = false;
 
   gcc_assert (!SSA_VAR_P (exp));
 
@@ -1004,6 +1005,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 				    fold_convert (bitsizetype, index),
 				    bitsize_unit_node);
 		bit_offset = size_binop (PLUS_EXPR, bit_offset, index);
+
+		/* An array ref with a constant index up in the structure
+		   hierarchy will constrain the size of any variable array ref
+		   lower in the access hierarchy.  */
+		seen_variable_array_ref = false;
 	      }
 	    else
 	      {
@@ -1019,6 +1025,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		  }
 		else
 		  maxsize = -1;
+
+		/* Remember that we have seen an array ref with a variable
+		   index.  */
+		seen_variable_array_ref = true;
 	      }
 	  }
 	  break;
@@ -1042,6 +1052,21 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       exp = TREE_OPERAND (exp, 0);
     }
  done:
+
+  /* We need to deal with variable arrays ending structures such as
+       struct { int length; int a[1]; } x;           x.a[d]
+       struct { struct { int a; int b; } a[1]; } x;  x.a[d].a
+       struct { struct { int a[1]; } a[1]; } x;      x.a[0][d], x.a[d][0]
+     where we do not know maxsize for variable index accesses to
+     the array.  The simplest way to conservatively deal with this
+     is to punt in the case that offset + maxsize reaches the
+     base type boundary.  */
+  if (seen_variable_array_ref
+      && maxsize != -1
+      && host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
+      && TREE_INT_CST_LOW (bit_offset) + maxsize
+	 == TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))))
+    maxsize = -1;
 
   /* ???  Due to negative offsets in ARRAY_REF we can end up with
      negative bit_offset here.  We might want to store a zero offset
