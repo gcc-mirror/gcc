@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -42,7 +42,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template
     streamsize
-    __copy_streambufs(basic_streambuf<char>*, basic_streambuf<char>*); 
+    __copy_streambufs(basic_streambuf<char>*, basic_streambuf<char>*);
+
+  template
+    streamsize
+    __copy_streambufs_eof(basic_streambuf<char>*,
+			  basic_streambuf<char>*, bool&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   // wstreambuf
@@ -50,7 +55,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template
     streamsize
-    __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*); 
+    __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*);
+
+  template
+    streamsize
+    __copy_streambufs_eof(basic_streambuf<wchar_t>*,
+			  basic_streambuf<wchar_t>*, bool&);
 #endif
 
 _GLIBCXX_END_NAMESPACE
