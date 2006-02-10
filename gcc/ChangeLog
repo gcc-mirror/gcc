@@ -1,3 +1,8 @@
+2006-02-10  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-if-conv.c (combine_blocks): Free the result of
+	get_loop_exit_edges.
+
 2006-02-10  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (tree_expr_nonzero_p): Fix thinko.
