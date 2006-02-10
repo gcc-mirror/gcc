@@ -1,3 +1,8 @@
+2006-02-10  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-inline.c (estimate_num_insns_1): Make OpenMP directives
+	expensive.
+
 2006-02-10  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* doc/invoke.texi (-floop-optimize2): Removed.
