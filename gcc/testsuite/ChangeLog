@@ -1,3 +1,7 @@
+2006-02-10  Richard Guenther  <rguenther@suse.de>
+
+	* testsuite/gcc.dg/pr23372-1.c: Remove empty file.
+
 2006-02-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Thomas  <pault@gcc.gnu.org>
 
