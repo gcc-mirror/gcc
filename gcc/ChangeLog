@@ -1,3 +1,9 @@
+2006-02-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/26213
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Do not
+	loop trying to follow SSA_NAME_VALUE chains.
+
 2006-02-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (get_ref_base_and_extent): When computing maxsize
