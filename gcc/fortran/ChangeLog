@@ -1,3 +1,18 @@
+2006-02-09  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/14771
+	* gfortran.h (gfc_intrinsic_op): Add INTRINSIC_PARENTHESES.
+	* dump-parse-tree (gfc_show_expr): Handle INTRINSIC_PARENTHESES.
+	* expr.c (simplify_intrinsic_op): Treat INTRINSIC_PARENTHESES as
+	if it were INTRINSIC_UPLUS.
+	* resolve.c (resolve_operator): Handle INTRINSIC_PARENTHESES.
+	* match.c (intrinsic_operators): Add INTRINSIC_PARENTHESES.
+	* matchexp.c (match_primary): Record parentheses surrounding
+	numeric expressions.
+	* module.c (intrinsics): Add INTRINSIC_PARENTHESES for module
+	dumping.
+	* trans-expr.c (gfc_conv_expr_op): Handle INTRINSIC_PARENTHESES.
+
 2006-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26038

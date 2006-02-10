@@ -1692,6 +1692,7 @@ resolve_operator (gfc_expr * e)
     case INTRINSIC_NOT:
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
+    case INTRINSIC_PARENTHESES:
       if (gfc_resolve_expr (e->value.op.op1) == FAILURE)
 	return FAILURE;
       break;
@@ -1835,6 +1836,9 @@ resolve_operator (gfc_expr * e)
 
       goto bad_op;
 
+    case INTRINSIC_PARENTHESES:
+      break;
+
     default:
       gfc_internal_error ("resolve_operator(): Bad intrinsic");
     }
@@ -1911,6 +1915,7 @@ resolve_operator (gfc_expr * e)
     case INTRINSIC_NOT:
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
+    case INTRINSIC_PARENTHESES:
       e->rank = op1->rank;
 
       if (e->shape == NULL)

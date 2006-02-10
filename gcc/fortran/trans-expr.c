@@ -925,6 +925,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   switch (expr->value.op.operator)
     {
     case INTRINSIC_UPLUS:
+    case INTRINSIC_PARENTHESES:
       gfc_conv_expr (se, expr->value.op.op1);
       return;
 

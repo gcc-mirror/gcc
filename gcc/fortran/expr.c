@@ -782,6 +782,7 @@ simplify_intrinsic_op (gfc_expr * p, int type)
   switch (p->value.op.operator)
     {
     case INTRINSIC_UPLUS:
+    case INTRINSIC_PARENTHESES:
       result = gfc_uplus (op1);
       break;
 

@@ -2455,6 +2455,7 @@ static const mstring intrinsics[] =
     minit ("LT", INTRINSIC_LT),
     minit ("LE", INTRINSIC_LE),
     minit ("NOT", INTRINSIC_NOT),
+    minit ("PARENTHESES", INTRINSIC_PARENTHESES),
     minit (NULL, -1)
 };
 
