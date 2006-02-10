@@ -1,3 +1,7 @@
+2006-02-09  Tom Tromey  <tromey@redhat.com>
+
+	* pthread_support.c: Conditionally include dlfcn.h.
+
 2006-02-06  Jakub Jelinek  <jakub@redhat.com>
 	    Anthony Green  <green@redhat.com>
 	    Tom Tromey  <tromey@redhat.com>
