@@ -500,7 +500,7 @@ split_nonconstant_init_1 (tree dest, tree init)
 		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 			      NULL_TREE);
 
-	      code = build2 (MODIFY_EXPR, inner_type, sub, value);
+	      code = build2 (INIT_EXPR, inner_type, sub, value);
 	      code = build_stmt (EXPR_STMT, code);
 	      add_stmt (code);
 	      continue;

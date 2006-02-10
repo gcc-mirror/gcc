@@ -1,3 +1,10 @@
+2006-02-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25979
+	* cp-gimplify.c (cp_gimplify_expr): Don't call
+	cp_gimplify_init_expr for MODIFY_EXPRs.
+	* typeck2.c (split_nonconstant_init_1): Use INIT_EXPR.
+
 2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26071
