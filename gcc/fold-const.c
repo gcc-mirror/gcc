@@ -11256,7 +11256,7 @@ tree_expr_nonzero_p (tree t)
 	tree inner_type = TREE_TYPE (TREE_OPERAND (t, 0));
 	tree outer_type = TREE_TYPE (t);
 
-	return (TYPE_PRECISION (inner_type) >= TYPE_PRECISION (outer_type)
+	return (TYPE_PRECISION (outer_type) >= TYPE_PRECISION (inner_type)
 		&& tree_expr_nonzero_p (TREE_OPERAND (t, 0)));
       }
       break;

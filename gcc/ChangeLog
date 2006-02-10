@@ -1,5 +1,7 @@
 2006-02-10  Jeff Law  <law@redhat.com>
 
+	* fold-const.c (tree_expr_nonzero_p): Fix thinko.
+
 	PR tree-optimization/26213
 	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Do not
 	loop trying to follow SSA_NAME_VALUE chains.
