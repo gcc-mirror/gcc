@@ -1,5 +1,12 @@
 2006-02-10  Steven G. Kargl  <kargls@comcast.net>
 
+	PR fortran/25756
+	* symbol.c (gfc_free_st_label): Give variable meaningful name. Remove
+	unneeded parenthesis. Fix-up the head of the list (2 lines gleaned
+	from g95).
+
+2006-02-10  Steven G. Kargl  <kargls@comcast.net>
+
 	PR fortran/20858
 	*decl.c (variable_decl): Improve error message.  Remove initialization
 	typespec.  Wrap long line.
