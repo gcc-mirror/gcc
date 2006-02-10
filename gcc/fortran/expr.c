@@ -1344,6 +1344,9 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
 
       break;
 
+    case INTRINSIC_PARENTHESES:
+      break;
+
     default:
       gfc_error ("Only intrinsic operators can be used in expression at %L",
 		 &e->where);
