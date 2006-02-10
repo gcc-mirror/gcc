@@ -1984,7 +1984,7 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
   /* If rvalue is a NULL() or NULLIFY, we're done. Otherwise the type,
      kind, etc for lvalue and rvalue must match, and rvalue must be a
      pure variable if we're in a pure function.  */
-  if (rvalue->expr_type == EXPR_NULL)
+  if (rvalue->expr_type == EXPR_NULL && rvalue->ts.type == BT_UNKNOWN)
     return SUCCESS;
 
   if (!gfc_compare_types (&lvalue->ts, &rvalue->ts))
@@ -2000,6 +2000,17 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
 		 "assignment at %L", &lvalue->where);
       return FAILURE;
     }
+
+  if (lvalue->rank != rvalue->rank)
+    {
+      gfc_error ("Different ranks in pointer assignment at %L",
+		  &lvalue->where);
+      return FAILURE;
+    }
+
+  /* Now punt if we are dealing with a NULLIFY(X) or X = NULL(X).  */
+  if (rvalue->expr_type == EXPR_NULL)
+    return SUCCESS;
 
   if (lvalue->ts.type == BT_CHARACTER
 	&& lvalue->ts.cl->length && rvalue->ts.cl->length
@@ -2023,13 +2034,6 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
     {
       gfc_error ("Bad target in pointer assignment in PURE "
 		 "procedure at %L", &rvalue->where);
-    }
-
-  if (lvalue->rank != rvalue->rank)
-    {
-      gfc_error ("Unequal ranks %d and %d in pointer assignment at %L", 
-		 lvalue->rank, rvalue->rank, &rvalue->where);
-      return FAILURE;
     }
 
   if (gfc_has_vector_index (rvalue))

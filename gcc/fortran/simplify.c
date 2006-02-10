@@ -2528,16 +2528,14 @@ gfc_simplify_null (gfc_expr * mold)
 {
   gfc_expr *result;
 
-  result = gfc_get_expr ();
-  result->expr_type = EXPR_NULL;
-
   if (mold == NULL)
-    result->ts.type = BT_UNKNOWN;
-  else
     {
-      result->ts = mold->ts;
-      result->where = mold->where;
+      result = gfc_get_expr ();
+      result->ts.type = BT_UNKNOWN;
     }
+  else
+    result = gfc_copy_expr (mold);
+  result->expr_type = EXPR_NULL;
 
   return result;
 }

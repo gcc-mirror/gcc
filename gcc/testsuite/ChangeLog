@@ -1,3 +1,7 @@
+2006-02-10  Steven G. Kargl  <kargls@comcast.net>
+
+	gfortran.dg/null_1.f90: New test.
+
 2006-02-10  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14771

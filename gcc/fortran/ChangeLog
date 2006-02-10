@@ -1,3 +1,14 @@
+2006-02-10  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/20858
+	*decl.c (variable_decl): Improve error message.  Remove initialization
+	typespec.  Wrap long line.
+	*expr.c (gfc_check_pointer_assign): Permit checking of type, kind type,
+	and rank.
+	*simplify.c (gfc_simplify_null): Ensure type, kind type, and rank
+	are set.
+
+
 2006-02-10  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14771

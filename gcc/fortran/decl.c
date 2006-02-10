@@ -1203,7 +1203,7 @@ variable_decl (int elem)
 	  m = gfc_match_null (&initializer);
 	  if (m == MATCH_NO)
 	    {
-	      gfc_error ("Pointer initialization requires a NULL at %C");
+	      gfc_error ("Pointer initialization requires a NULL() at %C");
 	      m = MATCH_ERROR;
 	    }
 
@@ -1217,8 +1217,6 @@ variable_decl (int elem)
 
 	  if (m != MATCH_YES)
 	    goto cleanup;
-
-	  initializer->ts = current_ts;
 
 	}
       else if (gfc_match_char ('=') == MATCH_YES)
@@ -1282,7 +1280,8 @@ variable_decl (int elem)
     t = add_init_expr_to_sym (name, &initializer, &var_locus);
   else
     {
-      if (current_ts.type == BT_DERIVED && !current_attr.pointer && !initializer)
+      if (current_ts.type == BT_DERIVED && !current_attr.pointer
+	  && !initializer)
 	initializer = gfc_default_initializer (&current_ts);
       t = build_struct (name, cl, &initializer, &as);
     }
