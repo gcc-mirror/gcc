@@ -1,3 +1,24 @@
+2006-02-10  Tom Tromey  <tromey@redhat.com>
+
+	Re-merged all regular expression code.
+	For PR libgcj/26177, PR libgcj/26202.
+	See classpath/ChangeLog.gcj for full details.
+	* java/lang/Character.java: Merged from Classpath.
+	(start, end): Now 'int's.
+	(canonicalName): New field.
+	(CANONICAL_NAME, NO_SPACES_NAME, CONSTANT_NAME): New constants.
+	(UnicodeBlock): Added argument.
+	(of): New overload.
+	(forName): New method.
+	Updated unicode blocks.
+	(sets): Updated.
+	* sources.am, Makefile.in: Rebuilt.
+
+2006-01-13  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/regexp/MessagesBundle_fr.properties: Removed.
+	* gnu/regexp/MessagesBundle.properties: Removed.
+
 2006-02-06  Tom Tromey  <tromey@redhat.com>
 
 	* gij.cc (version): Use 2006.

@@ -1,5 +1,5 @@
-/* gnu/regexp/RETokenBackRef.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+/* MatchResult.java -- Result of a regular expression match.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,49 +36,46 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.regexp;
+package java.util.regex;
 
-final class RETokenBackRef extends REToken {
-  private int num;
-  private boolean insens;
+/**
+ * This interface represents the result of a regular expression match.
+ * It can be used to query the contents of the match, but not to modify
+ * them.
+ * @since 1.5
+ */
+public interface MatchResult
+{
+  /** Returns the index just after the last matched character.  */
+  int end();
   
-  RETokenBackRef(int subIndex, int num, boolean insens) {
-    super(subIndex);
-    this.num = num;
-    this.insens = insens;
-  }
+  /**
+   * Returns the index just after the last matched character of the
+   * given sub-match group.
+   * @param group the sub-match group
+   */ 
+  int end(int group);
 
-  // should implement getMinimumLength() -- any ideas?
+  /** Returns the substring of the input which was matched.  */
+  String group();
+  
+  /** 
+   * Returns the substring of the input which was matched by the
+   * given sub-match group.
+   * @param group the sub-match group
+   */
+  String group(int group);
 
-    boolean match(CharIndexed input, REMatch mymatch) {
-	if (num >= mymatch.start.length) return false;
-	if (num >= mymatch.end.length) return false;
-	int b,e;
-	b = mymatch.start[num];
-	e = mymatch.end[num];
-	if ((b==-1)||(e==-1)) return false; // this shouldn't happen, but...
-	for (int i=b; i<e; i++) {
-	    char c1 = input.charAt(mymatch.index+i-b);
-	    char c2 = input.charAt(i);
-	    if (c1 != c2) {
-		if (insens) {
-		    if (c1 != Character.toLowerCase(c2) &&
-			c1 != Character.toUpperCase(c2)) {
-			return false;
-		    }
-		}
-		else {
-		    return false;
-		}
-	    }
-	}
-	mymatch.index += e-b;
-	return next(input, mymatch);
-    }
-    
-    void dump(StringBuffer os) {
-	os.append('\\').append(num);
-    }
+  /** Returns the number of sub-match groups in the matching pattern.  */  
+  int groupCount();
+
+  /** Returns the index of the first character of the match.  */
+  int start();
+
+  /**
+   * Returns the index of the first character of the given sub-match
+   * group.
+   * @param group the sub-match group
+   */
+  int start(int group);
 }
-
-

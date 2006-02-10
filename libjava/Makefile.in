@@ -1998,7 +1998,10 @@ classpath/gnu/regexp/RETokenBackRef.java \
 classpath/gnu/regexp/RETokenChar.java \
 classpath/gnu/regexp/RETokenEnd.java \
 classpath/gnu/regexp/RETokenEndSub.java \
+classpath/gnu/regexp/RETokenIndependent.java \
 classpath/gnu/regexp/RETokenLookAhead.java \
+classpath/gnu/regexp/RETokenLookBehind.java \
+classpath/gnu/regexp/RETokenNamedProperty.java \
 classpath/gnu/regexp/RETokenOneOf.java \
 classpath/gnu/regexp/RETokenPOSIX.java \
 classpath/gnu/regexp/RETokenRange.java \
@@ -3505,6 +3508,7 @@ classpath/java/util/prefs/PreferencesFactory.java
 
 java_util_prefs_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_prefs_source_files)))
 java_util_regex_source_files = \
+classpath/java/util/regex/MatchResult.java \
 classpath/java/util/regex/Matcher.java \
 classpath/java/util/regex/Pattern.java \
 classpath/java/util/regex/PatternSyntaxException.java

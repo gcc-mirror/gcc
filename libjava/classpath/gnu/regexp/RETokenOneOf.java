@@ -70,53 +70,67 @@ final class RETokenOneOf extends REToken {
     return min;
   }
 
+
+  int getMaximumLength() {
+    int max = 0;
+    int x;
+    for (int i=0; i < options.size(); i++) {
+      if ((x = ((REToken) options.elementAt(i)).getMaximumLength()) > max)
+	max = x;
+    }
+    return max;
+  }
+
     boolean match(CharIndexed input, REMatch mymatch) {
-    if (negative && (input.charAt(mymatch.index) == CharIndexed.OUT_OF_BOUNDS)) 
+      return negative ? matchN(input, mymatch) : matchP(input, mymatch);
+    }
+
+    private boolean matchN(CharIndexed input, REMatch mymatch) {
+    if (input.charAt(mymatch.index) == CharIndexed.OUT_OF_BOUNDS) 
       return false;
 
     REMatch newMatch = null;
     REMatch last = null;
     REToken tk;
-    boolean isMatch;
     for (int i=0; i < options.size(); i++) {
 	tk = (REToken) options.elementAt(i);
 	REMatch tryMatch = (REMatch) mymatch.clone();
 	if (tk.match(input, tryMatch)) { // match was successful
-	    if (negative) return false;
-
-	    if (next(input, tryMatch)) {
-		// Add tryMatch to list of possibilities.
-		if (last == null) {
-		    newMatch = tryMatch;
-		    last = tryMatch;
-		} else {
-		    last.next = tryMatch;
-		    last = tryMatch;
-		}
-	    } // next succeeds
+	    return false;
 	} // is a match
     } // try next option
 
-    if (newMatch != null) {
-	if (negative) {
-	    return false;
-	} else {
-	    // set contents of mymatch equal to newMatch
+    ++mymatch.index;
+    return next(input, mymatch);
+  }
 
-	    // try each one that matched
-	    mymatch.assignFrom(newMatch);
-	    return true;
-	}
+    private boolean matchP(CharIndexed input, REMatch mymatch) {
+    REMatch.REMatchList newMatch = new REMatch.REMatchList();
+    REToken tk;
+    for (int i=0; i < options.size(); i++) {
+	// In order that the backtracking can work,
+	// each option must be chained to the next token.
+	// But the chain method has some side effect, so
+	// we use clones.
+	tk = (REToken)((REToken) options.elementAt(i)).clone();
+	tk.chain(this.next);
+	tk.setUncle(this.uncle);
+	tk.subIndex = this.subIndex;
+	REMatch tryMatch = (REMatch) mymatch.clone();
+	if (tk.match(input, tryMatch)) { // match was successful
+	    newMatch.addTail(tryMatch);
+	} // is a match
+    } // try next option
+
+    if (newMatch.head != null) {
+	// set contents of mymatch equal to newMatch
+
+	// try each one that matched
+	mymatch.assignFrom(newMatch.head);
+	return true;
     } else {
-	if (negative) {
-	    ++mymatch.index;
-	    return next(input, mymatch);
-	} else {
-	    return false;
-	}
+	return false;
     }
-
-    // index+1 works for [^abc] lists, not for generic lookahead (--> index)
   }
 
   void dump(StringBuffer os) {

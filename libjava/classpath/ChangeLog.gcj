@@ -1,3 +1,192 @@
+2006-02-09  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #26112
+	* gnu/regexp/RE.java(REG_REPLACE_USE_BACKSLASHESCAPE): New execution
+	flag which enables backslash escape in a replacement.
+	(getReplacement): New public static method. 
+	(substituteImpl),(substituteAllImpl): Use getReplacement.
+	* gnu/regexp/REMatch.java(substituteInto): Replace $n even if n>=10.
+	* java/util/regex/Matcher.java(appendReplacement)
+	Use RE#getReplacement.
+	(replaceFirst),(replaceAll): Use RE.REG_REPLACE_USE_BACKSLASHESCAPE.
+
+2006-02-06  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* java/util/regex/Matcher.java(matches):
+	set RE.REG_TRY_ENTIRE_MATCH as an execution flag of getMatch.
+
+2006-02-06  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #25812
+ 	* gnu/regexp/CharIndexed.java(lookBehind),(length): New method.
+	* gnu/regexp/CharIndexedCharArray.java
+	(lookBehind),(length): Implemented.
+	* gnu/regexp/CharIndexedInputStream.java: Likewise.
+	* gnu/regexp/CharIndexedString.java: Likewise.
+	* gnu/regexp/CharIndexedStringBuffer.java: Likewise.
+	* gnu/regexp/REToken.java(getMaximumLength): New method.
+	* gnu/regexp/RE.java(internal constructor RE): Added new argument
+	maxLength.
+	(initialize): Parse (?<=X), (?<!X), (?>X).
+	(getMaximumLength): Implemented.
+	* gnu/regexp/RETokenAny.java(getMaximumLength): Implemented.
+	* gnu/regexp/RETokenChar.java: Likewise.
+	* gnu/regexp/RETokenEnd.java: Likewise.
+	* gnu/regexp/RETokenEndSub.java: Likewise.
+	* gnu/regexp/RETokenLookAhead.java: Likewise.
+	* gnu/regexp/RETokenNamedProperty.java: Likewise.
+	* gnu/regexp/RETokenOneOf.java: Likewise.
+	* gnu/regexp/RETokenPOSIX.java: Likewise.
+	* gnu/regexp/RETokenRange.java: Likewise.
+	* gnu/regexp/RETokenRepeated.java: Likewise.
+	* gnu/regexp/RETokenStart.java: Likewise.
+	* gnu/regexp/RETokenWordBoundary.java: Likewise.
+	* gnu/regexp/RETokenIndependent.java: New file.
+	* gnu/regexp/RETokenLookBehind.java: New file.
+
+2006-02-04  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* gnu/regexp/RETokenNamedProperty.java(getHandler): Check for
+	a Unicode block if the name starts with "In".
+	(UnicodeBlockHandler): New inner class.
+
+2006-02-02  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* gnu/regexp/REMatch.java(REMatchList): New inner utility class
+	for making a list of REMatch instances.
+	* gnu/regexp/RETokenOneOf.java(match): Rewritten using REMatchList.
+	* gnu/regexp/RETokenRepeated.java(findDoables): New method.
+	(match): Rewritten using REMatchList.
+	(matchRest): Rewritten using REMatchList.
+
+2006-02-01  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/regexp/RE.java (getRETokenNamedProperty): Chain exception.
+	* gnu/regexp/RETokenNamedProperty.java (LETTER, MARK, SEPARATOR,
+	SYMBOL, NUMBER, PUNCTUATION, OTHER): New final byte[] fields.
+	(getHandler): Check for grouped properties L, M, Z, S, N, P or C.
+	(UnicodeCategoriesHandler): New private static class.
+	
+2006-01-31  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/URI.java (getURIGroup): Check for null to see whether
+	group actually exists.
+
+2006-01-31  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #22873
+	* gnu/regexp/REMatch(toString(int)): Throw IndexOutOfBoundsException
+	for an invalid index and return null for a skipped group.
+
+2006-01-31  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #26002
+	* gnu/regexp/gnu/regexp/RE.java(initialize): Parse /\p{prop}/.
+	(NamedProperty): New inner class.
+	(getNamedProperty): New method.
+	(getRETokenNamedProperty): New Method.
+	* gnu/regexp/RESyntax.java(RE_NAMED_PROPERTY): New syntax falg.
+	* gnu/regexp/RETokenNamedProperty.java: New file.
+
+2006-01-30  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #24876
+	* gnu/regexp/gnu/regexp/RE.java(REG_TRY_ENTIRE_MATCH):
+	New execution flag.
+	(getMatchImpl): if REG_TRY_ENTIRE_MATCH is set, add an
+	implicit RETokenEnd at the end of the regexp chain.
+	Do not select the longest match, but select the first match.
+	(match): Do not take care of REMatch.empty.
+	* gnu/regexp/REMatch.java(empty): To be used only in RETokenRepeated.
+	* gnu/regexp/RETokenOneOf.java: Corrected a typo in a comment.
+	* gnu/regexp/RETokenBackRef.java: Do not take care of REMatch.empty.
+	* gnu/regexp/RETokenRepeated.java (match): Rewrote stingy matching.
+	Do not take care of REMatch.empty. Set and check REMatch.empty
+	when trying to match the single token.
+
+2006-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/regex/PatternSyntaxException.java: Added @since.
+	* java/util/regex/Matcher.java (Matcher): Implements MatchResult.
+	* java/util/regex/MatchResult.java: New file.
+
+2006-01-23  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* gnu/regexp/REToken.java(empty): Made Cloneable.
+	* gnu/regexp/RETokenOneOf.java(match): RE.java(match):
+	Use separate methods matchN and matchP depending on the
+	boolean negative.
+	(matchN): New method used when negative. Done as before.
+	(matchP): New method used when not negative. Each token is
+	tried not by itself but by a clone of it.
+
+2006-01-22  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #25837
+	* gnu/regexp/REMatch.java(empty): New boolean indicating
+	an empty string matched.
+	* gnu/regexp/RE.java(match): Sets empty flag when an empty
+	string matched.
+	(initialize): Support back reference \10, \11, and so on.
+	(parseInt): renamed from getEscapedChar and returns int.
+	* gnu/regexp/RETokenRepeated.java(match): Sets empty flag
+	when an empty string matched. Fixed a bug of the case where
+	an empty string matched. Added special handling of {0}.
+	* gnu/regexp/RETokenBackRef.java(match): Sets empty flag
+	when an empty string matched. Fixed the case insensitive matching.
+
+2006-01-19  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #23212
+	* gnu/regexp/RE.java(initialize): Support escaped characters such as
+	\0123, \x1B, \u1234.
+	(getEscapedChar): New method.
+	(CharExpression): New inner class.
+	(getCharExpression): New Method.
+	* gnu/regexp/RESyntax.java(RE_OCTAL_CHAR, RE_HEX_CHAR,
+	RE_UNICODE_CHAR): New syntax bits.
+
+2006-01-17  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #25817
+	* gnu/regexp/RETokenRange.java(constructor):
+	Keep lo and hi as they are.
+	(match): Changed the case insensitive comparison.
+
+2006-01-17  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* gnu/regexp/RETokenChar.java(chain):
+	Do not concatenate tokens whose insens flags are diffent.
+
+2006-01-16  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #22884
+	* gnu/regexp/RE.java(initialize): Parse embedded flags.
+	* gnu/regexp/RESyntax.java(RE_EMBEDDED_FLAGS): New syntax bit.
+
+2006-01-13  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/regex/Pattern.java (Pattern): Chain REException.
+
+2006-01-12  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #22802
+	* gnu/regexp/RE.java(initialize): Fixed the parsing of
+	character classes within a subexpression.
+
+2006-01-08  Ito Kazumitsu  <kaz@maczuka.gcd.org>  
+
+	Fixes bug #25679
+	* gnu/regexp/RETokenRepeated.java(match): Optimized the case
+	when an empty string matched an empty token.
+
+2006-01-06  Ito Kazumitsu  <kaz@maczuka.gcd.org>  
+
+	Fixes bug #25616
+	* gnu/regexp/RE.java(initialize): Allow repeat.empty.token.
+	* gnu/regexp/RETokenRepeated.java(match): Break the loop
+	when an empty string matched an empty token.
+
 2006-02-06  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/rmi/registry/RegistryImpl.java (version): Use 2006.

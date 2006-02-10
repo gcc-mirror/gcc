@@ -52,6 +52,10 @@ final class RETokenLookAhead extends REToken
     this.negative = negative;
   }
 
+  int getMaximumLength() {
+    return 0;
+  }
+
   boolean match(CharIndexed input, REMatch mymatch)
   {
     REMatch trymatch = (REMatch)mymatch.clone();

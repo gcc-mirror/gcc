@@ -45,12 +45,14 @@ final class RETokenRepeated extends REToken {
     private int min,max;
     private boolean stingy;
     private boolean possessive;
+    private boolean alwaysEmpty; // Special case of {0}
     
     RETokenRepeated(int subIndex, REToken token, int min, int max) {
 	super(subIndex);
 	this.token = token;
 	this.min = min;
 	this.max = max;
+	alwaysEmpty = (min == 0 && max == 0);
     }
 
     /** Sets the minimal matching mode to true. */
@@ -82,6 +84,36 @@ final class RETokenRepeated extends REToken {
 	return (min * token.getMinimumLength());
     }
 
+    int getMaximumLength() {
+        if (max == Integer.MAX_VALUE) return Integer.MAX_VALUE;
+	int tmax = token.getMaximumLength();
+	if (tmax == Integer.MAX_VALUE) return tmax;
+	return (max * tmax);
+    }
+
+    boolean stopMatchingIfSatisfied = true;
+
+    private static REMatch findDoables(REToken tk,
+			CharIndexed input, REMatch mymatch) {
+
+	    REMatch.REMatchList doables = new REMatch.REMatchList();
+
+	    // try next repeat at all possible positions
+	    for (REMatch current = mymatch;
+		 current != null; current = current.next) {
+		REMatch recurrent = (REMatch) current.clone();
+		int origin = recurrent.index;
+		tk = (REToken) tk.clone();
+		tk.next = tk.uncle = null;
+		if (tk.match(input, recurrent)) {
+		    if (recurrent.index == origin) recurrent.empty = true;
+		    // add all items in current to doables array
+		    doables.addTail(recurrent);
+		}
+	    }
+	    return doables.head;
+    }
+
     // We do need to save every possible point, but the number of clone()
     // invocations here is really a killer for performance on non-stingy
     // repeat operators.  I'm open to suggestions...
@@ -91,58 +123,34 @@ final class RETokenRepeated extends REToken {
     // the subexpression back-reference operator allow that?
 
     boolean match(CharIndexed input, REMatch mymatch) {
+	// Possible positions for the next repeat to match at
+	REMatch newMatch = mymatch;
+
+	// {0} needs some special treatment.
+	if (alwaysEmpty) {
+	    REMatch result = matchRest(input, newMatch);
+	    if (result != null) {
+	        mymatch.assignFrom(result);
+	        return true;
+	    }
+	    else {
+	        return false;
+	    }
+	}
+
 	// number of times we've matched so far
 	int numRepeats = 0; 
 	
-	// Possible positions for the next repeat to match at
-	REMatch newMatch = mymatch;
-	REMatch last = null;
-	REMatch current;
-
-	// Add the '0-repeats' index
-	// positions.elementAt(z) == position [] in input after <<z>> matches
-	Vector positions = new Vector();
-	positions.addElement(newMatch);
-	
-	// Declare variables used in loop
 	REMatch doables;
-	REMatch doablesLast;
-	REMatch recurrent;
+	int lastIndex = mymatch.index;
+	boolean emptyMatchFound = false;
 
-	do {
-	    // Check for stingy match for each possibility.
-	    if (stingy && (numRepeats >= min)) {
-		REMatch result = matchRest(input, newMatch);
-		if (result != null) {
-		    mymatch.assignFrom(result);
-		    return true;
-		}
-	    }
+	while (numRepeats < min) {
+	    doables = findDoables(token, input, newMatch);
 
-	    doables = null;
-	    doablesLast = null;
-
-	    // try next repeat at all possible positions
-	    for (current = newMatch; current != null; current = current.next) {
-		recurrent = (REMatch) current.clone();
-		if (token.match(input, recurrent)) {
-		    // add all items in current to doables array
-		    if (doables == null) {
-			doables = recurrent;
-			doablesLast = recurrent;
-		    } else {
-			// Order these from longest to shortest
-			// Start by assuming longest (more repeats)
-			doablesLast.next = recurrent;
-		    }
-		    // Find new doablesLast
-		    while (doablesLast.next != null) {
-			doablesLast = doablesLast.next;
-		    }
-		}
-	    }
-	    // if none of the possibilities worked out, break out of do/while
-	    if (doables == null) break;
+	    // if none of the possibilities worked out, 
+	    // it means that minimum number of repeats could not be found.
+	    if (doables == null) return false;
 	    
 	    // reassign where the next repeat can match
 	    newMatch = doables;
@@ -150,44 +158,92 @@ final class RETokenRepeated extends REToken {
 	    // increment how many repeats we've successfully found
 	    ++numRepeats;
 	    
-	    positions.addElement(newMatch);
-	} while (numRepeats < max);
-	
-	// If there aren't enough repeats, then fail
-	if (numRepeats < min) return false;
-	
-	// We're greedy, but ease off until a true match is found 
-	int posIndex = positions.size();
-	
-	// At this point we've either got too many or just the right amount.
-	// See if this numRepeats works with the rest of the regexp.
-	REMatch allResults = null;
-	REMatch allResultsLast = null;
+	    if (newMatch.empty) {
+		numRepeats = min;
+		emptyMatchFound = true;
+		break;
+	    }
+	    lastIndex = newMatch.index;
+	}
 
-	REMatch results = null;
-	while (--posIndex >= min) {
-	    newMatch = (REMatch) positions.elementAt(posIndex);
-	    results = matchRest(input, newMatch);
-	    if (results != null) {
-		if (allResults == null) {
-		    allResults = results;
-		    allResultsLast = results;
-		} else {
-		    // Order these from longest to shortest
-		    // Start by assuming longest (more repeats)
-		    allResultsLast.next = results;
-		}
-		// Find new doablesLast
-		while (allResultsLast.next != null) {
-		    allResultsLast = allResultsLast.next;
+	Vector positions = new Vector();
+
+	while (numRepeats <= max) {
+	    // We want to check something like  
+	    //    if (stingy)
+	    // and neglect the further matching.  But experience tells
+	    // such neglection may cause incomplete matching.
+	    // For example, if we neglect the seemingly unnecessay
+	    // matching, /^(b+?|a){1,2}?c/ cannot match "bbc".
+	    // On the other hand, if we do not stop the unnecessary
+	    // matching, /(([a-c])b*?\2)*/ matches "ababbbcbc"
+	    // entirely when we wan to find only "ababb".
+	    // In order to make regression tests pass, we do as we did.
+	    if (stopMatchingIfSatisfied && stingy) {
+		REMatch results = matchRest(input, newMatch);
+		if (results != null) {
+		    mymatch.assignFrom(results);
+		    return true;
 		}
 	    }
-	    // else did not match rest of the tokens, try again on smaller sample
-	    // or break out when performing possessive matching
-	    if (possessive) break;
+	    positions.add(newMatch);
+	    if (emptyMatchFound) break;
+
+	    doables = findDoables(token, input, newMatch);
+	    if (doables == null) break;
+
+	    // doables.index == lastIndex occurs either
+	    //   (1) when an empty string was the longest
+	    //       that matched this token.
+	    // or
+	    //   (2) when the same string matches this token many times.
+	    //       For example, "acbab" itself matches "a.*b" and
+	    //       its substrings "acb" and "ab" also match.
+	    //       In this case, we do not have to go further until
+	    //       numRepeats == max because the more numRepeats grows,
+	    //       the shorter the substring matching this token becomes.
+	    //       So the previous succesful match must have bee the best
+	    //       match.  But this is not necessarily the case if stingy.
+	    if (doables.index == lastIndex) {
+	        if (doables.empty) {
+		    emptyMatchFound = true;
+                }
+	        else {
+		    if (!stingy) break;
+		}
+	    }
+	    numRepeats++;
+	    newMatch = doables;
+	    lastIndex = newMatch.index;
 	}
-	if (allResults != null) {
-	    mymatch.assignFrom(allResults); // does this get all?
+
+	// We're greedy, but ease off until a true match is found.
+	// At this point we've either got too many or just the right amount.
+	// See if this numRepeats works with the rest of the regexp.
+
+	REMatch.REMatchList allResults = new REMatch.REMatchList();
+
+	int posCount = positions.size();
+	int posIndex = (stingy ? 0 : posCount - 1);
+
+	while (posCount-- > 0) {
+	    REMatch m = (REMatch) positions.elementAt(posIndex);
+            if (stingy) posIndex++; else posIndex--;
+
+	    REMatch results = matchRest(input, m);
+            if (results != null) {
+	    	// Order these from longest to shortest
+		// Start by assuming longest (more repeats)
+		// If stingy the order is shortest to longest.
+		allResults.addTail(results);
+	    }
+	    else {
+		if (possessive) break;
+	    }
+	}
+
+	if (allResults.head != null) {
+	    mymatch.assignFrom(allResults.head); // does this get all?
 	    return true;
 	}
 	// If we fall out, no matches.
@@ -196,27 +252,17 @@ final class RETokenRepeated extends REToken {
 
     private REMatch matchRest(CharIndexed input, final REMatch newMatch) {
 	REMatch current, single;
-	REMatch doneIndex = null;
-	REMatch doneIndexLast = null;
+	REMatch.REMatchList doneIndex = new REMatch.REMatchList();
 	// Test all possible matches for this number of repeats
 	for (current = newMatch; current != null; current = current.next) {
 	    // clone() separates a single match from the chain
 	    single = (REMatch) current.clone();
 	    if (next(input, single)) {
 		// chain results to doneIndex
-		if (doneIndex == null) {
-		    doneIndex = single;
-		    doneIndexLast = single;
-		} else {
-		    doneIndexLast.next = single;
-		}
-		// Find new doneIndexLast
-		while (doneIndexLast.next != null) {
-		    doneIndexLast = doneIndexLast.next;
-		}
+		doneIndex.addTail(single);
 	    }
 	}
-	return doneIndex;
+	return doneIndex.head;
     }
 
     void dump(StringBuffer os) {

@@ -1,5 +1,5 @@
-/* gnu/regexp/RETokenBackRef.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+/* gnu/regexp/RETokenIndependent.java
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,50 +35,42 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.regexp;
 
-final class RETokenBackRef extends REToken {
-  private int num;
-  private boolean insens;
-  
-  RETokenBackRef(int subIndex, int num, boolean insens) {
-    super(subIndex);
-    this.num = num;
-    this.insens = insens;
+/**
+ * @author Ito Kazumitsu
+ */
+final class RETokenIndependent extends REToken
+{
+  REToken re;
+
+  RETokenIndependent(REToken re) throws REException {
+    super(0);
+    this.re = re;
   }
 
-  // should implement getMinimumLength() -- any ideas?
+  int getMinimumLength() {
+    return re.getMinimumLength();
+  }
 
-    boolean match(CharIndexed input, REMatch mymatch) {
-	if (num >= mymatch.start.length) return false;
-	if (num >= mymatch.end.length) return false;
-	int b,e;
-	b = mymatch.start[num];
-	e = mymatch.end[num];
-	if ((b==-1)||(e==-1)) return false; // this shouldn't happen, but...
-	for (int i=b; i<e; i++) {
-	    char c1 = input.charAt(mymatch.index+i-b);
-	    char c2 = input.charAt(i);
-	    if (c1 != c2) {
-		if (insens) {
-		    if (c1 != Character.toLowerCase(c2) &&
-			c1 != Character.toUpperCase(c2)) {
-			return false;
-		    }
-		}
-		else {
-		    return false;
-		}
-	    }
-	}
-	mymatch.index += e-b;
-	return next(input, mymatch);
+  int getMaximumLength() {
+    return re.getMaximumLength();
+  }
+
+  boolean match(CharIndexed input, REMatch mymatch)
+  {
+    if (re.match(input, mymatch)) {
+      // Once we have found a match, we do not see other possible matches.
+      mymatch.next = null;
+      return next(input, mymatch);
     }
-    
+    return false;
+  }
+
     void dump(StringBuffer os) {
-	os.append('\\').append(num);
+	os.append("(?>");
+	re.dumpAll(os);
+	os.append(')');
     }
 }
-
 
