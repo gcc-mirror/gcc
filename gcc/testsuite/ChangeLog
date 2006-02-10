@@ -1,3 +1,7 @@
+2006-02-10  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/20050105-1.c: Do not use -floop-optimize2.
+
 2006-02-10  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/pr26213.c: New test.

@@ -315,7 +315,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmodulo-sched -fno-branch-count-reg @gol
--fno-default-inline  -fno-defer-pop -floop-optimize2 -fmove-loop-invariants @gol
+-fno-default-inline  -fno-defer-pop -fmove-loop-invariants @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations  -funsafe-loop-optimizations  -ffinite-math-only @gol
@@ -4831,12 +4831,6 @@ Perform loop optimizations: move constant expressions out of loops, simplify
 exit test conditions and optionally do strength-reduction as well.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
-
-@item -floop-optimize2
-@opindex floop-optimize2
-Perform loop optimizations using the new loop optimizer.  The optimizations
-(loop unrolling, peeling and unswitching, loop invariant motion) are enabled
-by separate flags.
 
 @item -funsafe-loop-optimizations
 @opindex funsafe-loop-optimizations

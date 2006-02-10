@@ -1,3 +1,12 @@
+2006-02-10  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* doc/invoke.texi (-floop-optimize2): Removed.
+	* toplev.c (process_options): Remove handling of flag_loop_optimize2.
+	* loop-init.c (gate_handle_loop2): Do not test flag_loop_optimize2.
+	Test flag_branch_on_count_reg only if HAVE_doloop_end.
+	* common.opt (floop-optimize2): Removed.
+	(fmove-loop-invariants): Enabled by default.
+
 2006-02-10  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-if-conv.c (combine_blocks): Free the result of
