@@ -555,10 +555,6 @@ floop-optimize
 Common Report Var(flag_loop_optimize)
 Perform loop optimizations
 
-floop-optimize2
-Common Report Var(flag_loop_optimize2)
-Perform loop optimizations using the new loop optimizer
-
 fmath-errno
 Common Report Var(flag_errno_math) Init(1)
 Set errno after built-in math functions
@@ -587,7 +583,7 @@ Common Report Var(flag_modulo_sched)
 Perform SMS based modulo scheduling before the first scheduling pass
 
 fmove-loop-invariants
-Common Report Var(flag_move_loop_invariants)
+Common Report Var(flag_move_loop_invariants) Init(1)
 Move loop invariant computations out of loops
 
 fmudflap

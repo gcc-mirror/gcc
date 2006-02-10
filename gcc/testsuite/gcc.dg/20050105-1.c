@@ -1,6 +1,6 @@
 /* PR rtl-optimization/18861 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -floop-optimize2" } */
+/* { dg-options "-O2" } */
 
 extern void abort (void);
 

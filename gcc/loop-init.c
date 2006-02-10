@@ -133,12 +133,15 @@ loop_optimizer_finalize (struct loops *loops)
 static bool
 gate_handle_loop2 (void)
 {
-  return (optimize > 0 && flag_loop_optimize2
+  return (optimize > 0
   	  && (flag_move_loop_invariants
               || flag_unswitch_loops
               || flag_peel_loops
               || flag_unroll_loops
-              || flag_branch_on_count_reg));
+#ifdef HAVE_doloop_end
+	      || (flag_branch_on_count_reg && HAVE_doloop_end)
+#endif
+	      ));
 }
 
 struct tree_opt_pass pass_loop2 =
