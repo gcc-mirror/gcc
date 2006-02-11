@@ -1,3 +1,8 @@
+2006-02-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/invoke.texi (xl-compat): Document conversion and support
+	routine names.
+
 2006-02-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/contrib.texi: Update my entry.

@@ -11131,20 +11131,22 @@ implies @option{-mno-powerpc64}.  GCC defaults to @option{-maix32}.
 @itemx -mno-xl-compat
 @opindex mxl-compat
 @opindex mno-xl-compat
-Produce code that conforms more closely to IBM XLC semantics when using
-AIX-compatible ABI.  Pass floating-point arguments to prototyped
-functions beyond the register save area (RSA) on the stack in addition
-to argument FPRs.  Do not assume that most significant double in 128
-bit long double value is properly rounded when comparing values.
+Produce code that conforms more closely to IBM XL compiler semantics
+when using AIX-compatible ABI.  Pass floating-point arguments to
+prototyped functions beyond the register save area (RSA) on the stack
+in addition to argument FPRs.  Do not assume that most significant
+double in 128-bit long double value is properly rounded when comparing
+values and converting to double.  Use XL symbol names for long double
+support routines.
 
 The AIX calling convention was extended but not initially documented to
 handle an obscure K&R C case of calling a function that takes the
-address of its arguments with fewer arguments than declared.  AIX XL
+address of its arguments with fewer arguments than declared.  IBM XL
 compilers access floating point arguments which do not fit in the
 RSA from the stack when a subroutine is compiled without
 optimization.  Because always storing floating-point arguments on the
 stack is inefficient and rarely needed, this option is not enabled by
-default and only is necessary when calling subroutines compiled by AIX
+default and only is necessary when calling subroutines compiled by IBM
 XL compilers without optimization.
 
 @item -mpe
