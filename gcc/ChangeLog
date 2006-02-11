@@ -1,3 +1,7 @@
+2006-02-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/contrib.texi: Update my entry.
+
 2006-02-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/darwin.h (DBX_REGISTER_NUMBER): Define.
