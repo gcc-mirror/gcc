@@ -1,3 +1,7 @@
+2006-02-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/i386/darwin.h (DBX_REGISTER_NUMBER): Define.
+
 2006-02-10  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-inline.c (estimate_num_insns_1): Make OpenMP directives
