@@ -210,8 +210,10 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
       ret = GS_OK;
       break;
 
+      /* We used to do this for MODIFY_EXPR as well, but that's unsafe; the
+	 LHS of an assignment might also be involved in the RHS, as in bug
+	 25979.  */
     case INIT_EXPR:
-    case MODIFY_EXPR:
       cp_gimplify_init_expr (expr_p, pre_p, post_p);
       ret = GS_OK;
       break;

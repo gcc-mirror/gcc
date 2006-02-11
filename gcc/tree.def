@@ -466,7 +466,8 @@ DEFTREECODE (COMPOUND_EXPR, "compound_expr", tcc_expression, 2)
 DEFTREECODE (MODIFY_EXPR, "modify_expr", tcc_expression, 2)
 
 /* Initialization expression.  Operand 0 is the variable to initialize;
-   Operand 1 is the initializer.  */
+   Operand 1 is the initializer.  This differs from MODIFY_EXPR in that any
+   reference to the referent of operand 0 within operand 1 is undefined.  */
 DEFTREECODE (INIT_EXPR, "init_expr", tcc_expression, 2)
 
 /* For TARGET_EXPR, operand 0 is the target of an initialization,

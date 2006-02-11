@@ -470,7 +470,7 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
 
   t = lookup_tmp_var (val, is_formal);
 
-  mod = build (MODIFY_EXPR, TREE_TYPE (t), t, val);
+  mod = build2 (INIT_EXPR, TREE_TYPE (t), t, val);
 
   if (EXPR_HAS_LOCATION (val))
     SET_EXPR_LOCUS (mod, EXPR_LOCUS (val));
@@ -1031,7 +1031,7 @@ gimplify_decl_expr (tree *stmt_p)
 	  if (!TREE_STATIC (decl))
 	    {
 	      DECL_INITIAL (decl) = NULL_TREE;
-	      init = build (MODIFY_EXPR, void_type_node, decl, init);
+	      init = build2 (INIT_EXPR, void_type_node, decl, init);
 	      gimplify_and_add (init, stmt_p);
 	    }
 	  else
@@ -2113,14 +2113,10 @@ gimple_boolify (tree expr)
     TARGET is the tree for T1 above.
 
     PRE_P points to the list where side effects that must happen before
-	*EXPR_P should be stored.
-
-   POST_P points to the list where side effects that must happen after
-     *EXPR_P should be stored.  */
+      *EXPR_P should be stored.  */
 
 static enum gimplify_status
-gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target,
-		    fallback_t fallback)
+gimplify_cond_expr (tree *expr_p, tree *pre_p, fallback_t fallback)
 {
   tree expr = *expr_p;
   tree tmp, tmp2, type;
@@ -2136,16 +2132,7 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target,
     {
       tree result;
 
-      if (target)
-	{
-	  ret = gimplify_expr (&target, pre_p, post_p,
-			       is_gimple_min_lval, fb_lvalue);
-	  if (ret != GS_ERROR)
-	    ret = GS_OK;
-	  result = tmp = target;
-	  tmp2 = unshare_expr (target);
-	}
-      else if ((fallback & fb_lvalue) == 0)
+      if ((fallback & fb_lvalue) == 0)
 	{
 	  result = tmp2 = tmp = create_tmp_var (TREE_TYPE (expr), "iftmp");
 	  ret = GS_ALL_DONE;
@@ -2576,7 +2563,7 @@ gimplify_init_ctor_eval (tree object, tree list, tree *pre_p, bool cleared)
 				 pre_p, cleared);
       else
 	{
-	  init = build (MODIFY_EXPR, TREE_TYPE (cref), cref, value);
+	  init = build2 (INIT_EXPR, TREE_TYPE (cref), cref, value);
 	  gimplify_and_add (init, pre_p);
 	}
     }
@@ -2934,9 +2921,36 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	   copy in other cases as well.  */
 	if (!is_gimple_reg_type (TREE_TYPE (*from_p)))
 	  {
-	    *expr_p = *from_p;
-	    return gimplify_cond_expr (expr_p, pre_p, post_p, *to_p,
-				       fb_rvalue);
+	    /* This code should mirror the code in gimplify_cond_expr. */
+	    enum tree_code code = TREE_CODE (*expr_p);
+	    tree cond = *from_p;
+	    tree result = *to_p;
+
+	    ret = gimplify_expr (&result, pre_p, post_p,
+				 is_gimple_min_lval, fb_lvalue);
+	    if (ret != GS_ERROR)
+	      ret = GS_OK;
+
+	    if (TREE_TYPE (TREE_OPERAND (cond, 1)) != void_type_node)
+	      TREE_OPERAND (cond, 1)
+		= build2 (code, void_type_node, result,
+			  TREE_OPERAND (cond, 1));
+	    if (TREE_TYPE (TREE_OPERAND (cond, 2)) != void_type_node)
+	      TREE_OPERAND (cond, 2)
+		= build2 (code, void_type_node, unshare_expr (result),
+			  TREE_OPERAND (cond, 2));
+
+	    TREE_TYPE (cond) = void_type_node;
+	    recalculate_side_effects (cond);
+
+	    if (want_value)
+	      {
+		gimplify_and_add (cond, pre_p);
+		*expr_p = unshare_expr (result);
+	      }
+	    else
+	      *expr_p = cond;
+	    return ret;
 	  }
 	else
 	  ret = GS_UNHANDLED;
@@ -2974,10 +2988,6 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
-
-  /* The distinction between MODIFY_EXPR and INIT_EXPR is no longer useful.  */
-  if (TREE_CODE (*expr_p) == INIT_EXPR)
-    TREE_SET_CODE (*expr_p, MODIFY_EXPR);
 
   /* See if any simplifications can be done based on what the RHS is.  */
   ret = gimplify_modify_expr_rhs (expr_p, from_p, to_p, pre_p, post_p,
@@ -3648,7 +3658,7 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	    gimplify_bind_expr (&init, temp, pre_p);
 	  if (init != temp)
 	    {
-	      init = build (MODIFY_EXPR, void_type_node, temp, init);
+	      init = build2 (INIT_EXPR, void_type_node, temp, init);
 	      ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt,
 				   fb_none);
 	    }
@@ -3822,8 +3832,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case COND_EXPR:
-	  ret = gimplify_cond_expr (expr_p, pre_p, post_p, NULL_TREE,
-				    fallback);
+	  ret = gimplify_cond_expr (expr_p, pre_p, fallback);
 	  /* C99 code may assign to an array in a structure value of a
 	     conditional expression, and this has undefined behavior
 	     only on execution, so create a temporary if an lvalue is
@@ -3859,6 +3868,11 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	case INIT_EXPR:
 	  ret = gimplify_modify_expr (expr_p, pre_p, post_p,
 				      fallback != fb_none);
+
+	  /* The distinction between MODIFY_EXPR and INIT_EXPR is no longer
+	     useful.  */
+	  if (*expr_p && TREE_CODE (*expr_p) == INIT_EXPR)
+	    TREE_SET_CODE (*expr_p, MODIFY_EXPR);
 	  break;
 
 	case TRUTH_ANDIF_EXPR:
@@ -4492,7 +4506,7 @@ gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
 
       *expr_p = create_tmp_var (type, NULL);
       tmp = build1 (NOP_EXPR, type, expr);
-      tmp = build2 (MODIFY_EXPR, type, *expr_p, expr);
+      tmp = build2 (MODIFY_EXPR, type, *expr_p, tmp);
       if (EXPR_HAS_LOCATION (expr))
 	SET_EXPR_LOCUS (tmp, EXPR_LOCUS (expr));
       else

@@ -1,3 +1,20 @@
+2006-02-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25979
+	* tree.def: Elaborate on difference from MODIFY_EXPR.
+	* doc/c-tree.texi (INIT_EXPR): Likewise.
+	* gimplify.c (internal_get_tmp_var): Use INIT_EXPR.
+	(gimplify_decl_expr, gimplify_init_ctor_eval): Likewise.
+	(gimplify_target_expr): Likewise.
+	(gimplify_cond_expr): Remove target handling.
+	(gimplify_modify_expr): Don't clobber INIT_EXPR code here.
+	(gimplify_expr): Clobber it here.
+	(gimplify_modify_expr_rhs): Push assignment into COND_EXPR here.
+	Do return slot optimization if we have an INIT_EXPR.
+
+	PR middle-end/22439
+	* gimplify.c (gimplify_one_sizepos): Fix typo.
+
 2006-02-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (tls_call_delay): Fix oversight.

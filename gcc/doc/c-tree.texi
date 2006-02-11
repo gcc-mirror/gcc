@@ -2164,7 +2164,10 @@ just like that for @samp{i = i + 3}.
 
 @item INIT_EXPR
 These nodes are just like @code{MODIFY_EXPR}, but are used only when a
-variable is initialized, rather than assigned to subsequently.
+variable is initialized, rather than assigned to subsequently.  This
+means that we can assume that the target of the initialization is not
+used in computing its own value; any reference to the lhs in computing
+the rhs is undefined.
 
 @item COMPONENT_REF
 These nodes represent non-static data member accesses.  The first
