@@ -1,5 +1,5 @@
 /* IEEE floating point support routines, for GDB, the GNU Debugger.
-   Copyright 1991, 1994, 1999, 2000, 2003, 2005
+   Copyright 1991, 1994, 1999, 2000, 2003, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GDB.
@@ -31,6 +31,11 @@ Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA. 
 #include <string.h>
 #endif
 
+/* On some platforms, <float.h> provides DBL_QNAN.  */
+#ifdef STDC_HEADERS
+#include <float.h>
+#endif
+
 #include "ansidecl.h"
 #include "libiberty.h"
 #include "floatformat.h"
@@ -44,7 +49,11 @@ Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA. 
 #endif
 
 #ifndef NAN
+#ifdef DBL_QNAN
+#define NAN DBL_QNAN
+#else
 #define NAN (0.0 / 0.0)
+#endif
 #endif
 
 static unsigned long get_field (const unsigned char *,

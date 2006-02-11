@@ -1,3 +1,11 @@
+2006-02-11  Roger Sayle  <roger@eyesopen.com>
+	    R. Scott Bailey  <scott.bailey@eds.com>
+	    Bill Northcott  <w.northcott@unsw.edu.au>
+
+	PR bootstrap/16787
+	* floatformat.c: Include <float.h> where available.
+	(NAN): Use value of DBL_QNAN if defined, and NAN isn't.
+
 2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* configure.ac: Add -Wc++-compat to ac_libibety_warn_cflags where
