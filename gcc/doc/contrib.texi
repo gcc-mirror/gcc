@@ -269,9 +269,12 @@ Ivan Fontes Garcia for the Portugese translation of the GCJ FAQ.
 Peter Gerwinski for various bug fixes and the Pascal front end.
 
 @item
-Kaveh Ghazi for his direction via the steering committee,
-amazing work to make @samp{-W -Wall} useful, and continuously testing
-GCC on a plethora of platforms.
+Kaveh R.@: Ghazi for his direction via the steering committee, amazing
+work to make @samp{-W -Wall -W* -Werror} useful, and continuously
+testing GCC on a plethora of platforms.  Kaveh extends his gratitude to
+the @uref{http://www.caip.rutgers.edu,,CAIP Center} at Rutgers
+University for providing him with computing resources to work on Free
+Software since the late 1980s.
 
 @item
 John Gilmore for a donation to the FSF earmarked improving GNU Java.
