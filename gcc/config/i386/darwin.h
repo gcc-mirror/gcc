@@ -152,3 +152,13 @@ extern void darwin_x86_file_end (void);
 	}								\
       else fprintf (FILE, "\tcall mcount\n");				\
     } while (0)
+
+/* Darwin uses the standard DWARF register numbers but the default
+   register numbers for STABS.  Fortunately for 64-bit code the
+   default and the standard are the same.  */
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n) (TARGET_64BIT			\
+				? dbx64_register_map[n]		\
+				: write_symbols == DWARF2_DEBUG	\
+				? svr4_dbx_register_map[n]	\
+				: dbx_register_map[n])
