@@ -1,3 +1,9 @@
+2006-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/24996
+	* except.c (build_throw): Add a CLEANUP_POINT_EXPR inside the 
+	TRY_CATCH_EXPR or MUST_NOT_THROW_EXPR.
+
 2006-02-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* class.c (debug_class): Remove extern.
