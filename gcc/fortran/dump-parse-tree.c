@@ -478,6 +478,9 @@ gfc_show_expr (gfc_expr * p)
 	case INTRINSIC_NOT:
 	  gfc_status ("NOT ");
 	  break;
+	case INTRINSIC_PARENTHESES:
+	  gfc_status ("parens");
+	  break;
 
 	default:
 	  gfc_internal_error

@@ -1,3 +1,13 @@
+2006-02-11  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	Backport r110819 and r110840 from the trunk
+	PR fortran/14771
+	* gfortran.dg/parens_1.f90: New.
+	* gfortran.dg/parens_2.f90: New.
+	* gfortran.dg/parens_3.f90: New.
+	* gfortran.dg/parens_4.f90: New.
+	* gfortran.dg/parens_5.f90: New.
+
 2006-02-10  Bernhard Fischer  <rep.nop@aon.at>
 
 	PR fortran/25756

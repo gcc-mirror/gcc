@@ -2455,6 +2455,7 @@ static const mstring intrinsics[] =
     minit ("LT", INTRINSIC_LT),
     minit ("LE", INTRINSIC_LE),
     minit ("NOT", INTRINSIC_NOT),
+    minit ("PARENTHESES", INTRINSIC_PARENTHESES),
     minit (NULL, -1)
 };
 
@@ -2513,6 +2514,7 @@ mio_expr (gfc_expr ** ep)
 	case INTRINSIC_UPLUS:
 	case INTRINSIC_UMINUS:
 	case INTRINSIC_NOT:
+	case INTRINSIC_PARENTHESES:
 	  mio_expr (&e->value.op.op1);
 	  break;
 

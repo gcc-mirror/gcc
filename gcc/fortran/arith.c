@@ -1507,6 +1507,12 @@ eval_intrinsic (gfc_intrinsic_op operator,
       unary = 1;
       break;
 
+    case INTRINSIC_PARENTHESES:
+      temp.ts = op1->ts;
+
+      unary = 1;
+      break;
+
     case INTRINSIC_GE:
     case INTRINSIC_LT:		/* Additional restrictions  */
     case INTRINSIC_LE:          /* for ordering relations.  */
