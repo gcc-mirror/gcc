@@ -1,7 +1,4 @@
-// 2000-06-29 bkoz
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
-// Free Software Foundation
+// Copyright (C) 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,36 +16,33 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 27.6.1.3 unformatted input functions
-// NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-
 #include <istream>
 #include <sstream>
 #include <testsuite_hooks.h>
 
-// libstdc++/8348
-void test06(void)
+// libstdc++/26211
+void test01()
 {
   using namespace std;
   bool test __attribute__((unused)) = true;
-  string num1("555");
+  
+  typedef wistringstream::pos_type pos_type;
 
-  // seekg
-  {
-    istringstream iss(num1);
-    istream::pos_type pos1 = iss.tellg();
-    int asNum = 0;
-    iss >> asNum;
-    VERIFY( test = iss.eof() );
-    VERIFY( test = !iss.fail() );
-    iss.clear();
-    iss.seekg(0, ios_base::beg);
-    VERIFY( test = !iss.fail() );
-  }
+  wistringstream iss(L"Duos for Doris");
+  wostringstream oss;
+  
+  VERIFY( iss.tellg() == pos_type(0) );
+  
+  iss >> oss.rdbuf();
+  VERIFY( iss.rdstate() == iss.eofbit );
+  VERIFY( iss.tellg() == pos_type(-1) );
+
+  iss.clear();
+  VERIFY( iss.tellg() == pos_type(14) );
 }
 
 int main()
 {
-  test06();
+  test01();
   return 0;
 }
