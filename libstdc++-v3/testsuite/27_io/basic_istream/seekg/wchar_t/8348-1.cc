@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,7 @@ void test06(void)
     VERIFY( test = iss.eof() );
     VERIFY( test = !iss.fail() );
     iss.seekg(pos1);
+    iss.clear();
     VERIFY( test = !iss.fail() );
   }
 }
