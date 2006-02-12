@@ -722,6 +722,7 @@ build_throw (tree exp)
       temp_expr = NULL_TREE;
       stabilize_init (exp, &temp_expr);
 
+      exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
       if (elided)
 	exp = build2 (TRY_CATCH_EXPR, void_type_node, exp,
 		      do_free_exception (ptr));
