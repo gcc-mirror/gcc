@@ -1,3 +1,20 @@
+2006-02-12  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25806
+	* trans-array.c (gfc_trans_allocate_array_storage): New argument
+	dealloc; free the temporary only if dealloc is true.
+	(gfc_trans_allocate_temp_array): New argument bool dealloc, to be
+	passed onwards to gfc_trans_allocate_array_storage.
+	(gfc_trans_array_constructor, gfc_conv_loop_setup): Update call to
+	gfc_trans_allocate_temp_array.
+	* trans-array.h (gfc_trans_allocate_temp_array): Update function
+	prototype.
+	* trans-expr.c (gfc_conv_function_call): Set new argument 'dealloc'
+	to gfc_trans_allocate_temp_array to false in case of functions
+	returning pointers.
+	(gfc_trans_arrayfunc_assign): Return NULL for functions returning
+	pointers.
+
 2006-02-10  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/20858
