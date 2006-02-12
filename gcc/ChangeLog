@@ -1,3 +1,10 @@
+2006-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR tree-opt/24365
+	* tree-inline.c (declare_return_variable): Just don't use the
+	modify target if it's a gimple complex reg and the return slot
+	isn't.
+
 2006-02-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/contrib.texi: Update my entry.
