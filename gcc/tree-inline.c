@@ -1222,9 +1222,10 @@ declare_return_variable (copy_body_data *id, tree return_slot_addr,
 	    use_it = false;
 	  else if (is_global_var (base_m))
 	    use_it = false;
-	  else if (TREE_CODE (TREE_TYPE (base_m)) == COMPLEX_TYPE
-		   && !DECL_COMPLEX_GIMPLE_REG_P (result))
-	    DECL_COMPLEX_GIMPLE_REG_P (base_m) = 0;
+	  else if (TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
+		   && !DECL_COMPLEX_GIMPLE_REG_P (result)
+		   && DECL_COMPLEX_GIMPLE_REG_P (base_m))
+	    use_it = false;
 	  else if (!TREE_ADDRESSABLE (base_m))
 	    use_it = true;
 	}
