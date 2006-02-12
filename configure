@@ -1189,7 +1189,7 @@ no)
 	;;
     *-*-solaris2* | *-*-sysv4* | *-*-irix* | *-*-osf* | *-*-hpux*)
 	;;
-    *-*-darwin*)
+    *-*-darwin* | *-*-aix*)
 	;;
     *)
 	noconfigdirs="$noconfigdirs target-libgomp"
