@@ -562,15 +562,9 @@ fd_sfree (unix_stream * s)
 static try
 fd_seek (unix_stream * s, gfc_offset offset)
 {
-  if (s->physical_offset == offset) /* Are we lucky and avoid syscall?  */
-    {
-      s->logical_offset = offset;
-      return SUCCESS;
-    }
+  s->logical_offset = offset;
 
-  s->physical_offset = s->logical_offset = offset;
-
-  return (lseek (s->fd, offset, SEEK_SET) < 0) ? FAILURE : SUCCESS;
+  return SUCCESS;
 }
 
 
@@ -606,6 +600,34 @@ fd_truncate (unix_stream * s)
 }
 
 
+/* Similar to memset(), but operating on a stream instead of a string.
+   Takes care of not using too much memory.  */
+
+static try
+fd_sset (unix_stream * s, int c, size_t n)
+{
+  size_t bytes_left;
+  int trans;
+  void *p;
+
+  bytes_left = n;
+
+  while (bytes_left > 0)
+    {
+      /* memset() in chunks of BUFFER_SIZE.  */
+      trans = (bytes_left < BUFFER_SIZE) ? bytes_left : BUFFER_SIZE;
+
+      p = fd_alloc_w_at (s, &trans, -1);
+      if (p)
+	  memset (p, c, trans);
+      else
+	return FAILURE;
+
+      bytes_left -= trans;
+    }
+
+  return SUCCESS;
+}
 
 
 /* Stream read function. Avoids using a buffer for big reads. The
@@ -644,7 +666,8 @@ fd_read (unix_stream * s, void * buf, size_t * nbytes)
       return errno;
     }
 
-  if (is_seekable ((stream *) s) && fd_seek (s, s->logical_offset) == FAILURE)
+  if (is_seekable ((stream *) s) && s->physical_offset != s->logical_offset 
+      && lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
     {
       *nbytes = 0;
       return errno;
@@ -692,7 +715,8 @@ fd_write (unix_stream * s, const void * buf, size_t * nbytes)
       return errno;
     }
 
-  if (is_seekable ((stream *) s) && fd_seek (s, s->logical_offset) == FAILURE)
+  if (is_seekable ((stream *) s) && s->physical_offset != s->logical_offset
+      && lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
     {
       *nbytes = 0;
       return errno;
@@ -739,6 +763,7 @@ fd_open (unix_stream * s)
   s->st.truncate = (void *) fd_truncate;
   s->st.read = (void *) fd_read;
   s->st.write = (void *) fd_write;
+  s->st.set = (void *) fd_sset;
 
   s->buffer = NULL;
 }
@@ -870,6 +895,25 @@ mem_seek (unix_stream * s, gfc_offset offset)
 }
 
 
+static try
+mem_set (unix_stream * s, int c, size_t n)
+{
+  void *p;
+  int len;
+
+  len = n;
+  
+  p = mem_alloc_w_at (s, &len, -1);
+  if (p)
+    {
+      memset (p, c, len);
+      return SUCCESS;
+    }
+  else
+    return FAILURE;
+}
+
+
 static int
 mem_truncate (unix_stream * s __attribute__ ((unused)))
 {
@@ -932,6 +976,7 @@ open_internal (char *base, int length)
   s->st.truncate = (void *) mem_truncate;
   s->st.read = (void *) mem_read;
   s->st.write = (void *) mem_write;
+  s->st.set = (void *) mem_set;
 
   return (stream *) s;
 }

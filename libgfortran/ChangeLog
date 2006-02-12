@@ -1,3 +1,22 @@
+2006-02-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libgfortran/25949
+	* io/io.h: Add set function pointer to struct stream.  
+	* io/unix.c (fd_seek): Only update offset, don't seek.
+	(fd_sset): New function.
+	(fd_read): Call lseek directly if necessary.
+	(fd_write): Likewise.
+	(fd_open): Set pointer to fd_sset.
+	(mem_set): New function.
+	(open_internal): Set pointer to mem_set.
+	* io/transfer.c (write_block_direct): Rename to write_buf, add
+	error return, non-pointer length argument.
+	(unformatted_write): Update to use write_buf.
+	(us_write): Simplify by using swrite instead of salloc_w.
+	(write_us_marker): New function.
+	(new_record_w): Use sset instead of memset, use write_us_marker,
+	simplify by using swrite instead of salloc_w.
+
 2006-02-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/25425
