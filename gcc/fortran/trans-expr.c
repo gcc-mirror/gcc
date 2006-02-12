@@ -1953,9 +1953,11 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  /* Evaluate the bounds of the result, if known.  */
 	  gfc_set_loop_bounds_from_array_spec (&mapping, se, sym->result->as);
 
-	  /* Allocate a temporary to store the result.  */
-	  gfc_trans_allocate_temp_array (&se->pre, &se->post,
-					 se->loop, info, tmp, false);
+	  /* Allocate a temporary to store the result.  In case the function
+             returns a pointer, the temporary will be a shallow copy and
+             mustn't be deallocated.  */
+          gfc_trans_allocate_temp_array (&se->pre, &se->post, se->loop, info,
+                                         tmp, false, !sym->attr.pointer);
 
 	  /* Zero the first stride to indicate a temporary.  */
 	  tmp = gfc_conv_descriptor_stride (info->descriptor, gfc_rank_cst[0]);
@@ -2911,6 +2913,10 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 
   /* Fail if EXPR1 can't be expressed as a descriptor.  */
   if (gfc_ref_needs_temporary_p (expr1->ref))
+    return NULL;
+
+  /* Functions returning pointers need temporaries.  */
+  if (expr2->symtree->n.sym->attr.pointer)
     return NULL;
 
   /* Check that no LHS component references appear during an array
