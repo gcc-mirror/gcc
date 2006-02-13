@@ -3734,7 +3734,6 @@ extern void cxx_print_error_function	(struct diagnostic_context *,
 						 const char *);
 extern void build_self_reference		(void);
 extern int same_signature_p			(tree, tree);
-extern void warn_hidden				(tree);
 extern void maybe_add_class_template_decl_list	(tree, tree, int);
 extern void unreverse_member_declarations	(tree);
 extern void invalidate_class_lookup_cache	(void);

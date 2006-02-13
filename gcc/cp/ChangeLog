@@ -1,5 +1,8 @@
 2006-02-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* cp-tree.h (warn_hidden): Remove prototype.
+	* class.c (warn_hidden): Make static.
+
 	* cp-tree.h (build_type_conversion): Remove prototype.
 	* cvt.c (build_type_conversion): Add prototype, make static.
 
