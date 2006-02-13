@@ -40,6 +40,7 @@ Boston, MA 02110-1301, USA.  */
 
 static tree cp_convert_to_pointer (tree, tree, bool);
 static tree convert_to_pointer_force (tree, tree);
+static tree build_type_conversion (tree, tree);
 static tree build_up_reference (tree, tree, int, tree);
 static void warn_ref_binding (tree, tree, tree);
 
@@ -1035,7 +1036,7 @@ convert_force (tree type, tree expr, int convtype)
    that doesn't do it.  This will probably wait for an overloading rewrite.
    (jason 8/9/95)  */
 
-tree
+static tree
 build_type_conversion (tree xtype, tree expr)
 {
   /* C++: check to see if we can convert this aggregate type

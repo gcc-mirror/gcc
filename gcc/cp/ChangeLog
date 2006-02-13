@@ -1,5 +1,8 @@
 2006-02-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* cp-tree.h (build_type_conversion): Remove prototype.
+	* cvt.c (build_type_conversion): Add prototype, make static.
+
 	* cp-tree.h (push_tinst_level): Remove prototype.
 	(pop_tinst_level): Likewise.
 	* pt.c (push_tinst_level): Add prototype, make static.
