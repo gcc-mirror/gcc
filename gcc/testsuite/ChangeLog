@@ -1,3 +1,8 @@
+2006-02-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/24427
+	* gcc.dg/tree-ssa/andor-1.c: New test case.
+
 2006-02-13  Josh Conner  <jconner@apple.com>
 
 	PR target/25376
