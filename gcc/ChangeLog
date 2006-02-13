@@ -1,5 +1,6 @@
 2006-02-13  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR middle-end/25335
 	* reload1.c (gen_reload): Also use find_replacement in UNARY_P case.
 
 2006-02-12  Zdenek Dvorak <dvorakz@suse.cz>
