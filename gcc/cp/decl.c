@@ -6815,7 +6815,7 @@ grokdeclarator (const cp_declarator *declarator,
      a function declarator.  */
 
   if (funcdef_flag && innermost_code != cdk_function)
-    return 0;
+    return NULL_TREE;
 
   if (((dname && IDENTIFIER_OPNAME_P (dname)) || flags == TYPENAME_FLAG)
       && innermost_code != cdk_function

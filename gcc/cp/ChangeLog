@@ -1,5 +1,10 @@
 2006-02-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* decl.c (grokdeclarator): Return NULL_TREE instead of 0.
+	* typeck.c (unary_complex_lvalue): Likewise.
+
+2006-02-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* lex.c (parse_strconst_pragma): Return error_mark_node instead of
 	"(tree)-1" to indicate failure.  Simplify.
 	(handle_pragma_interface): Test for error_mark_node instead of
