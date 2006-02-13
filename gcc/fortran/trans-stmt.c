@@ -3245,6 +3245,10 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_add_modify_expr (&se.pre, val, tmp);
 
 	  tmp = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
+
+	  if (expr->ts.type == BT_CHARACTER && tmp == NULL_TREE)
+	    tmp = se.string_length;
+
 	  parm = gfc_chainon_list (NULL_TREE, val);
 	  parm = gfc_chainon_list (parm, tmp);
 	  parm = gfc_chainon_list (parm, pstat);

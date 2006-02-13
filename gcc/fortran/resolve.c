@@ -4218,7 +4218,16 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	    break;
 
 	  if (gfc_extend_assign (code, ns) == SUCCESS)
-	    goto call;
+	    {
+	      if (gfc_pure (NULL) && !gfc_pure (code->symtree->n.sym))
+		{
+		  gfc_error ("Subroutine '%s' called instead of assignment at "
+			     "%L must be PURE", code->symtree->n.sym->name,
+			     &code->loc);
+		  break;
+		}
+	      goto call;
+	    }
 
 	  if (gfc_pure (NULL))
 	    {

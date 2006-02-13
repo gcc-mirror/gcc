@@ -1,3 +1,20 @@
+2006-02-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26038
+	* trans-stmt.c (gfc_trans_allocate): Provide assumed character length
+	scalar with missing backend_decl for the hidden dummy charlen.
+
+	PR fortran/25059
+	* interface.c (gfc_extend_assign): Remove detection of non-PURE
+	subroutine in assignment interface, with gfc_error, and put it in
+	* resolve.c (resolve_code).
+
+	PR fortran/25070
+	* interface.c (gfc_procedure_use): Flag rank checking for non-
+	elemental, contained or interface procedures in call to
+	(compare_actual_formal), where ranks are checked for assumed
+	shape arrays..
+
 2006-02-11  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	Backport r110819 and r110840 from the trunk
