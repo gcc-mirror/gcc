@@ -8114,6 +8114,53 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  return omit_one_operand (type, t1, arg0);
 	}
 
+      /* Canonicalize (X & C1) | C2.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  unsigned HOST_WIDE_INT hi1, lo1, hi2, lo2, mlo, mhi;
+	  int width = TYPE_PRECISION (type);
+	  hi1 = TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1));
+	  lo1 = TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1));
+	  hi2 = TREE_INT_CST_HIGH (arg1);
+	  lo2 = TREE_INT_CST_LOW (arg1);
+
+	  /* If (C1&C2) == C1, then (X&C1)|C2 becomes (X,C2).  */
+	  if ((hi1 & hi2) == hi1 && (lo1 & lo2) == lo1)
+	    return omit_one_operand (type, arg1, TREE_OPERAND (arg0, 0));
+
+	  if (width > HOST_BITS_PER_WIDE_INT)
+	    {
+	      mhi = (unsigned HOST_WIDE_INT) -1 
+		    >> (2 * HOST_BITS_PER_WIDE_INT - width);
+	      mlo = -1;
+	    }
+	  else
+	    {
+	      mhi = 0;
+	      mlo = (unsigned HOST_WIDE_INT) -1
+		    >> (HOST_BITS_PER_WIDE_INT - width);
+	    }
+
+	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
+	  if ((~(hi1 | hi2) & mhi) == 0 && (~(lo1 | lo2) & mlo) == 0)
+	    return fold_build2 (BIT_IOR_EXPR, type,
+				TREE_OPERAND (arg0, 0), arg1);
+
+	  /* Minimize the number of bits set in C1, i.e. C1 := C1 & ~C2.  */
+	  hi1 &= mhi;
+	  lo1 &= mlo;
+	  if ((hi1 & ~hi2) != hi1 || (lo1 & ~lo2) != lo1)
+	    return fold_build2 (BIT_IOR_EXPR, type,
+				fold_build2 (BIT_AND_EXPR, type,
+					     TREE_OPERAND (arg0, 0),
+					     build_int_cst_wide (type,
+								 lo1 & ~lo2,
+								 hi1 & ~hi2)),
+				arg1);
+	}
+
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
@@ -8255,6 +8302,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	return omit_one_operand (type, integer_zero_node, arg0);
+
+      /* Canonicalize (X | C1) & C2 as (X & C2) | (C1 & C2).  */
+      if (TREE_CODE (arg0) == BIT_IOR_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	return fold_build2 (BIT_IOR_EXPR, type,
+			    fold_build2 (BIT_AND_EXPR, type,
+					 TREE_OPERAND (arg0, 0), arg1),
+			    fold_build2 (BIT_AND_EXPR, type,
+					 TREE_OPERAND (arg0, 1), arg1));
 
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)

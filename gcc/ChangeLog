@@ -1,3 +1,12 @@
+2006-02-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/24427
+	* fold-const.c (fold_binary) <BIT_IOR_EXPR>: Transform (X&C1)|C2
+	into (X,C2) if C1 is a subset of the bits of C2.  Transform
+	(X&C1)|C2 into X|C2 if C1|C2 == ~0.  Canonicalize (X&C1)|C2 as
+	(X&(C1&~C2))|C2.
+	<BIT_AND_EXPR>: Canonicalize (X|C1)&C2 as (X&C2)|(C1&C2).
+
 2006-02-13  Josh Conner  <jconner@apple.com>
 
 	PR target/25376
