@@ -1,3 +1,9 @@
+2005-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2005-05-20  Richard Henderson  <rth@redhat.com>
+	* g++.dg/other/stdarg3.C: Only use -mlp64 for hpux.
+
 2006-02-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* objc/compile/trivial.m: New.
@@ -7,7 +13,7 @@
 
 2006-02-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-        * gcc.dg/tls/opt-11.c: XFAIL on SPARC.
+	* gcc.dg/tls/opt-11.c: XFAIL on SPARC.
 
 2006-02-09  Janis Johnson  <janis187@us.ibm.com>
 
