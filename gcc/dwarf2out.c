@@ -8085,22 +8085,10 @@ static dw_die_ref
 base_type_die (tree type)
 {
   dw_die_ref base_type_result;
-  const char *type_name;
   enum dwarf_type encoding;
-  tree name = TYPE_NAME (type);
 
   if (TREE_CODE (type) == ERROR_MARK || TREE_CODE (type) == VOID_TYPE)
     return 0;
-
-  if (name)
-    {
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
-
-      type_name = IDENTIFIER_POINTER (name);
-    }
-  else
-    type_name = "__unknown__";
 
   switch (TREE_CODE (type))
     {
@@ -8145,10 +8133,11 @@ base_type_die (tree type)
     }
 
   base_type_result = new_die (DW_TAG_base_type, comp_unit_die, type);
-  if (demangle_name_func)
-    type_name = (*demangle_name_func) (type_name);
 
-  add_AT_string (base_type_result, DW_AT_name, type_name);
+  /* This probably indicates a bug.  */
+  if (! TYPE_NAME (type))
+    add_name_attribute (base_type_result, "__unknown__");
+
   add_AT_unsigned (base_type_result, DW_AT_byte_size,
 		   int_size_in_bytes (type));
   add_AT_unsigned (base_type_result, DW_AT_encoding, encoding);
@@ -8302,30 +8291,15 @@ is_subrange_type (tree type)
 static dw_die_ref
 subrange_type_die (tree type, dw_die_ref context_die)
 {
-  dw_die_ref subtype_die;
   dw_die_ref subrange_die;
-  tree name = TYPE_NAME (type);
   const HOST_WIDE_INT size_in_bytes = int_size_in_bytes (type);
-  tree subtype = TREE_TYPE (type);
 
   if (context_die == NULL)
     context_die = comp_unit_die;
 
-  if (TREE_CODE (subtype) == ENUMERAL_TYPE)
-    subtype_die = gen_enumeration_type_die (subtype, context_die);
-  else
-    subtype_die = base_type_die (subtype);
-
   subrange_die = new_die (DW_TAG_subrange_type, context_die, type);
 
-  if (name != NULL)
-    {
-      if (TREE_CODE (name) == TYPE_DECL)
-        name = DECL_NAME (name);
-      add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
-    }
-
-  if (int_size_in_bytes (subtype) != size_in_bytes)
+  if (int_size_in_bytes (TREE_TYPE (type)) != size_in_bytes)
     {
       /* The size of the subrange type and its base type do not match,
          so we need to generate a size attribute for the subrange type.  */
@@ -8338,7 +8312,6 @@ subrange_type_die (tree type, dw_die_ref context_die)
   if (TYPE_MAX_VALUE (type) != NULL)
     add_bound_info (subrange_die, DW_AT_upper_bound,
                     TYPE_MAX_VALUE (type));
-  add_AT_die_ref (subrange_die, DW_AT_type, subtype_die);
 
   return subrange_die;
 }
@@ -8351,118 +8324,120 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 		   dw_die_ref context_die)
 {
   enum tree_code code = TREE_CODE (type);
-  dw_die_ref mod_type_die = NULL;
+  dw_die_ref mod_type_die;
   dw_die_ref sub_die = NULL;
   tree item_type = NULL;
+  tree qualified_type;
+  tree name;
 
-  if (code != ERROR_MARK)
+  if (code == ERROR_MARK)
+    return NULL;
+
+  /* See if we already have the appropriately qualified variant of
+     this type.  */
+  qualified_type
+    = get_qualified_type (type,
+			  ((is_const_type ? TYPE_QUAL_CONST : 0)
+			   | (is_volatile_type ? TYPE_QUAL_VOLATILE : 0)));
+  
+  /* If we do, then we can just use its DIE, if it exists.  */
+  if (qualified_type)
     {
-      tree qualified_type;
-
-      /* See if we already have the appropriately qualified variant of
-	 this type.  */
-      qualified_type
-	= get_qualified_type (type,
-			      ((is_const_type ? TYPE_QUAL_CONST : 0)
-			       | (is_volatile_type
-				  ? TYPE_QUAL_VOLATILE : 0)));
-
-      /* If we do, then we can just use its DIE, if it exists.  */
-      if (qualified_type)
-	{
-	  mod_type_die = lookup_type_die (qualified_type);
-	  if (mod_type_die)
-	    return mod_type_die;
-	}
-
-      /* Handle C typedef types.  */
-      if (qualified_type && TYPE_NAME (qualified_type)
-	  && TREE_CODE (TYPE_NAME (qualified_type)) == TYPE_DECL
-	  && DECL_ORIGINAL_TYPE (TYPE_NAME (qualified_type)))
-	{
-	  tree type_name = TYPE_NAME (qualified_type);
-	  tree dtype = TREE_TYPE (type_name);
-
-	  if (qualified_type == dtype)
-	    {
-	      /* For a named type, use the typedef.  */
-	      gen_type_die (qualified_type, context_die);
-	      mod_type_die = lookup_type_die (qualified_type);
-	    }
-	  else if (is_const_type < TYPE_READONLY (dtype)
-		   || is_volatile_type < TYPE_VOLATILE (dtype))
-	    /* cv-unqualified version of named type.  Just use the unnamed
-	       type to which it refers.  */
-	    mod_type_die
-	      = modified_type_die (DECL_ORIGINAL_TYPE (type_name),
-				   is_const_type, is_volatile_type,
-				   context_die);
-
-	  /* Else cv-qualified version of named type; fall through.  */
-	}
-
+      mod_type_die = lookup_type_die (qualified_type);
       if (mod_type_die)
-	/* OK.  */
-	;
-      else if (is_const_type)
-	{
-	  mod_type_die = new_die (DW_TAG_const_type, comp_unit_die, type);
-	  sub_die = modified_type_die (type, 0, is_volatile_type, context_die);
-	}
-      else if (is_volatile_type)
-	{
-	  mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die, type);
-	  sub_die = modified_type_die (type, 0, 0, context_die);
-	}
-      else if (code == POINTER_TYPE)
-	{
-	  mod_type_die = new_die (DW_TAG_pointer_type, comp_unit_die, type);
-	  add_AT_unsigned (mod_type_die, DW_AT_byte_size,
-			   simple_type_size_in_bits (type) / BITS_PER_UNIT);
-#if 0
-	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
-#endif
-	  item_type = TREE_TYPE (type);
-	}
-      else if (code == REFERENCE_TYPE)
-	{
-	  mod_type_die = new_die (DW_TAG_reference_type, comp_unit_die, type);
-	  add_AT_unsigned (mod_type_die, DW_AT_byte_size,
-			   simple_type_size_in_bits (type) / BITS_PER_UNIT);
-#if 0
-	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
-#endif
-	  item_type = TREE_TYPE (type);
-	}
-      else if (is_subrange_type (type))
-        mod_type_die = subrange_type_die (type, context_die);
-      else if (is_base_type (type))
-	mod_type_die = base_type_die (type);
-      else
-	{
-	  gen_type_die (type, context_die);
-
-	  /* We have to get the type_main_variant here (and pass that to the
-	     `lookup_type_die' routine) because the ..._TYPE node we have
-	     might simply be a *copy* of some original type node (where the
-	     copy was created to help us keep track of typedef names) and
-	     that copy might have a different TYPE_UID from the original
-	     ..._TYPE node.  */
-	  if (TREE_CODE (type) != VECTOR_TYPE)
-	    mod_type_die = lookup_type_die (type_main_variant (type));
-	  else
-	    /* Vectors have the debugging information in the type,
-	       not the main variant.  */
-	    mod_type_die = lookup_type_die (type);
-	  gcc_assert (mod_type_die);
-	}
-
-      /* We want to equate the qualified type to the die below.  */
-      type = qualified_type;
+	return mod_type_die;
     }
+  
+  name = qualified_type ? TYPE_NAME (qualified_type) : NULL;
+  
+  /* Handle C typedef types.  */
+  if (name && TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
+    {
+      tree dtype = TREE_TYPE (name);
+      
+      if (qualified_type == dtype)
+	{
+	  /* For a named type, use the typedef.  */
+	  gen_type_die (qualified_type, context_die);
+	  return lookup_type_die (qualified_type);
+	}
+      else if (DECL_ORIGINAL_TYPE (name)
+	       && (is_const_type < TYPE_READONLY (dtype)
+		   || is_volatile_type < TYPE_VOLATILE (dtype)))
+	/* cv-unqualified version of named type.  Just use the unnamed
+	   type to which it refers.  */
+	return modified_type_die (DECL_ORIGINAL_TYPE (name),
+				  is_const_type, is_volatile_type,
+				  context_die);
+      /* Else cv-qualified version of named type; fall through.  */
+    }
+  
+  if (is_const_type)
+    {
+      mod_type_die = new_die (DW_TAG_const_type, comp_unit_die, type);
+      sub_die = modified_type_die (type, 0, is_volatile_type, context_die);
+    }
+  else if (is_volatile_type)
+    {
+      mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die, type);
+      sub_die = modified_type_die (type, 0, 0, context_die);
+    }
+  else if (code == POINTER_TYPE)
+    {
+      mod_type_die = new_die (DW_TAG_pointer_type, comp_unit_die, type);
+      add_AT_unsigned (mod_type_die, DW_AT_byte_size,
+		       simple_type_size_in_bits (type) / BITS_PER_UNIT);
+      item_type = TREE_TYPE (type);
+    }
+  else if (code == REFERENCE_TYPE)
+    {
+      mod_type_die = new_die (DW_TAG_reference_type, comp_unit_die, type);
+      add_AT_unsigned (mod_type_die, DW_AT_byte_size,
+		       simple_type_size_in_bits (type) / BITS_PER_UNIT);
+      item_type = TREE_TYPE (type);
+    }
+  else if (is_subrange_type (type))
+    {
+      mod_type_die = subrange_type_die (type, context_die);
+      item_type = TREE_TYPE (type);
+    }
+  else if (is_base_type (type))
+    mod_type_die = base_type_die (type);
+  else
+    {
+      gen_type_die (type, context_die);
+      
+      /* We have to get the type_main_variant here (and pass that to the
+	 `lookup_type_die' routine) because the ..._TYPE node we have
+	 might simply be a *copy* of some original type node (where the
+	 copy was created to help us keep track of typedef names) and
+	 that copy might have a different TYPE_UID from the original
+	 ..._TYPE node.  */
+      if (TREE_CODE (type) != VECTOR_TYPE)
+	return lookup_type_die (type_main_variant (type));
+      else
+	/* Vectors have the debugging information in the type,
+	   not the main variant.  */
+	return lookup_type_die (type);
+    }
+  
+  /* Builtin types don't have a DECL_ORIGINAL_TYPE.  For those,
+     don't output a DW_TAG_typedef, since there isn't one in the
+     user's program; just attach a DW_AT_name to the type.  */
+  if (name
+      && (TREE_CODE (name) != TYPE_DECL || TREE_TYPE (name) == qualified_type))
+    {
+      if (TREE_CODE (name) == TYPE_DECL)
+	/* Could just call add_name_and_src_coords_attributes here,
+	   but since this is a builtin type it doesn't have any
+	   useful source coordinates anyway.  */
+	name = DECL_NAME (name);
+      add_name_attribute (mod_type_die, IDENTIFIER_POINTER (name));
+    }
+  
+  if (qualified_type)
+    equate_type_number_to_die (qualified_type, mod_type_die);
 
-  if (type)
-    equate_type_number_to_die (type, mod_type_die);
   if (item_type)
     /* We must do this after the equate_type_number_to_die call, in case
        this is a recursive type.  This ensures that the modified_type_die

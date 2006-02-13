@@ -1,3 +1,9 @@
+2006-02-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (base_type_die): Don't add AT_name here.
+	(subrange_type_die): Don't add AT_name here.
+	(modified_type_die): Rearrange code flow.  Do add AT_name here.
+
 2006-02-13  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/26247
