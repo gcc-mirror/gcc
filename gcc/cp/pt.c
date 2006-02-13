@@ -97,6 +97,8 @@ static int try_one_overload (tree, tree, tree, tree, tree,
 			     unification_kind_t, int, bool);
 static int unify (tree, tree, tree, tree, int);
 static void add_pending_template (tree);
+static int push_tinst_level (tree);
+static void pop_tinst_level (void);
 static void reopen_tinst_level (tree);
 static tree classtype_mangled_name (tree);
 static char* mangle_class_name_for_template (const char *, tree, tree);
@@ -5046,7 +5048,7 @@ static int last_template_error_tick;
 /* We're starting to instantiate D; record the template instantiation context
    for diagnostics and to restore it later.  */
 
-int
+static int
 push_tinst_level (tree d)
 {
   tree new;
@@ -5089,7 +5091,7 @@ push_tinst_level (tree d)
 /* We're done instantiating this template; return to the instantiation
    context.  */
 
-void
+static void
 pop_tinst_level (void)
 {
   tree old = current_tinst_level;
