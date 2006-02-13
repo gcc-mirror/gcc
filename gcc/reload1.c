@@ -7721,6 +7721,10 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       rtx out_moded;
       rtx set;
 
+      op1 = find_replacement (&XEXP (in, 0));
+      if (op1 != XEXP (in, 0))
+	in = gen_rtx_fmt_e (GET_CODE (in), GET_MODE (in), op1);
+
       /* First, try a plain SET.  */
       set = emit_insn_if_valid_for_reload (gen_rtx_SET (VOIDmode, out, in));
       if (set)
@@ -7729,7 +7733,6 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       /* If that failed, move the inner operand to the reload
 	 register, and try the same unop with the inner expression
 	 replaced with the reload register.  */
-      op1 = XEXP (in, 0);
 
       if (GET_MODE (op1) != GET_MODE (out))
 	out_moded = gen_rtx_REG (GET_MODE (op1), REGNO (out));
