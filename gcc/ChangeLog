@@ -1,3 +1,10 @@
+2006-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26092
+	* gimplify.c (gimplify_call_expr): Don't call get_callee_fndecl
+	twice if decl is a builtin.  When trying again, call get_callee_fndecl
+	first to verify it is still a builtin.
+
 2006-02-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (base_type_die): Don't add AT_name here.
