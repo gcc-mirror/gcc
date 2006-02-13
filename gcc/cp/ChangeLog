@@ -1,3 +1,11 @@
+2006-02-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/26151
+	* parser.c (cp_parser_decl_specifier_seq): Check for duplicate
+	decl-specifiers.  Remove extra check for duplicate 'friend'.
+	* decl.c (grokdeclarator): Remove check for duplicate
+	decl-specifiers.  Set longlong together with long_p.
+
 2006-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24996
