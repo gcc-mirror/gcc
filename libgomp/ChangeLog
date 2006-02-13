@@ -1,3 +1,9 @@
+2006-02-12  Roger Sayle  <roger@eyesopen.com>
+	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	PR libgomp/25936
+	* configure.tgt: Link against -lrt for sem_init on HPUX v11 systems.
+ 
 2006-02-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* testsuite/lib/libgomp-dg.exp: Load scanrtl.exp library.
