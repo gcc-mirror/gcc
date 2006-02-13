@@ -1,3 +1,9 @@
+2006-02-13  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/26247
+	PR rtl-optimization/26248
+	* loop-invariant.c (may_assign_reg_p): Do not allow VOIDmode.
+
 2006-02-13  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/floatunditf.c: Use if __LDBL_MANT_DIG__ == 113.
