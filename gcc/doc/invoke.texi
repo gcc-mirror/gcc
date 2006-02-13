@@ -3065,7 +3065,8 @@ When compiling C, give string constants the type @code{const
 char[@var{length}]} so that
 copying the address of one into a non-@code{const} @code{char *}
 pointer will get a warning; when compiling C++, warn about the
-deprecated conversion from string constants to @code{char *}.
+deprecated conversion from string literals to @code{char *}.  This
+warning, by default, is enabled for C++ programs.
 These warnings will help you find at
 compile time code that can try to write into a string constant, but
 only if you have been very careful about using @code{const} in
