@@ -1,5 +1,5 @@
 /* gnu/regexp/RESyntax.java
-   Copyright (C) 1998-2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -227,7 +227,12 @@ public final class RESyntax implements Serializable {
    */
   public static final int RE_NAMED_PROPERTY            = 30;
 
-  private static final int BIT_TOTAL                   = 31;
+  /**
+   * Syntax bit.  Allow nested characterclass ([a-z&&[^p-r]]), as in Java 1.4.
+   */
+  public static final int RE_NESTED_CHARCLASS          = 31;
+
+  private static final int BIT_TOTAL                   = 32;
 
   /**
    * Predefined syntax.
@@ -461,6 +466,7 @@ public final class RESyntax implements Serializable {
 	  // XXX
 	  .set(RE_POSSESSIVE_OPS)         // *+,?+,++,{}+
 	  .set(RE_UNICODE_CHAR)           // \u1234
+	  .set(RE_NESTED_CHARCLASS)       // [a-z&&[^p-r]]
 	  .makeFinal();
   }
 

@@ -1,5 +1,5 @@
 /* gnu/regexp/RE.java
-   Copyright (C) 1998-2001, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -427,116 +427,12 @@ public class RE extends REToken {
       //  [...] | [^...]
 
       else if ((unit.ch == '[') && !(unit.bk || quot)) {
-	Vector options = new Vector();
-	boolean negative = false;
-	// FIXME: lastChar == 0 means lastChar is not set. But what if
-	// \u0000 is used as a meaningful character?
-	char lastChar = 0;
-	if (index == pLength) throw new REException(getLocalizedMessage("unmatched.bracket"),REException.REG_EBRACK,index);
-	
-	// Check for initial caret, negation
-	if ((ch = pattern[index]) == '^') {
-	  negative = true;
-	  if (++index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
-	  ch = pattern[index];
-	}
-
-	// Check for leading right bracket literal
-	if (ch == ']') {
-	  lastChar = ch;
-	  if (++index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
-	}
-
-	while ((ch = pattern[index++]) != ']') {
-	  if ((ch == '-') && (lastChar != 0)) {
-	    if (index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
-	    if ((ch = pattern[index]) == ']') {
-	      options.addElement(new RETokenChar(subIndex,lastChar,insens));
-	      lastChar = '-';
-	    } else {
-	      if ((ch == '\\') && syntax.get(RESyntax.RE_BACKSLASH_ESCAPE_IN_LISTS)) {
-	        CharExpression ce = getCharExpression(pattern, index, pLength, syntax);
-	        if (ce == null)
-		  throw new REException("invalid escape sequence", REException.REG_ESCAPE, index);
-		ch = ce.ch;
-		index = index + ce.len - 1;
-	      }
-	      options.addElement(new RETokenRange(subIndex,lastChar,ch,insens));
-	      lastChar = 0;
-	      index++;
-	    }
-          } else if ((ch == '\\') && syntax.get(RESyntax.RE_BACKSLASH_ESCAPE_IN_LISTS)) {
-            if (index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
-	    int posixID = -1;
-	    boolean negate = false;
-	    // FIXME: asciiEsc == 0 means asciiEsc is not set. But what if
-	    // \u0000 is used as a meaningful character?
-            char asciiEsc = 0;
-	    NamedProperty np = null;
-	    if (("dswDSW".indexOf(pattern[index]) != -1) && syntax.get(RESyntax.RE_CHAR_CLASS_ESC_IN_LISTS)) {
-	      switch (pattern[index]) {
-	      case 'D':
-		negate = true;
-	      case 'd':
-		posixID = RETokenPOSIX.DIGIT;
-		break;
-	      case 'S':
-		negate = true;
-	      case 's':
-		posixID = RETokenPOSIX.SPACE;
-		break;
-	      case 'W':
-		negate = true;
-	      case 'w':
-		posixID = RETokenPOSIX.ALNUM;
-		break;
-	      }
-	    }
-	    if (("pP".indexOf(pattern[index]) != -1) && syntax.get(RESyntax.RE_NAMED_PROPERTY)) {
-	      np = getNamedProperty(pattern, index - 1, pLength);
-	      if (np == null)
-		throw new REException("invalid escape sequence", REException.REG_ESCAPE, index);
-	      index = index - 1 + np.len - 1;
-	    }
-	    else {
-	      CharExpression ce = getCharExpression(pattern, index - 1, pLength, syntax);
-	      if (ce == null)
-		throw new REException("invalid escape sequence", REException.REG_ESCAPE, index);
-	      asciiEsc = ce.ch;
-	      index = index - 1 + ce.len - 1;
-	    }
-	    if (lastChar != 0) options.addElement(new RETokenChar(subIndex,lastChar,insens));
-	    
-	    if (posixID != -1) {
-	      options.addElement(new RETokenPOSIX(subIndex,posixID,insens,negate));
-	    } else if (np != null) {
-	      options.addElement(getRETokenNamedProperty(subIndex,np,insens,index));
-	    } else if (asciiEsc != 0) {
-	      lastChar = asciiEsc;
-	    } else {
-	      lastChar = pattern[index];
-	    }
-	    ++index;
-	  } else if ((ch == '[') && (syntax.get(RESyntax.RE_CHAR_CLASSES)) && (index < pLength) && (pattern[index] == ':')) {
-	    StringBuffer posixSet = new StringBuffer();
-	    index = getPosixSet(pattern,index+1,posixSet);
-	    int posixId = RETokenPOSIX.intValue(posixSet.toString());
-	    if (posixId != -1)
-	      options.addElement(new RETokenPOSIX(subIndex,posixId,insens,false));
-	  } else {
-	    if (lastChar != 0) options.addElement(new RETokenChar(subIndex,lastChar,insens));
-	    lastChar = ch;
-	  }
-	  if (index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
-	} // while in list
-	// Out of list, index is one past ']'
-	    
-	if (lastChar != 0) options.addElement(new RETokenChar(subIndex,lastChar,insens));
-	    
 	// Create a new RETokenOneOf
+	ParseCharClassResult result = parseCharClass(
+		subIndex, pattern, index, pLength, cflags, syntax, 0);
 	addToken(currentToken);
-	options.trimToSize();
-	currentToken = new RETokenOneOf(subIndex,options,negative);
+	currentToken = result.token;
+	index = result.index;
       }
 
       // SUBEXPRESSIONS
@@ -1088,6 +984,199 @@ public class RE extends REToken {
 
   }
 
+  private static class ParseCharClassResult {
+      RETokenOneOf token;
+      int index;
+      boolean returnAtAndOperator = false;
+  }
+
+  /**
+   * Parse [...] or [^...] and make an RETokenOneOf instance.
+   * @param subIndex subIndex to be given to the created RETokenOneOf instance.
+   * @param pattern Input array of characters to be parsed.
+   * @param index Index pointing to the character next to the beginning '['.
+   * @param pLength Limit of the input array.
+   * @param cflags Compilation flags used to parse the pattern.
+   * @param pflags Flags that affect the behavior of this method.
+   * @param syntax Syntax used to parse the pattern.
+   */
+  private static ParseCharClassResult parseCharClass(int subIndex,
+		char[] pattern, int index,
+		int pLength, int cflags, RESyntax syntax, int pflags)
+		throws REException {
+
+	boolean insens = ((cflags & REG_ICASE) > 0);
+	Vector options = new Vector();
+	Vector addition = new Vector();
+	boolean additionAndAppeared = false;
+	final int RETURN_AT_AND = 0x01;
+	boolean returnAtAndOperator = ((pflags & RETURN_AT_AND) != 0);
+	boolean negative = false;
+	char ch;
+
+	char lastChar = 0;
+	boolean lastCharIsSet = false;
+	if (index == pLength) throw new REException(getLocalizedMessage("unmatched.bracket"),REException.REG_EBRACK,index);
+	
+	// Check for initial caret, negation
+	if ((ch = pattern[index]) == '^') {
+	  negative = true;
+	  if (++index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
+	  ch = pattern[index];
+	}
+
+	// Check for leading right bracket literal
+	if (ch == ']') {
+	  lastChar = ch; lastCharIsSet = true;
+	  if (++index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
+	}
+
+	while ((ch = pattern[index++]) != ']') {
+	  if ((ch == '-') && (lastCharIsSet)) {
+	    if (index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
+	    if ((ch = pattern[index]) == ']') {
+	      options.addElement(new RETokenChar(subIndex,lastChar,insens));
+	      lastChar = '-';
+	    } else {
+	      if ((ch == '\\') && syntax.get(RESyntax.RE_BACKSLASH_ESCAPE_IN_LISTS)) {
+	        CharExpression ce = getCharExpression(pattern, index, pLength, syntax);
+	        if (ce == null)
+		  throw new REException("invalid escape sequence", REException.REG_ESCAPE, index);
+		ch = ce.ch;
+		index = index + ce.len - 1;
+	      }
+	      options.addElement(new RETokenRange(subIndex,lastChar,ch,insens));
+	      lastChar = 0; lastCharIsSet = false;
+	      index++;
+	    }
+          } else if ((ch == '\\') && syntax.get(RESyntax.RE_BACKSLASH_ESCAPE_IN_LISTS)) {
+            if (index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
+	    int posixID = -1;
+	    boolean negate = false;
+            char asciiEsc = 0;
+	    boolean asciiEscIsSet = false;
+	    NamedProperty np = null;
+	    if (("dswDSW".indexOf(pattern[index]) != -1) && syntax.get(RESyntax.RE_CHAR_CLASS_ESC_IN_LISTS)) {
+	      switch (pattern[index]) {
+	      case 'D':
+		negate = true;
+	      case 'd':
+		posixID = RETokenPOSIX.DIGIT;
+		break;
+	      case 'S':
+		negate = true;
+	      case 's':
+		posixID = RETokenPOSIX.SPACE;
+		break;
+	      case 'W':
+		negate = true;
+	      case 'w':
+		posixID = RETokenPOSIX.ALNUM;
+		break;
+	      }
+	    }
+	    if (("pP".indexOf(pattern[index]) != -1) && syntax.get(RESyntax.RE_NAMED_PROPERTY)) {
+	      np = getNamedProperty(pattern, index - 1, pLength);
+	      if (np == null)
+		throw new REException("invalid escape sequence", REException.REG_ESCAPE, index);
+	      index = index - 1 + np.len - 1;
+	    }
+	    else {
+	      CharExpression ce = getCharExpression(pattern, index - 1, pLength, syntax);
+	      if (ce == null)
+		throw new REException("invalid escape sequence", REException.REG_ESCAPE, index);
+	      asciiEsc = ce.ch; asciiEscIsSet = true;
+	      index = index - 1 + ce.len - 1;
+	    }
+	    if (lastCharIsSet) options.addElement(new RETokenChar(subIndex,lastChar,insens));
+	    
+	    if (posixID != -1) {
+	      options.addElement(new RETokenPOSIX(subIndex,posixID,insens,negate));
+	    } else if (np != null) {
+	      options.addElement(getRETokenNamedProperty(subIndex,np,insens,index));
+	    } else if (asciiEscIsSet) {
+	      lastChar = asciiEsc; lastCharIsSet = true;
+	    } else {
+	      lastChar = pattern[index]; lastCharIsSet = true;
+	    }
+	    ++index;
+	  } else if ((ch == '[') && (syntax.get(RESyntax.RE_CHAR_CLASSES)) && (index < pLength) && (pattern[index] == ':')) {
+	    StringBuffer posixSet = new StringBuffer();
+	    index = getPosixSet(pattern,index+1,posixSet);
+	    int posixId = RETokenPOSIX.intValue(posixSet.toString());
+	    if (posixId != -1)
+	      options.addElement(new RETokenPOSIX(subIndex,posixId,insens,false));
+	  } else if ((ch == '[') && (syntax.get(RESyntax.RE_NESTED_CHARCLASS))) {
+		ParseCharClassResult result = parseCharClass(
+		    subIndex, pattern, index, pLength, cflags, syntax, 0);
+		addition.addElement(result.token);
+		addition.addElement("|");
+		index = result.index;
+	  } else if ((ch == '&') &&
+		     (syntax.get(RESyntax.RE_NESTED_CHARCLASS)) &&
+		     (index < pLength) && (pattern[index] == '&')) {
+		if (returnAtAndOperator) {
+		    ParseCharClassResult result = new ParseCharClassResult(); 
+		    options.trimToSize();
+		    if (additionAndAppeared) addition.addElement("&");
+		    if (addition.size() == 0) addition = null;
+		    result.token = new RETokenOneOf(subIndex,
+			options, addition, negative);
+		    result.index = index - 1;
+		    result.returnAtAndOperator = true;
+		    return result;
+		}
+		// The precedence of the operator "&&" is the lowest.
+		// So we postpone adding "&" until other elements
+		// are added. And we insert Boolean.FALSE at the
+		// beginning of the list of tokens following "&&".
+		// So, "&&[a-b][k-m]" will be stored in the Vecter
+		// addition in this order:
+		//     Boolean.FALSE, [a-b], "|", [k-m], "|", "&"
+		if (additionAndAppeared) addition.addElement("&");
+		addition.addElement(Boolean.FALSE);
+		additionAndAppeared = true;
+
+		// The part on which "&&" operates may be either
+		//   (1) explicitly enclosed by []
+		//   or
+		//   (2) not enclosed by [] and terminated by the
+		//       next "&&" or the end of the character list.
+	        //  Let the preceding else if block do the case (1).
+		//  We must do something in case of (2).
+		if ((index + 1 < pLength) && (pattern[index + 1] != '[')) {
+		    ParseCharClassResult result = parseCharClass(
+			subIndex, pattern, index+1, pLength, cflags, syntax,
+			RETURN_AT_AND);
+		    addition.addElement(result.token);
+		    addition.addElement("|");
+		    // If the method returned at the next "&&", it is OK.
+		    // Otherwise we have eaten the mark of the end of this
+		    // character list "]".  In this case we must give back
+		    // the end mark.
+		    index = (result.returnAtAndOperator ?
+			result.index: result.index - 1);
+		}
+	  } else {
+	    if (lastCharIsSet) options.addElement(new RETokenChar(subIndex,lastChar,insens));
+	    lastChar = ch; lastCharIsSet = true;
+	  }
+	  if (index == pLength) throw new REException(getLocalizedMessage("class.no.end"),REException.REG_EBRACK,index);
+	} // while in list
+	// Out of list, index is one past ']'
+	    
+	if (lastCharIsSet) options.addElement(new RETokenChar(subIndex,lastChar,insens));
+	   
+	ParseCharClassResult result = new ParseCharClassResult(); 
+	// Create a new RETokenOneOf
+	options.trimToSize();
+	if (additionAndAppeared) addition.addElement("&");
+	if (addition.size() == 0) addition = null;
+	result.token = new RETokenOneOf(subIndex,options, addition, negative);
+	result.index = index;
+	return result;
+  }
+
   private static int getCharUnit(char[] input, int index, CharUnit unit, boolean quot) throws REException {
     unit.ch = input[index++];
     unit.bk = (unit.ch == '\\'
@@ -1124,7 +1213,7 @@ public class RE extends REToken {
     public String toString() { return expr; }
   }
 
-  private CharExpression getCharExpression(char[] input, int pos, int lim,
+  private static CharExpression getCharExpression(char[] input, int pos, int lim,
         RESyntax syntax) {
     CharExpression ce = new CharExpression();
     char c = input[pos];
@@ -1216,7 +1305,7 @@ public class RE extends REToken {
     int len;
   }
 
-  private NamedProperty getNamedProperty(char[] input, int pos, int lim) {
+  private static NamedProperty getNamedProperty(char[] input, int pos, int lim) {
     NamedProperty np = new NamedProperty();
     char c = input[pos];
     if (c == '\\') {

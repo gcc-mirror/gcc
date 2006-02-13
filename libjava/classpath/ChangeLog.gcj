@@ -1,3 +1,22 @@
+2006-02-13  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #26166
+	* gnu/regexp/RE.java(initialize): Parsing of character class expression
+	was moved to a new method parseCharClass.
+	(parseCharClass): New method originally in initialize. Added parsing
+	of nested character classes.
+	(ParseCharClassResult): New inner class used as a return value of
+	parseCharClass.
+	(getCharExpression),(getNamedProperty): Made static.
+	* gnu/regexp/RESyntax.java(RE_NESTED_CHARCLASS): New syntax flag.
+	* gnu/regexp/RETokenOneOf.java(addition): New Vector for storing
+	nested character classes.
+	(RETokenOneOf): New constructor accepting the Vector addition.
+	(getMinimumLength), (getMaximumLength): Returns 1 if the token
+	stands for only one character.
+	(match): Added the processing of the Vector addition.
+	(matchN), (matchP): Do not check next token if addition is used.
+
 2006-02-09  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
 	Fixes bug #26112
