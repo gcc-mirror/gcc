@@ -1,6 +1,6 @@
 /* Expands front end tree to back end RTL for GCC
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -112,7 +112,6 @@ static bool check_unique_operand_names (tree, tree);
 static char *resolve_operand_name_1 (char *, tree, tree);
 static void expand_null_return_1 (void);
 static void expand_value_return (rtx);
-static void do_jump_if_equal (rtx, rtx, rtx, int);
 static int estimate_case_costs (case_node_ptr);
 static bool lshift_cheap_p (void);
 static int case_bit_test_cmp (const void *, const void *);
@@ -2588,21 +2587,14 @@ expand_case (tree exp)
   free_temp_slots ();
 }
 
-/* Generate code to jump to LABEL if OP1 and OP2 are equal.  */
+/* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.  */
 
 static void
-do_jump_if_equal (rtx op1, rtx op2, rtx label, int unsignedp)
+do_jump_if_equal (enum machine_mode mode, rtx op0, rtx op1, rtx label,
+		  int unsignedp)
 {
-  if (GET_CODE (op1) == CONST_INT && GET_CODE (op2) == CONST_INT)
-    {
-      if (op1 == op2)
-	emit_jump (label);
-    }
-  else
-    emit_cmp_and_jump_insns (op1, op2, EQ, NULL_RTX,
-			     (GET_MODE (op1) == VOIDmode
-			     ? GET_MODE (op2) : GET_MODE (op1)),
-			     unsignedp, label);
+  do_compare_rtx_and_jump (op0, op1, EQ, unsignedp, mode,
+			   NULL_RTX, NULL_RTX, label);
 }
 
 /* Not all case values are encountered equally.  This function
@@ -2954,7 +2946,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
       /* Node is single valued.  First see if the index expression matches
 	 this node and then check our children, if any.  */
 
-      do_jump_if_equal (index,
+      do_jump_if_equal (mode, index,
 			convert_modes (mode, imode,
 				       expand_normal (node->low),
 				       unsignedp),
@@ -3007,7 +2999,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	      /* See if the value matches what the right hand side
 		 wants.  */
-	      do_jump_if_equal (index,
+	      do_jump_if_equal (mode, index,
 				convert_modes (mode, imode,
 					       expand_normal (node->right->low),
 					       unsignedp),
@@ -3016,7 +3008,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	      /* See if the value matches what the left hand side
 		 wants.  */
-	      do_jump_if_equal (index,
+	      do_jump_if_equal (mode, index,
 				convert_modes (mode, imode,
 					       expand_normal (node->left->low),
 					       unsignedp),
@@ -3082,7 +3074,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	    /* We cannot process node->right normally
 	       since we haven't ruled out the numbers less than
 	       this node's value.  So handle node->right explicitly.  */
-	    do_jump_if_equal (index,
+	    do_jump_if_equal (mode, index,
 			      convert_modes
 			      (mode, imode,
 			       expand_normal (node->right->low),
@@ -3113,7 +3105,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	    /* We cannot process node->left normally
 	       since we haven't ruled out the numbers less than
 	       this node's value.  So handle node->left explicitly.  */
-	    do_jump_if_equal (index,
+	    do_jump_if_equal (mode, index,
 			      convert_modes
 			      (mode, imode,
 			       expand_normal (node->left->low),

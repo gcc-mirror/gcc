@@ -1,3 +1,24 @@
+2006-02-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/25724
+	* dojump.c (do_jump): Call do_compare_rtx_and_jump.
+	(do_jump_parts_zero_rtx): New function renamed from
+	do_jump_parts_equality_rtx.  Made static.  Add a mode argument.
+	(do_jump_parts_equality_rtx): New function split out from
+	do_jump_parts_equality.  Old implementation renamed as above.
+	Call do_jump_parts_zero_rtx if either operand is zero.
+	(do_jump_parts_equality): Call do_jump_parts_equality_rtx to
+	do all of the heavy lifting.
+	(do_compare_rtx_and_jump): Handle multi-word comparisons by
+	calling either do_jump_by_parts_greater_rtx or
+	do_jump_by_parts_equality_rtx.
+	* expr.h (do_jump_by_parts_equality_rtx): Remove prototype.
+	* expmed.c (do_cmp_and_jump): Now multi-word optimization has
+	moved to do_compare_rtx_and_jump, call it directly.
+	* stmt.c (do_jump_if_equal): Remove static prototype.  Add a
+	mode argument.  Call do_compare_rtx_and_jump.
+	(emit_case_nodes): Update calls to do_jump_if_equal.
+
 2006-02-12  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/26225
