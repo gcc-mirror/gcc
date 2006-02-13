@@ -1,3 +1,12 @@
+2006-02-13  Josh Conner  <jconner@apple.com>
+
+	PR target/25376
+	* varasm.c (function_section): Check for section name before
+	calling select_section on targets that define
+	USE_SELECT_SECTION_FOR_FUNCTIONS.  On other targets, use
+	unlikely_text_section instead of hot_function_section if
+	first_function_block_is_cold.
+
 2006-02-13  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR middle-end/25335

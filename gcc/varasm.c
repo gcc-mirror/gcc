@@ -440,9 +440,14 @@ function_section (tree decl)
     reloc = 1;
 
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
-  return targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
+  if (decl != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL_TREE)
+    return reloc ? unlikely_text_section ()
+		 : get_named_section (decl, NULL, 0);
+  else
+    return targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
 #else
-  return hot_function_section (decl);
+  return reloc ? unlikely_text_section () : hot_function_section (decl);
 #endif
 }
 
@@ -450,9 +455,15 @@ section *
 current_function_section (void)
 {
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
-  return targetm.asm_out.select_section (current_function_decl,
-					 in_cold_section_p,
-					 DECL_ALIGN (current_function_decl));
+  if (current_function_decl != NULL_TREE
+      && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
+    return in_cold_section_p ? unlikely_text_section ()
+			     : get_named_section (current_function_decl,
+						  NULL, 0);
+  else
+    return targetm.asm_out.select_section (current_function_decl,
+					   in_cold_section_p,
+					   DECL_ALIGN (current_function_decl));
 #else
   return (in_cold_section_p
 	  ? unlikely_text_section ()
