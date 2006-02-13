@@ -1,3 +1,10 @@
+2006-02-13  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/26235
+	* loop-invariant.c (hash_invariant_expr_1): Handle 'i' and 'n' formats.
+	(invariant_expr_equal_p): Handle 'i' and 'n' formats.  Fail on unknown
+	format.
+
 2006-02-13  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr): Remove handling of
