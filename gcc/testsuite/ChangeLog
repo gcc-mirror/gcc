@@ -1,3 +1,7 @@
+2006-02-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* objc.dg/dwarf-1.m: New.
+
 2006-02-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/24427
