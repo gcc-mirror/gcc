@@ -809,11 +809,25 @@ resolve_actual_arglist (gfc_actual_arglist * arg)
 	  || sym->attr.external)
 	{
 
-          if (sym->attr.proc == PROC_ST_FUNCTION)
-            {
-              gfc_error ("Statement function '%s' at %L is not allowed as an "
-                         "actual argument", sym->name, &e->where);
-            }
+	  if (sym->attr.proc == PROC_ST_FUNCTION)
+	    {
+	      gfc_error ("Statement function '%s' at %L is not allowed as an "
+			 "actual argument", sym->name, &e->where);
+	    }
+
+	  if (sym->attr.contained && !sym->attr.use_assoc
+	      && sym->ns->proc_name->attr.flavor != FL_MODULE)
+	    {
+	      gfc_error ("Internal procedure '%s' is not allowed as an "
+			 "actual argument at %L", sym->name, &e->where);
+	    }
+
+	  if (sym->attr.elemental && !sym->attr.intrinsic)
+	    {
+	      gfc_error ("ELEMENTAL non-INTRINSIC procedure '%s' is not "
+		         "allowed as an actual argument at %L", sym->name,
+			 &e->where);
+	    }
 
 	  /* If the symbol is the function that names the current (or
 	     parent) scope, then we really have a variable reference.  */
@@ -1578,6 +1592,15 @@ static try
 resolve_call (gfc_code * c)
 {
   try t;
+
+  if (c->symtree && c->symtree->n.sym
+	&& c->symtree->n.sym->ts.type != BT_UNKNOWN)
+    {
+      gfc_error ("'%s' at %L has a type, which is not consistent with "
+		 "the CALL at %L", c->symtree->n.sym->name,
+		 &c->symtree->n.sym->declared_at, &c->loc);
+      return FAILURE;
+    }
 
   /* If the procedure is not internal or module, it must be external and
      should be checked for usage.  */
@@ -4459,6 +4482,24 @@ resolve_values (gfc_symbol * sym)
 }
 
 
+/* Resolve an index expression.  */
+
+static try
+resolve_index_expr (gfc_expr * e)
+{
+
+  if (gfc_resolve_expr (e) == FAILURE)
+    return FAILURE;
+
+  if (gfc_simplify_expr (e, 0) == FAILURE)
+    return FAILURE;
+
+  if (gfc_specification_expr (e) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
 /* Resolve a charlen structure.  */
 
 static try
@@ -4469,15 +4510,303 @@ resolve_charlen (gfc_charlen *cl)
 
   cl->resolved = 1;
 
-  if (gfc_resolve_expr (cl->length) == FAILURE)
+  if (resolve_index_expr (cl->length) == FAILURE)
     return FAILURE;
 
-  if (gfc_simplify_expr (cl->length, 0) == FAILURE)
+  return SUCCESS;
+}
+
+
+/* Resolution of common features of flavors variable and procedure. */
+
+static try
+resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
+{
+  /* Constraints on deferred shape variable.  */
+  if (sym->as == NULL || sym->as->type != AS_DEFERRED)
+    {
+      if (sym->attr.allocatable)
+	{
+	  if (sym->attr.dimension)
+	    gfc_error ("Allocatable array '%s' at %L must have "
+		       "a deferred shape", sym->name, &sym->declared_at);
+	  else
+	    gfc_error ("Scalar object '%s' at %L may not be ALLOCATABLE",
+		       sym->name, &sym->declared_at);
+	    return FAILURE;
+	}
+
+      if (sym->attr.pointer && sym->attr.dimension)
+	{
+	  gfc_error ("Array pointer '%s' at %L must have a deferred shape",
+		     sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+
+    }
+  else
+    {
+      if (!mp_flag && !sym->attr.allocatable
+	     && !sym->attr.pointer && !sym->attr.dummy)
+	{
+	  gfc_error ("Array '%s' at %L cannot have a deferred shape",
+		     sym->name, &sym->declared_at);
+	  return FAILURE;
+	 }
+    }
+  return SUCCESS;
+}
+
+/* Resolve symbols with flavor variable.  */
+
+static try
+resolve_fl_variable (gfc_symbol *sym, int mp_flag)
+{
+  int flag;
+  int i;
+  gfc_expr *e;
+  gfc_expr *constructor_expr;
+
+  if (resolve_fl_var_and_proc (sym, mp_flag) == FAILURE)
     return FAILURE;
 
-  if (gfc_specification_expr (cl->length) == FAILURE)
+  /* The shape of a main program or module array needs to be constant.  */
+  if (sym->as != NULL
+	&& sym->ns->proc_name
+	&& (sym->ns->proc_name->attr.flavor == FL_MODULE
+	     || sym->ns->proc_name->attr.is_main_program)
+	&& !sym->attr.use_assoc
+	&& !sym->attr.allocatable
+	&& !sym->attr.pointer)
+    {
+      /* Unfortunately, !gfc_is_compile_time_shape hits a legal case that
+	 has not been simplified; parameter array references.  Do the
+	 simplification now.  */
+      flag = 0;
+      for (i = 0; i < sym->as->rank; i++)
+	{
+	  e = sym->as->lower[i];
+	  if (e && (resolve_index_expr (e) == FAILURE
+		|| !gfc_is_constant_expr (e)))
+	    {
+	      flag = 1;
+	      break;
+	    }
+
+	  e = sym->as->upper[i];
+	  if (e && (resolve_index_expr (e) == FAILURE
+		|| !gfc_is_constant_expr (e)))
+	    {
+	      flag = 1;
+	      break;
+	    }
+	}
+
+      if (flag)
+	{
+	  gfc_error ("The module or main program array '%s' at %L must "
+		     "have constant shape", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+    }
+
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      /* Make sure that character string variables with assumed length are
+	 dummy arguments.  */
+      e = sym->ts.cl->length;
+      if (e == NULL && !sym->attr.dummy && !sym->attr.result)
+	{
+	  gfc_error ("Entity with assumed character length at %L must be a "
+		     "dummy argument or a PARAMETER", &sym->declared_at);
+	  return FAILURE;
+	}
+
+      if (!gfc_is_constant_expr (e)
+	    && !(e->expr_type == EXPR_VARIABLE
+	    && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
+	    && sym->ns->proc_name
+	    && (sym->ns->proc_name->attr.flavor == FL_MODULE
+		  || sym->ns->proc_name->attr.is_main_program)
+	    && !sym->attr.use_assoc)
+	{
+	  gfc_error ("'%s' at %L must have constant character length "
+		     "in this context", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+    }
+
+  /* Can the symbol have an initializer?  */
+  flag = 0;
+  if (sym->attr.allocatable || sym->attr.external || sym->attr.dummy
+	|| sym->attr.intrinsic || sym->attr.result)
+    flag = 1;
+  else if (sym->attr.dimension && !sym->attr.pointer)
+    {
+      /* Don't allow initialization of automatic arrays.  */
+      for (i = 0; i < sym->as->rank; i++)
+	{
+	  if (sym->as->lower[i] == NULL
+		|| sym->as->lower[i]->expr_type != EXPR_CONSTANT
+		|| sym->as->upper[i] == NULL
+		|| sym->as->upper[i]->expr_type != EXPR_CONSTANT)
+	    {
+	      flag = 1;
+	      break;
+	    }
+	}
+  }
+
+  /* Reject illegal initializers.  */
+  if (sym->value && flag)
+    {
+      if (sym->attr.allocatable)
+	gfc_error ("Allocatable '%s' at %L cannot have an initializer",
+		   sym->name, &sym->declared_at);
+      else if (sym->attr.external)
+	gfc_error ("External '%s' at %L cannot have an initializer",
+		   sym->name, &sym->declared_at);
+      else if (sym->attr.dummy)
+	gfc_error ("Dummy '%s' at %L cannot have an initializer",
+		   sym->name, &sym->declared_at);
+      else if (sym->attr.intrinsic)
+	gfc_error ("Intrinsic '%s' at %L cannot have an initializer",
+		   sym->name, &sym->declared_at);
+      else if (sym->attr.result)
+	gfc_error ("Function result '%s' at %L cannot have an initializer",
+		   sym->name, &sym->declared_at);
+      else
+	gfc_error ("Automatic array '%s' at %L cannot have an initializer",
+		   sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
+  /* 4th constraint in section 11.3:  "If an object of a type for which
+     component-initialization is specified (R429) appears in the
+     specification-part of a module and does not have the ALLOCATABLE
+     or POINTER attribute, the object shall have the SAVE attribute."  */
+
+  constructor_expr = NULL;
+  if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
+	constructor_expr = gfc_default_initializer (&sym->ts);
+
+  if (sym->ns->proc_name
+	&& sym->ns->proc_name->attr.flavor == FL_MODULE
+	&& constructor_expr
+	&& !sym->ns->save_all && !sym->attr.save
+	&& !sym->attr.pointer && !sym->attr.allocatable)
+    {
+      gfc_error("Object '%s' at %L must have the SAVE attribute %s",
+ 	 	sym->name, &sym->declared_at,
+		"for default initialization of a component");
+      return FAILURE;
+    }
+
+  /* Assign default initializer.  */
+  if (sym->ts.type == BT_DERIVED && !(sym->value || flag)
+	&& !sym->attr.pointer)
+    sym->value = gfc_default_initializer (&sym->ts);
+
+  return SUCCESS;
+}
+
+
+/* Resolve a procedure.  */
+
+static try
+resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
+{
+  gfc_formal_arglist *arg;
+
+  if (sym->attr.function
+	&& resolve_fl_var_and_proc (sym, mp_flag) == FAILURE)
     return FAILURE;
 
+  if (sym->attr.proc == PROC_ST_FUNCTION)
+    {
+      if (sym->ts.type == BT_CHARACTER)
+        {
+          gfc_charlen *cl = sym->ts.cl;
+          if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
+            {
+              gfc_error ("Character-valued statement function '%s' at %L must "
+                         "have constant length", sym->name, &sym->declared_at);
+              return FAILURE;
+            }
+        }
+    }
+
+  /* Ensure that derived type formal arguments of a public procedure
+     are not of a private type.  */
+  if (gfc_check_access(sym->attr.access, sym->ns->default_access))
+    {
+      for (arg = sym->formal; arg; arg = arg->next)
+	{
+	  if (arg->sym
+		&& arg->sym->ts.type == BT_DERIVED
+		&& !arg->sym->ts.derived->attr.use_assoc
+		&& !gfc_check_access(arg->sym->ts.derived->attr.access,
+			arg->sym->ts.derived->ns->default_access))
+	    {
+	      gfc_error_now ("'%s' is of a PRIVATE type and cannot be "
+			     "a dummy argument of '%s', which is "
+			     "PUBLIC at %L", arg->sym->name, sym->name,
+			     &sym->declared_at);
+	      /* Stop this message from recurring.  */
+	      arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
+	      return FAILURE;
+	    }
+	}
+    }
+
+  /* An external symbol may not have an intializer because it is taken to be
+     a procedure.  */
+  if (sym->attr.external && sym->value)
+    {
+      gfc_error ("External object '%s' at %L may not have an initializer",
+		 sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
+  /* 5.1.1.5 of the Standard: A function name declared with an asterisk
+     char-len-param shall not be array-valued, pointer-valued, recursive
+     or pure.  ....snip... A character value of * may only be used in the
+     following ways: (i) Dummy arg of procedure - dummy associates with
+     actual length; (ii) To declare a named constant; or (iii) External
+     function - but length must be declared in calling scoping unit.  */
+  if (sym->attr.function
+	&& sym->ts.type == BT_CHARACTER
+	&& sym->ts.cl && sym->ts.cl->length == NULL)
+    {
+      if ((sym->as && sym->as->rank) || (sym->attr.pointer)
+	     || (sym->attr.recursive) || (sym->attr.pure))
+	{
+	  if (sym->as && sym->as->rank)
+	    gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+		       "array-valued", sym->name, &sym->declared_at);
+
+	  if (sym->attr.pointer)
+	    gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+		       "pointer-valued", sym->name, &sym->declared_at);
+
+	  if (sym->attr.pure)
+	    gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+		       "pure", sym->name, &sym->declared_at);
+
+	  if (sym->attr.recursive)
+	    gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+		       "recursive", sym->name, &sym->declared_at);
+
+	  return FAILURE;
+	}
+
+      /* Appendix B.2 of the standard.  Contained functions give an
+	 error anyway.  Fixed-form is likely to be F77/legacy.  */
+      if (!sym->attr.contained && gfc_current_form != FORM_FIXED)
+	gfc_notify_std (GFC_STD_F95_OBS, "CHARACTER(*) function "
+			"'%s' at %L is obsolescent in fortran 95",
+			sym->name, &sym->declared_at);
+    }
   return SUCCESS;
 }
 
@@ -4485,18 +4814,18 @@ resolve_charlen (gfc_charlen *cl)
 /* Resolve the components of a derived type.  */
 
 static try
-resolve_derived (gfc_symbol *sym)
+resolve_fl_derived (gfc_symbol *sym)
 {
   gfc_component *c;
+  gfc_dt_list * dt_list;
+  int i;
 
   for (c = sym->components; c != NULL; c = c->next)
     {
       if (c->ts.type == BT_CHARACTER)
 	{
-         if (resolve_charlen (c->ts.cl) == FAILURE)
-	   return FAILURE;
-	 
 	 if (c->ts.cl->length == NULL
+	     || (resolve_charlen (c->ts.cl) == FAILURE)
 	     || !gfc_is_constant_expr (c->ts.cl->length))
 	   {
 	     gfc_error ("Character length of component '%s' needs to "
@@ -4507,11 +4836,85 @@ resolve_derived (gfc_symbol *sym)
 	   }
 	}
 
-      /* TODO: Anything else that should be done here?  */
+      if (c->ts.type == BT_DERIVED
+	    && sym->component_access != ACCESS_PRIVATE
+	    && gfc_check_access(sym->attr.access, sym->ns->default_access)
+	    && !c->ts.derived->attr.use_assoc
+	    && !gfc_check_access(c->ts.derived->attr.access,
+				 c->ts.derived->ns->default_access))
+	{
+	  gfc_error ("The component '%s' is a PRIVATE type and cannot be "
+		     "a component of '%s', which is PUBLIC at %L",
+		      c->name, sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+
+      if (c->pointer || c->as == NULL)
+	continue;
+
+      for (i = 0; i < c->as->rank; i++)
+	{
+	  if (c->as->lower[i] == NULL
+		|| !gfc_is_constant_expr (c->as->lower[i])
+		|| (resolve_index_expr (c->as->lower[i]) == FAILURE)
+		|| c->as->upper[i] == NULL
+		|| (resolve_index_expr (c->as->upper[i]) == FAILURE)
+		|| !gfc_is_constant_expr (c->as->upper[i]))
+	    {
+	      gfc_error ("Component '%s' of '%s' at %L must have "
+			 "constant array bounds.",
+			 c->name, sym->name, &c->loc);
+	      return FAILURE;
+	    }
+	}
     }
+    
+  /* Add derived type to the derived type list.  */
+  dt_list = gfc_get_dt_list ();
+  dt_list->next = sym->ns->derived_types;
+  dt_list->derived = sym;
+  sym->ns->derived_types = dt_list;
 
   return SUCCESS;
 }
+
+
+static try
+resolve_fl_parameter (gfc_symbol *sym)
+{
+  /* A parameter array's shape needs to be constant.  */
+  if (sym->as != NULL && !gfc_is_compile_time_shape (sym->as))
+    {
+      gfc_error ("Parameter array '%s' at %L cannot be automatic "
+		 "or assumed shape", sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
+  /* Make sure a parameter that has been implicitly typed still
+     matches the implicit type, since PARAMETER statements can precede
+     IMPLICIT statements.  */
+  if (sym->attr.implicit_type
+	&& !gfc_compare_types (&sym->ts,
+			       gfc_get_default_type (sym, sym->ns)))
+    {
+      gfc_error ("Implicitly typed PARAMETER '%s' at %L doesn't match a "
+		 "later IMPLICIT type", sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
+  /* Make sure the types of derived parameters are consistent.  This
+     type checking is deferred until resolution because the type may
+     refer to a derived type from the host.  */
+  if (sym->ts.type == BT_DERIVED
+	&& !gfc_compare_types (&sym->ts, &sym->value->ts))
+    {
+      gfc_error ("Incompatible derived type in PARAMETER at %L",
+		 &sym->value->where);
+      return FAILURE;
+    }
+  return SUCCESS;
+}
+
 
 /* Do anything necessary to resolve a symbol.  Right now, we just
    assume that an otherwise unknown symbol is a variable.  This sort
@@ -4523,14 +4926,11 @@ resolve_symbol (gfc_symbol * sym)
   /* Zero if we are checking a formal namespace.  */
   static int formal_ns_flag = 1;
   int formal_ns_save, check_constant, mp_flag;
-  int i, flag;
   gfc_namelist *nl;
   gfc_symtree *symtree;
   gfc_symtree *this_symtree;
   gfc_namespace *ns;
   gfc_component *c;
-  gfc_formal_arglist *arg;
-  gfc_expr *constructor_expr;
 
   if (sym->attr.flavor == FL_UNKNOWN)
     {
@@ -4566,7 +4966,7 @@ resolve_symbol (gfc_symbol * sym)
 	}
     }
 
-  if (sym->attr.flavor == FL_DERIVED && resolve_derived (sym) == FAILURE)
+  if (sym->attr.flavor == FL_DERIVED && resolve_fl_derived (sym) == FAILURE)
     return;
 
   /* Symbols that are module procedures with results (functions) have
@@ -4618,88 +5018,16 @@ resolve_symbol (gfc_symbol * sym)
       return;
     }
 
-  /* A parameter array's shape needs to be constant.  */
-
-  if (sym->attr.flavor == FL_PARAMETER && sym->as != NULL 
-      && !gfc_is_compile_time_shape (sym->as))
-    {
-      gfc_error ("Parameter array '%s' at %L cannot be automatic "
-		 "or assumed shape", sym->name, &sym->declared_at);
-	  return;
-    }
-
-  /* A module array's shape needs to be constant.  */
-
-  if (sym->ns->proc_name
-      && sym->attr.flavor == FL_VARIABLE
-      && sym->ns->proc_name->attr.flavor == FL_MODULE
-      && !sym->attr.use_assoc
-      && !sym->attr.allocatable
-      && !sym->attr.pointer
-      && sym->as != NULL
-      && !gfc_is_compile_time_shape (sym->as))
-    {
-      gfc_error ("Module array '%s' at %L cannot be automatic "
-         "or assumed shape", sym->name, &sym->declared_at);
-      return;
-    }
-
-  /* Make sure that character string variables with assumed length are
-     dummy arguments.  */
-
-  if (sym->attr.flavor == FL_VARIABLE && !sym->attr.result
-      && sym->ts.type == BT_CHARACTER
-      && sym->ts.cl->length == NULL && sym->attr.dummy == 0)
-    {
-      gfc_error ("Entity with assumed character length at %L must be a "
-		 "dummy argument or a PARAMETER", &sym->declared_at);
-      return;
-    }
-
-  /* Make sure a parameter that has been implicitly typed still
-     matches the implicit type, since PARAMETER statements can precede
-     IMPLICIT statements.  */
-
-  if (sym->attr.flavor == FL_PARAMETER
-      && sym->attr.implicit_type
-      && !gfc_compare_types (&sym->ts, gfc_get_default_type (sym, sym->ns)))
-    gfc_error ("Implicitly typed PARAMETER '%s' at %L doesn't match a "
-	       "later IMPLICIT type", sym->name, &sym->declared_at);
-
-  /* Make sure the types of derived parameters are consistent.  This
-     type checking is deferred until resolution because the type may
-     refer to a derived type from the host.  */
-
-  if (sym->attr.flavor == FL_PARAMETER
-      && sym->ts.type == BT_DERIVED
-      && !gfc_compare_types (&sym->ts, &sym->value->ts))
-    gfc_error ("Incompatible derived type in PARAMETER at %L",
-	       &sym->value->where);
-
   /* Make sure symbols with known intent or optional are really dummy
      variable.  Because of ENTRY statement, this has to be deferred
      until resolution time.  */
 
-  if (! sym->attr.dummy
+  if (!sym->attr.dummy
       && (sym->attr.optional
 	  || sym->attr.intent != INTENT_UNKNOWN))
     {
       gfc_error ("Symbol at %L is not a DUMMY variable", &sym->declared_at);
       return;
-    }
-
-  if (sym->attr.proc == PROC_ST_FUNCTION)
-    {
-      if (sym->ts.type == BT_CHARACTER)
-        {
-          gfc_charlen *cl = sym->ts.cl;
-          if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
-            {
-              gfc_error ("Character-valued statement function '%s' at %L must "
-                         "have constant length", sym->name, &sym->declared_at);
-              return;
-            }
-        }
     }
 
   /* If a derived type symbol has reached this point, without its
@@ -4718,28 +5046,6 @@ resolve_symbol (gfc_symbol * sym)
 		  &sym->declared_at, sym->ts.derived->name);
       sym->ts.type = BT_UNKNOWN;
       return;
-    }
-
-  /* If a component of a derived type is of a type declared to be private,
-     either the derived type definition must contain the PRIVATE statement,
-     or the derived type must be private.  (4.4.1 just after R427) */
-  if (sym->attr.flavor == FL_DERIVED
-	&& sym->component_access != ACCESS_PRIVATE
-	&& gfc_check_access(sym->attr.access, sym->ns->default_access))
-    {
-      for (c = sym->components; c; c = c->next)
-	{
-	  if (c->ts.type == BT_DERIVED
-		&& !c->ts.derived->attr.use_assoc
-		&& !gfc_check_access(c->ts.derived->attr.access,
-				     c->ts.derived->ns->default_access))
-	    {
-	      gfc_error ("The component '%s' is a PRIVATE type and cannot be "
-			 "a component of '%s', which is PUBLIC at %L",
-			 c->name, sym->name, &sym->declared_at);
-	      return;
-	    }
-	}
     }
 
   /* An assumed-size array with INTENT(OUT) shall not be of a type for which
@@ -4762,141 +5068,16 @@ resolve_symbol (gfc_symbol * sym)
 	}
     }
 
-
-  /* Ensure that derived type formal arguments of a public procedure
-     are not of a private type.  */
-  if (sym->attr.flavor == FL_PROCEDURE
-	&& gfc_check_access(sym->attr.access, sym->ns->default_access))
-    {
-      for (arg = sym->formal; arg; arg = arg->next)
-	{
-	  if (arg->sym
-		&& arg->sym->ts.type == BT_DERIVED
-		&& !arg->sym->ts.derived->attr.use_assoc
-		&& !gfc_check_access(arg->sym->ts.derived->attr.access,
-				     arg->sym->ts.derived->ns->default_access))
-	    {
-	      gfc_error_now ("'%s' is a PRIVATE type and cannot be "
-			     "a dummy argument of '%s', which is PUBLIC at %L",
-			     arg->sym->name, sym->name, &sym->declared_at);
-	      /* Stop this message from recurring.  */
-	      arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
-	      return;
-	    }
-	}
-    }
-
-  /* Constraints on deferred shape variable.  */
-  if (sym->attr.flavor == FL_VARIABLE
-      || (sym->attr.flavor == FL_PROCEDURE
-	  && sym->attr.function))
-    {
-      if (sym->as == NULL || sym->as->type != AS_DEFERRED)
-	{
-	  if (sym->attr.allocatable)
-	    {
-	      if (sym->attr.dimension)
-		gfc_error ("Allocatable array '%s' at %L must have "
-			   "a deferred shape", sym->name, &sym->declared_at);
-	      else
-		gfc_error ("Scalar object '%s' at %L may not be ALLOCATABLE",
-			   sym->name, &sym->declared_at);
-	      return;
-	    }
-
-	  if (sym->attr.pointer && sym->attr.dimension)
-	    {
-	      gfc_error ("Array pointer '%s' at %L must have a deferred shape",
-			 sym->name, &sym->declared_at);
-	      return;
-	    }
-
-	}
-      else
-	{
-	  if (!mp_flag && !sym->attr.allocatable
-	      && !sym->attr.pointer && !sym->attr.dummy)
-	    {
-	      gfc_error ("Array '%s' at %L cannot have a deferred shape",
-			 sym->name, &sym->declared_at);
-	      return;
-	    }
-	}
-    }
-
   switch (sym->attr.flavor)
     {
     case FL_VARIABLE:
-      /* Can the symbol have an initializer?  */
-      flag = 0;
-      if (sym->attr.allocatable || sym->attr.external || sym->attr.dummy
-	  || sym->attr.intrinsic || sym->attr.result)
-	flag = 1;
-      else if (sym->attr.dimension && !sym->attr.pointer)
-	{
-	  /* Don't allow initialization of automatic arrays.  */
-	  for (i = 0; i < sym->as->rank; i++)
-	    {
-	      if (sym->as->lower[i] == NULL
-		  || sym->as->lower[i]->expr_type != EXPR_CONSTANT
-		  || sym->as->upper[i] == NULL
-		  || sym->as->upper[i]->expr_type != EXPR_CONSTANT)
-		{
-		  flag = 1;
-		  break;
-		}
-	    }
-	}
+      if (resolve_fl_variable (sym, mp_flag) == FAILURE)
+	return;
+      break;
 
-      /* Reject illegal initializers.  */
-      if (sym->value && flag)
-	{
-	  if (sym->attr.allocatable)
-	    gfc_error ("Allocatable '%s' at %L cannot have an initializer",
-		       sym->name, &sym->declared_at);
-	  else if (sym->attr.external)
-	    gfc_error ("External '%s' at %L cannot have an initializer",
-		       sym->name, &sym->declared_at);
-	  else if (sym->attr.dummy)
-	    gfc_error ("Dummy '%s' at %L cannot have an initializer",
-		       sym->name, &sym->declared_at);
-	  else if (sym->attr.intrinsic)
-	    gfc_error ("Intrinsic '%s' at %L cannot have an initializer",
-		       sym->name, &sym->declared_at);
-	  else if (sym->attr.result)
-	    gfc_error ("Function result '%s' at %L cannot have an initializer",
-		       sym->name, &sym->declared_at);
-	  else
-	    gfc_error ("Automatic array '%s' at %L cannot have an initializer",
-		       sym->name, &sym->declared_at);
-	  return;
-	}
-
-     /* 4th constraint in section 11.3:  "If an object of a type for which
-	component-initialization is specified (R429) appears in the
-	specification-part of a module and does not have the ALLOCATABLE
-	or POINTER attribute, the object shall have the SAVE attribute."  */
-
-      constructor_expr = NULL;
-      if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
-        constructor_expr = gfc_default_initializer (&sym->ts);
-
-      if (sym->ns->proc_name
-	  && sym->ns->proc_name->attr.flavor == FL_MODULE
-	  && constructor_expr
-	  && !sym->ns->save_all && !sym->attr.save
-	  && !sym->attr.pointer && !sym->attr.allocatable)
-	{
-	  gfc_error("Object '%s' at %L must have the SAVE attribute %s",
- 	 	     sym->name, &sym->declared_at,
-		     "for default initialization of a component");
-	  return;
-	}
-
-      /* Assign default initializer.  */
-      if (sym->ts.type == BT_DERIVED && !(sym->value || flag)
-          && !sym->attr.pointer)
-	sym->value = gfc_default_initializer (&sym->ts);
+    case FL_PROCEDURE:
+      if (resolve_fl_procedure (sym, mp_flag) == FAILURE)
+	return;
       break;
 
     case FL_NAMELIST:
@@ -4916,69 +5097,13 @@ resolve_symbol (gfc_symbol * sym)
 			   &sym->declared_at);
 	    }
 	}
-      break;
-
-    case FL_PROCEDURE:
-      /* An external symbol may not have an intializer because it is taken to be
-	 a procedure.  */
-      if (sym->attr.external && sym->value)
-	{
-	  gfc_error ("External object '%s' at %L may not have an initializer",
-		     sym->name, &sym->declared_at);
-	  return;
-	}
-
-      /* 5.1.1.5 of the Standard: A function name declared with an asterisk
-	 char-len-param shall not be array-valued, pointer-valued, recursive
-	 or pure.  ....snip... A character value of * may only be used in the
-	 following ways: (i) Dummy arg of procedure - dummy associates with
-	 actual length; (ii) To declare a named constant; or (iii) External
-	 function - but length must be declared in calling scoping unit.  */
-      if (sym->attr.function
-	    && sym->ts.type == BT_CHARACTER
-	    && sym->ts.cl && sym->ts.cl->length == NULL)
-	{
-	  if ((sym->as && sym->as->rank) || (sym->attr.pointer)
-		 || (sym->attr.recursive) || (sym->attr.pure))
-	    {
-	      if (sym->as && sym->as->rank)
-		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
-			   "array-valued", sym->name, &sym->declared_at);
-
-	      if (sym->attr.pointer)
-		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
-			   "pointer-valued", sym->name, &sym->declared_at);
-
-	      if (sym->attr.pure)
-		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
-			   "pure", sym->name, &sym->declared_at);
-
-	      if (sym->attr.recursive)
-		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
-			   "recursive", sym->name, &sym->declared_at);
-
-	      return;
-	    }
-
-	  /* Appendix B.2 of the standard.  Contained functions give an
-	     error anyway.  Fixed-form is likely to be F77/legacy.  */
-	  if (!sym->attr.contained && gfc_current_form != FORM_FIXED)
-	    gfc_notify_std (GFC_STD_F95_OBS, "CHARACTER(*) function "
-			    "'%s' at %L is obsolescent in fortran 95",
-			    sym->name, &sym->declared_at);
-	}
 
       break;
 
-    case FL_DERIVED:
-      /* Add derived type to the derived type list.  */
-      {
-	gfc_dt_list * dt_list;
-	dt_list = gfc_get_dt_list ();
-	dt_list->next = sym->ns->derived_types;
-	dt_list->derived = sym;
-	sym->ns->derived_types = dt_list;
-      }
+    case FL_PARAMETER:
+      if (resolve_fl_parameter (sym) == FAILURE)
+	return;
+
       break;
 
     default:
@@ -5062,6 +5187,13 @@ check_data_variable (gfc_data_variable * var, locus * where)
 
   if (e->expr_type != EXPR_VARIABLE)
     gfc_internal_error ("check_data_variable(): Bad expression");
+
+  if (e->symtree->n.sym->ns->is_block_data
+	&& !e->symtree->n.sym->attr.in_common)
+    {
+      gfc_error ("BLOCK DATA element '%s' at %L must be in COMMON",
+	         e->symtree->n.sym->name, &e->symtree->n.sym->declared_at);
+    }
 
   if (e->rank == 0)
     {
