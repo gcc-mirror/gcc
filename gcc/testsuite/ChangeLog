@@ -1,3 +1,26 @@
+2006-02-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26074
+	PR fortran/25103
+	* gfortran.dg/module_parameter_array_refs_1.f90: New test.
+	* gfortran.dg/bad_automatic_objects_1.f90: New test.
+	* gfortran.dg/automatic_module_variable.f90: Change error message.
+
+	PR fortran/20861
+	* gfortran.dg/internal_dummy_1.f90: New test.
+
+	PR fortran/20871
+	* gfortran.dg/elemental_non_intrinsic_dummy_1.f90: New test.
+
+
+	PR fortran/25083
+	* gfortran.dg/uncommon_block_data_1.f90: New test.
+	* gfortran.dg/equiv_constraint_7.f90: Correct non-compliance of test
+	with standard.
+
+	PR fortran/25088
+	* gfortran.dg/typed_subroutine_1.f90: New test.
+
 2006-02-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* objc.dg/dwarf-1.m: New.

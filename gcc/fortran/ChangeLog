@@ -1,3 +1,42 @@
+2006-02-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26074
+	PR fortran/25103
+	* resolve.c (resolve_symbol): Extend the requirement that module
+	arrays have constant bounds to those in the main program.  At the
+	same time simplify the array bounds, to avoiding trapping parameter
+	array references, and exclude automatic character length from main
+	and modules. Rearrange resolve_symbol and resolve_derived to put as
+	each flavor together, as much as is possible and move all specific
+	code for flavors FL_VARIABLE, FL_PROCEDURE and FL_PARAMETER into new
+	functions.
+	(resolve_fl_var_and_proc, resolve_fl_variable, resolve_fl_procedure):
+	New functions to do work of resolve_symbol.
+	(resolve_index_expr): New function that is called from resolved_symbol
+	and is extracted from resolve_charlen.
+	(resolve_charlen): Call this new function.
+	(resolve_fl_derived): Renamed resolve_derived to be consistent with
+	the naming of the new functions for the other flavours.  Change the
+	charlen checking so that the style is consistent with other similar
+	checks. Add the generation of the gfc_dt_list, removed from resolve_
+	symbol.
+
+	PR fortran/20861
+	* resolve.c (resolve_actual_arglist): Prevent internal procedures
+	from being dummy arguments.
+
+	PR fortran/20871
+	* resolve.c (resolve_actual_arglist): Prevent pure but non-intrinsic
+	procedures from being dummy arguments.
+
+	PR fortran/25083
+	* resolve.c (check_data_variable): Add test that data variable is in
+	COMMON.
+
+	PR fortran/25088
+	* resolve.c (resolve_call): Add test that the subroutine does not
+	have a type.
+
 2006-02-12  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25806
