@@ -1,3 +1,13 @@
+2006-02-13  Josh Conner  <jconner@apple.com>
+
+	PR target/25376
+	* gcc.dg/pr25376.c: New test.	
+
+	* gcc.c-torture/compile/pr23237.c: Only compile test -- don't
+	assemble.
+	* lib/target-supports.exp (check_named_sections_available):
+	Only compile named-sections test -- don't assemble.
+
 2006-02-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* g++.dg/warn/no-write-strings.C: New test.

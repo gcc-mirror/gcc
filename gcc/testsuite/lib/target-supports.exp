@@ -637,7 +637,7 @@ proc check_iconv_available { test_what } {
 # the same test run.
 proc check_named_sections_available { } {
     verbose "check_named_sections_available: compiling source" 2
-    set answer [string match "" [get_compiler_messages named object {
+    set answer [string match "" [get_compiler_messages named assembly {
 	int __attribute__ ((section("whatever"))) foo;
     }]]
     verbose "check_named_sections_available: returning $answer" 2
