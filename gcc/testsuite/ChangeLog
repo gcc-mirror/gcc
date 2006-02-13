@@ -1,3 +1,9 @@
+2006-02-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* g++.dg/warn/no-write-strings.C: New test.
+	* g++.dg/warn/write-strings.C: Likewise.
+	* g++.dg/warn/write-strings-default.C: Likewise.
+
 2006-02-12  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25806

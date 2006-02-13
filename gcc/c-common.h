@@ -406,11 +406,6 @@ extern int flag_const_strings;
 
 extern int flag_signed_bitfields;
 
-/* Nonzero means warn about deprecated conversion from string constant to
-   `char *'.  */
-
-extern int warn_write_strings;
-
 /* Warn about #pragma directives that are not recognized.  */      
 
 extern int warn_unknown_pragmas; /* Tri state variable.  */  

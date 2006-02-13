@@ -265,11 +265,6 @@ int flag_no_asm;
 
 int flag_signed_bitfields = 1;
 
-/* Nonzero means warn about deprecated conversion from string constant to
-   `char *'.  */
-
-int warn_write_strings;
-
 /* Warn about #pragma directives that are not recognized.  */
 
 int warn_unknown_pragmas; /* Tri state variable.  */

@@ -1,3 +1,14 @@
+2006-02-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* doc/invoke.texi (-Write-strings): Document that it is enabled by
+	default. 
+	* c.opt (-Wwrite-strings): Declare variable warn_write_strings.
+	Clarify documentation.
+	* c-common.h (warn_write_strings): Remove.
+ 	* c-common.c (warn_write_strings): Likewise.
+	* c-opts.c (c_common_init_options): Enable -Wwrite-strings by
+	default for C++.
+
 2006-02-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/25724

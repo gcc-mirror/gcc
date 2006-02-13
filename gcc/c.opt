@@ -420,8 +420,8 @@ C ObjC C++ ObjC++
 Do not warn about using variadic macros when -pedantic
 
 Wwrite-strings
-C ObjC C++ ObjC++
-Give strings the type \"array of char\"
+C ObjC C++ ObjC++ Var(warn_write_strings)
+In C++, nonzero means warn about deprecated conversion from string literals to `char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.
 
 Wpointer-sign
 C ObjC Var(warn_pointer_sign) Init(-1)
