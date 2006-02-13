@@ -1,3 +1,11 @@
+2006-02-12  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/26222
+	* function.c (assign_stack_temp_for_type): Do not reuse stack slots
+	after tree->rtl expansion.
+	* loop-invariant.c (move_invariant_reg): Use force_operand on rhs
+	before passing it to emit_move_insn.
+
 2006-02-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* doc/invoke.texi (-Write-strings): Document that it is enabled by

@@ -1075,7 +1075,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
   struct invariant *repr = VEC_index (invariant_p, invariants, inv->eqto);
   unsigned i;
   basic_block preheader = loop_preheader_edge (loop)->src;
-  rtx reg, set;
+  rtx reg, set, seq, op;
   struct use *use;
   bitmap_iterator bi;
 
@@ -1115,7 +1115,14 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	}
       else
 	{
-	  emit_insn_after (gen_move_insn (reg, SET_SRC (set)), BB_END (preheader));
+	  start_sequence ();
+	  op = force_operand (SET_SRC (set), reg);
+	  if (op != reg)
+	    emit_move_insn (reg, op);
+	  seq = get_insns ();
+	  end_sequence ();
+
+	  emit_insn_after (seq, BB_END (preheader));
 	  delete_insn (inv->insn);
 	}
     }
