@@ -582,8 +582,9 @@ find_exits (struct loop *loop, basic_block *body,
 static bool
 may_assign_reg_p (rtx x)
 {
-  return (can_copy_p (GET_MODE (x))
+  return (GET_MODE (x) != VOIDmode
 	  && GET_MODE (x) != BLKmode
+	  && can_copy_p (GET_MODE (x))
 	  && (!REG_P (x)
 	      || !HARD_REGISTER_P (x)
 	      || REGNO_REG_CLASS (REGNO (x)) != NO_REGS));
