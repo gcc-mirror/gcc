@@ -625,22 +625,30 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 
   /* Try to find an available, already-allocated temporary of the proper
      mode which meets the size and alignment requirements.  Choose the
-     smallest one with the closest alignment.  */
-  for (p = avail_temp_slots; p; p = p->next)
+     smallest one with the closest alignment.
+   
+     If assign_stack_temp is called outside of the tree->rtl expansion,
+     we cannot reuse the stack slots (that may still refer to
+     VIRTUAL_STACK_VARS_REGNUM).  */
+  if (!virtuals_instantiated)
     {
-      if (p->align >= align && p->size >= size && GET_MODE (p->slot) == mode
-	  && objects_must_conflict_p (p->type, type)
-	  && (best_p == 0 || best_p->size > p->size
-	      || (best_p->size == p->size && best_p->align > p->align)))
+      for (p = avail_temp_slots; p; p = p->next)
 	{
-	  if (p->align == align && p->size == size)
+	  if (p->align >= align && p->size >= size
+	      && GET_MODE (p->slot) == mode
+	      && objects_must_conflict_p (p->type, type)
+	      && (best_p == 0 || best_p->size > p->size
+		  || (best_p->size == p->size && best_p->align > p->align)))
 	    {
-	      selected = p;
-	      cut_slot_from_list (selected, &avail_temp_slots);
-	      best_p = 0;
-	      break;
+	      if (p->align == align && p->size == size)
+		{
+		  selected = p;
+		  cut_slot_from_list (selected, &avail_temp_slots);
+		  best_p = 0;
+		  break;
+		}
+	      best_p = p;
 	    }
-	  best_p = p;
 	}
     }
 
