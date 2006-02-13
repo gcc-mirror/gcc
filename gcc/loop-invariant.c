@@ -292,6 +292,8 @@ hash_invariant_expr_1 (rtx insn, rtx x)
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    val ^= hash_invariant_expr_1 (insn, XVECEXP (x, i, j));
 	}
+      else if (fmt[i] == 'i' || fmt[i] == 'n')
+	val ^= XINT (x, i);
     }
 
   return val;
@@ -373,6 +375,14 @@ invariant_expr_equal_p (rtx insn1, rtx e1, rtx insn2, rtx e2)
 		return false;
 	    }
 	}
+      else if (fmt[i] == 'i' || fmt[i] == 'n')
+	{
+	  if (XINT (e1, i) != XINT (e2, i))
+	    return false;
+	}
+      /* Unhandled type of subexpression, we fail conservatively.  */
+      else
+	return false;
     }
 
   return true;
