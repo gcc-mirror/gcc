@@ -583,6 +583,7 @@ static bool
 may_assign_reg_p (rtx x)
 {
   return (can_copy_p (GET_MODE (x))
+	  && GET_MODE (x) != BLKmode
 	  && (!REG_P (x)
 	      || !HARD_REGISTER_P (x)
 	      || REGNO_REG_CLASS (REGNO (x)) != NO_REGS));
