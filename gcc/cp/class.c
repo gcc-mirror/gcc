@@ -2349,7 +2349,7 @@ check_for_override (tree decl, tree ctype)
 /* Warn about hidden virtual functions that are not overridden in t.
    We know that constructors and destructors don't apply.  */
 
-void
+static void
 warn_hidden (tree t)
 {
   VEC(tree,gc) *method_vec = CLASSTYPE_METHOD_VEC (t);
