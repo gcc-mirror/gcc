@@ -873,7 +873,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  if (TREE_CODE (length) == VAR_DECL
 	      && DECL_CONTEXT (length) == NULL_TREE)
 	    {
-	      gfc_finish_var_decl (length, sym);
+	      gfc_add_decl_to_function (length);
 	      gfc_defer_symbol_init (sym);
 	    }
 	}
@@ -1779,7 +1779,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym)
 	length = sym->ts.cl->backend_decl;
       if (TREE_CODE (length) == VAR_DECL
 	  && DECL_CONTEXT (length) == NULL_TREE)
-	gfc_finish_var_decl (length, sym);
+	gfc_add_decl_to_function (length);
     }
 
   if (gfc_return_by_reference (sym))

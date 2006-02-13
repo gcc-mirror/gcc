@@ -1,3 +1,10 @@
+2006-02-13  Andrew Pinski  <pinskia@physics.uc.edu>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/26246
+	* trans-decl.c (gfc_get_symbol_decl, gfc_get_fake_result_decl): Use
+	gfc_add_decl_to_function rather than gfc_finish_var_decl on length.
+
 2006-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26074
