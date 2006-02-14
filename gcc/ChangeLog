@@ -1,3 +1,14 @@
+2006-02-14  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/26260
+
+	* doc/invoke.texi (max-fields-for-field-sensitive): Document
+	param.
+	* params.h (MAX_FIELDS_FOR_FIELD_SENSITIVE): New.
+	* params.def (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE): Ditto.
+	* tree-ssa-structalias.c (create_variable_info_for): Use
+	MAX_FIELDS_FOR_FIELD_SENSITIVE.
+	
 2006-02-14  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* doc/invoke.texi (-fprefetch-loop-arrays, -fprefetch-loop-arrays-rtl):
