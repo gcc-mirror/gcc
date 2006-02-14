@@ -337,6 +337,8 @@ layout_decl (tree decl, unsigned int known_align)
     /* For fields, it's a bit more complicated...  */
     {
       bool old_user_align = DECL_USER_ALIGN (decl);
+      bool zero_bitfield = false;
+      unsigned int mfa;
 
       if (DECL_BIT_FIELD (decl))
 	{
@@ -345,9 +347,9 @@ layout_decl (tree decl, unsigned int known_align)
 	  /* A zero-length bit-field affects the alignment of the next
 	     field.  */
 	  if (integer_zerop (DECL_SIZE (decl))
-	      && ! DECL_PACKED (decl)
 	      && ! targetm.ms_bitfield_layout_p (DECL_FIELD_CONTEXT (decl)))
 	    {
+	      zero_bitfield = true;
 #ifdef PCC_BITFIELD_TYPE_MATTERS
 	      if (PCC_BITFIELD_TYPE_MATTERS)
 		do_type_align (type, decl);
@@ -408,12 +410,13 @@ layout_decl (tree decl, unsigned int known_align)
 	 check old_user_align instead.  */
       if (DECL_PACKED (decl)
 	  && !old_user_align
+	  && !zero_bitfield
 	  && (DECL_NONADDRESSABLE_P (decl)
 	      || DECL_SIZE_UNIT (decl) == 0
 	      || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
 
-      if (! DECL_USER_ALIGN (decl) && ! DECL_PACKED (decl))
+      if (! DECL_USER_ALIGN (decl) && (! DECL_PACKED (decl) || zero_bitfield))
 	{
 	  /* Some targets (i.e. i386, VMS) limit struct field alignment
 	     to a lower boundary than alignment of variables unless
@@ -427,9 +430,13 @@ layout_decl (tree decl, unsigned int known_align)
 #endif
 	}
 
+      if (zero_bitfield)
+        mfa = initial_max_fld_align * BITS_PER_UNIT;
+      else
+	mfa = maximum_field_alignment;
       /* Should this be controlled by DECL_USER_ALIGN, too?  */
-      if (maximum_field_alignment != 0)
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
+      if (mfa != 0)
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), mfa);
     }
 
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
@@ -713,7 +720,16 @@ update_alignment_for_field (record_layout_info rli, tree field,
 	    type_align = ADJUST_FIELD_ALIGN (field, type_align);
 #endif
 
-	  if (maximum_field_alignment != 0)
+	  /* Targets might chose to handle unnamed and hence possibly
+	     zero-width bitfield.  Those are not influenced by #pragmas
+	     or packed attributes.  */
+	  if (integer_zerop (DECL_SIZE (field)))
+	    {
+	      if (initial_max_fld_align)
+	        type_align = MIN (type_align,
+				  initial_max_fld_align * BITS_PER_UNIT);
+	    }
+	  else if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
 	  else if (DECL_PACKED (field))
 	    type_align = MIN (type_align, BITS_PER_UNIT);
@@ -1175,6 +1191,10 @@ place_field (record_layout_info rli, tree field)
   if (DECL_BIT_FIELD_TYPE (field))
     {
       unsigned int type_align = TYPE_ALIGN (type);
+      unsigned int mfa = maximum_field_alignment;
+
+      if (integer_zerop (DECL_SIZE (field)))
+        mfa = initial_max_fld_align * BITS_PER_UNIT;
 
       /* Only the MS bitfields use this.  We used to also put any kind of
 	 packed bit fields into prev_field, but that makes no sense, because
@@ -1183,8 +1203,8 @@ place_field (record_layout_info rli, tree field)
 	 are also not fulfilled.
 	 There is no sane value to set rli->remaining_in_alignment to when
 	 a packed bitfield in prev_field is unaligned.  */
-      if (maximum_field_alignment != 0)
-	type_align = MIN (type_align, maximum_field_alignment);
+      if (mfa != 0)
+	type_align = MIN (type_align, mfa);
       gcc_assert (rli->prev_field
 		  || actual_align >= type_align || DECL_PACKED (field)
 		  || integer_zerop (DECL_SIZE (field))
