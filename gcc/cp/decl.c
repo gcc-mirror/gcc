@@ -1976,7 +1976,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 constructs like "typedef struct foo { ... } foo"
 	 would look like an erroneous redeclaration.  */
       if (same_type_p (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
-	return 0;
+	return NULL;
       else
 	return "redefinition of %q#D";
     }
@@ -1987,7 +1987,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 abort()).  Don't complain about redefinition in this case.  */
       if (DECL_LANG_SPECIFIC (olddecl) && DECL_PURE_VIRTUAL_P (olddecl)
 	  && DECL_INITIAL (olddecl) == NULL_TREE)
-	return 0;
+	return NULL;
 
       /* If both functions come from different namespaces, this is not
 	 a redeclaration - this is a conflict with a used function.  */
@@ -2008,7 +2008,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	  else
 	    return "redefinition of %q#D";
 	}
-      return 0;
+      return NULL;
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
@@ -2055,7 +2055,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       /* Objects declared at top level:  */
       /* If at least one is a reference, it's ok.  */
       if (DECL_EXTERNAL (newdecl) || DECL_EXTERNAL (olddecl))
-	return 0;
+	return NULL;
       /* Reject two definitions.  */
       return "redefinition of %q#D";
     }
@@ -2066,7 +2066,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 together with an external reference.  */
       if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl)))
 	return "redeclaration of %q#D";
-      return 0;
+      return NULL;
     }
 }
 
