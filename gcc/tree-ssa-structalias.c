@@ -3239,7 +3239,33 @@ find_func_aliases (tree origt)
 	  get_constraint_for (PHI_RESULT (t), &lhsc);
 	  for (i = 0; i < PHI_NUM_ARGS (t); i++)
 	    { 
+	      tree rhstype;
+	      tree strippedrhs = PHI_ARG_DEF (t, i);
+
+	      STRIP_NOPS (strippedrhs);
+	      rhstype = TREE_TYPE (strippedrhs);
 	      get_constraint_for (PHI_ARG_DEF (t, i), &rhsc);
+
+	      if (TREE_CODE (strippedrhs) == ADDR_EXPR
+		 && AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
+		 && VEC_length (ce_s, rhsc) == 1)
+		{
+		  struct constraint_expr *origrhs;
+		  varinfo_t origvar;
+		  struct constraint_expr tmp;
+
+		  gcc_assert (VEC_length (ce_s, rhsc) == 1);
+		  origrhs = VEC_last (ce_s, rhsc);
+		  tmp = *origrhs;
+		  VEC_pop (ce_s, rhsc);
+		  origvar = get_varinfo (origrhs->var);
+		  for (; origvar; origvar = origvar->next)
+		    {
+		      tmp.var = origvar->id;
+		      VEC_safe_push (ce_s, heap, rhsc, &tmp);
+		    }
+		}
+
 	      for (j = 0; VEC_iterate (ce_s, lhsc, j, c); j++)
 		{
 		  struct constraint_expr *c2;

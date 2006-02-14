@@ -1,3 +1,9 @@
+2006-02-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26258
+	* tree-ssa-structalias.c (find_func_aliases): Handle aggregates
+	in PHI argument processing.
+
 2006-02-13  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1) <TRUNCATE>: Return
