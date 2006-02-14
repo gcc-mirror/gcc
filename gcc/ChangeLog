@@ -1,3 +1,18 @@
+2006-02-14  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR inline-asm/16194
+	* tree.h (decl_overlaps_hard_reg_set_p) Don't declare.
+	(tree_overlaps_hard_reg_set): Declare.
+	* stmt.c (decl_overlaps_hard_reg_set_p): Now static.  Change return
+	type and signature to match function type expected by walk_tree.
+	(tree_overlaps_hard_reg_set): New function.
+	(decl_conflicts_with_clobbers_p): Rename to:
+	(tree_conflicts_with_clobbers_p).  Take HARD_REG_SET * argument.
+	Use tree_overlaps_hard_reg_set.  Changed caller.
+	* doc/tm.texi (TARGET_MD_ASM_CLOBBERS): Replace
+	decl_overlaps_hard_reg_set_p with tree_overlaps_hard_reg_set.
+	* cris.c (cris_md_asm_clobbers): Likewise.
+
 2006-02-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26258

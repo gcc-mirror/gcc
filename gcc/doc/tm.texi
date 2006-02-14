@@ -9232,7 +9232,7 @@ It should return the result of the last @code{tree_cons} used to add a
 clobber.  The @var{outputs}, @var{inputs} and @var{clobber} lists are the
 corresponding parameters to the asm and may be inspected to avoid
 clobbering a register that is an input or output of the asm.  You can use
-@code{decl_overlaps_hard_reg_set_p}, declared in @file{tree.h}, to test
+@code{tree_overlaps_hard_reg_set}, declared in @file{tree.h}, to test
 for overlap with regards to asm-declared registers.
 @end deftypefn
 
