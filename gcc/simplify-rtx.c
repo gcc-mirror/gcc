@@ -609,12 +609,13 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	return simplify_gen_unary (GET_CODE (op), mode,
 				   XEXP (XEXP (op, 0), 0), mode);
 
-      /* (truncate:SI (subreg:DI (truncate:SI X) 0)) is
-	 (truncate:SI x).  */
+      /* (truncate:A (subreg:B (truncate:C X) 0)) is
+	 (truncate:A X).  */
       if (GET_CODE (op) == SUBREG
 	  && GET_CODE (SUBREG_REG (op)) == TRUNCATE
 	  && subreg_lowpart_p (op))
-	return SUBREG_REG (op);
+	return simplify_gen_unary (TRUNCATE, mode, XEXP (SUBREG_REG (op), 0),
+				   GET_MODE (XEXP (SUBREG_REG (op), 0)));
 
       /* If we know that the value is already truncated, we can
          replace the TRUNCATE with a SUBREG if TRULY_NOOP_TRUNCATION

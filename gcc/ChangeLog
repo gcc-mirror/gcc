@@ -1,3 +1,8 @@
+2006-02-13  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1) <TRUNCATE>: Return
+	new expression in the requested machine mode.
+
 2006-02-13  Roger Sayle  <roger@eyesopen.com>
 
 	* optabs.c (expand_abs): Don't call do_jump_by_parts_greater_rtx
