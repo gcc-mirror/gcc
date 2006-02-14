@@ -1,3 +1,10 @@
+2006-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR bootstrap/26053
+	* configure.ac (HAVE_COMDAT_GROUP): Don't assume non-GNU linkers
+	support COMDAT group.
+	* configure: Regenerate.
+
 2006-02-14  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26279
