@@ -2055,7 +2055,7 @@ language_to_string (enum languages c)
     default:
       gcc_unreachable ();
     }
-  return 0;
+  return NULL;
 }
 
 /* Return the proper printed version of a parameter to a C++ function.  */

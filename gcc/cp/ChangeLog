@@ -1,3 +1,11 @@
+2006-02-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* call.c (standard_conversion): Return NULL instead of 0.
+	(build_user_type_conversion_1): Likewise.
+	(tourney): Likewise.
+	* decl.c (redeclaration_error_message): Likewise.
+	* error.c (language_to_string): Likewise.
+
 2006-02-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* cp-tree.h (warn_hidden): Remove prototype.

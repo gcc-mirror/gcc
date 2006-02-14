@@ -768,7 +768,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  || !compparms (TREE_CHAIN (TYPE_ARG_TYPES (fromfn)),
 			 TREE_CHAIN (TYPE_ARG_TYPES (tofn)))
 	  || cp_type_quals (fbase) != cp_type_quals (tbase))
-	return 0;
+	return NULL;
 
       from = cp_build_qualified_type (tbase, cp_type_quals (fbase));
       from = build_method_type_directly (from,
@@ -806,7 +806,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	   || tcode == REAL_TYPE)
     {
       if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE))
-	return 0;
+	return NULL;
       conv = build_conv (ck_std, to, conv);
 
       /* Give this a better rank if it's a promotion.  */
@@ -2615,7 +2615,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 
   candidates = splice_viable (candidates, pedantic, &any_viable_p);
   if (!any_viable_p)
-    return 0;
+    return NULL;
 
   cand = tourney (candidates);
   if (cand == 0)
@@ -6247,7 +6247,7 @@ tourney (struct z_candidate *candidates)
 	    {
 	      champ = challenger->next;
 	      if (champ == 0)
-		return 0;
+		return NULL;
 	      champ_compared_to_predecessor = 0;
 	    }
 	  else
@@ -6270,7 +6270,7 @@ tourney (struct z_candidate *candidates)
     {
       fate = joust (champ, challenger, 0);
       if (fate != 1)
-	return 0;
+	return NULL;
     }
 
   return champ;
