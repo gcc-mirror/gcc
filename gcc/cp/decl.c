@@ -6662,7 +6662,6 @@ grokdeclarator (const cp_declarator *declarator,
      this value will be NULL_TREE, even if the entity is located at
      namespace scope.  */
   tree in_namespace = NULL_TREE;
-  cp_decl_spec ds;
   cp_storage_class storage_class;
   bool unsigned_p, signed_p, short_p, long_p, thread_p;
   bool type_was_error_mark_node = false;
@@ -6671,6 +6670,7 @@ grokdeclarator (const cp_declarator *declarator,
   unsigned_p = declspecs->specs[(int)ds_unsigned];
   short_p = declspecs->specs[(int)ds_short];
   long_p = declspecs->specs[(int)ds_long];
+  longlong = declspecs->specs[(int)ds_long] >= 2;
   thread_p = declspecs->specs[(int)ds_thread];
 
   if (decl_context == FUNCDEF)
@@ -6883,45 +6883,6 @@ grokdeclarator (const cp_declarator *declarator,
   /* Gather flags.  */
   explicit_int = declspecs->explicit_int_p;
   explicit_char = declspecs->explicit_char_p;
-
-  /* Check for repeated decl-specifiers.  */
-  for (ds = ds_first; ds != ds_last; ++ds)
-    {
-      unsigned count = declspecs->specs[(int)ds];
-      if (count < 2)
-	continue;
-      /* The "long" specifier is a special case because of
-	 "long long".  */
-      if (ds == ds_long)
-	{
-	  if (count > 2)
-	    error ("%<long long long%> is too long for GCC");
-	  else if (pedantic && !in_system_header && warn_long_long)
-	    pedwarn ("ISO C++ does not support %<long long%>");
-	  else
-	    longlong = 1;
-	}
-      else if (declspecs->specs[(int)ds] > 1)
-	{
-	  static const char *const decl_spec_names[] = {
-	    "signed",
-	    "unsigned",
-	    "short",
-	    "long",
-	    "const",
-	    "volatile",
-	    "restrict",
-	    "inline",
-	    "virtual",
-	    "explicit",
-	    "friend",
-	    "typedef",
-	    "__complex",
-	    "__thread"
-	  };
-	  error ("duplicate %qs", decl_spec_names[(int)ds]);
-	}
-    }
 
 #if 0
   /* See the code below that used this.  */
