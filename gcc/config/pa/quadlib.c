@@ -1,5 +1,5 @@
 /* Subroutines for long double support.
-   Copyright (C) 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,16 +27,20 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-/* HPUX TFmode compare requires a library call to _U_Qfcmp, which takes a
-   magic number as its third argument, that indicates what to do.
-   The return value is an integer to be compared against zero.  */
-enum qfcmp_magic {
-  QCMP_INV = 1,		/* Raise FP_INVALID on SNaN as a side effect.  */
-  QCMP_UNORD = 2,
-  QCMP_EQ = 4,
-  QCMP_LT = 8,
-  QCMP_GT = 16
-} magic;
+/* HPUX TFmode compare requires a library call to _U_Qfcmp.  It takes
+   a magic number as its third argument which indicates what to do.
+   The return value is an integer to be compared against zero.  The
+   comparison conditions are the same as those listed in Table 8-12
+   of the PA-RISC 2.0 Architecture book for the fcmp instruction.  */
+
+/* Raise FP_INVALID on SNaN as a side effect.  */
+#define QCMP_INV 1
+
+/* Comparison relations.  */
+#define QCMP_UNORD 2
+#define QCMP_EQ 4
+#define QCMP_LT 8
+#define QCMP_GT 16
 
 int _U_Qfcmp (long double a, long double b, int);
 long _U_Qfcnvfxt_quad_to_sgl (long double);
