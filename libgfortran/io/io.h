@@ -62,6 +62,7 @@ typedef struct stream
   try (*truncate) (struct stream *);
   int (*read) (struct stream *, void *, size_t *);
   int (*write) (struct stream *, const void *, size_t *);
+  try (*set) (struct stream *, int, size_t);
 }
 stream;
 
@@ -81,6 +82,8 @@ stream;
 #define struncate(s) ((s)->truncate)(s)
 #define sread(s, buf, nbytes) ((s)->read)(s, buf, nbytes)
 #define swrite(s, buf, nbytes) ((s)->write)(s, buf, nbytes)
+
+#define sset(s, c, n) ((s)->set)(s, c, n)
 
 /* The array_loop_spec contains the variables for the loops over index ranges
    that are encountered.  Since the variables can be negative, ssize_t

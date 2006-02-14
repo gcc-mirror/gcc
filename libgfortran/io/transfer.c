@@ -377,22 +377,32 @@ write_block (st_parameter_dt *dtp, int length)
 }
 
 
-/* Writes a block directly without necessarily allocating space in a
-   buffer.  */
+/* High level interface to swrite(), taking care of errors.  */
 
-static void
-write_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
+static try
+write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 {
-  if (dtp->u.p.current_unit->bytes_left < *nbytes)
-    generate_error (&dtp->common, ERROR_EOR, NULL);
+  if (dtp->u.p.current_unit->bytes_left < nbytes)
+    {
+      generate_error (&dtp->common, ERROR_EOR, NULL);
+      return FAILURE;
+    }
 
-  dtp->u.p.current_unit->bytes_left -= (gfc_offset) *nbytes;
+  dtp->u.p.current_unit->bytes_left -= (gfc_offset) nbytes;
 
-  if (swrite (dtp->u.p.current_unit->s, buf, nbytes) != 0)
-    generate_error (&dtp->common, ERROR_OS, NULL);
+  if (swrite (dtp->u.p.current_unit->s, buf, &nbytes) != 0)
+    {
+      generate_error (&dtp->common, ERROR_OS, NULL);
+      return FAILURE;
+    }
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size += (GFC_INTEGER_4) *nbytes;
+    {
+      *dtp->size += (GFC_INTEGER_4) nbytes;
+      return FAILURE;
+    }
+
+  return SUCCESS;
 }
 
 
@@ -452,7 +462,7 @@ unformatted_write (st_parameter_dt *dtp, bt type,
     {
       size *= nelems;
 
-      write_block_direct (dtp, source, &size);
+      write_buf (dtp, source, size);
     }
   else
     {
@@ -479,7 +489,7 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	{
 	  reverse_memcpy(buffer, p, size);
  	  p+= size;
-	  write_block_direct (dtp, buffer, &sz);
+	  write_buf (dtp, buffer, sz);
 	}
     }
 }
@@ -1253,25 +1263,18 @@ us_read (st_parameter_dt *dtp)
 static void
 us_write (st_parameter_dt *dtp)
 {
-  char *p;
-  int length;
+  size_t nbytes;
+  gfc_offset dummy;
 
-  length = sizeof (gfc_offset);
-  p = salloc_w (dtp->u.p.current_unit->s, &length);
+  dummy = 0;
+  nbytes = sizeof (gfc_offset);
 
-  if (p == NULL)
-    {
-      generate_error (&dtp->common, ERROR_OS, NULL);
-      return;
-    }
-
-  memset (p, '\0', sizeof (gfc_offset));	/* Bogus value for now.  */
-  if (sfree (dtp->u.p.current_unit->s) == FAILURE)
+  if (swrite (dtp->u.p.current_unit->s, &dummy, &nbytes) != 0)
     generate_error (&dtp->common, ERROR_OS, NULL);
 
-  /* For sequential unformatted, we write until we have more bytes than
-     can fit in the record markers. If disk space runs out first, it will
-     error on the write.  */
+  /* For sequential unformatted, we write until we have more bytes
+     than can fit in the record markers. If disk space runs out first,
+     it will error on the write.  */
   dtp->u.p.current_unit->recl = max_offset;
 
   dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
@@ -1766,6 +1769,24 @@ next_record_r (st_parameter_dt *dtp)
 }
 
 
+/* Small utility function to write a record marker, taking care of
+   byte swapping.  */
+
+inline static int
+write_us_marker (st_parameter_dt *dtp, const gfc_offset buf)
+{
+  size_t len = sizeof (gfc_offset);
+  /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
+  if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
+    return swrite (dtp->u.p.current_unit->s, &buf, &len);
+  else {
+    gfc_offset p;
+    reverse_memcpy (&p, &buf, sizeof (gfc_offset));
+    return swrite (dtp->u.p.current_unit->s, &p, &len);
+  }
+}
+
+
 /* Position to the next record in write mode.  */
 
 static void
@@ -1785,15 +1806,10 @@ next_record_w (st_parameter_dt *dtp, int done)
       if (dtp->u.p.current_unit->bytes_left == 0)
 	break;
 
-      length = dtp->u.p.current_unit->bytes_left;
-      p = salloc_w (dtp->u.p.current_unit->s, &length);
-
-      if (p == NULL)
+      if (sset (dtp->u.p.current_unit->s, ' ', 
+		dtp->u.p.current_unit->bytes_left) == FAILURE)
 	goto io_error;
 
-      memset (p, ' ', dtp->u.p.current_unit->bytes_left);
-      if (sfree (dtp->u.p.current_unit->s) == FAILURE)
-	goto io_error;
       break;
 
     case UNFORMATTED_DIRECT:
@@ -1806,37 +1822,19 @@ next_record_w (st_parameter_dt *dtp, int done)
       m = dtp->u.p.current_unit->recl - dtp->u.p.current_unit->bytes_left;
       c = file_position (dtp->u.p.current_unit->s);
 
-      length = sizeof (gfc_offset);
-
       /* Write the length tail.  */
 
-      p = salloc_w (dtp->u.p.current_unit->s, &length);
-      if (p == NULL)
-	goto io_error;
-
-      /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
-      if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
-	memcpy (p, &m, sizeof (gfc_offset));
-      else
-	reverse_memcpy (p, &m, sizeof (gfc_offset));
-      
-      if (sfree (dtp->u.p.current_unit->s) == FAILURE)
+      if (write_us_marker (dtp, m) != 0)
 	goto io_error;
 
       /* Seek to the head and overwrite the bogus length with the real
 	 length.  */
 
-      p = salloc_w_at (dtp->u.p.current_unit->s, &length, c - m - length);
-      if (p == NULL)
-	generate_error (&dtp->common, ERROR_OS, NULL);
+      if (sseek (dtp->u.p.current_unit->s, c - m - sizeof (gfc_offset))
+		 == FAILURE)
+	goto io_error;
 
-      /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
-      if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
-	memcpy (p, &m, sizeof (gfc_offset));
-      else
-	reverse_memcpy (p, &m, sizeof (gfc_offset));
-	
-      if (sfree (dtp->u.p.current_unit->s) == FAILURE)
+      if (write_us_marker (dtp, m) != 0)
 	goto io_error;
 
       /* Seek past the end of the current record.  */
@@ -1870,13 +1868,11 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  length = (int) (dtp->u.p.current_unit->recl - max_pos);
 		}
 
-	      p = salloc_w (dtp->u.p.current_unit->s, &length);
-	      if (p == NULL)
+	      if (sset (dtp->u.p.current_unit->s, ' ', length) == FAILURE)
 		{
 		  generate_error (&dtp->common, ERROR_END, NULL);
 		  return;
 		}
-	      memset(p, ' ', length);
 
 	      /* Now that the current record has been padded out,
 		 determine where the next record in the array is. */
@@ -1913,13 +1909,11 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  else
 		    length = (int) dtp->u.p.current_unit->bytes_left;
 		}
-	      p = salloc_w (dtp->u.p.current_unit->s, &length);
-	      if (p == NULL)
+	      if (sset (dtp->u.p.current_unit->s, ' ', length) == FAILURE)
 		{
 		  generate_error (&dtp->common, ERROR_END, NULL);
 		  return;
 		}
-	      memset (p, ' ', length);
 	    }
 	}
       else
@@ -1937,22 +1931,14 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  p = salloc_w (dtp->u.p.current_unit->s, &length);
 		}
  	    }
+	  size_t len;
+	  const char crlf[] = "\r\n";
 #ifdef HAVE_CRLF
-	  length = 2;
+	  len = 2;
 #else
-	  length = 1;
+	  len = 1;
 #endif
-	  p = salloc_w (dtp->u.p.current_unit->s, &length);
-	  if (p)
-	    {  /* No new line for internal writes.  */
-#ifdef HAVE_CRLF
-	      p[0] = '\r';
-	      p[1] = '\n';
-#else
-	      *p = '\n';
-#endif
-	    }
-	  else
+	  if (swrite (dtp->u.p.current_unit->s, &crlf[2-len], &len) != 0)
 	    goto io_error;
 	}
 

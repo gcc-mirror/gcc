@@ -1,7 +1,27 @@
+2006-02-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libgfortran/25949
+	* io/io.h: Add set function pointer to struct stream.  
+	* io/unix.c (fd_seek): Only update offset, don't seek.
+	(fd_sset): New function.
+	(fd_read): Call lseek directly if necessary.
+	(fd_write): Likewise.
+	(fd_open): Set pointer to fd_sset.
+	(mem_set): New function.
+	(open_internal): Set pointer to mem_set.
+	* io/transfer.c (write_block_direct): Rename to write_buf, add
+	error return, non-pointer length argument.
+	(unformatted_write): Update to use write_buf.
+	(us_write): Simplify by using swrite instead of salloc_w.
+	(write_us_marker): New function.
+	(new_record_w): Use sset instead of memset, use write_us_marker,
+	simplify by using swrite instead of salloc_w.
+
 2006-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR libfortran/15234: Backport from mainline
-	2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
+
+2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
         PR target/25259
         * configure.ac: Use GCC_HEADER_STDINT.
