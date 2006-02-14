@@ -2145,7 +2145,8 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_set_std =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_std")),
 				    void_type_node,
-				    2,
+				    3,
+				    gfc_int4_type_node,
 				    gfc_int4_type_node,
 				    gfc_int4_type_node);
 
@@ -2592,10 +2593,10 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* Now generate the code for the body of this function.  */
   gfc_init_block (&body);
 
-  /* If this is the main program and we compile with -pedantic, add a call
-     to set_std to set up the runtime library Fortran language standard
-     parameters.  */
-  if (sym->attr.is_main_program && pedantic)
+  /* If this is the main program, add a call to set_std to set up the
+     runtime library Fortran language standard parameters.  */
+
+  if (sym->attr.is_main_program)
     {
       tree arglist, gfc_int4_type_node;
 
@@ -2606,7 +2607,10 @@ gfc_generate_function_code (gfc_namespace * ns)
       arglist = gfc_chainon_list (arglist,
 				  build_int_cst (gfc_int4_type_node,
 						 gfc_option.allow_std));
-      tmp = gfc_build_function_call (gfor_fndecl_set_std, arglist);
+      arglist = gfc_chainon_list (arglist,
+				  build_int_cst (gfc_int4_type_node,
+						 pedantic));
+      tmp = build_function_call_expr (gfor_fndecl_set_std, arglist);
       gfc_add_expr_to_block (&body, tmp);
     }
 

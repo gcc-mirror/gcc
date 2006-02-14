@@ -368,6 +368,7 @@ typedef struct
 {
   int warn_std;
   int allow_std;
+  int pedantic;
   int convert;
 }
 compile_options_t;

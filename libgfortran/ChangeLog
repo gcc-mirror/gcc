@@ -1,4 +1,14 @@
-2005-02-08  Thomas Koenig  <Thomas.Koenig@online.de>
+2006-02-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/25425
+	* libgfortran.h: Add pedantic field to compile_options struct.
+	* io/write.c (calculate_G_format): Depending on the standard,
+	choose E or F format for list-directed output of 0.0.
+	* runtime/error.c (notify_std): Make warning and error dependent
+	on pedanticity.
+	* runtime/compile_options.c (set_std): Use new pedantic argument.
+
+2006-02-08  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23815
 	* runtime/environ.c (init_unformatted):  Add GFORTRAN_CONVERT_UNIT
@@ -33,8 +43,8 @@
 2006-02-07  Rainer Emrich <r.emrich@de.tecosim.com>
 
 	* intrinsics/c99_functions.c: Work around incompatible
-        declarations of cabs{,f,l} on pre-C99 IRIX systems.
-                
+	declarations of cabs{,f,l} on pre-C99 IRIX systems.
+
 2006-01-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25835

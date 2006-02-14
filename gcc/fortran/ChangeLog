@@ -1,3 +1,9 @@
+2006-02-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/25425
+	* trans-decl.c (gfc_generate_function_code): Add new argument,
+	pedantic, to set_std call.
+
 2006-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26074
