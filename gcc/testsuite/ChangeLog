@@ -1,3 +1,8 @@
+2006-02-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26258
+	* gcc.dg/torture/pr26258.c: New testcase.
+
 2006-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/26246
