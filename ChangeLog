@@ -1,3 +1,17 @@
+2006-02-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	Sync from src:
+
+	2005-12-27  Leif Ekblad  <leif@rdos.net>
+
+        * configure.in: Add support for RDOS target.
+        * configure: Regenerate.
+
+2006-02-14  Paolo Bonzini  <bonzini@gnu.org>
+            Andreas Schwab  <schwab@suse.de>
+
+        * configure: Regenerate.
+
 2006-02-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in (enable_libgomp): Add AIX.

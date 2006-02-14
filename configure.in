@@ -697,6 +697,9 @@ case "${target}" in
   i[[3456789]]86-*-beos*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
+  i[[3456789]]86-*-rdos*)
+    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
+    ;;
   m32r-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;

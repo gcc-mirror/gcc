@@ -138,8 +138,8 @@ AC_DEFUN([NCN_STRICT_CHECK_TARGET_TOOLS],
 if test -n "$with_build_time_tools"; then
   for ncn_progname in $2; do
     AC_MSG_CHECKING([for ${ncn_progname} in $with_build_time_tools])
-    if test -x $with_build_time_tools/$1; then
-      ac_cv_prog_$1=$with_build_time_tools/$1
+    if test -x $with_build_time_tools/${ncn_progname}; then
+      ac_cv_prog_$1=$with_build_time_tools/${ncn_progname}
       AC_MSG_RESULT(yes)
       break
     else
@@ -271,10 +271,14 @@ AC_REQUIRE([ACX_TOOL_DIRS])
 AC_REQUIRE([ACX_HAVE_GCC_FOR_TARGET])
 if test -z "$ac_cv_path_$1" ; then
   if test -n "$with_build_time_tools"; then
-    AC_MSG_CHECKING([for ${ncn_target_tool_prefix}${ncn_progname} in $with_build_time_tools])
-    $1=`cd $with_build_time_tools && pwd`/$1
-    ac_cv_path_$1=[$]$1
-    AC_MSG_RESULT([$ac_cv_path_$1])
+    AC_MSG_CHECKING([for $2 in $with_build_time_tools])
+    if test -x $with_build_time_tools/$2; then
+      $1=`cd $with_build_time_tools && pwd`/$2
+      ac_cv_path_$1=[$]$1
+      AC_MSG_RESULT([$ac_cv_path_$1])
+    else
+      AC_MSG_RESULT(no)
+    fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     $1=`$GCC_FOR_TARGET --print-prog-name=$2`
     test [$]$1=$2 && $1=
@@ -286,6 +290,8 @@ if test -z "$ac_cv_path_$1" ; then
 fi
 if test -z "$ac_cv_path_$1" ; then
   NCN_STRICT_CHECK_TARGET_TOOLS([$1], [$2])
+else
+  $1=$ac_cv_path_$1
 fi
 ]) []dnl # ACX_CHECK_INSTALLED_TARGET_TOOL
 
