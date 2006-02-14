@@ -4426,6 +4426,14 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       return NULL_RTX;
     }
 
+  /* Merge implicit and explicit truncations.  */
+
+  if (GET_CODE (op) == TRUNCATE
+      && GET_MODE_SIZE (outermode) < GET_MODE_SIZE (innermode)
+      && subreg_lowpart_offset (outermode, innermode) == byte)
+    return simplify_gen_unary (TRUNCATE, outermode, XEXP (op, 0),
+			       GET_MODE (XEXP (op, 0)));
+
   /* SUBREG of a hard register => just change the register number
      and/or mode.  If the hard register is not valid in that mode,
      suppress this simplification.  If the hard register is the stack,

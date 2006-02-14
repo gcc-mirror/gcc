@@ -1,3 +1,7 @@
+2006-02-14  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* simplify-rtx.c (simplify_subreg): Combine SUBREG and TRUNCATE.
+
 2006-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR bootstrap/26053
