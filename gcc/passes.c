@@ -601,6 +601,7 @@ init_optimization_passes (void)
      vectorizer creates alias relations that are not supported by
      pass_may_alias.  */
   NEXT_PASS (pass_complete_unroll);
+  NEXT_PASS (pass_loop_prefetch);
   NEXT_PASS (pass_iv_optimize);
   NEXT_PASS (pass_tree_loop_done);
   *p = NULL;

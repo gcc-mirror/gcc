@@ -1,3 +1,38 @@
+2006-02-14  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* doc/invoke.texi (-fprefetch-loop-arrays, -fprefetch-loop-arrays-rtl):
+	Document.
+	* tree-ssa-loop-niter.c (number_of_iterations_ne,
+	number_of_iterations_lt, number_of_iterations_cond): Remember the shape
+	of the ending condition.
+	* tree-ssa-loop-manip.c: Include params.h.
+	(build_if_stmt, can_unroll_loop_p, determine_exit_conditions,
+	tree_unroll_loop): New functions.
+	* tree-pass.h (pass_loop_prefetch): Declare.
+	* loop.c (rest_of_handle_loop_optimize): Test for
+	-fprefetch-loop-arrays-rtl.
+	* tree-scalar-evolution.h (affine_iv): Moved to tree-flow.h.
+	* timevar.def (TV_TREE_PREFETCH): New timevar.
+	* tree-ssa-loop.c (tree_ssa_loop_prefetch, gate_tree_ssa_loop_prefetch,
+	pass_loop_prefetch): New.
+	* tree-cfgcleanup.c: Include tree-scalar-evolution.h.
+	(cleanup_tree_cfg_loop): Call scev_reset.
+	* common.opt (fprefetch-loop-arrays-rtl): Add.
+	* tree-ssa-loop-prefetch.c: New file.
+	* tree-outof-ssa.c (struct value_expr_d): Add expr_vars field.
+	(new_temp_expr_table): Initialize expr_vars.
+	(free_temp_expr_table): Cleanup expr_vars.
+	(check_replaceable, find_replaceable_in_bb): Prevent accumulating
+	expressions from being merged into one.
+	* tree-flow.h (affine_iv): Moved from tree-scalar-evolution.h.
+	(struct tree_niter_desc): Add control, bound and cmp fields.
+	(tree_ssa_prefetch_arrays, can_unroll_loop_p, tree_unroll_loop):
+	Declare.
+	* Makefile.in (tree-ssa-loop-prefetch.o): Add.
+	(tree-cfgcleanup.o): Add SCEV_H dependency.
+	(tree-ssa-loop-manip.o): Add PARAMS_H dependency.
+	* passes.c (init_optimization_passes): Add pass_loop_prefetch.
+
 2006-02-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26258

@@ -140,6 +140,10 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
   tree niter_type = unsigned_type_for (type);
   tree s, c, d, bits, assumption, tmp, bound;
 
+  niter->control = *iv;
+  niter->bound = final;
+  niter->cmp = NE_EXPR;
+
   /* Rearrange the terms so that we get inequality s * i <> c, with s
      positive.  Also cast everything to the unsigned type.  */
   if (tree_int_cst_sign_bit (iv->step))
@@ -410,6 +414,19 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   tree niter_type = unsigned_type_for (type);
   tree delta, step, s;
 
+  if (nonzero_p (iv0->step))
+    {
+      niter->control = *iv0;
+      niter->cmp = LT_EXPR;
+      niter->bound = iv1->base;
+    }
+  else
+    {
+      niter->control = *iv1;
+      niter->cmp = GT_EXPR;
+      niter->bound = iv0->base;
+    }
+
   delta = fold_build2 (MINUS_EXPR, niter_type,
 		       fold_convert (niter_type, iv1->base),
 		       fold_convert (niter_type, iv0->base));
@@ -542,6 +559,9 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
   niter->may_be_zero = boolean_false_node;
   niter->niter = NULL_TREE;
   niter->additional_info = boolean_true_node;
+
+  niter->bound = NULL_TREE;
+  niter->cmp = ERROR_MARK;
 
   /* Make < comparison from > ones, and for NE_EXPR comparisons, ensure that
      the control variable is on lhs.  */

@@ -45,6 +45,7 @@ Boston, MA 02110-1301, USA.  */
 #include "cfglayout.h"
 #include "hashtab.h"
 #include "tree-ssa-propagate.h"
+#include "tree-scalar-evolution.h"
 
 /* Remove any fallthru edge from EV.  Return true if an edge was removed.  */
 
@@ -559,23 +560,26 @@ cleanup_tree_cfg (void)
 void
 cleanup_tree_cfg_loop (void)
 {
-  bitmap changed_bbs = BITMAP_ALLOC (NULL);
+  bool changed = cleanup_tree_cfg ();
 
-  cleanup_tree_cfg ();
+  if (changed)
+    {
+      bitmap changed_bbs = BITMAP_ALLOC (NULL);
+      fix_loop_structure (current_loops, changed_bbs);
+      calculate_dominance_info (CDI_DOMINATORS);
 
-  fix_loop_structure (current_loops, changed_bbs);
-  calculate_dominance_info (CDI_DOMINATORS);
+      /* This usually does nothing.  But sometimes parts of cfg that originally
+	 were inside a loop get out of it due to edge removal (since they
+	 become unreachable by back edges from latch).  */
+      rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
 
-  /* This usually does nothing.  But sometimes parts of cfg that originally
-     were inside a loop get out of it due to edge removal (since they
-     become unreachable by back edges from latch).  */
-  rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
-
-  BITMAP_FREE (changed_bbs);
+      BITMAP_FREE (changed_bbs);
 
 #ifdef ENABLE_CHECKING
-  verify_loop_structure (current_loops);
+      verify_loop_structure (current_loops);
 #endif
+      scev_reset ();
+    }
 }
 
 /* Merge the PHI nodes at BB into those at BB's sole successor.  */

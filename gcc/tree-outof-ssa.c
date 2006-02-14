@@ -1299,7 +1299,8 @@ typedef struct value_expr_d
 typedef struct temp_expr_table_d 
 {
   var_map map;
-  void **version_info;		
+  void **version_info;
+  bitmap *expr_vars;
   value_expr_p *partition_dep_list;
   bitmap replaceable;
   bool saw_replaceable;
@@ -1344,6 +1345,7 @@ new_temp_expr_table (var_map map)
   t->map = map;
 
   t->version_info = XCNEWVEC (void *, num_ssa_names + 1);
+  t->expr_vars = XCNEWVEC (bitmap, num_ssa_names + 1);
   t->partition_dep_list = XCNEWVEC (value_expr_p,
                                     num_var_partitions (map) + 1);
 
@@ -1367,6 +1369,7 @@ free_temp_expr_table (temp_expr_table_p t)
 {
   value_expr_p p;
   tree *ret = NULL;
+  unsigned i;
 
 #ifdef ENABLE_CHECKING
   unsigned x;
@@ -1382,6 +1385,11 @@ free_temp_expr_table (temp_expr_table_p t)
 
   BITMAP_FREE (t->partition_in_use);
   BITMAP_FREE (t->replaceable);
+
+  for (i = 0; i <= num_ssa_names; i++)
+    if (t->expr_vars[i])
+      BITMAP_FREE (t->expr_vars[i]);
+  free (t->expr_vars);
 
   free (t->partition_dep_list);
   if (t->saw_replaceable)
@@ -1545,11 +1553,12 @@ add_dependance (temp_expr_table_p tab, int version, tree var)
 static bool
 check_replaceable (temp_expr_table_p tab, tree stmt)
 {
-  tree var, def;
+  tree var, def, basevar;
   int version;
   var_map map = tab->map;
   ssa_op_iter iter;
   tree call_expr;
+  bitmap def_vars = BITMAP_ALLOC (NULL), use_vars;
 
   if (TREE_CODE (stmt) != MODIFY_EXPR)
     return false;
@@ -1580,12 +1589,19 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
     }
 
   version = SSA_NAME_VERSION (def);
+  basevar = SSA_NAME_VAR (def);
+  bitmap_set_bit (def_vars, DECL_UID (basevar));
 
   /* Add this expression to the dependency list for each use partition.  */
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
     {
       add_dependance (tab, version, var);
+
+      use_vars = tab->expr_vars[SSA_NAME_VERSION (var)];
+      if (use_vars)
+	bitmap_ior_into (def_vars, use_vars);
     }
+  tab->expr_vars[version] = def_vars;
 
   /* If there are VUSES, add a dependence on virtual defs.  */
   if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE))
@@ -1704,7 +1720,7 @@ static void
 find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 {
   block_stmt_iterator bsi;
-  tree stmt, def;
+  tree stmt, def, use;
   stmt_ann_t ann;
   int partition;
   var_map map = tab->map;
@@ -1717,30 +1733,34 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
       ann = stmt_ann (stmt);
 
       /* Determine if this stmt finishes an existing expression.  */
-      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_USE)
+      FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	{
-	  if (tab->version_info[SSA_NAME_VERSION (def)])
+	  unsigned ver = SSA_NAME_VERSION (use);
+
+	  if (tab->version_info[ver])
 	    {
 	      bool same_root_var = false;
-	      tree def2;
 	      ssa_op_iter iter2;
+	      bitmap vars = tab->expr_vars[ver];
 
 	      /* See if the root variables are the same.  If they are, we
 		 do not want to do the replacement to avoid problems with
 		 code size, see PR tree-optimization/17549.  */
-	      FOR_EACH_SSA_TREE_OPERAND (def2, stmt, iter2, SSA_OP_DEF)
-		if (SSA_NAME_VAR (def) == SSA_NAME_VAR (def2))
-		  {
-		    same_root_var = true;
-		    break;
-		  }
+	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter2, SSA_OP_DEF)
+		{
+		  if (bitmap_bit_p (vars, DECL_UID (SSA_NAME_VAR (def))))
+		    {
+		      same_root_var = true;
+		      break;
+		    }
+		}
 
 	      /* Mark expression as replaceable unless stmt is volatile
 		 or DEF sets the same root variable as STMT.  */
 	      if (!ann->has_volatile_ops && !same_root_var)
-		mark_replaceable (tab, def);
+		mark_replaceable (tab, use);
 	      else
-		finish_expr (tab, SSA_NAME_VERSION (def), false);
+		finish_expr (tab, ver, false);
 	    }
 	}
       

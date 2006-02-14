@@ -11780,7 +11780,7 @@ rest_of_handle_loop_optimize (void)
   free_bb_for_insn ();
   profile_status = PROFILE_ABSENT;
   
-  do_prefetch = flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0;
+  do_prefetch = flag_prefetch_loop_arrays == 2 ? LOOP_PREFETCH : 0;
   
   if (flag_rerun_loop_opt)
     {

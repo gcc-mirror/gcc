@@ -36,6 +36,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 #include "cfglayout.h"
 #include "tree-scalar-evolution.h"
+#include "params.h"
 
 /* Creates an induction variable with value BASE + STEP * iteration in LOOP.
    It is expected that neither BASE nor STEP are shared with other expressions
@@ -617,4 +618,329 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
   scev_reset ();
 
   return true;
+}
+
+/* Build if (COND) goto THEN_LABEL; else goto ELSE_LABEL;  */
+
+static tree
+build_if_stmt (tree cond, tree then_label, tree else_label)
+{
+  return build3 (COND_EXPR, void_type_node,
+		 cond,
+		 build1 (GOTO_EXPR, void_type_node, then_label),
+		 build1 (GOTO_EXPR, void_type_node, else_label));
+}
+
+/* Returns true if we can unroll LOOP FACTOR times.  Number
+   of iterations of the loop is returned in NITER.  */
+
+bool
+can_unroll_loop_p (struct loop *loop, unsigned factor,
+		   struct tree_niter_desc *niter)
+{
+  edge exit;
+
+  /* Check whether unrolling is possible.  We only want to unroll loops
+     for that we are able to determine number of iterations.  We also
+     want to split the extra iterations of the loop from its end,
+     therefore we require that the loop has precisely one
+     exit.  */
+
+  exit = single_dom_exit (loop);
+  if (!exit)
+    return false;
+
+  if (!number_of_iterations_exit (loop, exit, niter, false)
+      || niter->cmp == ERROR_MARK)
+    return false;
+
+  /* And of course, we must be able to duplicate the loop.  */
+  if (!can_duplicate_loop_p (loop))
+    return false;
+
+  /* The final loop should be small enough.  */
+  if (tree_num_loop_insns (loop) * factor
+      > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS))
+    return false;
+
+  return true;
+}
+
+/* Determines the conditions that control execution of LOOP unrolled FACTOR
+   times.  DESC is number of iterations of LOOP.  ENTER_COND is set to
+   condition that must be true if the main loop can be entered.
+   EXIT_BASE, EXIT_STEP, EXIT_CMP and EXIT_BOUND are set to values describing
+   how the exit from the unrolled loop should be controlled.  */
+
+static void
+determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
+			   unsigned factor, tree *enter_cond,
+			   tree *exit_base, tree *exit_step,
+			   enum tree_code *exit_cmp, tree *exit_bound)
+{
+  tree stmts;
+  tree base = desc->control.base;
+  tree step = desc->control.step;
+  tree bound = desc->bound;
+  tree type = TREE_TYPE (base);
+  tree bigstep, delta;
+  tree min = lower_bound_in_type (type, type);
+  tree max = upper_bound_in_type (type, type);
+  enum tree_code cmp = desc->cmp;
+  tree cond = boolean_true_node, assum;
+
+  *enter_cond = boolean_false_node;
+  *exit_base = NULL_TREE;
+  *exit_step = NULL_TREE;
+  *exit_cmp = ERROR_MARK;
+  *exit_bound = NULL_TREE;
+  gcc_assert (cmp != ERROR_MARK);
+
+  /* We only need to be correct when we answer question
+     "Do at least FACTOR more iterations remain?" in the unrolled loop.
+     Thus, transforming BASE + STEP * i <> BOUND to
+     BASE + STEP * i < BOUND is ok.  */
+  if (cmp == NE_EXPR)
+    {
+      if (tree_int_cst_sign_bit (step))
+	cmp = GT_EXPR;
+      else
+	cmp = LT_EXPR;
+    }
+  else if (cmp == LT_EXPR)
+    {
+      gcc_assert (!tree_int_cst_sign_bit (step));
+    }
+  else if (cmp == GT_EXPR)
+    {
+      gcc_assert (tree_int_cst_sign_bit (step));
+    }
+  else
+    gcc_unreachable ();
+
+  /* The main body of the loop may be entered iff:
+
+     1) desc->may_be_zero is false.
+     2) it is possible to check that there are at least FACTOR iterations
+	of the loop, i.e., BOUND - step * FACTOR does not overflow.
+     3) # of iterations is at least FACTOR  */
+
+  if (!zero_p (desc->may_be_zero))
+    cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			invert_truthvalue (desc->may_be_zero),
+			cond);
+
+  bigstep = fold_build2 (MULT_EXPR, type, step,
+			 build_int_cst_type (type, factor));
+  delta = fold_build2 (MINUS_EXPR, type, bigstep, step);
+  if (cmp == LT_EXPR)
+    assum = fold_build2 (GE_EXPR, boolean_type_node,
+			 bound,
+			 fold_build2 (PLUS_EXPR, type, min, delta));
+  else
+    assum = fold_build2 (LE_EXPR, boolean_type_node,
+			 bound,
+			 fold_build2 (PLUS_EXPR, type, max, delta));
+  cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, assum, cond);
+
+  bound = fold_build2 (MINUS_EXPR, type, bound, delta);
+  assum = fold_build2 (cmp, boolean_type_node, base, bound);
+  cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, assum, cond);
+
+  cond = force_gimple_operand (unshare_expr (cond), &stmts, false, NULL_TREE);
+  if (stmts)
+    bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+  /* cond now may be a gimple comparison, which would be OK, but also any
+     other gimple rhs (say a && b).  In this case we need to force it to
+     operand.  */
+  if (!is_gimple_condexpr (cond))
+    {
+      cond = force_gimple_operand (cond, &stmts, true, NULL_TREE);
+      if (stmts)
+	bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+    }
+  *enter_cond = cond;
+
+  base = force_gimple_operand (unshare_expr (base), &stmts, true, NULL_TREE);
+  if (stmts)
+    bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+  bound = force_gimple_operand (unshare_expr (bound), &stmts, true, NULL_TREE);
+  if (stmts)
+    bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+
+  *exit_base = base;
+  *exit_step = bigstep;
+  *exit_cmp = cmp;
+  *exit_bound = bound;
+}
+
+/* Unroll LOOP FACTOR times.  LOOPS is the loops tree.  DESC describes
+   number of iterations of LOOP.  EXIT is the exit of the loop to that
+   DESC corresponds.
+   
+   If N is number of iterations of the loop and MAY_BE_ZERO is the condition
+   under that loop exits in the first iteration even if N != 0,
+   
+   while (1)
+     {
+       x = phi (init, next);
+
+       pre;
+       if (st)
+         break;
+       post;
+     }
+
+   becomes (with possibly the exit conditions formulated a bit differently,
+   avoiding the need to create a new iv):
+   
+   if (MAY_BE_ZERO || N < FACTOR)
+     goto rest;
+
+   do
+     {
+       x = phi (init, next);
+
+       pre;
+       post;
+       pre;
+       post;
+       ...
+       pre;
+       post;
+       N -= FACTOR;
+       
+     } while (N >= FACTOR);
+
+   rest:
+     init' = phi (init, x);
+
+   while (1)
+     {
+       x = phi (init', next);
+
+       pre;
+       if (st)
+         break;
+       post;
+     } */
+
+void
+tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
+		  edge exit, struct tree_niter_desc *desc)
+{
+  tree dont_exit, exit_if, ctr_before, ctr_after;
+  tree enter_main_cond, exit_base, exit_step, exit_bound;
+  enum tree_code exit_cmp;
+  tree phi_old_loop, phi_new_loop, phi_rest, init, next, new_init, var;
+  struct loop *new_loop;
+  basic_block rest, exit_bb;
+  edge old_entry, new_entry, old_latch, precond_edge, new_exit;
+  edge nonexit, new_nonexit;
+  block_stmt_iterator bsi;
+  use_operand_p op;
+  bool ok;
+  unsigned est_niter;
+  sbitmap wont_exit;
+
+  est_niter = expected_loop_iterations (loop);
+  determine_exit_conditions (loop, desc, factor,
+			     &enter_main_cond, &exit_base, &exit_step,
+			     &exit_cmp, &exit_bound);
+
+  new_loop = loop_version (loops, loop, enter_main_cond, NULL, true);
+  gcc_assert (new_loop != NULL);
+  update_ssa (TODO_update_ssa);
+
+  /* Unroll the loop and remove the old exits.  */
+  dont_exit = ((exit->flags & EDGE_TRUE_VALUE)
+	       ? boolean_false_node
+	       : boolean_true_node);
+  if (exit == EDGE_SUCC (exit->src, 0))
+    nonexit = EDGE_SUCC (exit->src, 1);
+  else
+    nonexit = EDGE_SUCC (exit->src, 0);
+  nonexit->probability = REG_BR_PROB_BASE;
+  exit->probability = 0;
+  nonexit->count += exit->count;
+  exit->count = 0;
+  exit_if = last_stmt (exit->src);
+  COND_EXPR_COND (exit_if) = dont_exit;
+  update_stmt (exit_if);
+      
+  wont_exit = sbitmap_alloc (factor);
+  sbitmap_ones (wont_exit);
+  ok = tree_duplicate_loop_to_header_edge
+	  (loop, loop_latch_edge (loop), loops, factor - 1,
+	   wont_exit, NULL, NULL, NULL, DLTHE_FLAG_UPDATE_FREQ);
+  free (wont_exit);
+  gcc_assert (ok);
+  update_ssa (TODO_update_ssa);
+
+  /* Prepare the cfg and update the phi nodes.  */
+  rest = loop_preheader_edge (new_loop)->src;
+  precond_edge = single_pred_edge (rest);
+  loop_split_edge_with (loop_latch_edge (loop), NULL);
+  exit_bb = single_pred (loop->latch);
+
+  new_exit = make_edge (exit_bb, rest, EDGE_FALSE_VALUE);
+  new_exit->count = loop_preheader_edge (loop)->count;
+  est_niter = est_niter / factor + 1;
+  new_exit->probability = REG_BR_PROB_BASE / est_niter;
+
+  new_nonexit = single_pred_edge (loop->latch);
+  new_nonexit->flags = EDGE_TRUE_VALUE;
+  new_nonexit->probability = REG_BR_PROB_BASE - new_exit->probability;
+
+  old_entry = loop_preheader_edge (loop);
+  new_entry = loop_preheader_edge (new_loop);
+  old_latch = loop_latch_edge (loop);
+  for (phi_old_loop = phi_nodes (loop->header),
+       phi_new_loop = phi_nodes (new_loop->header);
+       phi_old_loop;
+       phi_old_loop = PHI_CHAIN (phi_old_loop),
+       phi_new_loop = PHI_CHAIN (phi_new_loop))
+    {
+      init = PHI_ARG_DEF_FROM_EDGE (phi_old_loop, old_entry);
+      op = PHI_ARG_DEF_PTR_FROM_EDGE (phi_new_loop, new_entry);
+      gcc_assert (operand_equal_for_phi_arg_p (init, USE_FROM_PTR (op)));
+      next = PHI_ARG_DEF_FROM_EDGE (phi_old_loop, old_latch);
+
+      /* Prefer using original variable as a base for the new ssa name.
+	 This is necessary for virtual ops, and useful in order to avoid
+	 losing debug info for real ops.  */
+      if (TREE_CODE (next) == SSA_NAME)
+	var = SSA_NAME_VAR (next);
+      else if (TREE_CODE (init) == SSA_NAME)
+	var = SSA_NAME_VAR (init);
+      else
+	{
+	  var = create_tmp_var (TREE_TYPE (init), "unrinittmp");
+	  add_referenced_tmp_var (var);
+	}
+
+      new_init = make_ssa_name (var, NULL_TREE);
+      phi_rest = create_phi_node (new_init, rest);
+      SSA_NAME_DEF_STMT (new_init) = phi_rest;
+
+      add_phi_arg (phi_rest, init, precond_edge);
+      add_phi_arg (phi_rest, next, new_exit);
+      SET_USE (op, new_init);
+    }
+
+  /* Finally create the new counter for number of iterations and add the new
+     exit instruction.  */
+  bsi = bsi_last (exit_bb);
+  create_iv (exit_base, exit_step, NULL_TREE, loop,
+	     &bsi, true, &ctr_before, &ctr_after);
+  exit_if = build_if_stmt (build2 (exit_cmp, boolean_type_node, ctr_after,
+				   exit_bound),
+			   tree_block_label (loop->latch),
+			   tree_block_label (rest));
+  bsi_insert_after (&bsi, exit_if, BSI_NEW_STMT);
+
+  verify_flow_info ();
+  verify_dominators (CDI_DOMINATORS);
+  verify_loop_structure (loops);
+  verify_loop_closed_ssa ();
 }
