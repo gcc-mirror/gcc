@@ -2898,15 +2898,8 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
   emit_move_insn (target, op0);
   NO_DEFER_POP;
 
-  /* If this mode is an integer too wide to compare properly,
-     compare word by word.  Rely on CSE to optimize constant cases.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && ! can_compare_p (GE, mode, ccp_jump))
-    do_jump_by_parts_greater_rtx (mode, 0, target, const0_rtx,
-				  NULL_RTX, op1);
-  else
-    do_compare_rtx_and_jump (target, CONST0_RTX (mode), GE, 0, mode,
-			     NULL_RTX, NULL_RTX, op1);
+  do_compare_rtx_and_jump (target, CONST0_RTX (mode), GE, 0, mode,
+			   NULL_RTX, NULL_RTX, op1);
 
   op0 = expand_unop (mode, result_unsignedp ? neg_optab : negv_optab,
                      target, target, 0);

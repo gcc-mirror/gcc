@@ -743,9 +743,6 @@ extern void init_all_optabs (void);
 /* Call this to initialize an optab function entry.  */
 extern rtx init_one_libfunc (const char *);
 
-extern void do_jump_by_parts_greater_rtx (enum machine_mode, int, rtx, rtx,
-					  rtx, rtx);
-
 extern int vector_mode_valid_p (enum machine_mode);
 
 #endif /* GCC_EXPR_H */
