@@ -4,7 +4,7 @@
 module sd
   integer, parameter :: n = 20
   integer :: i(n)
-  integer :: j(m) ! { dg-error "cannot be automatic or assumed shape" }
+  integer :: j(m) ! { dg-error "must have constant shape" }
   integer, pointer :: p(:)
   integer, allocatable :: q(:)
 contains
