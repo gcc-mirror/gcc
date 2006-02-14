@@ -972,6 +972,10 @@ match_ltag (const io_tag * tag, gfc_st_label ** label)
       return MATCH_ERROR;
     }
 
+  if (m == MATCH_YES 
+      && gfc_reference_st_label (*label, ST_LABEL_TARGET) == FAILURE)
+    return MATCH_ERROR;
+
   return m;
 }
 
