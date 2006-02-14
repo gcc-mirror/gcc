@@ -661,4 +661,5 @@ AC_SUBST([am__untar])
 
 m4_include([../config/gcc-version.m4])
 m4_include([../config/no-executables.m4])
+m4_include([../config/stdint.m4])
 m4_include([acinclude.m4])

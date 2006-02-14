@@ -1,3 +1,14 @@
+2006-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libfortran/15234: Backport from mainline
+	2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR target/25259
+        * configure.ac: Use GCC_HEADER_STDINT.
+        * libgfortran.h: Include gstdint.h.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+
 2005-12-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25305
