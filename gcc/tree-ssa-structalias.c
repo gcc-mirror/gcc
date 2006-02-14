@@ -2883,8 +2883,25 @@ find_func_aliases (tree t, struct alias_info *ai)
 	  lhs = get_constraint_for (PHI_RESULT (t), NULL);
 	  for (i = 0; i < PHI_NUM_ARGS (t); i++)
 	    {
-	      rhs = get_constraint_for (PHI_ARG_DEF (t, i), NULL);
+	      bool need_anyoffset = false;
+	      tree anyoffsetrhs = PHI_ARG_DEF (t, i);
+
+	      rhs = get_constraint_for (PHI_ARG_DEF (t, i), &need_anyoffset);
 	      process_constraint (new_constraint (lhs, rhs));
+
+	      STRIP_NOPS (anyoffsetrhs);
+	      /* When taking the address of an aggregate
+	         type, from the LHS we can access any field
+	         of the RHS.  */
+	      if (need_anyoffset || (rhs.type == ADDRESSOF
+		  && !(get_varinfo (rhs.var)->is_special_var)
+		  && AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (anyoffsetrhs)))))
+		{
+		  rhs.var = anyoffset_id;
+		  rhs.type = ADDRESSOF;
+		  rhs.offset = 0;
+		  process_constraint (new_constraint (lhs, rhs));
+		}
 	    }
 	}
     }
