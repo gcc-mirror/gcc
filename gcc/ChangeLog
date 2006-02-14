@@ -1,3 +1,7 @@
+2006-02-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/quadlib.c: Use defines instead of enum qfcmp_magic.
+
 2006-02-13  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/26235
