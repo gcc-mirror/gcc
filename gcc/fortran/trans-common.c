@@ -1,5 +1,6 @@
 /* Common block and equivalence list handling
-   Copyright (C) 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Canqun Yang <canqun@nudt.edu.cn>
 
 This file is part of GCC.
@@ -96,6 +97,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "target.h"
 #include "tree.h"
 #include "toplev.h"
 #include "tm.h"
@@ -103,6 +105,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
+#include "rtl.h"
 
 
 /* Holds a single variable in an equivalence set.  */
@@ -278,6 +281,7 @@ build_equiv_decl (tree union_type, bool is_init, bool is_saved)
     {
       decl = gfc_create_var (union_type, "equiv");
       TREE_STATIC (decl) = 1;
+      GFC_DECL_COMMON_OR_EQUIV (decl) = 1;
       return decl;
     }
 
@@ -292,6 +296,7 @@ build_equiv_decl (tree union_type, bool is_init, bool is_saved)
 
   TREE_ADDRESSABLE (decl) = 1;
   TREE_USED (decl) = 1;
+  GFC_DECL_COMMON_OR_EQUIV (decl) = 1;
 
   /* The source location has been lost, and doesn't really matter.
      We need to set it to something though.  */
@@ -349,8 +354,12 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       TREE_STATIC (decl) = 1;
       DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
       DECL_USER_ALIGN (decl) = 0;
+      GFC_DECL_COMMON_OR_EQUIV (decl) = 1;
 
       gfc_set_decl_location (decl, &com->where);
+
+      if (com->threadprivate && targetm.have_tls)
+	DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
 
       /* Place the back end declaration for this common block in
          GLOBAL_BINDING_LEVEL.  */
@@ -493,6 +502,7 @@ create_common (gfc_common_head *com, segment_info * head, bool saw_equiv)
 			   build3 (COMPONENT_REF, TREE_TYPE (s->field),
 				   decl, s->field, NULL_TREE));
       DECL_HAS_VALUE_EXPR_P (var_decl) = 1;
+      GFC_DECL_COMMON_OR_EQUIV (var_decl) = 1;
 
       if (s->sym->attr.assign)
 	{

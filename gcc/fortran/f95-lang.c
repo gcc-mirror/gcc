@@ -1,6 +1,6 @@
 /* gfortran backend interface
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -116,6 +116,11 @@ static void gfc_expand_function (tree);
 #undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #undef LANG_HOOKS_CLEAR_BINDING_STACK
+#undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
+#undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
+#undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
+#undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
+#undef LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES
 
 /* Define lang hooks.  */
 #define LANG_HOOKS_NAME                 "GNU F95"
@@ -134,6 +139,12 @@ static void gfc_expand_function (tree);
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE gfc_signed_or_unsigned_type
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gfc_expand_function
 #define LANG_HOOKS_CLEAR_BINDING_STACK     gfc_clear_binding_stack
+#define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
+#define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
+#define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr
+#define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE	gfc_omp_private_debug_clause
+#define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
+  gfc_omp_firstprivatize_type_sizes
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -784,12 +795,53 @@ build_builtin_fntypes (tree * fntype, tree type)
   fntype[2] = build_function_type (type, tmp);
 }
 
+static tree
+builtin_type_for_size (int size, bool unsignedp)
+{
+  tree type = lang_hooks.types.type_for_size (size, unsignedp);
+  return type ? type : error_mark_node;
+}
 
 /* Initialization of builtin function nodes.  */
 
 static void
 gfc_init_builtin_functions (void)
 {
+  enum builtin_type
+  {
+#define DEF_PRIMITIVE_TYPE(NAME, VALUE) NAME,
+#define DEF_FUNCTION_TYPE_0(NAME, RETURN) NAME,
+#define DEF_FUNCTION_TYPE_1(NAME, RETURN, ARG1) NAME,
+#define DEF_FUNCTION_TYPE_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_FUNCTION_TYPE_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
+#define DEF_FUNCTION_TYPE_4(NAME, RETURN, ARG1, ARG2, ARG3, ARG4) NAME,
+#define DEF_FUNCTION_TYPE_5(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) NAME,
+#define DEF_FUNCTION_TYPE_6(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) NAME,
+#define DEF_FUNCTION_TYPE_7(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) NAME,
+#define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
+#define DEF_POINTER_TYPE(NAME, TYPE) NAME,
+#include "types.def"
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_0
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_5
+#undef DEF_FUNCTION_TYPE_6
+#undef DEF_FUNCTION_TYPE_7
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_POINTER_TYPE
+    BT_LAST
+  };
+  typedef enum builtin_type builtin_type;
+  enum
+  {
+    /* So far we need just these 2 attribute types.  */
+    ATTR_NOTHROW_LIST,
+    ATTR_CONST_NOTHROW_LIST
+  };
+
   tree mfunc_float[3];
   tree mfunc_double[3];
   tree mfunc_longdouble[3];
@@ -801,6 +853,7 @@ gfc_init_builtin_functions (void)
   tree func_clongdouble_longdouble;
   tree ftype;
   tree tmp;
+  tree builtin_types[(int) BT_LAST + 1];
 
   build_builtin_fntypes (mfunc_float, float_type_node);
   build_builtin_fntypes (mfunc_double, double_type_node);
@@ -881,6 +934,150 @@ gfc_init_builtin_functions (void)
   ftype = build_function_type (long_integer_type_node, tmp);
   gfc_define_builtin ("__builtin_expect", ftype, BUILT_IN_EXPECT,
 		      "__builtin_expect", true);
+
+#define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
+  builtin_types[(int) ENUM] = VALUE;
+#define DEF_FUNCTION_TYPE_0(ENUM, RETURN)		\
+  builtin_types[(int) ENUM]				\
+    = build_function_type (builtin_types[(int) RETURN],	\
+			   void_list_node);
+#define DEF_FUNCTION_TYPE_1(ENUM, RETURN, ARG1)				\
+  builtin_types[(int) ENUM]						\
+    = build_function_type (builtin_types[(int) RETURN],			\
+			   tree_cons (NULL_TREE,			\
+				      builtin_types[(int) ARG1],	\
+				      void_list_node));
+#define DEF_FUNCTION_TYPE_2(ENUM, RETURN, ARG1, ARG2)	\
+  builtin_types[(int) ENUM]				\
+    = build_function_type				\
+      (builtin_types[(int) RETURN],			\
+       tree_cons (NULL_TREE,				\
+		  builtin_types[(int) ARG1],		\
+		  tree_cons (NULL_TREE,			\
+			     builtin_types[(int) ARG2],	\
+			     void_list_node)));
+#define DEF_FUNCTION_TYPE_3(ENUM, RETURN, ARG1, ARG2, ARG3)		 \
+  builtin_types[(int) ENUM]						 \
+    = build_function_type						 \
+      (builtin_types[(int) RETURN],					 \
+       tree_cons (NULL_TREE,						 \
+		  builtin_types[(int) ARG1],				 \
+		  tree_cons (NULL_TREE,					 \
+			     builtin_types[(int) ARG2],			 \
+			     tree_cons (NULL_TREE,			 \
+					builtin_types[(int) ARG3],	 \
+					void_list_node))));
+#define DEF_FUNCTION_TYPE_4(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4)	\
+  builtin_types[(int) ENUM]						\
+    = build_function_type						\
+      (builtin_types[(int) RETURN],					\
+       tree_cons (NULL_TREE,						\
+		  builtin_types[(int) ARG1],				\
+		  tree_cons (NULL_TREE,					\
+			     builtin_types[(int) ARG2],			\
+			     tree_cons					\
+			     (NULL_TREE,				\
+			      builtin_types[(int) ARG3],		\
+			      tree_cons (NULL_TREE,			\
+					 builtin_types[(int) ARG4],	\
+					 void_list_node)))));
+#define DEF_FUNCTION_TYPE_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5)	\
+  builtin_types[(int) ENUM]						\
+    = build_function_type						\
+      (builtin_types[(int) RETURN],					\
+       tree_cons (NULL_TREE,						\
+		  builtin_types[(int) ARG1],				\
+		  tree_cons (NULL_TREE,					\
+			     builtin_types[(int) ARG2],			\
+			     tree_cons					\
+			     (NULL_TREE,				\
+			      builtin_types[(int) ARG3],		\
+			      tree_cons (NULL_TREE,			\
+					 builtin_types[(int) ARG4],	\
+					 tree_cons (NULL_TREE,		\
+					      builtin_types[(int) ARG5],\
+					      void_list_node))))));
+#define DEF_FUNCTION_TYPE_6(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6)					\
+  builtin_types[(int) ENUM]						\
+    = build_function_type						\
+      (builtin_types[(int) RETURN],					\
+       tree_cons (NULL_TREE,						\
+		  builtin_types[(int) ARG1],				\
+		  tree_cons (NULL_TREE,					\
+			     builtin_types[(int) ARG2],			\
+			     tree_cons					\
+			     (NULL_TREE,				\
+			      builtin_types[(int) ARG3],		\
+			      tree_cons					\
+			      (NULL_TREE,				\
+			       builtin_types[(int) ARG4],		\
+			       tree_cons (NULL_TREE,			\
+					 builtin_types[(int) ARG5],	\
+					 tree_cons (NULL_TREE,		\
+					      builtin_types[(int) ARG6],\
+					      void_list_node)))))));
+#define DEF_FUNCTION_TYPE_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7)					\
+  builtin_types[(int) ENUM]						\
+    = build_function_type						\
+      (builtin_types[(int) RETURN],					\
+       tree_cons (NULL_TREE,						\
+		  builtin_types[(int) ARG1],				\
+		  tree_cons (NULL_TREE,					\
+			     builtin_types[(int) ARG2],			\
+			     tree_cons					\
+			     (NULL_TREE,				\
+			      builtin_types[(int) ARG3],		\
+			      tree_cons					\
+			      (NULL_TREE,				\
+			       builtin_types[(int) ARG4],		\
+			       tree_cons (NULL_TREE,			\
+					 builtin_types[(int) ARG5],	\
+					 tree_cons (NULL_TREE,		\
+					      builtin_types[(int) ARG6],\
+					 tree_cons (NULL_TREE,		\
+					      builtin_types[(int) ARG6], \
+					      void_list_node))))))));
+#define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN)				\
+  builtin_types[(int) ENUM]						\
+    = build_function_type (builtin_types[(int) RETURN], NULL_TREE);
+#define DEF_POINTER_TYPE(ENUM, TYPE)			\
+  builtin_types[(int) ENUM]				\
+    = build_pointer_type (builtin_types[(int) TYPE]);
+#include "types.def"
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_5
+#undef DEF_FUNCTION_TYPE_6
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_POINTER_TYPE
+  builtin_types[(int) BT_LAST] = NULL_TREE;
+
+  /* Initialize synchronization builtins.  */
+#undef DEF_SYNC_BUILTIN
+#define DEF_SYNC_BUILTIN(code, name, type, attr) \
+    gfc_define_builtin (name, builtin_types[type], code, name, \
+			attr == ATTR_CONST_NOTHROW_LIST);
+#include "../sync-builtins.def"
+#undef DEF_SYNC_BUILTIN
+
+  if (gfc_option.flag_openmp)
+    {
+#undef DEF_GOMP_BUILTIN
+#define DEF_GOMP_BUILTIN(code, name, type, attr) \
+      gfc_define_builtin ("__builtin_" name, builtin_types[type], \
+			  code, name, attr == ATTR_CONST_NOTHROW_LIST);
+#include "../omp-builtins.def"
+#undef DEF_GOMP_BUILTIN
+    }
+
+  gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],
+		      BUILT_IN_TRAP, NULL, false);
+  TREE_THIS_VOLATILE (built_in_decls[BUILT_IN_TRAP]) = 1;
 
   build_common_builtin_nodes ();
   targetm.init_builtins ();

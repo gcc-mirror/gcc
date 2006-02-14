@@ -90,6 +90,28 @@ match gfc_match_forall (gfc_statement *);
 
 gfc_common_head *gfc_get_common (const char *, int);
 
+/* openmp.c */
+
+/* OpenMP directive matchers */
+match gfc_match_omp_eos (void);
+match gfc_match_omp_atomic (void);
+match gfc_match_omp_barrier (void);
+match gfc_match_omp_critical (void);
+match gfc_match_omp_do (void);
+match gfc_match_omp_flush (void);
+match gfc_match_omp_master (void);
+match gfc_match_omp_ordered (void);
+match gfc_match_omp_parallel (void);
+match gfc_match_omp_parallel_do (void);
+match gfc_match_omp_parallel_sections (void);
+match gfc_match_omp_parallel_workshare (void);
+match gfc_match_omp_sections (void);
+match gfc_match_omp_single (void);
+match gfc_match_omp_threadprivate (void);
+match gfc_match_omp_workshare (void);
+match gfc_match_omp_end_nowait (void);
+match gfc_match_omp_end_single (void);
+
 /* decl.c */
 
 match gfc_match_data (void);

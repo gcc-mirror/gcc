@@ -1,6 +1,6 @@
 # -*- makefile -*-
 # Top level makefile fragment for GNU gfortran, the GNU Fortran 95 compiler.
-# Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 # Contributed by Paul Brook <paul@nowt.org
 # and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -65,15 +65,16 @@ F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o \
     fortran/error.o fortran/expr.o fortran/interface.o \
     fortran/intrinsic.o fortran/io.o fortran/iresolve.o \
     fortran/match.o fortran/matchexp.o fortran/misc.o fortran/module.o \
-    fortran/options.o fortran/parse.o fortran/primary.o fortran/resolve.o \
-    fortran/scanner.o fortran/simplify.o fortran/st.o fortran/symbol.o
+    fortran/openmp.o fortran/options.o fortran/parse.o fortran/primary.o \
+    fortran/resolve.o fortran/scanner.o fortran/simplify.o fortran/st.o \
+    fortran/symbol.o
 
 F95_OBJS = $(F95_PARSER_OBJS) \
     fortran/convert.o fortran/dependency.o fortran/f95-lang.o \
     fortran/trans.o fortran/trans-array.o fortran/trans-common.o \
     fortran/trans-const.o fortran/trans-decl.o fortran/trans-expr.o \
-    fortran/trans-intrinsic.o fortran/trans-io.o fortran/trans-stmt.o \
-    fortran/trans-types.o
+    fortran/trans-intrinsic.o fortran/trans-io.o fortran/trans-openmp.o \
+    fortran/trans-stmt.o fortran/trans-types.o
 
 # GFORTRAN uses GMP for its internal arithmetics.
 F95_LIBS = $(GMPLIBS) $(LIBS)
@@ -261,6 +262,7 @@ $(F95_PARSER_OBJS): fortran/gfortran.h fortran/intrinsic.h fortran/match.h \
 		$(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TM_P_H) coretypes.h \
 		$(RTL_H) $(TREE_H) $(TREE_DUMP_H) $(GGC_H) $(EXPR_H) \
 		flags.h output.h diagnostic.h errors.h function.h 
+fortran/openmp.o: pointer-set.h $(TARGET_H) toplev.h
 
 GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/intrinsic.h fortran/trans-array.h \
     fortran/trans-const.h fortran/trans-const.h fortran/trans.h \
@@ -268,24 +270,26 @@ GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/intrinsic.h fortran/trans-array
     $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) coretypes.h $(GGC_H)
 
 fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
-  gt-fortran-f95-lang.h gtype-fortran.h cgraph.h $(TARGET_H)
+  gt-fortran-f95-lang.h gtype-fortran.h cgraph.h $(TARGET_H) \
+  $(BUILTINS_DEF) fortran/types.def
 fortran/scanner.o: toplev.h
 fortran/convert.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
-  cgraph.h $(TARGET_H) function.h $(FLAGS_H) tree-gimple.h \
+  cgraph.h $(TARGET_H) function.h $(FLAGS_H) $(RTL_H) tree-gimple.h \
   tree-dump.h
 fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h \
   real.h toplev.h $(TARGET_H)
 fortran/trans-const.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-expr.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
 fortran/trans-stmt.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
+fortran/trans-openmp.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-io.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-io.h \
   fortran/ioparm.def
 fortran/trans-array.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-intrinsic.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   gt-fortran-trans-intrinsic.h
 fortran/dependency.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
-fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS) $(TARGET_H) $(RTL_H)
 fortran/resolve.o: fortran/dependency.h
 

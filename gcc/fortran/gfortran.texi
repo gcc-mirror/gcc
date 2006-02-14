@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2005
+@set copyrights-gfortran 1999-2006
 
 @include gcc-common.texi
 
@@ -493,10 +493,6 @@ Option to initialize otherwise uninitialized integer and floating
 point variables.
 
 @item
-Support for OpenMP directives.  This also requires support from the runtime
-library and the rest of the compiler.
-
-@item
 Support for Fortran 200x. This includes several new features including
 floating point exceptions, extended use of allocatable arrays, C
 interoperability, Parameterizer data types and function pointers.
@@ -658,6 +654,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 * Hollerith constants support::
 * Cray pointers::
 * CONVERT specifier::
+* OpenMP::
 @end menu
 
 @node Old-style kind specifications
@@ -1048,6 +1045,22 @@ Using anything but the native representation for unformatted data
 carries a significant speed overhead.  If speed in this area matters
 to you, it is best if you use this only for data that needs to be
 portable.
+
+@node OpenMP
+@section OpenMP
+@cindex OpenMP
+
+gfortran attempts to be OpenMP Application Program Interface v2.5
+compatible when invoked with the @code{-fopenmp} option.  gfortran
+then generates parallellized code according to the OpenMP directives
+used in the source.  The OpenMP Fortran runtime library
+routines are provided both in a form of Fortran 90 module named
+@code{omp_lib} and in a form of a Fortran @code{include} file named
+@code{omp_lib.h}.
+
+For details refer to the actual
+@uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
+OpenMP Application Program Interface v2.5} specification.
 
 @c ---------------------------------------------------------------------
 @include intrinsic.texi

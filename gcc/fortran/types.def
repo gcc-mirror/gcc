@@ -1,0 +1,132 @@
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  */
+
+/* This header contains a subset of ../builtin-types.def needed for
+   Fortran frontend builtins.
+
+   Before including this header, you must define the following macros:
+
+   DEF_PRIMITIVE_TYPE (ENUM, TYPE)
+
+     The ENUM is an identifier indicating which type is being defined.
+     TYPE is an expression for a `tree' that represents the type.
+
+   DEF_FUNCTION_TYPE_0 (ENUM, RETURN)
+   DEF_FUNCTION_TYPE_1 (ENUM, RETURN, ARG1)
+   DEF_FUNCTION_TYPE_2 (ENUM, RETURN, ARG1, ARG2)
+   DEF_FUNCTION_TYPE_3 (ENUM, RETURN, ARG1, ARG2, ARG3)
+   DEF_FUNCTION_TYPE_4 (ENUM, RETURN, ARG1, ARG2, ARG3, ARG4)
+   DEF_FUNCTION_TYPE_5 (ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5)
+   DEF_FUNCTION_TYPE_6 (ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)
+   DEF_FUNCTION_TYPE_7 (ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)
+
+     These macros describe function types.  ENUM is as above.  The
+     RETURN type is one of the enumerals already defined.  ARG1, ARG2,
+     and ARG3 give the types of the arguments, similarly.
+
+   DEF_FUNCTION_TYPE_VAR_0 (ENUM, RETURN)
+
+     Similar, but for function types that take variable arguments.
+
+  DEF_POINTER_TYPE (ENUM, TYPE)
+
+    This macro describes a pointer type.  ENUM is as above; TYPE is
+    the type pointed to.  */
+
+DEF_PRIMITIVE_TYPE (BT_VOID, void_type_node)
+DEF_PRIMITIVE_TYPE (BT_BOOL, boolean_type_node)
+DEF_PRIMITIVE_TYPE (BT_INT, integer_type_node)
+DEF_PRIMITIVE_TYPE (BT_UINT, unsigned_type_node)
+DEF_PRIMITIVE_TYPE (BT_LONG, long_integer_type_node)
+
+DEF_PRIMITIVE_TYPE (BT_I1, builtin_type_for_size (BITS_PER_UNIT*1, 1))
+DEF_PRIMITIVE_TYPE (BT_I2, builtin_type_for_size (BITS_PER_UNIT*2, 1))
+DEF_PRIMITIVE_TYPE (BT_I4, builtin_type_for_size (BITS_PER_UNIT*4, 1))
+DEF_PRIMITIVE_TYPE (BT_I8, builtin_type_for_size (BITS_PER_UNIT*8, 1))
+DEF_PRIMITIVE_TYPE (BT_I16, builtin_type_for_size (BITS_PER_UNIT*16, 1))
+
+DEF_PRIMITIVE_TYPE (BT_PTR, ptr_type_node)
+DEF_PRIMITIVE_TYPE (BT_CONST_PTR, const_ptr_type_node)
+DEF_PRIMITIVE_TYPE (BT_VOLATILE_PTR,
+                    build_pointer_type
+                     (build_qualified_type (void_type_node,
+                                            TYPE_QUAL_VOLATILE)))
+
+DEF_POINTER_TYPE (BT_PTR_LONG, BT_LONG)
+DEF_POINTER_TYPE (BT_PTR_PTR, BT_PTR)
+DEF_FUNCTION_TYPE_0 (BT_FN_BOOL, BT_BOOL)
+DEF_FUNCTION_TYPE_0 (BT_FN_PTR, BT_PTR)
+DEF_FUNCTION_TYPE_0 (BT_FN_INT, BT_INT)
+DEF_FUNCTION_TYPE_0 (BT_FN_UINT, BT_UINT)
+DEF_FUNCTION_TYPE_0 (BT_FN_VOID, BT_VOID)
+
+DEF_FUNCTION_TYPE_1 (BT_FN_VOID_PTR, BT_VOID, BT_PTR)
+DEF_FUNCTION_TYPE_1 (BT_FN_VOID_PTRPTR, BT_VOID, BT_PTR_PTR)
+DEF_FUNCTION_TYPE_1 (BT_FN_VOID_VPTR, BT_VOID, BT_VOLATILE_PTR)
+DEF_FUNCTION_TYPE_1 (BT_FN_UINT_UINT, BT_UINT, BT_UINT)
+
+DEF_POINTER_TYPE (BT_PTR_FN_VOID_PTR, BT_FN_VOID_PTR)
+
+DEF_FUNCTION_TYPE_2 (BT_FN_BOOL_LONGPTR_LONGPTR,
+                     BT_BOOL, BT_PTR_LONG, BT_PTR_LONG)
+DEF_FUNCTION_TYPE_2 (BT_FN_I1_VPTR_I1, BT_I1, BT_VOLATILE_PTR, BT_I1)
+DEF_FUNCTION_TYPE_2 (BT_FN_I2_VPTR_I2, BT_I2, BT_VOLATILE_PTR, BT_I2)
+DEF_FUNCTION_TYPE_2 (BT_FN_I4_VPTR_I4, BT_I4, BT_VOLATILE_PTR, BT_I4)
+DEF_FUNCTION_TYPE_2 (BT_FN_I8_VPTR_I8, BT_I8, BT_VOLATILE_PTR, BT_I8)
+DEF_FUNCTION_TYPE_2 (BT_FN_I16_VPTR_I16, BT_I16, BT_VOLATILE_PTR, BT_I16)
+
+DEF_FUNCTION_TYPE_3 (BT_FN_BOOL_VPTR_I1_I1, BT_BOOL, BT_VOLATILE_PTR,
+                     BT_I1, BT_I1)
+DEF_FUNCTION_TYPE_3 (BT_FN_BOOL_VPTR_I2_I2, BT_BOOL, BT_VOLATILE_PTR,
+                     BT_I2, BT_I2)
+DEF_FUNCTION_TYPE_3 (BT_FN_BOOL_VPTR_I4_I4, BT_BOOL, BT_VOLATILE_PTR,
+                     BT_I4, BT_I4)
+DEF_FUNCTION_TYPE_3 (BT_FN_BOOL_VPTR_I8_I8, BT_BOOL, BT_VOLATILE_PTR,
+                     BT_I8, BT_I8)
+DEF_FUNCTION_TYPE_3 (BT_FN_BOOL_VPTR_I16_I16, BT_BOOL, BT_VOLATILE_PTR,
+                     BT_I16, BT_I16)
+DEF_FUNCTION_TYPE_3 (BT_FN_I1_VPTR_I1_I1, BT_I1, BT_VOLATILE_PTR, BT_I1, BT_I1)
+DEF_FUNCTION_TYPE_3 (BT_FN_I2_VPTR_I2_I2, BT_I2, BT_VOLATILE_PTR, BT_I2, BT_I2)
+DEF_FUNCTION_TYPE_3 (BT_FN_I4_VPTR_I4_I4, BT_I4, BT_VOLATILE_PTR, BT_I4, BT_I4)
+DEF_FUNCTION_TYPE_3 (BT_FN_I8_VPTR_I8_I8, BT_I8, BT_VOLATILE_PTR, BT_I8, BT_I8)
+DEF_FUNCTION_TYPE_3 (BT_FN_I16_VPTR_I16_I16, BT_I16, BT_VOLATILE_PTR,
+		     BT_I16, BT_I16)
+DEF_FUNCTION_TYPE_3 (BT_FN_VOID_OMPFN_PTR_UINT, BT_VOID, BT_PTR_FN_VOID_PTR,
+                     BT_PTR, BT_UINT)
+
+DEF_FUNCTION_TYPE_4 (BT_FN_VOID_OMPFN_PTR_UINT_UINT,
+                     BT_VOID, BT_PTR_FN_VOID_PTR, BT_PTR, BT_UINT, BT_UINT)
+
+DEF_FUNCTION_TYPE_5 (BT_FN_BOOL_LONG_LONG_LONG_LONGPTR_LONGPTR,
+                     BT_BOOL, BT_LONG, BT_LONG, BT_LONG,
+		     BT_PTR_LONG, BT_PTR_LONG)
+
+DEF_FUNCTION_TYPE_6 (BT_FN_BOOL_LONG_LONG_LONG_LONG_LONGPTR_LONGPTR,
+                     BT_BOOL, BT_LONG, BT_LONG, BT_LONG, BT_LONG,
+		     BT_PTR_LONG, BT_PTR_LONG)
+DEF_FUNCTION_TYPE_6 (BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG,
+                     BT_VOID, BT_PTR_FN_VOID_PTR, BT_PTR, BT_UINT,
+                     BT_LONG, BT_LONG, BT_LONG)
+
+DEF_FUNCTION_TYPE_7 (BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_LONG,
+                     BT_VOID, BT_PTR_FN_VOID_PTR, BT_PTR, BT_UINT,
+                     BT_LONG, BT_LONG, BT_LONG, BT_LONG)
+
+DEF_FUNCTION_TYPE_VAR_0 (BT_FN_VOID_VAR, BT_VOID)
