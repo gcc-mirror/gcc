@@ -8184,24 +8184,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  emit_move_insn (target, op0);
 
 	temp = gen_label_rtx ();
-
-	/* If this mode is an integer too wide to compare properly,
-	   compare word by word.  Rely on cse to optimize constant cases.  */
-	if (GET_MODE_CLASS (mode) == MODE_INT
-	    && ! can_compare_p (GE, mode, ccp_jump))
-	  {
-	    if (code == MAX_EXPR)
-	      do_jump_by_parts_greater_rtx (mode, unsignedp, target, op1,
-					    NULL_RTX, temp);
-	    else
-	      do_jump_by_parts_greater_rtx (mode, unsignedp, op1, target,
-					    NULL_RTX, temp);
-	  }
-	else
-	  {
-	    do_compare_rtx_and_jump (target, cmpop1, comparison_code,
-				     unsignedp, mode, NULL_RTX, NULL_RTX, temp);
-	  }
+	do_compare_rtx_and_jump (target, cmpop1, comparison_code,
+				 unsignedp, mode, NULL_RTX, NULL_RTX, temp);
       }
       emit_move_insn (target, op1);
       emit_label (temp);

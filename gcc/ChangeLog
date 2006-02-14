@@ -1,3 +1,13 @@
+2006-02-13  Roger Sayle  <roger@eyesopen.com>
+
+	* optabs.c (expand_abs): Don't call do_jump_by_parts_greater_rtx
+	directly, instead let do_compare_rtx_and_jump handle this for us.
+	* expr.c (expand_expr_real_1): Likewise.
+	* dojump.c (do_jump_by_parts_greater_rtx): Make static.  Move
+	before do_jump_by_parts_greater.
+	(do_jump_by_parts_greater): Move after do_jump_by_parts_greater_rtx.
+	* expr.h (do_jump_by_parts_greater_rtx): Delete prototype.
+
 2006-02-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/quadlib.c: Use defines instead of enum qfcmp_magic.

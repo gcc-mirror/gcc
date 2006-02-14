@@ -609,29 +609,11 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
     }
 }
 
-/* Given a comparison expression EXP for values too wide to be compared
-   with one insn, test the comparison and jump to the appropriate label.
-   The code of EXP is ignored; we always test GT if SWAP is 0,
-   and LT if SWAP is 1.  */
-
-static void
-do_jump_by_parts_greater (tree exp, int swap, rtx if_false_label,
-			  rtx if_true_label)
-{
-  rtx op0 = expand_normal (TREE_OPERAND (exp, swap));
-  rtx op1 = expand_normal (TREE_OPERAND (exp, !swap));
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
-  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
-
-  do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label,
-				if_true_label);
-}
-
 /* Compare OP0 with OP1, word at a time, in mode MODE.
    UNSIGNEDP says to do unsigned comparison.
    Jump to IF_TRUE_LABEL if OP0 is greater, IF_FALSE_LABEL otherwise.  */
 
-void
+static void
 do_jump_by_parts_greater_rtx (enum machine_mode mode, int unsignedp, rtx op0,
 			      rtx op1, rtx if_false_label, rtx if_true_label)
 {
@@ -676,6 +658,24 @@ do_jump_by_parts_greater_rtx (enum machine_mode mode, int unsignedp, rtx op0,
     emit_jump (if_false_label);
   if (drop_through_label)
     emit_label (drop_through_label);
+}
+
+/* Given a comparison expression EXP for values too wide to be compared
+   with one insn, test the comparison and jump to the appropriate label.
+   The code of EXP is ignored; we always test GT if SWAP is 0,
+   and LT if SWAP is 1.  */
+
+static void
+do_jump_by_parts_greater (tree exp, int swap, rtx if_false_label,
+			  rtx if_true_label)
+{
+  rtx op0 = expand_normal (TREE_OPERAND (exp, swap));
+  rtx op1 = expand_normal (TREE_OPERAND (exp, !swap));
+  enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
+
+  do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label,
+				if_true_label);
 }
 
 /* Jump according to whether OP0 is 0.  We assume that OP0 has an integer
