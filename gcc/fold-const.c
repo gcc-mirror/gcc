@@ -8161,6 +8161,26 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				arg1);
 	}
 
+      /* (X & Y) | Y is (X, Y).  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
+	return omit_one_operand (type, arg1, TREE_OPERAND (arg0, 0));
+      /* (X & Y) | X is (Y, X).  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
+	return omit_one_operand (type, arg1, TREE_OPERAND (arg0, 1));
+      /* X | (X & Y) is (Y, X).  */
+      if (TREE_CODE (arg1) == BIT_AND_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0)
+	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 1)))
+	return omit_one_operand (type, arg0, TREE_OPERAND (arg1, 1));
+      /* X | (Y & X) is (Y, X).  */
+      if (TREE_CODE (arg1) == BIT_AND_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0)
+	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
+	return omit_one_operand (type, arg0, TREE_OPERAND (arg1, 0));
+
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
@@ -8312,6 +8332,26 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					 TREE_OPERAND (arg0, 0), arg1),
 			    fold_build2 (BIT_AND_EXPR, type,
 					 TREE_OPERAND (arg0, 1), arg1));
+
+      /* (X | Y) & Y is (X, Y).  */
+      if (TREE_CODE (arg0) == BIT_IOR_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
+	return omit_one_operand (type, arg1, TREE_OPERAND (arg0, 0));
+      /* (X | Y) & X is (Y, X).  */
+      if (TREE_CODE (arg0) == BIT_IOR_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
+	return omit_one_operand (type, arg1, TREE_OPERAND (arg0, 1));
+      /* X & (X | Y) is (Y, X).  */
+      if (TREE_CODE (arg1) == BIT_IOR_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0)
+	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 1)))
+	return omit_one_operand (type, arg0, TREE_OPERAND (arg1, 1));
+      /* X & (Y | X) is (Y, X).  */
+      if (TREE_CODE (arg1) == BIT_IOR_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0)
+	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
+	return omit_one_operand (type, arg0, TREE_OPERAND (arg1, 0));
 
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
