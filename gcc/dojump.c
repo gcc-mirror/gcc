@@ -921,6 +921,11 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 					if_false_label, if_true_label);
 	  break;
 
+	case LE:
+	  do_jump_by_parts_greater_rtx (mode, 0, op0, op1,
+					if_true_label, if_false_label);
+	  break;
+
 	case GT:
 	  do_jump_by_parts_greater_rtx (mode, 0, op0, op1,
 					if_false_label, if_true_label);

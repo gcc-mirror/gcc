@@ -1,3 +1,10 @@
+2006-02-14  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/26279
+	PR middle-end/26280
+	PR middle-end/26283
+	* dojump.c (do_compare_rtx_and_jump): Handle multi-word LE.
+
 2006-02-14  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/26260
