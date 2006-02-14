@@ -1,6 +1,6 @@
 /* Parse and display command line options.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -77,6 +77,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_backslash = 1;
   gfc_option.flag_cray_pointer = 0;
   gfc_option.flag_d_lines = -1;
+  gfc_option.flag_openmp = 0;
 
   gfc_option.q_kind = gfc_default_double_kind;
 
@@ -454,6 +455,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_ffree_form:
       gfc_option.source_form = FORM_FREE;
+      break;
+
+    case OPT_fopenmp:
+      gfc_option.flag_openmp = value;
       break;
 
     case OPT_ffree_line_length_none:

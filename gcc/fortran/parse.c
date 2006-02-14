@@ -300,6 +300,107 @@ decode_statement (void)
   return ST_NONE;
 }
 
+static gfc_statement
+decode_omp_directive (void)
+{
+  locus old_locus;
+  int c;
+
+#ifdef GFC_DEBUG
+  gfc_symbol_state ();
+#endif
+
+  gfc_clear_error ();	/* Clear any pending errors.  */
+  gfc_clear_warning ();	/* Clear any pending warnings.  */
+
+  if (gfc_pure (NULL))
+    {
+      gfc_error_now ("OpenMP directives at %C may not appear in PURE or ELEMENTAL procedures");
+      gfc_error_recovery ();
+      return ST_NONE;
+    }
+
+  old_locus = gfc_current_locus;
+
+  /* General OpenMP directive matching: Instead of testing every possible
+     statement, we eliminate most possibilities by peeking at the
+     first character.  */
+
+  c = gfc_peek_char ();
+
+  switch (c)
+    {
+    case 'a':
+      match ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
+      break;
+    case 'b':
+      match ("barrier", gfc_match_omp_barrier, ST_OMP_BARRIER);
+      break;
+    case 'c':
+      match ("critical", gfc_match_omp_critical, ST_OMP_CRITICAL);
+      break;
+    case 'd':
+      match ("do", gfc_match_omp_do, ST_OMP_DO);
+      break;
+    case 'e':
+      match ("end critical", gfc_match_omp_critical, ST_OMP_END_CRITICAL);
+      match ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
+      match ("end master", gfc_match_omp_eos, ST_OMP_END_MASTER);
+      match ("end ordered", gfc_match_omp_eos, ST_OMP_END_ORDERED);
+      match ("end parallel do", gfc_match_omp_eos, ST_OMP_END_PARALLEL_DO);
+      match ("end parallel sections", gfc_match_omp_eos,
+	     ST_OMP_END_PARALLEL_SECTIONS);
+      match ("end parallel workshare", gfc_match_omp_eos,
+	     ST_OMP_END_PARALLEL_WORKSHARE);
+      match ("end parallel", gfc_match_omp_eos, ST_OMP_END_PARALLEL);
+      match ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
+      match ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
+      match ("end workshare", gfc_match_omp_end_nowait,
+	     ST_OMP_END_WORKSHARE);
+      break;
+    case 'f':
+      match ("flush", gfc_match_omp_flush, ST_OMP_FLUSH);
+      break;
+    case 'm':
+      match ("master", gfc_match_omp_master, ST_OMP_MASTER);
+      break;
+    case 'o':
+      match ("ordered", gfc_match_omp_ordered, ST_OMP_ORDERED);
+      break;
+    case 'p':
+      match ("parallel do", gfc_match_omp_parallel_do, ST_OMP_PARALLEL_DO);
+      match ("parallel sections", gfc_match_omp_parallel_sections,
+	     ST_OMP_PARALLEL_SECTIONS);
+      match ("parallel workshare", gfc_match_omp_parallel_workshare,
+	     ST_OMP_PARALLEL_WORKSHARE);
+      match ("parallel", gfc_match_omp_parallel, ST_OMP_PARALLEL);
+      break;
+    case 's':
+      match ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
+      match ("section", gfc_match_omp_eos, ST_OMP_SECTION);
+      match ("single", gfc_match_omp_single, ST_OMP_SINGLE);
+      break;
+    case 't':
+      match ("threadprivate", gfc_match_omp_threadprivate,
+	     ST_OMP_THREADPRIVATE);
+    case 'w':
+      match ("workshare", gfc_match_omp_workshare, ST_OMP_WORKSHARE);
+      break;
+    }
+
+  /* All else has failed, so give up.  See if any of the matchers has
+     stored an error message of some sort.  */
+
+  if (gfc_error_check () == 0)
+    gfc_error_now ("Unclassifiable OpenMP directive at %C");
+
+  reject_statement ();
+
+  gfc_error_recovery ();
+
+  return ST_NONE;
+}
+
 #undef match
 
 
@@ -355,6 +456,22 @@ next_free (void)
 	    }
 	}
     }
+  else if (c == '!')
+    {
+      /* Comments have already been skipped by the time we get here,
+	 except for OpenMP directives.  */
+      if (gfc_option.flag_openmp)
+	{
+	  int i;
+
+	  c = gfc_next_char ();
+	  for (i = 0; i < 5; i++, c = gfc_next_char ())
+	    gcc_assert (c == "!$omp"[i]);
+
+	  gcc_assert (c == ' ');
+	  return decode_omp_directive ();
+	}
+    }
 
   return decode_statement ();
 }
@@ -405,7 +522,26 @@ next_fixed (void)
 	  digit_flag = 1;
 	  break;
 
-          /* Comments have already been skipped by the time we get
+	  /* Comments have already been skipped by the time we get
+	     here, except for OpenMP directives.  */
+	case '*':
+	  if (gfc_option.flag_openmp)
+	    {
+	      for (i = 0; i < 5; i++, c = gfc_next_char_literal (0))
+		gcc_assert (TOLOWER (c) == "*$omp"[i]);
+
+	      if (c != ' ' && c != '0')
+		{
+		  gfc_buffer_error (0);
+		  gfc_error ("Bad continuation line at %C");
+		  return ST_NONE;
+		}
+
+	      return decode_omp_directive ();
+	    }
+	  /* FALLTHROUGH */
+
+	  /* Comments have already been skipped by the time we get
 	     here so don't bother checking for them.  */
 
 	default:
@@ -534,18 +670,23 @@ next_statement (void)
   case ST_PAUSE: case ST_STOP: case ST_WRITE: case ST_ASSIGNMENT: \
   case ST_POINTER_ASSIGNMENT: case ST_EXIT: case ST_CYCLE: \
   case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: \
-  case ST_LABEL_ASSIGNMENT: case ST_FLUSH
+  case ST_LABEL_ASSIGNMENT: case ST_FLUSH: case ST_OMP_FLUSH: \
+  case ST_OMP_BARRIER
 
 /* Statements that mark other executable statements.  */
 
 #define case_exec_markers case ST_DO: case ST_FORALL_BLOCK: case ST_IF_BLOCK: \
-  case ST_WHERE_BLOCK: case ST_SELECT_CASE
+  case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_OMP_PARALLEL: \
+  case ST_OMP_PARALLEL_SECTIONS: case ST_OMP_SECTIONS: case ST_OMP_ORDERED: \
+  case ST_OMP_CRITICAL: case ST_OMP_MASTER: case ST_OMP_SINGLE: \
+  case ST_OMP_DO: case ST_OMP_PARALLEL_DO: case ST_OMP_ATOMIC: \
+  case ST_OMP_WORKSHARE: case ST_OMP_PARALLEL_WORKSHARE
 
 /* Declaration statements */
 
 #define case_decl case ST_ATTR_DECL: case ST_COMMON: case ST_DATA_DECL: \
   case ST_EQUIVALENCE: case ST_NAMELIST: case ST_STATEMENT_FUNCTION: \
-  case ST_TYPE: case ST_INTERFACE
+  case ST_TYPE: case ST_INTERFACE: case ST_OMP_THREADPRIVATE
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -962,6 +1103,87 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_END_ENUM:
       p = "END ENUM";
+      break;
+    case ST_OMP_ATOMIC:
+      p = "!$OMP ATOMIC";
+      break;
+    case ST_OMP_BARRIER:
+      p = "!$OMP BARRIER";
+      break;
+    case ST_OMP_CRITICAL:
+      p = "!$OMP CRITICAL";
+      break;
+    case ST_OMP_DO:
+      p = "!$OMP DO";
+      break;
+    case ST_OMP_END_CRITICAL:
+      p = "!$OMP END CRITICAL";
+      break;
+    case ST_OMP_END_DO:
+      p = "!$OMP END DO";
+      break;
+    case ST_OMP_END_MASTER:
+      p = "!$OMP END MASTER";
+      break;
+    case ST_OMP_END_ORDERED:
+      p = "!$OMP END ORDERED";
+      break;
+    case ST_OMP_END_PARALLEL:
+      p = "!$OMP END PARALLEL";
+      break;
+    case ST_OMP_END_PARALLEL_DO:
+      p = "!$OMP END PARALLEL DO";
+      break;
+    case ST_OMP_END_PARALLEL_SECTIONS:
+      p = "!$OMP END PARALLEL SECTIONS";
+      break;
+    case ST_OMP_END_PARALLEL_WORKSHARE:
+      p = "!$OMP END PARALLEL WORKSHARE";
+      break;
+    case ST_OMP_END_SECTIONS:
+      p = "!$OMP END SECTIONS";
+      break;
+    case ST_OMP_END_SINGLE:
+      p = "!$OMP END SINGLE";
+      break;
+    case ST_OMP_END_WORKSHARE:
+      p = "!$OMP END WORKSHARE";
+      break;
+    case ST_OMP_FLUSH:
+      p = "!$OMP FLUSH";
+      break;
+    case ST_OMP_MASTER:
+      p = "!$OMP MASTER";
+      break;
+    case ST_OMP_ORDERED:
+      p = "!$OMP ORDERED";
+      break;
+    case ST_OMP_PARALLEL:
+      p = "!$OMP PARALLEL";
+      break;
+    case ST_OMP_PARALLEL_DO:
+      p = "!$OMP PARALLEL DO";
+      break;
+    case ST_OMP_PARALLEL_SECTIONS:
+      p = "!$OMP PARALLEL SECTIONS";
+      break;
+    case ST_OMP_PARALLEL_WORKSHARE:
+      p = "!$OMP PARALLEL WORKSHARE";
+      break;
+    case ST_OMP_SECTIONS:
+      p = "!$OMP SECTIONS";
+      break;
+    case ST_OMP_SECTION:
+      p = "!$OMP SECTION";
+      break;
+    case ST_OMP_SINGLE:
+      p = "!$OMP SINGLE";
+      break;
+    case ST_OMP_THREADPRIVATE:
+      p = "!$OMP THREADPRIVATE";
+      break;
+    case ST_OMP_WORKSHARE:
+      p = "!$OMP WORKSHARE";
       break;
     default:
       gfc_internal_error ("gfc_ascii_statement(): Bad statement code");
@@ -2070,6 +2292,266 @@ loop:
 }
 
 
+/* Parse the statements of OpenMP do/parallel do.  */
+
+static gfc_statement
+parse_omp_do (gfc_statement omp_st)
+{
+  gfc_statement st;
+  gfc_code *cp, *np;
+  gfc_state_data s;
+
+  accept_statement (omp_st);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_OMP_STRUCTURED_BLOCK, NULL);
+  np = new_level (cp);
+  np->op = cp->op;
+  np->block = NULL;
+
+  for (;;)
+    {
+      st = next_statement ();
+      if (st == ST_NONE)
+	unexpected_eof ();
+      else if (st == ST_DO)
+	break;
+      else
+	unexpected_statement (st);
+    }
+
+  parse_do_block ();
+  if (gfc_statement_label != NULL
+      && gfc_state_stack->previous != NULL
+      && gfc_state_stack->previous->state == COMP_DO
+      && gfc_state_stack->previous->ext.end_do_label == gfc_statement_label)
+    {
+      /* In
+         DO 100 I=1,10
+           !$OMP DO
+             DO J=1,10
+             ...
+             100 CONTINUE
+         there should be no !$OMP END DO.  */
+      pop_state ();
+      return ST_IMPLIED_ENDDO;
+    }
+
+  check_do_closure ();
+  pop_state ();
+
+  st = next_statement ();
+  if (st == (omp_st == ST_OMP_DO ? ST_OMP_END_DO : ST_OMP_END_PARALLEL_DO))
+    {
+      if (new_st.op == EXEC_OMP_END_NOWAIT)
+	cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
+      else
+	gcc_assert (new_st.op == EXEC_NOP);
+      gfc_clear_new_st ();
+      st = next_statement ();
+    }
+  return st;
+}
+
+
+/* Parse the statements of OpenMP atomic directive.  */
+
+static void
+parse_omp_atomic (void)
+{
+  gfc_statement st;
+  gfc_code *cp, *np;
+  gfc_state_data s;
+
+  accept_statement (ST_OMP_ATOMIC);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_OMP_STRUCTURED_BLOCK, NULL);
+  np = new_level (cp);
+  np->op = cp->op;
+  np->block = NULL;
+
+  for (;;)
+    {
+      st = next_statement ();
+      if (st == ST_NONE)
+	unexpected_eof ();
+      else if (st == ST_ASSIGNMENT)
+	break;
+      else
+	unexpected_statement (st);
+    }
+
+  accept_statement (st);
+
+  pop_state ();
+}
+
+
+/* Parse the statements of an OpenMP structured block.  */
+
+static void
+parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
+{
+  gfc_statement st, omp_end_st;
+  gfc_code *cp, *np;
+  gfc_state_data s;
+
+  accept_statement (omp_st);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_OMP_STRUCTURED_BLOCK, NULL);
+  np = new_level (cp);
+  np->op = cp->op;
+  np->block = NULL;
+
+  switch (omp_st)
+    {
+    case ST_OMP_PARALLEL:
+      omp_end_st = ST_OMP_END_PARALLEL;
+      break;
+    case ST_OMP_PARALLEL_SECTIONS:
+      omp_end_st = ST_OMP_END_PARALLEL_SECTIONS;
+      break;
+    case ST_OMP_SECTIONS:
+      omp_end_st = ST_OMP_END_SECTIONS;
+      break;
+    case ST_OMP_ORDERED:
+      omp_end_st = ST_OMP_END_ORDERED;
+      break;
+    case ST_OMP_CRITICAL:
+      omp_end_st = ST_OMP_END_CRITICAL;
+      break;
+    case ST_OMP_MASTER:
+      omp_end_st = ST_OMP_END_MASTER;
+      break;
+    case ST_OMP_SINGLE:
+      omp_end_st = ST_OMP_END_SINGLE;
+      break;
+    case ST_OMP_WORKSHARE:
+      omp_end_st = ST_OMP_END_WORKSHARE;
+      break;
+    case ST_OMP_PARALLEL_WORKSHARE:
+      omp_end_st = ST_OMP_END_PARALLEL_WORKSHARE;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  do
+    {
+      if (workshare_stmts_only)
+	{
+	  /* Inside of !$omp workshare, only
+	     scalar assignments
+	     array assignments
+	     where statements and constructs
+	     forall statements and constructs
+	     !$omp atomic
+	     !$omp critical
+	     !$omp parallel
+	     are allowed.  For !$omp critical these
+	     restrictions apply recursively.  */
+	  bool cycle = true;
+
+	  st = next_statement ();
+	  for (;;)
+	    {
+	      switch (st)
+		{
+		case ST_NONE:
+		  unexpected_eof ();
+
+		case ST_ASSIGNMENT:
+		case ST_WHERE:
+		case ST_FORALL:
+		  accept_statement (st);
+		  break;
+
+		case ST_WHERE_BLOCK:
+		  parse_where_block ();
+		  break;
+
+		case ST_FORALL_BLOCK:
+		  parse_forall_block ();
+		  break;
+
+		case ST_OMP_PARALLEL:
+		case ST_OMP_PARALLEL_SECTIONS:
+		  parse_omp_structured_block (st, false);
+		  break;
+
+		case ST_OMP_PARALLEL_WORKSHARE:
+		case ST_OMP_CRITICAL:
+		  parse_omp_structured_block (st, true);
+		  break;
+
+		case ST_OMP_PARALLEL_DO:
+		  st = parse_omp_do (st);
+		  continue;
+
+		case ST_OMP_ATOMIC:
+		  parse_omp_atomic ();
+		  break;
+
+		default:
+		  cycle = false;
+		  break;
+		}
+
+	      if (!cycle)
+		break;
+
+	      st = next_statement ();
+	    }
+	}
+      else
+	st = parse_executable (ST_NONE);
+      if (st == ST_NONE)
+	unexpected_eof ();
+      else if (st == ST_OMP_SECTION
+	       && (omp_st == ST_OMP_SECTIONS
+		   || omp_st == ST_OMP_PARALLEL_SECTIONS))
+	{
+	  np = new_level (np);
+	  np->op = cp->op;
+	  np->block = NULL;
+	}
+      else if (st != omp_end_st)
+	unexpected_statement (st);
+    }
+  while (st != omp_end_st);
+
+  switch (new_st.op)
+    {
+    case EXEC_OMP_END_NOWAIT:
+      cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
+      break;
+    case EXEC_OMP_CRITICAL:
+      if (((cp->ext.omp_name == NULL) ^ (new_st.ext.omp_name == NULL))
+	  || (new_st.ext.omp_name != NULL
+	      && strcmp (cp->ext.omp_name, new_st.ext.omp_name) != 0))
+	gfc_error ("Name after !$omp critical and !$omp end critical does"
+		   " not match at %C");
+      gfc_free ((char *) new_st.ext.omp_name);
+      break;
+    case EXEC_OMP_END_SINGLE:
+      cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE]
+	= new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
+      new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE] = NULL;
+      gfc_free_omp_clauses (new_st.ext.omp_clauses);
+      break;
+    case EXEC_NOP:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  gfc_clear_new_st ();
+  pop_state ();
+}
+
+
 /* Accept a series of executable statements.  We return the first
    statement that doesn't fit to the caller.  Any block statements are
    passed on to the correct handler, which usually passes the buck
@@ -2083,9 +2565,8 @@ parse_executable (gfc_statement st)
   if (st == ST_NONE)
     st = next_statement ();
 
-  for (;; st = next_statement ())
+  for (;;)
     {
-
       close_flag = check_do_closure ();
       if (close_flag)
 	switch (st)
@@ -2125,38 +2606,62 @@ parse_executable (gfc_statement st)
 	  accept_statement (st);
 	  if (close_flag == 1)
 	    return ST_IMPLIED_ENDDO;
-	  continue;
+	  break;
 
 	case ST_IF_BLOCK:
 	  parse_if_block ();
-	  continue;
+	  break;
 
 	case ST_SELECT_CASE:
 	  parse_select_block ();
-	  continue;
+	  break;
 
 	case ST_DO:
 	  parse_do_block ();
 	  if (check_do_closure () == 1)
 	    return ST_IMPLIED_ENDDO;
-	  continue;
+	  break;
 
 	case ST_WHERE_BLOCK:
 	  parse_where_block ();
-	  continue;
+	  break;
 
 	case ST_FORALL_BLOCK:
 	  parse_forall_block ();
+	  break;
+
+	case ST_OMP_PARALLEL:
+	case ST_OMP_PARALLEL_SECTIONS:
+	case ST_OMP_SECTIONS:
+	case ST_OMP_ORDERED:
+	case ST_OMP_CRITICAL:
+	case ST_OMP_MASTER:
+	case ST_OMP_SINGLE:
+	  parse_omp_structured_block (st, false);
+	  break;
+
+	case ST_OMP_WORKSHARE:
+	case ST_OMP_PARALLEL_WORKSHARE:
+	  parse_omp_structured_block (st, true);
+	  break;
+
+	case ST_OMP_DO:
+	case ST_OMP_PARALLEL_DO:
+	  st = parse_omp_do (st);
+	  if (st == ST_IMPLIED_ENDDO)
+	    return st;
 	  continue;
 
-	default:
+	case ST_OMP_ATOMIC:
+	  parse_omp_atomic ();
 	  break;
+
+	default:
+	  return st;
 	}
 
-      break;
+      st = next_statement ();
     }
-
-  return st;
 }
 
 

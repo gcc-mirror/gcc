@@ -265,6 +265,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     *dimension = "DIMENSION", *in_equivalence = "EQUIVALENCE",
     *use_assoc = "USE ASSOCIATED", *cray_pointer = "CRAY POINTER",
     *cray_pointee = "CRAY POINTEE", *data = "DATA";
+  static const char *threadprivate = "THREADPRIVATE";
 
   const char *a1, *a2;
 
@@ -308,6 +309,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     }
 
   conf (dummy, save);
+  conf (dummy, threadprivate);
   conf (pointer, target);
   conf (pointer, external);
   conf (pointer, intrinsic);
@@ -347,6 +349,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (in_equivalence, result);
   conf (in_equivalence, entry);
   conf (in_equivalence, allocatable);
+  conf (in_equivalence, threadprivate);
 
   conf (in_namelist, pointer);
   conf (in_namelist, allocatable);
@@ -381,6 +384,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (cray_pointee, entry);
   conf (cray_pointee, in_common);
   conf (cray_pointee, in_equivalence);
+  conf (cray_pointee, threadprivate);
 
   conf (data, dummy);
   conf (data, function);
@@ -417,6 +421,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (optional);
       conf2 (function);
       conf2 (subroutine);
+      conf2 (threadprivate);
       break;
 
     case FL_VARIABLE:
@@ -435,6 +440,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 	  conf2(result);
 	  conf2(in_namelist);
 	  conf2(function);
+	  conf2(threadprivate);
 	}
 
       switch (attr->proc)
@@ -452,6 +458,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 	  conf2 (result);
 	  conf2 (in_common);
 	  conf2 (save);
+	  conf2 (threadprivate);
 	  break;
 
 	default:
@@ -472,6 +479,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (entry);
       conf2 (function);
       conf2 (subroutine);
+      conf2 (threadprivate);
 
       if (attr->intent != INTENT_UNKNOWN)
 	{
@@ -493,6 +501,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (dummy);
       conf2 (in_common);
       conf2 (save);
+      conf2 (threadprivate);
       break;
 
     default:
@@ -777,6 +786,23 @@ gfc_add_save (symbol_attribute * attr, const char *name, locus * where)
     }
 
   attr->save = 1;
+  return check_conflict (attr, name, where);
+}
+
+
+try
+gfc_add_threadprivate (symbol_attribute * attr, const char *name, locus * where)
+{
+  if (check_used (attr, name, where))
+    return FAILURE;
+
+  if (attr->threadprivate)
+    {
+      duplicate_attr ("THREADPRIVATE", where);
+      return FAILURE;
+    }
+
+  attr->threadprivate = 1;
   return check_conflict (attr, name, where);
 }
 
@@ -1190,6 +1216,8 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
   if (src->pointer && gfc_add_pointer (dest, where) == FAILURE)
     goto fail;
   if (src->save && gfc_add_save (dest, NULL, where) == FAILURE)
+    goto fail;
+  if (src->threadprivate && gfc_add_threadprivate (dest, NULL, where) == FAILURE)
     goto fail;
   if (src->target && gfc_add_target (dest, where) == FAILURE)
     goto fail;

@@ -583,6 +583,23 @@ gfc_trans_code (gfc_code * code)
 	  res = gfc_trans_dt_end (code);
 	  break;
 
+	case EXEC_OMP_ATOMIC:
+	case EXEC_OMP_BARRIER:
+	case EXEC_OMP_CRITICAL:
+	case EXEC_OMP_DO:
+	case EXEC_OMP_FLUSH:
+	case EXEC_OMP_MASTER:
+	case EXEC_OMP_ORDERED:
+	case EXEC_OMP_PARALLEL:
+	case EXEC_OMP_PARALLEL_DO:
+	case EXEC_OMP_PARALLEL_SECTIONS:
+	case EXEC_OMP_PARALLEL_WORKSHARE:
+	case EXEC_OMP_SECTIONS:
+	case EXEC_OMP_SINGLE:
+	case EXEC_OMP_WORKSHARE:
+	  res = gfc_trans_omp_directive (code);
+	  break;
+
 	default:
 	  internal_error ("gfc_trans_code(): Bad statement code");
 	}

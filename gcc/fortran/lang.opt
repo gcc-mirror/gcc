@@ -117,6 +117,10 @@ ffree-form
 Fortran RejectNegative
 Assume that the source file is free form
 
+fopenmp
+Fortran
+Enable OpenMP
+
 funderscoring
 Fortran
 Append underscores to externally visible names

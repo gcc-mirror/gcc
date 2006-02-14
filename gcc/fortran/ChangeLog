@@ -1,3 +1,375 @@
+2006-02-14  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* invoke.texi: Document -fopenmp.
+	* gfortran.texi (Extensions): Document OpenMP.
+
+	Backport from gomp-20050608-branch
+	* trans-openmp.c: Call build_omp_clause instead of
+	make_node when creating OMP_CLAUSE_* trees.
+	(gfc_trans_omp_reduction_list): Remove argument 'code'.
+	Adjust all callers.
+
+	* trans.h (build4_v): Define.
+	* trans-openmp.c: Call build4_v to create OMP_PARALLEL nodes.
+	Call build3_v to create OMP_SECTIONS nodes.
+
+	PR fortran/25162
+	* openmp.c (gfc_match_omp_variable_list): Call gfc_set_sym_referenced
+	on all symbols added to the variable list.
+
+	* openmp.c (gfc_match_omp_clauses): Fix check for non-INTRINSIC
+	procedure symbol in REDUCTION.
+
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Use gfc_add
+	for MINUS_EXPR OMP_CLAUSE_REDUCTION_CODE.
+
+	* trans-openmp.c (gfc_trans_omp_do): Add PBLOCK argument.  If PBLOCK
+	is non-NULL, evaluate INIT/COND/INCR and chunk size expressions in
+	that statement block.
+	(gfc_trans_omp_parallel_do): Pass non-NULL PBLOCK to gfc_trans_omp_do
+	for non-ordered non-static combined loops.
+	(gfc_trans_omp_directive): Pass NULL PBLOCK to gfc_trans_omp_do.
+
+	* openmp.c: Include target.h and toplev.h.
+	(gfc_match_omp_threadprivate): Emit diagnostic if target does
+	not support TLS.
+	* Make-lang.in (fortran/openmp.o): Add dependencies on
+	target.h and toplev.h.
+
+	* trans-decl.c (gfc_get_fake_result_decl): Set GFC_DECL_RESULT.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Make
+	DECL_ARTIFICIAL vars predetermined shared except GFC_DECL_RESULT.
+	(gfc_omp_disregard_value_expr): Handle GFC_DECL_RESULT.
+	(gfc_trans_omp_variable): New function.
+	(gfc_trans_omp_variable_list, gfc_trans_omp_reduction_list): Use it.
+	* trans.h (GFC_DECL_RESULT): Define.
+
+	* trans-openmp.c (gfc_omp_firstprivatize_type_sizes): New function.
+	* f95-lang.c (LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES): Define.
+	* trans.h (gfc_omp_firstprivatize_type_sizes): New prototype.
+
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Return
+	true if a pointer has GFC_DECL_SAVED_DESCRIPTOR set.
+	(gfc_trans_omp_array_reduction, gfc_trans_omp_reduction_list): New
+	functions.
+	(gfc_trans_omp_clauses): Add WHERE argument.  Call
+	gfc_trans_omp_reduction_list rather than gfc_trans_omp_variable_list
+	for reductions.
+	(gfc_trans_omp_do, gfc_trans_omp_parallel, gfc_trans_omp_parallel_do,
+	gfc_trans_omp_parallel_sections, gfc_trans_omp_parallel_workshare,
+	gfc_trans_omp_sections, gfc_trans_omp_single): Adjust
+	gfc_trans_omp_clauses callers.
+
+	* openmp.c (omp_current_do_code): New var.
+	(gfc_resolve_omp_do_blocks): New function.
+	(gfc_resolve_omp_parallel_blocks): Call it.
+	(gfc_resolve_do_iterator): Add CODE argument.  Don't propagate
+	predetermination if argument is !$omp do or !$omp parallel do
+	iteration variable.
+	* resolve.c (resolve_code): Call gfc_resolve_omp_do_blocks
+	for EXEC_OMP_DO.  Adjust gfc_resolve_do_iterator caller.
+	* fortran.h (gfc_resolve_omp_do_blocks): New prototype.
+	(gfc_resolve_do_iterator): Add CODE argument.
+
+	* trans.h (gfc_omp_predetermined_sharing,
+	gfc_omp_disregard_value_expr, gfc_omp_private_debug_clause): New
+	prototypes.
+	(GFC_DECL_COMMON_OR_EQUIV, GFC_DECL_CRAY_POINTEE): Define.
+	* trans-openmp.c (gfc_omp_predetermined_sharing,
+	gfc_omp_disregard_value_expr, gfc_omp_private_debug_clause): New
+	functions.
+	* trans-common.c (build_equiv_decl, build_common_decl,
+	create_common): Set GFC_DECL_COMMON_OR_EQUIV flag on the decls.
+	* trans-decl.c (gfc_finish_cray_pointee): Set GFC_DECL_CRAY_POINTEE
+	on the decl.
+	* f95-lang.c (LANG_HOOKS_OMP_PREDETERMINED_SHARING,
+	LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR,
+	LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE): Define.
+
+	* openmp.c (resolve_omp_clauses): Remove extraneous comma.
+
+	* symbol.c (check_conflict): Add conflict between cray_pointee and
+	threadprivate.
+	* openmp.c (gfc_match_omp_threadprivate): Fail if
+	gfc_add_threadprivate returned FAILURE.
+	(resolve_omp_clauses): Diagnose Cray pointees in SHARED,
+	{,FIRST,LAST}PRIVATE and REDUCTION clauses and Cray pointers in
+	{FIRST,LAST}PRIVATE and REDUCTION clauses.
+
+	* resolve.c (omp_workshare_flag): New variable.
+	(resolve_function): Diagnose use of non-ELEMENTAL user defined
+	function in WORKSHARE construct.
+	(resolve_code): Cleanup forall_save use.  Make sure omp_workshare_flag
+	is set to correct value in different contexts.
+
+	* openmp.c (resolve_omp_clauses): Replace %s with '%s' when printing
+	variable name.
+	(resolve_omp_atomic): Likewise.
+
+	PR fortran/24493
+	* scanner.c (skip_free_comments): Set at_bol at the beginning of the
+	loop, not before it.
+	(skip_fixed_comments): Handle ! comments in the middle of line here
+	as well.
+	(gfc_skip_comments): Use skip_fixed_comments for FIXED_FORM even if
+	not at BOL.
+	(gfc_next_char_literal): Fix expected canonicalized *$omp string.
+
+	* trans-openmp.c (gfc_trans_omp_do): Use make_node and explicit
+	initialization to build OMP_FOR instead of build.
+
+	* trans-decl.c (gfc_gimplify_function): Invoke
+	diagnose_omp_structured_block_errors.
+
+	* trans-openmp.c (gfc_trans_omp_master): Use OMP_MASTER.
+	(gfc_trans_omp_ordered): Use OMP_ORDERED.
+
+	* gfortran.h (gfc_resolve_do_iterator, gfc_resolve_blocks,
+	gfc_resolve_omp_parallel_blocks): New prototypes.
+	* resolve.c (resolve_blocks): Renamed to...
+	(gfc_resolve_blocks): ... this.  Remove static.
+	(gfc_resolve_forall): Adjust caller.
+	(resolve_code): Only call gfc_resolve_blocks if code->block != 0
+	and not for EXEC_OMP_PARALLEL* directives.  Call
+	gfc_resolve_omp_parallel_blocks for EXEC_OMP_PARALLEL* directives.
+	Call gfc_resolve_do_iterator if resolved successfully EXEC_DO
+	iterator.
+	* openmp.c: Include pointer-set.h.
+	(omp_current_ctx): New variable.
+	(gfc_resolve_omp_parallel_blocks, gfc_resolve_do_iterator): New
+	functions.
+	* Make-lang.in (fortran/openmp.o): Depend on pointer-set.h.
+
+	* openmp.c (gfc_match_omp_clauses): For max/min/iand/ior/ieor,
+	look up symbol if it exists, use its name instead and, if it is not
+	INTRINSIC, issue diagnostics.
+
+	* parse.c (parse_omp_do): Handle implied end do properly.
+	(parse_executable): If parse_omp_do returned ST_IMPLIED_ENDDO,
+	return it instead of continuing.
+
+	* trans-openmp.c (gfc_trans_omp_critical): Update for changed
+	operand numbering.
+	(gfc_trans_omp_do, gfc_trans_omp_parallel, gfc_trans_omp_parallel_do,
+	gfc_trans_omp_parallel_sections, gfc_trans_omp_parallel_workshare,
+	gfc_trans_omp_sections, gfc_trans_omp_single): Likewise.
+
+	* trans.h (gfc_omp_privatize_by_reference): New prototype.
+	* f95-lang.c (LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE): Redefine
+	to gfc_omp_privatize_by_reference.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): New function.
+
+	* trans-stmt.h (gfc_trans_omp_directive): Add comment.
+
+	* openmp.c (gfc_match_omp_variable_list): Add ALLOW_COMMON argument.
+	Disallow COMMON matching if it is set.
+	(gfc_match_omp_clauses, gfc_match_omp_flush): Adjust all callers.
+	(resolve_omp_clauses): Show locus in error messages.  Check that
+	variable types in reduction clauses are appropriate for reduction
+	operators.
+
+	* resolve.c (resolve_symbol): Don't error if a threadprivate module
+	variable isn't SAVEd.
+
+	* trans-openmp.c (gfc_trans_omp_do): Put count into BLOCK, not BODY.
+	Fix typo in condition.  Fix DOVAR initialization.
+
+	* openmp.c (gfc_match_omp_clauses): Match min/iand/ior/ieor
+	rather than .min. etc.
+
+	* trans-openmpc.c (omp_not_yet): Remove.
+	(gfc_trans_omp_parallel_do): Keep listprivate clause on parallel.
+	Force creation of BIND_EXPR around the workshare construct.
+	(gfc_trans_omp_parallel_sections): Likewise.
+	(gfc_trans_omp_parallel_workshare): Likewise.
+
+	* types.def (BT_I16, BT_FN_I16_VPTR_I16,
+	BT_FN_BOOL_VPTR_I16_I16, BT_FN_I16_VPTR_I16_I16): Add.
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Create OMP_CLAUSE_DEFAULT.
+	(gfc_trans_omp_code): New function.
+	(gfc_trans_omp_do): Use it, remove omp_not_yet uses.
+	(gfc_trans_omp_parallel, gfc_trans_omp_single): Likewise.
+	(gfc_trans_omp_sections): Likewise.  Only treat empty last section
+	specially if lastprivate clause is present.
+	* f95-lang.c (gfc_init_builtin_functions): Create BUILT_IN_TRAP
+	builtin.
+
+	* trans-openmp.c (gfc_trans_omp_variable_list): Update for
+	OMP_CLAUSE_DECL name change.
+	(gfc_trans_omp_do): Likewise.
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Create OMP_CLAUSE_REDUCTION
+	clauses.
+	(gfc_trans_omp_atomic): Build OMP_ATOMIC instead of expanding
+	sync builtins directly.
+	(gfc_trans_omp_single): Build OMP_SINGLE statement.
+
+	* trans-openmp.c (gfc_trans_add_clause): New.
+	(gfc_trans_omp_variable_list): Take a tree code and build the clause
+	node here.  Link it to the head of a list.
+	(gfc_trans_omp_clauses): Update to match.
+	(gfc_trans_omp_do): Use gfc_trans_add_clause.
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Change second argument to
+	gfc_omp_clauses *.  Use gfc_evaluate_now instead of creating
+	temporaries by hand.
+	(gfc_trans_omp_atomic, gfc_trans_omp_critical): Use buildN_v macros.
+	(gfc_trans_omp_do): New function.
+	(gfc_trans_omp_master): Dont' check for gfc_trans_code returning NULL.
+	(gfc_trans_omp_parallel): Adjust gfc_trans_omp_clauses caller.
+	Use buildN_v macros.
+	(gfc_trans_omp_parallel_do, gfc_trans_omp_parallel_sections,
+	gfc_trans_omp_parallel_workshare, gfc_trans_omp_sections,
+	gfc_trans_omp_single, gfc_trans_omp_workshare): New functions.
+	(gfc_trans_omp_directive): Use them.
+	* parse.c (parse_omp_do): Allow new_st.op == EXEC_NOP.
+	* openmp.c (resolve_omp_clauses): Check for list items present
+	in multiple clauses.
+	(resolve_omp_do): Check that iteration variable is not THREADPRIVATE
+	and is not present in any clause variable lists other than PRIVATE
+	or LASTPRIVATE.
+
+	* gfortran.h (symbol_attribute): Add threadprivate bit.
+	(gfc_common_head): Add threadprivate member, change use_assoc
+	and saved into char to save space.
+	(gfc_add_threadprivate): New prototype.
+	* symbol.c (check_conflict): Handle threadprivate.
+	(gfc_add_threadprivate): New function.
+	(gfc_copy_attr): Copy threadprivate.
+	* trans-openmp.c (gfc_trans_omp_clauses): Avoid creating a temporary
+	if IF or NUM_THREADS is constant.  Create OMP_CLAUSE_SCHEDULE and
+	OMP_CLAUSE_ORDERED.
+	* resolve.c (resolve_symbol): Complain if a THREADPRIVATE symbol
+	outside a module and not in COMMON has is not SAVEd.
+	(resolve_equivalence): Ensure THREADPRIVATE objects don't get
+	EQUIVALENCEd.
+	* trans-common.c: Include target.h and rtl.h.
+	(build_common_decl): Set DECL_TLS_MODEL if THREADPRIVATE.
+	* trans-decl.c: Include rtl.h.
+	(gfc_finish_var_decl): Set DECL_TLS_MODEL if THREADPRIVATE.
+	* dump-parse-tree.c (gfc_show_attr): Handle THREADPRIVATE.
+	* Make-lang.in (fortran/trans-decl.o): Depend on $(RTL_H).
+	(fortran/trans-common.o): Depend on $(RTL_H) and $(TARGET_H).
+	* openmp.c (gfc_match_omp_variable_list): Ensure COMMON block
+	is from current namespace.
+	(gfc_match_omp_threadprivate): Rewrite.
+	(resolve_omp_clauses): Check some clause restrictions.
+	* module.c (ab_attribute): Add AB_THREADPRIVATE.
+	(attr_bits): Add THREADPRIVATE.
+	(mio_symbol_attribute, mio_symbol_attribute): Handle threadprivate.
+	(load_commons, write_common, write_blank_common): Adjust for type
+	change of saved, store/load threadprivate bit from the integer
+	as well.
+
+	* types.def (BT_FN_UINT_UINT): New.
+	(BT_FN_VOID_UINT_UINT): Remove.
+
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_trans_omp_barrier,
+	gfc_trans_omp_critical, gfc_trans_omp_flush, gfc_trans_omp_master,
+	gfc_trans_omp_ordered, gfc_trans_omp_parallel): New functions.
+	(gfc_trans_omp_directive): Use them.
+
+	* openmp.c (expr_references_sym): Add SE argument, don't look
+	into SE tree.
+	(is_conversion): New function.
+	(resolve_omp_atomic): Adjust expr_references_sym callers.  Handle
+	promoted expressions.
+	* trans-openmp.c (gfc_trans_omp_atomic): New function.
+	(gfc_trans_omp_directive): Call it.
+
+	* f95-lang.c (builtin_type_for_size): New function.
+	(gfc_init_builtin_functions): Initialize synchronization and
+	OpenMP builtins.
+	* types.def: New file.
+	* Make-lang.in (f95-lang.o): Depend on $(BUILTINS_DEF) and
+	fortran/types.def.
+
+	* trans-openmp.c: Rename GOMP_* tree codes into OMP_*.
+
+	* dump-parse-tree.c (show_symtree): Don't crash if ns->proc_name
+	is NULL.
+
+	* dump-parse-tree.c (gfc_show_namelist, gfc_show_omp_node): New
+	functions.
+	(gfc_show_code_node): Call gfc_show_omp_node for EXEC_OMP_* nodes.
+
+	* parse.c (parse_omp_do): Call pop_state before next_statement.
+	* openmp.c (expr_references_sym, resolve_omp_atomic, resolve_omp_do):
+	New functions.
+	(gfc_resolve_omp_directive): Call them.
+	* match.c (match_exit_cycle): Issue error if EXIT or CYCLE statement
+	leaves an OpenMP structured block or if EXIT terminates !$omp do
+	loop.
+
+	* Make-lang.in (F95_PARSER_OBJS): Add fortran/openmp.o.
+	(F95_OBJS): Add fortran/trans-openmp.o.
+	(fortran/trans-openmp.o): Depend on $(GFORTRAN_TRANS_DEPS).
+	* lang.opt: Add -fopenmp option.
+	* options.c (gfc_init_options): Initialize it.
+	(gfc_handle_option): Handle it.
+	* gfortran.h (ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL,
+	ST_OMP_END_CRITICAL, ST_OMP_END_DO, ST_OMP_END_MASTER,
+	ST_OMP_END_ORDERED, ST_OMP_END_PARALLEL, ST_OMP_END_PARALLEL_DO,
+	ST_OMP_END_PARALLEL_SECTIONS, ST_OMP_END_PARALLEL_WORKSHARE,
+	ST_OMP_END_SECTIONS, ST_OMP_END_SINGLE, ST_OMP_END_WORKSHARE,
+	ST_OMP_DO, ST_OMP_FLUSH, ST_OMP_MASTER, ST_OMP_ORDERED,
+	ST_OMP_PARALLEL, ST_OMP_PARALLEL_DO, ST_OMP_PARALLEL_SECTIONS,
+	ST_OMP_PARALLEL_WORKSHARE, ST_OMP_SECTIONS, ST_OMP_SECTION,
+	ST_OMP_SINGLE, ST_OMP_THREADPRIVATE, ST_OMP_WORKSHARE): New
+	statement codes.
+	(OMP_LIST_PRIVATE, OMP_LIST_FIRSTPRIVATE, OMP_LIST_LASTPRIVATE,
+	OMP_LIST_COPYPRIVATE, OMP_LIST_SHARED, OMP_LIST_COPYIN,
+	OMP_LIST_PLUS, OMP_LIST_REDUCTION_FIRST, OMP_LIST_MULT,
+	OMP_LIST_SUB, OMP_LIST_AND, OMP_LIST_OR, OMP_LIST_EQV,
+	OMP_LIST_NEQV, OMP_LIST_MAX, OMP_LIST_MIN, OMP_LIST_IAND,
+	OMP_LIST_IOR, OMP_LIST_IEOR, OMP_LIST_REDUCTION_LAST, OMP_LIST_NUM):
+	New OpenMP variable list types.
+	(gfc_omp_clauses): New typedef.
+	(gfc_get_omp_clauses): Define.
+	(EXEC_OMP_CRITICAL, EXEC_OMP_DO, EXEC_OMP_FLUSH, EXEC_OMP_MASTER,
+	EXEC_OMP_ORDERED, EXEC_OMP_PARALLEL, EXEC_OMP_PARALLEL_DO,
+	EXEC_OMP_PARALLEL_SECTIONS, EXEC_OMP_PARALLEL_WORKSHARE,
+	EXEC_OMP_SECTIONS, EXEC_OMP_SINGLE, EXEC_OMP_WORKSHARE,
+	EXEC_OMP_ATOMIC, EXEC_OMP_BARRIER, EXEC_OMP_END_NOWAIT,
+	EXEC_OMP_END_SINGLE): New OpenMP gfc_exec_op codes.
+	(struct gfc_code): Add omp_clauses, omp_name, omp_namelist
+	and omp_bool fields to ext union.
+	(flag_openmp): Declare.
+	(gfc_free_omp_clauses, gfc_resolve_omp_directive): New prototypes.
+	* scanner.c (openmp_flag, openmp_locus): New variables.
+	(skip_free_comments, skip_fixed_comments, gfc_next_char_literal):
+	Handle OpenMP directive lines and conditional compilation magic
+	comments.
+	* parse.h (COMP_OMP_STRUCTURED_BLOCK): New compile state.
+	* parse.c (decode_omp_directive, parse_omp_do, parse_omp_atomic,
+	parse_omp_structured_block): New functions.
+	(next_free, next_fixed): Parse OpenMP directives.
+	(case_executable, case_exec_markers, case_decl): Add ST_OMP_*
+	codes.
+	(gfc_ascii_statement): Handle ST_OMP_* codes.
+	(parse_executable): Rearrange the loop slightly, so that
+	parse_omp_do can return next_statement.
+	* match.h (gfc_match_omp_eos, gfc_match_omp_atomic,
+	gfc_match_omp_barrier, gfc_match_omp_critical, gfc_match_omp_do,
+	gfc_match_omp_flush, gfc_match_omp_master, gfc_match_omp_ordered,
+	gfc_match_omp_parallel, gfc_match_omp_parallel_do,
+	gfc_match_omp_parallel_sections, gfc_match_omp_parallel_workshare,
+	gfc_match_omp_sections, gfc_match_omp_single,
+	gfc_match_omp_threadprivate, gfc_match_omp_workshare,
+	gfc_match_omp_end_nowait, gfc_match_omp_end_single): New prototypes.
+	* resolve.c (resolve_blocks): Ignore EXEC_OMP_* block directives.
+	(resolve_code): Call gfc_resolve_omp_directive on EXEC_OMP_*
+	directives.
+	* trans.c (gfc_trans_code): Call gfc_trans_omp_directive for
+	EXEC_OMP_* directives.
+	* st.c (gfc_free_statement): Handle EXEC_OMP_* statement freeing.
+	* trans-stmt.h (gfc_trans_omp_directive): New prototype.
+	* openmp.c: New file.
+	* trans-openmp.c: New file.
+
 2006-02-13  Andrew Pinski  <pinskia@physics.uc.edu>
 	    Jakub Jelinek  <jakub@redhat.com>
 

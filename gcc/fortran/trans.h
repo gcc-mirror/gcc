@@ -439,6 +439,14 @@ tree gfc_truthvalue_conversion (tree);
 tree builtin_function (const char *, tree, int, enum built_in_class,
 		       const char *, tree);
 
+/* In trans-openmp.c */
+bool gfc_omp_privatize_by_reference (tree);
+enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
+bool gfc_omp_disregard_value_expr (tree, bool);
+bool gfc_omp_private_debug_clause (tree, bool);
+struct gimplify_omp_ctx;
+void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
+
 /* Runtime library function decls.  */
 extern GTY(()) tree gfor_fndecl_internal_malloc;
 extern GTY(()) tree gfor_fndecl_internal_malloc64;
@@ -548,6 +556,9 @@ struct lang_decl		GTY(())
 #define GFC_DECL_PACKED_ARRAY(node) DECL_LANG_FLAG_0(node)
 #define GFC_DECL_PARTIAL_PACKED_ARRAY(node) DECL_LANG_FLAG_1(node)
 #define GFC_DECL_ASSIGN(node) DECL_LANG_FLAG_2(node)
+#define GFC_DECL_COMMON_OR_EQUIV(node) DECL_LANG_FLAG_3(node)
+#define GFC_DECL_CRAY_POINTEE(node) DECL_LANG_FLAG_4(node)
+#define GFC_DECL_RESULT(node) DECL_LANG_FLAG_5(node)
 
 /* An array descriptor.  */
 #define GFC_DESCRIPTOR_TYPE_P(node) TYPE_LANG_FLAG_1(node)
@@ -580,6 +591,8 @@ struct lang_decl		GTY(())
                                           arg1, arg2)
 #define build3_v(code, arg1, arg2, arg3) build3(code, void_type_node, \
                                                 arg1, arg2, arg3)
+#define build4_v(code, arg1, arg2, arg3, arg4) build4(code, void_type_node, \
+						      arg1, arg2, arg3, arg4)
 
 /* This group of functions allows a caller to evaluate an expression from
    the callee's interface.  It establishes a mapping between the interface's

@@ -40,6 +40,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"
+#include "rtl.h"
 /* Only for gfc_trans_code.  Shouldn't need to include this.  */
 #include "trans-stmt.h"
 
@@ -389,6 +390,7 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
 
   SET_DECL_VALUE_EXPR (decl, value);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
+  GFC_DECL_CRAY_POINTEE (decl) = 1;
   /* This is a fake variable just for debugging purposes.  */
   TREE_ASM_WRITTEN (decl) = 1;
 }
@@ -508,6 +510,11 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
       && !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl)))
     TREE_STATIC (decl) = 1;
+
+  /* Handle threadprivate variables.  */
+  if (sym->attr.threadprivate && targetm.have_tls
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
 }
 
 
@@ -1473,6 +1480,11 @@ gfc_gimplify_function (tree fndecl)
   gimplify_function_tree (fndecl);
   dump_function (TDI_generic, fndecl);
 
+  /* Generate errors for structured block violations.  */
+  /* ??? Could be done as part of resolve_labels.  */
+  if (flag_openmp)
+    diagnose_omp_structured_block_errors (fndecl);
+
   /* Convert all nested functions to GIMPLE now.  We do things in this order
      so that items like VLA sizes are expanded properly in the context of the
      correct function.  */
@@ -1755,6 +1767,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym)
 			 NULL_TREE);
 	}
       var = gfc_create_var (TREE_TYPE (decl), sym->name);
+      GFC_DECL_RESULT (var) = 1;
       SET_DECL_VALUE_EXPR (var, decl);
       DECL_HAS_VALUE_EXPR_P (var) = 1;
       TREE_CHAIN (current_fake_result_decl)
@@ -1806,6 +1819,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym)
       DECL_EXTERNAL (decl) = 0;
       TREE_PUBLIC (decl) = 0;
       TREE_USED (decl) = 1;
+      GFC_DECL_RESULT (decl) = 1;
 
       layout_decl (decl, 0);
 

@@ -1,3 +1,8 @@
+2006-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/vla7.f90: Add -w to options.
+	Remove tests for returning assumed character length arrays.
+
 2006-02-12  Roger Sayle  <roger@eyesopen.com>
 	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
 

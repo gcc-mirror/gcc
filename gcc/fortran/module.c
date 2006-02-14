@@ -1432,7 +1432,7 @@ typedef enum
   AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, 
   AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE, AB_ELEMENTAL, AB_PURE,
   AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT, AB_CRAY_POINTER,
-  AB_CRAY_POINTEE
+  AB_CRAY_POINTEE, AB_THREADPRIVATE
 }
 ab_attribute;
 
@@ -1446,6 +1446,7 @@ static const mstring attr_bits[] =
     minit ("POINTER", AB_POINTER),
     minit ("SAVE", AB_SAVE),
     minit ("TARGET", AB_TARGET),
+    minit ("THREADPRIVATE", AB_THREADPRIVATE),
     minit ("DUMMY", AB_DUMMY),
     minit ("RESULT", AB_RESULT),
     minit ("DATA", AB_DATA),
@@ -1515,6 +1516,8 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_SAVE, attr_bits);
       if (attr->target)
 	MIO_NAME(ab_attribute) (AB_TARGET, attr_bits);
+      if (attr->threadprivate)
+	MIO_NAME(ab_attribute) (AB_THREADPRIVATE, attr_bits);
       if (attr->dummy)
 	MIO_NAME(ab_attribute) (AB_DUMMY, attr_bits);
       if (attr->result)
@@ -1589,6 +1592,9 @@ mio_symbol_attribute (symbol_attribute * attr)
 	      break;
 	    case AB_TARGET:
 	      attr->target = 1;
+	      break;
+	    case AB_THREADPRIVATE:
+	      attr->threadprivate = 1;
 	      break;
 	    case AB_DUMMY:
 	      attr->dummy = 1;
@@ -2982,13 +2988,18 @@ load_commons(void)
 
   while (peek_atom () != ATOM_RPAREN)
     {
+      int flags;
       mio_lparen ();
       mio_internal_string (name);
 
       p = gfc_get_common (name, 1);
 
       mio_symbol_ref (&p->head);
-      mio_integer (&p->saved);
+      mio_integer (&flags);
+      if (flags & 1)
+	p->saved = 1;
+      if (flags & 2)
+	p->threadprivate = 1;
       p->use_assoc = 1;
 
       mio_rparen();
@@ -3385,6 +3396,7 @@ write_common (gfc_symtree *st)
 {
   gfc_common_head *p;
   const char * name;
+  int flags;
 
   if (st == NULL)
     return;
@@ -3401,7 +3413,9 @@ write_common (gfc_symtree *st)
 
   p = st->n.common;
   mio_symbol_ref(&p->head);
-  mio_integer(&p->saved);
+  flags = p->saved ? 1 : 0;
+  if (p->threadprivate) flags |= 2;
+  mio_integer(&flags);
 
   mio_rparen();
 }
@@ -3412,6 +3426,7 @@ static void
 write_blank_common (void)
 {
   const char * name = BLANK_COMMON_NAME;
+  int saved;
 
   if (gfc_current_ns->blank_common.head == NULL)
     return;
@@ -3421,7 +3436,8 @@ write_blank_common (void)
   mio_pool_string(&name);
 
   mio_symbol_ref(&gfc_current_ns->blank_common.head);
-  mio_integer(&gfc_current_ns->blank_common.saved);
+  saved = gfc_current_ns->blank_common.saved;
+  mio_integer(&saved);
 
   mio_rparen();
 }

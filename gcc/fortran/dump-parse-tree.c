@@ -547,6 +547,8 @@ gfc_show_attr (symbol_attribute * attr)
     gfc_status (" POINTER");
   if (attr->save)
     gfc_status (" SAVE");
+  if (attr->threadprivate)
+    gfc_status (" THREADPRIVATE");
   if (attr->target)
     gfc_status (" TARGET");
   if (attr->dummy)
@@ -786,6 +788,202 @@ gfc_show_code (int level, gfc_code * c)
     gfc_show_code_node (level, c);
 }
 
+static void
+gfc_show_namelist (gfc_namelist *n)
+{
+  for (; n->next; n = n->next)
+    gfc_status ("%s,", n->sym->name);
+  gfc_status ("%s", n->sym->name);
+}
+
+/* Show a single OpenMP directive node and everything underneath it
+   if necessary.  */
+
+static void
+gfc_show_omp_node (int level, gfc_code * c)
+{
+  gfc_omp_clauses *omp_clauses = NULL;
+  const char *name = NULL;
+
+  switch (c->op)
+    {
+    case EXEC_OMP_ATOMIC: name = "ATOMIC"; break;
+    case EXEC_OMP_BARRIER: name = "BARRIER"; break;
+    case EXEC_OMP_CRITICAL: name = "CRITICAL"; break;
+    case EXEC_OMP_FLUSH: name = "FLUSH"; break;
+    case EXEC_OMP_DO: name = "DO"; break;
+    case EXEC_OMP_MASTER: name = "MASTER"; break;
+    case EXEC_OMP_ORDERED: name = "ORDERED"; break;
+    case EXEC_OMP_PARALLEL: name = "PARALLEL"; break;
+    case EXEC_OMP_PARALLEL_DO: name = "PARALLEL DO"; break;
+    case EXEC_OMP_PARALLEL_SECTIONS: name = "PARALLEL SECTIONS"; break;
+    case EXEC_OMP_PARALLEL_WORKSHARE: name = "PARALLEL WORKSHARE"; break;
+    case EXEC_OMP_SECTIONS: name = "SECTIONS"; break;
+    case EXEC_OMP_SINGLE: name = "SINGLE"; break;
+    case EXEC_OMP_WORKSHARE: name = "WORKSHARE"; break;
+    default:
+      gcc_unreachable ();
+    }
+  gfc_status ("!$OMP %s", name);
+  switch (c->op)
+    {
+    case EXEC_OMP_DO:
+    case EXEC_OMP_PARALLEL:
+    case EXEC_OMP_PARALLEL_DO:
+    case EXEC_OMP_PARALLEL_SECTIONS:
+    case EXEC_OMP_SECTIONS:
+    case EXEC_OMP_SINGLE:
+    case EXEC_OMP_WORKSHARE:
+    case EXEC_OMP_PARALLEL_WORKSHARE:
+      omp_clauses = c->ext.omp_clauses;
+      break;
+    case EXEC_OMP_CRITICAL:
+      if (c->ext.omp_name)
+	gfc_status (" (%s)", c->ext.omp_name);
+      break;
+    case EXEC_OMP_FLUSH:
+      if (c->ext.omp_namelist)
+	{
+	  gfc_status (" (");
+	  gfc_show_namelist (c->ext.omp_namelist);
+	  gfc_status_char (')');
+	}
+      return;
+    case EXEC_OMP_BARRIER:
+      return;
+    default:
+      break;
+    }
+  if (omp_clauses)
+    {
+      int list_type;
+
+      if (omp_clauses->if_expr)
+	{
+	  gfc_status (" IF(");
+	  gfc_show_expr (omp_clauses->if_expr);
+	  gfc_status_char (')');
+	}
+      if (omp_clauses->num_threads)
+	{
+	  gfc_status (" NUM_THREADS(");
+	  gfc_show_expr (omp_clauses->num_threads);
+	  gfc_status_char (')');
+	}
+      if (omp_clauses->sched_kind != OMP_SCHED_NONE)
+	{
+	  const char *type;
+	  switch (omp_clauses->sched_kind)
+	    {
+	    case OMP_SCHED_STATIC: type = "STATIC"; break;
+	    case OMP_SCHED_DYNAMIC: type = "DYNAMIC"; break;
+	    case OMP_SCHED_GUIDED: type = "GUIDED"; break;
+	    case OMP_SCHED_RUNTIME: type = "RUNTIME"; break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  gfc_status (" SCHEDULE (%s", type);
+	  if (omp_clauses->chunk_size)
+	    {
+	      gfc_status_char (',');
+	      gfc_show_expr (omp_clauses->chunk_size);
+	    }
+	  gfc_status_char (')');
+	}
+      if (omp_clauses->default_sharing != OMP_DEFAULT_UNKNOWN)
+	{
+	  const char *type;
+	  switch (omp_clauses->default_sharing)
+	    {
+	    case OMP_DEFAULT_NONE: type = "NONE"; break;
+	    case OMP_DEFAULT_PRIVATE: type = "PRIVATE"; break;
+	    case OMP_DEFAULT_SHARED: type = "SHARED"; break;
+	    case OMP_SCHED_RUNTIME: type = "RUNTIME"; break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  gfc_status (" DEFAULT(%s)", type);
+	}
+      if (omp_clauses->ordered)
+	gfc_status (" ORDERED");
+      for (list_type = 0; list_type < OMP_LIST_NUM; list_type++)
+	if (omp_clauses->lists[list_type] != NULL
+	    && list_type != OMP_LIST_COPYPRIVATE)
+	  {
+	    const char *type;
+	    if (list_type >= OMP_LIST_REDUCTION_FIRST)
+	      {
+		switch (list_type)
+		  {
+		  case OMP_LIST_PLUS: type = "+"; break;
+		  case OMP_LIST_MULT: type = "*"; break;
+		  case OMP_LIST_SUB: type = "-"; break;
+		  case OMP_LIST_AND: type = ".AND."; break;
+		  case OMP_LIST_OR: type = ".OR."; break;
+		  case OMP_LIST_EQV: type = ".EQV."; break;
+		  case OMP_LIST_NEQV: type = ".NEQV."; break;
+		  case OMP_LIST_MAX: type = "MAX"; break;
+		  case OMP_LIST_MIN: type = "MIN"; break;
+		  case OMP_LIST_IAND: type = "IAND"; break;
+		  case OMP_LIST_IOR: type = "IOR"; break;
+		  case OMP_LIST_IEOR: type = "IEOR"; break;
+		  default:
+		    gcc_unreachable ();
+		  }
+		gfc_status (" REDUCTION(%s:", type);
+	      }
+	    else
+	      {
+		switch (list_type)
+		  {
+		  case OMP_LIST_PRIVATE: type = "PRIVATE"; break;
+		  case OMP_LIST_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
+		  case OMP_LIST_LASTPRIVATE: type = "LASTPRIVATE"; break;
+		  case OMP_LIST_SHARED: type = "SHARED"; break;
+		  case OMP_LIST_COPYIN: type = "COPYIN"; break;
+		  default:
+		    gcc_unreachable ();
+		  }
+		gfc_status (" %s(", type);
+	      }
+	    gfc_show_namelist (omp_clauses->lists[list_type]);
+	    gfc_status_char (')');
+	  }
+    }
+  gfc_status_char ('\n');
+  if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
+    {
+      gfc_code *d = c->block;
+      while (d != NULL)
+	{
+	  gfc_show_code (level + 1, d->next);
+	  if (d->block == NULL)
+	    break;
+	  code_indent (level, 0);
+	  gfc_status ("!$OMP SECTION\n");
+	  d = d->block;
+	}
+    }
+  else
+    gfc_show_code (level + 1, c->block->next);
+  if (c->op == EXEC_OMP_ATOMIC)
+    return;
+  code_indent (level, 0);
+  gfc_status ("!$OMP END %s", name);
+  if (omp_clauses != NULL)
+    {
+      if (omp_clauses->lists[OMP_LIST_COPYPRIVATE])
+	{
+	  gfc_status (" COPYPRIVATE(");
+	  gfc_show_namelist (omp_clauses->lists[OMP_LIST_COPYPRIVATE]);
+	  gfc_status_char (')');
+	}
+      else if (omp_clauses->nowait)
+	gfc_status (" NOWAIT");
+    }
+  else if (c->op == EXEC_OMP_CRITICAL && c->ext.omp_name)
+    gfc_status (" (%s)", c->ext.omp_name);
+}
 
 /* Show a single code node and everything underneath it if necessary.  */
 
@@ -1446,6 +1644,23 @@ gfc_show_code_node (int level, gfc_code * c)
 	gfc_status (" END=%d", dt->end->value);
       if (dt->eor != NULL)
 	gfc_status (" EOR=%d", dt->eor->value);
+      break;
+
+    case EXEC_OMP_ATOMIC:
+    case EXEC_OMP_BARRIER:
+    case EXEC_OMP_CRITICAL:
+    case EXEC_OMP_FLUSH:
+    case EXEC_OMP_DO:
+    case EXEC_OMP_MASTER:
+    case EXEC_OMP_ORDERED:
+    case EXEC_OMP_PARALLEL:
+    case EXEC_OMP_PARALLEL_DO:
+    case EXEC_OMP_PARALLEL_SECTIONS:
+    case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_SECTIONS:
+    case EXEC_OMP_SINGLE:
+    case EXEC_OMP_WORKSHARE:
+      gfc_show_omp_node (level, c);
       break;
 
     default:
