@@ -1,5 +1,11 @@
 2006-02-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/24685
+	* io/write.c (write_real): Widen the default format for real(10)
+	variables output.
+
+2006-02-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/25425
 	* libgfortran.h: Add pedantic field to compile_options struct.
 	* io/write.c (calculate_G_format): Depending on the standard,
