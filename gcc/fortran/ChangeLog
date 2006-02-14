@@ -1,3 +1,11 @@
+2006-02-14  Thomas Koenig  <Thomas.Koenig@online.de>
+
+        PR fortran/25045
+        * check.c (dim_check):  Perform all checks if dim is optional.
+        (gfc_check_minloc_maxloc):  Use dim_check and dim_rank_check
+        to check dim argument.
+        (check_reduction):  Likewise.
+
 2006-02-14  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/26277

@@ -295,16 +295,8 @@ variable_check (gfc_expr * e, int n)
 static try
 dim_check (gfc_expr * dim, int n, int optional)
 {
-  if (optional)
-    {
-      if (dim == NULL)
-	return SUCCESS;
-
-      if (nonoptional_check (dim, n) == FAILURE)
-	return FAILURE;
-
-      return SUCCESS;
-    }
+  if (optional && dim == NULL)
+    return SUCCESS;
 
   if (dim == NULL)
     {
@@ -317,6 +309,9 @@ dim_check (gfc_expr * dim, int n, int optional)
     return FAILURE;
 
   if (scalar_check (dim, n) == FAILURE)
+    return FAILURE;
+
+  if (nonoptional_check (dim, n) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1578,9 +1573,10 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
       ap->next->next->expr = m;
     }
 
-  if (d != NULL
-      && (scalar_check (d, 1) == FAILURE
-      || type_check (d, 1, BT_INTEGER) == FAILURE))
+  if (dim_check (d, 1, 1) == FAILURE)
+    return FAILURE;
+
+  if (dim_rank_check (d, a, 0) == FAILURE)
     return FAILURE;
 
   if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
@@ -1634,9 +1630,10 @@ check_reduction (gfc_actual_arglist * ap)
       ap->next->next->expr = m;
     }
 
-  if (d != NULL
-      && (scalar_check (d, 1) == FAILURE
-      || type_check (d, 1, BT_INTEGER) == FAILURE))
+  if (dim_check (d, 1, 1) == FAILURE)
+    return FAILURE;
+
+  if (dim_rank_check (d, a, 0) == FAILURE)
     return FAILURE;
 
   if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
