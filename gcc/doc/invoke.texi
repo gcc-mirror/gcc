@@ -321,7 +321,7 @@ Objective-C and Objective-C++ Dialects}.
 -funsafe-math-optimizations  -funsafe-loop-optimizations  -ffinite-math-only @gol
 -fno-toplevel-reorder -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
--foptimize-sibling-calls  -fprefetch-loop-arrays @gol
+-foptimize-sibling-calls  -fprefetch-loop-arrays -fprefetch-loop-arrays-rtl @gol
 -fprofile-generate -fprofile-use @gol
 -fregmove  -frename-registers @gol
 -freorder-blocks  -freorder-blocks-and-partition -freorder-functions @gol
@@ -5171,7 +5171,9 @@ With this option, the compiler will create multiple copies of some
 local variables when unrolling a loop which can result in superior code.
 
 @item -fprefetch-loop-arrays
+@itemx -fprefetch-loop-arrays-rtl
 @opindex fprefetch-loop-arrays
+@opindex fprefetch-loop-arrays-rtl
 If supported by the target machine, generate instructions to prefetch
 memory to improve the performance of loops that access large arrays.
 
@@ -5709,7 +5711,9 @@ Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
 
 @item -fprefetch-loop-arrays
+@itemx -fprefetch-loop-arrays-rtl
 @opindex fprefetch-loop-arrays
+@opindex fprefetch-loop-arrays-rtl
 If supported by the target machine, generate instructions to prefetch
 memory to improve the performance of loops that access large arrays.
 

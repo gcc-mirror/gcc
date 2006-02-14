@@ -659,7 +659,11 @@ Common Report Var(flag_pie,1) VarExists
 Generate position-independent code for executables if possible (small mode)
 
 fprefetch-loop-arrays
-Common Report Var(flag_prefetch_loop_arrays)
+Common Report Var(flag_prefetch_loop_arrays,1)
+Generate prefetch instructions, if available, for arrays in loops
+
+fprefetch-loop-arrays-rtl
+Common Report Var(flag_prefetch_loop_arrays,2)
 Generate prefetch instructions, if available, for arrays in loops
 
 fprofile
