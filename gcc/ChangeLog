@@ -1,3 +1,11 @@
+2006-02-14  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/26209
+	* tree-ssa-loop.c (pass_scev_cprop): Add TODO_cleanup_cfg.
+	* tree-cfgcleanup.c (cleanup_control_flow): Remove dead
+	eh edges.
+	* tree-cfg.c (replace_uses_by): Do not alter cfg.
+
 2006-02-14  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/23670
@@ -8,7 +16,7 @@
 
 2006-02-14  Roger Sayle  <roger@eyesopen.com>
 
-        * dojump.c (do_compare_rtx_and_jump): Also handle multi-word GTU
+	* dojump.c (do_compare_rtx_and_jump): Also handle multi-word GTU
 	and GEU.
 
 2006-02-14  Adam Nemet  <anemet@caviumnetworks.com>

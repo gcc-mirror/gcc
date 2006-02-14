@@ -158,19 +158,24 @@ cleanup_control_flow (void)
     {
       bsi = bsi_last (bb);
 
+      /* If the last statement of the block could throw and now cannot,
+	 we need to prune cfg.  */
+      tree_purge_dead_eh_edges (bb);
+
       if (bsi_end_p (bsi))
 	continue;
 
       stmt = bsi_stmt (bsi);
+
       if (TREE_CODE (stmt) == COND_EXPR
 	  || TREE_CODE (stmt) == SWITCH_EXPR)
 	retval |= cleanup_control_expr_graph (bb, bsi);
-
       /* If we had a computed goto which has a compile-time determinable
 	 destination, then we can eliminate the goto.  */
-      if (TREE_CODE (stmt) == GOTO_EXPR
-	  && TREE_CODE (GOTO_DESTINATION (stmt)) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (GOTO_DESTINATION (stmt), 0)) == LABEL_DECL)
+      else if (TREE_CODE (stmt) == GOTO_EXPR
+	       && TREE_CODE (GOTO_DESTINATION (stmt)) == ADDR_EXPR
+	       && (TREE_CODE (TREE_OPERAND (GOTO_DESTINATION (stmt), 0))
+		   == LABEL_DECL))
 	{
 	  edge e;
 	  tree label;
@@ -214,7 +219,7 @@ cleanup_control_flow (void)
 
       /* Check for indirect calls that have been turned into
 	 noreturn calls.  */
-      if (noreturn_call_p (stmt) && remove_fallthru_edge (bb->succs))
+      else if (noreturn_call_p (stmt) && remove_fallthru_edge (bb->succs))
 	{
 	  free_dominance_info (CDI_DOMINATORS);
 	  retval = true;
