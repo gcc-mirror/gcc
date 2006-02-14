@@ -1,5 +1,13 @@
 2006-02-14  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/23670
+	* fold-const.c (fold_binary) <BIT_IOR_EXPR>: Optimize (X&Y)|Y into
+	(X,Y) and the corresponding symmetry related transformations.
+	(fold_binary) <BIT_AND_EXPR>: Likewise, optimize (X|Y)&Y into
+	(X,Y) and its symmetry related transformations.
+
+2006-02-14  Roger Sayle  <roger@eyesopen.com>
+
         * dojump.c (do_compare_rtx_and_jump): Also handle multi-word GTU
 	and GEU.
 
