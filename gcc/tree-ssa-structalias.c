@@ -3881,7 +3881,6 @@ check_for_overlaps (VEC (fieldoff_s,heap) *fieldstack)
     }
   return false;
 }
-
 /* Create a varinfo structure for NAME and DECL, and add it to VARMAP.
    This will also create any varinfo structures necessary for fields
    of DECL.  */
@@ -3945,7 +3944,8 @@ create_variable_info_for (tree decl, const char *name)
   if (use_field_sensitive 
       && !notokay 
       && !vi->is_unknown_size_var 
-      && var_can_have_subvars (decl))
+      && var_can_have_subvars (decl)
+      && VEC_length (fieldoff_s, fieldstack) <= MAX_FIELDS_FOR_FIELD_SENSITIVE)
     {
       unsigned int newindex = VEC_length (varinfo_t, varmap);
       fieldoff_s *fo = NULL;
