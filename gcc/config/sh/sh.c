@@ -6732,6 +6732,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   tree tmp, pptr_type_node;
   tree addr, lab_over = NULL, result = NULL;
   int pass_by_ref = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+  tree eff_type;
 
   if (pass_by_ref)
     type = build_pointer_type (type);
@@ -6769,21 +6770,22 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       /* Structures with a single member with a distinct mode are passed
 	 like their member.  This is relevant if the latter has a REAL_TYPE
 	 or COMPLEX_TYPE type.  */
-      while (TREE_CODE (type) == RECORD_TYPE
-	     && (member = find_sole_member (type))
+      eff_type = type;
+      while (TREE_CODE (eff_type) == RECORD_TYPE
+	     && (member = find_sole_member (eff_type))
 	     && (TREE_CODE (TREE_TYPE (member)) == REAL_TYPE
 		 || TREE_CODE (TREE_TYPE (member)) == COMPLEX_TYPE
 		 || TREE_CODE (TREE_TYPE (member)) == RECORD_TYPE))
 	{
 	  tree field_type = TREE_TYPE (member);
 
-	  if (TYPE_MODE (type) == TYPE_MODE (field_type))
-	    type = field_type;
+	  if (TYPE_MODE (eff_type) == TYPE_MODE (field_type))
+	    eff_type = field_type;
 	  else
 	    {
-	      gcc_assert ((TYPE_ALIGN (type)
+	      gcc_assert ((TYPE_ALIGN (eff_type)
 			   < GET_MODE_ALIGNMENT (TYPE_MODE (field_type)))
-			  || (TYPE_ALIGN (type)
+			  || (TYPE_ALIGN (eff_type)
 			      > GET_MODE_BITSIZE (TYPE_MODE (field_type))));
 	      break;
 	    }
@@ -6791,14 +6793,14 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 
       if (TARGET_SH4)
 	{
-	  pass_as_float = ((TREE_CODE (type) == REAL_TYPE && size <= 8)
-			   || (TREE_CODE (type) == COMPLEX_TYPE
-			       && TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
+	  pass_as_float = ((TREE_CODE (eff_type) == REAL_TYPE && size <= 8)
+			   || (TREE_CODE (eff_type) == COMPLEX_TYPE
+			       && TREE_CODE (TREE_TYPE (eff_type)) == REAL_TYPE
 			       && size <= 16));
 	}
       else
 	{
-	  pass_as_float = (TREE_CODE (type) == REAL_TYPE && size == 4);
+	  pass_as_float = (TREE_CODE (eff_type) == REAL_TYPE && size == 4);
 	}
 
       addr = create_tmp_var (pptr_type_node, NULL);
@@ -6811,7 +6813,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	{
 	  tree next_fp_tmp = create_tmp_var (TREE_TYPE (f_next_fp), NULL);
 	  tree cmp;
-	  bool is_double = size == 8 && TREE_CODE (type) == REAL_TYPE;
+	  bool is_double = size == 8 && TREE_CODE (eff_type) == REAL_TYPE;
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_fp);
 	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
@@ -6830,7 +6832,8 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	  if (!is_double)
 	    gimplify_and_add (cmp, pre_p);
 
-	  if (TYPE_ALIGN (type) > BITS_PER_WORD || (is_double || size == 16))
+	  if (TYPE_ALIGN (eff_type) > BITS_PER_WORD
+	      || (is_double || size == 16))
 	    {
 	      tmp = fold_convert (ptr_type_node, size_int (UNITS_PER_WORD));
 	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp_tmp, tmp);
@@ -6842,9 +6845,10 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	    gimplify_and_add (cmp, pre_p);
 
 #ifdef FUNCTION_ARG_SCmode_WART
-	  if (TYPE_MODE (type) == SCmode && TARGET_SH4 && TARGET_LITTLE_ENDIAN)
+	  if (TYPE_MODE (eff_type) == SCmode
+	      && TARGET_SH4 && TARGET_LITTLE_ENDIAN)
 	    {
-	      tree subtype = TREE_TYPE (type);
+	      tree subtype = TREE_TYPE (eff_type);
 	      tree real, imag;
 
 	      imag

@@ -1,5 +1,11 @@
 2006-02-14  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR target/26141
+	* sh.c (sh_gimplify_va_arg_expr): Don't change the result type when
+	computing the effective result type.
+
+2006-02-14  J"orn Rennecke <joern.rennecke@st.com>
+
 	PR inline-asm/16194
 	* tree.h (decl_overlaps_hard_reg_set_p) Don't declare.
 	(tree_overlaps_hard_reg_set): Declare.

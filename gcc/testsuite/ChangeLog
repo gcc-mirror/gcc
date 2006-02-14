@@ -1,5 +1,10 @@
 2006-02-14  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR target/26141
+	* g++.dg/expr/stdarg2.C: New test.
+
+2006-02-14  J"orn Rennecke <joern.rennecke@st.com>
+
 	PR inline-asm/16194
 	* gcc.dg/pr16194.c: New test.
 
