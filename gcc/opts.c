@@ -777,7 +777,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 	option_index = find_opt (new_option, lang_mask);
 	if (option_index == N_OPTS)
 	  {
-	    error("-Werror-%s: No option -%s", arg, new_option);
+	    error ("-Werror-%s: No option -%s", arg, new_option);
 	  }
 	else
 	  {
@@ -789,6 +789,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 		&& cl_options[option_index].flag_var
 		&& kind == DK_ERROR)
 	      *(int *) cl_options[option_index].flag_var = 1;
+	    free (new_option);
 	  }
       }
       break;

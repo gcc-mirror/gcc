@@ -1,4 +1,17 @@
-2006-02-15 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-02-15  Uttam Pawar  <uttamp@us.ibm.com>
+
+	PR rtl-optimization/26184
+	* modulo-sched.c (generate_reg_moves): Free bitmap vector
+	uses_of_defs.
+	* modulo-sched.c (sms_schedule): Free g_arr pointer.
+	* modulo-sched.c (sms_schedule_by_order): Free bitmap pointers
+	must_precede, must_follow and tobe_scheduled.
+
+	PR other/26147
+	* opts.c (common_handle_option): Free new_option pointer.
+	* df-core.c (df_analyze): Free postorder pointer.
+
+2006-02-15  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 
 	* Makefile.in: Fix the examples about the use of stamps
 
@@ -3687,7 +3700,7 @@
 	* basic-block.h: Remove the prototype for
 	partition_hot_cold_basic_blocks.
 
-2006-01-16  Rafael Ãƒvila de EspÃï¿½­ndola <rafael.espindola@gmail.com>
+2006-01-16  Rafael Ãvila de EspÃï¿½­ndola <rafael.espindola@gmail.com>
 
 	* cppspec.c (lang_specific_spec_functions): Remove.
 	* gcc.c (lookup_spec_function): Use static_spec_functions directly.

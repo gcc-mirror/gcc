@@ -782,6 +782,7 @@ df_analyze (struct df *df)
 
   BITMAP_FREE (df->blocks_to_scan);
   df->blocks_to_scan = NULL;
+  free (postorder);
 }
 
 
