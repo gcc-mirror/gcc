@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,6 +142,11 @@ package Styleg is
    procedure Check_Xtra_Parens (Loc : Source_Ptr);
    --  Called after scanning a conditional expression that has at least one
    --  level of parentheses around the entire expression.
+
+   function Mode_In_Check return Boolean;
+   pragma Inline (Mode_In_Check);
+   --  Determines whether style checking is active and the Mode_In_Check is
+   --  set, forbidding the explicit use of mode IN.
 
    procedure No_End_Name (Name : Node_Id);
    --  Called if an END is encountered where a name is allowed but not present.

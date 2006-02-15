@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,14 +25,14 @@
 ------------------------------------------------------------------------------
 
 --  This package collects all the routines used for style checking, as
---  activated by the relevant command line option. These are gathered in
---  a separate package so that they can more easily be customized. Calls
---  to these subprograms are only made if Opt.Style_Check is set True.
+--  activated by the relevant command line option. These are gathered in a
+--  separate package so that they can more easily be customized. Calls to
+--  these subprograms are only made if Opt.Style_Check is set True.
 
 with Errout;
 with Styleg;
 with Styleg.C;
-with Types; use Types;
+with Types;    use Types;
 
 package Style is
 
@@ -71,10 +71,10 @@ package Style is
 
    procedure Check_Attribute_Name (Reserved : Boolean)
      renames Style_Inst.Check_Attribute_Name;
-   --  The current token is an attribute designator. Check that it
-   --  is capitalized in an appropriate manner. Reserved is set if
-   --  the attribute designator is a reserved word (access, digits,
-   --  delta or range) to allow differing rules for the two cases.
+   --  The current token is an attribute designator. Check that it is
+   --  capitalized in an appropriate manner. Reserved is set if the attribute
+   --  designator is a reserved word (access, digits, delta or range) to allow
+   --  differing rules for the two cases.
 
    procedure Check_Box
      renames Style_Inst.Check_Box;
@@ -136,14 +136,14 @@ package Style is
 
    procedure Check_Left_Paren
      renames Style_Inst.Check_Left_Paren;
-   --  Called after scanning out a left parenthesis to check spacing.
+   --  Called after scanning out a left parenthesis to check spacing
 
    procedure Check_Line_Terminator (Len : Int)
      renames Style_Inst.Check_Line_Terminator;
    --  Called with Scan_Ptr pointing to the first line terminator terminating
-   --  the current line, used to check for appropriate line terminator and
-   --  to check the line length (Len is the length of the current line).
-   --  Note that the terminator may be the EOF character.
+   --  the current line, used to check for appropriate line terminator and to
+   --  check the line length (Len is the length of the current line). Note that
+   --  the terminator may be the EOF character.
 
    procedure Check_Pragma_Name
      renames Style_Inst.Check_Pragma_Name;
@@ -152,7 +152,7 @@ package Style is
 
    procedure Check_Right_Paren
      renames Style_Inst.Check_Right_Paren;
-   --  Called after scanning out a right parenthesis to check spacing.
+   --  Called after scanning out a right parenthesis to check spacing
 
    procedure Check_Semicolon
      renames Style_Inst.Check_Semicolon;
@@ -177,6 +177,11 @@ package Style is
      renames Style_Inst.Check_Xtra_Parens;
    --  Called after scanning a conditional expression that has at least one
    --  level of parentheses around the entire expression.
+
+   function Mode_In_Check return Boolean
+     renames Style_Inst.Mode_In_Check;
+   --  Determines whether style checking is active and the Mode_In_Check is
+   --  set, forbidding the explicit use of mode IN.
 
    procedure No_End_Name (Name : Node_Id)
      renames Style_Inst.No_End_Name;

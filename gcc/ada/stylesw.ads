@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,6 +154,10 @@ package Stylesw is
    --  This can be set True by using -gnatyLnnn with a value other than
    --  zero (a value of zero resets it to False). If True, it activates
    --  checking the maximum nesting level against Style_Max_Nesting_Level.
+
+   Style_Check_Mode_In : Boolean := False;
+   --  This can be set True by using -gnatyI. If True, it activates checking
+   --  that mode IN is not used on its own (since it is the default).
 
    Style_Check_Order_Subprograms : Boolean := False;
    --  This can be set True by using the -gnatg or -gnatyo switch. If it
