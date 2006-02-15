@@ -136,21 +136,14 @@ package Exp_Disp is
 
    --  Guidelines for addition of new predefined primitive operations
 
-   --      Update the value of constant Default_Prim_Op_Count in Exp_Disp.ads
-   --      to reflect the new number of PPOs.
-
    --      Update the value of constant Default_Prim_Op_Count in A-Tags.ads
-   --      to reflect the new number of PPOs. This value should be the same
-   --      as the one in Exp_Disp.ads.
+   --      to reflect the new number of PPOs.
 
    --      Introduce a new predefined name for the new PPO in Snames.ads and
    --      Snames.adb.
 
    --      Categorize the new PPO name as predefined by adding an entry in
    --      Is_Predefined_Dispatching_Operation in Exp_Util.adb.
-
-   --      Reserve a dispatch table position for the new PPO by adding an entry
-   --      in Default_Prim_Op_Position in Exp_Disp.adb.
 
    --      Generate the specification of the new PPO in Make_Predefined_
    --      Primitive_Spec in Exp_Ch3.adb. The Is_Internal flag of the defining
@@ -174,8 +167,6 @@ package Exp_Disp is
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
-   Default_Prim_Op_Count : constant Int := 15;
-
    type DT_Access_Action is
       (CW_Membership,
        IW_Membership,
@@ -184,6 +175,7 @@ package Exp_Disp is
        Get_Access_Level,
        Get_Entry_Index,
        Get_External_Tag,
+       Get_Predefined_Prim_Op_Address,
        Get_Prim_Op_Address,
        Get_Prim_Op_Kind,
        Get_RC_Offset,
@@ -200,10 +192,12 @@ package Exp_Disp is
        Set_Interface_Table,
        Set_Offset_Index,
        Set_OSD,
+       Set_Predefined_Prim_Op_Address,
        Set_Prim_Op_Address,
        Set_Prim_Op_Kind,
        Set_RC_Offset,
        Set_Remotely_Callable,
+       Set_Signature,
        Set_SSD,
        Set_TSD,
        Set_Tagged_Kind,
