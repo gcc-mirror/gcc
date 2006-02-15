@@ -159,10 +159,12 @@ package body Ada.Containers.Ordered_Sets is
 
    function "<" (Left, Right : Cursor) return Boolean is
    begin
-      if Left.Node = null
-        or else Right.Node = null
-      then
-         raise Constraint_Error;
+      if Left.Node = null then
+         raise Constraint_Error with "Left cursor equals No_Element";
+      end if;
+
+      if Right.Node = null then
+         raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -177,7 +179,7 @@ package body Ada.Containers.Ordered_Sets is
    function "<" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
       if Left.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -189,7 +191,7 @@ package body Ada.Containers.Ordered_Sets is
    function "<" (Left : Element_Type; Right : Cursor) return Boolean is
    begin
       if Right.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Right.Container.Tree, Right.Node),
@@ -213,10 +215,12 @@ package body Ada.Containers.Ordered_Sets is
 
    function ">" (Left, Right : Cursor) return Boolean is
    begin
-      if Left.Node = null
-        or else Right.Node = null
-      then
-         raise Constraint_Error;
+      if Left.Node = null then
+         raise Constraint_Error with "Left cursor equals No_Element";
+      end if;
+
+      if Right.Node = null then
+         raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -233,7 +237,7 @@ package body Ada.Containers.Ordered_Sets is
    function ">" (Left : Element_Type; Right : Cursor) return Boolean is
    begin
       if Right.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Right.Container.Tree, Right.Node),
@@ -245,7 +249,7 @@ package body Ada.Containers.Ordered_Sets is
    function ">" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
       if Left.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -337,11 +341,11 @@ package body Ada.Containers.Ordered_Sets is
    procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
       if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error;
+         raise Program_Error with "Position cursor designates wrong set";
       end if;
 
       pragma Assert (Vet (Container.Tree, Position.Node),
@@ -357,7 +361,7 @@ package body Ada.Containers.Ordered_Sets is
 
    begin
       if X = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "attempt to delete element not in set";
       end if;
 
       Tree_Operations.Delete_Node_Sans_Free (Container.Tree, X);
@@ -417,7 +421,7 @@ package body Ada.Containers.Ordered_Sets is
    function Element (Position : Cursor) return Element_Type is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Position.Container.Tree, Position.Node),
@@ -523,7 +527,7 @@ package body Ada.Containers.Ordered_Sets is
    function First_Element (Container : Set) return Element_Type is
    begin
       if Container.Tree.First = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "set is empty";
       end if;
 
       return Container.Tree.First.Element;
@@ -628,7 +632,7 @@ package body Ada.Containers.Ordered_Sets is
 
       begin
          if X = null then
-            raise Constraint_Error;
+            raise Constraint_Error with "attempt to delete key not in set";
          end if;
 
          Delete_Node_Sans_Free (Container.Tree, X);
@@ -645,7 +649,7 @@ package body Ada.Containers.Ordered_Sets is
 
       begin
          if Node = null then
-            raise Constraint_Error;
+            raise Constraint_Error with "key not in set";
          end if;
 
          return Node.Element;
@@ -741,7 +745,8 @@ package body Ada.Containers.Ordered_Sets is
       function Key (Position : Cursor) return Key_Type is
       begin
          if Position.Node = null then
-            raise Constraint_Error;
+            raise Constraint_Error with
+              "Position cursor equals No_Element";
          end if;
 
          pragma Assert (Vet (Position.Container.Tree, Position.Node),
@@ -763,7 +768,8 @@ package body Ada.Containers.Ordered_Sets is
 
       begin
          if Node = null then
-            raise Constraint_Error;
+            raise Constraint_Error with
+              "attempt to replace key not in set";
          end if;
 
          Replace_Element (Container.Tree, Node, New_Item);
@@ -782,11 +788,13 @@ package body Ada.Containers.Ordered_Sets is
 
       begin
          if Position.Node = null then
-            raise Constraint_Error;
+            raise Constraint_Error with
+              "Position cursor equals No_Element";
          end if;
 
          if Position.Container /= Container'Unrestricted_Access then
-            raise Program_Error;
+            raise Program_Error with
+              "Position cursor designates wrong set";
          end if;
 
          pragma Assert (Vet (Container.Tree, Position.Node),
@@ -827,7 +835,7 @@ package body Ada.Containers.Ordered_Sets is
             Free (X);
          end;
 
-         raise Program_Error;
+         raise Program_Error with "key was modified";
       end Update_Element_Preserving_Key;
 
    end Generic_Keys;
@@ -854,7 +862,8 @@ package body Ada.Containers.Ordered_Sets is
 
       if not Inserted then
          if Container.Tree.Lock > 0 then
-            raise Program_Error;
+            raise Program_Error with
+              "attempt to tamper with cursors (set is locked)";
          end if;
 
          Position.Node.Element := New_Item;
@@ -892,7 +901,8 @@ package body Ada.Containers.Ordered_Sets is
       Insert (Container, New_Item, Position, Inserted);
 
       if not Inserted then
-         raise Constraint_Error;
+         raise Constraint_Error with
+           "attempt to insert element already in set";
       end if;
    end Insert;
 
@@ -1130,7 +1140,7 @@ package body Ada.Containers.Ordered_Sets is
    function Last_Element (Container : Set) return Element_Type is
    begin
       if Container.Tree.Last = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "set is empty";
       end if;
 
       return Container.Tree.Last.Element;
@@ -1256,7 +1266,7 @@ package body Ada.Containers.Ordered_Sets is
    is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
       pragma Assert (Vet (Position.Container.Tree, Position.Node),
@@ -1331,7 +1341,7 @@ package body Ada.Containers.Ordered_Sets is
       Item   : out Cursor)
    is
    begin
-      raise Program_Error;
+      raise Program_Error with "attempt to stream set cursor";
    end Read;
 
    -------------
@@ -1344,11 +1354,13 @@ package body Ada.Containers.Ordered_Sets is
 
    begin
       if Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with
+           "attempt to replace element not in set";
       end if;
 
       if Container.Tree.Lock > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with cursors (set is locked)";
       end if;
 
       Node.Element := New_Item;
@@ -1370,7 +1382,8 @@ package body Ada.Containers.Ordered_Sets is
          null;
       else
          if Tree.Lock > 0 then
-            raise Program_Error;
+            raise Program_Error with
+              "attempt to tamper with cursors (set is locked)";
          end if;
 
          Node.Element := Item;
@@ -1465,7 +1478,7 @@ package body Ada.Containers.Ordered_Sets is
             null;  -- Assignment must have failed
       end Reinsert_Old_Element;
 
-      raise Program_Error;
+      raise Program_Error with "attempt to replace existing element";
    end Replace_Element;
 
    procedure Replace_Element
@@ -1475,11 +1488,13 @@ package body Ada.Containers.Ordered_Sets is
    is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with
+           "Position cursor equals No_Element";
       end if;
 
       if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error;
+         raise Program_Error with
+           "Position cursor designates wrong set";
       end if;
 
       pragma Assert (Vet (Container.Tree, Position.Node),
@@ -1660,7 +1675,7 @@ package body Ada.Containers.Ordered_Sets is
       Item   : Cursor)
    is
    begin
-      raise Program_Error;
+      raise Program_Error with "attempt to stream set cursor";
    end Write;
 
 end Ada.Containers.Ordered_Sets;

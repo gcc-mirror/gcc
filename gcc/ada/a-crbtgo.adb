@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -246,7 +246,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    begin
       if Tree.Busy > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
 --    pragma Assert (Tree.Length > 0);
@@ -523,7 +524,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
       Root : Node_Access := Tree.Root;
    begin
       if Tree.Busy > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
       Tree := (First  => null,
@@ -672,7 +674,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
       end if;
 
       if Source.Busy > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
       Clear (Target);
@@ -771,7 +774,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    procedure Generic_Write
      (Stream : access Root_Stream_Type'Class;
-      Tree   : in     Tree_Type)
+      Tree   : Tree_Type)
    is
       procedure Process (Node : Node_Access);
       pragma Inline (Process);
