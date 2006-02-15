@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,11 +81,16 @@ package body Sem_Ch5 is
       T1   : Entity_Id;
       T2   : Entity_Id;
       Decl : Node_Id;
-      Ent  : Entity_Id;
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it
       --  is not a variable. This routine issues an appropriate diagnostic.
+
+      procedure Kill_Lhs;
+      --  This is called to kill current value settings of a simple variable
+      --  on the left hand side. We call it if we find any error in analyzing
+      --  the assignment, and at the end of processing before setting any new
+      --  current values in place.
 
       procedure Set_Assignment_Type
         (Opnd      : Node_Id;
@@ -159,6 +164,23 @@ package body Sem_Ch5 is
          end if;
       end Diagnose_Non_Variable_Lhs;
 
+      --------------
+      -- Kill_LHS --
+      --------------
+
+      procedure Kill_Lhs is
+      begin
+         if Is_Entity_Name (Lhs) then
+            declare
+               Ent : constant Entity_Id := Entity (Lhs);
+            begin
+               if Present (Ent) then
+                  Kill_Current_Values (Ent);
+               end if;
+            end;
+         end if;
+      end Kill_Lhs;
+
       -------------------------
       -- Set_Assignment_Type --
       -------------------------
@@ -225,6 +247,9 @@ package body Sem_Ch5 is
    begin
       Analyze (Rhs);
       Analyze (Lhs);
+
+      --  Start type analysis for assignment
+
       T1 := Etype (Lhs);
 
       --  In the most general case, both Lhs and Rhs can be overloaded, and we
@@ -305,6 +330,7 @@ package body Sem_Ch5 is
          if T1 = Any_Type then
             Error_Msg_N
               ("no valid types for left-hand side for assignment", Lhs);
+            Kill_Lhs;
             return;
          end if;
       end if;
@@ -350,6 +376,7 @@ package body Sem_Ch5 is
         and then Ekind (T1) = E_Incomplete_Type
       then
          Error_Msg_N ("invalid use of incomplete type", Lhs);
+         Kill_Lhs;
          return;
       end if;
 
@@ -361,6 +388,7 @@ package body Sem_Ch5 is
       --  Remaining steps are skipped if Rhs was syntactically in error
 
       if Rhs = Error then
+         Kill_Lhs;
          return;
       end if;
 
@@ -368,6 +396,7 @@ package body Sem_Ch5 is
 
       if not Covers (T1, T2) then
          Wrong_Type (Rhs, Etype (Lhs));
+         Kill_Lhs;
          return;
       end if;
 
@@ -395,6 +424,7 @@ package body Sem_Ch5 is
       end if;
 
       if T1 = Any_Type or else T2 = Any_Type then
+         Kill_Lhs;
          return;
       end if;
 
@@ -411,13 +441,10 @@ package body Sem_Ch5 is
          Error_Msg_N ("dynamically tagged expression required!", Rhs);
       end if;
 
-      --  Tag propagation is done only in semantics mode only. If expansion
-      --  is on, the rhs tag indeterminate function call has been expanded
-      --  and tag propagation would have happened too late, so the
-      --  propagation take place in expand_call instead.
+      --  Propagate the tag from a class-wide target to the rhs when the rhs
+      --  is a tag-indeterminate call.
 
-      if not Expander_Active
-        and then Is_Class_Wide_Type (T1)
+      if Is_Class_Wide_Type (T1)
         and then Is_Tag_Indeterminate (Rhs)
       then
          Propagate_Tag (Lhs, Rhs);
@@ -457,10 +484,18 @@ package body Sem_Ch5 is
       if Is_Scalar_Type (T1) then
          Apply_Scalar_Range_Check (Rhs, Etype (Lhs));
 
+      --  For array types, verify that lengths match. If the right hand side
+      --  if a function call that has been inlined, the assignment has been
+      --  rewritten as a block, and the constraint check will be applied to the
+      --  assignment within the block.
+
       elsif Is_Array_Type (T1)
         and then
           (Nkind (Rhs) /= N_Type_Conversion
-             or else Is_Constrained (Etype (Rhs)))
+            or else Is_Constrained (Etype (Rhs)))
+        and then
+          (Nkind (Rhs) /= N_Function_Call
+            or else Nkind (N) /= N_Block_Statement)
       then
          --  Assignment verifies that the length of the Lsh and Rhs are equal,
          --  but of course the indices do not have to match. If the right-hand
@@ -520,33 +555,59 @@ package body Sem_Ch5 is
          Error_Msg_CRT ("composite assignment", N);
       end if;
 
-      --  One more step. Let's see if we have a simple assignment of a
-      --  known at compile time value to a simple variable. If so, we
-      --  can record the value as the current value providing that:
+      --  Final step. If left side is an entity, then we may be able to
+      --  reset the current tracked values to new safe values. We only have
+      --  something to do if the left side is an entity name, and expansion
+      --  has not modified the node into something other than an assignment,
+      --  and of course we only capture values if it is safe to do so.
 
-      --    We still have a simple assignment statement (no expansion
-      --    activity has modified it in some peculiar manner)
-
-      --    The type is a discrete type
-
-      --    The assignment is to a named entity
-
-      --    The value is known at compile time
-
-      if Nkind (N) /= N_Assignment_Statement
-        or else not Is_Discrete_Type (T1)
-        or else not Is_Entity_Name (Lhs)
-        or else not Compile_Time_Known_Value (Rhs)
+      if Is_Entity_Name (Lhs)
+        and then Nkind (N) = N_Assignment_Statement
       then
-         return;
-      end if;
+         declare
+            Ent : constant Entity_Id := Entity (Lhs);
 
-      Ent := Entity (Lhs);
+         begin
+            if Safe_To_Capture_Value (N, Ent) then
 
-      --  Capture value if safe to do so
+               --  If we are assigning an access type and the left side is an
+               --  entity, then make sure that the Is_Known_[Non_]Null flags
+               --  properly reflect the state of the entity after assignment.
 
-      if Safe_To_Capture_Value (N, Ent) then
-         Set_Current_Value (Ent, Rhs);
+               if Is_Access_Type (T1) then
+                  if Known_Non_Null (Rhs) then
+                     Set_Is_Known_Non_Null (Ent, True);
+
+                  elsif Known_Null (Rhs)
+                    and then not Can_Never_Be_Null (Ent)
+                  then
+                     Set_Is_Known_Null (Ent, True);
+
+                  else
+                     Set_Is_Known_Null (Ent, False);
+
+                     if not Can_Never_Be_Null (Ent) then
+                        Set_Is_Known_Non_Null (Ent, False);
+                     end if;
+                  end if;
+
+               --  For discrete types, we may be able to set the current value
+               --  if the value is known at compile time.
+
+               elsif Is_Discrete_Type (T1)
+                 and then Compile_Time_Known_Value (Rhs)
+               then
+                  Set_Current_Value (Ent, Rhs);
+               else
+                  Set_Current_Value (Ent, Empty);
+               end if;
+
+            --  If not safe to capture values, kill them
+
+            else
+               Kill_Lhs;
+            end if;
+         end;
       end if;
    end Analyze_Assignment;
 
@@ -1193,6 +1254,7 @@ package body Sem_Ch5 is
          New_Lo_Bound : Node_Id := Empty;
          New_Hi_Bound : Node_Id := Empty;
          Typ          : Entity_Id;
+         Save_Analysis : Boolean;
 
          function One_Bound
            (Original_Bound : Node_Id;
@@ -1268,9 +1330,64 @@ package body Sem_Ch5 is
 
       begin
          --  Determine expected type of range by analyzing separate copy
+         --  Do the analysis and resolution of the copy of the bounds with
+         --  expansion disabled, to prevent the generation of finalization
+         --  actions on each bound. This prevents memory leaks when the
+         --  bounds contain calls to functions returning controlled arrays.
 
          Set_Parent (R_Copy, Parent (R));
-         Pre_Analyze_And_Resolve (R_Copy);
+         Save_Analysis := Full_Analysis;
+         Full_Analysis := False;
+         Expander_Mode_Save_And_Set (False);
+
+         Analyze (R_Copy);
+
+         if Is_Overloaded (R_Copy) then
+
+            --  Apply preference rules for range of predefined integer types,
+            --  or diagnose true ambiguity.
+
+            declare
+               I     : Interp_Index;
+               It    : Interp;
+               Found : Entity_Id := Empty;
+
+            begin
+               Get_First_Interp (R_Copy, I, It);
+               while Present (It.Typ) loop
+                  if Is_Discrete_Type (It.Typ) then
+                     if No (Found) then
+                        Found := It.Typ;
+                     else
+                        if Scope (Found) = Standard_Standard then
+                           null;
+
+                        elsif Scope (It.Typ) = Standard_Standard then
+                           Found := It.Typ;
+
+                        else
+                           --  Both of them are user-defined
+
+                           Error_Msg_N
+                             ("ambiguous bounds in range of iteration",
+                               R_Copy);
+                           Error_Msg_N ("\possible interpretations:", R_Copy);
+                           Error_Msg_NE ("\} ", R_Copy, Found);
+                           Error_Msg_NE ("\} ", R_Copy, It.Typ);
+                           exit;
+                        end if;
+                     end if;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end;
+         end if;
+
+         Resolve (R_Copy);
+         Expander_Mode_Restore;
+         Full_Analysis := Save_Analysis;
+
          Typ := Etype (R_Copy);
 
          --  If the type of the discrete range is Universal_Integer, then

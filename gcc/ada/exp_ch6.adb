@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -698,6 +698,11 @@ package body Exp_Ch6 is
          --  Processing for OUT or IN OUT parameter
 
          else
+            --  Kill current value indications for the temporary variable we
+            --  created, since we just passed it as an OUT parameter.
+
+            Kill_Current_Values (Temp);
+
             --  If type conversion, use reverse conversion on exit
 
             if Nkind (Actual) = N_Type_Conversion then
@@ -1265,7 +1270,7 @@ package body Exp_Ch6 is
             Set_First_Named_Actual (N, Actual_Expr);
 
             if No (Prev) then
-               if not Present (Parameter_Associations (N)) then
+               if No (Parameter_Associations (N)) then
                   Set_Parameter_Associations (N, New_List);
                   Append (Insert_Param, Parameter_Associations (N));
                end if;
@@ -1830,11 +1835,10 @@ package body Exp_Ch6 is
             Check_Valid_Lvalue_Subscripts (Actual);
          end if;
 
-         --  Mark any scalar OUT parameter that is a simple variable
-         --  as no longer known to be valid (unless the type is always
-         --  valid). This reflects the fact that if an OUT parameter
-         --  is never set in a procedure, then it can become invalid
-         --  on return from the procedure.
+         --  Mark any scalar OUT parameter that is a simple variable as no
+         --  longer known to be valid (unless the type is always valid). This
+         --  reflects the fact that if an OUT parameter is never set in a
+         --  procedure, then it can become invalid on the procedure return.
 
          if Ekind (Formal) = E_Out_Parameter
            and then Is_Entity_Name (Actual)
@@ -1844,14 +1848,15 @@ package body Exp_Ch6 is
             Set_Is_Known_Valid (Entity (Actual), False);
          end if;
 
-         --  For an OUT or IN OUT parameter of an access type, if the
-         --  actual is an entity, then it is no longer known to be non-null.
+         --  For an OUT or IN OUT parameter, if the actual is an entity, then
+         --  clear current values, since they can be clobbered. We are probably
+         --  doing this in more places than we need to, but better safe than
+         --  sorry when it comes to retaining bad current values!
 
          if Ekind (Formal) /= E_In_Parameter
            and then Is_Entity_Name (Actual)
-           and then Is_Access_Type (Etype (Actual))
          then
-            Set_Is_Known_Non_Null (Entity (Actual), False);
+            Kill_Current_Values (Entity (Actual));
          end if;
 
          --  If the formal is class wide and the actual is an aggregate, force
@@ -1894,11 +1899,11 @@ package body Exp_Ch6 is
          Next_Formal (Formal);
       end loop;
 
-      --  If we are expanding a rhs of an assignement we need to check if
-      --  tag propagation is needed. This code belongs theorically in Analyze
-      --  Assignment but has to be done earlier (bottom-up) because the
-      --  assignment might be transformed into a declaration for an uncons-
-      --  trained value, if the expression is classwide.
+      --  If we are expanding a rhs of an assignment we need to check if tag
+      --  propagation is needed. You might expect this processing to be in
+      --  Analyze_Assignment but has to be done earlier (bottom-up) because the
+      --  assignment might be transformed to a declaration for an unconstrained
+      --  value if the expression is classwide.
 
       if Nkind (N) = N_Function_Call
         and then Is_Tag_Indeterminate (N)
@@ -2015,6 +2020,8 @@ package body Exp_Ch6 is
                Parent_Subp := Alias (Parent_Subp);
             end loop;
          end if;
+
+         --  The below setting of Entity is suspect, see F109-018 discussion???
 
          Set_Entity (Name (N), Parent_Subp);
 
@@ -2337,10 +2344,16 @@ package body Exp_Ch6 is
       --  call, or a protected function call. Protected procedure calls are
       --  rewritten as entry calls and handled accordingly.
 
+      --  In Ada 2005, this may be an indirect call to an access parameter
+      --  that is an access_to_subprogram. In that case the anonymous type
+      --  has a scope that is a protected operation, but the call is a
+      --  regular one.
+
       Scop := Scope (Subp);
 
       if Nkind (N) /= N_Entry_Call_Statement
         and then Is_Protected_Type (Scop)
+        and then Ekind (Subp) /= E_Subprogram_Type
       then
          --  If the call is an internal one, it is rewritten as a call to
          --  to the corresponding unprotected subprogram.
@@ -2498,6 +2511,28 @@ package body Exp_Ch6 is
             end if;
          end;
       end if;
+
+      --  Special processing for Ada 2005 AI-329, which requires a call to
+      --  Raise_Exception to raise Constraint_Error if the Exception_Id is
+      --  null. Note that we never need to do this in GNAT mode, or if the
+      --  parameter to Raise_Exception is a use of Identity, since in these
+      --  cases we know that the parameter is never null.
+
+      if Ada_Version >= Ada_05
+        and then not GNAT_Mode
+        and then Is_RTE (Subp, RE_Raise_Exception)
+        and then (Nkind (First_Actual (N)) /= N_Attribute_Reference
+                   or else Attribute_Name (First_Actual (N)) /= Name_Identity)
+      then
+         declare
+            RCE : constant Node_Id :=
+                    Make_Raise_Constraint_Error (Loc,
+                      Reason => CE_Null_Exception_Id);
+         begin
+            Insert_After (N, RCE);
+            Analyze (RCE);
+         end;
+      end if;
    end Expand_Call;
 
    --------------------------
@@ -2519,6 +2554,7 @@ package body Exp_Ch6 is
       Blk      : Node_Id;
       Bod      : Node_Id;
       Decl     : Node_Id;
+      Decls    : constant List_Id := New_List;
       Exit_Lab : Entity_Id := Empty;
       F        : Entity_Id;
       A        : Node_Id;
@@ -2528,8 +2564,22 @@ package body Exp_Ch6 is
       Num_Ret  : Int := 0;
       Ret_Type : Entity_Id;
       Targ     : Node_Id;
+      Targ1    : Node_Id;
       Temp     : Entity_Id;
       Temp_Typ : Entity_Id;
+
+      Is_Unc : constant Boolean :=
+                    Is_Array_Type (Etype (Subp))
+                      and then not Is_Constrained (Etype (Subp));
+      --  If the type returned by the function is unconstrained and the
+      --  call can be inlined, special processing is required.
+
+      procedure Find_Result;
+      --  For a function that returns an unconstrained type, retrieve the
+      --  name of the single variable that is the expression of a return
+      --  statement in the body of the function. Build_Body_To_Inline has
+      --  verified that this variable is unique, even in the presence of
+      --  multiple return statements.
 
       procedure Make_Exit_Label;
       --  Build declaration for exit label to be used in Return statements
@@ -2556,6 +2606,50 @@ package body Exp_Ch6 is
 
       function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean;
       --  Determine whether a formal parameter is used only once in Orig_Bod
+
+      -----------------
+      -- Find_Result --
+      -----------------
+
+      procedure Find_Result is
+         Decl : Node_Id;
+         Id   : Node_Id;
+
+         function Get_Return (N : Node_Id) return Traverse_Result;
+         --  Recursive function to locate return statements in body.
+
+         function Get_Return (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Return_Statement then
+               Id := Expression (N);
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Get_Return;
+
+         procedure Find_It is new Traverse_Proc (Get_Return);
+
+      --  Start of processing for Find_Result
+
+      begin
+         Find_It (Handled_Statement_Sequence (Orig_Bod));
+
+         --  At this point the body is unanalyzed. Traverse the list of
+         --  declarations to locate the defining_identifier for it.
+
+         Decl := First (Declarations (Blk));
+
+         while Present (Decl) loop
+            if Chars (Defining_Identifier (Decl)) = Chars (Id) then
+               Targ1 := Defining_Identifier (Decl);
+               exit;
+
+            else
+               Next (Decl);
+            end if;
+         end loop;
+      end Find_Result;
 
       ---------------------
       -- Make_Exit_Label --
@@ -2746,7 +2840,11 @@ package body Exp_Ch6 is
             Insert_After (Parent (Entity (N)), Blk);
 
          elsif Nkind (Parent (N)) = N_Assignment_Statement
-           and then Is_Entity_Name (Name (Parent (N)))
+           and then
+            (Is_Entity_Name (Name (Parent (N)))
+               or else
+                  (Nkind (Name (Parent (N))) = N_Explicit_Dereference
+                    and then Is_Entity_Name (Prefix (Name (Parent (N))))))
          then
             --  Replace assignment with the block
 
@@ -2770,6 +2868,9 @@ package body Exp_Ch6 is
          elsif Nkind (Parent (N)) = N_Object_Declaration then
             Set_Expression (Parent (N), Empty);
             Insert_After (Parent (N), Blk);
+
+         elsif Is_Unc then
+            Insert_Before (Parent (N), Blk);
          end if;
       end Rewrite_Function_Call;
 
@@ -2907,6 +3008,13 @@ package body Exp_Ch6 is
          Set_Declarations (Blk, New_List);
       end if;
 
+      --  For the unconstrained case, capture the name of the local
+      --  variable that holds the result.
+
+      if Is_Unc then
+         Find_Result;
+      end if;
+
       --  If this is a derived function, establish the proper return type
 
       if Present (Orig_Subp)
@@ -3022,7 +3130,7 @@ package body Exp_Ch6 is
                    Name                => New_A);
             end if;
 
-            Prepend (Decl, Declarations (Blk));
+            Append (Decl, Decls);
             Set_Renamed_Object (F, Temp);
          end if;
 
@@ -3034,11 +3142,17 @@ package body Exp_Ch6 is
       --  declaration, create a temporary as a target. The declaration for
       --  the temporary may be subsequently optimized away if the body is a
       --  single expression, or if the left-hand side of the assignment is
-      --  simple enough.
+      --  simple enough, i.e. an entity or an explicit dereference of one.
 
       if Ekind (Subp) = E_Function then
          if Nkind (Parent (N)) = N_Assignment_Statement
            and then Is_Entity_Name (Name (Parent (N)))
+         then
+            Targ := Name (Parent (N));
+
+         elsif Nkind (Parent (N)) = N_Assignment_Statement
+           and then Nkind (Name (Parent (N))) = N_Explicit_Dereference
+           and then Is_Entity_Name (Prefix (Name (Parent (N))))
          then
             Targ := Name (Parent (N));
 
@@ -3049,18 +3163,38 @@ package body Exp_Ch6 is
               Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
             Set_Is_Internal (Temp);
 
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Temp,
-                Object_Definition =>
-                  New_Occurrence_Of (Ret_Type, Loc));
+            --  For the unconstrained case. the generated temporary has the
+            --  same constrained declaration as the result variable.
+            --  It may eventually be possible to remove that temporary and
+            --  use the result variable directly.
+
+            if Is_Unc then
+               Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition =>
+                     New_Copy_Tree (Object_Definition (Parent (Targ1))));
+
+               Replace_Formals (Decl);
+
+            else
+               Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition =>
+                     New_Occurrence_Of (Ret_Type, Loc));
+
+               Set_Etype (Temp, Ret_Type);
+            end if;
 
             Set_No_Initialization (Decl);
-            Insert_Action (N, Decl);
+            Append (Decl, Decls);
             Rewrite (N, New_Occurrence_Of (Temp, Loc));
             Targ := Temp;
          end if;
       end if;
+
+      Insert_Actions (N, Decls);
 
       --  Traverse the tree and replace formals with actuals or their thunks.
       --  Attach block to tree before analysis and rewriting.
@@ -3122,6 +3256,18 @@ package body Exp_Ch6 is
          Rewrite_Procedure_Call (N, Blk);
       else
          Rewrite_Function_Call (N, Blk);
+
+         --  For the unconstrained case, the replacement of the call has been
+         --  made prior to the complete analysis of the generated declarations.
+         --  Propagate the proper type now.
+
+         if Is_Unc then
+            if Nkind (N) = N_Identifier then
+               Set_Etype (N, Etype (Entity (N)));
+            else
+               Set_Etype (N, Etype (Targ1));
+            end if;
+         end if;
       end if;
 
       Restore_Env;
@@ -3280,8 +3426,8 @@ package body Exp_Ch6 is
 
                      Proc := Entity (Name (Parent (N)));
 
-                     F    := First_Formal (Proc);
-                     A    := First_Actual (Parent (N));
+                     F := First_Formal (Proc);
+                     A := First_Actual (Parent (N));
                      while A /= N loop
                         Next_Formal (F);
                         Next_Actual (A);
@@ -4133,8 +4279,7 @@ package body Exp_Ch6 is
       --  (Ada 2005): Register an interface primitive in a secondary dispatch
       --  table. If Prim overrides an ancestor primitive of its associated
       --  tagged-type then Ancestor_Iface_Prim indicates the entity of that
-      --  immediate ancestor associated with the interface; otherwise Prim and
-      --  Ancestor_Iface_Prim have the same info.
+      --  immediate ancestor associated with the interface.
 
       procedure Register_Predefined_DT_Entry (Prim : Entity_Id);
       --  (Ada 2005): Register a predefined primitive in all the secondary
@@ -4192,7 +4337,7 @@ package body Exp_Ch6 is
                                 Skip_Controlling_Formals => True)
                     and then DT_Position (Prim_Op) = DT_Position (E)
                     and then Etype (DTC_Entity (Prim_Op)) = RTE (RE_Tag)
-                    and then not Present (Abstract_Interface_Alias (Prim_Op))
+                    and then No (Abstract_Interface_Alias (Prim_Op))
                   then
                      if Overriden_Op = Empty then
                         Overriden_Op := Prim_Op;
@@ -4268,7 +4413,14 @@ package body Exp_Ch6 is
          Thunk_Id     : Entity_Id;
 
       begin
-         if not Present (Ancestor_Iface_Prim) then
+         --  Nothing to do if the run-time does not give support to abstract
+         --  interfaces.
+
+         if not (RTE_Available (RE_Interface_Tag)) then
+            return;
+         end if;
+
+         if No (Ancestor_Iface_Prim) then
             Prim_Typ  := Scope (DTC_Entity (Alias (Prim)));
             Iface_Typ := Scope (DTC_Entity (Abstract_Interface_Alias (Prim)));
 
@@ -4373,8 +4525,9 @@ package body Exp_Ch6 is
       begin
          Prim_Typ := Scope (DTC_Entity (Prim));
 
-         if not Present (Access_Disp_Table (Prim_Typ))
-           or else not Present (Abstract_Interfaces (Prim_Typ))
+         if No (Access_Disp_Table (Prim_Typ))
+           or else No (Abstract_Interfaces (Prim_Typ))
+           or else not RTE_Available (RE_Interface_Tag)
          then
             return;
          end if;
@@ -4404,7 +4557,7 @@ package body Exp_Ch6 is
                Insert_After (N, New_Thunk);
                Insert_After (New_Thunk,
                  Make_DT_Access_Action (Node (Iface_Typ),
-                   Action => Set_Prim_Op_Address,
+                   Action => Set_Predefined_Prim_Op_Address,
                    Args   => New_List (
                      Unchecked_Convert_To (RTE (RE_Tag),
                        New_Reference_To (Node (Iface_DT_Ptr), Loc)),
@@ -4438,9 +4591,20 @@ package body Exp_Ch6 is
       then
          Check_Overriding_Operation (E);
 
+         --  Ada 95 case: Register the subprogram in the primary dispatch table
+
          if Ada_Version < Ada_05 then
-            Insert_After (N,
-              Fill_DT_Entry (Sloc (N), Prim => E));
+
+            --  Do not register the subprogram in the dispatch table if we
+            --  are compiling with the No_Dispatching_Calls restriction.
+
+            if not Restriction_Active (No_Dispatching_Calls) then
+               Insert_After (N,
+                 Fill_DT_Entry (Sloc (N), Prim => E));
+            end if;
+
+         --  Ada 2005 case: Register the subprogram in the secondary dispatch
+         --  tables associated with abstract interfaces.
 
          else
             declare
@@ -4448,8 +4612,8 @@ package body Exp_Ch6 is
 
             begin
                --  There is no dispatch table associated with abstract
-               --  interface types; each type implementing interfaces
-               --  will fill the associated secondary DT entries.
+               --  interface types. Each type implementing interfaces will
+               --  fill the associated secondary DT entries.
 
                if not Is_Interface (Typ)
                  or else Present (Alias (E))
@@ -4465,12 +4629,15 @@ package body Exp_Ch6 is
                   else
                      --  Generate thunks for all the predefined operations
 
-                     if Is_Predefined_Dispatching_Operation (E) then
-                        Register_Predefined_DT_Entry (E);
+                     if not Restriction_Active (No_Dispatching_Calls) then
+                        if Is_Predefined_Dispatching_Operation (E) then
+                           Register_Predefined_DT_Entry (E);
+                        end if;
+
+                        Insert_After (N,
+                          Fill_DT_Entry (Sloc (N), Prim => E));
                      end if;
 
-                     Insert_After (N,
-                       Fill_DT_Entry (Sloc (N), Prim => E));
                      Check_Overriding_Inherited_Interfaces (E);
                   end if;
                end if;
