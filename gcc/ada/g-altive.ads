@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -236,7 +236,23 @@ package GNAT.Altivec is
    --  points to a 16-byte boundary. The compiler is responsible for aligning
    --  vector data types on 16-byte boundaries."
 
-   VECTOR_ALIGNMENT : constant := 16;
+   VECTOR_ALIGNMENT : constant := Natural'Min (16, Standard'Maximum_Alignment);
+   --  This value is used to set the alignment of vector datatypes in both the
+   --  hard and the soft binding implementations.
+   --
+   --  We want this value to never be greater than 16, because none of the
+   --  binding implementations requires larger alignments and such a value
+   --  would cause useless space to be allocated/wasted for vector objects.
+   --  Furthermore, the alignment of 16 matches the hard binding leading to
+   --  a more faithful emulation.
+   --
+   --  It needs to be exactly 16 for the hard binding, and the initializing
+   --  expression is just right for this purpose since Maximum_Alignment is
+   --  expected to be 16 for the real Altivec ABI.
+   --
+   --  The soft binding doesn't rely on strict 16byte alignment, and we want
+   --  the value to be no greater than Standard'Maximum_Alignment in this case
+   --  to ensure it is supported on every possible target.
 
    -------------------------------------------------------
    -- [PIM-2.1] Data Types - Interpretation of contents --
