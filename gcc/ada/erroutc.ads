@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -307,8 +307,8 @@ package Erroutc is
 
    procedure Set_Msg_Blank;
    --  Sets a single blank in the message if the preceding character is a
-   --  non-blank character other than a left parenthesis. Has no effect if
-   --  manual quote mode is turned on.
+   --  non-blank character other than a left parenthesis or minus. Has no
+   --  effect if manual quote mode is turned on.
 
    procedure Set_Msg_Blank_Conditional;
    --  Sets a single blank in the message if the preceding character is a
