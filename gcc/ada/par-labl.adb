@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -521,7 +521,7 @@ begin
          --  Now attach the implicit label declaration to the appropriate
          --  declarative region, creating a declaration list if none exists
 
-         if not Present (Declarations (Enclosing_Body_Or_Block)) then
+         if No (Declarations (Enclosing_Body_Or_Block)) then
             Set_Declarations (Enclosing_Body_Or_Block, New_List);
          end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -850,7 +850,7 @@ package body Lib.Writ is
 
             S := Specification (U);
 
-            if not Present (Parameter_Specifications (S)) then
+            if No (Parameter_Specifications (S)) then
                if Nkind (S) = N_Procedure_Specification then
                   Write_Info_Initiate ('M');
                   Write_Info_Str (" P");
