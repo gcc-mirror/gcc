@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -260,8 +260,7 @@ package body Lib.Xref is
             end if;
          end loop;
 
-         --  Parent (N) is an assignment statement, check whether
-         --  N is its name.
+         --  Parent (N) is assignment statement, check whether N is its name
 
          return Name (Parent (N)) = N;
       end Is_On_LHS;
@@ -277,21 +276,23 @@ package body Lib.Xref is
          Check_Restriction (No_Obsolescent_Features, N);
       end if;
 
-      --  Warn if reference to Ada 2005 entity not in Ada 2005 mode
+      --  Warn if reference to Ada 2005 entity not in Ada 2005 mode. We only
+      --  detect real explicit references (modifications and references).
 
       if Is_Ada_2005 (E)
         and then Ada_Version < Ada_05
         and then Warn_On_Ada_2005_Compatibility
+        and then (Typ = 'm' or else Typ = 'r')
       then
          Error_Msg_NE ("& is only defined in Ada 2005?", N, E);
       end if;
 
-      --  Never collect references if not in main source unit. However,
-      --  we omit this test if Typ is 'e' or 'k', since these entries are
-      --  really structural, and it is useful to have them in units
-      --  that reference packages as well as units that define packages.
-      --  We also omit the test for the case of 'p' since we want to
-      --  include inherited primitive operations from other packages.
+      --  Never collect references if not in main source unit. However, we omit
+      --  this test if Typ is 'e' or 'k', since these entries are structural,
+      --  and it is useful to have them in units that reference packages as
+      --  well as units that define packages. We also omit the test for the
+      --  case of 'p' since we want to include inherited primitive operations
+      --  from other packages.
 
       if not In_Extended_Main_Source_Unit (N)
         and then Typ /= 'e'
@@ -397,12 +398,9 @@ package body Lib.Xref is
                null;
 
             --  Neither does a reference to a variable on the left side
-            --  of an assignment
+            --  of an assignment.
 
-            elsif Ekind (E) = E_Variable
-              and then Nkind (Parent (N)) = N_Assignment_Statement
-              and then Name (Parent (N)) = N
-            then
+            elsif Is_On_LHS (N) then
                null;
 
             --  For entry formals, we want to place the warning on the
@@ -720,11 +718,21 @@ package body Lib.Xref is
 
                   elsif Is_Private_Type (Tref)
                     and then Present (Full_View (Tref))
-                    and then Is_Access_Type (Full_View (Tref))
                   then
-                     Tref := Directly_Designated_Type (Full_View (Tref));
-                     Left := '(';
-                     Right := ')';
+                     if Is_Access_Type (Full_View (Tref)) then
+                        Tref := Directly_Designated_Type (Full_View (Tref));
+                        Left := '(';
+                        Right := ')';
+
+                     --  If the full view is an array type, we also retrieve
+                     --  the corresponding component type, because the ali
+                     --  entry already indicates that this is an array.
+
+                     elsif Is_Array_Type (Full_View (Tref)) then
+                        Tref := Component_Type (Full_View (Tref));
+                        Left := '(';
+                        Right := ')';
+                     end if;
 
                   --  If non-derived array, get component type.
                   --  Skip component type for case of String
