@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2003, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2006, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -98,8 +98,8 @@ ostrcpy (char *s1, char *s2)
 /* This function will return the Ada name from the encoded form.
    The Ada coding is done in exp_dbug.ads and this is the inverse function.
    see exp_dbug.ads for full encoding rules, a short description is added
-   below. Right now only objects and routines are handled. There is no support
-   for Ada types.
+   below. Right now only objects and routines are handled. Ada types are
+   stripped of their encodings.
 
    CODED_NAME is the encoded entity name.
 
@@ -158,6 +158,18 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
     }
   else
     strcpy (ada_name, coded_name);
+
+  /* Check for the first triple underscore in the name. This indicates
+     that the name represents a type with encodings; in this case, we
+     need to strip the encodings.  */
+  {
+    char *encodings;
+
+    if ((encodings = (char *) strstr (ada_name, "___")) != NULL)
+      {
+	*encodings = '\0';
+      }
+  }
 
   /* Check for task body.  */
   if (has_suffix (ada_name, "TKB"))
@@ -320,4 +332,44 @@ ada_demangle (const char *coded_name)
 
   __gnat_decode (coded_name, ada_name, 0);
   return xstrdup (ada_name);
+}
+
+void
+get_encoding (const char *coded_name, char *encoding)
+{
+  char * dest_index = encoding;
+  const char *p;
+  int found = 0;
+  int count = 0;
+
+  /* The heuristics is the following: we assume that the first triple
+     underscore in an encoded name indicates the beginning of the
+     first encoding, and that subsequent triple underscores indicate
+     the next encodings. We assume that the encodings are always at the
+     end of encoded names.  */
+
+  for (p = coded_name; *p != '\0'; p++)
+    {
+      if (*p != '_')
+	count = 0;
+      else
+	if (++count == 3)
+	  {
+	    count = 0;
+
+	    if (found)
+	      {
+		dest_index = dest_index - 2;
+		*dest_index++ = ':';
+	      }
+
+	    p++;
+	    found = 1;
+	  }
+
+      if (found)
+	*dest_index++ = *p;
+    }
+
+  *dest_index = '\0';
 }
