@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -981,9 +981,10 @@ package body Sem_Ch13 is
                         Size /= System_Storage_Unit * 8
                      then
                         Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
+                        Error_Msg_Uint_2 := Error_Msg_Uint_1 * 8;
                         Error_Msg_N
                           ("size for primitive object must be a power of 2"
-                            & " and at least ^", N);
+                            & " in the range ^-^", N);
                      end if;
                   end if;
 
@@ -3353,7 +3354,7 @@ package body Sem_Ch13 is
 
          if Present (Freeze_Node (S)) then
             Error_Msg_NE
-              ("?no more representation items for }!", Freeze_Node (S), S);
+              ("?no more representation items for }", Freeze_Node (S), S);
          end if;
 
          return True;
