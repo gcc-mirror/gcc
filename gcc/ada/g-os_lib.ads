@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,14 +62,14 @@ package GNAT.OS_Lib is
 
    subtype String_Access is Strings.String_Access;
 
-   function "=" (Left, Right : in String_Access) return Boolean
+   function "=" (Left, Right : String_Access) return Boolean
      renames Strings."=";
 
    procedure Free (X : in out String_Access) renames Strings.Free;
 
    subtype String_List is Strings.String_List;
 
-   function "=" (Left, Right : in String_List) return Boolean
+   function "=" (Left, Right : String_List) return Boolean
      renames Strings."=";
 
    function "&" (Left : String_Access; Right : String_Access)
@@ -83,7 +83,7 @@ package GNAT.OS_Lib is
 
    subtype String_List_Access is Strings.String_List_Access;
 
-   function "=" (Left, Right : in String_List_Access) return Boolean
+   function "=" (Left, Right : String_List_Access) return Boolean
      renames Strings."=";
 
    procedure Free (Arg : in out String_List_Access)
@@ -808,7 +808,9 @@ package GNAT.OS_Lib is
    procedure OS_Exit (Status : Integer);
    pragma Import (C, OS_Exit, "__gnat_os_exit");
    pragma No_Return (OS_Exit);
-   --  Exit to OS with given status code (program is terminated)
+   --  Exit to OS with given status code (program is terminated). Note that
+   --  this is abrupt termination. All tasks are immediately terminated. There
+   --  is no finalization or other cleanup actions performed.
 
    procedure OS_Abort;
    pragma Import (C, OS_Abort, "abort");

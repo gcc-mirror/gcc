@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                      Copyright (C) 2002-2005, AdaCore                    --
+--                      Copyright (C) 2002-2006, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,8 @@ package GNAT.Ctrl_C is
    --  Handler_Type should not propagate exceptions.
 
    procedure Install_Handler (Handler : Handler_Type);
-   --  Set up Handler to be called if the operator hits Ctrl-C
+   --  Set up Handler to be called if the operator hits Ctrl-C, instead of the
+   --  standard Control-C handler.
 
    procedure Uninstall_Handler;
    --  Reinstall the standard Control-C handler.

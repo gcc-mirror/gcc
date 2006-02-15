@@ -352,7 +352,7 @@ package Stand is
    --  error messages ("expecting an integer type").
 
    Any_Id : Entity_Id;
-   --  Used to represent some unknown identifier. Used to lable undefined
+   --  Used to represent some unknown identifier. Used to label undefined
    --  identifier references to prevent cascaded errors.
 
    Any_Type : Entity_Id;
