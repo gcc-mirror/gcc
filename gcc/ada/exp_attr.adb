@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1977,7 +1977,7 @@ package body Exp_Attr is
                --  values.
 
                if Is_Unchecked_Union (Base_Type (U_Type))
-                 and then not Present (Discriminant_Constraint (U_Type))
+                 and then No (Discriminant_Constraint (U_Type))
                then
                   Insert_Action (N,
                     Make_Raise_Program_Error (Loc,
@@ -2382,6 +2382,20 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Mantissa;
 
+      --------------------
+      -- Mechanism_Code --
+      --------------------
+
+      when Attribute_Mechanism_Code =>
+
+         --  We must replace the prefix in the renamed case
+
+         if Is_Entity_Name (Pref)
+           and then Present (Alias (Entity (Pref)))
+         then
+            Set_Renamed_Subprogram (Pref, Alias (Entity (Pref)));
+         end if;
+
       ---------
       -- Mod --
       ---------
@@ -2659,7 +2673,7 @@ package body Exp_Attr is
                --  values.
 
                if Is_Unchecked_Union (Base_Type (U_Type))
-                 and then not Present (Discriminant_Constraint (U_Type))
+                 and then No (Discriminant_Constraint (U_Type))
                then
                   Insert_Action (N,
                     Make_Raise_Program_Error (Loc,
@@ -2855,7 +2869,6 @@ package body Exp_Attr is
          elsif not Overflow_Checks_Suppressed (Ptyp) then
             Expand_Pred_Succ (N);
          end if;
-
       end Pred;
 
       ------------------
@@ -2915,7 +2928,6 @@ package body Exp_Attr is
          else
             Apply_Universal_Integer_Attribute_Checks (N);
          end if;
-
       end Range_Length;
 
       ----------
@@ -3424,7 +3436,7 @@ package body Exp_Attr is
          --  Typ (Adjust_Storage_Size (taskV!(name)._Size))
 
          else
-            if not Present (Storage_Size_Variable (Ptyp)) then
+            if No (Storage_Size_Variable (Ptyp)) then
                Rewrite (N,
                  Convert_To (Typ,
                    Make_Function_Call (Loc,
@@ -4468,22 +4480,26 @@ package body Exp_Attr is
       when Attribute_Component_Size =>
          null;
 
-      --  The following attributes are handled by Gigi (except that static
-      --  cases have already been evaluated by the semantics, but in any case
-      --  Gigi should not count on that).
+      --  The following attributes are handled by the back end (except that
+      --  static cases have already been evaluated during semantic processing,
+      --  but in any case the back end should not count on this). The one bit
+      --  of special processing required is that these attributes typically
+      --  generate conditionals in the code, so we need to check the relevant
+      --  restriction.
 
-      --  In addition Gigi handles the non-floating-point cases of Pred and
-      --  Succ (including the fixed-point cases, which can just be treated as
-      --  integer increment/decrement operations)
+      when Attribute_Max                          |
+           Attribute_Min                          =>
+         Check_Restriction (No_Implicit_Conditionals, N);
+
+      --  The following attributes are handled by the back end (except that
+      --  static cases have already been evaluated during semantic processing,
+      --  but in any case the back end should not count on this).
 
       --  Gigi also handles the non-class-wide cases of Size
 
       when Attribute_Bit_Order                    |
            Attribute_Code_Address                 |
            Attribute_Definite                     |
-           Attribute_Max                          |
-           Attribute_Mechanism_Code               |
-           Attribute_Min                          |
            Attribute_Null_Parameter               |
            Attribute_Passed_By_Reference          |
            Attribute_Pool_Address                 =>
