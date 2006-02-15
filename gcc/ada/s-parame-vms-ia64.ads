@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the OpenVMS version
+--  This is the Integrity OpenVMS version
 
 --  This package defines some system dependent parameters for GNAT. These
 --  are values that are referenced by the runtime library and are therefore
@@ -147,7 +147,7 @@ package System.Parameters is
    -- Locking Strategy --
    ----------------------
 
-   Single_Lock : constant Boolean := True;
+   Single_Lock : constant Boolean := False;
    --  Indicates whether a single lock should be used within the tasking
    --  run-time to protect internal structures. If True, a single lock
    --  will be used, meaning less locking/unlocking operations, but also
