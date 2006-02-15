@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -382,60 +382,22 @@ package body Checks is
       P : constant Node_Id := Prefix (N);
 
    begin
-      if Inside_A_Generic then
-         return;
-      end if;
-
-      if Is_Entity_Name (P) then
-         Check_Unset_Reference (P);
-      end if;
-
-      --  We do not need access checks if prefix is known to be non-null
-
-      if Known_Non_Null (P) then
-         return;
-
-      --  We do not need access checks if they are suppressed on the type
-
-      elsif Access_Checks_Suppressed (Etype (P)) then
-         return;
-
       --  We do not need checks if we are not generating code (i.e. the
       --  expander is not active). This is not just an optimization, there
       --  are cases (e.g. with pragma Debug) where generating the checks
       --  can cause real trouble).
 
-      elsif not Expander_Active then
-         return;
-
-      --  We do not need checks if not needed because of short circuiting
-
-      elsif not Check_Needed (P, Access_Check) then
+      if not Expander_Active then
          return;
       end if;
 
-      --  Case where P is an entity name
+      --  No check if short circuiting makes check unnecessary
 
-      if Is_Entity_Name (P) then
-         declare
-            Ent : constant Entity_Id := Entity (P);
-
-         begin
-            if Access_Checks_Suppressed (Ent) then
-               return;
-            end if;
-
-            --  Otherwise we are going to generate an access check, and
-            --  are we have done it, the entity will now be known non null
-            --  But we have to check for safe sequential semantics here!
-
-            if Safe_To_Capture_Value (N, Ent) then
-               Set_Is_Known_Non_Null (Ent);
-            end if;
-         end;
+      if not Check_Needed (P, Access_Check) then
+         return;
       end if;
 
-      --  Access check is required
+      --  Otherwise go ahead and install the check
 
       Install_Null_Excluding_Check (P);
    end Apply_Access_Check;
@@ -472,9 +434,8 @@ package body Checks is
          Type_Level :=
            Make_Integer_Literal (Loc, Type_Access_Level (Typ));
 
-         --  Raise Program_Error if the accessibility level of the
-         --  the access parameter is deeper than the level of the
-         --  target access type.
+         --  Raise Program_Error if the accessibility level of the the access
+         --  parameter is deeper than the level of the target access type.
 
          Insert_Action (N,
            Make_Raise_Program_Error (Loc,
@@ -2387,7 +2348,40 @@ package body Checks is
       Dref     : Node_Id;
       Dval     : Node_Id;
 
+      function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id;
+
+      ----------------------------------
+      -- Aggregate_Discriminant_Value --
+      ----------------------------------
+
+      function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id is
+         Assoc : Node_Id;
+
+      begin
+         --  The aggregate has been normalized with named associations. We
+         --  use the Chars field to locate the discriminant to take into
+         --  account discriminants in derived types, which carry the same
+         --  name as those in the parent.
+
+         Assoc := First (Component_Associations (N));
+         while Present (Assoc) loop
+            if Chars (First (Choices (Assoc))) = Chars (Disc) then
+               return Expression (Assoc);
+            else
+               Next (Assoc);
+            end if;
+         end loop;
+
+         --  Discriminant must have been found in the loop above
+
+         raise Program_Error;
+      end Aggregate_Discriminant_Val;
+
+   --  Start of processing for Build_Discriminant_Checks
+
    begin
+      --  Loop through discriminants evolving the condition
+
       Cond := Empty;
       Disc := First_Elmt (Discriminant_Constraint (T_Typ));
 
@@ -2421,6 +2415,11 @@ package body Checks is
                 First_Discriminant (T_Typ),
                 T_Typ,
                 Stored_Constraint (T_Typ)));
+
+         elsif Nkind (N) = N_Aggregate then
+            Dref :=
+               Duplicate_Subexpr_No_Checks
+                 (Aggregate_Discriminant_Val (Disc_Ent));
 
          else
             Dref :=
@@ -2664,7 +2663,7 @@ package body Checks is
       --  Check that null-excluding objects are always initialized
 
       if K = N_Object_Declaration
-        and then not Present (Expression (N))
+        and then No (Expression (N))
       then
          --  Add a an expression that assignates null. This node is needed
          --  by Apply_Compile_Time_Constraint_Error, that will replace this
@@ -4802,42 +4801,81 @@ package body Checks is
    ----------------------------------
 
    procedure Install_Null_Excluding_Check (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Etyp : constant Entity_Id  := Etype (N);
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id  := Etype (N);
+
+      procedure Mark_Non_Null;
+      --  After installation of check, marks node as non-null if entity
+
+      -------------------
+      -- Mark_Non_Null --
+      -------------------
+
+      procedure Mark_Non_Null is
+      begin
+         if Is_Entity_Name (N) then
+            Set_Is_Known_Null (Entity (N), False);
+
+            if Safe_To_Capture_Value (N, Entity (N)) then
+               Set_Is_Known_Non_Null (Entity (N), True);
+            end if;
+         end if;
+      end Mark_Non_Null;
+
+   --  Start of processing for Install_Null_Excluding_Check
 
    begin
-      pragma Assert (Is_Access_Type (Etyp));
+      pragma Assert (Is_Access_Type (Typ));
 
-      --  Don't need access check if:
-      --   1) we are analyzing a generic
-      --   2) it is known to be non-null
-      --   3) the check was suppressed on the type
-      --   4) This is an attribute reference that returns an access type.
+      --  No check inside a generic (why not???)
 
-      if Inside_A_Generic
-        or else Access_Checks_Suppressed (Etyp)
-      then
+      if Inside_A_Generic then
          return;
-      elsif Nkind (N) = N_Attribute_Reference
-        and then
-         (Attribute_Name (N) = Name_Access
-            or else
-          Attribute_Name (N) = Name_Unchecked_Access
-            or else
-          Attribute_Name (N) = Name_Unrestricted_Access)
-      then
-         return;
-         --  Otherwise install access check
-
-      else
-         Insert_Action (N,
-           Make_Raise_Constraint_Error (Loc,
-             Condition =>
-               Make_Op_Eq (Loc,
-                 Left_Opnd  => Duplicate_Subexpr_Move_Checks (N),
-                 Right_Opnd => Make_Null (Loc)),
-             Reason    => CE_Access_Check_Failed));
       end if;
+
+      --  No check needed if known to be non-null
+
+      if Known_Non_Null (N) then
+         return;
+      end if;
+
+      --  If known to be null, here is where we generate a compile time check
+
+      if Known_Null (N) then
+         Apply_Compile_Time_Constraint_Error
+           (N,
+            "null value not allowed here?",
+            CE_Access_Check_Failed);
+         Mark_Non_Null;
+         return;
+      end if;
+
+      --  If entity is never assigned, for sure a warning is appropriate
+
+      if Is_Entity_Name (N) then
+         Check_Unset_Reference (N);
+      end if;
+
+      --  No check needed if checks are suppressed on the range. Note that we
+      --  don't set Is_Known_Non_Null in this case (we could legitimately do
+      --  so, since the program is erroneous, but we don't like to casually
+      --  propagate such conclusions from erroneosity).
+
+      if Access_Checks_Suppressed (Typ) then
+         return;
+      end if;
+
+      --  Otherwise install access check
+
+      Insert_Action (N,
+        Make_Raise_Constraint_Error (Loc,
+          Condition =>
+            Make_Op_Eq (Loc,
+              Left_Opnd  => Duplicate_Subexpr_Move_Checks (N),
+              Right_Opnd => Make_Null (Loc)),
+          Reason => CE_Access_Check_Failed));
+
+      Mark_Non_Null;
    end Install_Null_Excluding_Check;
 
    --------------------------
@@ -5375,7 +5413,7 @@ package body Checks is
             Freeze_Before (Ck_Node, T_Typ);
 
             Expr_Actual := Get_Referenced_Object (Ck_Node);
-            Exptyp      := Get_Actual_Subtype (Expr_Actual);
+            Exptyp      := Get_Actual_Subtype (Ck_Node);
 
             if Is_Access_Type (Exptyp) then
                Exptyp := Designated_Type (Exptyp);
