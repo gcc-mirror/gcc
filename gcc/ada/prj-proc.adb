@@ -65,11 +65,20 @@ package body Prj.Proc is
    --  values to the package or project with declarations Decl.
 
    procedure Check
-     (In_Tree      : Project_Tree_Ref;
-      Project      : in out Project_Id;
-      Follow_Links : Boolean);
+     (In_Tree         : Project_Tree_Ref;
+      Project         : in out Project_Id;
+      Follow_Links    : Boolean;
+      When_No_Sources : Error_Warning);
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
+
+   procedure Copy_Package_Declarations
+     (From    : Declarations;
+      To      : in out Declarations;
+      New_Loc : Source_Ptr;
+      In_Tree : Project_Tree_Ref);
+   --  Copy a package declaration From to To for a renamed package. Change the
+   --  locations of all the attributes to New_Loc.
 
    function Expression
      (Project                : Project_Id;
@@ -119,9 +128,10 @@ package body Prj.Proc is
    --  Then process the declarative items of the project.
 
    procedure Recursive_Check
-     (Project      : Project_Id;
-      In_Tree      : Project_Tree_Ref;
-      Follow_Links : Boolean);
+     (Project         : Project_Id;
+      In_Tree         : Project_Tree_Ref;
+      Follow_Links    : Boolean;
+      When_No_Sources : Error_Warning);
    --  If Project is not marked as checked, mark it as checked, call
    --  Check_Naming_Scheme for the project, then call itself for a
    --  possible extended project and all the imported projects of Project.
@@ -225,9 +235,10 @@ package body Prj.Proc is
    -----------
 
    procedure Check
-     (In_Tree      : Project_Tree_Ref;
-      Project      : in out Project_Id;
-      Follow_Links : Boolean)
+     (In_Tree         : Project_Tree_Ref;
+      Project         : in out Project_Id;
+      Follow_Links    : Boolean;
+      When_No_Sources : Error_Warning)
    is
    begin
       --  Make sure that all projects are marked as not checked
@@ -238,8 +249,135 @@ package body Prj.Proc is
          In_Tree.Projects.Table (Index).Checked := False;
       end loop;
 
-      Recursive_Check (Project, In_Tree, Follow_Links);
+      Recursive_Check (Project, In_Tree, Follow_Links, When_No_Sources);
    end Check;
+
+   -------------------------------
+   -- Copy_Package_Declarations --
+   -------------------------------
+
+   procedure Copy_Package_Declarations
+     (From    : Declarations;
+      To      : in out Declarations;
+      New_Loc : Source_Ptr;
+      In_Tree : Project_Tree_Ref)
+   is
+      V1  : Variable_Id := From.Attributes;
+      V2  : Variable_Id := No_Variable;
+      Var : Variable;
+      A1  : Array_Id := From.Arrays;
+      A2  : Array_Id := No_Array;
+      Arr : Array_Data;
+      E1  : Array_Element_Id;
+      E2  : Array_Element_Id := No_Array_Element;
+      Elm : Array_Element;
+
+   begin
+      --  To avoid references in error messages to attribute declarations in
+      --  an original package that has been renamed, copy all the attribute
+      --  declarations of the package and change all locations to New_Loc,
+      --  the location of the renamed package.
+
+      --  First single attributes
+
+      while V1 /= No_Variable loop
+
+         --  Copy the attribute
+
+         Var := In_Tree.Variable_Elements.Table (V1);
+         V1  := Var.Next;
+
+         --  Remove the Next component
+
+         Var.Next := No_Variable;
+
+         --  Change the location to New_Loc
+
+         Var.Value.Location := New_Loc;
+         Variable_Element_Table.Increment_Last (In_Tree.Variable_Elements);
+
+         --  Put in new declaration
+
+         if To.Attributes = No_Variable then
+            To.Attributes :=
+              Variable_Element_Table.Last (In_Tree.Variable_Elements);
+
+         else
+            In_Tree.Variable_Elements.Table (V2).Next :=
+              Variable_Element_Table.Last (In_Tree.Variable_Elements);
+         end if;
+
+         V2 := Variable_Element_Table.Last (In_Tree.Variable_Elements);
+         In_Tree.Variable_Elements.Table (V2) := Var;
+      end loop;
+
+      --  Then the associated array attributes
+
+      while A1 /= No_Array loop
+
+         --  Copy the array
+
+         Arr := In_Tree.Arrays.Table (A1);
+         A1  := Arr.Next;
+
+         --  Remove the Next component
+
+         Arr.Next := No_Array;
+
+         Array_Table.Increment_Last (In_Tree.Arrays);
+
+         --  Create new Array declaration
+         if To.Arrays = No_Array then
+            To.Arrays := Array_Table.Last (In_Tree.Arrays);
+
+         else
+            In_Tree.Arrays.Table (A2).Next :=
+              Array_Table.Last (In_Tree.Arrays);
+         end if;
+
+         A2 := Array_Table.Last (In_Tree.Arrays);
+
+         --  Don't store the array, as its first element has not been set yet
+
+         --  Copy the array elements of the array
+
+         E1 := Arr.Value;
+         Arr.Value := No_Array_Element;
+
+         while E1 /= No_Array_Element loop
+
+            --  Copy the array element
+
+            Elm := In_Tree.Array_Elements.Table (E1);
+            E1 := Elm.Next;
+
+            --  Remove the Next component
+
+            Elm.Next := No_Array_Element;
+
+            --  Change the location
+
+            Elm.Value.Location := New_Loc;
+            Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
+
+            --  Create new array element
+
+            if Arr.Value = No_Array_Element then
+               Arr.Value := Array_Element_Table.Last (In_Tree.Array_Elements);
+            else
+               In_Tree.Array_Elements.Table (E2).Next :=
+                 Array_Element_Table.Last (In_Tree.Array_Elements);
+            end if;
+
+            E2 := Array_Element_Table.Last (In_Tree.Array_Elements);
+            In_Tree.Array_Elements.Table (E2) := Elm;
+         end loop;
+
+         --  Finally, store the new array
+
+         In_Tree.Arrays.Table (A2) := Arr;
+      end loop;
+   end Copy_Package_Declarations;
 
    ----------------
    -- Expression --
@@ -998,7 +1136,8 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
-      Follow_Links           : Boolean := True)
+      Follow_Links           : Boolean := True;
+      When_No_Sources        : Error_Warning := Error)
    is
       Obj_Dir    : Name_Id;
       Extending  : Project_Id;
@@ -1024,7 +1163,7 @@ package body Prj.Proc is
          Extended_By            => No_Project);
 
       if Project /= No_Project then
-         Check (In_Tree, Project, Follow_Links);
+         Check (In_Tree, Project, Follow_Links, When_No_Sources);
       end if;
 
       --  If main project is an extending all project, set the object
@@ -1233,11 +1372,20 @@ package body Prj.Proc is
                                                      From_Project_Node_Tree));
 
                         begin
-                           --  For a renamed package, set declarations to
-                           --  the declarations of the renamed package.
+                           --  For a renamed package, copy the declarations of
+                           --  the renamed package, but set all the locations
+                           --  to the location of the package name in the
+                           --  renaming declaration.
 
-                           In_Tree.Packages.Table (New_Pkg).Decl :=
-                             In_Tree.Packages.Table (Renamed_Package).Decl;
+                           Copy_Package_Declarations
+                             (From     =>
+                                In_Tree.Packages.Table (Renamed_Package).Decl,
+                              To      =>
+                                In_Tree.Packages.Table (New_Pkg).Decl,
+                              New_Loc =>
+                                Location_Of
+                                  (Current_Item, From_Project_Node_Tree),
+                              In_Tree => In_Tree);
                         end;
 
                      --  Standard package declaration, not renaming
@@ -2106,9 +2254,10 @@ package body Prj.Proc is
    ---------------------
 
    procedure Recursive_Check
-     (Project           : Project_Id;
-      In_Tree           : Project_Tree_Ref;
-      Follow_Links      : Boolean)
+     (Project         : Project_Id;
+      In_Tree         : Project_Tree_Ref;
+      Follow_Links    : Boolean;
+      When_No_Sources : Error_Warning)
    is
       Data                  : Project_Data;
       Imported_Project_List : Project_List := Empty_Project_List;
@@ -2130,7 +2279,8 @@ package body Prj.Proc is
          --  Call itself for a possible extended project.
          --  (if there is no extended project, then nothing happens).
 
-         Recursive_Check (Data.Extends, In_Tree, Follow_Links);
+         Recursive_Check
+           (Data.Extends, In_Tree, Follow_Links, When_No_Sources);
 
          --  Call itself for all imported projects
 
@@ -2139,7 +2289,7 @@ package body Prj.Proc is
             Recursive_Check
               (In_Tree.Project_Lists.Table
                  (Imported_Project_List).Project,
-               In_Tree, Follow_Links);
+               In_Tree, Follow_Links, When_No_Sources);
             Imported_Project_List :=
               In_Tree.Project_Lists.Table
                 (Imported_Project_List).Next;
@@ -2151,7 +2301,8 @@ package body Prj.Proc is
             Write_Line ("""");
          end if;
 
-         Prj.Nmsc.Check (Project, In_Tree, Error_Report, Follow_Links);
+         Prj.Nmsc.Check
+           (Project, In_Tree, Error_Report, Follow_Links, When_No_Sources);
       end if;
    end Recursive_Check;
 

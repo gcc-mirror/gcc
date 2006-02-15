@@ -72,6 +72,16 @@ package Prj is
    --  The standard project file name extension. It is not a constant, because
    --  Canonical_Case_File_Name is called on this variable in the body of Prj.
 
+   type Error_Warning is (Silent, Warning, Error);
+   --  Severity of some situations, such as: no Ada sources in a project where
+   --  Ada is one of the language.
+   --
+   --  When the situation occurs, the behaviour depends on the setting:
+   --
+   --    - Silent:  no action
+   --    - Warning: issue a warning, does not cause the tool to fail
+   --    - Error:   issue an error, causes the tool to fail
+
    -----------------------------------------------------
    -- Multi-language Stuff That Will be Modified Soon --
    -----------------------------------------------------

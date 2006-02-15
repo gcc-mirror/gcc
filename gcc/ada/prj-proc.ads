@@ -39,7 +39,8 @@ package Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
-      Follow_Links           : Boolean := True);
+      Follow_Links           : Boolean := True;
+      When_No_Sources        : Error_Warning := Error);
    --  Process a project file tree into project file data structures. If
    --  Report_Error is null, use the error reporting mechanism. Otherwise,
    --  report errors using Report_Error.
@@ -48,6 +49,9 @@ package Prj.Proc is
    --  any file duplicated through symbolic links (although the latter are
    --  still valid if they point to a file which is outside of the project),
    --  and that no directory has a name which is a valid source name.
+   --
+   --  When_No_Sources indicates what should be done when no sources
+   --  are found in a project for a specified or implied language.
    --
    --  Process is a bit of a junk name, how about Process_Project_Tree???
 
