@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2004-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 2004-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -192,7 +192,7 @@ package body System.Stack_Usage is
       Analyzer.Task_Name := (others => ' ');
 
       if Task_Name'Length <= Task_Name_Length then
-         Analyzer.Task_Name (1 .. Task_Name_Length) := Task_Name;
+         Analyzer.Task_Name (1 .. Task_Name'Length) := Task_Name;
       else
          Analyzer.Task_Name :=
            Task_Name (Task_Name'First ..
@@ -288,7 +288,7 @@ package body System.Stack_Usage is
       end if;
 
       Set_Output (Standard_Error);
-      Put ("INDEX | TASK NAME | STACK SIZE | MAX USAGE");
+      Put ("Index | Task Name | Stack Size | Actual Use");
       New_Line;
 
       for J in Result_Array'Range loop
