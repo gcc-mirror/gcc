@@ -67,7 +67,7 @@ extern void set_gnat_exit_status	(int);
 extern void __gnat_set_globals		(int, int,
 						 char, char, char, char,
 						 char *, char *,
-						 int, int, int, int, int);
+						 int, int, int, int, int, int);
 extern void __gnat_initialize		(void *);
 extern void __gnat_init_float		(void);
 extern void __gnat_install_handler	(void);

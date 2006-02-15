@@ -78,9 +78,16 @@ begin
    Write_Str ("  -C        Generate binder program in C");
    Write_Eol;
 
+   --  Line for -d switch
+
+   Write_Str ("  -dnn[k|m] Default primary stack size = nn [kilo|mega] ");
+   Write_Str ("bytes ");
+   Write_Eol;
+
    --  Line for D switch
 
-   Write_Str ("  -Dnnn     Default secondary stack size = nnn bytes");
+   Write_Str ("  -Dnn[k|m] Default secondary stack size = nnn [kilo|mega] ");
+   Write_Str ("bytes");
    Write_Eol;
 
    --  Line for -e switch
