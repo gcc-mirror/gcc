@@ -35,14 +35,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions is a full Ada 95 version, but lacks the
---  additional definitions of Exception_Name returning Wide_[Wide_]String.
---  It is used for building the compiler and the basic tools, since these
---  builds may be done with bootstrap compilers that cannot handle these
---  additions. The full version of Ada.Exceptions can be found in the files
---  a-except-2005.ads/adb, and is used for all other builds where full Ada
---  2005 functionality is required. in particular, it is used for building
---  run times on all targets.
+--  This version is used for all Ada 2005 builds. It differs from a-except.ads
+--  only with respect to the addition of Wide_[Wide]Exception_Name functions.
+--  The additional entities are marked with pragma Ada_05, so this extended
+--  unit is also perfectly suitable for use in Ada 95 or Ada 83 mode.
+
+--  The reason for this splitting off of a separate version is that bootstrap
+--  compilers often will be used that do not support Ada 2005 features, and
+--  Ada.Exceptions is part of the compiler sources.
+
+--  The base version of this unit Ada.Exceptions omits the Wide version of
+--  Exception_Name and is used to build the compiler and other basic tools.
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
@@ -69,10 +72,25 @@ package Ada.Exceptions is
 
    Null_Occurrence : constant Exception_Occurrence;
 
-   function Exception_Name (X : Exception_Occurrence) return String;
-   --  Same as Exception_Name (Exception_Identity (X))
-
    function Exception_Name (Id : Exception_Id) return String;
+
+   function Exception_Name (X : Exception_Occurrence) return String;
+
+   function Wide_Exception_Name
+     (Id : Exception_Id) return Wide_String;
+   pragma Ada_05 (Wide_Exception_Name);
+
+   function Wide_Exception_Name
+     (X : Exception_Occurrence) return Wide_String;
+   pragma Ada_05 (Wide_Exception_Name);
+
+   function Wide_Wide_Exception_Name
+     (Id : Exception_Id) return Wide_Wide_String;
+   pragma Ada_05 (Wide_Wide_Exception_Name);
+
+   function Wide_Wide_Exception_Name
+     (X : Exception_Occurrence) return Wide_Wide_String;
+   pragma Ada_05 (Wide_Wide_Exception_Name);
 
    procedure Raise_Exception (E : Exception_Id; Message : String := "");
    --  Note: it would be really nice to give a pragma No_Return for this

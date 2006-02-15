@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 
 with ALI;      use ALI;
 with Csets;
-with Gnatvsn;
+with Gnatvsn;  use Gnatvsn;
 with Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with Namet;    use Namet;
@@ -1288,8 +1288,11 @@ package body Clean is
    begin
       if not Copyright_Displayed then
          Copyright_Displayed := True;
-         Put_Line ("GNATCLEAN " & Gnatvsn.Gnat_Version_String
-                   & " Copyright 2003-2005 Free Software Foundation, Inc.");
+         Put_Line
+           ("GNATCLEAN " & Gnatvsn.Gnat_Version_String
+            & " Copyright 2003-"
+            & Current_Year
+            & " Free Software Foundation, Inc.");
       end if;
    end Display_Copyright;
 
@@ -1308,7 +1311,6 @@ package body Clean is
 
    procedure Extract_From_Q (Lib_File : out File_Name_Type) is
       Lib : constant File_Name_Type := Q.Table (Q_Front);
-
    begin
       Q_Front  := Q_Front + 1;
       Lib_File := Lib;
@@ -1501,12 +1503,27 @@ package body Clean is
       if not Initialized then
          Initialized := True;
 
+         --  Get default search directories to locate system.ads when calling
+         --  Targparm.Get_Target_Parameters.
+
+         Osint.Add_Default_Search_Dirs;
+
          --  Initialize some packages
 
          Csets.Initialize;
          Namet.Initialize;
          Snames.Initialize;
          Prj.Initialize (Project_Tree);
+
+         --  Check if the platform is VMS and, if it is, change some variables
+
+         Targparm.Get_Target_Parameters;
+
+         if OpenVMS_On_Target then
+            Debug_Suffix (Debug_Suffix'First) := '_';
+            Repinfo_Suffix (Repinfo_Suffix'First) := '_';
+            B_Start := new String'("b__");
+         end if;
       end if;
 
       --  Reset global variables
@@ -1897,11 +1914,4 @@ package body Clean is
          New_Line;
       end if;
    end Usage;
-
-begin
-   if OpenVMS_On_Target then
-      Debug_Suffix (Debug_Suffix'First) := '_';
-      Repinfo_Suffix (Repinfo_Suffix'First) := '_';
-      B_Start := new String'("b__");
-   end if;
 end Clean;

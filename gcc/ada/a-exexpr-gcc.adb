@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -532,7 +532,11 @@ package body Exception_Propagation is
    --  Unwind_RaiseException to actually throw, taking care of handling
    --  the two phase scheme it implements.
 
-   procedure Propagate_Exception (From_Signal_Handler : Boolean) is
+   procedure Propagate_Exception
+     (E                   : Exception_Id;
+      From_Signal_Handler : Boolean)
+   is
+      pragma Inspection_Point (E);
       pragma Unreferenced (From_Signal_Handler);
 
       Excep         : constant EOA := Get_Current_Excep.all;

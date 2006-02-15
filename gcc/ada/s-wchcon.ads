@@ -182,4 +182,8 @@ package System.WCh_Con is
    --  The longest number of characters that can be used for a wide character
    --  or wide wide character sequence for any of the active encoding methods.
 
+   function Get_WC_Encoding_Method (C : Character) return WC_Encoding_Method;
+   --  Given a character C, returns corresponding encoding method (see array
+   --  WC_Encoding_Letters above). Raises Constraint_Error if not in list.
+
 end System.WCh_Con;

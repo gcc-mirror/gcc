@@ -302,7 +302,7 @@ GNATLINK_OBJS = gnatlink.o \
  sdefault.o snames.o stylesw.o switch.o system.o table.o targparm.o tree_io.o \
  types.o validsw.o widechar.o
 
-GNATMAKE_OBJS = a-except.o ctrl_c.o ali.o ali-util.o s-casuti.o \
+GNATMAKE_OBJS = a-except.o ali.o ali-util.o s-casuti.o \
  alloc.o atree.o binderr.o butil.o casing.o csets.o debug.o elists.o einfo.o\
  erroutc.o errutil.o err_vars.o fmap.o fname.o fname-uf.o fname-sf.o \
  gnatmake.o gnatvsn.o hostparm.o interfac.o i-c.o i-cstrin.o krunch.o lib.o \
@@ -399,6 +399,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \
+  s-parame.adb<s-parame-vxworks.adb \
   s-stchop.adb<s-stchop-vxworks.adb \
   s-taprop.adb<s-taprop-vxworks.adb \
   s-taspri.ads<s-taspri-vxworks.ads \
@@ -435,6 +436,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \
+  s-parame.adb<s-parame-vxworks.adb \
   s-stchop.adb<s-stchop-vxworks.adb \
   s-taprop.adb<s-taprop-vxworks.adb \
   s-taspri.ads<s-taspri-vxworks.ads \
@@ -473,129 +475,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
 endif
 
-ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<a-intnam-vxworks.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
-  s-intman.ads<s-intman-vxworks.ads \
-  s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
-  s-osinte.ads<s-osinte-vxworks.ads \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-vxworks.ads \
-  s-stchop.adb<s-stchop-vxworks.adb \
-  s-taprop.adb<s-taprop-vxworks.adb \
-  s-taspri.ads<s-taspri-vxworks.ads \
-  s-tpopsp.adb<s-tpopsp-vxworks.adb \
-  s-vxwork.ads<s-vxwork-sparcv9.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
-  g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb \
-  system.ads<system-vxworks-sparcv9.ads   \
-
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
-
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
-endif
-
-ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
-  LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<a-intnam-vxworks.ads \
-  i-vxwork.ads<i-vxwork-x86.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
-  s-intman.ads<s-intman-vxworks.ads \
-  s-intman.adb<s-intman-vxworks.adb \
-  a-numaux.adb<a-numaux-x86.adb \
-  a-numaux.ads<a-numaux-x86.ads \
-  s-osinte.adb<s-osinte-vxworks.adb \
-  s-osinte.ads<s-osinte-vxworks.ads \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-vxworks.ads \
-  s-stchop.adb<s-stchop-vxworks.adb \
-  s-taprop.adb<s-taprop-vxworks.adb \
-  s-taspri.ads<s-taspri-vxworks.ads \
-  s-tpopsp.adb<s-tpopsp-vxworks.adb \
-  s-vxwork.ads<s-vxwork-x86.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
-  g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb \
-  system.ads<system-vxworks-x86.ads
-
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
-
-  ifeq ($(strip $(filter-out yes,$(TRACE))),)
-    LIBGNAT_TARGET_PAIRS += \
-    s-traces.adb<s-traces-default.adb \
-    s-trafor.adb<s-trafor-default.adb \
-    s-trafor.ads<s-trafor-default.ads \
-    s-tratas.adb<s-tratas-default.adb \
-    s-tfsetr.adb<s-tfsetr-vxworks.adb
-  endif
-
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
-endif
-
-ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<a-intnam-vxworks.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
-  s-intman.ads<s-intman-vxworks.ads \
-  s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
-  s-osinte.ads<s-osinte-vxworks.ads \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-vxworks.ads \
-  s-stchop.adb<s-stchop-vxworks.adb \
-  s-taprop.adb<s-taprop-vxworks.adb \
-  s-taspri.ads<s-taspri-vxworks.ads \
-  s-tpopsp.adb<s-tpopsp-vxworks.adb \
-  s-vxwork.ads<s-vxwork-arm.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
-  g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb \
-  system.ads<system-vxworks-arm.ads
-
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
-
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
-endif
-
-ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<a-intnam-vxworks.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
-  s-intman.ads<s-intman-vxworks.ads \
-  s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
-  s-osinte.ads<s-osinte-vxworks.ads \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-vxworks.ads \
-  s-stchop.adb<s-stchop-vxworks.adb \
-  s-taprop.adb<s-taprop-vxworks.adb \
-  s-taspri.ads<s-taspri-vxworks.ads \
-  s-tpopsp.adb<s-tpopsp-vxworks.adb \
-  s-vxwork.ads<s-vxwork-mips.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
-  g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb \
-  system.ads<system-vxworks-mips.ads
-
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
-
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
-endif
-
 # vxworksae / vxworks 653
 ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   # target pairs for kernel + vthreads runtime
@@ -615,6 +494,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-ae653.ads \
+  s-parame.adb<s-parame-vxworks.adb \
   s-taprop.adb<s-taprop-vxworks.adb \
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
@@ -646,15 +526,153 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   endif
 endif
 
-ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
+ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  a-numaux.ads<a-numaux-vxworks.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-vxworks.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-vxworks.ads \
+  s-parame.adb<s-parame-vxworks.adb \
+  s-stchop.adb<s-stchop-vxworks.adb \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-tpopsp.adb<s-tpopsp-vxworks.adb \
+  s-vxwork.ads<s-vxwork-sparcv9.ads \
+  g-soccon.ads<g-soccon-vxworks.ads \
+  g-socthi.ads<g-socthi-vxworks.ads \
+  g-socthi.adb<g-socthi-vxworks.adb \
+  system.ads<system-vxworks-sparcv9.ads   \
+
+  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+endif
+
+ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  i-vxwork.ads<i-vxwork-x86.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-vxworks.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  a-numaux.adb<a-numaux-x86.adb \
+  a-numaux.ads<a-numaux-x86.ads \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-vxworks.ads \
+  s-parame.adb<s-parame-vxworks.adb \
+  s-stchop.adb<s-stchop-vxworks.adb \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-vxwork.ads<s-vxwork-x86.ads \
+  g-soccon.ads<g-soccon-vxworks.ads \
+  g-socthi.ads<g-socthi-vxworks.ads \
+  g-socthi.adb<g-socthi-vxworks.adb
+
+  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
+
+  ifeq ($(strip $(filter-out yes,$(TRACE))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-traces.adb<s-traces-default.adb \
+    s-trafor.adb<s-trafor-default.adb \
+    s-trafor.ads<s-trafor-default.ads \
+    s-tratas.adb<s-tratas-default.adb \
+    s-tfsetr.adb<s-tfsetr-vxworks.adb
+  endif
+
+  ifeq ($(strip $(filter-out rtp,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-osinte.adb<s-osinte-vxworks-rtp.adb \
+    s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
+    system.ads<system-vxworks-x86-rtp.ads
+
+    EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
+  else
+    LIBGNAT_TARGET_PAIRS += \
+    s-osinte.adb<s-osinte-vxworks.adb \
+    s-tpopsp.adb<s-tpopsp-vxworks.adb \
+    system.ads<system-vxworks-x86.ads
+
+    EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
+  endif
+
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+endif
+
+ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  a-numaux.ads<a-numaux-vxworks.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-vxworks.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-vxworks.ads \
+  s-parame.adb<s-parame-vxworks.adb \
+  s-stchop.adb<s-stchop-vxworks.adb \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-tpopsp.adb<s-tpopsp-vxworks.adb \
+  s-vxwork.ads<s-vxwork-arm.ads \
+  g-soccon.ads<g-soccon-vxworks.ads \
+  g-socthi.ads<g-socthi-vxworks.ads \
+  g-socthi.adb<g-socthi-vxworks.adb \
+  system.ads<system-vxworks-arm.ads
+
+  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+endif
+
+ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  a-numaux.ads<a-numaux-vxworks.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-vxworks.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-vxworks.ads \
+  s-parame.adb<s-parame-vxworks.adb \
+  s-stchop.adb<s-stchop-vxworks.adb \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-tpopsp.adb<s-tpopsp-vxworks.adb \
+  s-vxwork.ads<s-vxwork-mips.ads \
+  g-soccon.ads<g-soccon-vxworks.ads \
+  g-socthi.ads<g-socthi-vxworks.ads \
+  g-socthi.adb<g-socthi-vxworks.adb \
+  system.ads<system-vxworks-mips.ads
+
+  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+endif
+
+ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS_32 = \
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-solaris.adb \
   s-osinte.adb<s-osinte-solaris.adb \
   s-osinte.ads<s-osinte-solaris.ads \
   s-osprim.adb<s-osprim-solaris.adb \
-  s-parame.adb<s-parame-solaris.adb \
   s-taprop.adb<s-taprop-solaris.adb \
   s-tasinf.adb<s-tasinf-solaris.adb \
   s-tasinf.ads<s-tasinf-solaris.ads \
@@ -664,6 +682,28 @@ ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
   g-soliop.ads<g-soliop-solaris.ads \
   system.ads<system-solaris-sparc.ads
 
+  LIBGNAT_TARGET_PAIRS_64 = \
+  a-intnam.ads<a-intnam-solaris.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-intman.adb<s-intman-solaris.adb \
+  s-osinte.adb<s-osinte-solaris.adb \
+  s-osinte.ads<s-osinte-solaris.ads \
+  s-osprim.adb<s-osprim-solaris.adb \
+  s-taprop.adb<s-taprop-solaris.adb \
+  s-tasinf.adb<s-tasinf-solaris.adb \
+  s-tasinf.ads<s-tasinf-solaris.ads \
+  s-taspri.ads<s-taspri-solaris.ads \
+  s-tpopsp.adb<s-tpopsp-solaris.adb \
+  g-soccon.ads<g-soccon-solaris-64.ads \
+  g-soliop.ads<g-soliop-solaris.ads \
+  system.ads<system-solaris-sparcv9.ads
+
+  ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
+    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+  else
+    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+  endif
+  
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-solaris.adb
 
   EH_MECHANISM=-gcc
@@ -694,22 +734,7 @@ ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
   endif
 
   ifeq ($(strip $(filter-out m64,$(THREAD_KIND))),)
-    LIBGNAT_TARGET_PAIRS = \
-    a-intnam.ads<a-intnam-solaris.ads \
-    s-inmaop.adb<s-inmaop-posix.adb \
-    s-intman.adb<s-intman-solaris.adb \
-    s-osinte.adb<s-osinte-solaris.adb \
-    s-osinte.ads<s-osinte-solaris.ads \
-    s-osprim.adb<s-osprim-solaris.adb \
-    s-parame.adb<s-parame-solaris.adb \
-    s-taprop.adb<s-taprop-solaris.adb \
-    s-tasinf.adb<s-tasinf-solaris.adb \
-    s-tasinf.ads<s-tasinf-solaris.ads \
-    s-taspri.ads<s-taspri-solaris.ads \
-    s-tpopsp.adb<s-tpopsp-solaris.adb \
-    g-soccon.ads<g-soccon-solaris-64.ads \
-    g-soliop.ads<g-soliop-solaris.ads \
-    system.ads<system-solaris-sparcv9.ads
+    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
   endif
 endif
 
@@ -723,7 +748,6 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   s-osinte.adb<s-osinte-solaris.adb \
   s-osinte.ads<s-osinte-solaris.ads \
   s-osprim.adb<s-osprim-solaris.adb \
-  s-parame.adb<s-parame-solaris.adb \
   s-taprop.adb<s-taprop-solaris.adb \
   s-tasinf.adb<s-tasinf-solaris.adb \
   s-tasinf.ads<s-tasinf-solaris.ads \
@@ -758,7 +782,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-x86.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -811,7 +834,6 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
     s-taprop.adb<s-taprop-linux.adb \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    s-parame.adb<s-parame-linux.adb \
     system.ads<system-linux-s390x.ads
   else
     LIBGNAT_TARGET_PAIRS = \
@@ -824,7 +846,6 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
     s-taprop.adb<s-taprop-linux.adb \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    s-parame.adb<s-parame-linux.adb \
     system.ads<system-linux-s390.ads
   endif
 
@@ -1055,6 +1076,9 @@ ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
   s-osinte.ads<s-osinte-vms-ia64.ads \
   s-vaflop.adb<s-vaflop-vms-ia64.adb \
   system.ads<system-vms_64.ads
+
+  LIBGNAT_TARGET_PAIRS_AUX2 = \
+  s-parame.ads<s-parame-vms-ia64.ads
 else
 ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
   LIBGNAT_TARGET_PAIRS_AUX1 = \
@@ -1067,14 +1091,15 @@ ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
   s-osinte.ads<s-osinte-vms.ads \
   s-vaflop.adb<s-vaflop-vms-alpha.adb \
   system.ads<system-vms_64.ads
-endif
-endif
+
 ifeq ($(strip $(filter-out express EXPRESS,$(THREAD_KIND))),)
   LIBGNAT_TARGET_PAIRS_AUX2 = \
   s-parame.ads<s-parame-vms-restrict.ads
 else
   LIBGNAT_TARGET_PAIRS_AUX2 = \
-  s-parame.ads<s-parame-vms.ads
+  s-parame.ads<s-parame-vms-alpha.ads
+endif
+endif
 endif
 
   LIBGNAT_TARGET_PAIRS = \
@@ -1118,6 +1143,8 @@ else
   symbols-processing.adb<symbols-processing-vms-alpha.adb
 endif
 
+
+  GMEM_LIB = gmemlib
   EH_MECHANISM=-gcc
   GNATLIB_SHARED=gnatlib-shared-vms
 ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
@@ -1153,7 +1180,6 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   s-osprim.adb<s-osprim-mingw.adb \
   s-taprop.adb<s-taprop-mingw.adb \
   s-taspri.ads<s-taspri-mingw.ads \
-  s-parame.adb<s-parame-mingw.adb \
   g-socthi.ads<g-socthi-mingw.ads \
   g-socthi.adb<g-socthi-mingw.adb \
   g-soccon.ads<g-soccon-mingw.ads \
@@ -1189,7 +1215,6 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-ppc.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -1215,7 +1240,6 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-sparc.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -1241,7 +1265,6 @@ ifeq ($(strip $(filter-out hppa% linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-hppa.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -1372,6 +1395,18 @@ ifneq ($(EH_MECHANISM),)
   EXTRA_LIBGNAT_OBJS+=raise$(EH_MECHANISM).o
 endif
 
+# Use the Ada 2005 version of Ada.Exceptions by default, unless specified
+# explicitely already. The base files (a-except.ad?) are used only for building
+# the compiler and other basic tools.
+# These base versions lack Ada 2005 additions which would cause bootstrap
+# problems if included in the compiler and other basic tools.
+
+ifeq ($(filter-out a-except%,$(LIBGNAT_TARGET_PAIRS)),$(LIBGNAT_TARGET_PAIRS))
+  LIBGNAT_TARGET_PAIRS += \
+    a-except.ads<a-except-2005.ads \
+    a-except.adb<a-except-2005.adb
+endif
+
 # The runtime library for gnat comprises two directories.  One contains the
 # Ada source files that the compiler (gnat1) needs -- these files are listed
 # by ADA_INCLUDE_SRCS -- and the other contains the object files and their
@@ -1382,12 +1417,12 @@ endif
 # go into the directory.  The pthreads emulation is built in the threads
 # subdirectory and copied.
 LIBGNAT_SRCS = ada.h adaint.c adaint.h argv.c cio.c cstreams.c \
-  errno.c exit.c cal.c ctrl_c.c \
+  errno.c exit.c cal.c ctrl_c.c env.c env.h \
   raise.h raise.c sysdep.c aux-io.c init.c initialize.c seh_init.c \
-  final.c tracebak.c tb-alvms.c tb-alvxw.c expect.c mkdir.c socket.c gsocket.h \
-  targext.c $(EXTRA_LIBGNAT_SRCS)
+  final.c tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c expect.c mkdir.c \
+  socket.c gsocket.h targext.c $(EXTRA_LIBGNAT_SRCS)
 
-LIBGNAT_OBJS = adaint.o argv.o cio.o cstreams.o ctrl_c.o errno.o exit.o \
+LIBGNAT_OBJS = adaint.o argv.o cio.o cstreams.o ctrl_c.o errno.o exit.o env.o \
   raise.o sysdep.o aux-io.o init.o initialize.o seh_init.o cal.o \
   final.o tracebak.o expect.o mkdir.o socket.o targext.o $(EXTRA_LIBGNAT_OBJS)
 
@@ -1811,7 +1846,8 @@ gnatlib-sjlj:
 	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' rts/system.ads > rts/s.ads
 	$(MV) rts/s.ads rts/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
-             GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	     EH_MECHANISM="" \
+	     GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" gnatlib
@@ -1821,6 +1857,7 @@ gnatlib-zcx:
 	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := True;/' rts/system.ads > rts/s.ads
 	$(MV) rts/s.ads rts/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
+	     EH_MECHANISM="-gcc" \
 	     GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
@@ -1935,7 +1972,7 @@ seh_init.o : seh_init.c raise.h
 
 # Need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
-tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c
+tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	      -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 
