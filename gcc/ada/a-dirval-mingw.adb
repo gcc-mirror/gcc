@@ -153,4 +153,13 @@ package body Ada.Directories.Validity is
       end if;
    end Is_Valid_Simple_Name;
 
+   -------------
+   -- OpenVMS --
+   -------------
+
+   function OpenVMS return Boolean is
+   begin
+      return False;
+   end OpenVMS;
+
 end Ada.Directories.Validity;

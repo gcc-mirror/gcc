@@ -45,4 +45,7 @@ private package Ada.Directories.Validity is
    function Is_Path_Name_Case_Sensitive return Boolean;
    --  Returns True if file and path names are case-sensitive
 
+   function OpenVMS return Boolean;
+   --  Return True when OS is OpenVMS
+
 end Ada.Directories.Validity;
