@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,8 +138,8 @@ package body Sem_Util is
          Rtyp := Typ;
       end if;
 
-      Discard_Node (
-        Compile_Time_Constraint_Error (N, Msg, Ent, Loc, Warn => Warn));
+      Discard_Node
+        (Compile_Time_Constraint_Error (N, Msg, Ent, Loc, Warn => Warn));
 
       if not Rep then
          return;
@@ -1103,6 +1103,7 @@ package body Sem_Util is
       Msgl : Natural;
       Wmsg : Boolean;
       P    : Node_Id;
+      OldP : Node_Id;
       Msgs : Boolean;
       Eloc : Source_Ptr;
 
@@ -1157,28 +1158,72 @@ package body Sem_Util is
          --  Should we generate a warning? The answer is not quite yes. The
          --  very annoying exception occurs in the case of a short circuit
          --  operator where the left operand is static and decisive. Climb
-         --  parents to see if that is the case we have here.
+         --  parents to see if that is the case we have here. Conditional
+         --  expressions with decisive conditions are a similar situation.
 
          Msgs := True;
          P := N;
-
          loop
+            OldP := P;
             P := Parent (P);
 
-            if (Nkind (P) = N_And_Then
-                and then Compile_Time_Known_Value (Left_Opnd (P))
-                and then Is_False (Expr_Value (Left_Opnd (P))))
-              or else (Nkind (P) = N_Or_Else
-                and then Compile_Time_Known_Value (Left_Opnd (P))
-                and then Is_True (Expr_Value (Left_Opnd (P))))
+            --  And then with False as left operand
+
+            if Nkind (P) = N_And_Then
+              and then Compile_Time_Known_Value (Left_Opnd (P))
+              and then Is_False (Expr_Value (Left_Opnd (P)))
             then
                Msgs := False;
                exit;
 
+            --  OR ELSE with True as left operand
+
+            elsif Nkind (P) = N_Or_Else
+              and then Compile_Time_Known_Value (Left_Opnd (P))
+              and then Is_True (Expr_Value (Left_Opnd (P)))
+            then
+               Msgs := False;
+               exit;
+
+            --  Conditional expression
+
+            elsif Nkind (P) = N_Conditional_Expression then
+               declare
+                  Cond : constant Node_Id := First (Expressions (P));
+                  Texp : constant Node_Id := Next (Cond);
+                  Fexp : constant Node_Id := Next (Texp);
+
+               begin
+                  if Compile_Time_Known_Value (Cond) then
+
+                     --  Condition is True and we are in the right operand
+
+                     if Is_True (Expr_Value (Cond))
+                       and then OldP = Fexp
+                     then
+                        Msgs := False;
+                        exit;
+
+                     --  Condition is False and we are in the left operand
+
+                     elsif Is_False (Expr_Value (Cond))
+                       and then OldP = Texp
+                     then
+                        Msgs := False;
+                        exit;
+                     end if;
+                  end if;
+               end;
+
+            --  Special case for component association in aggregates, where
+            --  we want to keep climbing up to the parent aggregate.
+
             elsif Nkind (P) = N_Component_Association
               and then Nkind (Parent (P)) = N_Aggregate
             then
-               null;  --   Keep going.
+               null;
+
+            --  Keep going if within subexpression
 
             else
                exit when Nkind (P) not in N_Subexpr;
@@ -1195,11 +1240,11 @@ package body Sem_Util is
             if Wmsg then
                if Inside_Init_Proc then
                   Error_Msg_NEL
-                    ("\& will be raised for objects of this type!?",
+                    ("\?& will be raised for objects of this type",
                      N, Standard_Constraint_Error, Eloc);
                else
                   Error_Msg_NEL
-                    ("\& will be raised at run time!?",
+                    ("\?& will be raised at run time",
                      N, Standard_Constraint_Error, Eloc);
                end if;
             else
@@ -1536,15 +1581,14 @@ package body Sem_Util is
    ----------------------------
 
    function Enclosing_Generic_Body
-     (E : Entity_Id) return Node_Id
+     (N : Node_Id) return Node_Id
    is
       P    : Node_Id;
       Decl : Node_Id;
       Spec : Node_Id;
 
    begin
-      P := Parent (E);
-
+      P := Parent (N);
       while Present (P) loop
          if Nkind (P) = N_Package_Body
            or else Nkind (P) = N_Subprogram_Body
@@ -1567,6 +1611,47 @@ package body Sem_Util is
 
       return Empty;
    end Enclosing_Generic_Body;
+
+   ----------------------------
+   -- Enclosing_Generic_Unit --
+   ----------------------------
+
+   function Enclosing_Generic_Unit
+     (N : Node_Id) return Node_Id
+   is
+      P    : Node_Id;
+      Decl : Node_Id;
+      Spec : Node_Id;
+
+   begin
+      P := Parent (N);
+      while Present (P) loop
+         if Nkind (P) = N_Generic_Package_Declaration
+           or else Nkind (P) = N_Generic_Subprogram_Declaration
+         then
+            return P;
+
+         elsif Nkind (P) = N_Package_Body
+           or else Nkind (P) = N_Subprogram_Body
+         then
+            Spec := Corresponding_Spec (P);
+
+            if Present (Spec) then
+               Decl := Unit_Declaration_Node (Spec);
+
+               if Nkind (Decl) = N_Generic_Package_Declaration
+                 or else Nkind (Decl) = N_Generic_Subprogram_Declaration
+               then
+                  return Decl;
+               end if;
+            end if;
+         end if;
+
+         P := Parent (P);
+      end loop;
+
+      return Empty;
+   end Enclosing_Generic_Unit;
 
    -------------------------------
    -- Enclosing_Lib_Unit_Entity --
@@ -1660,7 +1745,7 @@ package body Sem_Util is
    -- Enter_Name --
    ----------------
 
-   procedure Enter_Name (Def_Id : Node_Id) is
+   procedure Enter_Name (Def_Id : Entity_Id) is
       C : constant Entity_Id := Current_Entity (Def_Id);
       E : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
       S : constant Entity_Id := Current_Scope;
@@ -2450,7 +2535,7 @@ package body Sem_Util is
       Atyp : Entity_Id;
 
    begin
-      if not Present (Utyp) then
+      if No (Utyp) then
          Utyp := Typ;
       end if;
 
@@ -5054,6 +5139,20 @@ package body Sem_Util is
    -- Kill_Current_Values --
    -------------------------
 
+   procedure Kill_Current_Values (Ent : Entity_Id) is
+   begin
+      if Is_Object (Ent) then
+         Kill_Checks (Ent);
+         Set_Current_Value (Ent, Empty);
+
+         if not Can_Never_Be_Null (Ent) then
+            Set_Is_Known_Non_Null (Ent, False);
+         end if;
+
+         Set_Is_Known_Null (Ent, False);
+      end if;
+   end Kill_Current_Values;
+
    procedure Kill_Current_Values is
       S : Entity_Id;
 
@@ -5066,18 +5165,10 @@ package body Sem_Util is
 
       procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id) is
          Ent : Entity_Id;
-
       begin
          Ent := E;
          while Present (Ent) loop
-            if Is_Object (Ent) then
-               Set_Current_Value (Ent, Empty);
-
-               if not Can_Never_Be_Null (Ent) then
-                  Set_Is_Known_Non_Null (Ent, False);
-               end if;
-            end if;
-
+            Kill_Current_Values (Ent);
             Next_Entity (Ent);
          end loop;
       end Kill_Current_Values_For_Entity_Chain;
@@ -5570,6 +5661,7 @@ package body Sem_Util is
                   --  side effects have been removed.
 
                   Exp := Prefix (Expression (Parent (Entity (P))));
+                  goto Continue;
 
                else
                   return;
@@ -5581,22 +5673,22 @@ package body Sem_Util is
            or else Nkind (Exp) = N_Unchecked_Type_Conversion
          then
             Exp := Expression (Exp);
+            goto Continue;
 
          elsif     Nkind (Exp) = N_Slice
            or else Nkind (Exp) = N_Indexed_Component
            or else Nkind (Exp) = N_Selected_Component
          then
             Exp := Prefix (Exp);
+            goto Continue;
 
          else
             return;
-
          end if;
 
          --  Now look for entity being referenced
 
          if Present (Ent) then
-
             if Is_Object (Ent) then
                if Comes_From_Source (Exp)
                  or else Modification_Comes_From_Source
@@ -5604,12 +5696,15 @@ package body Sem_Util is
                   Set_Never_Set_In_Source (Ent, False);
                end if;
 
-               Set_Is_True_Constant    (Ent, False);
-               Set_Current_Value       (Ent, Empty);
+               Set_Is_True_Constant (Ent, False);
+               Set_Current_Value    (Ent, Empty);
+               Set_Is_Known_Null    (Ent, False);
 
                if not Can_Never_Be_Null (Ent) then
                   Set_Is_Known_Non_Null (Ent, False);
                end if;
+
+               --  Follow renaming chain
 
                if (Ekind (Ent) = E_Variable or else Ekind (Ent) = E_Constant)
                  and then Present (Renamed_Object (Ent))
@@ -6746,6 +6841,18 @@ package body Sem_Util is
          end if;
 
          Btyp := Root_Type (Btyp);
+
+         --  The accessibility level of anonymous acccess types associated with
+         --  discriminants is that of the current instance of the type, and
+         --  that's deeper than the type itself (AARM 3.10.2 (12.3.21)).
+
+         if Ekind (Typ) = E_Anonymous_Access_Type
+           and then Present (Associated_Node_For_Itype (Typ))
+           and then Nkind (Associated_Node_For_Itype (Typ)) =
+                                                 N_Discriminant_Specification
+         then
+            return Scope_Depth (Enclosing_Dynamic_Scope (Btyp)) + 1;
+         end if;
       end if;
 
       return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
