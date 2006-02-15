@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2002-2004, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2002-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,6 +35,35 @@
 
 #ifndef _MINGW32_H
 #define _MINGW32_H
+
+
+
+/* Uncomment to activate the GNAT Unicode support. */
+/*#define GNAT_UNICODE_SUPPORT */
+
+#ifdef GNAT_UNICODE_SUPPORT
+#define _UNICODE /* For C runtime */
+#define UNICODE  /* For Win32 API */
+#endif
+
+#include <tchar.h>
+
+/* After including this file it is possible to use the character t as prefix
+   to routines. If GNAT_UNICODE_SUPPORT is defined then the unicode enabled
+   versions will be used. */
+
+/* Copy to/from wide-string, if GNAT_UNICODE_SUPPORT activated this will do
+   the proper translations using the UTF-8 encoding.  */
+
+#ifdef GNAT_UNICODE_SUPPORT
+#define S2WS(wstr,str,len) \
+   MultiByteToWideChar (CP_UTF8,0,str,-1,wstr,len);
+#define WS2S(str,wstr,len) \
+   WideCharToMultiByte (CP_UTF8,0,wstr,-1,str,len,NULL,NULL);
+#else
+#define S2WS(wstr,str,len) strncpy(wstr,str,len);
+#define WS2S(str,wstr,len) strncpy(str,wstr,len);
+#endif
 
 #include <stdlib.h>
 

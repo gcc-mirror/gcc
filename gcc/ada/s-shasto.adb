@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@
 with Ada.Exceptions;
 with Ada.IO_Exceptions;
 with Ada.Streams;
-with Ada.Streams.Stream_IO;
 
 with System.Global_Locks;
 with System.Soft_Links;
@@ -86,7 +85,7 @@ package body System.Shared_Storage is
 
    procedure Write
      (Stream : in out File_Stream_Type;
-      Item   : in AS.Stream_Element_Array);
+      Item   : AS.Stream_Element_Array);
 
    subtype Hash_Header is Natural range 0 .. 30;
    --  Number of hash headers, related (for efficiency purposes only)
@@ -249,7 +248,7 @@ package body System.Shared_Storage is
 
    procedure Initialize is
       procedure Get_Env_Value_Ptr (Name, Length, Ptr : Address);
-      pragma Import (C, Get_Env_Value_Ptr, "__gnat_get_env_value_ptr");
+      pragma Import (C, Get_Env_Value_Ptr, "__gnat_getenv");
 
       procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
       pragma Import (C, Strncpy, "strncpy");
@@ -331,7 +330,7 @@ package body System.Shared_Storage is
    -- Shared_Var_Close --
    ----------------------
 
-   procedure Shared_Var_Close (Var : in SIO.Stream_Access) is
+   procedure Shared_Var_Close (Var : SIO.Stream_Access) is
       pragma Warnings (Off, Var);
 
    begin
@@ -342,7 +341,7 @@ package body System.Shared_Storage is
    -- Shared_Var_Lock --
    ---------------------
 
-   procedure Shared_Var_Lock (Var : in String) is
+   procedure Shared_Var_Lock (Var : String) is
       pragma Warnings (Off, Var);
 
    begin
@@ -429,7 +428,7 @@ package body System.Shared_Storage is
    -- Shared_Var_Unlock --
    -----------------------
 
-   procedure Shared_Var_Unlock (Var : in String) is
+   procedure Shared_Var_Unlock (Var : String) is
       pragma Warnings (Off, Var);
 
    begin
@@ -522,7 +521,7 @@ package body System.Shared_Storage is
 
    procedure Write
      (Stream : in out File_Stream_Type;
-      Item   : in AS.Stream_Element_Array)
+      Item   : AS.Stream_Element_Array)
    is
    begin
       SIO.Write (Stream.File, Item);

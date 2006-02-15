@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -609,11 +609,11 @@ package body GNAT.OS_Lib is
             C_Source : String (1 .. Source'Length + 1);
             C_Dest   : String (1 .. Dest'Length + 1);
          begin
-            C_Source (1 .. C_Source'Length) := Source;
-            C_Source (C_Source'Last)        := ASCII.Nul;
+            C_Source (1 .. Source'Length) := Source;
+            C_Source (C_Source'Last)      := ASCII.NUL;
 
-            C_Dest (1 .. C_Dest'Length) := Dest;
-            C_Dest (C_Dest'Last)        := ASCII.Nul;
+            C_Dest (1 .. Dest'Length) := Dest;
+            C_Dest (C_Dest'Last)      := ASCII.NUL;
 
             if Copy_Attributes (C_Source'Address, C_Dest'Address, 0) = -1 then
                Success := False;
@@ -1057,7 +1057,7 @@ package body GNAT.OS_Lib is
 
    function Getenv (Name : String) return String_Access is
       procedure Get_Env_Value_Ptr (Name, Length, Ptr : Address);
-      pragma Import (C, Get_Env_Value_Ptr, "__gnat_get_env_value_ptr");
+      pragma Import (C, Get_Env_Value_Ptr, "__gnat_getenv");
 
       procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
       pragma Import (C, Strncpy, "strncpy");
@@ -1702,12 +1702,11 @@ package body GNAT.OS_Lib is
          --  Directory given, add directory separator if needed
 
          if Dir'Length > 0 then
-            if Dir (Dir'Length) = Directory_Separator then
+            if Dir (Dir'Last) = Directory_Separator then
                return Directory;
             else
                declare
                   Result : String (1 .. Dir'Length + 1);
-
                begin
                   Result (1 .. Dir'Length) := Dir;
                   Result (Result'Length) := Directory_Separator;
@@ -2313,7 +2312,7 @@ package body GNAT.OS_Lib is
       F_Value : String (1 .. Value'Length + 1);
 
       procedure Set_Env_Value (Name, Value : System.Address);
-      pragma Import (C, Set_Env_Value, "__gnat_set_env_value");
+      pragma Import (C, Set_Env_Value, "__gnat_setenv");
 
    begin
       F_Name (1 .. Name'Length) := Name;
