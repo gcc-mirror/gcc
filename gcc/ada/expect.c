@@ -114,7 +114,61 @@ __gnat_expect_fork (void)
 void
 __gnat_expect_portable_execvp (int *pid, char *cmd, char *argv[])
 {
-  *pid = (int) spawnve (_P_NOWAIT, cmd, argv, NULL);
+  BOOL result;
+  STARTUPINFO SI;
+  PROCESS_INFORMATION PI;
+  SECURITY_ATTRIBUTES SA;
+  int csize = 1;
+  char *full_command;
+  int k;
+
+  /* compute the total command line length.  */
+  k = 0;
+  while (argv[k])
+    {
+      csize += strlen (argv[k]) + 1;
+      k++;
+    }
+
+  full_command = (char *) malloc (csize);
+  full_command[0] = '\0';
+
+  /* Startup info. */
+  SI.cb          = sizeof (STARTUPINFO);
+  SI.lpReserved  = NULL;
+  SI.lpReserved2 = NULL;
+  SI.lpDesktop   = NULL;
+  SI.cbReserved2 = 0;
+  SI.lpTitle     = NULL;
+  SI.dwFlags     = 0;
+  SI.wShowWindow = SW_HIDE;
+
+  /* Security attributes. */
+  SA.nLength = sizeof (SECURITY_ATTRIBUTES);
+  SA.bInheritHandle = TRUE;
+  SA.lpSecurityDescriptor = NULL;
+
+  k = 0;
+  while (argv[k])
+    {
+      strcat (full_command, argv[k]);
+      strcat (full_command, " ");
+      k++;
+    }
+
+  result = CreateProcess
+	     (NULL, (char *) full_command, &SA, NULL, TRUE,
+              GetPriorityClass (GetCurrentProcess()), NULL, NULL, &SI, &PI);
+
+  free (full_command);
+
+  if (result == TRUE)
+    {
+      CloseHandle (PI.hThread);
+      *pid = (int) PI.hProcess;
+    }
+  else
+    *pid = -1;
 }
 
 int
