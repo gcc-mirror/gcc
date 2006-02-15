@@ -5,9 +5,9 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                               (NT Version)                               --
+--                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -133,7 +133,7 @@ private
    Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
-   Stack_Check_Probes        : constant Boolean := False;
+   Stack_Check_Probes        : constant Boolean := True;
    Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
@@ -168,16 +168,27 @@ private
    --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
 
    Underlying_Priorities : constant Priorities_Mapping :=
-     (Priority'First .. 1        => -15,
-      2 .. Default_Priority - 2  => -2,
-      Default_Priority - 1       => -1,
-      Default_Priority           => 0,
-      Default_Priority + 1 .. 19 => 1,
-      20 .. Priority'Last        => 2,
-      Interrupt_Priority         => 15);
-   --  On NT, the default mapping preserves the standard 31 priorities
-   --  of the Ada model, but maps them using compression onto the 7
-   --  priority levels available in NT.
+     (Priority'First ..
+      Default_Priority - 8    => -15,
+      Default_Priority - 7    => -7,
+      Default_Priority - 6    => -6,
+      Default_Priority - 5    => -5,
+      Default_Priority - 4    => -4,
+      Default_Priority - 3    => -3,
+      Default_Priority - 2    => -2,
+      Default_Priority - 1    => -1,
+      Default_Priority        => 0,
+      Default_Priority + 1    => 1,
+      Default_Priority + 2    => 2,
+      Default_Priority + 3    => 3,
+      Default_Priority + 4    => 4,
+      Default_Priority + 5    => 5,
+      Default_Priority + 6 ..
+      Priority'Last           => 6,
+      Interrupt_Priority      => 15);
+   --  The default mapping preserves the standard 31 priorities of the Ada
+   --  model, but maps them using compression onto the 7 priority levels
+   --  available in NT and on the 16 priority levels available in 2000/XP.
 
    --  To replace the default values of the Underlying_Priorities mapping,
    --  copy this source file into your build directory, edit the file to
