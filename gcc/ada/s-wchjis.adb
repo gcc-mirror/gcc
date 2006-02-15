@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+with System.Pure_Exceptions; use System.Pure_Exceptions;
 
 package body System.WCh_JIS is
 
@@ -68,7 +70,7 @@ package body System.WCh_JIS is
    ----------------
 
    procedure JIS_To_EUC
-     (J    : in Wide_Character;
+     (J    : Wide_Character;
       EUC1 : out Character;
       EUC2 : out Character)
    is
@@ -76,9 +78,27 @@ package body System.WCh_JIS is
       JIS2 : constant Natural := Wide_Character'Pos (J) rem 256;
 
    begin
+      --  Special case of small Katakana
+
       if JIS1 = 0 then
+
+         --  The value must be in the range 16#80# to 16#FF# so that the upper
+         --  bit is set in both bytes.
+
+         if JIS2 < 16#80# then
+            Raise_Exception (CE, "invalid small Katakana character");
+         end if;
+
          EUC1 := Character'Val (EUC_Hankaku_Kana);
          EUC2 := Character'Val (JIS2);
+
+      --  The upper bit of both characters must be clear, or this is not
+      --  a valid character for representation in EUC form.
+
+      elsif JIS1 > 16#7F# or else JIS2 > 16#7F# then
+         Raise_Exception (CE, "wide character value out of EUC range");
+
+      --  Result is just the two characters with upper bits set
 
       else
          EUC1 := Character'Val (JIS1 + 16#80#);
@@ -91,7 +111,7 @@ package body System.WCh_JIS is
    ----------------------
 
    procedure JIS_To_Shift_JIS
-     (J   : in Wide_Character;
+     (J   : Wide_Character;
       SJ1 : out Character;
       SJ2 : out Character)
    is
