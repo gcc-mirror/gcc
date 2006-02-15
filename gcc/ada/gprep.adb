@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 with Csets;
 with Err_Vars; use Err_Vars;
 with Errutil;
-with Gnatvsn;
+with Gnatvsn;  use Gnatvsn;
 with Namet;    use Namet;
 with Opt;
 with Osint;    use Osint;
@@ -137,7 +137,9 @@ package body GPrep is
    begin
       if not Copyright_Displayed then
          Write_Line ("GNAT Preprocessor " & Gnatvsn.Gnat_Version_String);
-         Write_Line ("Copyright 1996-2005, Free Software Foundation, Inc.");
+         Write_Line ("Copyright 1996-" &
+                     Current_Year &
+                     ", Free Software Foundation, Inc.");
          Copyright_Displayed := True;
       end if;
    end Display_Copyright;
@@ -241,7 +243,7 @@ package body GPrep is
                      """");
             end if;
 
-            Scanner.Initialize_Scanner (No_Unit, Deffile);
+            Scanner.Initialize_Scanner (Deffile);
 
             Prep.Parse_Def_File;
          end;
@@ -502,7 +504,7 @@ package body GPrep is
 
          Sinput.Main_Source_File := Infile;
 
-         Scanner.Initialize_Scanner (No_Unit, Infile);
+         Scanner.Initialize_Scanner (Infile);
 
          --  Output the SFN pragma if asked to
 

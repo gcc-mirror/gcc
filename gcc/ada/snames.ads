@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,58 +336,59 @@ package Snames is
    Name_Ada_83                         : constant Name_Id := N + 114; -- GNAT
    Name_Ada_95                         : constant Name_Id := N + 115; -- GNAT
    Name_Ada_05                         : constant Name_Id := N + 116; -- GNAT
-   Name_Assertion_Policy               : constant Name_Id := N + 117; -- Ada 05
-   Name_C_Pass_By_Copy                 : constant Name_Id := N + 118; -- GNAT
-   Name_Compile_Time_Warning           : constant Name_Id := N + 119; -- GNAT
-   Name_Component_Alignment            : constant Name_Id := N + 120; -- GNAT
-   Name_Convention_Identifier          : constant Name_Id := N + 121; -- GNAT
-   Name_Debug_Policy                   : constant Name_Id := N + 122; -- GNAT
-   Name_Detect_Blocking                : constant Name_Id := N + 123; -- Ada 05
-   Name_Discard_Names                  : constant Name_Id := N + 124;
-   Name_Elaboration_Checks             : constant Name_Id := N + 125; -- GNAT
-   Name_Eliminate                      : constant Name_Id := N + 126; -- GNAT
-   Name_Explicit_Overriding            : constant Name_Id := N + 127; -- Ada 05
-   Name_Extend_System                  : constant Name_Id := N + 128; -- GNAT
-   Name_Extensions_Allowed             : constant Name_Id := N + 129; -- GNAT
-   Name_External_Name_Casing           : constant Name_Id := N + 130; -- GNAT
-   Name_Float_Representation           : constant Name_Id := N + 131; -- GNAT
-   Name_Initialize_Scalars             : constant Name_Id := N + 132; -- GNAT
-   Name_Interrupt_State                : constant Name_Id := N + 133; -- GNAT
-   Name_License                        : constant Name_Id := N + 134; -- GNAT
-   Name_Locking_Policy                 : constant Name_Id := N + 135;
-   Name_Long_Float                     : constant Name_Id := N + 136; -- VMS
-   Name_No_Run_Time                    : constant Name_Id := N + 137; -- GNAT
-   Name_No_Strict_Aliasing             : constant Name_Id := N + 138; -- GNAT
-   Name_Normalize_Scalars              : constant Name_Id := N + 139;
-   Name_Polling                        : constant Name_Id := N + 140; -- GNAT
-   Name_Persistent_BSS                 : constant Name_Id := N + 141; -- GNAT
-   Name_Profile                        : constant Name_Id := N + 142; -- Ada 05
-   Name_Profile_Warnings               : constant Name_Id := N + 143; -- GNAT
-   Name_Propagate_Exceptions           : constant Name_Id := N + 144; -- GNAT
-   Name_Queuing_Policy                 : constant Name_Id := N + 145;
-   Name_Ravenscar                      : constant Name_Id := N + 146; -- Ada 05
-   Name_Restricted_Run_Time            : constant Name_Id := N + 147; -- GNAT
-   Name_Restrictions                   : constant Name_Id := N + 148;
-   Name_Restriction_Warnings           : constant Name_Id := N + 149; -- GNAT
-   Name_Reviewable                     : constant Name_Id := N + 150;
-   Name_Source_File_Name               : constant Name_Id := N + 151; -- GNAT
-   Name_Source_File_Name_Project       : constant Name_Id := N + 152; -- GNAT
-   Name_Style_Checks                   : constant Name_Id := N + 153; -- GNAT
-   Name_Suppress                       : constant Name_Id := N + 154;
-   Name_Suppress_Exception_Locations   : constant Name_Id := N + 155; -- GNAT
-   Name_Task_Dispatching_Policy        : constant Name_Id := N + 156;
-   Name_Universal_Data                 : constant Name_Id := N + 157; -- AAMP
-   Name_Unsuppress                     : constant Name_Id := N + 158; -- GNAT
-   Name_Use_VADS_Size                  : constant Name_Id := N + 159; -- GNAT
-   Name_Validity_Checks                : constant Name_Id := N + 160; -- GNAT
-   Name_Warnings                       : constant Name_Id := N + 161; -- GNAT
-   Last_Configuration_Pragma_Name      : constant Name_Id := N + 161;
+   Name_Ada_2005                       : constant Name_Id := N + 117; -- GNAT
+   Name_Assertion_Policy               : constant Name_Id := N + 118; -- Ada 05
+   Name_C_Pass_By_Copy                 : constant Name_Id := N + 119; -- GNAT
+   Name_Compile_Time_Warning           : constant Name_Id := N + 120; -- GNAT
+   Name_Component_Alignment            : constant Name_Id := N + 121; -- GNAT
+   Name_Convention_Identifier          : constant Name_Id := N + 122; -- GNAT
+   Name_Debug_Policy                   : constant Name_Id := N + 123; -- GNAT
+   Name_Detect_Blocking                : constant Name_Id := N + 124; -- Ada 05
+   Name_Discard_Names                  : constant Name_Id := N + 125;
+   Name_Elaboration_Checks             : constant Name_Id := N + 126; -- GNAT
+   Name_Eliminate                      : constant Name_Id := N + 127; -- GNAT
+   Name_Explicit_Overriding            : constant Name_Id := N + 128; -- Ada 05
+   Name_Extend_System                  : constant Name_Id := N + 129; -- GNAT
+   Name_Extensions_Allowed             : constant Name_Id := N + 130; -- GNAT
+   Name_External_Name_Casing           : constant Name_Id := N + 131; -- GNAT
+   Name_Float_Representation           : constant Name_Id := N + 132; -- GNAT
+   Name_Initialize_Scalars             : constant Name_Id := N + 133; -- GNAT
+   Name_Interrupt_State                : constant Name_Id := N + 134; -- GNAT
+   Name_License                        : constant Name_Id := N + 135; -- GNAT
+   Name_Locking_Policy                 : constant Name_Id := N + 136;
+   Name_Long_Float                     : constant Name_Id := N + 137; -- VMS
+   Name_No_Run_Time                    : constant Name_Id := N + 138; -- GNAT
+   Name_No_Strict_Aliasing             : constant Name_Id := N + 139; -- GNAT
+   Name_Normalize_Scalars              : constant Name_Id := N + 140;
+   Name_Polling                        : constant Name_Id := N + 141; -- GNAT
+   Name_Persistent_BSS                 : constant Name_Id := N + 142; -- GNAT
+   Name_Profile                        : constant Name_Id := N + 143; -- Ada 05
+   Name_Profile_Warnings               : constant Name_Id := N + 144; -- GNAT
+   Name_Propagate_Exceptions           : constant Name_Id := N + 145; -- GNAT
+   Name_Queuing_Policy                 : constant Name_Id := N + 146;
+   Name_Ravenscar                      : constant Name_Id := N + 147; -- Ada 05
+   Name_Restricted_Run_Time            : constant Name_Id := N + 148; -- GNAT
+   Name_Restrictions                   : constant Name_Id := N + 149;
+   Name_Restriction_Warnings           : constant Name_Id := N + 150; -- GNAT
+   Name_Reviewable                     : constant Name_Id := N + 151;
+   Name_Source_File_Name               : constant Name_Id := N + 152; -- GNAT
+   Name_Source_File_Name_Project       : constant Name_Id := N + 153; -- GNAT
+   Name_Style_Checks                   : constant Name_Id := N + 154; -- GNAT
+   Name_Suppress                       : constant Name_Id := N + 155;
+   Name_Suppress_Exception_Locations   : constant Name_Id := N + 156; -- GNAT
+   Name_Task_Dispatching_Policy        : constant Name_Id := N + 157;
+   Name_Universal_Data                 : constant Name_Id := N + 158; -- AAMP
+   Name_Unsuppress                     : constant Name_Id := N + 159; -- GNAT
+   Name_Use_VADS_Size                  : constant Name_Id := N + 160; -- GNAT
+   Name_Validity_Checks                : constant Name_Id := N + 161; -- GNAT
+   Name_Warnings                       : constant Name_Id := N + 162; -- GNAT
+   Last_Configuration_Pragma_Name      : constant Name_Id := N + 162;
 
    --  Remaining pragma names
 
-   Name_Abort_Defer                    : constant Name_Id := N + 162; -- GNAT
-   Name_All_Calls_Remote               : constant Name_Id := N + 163;
-   Name_Annotate                       : constant Name_Id := N + 164; -- GNAT
+   Name_Abort_Defer                    : constant Name_Id := N + 163; -- GNAT
+   Name_All_Calls_Remote               : constant Name_Id := N + 164;
+   Name_Annotate                       : constant Name_Id := N + 165; -- GNAT
 
    --  Note: AST_Entry is not in this list because its name matches the
    --  name of the corresponding attribute. However, it is included in the
@@ -395,81 +396,81 @@ package Snames is
    --  and Check_Pragma_Id correctly recognize and process Name_AST_Entry.
    --  AST_Entry is a VMS specific pragma.
 
-   Name_Assert                         : constant Name_Id := N + 165; -- Ada 05
-   Name_Asynchronous                   : constant Name_Id := N + 166;
-   Name_Atomic                         : constant Name_Id := N + 167;
-   Name_Atomic_Components              : constant Name_Id := N + 168;
-   Name_Attach_Handler                 : constant Name_Id := N + 169;
-   Name_Comment                        : constant Name_Id := N + 170; -- GNAT
-   Name_Common_Object                  : constant Name_Id := N + 171; -- GNAT
-   Name_Complete_Representation        : constant Name_Id := N + 172; -- GNAT
-   Name_Complex_Representation         : constant Name_Id := N + 173; -- GNAT
-   Name_Controlled                     : constant Name_Id := N + 174;
-   Name_Convention                     : constant Name_Id := N + 175;
-   Name_CPP_Class                      : constant Name_Id := N + 176; -- GNAT
-   Name_CPP_Constructor                : constant Name_Id := N + 177; -- GNAT
-   Name_CPP_Virtual                    : constant Name_Id := N + 178; -- GNAT
-   Name_CPP_Vtable                     : constant Name_Id := N + 179; -- GNAT
-   Name_Debug                          : constant Name_Id := N + 180; -- GNAT
-   Name_Elaborate                      : constant Name_Id := N + 181; -- Ada 83
-   Name_Elaborate_All                  : constant Name_Id := N + 182;
-   Name_Elaborate_Body                 : constant Name_Id := N + 183;
-   Name_Export                         : constant Name_Id := N + 184;
-   Name_Export_Exception               : constant Name_Id := N + 185; -- VMS
-   Name_Export_Function                : constant Name_Id := N + 186; -- GNAT
-   Name_Export_Object                  : constant Name_Id := N + 187; -- GNAT
-   Name_Export_Procedure               : constant Name_Id := N + 188; -- GNAT
-   Name_Export_Value                   : constant Name_Id := N + 189; -- GNAT
-   Name_Export_Valued_Procedure        : constant Name_Id := N + 190; -- GNAT
-   Name_External                       : constant Name_Id := N + 191; -- GNAT
-   Name_Finalize_Storage_Only          : constant Name_Id := N + 192; -- GNAT
-   Name_Ident                          : constant Name_Id := N + 193; -- VMS
-   Name_Import                         : constant Name_Id := N + 194;
-   Name_Import_Exception               : constant Name_Id := N + 195; -- VMS
-   Name_Import_Function                : constant Name_Id := N + 196; -- GNAT
-   Name_Import_Object                  : constant Name_Id := N + 197; -- GNAT
-   Name_Import_Procedure               : constant Name_Id := N + 198; -- GNAT
-   Name_Import_Valued_Procedure        : constant Name_Id := N + 199; -- GNAT
-   Name_Inline                         : constant Name_Id := N + 200;
-   Name_Inline_Always                  : constant Name_Id := N + 201; -- GNAT
-   Name_Inline_Generic                 : constant Name_Id := N + 202; -- GNAT
-   Name_Inspection_Point               : constant Name_Id := N + 203;
-   Name_Interface_Name                 : constant Name_Id := N + 204; -- GNAT
-   Name_Interrupt_Handler              : constant Name_Id := N + 205;
-   Name_Interrupt_Priority             : constant Name_Id := N + 206;
-   Name_Java_Constructor               : constant Name_Id := N + 207; -- GNAT
-   Name_Java_Interface                 : constant Name_Id := N + 208; -- GNAT
-   Name_Keep_Names                     : constant Name_Id := N + 209; -- GNAT
-   Name_Link_With                      : constant Name_Id := N + 210; -- GNAT
-   Name_Linker_Alias                   : constant Name_Id := N + 211; -- GNAT
-   Name_Linker_Constructor             : constant Name_Id := N + 212; -- GNAT
-   Name_Linker_Destructor              : constant Name_Id := N + 213; -- GNAT
-   Name_Linker_Options                 : constant Name_Id := N + 214;
-   Name_Linker_Section                 : constant Name_Id := N + 215; -- GNAT
-   Name_List                           : constant Name_Id := N + 216;
-   Name_Machine_Attribute              : constant Name_Id := N + 217; -- GNAT
-   Name_Main                           : constant Name_Id := N + 218; -- GNAT
-   Name_Main_Storage                   : constant Name_Id := N + 219; -- GNAT
-   Name_Memory_Size                    : constant Name_Id := N + 220; -- Ada 83
-   Name_No_Return                      : constant Name_Id := N + 221; -- GNAT
-   Name_Obsolescent                    : constant Name_Id := N + 222; -- GNAT
-   Name_Optimize                       : constant Name_Id := N + 223;
-   Name_Optional_Overriding            : constant Name_Id := N + 224; -- Ada 05
-   Name_Pack                           : constant Name_Id := N + 225;
-   Name_Page                           : constant Name_Id := N + 226;
-   Name_Passive                        : constant Name_Id := N + 227; -- GNAT
-   Name_Preelaborate                   : constant Name_Id := N + 228;
-   Name_Preelaborate_05                : constant Name_Id := N + 229; -- GNAT
-   Name_Priority                       : constant Name_Id := N + 230;
-   Name_Psect_Object                   : constant Name_Id := N + 231; -- VMS
-   Name_Pure                           : constant Name_Id := N + 232;
-   Name_Pure_05                        : constant Name_Id := N + 233; -- GNAT
-   Name_Pure_Function                  : constant Name_Id := N + 234; -- GNAT
-   Name_Remote_Call_Interface          : constant Name_Id := N + 235;
-   Name_Remote_Types                   : constant Name_Id := N + 236;
-   Name_Share_Generic                  : constant Name_Id := N + 237; -- GNAT
-   Name_Shared                         : constant Name_Id := N + 238; -- Ada 83
-   Name_Shared_Passive                 : constant Name_Id := N + 239;
+   Name_Assert                         : constant Name_Id := N + 166; -- Ada 05
+   Name_Asynchronous                   : constant Name_Id := N + 167;
+   Name_Atomic                         : constant Name_Id := N + 168;
+   Name_Atomic_Components              : constant Name_Id := N + 169;
+   Name_Attach_Handler                 : constant Name_Id := N + 170;
+   Name_Comment                        : constant Name_Id := N + 171; -- GNAT
+   Name_Common_Object                  : constant Name_Id := N + 172; -- GNAT
+   Name_Complete_Representation        : constant Name_Id := N + 173; -- GNAT
+   Name_Complex_Representation         : constant Name_Id := N + 174; -- GNAT
+   Name_Controlled                     : constant Name_Id := N + 175;
+   Name_Convention                     : constant Name_Id := N + 176;
+   Name_CPP_Class                      : constant Name_Id := N + 177; -- GNAT
+   Name_CPP_Constructor                : constant Name_Id := N + 178; -- GNAT
+   Name_CPP_Virtual                    : constant Name_Id := N + 179; -- GNAT
+   Name_CPP_Vtable                     : constant Name_Id := N + 180; -- GNAT
+   Name_Debug                          : constant Name_Id := N + 181; -- GNAT
+   Name_Elaborate                      : constant Name_Id := N + 182; -- Ada 83
+   Name_Elaborate_All                  : constant Name_Id := N + 183;
+   Name_Elaborate_Body                 : constant Name_Id := N + 184;
+   Name_Export                         : constant Name_Id := N + 185;
+   Name_Export_Exception               : constant Name_Id := N + 186; -- VMS
+   Name_Export_Function                : constant Name_Id := N + 187; -- GNAT
+   Name_Export_Object                  : constant Name_Id := N + 188; -- GNAT
+   Name_Export_Procedure               : constant Name_Id := N + 189; -- GNAT
+   Name_Export_Value                   : constant Name_Id := N + 190; -- GNAT
+   Name_Export_Valued_Procedure        : constant Name_Id := N + 191; -- GNAT
+   Name_External                       : constant Name_Id := N + 192; -- GNAT
+   Name_Finalize_Storage_Only          : constant Name_Id := N + 193; -- GNAT
+   Name_Ident                          : constant Name_Id := N + 194; -- VMS
+   Name_Import                         : constant Name_Id := N + 195;
+   Name_Import_Exception               : constant Name_Id := N + 196; -- VMS
+   Name_Import_Function                : constant Name_Id := N + 197; -- GNAT
+   Name_Import_Object                  : constant Name_Id := N + 198; -- GNAT
+   Name_Import_Procedure               : constant Name_Id := N + 199; -- GNAT
+   Name_Import_Valued_Procedure        : constant Name_Id := N + 200; -- GNAT
+   Name_Inline                         : constant Name_Id := N + 201;
+   Name_Inline_Always                  : constant Name_Id := N + 202; -- GNAT
+   Name_Inline_Generic                 : constant Name_Id := N + 203; -- GNAT
+   Name_Inspection_Point               : constant Name_Id := N + 204;
+   Name_Interface_Name                 : constant Name_Id := N + 205; -- GNAT
+   Name_Interrupt_Handler              : constant Name_Id := N + 206;
+   Name_Interrupt_Priority             : constant Name_Id := N + 207;
+   Name_Java_Constructor               : constant Name_Id := N + 208; -- GNAT
+   Name_Java_Interface                 : constant Name_Id := N + 209; -- GNAT
+   Name_Keep_Names                     : constant Name_Id := N + 210; -- GNAT
+   Name_Link_With                      : constant Name_Id := N + 211; -- GNAT
+   Name_Linker_Alias                   : constant Name_Id := N + 212; -- GNAT
+   Name_Linker_Constructor             : constant Name_Id := N + 213; -- GNAT
+   Name_Linker_Destructor              : constant Name_Id := N + 214; -- GNAT
+   Name_Linker_Options                 : constant Name_Id := N + 215;
+   Name_Linker_Section                 : constant Name_Id := N + 216; -- GNAT
+   Name_List                           : constant Name_Id := N + 217;
+   Name_Machine_Attribute              : constant Name_Id := N + 218; -- GNAT
+   Name_Main                           : constant Name_Id := N + 219; -- GNAT
+   Name_Main_Storage                   : constant Name_Id := N + 220; -- GNAT
+   Name_Memory_Size                    : constant Name_Id := N + 221; -- Ada 83
+   Name_No_Return                      : constant Name_Id := N + 222; -- GNAT
+   Name_Obsolescent                    : constant Name_Id := N + 223; -- GNAT
+   Name_Optimize                       : constant Name_Id := N + 224;
+   Name_Optional_Overriding            : constant Name_Id := N + 225; -- Ada 05
+   Name_Pack                           : constant Name_Id := N + 226;
+   Name_Page                           : constant Name_Id := N + 227;
+   Name_Passive                        : constant Name_Id := N + 228; -- GNAT
+   Name_Preelaborate                   : constant Name_Id := N + 229;
+   Name_Preelaborate_05                : constant Name_Id := N + 230; -- GNAT
+   Name_Priority                       : constant Name_Id := N + 231;
+   Name_Psect_Object                   : constant Name_Id := N + 232; -- VMS
+   Name_Pure                           : constant Name_Id := N + 233;
+   Name_Pure_05                        : constant Name_Id := N + 234; -- GNAT
+   Name_Pure_Function                  : constant Name_Id := N + 235; -- GNAT
+   Name_Remote_Call_Interface          : constant Name_Id := N + 236;
+   Name_Remote_Types                   : constant Name_Id := N + 237;
+   Name_Share_Generic                  : constant Name_Id := N + 238; -- GNAT
+   Name_Shared                         : constant Name_Id := N + 239; -- Ada 83
+   Name_Shared_Passive                 : constant Name_Id := N + 240;
 
    --  Note: Storage_Size is not in this list because its name matches the
    --  name of the corresponding attribute. However, it is included in the
@@ -479,27 +480,27 @@ package Snames is
    --  Note: Storage_Unit is also omitted from the list because of a clash
    --  with an attribute name, and is treated similarly.
 
-   Name_Source_Reference               : constant Name_Id := N + 240; -- GNAT
-   Name_Stream_Convert                 : constant Name_Id := N + 241; -- GNAT
-   Name_Subtitle                       : constant Name_Id := N + 242; -- GNAT
-   Name_Suppress_All                   : constant Name_Id := N + 243; -- GNAT
-   Name_Suppress_Debug_Info            : constant Name_Id := N + 244; -- GNAT
-   Name_Suppress_Initialization        : constant Name_Id := N + 245; -- GNAT
-   Name_System_Name                    : constant Name_Id := N + 246; -- Ada 83
-   Name_Task_Info                      : constant Name_Id := N + 247; -- GNAT
-   Name_Task_Name                      : constant Name_Id := N + 248; -- GNAT
-   Name_Task_Storage                   : constant Name_Id := N + 249; -- VMS
-   Name_Thread_Body                    : constant Name_Id := N + 250; -- GNAT
-   Name_Time_Slice                     : constant Name_Id := N + 251; -- GNAT
-   Name_Title                          : constant Name_Id := N + 252; -- GNAT
-   Name_Unchecked_Union                : constant Name_Id := N + 253; -- GNAT
-   Name_Unimplemented_Unit             : constant Name_Id := N + 254; -- GNAT
-   Name_Unreferenced                   : constant Name_Id := N + 255; -- GNAT
-   Name_Unreserve_All_Interrupts       : constant Name_Id := N + 256; -- GNAT
-   Name_Volatile                       : constant Name_Id := N + 257;
-   Name_Volatile_Components            : constant Name_Id := N + 258;
-   Name_Weak_External                  : constant Name_Id := N + 259; -- GNAT
-   Last_Pragma_Name                    : constant Name_Id := N + 259;
+   Name_Source_Reference               : constant Name_Id := N + 241; -- GNAT
+   Name_Stream_Convert                 : constant Name_Id := N + 242; -- GNAT
+   Name_Subtitle                       : constant Name_Id := N + 243; -- GNAT
+   Name_Suppress_All                   : constant Name_Id := N + 244; -- GNAT
+   Name_Suppress_Debug_Info            : constant Name_Id := N + 245; -- GNAT
+   Name_Suppress_Initialization        : constant Name_Id := N + 246; -- GNAT
+   Name_System_Name                    : constant Name_Id := N + 247; -- Ada 83
+   Name_Task_Info                      : constant Name_Id := N + 248; -- GNAT
+   Name_Task_Name                      : constant Name_Id := N + 249; -- GNAT
+   Name_Task_Storage                   : constant Name_Id := N + 250; -- VMS
+   Name_Thread_Body                    : constant Name_Id := N + 251; -- GNAT
+   Name_Time_Slice                     : constant Name_Id := N + 252; -- GNAT
+   Name_Title                          : constant Name_Id := N + 253; -- GNAT
+   Name_Unchecked_Union                : constant Name_Id := N + 254; -- GNAT
+   Name_Unimplemented_Unit             : constant Name_Id := N + 255; -- GNAT
+   Name_Unreferenced                   : constant Name_Id := N + 256; -- GNAT
+   Name_Unreserve_All_Interrupts       : constant Name_Id := N + 257; -- GNAT
+   Name_Volatile                       : constant Name_Id := N + 258;
+   Name_Volatile_Components            : constant Name_Id := N + 259;
+   Name_Weak_External                  : constant Name_Id := N + 260; -- GNAT
+   Last_Pragma_Name                    : constant Name_Id := N + 260;
 
    --  Language convention names for pragma Convention/Export/Import/Interface
    --  Note that Name_C is not included in this list, since it was already
@@ -510,114 +511,114 @@ package Snames is
    --  Entry and Protected, this is because these conventions cannot be
    --  specified by a pragma.
 
-   First_Convention_Name               : constant Name_Id := N + 260;
-   Name_Ada                            : constant Name_Id := N + 260;
-   Name_Assembler                      : constant Name_Id := N + 261;
-   Name_COBOL                          : constant Name_Id := N + 262;
-   Name_CPP                            : constant Name_Id := N + 263;
-   Name_Fortran                        : constant Name_Id := N + 264;
-   Name_Intrinsic                      : constant Name_Id := N + 265;
-   Name_Java                           : constant Name_Id := N + 266;
-   Name_Stdcall                        : constant Name_Id := N + 267;
-   Name_Stubbed                        : constant Name_Id := N + 268;
-   Last_Convention_Name                : constant Name_Id := N + 268;
+   First_Convention_Name               : constant Name_Id := N + 261;
+   Name_Ada                            : constant Name_Id := N + 261;
+   Name_Assembler                      : constant Name_Id := N + 262;
+   Name_COBOL                          : constant Name_Id := N + 263;
+   Name_CPP                            : constant Name_Id := N + 264;
+   Name_Fortran                        : constant Name_Id := N + 265;
+   Name_Intrinsic                      : constant Name_Id := N + 266;
+   Name_Java                           : constant Name_Id := N + 267;
+   Name_Stdcall                        : constant Name_Id := N + 268;
+   Name_Stubbed                        : constant Name_Id := N + 269;
+   Last_Convention_Name                : constant Name_Id := N + 269;
 
    --  The following names are preset as synonyms for Assembler
 
-   Name_Asm                            : constant Name_Id := N + 269;
-   Name_Assembly                       : constant Name_Id := N + 270;
+   Name_Asm                            : constant Name_Id := N + 270;
+   Name_Assembly                       : constant Name_Id := N + 271;
 
    --  The following names are preset as synonyms for C
 
-   Name_Default                        : constant Name_Id := N + 271;
+   Name_Default                        : constant Name_Id := N + 272;
    --  Name_Exernal (previously defined as pragma)
 
    --  The following names are present as synonyms for Stdcall
 
-   Name_DLL                            : constant Name_Id := N + 272;
-   Name_Win32                          : constant Name_Id := N + 273;
+   Name_DLL                            : constant Name_Id := N + 273;
+   Name_Win32                          : constant Name_Id := N + 274;
 
    --  Other special names used in processing pragmas
 
-   Name_As_Is                          : constant Name_Id := N + 274;
-   Name_Attribute_Name                 : constant Name_Id := N + 275;
-   Name_Body_File_Name                 : constant Name_Id := N + 276;
-   Name_Boolean_Entry_Barriers         : constant Name_Id := N + 277;
-   Name_Check                          : constant Name_Id := N + 278;
-   Name_Casing                         : constant Name_Id := N + 279;
-   Name_Code                           : constant Name_Id := N + 280;
-   Name_Component                      : constant Name_Id := N + 281;
-   Name_Component_Size_4               : constant Name_Id := N + 282;
-   Name_Copy                           : constant Name_Id := N + 283;
-   Name_D_Float                        : constant Name_Id := N + 284;
-   Name_Descriptor                     : constant Name_Id := N + 285;
-   Name_Dot_Replacement                : constant Name_Id := N + 286;
-   Name_Dynamic                        : constant Name_Id := N + 287;
-   Name_Entity                         : constant Name_Id := N + 288;
-   Name_Entry_Count                    : constant Name_Id := N + 289;
-   Name_External_Name                  : constant Name_Id := N + 290;
-   Name_First_Optional_Parameter       : constant Name_Id := N + 291;
-   Name_Form                           : constant Name_Id := N + 292;
-   Name_G_Float                        : constant Name_Id := N + 293;
-   Name_Gcc                            : constant Name_Id := N + 294;
-   Name_Gnat                           : constant Name_Id := N + 295;
-   Name_GPL                            : constant Name_Id := N + 296;
-   Name_IEEE_Float                     : constant Name_Id := N + 297;
-   Name_Ignore                         : constant Name_Id := N + 298;
-   Name_Info                           : constant Name_Id := N + 299;
-   Name_Internal                       : constant Name_Id := N + 300;
-   Name_Link_Name                      : constant Name_Id := N + 301;
-   Name_Lowercase                      : constant Name_Id := N + 302;
-   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + 303;
-   Name_Max_Entry_Queue_Length         : constant Name_Id := N + 304;
-   Name_Max_Size                       : constant Name_Id := N + 305;
-   Name_Mechanism                      : constant Name_Id := N + 306;
-   Name_Message                        : constant Name_Id := N + 307;
-   Name_Mixedcase                      : constant Name_Id := N + 308;
-   Name_Modified_GPL                   : constant Name_Id := N + 309;
-   Name_Name                           : constant Name_Id := N + 310;
-   Name_NCA                            : constant Name_Id := N + 311;
-   Name_No                             : constant Name_Id := N + 312;
-   Name_No_Dependence                  : constant Name_Id := N + 313;
-   Name_No_Dynamic_Attachment          : constant Name_Id := N + 314;
-   Name_No_Dynamic_Interrupts          : constant Name_Id := N + 315;
-   Name_No_Requeue                     : constant Name_Id := N + 316;
-   Name_No_Requeue_Statements          : constant Name_Id := N + 317;
-   Name_No_Task_Attributes             : constant Name_Id := N + 318;
-   Name_No_Task_Attributes_Package     : constant Name_Id := N + 319;
-   Name_On                             : constant Name_Id := N + 320;
-   Name_Parameter_Types                : constant Name_Id := N + 321;
-   Name_Reference                      : constant Name_Id := N + 322;
-   Name_Restricted                     : constant Name_Id := N + 323;
-   Name_Result_Mechanism               : constant Name_Id := N + 324;
-   Name_Result_Type                    : constant Name_Id := N + 325;
-   Name_Runtime                        : constant Name_Id := N + 326;
-   Name_SB                             : constant Name_Id := N + 327;
-   Name_Secondary_Stack_Size           : constant Name_Id := N + 328;
-   Name_Section                        : constant Name_Id := N + 329;
-   Name_Semaphore                      : constant Name_Id := N + 330;
-   Name_Simple_Barriers                : constant Name_Id := N + 331;
-   Name_Spec_File_Name                 : constant Name_Id := N + 332;
-   Name_State                          : constant Name_Id := N + 333;
-   Name_Static                         : constant Name_Id := N + 334;
-   Name_Stack_Size                     : constant Name_Id := N + 335;
-   Name_Subunit_File_Name              : constant Name_Id := N + 336;
-   Name_Task_Stack_Size_Default        : constant Name_Id := N + 337;
-   Name_Task_Type                      : constant Name_Id := N + 338;
-   Name_Time_Slicing_Enabled           : constant Name_Id := N + 339;
-   Name_Top_Guard                      : constant Name_Id := N + 340;
-   Name_UBA                            : constant Name_Id := N + 341;
-   Name_UBS                            : constant Name_Id := N + 342;
-   Name_UBSB                           : constant Name_Id := N + 343;
-   Name_Unit_Name                      : constant Name_Id := N + 344;
-   Name_Unknown                        : constant Name_Id := N + 345;
-   Name_Unrestricted                   : constant Name_Id := N + 346;
-   Name_Uppercase                      : constant Name_Id := N + 347;
-   Name_User                           : constant Name_Id := N + 348;
-   Name_VAX_Float                      : constant Name_Id := N + 349;
-   Name_VMS                            : constant Name_Id := N + 350;
-   Name_Vtable_Ptr                     : constant Name_Id := N + 351;
-   Name_Working_Storage                : constant Name_Id := N + 352;
+   Name_As_Is                          : constant Name_Id := N + 275;
+   Name_Attribute_Name                 : constant Name_Id := N + 276;
+   Name_Body_File_Name                 : constant Name_Id := N + 277;
+   Name_Boolean_Entry_Barriers         : constant Name_Id := N + 278;
+   Name_Check                          : constant Name_Id := N + 279;
+   Name_Casing                         : constant Name_Id := N + 280;
+   Name_Code                           : constant Name_Id := N + 281;
+   Name_Component                      : constant Name_Id := N + 282;
+   Name_Component_Size_4               : constant Name_Id := N + 283;
+   Name_Copy                           : constant Name_Id := N + 284;
+   Name_D_Float                        : constant Name_Id := N + 285;
+   Name_Descriptor                     : constant Name_Id := N + 286;
+   Name_Dot_Replacement                : constant Name_Id := N + 287;
+   Name_Dynamic                        : constant Name_Id := N + 288;
+   Name_Entity                         : constant Name_Id := N + 289;
+   Name_Entry_Count                    : constant Name_Id := N + 290;
+   Name_External_Name                  : constant Name_Id := N + 291;
+   Name_First_Optional_Parameter       : constant Name_Id := N + 292;
+   Name_Form                           : constant Name_Id := N + 293;
+   Name_G_Float                        : constant Name_Id := N + 294;
+   Name_Gcc                            : constant Name_Id := N + 295;
+   Name_Gnat                           : constant Name_Id := N + 296;
+   Name_GPL                            : constant Name_Id := N + 297;
+   Name_IEEE_Float                     : constant Name_Id := N + 298;
+   Name_Ignore                         : constant Name_Id := N + 299;
+   Name_Info                           : constant Name_Id := N + 300;
+   Name_Internal                       : constant Name_Id := N + 301;
+   Name_Link_Name                      : constant Name_Id := N + 302;
+   Name_Lowercase                      : constant Name_Id := N + 303;
+   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + 304;
+   Name_Max_Entry_Queue_Length         : constant Name_Id := N + 305;
+   Name_Max_Size                       : constant Name_Id := N + 306;
+   Name_Mechanism                      : constant Name_Id := N + 307;
+   Name_Message                        : constant Name_Id := N + 308;
+   Name_Mixedcase                      : constant Name_Id := N + 309;
+   Name_Modified_GPL                   : constant Name_Id := N + 310;
+   Name_Name                           : constant Name_Id := N + 311;
+   Name_NCA                            : constant Name_Id := N + 312;
+   Name_No                             : constant Name_Id := N + 313;
+   Name_No_Dependence                  : constant Name_Id := N + 314;
+   Name_No_Dynamic_Attachment          : constant Name_Id := N + 315;
+   Name_No_Dynamic_Interrupts          : constant Name_Id := N + 316;
+   Name_No_Requeue                     : constant Name_Id := N + 317;
+   Name_No_Requeue_Statements          : constant Name_Id := N + 318;
+   Name_No_Task_Attributes             : constant Name_Id := N + 319;
+   Name_No_Task_Attributes_Package     : constant Name_Id := N + 320;
+   Name_On                             : constant Name_Id := N + 321;
+   Name_Parameter_Types                : constant Name_Id := N + 322;
+   Name_Reference                      : constant Name_Id := N + 323;
+   Name_Restricted                     : constant Name_Id := N + 324;
+   Name_Result_Mechanism               : constant Name_Id := N + 325;
+   Name_Result_Type                    : constant Name_Id := N + 326;
+   Name_Runtime                        : constant Name_Id := N + 327;
+   Name_SB                             : constant Name_Id := N + 328;
+   Name_Secondary_Stack_Size           : constant Name_Id := N + 329;
+   Name_Section                        : constant Name_Id := N + 330;
+   Name_Semaphore                      : constant Name_Id := N + 331;
+   Name_Simple_Barriers                : constant Name_Id := N + 332;
+   Name_Spec_File_Name                 : constant Name_Id := N + 333;
+   Name_State                          : constant Name_Id := N + 334;
+   Name_Static                         : constant Name_Id := N + 335;
+   Name_Stack_Size                     : constant Name_Id := N + 336;
+   Name_Subunit_File_Name              : constant Name_Id := N + 337;
+   Name_Task_Stack_Size_Default        : constant Name_Id := N + 338;
+   Name_Task_Type                      : constant Name_Id := N + 339;
+   Name_Time_Slicing_Enabled           : constant Name_Id := N + 340;
+   Name_Top_Guard                      : constant Name_Id := N + 341;
+   Name_UBA                            : constant Name_Id := N + 342;
+   Name_UBS                            : constant Name_Id := N + 343;
+   Name_UBSB                           : constant Name_Id := N + 344;
+   Name_Unit_Name                      : constant Name_Id := N + 345;
+   Name_Unknown                        : constant Name_Id := N + 346;
+   Name_Unrestricted                   : constant Name_Id := N + 347;
+   Name_Uppercase                      : constant Name_Id := N + 348;
+   Name_User                           : constant Name_Id := N + 349;
+   Name_VAX_Float                      : constant Name_Id := N + 350;
+   Name_VMS                            : constant Name_Id := N + 351;
+   Name_Vtable_Ptr                     : constant Name_Id := N + 352;
+   Name_Working_Storage                : constant Name_Id := N + 353;
 
    --  Names of recognized attributes. The entries with the comment "Ada 83"
    --  are attributes that are defined in Ada 83, but not in Ada 95. These
@@ -631,166 +632,166 @@ package Snames is
    --  The entries marked VMS are recognized only in OpenVMS implementations
    --  of GNAT, and are treated as illegal in all other contexts.
 
-   First_Attribute_Name                : constant Name_Id := N + 353;
-   Name_Abort_Signal                   : constant Name_Id := N + 353; -- GNAT
-   Name_Access                         : constant Name_Id := N + 354;
-   Name_Address                        : constant Name_Id := N + 355;
-   Name_Address_Size                   : constant Name_Id := N + 356; -- GNAT
-   Name_Aft                            : constant Name_Id := N + 357;
-   Name_Alignment                      : constant Name_Id := N + 358;
-   Name_Asm_Input                      : constant Name_Id := N + 359; -- GNAT
-   Name_Asm_Output                     : constant Name_Id := N + 360; -- GNAT
-   Name_AST_Entry                      : constant Name_Id := N + 361; -- VMS
-   Name_Bit                            : constant Name_Id := N + 362; -- GNAT
-   Name_Bit_Order                      : constant Name_Id := N + 363;
-   Name_Bit_Position                   : constant Name_Id := N + 364; -- GNAT
-   Name_Body_Version                   : constant Name_Id := N + 365;
-   Name_Callable                       : constant Name_Id := N + 366;
-   Name_Caller                         : constant Name_Id := N + 367;
-   Name_Code_Address                   : constant Name_Id := N + 368; -- GNAT
-   Name_Component_Size                 : constant Name_Id := N + 369;
-   Name_Compose                        : constant Name_Id := N + 370;
-   Name_Constrained                    : constant Name_Id := N + 371;
-   Name_Count                          : constant Name_Id := N + 372;
-   Name_Default_Bit_Order              : constant Name_Id := N + 373; -- GNAT
-   Name_Definite                       : constant Name_Id := N + 374;
-   Name_Delta                          : constant Name_Id := N + 375;
-   Name_Denorm                         : constant Name_Id := N + 376;
-   Name_Digits                         : constant Name_Id := N + 377;
-   Name_Elaborated                     : constant Name_Id := N + 378; -- GNAT
-   Name_Emax                           : constant Name_Id := N + 379; -- Ada 83
-   Name_Enum_Rep                       : constant Name_Id := N + 380; -- GNAT
-   Name_Epsilon                        : constant Name_Id := N + 381; -- Ada 83
-   Name_Exponent                       : constant Name_Id := N + 382;
-   Name_External_Tag                   : constant Name_Id := N + 383;
-   Name_First                          : constant Name_Id := N + 384;
-   Name_First_Bit                      : constant Name_Id := N + 385;
-   Name_Fixed_Value                    : constant Name_Id := N + 386; -- GNAT
-   Name_Fore                           : constant Name_Id := N + 387;
-   Name_Has_Access_Values              : constant Name_Id := N + 388; -- GNAT
-   Name_Has_Discriminants              : constant Name_Id := N + 389; -- GNAT
-   Name_Identity                       : constant Name_Id := N + 390;
-   Name_Img                            : constant Name_Id := N + 391; -- GNAT
-   Name_Integer_Value                  : constant Name_Id := N + 392; -- GNAT
-   Name_Large                          : constant Name_Id := N + 393; -- Ada 83
-   Name_Last                           : constant Name_Id := N + 394;
-   Name_Last_Bit                       : constant Name_Id := N + 395;
-   Name_Leading_Part                   : constant Name_Id := N + 396;
-   Name_Length                         : constant Name_Id := N + 397;
-   Name_Machine_Emax                   : constant Name_Id := N + 398;
-   Name_Machine_Emin                   : constant Name_Id := N + 399;
-   Name_Machine_Mantissa               : constant Name_Id := N + 400;
-   Name_Machine_Overflows              : constant Name_Id := N + 401;
-   Name_Machine_Radix                  : constant Name_Id := N + 402;
-   Name_Machine_Rounding               : constant Name_Id := N + 403; -- Ada 05
-   Name_Machine_Rounds                 : constant Name_Id := N + 404;
-   Name_Machine_Size                   : constant Name_Id := N + 405; -- GNAT
-   Name_Mantissa                       : constant Name_Id := N + 406; -- Ada 83
-   Name_Max_Size_In_Storage_Elements   : constant Name_Id := N + 407;
-   Name_Maximum_Alignment              : constant Name_Id := N + 408; -- GNAT
-   Name_Mechanism_Code                 : constant Name_Id := N + 409; -- GNAT
-   Name_Mod                            : constant Name_Id := N + 410;
-   Name_Model_Emin                     : constant Name_Id := N + 411;
-   Name_Model_Epsilon                  : constant Name_Id := N + 412;
-   Name_Model_Mantissa                 : constant Name_Id := N + 413;
-   Name_Model_Small                    : constant Name_Id := N + 414;
-   Name_Modulus                        : constant Name_Id := N + 415;
-   Name_Null_Parameter                 : constant Name_Id := N + 416; -- GNAT
-   Name_Object_Size                    : constant Name_Id := N + 417; -- GNAT
-   Name_Partition_ID                   : constant Name_Id := N + 418;
-   Name_Passed_By_Reference            : constant Name_Id := N + 419; -- GNAT
-   Name_Pool_Address                   : constant Name_Id := N + 420;
-   Name_Pos                            : constant Name_Id := N + 421;
-   Name_Position                       : constant Name_Id := N + 422;
-   Name_Range                          : constant Name_Id := N + 423;
-   Name_Range_Length                   : constant Name_Id := N + 424; -- GNAT
-   Name_Round                          : constant Name_Id := N + 425;
-   Name_Safe_Emax                      : constant Name_Id := N + 426; -- Ada 83
-   Name_Safe_First                     : constant Name_Id := N + 427;
-   Name_Safe_Large                     : constant Name_Id := N + 428; -- Ada 83
-   Name_Safe_Last                      : constant Name_Id := N + 429;
-   Name_Safe_Small                     : constant Name_Id := N + 430; -- Ada 83
-   Name_Scale                          : constant Name_Id := N + 431;
-   Name_Scaling                        : constant Name_Id := N + 432;
-   Name_Signed_Zeros                   : constant Name_Id := N + 433;
-   Name_Size                           : constant Name_Id := N + 434;
-   Name_Small                          : constant Name_Id := N + 435;
-   Name_Storage_Size                   : constant Name_Id := N + 436;
-   Name_Storage_Unit                   : constant Name_Id := N + 437; -- GNAT
-   Name_Stream_Size                    : constant Name_Id := N + 438; -- Ada 05
-   Name_Tag                            : constant Name_Id := N + 439;
-   Name_Target_Name                    : constant Name_Id := N + 440; -- GNAT
-   Name_Terminated                     : constant Name_Id := N + 441;
-   Name_To_Address                     : constant Name_Id := N + 442; -- GNAT
-   Name_Type_Class                     : constant Name_Id := N + 443; -- GNAT
-   Name_UET_Address                    : constant Name_Id := N + 444; -- GNAT
-   Name_Unbiased_Rounding              : constant Name_Id := N + 445;
-   Name_Unchecked_Access               : constant Name_Id := N + 446;
-   Name_Unconstrained_Array            : constant Name_Id := N + 447;
-   Name_Universal_Literal_String       : constant Name_Id := N + 448; -- GNAT
-   Name_Unrestricted_Access            : constant Name_Id := N + 449; -- GNAT
-   Name_VADS_Size                      : constant Name_Id := N + 450; -- GNAT
-   Name_Val                            : constant Name_Id := N + 451;
-   Name_Valid                          : constant Name_Id := N + 452;
-   Name_Value_Size                     : constant Name_Id := N + 453; -- GNAT
-   Name_Version                        : constant Name_Id := N + 454;
-   Name_Wchar_T_Size                   : constant Name_Id := N + 455; -- GNAT
-   Name_Wide_Wide_Width                : constant Name_Id := N + 456; -- Ada 05
-   Name_Wide_Width                     : constant Name_Id := N + 457;
-   Name_Width                          : constant Name_Id := N + 458;
-   Name_Word_Size                      : constant Name_Id := N + 459; -- GNAT
+   First_Attribute_Name                : constant Name_Id := N + 354;
+   Name_Abort_Signal                   : constant Name_Id := N + 354; -- GNAT
+   Name_Access                         : constant Name_Id := N + 355;
+   Name_Address                        : constant Name_Id := N + 356;
+   Name_Address_Size                   : constant Name_Id := N + 357; -- GNAT
+   Name_Aft                            : constant Name_Id := N + 358;
+   Name_Alignment                      : constant Name_Id := N + 359;
+   Name_Asm_Input                      : constant Name_Id := N + 360; -- GNAT
+   Name_Asm_Output                     : constant Name_Id := N + 361; -- GNAT
+   Name_AST_Entry                      : constant Name_Id := N + 362; -- VMS
+   Name_Bit                            : constant Name_Id := N + 363; -- GNAT
+   Name_Bit_Order                      : constant Name_Id := N + 364;
+   Name_Bit_Position                   : constant Name_Id := N + 365; -- GNAT
+   Name_Body_Version                   : constant Name_Id := N + 366;
+   Name_Callable                       : constant Name_Id := N + 367;
+   Name_Caller                         : constant Name_Id := N + 368;
+   Name_Code_Address                   : constant Name_Id := N + 369; -- GNAT
+   Name_Component_Size                 : constant Name_Id := N + 370;
+   Name_Compose                        : constant Name_Id := N + 371;
+   Name_Constrained                    : constant Name_Id := N + 372;
+   Name_Count                          : constant Name_Id := N + 373;
+   Name_Default_Bit_Order              : constant Name_Id := N + 374; -- GNAT
+   Name_Definite                       : constant Name_Id := N + 375;
+   Name_Delta                          : constant Name_Id := N + 376;
+   Name_Denorm                         : constant Name_Id := N + 377;
+   Name_Digits                         : constant Name_Id := N + 378;
+   Name_Elaborated                     : constant Name_Id := N + 379; -- GNAT
+   Name_Emax                           : constant Name_Id := N + 380; -- Ada 83
+   Name_Enum_Rep                       : constant Name_Id := N + 381; -- GNAT
+   Name_Epsilon                        : constant Name_Id := N + 382; -- Ada 83
+   Name_Exponent                       : constant Name_Id := N + 383;
+   Name_External_Tag                   : constant Name_Id := N + 384;
+   Name_First                          : constant Name_Id := N + 385;
+   Name_First_Bit                      : constant Name_Id := N + 386;
+   Name_Fixed_Value                    : constant Name_Id := N + 387; -- GNAT
+   Name_Fore                           : constant Name_Id := N + 388;
+   Name_Has_Access_Values              : constant Name_Id := N + 389; -- GNAT
+   Name_Has_Discriminants              : constant Name_Id := N + 390; -- GNAT
+   Name_Identity                       : constant Name_Id := N + 391;
+   Name_Img                            : constant Name_Id := N + 392; -- GNAT
+   Name_Integer_Value                  : constant Name_Id := N + 393; -- GNAT
+   Name_Large                          : constant Name_Id := N + 394; -- Ada 83
+   Name_Last                           : constant Name_Id := N + 395;
+   Name_Last_Bit                       : constant Name_Id := N + 396;
+   Name_Leading_Part                   : constant Name_Id := N + 397;
+   Name_Length                         : constant Name_Id := N + 398;
+   Name_Machine_Emax                   : constant Name_Id := N + 399;
+   Name_Machine_Emin                   : constant Name_Id := N + 400;
+   Name_Machine_Mantissa               : constant Name_Id := N + 401;
+   Name_Machine_Overflows              : constant Name_Id := N + 402;
+   Name_Machine_Radix                  : constant Name_Id := N + 403;
+   Name_Machine_Rounding               : constant Name_Id := N + 404; -- Ada 05
+   Name_Machine_Rounds                 : constant Name_Id := N + 405;
+   Name_Machine_Size                   : constant Name_Id := N + 406; -- GNAT
+   Name_Mantissa                       : constant Name_Id := N + 407; -- Ada 83
+   Name_Max_Size_In_Storage_Elements   : constant Name_Id := N + 408;
+   Name_Maximum_Alignment              : constant Name_Id := N + 409; -- GNAT
+   Name_Mechanism_Code                 : constant Name_Id := N + 410; -- GNAT
+   Name_Mod                            : constant Name_Id := N + 411;
+   Name_Model_Emin                     : constant Name_Id := N + 412;
+   Name_Model_Epsilon                  : constant Name_Id := N + 413;
+   Name_Model_Mantissa                 : constant Name_Id := N + 414;
+   Name_Model_Small                    : constant Name_Id := N + 415;
+   Name_Modulus                        : constant Name_Id := N + 416;
+   Name_Null_Parameter                 : constant Name_Id := N + 417; -- GNAT
+   Name_Object_Size                    : constant Name_Id := N + 418; -- GNAT
+   Name_Partition_ID                   : constant Name_Id := N + 419;
+   Name_Passed_By_Reference            : constant Name_Id := N + 420; -- GNAT
+   Name_Pool_Address                   : constant Name_Id := N + 421;
+   Name_Pos                            : constant Name_Id := N + 422;
+   Name_Position                       : constant Name_Id := N + 423;
+   Name_Range                          : constant Name_Id := N + 424;
+   Name_Range_Length                   : constant Name_Id := N + 425; -- GNAT
+   Name_Round                          : constant Name_Id := N + 426;
+   Name_Safe_Emax                      : constant Name_Id := N + 427; -- Ada 83
+   Name_Safe_First                     : constant Name_Id := N + 428;
+   Name_Safe_Large                     : constant Name_Id := N + 429; -- Ada 83
+   Name_Safe_Last                      : constant Name_Id := N + 430;
+   Name_Safe_Small                     : constant Name_Id := N + 431; -- Ada 83
+   Name_Scale                          : constant Name_Id := N + 432;
+   Name_Scaling                        : constant Name_Id := N + 433;
+   Name_Signed_Zeros                   : constant Name_Id := N + 434;
+   Name_Size                           : constant Name_Id := N + 435;
+   Name_Small                          : constant Name_Id := N + 436;
+   Name_Storage_Size                   : constant Name_Id := N + 437;
+   Name_Storage_Unit                   : constant Name_Id := N + 438; -- GNAT
+   Name_Stream_Size                    : constant Name_Id := N + 439; -- Ada 05
+   Name_Tag                            : constant Name_Id := N + 440;
+   Name_Target_Name                    : constant Name_Id := N + 441; -- GNAT
+   Name_Terminated                     : constant Name_Id := N + 442;
+   Name_To_Address                     : constant Name_Id := N + 443; -- GNAT
+   Name_Type_Class                     : constant Name_Id := N + 444; -- GNAT
+   Name_UET_Address                    : constant Name_Id := N + 445; -- GNAT
+   Name_Unbiased_Rounding              : constant Name_Id := N + 446;
+   Name_Unchecked_Access               : constant Name_Id := N + 447;
+   Name_Unconstrained_Array            : constant Name_Id := N + 448;
+   Name_Universal_Literal_String       : constant Name_Id := N + 449; -- GNAT
+   Name_Unrestricted_Access            : constant Name_Id := N + 450; -- GNAT
+   Name_VADS_Size                      : constant Name_Id := N + 451; -- GNAT
+   Name_Val                            : constant Name_Id := N + 452;
+   Name_Valid                          : constant Name_Id := N + 453;
+   Name_Value_Size                     : constant Name_Id := N + 454; -- GNAT
+   Name_Version                        : constant Name_Id := N + 455;
+   Name_Wchar_T_Size                   : constant Name_Id := N + 456; -- GNAT
+   Name_Wide_Wide_Width                : constant Name_Id := N + 457; -- Ada 05
+   Name_Wide_Width                     : constant Name_Id := N + 458;
+   Name_Width                          : constant Name_Id := N + 459;
+   Name_Word_Size                      : constant Name_Id := N + 460; -- GNAT
 
    --  Attributes that designate attributes returning renamable functions,
    --  i.e. functions that return other than a universal value and that
    --  have non-universal arguments.
 
-   First_Renamable_Function_Attribute  : constant Name_Id := N + 460;
-   Name_Adjacent                       : constant Name_Id := N + 460;
-   Name_Ceiling                        : constant Name_Id := N + 461;
-   Name_Copy_Sign                      : constant Name_Id := N + 462;
-   Name_Floor                          : constant Name_Id := N + 463;
-   Name_Fraction                       : constant Name_Id := N + 464;
-   Name_Image                          : constant Name_Id := N + 465;
-   Name_Input                          : constant Name_Id := N + 466;
-   Name_Machine                        : constant Name_Id := N + 467;
-   Name_Max                            : constant Name_Id := N + 468;
-   Name_Min                            : constant Name_Id := N + 469;
-   Name_Model                          : constant Name_Id := N + 470;
-   Name_Pred                           : constant Name_Id := N + 471;
-   Name_Remainder                      : constant Name_Id := N + 472;
-   Name_Rounding                       : constant Name_Id := N + 473;
-   Name_Succ                           : constant Name_Id := N + 474;
-   Name_Truncation                     : constant Name_Id := N + 475;
-   Name_Value                          : constant Name_Id := N + 476;
-   Name_Wide_Image                     : constant Name_Id := N + 477;
-   Name_Wide_Wide_Image                : constant Name_Id := N + 478;
-   Name_Wide_Value                     : constant Name_Id := N + 479;
-   Name_Wide_Wide_Value                : constant Name_Id := N + 480;
-   Last_Renamable_Function_Attribute   : constant Name_Id := N + 480;
+   First_Renamable_Function_Attribute  : constant Name_Id := N + 461;
+   Name_Adjacent                       : constant Name_Id := N + 461;
+   Name_Ceiling                        : constant Name_Id := N + 462;
+   Name_Copy_Sign                      : constant Name_Id := N + 463;
+   Name_Floor                          : constant Name_Id := N + 464;
+   Name_Fraction                       : constant Name_Id := N + 465;
+   Name_Image                          : constant Name_Id := N + 466;
+   Name_Input                          : constant Name_Id := N + 467;
+   Name_Machine                        : constant Name_Id := N + 468;
+   Name_Max                            : constant Name_Id := N + 469;
+   Name_Min                            : constant Name_Id := N + 470;
+   Name_Model                          : constant Name_Id := N + 471;
+   Name_Pred                           : constant Name_Id := N + 472;
+   Name_Remainder                      : constant Name_Id := N + 473;
+   Name_Rounding                       : constant Name_Id := N + 474;
+   Name_Succ                           : constant Name_Id := N + 475;
+   Name_Truncation                     : constant Name_Id := N + 476;
+   Name_Value                          : constant Name_Id := N + 477;
+   Name_Wide_Image                     : constant Name_Id := N + 478;
+   Name_Wide_Wide_Image                : constant Name_Id := N + 479;
+   Name_Wide_Value                     : constant Name_Id := N + 480;
+   Name_Wide_Wide_Value                : constant Name_Id := N + 481;
+   Last_Renamable_Function_Attribute   : constant Name_Id := N + 481;
 
    --  Attributes that designate procedures
 
-   First_Procedure_Attribute           : constant Name_Id := N + 481;
-   Name_Output                         : constant Name_Id := N + 481;
-   Name_Read                           : constant Name_Id := N + 482;
-   Name_Write                          : constant Name_Id := N + 483;
-   Last_Procedure_Attribute            : constant Name_Id := N + 483;
+   First_Procedure_Attribute           : constant Name_Id := N + 482;
+   Name_Output                         : constant Name_Id := N + 482;
+   Name_Read                           : constant Name_Id := N + 483;
+   Name_Write                          : constant Name_Id := N + 484;
+   Last_Procedure_Attribute            : constant Name_Id := N + 484;
 
    --  Remaining attributes are ones that return entities
 
-   First_Entity_Attribute_Name         : constant Name_Id := N + 484;
-   Name_Elab_Body                      : constant Name_Id := N + 484; -- GNAT
-   Name_Elab_Spec                      : constant Name_Id := N + 485; -- GNAT
-   Name_Storage_Pool                   : constant Name_Id := N + 486;
+   First_Entity_Attribute_Name         : constant Name_Id := N + 485;
+   Name_Elab_Body                      : constant Name_Id := N + 485; -- GNAT
+   Name_Elab_Spec                      : constant Name_Id := N + 486; -- GNAT
+   Name_Storage_Pool                   : constant Name_Id := N + 487;
 
    --  These attributes are the ones that return types
 
-   First_Type_Attribute_Name           : constant Name_Id := N + 487;
-   Name_Base                           : constant Name_Id := N + 487;
-   Name_Class                          : constant Name_Id := N + 488;
-   Last_Type_Attribute_Name            : constant Name_Id := N + 488;
-   Last_Entity_Attribute_Name          : constant Name_Id := N + 488;
-   Last_Attribute_Name                 : constant Name_Id := N + 488;
+   First_Type_Attribute_Name           : constant Name_Id := N + 488;
+   Name_Base                           : constant Name_Id := N + 488;
+   Name_Class                          : constant Name_Id := N + 489;
+   Last_Type_Attribute_Name            : constant Name_Id := N + 489;
+   Last_Entity_Attribute_Name          : constant Name_Id := N + 489;
+   Last_Attribute_Name                 : constant Name_Id := N + 489;
 
    --  Names of recognized locking policy identifiers
 
@@ -798,10 +799,10 @@ package Snames is
    --  name (e.g. C for Ceiling_Locking). If new policy names are added,
    --  the first character must be distinct.
 
-   First_Locking_Policy_Name           : constant Name_Id := N + 489;
-   Name_Ceiling_Locking                : constant Name_Id := N + 489;
-   Name_Inheritance_Locking            : constant Name_Id := N + 490;
-   Last_Locking_Policy_Name            : constant Name_Id := N + 490;
+   First_Locking_Policy_Name           : constant Name_Id := N + 490;
+   Name_Ceiling_Locking                : constant Name_Id := N + 490;
+   Name_Inheritance_Locking            : constant Name_Id := N + 491;
+   Last_Locking_Policy_Name            : constant Name_Id := N + 491;
 
    --  Names of recognized queuing policy identifiers
 
@@ -809,10 +810,10 @@ package Snames is
    --  name (e.g. F for FIFO_Queuing). If new policy names are added,
    --  the first character must be distinct.
 
-   First_Queuing_Policy_Name           : constant Name_Id := N + 491;
-   Name_FIFO_Queuing                   : constant Name_Id := N + 491;
-   Name_Priority_Queuing               : constant Name_Id := N + 492;
-   Last_Queuing_Policy_Name            : constant Name_Id := N + 492;
+   First_Queuing_Policy_Name           : constant Name_Id := N + 492;
+   Name_FIFO_Queuing                   : constant Name_Id := N + 492;
+   Name_Priority_Queuing               : constant Name_Id := N + 493;
+   Last_Queuing_Policy_Name            : constant Name_Id := N + 493;
 
    --  Names of recognized task dispatching policy identifiers
 
@@ -820,223 +821,231 @@ package Snames is
    --  name (e.g. F for FIFO_WIthinn_Priorities). If new policy names
    --  are added, the first character must be distinct.
 
-   First_Task_Dispatching_Policy_Name  : constant Name_Id := N + 493;
-   Name_FIFO_Within_Priorities         : constant Name_Id := N + 493;
-   Last_Task_Dispatching_Policy_Name   : constant Name_Id := N + 493;
+   First_Task_Dispatching_Policy_Name  : constant Name_Id := N + 494;
+   Name_FIFO_Within_Priorities         : constant Name_Id := N + 494;
+   Last_Task_Dispatching_Policy_Name   : constant Name_Id := N + 494;
 
    --  Names of recognized checks for pragma Suppress
 
-   First_Check_Name                    : constant Name_Id := N + 494;
-   Name_Access_Check                   : constant Name_Id := N + 494;
-   Name_Accessibility_Check            : constant Name_Id := N + 495;
-   Name_Discriminant_Check             : constant Name_Id := N + 496;
-   Name_Division_Check                 : constant Name_Id := N + 497;
-   Name_Elaboration_Check              : constant Name_Id := N + 498;
-   Name_Index_Check                    : constant Name_Id := N + 499;
-   Name_Length_Check                   : constant Name_Id := N + 500;
-   Name_Overflow_Check                 : constant Name_Id := N + 501;
-   Name_Range_Check                    : constant Name_Id := N + 502;
-   Name_Storage_Check                  : constant Name_Id := N + 503;
-   Name_Tag_Check                      : constant Name_Id := N + 504;
-   Name_All_Checks                     : constant Name_Id := N + 505;
-   Last_Check_Name                     : constant Name_Id := N + 505;
+   First_Check_Name                    : constant Name_Id := N + 495;
+   Name_Access_Check                   : constant Name_Id := N + 495;
+   Name_Accessibility_Check            : constant Name_Id := N + 496;
+   Name_Discriminant_Check             : constant Name_Id := N + 497;
+   Name_Division_Check                 : constant Name_Id := N + 498;
+   Name_Elaboration_Check              : constant Name_Id := N + 499;
+   Name_Index_Check                    : constant Name_Id := N + 500;
+   Name_Length_Check                   : constant Name_Id := N + 501;
+   Name_Overflow_Check                 : constant Name_Id := N + 502;
+   Name_Range_Check                    : constant Name_Id := N + 503;
+   Name_Storage_Check                  : constant Name_Id := N + 504;
+   Name_Tag_Check                      : constant Name_Id := N + 505;
+   Name_All_Checks                     : constant Name_Id := N + 506;
+   Last_Check_Name                     : constant Name_Id := N + 506;
 
    --  Names corresponding to reserved keywords, excluding those already
    --  declared in the attribute list (Access, Delta, Digits, Mod, Range).
 
-   Name_Abort                          : constant Name_Id := N + 506;
-   Name_Abs                            : constant Name_Id := N + 507;
-   Name_Accept                         : constant Name_Id := N + 508;
-   Name_And                            : constant Name_Id := N + 509;
-   Name_All                            : constant Name_Id := N + 510;
-   Name_Array                          : constant Name_Id := N + 511;
-   Name_At                             : constant Name_Id := N + 512;
-   Name_Begin                          : constant Name_Id := N + 513;
-   Name_Body                           : constant Name_Id := N + 514;
-   Name_Case                           : constant Name_Id := N + 515;
-   Name_Constant                       : constant Name_Id := N + 516;
-   Name_Declare                        : constant Name_Id := N + 517;
-   Name_Delay                          : constant Name_Id := N + 518;
-   Name_Do                             : constant Name_Id := N + 519;
-   Name_Else                           : constant Name_Id := N + 520;
-   Name_Elsif                          : constant Name_Id := N + 521;
-   Name_End                            : constant Name_Id := N + 522;
-   Name_Entry                          : constant Name_Id := N + 523;
-   Name_Exception                      : constant Name_Id := N + 524;
-   Name_Exit                           : constant Name_Id := N + 525;
-   Name_For                            : constant Name_Id := N + 526;
-   Name_Function                       : constant Name_Id := N + 527;
-   Name_Generic                        : constant Name_Id := N + 528;
-   Name_Goto                           : constant Name_Id := N + 529;
-   Name_If                             : constant Name_Id := N + 530;
-   Name_In                             : constant Name_Id := N + 531;
-   Name_Is                             : constant Name_Id := N + 532;
-   Name_Limited                        : constant Name_Id := N + 533;
-   Name_Loop                           : constant Name_Id := N + 534;
-   Name_New                            : constant Name_Id := N + 535;
-   Name_Not                            : constant Name_Id := N + 536;
-   Name_Null                           : constant Name_Id := N + 537;
-   Name_Of                             : constant Name_Id := N + 538;
-   Name_Or                             : constant Name_Id := N + 539;
-   Name_Others                         : constant Name_Id := N + 540;
-   Name_Out                            : constant Name_Id := N + 541;
-   Name_Package                        : constant Name_Id := N + 542;
-   Name_Pragma                         : constant Name_Id := N + 543;
-   Name_Private                        : constant Name_Id := N + 544;
-   Name_Procedure                      : constant Name_Id := N + 545;
-   Name_Raise                          : constant Name_Id := N + 546;
-   Name_Record                         : constant Name_Id := N + 547;
-   Name_Rem                            : constant Name_Id := N + 548;
-   Name_Renames                        : constant Name_Id := N + 549;
-   Name_Return                         : constant Name_Id := N + 550;
-   Name_Reverse                        : constant Name_Id := N + 551;
-   Name_Select                         : constant Name_Id := N + 552;
-   Name_Separate                       : constant Name_Id := N + 553;
-   Name_Subtype                        : constant Name_Id := N + 554;
-   Name_Task                           : constant Name_Id := N + 555;
-   Name_Terminate                      : constant Name_Id := N + 556;
-   Name_Then                           : constant Name_Id := N + 557;
-   Name_Type                           : constant Name_Id := N + 558;
-   Name_Use                            : constant Name_Id := N + 559;
-   Name_When                           : constant Name_Id := N + 560;
-   Name_While                          : constant Name_Id := N + 561;
-   Name_With                           : constant Name_Id := N + 562;
-   Name_Xor                            : constant Name_Id := N + 563;
+   Name_Abort                          : constant Name_Id := N + 507;
+   Name_Abs                            : constant Name_Id := N + 508;
+   Name_Accept                         : constant Name_Id := N + 509;
+   Name_And                            : constant Name_Id := N + 510;
+   Name_All                            : constant Name_Id := N + 511;
+   Name_Array                          : constant Name_Id := N + 512;
+   Name_At                             : constant Name_Id := N + 513;
+   Name_Begin                          : constant Name_Id := N + 514;
+   Name_Body                           : constant Name_Id := N + 515;
+   Name_Case                           : constant Name_Id := N + 516;
+   Name_Constant                       : constant Name_Id := N + 517;
+   Name_Declare                        : constant Name_Id := N + 518;
+   Name_Delay                          : constant Name_Id := N + 519;
+   Name_Do                             : constant Name_Id := N + 520;
+   Name_Else                           : constant Name_Id := N + 521;
+   Name_Elsif                          : constant Name_Id := N + 522;
+   Name_End                            : constant Name_Id := N + 523;
+   Name_Entry                          : constant Name_Id := N + 524;
+   Name_Exception                      : constant Name_Id := N + 525;
+   Name_Exit                           : constant Name_Id := N + 526;
+   Name_For                            : constant Name_Id := N + 527;
+   Name_Function                       : constant Name_Id := N + 528;
+   Name_Generic                        : constant Name_Id := N + 529;
+   Name_Goto                           : constant Name_Id := N + 530;
+   Name_If                             : constant Name_Id := N + 531;
+   Name_In                             : constant Name_Id := N + 532;
+   Name_Is                             : constant Name_Id := N + 533;
+   Name_Limited                        : constant Name_Id := N + 534;
+   Name_Loop                           : constant Name_Id := N + 535;
+   Name_New                            : constant Name_Id := N + 536;
+   Name_Not                            : constant Name_Id := N + 537;
+   Name_Null                           : constant Name_Id := N + 538;
+   Name_Of                             : constant Name_Id := N + 539;
+   Name_Or                             : constant Name_Id := N + 540;
+   Name_Others                         : constant Name_Id := N + 541;
+   Name_Out                            : constant Name_Id := N + 542;
+   Name_Package                        : constant Name_Id := N + 543;
+   Name_Pragma                         : constant Name_Id := N + 544;
+   Name_Private                        : constant Name_Id := N + 545;
+   Name_Procedure                      : constant Name_Id := N + 546;
+   Name_Raise                          : constant Name_Id := N + 547;
+   Name_Record                         : constant Name_Id := N + 548;
+   Name_Rem                            : constant Name_Id := N + 549;
+   Name_Renames                        : constant Name_Id := N + 550;
+   Name_Return                         : constant Name_Id := N + 551;
+   Name_Reverse                        : constant Name_Id := N + 552;
+   Name_Select                         : constant Name_Id := N + 553;
+   Name_Separate                       : constant Name_Id := N + 554;
+   Name_Subtype                        : constant Name_Id := N + 555;
+   Name_Task                           : constant Name_Id := N + 556;
+   Name_Terminate                      : constant Name_Id := N + 557;
+   Name_Then                           : constant Name_Id := N + 558;
+   Name_Type                           : constant Name_Id := N + 559;
+   Name_Use                            : constant Name_Id := N + 560;
+   Name_When                           : constant Name_Id := N + 561;
+   Name_While                          : constant Name_Id := N + 562;
+   Name_With                           : constant Name_Id := N + 563;
+   Name_Xor                            : constant Name_Id := N + 564;
 
    --  Names of intrinsic subprograms
 
    --  Note: Asm is missing from this list, since Asm is a legitimate
    --  convention name. So is To_Adress, which is a GNAT attribute.
 
-   First_Intrinsic_Name                 : constant Name_Id := N + 564;
-   Name_Divide                          : constant Name_Id := N + 564;
-   Name_Enclosing_Entity                : constant Name_Id := N + 565;
-   Name_Exception_Information           : constant Name_Id := N + 566;
-   Name_Exception_Message               : constant Name_Id := N + 567;
-   Name_Exception_Name                  : constant Name_Id := N + 568;
-   Name_File                            : constant Name_Id := N + 569;
-   Name_Generic_Dispatching_Constructor : constant Name_Id := N + 570;
-   Name_Import_Address                  : constant Name_Id := N + 571;
-   Name_Import_Largest_Value            : constant Name_Id := N + 572;
-   Name_Import_Value                    : constant Name_Id := N + 573;
-   Name_Is_Negative                     : constant Name_Id := N + 574;
-   Name_Line                            : constant Name_Id := N + 575;
-   Name_Rotate_Left                     : constant Name_Id := N + 576;
-   Name_Rotate_Right                    : constant Name_Id := N + 577;
-   Name_Shift_Left                      : constant Name_Id := N + 578;
-   Name_Shift_Right                     : constant Name_Id := N + 579;
-   Name_Shift_Right_Arithmetic          : constant Name_Id := N + 580;
-   Name_Source_Location                 : constant Name_Id := N + 581;
-   Name_Unchecked_Conversion            : constant Name_Id := N + 582;
-   Name_Unchecked_Deallocation          : constant Name_Id := N + 583;
-   Name_To_Pointer                      : constant Name_Id := N + 584;
-   Last_Intrinsic_Name                  : constant Name_Id := N + 584;
+   First_Intrinsic_Name                 : constant Name_Id := N + 565;
+   Name_Divide                          : constant Name_Id := N + 565;
+   Name_Enclosing_Entity                : constant Name_Id := N + 566;
+   Name_Exception_Information           : constant Name_Id := N + 567;
+   Name_Exception_Message               : constant Name_Id := N + 568;
+   Name_Exception_Name                  : constant Name_Id := N + 569;
+   Name_File                            : constant Name_Id := N + 570;
+   Name_Generic_Dispatching_Constructor : constant Name_Id := N + 571;
+   Name_Import_Address                  : constant Name_Id := N + 572;
+   Name_Import_Largest_Value            : constant Name_Id := N + 573;
+   Name_Import_Value                    : constant Name_Id := N + 574;
+   Name_Is_Negative                     : constant Name_Id := N + 575;
+   Name_Line                            : constant Name_Id := N + 576;
+   Name_Rotate_Left                     : constant Name_Id := N + 577;
+   Name_Rotate_Right                    : constant Name_Id := N + 578;
+   Name_Shift_Left                      : constant Name_Id := N + 579;
+   Name_Shift_Right                     : constant Name_Id := N + 580;
+   Name_Shift_Right_Arithmetic          : constant Name_Id := N + 581;
+   Name_Source_Location                 : constant Name_Id := N + 582;
+   Name_Unchecked_Conversion            : constant Name_Id := N + 583;
+   Name_Unchecked_Deallocation          : constant Name_Id := N + 584;
+   Name_To_Pointer                      : constant Name_Id := N + 585;
+   Last_Intrinsic_Name                  : constant Name_Id := N + 585;
 
    --  Names used in processing intrinsic calls
 
-   Name_Free                           : constant Name_Id := N + 585;
+   Name_Free                           : constant Name_Id := N + 586;
 
    --  Reserved words used only in Ada 95
 
-   First_95_Reserved_Word              : constant Name_Id := N + 586;
-   Name_Abstract                       : constant Name_Id := N + 586;
-   Name_Aliased                        : constant Name_Id := N + 587;
-   Name_Protected                      : constant Name_Id := N + 588;
-   Name_Until                          : constant Name_Id := N + 589;
-   Name_Requeue                        : constant Name_Id := N + 590;
-   Name_Tagged                         : constant Name_Id := N + 591;
-   Last_95_Reserved_Word               : constant Name_Id := N + 591;
+   First_95_Reserved_Word              : constant Name_Id := N + 587;
+   Name_Abstract                       : constant Name_Id := N + 587;
+   Name_Aliased                        : constant Name_Id := N + 588;
+   Name_Protected                      : constant Name_Id := N + 589;
+   Name_Until                          : constant Name_Id := N + 590;
+   Name_Requeue                        : constant Name_Id := N + 591;
+   Name_Tagged                         : constant Name_Id := N + 592;
+   Last_95_Reserved_Word               : constant Name_Id := N + 592;
 
    subtype Ada_95_Reserved_Words is
      Name_Id range First_95_Reserved_Word .. Last_95_Reserved_Word;
 
    --  Miscellaneous names used in semantic checking
 
-   Name_Raise_Exception                : constant Name_Id := N + 592;
+   Name_Raise_Exception                : constant Name_Id := N + 593;
 
    --  Additional reserved words and identifiers used in GNAT Project Files
    --  Note that Name_External is already previously declared
 
-   Name_Ada_Roots                      : constant Name_Id := N + 593;
-   Name_Binder                         : constant Name_Id := N + 594;
-   Name_Binder_Driver                  : constant Name_Id := N + 595;
-   Name_Body_Suffix                    : constant Name_Id := N + 596;
-   Name_Builder                        : constant Name_Id := N + 597;
-   Name_Compiler                       : constant Name_Id := N + 598;
-   Name_Compiler_Driver                : constant Name_Id := N + 599;
-   Name_Compiler_Kind                  : constant Name_Id := N + 600;
-   Name_Compute_Dependency             : constant Name_Id := N + 601;
-   Name_Cross_Reference                : constant Name_Id := N + 602;
-   Name_Default_Linker                 : constant Name_Id := N + 603;
-   Name_Default_Switches               : constant Name_Id := N + 604;
-   Name_Dependency_Option              : constant Name_Id := N + 605;
-   Name_Exec_Dir                       : constant Name_Id := N + 606;
-   Name_Executable                     : constant Name_Id := N + 607;
-   Name_Executable_Suffix              : constant Name_Id := N + 608;
-   Name_Extends                        : constant Name_Id := N + 609;
-   Name_Externally_Built               : constant Name_Id := N + 610;
-   Name_Finder                         : constant Name_Id := N + 611;
-   Name_Global_Configuration_Pragmas   : constant Name_Id := N + 612;
-   Name_Gnatls                         : constant Name_Id := N + 613;
-   Name_Gnatstub                       : constant Name_Id := N + 614;
-   Name_Implementation                 : constant Name_Id := N + 615;
-   Name_Implementation_Exceptions      : constant Name_Id := N + 616;
-   Name_Implementation_Suffix          : constant Name_Id := N + 617;
-   Name_Include_Option                 : constant Name_Id := N + 618;
-   Name_Language_Processing            : constant Name_Id := N + 619;
-   Name_Languages                      : constant Name_Id := N + 620;
-   Name_Library_Ali_Dir                : constant Name_Id := N + 621;
-   Name_Library_Dir                    : constant Name_Id := N + 622;
-   Name_Library_Auto_Init              : constant Name_Id := N + 623;
-   Name_Library_GCC                    : constant Name_Id := N + 624;
-   Name_Library_Interface              : constant Name_Id := N + 625;
-   Name_Library_Kind                   : constant Name_Id := N + 626;
-   Name_Library_Name                   : constant Name_Id := N + 627;
-   Name_Library_Options                : constant Name_Id := N + 628;
-   Name_Library_Reference_Symbol_File  : constant Name_Id := N + 629;
-   Name_Library_Src_Dir                : constant Name_Id := N + 630;
-   Name_Library_Symbol_File            : constant Name_Id := N + 631;
-   Name_Library_Symbol_Policy          : constant Name_Id := N + 632;
-   Name_Library_Version                : constant Name_Id := N + 633;
-   Name_Linker                         : constant Name_Id := N + 634;
-   Name_Local_Configuration_Pragmas    : constant Name_Id := N + 635;
-   Name_Locally_Removed_Files          : constant Name_Id := N + 636;
-   Name_Metrics                        : constant Name_Id := N + 637;
-   Name_Naming                         : constant Name_Id := N + 638;
-   Name_Object_Dir                     : constant Name_Id := N + 639;
-   Name_Pretty_Printer                 : constant Name_Id := N + 640;
-   Name_Project                        : constant Name_Id := N + 641;
-   Name_Separate_Suffix                : constant Name_Id := N + 642;
-   Name_Source_Dirs                    : constant Name_Id := N + 643;
-   Name_Source_Files                   : constant Name_Id := N + 644;
-   Name_Source_List_File               : constant Name_Id := N + 645;
-   Name_Spec                           : constant Name_Id := N + 646;
-   Name_Spec_Suffix                    : constant Name_Id := N + 647;
-   Name_Specification                  : constant Name_Id := N + 648;
-   Name_Specification_Exceptions       : constant Name_Id := N + 649;
-   Name_Specification_Suffix           : constant Name_Id := N + 650;
-   Name_Switches                       : constant Name_Id := N + 651;
+   Name_Ada_Roots                      : constant Name_Id := N + 594;
+   Name_Binder                         : constant Name_Id := N + 595;
+   Name_Binder_Driver                  : constant Name_Id := N + 596;
+   Name_Body_Suffix                    : constant Name_Id := N + 597;
+   Name_Builder                        : constant Name_Id := N + 598;
+   Name_Compiler                       : constant Name_Id := N + 599;
+   Name_Compiler_Driver                : constant Name_Id := N + 600;
+   Name_Compiler_Kind                  : constant Name_Id := N + 601;
+   Name_Compute_Dependency             : constant Name_Id := N + 602;
+   Name_Cross_Reference                : constant Name_Id := N + 603;
+   Name_Default_Linker                 : constant Name_Id := N + 604;
+   Name_Default_Switches               : constant Name_Id := N + 605;
+   Name_Dependency_Option              : constant Name_Id := N + 606;
+   Name_Exec_Dir                       : constant Name_Id := N + 607;
+   Name_Executable                     : constant Name_Id := N + 608;
+   Name_Executable_Suffix              : constant Name_Id := N + 609;
+   Name_Extends                        : constant Name_Id := N + 610;
+   Name_Externally_Built               : constant Name_Id := N + 611;
+   Name_Finder                         : constant Name_Id := N + 612;
+   Name_Global_Configuration_Pragmas   : constant Name_Id := N + 613;
+   Name_Gnatls                         : constant Name_Id := N + 614;
+   Name_Gnatstub                       : constant Name_Id := N + 615;
+   Name_Implementation                 : constant Name_Id := N + 616;
+   Name_Implementation_Exceptions      : constant Name_Id := N + 617;
+   Name_Implementation_Suffix          : constant Name_Id := N + 618;
+   Name_Include_Option                 : constant Name_Id := N + 619;
+   Name_Language_Processing            : constant Name_Id := N + 620;
+   Name_Languages                      : constant Name_Id := N + 621;
+   Name_Library_Ali_Dir                : constant Name_Id := N + 622;
+   Name_Library_Dir                    : constant Name_Id := N + 623;
+   Name_Library_Auto_Init              : constant Name_Id := N + 624;
+   Name_Library_GCC                    : constant Name_Id := N + 625;
+   Name_Library_Interface              : constant Name_Id := N + 626;
+   Name_Library_Kind                   : constant Name_Id := N + 627;
+   Name_Library_Name                   : constant Name_Id := N + 628;
+   Name_Library_Options                : constant Name_Id := N + 629;
+   Name_Library_Reference_Symbol_File  : constant Name_Id := N + 630;
+   Name_Library_Src_Dir                : constant Name_Id := N + 631;
+   Name_Library_Symbol_File            : constant Name_Id := N + 632;
+   Name_Library_Symbol_Policy          : constant Name_Id := N + 633;
+   Name_Library_Version                : constant Name_Id := N + 634;
+   Name_Linker                         : constant Name_Id := N + 635;
+   Name_Local_Configuration_Pragmas    : constant Name_Id := N + 636;
+   Name_Locally_Removed_Files          : constant Name_Id := N + 637;
+   Name_Metrics                        : constant Name_Id := N + 638;
+   Name_Naming                         : constant Name_Id := N + 639;
+   Name_Object_Dir                     : constant Name_Id := N + 640;
+   Name_Pretty_Printer                 : constant Name_Id := N + 641;
+   Name_Project                        : constant Name_Id := N + 642;
+   Name_Separate_Suffix                : constant Name_Id := N + 643;
+   Name_Source_Dirs                    : constant Name_Id := N + 644;
+   Name_Source_Files                   : constant Name_Id := N + 645;
+   Name_Source_List_File               : constant Name_Id := N + 646;
+   Name_Spec                           : constant Name_Id := N + 647;
+   Name_Spec_Suffix                    : constant Name_Id := N + 648;
+   Name_Specification                  : constant Name_Id := N + 649;
+   Name_Specification_Exceptions       : constant Name_Id := N + 650;
+   Name_Specification_Suffix           : constant Name_Id := N + 651;
+   Name_Switches                       : constant Name_Id := N + 652;
 
    --  Other miscellaneous names used in front end
 
-   Name_Unaligned_Valid                : constant Name_Id := N + 652;
+   Name_Unaligned_Valid                : constant Name_Id := N + 653;
 
-   --  ----------------------------------------------------------------
-   First_2005_Reserved_Word            : constant Name_Id := N + 653;
-   Name_Interface                      : constant Name_Id := N + 653;
-   Name_Overriding                     : constant Name_Id := N + 654;
-   Name_Synchronized                   : constant Name_Id := N + 655;
-   Last_2005_Reserved_Word             : constant Name_Id := N + 655;
+   --  Ada 2005 reserved words
+
+   First_2005_Reserved_Word            : constant Name_Id := N + 654;
+   Name_Interface                      : constant Name_Id := N + 654;
+   Name_Overriding                     : constant Name_Id := N + 655;
+   Name_Synchronized                   : constant Name_Id := N + 656;
+   Last_2005_Reserved_Word             : constant Name_Id := N + 656;
 
    subtype Ada_2005_Reserved_Words is
      Name_Id range First_2005_Reserved_Word .. Last_2005_Reserved_Word;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 655;
+   Last_Predefined_Name                : constant Name_Id := N + 656;
+
+   ---------------------------------------
+   -- Subtypes Defining Name Categories --
+   ---------------------------------------
 
    subtype Any_Operator_Name is Name_Id range
      First_Operator_Name .. Last_Operator_Name;
+
+   subtype Configuration_Pragma_Names is Name_Id range
+     First_Pragma_Name .. Last_Configuration_Pragma_Name;
 
    ------------------------------
    -- Attribute ID Definitions --
@@ -1246,6 +1255,7 @@ package Snames is
       Pragma_Ada_83,
       Pragma_Ada_95,
       Pragma_Ada_05,
+      Pragma_Ada_2005,
       Pragma_Assertion_Policy,
       Pragma_C_Pass_By_Copy,
       Pragma_Compile_Time_Warning,
@@ -1393,9 +1403,9 @@ package Snames is
       Pragma_Volatile_Components,
       Pragma_Weak_External,
 
-      --  The following pragmas are on their own, out of order, because of
-      --  the special processing required to deal with the fact that their
-      --  names match existing attribute names.
+      --  The following pragmas are on their own, out of order, because of the
+      --  special processing required to deal with the fact that their names
+      --  match existing attribute names.
 
       Pragma_AST_Entry,
       Pragma_Interface,
@@ -1461,6 +1471,13 @@ package Snames is
    --  Export, Interface. Returns True if so. Also returns True for a
    --  name that has been specified by a Convention_Identifier pragma.
    --  If neither case holds, returns False.
+
+   function Is_Keyword_Name (N : Name_Id) return Boolean;
+   --  Test to see if the name N is one of the (reserved) keyword names. This
+   --  includes all the keywords defined in the Ada standard (taking into
+   --  effect the Ada version). It also includes additional keywords in
+   --  contexts where additional keywords have been added. For example, in the
+   --  context of parsing project files, keywords such as PROJECT are included.
 
    function Is_Locking_Policy_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized locking policy

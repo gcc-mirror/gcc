@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,6 +193,7 @@ package body Sinput.C is
                Source_Last         => Hi,
                Source_Text         => Src,
                Template            => No_Source_File,
+               Unit                => No_Unit,
                Time_Stamp          => Empty_Time_Stamp);
 
          Alloc_Line_Tables (S, Opt.Table_Factor * Alloc.Lines_Initial);

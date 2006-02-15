@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -424,10 +424,10 @@ package Lib is
    --  Return unit number of file identified by given source pointer value.
    --  This call must always succeed, since any valid source pointer value
    --  belongs to some previously loaded module. If the given source pointer
-   --  value is within an instantiation, this function returns the unit
-   --  number of the templace, i.e. the unit containing the source code
-   --  corresponding to the given Source_Ptr value. The version taking
-   --  a Node_Id argument, N, simply applies the function to Sloc (N).
+   --  value is within an instantiation, this function returns the unit number
+   --  of the template, i.e. the unit containing the source code corresponding
+   --  to the given Source_Ptr value. The version taking a Node_Id argument, N,
+   --  simply applies the function to Sloc (N).
 
    function Get_Code_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type;
    pragma Inline (Get_Code_Unit);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,6 +268,10 @@ package Sinput is
    --    is a generic instantiation. Set to No_Source_File for the normal case
    --    of a non-instantiation entry. See Sinput-L for details.
 
+   --  Unit : Unit_Number_Type;
+   --    Identifies the unit contained in this source file. Set by
+   --    Initialize_Scanner, must not be subsequently altered.
+
    --  The source file table is accessed by clients using the following
    --  subprogram interface:
 
@@ -299,11 +303,13 @@ package Sinput is
    function Source_Last       (S : SFI) return Source_Ptr;
    function Source_Text       (S : SFI) return Source_Buffer_Ptr;
    function Template          (S : SFI) return Source_File_Index;
+   function Unit              (S : SFI) return Unit_Number_Type;
    function Time_Stamp        (S : SFI) return Time_Stamp_Type;
 
    procedure Set_Keyword_Casing    (S : SFI; C : Casing_Type);
    procedure Set_Identifier_Casing (S : SFI; C : Casing_Type);
    procedure Set_License           (S : SFI; L : License_Type);
+   procedure Set_Unit              (S : SFI; U : Unit_Number_Type);
 
    function Last_Source_File return Source_File_Index;
    --  Index of last source file table entry
@@ -686,6 +692,7 @@ private
       Identifier_Casing : Casing_Type;
       Instantiation     : Source_Ptr;
       Template          : Source_File_Index;
+      Unit              : Unit_Number_Type;
 
       --  The following fields are for internal use only (i.e. only in the
       --  body of Sinput or its children, with no direct access by clients).
