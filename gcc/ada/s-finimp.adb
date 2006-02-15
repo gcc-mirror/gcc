@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,8 +60,8 @@ package body System.Finalization_Implementation is
      new Unchecked_Conversion (Address, RC_Ptr);
 
    procedure Raise_Exception_No_Defer
-     (E       : in Exception_Id;
-      Message : in String := "");
+     (E       : Exception_Id;
+      Message : String := "");
    pragma Import (Ada, Raise_Exception_No_Defer,
      "ada__exceptions__raise_exception_no_defer");
    pragma No_Return (Raise_Exception_No_Defer);
@@ -214,6 +214,13 @@ package body System.Finalization_Implementation is
             P.Next := L;
             L := Obj'Unchecked_Access;
          end;
+
+      --  Make the object completely unattached (case of a library-level,
+      --  Finalize_Storage_Only object).
+
+      elsif Nb_Link = 4 then
+         Obj.Prev := null;
+         Obj.Next := null;
       end if;
    end Attach_To_Final_List;
 

@@ -494,8 +494,8 @@ package body Exp_Ch4 is
 
          if Java_VM then
 
-            --  Suppress the tag assignment when Java_VM because JVM tags
-            --  are represented implicitly in objects.
+            --  Suppress the tag assignment when Java_VM because JVM tags are
+            --  represented implicitly in objects.
 
             null;
 
@@ -507,10 +507,10 @@ package body Exp_Ch4 is
            and then Is_Tagged_Type (Underlying_Type (T))
          then
             TagT := Underlying_Type (T);
-            TagR := Unchecked_Convert_To (Underlying_Type (T),
-                      Make_Explicit_Dereference (Loc,
-                        New_Reference_To (Temp, Loc)));
-
+            TagR :=
+              Unchecked_Convert_To (Underlying_Type (T),
+                Make_Explicit_Dereference (Loc,
+                  Prefix => New_Reference_To (Temp, Loc)));
          end if;
 
          if Present (TagT) then
@@ -593,11 +593,12 @@ package body Exp_Ch4 is
 
                       Unchecked_Convert_To (T,
                         Make_Explicit_Dereference (Loc,
-                          New_Reference_To (Temp, Loc))),
+                          Prefix => New_Reference_To (Temp, Loc))),
 
                       Typ          => T,
                       Flist_Ref    => Flist,
-                      With_Attach  => Attach));
+                      With_Attach  => Attach,
+                      Allocator    => True));
                end if;
             end;
          end if;
@@ -3040,8 +3041,7 @@ package body Exp_Ch4 is
 
    procedure Expand_N_Explicit_Dereference (N : Node_Id) is
    begin
-      --  The only processing required is an insertion of an explicit
-      --  dereference call for the checked storage pool case.
+      --  Insert explicit dereference call for the checked storage pool case
 
       Insert_Dereference_Action (Prefix (N));
    end Expand_N_Explicit_Dereference;
@@ -4798,11 +4798,11 @@ package body Exp_Ch4 is
       --  Signed integer cases, done using either Integer or Long_Long_Integer.
       --  It is not worth having routines for Short_[Short_]Integer, since for
       --  most machines it would not help, and it would generate more code that
-      --  might need certification in the HI-E case.
+      --  might need certification when a certified run time is required.
 
       --  In the integer cases, we have two routines, one for when overflow
-      --  checks are required, and one when they are not required, since
-      --  there is a real gain in ommitting checks on many machines.
+      --  checks are required, and one when they are not required, since there
+      --  is a real gain in omitting checks on many machines.
 
       elsif Rtyp = Base_Type (Standard_Long_Long_Integer)
         or else (Rtyp = Base_Type (Standard_Long_Integer)
@@ -8226,6 +8226,14 @@ package body Exp_Ch4 is
 
            or else Is_Interface (Left_Type)
          then
+            --  Issue error if IW_Membership operation not available in a
+            --  configurable run time setting.
+
+            if not RTE_Available (RE_IW_Membership) then
+               Error_Msg_CRT ("abstract interface types", N);
+               return Empty;
+            end if;
+
             return
               Make_Function_Call (Loc,
                  Name => New_Occurrence_Of (RTE (RE_IW_Membership), Loc),
