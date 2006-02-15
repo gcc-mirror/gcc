@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2006, AdaCore                     --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -58,6 +58,12 @@ package body GNAT.Calendar.Time_IO is
 
    type Padding_Mode is (None, Zero, Space);
 
+   type Sec_Number is mod 2 ** 64;
+   --  Type used to compute the number of seconds since 01/01/1970. A 32 bit
+   --  number will cover only a period of 136 years. This means that for date
+   --  past 2106 the computation is not possible. A 64 bits number should be
+   --  enough for a very large period of time.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -73,14 +79,14 @@ package body GNAT.Calendar.Time_IO is
    --  length is set to 0 it does not cut it.
 
    function Image
-     (N       : Long_Integer;
+     (N       : Sec_Number;
       Padding : Padding_Mode := Zero;
       Length  : Natural := 0) return String;
    --  Return image of N. This number is eventually padded with zeros or spaces
    --  depending of the length required. If length is 0 then no padding occurs.
 
    function Image
-     (N       : Integer;
+     (N       : Natural;
       Padding : Padding_Mode := Zero;
       Length  : Natural := 0) return String;
    --  As above with N provided in Integer format
@@ -137,16 +143,16 @@ package body GNAT.Calendar.Time_IO is
    -----------
 
    function Image
-     (N       : Integer;
+     (N       : Natural;
       Padding : Padding_Mode := Zero;
       Length  : Natural := 0) return String
    is
    begin
-      return Image (Long_Integer (N), Padding, Length);
+      return Image (Sec_Number (N), Padding, Length);
    end Image;
 
    function Image
-     (N       : Long_Integer;
+     (N       : Sec_Number;
       Padding : Padding_Mode := Zero;
       Length  : Natural := 0) return String
    is
@@ -165,7 +171,7 @@ package body GNAT.Calendar.Time_IO is
          end case;
       end Pad_Char;
 
-      NI  : constant String := Long_Integer'Image (N);
+      NI  : constant String := Sec_Number'Image (N);
       NIP : constant String := Pad_Char & NI (2 .. NI'Last);
 
    --  Start of processing for Image
@@ -290,11 +296,12 @@ package body GNAT.Calendar.Time_IO is
 
                when 's' =>
                   declare
-                     Sec : constant Long_Integer :=
-                             Long_Integer
-                               ((Julian_Day (Year, Month, Day) -
-                                  Julian_Day (1970, 1, 1)) * 86_400 +
-                                Hour * 3_600 + Minute * 60 + Second);
+                     Sec : constant Sec_Number :=
+                             Sec_Number (Julian_Day (Year, Month, Day) -
+                                       Julian_Day (1970, 1, 1)) * 86_400
+                                         + Sec_Number (Hour) * 3_600
+                                         + Sec_Number (Minute) * 60
+                                         + Sec_Number (Second);
 
                   begin
                      Result := Result & Image (Sec, None);
