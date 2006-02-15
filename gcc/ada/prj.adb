@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -577,6 +577,9 @@ package body Prj is
       Units_Htable.Reset          (Tree.Units_HT);
       Files_Htable.Reset          (Tree.Files_HT);
       Naming_Table.Init           (Tree.Private_Part.Namings);
+      Naming_Table.Increment_Last (Tree.Private_Part.Namings);
+      Tree.Private_Part.Namings.Table
+        (Naming_Table.Last (Tree.Private_Part.Namings)) := Std_Naming_Data;
       Path_File_Table.Init        (Tree.Private_Part.Path_Files);
       Source_Path_Table.Init      (Tree.Private_Part.Source_Paths);
       Object_Path_Table.Init      (Tree.Private_Part.Object_Paths);
