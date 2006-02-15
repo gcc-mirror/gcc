@@ -1,3 +1,9 @@
+2006-02-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/23424
+	* config/cris/predicates.md ("cris_bdap_sign_extend_operand"):
+	Reenable.
+
 2006-02-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/26255
