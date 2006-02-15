@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,44 +42,42 @@ generic
 
 package Ada.Text_IO.Complex_IO is
 
-   use Complex_Types;
-
    Default_Fore : Field := 2;
-   Default_Aft  : Field := Real'Digits - 1;
+   Default_Aft  : Field := Complex_Types.Real'Digits - 1;
    Default_Exp  : Field := 3;
 
    procedure Get
-     (File  : in  File_Type;
-      Item  : out Complex;
-      Width : in  Field := 0);
+     (File  : File_Type;
+      Item  : out Complex_Types.Complex;
+      Width : Field := 0);
 
    procedure Get
-     (Item  : out Complex;
-      Width : in  Field := 0);
+     (Item  : out Complex_Types.Complex;
+      Width : Field := 0);
 
    procedure Put
-     (File : in File_Type;
-      Item : in Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp);
+     (File : File_Type;
+      Item : Complex_Types.Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
    procedure Put
-     (Item : in Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp);
+     (Item : Complex_Types.Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
    procedure Get
-     (From : in  String;
-      Item : out Complex;
+     (From : String;
+      Item : out Complex_Types.Complex;
       Last : out Positive);
 
    procedure Put
      (To   : out String;
-      Item : in  Complex;
-      Aft  : in  Field := Default_Aft;
-      Exp  : in  Field := Default_Exp);
+      Item : Complex_Types.Complex;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
 private
    pragma Inline (Get);
