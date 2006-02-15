@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -34,130 +34,102 @@
 -- This unit has originally being developed by Matthew J Heaney.            --
 ------------------------------------------------------------------------------
 
+--  This algorithm was adapted from GNAT.Heap_Sort_G (see g-hesorg.ad[sb]).
+
+with System;
+
 procedure Ada.Containers.Generic_Constrained_Array_Sort
   (Container : in out Array_Type)
 is
-   function Is_Less (I, J : Index_Type) return Boolean;
-   pragma Inline (Is_Less);
+   type T is range System.Min_Int .. System.Max_Int;
 
-   procedure Swap (I, J : Index_Type);
-   pragma Inline (Swap);
+   function To_Index (J : T) return Index_Type;
+   pragma Inline (To_Index);
 
-   procedure Sort (First, Last : Index_Type'Base);
+   procedure Sift (S : T);
 
-   -------------
-   -- Is_Less --
-   -------------
+   A : Array_Type renames Container;
 
-   function Is_Less (I, J : Index_Type) return Boolean is
+   --------------
+   -- To_Index --
+   --------------
+
+   function To_Index (J : T) return Index_Type is
+      K : constant T'Base := Index_Type'Pos (A'First) + J - T'(1);
    begin
-      return Container (I) < Container (J);
-   end Is_Less;
+      return Index_Type'Val (K);
+   end To_Index;
+
+   Max  : T := A'Length;
+   Temp : Element_Type;
 
    ----------
-   -- Sort --
+   -- Sift --
    ----------
 
-   procedure Sort (First, Last : Index_Type'Base) is
-      Pivot, Lo, Mid, Hi : Index_Type;
+   procedure Sift (S : T) is
+      C   : T := S;
+      Son : T;
 
    begin
-      if Last <= First then
-         return;
-      end if;
+      loop
+         Son := 2 * C;
 
-      Lo := First;
-      Hi := Last;
+         exit when Son > Max;
 
-      if Last = Index_Type'Succ (First) then
-         if not Is_Less (Lo, Hi) then
-            Swap (Lo, Hi);
-         end if;
+         declare
+            Son_Index : Index_Type := To_Index (Son);
 
-         return;
-      end if;
-
-      Mid := Index_Type'Val
-               (Index_Type'Pos (Lo) +
-                (Index_Type'Pos (Hi) - Index_Type'Pos (Lo)) / 2);
-
-      --  We need to figure out which case we have:
-      --  x < y < z
-      --  x < z < y
-      --  z < x < y
-      --  y < x < z
-      --  y < z < x
-      --  z < y < x
-
-      if Is_Less (Lo, Mid) then
-         if Is_Less (Lo, Hi) then
-            if Is_Less (Mid, Hi) then
-               Swap (Lo, Mid);
-            else
-               Swap (Lo, Hi);
+         begin
+            if Son < Max then
+               if A (Son_Index) < A (Index_Type'Succ (Son_Index)) then
+                  Son := Son + 1;
+                  Son_Index := Index_Type'Succ (Son_Index);
+               end if;
             end if;
 
-         else
-            null;  --  lo is median
-         end if;
+            A (To_Index (C)) := A (Son_Index);  -- Move (Son, C);
+         end;
 
-      elsif Is_Less (Lo, Hi) then
-         null; --  lo is median
+         C := Son;
+      end loop;
 
-      elsif Is_Less (Mid, Hi) then
-         Swap (Lo, Hi);
+      while C /= S loop
+         declare
+            Father      : constant T := C / 2;
+            Father_Elem : Element_Type renames A (To_Index (Father));
 
-      else
-         Swap (Lo, Mid);
-      end if;
+         begin
+            if Father_Elem < Temp then           -- Lt (Father, 0)
+               A (To_Index (C)) := Father_Elem;  -- Move (Father, C)
+               C := Father;
 
-      Pivot := Lo;
-
-      Outer : loop
-         loop
-            exit Outer when not (Pivot < Hi);
-
-            if Is_Less (Hi, Pivot) then
-               Swap (Hi, Pivot);
-               Pivot := Hi;
-               Lo := Index_Type'Succ (Lo);
-               exit;
             else
-               Hi := Index_Type'Pred (Hi);
-            end if;
-         end loop;
-
-         loop
-            exit Outer when not (Lo < Pivot);
-
-            if Is_Less (Lo, Pivot) then
-               Lo := Index_Type'Succ (Lo);
-            else
-               Swap (Lo, Pivot);
-               Pivot := Lo;
-               Hi := Index_Type'Pred (Hi);
                exit;
             end if;
-         end loop;
-      end loop Outer;
+         end;
+      end loop;
 
-      Sort (First, Index_Type'Pred (Pivot));
-      Sort (Index_Type'Succ (Pivot), Last);
-   end Sort;
-
-   ----------
-   -- Swap --
-   ----------
-
-   procedure Swap (I, J : Index_Type) is
-      EI : constant Element_Type := Container (I);
-   begin
-      Container (I) := Container (J);
-      Container (J) := EI;
-   end Swap;
+      A (To_Index (C)) := Temp; -- Move (0, C);
+   end Sift;
 
 --  Start of processing for Generic_Constrained_Array_Sort
 
 begin
-   Sort (Container'First, Container'Last);
+   for J in reverse 1 .. Max / 2 loop
+      Temp := Container (To_Index (J)); --  Move (J, 0);
+      Sift (J);
+   end loop;
+
+   while Max > 1 loop
+      declare
+         Max_Elem : Element_Type renames A (To_Index (Max));
+      begin
+         Temp := Max_Elem;         --  Move (Max, 0);
+         Max_Elem := A (A'First);  --  Move (1, Max);
+      end;
+
+      Max := Max - 1;
+      Sift (1);
+   end loop;
 end Ada.Containers.Generic_Constrained_Array_Sort;
