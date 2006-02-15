@@ -1067,7 +1067,7 @@ enable_rtl_dump_file (int letter)
   if (letter == 'a')
     letter = 0;
 
-  return dump_enable_all (TDF_RTL, letter) > 0;
+  return dump_enable_all (TDF_RTL | TDF_DETAILS | TDF_BLOCKS, letter) > 0;
 }
 
 

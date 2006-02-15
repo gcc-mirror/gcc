@@ -168,7 +168,7 @@ static void
 rtl_loop_init (void)
 {
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   /* Initialize structures for layout changes.  */
   cfg_layout_initialize (0);
@@ -215,7 +215,7 @@ rtl_loop_done (void)
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
   reg_scan (get_insns (), max_reg_num ());
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   current_loops = NULL;
 }

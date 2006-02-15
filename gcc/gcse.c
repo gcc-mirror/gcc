@@ -674,7 +674,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
   max_gcse_regno = max_reg_num ();
 
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   /* Return if there's nothing to do, or it is too expensive.  */
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
@@ -6519,7 +6519,7 @@ bypass_jumps (void)
   max_gcse_regno = max_reg_num ();
 
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   /* Return if there's nothing to do, or it is too expensive.  */
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1

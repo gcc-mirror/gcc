@@ -2710,7 +2710,7 @@ static void
 rest_of_handle_cfg (void)
 {
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE
                  | (flag_thread_jumps ? CLEANUP_THREADING : 0));

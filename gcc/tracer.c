@@ -369,11 +369,11 @@ tracer (unsigned int flags)
   cfg_layout_initialize (flags);
   mark_dfs_back_edges ();
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
   tail_duplicate ();
   layout_superblocks ();
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
   cfg_layout_finalize ();
 
   /* Merge basic blocks in duplicated traces.  */
@@ -391,7 +391,7 @@ static void
 rest_of_handle_tracer (void)
 {
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
   tracer (0);
   cleanup_cfg (CLEANUP_EXPENSIVE);
   reg_scan (get_insns (), max_reg_num ());

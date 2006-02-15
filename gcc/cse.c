@@ -7844,7 +7844,7 @@ rest_of_handle_cse (void)
   int tem;
 
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   reg_scan (get_insns (), max_reg_num ());
 
@@ -7899,7 +7899,7 @@ rest_of_handle_cse2 (void)
   int tem;
 
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   tem = cse_main (get_insns (), max_reg_num ());
 
