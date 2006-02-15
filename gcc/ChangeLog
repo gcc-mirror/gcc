@@ -1,3 +1,7 @@
+2006-02-15 Rafael ¡vila de EspÌndola <rafael.espindola@gmail.com>
+
+	* Makefile.in: Fix the examples about the use of stamps
+
 2006-02-15  Michael Matz  <matz@suse.de>
 
 	PR middle-end/22275
@@ -3683,7 +3687,7 @@
 	* basic-block.h: Remove the prototype for
 	partition_hot_cold_basic_blocks.
 
-2006-01-16  Rafael √vila de Esp√≠ndola <rafael.espindola@gmail.com>
+2006-01-16  Rafael √Évila de Esp√ÔøΩ≠ndola <rafael.espindola@gmail.com>
 
 	* cppspec.c (lang_specific_spec_functions): Remove.
 	* gcc.c (lookup_spec_function): Use static_spec_functions directly.
