@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1471,7 +1471,7 @@ package body Ada.Strings.Superbounded is
          raise Index_Error;
       else
          Result.Current_Length := High - Low + 1;
-         Result.Data (1 .. Source.Current_Length) := Source.Data (Low .. High);
+         Result.Data (1 .. Result.Current_Length) := Source.Data (Low .. High);
       end if;
 
       return Result;
@@ -1490,7 +1490,7 @@ package body Ada.Strings.Superbounded is
          raise Index_Error;
       else
          Target.Current_Length := High - Low + 1;
-         Target.Data (1 .. Source.Current_Length) := Source.Data (Low .. High);
+         Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
       end if;
    end Super_Slice;
 
