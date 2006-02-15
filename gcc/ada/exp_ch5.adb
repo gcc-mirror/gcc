@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -506,7 +506,7 @@ package body Exp_Ch5 is
       if Nkind (Rhs) = N_String_Literal then
          declare
             Temp : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc, Name_T);
+                     Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
             Decl : Node_Id;
 
          begin
@@ -1629,18 +1629,6 @@ package body Exp_Ch5 is
         and then not Can_Never_Be_Null (Etype (Rhs))
       then
          Apply_Constraint_Check (Rhs, Etype (Lhs));
-      end if;
-
-      --  If we are assigning an access type and the left side is an
-      --  entity, then make sure that Is_Known_Non_Null properly
-      --  reflects the state of the entity after the assignment
-
-      if Is_Access_Type (Typ)
-        and then Is_Entity_Name (Lhs)
-        and then Known_Non_Null (Rhs)
-        and then Safe_To_Capture_Value (N, Entity (Lhs))
-      then
-         Set_Is_Known_Non_Null (Entity (Lhs), Known_Non_Null (Rhs));
       end if;
 
       --  Case of assignment to a bit packed array element
@@ -2809,14 +2797,14 @@ package body Exp_Ch5 is
 
       --  Nothing to do if we are returning by reference, or this is not
       --  a type that requires special processing (indicated by the fact
-      --  that it requires a cleanup scope for the secondary stack case)
+      --  that it requires a cleanup scope for the secondary stack case).
 
       if Is_Return_By_Reference_Type (T) then
          null;
 
       elsif not Requires_Transient_Scope (Return_Type) then
 
-         --  mutable records with no variable length components are not
+         --  Mutable records with no variable length components are not
          --  returned on the sec-stack so we need to make sure that the
          --  backend will only copy back the size of the actual value  and not
          --  the maximum size. We create an actual subtype for this purpose
