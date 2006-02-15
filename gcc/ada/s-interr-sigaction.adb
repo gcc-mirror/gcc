@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2005, Free Software Fundation                --
+--             Copyright (C) 1998-2006, Free Software Fundation             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +38,6 @@ with Ada.Task_Identification;
 
 with Ada.Exceptions;
 --  used for Raise_Exception
-
-with System.OS_Interface;
---  used for intr_attach
 
 with System.Storage_Elements;
 --  used for To_Address

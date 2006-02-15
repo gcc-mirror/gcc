@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,11 +38,6 @@
 --  or kept always unmasked.
 --  Be on the lookout for special signals that
 --  may be used by the thread library.
-
-with Interfaces.C;
-
-with System.OS_Interface;
---  used for various Constants, Signal and types
 
 package body System.Interrupt_Management is
 

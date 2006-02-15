@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,6 @@ with System.Address_Image;
 with System.Parameters;
 with System.Soft_Links;
 with System.Task_Primitives.Operations;
-with System.Tasking;
-
 with Unchecked_Conversion;
 
 pragma Warnings (Off);

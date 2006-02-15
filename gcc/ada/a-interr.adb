@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,17 +31,6 @@
 -- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-with System.Interrupts;
---  used for Interrupt_ID
---           Parameterless_Handler
---           Is_Reserved
---           Is_Handler_Attached
---           Current_Handler
---           Attach_Handler
---           Exchange_Handler
---           Detach_Handler
---           Reference
 
 with Unchecked_Conversion;
 

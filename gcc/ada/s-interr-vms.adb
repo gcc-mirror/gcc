@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,13 +98,6 @@ with System.Storage_Elements;
 --  used for To_Address
 --           To_Integer
 --           Integer_Address
-
-with System.Tasking;
---  used for Task_Id
---           Task_Entry_Index
---           Null_Task
---           Self
---           Interrupt_Manager_ID
 
 with System.Tasking.Utilities;
 --  used for Make_Independent

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,17 +59,12 @@ with System.Tasking.Queuing;
 --  used for Dequeue_Call
 --           Dequeue_Head
 
-with System.Tasking.Debug;
---  used for Trace
-
 with System.Parameters;
 --  used for Single_Lock
 --           Runtime_Traces
 
 with System.Traces.Tasking;
 --  used for Send_Trace_Info
-
-with Unchecked_Conversion;
 
 package body System.Tasking.Utilities is
 
