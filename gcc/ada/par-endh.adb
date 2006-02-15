@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -759,12 +759,22 @@ package body Endh is
    --------------------------
 
    function Explicit_Start_Label (SS_Index : Nat) return Boolean is
-      L : constant Node_Id := Scope.Table (SS_Index).Labl;
+      L    : constant Node_Id := Scope.Table (SS_Index).Labl;
+      Etyp : constant SS_End_Type := Scope.Table (SS_Index).Etyp;
 
    begin
       if No (L) then
          return False;
-      elsif Comes_From_Source (L) then
+
+      --  In the following test we protect the call to Comes_From_Source
+      --  against lines containing previously reported syntax errors.
+
+      elsif (Etyp = E_Loop
+         or else Etyp = E_Name
+         or else Etyp = E_Suspicious_Is
+         or else Etyp = E_Bad_Is)
+         and then Comes_From_Source (L)
+      then
          return True;
       else
          return False;
