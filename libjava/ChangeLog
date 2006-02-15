@@ -1,3 +1,8 @@
+2006-02-15  Matthias Klose  <doko@debian.org>
+
+	* gnu/java/nio/charset, gnu/java/net/protocol/file,
+	gnu/regexp: Remove empty directories.
+
 2006-02-10  Tom Tromey  <tromey@redhat.com>
 
 	Re-merged all regular expression code.
