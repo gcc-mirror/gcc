@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -438,7 +438,7 @@ package body Sem_Ch8 is
 
    function Has_Private_With (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-262): Determines if the current compilation unit has a
-   --  private with on E
+   --  private with on E.
 
    procedure Find_Expanded_Name (N : Node_Id);
    --  Selected component is known to be expanded name. Verify legality
@@ -1762,9 +1762,11 @@ package body Sem_Ch8 is
       --  Ada 2005 AI 404: if the new subprogram is dispatching, verify that
       --  controlling access parameters are known non-null for the renamed
       --  subprogram. Test also applies to a subprogram instantiation that
-      --  is dispatching.
+      --  is dispatching. Test is skipped if some previous error was detected
+      --  that set Old_S to Any_Id.
 
       if Ada_Version >= Ada_05
+        and then Old_S /= Any_Id
         and then not Is_Dispatching_Operation (Old_S)
         and then Is_Dispatching_Operation (New_S)
       then
@@ -4663,7 +4665,7 @@ package body Sem_Ch8 is
                   --  of incomplete types, because the type must still
                   --  appear untagged to outside units.
 
-                  if not Present (Class_Wide_Type (T)) then
+                  if No (Class_Wide_Type (T)) then
                      Make_Class_Wide_Type (T);
                   end if;
 
@@ -4685,8 +4687,18 @@ package body Sem_Ch8 is
 
             else
                if Is_Concurrent_Type (T) then
-                  C := Class_Wide_Type
-                         (Corresponding_Record_Type (Entity (Prefix (N))));
+                  if No (Corresponding_Record_Type (Entity (Prefix (N)))) then
+
+                     --  Previous error. Use current type, which at least
+                     --  provides some operations.
+
+                     C := Entity (Prefix (N));
+
+                  else
+                     C := Class_Wide_Type
+                            (Corresponding_Record_Type (Entity (Prefix (N))));
+                  end if;
+
                else
                   C := Class_Wide_Type (Entity (Prefix (N)));
                end if;
@@ -5415,7 +5427,22 @@ package body Sem_Ch8 is
       if not Is_Compilation_Unit (Current_Scope) then
 
          --  If the use_clause is in an inner scope, it is made redundant
-         --  by some clause in the current context.
+         --  by some clause in the current context, with one exception:
+         --  If we're compiling a nested package body, and the use_clause
+         --  comes from the corresponding spec, the clause is not necessarily
+         --  fully redundant, so we should not warn.  If a warning was
+         --  warranted, it would have been given when the spec was processed.
+
+         if Nkind (Parent (Decl)) = N_Package_Specification then
+            declare
+               Package_Spec_Entity : constant Entity_Id :=
+                                       Defining_Unit_Name (Parent (Decl));
+            begin
+               if In_Package_Body (Package_Spec_Entity) then
+                  return;
+               end if;
+            end;
+         end if;
 
          Redundant := Clause;
          Prev_Use  := Cur_Use;
