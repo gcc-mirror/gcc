@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -56,6 +56,12 @@
 #include "einfo.h"
 #include "ada-tree.h"
 #include "gigi.h"
+
+/* Let code below know whether we are targetting VMS without need of
+   intrusive preprocessor directives.  */
+#ifndef TARGET_ABI_OPEN_VMS
+#define TARGET_ABI_OPEN_VMS 0
+#endif
 
 int max_gnat_nodes;
 int number_names;
@@ -159,7 +165,7 @@ static tree emit_index_check (tree, tree, tree, tree);
 static tree emit_check (tree, tree, int);
 static tree convert_with_check (Entity_Id, tree, bool, bool, bool);
 static bool addressable_p (tree);
-static tree assoc_to_constructor (Node_Id, tree);
+static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
@@ -446,7 +452,18 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 			    == Attr_Unchecked_Access)
 		       || (Get_Attribute_Id (Attribute_Name (gnat_temp))
 			   == Attr_Unrestricted_Access)))))
-	gnu_result = DECL_INITIAL (gnu_result);
+	{
+	  gnu_result = DECL_INITIAL (gnu_result);
+	  /* ??? The mark/unmark mechanism implemented in Gigi to prevent tree
+	     sharing between global level and subprogram level doesn't apply
+	     to elaboration routines.  As a result, the DECL_INITIAL tree may
+	     be shared between the static initializer of a global object and
+	     the elaboration routine, thus wreaking havoc if a local temporary
+	     is created in place during gimplification of the latter and the
+	     former is emitted afterwards.  Manually unshare for now.  */
+	  if (TREE_VISITED (gnu_result))
+	    gnu_result = unshare_expr (gnu_result);
+	}
     }
 
   *gnu_result_type_p = gnu_result_type;
@@ -1340,6 +1357,57 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   return gnu_result;
 }
 
+/* Emit statements to establish __gnat_handle_vms_condition as a VMS condition
+   handler for the current function.  */
+
+/* This is implemented by issuing a call to the appropriate VMS specific
+   builtin.  To avoid having VMS specific sections in the global gigi decls
+   array, we maintain the decls of interest here.  We can't declare them
+   inside the function because we must mark them never to be GC'd, which we
+   can only do at the global level.  */
+
+static GTY(()) tree vms_builtin_establish_handler_decl = NULL_TREE;
+static GTY(()) tree gnat_vms_condition_handler_decl = NULL_TREE;
+
+static void
+establish_gnat_vms_condition_handler (void)
+{
+  tree establish_stmt;
+
+  /* Elaborate the required decls on the first call.  Check on the decl for
+     the gnat condition handler to decide, as this is one we create so we are
+     sure that it will be non null on subsequent calls.  The builtin decl is
+     looked up so remains null on targets where it is not implemented yet.  */
+  if (gnat_vms_condition_handler_decl == NULL_TREE)
+    {
+      vms_builtin_establish_handler_decl
+	= builtin_decl_for
+	  (get_identifier ("__builtin_establish_vms_condition_handler"));
+
+      gnat_vms_condition_handler_decl
+	= create_subprog_decl (get_identifier ("__gnat_handle_vms_condition"),
+			       NULL_TREE,
+			       build_function_type_list (integer_type_node,
+							 ptr_void_type_node,
+							 ptr_void_type_node,
+							 NULL_TREE),
+			       NULL_TREE, 0, 1, 1, 0, Empty);
+    }
+
+  /* Do nothing if the establish builtin is not available, which might happen
+     on targets where the facility is not implemented.  */
+  if (vms_builtin_establish_handler_decl == NULL_TREE)
+    return;
+
+  establish_stmt
+    = build_call_1_expr (vms_builtin_establish_handler_decl,
+			 build_unary_op
+			 (ADDR_EXPR, NULL_TREE,
+			  gnat_vms_condition_handler_decl));
+
+  add_stmt (establish_stmt);
+}
+
 /* Subroutine of gnat_to_gnu to process gnat_node, an N_Subprogram_Body.  We
    don't return anything.  */
 
@@ -1432,6 +1500,22 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	  = convert (TREE_TYPE (TREE_PURPOSE (gnu_cico_list)),
 		     gnat_to_gnu_entity (gnat_param, NULL_TREE, 1));
       }
+
+
+  /* On VMS, establish our condition handler to possibly turn a condition into
+     the corresponding exception if the subprogram has a foreign convention or
+     is exported.
+
+     To ensure proper execution of local finalizations on condition instances,
+     we must turn a condition into the corresponding exception even if there
+     is no applicable Ada handler, and need at least one condition handler per
+     possible call chain involving GNAT code.  OTOH, establishing the handler
+     has a cost so we want to mimize the number of subprograms into which this
+     happens.  The foreign or exported condition is expected to satisfy all
+     the constraints.  */
+  if (TARGET_ABI_OPEN_VMS
+      && (Has_Foreign_Convention (gnat_node) || Is_Exported (gnat_node)))
+    establish_gnat_vms_condition_handler ();
 
   process_decls (Declarations (gnat_node), Empty, Empty, true, true);
 
@@ -3082,25 +3166,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	if (Null_Record_Present (gnat_node))
 	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL_TREE);
 
-	else if (TREE_CODE (gnu_aggr_type) == UNION_TYPE
-		 && TYPE_UNCHECKED_UNION_P (gnu_aggr_type))
-	  {
-	    /* The first element is the discrimant, which we ignore.  The
-	       next is the field we're building.  Convert the expression
-	       to the type of the field and then to the union type.  */
-	    Node_Id gnat_assoc
-	      = Next (First (Component_Associations (gnat_node)));
-	    Entity_Id gnat_field = Entity (First (Choices (gnat_assoc)));
-	    tree gnu_field_type
-	      = TREE_TYPE (gnat_to_gnu_entity (gnat_field, NULL_TREE, 0));
-
-	    gnu_result = convert (gnu_field_type,
-				  gnat_to_gnu (Expression (gnat_assoc)));
-	  }
 	else if (TREE_CODE (gnu_aggr_type) == RECORD_TYPE
 		 || TREE_CODE (gnu_aggr_type) == UNION_TYPE)
 	  gnu_result
-	    = assoc_to_constructor (First (Component_Associations (gnat_node)),
+	    = assoc_to_constructor (Etype (gnat_node),
+				    First (Component_Associations (gnat_node)),
 				    gnu_aggr_type);
 	else if (TREE_CODE (gnu_aggr_type) == ARRAY_TYPE)
 	  gnu_result = pos_to_constructor (First (Expressions (gnat_node)),
@@ -3996,7 +4066,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	  if (Present (Actual_Designated_Subtype (gnat_node)))
 	    {
-	      gnu_actual_obj_type = gnat_to_gnu_type (Actual_Designated_Subtype (gnat_node));
+	      gnu_actual_obj_type
+	        = gnat_to_gnu_type (Actual_Designated_Subtype (gnat_node));
 
 	      if (TYPE_FAT_OR_THIN_POINTER_P (gnu_ptr_type))
 	        gnu_actual_obj_type
@@ -5582,13 +5653,14 @@ process_type (Entity_Id gnat_entity)
     }
 }
 
-/* GNAT_ASSOC is the front of the Component_Associations of an N_Aggregate.
-   GNU_TYPE is the GCC type of the corresponding record.
+/* GNAT_ENTITY is the type of the resulting constructors,
+   GNAT_ASSOC is the front of the Component_Associations of an N_Aggregate,
+   and GNU_TYPE is the GCC type of the corresponding record.
 
    Return a CONSTRUCTOR to build the record.  */
 
 static tree
-assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
+assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 {
   tree gnu_list, gnu_result;
 
@@ -5612,6 +5684,11 @@ assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
 	 be setting that field in the parent.  */
       if (Present (Corresponding_Discriminant (Entity (gnat_field)))
 	  && Is_Tagged_Type (Scope (Entity (gnat_field))))
+	continue;
+
+      /* Also ignore discriminants of Unchecked_Unions.  */
+      else if (Is_Unchecked_Union (gnat_entity)
+	       && Ekind (Entity (gnat_field)) == E_Discriminant)
 	continue;
 
       /* Before assigning a value in an aggregate make sure range checks
