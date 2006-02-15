@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
 with Rident;   use Rident;
+with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
@@ -1870,6 +1871,12 @@ package body Sem_Ch4 is
       --  in any case.
 
       Set_Etype (N, Standard_Boolean);
+
+      if Comes_From_Source (N)
+        and then Is_CPP_Class (Etype (Etype (Right_Opnd (N))))
+      then
+         Error_Msg_N ("membership test not applicable to cpp-class types", N);
+      end if;
    end Analyze_Membership_Op;
 
    ----------------------
@@ -2040,7 +2047,7 @@ package body Sem_Ch4 is
       then
          return;
 
-      elsif not Present (Actuals) then
+      elsif No (Actuals) then
 
          --  If Normalize succeeds, then there are default parameters for
          --  all formals.
@@ -4064,18 +4071,31 @@ package body Sem_Ch4 is
          --  universal, the context will impose the correct type. An anonymous
          --  type for a 'Access reference is also universal in this sense, as
          --  the actual type is obtained from context.
+         --  In Ada 2005, the equality operator for anonymous access types
+         --  is declared in Standard, and preference rules apply to it.
 
-         if Present (Scop)
-            and then not Defined_In_Scope (T1, Scop)
-            and then T1 /= Universal_Integer
-            and then T1 /= Universal_Real
-            and then T1 /= Any_Access
-            and then T1 /= Any_String
-            and then T1 /= Any_Composite
-            and then (Ekind (T1) /= E_Access_Subprogram_Type
-                        or else Comes_From_Source (T1))
-         then
-            return;
+         if Present (Scop) then
+            if Defined_In_Scope (T1, Scop)
+              or else T1 = Universal_Integer
+              or else T1 = Universal_Real
+              or else T1 = Any_Access
+              or else T1 = Any_String
+              or else T1 = Any_Composite
+              or else (Ekind (T1) = E_Access_Subprogram_Type
+                          and then not Comes_From_Source (T1))
+            then
+               null;
+
+            elsif Ekind (T1) = E_Anonymous_Access_Type
+              and then Scop = Standard_Standard
+            then
+               null;
+
+            else
+               --  The scope does not contain an operator for the type
+
+               return;
+            end if;
          end if;
 
          --  Ada 2005 (AI-230): Keep restriction imposed by Ada 83 and 95:
@@ -4123,6 +4143,11 @@ package body Sem_Ch4 is
             if Etype (N) = Any_Type then
                Found := False;
             end if;
+
+         elsif Scop = Standard_Standard
+           and then Ekind (T1) = E_Anonymous_Access_Type
+         then
+            Found := True;
          end if;
       end Try_One_Interp;
 
@@ -4595,27 +4620,56 @@ package body Sem_Ch4 is
             if not Is_Type (It.Nam)
               and then Is_Abstract (It.Nam)
               and then not Is_Dispatching_Operation (It.Nam)
-              and then
-                (Ada_Version >= Ada_05
-                   or else Is_Predefined_File_Name
-                             (Unit_File_Name (Get_Source_Unit (It.Nam))))
-
             then
                Abstract_Op := It.Nam;
-               Remove_Interp (I);
-               exit;
+
+               --  In Ada 2005, this operation does not participate in Overload
+               --  resolution. If the operation is defined in in a predefined
+               --  unit, it is one of the operations declared abstract in some
+               --  variants of System, and it must be removed as well.
+
+               if Ada_Version >= Ada_05
+                   or else Is_Predefined_File_Name
+                             (Unit_File_Name (Get_Source_Unit (It.Nam)))
+                   or else Is_Descendent_Of_Address (It.Typ)
+               then
+                  Remove_Interp (I);
+                  exit;
+               end if;
             end if;
 
             Get_Next_Interp (I, It);
          end loop;
 
          if No (Abstract_Op) then
-            return;
+
+            --  If some interpretation yields an integer type, it is still
+            --  possible that there are address interpretations. Remove them
+            --  if one operand is a literal, to avoid spurious ambiguities
+            --  on systems where Address is a visible integer type.
+
+            if Is_Overloaded (N)
+              and then  Nkind (N) in N_Op
+              and then Is_Integer_Type (Etype (N))
+            then
+               if Nkind (N) in N_Binary_Op then
+                  if Nkind (Right_Opnd (N)) = N_Integer_Literal then
+                     Remove_Address_Interpretations (Second_Op);
+
+                  elsif Nkind (Right_Opnd (N)) = N_Integer_Literal then
+                     Remove_Address_Interpretations (First_Op);
+                  end if;
+               end if;
+            end if;
 
          elsif Nkind (N) in N_Op then
 
-            --  Remove interpretations that treat literals as addresses.
-            --  This is never appropriate.
+            --  Remove interpretations that treat literals as addresses. This
+            --  is never appropriate, even when Address is defined as a visible
+            --  Integer type. The reason is that we would really prefer Address
+            --  to behave as a private type, even in this case, which is there
+            --  only to accomodate oddities of VMS address sizes. If Address is
+            --  a visible integer type, we get lots of overload ambiguities.
 
             if Nkind (N) in N_Binary_Op then
                declare
@@ -4884,6 +4938,8 @@ package body Sem_Ch4 is
          Node_To_Replace : Node_Id;
          Subprog         : Node_Id)
       is
+         Formal_Type  : constant Entity_Id :=
+                          Etype (First_Formal (Entity (Subprog)));
          First_Actual : Node_Id;
 
       begin
@@ -4898,12 +4954,26 @@ package body Sem_Ch4 is
 
          --  If need be, rewrite first actual as an explicit dereference
 
-         if not Is_Access_Type (Etype (First_Formal (Entity (Subprog))))
+         if not Is_Access_Type (Formal_Type)
            and then Is_Access_Type (Etype (Obj))
          then
             Rewrite (First_Actual,
               Make_Explicit_Dereference (Sloc (Obj), Obj));
             Analyze (First_Actual);
+
+         --  Conversely, if the formal is an access parameter and the
+         --  object is not, replace the actual with a 'Access reference.
+         --   Its analysis will check that the object is aliased.
+
+         elsif Is_Access_Type (Formal_Type)
+           and then not Is_Access_Type (Etype (Obj))
+         then
+            Rewrite (First_Actual,
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Access,
+                Prefix => Relocate_Node (Obj)));
+            Analyze (First_Actual);
+
          else
             Rewrite (First_Actual, Obj);
          end if;
@@ -5040,7 +5110,7 @@ package body Sem_Ch4 is
                  and then Etype (First_Formal (Hom)) =
                             Class_Wide_Type (Anc_Type)
                then
-                  Hom_Ref := New_Reference_To (Hom, Loc);
+                  Hom_Ref := New_Reference_To (Hom, Sloc (Subprog));
 
                   Set_Etype (Call_Node, Any_Type);
                   Set_Parent (Call_Node, Parent (Node_To_Replace));
@@ -5091,8 +5161,9 @@ package body Sem_Ch4 is
       is
          Elmt        : Elmt_Id;
          Prim_Op     : Entity_Id;
-         Prim_Op_Ref : Node_Id;
-         Success     : Boolean;
+         Prim_Op_Ref : Node_Id := Empty;
+         Success     : Boolean := False;
+         Op_Exists   : Boolean := False;
 
          function Valid_First_Argument_Of (Op : Entity_Id) return Boolean;
          --  Verify that the prefix, dereferenced if need be, is a valid
@@ -5128,7 +5199,9 @@ package body Sem_Ch4 is
       --  Start of processing for Try_Primitive_Operation
 
       begin
-         --  Look for the subprogram in the list of primitive operations
+         --  Look for subprograms in the list of primitive operations
+         --  The name must be identical, and the kind of call indicates
+         --  the expected kind of operation (function or procedure).
 
          Elmt := First_Elmt (Primitive_Operations (Obj_Type));
          while Present (Elmt) loop
@@ -5137,35 +5210,73 @@ package body Sem_Ch4 is
             if Chars (Prim_Op) = Chars (Subprog)
               and then Present (First_Formal (Prim_Op))
               and then Valid_First_Argument_Of (Prim_Op)
+              and then
+                 (Nkind (Call_Node) = N_Function_Call)
+                   = (Ekind (Prim_Op) = E_Function)
             then
-               Prim_Op_Ref := New_Reference_To (Prim_Op, Loc);
+               --  If this primitive operation corresponds with an immediate
+               --  ancestor interface there is no need to add it to the list
+               --  of interpretations; the corresponding aliased primitive is
+               --  also in this list of primitive operations and will be
+               --  used instead.
 
-               Set_Etype (Call_Node, Any_Type);
-               Set_Parent (Call_Node, Parent (Node_To_Replace));
+               if Present (Abstract_Interface_Alias (Prim_Op))
+                 and then Present (DTC_Entity (Alias (Prim_Op)))
+                 and then Etype (DTC_Entity (Alias (Prim_Op))) = RTE (RE_Tag)
+               then
+                  goto Continue;
+               end if;
 
-               Set_Name (Call_Node, Prim_Op_Ref);
+               if not Success then
+                  Prim_Op_Ref := New_Reference_To (Prim_Op, Sloc (Subprog));
 
-               Analyze_One_Call
-                 (N          => Call_Node,
-                  Nam        => Prim_Op,
-                  Report     => False,
-                  Success    => Success,
-                  Skip_First => True);
+                  Set_Etype (Call_Node, Any_Type);
+                  Set_Parent (Call_Node, Parent (Node_To_Replace));
 
-               if Success then
-                  Complete_Object_Operation
-                    (Call_Node       => Call_Node,
-                     Node_To_Replace => Node_To_Replace,
-                     Subprog         => Prim_Op_Ref);
+                  Set_Name (Call_Node, Prim_Op_Ref);
 
-                  return True;
+                  Analyze_One_Call
+                    (N          => Call_Node,
+                     Nam        => Prim_Op,
+                     Report     => False,
+                     Success    => Success,
+                     Skip_First => True);
+
+                  if Success then
+                     Op_Exists := True;
+
+                     --  If the operation is a procedure call, there can only
+                     --  be one candidate and we found it. If it is a function
+                     --  we must collect all interpretations, because there
+                     --  may be several primitive operations that differ only
+                     --  in the return type.
+
+                     if Nkind (Call_Node) = N_Procedure_Call_Statement then
+                        exit;
+                     end if;
+                  end if;
+
+               elsif Ekind (Prim_Op) = E_Function then
+
+                  --  Collect remaining function interpretations, to be
+                  --  resolved from context.
+
+                  Add_One_Interp (Prim_Op_Ref, Prim_Op, Etype (Prim_Op));
                end if;
             end if;
 
+            <<Continue>>
             Next_Elmt (Elmt);
          end loop;
 
-         return False;
+         if Op_Exists then
+            Complete_Object_Operation
+              (Call_Node       => Call_Node,
+               Node_To_Replace => Node_To_Replace,
+               Subprog         => Prim_Op_Ref);
+         end if;
+
+         return Op_Exists;
       end Try_Primitive_Operation;
 
    --  Start of processing for Try_Object_Operation
