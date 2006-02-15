@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,6 +69,14 @@ package System.Val_Util is
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case. Constraint_Error is
    --  also raised in this case.
+
+   procedure Scan_Plus_Sign
+     (Str   : String;
+      Ptr   : access Integer;
+      Max   : Integer;
+      Start : out Positive);
+   --  Same as Scan_Sign, but allows only plus, not minus.
+   --  This is used for modular types.
 
    function Scan_Exponent
      (Str  : String;

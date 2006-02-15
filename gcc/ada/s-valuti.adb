@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,6 +158,50 @@ package body System.Val_Util is
       return X;
 
    end Scan_Exponent;
+
+   --------------------
+   -- Scan_Plus_Sign --
+   --------------------
+
+   procedure Scan_Plus_Sign
+     (Str   : String;
+      Ptr   : access Integer;
+      Max   : Integer;
+      Start : out Positive)
+   is
+      P : Natural := Ptr.all;
+
+   begin
+      if P > Max then
+         raise Constraint_Error;
+      end if;
+
+      --  Scan past initial blanks
+
+      while Str (P) = ' ' loop
+         P := P + 1;
+
+         if P > Max then
+            Ptr.all := P;
+            raise Constraint_Error;
+         end if;
+      end loop;
+
+      Start := P;
+
+      --  Skip past an initial plus sign
+
+      if Str (P) = '+' then
+         P := P + 1;
+
+         if P > Max then
+            Ptr.all := Start;
+            raise Constraint_Error;
+         end if;
+      end if;
+
+      Ptr.all := P;
+   end Scan_Plus_Sign;
 
    ---------------
    -- Scan_Sign --

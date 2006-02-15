@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,11 +36,11 @@ with System.Val_Util;       use System.Val_Util;
 
 package body System.Val_LLU is
 
-   -----------------------------
-   -- Scan_Long_Long_Unsigned --
-   -----------------------------
+   ---------------------------------
+   -- Scan_Raw_Long_Long_Unsigned --
+   ---------------------------------
 
-   function Scan_Long_Long_Unsigned
+   function Scan_Raw_Long_Long_Unsigned
      (Str : String;
       Ptr : access Integer;
       Max : Integer) return Long_Long_Unsigned
@@ -54,16 +54,8 @@ package body System.Val_LLU is
       Expon : Integer;
       --  Exponent value
 
-      Minus : Boolean := False;
-      --  Set to True if minus sign is present, otherwise to False. Note that
-      --  a minus sign is permissible for the singular case of -0, and in any
-      --  case the pointer is left pointing past a negative integer literal.
-
       Overflow : Boolean := False;
       --  Set True if overflow is detected at any point
-
-      Start : Positive;
-      --  Save location of first non-blank character
 
       Base_Char : Character;
       --  Base character (# or :) in based case
@@ -75,13 +67,6 @@ package body System.Val_LLU is
       --  Digit value
 
    begin
-      Scan_Sign (Str, Ptr, Max, Minus, Start);
-
-      if Str (Ptr.all) not in '0' .. '9' then
-         Ptr.all := Start;
-         raise Constraint_Error;
-      end if;
-
       P := Ptr.all;
       Uval := Character'Pos (Str (P)) - Character'Pos ('0');
       P := P + 1;
@@ -273,11 +258,34 @@ package body System.Val_LLU is
 
       --  Return result, dealing with sign and overflow
 
-      if Overflow or else (Minus and then Uval /= 0) then
+      if Overflow then
          raise Constraint_Error;
       else
          return Uval;
       end if;
+   end Scan_Raw_Long_Long_Unsigned;
+
+   -----------------------------
+   -- Scan_Long_Long_Unsigned --
+   -----------------------------
+
+   function Scan_Long_Long_Unsigned
+     (Str : String;
+      Ptr : access Integer;
+      Max : Integer) return Long_Long_Unsigned
+   is
+      Start : Positive;
+      --  Save location of first non-blank character
+
+   begin
+      Scan_Plus_Sign (Str, Ptr, Max, Start);
+
+      if Str (Ptr.all) not in '0' .. '9' then
+         Ptr.all := Start;
+         raise Constraint_Error;
+      end if;
+
+      return Scan_Raw_Long_Long_Unsigned (Str, Ptr, Max);
    end Scan_Long_Long_Unsigned;
 
    ------------------------------
