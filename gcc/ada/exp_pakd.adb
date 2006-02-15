@@ -674,7 +674,7 @@ package body Exp_Pakd is
 
    --  The PAT is always obtained from the actual subtype
 
-   procedure Convert_To_PAT_Type (Aexp : Entity_Id) is
+   procedure Convert_To_PAT_Type (Aexp : Node_Id) is
       Act_ST : Entity_Id;
 
    begin
@@ -682,18 +682,18 @@ package body Exp_Pakd is
       Act_ST := Underlying_Type (Etype (Aexp));
       Create_Packed_Array_Type (Act_ST);
 
-      --  Just replace the etype with the packed array type. This works
+      --  Just replace the eEype with the packed array type. This works
       --  because the expression will not be further analyzed, and Gigi
       --  considers the two types equivalent in any case.
 
-      --  This is not strictly the case ??? If the reference is an actual
-      --  in a call, the expansion of the prefix is delayed, and must be
-      --  reanalyzed, see Reset_Packed_Prefix. On the other hand, if the
-      --  prefix is a simple array reference, reanalysis can produce spurious
-      --  type errors when the PAT type is replaced again with the original
-      --  type of the array. The following is correct and minimal, but the
-      --  handling of more complex packed expressions in actuals is confused.
-      --  It is likely that the problem only remains for actuals in calls.
+      --  This is not strictly the case ??? If the reference is an actual in
+      --  call, the expansion of the prefix is delayed, and must be reanalyzed,
+      --  see Reset_Packed_Prefix. On the other hand, if the prefix is a simple
+      --  array reference, reanalysis can produce spurious type errors when the
+      --  PAT type is replaced again with the original type of the array. Same
+      --  for the case of a dereference. The following is correct and minimal,
+      --  but the handling of more complex packed expressions in actuals is
+      --  confused. Probably the problem only remains for actuals in calls.
 
       Set_Etype (Aexp, Packed_Array_Type (Act_ST));
 
@@ -701,6 +701,7 @@ package body Exp_Pakd is
         or else
            (Nkind (Aexp) = N_Indexed_Component
              and then Is_Entity_Name (Prefix (Aexp)))
+        or else Nkind (Aexp) = N_Explicit_Dereference
       then
          Set_Analyzed (Aexp);
       end if;
@@ -2584,7 +2585,7 @@ package body Exp_Pakd is
       Csiz := Component_Size (Atyp);
 
       Convert_To_PAT_Type (Obj);
-      PAT  := Etype (Obj);
+      PAT := Etype (Obj);
 
       Cmask := 2 ** Csiz - 1;
 
