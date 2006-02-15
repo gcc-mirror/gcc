@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1500,7 +1500,9 @@ begin
       Write_Str ("GNATLS ");
       Write_Str (Gnat_Version_String);
       Write_Eol;
-      Write_Str ("Copyright 1997-2005 Free Software Foundation, Inc.");
+      Write_Str ("Copyright 1997-" &
+                 Current_Year &
+                 ", Free Software Foundation, Inc.");
       Write_Eol;
       Write_Eol;
       Write_Str ("Source Search Path:");
@@ -1579,7 +1581,7 @@ begin
                end loop;
 
                --  If the directory is No_Default_Project_Dir, set
-               --  Add_Default_Dir to False
+               --  Add_Default_Dir to False.
 
                if Project_Path (First .. Last) = No_Project_Default_Dir then
                   Add_Default_Dir := False;

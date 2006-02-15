@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,5 +91,8 @@ package Gnatvsn is
    --  trees. It must be updated (incremented) whenever a change is made to
    --  the tree format that would result in a compiler being incompatible with
    --  an older version of ASIS, or vice versa.
+
+   Current_Year : constant String := "2006";
+   --  Used in printing copyright messages
 
 end Gnatvsn;
