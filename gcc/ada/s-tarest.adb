@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1999-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1999-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,13 +47,6 @@ pragma Polling (Off);
 
 with Ada.Exceptions;
 --  used for Exception_Occurrence
-
-with System.Parameters;
---  used for Size_Type
---           Single_Lock
-
-with System.Task_Info;
---  used for Task_Info_Type
 
 with System.Task_Primitives.Operations;
 --  used for Enter_Task
@@ -268,11 +261,38 @@ package body System.Tasking.Restricted.Stages is
       --  neither task hierarchies (No_Task_Hierarchy) nor specific task
       --  termination handlers (No_Specific_Termination_Handlers).
 
+      --  There is no need for explicit protection against race conditions
+      --  for Self_ID.Common.Fall_Back_Handler because this procedure can
+      --  only be executed by Self, and the Fall_Back_Handler can only be
+      --  modified by Self.
+
       if Self_ID.Common.Fall_Back_Handler /= null then
-         Self_ID.Common.Fall_Back_Handler.all (Cause, Self_ID, EO);
-      elsif Self_ID.Common.Parent.Common.Fall_Back_Handler /= null then
-         Self_ID.Common.Parent.Common.Fall_Back_Handler.all
-           (Cause, Self_ID, EO);
+         Self_ID.Common.Fall_Back_Handler (Cause, Self_ID, EO);
+      else
+         declare
+            TH : Termination_Handler := null;
+
+         begin
+            if Single_Lock then
+               Lock_RTS;
+            end if;
+
+            Write_Lock (Self_ID.Common.Parent);
+
+            TH := Self_ID.Common.Parent.Common.Fall_Back_Handler;
+
+            Unlock (Self_ID.Common.Parent);
+
+            if Single_Lock then
+               Unlock_RTS;
+            end if;
+
+            --  Execute the task termination handler if we found it
+
+            if TH /= null then
+               TH.all (Cause, Self_ID, EO);
+            end if;
+         end;
       end if;
 
       Terminate_Task (Self_ID);

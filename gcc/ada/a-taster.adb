@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2005, Free Software Foundation, Inc.            --
+--          Copyright (C) 2005-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -40,6 +40,17 @@ with System.Tasking;
 
 with System.Task_Primitives.Operations;
 --  used for Self
+--           Write_Lock
+--           Unlock
+--           Lock_RTS
+--           Unlock_RTS
+
+with System.Parameters;
+--  used for Single_Lock
+
+with System.Soft_Links;
+--  use for Abort_Defer
+--          Abort_Undefer
 
 with Unchecked_Conversion;
 
@@ -48,6 +59,9 @@ package body Ada.Task_Termination is
    use type Ada.Task_Identification.Task_Id;
 
    package STPO renames System.Task_Primitives.Operations;
+   package SSL  renames System.Soft_Links;
+
+   use System.Parameters;
 
    -----------------------
    -- Local subprograms --
@@ -68,7 +82,11 @@ package body Ada.Task_Termination is
 
    function Current_Task_Fallback_Handler return Termination_Handler is
    begin
-      return To_TT (System.Tasking.Self.Common.Fall_Back_Handler);
+      --  There is no need for explicit protection against race conditions
+      --  for this function because this function can only be executed by
+      --  Self, and the Fall_Back_Handler can only be modified by Self.
+
+      return To_TT (STPO.Self.Common.Fall_Back_Handler);
    end Current_Task_Fallback_Handler;
 
    -------------------------------------
@@ -78,8 +96,26 @@ package body Ada.Task_Termination is
    procedure Set_Dependents_Fallback_Handler
      (Handler : Termination_Handler)
    is
+      Self : constant System.Tasking.Task_Id := STPO.Self;
+
    begin
-      STPO.Self.Common.Fall_Back_Handler := To_ST (Handler);
+      SSL.Abort_Defer.all;
+
+      if Single_Lock then
+         STPO.Lock_RTS;
+      end if;
+
+      STPO.Write_Lock (Self);
+
+      Self.Common.Fall_Back_Handler := To_ST (Handler);
+
+      STPO.Unlock (Self);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      end if;
+
+      SSL.Abort_Undefer.all;
    end Set_Dependents_Fallback_Handler;
 
    --------------------------
@@ -100,7 +136,28 @@ package body Ada.Task_Termination is
       elsif Ada.Task_Identification.Is_Terminated (T) then
          raise Tasking_Error;
       else
-         To_Task_Id (T).Common.Specific_Handler := To_ST (Handler);
+         declare
+            Target : constant System.Tasking.Task_Id := To_Task_Id (T);
+
+         begin
+            SSL.Abort_Defer.all;
+
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
+            STPO.Write_Lock (Target);
+
+            Target.Common.Specific_Handler := To_ST (Handler);
+
+            STPO.Unlock (Target);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
+
+            SSL.Abort_Undefer.all;
+         end;
       end if;
    end Set_Specific_Handler;
 
@@ -121,7 +178,31 @@ package body Ada.Task_Termination is
       elsif Ada.Task_Identification.Is_Terminated (T) then
          raise Tasking_Error;
       else
-         return To_TT (To_Task_Id (T).Common.Specific_Handler);
+         declare
+            Target : constant System.Tasking.Task_Id := To_Task_Id (T);
+            TH     : Termination_Handler;
+
+         begin
+            SSL.Abort_Defer.all;
+
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
+            STPO.Write_Lock (Target);
+
+            TH := To_TT (Target.Common.Specific_Handler);
+
+            STPO.Unlock (Target);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
+
+            SSL.Abort_Undefer.all;
+
+            return TH;
+         end;
       end if;
    end Specific_Handler;
 

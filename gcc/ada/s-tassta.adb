@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,14 +43,6 @@ with System.Tasking.Debug;
 
 with System.Address_Image;
 --  Used for the function itself
-
-with System.Parameters;
---  Used for Size_Type
---           Single_Lock
---           Runtime_Traces
-
-with System.Task_Info;
---  Used for Task_Info_Type
 
 with System.Task_Primitives.Operations;
 --  Used for Finalize_Lock
@@ -907,7 +899,11 @@ package body System.Tasking.Stages is
       pragma Warnings (Off);
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
 
-      Overflow_Guard          : constant := 16#1_000#;
+      Small_Overflow_Guard    : constant := 4 * 1024;
+      Big_Overflow_Guard      : constant := 16 * 1024;
+      Small_Stack_Limit       : constant := 64 * 1024;
+      --  ??? These three values are experimental, and seems to work on most
+      --  platforms. They still need to be analyzed further.
 
       Size :
         Natural := Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size);
@@ -938,16 +934,22 @@ package body System.Tasking.Stages is
       --  execution of its task body, then EO will contain the associated
       --  exception occurrence. Otherwise, it will contain Null_Occurrence.
 
+      TH : Termination_Handler := null;
+      --  Pointer to the protected procedure to be executed upon task
+      --  termination.
+
       procedure Search_Fall_Back_Handler (ID : Task_Id);
       --  Procedure that searches recursively a fall-back handler through the
-      --  master relationship.
+      --  master relationship. If the handler is found, its pointer is stored
+      --  in TH.
 
       procedure Search_Fall_Back_Handler (ID : Task_Id) is
       begin
-         --  If there is a fall back handler, execute it
+         --  If there is a fall back handler, store its pointer for later
+         --  execution.
 
          if ID.Common.Fall_Back_Handler /= null then
-            ID.Common.Fall_Back_Handler.all (Cause, Self_ID, EO);
+            TH := ID.Common.Fall_Back_Handler;
 
          --  Otherwise look for a fall back handler in the parent
 
@@ -964,14 +966,20 @@ package body System.Tasking.Stages is
    begin
       pragma Assert (Self_ID.Deferral_Level = 1);
 
+      --  Assume a size of the stack taken at this stage
+
+      if Size < Small_Stack_Limit then
+         Size := Size - Small_Overflow_Guard;
+      else
+         Size := Size - Big_Overflow_Guard;
+      end if;
+
       if not Parameters.Sec_Stack_Dynamic then
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
            Secondary_Stack'Address;
          SST.SS_Init (Secondary_Stack_Address, Integer (Secondary_Stack'Last));
          Size := Size - Natural (Secondary_Stack_Size);
       end if;
-
-      Size := Size - Overflow_Guard;
 
       if System.Stack_Usage.Is_Enabled then
          STPO.Lock_RTS;
@@ -1096,13 +1104,31 @@ package body System.Tasking.Stages is
       --  the environment task. The task termination code for the environment
       --  task is executed by SSL.Task_Termination_Handler.
 
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
+      Write_Lock (Self_ID);
+
       if Self_ID.Common.Specific_Handler /= null then
-         Self_ID.Common.Specific_Handler.all (Cause, Self_ID, EO);
+         TH := Self_ID.Common.Specific_Handler;
       else
          --  Look for a fall-back handler following the master relationship
          --  for the task.
 
          Search_Fall_Back_Handler (Self_ID);
+      end if;
+
+      Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
+      --  Execute the task termination handler if we found it
+
+      if TH /= null then
+         TH.all (Cause, Self_ID, EO);
       end if;
 
       if System.Stack_Usage.Is_Enabled then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -353,9 +353,9 @@ package System.Tasking is
    --    raised by by the execution of its task_body.
 
    type Termination_Handler is access protected procedure
-     (Cause : in Cause_Of_Termination;
-      T     : in Task_Id;
-      X     : in Ada.Exceptions.Exception_Occurrence);
+     (Cause : Cause_Of_Termination;
+      T     : Task_Id;
+      X     : Ada.Exceptions.Exception_Occurrence);
    --  Used to represent protected procedures to be executed when task
    --  terminates.
 
@@ -375,7 +375,7 @@ package System.Tasking is
 
    function Detect_Blocking return Boolean;
    pragma Inline (Detect_Blocking);
-   --  Return whether the Detect_Blocking pragma is enabled.
+   --  Return whether the Detect_Blocking pragma is enabled
 
    ----------------------------------------------
    -- Ada_Task_Control_Block (ATCB) definition --
@@ -571,7 +571,7 @@ package System.Tasking is
       --  Task_Info pragma.
 
       Analyzer  : System.Stack_Usage.Stack_Analyzer;
-      --  For storing informations used to measure the stack usage.
+      --  For storing informations used to measure the stack usage
 
       Global_Task_Lock_Nesting : Natural;
       --  This is the current nesting level of calls to
@@ -583,18 +583,16 @@ package System.Tasking is
       --  Protection: Only accessed by Self
 
       Fall_Back_Handler : Termination_Handler;
-      pragma Atomic (Fall_Back_Handler);
       --  This is the fall-back handler that applies to the dependent tasks of
       --  the task.
       --
-      --  Protection: atomic access
+      --  Protection: Self.L
 
       Specific_Handler : Termination_Handler;
-      pragma Atomic (Specific_Handler);
       --  This is the specific handler that applies only to this task, and not
       --  any of its dependent tasks.
       --
-      --  Protection: atomic access
+      --  Protection: Self.L
    end record;
 
    ---------------------------------------
