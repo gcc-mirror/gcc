@@ -37,6 +37,11 @@ package body Switch is
       Osint.Fail ("invalid switch: ", (1 => Switch));
    end Bad_Switch;
 
+   procedure Bad_Switch (Switch : String) is
+   begin
+      Osint.Fail ("invalid switch: ", Switch);
+   end Bad_Switch;
+
    -------------------------
    -- Is_Front_End_Switch --
    -------------------------
@@ -63,7 +68,6 @@ package body Switch is
         and then Switch_Chars (Switch_Chars'First) = '-';
    end Is_Switch;
 
-   ------------------------
    --------------
    -- Scan_Nat --
    --------------

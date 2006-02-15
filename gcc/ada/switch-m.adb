@@ -491,7 +491,7 @@ package body Switch.M is
       --  Skip past the initial character (must be the switch character)
 
       if Ptr = Max then
-         Bad_Switch (C);
+         Bad_Switch (Switch_Chars);
 
       else
          Ptr := Ptr + 1;
@@ -573,15 +573,11 @@ package body Switch.M is
             while Ptr < Max loop
                Ptr := Ptr + 1;
                C := Switch_Chars (Ptr);
-               exit when C = ASCII.NUL or else C = '/' or else C = '-';
 
-               if C in '1' .. '9' or else
-                  C in 'a' .. 'z' or else
-                  C in 'A' .. 'Z'
-               then
+               if C in 'a' .. 'z' or else C in 'A' .. 'Z' then
                   Set_Debug_Flag (C);
                else
-                  Bad_Switch (C);
+                  Bad_Switch (Switch_Chars);
                end if;
             end loop;
 
@@ -593,7 +589,7 @@ package body Switch.M is
             Ptr := Ptr + 1;
 
             if Ptr > Max then
-               Bad_Switch (C);
+               Bad_Switch (Switch_Chars);
             end if;
 
             case Switch_Chars (Ptr) is
@@ -611,7 +607,7 @@ package body Switch.M is
                   Follow_Links := True;
 
                when others =>
-                  Bad_Switch (C);
+                  Bad_Switch (Switch_Chars);
             end case;
 
          --  Processing for f switch
@@ -641,6 +637,10 @@ package body Switch.M is
          --  Processing for j switch
 
          when 'j' =>
+            if Ptr = Max then
+               Bad_Switch (Switch_Chars);
+            end if;
+
             Ptr := Ptr + 1;
 
             declare
@@ -721,7 +721,7 @@ package body Switch.M is
                      Verbosity_Level := Opt.High;
 
                   when others =>
-                     Osint.Fail ("invalid switch: ", Switch_Chars);
+                     Bad_Switch (Switch_Chars);
                end case;
 
                Ptr := Ptr + 1;
@@ -739,20 +739,15 @@ package body Switch.M is
             Ptr := Ptr + 1;
             No_Main_Subprogram := True;
 
-         --  Ignore extra switch character
-
-         when '/' | '-' =>
-            Ptr := Ptr + 1;
-
          --  Anything else is an error (illegal switch character)
 
          when others =>
-            Bad_Switch (C);
+            Bad_Switch (Switch_Chars);
 
          end case;
 
          if Ptr <= Max then
-            Osint.Fail ("invalid switch: ", Switch_Chars);
+            Bad_Switch (Switch_Chars);
          end if;
 
       end Check_Switch;

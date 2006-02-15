@@ -86,6 +86,7 @@ private
    --  digit of the integer value.
 
    procedure Bad_Switch (Switch : Character);
+   procedure Bad_Switch (Switch : String);
    --  Fail with an appropriate message when a switch is not recognized
 
 end Switch;
