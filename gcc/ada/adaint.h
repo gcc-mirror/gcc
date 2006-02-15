@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,7 +30,13 @@
  *                                                                          *
  ****************************************************************************/
 
+#include <sys/stat.h>
 #include <stdio.h>
+
+#ifdef _WIN32
+#include "mingw32.h"
+#endif
+
 #include <dirent.h>
 
 typedef long OS_Time; /* Type corresponding to GNAT.OS_Lib.OS_Time */
@@ -68,7 +74,9 @@ extern int    __gnat_open_append                   (char *, int);
 extern long   __gnat_file_length                   (int);
 extern long   __gnat_named_file_length             (char *);
 extern void   __gnat_tmp_name			   (char *);
-extern char  *__gnat_readdir                       (DIR *, char *);
+extern DIR   *__gnat_opendir                       (char *);
+extern char  *__gnat_readdir                       (DIR *, char *, int *);
+extern int    __gnat_closedir                      (DIR *);
 extern int    __gnat_readdir_is_thread_safe        (void);
 
 extern OS_Time __gnat_file_time_name                (char *);
@@ -76,8 +84,7 @@ extern OS_Time __gnat_file_time_fd                  (int);
 /* return -1 in case of error */
 
 extern void   __gnat_set_file_time_name		   (char *, time_t);
-extern void   __gnat_get_env_value_ptr             (char *, int *,
-						    char **);
+
 extern int    __gnat_dup			   (int);
 extern int    __gnat_dup2			   (int, int);
 extern int    __gnat_file_exists		   (char *);
@@ -98,7 +105,6 @@ extern char  *__gnat_locate_exec_on_path	   (char *);
 extern char  *__gnat_locate_regular_file           (char *, char *);
 extern void   __gnat_maybe_glob_args               (int *, char ***);
 extern void   __gnat_os_exit			   (int);
-extern void   __gnat_set_env_value		   (char *, char *);
 extern char  *__gnat_get_libraries_from_registry   (void);
 extern int    __gnat_to_canonical_file_list_init   (char *, int);
 extern char  *__gnat_to_canonical_file_list_next   (void);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                S p e c                                   --
 --                                                                          --
---         Copyright (C) 2004-2005 Free Software Foundation, Inc.           --
+--         Copyright (C) 2004-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,9 +62,6 @@ package System.CRTL is
 
    procedure clearerr (stream : FILEs);
    pragma Import (C, clearerr, "decc$clearerr");
-
-   function closedir (directory : DIRs) return Integer;
-   pragma Import (C, closedir, "decc$closedir");
 
    function dup  (handle : int) return int;
    pragma Import (C, dup, "decc$dup");
@@ -136,9 +133,6 @@ package System.CRTL is
 
    procedure mktemp (template : chars);
    pragma Import (C, mktemp, "decc$_mktemp64");
-
-   function opendir (file_name : String) return DIRs;
-   pragma Import (C, opendir, "decc$opendir");
 
    function pclose (stream : System.Address) return int;
    pragma Import (C, pclose, "decc$pclose");

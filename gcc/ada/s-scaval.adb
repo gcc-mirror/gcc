@@ -44,7 +44,7 @@ package body System.Scalar_Values is
       C2 : Character := Mode2;
 
       procedure Get_Env_Value_Ptr (Name, Length, Ptr : Address);
-      pragma Import (C, Get_Env_Value_Ptr, "__gnat_get_env_value_ptr");
+      pragma Import (C, Get_Env_Value_Ptr, "__gnat_getenv");
 
       subtype String2 is String (1 .. 2);
       type String2_Ptr is access all String2;
