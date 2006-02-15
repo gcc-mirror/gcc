@@ -531,6 +531,7 @@ generate_reg_moves (partial_schedule_ptr ps)
 
 	  prev_reg = new_reg;
 	}
+      sbitmap_vector_free (uses_of_defs);
     }
   return reg_move_replaces;
 }
@@ -1259,6 +1260,8 @@ sms_schedule (void)
       free_ddg (g);
     }
 
+  free (g_arr);
+
   /* Release scheduler data, needed until now because of DFA.  */
   sched_finish ();
   loop_optimizer_finalize (loops);
@@ -1607,6 +1610,9 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
     } /* While try_again_with_larger_ii.  */
 
   sbitmap_free (sched_nodes);
+  sbitmap_free (must_precede);
+  sbitmap_free (must_follow);
+  sbitmap_free (tobe_scheduled);
 
   if (ii >= maxii)
     {
