@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,12 +58,6 @@
 --                all the threads. SIGADAABORT is unmasked by
 --                default
 --      Reserved: the OS specific set of signals that are reserved.
-
-with Interfaces.C;
---  used for int and other types
-
-with System.OS_Interface;
---  used for various Constants, Signal and types
 
 package body System.Interrupt_Management is
 

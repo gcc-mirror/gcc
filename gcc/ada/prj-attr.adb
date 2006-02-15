@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,8 +27,6 @@
 with Namet;   use Namet;
 with Osint;
 with Prj.Com; use Prj.Com;
-with Table;
-
 with System.Case_Util; use System.Case_Util;
 
 package body Prj.Attr is

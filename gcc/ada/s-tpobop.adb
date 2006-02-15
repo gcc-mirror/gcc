@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,11 +44,6 @@
 
 --  This package contains all primitives related to Protected_Objects.
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
-
-with Ada.Exceptions;
---  Used for Exception_ID
---           Null_Id
---           Raise_Exception
 
 with System.Task_Primitives.Operations;
 --  used for Initialize_Lock
