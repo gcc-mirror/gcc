@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,9 +40,22 @@
 --  been compiled with debugging information turned on, since this information
 --  is used to build a symbolic traceback.
 
---  It is also in some cases necessary to invoke the binder
---  with -E switch (store the backtrace with exception occurence). Please
---  refer to gnatbind documentation for more information.
+--  If you want to retrieve tracebacks from exception occurrences, it is also
+--  necessary to invoke the binder with -E switch. Please refer to the gnatbind
+--  documentation for more information.
+
+--  Note that it is also possible (and often recommended) to compute symbolic
+--  traceback outside the program execution, which in addition allows you
+--  to distribute the executable with no debug info:
+--
+--  - build your executable with debug info
+--  - archive this executable
+--  - strip a copy of the executable and distribute/deploy this version
+--  - at run time, compute absolute traceback (-bargs -E) from your
+--    executable and log it using Ada.Exceptions.Exception_Occurrence
+--  - off line, compute the symbolic traceback using the executable archived
+--    with debug info and addr2line or gdb (using info line *<addr>) on the
+--    absolute addresses logged by your application.
 
 --  In order to retrieve symbolic information, functions in this package will
 --  read on disk all the debug information of the executable file (found via

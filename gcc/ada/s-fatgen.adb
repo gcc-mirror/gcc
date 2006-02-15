@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -902,7 +902,16 @@ package body System.Fat_Gen is
       Local_T : aliased T;
 
    begin
+      --  Note that we have to be sure that we do not load the value into a
+      --  floating-point register, since a signalling NaN may cause a trap.
+      --  The following assignment is what does the actual alignment, since
+      --  we know that the target Local_T is aligned.
+
       To_FSP (Local_T'Address).all := To_FSP (A).all;
+
+      --  Now that we have an aligned value, we can use the normal aligned
+      --  version of Valid to obtain the required result.
+
       return Valid (Local_T'Access);
    end Unaligned_Valid;
 

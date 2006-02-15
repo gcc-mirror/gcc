@@ -10,6 +10,8 @@ gnat1           ^ GNAT1
 Gnat1           ^ GNAT1
 gnatbind        ^ GNAT BIND
 Gnatbind        ^ GNAT BIND
+gnatcheck       ^ GNAT CHECK
+Gnatcheck       ^ GNAT CHECK
 gnatchop        ^ GNAT CHOP
 Gnatchop        ^ GNAT CHOP
 gnatclean       ^ GNAT CLEAN
