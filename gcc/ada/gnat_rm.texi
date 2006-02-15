@@ -48,7 +48,7 @@ entitled ``GNU Free Documentation License''.
 @title GNAT Reference Manual
 @subtitle GNAT, The GNU Ada 95 Compiler
 @subtitle GCC version @value{version-GCC}
-@author Ada Core Technologies, Inc.
+@author AdaCore
 
 @page
 @vskip 0pt plus 1filll
@@ -103,6 +103,7 @@ Implementation Defined Pragmas
 * Pragma Ada_83::
 * Pragma Ada_95::
 * Pragma Ada_05::
+* Pragma Ada_2005::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Ast_Entry::
@@ -166,7 +167,6 @@ Implementation Defined Pragmas
 * Pragma Polling::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
-* Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Restriction_Warnings::
@@ -643,6 +643,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_83::
 * Pragma Ada_95::
 * Pragma Ada_05::
+* Pragma Ada_2005::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Ast_Entry::
@@ -706,7 +707,6 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Polling::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
-* Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Restriction_Warnings::
@@ -818,6 +818,19 @@ packages and their children, so you need not specify it in these
 contexts.  This pragma is useful when writing a reusable component that
 itself uses Ada 2005 features, but which is intended to be usable from
 either Ada 83 or Ada 95 programs.
+
+@node Pragma Ada_2005
+@unnumberedsec Pragma Ada_2005
+@findex Ada_2005
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Ada_2005;
+@end smallexample
+
+@noindent
+This configuration pragma is a synonym for pragma Ada_05 and has the
+same syntax and effect.
 
 @node Pragma Annotate
 @unnumberedsec Pragma Annotate
@@ -2916,20 +2929,24 @@ also has no effect in DEC Ada 83 for OpenVMS Alpha Systems.
 Syntax:
 
 @smallexample @c ada
-pragma No_Return (procedure_local_NAME);
+pragma No_Return (procedure_local_NAME @{, procedure_local_NAME@});
 @end smallexample
 
 @noindent
-@var{procedure_local_NAME} must refer to one or more procedure
+Each @var{procedure_local_NAME} argument must refer to one or more procedure
 declarations in the current declarative part.  A procedure to which this
-pragma is applied may not contain any explicit @code{return} statements,
-and also may not contain any implicit return statements from falling off
-the end of a statement sequence.  One use of this pragma is to identify
-procedures whose only purpose is to raise an exception.
+pragma is applied may not contain any explicit @code{return} statements.
+In addition, if the procedure contains any implicit returns from falling
+off the end of a statement sequence, then execution of that implicit
+return will cause Program_Error to be raised.
 
-Another use of this pragma is to suppress incorrect warnings about
-missing returns in functions, where the last statement of a function
+One use of this pragma is to identify procedures whose only purpose is to raise
+an exception. Another use of this pragma is to suppress incorrect warnings
+about missing returns in functions, where the last statement of a function
 statement sequence is a call to such a procedure.
+
+Note that in Ada 2005 mode, this pragma is part of the language, and is
+identical in effect to the pragma as implemented in Ada 95 mode.
 
 @node Pragma No_Strict_Aliasing
 @unnumberedsec Pragma No_Strict_Aliasing
@@ -3340,46 +3357,6 @@ This set of restrictions causes the automatic selection of a simplified
 version of the run time that provides improved performance for the
 limited set of tasking functionality permitted by this set of restrictions.
 
-@node Pragma Propagate_Exceptions
-@unnumberedsec Pragma Propagate_Exceptions
-@findex Propagate_Exceptions
-@cindex Zero Cost Exceptions
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Propagate_Exceptions (subprogram_local_NAME);
-@end smallexample
-
-@noindent
-This pragma indicates that the given entity, which is the name of an
-imported foreign-language subprogram may receive an Ada exception,
-and that the exception should be propagated.  It is relevant only if
-zero cost exception handling is in use, and is thus never needed if
-the alternative @code{longjmp} / @code{setjmp} implementation of
-exceptions is used (although it is harmless to use it in such cases).
-
-The implementation of fast exceptions always properly propagates
-exceptions through Ada code, as described in the Ada Reference Manual.
-However, this manual is silent about the propagation of exceptions
-through foreign code.  For example, consider the
-situation where @code{P1} calls
-@code{P2}, and @code{P2} calls @code{P3}, where
-@code{P1} and @code{P3} are in Ada, but @code{P2} is in C@.
-@code{P3} raises an Ada exception.  The question is whether or not
-it will be propagated through @code{P2} and can be handled in
-@code{P1}.
-
-For the @code{longjmp} / @code{setjmp} implementation of exceptions,
-the answer is always yes.  For some targets on which zero cost exception
-handling is implemented, the answer is also always yes.  However, there
-are some targets, notably in the current version all x86 architecture
-targets, in which the answer is that such propagation does not
-happen automatically.  If such propagation is required on these
-targets, it is mandatory to use @code{Propagate_Exceptions} to
-name all foreign language routines through which Ada exceptions
-may be propagated.
-
 @node Pragma Psect_Object
 @unnumberedsec Pragma Psect_Object
 @findex Psect_Object
@@ -3449,6 +3426,11 @@ Note: If pragma @code{Pure_Function} is applied to a renamed function, it
 applies to the underlying renamed function.  This can be used to
 disambiguate cases of overloading where some but not all functions
 in a set of overloaded functions are to be designated as pure.
+
+If pragma @code{Pure_Function} is applied to a library level function, the
+function is also considered pure from an optimization point of view, but the
+unit is not a Pure unit in the categorization sense. So for example, a function
+thus marked is free to @code{with} non-pure units.
 
 @node Pragma Restriction_Warnings
 @unnumberedsec Pragma Restriction_Warnings
@@ -4115,7 +4097,10 @@ effects.
 
 If @code{local_NAME} identifies more than one matching homonym in the
 current scope, then the entity most recently declared is the one to which
-the pragma applies.
+the pragma applies. Note that in the case of accept formals, the pragma
+Unreferenced may appear immediately after the keyword @code{do} which
+allows the indication of whether or not accept formals are referenced
+or not to be given individually for each accept statement.
 
 The left hand side of an assignment does not count as a reference for the
 purpose of this pragma. Thus it is fine to assign to an entity for which
@@ -5152,6 +5137,17 @@ conversions and without the need to enclose the strings in quotes (which
 would preclude their use as numbers).  This is used internally for the
 construction of values of the floating-point attributes from the file
 @file{ttypef.ads}, but may also be used by user programs.
+
+For example, the following program prints the first 50 digits of pi:
+
+@smallexample @c ada
+with Text_IO; use Text_IO;
+with Ada.Numerics;
+procedure Pi is
+begin
+   Put (Ada.Numerics.Pi'Universal_Literal_String);
+end;
+@end smallexample
 
 @node Unrestricted_Access
 @unnumberedsec Unrestricted_Access
@@ -7376,6 +7372,57 @@ from Boolean). This is intended for use in safety critical programs
 where the certification protocol requires the use of short-circuit
 (and then, or else) forms for all composite boolean operations.
 
+@item No_Dispatching_Calls
+@findex No_Dispatching_Calls
+This restriction ensures at compile time that the code generated by the
+compiler involves no dispatching calls. The use of this restriction allows the
+safe use of record extensions and membership tests and ensures that the code 
+contains no indirect calls through a dispatching mechanism. (Note that this
+includes internally-generated calls created by the compiler, for example in
+the implementation of the predefined attributes on class-wide objects.) The
+membership test is allowed in the presence of this restriction, because its
+implementation requires no dispatching. The following example indicates
+constructs that violate this restriction.
+
+@smallexample
+package Pkg is
+  type T is tagged record
+    Data : Natural;
+  end record;
+  procedure P (X : T);
+
+  type DT is new T with record
+    More_Data : Natural;
+  end record;
+  procedure Q (X : DT);
+end Pkg;
+
+with Pkg; use Pkg;
+procedure Example is
+  procedure Test (O : T'Class) is
+    N : Natural := O'Size; --  Error: Dispatching call
+  begin
+    if O in DT'Class then  --  OK   : Membership test
+       Q (DT (O));         --  OK   : Type conversion plus direct call         
+    else
+       P (O);              --  Error: Dispatching call
+    end if;
+  end Test;
+
+  Obj : DT;
+begin
+  P (Obj);                 --  OK   : Direct call
+  P (T (Obj));             --  OK   : Type conversion plus direct call
+  P (T'Class (Obj));       --  Error: Dispatching call
+
+  Test (Obj);              --  OK   : Type conversion
+
+  if Obj in T'Class then   --  OK   : Membership test
+     null;
+  end if;
+end Example;
+@end smallexample
+
 @item No_Dynamic_Attachment
 @findex No_Dynamic_Attachment
 This restriction ensures that there is no call to any of the operations
@@ -7429,7 +7476,8 @@ or by rejecting any construct that would otherwise generate an implicit
 conditional. Note that this check does not include run time constraint
 checks, which on some targets may generate implicit conditionals as
 well. To control the latter, constraint checks can be suppressed in the
-normal manner.
+normal manner. Constructs generating implicit conditionals include comparisons
+of composite objects and the Max/Min attributes.
 
 @item No_Implicit_Dynamic_Code
 @findex No_Implicit_Dynamic_Code
@@ -7513,15 +7561,6 @@ the partition.  It is similar in effect to the use of @code{Max_Tasks => 0}
 except that violations are caught at compile time and cause an error message
 to be output either by the compiler or binder.
 
-@item No_Wide_Characters
-@findex No_Wide_Characters
-This restriction ensures at compile time that no uses of the types
-@code{Wide_Character} or @code{Wide_String} or corresponding wide
-wide types
-appear, and that no wide or wide wide string or character literals
-appear in the program (that is literals representing characters not in
-type @code{Character}.
-
 @item Static_Priorities
 @findex Static_Priorities
 This restriction ensures at compile time that all priority expressions
@@ -7604,6 +7643,15 @@ This restriction checks at compile time that no GNAT-defined restriction
 identifiers (other than @code{No_Implementation_Restrictions} itself)
 are present.  With this restriction, the only other restriction identifiers
 that can be used are those defined in the Ada 95 Reference Manual.
+
+@item No_Wide_Characters
+@findex No_Wide_Characters
+This restriction ensures at compile time that no uses of the types
+@code{Wide_Character} or @code{Wide_String} or corresponding wide
+wide types
+appear, and that no wide or wide wide string or character literals
+appear in the program (that is literals representing characters not in
+type @code{Character}.
 
 @end table
 
@@ -8945,8 +8993,11 @@ task definition a pragma of the form:
 
 @noindent
 Then @code{Default_Stack_Size} can be defined in a global package, and
-modified as required.  Any tasks requiring stack sizes different from the
+modified as required. Any tasks requiring stack sizes different from the
 default can have an appropriate alternative reference in the pragma.
+
+You can also use the @code{-d} binder switch to modify the default stack
+size.
 
 For access types, the @code{Storage_Size} clause specifies the maximum
 space available for allocation of objects of the type.  If this space is
@@ -11089,8 +11140,8 @@ There is no internal buffering of any kind at the Ada library level. The only
 buffering is that provided at the system level in the implementation of the
 library routines that support streams. This facilitates shared use of these
 streams by mixed language programs. Note though that system level buffering is
-explictly enabled at elaboration of the standard I/O packages and that can have
-an impact on mixed language programs, in particular those using I/O before
+explicitly enabled at elaboration of the standard I/O packages and that can
+have an impact on mixed language programs, in particular those using I/O before
 calling the Ada elaboration routine (e.g. adainit). It is recommended to call
 the Ada elaboration routine before performing any I/O or when impractical,
 flush the common I/O streams and in particular Standard_Output before
@@ -12504,7 +12555,7 @@ is common to both bindings.
 @cindex @code{GNAT.Altivec.Vector_Types} (@file{g-alvety.ads})
 @cindex AltiVec
 
-@noindent 
+@noindent
 This package exposes the various vector types part of the Ada binding
 to AltiVec facilities.
 
@@ -14025,23 +14076,23 @@ except for OpenVMS.
 
 @menu
 * Static constant aggregates with static bounds::
-* Constant aggregates with an unconstrained nominal types::
+* Constant aggregates with unconstrained nominal types::
 * Aggregates with static bounds::
 * Aggregates with non-static bounds::
 * Aggregates in assignment statements::
 @end menu
 
 @noindent
-Aggregate have a rich syntax and allow the user to specify the values of
+Aggregates have a rich syntax and allow the user to specify the values of
 complex data structures by means of a single construct.  As a result, the
 code generated for aggregates can be quite complex and involve loops, case
 statements and multiple assignments.  In the simplest cases, however, the
 compiler will recognize aggregates whose components and constraints are
 fully static, and in those cases the compiler will generate little or no
 executable code.  The following is an outline of the code that GNAT generates
-for various aggregate constructs.  For further details, the user will find it
+for various aggregate constructs.  For further details, you will find it
 useful to examine the output produced by the -gnatG flag to see the expanded
-source that is input to the code generator.  The user will also want to examine
+source that is input to the code generator.  You may also want to examine
 the assembly code generated at various levels of optimization.
 
 The code generated for aggregates depends on the context, the component values,
@@ -14056,7 +14107,7 @@ component values and static subtypes also lead to simpler code.
 For the declarations:
 @smallexample @c ada
     type One_Dim is array (1..10) of integer;
-    ar0 : constant One_Dim := ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 0);
+    ar0 : constant One_Dim := (1, 2, 3, 4, 5, 6, 7, 8, 9, 0);
 @end smallexample
 
 @noindent
@@ -14064,7 +14115,7 @@ GNAT generates no executable code: the constant ar0 is placed in static memory.
 The same is true for constant aggregates with named associations:
 
 @smallexample @c ada
-    Cr1 : constant One_Dim := (4 => 16, 2 => 4, 3 => 9, 1=> 1);
+    Cr1 : constant One_Dim := (4 => 16, 2 => 4, 3 => 9, 1 => 1, 5 .. 10 => 0);
     Cr3 : constant One_Dim := (others => 7777);
 @end smallexample
 
@@ -14098,8 +14149,8 @@ Zero1: constant two_dim := (1..3 => (1..3 => 0));
 Zero2: constant two_dim := (others => (others => 0));
 @end smallexample
 
-@node Constant aggregates with an unconstrained nominal types
-@subsection Constant aggregates with an unconstrained nominal types
+@node Constant aggregates with unconstrained nominal types
+@subsection Constant aggregates with unconstrained nominal types
 
 @noindent
 In such cases the aggregate itself establishes the subtype, so that
@@ -14122,7 +14173,7 @@ for it as a combination of individual assignments and loops over the target
 object.  The declarations
 
 @smallexample @c ada
-       Cr_Var1 : One_Dim := (2, 5, 7, 11);
+       Cr_Var1 : One_Dim := (2, 5, 7, 11, 0, 0, 0, 0, 0, 0);
        Cr_Var2 : One_Dim := (others > -1);
 @end smallexample
 
@@ -14624,14 +14675,14 @@ for building shared libraries.
 Expression must be a path name. The attribute defines the
 directory in which the sources of the interfaces of a Stand-alone Library will
 be copied.  The directory must exist, must be distinct from the project's
-object directory and source directories of all project in the project tree,
+object directory and source directories of all projects in the project tree,
 and must be writable.
 
 @item  Library_Src_Dir
 Expression must be a path name. The attribute defines the
 directory in which the ALI files of a Library will
 be copied.  The directory must exist, must be distinct from the project's
-object directory and source directoriesof all project in the project tree,
+object directory and source directories of all projects in the project tree,
 and must be writable.
 
 @item  Library_Symbol_File
@@ -14665,7 +14716,7 @@ object files of the interfaces that are not in the reference symbol file,
 these symbols are put at the end of the list in the newly created symbol file
 and the minor ID is increased.
 
-"controlled": the attribute Library_Reference_Symbol_File must be difined.
+"controlled": the attribute Library_Reference_Symbol_File must be defined.
 The library will fail to build if the exported symbols in the object files of
 the interfaces do not match exactly the symbol in the symbol file.
 
@@ -15037,7 +15088,7 @@ specified.
 This is an associative array attribute. Its domain is
 a set of file names. Its range is a string list that specifies
 options to be used when binding the named main file. If a main file
-is not specified in the Switches attribute, it is boundt with the
+is not specified in the Switches attribute, it is bound with the
 options specified by Default_Switches of its language, if defined.
 @end table
 
@@ -15065,7 +15116,7 @@ options specified by Default_Switches of its language, if defined.
 
 @item  Linker_Options
 This is a string list attribute. Its value specifies additional options that
-be givent to the linker when linking an executable. This attribute is not
+be given to the linker when linking an executable. This attribute is not
 used in the main project, only in projects imported directly or indirectly.
 
 @end table
