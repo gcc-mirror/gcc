@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,11 +238,10 @@ package body Back_End is
       --  Loop through command line arguments, storing them for later access
 
       while Next_Arg < save_argc loop
-
          Look_At_Arg : declare
-            Argv_Ptr  : constant BSP    := save_argv (Next_Arg);
-            Argv_Len  : constant Nat    := Len_Arg (Next_Arg);
-            Argv      : constant String := Argv_Ptr (1 .. Natural (Argv_Len));
+            Argv_Ptr : constant BSP    := save_argv (Next_Arg);
+            Argv_Len : constant Nat    := Len_Arg (Next_Arg);
+            Argv     : constant String := Argv_Ptr (1 .. Natural (Argv_Len));
 
          begin
             --  If the previous switch has set the Output_File_Name_Present
@@ -258,6 +257,18 @@ package body Back_End is
                else
                   Set_Output_Object_File_Name (Argv);
                   Output_File_Name_Seen := True;
+               end if;
+
+               --  If the previous switch has set the Search_Directory_Present
+               --  flag (that is if we have just seen -I), then the next
+               --  argument is a search directory path.
+
+            elsif Search_Directory_Present then
+               if Is_Switch (Argv) then
+                  Fail ("search directory missing after -I");
+               else
+                  Add_Src_Search_Dir (Argv);
+                  Search_Directory_Present := False;
                end if;
 
             elsif not Is_Switch (Argv) then -- must be a file name
