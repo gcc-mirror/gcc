@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,11 +40,6 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
 --  tasking operations. It causes infinite loops and other problems.
 
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
---           ATCB components and types
-
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
@@ -53,12 +48,6 @@ with System.Interrupt_Management;
 --           Abort_Task_Signal
 --           Signal_ID
 --           Initialize_Interrupts
-
-with System.OS_Interface;
---  used for various type, constant, and operations
-
-with System.Parameters;
---  used for Size_Type
 
 with Interfaces.C;
 
@@ -866,16 +855,6 @@ package body System.Task_Primitives.Operations is
    is
       Adjusted_Stack_Size : size_t;
    begin
-      if Stack_Size = Unspecified_Size then
-         Adjusted_Stack_Size := size_t (Default_Stack_Size);
-
-      elsif Stack_Size < Minimum_Stack_Size then
-         Adjusted_Stack_Size := size_t (Minimum_Stack_Size);
-
-      else
-         Adjusted_Stack_Size := size_t (Stack_Size);
-      end if;
-
       --  Ask for four extra bytes of stack space so that the ATCB pointer can
       --  be stored below the stack limit, plus extra space for the frame of
       --  Task_Wrapper. This is so the user gets the amount of stack requested
@@ -890,7 +869,7 @@ package body System.Task_Primitives.Operations is
       --  ??? - we should come back and visit this so we can set the task name
       --        to something appropriate.
 
-      Adjusted_Stack_Size := Adjusted_Stack_Size + 2048;
+      Adjusted_Stack_Size := size_t (Stack_Size) + 2048;
 
       --  Since the initial signal mask of a thread is inherited from the
       --  creator, and the Environment task has all its signals masked, we do

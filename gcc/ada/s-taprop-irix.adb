@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,19 +59,6 @@ with System.OS_Primitives;
 
 with System.IO;
 --  used for Put_Line
-
-with System.Parameters;
---  used for Size_Type
-
-with System.Program_Info;
---  used for Default_Task_Stack
---           Default_Time_Slice
---           Stack_Guard_Pages
---           Pthread_Sched_Signal
---           Pthread_Arena_Size
-
-with System.OS_Interface;
---  used for various type, constant, and operations
 
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
@@ -763,10 +750,9 @@ package body System.Task_Primitives.Operations is
    is
       use System.Task_Info;
 
-      Attributes          : aliased pthread_attr_t;
-      Sched_Param         : aliased struct_sched_param;
-      Adjusted_Stack_Size : Interfaces.C.size_t;
-      Result              : Interfaces.C.int;
+      Attributes  : aliased pthread_attr_t;
+      Sched_Param : aliased struct_sched_param;
+      Result      : Interfaces.C.int;
 
       function Thread_Body_Access is new
         Unchecked_Conversion (System.Address, Thread_Body);
@@ -779,18 +765,6 @@ package body System.Task_Primitives.Operations is
         (System.Task_Info.Thread_Scheduling_Policy, Interfaces.C.int);
 
    begin
-      if Stack_Size = System.Parameters.Unspecified_Size then
-         Adjusted_Stack_Size :=
-           Interfaces.C.size_t (System.Program_Info.Default_Task_Stack);
-
-      elsif Stack_Size < Size_Type (Minimum_Stack_Size) then
-         Adjusted_Stack_Size :=
-           Interfaces.C.size_t (Minimum_Stack_Size);
-
-      else
-         Adjusted_Stack_Size := Interfaces.C.size_t (Stack_Size);
-      end if;
-
       Result := pthread_attr_init (Attributes'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
@@ -804,7 +778,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0);
 
       Result := pthread_attr_setstacksize
-        (Attributes'Access, Adjusted_Stack_Size);
+        (Attributes'Access, Interfaces.C.size_t (Stack_Size));
       pragma Assert (Result = 0);
 
       if T.Common.Task_Info /= null then
