@@ -1,3 +1,8 @@
+2006-02-15  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/26054
+	* options.c: Do not warn for Fortran 2003 features by default.
+
 2006-02-15  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* check.c: Update copyright years.

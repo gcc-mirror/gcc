@@ -5,15 +5,15 @@
 ! corresponding C type.
 
 module enum_10
-enum, bind( c )   ! { dg-warning "New in Fortran 2003" }
+enum, bind( c )
    enumerator :: one1 = 1, two1, max1 = huge(1_1)
 end enum
 
-enum, bind( c )   ! { dg-warning "New in Fortran 2003" }
+enum, bind( c )
    enumerator :: one2 = 1, two2, max2 = huge(1_2)
 end enum
 
-enum, bind( c )   ! { dg-warning "New in Fortran 2003" }
+enum, bind( c )
    enumerator :: one4 = 1, two4, max4 = huge(1_4)
 end enum
 end module enum_10

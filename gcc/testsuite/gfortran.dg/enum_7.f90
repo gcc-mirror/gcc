@@ -4,7 +4,7 @@
 program main
   implicit none
 
-  enum, bind (c)  ! { dg-warning "New in Fortran 2003" } 
+  enum, bind (c)
     enumerator :: sun, mon = 2    
     enum, bind (c)  ! { dg-error "Unexpected" }
       enumerator :: apple, mango

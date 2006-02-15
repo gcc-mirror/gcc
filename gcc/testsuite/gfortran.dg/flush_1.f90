@@ -8,17 +8,17 @@ program flush_1
    open (unit=10, access='SEQUENTIAL', status='SCRATCH')
 
    write (10, *) 42
-   flush 10                   ! { dg-warning "Fortran 2003: FLUSH statement" }
+   flush 10
 
    write (10, *) 42
-   flush(10)                  ! { dg-warning "Fortran 2003: FLUSH statement" }
+   flush(10)
 
    write (10, *) 42
-   flush(unit=10, iostat=ios) ! { dg-warning "Fortran 2003: FLUSH statement" }
+   flush(unit=10, iostat=ios)
    if (ios /= 0) call abort
 
    write (10, *) 42
-   flush (unit=10, err=20)    ! { dg-warning "Fortran 2003: FLUSH statement" }
+   flush (unit=10, err=20)
    goto 30
 20 call abort
 30 continue
