@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -133,9 +133,14 @@ package body Prj.Makr is
       Source_Dirs_List    : Project_Node_Id := Empty_Node;
       Current_Source_Dir  : Project_Node_Id := Empty_Node;
 
-      Project_Naming_Node : Project_Node_Id := Empty_Node;
-      Project_Naming_Decl : Project_Node_Id := Empty_Node;
-      Naming_Package      : Project_Node_Id := Empty_Node;
+      Project_Naming_Node     : Project_Node_Id := Empty_Node;
+      Project_Naming_Decl     : Project_Node_Id := Empty_Node;
+      Naming_Package          : Project_Node_Id := Empty_Node;
+      Naming_Package_Comments : Project_Node_Id := Empty_Node;
+
+      Source_Files_Comments     : Project_Node_Id := Empty_Node;
+      Source_Dirs_Comments      : Project_Node_Id := Empty_Node;
+      Source_List_File_Comments : Project_Node_Id := Empty_Node;
 
       Project_Naming_File_Name : String (1 .. Output_Name'Length +
                                            Naming_File_Suffix'Length);
@@ -724,7 +729,8 @@ package body Prj.Makr is
               (In_Tree                => Tree,
                Project                => Project_Node,
                Project_File_Name      => Output_Name (1 .. Output_Name_Last),
-               Always_Errout_Finalize => False);
+               Always_Errout_Finalize => False,
+               Store_Comments         => True);
 
             --  Fail if parsing was not successful
 
@@ -768,7 +774,8 @@ package body Prj.Makr is
 
                --  Remove attribute declarations of Source_Files,
                --  Source_List_File, Source_Dirs, and the declaration of
-               --  package Naming, if they exist.
+               --  package Naming, if they exist, but preserve the comments
+               --  attached to these nodes.
 
                declare
                   Declaration  : Project_Node_Id :=
@@ -779,37 +786,59 @@ package body Prj.Makr is
                   Previous     : Project_Node_Id := Empty_Node;
                   Current_Node : Project_Node_Id := Empty_Node;
 
+                  Name         : Name_Id;
+                  Kind_Of_Node : Project_Node_Kind;
+                  Comments     : Project_Node_Id;
+
                begin
                   while Declaration /= Empty_Node loop
                      Current_Node := Current_Item_Node (Declaration, Tree);
 
-                     if (Kind_Of (Current_Node, Tree) = N_Attribute_Declaration
-                           and then
-                           (Prj.Tree.Name_Of (Current_Node, Tree) =
-                              Name_Source_Files
-                             or else Prj.Tree.Name_Of (Current_Node, Tree) =
-                                               Name_Source_List_File
-                             or else Prj.Tree.Name_Of (Current_Node, Tree) =
-                                               Name_Source_Dirs))
-                       or else
-                       (Kind_Of (Current_Node, Tree) = N_Package_Declaration
-                        and then Prj.Tree.Name_Of (Current_Node, Tree) =
-                                   Name_Naming)
+                     Kind_Of_Node := Kind_Of (Current_Node, Tree);
+
+                     if Kind_Of_Node = N_Attribute_Declaration or else
+                       Kind_Of_Node = N_Package_Declaration
                      then
-                        if Previous = Empty_Node then
-                           Set_First_Declarative_Item_Of
-                             (Project_Declaration_Of (Project_Node, Tree),
-                              Tree,
-                              To => Next_Declarative_Item (Declaration, Tree));
+                        Name := Prj.Tree.Name_Of (Current_Node, Tree);
+
+                        if Name = Name_Source_Files     or else
+                           Name = Name_Source_List_File or else
+                           Name = Name_Source_Dirs      or else
+                           Name = Name_Naming
+                        then
+                           Comments :=
+                             Tree.Project_Nodes.Table (Current_Node).Comments;
+
+                           if Name = Name_Source_Files then
+                              Source_Files_Comments := Comments;
+
+                           elsif Name = Name_Source_List_File then
+                              Source_List_File_Comments := Comments;
+
+                           elsif Name = Name_Source_Dirs then
+                              Source_Dirs_Comments := Comments;
+
+                           elsif Name = Name_Naming then
+                              Naming_Package_Comments := Comments;
+                           end if;
+
+                           if Previous = Empty_Node then
+                              Set_First_Declarative_Item_Of
+                                (Project_Declaration_Of (Project_Node, Tree),
+                                 Tree,
+                                 To => Next_Declarative_Item
+                                         (Declaration, Tree));
+
+                           else
+                              Set_Next_Declarative_Item
+                                (Previous, Tree,
+                                 To => Next_Declarative_Item
+                                         (Declaration, Tree));
+                           end if;
 
                         else
-                           Set_Next_Declarative_Item
-                             (Previous, Tree,
-                              To => Next_Declarative_Item (Declaration, Tree));
+                           Previous := Declaration;
                         end if;
-
-                     else
-                        Previous := Declaration;
                      end if;
 
                      Declaration := Next_Declarative_Item (Declaration, Tree);
@@ -1058,30 +1087,41 @@ package body Prj.Makr is
             Set_Current_Term (Term, Tree, To => Empty_List);
          end;
 
-         --  Add a with clause on the naming project in the main project
+         --  Add a with clause on the naming project in the main project, if
+         --  there is not already one.
 
          declare
-            With_Clause : constant Project_Node_Id :=
-                            Default_Project_Node
-                              (Of_Kind => N_With_Clause, In_Tree => Tree);
+            With_Clause : Project_Node_Id :=
+                                  First_With_Clause_Of (Project_Node, Tree);
 
          begin
-            Set_Next_With_Clause_Of
-              (With_Clause, Tree,
-               To => First_With_Clause_Of (Project_Node, Tree));
-            Set_First_With_Clause_Of (Project_Node, Tree, To => With_Clause);
-            Set_Name_Of (With_Clause, Tree, To => Project_Naming_Id);
+            while With_Clause /= Empty_Node loop
+               exit when
+                 Prj.Tree.Name_Of (With_Clause, Tree) = Project_Naming_Id;
+               With_Clause := Next_With_Clause_Of (With_Clause, Tree);
+            end loop;
 
-            --  We set the project node to something different than
-            --  Empty_Node, so that Prj.PP does not generate a limited
-            --  with clause.
+            if With_Clause = Empty_Node then
+               With_Clause := Default_Project_Node
+                 (Of_Kind => N_With_Clause, In_Tree => Tree);
+               Set_Next_With_Clause_Of
+                 (With_Clause, Tree,
+                  To => First_With_Clause_Of (Project_Node, Tree));
+               Set_First_With_Clause_Of
+                 (Project_Node, Tree, To => With_Clause);
+               Set_Name_Of (With_Clause, Tree, To => Project_Naming_Id);
 
-            Set_Project_Node_Of (With_Clause, Tree, Non_Empty_Node);
+               --  We set the project node to something different than
+               --  Empty_Node, so that Prj.PP does not generate a limited
+               --  with clause.
 
-            Name_Len := Project_Naming_Last;
-            Name_Buffer (1 .. Name_Len) :=
-              Project_Naming_File_Name (1 .. Project_Naming_Last);
-            Set_String_Value_Of (With_Clause, Tree, To => Name_Find);
+               Set_Project_Node_Of (With_Clause, Tree, Non_Empty_Node);
+
+               Name_Len := Project_Naming_Last;
+               Name_Buffer (1 .. Name_Len) :=
+                 Project_Naming_File_Name (1 .. Project_Naming_Last);
+               Set_String_Value_Of (With_Clause, Tree, To => Name_Find);
+            end if;
          end;
 
          Project_Declaration := Project_Declaration_Of (Project_Node, Tree);
@@ -1109,6 +1149,12 @@ package body Prj.Makr is
             Set_Name_Of (Naming, Tree, To => Name_Naming);
             Set_Project_Of_Renamed_Package_Of
               (Naming, Tree, To => Project_Naming_Node);
+
+            --  Attach the comments, if any, that were saved for package
+            --  Naming.
+
+            Tree.Project_Nodes.Table (Naming).Comments :=
+              Naming_Package_Comments;
          end;
 
          --  Add an attribute declaration for Source_Dirs, initialized as an
@@ -1154,6 +1200,12 @@ package body Prj.Makr is
                  In_Tree       => Tree,
                  And_Expr_Kind => List);
             Set_Current_Term (Term, Tree, To => Source_Dirs_List);
+
+            --  Attach the comments, if any, that were saved for attribute
+            --  Source_Dirs.
+
+            Tree.Project_Nodes.Table (Attribute).Comments :=
+              Source_Dirs_Comments;
          end;
 
          --  Add an attribute declaration for Source_List_File with the
@@ -1204,6 +1256,17 @@ package body Prj.Makr is
             Name_Buffer (1 .. Name_Len) :=
               Source_List_Path (1 .. Source_List_Last);
             Set_String_Value_Of (Value, Tree, To => Name_Find);
+
+            --  If there was no comments for attribute Source_List_File, put
+            --  those for Source_Files, if they exist.
+
+            if Source_List_File_Comments /= Empty_Node then
+               Tree.Project_Nodes.Table (Attribute).Comments :=
+                 Source_List_File_Comments;
+            else
+               Tree.Project_Nodes.Table (Attribute).Comments :=
+                 Source_Files_Comments;
+            end if;
          end;
       end if;
 
