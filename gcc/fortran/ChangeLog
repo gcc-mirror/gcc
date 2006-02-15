@@ -1,5 +1,7 @@
 2006-02-15  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* check.c: Update copyright years.
+	
 	* check.c (gfc_check_minloc_maxloc, check_reduction): Don't call
 	dim_range_check on not-present optional dim argument.
 
