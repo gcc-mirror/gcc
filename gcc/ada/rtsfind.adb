@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -799,7 +799,7 @@ package body Rtsfind is
             --  specially permitted units, raise the exception.
 
             if No_Run_Time_Mode
-                 and then not OK_No_Run_Time_Unit (U_Id)
+              and then not OK_No_Run_Time_Unit (U_Id)
             then
                Entity_Not_Defined (E);
                raise RE_Not_Available;
@@ -1105,7 +1105,7 @@ package body Rtsfind is
             begin
                --  If entry is not set, set it now
 
-               if not Present (U.Entity) then
+               if No (U.Entity) then
                   U.Entity := E;
                   U.Uname  := Get_Unit_Name (U_Id);
                   U.Unum   := Unum;
