@@ -502,6 +502,7 @@ package Rtsfind is
      RE_Get_Entry_Index,                 -- Ada.Tags
      RE_Get_External_Tag,                -- Ada.Tags
      RE_Get_Offset_Index,                -- Ada.Tags
+     RE_Get_Predefined_Prim_Op_Address,  -- Ada.Tags
      RE_Get_Prim_Op_Address,             -- Ada.Tags
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
      RE_Get_RC_Offset,                   -- Ada.Tags
@@ -539,11 +540,13 @@ package Rtsfind is
      RE_Set_Offset_Index,                -- Ada.Tags
      RE_Set_Offset_To_Top,               -- Ada.Tags
      RE_Set_OSD,                         -- Ada.Tags
+     RE_Set_Predefined_Prim_Op_Address,  -- Ada.Tags
      RE_Set_Prim_Op_Address,             -- Ada.Tags
      RE_Set_Prim_Op_Kind,                -- Ada.Tags
      RE_Set_RC_Offset,                   -- Ada.Tags
      RE_Set_Remotely_Callable,           -- Ada.Tags
      RE_Set_SSD,                         -- Ada.Tags
+     RE_Set_Signature,                   -- Ada.Tags
      RE_Set_Tagged_Kind,                 -- Ada.Tags
      RE_Set_TSD,                         -- Ada.Tags
      RE_Tag,                             -- Ada.Tags
@@ -1656,6 +1659,7 @@ package Rtsfind is
      RE_Get_Entry_Index                  => Ada_Tags,
      RE_Get_External_Tag                 => Ada_Tags,
      RE_Get_Offset_Index                 => Ada_Tags,
+     RE_Get_Predefined_Prim_Op_Address   => Ada_Tags,
      RE_Get_Prim_Op_Address              => Ada_Tags,
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
      RE_Get_RC_Offset                    => Ada_Tags,
@@ -1693,11 +1697,13 @@ package Rtsfind is
      RE_Set_Offset_Index                 => Ada_Tags,
      RE_Set_Offset_To_Top                => Ada_Tags,
      RE_Set_OSD                          => Ada_Tags,
+     RE_Set_Predefined_Prim_Op_Address   => Ada_Tags,
      RE_Set_Prim_Op_Address              => Ada_Tags,
      RE_Set_Prim_Op_Kind                 => Ada_Tags,
      RE_Set_RC_Offset                    => Ada_Tags,
      RE_Set_Remotely_Callable            => Ada_Tags,
      RE_Set_SSD                          => Ada_Tags,
+     RE_Set_Signature                    => Ada_Tags,
      RE_Set_Tagged_Kind                  => Ada_Tags,
      RE_Set_TSD                          => Ada_Tags,
      RE_Tag                              => Ada_Tags,
