@@ -180,7 +180,7 @@ package Ada.Containers.Indefinite_Hashed_Sets is
 
       function Element (Container : Set; Key : Key_Type) return Element_Type;
 
-      procedure Replace           -- TODO: ask Randy why this is still here
+      procedure Replace
         (Container : in out Set;
          Key       : Key_Type;
          New_Item  : Element_Type);

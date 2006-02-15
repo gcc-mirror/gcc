@@ -179,7 +179,7 @@ package Ada.Containers.Hashed_Sets is
 
       function Element (Container : Set; Key : Key_Type) return Element_Type;
 
-      procedure Replace          --  TODO: ask Randy why this wasn't removed
+      procedure Replace
         (Container : in out Set;
          Key       : Key_Type;
          New_Item  : Element_Type);

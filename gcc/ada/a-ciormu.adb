@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -162,16 +162,20 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
    function "<" (Left, Right : Cursor) return Boolean is
    begin
-      if Left.Node = null
-        or else Right.Node = null
-      then
-         raise Constraint_Error;
+      if Left.Node = null then
+         raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
-      if Left.Node.Element = null
-        or else Right.Node.Element = null
-      then
-         raise Program_Error;
+      if Right.Node = null then
+         raise Constraint_Error with "Right cursor equals No_Element";
+      end if;
+
+      if Left.Node.Element = null then
+         raise Program_Error with "Left cursor is bad";
+      end if;
+
+      if Right.Node.Element = null then
+         raise Program_Error with "Right cursor is bad";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -186,11 +190,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    function "<" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
       if Left.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
       if Left.Node.Element = null then
-         raise Program_Error;
+         raise Program_Error with "Left cursor is bad";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -202,11 +206,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    function "<" (Left : Element_Type; Right : Cursor) return Boolean is
    begin
       if Right.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
       if Right.Node.Element = null then
-         raise Program_Error;
+         raise Program_Error with "Right cursor is bad";
       end if;
 
       pragma Assert (Vet (Right.Container.Tree, Right.Node),
@@ -230,16 +234,20 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
    function ">" (Left, Right : Cursor) return Boolean is
    begin
-      if Left.Node = null
-        or else Right.Node = null
-      then
-         raise Constraint_Error;
+      if Left.Node = null then
+         raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
-      if Left.Node.Element = null
-        or else Right.Node.Element = null
-      then
-         raise Program_Error;
+      if Right.Node = null then
+         raise Constraint_Error with "Right cursor equals No_Element";
+      end if;
+
+      if Left.Node.Element = null then
+         raise Program_Error with "Left cursor is bad";
+      end if;
+
+      if Right.Node.Element = null then
+         raise Program_Error with "Right cursor is bad";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -256,11 +264,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    function ">" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
       if Left.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
       if Left.Node.Element = null then
-         raise Program_Error;
+         raise Program_Error with "Left cursor is bad";
       end if;
 
       pragma Assert (Vet (Left.Container.Tree, Left.Node),
@@ -272,11 +280,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    function ">" (Left : Element_Type; Right : Cursor) return Boolean is
    begin
       if Right.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
       if Right.Node.Element = null then
-         raise Program_Error;
+         raise Program_Error with "Right cursor is bad";
       end if;
 
       pragma Assert (Vet (Right.Container.Tree, Right.Node),
@@ -375,7 +383,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
    begin
       if Node = Done then
-         raise Constraint_Error;
+         raise Constraint_Error with "attempt to delete element not in set";
       end if;
 
       loop
@@ -391,11 +399,15 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Position cursor equals No_Element";
+      end if;
+
+      if Position.Node.Element = null then
+         raise Program_Error with "Position cursor is bad";
       end if;
 
       if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error;
+         raise Program_Error with "Position cursor designates wrong set";
       end if;
 
       pragma Assert (Vet (Container.Tree, Position.Node),
@@ -464,11 +476,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    function Element (Position : Cursor) return Element_Type is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
       if Position.Node.Element = null then
-         raise Program_Error;
+         raise Program_Error with "Position cursor is bad";
       end if;
 
       pragma Assert (Vet (Position.Container.Tree, Position.Node),
@@ -580,13 +592,10 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    function First_Element (Container : Set) return Element_Type is
    begin
       if Container.Tree.First = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "set is empty";
       end if;
 
-      if Container.Tree.First.Element = null then
-         raise Program_Error;
-      end if;
-
+      pragma Assert (Container.Tree.First.Element /= null);
       return Container.Tree.First.Element.all;
    end First_Element;
 
@@ -703,7 +712,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
       begin
          if Node = Done then
-            raise Constraint_Error;
+            raise Constraint_Error with "attempt to delete key not in set";
          end if;
 
          loop
@@ -726,7 +735,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
       begin
          if Node = null then
-            raise Constraint_Error;
+            raise Constraint_Error with "key not in set";
          end if;
 
          return Node.Element.all;
@@ -870,11 +879,13 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       function Key (Position : Cursor) return Key_Type is
       begin
          if Position.Node = null then
-            raise Constraint_Error;
+            raise Constraint_Error with
+              "Position cursor equals No_Element";
          end if;
 
          if Position.Node.Element = null then
-            raise Program_Error;
+            raise Program_Error with
+              "Position cursor is bad";
          end if;
 
          pragma Assert (Vet (Position.Container.Tree, Position.Node),
@@ -930,35 +941,36 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
          B := B - 1;
       end Reverse_Iterate;
 
-      -----------------------------------
-      -- Update_Element_Preserving_Key --
-      -----------------------------------
+      --------------------
+      -- Update_Element --
+      --------------------
 
-      procedure Update_Element_Preserving_Key
+      procedure Update_Element
         (Container : in out Set;
          Position  : Cursor;
          Process   : not null access procedure (Element : in out Element_Type))
       is
          Tree : Tree_Type renames Container.Tree;
+         Node : constant Node_Access := Position.Node;
 
       begin
-         if Position.Node = null then
-            raise Constraint_Error;
+         if Node = null then
+            raise Constraint_Error with "Position cursor equals No_Element";
          end if;
 
-         if Position.Node.Element = null then
-            raise Program_Error;
+         if Node.Element = null then
+            raise Program_Error with "Position cursor is bad";
          end if;
 
          if Position.Container /= Container'Unrestricted_Access then
-            raise Program_Error;
+            raise Program_Error with "Position cursor designates wrong set";
          end if;
 
-         pragma Assert (Vet (Container.Tree, Position.Node),
-                        "bad cursor in Update_Element_Preserving_Key");
+         pragma Assert (Vet (Tree, Node),
+                        "bad cursor in Update_Element");
 
          declare
-            E : Element_Type renames Position.Node.Element.all;
+            E : Element_Type renames Node.Element.all;
             K : constant Key_Type := Key (E);
 
             B : Natural renames Tree.Busy;
@@ -985,15 +997,47 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
             end if;
          end;
 
-         declare
-            X : Node_Access := Position.Node;
-         begin
-            Tree_Operations.Delete_Node_Sans_Free (Tree, X);
-            Free (X);
-         end;
+         --  Delete_Node checks busy-bit
 
-         raise Program_Error;
-      end Update_Element_Preserving_Key;
+         Tree_Operations.Delete_Node_Sans_Free (Tree, Node);
+
+         Insert_New_Item : declare
+            function New_Node return Node_Access;
+            pragma Inline (New_Node);
+
+            procedure Insert_Post is
+               new Element_Keys.Generic_Insert_Post (New_Node);
+
+            procedure Unconditional_Insert is
+               new Element_Keys.Generic_Unconditional_Insert (Insert_Post);
+
+            --------------
+            -- New_Node --
+            --------------
+
+            function New_Node return Node_Access is
+            begin
+               Node.Color := Red_Black_Trees.Red;
+               Node.Parent := null;
+               Node.Left := null;
+               Node.Right := null;
+
+               return Node;
+            end New_Node;
+
+            Result : Node_Access;
+
+         --  Start of processing for Insert_New_Item
+
+         begin
+            Unconditional_Insert
+              (Tree => Tree,
+               Key  => Node.Element.all,
+               Node => Result);
+
+            pragma Assert (Result = Node);
+         end Insert_New_Item;
+      end Update_Element;
 
    end Generic_Keys;
 
@@ -1022,11 +1066,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       Position  : out Cursor)
    is
    begin
-      Insert_Sans_Hint
-        (Container.Tree,
-         New_Item,
-         Position.Node);
-
+      Insert_Sans_Hint (Container.Tree, New_Item, Position.Node);
       Position.Container := Container'Unrestricted_Access;
    end Insert;
 
@@ -1045,7 +1085,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       procedure Insert_Post is
         new Element_Keys.Generic_Insert_Post (New_Node);
 
-      procedure Unconditional_Insert_Sans_Hint is
+      procedure Unconditional_Insert is
         new Element_Keys.Generic_Unconditional_Insert (Insert_Post);
 
       --------------
@@ -1053,28 +1093,24 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       --------------
 
       function New_Node return Node_Access is
-         X : Element_Access := new Element_Type'(New_Item);
+         Element : Element_Access := new Element_Type'(New_Item);
 
       begin
          return new Node_Type'(Parent  => null,
                                Left    => null,
                                Right   => null,
                                Color   => Red_Black_Trees.Red,
-                               Element => X);
-
+                               Element => Element);
       exception
          when others =>
-            Free_Element (X);
+            Free_Element (Element);
             raise;
       end New_Node;
 
    --  Start of processing for Insert_Sans_Hint
 
    begin
-      Unconditional_Insert_Sans_Hint
-        (Tree,
-         New_Item,
-         Node);
+      Unconditional_Insert (Tree, New_Item, Node);
    end Insert_Sans_Hint;
 
    ----------------------
@@ -1310,9 +1346,10 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    function Last_Element (Container : Set) return Element_Type is
    begin
       if Container.Tree.Last = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "set is empty";
       end if;
 
+      pragma Assert (Container.Tree.Last.Element /= null);
       return Container.Tree.Last.Element.all;
    end Last_Element;
 
@@ -1436,11 +1473,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
       if Position.Node.Element = null then
-         raise Program_Error;
+         raise Program_Error with "Position cursor is bad";
       end if;
 
       pragma Assert (Vet (Position.Container.Tree, Position.Node),
@@ -1513,7 +1550,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       Item   : out Cursor)
    is
    begin
-      raise Program_Error;
+      raise Program_Error with "attempt to stream set cursor";
    end Read;
 
    ---------------------
@@ -1532,7 +1569,8 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
          null;
       else
          if Tree.Lock > 0 then
-            raise Program_Error;
+            raise Program_Error with
+              "attempt to tamper with cursors (set is locked)";
          end if;
 
          declare
@@ -1596,15 +1634,15 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    is
    begin
       if Position.Node = null then
-         raise Constraint_Error;
+         raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
       if Position.Node.Element = null then
-         raise Program_Error;
+         raise Program_Error with "Position cursor is bad";
       end if;
 
       if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error;
+         raise Program_Error with "Position cursor designates wrong set";
       end if;
 
       pragma Assert (Vet (Container.Tree, Position.Node),
@@ -1823,7 +1861,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       Item   : Cursor)
    is
    begin
-      raise Program_Error;
+      raise Program_Error with "attempt to stream set cursor";
    end Write;
 
 end Ada.Containers.Indefinite_Ordered_Multisets;
