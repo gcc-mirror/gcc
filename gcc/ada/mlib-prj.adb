@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,6 +228,9 @@ package body MLib.Prj is
    procedure Display (Executable : String);
    --  Display invocation of gnatbind and of the compiler with the arguments
    --  in Arguments, except when Quiet_Output is True.
+
+   function Index (S, Pattern : String) return Natural;
+   --  Return the last occurrence of Pattern in S, or 0 if none
 
    procedure Process_Binder_File (Name : String);
    --  For Stand-Alone libraries, get the Linker Options in the binder
@@ -1282,7 +1285,31 @@ package body MLib.Prj is
          --  Rpath.
 
          if Path_Option /= null then
-            Add_Rpath (Lib_Directory);
+            declare
+               Libdir    : constant String := Lib_Directory;
+               GCC_Index : Natural := 0;
+
+            begin
+               Add_Rpath (Libdir);
+
+               --  For shared libraries, add to the Path Option the directory
+               --  of the shared version of libgcc.
+
+               if The_Build_Mode /= Static then
+                  GCC_Index := Index (Libdir, "/lib/");
+
+                  if GCC_Index = 0 then
+                     GCC_Index :=
+                       Index
+                         (Libdir,
+                          Directory_Separator & "lib" & Directory_Separator);
+                  end if;
+
+                  if GCC_Index /= 0 then
+                     Add_Rpath (Libdir (Libdir'First .. GCC_Index + 3));
+                  end if;
+               end if;
+            end;
          end if;
 
          if Libgnarl_Needed then
@@ -1303,10 +1330,17 @@ package body MLib.Prj is
 
          if Libdecgnat_Needed then
             Opts.Increment_Last;
+
             Opts.Table (Opts.Last) :=
               new String'("-L" & Lib_Directory & "/../declib");
+
             Opts.Increment_Last;
-            Opts.Table (Opts.Last) := new String'("-ldecgnat");
+
+            if The_Build_Mode = Static then
+               Opts.Table (Opts.Last) := new String'("-ldecgnat");
+            else
+               Opts.Table (Opts.Last) := new String'(Shared_Lib ("decgnat"));
+            end if;
          end if;
 
          Opts.Increment_Last;
@@ -2021,6 +2055,23 @@ package body MLib.Prj is
       end if;
    end Display;
 
+   -----------
+   -- Index --
+   -----------
+
+   function Index (S, Pattern : String) return Natural is
+      Len : constant Natural := Pattern'Length;
+
+   begin
+      for J in reverse S'First .. S'Last - Len + 1 loop
+         if Pattern = S (J .. J + Len - 1) then
+            return J;
+         end if;
+      end loop;
+
+      return 0;
+   end Index;
+
    -------------------------
    -- Process_Binder_File --
    -------------------------
@@ -2128,6 +2179,9 @@ package body MLib.Prj is
                Next_Line (1 .. Nlast) /= "-ldecgnat" and then
                Next_Line (1 .. Nlast) /= "-lgnarl" and then
                Next_Line (1 .. Nlast) /= "-lgnat" and then
+               Next_Line
+                 (1 .. Natural'Min (Nlast, 10 + Library_Version'Length)) /=
+                   Shared_Lib ("decgnat") and then
                Next_Line
                  (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) /=
                    Shared_Lib ("gnarl") and then
