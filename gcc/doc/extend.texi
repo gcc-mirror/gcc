@@ -3329,9 +3329,10 @@ alignment.  See your linker documentation for further information.
 
 @item packed
 This attribute, attached to @code{struct} or @code{union} type
-definition, specifies that each member of the structure or union is
-placed to minimize the memory required.  When attached to an @code{enum}
-definition, it indicates that the smallest integral type should be used.
+definition, specifies that each member (other than zero-width bitfields)
+of the structure or union is placed to minimize the memory required.  When
+attached to an @code{enum} definition, it indicates that the smallest
+integral type should be used.
 
 @opindex fshort-enums
 Specifying this attribute for @code{struct} and @code{union} types is
@@ -9518,10 +9519,10 @@ way of knowing that that happened.)
 @subsection Structure-Packing Pragmas
 
 For compatibility with Win32, GCC supports a set of @code{#pragma}
-directives which change the maximum alignment of members of structures,
-unions, and classes subsequently defined.  The @var{n} value below always
-is required to be a small power of two and specifies the new alignment
-in bytes.
+directives which change the maximum alignment of members of structures
+(other than zero-width bitfields), unions, and classes subsequently
+defined.  The @var{n} value below always is required to be a small power
+of two and specifies the new alignment in bytes.
 
 @enumerate
 @item @code{#pragma pack(@var{n})} simply sets the new alignment.

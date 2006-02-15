@@ -1,3 +1,14 @@
+2006-02-15  Michael Matz  <matz@suse.de>
+
+	PR middle-end/22275
+
+	* stor-layout.c (layout_decl): Zero-width bitfields aren't
+	influenced by maximum_field_alignment or DECL_PACKED.
+	(update_alignment_for_field): Ditto.
+	(place_field): Ditto.
+	* doc/extend.texi (<#pragma pack>, <Type Attributes>): Document
+	this behaviour.
+
 2006-02-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* cfg.c (dump_flow_info): Get dump flags as an additional parameter.
