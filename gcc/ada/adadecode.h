@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 2001-2003, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2006, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,8 +33,8 @@
 /* This function will return the Ada name from the encoded form.
    The Ada coding is done in exp_dbug.ads and this is the inverse function.
    see exp_dbug.ads for full encoding rules, a short description is added
-   below. Right now only objects and routines are handled. There is no support
-   for Ada types.
+   below. Objects and routines are fully handled; types are stripped of their
+   encodings.
 
    CODED_NAME is the encoded entity name.
    ADA_NAME is a pointer to a buffer, it will receive the Ada name. A safe
@@ -43,6 +43,10 @@
    VERBOSE is nonzero if more information about the entity is to be
    added at the end of the Ada name and surrounded by ( and ).  */
 extern void __gnat_decode (const char *, char *, int);
+
+/* This function will return the GNAT encodings, in a colon-separated list,
+   from the encoded form. The Ada encodings are described in exp_dbug.ads.  */
+extern void get_encoding (const char *, char *);
 
 /* ada_demangle is added for COMPATIBILITY ONLY. It has the name of the
    function used in the binutils and GDB. Always consider using __gnat_decode
