@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -179,7 +179,9 @@ begin
          Write_Str ("GNAT ");
          Write_Str (Gnat_Version_String);
          Write_Eol;
-         Write_Str ("Copyright 1992-2005 Free Software Foundation, Inc.");
+         Write_Str ("Copyright 1992-" &
+                    Current_Year &
+                    ", Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -330,10 +332,10 @@ begin
                  and then not Compilation_Errors
                then
                   Error_Msg_N
-                    ("package % does not require a body?!", Main_Unit_Node);
+                    ("package % does not require a body?", Main_Unit_Node);
                   Error_Msg_Name_1 := Fname;
                   Error_Msg_N
-                    ("body in file{?! will be ignored", Main_Unit_Node);
+                    ("body in file{? will be ignored", Main_Unit_Node);
 
                --  Ada 95 cases of a body file present when no body is
                --  permitted. This we consider to be an error.
@@ -416,7 +418,11 @@ begin
          Errout.Finalize;
          Tree_Gen;
          Namet.Finalize;
-         Exit_Program (E_Success);
+
+         --  Use a goto instead of calling Exit_Program so that finalization
+         --  occurs normally.
+
+         goto End_Of_Program;
 
       elsif Original_Operating_Mode = Check_Semantics then
          Back_End_Mode := Declarations_Only;
@@ -683,7 +689,10 @@ begin
          Comperr.Compiler_Abort ("Storage_Error");
    end;
 
---  The outer exception handles an unrecoverable error
+   <<End_Of_Program>>
+   null;
+
+   --  The outer exception handles an unrecoverable error
 
 exception
    when Unrecoverable_Error =>
