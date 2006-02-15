@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 
 with Atree;    use Atree;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -273,7 +274,7 @@ package body Exp_Util is
       Ensure_Freeze_Node (T);
       Fnode := Freeze_Node (T);
 
-      if not Present (Actions (Fnode)) then
+      if No (Actions (Fnode)) then
          Set_Actions (Fnode, New_List);
       end if;
 
@@ -1541,14 +1542,14 @@ package body Exp_Util is
       Found  : Boolean := False;
       Typ    : Entity_Id := T;
 
-      procedure Find_Tag (Typ : in Entity_Id);
+      procedure Find_Tag (Typ : Entity_Id);
       --  Internal subprogram used to recursively climb to the ancestors
 
       --------------
       -- Find_Tag --
       --------------
 
-      procedure Find_Tag (Typ : in Entity_Id) is
+      procedure Find_Tag (Typ : Entity_Id) is
          AI_Elmt : Elmt_Id;
          AI      : Node_Id;
 
@@ -1655,14 +1656,14 @@ package body Exp_Util is
       Iface  : Entity_Id;
       Typ    : Entity_Id := T;
 
-      procedure Find_Iface (Typ : in Entity_Id);
+      procedure Find_Iface (Typ : Entity_Id);
       --  Internal subprogram used to recursively climb to the ancestors
 
       ----------------
       -- Find_Iface --
       ----------------
 
-      procedure Find_Iface (Typ : in Entity_Id) is
+      procedure Find_Iface (Typ : Entity_Id) is
          AI_Elmt : Elmt_Id;
 
       begin
@@ -1744,6 +1745,7 @@ package body Exp_Util is
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id is
       Prim : Elmt_Id;
       Typ  : Entity_Id := T;
+      Op   : Entity_Id;
 
    begin
       if Is_Class_Wide_Type (Typ) then
@@ -1752,8 +1754,22 @@ package body Exp_Util is
 
       Typ := Underlying_Type (Typ);
 
+      --  Loop through primitive operations
+
       Prim := First_Elmt (Primitive_Operations (Typ));
-      while Chars (Node (Prim)) /= Name loop
+      while Present (Prim) loop
+         Op := Node (Prim);
+
+         --  We can retrieve primitive operations by name if it is an internal
+         --  name. For equality we must check that both of its operands have
+         --  the same type, to avoid confusion with user-defined equalities
+         --  than may have a non-symmetric signature.
+
+         exit when Chars (Op) = Name
+           and then
+             (Name /= Name_Op_Eq
+                or else Etype (First_Entity (Op)) = Etype (Last_Entity (Op)));
+
          Next_Elmt (Prim);
          pragma Assert (Present (Prim));
       end loop;
@@ -1822,153 +1838,165 @@ package body Exp_Util is
       Op  : out Node_Kind;
       Val : out Node_Id)
    is
-      Loc  : constant Source_Ptr := Sloc (Var);
-      CV   : constant Node_Id    := Current_Value (Entity (Var));
-      Sens : Boolean;
-      Stm  : Node_Id;
-      Cond : Node_Id;
+      Loc : constant Source_Ptr := Sloc (Var);
+      Ent : constant Entity_Id  := Entity (Var);
 
    begin
       Op  := N_Empty;
       Val := Empty;
 
-      --  If statement. Condition is known true in THEN section, known False
-      --  in any ELSIF or ELSE part, and unknown outside the IF statement.
+      --  Immediate return, nothing doing, if this is not an object
 
-      if Nkind (CV) = N_If_Statement then
-
-         --  Before start of IF statement
-
-         if Loc < Sloc (CV) then
-            return;
-
-         --  After end of IF statement
-
-         elsif Loc >= Sloc (CV) + Text_Ptr (UI_To_Int (End_Span (CV))) then
-            return;
-         end if;
-
-         --  At this stage we know that we are within the IF statement, but
-         --  unfortunately, the tree does not record the SLOC of the ELSE so
-         --  we cannot use a simple SLOC comparison to distinguish between
-         --  the then/else statements, so we have to climb the tree.
-
-         declare
-            N : Node_Id;
-
-         begin
-            N := Parent (Var);
-            while Parent (N) /= CV loop
-               N := Parent (N);
-
-               --  If we fall off the top of the tree, then that's odd, but
-               --  perhaps it could occur in some error situation, and the
-               --  safest response is simply to assume that the outcome of the
-               --  condition is unknown. No point in bombing during an attempt
-               --  to optimize things.
-
-               if No (N) then
-                  return;
-               end if;
-            end loop;
-
-            --  Now we have N pointing to a node whose parent is the IF
-            --  statement in question, so now we can tell if we are within
-            --  the THEN statements.
-
-            if Is_List_Member (N)
-              and then List_Containing (N) = Then_Statements (CV)
-            then
-               Sens := True;
-
-            --  Otherwise we must be in ELSIF or ELSE part
-
-            else
-               Sens := False;
-            end if;
-         end;
-
-      --  ELSIF part. Condition is known true within the referenced ELSIF,
-      --  known False in any subsequent ELSIF or ELSE part, and unknown before
-      --  the ELSE part or after the IF statement.
-
-      elsif Nkind (CV) = N_Elsif_Part then
-         Stm := Parent (CV);
-
-         --  Before start of ELSIF part
-
-         if Loc < Sloc (CV) then
-            return;
-
-         --  After end of IF statement
-
-         elsif Loc >= Sloc (Stm) +
-                        Text_Ptr (UI_To_Int (End_Span (Stm)))
-         then
-            return;
-         end if;
-
-         --  Again we lack the SLOC of the ELSE, so we need to climb the tree
-         --  to see if we are within the ELSIF part in question.
-
-         declare
-            N : Node_Id;
-
-         begin
-            N := Parent (Var);
-            while Parent (N) /= Stm loop
-               N := Parent (N);
-
-               --  If we fall off the top of the tree, then that's odd, but
-               --  perhaps it could occur in some error situation, and the
-               --  safest response is simply to assume that the outcome of the
-               --  condition is unknown. No point in bombing during an attempt
-               --  to optimize things.
-
-               if No (N) then
-                  return;
-               end if;
-            end loop;
-
-            --  Now we have N pointing to a node whose parent is the IF
-            --  statement in question, so see if is the ELSIF part we want.
-            --  the THEN statements.
-
-            if N = CV then
-               Sens := True;
-
-            --  Otherwise we must be in susbequent ELSIF or ELSE part
-
-            else
-               Sens := False;
-            end if;
-         end;
-
-      --  All other cases of Current_Value settings
-
-      else
+      if Ekind (Ent) not in Object_Kind then
          return;
       end if;
 
-      --  If we fall through here, then we have a reportable condition, Sens is
-      --  True if the condition is true and False if it needs inverting.
+      --  Otherwise examine current value
 
-      --  Deal with NOT operators, inverting sense
+      declare
+         CV   : constant Node_Id := Current_Value (Ent);
+         Sens : Boolean;
+         Stm  : Node_Id;
+         Cond : Node_Id;
 
-      Cond := Condition (CV);
-      while Nkind (Cond) = N_Op_Not loop
-         Cond := Right_Opnd (Cond);
-         Sens := not Sens;
-      end loop;
+      begin
+         --  If statement. Condition is known true in THEN section, known False
+         --  in any ELSIF or ELSE part, and unknown outside the IF statement.
 
-      --  Now we must have a relational operator
+         if Nkind (CV) = N_If_Statement then
 
-      pragma Assert (Entity (Var) = Entity (Left_Opnd (Cond)));
-      Val := Right_Opnd (Cond);
-      Op  := Nkind (Cond);
+            --  Before start of IF statement
 
-      if Sens = False then
-         case Op is
+            if Loc < Sloc (CV) then
+               return;
+
+               --  After end of IF statement
+
+            elsif Loc >= Sloc (CV) + Text_Ptr (UI_To_Int (End_Span (CV))) then
+               return;
+            end if;
+
+            --  At this stage we know that we are within the IF statement, but
+            --  unfortunately, the tree does not record the SLOC of the ELSE so
+            --  we cannot use a simple SLOC comparison to distinguish between
+            --  the then/else statements, so we have to climb the tree.
+
+            declare
+               N : Node_Id;
+
+            begin
+               N := Parent (Var);
+               while Parent (N) /= CV loop
+                  N := Parent (N);
+
+                  --  If we fall off the top of the tree, then that's odd, but
+                  --  perhaps it could occur in some error situation, and the
+                  --  safest response is simply to assume that the outcome of
+                  --  the condition is unknown. No point in bombing during an
+                  --  attempt to optimize things.
+
+                  if No (N) then
+                     return;
+                  end if;
+               end loop;
+
+               --  Now we have N pointing to a node whose parent is the IF
+               --  statement in question, so now we can tell if we are within
+               --  the THEN statements.
+
+               if Is_List_Member (N)
+                 and then List_Containing (N) = Then_Statements (CV)
+               then
+                  Sens := True;
+
+                  --  Otherwise we must be in ELSIF or ELSE part
+
+               else
+                  Sens := False;
+               end if;
+            end;
+
+            --  ELSIF part. Condition is known true within the referenced
+            --  ELSIF, known False in any subsequent ELSIF or ELSE part, and
+            --  unknown before the ELSE part or after the IF statement.
+
+         elsif Nkind (CV) = N_Elsif_Part then
+            Stm := Parent (CV);
+
+            --  Before start of ELSIF part
+
+            if Loc < Sloc (CV) then
+               return;
+
+               --  After end of IF statement
+
+            elsif Loc >= Sloc (Stm) +
+              Text_Ptr (UI_To_Int (End_Span (Stm)))
+            then
+               return;
+            end if;
+
+            --  Again we lack the SLOC of the ELSE, so we need to climb the
+            --  tree to see if we are within the ELSIF part in question.
+
+            declare
+               N : Node_Id;
+
+            begin
+               N := Parent (Var);
+               while Parent (N) /= Stm loop
+                  N := Parent (N);
+
+                  --  If we fall off the top of the tree, then that's odd, but
+                  --  perhaps it could occur in some error situation, and the
+                  --  safest response is simply to assume that the outcome of
+                  --  the condition is unknown. No point in bombing during an
+                  --  attempt to optimize things.
+
+                  if No (N) then
+                     return;
+                  end if;
+               end loop;
+
+               --  Now we have N pointing to a node whose parent is the IF
+               --  statement in question, so see if is the ELSIF part we want.
+               --  the THEN statements.
+
+               if N = CV then
+                  Sens := True;
+
+                  --  Otherwise we must be in susbequent ELSIF or ELSE part
+
+               else
+                  Sens := False;
+               end if;
+            end;
+
+            --  All other cases of Current_Value settings
+
+         else
+            return;
+         end if;
+
+         --  If we fall through here, then we have a reportable condition, Sens
+         --  is True if the condition is true and False if it needs inverting.
+
+         --  Deal with NOT operators, inverting sense
+
+         Cond := Condition (CV);
+         while Nkind (Cond) = N_Op_Not loop
+            Cond := Right_Opnd (Cond);
+            Sens := not Sens;
+         end loop;
+
+         --  Now we must have a relational operator
+
+         pragma Assert (Entity (Var) = Entity (Left_Opnd (Cond)));
+         Val := Right_Opnd (Cond);
+         Op  := Nkind (Cond);
+
+         if Sens = False then
+            case Op is
             when N_Op_Eq => Op := N_Op_Ne;
             when N_Op_Ne => Op := N_Op_Eq;
             when N_Op_Lt => Op := N_Op_Ge;
@@ -1976,12 +2004,13 @@ package body Exp_Util is
             when N_Op_Le => Op := N_Op_Gt;
             when N_Op_Ge => Op := N_Op_Lt;
 
-            --  No other entry should be possible
+               --  No other entry should be possible
 
             when others =>
                raise Program_Error;
-         end case;
-      end if;
+            end case;
+         end if;
+      end;
    end Get_Current_Value_Condition;
 
    --------------------
@@ -2773,19 +2802,14 @@ package body Exp_Util is
    -- Is_Predefined_Dispatching_Operation --
    -----------------------------------------
 
-   function Is_Predefined_Dispatching_Operation
-     (Subp : Entity_Id) return Boolean
+   function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean
    is
       TSS_Name : TSS_Name_Type;
-      E        : Entity_Id := Subp;
+
    begin
-      pragma Assert (Is_Dispatching_Operation (Subp));
-
-      --  Handle overriden subprograms
-
-      while Present (Alias (E)) loop
-         E := Alias (E);
-      end loop;
+      if not Is_Dispatching_Operation (E) then
+         return False;
+      end if;
 
       Get_Name_String (Chars (E));
 
@@ -2798,7 +2822,9 @@ package body Exp_Util is
            or else TSS_Name  = TSS_Stream_Write
            or else TSS_Name  = TSS_Stream_Input
            or else TSS_Name  = TSS_Stream_Output
-           or else Chars (E) = Name_Op_Eq
+           or else
+             (Chars (E) = Name_Op_Eq
+                and then Etype (First_Entity (E)) = Etype (Last_Entity (E)))
            or else Chars (E) = Name_uAssign
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize
@@ -3324,27 +3350,38 @@ package body Exp_Util is
 
    function Known_Non_Null (N : Node_Id) return Boolean is
    begin
-      pragma Assert (Is_Access_Type (Underlying_Type (Etype (N))));
+      --  Checks for case where N is an entity reference
 
-      --  Case of entity for which Is_Known_Non_Null is True
+      if Is_Entity_Name (N) and then Present (Entity (N)) then
+         declare
+            E   : constant Entity_Id := Entity (N);
+            Op  : Node_Kind;
+            Val : Node_Id;
 
-      if Is_Entity_Name (N) and then Is_Known_Non_Null (Entity (N)) then
+         begin
+            --  First check if we are in decisive conditional
 
-         --  If the entity is aliased or volatile, then we decide that
-         --  we don't know it is really non-null even if the sequential
-         --  flow indicates that it is, since such variables can be
-         --  changed without us noticing.
+            Get_Current_Value_Condition (N, Op, Val);
 
-         if Is_Aliased (Entity (N))
-           or else Treat_As_Volatile (Entity (N))
-         then
-            return False;
+            if Nkind (Val) = N_Null then
+               if Op = N_Op_Eq then
+                  return False;
+               elsif Op = N_Op_Ne then
+                  return True;
+               end if;
+            end if;
 
-         --  For all other cases, the flag is decisive
+            --  If OK to do replacement, test Is_Known_Non_Null flag
 
-         else
-            return True;
-         end if;
+            if OK_To_Do_Constant_Replacement (E) then
+               return Is_Known_Non_Null (E);
+
+            --  Otherwise if not safe to do replacement, then say so
+
+            else
+               return False;
+            end if;
+         end;
 
       --  True if access attribute
 
@@ -3367,19 +3404,6 @@ package body Exp_Util is
       elsif Nkind (N) = N_Type_Conversion then
          return Known_Non_Null (Expression (N));
 
-      --  One more case is when Current_Value references a condition
-      --  that ensures a non-null value.
-
-      elsif Is_Entity_Name (N) then
-         declare
-            Op  : Node_Kind;
-            Val : Node_Id;
-
-         begin
-            Get_Current_Value_Condition (N, Op, Val);
-            return Op = N_Op_Ne and then Nkind (Val) = N_Null;
-         end;
-
       --  Above are all cases where the value could be determined to be
       --  non-null. In all other cases, we don't know, so return False.
 
@@ -3387,6 +3411,63 @@ package body Exp_Util is
          return False;
       end if;
    end Known_Non_Null;
+
+   ----------------
+   -- Known_Null --
+   ----------------
+
+   function Known_Null (N : Node_Id) return Boolean is
+   begin
+      --  Checks for case where N is an entity reference
+
+      if Is_Entity_Name (N) and then Present (Entity (N)) then
+         declare
+            E   : constant Entity_Id := Entity (N);
+            Op  : Node_Kind;
+            Val : Node_Id;
+
+         begin
+            --  First check if we are in decisive conditional
+
+            Get_Current_Value_Condition (N, Op, Val);
+
+            if Nkind (Val) = N_Null then
+               if Op = N_Op_Eq then
+                  return True;
+               elsif Op = N_Op_Ne then
+                  return False;
+               end if;
+            end if;
+
+            --  If OK to do replacement, test Is_Known_Null flag
+
+            if OK_To_Do_Constant_Replacement (E) then
+               return Is_Known_Null (E);
+
+            --  Otherwise if not safe to do replacement, then say so
+
+            else
+               return False;
+            end if;
+         end;
+
+      --  True if explicit reference to null
+
+      elsif Nkind (N) = N_Null then
+         return True;
+
+      --  For a conversion, true if expression is known null
+
+      elsif Nkind (N) = N_Type_Conversion then
+         return Known_Null (Expression (N));
+
+      --  Above are all cases where the value could be determined to be null.
+      --  In all other cases, we don't know, so return False.
+
+      else
+         return False;
+      end if;
+   end Known_Null;
 
    -----------------------------
    -- Make_CW_Equivalent_Type --
@@ -3774,6 +3855,67 @@ package body Exp_Util is
       return (Res);
    end New_Class_Wide_Subtype;
 
+   -----------------------------------
+   -- OK_To_Do_Constant_Replacement --
+   -----------------------------------
+
+   function OK_To_Do_Constant_Replacement (E : Entity_Id) return Boolean is
+      ES : constant Entity_Id := Scope (E);
+      CS : Entity_Id;
+
+   begin
+      --  Do not replace statically allocated objects, because they may be
+      --  modified outside the current scope.
+
+      if Is_Statically_Allocated (E) then
+         return False;
+
+      --  Do not replace aliased or volatile objects, since we don't know what
+      --  else might change the value.
+
+      elsif Is_Aliased (E) or else Treat_As_Volatile (E) then
+         return False;
+
+      --  Debug flag -gnatdM disconnects this optimization
+
+      elsif Debug_Flag_MM then
+         return False;
+
+      --  Otherwise check scopes
+
+      else
+
+         CS := Current_Scope;
+
+         loop
+            --  If we are in right scope, replacement is safe
+
+            if CS = ES then
+               return True;
+
+            --  Packages do not affect the determination of safety
+
+            elsif Ekind (CS) = E_Package then
+               CS := Scope (CS);
+               exit when CS = Standard_Standard;
+
+            --  Blocks do not affect the determination of safety
+
+            elsif Ekind (CS) = E_Block then
+               CS := Scope (CS);
+
+            --  Otherwise, the reference is dubious, and we cannot be sure that
+            --  it is safe to do the replacement.
+
+            else
+               exit;
+            end if;
+         end loop;
+
+         return False;
+      end if;
+   end OK_To_Do_Constant_Replacement;
+
    -------------------------
    -- Remove_Side_Effects --
    -------------------------
@@ -3783,7 +3925,7 @@ package body Exp_Util is
       Name_Req     : Boolean := False;
       Variable_Ref : Boolean := False)
    is
-      Loc          : constant Source_Ptr := Sloc (Exp);
+      Loc          : constant Source_Ptr     := Sloc (Exp);
       Exp_Type     : constant Entity_Id      := Etype (Exp);
       Svg_Suppress : constant Suppress_Array := Scope_Suppress;
       Def_Id       : Entity_Id;
@@ -3794,31 +3936,30 @@ package body Exp_Util is
       E            : Node_Id;
 
       function Side_Effect_Free (N : Node_Id) return Boolean;
-      --  Determines if the tree N represents an expression that is known
-      --  not to have side effects, and for which no processing is required.
+      --  Determines if the tree N represents an expression that is known not
+      --  to have side effects, and for which no processing is required.
 
       function Side_Effect_Free (L : List_Id) return Boolean;
       --  Determines if all elements of the list L are side effect free
 
       function Safe_Prefixed_Reference (N : Node_Id) return Boolean;
-      --  The argument N is a construct where the Prefix is dereferenced
-      --  if it is a an access type and the result is a variable. The call
-      --  returns True if the construct is side effect free (not considering
-      --  side effects in other than the prefix which are to be tested by the
-      --  caller).
+      --  The argument N is a construct where the Prefix is dereferenced if it
+      --  is an access type and the result is a variable. The call returns True
+      --  if the construct is side effect free (not considering side effects in
+      --  other than the prefix which are to be tested by the caller).
 
       function Within_In_Parameter (N : Node_Id) return Boolean;
-      --  Determines if N is a subcomponent of a composite in-parameter.
-      --  If so, N is not side-effect free when the actual is global and
-      --  modifiable indirectly from within a subprogram, because it may
-      --  be passed by reference. The front-end must be conservative here
-      --  and assume that this may happen with any array or record type.
-      --  On the other hand, we cannot create temporaries for all expressions
-      --  for which this condition is true, for various reasons that might
-      --  require clearing up ??? For example, descriminant references that
-      --  appear out of place, or spurious type errors with class-wide
-      --  expressions. As a result, we limit the transformation to loop
-      --  bounds, which is so far the only case that requires it.
+      --  Determines if N is a subcomponent of a composite in-parameter. If so,
+      --  N is not side-effect free when the actual is global and modifiable
+      --  indirectly from within a subprogram, because it may be passed by
+      --  reference. The front-end must be conservative here and assume that
+      --  this may happen with any array or record type. On the other hand, we
+      --  cannot create temporaries for all expressions for which this
+      --  condition is true, for various reasons that might require clearing up
+      --  ??? For example, descriminant references that appear out of place, or
+      --  spurious type errors with class-wide expressions. As a result, we
+      --  limit the transformation to loop bounds, which is so far the only
+      --  case that requires it.
 
       -----------------------------
       -- Safe_Prefixed_Reference --
@@ -3942,6 +4083,7 @@ package body Exp_Util is
 
             when N_Attribute_Reference =>
                return Side_Effect_Free (Expressions (N))
+                 and then Attribute_Name (N) /= Name_Input
                  and then (Is_Entity_Name (Prefix (N))
                             or else Side_Effect_Free (Prefix (N)));
 
@@ -4175,14 +4317,7 @@ package body Exp_Util is
       --  is a view conversion to a smaller object, where gigi can end up
       --  creating its own temporary of the wrong size.
 
-      --  ??? this transformation is inhibited for elementary types that are
-      --  not involved in a change of representation because it causes
-      --  regressions that are not fully understood yet.
-
-      elsif Nkind (Exp) = N_Type_Conversion
-        and then (not Is_Elementary_Type (Underlying_Type (Exp_Type))
-                   or else Nkind (Parent (Exp)) = N_Assignment_Statement)
-      then
+      elsif Nkind (Exp) = N_Type_Conversion then
          Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
          Scope_Suppress := Svg_Suppress;
          return;
@@ -4193,7 +4328,7 @@ package body Exp_Util is
       elsif Nkind (Exp) = N_Unchecked_Type_Conversion
         and then not Safe_Unchecked_Type_Conversion (Exp)
       then
-         if Controlled_Type (Etype (Exp)) then
+         if Controlled_Type (Exp_Type) then
 
             --  Use a renaming to capture the expression, rather than create
             --  a controlled temporary.
@@ -4237,7 +4372,7 @@ package body Exp_Util is
 
          if Nkind (Exp) = N_Selected_Component
            and then Nkind (Prefix (Exp)) = N_Function_Call
-           and then Is_Array_Type (Etype (Exp))
+           and then Is_Array_Type (Exp_Type)
          then
             --  Avoid generating a variable-sized temporary, by generating
             --  the renaming declaration just for the function call. The
@@ -4267,11 +4402,22 @@ package body Exp_Util is
 
          end if;
 
-         --  The temporary must be elaborated by gigi, and is of course
-         --  not to be replaced in-line by the expression it renames,
-         --  which would defeat the purpose of removing the side-effect.
+         --  If this is a packed reference, or a selected component with a
+         --  non-standard representation, a reference to the temporary will
+         --  be replaced by a copy of the original expression (see
+         --  exp_ch2.Expand_Renaming). Otherwise the temporary must be
+         --  elaborated by gigi, and is of course not to be replaced in-line
+         --  by the expression it renames, which would defeat the purpose of
+         --  removing the side-effect.
 
-         Set_Is_Renaming_Of_Object (Def_Id, False);
+         if (Nkind (Exp) = N_Selected_Component
+              or else Nkind (Exp) = N_Indexed_Component)
+           and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
+         then
+            null;
+         else
+            Set_Is_Renaming_Of_Object (Def_Id, False);
+         end if;
 
       --  Otherwise we generate a reference to the value
 
@@ -4587,6 +4733,32 @@ package body Exp_Util is
          end if;
       end if;
    end Set_Elaboration_Flag;
+
+   ----------------------------
+   -- Set_Renamed_Subprogram --
+   ----------------------------
+
+   procedure Set_Renamed_Subprogram (N : Node_Id; E : Entity_Id) is
+   begin
+      --  If input node is an identifier, we can just reset it
+
+      if Nkind (N) = N_Identifier then
+         Set_Chars  (N, Chars (E));
+         Set_Entity (N, E);
+
+         --  Otherwise we have to do a rewrite, preserving Comes_From_Source
+
+      else
+         declare
+            CS : constant Boolean := Comes_From_Source (N);
+         begin
+            Rewrite (N, Make_Identifier (Sloc (N), Chars => Chars (E)));
+            Set_Entity (N, E);
+            Set_Comes_From_Source (N, CS);
+            Set_Analyzed (N, True);
+         end;
+      end if;
+   end Set_Renamed_Subprogram;
 
    --------------------------
    -- Target_Has_Fixed_Ops --
