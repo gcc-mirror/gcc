@@ -90,7 +90,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
     | GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU
     | GFC_STD_LEGACY;
   gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_F2003 | GFC_STD_LEGACY;
+    | GFC_STD_LEGACY;
 
   gfc_option.warn_nonstd_intrinsics = 0;
 

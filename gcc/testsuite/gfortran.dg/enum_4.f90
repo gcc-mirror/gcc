@@ -3,12 +3,12 @@
 
 program main
   implicit none
-  enum, bind (c)  ! { dg-warning "New in Fortran 2003" } 
+  enum, bind (c)
     enumerator :: red, black = 2     
     enumerator :: blue = 1, red  ! { dg-error "already" }
   end enum
 
-  enum, bind (c)  ! { dg-warning "New in Fortran 2003" } 
+  enum, bind (c)
     enumerator :: r, b(10) = 2  ! { dg-error "cannot be array" }
     enumerator , save :: g = 1  ! { dg-error "cannot have attributes" }  
   end  ! { dg-error " END ENUM" } 

@@ -3,7 +3,7 @@
 
 program main
   implicit none
-  enum, bind (c)  ! { dg-warning "New in Fortran 2003" }
+  enum, bind (c)
     enumerator :: red, black
     integer :: x  ! { dg-error "Unexpected data declaration" }
     enumerator blue = 1  ! { dg-error "Syntax error in ENUMERATOR definition" }

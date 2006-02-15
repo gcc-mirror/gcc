@@ -4,7 +4,7 @@
 
 program main
   implicit none
-  enum, bind (c)  ! { dg-warning "New in Fortran 2003" }
+  enum, bind (c)
     enumerator :: red, black = 127
     enumerator blue
   end enum

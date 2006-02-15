@@ -4,12 +4,12 @@ program bracket_array_constructor
     implicit none
     integer :: a(4), i
 
-    a = [ 1, 2, 3, 4 ]  ! { dg-warning "array constructor" }
+    a = [ 1, 2, 3, 4 ]
     do i = 1, size(a)
         if (a(i) /= i) call abort()
     end do
 
-    a = [ (/ 1, 2, 3, 4 /) ]  ! { dg-warning "array constructor" }
+    a = [ (/ 1, 2, 3, 4 /) ]
     do i = 1, size(a)
         if (a(i) /= i) call abort()
     end do

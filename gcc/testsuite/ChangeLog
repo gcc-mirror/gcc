@@ -1,3 +1,20 @@
+2006-02-15  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/26054
+	* gfortran.dg/enum_8.f90: Remove check for warning.
+	* gfortran.dg/iomsg_1.f90: Ditto.
+	* gfortran.dg/enum_1.f90: Ditto.
+	* gfortran.dg/enum_9.f90: Ditto.
+	* gfortran.dg/enum_2.f90: Ditto.
+	* gfortran.dg/enum_10.f90: Ditto.
+	* gfortran.dg/enum_3.f90: Ditto.
+	* gfortran.dg/flush_1.f90: Ditto.
+	* gfortran.dg/enum_4.f90: Ditto.
+	* gfortran.dg/array_constructor_1.f90: Ditto.
+	* gfortran.dg/enum_5.f90: Ditto.
+	* gfortran.dg/enum_6.f90: Ditto.
+	* gfortran.dg/enum_7.f90: Ditto.
+
 2006-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26300
