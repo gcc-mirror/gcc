@@ -1,3 +1,8 @@
+2006-02-15  Marcin Dalecki <martin@dalecki.de>
+
+	* tree-ssa-dom.c (dom_thread_across_edge): fix tag expression
+	construction.
+
 2006-02-14  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/26209

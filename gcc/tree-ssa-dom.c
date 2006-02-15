@@ -596,7 +596,7 @@ dom_thread_across_edge (struct dom_walk_data *walk_data, edge e)
   /* If we don't already have a dummy condition, build it now.  */
   if (! walk_data->global_data)
     {
-      tree dummy_cond = build2 (NE, boolean_type_node,
+      tree dummy_cond = build2 (NE_EXPR, boolean_type_node,
 			        integer_zero_node, integer_zero_node);
       dummy_cond = build3 (COND_EXPR, void_type_node, dummy_cond, NULL, NULL);
       walk_data->global_data = dummy_cond;
