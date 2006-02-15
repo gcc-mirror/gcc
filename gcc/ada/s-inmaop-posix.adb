@@ -8,7 +8,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,17 +48,10 @@ with System.Storage_Elements;
 --  used for To_Address
 --           Integer_Address
 
-with Unchecked_Conversion;
-
 package body System.Interrupt_Management.Operations is
 
    use Interfaces.C;
    use System.OS_Interface;
-
-   type Interrupt_Mask_Ptr is access all Interrupt_Mask;
-
-   function "+" is new
-     Unchecked_Conversion (Interrupt_Mask_Ptr, sigset_t_ptr);
 
    ---------------------
    -- Local Variables --
@@ -111,10 +104,9 @@ package body System.Interrupt_Management.Operations is
    ------------------------
 
    procedure Set_Interrupt_Mask (Mask : access Interrupt_Mask) is
-      Result   : Interfaces.C.int;
+      Result : Interfaces.C.int;
    begin
-      Result := pthread_sigmask
-        (SIG_SETMASK, +Interrupt_Mask_Ptr (Mask), null);
+      Result := pthread_sigmask (SIG_SETMASK, Mask, null);
       pragma Assert (Result = 0);
    end Set_Interrupt_Mask;
 
@@ -124,8 +116,7 @@ package body System.Interrupt_Management.Operations is
    is
       Result  : Interfaces.C.int;
    begin
-      Result := pthread_sigmask
-        (SIG_SETMASK, +Interrupt_Mask_Ptr (Mask), +Interrupt_Mask_Ptr (OMask));
+      Result := pthread_sigmask (SIG_SETMASK, Mask, OMask);
       pragma Assert (Result = 0);
    end Set_Interrupt_Mask;
 
@@ -136,8 +127,7 @@ package body System.Interrupt_Management.Operations is
    procedure Get_Interrupt_Mask (Mask : access Interrupt_Mask) is
       Result : Interfaces.C.int;
    begin
-      Result := pthread_sigmask
-        (SIG_SETMASK, null, +Interrupt_Mask_Ptr (Mask));
+      Result := pthread_sigmask (SIG_SETMASK, null, Mask);
       pragma Assert (Result = 0);
    end Get_Interrupt_Mask;
 
