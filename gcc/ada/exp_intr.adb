@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -705,10 +705,24 @@ package body Exp_Intr is
       Free_Cod  : List_Id;
       Blk       : Node_Id;
 
+      Arg_Known_Non_Null : constant Boolean := Known_Non_Null (N);
+      --  This captures whether we know the argument to be non-null so that
+      --  we can avoid the test. The reason that we need to capture this is
+      --  that we analyze some generated statements before properly attaching
+      --  them to the tree, and that can disturb current value settings.
+
    begin
       if No_Pool_Assigned (Rtyp) then
          Error_Msg_N ("?deallocation from empty storage pool", N);
       end if;
+
+      --  Nothing to do if we know the argument is null
+
+      if Known_Null (N) then
+         return;
+      end if;
+
+      --  Processing for pointer to controlled type
 
       if Controlled_Type (Desig_T) then
          Deref :=
@@ -760,6 +774,11 @@ package body Exp_Intr is
             Expand_At_End_Handler
               (Handled_Statement_Sequence (Blk), Entity (Identifier (Blk)));
             Append (Blk, Stmts);
+
+            --  We kill saved current values, since analyzing statements not
+            --  properly attached to the tree can set wrong current values.
+
+            Kill_Current_Values;
 
          else
             Append_List_To (Stmts, Free_Cod);
@@ -917,58 +936,6 @@ package body Exp_Intr is
 
       Set_Expression (Free_Node, Free_Arg);
 
-      --  Make implicit if statement. We omit this if we are the then part
-      --  of a test of the form:
-
-      --    if not (Arg = null) then
-
-      --  i.e. if the test is explicit in the source. Arg must be a simple
-      --  identifier for the purposes of this special test. Note that the
-      --  use of /= in the source is always transformed into the above form.
-
-      declare
-         Test_Needed : Boolean := True;
-         P           : constant Node_Id := Parent (N);
-         C           : Node_Id;
-
-      begin
-         if Nkind (Arg) = N_Identifier
-           and then Nkind (P) =  N_If_Statement
-           and then First (Then_Statements (P)) = N
-         then
-            if Nkind (Condition (P)) = N_Op_Not then
-               C := Right_Opnd (Condition (P));
-
-               if Nkind (C) = N_Op_Eq
-                 and then Nkind (Left_Opnd (C)) = N_Identifier
-                 and then Chars (Arg) = Chars (Left_Opnd (C))
-                 and then Nkind (Right_Opnd (C)) = N_Null
-               then
-                  Test_Needed := False;
-               end if;
-            end if;
-         end if;
-
-         --  Generate If_Statement if needed
-
-         if Test_Needed then
-            Gen_Code :=
-              Make_Implicit_If_Statement (N,
-                Condition =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd  => Duplicate_Subexpr (Arg),
-                    Right_Opnd => Make_Null (Loc)),
-                Then_Statements => Stmts);
-
-         else
-            Gen_Code :=
-              Make_Block_Statement (Loc,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => Stmts));
-         end if;
-      end;
-
       --  Only remaining step is to set result to null, or generate a
       --  raise of constraint error if the target object is "not null".
 
@@ -987,6 +954,29 @@ package body Exp_Intr is
                 Name       => Lhs,
                 Expression => Make_Null (Loc)));
          end;
+      end if;
+
+      --  If we know the argument is non-null, then make a block statement
+      --  that contains the required statements, no need for a test.
+
+      if Arg_Known_Non_Null then
+         Gen_Code :=
+           Make_Block_Statement (Loc,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+             Statements => Stmts));
+
+      --  If the argument may be null, wrap the statements inside an IF that
+      --  does an explicit test to exclude the null case.
+
+      else
+         Gen_Code :=
+           Make_Implicit_If_Statement (N,
+             Condition =>
+               Make_Op_Ne (Loc,
+                 Left_Opnd  => Duplicate_Subexpr (Arg),
+                 Right_Opnd => Make_Null (Loc)),
+             Then_Statements => Stmts);
       end if;
 
       --  Rewrite the call
