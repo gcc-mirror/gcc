@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1880,7 +1880,7 @@ package body Exp_Dist is
       For_RAS         : Boolean := False;
 
    begin
-      if not Present (Parameter_Specifications (Spec)) then
+      if No (Parameter_Specifications (Spec)) then
          return New_List;
       end if;
 
@@ -2255,12 +2255,17 @@ package body Exp_Dist is
                     Root_Type (Current_Etype) = Root_Type (Object_Type));
                   Current_Type :=
                     Make_Access_Definition (Loc,
-                      Subtype_Mark => New_Occurrence_Of (Stub_Type, Loc));
+                      Subtype_Mark => New_Occurrence_Of (Stub_Type, Loc),
+                      Null_Exclusion_Present =>
+                        Null_Exclusion_Present (Current_Type));
+
                else
                   Current_Type :=
                     Make_Access_Definition (Loc,
                       Subtype_Mark =>
-                        New_Occurrence_Of (Current_Etype, Loc));
+                        New_Occurrence_Of (Current_Etype, Loc),
+                      Null_Exclusion_Present =>
+                         Null_Exclusion_Present (Current_Type));
                end if;
 
             else
