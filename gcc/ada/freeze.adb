@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2227,7 +2227,7 @@ package body Freeze is
 
                            if Formal = First_Formal (E) then
                               Error_Msg_NE
-                                ("?in inherited operation&!", Warn_Node, E);
+                                ("?in inherited operation&", Warn_Node, E);
                            end if;
                         else
                            Warn_Node := Formal;
@@ -2372,7 +2372,7 @@ package body Freeze is
                --  pragma is to suppress implicit initialization.
 
                if Is_Imported (E)
-                 and then not Present (Address_Clause (E))
+                 and then No (Address_Clause (E))
                then
                   Set_Is_Public (E);
                end if;
@@ -3159,8 +3159,19 @@ package body Freeze is
                Prim_List : Elist_Id;
                Prim      : Elmt_Id;
                Ent       : Entity_Id;
+               Aux_E     : Entity_Id;
 
             begin
+               --  Handle subtypes
+
+               if Ekind (E) = E_Protected_Subtype
+                 or else Ekind (E) = E_Task_Subtype
+               then
+                  Aux_E := Etype (E);
+               else
+                  Aux_E := E;
+               end if;
+
                --  Ada 2005 (AI-345): In case of concurrent type generate
                --  reference to the wrapper that allow us to dispatch calls
                --  through their implemented abstract interface types.
@@ -3168,17 +3179,17 @@ package body Freeze is
                --  The check for Present here is to protect against previously
                --  reported critical errors.
 
-               if Is_Concurrent_Type (E)
-                 and then Present (Corresponding_Record_Type (E))
+               if Is_Concurrent_Type (Aux_E)
+                 and then Present (Corresponding_Record_Type (Aux_E))
                then
                   pragma Assert (not Is_Empty_Elmt_List
                                        (Abstract_Interfaces
-                                        (Corresponding_Record_Type (E))));
+                                        (Corresponding_Record_Type (Aux_E))));
 
                   Prim_List := Primitive_Operations
-                                (Corresponding_Record_Type (E));
+                                (Corresponding_Record_Type (Aux_E));
                else
-                  Prim_List := Primitive_Operations (E);
+                  Prim_List := Primitive_Operations (Aux_E);
                end if;
 
                --  Loop to generate references for primitive operations
