@@ -159,16 +159,6 @@ package body Debug is
    --  dy
    --  dz
 
-   --  d1
-   --  d2
-   --  d3
-   --  d4
-   --  d5
-   --  d6
-   --  d7
-   --  d8
-   --  d9
-
    --  Debug flags used in package Make and its clients (e.g. GNATMAKE)
 
    --  da
@@ -197,16 +187,6 @@ package body Debug is
    --  dx
    --  dy
    --  dz
-
-   --  d1
-   --  d2
-   --  d3
-   --  d4
-   --  d5
-   --  d6
-   --  d7
-   --  d8
-   --  d9
 
    --------------------------------------------
    -- Documentation for Compiler Debug Flags --
