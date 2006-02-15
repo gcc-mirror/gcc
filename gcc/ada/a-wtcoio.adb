@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,9 +56,9 @@ package body Ada.Wide_Text_IO.Complex_IO is
    ---------
 
    procedure Get
-     (File  :  File_Type;
+     (File  : File_Type;
       Item  : out Complex;
-      Width :  Field := 0)
+      Width : Field := 0)
    is
       Real_Item : Real'Base;
       Imag_Item : Real'Base;

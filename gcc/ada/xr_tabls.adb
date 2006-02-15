@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -761,7 +761,7 @@ package body Xr_Tabls is
 
    function Get_File
      (File     : File_Reference;
-      With_Dir : in Boolean := False;
+      With_Dir : Boolean := False;
       Strip    : Natural    := 0) return String
    is
       Tmp : GNAT.OS_Lib.String_Access;

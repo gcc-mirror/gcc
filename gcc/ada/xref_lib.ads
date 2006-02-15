@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,11 +80,11 @@ package Xref_Lib is
    -----------------------
 
    procedure Print_Gnatfind
-     (References     : in Boolean;
-      Full_Path_Name : in Boolean);
-   procedure Print_Unused (Full_Path_Name : in Boolean);
-   procedure Print_Vi (Full_Path_Name : in Boolean);
-   procedure Print_Xref (Full_Path_Name : in Boolean);
+     (References     : Boolean;
+      Full_Path_Name : Boolean);
+   procedure Print_Unused (Full_Path_Name : Boolean);
+   procedure Print_Vi     (Full_Path_Name : Boolean);
+   procedure Print_Xref   (Full_Path_Name : Boolean);
    --  The actual print procedures. These functions step through the symbol
    --  table and print all the symbols if they match the files given on the
    --  command line (they already match the entities if they are in the
@@ -94,7 +94,7 @@ package Xref_Lib is
    -- General Algorithms --
    ------------------------
 
-   function Default_Project_File (Dir_Name : in String) return String;
+   function Default_Project_File (Dir_Name : String) return String;
    --  Returns the default Project file name for the directory Dir_Name
 
    procedure Search

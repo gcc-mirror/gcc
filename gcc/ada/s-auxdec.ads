@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,13 +209,13 @@ package System.Aux_DEC is
    type Unsigned_Quadword_Array is
       array (Integer range <>) of Unsigned_Quadword;
 
-   function To_Address      (X : Integer)           return Address;
+   function To_Address (X : Integer) return Address;
    pragma Pure_Function (To_Address);
 
    function To_Address_Long (X : Unsigned_Longword) return Address;
    pragma Pure_Function (To_Address_Long);
 
-   function To_Integer      (X : Address)           return Integer;
+   function To_Integer (X : Address) return Integer;
 
    function To_Unsigned_Longword (X : Address)     return Unsigned_Longword;
    function To_Unsigned_Longword (X : AST_Handler) return Unsigned_Longword;
@@ -288,17 +288,17 @@ package System.Aux_DEC is
    procedure Clear_Interlocked
      (Bit          : in out Boolean;
       Old_Value    : out Boolean;
-      Retry_Count  : in Natural;
+      Retry_Count  : Natural;
       Success_Flag : out Boolean);
 
    procedure Set_Interlocked
      (Bit          : in out Boolean;
       Old_Value    : out Boolean;
-      Retry_Count  : in Natural;
+      Retry_Count  : Natural;
       Success_Flag : out Boolean);
 
    procedure Add_Interlocked
-     (Addend       : in Short_Integer;
+     (Addend       : Short_Integer;
       Augend       : in out Aligned_Word;
       Sign         : out Integer);
 
@@ -322,67 +322,67 @@ package System.Aux_DEC is
 
    procedure Add_Atomic
      (To           : in out Aligned_Integer;
-      Amount       : in Integer);
+      Amount       : Integer);
 
    procedure Add_Atomic
      (To           : in out Aligned_Integer;
-      Amount       : in Integer;
-      Retry_Count  : in Natural;
+      Amount       : Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Integer;
       Success_Flag : out Boolean);
 
    procedure Add_Atomic
      (To           : in out Aligned_Long_Integer;
-      Amount       : in Long_Integer);
+      Amount       : Long_Integer);
 
    procedure Add_Atomic
      (To           : in out Aligned_Long_Integer;
-      Amount       : in Long_Integer;
-      Retry_Count  : in Natural;
+      Amount       : Long_Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean);
 
    procedure And_Atomic
      (To           : in out Aligned_Integer;
-      From         : in Integer);
+      From         : Integer);
 
    procedure And_Atomic
      (To           : in out Aligned_Integer;
-      From         : in Integer;
-      Retry_Count  : in Natural;
+      From         : Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Integer;
       Success_Flag : out Boolean);
 
    procedure And_Atomic
      (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer);
+      From         : Long_Integer);
 
    procedure And_Atomic
      (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer;
-      Retry_Count  : in Natural;
+      From         : Long_Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean);
 
    procedure Or_Atomic
      (To           : in out Aligned_Integer;
-      From         : in Integer);
+      From         : Integer);
 
    procedure Or_Atomic
      (To           : in out Aligned_Integer;
-      From         : in Integer;
-      Retry_Count  : in Natural;
+      From         : Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Integer;
       Success_Flag : out Boolean);
 
    procedure Or_Atomic
      (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer);
+      From         : Long_Integer);
 
    procedure Or_Atomic
      (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer;
-      Retry_Count  : in Natural;
+      From         : Long_Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean);
 
@@ -407,22 +407,22 @@ package System.Aux_DEC is
       OK_Empty       => +2);
 
    procedure Insqhi
-     (Item   : in  Address;
-      Header : in  Address;
+     (Item   : Address;
+      Header : Address;
       Status : out Insq_Status);
 
    procedure Remqhi
-     (Header : in  Address;
+     (Header : Address;
       Item   : out Address;
       Status : out Remq_Status);
 
    procedure Insqti
-     (Item   : in  Address;
-      Header : in  Address;
+     (Item   : Address;
+      Header : Address;
       Status : out Insq_Status);
 
    procedure Remqti
-     (Header : in  Address;
+     (Header : Address;
       Item   : out Address;
       Status : out Remq_Status);
 

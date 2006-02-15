@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,8 @@ with Ada.Text_IO.Complex_Aux;
 
 package body Ada.Text_IO.Complex_IO is
 
+   use Complex_Types;
+
    package Aux renames Ada.Text_IO.Complex_Aux;
 
    subtype LLF is Long_Long_Float;
@@ -47,12 +49,12 @@ package body Ada.Text_IO.Complex_IO is
    ---------
 
    procedure Get
-     (File  : in  File_Type;
+     (File  : File_Type;
       Item  : out Complex_Types.Complex;
-      Width : in  Field := 0)
+      Width : Field := 0)
    is
-      Real_Item  : Real'Base;
-      Imag_Item  : Real'Base;
+      Real_Item : Real'Base;
+      Imag_Item : Real'Base;
 
    begin
       Aux.Get (File, LLF (Real_Item), LLF (Imag_Item), Width);
@@ -68,7 +70,7 @@ package body Ada.Text_IO.Complex_IO is
 
    procedure Get
      (Item  : out Complex_Types.Complex;
-      Width : in  Field := 0)
+      Width : Field := 0)
    is
    begin
       Get (Current_In, Item, Width);
@@ -79,7 +81,7 @@ package body Ada.Text_IO.Complex_IO is
    ---------
 
    procedure Get
-     (From : in  String;
+     (From : String;
       Item : out Complex_Types.Complex;
       Last : out Positive)
    is
@@ -99,11 +101,11 @@ package body Ada.Text_IO.Complex_IO is
    ---------
 
    procedure Put
-     (File : in File_Type;
-      Item : in Complex_Types.Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp)
+     (File : File_Type;
+      Item : Complex_Types.Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
    begin
       Aux.Put (File, LLF (Re (Item)), LLF (Im (Item)), Fore, Aft, Exp);
@@ -114,10 +116,10 @@ package body Ada.Text_IO.Complex_IO is
    ---------
 
    procedure Put
-     (Item : in Complex_Types.Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp)
+     (Item : Complex_Types.Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
    begin
       Put (Current_Out, Item, Fore, Aft, Exp);
@@ -129,9 +131,9 @@ package body Ada.Text_IO.Complex_IO is
 
    procedure Put
      (To   : out String;
-      Item : in  Complex_Types.Complex;
-      Aft  : in  Field := Default_Aft;
-      Exp  : in  Field := Default_Exp)
+      Item : Complex_Types.Complex;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
    begin
       Aux.Puts (To, LLF (Re (Item)), LLF (Im (Item)), Aft, Exp);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,9 +54,9 @@ package body Ada.Wide_Text_IO.Integer_IO is
    ---------
 
    procedure Get
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Num;
-      Width : in Field := 0)
+      Width : Field := 0)
    is
    begin
       if Need_LLI then
@@ -71,14 +71,14 @@ package body Ada.Wide_Text_IO.Integer_IO is
 
    procedure Get
      (Item  : out Num;
-      Width : in Field := 0)
+      Width : Field := 0)
    is
    begin
       Get (Current_Input, Item, Width);
    end Get;
 
    procedure Get
-     (From : in Wide_String;
+     (From : Wide_String;
       Item : out Num;
       Last : out Positive)
    is
@@ -104,10 +104,10 @@ package body Ada.Wide_Text_IO.Integer_IO is
    ---------
 
    procedure Put
-     (File  : in File_Type;
-      Item  : in Num;
-      Width : in Field := Default_Width;
-      Base  : in Number_Base := Default_Base)
+     (File  : File_Type;
+      Item  : Num;
+      Width : Field := Default_Width;
+      Base  : Number_Base := Default_Base)
    is
    begin
       if Need_LLI then
@@ -118,9 +118,9 @@ package body Ada.Wide_Text_IO.Integer_IO is
    end Put;
 
    procedure Put
-     (Item  : in Num;
-      Width : in Field := Default_Width;
-      Base  : in Number_Base := Default_Base)
+     (Item  : Num;
+      Width : Field := Default_Width;
+      Base  : Number_Base := Default_Base)
    is
    begin
       Put (Current_Output, Item, Width, Base);
@@ -128,8 +128,8 @@ package body Ada.Wide_Text_IO.Integer_IO is
 
    procedure Put
      (To   : out Wide_String;
-      Item : in Num;
-      Base : in Number_Base := Default_Base)
+      Item : Num;
+      Base : Number_Base := Default_Base)
    is
       S : String (To'First .. To'Last);
 

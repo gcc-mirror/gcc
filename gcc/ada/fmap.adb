@@ -214,8 +214,8 @@ package body Fmap is
 
          while First < SP'Last
            and then (SP (First) = CR
-                     or else SP (First) = LF
-                     or else SP (First) = EOF)
+                      or else SP (First) = LF
+                      or else SP (First) = EOF)
          loop
             First := First + 1;
          end loop;

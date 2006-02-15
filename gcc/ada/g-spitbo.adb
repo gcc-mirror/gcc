@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005, AdaCore                     --
+--                     Copyright (C) 1998-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -428,7 +428,7 @@ package body GNAT.Spitbol is
       -- Copy --
       ----------
 
-      procedure Copy (From : in Table; To : in out Table) is
+      procedure Copy (From : Table; To : in out Table) is
          Elmt : Hash_Element_Ptr;
 
       begin

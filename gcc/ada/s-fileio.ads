@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package System.File_IO is
 
    procedure Open
      (File_Ptr  : in out FCB.AFCB_Ptr;
-      Dummy_FCB : in FCB.AFCB'Class;
+      Dummy_FCB : FCB.AFCB'Class;
       Mode      : FCB.File_Mode;
       Name      : String;
       Form      : String;
@@ -110,24 +110,24 @@ package System.File_IO is
    procedure Delete (File : in out FCB.AFCB_Ptr);
    --  The indicated file is unlinked
 
-   procedure Reset (File : in out FCB.AFCB_Ptr; Mode : in FCB.File_Mode);
-   --  The file is reset, and the mode changed as indicated.
+   procedure Reset (File : in out FCB.AFCB_Ptr; Mode : FCB.File_Mode);
+   --  The file is reset, and the mode changed as indicated
 
    procedure Reset (File : in out FCB.AFCB_Ptr);
    --  The files is reset, and the mode is unchanged
 
-   function Mode (File : in FCB.AFCB_Ptr) return FCB.File_Mode;
+   function Mode (File : FCB.AFCB_Ptr) return FCB.File_Mode;
    --  Returns the mode as supplied by create, open or reset
 
-   function Name (File : in FCB.AFCB_Ptr) return String;
+   function Name (File : FCB.AFCB_Ptr) return String;
    --  Returns the file name as supplied by Open or Create. Raises Use_Error
    --  if used with temporary files or standard files.
 
-   function Form (File : in FCB.AFCB_Ptr) return String;
+   function Form (File : FCB.AFCB_Ptr) return String;
    --  Returns the form as supplied by create, open or reset
    --  The string is normalized to all lower case letters.
 
-   function Is_Open (File : in FCB.AFCB_Ptr) return Boolean;
+   function Is_Open (File : FCB.AFCB_Ptr) return Boolean;
    --  Determines if file is open or not
 
    ----------------------
@@ -218,7 +218,7 @@ package System.File_IO is
    procedure Read_Buf
      (File  : FCB.AFCB_Ptr;
       Buf   : Address;
-      Siz   : in Interfaces.C_Streams.size_t;
+      Siz   : Interfaces.C_Streams.size_t;
       Count : out Interfaces.C_Streams.size_t);
    --  Reads Siz bytes from File.Stream into Buf. The caller has checked
    --  that the file is open in read mode. Device Error is raised if an error

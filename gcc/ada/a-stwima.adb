@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,7 +148,7 @@ package body Ada.Strings.Wide_Maps is
 
    --  The sorted, discontiguous form is canonical, so equality can be used
 
-   function "=" (Left, Right : in Wide_Character_Set) return Boolean is
+   function "=" (Left, Right : Wide_Character_Set) return Boolean is
    begin
       return Left.Set.all = Right.Set.all;
    end "=";
@@ -556,7 +556,7 @@ package body Ada.Strings.Wide_Maps is
    ---------------
 
    function To_Ranges
-     (Set :  in Wide_Character_Set) return Wide_Character_Ranges
+     (Set : Wide_Character_Set) return Wide_Character_Ranges
    is
    begin
       return Set.Set.all;
@@ -643,7 +643,7 @@ package body Ada.Strings.Wide_Maps is
          end if;
       end loop;
 
-      if Result (N).High < Result (N).Low then
+      if N > 0 and then Result (N).High < Result (N).Low then
          N := N - 1;
       end if;
 

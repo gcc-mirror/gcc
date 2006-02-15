@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,7 +83,7 @@ package body System.Arith_64 is
    pragma Inline (Hi);
    --  High order half of 64-bit value
 
-   procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : in Uns32);
+   procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : Uns32);
    --  Computes X1&X2&X3 := X1&X2&X3 - Y1&Y1&Y3 with mod 2**96 wrap
 
    function To_Neg_Int (A : Uns64) return Int64;
@@ -542,7 +542,7 @@ package body System.Arith_64 is
          D (3) := Lo (T2) or Hi (T3);
          D (4) := Lo (T3);
 
-         --  Loop to compute quotient digits, runs twice for Qd(1) and Qd(2).
+         --  Loop to compute quotient digits, runs twice for Qd(1) and Qd(2)
 
          for J in 0 .. 1 loop
 
@@ -630,7 +630,7 @@ package body System.Arith_64 is
    -- Sub3 --
    ----------
 
-   procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : in Uns32) is
+   procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : Uns32) is
    begin
       if Y3 > X3 then
          if X2 = 0 then

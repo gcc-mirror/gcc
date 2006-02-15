@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -198,7 +198,7 @@ package System.Shared_Storage is
    --  value. The storage is created by this call if it does not
    --  already exist.
 
-   procedure Shared_Var_Close (Var : in SIO.Stream_Access);
+   procedure Shared_Var_Close (Var : SIO.Stream_Access);
    --  This routine signals the end of a read/assign operation. It can
    --  be useful to embrace a read/write operation between a call to
    --  open and a call to close which protect the whole operation.

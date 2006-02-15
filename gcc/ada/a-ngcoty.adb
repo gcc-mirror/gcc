@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -647,12 +647,12 @@ package body Ada.Numerics.Generic_Complex_Types is
    -- Set_Im --
    ------------
 
-   procedure Set_Im (X : in out Complex; Im : in Real'Base) is
+   procedure Set_Im (X : in out Complex; Im : Real'Base) is
    begin
       X.Im := Im;
    end Set_Im;
 
-   procedure Set_Im (X : out Imaginary; Im : in Real'Base) is
+   procedure Set_Im (X : out Imaginary; Im : Real'Base) is
    begin
       X := Imaginary (Im);
    end Set_Im;
@@ -661,7 +661,7 @@ package body Ada.Numerics.Generic_Complex_Types is
    -- Set_Re --
    ------------
 
-   procedure Set_Re (X : in out Complex; Re : in Real'Base) is
+   procedure Set_Re (X : in out Complex; Re : Real'Base) is
    begin
       X.Re := Re;
    end Set_Re;

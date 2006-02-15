@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body Ada.Command_Line.Environment is
    -- Environment_Value --
    -----------------------
 
-   function Environment_Value (Number : in Positive) return String is
+   function Environment_Value (Number : Positive) return String is
       procedure Fill_Env (E : System.Address; Env_Num : Integer);
       pragma Import (C, Fill_Env, "__gnat_fill_env");
 

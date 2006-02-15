@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,7 +77,7 @@ package body System.File_IO is
    --  a controlled type introduced for this purpose.
 
    procedure Finalize (V : in out File_IO_Clean_Up_Type);
-   --  This is the finalize operation that is used to do the cleanup.
+   --  This is the finalize operation that is used to do the cleanup
 
    File_IO_Clean_Up_Object : File_IO_Clean_Up_Type;
    pragma Warnings (Off, File_IO_Clean_Up_Object);
@@ -88,7 +88,7 @@ package body System.File_IO is
    text_translation_required : Boolean;
    pragma Import
      (C, text_translation_required, "__gnat_text_translation_required");
-   --  If true, add appropriate suffix to control string for Open.
+   --  If true, add appropriate suffix to control string for Open
 
    -----------------------
    -- Local Subprograms --
@@ -491,7 +491,7 @@ package body System.File_IO is
    -- Form --
    ----------
 
-   function Form (File : in AFCB_Ptr) return String is
+   function Form (File : AFCB_Ptr) return String is
    begin
       if File = null then
          raise Status_Error;
@@ -607,7 +607,7 @@ package body System.File_IO is
    -- Is_Open --
    -------------
 
-   function Is_Open (File : in AFCB_Ptr) return Boolean is
+   function Is_Open (File : AFCB_Ptr) return Boolean is
    begin
       return (File /= null);
    end Is_Open;
@@ -658,7 +658,7 @@ package body System.File_IO is
    -- Mode --
    ----------
 
-   function Mode (File : in AFCB_Ptr) return File_Mode is
+   function Mode (File : AFCB_Ptr) return File_Mode is
    begin
       if File = null then
          raise Status_Error;
@@ -671,7 +671,7 @@ package body System.File_IO is
    -- Name --
    ----------
 
-   function Name (File : in AFCB_Ptr) return String is
+   function Name (File : AFCB_Ptr) return String is
    begin
       if File = null then
          raise Status_Error;
@@ -686,7 +686,7 @@ package body System.File_IO is
 
    procedure Open
      (File_Ptr  : in out AFCB_Ptr;
-      Dummy_FCB : in AFCB'Class;
+      Dummy_FCB : AFCB'Class;
       Mode      : File_Mode;
       Name      : String;
       Form      : String;
@@ -701,7 +701,7 @@ package body System.File_IO is
 
       procedure Tmp_Name (Buffer : Address);
       pragma Import (C, Tmp_Name, "__gnat_tmp_name");
-      --  set buffer (a String address) with a temporary filename.
+      --  set buffer (a String address) with a temporary filename
 
       Stream : FILEs := C_Stream;
       --  Stream which we open in response to this request
@@ -823,7 +823,7 @@ package body System.File_IO is
             Namestr (Name'Length + 1)  := ASCII.NUL;
          end if;
 
-         --  Get full name in accordance with the advice of RM A.8.2(22).
+         --  Get full name in accordance with the advice of RM A.8.2(22)
 
          full_name (Namestr'Address, Fullname'Address);
 
@@ -991,7 +991,7 @@ package body System.File_IO is
    procedure Read_Buf
      (File  : AFCB_Ptr;
       Buf   : Address;
-      Siz   : in Interfaces.C_Streams.size_t;
+      Siz   : Interfaces.C_Streams.size_t;
       Count : out Interfaces.C_Streams.size_t)
    is
    begin
@@ -1006,7 +1006,7 @@ package body System.File_IO is
    -- Reset --
    -----------
 
-   --  The reset which does not change the mode simply does a rewind.
+   --  The reset which does not change the mode simply does a rewind
 
    procedure Reset (File : in out AFCB_Ptr) is
    begin
@@ -1018,7 +1018,7 @@ package body System.File_IO is
    --  not permitted except for regular files (since otherwise there
    --  is no name for the freopen, and in any case it seems meaningless)
 
-   procedure Reset (File : in out AFCB_Ptr; Mode : in File_Mode) is
+   procedure Reset (File : in out AFCB_Ptr; Mode : File_Mode) is
       Fopstr : aliased Fopen_String;
 
    begin

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@ package body MLib.Fil is
       return     String
    is
       use Strings.Fixed;
+
       J : constant Natural :=
             Index (Source  =>  Filename,
                    Pattern => ".",
@@ -71,7 +72,7 @@ package body MLib.Fil is
    -- Get_Ext --
    -------------
 
-   function Get_Ext (Filename : in String) return String is
+   function Get_Ext (Filename : String) return String is
       use Strings.Fixed;
 
       J : constant Natural :=
@@ -93,7 +94,6 @@ package body MLib.Fil is
 
    function Is_Archive (Filename : String) return Boolean is
       Ext : constant String := Get_Ext (Filename);
-
    begin
       return Target.Is_Archive_Ext (Ext);
    end Is_Archive;
@@ -102,9 +102,8 @@ package body MLib.Fil is
    -- Is_C --
    ----------
 
-   function Is_C (Filename : in String) return Boolean is
+   function Is_C (Filename : String) return Boolean is
       Ext : constant String := Get_Ext (Filename);
-
    begin
       return Target.Is_C_Ext (Ext);
    end Is_C;
@@ -113,9 +112,8 @@ package body MLib.Fil is
    -- Is_Obj --
    ------------
 
-   function Is_Obj (Filename : in String) return Boolean is
+   function Is_Obj (Filename : String) return Boolean is
       Ext : constant String := Get_Ext (Filename);
-
    begin
       return Target.Is_Object_Ext (Ext);
    end Is_Obj;

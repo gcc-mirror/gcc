@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,9 +54,9 @@ package System.Tasking.Queuing is
    procedure Dequeue (E : in out Entry_Queue; Call : Entry_Call_Link);
    --  Dequeue Call from entry_queue E
 
-   function Head (E : in Entry_Queue) return Entry_Call_Link;
-   --  Return the head of entry_queue E
+   function Head (E : Entry_Queue) return Entry_Call_Link;
    pragma Inline (Head);
+   --  Return the head of entry_queue E
 
    procedure Dequeue_Head
      (E    : in out Entry_Queue;
@@ -64,10 +64,10 @@ package System.Tasking.Queuing is
    --  Remove and return the head of entry_queue E
 
    function Onqueue (Call : Entry_Call_Link) return Boolean;
-   --  Return True if Call is on any entry_queue at all
    pragma Inline (Onqueue);
+   --  Return True if Call is on any entry_queue at all
 
-   function Count_Waiting (E : in Entry_Queue) return Natural;
+   function Count_Waiting (E : Entry_Queue) return Natural;
    --  Return number of calls on the waiting queue of E
 
    procedure Select_Task_Entry_Call
@@ -82,9 +82,9 @@ package System.Tasking.Queuing is
    --    Open_Alternative will be True if there were any open alternatives
 
    procedure Select_Protected_Entry_Call
-     (Self_ID   : Task_Id;
-      Object    : POE.Protection_Entries_Access;
-      Call      : out Entry_Call_Link);
+     (Self_ID : Task_Id;
+      Object  : POE.Protection_Entries_Access;
+      Call    : out Entry_Call_Link);
    --  Select an entry of a protected object
 
    procedure Enqueue_Call (Entry_Call : Entry_Call_Link);

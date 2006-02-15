@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,8 @@
 
 with Ada.Text_IO.Generic_Aux; use Ada.Text_IO.Generic_Aux;
 
-with System.Img_Real;  use System.Img_Real;
-with System.Val_Real;  use System.Val_Real;
+with System.Img_Real; use System.Img_Real;
+with System.Val_Real; use System.Val_Real;
 
 package body Ada.Text_IO.Float_Aux is
 
@@ -43,9 +43,9 @@ package body Ada.Text_IO.Float_Aux is
    ---------
 
    procedure Get
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Long_Long_Float;
-      Width : in Field)
+      Width : Field)
    is
       Buf  : String (1 .. Field'Last);
       Stop : Integer := 0;
@@ -69,7 +69,7 @@ package body Ada.Text_IO.Float_Aux is
    ----------
 
    procedure Gets
-     (From : in String;
+     (From : String;
       Item : out Long_Long_Float;
       Last : out Positive)
    is
@@ -90,7 +90,7 @@ package body Ada.Text_IO.Float_Aux is
    ---------------
 
    procedure Load_Real
-     (File : in File_Type;
+     (File : File_Type;
       Buf  : out String;
       Ptr  : in out Natural)
    is
@@ -181,11 +181,11 @@ package body Ada.Text_IO.Float_Aux is
    ---------
 
    procedure Put
-     (File : in File_Type;
-      Item : in Long_Long_Float;
-      Fore : in Field;
-      Aft  : in Field;
-      Exp  : in Field)
+     (File : File_Type;
+      Item : Long_Long_Float;
+      Fore : Field;
+      Aft  : Field;
+      Exp  : Field)
    is
       Buf : String (1 .. 3 * Field'Last + 2);
       Ptr : Natural := 0;
@@ -201,9 +201,9 @@ package body Ada.Text_IO.Float_Aux is
 
    procedure Puts
      (To   : out String;
-      Item : in Long_Long_Float;
-      Aft  : in Field;
-      Exp  : in Field)
+      Item : Long_Long_Float;
+      Aft  : Field;
+      Exp  : Field)
    is
       Buf : String (1 .. 3 * Field'Last + 2);
       Ptr : Natural := 0;

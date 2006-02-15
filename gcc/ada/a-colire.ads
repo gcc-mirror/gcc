@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@
 package Ada.Command_Line.Remove is
    pragma Preelaborate;
 
-   procedure Remove_Argument (Number : in Positive);
+   procedure Remove_Argument (Number : Positive);
    --  Removes the argument identified by Number, which must be in the
    --  range 1 .. Argument_Count (i.e. an in range argument number which
    --  reflects removals). If Number is out of range Constraint_Error

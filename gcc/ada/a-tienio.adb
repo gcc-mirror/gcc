@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@ package body Ada.Text_IO.Enumeration_IO is
    -- Get --
    ---------
 
-   procedure Get (File : in File_Type; Item : out Enum) is
+   procedure Get (File : File_Type; Item : out Enum) is
       Buf    : String (1 .. Enum'Width);
       Buflen : Natural;
 
@@ -67,7 +67,7 @@ package body Ada.Text_IO.Enumeration_IO is
    end Get;
 
    procedure Get
-     (From : in String;
+     (From : String;
       Item : out Enum;
       Last : out Positive)
    is
@@ -92,10 +92,10 @@ package body Ada.Text_IO.Enumeration_IO is
    ---------
 
    procedure Put
-     (File  : in File_Type;
-      Item  : in Enum;
-      Width : in Field := Default_Width;
-      Set   : in Type_Set := Default_Setting)
+     (File  : File_Type;
+      Item  : Enum;
+      Width : Field := Default_Width;
+      Set   : Type_Set := Default_Setting)
    is
       Image : constant String := Enum'Image (Item);
 
@@ -104,9 +104,9 @@ package body Ada.Text_IO.Enumeration_IO is
    end Put;
 
    procedure Put
-     (Item  : in Enum;
-      Width : in Field := Default_Width;
-      Set   : in Type_Set := Default_Setting)
+     (Item  : Enum;
+      Width : Field := Default_Width;
+      Set   : Type_Set := Default_Setting)
    is
    begin
       Put (Current_Out, Item, Width, Set);
@@ -114,8 +114,8 @@ package body Ada.Text_IO.Enumeration_IO is
 
    procedure Put
      (To   : out String;
-      Item : in Enum;
-      Set  : in Type_Set := Default_Setting)
+      Item : Enum;
+      Set  : Type_Set := Default_Setting)
    is
       Image : constant String := Enum'Image (Item);
 

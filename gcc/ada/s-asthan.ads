@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,15 +41,14 @@ package System.AST_Handling is
 
    function Create_AST_Handler
      (Taskid  : Ada.Task_Identification.Task_Id;
-      Entryno : Natural)
-      return    System.Aux_DEC.AST_Handler;
+      Entryno : Natural) return System.Aux_DEC.AST_Handler;
    --  This function implements the appropriate semantics for a use of the
    --  AST_Entry pragma. See body for details of implementation approach.
    --  The parameters are the Task_Id for the task containing the entry
    --  and the entry Index for the specified entry.
 
    procedure Expand_AST_Packet_Pool
-     (Requested_Packets : in Natural;
+     (Requested_Packets : Natural;
       Actual_Number     : out Natural;
       Total_Number      : out Natural);
    --  This function takes a request for zero or more extra AST packets and

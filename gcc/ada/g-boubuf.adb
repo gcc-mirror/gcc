@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2003-2005, AdaCore                     --
+--                     Copyright (C) 2003-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package body GNAT.Bounded_Buffers is
       -- Insert --
       ------------
 
-      entry Insert (Item : in Element) when Count /= Capacity is
+      entry Insert (Item : Element) when Count /= Capacity is
       begin
          Values (Next_In) := Item;
          Next_In := (Next_In mod Capacity) + 1;

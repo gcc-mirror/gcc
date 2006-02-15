@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package body System.Global_Locks is
    -- Create_Lock --
    -----------------
 
-   procedure Create_Lock (Lock : out Lock_Type; Name : in String) is
+   procedure Create_Lock (Lock : out Lock_Type; Name : String) is
       L : Lock_Type;
 
    begin

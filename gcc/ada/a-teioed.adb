@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package body Ada.Text_IO.Editing is
    -- Blank_When_Zero --
    ---------------------
 
-   function Blank_When_Zero (Pic : in Picture) return Boolean is
+   function Blank_When_Zero (Pic : Picture) return Boolean is
    begin
       return Pic.Contents.Original_BWZ;
    end Blank_When_Zero;
@@ -51,7 +51,7 @@ package body Ada.Text_IO.Editing is
    -- Expand --
    ------------
 
-   function Expand (Picture : in String) return String is
+   function Expand (Picture : String) return String is
       Result        : String (1 .. MAX_PICSIZE);
       Picture_Index : Integer := Picture'First;
       Result_Index  : Integer := Result'First;
@@ -124,8 +124,7 @@ package body Ada.Text_IO.Editing is
       Currency_Symbol     : String;
       Fill_Character      : Character;
       Separator_Character : Character;
-      Radix_Point         : Character)
-      return                String
+      Radix_Point         : Character) return String
    is
       Attrs    : Number_Attributes := Parse_Number_String (Number);
       Position : Integer;
@@ -929,7 +928,7 @@ package body Ada.Text_IO.Editing is
    --  The following ensures that we return B and not b being careful not
    --  to break things which expect lower case b for blank. See CXF3A02.
 
-   function Pic_String (Pic : in Picture) return String is
+   function Pic_String (Pic : Picture) return String is
       Temp : String (1 .. Pic.Contents.Picture.Length) :=
                               Pic.Contents.Picture.Expanded;
    begin
@@ -975,7 +974,7 @@ package body Ada.Text_IO.Editing is
       procedure Debug_Start (Name : String);
       pragma Inline (Debug_Start);
 
-      procedure Debug_Integer  (Value : in Integer; S : String);
+      procedure Debug_Integer  (Value : Integer; S : String);
       pragma Inline (Debug_Integer);
 
       procedure Trailing_Currency;
@@ -1032,7 +1031,7 @@ package body Ada.Text_IO.Editing is
       -- Debug_Integer --
       -------------------
 
-      procedure Debug_Integer  (Value : in Integer; S : String) is
+      procedure Debug_Integer (Value : Integer; S : String) is
          use Ada.Text_IO; --  needed for >
 
       begin
@@ -2717,9 +2716,8 @@ package body Ada.Text_IO.Editing is
    ----------------
 
    function To_Picture
-     (Pic_String      : in String;
-      Blank_When_Zero : in Boolean := False)
-      return            Picture
+     (Pic_String      : String;
+      Blank_When_Zero : Boolean := False) return Picture
    is
       Result : Picture;
 
@@ -2745,9 +2743,8 @@ package body Ada.Text_IO.Editing is
    -----------
 
    function Valid
-     (Pic_String      : in String;
-      Blank_When_Zero : in Boolean := False)
-      return            Boolean
+     (Pic_String      : String;
+      Blank_When_Zero : Boolean := False) return Boolean
    is
    begin
       declare
@@ -2764,8 +2761,8 @@ package body Ada.Text_IO.Editing is
 
          --  False only if Blank_When_Zero is True but the pic string has a '*'
 
-         return not Blank_When_Zero or
-           Strings_Fixed.Index (Expanded_Pic, "*") = 0;
+         return not Blank_When_Zero
+           or else Strings_Fixed.Index (Expanded_Pic, "*") = 0;
       end;
 
    exception
@@ -2783,13 +2780,12 @@ package body Ada.Text_IO.Editing is
       -----------
 
       function Image
-        (Item       : in Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark)
-         return       String
+        (Item       : Num;
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark) return String
       is
       begin
          return Format_Number
@@ -2802,9 +2798,8 @@ package body Ada.Text_IO.Editing is
       ------------
 
       function Length
-        (Pic      : in Picture;
-         Currency : in String := Default_Currency)
-         return     Natural
+        (Pic      : Picture;
+         Currency : String := Default_Currency) return Natural
       is
          Picstr     : constant String := Pic_String (Pic);
          V_Adjust   : Integer := 0;
@@ -2836,13 +2831,13 @@ package body Ada.Text_IO.Editing is
       ---------
 
       procedure Put
-        (File       : in Text_IO.File_Type;
-         Item       : in Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark)
+        (File       : Text_IO.File_Type;
+         Item       : Num;
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark)
       is
       begin
          Text_IO.Put (File, Image (Item, Pic,
@@ -2850,12 +2845,12 @@ package body Ada.Text_IO.Editing is
       end Put;
 
       procedure Put
-        (Item       : in Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark)
+        (Item       : Num;
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark)
       is
       begin
          Text_IO.Put (Image (Item, Pic,
@@ -2864,12 +2859,12 @@ package body Ada.Text_IO.Editing is
 
       procedure Put
         (To         : out String;
-         Item       : in Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark)
+         Item       : Num;
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark)
       is
          Result : constant String :=
            Image (Item, Pic, Currency, Fill, Separator, Radix_Mark);
@@ -2889,9 +2884,8 @@ package body Ada.Text_IO.Editing is
 
       function Valid
         (Item     : Num;
-         Pic      : in Picture;
-         Currency : in String := Default_Currency)
-         return     Boolean
+         Pic      : Picture;
+         Currency : String := Default_Currency) return Boolean
       is
       begin
          declare

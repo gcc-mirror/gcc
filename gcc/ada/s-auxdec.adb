@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/Or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -318,7 +318,7 @@ package body System.Aux_DEC is
    procedure Clear_Interlocked
      (Bit          : in out Boolean;
       Old_Value    : out Boolean;
-      Retry_Count  : in Natural;
+      Retry_Count  : Natural;
       Success_Flag : out Boolean)
    is
       pragma Warnings (Off, Retry_Count);
@@ -349,7 +349,7 @@ package body System.Aux_DEC is
    procedure Set_Interlocked
      (Bit          : in out Boolean;
       Old_Value    : out Boolean;
-      Retry_Count  : in Natural;
+      Retry_Count  : Natural;
       Success_Flag : out Boolean)
    is
       pragma Warnings (Off, Retry_Count);
@@ -367,9 +367,9 @@ package body System.Aux_DEC is
    ---------------------
 
    procedure Add_Interlocked
-     (Addend       : in Short_Integer;
-      Augend       : in out Aligned_Word;
-      Sign         : out Integer)
+     (Addend : Short_Integer;
+      Augend : in out Aligned_Word;
+      Sign   : out Integer)
    is
    begin
       SSL.Lock_Task.all;
@@ -391,8 +391,8 @@ package body System.Aux_DEC is
    ----------------
 
    procedure Add_Atomic
-     (To           : in out Aligned_Integer;
-      Amount       : in Integer)
+     (To     : in out Aligned_Integer;
+      Amount : Integer)
    is
    begin
       SSL.Lock_Task.all;
@@ -402,8 +402,8 @@ package body System.Aux_DEC is
 
    procedure Add_Atomic
      (To           : in out Aligned_Integer;
-      Amount       : in Integer;
-      Retry_Count  : in Natural;
+      Amount       : Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Integer;
       Success_Flag : out Boolean)
    is
@@ -418,8 +418,8 @@ package body System.Aux_DEC is
    end Add_Atomic;
 
    procedure Add_Atomic
-     (To           : in out Aligned_Long_Integer;
-      Amount       : in Long_Integer)
+     (To     : in out Aligned_Long_Integer;
+      Amount : Long_Integer)
    is
    begin
       SSL.Lock_Task.all;
@@ -429,8 +429,8 @@ package body System.Aux_DEC is
 
    procedure Add_Atomic
      (To           : in out Aligned_Long_Integer;
-      Amount       : in Long_Integer;
-      Retry_Count  : in Natural;
+      Amount       : Long_Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean)
    is
@@ -458,8 +458,8 @@ package body System.Aux_DEC is
    function From_LU is new Unchecked_Conversion (LU, Long_Integer);
 
    procedure And_Atomic
-     (To           : in out Aligned_Integer;
-      From         : in Integer)
+     (To   : in out Aligned_Integer;
+      From : Integer)
    is
    begin
       SSL.Lock_Task.all;
@@ -469,8 +469,8 @@ package body System.Aux_DEC is
 
    procedure And_Atomic
      (To           : in out Aligned_Integer;
-      From         : in Integer;
-      Retry_Count  : in Natural;
+      From         : Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Integer;
       Success_Flag : out Boolean)
    is
@@ -485,8 +485,8 @@ package body System.Aux_DEC is
    end And_Atomic;
 
    procedure And_Atomic
-     (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer)
+     (To   : in out Aligned_Long_Integer;
+      From : Long_Integer)
    is
    begin
       SSL.Lock_Task.all;
@@ -496,8 +496,8 @@ package body System.Aux_DEC is
 
    procedure And_Atomic
      (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer;
-      Retry_Count  : in Natural;
+      From         : Long_Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean)
    is
@@ -516,8 +516,8 @@ package body System.Aux_DEC is
    ---------------
 
    procedure Or_Atomic
-     (To           : in out Aligned_Integer;
-      From         : in Integer)
+     (To   : in out Aligned_Integer;
+      From : Integer)
    is
    begin
       SSL.Lock_Task.all;
@@ -527,8 +527,8 @@ package body System.Aux_DEC is
 
    procedure Or_Atomic
      (To           : in out Aligned_Integer;
-      From         : in Integer;
-      Retry_Count  : in Natural;
+      From         : Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Integer;
       Success_Flag : out Boolean)
    is
@@ -543,8 +543,8 @@ package body System.Aux_DEC is
    end Or_Atomic;
 
    procedure Or_Atomic
-     (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer)
+     (To   : in out Aligned_Long_Integer;
+      From : Long_Integer)
    is
    begin
       SSL.Lock_Task.all;
@@ -554,8 +554,8 @@ package body System.Aux_DEC is
 
    procedure Or_Atomic
      (To           : in out Aligned_Long_Integer;
-      From         : in Long_Integer;
-      Retry_Count  : in Natural;
+      From         : Long_Integer;
+      Retry_Count  : Natural;
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean)
    is
@@ -590,8 +590,8 @@ package body System.Aux_DEC is
    ------------
 
    procedure Insqhi
-     (Item   : in  Address;
-      Header : in  Address;
+     (Item   : Address;
+      Header : Address;
       Status : out Insq_Status)
    is
       Hedr : constant QR_Ptr := To_QR_Ptr (Header);
@@ -621,7 +621,7 @@ package body System.Aux_DEC is
    ------------
 
    procedure Remqhi
-     (Header : in  Address;
+     (Header : Address;
       Item   : out Address;
       Status : out Remq_Status)
    is
@@ -656,8 +656,8 @@ package body System.Aux_DEC is
    ------------
 
    procedure Insqti
-     (Item   : in  Address;
-      Header : in  Address;
+     (Item   : Address;
+      Header : Address;
       Status : out Insq_Status)
    is
       Hedr : constant QR_Ptr := To_QR_Ptr (Header);
@@ -687,7 +687,7 @@ package body System.Aux_DEC is
    ------------
 
    procedure Remqti
-     (Header : in  Address;
+     (Header : Address;
       Item   : out Address;
       Status : out Remq_Status)
    is

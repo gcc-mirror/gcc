@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,14 +33,14 @@
 
 with Ada.Wide_Text_IO.Generic_Aux; use Ada.Wide_Text_IO.Generic_Aux;
 
-with System.Img_BIU;   use System.Img_BIU;
-with System.Img_Int;   use System.Img_Int;
-with System.Img_LLB;   use System.Img_LLB;
-with System.Img_LLI;   use System.Img_LLI;
-with System.Img_LLW;   use System.Img_LLW;
-with System.Img_WIU;   use System.Img_WIU;
-with System.Val_Int;   use System.Val_Int;
-with System.Val_LLI;   use System.Val_LLI;
+with System.Img_BIU; use System.Img_BIU;
+with System.Img_Int; use System.Img_Int;
+with System.Img_LLB; use System.Img_LLB;
+with System.Img_LLI; use System.Img_LLI;
+with System.Img_LLW; use System.Img_LLW;
+with System.Img_WIU; use System.Img_WIU;
+with System.Val_Int; use System.Val_Int;
+with System.Val_LLI; use System.Val_LLI;
 
 package body Ada.Wide_Text_IO.Integer_Aux is
 
@@ -49,7 +49,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    -----------------------
 
    procedure Load_Integer
-     (File : in File_Type;
+     (File : File_Type;
       Buf  : out String;
       Ptr  : in out Natural);
    --  This is an auxiliary routine that is used to load an possibly signed
@@ -61,9 +61,9 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    -------------
 
    procedure Get_Int
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Integer;
-      Width : in Field)
+      Width : Field)
    is
       Buf  : String (1 .. Field'Last);
       Ptr  : aliased Integer := 1;
@@ -86,9 +86,9 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    -------------
 
    procedure Get_LLI
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Long_Long_Integer;
-      Width : in Field)
+      Width : Field)
    is
       Buf  : String (1 .. Field'Last);
       Ptr  : aliased Integer := 1;
@@ -111,7 +111,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    --------------
 
    procedure Gets_Int
-     (From : in String;
+     (From : String;
       Item : out Integer;
       Last : out Positive)
    is
@@ -132,7 +132,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    --------------
 
    procedure Gets_LLI
-     (From : in String;
+     (From : String;
       Item : out Long_Long_Integer;
       Last : out Positive)
    is
@@ -153,7 +153,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    ------------------
 
    procedure Load_Integer
-     (File : in File_Type;
+     (File : File_Type;
       Buf  : out String;
       Ptr  : in out Natural)
    is
@@ -193,10 +193,10 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    -------------
 
    procedure Put_Int
-     (File  : in File_Type;
-      Item  : in Integer;
-      Width : in Field;
-      Base  : in Number_Base)
+     (File  : File_Type;
+      Item  : Integer;
+      Width : Field;
+      Base  : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;
@@ -218,10 +218,10 @@ package body Ada.Wide_Text_IO.Integer_Aux is
    -------------
 
    procedure Put_LLI
-     (File  : in File_Type;
-      Item  : in Long_Long_Integer;
-      Width : in Field;
-      Base  : in Number_Base)
+     (File  : File_Type;
+      Item  : Long_Long_Integer;
+      Width : Field;
+      Base  : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;
@@ -244,8 +244,8 @@ package body Ada.Wide_Text_IO.Integer_Aux is
 
    procedure Puts_Int
      (To   : out String;
-      Item : in Integer;
-      Base : in Number_Base)
+      Item : Integer;
+      Base : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;
@@ -270,8 +270,8 @@ package body Ada.Wide_Text_IO.Integer_Aux is
 
    procedure Puts_LLI
      (To   : out String;
-      Item : in Long_Long_Integer;
-      Base : in Number_Base)
+      Item : Long_Long_Integer;
+      Base : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;

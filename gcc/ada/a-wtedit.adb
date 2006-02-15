@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package body Ada.Wide_Text_IO.Editing is
    -- Blank_When_Zero --
    ---------------------
 
-   function Blank_When_Zero (Pic : in Picture) return Boolean is
+   function Blank_When_Zero (Pic : Picture) return Boolean is
    begin
       return Pic.Contents.Original_BWZ;
    end Blank_When_Zero;
@@ -194,7 +194,7 @@ package body Ada.Wide_Text_IO.Editing is
    -- Expand --
    ------------
 
-   function Expand (Picture : in String) return String is
+   function Expand (Picture : String) return String is
       Result        : String (1 .. MAX_PICSIZE);
       Picture_Index : Integer := Picture'First;
       Result_Index  : Integer := Result'First;
@@ -308,9 +308,9 @@ package body Ada.Wide_Text_IO.Editing is
 
       Sign_Position : Integer := Pic.Sign_Position; --  may float.
 
-      Answer        : Wide_String (1 .. Pic.Picture.Length);
-      Last          : Integer;
-      Currency_Pos  : Integer := Pic.Start_Currency;
+      Answer       : Wide_String (1 .. Pic.Picture.Length);
+      Last         : Integer;
+      Currency_Pos : Integer := Pic.Start_Currency;
 
       Dollar : Boolean := False;
       --  Overridden immediately if necessary
@@ -1095,7 +1095,7 @@ package body Ada.Wide_Text_IO.Editing is
    --  The following ensures that we return B and not b being careful not
    --  to break things which expect lower case b for blank. See CXF3A02.
 
-   function Pic_String (Pic : in Picture) return String is
+   function Pic_String (Pic : Picture) return String is
       Temp : String (1 .. Pic.Contents.Picture.Length) :=
                               Pic.Contents.Picture.Expanded;
    begin
@@ -2757,11 +2757,10 @@ package body Ada.Wide_Text_IO.Editing is
          Format_Rec.Original_BWZ := Blank_When_Zero;
          Precalculate (Format_Rec);
 
-         --  False only if Blank_When_0 is True but the pic string
-         --  has a '*'
+         --  False only if Blank_When_0 is True but the pic string has a '*'
 
-         return not Blank_When_Zero or
-           Strings_Fixed.Index (Expanded_Pic, "*") = 0;
+         return not Blank_When_Zero
+           or else Strings_Fixed.Index (Expanded_Pic, "*") = 0;
       end;
 
    exception

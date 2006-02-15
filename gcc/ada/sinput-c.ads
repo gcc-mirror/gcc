@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This child package contains a procedure to load files.
+--  This child package contains a procedure to load files
 
 --  It is used by Sinput.P to load project files, and by GPrep to load
 --  preprocessor definition files and input files.
@@ -32,6 +32,6 @@
 package Sinput.C is
 
    function Load_File (Path : String) return Source_File_Index;
-   --  Load a file into memory and Initialize the Scans state.
+   --  Load a file into memory and Initialize the Scans state
 
 end Sinput.C;

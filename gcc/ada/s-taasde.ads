@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,7 +97,7 @@ package System.Tasking.Async_Delays is
    type Delay_Block_Access is access all Delay_Block;
 
    function Enqueue_Duration
-     (T : in Duration;
+     (T : Duration;
       D : Delay_Block_Access) return Boolean;
    --  Enqueue the specified relative delay. Returns True if the delay has
    --  been enqueued, False if it has already expired. If the delay has been

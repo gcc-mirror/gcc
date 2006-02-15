@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -465,9 +465,8 @@ package body System.Stream_Attributes is
    -- W_AD --
    ----------
 
-   procedure W_AD (Stream : not null access RST; Item : in Fat_Pointer) is
+   procedure W_AD (Stream : not null access RST; Item : Fat_Pointer) is
       T : constant S_AD := From_AD (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_AD;
@@ -476,9 +475,8 @@ package body System.Stream_Attributes is
    -- W_AS --
    ----------
 
-   procedure W_AS (Stream : not null access RST; Item : in Thin_Pointer) is
+   procedure W_AS (Stream : not null access RST; Item : Thin_Pointer) is
       T : constant S_AS := From_AS (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_AS;
@@ -487,9 +485,8 @@ package body System.Stream_Attributes is
    -- W_B --
    ---------
 
-   procedure W_B (Stream : not null access RST; Item : in Boolean) is
+   procedure W_B (Stream : not null access RST; Item : Boolean) is
       T : S_B;
-
    begin
       T (1) := Boolean'Pos (Item);
       Ada.Streams.Write (Stream.all, T);
@@ -499,9 +496,8 @@ package body System.Stream_Attributes is
    -- W_C --
    ---------
 
-   procedure W_C (Stream : not null access RST; Item : in Character) is
+   procedure W_C (Stream : not null access RST; Item : Character) is
       T : S_C;
-
    begin
       T (1) := Character'Pos (Item);
       Ada.Streams.Write (Stream.all, T);
@@ -511,9 +507,8 @@ package body System.Stream_Attributes is
    -- W_F --
    ---------
 
-   procedure W_F (Stream : not null access RST; Item : in Float) is
+   procedure W_F (Stream : not null access RST; Item : Float) is
       T : constant S_F := From_F (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_F;
@@ -522,9 +517,8 @@ package body System.Stream_Attributes is
    -- W_I --
    ---------
 
-   procedure W_I (Stream : not null access RST; Item : in Integer) is
+   procedure W_I (Stream : not null access RST; Item : Integer) is
       T : constant S_I := From_I (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_I;
@@ -533,9 +527,8 @@ package body System.Stream_Attributes is
    -- W_LF --
    ----------
 
-   procedure W_LF (Stream : not null access RST; Item : in Long_Float) is
+   procedure W_LF (Stream : not null access RST; Item : Long_Float) is
       T : constant S_LF := From_LF (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_LF;
@@ -544,9 +537,8 @@ package body System.Stream_Attributes is
    -- W_LI --
    ----------
 
-   procedure W_LI (Stream : not null access RST; Item : in Long_Integer) is
+   procedure W_LI (Stream : not null access RST; Item : Long_Integer) is
       T : constant S_LI := From_LI (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_LI;
@@ -555,9 +547,8 @@ package body System.Stream_Attributes is
    -- W_LLF --
    -----------
 
-   procedure W_LLF (Stream : not null access RST; Item : in Long_Long_Float) is
+   procedure W_LLF (Stream : not null access RST; Item : Long_Long_Float) is
       T : constant S_LLF := From_LLF (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_LLF;
@@ -567,10 +558,9 @@ package body System.Stream_Attributes is
    -----------
 
    procedure W_LLI
-     (Stream : not null access RST; Item : in Long_Long_Integer)
+     (Stream : not null access RST; Item : Long_Long_Integer)
    is
       T : constant S_LLI := From_LLI (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_LLI;
@@ -580,10 +570,9 @@ package body System.Stream_Attributes is
    -----------
 
    procedure W_LLU
-     (Stream : not null access RST; Item : in UST.Long_Long_Unsigned)
+     (Stream : not null access RST; Item : UST.Long_Long_Unsigned)
    is
       T : constant S_LLU := From_LLU (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_LLU;
@@ -593,10 +582,9 @@ package body System.Stream_Attributes is
    ----------
 
    procedure W_LU
-     (Stream : not null access RST; Item : in UST.Long_Unsigned)
+     (Stream : not null access RST; Item : UST.Long_Unsigned)
    is
       T : constant S_LU := From_LU (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_LU;
@@ -605,9 +593,8 @@ package body System.Stream_Attributes is
    -- W_SF --
    ----------
 
-   procedure W_SF (Stream : not null access RST; Item : in Short_Float) is
+   procedure W_SF (Stream : not null access RST; Item : Short_Float) is
       T : constant S_SF := From_SF (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_SF;
@@ -616,9 +603,8 @@ package body System.Stream_Attributes is
    -- W_SI --
    ----------
 
-   procedure W_SI (Stream : not null access RST; Item : in Short_Integer) is
+   procedure W_SI (Stream : not null access RST; Item : Short_Integer) is
       T : constant S_SI := From_SI (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_SI;
@@ -628,10 +614,9 @@ package body System.Stream_Attributes is
    -----------
 
    procedure W_SSI
-     (Stream : not null access RST; Item : in Short_Short_Integer)
+     (Stream : not null access RST; Item : Short_Short_Integer)
    is
       T : constant S_SSI := From_SSI (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_SSI;
@@ -641,10 +626,9 @@ package body System.Stream_Attributes is
    -----------
 
    procedure W_SSU
-     (Stream : not null access RST; Item : in UST.Short_Short_Unsigned)
+     (Stream : not null access RST; Item : UST.Short_Short_Unsigned)
    is
       T : constant S_SSU := From_SSU (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_SSU;
@@ -654,10 +638,9 @@ package body System.Stream_Attributes is
    ----------
 
    procedure W_SU
-     (Stream : not null access RST; Item : in UST.Short_Unsigned)
+     (Stream : not null access RST; Item : UST.Short_Unsigned)
    is
       T : constant S_SU := From_SU (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_SU;
@@ -666,9 +649,8 @@ package body System.Stream_Attributes is
    -- W_U --
    ---------
 
-   procedure W_U (Stream : not null access RST; Item : in UST.Unsigned) is
+   procedure W_U (Stream : not null access RST; Item : UST.Unsigned) is
       T : constant S_U := From_U (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_U;
@@ -677,9 +659,8 @@ package body System.Stream_Attributes is
    -- W_WC --
    ----------
 
-   procedure W_WC (Stream : not null access RST; Item : in Wide_Character) is
+   procedure W_WC (Stream : not null access RST; Item : Wide_Character) is
       T : constant S_WC := From_WC (Item);
-
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_WC;
