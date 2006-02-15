@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2006 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -159,9 +159,6 @@ struct lang_type GTY(()) {tree t; };
 /* For a RECORD_TYPE, nonzero if this was made just to supply needed
    padding or alignment.  */
 #define TYPE_IS_PADDING_P(NODE) TYPE_LANG_FLAG_5 (RECORD_TYPE_CHECK (NODE))
-
-/* For a UNION_TYPE, nonzero if this is an unchecked union.  */
-#define TYPE_UNCHECKED_UNION_P(NODE) TYPE_LANG_FLAG_6 (UNION_TYPE_CHECK (NODE))
 
 /* This field is only defined for FUNCTION_TYPE nodes. If the Ada
    subprogram contains no parameters passed by copy in/copy out then this

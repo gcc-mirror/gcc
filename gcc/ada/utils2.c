@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -232,8 +232,12 @@ find_common_type (tree t1, tree t2)
   else if (TYPE_MODE (t2) != BLKmode)
     return t2;
 
-  /* Otherwise, return the type that has a constant size.  */
-  if (TREE_CONSTANT (TYPE_SIZE (t1)))
+  /* If both types have constant size, use the smaller one.  */
+  if (TREE_CONSTANT (TYPE_SIZE (t1)) && TREE_CONSTANT (TYPE_SIZE (t2)))
+    return tree_int_cst_lt (TYPE_SIZE (t1), TYPE_SIZE (t2)) ? t1 : t2;
+
+  /* Otherwise, if either type has a constant size, use it.  */
+  else if (TREE_CONSTANT (TYPE_SIZE (t1)))
     return t1;
   else if (TREE_CONSTANT (TYPE_SIZE (t2)))
     return t2;
@@ -1617,7 +1621,8 @@ build_simple_component_ref (tree record_variable, tree component,
 
       for (new_field = TYPE_FIELDS (record_type); new_field;
 	   new_field = TREE_CHAIN (new_field))
-	if (DECL_ORIGINAL_FIELD (new_field) == field
+	if (field == new_field
+	    || DECL_ORIGINAL_FIELD (new_field) == field
 	    || new_field == DECL_ORIGINAL_FIELD (field)
 	    || (DECL_ORIGINAL_FIELD (field)
 		&& (DECL_ORIGINAL_FIELD (field)

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -91,7 +91,7 @@ static tree elaborate_expression_1 (Node_Id, Entity_Id, tree, tree,
 static tree make_packable_type (tree);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool);
 static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
-                                  bool, bool, bool);
+                                  bool, bool, bool, bool);
 static int compare_field_bitpos (const PTR, const PTR);
 static Uint annotate_value (tree);
 static void annotate_rep (Entity_Id, tree);
@@ -1058,7 +1058,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    gnu_new_var
 	      = create_var_decl (create_concat_name (gnat_entity, "ALIGN"),
-				 NULL_TREE, gnu_new_type, gnu_expr, false,
+				 NULL_TREE, gnu_new_type, NULL_TREE, false,
 				 false, false, false, NULL, gnat_entity);
 
 	    if (gnu_expr)
@@ -1416,6 +1416,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       layout_type (gnu_type);
 
+      /* Inherit our alias set from what we're a subtype of.  Subtypes
+	 are not different types and a pointer can designate any instance
+	 within a subtype hierarchy.  */
+      copy_alias_set (gnu_type, TREE_TYPE (gnu_type));
+
       /* If the type we are dealing with is to represent a packed array,
 	 we need to have the bits left justified on big-endian targets
 	 and right justified on little-endian targets.  We also need to
@@ -1449,6 +1454,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  finish_record_type (gnu_type, gnu_field, false, false);
 	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 	  SET_TYPE_ADA_SIZE (gnu_type, bitsize_int (esize));
+
+	  copy_alias_set (gnu_type, gnu_field_type);
 	}
 
       break;
@@ -1516,6 +1523,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	layout_type (gnu_type);
+
+	/* Inherit our alias set from what we're a subtype of, as for
+	   integer subtypes.  */
+	copy_alias_set (gnu_type, TREE_TYPE (gnu_type));
       }
     break;
 
@@ -2463,9 +2474,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TREE_OPERAND (gnu_get_parent, 1) = gnu_field_list;
 	  }
 
-	/* Add the fields for the discriminants into the record.  */
-        if (!Is_Unchecked_Union (gnat_entity)
-	    && Has_Discriminants (gnat_entity))
+	/* Make the fields for the discriminants and put them into the record
+	   unless it's an Unchecked_Union.  */
+        if (Has_Discriminants (gnat_entity))
 	  for (gnat_field = First_Stored_Discriminant (gnat_entity);
 	       Present (gnat_field);
 	       gnat_field = Next_Stored_Discriminant (gnat_field))
@@ -2491,8 +2502,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				     gnu_field, NULL_TREE),
 			     true);
 
-	      TREE_CHAIN (gnu_field) = gnu_field_list;
-	      gnu_field_list = gnu_field;
+	      if (!Is_Unchecked_Union (gnat_entity))
+		{
+		  TREE_CHAIN (gnu_field) = gnu_field_list;
+		  gnu_field_list = gnu_field;
+		}
 	    }
 
 	/* Put the discriminants into the record (backwards), so we can
@@ -2503,7 +2517,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Add the listed fields into the record and finish up.  */
 	components_to_record (gnu_type, Component_List (record_definition),
 			      gnu_field_list, packed, definition, NULL,
-			      false, all_rep, this_deferred);
+			      false, all_rep, this_deferred,
+			      Is_Unchecked_Union (gnat_entity));
 
         if (this_deferred)
 	  {
@@ -4479,6 +4494,7 @@ make_dummy_type (Entity_Id gnat_type)
 {
   Entity_Id gnat_underlying;
   tree gnu_type;
+  enum tree_code code;
 
   /* Find a full type for GNAT_TYPE, taking into account any class wide
      types.  */
@@ -4498,17 +4514,31 @@ make_dummy_type (Entity_Id gnat_type)
     return dummy_node_table[gnat_underlying];
 
   /* If this is a record, make this a RECORD_TYPE or UNION_TYPE; else make
-     it a VOID_TYPE.  */
-  if (Is_Unchecked_Union (gnat_underlying))
+     it an ENUMERAL_TYPE.  */
+  if (Is_Record_Type (gnat_underlying))
     {
-      gnu_type = make_node (UNION_TYPE);
-      TYPE_UNCHECKED_UNION_P (gnu_type) = 1;
-    }
-  else if (Is_Record_Type (gnat_underlying))
-    gnu_type = make_node (RECORD_TYPE);
-  else
-    gnu_type = make_node (ENUMERAL_TYPE);
+      Node_Id component_list
+	= Component_List (Type_Definition
+			  (Declaration_Node
+			   (Implementation_Base_Type (gnat_underlying))));
+      Node_Id component;
 
+      /* Make this a UNION_TYPE unless it's either not an Unchecked_Union or
+	 we have a non-discriminant field outside a variant.  In either case,
+	 it's a RECORD_TYPE.  */
+      code = UNION_TYPE;
+      if (!Is_Unchecked_Union (gnat_underlying))
+	code = RECORD_TYPE;
+      else
+	for (component = First_Non_Pragma (Component_Items (component_list));
+	     Present (component); component = Next_Non_Pragma (component))
+	  if (Ekind (Defining_Entity (component)) == E_Component)
+	    code = RECORD_TYPE;
+    }
+  else
+    code = ENUMERAL_TYPE;
+
+  gnu_type = make_node (code);
   TYPE_NAME (gnu_type) = get_entity_name (gnat_type);
   TYPE_DUMMY_P (gnu_type) = 1;
   if (AGGREGATE_TYPE_P (gnu_type))
@@ -5215,12 +5245,30 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 			      gnat_field, FIELD_DECL, false, true);
 
-  /* If we are packing this record, have a specified size that's smaller than
-     that of the field type, or a position is specified, and the field type is
-     also a record that's BLKmode and with a small constant size, see if we
-     can get a better form of the type that allows more packing.  If we can,
-     show a size was specified for it if there wasn't one so we know to make
-     this a bitfield and avoid making things wider.  */
+  /* If we have a specified size that's smaller than that of the field type,
+     or a position is specified, and the field type is also a record that's
+     BLKmode and with a small constant size, see if we can get an integral
+     mode form of the type when appropriate.  If we can, show a size was
+     specified for the field if there wasn't one already, so we know to make
+     this a bitfield and avoid making things wider.
+
+     Doing this is first useful if the record is packed because we can then
+     place the field at a non-byte-aligned position and so achieve tigther
+     packing.
+
+     This is in addition *required* if the field shares a byte with another
+     field and the front-end lets the back-end handle the references, because
+     GCC does not handle BLKmode bitfields properly.
+
+     We avoid the transformation if it is not required or potentially useful,
+     as it might entail an increase of the field's alignment and have ripple
+     effects on the outer record type.  A typical case is a field known to be
+     byte aligned and not to share a byte with another field.
+
+     Besides, we don't even look the possibility of a transformation in cases
+     known to be in error already, for instance when an invalid size results
+     from a component clause.  */
+
   if (TREE_CODE (gnu_field_type) == RECORD_TYPE
       && TYPE_MODE (gnu_field_type) == BLKmode
       && host_integerp (TYPE_SIZE (gnu_field_type), 1)
@@ -5228,26 +5276,35 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       && (packed == 1
 	  || (gnu_size
 	      && tree_int_cst_lt (gnu_size, TYPE_SIZE (gnu_field_type)))
-	  || Present (Component_Clause (gnat_field))))
+	  || (Present (Component_Clause (gnat_field)) && gnu_size != 0)))
     {
       /* See what the alternate type and size would be.  */
       tree gnu_packable_type = make_packable_type (gnu_field_type);
+
+      bool has_byte_aligned_clause
+	= Present (Component_Clause (gnat_field))
+	  && (UI_To_Int (Component_Bit_Offset (gnat_field))
+	      % BITS_PER_UNIT == 0);
 
       /* Compute whether we should avoid the substitution.  */
       int reject =
         /* There is no point substituting if there is no change.  */
         (gnu_packable_type == gnu_field_type
          ||
+	 /* ... nor when the field is known to be byte aligned and not to
+	    share a byte with another field.  */
+	 (has_byte_aligned_clause
+	  && value_factor_p (gnu_size, BITS_PER_UNIT))
+	 ||
          /* The size of an aliased field must be an exact multiple of the
             type's alignment, which the substitution might increase.  Reject
             substitutions that would so invalidate a component clause when the
             specified position is byte aligned, as the change would have no
             real benefit from the packing standpoint anyway.  */
          (Is_Aliased (gnat_field)
-          && Present (Component_Clause (gnat_field))
-          && UI_To_Int (Component_Bit_Offset (gnat_field)) % BITS_PER_UNIT == 0
-          && tree_low_cst (gnu_size, 1) % TYPE_ALIGN (gnu_packable_type) != 0)
-         );
+          && has_byte_aligned_clause
+          && ! value_factor_p (gnu_size, TYPE_ALIGN (gnu_packable_type)))
+	 );
 
       /* Substitute unless told otherwise.  */
       if (!reject)
@@ -5477,6 +5534,9 @@ is_variable_size (tree type)
    DEFER_DEBUG, if true, means that the debugging routines should not be
    called when finishing constructing the record type.
 
+   UNCHECKED_UNION, if tree, means that we are building a type for a record
+   with a Pragma Unchecked_Union.
+
    The processing of the component list fills in the chain with all of the
    fields of the record and then the record type is finished.  */
 
@@ -5484,12 +5544,11 @@ static void
 components_to_record (tree gnu_record_type, Node_Id component_list,
                       tree gnu_field_list, int packed, bool definition,
                       tree *p_gnu_rep_list, bool cancel_alignment,
-		      bool all_rep, bool defer_debug)
+		      bool all_rep, bool defer_debug, bool unchecked_union)
 {
   Node_Id component_decl;
   Entity_Id gnat_field;
   Node_Id variant_part;
-  Node_Id variant;
   tree gnu_our_rep_list = NULL_TREE;
   tree gnu_field, gnu_last;
   bool layout_with_rep = false;
@@ -5530,49 +5589,44 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
   /* At the end of the component list there may be a variant part.  */
   variant_part = Variant_Part (component_list);
 
-  /* If this is an unchecked union, each variant must have exactly one
-     component, each of which becomes one component of this union.  */
-  if (TREE_CODE (gnu_record_type) == UNION_TYPE
-      && TYPE_UNCHECKED_UNION_P (gnu_record_type)
-      && Present (variant_part))
-    for (variant = First_Non_Pragma (Variants (variant_part));
-	 Present (variant);
-	 variant = Next_Non_Pragma (variant))
-      {
-	component_decl
-	  = First_Non_Pragma (Component_Items (Component_List (variant)));
-	gnat_field = Defining_Entity (component_decl);
-	gnu_field = gnat_to_gnu_field (gnat_field, gnu_record_type, packed,
-				       definition);
-	TREE_CHAIN (gnu_field) = gnu_field_list;
-	gnu_field_list = gnu_field;
-	save_gnu_tree (gnat_field, gnu_field, false);
-      }
-
   /* We create a QUAL_UNION_TYPE for the variant part since the variants are
      mutually exclusive and should go in the same memory.  To do this we need
      to treat each variant as a record whose elements are created from the
      component list for the variant.  So here we create the records from the
-     lists for the variants and put them all into the QUAL_UNION_TYPE.  */
-  else if (Present (variant_part))
+     lists for the variants and put them all into the QUAL_UNION_TYPE.
+     If this is an Unchecked_Union, we make a UNION_TYPE instead or
+     use GNU_RECORD_TYPE if there are no fields so far.  */
+  if (Present (variant_part))
     {
       tree gnu_discriminant = gnat_to_gnu (Name (variant_part));
       Node_Id variant;
-      tree gnu_union_type = make_node (QUAL_UNION_TYPE);
-      tree gnu_union_field;
-      tree gnu_variant_list = NULL_TREE;
       tree gnu_name = TYPE_NAME (gnu_record_type);
       tree gnu_var_name
-	= concat_id_with_name
-	  (get_identifier (Get_Name_String (Chars (Name (variant_part)))),
-	   "XVN");
+	= concat_id_with_name (get_identifier (Get_Name_String
+					       (Chars (Name (variant_part)))),
+			       "XVN");
+      tree gnu_union_type;
+      tree gnu_union_name;
+      tree gnu_union_field;
+      tree gnu_variant_list = NULL_TREE;
 
       if (TREE_CODE (gnu_name) == TYPE_DECL)
 	gnu_name = DECL_NAME (gnu_name);
 
-      TYPE_NAME (gnu_union_type)
-	= concat_id_with_name (gnu_name, IDENTIFIER_POINTER (gnu_var_name));
-      TYPE_PACKED (gnu_union_type) = TYPE_PACKED (gnu_record_type);
+      gnu_union_name = concat_id_with_name (gnu_name,
+					    IDENTIFIER_POINTER (gnu_var_name));
+
+      if (!gnu_field_list && TREE_CODE (gnu_record_type) == UNION_TYPE)
+	gnu_union_type = gnu_record_type;
+      else
+	{
+
+	  gnu_union_type
+	    = make_node (unchecked_union ? UNION_TYPE : QUAL_UNION_TYPE);
+
+	  TYPE_NAME (gnu_union_type) = gnu_union_name;
+	  TYPE_PACKED (gnu_union_type) = TYPE_PACKED (gnu_record_type);
+	}
 
       for (variant = First_Non_Pragma (Variants (variant_part));
            Present (variant);
@@ -5585,7 +5639,7 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	  Get_Variant_Encoding (variant);
 	  gnu_inner_name = get_identifier (Name_Buffer);
 	  TYPE_NAME (gnu_variant_type)
-	    = concat_id_with_name (TYPE_NAME (gnu_union_type),
+	    = concat_id_with_name (gnu_union_name,
 				   IDENTIFIER_POINTER (gnu_inner_name));
 
 	  /* Set the alignment of the inner type in case we need to make
@@ -5607,27 +5661,40 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	  components_to_record (gnu_variant_type, Component_List (variant),
 				NULL_TREE, packed, definition,
 				&gnu_our_rep_list, !all_rep_and_size, all_rep,
-				false);
+				false, unchecked_union);
 
 	  gnu_qual = choices_to_gnu (gnu_discriminant,
 				     Discrete_Choices (variant));
 
 	  Set_Present_Expr (variant, annotate_value (gnu_qual));
-	  gnu_field = create_field_decl (gnu_inner_name, gnu_variant_type,
-					 gnu_union_type, 0,
-					 (all_rep_and_size
-					  ? TYPE_SIZE (gnu_record_type) : 0),
-					 (all_rep_and_size
-					  ? bitsize_zero_node : 0),
-					 0);
 
-	  DECL_INTERNAL_P (gnu_field) = 1;
-	  DECL_QUALIFIER (gnu_field) = gnu_qual;
+	  /* If this is an Unchecked_Union and we have exactly one field,
+	     use that field here.  */
+	  if (unchecked_union && TYPE_FIELDS (gnu_variant_type)
+	      && !TREE_CHAIN (TYPE_FIELDS (gnu_variant_type)))
+	    gnu_field = TYPE_FIELDS (gnu_variant_type);
+	  else
+	    {
+	      gnu_field = create_field_decl (gnu_inner_name, gnu_variant_type,
+					     gnu_union_type, 0,
+					     (all_rep_and_size
+					      ? TYPE_SIZE (gnu_record_type)
+					      : 0),
+					     (all_rep_and_size
+					      ? bitsize_zero_node : 0),
+					     0);
+
+	      DECL_INTERNAL_P (gnu_field) = 1;
+
+	      if (!unchecked_union)
+		DECL_QUALIFIER (gnu_field) = gnu_qual;
+	    }
+
 	  TREE_CHAIN (gnu_field) = gnu_variant_list;
 	  gnu_variant_list = gnu_field;
 	}
 
-      /* We use to delete the empty variants from the end. However,
+      /* We used to delete the empty variants from the end. However,
          we no longer do that because we need them to generate complete
          debugging information for the variant record.  Otherwise,
          the union type definition will be missing the fields associated
@@ -5645,6 +5712,15 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 
 	  finish_record_type (gnu_union_type, nreverse (gnu_variant_list),
 			      all_rep_and_size, false);
+
+	  /* If GNU_UNION_TYPE is our record type, it means we must have an
+	     Unchecked_Union with no fields.  Verify that and, if so, just
+	     return.  */
+	  if (gnu_union_type == gnu_record_type)
+	    {
+	      gcc_assert (!gnu_field_list && unchecked_union);
+	      return;
+	    }
 
 	  gnu_union_field
 	    = create_field_decl (gnu_var_name, gnu_union_type, gnu_record_type,

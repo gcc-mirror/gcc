@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -133,7 +133,6 @@ static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static tree convert_to_thin_pointer (tree, tree);
 static tree make_descriptor_field (const char *,tree, tree, tree);
-static bool value_factor_p (tree, HOST_WIDE_INT);
 static bool potential_alignment_gap (tree, tree, tree);
 
 /* Initialize the association of GNAT nodes to GCC trees.  */
@@ -1215,9 +1214,10 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
 
   /* Pass type declaration information to the debugger unless this is an
      UNCONSTRAINED_ARRAY_TYPE, which the debugger does not support,
-     and ENUMERAL_TYPE or RECORD_TYPE which is handled separately,
-     a dummy type, which will be completed later, or a type for which
-     debugging information was not requested.  */
+     and ENUMERAL_TYPE or RECORD_TYPE which is handled separately, or
+     type for which debugging information was not requested.  */
+  if (code == UNCONSTRAINED_ARRAY_TYPE || ! debug_info_p)
+    DECL_IGNORED_P (type_decl) = 1;
   if (code == UNCONSTRAINED_ARRAY_TYPE || TYPE_IS_DUMMY_P (type)
       || !debug_info_p)
     DECL_IGNORED_P (type_decl) = 1;
@@ -1573,7 +1573,7 @@ process_attributes (tree decl, struct attrib *attr_list)
 /* Return true if VALUE is a known to be a multiple of FACTOR, which must be
    a power of 2. */
 
-static bool
+bool
 value_factor_p (tree value, HOST_WIDE_INT factor)
 {
   if (host_integerp (value, 1))
@@ -2471,7 +2471,8 @@ build_unc_object_type (tree template_type, tree object_type, tree name)
 /* Same, taking a thin or fat pointer type instead of a template type. */
 
 tree
-build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type, tree name)
+build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
+				tree name)
 {
   tree template_type;
 
@@ -2592,7 +2593,13 @@ update_pointer_to (tree old_type, tree new_type)
 				  TREE_CHAIN (TYPE_FIELDS (ptr)), new_ref));
 
       for (var = TYPE_MAIN_VARIANT (ptr); var; var = TYPE_NEXT_VARIANT (var))
-	SET_TYPE_UNCONSTRAINED_ARRAY (var, new_type);
+	{
+	  SET_TYPE_UNCONSTRAINED_ARRAY (var, new_type);
+
+	  /* This may seem a bit gross, in particular wrt DECL_CONTEXT, but
+	     actually is in keeping with what build_qualified_type does.  */
+	  TYPE_FIELDS (var) = TYPE_FIELDS (ptr);
+	}
 
       TYPE_POINTER_TO (new_type) = TYPE_REFERENCE_TO (new_type)
 	= TREE_TYPE (new_type) = ptr;
@@ -2722,7 +2729,6 @@ convert (tree type, tree expr)
   enum tree_code code = TREE_CODE (type);
   tree etype = TREE_TYPE (expr);
   enum tree_code ecode = TREE_CODE (etype);
-  tree tem;
 
   /* If EXPR is already the right type, we are done.  */
   if (type == etype)
@@ -2892,11 +2898,9 @@ convert (tree type, tree expr)
 	      return build1 (VIEW_CONVERT_EXPR, type, op0);
 
 	    /* Otherwise, we may just bypass the input view conversion unless
-	       one of the types is a fat pointer, or we're converting to an
-	       unchecked union type.  Both are handled by specialized code
-	       below and the latter relies on exact type matching.  */
-	    else if (!TYPE_FAT_POINTER_P (type) && !TYPE_FAT_POINTER_P (etype)
-		     && !(code == UNION_TYPE && TYPE_UNCHECKED_UNION_P (type)))
+	       one of the types is a fat pointer,  which is handled by
+	       specialized code below which relies on exact type matching.  */
+	    else if (!TYPE_FAT_POINTER_P (type) && !TYPE_FAT_POINTER_P (etype))
 	      return convert (type, op0);
 	  }
       }
@@ -3020,29 +3024,10 @@ convert (tree type, tree expr)
       return unchecked_convert (type, expr, false);
 
     case UNION_TYPE:
-      /* For unchecked unions, just validate that the type is indeed that of
-	 a field of the type.  Then make the simple conversion.  */
-      if (TYPE_UNCHECKED_UNION_P (type))
-	{
-	  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
-	    {
-	      if (TREE_TYPE (tem) == etype)
-		return build1 (CONVERT_EXPR, type, expr);
-	      else if (TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE
-		       && (TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (tem))
-			   || TYPE_IS_PADDING_P (TREE_TYPE (tem)))
-		       && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (tem))) == etype)
-		return build1 (CONVERT_EXPR, type,
-			       convert (TREE_TYPE (tem), expr));
-	    }
-
-	  gcc_unreachable ();
-	}
-      else
-	/* Otherwise, this is a conversion between a tagged type and some
-	   subtype, which we have to mark as a UNION_TYPE because of
-	   overlapping fields.  */
-	return unchecked_convert (type, expr, false);
+      /* This is a either a conversion between a tagged type and some
+	 subtype, which we have to mark as a UNION_TYPE because of
+	 overlapping fields or a conversion of an Unchecked_Union.  */
+      return unchecked_convert (type, expr, false);
 
     case UNCONSTRAINED_ARRAY_TYPE:
       /* If EXPR is a constrained array, take its address, convert it to a
