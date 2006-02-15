@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package Ada.Command_Line.Environment is
    --  variables in the environment of the program invoking the function.
    --  Otherwise it returns 0.  And that's a lot of environment.
 
-   function Environment_Value (Number : in Positive) return String;
+   function Environment_Value (Number : Positive) return String;
    --  If the external execution environment supports passing the environment
    --  to a program, then Environment_Value returns an implementation-defined
    --  value corresponding to the value at relative position Number. If Number

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,9 +174,8 @@ package body System.Tasking.Async_Delays is
    ---------------------------
 
    function Enqueue_Duration
-     (T    : in Duration;
-      D    : Delay_Block_Access)
-      return Boolean
+     (T : Duration;
+      D : Delay_Block_Access) return Boolean
    is
    begin
       if T <= 0.0 then
@@ -380,7 +379,7 @@ package body System.Tasking.Async_Delays is
 
          while Timer_Queue.Succ.Resume_Time <= Now loop
 
-            --  Dequeue the waiting task from the front of the queue.
+            --  Dequeue the waiting task from the front of the queue
 
             pragma Debug (System.Tasking.Debug.Trace
               (Timer_Server_ID, "Timer service: waking up waiting task", 'E'));

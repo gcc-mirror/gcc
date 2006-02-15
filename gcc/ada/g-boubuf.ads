@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2003-2005, AdaCore                     --
+--                     Copyright (C) 2003-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ package GNAT.Bounded_Buffers is
    is
       pragma Priority (Ceiling);
 
-      entry Insert (Item : in Element);
+      entry Insert (Item : Element);
       --  Insert Item into the buffer, blocks caller until space is available
 
       entry Remove (Item : out Element);

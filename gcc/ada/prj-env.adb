@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,7 +120,8 @@ package body Prj.Env is
    --  Call Setenv, after calling To_Host_File_Spec
 
    function Ultimate_Extension_Of
-     (Project : in Project_Id; In_Tree : Project_Tree_Ref) return Project_Id;
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Project_Id;
    --  Return a project that is either Project or an extended ancestor of
    --  Project that itself is not extended.
 
@@ -2405,7 +2406,8 @@ package body Prj.Env is
    ---------------------------
 
    function Ultimate_Extension_Of
-     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Project_Id
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Project_Id
    is
       Result : Project_Id := Project;
 

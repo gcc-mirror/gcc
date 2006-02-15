@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,10 +46,9 @@ package body Ada.Wide_Text_IO.Decimal_Aux is
    -------------
 
    function Get_Dec
-     (File   : File_Type;
-      Width  : Field;
-      Scale  : Integer)
-      return   Integer
+     (File  : File_Type;
+      Width : Field;
+      Scale : Integer) return Integer
    is
       Buf  : String (1 .. Field'Last);
       Ptr  : aliased Integer;
@@ -75,10 +74,9 @@ package body Ada.Wide_Text_IO.Decimal_Aux is
    -------------
 
    function Get_LLD
-     (File   : File_Type;
-      Width  : Field;
-      Scale  : Integer)
-      return   Long_Long_Integer
+     (File  : File_Type;
+      Width : Field;
+      Scale : Integer) return Long_Long_Integer
    is
       Buf  : String (1 .. Field'Last);
       Ptr  : aliased Integer;
@@ -106,8 +104,7 @@ package body Ada.Wide_Text_IO.Decimal_Aux is
    function Gets_Dec
      (From  : String;
       Last  : access Positive;
-      Scale : Integer)
-      return  Integer
+      Scale : Integer) return Integer
    is
       Pos  : aliased Integer;
       Item : Integer;
@@ -132,8 +129,7 @@ package body Ada.Wide_Text_IO.Decimal_Aux is
    function Gets_LLD
      (From  : String;
       Last  : access Positive;
-      Scale : Integer)
-      return  Long_Long_Integer
+      Scale : Integer) return Long_Long_Integer
    is
       Pos  : aliased Integer;
       Item : Long_Long_Integer;

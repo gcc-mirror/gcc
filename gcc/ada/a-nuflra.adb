@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ package body Ada.Numerics.Float_Random is
    -- Local Subprograms --
    -----------------------
 
-   procedure Euclid (P, Q : in Int; X, Y : out Int; GCD : out Int);
+   procedure Euclid (P, Q : Int; X, Y : out Int; GCD : out Int);
 
    function  Euclid (P, Q : Int) return Int;
 
@@ -65,24 +65,24 @@ package body Ada.Numerics.Float_Random is
    -- Euclid --
    ------------
 
-   procedure Euclid (P, Q : in Int; X, Y : out Int; GCD : out Int) is
+   procedure Euclid (P, Q : Int; X, Y : out Int; GCD : out Int) is
 
       XT : Int := 1;
       YT : Int := 0;
 
       procedure Recur
-        (P,  Q  : in Int;                 --  a (i-1), a (i)
-         X,  Y  : in Int;                 --  x (i),   y (i)
+        (P,  Q  : Int;                    --  a (i-1), a (i)
+         X,  Y  : Int;                    --  x (i),   y (i)
          XP, YP : in out Int;             --  x (i-1), y (i-1)
          GCD    : out Int);
 
       procedure Recur
-        (P,  Q  : in Int;
-         X,  Y  : in Int;
+        (P,  Q  : Int;
+         X,  Y  : Int;
          XP, YP : in out Int;
          GCD    : out Int)
       is
-         Quo : Int  := P / Q;             --  q <-- |_ a (i-1) / a (i) _|
+         Quo : Int := P / Q;              --  q <-- |_ a (i-1) / a (i) _|
          XT  : Int := X;                  --  x (i)
          YT  : Int := Y;                  --  y (i)
 
@@ -156,7 +156,7 @@ package body Ada.Numerics.Float_Random is
 
    --  Version that works from given initiator value
 
-   procedure Reset (Gen : in Generator; Initiator : in Integer) is
+   procedure Reset (Gen : Generator; Initiator : Integer) is
       Genp   : constant Pointer := Gen.Gen_State'Unrestricted_Access;
       X1, X2 : Int;
 
@@ -227,7 +227,7 @@ package body Ada.Numerics.Float_Random is
    -- Save --
    ----------
 
-   procedure Save (Gen : in Generator; To_State : out State) is
+   procedure Save (Gen : Generator; To_State : out State) is
    begin
       To_State := Gen.Gen_State;
    end Save;

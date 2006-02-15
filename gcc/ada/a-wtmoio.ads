@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,33 +50,33 @@ package Ada.Wide_Text_IO.Modular_IO is
    Default_Base  : Number_Base := 10;
 
    procedure Get
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Num;
-      Width : in Field := 0);
+      Width : Field := 0);
 
    procedure Get
      (Item  : out Num;
-      Width : in Field := 0);
+      Width : Field := 0);
 
    procedure Put
-     (File  : in File_Type;
-      Item  : in Num;
-      Width : in Field := Default_Width;
-      Base  : in Number_Base := Default_Base);
+     (File  : File_Type;
+      Item  : Num;
+      Width : Field := Default_Width;
+      Base  : Number_Base := Default_Base);
 
    procedure Put
-     (Item  : in Num;
-      Width : in Field := Default_Width;
-      Base  : in Number_Base := Default_Base);
+     (Item  : Num;
+      Width : Field := Default_Width;
+      Base  : Number_Base := Default_Base);
 
    procedure Get
-     (From : in Wide_String;
+     (From : Wide_String;
       Item : out Num;
       Last : out Positive);
 
    procedure Put
      (To   : out Wide_String;
-      Item : in Num;
-      Base : in Number_Base := Default_Base);
+      Item : Num;
+      Base : Number_Base := Default_Base);
 
 end Ada.Wide_Text_IO.Modular_IO;

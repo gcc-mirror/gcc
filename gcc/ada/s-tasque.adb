@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,7 @@ package body System.Tasking.Queuing is
    use Protected_Objects;
    use Protected_Objects.Entries;
 
-   --  Entry Queues implemented as doubly linked list.
+   --  Entry Queues implemented as doubly linked list
 
    Queuing_Policy : Character;
    pragma Import (C, Queuing_Policy, "__gl_queuing_policy");
@@ -164,7 +164,7 @@ package body System.Tasking.Queuing is
 
    --  Return number of calls on the waiting queue of E
 
-   function Count_Waiting (E : in Entry_Queue) return Natural is
+   function Count_Waiting (E : Entry_Queue) return Natural is
       Count   : Natural;
       Temp    : Entry_Call_Link;
 
@@ -418,7 +418,7 @@ package body System.Tasking.Queuing is
 
    --  Return the head of entry_queue E
 
-   function Head (E : in Entry_Queue) return Entry_Call_Link is
+   function Head (E : Entry_Queue) return Entry_Call_Link is
    begin
       pragma Assert (Check_Queue (E));
       return E.Head;
@@ -528,7 +528,7 @@ package body System.Tasking.Queuing is
             Broadcast_Program_Error (Self_ID, Object, null);
       end;
 
-      --  If a call was selected, dequeue it and return it for service.
+      --  If a call was selected, dequeue it and return it for service
 
       if Entry_Call /= null then
          Temp_Call := Entry_Call;

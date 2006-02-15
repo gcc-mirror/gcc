@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +37,9 @@
 package System.Error_Reporting is
    pragma Preelaborate;
 
-   function Shutdown (M : in String) return Boolean;
-   --  Perform emergency shutdown of the entire program.
-   --  Msg is an error message to be printed to the console.
-   --  This is to be used only for nonrecoverable errors.
+   function Shutdown (M : String) return Boolean;
+   --  Perform emergency shutdown of the entire program. Msg is an error
+   --  message to be printed to the console. This is to be used only for
+   --  nonrecoverable errors.
 
 end System.Error_Reporting;

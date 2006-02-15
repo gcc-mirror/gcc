@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,9 +40,6 @@ with System.Task_Primitives.Operations;
 
 with System.Storage_Elements;
 --  Needed for initializing Stack_Info.Size
-
-with System.Parameters;
---  Used for Adjust_Storage_Size
 
 package body System.Tasking is
 
@@ -128,7 +125,7 @@ package body System.Tasking is
              (Parameters.Adjust_Storage_Size (Stack_Size));
       end if;
 
-      --  Link the task into the list of all tasks.
+      --  Link the task into the list of all tasks
 
       T.Common.All_Tasks_Link := All_Tasks_List;
       All_Tasks_List := T;

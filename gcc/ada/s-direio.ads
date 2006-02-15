@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,7 +77,7 @@ package System.Direct_IO is
 
    procedure Write
      (File : in out Direct_AFCB;
-      Item : in Ada.Streams.Stream_Element_Array);
+      Item : Ada.Streams.Stream_Element_Array);
    --  Required overriding of Write, not actually used for Direct_IO
 
    type File_Type is access all Direct_AFCB;
@@ -85,43 +85,43 @@ package System.Direct_IO is
 
    procedure Create
      (File : in out File_Type;
-      Mode : in FCB.File_Mode := FCB.Inout_File;
-      Name : in String := "";
-      Form : in String := "");
+      Mode : FCB.File_Mode := FCB.Inout_File;
+      Name : String := "";
+      Form : String := "");
 
-   function End_Of_File (File : in File_Type) return Boolean;
+   function End_Of_File (File : File_Type) return Boolean;
 
-   function Index (File : in File_Type) return Positive_Count;
+   function Index (File : File_Type) return Positive_Count;
 
    procedure Open
      (File : in out File_Type;
-      Mode : in FCB.File_Mode;
-      Name : in String;
-      Form : in String := "");
+      Mode : FCB.File_Mode;
+      Name : String;
+      Form : String := "");
 
    procedure Read
-     (File : in File_Type;
+     (File : File_Type;
       Item : System.Address;
-      Size : in Interfaces.C_Streams.size_t;
-      From : in Positive_Count);
+      Size : Interfaces.C_Streams.size_t;
+      From : Positive_Count);
 
    procedure Read
-     (File : in File_Type;
+     (File : File_Type;
       Item : System.Address;
-      Size : in Interfaces.C_Streams.size_t);
+      Size : Interfaces.C_Streams.size_t);
 
-   procedure Reset (File : in out File_Type; Mode : in FCB.File_Mode);
+   procedure Reset (File : in out File_Type; Mode : FCB.File_Mode);
 
    procedure Reset (File : in out File_Type);
 
-   procedure Set_Index (File : in File_Type; To : in Positive_Count);
+   procedure Set_Index (File : File_Type; To : Positive_Count);
 
-   function Size (File : in File_Type) return Count;
+   function Size (File : File_Type) return Count;
 
    procedure Write
-     (File   : in File_Type;
+     (File   : File_Type;
       Item   : System.Address;
-      Size   : in Interfaces.C_Streams.size_t;
+      Size   : Interfaces.C_Streams.size_t;
       Zeroes : System.Storage_Elements.Storage_Array);
    --  Note: Zeroes is the buffer of zeroes used to fill out partial records
 

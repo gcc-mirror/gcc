@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,26 +45,22 @@ private package Ada.Wide_Text_IO.Decimal_Aux is
    function Get_Dec
      (File  : File_Type;
       Width : Field;
-      Scale : Integer)
-      return  Integer;
+      Scale : Integer) return Integer;
 
    function Get_LLD
      (File  : File_Type;
       Width : Field;
-      Scale : Integer)
-      return  Long_Long_Integer;
+      Scale : Integer) return Long_Long_Integer;
 
    function Gets_Dec
      (From  : String;
       Last  : access Positive;
-      Scale : Integer)
-      return  Integer;
+      Scale : Integer) return Integer;
 
    function Gets_LLD
      (From  : String;
       Last  : access Positive;
-      Scale : Integer)
-      return  Long_Long_Integer;
+      Scale : Integer) return Long_Long_Integer;
 
    procedure Put_Dec
      (File  : File_Type;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2005, AdaCore                     --
+--                     Copyright (C) 2002-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1965,7 +1965,7 @@ package body GNAT.Perfect_Hash_Generators is
       procedure Build_Identical_Keys_Sets
         (Table : in out Vertex_Table_Type;
          Last  : in out Natural;
-         Pos   : in Natural);
+         Pos   : Natural);
       --  Build a list of keys subsets that are identical with the current
       --  position selection plus Pos. Once this routine is called, reduced
       --  words are sorted by subsets and each item (First, Last) in Sets
@@ -1989,7 +1989,7 @@ package body GNAT.Perfect_Hash_Generators is
       procedure Build_Identical_Keys_Sets
         (Table : in out Vertex_Table_Type;
          Last  : in out Natural;
-         Pos   : in Natural)
+         Pos   : Natural)
       is
          S : constant Vertex_Table_Type := Table (1 .. Last);
          C : constant Natural           := Pos;

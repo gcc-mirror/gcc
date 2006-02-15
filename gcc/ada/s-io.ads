@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package System.IO is
    function Standard_Error return File_Type;
    function Standard_Output return File_Type;
 
-   procedure Set_Output (File : in File_Type);
+   procedure Set_Output (File : File_Type);
 
 private
 

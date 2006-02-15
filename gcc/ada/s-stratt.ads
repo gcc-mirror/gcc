@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -131,29 +131,29 @@ package System.Stream_Attributes is
    --  between 'Write and 'Output because there are no discriminants
    --  or bounds to be written.
 
-   procedure W_AD  (Stream : not null access RST; Item : in Fat_Pointer);
-   procedure W_AS  (Stream : not null access RST; Item : in Thin_Pointer);
-   procedure W_B   (Stream : not null access RST; Item : in Boolean);
-   procedure W_C   (Stream : not null access RST; Item : in Character);
-   procedure W_F   (Stream : not null access RST; Item : in Float);
-   procedure W_I   (Stream : not null access RST; Item : in Integer);
-   procedure W_LF  (Stream : not null access RST; Item : in Long_Float);
-   procedure W_LI  (Stream : not null access RST; Item : in Long_Integer);
-   procedure W_LLF (Stream : not null access RST; Item : in Long_Long_Float);
-   procedure W_LLI (Stream : not null access RST; Item : in Long_Long_Integer);
+   procedure W_AD  (Stream : not null access RST; Item : Fat_Pointer);
+   procedure W_AS  (Stream : not null access RST; Item : Thin_Pointer);
+   procedure W_B   (Stream : not null access RST; Item : Boolean);
+   procedure W_C   (Stream : not null access RST; Item : Character);
+   procedure W_F   (Stream : not null access RST; Item : Float);
+   procedure W_I   (Stream : not null access RST; Item : Integer);
+   procedure W_LF  (Stream : not null access RST; Item : Long_Float);
+   procedure W_LI  (Stream : not null access RST; Item : Long_Integer);
+   procedure W_LLF (Stream : not null access RST; Item : Long_Long_Float);
+   procedure W_LLI (Stream : not null access RST; Item : Long_Long_Integer);
    procedure W_LLU (Stream : not null access RST;
-                    Item   : in UST.Long_Long_Unsigned);
-   procedure W_LU  (Stream : not null access RST; Item : in UST.Long_Unsigned);
-   procedure W_SF  (Stream : not null access RST; Item : in Short_Float);
-   procedure W_SI  (Stream : not null access RST; Item : in Short_Integer);
+                    Item   : UST.Long_Long_Unsigned);
+   procedure W_LU  (Stream : not null access RST; Item : UST.Long_Unsigned);
+   procedure W_SF  (Stream : not null access RST; Item : Short_Float);
+   procedure W_SI  (Stream : not null access RST; Item : Short_Integer);
    procedure W_SSI (Stream : not null access RST;
-                    Item   : in Short_Short_Integer);
+                    Item   : Short_Short_Integer);
    procedure W_SSU (Stream : not null access RST;
-                    Item   : in UST.Short_Short_Unsigned);
+                    Item   : UST.Short_Short_Unsigned);
    procedure W_SU  (Stream : not null access RST;
-                    Item   : in UST.Short_Unsigned);
-   procedure W_U   (Stream : not null access RST; Item : in UST.Unsigned);
-   procedure W_WC  (Stream : not null access RST; Item : in Wide_Character);
+                    Item   : UST.Short_Unsigned);
+   procedure W_U   (Stream : not null access RST; Item : UST.Unsigned);
+   procedure W_WC  (Stream : not null access RST; Item : Wide_Character);
 
    ----------------------------
    -- Composite Input/Output --

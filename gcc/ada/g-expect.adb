@@ -972,9 +972,9 @@ package body GNAT.Expect is
 
          for J in Args'Range loop
             Arg                     := new String (1 .. Args (J)'Length + 1);
-            Arg (1 .. Args (J)'Length)  := Args (J).all;
-            Arg (Arg'Last)              := ASCII.NUL;
-            Arg_List (J + 2 - Args'First)   := Arg.all'Access;
+            Arg (1 .. Args (J)'Length)    := Args (J).all;
+            Arg (Arg'Last)                := ASCII.NUL;
+            Arg_List (J + 2 - Args'First) := Arg.all'Access;
          end loop;
 
          Arg_List (Arg_List'Last) := null;
@@ -1163,8 +1163,8 @@ package body GNAT.Expect is
       Pipe1 : in out Pipe_Type;
       Pipe2 : in out Pipe_Type;
       Pipe3 : in out Pipe_Type;
-      Cmd   : in String;
-      Args  : in System.Address)
+      Cmd   : String;
+      Args  : System.Address)
    is
       pragma Warnings (Off, Pid);
 

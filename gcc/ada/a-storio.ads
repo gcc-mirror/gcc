@@ -34,9 +34,9 @@ package Ada.Storage_IO is
    -- Input and Output Operations --
    ---------------------------------
 
-   procedure Read  (Buffer : in  Buffer_Type; Item : out Element_Type);
+   procedure Read (Buffer : Buffer_Type; Item : out Element_Type);
 
-   procedure Write (Buffer : out Buffer_Type; Item : in  Element_Type);
+   procedure Write (Buffer : out Buffer_Type; Item : Element_Type);
 
    ----------------
    -- Exceptions --

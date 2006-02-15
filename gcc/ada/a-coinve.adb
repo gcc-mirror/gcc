@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -1620,7 +1620,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Iterate
      (Container : Vector;
-      Process   : not null access procedure (Position : in Cursor))
+      Process   : not null access procedure (Position : Cursor))
    is
       V : Vector renames Container'Unrestricted_Access.all;
       B : Natural renames V.Busy;
@@ -1811,7 +1811,7 @@ package body Ada.Containers.Indefinite_Vectors is
    procedure Query_Element
      (Container : Vector;
       Index     : Index_Type;
-      Process   : not null access procedure (Element : in Element_Type))
+      Process   : not null access procedure (Element : Element_Type))
    is
       V : Vector renames Container'Unrestricted_Access.all;
       B : Natural renames V.Busy;
@@ -1844,7 +1844,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Query_Element
      (Position : Cursor;
-      Process  : not null access procedure (Element : in Element_Type))
+      Process  : not null access procedure (Element : Element_Type))
    is
    begin
       if Position.Container = null then
@@ -2189,7 +2189,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Reverse_Iterate
      (Container : Vector;
-      Process   : not null access procedure (Position : in Cursor))
+      Process   : not null access procedure (Position : Cursor))
    is
       V : Vector renames Container'Unrestricted_Access.all;
       B : Natural renames V.Busy;

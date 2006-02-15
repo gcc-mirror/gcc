@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,33 +42,33 @@
 private package Ada.Text_IO.Float_Aux is
 
    procedure Load_Real
-     (File : in File_Type;
+     (File : File_Type;
       Buf  : out String;
       Ptr  : in out Natural);
    --  This is an auxiliary routine that is used to load a possibly signed
    --  real literal value from the input file into Buf, starting at Ptr + 1.
 
    procedure Get
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Long_Long_Float;
-      Width : in Field);
+      Width : Field);
 
    procedure Put
-     (File : in File_Type;
-      Item : in Long_Long_Float;
-      Fore : in Field;
-      Aft  : in Field;
-      Exp  : in Field);
+     (File : File_Type;
+      Item : Long_Long_Float;
+      Fore : Field;
+      Aft  : Field;
+      Exp  : Field);
 
    procedure Gets
-     (From : in String;
+     (From : String;
       Item : out Long_Long_Float;
       Last : out Positive);
 
    procedure Puts
      (To   : out String;
-      Item : in Long_Long_Float;
-      Aft  : in Field;
-      Exp  : in Field);
+      Item : Long_Long_Float;
+      Aft  : Field;
+      Exp  : Field);
 
 end Ada.Text_IO.Float_Aux;

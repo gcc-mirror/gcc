@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -357,7 +357,7 @@ package body Prj.Util is
    -- Open --
    ----------
 
-   procedure Open (File : out Text_File; Name : in String) is
+   procedure Open (File : out Text_File; Name : String) is
       FD        : File_Descriptor;
       File_Name : String (1 .. Name'Length + 1);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -56,9 +56,9 @@ package Ada.Numerics.Generic_Complex_Types is
    function Im (X : Complex)   return Real'Base;
    function Im (X : Imaginary) return Real'Base;
 
-   procedure Set_Re (X  : in out Complex;   Re : in Real'Base);
-   procedure Set_Im (X  : in out Complex;   Im : in Real'Base);
-   procedure Set_Im (X  :    out Imaginary; Im : in Real'Base);
+   procedure Set_Re (X : in out Complex; Re : Real'Base);
+   procedure Set_Im (X : in out Complex; Im : Real'Base);
+   procedure Set_Im (X : out Imaginary;  Im : Real'Base);
 
    function Compose_From_Cartesian (Re, Im : Real'Base) return Complex;
    function Compose_From_Cartesian (Re     : Real'Base) return Complex;

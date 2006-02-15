@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,36 +51,36 @@ package Ada.Wide_Text_IO.Decimal_IO is
    Default_Exp  : Field := 3;
 
    procedure Get
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Num;
-      Width : in Field := 0);
+      Width : Field := 0);
 
    procedure Get
      (Item  : out Num;
-      Width : in Field := 0);
+      Width : Field := 0);
 
    procedure Put
-     (File : in File_Type;
-      Item : in Num;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp);
+     (File : File_Type;
+      Item : Num;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
    procedure Put
-     (Item : in Num;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp);
+     (Item : Num;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
    procedure Get
-     (From : in Wide_String;
+     (From : Wide_String;
       Item : out Num;
       Last : out Positive);
 
    procedure Put
      (To   : out Wide_String;
-      Item : in Num;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp);
+      Item : Num;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
 end Ada.Wide_Text_IO.Decimal_IO;

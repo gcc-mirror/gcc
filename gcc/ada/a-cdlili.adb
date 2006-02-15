@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -499,9 +499,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       procedure Sort (Container : in out List) is
 
-         procedure Partition
-           (Pivot : in Node_Access;
-            Back  : in Node_Access);
+         procedure Partition (Pivot : Node_Access; Back : Node_Access);
 
          procedure Sort (Front, Back : Node_Access);
 
@@ -509,10 +507,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
          -- Partition --
          ---------------
 
-         procedure Partition
-           (Pivot : Node_Access;
-            Back  : Node_Access)
-         is
+         procedure Partition (Pivot : Node_Access; Back : Node_Access) is
             Node : Node_Access := Pivot.Next;
 
          begin
@@ -948,7 +943,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    procedure Query_Element
      (Position : Cursor;
-      Process  : not null access procedure (Element : in Element_Type))
+      Process  : not null access procedure (Element : Element_Type))
    is
    begin
       if Position.Node = null then

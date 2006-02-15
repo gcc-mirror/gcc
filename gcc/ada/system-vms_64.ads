@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                (OpenVMS 64bit GCC_ZCX DEC Threads Version)               --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -248,7 +248,7 @@ private
    -- Special VMS Interfaces --
    ----------------------------
 
-   procedure Lib_Stop (I : in Integer);
+   procedure Lib_Stop (I : Integer);
    pragma Interface (C, Lib_Stop);
    pragma Import_Procedure (Lib_Stop, "LIB$STOP", Mechanism => (Value));
    --  Interface to VMS condition handling. Used by RTSfind and pragma

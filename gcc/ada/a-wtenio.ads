@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -49,28 +49,28 @@ package Ada.Wide_Text_IO.Enumeration_IO is
    Default_Width : Field := 0;
    Default_Setting : Type_Set := Upper_Case;
 
-   procedure Get (File : in File_Type; Item : out Enum);
+   procedure Get (File : File_Type; Item : out Enum);
    procedure Get (Item : out Enum);
 
    procedure Put
-     (File  : in File_Type;
-      Item  : in Enum;
-      Width : in Field := Default_Width;
-      Set   : in Type_Set := Default_Setting);
+     (File  : File_Type;
+      Item  : Enum;
+      Width : Field := Default_Width;
+      Set   : Type_Set := Default_Setting);
 
    procedure Put
-     (Item  : in Enum;
-      Width : in Field := Default_Width;
-      Set   : in Type_Set := Default_Setting);
+     (Item  : Enum;
+      Width : Field := Default_Width;
+      Set   : Type_Set := Default_Setting);
 
    procedure Get
-     (From : in Wide_String;
+     (From : Wide_String;
       Item : out Enum;
       Last : out Positive);
 
    procedure Put
      (To   : out Wide_String;
-      Item : in Enum;
-      Set  : in Type_Set := Default_Setting);
+      Item : Enum;
+      Set  : Type_Set := Default_Setting);
 
 end Ada.Wide_Text_IO.Enumeration_IO;

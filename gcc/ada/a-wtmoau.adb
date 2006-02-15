@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,14 +33,14 @@
 
 with Ada.Wide_Text_IO.Generic_Aux; use Ada.Wide_Text_IO.Generic_Aux;
 
-with System.Img_BIU;   use System.Img_BIU;
-with System.Img_Uns;   use System.Img_Uns;
-with System.Img_LLB;   use System.Img_LLB;
-with System.Img_LLU;   use System.Img_LLU;
-with System.Img_LLW;   use System.Img_LLW;
-with System.Img_WIU;   use System.Img_WIU;
-with System.Val_Uns;   use System.Val_Uns;
-with System.Val_LLU;   use System.Val_LLU;
+with System.Img_BIU; use System.Img_BIU;
+with System.Img_Uns; use System.Img_Uns;
+with System.Img_LLB; use System.Img_LLB;
+with System.Img_LLU; use System.Img_LLU;
+with System.Img_LLW; use System.Img_LLW;
+with System.Img_WIU; use System.Img_WIU;
+with System.Val_Uns; use System.Val_Uns;
+with System.Val_LLU; use System.Val_LLU;
 
 package body Ada.Wide_Text_IO.Modular_Aux is
 
@@ -51,7 +51,7 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    -----------------------
 
    procedure Load_Modular
-     (File : in File_Type;
+     (File : File_Type;
       Buf  : out String;
       Ptr  : in out Natural);
    --  This is an auxiliary routine that is used to load an possibly signed
@@ -63,9 +63,9 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    -------------
 
    procedure Get_LLU
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Long_Long_Unsigned;
-      Width : in Field)
+      Width : Field)
    is
       Buf  : String (1 .. Field'Last);
       Stop : Integer := 0;
@@ -88,9 +88,9 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    -------------
 
    procedure Get_Uns
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Unsigned;
-      Width : in Field)
+      Width : Field)
    is
       Buf  : String (1 .. Field'Last);
       Stop : Integer := 0;
@@ -113,7 +113,7 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    --------------
 
    procedure Gets_LLU
-     (From : in String;
+     (From : String;
       Item : out Long_Long_Unsigned;
       Last : out Positive)
    is
@@ -134,7 +134,7 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    --------------
 
    procedure Gets_Uns
-     (From : in String;
+     (From : String;
       Item : out Unsigned;
       Last : out Positive)
    is
@@ -155,7 +155,7 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    ------------------
 
    procedure Load_Modular
-     (File : in File_Type;
+     (File : File_Type;
       Buf  : out String;
       Ptr  : in out Natural)
    is
@@ -203,10 +203,10 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    -------------
 
    procedure Put_LLU
-     (File  : in File_Type;
-      Item  : in Long_Long_Unsigned;
-      Width : in Field;
-      Base  : in Number_Base)
+     (File  : File_Type;
+      Item  : Long_Long_Unsigned;
+      Width : Field;
+      Base  : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;
@@ -228,10 +228,10 @@ package body Ada.Wide_Text_IO.Modular_Aux is
    -------------
 
    procedure Put_Uns
-     (File  : in File_Type;
-      Item  : in Unsigned;
-      Width : in Field;
-      Base  : in Number_Base)
+     (File  : File_Type;
+      Item  : Unsigned;
+      Width : Field;
+      Base  : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;
@@ -254,8 +254,8 @@ package body Ada.Wide_Text_IO.Modular_Aux is
 
    procedure Puts_LLU
      (To   : out String;
-      Item : in Long_Long_Unsigned;
-      Base : in Number_Base)
+      Item : Long_Long_Unsigned;
+      Base : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;
@@ -280,8 +280,8 @@ package body Ada.Wide_Text_IO.Modular_Aux is
 
    procedure Puts_Uns
      (To   : out String;
-      Item : in Unsigned;
-      Base : in Number_Base)
+      Item : Unsigned;
+      Base : Number_Base)
    is
       Buf : String (1 .. Field'Last);
       Ptr : Natural := 0;

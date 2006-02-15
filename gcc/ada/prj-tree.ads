@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,7 +122,7 @@ package Prj.Tree is
    --  Save in variable S the comment state. Called before scanning a new
    --  project file.
 
-   procedure Restore (S : in Comment_State);
+   procedure Restore (S : Comment_State);
    --  Restore the comment state to a previously saved value. Called after
    --  scanning a project file.
 

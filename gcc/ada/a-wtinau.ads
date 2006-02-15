@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,45 +41,45 @@
 private package Ada.Wide_Text_IO.Integer_Aux is
 
    procedure Get_Int
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Integer;
-      Width : in Field);
+      Width : Field);
 
    procedure Get_LLI
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Long_Long_Integer;
-      Width : in Field);
+      Width : Field);
 
    procedure Gets_Int
-     (From : in String;
+     (From : String;
       Item : out Integer;
       Last : out Positive);
 
    procedure Gets_LLI
-     (From : in String;
+     (From : String;
       Item : out Long_Long_Integer;
       Last : out Positive);
 
    procedure Put_Int
-     (File  : in File_Type;
-      Item  : in Integer;
-      Width : in Field;
-      Base  : in Number_Base);
+     (File  : File_Type;
+      Item  : Integer;
+      Width : Field;
+      Base  : Number_Base);
 
    procedure Put_LLI
-     (File  : in File_Type;
-      Item  : in Long_Long_Integer;
-      Width : in Field;
-      Base  : in Number_Base);
+     (File  : File_Type;
+      Item  : Long_Long_Integer;
+      Width : Field;
+      Base  : Number_Base);
 
    procedure Puts_Int
      (To   : out String;
-      Item : in Integer;
-      Base : in Number_Base);
+      Item : Integer;
+      Base : Number_Base);
 
    procedure Puts_LLI
      (To   : out String;
-      Item : in Long_Long_Integer;
-      Base : in Number_Base);
+      Item : Long_Long_Integer;
+      Base : Number_Base);
 
 end Ada.Wide_Text_IO.Integer_Aux;

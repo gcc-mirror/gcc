@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -58,8 +58,8 @@ package Ada.Decimal is
       type Remainder_Type is delta <> digits <>;
 
    procedure Divide
-     (Dividend  : in Dividend_Type;
-      Divisor   : in Divisor_Type;
+     (Dividend  : Dividend_Type;
+      Divisor   : Divisor_Type;
       Quotient  : out Quotient_Type;
       Remainder : out Remainder_Type);
 

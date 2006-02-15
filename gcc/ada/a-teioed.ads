@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -40,17 +40,15 @@ package Ada.Text_IO.Editing is
    type Picture is private;
 
    function Valid
-     (Pic_String      : in String;
-      Blank_When_Zero : in Boolean := False)
-      return            Boolean;
+     (Pic_String      : String;
+      Blank_When_Zero : Boolean := False) return Boolean;
 
    function To_Picture
-     (Pic_String      : in String;
-      Blank_When_Zero : in Boolean := False)
-      return            Picture;
+     (Pic_String      : String;
+      Blank_When_Zero : Boolean := False) return Picture;
 
-   function Pic_String      (Pic : in Picture) return String;
-   function Blank_When_Zero (Pic : in Picture) return Boolean;
+   function Pic_String      (Pic : Picture) return String;
+   function Blank_When_Zero (Pic : Picture) return Boolean;
 
    Max_Picture_Length : constant := 64;
 
@@ -63,58 +61,55 @@ package Ada.Text_IO.Editing is
 
    generic
       type Num is delta <> digits <>;
-      Default_Currency   : in String := Editing.Default_Currency;
-      Default_Fill       : in Character := Editing.Default_Fill;
-      Default_Separator  : in Character := Editing.Default_Separator;
-      Default_Radix_Mark : in Character := Editing.Default_Radix_Mark;
+      Default_Currency   : String := Editing.Default_Currency;
+      Default_Fill       : Character := Editing.Default_Fill;
+      Default_Separator  : Character := Editing.Default_Separator;
+      Default_Radix_Mark : Character := Editing.Default_Radix_Mark;
 
    package Decimal_Output is
 
       function Length
-        (Pic      : in Picture;
-         Currency : in String := Default_Currency)
-         return     Natural;
+        (Pic      : Picture;
+         Currency : String := Default_Currency) return Natural;
 
       function Valid
         (Item     : Num;
-         Pic      : in Picture;
-         Currency : in String := Default_Currency)
-         return     Boolean;
+         Pic      : Picture;
+         Currency : String := Default_Currency) return Boolean;
 
       function Image
         (Item       : Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark)
-         return       String;
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark) return String;
 
       procedure Put
-        (File       : in Ada.Text_IO.File_Type;
+        (File       : Ada.Text_IO.File_Type;
          Item       : Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark);
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark);
 
       procedure Put
         (Item       : Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark);
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark);
 
       procedure Put
         (To         : out String;
          Item       : Num;
-         Pic        : in Picture;
-         Currency   : in String    := Default_Currency;
-         Fill       : in Character := Default_Fill;
-         Separator  : in Character := Default_Separator;
-         Radix_Mark : in Character := Default_Radix_Mark);
+         Pic        : Picture;
+         Currency   : String    := Default_Currency;
+         Fill       : Character := Default_Fill;
+         Separator  : Character := Default_Separator;
+         Radix_Mark : Character := Default_Radix_Mark);
 
    end Decimal_Output;
 
@@ -193,10 +188,9 @@ private
       Currency_Symbol     : String;
       Fill_Character      : Character;
       Separator_Character : Character;
-      Radix_Point         : Character)
-      return                String;
+      Radix_Point         : Character) return String;
    --  Formats number according to Pic
 
-   function Expand (Picture : in String) return String;
+   function Expand (Picture : String) return String;
 
 end Ada.Text_IO.Editing;

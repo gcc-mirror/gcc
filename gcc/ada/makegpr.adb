@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2086,7 +2086,7 @@ package body Makegpr is
 
    procedure Compile
      (Source_Id    : Other_Source_Id;
-      Data         : in Project_Data;
+      Data         : Project_Data;
       Local_Errors : in out Boolean)
    is
       Source  : Other_Source :=

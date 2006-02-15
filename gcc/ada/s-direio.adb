@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.IO_Exceptions;         use Ada.IO_Exceptions;
-with Interfaces.C_Streams;      use Interfaces.C_Streams;
-with System;                    use System;
+with Ada.IO_Exceptions;      use Ada.IO_Exceptions;
+with Interfaces.C_Streams;   use Interfaces.C_Streams;
+with System;                 use System;
 with System.CRTL;
 with System.File_IO;
 with System.Soft_Links;
@@ -54,7 +54,7 @@ package body System.Direct_IO is
    -- Local Subprograms --
    -----------------------
 
-   procedure Set_Position (File : in File_Type);
+   procedure Set_Position (File : File_Type);
    --  Sets file position pointer according to value of current index
 
    -------------------
@@ -104,9 +104,9 @@ package body System.Direct_IO is
 
    procedure Create
      (File : in out File_Type;
-      Mode : in FCB.File_Mode := FCB.Inout_File;
-      Name : in String := "";
-      Form : in String := "")
+      Mode : FCB.File_Mode := FCB.Inout_File;
+      Name : String := "";
+      Form : String := "")
    is
       Dummy_File_Control_Block : Direct_AFCB;
       pragma Warnings (Off, Dummy_File_Control_Block);
@@ -128,7 +128,7 @@ package body System.Direct_IO is
    -- End_Of_File --
    -----------------
 
-   function End_Of_File (File : in File_Type) return Boolean is
+   function End_Of_File (File : File_Type) return Boolean is
    begin
       FIO.Check_Read_Status (AP (File));
       return Count (File.Index) > Size (File);
@@ -138,7 +138,7 @@ package body System.Direct_IO is
    -- Index --
    -----------
 
-   function Index (File : in File_Type) return Positive_Count is
+   function Index (File : File_Type) return Positive_Count is
    begin
       FIO.Check_File_Open (AP (File));
       return Count (File.Index);
@@ -150,9 +150,9 @@ package body System.Direct_IO is
 
    procedure Open
      (File : in out File_Type;
-      Mode : in FCB.File_Mode;
-      Name : in String;
-      Form : in String := "")
+      Mode : FCB.File_Mode;
+      Name : String;
+      Form : String := "")
    is
       Dummy_File_Control_Block : Direct_AFCB;
       pragma Warnings (Off, Dummy_File_Control_Block);
@@ -175,10 +175,10 @@ package body System.Direct_IO is
    ----------
 
    procedure Read
-     (File : in File_Type;
+     (File : File_Type;
       Item : Address;
-      Size : in Interfaces.C_Streams.size_t;
-      From : in Positive_Count)
+      Size : Interfaces.C_Streams.size_t;
+      From : Positive_Count)
    is
    begin
       Set_Index (File, From);
@@ -186,9 +186,9 @@ package body System.Direct_IO is
    end Read;
 
    procedure Read
-     (File : in File_Type;
+     (File : File_Type;
       Item : Address;
-      Size : in Interfaces.C_Streams.size_t)
+      Size : Interfaces.C_Streams.size_t)
    is
    begin
       FIO.Check_Read_Status (AP (File));
@@ -250,7 +250,7 @@ package body System.Direct_IO is
    -- Reset --
    -----------
 
-   procedure Reset (File : in out File_Type; Mode : in FCB.File_Mode) is
+   procedure Reset (File : in out File_Type; Mode : FCB.File_Mode) is
    begin
       FIO.Reset (AP (File), Mode);
       File.Index := 1;
@@ -268,7 +268,7 @@ package body System.Direct_IO is
    -- Set_Index --
    ---------------
 
-   procedure Set_Index (File : in File_Type; To : in Positive_Count) is
+   procedure Set_Index (File : File_Type; To : Positive_Count) is
    begin
       FIO.Check_File_Open (AP (File));
       File.Index := Count (To);
@@ -279,7 +279,7 @@ package body System.Direct_IO is
    -- Set_Position --
    ------------------
 
-   procedure Set_Position (File : in File_Type) is
+   procedure Set_Position (File : File_Type) is
    begin
       if fseek
            (File.Stream, long (File.Bytes) *
@@ -293,7 +293,7 @@ package body System.Direct_IO is
    -- Size --
    ----------
 
-   function Size (File : in File_Type) return Count is
+   function Size (File : File_Type) return Count is
    begin
       FIO.Check_File_Open (AP (File));
       File.Last_Op := Op_Other;
@@ -312,7 +312,7 @@ package body System.Direct_IO is
    procedure Write
      (File   : File_Type;
       Item   : Address;
-      Size   : in Interfaces.C_Streams.size_t;
+      Size   : Interfaces.C_Streams.size_t;
       Zeroes : System.Storage_Elements.Storage_Array)
 
    is
@@ -380,7 +380,7 @@ package body System.Direct_IO is
 
    procedure Write
      (File : in out Direct_AFCB;
-      Item : in Ada.Streams.Stream_Element_Array)
+      Item : Ada.Streams.Stream_Element_Array)
    is
    begin
       raise Program_Error;

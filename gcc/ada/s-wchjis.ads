@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package System.WCh_JIS is
    --  if the two characters are not a valid EUC encoding.
 
    procedure JIS_To_EUC
-     (J    : in Wide_Character;
+     (J    : Wide_Character;
       EUC1 : out Character;
       EUC2 : out Character);
 
@@ -56,7 +56,7 @@ package System.WCh_JIS is
    --  the input code is assumed to be in an appropriate range.
 
    procedure JIS_To_Shift_JIS
-     (J   : in Wide_Character;
+     (J   : Wide_Character;
       SJ1 : out Character;
       SJ2 : out Character);
    --  Given a wide character code in JIS form, produce the corresponding

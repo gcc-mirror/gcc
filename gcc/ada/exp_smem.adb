@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,9 +57,7 @@ package body Exp_Smem is
    --  to the assignment statement) or Is_Out_Actual (where it points to
    --  the procedure call statement).
 
-   procedure Build_Full_Name
-     (E : in  Entity_Id;
-      N : out String_Id);
+   procedure Build_Full_Name (E : Entity_Id; N : out String_Id);
    --  Build the fully qualified string name of a shared variable
 
    function On_Lhs_Of_Assignment (N : Node_Id) return Boolean;
@@ -181,15 +179,15 @@ package body Exp_Smem is
    -- Build_Full_Name --
    ---------------------
 
-   procedure Build_Full_Name
-     (E : in  Entity_Id;
-      N : out String_Id)
-   is
+   procedure Build_Full_Name (E : Entity_Id; N : out String_Id) is
 
       procedure Build_Name (E : Entity_Id);
-      --  This is a recursive routine used to construct the fully
-      --  qualified string name of the package corresponding to the
-      --  shared variable.
+      --  This is a recursive routine used to construct the fully qualified
+      --  string name of the package corresponding to the shared variable.
+
+      ----------------
+      -- Build_Name --
+      ----------------
 
       procedure Build_Name (E : Entity_Id) is
       begin
@@ -201,6 +199,8 @@ package body Exp_Smem is
          Get_Decoded_Name_String (Chars (E));
          Store_String_Chars (Name_Buffer (1 .. Name_Len));
       end Build_Name;
+
+   --  Start of processing for Build_Full_Name
 
    begin
       Start_String;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,9 +62,9 @@ private package Ada.Wide_Text_IO.Enumeration_Aux is
    --  using the given Width and Set parameters (Item is always in upper case).
 
    procedure Puts
-     (To    : out Wide_String;
-      Item  : in Wide_String;
-      Set   : Type_Set);
+     (To   : out Wide_String;
+      Item : Wide_String;
+      Set  : Type_Set);
    --  Stores the enumeration literal image stored in Item to the string To,
    --  padding with trailing spaces if necessary to fill To. Set is used to
 

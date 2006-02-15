@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1997-2005, AdaCore                     --
+--                     Copyright (C) 1997-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,7 +310,7 @@ package GNAT.Spitbol is
       --  Clears all the elements of the given table, freeing associated
       --  storage. On return T is an empty table with no elements.
 
-      procedure Copy (From : in Table; To : in out Table);
+      procedure Copy (From : Table; To : in out Table);
       --  First all the elements of table To are cleared (as described for
       --  the Clear procedure above), then all the elements of table From
       --  are copied into To. In the case where the tables From and To have

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -47,15 +47,15 @@ package System.Storage_Pools is
    procedure Allocate
      (Pool                     : in out Root_Storage_Pool;
       Storage_Address          : out Address;
-      Size_In_Storage_Elements : in System.Storage_Elements.Storage_Count;
-      Alignment                : in System.Storage_Elements.Storage_Count)
+      Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+      Alignment                : System.Storage_Elements.Storage_Count)
    is abstract;
 
    procedure Deallocate
      (Pool                     : in out Root_Storage_Pool;
-      Storage_Address          : in Address;
-      Size_In_Storage_Elements : in System.Storage_Elements.Storage_Count;
-      Alignment                : in System.Storage_Elements.Storage_Count)
+      Storage_Address          : Address;
+      Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+      Alignment                : System.Storage_Elements.Storage_Count)
    is abstract;
 
    function Storage_Size

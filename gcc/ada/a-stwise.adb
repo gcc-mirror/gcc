@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,8 +130,8 @@ package body Ada.Strings.Wide_Search is
    end Count;
 
    function Count
-     (Source : in Wide_String;
-      Set : Wide_Maps.Wide_Character_Set) return Natural
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set) return Natural
    is
       N : Natural := 0;
 

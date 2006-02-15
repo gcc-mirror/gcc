@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,7 @@ package body Ada.Command_Line.Remove is
    -- Remove_Argument --
    ---------------------
 
-   procedure Remove_Argument (Number : in Positive) is
+   procedure Remove_Argument (Number : Positive) is
    begin
       Initialize;
 

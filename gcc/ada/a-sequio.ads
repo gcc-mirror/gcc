@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -67,35 +67,35 @@ package Ada.Sequential_IO is
 
    procedure Create
      (File : in out File_Type;
-      Mode : in File_Mode := Out_File;
-      Name : in String := "";
-      Form : in String := "");
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Form : String := "");
 
    procedure Open
      (File : in out File_Type;
-      Mode : in File_Mode;
-      Name : in String;
-      Form : in String := "");
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "");
 
    procedure Close  (File : in out File_Type);
    procedure Delete (File : in out File_Type);
-   procedure Reset  (File : in out File_Type; Mode : in File_Mode);
+   procedure Reset  (File : in out File_Type; Mode : File_Mode);
    procedure Reset  (File : in out File_Type);
 
-   function Mode    (File : in File_Type) return File_Mode;
-   function Name    (File : in File_Type) return String;
-   function Form    (File : in File_Type) return String;
+   function Mode    (File : File_Type) return File_Mode;
+   function Name    (File : File_Type) return String;
+   function Form    (File : File_Type) return String;
 
-   function Is_Open (File : in File_Type) return Boolean;
+   function Is_Open (File : File_Type) return Boolean;
 
    ---------------------------------
    -- Input and output operations --
    ---------------------------------
 
-   procedure Read  (File : in File_Type; Item : out Element_Type);
-   procedure Write (File : in File_Type; Item : in Element_Type);
+   procedure Read  (File : File_Type; Item : out Element_Type);
+   procedure Write (File : File_Type; Item : Element_Type);
 
-   function End_Of_File (File : in File_Type) return Boolean;
+   function End_Of_File (File : File_Type) return Boolean;
 
    ----------------
    -- Exceptions --

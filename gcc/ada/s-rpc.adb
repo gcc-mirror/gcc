@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@
 --  the presence of a master partition to run a test which is otherwise not
 --  distributed.
 
---  The GLADE distribution package includes a replacement for this file.
+--  The GLADE distribution package includes a replacement for this file
 
 with Ada.Exceptions; use Ada.Exceptions;
 
@@ -71,7 +71,7 @@ package body System.RPC is
 
    procedure Write
      (Stream : in out Params_Stream_Type;
-      Item   : in Ada.Streams.Stream_Element_Array)
+      Item   : Ada.Streams.Stream_Element_Array)
    is
    begin
       Raise_Exception (Program_Error'Identity, Msg);
@@ -82,7 +82,7 @@ package body System.RPC is
    ------------
 
    procedure Do_RPC
-     (Partition : in Partition_ID;
+     (Partition : Partition_ID;
       Params    : access Params_Stream_Type;
       Result    : access Params_Stream_Type)
    is
@@ -95,7 +95,7 @@ package body System.RPC is
    ------------
 
    procedure Do_APC
-     (Partition : in Partition_ID;
+     (Partition : Partition_ID;
       Params    : access Params_Stream_Type)
    is
    begin
@@ -107,8 +107,8 @@ package body System.RPC is
    ----------------------------
 
    procedure Establish_RPC_Receiver
-     (Partition : in Partition_ID;
-      Receiver  : in RPC_Receiver)
+     (Partition : Partition_ID;
+      Receiver  : RPC_Receiver)
    is
    begin
       null;
