@@ -6,8 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2005, Free Software Foundation, Inc.      --
+--               Copyright (C) 1991-1994, Florida State University          --
+--            Copyright (C) 1995-2006, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -320,12 +320,10 @@ package System.OS_Interface is
       sig    : Signal) return int;
    pragma Import (C, pthread_kill, "pthread_kill");
 
-   type sigset_t_ptr is access all sigset_t;
-
    function pthread_sigmask
      (how  : int;
-      set  : sigset_t_ptr;
-      oset : sigset_t_ptr) return int;
+      set  : access sigset_t;
+      oset : access sigset_t) return int;
    pragma Import (C, pthread_sigmask, "pthread_sigmask");
 
    --------------------------
@@ -526,29 +524,36 @@ private
    type int_array is array (Natural range <>) of int;
 
    type pthread_mutex_t is record
-      m_short  : short_array (0 .. 1);
-      m_int    : int;
-      m_int1   : int_array (0 .. 3);
-      m_pad    : int;  --  needed for 32 bit ABI, but *not* for 64 bit
-      m_ptr    : System.Address;
+      m_short : short_array (0 .. 1);
+      m_int   : int;
+      m_int1  : int_array (0 .. 3);
+      m_pad   : int;
+
+      m_ptr : int;
+      --  actually m_ptr is a void*, and on 32 bit ABI, m_pad is added so that
+      --  this field takes 64 bits. On 64 bit ABI, m_pad is gone, and m_ptr is
+      --  a 64 bit void*. Assume int'Size = 32.
+
       m_int2   : int_array (0 .. 1);
       m_int3   : int_array (0 .. 3);
       m_short2 : short_array (0 .. 1);
       m_int4   : int_array (0 .. 4);
       m_int5   : int_array (0 .. 1);
    end record;
+   for pthread_mutex_t'Alignment use System.Address'Alignment;
    pragma Convention (C, pthread_mutex_t);
 
    type pthread_cond_t is record
       c_short : short_array (0 .. 1);
       c_int   : int;
       c_int1  : int_array (0 .. 3);
-      m_pad   : int;  --  needed for 32 bit ABI, but *not* for 64 bit
-      m_ptr   : System.Address;
+      m_pad   : int;
+      m_ptr   : int;  --  see comment in pthread_mutex_t
       c_int2  : int_array (0 .. 1);
       c_int3  : int_array (0 .. 1);
       c_int4  : int_array (0 .. 1);
    end record;
+   for pthread_cond_t'Alignment use System.Address'Alignment;
    pragma Convention (C, pthread_cond_t);
 
    type pthread_key_t is new int;

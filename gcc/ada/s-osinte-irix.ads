@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2005, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,7 +127,6 @@ package System.OS_Interface is
    SIGRTMAX   : constant := 64; --  Posix 1003.1b signals
 
    type sigset_t is private;
-   type sigset_t_ptr is access all sigset_t;
 
    function sigaddset (set : access sigset_t; sig : Signal) return int;
    pragma Import (C, sigaddset, "sigaddset");
@@ -284,8 +283,8 @@ package System.OS_Interface is
 
    function pthread_sigmask
      (how  : int;
-      set  : sigset_t_ptr;
-      oset : sigset_t_ptr) return int;
+      set  : access sigset_t;
+      oset : access sigset_t) return int;
    pragma Import (C, pthread_sigmask, "pthread_sigmask");
 
    --------------------------
