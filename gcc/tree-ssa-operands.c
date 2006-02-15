@@ -1651,6 +1651,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
      terms of SFT_PARENT_VAR, that is where it is.
      However, the access through the foo pointer will be at offset 0.
   */
+
   if (size != -1
       && TREE_CODE (alias) == STRUCT_FIELD_TAG
       && base
@@ -1666,6 +1667,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 #endif
       return false;
     }
+
   /* Without strict aliasing, it is impossible for a component access
      through a pointer to touch a random variable, unless that
      variable *is* a structure or a pointer.
@@ -1693,6 +1695,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
      
      (taken from 20000623-1.c)
   */
+
   else if (ref 
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
@@ -1710,9 +1713,11 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 #endif
       return false;
     }
+
   /* If the offset of the access is greater than the size of one of
      the possible aliases, it can't be touching that alias, because it
      would be past the end of the structure.  */
+
   else if (ref
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
