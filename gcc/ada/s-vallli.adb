@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,9 +37,9 @@ with System.Val_Util;       use System.Val_Util;
 
 package body System.Val_LLI is
 
-   ---------------------------
-   -- Scn_Long_Long_Integer --
-   ---------------------------
+   ----------------------------
+   -- Scan_Long_Long_Integer --
+   ----------------------------
 
    function Scan_Long_Long_Integer
      (Str  : String;
@@ -57,13 +57,20 @@ package body System.Val_LLI is
 
    begin
       Scan_Sign (Str, Ptr, Max, Minus, Start);
-      Uval := Scan_Long_Long_Unsigned (Str, Ptr, Max);
+
+      if Str (Ptr.all) not in '0' .. '9' then
+         Ptr.all := Start;
+         raise Constraint_Error;
+      end if;
+
+      Uval := Scan_Raw_Long_Long_Unsigned (Str, Ptr, Max);
 
       --  Deal with overflow cases, and also with maximum negative number
 
       if Uval > Long_Long_Unsigned (Long_Long_Integer'Last) then
          if Minus
-           and then Uval = Long_Long_Unsigned (-(Long_Long_Integer'First)) then
+           and then Uval = Long_Long_Unsigned (-(Long_Long_Integer'First))
+         then
             return Long_Long_Integer'First;
          else
             raise Constraint_Error;
