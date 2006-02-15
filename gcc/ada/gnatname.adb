@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Gnatvsn;
+with Gnatvsn;  use Gnatvsn;
 with Hostparm;
 with Opt;
 with Osint;    use Osint;
@@ -172,7 +172,9 @@ procedure Gnatname is
          Output.Write_Str ("GNATNAME ");
          Output.Write_Line (Gnatvsn.Gnat_Version_String);
          Output.Write_Line
-           ("Copyright 2001-2005 Free Software Foundation, Inc.");
+           ("Copyright 2001-" &
+            Current_Year &
+            ", Free Software Foundation, Inc.");
       end if;
    end Output_Version;
 
