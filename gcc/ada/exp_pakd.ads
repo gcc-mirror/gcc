@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -237,8 +237,8 @@ package Exp_Pakd is
    procedure Expand_Packed_Element_Reference (N : Node_Id);
    --  N is an N_Indexed_Component node whose prefix is a packed array. In
    --  the bit packed case, this routine can only be used for the expression
-   --  evaluation case not the assignment case, since the result is not a
-   --  variable. See Expand_Bit_Packed_Element_Set for how he assignment case
+   --  evaluation case, not the assignment case, since the result is not a
+   --  variable. See Expand_Bit_Packed_Element_Set for how the assignment case
    --  is handled in the bit packed case. For the enumeration case, the result
    --  of this call is always a variable, so the call can be used for both the
    --  expression evaluation and assignment cases.
