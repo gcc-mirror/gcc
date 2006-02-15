@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005, AdaCore                     --
+--                     Copyright (C) 1998-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2484,11 +2484,11 @@ package body GNAT.Spitbol.Patterns is
 
             when PC_Assign_Imm =>
                Delete_Ampersand;
-               Append (Result, "* " & Str_VP (Refs (E.Index - 1).VP));
+               Append (Result, "* " & Str_VP (Refs (E.Index).VP));
 
             when PC_Assign_OnM =>
                Delete_Ampersand;
-               Append (Result, "** " & Str_VP (Refs (E.Index - 1).VP));
+               Append (Result, "** " & Str_VP (Refs (E.Index).VP));
 
             when PC_Any_CH =>
                Append (Result, "Any ('" & E.Char & "')");
