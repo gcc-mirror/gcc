@@ -6249,6 +6249,9 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	      || orig_pos + len > GET_MODE_BITSIZE (wanted_inner_mode)))
 	return 0;
 
+      if (orig_pos < 0)
+	return 0;
+
       inner = force_to_mode (inner, wanted_inner_mode,
 			     pos_rtx
 			     || len + orig_pos >= HOST_BITS_PER_WIDE_INT

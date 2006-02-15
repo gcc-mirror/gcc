@@ -1,5 +1,8 @@
 2006-02-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/26300
+	* combine.c (make_extraction): Bail out if ORIG_POS is negative.
+
 	* tree.h (struct tree_omp_clause): Use OMP_CLAUSE_CODE rather
 	than TREE_CODE as index into omp_clause_num_ops array.
 
