@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2974,6 +2974,10 @@ package Sinfo is
       --  Gigi restriction: For the Pos attribute, the prefix cannot be
       --  a non-standard enumeration type or a nonzero/zero semantics
       --  boolean type, so the value is simply the stored representation.
+
+      --  Gigi requirement: For the Mechanism_Code attribute, if the prefix
+      --  references a subprogram that is a renaming, then the front end must
+      --  rewrite the attribute to refer directly to the renamed entity.
 
       --  Note: In generated code, the Address and Unrestricted_Access
       --  attributes can be applied to any expression, and the meaning is
