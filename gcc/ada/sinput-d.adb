@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,13 +44,12 @@ package body Sinput.D is
       Trim_Lines_Table (Dfile);
       Close_Debug_File;
 
-      --  Now we need to read the file that we wrote and store it
-      --  in memory for subsequent access.
+      --  Now we need to read the file that we wrote and store it in memory for
+      --  subsequent access.
 
       Read_Source_File
         (S.Full_Debug_Name, S.Source_First, S.Source_Last, Src);
       S.Source_Text := Src;
-      Set_Source_File_Index_Table (Dfile);
    end Close_Debug_Source;
 
    -------------------------
@@ -78,8 +77,8 @@ package body Sinput.D is
          S.Lines_Table       := null;
          S.Last_Source_Line  := 1;
 
-         --  Allocate lines table, guess that it needs to be three times
-         --  bigger than the original source (in number of lines).
+         --  Allocate lines table, guess that it needs to be three times bigger
+         --  than the original source (in number of lines).
 
          Alloc_Line_Tables
            (S, Int (Source_File.Table (Source).Last_Source_Line * 3));
@@ -100,15 +99,15 @@ package body Sinput.D is
       if Str'Length = 0 and then Loc = S.Source_First then
          return;
 
-      --  Here we write the line, compute the source location for the
-      --  following line, allocate its table entry, and update the source
-      --  record entry.
+      --  Here we write the line, compute the source location for the following
+      --  line, allocate its table entry, and update the source record entry.
 
       else
          Write_Debug_Info (Str (Str'First .. Str'Last - 1));
          Loc := Loc - 1 + Source_Ptr (Str'Length + Debug_File_Eol_Length);
          Add_Line_Tables_Entry (S, Loc);
          S.Source_Last := Loc;
+         Set_Source_File_Index_Table (Dfile);
       end if;
    end Write_Debug_Line;
 
