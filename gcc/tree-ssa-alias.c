@@ -2061,8 +2061,7 @@ get_tmt_for (tree ptr, struct alias_info *ai)
     {
       struct alias_map_d *curr = ai->pointers[i];
       tree curr_tag = var_ann (curr->var)->type_mem_tag;
-      if (tag_set == curr->set
-	  && TYPE_READONLY (tag_type) == TYPE_READONLY (TREE_TYPE (curr_tag)))
+      if (tag_set == curr->set)
 	{
 	  tag = curr_tag;
 	  break;
@@ -2098,10 +2097,6 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   /* Make sure that the type tag has the same alias set as the
      pointed-to type.  */
   gcc_assert (tag_set == get_alias_set (tag));
-
-  /* If PTR's pointed-to type is read-only, then TAG's type must also
-     be read-only.  */
-  gcc_assert (TYPE_READONLY (tag_type) == TYPE_READONLY (TREE_TYPE (tag)));
 
   return tag;
 }
@@ -2749,11 +2744,12 @@ get_or_create_used_part_for (size_t uid)
 }
 
 
-/* Create and return a structure sub-variable for field type FIELD of
-   variable VAR.  */
+/* Create and return a structure sub-variable for field type FIELD at
+   offset OFFSET, with size SIZE, of variable VAR.  */
 
 static tree
-create_sft (tree var, tree field)
+create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
+	    unsigned HOST_WIDE_INT size)
 {
   var_ann_t ann;
   tree subvar = create_tag_raw (STRUCT_FIELD_TAG, field, "SFT");
@@ -2771,7 +2767,8 @@ create_sft (tree var, tree field)
   ann->type_mem_tag = NULL;  	
   add_referenced_tmp_var (subvar);
   SFT_PARENT_VAR (subvar) = var;
-
+  SFT_OFFSET (subvar) = offset;
+  SFT_SIZE (subvar) = size;
   return subvar;
 }
 
@@ -2882,19 +2879,17 @@ create_overlap_variables_for (tree var)
 		  && currfotype == lastfotype))
 	    continue;
 	  sv = GGC_NEW (struct subvar);
-	  sv->offset = fo->offset;
-	  sv->size = fosize;
 	  sv->next = *subvars;
-	  sv->var = create_sft (var, fo->type);
+	  sv->var = create_sft (var, fo->type, fo->offset, fosize);
 
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "structure field tag %s created for var %s",
 		       get_name (sv->var), get_name (var));
 	      fprintf (dump_file, " offset " HOST_WIDE_INT_PRINT_DEC,
-		       sv->offset);
+		       SFT_OFFSET (sv->var));
 	      fprintf (dump_file, " size " HOST_WIDE_INT_PRINT_DEC,
-		       sv->size);
+		       SFT_SIZE (sv->var));
 	      fprintf (dump_file, "\n");
 	    }
 	  
