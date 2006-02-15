@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,34 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Solaris (native) specific version
+--  Version used on all VxWorks targets.
 
 package body System.Parameters is
-
-   ------------------------
-   -- Default_Stack_Size --
-   ------------------------
-
-   function Default_Stack_Size return Size_Type is
-   begin
-      return 100_000;
-   end Default_Stack_Size;
-
-   ------------------------
-   -- Minimum_Stack_Size --
-   ------------------------
-
-   function Minimum_Stack_Size return Size_Type is
-
-      thr_min_stack : constant Size_Type := 1160;
-      --  hard coded value for Solaris 8 to avoid adding dependency on
-      --  libthread for every Ada program.
-      --  This value does not really matter anyway, since this is checked
-      --  and adjusted at the library level when creating a thread.
-
-   begin
-      return thr_min_stack;
-   end Minimum_Stack_Size;
 
    -------------------------
    -- Adjust_Storage_Size --
@@ -68,13 +43,35 @@ package body System.Parameters is
    begin
       if Size = Unspecified_Size then
          return Default_Stack_Size;
-
       elsif Size < Minimum_Stack_Size then
          return Minimum_Stack_Size;
-
       else
          return Size;
       end if;
    end Adjust_Storage_Size;
+
+   ------------------------
+   -- Default_Stack_Size --
+   ------------------------
+
+   function Default_Stack_Size return Size_Type is
+      Default_Stack_Size : Integer;
+      pragma Import (C, Default_Stack_Size, "__gl_default_stack_size");
+   begin
+      if Default_Stack_Size = -1 then
+         return 20 * 1024;
+      else
+         return Size_Type (Default_Stack_Size);
+      end if;
+   end Default_Stack_Size;
+
+   ------------------------
+   -- Minimum_Stack_Size --
+   ------------------------
+
+   function Minimum_Stack_Size return Size_Type is
+   begin
+      return 8 * 1024;
+   end Minimum_Stack_Size;
 
 end System.Parameters;

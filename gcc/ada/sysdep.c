@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2006, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -212,6 +212,8 @@ static void winflush_95 (void);
 
 static void winflush_nt (void);
 
+int __gnat_is_windows_xp (void);
+
 /* winflusfunction is set first to the winflushinit function which will check
    the OS version 95/98 or NT/2000 */
 
@@ -234,15 +236,40 @@ winflush_init (void)
 
 }
 
-static void winflush_95 (void)
+static void
+winflush_95 (void)
 {
   FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
 }
 
-static void winflush_nt (void)
+static void
+winflush_nt (void)
 {
   /* Does nothing as there is no problem under NT.  */
 }
+
+int
+__gnat_is_windows_xp (void)
+{
+  static int is_win_xp=0, is_win_xp_checked=0;
+
+  if (!is_win_xp_checked)
+    {
+      OSVERSIONINFO version;
+
+      is_win_xp_checked = 1;
+
+      memset (&version, 0, sizeof (version));
+      version.dwOSVersionInfoSize = sizeof (version);
+
+      is_win_xp = GetVersionEx (&version)
+        && version.dwPlatformId == VER_PLATFORM_WIN32_NT
+        && (version.dwMajorVersion > 5
+            || (version.dwMajorVersion == 5 && version.dwMinorVersion >= 1));
+    }
+  return is_win_xp;
+}
+
 #endif
 
 #else

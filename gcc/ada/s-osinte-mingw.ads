@@ -253,19 +253,21 @@ package System.OS_Interface is
       pThreadId            : PDWORD) return HANDLE;
    pragma Import (C, BeginThreadEx, "_beginthreadex");
 
-   Debug_Process              : constant := 16#00000001#;
-   Debug_Only_This_Process    : constant := 16#00000002#;
-   Create_Suspended           : constant := 16#00000004#;
-   Detached_Process           : constant := 16#00000008#;
-   Create_New_Console         : constant := 16#00000010#;
+   Debug_Process                     : constant := 16#00000001#;
+   Debug_Only_This_Process           : constant := 16#00000002#;
+   Create_Suspended                  : constant := 16#00000004#;
+   Detached_Process                  : constant := 16#00000008#;
+   Create_New_Console                : constant := 16#00000010#;
 
-   Create_New_Process_Group   : constant := 16#00000200#;
+   Create_New_Process_Group          : constant := 16#00000200#;
 
-   Create_No_window           : constant := 16#08000000#;
+   Create_No_window                  : constant := 16#08000000#;
 
-   Profile_User               : constant := 16#10000000#;
-   Profile_Kernel             : constant := 16#20000000#;
-   Profile_Server             : constant := 16#40000000#;
+   Profile_User                      : constant := 16#10000000#;
+   Profile_Kernel                    : constant := 16#20000000#;
+   Profile_Server                    : constant := 16#40000000#;
+
+   Stack_Size_Param_Is_A_Reservation : constant := 16#00010000#;
 
    function GetExitCodeThread
      (hThread   : HANDLE;
