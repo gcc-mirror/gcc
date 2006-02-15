@@ -113,8 +113,9 @@ Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
 Ada front end		Arnaud Charlet		charlet@act-europe.fr
 fortran 95		Paul Brook		paul@codesourcery.com
-fortran 95              Thomas Koenig           Thomas.Koenig@online.de
+fortran 95		Thomas Koenig		Thomas.Koenig@online.de
 fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
+fortran 95		Jerry DeLisle		jvdelisle@gcc.gnu.org
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -237,7 +238,6 @@ François-Xavier Coudert				coudert@clipper.ens.fr
 Ian Dall					ian@beware.dropbear.id.au
 David Daney					ddaney@avtrex.com
 Bud Davis					bdavis9659@comcast.net
-Jerry DeLisle					jvdelisle@verizon.net
 Zdenek Dvorak					dvorakz@suse.cz
 Erik Edelmann                                   erik.edelmann@iki.fi
 Steve Ellcey					sje@cup.hp.com
