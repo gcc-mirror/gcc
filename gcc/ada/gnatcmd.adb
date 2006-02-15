@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,9 +51,7 @@ with Ada.Text_IO;             use Ada.Text_IO;
 
 with GNAT.OS_Lib;             use GNAT.OS_Lib;
 
-with Table;
-
-with VMS_Conv; use VMS_Conv;
+with VMS_Conv;                use VMS_Conv;
 
 procedure GNATCmd is
    Project_Tree      : constant Project_Tree_Ref := new Project_Tree_Data;
@@ -91,6 +89,15 @@ procedure GNATCmd is
       Table_Increment      => 100,
       Table_Name           => "Gnatcmd.Carg_Switches");
    --  A table to keep the switches following -cargs for ASIS tools
+
+   package Rules_Switches is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 20,
+      Table_Increment      => 100,
+      Table_Name           => "Gnatcmd.Rules_Switches");
+   --  A table to keep the switches following -rules for gnatcheck
 
    package Library_Paths is new Table.Table (
      Table_Component_Type => String_Access,
@@ -179,6 +186,10 @@ procedure GNATCmd is
    --  Add a switch to the Carg_Switches table. If it is the first one,
    --  put the switch "-cargs" at the beginning of the table.
 
+   procedure Add_To_Rules_Switches (Switch : String_Access);
+   --  Add a switch to the Rules_Switches table. If it is the first one,
+   --  put the switch "-crules" at the beginning of the table.
+
    procedure Check_Files;
    --  For GNAT LIST, GNAT PRETTY and GNAT METRIC, check if a project
    --  file is specified, without any file arguments. If it is the case,
@@ -252,6 +263,23 @@ procedure GNATCmd is
       Carg_Switches.Increment_Last;
       Carg_Switches.Table (Carg_Switches.Last) := Switch;
    end Add_To_Carg_Switches;
+
+   ---------------------------
+   -- Add_To_Rules_Switches --
+   ---------------------------
+
+   procedure Add_To_Rules_Switches (Switch : String_Access) is
+   begin
+      --  If the Rules_Switches table is empty, put "-rules" at the beginning
+
+      if Rules_Switches.Last = 0 then
+         Rules_Switches.Increment_Last;
+         Rules_Switches.Table (Rules_Switches.Last) := new String'("-rules");
+      end if;
+
+      Rules_Switches.Increment_Last;
+      Rules_Switches.Table (Rules_Switches.Last) := Switch;
+   end Add_To_Rules_Switches;
 
    -----------------
    -- Check_Files --
@@ -1028,6 +1056,8 @@ begin
    First_Switches.Set_Last (0);
    Carg_Switches.Init;
    Carg_Switches.Set_Last (0);
+   Rules_Switches.Init;
+   Rules_Switches.Set_Last (0);
 
    VMS_Conv.Initialize;
 
@@ -1952,6 +1982,55 @@ begin
                                (Project).Object_Directory));
          end if;
 
+         --  For gnat check, -rules and the following switches need to be the
+         --  last options. So, we move all these switches to table
+         --  Rules_Switches.
+
+         if The_Command = Check then
+            declare
+               New_Last          : Natural;
+               --  Set to rank of options preceding "-rules"
+
+               In_Rules_Switches : Boolean;
+               --  Set to True when options "-rules" is found
+
+            begin
+               New_Last := First_Switches.Last;
+               In_Rules_Switches := False;
+
+               for J in 1 .. First_Switches.Last loop
+                  if In_Rules_Switches then
+                     Add_To_Rules_Switches (First_Switches.Table (J));
+
+                  elsif First_Switches.Table (J).all = "-rules" then
+                     New_Last := J - 1;
+                     In_Rules_Switches := True;
+                  end if;
+               end loop;
+
+               if In_Rules_Switches then
+                  First_Switches.Set_Last (New_Last);
+               end if;
+
+               New_Last := Last_Switches.Last;
+               In_Rules_Switches := False;
+
+               for J in 1 .. Last_Switches.Last loop
+                  if In_Rules_Switches then
+                     Add_To_Rules_Switches (Last_Switches.Table (J));
+
+                  elsif Last_Switches.Table (J).all = "-rules" then
+                     New_Last := J - 1;
+                     In_Rules_Switches := True;
+                  end if;
+               end loop;
+
+               if In_Rules_Switches then
+                  Last_Switches.Set_Last (New_Last);
+               end if;
+            end;
+         end if;
+
          --  For gnat check, gnat pretty, gnat metric ands gnat list,
          --  if no file has been put on the command line, call tool with all
          --  the sources of the main project.
@@ -1971,7 +2050,8 @@ begin
          The_Args : Argument_List
                       (1 .. First_Switches.Last +
                             Last_Switches.Last +
-                            Carg_Switches.Last);
+                            Carg_Switches.Last +
+                            Rules_Switches.Last);
          Arg_Num  : Natural := 0;
 
       begin
@@ -1988,6 +2068,11 @@ begin
          for J in 1 .. Carg_Switches.Last loop
             Arg_Num := Arg_Num + 1;
             The_Args (Arg_Num) := Carg_Switches.Table (J);
+         end loop;
+
+         for J in 1 .. Rules_Switches.Last loop
+            Arg_Num := Arg_Num + 1;
+            The_Args (Arg_Num) := Rules_Switches.Table (J);
          end loop;
 
          --  If Display_Command is on, only display the generated command
