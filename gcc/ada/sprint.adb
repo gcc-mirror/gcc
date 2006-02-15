@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@ with Casing;   use Casing;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Fname;    use Fname;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -149,6 +150,11 @@ package body Sprint is
 
    procedure Indent_End;
    --  Decrease indentation level
+
+   procedure Note_Implicit_Run_Time_Call (N : Node_Id);
+   --  N is the Name field of a function call or procedure statement call.
+   --  The effect of the call is to output a $ if the call is identified as
+   --  an implicit call to a run time routine.
 
    procedure Print_Debug_Line (S : String);
    --  Used to print output lines in Debug_Generated_Code mode (this is used
@@ -332,6 +338,30 @@ package body Sprint is
    begin
       Indent := Indent - 3;
    end Indent_End;
+
+   ---------------------------------
+   -- Note_Implicit_Run_Time_Call --
+   ---------------------------------
+
+   procedure Note_Implicit_Run_Time_Call (N : Node_Id) is
+   begin
+      if not Comes_From_Source (N)
+        and then Is_Entity_Name (N)
+      then
+         declare
+            Ent : constant Entity_Id := Entity (N);
+         begin
+            if not In_Extended_Main_Source_Unit (Ent)
+              and then
+                Is_Predefined_File_Name
+                  (Unit_File_Name (Get_Source_Unit (Ent)))
+            then
+               Col_Check (Length_Of_Name (Chars (Ent)));
+               Write_Char ('$');
+            end if;
+         end;
+      end if;
+   end Note_Implicit_Run_Time_Call;
 
    --------
    -- pg --
@@ -1003,7 +1033,7 @@ package body Sprint is
             Sprint_Bar_List (Choices (Node));
             Write_Str (" => ");
 
-            --  Ada 2005 (AI-287): Print the mbox if present
+            --  Ada 2005 (AI-287): Print the box if present
 
             if Box_Present (Node) then
                Write_Str_With_Col_Check ("<>");
@@ -1539,6 +1569,7 @@ package body Sprint is
 
          when N_Function_Call =>
             Set_Debug_Sloc;
+            Note_Implicit_Run_Time_Call (Name (Node));
             Sprint_Node (Name (Node));
             Sprint_Opt_Paren_Comma_List (Parameter_Associations (Node));
 
@@ -2146,6 +2177,7 @@ package body Sprint is
          when N_Procedure_Call_Statement =>
             Write_Indent;
             Set_Debug_Sloc;
+            Note_Implicit_Run_Time_Call (Name (Node));
             Sprint_Node (Name (Node));
             Sprint_Opt_Paren_Comma_List (Parameter_Associations (Node));
             Write_Char (';');
@@ -3212,6 +3244,10 @@ package body Sprint is
             S : constant Saved_Output_Buffer := Save_Output_Buffer;
             --  Save current output buffer
 
+            Old_Sloc : Source_Ptr;
+            --  Save sloc of related node, so it is not modified when
+            --  printing with -gnatD.
+
          begin
             --  Write indentation at start of line
 
@@ -3231,9 +3267,16 @@ package body Sprint is
                --  Write the declaration enclosed in [], avoiding new line
                --  at start of declaration, and semicolon at end.
 
+               --  Note: The itype may be imported from another unit, in which
+               --  case we do not want to modify the Sloc of the declaration.
+               --  Otherwise the itype may appear to be in the current unit,
+               --  and the back-end will reject a reference out of scope.
+
                Write_Char ('[');
                Indent_Annull_Flag := True;
+               Old_Sloc := Sloc (P);
                Sprint_Node (P);
+               Set_Sloc (P, Old_Sloc);
                Write_Erase_Char (';');
 
             --  If no constructed declaration, then we have to concoct the
@@ -3410,7 +3453,58 @@ package body Sprint is
                      Indent_End;
                      Write_Indent_Str (" end record");
 
-                     --  For all other Itypes, print ??? (fill in later)
+                  --  Class-Wide types
+
+                  when E_Class_Wide_Type =>
+                     Write_Header;
+                     Write_Name_With_Col_Check (Chars (Etype (Typ)));
+                     Write_Str ("'Class");
+
+                  --  Subprogram types
+
+                  when E_Subprogram_Type =>
+                     Write_Header;
+
+                     if Etype (Typ) = Standard_Void_Type then
+                        Write_Str ("procedure");
+                     else
+                        Write_Str ("function");
+                     end if;
+
+                     if Present (First_Entity (Typ)) then
+                        Write_Str (" (");
+
+                        declare
+                           Param : Entity_Id;
+
+                        begin
+                           Param := First_Entity (Typ);
+                           loop
+                              Write_Id (Param);
+                              Write_Str (" : ");
+
+                              if Ekind (Param) = E_In_Out_Parameter then
+                                 Write_Str ("in out ");
+                              elsif Ekind (Param) = E_Out_Parameter then
+                                 Write_Str ("out ");
+                              end if;
+
+                              Write_Id (Etype (Param));
+                              Next_Entity (Param);
+                              exit when No (Param);
+                              Write_Str (", ");
+                           end loop;
+
+                           Write_Char (')');
+                        end;
+                     end if;
+
+                     if Etype (Typ) /= Standard_Void_Type then
+                        Write_Str (" return ");
+                        Write_Id (Etype (Typ));
+                     end if;
+
+                  --  For all other Itypes, print ??? (fill in later)
 
                   when others =>
                      Write_Header (True);
