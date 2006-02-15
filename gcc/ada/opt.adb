@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,16 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Gnatvsn; use Gnatvsn;
 with System;  use System;
 with Tree_IO; use Tree_IO;
 
 package body Opt is
-
-   Immediate_Errors : Boolean := True;
-   --  This is an obsolete flag that is no longer present in opt.ads. We
-   --  retain it here because this flag was written to the tree and there
-   --  is no point in making trees incomaptible just for the sake of saving
-   --  one byte of data. The value written is ignored.
 
    ----------------------------------
    -- Register_Opt_Config_Switches --
@@ -114,6 +109,11 @@ package body Opt is
       --  Case of internal unit
 
       if Internal_Unit then
+
+         --  Set standard switches. Note we do NOT set Ada_Version_Explicit
+         --  since the whole point of this is that it still properly indicates
+         --  the configuration setting even in a run time unit.
+
          Ada_Version                := Ada_Version_Runtime;
          Dynamic_Elaboration_Checks := False;
          Extensions_Allowed         := True;
@@ -126,10 +126,10 @@ package body Opt is
          --  is the main unit and they were explicitly enabled.
 
          if Main_Unit then
-            Assertions_Enabled := Assertions_Enabled_Config;
+            Assertions_Enabled    := Assertions_Enabled_Config;
             Debug_Pragmas_Enabled := Debug_Pragmas_Enabled_Config;
          else
-            Assertions_Enabled := False;
+            Assertions_Enabled    := False;
             Debug_Pragmas_Enabled := False;
          end if;
 
@@ -137,6 +137,7 @@ package body Opt is
 
       else
          Ada_Version                := Ada_Version_Config;
+         Ada_Version_Explicit       := Ada_Version_Explicit_Config;
          Assertions_Enabled         := Assertions_Enabled_Config;
          Debug_Pragmas_Enabled      := Debug_Pragmas_Enabled_Config;
          Dynamic_Elaboration_Checks := Dynamic_Elaboration_Checks_Config;
@@ -149,7 +150,6 @@ package body Opt is
 
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
       Polling_Required               := Polling_Required_Config;
-      Ada_Version_Explicit           := Ada_Version_Explicit_Config;
    end Set_Opt_Config_Switches;
 
    ---------------
@@ -189,28 +189,22 @@ package body Opt is
       Assertions_Enabled_Config :=
         Boolean'Val (Assertions_Enabled_Config_Val);
 
-      --  Read version string: we have to check the length first
+      --  Read version string: we have to get the length first
 
       Tree_Read_Int (Tree_Version_String_Len);
 
-      if Tree_Version_String_Len = Tree_Version_String'Length then
+      declare
+         Tmp : String (1 .. Integer (Tree_Version_String_Len));
+      begin
          Tree_Read_Data
-           (Tree_Version_String'Address, Tree_Version_String_Len);
-      else
-         Tree_Version_String := (others => '?');
-
-         declare
-            Tmp : String (1 .. Integer (Tree_Version_String_Len));
-         begin
-            Tree_Read_Data
-              (Tmp'Address, Tree_Version_String_Len);
-         end;
-
-      end if;
+           (Tmp'Address, Tree_Version_String_Len);
+         GNAT.Strings.Free (Tree_Version_String);
+         Free (Tree_Version_String);
+         Tree_Version_String := new String'(Tmp);
+      end;
 
       Tree_Read_Data (Distribution_Stub_Mode'Address,
                       Distribution_Stub_Mode_Type'Object_Size / Storage_Unit);
-      Tree_Read_Bool (Immediate_Errors);
       Tree_Read_Bool (Inline_Active);
       Tree_Read_Bool (Inline_Processing_Required);
       Tree_Read_Bool (List_Units);
@@ -231,6 +225,7 @@ package body Opt is
 
    procedure Tree_Write is
       Version_String : String := Gnat_Version_String;
+
    begin
       Tree_Write_Int  (ASIS_Version_Number);
       Tree_Write_Bool (Brief_Output);
@@ -255,7 +250,6 @@ package body Opt is
                        Version_String'Length);
       Tree_Write_Data (Distribution_Stub_Mode'Address,
                        Distribution_Stub_Mode_Type'Object_Size / Storage_Unit);
-      Tree_Write_Bool (Immediate_Errors);
       Tree_Write_Bool (Inline_Active);
       Tree_Write_Bool (Inline_Processing_Required);
       Tree_Write_Bool (List_Units);

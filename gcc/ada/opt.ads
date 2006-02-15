@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,6 @@
 --  other GNAT tools. The comments indicate which options are used by which
 --  programs (GNAT, GNATBIND, GNATLINK, GNATMAKE, GPRMAKE, etc).
 
-with Gnatvsn;  use Gnatvsn;
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
@@ -51,7 +50,7 @@ package Opt is
 
    --  The following mode values represent the current state of processing.
    --  The values set here are the default values. Unless otherwise noted,
-   --  the value may be reset in Switch with an appropropiate switch. In
+   --  the value may be reset in Switch-? with an appropropiate switch. In
    --  some cases, the values can also be modified by pragmas, and in the
    --  case of some binder variables, Gnatbind.Scan_Bind_Arg may modify
    --  the default values.
@@ -93,13 +92,13 @@ package Opt is
    --  not Ada_Version_Explicit) when compiling predefined or internal units.
 
    Ada_Final_Suffix : constant String := "final";
-   Ada_Final_Name : String_Ptr := new String'("ada" & Ada_Final_Suffix);
+   Ada_Final_Name   : String_Ptr := new String'("ada" & Ada_Final_Suffix);
    --  GNATBIND
    --  The name of the procedure that performs the finalization at the end of
    --  execution. This variable may be modified by Gnatbind.Scan_Bind_Arg.
 
    Ada_Init_Suffix : constant String := "init";
-   Ada_Init_Name : String_Ptr := new String'("ada" & Ada_Init_Suffix);
+   Ada_Init_Name   : String_Ptr := new String'("ada" & Ada_Init_Suffix);
    --  GNATBIND
    --  The name of the procedure that performs initialization at the start
    --  of execution. This variable may be modified by Gnatbind.Scan_Bind_Arg.
@@ -300,9 +299,15 @@ package Opt is
    --  Set the default exit status value. Set by the -Xnnn switch for the
    --  binder.
 
+   Default_Stack_Size : Int := -1;
+   --  GNATBIND
+   --  Set to default primary stack size in units of bytes. Set by
+   --  the -dnnn switch for the binder. A value of -1 indicates that no
+   --  default was set by the binder.
+
    Default_Sec_Stack_Size : Int := -1;
    --  GNATBIND
-   --  Set to default secondary stack size in units of kilobytes. Set by
+   --  Set to default secondary stack size in units of bytes. Set by
    --  the -Dnnn switch for the binder. A value of -1 indicates that no
    --  default was set by the binder, and that the default should be the
    --  initial value of System.Secondary_Stack.Default_Secondary_Stack_Size.
@@ -857,6 +862,15 @@ package Opt is
    --  GNATMAKE, GNATLINK
    --  Set to False when no run_path_option should be issued to the linker
 
+   Search_Directory_Present : Boolean := False;
+   --  GNAT
+   --  Set to True when argument is -I. Reset to False when next argument,
+   --  a search directory path is taken into account. Note that this is
+   --  quite different from other switches in this section in that it is
+   --  only set in a transitory manner as a result of scanning a -I switch
+   --  with no file name, and if set, is an indication that the next argument
+   --  is to be treated as a file name.
+
    Sec_Stack_Used : Boolean := False;
    --  GNAT, GBATBIND
    --  Set True if generated code uses the System.Secondary_Stack package.
@@ -1161,8 +1175,10 @@ package Opt is
 
    Ada_Version_Explicit_Config : Ada_Version_Type;
    --  GNAT
-   --  Same as above but used to initialize Ada_Version_Explicit. Currently
-   --  this will always have the same value as Ada_Version_Config.
+   --  This is set in the same manner as Ada_Version_Config. The difference is
+   --  that the setting of this flag is not ignored for internal and predefined
+   --  units, which for some purposes do indeed access this value, regardless
+   --  of the fact that they are compiled the the most up to date ada version).
 
    Assertions_Enabled_Config : Boolean;
    --  GNAT
@@ -1306,19 +1322,27 @@ package Opt is
    --  tree, and they are supposed to be compared with the corresponding values
    --  from the Gnatvsn package which is a part of ASIS implementation.
 
-   Tree_Version_String : String (Gnat_Version_String'Range);
+   Tree_Version_String : String_Access;
    --  Used to store the compiler version string read from a tree file to check
-   --  if it is the same as stored in the version string in Gnatvsn. Therefore
-   --  its length is taken directly from the version string in Gnatvsn. If the
-   --  length of the version string stored in the tree is different, then
-   --  versions are for sure different, and a string containing '?' characters
-   --  is assigned to this variable as a result of tree read.
+   --  if it is from the same date as stored in the version string in Gnatvsn.
+   --  We require that ASIS Pro can be used only with GNAT Pro, but we allow
+   --  non-Pro ASIS and ASIS-based tools to be used with any version of the
+   --  GNAT compiler. Therefore, we need the possibility to compare the dates
+   --  of the corresponding source sets, using version strings that may be
+   --  of different lengths.
 
    Tree_ASIS_Version_Number : Int;
    --  Used to store the ASIS version number read from a tree file to check if
    --  it is the same as stored in the ASIS version number in Gnatvsn.
 
 private
+
+   --  The following type is used to save and restore settings of switches in
+   --  Opt that represent the configuration (i.e. result of config pragmas).
+
+   --  Note that Ada_Version_Explicit is not included, since this is a sticky
+   --  flag that once set does not get reset, since the whole idea of this flag
+   --  is to record the setting for the main unit.
 
    type Config_Switches_Type is record
       Ada_Version                    : Ada_Version_Type;

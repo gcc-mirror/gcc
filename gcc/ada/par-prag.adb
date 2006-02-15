@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,19 +302,19 @@ begin
          Ada_Version := Ada_95;
          Ada_Version_Explicit := Ada_Version;
 
-      ------------
-      -- Ada_05 --
-      ------------
+      ---------------------
+      -- Ada_05/Ada_2005 --
+      ---------------------
 
       --  This pragma must be processed at parse time, since we want to set
       --  the Ada version properly at parse time to recognize the appropriate
       --  Ada version syntax. However, it is only the zero argument form that
       --  must be processed at parse time.
 
-      when Pragma_Ada_05 =>
+      when Pragma_Ada_05 | Pragma_Ada_2005 =>
          if Arg_Count = 0 then
             Ada_Version := Ada_05;
-            Ada_Version_Explicit := Ada_Version;
+            Ada_Version_Explicit := Ada_05;
          end if;
 
       -----------
