@@ -1576,7 +1576,7 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
   if (dim_check (d, 1, 1) == FAILURE)
     return FAILURE;
 
-  if (dim_rank_check (d, a, 0) == FAILURE)
+  if (d && dim_rank_check (d, a, 0) == FAILURE)
     return FAILURE;
 
   if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
@@ -1633,7 +1633,7 @@ check_reduction (gfc_actual_arglist * ap)
   if (dim_check (d, 1, 1) == FAILURE)
     return FAILURE;
 
-  if (dim_rank_check (d, a, 0) == FAILURE)
+  if (d && dim_rank_check (d, a, 0) == FAILURE)
     return FAILURE;
 
   if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
