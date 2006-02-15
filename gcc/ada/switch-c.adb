@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,11 +102,15 @@ package body Switch.C is
                if Switch_Chars (Ptr) = 'I' then
                   Store_Switch := False;
 
-                  Ptr := Ptr + 1;
+                  --  Set flag Search_Directory_Present if switch is "-I" only:
+                  --  the directory will be the next argument.
 
-                  if Ptr > Max then
-                     Bad_Switch (C);
+                  if Ptr = Max then
+                     Search_Directory_Present := True;
+                     return;
                   end if;
+
+                  Ptr := Ptr + 1;
 
                   --  Find out whether this is a -I- or regular -Ixxx switch
 
