@@ -779,24 +779,13 @@ package body System.Task_Primitives.Operations is
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean)
    is
-      Attributes          : aliased pthread_attr_t;
-      Adjusted_Stack_Size : Interfaces.C.size_t;
-      Result              : Interfaces.C.int;
+      Attributes : aliased pthread_attr_t;
+      Result     : Interfaces.C.int;
 
       function Thread_Body_Access is new
         Unchecked_Conversion (System.Address, Thread_Body);
 
    begin
-      if Stack_Size = Unspecified_Size then
-         Adjusted_Stack_Size := Interfaces.C.size_t (Default_Stack_Size);
-
-      elsif Stack_Size < Minimum_Stack_Size then
-         Adjusted_Stack_Size := Interfaces.C.size_t (Minimum_Stack_Size);
-
-      else
-         Adjusted_Stack_Size := Interfaces.C.size_t (Stack_Size);
-      end if;
-
       Result := pthread_attr_init (Attributes'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
@@ -806,7 +795,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Result := pthread_attr_setstacksize
-        (Attributes'Access, Adjusted_Stack_Size);
+        (Attributes'Access, Interfaces.C.size_t (Stack_Size));
       pragma Assert (Result = 0);
 
       --  Since the initial signal mask of a thread is inherited from the

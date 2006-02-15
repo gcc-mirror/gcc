@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,9 +49,6 @@ with System.OS_Primitives;
 with Interfaces.C;
 --  used for int
 --           size_t
-
-with System.Parameters;
---  used for Size_Type
 
 with System.Soft_Links;
 --  used for Get_Exc_Stack_Addr
@@ -766,24 +763,13 @@ package body System.Task_Primitives.Operations is
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean)
    is
-      Attributes          : aliased pthread_attr_t;
-      Adjusted_Stack_Size : Interfaces.C.size_t;
-      Result              : Interfaces.C.int;
+      Attributes : aliased pthread_attr_t;
+      Result     : Interfaces.C.int;
 
       function Thread_Body_Access is new
         Unchecked_Conversion (System.Address, Thread_Body);
 
    begin
-      if Stack_Size = Unspecified_Size then
-         Adjusted_Stack_Size := Interfaces.C.size_t (Default_Stack_Size);
-
-      elsif Stack_Size < Minimum_Stack_Size then
-         Adjusted_Stack_Size := Interfaces.C.size_t (Minimum_Stack_Size);
-
-      else
-         Adjusted_Stack_Size := Interfaces.C.size_t (Stack_Size);
-      end if;
-
       --  Since the initial signal mask of a thread is inherited from the
       --  creator, we need to set our local signal mask mask all signals
       --  during the creation operation, to make sure the new thread is
@@ -802,7 +788,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0);
 
       Result := pthread_attr_setstacksize
-        (Attributes'Access, Adjusted_Stack_Size);
+        (Attributes'Access, Interfaces.C.size_t (Stack_Size));
       pragma Assert (Result = 0);
 
       --  This call may be unnecessary, not sure. ???

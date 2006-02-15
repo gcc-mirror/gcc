@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,9 +43,6 @@ pragma Polling (Off);
 with Interfaces.C;
 --  used for int
 --           size_t
-
-with System.Parameters;
---  used for Size_Type
 
 with System.Tasking.Debug;
 --  used for Known_Tasks
@@ -745,22 +742,10 @@ package body System.Task_Primitives.Operations is
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean)
    is
-      Adjusted_Stack_Size : Interfaces.C.size_t;
-
       Attributes : aliased pthread_attr_t;
       Result     : Interfaces.C.int;
 
    begin
-      if Stack_Size = Unspecified_Size then
-         Adjusted_Stack_Size := Interfaces.C.size_t (Default_Stack_Size);
-
-      elsif Stack_Size < Minimum_Stack_Size then
-         Adjusted_Stack_Size := Interfaces.C.size_t (Minimum_Stack_Size);
-
-      else
-         Adjusted_Stack_Size := Interfaces.C.size_t (Stack_Size);
-      end if;
-
       Result := pthread_attr_init (Attributes'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
@@ -771,7 +756,7 @@ package body System.Task_Primitives.Operations is
 
       Result :=
         pthread_attr_setstacksize
-          (Attributes'Access, Adjusted_Stack_Size);
+          (Attributes'Access, Interfaces.C.size_t (Stack_Size));
       pragma Assert (Result = 0);
 
       Result :=
