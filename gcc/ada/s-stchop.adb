@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -179,6 +179,20 @@ package body System.Stack_Checking.Operations is
       Frame_Address : constant System.Address := Marker'Address;
 
    begin
+      --  The parameter may have wrapped around in System.Address arithmetics.
+      --  In that case, we have no other choices than raising the exception.
+
+      if (Stack_Grows_Down and then
+            Stack_Address > Frame_Address)
+        or else
+         (not Stack_Grows_Down and then
+            Stack_Address < Frame_Address)
+      then
+         Ada.Exceptions.Raise_Exception
+           (E       => Storage_Error'Identity,
+            Message => "stack overflow detected");
+      end if;
+
       --  This function first does a "cheap" check which is correct
       --  if it succeeds. In case of failure, the full check is done.
       --  Ideally the cheap check should be done in an optimized manner,
