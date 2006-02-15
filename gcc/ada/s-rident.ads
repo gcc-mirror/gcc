@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,7 @@ package System.Rident is
       No_Delay,                                -- (RM H.4(21))
       No_Direct_Boolean_Operators,             -- GNAT
       No_Dispatch,                             -- (RM H.4(19))
+      No_Dispatching_Calls,                    -- GNAT
       No_Dynamic_Attachment,                   -- GNAT
       No_Dynamic_Priorities,                   -- (RM D.9(9))
       No_Enumeration_Maps,                     -- GNAT
@@ -105,18 +106,18 @@ package System.Rident is
       No_Unchecked_Access,                     -- (RM H.4(18))
       No_Unchecked_Conversion,                 -- (RM H.4(16))
       No_Unchecked_Deallocation,               -- (RM H.4(9))
-      No_Wide_Characters,                      -- GNAT
       Static_Priorities,                       -- GNAT
       Static_Storage_Size,                     -- GNAT
 
       --  The following cases do not require partition-wide checks
 
       Immediate_Reclamation,                   -- (RM H.4(10))
-      No_Implementation_Attributes,            -- GNAT
-      No_Implementation_Pragmas,               -- GNAT
+      No_Implementation_Attributes,            -- Ada 2005 AI-257
+      No_Implementation_Pragmas,               -- Ada 2005 AI-257
       No_Implementation_Restrictions,          -- GNAT
       No_Elaboration_Code,                     -- GNAT
       No_Obsolescent_Features,                 -- Ada 2005 AI-368
+      No_Wide_Characters,                      -- GNAT
 
       --  The following cases require a parameter value
 
@@ -167,7 +168,7 @@ package System.Rident is
    --  All restrictions (excluding only Not_A_Restriction_Id)
 
    subtype All_Boolean_Restrictions is Restriction_Id range
-     Simple_Barriers .. No_Obsolescent_Features;
+     Simple_Barriers .. No_Wide_Characters;
    --  All restrictions which do not take a parameter
 
    subtype Partition_Boolean_Restrictions is All_Boolean_Restrictions range
@@ -178,7 +179,7 @@ package System.Rident is
    --  case of Boolean restrictions.
 
    subtype Cunit_Boolean_Restrictions is All_Boolean_Restrictions range
-     Immediate_Reclamation .. No_Obsolescent_Features;
+     Immediate_Reclamation .. No_Wide_Characters;
    --  Boolean restrictions that are not checked for partition consistency
    --  and that thus apply only to the current unit. Note that for these
    --  restrictions, the compiler does not apply restrictions found in

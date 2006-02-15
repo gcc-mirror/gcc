@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,8 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Eval; use Sem_Eval;
@@ -54,14 +56,6 @@ package body Sem_Disp is
    -----------------------
    -- Local Subprograms --
    -----------------------
-
-   procedure Override_Dispatching_Operation
-     (Tagged_Type : Entity_Id;
-      Prev_Op     : Entity_Id;
-      New_Op      : Entity_Id);
-   --  Replace an implicit dispatching operation with an explicit one.
-   --  Prev_Op is an inherited primitive operation which is overridden
-   --  by the explicit declaration of New_Op.
 
    procedure Add_Dispatching_Operation
      (Tagged_Type : Entity_Id;
@@ -406,7 +400,7 @@ package body Sem_Disp is
          --  discriminants), the tag of the containing call's associated
          --  tagged type is directly used to control the dispatching.
 
-         if not Present (Control)
+         if No (Control)
            and then Indeterm_Ancestor_Call
          then
             Control :=
@@ -476,6 +470,15 @@ package body Sem_Disp is
                   if Nkind (Original_Node (Actual)) = N_Function_Call then
                      Func := Entity (Name (Original_Node (Actual)));
 
+                  --  If the actual is an attribute then it can't be abstract
+                  --  (the only current case of a tag-indeterminate attribute
+                  --  is the stream Input attribute).
+
+                  elsif
+                    Nkind (Original_Node (Actual)) = N_Attribute_Reference
+                  then
+                     Func := Empty;
+
                   --  Only other possibility is a qualified expression whose
                   --  consituent expression is itself a call.
 
@@ -486,7 +489,7 @@ package body Sem_Disp is
                            (Expression (Original_Node (Actual)))));
                   end if;
 
-                  if Is_Abstract (Func) then
+                  if Present (Func) and then Is_Abstract (Func) then
                      Error_Msg_N (
                        "call to abstract function must be dispatching", N);
                   end if;
@@ -553,7 +556,7 @@ package body Sem_Disp is
       then
          --  Protect the frontend against previously detected errors
 
-         if not Present (Corresponding_Record_Type (Tagged_Type)) then
+         if No (Corresponding_Record_Type (Tagged_Type)) then
             return;
          end if;
 
@@ -661,7 +664,7 @@ package body Sem_Disp is
                   --  has definitely been frozen already and the body
                   --  is illegal.
 
-                  if not Present (Decl_Item) then
+                  if No (Decl_Item) then
                      Error_Msg_N ("overriding of& is too late!", Subp);
                      Error_Msg_N
                        ("\spec should appear immediately after the type!",
@@ -679,8 +682,11 @@ package body Sem_Disp is
                      if Present (DTC_Entity (Old_Subp)) then
                         Set_DTC_Entity (Subp, DTC_Entity (Old_Subp));
                         Set_DT_Position (Subp, DT_Position (Old_Subp));
-                        Insert_After (
-                          Subp_Body, Fill_DT_Entry (Sloc (Subp_Body), Subp));
+
+                        if not Restriction_Active (No_Dispatching_Calls) then
+                           Insert_After (Subp_Body,
+                             Fill_DT_Entry (Sloc (Subp_Body), Subp));
+                        end if;
                      end if;
                   end if;
                end;
@@ -739,7 +745,12 @@ package body Sem_Disp is
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
             Set_Is_Overriding_Operation (Subp);
          end if;
-      else
+
+      --  If no old subprogram, then we add this as a dispatching operation,
+      --  but we avoid doing this if an error was posted, to prevent annoying
+      --  cascaded errors.
+
+      elsif not Error_Posted (Subp) then
          Add_Dispatching_Operation (Tagged_Type, Subp);
       end if;
 
@@ -1139,7 +1150,6 @@ package body Sem_Disp is
 
          else
             Actual := First_Actual (Orig_Node);
-
             while Present (Actual) loop
                if Is_Controlling_Actual (Actual)
                  and then not Is_Tag_Indeterminate (Actual)
@@ -1151,12 +1161,21 @@ package body Sem_Disp is
             end loop;
 
             return True;
-
          end if;
 
       elsif Nkind (Orig_Node) = N_Qualified_Expression then
          return Is_Tag_Indeterminate (Expression (Orig_Node));
 
+      --  Case of a call to the Input attribute (possibly rewritten), which is
+      --  always tag-indeterminate except when its prefix is a Class attribute.
+
+      elsif Nkind (Orig_Node) = N_Attribute_Reference
+        and then
+          Get_Attribute_Id (Attribute_Name (Orig_Node)) = Attribute_Input
+        and then
+          Nkind (Prefix (Orig_Node)) /= N_Attribute_Reference
+      then
+         return True;
       else
          return False;
       end if;
@@ -1174,9 +1193,12 @@ package body Sem_Disp is
       Op_Elmt : Elmt_Id := First_Elmt (Primitive_Operations (Tagged_Type));
       Elmt    : Elmt_Id;
       Found   : Boolean;
+      E       : Entity_Id;
 
       function Is_Interface_Subprogram (Op : Entity_Id) return Boolean;
-      --  Comment requjired ???
+      --  Traverse the list of aliased entities to check if the overriden
+      --  entity corresponds with a primitive operation of an abstract
+      --  interface type.
 
       -----------------------------
       -- Is_Interface_Subprogram --
@@ -1202,6 +1224,14 @@ package body Sem_Disp is
    --  Start of processing for Override_Dispatching_Operation
 
    begin
+      --  Diagnose failure to match No_Return in parent (Ada-2005, AI-414, but
+      --  we do it unconditionally in Ada 95 now, since this is our pragma!)
+
+      if No_Return (Prev_Op) and then not No_Return (New_Op) then
+         Error_Msg_N ("procedure & must have No_Return pragma", New_Op);
+         Error_Msg_N ("\since overridden procedure has No_Return", New_Op);
+      end if;
+
       --  Patch the primitive operation list
 
       while Present (Op_Elmt)
@@ -1228,7 +1258,20 @@ package body Sem_Disp is
          Set_DT_Position              (Prev_Op, DT_Position (Alias (Prev_Op)));
          Set_Is_Abstract              (Prev_Op, Is_Abstract (New_Op));
          Set_Is_Overriding_Operation  (Prev_Op);
-         Set_Abstract_Interface_Alias (Prev_Op, Alias (Prev_Op));
+
+         --  Traverse the list of aliased entities to look for the overriden
+         --  abstract interface subprogram.
+
+         E := Alias (Prev_Op);
+         while Present (Alias (E))
+           and then Present (DTC_Entity (E))
+           and then not (Is_Abstract (E))
+           and then not Is_Interface (Scope (DTC_Entity (E)))
+         loop
+            E := Alias (E);
+         end loop;
+
+         Set_Abstract_Interface_Alias (Prev_Op, E);
          Set_Alias                    (Prev_Op, New_Op);
          Set_Is_Internal              (Prev_Op);
          Set_Is_Hidden                (Prev_Op);
@@ -1256,8 +1299,8 @@ package body Sem_Disp is
 
          if not Found then
             Append_Elmt (New_Op, Primitive_Operations (Tagged_Type));
-            --  Replace_Elmt (Op_Elmt, New_Op); -- why is this commented out???
          end if;
+
          return;
 
       else
@@ -1274,10 +1317,10 @@ package body Sem_Disp is
       else pragma Assert (Is_Inherited_Operation (Prev_Op));
 
          --  Make the overriding operation into an alias of the implicit one.
-         --  In this fashion a call from outside ends up calling the new
-         --  body even if non-dispatching, and a call from inside calls the
-         --  overriding operation because it hides the implicit one.
-         --  To indicate that the body of Prev_Op is never called, set its
+         --  In this fashion a call from outside ends up calling the new body
+         --  even if non-dispatching, and a call from inside calls the
+         --  overriding operation because it hides the implicit one. To
+         --  indicate that the body of Prev_Op is never called, set its
          --  dispatch table entity to Empty.
 
          Set_Alias (Prev_Op, New_Op);
@@ -1307,7 +1350,9 @@ package body Sem_Disp is
 
          Call_Node := Expression (Parent (Entity (Actual)));
 
-      --  Only other possibility is parenthesized or qualified expression
+      --  Only other possibilities are parenthesized or qualified expression,
+      --  or an expander-generated unchecked conversion of a function call to
+      --  a stream Input attribute.
 
       else
          Call_Node := Expression (Actual);

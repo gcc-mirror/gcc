@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,6 +106,7 @@ package Restrict is
    Implementation_Restriction : array (All_Restrictions) of Boolean :=
      (Simple_Barriers                    => True,
       No_Calendar                        => True,
+      No_Dispatching_Calls               => True,
       No_Dynamic_Attachment              => True,
       No_Enumeration_Maps                => True,
       No_Entry_Calls_In_Elaboration_Code => True,
