@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -102,6 +102,7 @@ int   __gl_unreserve_all_interrupts = 0;
 int   __gl_exception_tracebacks     = 0;
 int   __gl_zero_cost_exceptions     = 0;
 int   __gl_detect_blocking          = 0;
+int   __gl_default_stack_size       = -1;
 
 /* Indication of whether synchronous signal handler has already been
    installed by a previous call to adainit */
@@ -171,7 +172,8 @@ __gnat_set_globals (int main_priority,
                     int unreserve_all_interrupts,
                     int exception_tracebacks,
                     int zero_cost_exceptions,
-                    int detect_blocking)
+                    int detect_blocking,
+                    int default_stack_size)
 {
   static int already_called = 0;
 
@@ -210,7 +212,8 @@ __gnat_set_globals (int main_priority,
 	  || __gl_queuing_policy           != queuing_policy
 	  || __gl_task_dispatching_policy  != task_dispatching_policy
 	  || __gl_unreserve_all_interrupts != unreserve_all_interrupts
-	  || __gl_zero_cost_exceptions     != zero_cost_exceptions)
+	  || __gl_zero_cost_exceptions     != zero_cost_exceptions
+	  || __gl_default_stack_size       != default_stack_size)
 	__gnat_raise_program_error (__FILE__, __LINE__);
 
       /* If either a library or the main program set the exception traceback
@@ -244,8 +247,11 @@ __gnat_set_globals (int main_priority,
      reasonable other way. This could be removed as soon as the next major
      release is out.  */
 
+   /* ??? ditto for __gl_default_stack_size, new in 5.04 */
+
 #ifdef IN_RTS
   __gl_zero_cost_exceptions = zero_cost_exceptions;
+  __gl_default_stack_size = default_stack_size;
 #else
   __gl_zero_cost_exceptions = 0;
   /* We never build the compiler to run in ZCX mode currently anyway.  */
@@ -280,22 +286,18 @@ __gnat_set_globals (int main_priority,
    the triggering instruction happens to be the very first of a region, the
    later adjustments performed by the unwinder would yield an address outside
    that region. We need to compensate for those adjustments at some point,
-   which we currently do in the GCC unwinding fallback macro.
+   which we used to do in the GCC unwinding fallback macro.
 
    The thread at http://gcc.gnu.org/ml/gcc-patches/2004-05/msg00343.html
-   describes a couple of issues with our current approach. Basically: on some
-   targets the adjustment to apply depends on the triggering signal, which is
-   not easily accessible from the macro, and we actually do not tackle this as
-   of today. Besides, other languages, e.g. Java, deal with this by performing
-   the adjustment in the signal handler before the raise, so our adjustments
-   may break those front-ends.
+   describes a couple of issues with the fallback based compensation approach.
+   First, on some targets the adjustment to apply depends on the triggering
+   signal, which is not easily accessible from the macro.  Besides, other
+   languages, e.g. Java, deal with this by performing the adjustment in the
+   signal handler before the raise, so fallback adjustments just break those
+   front-ends.
 
-   To have it all right, we should either find a way to deal with the signal
-   variants from the macro and convert Java on all targets (ugh), or remove
-   our macro adjustments and update our signal handlers a-la-java way.  The
-   latter option appears the simplest, although some targets have their share
-   of subtleties to account for.  See for instance the syscall(SYS_sigaction)
-   story in libjava/include/i386-signal.h.  */
+   We now follow the Java way for most targets, via adjust_context_for_raise
+   below.  */
 
 /***************/
 /* AIX Section */
@@ -1371,7 +1373,7 @@ copy_msg (msgdesc, message)
 }
 
 long
-__gnat_error_handler (int *sigargs, void *mechargs)
+__gnat_handle_vms_condition (int *sigargs, void *mechargs)
 {
   struct Exception_Data *exception = 0;
   Exception_Code base_code;
@@ -1379,8 +1381,6 @@ __gnat_error_handler (int *sigargs, void *mechargs)
   char message [Default_Exception_Msg_Max_Length];
 
   const char *msg = "";
-  char curr_icb[544];
-  long curr_invo_handle;
 
   /* Check for conditions to resignal which aren't effected by pragma
      Import_Exception.  */
@@ -1485,33 +1485,75 @@ __gnat_error_handler (int *sigargs, void *mechargs)
 	break;
       }
 
-  Raise_From_Signal_Handler (exception, msg);
+ __gnat_adjust_context_for_raise (0, (void *)sigargs);
+ Raise_From_Signal_Handler (exception, msg);
+}
+
+long
+__gnat_error_handler (int *sigargs, void *mechargs)
+{
+  return __gnat_handle_vms_condition (sigargs, mechargs);
 }
 
 void
 __gnat_install_handler (void)
 {
-  long prvhnd;
-#if defined (IN_RTS) && !defined (__IA64)
-  char *c;
+  long prvhnd ATTRIBUTE_UNUSED;
 
-  c = (char *) xmalloc (2049);
+#if !defined (IN_RTS)
+  SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
+#endif
 
-  __gnat_error_prehandler_stack = &c[2048];
-
-  /* __gnat_error_prehandler is an assembly function.  */
-  SYS$SETEXV (1, __gnat_error_prehandler, 3, &prvhnd);
-#else
 #if defined (IN_RTS) && defined (__IA64)
   if (getenv ("DBG$TDBG"))
     printf ("DBG$TDBG defined, __gnat_error_handler not installed!\n");
   else
-#endif
     SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
+#endif
+
+  /* On alpha-vms, we avoid the global vector annoyance thanks to frame based
+     handlers to turn conditions into exceptions since GCC 3.4.  The global
+     vector is still required for earlier GCC versions.  We're resorting to
+     the __gnat_error_prehandler assembly function in this case.  */
+
+#if defined (IN_RTS) && defined (__alpha__)
+  if ((__GNUC__ * 10 + __GNUC_MINOR__) < 34)
+    {
+      char * c = (char *) xmalloc (2049);
+
+      __gnat_error_prehandler_stack = &c[2048];
+      SYS$SETEXV (1, __gnat_error_prehandler, 3, &prvhnd);
+    }
 #endif
 
   __gnat_handler_installed = 1;
 }
+
+/* __gnat_adjust_context_for_raise for alpha - see comments along with the
+   default version later in this file.  */
+
+#if defined (IN_RTS) && defined (__alpha__)
+
+#include <vms/chfctxdef.h>
+#include <vms/chfdef.h>
+
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
+{
+  /* Add one to the address of the instruction signaling the condition,
+     located in the sigargs array.  */
+
+  CHF$SIGNAL_ARRAY * sigargs = (CHF$SIGNAL_ARRAY *) ucontext;
+
+  int vcount = sigargs->chf$is_sig_args;
+  int * pc_slot = & (&sigargs->chf$l_sig_name)[vcount-2];
+
+  (*pc_slot) ++;
+}
+
+#endif
 
 /*******************/
 /* FreeBSD Section */
