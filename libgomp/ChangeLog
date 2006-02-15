@@ -1,3 +1,12 @@
+2006-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/25938
+	PR libgomp/25984
+	* Makefile.am (fincludedir): New variable.
+	(nodist_include_HEADERS): Remove Fortran files.
+	(nodist_finclude_HEADERS): New variable.
+	* Makefile.in: Regenerated.
+
 2006-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.fortran/vla7.f90: Add -w to options.

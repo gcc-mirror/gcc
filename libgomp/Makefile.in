@@ -39,7 +39,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@USE_FORTRAN_TRUE@am__append_1 = omp_lib.mod omp_lib_kinds.mod
 DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../config.sub $(srcdir)/../depcomp \
 	$(srcdir)/../install-sh $(srcdir)/../ltmain.sh \
@@ -70,7 +69,8 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(includedir)" "$(DESTDIR)$(toolexeclibdir)"
+	"$(DESTDIR)$(fincludedir)" "$(DESTDIR)$(includedir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libgomp_la_LIBADD =
@@ -104,10 +104,11 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
+nodist_fincludeHEADERS_INSTALL = $(INSTALL_HEADER)
 nodist_includeHEADERS_INSTALL = $(INSTALL_HEADER)
 nodist_toolexeclibHEADERS_INSTALL = $(INSTALL_HEADER)
-HEADERS = $(nodist_include_HEADERS) $(nodist_noinst_HEADERS) \
-	$(nodist_toolexeclib_HEADERS)
+HEADERS = $(nodist_finclude_HEADERS) $(nodist_include_HEADERS) \
+	$(nodist_noinst_HEADERS) $(nodist_toolexeclib_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = $(SUBDIRS)
@@ -245,6 +246,7 @@ ACLOCAL_AMFLAGS = -I ../config
 SUBDIRS = testsuite
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir)
+fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude
 empty = 
 space = $(empty) $(empty)
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
@@ -261,7 +263,8 @@ libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 	lock.c mutex.c proc.c sem.c bar.c time.c fortran.c
 
 nodist_noinst_HEADERS = libgomp_f.h
-nodist_include_HEADERS = omp.h omp_lib.h omp_lib.f90 $(am__append_1)
+nodist_include_HEADERS = omp.h
+@USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -431,6 +434,23 @@ distclean-multi:
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
 uninstall-info-am:
+install-nodist_fincludeHEADERS: $(nodist_finclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(fincludedir)" || $(mkdir_p) "$(DESTDIR)$(fincludedir)"
+	@list='$(nodist_finclude_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(nodist_fincludeHEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(fincludedir)/$$f'"; \
+	  $(nodist_fincludeHEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(fincludedir)/$$f"; \
+	done
+
+uninstall-nodist_fincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_finclude_HEADERS)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(fincludedir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(fincludedir)/$$f"; \
+	done
 install-nodist_includeHEADERS: $(nodist_include_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(includedir)" || $(mkdir_p) "$(DESTDIR)$(includedir)"
@@ -745,7 +765,7 @@ check: check-recursive
 all-am: Makefile $(LTLIBRARIES) all-multi $(HEADERS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(includedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)" "$(DESTDIR)$(includedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-recursive
@@ -794,7 +814,8 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-nodist_includeHEADERS
+install-data-am: install-nodist_fincludeHEADERS \
+	install-nodist_includeHEADERS
 
 install-exec-am: install-multi install-nodist_toolexeclibHEADERS \
 	install-toolexeclibLTLIBRARIES
@@ -825,7 +846,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-nodist_includeHEADERS \
+uninstall-am: uninstall-info-am uninstall-nodist_fincludeHEADERS \
+	uninstall-nodist_includeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
@@ -842,7 +864,7 @@ uninstall-info: uninstall-info-recursive
 	html-am info info-am install install-am install-data \
 	install-data-am install-exec install-exec-am install-info \
 	install-info-am install-man install-multi \
-	install-nodist_includeHEADERS \
+	install-nodist_fincludeHEADERS install-nodist_includeHEADERS \
 	install-nodist_toolexeclibHEADERS install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
@@ -851,6 +873,7 @@ uninstall-info: uninstall-info-recursive
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi \
 	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-info-am \
+	uninstall-nodist_fincludeHEADERS \
 	uninstall-nodist_includeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS \
 	uninstall-toolexeclibLTLIBRARIES

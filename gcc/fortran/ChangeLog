@@ -1,3 +1,11 @@
+2006-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/25938
+	PR libgomp/25984
+	* Make-lang.in (install-finclude-dir): New goal.
+	(fortran.install-common): Depend on install-finclude-dir.
+	* lang-specs.h: If not -nostdinc, add -I finclude.
+
 2006-02-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
         PR fortran/25045

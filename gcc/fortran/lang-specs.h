@@ -15,7 +15,7 @@ This file is licensed under the GPL.  */
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E: -o %|.f |\n\
     f951 %|.f %{!ffree-form:-ffixed-form} %(cc1_options) %{J*} %{I*}\
-      -fpreprocessed %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+      -fpreprocessed %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 {".F90", "@f95-cpp-input", 0, 0, 0},
 {".F95", "@f95-cpp-input", 0, 0, 0},
 {"@f95-cpp-input",
@@ -23,13 +23,13 @@ This file is licensed under the GPL.  */
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E: -o %|.f95 |\n\
     f951 %|.f95 %(cc1_options) %{J*} %{I*}\
-      -fpreprocessed %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+      -fpreprocessed %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 {".f90", "@f95", 0, 0, 0},
 {".f95", "@f95", 0, 0, 0},
 {"@f95", "%{!E:f951 %i %(cc1_options) %{J*} %{I*}\
-         %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
+         %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
 {".f",   "@f77", 0, 0, 0},
 {".for", "@f77", 0, 0, 0},
 {".FOR", "@f77", 0, 0, 0},
 {"@f77", "%{!E:f951 %i %{!ffree-form:-ffixed-form} %(cc1_options) %{J*} %{I*}\
-         %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
+         %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
