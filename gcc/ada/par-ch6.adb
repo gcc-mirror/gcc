@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1227,6 +1227,10 @@ package body Ch6 is
       if Token = Tok_In then
          Scan; -- past IN
          Set_In_Present (Node, True);
+
+         if Style.Mode_In_Check and then Token /= Tok_Out then
+            Error_Msg_SP ("(style) IN should be omitted");
+         end if;
       end if;
 
       if Token = Tok_Out then
