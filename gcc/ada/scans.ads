@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,9 +46,9 @@ package Scans is
    --  The class column in this table indicates the token classes which
    --  apply to the token, as defined by subsquent subtype declarations.
 
-   --  Note: the coding in SCN depends on the fact that the first entry in
-   --  this type declaration is *not* for a reserved word. For details on
-   --  why there is this requirement, see Scn.Initialize_Scanner.
+   --  Note: Namet.Is_Keyword_Name depends on the fact that the first entry in
+   --  this type declaration is *not* for a reserved word. For details on why
+   --  there is this requirement, see Scans.Initialize_Ada_Keywords.
 
    type Token_Type is (
 
@@ -223,117 +223,122 @@ package Scans is
    --  The following subtype declarations group the token types into classes.
    --  These are used for class tests in the parser.
 
-      subtype Token_Class_Numeric_Literal is
-        Token_Type range Tok_Integer_Literal .. Tok_Real_Literal;
-      --  Numeric literal
+   subtype Token_Class_Numeric_Literal is
+     Token_Type range Tok_Integer_Literal .. Tok_Real_Literal;
+   --  Numeric literal
 
-      subtype Token_Class_Literal is
-        Token_Type range Tok_Integer_Literal .. Tok_Operator_Symbol;
-      --  Literal
+   subtype Token_Class_Literal is
+     Token_Type range Tok_Integer_Literal .. Tok_Operator_Symbol;
+   --  Literal
 
-      subtype Token_Class_Lit_Or_Name is
-        Token_Type range Tok_Integer_Literal .. Tok_Identifier;
+   subtype Token_Class_Lit_Or_Name is
+     Token_Type range Tok_Integer_Literal .. Tok_Identifier;
 
-      subtype Token_Class_Binary_Addop is
-        Token_Type range Tok_Ampersand .. Tok_Plus;
-      --  Binary adding operator (& + -)
+   subtype Token_Class_Binary_Addop is
+     Token_Type range Tok_Ampersand .. Tok_Plus;
+   --  Binary adding operator (& + -)
 
-      subtype Token_Class_Unary_Addop is
-        Token_Type range Tok_Minus .. Tok_Plus;
-      --  Unary adding operator (+ -)
+   subtype Token_Class_Unary_Addop is
+     Token_Type range Tok_Minus .. Tok_Plus;
+   --  Unary adding operator (+ -)
 
-      subtype Token_Class_Mulop is
-        Token_Type range Tok_Asterisk .. Tok_Slash;
-      --  Multiplying operator
+   subtype Token_Class_Mulop is
+     Token_Type range Tok_Asterisk .. Tok_Slash;
+   --  Multiplying operator
 
-      subtype Token_Class_Logop is
-        Token_Type range Tok_And .. Tok_Xor;
-      --  Logical operator (and, or, xor)
+   subtype Token_Class_Logop is
+     Token_Type range Tok_And .. Tok_Xor;
+   --  Logical operator (and, or, xor)
 
-      subtype Token_Class_Relop is
-        Token_Type range Tok_Less .. Tok_Box;
-      --  Relational operator (= /= < <= > >= not, in plus <> to catch misuse
-      --  of Pascal style not equal operator).
+   subtype Token_Class_Relop is
+     Token_Type range Tok_Less .. Tok_Box;
+   --  Relational operator (= /= < <= > >= not, in plus <> to catch misuse
+   --  of Pascal style not equal operator).
 
-      subtype Token_Class_Name is
-        Token_Type range Tok_Char_Literal .. Tok_Identifier;
-      --  First token of name (4.1),
-      --    (identifier, char literal, operator symbol)
+   subtype Token_Class_Name is
+     Token_Type range Tok_Char_Literal .. Tok_Identifier;
+   --  First token of name (4.1),
+   --    (identifier, char literal, operator symbol)
 
-      subtype Token_Class_Desig is
-        Token_Type range Tok_Operator_Symbol .. Tok_Identifier;
-      --  Token which can be a Designator (identifier, operator symbol)
+   subtype Token_Class_Desig is
+     Token_Type range Tok_Operator_Symbol .. Tok_Identifier;
+   --  Token which can be a Designator (identifier, operator symbol)
 
-      subtype Token_Class_Namext is
-        Token_Type range Tok_Dot .. Tok_Left_Paren;
-      --  Name extension tokens. These are tokens which can appear immediately
-      --  after a name to extend it recursively (period, quote, left paren)
+   subtype Token_Class_Namext is
+     Token_Type range Tok_Dot .. Tok_Left_Paren;
+   --  Name extension tokens. These are tokens which can appear immediately
+   --  after a name to extend it recursively (period, quote, left paren)
 
-      subtype Token_Class_Consk is
-        Token_Type range Tok_Left_Paren .. Tok_Range;
-      --  Keywords which can start constraint
-      --    (left paren, delta, digits, range)
+   subtype Token_Class_Consk is
+     Token_Type range Tok_Left_Paren .. Tok_Range;
+   --  Keywords which can start constraint
+   --    (left paren, delta, digits, range)
 
-      subtype Token_Class_Eterm is
-        Token_Type range Tok_Colon_Equal .. Tok_Semicolon;
-      --  Expression terminators. These tokens can never appear within a simple
-      --  expression. This is used for error recovery purposes (if we encounter
-      --  an error in an expression, we simply scan to the next Eterm token).
+   subtype Token_Class_Eterm is
+     Token_Type range Tok_Colon_Equal .. Tok_Semicolon;
+   --  Expression terminators. These tokens can never appear within a simple
+   --  expression. This is used for error recovery purposes (if we encounter
+   --  an error in an expression, we simply scan to the next Eterm token).
 
-      subtype Token_Class_Sterm is
-        Token_Type range Tok_Delta .. Tok_Dot_Dot;
-      --  Simple_Expression terminators. A Simple_Expression must be followed
-      --  by a token in this class, or an error message is issued complaining
-      --  about a missing binary operator.
+   subtype Token_Class_Sterm is
+     Token_Type range Tok_Delta .. Tok_Dot_Dot;
+   --  Simple_Expression terminators. A Simple_Expression must be followed
+   --  by a token in this class, or an error message is issued complaining
+   --  about a missing binary operator.
 
-      subtype Token_Class_Atkwd is
-        Token_Type range Tok_Delta .. Tok_Range;
-      --  Attribute keywords. This class includes keywords which can be used
-      --  as an Attribute_Designator, namely DELTA, DIGITS and RANGE
+   subtype Token_Class_Atkwd is
+     Token_Type range Tok_Delta .. Tok_Range;
+   --  Attribute keywords. This class includes keywords which can be used
+   --  as an Attribute_Designator, namely DELTA, DIGITS and RANGE
 
-      subtype Token_Class_Cterm is
-        Token_Type range Tok_EOF .. Tok_Vertical_Bar;
-      --  Choice terminators. These tokens terminate a choice. This is used for
-      --  error recovery purposes (if we encounter an error in a Choice, we
-      --  simply scan to the next Cterm token).
+   subtype Token_Class_Cterm is
+     Token_Type range Tok_EOF .. Tok_Vertical_Bar;
+   --  Choice terminators. These tokens terminate a choice. This is used for
+   --  error recovery purposes (if we encounter an error in a Choice, we
+   --  simply scan to the next Cterm token).
 
-      subtype Token_Class_Chtok is
-        Token_Type range Tok_Arrow .. Tok_Dot_Dot;
-      --  Choice tokens. These tokens signal a choice when used in an Aggregate
+   subtype Token_Class_Chtok is
+     Token_Type range Tok_Arrow .. Tok_Dot_Dot;
+   --  Choice tokens. These tokens signal a choice when used in an Aggregate
 
-      subtype Token_Class_Cunit is
-        Token_Type range Tok_Function .. Tok_Separate;
-      --  Tokens which can begin a compilation unit
+   subtype Token_Class_Cunit is
+     Token_Type range Tok_Function .. Tok_Separate;
+   --  Tokens which can begin a compilation unit
 
-      subtype Token_Class_Declk is
-        Token_Type range Tok_Entry .. Tok_Procedure;
-      --  Keywords which start a declaration
+   subtype Token_Class_Declk is
+     Token_Type range Tok_Entry .. Tok_Procedure;
+   --  Keywords which start a declaration
 
-      subtype Token_Class_Deckn is
-        Token_Type range Tok_Entry .. Tok_Use;
-      --  Keywords which start a declaration but can't start a compilation unit
+   subtype Token_Class_Deckn is
+     Token_Type range Tok_Entry .. Tok_Use;
+   --  Keywords which start a declaration but can't start a compilation unit
 
-      subtype Token_Class_After_SM is
-        Token_Type range Tok_Less_Less .. Tok_EOF;
-      --  Tokens which always, or almost always, appear after a semicolon. Used
-      --  in the Resync_Past_Semicolon routine to avoid gobbling up stuff when
-      --  a semicolon is missing. Of significance only for error recovery.
+   subtype Token_Class_After_SM is
+     Token_Type range Tok_Less_Less .. Tok_EOF;
+   --  Tokens which always, or almost always, appear after a semicolon. Used
+   --  in the Resync_Past_Semicolon routine to avoid gobbling up stuff when
+   --  a semicolon is missing. Of significance only for error recovery.
 
-      subtype Token_Class_Labeled_Stmt is
-        Token_Type range Tok_Begin .. Tok_While;
-      --  Tokens which start labeled statements
+   subtype Token_Class_Labeled_Stmt is
+     Token_Type range Tok_Begin .. Tok_While;
+   --  Tokens which start labeled statements
 
-      type Token_Flag_Array is array (Token_Type) of Boolean;
-      Is_Reserved_Keyword : constant Token_Flag_Array := Token_Flag_Array'(
-         Tok_Mod      .. Tok_Rem      => True,
-         Tok_New      .. Tok_Null     => True,
-         Tok_Delta    .. Tok_Range    => True,
-         Tok_And      .. Tok_Xor      => True,
-         Tok_In       .. Tok_Not      => True,
-         Tok_Abstract .. Tok_Then     => True,
-         Tok_Abort    .. Tok_Separate => True,
-         others                       => False);
-      --  Flag array used to test for reserved word
+   type Token_Flag_Array is array (Token_Type) of Boolean;
+   Is_Reserved_Keyword : constant Token_Flag_Array :=
+                           Token_Flag_Array'
+                             (Tok_Mod      .. Tok_Rem      => True,
+                              Tok_New      .. Tok_Null     => True,
+                              Tok_Delta    .. Tok_Range    => True,
+                              Tok_And      .. Tok_Xor      => True,
+                              Tok_In       .. Tok_Not      => True,
+                              Tok_Abstract .. Tok_Then     => True,
+                              Tok_Abort    .. Tok_Separate => True,
+                              others                       => False);
+   --  Flag array used to test for reserved word
+
+   procedure Initialize_Ada_Keywords;
+   --  Set up Token_Type values in Names table entries for Ada reserved
+   --  words.
 
    --------------------------
    -- Scan State Variables --
@@ -444,7 +449,7 @@ package Scans is
    --  Saves the current scan state for possible later restoration. Note that
    --  there is no harm in saving the state and then never restoring it.
 
-   procedure Restore_Scan_State (Saved_State : in Saved_Scan_State);
+   procedure Restore_Scan_State (Saved_State : Saved_Scan_State);
    pragma Inline (Restore_Scan_State);
    --  Restores a scan state saved by a call to Save_Scan_State.
    --  The saved scan state must refer to the current source file.

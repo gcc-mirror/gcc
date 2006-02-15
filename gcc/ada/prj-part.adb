@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1040,7 +1040,7 @@ package body Prj.Part is
          return;
       end if;
 
-      Prj.Err.Scanner.Initialize_Scanner (Types.No_Unit, Source_Index);
+      Prj.Err.Scanner.Initialize_Scanner (Source_Index);
       Tree.Reset_State;
       Scan (In_Tree);
 

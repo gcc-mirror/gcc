@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,12 @@ package body Lib is
    function Check_Same_Extended_Unit (S1, S2 : Source_Ptr) return SEU_Result;
    --  Used by In_Same_Extended_Unit and Earlier_In_Extended_Unit. Returns
    --  value as described above.
+
+   function Get_Code_Or_Source_Unit
+     (S                : Source_Ptr;
+      Unwind_Instances : Boolean) return Unit_Number_Type;
+   --  Common code for Get_Code_Unit (get unit of instantiation for location)
+   --  and Get_Source_Unit (get unit of template for location).
 
    --------------------------------------------
    -- Access Functions for Unit Table Fields --
@@ -486,11 +492,14 @@ package body Lib is
       end if;
    end Generic_Separately_Compiled;
 
-   -------------------
-   -- Get_Code_Unit --
-   -------------------
+   -----------------------------
+   -- Get_Code_Or_Source_Unit --
+   -----------------------------
 
-   function Get_Code_Unit (S : Source_Ptr) return Unit_Number_Type is
+   function Get_Code_Or_Source_Unit
+     (S                : Source_Ptr;
+      Unwind_Instances : Boolean) return Unit_Number_Type
+   is
    begin
       --  Search table unless we have No_Location, which can happen if the
       --  relevant location has not been set yet. Happens for example when
@@ -498,22 +507,41 @@ package body Lib is
 
       if S /= No_Location then
          declare
-            Source_File : constant Source_File_Index :=
-                            Get_Source_File_Index (Top_Level_Location (S));
+            Source_File : Source_File_Index;
+            Source_Unit : Unit_Number_Type;
 
          begin
-            for U in Units.First .. Units.Last loop
-               if Source_Index (U) = Source_File then
-                  return U;
-               end if;
-            end loop;
+            Source_File := Get_Source_File_Index (S);
+
+            if Unwind_Instances then
+               while Template (Source_File) /= No_Source_File loop
+                  Source_File := Template (Source_File);
+               end loop;
+            end if;
+
+            Source_Unit := Unit (Source_File);
+
+            if Source_Unit /= No_Unit then
+               return Source_Unit;
+            end if;
          end;
       end if;
 
-      --  If S was No_Location, or was not in the table, we must be in the
-      --  main source unit (and the value has not been placed in the table yet)
+      --  If S was No_Location, or was not in the table, we must be in the main
+      --  source unit (and the value has not been placed in the table yet),
+      --  or in one of the configuration pragma files.
 
       return Main_Unit;
+   end Get_Code_Or_Source_Unit;
+
+   -------------------
+   -- Get_Code_Unit --
+   -------------------
+
+   function Get_Code_Unit (S : Source_Ptr) return Unit_Number_Type is
+   begin
+      return Get_Code_Or_Source_Unit (Top_Level_Location (S),
+        Unwind_Instances => False);
    end Get_Code_Unit;
 
    function Get_Code_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
@@ -579,33 +607,7 @@ package body Lib is
 
    function Get_Source_Unit (S : Source_Ptr) return Unit_Number_Type is
    begin
-      --  Search table unless we have No_Location, which can happen if the
-      --  relevant location has not been set yet. Happens for example when
-      --  we obtain Sloc (Cunit (Main_Unit)) before it is set.
-
-      if S /= No_Location then
-         declare
-            Source_File : Source_File_Index :=
-                            Get_Source_File_Index (Top_Level_Location (S));
-
-         begin
-            Source_File := Get_Source_File_Index (S);
-            while Template (Source_File) /= No_Source_File loop
-               Source_File := Template (Source_File);
-            end loop;
-
-            for U in Units.First .. Units.Last loop
-               if Source_Index (U) = Source_File then
-                  return U;
-               end if;
-            end loop;
-         end;
-      end if;
-
-      --  If S was No_Location, or was not in the table, we must be in the
-      --  main source unit (and the value has not got put into the table yet)
-
-      return Main_Unit;
+      return Get_Code_Or_Source_Unit (S, Unwind_Instances => True);
    end Get_Source_Unit;
 
    function Get_Source_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is

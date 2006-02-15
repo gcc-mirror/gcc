@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,14 +60,8 @@ generic
 
 package Scng is
 
-   procedure Initialize_Scanner
-     (Unit  : Unit_Number_Type;
-      Index : Source_File_Index);
-   --  Initialize lexical scanner for scanning a new file. The caller has
-   --  completed the construction of the Units.Table entry for the specified
-   --  Unit and Index references the corresponding source file. A special
-   --  case is when Unit = No_Unit_Number, and Index corresponds to the
-   --  source index for reading the configuration pragma file.
+   procedure Initialize_Scanner (Index : Source_File_Index);
+   --  Initialize lexical scanner for scanning a new file referenced by Index.
    --  Initialize_Scanner does not call Scan.
 
    procedure Scan;

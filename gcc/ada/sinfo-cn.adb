@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 
 --  This child package of Sinfo contains some routines that permit in place
 --  alteration of existing tree nodes by changing the value in the Nkind
---  field. Since Nkind functions logically in a manner similart to a variant
+--  field. Since Nkind functions logically in a manner similar to a variant
 --  record discriminant part, such alterations cannot be permitted in a
 --  general manner, but in some specific cases, the fields of related nodes
 --  have been deliberately layed out in a manner that permits such alteration.

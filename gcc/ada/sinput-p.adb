@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package body Sinput.P is
    --------------------------------
 
    procedure Restore_Project_Scan_State
-     (Saved_State : in Saved_Project_Scan_State)
+     (Saved_State : Saved_Project_Scan_State)
    is
    begin
       Restore_Scan_State (Saved_State.Scan_State);
@@ -84,7 +84,7 @@ package body Sinput.P is
 
    function Source_File_Is_Subunit (X : Source_File_Index) return Boolean is
    begin
-      Prj.Err.Scanner.Initialize_Scanner (No_Unit, X);
+      Prj.Err.Scanner.Initialize_Scanner (X);
 
       --  We scan past junk to the first interesting compilation unit
       --  token, to see if it is SEPARATE. We ignore WITH keywords during

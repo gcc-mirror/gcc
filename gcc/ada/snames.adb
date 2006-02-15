@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Namet; use Namet;
+with Opt;   use Opt;
 with Table;
 
 package body Snames is
@@ -174,6 +175,7 @@ package body Snames is
      "ada_83#" &
      "ada_95#" &
      "ada_05#" &
+     "ada_2005#" &
      "assertion_policy#" &
      "c_pass_by_copy#" &
      "compile_time_warning#" &
@@ -991,6 +993,19 @@ package body Snames is
         First_Renamable_Function_Attribute ..
           Last_Renamable_Function_Attribute;
    end Is_Function_Attribute_Name;
+
+   ---------------------
+   -- Is_Keyword_Name --
+   ---------------------
+
+   function Is_Keyword_Name (N : Name_Id) return Boolean is
+   begin
+      return Get_Name_Table_Byte (N) /= 0
+        and then (Ada_Version >= Ada_95
+                  or else N not in Ada_95_Reserved_Words)
+        and then (Ada_Version >= Ada_05
+                  or else N not in Ada_2005_Reserved_Words);
+   end Is_Keyword_Name;
 
    ----------------------------
    -- Is_Locking_Policy_Name --
