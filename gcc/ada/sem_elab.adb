@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -327,8 +327,65 @@ package body Sem_Elab is
       Itm : Node_Id;
       Ent : Entity_Id;
 
+      procedure Add_To_Context_And_Mark (Itm : Node_Id);
+      --  This procedure is called when the elaborate indication must be
+      --  applied to a unit not in the context of the referencing unit. The
+      --  unit gets added to the context as an implicit with.
+
+      function In_Withs_Of (UEs : Entity_Id) return Boolean;
+      --  UEs is the spec entity of a unit. If the unit to be marked is
+      --  in the context item list of this unit spec, then the call returns
+      --  True and Itm is left set to point to the relevant N_With_Clause node.
+
       procedure Set_Elab_Flag (Itm : Node_Id);
       --  Sets Elaborate_[All_]Desirable as appropriate on Itm
+
+      -----------------------------
+      -- Add_To_Context_And_Mark --
+      -----------------------------
+
+      procedure Add_To_Context_And_Mark (Itm : Node_Id) is
+         CW : constant Node_Id :=
+                Make_With_Clause (Sloc (Itm),
+                  Name => Name (Itm));
+
+      begin
+         Set_Library_Unit  (CW, Library_Unit (Itm));
+         Set_Implicit_With (CW, True);
+
+         --  Set elaborate all desirable on copy and then append the copy to
+         --  the list of body with's and we are done.
+
+         Set_Elab_Flag (CW);
+         Append_To (CI, CW);
+      end Add_To_Context_And_Mark;
+
+      -----------------
+      -- In_Withs_Of --
+      -----------------
+
+      function In_Withs_Of (UEs : Entity_Id) return Boolean is
+         UNs : constant Unit_Number_Type := Get_Source_Unit (UEs);
+         CUs : constant Node_Id          := Cunit (UNs);
+         CIs : constant List_Id          := Context_Items (CUs);
+
+      begin
+         Itm := First (CIs);
+         while Present (Itm) loop
+            if Nkind (Itm) = N_With_Clause then
+               Ent :=
+                 Cunit_Entity (Get_Cunit_Unit_Number (Library_Unit (Itm)));
+
+               if U = Ent then
+                  return True;
+               end if;
+            end if;
+
+            Next (Itm);
+         end loop;
+
+         return False;
+      end In_Withs_Of;
 
       -------------------
       -- Set_Elab_Flag --
@@ -366,50 +423,30 @@ package body Sem_Elab is
       --  current unit. One legitimate possibility is that the with clause
       --  is present in the spec when we are a body.
 
-      if Is_Body_Name (Unm) then
+      if Is_Body_Name (Unm)
+        and then In_Withs_Of (Spec_Entity (UE))
+      then
+         Add_To_Context_And_Mark (Itm);
+         return;
+      end if;
+
+      --  Similarly, we may be in the spec or body of a child unit, where
+      --  the unit in question is with'ed by some ancestor of the child unit.
+
+      if Is_Child_Name (Unm) then
          declare
-            UEs : constant Entity_Id        := Spec_Entity (UE);
-            UNs : constant Unit_Number_Type := Get_Source_Unit (UEs);
-            CUs : constant Node_Id          := Cunit (UNs);
-            CIs : constant List_Id          := Context_Items (CUs);
+            Pkg : Entity_Id;
 
          begin
-            Itm := First (CIs);
-            while Present (Itm) loop
-               if Nkind (Itm) = N_With_Clause then
-                  Ent :=
-                    Cunit_Entity (Get_Cunit_Unit_Number (Library_Unit (Itm)));
+            Pkg := UE;
+            loop
+               Pkg := Scope (Pkg);
+               exit when Pkg = Standard_Standard;
 
-                  if U = Ent then
-
-                     --  If we find it, we have to create an implicit copy
-                     --  of the with clause for the body, just so that it
-                     --  can be marked as elaborate desirable (it would be
-                     --  wrong to put it on the spec item, since it is the
-                     --  body that has possible elaboration problems, not
-                     --  the spec.
-
-                     declare
-                        CW : constant Node_Id :=
-                               Make_With_Clause (Sloc (Itm),
-                                 Name => Name (Itm));
-
-                     begin
-                        Set_Library_Unit  (CW, Library_Unit (Itm));
-                        Set_Implicit_With (CW, True);
-
-                        --  Set elaborate all desirable on copy and then
-                        --  append the copy to the list of body with's
-                        --  and we are done.
-
-                        Set_Elab_Flag (CW);
-                        Append_To (CI, CW);
-                        return;
-                     end;
-                  end if;
+               if In_Withs_Of (Pkg) then
+                  Add_To_Context_And_Mark (Itm);
+                  return;
                end if;
-
-               Next (Itm);
             end loop;
          end;
       end if;
@@ -1090,7 +1127,7 @@ package body Sem_Elab is
       --  Nothing to do if inside a generic template
 
       elsif Inside_A_Generic
-        and then not Present (Enclosing_Generic_Body (N))
+        and then No (Enclosing_Generic_Body (N))
       then
          return;
       end if;
@@ -1988,7 +2025,7 @@ package body Sem_Elab is
                     ("task will be activated before elaboration of its body?",
                       Decl);
                   Error_Msg_N
-                    ("Program_Error will be raised at run-time?", Decl);
+                    ("\Program_Error will be raised at run-time?", Decl);
 
                elsif
                  Present (Corresponding_Body (Unit_Declaration_Node (Proc)))
@@ -2657,9 +2694,11 @@ package body Sem_Elab is
 
    begin
       --  Find elaboration scope for Scop1
+      --  This is either a subprogram or a compilation unit.
 
       S1 := Scop1;
       while S1 /= Standard_Standard
+        and then not Is_Compilation_Unit (S1)
         and then (Ekind (S1) = E_Package
                     or else
                   Ekind (S1) = E_Protected_Type
@@ -2673,6 +2712,7 @@ package body Sem_Elab is
 
       S2 := Scop2;
       while S2 /= Standard_Standard
+        and then not Is_Compilation_Unit (S2)
         and then (Ekind (S2) = E_Package
                     or else
                   Ekind (S2) = E_Protected_Type
