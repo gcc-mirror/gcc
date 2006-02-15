@@ -172,13 +172,18 @@ $(htmldir)/gfortran/index.html: $(GFORTRAN_TEXI)
 gfortran.pod: $(GFORTRAN_TEXI)
 	-$(TEXI2POD) < $(srcdir)/fortran/invoke.texi > $@
 
+# Create or recreate the gfortran private include file directory.
+install-finclude-dir: installdirs
+	-rm -rf $(DESTDIR)$(libsubdir)/finclude
+	mkdir $(DESTDIR)$(libsubdir)/finclude
+	-chmod a+rx $(DESTDIR)$(libsubdir)/finclude
 #
 # Install hooks:
 # f951 is installed elsewhere as part of $(COMPILERS).
 
 # Install the driver program as $(target)-gfortran
 # and also as either gfortran (if native) or $(tooldir)/bin/gfortran.
-fortran.install-common: installdirs
+fortran.install-common: install-finclude-dir installdirs
 	-if [ -f f951$(exeext) ] ; then \
 	  rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) gfortran$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
