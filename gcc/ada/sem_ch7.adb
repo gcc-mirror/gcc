@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -746,7 +746,11 @@ package body Sem_Ch7 is
                Set_Never_Set_In_Source (E, False);
                Set_Is_True_Constant    (E, False);
                Set_Current_Value       (E, Empty);
-               Set_Is_Known_Non_Null   (E, False);
+               Set_Is_Known_Null       (E, False);
+
+               if not Can_Never_Be_Null (E) then
+                  Set_Is_Known_Non_Null (E, False);
+               end if;
 
             elsif Ekind (E) = E_Package
                     or else

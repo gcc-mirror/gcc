@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -42,7 +41,6 @@ with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
-with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -53,13 +51,12 @@ package body Exp_Ch2 is
    -----------------------
 
    procedure Expand_Current_Value (N : Node_Id);
-   --  Given a node N for a variable whose Current_Value field is set.
-   --  If the node is for a discrete type, replaces the node with a
-   --  copy of the referenced value. This provides a limited form of
-   --  value propagation for variables which are initialized or assigned
-   --  not been further modified at the time of reference. The call has
-   --  no effect if the Current_Value refers to a conditional with a
-   --  condition other than equality.
+   --  N is a node for a variable whose Current_Value field is set. If N is
+   --  node is for a discrete type, replaces node with a copy of the referenced
+   --  value. This provides a limited form of value propagation for variables
+   --  which are initialized or assigned not been further modified at the time
+   --  of reference. The call has no effect if the Current_Value refers to a
+   --  conditional with condition other than equality.
 
    procedure Expand_Discriminant (N : Node_Id);
    --  An occurrence of a discriminant within a discriminated type is replaced
@@ -69,42 +66,42 @@ package body Exp_Ch2 is
    --  discriminants of records that appear in constraints of component of the
    --  record, because Gigi uses the discriminant name to retrieve its value.
    --  In the other hand, it has to be performed for default expressions of
-   --  components because they are used in the record init procedure. See
-   --  Einfo for more details, and Exp_Ch3, Exp_Ch9 for examples of use.
-   --  For discriminants of tasks and protected types, the transformation is
-   --  more complex when it occurs within a default expression for an entry
-   --  or protected operation. The corresponding default_expression_function
-   --  has an additional parameter which is the target of an entry call, and
-   --  the discriminant of the task must be replaced with a reference to the
+   --  components because they are used in the record init procedure. See Einfo
+   --  for more details, and Exp_Ch3, Exp_Ch9 for examples of use. For
+   --  discriminants of tasks and protected types, the transformation is more
+   --  complex when it occurs within a default expression for an entry or
+   --  protected operation. The corresponding default_expression_function has
+   --  an additional parameter which is the target of an entry call, and the
+   --  discriminant of the task must be replaced with a reference to the
    --  discriminant of that formal parameter.
 
    procedure Expand_Entity_Reference (N : Node_Id);
    --  Common processing for expansion of identifiers and expanded names
 
    procedure Expand_Entry_Index_Parameter (N : Node_Id);
-   --  A reference to the identifier in the entry index specification
-   --  of a protected entry body is modified to a reference to a constant
-   --  definintion equal to the index of the entry family member being
-   --  called. This constant is calculated as part of the elaboration
-   --  of the expanded code for the body, and is calculated from the
-   --  object-wide entry index returned by Next_Entry_Call.
+   --  A reference to the identifier in the entry index specification of
+   --  protected entry body is modified to a reference to a constant definition
+   --  equal to the index of the entry family member being called. This
+   --  constant is calculated as part of the elaboration of the expanded code
+   --  for the body, and is calculated from the object-wide entry index
+   --  returned by Next_Entry_Call.
 
    procedure Expand_Entry_Parameter (N : Node_Id);
-   --  A reference to an entry parameter is modified to be a reference to
-   --  the corresponding component of the entry parameter record that is
-   --  passed by the runtime to the accept body procedure
+   --  A reference to an entry parameter is modified to be a reference to the
+   --  corresponding component of the entry parameter record that is passed by
+   --  the runtime to the accept body procedure
 
    procedure Expand_Formal (N : Node_Id);
-   --  A reference to a formal parameter of a protected subprogram is
-   --  expanded to the corresponding formal of the unprotected procedure
-   --  used to represent the protected subprogram within the protected object.
+   --  A reference to a formal parameter of a protected subprogram is expanded
+   --  to the corresponding formal of the unprotected procedure used to
+   --  represent the protected subprogram within the protected object.
 
    procedure Expand_Protected_Private (N : Node_Id);
-   --  A reference to a private object of a protected type is expanded
-   --  to a component selected from the record used to implement
-   --  the protected object. Such a record is passed to all operations
-   --  on a protected object in a parameter named _object. Such an object
-   --  is a constant within a function, and a variable otherwise.
+   --  A reference to a private object of a protected type is expanded to a
+   --  component selected from the record used to implement the protected
+   --  object. Such a record is passed to all operations on a protected object
+   --  in a parameter named _object. Such an object is a constant within a
+   --  function, and a variable otherwise.
 
    procedure Expand_Renaming (N : Node_Id);
    --  For renamings, just replace the identifier by the corresponding
@@ -123,51 +120,6 @@ package body Exp_Ch2 is
       T   : constant Entity_Id  := Etype (N);
       Val : Node_Id;
       Op  : Node_Kind;
-
-      function In_Appropriate_Scope return Boolean;
-      --  Returns true if the current scope is the scope of E, or is a nested
-      --  (to any level) package declaration, package body, or block of this
-      --  scope. The idea is that such references are in the sequential
-      --  execution sequence of statements executed after E is elaborated.
-
-      --------------------------
-      -- In_Appropriate_Scope --
-      --------------------------
-
-      function In_Appropriate_Scope return Boolean is
-         ES : constant Entity_Id := Scope (E);
-         CS : Entity_Id;
-
-      begin
-         CS := Current_Scope;
-
-         loop
-            --  If we are in right scope, replacement is safe
-
-            if CS = ES then
-               return True;
-
-            --  Packages do not affect the determination of safety
-
-            elsif Ekind (CS) = E_Package then
-               CS := Scope (CS);
-               exit when CS = Standard_Standard;
-
-            --  Blocks do not affect the determination of safety
-
-            elsif Ekind (CS) = E_Block then
-               CS := Scope (CS);
-
-            --  Otherwise, the reference is dubious, and we cannot be
-            --  sure that it is safe to do the replacement.
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         return False;
-      end In_Appropriate_Scope;
 
    --  Start of processing for Expand_Current_Value
 
@@ -191,25 +143,9 @@ package body Exp_Ch2 is
 
          and then not Is_Lvalue (N)
 
-         --  Do not replace occurrences that are not in the current scope,
-         --  because in a nested subprogram we know absolutely nothing about
-         --  the sequence of execution.
+         --  Check that entity is suitable for replacement
 
-         and then In_Appropriate_Scope
-
-         --  Do not replace statically allocated objects, because they may
-         --  be modified outside the current scope.
-
-         and then not Is_Statically_Allocated (E)
-
-         --  Do not replace aliased or volatile objects, since we don't know
-         --  what else might change the value
-
-         and then not Is_Aliased (E) and then not Treat_As_Volatile (E)
-
-         --  Debug flag -gnatdM disconnects this optimization
-
-         and then not Debug_Flag_MM
+         and then OK_To_Do_Constant_Replacement (E)
 
          --  Do not replace occurrences in pragmas (where names typically
          --  appear not as values, but as simply names. If there are cases
@@ -316,11 +252,11 @@ package body Exp_Ch2 is
             Parent_P := Parent (Parent_P);
          end loop;
 
-         --  If the discriminant occurs within the default expression for
-         --  a formal of an entry or protected operation, create a default
-         --  function for it, and replace the discriminant with a reference
-         --  to the discriminant of the formal of the default function.
-         --  The discriminant entity is the one defined in the corresponding
+         --  If the discriminant occurs within the default expression for a
+         --  formal of an entry or protected operation, create a default
+         --  function for it, and replace the discriminant with a reference to
+         --  the discriminant of the formal of the default function. The
+         --  discriminant entity is the one defined in the corresponding
          --  record.
 
          if Present (Parent_P)
@@ -422,8 +358,8 @@ package body Exp_Ch2 is
       then
          Expand_Current_Value (N);
 
-         --  We do want to warn for the case of a boolean variable (not
-         --  a boolean constant) whose value is known at compile time.
+         --  We do want to warn for the case of a boolean variable (not a
+         --  boolean constant) whose value is known at compile time.
 
          if Is_Boolean_Type (Etype (N)) then
             Warn_On_Known_Condition (N);
@@ -454,8 +390,8 @@ package body Exp_Ch2 is
       P_Comp_Ref : Entity_Id;
 
       function In_Assignment_Context (N : Node_Id) return Boolean;
-      --  Check whether this is a context in which the entry formal may
-      --  be assigned to.
+      --  Check whether this is a context in which the entry formal may be
+      --  assigned to.
 
       ---------------------------
       -- In_Assignment_Context --
@@ -491,13 +427,12 @@ package body Exp_Ch2 is
       if Is_Task_Type (Scope (Ent_Spec))
         and then Comes_From_Source (Ent_Formal)
       then
-         --  Before replacing the formal with the local renaming that is
-         --  used in the accept block, note if this is an assignment
-         --  context, and note the modification to avoid spurious warnings,
-         --  because the original entity is not used further.
-         --  If the formal is unconstrained, we also generate an extra
-         --  parameter to hold the Constrained attribute of the actual. No
-         --  renaming is generated for this flag.
+         --  Before replacing the formal with the local renaming that is used
+         --  in the accept block, note if this is an assignment context, and
+         --  note the modification to avoid spurious warnings, because the
+         --  original entity is not used further. If formal is unconstrained,
+         --  we also generate an extra parameter to hold the Constrained
+         --  attribute of the actual. No renaming is generated for this flag.
 
          if Ekind (Entity (N)) /= E_In_Parameter
            and then In_Assignment_Context (N)
@@ -510,11 +445,11 @@ package body Exp_Ch2 is
       end if;
 
       --  What we need is a reference to the corresponding component of the
-      --  parameter record object. The Accept_Address field of the entry
-      --  entity references the address variable that contains the address
-      --  of the accept parameters record. We first have to do an unchecked
-      --  conversion to turn this into a pointer to the parameter record and
-      --  then we select the required parameter field.
+      --  parameter record object. The Accept_Address field of the entry entity
+      --  references the address variable that contains the address of the
+      --  accept parameters record. We first have to do an unchecked conversion
+      --  to turn this into a pointer to the parameter record and then we
+      --  select the required parameter field.
 
       P_Comp_Ref :=
         Make_Selected_Component (Loc,
@@ -525,11 +460,10 @@ package body Exp_Ch2 is
           Selector_Name =>
             New_Reference_To (Entry_Component (Ent_Formal), Loc));
 
-      --  For all types of parameters, the constructed parameter record
-      --  object contains a pointer to the parameter. Thus we must
-      --  dereference them to access them (this will often be redundant,
-      --  since the needed deference is implicit, but no harm is done by
-      --  making it explicit).
+      --  For all types of parameters, the constructed parameter record object
+      --  contains a pointer to the parameter. Thus we must dereference them to
+      --  access them (this will often be redundant, since the needed deference
+      --  is implicit, but no harm is done by making it explicit).
 
       Rewrite (N,
         Make_Explicit_Dereference (Loc, P_Comp_Ref));
@@ -655,8 +589,8 @@ package body Exp_Ch2 is
          end if;
       end if;
 
-      --  The type of the reference is the type of the prival, which may
-      --  differ from that of the original component if it is an itype.
+      --  The type of the reference is the type of the prival, which may differ
+      --  from that of the original component if it is an itype.
 
       Set_Entity (N, Prival (E));
       Set_Etype  (N, Etype (Prival (E)));
@@ -682,10 +616,10 @@ package body Exp_Ch2 is
    begin
       Rewrite (N, New_Copy_Tree (Renamed_Object (E)));
 
-      --  We mark the copy as unanalyzed, so that it is sure to be
-      --  reanalyzed at the top level. This is needed in the packed
-      --  case since we specifically avoided expanding packed array
-      --  references when the renaming declaration was analyzed.
+      --  We mark the copy as unanalyzed, so that it is sure to be reanalyzed
+      --  at the top level. This is needed in the packed case since we
+      --  specifically avoided expanding packed array references when the
+      --  renaming declaration was analyzed.
 
       Reset_Analyzed_Flags (N);
       Analyze_And_Resolve (N, T);
@@ -696,9 +630,9 @@ package body Exp_Ch2 is
    ------------------
 
    --  This would be trivial, simply a test for an identifier that was a
-   --  reference to a formal, if it were not for the fact that a previous
-   --  call to Expand_Entry_Parameter will have modified the reference
-   --  to the identifier. A formal of a protected entity is rewritten as
+   --  reference to a formal, if it were not for the fact that a previous call
+   --  to Expand_Entry_Parameter will have modified the reference to the
+   --  identifier. A formal of a protected entity is rewritten as
 
    --    typ!(recobj).rec.all'Constrained
 

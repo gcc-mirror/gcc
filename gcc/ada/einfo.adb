@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,6 +209,7 @@ package body Einfo is
    --    Privals_Chain                   Elist23
    --    Protected_Operation             Node23
 
+   --    DT_Offset_To_Top_Func           Node24
    --    Obsolescent_Warning             Node24
    --    Task_Body_Procedure             Node24
    --    Abstract_Interfaces             Elist24
@@ -453,9 +454,9 @@ package body Einfo is
 
    --    Has_Anon_Block_Suffix          Flag201
    --    Itype_Printed                  Flag202
+   --    Has_Pragma_Pure                Flag203
+   --    Is_Known_Null                  Flag204
 
-   --    (unused)                       Flag203
-   --    (unused)                       Flag204
    --    (unused)                       Flag205
    --    (unused)                       Flag206
    --    (unused)                       Flag207
@@ -831,6 +832,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Component and then Is_Tag (Id));
       return Uint15 (Id);
    end DT_Entry_Count;
+
+   function DT_Offset_To_Top_Func (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Component and then Is_Tag (Id));
+      return Node24 (Id);
+   end DT_Offset_To_Top_Func;
 
    function DT_Position (Id : E) return U is
    begin
@@ -1256,9 +1263,13 @@ package body Einfo is
       return Flag121 (Implementation_Base_Type (Id));
    end Has_Pragma_Pack;
 
+   function Has_Pragma_Pure (Id : E) return B is
+   begin
+      return Flag203 (Id);
+   end Has_Pragma_Pure;
+
    function Has_Pragma_Pure_Function (Id : E) return B is
    begin
-      pragma Assert (Is_Subprogram (Id));
       return Flag179 (Id);
    end Has_Pragma_Pure_Function;
 
@@ -1666,6 +1677,11 @@ package body Einfo is
       return Flag37 (Id);
    end Is_Known_Non_Null;
 
+   function Is_Known_Null (Id : E) return B is
+   begin
+      return Flag204 (Id);
+   end Is_Known_Null;
+
    function Is_Known_Valid (Id : E) return B is
    begin
       return Flag170 (Id);
@@ -1848,7 +1864,7 @@ package body Einfo is
 
    function Is_Unchecked_Union (Id : E) return B is
    begin
-      return Flag117 (Id);
+      return Flag117 (Implementation_Base_Type (Id));
    end Is_Unchecked_Union;
 
    function Is_Unsigned_Type (Id : E) return B is
@@ -1995,10 +2011,6 @@ package body Einfo is
 
    function No_Return (Id : E) return B is
    begin
-      pragma Assert
-        (Id = Any_Id
-          or else Ekind (Id) = E_Procedure
-          or else Ekind (Id) = E_Generic_Procedure);
       return Flag113 (Id);
    end No_Return;
 
@@ -2931,6 +2943,12 @@ package body Einfo is
       Set_Uint15 (Id, V);
    end Set_DT_Entry_Count;
 
+   procedure Set_DT_Offset_To_Top_Func (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Component and then Is_Tag (Id));
+      Set_Node24 (Id, V);
+   end Set_DT_Offset_To_Top_Func;
+
    procedure Set_DT_Position (Id : E; V : U) is
    begin
       pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
@@ -3362,9 +3380,13 @@ package body Einfo is
       Set_Flag121 (Id, V);
    end Set_Has_Pragma_Pack;
 
+   procedure Set_Has_Pragma_Pure (Id : E; V : B := True) is
+   begin
+      Set_Flag203 (Id, V);
+   end Set_Has_Pragma_Pure;
+
    procedure Set_Has_Pragma_Pure_Function (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Subprogram (Id));
       Set_Flag179 (Id, V);
    end Set_Has_Pragma_Pure_Function;
 
@@ -3799,6 +3821,11 @@ package body Einfo is
       Set_Flag37 (Id, V);
    end Set_Is_Known_Non_Null;
 
+   procedure Set_Is_Known_Null (Id : E; V : B := True) is
+   begin
+      Set_Flag204 (Id, V);
+   end Set_Is_Known_Null;
+
    procedure Set_Is_Known_Valid (Id : E; V : B := True) is
    begin
       Set_Flag170 (Id, V);
@@ -4134,7 +4161,9 @@ package body Einfo is
    procedure Set_No_Return (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind (Id) = E_Procedure or else Ekind (Id) = E_Generic_Procedure);
+        (V = False
+          or else Ekind (Id) = E_Procedure
+          or else Ekind (Id) = E_Generic_Procedure);
       Set_Flag113 (Id, V);
    end Set_No_Return;
 
@@ -5749,6 +5778,16 @@ package body Einfo is
       elsif Is_Concurrent_Type (Btype) then
          return True;
 
+         --  The Is_Limited_Record flag normally indicates that the type is
+         --  limited. The exception is that a type does not inherit limitedness
+         --  from its interface ancestor. So the type may be derived from a
+         --  limited interface, but is not limited.
+
+      elsif Is_Limited_Record (Id)
+        and then not Is_Interface (Id)
+      then
+         return True;
+
       --  Otherwise we will look around to see if there is some other reason
       --  for it to be limited, except that if an error was posted on the
       --  entity, then just assume it is non-limited, because it can cause
@@ -5967,7 +6006,7 @@ package body Einfo is
 
       loop
          D := Next_Entity (D);
-         if not Present (D)
+         if No (D)
            or else (Ekind (D) /= E_Discriminant
                       and then not Is_Itype (D))
          then
@@ -6382,6 +6421,14 @@ package body Einfo is
 
       if Is_Private_Type (Typ) then
          Typ := Underlying_Type (Typ);
+
+         --  If the underlying type is missing then the source program has
+         --  errors and there is nothing else to do (the full-type declaration
+         --  associated with the private type declaration is missing).
+
+         if No (Typ) then
+            return Empty;
+         end if;
       end if;
 
       Comp := First_Entity (Typ);
@@ -6613,6 +6660,7 @@ package body Einfo is
       W ("Has_Pragma_Elaborate_Body",     Flag150 (Id));
       W ("Has_Pragma_Inline",             Flag157 (Id));
       W ("Has_Pragma_Pack",               Flag121 (Id));
+      W ("Has_Pragma_Pure",               Flag203 (Id));
       W ("Has_Pragma_Pure_Function",      Flag179 (Id));
       W ("Has_Pragma_Unreferenced",       Flag180 (Id));
       W ("Has_Primitive_Operations",      Flag120 (Id));
@@ -6684,7 +6732,8 @@ package body Einfo is
       W ("Is_Interrupt_Handler",          Flag89  (Id));
       W ("Is_Intrinsic_Subprogram",       Flag64  (Id));
       W ("Is_Itype",                      Flag91  (Id));
-      W ("Is_Known_Valid",                Flag37  (Id));
+      W ("Is_Known_Non_Null",             Flag37  (Id));
+      W ("Is_Known_Null",                 Flag204 (Id));
       W ("Is_Known_Valid",                Flag170 (Id));
       W ("Is_Limited_Composite",          Flag106 (Id));
       W ("Is_Limited_Interface",          Flag197 (Id));
@@ -7637,6 +7686,9 @@ package body Einfo is
               E_Record_Type_With_Private                 |
               E_Record_Subtype_With_Private              =>
             Write_Str ("Abstract_Interfaces");
+
+         when E_Component                                =>
+            Write_Str ("DT_Offset_To_Top_Func");
 
          when Subprogram_Kind                            |
               E_Package                                  |

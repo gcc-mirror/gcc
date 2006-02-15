@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,14 +145,24 @@ package body Sem_Cat is
       begin
          if Is_Preelaborated (E) then
             return Preelaborated;
-         elsif Is_Pure (E) then
+
+            --  Ignore Pure specification if set by pragma Pure_Function
+
+         elsif Is_Pure (E)
+           and then not
+             (Has_Pragma_Pure_Function (E) and not Has_Pragma_Pure (E))
+         then
             return Pure;
+
          elsif Is_Shared_Passive (E) then
             return Shared_Passive;
+
          elsif Is_Remote_Types (E) then
             return Remote_Types;
+
          elsif Is_Remote_Call_Interface (E) then
             return Remote_Call_Interface;
+
          else
             return Normal;
          end if;
@@ -967,7 +977,7 @@ package body Sem_Cat is
       --  on instantiations).
 
       if Inside_A_Generic
-        and then not Present (Enclosing_Generic_Body (Id))
+        and then No (Enclosing_Generic_Body (Id))
       then
          return;
       end if;
