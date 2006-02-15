@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1788,7 +1788,17 @@ package body Ch3 is
 
    begin
       Typedef_Node := New_Node (N_Derived_Type_Definition, Token_Ptr);
-      T_New;
+
+      if Ada_Version < Ada_05
+        and then Token = Tok_Identifier
+        and then Token_Name = Name_Interface
+      then
+         Error_Msg_SP
+           ("abstract interface is an Ada 2005 extension");
+         Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+      else
+         T_New;
+      end if;
 
       if Token = Tok_Abstract then
          Error_Msg_SC ("ABSTRACT must come before NEW, not after");
@@ -3779,44 +3789,47 @@ package body Ch3 is
       Def_Node := New_Node (N_Access_Definition, Token_Ptr);
       Scan; -- past ACCESS
 
-      --  Ada 2005 (AI-254/AI-231)
+      --  Ada 2005 (AI-254): Access_To_Subprogram_Definition
 
-      if Ada_Version >= Ada_05 then
-
-         --  Ada 2005 (AI-254): Access_To_Subprogram_Definition
-
-         if Token = Tok_Protected
-           or else Token = Tok_Procedure
-           or else Token = Tok_Function
-         then
-            Subp_Node :=
-              P_Access_Type_Definition (Header_Already_Parsed => True);
-            Set_Null_Exclusion_Present (Subp_Node, Null_Exclusion_Present);
-            Set_Access_To_Subprogram_Definition (Def_Node, Subp_Node);
-
-         --  Ada 2005 (AI-231)
-         --  [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
-
-         else
-            Set_Null_Exclusion_Present (Def_Node, Null_Exclusion_Present);
-
-            if Token = Tok_All then
-               Scan; -- past ALL
-               Set_All_Present (Def_Node);
-
-            elsif Token = Tok_Constant then
-               Scan; -- past CONSTANT
-               Set_Constant_Present (Def_Node);
-            end if;
-
-            Set_Subtype_Mark (Def_Node, P_Subtype_Mark);
-            No_Constraint;
+      if Token = Tok_Protected
+        or else Token = Tok_Procedure
+        or else Token = Tok_Function
+      then
+         if Ada_Version < Ada_05 then
+            Error_Msg_SP ("access-to-subprogram is an Ada 2005 extension");
+            Error_Msg_SP ("\unit should be compiled with -gnat05 switch");
          end if;
 
-      --  Ada 95
+         Subp_Node := P_Access_Type_Definition (Header_Already_Parsed => True);
+         Set_Null_Exclusion_Present (Subp_Node, Null_Exclusion_Present);
+         Set_Access_To_Subprogram_Definition (Def_Node, Subp_Node);
+
+      --  Ada 2005 (AI-231)
+      --  [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
 
       else
-         Set_Null_Exclusion_Present (Def_Node, False);
+         Set_Null_Exclusion_Present (Def_Node, Null_Exclusion_Present);
+
+         if Token = Tok_All then
+            if Ada_Version < Ada_05 then
+               Error_Msg_SP
+                 ("access-all in this context is an Ada 2005 extension");
+               Error_Msg_SP ("\unit should be compiled with -gnat05 switch");
+            end if;
+
+            Scan; -- past ALL
+            Set_All_Present (Def_Node);
+
+         elsif Token = Tok_Constant then
+            if Ada_Version < Ada_05 then
+               Error_Msg_SP ("access-to-constant is an Ada 2005 extension");
+               Error_Msg_SP ("\unit should be compiled with -gnat05 switch");
+            end if;
+
+            Scan; -- past CONSTANT
+            Set_Constant_Present (Def_Node);
+         end if;
+
          Set_Subtype_Mark (Def_Node, P_Subtype_Mark);
          No_Constraint;
       end if;
