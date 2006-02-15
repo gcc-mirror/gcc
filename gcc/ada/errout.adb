@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -691,6 +691,7 @@ package body Errout is
       if Suppress_Message
         and not All_Errors_Mode
         and not (Msg (Msg'Last) = '!')
+        and not Is_Warning_Msg
       then
          if not Continuation then
             Last_Killed := True;
@@ -780,7 +781,8 @@ package body Errout is
       Errors.Table (Cur_Msg).Warn     := Is_Warning_Msg;
       Errors.Table (Cur_Msg).Style    := Is_Style_Msg;
       Errors.Table (Cur_Msg).Serious  := Is_Serious_Error;
-      Errors.Table (Cur_Msg).Uncond   := Is_Unconditional_Msg;
+      Errors.Table (Cur_Msg).Uncond
+        := Is_Unconditional_Msg or Is_Warning_Msg;
       Errors.Table (Cur_Msg).Msg_Cont := Continuation;
       Errors.Table (Cur_Msg).Deleted  := False;
 
@@ -1005,6 +1007,7 @@ package body Errout is
 
       if All_Errors_Mode
         or else Msg (Msg'Last) = '!'
+        or else Is_Warning_Msg
         or else OK_Node (N)
         or else (Msg (Msg'First) = '\' and not Last_Killed)
       then
@@ -1431,12 +1434,6 @@ package body Errout is
          Warnings.Table (Warnings.Last).Start := Source_Ptr'First;
          Warnings.Table (Warnings.Last).Stop  := Source_Ptr'Last;
       end if;
-
-      --  Set the error nodes to Empty to avoid uninitialized variable
-      --  references for saves/restores/moves.
-
-      Error_Msg_Node_1 := Empty;
-      Error_Msg_Node_2 := Empty;
    end Initialize;
 
    -----------------
@@ -1867,9 +1864,15 @@ package body Errout is
       end if;
 
       --  The following assignment ensures that a second ampersand insertion
-      --  character will correspond to the Error_Msg_Node_2 parameter.
+      --  character will correspond to the Error_Msg_Node_2 parameter. We
+      --  suppress possible validity checks in case operating in -gnatVa mode,
+      --  and Error_Msg_Node_2 is not needed and has not been set.
 
-      Error_Msg_Node_1 := Error_Msg_Node_2;
+      declare
+         pragma Suppress (Range_Check);
+      begin
+         Error_Msg_Node_1 := Error_Msg_Node_2;
+      end;
    end Set_Msg_Insertion_Node;
 
    --------------------------------------
@@ -2042,9 +2045,15 @@ package body Errout is
       end if;
 
       --  The following assignment ensures that a second percent insertion
-      --  character will correspond to the Error_Msg_Unit_2 parameter.
+      --  character will correspond to the Error_Msg_Unit_2 parameter. We
+      --  suppress possible validity checks in case operating in -gnatVa mode,
+      --  and Error_Msg_Unit_2 is not needed and has not been set.
 
-      Error_Msg_Unit_1 := Error_Msg_Unit_2;
+      declare
+         pragma Suppress (Range_Check);
+      begin
+         Error_Msg_Unit_1 := Error_Msg_Unit_2;
+      end;
    end Set_Msg_Insertion_Unit_Name;
 
    ------------------
