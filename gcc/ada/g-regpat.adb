@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2005, AdaCore                    --
+--                      Copyright (C) 1999-2006, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2878,12 +2878,14 @@ package body GNAT.Regpat is
             if Next_Char_Known then
                --  Last position to check
 
-               Last_Pos := Input_Pos + Max;
-
-               if Last_Pos > Last_In_Data
-                 or else Max = Natural'Last
-               then
+               if Max = Natural'Last then
                   Last_Pos := Last_In_Data;
+               else
+                  Last_Pos := Input_Pos + Max;
+
+                  if Last_Pos > Last_In_Data then
+                     Last_Pos := Last_In_Data;
+                  end if;
                end if;
 
                --  Look for the first possible opportunity
