@@ -1786,7 +1786,7 @@ struct tree_omp_clause GTY(())
     enum omp_clause_schedule_kind schedule_kind;
     enum tree_code                reduction_code;
   } GTY ((skip)) subcode;
-  tree GTY ((length ("omp_clause_num_ops[TREE_CODE ((tree)&%h)]"))) ops[1];
+  tree GTY ((length ("omp_clause_num_ops[OMP_CLAUSE_CODE ((tree)&%h)]"))) ops[1];
 };
 
 
