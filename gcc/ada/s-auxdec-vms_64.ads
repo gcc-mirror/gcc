@@ -37,15 +37,21 @@
 --  These definitions can be used directly by withing this package, or merged
 --  with System using pragma Extend_System (Aux_DEC)
 
---  This is the IPF VMS 64 bit version.
+--  This is the VMS 64 bit version.
 
 with Unchecked_Conversion;
 
 package System.Aux_DEC is
    pragma Preelaborate;
 
-   subtype Short_Address is Address
+   type Short_Integer_Address is
      range -2 ** (32 - 1) .. +2 ** (32 - 1) - 1;
+   --  Integer literals cannot appear naked in an address context, as a
+   --  result the bounds of Short_Address cannot be given simply as 2^32 etc.
+
+   subtype Short_Address is Address
+     range Address (Short_Integer_Address'First) ..
+           Address (Short_Integer_Address'Last);
    for Short_Address'Object_Size use 32;
    --  This subtype allows addresses to be converted from 64 bits to 32 bits
    --  with an appropriate range check. Note that since this is a subtype of
