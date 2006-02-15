@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,9 +113,9 @@ package body Exp_Ch9 is
    --  select statements. Astat is the accept statement.
 
    function Build_Barrier_Function
-     (N    : Node_Id;
-      Ent  : Entity_Id;
-      Pid  : Node_Id) return Node_Id;
+     (N   : Node_Id;
+      Ent : Entity_Id;
+      Pid : Node_Id) return Node_Id;
    --  Build the function body returning the value of the barrier expression
    --  for the specified entry body.
 
@@ -902,9 +902,9 @@ package body Exp_Ch9 is
    ----------------------------
 
    function Build_Barrier_Function
-     (N    : Node_Id;
-      Ent  : Entity_Id;
-      Pid  : Node_Id) return Node_Id
+     (N   : Node_Id;
+      Ent : Entity_Id;
+      Pid : Node_Id) return Node_Id
    is
       Loc         : constant Source_Ptr := Sloc (N);
       Ent_Formals : constant Node_Id    := Entry_Body_Formal_Part (N);
@@ -1580,7 +1580,7 @@ package body Exp_Ch9 is
 
       --  Return if no interface primitive can be overriden
 
-      if not Present (First_Param) then
+      if No (First_Param) then
          return Empty;
       end if;
 
@@ -3815,7 +3815,7 @@ package body Exp_Ch9 is
          --  allowed to modify queue orders for a given priority at will!
 
          if Opt.Task_Dispatching_Policy = 'F' and then
-           not Present (Handled_Statement_Sequence (N))
+           No (Handled_Statement_Sequence (N))
          then
             Set_Handled_Statement_Sequence (N,
               Make_Handled_Sequence_Of_Statements (Loc,
@@ -4858,9 +4858,11 @@ package body Exp_Ch9 is
       if Nkind (Ecall) = N_Procedure_Call_Statement then
          if Ada_Version >= Ada_05
            and then
-             (not Present (Original_Node (Ecall))
+             (No (Original_Node (Ecall))
                 or else
-              Nkind (Original_Node (Ecall)) /= N_Delay_Relative_Statement)
+                  (Nkind (Original_Node (Ecall)) /= N_Delay_Relative_Statement
+                     and then
+                   Nkind (Original_Node (Ecall)) /= N_Delay_Until_Statement))
          then
             Extract_Dispatching_Call (Ecall, Call_Ent, Obj, Actuals, Formals);
 
@@ -6818,7 +6820,6 @@ package body Exp_Ch9 is
       Cdecls       : List_Id;
       Discr_Map    : constant Elist_Id := New_Elmt_List;
       Priv         : Node_Id;
-      Pent         : Entity_Id;
       New_Priv     : Node_Id;
       Comp         : Node_Id;
       Comp_Id      : Entity_Id;
@@ -7024,21 +7025,42 @@ package body Exp_Ch9 is
          while Present (Priv) loop
 
             if Nkind (Priv) = N_Component_Declaration then
-               Pent := Defining_Identifier (Priv);
-               New_Priv :=
-                 Make_Component_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Sloc (Pent), Chars (Pent)),
-                   Component_Definition =>
-                     Make_Component_Definition (Sloc (Pent),
-                       Aliased_Present    => False,
-                       Subtype_Indication =>
-                         New_Copy_Tree (Subtype_Indication
-                                         (Component_Definition (Priv)),
-                                        Discr_Map)),
-                   Expression => Expression (Priv));
 
-               Append_To (Cdecls, New_Priv);
+               --  The component definition consists of a subtype indication,
+               --  or (in Ada 2005) an access definition. Make a copy of the
+               --  proper definition.
+
+               declare
+                  Old_Comp : constant Node_Id   := Component_Definition (Priv);
+                  Pent     : constant Entity_Id := Defining_Identifier (Priv);
+                  New_Comp : Node_Id;
+
+               begin
+                  if Present (Subtype_Indication (Old_Comp)) then
+                     New_Comp :=
+                       Make_Component_Definition (Sloc (Pent),
+                         Aliased_Present    => False,
+                         Subtype_Indication =>
+                           New_Copy_Tree (Subtype_Indication (Old_Comp),
+                                           Discr_Map));
+                  else
+                     New_Comp :=
+                       Make_Component_Definition (Sloc (Pent),
+                         Aliased_Present    => False,
+                         Access_Definition  =>
+                           New_Copy_Tree (Access_Definition (Old_Comp),
+                                           Discr_Map));
+                  end if;
+
+                  New_Priv :=
+                    Make_Component_Declaration (Loc,
+                      Defining_Identifier =>
+                        Make_Defining_Identifier (Sloc (Pent), Chars (Pent)),
+                      Component_Definition => New_Comp,
+                      Expression => Expression (Priv));
+
+                  Append_To (Cdecls, New_Priv);
+               end;
 
             elsif Nkind (Priv) = N_Subprogram_Declaration then
 
@@ -7131,7 +7153,7 @@ package body Exp_Ch9 is
                Wrap_Spec := Empty;
 
                if Nkind (Vis_Decl) = N_Entry_Declaration
-                 and then not Present (Discrete_Subtype_Definition (Vis_Decl))
+                 and then No (Discrete_Subtype_Definition (Vis_Decl))
                then
                   Wrap_Spec :=
                     Build_Wrapper_Spec (Loc,
