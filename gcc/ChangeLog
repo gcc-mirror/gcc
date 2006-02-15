@@ -1,3 +1,8 @@
+2006-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (struct tree_omp_clause): Use OMP_CLAUSE_CODE rather
+	than TREE_CODE as index into omp_clause_num_ops array.
+
 2006-02-15  Uttam Pawar  <uttamp@us.ibm.com>
 
 	PR rtl-optimization/26184
