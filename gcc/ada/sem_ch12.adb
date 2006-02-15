@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1351,6 +1351,7 @@ package body Sem_Ch12 is
              Subtype_Indication            => Subtype_Mark (Def));
 
          Set_Abstract_Present (New_N, Abstract_Present (Def));
+         Set_Limited_Present  (New_N, Limited_Present  (Def));
 
       else
          New_N :=
@@ -1364,6 +1365,8 @@ package body Sem_Ch12 is
 
          Set_Abstract_Present
            (Type_Definition (New_N), Abstract_Present (Def));
+         Set_Limited_Present
+           (Type_Definition (New_N), Limited_Present (Def));
       end if;
 
       Rewrite (N, New_N);
@@ -1894,7 +1897,7 @@ package body Sem_Ch12 is
             Ctrl_Type : constant Entity_Id := Find_Dispatching_Type (Nam);
 
          begin
-            if not Present (Ctrl_Type) then
+            if No (Ctrl_Type) then
                Error_Msg_N
                  ("abstract formal subprogram must have a controlling type",
                   N);
@@ -3030,9 +3033,13 @@ package body Sem_Ch12 is
                        Cunit_Entity (Current_Sem_Unit);
       Removed      : Boolean := False;
       Num_Scopes   : Int := 0;
-      Use_Clauses  : array (1 .. Scope_Stack.Last) of Node_Id;
-      Instances    : array (1 .. Scope_Stack.Last) of Entity_Id;
-      Inner_Scopes : array (1 .. Scope_Stack.Last) of Entity_Id;
+
+      Scope_Stack_Depth : constant Int :=
+                            Scope_Stack.Last - Scope_Stack.First + 1;
+
+      Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
+      Instances    : array (1 .. Scope_Stack_Depth) of Entity_Id;
+      Inner_Scopes : array (1 .. Scope_Stack_Depth) of Entity_Id;
       Num_Inner    : Int := 0;
       N_Instances  : Int := 0;
       S            : Entity_Id;
@@ -6568,16 +6575,23 @@ package body Sem_Ch12 is
       --  because each actual has the same name as the formal, and they do
       --  appear in the same order.
 
-      function Formal_Entity
-        (F       : Node_Id;
-         Act_Ent : Entity_Id) return Entity_Id;
-      --  Returns the entity associated with the given formal F. In the
-      --  case where F is a formal package, this function will iterate
-      --  through all of F's formals and enter map associations from the
+      function Get_Formal_Entity (N : Node_Id) return Entity_Id;
+      --  Retrieve entity of defining entity of  generic formal parameter.
+      --  Only the declarations of formals need to be considered when
+      --  linking them to actuals, but the declarative list may include
+      --  internal entities generated during analysis, and those are ignored.
+
+      procedure Match_Formal_Entity
+        (Formal_Node : Node_Id;
+         Formal_Ent  : Entity_Id;
+         Actual_Ent  : Entity_Id);
+      --  Associates the formal entity with the actual. In the case
+      --  where Formal_Ent is a formal package, this procedure iterates
+      --  through all of its formals and enters associations betwen the
       --  actuals occurring in the formal package's corresponding actual
-      --  package (obtained via Act_Ent) to the formal package's formal
-      --  parameters. This function is called recursively for arbitrary
-      --  levels of formal packages.
+      --  package (given by Actual_Ent) and the formal package's formal
+      --  parameters. This procedure recurses if any of the parameters is
+      --  itself a package.
 
       function Is_Instance_Of
         (Act_Spec : Entity_Id;
@@ -6641,118 +6655,109 @@ package body Sem_Ch12 is
          end case;
       end Find_Matching_Actual;
 
-      -------------------
-      -- Formal_Entity --
-      -------------------
+      -------------------------
+      -- Match_Formal_Entity --
+      -------------------------
 
-      function Formal_Entity
-        (F       : Node_Id;
-         Act_Ent : Entity_Id) return Entity_Id
+      procedure Match_Formal_Entity
+        (Formal_Node : Node_Id;
+         Formal_Ent  : Entity_Id;
+         Actual_Ent  : Entity_Id)
       is
-         Orig_Node : Node_Id := F;
          Act_Pkg   : Entity_Id;
 
       begin
-         case Nkind (Original_Node (F)) is
-            when N_Formal_Object_Declaration     =>
-               return Defining_Identifier (F);
+         Set_Instance_Of (Formal_Ent, Actual_Ent);
 
-            when N_Formal_Type_Declaration       =>
-               return Defining_Identifier (F);
+         if Ekind (Actual_Ent) = E_Package then
+            --  Record associations for each parameter
 
-            when N_Formal_Subprogram_Declaration =>
-               return Defining_Unit_Name (Specification (F));
+            Act_Pkg := Actual_Ent;
 
-            when N_Package_Declaration           =>
-               return Defining_Unit_Name (Specification (F));
+            declare
+               A_Ent  : Entity_Id := First_Entity (Act_Pkg);
+               F_Ent  : Entity_Id;
+               F_Node : Node_Id;
 
-            when N_Formal_Package_Declaration |
-                 N_Generic_Package_Declaration   =>
+               Gen_Decl : Node_Id;
+               Formals  : List_Id;
+               Actual   : Entity_Id;
 
-               if Nkind (F) = N_Generic_Package_Declaration then
-                  Orig_Node := Original_Node (F);
+            begin
+               --  Retrieve the actual given in the formal package declaration
+
+               Actual := Entity (Name (Original_Node (Formal_Node)));
+
+               --  The actual in the formal package declaration  may be a
+               --  renamed generic package, in which case we want to retrieve
+               --  the original generic in order to traverse its formal part.
+
+               if Present (Renamed_Entity (Actual)) then
+                  Gen_Decl := Unit_Declaration_Node (Renamed_Entity (Actual));
+               else
+                  Gen_Decl := Unit_Declaration_Node (Actual);
                end if;
 
-               Act_Pkg := Act_Ent;
+               Formals := Generic_Formal_Declarations (Gen_Decl);
 
-               --  Find matching actual package, skipping over itypes and
-               --  other entities generated when analyzing the formal. We
-               --  know that if the instantiation is legal then there is
-               --  a matching package for the formal.
+               if Present (Formals) then
+                  F_Node := First_Non_Pragma (Formals);
+               else
+                  F_Node := Empty;
+               end if;
 
-               while Ekind (Act_Pkg) /= E_Package loop
-                  Act_Pkg := Next_Entity (Act_Pkg);
+               while Present (A_Ent)
+                 and then Present (F_Node)
+                 and then A_Ent /= First_Private_Entity (Act_Pkg)
+               loop
+                  F_Ent := Get_Formal_Entity (F_Node);
+
+                  if Present (F_Ent) then
+
+                     --  This is a formal of the original package. Record
+                     --  association and recurse.
+
+                     Find_Matching_Actual (F_Node, A_Ent);
+                     Match_Formal_Entity (F_Node, F_Ent, A_Ent);
+                     Next_Entity (A_Ent);
+                  end if;
+
+                  Next_Non_Pragma (F_Node);
                end loop;
+            end;
+         end if;
+      end Match_Formal_Entity;
 
-               declare
-                  Actual_Ent  : Entity_Id := First_Entity (Act_Pkg);
-                  Formal_Node : Node_Id;
-                  Formal_Ent  : Entity_Id;
+      -----------------------
+      -- Get_Formal_Entity --
+      -----------------------
 
-                  Gen_Decl : Node_Id;
-                  Formals  : List_Id;
+      function Get_Formal_Entity (N : Node_Id) return Entity_Id is
+         Kind : constant Node_Kind := Nkind (Original_Node (N));
+      begin
+         case Kind is
+            when N_Formal_Object_Declaration     =>
+               return Defining_Identifier (N);
 
-               begin
-                  --  The actual may be a renamed generic package, in which
-                  --  case we want to retrieve the original generic in order
-                  --  to traverse its formal part.
+            when N_Formal_Type_Declaration       =>
+               return Defining_Identifier (N);
 
-                  if Present (Renamed_Entity (Entity (Name (Orig_Node)))) then
-                     Gen_Decl :=
-                       Unit_Declaration_Node (
-                         Renamed_Entity (Entity (Name (Orig_Node))));
-                  else
-                     Gen_Decl :=
-                        Unit_Declaration_Node (Entity (Name (Orig_Node)));
-                  end if;
+            when N_Formal_Subprogram_Declaration =>
+               return Defining_Unit_Name (Specification (N));
 
-                  Formals := Generic_Formal_Declarations (Gen_Decl);
+            when N_Formal_Package_Declaration    =>
+               return Defining_Identifier (Original_Node (N));
 
-                  if Present (Formals) then
-                     Formal_Node := First_Non_Pragma (Formals);
-                  else
-                     Formal_Node := Empty;
-                  end if;
+            when N_Generic_Package_Declaration   =>
+               return Defining_Identifier (Original_Node (N));
 
-                  while Present (Actual_Ent)
-                    and then Present (Formal_Node)
-                    and then Actual_Ent /= First_Private_Entity (Act_Pkg)
-                  loop
-                     --  ???  Are the following calls also needed here:
-                     --
-                     --  Set_Is_Hidden (Actual_Ent, False);
-                     --  Set_Is_Potentially_Use_Visible
-                     --    (Actual_Ent, In_Use (Act_Ent));
+            --  All other declarations are introduced by semantic analysis
+            --  and have no match in the actual.
 
-                     Formal_Ent := Formal_Entity (Formal_Node, Actual_Ent);
-                     if Present (Formal_Ent) then
-                        Set_Instance_Of (Formal_Ent, Actual_Ent);
-                     end if;
-                     Next_Non_Pragma (Formal_Node);
-
-                     Next_Entity (Actual_Ent);
-                  end loop;
-               end;
-
-               return Defining_Identifier (Orig_Node);
-
-            when N_Use_Package_Clause =>
+            when others                          =>
                return Empty;
-
-            when N_Use_Type_Clause =>
-               return Empty;
-
-            --  We return Empty for all other encountered forms of
-            --  declarations because there are some cases of nonformal
-            --  sorts of declaration that can show up (e.g., when array
-            --  formals are present). Since it's not clear what kinds
-            --  can appear among the formals, we won't raise failure here.
-
-            when others =>
-               return Empty;
-
          end case;
-      end Formal_Entity;
+      end Get_Formal_Entity;
 
       --------------------
       -- Is_Instance_Of --
@@ -6987,11 +6992,12 @@ package body Sem_Ch12 is
                   end if;
 
                   if Present (Formal_Node) then
-                     Formal_Ent := Formal_Entity (Formal_Node, Actual_Ent);
+                     Formal_Ent := Get_Formal_Entity (Formal_Node);
 
                      if Present (Formal_Ent) then
                         Find_Matching_Actual (Formal_Node, Actual_Ent);
-                        Set_Instance_Of (Formal_Ent, Actual_Ent);
+                        Match_Formal_Entity
+                          (Formal_Node, Formal_Ent, Actual_Ent);
                      end if;
 
                      Next_Non_Pragma (Formal_Node);
@@ -8529,7 +8535,7 @@ package body Sem_Ch12 is
                  and then Present (Ancestor_Discr)
                loop
                   if Base_Type (Act_T) /= Base_Type (Ancestor) and then
-                    not Present (Corresponding_Discriminant (Actual_Discr))
+                    No (Corresponding_Discriminant (Actual_Discr))
                   then
                      Error_Msg_NE
                        ("discriminant & does not correspond " &
@@ -10444,7 +10450,6 @@ package body Sem_Ch12 is
           (Fname => Unit_File_Name (Get_Source_Unit (Gen_Unit)),
            Renamings_Included => True) then
          Ada_Version := Ada_Version_Type'Last;
-         Ada_Version_Explicit := Ada_Version_Explicit_Config;
       end if;
 
       Current_Instantiated_Parent := (Gen_Unit, Act_Unit, Assoc_Null);
