@@ -438,7 +438,7 @@ life_analysis (int flags)
     end_alias_analysis ();
 
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   /* Removing dead insns should have made jumptables really dead.  */
   delete_dead_jumptables ();
@@ -4420,7 +4420,7 @@ recompute_reg_usage (void)
   update_life_info (NULL, UPDATE_LIFE_LOCAL, PROP_REG_INFO | PROP_DEATH_NOTES);
 
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 }
 
 struct tree_opt_pass pass_recompute_reg_usage =

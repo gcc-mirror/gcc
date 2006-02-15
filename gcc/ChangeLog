@@ -1,3 +1,24 @@
+2006-02-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cfg.c (dump_flow_info): Get dump flags as an additional parameter.
+	(debug_flow_info): Pass it.
+	* alias.c (rest_of_handle_cfg): Adjust calls to dump_flow_info.
+	* bb-reorder.c (reorder_basic_blocks): Likewise.
+	* cfgcleanup.c (rest_of_handle_jump2): Likewise.
+	* cse.c (rest_of_handle_cse, rest_of_handle_cse2): Likewise.
+	* flow.c (life_analysis, recompute_reg_usage): Likewise.
+	* gcse.c (gcse_main, bypass_jumps): Likewise.
+	* ifcvt.c (rest_of_handle_if_conversion): Likewise.
+	* local-alloc.c (rest_of_handle_local_alloc): Likewise.
+	* loop-init.c (rtl_loop_init, rtl_loop_done): Likewise.
+	* profile.c (compute_branch_probabilities, branch_prob): Likewise.
+	* rtl.h (dump_flow_info): Adjust prototype.
+	* tracer.c (rest_of_handle_tracer, tracer): Likewise.
+	* var-tracking.c (variable_tracking_main): Likewise.
+	* passes.c (execute_todo): Obey TDF_BLOCKS for RTL.
+	* tree-dump.c (enable_rtl_dump_file): Enable the details and blocks
+	options.
+
 2006-02-15  Marcin Dalecki <martin@dalecki.de>
 
 	* tree-ssa-dom.c (dom_thread_across_edge): fix tag expression

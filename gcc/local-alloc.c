@@ -2559,10 +2559,10 @@ rest_of_handle_local_alloc (void)
       timevar_pop (TV_JUMP);
     }
 
-  if (dump_enabled_p (pass_local_alloc.static_pass_number))
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       timevar_push (TV_DUMP);
-      dump_flow_info (dump_file);
+      dump_flow_info (dump_file, dump_flags);
       dump_local_alloc (dump_file);
       timevar_pop (TV_DUMP);
     }

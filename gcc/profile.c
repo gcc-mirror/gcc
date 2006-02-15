@@ -465,7 +465,7 @@ compute_branch_probabilities (void)
 	}
     }
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   total_num_passes += passes;
   if (dump_file)
@@ -1150,7 +1150,7 @@ branch_prob (void)
 	 insert_insn_on_edge.  */
       cleanup_cfg (profile_arc_flag ? CLEANUP_EXPENSIVE : 0);
       if (dump_file)
-	dump_flow_info (dump_file);
+	dump_flow_info (dump_file, dump_flags);
     }
 
   free_edge_list (el);

@@ -1930,7 +1930,7 @@ reorder_basic_blocks (unsigned int flags)
   FREE (bbd);
 
   if (dump_file)
-    dump_flow_info (dump_file);
+    dump_flow_info (dump_file, dump_flags);
 
   cfg_layout_finalize ();
   if (flag_reorder_blocks_and_partition)
