@@ -1,3 +1,35 @@
+2006-02-15 Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.c (init_ttree): Add STRUCT_FIELD_TAG handling.
+	(tree_code_size): Ditto.
+	* tree.h (struct tree_memory_tag): Remove parent_var.
+	(struct tree_struct_field_tag): New.
+	(SFT_OFFSET): New.
+	(SFT_SIZE): New.
+	(union tree_node): Add sft member.
+	* tree-ssa-alias.c (get_tmt_for): Don't handle TYPE_READONLY
+	specially here.
+	(create_sft): Add size and offset argument, set SFT_OFFSET and
+	SFT_SIZE.
+	(create_overlap_variables_for): Update for SFT_OFFSET/SFT_SIZE.
+	* treestruct.def: Add TS_STRUCT_FIELD_TAG.
+	* tree-flow-inline.h (get_subvar_at): Update for
+	SFT_OFFSET/SFT_SIZE.
+	(var_can_have_subvars): Ditto.
+	(overlap_subvar): Ditto.
+	* print-tree.c (print_node): Print out interesting things for
+	SFT's.
+	* tree-flow.h (struct subvar): Remove offset and size members.
+	* tree-ssa-operands.c (get_expr_operands): Update for
+	get_indirect_ref_operands changes.
+	(get_indirect_ref_operands): Call add_virtual_operand instead of
+	add_stmt_operand.  Only recurse on base var if requested.
+	(access_can_touch_variable): New function.
+	(add_stmt_operand): Split virtual operand handling into ...
+	(add_virtual_operand): Here.  Add offset, size, and for_clobber
+	arguments.  Prune alias sets.
+	(add_call_clobber_ops): Call add_virtual_operand.
+	
 2006-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26300

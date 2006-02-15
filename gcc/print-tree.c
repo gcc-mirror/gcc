@@ -510,6 +510,15 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  && DECL_HAS_VALUE_EXPR_P (node))
 	print_node (file, "value-expr", DECL_VALUE_EXPR (node), indent + 4);
 
+      if (TREE_CODE (node) == STRUCT_FIELD_TAG)
+	{
+	  fprintf (file, " sft size " HOST_WIDE_INT_PRINT_DEC, 
+		   SFT_SIZE (node));
+	  fprintf (file, " sft offset " HOST_WIDE_INT_PRINT_DEC,
+		   SFT_OFFSET (node));
+	  print_node_brief (file, "parent var", SFT_PARENT_VAR (node), 
+			    indent + 4);
+	}
       /* Print the decl chain only if decl is at second level.  */
       if (indent == 4)
 	print_node (file, "chain", TREE_CHAIN (node), indent + 4);

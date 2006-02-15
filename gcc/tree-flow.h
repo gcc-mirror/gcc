@@ -149,12 +149,6 @@ struct subvar GTY(())
   /* Fake variable.  */
   tree var;
 
-  /* Offset inside structure.  */
-  unsigned HOST_WIDE_INT offset;
-
-  /* Size of the field.  */
-  unsigned HOST_WIDE_INT size;
-
   /* Next subvar for this structure.  */
   subvar_t next;
 };
@@ -610,7 +604,7 @@ extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 static inline bool var_can_have_subvars (tree);
 static inline bool overlap_subvar (unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
-				   subvar_t, bool *);
+				   tree, bool *);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
    definition, a function with this prototype is called.  */

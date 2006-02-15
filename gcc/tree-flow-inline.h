@@ -1450,7 +1450,7 @@ get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
   subvar_t sv;
 
   for (sv = get_subvars_for_var (var); sv; sv = sv->next)
-    if (sv->offset == offset)
+    if (SFT_OFFSET (sv->var) == offset)
       return sv->var;
 
   return NULL_TREE;
@@ -1491,7 +1491,7 @@ var_can_have_subvars (tree v)
 
 static inline bool
 overlap_subvar (unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
-		subvar_t sv,  bool *exact)
+		tree sv,  bool *exact)
 {
   /* There are three possible cases of overlap.
      1. We can have an exact overlap, like so:   
@@ -1511,17 +1511,19 @@ overlap_subvar (unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
 
   if (exact)
     *exact = false;
-  if (offset == sv->offset && size == sv->size)
+  if (offset == SFT_OFFSET (sv) && size == SFT_SIZE (sv))
     {
       if (exact)
 	*exact = true;
       return true;
     }
-  else if (offset >= sv->offset && offset < (sv->offset + sv->size))
+  else if (offset >= SFT_OFFSET (sv) 
+	   && offset < (SFT_OFFSET (sv) + SFT_SIZE (sv)))
     {
       return true;
     }
-  else if (offset < sv->offset && (size > sv->offset - offset))
+  else if (offset < SFT_OFFSET (sv) 
+	   && (size > SFT_OFFSET (sv) - offset))
     {
       return true;
     }

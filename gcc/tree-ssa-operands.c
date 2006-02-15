@@ -128,7 +128,8 @@ static unsigned operand_memory_index;
 
 static void get_expr_operands (tree, tree *, int);
 static void get_asm_expr_operands (tree);
-static void get_indirect_ref_operands (tree, tree, int);
+static void get_indirect_ref_operands (tree, tree, int, tree, HOST_WIDE_INT,
+				       HOST_WIDE_INT, bool);
 static void get_tmr_operands (tree, tree, int);
 static void get_call_expr_operands (tree, tree);
 static inline void append_def (tree *);
@@ -138,6 +139,9 @@ static void append_v_must_def (tree);
 static void add_call_clobber_ops (tree, tree);
 static void add_call_read_ops (tree, tree);
 static void add_stmt_operand (tree *, stmt_ann_t, int);
+static void add_virtual_operand (tree, stmt_ann_t, int, tree,
+				 HOST_WIDE_INT, HOST_WIDE_INT, 
+				 bool);
 static void build_ssa_operands (tree stmt);
                                                                                 
 static def_optype_p free_defs = NULL;
@@ -1123,7 +1127,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 
     case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
-      get_indirect_ref_operands (stmt, expr, flags);
+      get_indirect_ref_operands (stmt, expr, flags, NULL_TREE,
+				 0, -1, true);
       return;
 
     case TARGET_MEM_REF:
@@ -1165,7 +1170,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	    for (sv = svars; sv; sv = sv->next)
 	      {
 		bool exact;		
-		if (overlap_subvar (offset, maxsize, sv, &exact))
+		if (overlap_subvar (offset, maxsize, sv->var, &exact))
 		  {
 	            int subvar_flags = flags;
 		    none = false;
@@ -1177,6 +1182,12 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	      }
 	    if (!none)
 	      flags |= opf_no_vops;
+	  }
+	else if (TREE_CODE (ref) == INDIRECT_REF)
+	  {
+	    get_indirect_ref_operands (stmt, ref, flags, expr, 
+				       offset, maxsize, false);
+	    flags |= opf_no_vops;
 	  }
 
 	/* Even if we found subvars above we need to ensure to see
@@ -1416,10 +1427,24 @@ get_asm_expr_operands (tree stmt)
 }
 
 /* A subroutine of get_expr_operands to handle INDIRECT_REF,
-   ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.  */
+   ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.  
+   STMT is the statement being processed, EXPR is the INDIRECT_REF
+   that got us here.  FLAGS is as in get_expr_operands.
+   FULL_REF contains the full pointer dereference expression, if we
+   have it, or NULL otherwise.
+   OFFSET and SIZE are the location of the access inside the
+   dereferenced pointer, if known.
+   RECURSE_ON_BASE should be set to true if we want to continue
+   calling get_expr_operands on the base pointer, and false if
+   something else will do it for us.
+
+*/
 
 static void
-get_indirect_ref_operands (tree stmt, tree expr, int flags)
+get_indirect_ref_operands (tree stmt, tree expr, int flags,
+			   tree full_ref,
+			   HOST_WIDE_INT offset, HOST_WIDE_INT size,
+			   bool recurse_on_base)
 {
   tree *pptr = &TREE_OPERAND (expr, 0);
   tree ptr = *pptr;
@@ -1438,7 +1463,8 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
 	  && pi->name_mem_tag)
 	{
 	  /* PTR has its own memory tag.  Use it.  */
-	  add_stmt_operand (&pi->name_mem_tag, s_ann, flags);
+	  add_virtual_operand (pi->name_mem_tag, s_ann, flags,
+			       full_ref, offset, size, false);
 	}
       else
 	{
@@ -1464,8 +1490,10 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
 	  if (TREE_CODE (ptr) == SSA_NAME)
 	    ptr = SSA_NAME_VAR (ptr);
 	  v_ann = var_ann (ptr);
+
 	  if (v_ann->type_mem_tag)
-	    add_stmt_operand (&v_ann->type_mem_tag, s_ann, flags);
+	    add_virtual_operand (v_ann->type_mem_tag, s_ann, flags,
+				 full_ref, offset, size, false);
 	}
     }
 
@@ -1483,7 +1511,8 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
     gcc_unreachable ();
 
   /* Add a USE operand for the base pointer.  */
-  get_expr_operands (stmt, pptr, opf_none);
+  if (recurse_on_base)
+    get_expr_operands (stmt, pptr, opf_none);
 }
 
 /* A subroutine of get_expr_operands to handle TARGET_MEM_REF.  */
@@ -1528,7 +1557,7 @@ get_tmr_operands (tree stmt, tree expr, int flags)
   for (sv = svars; sv; sv = sv->next)
     {
       bool exact;		
-      if (overlap_subvar (offset, maxsize, sv, &exact))
+      if (overlap_subvar (offset, maxsize, sv->var, &exact))
 	{
 	  int subvar_flags = flags;
 	  if (!exact || size != maxsize)
@@ -1580,6 +1609,269 @@ get_call_expr_operands (tree stmt, tree expr)
 
 }
 
+/* REF is a tree that contains the entire pointer dereference
+   expression, if available, or NULL otherwise.  ALIAS is the variable
+   we are asking if REF can access.  OFFSET and SIZE come from the
+   memory access expression that generated this virtual operand.
+   FOR_CLOBBER is true is this is adding a virtual operand for a call
+   clobber.  */
+
+static bool
+access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
+			   HOST_WIDE_INT size)
+{  
+  bool offsetgtz = offset > 0;
+  unsigned HOST_WIDE_INT uoffset = (unsigned HOST_WIDE_INT) offset;
+  tree base = ref ? get_base_address (ref) : NULL;
+
+  /* If ALIAS is an SFT, it can't be touched if the offset     
+     and size of the access is not overlapping with the SFT offset and
+     size.    This is only true if we are accessing through a pointer
+     to a type that is the same as SFT_PARENT_VAR.  Otherwise, we may
+     be accessing through a pointer to some substruct of the
+     structure, and if we try to prune there, we will have the wrong
+     offset, and get the wrong answer.
+     i.e., we can't prune without more work if we have something like
+     struct gcc_target
+     {
+       struct asm_out
+       {
+         const char *byte_op;
+	 struct asm_int_op
+	 {    
+	   const char *hi;
+	 } aligned_op;
+       } asm_out;
+     } targetm;
+     
+     foo = &targetm.asm_out.aligned_op;
+     return foo->hi;
+
+     SFT.1, which represents hi, will have SFT_OFFSET=32 because in
+     terms of SFT_PARENT_VAR, that is where it is.
+     However, the access through the foo pointer will be at offset 0.
+  */
+  if (size != -1
+      && TREE_CODE (alias) == STRUCT_FIELD_TAG
+      && base
+      && TREE_TYPE (base) == TREE_TYPE (SFT_PARENT_VAR (alias))
+      && !overlap_subvar (offset, size, alias, NULL))
+    {
+#ifdef ACCESS_DEBUGGING
+      fprintf (stderr, "Access to ");
+      print_generic_expr (stderr, ref, 0);
+      fprintf (stderr, " may not touch ");
+      print_generic_expr (stderr, alias, 0);
+      fprintf (stderr, " in function %s\n", get_name (current_function_decl));
+#endif
+      return false;
+    }
+  /* Without strict aliasing, it is impossible for a component access
+     through a pointer to touch a random variable, unless that
+     variable *is* a structure or a pointer.
+
+     
+     IE given p->c, and some random global variable b,
+     there is no legal way that p->c could be an access to b.
+     
+     Without strict aliasing on, we consider it legal to do something
+     like:
+     struct foos { int l; };
+     int foo;
+     static struct foos *getfoo(void);
+     int main (void)
+     {
+       struct foos *f = getfoo();
+       f->l = 1;
+       foo = 2;
+       if (f->l == 1)
+         abort();
+       exit(0);
+     }
+     static struct foos *getfoo(void)     
+     { return (struct foos *)&foo; }
+     
+     (taken from 20000623-1.c)
+  */
+  else if (ref 
+	   && flag_strict_aliasing
+	   && TREE_CODE (ref) != INDIRECT_REF
+	   && !MTAG_P (alias)
+	   && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
+	   && !TREE_CODE (TREE_TYPE (alias)) == COMPLEX_TYPE
+	   && !POINTER_TYPE_P (TREE_TYPE (alias)))
+    {
+#ifdef ACCESS_DEBUGGING
+      fprintf (stderr, "Access to ");
+      print_generic_expr (stderr, ref, 0);
+      fprintf (stderr, " may not touch ");
+      print_generic_expr (stderr, alias, 0);
+      fprintf (stderr, " in function %s\n", get_name (current_function_decl));
+#endif
+      return false;
+    }
+  /* If the offset of the access is greater than the size of one of
+     the possible aliases, it can't be touching that alias, because it
+     would be past the end of the structure.  */
+  else if (ref
+	   && flag_strict_aliasing
+	   && TREE_CODE (ref) != INDIRECT_REF
+	   && !MTAG_P (alias)
+	   && !POINTER_TYPE_P (TREE_TYPE (alias))
+	   && offsetgtz
+	   && DECL_SIZE (alias)
+	   && TREE_CODE (DECL_SIZE (alias)) == INTEGER_CST
+	   && uoffset > TREE_INT_CST_LOW (DECL_SIZE (alias)))
+    {
+#ifdef ACCESS_DEBUGGING
+      fprintf (stderr, "Access to ");
+      print_generic_expr (stderr, ref, 0);
+      fprintf (stderr, " may not touch ");
+      print_generic_expr (stderr, alias, 0);
+      fprintf (stderr, " in function %s\n", get_name (current_function_decl));
+#endif
+      return false;
+    }	   
+  return true;
+}
+
+/* Add VAR to the virtual operands array. FLAGS is as in
+   get_expr_operands.  FULL_REF is a tree that contains the entire
+   pointer dereference expression, if available, or NULL otherwise.
+   OFFSET and SIZE come from the memory access expression that
+   generated this virtual operand.  FOR_CLOBBER is true is this is
+   adding a virtual operand for a call clobber.  */
+
+static void 
+add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
+		     tree full_ref, HOST_WIDE_INT offset,
+		     HOST_WIDE_INT size, bool for_clobber)
+{
+  VEC(tree,gc) *aliases;
+  tree sym;
+  var_ann_t v_ann;
+  
+  sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
+  v_ann = var_ann (sym);
+  
+  /* Mark statements with volatile operands.  Optimizers should back
+     off from statements having volatile operands.  */
+  if (TREE_THIS_VOLATILE (sym) && s_ann)
+    s_ann->has_volatile_ops = true;
+
+  /* If the variable cannot be modified and this is a V_MAY_DEF change
+     it into a VUSE.  This happens when read-only variables are marked
+     call-clobbered and/or aliased to writable variables.  So we only
+     check that this only happens on non-specific stores.
+
+     Note that if this is a specific store, i.e. associated with a
+     modify_expr, then we can't suppress the V_DEF, lest we run into
+     validation problems.
+
+     This can happen when programs cast away const, leaving us with a
+     store to read-only memory.  If the statement is actually executed
+     at runtime, then the program is ill formed.  If the statement is
+     not executed then all is well.  At the very least, we cannot ICE.  */
+  if ((flags & opf_non_specific) && unmodifiable_var_p (var))
+    flags &= ~(opf_is_def | opf_kill_def);
+  
+
+  /* The variable is not a GIMPLE register.  Add it (or its aliases) to
+     virtual operands, unless the caller has specifically requested
+     not to add virtual operands (used when adding operands inside an
+     ADDR_EXPR expression).  */
+  if (flags & opf_no_vops)
+    return;
+  
+  aliases = v_ann->may_aliases;
+  if (aliases == NULL)
+    {
+      /* The variable is not aliased or it is an alias tag.  */
+      if (flags & opf_is_def)
+	{
+	  if (flags & opf_kill_def)
+	    {
+	      /* Only regular variables or struct fields may get a
+		 V_MUST_DEF operand.  */
+	      gcc_assert (!MTAG_P (var)
+			  || TREE_CODE (var) == STRUCT_FIELD_TAG);
+	      /* V_MUST_DEF for non-aliased, non-GIMPLE register 
+		 variable definitions.  */
+	      append_v_must_def (var);
+	    }
+	  else
+	    {
+	      /* Add a V_MAY_DEF for call-clobbered variables and
+		 memory tags.  */
+	      append_v_may_def (var);
+	    }
+	}
+      else
+	append_vuse (var);
+    }
+  else
+    {
+      unsigned i;
+      tree al;
+      
+      /* The variable is aliased.  Add its aliases to the virtual
+	 operands.  */
+      gcc_assert (VEC_length (tree, aliases) != 0);
+      
+      if (flags & opf_is_def)
+	{
+	  
+	  bool none_added = true;
+
+	  for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	    {
+	      if (!access_can_touch_variable (full_ref, al, offset, size))
+		continue;
+	      
+	      none_added = false;
+	      append_v_may_def (al);
+	    }
+
+	  /* If the variable is also an alias tag, add a virtual
+	     operand for it, otherwise we will miss representing
+	     references to the members of the variable's alias set.	     
+	     This fixes the bug in gcc.c-torture/execute/20020503-1.c.
+	     
+	     It is also necessary to add bare defs on clobbers for
+	     TMT's, so that bare TMT uses caused by pruning all the
+	     aliases will link up properly with calls.   */
+	  if (v_ann->is_alias_tag || none_added
+	      || (TREE_CODE (var) == TYPE_MEMORY_TAG && for_clobber))
+	    {
+	      /* We should never end up with adding no aliases of an
+		 NMT, as that would imply we got the set wrong.  */
+	      gcc_assert (!(none_added && TREE_CODE (var) == NAME_MEMORY_TAG));
+	      
+	      append_v_may_def (var);
+	    }
+	}
+      else
+	{
+	  bool none_added = true;
+	  for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	    {
+	      if (!access_can_touch_variable (full_ref, al, offset, size))
+		continue;
+	      none_added = false;
+	      append_vuse (al);
+	    }
+
+	  /* Similarly, append a virtual uses for VAR itself, when
+	     it is an alias tag.  */
+	  if (v_ann->is_alias_tag || none_added)
+	    {
+	      gcc_assert (!(none_added && TREE_CODE (var) == NAME_MEMORY_TAG));
+
+	      append_vuse (var);
+	    }
+	}
+    }
+}
 
 /* Add *VAR_P to the appropriate operand array for INFO.  FLAGS is as in
    get_expr_operands.  If *VAR_P is a GIMPLE register, it will be added to
@@ -1609,25 +1901,6 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
   if (TREE_THIS_VOLATILE (sym) && s_ann)
     s_ann->has_volatile_ops = true;
 
-  /* If the variable cannot be modified and this is a V_MAY_DEF change
-     it into a VUSE.  This happens when read-only variables are marked
-     call-clobbered and/or aliased to writable variables.  So we only
-     check that this only happens on non-specific stores.
-
-     Note that if this is a specific store, i.e. associated with a
-     modify_expr, then we can't suppress the V_DEF, lest we run into
-     validation problems.
-
-     This can happen when programs cast away const, leaving us with a
-     store to read-only memory.  If the statement is actually executed
-     at runtime, then the program is ill formed.  If the statement is
-     not executed then all is well.  At the very least, we cannot ICE.  */
-  if ((flags & opf_non_specific) && unmodifiable_var_p (var))
-    {
-      gcc_assert (!is_real_op);
-      flags &= ~(opf_is_def | opf_kill_def);
-    }
-
   if (is_real_op)
     {
       /* The variable is a GIMPLE register.  Add it to real operands.  */
@@ -1637,79 +1910,9 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 	append_use (var_p);
     }
   else
-    {
-      VEC(tree,gc) *aliases;
-
-      /* The variable is not a GIMPLE register.  Add it (or its aliases) to
-	 virtual operands, unless the caller has specifically requested
-	 not to add virtual operands (used when adding operands inside an
-	 ADDR_EXPR expression).  */
-      if (flags & opf_no_vops)
-	return;
-
-      aliases = v_ann->may_aliases;
-
-      if (aliases == NULL)
-	{
-	  /* The variable is not aliased or it is an alias tag.  */
-	  if (flags & opf_is_def)
-	    {
-	      if (flags & opf_kill_def)
-		{
-		  /* Only regular variables or struct fields may get a
-		     V_MUST_DEF operand.  */
-		  gcc_assert (!MTAG_P (var)
-			      || TREE_CODE (var) == STRUCT_FIELD_TAG);
-		  /* V_MUST_DEF for non-aliased, non-GIMPLE register 
-		    variable definitions.  */
-		  append_v_must_def (var);
-		}
-	      else
-		{
-		  /* Add a V_MAY_DEF for call-clobbered variables and
-		     memory tags.  */
-		  append_v_may_def (var);
-		}
-	    }
-	  else
-	    append_vuse (var);
-	}
-      else
-	{
-	  unsigned i;
-	  tree al;
-
-	  /* The variable is aliased.  Add its aliases to the virtual
-	     operands.  */
-	  gcc_assert (VEC_length (tree, aliases) != 0);
-
-	  if (flags & opf_is_def)
-	    {
-	      /* If the variable is also an alias tag, add a virtual
-		 operand for it, otherwise we will miss representing
-		 references to the members of the variable's alias set.
-		 This fixes the bug in gcc.c-torture/execute/20020503-1.c.  */
-	      if (v_ann->is_alias_tag)
-		append_v_may_def (var);
-
-	      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
-		append_v_may_def (al);
-	    }
-	  else
-	    {
-	      /* Similarly, append a virtual uses for VAR itself, when
-		 it is an alias tag.  */
-	      if (v_ann->is_alias_tag)
-		append_vuse (var);
-
-	      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
-		append_vuse (al);
-	    }
-	}
-    }
+    add_virtual_operand (var, s_ann, flags, NULL_TREE, 0, -1, false);
 }
 
-  
 /* Add the base address of REF to the set *ADDRESSES_TAKEN.  If
    *ADDRESSES_TAKEN is NULL, a new set is created.  REF may be
    a single variable whose address has been taken or any other valid
@@ -1836,7 +2039,8 @@ add_call_clobber_ops (tree stmt, tree callee)
 	    clobber_stats.static_read_clobbers_avoided++;
 	}
       else
-	add_stmt_operand (&var, s_ann, opf_is_def);
+	add_virtual_operand (var, s_ann, opf_is_def, 
+			     NULL, 0, -1, true);
     }
   
 }
