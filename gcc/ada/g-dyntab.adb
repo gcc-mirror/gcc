@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2005, AdaCore                     --
+--                     Copyright (C) 2000-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -165,7 +165,7 @@ package body GNAT.Dynamic_Tables is
    -- Last --
    ----------
 
-   function Last (T : in Instance) return Table_Index_Type is
+   function Last (T : Instance) return Table_Index_Type is
    begin
       return Table_Index_Type (T.P.Last_Val);
    end Last;
@@ -284,8 +284,11 @@ package body GNAT.Dynamic_Tables is
       --------------
 
       function Index_Of (Idx : Natural) return Table_Index_Type is
+         J : constant Integer'Base :=
+               Table_Index_Type'Pos (First) + Idx - 1;
+
       begin
-         return First + Table_Index_Type (Idx) - 1;
+         return Table_Index_Type'Val (J);
       end Index_Of;
 
       ----------
