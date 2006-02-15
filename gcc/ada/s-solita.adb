@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -184,6 +184,10 @@ package body System.Soft_Links.Tasking is
          Cause := System.Tasking.Unhandled_Exception;
          Ada.Exceptions.Save_Occurrence (EO, Excep);
       end if;
+
+      --  There is no need for explicit protection against race conditions
+      --  for this part because it can only be executed by the environment
+      --  task after all the other tasks have been finalized.
 
       if Self_Id.Common.Specific_Handler /= null then
          Self_Id.Common.Specific_Handler.all (Cause, Self_Id, EO);
