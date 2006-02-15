@@ -31,14 +31,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions is a full Ada 95 version, but lacks the
---  additional definitions of Exception_Name returning Wide_[Wide_]String.
---  It is used for building the compiler and the basic tools, since these
---  builds may be done with bootstrap compilers that cannot handle these
---  additions. The full version of Ada.Exceptions can be found in the files
---  a-except-2005.ads/adb, and is used for all other builds where full Ada
---  2005 functionality is required. in particular, it is used for building
---  run times on all targets.
+--  This version is used for all Ada 2005 builds. It differs from a-except.ads
+--  only with respect to the addition of Wide_[Wide]Exception_Name functions.
+
+--  The reason for this splitting off of a separate version is that bootstrap
+--  compilers often will be used that do not support Ada 2005 features, and
+--  Ada.Exceptions is part of the compiler sources.
+
+--  The base version of this unit Ada.Exceptions omits the Wide version of
+--  Exception_Name and is used to build the compiler and other basic tools.
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
@@ -47,6 +48,8 @@ pragma Polling (Off);
 with System;                  use System;
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links;       use System.Soft_Links;
+with System.WCh_Con;          use System.WCh_Con;
+with System.WCh_StW;          use System.WCh_StW;
 
 package body Ada.Exceptions is
 
@@ -63,11 +66,33 @@ package body Ada.Exceptions is
    --  from C clients using the given external name, even though they are not
    --  technically visible in the Ada sense.
 
-   procedure Process_Raise_Exception (E : Exception_Id);
-   pragma No_Return (Process_Raise_Exception);
-   --  This is the lowest level raise routine. It raises the exception
-   --  referenced by Current_Excep.all in the TSD, without deferring abort
-   --  (the caller must ensure that abort is deferred on entry).
+   function Code_Address_For_AAA return System.Address;
+   function Code_Address_For_ZZZ return System.Address;
+   --  Return start and end of procedures in this package
+   --
+   --  These procedures are used to provide exclusion bounds in
+   --  calls to Call_Chain at exception raise points from this unit. The
+   --  purpose is to arrange for the exception tracebacks not to include
+   --  frames from routines involved in the raise process, as these are
+   --  meaningless from the user's standpoint.
+   --
+   --  For these bounds to be meaningful, we need to ensure that the object
+   --  code for the routines involved in processing a raise is located after
+   --  the object code Code_Address_For_AAA and before the object code
+   --  Code_Address_For_ZZZ. This will indeed be the case as long as the
+   --  following rules are respected:
+   --
+   --  1) The bodies of the subprograms involved in processing a raise
+   --     are located after the body of Code_Address_For_AAA and before the
+   --     body of Code_Address_For_ZZZ.
+   --
+   --  2) No pragma Inline applies to any of these subprograms, as this
+   --     could delay the corresponding assembly output until the end of
+   --     the unit.
+
+   procedure Call_Chain (Excep : EOA);
+   --  Store up to Max_Tracebacks in Excep, corresponding to the current
+   --  call chain.
 
    procedure To_Stderr (S : String);
    pragma Export (Ada, To_Stderr, "__gnat_to_stderr");
@@ -202,11 +227,36 @@ package body Ada.Exceptions is
 
    package Exception_Propagation is
 
+      use Exception_Traces;
+      --  Imports Notify_Unhandled_Exception and
+      --  Unhandled_Exception_Terminate
+
+      ------------------------------------
+      -- Exception propagation routines --
+      ------------------------------------
+
       procedure Setup_Exception
         (Excep    : EOA;
          Current  : EOA;
          Reraised : Boolean := False);
-      --  Dummy routine used to share a-exexda.adb, do nothing.
+      --  Perform the necessary operations to prepare the propagation of Excep
+      --  in a task where Current is the current occurrence. Excep is assumed
+      --  to be a valid (non null) pointer.
+      --
+      --  This should be called before any (re-)setting of the current
+      --  occurrence. Any such (re-)setting shall take care *not* to clobber
+      --  the Private_Data component.
+      --
+      --  Having Current provided as an argument (instead of retrieving it via
+      --  Get_Current_Excep internally) is required to allow one task to setup
+      --  an exception for another task, which is used by Transfer_Occurrence.
+
+      procedure Propagate_Exception
+        (E                   : Exception_Id;
+         From_Signal_Handler : Boolean);
+      pragma No_Return (Propagate_Exception);
+      --  This procedure propagates the exception represented by the occurrence
+      --  referenced by Current_Excep in the TSD for the current task.
 
    end Exception_Propagation;
 
@@ -230,7 +280,8 @@ package body Ada.Exceptions is
    procedure Raise_Current_Excep (E : Exception_Id);
    pragma No_Return (Raise_Current_Excep);
    pragma Export (C, Raise_Current_Excep, "__gnat_raise_nodefer_with_msg");
-   --  This is a simple wrapper to Process_Raise_Exception.
+   --  This is a simple wrapper to Exception_Propagation.Propagate_Exception
+   --  setting the From_Signal_Handler argument to False.
    --
    --  This external name for Raise_Current_Excep is historical, and probably
    --  should be changed but for now we keep it, because gdb and gigi know
@@ -537,6 +588,34 @@ package body Ada.Exceptions is
    --  The actual polling routine is separate, so that it can easily
    --  be replaced with a target dependent version.
 
+   --------------------------
+   -- Code_Address_For_AAA --
+   --------------------------
+
+   --  This function gives us the start of the PC range for addresses
+   --  within the exception unit itself. We hope that gigi/gcc keep all the
+   --  procedures in their original order!
+
+   function Code_Address_For_AAA return System.Address is
+   begin
+      --  We are using a label instead of merely using
+      --  Code_Address_For_AAA'Address because on some platforms the latter
+      --  does not yield the address we want, but the address of a stub or of
+      --  a descriptor instead. This is the case at least on Alpha-VMS and
+      --  PA-HPUX.
+
+      <<Start_Of_AAA>>
+      return Start_Of_AAA'Address;
+   end Code_Address_For_AAA;
+
+   ----------------
+   -- Call_Chain --
+   ----------------
+
+   procedure Call_Chain (Excep : EOA) is separate;
+   --  The actual Call_Chain routine is separate, so that it can easily
+   --  be dummied out when no exception traceback information is needed.
+
    ------------------------------
    -- Current_Target_Exception --
    ------------------------------
@@ -658,21 +737,14 @@ package body Ada.Exceptions is
    --  This package can be easily dummied out if we do not want the
    --  basic support for exception messages (such as in Ada 83).
 
-   package body Exception_Propagation is
+   ---------------------------
+   -- Exception_Propagation --
+   ---------------------------
 
-      procedure Setup_Exception
-        (Excep    : EOA;
-         Current  : EOA;
-         Reraised : Boolean := False)
-      is
-         pragma Warnings (Off, Excep);
-         pragma Warnings (Off, Current);
-         pragma Warnings (Off, Reraised);
-      begin
-         null;
-      end Setup_Exception;
-
-   end Exception_Propagation;
+   package body Exception_Propagation is separate;
+   --  Depending on the actual exception mechanism used (front-end or
+   --  back-end based), the implementation will differ, which is why this
+   --  package is separated.
 
    ----------------------
    -- Exception_Traces --
@@ -691,48 +763,6 @@ package body Ada.Exceptions is
    package body Stream_Attributes is separate;
    --  This package can be easily dummied out if we do not want the
    --  support for streaming Exception_Ids and Exception_Occurrences.
-
-   -----------------------------
-   -- Process_Raise_Exception --
-   -----------------------------
-
-   procedure Process_Raise_Exception (E : Exception_Id) is
-      pragma Inspection_Point (E);
-      --  This is so the debugger can reliably inspect the parameter
-
-      Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
-      Excep       : constant EOA := Get_Current_Excep.all;
-
-      procedure builtin_longjmp (buffer : Address; Flag : Integer);
-      pragma No_Return (builtin_longjmp);
-      pragma Import (C, builtin_longjmp, "_gnat_builtin_longjmp");
-
-   begin
-      --  WARNING: There should be no exception handler for this body
-      --  because this would cause gigi to prepend a setup for a new
-      --  jmpbuf to the sequence of statements in case of built-in sjljl.
-      --  We would then always get this new buf in Jumpbuf_Ptr instead of the
-      --  one for the exception we are handling, which would completely break
-      --  the whole design of this procedure.
-
-      --  If the jump buffer pointer is non-null, transfer control using
-      --  it. Otherwise announce an unhandled exception (note that this
-      --  means that we have no finalizations to do other than at the outer
-      --  level). Perform the necessary notification tasks in both cases.
-
-      if Jumpbuf_Ptr /= Null_Address then
-         if not Excep.Exception_Raised then
-            Excep.Exception_Raised := True;
-            Exception_Traces.Notify_Handled_Exception;
-         end if;
-
-         builtin_longjmp (Jumpbuf_Ptr, 1);
-
-      else
-         Exception_Traces.Notify_Unhandled_Exception;
-         Exception_Traces.Unhandled_Exception_Terminate;
-      end if;
-   end Process_Raise_Exception;
 
    ----------------------------
    -- Raise_Constraint_Error --
@@ -784,7 +814,8 @@ package body Ada.Exceptions is
       --  pragma Volatile is peculiar!
 
    begin
-      Process_Raise_Exception (E);
+      Exception_Propagation.Propagate_Exception
+        (E => E, From_Signal_Handler => False);
    end Raise_Current_Excep;
 
    ---------------------
@@ -836,7 +867,8 @@ package body Ada.Exceptions is
    begin
       Exception_Data.Set_Exception_C_Msg (E, M);
       Abort_Defer.all;
-      Process_Raise_Exception (E);
+      Exception_Propagation.Propagate_Exception
+        (E => E, From_Signal_Handler => True);
    end Raise_From_Signal_Handler;
 
    -------------------------
@@ -917,6 +949,8 @@ package body Ada.Exceptions is
       Excep : constant EOA := Get_Current_Excep.all;
 
    begin
+      Exception_Propagation.Setup_Exception (Excep, Excep);
+
       Excep.Exception_Raised := False;
       Excep.Id               := E;
       Excep.Num_Tracebacks   := 0;
@@ -1104,6 +1138,7 @@ package body Ada.Exceptions is
 
    begin
       Abort_Defer.all;
+      Exception_Propagation.Setup_Exception (Excep, Excep, Reraised => True);
       Raise_Current_Excep (Excep.Id);
    end Reraise;
 
@@ -1115,6 +1150,8 @@ package body Ada.Exceptions is
    begin
       if X.Id /= null then
          Abort_Defer.all;
+         Exception_Propagation.Setup_Exception
+           (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
          Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
          Raise_Current_Excep (X.Id);
       end if;
@@ -1127,6 +1164,8 @@ package body Ada.Exceptions is
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence) is
    begin
       Abort_Defer.all;
+      Exception_Propagation.Setup_Exception
+        (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
       Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_Always;
@@ -1137,6 +1176,8 @@ package body Ada.Exceptions is
 
    procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence) is
    begin
+      Exception_Propagation.Setup_Exception
+        (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
       Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_No_Defer;
@@ -1197,6 +1238,7 @@ package body Ada.Exceptions is
       --  fixed TSD occurrence, which is very different from Get_Current_Excep
       --  here because this subprogram is called from the called task.
 
+      Exception_Propagation.Setup_Exception (Target, Target);
       Save_Occurrence_No_Private (Target.all, Source);
    end Transfer_Occurrence;
 
@@ -1253,5 +1295,61 @@ package body Ada.Exceptions is
          end if;
       end loop;
    end To_Stderr;
+
+   -------------------------
+   -- Wide_Exception_Name --
+   -------------------------
+
+   WC_Encoding : Character;
+   pragma Import (C, WC_Encoding, "__gl_wc_encoding");
+   --  Encoding method for source, as exported by binder
+
+   function Wide_Exception_Name
+     (Id : Exception_Id) return Wide_String is
+   begin
+      return String_To_Wide_String
+        (Exception_Name (Id), Get_WC_Encoding_Method (WC_Encoding));
+   end Wide_Exception_Name;
+
+   function Wide_Exception_Name
+     (X : Exception_Occurrence) return Wide_String is
+   begin
+      return String_To_Wide_String
+        (Exception_Name (X), Get_WC_Encoding_Method (WC_Encoding));
+   end Wide_Exception_Name;
+
+   ----------------------------
+   -- Wide_Wide_Exception_Name --
+   -----------------------------
+
+   function Wide_Wide_Exception_Name
+     (Id : Exception_Id) return Wide_Wide_String
+   is
+   begin
+      return String_To_Wide_Wide_String
+        (Exception_Name (Id), Get_WC_Encoding_Method (WC_Encoding));
+   end Wide_Wide_Exception_Name;
+
+   function Wide_Wide_Exception_Name
+     (X : Exception_Occurrence) return Wide_Wide_String
+   is
+   begin
+      return String_To_Wide_Wide_String
+        (Exception_Name (X), Get_WC_Encoding_Method (WC_Encoding));
+   end Wide_Wide_Exception_Name;
+
+   --------------------------
+   -- Code_Address_For_ZZZ --
+   --------------------------
+
+   --  This function gives us the end of the PC range for addresses
+   --  within the exception unit itself. We hope that gigi/gcc keeps all the
+   --  procedures in their original order!
+
+   function Code_Address_For_ZZZ return System.Address is
+   begin
+      <<Start_Of_ZZZ>>
+      return Start_Of_ZZZ'Address;
+   end Code_Address_For_ZZZ;
 
 end Ada.Exceptions;
