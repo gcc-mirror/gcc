@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the default VxWorks version of the package`
+--  This is the default VxWorks version of the package
 
 --  This package defines some system dependent parameters for GNAT. These
 --  are values that are referenced by the runtime library and are therefore

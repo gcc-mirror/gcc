@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This is the default (used on all native platforms) version of this package
+
 package body System.Parameters is
 
    -------------------------
@@ -41,10 +43,8 @@ package body System.Parameters is
    begin
       if Size = Unspecified_Size then
          return Default_Stack_Size;
-
       elsif Size < Minimum_Stack_Size then
          return Minimum_Stack_Size;
-
       else
          return Size;
       end if;
@@ -55,8 +55,14 @@ package body System.Parameters is
    ------------------------
 
    function Default_Stack_Size return Size_Type is
+      Default_Stack_Size : Integer;
+      pragma Import (C, Default_Stack_Size, "__gl_default_stack_size");
    begin
-      return 20 * 1024;
+      if Default_Stack_Size = -1 then
+         return 2 * 1024 * 1024;
+      else
+         return Size_Type (Default_Stack_Size);
+      end if;
    end Default_Stack_Size;
 
    ------------------------
@@ -65,7 +71,10 @@ package body System.Parameters is
 
    function Minimum_Stack_Size return Size_Type is
    begin
-      return 8 * 1024;
+      --  12K is required for stack-checking to work reliably on most platforms
+      --  when using the GCC scheme to propagate an exception in the ZCX case.
+
+      return 12 * 1024;
    end Minimum_Stack_Size;
 
 end System.Parameters;
