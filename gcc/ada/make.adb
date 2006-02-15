@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2065,11 +2065,11 @@ package body Make is
       Process_Created : Boolean := False;
 
       procedure Add_Process
-        (Pid    : Process_Id;
-         Sfile  : File_Name_Type;
-         Afile  : File_Name_Type;
-         Uname  : Unit_Name_Type;
-         Mfile  : Natural := No_Mapping_File);
+        (Pid   : Process_Id;
+         Sfile : File_Name_Type;
+         Afile : File_Name_Type;
+         Uname : Unit_Name_Type;
+         Mfile : Natural := No_Mapping_File);
       --  Adds process Pid to the current list of outstanding compilation
       --  processes and record the full name of the source file Sfile that
       --  we are compiling, the name of its library file Afile and the
@@ -2098,7 +2098,8 @@ package body Make is
       --  Check if s-stalib.adb needs to be compiled
 
       procedure Collect_Arguments_And_Compile
-        (Source_File : File_Name_Type; Source_Index : Int);
+        (Source_File  : File_Name_Type;
+         Source_Index : Int);
       --  Collect arguments from project file (if any) and compile
 
       function Compile
@@ -2146,11 +2147,11 @@ package body Make is
       -----------------
 
       procedure Add_Process
-        (Pid    : Process_Id;
-         Sfile  : File_Name_Type;
-         Afile  : File_Name_Type;
-         Uname  : Unit_Name_Type;
-         Mfile  : Natural := No_Mapping_File)
+        (Pid   : Process_Id;
+         Sfile : File_Name_Type;
+         Afile : File_Name_Type;
+         Uname : Unit_Name_Type;
+         Mfile : Natural := No_Mapping_File)
       is
          OC1 : constant Positive := Outstanding_Compiles + 1;
 
@@ -2304,7 +2305,8 @@ package body Make is
       -----------------------------------
 
       procedure Collect_Arguments_And_Compile
-        (Source_File : File_Name_Type; Source_Index : Int)
+        (Source_File  : File_Name_Type;
+         Source_Index : Int)
       is
       begin
          --  Process_Created will be set True if an attempt is made to compile
@@ -2316,6 +2318,29 @@ package body Make is
 
          if not Arguments_Collected then
             Collect_Arguments (Source_File, Source_Index, Args);
+         end if;
+
+         --  For VMS, when compiling the main source, add switch
+         --  -mdebug-main=_ada_ so that the executable can be debugged
+         --  by the standard VMS debugger.
+
+         if not No_Main_Subprogram
+           and then Targparm.OpenVMS_On_Target
+           and then Source_File = Main_Source
+         then
+            --  First, check if compilation will be invoked with -g
+
+            for J in 1 .. Last_Argument loop
+               if Arguments (J)'Length >= 2
+                 and then Arguments (J) (1 .. 2) = "-g"
+                 and then (Arguments (J)'Length < 5
+                             or else Arguments (J) (1 .. 5) /= "-gnat")
+               then
+                  Add_Arguments
+                    ((1 => new String'("-mdebug-main=_ada_")));
+                  exit;
+               end if;
+            end loop;
          end if;
 
          --  If we use mapping file (-P or -C switches), then get one
@@ -4063,6 +4088,7 @@ package body Make is
             Make_Failed ("-B cannot be used for a library project file");
 
          else
+            No_Main_Subprogram := True;
             Insert_Project_Sources
               (The_Project  => Main_Project,
                All_Projects => Unique_Compile_All_Projects,
@@ -4147,6 +4173,7 @@ package body Make is
 
                      --  Put all the sources in the queue
 
+                     No_Main_Subprogram := True;
                      Insert_Project_Sources
                        (The_Project  => Main_Project,
                         All_Projects => Unique_Compile_All_Projects,
@@ -4269,7 +4296,10 @@ package body Make is
          Write_Str ("GNATMAKE ");
          Write_Str (Gnatvsn.Gnat_Version_String);
          Write_Eol;
-         Write_Str ("Copyright 1995-2004 Free Software Foundation, Inc.");
+         Write_Str
+           ("Copyright 1995-" &
+            Current_Year &
+            ", Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -5131,6 +5161,11 @@ package body Make is
 
                   for J in 1 .. Library_Projs.Last loop
                      Library_Rebuilt := True;
+
+                     --  If a library is rebuilt, then executables are obsolete
+
+                     Executable_Obsolete := True;
+
                      MLib.Prj.Build_Library
                        (For_Project   => Library_Projs.Table (J),
                         In_Tree       => Project_Tree,
@@ -5176,12 +5211,13 @@ package body Make is
 
                --    4) Made unit cannot be a main unit
 
-               if (Do_Not_Execute
-                   or List_Dependencies
-                   or not Do_Bind_Step
-                   or not Is_Main_Unit)
-                 and then not No_Main_Subprogram
-                 and then not Build_Bind_And_Link_Full_Project
+               if ((Do_Not_Execute
+                    or List_Dependencies
+                    or not Do_Bind_Step
+                    or not Is_Main_Unit)
+                  and then not No_Main_Subprogram
+                  and then not Build_Bind_And_Link_Full_Project)
+                 or else Unique_Compile
                then
                   if Osint.Number_Of_Files = 1 then
                      exit Multiple_Main_Loop;
