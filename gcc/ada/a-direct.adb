@@ -34,6 +34,7 @@
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
 with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
@@ -45,6 +46,13 @@ with System;
 
 package body Ada.Directories is
 
+   function Duration_To_Time is new
+     Ada.Unchecked_Conversion (Duration, Ada.Calendar.Time);
+   function OS_Time_To_Long_Integer is new
+     Ada.Unchecked_Conversion (OS_Time, Long_Integer);
+   --  These two unchecked conversions are used in function Modification_Time
+   --  to convert an OS_Time to a Calendar.Time.
+
    type Search_Data is record
       Is_Valid      : Boolean := False;
       Name          : Ada.Strings.Unbounded.Unbounded_String;
@@ -54,10 +62,10 @@ package body Ada.Directories is
       Entry_Fetched : Boolean := False;
       Dir_Entry     : Directory_Entry_Type;
    end record;
-   --  Comment required ???
+   --  The current state of a search
 
    Empty_String : constant String := (1 .. 0 => ASCII.NUL);
-   --  Comment required ???
+   --  Empty string, returned by function Extension when there is no extension
 
    procedure Free is new Ada.Unchecked_Deallocation (Search_Data, Search_Ptr);
 
@@ -725,6 +733,8 @@ package body Ada.Directories is
       Minute : Minute_Type;
       Second : Second_Type;
 
+      Result : Ada.Calendar.Time;
+
    begin
       --  First, the invalid cases
 
@@ -733,14 +743,27 @@ package body Ada.Directories is
 
       else
          Date := File_Time_Stamp (Name);
-         --  ???? We need to be able to convert OS_Time to Ada.Calendar.Time
-         --  For now, use the component of the OS_Time to create the
-         --  Calendar.Time value.
 
-         GM_Split (Date, Year, Month, Day, Hour, Minute, Second);
+         --  ??? This implementation should be revisited when AI 00351 has
+         --  implemented.
 
-         return Ada.Calendar.Time_Of
-           (Year, Month, Day, Duration (Second + 60 * (Minute + 60 * Hour)));
+         if OpenVMS then
+
+            --  On OpenVMS, OS_Time is in local time
+
+            GM_Split (Date, Year, Month, Day, Hour, Minute, Second);
+
+            return Ada.Calendar.Time_Of
+              (Year, Month, Day,
+               Duration (Second + 60 * (Minute + 60 * Hour)));
+
+         else
+            --  On Unix and Windows, OS_Time is in GMT
+
+            Result :=
+              Duration_To_Time (Duration (OS_Time_To_Long_Integer (Date)));
+            return Result;
+         end if;
       end if;
    end Modification_Time;
 
