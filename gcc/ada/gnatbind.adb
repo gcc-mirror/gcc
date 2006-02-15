@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -364,12 +364,13 @@ procedure Gnatbind is
          --  -Mname
 
          elsif Argv'Length >= 3 and then Argv (2) = 'M' then
-            if Is_Cross_Compiler then
-               Opt.Bind_Alternate_Main_Name := True;
-               Opt.Alternate_Main_Name := new String'(Argv (3 .. Argv'Last));
-            else
-               Fail ("-M option only valid for a cross-compiler");
+            if not Is_Cross_Compiler then
+               Write_Line
+                 ("gnatbind: -M not expected to be used on native platforms");
             end if;
+
+            Opt.Bind_Alternate_Main_Name := True;
+            Opt.Alternate_Main_Name := new String'(Argv (3 .. Argv'Last));
 
          --  All other options are single character and are handled by
          --  Scan_Binder_Switches.
@@ -525,7 +526,9 @@ begin
       Write_Str ("GNATBIND ");
       Write_Str (Gnat_Version_String);
       Write_Eol;
-      Write_Str ("Copyright 1995-2005 Free Software Foundation, Inc.");
+      Write_Str ("Copyright 1995-" &
+                 Current_Year &
+                 ", Free Software Foundation, Inc.");
       Write_Eol;
    end if;
 
@@ -720,10 +723,15 @@ begin
 
    if Total_Errors > 0 then
       Exit_Program (E_Errors);
+
    elsif Total_Warnings > 0 then
       Exit_Program (E_Warnings);
+
    else
-      Exit_Program (E_Success);
+      --  Do not call Exit_Program (E_Success), so that finalization occurs
+      --  normally.
+
+      null;
    end if;
 
 end Gnatbind;
