@@ -49,6 +49,18 @@ Wlong-long
 Ada
 ; Documented for C
 
+Wvariadic-macros
+Ada
+; Documented for C
+
+Wold-style-definition
+Ada
+; Documented for C
+
+Wmissing-format-attribute
+Ada
+; Documented for C
+
 nostdinc
 Ada RejectNegative
 ; Don't look for source files
