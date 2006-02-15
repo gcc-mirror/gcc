@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,11 +136,12 @@ package Sem_Util is
       Ent  : Entity_Id  := Empty;
       Loc  : Source_Ptr := No_Location;
       Warn : Boolean    := False) return Node_Id;
-   --  Subsidiary to Apply_Compile_Time_Constraint_Error and Checks routines.
-   --  Does not modify any nodes, but generates a warning (or error) message.
-   --  For convenience, the function always returns its first argument. The
-   --  message is a warning if the message ends with ?, or we are operating
-   --  in Ada 83 mode, or if the Warn parameter is set to True.
+   --  This is similar to Apply_Compile_Time_Constraint_Error in that it
+   --  generates a warning (or error) message in the same manner, but it does
+   --  not replace any nodes. For convenience, the function always returns its
+   --  first argument. The message is a warning if the message ends with ?, or
+   --  we are operating in Ada 83 mode, or if the Warn parameter is set to
+   --  True.
 
    procedure Conditional_Delay (New_Ent, Old_Ent : Entity_Id);
    --  Sets the Has_Delayed_Freeze flag of New if the Delayed_Freeze flag
@@ -194,9 +195,14 @@ package Sem_Util is
    --  an expanded name, a defining program unit name or an identifier
 
    function Enclosing_Generic_Body
-     (E : Entity_Id) return Node_Id;
+     (N : Node_Id) return Node_Id;
    --  Returns the Node_Id associated with the innermost enclosing
    --  generic body, if any. If none, then returns Empty.
+
+   function Enclosing_Generic_Unit
+     (N : Node_Id) return Node_Id;
+   --  Returns the Node_Id associated with the innermost enclosing
+   --  generic unit, if any. If none, then returns Empty.
 
    function Enclosing_Lib_Unit_Entity return Entity_Id;
    --  Returns the entity of enclosing N_Compilation_Unit Node which is the
@@ -216,7 +222,7 @@ package Sem_Util is
    --  build and initialize a new freeze node and set Has_Delayed_Freeze
    --  true for entity E.
 
-   procedure Enter_Name (Def_Id : Node_Id);
+   procedure Enter_Name (Def_Id : Entity_Id);
    --  Insert new name in symbol table of current scope with check for
    --  duplications (error message is issued if a conflict is found)
    --  Note: Enter_Name is not used for overloadable entities, instead
@@ -626,6 +632,11 @@ package Sem_Util is
    --  of needing to forget saved values. This procedure also clears any
    --  Is_Known_Non_Null flags in variables, constants or parameters
    --  since these are also not known to be valid.
+
+   procedure Kill_Current_Values (Ent : Entity_Id);
+   --  This performs the same processing as described above for the form with
+   --  no argument, but for the specific entity given. The call has no effect
+   --  if the entity Ent is not for an object.
 
    procedure Kill_Size_Check_Code (E : Entity_Id);
    --  Called when an address clause or pragma Import is applied to an
