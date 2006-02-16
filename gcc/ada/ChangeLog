@@ -1,3 +1,7 @@
+2006-02-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* opt.ads (Ada_Version_Default): Set to Ada 2005 by default.
+
 2006-02-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-intnam-os2.ads, a-intnam-unixware.ads, g-soccon-unixware.ads,
