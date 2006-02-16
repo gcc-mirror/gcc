@@ -233,6 +233,9 @@ invariant_for_use (struct df_ref *use)
   struct df_ref *def;
   basic_block bb = BLOCK_FOR_INSN (use->insn), def_bb;
 
+  if (use->flags & DF_REF_READ_WRITE)
+    return NULL;
+
   defs = DF_REF_CHAIN (use);
   if (!defs || defs->next)
     return NULL;
@@ -682,7 +685,8 @@ record_use (struct def *def, rtx *use, rtx insn)
 }
 
 /* Finds the invariants INSN depends on and store them to the DEPENDS_ON
-   bitmap.  */
+   bitmap.  Returns true if all dependencies of INSN are known to be
+   loop invariants, false otherwise.  */
 
 static bool
 check_dependencies (rtx insn, bitmap depends_on)
@@ -695,6 +699,9 @@ check_dependencies (rtx insn, bitmap depends_on)
 
   for (use = DF_INSN_GET (df, insn)->uses; use; use = use->next_ref)
     {
+      if (use->flags & DF_REF_READ_WRITE)
+	return false;
+
       defs = DF_REF_CHAIN (use);
       if (!defs)
 	continue;
