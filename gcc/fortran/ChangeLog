@@ -1,3 +1,10 @@
+2005-02-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24557
+	* trans-expr.c (gfc_add_interface_mapping): Use the actual argument
+	for character(*) arrays, rather than casting to the type and kind
+	parameters of the formal argument.
+
 2006-02-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/26054

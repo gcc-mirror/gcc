@@ -1,3 +1,8 @@
+2005-02-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24557
+        * gfortran.dg/assumed_charlen_needed_1.f90: New test.
+
 2006-02-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/26054

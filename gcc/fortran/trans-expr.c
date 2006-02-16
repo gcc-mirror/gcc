@@ -1346,6 +1346,10 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   /* If the argument is a scalar or a pointer to an array, dereference it.  */
   else if (!sym->attr.dimension || sym->attr.pointer)
     value = build_fold_indirect_ref (se->expr);
+  
+  /* For character(*), use the actual argument's descriptor.  */  
+  else if (sym->ts.type == BT_CHARACTER && !new_sym->ts.cl->length)
+    value = build_fold_indirect_ref (se->expr);
 
   /* If the argument is an array descriptor, use it to determine
      information about the actual argument's shape.  */
