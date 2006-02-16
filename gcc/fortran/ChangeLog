@@ -1,3 +1,8 @@
+2006-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* openmp.c (resolve_omp_clauses): Add a dummy case label to workaround
+	PR middle-end/26316.
+
 2005-02-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24557
