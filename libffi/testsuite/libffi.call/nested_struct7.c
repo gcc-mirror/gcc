@@ -4,13 +4,13 @@
 		Sample taken from Alan Modras patch to src/prep_cif.c.
    Limitations:	none.
    PR:		none.
-   Originator:	<andreast@gcc.gnu.org> 20030911	 */
+   Originator:	<andreast@gcc.gnu.org> 20051010	 */
 
 /* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct A {
-  unsigned long a;
+  unsigned long long a;
   unsigned char b;
 } A;
 
@@ -19,22 +19,24 @@ typedef struct B {
   unsigned char y;
 } B;
 
-B B_fn(struct A b0, struct B b1)
+static B B_fn(struct A b2, struct B b3)
 {
   struct B result;
 
-  result.x.a = b0.a + b1.x.a;
-  result.x.b = b0.b + b1.x.b + b1.y;
-  result.y = b0.b + b1.x.b;
+  result.x.a = b2.a + b3.x.a;
+  result.x.b = b2.b + b3.x.b + b3.y;
+  result.y = b2.b + b3.x.b;
 
-  printf("%d %d %d %d %d: %d %d %d\n", b0.a, b0.b, b1.x.a, b1.x.b, b1.y,
-	 result.x.a, result.x.b, result.y);
+  printf("%d %d %d %d %d: %d %d %d\n", (int)b2.a, b2.b,
+	 (int)b3.x.a, b3.x.b, b3.y,
+	 (int)result.x.a, result.x.b, result.y);
 
   return result;
 }
 
 static void
-B_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
+B_gn(ffi_cif* cif __attribute__((unused)), void* resp, void** args,
+     void* userdata __attribute__((unused)))
 {
   struct A b0;
   struct B b1;
@@ -74,12 +76,12 @@ int main (void)
   cls_struct_type1.type = FFI_TYPE_STRUCT;
   cls_struct_type1.elements = cls_struct_fields1;
 
-  struct A e_dbl = { 1, 7};
-  struct B f_dbl = {{12 , 127}, 99};
+  struct A e_dbl = { 1LL, 7};
+  struct B f_dbl = {{12.0 , 127}, 99};
 
   struct B res_dbl;
 
-  cls_struct_fields[0] = &ffi_type_mylong;
+  cls_struct_fields[0] = &ffi_type_uint64;
   cls_struct_fields[1] = &ffi_type_uchar;
   cls_struct_fields[2] = NULL;
 

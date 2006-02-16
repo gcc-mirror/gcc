@@ -1,3 +1,18 @@
+2006-02-16  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/nested_struct2.c: Remove ffi_type_mylong
+	definition.
+	* testsuite/libffi.call/ffitest.h: Add ffi_type_mylong definition
+	here to be used by other test cases too.
+
+	* testsuite/libffi.call/nested_struct10.c: New test case.
+	* testsuite/libffi.call/nested_struct9.c: Likewise.
+	* testsuite/libffi.call/nested_struct8.c: Likewise.
+	* testsuite/libffi.call/nested_struct7.c: Likewise.
+	* testsuite/libffi.call/nested_struct6.c: Likewise.
+	* testsuite/libffi.call/nested_struct5.c: Likewise.
+	* testsuite/libffi.call/nested_struct4.c: Likewise.
+
 2006-01-21  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.ac: Enable libffi for sparc64-*-freebsd*.
