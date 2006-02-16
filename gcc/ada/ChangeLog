@@ -1,3 +1,9 @@
+2006-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* env.c (__gnat_setenv): Use size_t.
+	(__gnat_unsetenv): Likewise.
+	(__gnat_clearenv): Likewise.
+
 2006-02-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* opt.ads (Ada_Version_Default): Set to Ada 2005 by default.
