@@ -1,5 +1,14 @@
 2006-02-16  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* testsuite/libffi.call/return_dbl.c: New test case.
+	* testsuite/libffi.call/return_dbl1.c: Likewise.
+	* testsuite/libffi.call/return_dbl2.c: Likewise.
+	* testsuite/libffi.call/return_fl.c: Likewise.
+	* testsuite/libffi.call/return_fl1.c: Likewise.
+	* testsuite/libffi.call/return_fl2.c: Likewise.
+	* testsuite/libffi.call/return_fl3.c: Likewise.
+	* testsuite/libffi.call/closure_fn6.c: Likewise.
+
 	* testsuite/libffi.call/nested_struct2.c: Remove ffi_type_mylong
 	definition.
 	* testsuite/libffi.call/ffitest.h: Add ffi_type_mylong definition
