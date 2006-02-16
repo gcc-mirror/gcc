@@ -1,5 +1,10 @@
 2006-02-16  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* loop-invariant.c (invariant_for_use, check_dependencies): Fail for
+	read-write uses.
+
+2006-02-16  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR rtl-optimization/26296
 	* Makefile.in (loop-invariant.c): Add except.h dependency.
 	* loop-invariant.c: Include except.h.
