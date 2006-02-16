@@ -865,6 +865,10 @@ resolve_omp_clauses (gfc_code *code)
 				 : list == OMP_LIST_MULT ? "IOR" : "IEOR",
 				 n->sym->name, &code->loc);
 		    break;
+		  /* Workaround for PR middle-end/26316, nothing really needs
+		     to be done here for OMP_LIST_PRIVATE.  */
+		  case OMP_LIST_PRIVATE:
+		    gcc_assert (code->op != EXEC_NOP);
 		  default:
 		    break;
 		  }
