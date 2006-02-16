@@ -7244,24 +7244,19 @@
   [(const_int 0)]
   ""
 {
-  if (TARGET_ARCH64)
-    emit_insn (gen_setjmp_64 ());
-  else
-    emit_insn (gen_setjmp_32 ());
+  rtx mem;
+  
+  mem = gen_rtx_MEM (Pmode,
+		     plus_constant (stack_pointer_rtx,
+				    SPARC_STACK_BIAS + 14 * UNITS_PER_WORD));
+  emit_insn (gen_rtx_SET (VOIDmode, mem, frame_pointer_rtx));
+
+  mem = gen_rtx_MEM (Pmode,
+		     plus_constant (stack_pointer_rtx,
+				    SPARC_STACK_BIAS + 15 * UNITS_PER_WORD));
+  emit_insn (gen_rtx_SET (VOIDmode, mem, gen_rtx_REG (Pmode, 31)));
   DONE;
 })
-
-(define_expand "setjmp_32"
-  [(set (mem:SI (plus:SI (reg:SI 14) (const_int 56))) (match_dup 0))
-   (set (mem:SI (plus:SI (reg:SI 14) (const_int 60))) (reg:SI 31))]
-  ""
-  { operands[0] = frame_pointer_rtx; })
-
-(define_expand "setjmp_64"
-  [(set (mem:DI (plus:DI (reg:DI 14) (const_int 112))) (match_dup 0))
-   (set (mem:DI (plus:DI (reg:DI 14) (const_int 120))) (reg:DI 31))]
-  ""
-  { operands[0] = frame_pointer_rtx; })
 
 ;; Special pattern for the FLUSH instruction.
 
