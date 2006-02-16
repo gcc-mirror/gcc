@@ -1,3 +1,9 @@
+2006-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (setjmp): Rewrite.
+	(setjmp_32): Delete.
+	(setjmp_64): Likewise.
+
 2006-02-16  Daniel Berlin <dberlin@dberlin.org>
 
 	* tree-ssa-operands.c (access_can_touch_variable): Fix typo in
