@@ -9,6 +9,16 @@
 
 #define CHECK(x) !(x) ? abort() : 0
 
+/* Define our own long for easier handling on multilib targets.  */
+#if LONG_MAX == 2147483647
+#define ffi_type_mylong ffi_type_uint32
+#else
+#if LONG_MAX == 9223372036854775807
+#define ffi_type_mylong ffi_type_uint64
+#else
+#error "Error, size LONG not defined as expected"
+#endif
+#endif
 
 /* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
    file open.  */
