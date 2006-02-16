@@ -34,6 +34,7 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"'
 include(iparm.m4)dnl
+include(mtype.m4)dnl
 
 `#if defined (HAVE_'rtype_name`)'
 
@@ -50,7 +51,6 @@ dot_product_`'rtype_code (rtype * const restrict a, rtype * const restrict b)
   const rtype_name * restrict pa;
   const rtype_name * restrict pb;
   rtype_name res;
-  rtype_name conjga;
   index_type count;
   index_type astride;
   index_type bstride;
@@ -73,8 +73,7 @@ sinclude(`dotprod_asm_'rtype_code`.m4')dnl
 
   while (count--)
     {
-      COMPLEX_ASSIGN(conjga, REALPART (*pa), -IMAGPART (*pa));
-      res += conjga * *pb;
+      res += __builtin_conj`'q (*pa) * *pb;
       pa += astride;
       pb += bstride;
     }

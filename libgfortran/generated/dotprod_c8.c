@@ -49,7 +49,6 @@ dot_product_c8 (gfc_array_c8 * const restrict a, gfc_array_c8 * const restrict b
   const GFC_COMPLEX_8 * restrict pa;
   const GFC_COMPLEX_8 * restrict pb;
   GFC_COMPLEX_8 res;
-  GFC_COMPLEX_8 conjga;
   index_type count;
   index_type astride;
   index_type bstride;
@@ -71,8 +70,7 @@ dot_product_c8 (gfc_array_c8 * const restrict a, gfc_array_c8 * const restrict b
 
   while (count--)
     {
-      COMPLEX_ASSIGN(conjga, REALPART (*pa), -IMAGPART (*pa));
-      res += conjga * *pb;
+      res += __builtin_conj (*pa) * *pb;
       pa += astride;
       pb += bstride;
     }
