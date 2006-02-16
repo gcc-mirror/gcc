@@ -1,4 +1,4 @@
-/* Copyright (C) 2003 Free Software Foundation.
+/* Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation.
 
    Define macros useful in tests for bulitin functions.  */
 
@@ -38,9 +38,10 @@
    too, but the GLIBC math inlines cause us to generate inferior code,
    which causes the test to fail, so it is not safe.  Including <limits.h>
    also fails because the include search paths are ordered such that GCC's
-   version will be found before the newlib version.  */
+   version will be found before the newlib version.  Similarly, uClibc
+   lacks the C99 functions.  */
 #include <sys/types.h>
-#ifdef _NEWLIB_VERSION
+#if defined(_NEWLIB_VERSION) || defined(__UCLIBC__)
 #else
 #define HAVE_C99_RUNTIME
 #endif

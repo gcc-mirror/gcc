@@ -1,3 +1,10 @@
+2006-02-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR target/20353
+	PR target/24578
+	* gcc.dg/builtins-config.h (HAVE_C99_RUNTIME): Don't define if
+	__UCLIBC__ is defined.
+
 2006-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/26224

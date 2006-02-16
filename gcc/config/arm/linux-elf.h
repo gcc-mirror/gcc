@@ -1,6 +1,6 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
    Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005
+   2005, 2006
    Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
@@ -51,7 +51,7 @@
 
 #define LIBGCC_SPEC "%{msoft-float:-lfloat} %{mfloat-abi=soft*:-lfloat} -lgcc"
 
-#define LINUX_TARGET_INTERPRETER "/lib/ld-linux.so.2"
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
 #define LINUX_TARGET_LINK_SPEC  "%{h*} %{version:-v} \
    %{b} \
@@ -59,7 +59,7 @@
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \
    %{rdynamic:-export-dynamic} \
-   %{!dynamic-linker:-dynamic-linker " LINUX_TARGET_INTERPRETER "} \
+   %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "} \
    -X \
    %{mbig-endian:-EB}" \
    SUBTARGET_EXTRA_LINK_SPEC

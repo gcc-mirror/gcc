@@ -1,5 +1,5 @@
 /* Configuration file for ARM GNU/Linux EABI targets.
-   Copyright (C) 2004, 2005
+   Copyright (C) 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
@@ -52,8 +52,8 @@
 
 /* Use ld-linux.so.3 so that it will be possible to run "classic"
    GNU/Linux binaries on an EABI system.  */
-#undef LINUX_TARGET_INTERPRETER
-#define LINUX_TARGET_INTERPRETER "/lib/ld-linux.so.3"
+#undef GLIBC_DYNAMIC_LINKER
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.3"
 
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */

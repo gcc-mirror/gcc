@@ -1,5 +1,5 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -98,6 +98,8 @@ Boston, MA 02110-1301, USA.  */
 #undef MIPS_DEFAULT_GVALUE
 #define MIPS_DEFAULT_GVALUE 0
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+
 /* Borrowed from sparc/linux.h */
 #undef LINK_SPEC
 #define LINK_SPEC \
@@ -107,7 +109,7 @@ Boston, MA 02110-1301, USA.  */
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
+        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
         %{static:-static}}}"
 
 #undef SUBTARGET_ASM_SPEC
