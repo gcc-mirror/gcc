@@ -67,7 +67,7 @@ package Opt is
    --  which we want to allow, so that things work OK when Ada_15 is added!
    --  This warning is now removed, so this pragma can be removed some time???
 
-   Ada_Version_Default : Ada_Version_Type := Ada_95;
+   Ada_Version_Default : Ada_Version_Type := Ada_05;
    --  GNAT
    --  Default Ada version if no switch given
 
