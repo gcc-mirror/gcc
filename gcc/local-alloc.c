@@ -1,6 +1,7 @@
 /* Allocate registers within a basic block, for GNU compiler.
    Copyright (C) 1987, 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -962,8 +963,7 @@ update_equiv_regs (void)
 
 	      /* If we haven't done so, record for reload that this is an
 		 equivalencing insn.  */
-	      if (!reg_equiv[regno].is_arg_equivalence
-		  && (!MEM_P (x) || rtx_equal_p (src, x)))
+	      if (!reg_equiv[regno].is_arg_equivalence)
 		reg_equiv_init[regno]
 		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
 

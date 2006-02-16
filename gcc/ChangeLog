@@ -1,3 +1,9 @@
+2006-02-16  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-optimization/25636
+	* local-alloc.c (update_equiv_regs): Lose a bogus rtx_equal_p test
+	when deciding whether an insn is an initializing insn.
+
 2006-02-15 Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree.c (init_ttree): Add STRUCT_FIELD_TAG handling.
