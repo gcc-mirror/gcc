@@ -96,23 +96,6 @@ begin
       end if;
 
 
-      -- Verify that Raise_Exception has no effect in the case of Null_Id.
-      begin
-         Ada.Exceptions.Raise_Exception(A_Null_Exception_Id);
-         TC_Flag := True;
-      exception
-         when others =>
-            Report.Failed("Exception raised by procedure Raise_Exception " &
-                          "when called with a Null_Id input parameter");
-      end;
-
-      if not TC_Flag then
-         Report.Failed("Incorrect processing following the call to " &
-                       "Raise_Exception with a Null_Id input parameter");
-      end if;
-      TC_Flag := False;
-
-
       -- Verify that Reraise_Occurrence has no effect in the case of
       -- Null_Occurrence.
       begin
