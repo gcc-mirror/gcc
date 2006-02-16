@@ -1,5 +1,9 @@
 2006-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/26224
+	* parse.c (parse_omp_do, parse_omp_structured_block): Call
+	gfc_commit_symbols and gfc_warning_check.
+
 	* openmp.c (resolve_omp_clauses): Add a dummy case label to workaround
 	PR middle-end/26316.
 
