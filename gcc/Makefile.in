@@ -1842,7 +1842,7 @@ tree-cfgcleanup.o : tree-cfgcleanup.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(DIAGNOSTIC_H) errors.h function.h $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) except.h langhooks.h $(CFGLOOP_H) tree-pass.h \
    $(CFGLAYOUT_H) $(BASIC_BLOCK_H) hard-reg-set.h $(HASHTAB_H) toplev.h \
-   tree-ssa-propagate.h
+   tree-ssa-propagate.h $(SCEV_H)
 tree-tailcall.o : tree-tailcall.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) function.h $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(DIAGNOSTIC_H) except.h tree-pass.h $(FLAGS_H) langhooks.h \
