@@ -1435,6 +1435,67 @@ proc check_effective_target_vect_no_bitwise { } {
 }
 
 # Return 1 if the target plus current options supports a vector
+# widening summation of *short* args into *int* result, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+                                                                                                
+proc check_effective_target_vect_widen_sum_hi_to_si { } {
+    global et_vect_widen_sum_hi_to_si
+                                                                                                
+    if [info exists et_vect_widen_sum_hi_to_si_saved] {
+        verbose "check_effective_target_vect_widen_sum_hi_to_si: using cached result" 2
+    } else {
+        set et_vect_widen_sum_hi_to_si_saved 0
+        if { [istarget powerpc*-*-*]
+	     || [istarget ia64-*-*] } {
+            set et_vect_widen_sum_hi_to_si_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_sum_hi_to_si: returning $et_vect_widen_sum_hi_to_si_saved" 2
+    return $et_vect_widen_sum_hi_to_si_saved
+}
+
+# Return 1 if the target plus current options supports a vector
+# widening summation of *char* args into *short* result, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+                                                                                                
+proc check_effective_target_vect_widen_sum_qi_to_hi { } {
+    global et_vect_widen_sum_qi_to_hi
+                                                                                                
+    if [info exists et_vect_widen_sum_qi_to_hi_saved] {
+        verbose "check_effective_target_vect_widen_sum_qi_to_hi: using cached result" 2
+    } else {
+        set et_vect_widen_sum_qi_to_hi_saved 0
+        if { [istarget ia64-*-*] } {
+            set et_vect_widen_sum_qi_to_hi_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_sum_qi_to_hi: returning $et_vect_widen_sum_qi_to_hi_saved" 2
+    return $et_vect_widen_sum_qi_to_hi_saved
+}
+
+# Return 1 if the target plus current options supports a vector
+# widening summation of *char* args into *int* result, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+                                                                                                
+proc check_effective_target_vect_widen_sum_qi_to_si { } {
+    global et_vect_widen_sum_qi_to_si
+                                                                                                
+    if [info exists et_vect_widen_sum_qi_to_si_saved] {
+        verbose "check_effective_target_vect_widen_sum_qi_to_si: using cached result" 2
+    } else {
+        set et_vect_widen_sum_qi_to_si_saved 0
+        if { [istarget powerpc*-*-*] } {
+            set et_vect_widen_sum_qi_to_si_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_sum_qi_to_si: returning $et_vect_widen_sum_qi_to_si_saved" 2
+    return $et_vect_widen_sum_qi_to_si_saved
+}
+
+# Return 1 if the target plus current options supports a vector
 # widening summation, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
@@ -1581,6 +1642,46 @@ proc check_effective_target_vect_condition { } {
 
     verbose "check_effective_target_vect_cond: returning $et_vect_cond_saved" 2
     return $et_vect_cond_saved
+}
+
+# Return 1 if the target supports vector char multiplication, 0 otherwise.
+
+proc check_effective_target_vect_char_mult { } {
+    global et_vect_char_mult_saved
+
+    if [info exists et_vect_char_mult_saved] {
+	verbose "check_effective_target_vect_char_mult: using cached result" 2
+    } else {
+	set et_vect_char_mult_saved 0
+	if { [istarget ia64-*-*]
+	     || [istarget i?86-*-*]
+	     || [istarget x86_64-*-*] } {
+	   set et_vect_char_mult_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_char_mult: returning $et_vect_char_mult_saved" 2
+    return $et_vect_char_mult_saved
+}
+
+# Return 1 if the target supports vector short multiplication, 0 otherwise.
+
+proc check_effective_target_vect_short_mult { } {
+    global et_vect_short_mult_saved
+
+    if [info exists et_vect_short_mult_saved] {
+	verbose "check_effective_target_vect_short_mult: using cached result" 2
+    } else {
+	set et_vect_short_mult_saved 0
+	if { [istarget ia64-*-*]
+	     || [istarget i?86-*-*]
+	     || [istarget x86_64-*-*] } {
+	   set et_vect_short_mult_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_short_mult: returning $et_vect_short_mult_saved" 2
+    return $et_vect_short_mult_saved
 }
 
 # Return 1 if the target supports vector int multiplication, 0 otherwise.
