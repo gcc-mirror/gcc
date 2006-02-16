@@ -1,3 +1,8 @@
+2006-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/26224
+	* gfortran.dg/gomp/pr26224.f: New test.
+
 2006-02-16  Victor Kaplansky  <victork@il.ibm.com>
 
 	PR tree-opt/25918

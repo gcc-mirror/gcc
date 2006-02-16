@@ -2348,6 +2348,8 @@ parse_omp_do (gfc_statement omp_st)
       else
 	gcc_assert (new_st.op == EXEC_NOP);
       gfc_clear_new_st ();
+      gfc_commit_symbols ();
+      gfc_warning_check ();
       st = next_statement ();
     }
   return st;
@@ -2548,6 +2550,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     }
 
   gfc_clear_new_st ();
+  gfc_commit_symbols ();
+  gfc_warning_check ();
   pop_state ();
 }
 
