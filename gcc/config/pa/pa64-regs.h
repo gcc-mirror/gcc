@@ -157,7 +157,8 @@ Boston, MA 02111-1307, USA.  */
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode					\
    || (MODE) == SCmode || (MODE) == DCmode				\
-   || (MODE) == SImode || (MODE) == DImode)
+   || (MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
+   || (MODE) == DImode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
