@@ -170,7 +170,7 @@ __gnat_setenv (char *name, char *value)
   setenv (name, value, 1);
 
 #else
-  int size = strlen (name) + strlen (value) + 2;
+  size_t size = strlen (name) + strlen (value) + 2;
   char *expression;
 
   expression = (char *) xmalloc (size * sizeof (char));
@@ -234,7 +234,7 @@ void __gnat_unsetenv (char *name) {
      As we are still supporting AIX 5.1 we cannot use unsetenv */
   char **env = __gnat_environ ();
   int index = 0;
-  int size = strlen (name);
+  size_t size = strlen (name);
 
   while (env[index] != NULL) {
      if (strlen (env[index]) > size) {
@@ -258,7 +258,7 @@ void __gnat_unsetenv (char *name) {
   /* On Windows platform putenv ("key=") is equivalent to unsetenv (a
      subsequent call to getenv ("key") will return NULL and not the "\0"
      string */
-  int size = strlen (name) + 2;
+  size_t size = strlen (name) + 2;
   char *expression;
   expression = (char *) xmalloc (size * sizeof (char));
 
@@ -293,7 +293,7 @@ void __gnat_clearenv (void) {
      environment but there is a "clean" way to unset a variable. So go
      through the environ table and call __gnat_unsetenv on all entries */
   char **env = __gnat_environ ();
-  int size;
+  size_t size;
 
   while (env[0] != NULL) {
     size = 0;
