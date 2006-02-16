@@ -503,6 +503,9 @@ Objective-C and Objective-C++ Dialects}.
 -mTLS -mtls @gol
 -mcpu=@var{cpu}}
 
+@emph{GNU/Linux Options}
+@gccoptlist{-muclibc}
+
 @emph{H8/300 Options}
 @gccoptlist{-mrelax  -mh  -ms  -mn  -mint32  -malign-300}
 
@@ -7193,6 +7196,7 @@ platform.
 * DEC Alpha Options::
 * DEC Alpha/VMS Options::
 * FRV Options::
+* GNU/Linux Options::
 * H8/300 Options::
 * HPPA Options::
 * i386 and x86-64 Options::
@@ -8781,6 +8785,24 @@ Select the processor type for which to generate code.  Possible values are
 @samp{frv}, @samp{fr550}, @samp{tomcat}, @samp{fr500}, @samp{fr450},
 @samp{fr405}, @samp{fr400}, @samp{fr300} and @samp{simple}.
 
+@end table
+
+@node GNU/Linux Options
+@subsection GNU/Linux Options
+
+These @samp{-m} options are defined for GNU/Linux targets:
+
+@table @gcctabopt
+@item -mglibc
+@opindex mglibc
+Use the GNU C library instead of uClibc.  This is the default except
+on @samp{*-*-linux-*uclibc*} targets.
+
+@item -muclibc
+@opindex muclibc
+Use uClibc instead of the GNU C library.  This is the default on
+@samp{*-*-linux-*uclibc*} targets.  GCC currently only supports uClibc
+on ARM and 32-bit MIPS targets.
 @end table
 
 @node H8/300 Options

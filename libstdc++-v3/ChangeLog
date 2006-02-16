@@ -1,3 +1,15 @@
+2006-02-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR libstdc++/14939
+	* config/os/uclibc/ctype_base.h, config/os/uclibc/ctype_inline.h,
+	config/os/uclibc/ctype_noninline.h, config/os/uclibc/os_defines.h:
+	New.
+	* acinclude.m4 (GLIBCXX_CONFIGURE): Test whether using uClibc.
+	* configure.host: Use os/uclibc for uClibc.
+	* crossconfig.m4 (*-linux*): Use link tests.  Don't hardcode
+	presence of math functions.
+	* configure: Regenerate.
+
 2006-02-12  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/26211

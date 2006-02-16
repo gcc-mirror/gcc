@@ -1,3 +1,23 @@
+2006-02-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR target/20353
+	PR target/24578
+	PR target/24837
+	* config/linux.opt: New file.
+	* config/linux.h (CHOOSE_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER,
+	LINUX_DYNAMIC_LINKER): Define.
+	(TARGET_C99_FUNCTIONS): Define depending on TARGET_GLIBC.
+	* config.gcc (*-*-linux*): Define extra_options.
+	(*-*-*uclibc*): Define UCLIBC_DEFAULT.
+	(arm*-*-linux-gnueabi): Change to arm*-*-linux-*eabi.
+	* config/arm/linux-eabi.h (LINUX_TARGET_INTERPRETER): Change to
+	GLIBC_DYNAMIC_LINKER.
+	* config/arm/linux-elf.h (LINUX_TARGET_INTERPRETER): Likewise.
+	(LINUX_TARGET_LINK_SPEC): Use LINUX_DYNAMIC_LINKER.
+	* config/mips/linux.h (GLIBC_DYNAMIC_LINKER): Define.
+	(LINK_SPEC): Use LINUX_DYNAMIC_LINKER.
+	* doc/invoke.texi (GNU/Linux Options): New section.
+
 2006-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.md (setjmp): Rewrite.

@@ -1,5 +1,5 @@
 /* Definitions for Linux-based GNU systems with ELF format
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
@@ -99,8 +99,24 @@ Boston, MA 02110-1301, USA.  */
 #define USE_LD_AS_NEEDED 1
 #endif
 
+/* Determine which dynamic linker to use depending on whether GLIBC or
+   uClibc is the default C library and whether -muclibc or -mglibc has
+   been passed to change the default.  */
+#ifdef UCLIBC_DEFAULT
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:" G ";:" U "}"
+#else
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:" U ";:" G "}"
+#endif
+
+/* For most targets with a single dynamic linker the following
+   definitions suffice; GLIBC_DYNAMIC_LINKER must be defined for each
+   target using them.  */
+#define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
+#define LINUX_DYNAMIC_LINKER \
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER)
+
 /* Determine whether the entire c99 runtime
    is present in the runtime library.  */
-#define TARGET_C99_FUNCTIONS 1
+#define TARGET_C99_FUNCTIONS (TARGET_GLIBC)
 
 #define TARGET_POSIX_IO

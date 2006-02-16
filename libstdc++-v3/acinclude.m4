@@ -125,6 +125,15 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   ## other macros from doing the same.  This should be automated.)  -pme
   need_libmath=no
 
+  # Check for uClibc since Linux platforms use different configuration
+  # directories depending on the C library in use.
+  AC_EGREP_CPP([_using_uclibc], [
+  #include <stdio.h>
+  #if __UCLIBC__
+    _using_uclibc
+  #endif
+  ], uclibc=yes, uclibc=no)
+
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
   GLIBCXX_CHECK_HOST

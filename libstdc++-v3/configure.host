@@ -206,7 +206,11 @@ case "${host_os}" in
     os_include_dir="os/bsd/freebsd"
     ;;
   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
-    os_include_dir="os/gnu-linux"
+    if [ "$uclibc" = "yes" ]; then
+      os_include_dir="os/uclibc"
+    else
+      os_include_dir="os/gnu-linux"
+    fi
     ;;
   hpux*)
     os_include_dir="os/hpux"
