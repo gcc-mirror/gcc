@@ -52,6 +52,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "flags.h"
 #include "df.h"
 #include "hashtab.h"
+#include "except.h"
 
 /* The data stored for the loop.  */
 
@@ -761,16 +762,14 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
       || !check_maybe_invariant (SET_SRC (set)))
     return;
 
-  if (may_trap_p (PATTERN (insn)))
-    {
-      if (!always_reached)
-	return;
+  /* If the insn can throw exception, we cannot move it at all without changing
+     cfg.  */
+  if (can_throw_internal (insn))
+    return;
 
-      /* Unless the exceptions are handled, the behavior is undefined
- 	 if the trap occurs.  */
-      if (flag_non_call_exceptions)
-	return;
-    }
+  /* We cannot make trapping insn executed, unless it was executed before.  */
+  if (may_trap_p (PATTERN (insn)) && !always_reached)
+    return;
 
   depends_on = BITMAP_ALLOC (NULL);
   if (!check_dependencies (insn, depends_on))

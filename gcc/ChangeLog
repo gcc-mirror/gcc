@@ -1,3 +1,10 @@
+2006-02-16  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/26296
+	* Makefile.in (loop-invariant.c): Add except.h dependency.
+	* loop-invariant.c: Include except.h.
+	(find_invariant_insn): Ignore insns satisfying can_throw_internal.
+
 2005-02-16  Paul Brook  <paul@codesourcery.com>
 
 	* reload1.c (emit_reload_insns): Invalidate dead input registers used
