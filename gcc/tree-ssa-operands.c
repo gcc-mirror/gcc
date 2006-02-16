@@ -1701,7 +1701,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 	   && TREE_CODE (ref) != INDIRECT_REF
 	   && !MTAG_P (alias)
 	   && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
-	   && !TREE_CODE (TREE_TYPE (alias)) == COMPLEX_TYPE
+	   && TREE_CODE (TREE_TYPE (alias)) != COMPLEX_TYPE
 	   && !POINTER_TYPE_P (TREE_TYPE (alias)))
     {
 #ifdef ACCESS_DEBUGGING
