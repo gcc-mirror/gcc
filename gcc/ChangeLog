@@ -1,3 +1,8 @@
+2005-02-16  Paul Brook  <paul@codesourcery.com>
+
+	* reload1.c (emit_reload_insns): Invalidate dead input registers used
+	for reloads.
+
 2006-02-16  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR rtl-optimization/25636
