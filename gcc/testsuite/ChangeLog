@@ -1,3 +1,23 @@
+2006-02-16  Victor Kaplansky  <victork@il.ibm.com>
+
+	PR tree-opt/25918
+	* lib/target-supports.exp
+	(check_effective_target_vect_short_mult): New.
+	(check_effective_target_vect_char_mult): New.
+	(check_effective_target_vect_widen_sum_qi_to_si): New.
+	(check_effective_target_vect_widen_sum_qi_to_hi): New.
+	(check_effective_target_vect_widen_sum_hi_to_si): New.
+	* gcc.dg/vect/vect-reduc-dot-s16.c: Remove, split into
+	vect-reduc-dot-s16a.c and vect-reduc-dot-s16b.c
+	* vect-reduc-dot-s16a.c: New, split from vect-reduc-dot-s16.c.
+	* vect-reduc-dot-s16b.c: New, split from vect-reduc-dot-s16.c.
+	* gcc.dg/vect/vect-reduc-pattern-2.c: Remove, split into
+	vect-reduc-pattern-2a.c, vect-reduc-pattern-2b.c and
+	vect-reduc-pattern-2c.c
+	* gcc.dg/vect/vect-reduc-pattern-1.c: Remove, split into
+	vect-reduc-pattern-1a.c, vect-reduc-pattern-1b.c and
+	vect-reduc-pattern-1c.c
+
 2005-02-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24557
