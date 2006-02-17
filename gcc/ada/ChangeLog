@@ -1,3 +1,178 @@
+2006-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Boolean_Types): If one of the operands is an
+	aggregate, check the interpretations of the other operand to find one
+	that may be a boolean array.
+
+	(Analyze_Selected_Component): Fix flow-of-control typo in case where
+	the prefix is a private extension.
+
+2006-02-17  Eric Botcazou  <botcazou@adacore.com>
+
+	PR ada/26315
+
+	* utils2.c (find_common_type): If both input types are BLKmode and
+	have the same constant size, keep using the first one.
+
+	* bindgen.adb: (Gen_Versions_Ada): Revert previous workaround.
+
+	* decl.c (gnat_to_gnu_entity): Only check TREE_OVERFLOW for a constant.
+
+	* misc.c (gnat_handle_option): New case for -Woverlength-strings.
+
+2006-02-17  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-irix.adb, s-taprop-hpux-dce.adb, s-taprop-linux.adb, 
+	s-taprop-solaris.adb, s-taprop-vms.adb, s-taprop-mingw.adb, 
+	s-taprop-posix.adb, s-taprop-vxworks.adb, s-taprop-lynxos.adb, 
+	s-taprop-tru64.adb (Set_False, Set_True, Suspend_Until_True): Add
+	Abort_Defer/Undefer pairs to avoid the possibility of a task being
+	aborted while owning a lock.
+
+2006-02-17  Javier Miranda  <miranda@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): If the allocated object is accessed
+	through an access to class-wide interface we force the displacement of
+	the pointer to the allocated object to reference the corresponding
+	secondary dispatch table.
+	(Expand_N_Op_Divide): Allow 64 bit divisions by small power of 2,
+	if Long_Shifts are supported on the target, even if 64 bit divides
+	are not supported (configurable run time mode).
+	(Expand_N_Type_Conversion): Do validity check if validity checks on
+	operands are enabled.
+	(Expand_N_Qualified_Expression): Do validity check if validity checks
+	on operands are enabled.
+
+2006-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration): Indicate that the entity
+	must be materialized when the renamed expression is an explicit
+	dereference.
+
+2006-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Statically_Discriminated_Components): Return false if
+	the bounds of the type of the discriminant are not static expressions.
+
+	* sem_aggr.adb (Check_Static_Discriminated_Subtype): Return false if
+	the bounds of the discriminant type are not static.
+
+2006-02-17  Robert Dewar  <dewar@adacore.com>
+
+	* g-os_lib.adb (Copy_File): Make sure that if From has an Invalid_FD,
+	then we close To if it is valid.
+
+2006-02-17  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* init.c (facility_resignal_table): new array
+	(__gnat_default_resignal_p): enhance default predicate to resignal if
+	VMS condition has one of the predefined facility codes.
+
+2006-02-17  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* Makefile.in: Use VMS64 specialized versions of several units in
+	Interfaces.C hierarchy to be compatible with HP C default size choices.
+	Use the default version of Ada.Synchronous_Task_Control for VxWorks 653.
+
+2006-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): If the unit is a subprogram
+	instantiation, the corresponding entity is the related_instance of the
+	wrapper package created for the instance.
+
+2006-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Inline_Now is false if
+	the current instance is nested within another instance in a child unit.
+
+2006-02-17  Javier Miranda  <miranda@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminated_Subtype): In case of concurrent
+	type we cannot inherit the primitive operations; we inherit the
+	Corresponding_Record_Type (which has the list of primitive operations).
+	(Check_Anonymous_Access_Types): When creating anonymous access types for
+	access components, use Rewrite in order to preserve the tree structure,
+	for ASIS use.
+	(Analyze_Object_Declaration): For limited types with access
+	discriminants with defaults initialized by an aggregate, obtain
+	subtype from aggregate as for other mutable types.
+	(Derived_Type_Declaration): If the derived type is a limited interface,
+	set the corresponding flag (Is_Limited_Record is not sufficient).
+
+2006-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Build_Body_To_Inline): Enforce the rule that in order
+	to inline a function that returns an unconstrained type, the return
+	expression must be the first variable declared in the body of the
+	function.
+
+2006-02-17  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): In case of conversion to an
+	abstract interface type, the static analysis is not enough to know if
+	the interface is implemented or not by the source tagged type. Hence
+	we must pass the work to the expander to generate the required code to
+	evaluate the conversion at run-time.
+	(Resolve_Equality_Op): Do not apply previous
+	transformation if expansion is disasbled, to prevent anomalies when
+	locating global references in a generic unit.
+
+2006-02-17  Vincent Celier  <celier@adacore.com>
+
+	* snames.ads, snames.adb: New standard names for new project attributes:
+	archive_builder, archive_indexer, compiler_pic_option,
+	config_body_file_name, config_body_file_name_pattern,
+	config_file_switches, config_file_unique, config_spec_file_name,
+	config_spec_file_name_pattern, default_builder_switches,
+	default_global_compiler_switches, default_language,
+	dependency_file_kind, global_compiler_switches, include_path,
+	include_path_file, language_kind, linker_executable_option,
+	linker_lib_dir_option, linker_lib_name_option, mapping_file_switches,
+	roots, runtime_project.
+
+2006-02-17  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.ads, a-convec.adb: 
+	(operator "&"): handle potential overflow for large index types
+	(Insert): removed Contraint_Error when using large index types
+	(Insert_Space): removed Constraint_Error for large index types
+	(Length): moved constraint check from Length to Insert
+
+	* a-coinve.ads, a-coinve.adb: Stream attribute procedures are declared
+	as not null access.
+	Explicit raise statements now include an exception message.
+	(operator "&"): handle potential overflow for large index types
+	(Insert): removed Contraint_Error when using large index types
+	(Insert_Space): removed Constraint_Error for large index types
+	(Length): moved constraint check from Length to Insert
+
+2006-02-17  Robert Dewar  <dewar@adacore.com>
+
+	* s-wchcnv.adb: Document handling of [ on output (we do not change
+	this to ["5B"] and the new comments say why not.
+
+	* gnat_ugn.texi: 
+	Add note for -gnatVo that this now includes the cases of type
+	conversions and qualified expressions.
+	Add comments on handling of brackets encoding for Text_IO
+
+2006-02-17  Ramon Fernandez  <fernandez@adacore.com>
+	    Thomas Quinot  <quinot@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+
+	* expander.adb: Fix typo in comment
+
+	* exp_pakd.adb: Fix typo
+	Minor comment reformatting.
+
+	* g-dyntab.adb: Minor reformatting
+
+	* exp_ch6.adb (Register_Interface_DT_Entry): Traverse the list of
+	aliased subprograms to look for the abstract interface subprogram.
+
 2006-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* env.c (__gnat_setenv): Use size_t.
