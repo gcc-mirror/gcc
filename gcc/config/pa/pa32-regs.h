@@ -172,7 +172,8 @@
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode					\
    || (MODE) == SCmode || (MODE) == DCmode				\
-   || (MODE) == SImode || (TARGET_PA_11 && (MODE) == DImode))
+   || (MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
+   || (TARGET_PA_11 && (MODE) == DImode))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
 

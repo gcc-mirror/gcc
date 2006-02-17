@@ -1,3 +1,16 @@
+2006-02-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/26255
+	* pa.md: Create separate HI and QI move patterns for 32-bit and 64-bit
+	with hardware float support, and software float support.  Add fcpy
+	alternative to hardware patterns.  Add alternatives to copy between
+	general and floating-point registers to the 32-bit pattern.
+	* pa.c (pa_secondary_reload): Don't abort if reload tries to find a
+	secondary reload to load a QI or HI mode constant into a floating
+	point register. 
+	* pa32-regs.h (VALID_FP_MODE_P): Allow QImode and HImode.
+	* pa64-regs.h (VALID_FP_MODE_P): Likewise.
+
 2006-02-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/26272
