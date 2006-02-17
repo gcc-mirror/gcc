@@ -139,12 +139,11 @@ AC_SUBST(libtool_VERSION)
 AC_STDC_HEADERS
 AC_HEADER_TIME
 AC_CHECK_HEADERS(unistd.h semaphore.h sys/loadavg.h sys/time.h)
-AC_CHECK_HEADER([pthread.h],[],
-  [AC_MSG_ERROR([Pthreads are required to build libgomp])])
 
 GCC_HEADER_STDINT(gstdint.h)
 
 # Check to see if -pthread or -lpthread is needed.  Prefer the former.
+# In case the pthread.h system header is not found, this test will fail.
 XPCFLAGS=""
 CFLAGS="$CFLAGS -pthread"
 AC_LINK_IFELSE(

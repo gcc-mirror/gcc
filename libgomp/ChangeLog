@@ -1,3 +1,11 @@
+2006-02-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR bootstrap/26161
+	* configure.ac: Remove AC_CHECK_HEADER for pthread.h. Add comment
+	for the other pthread check.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2006-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/25938
