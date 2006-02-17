@@ -232,9 +232,10 @@ find_common_type (tree t1, tree t2)
   else if (TYPE_MODE (t2) != BLKmode)
     return t2;
 
-  /* If both types have constant size, use the smaller one.  */
+  /* If both types have constant size, use the smaller one.  Keep returning
+     T1 if we have a tie, to be consistent with the other cases.  */
   if (TREE_CONSTANT (TYPE_SIZE (t1)) && TREE_CONSTANT (TYPE_SIZE (t2)))
-    return tree_int_cst_lt (TYPE_SIZE (t1), TYPE_SIZE (t2)) ? t1 : t2;
+    return tree_int_cst_lt (TYPE_SIZE (t2), TYPE_SIZE (t1)) ? t2 : t1;
 
   /* Otherwise, if either type has a constant size, use it.  */
   else if (TREE_CONSTANT (TYPE_SIZE (t1)))

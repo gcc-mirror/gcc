@@ -2538,13 +2538,7 @@ package body Bindgen is
       end loop;
 
       WBI ("");
-
-      --  We used to have more complex code: Ubuf := "u00000";
-      --  which was being miscompiled, so use simpler code instead:
-
-      for J in Ubuf'First + 1 .. Ubuf'Last loop
-         Ubuf (J) := '0';
-      end loop;
+      Ubuf := "u00000";
 
       for U in Units.First .. Units.Last loop
          Increment_Ubuf;
