@@ -1,3 +1,13 @@
+2006-02-16  Roger Sayle  <roger@eyesopen.com>
+
+	* gfortran.fortran-torture/execute/where_10.f90: New test case.
+	* gfortran.fortran-torture/execute/where_11.f90: Likewise.
+	* gfortran.fortran-torture/execute/where_12.f90: Likewise.
+	* gfortran.fortran-torture/execute/where_13.f90: Likewise.
+	* gfortran.fortran-torture/execute/where_14.f90: Likewise.
+	* gfortran.fortran-torture/execute/where_15.f90: Likewise.
+	* gfortran.fortran-torture/execute/where_16.f90: Likewise.
+
 2006-02-16  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp24.c: Update expected output.
