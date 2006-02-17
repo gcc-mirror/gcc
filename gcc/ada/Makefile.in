@@ -482,8 +482,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
-  a-sytaco.ads<1asytaco.ads \
-  a-sytaco.adb<1asytaco.adb \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   g-io.ads<g-io-vxworks-ppc-cert.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1114,6 +1112,11 @@ endif
   g-soccon.ads<g-soccon-vms.ads \
   g-socthi.ads<g-socthi-vms.ads \
   g-socthi.adb<g-socthi-vms.adb \
+  i-c.ads<i-c-vms_64.ads \
+  i-cstrin.ads<i-cstrin-vms_64.ads \
+  i-cstrin.adb<i-cstrin-vms_64.adb \
+  i-cpoint.ads<i-cpoint-vms_64.ads \
+  i-cpoint.adb<i-cpoint-vms_64.adb \
   i-cstrea.adb<i-cstrea-vms.adb \
   s-inmaop.adb<s-inmaop-vms.adb \
   s-interr.adb<s-interr-vms.adb \
