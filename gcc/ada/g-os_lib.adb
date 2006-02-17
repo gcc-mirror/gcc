@@ -384,7 +384,14 @@ package body GNAT.OS_Lib is
          procedure Free is new Unchecked_Deallocation (Buf, Buf_Ptr);
 
       begin
+         --  Check for invalid descriptors, making sure that we do not
+         --  accidentally leave an open file descriptor around.
+
          if From = Invalid_FD then
+            if To /= Invalid_FD then
+               Close (To, Status_To);
+            end if;
+
             raise Copy_Error;
 
          elsif To = Invalid_FD then
