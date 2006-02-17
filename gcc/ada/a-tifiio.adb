@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,9 +314,9 @@ package body Ada.Text_IO.Fixed_IO is
    ---------
 
    procedure Get
-     (File  : in File_Type;
+     (File  : File_Type;
       Item  : out Num;
-      Width : in Field := 0)
+      Width : Field := 0)
    is
       pragma Unsuppress (Range_Check);
 
@@ -329,7 +329,7 @@ package body Ada.Text_IO.Fixed_IO is
 
    procedure Get
      (Item  : out Num;
-      Width : in Field := 0)
+      Width : Field := 0)
    is
       pragma Unsuppress (Range_Check);
 
@@ -341,7 +341,7 @@ package body Ada.Text_IO.Fixed_IO is
    end Get;
 
    procedure Get
-     (From : in String;
+     (From : String;
       Item : out Num;
       Last : out Positive)
    is
@@ -359,11 +359,11 @@ package body Ada.Text_IO.Fixed_IO is
    ---------
 
    procedure Put
-     (File : in File_Type;
-      Item : in Num;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp)
+     (File : File_Type;
+      Item : Num;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
       S    : String (1 .. Fore + Aft + Exp + Extra_Layout_Space);
       Last : Natural;
@@ -373,10 +373,10 @@ package body Ada.Text_IO.Fixed_IO is
    end Put;
 
    procedure Put
-     (Item : in Num;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp)
+     (Item : Num;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
       S    : String (1 .. Fore + Aft + Exp + Extra_Layout_Space);
       Last : Natural;
@@ -387,9 +387,9 @@ package body Ada.Text_IO.Fixed_IO is
 
    procedure Put
      (To   : out String;
-      Item : in Num;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp)
+      Item : Num;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
       Fore : constant Integer := To'Length
                                 - 1                      -- Decimal point
@@ -399,7 +399,7 @@ package body Ada.Text_IO.Fixed_IO is
       Last : Natural;
 
    begin
-      if Fore not in Field'Range then
+      if Fore < 1 or else Fore > Field'Last then
          raise Layout_Error;
       end if;
 
@@ -419,10 +419,11 @@ package body Ada.Text_IO.Fixed_IO is
       Exp  : Field)
    is
       subtype Digit is Int64 range 0 .. 9;
-      X     : constant Int64   := Int64'Integer_Value (Item);
-      A     : constant Field   := Field'Max (Aft, 1);
-      Neg   : constant Boolean := (Item < 0.0);
-      Pos   : Integer;  -- Next digit X has value X * 10.0**Pos;
+
+      X   : constant Int64   := Int64'Integer_Value (Item);
+      A   : constant Field   := Field'Max (Aft, 1);
+      Neg : constant Boolean := (Item < 0.0);
+      Pos : Integer;  -- Next digit X has value X * 10.0**Pos;
 
       Y, Z : Int64;
       E : constant Integer := Boolean'Pos (not Exact)
@@ -438,7 +439,7 @@ package body Ada.Text_IO.Fixed_IO is
 
       procedure Put_Digit (X : Digit);
       --  Add digit X to the output string (going from left to right),
-      --  updating Last and Pos, and inserting the sign, leading zeroes
+      --  updating Last and Pos, and inserting the sign, leading zeros
       --  or a decimal point when necessary. After outputting the first
       --  digit, Pos must not be changed outside Put_Digit anymore
 
@@ -470,11 +471,12 @@ package body Ada.Text_IO.Fixed_IO is
 
       procedure Put_Digit (X : Digit) is
          Digs : constant array (Digit) of Character := "0123456789";
+
       begin
-         if Last = 0 then
+         if Last = To'First - 1 then
             if X /= 0 or Pos <= 0 then
                --  Before outputting first digit, include leading space,
-               --  posible minus sign and, if the first digit is fractional,
+               --  possible minus sign and, if the first digit is fractional,
                --  decimal seperator and leading zeros.
 
                --  The Fore part has Pos + 1 + Boolean'Pos (Neg) characters,

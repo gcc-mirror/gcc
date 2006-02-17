@@ -1,3 +1,17 @@
+2006-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline:
+	2006-02-13  Geert Bosch  <bosch@adacore.com>
+	            Gary Dismukes  <dismukes@adacore.com>
+
+	* a-tifiio.adb (Put_Digits): Test Last against To'First - 1 instead of
+	0, since the lower bound of the actual string may be greater than one.
+
+	PR ada/20753
+
+	(Put): Fix condition to raise Layout_Error when invalid
+	layout is requested.
+
 2006-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in (check-gnat): Run run_acats with $(SHELL).
