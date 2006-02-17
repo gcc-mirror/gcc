@@ -2180,16 +2180,11 @@ package body Sem_Ch10 is
 
       elsif Unit_Kind in N_Subprogram_Instantiation then
 
-         --  Instantiation node is replaced with a package that contains
-         --  renaming declarations and instance itself. The subprogram
-         --  Instance is declared in the visible part of the wrapper package.
+         --  Instantiation node is replaced with a wrapper package.
+         --  Retrieve the visible subprogram created by the instance from
+         --  the corresponding attribute of the wrapper.
 
-         E_Name := First_Entity (Defining_Entity (U));
-         while Present (E_Name) loop
-            exit when Is_Subprogram (E_Name)
-              and then Is_Generic_Instance (E_Name);
-            E_Name := Next_Entity (E_Name);
-         end loop;
+         E_Name := Related_Instance (Defining_Entity (U));
 
       elsif Unit_Kind = N_Package_Renaming_Declaration
         or else Unit_Kind in N_Generic_Renaming_Declaration
