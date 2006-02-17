@@ -731,13 +731,10 @@ package body Sem_Aggr is
                 Name_Buffer (1 .. Name_Len);
 
       begin
-
          Component_Elmt := First_Elmt (Elements);
-
          while Nr_Of_Suggestions <= Max_Suggestions
             and then Present (Component_Elmt)
          loop
-
             Get_Name_String (Chars (Node (Component_Elmt)));
 
             if Is_Bad_Spelling_Of (Name_Buffer (1 .. Name_Len), S) then
@@ -785,12 +782,23 @@ package body Sem_Aggr is
 
       elsif Nkind (V) /= N_Integer_Literal then
          return;
+
+      elsif Is_Access_Type (Etype (Disc)) then
+         null;
+
+      --  If the bounds of the discriminant type are not compile time known,
+      --  the back-end will treat this as a variable-size object.
+
+      elsif not
+        (Compile_Time_Known_Value (Type_Low_Bound  (Etype (Disc)))
+           and then
+         Compile_Time_Known_Value (Type_High_Bound (Etype (Disc))))
+      then
+         return;
       end if;
 
       Comp := First_Component (T);
-
       while Present (Comp) loop
-
          if Is_Scalar_Type (Etype (Comp)) then
             null;
 
@@ -801,15 +809,12 @@ package body Sem_Aggr is
             null;
 
          elsif Is_Array_Type (Etype (Comp)) then
-
             if Is_Bit_Packed_Array (Etype (Comp)) then
                return;
             end if;
 
             Ind := First_Index (Etype (Comp));
-
             while Present (Ind) loop
-
                if Nkind (Ind) /= N_Range
                  or else Nkind (Low_Bound (Ind)) /= N_Integer_Literal
                  or else Nkind (High_Bound (Ind)) /= N_Integer_Literal
@@ -1615,7 +1620,6 @@ package body Sem_Aggr is
 
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
-
                Prev_Nb_Discrete_Choices := Nb_Discrete_Choices;
                Choice := First (Choices (Assoc));
                loop
@@ -2058,10 +2062,9 @@ package body Sem_Aggr is
       elsif Nkind (A) /= N_Aggregate then
          if Is_Overloaded (A) then
             A_Type := Any_Type;
+
             Get_First_Interp (A, I, It);
-
             while Present (It.Typ) loop
-
                if Is_Tagged_Type (It.Typ)
                   and then not Is_Limited_Type (It.Typ)
                then
@@ -2555,7 +2558,7 @@ package body Sem_Aggr is
 
             if Is_Array_Type (Expr_Type) then
                declare
-                  Index : Node_Id := First_Index (Expr_Type);
+                  Index : Node_Id;
                   --  Range of the current constrained index in the array
 
                   Orig_Index : Node_Id := First_Index (Etype (Component));
@@ -2569,6 +2572,7 @@ package body Sem_Aggr is
                   --  range checks.
 
                begin
+                  Index := First_Index (Expr_Type);
                   while Present (Index) loop
                      if Depends_On_Discriminant (Orig_Index) then
                         Apply_Range_Check (Index, Etype (Unconstr_Index));
@@ -2890,7 +2894,6 @@ package body Sem_Aggr is
 
             Parent_Typ  := Base_Type (Typ);
             while Parent_Typ /= Root_Typ loop
-
                Prepend_Elmt (Parent_Typ, To => Parent_Typ_List);
                Parent_Typ := Etype (Parent_Typ);
 
@@ -3208,11 +3211,10 @@ package body Sem_Aggr is
 
    begin
       K := L;
-
       while K /= U loop
          T := Case_Table (K + 1);
-         J := K + 1;
 
+         J := K + 1;
          while J /= L
            and then Expr_Value (Case_Table (J - 1).Choice_Lo) >
                     Expr_Value (T.Choice_Lo)
