@@ -5780,7 +5780,7 @@ choose_reload_regs (struct insn_chain *chain)
 
 	      if (equiv != 0)
 		{
-		  if (regno_clobbered_p (regno, insn, rld[r].mode, 0))
+		  if (regno_clobbered_p (regno, insn, rld[r].mode, 2))
 		    switch (rld[r].when_needed)
 		      {
 		      case RELOAD_FOR_OTHER_ADDRESS:

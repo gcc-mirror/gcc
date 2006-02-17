@@ -1,3 +1,11 @@
+2006-02-16  Denis Nagorny <denis_nagorny@linux.intel.com>
+
+	PR rtl-optimization/25603
+	* reload.c (reg_inc_found_and_valid_p): New. Check REG_INC note.
+	(regno_clobbered_p): Use it. Reusing SETS argument for REG_INC case.
+	* reload1.c (choose_reload_regs): Added call of regno_clobbered_p 
+	with new meaning of SETS.
+
 2006-02-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR target/20353
