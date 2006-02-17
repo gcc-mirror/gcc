@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -101,14 +101,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // Try to append __c into output sequence in one of two ways.
       // Order these tests done in is unspecified by the standard.
+      const char_type __conv = traits_type::to_char_type(__c);
       if (!__testput)
 	{
-	  // NB: Start ostringstream buffers at 512 chars. This is an
+	  // NB: Start ostringstream buffers at 512 chars.  This is an
 	  // experimental value (pronounced "arbitrary" in some of the
 	  // hipper english-speaking countries), and can be changed to
 	  // suit particular needs.
-	  // Then, in virtue of DR 169 (TC) we are allowed to grow more
-	  // than one char.
+	  //
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 169. Bad efficiency of overflow() mandated
+	  // 432. stringbuf::overflow() makes only one write position
+	  //      available
 	  const __size_type __opt_len = std::max(__size_type(2 * __capacity),
 						 __size_type(512));
 	  const __size_type __len = std::min(__opt_len, __max_size);
@@ -116,11 +120,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __tmp.reserve(__len);
 	  if (this->pbase())
 	    __tmp.assign(this->pbase(), this->epptr() - this->pbase());
+	  __tmp.push_back(__conv);
 	  _M_string.swap(__tmp);
 	  _M_sync(const_cast<char_type*>(_M_string.data()),
 		  this->gptr() - this->eback(), this->pptr() - this->pbase());
 	}
-      return this->sputc(traits_type::to_char_type(__c));
+      else
+	*this->pptr() = __conv;
+      this->pbump(1);
+      return __c;
     }
 
   template <class _CharT, class _Traits, class _Alloc>
@@ -203,8 +211,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_update_egptr();
 
 	  const off_type __pos(__sp);
-	  const bool __testpos = 0 <= __pos
-	                         && __pos <=  this->egptr() - __beg;
+	  const bool __testpos = (0 <= __pos
+				  && __pos <= this->egptr() - __beg);
 	  if (__testpos)
 	    {
 	      if (__testin)
@@ -215,6 +223,38 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    }
 	}
       return __ret;
+    }
+
+  // Assumes: contents of _M_string and internal buffer match exactly.
+  // __i == _M_in_cur - _M_in_beg
+  // __o == _M_out_cur - _M_out_beg
+  template <class _CharT, class _Traits, class _Alloc>
+    void
+    basic_stringbuf<_CharT, _Traits, _Alloc>::
+    _M_sync(char_type* __base, __size_type __i, __size_type __o)
+    {
+      const bool __testin = _M_mode & ios_base::in;
+      const bool __testout = _M_mode & ios_base::out;
+      char_type* __end = __base + _M_string.size();
+      
+      if (__testin)
+	this->setg(__base, __base + __i, __end);
+      if (__testout)
+	{
+	  // If __base comes from setbuf we cannot trust capacity()
+	  // to match the size of the buffer area:  in general, after
+	  // Step 1 in setbuf, _M_string.capacity() >= __n.
+	  if (__base == _M_string.data())
+	    this->setp(__base, __base + _M_string.capacity());
+	  else
+	    this->setp(__base, __end);
+	  this->pbump(__o);
+	  // egptr() always tracks the string end.  When !__testin,
+	  // for the correct functioning of the streambuf inlines
+	  // the other get area pointers are identical.
+	  if (!__testin)
+	    this->setg(__end, __end, __end);
+	}
     }
 
   // Inhibit implicit instantiations for required instantiations,

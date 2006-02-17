@@ -358,6 +358,12 @@
         calculating an incorrect number of characters to write.
     </dd>
 
+    <dt><a href="lwg-defects.html#169">169</a>:
+        <em>Bad efficiency of overflow() mandated</em>
+    </dt>
+    <dd>Grow efficiently the internal array object.
+    </dd>
+
     <dt><a href="lwg-defects.html#171">171</a>:
         <em>Strange seekpos() semantics due to joint position</em>
     </dt>
@@ -534,6 +540,13 @@
         <em>Swapping containers with unequal allocators</em>
     </dt>
     <dd>Implement Option 3, as per N1599.
+    </dd>
+
+    <dt><a href="lwg-defects.html#432">432</a>:
+        <em>432. stringbuf::overflow() makes only one write position
+	    available</em>
+    </dt>
+    <dd>Implement the resolution, beyond DR 169.
     </dd>
 
     <dt><a href="lwg-defects.html#434">434</a>:

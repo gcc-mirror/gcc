@@ -1,3 +1,19 @@
+2006-02-17  Paolo Carlini  <pcarlini@suse.de>
+	    Howard Hinnant  <hhinnant@apple.com>
+
+	PR libstdc++/26250
+	* include/bits/sstream.tcc (basic_stringbuf<>::overflow): Tweak
+	to leave epgtr() just past the new write position, as per the
+	relevant bits of 27.7.1.3/8 (not changed by DR 432).
+	* testsuite/27_io/basic_stringbuf/overflow/char/26250.cc: New.
+	* testsuite/27_io/basic_stringbuf/overflow/wchar_t/26250.cc: Same.
+
+	* docs/html/ext/howto.html: Add entries for DR 169 and DR 432.
+
+	* include/std/std_sstream.h (basic_stringbuf<>::_M_sync): Move out
+	of line...
+	* include/bits/sstream.tcc: ... here.
+
 2006-02-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR libstdc++/14939
