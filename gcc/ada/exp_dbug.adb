@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -431,6 +431,7 @@ package body Exp_Dbug is
                Ren := Prefix (Ren);
 
             when N_Explicit_Dereference =>
+               Set_Materialize_Entity (Ent);
                Prepend_String_To_Buffer ("XA");
                Ren := Prefix (Ren);
 
