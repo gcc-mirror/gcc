@@ -4520,6 +4520,10 @@ extern int tree_map_eq (const void *, const void *);
 extern tree tree_mem_ref_addr (tree, tree);
 extern void copy_mem_ref_info (tree, tree);
 
+/* In tree-vrp.c */
+extern bool ssa_name_nonzero_p (tree);
+extern bool ssa_name_nonnegative_p (tree);
+
 /* In tree-object-size.c.  */
 extern void init_object_sizes (void);
 extern void fini_object_sizes (void);

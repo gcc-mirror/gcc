@@ -135,17 +135,6 @@ struct expr_hash_elt
    restored during finalization of this block.  */
 static VEC(tree,heap) *const_and_copies_stack;
 
-/* Bitmap of SSA_NAMEs known to have a nonzero value, even if we do not
-   know their exact value.  */
-static bitmap nonzero_vars;
-
-/* Stack of SSA_NAMEs which need their NONZERO_VARS property cleared
-   when the current block is finalized. 
-
-   A NULL entry is used to mark the end of names needing their 
-   entry in NONZERO_VARS cleared during finalization of this block.  */
-static VEC(tree,heap) *nonzero_vars_stack;
-
 /* Track whether or not we have changed the control flow graph.  */
 static bool cfg_altered;
 
@@ -194,8 +183,6 @@ static void propagate_to_outgoing_edges (struct dom_walk_data *, basic_block);
 static void remove_local_expressions_from_table (void);
 static void restore_vars_to_original_value (void);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
-static void restore_nonzero_vars_to_original_value (void);
-static inline bool unsafe_associative_fp_binop (tree);
 
 
 /* Allocate an EDGE_INFO for edge E and attach it to E.
@@ -261,9 +248,7 @@ tree_ssa_dominator_optimize (void)
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
   avail_exprs_stack = VEC_alloc (tree, heap, 20);
   const_and_copies_stack = VEC_alloc (tree, heap, 20);
-  nonzero_vars_stack = VEC_alloc (tree, heap, 20);
   stmts_to_rescan = VEC_alloc (tree, heap, 20);
-  nonzero_vars = BITMAP_ALLOC (NULL);
   need_eh_cleanup = BITMAP_ALLOC (NULL);
 
   /* Setup callbacks for the generic dominator tree walker.  */
@@ -367,13 +352,11 @@ tree_ssa_dominator_optimize (void)
   /* And finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
 
-  /* Free nonzero_vars.  */
-  BITMAP_FREE (nonzero_vars);
+  /* Free asserted bitmaps and stacks.  */
   BITMAP_FREE (need_eh_cleanup);
   
   VEC_free (tree, heap, avail_exprs_stack);
   VEC_free (tree, heap, const_and_copies_stack);
-  VEC_free (tree, heap, nonzero_vars_stack);
   VEC_free (tree, heap, stmts_to_rescan);
 }
 
@@ -466,7 +449,6 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
      far to unwind when we finalize this block.  */
   VEC_safe_push (tree, heap, avail_exprs_stack, NULL_TREE);
   VEC_safe_push (tree, heap, const_and_copies_stack, NULL_TREE);
-  VEC_safe_push (tree, heap, nonzero_vars_stack, NULL_TREE);
 
   record_equivalences_from_incoming_edge (bb);
 
@@ -537,23 +519,6 @@ remove_local_expressions_from_table (void)
 
       initialize_hash_element (expr, NULL, &element);
       htab_remove_elt_with_hash (avail_exprs, &element, element.hash);
-    }
-}
-
-/* Use the SSA_NAMES in LOCALS to restore TABLE to its original
-   state, stopping when there are LIMIT entries left in LOCALs.  */
-
-static void
-restore_nonzero_vars_to_original_value (void)
-{
-  while (VEC_length (tree, nonzero_vars_stack) > 0)
-    {
-      tree name = VEC_pop (tree, nonzero_vars_stack);
-
-      if (name == NULL)
-	break;
-
-      bitmap_clear_bit (nonzero_vars, SSA_NAME_VERSION (name));
     }
 }
 
@@ -728,7 +693,6 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
     }
 
   remove_local_expressions_from_table ();
-  restore_nonzero_vars_to_original_value ();
   restore_vars_to_original_value ();
 
   /* If we queued any statements to rescan in this block, then
@@ -750,11 +714,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 
    Ignoring any alternatives which are the same as the result, if
    all the alternatives are equal, then the PHI node creates an
-   equivalence.
-
-   Additionally, if all the PHI alternatives are known to have a nonzero
-   value, then the result of this PHI is known to have a nonzero value,
-   even if we do not know its exact value.  */
+   equivalence.  */
 
 static void
 record_equivalences_from_phis (basic_block bb)
@@ -802,17 +762,6 @@ record_equivalences_from_phis (basic_block bb)
       if (i == PHI_NUM_ARGS (phi)
 	  && may_propagate_copy (lhs, rhs))
 	SSA_NAME_VALUE (lhs) = rhs;
-
-      /* Now see if we know anything about the nonzero property for the
-	 result of this PHI.  */
-      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
-	{
-	  if (!PHI_ARG_NONZERO (phi, i))
-	    break;
-	}
-
-      if (i == PHI_NUM_ARGS (phi))
-	bitmap_set_bit (nonzero_vars, SSA_NAME_VERSION (PHI_RESULT (phi)));
     }
 }
 
@@ -942,26 +891,6 @@ htab_statistics (FILE *file, htab_t htab)
 	   (long) htab_size (htab),
 	   (long) htab_elements (htab),
 	   htab_collisions (htab));
-}
-
-/* Record the fact that VAR has a nonzero value, though we may not know
-   its exact value.  Note that if VAR is already known to have a nonzero
-   value, then we do nothing.  */
-
-static void
-record_var_is_nonzero (tree var)
-{
-  int indx = SSA_NAME_VERSION (var);
-
-  if (bitmap_bit_p (nonzero_vars, indx))
-    return;
-
-  /* Mark it in the global table.  */
-  bitmap_set_bit (nonzero_vars, indx);
-
-  /* Record this SSA_NAME so that we can reset the global table
-     when we leave this block.  */
-  VEC_safe_push (tree, heap, nonzero_vars_stack, var);
 }
 
 /* Enter a statement into the true/false expression hash table indicating
@@ -1213,19 +1142,6 @@ record_equality (tree x, tree y)
   record_const_or_copy_1 (x, y, prev_x);
 }
 
-/* Return true, if it is ok to do folding of an associative expression.
-   EXP is the tree for the associative expression.  */ 
-
-static inline bool
-unsafe_associative_fp_binop (tree exp)
-{
-  enum tree_code code = TREE_CODE (exp);
-  return !(!flag_unsafe_math_optimizations
-           && (code == MULT_EXPR || code == PLUS_EXPR
-	       || code == MINUS_EXPR)
-           && FLOAT_TYPE_P (TREE_TYPE (exp)));
-}
-
 /* Returns true when STMT is a simple iv increment.  It detects the
    following situation:
    
@@ -1269,14 +1185,11 @@ simple_iv_increment_p (tree stmt)
 /* CONST_AND_COPIES is a table which maps an SSA_NAME to the current
    known value for that SSA_NAME (or NULL if no value is known).  
 
-   NONZERO_VARS is the set SSA_NAMES known to have a nonzero value,
-   even if we don't know their precise value.
-
-   Propagate values from CONST_AND_COPIES and NONZERO_VARS into the PHI
-   nodes of the successors of BB.  */
+   Propagate values from CONST_AND_COPIES into the PHI nodes of the
+   successors of BB.  */
 
 static void
-cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
+cprop_into_successor_phis (basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -1308,11 +1221,6 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
 	  orig = USE_FROM_PTR (orig_p);
 	  if (TREE_CODE (orig) != SSA_NAME)
 	    continue;
-
-	  /* If the alternative is known to have a nonzero value, record
-	     that fact in the PHI node itself for future use.  */
-	  if (bitmap_bit_p (nonzero_vars, SSA_NAME_VERSION (orig)))
-	    PHI_ARG_NONZERO (phi, indx) = true;
 
 	  /* If we have *ORIG_P in our constant/copy table, then replace
 	     ORIG_P with its value in our constant/copy table.  */
@@ -1518,7 +1426,7 @@ propagate_to_outgoing_edges (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 			     basic_block bb)
 {
   record_edge_info (bb);
-  cprop_into_successor_phis (bb, nonzero_vars);
+  cprop_into_successor_phis (bb);
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
@@ -1626,7 +1534,6 @@ record_equivalences_from_stmt (tree stmt,
 {
   tree lhs = TREE_OPERAND (stmt, 0);
   enum tree_code lhs_code = TREE_CODE (lhs);
-  int i;
 
   if (lhs_code == SSA_NAME)
     {
@@ -1645,47 +1552,7 @@ record_equivalences_from_stmt (tree stmt,
 	  && (TREE_CODE (rhs) == SSA_NAME
 	      || is_gimple_min_invariant (rhs)))
 	SSA_NAME_VALUE (lhs) = rhs;
-
-      if (tree_expr_nonzero_p (rhs))
-	record_var_is_nonzero (lhs);
     }
-
-  /* Look at both sides for pointer dereferences.  If we find one, then
-     the pointer must be nonnull and we can enter that equivalence into
-     the hash tables.  */
-  if (flag_delete_null_pointer_checks)
-    for (i = 0; i < 2; i++)
-      {
-	tree t = TREE_OPERAND (stmt, i);
-
-	/* Strip away any COMPONENT_REFs.  */
-	while (TREE_CODE (t) == COMPONENT_REF)
-	  t = TREE_OPERAND (t, 0);
-
-	/* Now see if this is a pointer dereference.  */
-	if (INDIRECT_REF_P (t))
-          {
-	    tree op = TREE_OPERAND (t, 0);
-
-	    /* If the pointer is a SSA variable, then enter new
-	       equivalences into the hash table.  */
-	    while (TREE_CODE (op) == SSA_NAME)
-	      {
-		tree def = SSA_NAME_DEF_STMT (op);
-
-		record_var_is_nonzero (op);
-
-		/* And walk up the USE-DEF chains noting other SSA_NAMEs
-		   which are known to have a nonzero value.  */
-		if (def
-		    && TREE_CODE (def) == MODIFY_EXPR
-		    && TREE_CODE (TREE_OPERAND (def, 1)) == NOP_EXPR)
-		  op = TREE_OPERAND (TREE_OPERAND (def, 1), 0);
-		else
-		  break;
-	      }
-	  }
-      }
 
   /* A memory store, even an aliased store, creates a useful
      equivalence.  By exchanging the LHS and RHS, creating suitable
@@ -2045,24 +1912,6 @@ lookup_avail_expr (tree stmt, bool insert)
     {
       free (element);
       return NULL_TREE;
-    }
-
-  /* If this is an equality test against zero, see if we have recorded a
-     nonzero value for the variable in question.  */
-  if ((TREE_CODE (element->rhs) == EQ_EXPR
-       || TREE_CODE  (element->rhs) == NE_EXPR)
-      && TREE_CODE (TREE_OPERAND (element->rhs, 0)) == SSA_NAME
-      && integer_zerop (TREE_OPERAND (element->rhs, 1)))
-    {
-      int indx = SSA_NAME_VERSION (TREE_OPERAND (element->rhs, 0));
-
-      if (bitmap_bit_p (nonzero_vars, indx))
-	{
-	  tree t = element->rhs;
-	  free (element);
-	  return constant_boolean_node (TREE_CODE (t) != EQ_EXPR,
-					TREE_TYPE (t));
-	}
     }
 
   /* Finally try to find the expression in the main expression hash table.  */

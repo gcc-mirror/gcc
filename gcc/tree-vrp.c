@@ -191,6 +191,14 @@ copy_value_range (value_range_t *to, value_range_t *from)
   set_value_range (to, from->type, from->min, from->max, from->equiv);
 }
 
+/* Set value range VR to a non-negative range of type TYPE.  */
+
+static inline void
+set_value_range_to_nonnegative (value_range_t *vr, tree type)
+{
+  tree zero = build_int_cst (type, 0);
+  set_value_range (vr, VR_RANGE, zero, TYPE_MAX_VALUE (type), vr->equiv);
+}
 
 /* Set value range VR to a non-NULL range of type TYPE.  */
 
@@ -236,8 +244,10 @@ set_value_range_to_undefined (value_range_t *vr)
 }
 
 
-/* Return value range information for VAR.  Create an empty range
-   if none existed.  */
+/* Return value range information for VAR.  
+
+   If we have no values ranges recorded (ie, VRP is not running), then
+   return NULL.  Otherwise create an empty range if none existed for VAR.  */
 
 static value_range_t *
 get_value_range (tree var)
@@ -245,6 +255,10 @@ get_value_range (tree var)
   value_range_t *vr;
   tree sym;
   unsigned ver = SSA_NAME_VERSION (var);
+
+  /* If we have no recorded ranges, then return NULL.  */
+  if (! vr_value)
+    return NULL;
 
   vr = vr_value[ver];
   if (vr)
@@ -358,6 +372,14 @@ symbolic_range_p (value_range_t *vr)
           || !is_gimple_min_invariant (vr->max));
 }
 
+/* Like tree_expr_nonnegative_p, but this function uses value ranges
+   obtained so far.  */
+
+static bool
+vrp_expr_computes_nonnegative (tree expr)
+{
+  return tree_expr_nonnegative_p (expr);
+}
 
 /* Like tree_expr_nonzero_p, but this function uses value ranges
    obtained so far.  */
@@ -627,6 +649,50 @@ range_includes_zero_p (value_range_t *vr)
 
   zero = build_int_cst (TREE_TYPE (vr->min), 0);
   return (value_inside_range (zero, vr) == 1);
+}
+
+/* Return true if T, an SSA_NAME, is known to be nonnegative.  Return
+   false otherwise or if no value range information is available.  */
+
+bool
+ssa_name_nonnegative_p (tree t)
+{
+  value_range_t *vr = get_value_range (t);
+
+  if (!vr)
+    return false;
+
+  /* Testing for VR_ANTI_RANGE is not useful here as any anti-range
+     which would return a useful value should be encoded as a VR_RANGE.  */
+  if (vr->type == VR_RANGE)
+    {
+      int result = compare_values (vr->min, integer_zero_node);
+
+      return (result == 0 || result == 1);
+    }
+  return false;
+}
+
+/* Return true if T, an SSA_NAME, is known to be nonzero.  Return
+   false otherwise or if no value range information is available.  */
+
+bool
+ssa_name_nonzero_p (tree t)
+{
+  value_range_t *vr = get_value_range (t);
+
+  if (!vr)
+    return false;
+
+  /* A VR_RANGE which does not include zero is a nonzero value.  */
+  if (vr->type == VR_RANGE && !symbolic_range_p (vr))
+    return ! range_includes_zero_p (vr);
+
+  /* A VR_ANTI_RANGE which does include zero is a nonzero value.  */
+  if (vr->type == VR_ANTI_RANGE && !symbolic_range_p (vr))
+    return range_includes_zero_p (vr);
+
+  return false;
 }
 
 
@@ -1868,10 +1934,21 @@ extract_range_from_expr (value_range_t *vr, tree expr)
     extract_range_from_comparison (vr, expr);
   else if (is_gimple_min_invariant (expr))
     set_value_range (vr, VR_RANGE, expr, expr, NULL);
-  else if (vrp_expr_computes_nonzero (expr))
-    set_value_range_to_nonnull (vr, TREE_TYPE (expr));
   else
     set_value_range_to_varying (vr);
+
+  /* If we got a varying range from the tests above, try a final
+     time to derive a nonnegative or nonzero range.  This time
+     relying primarily on generic routines in fold in conjunction
+     with range data.  */
+  if (vr->type == VR_VARYING)
+    {
+      if (INTEGRAL_TYPE_P (TREE_TYPE (expr))
+	  && vrp_expr_computes_nonnegative (expr))
+        set_value_range_to_nonnegative (vr, TREE_TYPE (expr));
+      else if (vrp_expr_computes_nonzero (expr))
+        set_value_range_to_nonnull (vr, TREE_TYPE (expr));
+    }
 }
 
 /* Given a range VR, a LOOP and a variable VAR, determine whether it
@@ -4428,6 +4505,10 @@ vrp_finalize (void)
 
   free (single_val_range);
   free (vr_value);
+
+  /* So that we can distinguish between VRP data being available
+     and not available.  */
+  vr_value = NULL;
 }
 
 
