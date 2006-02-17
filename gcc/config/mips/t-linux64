@@ -4,7 +4,7 @@ MULTILIB_OSDIRNAMES = ../lib32 ../lib ../lib64
 
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
 
-LIB2FUNCS_EXTRA = $(srcdir)/config/mips/_tilib.c
+LIB2FUNCS_EXTRA = $(srcdir)/config/fixtfdi.c $(srcdir)/config/fixunstfdi.c $(srcdir)/config/floatditf.c $(srcdir)/config/floatunditf.c
 
 TPBIT = tp-bit.c
 

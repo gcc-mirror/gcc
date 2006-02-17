@@ -975,7 +975,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
+#endif
 
 /* For MIPS, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)

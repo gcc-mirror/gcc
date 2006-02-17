@@ -1,3 +1,17 @@
+2006-02-17  Roger Sayle  <roger@eyesopen.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/22209
+	* config/mips/mips.h (MIN_UNITS_PER_WORD): Don't define for libgcc.
+	* config/mips/_tilib.c: Remove.
+	* config/fixtfdi.c: New libgcc source file.
+	* config/fixunstfdi.c: New source file.
+	* config/floatditf.c: New source file.
+	* config/floatunditf.c: New souce file.
+	* config/mips/t-iris6 (LIB2FUNCS_EXTRA): Include the new source
+	files above instead of config/mips/_tilib.c.
+	* config/mips/t-linux64 (LIB2FUNCS_EXTRA): Likewise.
+
 2006-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26300
