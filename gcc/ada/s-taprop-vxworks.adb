@@ -51,10 +51,20 @@ with System.Interrupt_Management;
 
 with Interfaces.C;
 
+with System.Soft_Links;
+--  used for Abort_Defer/Undefer
+
+--  We use System.Soft_Links instead of System.Tasking.Initialization
+--  because the later is a higher level package that we shouldn't depend on.
+--  For example when using the restricted run time, it is replaced by
+--  System.Tasking.Restricted.Stages.
+
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
 package body System.Task_Primitives.Operations is
+
+   package SSL renames System.Soft_Links;
 
    use System.Tasking.Debug;
    use System.Tasking;
@@ -1030,6 +1040,8 @@ package body System.Task_Primitives.Operations is
    procedure Set_False (S : in out Suspension_Object) is
       Result  : STATUS;
    begin
+      SSL.Abort_Defer.all;
+
       Result := semTake (S.L, WAIT_FOREVER);
       pragma Assert (Result = OK);
 
@@ -1037,6 +1049,8 @@ package body System.Task_Primitives.Operations is
 
       Result := semGive (S.L);
       pragma Assert (Result = OK);
+
+      SSL.Abort_Undefer.all;
    end Set_False;
 
    --------------
@@ -1046,6 +1060,8 @@ package body System.Task_Primitives.Operations is
    procedure Set_True (S : in out Suspension_Object) is
       Result : STATUS;
    begin
+      SSL.Abort_Defer.all;
+
       Result := semTake (S.L, WAIT_FOREVER);
       pragma Assert (Result = OK);
 
@@ -1066,6 +1082,8 @@ package body System.Task_Primitives.Operations is
 
       Result := semGive (S.L);
       pragma Assert (Result = OK);
+
+      SSL.Abort_Undefer.all;
    end Set_True;
 
    ------------------------
@@ -1075,6 +1093,8 @@ package body System.Task_Primitives.Operations is
    procedure Suspend_Until_True (S : in out Suspension_Object) is
       Result : STATUS;
    begin
+      SSL.Abort_Defer.all;
+
       Result := semTake (S.L, WAIT_FOREVER);
 
       if S.Waiting then
@@ -1084,6 +1104,8 @@ package body System.Task_Primitives.Operations is
 
          Result := semGive (S.L);
          pragma Assert (Result = OK);
+
+         SSL.Abort_Undefer.all;
 
          raise Program_Error;
       else
@@ -1096,6 +1118,8 @@ package body System.Task_Primitives.Operations is
 
             Result := semGive (S.L);
             pragma Assert (Result = 0);
+
+            SSL.Abort_Undefer.all;
          else
             S.Waiting := True;
 
@@ -1103,6 +1127,8 @@ package body System.Task_Primitives.Operations is
 
             Result := semGive (S.L);
             pragma Assert (Result = OK);
+
+            SSL.Abort_Undefer.all;
 
             Result := semTake (S.CV, WAIT_FOREVER);
             pragma Assert (Result = 0);

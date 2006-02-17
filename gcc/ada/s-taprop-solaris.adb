@@ -64,9 +64,19 @@ with Interfaces.C;
 with System.Task_Info;
 --  to initialize Task_Info for a C thread, in function Self
 
+with System.Soft_Links;
+--  used for Defer/Undefer_Abort
+
+--  We use System.Soft_Links instead of System.Tasking.Initialization
+--  because the later is a higher level package that we shouldn't depend on.
+--  For example when using the restricted run time, it is replaced by
+--  System.Tasking.Restricted.Stages.
+
 with Unchecked_Deallocation;
 
 package body System.Task_Primitives.Operations is
+
+   package SSL renames System.Soft_Links;
 
    use System.Tasking.Debug;
    use System.Tasking;
@@ -1720,6 +1730,8 @@ package body System.Task_Primitives.Operations is
    procedure Set_False (S : in out Suspension_Object) is
       Result  : Interfaces.C.int;
    begin
+      SSL.Abort_Defer.all;
+
       Result := mutex_lock (S.L'Access);
       pragma Assert (Result = 0);
 
@@ -1727,6 +1739,8 @@ package body System.Task_Primitives.Operations is
 
       Result := mutex_unlock (S.L'Access);
       pragma Assert (Result = 0);
+
+      SSL.Abort_Undefer.all;
    end Set_False;
 
    --------------
@@ -1736,6 +1750,8 @@ package body System.Task_Primitives.Operations is
    procedure Set_True (S : in out Suspension_Object) is
       Result : Interfaces.C.int;
    begin
+      SSL.Abort_Defer.all;
+
       Result := mutex_lock (S.L'Access);
       pragma Assert (Result = 0);
 
@@ -1756,6 +1772,8 @@ package body System.Task_Primitives.Operations is
 
       Result := mutex_unlock (S.L'Access);
       pragma Assert (Result = 0);
+
+      SSL.Abort_Undefer.all;
    end Set_True;
 
    ------------------------
@@ -1765,6 +1783,8 @@ package body System.Task_Primitives.Operations is
    procedure Suspend_Until_True (S : in out Suspension_Object) is
       Result : Interfaces.C.int;
    begin
+      SSL.Abort_Defer.all;
+
       Result := mutex_lock (S.L'Access);
       pragma Assert (Result = 0);
 
@@ -1775,6 +1795,8 @@ package body System.Task_Primitives.Operations is
 
          Result := mutex_unlock (S.L'Access);
          pragma Assert (Result = 0);
+
+         SSL.Abort_Undefer.all;
 
          raise Program_Error;
       else
@@ -1788,10 +1810,12 @@ package body System.Task_Primitives.Operations is
             S.Waiting := True;
             Result := cond_wait (S.CV'Access, S.L'Access);
          end if;
-      end if;
 
-      Result := mutex_unlock (S.L'Access);
-      pragma Assert (Result = 0);
+         Result := mutex_unlock (S.L'Access);
+         pragma Assert (Result = 0);
+
+         SSL.Abort_Undefer.all;
+      end if;
    end Suspend_Until_True;
 
    ----------------
