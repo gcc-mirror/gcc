@@ -79,11 +79,13 @@ L7:
 
 }
 
+/* The first n_sets > 0 test can be simplfiied into n_sets == 1 since
+   n_sets can only have the values [0, 1] as it's the result of a
+   boolean operation.
 
-
-/* The n_sets > 0 test can be simplified into n_sets == 1 since the
-   only way to reach the test is when n_sets <= 1, and the only value
-   which satisfies both conditions is n_sets == 1.  */
-/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
+   The second n_sets > 0 test can also be simplified into n_sets == 1
+   as the only way to reach the tests is when n_sets <= 1 and the only
+   value which satisfies both conditions is n_sets == 1.  */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 2 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
 

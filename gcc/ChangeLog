@@ -1,5 +1,33 @@
 2006-02-16  Jeff Law  <law@redhat.com>
 
+	* tree-vrp.c (set_value_range_to_nonnegative): New function.
+	(vrp_expr_computes_nonnegative, ssa_name_nonnegative_p): Likewise.
+	(ssa_name_nonzero_p): Likewise.
+	(get_value_range): Return NULL if VRP is not running.
+	(extract_range_from_expr): Fallback to tree_expr_XXX_p if
+	VRP routines do not discover a range.
+	(vrp_finalize): Clear VR_VALUE to indicate VRP is not running.
+	* tree.h (ssa_name_nonzero_p, ssa_name_nonnegative_p): Prototype.
+	* fold-const.c (tree_expr_nonzero_p): For SSA_NAMEs, query VRP.
+	(tree_expr_nonnegative_p): Similarly.
+	* tree-ssa-dom.c (nonzero_vars, nonzero_vars_stack): Remove.
+	(restore_nonzero_vars_to_original_value): Remove.
+	(unsafe_associative_fp_binop): Remove.
+	(tree_ssa_dominator_optimize): Remove initialization and
+	finalization of nonzero_vars and nonzero_vars_stack.
+	(dom_opt_initialize_block): No longer push marker on
+	nonzero_vars_stack.
+	(dom_opt_finalize_block): No longer call
+	restore_nonzero_vars_to_original_value.
+	(record_equivalences_from_phis): No longer look for
+	nonzero PHI arguments.
+	(cprop_into_successor_phis): No longer propagate nonzero
+	property into PHI arguments.  Lose unused argument.  Caller
+	updated.
+	(record_equivalences_from_stmt): No longer record nonzero
+	values for SSA_NAMEs.
+	(lookup_avail_expr): No longer use nonzero_vars.
+
 	* stor-layout.c (set_sizetype): Set TYPE_MAX_VALUE properly
 	for sizetype when sizetype is unsigned.
 
