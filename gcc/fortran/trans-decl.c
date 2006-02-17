@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "toplev.h"
 #include "tm.h"
+#include "rtl.h"
 #include "target.h"
 #include "function.h"
 #include "flags.h"
@@ -40,7 +41,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"
-#include "rtl.h"
 /* Only for gfc_trans_code.  Shouldn't need to include this.  */
 #include "trans-stmt.h"
 
