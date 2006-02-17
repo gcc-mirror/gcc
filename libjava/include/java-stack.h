@@ -105,7 +105,8 @@ private:
   static jclass ClassForFrame (_Jv_StackFrame *frame);
   static void FillInFrameInfo (_Jv_StackFrame *frame);
   static void getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder, 
-			     jstring *sourceFileName, jint *lineNum);
+				    jstring *sourceFileName, jint *lineNum,
+				    jstring *methodName);
   
   static _Unwind_Reason_Code UnwindTraceFn (struct _Unwind_Context *context, 
     void *state_ptr);

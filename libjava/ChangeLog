@@ -1,3 +1,15 @@
+2006-02-16  Andrew Haley  <aph@redhat.com>
+
+	* stacktrace.cc (GetStackTraceElements): Call
+	gnu::gcj::runtime::NameFinder::removeUnknown() to determine if
+	non-Java frames should be removed from a printed stack trace.
+	Pass methodName to getLineNumberForFrame().
+	(getLineNumberForFrame): Set method_name from info.dli_sname.
+	* gnu/gcj/runtime/NameFinder.java (removeUnknown): New method.
+	(remove_unknown): New variable.
+	* include/java-stack.h (_Jv_StackTrace::getLineNumberForFrame):
+	Add methodName arg.
+
 2006-02-15  Matthias Klose  <doko@debian.org>
 
 	* gnu/java/nio/charset, gnu/java/net/protocol/file,
