@@ -4404,6 +4404,7 @@ package body Exp_Ch6 is
         (Prim                : Entity_Id;
          Ancestor_Iface_Prim : Entity_Id := Empty)
       is
+         E            : Entity_Id;
          Prim_Typ     : Entity_Id;
          Prim_Op      : Entity_Id;
          Iface_Typ    : Entity_Id;
@@ -4422,7 +4423,18 @@ package body Exp_Ch6 is
 
          if No (Ancestor_Iface_Prim) then
             Prim_Typ  := Scope (DTC_Entity (Alias (Prim)));
-            Iface_Typ := Scope (DTC_Entity (Abstract_Interface_Alias (Prim)));
+
+            --  Look for the abstract interface subprogram
+
+            E := Abstract_Interface_Alias (Prim);
+            while Present (E)
+              and then Is_Abstract (E)
+              and then not Is_Interface (Scope (DTC_Entity (E)))
+            loop
+               E := Alias (E);
+            end loop;
+
+            Iface_Typ := Scope (DTC_Entity (E));
 
             --  Generate the code of the thunk only when this primitive
             --  operation is associated with a secondary dispatch table.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -682,9 +682,9 @@ package body Exp_Pakd is
       Act_ST := Underlying_Type (Etype (Aexp));
       Create_Packed_Array_Type (Act_ST);
 
-      --  Just replace the eEype with the packed array type. This works
-      --  because the expression will not be further analyzed, and Gigi
-      --  considers the two types equivalent in any case.
+      --  Just replace the etype with the packed array type. This works because
+      --  the expression will not be further analyzed, and Gigi considers the
+      --  two types equivalent in any case.
 
       --  This is not strictly the case ??? If the reference is an actual in
       --  call, the expansion of the prefix is delayed, and must be reanalyzed,
