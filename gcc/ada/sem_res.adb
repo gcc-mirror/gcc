@@ -4962,8 +4962,9 @@ package body Sem_Res is
          --  We apply the same conversion in the case one of the operands is
          --  a private subtype of the type of the other.
 
-         if Ekind (T) =  E_Anonymous_Access_Type
-           or else Is_Private_Type (T)
+         if Expander_Active
+           and then (Ekind (T) =  E_Anonymous_Access_Type
+                       or else Is_Private_Type (T))
          then
             if Etype (L) /= T then
                Rewrite (L,
@@ -6747,45 +6748,31 @@ package body Sem_Res is
                Opnd_Type := Directly_Designated_Type (Opnd_Type);
             end if;
 
-            declare
-               Save_Typ : constant Entity_Id := Opnd_Type;
+            if Is_Class_Wide_Type (Opnd_Type) then
+               Opnd_Type := Etype (Opnd_Type);
+            end if;
 
-            begin
-               if Is_Class_Wide_Type (Opnd_Type) then
-                  Opnd_Type := Etype (Opnd_Type);
-               end if;
+            --  Handle subtypes
 
-               --  Handle subtypes
+            if Ekind (Opnd_Type) = E_Protected_Subtype
+              or else Ekind (Opnd_Type) = E_Task_Subtype
+            then
+               Opnd_Type := Etype (Opnd_Type);
+            end if;
 
-               if Ekind (Opnd_Type) = E_Protected_Subtype
-                 or else Ekind (Opnd_Type) = E_Task_Subtype
-               then
-                  Opnd_Type := Etype (Opnd_Type);
-               end if;
+            if not Interface_Present_In_Ancestor
+                     (Typ   => Opnd_Type,
+                      Iface => Target_Type)
+            then
+               --  The static analysis is not enough to know if the interface
+               --  is implemented or not. Hence we must pass the work to the
+               --  expander to generate the required code to evaluate the
+               --  conversion at run-time.
 
-               if not Interface_Present_In_Ancestor
-                        (Typ   => Opnd_Type,
-                         Iface => Target_Type)
-               then
-                  --  The static analysis is not enough to know if the
-                  --  interface is implemented or not. Hence we must pass the
-                  --  work to the expander to generate the required code to
-                  --  evaluate the conversion at run-time.
-
-                  if Is_Class_Wide_Type (Save_Typ)
-                    and then Is_Interface (Save_Typ)
-                  then
-                     Expand_Interface_Conversion (N, Is_Static => False);
-                  else
-                     Error_Msg_NE
-                       ("(Ada 2005) does not implement interface }",
-                        Operand, Target_Type);
-                  end if;
-
-               else
-                  Expand_Interface_Conversion (N);
-               end if;
-            end;
+               Expand_Interface_Conversion (N, Is_Static => False);
+            else
+               Expand_Interface_Conversion (N);
+            end if;
          end if;
       end if;
    end Resolve_Type_Conversion;
