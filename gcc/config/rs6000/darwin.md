@@ -254,8 +254,8 @@ Boston, MA 02110-1301, USA.  */
 
 (define_insn "load_macho_picbase_si"
   [(set (match_operand:SI 0 "register_operand" "=l")
-	(unspec:SI [(match_operand:SI 1 "immediate_operand" "s")]
-		   UNSPEC_LD_MPIC))]
+	(unspec:SI [(match_operand:SI 1 "immediate_operand" "s")
+		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
   "bcl 20,31,%1\\n%1:"
   [(set_attr "type" "branch")
@@ -263,7 +263,8 @@ Boston, MA 02110-1301, USA.  */
 
 (define_insn "load_macho_picbase_di"
   [(set (match_operand:DI 0 "register_operand" "=l")
-	(unspec:DI [(match_operand:DI 1 "immediate_operand" "s")] UNSPEC_LD_MPIC))]
+	(unspec:DI [(match_operand:DI 1 "immediate_operand" "s")
+		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
   "bcl 20,31,%1\\n%1:"
   [(set_attr "type" "branch")
