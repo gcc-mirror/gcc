@@ -1,3 +1,10 @@
+2006-02-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/26272
+	* config/rs6000/darwin.md (load_macho_picbase_si): Add
+	pc to the pattern.
+	(load_macho_picbase_di): Likewise.
+
 2006-02-16  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (set_value_range_to_nonnegative): New function.
