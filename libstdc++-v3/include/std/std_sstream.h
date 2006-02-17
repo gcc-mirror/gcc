@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -228,37 +228,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       // Internal function for correctly updating the internal buffer
-      // for a particular _M_string, due to initialization or
-      // re-sizing of an existing _M_string.
-      // Assumes: contents of _M_string and internal buffer match exactly.
-      // __i == _M_in_cur - _M_in_beg
-      // __o == _M_out_cur - _M_out_beg
+      // for a particular _M_string, due to initialization or re-sizing
+      // of an existing _M_string.
       void
-      _M_sync(char_type* __base, __size_type __i, __size_type __o)
-      {
-	const bool __testin = _M_mode & ios_base::in;
-	const bool __testout = _M_mode & ios_base::out;
-	char_type* __end = __base + _M_string.size();
-
-	if (__testin)
-	  this->setg(__base, __base + __i, __end);
-	if (__testout)
-	  {
-	    // If __base comes from setbuf we cannot trust capacity()
-	    // to match the size of the buffer area: in general, after
-	    // Step 1 above, _M_string.capacity() >= __n.
-	    if (__base == _M_string.data())
-	      this->setp(__base, __base + _M_string.capacity());
-	    else
-	      this->setp(__base, __end);
-	    this->pbump(__o);
-	    // egptr() always tracks the string end. When !__testin,
-	    // for the correct functioning of the streambuf inlines
-	    // the other get area pointers are identical.
-	    if (!__testin)
-	      this->setg(__end, __end, __end);
-	  }
-      }
+      _M_sync(char_type* __base, __size_type __i, __size_type __o);
 
       // Internal function for correctly updating egptr() to the actual
       // string end.
