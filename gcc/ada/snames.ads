@@ -959,83 +959,106 @@ package Snames is
    --  Note that Name_External is already previously declared
 
    Name_Ada_Roots                      : constant Name_Id := N + 594;
-   Name_Binder                         : constant Name_Id := N + 595;
-   Name_Binder_Driver                  : constant Name_Id := N + 596;
-   Name_Body_Suffix                    : constant Name_Id := N + 597;
-   Name_Builder                        : constant Name_Id := N + 598;
-   Name_Compiler                       : constant Name_Id := N + 599;
-   Name_Compiler_Driver                : constant Name_Id := N + 600;
-   Name_Compiler_Kind                  : constant Name_Id := N + 601;
-   Name_Compute_Dependency             : constant Name_Id := N + 602;
-   Name_Cross_Reference                : constant Name_Id := N + 603;
-   Name_Default_Linker                 : constant Name_Id := N + 604;
-   Name_Default_Switches               : constant Name_Id := N + 605;
-   Name_Dependency_Option              : constant Name_Id := N + 606;
-   Name_Exec_Dir                       : constant Name_Id := N + 607;
-   Name_Executable                     : constant Name_Id := N + 608;
-   Name_Executable_Suffix              : constant Name_Id := N + 609;
-   Name_Extends                        : constant Name_Id := N + 610;
-   Name_Externally_Built               : constant Name_Id := N + 611;
-   Name_Finder                         : constant Name_Id := N + 612;
-   Name_Global_Configuration_Pragmas   : constant Name_Id := N + 613;
-   Name_Gnatls                         : constant Name_Id := N + 614;
-   Name_Gnatstub                       : constant Name_Id := N + 615;
-   Name_Implementation                 : constant Name_Id := N + 616;
-   Name_Implementation_Exceptions      : constant Name_Id := N + 617;
-   Name_Implementation_Suffix          : constant Name_Id := N + 618;
-   Name_Include_Option                 : constant Name_Id := N + 619;
-   Name_Language_Processing            : constant Name_Id := N + 620;
-   Name_Languages                      : constant Name_Id := N + 621;
-   Name_Library_Ali_Dir                : constant Name_Id := N + 622;
-   Name_Library_Dir                    : constant Name_Id := N + 623;
-   Name_Library_Auto_Init              : constant Name_Id := N + 624;
-   Name_Library_GCC                    : constant Name_Id := N + 625;
-   Name_Library_Interface              : constant Name_Id := N + 626;
-   Name_Library_Kind                   : constant Name_Id := N + 627;
-   Name_Library_Name                   : constant Name_Id := N + 628;
-   Name_Library_Options                : constant Name_Id := N + 629;
-   Name_Library_Reference_Symbol_File  : constant Name_Id := N + 630;
-   Name_Library_Src_Dir                : constant Name_Id := N + 631;
-   Name_Library_Symbol_File            : constant Name_Id := N + 632;
-   Name_Library_Symbol_Policy          : constant Name_Id := N + 633;
-   Name_Library_Version                : constant Name_Id := N + 634;
-   Name_Linker                         : constant Name_Id := N + 635;
-   Name_Local_Configuration_Pragmas    : constant Name_Id := N + 636;
-   Name_Locally_Removed_Files          : constant Name_Id := N + 637;
-   Name_Metrics                        : constant Name_Id := N + 638;
-   Name_Naming                         : constant Name_Id := N + 639;
-   Name_Object_Dir                     : constant Name_Id := N + 640;
-   Name_Pretty_Printer                 : constant Name_Id := N + 641;
-   Name_Project                        : constant Name_Id := N + 642;
-   Name_Separate_Suffix                : constant Name_Id := N + 643;
-   Name_Source_Dirs                    : constant Name_Id := N + 644;
-   Name_Source_Files                   : constant Name_Id := N + 645;
-   Name_Source_List_File               : constant Name_Id := N + 646;
-   Name_Spec                           : constant Name_Id := N + 647;
-   Name_Spec_Suffix                    : constant Name_Id := N + 648;
-   Name_Specification                  : constant Name_Id := N + 649;
-   Name_Specification_Exceptions       : constant Name_Id := N + 650;
-   Name_Specification_Suffix           : constant Name_Id := N + 651;
-   Name_Switches                       : constant Name_Id := N + 652;
+   Name_Archive_Builder                : constant Name_Id := N + 595;
+   Name_Archive_Indexer                : constant Name_Id := N + 596;
+   Name_Binder                         : constant Name_Id := N + 597;
+   Name_Binder_Driver                  : constant Name_Id := N + 598;
+   Name_Body_Suffix                    : constant Name_Id := N + 599;
+   Name_Builder                        : constant Name_Id := N + 600;
+   Name_Compiler                       : constant Name_Id := N + 601;
+   Name_Compiler_Driver                : constant Name_Id := N + 602;
+   Name_Compiler_Kind                  : constant Name_Id := N + 603;
+   Name_Compiler_Pic_Option            : constant Name_Id := N + 604;
+   Name_Compute_Dependency             : constant Name_Id := N + 605;
+   Name_Config_Body_File_Name          : constant Name_Id := N + 606;
+   Name_Config_Body_File_Name_Pattern  : constant Name_Id := N + 607;
+   Name_Config_File_Switches           : constant Name_Id := N + 608;
+   Name_Config_File_Unique             : constant Name_Id := N + 609;
+   Name_Config_Spec_File_Name          : constant Name_Id := N + 610;
+   Name_Config_Spec_File_Name_Pattern  : constant Name_Id := N + 611;
+   Name_Cross_Reference                : constant Name_Id := N + 612;
+   Name_Default_Builder_Switches       : constant Name_Id := N + 613;
+   Name_Default_Global_Compiler_Switches : constant Name_Id := N + 614;
+   Name_Default_Language               : constant Name_Id := N + 615;
+   Name_Default_Linker                 : constant Name_Id := N + 616;
+   Name_Default_Switches               : constant Name_Id := N + 617;
+   Name_Dependency_File_Kind           : constant Name_Id := N + 618;
+   Name_Dependency_Option              : constant Name_Id := N + 619;
+   Name_Exec_Dir                       : constant Name_Id := N + 620;
+   Name_Executable                     : constant Name_Id := N + 621;
+   Name_Executable_Suffix              : constant Name_Id := N + 622;
+   Name_Extends                        : constant Name_Id := N + 623;
+   Name_Externally_Built               : constant Name_Id := N + 624;
+   Name_Finder                         : constant Name_Id := N + 625;
+   Name_Global_Compiler_Switches       : constant Name_Id := N + 626;
+   Name_Global_Configuration_Pragmas   : constant Name_Id := N + 627;
+   Name_Gnatls                         : constant Name_Id := N + 628;
+   Name_Gnatstub                       : constant Name_Id := N + 629;
+   Name_Implementation                 : constant Name_Id := N + 630;
+   Name_Implementation_Exceptions      : constant Name_Id := N + 631;
+   Name_Implementation_Suffix          : constant Name_Id := N + 632;
+   Name_Include_Option                 : constant Name_Id := N + 633;
+   Name_Include_Path                   : constant Name_Id := N + 634;
+   Name_Include_Path_File              : constant Name_Id := N + 635;
+   Name_Language_Kind                  : constant Name_Id := N + 636;
+   Name_Language_Processing            : constant Name_Id := N + 637;
+   Name_Languages                      : constant Name_Id := N + 638;
+   Name_Library_Ali_Dir                : constant Name_Id := N + 639;
+   Name_Library_Dir                    : constant Name_Id := N + 640;
+   Name_Library_Auto_Init              : constant Name_Id := N + 641;
+   Name_Library_GCC                    : constant Name_Id := N + 642;
+   Name_Library_Interface              : constant Name_Id := N + 643;
+   Name_Library_Kind                   : constant Name_Id := N + 644;
+   Name_Library_Name                   : constant Name_Id := N + 645;
+   Name_Library_Options                : constant Name_Id := N + 646;
+   Name_Library_Reference_Symbol_File  : constant Name_Id := N + 647;
+   Name_Library_Src_Dir                : constant Name_Id := N + 648;
+   Name_Library_Symbol_File            : constant Name_Id := N + 649;
+   Name_Library_Symbol_Policy          : constant Name_Id := N + 650;
+   Name_Library_Version                : constant Name_Id := N + 651;
+   Name_Linker                         : constant Name_Id := N + 652;
+   Name_Linker_Executable_Option       : constant Name_Id := N + 653;
+   Name_Linker_Lib_Dir_Option          : constant Name_Id := N + 654;
+   Name_Linker_Lib_Name_Option         : constant Name_Id := N + 655;
+   Name_Local_Configuration_Pragmas    : constant Name_Id := N + 656;
+   Name_Locally_Removed_Files          : constant Name_Id := N + 657;
+   Name_Mapping_File_Switches          : constant Name_Id := N + 658;
+   Name_Metrics                        : constant Name_Id := N + 659;
+   Name_Naming                         : constant Name_Id := N + 660;
+   Name_Object_Dir                     : constant Name_Id := N + 661;
+   Name_Pretty_Printer                 : constant Name_Id := N + 662;
+   Name_Project                        : constant Name_Id := N + 663;
+   Name_Roots                          : constant Name_Id := N + 664;
+   Name_Runtime_Project                : constant Name_Id := N + 665;
+   Name_Separate_Suffix                : constant Name_Id := N + 666;
+   Name_Source_Dirs                    : constant Name_Id := N + 667;
+   Name_Source_Files                   : constant Name_Id := N + 668;
+   Name_Source_List_File               : constant Name_Id := N + 669;
+   Name_Spec                           : constant Name_Id := N + 670;
+   Name_Spec_Suffix                    : constant Name_Id := N + 671;
+   Name_Specification                  : constant Name_Id := N + 672;
+   Name_Specification_Exceptions       : constant Name_Id := N + 673;
+   Name_Specification_Suffix           : constant Name_Id := N + 674;
+   Name_Switches                       : constant Name_Id := N + 675;
 
    --  Other miscellaneous names used in front end
 
-   Name_Unaligned_Valid                : constant Name_Id := N + 653;
+   Name_Unaligned_Valid                : constant Name_Id := N + 676;
 
    --  Ada 2005 reserved words
 
-   First_2005_Reserved_Word            : constant Name_Id := N + 654;
-   Name_Interface                      : constant Name_Id := N + 654;
-   Name_Overriding                     : constant Name_Id := N + 655;
-   Name_Synchronized                   : constant Name_Id := N + 656;
-   Last_2005_Reserved_Word             : constant Name_Id := N + 656;
+   First_2005_Reserved_Word            : constant Name_Id := N + 677;
+   Name_Interface                      : constant Name_Id := N + 677;
+   Name_Overriding                     : constant Name_Id := N + 678;
+   Name_Synchronized                   : constant Name_Id := N + 679;
+   Last_2005_Reserved_Word             : constant Name_Id := N + 679;
 
    subtype Ada_2005_Reserved_Words is
      Name_Id range First_2005_Reserved_Word .. Last_2005_Reserved_Word;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 656;
+   Last_Predefined_Name                : constant Name_Id := N + 679;
 
    ---------------------------------------
    -- Subtypes Defining Name Categories --
