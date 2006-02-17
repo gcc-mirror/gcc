@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -411,8 +411,25 @@ package body System.WCh_Cnv is
             end if;
 
          when WCEM_Brackets =>
+
+            --  Values in the range 0-255 are directly output. Note that there
+            --  is some issue with [ (16#5B#] since this will cause confusion
+            --  if the resulting string is interpreted using brackets encoding.
+
+            --  One possibility would be to always output [ as ["5B"] but in
+            --  practice this is undesirable, since for example normal use of
+            --  Wide_Text_IO for output (much more common than input), really
+            --  does want to be able to say something like
+
+            --     Put_Line ("Start of output [first run]");
+
+            --  and have it come out as intended, rather than contaminated by
+            --  a ["5B"] sequence in place of the left bracket.
+
             if Val < 256 then
                Out_Char (Character'Val (Val));
+
+            --  Otherwise use brackets notation for vales greater than 255
 
             else
                Out_Char ('[');
