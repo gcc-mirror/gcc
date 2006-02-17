@@ -2953,7 +2953,7 @@ package body Sem_Ch4 is
                      Set_Entity_With_Style_Check (Sel, Comp);
                      Set_Etype (Sel, Etype (Comp));
                      Set_Etype (N,   Etype (Comp));
-                     exit;
+                     return;
                   end if;
 
                   Next_Component (Comp);
@@ -3837,6 +3837,31 @@ package body Sem_Ch4 is
                Get_First_Interp (R, Index, It);
                while Present (It.Typ) loop
                   Check_Numeric_Argument (It.Typ);
+                  Get_Next_Interp (Index, It);
+               end loop;
+            end if;
+
+         --  If operands are aggregates, we must assume that they may be
+         --  boolean arrays, and leave disambiguation for the second pass.
+         --  If only one is an aggregate, verify that the other one has an
+         --  interpretation as a boolean array
+
+         elsif Nkind (L) = N_Aggregate then
+            if Nkind (R) = N_Aggregate then
+               Add_One_Interp (N, Op_Id, Etype (L));
+
+            elsif not Is_Overloaded (R) then
+               if Valid_Boolean_Arg (Etype (R)) then
+                  Add_One_Interp (N, Op_Id, Etype (R));
+               end if;
+
+            else
+               Get_First_Interp (R, Index, It);
+               while Present (It.Typ) loop
+                  if Valid_Boolean_Arg (It.Typ) then
+                     Add_One_Interp (N, Op_Id, It.Typ);
+                  end if;
+
                   Get_Next_Interp (Index, It);
                end loop;
             end if;
