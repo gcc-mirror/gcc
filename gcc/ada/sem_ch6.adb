@@ -2163,7 +2163,10 @@ package body Sem_Ch6 is
       --  Start of processing for Has_Single_Return
 
       begin
-         return Check_All_Returns (N) = OK;
+         return Check_All_Returns (N) = OK
+           and then Present (Declarations (N))
+           and then Chars (Expression (Return_Statement)) =
+                    Chars (Defining_Identifier (First (Declarations (N))));
       end Has_Single_Return;
 
       --------------------
@@ -2231,20 +2234,24 @@ package body Sem_Ch6 is
       then
          return;    --  Done already.
 
-      --  Functions that return unconstrained composite types will require
-      --  secondary stack handling, and cannot currently be inlined.
-      --  Ditto for functions that return controlled types, where controlled
-      --  actions interfere in complex ways with inlining.
+      --  Functions that return unconstrained composite types require
+      --  secondary stack handling, and cannot currently be inlined, unless
+      --  all return statements return a local variable that is the first
+      --  local declaration in the body.
 
       elsif Ekind (Subp) = E_Function
         and then not Is_Scalar_Type (Etype (Subp))
         and then not Is_Access_Type (Etype (Subp))
         and then not Is_Constrained (Etype (Subp))
-        and then not Has_Single_Return
       then
-         Cannot_Inline
-           ("cannot inline & (unconstrained return type)?", N, Subp);
-         return;
+         if not Has_Single_Return then
+            Cannot_Inline
+              ("cannot inline & (unconstrained return type)?", N, Subp);
+            return;
+         end if;
+
+      --  Ditto for functions that return controlled types, where controlled
+      --  actions interfere in complex ways with inlining.
 
       elsif Ekind (Subp) = E_Function
         and then Controlled_Type (Etype (Subp))
