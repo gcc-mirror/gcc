@@ -5275,7 +5275,8 @@ Arguments for predefined operators and attributes are validity checked.
 This includes all operators in package @code{Standard},
 the shift operators defined as intrinsic in package @code{Interfaces}
 and operands for attributes such as @code{Pos}. Checks are also made
-on individual component values for composite comparisons.
+on individual component values for composite comparisons, and on the
+expressions in type conversions and qualified expressions.
 
 @item -gnatVp
 @emph{Validity checks for parameters.}
