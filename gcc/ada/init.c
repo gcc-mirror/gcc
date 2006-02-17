@@ -1308,12 +1308,22 @@ const int *cond_resignal_table [] = {
   0
 };
 
+const int facility_resignal_table [] = {
+  0x1380000, /* RDB */
+  0x2220000, /* SQL */
+  0
+};
+
 /* Default GNAT predicate for resignaling conditions.  */
 
 static int
 __gnat_default_resignal_p (int code)
 {
   int i, iexcept;
+
+  for (i = 0; facility_resignal_table [i]; i++)
+    if ((code & 0xfff0000) == facility_resignal_table [i])
+      return 1;
 
   for (i = 0, iexcept = 0;
        cond_resignal_table [i] &&
