@@ -1497,6 +1497,7 @@ package body Sem_Ch3 is
       P := Private_Component (T);
 
       if Present (P) then
+
          --  Check for circular definitions
 
          if P = Any_Type then
@@ -2384,7 +2385,17 @@ package body Sem_Ch3 is
         and then not Is_Constrained (T)
         and then Has_Discriminants (T)
       then
-         Act_T := Build_Default_Subtype;
+         if No (E) then
+            Act_T := Build_Default_Subtype;
+         else
+            --  Ada 2005:  a limited object may be initialized by means of an
+            --  aggregate. If the type has default discriminants it has an
+            --  unconstrained nominal type, Its actual subtype will be obtained
+            --  from the aggregate, and not from the default discriminants.
+
+            Act_T := Etype (E);
+         end if;
+
          Rewrite (Object_Definition (N), New_Occurrence_Of (Act_T, Loc));
 
       elsif Present (Underlying_Type (T))
@@ -6985,7 +6996,20 @@ package body Sem_Ch3 is
       end if;
 
       if Is_Tagged_Type (T) then
-         Set_Primitive_Operations (Def_Id, Primitive_Operations (T));
+
+         --  Ada 2005 (AI-251): In case of concurrent types we inherit the
+         --  concurrent record type (which has the list of primitive
+         --  operations).
+
+         if Ada_Version >= Ada_05
+           and then Is_Concurrent_Type (T)
+         then
+            Set_Corresponding_Record_Type (Def_Id,
+               Corresponding_Record_Type (T));
+         else
+            Set_Primitive_Operations (Def_Id, Primitive_Operations (T));
+         end if;
+
          Set_Is_Abstract (Def_Id, Is_Abstract (T));
       end if;
 
@@ -11195,6 +11219,10 @@ package body Sem_Ch3 is
       if Limited_Present (Def) then
          Set_Is_Limited_Record (T);
 
+         if Is_Interface (T) then
+            Set_Is_Limited_Interface (T);
+         end if;
+
          if not Is_Limited_Type (Parent_Type)
            and then
              (not Is_Interface (Parent_Type)
@@ -14856,9 +14884,10 @@ package body Sem_Ch3 is
                Insert_Before (N, Decl);
                Analyze (Decl);
 
-               Set_Access_Definition (Component_Definition (Comp), Empty);
-               Set_Subtype_Indication (Component_Definition (Comp),
-                  New_Occurrence_Of (Anon_Access, Loc));
+               Rewrite (Component_Definition (Comp),
+                 Make_Component_Definition (Loc,
+                   Subtype_Indication =>
+                  New_Occurrence_Of (Anon_Access, Loc)));
                Set_Ekind (Anon_Access, E_Anonymous_Access_Type);
                Set_Is_Local_Anonymous_Access (Anon_Access);
             end if;
