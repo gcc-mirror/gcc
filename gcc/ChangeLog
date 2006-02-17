@@ -1,3 +1,11 @@
+2006-02-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2005-08-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/16045
+	* builtins.c (fold_builtin): Create a new NOP_EXPR all the time.
+
 2006-02-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/26255
