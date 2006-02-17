@@ -332,13 +332,13 @@ private
    use Ada.Streams;
 
    procedure Write
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : Vector);
 
    for Vector'Write use Write;
 
    procedure Read
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : out Vector);
 
    for Vector'Read use Read;
@@ -354,13 +354,13 @@ private
    end record;
 
    procedure Write
-     (Stream   : access Root_Stream_Type'Class;
+     (Stream   : not null access Root_Stream_Type'Class;
       Position : Cursor);
 
    for Cursor'Write use Write;
 
    procedure Read
-     (Stream   : access Root_Stream_Type'Class;
+     (Stream   : not null access Root_Stream_Type'Class;
       Position : out Cursor);
 
    for Cursor'Read use Read;
