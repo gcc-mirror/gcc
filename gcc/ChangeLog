@@ -1,3 +1,8 @@
+2006-02-16  Jeff Law  <law@redhat.com>
+
+	* stor-layout.c (set_sizetype): Set TYPE_MAX_VALUE properly
+	for sizetype when sizetype is unsigned.
+
 2006-02-16  Denis Nagorny <denis_nagorny@linux.intel.com>
 
 	PR rtl-optimization/25603
