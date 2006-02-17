@@ -1,3 +1,9 @@
+2006-02-17  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/nested_struct6.c: XFAIL this test until PR25630
+	is fixed.
+	* testsuite/libffi.call/nested_struct4.c: Likewise.
+
 2006-02-16  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libffi.call/return_dbl.c: New test case.
