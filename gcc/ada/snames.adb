@@ -653,6 +653,8 @@ package body Snames is
      "tagged#" &
      "raise_exception#" &
      "ada_roots#" &
+     "archive_builder#" &
+     "archive_indexer#" &
      "binder#" &
      "binder_driver#" &
      "body_suffix#" &
@@ -660,10 +662,21 @@ package body Snames is
      "compiler#" &
      "compiler_driver#" &
      "compiler_kind#" &
+     "compiler_pic_option#" &
      "compute_dependency#" &
+     "config_body_file_name#" &
+     "config_body_file_name_pattern#" &
+     "config_file_switches#" &
+     "config_file_unique#" &
+     "config_spec_file_name#" &
+     "config_spec_file_name_pattern#" &
      "cross_reference#" &
+     "default_builder_switches#" &
+     "default_global_compiler_switches#" &
+     "default_language#" &
      "default_linker#" &
      "default_switches#" &
+     "dependency_file_kind#" &
      "dependency_option#" &
      "exec_dir#" &
      "executable#" &
@@ -671,6 +684,7 @@ package body Snames is
      "extends#" &
      "externally_built#" &
      "finder#" &
+     "global_compiler_switches#" &
      "global_configuration_pragmas#" &
      "gnatls#" &
      "gnatstub#" &
@@ -678,6 +692,9 @@ package body Snames is
      "implementation_exceptions#" &
      "implementation_suffix#" &
      "include_option#" &
+     "include_path#" &
+     "include_path_file#" &
+     "language_kind#" &
      "language_processing#" &
      "languages#" &
      "library_ali_dir#" &
@@ -694,13 +711,19 @@ package body Snames is
      "library_symbol_policy#" &
      "library_version#" &
      "linker#" &
+     "linker_executable_option#" &
+     "linker_lib_dir_option#" &
+     "linker_lib_name_option#" &
      "local_configuration_pragmas#" &
      "locally_removed_files#" &
+     "mapping_file_switches#" &
      "metrics#" &
      "naming#" &
      "object_dir#" &
      "pretty_printer#" &
      "project#" &
+     "roots#" &
+     "runtime_project#" &
      "separate_suffix#" &
      "source_dirs#" &
      "source_files#" &
