@@ -887,12 +887,31 @@ package body Freeze is
         (T : Entity_Id) return Boolean
       is
          Constraint : Elmt_Id;
+         Discr      : Entity_Id;
 
       begin
          if Has_Discriminants (T)
            and then Present (Discriminant_Constraint (T))
            and then Present (First_Component (T))
          then
+            Discr := First_Discriminant (T);
+
+            if Is_Access_Type (Etype (Discr)) then
+               null;
+
+            --  If the bounds of the discriminant are not compile-time known,
+            --  treat this as non-static, even if the value of the discriminant
+            --  is compile-time known, because the back-end treats aggregates
+            --  of such a subtype as having unknown size.
+
+            elsif not
+              (Compile_Time_Known_Value (Type_Low_Bound  (Etype (Discr)))
+                 and then
+               Compile_Time_Known_Value (Type_High_Bound (Etype (Discr))))
+            then
+               return False;
+            end if;
+
             Constraint := First_Elmt (Discriminant_Constraint (T));
             while Present (Constraint) loop
                if not Compile_Time_Known_Value (Node (Constraint)) then
