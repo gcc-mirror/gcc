@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2448,8 +2448,9 @@ package body Exp_Ch4 is
    procedure Expand_N_Allocator (N : Node_Id) is
       PtrT  : constant Entity_Id  := Etype (N);
       Dtyp  : constant Entity_Id  := Designated_Type (PtrT);
-      Desig : Entity_Id;
+      Etyp  : constant Entity_Id  := Etype (Expression (N));
       Loc   : constant Source_Ptr := Sloc (N);
+      Desig : Entity_Id;
       Temp  : Entity_Id;
       Node  : Node_Id;
 
@@ -2848,6 +2849,44 @@ package body Exp_Ch4 is
 
                Analyze_And_Resolve (N, PtrT);
             end if;
+         end;
+      end if;
+
+      --  Ada 2005 (AI-251): If the allocated object is accessed through an
+      --  access to class-wide interface we force the displacement of the
+      --  pointer to the allocated object to reference the corresponding
+      --  secondary dispatch table.
+
+      if Is_Class_Wide_Type (Dtyp)
+        and then Is_Interface (Dtyp)
+      then
+         declare
+            Saved_Typ : constant Entity_Id := Etype (N);
+
+         begin
+            --  1) Get access to the allocated object
+
+            Rewrite (N,
+              Make_Explicit_Dereference (Loc,
+                Relocate_Node (N)));
+            Set_Etype (N, Etyp);
+            Set_Analyzed (N);
+
+            --  2) Add the conversion to displace the pointer to reference
+            --     the secondary dispatch table.
+
+            Rewrite (N, Convert_To (Dtyp, Relocate_Node (N)));
+            Analyze_And_Resolve (N, Dtyp);
+
+            --  3) The 'access to the secondary dispatch table will be used as
+            --     the value returned by the allocator.
+
+            Rewrite (N,
+              Make_Attribute_Reference (Loc,
+                Prefix         => Relocate_Node (N),
+                Attribute_Name => Name_Access));
+            Set_Etype (N, Saved_Typ);
+            Set_Analyzed (N);
          end;
       end if;
 
@@ -3865,21 +3904,28 @@ package body Exp_Ch4 is
    ------------------------
 
    procedure Expand_N_Op_Divide (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Ltyp : constant Entity_Id  := Etype (Left_Opnd (N));
-      Rtyp : constant Entity_Id  := Etype (Right_Opnd (N));
-      Typ  : Entity_Id           := Etype (N);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Lopnd : constant Node_Id    := Left_Opnd (N);
+      Ropnd : constant Node_Id    := Right_Opnd (N);
+      Ltyp  : constant Entity_Id  := Etype (Lopnd);
+      Rtyp  : constant Entity_Id  := Etype (Ropnd);
+      Typ   : Entity_Id           := Etype (N);
+      Rknow : constant Boolean    := Is_Integer_Type (Typ)
+                                       and then
+                                         Compile_Time_Known_Value (Ropnd);
+      Rval  : Uint;
 
    begin
       Binary_Op_Validity_Checks (N);
 
+      if Rknow then
+         Rval := Expr_Value (Ropnd);
+      end if;
+
       --  N / 1 = N for integer types
 
-      if Is_Integer_Type (Typ)
-        and then Compile_Time_Known_Value (Right_Opnd (N))
-        and then Expr_Value (Right_Opnd (N)) = Uint_1
-      then
-         Rewrite (N, Left_Opnd (N));
+      if Rknow and then Rval = Uint_1 then
+         Rewrite (N, Lopnd);
          return;
       end if;
 
@@ -3887,8 +3933,8 @@ package body Exp_Ch4 is
       --  Is_Power_Of_2_For_Shift is set means that we know that our left
       --  operand is an unsigned integer, as required for this to work.
 
-      if Nkind (Right_Opnd (N)) = N_Op_Expon
-        and then Is_Power_Of_2_For_Shift (Right_Opnd (N))
+      if Nkind (Ropnd) = N_Op_Expon
+        and then Is_Power_Of_2_For_Shift (Ropnd)
 
       --  We cannot do this transformation in configurable run time mode if we
       --  have 64-bit --  integers and long shifts are not available.
@@ -3899,9 +3945,9 @@ package body Exp_Ch4 is
       then
          Rewrite (N,
            Make_Op_Shift_Right (Loc,
-             Left_Opnd  => Left_Opnd (N),
+             Left_Opnd  => Lopnd,
              Right_Opnd =>
-               Convert_To (Standard_Natural, Right_Opnd (Right_Opnd (N)))));
+               Convert_To (Standard_Natural, Right_Opnd (Ropnd))));
          Analyze_And_Resolve (N, Typ);
          return;
       end if;
@@ -3950,28 +3996,39 @@ package body Exp_Ch4 is
       elsif Typ = Universal_Real
         and then Is_Integer_Type (Rtyp)
       then
-         Rewrite (Right_Opnd (N),
-           Convert_To (Universal_Real, Relocate_Node (Right_Opnd (N))));
+         Rewrite (Ropnd,
+           Convert_To (Universal_Real, Relocate_Node (Ropnd)));
 
-         Analyze_And_Resolve (Right_Opnd (N), Universal_Real);
+         Analyze_And_Resolve (Ropnd, Universal_Real);
 
       elsif Typ = Universal_Real
         and then Is_Integer_Type (Ltyp)
       then
-         Rewrite (Left_Opnd (N),
-           Convert_To (Universal_Real, Relocate_Node (Left_Opnd (N))));
+         Rewrite (Lopnd,
+           Convert_To (Universal_Real, Relocate_Node (Lopnd)));
 
-         Analyze_And_Resolve (Left_Opnd (N), Universal_Real);
+         Analyze_And_Resolve (Lopnd, Universal_Real);
 
       --  Non-fixed point cases, do integer zero divide and overflow checks
 
       elsif Is_Integer_Type (Typ) then
          Apply_Divide_Check (N);
 
-         --  Check for 64-bit division available
+         --  Check for 64-bit division available, or long shifts if the divisor
+         --  is a small power of 2 (since such divides will be converted into
+         --  long shifts.
 
          if Esize (Ltyp) > 32
            and then not Support_64_Bit_Divides_On_Target
+           and then
+             (not Rknow
+                or else not Support_Long_Shifts_On_Target
+                or else (Rval /= Uint_2  and then
+                         Rval /= Uint_4  and then
+                         Rval /= Uint_8  and then
+                         Rval /= Uint_16 and then
+                         Rval /= Uint_32 and then
+                         Rval /= Uint_64))
          then
             Error_Msg_CRT ("64-bit division", N);
          end if;
@@ -5929,6 +5986,16 @@ package body Exp_Ch4 is
       Target_Type : constant Entity_Id := Entity (Subtype_Mark (N));
 
    begin
+      --  Do validity check if validity checking operands
+
+      if Validity_Checks_On
+        and then Validity_Check_Operands
+      then
+         Ensure_Valid (Operand);
+      end if;
+
+      --  Apply possible constraint check
+
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
    end Expand_N_Qualified_Expression;
 
@@ -6367,7 +6434,7 @@ package body Exp_Ch4 is
          Cons : List_Id;
 
       begin
-         --  Nothing to do if no change of representation
+         --  Nothing else to do if no change of representation
 
          if Same_Representation (Operand_Type, Target_Type) then
             return;
@@ -6662,6 +6729,14 @@ package body Exp_Ch4 is
       end if;
 
       --  Here if we may need to expand conversion
+
+      --  Do validity check if validity checking operands
+
+      if Validity_Checks_On
+        and then Validity_Check_Operands
+      then
+         Ensure_Valid (Operand);
+      end if;
 
       --  Special case of converting from non-standard boolean type
 
