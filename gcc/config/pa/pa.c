@@ -5630,11 +5630,10 @@ pa_secondary_reload (bool in_p, rtx x, enum reg_class class,
   /* Trying to load a constant into a FP register during PIC code
      generation requires %r1 as a scratch register.  */
   if (flag_pic
-      && GET_MODE_CLASS (mode) == MODE_INT
+      && (mode == SImode || mode == DImode)
       && FP_REG_CLASS_P (class)
       && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE))
     {
-      gcc_assert (mode == SImode || mode == DImode);
       sri->icode = (mode == SImode ? CODE_FOR_reload_insi_r1
 		    : CODE_FOR_reload_indi_r1);
       return NO_REGS;

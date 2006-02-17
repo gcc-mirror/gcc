@@ -154,10 +154,11 @@ Boston, MA 02110-1301, USA.  */
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* These are the valid FP modes.  */
-#define VALID_FP_MODE_P(MODE)                                           \
-  ((MODE) == SFmode || (MODE) == DFmode                                 \
-   || (MODE) == SCmode || (MODE) == DCmode                              \
-   || (MODE) == SImode || (MODE) == DImode)
+#define VALID_FP_MODE_P(MODE)						\
+  ((MODE) == SFmode || (MODE) == DFmode					\
+   || (MODE) == SCmode || (MODE) == DCmode				\
+   || (MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
+   || (MODE) == DImode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
