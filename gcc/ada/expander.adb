@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package body Expander is
    procedure Expand (N : Node_Id) is
    begin
       --  If we were analyzing a default expression the Full_Analysis flag
-      --  must have be off. If we are in expansion mode then we must be
+      --  must be off. If we are in expansion mode then we must be
       --  performing a full analysis. If we are analyzing a generic then
       --  Expansion must be off.
 

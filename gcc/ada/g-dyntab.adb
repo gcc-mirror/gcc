@@ -286,7 +286,6 @@ package body GNAT.Dynamic_Tables is
       function Index_Of (Idx : Natural) return Table_Index_Type is
          J : constant Integer'Base :=
                Table_Index_Type'Pos (First) + Idx - 1;
-
       begin
          return Table_Index_Type'Val (J);
       end Index_Of;
