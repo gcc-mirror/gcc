@@ -2018,6 +2018,25 @@ set_sizetype (tree type)
       ssizetype = sizetype;
       sbitsizetype = bitsizetype;
     }
+
+  /* If SIZETYPE is unsigned, we need to fix TYPE_MAX_VALUE so that
+     it is sign extended in a way consistent with force_fit_type.  */
+  if (TYPE_UNSIGNED (type))
+    {
+      tree orig_max, new_max;
+
+      orig_max = TYPE_MAX_VALUE (sizetype);
+
+      /* Build a new node with the same values, but a different type.  */
+      new_max = build_int_cst_wide (sizetype,
+				    TREE_INT_CST_LOW (orig_max),
+				    TREE_INT_CST_HIGH (orig_max));
+
+      /* Now sign extend it using force_fit_type to ensure
+	 consistency.  */
+      new_max = force_fit_type (new_max, 0, 0, 0);
+      TYPE_MAX_VALUE (sizetype) = new_max;
+    }
 }
 
 /* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE
