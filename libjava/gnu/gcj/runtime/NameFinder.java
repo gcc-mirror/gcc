@@ -34,6 +34,9 @@ import java.util.HashMap;
  *     source file and line number info. Throwable.printStackTrace() will
  *     be faster if this property is set to 'false'.
  * </ul>
+ * <ul><code>gnu.gcj.runtime.NameFinder.remove_unknown</code>
+ *     Whether calls to unknown functions (class and method names are unknown)
+ *     should be removed from the stack trace. </ul>
  * </li>
  *
  * <code>close()</code> should be called to get rid of all resources.
@@ -56,6 +59,18 @@ public class NameFinder
           = Boolean.valueOf(System.getProperty
                 ("gnu.gcj.runtime.NameFinder.use_addr2line", "true")
             ).booleanValue();
+
+  private static final boolean remove_unknown
+	  = Boolean.valueOf(System.getProperty
+		("gnu.gcj.runtime.NameFinder.remove_unknown", "true")
+	    ).booleanValue();
+
+  // Return true if non-Java frames should be removed from stack
+  // traces.
+  static final boolean removeUnknown()
+  {
+    return remove_unknown;
+  }
 
   class Addr2Line
   {
