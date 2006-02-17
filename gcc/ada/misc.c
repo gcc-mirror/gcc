@@ -286,6 +286,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
     case OPT_Wvariadic_macros:
     case OPT_Wold_style_definition:
     case OPT_Wmissing_format_attribute:
+    case OPT_Woverlength_strings:
       break;
 
       /* This is handled by the front-end.  */
