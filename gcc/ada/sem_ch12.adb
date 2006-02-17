@@ -2710,16 +2710,24 @@ package body Sem_Ch12 is
                end if;
 
                --  If the current scope is itself an instance within a child
-               --  unit, and that unit itself is not an instance, it is
-               --  duplicated in the scope stack, and the unstacking mechanism
-               --  in Inline_Instance_Body will fail. This loses some rare
-               --  cases of optimization, and might be improved some day ????
+               --  unit,there will be duplications in the scope stack, and the
+               --  unstacking mechanism in Inline_Instance_Body will fail.
+               --  This loses some rare cases of optimization, and might be
+               --  improved some day, if we can find a proper abstraction for
+               --  "the complete compilation context" that can be saved and
+               --  restored ???
 
-               if Is_Generic_Instance (Current_Scope)
-                  and then Is_Child_Unit (Scope (Current_Scope))
-                  and then not Is_Generic_Instance (Scope (Current_Scope))
-               then
-                  Inline_Now := False;
+               if Is_Generic_Instance (Current_Scope) then
+                  declare
+                     Curr_Unit : constant Entity_Id :=
+                                   Cunit_Entity (Current_Sem_Unit);
+                  begin
+                     if Curr_Unit /= Current_Scope
+                       and then Is_Child_Unit (Curr_Unit)
+                     then
+                        Inline_Now := False;
+                     end if;
+                  end;
                end if;
             end if;
 
