@@ -1,3 +1,9 @@
+2006-02-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* MAINTAINERS (Write After Approval):  Remove myself.
+	(Language Front End Maintainers):  Add myself as fortran 95
+	maintainer.
+
 2006-02-16  Victor Kaplansky  <victork@il.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

@@ -116,6 +116,7 @@ fortran 95		Paul Brook		paul@codesourcery.com
 fortran 95		Thomas Koenig		Thomas.Koenig@online.de
 fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
 fortran 95		Jerry DeLisle		jvdelisle@gcc.gnu.org
+fortran 95		François-Xavier Coudert	coudert@clipper.ens.fr
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -234,7 +235,6 @@ William Cohen					wcohen@redhat.com
 Josh Conner					jconner@apple.com
 R. Kelley Cook					kcook@gcc.gnu.org
 Christian Cornelssen				ccorn@cs.tu-berlin.de
-François-Xavier Coudert				coudert@clipper.ens.fr
 Ian Dall					ian@beware.dropbear.id.au
 David Daney					ddaney@avtrex.com
 Bud Davis					bdavis9659@comcast.net
