@@ -787,6 +787,10 @@ fsched-stalled-insns-dep=
 Common RejectNegative Joined UInteger
 -fsched-stalled-insns-dep=<number>	Set dependence distance checking in premature scheduling of queued insns
 
+fsection-anchors
+Common Report Var(flag_section_anchors)
+Access data in the same section from shared anchor points
+
 frtl-abstract-sequences
 Common Report Var(flag_rtl_seqabstr)
 Perform sequence abstraction optimization on RTL

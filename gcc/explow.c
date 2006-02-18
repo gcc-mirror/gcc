@@ -39,6 +39,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "recog.h"
 #include "langhooks.h"
 #include "target.h"
+#include "output.h"
 
 static rtx break_out_memory_refs (rtx);
 static void emit_stack_probe (rtx);
@@ -527,12 +528,67 @@ validize_mem (rtx ref)
 {
   if (!MEM_P (ref))
     return ref;
+  ref = use_anchored_address (ref);
   if (! (flag_force_addr && CONSTANT_ADDRESS_P (XEXP (ref, 0)))
       && memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
     return ref;
 
   /* Don't alter REF itself, since that is probably a stack slot.  */
   return replace_equiv_address (ref, XEXP (ref, 0));
+}
+
+/* If X is a memory reference to a member of an object block, try rewriting
+   it to use an anchor instead.  Return the new memory reference on success
+   and the old one on failure.  */
+
+rtx
+use_anchored_address (rtx x)
+{
+  rtx base;
+  HOST_WIDE_INT offset;
+
+  if (!flag_section_anchors)
+    return x;
+
+  if (!MEM_P (x))
+    return x;
+
+  /* Split the address into a base and offset.  */
+  base = XEXP (x, 0);
+  offset = 0;
+  if (GET_CODE (base) == CONST
+      && GET_CODE (XEXP (base, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (base, 0), 1)) == CONST_INT)
+    {
+      offset += INTVAL (XEXP (XEXP (base, 0), 1));
+      base = XEXP (XEXP (base, 0), 0);
+    }
+
+  /* Check whether BASE is suitable for anchors.  */
+  if (GET_CODE (base) != SYMBOL_REF
+      || !SYMBOL_REF_IN_BLOCK_P (base)
+      || SYMBOL_REF_ANCHOR_P (base)
+      || !targetm.use_anchors_for_symbol_p (base))
+    return x;
+
+  /* Decide where BASE is going to be.  */
+  place_block_symbol (base);
+
+  /* Get the anchor we need to use.  */
+  offset += SYMBOL_REF_BLOCK_OFFSET (base);
+  base = get_section_anchor (SYMBOL_REF_BLOCK (base), offset,
+			     SYMBOL_REF_TLS_MODEL (base));
+
+  /* Work out the offset from the anchor.  */
+  offset -= SYMBOL_REF_BLOCK_OFFSET (base);
+
+  /* If we're going to run a CSE pass, force the anchor into a register.
+     We will then be able to reuse registers for several accesses, if the
+     target costs say that that's worthwhile.  */
+  if (!cse_not_expected)
+    base = force_reg (GET_MODE (base), base);
+
+  return replace_equiv_address (x, plus_constant (base, offset));
 }
 
 /* Copy the value or contents of X to a new temp reg and return that reg.  */

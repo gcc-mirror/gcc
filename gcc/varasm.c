@@ -184,6 +184,12 @@ static GTY(()) section *unnamed_sections;
 /* Hash table of named sections.  */
 static GTY((param_is (section))) htab_t section_htab;
 
+/* A table of object_blocks, indexed by section.  */
+static GTY((param_is (struct object_block))) htab_t object_block_htab;
+
+/* The next number to use for internal anchor labels.  */
+static GTY(()) int anchor_labelno;
+
 /* Helper routines for maintaining section_htab.  */
 
 static int
@@ -200,6 +206,34 @@ section_entry_hash (const void *p)
 {
   const section *old = p;
   return htab_hash_string (old->named.name);
+}
+
+/* Return a hash value for section SECT.  */
+
+static hashval_t
+hash_section (section *sect)
+{
+  if (sect->common.flags & SECTION_NAMED)
+    return htab_hash_string (sect->named.name);
+  return sect->common.flags;
+}
+
+/* Helper routines for maintaining object_block_htab.  */
+
+static int
+object_block_entry_eq (const void *p1, const void *p2)
+{
+  const struct object_block *old = p1;
+  const section *new = p2;
+
+  return old->sect == new;
+}
+
+static hashval_t
+object_block_entry_hash (const void *p)
+{
+  const struct object_block *old = p;
+  return hash_section (old->sect);
 }
 
 /* Return a new unnamed section with the given fields.  */
@@ -254,6 +288,66 @@ get_section (const char *name, unsigned int flags, tree decl)
 	}
     }
   return sect;
+}
+
+/* Return true if the current compilation mode benefits from having
+   objects grouped into blocks.  */
+
+static bool
+use_object_blocks_p (void)
+{
+  return flag_section_anchors;
+}
+
+/* Return the object_block structure for section SECT.  Create a new
+   structure if we haven't created one already.  */
+
+static struct object_block *
+get_block_for_section (section *sect)
+{
+  struct object_block *block;
+  void **slot;
+
+  slot = htab_find_slot_with_hash (object_block_htab, sect,
+				   hash_section (sect), INSERT);
+  block = (struct object_block *) *slot;
+  if (block == NULL)
+    {
+      block = (struct object_block *)
+	ggc_alloc_cleared (sizeof (struct object_block));
+      block->sect = sect;
+      *slot = block;
+    }
+  return block;
+}
+
+/* Create a symbol with label LABEL and place it at byte offset
+   OFFSET in BLOCK.  OFFSET can be negative if the symbol's offset
+   is not yet known.  LABEL must be a garbage-collected string.  */
+
+static rtx
+create_block_symbol (const char *label, struct object_block *block,
+		     HOST_WIDE_INT offset)
+{
+  rtx symbol;
+  unsigned int size;
+
+  /* Create the extended SYMBOL_REF.  */
+  size = RTX_HDR_SIZE + sizeof (struct block_symbol);
+  symbol = ggc_alloc_zone (size, &rtl_zone);
+
+  /* Initialize the normal SYMBOL_REF fields.  */
+  memset (symbol, 0, size);
+  PUT_CODE (symbol, SYMBOL_REF);
+  PUT_MODE (symbol, Pmode);
+  XSTR (symbol, 0) = label;
+  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_IN_BLOCK;
+
+  /* Initialize the block_symbol stuff.  */
+  SYMBOL_REF_BLOCK (symbol) = block;
+  SYMBOL_REF_BLOCK_OFFSET (symbol) = offset;
+
+  return symbol;
 }
 
 static void
@@ -705,6 +799,83 @@ decode_reg_name (const char *asmspec)
   return -1;
 }
 
+/* Return true if it is possible to put DECL in an object_block.  */
+
+static bool
+use_blocks_for_decl_p (tree decl)
+{
+  /* Only data DECLs can be placed into object blocks.  */
+  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != CONST_DECL)
+    return false;
+
+  if (TREE_CODE (decl) == VAR_DECL)
+    {
+      /* The object must be defined in this translation unit.  */
+      if (DECL_EXTERNAL (decl))
+	return false;
+
+      /* There's no point using object blocks for something that is
+	 isolated by definition.  */
+      if (DECL_ONE_ONLY (decl))
+	return false;
+
+      /* Symbols that use .common cannot be put into blocks.  */
+      if (DECL_COMMON (decl) && DECL_INITIAL (decl) == NULL)
+	return false;
+    }
+
+  /* We can only calculate block offsets if the decl has a known
+     constant size.  */
+  if (DECL_SIZE_UNIT (decl) == NULL)
+    return false;
+  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+    return false;
+
+  /* Detect decls created by dw2_force_const_mem.  Such decls are
+     special because DECL_INITIAL doesn't specify the decl's true value.
+     dw2_output_indirect_constants will instead call assemble_variable
+     with dont_output_data set to 1 and then print the contents itself.  */
+  if (DECL_INITIAL (decl) == decl)
+    return false;
+
+  return true;
+}
+
+/* Make sure block symbol SYMBOL is in section SECT, moving it to a
+   different block if necessary.  */
+
+static void
+change_symbol_section (rtx symbol, section *sect)
+{
+  if (sect != SYMBOL_REF_BLOCK (symbol)->sect)
+    {
+      gcc_assert (SYMBOL_REF_BLOCK_OFFSET (symbol) < 0);
+      SYMBOL_REF_BLOCK (symbol) = get_block_for_section (sect);
+    }
+}
+
+/* Return the section into which the given VAR_DECL or CONST_DECL
+   should be placed.  */
+
+static section *
+get_variable_section (tree decl)
+{
+  int reloc;
+
+  if (DECL_INITIAL (decl) == error_mark_node)
+    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
+  else if (DECL_INITIAL (decl))
+    reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
+  else
+    reloc = 0;
+
+  resolve_unique_section (decl, reloc, flag_data_sections);
+  if (IN_NAMED_SECTION (decl))
+    return get_named_section (decl, NULL, reloc);
+  else
+    return targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
+}
+
 /* Create the DECL_RTL for a VAR_DECL or FUNCTION_DECL.  DECL should
    have static storage duration.  In other words, it should not be an
    automatic variable, including PARM_DECLs.
@@ -741,9 +912,9 @@ make_decl_rtl (tree decl)
   if (DECL_RTL_SET_P (decl))
     {
       /* If the old RTL had the wrong mode, fix the mode.  */
-      if (GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
-	SET_DECL_RTL (decl, adjust_address_nv (DECL_RTL (decl),
-					       DECL_MODE (decl), 0));
+      x = DECL_RTL (decl);
+      if (GET_MODE (x) != DECL_MODE (decl))
+	SET_DECL_RTL (decl, adjust_address_nv (x, DECL_MODE (decl), 0));
 
       if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
 	return;
@@ -757,6 +928,13 @@ make_decl_rtl (tree decl)
 	 This is necessary, for example, when one machine specific
 	 decl attribute overrides another.  */
       targetm.encode_section_info (decl, DECL_RTL (decl), false);
+
+      /* If the old address was assigned to an object block, see whether
+	 that block is still in the right section.  */
+      if (MEM_P (x)
+	  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	  && SYMBOL_REF_IN_BLOCK_P (XEXP (x, 0)))
+	change_symbol_section (XEXP (x, 0), get_variable_section (decl));
 
       /* Make this function static known to the mudflap runtime.  */
       if (flag_mudflap && TREE_CODE (decl) == VAR_DECL)
@@ -854,7 +1032,13 @@ make_decl_rtl (tree decl)
   if (TREE_CODE (decl) == VAR_DECL && DECL_WEAK (decl))
     DECL_COMMON (decl) = 0;
 
-  x = gen_rtx_SYMBOL_REF (Pmode, name);
+  if (use_object_blocks_p () && use_blocks_for_decl_p (decl))
+    {
+      section *sect = get_variable_section (decl);
+      x = create_block_symbol (name, get_block_for_section (sect), -1);
+    }
+  else
+    x = gen_rtx_SYMBOL_REF (Pmode, name);
   SYMBOL_REF_WEAK (x) = DECL_WEAK (decl);
   SET_SYMBOL_REF_DECL (x, decl);
 
@@ -1407,6 +1591,38 @@ asm_emit_uninitialised (tree decl, const char *name,
   return true;
 }
 
+/* A subroutine of assemble_variable.  Output the label and contents of
+   DECL, whose address is a SYMBOL_REF with name NAME.  DONT_OUTPUT_DATA
+   is as for assemble_variable.  */
+
+static void
+assemble_variable_contents (tree decl, const char *name,
+			    bool dont_output_data)
+{
+  /* Do any machine/system dependent processing of the object.  */
+#ifdef ASM_DECLARE_OBJECT_NAME
+  last_assemble_variable_decl = decl;
+  ASM_DECLARE_OBJECT_NAME (asm_out_file, name, decl);
+#else
+  /* Standard thing is just output label for the object.  */
+  ASM_OUTPUT_LABEL (asm_out_file, name);
+#endif /* ASM_DECLARE_OBJECT_NAME */
+
+  if (!dont_output_data)
+    {
+      if (DECL_INITIAL (decl)
+	  && DECL_INITIAL (decl) != error_mark_node
+	  && !initializer_zerop (DECL_INITIAL (decl)))
+	/* Output the actual data.  */
+	output_constant (DECL_INITIAL (decl),
+			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
+			 DECL_ALIGN (decl));
+      else
+	/* Leave space for it.  */
+	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
+    }
+}
+
 /* Assemble everything that is needed for a variable or function declaration.
    Not used for automatic variables, and not used for function definitions.
    Should not be called for variables of incomplete structure type.
@@ -1423,8 +1639,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 {
   const char *name;
   unsigned int align;
-  int reloc = 0;
   rtx decl_rtl;
+  bool in_block_p;
 
   if (lang_hooks.decls.prepare_assemble_variable)
     lang_hooks.decls.prepare_assemble_variable (decl);
@@ -1494,6 +1710,9 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       return;
     }
 
+  gcc_assert (MEM_P (decl_rtl));
+  gcc_assert (GET_CODE (XEXP (decl_rtl, 0)) == SYMBOL_REF);
+  in_block_p = SYMBOL_REF_IN_BLOCK_P (XEXP (decl_rtl, 0));
   name = XSTR (XEXP (decl_rtl, 0), 0);
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     notice_global_symbol (decl);
@@ -1563,6 +1782,10 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 #endif
 	}
     }
+  /* Do not handle decls as common if they will be assigned a
+     specific section position.  */
+  else if (in_block_p)
+    ;
   else if (DECL_INITIAL (decl) == 0
 	   || DECL_INITIAL (decl) == error_mark_node
 	   || (flag_zero_initialized_in_bss
@@ -1605,47 +1828,27 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     globalize_decl (decl);
 
   /* Output any data that we will need to use the address of.  */
-  if (DECL_INITIAL (decl) == error_mark_node)
-    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
-  else if (DECL_INITIAL (decl))
-    {
-      reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
-      output_addressed_constants (DECL_INITIAL (decl));
-    }
-
-  /* Switch to the appropriate section.  */
-  resolve_unique_section (decl, reloc, flag_data_sections);
-  variable_section (decl, reloc);
+  if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node)
+    output_addressed_constants (DECL_INITIAL (decl));
 
   /* dbxout.c needs to know this.  */
   if (in_section && (in_section->common.flags & SECTION_CODE) != 0)
     DECL_IN_TEXT_SECTION (decl) = 1;
 
-  /* Output the alignment of this data.  */
-  if (align > BITS_PER_UNIT)
-    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DECL_ALIGN_UNIT (decl)));
-
-  /* Do any machine/system dependent processing of the object.  */
-#ifdef ASM_DECLARE_OBJECT_NAME
-  last_assemble_variable_decl = decl;
-  ASM_DECLARE_OBJECT_NAME (asm_out_file, name, decl);
-#else
-  /* Standard thing is just output label for the object.  */
-  ASM_OUTPUT_LABEL (asm_out_file, name);
-#endif /* ASM_DECLARE_OBJECT_NAME */
-
-  if (!dont_output_data)
+  /* If the decl is part of an object_block, make sure that the decl
+     has been positioned within its block, but do not write out its
+     definition yet.  output_object_blocks will do that later.  */
+  if (in_block_p)
     {
-      if (DECL_INITIAL (decl)
-	  && DECL_INITIAL (decl) != error_mark_node
-	  && !initializer_zerop (DECL_INITIAL (decl)))
-	/* Output the actual data.  */
-	output_constant (DECL_INITIAL (decl),
-			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
-			 align);
-      else
-	/* Leave space for it.  */
-	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
+      gcc_assert (!dont_output_data);
+      place_block_symbol (XEXP (decl_rtl, 0));
+    }
+  else
+    {
+      switch_to_section (get_variable_section (decl));
+      if (align > BITS_PER_UNIT)
+	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DECL_ALIGN_UNIT (decl)));
+      assemble_variable_contents (decl, name, dont_output_data);
     }
 }
 
@@ -2554,6 +2757,46 @@ copy_constant (tree exp)
     }
 }
 
+/* Return the alignment of constant EXP in bits.  */
+
+static unsigned int
+get_constant_alignment (tree exp)
+{
+  unsigned int align;
+
+  align = TYPE_ALIGN (TREE_TYPE (exp));
+#ifdef CONSTANT_ALIGNMENT
+  align = CONSTANT_ALIGNMENT (exp, align);
+#endif
+  return align;
+}
+
+/* Return the section into which constant EXP should be placed.  */
+
+static section *
+get_constant_section (tree exp)
+{
+  if (IN_NAMED_SECTION (exp))
+    return get_named_section (exp, NULL, compute_reloc_for_constant (exp));
+  else
+    return targetm.asm_out.select_section (exp,
+					   compute_reloc_for_constant (exp),
+					   get_constant_alignment (exp));
+}
+
+/* Return the size of constant EXP in bytes.  */
+
+static HOST_WIDE_INT
+get_constant_size (tree exp)
+{
+  HOST_WIDE_INT size;
+
+  size = int_size_in_bytes (TREE_TYPE (exp));
+  if (TREE_CODE (exp) == STRING_CST)
+    size = MAX (TREE_STRING_LENGTH (exp), size);
+  return size;
+}
+
 /* Subroutine of output_constant_def:
    No constant equal to EXP is known to have been output.
    Make a constant descriptor to enter EXP in the hash table.
@@ -2582,8 +2825,15 @@ build_constant_desc (tree exp)
   ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
 
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
-  symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
-  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+  if (use_object_blocks_p ())
+    {
+      section *sect = get_constant_section (exp);
+      symbol = create_block_symbol (ggc_strdup (label),
+				    get_block_for_section (sect), -1);
+    }
+  else
+    symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
+  SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LOCAL;
   SET_SYMBOL_REF_DECL (symbol, desc->value);
   TREE_CONSTANT_POOL_ADDRESS_P (symbol) = 1;
 
@@ -2676,43 +2926,16 @@ maybe_output_constant_def_contents (struct constant_descriptor_tree *desc,
   output_constant_def_contents (symbol);
 }
 
-/* We must output the constant data referred to by SYMBOL; do so.  */
+/* Subroutine of output_constant_def_contents.  Output the definition
+   of constant EXP, which is pointed to by label LABEL.  ALIGN is the
+   constant's alignment in bits.  */
 
 static void
-output_constant_def_contents (rtx symbol)
+assemble_constant_contents (tree exp, const char *label, unsigned int align)
 {
-  tree exp = SYMBOL_REF_DECL (symbol);
-  const char *label = XSTR (symbol, 0);
   HOST_WIDE_INT size;
 
-  /* Make sure any other constants whose addresses appear in EXP
-     are assigned label numbers.  */
-  int reloc = compute_reloc_for_constant (exp);
-
-  /* Align the location counter as required by EXP's data type.  */
-  unsigned int align = TYPE_ALIGN (TREE_TYPE (exp));
-#ifdef CONSTANT_ALIGNMENT
-  align = CONSTANT_ALIGNMENT (exp, align);
-#endif
-
-  output_addressed_constants (exp);
-
-  /* We are no longer deferring this constant.  */
-  TREE_ASM_WRITTEN (exp) = 1;
-
-  if (IN_NAMED_SECTION (exp))
-    switch_to_section (get_named_section (exp, NULL, reloc));
-  else
-    switch_to_section (targetm.asm_out.select_section (exp, reloc, align));
-
-  if (align > BITS_PER_UNIT)
-    {
-      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-    }
-
-  size = int_size_in_bytes (TREE_TYPE (exp));
-  if (TREE_CODE (exp) == STRING_CST)
-    size = MAX (TREE_STRING_LENGTH (exp), size);
+  size = get_constant_size (exp);
 
   /* Do any machine/system dependent processing of the constant.  */
 #ifdef ASM_DECLARE_CONSTANT_NAME
@@ -2724,6 +2947,36 @@ output_constant_def_contents (rtx symbol)
 
   /* Output the value of EXP.  */
   output_constant (exp, size, align);
+}
+
+/* We must output the constant data referred to by SYMBOL; do so.  */
+
+static void
+output_constant_def_contents (rtx symbol)
+{
+  tree exp = SYMBOL_REF_DECL (symbol);
+  unsigned int align;
+
+  /* Make sure any other constants whose addresses appear in EXP
+     are assigned label numbers.  */
+  output_addressed_constants (exp);
+
+  /* We are no longer deferring this constant.  */
+  TREE_ASM_WRITTEN (exp) = 1;
+
+  /* If the constant is part of an object block, make sure that the
+     decl has been positioned within its block, but do not write out
+     its definition yet.  output_object_blocks will do that later.  */
+  if (SYMBOL_REF_IN_BLOCK_P (symbol))
+    place_block_symbol (symbol);
+  else
+    {
+      switch_to_section (get_constant_section (exp));
+      align = get_constant_alignment (exp);
+      if (align > BITS_PER_UNIT)
+	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+      assemble_constant_contents (exp, XSTR (symbol, 0), align);
+    }
   if (flag_mudflap)
     mudflap_enqueue_constant (exp);
 }
@@ -2987,8 +3240,16 @@ force_const_mem (enum machine_mode mode, rtx x)
 
   /* Construct the SYMBOL_REF.  Make sure to mark it as belonging to
      the constants pool.  */
-  desc->sym = symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
-  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+  if (use_object_blocks_p () && targetm.use_blocks_for_constant_p (mode, x))
+    {
+      section *sect = targetm.asm_out.select_rtx_section (mode, x, align);
+      symbol = create_block_symbol (ggc_strdup (label),
+				    get_block_for_section (sect), -1);
+    }
+  else
+    symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
+  desc->sym = symbol;
+  SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LOCAL;
   CONSTANT_POOL_ADDRESS_P (symbol) = 1;
   SET_SYMBOL_REF_CONSTANT (symbol, desc);
   current_function_uses_const_pool = 1;
@@ -3090,15 +3351,15 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
     }
 }
 
-/* Worker function for output_constant_pool.  Emit POOL.  */
+/* Worker function for output_constant_pool.  Emit constant DESC,
+   giving it ALIGN bits of alignment.  */
 
 static void
-output_constant_pool_1 (struct constant_descriptor_rtx *desc)
+output_constant_pool_1 (struct constant_descriptor_rtx *desc,
+			unsigned int align)
 {
   rtx x, tmp;
 
-  if (!desc->mark)
-    return;
   x = desc->constant;
 
   /* See if X is a LABEL_REF (or a CONST referring to a LABEL_REF)
@@ -3131,29 +3392,25 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc)
       break;
     }
 
-  /* First switch to correct section.  */
-  switch_to_section (targetm.asm_out.select_rtx_section (desc->mode, x,
-							 desc->align));
-
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
   ASM_OUTPUT_SPECIAL_POOL_ENTRY (asm_out_file, x, desc->mode,
-				 desc->align, desc->labelno, done);
+				 align, desc->labelno, done);
 #endif
 
-  assemble_align (desc->align);
+  assemble_align (align);
 
   /* Output the label.  */
   targetm.asm_out.internal_label (asm_out_file, "LC", desc->labelno);
 
   /* Output the data.  */
-  output_constant_pool_2 (desc->mode, x, desc->align);
+  output_constant_pool_2 (desc->mode, x, align);
 
   /* Make sure all constants in SECTION_MERGE and not SECTION_STRINGS
      sections have proper size.  */
-  if (desc->align > GET_MODE_BITSIZE (desc->mode)
+  if (align > GET_MODE_BITSIZE (desc->mode)
       && in_section
       && (in_section->common.flags & SECTION_MERGE))
-    assemble_align (desc->align);
+    assemble_align (align);
 
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
  done:
@@ -3265,7 +3522,21 @@ output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
 #endif
 
   for (desc = pool->first; desc ; desc = desc->next)
-    output_constant_pool_1 (desc);
+    if (desc->mark)
+      {
+	/* If the constant is part of an object_block, make sure that
+	   the constant has been positioned within its block, but do not
+	   write out its definition yet.  output_object_blocks will do
+	   that later.  */
+	if (SYMBOL_REF_IN_BLOCK_P (desc->sym))
+	  place_block_symbol (desc->sym);
+	else
+	  {
+	    switch_to_section (targetm.asm_out.select_rtx_section
+			       (desc->mode, desc->constant, desc->align));
+	    output_constant_pool_1 (desc, desc->align);
+	  }
+      }
 
 #ifdef ASM_OUTPUT_POOL_EPILOGUE
   ASM_OUTPUT_POOL_EPILOGUE (asm_out_file, fnname, fndecl, pool->offset);
@@ -4805,6 +5076,8 @@ init_varasm_once (void)
 {
   section_htab = htab_create_ggc (31, section_entry_hash,
 				  section_entry_eq, NULL);
+  object_block_htab = htab_create_ggc (31, object_block_entry_hash,
+				       object_block_entry_eq, NULL);
   const_desc_htab = htab_create_ggc (1009, const_desc_hash,
 				     const_desc_eq, NULL);
 
@@ -5413,7 +5686,7 @@ default_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   if (GET_CODE (symbol) != SYMBOL_REF)
     return;
 
-  flags = 0;
+  flags = SYMBOL_REF_FLAGS (symbol) & SYMBOL_FLAG_IN_BLOCK;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     flags |= SYMBOL_FLAG_FUNCTION;
   if (targetm.binds_local_p (decl))
@@ -5438,6 +5711,59 @@ const char *
 default_strip_name_encoding (const char *str)
 {
   return str + (*str == '*');
+}
+
+#ifdef ASM_OUTPUT_DEF
+/* The default implementation of TARGET_ASM_OUTPUT_ANCHOR.  Define the
+   anchor relative to ".", the current section position.  */
+
+void
+default_asm_output_anchor (rtx symbol)
+{
+  char buffer[100];
+
+  sprintf (buffer, ". + " HOST_WIDE_INT_PRINT_DEC,
+	   SYMBOL_REF_BLOCK_OFFSET (symbol));
+  ASM_OUTPUT_DEF (asm_out_file, XSTR (symbol, 0), buffer);
+}
+#endif
+
+/* The default implementation of TARGET_USE_ANCHORS_FOR_SYMBOL_P.  */
+
+bool
+default_use_anchors_for_symbol_p (rtx symbol)
+{
+  section *sect;
+  tree decl;
+
+  /* Don't use anchors for mergeable sections.  The linker might move
+     the objects around.  */
+  sect = SYMBOL_REF_BLOCK (symbol)->sect;
+  if (sect->common.flags & SECTION_MERGE)
+    return false;
+
+  /* Don't use anchors for small data sections.  The small data register
+     acts as an anchor for such sections.  */
+  if (sect->common.flags & SECTION_SMALL)
+    return false;
+
+  decl = SYMBOL_REF_DECL (symbol);
+  if (decl && DECL_P (decl))
+    {
+      /* Don't use section anchors for decls that might be defined by
+	 other modules.  */
+      if (!targetm.binds_local_p (decl))
+	return false;
+
+      /* Don't use section anchors for decls that will be placed in a
+	 small data section.  */
+      /* ??? Ideally, this check would be redundant with the SECTION_SMALL
+	 one above.  The problem is that we only use SECTION_SMALL for
+	 sections that should be marked as small in the section directive.  */
+      if (targetm.in_small_data_p (decl))
+	return false;
+    }
+  return true;
 }
 
 /* Assume ELF-ish defaults, since that's pretty much the most liberal
@@ -5618,6 +5944,209 @@ switch_to_section (section *new_section)
     new_section->unnamed.callback (new_section->unnamed.data);
 
   new_section->common.flags |= SECTION_DECLARED;
+}
+
+/* If block symbol SYMBOL has not yet been assigned an offset, place
+   it at the end of its block.  */
+
+void
+place_block_symbol (rtx symbol)
+{
+  unsigned HOST_WIDE_INT size, mask, offset;
+  struct constant_descriptor_rtx *desc;
+  unsigned int alignment;
+  struct object_block *block;
+  tree decl;
+
+  if (SYMBOL_REF_BLOCK_OFFSET (symbol) >= 0)
+    return;
+
+  /* Work out the symbol's size and alignment.  */
+  if (CONSTANT_POOL_ADDRESS_P (symbol))
+    {
+      desc = SYMBOL_REF_CONSTANT (symbol);
+      alignment = desc->align;
+      size = GET_MODE_SIZE (desc->mode);
+    }
+  else if (TREE_CONSTANT_POOL_ADDRESS_P (symbol))
+    {
+      decl = SYMBOL_REF_DECL (symbol);
+      alignment = get_constant_alignment (decl);
+      size = get_constant_size (decl);
+    }
+  else
+    {
+      decl = SYMBOL_REF_DECL (symbol);
+      alignment = DECL_ALIGN (decl);
+      size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+    }
+
+  /* Calculate the object's offset from the start of the block.  */
+  block = SYMBOL_REF_BLOCK (symbol);
+  mask = alignment / BITS_PER_UNIT - 1;
+  offset = (block->size + mask) & ~mask;
+  SYMBOL_REF_BLOCK_OFFSET (symbol) = offset;
+
+  /* Record the block's new alignment and size.  */
+  block->alignment = MAX (block->alignment, alignment);
+  block->size = offset + size;
+
+  VEC_safe_push (rtx, gc, block->objects, symbol);
+}
+
+/* Return the anchor that should be used to address byte offset OFFSET
+   from the first object in BLOCK.  MODEL is the TLS model used
+   to access it.  */
+
+rtx
+get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
+		    enum tls_model model)
+{
+  char label[100];
+  unsigned int begin, middle, end;
+  unsigned HOST_WIDE_INT min_offset, max_offset, range, bias, delta;
+  rtx anchor;
+
+  /* Work out the anchor's offset.  Use an offset of 0 for the first
+     anchor so that we don't pessimize the case where we take the address
+     of a variable at the beginning of the block.  This is particularly
+     useful when a block has only one variable assigned to it.
+
+     We try to place anchors RANGE bytes apart, so there can then be
+     anchors at +/-RANGE, +/-2 * RANGE, and so on, up to the limits of
+     a ptr_mode offset.  With some target settings, the lowest such
+     anchor might be out of range for the lowest ptr_mode offset;
+     likewise the highest anchor for the highest offset.  Use anchors
+     at the extreme ends of the ptr_mode range in such cases.
+
+     All arithmetic uses unsigned integers in order to avoid
+     signed overflow.  */
+  max_offset = (unsigned HOST_WIDE_INT) targetm.max_anchor_offset;
+  min_offset = (unsigned HOST_WIDE_INT) targetm.min_anchor_offset;
+  range = max_offset - min_offset + 1;
+  if (range == 0)
+    offset = 0;
+  else
+    {
+      bias = 1 << (GET_MODE_BITSIZE (ptr_mode) - 1);
+      if (offset < 0)
+	{
+	  delta = -(unsigned HOST_WIDE_INT) offset + max_offset;
+	  delta -= delta % range;
+	  if (delta > bias)
+	    delta = bias;
+	  offset = (HOST_WIDE_INT) (-delta);
+	}
+      else
+	{
+	  delta = (unsigned HOST_WIDE_INT) offset - min_offset;
+	  delta -= delta % range;
+	  if (delta > bias - 1)
+	    delta = bias - 1;
+	  offset = (HOST_WIDE_INT) delta;
+	}
+    }
+
+  /* Do a binary search to see if there's already an anchor we can use.
+     Set BEGIN to the new anchor's index if not.  */
+  begin = 0;
+  end = VEC_length (rtx, block->anchors);
+  while (begin != end)
+    {
+      middle = (end + begin) / 2;
+      anchor = VEC_index (rtx, block->anchors, middle);
+      if (SYMBOL_REF_BLOCK_OFFSET (anchor) > offset)
+	end = middle;
+      else if (SYMBOL_REF_BLOCK_OFFSET (anchor) < offset)
+	begin = middle + 1;
+      else if (SYMBOL_REF_TLS_MODEL (anchor) > model)
+	end = middle;
+      else if (SYMBOL_REF_TLS_MODEL (anchor) < model)
+	begin = middle + 1;
+      else
+	return anchor;
+    }
+
+  /* Create a new anchor with a unique label.  */
+  ASM_GENERATE_INTERNAL_LABEL (label, "LANCHOR", anchor_labelno++);
+  anchor = create_block_symbol (ggc_strdup (label), block, offset);
+  SYMBOL_REF_FLAGS (anchor) |= SYMBOL_FLAG_LOCAL | SYMBOL_FLAG_ANCHOR;
+  SYMBOL_REF_FLAGS (anchor) |= model << SYMBOL_FLAG_TLS_SHIFT;
+
+  /* Insert it at index BEGIN.  */
+  VEC_safe_insert (rtx, gc, block->anchors, begin, anchor);
+  return anchor;
+}
+
+/* Output the objects in BLOCK.  */
+
+static void
+output_object_block (struct object_block *block)
+{
+  struct constant_descriptor_rtx *desc;
+  unsigned int i;
+  HOST_WIDE_INT offset;
+  tree decl;
+  rtx symbol;
+
+  if (block->objects == NULL)
+    return;
+
+  /* Switch to the section and make sure that the first byte is
+     suitably aligned.  */
+  switch_to_section (block->sect);
+  assemble_align (block->alignment);
+
+  /* Define the values of all anchors relative to the current section
+     position.  */
+  for (i = 0; VEC_iterate (rtx, block->anchors, i, symbol); i++)
+    targetm.asm_out.output_anchor (symbol);
+
+  /* Output the objects themselves.  */
+  offset = 0;
+  for (i = 0; VEC_iterate (rtx, block->objects, i, symbol); i++)
+    {
+      /* Move to the object's offset, padding with zeros if necessary.  */
+      assemble_zeros (SYMBOL_REF_BLOCK_OFFSET (symbol) - offset);
+      offset = SYMBOL_REF_BLOCK_OFFSET (symbol);
+      if (CONSTANT_POOL_ADDRESS_P (symbol))
+	{
+	  desc = SYMBOL_REF_CONSTANT (symbol);
+	  output_constant_pool_1 (desc, 1);
+	  offset += GET_MODE_SIZE (desc->mode);
+	}
+      else if (TREE_CONSTANT_POOL_ADDRESS_P (symbol))
+	{
+	  decl = SYMBOL_REF_DECL (symbol);
+	  assemble_constant_contents (decl, XSTR (symbol, 0),
+				      get_constant_alignment (decl));
+	  offset += get_constant_size (decl);
+	}
+      else
+	{
+	  decl = SYMBOL_REF_DECL (symbol);
+	  assemble_variable_contents (decl, XSTR (symbol, 0), false);
+	  offset += tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	}
+    }
+}
+
+/* A htab_traverse callback used to call output_object_block for
+   each member of object_block_htab.  */
+
+static int
+output_object_block_htab (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  output_object_block ((struct object_block *) (*slot));
+  return 1;
+}
+
+/* Output the definitions of all object_blocks.  */
+
+void
+output_object_blocks (void)
+{
+  htab_traverse (object_block_htab, output_object_block_htab, NULL);
 }
 
 #include "gt-varasm.h"

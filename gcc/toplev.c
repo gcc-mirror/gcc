@@ -1022,6 +1022,8 @@ compile_file (void)
   if (flag_mudflap)
     mudflap_finish_file ();
 
+  output_object_blocks ();
+
   /* Write out any pending weak symbol declarations.  */
 
   weak_finish ();
@@ -1498,6 +1500,20 @@ general_init (const char *argv0)
   init_optimization_passes ();
 }
 
+/* Return true if the current target supports -fsection-anchors.  */
+
+static bool
+target_supports_section_anchors_p (void)
+{
+  if (targetm.min_anchor_offset == 0 && targetm.max_anchor_offset == 0)
+    return false;
+
+  if (targetm.asm_out.output_anchor == NULL)
+    return false;
+
+  return true;
+}
+
 /* Process the options that have been parsed.  */
 static void
 process_options (void)
@@ -1519,6 +1535,13 @@ process_options (void)
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
 #endif
+
+  if (flag_section_anchors && !target_supports_section_anchors_p ())
+    {
+      warning (OPT_fsection_anchors,
+	       "this target does not support %qs", "-fsection-anchors");
+      flag_section_anchors = 0;
+    }
 
   if (flag_short_enums == 2)
     flag_short_enums = targetm.default_short_enums ();
@@ -1577,6 +1600,9 @@ process_options (void)
      interface.  */
   if (flag_unit_at_a_time && ! lang_hooks.callgraph.expand_function)
     flag_unit_at_a_time = 0;
+
+  if (!flag_unit_at_a_time)
+    flag_section_anchors = 0;
 
   if (flag_value_profile_transformations)
     flag_profile_values = 1;

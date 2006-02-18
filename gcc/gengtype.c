@@ -354,6 +354,33 @@ create_field (pair_p next, type_p type, const char *name)
   return field;
 }
 
+/* Like create_field, but the field is only valid when condition COND
+   is true.  */
+
+static pair_p
+create_optional_field (pair_p next, type_p type, const char *name,
+		       const char *cond)
+{
+  static int id = 1;
+  pair_p union_fields, field;
+  type_p union_type;
+
+  /* Create a fake union type with a single nameless field of type TYPE.
+     The field has a tag of "1".  This allows us to make the presence
+     of a field of type TYPE depend on some boolean "desc" being true.  */
+  union_fields = create_field (NULL, type, "");
+  union_fields->opt = create_option (union_fields->opt, "dot", "");
+  union_fields->opt = create_option (union_fields->opt, "tag", "1");
+  union_type = new_structure (xasprintf ("%s_%d", "fake_union", id++), 1,
+			      &lexer_line, union_fields, NULL);
+
+  /* Create the field and give it the new fake union type.  Add a "desc"
+     tag that specifies the condition under which the field is valid.  */
+  field = create_field (next, union_type, name);
+  field->opt = create_option (field->opt, "desc", cond);
+  return field;
+}
+
 /* We don't care how long a CONST_DOUBLE is.  */
 #define CONST_DOUBLE_FORMAT "ww"
 /* We don't want to see codes that are only for generator files.  */
@@ -644,6 +671,14 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	  if (t == symbol_union_tp)
 	    subfields->opt = create_option (subfields->opt, "desc",
 					    "CONSTANT_POOL_ADDRESS_P (&%0)");
+	}
+
+      if (i == SYMBOL_REF)
+	{
+	  /* Add the "block_sym" field if SYMBOL_REF_IN_BLOCK_P holds.  */
+	  type_p field_tp = find_structure ("block_symbol", 0);
+	  subfields = create_optional_field (subfields, field_tp, "block_sym",
+					     "SYMBOL_REF_IN_BLOCK_P (&%0)");
 	}
 
       sname = xasprintf ("rtx_def_%s", rtx_name[i]);

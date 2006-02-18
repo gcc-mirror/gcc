@@ -275,6 +275,8 @@ extern rtx peephole (rtx);
 /* Write all the constants in the constant pool.  */
 extern void output_constant_pool (const char *, tree);
 
+extern void output_object_blocks (void);
+
 /* Return nonzero if VALUE is a valid constant-valued expression
    for use in initializing a static variable; one that can be an
    element of a "constant" initializer.
@@ -483,6 +485,8 @@ union section GTY ((desc ("(%h).common.flags & SECTION_NAMED")))
   struct unnamed_section GTY ((tag ("0"))) unnamed;
 };
 
+struct object_block;
+
 /* Special well-known sections.  */
 extern GTY(()) section *text_section;
 extern GTY(()) section *data_section;
@@ -502,6 +506,9 @@ extern section *get_unnamed_section (unsigned int, void (*) (const void *),
 				     const void *);
 extern section *get_section (const char *, unsigned int, tree);
 extern section *get_named_section (tree, const char *, int);
+extern void place_block_symbol (rtx);
+extern rtx get_section_anchor (struct object_block *, HOST_WIDE_INT,
+			       enum tls_model);
 extern section *mergeable_constant_section (enum machine_mode,
 					    unsigned HOST_WIDE_INT,
 					    unsigned int);
@@ -546,6 +553,8 @@ extern section *default_elf_select_rtx_section (enum machine_mode, rtx,
 						unsigned HOST_WIDE_INT);
 extern void default_encode_section_info (tree, rtx, int);
 extern const char *default_strip_name_encoding (const char *);
+extern void default_asm_output_anchor (rtx);
+extern bool default_use_anchors_for_symbol_p (rtx);
 extern bool default_binds_local_p (tree);
 extern bool default_binds_local_p_1 (tree, int);
 extern void default_globalize_label (FILE *, const char *);

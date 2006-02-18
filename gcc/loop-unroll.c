@@ -84,9 +84,6 @@ struct iv_to_split
 			   XEXP (XEXP (single_set, loc[0]), loc[1]).  */ 
 };
 
-DEF_VEC_P(rtx);
-DEF_VEC_ALLOC_P(rtx,heap);
-
 /* Information about accumulators to expand.  */
 
 struct var_to_expand

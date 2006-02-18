@@ -647,6 +647,8 @@ extern rtx widen_memory_access (rtx, enum machine_mode, HOST_WIDE_INT);
    valid address.  */
 extern rtx validize_mem (rtx);
 
+extern rtx use_anchored_address (rtx);
+
 /* Given REF, a MEM, and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  */
