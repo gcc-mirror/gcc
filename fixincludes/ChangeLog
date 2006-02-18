@@ -1,3 +1,9 @@
+2006-02-18  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/26189
+	* inclhack.def (hpux_spu_info): New.
+	* fixincl.x: Regenerate
+
 2005-11-25  Bruce Korb  <bkorb@gnu.org>
 
 	* fixincl.c (write_replacement): "here strings" in AutoGen often
