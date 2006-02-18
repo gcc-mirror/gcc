@@ -1,3 +1,9 @@
+2006-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26334
+	* stmt.c (decl_overlaps_hard_reg_set_p): Use DECL_HARD_REGISTER
+	instead of DECL_REGISTER.
+
 2006-02-18  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/13408
