@@ -568,7 +568,7 @@ decl_overlaps_hard_reg_set_p (tree *declp, int *walk_subtrees ATTRIBUTE_UNUSED,
   tree decl = *declp;
   const HARD_REG_SET *regs = data;
 
-  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+  if (TREE_CODE (decl) == VAR_DECL)
     {
       if (DECL_HARD_REGISTER (decl)
 	  && REG_P (DECL_RTL (decl))
@@ -586,7 +586,7 @@ decl_overlaps_hard_reg_set_p (tree *declp, int *walk_subtrees ATTRIBUTE_UNUSED,
 	}
       walk_subtrees = 0;
     }
-  else if (TYPE_P (decl))
+  else if (TYPE_P (decl) || TREE_CODE (decl) == PARM_DECL)
     walk_subtrees = 0;
   return NULL_TREE;
 }
