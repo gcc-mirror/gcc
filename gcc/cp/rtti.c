@@ -1426,7 +1426,8 @@ emit_tinfo_decl (tree decl)
       var_init = get_pseudo_ti_init (type, var_desc);
       DECL_INITIAL (decl) = var_init;
       mark_used (decl);
-      cp_finish_decl (decl, var_init, NULL_TREE, 0);
+      cp_finish_decl (decl, var_init, /*init_const_expr_p=*/false, 
+		      NULL_TREE, 0);
       return true;
     }
   else

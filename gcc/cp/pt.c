@@ -5727,6 +5727,7 @@ instantiate_class_template (tree type)
 		      finish_static_data_member_decl 
 			(r, 
 			 /*init=*/NULL_TREE, 
+			 /*init_const_expr_p=*/false,
 			 /*asmspec_tree=*/NULL_TREE, 
 			 /*flags=*/0);
 		      if (DECL_INITIALIZED_IN_CLASS_P (r))
@@ -8184,7 +8185,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		      }
 		    else
 		      init = tsubst_expr (init, args, complain, in_decl);
-		    cp_finish_decl (decl, init, NULL_TREE, 0);
+		    finish_decl (decl, init, NULL_TREE);
 		  }
 	      }
 	  }
@@ -10020,17 +10021,23 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	    tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
 	    tree argtmplvec
 	      = DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (arg));
+	    tree converted_args;
 	    int i;
 
+	    /* Default arguments for the parameters to the template
+	       may involve other template parameters, and thus be
+	       dependent.  */
+	    ++processing_template_decl;
 	    /* The parameter and argument roles have to be switched here 
 	       in order to handle default arguments properly.  For example, 
 	       template<template <class> class TT> void f(TT<int>) 
 	       should be able to accept vector<int> which comes from 
 	       template <class T, class Allocator = allocator> 
 	       class vector.  */
-
-	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 0, 1)
-	        == error_mark_node)
+	    converted_args 
+	      = coerce_template_parms (argtmplvec, parmvec, parmtmpl, 0, 1);
+	    --processing_template_decl;
+ 	    if (converted_args == error_mark_node)
 	      return 1;
 	  
 	    /* Deduce arguments T, i from TT<T> or TT<i>.  
@@ -11637,7 +11644,8 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 			      args,
 			      tf_error | tf_warning, NULL_TREE);
 	  DECL_INITIAL (d) = init;
-	  cp_finish_decl (d, init, /*asmspec_tree=*/NULL_TREE,
+	  cp_finish_decl (d, init, /*init_const_expr_p=*/false,
+			  /*asmspec_tree=*/NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
 	  pop_nested_class ();
 	  pop_nested_namespace (ns);
@@ -11714,7 +11722,7 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 
       /* Enter the scope of D so that access-checking works correctly.  */
       push_nested_class (DECL_CONTEXT (d));
-      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0);
+      finish_decl (d, DECL_INITIAL (d), NULL_TREE);
       pop_nested_class ();
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
