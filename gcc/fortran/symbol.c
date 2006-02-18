@@ -604,7 +604,8 @@ duplicate_attr (const char *attr, locus * where)
 /* Called from decl.c (attr_decl1) to check attributes, when declared separately.  */
 
 try
-gfc_add_attribute (symbol_attribute * attr, locus * where, uint attr_intent)
+gfc_add_attribute (symbol_attribute * attr, locus * where,
+		   unsigned int attr_intent)
 {
 
   if (check_used (attr, NULL, where)

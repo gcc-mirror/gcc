@@ -1,3 +1,9 @@
+2006-02-18   Danny Smith  <dannysmith@users.sourceforeg.net>
+
+	* gfortran.h (gfc_add_attribute): Change uint to unsigned int.
+	* symbol.c (gfc_add_attribute): Likewise for definition.
+	* resolve.c (resolve_global_procedure): Likewise for variable 'type'.
+
 2006-02-17  Richard Sandiford  <richard@codesourcery.com>
 
 	* trans-common.c: Include rtl.h earlier.

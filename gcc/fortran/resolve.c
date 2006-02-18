@@ -916,7 +916,7 @@ static void
 resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 {
   gfc_gsymbol * gsym;
-  uint type;
+  unsigned int type;
 
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 
