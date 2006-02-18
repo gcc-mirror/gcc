@@ -1,3 +1,9 @@
+2006-02-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/ffi.c (ffi_closure_helper_SYSV): Remove unused variable
+	and cast integer to void * if needed.  Update the pointer to
+	the FP register saved area correctly.
+	
 2006-02-17  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libffi.call/nested_struct6.c: XFAIL this test until PR25630

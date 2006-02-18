@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2002, 2003, 2004, 2005 Kaz Kojima
+   ffi.c - Copyright (c) 2002, 2003, 2004, 2005, 2006 Kaz Kojima
    
    SuperH Foreign Function Interface 
 
@@ -535,7 +535,6 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
   int freg = 0;
 #endif
   ffi_cif *cif; 
-  double temp; 
 
   cif = closure->cif;
   avalue = alloca(cif->nargs * sizeof(void *));
@@ -544,7 +543,7 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
      returns the data directly to the caller.  */
   if (cif->rtype->type == FFI_TYPE_STRUCT && STRUCT_VALUE_ADDRESS_WITH_ARG)
     {
-      rvalue = *pgr++;
+      rvalue = (void *) *pgr++;
       ireg = 1;
     }
   else
@@ -611,6 +610,8 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 	{
 	  if (freg + 1 >= NFREGARG)
 	    continue;
+	  if (freg & 1)
+	    pfr++;
 	  freg = (freg + 1) & ~1;
 	  freg += 2;
 	  avalue[i] = pfr;
