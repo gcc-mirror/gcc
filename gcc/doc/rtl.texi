@@ -501,11 +501,40 @@ See @code{TARGET_IN_SMALL_DATA_P}.
 This is a multi-bit field accessor that returns the @code{tls_model}
 to be used for a thread-local storage symbol.  It returns zero for
 non-thread-local symbols.
+
+@findex SYMBOL_REF_IN_BLOCK_P
+@findex SYMBOL_FLAG_IN_BLOCK
+@item SYMBOL_FLAG_IN_BLOCK
+Set if the symbol has been assigned to an @code{object_block} structure.
+@code{SYMBOL_REF_BLOCK} and @code{SYMBOL_REF_BLOCK_OFFSET} provide more
+information about such symbols.
+
+@findex SYMBOL_REF_ANCHOR_P
+@findex SYMBOL_FLAG_ANCHOR
+@cindex @option{-fsection-anchors}
+@item SYMBOL_FLAG_ANCHOR
+Set if the symbol is used as a section anchor.  ``Section anchors''
+are symbols that have a known position within an @code{object_block}
+and that can be used to access nearby members of that block.
+They are used to implement @option{-fsection-anchors}.
+
+If this flag is set, then @code{SYMBOL_FLAG_IN_BLOCK} will be too.
 @end table
 
 Bits beginning with @code{SYMBOL_FLAG_MACH_DEP} are available for
 the target's use.
 @end table
+
+@findex SYMBOL_REF_BLOCK
+@item SYMBOL_REF_BLOCK (@var{x})
+If @samp{SYMBOL_REF_IN_BLOCK_P (@var{x})}, this is the @samp{object_block}
+structure to which the symbol belongs.  The value is always nonnull.
+
+@findex SYMBOL_REF_BLOCK_OFFSET
+@item SYMBOL_REF_BLOCK_OFFSET (@var{x})
+If @samp{SYMBOL_REF_IN_BLOCK_P (@var{x})}, this is the offset of @var{x}
+from the first object in @samp{SYMBOL_REF_BLOCK (@var{x})}.  The value is
+negative if @var{x} has not yet been assigned an offset.
 @end table
 
 @node Flags

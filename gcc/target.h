@@ -198,6 +198,9 @@ struct gcc_target
 	linker to not dead code strip this symbol.  */
     void (*mark_decl_preserved) (const char *);
 
+    /* Output the definition of a section anchor.  */
+    void (*output_anchor) (rtx);
+
     /* Output a DTP-relative reference to a TLS symbol.  */
     void (*output_dwarf_dtprel) (FILE *file, int size, rtx x);
 
@@ -420,6 +423,16 @@ struct gcc_target
 
   /* Given an address RTX, undo the effects of LEGITIMIZE_ADDRESS.  */
   rtx (* delegitimize_address) (rtx);
+
+  /* True if the given constant can be put into an object_block.  */
+  bool (* use_blocks_for_constant_p) (enum machine_mode, rtx);
+
+  /* The minimum and maximum byte offsets for anchored addresses.  */
+  HOST_WIDE_INT min_anchor_offset;
+  HOST_WIDE_INT max_anchor_offset;
+
+  /* True if section anchors can be used to access the given symbol.  */
+  bool (* use_anchors_for_symbol_p) (rtx);
 
   /* True if it is OK to do sibling call optimization for the specified
      call expression EXP.  DECL will be the called function, or NULL if

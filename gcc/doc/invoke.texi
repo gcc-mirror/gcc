@@ -333,7 +333,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsched-stalled-insns=@var{n} -fsched-stalled-insns-dep=@var{n} @gol
 -fsched2-use-superblocks @gol
 -fsched2-use-traces -freschedule-modulo-scheduled-loops @gol
--fsignaling-nans -fsingle-precision-constant  @gol
+-fsection-anchors  -fsignaling-nans  -fsingle-precision-constant @gol
 -fstack-protector  -fstack-protector-all @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
@@ -5772,6 +5772,35 @@ If a guard check fails, an error message is printed and the program exits.
 
 @item -fstack-protector-all
 Like @option{-fstack-protector} except that all functions are protected.
+
+@item -fsection-anchors
+@opindex fsection-anchors
+Try to reduce the number of symbolic address calculations by using
+shared ``anchor'' symbols to address nearby objects.  This transformation
+can help to reduce the number of GOT entries and GOT accesses on some
+targets.
+
+For example, the implementation of the following function @code{foo}:
+
+@smallexample
+static int a, b, c;
+int foo (void) @{ return a + b + c; @}
+@end smallexample
+
+would usually calculate the addresses of all three variables, but if you
+compile it with @option{-fsection-anchors}, it will access the variables
+from a common anchor point instead.  The effect is similar to the
+following pseudocode (which isn't valid C):
+
+@smallexample
+int foo (void)
+@{
+  register int *xr = &x;
+  return xr[&a - &x] + xr[&b - &x] + xr[&c - &x];
+@}
+@end smallexample
+
+Not all targets support this option.
 
 @item --param @var{name}=@var{value}
 @opindex param

@@ -124,9 +124,6 @@ dwarf2out_do_frame (void)
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
 #endif
 
-DEF_VEC_P(rtx);
-DEF_VEC_ALLOC_P(rtx,gc);
-
 /* Array of RTXes referenced by the debugging information, which therefore
    must be kept around forever.  */
 static GTY(()) VEC(rtx,gc) *used_rtx_array;

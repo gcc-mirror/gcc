@@ -1,3 +1,119 @@
+2005-02-18  Richard Sandiford  <richard@codesourcery.com>
+
+	* cselib.c (cselib_init): Change RTX_SIZE to RTX_CODE_SIZE.
+	* emit-rtl.c (copy_rtx_if_shared_1): Use shallow_copy_rtx.
+	(copy_insn_1): Likewise.  Don't copy each field individually.
+	Reindent.
+	* read-rtl.c (apply_macro_to_rtx): Use RTX_CODE_SIZE instead
+	of RTX_SIZE.
+	* reload1.c (eliminate_regs): Use shallow_copy_rtx.
+	* rtl.c (rtx_size): Rename variable to...
+	(rtx_code_size): ...this.
+	(rtx_size): New function.
+	(rtx_alloc_stat): Use RTX_CODE_SIZE instead of RTX_SIZE.
+	(copy_rtx): Use shallow_copy_rtx.  Don't copy each field individually.
+	Reindent.
+	(shallow_copy_rtx_stat): Use rtx_size instead of RTX_SIZE.
+	* rtl.h (rtx_code_size): New variable.
+	(rtx_size): Change from a variable to a function.
+	(RTX_SIZE): Rename to...
+	(RTX_CODE_SIZE): ...this.
+
+	PR target/9703
+	PR tree-optimization/17106
+	* doc/tm.texi (TARGET_USE_BLOCKS_FOR_CONSTANT_P): Document.
+	(Anchored Addresses): New section.
+	* doc/invoke.texi (-fsection-anchors): Document.
+	* doc/rtl.texi (SYMBOL_REF_IN_BLOCK_P, SYMBOL_FLAG_IN_BLOCK): Likewise.
+	(SYMBOL_REF_ANCHOR_P, SYMBOL_FLAG_ANCHOR): Likewise.
+	(SYMBOL_REF_BLOCK, SYMBOL_REF_BLOCK_OFFSET): Likewise.
+	* hooks.c (hook_bool_mode_rtx_false): New function.
+	* hooks.h (hook_bool_mode_rtx_false): Declare.
+	* gengtype.c (create_optional_field): New function.
+	(adjust_field_rtx_def): Add the "block_sym" field for SYMBOL_REFs when
+	SYMBOL_REF_IN_BLOCK_P is true.
+	* target.h (output_anchor, use_blocks_for_constant_p): New hooks.
+	(min_anchor_offset, max_anchor_offset): Likewise.
+	(use_anchors_for_symbol_p): New hook.
+	* toplev.c (compile_file): Call output_object_blocks.
+	(target_supports_section_anchors_p): New function.
+	(process_options): Check that -fsection-anchors is only used on
+	targets that support it and when -funit-at-a-time is in effect.
+	* tree-ssa-loop-ivopts.c (prepare_decl_rtl): Only create DECL_RTL
+	if the decl doesn't have one.
+	* dwarf2out.c: Remove instantiations of VEC(rtx,gc).
+	* expr.c (emit_move_multi_word, emit_move_insn): Pass the result
+	of force_const_mem through use_anchored_address.
+	(expand_expr_constant): New function.
+	(expand_expr_addr_expr_1): Call it.  Use the same modifier when
+	calling expand_expr for INDIRECT_REF.
+	(expand_expr_real_1): Pass DECL_RTL through use_anchored_address
+	for all modifiers except EXPAND_INITIALIZER.  Use expand_expr_constant.
+	* expr.h (use_anchored_address): Declare.
+	* loop-unroll.c: Don't declare rtx vectors here.
+	* explow.c: Include output.h.
+	(validize_mem): Call use_anchored_address.
+	(use_anchored_address): New function.
+	* common.opt (-fsection-anchors): New switch.
+	* varasm.c (object_block_htab, anchor_labelno): New variables.
+	(hash_section, object_block_entry_eq, object_block_entry_hash)
+	(use_object_blocks_p, get_block_for_section, create_block_symbol)
+	(use_blocks_for_decl_p, change_symbol_section): New functions.
+	(get_variable_section): New function, split out from assemble_variable.
+	(make_decl_rtl): Create a block symbol if use_object_blocks_p and
+	use_blocks_for_decl_p say so.  Use change_symbol_section if the
+	symbol has already been created.
+	(assemble_variable_contents): New function, split out from...
+	(assemble_variable): ...here.  Don't output any code for
+	block symbols; just pass them to place_block_symbol.
+	Use get_variable_section and assemble_variable_contents.
+	(get_constant_alignment, get_constant_section, get_constant_size): New
+	functions, split from output_constant_def_contents.
+	(build_constant_desc): Create a block symbol if use_object_blocks_p
+	says so.  Or into SYMBOL_REF_FLAGS.
+	(assemble_constant_contents): New function, split from...
+	(output_constant_def_contents): ...here.  Don't output any code
+	for block symbols; just pass them to place_section_symbol.
+	Use get_constant_section and get_constant_alignment.
+	(force_const_mem): Create a block symbol if use_object_blocks_p and
+	use_blocks_for_constant_p say so.  Or into SYMBOL_REF_FLAGS.
+	(output_constant_pool_1): Add an explicit alignment argument.
+	Don't switch sections here.
+	(output_constant_pool): Adjust call to output_constant_pool_1.
+	Switch sections here instead.  Don't output anything for block symbols;
+	just pass them to place_block_symbol.
+	(init_varasm_once): Initialize object_block_htab.
+	(default_encode_section_info): Keep the old SYMBOL_FLAG_IN_BLOCK.
+	(default_asm_output_anchor, default_use_aenchors_for_symbol_p)
+	(place_block_symbol, get_section_anchor, output_object_block)
+	(output_object_block_htab, output_object_blocks): New functions.
+	* target-def.h (TARGET_ASM_OUTPUT_ANCHOR): New macro.
+	(TARGET_ASM_OUT): Include it.
+	(TARGET_USE_BLOCKS_FOR_CONSTANT_P): New macro.
+	(TARGET_MIN_ANCHOR_OFFSET, TARGET_MAX_ANCHOR_OFFSET): New macros.
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): New macro.
+	(TARGET_INITIALIZER): Include them.
+	* rtl.c (rtl_check_failed_block_symbol): New function.
+	* rtl.h: Include vec.h.  Declare heap and gc rtx vectors.
+	(block_symbol, object_block): New structures.
+	(rtx_def): Add a block_symbol field to the union.
+	(BLOCK_SYMBOL_CHECK): New macro.
+	(rtl_check_failed_block_symbol): Declare.
+	(SYMBOL_FLAG_IN_BLOCK, SYMBOL_FLAG_ANCHOR): New SYMBOL_REF flags.
+	(SYMBOL_REF_IN_BLOCK_P, SYMBOL_REF_ANCHOR_P): New predicates.
+	(SYMBOL_FLAG_MACH_DEP_SHIFT): Bump by 2.
+	(SYMBOL_REF_BLOCK, SYMBOL_REF_BLOCK_OFFSET): New accessors.
+	* output.h (output_section_symbols): Declare.
+	(object_block): Name structure.
+	(place_section_symbol, get_section_anchor, default_asm_output_anchor)
+	(default_use_anchors_for_symbol_p): Declare.
+	* Makefile.in (RTL_BASE_H): Add vec.h.
+	(explow.o): Depend on output.h.
+	* config/rs6000/rs6000.c (TARGET_MIN_ANCHOR_OFFSET): Override default.
+	(TARGET_MAX_ANCHOR_OFFSET): Likewise.
+	(TARGET_USE_BLOCKS_FOR_CONSTANT_P): Likewise.
+	(rs6000_use_blocks_for_constant_p): New function.
+
 2006-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/install.texi (hppa*-hp-hpux*): Update for 4.1.0.

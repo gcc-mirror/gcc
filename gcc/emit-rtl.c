@@ -2467,11 +2467,7 @@ repeat:
 
   if (RTX_FLAG (x, used))
     {
-      rtx copy;
-
-      copy = rtx_alloc (code);
-      memcpy (copy, x, RTX_SIZE (code));
-      x = copy;
+      x = shallow_copy_rtx (x);
       copied = 1;
     }
   RTX_FLAG (x, used) = 1;
@@ -4978,13 +4974,11 @@ copy_insn_1 (rtx orig)
       break;
     }
 
-  copy = rtx_alloc (code);
-
-  /* Copy the various flags, and other information.  We assume that
-     all fields need copying, and then clear the fields that should
+  /* Copy the various flags, fields, and other information.  We assume
+     that all fields need copying, and then clear the fields that should
      not be copied.  That is the sensible default behavior, and forces
      us to explicitly document why we are *not* copying a flag.  */
-  memcpy (copy, orig, RTX_HDR_SIZE);
+  copy = shallow_copy_rtx (orig);
 
   /* We do not copy the USED flag, which is used as a mark bit during
      walks over the RTL.  */
@@ -5001,43 +4995,40 @@ copy_insn_1 (rtx orig)
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
-    {
-      copy->u.fld[i] = orig->u.fld[i];
-      switch (*format_ptr++)
-	{
-	case 'e':
-	  if (XEXP (orig, i) != NULL)
-	    XEXP (copy, i) = copy_insn_1 (XEXP (orig, i));
-	  break;
+    switch (*format_ptr++)
+      {
+      case 'e':
+	if (XEXP (orig, i) != NULL)
+	  XEXP (copy, i) = copy_insn_1 (XEXP (orig, i));
+	break;
 
-	case 'E':
-	case 'V':
-	  if (XVEC (orig, i) == orig_asm_constraints_vector)
-	    XVEC (copy, i) = copy_asm_constraints_vector;
-	  else if (XVEC (orig, i) == orig_asm_operands_vector)
-	    XVEC (copy, i) = copy_asm_operands_vector;
-	  else if (XVEC (orig, i) != NULL)
-	    {
-	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
-	      for (j = 0; j < XVECLEN (copy, i); j++)
-		XVECEXP (copy, i, j) = copy_insn_1 (XVECEXP (orig, i, j));
-	    }
-	  break;
+      case 'E':
+      case 'V':
+	if (XVEC (orig, i) == orig_asm_constraints_vector)
+	  XVEC (copy, i) = copy_asm_constraints_vector;
+	else if (XVEC (orig, i) == orig_asm_operands_vector)
+	  XVEC (copy, i) = copy_asm_operands_vector;
+	else if (XVEC (orig, i) != NULL)
+	  {
+	    XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
+	    for (j = 0; j < XVECLEN (copy, i); j++)
+	      XVECEXP (copy, i, j) = copy_insn_1 (XVECEXP (orig, i, j));
+	  }
+	break;
 
-	case 't':
-	case 'w':
-	case 'i':
-	case 's':
-	case 'S':
-	case 'u':
-	case '0':
-	  /* These are left unchanged.  */
-	  break;
+      case 't':
+      case 'w':
+      case 'i':
+      case 's':
+      case 'S':
+      case 'u':
+      case '0':
+	/* These are left unchanged.  */
+	break;
 
-	default:
-	  gcc_unreachable ();
-	}
-    }
+      default:
+	gcc_unreachable ();
+      }
 
   if (code == SCRATCH)
     {

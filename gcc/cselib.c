@@ -1453,8 +1453,7 @@ cselib_init (bool record_memory)
 				         sizeof (struct elt_loc_list), 10);
   cselib_val_pool = create_alloc_pool ("cselib_val_list", 
 				       sizeof (cselib_val), 10);
-  value_pool = create_alloc_pool ("value", 
-				  RTX_SIZE (VALUE), 100);
+  value_pool = create_alloc_pool ("value", RTX_CODE_SIZE (VALUE), 100);
   cselib_record_memory = record_memory;
   /* This is only created once.  */
   if (! callmem)

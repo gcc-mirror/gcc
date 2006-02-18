@@ -38,6 +38,7 @@ through the macros defined in the @file{.h} file.
 * Trampolines::         Code set up at run time to enter a nested function.
 * Library Calls::       Controlling how library routines are implicitly called.
 * Addressing Modes::    Defining addressing modes valid for memory operands.
+* Anchored Addresses::  Defining how @option{-fsection-anchors} should work.
 * Condition Code::      Defining how insns update the condition code.
 * Costs::               Defining relative costs of different operations.
 * Scheduling::          Adjusting the behavior of the instruction scheduler.
@@ -5207,6 +5208,14 @@ holding the constant.  This restriction is often true of addresses
 of TLS symbols for various targets.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_USE_BLOCKS_FOR_CONSTANT_P (enum machine_mode @var{mode}, rtx @var{x})
+This hook should return true if pool entries for constant @var{x} can
+be placed in an @code{object_block} structure.  @var{mode} is the mode
+of @var{x}.
+
+The default version returns false for all constants.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD (void)
 This hook should return the DECL of a function @var{f} that given an
 address @var{addr} as an argument returns a mask @var{m} that can be
@@ -5234,6 +5243,76 @@ described above.
 If this hook is not defined, then @var{addr} will be used as
 the argument @var{OFF} to @code{REALIGN_LOAD}, in which case the low
 log2(@var{VS})-1 bits of @var{addr} will be considered.
+@end deftypefn
+
+@node Anchored Addresses
+@section Anchored Addresses
+@cindex anchored addresses
+@cindex @option{-fsection-anchors}
+
+GCC usually addresses every static object as a separate entity.
+For example, if we have:
+
+@smallexample
+static int a, b, c;
+int foo (void) @{ return a + b + c; @}
+@end smallexample
+
+the code for @code{foo} will usually calculate three separate symbolic
+addresses: those of @code{a}, @code{b} and @code{c}.  On some targets,
+it would be better to calculate just one symbolic address and access
+the three variables relative to it.  The equivalent pseudocode would
+be something like:
+
+@smallexample
+int foo (void)
+@{
+  register int *xr = &x;
+  return xr[&a - &x] + xr[&b - &x] + xr[&c - &x];
+@}
+@end smallexample
+
+(which isn't valid C).  We refer to shared addresses like @code{x} as
+``section anchors''.  Their use is controlled by @option{-fsection-anchors}.
+
+The hooks below describe the target properties that GCC needs to know
+in order to make effective use of section anchors.  It won't use
+section anchors at all unless either @code{TARGET_MIN_ANCHOR_OFFSET}
+or @code{TARGET_MAX_ANCHOR_OFFSET} is set to a nonzero value.
+
+@deftypevar {Target Hook} HOST_WIDE_INT TARGET_MIN_ANCHOR_OFFSET
+The minimum offset that should be applied to a section anchor.
+On most targets, it should be the smallest offset that can be
+applied to a base register while still giving a legitimate address
+for every mode.  The default value is 0.
+@end deftypevar
+
+@deftypevar {Target Hook} HOST_WIDE_INT TARGET_MAX_ANCHOR_OFFSET
+Like @code{TARGET_MIN_ANCHOR_OFFSET}, but the maximum (inclusive)
+offset that should be applied to section anchors.  The default
+value is 0.
+@end deftypevar
+
+@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_ANCHOR (rtx @var{x})
+Write the assembly code to define section anchor @var{x}, which is a
+@code{SYMBOL_REF} for which @samp{SYMBOL_REF_ANCHOR_P (@var{x})} is true.
+The hook is called with the assembly output position set to the beginning
+of @code{SYMBOL_REF_BLOCK (@var{x})}.
+
+If @code{ASM_OUTPUT_DEF} is available, the hook's default definition uses
+it to define the symbol as @samp{. + SYMBOL_REF_BLOCK_OFFSET (@var{x})}.
+If @code{ASM_OUTPUT_DEF} is not available, the hook's default definition
+is @code{NULL}, which disables the use of section anchors altogether.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_USE_ANCHORS_FOR_SYMBOL_P (rtx @var{x})
+Return true if GCC should attempt to use anchors to access @code{SYMBOL_REF}
+@var{x}.  You can assume @samp{SYMBOL_REF_IN_BLOCK_P (@var{x})} and
+@samp{!SYMBOL_REF_ANCHOR_P (@var{x})}.
+
+The default version is correct for most targets, but you might need to
+intercept this hook to handle things like target-specific attributes
+or target-specific sections.
 @end deftypefn
 
 @node Condition Code

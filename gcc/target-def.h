@@ -205,6 +205,14 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_ASM_MARK_DECL_PRESERVED hook_void_constcharptr
 #endif
 
+#ifndef TARGET_ASM_OUTPUT_ANCHOR
+#ifdef ASM_OUTPUT_DEF
+#define TARGET_ASM_OUTPUT_ANCHOR default_asm_output_anchor
+#else
+#define TARGET_ASM_OUTPUT_ANCHOR NULL
+#endif
+#endif
+
 #ifndef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL NULL
 #endif
@@ -252,6 +260,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
                         TARGET_ASM_FILE_END,			\
 			TARGET_ASM_EXTERNAL_LIBCALL,            \
                         TARGET_ASM_MARK_DECL_PRESERVED,		\
+			TARGET_ASM_OUTPUT_ANCHOR,		\
 			TARGET_ASM_OUTPUT_DWARF_DTPREL}
 
 /* Scheduler hooks.  All of these default to null pointers, which
@@ -373,6 +382,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_CANNOT_COPY_INSN_P NULL
 #define TARGET_COMMUTATIVE_P hook_bool_rtx_commutative_p
 #define TARGET_DELEGITIMIZE_ADDRESS hook_rtx_rtx_identity
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_rtx_false
+#define TARGET_MIN_ANCHOR_OFFSET 0
+#define TARGET_MAX_ANCHOR_OFFSET 0
+#define TARGET_USE_ANCHORS_FOR_SYMBOL_P default_use_anchors_for_symbol_p
 #define TARGET_FUNCTION_OK_FOR_SIBCALL hook_bool_tree_tree_false
 #define TARGET_COMP_TYPE_ATTRIBUTES hook_int_tree_tree_1
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES hook_void_tree
@@ -592,6 +605,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_CANNOT_COPY_INSN_P,			\
   TARGET_COMMUTATIVE_P,				\
   TARGET_DELEGITIMIZE_ADDRESS,			\
+  TARGET_USE_BLOCKS_FOR_CONSTANT_P,		\
+  TARGET_MIN_ANCHOR_OFFSET,			\
+  TARGET_MAX_ANCHOR_OFFSET,			\
+  TARGET_USE_ANCHORS_FOR_SYMBOL_P,		\
   TARGET_FUNCTION_OK_FOR_SIBCALL,		\
   TARGET_IN_SMALL_DATA_P,			\
   TARGET_BINDS_LOCAL_P,				\
