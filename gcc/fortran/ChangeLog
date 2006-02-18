@@ -1,3 +1,20 @@
+2006-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-stmt.c (struct temporary_list): Delete.
+	(gfc_trans_where_2): Major reorganization.  Remove no longer needed
+	TEMP argument.  Allocate and deallocate the control mask and
+	pending control mask locally.
+	(gfc_trans_forall_1): Delete TEMP local variable, and update
+	call to gfc_trans_where_2.  No need to deallocate arrays after.
+	(gfc_evaluate_where_mask): Major reorganization.  Change return
+	type to void.  Pass in parent execution mask, MASK, and two
+	already allocated mask arrays CMASK and PMASK.  On return
+	CMASK := MASK & COND, PMASK := MASK & !COND.  MASK, CMASK and
+	CMASK may all be NULL, or refer to the same temporary arrays.
+	(gfc_trans_where): Update call to gfc_trans_where_2.  We no
+	longer need a TEMP variable or to deallocate temporary arrays
+	allocated by gfc_trans_where_2.
+
 2006-02-18   Danny Smith  <dannysmith@users.sourceforeg.net>
 
 	* gfortran.h (gfc_add_attribute): Change uint to unsigned int.
