@@ -1701,6 +1701,23 @@ fix = {
 
 
 /*
+ *  Wrap spu_info in ifdef _KERNEL.  GCC cannot handle an array of unknown
+ *  type and mpinfou is only defined when _KERNEL is set.
+ */
+fix = {
+    hackname = hpux_spu_info;
+    mach     = "*-hp-hpux*";
+    files    = ia64/sys/getppdp.h;
+    select   = "^.*extern.*spu_info.*";
+
+    c_fix     = format;
+    c_fix_arg = "#ifdef _KERNEL\n%0\n#endif";
+
+    test_text = "extern union mpinfou spu_info[];";
+};
+
+
+/*
  *  Fix glibc definition of HUGE_VAL in terms of hex floating point constant
  */
 fix = {
