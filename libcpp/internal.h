@@ -264,6 +264,10 @@ struct cpp_buffer
      Used for include_next and to record control macros.  */
   struct _cpp_file *file;
 
+  /* Saved value of __TIMESTAMP__ macro - date and time of last modification
+     of the assotiated file.  */
+  const unsigned char *timestamp;
+
   /* Value of if_stack at start of this file.
      Used to prohibit unmatched #endif (etc) in an include file.  */
   struct if_stack *if_stack;
@@ -524,6 +528,7 @@ extern void _cpp_cleanup_files (cpp_reader *);
 extern void _cpp_pop_file_buffer (cpp_reader *, struct _cpp_file *);
 extern bool _cpp_save_file_entries (cpp_reader *pfile, FILE *f);
 extern bool _cpp_read_file_entries (cpp_reader *, FILE *);
+extern struct stat *_cpp_get_file_stat (_cpp_file *);
 
 /* In expr.c */
 extern bool _cpp_parse_expr (cpp_reader *);

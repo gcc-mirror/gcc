@@ -1147,6 +1147,13 @@ _cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file)
     }
 }
 
+/* Inteface to file statistics record in _cpp_file structure. */
+struct stat *
+_cpp_get_file_stat (_cpp_file *file)
+{
+    return &file->st;
+}
+
 /* Set the include chain for "" to QUOTE, for <> to BRACKET.  If
    QUOTE_IGNORES_SOURCE_DIR, then "" includes do not look in the
    directory of the including file.

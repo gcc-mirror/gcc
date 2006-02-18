@@ -2128,6 +2128,17 @@ use.
 This macro is defined, with value 2, when @option{-fstack-protector-all} is
 in use.
 
+@item __TIMESTAMP__
+This macro expands to a string constant that describes the date and time
+of the last modification of the current source file. The string constant
+contains abbreviated day of the week, month, day of the month, time in
+hh:mm:ss form, year and looks like @code{@w{"Sun Sep 16 01:03:52 1973"}}.
+If the day of the month is less than 10, it is padded with a space on the left.
+
+If GCC cannot determine the current date, it will emit a warning message
+(once per compilation) and @code{__TIMESTAMP__} will expand to
+@code{@w{"??? ??? ?? ??:??:?? ????"}}.
+
 @end table
 
 @node System-specific Predefined Macros
