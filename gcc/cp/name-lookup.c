@@ -3324,7 +3324,7 @@ pushdecl_top_level_1 (tree x, tree *init, bool is_friend)
   push_to_top_level ();
   x = pushdecl_namespace_level (x, is_friend);
   if (init)
-    cp_finish_decl (x, *init, NULL_TREE, 0);
+    finish_decl (x, *init, NULL_TREE);
   pop_from_top_level ();
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, x);
 }
