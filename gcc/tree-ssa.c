@@ -406,10 +406,10 @@ verify_flow_insensitive_alias_info (void)
       ann = var_ann (var);
 
       if (!MTAG_P (var)
-	  && ann->is_alias_tag
+	  && ann->is_aliased
 	  && !bitmap_bit_p (visited, DECL_UID (var)))
 	{
-	  error ("addressable variable that is an alias tag but is not in any alias set");
+	  error ("addressable variable that is aliased but is not in any alias set");
 	  goto err;
 	}
     }

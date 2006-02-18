@@ -1,3 +1,9 @@
+2006-02-18  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-flow.h (struct var_ann_d): Rename field is_alias_tag to
+	is_aliased.
+	Update all users.
+
 2006-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26334

@@ -1740,6 +1740,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   return true;
 }
 
+
 /* Add VAR to the virtual operands array. FLAGS is as in
    get_expr_operands.  FULL_REF is a tree that contains the entire
    pointer dereference expression, if available, or NULL otherwise.
@@ -1780,7 +1781,6 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
   if ((flags & opf_non_specific) && unmodifiable_var_p (var))
     flags &= ~(opf_is_def | opf_kill_def);
   
-
   /* The variable is not a GIMPLE register.  Add it (or its aliases) to
      virtual operands, unless the caller has specifically requested
      not to add virtual operands (used when adding operands inside an
@@ -1845,7 +1845,8 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	     It is also necessary to add bare defs on clobbers for
 	     TMT's, so that bare TMT uses caused by pruning all the
 	     aliases will link up properly with calls.   */
-	  if (v_ann->is_alias_tag || none_added
+	  if (v_ann->is_aliased
+	      || none_added
 	      || (TREE_CODE (var) == TYPE_MEMORY_TAG && for_clobber))
 	    append_v_may_def (var);
 	}
@@ -1862,13 +1863,14 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 
 	  /* Similarly, append a virtual uses for VAR itself, when
 	     it is an alias tag.  */
-	  if (v_ann->is_alias_tag || none_added)
+	  if (v_ann->is_aliased || none_added)
 	    append_vuse (var);
 	}
     }
 }
 
-/* Add *VAR_P to the appropriate operand array for INFO.  FLAGS is as in
+
+/* Add *VAR_P to the appropriate operand array for S_ANN.  FLAGS is as in
    get_expr_operands.  If *VAR_P is a GIMPLE register, it will be added to
    the statement's real operands, otherwise it is added to virtual
    operands.  */
@@ -1884,8 +1886,9 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
   gcc_assert (SSA_VAR_P (var));
 
   is_real_op = is_gimple_reg (var);
-  /* If this is a real operand, the operand is either ssa name or decl.
-     Virtual operands may only be decls.  */
+
+  /* If this is a real operand, the operand is either an SSA name or a 
+     decl.  Virtual operands may only be decls.  */
   gcc_assert (is_real_op || DECL_P (var));
 
   sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
