@@ -10042,6 +10042,30 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    return t1;
 	}
 
+      /* Fold (X >> C) != 0 into X < 0 if C is one less than the width
+	 of X.  Similarly fold (X >> C) == 0 into X >= 0.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && integer_zerop (arg1)
+	  && TREE_CODE (arg0) == RSHIFT_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  tree arg00 = TREE_OPERAND (arg0, 0);
+	  tree arg01 = TREE_OPERAND (arg0, 1);
+	  tree itype = TREE_TYPE (arg00);
+	  if (TREE_INT_CST_HIGH (arg01) == 0
+	      && TREE_INT_CST_LOW (arg01)
+		 == (unsigned HOST_WIDE_INT) (TYPE_PRECISION (itype) - 1))
+	    {
+	      if (TYPE_UNSIGNED (itype))
+		{
+		  itype = lang_hooks.types.signed_type (itype);
+		  arg00 = fold_convert (itype, arg00);
+		}
+	      return fold_build2 (code == EQ_EXPR ? GE_EXPR : LT_EXPR,
+				  type, arg00, build_int_cst (itype, 0));
+	    }
+	}
+
       if ((code == EQ_EXPR || code == NE_EXPR)
 	  && integer_zerop (arg1)
 	  && tree_expr_nonzero_p (arg0))

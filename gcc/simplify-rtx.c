@@ -584,6 +584,19 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && XEXP (op, 1) == const1_rtx
 	  && nonzero_bits (XEXP (op, 0), mode) == 1)
 	return plus_constant (XEXP (op, 0), -1);
+
+      /* (neg (lt x 0)) is (ashiftrt X C) if STORE_FLAG_VALUE is 1.  */
+      /* (neg (lt x 0)) is (lshiftrt X C) if STORE_FLAG_VALUE is -1.  */
+      if (GET_CODE (op) == LT
+	  && XEXP (op, 1) == const0_rtx)
+	{
+	  if (STORE_FLAG_VALUE == 1)
+	    return simplify_gen_binary (ASHIFTRT, mode, XEXP (op, 0),
+					GEN_INT (GET_MODE_BITSIZE (mode) - 1));
+	  else if (STORE_FLAG_VALUE == -1)
+	    return simplify_gen_binary (LSHIFTRT, mode, XEXP (op, 0),
+					GEN_INT (GET_MODE_BITSIZE (mode) - 1));
+	}
       break;
 
     case TRUNCATE:
