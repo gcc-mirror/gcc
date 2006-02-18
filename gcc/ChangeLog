@@ -1,3 +1,7 @@
+2006-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* doc/install.texi (hppa*-hp-hpux*): Update for 4.1.0.
+
 2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/25680
