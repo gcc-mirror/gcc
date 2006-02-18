@@ -5,6 +5,7 @@
 	* g++.dg/template/static23.C: New test.
 	* g++.dg/template/static24.C: New test.
 	* g++.dg/template/non-dependent13.C: New test.
+	* g++.dg/init/member1.C: Tweak error markers.
 
 2006-02-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
