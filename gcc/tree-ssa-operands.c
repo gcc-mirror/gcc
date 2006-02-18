@@ -1847,13 +1847,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	     aliases will link up properly with calls.   */
 	  if (v_ann->is_alias_tag || none_added
 	      || (TREE_CODE (var) == TYPE_MEMORY_TAG && for_clobber))
-	    {
-	      /* We should never end up with adding no aliases of an
-		 NMT, as that would imply we got the set wrong.  */
-	      gcc_assert (!(none_added && TREE_CODE (var) == NAME_MEMORY_TAG));
-	      
-	      append_v_may_def (var);
-	    }
+	    append_v_may_def (var);
 	}
       else
 	{
@@ -1869,11 +1863,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	  /* Similarly, append a virtual uses for VAR itself, when
 	     it is an alias tag.  */
 	  if (v_ann->is_alias_tag || none_added)
-	    {
-	      gcc_assert (!(none_added && TREE_CODE (var) == NAME_MEMORY_TAG));
-
-	      append_vuse (var);
-	    }
+	    append_vuse (var);
 	}
     }
 }
