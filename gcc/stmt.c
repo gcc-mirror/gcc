@@ -570,7 +570,7 @@ decl_overlaps_hard_reg_set_p (tree *declp, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
     {
-      if (DECL_REGISTER (decl)
+      if (DECL_HARD_REGISTER (decl)
 	  && REG_P (DECL_RTL (decl))
 	  && REGNO (DECL_RTL (decl)) < FIRST_PSEUDO_REGISTER)
 	{
