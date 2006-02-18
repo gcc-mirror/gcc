@@ -1,3 +1,8 @@
+2006-02-18  Olivier Hainque  <hainque@adacore.com>
+
+	PR ada/13408
+	* pa.h (WIDEST_HARDWARE_FP_SIZE): Define.
+
 2006-02-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR target/24837
