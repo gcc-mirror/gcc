@@ -365,7 +365,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl)
 
       /* Process the initializer for the declaration.  */
       DECL_INITIAL (arg) = targ;
-      cp_finish_decl (arg, targ, NULL_TREE,
+      cp_finish_decl (arg, targ, /*init_const_expr_p=*/false, NULL_TREE,
 		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
     }
   else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))

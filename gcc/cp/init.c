@@ -1484,7 +1484,7 @@ constant_value_1 (tree decl, bool integral_p)
       tree init;
       /* Static data members in template classes may have
 	 non-dependent initializers.  References to such non-static
-	 data members are no value-dependent, so we must retrieve the
+	 data members are not value-dependent, so we must retrieve the
 	 initializer here.  The DECL_INITIAL will have the right type,
 	 but will not have been folded because that would prevent us
 	 from performing all appropriate semantic checks at
@@ -1493,7 +1493,11 @@ constant_value_1 (tree decl, bool integral_p)
 	  && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl))
 	  && uses_template_parms (CLASSTYPE_TI_ARGS 
 				  (DECL_CONTEXT (decl))))
-	init = fold_non_dependent_expr (DECL_INITIAL (decl));
+	{
+	  ++processing_template_decl;
+	  init = fold_non_dependent_expr (DECL_INITIAL (decl));
+	  --processing_template_decl;
+	}
       else
 	{
 	  /* If DECL is a static data member in a template
@@ -1503,7 +1507,9 @@ constant_value_1 (tree decl, bool integral_p)
 	  mark_used (decl);
 	  init = DECL_INITIAL (decl);
 	}
-      if (!init || init == error_mark_node
+      if (init == error_mark_node)
+	return error_mark_node;
+      if (!init
 	  || !TREE_TYPE (init)
 	  || (integral_p
 	      ? !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (init))

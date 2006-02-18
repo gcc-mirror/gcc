@@ -1,3 +1,41 @@
+2006-02-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26266
+	* cp-tree.h (cp_finish_decl): Adjust declaration.
+	(grokbitfield): Likewise.
+	(finish_static_data_member_decl): Likewise.
+	* init.c (constant_value_1): Ensure processing_template_decl when
+	folding non-dependent initializers for static data members of
+	dependent types.  Return error_mark_node for erroneous
+	initailizers.
+	* class.c (get_vtable_decl): Use finish_decl, not cp_finish_decl.
+	* decl.c (cp_make_fname_decl): Adjust call to cp_finish_decl.
+	(cp_finish_decl): Add init_const_expr_p parameter.  Set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P here.
+	(finish_decl): Adjust call to cp_finish_decl.
+	(compute_array_index_type): Robustify.
+	(start_method): Use finish_decl, not cp_finish_decl.
+	* rtti.c (emit_tinfo_decl): Likewise.
+	* except.c (initialize_handler_parm): Adjust call to
+	cp_finish_decl.
+	(expand_start_catch_block): Likewise.
+	* cvt.c (build_up_reference): Adjust call to cp_finish_decl.
+	* pt.c (instantiate_class_template): Adjust call to
+	finish_static_data_member_decl.
+	(tsubst_expr): Use finish_decl, not cp_finish_decl.
+	(instantiate_decl): Adjust call to cp_finish_decl.
+	* name-lookup.c (pushdecl_top_level_1): Use finish_decl, not
+	cp_finish_decl.
+	* decl2.c (finish_static_data_member_decl): Add init_const_expr_p
+	parameter.
+	(grokfield): Likewise.
+	* parser.c (cp_parser_condition): Check for constant initializers.
+	(cp_parser_init_declarator): Adjust calls to grokfield and
+	cp_finish_decl.  Don't set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P here.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_objc_class_ivars): Likewise.
+
 2006-02-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* call.c (standard_conversion): Return NULL instead of 0.

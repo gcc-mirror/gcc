@@ -1,3 +1,11 @@
+2006-02-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26266
+	* g++.dg/template/static22.C: New test.
+	* g++.dg/template/static23.C: New test.
+	* g++.dg/template/static24.C: New test.
+	* g++.dg/template/non-dependent13.C: New test.
+
 2006-02-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/26255

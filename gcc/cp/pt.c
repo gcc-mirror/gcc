@@ -5743,6 +5743,7 @@ instantiate_class_template (tree type)
 		      finish_static_data_member_decl 
 			(r, 
 			 /*init=*/NULL_TREE, 
+			 /*init_const_expr_p=*/false,
 			 /*asmspec_tree=*/NULL_TREE, 
 			 /*flags=*/0);
 		      if (DECL_INITIALIZED_IN_CLASS_P (r))
@@ -8218,7 +8219,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		      }
 		    else
 		      init = tsubst_expr (init, args, complain, in_decl);
-		    cp_finish_decl (decl, init, NULL_TREE, 0);
+		    finish_decl (decl, init, NULL_TREE);
 		  }
 	      }
 	  }
@@ -11694,7 +11695,8 @@ instantiate_decl (tree d, int defer_ok,
 			      args,
 			      tf_warning_or_error, NULL_TREE);
 	  DECL_INITIAL (d) = init;
-	  cp_finish_decl (d, init, /*asmspec_tree=*/NULL_TREE,
+	  cp_finish_decl (d, init, /*init_const_expr_p=*/false,
+			  /*asmspec_tree=*/NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
 	  pop_nested_class ();
 	  pop_nested_namespace (ns);
@@ -11771,7 +11773,7 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Enter the scope of D so that access-checking works correctly.  */
       push_nested_class (DECL_CONTEXT (d));
-      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0);
+      finish_decl (d, DECL_INITIAL (d), NULL_TREE);
       pop_nested_class ();
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)

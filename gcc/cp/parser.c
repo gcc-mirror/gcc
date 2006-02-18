@@ -6500,6 +6500,7 @@ cp_parser_condition (cp_parser* parser)
       if (cp_parser_parse_definitely (parser))
 	{
 	  tree pushed_scope;
+	  bool non_constant_p;
 
 	  /* Create the declaration.  */
 	  decl = start_decl (declarator, &type_specifiers,
@@ -6507,12 +6508,16 @@ cp_parser_condition (cp_parser* parser)
 			     attributes, /*prefix_attributes=*/NULL_TREE,
 			     &pushed_scope);
 	  /* Parse the assignment-expression.  */
-	  initializer = cp_parser_assignment_expression (parser,
-							 /*cast_p=*/false);
+	  initializer 
+	    = cp_parser_constant_expression (parser,
+					     /*allow_non_constant_p=*/true,
+					     &non_constant_p);
+	  if (!non_constant_p)
+	    initializer = fold_non_dependent_expr (initializer);
 
 	  /* Process the initializer.  */
 	  cp_finish_decl (decl,
-			  initializer,
+			  initializer, !non_constant_p, 
 			  asm_specification,
 			  LOOKUP_ONLYCONVERTING);
 
@@ -11061,7 +11066,8 @@ cp_parser_init_declarator (cp_parser* parser,
 	  pushed_scope = false;
 	}
       decl = grokfield (declarator, decl_specifiers,
-			initializer, /*asmspec=*/NULL_TREE,
+			initializer, !is_non_constant_init,
+			/*asmspec=*/NULL_TREE,
 			prefix_attributes);
       if (decl && TREE_CODE (decl) == FUNCTION_DECL)
 	cp_parser_save_default_args (parser, decl);
@@ -11072,7 +11078,7 @@ cp_parser_init_declarator (cp_parser* parser,
   if (!friend_p && decl && decl != error_mark_node)
     {
       cp_finish_decl (decl,
-		      initializer,
+		      initializer, !is_non_constant_init,
 		      asm_specification,
 		      /* If the initializer is in parentheses, then this is
 			 a direct-initialization, which means that an
@@ -11083,12 +11089,6 @@ cp_parser_init_declarator (cp_parser* parser,
     }
   if (!friend_p && pushed_scope)
     pop_scope (pushed_scope);
-
-  /* Remember whether or not variables were initialized by
-     constant-expressions.  */
-  if (decl && TREE_CODE (decl) == VAR_DECL
-      && is_initialized && !is_non_constant_init)
-    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
 
   return decl;
 }
@@ -13706,16 +13706,11 @@ cp_parser_member_declaration (cp_parser* parser)
 		  return;
 		}
 	      else
-		{
-		  /* Create the declaration.  */
-		  decl = grokfield (declarator, &decl_specifiers,
-				    initializer, asm_specification,
-				    attributes);
-		  /* Any initialization must have been from a
-		     constant-expression.  */
-		  if (decl && TREE_CODE (decl) == VAR_DECL && initializer)
-		    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
-		}
+		/* Create the declaration.  */
+		decl = grokfield (declarator, &decl_specifiers,
+				  initializer, /*init_const_expr_p=*/true,
+				  asm_specification,
+				  attributes);
 	    }
 
 	  /* Reset PREFIX_ATTRIBUTES.  */
@@ -17278,7 +17273,8 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	      cplus_decl_attributes (&decl, attributes, /*flags=*/0);
 	    }
 	  else
-	    decl = grokfield (declarator, &declspecs, NULL_TREE,
+	    decl = grokfield (declarator, &declspecs, 
+			      NULL_TREE, /*init_const_expr_p=*/false,
 			      NULL_TREE, attributes);
 
 	  /* Add the instance variable.  */
