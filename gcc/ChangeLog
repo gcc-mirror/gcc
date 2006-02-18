@@ -1,3 +1,9 @@
+2005-02-18  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/26350
+	* config/rs6000/rs6000.md (extenddftf2): Force 0.0 to validized
+	MEM for ABI_V4 pic.
+
 2005-02-18  Richard Sandiford  <richard@codesourcery.com>
 
 	* cselib.c (cselib_init): Change RTX_SIZE to RTX_CODE_SIZE.
