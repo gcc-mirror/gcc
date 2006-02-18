@@ -1,3 +1,9 @@
+2006-02-17  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/26341
+	* tree-ssa-operands.c (add_virtual_operand): Remove assert 
+	about NAME_MEMORY_TAG's.
+
 2006-02-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/26255
