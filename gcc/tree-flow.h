@@ -164,10 +164,8 @@ struct var_ann_d GTY(())
   /* Used when building root_var structures in tree_ssa_live.[ch].  */
   unsigned root_var_processed : 1;
 
-  /* Nonzero if this variable is an alias tag that represents references to
-     other variables (i.e., this variable appears in the MAY_ALIASES array
-     of other variables).  */
-  unsigned is_alias_tag : 1;
+  /* Nonzero if this variable is in the alias set of another variable.  */
+  unsigned is_aliased : 1;
 
   /* Nonzero if this variable was used after SSA optimizations were
      applied.  We set this when translating out of SSA form.  */
@@ -206,7 +204,6 @@ struct var_ann_d GTY(())
      current version of this variable (an SSA_NAME).  */
   tree current_def;
   
-
   /* If this variable is a structure, this fields holds a list of
      symbols representing each of the fields of the structure.  */
   subvar_t subvars;

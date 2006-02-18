@@ -766,7 +766,7 @@ init_alias_info (void)
 	{
 	  var_ann_t ann = var_ann (var);
 	  
-	  ann->is_alias_tag = 0;
+	  ann->is_aliased = 0;
 	  ann->may_aliases = NULL;
 	  NUM_REFERENCES_CLEAR (ann);
 
@@ -1209,7 +1209,7 @@ group_aliases_into (tree tag, bitmap tag_aliases, struct alias_info *ai)
       var_ann_t ann = var_ann (var);
 
       /* Make TAG the unique alias of VAR.  */
-      ann->is_alias_tag = 0;
+      ann->is_aliased = 0;
       ann->may_aliases = NULL;
 
       /* Note that VAR and TAG may be the same if the function has no
@@ -1849,7 +1849,7 @@ add_may_alias (tree var, tree alias)
       return;
 
   VEC_safe_push (tree, gc, v_ann->may_aliases, alias);
-  a_ann->is_alias_tag = 1;
+  a_ann->is_aliased = 1;
 }
 
 
@@ -2454,7 +2454,7 @@ is_aliased_with (tree tag, tree sym)
   VEC(tree,gc) *aliases;
   tree al;
 
-  if (var_ann (sym)->is_alias_tag)
+  if (var_ann (sym)->is_aliased)
     {
       aliases = var_ann (tag)->may_aliases;
 
