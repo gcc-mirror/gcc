@@ -1,5 +1,5 @@
 /* Definitions for SH running Linux-based GNU systems using ELF
-   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
@@ -48,6 +48,8 @@ Boston, MA 02110-1301, USA.  */
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
+
 #undef SUBTARGET_LINK_EMUL_SUFFIX
 #define SUBTARGET_LINK_EMUL_SUFFIX "_linux"
 #undef SUBTARGET_LINK_SPEC
@@ -55,7 +57,7 @@ Boston, MA 02110-1301, USA.  */
   "%{shared:-shared} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
-     %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
+     %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
    %{static:-static}"
 
 /* Output assembler code to STREAM to call the profiler.  */

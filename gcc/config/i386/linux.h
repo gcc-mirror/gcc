@@ -1,6 +1,6 @@
 /* Definitions for Intel 386 running Linux-based GNU systems with ELF format.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2004
-   Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2004, 2005,
+   2006 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 
@@ -100,12 +100,12 @@ Boston, MA 02110-1301, USA.  */
 /* If ELF is the default format, we should not use /lib/elf.  */
 
 #define LINK_EMULATION "elf_i386"
-#define DYNAMIC_LINKER "/lib/ld-linux.so.2"
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
 #undef  SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
   { "link_emulation", LINK_EMULATION },\
-  { "dynamic_linker", DYNAMIC_LINKER }
+  { "dynamic_linker", LINUX_DYNAMIC_LINKER }
 
 #undef	LINK_SPEC
 #define LINK_SPEC "-m %(link_emulation) %{shared:-shared} \

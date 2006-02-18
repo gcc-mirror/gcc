@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Alpha Linux-based GNU systems.
-   Copyright (C) 1996, 1997, 1998, 2002, 2003, 2004, 2005
+   Copyright (C) 1996, 1997, 1998, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
@@ -64,7 +64,7 @@ Boston, MA 02110-1301, USA.  */
 
 /* Determine whether the entire c99 runtime is present in the
    runtime library.  */
-#define TARGET_C99_FUNCTIONS 1
+#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 #define TARGET_POSIX_IO
 

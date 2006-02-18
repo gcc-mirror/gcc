@@ -455,7 +455,10 @@ case ${target} in
   tmake_file="t-slibgcc-elf-ver t-linux"
   case ${target} in
     *-*-*uclibc*)
-      tm_defines="${tm_defines} UCLIBC_DEFAULT"
+      tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
+      ;;
+    *)
+      tm_defines="${tm_defines} UCLIBC_DEFAULT=0"
       ;;
   esac
   ;;

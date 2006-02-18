@@ -123,12 +123,14 @@ Boston, MA 02110-1301, USA.  */
 
 /* If ELF is the default format, we should not use /lib/elf.  */
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+
 #undef	LINK_SPEC
 #define LINK_SPEC "-m m68kelf %{shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker*:-dynamic-linker /lib/ld.so.1}} \
+      %{!dynamic-linker*:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
     %{static}}"
 
 /* For compatibility with linux/a.out */

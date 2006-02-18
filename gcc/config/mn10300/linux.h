@@ -1,6 +1,6 @@
 /* Definitions of taret machine for GNU compiler.
    Matsushita AM33/2.0
-   Copyright 2001, 2002, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
    This file is part of GCC.
@@ -33,11 +33,13 @@
 #undef  ASM_SPEC
 #define ASM_SPEC "%{Wa,*:%*}"
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+
 #undef  LINK_SPEC
 #define LINK_SPEC "%{mrelax:--relax} %{shared:-shared} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
-     %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
+     %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
    %{static:-static}"
 
 #undef  PROCESSOR_DEFAULT

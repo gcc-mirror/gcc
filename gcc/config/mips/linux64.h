@@ -1,6 +1,6 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format
    using n32/64 abi.
-   Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,13 @@ Boston, MA 02110-1301, USA.  */
 %{!shared: %{pthread:-lpthread} \
   %{profile:-lc_p} %{!profile: -lc}}"
 
+#define GLIBC_DYNAMIC_LINKER32 "/lib/ld.so.1"
+#define GLIBC_DYNAMIC_LINKER64 "/lib64/ld.so.1"
+#define GLIBC_DYNAMIC_LINKERN32 "/lib32/ld.so.1"
+#define UCLIBC_DYNAMIC_LINKERN32 "/lib32/ld-uClibc.so.0"
+#define LINUX_DYNAMIC_LINKERN32 \
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKERN32, UCLIBC_DYNAMIC_LINKERN32)
+
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
@@ -47,9 +54,9 @@ Boston, MA 02110-1301, USA.  */
       %{!static: \
         %{rdynamic:-export-dynamic} \
         %{!dynamic-linker: \
-	  %{mabi=n32: -dynamic-linker /lib32/ld.so.1} \
-	  %{mabi=64: -dynamic-linker /lib64/ld.so.1} \
-	  %{mabi=32: -dynamic-linker /lib/ld.so.1}}} \
+	  %{mabi=n32: -dynamic-linker " LINUX_DYNAMIC_LINKERN32 "} \
+	  %{mabi=64: -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
+	  %{mabi=32: -dynamic-linker " LINUX_DYNAMIC_LINKER32 "}}} \
       %{static:-static}}} \
 %{mabi=n32:-melf32%{EB:b}%{EL:l}tsmipn32} \
 %{mabi=64:-melf64%{EB:b}%{EL:l}tsmip} \
