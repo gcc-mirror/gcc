@@ -10,6 +10,7 @@
 
 	PR middle-end/26334
 	* gcc.c-torture/compile/20060217-1.c: New test.
+	* gcc.dg/20060218-1.c: New test.
 
 2006-02-17  Jakub Jelinek  <jakub@redhat.com>
 
