@@ -1,3 +1,8 @@
+2006-02-17  Grigory Zagorodnev <grigory_zagorodnev@linux.intel.com>
+
+	* gcc.dg/cpp/undef3.c: New test.
+	* gcc.dg/cpp/trad/builtins2.c: New test.
+
 2006-02-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26266

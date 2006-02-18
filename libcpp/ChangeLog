@@ -1,3 +1,12 @@
+2006-02-17  Grigory Zagorodnev <grigory_zagorodnev@linux.intel.com>
+
+	* macro.c (_cpp_builtin_macro_text): Handle BT_TIMESTAMP.
+	* files.c (_cpp_get_file_stat): New function.
+	* include/cpplib.h (builtin_type): Add BT_TIMESTAMP.
+	* init.c (builtin_array): Add support for __TIMESTAMP__/BT_TIMESTAMP.
+	* internal.h (_cpp_get_file_stat): Prototype.
+	(struct cpp_buffer): Add timestamp.
+
 2006-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/25717

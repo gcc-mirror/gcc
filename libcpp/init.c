@@ -301,6 +301,7 @@ struct builtin
 #define B(n, t)    { DSC(n), t }
 static const struct builtin builtin_array[] =
 {
+  B("__TIMESTAMP__",	 BT_TIMESTAMP),
   B("__TIME__",		 BT_TIME),
   B("__DATE__",		 BT_DATE),
   B("__FILE__",		 BT_FILE),
