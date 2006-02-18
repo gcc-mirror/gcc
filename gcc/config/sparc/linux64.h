@@ -1,5 +1,5 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
-   Copyright 1996, 1997, 1998, 2000, 2002, 2003, 2004, 2005
+   Copyright 1996, 1997, 1998, 2000, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
@@ -143,6 +143,20 @@ Boston, MA 02110-1301, USA.  */
 
 /* If ELF is the default format, we should not use /lib/elf.  */
 
+#define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
+#define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux.so.2"
+#define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
+#define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
+#if UCLIBC_DEFAULT
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:%{muclibc:%e-mglibc and -muclibc used together}" G ";:" U "}"
+#else
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:%{mglibc:%e-mglibc and -muclibc used together}" U ";:" G "}"
+#endif
+#define LINUX_DYNAMIC_LINKER32 \
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32)
+#define LINUX_DYNAMIC_LINKER64 \
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
+
 #ifdef SPARC_BI_ARCH
 
 #undef SUBTARGET_EXTRA_SPECS
@@ -151,13 +165,13 @@ Boston, MA 02110-1301, USA.  */
   { "link_arch64",       LINK_ARCH64_SPEC },              \
   { "link_arch_default", LINK_ARCH_DEFAULT_SPEC },	  \
   { "link_arch",	 LINK_ARCH_SPEC },
-    
+
 #define LINK_ARCH32_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
+        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
         %{static:-static}}} \
 "
 
@@ -166,7 +180,7 @@ Boston, MA 02110-1301, USA.  */
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib64/ld-linux.so.2}} \
+        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}} \
         %{static:-static}}} \
 "
 
@@ -247,7 +261,7 @@ Boston, MA 02110-1301, USA.  */
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib64/ld-linux.so.2}} \
+        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}} \
         %{static:-static}}} \
 %{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
@@ -330,7 +344,7 @@ do {									\
 
 /* Determine whether the entire c99 runtime is present in the
    runtime library.  */
-#define TARGET_C99_FUNCTIONS 1
+#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 #define TARGET_POSIX_IO
 

@@ -1,5 +1,5 @@
 /* Definitions for Renesas M32R running Linux-based GNU systems using ELF.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2006 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -59,6 +59,8 @@
 
 /* If ELF is the default format, we should not use /lib/elf.  */
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
+
 #undef	LINK_SPEC
 #if TARGET_LITTLE_ENDIAN
 #define LINK_SPEC "%(link_cpu) -m m32rlelf_linux %{shared:-shared} \
@@ -66,7 +68,7 @@
     %{!ibcs: \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
+	%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
 	%{static:-static}}}"
 #else
 #define LINK_SPEC "%(link_cpu) -m m32relf_linux %{shared:-shared} \
@@ -74,7 +76,7 @@
     %{!ibcs: \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
+	%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
 	%{static:-static}}}"
 #endif
 

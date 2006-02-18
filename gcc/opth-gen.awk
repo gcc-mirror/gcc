@@ -1,4 +1,4 @@
-#  Copyright (C) 2003,2004 Free Software Foundation, Inc.
+#  Copyright (C) 2003,2004,2005,2006 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -118,9 +118,18 @@ print ""
 
 for (i = 0; i < n_opts; i++) {
 	opt = opt_args("InverseMask", flags[i])
-	if (opt ~ ",")
-		print "#define TARGET_" nth_arg(1, opt) \
-		      " ((target_flags & MASK_" nth_arg(0, opt) ") == 0)"
+	if (opt ~ ",") {
+		vname = var_name(flags[i])
+		macro = "OPTION_"
+		mask = "OPTION_MASK_"
+		if (vname == "") {
+			vname = "target_flags"
+			macro = "TARGET_"
+			mask = "MASK_"
+		}
+		print "#define " macro nth_arg(1, opt) \
+		      " ((" vname " & " mask nth_arg(0, opt) ") == 0)"
+	}
 }
 print ""
 

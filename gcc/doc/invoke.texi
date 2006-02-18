@@ -8801,8 +8801,7 @@ on @samp{*-*-linux-*uclibc*} targets.
 @item -muclibc
 @opindex muclibc
 Use uClibc instead of the GNU C library.  This is the default on
-@samp{*-*-linux-*uclibc*} targets.  GCC currently only supports uClibc
-on ARM and 32-bit MIPS targets.
+@samp{*-*-linux-*uclibc*} targets.
 @end table
 
 @node H8/300 Options

@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -76,6 +76,8 @@ Boston, MA 02110-1301, USA.  */
 #undef CRIS_SUBTARGET_VERSION
 #define CRIS_SUBTARGET_VERSION " - cris-axis-linux-gnu"
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+
 /* We need an -rpath-link to ld.so.1, and presumably to each directory
    specified with -B.  */
 #undef CRIS_LINK_SUBTARGET_SPEC
@@ -84,7 +86,9 @@ Boston, MA 02110-1301, USA.  */
   -rpath-link include/asm/../..%s\
   %{shared} %{static}\
   %{symbolic:-Bdynamic} %{shlib:-Bdynamic} %{static:-Bstatic}\
-  %{!shared:%{!static:%{rdynamic:-export-dynamic}}}\
+  %{!shared:%{!static:\
+              %{rdynamic:-export-dynamic}\
+              %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}}}\
   %{!r:%{O2|O3: --gc-sections}}"
 
 

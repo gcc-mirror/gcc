@@ -33,7 +33,7 @@
 
 /* glibc has float and long double forms of math functions.  */
 #undef  TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS 1
+#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()		\

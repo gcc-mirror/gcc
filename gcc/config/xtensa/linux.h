@@ -1,6 +1,6 @@
 /* Xtensa Linux configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,6 +43,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   %{mlongcalls:--longcalls} \
   %{mno-longcalls:--no-longcalls}"
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{shared:-shared} \
@@ -50,7 +52,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
+        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
       %{static:-static}}}"
 
 #undef LOCAL_LABEL_PREFIX

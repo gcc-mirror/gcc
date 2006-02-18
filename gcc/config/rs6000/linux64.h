@@ -283,7 +283,7 @@ extern int dot_symbols;
 
 /* glibc has float and long double forms of math functions.  */
 #undef  TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS 1
+#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()			\
@@ -336,13 +336,28 @@ extern int dot_symbols;
 #undef	LINK_OS_DEFAULT_SPEC
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
+#define GLIBC_DYNAMIC_LINKER32 "/lib/ld.so.1"
+#define GLIBC_DYNAMIC_LINKER64 "/lib64/ld64.so.1"
+#define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
+#define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
+#if UCLIBC_DEFAULT
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:%{muclibc:%e-mglibc and -muclibc used together}" G ";:" U "}"
+#else
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:%{mglibc:%e-mglibc and -muclibc used together}" U ";:" G "}"
+#endif
+#define LINUX_DYNAMIC_LINKER32 \
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32)
+#define LINUX_DYNAMIC_LINKER64 \
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
+
+
 #define LINK_OS_LINUX_SPEC32 "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
+  %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}}}"
 
 #define LINK_OS_LINUX_SPEC64 "-m elf64ppc %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker /lib64/ld64.so.1}}}"
+  %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}}"
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP \

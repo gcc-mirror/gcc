@@ -1,5 +1,6 @@
 /* Definitions for PA_RISC with ELF format
-   Copyright 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,13 +45,15 @@ Boston, MA 02110-1301, USA.  */
 /* Define this for shared library support because it isn't in the main
    linux.h file.  */
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+
 #undef LINK_SPEC
 #define LINK_SPEC "\
   %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
+      %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
       %{static:-static}}"
 
 /* glibc's profiling functions don't need gcc to allocate counters.  */

@@ -909,9 +909,19 @@ extern int fixuplabelno;
 
 #define LINK_START_LINUX_SPEC ""
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+#define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
+#if UCLIBC_DEFAULT
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:%{muclibc:%e-mglibc and -muclibc used together}" G ";:" U "}"
+#else
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:%{mglibc:%e-mglibc and -muclibc used together}" U ";:" G "}"
+#endif
+#define LINUX_DYNAMIC_LINKER \
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER)
+
 #define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
+  %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}}}"
 
 #if defined(HAVE_LD_EH_FRAME_HDR)
 # define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "

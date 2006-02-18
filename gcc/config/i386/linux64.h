@@ -1,5 +1,5 @@
 /* Definitions for AMD x86-64 running Linux-based GNU systems with ELF format.
-   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Jan Hubicka <jh@suse.cz>, based on linux.h.
 
 This file is part of GCC.
@@ -49,14 +49,17 @@ Boston, MA 02110-1301, USA.  */
    When the -shared link option is used a final link is not being
    done.  */
 
+#define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
+#define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux-x86-64.so.2"
+
 #undef	LINK_SPEC
 #define LINK_SPEC "%{!m32:-m elf_x86_64} %{m32:-m elf_i386} \
   %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{m32:%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
-      %{!m32:%{!dynamic-linker:-dynamic-linker /lib64/ld-linux-x86-64.so.2}}} \
+      %{m32:%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
+      %{!m32:%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}} \
     %{static:-static}}"
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
