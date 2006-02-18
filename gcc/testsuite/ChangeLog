@@ -1,5 +1,10 @@
 2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
+        PR tree-opt/25680
+        * testsuite/gcc.dg/tree-ssa/complex-3.c: New test.
+
+2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* gcc.dg/tree-ssa/20031106-1.c: Fix the final scan of the
 	variable to take into account the variable name in the
 	function header.

@@ -855,11 +855,19 @@ ccp_fold (tree stmt)
       /* If the RHS is a memory load, see if the VUSEs associated with
 	 it are a valid constant for that memory load.  */
       prop_value_t *val = get_value_loaded_by (stmt, const_val);
-      if (val && val->mem_ref
-	  && operand_equal_p (val->mem_ref, rhs, 0))
-	return val->value;
-      else
-	return NULL_TREE;
+      if (val && val->mem_ref)
+	{
+	  if (operand_equal_p (val->mem_ref, rhs, 0))
+	    return val->value;
+
+	  /* If RHS is extracting REALPART_EXPR or IMAGPART_EXPR of a
+	     complex type with a known constant value, return it.  */
+	  if ((TREE_CODE (rhs) == REALPART_EXPR
+	       || TREE_CODE (rhs) == IMAGPART_EXPR)
+	      && operand_equal_p (val->mem_ref, TREE_OPERAND (rhs, 0), 0))
+	    return fold_build1 (TREE_CODE (rhs), TREE_TYPE (rhs), val->value);
+	}
+      return NULL_TREE;
     }
 
   /* Unary operators.  Note that we know the single operand must

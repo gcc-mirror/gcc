@@ -1,3 +1,9 @@
+2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/25680
+	* tree-ssa-ccp.c (ccp_fold): Handle store CCP of REALPART_EXPR and
+	IMAGPART_EXPR.
+
 2006-02-18  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-flow.h (struct var_ann_d): Rename field is_alias_tag to
