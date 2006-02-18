@@ -1784,7 +1784,7 @@ void gfc_get_component_attr (symbol_attribute *, gfc_component *);
 
 void gfc_set_sym_referenced (gfc_symbol * sym);
 
-try gfc_add_attribute (symbol_attribute *, locus *, uint);
+try gfc_add_attribute (symbol_attribute *, locus *, unsigned int);
 try gfc_add_allocatable (symbol_attribute *, locus *);
 try gfc_add_dimension (symbol_attribute *, const char *, locus *);
 try gfc_add_external (symbol_attribute *, locus *);
