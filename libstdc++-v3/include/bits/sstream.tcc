@@ -225,9 +225,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __ret;
     }
 
-  // Assumes: contents of _M_string and internal buffer match exactly.
-  // __i == _M_in_cur - _M_in_beg
-  // __o == _M_out_cur - _M_out_beg
   template <class _CharT, class _Traits, class _Alloc>
     void
     basic_stringbuf<_CharT, _Traits, _Alloc>::
@@ -235,25 +232,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       const bool __testin = _M_mode & ios_base::in;
       const bool __testout = _M_mode & ios_base::out;
-      char_type* __end = __base + _M_string.size();
-      
+      char_type* __endg = __base + _M_string.size();
+      char_type* __endp = __base + _M_string.capacity();
+
+      if (__base != _M_string.data())
+	{
+	  // setbuf: __i == size of buffer area (_M_string.size() == 0).
+	  __endg += __i;
+	  __i = 0;
+	  __endp = __endg;
+	}
+
       if (__testin)
-	this->setg(__base, __base + __i, __end);
+	this->setg(__base, __base + __i, __endg);
       if (__testout)
 	{
-	  // If __base comes from setbuf we cannot trust capacity()
-	  // to match the size of the buffer area:  in general, after
-	  // Step 1 in setbuf, _M_string.capacity() >= __n.
-	  if (__base == _M_string.data())
-	    this->setp(__base, __base + _M_string.capacity());
-	  else
-	    this->setp(__base, __end);
+	  this->setp(__base, __endp);
 	  this->pbump(__o);
 	  // egptr() always tracks the string end.  When !__testin,
 	  // for the correct functioning of the streambuf inlines
 	  // the other get area pointers are identical.
 	  if (!__testin)
-	    this->setg(__end, __end, __end);
+	    this->setg(__endg, __endg, __endg);
 	}
     }
 

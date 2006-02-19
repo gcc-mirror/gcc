@@ -211,10 +211,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    // things will quickly blow up.
 	    
 	    // Step 1: Destroy the current internal array.
-	    _M_string.assign(__s, __n);
+	    _M_string.clear();
 	    
 	    // Step 2: Use the external array.
-	    _M_sync(__s, 0, 0);
+	    _M_sync(__s, __n, 0);
 	  }
 	return this;
       }
