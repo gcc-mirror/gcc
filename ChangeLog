@@ -1,3 +1,9 @@
+2006-02-19  Bud Davis  <jmdavis@link.com>
+
+	* MAINTAINERS (Write After Approval):  Remove myself.
+	(Language Front End Maintainers):  Add myself as fortran 95
+	maintainer and update e-mail address.
+
 2006-02-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* MAINTAINERS (Write After Approval):  Remove myself.
