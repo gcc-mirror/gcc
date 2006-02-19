@@ -1,3 +1,7 @@
+2006-02-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/open.c (edit_modes): Correct abusive copy-pasting.
+
 2006-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/24903
