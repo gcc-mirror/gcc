@@ -1,3 +1,9 @@
+2006-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26334
+	* gcc.dg/20060218-1.c: Moved to...
+	* gcc.target/i386/20060218-1.c: ... here.  New test.
+
 2006-02-19  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/26201
