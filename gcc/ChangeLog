@@ -1,3 +1,8 @@
+2006-02-18  Mark Wielaard  <mark@klomp.org>
+
+	* doc/contrib.texi (Contributors): Add classpath/libgcj hackers
+	who added new 4.1 features, bug fixes and integration support.
+
 2006-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/install.texi (hppa*-hp-hpux*): Update for 4.1.0.
