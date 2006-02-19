@@ -523,6 +523,10 @@ fipa-pure-const
 Common Report Var(flag_ipa_pure_const) Init(0)
 Discover pure and const functions
 
+fipa-pta
+Common Report Var(flag_ipa_pta) Init(0)
+Perform interprocedural points-to analysis
+
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0)
 Discover readonly and non addressable static variables
