@@ -1,3 +1,8 @@
+2006-02-19  Thomas Koenig  <Thomas.Koenig@online.de>
+
+        * gfortran.texi:  Document environment variables which
+        influence runtime behavior.
+
 2006-02-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* resolve.c (resolve_contained_functions): Call resolve_entries
