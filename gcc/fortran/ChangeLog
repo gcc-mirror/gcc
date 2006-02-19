@@ -1,3 +1,9 @@
+2006-02-19  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/26201
+	* intrinsic.c (gfc_convert_type_warn): Call
+	gfc_intrinsic_symbol() on the newly created symbol.
+
 2005-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25054
