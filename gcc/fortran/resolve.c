@@ -4598,6 +4598,35 @@ resolve_charlen (gfc_charlen *cl)
 }
 
 
+/* Test for non-constant shape arrays. */
+
+static bool
+is_non_constant_shape_array (gfc_symbol *sym)
+{
+  gfc_expr *e;
+  int i;
+
+  if (sym->as != NULL)
+    {
+      /* Unfortunately, !gfc_is_compile_time_shape hits a legal case that
+	 has not been simplified; parameter array references.  Do the
+	 simplification now.  */
+      for (i = 0; i < sym->as->rank; i++)
+	{
+	  e = sym->as->lower[i];
+	  if (e && (resolve_index_expr (e) == FAILURE
+		|| !gfc_is_constant_expr (e)))
+	    return true;
+
+	  e = sym->as->upper[i];
+	  if (e && (resolve_index_expr (e) == FAILURE
+		|| !gfc_is_constant_expr (e)))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Resolution of common features of flavors variable and procedure. */
 
 static try
@@ -4652,43 +4681,17 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     return FAILURE;
 
   /* The shape of a main program or module array needs to be constant.  */
-  if (sym->as != NULL
-	&& sym->ns->proc_name
+  if (sym->ns->proc_name
 	&& (sym->ns->proc_name->attr.flavor == FL_MODULE
 	     || sym->ns->proc_name->attr.is_main_program)
 	&& !sym->attr.use_assoc
 	&& !sym->attr.allocatable
-	&& !sym->attr.pointer)
+	&& !sym->attr.pointer
+	&& is_non_constant_shape_array (sym))
     {
-      /* Unfortunately, !gfc_is_compile_time_shape hits a legal case that
-	 has not been simplified; parameter array references.  Do the
-	 simplification now.  */
-      flag = 0;
-      for (i = 0; i < sym->as->rank; i++)
-	{
-	  e = sym->as->lower[i];
-	  if (e && (resolve_index_expr (e) == FAILURE
-		|| !gfc_is_constant_expr (e)))
-	    {
-	      flag = 1;
-	      break;
-	    }
-
-	  e = sym->as->upper[i];
-	  if (e && (resolve_index_expr (e) == FAILURE
-		|| !gfc_is_constant_expr (e)))
-	    {
-	      flag = 1;
-	      break;
-	    }
-	}
-
-      if (flag)
-	{
-	  gfc_error ("The module or main program array '%s' at %L must "
+       gfc_error ("The module or main program array '%s' at %L must "
 		     "have constant shape", sym->name, &sym->declared_at);
 	  return FAILURE;
-	}
     }
 
   if (sym->ts.type == BT_CHARACTER)
@@ -4961,6 +4964,64 @@ resolve_fl_derived (gfc_symbol *sym)
 
 
 static try
+resolve_fl_namelist (gfc_symbol *sym)
+{
+  gfc_namelist *nl;
+  gfc_symbol *nlsym;
+
+  /* Reject PRIVATE objects in a PUBLIC namelist.  */
+  if (gfc_check_access(sym->attr.access, sym->ns->default_access))
+    {
+      for (nl = sym->namelist; nl; nl = nl->next)
+	{
+	  if (!nl->sym->attr.use_assoc
+		&& !(sym->ns->parent == nl->sym->ns)
+		       && !gfc_check_access(nl->sym->attr.access,
+					    nl->sym->ns->default_access))
+	    {
+	      gfc_error ("PRIVATE symbol '%s' cannot be member of "
+			 "PUBLIC namelist at %L", nl->sym->name,
+			 &sym->declared_at);
+	      return FAILURE;
+	    }
+	}
+    }
+
+    /* Reject namelist arrays that are not constant shape.  */
+    for (nl = sym->namelist; nl; nl = nl->next)
+      {
+	if (is_non_constant_shape_array (nl->sym))
+	  {
+	    gfc_error ("The array '%s' must have constant shape to be "
+		       "a NAMELIST object at %L", nl->sym->name,
+		       &sym->declared_at);
+	    return FAILURE;
+	  }
+    }
+
+  /* 14.1.2 A module or internal procedure represent local entities
+     of the same type as a namelist member and so are not allowed.
+     Note that this is sometimes caught by check_conflict so the
+     same message has been used.  */
+  for (nl = sym->namelist; nl; nl = nl->next)
+    {
+      nlsym = NULL;
+	if (sym->ns->parent && nl->sym && nl->sym->name)
+	  gfc_find_symbol (nl->sym->name, sym->ns->parent, 0, &nlsym);
+	if (nlsym && nlsym->attr.flavor == FL_PROCEDURE)
+	  {
+	    gfc_error ("PROCEDURE attribute conflicts with NAMELIST "
+		       "attribute in '%s' at %L", nlsym->name,
+		       &sym->declared_at);
+	    return FAILURE;
+	  }
+    }
+
+  return SUCCESS;
+}
+
+
+static try
 resolve_fl_parameter (gfc_symbol *sym)
 {
   /* A parameter array's shape needs to be constant.  */
@@ -5007,7 +5068,6 @@ resolve_symbol (gfc_symbol * sym)
   /* Zero if we are checking a formal namespace.  */
   static int formal_ns_flag = 1;
   int formal_ns_save, check_constant, mp_flag;
-  gfc_namelist *nl;
   gfc_symtree *symtree;
   gfc_symtree *this_symtree;
   gfc_namespace *ns;
@@ -5162,23 +5222,8 @@ resolve_symbol (gfc_symbol * sym)
       break;
 
     case FL_NAMELIST:
-      /* Reject PRIVATE objects in a PUBLIC namelist.  */
-      if (gfc_check_access(sym->attr.access, sym->ns->default_access))
-	{
-	  for (nl = sym->namelist; nl; nl = nl->next)
-	    {
-	      if (!nl->sym->attr.use_assoc
-		    &&
-		  !(sym->ns->parent == nl->sym->ns)
-		    &&
-		  !gfc_check_access(nl->sym->attr.access,
-				    nl->sym->ns->default_access))
-		gfc_error ("PRIVATE symbol '%s' cannot be member of "
-			   "PUBLIC namelist at %L", nl->sym->name,
-			   &sym->declared_at);
-	    }
-	}
-
+      if (resolve_fl_namelist (sym) == FAILURE)
+	return;
       break;
 
     case FL_PARAMETER:
@@ -5191,7 +5236,6 @@ resolve_symbol (gfc_symbol * sym)
 
       break;
     }
-
 
   /* Make sure that intrinsic exist */
   if (sym->attr.intrinsic
