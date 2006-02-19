@@ -2589,6 +2589,7 @@ gfc_match_namelist (void)
 
 	  nl = gfc_get_namelist ();
 	  nl->sym = sym;
+	  sym->refs++;
 
 	  if (group_name->namelist == NULL)
 	    group_name->namelist = group_name->namelist_tail = nl;
