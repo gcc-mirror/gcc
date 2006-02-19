@@ -1046,6 +1046,7 @@ extern bool subreg_offset_representable_p (unsigned int, enum machine_mode,
 extern unsigned int subreg_regno (rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (rtx, enum machine_mode);
 extern unsigned int num_sign_bit_copies (rtx, enum machine_mode);
+extern bool constant_pool_constant_p (rtx);
 
 
 /* 1 if RTX is a subreg containing a reg that is already known to be

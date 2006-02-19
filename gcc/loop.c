@@ -1222,6 +1222,12 @@ scan_loop (struct loop *loop, int flags)
 	      if (GET_MODE_CLASS (GET_MODE (SET_DEST (set))) == MODE_CC
 		  && CONSTANT_P (src))
 		;
+#ifdef STACK_REGS
+	      /* Don't hoist constant pool constants into stack regs. */
+	      else if (IS_STACK_MODE (GET_MODE (SET_SRC (set)))
+		       && constant_pool_constant_p (SET_SRC (set)))
+		;
+#endif
 	      /* Don't try to optimize a register that was made
 		 by loop-optimization for an inner loop.
 		 We don't know its life-span, so we can't compute
@@ -10822,6 +10828,13 @@ load_mems (const struct loop *loop)
       if (flag_float_store && written
 	  && SCALAR_FLOAT_MODE_P (GET_MODE (mem)))
 	loop_info->mems[i].optimize = 0;
+
+#ifdef STACK_REGS
+      /* Don't hoist constant pool constants into stack registers.  */
+      if (IS_STACK_MODE (GET_MODE (mem))
+          && constant_pool_constant_p (mem))
+	loop_info->mems[i].optimize = 0;
+#endif
 
       /* If this MEM is written to, we must be sure that there
 	 are no reads from another MEM that aliases this one.  */

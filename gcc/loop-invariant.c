@@ -932,6 +932,32 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
   (*regs_needed)++;
   (*comp_cost) += inv->cost;
 
+#ifdef STACK_REGS
+  {
+    /* Hoisting constant pool constants into stack regs may cost more than
+       just single register.  On x87, the balance is affected both by the
+       small number of FP registers, and by its register stack organisation,
+       that forces us to add compensation code in and around the loop to
+       shuffle the operands to the top of stack before use, and pop them
+       from the stack after the loop finishes.
+
+       To model this effect, we increase the number of registers needed for
+       stack registers by two: one register push, and one register pop.
+       This usually has the effect that FP constant loads from the constant
+       pool are not moved out of the loop.
+
+       Note that this also means that dependent invariants can not be moved.
+       However, the primary purpose of this pass is to move loop invariant
+       address arithmetic out of loops, and address arithmetic that depends
+       on floating point constants is unlikely to ever occur.  */
+    rtx set = single_set (inv->insn);
+    if (set
+       && IS_STACK_MODE (GET_MODE (SET_SRC (set)))
+       && constant_pool_constant_p (SET_SRC (set)))
+      (*regs_needed) += 2;
+  }
+#endif
+
   EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, depno, bi)
     {
       dep = VEC_index (invariant_p, invariants, depno);

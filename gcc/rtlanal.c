@@ -4800,3 +4800,12 @@ init_rtlanal (void)
       non_rtx_starting_operands[i] = first ? first - format : -1;
     }
 }
+
+/* Check whether this is a constant pool constant.  */
+bool
+constant_pool_constant_p (rtx x)
+{
+  x = avoid_constant_pool_reference (x);
+  return GET_CODE (x) == CONST_DOUBLE;
+}
+

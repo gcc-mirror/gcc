@@ -1,4 +1,18 @@
 2006-02-19  Roger Sayle  <roger@eyesopen.com>
+	    Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* gcse.c (want_to_gcse_p): On STACK_REGS targets, look through
+	constant pool references to identify stack mode constants.
+	* rtlanal.c (constant_pool_constant_p): New predicate to check
+	whether operand is a floating point constant in the pool.
+	* rtl.h (constant_pool_constant_p): Prototype here.
+	* loop.c (scan_loop): Avoid hoisting constants from the constant
+	pool on STACK_REGS targets.
+	(load_mems): Likewise.
+	* loop-invariant.c (get_inv_cost): Make hoisting constant pool
+	loads into x87 registers expensive in terms of register pressure.
+
+2006-02-19  Roger Sayle  <roger@eyesopen.com>
 
 	* gthr-posix.h: On Tru64, map __gthr_foo as a weak reference to
 	__foo and not foo when _PTHREAD_USE_MANGLED_NAMES_ is defined.

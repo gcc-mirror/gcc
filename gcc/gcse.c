@@ -1170,6 +1170,14 @@ static basic_block current_bb;
 static int
 want_to_gcse_p (rtx x)
 {
+#ifdef STACK_REGS
+  /* On register stack architectures, don't GCSE constants from the
+     constant pool, as the benefits are often swamped by the overhead
+     of shuffling the register stack between basic blocks.  */
+  if (IS_STACK_MODE (GET_MODE (x)))
+    x = avoid_constant_pool_reference (x);
+#endif
+
   switch (GET_CODE (x))
     {
     case REG:
