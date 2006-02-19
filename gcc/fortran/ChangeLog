@@ -1,3 +1,11 @@
+2006-02-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* resolve.c (resolve_contained_functions): Call resolve_entries
+	first.
+	(resolve_types): Remove calls to resolve_entries and
+	resolve_contained_functions.
+	(gfc_resolve): Call resolve_contained_functions.
+
 2006-02-19  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/26201
