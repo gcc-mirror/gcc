@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -842,6 +842,9 @@ internal_proto(list_formatted_write);
 /* error.c */
 extern try notify_std (int, const char *);
 internal_proto(notify_std);
+
+extern notification notification_std(int);
+internal_proto(notification_std);
 
 /* size_from_kind.c */
 extern size_t size_from_real_kind (int);

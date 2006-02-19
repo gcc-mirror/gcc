@@ -569,8 +569,26 @@ data_desc:
       if (t == FMT_POSINT)
 	break;
 
-      error = posint_required;
-      goto syntax;
+      switch (gfc_notification_std (GFC_STD_GNU))
+	{
+	  case WARNING:
+	    gfc_warning
+	      ("Extension: Missing positive width after L descriptor at %C");
+	    saved_token = t;
+	    break;
+
+	  case ERROR:
+	    error = posint_required;
+	    goto syntax;
+
+	  case SILENT:
+	    saved_token = t;
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
+      break;
 
     case FMT_A:
       t = format_lex ();

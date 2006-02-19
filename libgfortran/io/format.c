@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -662,8 +662,17 @@ parse_format_list (st_parameter_dt *dtp)
       t = format_lex (fmt);
       if (t != FMT_POSINT)
 	{
-	  fmt->error = posint_required;
-	  goto finished;
+	  if (notification_std(GFC_STD_GNU) == ERROR)
+	    {
+	      fmt->error = posint_required;
+	      goto finished;
+	    }
+	  else
+	    {
+	      fmt->saved_token = t;
+	      fmt->value = 1;	/* Default width */
+	      notify_std(GFC_STD_GNU, posint_required);
+	    }
 	}
 
       get_fnode (fmt, &head, &tail, FMT_L);
