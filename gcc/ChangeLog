@@ -1,3 +1,7 @@
+2006-02-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* doc/install.texi: Add missing `@samp'.
+
 2006-02-18  Andrew Pinski <pinskia@physics.uc.edu>
 
 	* config/rs6000/darwin.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P):
