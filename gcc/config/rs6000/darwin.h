@@ -316,7 +316,7 @@ do {									\
 
 /* Since Darwin doesn't do TOCs, stub this out.  */
 
-#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)  0
+#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)  ((void)X, (void)MODE, 0)
 
 /* Unlike most other PowerPC targets, chars are signed, for
    consistency with other Darwin architectures.  */

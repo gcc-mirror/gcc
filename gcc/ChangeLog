@@ -1,3 +1,8 @@
+2006-02-18  Andrew Pinski <pinskia@physics.uc.edu>
+
+	* config/rs6000/darwin.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P):
+	Use the arguments.
+
 2006-02-18  Mark Wielaard  <mark@klomp.org>
 
 	* doc/contrib.texi (Contributors): Add classpath/libgcj hackers
