@@ -132,6 +132,11 @@ convert the front end trees to GIMPLE@.  Usually such a hook will involve
 much of the same code for expanding front end trees to RTL@.  This function
 can return fully lowered GIMPLE, or it can return GENERIC trees and let the
 main gimplifier lower them the rest of the way; this is often simpler.
+GIMPLE that is not fully lowered is known as ``high GIMPLE'' and
+consists of the IL before the pass @code{pass_lower_cf}.  High GIMPLE
+still contains lexical scopes and nested expressions, while low GIMPLE
+exposes all of the implicit jumps for control expressions like
+@code{COND_EXPR}.
 
 The C and C++ front ends currently convert directly from front end
 trees to GIMPLE, and hand that off to the back end rather than first

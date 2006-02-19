@@ -1,3 +1,7 @@
+2006-02-20  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/tree-ssa.texi (Interfaces): Describe low vs. high GIMPLE.
+
 2006-02-19  Roger Sayle  <roger@eyesopen.com>
 	    Steven Bosscher  <stevenb.gcc@gmail.com>
 
