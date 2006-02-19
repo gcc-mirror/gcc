@@ -146,7 +146,7 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
     generate_error (&opp->common, ERROR_BAD_OPTION,
 		    "Cannot change RECL parameter in OPEN statement");
 
-  if (flags->action != ACTION_UNSPECIFIED && u->flags.access != flags->access)
+  if (flags->action != ACTION_UNSPECIFIED && u->flags.action != flags->action)
     generate_error (&opp->common, ERROR_BAD_OPTION,
 		    "Cannot change ACTION parameter in OPEN statement");
 
