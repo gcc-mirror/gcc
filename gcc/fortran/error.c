@@ -1,6 +1,6 @@
 /* Handle errors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -480,6 +480,22 @@ gfc_warning (const char *nocmsgid, ...)
   va_end (argp);
 
   error_char ('\0');
+}
+
+
+/* Whether, for a feature included in a given standard set (GFC_STD_*),
+   we should issue an error or a warning, or be quiet.  */
+
+notification
+gfc_notification_std (int std)
+{
+  bool warning;
+
+  warning = ((gfc_option.warn_std & std) != 0) && !inhibit_warnings;
+  if ((gfc_option.allow_std & std) != 0 && !warning)
+    return SILENT;
+
+  return warning ? WARNING : ERROR;
 }
 
 

@@ -129,6 +129,14 @@ typedef enum
 { SUCCESS = 1, FAILURE }
 try;
 
+/* This is returned by gfc_notification_std to know if, given the flags
+   that were given (-std=, -pedantic) we should issue an error, a warning
+   or nothing.  */
+
+typedef enum
+{ SILENT, WARNING, ERROR }
+notification;
+
 /* Matchers return one of these three values.  The difference between
    MATCH_NO and MATCH_ERROR is that MATCH_ERROR means that a match was
    successful, but that something non-syntactic is wrong and an error
@@ -1737,6 +1745,7 @@ void gfc_internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC
 void gfc_clear_error (void);
 int gfc_error_check (void);
 
+notification gfc_notification_std (int);
 try gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 
 /* A general purpose syntax error.  */
