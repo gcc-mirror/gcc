@@ -1,3 +1,9 @@
+2006-02-19  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/26350
+	* config/rs6000/rs6000.md (extenddftf2): Force 0.0 to validized
+	MEM for ABI_V4 pic.
+
 2006-02-18  Mark Wielaard  <mark@klomp.org>
 
 	* doc/contrib.texi (Contributors): Add classpath/libgcj hackers
