@@ -550,16 +550,113 @@ Environment variable forcing standard output to be line buffered (unix).
 
 The behaviour of the @command{gfortran} can be influenced by
 environment variables.
+
+Malformed environment variables are silently ignored.
+
 @menu
+* GFORTRAN_STDIN_UNIT:: Unit number for standard input
+* GFORTRAN_STDOUT_UNIT:: Unit number for standard output
+* GFORTRAN_STDERR_UNIT:: Unit number for standard error
+* GFORTRAN_USE_STDERR:: Send library output to standard error
+* GFORTRAN_TMPDIR:: Directory for scratch files
+* GFORTRAN_UNBUFFERED_ALL:: Don't buffer output
+* GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
+* GFORTRAN_OPTIONAL_PLUS:: Print leading + where permitted
+* GFORTRAN_DEFAULT_RECL:: Default record length for new files
+* GFORTRAN_LIST_SEPARATOR::  Separator for list output
 * GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
 @end menu
 
-@node GFORTRAN_CONVERT_UNIT
-@section GFORTRAN_CONVERT_UNIT --- Set endianness for unformatted I/O
+@node GFORTRAN_STDIN_UNIT
+@section @env{GFORTRAN_STDIN_UNIT}---Unit number for standard input
 
-By setting the @code{GFORTRAN_CONVERT_UNIT variable}, it is possible
+This environment variable can be used to select the unit number
+preconnected to standard input.  This must be a positive integer.
+The default value is 5.
+
+@node GFORTRAN_STDOUT_UNIT
+@section @env{GFORTRAN_STDOUT_UNIT}---Unit number for standard output
+
+This environment variable can be used to select the unit number
+preconnected to standard output.  This must be a positive integer.
+The default value is 6.
+
+@node GFORTRAN_STDERR_UNIT
+@section @env{GFORTRAN_STDERR_UNIT}---Unit number for standard error
+
+This environment variable can be used to select the unit number
+preconnected to standard error.  This must be a positive integer.
+The default value is 0.
+
+@node GFORTRAN_USE_STDERR
+@section @env{GFORTRAN_USE_STDERR}---Send library output to standard error
+
+This environment variable controls where library output is sent.
+If the first letter is @samp{y}, @samp{Y} or @samp{1}, standard
+error is used. If the first letter is @samp{n}, @samp{N} or
+@samp{0}, standard output is used.
+
+@node GFORTRAN_TMPDIR
+@section @env{GFORTRAN_TMPDIR}---Directory for scratch files
+
+This environment variable controls where scratch files are
+created.  If this environment variable is missing,
+gfortran searches for the environment variable @env{TMP}.  If
+this is also missing, the default is @file{/tmp}.
+
+@node GFORTRAN_UNBUFFERED_ALL
+@section @env{GFORTRAN_UNBUFFERED_ALL}---Don't buffer output
+
+This environment variable controls wether all output is unbuffered.
+If the first letter is @samp{y}, @samp{Y} or @samp{1}, all output is
+unbuffered. This will slow down large writes.  If the first letter is
+@samp{n}, @samp{N}  or @samp{0}, output is bufferred.  This is the
+default.
+
+@node GFORTRAN_SHOW_LOCUS
+@section @env{GFORTRAN_SHOW_LOCUS}---Show location for runtime errors
+
+If the first letter is @samp{y}, @samp{Y} or @samp{1}, filename and
+line numbers for runtime errors are printed.  If the first letter is
+@samp{n}, @samp{N} or @samp{0}, don't print filename and line numbers
+for runtime errors. The default is to print the location.
+
+@node GFORTRAN_OPTIONAL_PLUS
+@section @env{GFORTRAN_OPTIONAL_PLUS}---Print leading + where permitted
+
+If the first letter is @samp{y}, @samp{Y} or @samp{1},
+a plus sign is printed
+where permitted by the Fortran standard.  If the first lettter
+is @samp{n}, @samp{N} or @samp{0}, a plus sign is not printed
+in most cases. Default is not to print plus signs.
+
+@node GFORTRAN_DEFAULT_RECL
+@section @env{GFORTRAN_DEFAULT_RECL}---Default record length for new files
+
+This environment variable specifies the default record length for
+files which are opened without a @code{RECL} tag in the @code{OPEN}
+statement.  This must be a positive integer.  The default value is
+1073741824.
+
+@node GFORTRAN_LIST_SEPARATOR
+@section @env{GFORTRAN_LIST_SEPARATOR}---Separator for list output
+
+This environment variable specifies the separator when writing
+list-directed output.  It may contain any number of spaces and
+at most one comma.  If you specify this on the command line,
+be sure to quote spaces, as in
+@smallexample
+$ GFORTRAN_LIST_SEPARATOR='  ,  ' ./a.out
+@end smallexample
+when @code{a.out} is the gfortran program that you want to run.
+Default is a single space.
+
+@node GFORTRAN_CONVERT_UNIT
+@section @env{GFORTRAN_CONVERT_UNIT}---Set endianness for unformatted I/O
+
+By setting the @env{GFORTRAN_CONVERT_UNIT} variable, it is possible
 to change the representation of data for unformatted files.
-The syntax for the @code{GFORTRAN_CONVERT_UNIT} variable is:
+The syntax for the @env{GFORTRAN_CONVERT_UNIT} variable is:
 @smallexample
 GFORTRAN_CONVERT_UNIT: mode | mode ';' exception ;
 mode: 'native' | 'swap' | 'big_endian' | 'little_endian' ;
