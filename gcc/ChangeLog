@@ -1,3 +1,23 @@
+2006-02-19  Daniel Berlin  <dberlin@dberlin.org>
+
+	* doc/invoke.texi: Document -fipa-pta.
+	* common.opt: Add ipa-pta option.
+	* tree-ssa-structalias.c (DONT_PROPAGATE_WITH_ANYTHING): Removed.
+	(do_sd_constraint): Enable DONT_PROPAGATE_WITH_ANYTHING code.
+	(do_ds_constraint): Ditto.
+	(get_constraint_for): Only add to referenced_vars if
+	referenced_vars exists.
+	(insert_into_field_list): Rewrite to do this unsorted.
+	(insert_into_field_list_sorted): Rename old insert_into_field_list
+	to this.
+	(create_function_info_for): Use insert_into_field_list_sorted.
+	(create_variable_info_for): Rewrite so it uses unsorted version,
+	since the field list is sorted.
+	(intra_create_variable_infos): Only add to referenced_vars if
+	referenced_vars exists.
+	(ipa_pta_execute): Init heapvars, and delete when done.
+	* passes.c (init_optimization_passes): Add call to pass_ipa_pta.
+
 2006-02-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/install.texi: Add missing `@samp'.

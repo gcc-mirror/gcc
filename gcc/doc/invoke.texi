@@ -343,7 +343,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
--ftree-vect-loop-version -ftree-salias -fweb @gol
+-ftree-vect-loop-version -ftree-salias -fipa-pta -fweb @gol
 -ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop -fwhole-program @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
@@ -5032,6 +5032,9 @@ default at @option{-O2} and higher.
 @item -ftree-salias
 Perform structural alias analysis on trees.  This flag
 is enabled by default at @option{-O} and higher.
+
+@item -fipa-pta
+Perform interprocedural pointer analysis.
 
 @item -ftree-sink
 Perform forward store motion  on trees.  This flag is
