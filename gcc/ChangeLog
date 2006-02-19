@@ -1,3 +1,8 @@
+2006-02-19  Roger Sayle  <roger@eyesopen.com>
+
+	* gthr-posix.h: On Tru64, map __gthr_foo as a weak reference to
+	__foo and not foo when _PTHREAD_USE_MANGLED_NAMES_ is defined.
+
 2006-02-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/xcoff.h (TARGET_ASM_OUTPUT_ANCHOR): Define.
