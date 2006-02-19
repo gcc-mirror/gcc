@@ -625,6 +625,7 @@ static void rs6000_elf_encode_section_info (tree, rtx, int)
 #endif
 static bool rs6000_use_blocks_for_constant_p (enum machine_mode, rtx);
 #if TARGET_XCOFF
+static void rs6000_xcoff_asm_output_anchor (rtx);
 static void rs6000_xcoff_asm_globalize_label (FILE *, const char *);
 static void rs6000_xcoff_asm_init_sections (void);
 static void rs6000_xcoff_asm_named_section (const char *, unsigned int, tree);
@@ -18219,6 +18220,16 @@ rs6000_elf_end_indicate_exec_stack (void)
 #endif
 
 #if TARGET_XCOFF
+static void
+rs6000_xcoff_asm_output_anchor (rtx symbol)
+{
+  char buffer[100];
+
+  sprintf (buffer, "$ + " HOST_WIDE_INT_PRINT_DEC,
+	   SYMBOL_REF_BLOCK_OFFSET (symbol));
+  ASM_OUTPUT_DEF (asm_out_file, XSTR (symbol, 0), buffer);
+}
+
 static void
 rs6000_xcoff_asm_globalize_label (FILE *stream, const char *name)
 {

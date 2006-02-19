@@ -1,3 +1,8 @@
+2006-02-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (TARGET_ASM_OUTPUT_ANCHOR): Define.
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_output_anchor): Define.
+
 2006-02-19  Daniel Berlin  <dberlin@dberlin.org>
 
 	* doc/invoke.texi: Document -fipa-pta.
@@ -32,13 +37,13 @@
 	* doc/contrib.texi (Contributors): Add classpath/libgcj hackers
 	who added new 4.1 features, bug fixes and integration support.
 
-2005-02-18  David Edelsohn  <edelsohn@gnu.org>
+2006-02-18  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/26350
 	* config/rs6000/rs6000.md (extenddftf2): Force 0.0 to validized
 	MEM for ABI_V4 pic.
 
-2005-02-18  Richard Sandiford  <richard@codesourcery.com>
+2006-02-18  Richard Sandiford  <richard@codesourcery.com>
 
 	* cselib.c (cselib_init): Change RTX_SIZE to RTX_CODE_SIZE.
 	* emit-rtl.c (copy_rtx_if_shared_1): Use shallow_copy_rtx.
