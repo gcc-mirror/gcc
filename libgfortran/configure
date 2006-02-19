@@ -2998,6 +2998,9 @@ if test "x$GCC" = "xyes"; then
   ## We like to use C99 routines when available.  This makes sure that
   ## __STDC_VERSION__ is set such that libc includes make them available.
   AM_CFLAGS="-std=gnu99 -Wall -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wextra -Wwrite-strings"
+  ## Compile the following tests with the same system header contents
+  ## that we'll encounter when compiling our own source files.
+  CFLAGS="-std=gnu99 $CFLAGS"
 fi
 
 
@@ -4149,7 +4152,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4152 "configure"' > conftest.$ac_ext
+  echo '#line 4155 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4539,7 +4542,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4542:" \
+echo "$as_me:4545:" \
      "checking for Fortran compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
