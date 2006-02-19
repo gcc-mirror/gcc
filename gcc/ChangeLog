@@ -1,3 +1,8 @@
+2006-02-18  Mark Wielaard  <mark@klomp.org>
+
+	* doc/contrib.texi (Contributors): Add classpath/libgcj hackers
+	who added new 4.1 features, bug fixes and integration support.
+
 2005-02-18  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/26350
