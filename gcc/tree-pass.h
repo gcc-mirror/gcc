@@ -68,8 +68,6 @@ enum tree_dump_index
 #define TDF_STMTADDR	(1 << 12)	/* Address of stmt.  */
 
 #define TDF_GRAPH	(1 << 13)	/* a graph dump is being emitted */
-#define TDF_CHAIN	(1 << 14)	/* Follow TREE_CHAIN when
-					   dumping *_DECLs.  */
 
 extern char *get_dump_file_name (enum tree_dump_index);
 extern int dump_enabled_p (enum tree_dump_index);

@@ -1,4 +1,12 @@
-2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-02-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/25879
+	* tree-pretty-print.c (debug_tree_chain): Walk the chains.
+	(dump_decl_name): Do not walk the decl tree chains.
+	* tree-pass.h (TDF_CHAIN): Remove.
+
+2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
 	* Makefile.in (C): Remove
 	(PROTO): Remove
 	(.PHONY): Remove C and PROTO
