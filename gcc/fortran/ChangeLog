@@ -1,3 +1,9 @@
+2006-02-20  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-stmt.c (gfc_trans_where_assign): Remove code to handle
+	traversing a linked list of MASKs.  The MASK is now always a
+	single element requiring no ANDing during the assignment.
+
 2006-02-19  Thomas Koenig  <Thomas.Koenig@online.de>
 
         * gfortran.texi:  Document environment variables which
