@@ -1,3 +1,65 @@
+2006-02-20  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-chrec.c (eq_evolutions_p): New.
+	* tree-chrec.h (eq_evolutions_p): Declared.
+	* tree-data-ref.c: Fix formatting.
+	(datadep_stats, dependence_stats): New.
+	(gcd): Moved...
+	(print_direction_vector): New.
+	(dump_data_dependence_relation): Use print_direction_vector.
+	(object_analysis, create_data_ref): Handle COMPONENT_REF.
+	(compute_subscript_distance): Static.
+	(initialize_data_dependence_relation): Static.  Get the number
+	of loops surrounding the references from the callers, and initialize
+	DDR_SIZE_VECT to nb_loops.  Use both base_addr_differ_p and
+	base_object_differ_p analyzers.
+	(analyze_ziv_subscript, analyze_siv_subscript_cst_affine, 
+	compute_overlap_steps_for_affine_1_2,
+	analyze_subscript_affine_affine): Count the classified dependences.
+	Print a message when a test failed.
+	(can_use_analyze_subscript_affine_affine): New.	
+	(analyze_siv_subscript): Compute the data dependences on symbolic
+	scevs that verify can_use_analyze_subscript_affine_affine.
+	(chrec_steps_divide_constant_p): Returns true, false, or unknown.
+	(analyze_miv_subscript): Update use of chrec_steps_divide_constant_p.
+	Handle symbolic scevs.
+	(analyze_overlapping_iterations): Let symbolic affine scevs to be
+	analyzed.
+	(subscript_dependence_tester): Moved...
+	(build_classic_dist_vector, build_classic_dir_vector): Don't use 
+	lambda_vector_clear on newly allocated vectors.  Get nb_loops from
+	DDR_SIZE_VECT instead of getting it in parameter.
+	(subscript_dependence_tester): ... here.  Take as a parameter 
+	loop_nest_depth.  Call build_classic_dist_vector and
+	build_classic_dir_vector.
+	(compute_affine_dependence): Update subscript_dependence_tester 
+	parameters.  Update datadep_stats counters.  Call 
+	compute_subscript_distance.
+	(compute_self_dependence): Save the dist and dir vectors.  Call 
+	compute_subscript_distance.
+	(ddr_p, DEF_VEC_P(ddr_p), DEF_VEC_ALLOC_P(ddr_p,heap)): Moved...
+	(compute_all_dependences): Reorder parameters as they were before
+	conversion to VEC.  Pass nb_loops and loop_nest_depth.  Don't call
+	compute_subscript_distance.  Update the use of 
+	compute_affine_dependence and initialize_data_dependence_relation.
+	(find_data_references_in_loop): Handle COMPONENT_REF.
+	(compute_data_dependences_for_loop): Initialize dependence_stats.
+	Don't call build_classic_dist_vector and build_classic_dir_vector.
+	Update the parameters of initialize_data_dependence_relation and 
+	compute_all_dependences.  Print the statistics from datadep_stats.
+	(analyze_all_data_dependences): Static.  Not used until the pass for
+	checking the data dependences is contributed.
+	* tree-data-ref.h (ddr_p, DEF_VEC_P(ddr_p),
+	DEF_VEC_ALLOC_P(ddr_p,heap)): ... here.
+	(initialize_data_dependence_relation, compute_affine_dependence, 
+	analyze_all_data_dependences, compute_subscript_distance): Removed.
+	(print_direction_vector): New.
+	* lambda.h (gcd): ... here.
+	(lambda_vector_gcd): Moved here from gcd_vector.
+	* lambda-code.c (gcd, gcd_vector): Removed.
+	(lambda_compute_target_space): Use lambda_vector_gcd.  Fix formatting.
+	* Makefile.in (tree-vect-patterns.o): Depends on TREE_DATA_REF_H.
+
 2006-02-20  Diego Novillo  <dnovillo@redhat.com>
 
 	* ipa-type-escape.c: Tidy some comments and white space.

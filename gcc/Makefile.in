@@ -2057,7 +2057,7 @@ tree-vect-analyze.o: tree-vect-analyze.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 tree-vect-patterns.o: tree-vect-patterns.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) errors.h $(GGC_H) $(OPTABS_H) $(TREE_H) $(RTL_H) $(BASIC_BLOCK_H) \
    diagnostic.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) cfgloop.h \
-   tree-vectorizer.h tree-data-ref.h $(EXPR_H)
+   tree-vectorizer.h $(TREE_DATA_REF_H) $(EXPR_H)
 tree-vect-transform.o: tree-vect-transform.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(OPTABS_H) $(RECOG_H) $(TREE_H) $(RTL_H) \
    $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \

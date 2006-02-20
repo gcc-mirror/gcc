@@ -1,6 +1,6 @@
 /* Chains of recurrences.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
-   Contributed by Sebastian Pop <s.pop@laposte.net>
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
 
@@ -82,6 +82,7 @@ extern tree reset_evolution_in_loop (unsigned, tree, tree);
 extern tree chrec_merge (tree, tree);
 
 /* Observers.  */
+extern bool eq_evolutions_p (tree, tree);
 extern bool is_multivariate_chrec (tree);
 extern bool chrec_is_positive (tree, bool *);
 extern bool chrec_contains_symbols (tree);
