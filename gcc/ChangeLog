@@ -1,3 +1,8 @@
+2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+	* Makefile.in (C): Remove
+	(PROTO): Remove
+	(.PHONY): Remove C and PROTO
+
 2006-02-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26236

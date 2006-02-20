@@ -82,10 +82,10 @@ ada/b_gnatb.o-warn = -Wno-error
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # Define the names for selecting Ada in LANGUAGES.
-Ada ada: gnat1$(exeext) gnatbind$(exeext)
+ada: gnat1$(exeext) gnatbind$(exeext)
 
 # Tell GNU Make to ignore these, if they exist.
-.PHONY: Ada ada
+.PHONY: ada
 
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.

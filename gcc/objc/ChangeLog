@@ -1,3 +1,9 @@
+2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+	* Make-lang.in (OBJC): Remove
+	(OBJECTIVE-C): Remove
+	(objective-c): Remove
+	(.PHONY): Remove objective-c and ObjC
+
 2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/25360

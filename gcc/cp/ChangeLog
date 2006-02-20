@@ -1,3 +1,7 @@
+2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+	* Make-lang.in (C++): Remove
+	(.PHONY): Remove C++
+
 2006-02-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26266

@@ -68,9 +68,9 @@ treelang/lex.o-warn = -Wno-error
 #
 # Define the names for selecting treelang in LANGUAGES.
 
-.phony: treelang TREELANG
+.phony: treelang
 
-treelang TREELANG:treelang.done
+treelang:treelang.done
 
 treelang.done: gtreelang$(exeext) tree1$(exeext)
 	$(STAMP) treelang.done

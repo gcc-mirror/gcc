@@ -1,3 +1,7 @@
+2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+	* Make-lang.in (FORTRAN): Remove
+	(.PHONY): Remove F95 and f95. Add fortran
+
 2006-02-20  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-stmt.c (gfc_trans_where_2): Avoid updating unused current

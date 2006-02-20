@@ -1,3 +1,7 @@
+2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+	* Make-lang.in (OBJ-C++): Remove
+	(.PHONY): Remove Obj-c++ and obj-C++. Add obj-c++
+
 2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* Make-lang.in (objcp/objcp-decl.o): Add depends on $(EXPR_H).

@@ -1,3 +1,7 @@
+2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+	* Make-lang.in (.phony): Remove TREELANG
+	(TREELANG): Remove
+
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* spec.c (lang_specific_driver): Update copyright notice date.

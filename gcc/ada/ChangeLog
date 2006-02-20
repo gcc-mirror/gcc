@@ -1,3 +1,7 @@
+2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+	* Make-lang.in (Ada): Remove
+	(.PHONY): Remove Ada
+
 2006-02-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Find_Boolean_Types): If one of the operands is an
