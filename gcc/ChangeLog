@@ -1,3 +1,10 @@
+2006-02-20  Angel Nunez Mencias  <anunez@de.ibm.com>
+
+	* config/s390/s390.c (legitimize_pic_address): Assertions checking
+	for non tls symbols added.
+	(legitimize_address): Do nothing for PLUS expressions if one of the
+	addends is a tls symbol reference.
+
 2006-02-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/25476
