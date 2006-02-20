@@ -1,5 +1,5 @@
 /*  Loop transformation code generation
-    Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+    Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
     Contributed by Daniel Berlin <dberlin@dberlin.org>
 
     This file is part of GCC.
@@ -441,45 +441,6 @@ lambda_lattice_compute_base (lambda_loopnest nest)
   return ret;
 }
 
-/* Compute the greatest common denominator of two numbers (A and B) using
-   Euclid's algorithm.  */
-
-static int
-gcd (int a, int b)
-{
-
-  int x, y, z;
-
-  x = abs (a);
-  y = abs (b);
-
-  while (x > 0)
-    {
-      z = y % x;
-      y = x;
-      x = z;
-    }
-
-  return (y);
-}
-
-/* Compute the greatest common denominator of a VECTOR of SIZE numbers.  */
-
-static int
-gcd_vector (lambda_vector vector, int size)
-{
-  int i;
-  int gcd1 = 0;
-
-  if (size > 0)
-    {
-      gcd1 = vector[0];
-      for (i = 1; i < size; i++)
-	gcd1 = gcd (gcd1, vector[i]);
-    }
-  return gcd1;
-}
-
 /* Compute the least common multiple of two numbers A and B .  */
 
 static int
@@ -848,7 +809,7 @@ lambda_compute_target_space (lambda_loopnest auxillary_nest,
       LN_LOOPS (target_nest)[i] = target_loop;
 
       /* Computes the gcd of the coefficients of the linear part.  */
-      gcd1 = gcd_vector (target[i], i);
+      gcd1 = lambda_vector_gcd (target[i], i);
 
       /* Include the denominator in the GCD.  */
       gcd1 = gcd (gcd1, determinant);
@@ -911,9 +872,9 @@ lambda_compute_target_space (lambda_loopnest auxillary_nest,
 	    }
 	  /* Find the gcd and divide by it here, rather than doing it
 	     at the tree level.  */
-	  gcd1 = gcd_vector (LLE_COEFFICIENTS (target_expr), depth);
-	  gcd2 = gcd_vector (LLE_INVARIANT_COEFFICIENTS (target_expr),
-			     invariants);
+	  gcd1 = lambda_vector_gcd (LLE_COEFFICIENTS (target_expr), depth);
+	  gcd2 = lambda_vector_gcd (LLE_INVARIANT_COEFFICIENTS (target_expr),
+				    invariants);
 	  gcd1 = gcd (gcd1, gcd2);
 	  gcd1 = gcd (gcd1, LLE_CONSTANT (target_expr));
 	  gcd1 = gcd (gcd1, LLE_DENOMINATOR (target_expr));
@@ -967,9 +928,9 @@ lambda_compute_target_space (lambda_loopnest auxillary_nest,
 	    }
 	  /* Find the gcd and divide by it here, instead of at the
 	     tree level.  */
-	  gcd1 = gcd_vector (LLE_COEFFICIENTS (target_expr), depth);
-	  gcd2 = gcd_vector (LLE_INVARIANT_COEFFICIENTS (target_expr),
-			     invariants);
+	  gcd1 = lambda_vector_gcd (LLE_COEFFICIENTS (target_expr), depth);
+	  gcd2 = lambda_vector_gcd (LLE_INVARIANT_COEFFICIENTS (target_expr),
+				    invariants);
 	  gcd1 = gcd (gcd1, gcd2);
 	  gcd1 = gcd (gcd1, LLE_CONSTANT (target_expr));
 	  gcd1 = gcd (gcd1, LLE_DENOMINATOR (target_expr));

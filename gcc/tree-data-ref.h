@@ -1,6 +1,6 @@
 /* Data references and dependences detectors. 
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
-   Contributed by Sebastian Pop <s.pop@laposte.net>
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
 
@@ -228,6 +228,10 @@ struct data_dependence_relation
   VEC(lambda_vector,heap) *dist_vects;
 };
 
+typedef struct data_dependence_relation *ddr_p;
+DEF_VEC_P(ddr_p);
+DEF_VEC_ALLOC_P(ddr_p,heap);
+
 #define DDR_A(DDR) DDR->a
 #define DDR_B(DDR) DDR->b
 #define DDR_AFFINE_P(DDR) DDR->affine_p
@@ -253,13 +257,9 @@ struct data_dependence_relation
 
 
 extern tree find_data_references_in_loop (struct loop *, varray_type *);
-extern struct data_dependence_relation *initialize_data_dependence_relation 
-(struct data_reference *, struct data_reference *);
-extern void compute_affine_dependence (struct data_dependence_relation *);
-extern void analyze_all_data_dependences (struct loops *);
 extern void compute_data_dependences_for_loop (struct loop *, bool,
 					       varray_type *, varray_type *);
-
+extern void print_direction_vector (FILE *, lambda_vector, int);
 extern void dump_subscript (FILE *, struct subscript *);
 extern void dump_ddrs (FILE *, varray_type);
 extern void dump_dist_dir_vectors (FILE *, varray_type);
@@ -273,10 +273,8 @@ extern void dump_data_dependence_direction (FILE *,
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (varray_type);
 extern void free_data_refs (varray_type);
-extern void compute_subscript_distance (struct data_dependence_relation *);
 extern struct data_reference *analyze_array (tree, tree, bool);
 extern void estimate_iters_using_array (tree, tree);
-
 
 
 

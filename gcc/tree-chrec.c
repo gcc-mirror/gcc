@@ -1,6 +1,6 @@
 /* Chains of recurrences.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
-   Contributed by Sebastian Pop <s.pop@laposte.net>
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
 
@@ -1232,3 +1232,32 @@ chrec_type (tree chrec)
   
   return TREE_TYPE (chrec);
 }
+
+/* Returns true when CHREC0 == CHREC1.  */
+
+bool 
+eq_evolutions_p (tree chrec0, 
+		 tree chrec1)
+{
+  if (chrec0 == NULL_TREE
+      || chrec1 == NULL_TREE
+      || TREE_CODE (chrec0) != TREE_CODE (chrec1))
+    return false;
+
+  if (chrec0 == chrec1)
+    return true;
+
+  switch (TREE_CODE (chrec0))
+    {
+    case INTEGER_CST:
+      return integer_zerop (fold (build2 (MINUS_EXPR, TREE_TYPE (chrec0), 
+					 chrec0, chrec1)));
+    case POLYNOMIAL_CHREC:
+      return (CHREC_VARIABLE (chrec0) == CHREC_VARIABLE (chrec1)
+	      && eq_evolutions_p (CHREC_LEFT (chrec0), CHREC_LEFT (chrec1))
+	      && eq_evolutions_p (CHREC_RIGHT (chrec0), CHREC_RIGHT (chrec1)));
+    default:
+      return false;
+    }  
+}
+
