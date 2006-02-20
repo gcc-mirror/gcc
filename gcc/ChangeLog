@@ -1,3 +1,9 @@
+2006-02-19  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19543
+	* varasm.c (compare_constant) <INTEGER_CST>: Integer constants are
+	only equivalent if the have both the same mode and precision.
+
 2006-02-20  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/tree-ssa.texi (Interfaces): Describe low vs. high GIMPLE.

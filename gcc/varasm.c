@@ -2573,6 +2573,8 @@ compare_constant (const tree t1, const tree t2)
       /* Integer constants are the same only if the same width of type.  */
       if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
 	return 0;
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+	return 0;
       return tree_int_cst_equal (t1, t2);
 
     case REAL_CST:
