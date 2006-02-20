@@ -1,3 +1,8 @@
+2006-02-20  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/return_fl2.c (return_fl): Remove static
+	declaration to avoid a false negative on ix86. See PR323.
+
 2006-02-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (ffi_closure_helper_SYSV): Remove unused variable

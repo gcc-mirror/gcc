@@ -7,7 +7,7 @@
 /* { dg-do run } */
 #include "ffitest.h"
 
-static float return_fl(float fl1, float fl2, float fl3, float fl4)
+float return_fl(float fl1, float fl2, float fl3, float fl4)
 {
   return fl1 + fl2 + fl3 + fl4;
 }
