@@ -1050,9 +1050,10 @@ swap_tree_operands (tree stmt, tree *exp0, tree *exp1)
   *exp1 = op0;
 }
 
-/* Recursively scan the expression pointed to by EXPR_P in statement referred
-   to by INFO.  FLAGS is one of the OPF_* constants modifying how to interpret
-   the operands found.  */
+
+/* Recursively scan the expression pointed to by EXPR_P in statement
+   referred to by INFO.  FLAGS is one of the OPF_* constants modifying
+   how to interpret the operands found.  */
 
 static void
 get_expr_operands (tree stmt, tree *expr_p, int flags)
@@ -1072,22 +1073,22 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     {
     case ADDR_EXPR:
       /* Taking the address of a variable does not represent a
-	 reference to it, but the fact that the stmt takes its address will be
-	 of interest to some passes (e.g. alias resolution).  */
-      add_to_addressable_set (TREE_OPERAND (expr, 0),
-			      &s_ann->addresses_taken);
+	 reference to it, but the fact that the statement takes its
+	 address will be of interest to some passes (e.g. alias
+	 resolution).  */
+      add_to_addressable_set (TREE_OPERAND (expr, 0), &s_ann->addresses_taken);
 
-      /* If the address is invariant, there may be no interesting variable
-	 references inside.  */
+      /* If the address is invariant, there may be no interesting
+	 variable references inside.  */
       if (is_gimple_min_invariant (expr))
 	return;
 
-      /* There should be no VUSEs created, since the referenced objects are
-	 not really accessed.  The only operands that we should find here
-	 are ARRAY_REF indices which will always be real operands (GIMPLE
-	 does not allow non-registers as array indices).  */
+      /* Otherwise, there may be variables referenced inside but there
+	 should be no VUSEs created, since the referenced objects are
+	 not really accessed.  The only operands that we should find
+	 here are ARRAY_REF indices which will always be real operands
+	 (GIMPLE does not allow non-registers as array indices).  */
       flags |= opf_no_vops;
-
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
       return;
 
@@ -1095,7 +1096,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case STRUCT_FIELD_TAG:
     case TYPE_MEMORY_TAG:
     case NAME_MEMORY_TAG:
-
      add_stmt_operand (expr_p, s_ann, flags);
      return;
 
@@ -1105,9 +1105,9 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       {
 	subvar_t svars;
 	
-	/* Add the subvars for a variable if it has subvars, to DEFS or USES.
-	   Otherwise, add the variable itself.  
-	   Whether it goes to USES or DEFS depends on the operand flags.  */
+	/* Add the subvars for a variable if it has subvars, to DEFS
+	   or USES.  Otherwise, add the variable itself.  Whether it
+	   goes to USES or DEFS depends on the operand flags.  */
 	if (var_can_have_subvars (expr)
 	    && (svars = get_subvars_for_var (expr)))
 	  {
@@ -1116,11 +1116,11 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	      add_stmt_operand (&sv->var, s_ann, flags);
 	  }
 	else
-	  {
-	    add_stmt_operand (expr_p, s_ann, flags);
-	  }
+	  add_stmt_operand (expr_p, s_ann, flags);
+
 	return;
       }
+
     case MISALIGNED_INDIRECT_REF:
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
       /* fall through */
@@ -1139,9 +1139,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       /* Treat array references as references to the virtual variable
 	 representing the array.  The virtual variable for an ARRAY_REF
 	 is the VAR_DECL for the array.  */
-
-      /* Add the virtual variable for the ARRAY_REF to VDEFS or VUSES
-	 according to the value of IS_DEF.  */
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
@@ -1156,30 +1153,33 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	tree ref;
 	HOST_WIDE_INT offset, size, maxsize;
 	bool none = true;
- 	/* This component ref becomes an access to all of the subvariables
-	   it can touch,  if we can determine that, but *NOT* the real one.
-	   If we can't determine which fields we could touch, the recursion
-	   will eventually get to a variable and add *all* of its subvars, or
-	   whatever is the minimum correct subset.  */
 
+	/* This component reference becomes an access to all of the
+	   subvariables it can touch, if we can determine that, but
+	   *NOT* the real one.  If we can't determine which fields we
+	   could touch, the recursion will eventually get to a
+	   variable and add *all* of its subvars, or whatever is the
+	   minimum correct subset.  */
 	ref = get_ref_base_and_extent (expr, &offset, &size, &maxsize);
 	if (SSA_VAR_P (ref) && get_subvars_for_var (ref))
-	  {	  
-	    subvar_t svars = get_subvars_for_var (ref);
+	  {
 	    subvar_t sv;
+	    subvar_t svars = get_subvars_for_var (ref);
+
 	    for (sv = svars; sv; sv = sv->next)
 	      {
 		bool exact;		
+
 		if (overlap_subvar (offset, maxsize, sv->var, &exact))
 		  {
 	            int subvar_flags = flags;
 		    none = false;
-		    if (!exact
-			|| size != maxsize)
+		    if (!exact || size != maxsize)
 		      subvar_flags &= ~opf_kill_def;
 		    add_stmt_operand (&sv->var, s_ann, subvar_flags);
 		  }
 	      }
+
 	    if (!none)
 	      flags |= opf_no_vops;
 	  }
@@ -1193,7 +1193,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	/* Even if we found subvars above we need to ensure to see
 	   immediate uses for d in s.a[d].  In case of s.a having
 	   a subvar we'd miss it otherwise.  */
-	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), 
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 0),
 			   flags & ~opf_kill_def);
 	
 	if (code == COMPONENT_REF)
@@ -1208,8 +1208,10 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
             get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
             get_expr_operands (stmt, &TREE_OPERAND (expr, 3), opf_none);
 	  }
+
 	return;
       }
+
     case WITH_SIZE_EXPR:
       /* WITH_SIZE_EXPR is a pass-through reference to its first argument,
 	 and an rvalue reference to its second argument.  */
@@ -1368,10 +1370,9 @@ get_asm_expr_operands (tree stmt)
 
   for (link = ASM_INPUTS (stmt); link; link = TREE_CHAIN (link))
     {
-      constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
       parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-	  oconstraints, &allows_mem, &allows_reg);
+			      oconstraints, &allows_mem, &allows_reg);
 
       /* Memory operands are addressable.  Note that STMT needs the
 	 address of this operand.  */
@@ -1428,17 +1429,21 @@ get_asm_expr_operands (tree stmt)
 
 /* A subroutine of get_expr_operands to handle INDIRECT_REF,
    ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.  
-   STMT is the statement being processed, EXPR is the INDIRECT_REF
-   that got us here.  FLAGS is as in get_expr_operands.
-   FULL_REF contains the full pointer dereference expression, if we
-   have it, or NULL otherwise.
-   OFFSET and SIZE are the location of the access inside the
-   dereferenced pointer, if known.
-   RECURSE_ON_BASE should be set to true if we want to continue
-   calling get_expr_operands on the base pointer, and false if
-   something else will do it for us.
 
-*/
+   STMT is the statement being processed, EXPR is the INDIRECT_REF
+      that got us here.
+   
+   FLAGS is as in get_expr_operands.
+
+   FULL_REF contains the full pointer dereference expression, if we
+      have it, or NULL otherwise.
+
+   OFFSET and SIZE are the location of the access inside the
+      dereferenced pointer, if known.
+
+   RECURSE_ON_BASE should be set to true if we want to continue
+      calling get_expr_operands on the base pointer, and false if
+      something else will do it for us.  */
 
 static void
 get_indirect_ref_operands (tree stmt, tree expr, int flags,
@@ -1496,24 +1501,26 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 				 full_ref, offset, size, false);
 	}
     }
-
-  /* If a constant is used as a pointer, we can't generate a real
-     operand for it but we mark the statement volatile to prevent
-     optimizations from messing things up.  */
   else if (TREE_CODE (ptr) == INTEGER_CST)
     {
+      /* If a constant is used as a pointer, we can't generate a real
+	 operand for it but we mark the statement volatile to prevent
+	 optimizations from messing things up.  */
       if (s_ann)
 	s_ann->has_volatile_ops = true;
       return;
     }
-  /* Ok, this isn't even is_gimple_min_invariant.  Something's broke.  */
   else
-    gcc_unreachable ();
+    {
+      /* Ok, this isn't even is_gimple_min_invariant.  Something's broke.  */
+      gcc_unreachable ();
+    }
 
-  /* Add a USE operand for the base pointer.  */
+  /* If requested, add a USE operand for the base pointer.  */
   if (recurse_on_base)
     get_expr_operands (stmt, pptr, opf_none);
 }
+
 
 /* A subroutine of get_expr_operands to handle TARGET_MEM_REF.  */
 
@@ -1566,6 +1573,7 @@ get_tmr_operands (tree stmt, tree expr, int flags)
 	}
     }
 }
+
 
 /* A subroutine of get_expr_operands to handle CALL_EXPR.  */
 
@@ -1626,12 +1634,13 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 
   /* If ALIAS is an SFT, it can't be touched if the offset     
      and size of the access is not overlapping with the SFT offset and
-     size.    This is only true if we are accessing through a pointer
+     size.  This is only true if we are accessing through a pointer
      to a type that is the same as SFT_PARENT_VAR.  Otherwise, we may
      be accessing through a pointer to some substruct of the
      structure, and if we try to prune there, we will have the wrong
      offset, and get the wrong answer.
      i.e., we can't prune without more work if we have something like
+
      struct gcc_target
      {
        struct asm_out
@@ -1649,9 +1658,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 
      SFT.1, which represents hi, will have SFT_OFFSET=32 because in
      terms of SFT_PARENT_VAR, that is where it is.
-     However, the access through the foo pointer will be at offset 0.
-  */
-
+     However, the access through the foo pointer will be at offset 0.  */
   if (size != -1
       && TREE_CODE (alias) == STRUCT_FIELD_TAG
       && base
@@ -1672,12 +1679,12 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
      through a pointer to touch a random variable, unless that
      variable *is* a structure or a pointer.
 
-     
-     IE given p->c, and some random global variable b,
+     That is, given p->c, and some random global variable b,
      there is no legal way that p->c could be an access to b.
      
      Without strict aliasing on, we consider it legal to do something
      like:
+
      struct foos { int l; };
      int foo;
      static struct foos *getfoo(void);
@@ -1695,7 +1702,6 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
      
      (taken from 20000623-1.c)
   */
-
   else if (ref 
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
@@ -1717,7 +1723,6 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   /* If the offset of the access is greater than the size of one of
      the possible aliases, it can't be touching that alias, because it
      would be past the end of the structure.  */
-
   else if (ref
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
@@ -1737,11 +1742,12 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 #endif
       return false;
     }	   
+
   return true;
 }
 
 
-/* Add VAR to the virtual operands array. FLAGS is as in
+/* Add VAR to the virtual operands array.  FLAGS is as in
    get_expr_operands.  FULL_REF is a tree that contains the entire
    pointer dereference expression, if available, or NULL otherwise.
    OFFSET and SIZE come from the memory access expression that
@@ -1771,8 +1777,8 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
      check that this only happens on non-specific stores.
 
      Note that if this is a specific store, i.e. associated with a
-     modify_expr, then we can't suppress the V_DEF, lest we run into
-     validation problems.
+     modify_expr, then we can't suppress the V_MAY_DEF, lest we run
+     into validation problems.
 
      This can happen when programs cast away const, leaving us with a
      store to read-only memory.  If the statement is actually executed
@@ -1796,12 +1802,10 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	{
 	  if (flags & opf_kill_def)
 	    {
-	      /* Only regular variables or struct fields may get a
-		 V_MUST_DEF operand.  */
-	      gcc_assert (!MTAG_P (var)
-			  || TREE_CODE (var) == STRUCT_FIELD_TAG);
 	      /* V_MUST_DEF for non-aliased, non-GIMPLE register 
 		 variable definitions.  */
+	      gcc_assert (!MTAG_P (var)
+			  || TREE_CODE (var) == STRUCT_FIELD_TAG);
 	      append_v_must_def (var);
 	    }
 	  else
@@ -1926,6 +1930,7 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
     add_virtual_operand (var, s_ann, flags, NULL_TREE, 0, -1, false);
 }
 
+
 /* Add the base address of REF to the set *ADDRESSES_TAKEN.  If
    *ADDRESSES_TAKEN is NULL, a new set is created.  REF may be
    a single variable whose address has been taken or any other valid
@@ -1970,6 +1975,7 @@ add_to_addressable_set (tree ref, bitmap *addresses_taken)
     }
 }
 
+
 /* Add clobbering definitions for .GLOBAL_VAR or for each of the call
    clobbered variables in the function.  */
 
@@ -1997,7 +2003,6 @@ add_call_clobber_ops (tree stmt, tree callee)
   /* Get info for local and module level statics.  There is a bit
      set for each static if the call being processed does not read
      or write that variable.  */
-
   not_read_b = callee ? ipa_reference_get_not_read_global (callee) : NULL; 
   not_written_b = callee ? ipa_reference_get_not_written_global (callee) : NULL; 
   /* Add a V_MAY_DEF operand for every call clobbered variable.  */
@@ -2011,7 +2016,6 @@ add_call_clobber_ops (tree stmt, tree callee)
       
       /* Not read and not written are computed on regular vars, not
 	 subvars, so look at the parent var if this is an SFT. */
-
       if (TREE_CODE (var) == STRUCT_FIELD_TAG)
 	real_var = SFT_PARENT_VAR (var);
 
@@ -2144,7 +2148,9 @@ verify_imm_links (FILE *f, tree var)
 
       prev = ptr;
       ptr = ptr->next;
-      /* Avoid infinite loops.  50,000,000 uses probably indicates a problem.  */
+
+      /* Avoid infinite loops.  50,000,000 uses probably indicates a
+	 problem.  */
       if (count++ > 50000000)
 	goto error;
     }
@@ -2210,6 +2216,7 @@ dump_immediate_uses_for (FILE *file, tree var)
   fprintf(file, "\n");
 }
 
+
 /* Dump all the immediate uses to FILE.  */
 
 void
@@ -2244,4 +2251,5 @@ debug_immediate_uses_for (tree var)
 {
   dump_immediate_uses_for (stderr, var);
 }
+
 #include "gt-tree-ssa-operands.h"
