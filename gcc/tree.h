@@ -2310,9 +2310,14 @@ struct tree_memory_tag GTY(())
 {
   struct tree_decl_minimal common;
   unsigned int is_global:1;
+  unsigned int is_used_alone:1;
 };
 
 #define MTAG_GLOBAL(NODE) (TREE_MEMORY_TAG_CHECK (NODE)->mtag.is_global)
+
+/* This flag is true if a TMT is used as the vdef or vuse operand directly,
+   because the access had all of the TMT's aliases pruned from it.  */
+#define TMT_USED_ALONE(NODE) (TYPE_MEMORY_TAG_CHECK (NODE)->mtag.is_used_alone)
 
 struct tree_struct_field_tag GTY(())
 {

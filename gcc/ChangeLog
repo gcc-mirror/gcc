@@ -1,3 +1,24 @@
+2006-02-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.h (struct tree_memory_tag): Add is_used_alone member.
+	(TMT_USED_ALONE): New macro.
+	* tree-pass.h (PROP_tmt_usage): New property.
+	(TODO_update_tmt_usage): New todo.
+	* tree-ssa-alias.c (updating_used_alone): New variable.
+	(recalculate_used_alone): New function.	  
+	(compute_may_aliases): Set updating_used_alone, call
+	recalculate_used_alone. 
+	* tree-sra.c (pass_sra): Note that this pass destroys
+	PROP_tmt_usage, and add TODO_update_tmt_usage.
+	* tree-ssa-forwprop.c (pass_forwprop): Ditto.
+	* tree-flow.h (updating_used_alone): Prototype.
+	(recalculate_used_alone): Ditto.
+	* passes.c (execute_todo): Add code to set updating_used_alone,
+	and call recalculate.
+	* tree-ssa-operands.c (add_virtual_operand): Only append bare def
+	for clobber if used alone, and add assert to verify used_alone
+	status.
+	
 2006-02-20  Angel Nunez Mencias  <anunez@de.ibm.com>
 
 	* config/s390/s390.c (legitimize_pic_address): Assertions checking

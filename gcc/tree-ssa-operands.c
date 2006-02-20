@@ -1844,11 +1844,26 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	     
 	     It is also necessary to add bare defs on clobbers for
 	     TMT's, so that bare TMT uses caused by pruning all the
-	     aliases will link up properly with calls.   */
+	     aliases will link up properly with calls.   In order to
+	     keep the number of these bare defs we add down to the
+	     minimum necessary, we keep track of which TMT's were used
+	     alone in statement defs or vuses.  */
+
 	  if (v_ann->is_aliased
 	      || none_added
-	      || (TREE_CODE (var) == TYPE_MEMORY_TAG && for_clobber))
-	    append_v_may_def (var);
+	      || (TREE_CODE (var) == TYPE_MEMORY_TAG && for_clobber
+		  && TMT_USED_ALONE (var)))
+	    {
+	      /* Every bare tmt def we add should have TMT_USED_ALONE
+		 set on it, or else we will get the wrong answer on
+		 clobbers.  */
+
+	      if (none_added && !updating_used_alone && aliases_computed_p
+		  && TREE_CODE (var) == TYPE_MEMORY_TAG)
+		gcc_assert (TMT_USED_ALONE (var));
+
+	      append_v_may_def (var);
+	    }
 	}
       else
 	{
