@@ -718,8 +718,12 @@ execute_todo (unsigned int flags)
   flags &= ~last_verified;
   if (!flags)
     return;
+  
+  /* Always recalculate TMT usage before doing anything else.  */
+  if (flags & TODO_update_tmt_usage)
+    recalculate_used_alone ();
 
-  /* Always cleanup the CFG before doing anything else.  */
+  /* Always cleanup the CFG before trying to update SSA .  */
   if (flags & TODO_cleanup_cfg)
     {
       if (current_loops)
@@ -822,6 +826,9 @@ execute_one_pass (struct tree_opt_pass *pass)
   gcc_assert ((curr_properties & pass->properties_required)
 	      == pass->properties_required);
 
+  if (pass->properties_destroyed & PROP_tmt_usage)
+    updating_used_alone = true;
+
   /* If a dump file name is present, open it if enabled.  */
   if (pass->static_pass_number != -1)
     {
@@ -887,6 +894,9 @@ execute_one_pass (struct tree_opt_pass *pass)
       dump_end (pass->static_pass_number, dump_file);
       dump_file = NULL;
     }
+
+  if (pass->properties_destroyed & PROP_tmt_usage)
+    updating_used_alone = false;
 
   return true;
 }

@@ -152,6 +152,8 @@ struct dump_file_info
 #define PROP_rtl		(1 << 8)
 #define PROP_alias		(1 << 9)
 #define PROP_gimple_lomp	(1 << 10)	/* lowered OpenMP directives */
+#define PROP_tmt_usage          (1 << 11)       /* which TMT's are
+						   used alone.  */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
@@ -211,6 +213,10 @@ struct dump_file_info
 /* Internally used for the first in a sequence of passes.  It is set
    for the passes that are handed to register_dump_files.  */
 #define TODO_set_props			(1 << 12)
+
+/* Set by passes that may make TMT's that were previously never used
+   in statements, used.  */
+#define TODO_update_tmt_usage           (1 << 13)
 
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\

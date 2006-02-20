@@ -938,4 +938,6 @@ void delete_alias_heapvars (void);
 
 void swap_tree_operands (tree, tree *, tree *);
 
+extern void recalculate_used_alone (void);
+extern bool updating_used_alone;
 #endif /* _TREE_FLOW_H  */

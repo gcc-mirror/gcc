@@ -392,6 +392,12 @@ set_initial_properties (struct alias_info *ai)
     }
 }
 
+/* This variable is set to true if we are updating the used alone
+   information for TMT's, or are in a pass that is going to break it
+   temporarily.  */
+
+bool updating_used_alone;
+
 /* Compute which variables need to be marked call clobbered because
    their tag is call clobbered, and which tags need to be marked
    global because they contain global variables.  */
@@ -415,6 +421,76 @@ compute_call_clobbered (struct alias_info *ai)
   VEC_free (tree, heap, worklist);
   VEC_free (int, heap, worklist2);
   compute_tag_properties ();
+}
+
+
+/* Recalculate the used_alone information for TMT's . */
+void 
+recalculate_used_alone (void)
+{
+  VEC (tree, heap) *calls = NULL;
+  block_stmt_iterator bsi;
+  basic_block bb;
+  tree stmt;
+  size_t i;
+  referenced_var_iterator rvi;
+  tree var;
+  
+  /* First, reset all the TMT used alone bits to zero.  */
+  updating_used_alone = true;
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    if (TREE_CODE (var) == TYPE_MEMORY_TAG)
+      TMT_USED_ALONE (var) = 0;
+
+  /* Walk all the statements.
+     Calls get put into a list of statements to update, since we will
+     need to update operands on them if we make any changes.
+     If we see a bare use of a TMT anywhere in a real virtual use or virtual
+     def, mark the TMT as used alone, and for renaming.  */
+     
+     
+  FOR_EACH_BB (bb)
+    {
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  stmt = bsi_stmt (bsi);
+	  if (TREE_CODE (stmt) == CALL_EXPR
+	      || (TREE_CODE (stmt) == MODIFY_EXPR 
+		  && TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR))
+	    VEC_safe_push (tree, heap, calls, stmt);
+	  else
+	    {
+	      ssa_op_iter iter;
+	      
+	      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, 
+					 SSA_OP_VUSE | SSA_OP_VIRTUAL_DEFS)
+		{
+		  tree svar = var;
+		  
+		  if(TREE_CODE (var) == SSA_NAME)
+		    svar = SSA_NAME_VAR (var);
+		  
+		  if (TREE_CODE (svar) == TYPE_MEMORY_TAG)
+		    {
+		      if (!TMT_USED_ALONE (svar))
+			{
+			  TMT_USED_ALONE (svar) = true;
+			  mark_sym_for_renaming (svar);
+			}
+		    }
+		}
+	    }	           
+	}
+    }
+  
+  /* Update the operands on all the calls we saw.  */
+  if (calls)
+    {
+      for (i = 0; VEC_iterate (tree, calls, i, stmt); i++)
+	update_stmt (stmt);
+    }
+  VEC_free (tree, heap, calls);
+  updating_used_alone = false;
 }
 
 /* Compute may-alias information for every variable referenced in function
@@ -585,6 +661,7 @@ compute_may_aliases (void)
   /* Deallocate memory used by aliasing data structures.  */
   delete_alias_info (ai);
 
+  updating_used_alone = true;
   {
     block_stmt_iterator bsi;
     basic_block bb;
@@ -596,8 +673,10 @@ compute_may_aliases (void)
           }
       }
   }
-
+  recalculate_used_alone ();
+  updating_used_alone = false;
 }
+
 
 struct tree_opt_pass pass_may_alias = 
 {
