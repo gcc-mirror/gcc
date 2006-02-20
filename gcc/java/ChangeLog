@@ -1,3 +1,9 @@
+2006-02-15  Andrew Haley  <aph@redhat.com>
+
+	* class.c (GEN_TABLE): Don't pushdecl *_SYMS_DECL here.
+	(make_class_data): pushdecl_top_level TYPE_OTABLE_SYMS_DECL,
+	TYPE_ATABLE_SYMS_DECL, TYPE_ITABLE_SYMS_DECL here.
+
 2006-02-09  Andrew Haley  <aph@redhat.com>
 
 	PR java/26192
