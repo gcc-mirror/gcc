@@ -101,7 +101,12 @@ debug_generic_stmt (tree t)
 void
 debug_tree_chain (tree t)
 {
-  print_generic_expr (stderr, t, TDF_VOPS|TDF_UID|TDF_CHAIN);
+  while (t)
+  {
+    print_generic_expr (stderr, t, TDF_VOPS|TDF_UID);
+    fprintf(stderr, " ");
+    t = TREE_CHAIN (t);
+  }
   fprintf (stderr, "\n");
 }
 
@@ -160,32 +165,20 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
 {
   tree t = node;
 
-  while (t)
+  if (DECL_NAME (t))
+    pp_tree_identifier (buffer, DECL_NAME (t));
+  if ((flags & TDF_UID)
+      || DECL_NAME (t) == NULL_TREE)
     {
-      if (DECL_NAME (t))
-	pp_tree_identifier (buffer, DECL_NAME (t));
-
-      if ((flags & TDF_UID)
-	  || DECL_NAME (t) == NULL_TREE)
-	{
-	  if (TREE_CODE (t) == LABEL_DECL
-	      && LABEL_DECL_UID (t) != -1)
-	    pp_printf (buffer, "L." HOST_WIDE_INT_PRINT_DEC,
-		LABEL_DECL_UID (t));
-	  else
-	    {
-	      char c = TREE_CODE (t) == CONST_DECL ? 'C' : 'D';
-	      pp_printf (buffer, "%c.%u", c, DECL_UID (t));
-	    }
-	}
-
-      if (flags & TDF_CHAIN)
-	{
-	  t = TREE_CHAIN (t);
-	  pp_string (buffer, " ");
-	}
+      if (TREE_CODE (t) == LABEL_DECL
+          && LABEL_DECL_UID (t) != -1)
+        pp_printf (buffer, "L." HOST_WIDE_INT_PRINT_DEC,
+		   LABEL_DECL_UID (t));
       else
-	t = NULL_TREE;
+	{
+	  char c = TREE_CODE (t) == CONST_DECL ? 'C' : 'D';
+	  pp_printf (buffer, "%c.%u", c, DECL_UID (t));
+	}
     }
 }
 
