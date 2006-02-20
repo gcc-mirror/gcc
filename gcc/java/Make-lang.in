@@ -27,7 +27,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man,
+# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.html,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -176,8 +176,8 @@ java.info: doc/gcj.info
 java.srcinfo: doc/gcj.info
 	-cp -p $^ $(srcdir)/doc
 
-dvi:: doc/gcj.dvi
-html:: $(htmldir)/java/index.html
+java.dvi: doc/gcj.dvi
+java.html: $(htmldir)/java/index.html
 JAVA_MANFILES = doc/gcj.1 doc/gcjh.1 doc/jv-scan.1 doc/jcf-dump.1 doc/gij.1 \
                 doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1 \
 		doc/gcj-dbtool.1 doc/gjnih.1
@@ -240,7 +240,7 @@ java.uninstall:
 	-rm -rf $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/gcj-dbtool$(man1ext)
 
-install-info:: $(DESTDIR)$(infodir)/gcj.info
+java.install-info: $(DESTDIR)$(infodir)/gcj.info
 
 #
 # Clean hooks:

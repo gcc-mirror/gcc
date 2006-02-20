@@ -24,7 +24,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man,
+# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.html,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -158,7 +158,7 @@ treelang.info: doc/treelang.info
 treelang.srcinfo: doc/treelang.info
 	-cp -p $^ $(srcdir)/doc
 
-dvi:: doc/treelang.dvi
+treelang.dvi: doc/treelang.dvi
 
 TEXI_TREELANG_FILES = treelang/treelang.texi \
 	 $(docdir)/include/gcc-common.texi \
@@ -173,7 +173,7 @@ doc/treelang.info: $(TEXI_TREELANG_FILES)
 doc/treelang.dvi: $(TEXI_TREELANG_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
-html:: $(htmldir)/treelang/index.html
+treelang.html: $(htmldir)/treelang/index.html
 
 $(htmldir)/treelang/index.html: $(TEXI_TREELANG_FILES)
 	$(mkinstalldirs) $(@D)
@@ -203,7 +203,7 @@ treelang.install.common.done:  installdirs treelang.done
 	$(STAMP) treelang.install.common.done
 
 # We might not be able to build the info files
-install-info:: $(DESTDIR)$(infodir)/treelang.info
+treelang.install-info: $(DESTDIR)$(infodir)/treelang.info
 
 treelang.install-man:
 

@@ -23,7 +23,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man,
+# foo.install-common, foo.install-man, foo.install-info, foo.dvi,
 # foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -424,11 +424,11 @@ ada.info: $(ADA_INFOFILES)
 ada.srcinfo: $(ADA_INFOFILES)
 	-$(CP) $^ $(srcdir)/doc
 
-install-info:: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
+ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
 	$(DESTDIR)$(infodir)/gnat_rm.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
-dvi:: doc/gnat_ugn_unw.dvi \
+ada.dvi: doc/gnat_ugn_unw.dvi \
       doc/gnat_rm.dvi doc/gnat-style.dvi
 
 doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi $(docdir)/include/fdl.texi	\

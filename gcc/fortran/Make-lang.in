@@ -27,7 +27,7 @@
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.info
 # foo.install-common, foo.install-info, foo.install-man,
-# foo.uninstall,
+# foo.uninstall, foo.install-info, foo.dvi, foo.html,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -126,8 +126,8 @@ fortran.tags: force
 	etags --include TAGS.sub --include ../TAGS.sub
 
 fortran.info: doc/gfortran.info
-dvi:: doc/gfortran.dvi
-html:: $(htmldir)/gfortran/index.html
+fortran.dvi: doc/gfortran.dvi
+fortran.html: $(htmldir)/gfortran/index.html
 
 F95_MANFILES = doc/gfortran.1
 
@@ -199,7 +199,7 @@ fortran.install-common: install-finclude-dir installdirs
 	  fi ; \
 	fi
 
-install-info:: $(DESTDIR)$(infodir)/gfortran.info
+fortran.install-info: $(DESTDIR)$(infodir)/gfortran.info
 
 fortran.install-man: $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext)
 
