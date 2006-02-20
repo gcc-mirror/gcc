@@ -1,3 +1,12 @@
+2006-02-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (target_list): Add install-info, dvi, html.
+	* configure: Regenerate.
+
+	* ada/Make-lang.in, cp/Make-lang.in, fortran/Make-lang.in,
+	java/Make-lang.in, objc/Make-lang.in, objcp/Make-lang.in,
+	treelang/Make-lang.in: Do not use double-colon rules.
+
 2006-02-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree.h (struct tree_memory_tag): Add is_used_alone member.
