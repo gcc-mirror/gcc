@@ -1,3 +1,35 @@
+2006-02-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/25670
+
+	* Makefile.tpl ([+compare-target+]): Print explanation messages.
+
+	* Makefile.def (ADAFLAGS, BOOT_ADAFLAGS, LANGUAGES): New flags_to_pass.
+	* Makefile.tpl (BASE_FLAGS_TO_PASS): Support optional flags_to_pass.
+	(EXTRA_GCC_FLAGS): Remove ADAFLAGS, BOOT_ADAFLAGS, LANGUAGES,
+	BUILD_PREFIX, BUILD_PREFIX_1.
+	* configure.in: (BUILD_PREFIX, BUILD_PREFIX_1): Don't substitute.
+
+	* Makefile.def (bootstrap stage 1): Pass LIBCFLAGS too.
+	* Makefile.tpl (POSTSTAGE1_FLAGS_TO_PASS): Override LIBCFLAGS too.
+
+	* Makefile.tpl (configure-stage[+id+]-[+prefix+][+module+],
+	all-stage[+id+]-[+prefix+][+module+], : Use $(current_stage) instead
+	of `cat stage_current`.  Always provide the `r' and `s' variables.
+	(clean-stage[+id+]-[+prefix+][+module+]): Likewise, and make it into
+	a single shell execution.
+	(configure-[+prefix+][+module+], all-[+prefix+][+module+]): For
+	bootstrapped modules, make the stage1 module if the build was not
+	started yet, else build the current stage.
+	(all-host, all-target): Omit bootstrapped modules (if bootstrapping).
+	(all-build, all-host, all-target, [+make_target+]-host,
+	[+make_target+]-target): Do not use \-continued lines.
+	(target modules): Depend on stage_last, not all-gcc, if bootstrapping.
+	(current_stage, restrap, stage_last): New.
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2006-02-19  Bud Davis  <jmdavis@link.com>
 
 	* MAINTAINERS (Write After Approval):  Remove myself.

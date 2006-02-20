@@ -130,7 +130,7 @@ T_ADAFLAGS =
 SUBDIRS =@subdirs@ build
 
 # Selection of languages to be made.
-CONFIG_LANGUAGES = @all_languages@
+CONFIG_LANGUAGES = @all_selected_languages@
 LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
 
 # Selection of languages to be made during stage1 build.
@@ -150,6 +150,7 @@ BOOT_LANGUAGES = c @all_boot_languages@
 XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
+LDFLAGS = @LDFLAGS@
 STAGE1_CFLAGS = -g @stage1_cflags@
 STAGE1_CHECKING = -DENABLE_CHECKING -DENABLE_ASSERT_CHECKING
 BOOT_CFLAGS = -g -O2
@@ -3193,17 +3194,23 @@ stmp-fixinc: gsyslimits.h macro_list \
 	fi
 	rm -rf include; mkdir include
 	-chmod a+rx include
-	(TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); ${PWD_COMMAND}`; \
-	  SHELL='$(SHELL)'; MACRO_LIST=`${PWD_COMMAND}`/macro_list ; \
-	  export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
-	  cd $(build_objdir)/fixincludes && \
-	  $(SHELL) ./fixinc.sh ../../gcc/include \
-	    $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) )
-	rm -f include/syslimits.h
-	if [ -f include/limits.h ]; then \
-	  mv include/limits.h include/syslimits.h; \
+	if [ -d ../prev-gcc ]; then \
+	  cd ../prev-gcc && \
+	  $(MAKE) $(INSTALL_HEADERS_DIR) DESTDIR=`pwd`/../gcc/ \
+	    libsubdir=. ; \
 	else \
-	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
+	  (TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); ${PWD_COMMAND}`; \
+	    SHELL='$(SHELL)'; MACRO_LIST=`${PWD_COMMAND}`/macro_list ; \
+	    export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
+	    cd $(build_objdir)/fixincludes && \
+	    $(SHELL) ./fixinc.sh ../../gcc/include \
+	      $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) ); \
+	  rm -f include/syslimits.h; \
+	  if [ -f include/limits.h ]; then \
+	    mv include/limits.h include/syslimits.h; \
+	  else \
+	    cp $(srcdir)/gsyslimits.h include/syslimits.h; \
+	  fi; \
 	fi
 	chmod a+r include/syslimits.h
 	$(STAMP) stmp-fixinc
@@ -4239,12 +4246,19 @@ bubblestrap:
 	  $(MAKE) $(REMAKEFLAGS) stage4_build || exit 1; \
 	fi
 
+BOOTSTRAPPING := $(shell if test -f ../stage_last; then echo yes; else echo no; fi)
+ifeq ($(BOOTSTRAPPING),yes)
+# Provide quickstrap as a target that people can type into the gcc directory,
+# and that fails if you're not into it.
+quickstrap: all
+else
 quickstrap:
 	if test -f stage_last ; then \
 	  LAST=`cat stage_last`; rm $$LAST; $(MAKE) $(REMAKEFLAGS) $$LAST; \
 	else \
 	  $(MAKE) $(REMAKEFLAGS) stage1_build; \
 	fi
+endif
 
 cleanstrap:
 	-$(MAKE) clean

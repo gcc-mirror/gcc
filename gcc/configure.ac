@@ -817,30 +817,6 @@ AC_ARG_ENABLE(languages,
 esac],
 [enable_languages=c])
 
-subdirs=
-for lang in ${srcdir}/*/config-lang.in
-do
-	case $lang in
-	# The odd quoting in the next line works around
-	# an apparent bug in bash 1.12 on linux.
-changequote(,)dnl
-	${srcdir}/[*]/config-lang.in) ;;
-	*)
-	  lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^   ]*\).*$,\1,p' $lang`
-	  if test "x$lang_alias" = x
-	  then
-	        echo "$lang doesn't set \$language." 1>&2
-	        exit 1
-	  fi
-	  case ",$enable_languages," in
-	  *,$lang_alias,*)
-	    subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`" ;;
-	  esac
-	  ;;
-changequote([,])dnl
-	esac
-done
-
 
 # -------------------------
 # Checks for other programs
@@ -3258,22 +3234,10 @@ AC_SUBST(MAINT)dnl
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
 
+subdirs=
 lang_opt_files=
 lang_specs_files=
 lang_tree_files=
-for subdir in . $subdirs
-do
-	if test -f $srcdir/$subdir/lang.opt; then
-	    lang_opt_files="$lang_opt_files $srcdir/$subdir/lang.opt"
-	fi
-	if test -f $srcdir/$subdir/lang-specs.h; then
-	    lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
-	fi
-	if test -f $srcdir/$subdir/$subdir-tree.def; then
-	    lang_tree_files="$lang_tree_files $srcdir/$subdir/$subdir-tree.def"
-	fi
-done
-
 # These (without "all_") are set in each config-lang.in.
 # `language' must be a single word so is spelled singularly.
 all_languages=
@@ -3291,6 +3255,10 @@ all_gtfiles="$target_gtfiles"
 all_gtfiles_files_langs=
 all_gtfiles_files_files=
 
+# These are the languages that are set in --enable-languages,
+# and are available in the GCC tree.
+all_selected_languages=
+
 # Add the language fragments.
 # Languages are added via two mechanisms.  Some information must be
 # recorded in makefile variables, these are defined in config-lang.in.
@@ -3300,59 +3268,93 @@ all_gtfiles_files_files=
 
 language_hooks="Make-hooks"
 
-for s in $subdirs
+for lang in ${srcdir}/*/config-lang.in
 do
-		language=
-		boot_language=
-		compilers=
-		stagestuff=
-		outputs=
-		gtfiles=
-		. ${srcdir}/$s/config-lang.in
-		if test "x$language" = x
-		then
-			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
-			exit 1
-		fi
-		all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$s/Make-lang.in"
-		if test -f ${srcdir}/$s/Makefile.in
-		then all_lang_makefiles="$s/Makefile"
-		fi
-		all_languages="$all_languages $language"
-		if test "x$boot_language" = xyes
-		then
-			all_boot_languages="$all_boot_languages $language"
-		fi
-		all_compilers="$all_compilers $compilers"
-		all_stagestuff="$all_stagestuff $stagestuff"
-		all_outputs="$all_outputs $outputs"
-		all_gtfiles="$all_gtfiles $gtfiles"
-                for f in $gtfiles
-                do
-                         all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
-                         all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
-                done
+    case $lang in
+    # The odd quoting in the next line works around
+    # an apparent bug in bash 1.12 on linux.
+changequote(,)dnl
+    ${srcdir}/[*]/config-lang.in)
+        continue ;;
+    *)
+        lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^   ]*\).*$,\1,p' $lang`
+        if test "x$lang_alias" = x
+        then
+              echo "$lang doesn't set \$language." 1>&2
+              exit 1
+        fi
+        subdir="`echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
+        subdirs="$subdirs $subdir"
+        case ",$enable_languages," in
+        *,$lang_alias,*)
+            all_selected_languages="$all_selected_languages $lang_alias"
+	    if test -f $srcdir/$subdir/lang-specs.h; then
+	        lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
+	    fi
+	    ;;
+        esac
+changequote([,])dnl
+
+	if test -f $srcdir/$subdir/lang.opt; then
+	    lang_opt_files="$lang_opt_files $srcdir/$subdir/lang.opt"
+	fi
+	if test -f $srcdir/$subdir/$subdir-tree.def; then
+	    lang_tree_files="$lang_tree_files $srcdir/$subdir/$subdir-tree.def"
+	fi
+
+	language=
+	boot_language=
+	compilers=
+	stagestuff=
+	outputs=
+	gtfiles=
+	. ${srcdir}/$subdir/config-lang.in
+	if test "x$language" = x
+	then
+		echo "${srcdir}/$subdir/config-lang.in doesn't set \$language." 1>&2
+		exit 1
+	fi
+	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$subdir/Make-lang.in"
+	if test -f ${srcdir}/$subdir/Makefile.in
+		then all_lang_makefiles="$subdir/Makefile"
+	fi
+	all_languages="$all_languages $language"
+	if test "x$boot_language" = xyes
+	then
+		all_boot_languages="$all_boot_languages $language"
+	fi
+	all_compilers="$all_compilers $compilers"
+	all_stagestuff="$all_stagestuff $stagestuff"
+	all_outputs="$all_outputs $outputs"
+	all_gtfiles="$all_gtfiles $gtfiles"
+        for f in $gtfiles
+        do
+                 all_gtfiles_files_langs="$all_gtfiles_files_langs ${subdir} "
+                 all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
+        done
+	;;
+    esac
 done
 
 # Pick up gtfiles for c
 gtfiles=
-s="c"
+subdir="c"
 . ${srcdir}/c-config-lang.in
 all_gtfiles="$all_gtfiles $gtfiles"
 for f in $gtfiles
 do
-        all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
+        all_gtfiles_files_langs="$all_gtfiles_files_langs ${subdir} "
         all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
 done
 
 check_languages=
-for language in $all_languages
+for language in $all_selected_languages
 do
-		check_languages="$check_languages check-$language"
+	check_languages="$check_languages check-$language"
 done
 
 # We link each language in with a set of hooks, reached indirectly via
-# lang.${target}.
+# lang.${target}.  Only do so for selected languages.
 
 rm -f Make-hooks
 touch Make-hooks
@@ -3361,12 +3363,13 @@ target_list="all.cross start.encap rest.encap tags \
 	uninstall info man srcextra srcman srcinfo \
 	mostlyclean clean distclean maintainer-clean \
 	stage1 stage2 stage3 stage4 stageprofile stagefeedback"
+
 for t in $target_list
 do
 	x=
-	for lang in $all_languages
+	for lang in $all_selected_languages
 	do
-			x="$x $lang.$t"
+		x="$x $lang.$t"
 	done
 	echo "lang.$t: $x" >> Make-hooks
 done
@@ -3463,6 +3466,7 @@ AC_SUBST(all_gtfiles_files_files)
 AC_SUBST(all_lang_makefrags)
 AC_SUBST(all_lang_makefiles)
 AC_SUBST(all_languages)
+AC_SUBST(all_selected_languages)
 AC_SUBST(all_stagestuff)
 AC_SUBST(build_exeext)
 AC_SUBST(build_install_headers_dir)

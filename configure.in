@@ -1060,8 +1060,6 @@ if test "${build}" != "${host}" ; then
   CXX=${CXX-${host_alias}-c++}
   CXXFLAGS=${CXXFLAGS-"-g -O2"}
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
-  BUILD_PREFIX=${build_alias}-
-  BUILD_PREFIX_1=${build_alias}-
 
 else
   # Set reasonable default values for some tools even if not Canadian.
@@ -1073,9 +1071,6 @@ else
   # This is all going to change when we autoconfiscate...
 
   CC_FOR_BUILD="\$(CC)"
-  BUILD_PREFIX=
-  BUILD_PREFIX_1=loser-
-
   AC_PROG_CC
 
   # We must set the default linker to the linker used by gcc for the correct
@@ -2160,8 +2155,6 @@ AC_SUBST_FILE(ospace_frag)
 
 # Miscellanea: directories, flags, etc.
 AC_SUBST(RPATH_ENVVAR)
-AC_SUBST(BUILD_PREFIX)
-AC_SUBST(BUILD_PREFIX_1)
 AC_SUBST(tooldir)
 AC_SUBST(build_tooldir)
 AC_SUBST(CONFIGURE_GDB_TK)

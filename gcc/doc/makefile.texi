@@ -7,6 +7,8 @@
 @cindex makefile targets
 @cindex targets, makefile
 
+These targets are available from the @samp{gcc} directory:
+
 @table @code
 @item all
 This is the default target.  Depending on what your build/host/target
@@ -72,49 +74,59 @@ make check-gcc RUNTESTFLAGS="execute.exp=19980413-*"
 
 Note that running the testsuite may require additional tools be
 installed, such as TCL or dejagnu.
+@end table
 
-@item bootstrap
-Builds GCC three times---once with the native compiler, once with the
-native-built compiler it just built, and once with the compiler it built
-the second time.  In theory, the last two should produce the same
-results, which @samp{make compare} can check.  Each step of this process
-is called a ``stage'', and the results of each stage @var{N}
-(@var{N} = 1@dots{}3) are copied to a subdirectory @file{stage@var{N}/}.
+The toplevel tree from which you start GCC compilation is not
+the GCC directory, but rather a complex Makefile that coordinates
+the various steps of the build, including bootstrapping the compiler
+and using the new compiler to build target libraries.
 
+When GCC is configured for a native configuration, the default action
+for @command{make} is to do a full three-stage bootstrap.  This means
+that GCC is built three times---once with the native compiler, once with
+the native-built compiler it just built, and once with the compiler it
+built the second time.  In theory, the last two should produce the same
+results, which @samp{make compare} can check.  Each stage is configured
+separately and compiled into a separate directory, to minimize problems
+due to ABI incompatibilities between the native compiler and GCC.
+
+If you do a change, rebuilding will also start from the first stage
+and ``bubble'' up the change through the three stages.  Each stage
+is taken from its build directory (if it had been built previously),
+rebuilt, and copied to its subdirectory.  This will allow you to, for
+example, continue a bootstrap after fixing a bug which causes the
+stage2 build to crash.  It does not provide as good coverage of the
+compiler as bootstrapping from scratch, but it ensures that the new
+code is syntactically correct (e.g. that you did not use GCC extensions
+by mistake), and avoids spurious bootstrap comparison
+failures@footnote{Except if the compiler was buggy and miscompiled
+  some of the files that were not modified.  In this case, it's best
+  to use @command{make restrap}.}.
+
+Other targets available from the top level include:
+
+@table @code
 @item bootstrap-lean
 Like @code{bootstrap}, except that the various stages are removed once
 they're no longer needed.  This saves disk space.
 
-@item bubblestrap
-This incrementally rebuilds each of the three stages, one at a time.
-It does this by ``bubbling'' the stages up from their subdirectories
-(if they had been built previously), rebuilding them, and copying them
-back to their subdirectories.  This will allow you to, for example,
-continue a bootstrap after fixing a bug which causes the stage2 build
-to crash.
+@item bootstrap2
+@itemx bootstrap2-lean
+Performs only the first two stages of bootstrap.  Unlike a three-stage
+bootstrap, this does not perform a comparison to test that the compiler
+is running properly.  Note that the disk space required by a ``lean''
+bootstrap is approximately independent of the number of stages.
 
-@item quickstrap
-Rebuilds the most recently built stage.  Since each stage requires
-special invocation, using this target means you don't have to keep
-track of which stage you're on or what invocation that stage needs.
+@item stage@var{N}-bubble (@var{N} = 1@dots{}4)
+Rebuild all the stages up to @var{N}, with the appropriate flags,
+``bubbling'' the changes as described above.
+
+@item all-stage@var{N} (@var{N} = 1@dots{}4)
+Assuming that stage @var{N} has already been built, rebuild it with the
+appropriate flags.  This is rarely needed.
 
 @item cleanstrap
-Removed everything (@samp{make clean}) and rebuilds (@samp{make bootstrap}).
-
-@item restrap
-Like @code{cleanstrap}, except that the process starts from the first
-stage build, not from scratch.
-
-@item stage@var{N} (@var{N} = 1@dots{}4)
-For each stage, moves the appropriate files to the @file{stage@var{N}}
-subdirectory.
-
-@item unstage@var{N} (@var{N} = 1@dots{}4)
-Undoes the corresponding @code{stage@var{N}}.
-
-@item restage@var{N} (@var{N} = 1@dots{}4)
-Undoes the corresponding @code{stage@var{N}} and rebuilds it with the
-appropriate flags.
+Remove everything (@samp{make clean}) and rebuilds (@samp{make bootstrap}).
 
 @item compare
 Compares the results of stages 2 and 3.  This ensures that the compiler
@@ -125,7 +137,53 @@ regardless of how it itself was compiled.
 Builds a compiler with profiling feedback information.  For more
 information, see
 @ref{Building,,Building with profile feedback,gccinstall,Installing GCC}.
-This is actually a target in the top-level directory, which then
-recurses into the @file{gcc} subdirectory multiple times.
+
+@item restrap
+Restart a bootstrap, so that everything that was not built with
+the system compiler is rebuilt.
+
+@item stage@var{N}-start (@var{N} = 1@dots{}4)
+For each package that is bootstrapped, rename directories so that,
+for example, @file{gcc} points to the stage@var{N} GCC, compiled
+with the stage@var{N-1} GCC@footnote{Customarily, the system compiler
+  is also termed the @file{stage0} GCC.}.
+
+You will invoke this target if you need to test or debug the
+stage@var{N} GCC.  If you only need to execute GCC (but you need
+not run @samp{make} either to rebuild it or to run test suites),
+you should be able to work directly in the @file{stage@var{N}-gcc}
+directory.  This makes it easier to debug multiple stages in
+parallel.
+
+@item stage
+For each package that is bootstrapped, relocate its build directory
+to indicate its stage.  For example, if the @file{gcc} directory
+points to the stage2 GCC, after invoking this target it will be
+renamed to @file{stage2-gcc}.
 
 @end table
+
+If you wish to use non-default GCC flags when compiling the stage2 and
+stage3 compilers, set @code{BOOT_CFLAGS} on the command line when doing
+@samp{make}.
+
+Usually, the first stage only builds the languages that the compiler
+is written in: typically, C and maybe Ada.  If you are debugging a
+miscompilation of a different stage2 front-end (for example, of the
+Fortran front-end), you may want to have front-ends for other languages
+in the first stage as well.  To do so, set @code{STAGE1_LANGUAGES}
+on the command line when doing @samp{make}.
+
+For example, in the aforementioned scenario of debugging a Fortran
+front-end miscompilation caused by the stage1 compiler, you may need a
+command like
+
+@example
+make stage2-bubble STAGE1_LANGUAGES=c,fortran
+@end example
+
+Alternatively, you can use per-language targets to build and test
+languages that are not enabled by default in stage1.  For example,
+@command{make f951} will build a Fortran compiler even in the stage1
+build directory.
+

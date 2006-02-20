@@ -1,3 +1,28 @@
+2006-02-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/25476
+
+	* Makefile.in (LDFLAGS): Define from autoconf substitution.
+
+	* Makefile.in (BOOTSTRAPPING): New.
+	(quickstrap): New definition if BOOTSTRAPPING=yes.
+
+	* Makefile.in (CONFIG_LANGUAGES): Substitute all_selected_languages.
+	* configure.ac: Substitute all_selected_languages with the languages
+	that were configured.  For all the other variables except
+	lang_specs_files, include all the languages in the tree.
+	* configure: Regenerate.
+	
+	* Makefile.in (stmp-fixinc): Copy includes from the prev-gcc directory,
+	if there is one.  Run the commands to run fixincludes in the same
+	subshell.
+
+	* doc/makefile.texi: Document new makefile targets from toplevel bootstrap.
+	* doc/install.texi: Document exact conventions for searching target tools.
+	Document --with-build-time-tools.  Document toplevel bootstrap.  Document
+	something more about building an Ada cross-compiler.  Don't list GNU Make
+	requirements which affect all platforms.
+
 2006-02-19  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19543
