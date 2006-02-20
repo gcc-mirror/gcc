@@ -1,5 +1,11 @@
 2006-02-20  Roger Sayle  <roger@eyesopen.com>
 
+	* trans-stmt.c (gfc_trans_where_2): Avoid updating unused current
+	execution mask for empty WHERE/ELSEWHERE clauses.  Don't allocate
+	temporary mask arrays if they won't be used.
+
+2006-02-20  Roger Sayle  <roger@eyesopen.com>
+
 	* trans-stmt.c (gfc_trans_where_assign): Remove code to handle
 	traversing a linked list of MASKs.  The MASK is now always a
 	single element requiring no ANDing during the assignment.

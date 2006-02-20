@@ -2960,12 +2960,28 @@ gfc_trans_where_2 (gfc_code * code, tree mask,
   /* As the mask array can be very big, prefer compact boolean types.  */
   mask_type = gfc_get_logical_type (gfc_logical_kinds[0].kind);
 
-  /* Allocate temporary for where mask.  */
-  cmask = allocate_temp_for_forall_nest_1 (mask_type, size, block, &pcmask);
-
-  if (cblock->block)
+  /* Allocate temporary for WHERE mask.  We only need a "cmask" if
+     there are statements to be executed.  The following test only
+     checks the first ELSEWHERE to catch the F90 cases.  */
+  if (cblock->next
+      || (cblock->block && cblock->block->next && cblock->block->expr)
+      || (cblock->block && cblock->block->block))
     {
-      /* Allocate temporary for !mask.  */
+      cmask = allocate_temp_for_forall_nest_1 (mask_type, size, block,
+					       &pcmask);
+    }
+  else
+    {
+      pcmask = NULL_TREE;
+      cmask = NULL_TREE;
+    }
+
+  /* Allocate temporary for !mask.  We only need a "pmask" if there 
+     is an ELSEWHERE clause containing executable statements.  Again
+     we only lookahead a single ELSEWHERE to catch the F90 cases.  */
+  if ((cblock->block && cblock->block->next)
+      || (cblock->block && cblock->block->block))
+    {
       pmask = allocate_temp_for_forall_nest_1 (mask_type, size, block,
 					       &ppmask);
     }
@@ -2980,17 +2996,18 @@ gfc_trans_where_2 (gfc_code * code, tree mask,
       /* Has mask-expr.  */
       if (cblock->expr)
         {
-	  /* If this is the last clause of the WHERE construct, then
+          /* Ensure that the WHERE mask will be evaluated exactly once.
+	     If there are no statements in this WHERE/ELSEWHERE clause,
+	     then we don't need to update the control mask (cmask).
+	     If this is the last clause of the WHERE construct, then
 	     we don't need to update the pending control mask (pmask).  */
-	  if (! cblock->block)
-	    pmask = NULL_TREE;
-
-          /* Ensure that the WHERE mask be evaluated only once.  */
-          gfc_evaluate_where_mask (cblock->expr, nested_forall_info,
-				   mask, cmask, pmask, mask_type, block);
+          gfc_evaluate_where_mask (cblock->expr, nested_forall_info, mask,
+				   cblock->next ? cmask : NULL_TREE,
+				   cblock->block ? pmask : NULL_TREE,
+				   mask_type, block);
 
         }
-      /* It's a elsewhere-stmt. No mask-expr is present.  */
+      /* It's a final elsewhere-stmt. No mask-expr is present.  */
       else
         cmask = mask;
 
