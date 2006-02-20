@@ -2740,7 +2740,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
   tree tmp;
   stmtblock_t block;
   stmtblock_t body;
-  tree index, maskexpr, tmp1;
+  tree index, maskexpr;
 
 #if 0
   /* TODO: handle this special case.
@@ -2835,21 +2835,10 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
   else
     gfc_conv_expr (&lse, expr1);
 
-  /* Form the mask expression according to the mask tree list.  */
+  /* Form the mask expression according to the mask.  */
   index = count1;
-  tmp = mask;
-  if (tmp != NULL)
-    maskexpr = gfc_build_array_ref (tmp, index);
-  else
-    maskexpr = NULL;
+  maskexpr = gfc_build_array_ref (mask, index);
 
-  tmp = TREE_CHAIN (tmp);
-  while (tmp)
-    {
-      tmp1 = gfc_build_array_ref (tmp, index);
-      maskexpr = build2 (TRUTH_AND_EXPR, TREE_TYPE (tmp1), maskexpr, tmp1);
-      tmp = TREE_CHAIN (tmp);
-    }
   /* Use the scalar assignment as is.  */
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts.type);
   tmp = build3_v (COND_EXPR, maskexpr, tmp, build_empty_stmt ());
@@ -2898,20 +2887,8 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
 
           /* Form the mask expression according to the mask tree list.  */
           index = count2;
-          tmp = mask;
-          if (tmp != NULL)
-            maskexpr = gfc_build_array_ref (tmp, index);
-          else
-            maskexpr = NULL;
+          maskexpr = gfc_build_array_ref (mask, index);
 
-          tmp = TREE_CHAIN (tmp);
-          while (tmp)
-            {
-              tmp1 = gfc_build_array_ref (tmp, index);
-              maskexpr = build2 (TRUTH_AND_EXPR, TREE_TYPE (tmp1),
-				 maskexpr, tmp1);
-              tmp = TREE_CHAIN (tmp);
-            }
           /* Use the scalar assignment as is.  */
           tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts.type);
           tmp = build3_v (COND_EXPR, maskexpr, tmp, build_empty_stmt ());
