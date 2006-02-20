@@ -118,6 +118,7 @@ fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
 fortran 95		Jerry DeLisle		jvdelisle@gcc.gnu.org
 fortran 95		François-Xavier Coudert	coudert@clipper.ens.fr
 fortran 95              Bud Davis               jmdavis@link.com
+fortran 95		Steve Kargl		sgk@troutmask.apl.washington.edu
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -268,7 +269,6 @@ Andreas Jaeger					aj@suse.de
 Fariborz Jahanian				fjahanian@apple.com
 Klaus Kaempf					kkaempf@progis.de
 Victor Kaplansky				victork@il.ibm.com
-Steve Kargl					sgk@troutmask.apl.washington.edu
 Brendan Kehoe					brendan@zen.org
 Mumit Khan					khan@xraylith.wisc.edu
 Matthias Klose					doko@debian.org

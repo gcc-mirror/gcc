@@ -1,3 +1,8 @@
+2006-02-20  Steven G. Kargl  <kargls@comcast.net>
+
+	* MAINTAINERS (Write After Approval):  Remove myself.
+	(Language Front End Maintainers):  Add myself as fortran 95 maintainer.
+
 2006-02-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/25670
