@@ -1,3 +1,9 @@
+2006-02-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/26236
+	* doc/c-tree.texi (INTEGER_TYPE): Remove reference to the now
+	deprecated CHAR_TYPE tree code.
+
 2006-02-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (target_list): Add install-info, dvi, html.

@@ -429,9 +429,8 @@ Used to represent the @code{void} type.
 @item INTEGER_TYPE
 Used to represent the various integral types, including @code{char},
 @code{short}, @code{int}, @code{long}, and @code{long long}.  This code
-is not used for enumeration types, nor for the @code{bool} type.  Note
-that GCC's @code{CHAR_TYPE} node is @emph{not} used to represent
-@code{char}.  The @code{TYPE_PRECISION} is the number of bits used in
+is not used for enumeration types, nor for the @code{bool} type.
+The @code{TYPE_PRECISION} is the number of bits used in
 the representation, represented as an @code{unsigned int}.  (Note that
 in the general case this is not the same value as @code{TYPE_SIZE};
 suppose that there were a 24-bit integer type, but that alignment
