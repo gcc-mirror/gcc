@@ -1,3 +1,20 @@
+2006-02-20  Paolo Carlini  <pcarlini@suse.de>
+
+	Revert recent commit for libstdc++/26211, now suspended waiting for
+	DR 342 (reopened) to reach a new resolution.
+	* include/bits/istream.tcc (basic_istream<>::tellg, seekg(pos_type),
+	seekg(off_type, ios_base::seekdir)): Remove sentry.
+	* testsuite/27_io/basic_istream/seekg/char/26211.cc: Remove.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-1.cc: Revert changes.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/8348-1.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/8348-1.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/8348.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/8348.cc: Likewise.
+
 2006-02-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_sstream.h (basic_stringbuf<>::setbuf): Simply

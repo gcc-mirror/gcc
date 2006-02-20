@@ -39,7 +39,6 @@ void test06(void)
     VERIFY( test = iss.eof() );
     VERIFY( test = !iss.fail() );
     iss.seekg(pos1);
-    iss.clear();
     VERIFY( test = !iss.fail() );
   }
 }
