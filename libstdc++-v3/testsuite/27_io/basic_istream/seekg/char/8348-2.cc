@@ -41,7 +41,6 @@ void test06(void)
     iss >> asNum;
     VERIFY( test = iss.eof() );
     VERIFY( test = !iss.fail() );
-    iss.clear();
     iss.seekg(0, ios_base::beg);
     VERIFY( test = !iss.fail() );
   }
