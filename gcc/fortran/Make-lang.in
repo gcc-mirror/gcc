@@ -81,10 +81,10 @@ F95_LIBS = $(GMPLIBS) $(LIBS)
 
 #
 # Define the names for selecting gfortran in LANGUAGES.
-FORTRAN fortran: f951$(exeext)
+fortran: f951$(exeext)
 
 # Tell GNU make to ignore files by these names if they exist.
-.PHONY: F95 f95
+.PHONY: fortran
 
 gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) $(CONFIG_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \

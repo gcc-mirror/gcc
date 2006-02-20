@@ -38,11 +38,10 @@
 
 #
 # Define the names for selecting Objective-C in LANGUAGES.
-OBJC objc: cc1obj$(exeext)
-OBJECTIVE-C objective-c: cc1obj$(exeext)
+objc: cc1obj$(exeext)
 
 # Tell GNU make to ignore these if they exist.
-.PHONY: objective-c objc ObjC
+.PHONY: objc
 
 # Use maximal warnings for this front end.
 objc-warn = $(STRICT_WARN)

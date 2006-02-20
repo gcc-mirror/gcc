@@ -1263,11 +1263,10 @@ native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
-C c: cc1$(exeext)
-PROTO: proto
+c: cc1$(exeext)
 
 # Tell GNU make these are phony targets.
-.PHONY: C c PROTO proto
+.PHONY: c proto
 
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.

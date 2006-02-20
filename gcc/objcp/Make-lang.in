@@ -38,10 +38,10 @@
 
 #
 # Define the names for selecting Objective-C++ in LANGUAGES.
-OBJ-C++ obj-c++: cc1objplus$(exeext)
+obj-c++: cc1objplus$(exeext)
 
 # Tell GNU make to ignore these if they exist.
-.PHONY: Obj-c++ obj-C++
+.PHONY: obj-c++
 
 # Use maximal warnings for this front end.  Also, make ObjC and C++
 # headers accessible.
