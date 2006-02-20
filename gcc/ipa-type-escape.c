@@ -394,7 +394,7 @@ ipa_type_escape_type_contained_p (tree type)
 			get_canon_type_uid (type, true, false));
 }
 
-/* Return true a modification to a field of type FIELD_TYPE cannot
+/* Return true if a modification to a field of type FIELD_TYPE cannot
    clobber a record of RECORD_TYPE.  */
 
 bool 
