@@ -1,3 +1,12 @@
+2006-02-21  Robert Schuster  <robertschuster@fsfe.org>
+
+	* link.cc: Added variant of create_error_method that
+	will not complain about unused parameter if compiled with
+	USE_LIBFFI not being defined.
+	(_Jv_Linker::find_field_helper): Fixed indentation.
+	(_Jv_Linker::create_error_method): Fixed indentation.
+	(_Jv_Linker::link_symbol_table): Fixed indentation.
+
 2006-02-16  Andrew Haley  <aph@redhat.com>
 
 	* stacktrace.cc (GetStackTraceElements): Call
