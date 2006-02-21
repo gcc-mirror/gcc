@@ -157,8 +157,16 @@ extern void darwin_x86_file_end (void);
    register numbers for STABS.  Fortunately for 64-bit code the
    default and the standard are the same.  */
 #undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) (TARGET_64BIT			\
-				? dbx64_register_map[n]		\
-				: write_symbols == DWARF2_DEBUG	\
-				? svr4_dbx_register_map[n]	\
-				: dbx_register_map[n])
+#define DBX_REGISTER_NUMBER(n) 					\
+  (TARGET_64BIT ? dbx64_register_map[n]				\
+   : write_symbols == DWARF2_DEBUG ? svr4_dbx_register_map[n]	\
+   : dbx_register_map[n])
+
+/* Unfortunately, the 32-bit EH information also doesn't use the standard
+   DWARF register numbers.  */
+#define DWARF2_FRAME_REG_OUT(n, for_eh)					\
+  (! (for_eh) || write_symbols != DWARF2_DEBUG || TARGET_64BIT ? (n)	\
+   : (n) == 5 ? 4							\
+   : (n) == 4 ? 5							\
+   : (n) >= 11 && (n) <= 18 ? (n) + 1					\
+   : (n))

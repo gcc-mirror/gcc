@@ -1,3 +1,7 @@
+2006-02-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/eh/spbp.C: New.
+
 2006-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26379
