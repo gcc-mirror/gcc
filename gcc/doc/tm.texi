@@ -3043,6 +3043,13 @@ of @code{FRAME_POINTER_CFA_OFFSET} and @code{ARG_POINTER_CFA_OFFSET}
 should be defined.
 @end defmac
 
+@defmac CFA_FRAME_BASE_OFFSET (@var{fundecl})
+If defined, a C expression whose value is an integer giving the offset
+in bytes from the canonical frame address (cfa) to the frame base used
+in DWARF 2 debug information.  The default is zero.  A different value
+may reduce the size of debug information on some ports.
+@end defmac
+
 @node Exception Handling
 @subsection Exception Handling Support
 @cindex exception handling

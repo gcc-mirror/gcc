@@ -344,7 +344,7 @@ static void output_cfa_loc (dw_cfi_ref);
 static void get_cfa_from_loc_descr (dw_cfa_location *,
 				    struct dw_loc_descr_struct *);
 static struct dw_loc_descr_struct *build_cfa_loc
- (dw_cfa_location *);
+  (dw_cfa_location *, HOST_WIDE_INT);
 static void def_cfa_1 (const char *, dw_cfa_location *);
 
 /* How to start an assembler comment.  */
@@ -805,7 +805,7 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
       struct dw_loc_descr_struct *loc_list;
 
       cfi->dw_cfi_opc = DW_CFA_def_cfa_expression;
-      loc_list = build_cfa_loc (&loc);
+      loc_list = build_cfa_loc (&loc, 0);
       cfi->dw_cfi_oprnd1.dw_cfi_loc = loc_list;
     }
 
@@ -3390,13 +3390,16 @@ output_cfa_loc (dw_cfi_ref cfi)
   output_loc_sequence (loc);
 }
 
-/* This function builds a dwarf location descriptor sequence from
-   a dw_cfa_location.  */
+/* This function builds a dwarf location descriptor sequence from a
+   dw_cfa_location, adding the given OFFSET to the result of the
+   expression.  */
 
 static struct dw_loc_descr_struct *
-build_cfa_loc (dw_cfa_location *cfa)
+build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
 {
   struct dw_loc_descr_struct *head, *tmp;
+
+  offset += cfa->offset;
 
   if (cfa->indirect)
     {
@@ -3415,23 +3418,23 @@ build_cfa_loc (dw_cfa_location *cfa)
       head->dw_loc_oprnd1.val_class = dw_val_class_const;
       tmp = new_loc_descr (DW_OP_deref, 0, 0);
       add_loc_descr (&head, tmp);
-      if (cfa->offset != 0)
+      if (offset != 0)
 	{
-	  tmp = new_loc_descr (DW_OP_plus_uconst, cfa->offset, 0);
+	  tmp = new_loc_descr (DW_OP_plus_uconst, offset, 0);
 	  add_loc_descr (&head, tmp);
 	}
     }
   else
     {
-      if (cfa->offset == 0)
+      if (offset == 0)
 	if (cfa->reg <= 31)
 	  head = new_loc_descr (DW_OP_reg0 + cfa->reg, 0, 0);
 	else
 	  head = new_loc_descr (DW_OP_regx, cfa->reg, 0);
       else if (cfa->reg <= 31)
-	head = new_loc_descr (DW_OP_breg0 + cfa->reg, cfa->offset, 0);
+	head = new_loc_descr (DW_OP_breg0 + cfa->reg, offset, 0);
       else
-	head = new_loc_descr (DW_OP_bregx, cfa->reg, cfa->offset);
+	head = new_loc_descr (DW_OP_bregx, cfa->reg, offset);
     }
 
   return head;
@@ -3930,9 +3933,9 @@ static GTY(()) int label_num;
 
 #ifdef DWARF2_DEBUGGING_INFO
 
-/* Offset from the "steady-state frame pointer" to the CFA,
+/* Offset from the "steady-state frame pointer" to the frame base,
    within the current function.  */
-static HOST_WIDE_INT frame_pointer_cfa_offset;
+static HOST_WIDE_INT frame_pointer_fb_offset;
 
 /* Forward declarations for functions defined in this file.  */
 
@@ -8644,7 +8647,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset)
 	    }
 	  gcc_assert (elim == (frame_pointer_needed ? hard_frame_pointer_rtx
 		      : stack_pointer_rtx));
-          offset += frame_pointer_cfa_offset;
+          offset += frame_pointer_fb_offset;
 
           return new_loc_descr (DW_OP_fbreg, offset, 0);
 	}
@@ -10303,12 +10306,14 @@ tree_add_const_value_attribute (dw_die_ref var_die, tree decl)
     add_const_value_attribute (var_die, rtl);
 }
 
-/* Convert the CFI instructions for the current function into a location
-   list.  This is used for DW_AT_frame_base when we targeting a dwarf2
-   consumer that does not support the dwarf3 DW_OP_call_frame_cfa.  */
+/* Convert the CFI instructions for the current function into a
+   location list.  This is used for DW_AT_frame_base when we targeting
+   a dwarf2 consumer that does not support the dwarf3
+   DW_OP_call_frame_cfa.  OFFSET is a constant to be added to all CFA
+   expressions.  */
 
 static dw_loc_list_ref
-convert_cfa_to_loc_list (void)
+convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
 {
   dw_fde_ref fde;
   dw_loc_list_ref list, *list_tail;
@@ -10345,8 +10350,9 @@ convert_cfa_to_loc_list (void)
       case DW_CFA_advance_loc4:
 	if (!cfa_equal_p (&last_cfa, &next_cfa))
 	  {
-	    *list_tail = new_loc_list (build_cfa_loc (&last_cfa), start_label,
-				       last_label, section, list == NULL);
+	    *list_tail = new_loc_list (build_cfa_loc (&last_cfa, offset),
+				       start_label, last_label, section,
+				       list == NULL);
 
 	    list_tail = &(*list_tail)->dw_loc_next;
 	    last_cfa = next_cfa;
@@ -10370,32 +10376,35 @@ convert_cfa_to_loc_list (void)
 
   if (!cfa_equal_p (&last_cfa, &next_cfa))
     {
-      *list_tail = new_loc_list (build_cfa_loc (&last_cfa), start_label,
-				 last_label, section, list == NULL);
+      *list_tail = new_loc_list (build_cfa_loc (&last_cfa, offset),
+				 start_label, last_label, section,
+				 list == NULL);
       list_tail = &(*list_tail)->dw_loc_next;
       start_label = last_label;
     }
-  *list_tail = new_loc_list (build_cfa_loc (&next_cfa), start_label,
-			     fde->dw_fde_end, section, list == NULL);
+  *list_tail = new_loc_list (build_cfa_loc (&next_cfa, offset),
+			     start_label, fde->dw_fde_end, section,
+			     list == NULL);
 
   return list;
 }
 
-/* Compute a displacement from the "steady-state frame pointer" to
-   the CFA, and store it in frame_pointer_cfa_offset.  */
+/* Compute a displacement from the "steady-state frame pointer" to the
+   frame base (often the same as the CFA), and store it in
+   frame_pointer_fb_offset.  OFFSET is added to the displacement
+   before the latter is negated.  */
 
 static void
-compute_frame_pointer_to_cfa_displacement (void)
+compute_frame_pointer_to_fb_displacement (HOST_WIDE_INT offset)
 {
-  HOST_WIDE_INT offset;
   rtx reg, elim;
 
 #ifdef FRAME_POINTER_CFA_OFFSET
   reg = frame_pointer_rtx;
-  offset = FRAME_POINTER_CFA_OFFSET (current_function_decl);
+  offset += FRAME_POINTER_CFA_OFFSET (current_function_decl);
 #else
   reg = arg_pointer_rtx;
-  offset = ARG_POINTER_CFA_OFFSET (current_function_decl);
+  offset += ARG_POINTER_CFA_OFFSET (current_function_decl);
 #endif
 
   elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
@@ -10407,7 +10416,7 @@ compute_frame_pointer_to_cfa_displacement (void)
   gcc_assert (elim == (frame_pointer_needed ? hard_frame_pointer_rtx
 		       : stack_pointer_rtx));
 
-  frame_pointer_cfa_offset = -offset;
+  frame_pointer_fb_offset = -offset;
 }
 
 /* Generate a DW_AT_name attribute given some string value to be included as
@@ -11607,6 +11616,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
     }
   else if (!DECL_EXTERNAL (decl))
     {
+      HOST_WIDE_INT cfa_fb_offset;
+
       if (!old_die || !get_AT (old_die, DW_AT_inline))
 	equate_decl_number_to_die (decl, subr_die);
 
@@ -11643,6 +11654,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       add_AT_fde_ref (subr_die, DW_AT_MIPS_fde, current_funcdef_fde);
 #endif
 
+      cfa_fb_offset = CFA_FRAME_BASE_OFFSET (decl);
+
       /* We define the "frame base" as the function's CFA.  This is more
 	 convenient for several reasons: (1) It's stable across the prologue
 	 and epilogue, which makes it better than just a frame pointer,
@@ -11656,7 +11669,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 consumers that understand it; fall back to "pure" dwarf2 and
 	 convert the CFA data into a location list.  */
       {
-	dw_loc_list_ref list = convert_cfa_to_loc_list ();
+	dw_loc_list_ref list = convert_cfa_to_fb_loc_list (cfa_fb_offset);
 	if (list->dw_loc_next)
 	  add_AT_loc_list (subr_die, DW_AT_frame_base, list);
 	else
@@ -11668,7 +11681,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 will reference in the rtl; the later is what we've told the 
 	 debugger about.  We'll need to adjust all frame_base references
 	 by this displacement.  */
-      compute_frame_pointer_to_cfa_displacement ();
+      compute_frame_pointer_to_fb_displacement (cfa_fb_offset);
 
       if (cfun->static_chain_decl)
 	add_AT_location_description (subr_die, DW_AT_static_link,
