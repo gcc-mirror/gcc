@@ -1,3 +1,17 @@
+2006-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR c++/21583
+
+	Backport:
+	2004-11-30  Loren James Rittle  <ljrittle@acm.org>
+
+        * g++.old-deja/g++.eh/badalloc1.C (arena_size): Bump up to 262144
+        to support new requirements on FreeBSD 5.
+
+	2004-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.eh/badalloc1.C: Robustify.
+
 2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26070
