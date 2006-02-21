@@ -1,5 +1,6 @@
 /* GNU Objective C Runtime Thread Interface.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,8 +27,11 @@ Boston, MA 02110-1301, USA.  */
 #define _LIBOBJC
 /* The line below is needed for declarations of functions such as
    pthread_mutexattr_settype, without which gthr-posix.h may fail to
-   compile within libobjc.  */
+   compile within libobjc.  Unfortunately, this breaks compilation on
+   Tru64 UNIX V4.0F, so disable it there.  */
+#ifndef __osf__
 #define _XOPEN_SOURCE 500
+#endif
 #include "config.h"
 #include "tconfig.h"
 #include "coretypes.h"
