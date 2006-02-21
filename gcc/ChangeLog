@@ -1,3 +1,8 @@
+2006-02-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/sourcebuild.texi (Front End Directory): No more double-colon
+	hooks.
+
 2006-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26379

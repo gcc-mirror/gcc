@@ -567,10 +567,7 @@ setting of @code{language} in @file{config-lang.in}) for the following
 values of @code{@var{hook}}, and any other Makefile rules required to
 build those targets (which may if necessary use other Makefiles
 specified in @code{outputs} in @file{config-lang.in}, although this is
-deprecated).  Some hooks are defined by using a double-colon rule for
-@code{@var{hook}}, rather than by using a target of form
-@code{@var{lang}.@var{hook}}.  These hooks are called ``double-colon
-hooks'' below.  It also adds any testsuite targets that can use the
+deprecated).  It also adds any testsuite targets that can use the
 standard rule in @file{gcc/Makefile.in} to the variable
 @code{lang_checks}.
 
@@ -591,7 +588,6 @@ for this, and should fail if an error occurs.
 Build DVI documentation for the front end, in the build directory.
 This should be done using @code{$(TEXI2DVI)}, with appropriate
 @option{-I} arguments pointing to directories of included files.
-This hook is a double-colon hook.
 @item html
 Build HTML documentation for the front end, in the build directory.
 @item man
@@ -607,7 +603,7 @@ compiler executables listed in @code{compilers} in
 @item install-info
 Install info documentation for the front end, if it is present in the
 source directory.  This target should have dependencies on info files
-that should be installed.  This hook is a double-colon hook.
+that should be installed.
 @item install-man
 Install man pages for the front end.  This target should ignore
 errors.
