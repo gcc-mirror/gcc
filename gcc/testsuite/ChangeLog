@@ -1,3 +1,8 @@
+2006-02-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/26361
+	* gcc.dg/tree-ssa/vrp27.c: New test case.
+
 2006-02-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/tree-ssa/complex-3.c: Split out first part into ...
