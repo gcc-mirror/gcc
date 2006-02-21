@@ -1,5 +1,5 @@
 /* Definitions for the Blackfin port.
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -256,7 +256,7 @@ extern const char *bfin_library_id_string;
 /*i0 i1 i2 i3 b0 b1 b2 b3   l0 l1 l2 l3 m0 m1 m2 m3 */ \
   0, 0, 0, 0, 0, 0, 0, 0,   1, 1, 1, 1, 0, 0, 0, 0,    \
 /*a0 a1 cc rets/i/x/n/e     astat seqstat usp argp */ \
-  0, 0, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1	 \
+  0, 0, 0, 1, 1, 1, 1, 1,   1, 1, 1, 1	 \
 }
 
 /* 1 for registers not available across function calls.

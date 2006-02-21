@@ -1,4 +1,6 @@
 ;; Predicate definitions for the Blackfin.
+;; Copyright (C) 2005, 2006  Free Software Foundation, Inc.
+;; Contributed by Analog Devices.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -64,11 +66,6 @@
     return HARD_REGNO_MODE_OK (REGNO (op), mode);
   return 1;
 })
-
-;; Return nonzero if OP is the CC register.
-(define_predicate "cc_operand"
-  (and (match_code "reg")
-       (match_test "REGNO (op) == REG_CC && GET_MODE (op) == BImode")))
 
 ;; Return nonzero if OP is a register or a 7 bit signed constant.
 (define_predicate "reg_or_7bit_operand"

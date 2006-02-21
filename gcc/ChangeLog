@@ -1,3 +1,13 @@
+2006-02-21  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/predicates.md (cc_operand): Delete predicate.  All uses
+	replaced with register_operand.
+	* config/bfin/bfin.c (bfin_register_move_cost): Moving CC to any
+	non-DREG is expensive.
+	* config/bfin/bfin.h (FIXED_REGISTERS): CC isn't fixed.
+	* config/bfin/bfin.md (movbi): Fix constraints and template for moves
+	involving memory.
+
 2006-02-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/install.texi2html: Use set -e.
