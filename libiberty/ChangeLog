@@ -1,3 +1,7 @@
+2006-02-21  Ben Elliston  <bje@au.ibm.com>
+
+	* pexecute.c (pwait): Syntax fix for previous change.
+
 2006-02-17  Uttam Pawar  <uttamp@us.ibm.com>
 
 	* pexecute.c (pwait): Free vector pointer.
