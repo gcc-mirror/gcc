@@ -5,12 +5,14 @@
 # $SOURCEDIR and $DESTDIR, resp., refer to the directory containing
 # the texinfo source and the directory to put the HTML version in.
 #
-# (C) 2001 Free Software Foundation
+# (C) 2001, 2003, 2006 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, June 2001.
 #
 # This script is Free Software, and it can be copied, distributed and
 # modified as defined in the GNU General Public License.  A copy of
 # its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+
+set -e
 
 SOURCEDIR=${SOURCEDIR-.}
 DESTDIR=${DESTDIR-HTML}

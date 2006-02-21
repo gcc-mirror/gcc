@@ -1,3 +1,7 @@
+2006-02-21  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/install.texi2html: Use set -e.
+
 2006-02-21  Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/tm.texi (ASM_OUTPUT_SHARED_COMMON, ASM_OUTPUT_SHARED_BSS)
