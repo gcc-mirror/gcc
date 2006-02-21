@@ -1,3 +1,7 @@
+2006-02-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/i386/darwin.h (DWARF2_FRAME_REG_OUT): New.
+
 2006-02-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/sse.md (vec_extractv2df_1_sse): New.
