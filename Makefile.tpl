@@ -87,8 +87,6 @@ GDB_NLM_DEPS =
 # the libraries.
 RPATH_ENVVAR = @RPATH_ENVVAR@
 
-# This is the list of directories to be built for the build system.
-BUILD_CONFIGDIRS = libiberty
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
@@ -181,9 +179,6 @@ POSTSTAGE1_HOST_EXPORTS = \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
 	  -B$(build_tooldir)/bin/"; export CC_FOR_BUILD;
 
-# This is set by the configure script to the list of directories which
-# should be built using the target tools.
-TARGET_CONFIGDIRS = @target_configdirs@
 # Target libraries are put under this directory:
 TARGET_SUBDIR = @target_subdir@
 # This is set by the configure script to the arguments to use when configuring

@@ -7438,7 +7438,6 @@ s%@build_configdirs@%$build_configdirs%g
 s%@host_configargs@%$host_configargs%g
 s%@configdirs@%$configdirs%g
 s%@target_configargs@%$target_configargs%g
-s%@target_configdirs@%$target_configdirs%g
 s%@CC_FOR_BUILD@%$CC_FOR_BUILD%g
 s%@config_shell@%$config_shell%g
 s%@YACC@%$YACC%g
