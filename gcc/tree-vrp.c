@@ -1790,6 +1790,24 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
       max = (vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)) && !flag_wrapv)
 	     ? TYPE_MAX_VALUE (TREE_TYPE (expr))
 	     : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
+
+    }
+  else if (code == NEGATE_EXPR
+	   && TYPE_UNSIGNED (TREE_TYPE (expr)))
+    {
+      if (!range_includes_zero_p (&vr0))
+	{
+	  max = fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
+	  min = fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
+	}
+      else
+	{
+	  if (range_is_null (&vr0))
+	    set_value_range_to_null (vr, TREE_TYPE (expr));
+	  else
+	    set_value_range_to_varying (vr);
+	  return;
+	}
     }
   else if (code == ABS_EXPR
            && !TYPE_UNSIGNED (TREE_TYPE (expr)))

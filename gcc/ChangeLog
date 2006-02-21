@@ -1,3 +1,9 @@
+2006-02-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/26361
+	* tree-vrp.c (extract_range_from_unary_expr): Handle NEGATE_EXPR
+	of unsigned integer types.
+
 2006-02-20  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-chrec.c (eq_evolutions_p): New.
