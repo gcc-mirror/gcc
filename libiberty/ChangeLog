@@ -1,3 +1,8 @@
+2006-02-17  Uttam Pawar  <uttamp@us.ibm.com>
+
+	* pexecute.c (pwait): Free vector pointer.
+	* partition.c (partition_print): Free class_elements pointer.
+
 2006-02-11  Roger Sayle  <roger@eyesopen.com>
 	    R. Scott Bailey  <scott.bailey@eds.com>
 	    Bill Northcott  <w.northcott@unsw.edu.au>

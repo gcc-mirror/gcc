@@ -101,7 +101,10 @@ pwait (int pid, int *status, int flags ATTRIBUTE_UNUSED)
 
       vector = XNEWVEC (int, idx);
       if (!pex_get_status (pex, idx, vector))
-	return -1;
+	{
+	  free (vector)
+	  return -1;
+	}
       *status = vector[pid];
       free (vector);
     }

@@ -177,6 +177,7 @@ partition_print (partition part, FILE *fp)
       }
   fputc (']', fp);
 
+  free (class_elements);
   free (done);
 }
 
