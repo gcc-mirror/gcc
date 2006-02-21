@@ -1,5 +1,10 @@
 2006-02-21  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/i386/sse.md (vec_extractv2df_1_sse): New.
+	(vec_extractv2df_0_sse): New.
+
+2006-02-21  Alexandre Oliva  <aoliva@redhat.com>
+
 	* defaults.h (CFA_FRAME_BASE_OFFSET): Define.
 	* config/ia64/ia64.h (CFA_FRAME_BASE_OFFSET): Override.
 	* doc/tm.texi (CFA_FRAME_BASE_OFFSET): Document.
