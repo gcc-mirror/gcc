@@ -1,3 +1,8 @@
+2006-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26379
+	* gcc.target/i386/mmx-7.c: New test.
+
 2006-02-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/26361
