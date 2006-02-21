@@ -1,3 +1,8 @@
+2006-02-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR libgomp/26234
+	* doc/install.texi (Configuration): Document --disable-libgomp.
+
 2006-02-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/darwin.h (DWARF2_FRAME_REG_OUT): New.
