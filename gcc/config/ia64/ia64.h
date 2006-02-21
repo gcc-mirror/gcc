@@ -1020,6 +1020,9 @@ enum reg_class
    pointer.  */
 #define INCOMING_FRAME_SP_OFFSET STACK_POINTER_OFFSET
 
+/* We shorten debug info by using CFA-16 as DW_AT_frame_base.  */
+#define CFA_FRAME_BASE_OFFSET(FUNDECL) (-INCOMING_FRAME_SP_OFFSET)
+
 
 /* Register That Address the Stack Frame.  */
 

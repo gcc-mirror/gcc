@@ -1,3 +1,23 @@
+2006-02-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	* defaults.h (CFA_FRAME_BASE_OFFSET): Define.
+	* config/ia64/ia64.h (CFA_FRAME_BASE_OFFSET): Override.
+	* doc/tm.texi (CFA_FRAME_BASE_OFFSET): Document.
+	* dwarf2out.c (build_cfa_loc): New offset parameter.  Add it
+	to the result of the expression.
+	(def_cfa_1): Adjust.
+	(frame_pointer_cfa_offset): Rename to...
+	(frame_pointer_fb_offset): ... this.  Adjust all uses.
+	(convert_cfa_to_loc_list): Rename to...
+	(convert_cfa_to_fb_loc_list): ... this.  New offset parameter.
+	Pass it on to build_cfa_loc.
+	(compute_frame_pointer_to_cfa_displacement): Rename to...
+	(compute_frame_pointer_to_fb_displacement): ... this.  New
+	offset parameter.  Use it in computation.
+	(gen_subprogram_die): Compute cfa_fb_offset with the new
+	macro, and use it to compute the fb loc list and the
+	displacement.
+
 2006-02-21  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/predicates.md (cc_operand): Delete predicate.  All uses

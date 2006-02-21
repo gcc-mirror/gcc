@@ -889,6 +889,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define ARG_POINTER_CFA_OFFSET(FNDECL) FIRST_PARM_OFFSET (FNDECL)
 #endif
 
+/* On most machines, we use the CFA as DW_AT_frame_base.  */
+#ifndef CFA_FRAME_BASE_OFFSET
+#define CFA_FRAME_BASE_OFFSET(FNDECL) 0
+#endif
+
 /* The offset from the incoming value of %sp to the top of the stack frame
    for the current function.  */
 #ifndef INCOMING_FRAME_SP_OFFSET
