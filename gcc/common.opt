@@ -799,10 +799,6 @@ frtl-abstract-sequences
 Common Report Var(flag_rtl_seqabstr)
 Perform sequence abstraction optimization on RTL
 
-fshared-data
-Common Report Var(flag_shared_data)
-Mark data as shared rather than private
-
 fshow-column
 Common C ObjC C++ ObjC++ Report Var(flag_show_column) Init(1)
 Show column numbers in diagnostics, when available.  Default on

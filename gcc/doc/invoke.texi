@@ -761,7 +761,7 @@ See S/390 and zSeries Options.
 -fno-common  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC -fpie -fPIE @gol
 -fno-jump-tables @gol
--freg-struct-return  -fshared-data  -fshort-enums @gol
+-freg-struct-return  -fshort-enums @gol
 -fshort-double  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -13000,14 +13000,6 @@ useful for building programs to run under WINE@.
 @strong{Warning:} the @option{-fshort-wchar} switch causes GCC to generate
 code that is not binary compatible with code generated without that switch.
 Use it to conform to a non-default application binary interface.
-
-@item -fshared-data
-@opindex fshared-data
-Requests that the data and non-@code{const} variables of this
-compilation be shared data rather than private data.  The distinction
-makes sense only on certain operating systems, where shared data is
-shared between processes running the same program, while private data
-exists in one copy per process.
 
 @item -fno-common
 @opindex fno-common

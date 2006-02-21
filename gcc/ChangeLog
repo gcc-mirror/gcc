@@ -1,3 +1,15 @@
+2006-02-21  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/tm.texi (ASM_OUTPUT_SHARED_COMMON, ASM_OUTPUT_SHARED_BSS)
+	(ASM_OUTPUT_SHARED_LOCAL): Delete.
+	* doc/invoke.texi (-fshared-data): Delete.
+	* common.opt (fshared-data): Delete.
+	* varasm.c (asm_emit_uninitialised): Remove flag_shared_data handling.
+	(assemble_static_space): Remove #if 0 code.
+	* system.h (ASM_OUTPUT_SHARED_COMMON, ASM_OUTPUT_SHARED_BSS)
+	(ASM_OUTPUT_SHARED_LOCAL): Poison.
+	* config/cris/cris.h: Remove FIXME.
+
 2006-02-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/sourcebuild.texi (Front End Directory): No more double-colon
