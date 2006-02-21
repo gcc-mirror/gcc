@@ -1243,9 +1243,6 @@ enum cris_pic_symbol_type
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
  CRIS_ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN, 1)
 
-/* FIXME: define ASM_OUTPUT_SHARED_COMMON and emit an error when it is
-   used with -melinux and a.out.  */
-
 /* Node: Label Output */
 
 /* Globalizing directive for a label.  */

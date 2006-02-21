@@ -6671,12 +6671,6 @@ in place of both @code{ASM_OUTPUT_COMMON} and
 the variable's decl in order to chose what to output.
 @end defmac
 
-@defmac ASM_OUTPUT_SHARED_COMMON (@var{stream}, @var{name}, @var{size}, @var{rounded})
-If defined, it is similar to @code{ASM_OUTPUT_COMMON}, except that it
-is used when @var{name} is shared.  If not defined, @code{ASM_OUTPUT_COMMON}
-will be used.
-@end defmac
-
 @defmac ASM_OUTPUT_BSS (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{rounded})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} the assembler definition of uninitialized global @var{decl} named
@@ -6709,12 +6703,6 @@ Try to use function @code{asm_output_aligned_bss} defined in file
 @file{varasm.c} when defining this macro.
 @end defmac
 
-@defmac ASM_OUTPUT_SHARED_BSS (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{rounded})
-If defined, it is similar to @code{ASM_OUTPUT_BSS}, except that it
-is used when @var{name} is shared.  If not defined, @code{ASM_OUTPUT_BSS}
-will be used.
-@end defmac
-
 @defmac ASM_OUTPUT_LOCAL (@var{stream}, @var{name}, @var{size}, @var{rounded})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} the assembler definition of a local-common-label named
@@ -6744,12 +6732,6 @@ is no corresponding variable.  If you define this macro, GCC will use it
 in place of both @code{ASM_OUTPUT_DECL} and
 @code{ASM_OUTPUT_ALIGNED_DECL}.  Define this macro when you need to see
 the variable's decl in order to chose what to output.
-@end defmac
-
-@defmac ASM_OUTPUT_SHARED_LOCAL (@var{stream}, @var{name}, @var{size}, @var{rounded})
-If defined, it is similar to @code{ASM_OUTPUT_LOCAL}, except that it
-is used when @var{name} is shared.  If not defined, @code{ASM_OUTPUT_LOCAL}
-will be used.
 @end defmac
 
 @node Label Output

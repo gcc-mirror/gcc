@@ -1547,30 +1547,6 @@ asm_emit_uninitialised (tree decl, const char *name,
   if (destination == asm_dest_bss)
     globalize_decl (decl);
 
-  if (flag_shared_data)
-    {
-      switch (destination)
-	{
-#ifdef ASM_OUTPUT_SHARED_BSS
-	case asm_dest_bss:
-	  ASM_OUTPUT_SHARED_BSS (asm_out_file, decl, name, size, rounded);
-	  return;
-#endif
-#ifdef ASM_OUTPUT_SHARED_COMMON
-	case asm_dest_common:
-	  ASM_OUTPUT_SHARED_COMMON (asm_out_file, name, size, rounded);
-	  return;
-#endif
-#ifdef ASM_OUTPUT_SHARED_LOCAL
-	case asm_dest_local:
-	  ASM_OUTPUT_SHARED_LOCAL (asm_out_file, name, size, rounded);
-	  return;
-#endif
-	default:
-	  break;
-	}
-    }
-
   switch (destination)
     {
 #ifdef ASM_EMIT_BSS
@@ -2103,11 +2079,6 @@ assemble_static_space (unsigned HOST_WIDE_INT size)
   char name[12];
   const char *namestring;
   rtx x;
-
-#if 0
-  if (flag_shared_data)
-    switch_to_section (data_section);
-#endif
 
   ASM_GENERATE_INTERNAL_LABEL (name, "LF", const_labelno);
   ++const_labelno;
