@@ -2171,7 +2171,7 @@ AC_SUBST(configdirs)
 
 # Target module lists & subconfigure args.
 AC_SUBST(target_configargs)
-AC_SUBST(target_configdirs)
+
 
 # Build tools.
 AC_SUBST(CC_FOR_BUILD)
