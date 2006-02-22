@@ -4381,7 +4381,6 @@ extern unsigned int update_alignment_for_field (record_layout_info, tree,
 extern void make_decl_rtl (tree);
 extern void make_decl_one_only (tree);
 extern int supports_one_only (void);
-extern void variable_section (tree, int);
 extern void resolve_unique_section (tree, int, int);
 extern void mark_referenced (tree);
 extern void mark_decl_referenced (tree);
