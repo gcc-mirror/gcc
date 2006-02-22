@@ -1,6 +1,6 @@
 // Debugging list implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
+// Copyright (C) 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -307,9 +307,10 @@ namespace __debug
       splice(iterator __position, list& __x, iterator __i)
       {
 	__glibcxx_check_insert(__position);
-	_GLIBCXX_DEBUG_VERIFY(__x.get_allocator() == this->get_allocator(),
-			      _M_message(__gnu_debug::__msg_splice_alloc)
-			    ._M_sequence(*this)._M_sequence(__x, "__x"));
+
+	// We used to perform the splice_alloc check:  not anymore, redundant
+	// after implementing the relevant bits of N1599.
+
 	_GLIBCXX_DEBUG_VERIFY(__i._M_dereferenceable(),
 			      _M_message(__gnu_debug::__msg_splice_bad)
 			      ._M_iterator(__i, "__i"));
@@ -332,9 +333,9 @@ namespace __debug
 			      _M_message(__gnu_debug::__msg_splice_other)
 			      ._M_sequence(__x, "x")
 			      ._M_iterator(__first, "first"));
-	_GLIBCXX_DEBUG_VERIFY(__x.get_allocator() == this->get_allocator(),
-			      _M_message(__gnu_debug::__msg_splice_alloc)
-			      ._M_sequence(*this)._M_sequence(__x));
+
+	// We used to perform the splice_alloc check:  not anymore, redundant
+	// after implementing the relevant bits of N1599.
 
 	for (iterator __tmp = __first; __tmp != __last; )
 	  {

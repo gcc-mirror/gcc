@@ -1,3 +1,8 @@
+2006-02-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/debug/list (splice): Remove splice_alloc check, redundant
+	after implementing the splice bits of N1599.
+
 2006-02-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_std/cmath.tcc: Use _GLIBCXX_BEGIN_NAMESPACE,
