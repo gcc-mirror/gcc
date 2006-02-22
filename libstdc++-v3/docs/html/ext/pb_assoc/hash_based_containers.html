@@ -888,7 +888,7 @@ supports a <tt><b>protected virtual</b></tt> function for external resize.
     The library contains a single class for instantiating a resize policy,
 <tt>pb_assoc</tt> contains
 a standard resize policy,
-<a href = "ht_standard_resize_policy.html"><tt>ht_standard_resize_policy</tt></a> (the name is explained shortly).
+<a href = "hash_standard_resize_policy.html"><tt>hash_standard_resize_policy</tt></a> (the name is explained shortly).
 In terms of interface, it is parameterized by a boolean constant indicating whether its public interface supports
 queries of actual size and external resize operations (the inclusion and exclusion of these methods in the interface have obvious tradeoffs in terms of encapsulation and flexibility).
 ([<a href = "references.html#alexandrescu01modern">alexandrescu01modern</a>] shows many techniques for
@@ -898,7 +898,7 @@ changing between alternative interfaces at compile time.)
 <p>
 As noted before,
     size and trigger policies are usually orthogonal.
-<a href = "ht_standard_resize_policy.html"><tt>ht_standard_resize_policy</tt></a>
+<a href = "hash_standard_resize_policy.html"><tt>hash_standard_resize_policy</tt></a>
 is parameterized by size and trigger policies. For example,
 a collision-chaining hash table
 is typically be defined as follows:
@@ -908,7 +908,7 @@ cc_ht_map&lt;
   key,
   data,
   ...
-  ht_standard_resize_policy&lt;
+  hash_standard_resize_policy&lt;
     some_trigger_policy,
     some_size_policy,
     ...&gt; &gt;
@@ -916,7 +916,7 @@ cc_ht_map&lt;
 
 <p>
  The sole function of
-<a href = "ht_standard_resize_policy.html"><tt>ht_standard_resize_policy</tt></a>
+<a href = "hash_standard_resize_policy.html"><tt>hash_standard_resize_policy</tt></a>
  is to
 act as a standard delegator
 [<a href = "references.html#gamma95designpatterns">gamma95designpatterns</a>] for these
@@ -956,19 +956,19 @@ and trigger policies:
 
 <ol>
     <li>
-        <a href = "ht_load_check_trigger.html"><tt>ht_load_check_trigger</tt></a> implements
+        <a href = "hash_load_check_resize_trigger.html"><tt>hash_load_check_resize_trigger</tt></a> implements
     a load check trigger policy.
     </li>
     <li>
-        <a href = "ht_max_collision_check_grow_resize_trigger.html"><tt>ht_max_collision_check_grow_resize_trigger</tt></a>
+        <a href = "cc_hash_max_collision_check_resize_trigger.html"><tt>cc_hash_max_collision_check_resize_trigger</tt></a>
     implements a collision check trigger policy.
     </li>
     <li>
-<a href = "ht_exponential_size_policy.html"><tt>ht_exponential_size_policy</tt></a> implemens
+<a href = "hash_exponential_size_policy.html"><tt>hash_exponential_size_policy</tt></a> implemens
 an exponential-size policy (which should be used with mask range hashing).
     </li>
     <li>
-<a href = "ht_prime_size_policy.html"><tt>ht_prime_size_policy</tt></a> implementing
+<a href = "hash_prime_size_policy.html"><tt>hash_prime_size_policy</tt></a> implementing
 a size policy based on a sequence of primes
 [<a href = "references.html#sgi_stl">sgi_stl</a>] (which should be used with mod range hashing
     </li>
@@ -987,16 +987,16 @@ of the resize-related classes.
 by <tt>Resize_Policy</tt>, from which it subclasses publicly
 [<a href = "references.html#alexandrescu01modern">alexandrescu01modern</a>].
 This class is currently instantiated only by
-<a href = "ht_standard_resize_policy.html"><tt>ht_standard_resize_policy</tt></a>.
-<a href = "ht_standard_resize_policy.html"><tt>ht_standard_resize_policy</tt></a> itself
+<a href = "hash_standard_resize_policy.html"><tt>hash_standard_resize_policy</tt></a>.
+<a href = "hash_standard_resize_policy.html"><tt>hash_standard_resize_policy</tt></a> itself
 is parameterized by <tt>Trigger_Policy</tt> and <tt>Size_Policy</tt>.
 Currently, <tt>Trigger_Policy</tt> is instantiated by
-<a href = "ht_load_check_trigger.html"><tt>ht_load_check_trigger</tt></a>,
+<a href = "hash_load_check_resize_trigger.html"><tt>hash_load_check_resize_trigger</tt></a>,
 or
-<a href = "ht_max_collision_check_grow_resize_trigger.html"><tt>ht_max_collision_check_grow_resize_trigger</tt></a>; <tt>Size_Policy</tt> is instantiated by
-<a href = "ht_exponential_size_policy.html"><tt>ht_exponential_size_policy</tt></a>,
+<a href = "cc_hash_max_collision_check_resize_trigger.html"><tt>cc_hash_max_collision_check_resize_trigger</tt></a>; <tt>Size_Policy</tt> is instantiated by
+<a href = "hash_exponential_size_policy.html"><tt>hash_exponential_size_policy</tt></a>,
 or
-<a href = "ht_prime_size_policy.html"><tt>ht_prime_size_policy</tt></a>.
+<a href = "hash_prime_size_policy.html"><tt>hash_prime_size_policy</tt></a>.
 </p>
 
 
