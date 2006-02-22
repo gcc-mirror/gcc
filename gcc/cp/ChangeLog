@@ -1,6 +1,13 @@
-2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
-	* Make-lang.in (C++): Remove
-	(.PHONY): Remove C++
+2006-02-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/26291
+	* decl.c (grok_op_properties): Check for ellipsis in arguments of
+        operators.
+
+2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
+	* Make-lang.in (C++): Remove.
+	(.PHONY): Remove C++.
 
 2006-02-18  Mark Mitchell  <mark@codesourcery.com>
 

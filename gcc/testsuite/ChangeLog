@@ -1,3 +1,9 @@
+2006-02-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/26291
+	* g++.dg/other/ellipsis1.C: New test.
+	* g++.dg/parse/operator4.C: Adjust error marker.
+
 2006-02-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/25603
