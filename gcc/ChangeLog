@@ -1,3 +1,9 @@
+2006-02-22  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in (stmp-fixinc): Use real-$(INSTALL_HEADERS_DIR).
+	(real-install-headers-tar, real-install-headers-cpio)
+	(real-install-headers-cp): New targets.
+
 2006-02-22  Richard Sandiford  <richard@codesourcery.com>
 
 	* tree.h (variable_section): Delete.
