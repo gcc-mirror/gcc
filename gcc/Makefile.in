@@ -3195,7 +3195,7 @@ stmp-fixinc: gsyslimits.h macro_list \
 	-chmod a+rx include
 	if [ -d ../prev-gcc ]; then \
 	  cd ../prev-gcc && \
-	  $(MAKE) $(INSTALL_HEADERS_DIR) DESTDIR=`pwd`/../gcc/ \
+	  $(MAKE) real-$(INSTALL_HEADERS_DIR) DESTDIR=`pwd`/../gcc/ \
 	    libsubdir=. ; \
 	else \
 	  (TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); ${PWD_COMMAND}`; \
@@ -3787,6 +3787,18 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 
 # Install the include directory using cp.
 install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
+	cp -p -r include $(DESTDIR)$(libsubdir)
+
+# Targets without dependencies, for use in prev-gcc during bootstrap.
+real-install-headers-tar:
+	(cd `${PWD_COMMAND}`/include ; \
+	 tar -cf - .; exit 0) | (cd $(DESTDIR)$(libsubdir)/include; tar xpf - )
+
+real-install-headers-cpio:
+	cd `${PWD_COMMAND}`/include ; \
+	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include
+
+real-install-headers-cp:
 	cp -p -r include $(DESTDIR)$(libsubdir)
 
 # Install supporting files for fixincludes to be run later.
