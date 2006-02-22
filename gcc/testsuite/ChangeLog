@@ -1,3 +1,8 @@
+2006-02-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/bf-spl1.c: Don't specify -m68000.
+	* g++.old-deja/g++.pt/static11.C: Xfail for m68k-elf
+
 2006-02-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/eh/spbp.C: New.
