@@ -1,3 +1,7 @@
+2006-02-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/hashtable: Trivial formatting fixes.
+
 2006-02-20  Paolo Carlini  <pcarlini@suse.de>
 
 	Revert recent commit for libstdc++/26211, now suspended waiting for

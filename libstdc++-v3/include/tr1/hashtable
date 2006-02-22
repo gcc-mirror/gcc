@@ -101,6 +101,7 @@ namespace Internal
   
 } // namespace Internal
 
+
 //----------------------------------------------------------------------
 // Auxiliary types used for all instantiations of hashtable: nodes
 // and iterators.
@@ -118,16 +119,16 @@ namespace Internal
   template<typename Value>
     struct hash_node<Value, true>
     {
-      Value m_v;
+      Value       m_v;
       std::size_t hash_code;
-      hash_node* m_next;
+      hash_node*  m_next;
     };
 
   template<typename Value>
     struct hash_node<Value, false>
     {
-      Value m_v;
-      hash_node* m_next;
+      Value       m_v;
+      hash_node*  m_next;
     };
 
   // Local iterators, used to iterate within a bucket but not between
@@ -259,7 +260,7 @@ namespace Internal
       void
       m_incr_bucket();
 
-      hash_node<Value, cache>* m_cur_node;
+      hash_node<Value, cache>*  m_cur_node;
       hash_node<Value, cache>** m_cur_bucket;
     };
 
@@ -381,6 +382,7 @@ namespace Internal
     };
 } // namespace Internal
 
+
 // ----------------------------------------------------------------------
 // Many of class template hashtable's template parameters are policy
 // classes.  These are defaults for the policies.
@@ -413,7 +415,7 @@ namespace Internal
     typedef std::size_t result_type;
 
     result_type
-    operator() (first_argument_type r, second_argument_type N) const
+    operator()(first_argument_type r, second_argument_type N) const
     { return r % N; }
   };
 
@@ -448,8 +450,8 @@ namespace Internal
     std::pair<bool, std::size_t>
     need_rehash(std::size_t n_bkt, std::size_t n_elt, std::size_t n_ins) const;
     
-    float m_max_load_factor;
-    float m_growth_factor;
+    float               m_max_load_factor;
+    float               m_growth_factor;
     mutable std::size_t m_next_resize;
   };
 
@@ -542,7 +544,7 @@ namespace Internal
   next_bkt(std::size_t n) const
   {
     const unsigned long* const last = X<0>::primes + X<0>::n_primes;
-    const unsigned long* p = std::lower_bound (X<0>::primes, last, n);
+    const unsigned long* p = std::lower_bound(X<0>::primes, last, n);
     m_next_resize = static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
     return *p;
   }
@@ -555,8 +557,8 @@ namespace Internal
   {
     const unsigned long* const last = X<0>::primes + X<0>::n_primes;
     const float min_bkts = n / m_max_load_factor;
-    const unsigned long* p = std::lower_bound (X<0>::primes, last,
-					       min_bkts, lt());
+    const unsigned long* p = std::lower_bound(X<0>::primes, last,
+					      min_bkts, lt());
     m_next_resize = static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
     return *p;
   }
@@ -579,10 +581,10 @@ namespace Internal
 	float min_bkts = (float(n_ins) + float(n_elt)) / m_max_load_factor;
 	if (min_bkts > n_bkt)
 	  {
-	    min_bkts = std::max (min_bkts, m_growth_factor * n_bkt);
+	    min_bkts = std::max(min_bkts, m_growth_factor * n_bkt);
 	    const unsigned long* const last = X<0>::primes + X<0>::n_primes;
-	    const unsigned long* p = std::lower_bound (X<0>::primes, last,
-						       min_bkts, lt());
+	    const unsigned long* p = std::lower_bound(X<0>::primes, last,
+						      min_bkts, lt());
 	    m_next_resize = 
 	      static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
 	    return std::make_pair(true, *p);
@@ -599,6 +601,7 @@ namespace Internal
   }
 
 } // namespace Internal
+
 
 //----------------------------------------------------------------------
 // Base classes for std::tr1::hashtable.  We define these base classes
@@ -703,15 +706,15 @@ namespace Internal
   
       std::size_t
       bucket_index(const Key& k, hash_code_t, std::size_t N) const
-      { return m_ranged_hash (k, N); }
+      { return m_ranged_hash(k, N); }
 
       std::size_t
       bucket_index(const hash_node<Value, false>* p, std::size_t N) const
-      { return m_ranged_hash (m_extract (p->m_v), N); }
+      { return m_ranged_hash(m_extract(p->m_v), N); }
   
       bool
       compare(const Key& k, hash_code_t, hash_node<Value, false>* n) const
-      { return m_eq (k, m_extract(n->m_v)); }
+      { return m_eq(k, m_extract(n->m_v)); }
 
       void
       store_code(hash_node<Value, false>*, hash_code_t) const
@@ -731,8 +734,8 @@ namespace Internal
 
     protected:
       ExtractKey m_extract;
-      Equal m_eq;
-      H m_ranged_hash;
+      Equal      m_eq;
+      H          m_ranged_hash;
     };
 
 
@@ -779,15 +782,15 @@ namespace Internal
       
       std::size_t
       bucket_index(const Key&, hash_code_t c, std::size_t N) const
-      { return m_h2 (c, N); }
+      { return m_h2(c, N); }
 
       std::size_t
       bucket_index(const hash_node<Value, false>* p, std::size_t N) const
-      { return m_h2 (m_h1 (m_extract (p->m_v)), N); }
+      { return m_h2(m_h1(m_extract(p->m_v)), N); }
 
       bool
       compare(const Key& k, hash_code_t, hash_node<Value, false>* n) const
-      { return m_eq (k, m_extract(n->m_v)); }
+      { return m_eq(k, m_extract(n->m_v)); }
 
       void
       store_code(hash_node<Value, false>*, hash_code_t) const
@@ -808,9 +811,9 @@ namespace Internal
 
     protected:
       ExtractKey m_extract;
-      Equal m_eq;
-      H1 m_h1;
-      H2 m_h2;
+      Equal      m_eq;
+      H1         m_h1;
+      H2         m_h2;
     };
 
   // Specialization: hash function and range-hashing function, 
@@ -841,11 +844,11 @@ namespace Internal
   
       std::size_t
       bucket_index(const Key&, hash_code_t c, std::size_t N) const
-      { return m_h2 (c, N); }
+      { return m_h2(c, N); }
 
       std::size_t
       bucket_index(const hash_node<Value, true>* p, std::size_t N) const
-      { return m_h2 (p->hash_code, N); }
+      { return m_h2(p->hash_code, N); }
 
       bool
       compare(const Key& k, hash_code_t c, hash_node<Value, true>* n) const
@@ -871,9 +874,9 @@ namespace Internal
       
     protected:
       ExtractKey m_extract;
-      Equal m_eq;
-      H1 m_h1;
-      H2 m_h2;
+      Equal      m_eq;
+      H1         m_h1;
+      H2         m_h2;
     };
 
 } // namespace internal
@@ -962,44 +965,44 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 					  unique_keys> >
     {
     public:
-      typedef Allocator                                      allocator_type;
-      typedef Value                                          value_type;
-      typedef Key                                            key_type;
-      typedef Equal                                          key_equal;
+      typedef Allocator                                   allocator_type;
+      typedef Value                                       value_type;
+      typedef Key                                         key_type;
+      typedef Equal                                       key_equal;
       // mapped_type, if present, comes from map_base.
       // hasher, if present, comes from hash_code_base.
-      typedef typename Allocator::difference_type            difference_type;
-      typedef typename Allocator::size_type                  size_type;
-      typedef typename Allocator::reference                  reference;
-      typedef typename Allocator::const_reference            const_reference;
+      typedef typename Allocator::difference_type         difference_type;
+      typedef typename Allocator::size_type               size_type;
+      typedef typename Allocator::reference               reference;
+      typedef typename Allocator::const_reference         const_reference;
       
       typedef Internal::node_iterator<value_type, constant_iterators,
 				      cache_hash_code>
-        local_iterator;
+                                                          local_iterator;
       typedef Internal::node_const_iterator<value_type, constant_iterators,
 					    cache_hash_code>
-        const_local_iterator;
+                                                          const_local_iterator;
 
       typedef Internal::hashtable_iterator<value_type, constant_iterators,
 					   cache_hash_code>
-        iterator;
+                                                          iterator;
       typedef Internal::hashtable_const_iterator<value_type, constant_iterators,
 						 cache_hash_code>
-        const_iterator;
+                                                          const_iterator;
 
     private:
-      typedef Internal::hash_node<Value, cache_hash_code>    node;
+      typedef Internal::hash_node<Value, cache_hash_code> node;
       typedef typename Allocator::template rebind<node>::other
-        node_allocator_t;
+                                                          node_allocator_t;
       typedef typename Allocator::template rebind<node*>::other
-        bucket_allocator_t;
+                                                          bucket_allocator_t;
 
     private:
-      node_allocator_t m_node_allocator;
-      node** m_buckets;
-      size_type m_bucket_count;
-      size_type m_element_count;
-      RehashPolicy m_rehash_policy;
+      node_allocator_t      m_node_allocator;
+      node**                m_buckets;
+      size_type             m_bucket_count;
+      size_type             m_element_count;
+      RehashPolicy          m_rehash_policy;
       
       node*
       m_allocate_node(const value_type& v);
@@ -1025,7 +1028,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       template<typename InIter>
         hashtable(InIter first, InIter last,
 		  size_type bucket_hint,
-		  const H1&, const H2&, const H&,
+		  const H1&, const H2&, const H&, 
 		  const Equal&, const ExtractKey&,
 		  const allocator_type&);
   
@@ -1231,9 +1234,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       void m_rehash(size_type n);
     };
 
+
   //----------------------------------------------------------------------
   // Definitions of class template hashtable's out-of-line member functions.
-  
+
   template<typename K, typename V, 
 	   typename A, typename Ex, typename Eq,
 	   typename H1, typename H2, typename H, typename RP,
@@ -1283,7 +1287,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    {
 	      node* tmp = p;
 	      p = p->m_next;
-	      m_deallocate_node (tmp);
+	      m_deallocate_node(tmp);
 	    }
 	  array[i] = 0;
 	}
@@ -1301,7 +1305,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       // We allocate one extra bucket to hold a sentinel, an arbitrary
       // non-null pointer.  Iterator increment relies on this.
-      node** p = alloc.allocate(n+1);
+      node** p = alloc.allocate(n + 1);
       std::fill(p, p+n, (node*) 0);
       p[n] = reinterpret_cast<node*>(0x1000);
       return p;
@@ -1328,7 +1332,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	      const H1& h1, const H2& h2, const H& h,
 	      const Eq& eq, const Ex& exk,
 	      const allocator_type& a)
-    : Internal::rehash_base<RP,hashtable>(),
+    : Internal::rehash_base<RP, hashtable>(),
       Internal::hash_code_base<K, V, Ex, Eq, H1, H2, H, c>(exk, eq, h1, h2, h),
       Internal::map_base<K, V, Ex, u, hashtable>(),
       m_node_allocator(a),
@@ -1351,10 +1355,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		const H1& h1, const H2& h2, const H& h,
 		const Eq& eq, const Ex& exk,
 		const allocator_type& a)
-      : Internal::rehash_base<RP,hashtable>(),
+      : Internal::rehash_base<RP, hashtable>(),
 	Internal::hash_code_base<K, V, Ex, Eq, H1, H2, H, c> (exk, eq,
 							      h1, h2, h),
-	Internal::map_base<K,V,Ex,u,hashtable>(),
+	Internal::map_base<K, V, Ex, u, hashtable>(),
 	m_node_allocator(a),
 	m_bucket_count (0),
 	m_element_count(0),
@@ -1408,7 +1412,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		}
 	    }
 	}
-      catch (...)
+      catch(...)
 	{
 	  clear();
 	  m_deallocate_buckets (m_buckets, m_bucket_count);
@@ -1475,7 +1479,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       m_rehash_policy = pol;
       size_type n_bkt = pol.bkt_for_elements(m_element_count);
       if (n_bkt > m_bucket_count)
-	m_rehash (n_bkt);
+	m_rehash(n_bkt);
     }
 
   template<typename K, typename V, 
@@ -1517,7 +1521,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
       size_t result = 0;
-      for (node* p = m_buckets[n]; p ; p = p->m_next)
+      for (node* p = m_buckets[n]; p; p = p->m_next)
 	if (this->compare(k, code, p))
 	  ++result;
       return result;
@@ -1542,8 +1546,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       if (p)
 	{
 	  node* p1 = p->m_next;
-	  for (; p1 ; p1 = p1->m_next)
-	    if (!this->compare (k, code, p1))
+	  for (; p1; p1 = p1->m_next)
+	    if (!this->compare(k, code, p1))
 	      break;
 
 	  iterator first(p, head);
@@ -1575,7 +1579,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       if (p)
 	{
 	  node* p1 = p->m_next;
-	  for (; p1 ; p1 = p1->m_next)
+	  for (; p1; p1 = p1->m_next)
 	    if (!this->compare(k, code, p1))
 	      break;
 
@@ -1600,8 +1604,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     find_node(node* p, const key_type& k,
 	      typename hashtable::hash_code_t code) const
     {
-      for ( ; p ; p = p->m_next)
-	if (this->compare (k, code, p))
+      for (; p ; p = p->m_next)
+	if (this->compare(k, code, p))
 	  return p;
       return false;
     }
@@ -1628,7 +1632,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       // Allocate the new node before doing the rehash so that we don't
       // do a rehash if the allocation throws.
-      node* new_node = m_allocate_node (v);
+      node* new_node = m_allocate_node(v);
       
       try
 	{
@@ -1644,9 +1648,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  ++m_element_count;
 	  return std::make_pair(iterator(new_node, m_buckets + n), true);
 	}
-      catch (...)
+      catch(...)
 	{
-	  m_deallocate_node (new_node);
+	  m_deallocate_node(new_node);
 	  __throw_exception_again;
 	}
     }
@@ -1669,7 +1673,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typename hashtable::hash_code_t code = this->m_hash_code(k);
       size_type n = this->bucket_index(k, code, m_bucket_count);
       
-      node* new_node = m_allocate_node (v);
+      node* new_node = m_allocate_node(v);
       node* prev = find_node(m_buckets[n], k, code);
       if (prev)
 	{
@@ -1710,7 +1714,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  cur->m_next = next->m_next;
 	}
 
-      m_deallocate_node (p);
+      m_deallocate_node(p);
       --m_element_count;
     }
 
@@ -1730,7 +1734,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  m_rehash(do_rehash.second);
 
 	for (; first != last; ++first)
-	  this->insert (*first);
+	  this->insert(*first);
       }
 
   template<typename K, typename V, 
@@ -1774,14 +1778,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       size_type result = 0;
       
       node** slot = m_buckets + n;
-      while (*slot && ! this->compare(k, code, *slot))
+      while (*slot && !this->compare(k, code, *slot))
 	slot = &((*slot)->m_next);
 
       while (*slot && this->compare(k, code, *slot))
 	{
 	  node* n = *slot;
 	  *slot = n->m_next;
-	  m_deallocate_node (n);
+	  m_deallocate_node(n);
 	  --m_element_count;
 	  ++result;
 	}
@@ -1838,13 +1842,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     m_rehash(size_type N)
     {
-      node** new_array = m_allocate_buckets (N);
+      node** new_array = m_allocate_buckets(N);
       try
 	{
 	  for (size_type i = 0; i < m_bucket_count; ++i)
 	    while (node* p = m_buckets[i])
 	      {
-		size_type new_index = this->bucket_index (p, N);
+		size_type new_index = this->bucket_index(p, N);
 		m_buckets[i] = p->m_next;
 		p->m_next = new_array[new_index];
 		new_array[new_index] = p;
