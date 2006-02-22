@@ -620,19 +620,6 @@ default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
   return readonly_data_section;
 }
 
-/* Switch to section for variable DECL.  RELOC is the same as the
-   argument to SELECT_SECTION.  */
-
-void
-variable_section (tree decl, int reloc)
-{
-  if (IN_NAMED_SECTION (decl))
-    switch_to_section (get_named_section (decl, NULL, reloc));
-  else
-    switch_to_section (targetm.asm_out.select_section (decl, reloc,
-						       DECL_ALIGN (decl)));
-}
-
 /* Return the section to use for string merging.  */
 
 static section *
