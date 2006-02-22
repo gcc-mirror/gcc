@@ -1,11 +1,14 @@
 2006-02-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/ext/pb_assoc/basic_tree_assoc_cntnr_const_node_iterator.html:
+	Fix links
 	* docs/html/ext/pb_assoc/basic_tree_assoc_cntnr_node_iterator.html:
-	Fix links.
+	Likewise.
 	* docs/html/ext/pb_assoc/hash_based_containers.html: Likewise.
 	* docs/html/ext/pb_assoc/hash_standard_resize_policy.html: Likewise.
 	* docs/html/ext/pb_assoc/interface.html: Likewise..
 	* docs/html/ext/pb_assoc/list_updates.html: Likewise.
+	* docs/html/ext/pb_assoc/lu_based_containers.html: Likewise.
 	* docs/html/ext/pb_assoc/resize_policies.html: Likewise.
 	* docs/html/ext/pb_assoc/sample_probe_fn.html: Likewise.
 	* docs/html/ext/pb_assoc/sample_range_hashing.html: Likewise.
