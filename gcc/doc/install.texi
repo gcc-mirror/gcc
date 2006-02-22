@@ -43,8 +43,13 @@
 @end ifset
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
+
+@c IMPORTANT: whenever you modify this file, run `install.texi2html' to
+@c test the generation of HTML documents for the gcc.gnu.org web pages.
+@c
+@c Do not use @footnote{} in this file as it breaks install.texi2html!
 
 @c Include everything if we're not making html
 @ifnothtml
@@ -64,7 +69,7 @@
 @c Part 2 Summary Description and Copyright
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -1723,9 +1728,9 @@ compilation options.  Check your target's definition of
 
 @section Building in parallel
 
-You can use @samp{make -j 2}@footnote{Only supported by GNU Make 3.79
-  and above, which is anyway necessary to build GCC.}, instead of @samp{make},
-to build GCC in parallel.  You can also specify a bigger number, and
+GNU Make 3.79 and above, which is necessary to build GCC, support
+building in parallel.  To activate this, you can use @samp{make -j 2}
+instead of @samp{make}.  You can also specify a bigger number, and 
 in most cases using a value greater than the number of processors in
 your machine will result in fewer and shorter I/O latency hits, thus
 improving overall throughput; this is especially true for slow drives
