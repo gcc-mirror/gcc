@@ -1,5 +1,16 @@
 2006-02-22  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/26132
+	* include/tr1/hashtable (hashtable<>::rehash): Define.
+	* testsuite/tr1/6_containers/unordered/hashtable/26132.cc: New.
+
+	* include/tr1/hashtable: Trivial formatting and stylistic fixes.
+
+	* testsuite/tr1/headers.cc: remove <tr1/hashtable>, not a tr1 header,
+	only an implementation detail.
+
+2006-02-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/debug/list (splice): Remove splice_alloc check, redundant
 	after implementing the splice bits of N1599.
 
