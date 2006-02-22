@@ -1,3 +1,8 @@
+2006-02-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/sysv.S: Fix register numbers in the FDE for
+	ffi_closure_SYSV.
+
 2006-02-20  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libffi.call/return_fl2.c (return_fl): Remove static
