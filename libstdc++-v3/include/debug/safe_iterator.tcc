@@ -1,6 +1,6 @@
 // Debugging iterator implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
+// Copyright (C) 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,8 +36,6 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_ITERATOR_TCC
 #define _GLIBCXX_DEBUG_SAFE_ITERATOR_TCC 1
 
-namespace std
-{
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
@@ -55,7 +53,7 @@ namespace __gnu_debug
 	{
 	  const_iterator __begin =
 	    static_cast<const _Sequence*>(_M_sequence)->begin();
-	  pair<difference_type, _Distance_precision> __dist =
+	  std::pair<difference_type, _Distance_precision> __dist =
 	    this->_M_get_distance(__begin, *this);
 	  bool __ok =  (__dist.second == __dp_exact && __dist.first >= -__n
 			|| __dist.second != __dp_exact && __dist.first > 0);
@@ -65,7 +63,7 @@ namespace __gnu_debug
 	{
 	  const_iterator __end =
 	    static_cast<const _Sequence*>(_M_sequence)->end();
-	  pair<difference_type, _Distance_precision> __dist =
+	  std::pair<difference_type, _Distance_precision> __dist =
 	    this->_M_get_distance(*this, __end);
 	  bool __ok = (__dist.second == __dp_exact && __dist.first >= __n
 		       || __dist.second != __dp_exact && __dist.first > 0);
@@ -84,7 +82,7 @@ namespace __gnu_debug
 
 	/* Determine if we can order the iterators without the help of
 	   the container */
-	pair<difference_type, _Distance_precision> __dist =
+	std::pair<difference_type, _Distance_precision> __dist =
 	  this->_M_get_distance(*this, __rhs);
 	switch (__dist.second) {
 	case __dp_equality:
@@ -118,26 +116,25 @@ namespace __gnu_debug
 
       if (!this->_M_singular())
 	{
-	  for (_Safe_iterator_base* iter = _M_sequence->_M_iterators; iter; )
+	  for (_Safe_iterator_base* iter = _M_sequence->_M_iterators; iter;)
 	    {
 	      iterator* __victim = static_cast<iterator*>(iter);
 	      iter = iter->_M_next;
 	      if (this->base() == __victim->base())
 		__victim->_M_version = 0;
 	    }
-	  for (_Safe_iterator_base* iter2 = _M_sequence->_M_const_iterators;
-	       iter2; /* increment in loop */)
+	  for (_Safe_iterator_base* iter = _M_sequence->_M_const_iterators;
+	       iter;)
 	    {
-	      const_iterator* __victim = static_cast<const_iterator*>(iter2);
-	      iter2 = iter2->_M_next;
-	      if (this->base() == __victim->base())
+	      const_iterator* __victim = static_cast<const_iterator*>(iter);
+	      iter = iter->_M_next;
+	      if (__victim->base() == this->base())
 		__victim->_M_version = 0;
 	    }
 	  _M_version = 0;
 	}
     }
 } // namespace __gnu_debug
-} // namespace std
 
 #endif
 

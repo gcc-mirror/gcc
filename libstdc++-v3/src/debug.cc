@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
+// Copyright (C) 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -44,8 +44,6 @@ namespace __gnu_internal
   static __glibcxx_mutex_define_initialized(iterator_base_mutex);
 } // namespace __gnu_internal
 
-namespace std
-{
 namespace __gnu_debug
 {
   const char* _S_debug_messages[] = 
@@ -670,4 +668,3 @@ namespace __gnu_debug
     _Error_formatter::_M_format_word(char*, int, const char*, 
 				     const char*) const;
 } // namespace __gnu_debug
-} // namespace std

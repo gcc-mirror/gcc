@@ -1,6 +1,6 @@
 // Debugging string implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005
+// Copyright (C) 2003, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,8 +35,6 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
-namespace std
-{
 namespace __gnu_debug
 {
   template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
@@ -664,7 +662,8 @@ namespace __gnu_debug
     { return _Base::find_first_of(__c, __pos); }
 
     size_type
-    find_last_of(const basic_string& __str, size_type __pos = _Base::npos) const
+    find_last_of(const basic_string& __str, 
+		 size_type __pos = _Base::npos) const
     { return _Base::find_last_of(__str, __pos); }
 
     size_type
@@ -1016,6 +1015,5 @@ namespace __gnu_debug
 #endif
 
 } // namespace __gnu_debug
-} // namespace std
 
 #endif

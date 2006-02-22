@@ -38,7 +38,7 @@
 
 namespace std
 {
-namespace __gnu_debug_def
+namespace __debug
 {
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class list
@@ -502,7 +502,7 @@ namespace __gnu_debug_def
     inline void
     swap(list<_Tp, _Alloc>& __lhs, list<_Tp, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
-} // namespace __gnu_debug_def
+} // namespace __debug
 } // namespace std
 
 #endif

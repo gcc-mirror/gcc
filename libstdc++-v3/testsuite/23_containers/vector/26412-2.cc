@@ -1,6 +1,7 @@
-// Debugging mode support code for list -*- C++ -*-
+// { dg-do compile }
+// -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +28,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#define _GLIBCXX_DEBUG
+#define debug 0
 
-#include "list.cc"
+#include <debug/vector>
 
+// libstdc++26412

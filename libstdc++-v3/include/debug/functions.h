@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005
+// Copyright (C) 2003, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,8 +36,6 @@
 #include <bits/stl_iterator_base_types.h> // for iterator_traits, categories
 #include <bits/cpp_type_traits.h>         // for __is_integer
 
-namespace std
-{
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
@@ -287,6 +285,5 @@ namespace __gnu_debug
       return __first == __last;
     }
 } // namespace __gnu_debug
-} // namespace std
 
 #endif

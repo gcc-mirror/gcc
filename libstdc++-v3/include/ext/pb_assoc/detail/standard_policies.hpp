@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,19 +66,16 @@ namespace pb_assoc
 
 #ifdef __GNUC__
 
-#define PB_ASSOC_HASH_NAMESPACE \
-	__gnu_cxx
-
     template<typename Key>
     struct def_hash_fn
     {
-      typedef PB_ASSOC_HASH_NAMESPACE::hash<Key> type;
+      typedef __gnu_cxx::hash<Key> type;
     };
 
     template<typename Key>
     struct def_eq_fn
     {
-      typedef PB_ASSOC_HASH_NAMESPACE::equal_to<Key> type;
+      typedef std::equal_to<Key> type;
     };
 
 #elif defined(_MSC_VER)
@@ -154,10 +151,6 @@ namespace pb_assoc
     {
       typedef pb_assoc::move_to_front_lu_policy<> type;
     };
-
-#ifdef __GNUC__
-#undef PB_ASSOC_HASH_NAMESPACE
-#endif // #ifdef __GNUC__
 
     template<class Comb_Probe_Fn>
     struct def_probe_fn

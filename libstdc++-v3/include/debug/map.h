@@ -37,7 +37,7 @@
 
 namespace std
 {
-namespace __gnu_debug_def
+namespace __debug
 {
   template<typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<std::pair<const _Key, _Tp> > >
@@ -324,7 +324,7 @@ namespace __gnu_debug_def
     swap(map<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	 map<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { __lhs.swap(__rhs); }
-} // namespace __gnu_debug_def
+} // namespace __debug
 } // namespace std
 
 #endif
