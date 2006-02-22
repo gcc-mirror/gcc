@@ -1,6 +1,4 @@
-// { dg-do compile }
-
-// 2006-02-02  Paolo Carlini  <pcarlini@suse.de>
+// 2006-02-22  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,37 +18,41 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-#include <tr1/array>
-#include <tr1/cctype>
-#include <tr1/cfenv>
-#include <tr1/cfloat>
-#include <tr1/cinttypes>
-#include <tr1/climits>
-#include <tr1/cmath>
-#include <tr1/complex>
-#include <tr1/cstdarg>
-#include <tr1/cstdint>
-#include <tr1/cstdio>
-#include <tr1/cstdlib>
-#include <tr1/ctime>
-#include <tr1/ctype.h>
-#include <tr1/cwchar>
-#include <tr1/cwctype>
-#include <tr1/fenv.h>
-#include <tr1/float.h>
-#include <tr1/functional>
-#include <tr1/inttypes.h>
-#include <tr1/limits.h>
-#include <tr1/math.h>
-#include <tr1/memory>
-#include <tr1/stdarg.h>
-#include <tr1/stdint.h>
-#include <tr1/stdio.h>
-#include <tr1/stdlib.h>
-#include <tr1/tuple>
-#include <tr1/type_traits>
+// 6.3 Unordered associative containers
+
 #include <tr1/unordered_set>
-#include <tr1/unordered_map>
-#include <tr1/utility>
-#include <tr1/wchar.h>
-#include <tr1/wctype.h>
+#include <testsuite_hooks.h>
+
+// libstdc++/26132
+void test01()
+{
+  bool test __attribute__((unused)) = true;
+
+  for (float lf = 1.0; lf < 101.0; lf *= 10.0)
+    for (int size = 1; size <= 6561; size *= 3)
+      {
+	std::tr1::unordered_set<int> us1;
+	typedef std::tr1::unordered_set<int>::size_type size_type;
+	
+	us1.max_load_factor(10.0);
+
+	for (int i = 0; i < size; ++i)
+	  us1.insert(i);
+
+	us1.max_load_factor(lf);
+
+	for (int i = 1; i <= 6561; i *= 81)
+	  {
+	    const size_type n = size * 81 / i;
+	    us1.rehash(n);
+	    VERIFY( us1.bucket_count() > us1.size() / us1.max_load_factor() );
+	    VERIFY( us1.bucket_count() >= n );
+	  }
+      }
+}
+
+int main()
+{
+  test01();
+  return 0;
+}

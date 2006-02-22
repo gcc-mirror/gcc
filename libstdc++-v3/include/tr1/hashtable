@@ -1132,6 +1132,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       { 
 	return static_cast<float>(size()) / static_cast<float>(bucket_count());
       }
+
       // max_load_factor, if present, comes from rehash_base.
 
       // Generalization of max_load_factor.  Extension, not found in TR1.  Only
@@ -1226,7 +1227,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       clear();
 
     public:
-      // Set number of buckets to be apropriate for container of n element.
+      // Set number of buckets to be appropriate for container of n element.
       void rehash(size_type n);
       
     private:
@@ -1306,7 +1307,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       // We allocate one extra bucket to hold a sentinel, an arbitrary
       // non-null pointer.  Iterator increment relies on this.
       node** p = alloc.allocate(n + 1);
-      std::fill(p, p+n, (node*) 0);
+      std::fill(p, p + n, (node*) 0);
       p[n] = reinterpret_cast<node*>(0x1000);
       return p;
     }
@@ -1320,7 +1321,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     m_deallocate_buckets(node** p, size_type n)
     {
       bucket_allocator_t alloc(m_node_allocator);
-      alloc.deallocate(p, n+1);
+      alloc.deallocate(p, n + 1);
     }
 
   template<typename K, typename V, 
@@ -1356,11 +1357,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		const Eq& eq, const Ex& exk,
 		const allocator_type& a)
       : Internal::rehash_base<RP, hashtable>(),
-	Internal::hash_code_base<K, V, Ex, Eq, H1, H2, H, c> (exk, eq,
-							      h1, h2, h),
+	Internal::hash_code_base<K, V, Ex, Eq, H1, H2, H, c>(exk, eq,
+							     h1, h2, h),
 	Internal::map_base<K, V, Ex, u, hashtable>(),
 	m_node_allocator(a),
-	m_bucket_count (0),
+	m_bucket_count(0),
 	m_element_count(0),
 	m_rehash_policy()
       {
@@ -1396,10 +1397,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       m_element_count(ht.m_element_count),
       m_rehash_policy(ht.m_rehash_policy)
     {
-      m_buckets = m_allocate_buckets (m_bucket_count);
+      m_buckets = m_allocate_buckets(m_bucket_count);
       try
 	{
-	  for (size_t i = 0; i < ht.m_bucket_count; ++i)
+	  for (size_type i = 0; i < ht.m_bucket_count; ++i)
 	    {
 	      node* n = ht.m_buckets[i];
 	      node** tail = m_buckets + i;
@@ -1415,7 +1416,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       catch(...)
 	{
 	  clear();
-	  m_deallocate_buckets (m_buckets, m_bucket_count);
+	  m_deallocate_buckets(m_buckets, m_bucket_count);
 	  __throw_exception_again;
 	}
     }
@@ -1520,7 +1521,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     {
       typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
-      size_t result = 0;
+      std::size_t result = 0;
       for (node* p = m_buckets[n]; p; p = p->m_next)
 	if (this->compare(k, code, p))
 	  ++result;
@@ -1541,7 +1542,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
       node** head = m_buckets + n;
-      node* p = find_node (*head, k, code);
+      node* p = find_node(*head, k, code);
       
       if (p)
 	{
@@ -1604,7 +1605,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     find_node(node* p, const key_type& k,
 	      typename hashtable::hash_code_t code) const
     {
-      for (; p ; p = p->m_next)
+      for (; p; p = p->m_next)
 	if (this->compare(k, code, p))
 	  return p;
       return false;
@@ -1622,12 +1623,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     {
       const key_type& k = this->m_extract(v);
       typename hashtable::hash_code_t code = this->m_hash_code(k);
-      size_type n = this->bucket_index(k, code, m_bucket_count);
+      std::size_t n = this->bucket_index(k, code, m_bucket_count);
       
       if (node* p = find_node(m_buckets[n], k, code))
 	return std::make_pair(iterator(p, m_buckets + n), false);
 
-      std::pair<bool, size_t> do_rehash
+      std::pair<bool, std::size_t> do_rehash
 	= m_rehash_policy.need_rehash(m_bucket_count, m_element_count, 1);
 
       // Allocate the new node before doing the rehash so that we don't
@@ -1671,7 +1672,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       const key_type& k = this->m_extract(v);
       typename hashtable::hash_code_t code = this->m_hash_code(k);
-      size_type n = this->bucket_index(k, code, m_bucket_count);
+      std::size_t n = this->bucket_index(k, code, m_bucket_count);
       
       node* new_node = m_allocate_node(v);
       node* prev = find_node(m_buckets[n], k, code);
@@ -1727,7 +1728,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
       insert(InIter first, InIter last)
       {
-	size_type n_elt = Internal::distance_fw (first, last);
+	size_type n_elt = Internal::distance_fw(first, last);
 	std::pair<bool, std::size_t> do_rehash
 	  = m_rehash_policy.need_rehash(m_bucket_count, m_element_count, n_elt);
 	if (do_rehash.first)
@@ -1774,7 +1775,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     erase(const key_type& k)
     {
       typename hashtable::hash_code_t code = this->m_hash_code(k);
-      size_type n = this->bucket_index(k, code, m_bucket_count);
+      std::size_t n = this->bucket_index(k, code, m_bucket_count);
       size_type result = 0;
       
       node** slot = m_buckets + n;
@@ -1783,9 +1784,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       while (*slot && this->compare(k, code, *slot))
 	{
-	  node* n = *slot;
-	  *slot = n->m_next;
-	  m_deallocate_node(n);
+	  node* p = *slot;
+	  *slot = p->m_next;
+	  m_deallocate_node(p);
 	  --m_element_count;
 	  ++result;
 	}
@@ -1833,6 +1834,19 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       m_deallocate_nodes(m_buckets, m_bucket_count);
       m_element_count = 0;
     }
+ 
+  template<typename K, typename V, 
+	   typename A, typename Ex, typename Eq,
+	   typename H1, typename H2, typename H, typename RP,
+	   bool c, bool ci, bool u>
+    void
+    hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
+    rehash(size_type n)
+    {
+      m_rehash(std::max(m_rehash_policy.next_bkt(n),
+			m_rehash_policy.bkt_for_elements(m_element_count
+							 + 1)));
+    }
 
   template<typename K, typename V, 
 	   typename A, typename Ex, typename Eq,
@@ -1840,31 +1854,31 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool c, bool ci, bool u>
     void
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    m_rehash(size_type N)
+    m_rehash(size_type n)
     {
-      node** new_array = m_allocate_buckets(N);
+      node** new_array = m_allocate_buckets(n);
       try
 	{
 	  for (size_type i = 0; i < m_bucket_count; ++i)
 	    while (node* p = m_buckets[i])
 	      {
-		size_type new_index = this->bucket_index(p, N);
+		std::size_t new_index = this->bucket_index(p, n);
 		m_buckets[i] = p->m_next;
 		p->m_next = new_array[new_index];
 		new_array[new_index] = p;
 	      }
 	  m_deallocate_buckets(m_buckets, m_bucket_count);
-	  m_bucket_count = N;
+	  m_bucket_count = n;
 	  m_buckets = new_array;
 	}
-      catch (...)
+      catch(...)
 	{
 	  // A failure here means that a hash function threw an exception.
 	  // We can't restore the previous state without calling the hash
 	  // function again, so the only sensible recovery is to delete
 	  // everything.
-	  m_deallocate_nodes(new_array, N);
-	  m_deallocate_buckets(new_array, N);
+	  m_deallocate_nodes(new_array, n);
+	  m_deallocate_buckets(new_array, n);
 	  m_deallocate_nodes(m_buckets, m_bucket_count);
 	  m_element_count = 0;
 	  __throw_exception_again;
