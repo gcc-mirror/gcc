@@ -1,6 +1,6 @@
 // Hashing set implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,10 +61,11 @@
 #ifndef _HASH_SET
 #define _HASH_SET 1
 
+#include <bits/c++config.h>
 #include <ext/hashtable.h>
 #include <bits/concept_check.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT)
 
   using std::equal_to;
   using std::allocator;
@@ -73,12 +74,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   // Forward declaration of equality operator; needed for friend
   // declaration.
-  template <class _Value, class _HashFcn  = hash<_Value>,
+  template<class _Value, class _HashFcn  = hash<_Value>,
 	    class _EqualKey = equal_to<_Value>,
 	    class _Alloc = allocator<_Value> >
     class hash_set;
 
-  template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
     inline bool
     operator==(const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	       const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs2);
@@ -88,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  @ingroup SGIextensions
    *  @doctodo
    */
-  template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
     class hash_set
     {
       // concept requirements
@@ -146,23 +147,23 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	       const allocator_type& __a = allocator_type())
       : _M_ht(__n, __hf, __eql, __a) {}
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_set(_InputIterator __f, _InputIterator __l)
 	: _M_ht(100, hasher(), key_equal(), allocator_type())
         { _M_ht.insert_unique(__f, __l); }
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_set(_InputIterator __f, _InputIterator __l, size_type __n)
 	: _M_ht(__n, hasher(), key_equal(), allocator_type())
         { _M_ht.insert_unique(__f, __l); }
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_set(_InputIterator __f, _InputIterator __l, size_type __n,
 		 const hasher& __hf)
 	: _M_ht(__n, __hf, key_equal(), allocator_type())
         { _M_ht.insert_unique(__f, __l); }
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_set(_InputIterator __f, _InputIterator __l, size_type __n,
 		 const hasher& __hf, const key_equal& __eql,
 		 const allocator_type& __a = allocator_type())
@@ -186,7 +187,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       swap(hash_set& __hs)
       { _M_ht.swap(__hs._M_ht); }
 
-      template <class _Val, class _HF, class _EqK, class _Al>
+      template<class _Val, class _HF, class _EqK, class _Al>
         friend bool
         operator==(const hash_set<_Val, _HF, _EqK, _Al>&,
 		   const hash_set<_Val, _HF, _EqK, _Al>&);
@@ -207,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	return pair<iterator,bool>(__p.first, __p.second);
       }
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         void
         insert(_InputIterator __f, _InputIterator __l)
         { _M_ht.insert_unique(__f, __l); }
@@ -248,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       clear()
       { _M_ht.clear(); }
 
-public:
+    public:
       void
       resize(size_type __hint)
       { _M_ht.resize(__hint); }
@@ -266,31 +267,31 @@ public:
       { return _M_ht.elems_in_bucket(__n); }
     };
 
-  template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
     inline bool
     operator==(const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	       const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { return __hs1._M_ht == __hs2._M_ht; }
 
-  template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
     inline bool
     operator!=(const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	       const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { return !(__hs1 == __hs2); }
 
-  template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Val, class _HashFcn, class _EqualKey, class _Alloc>
     inline void
     swap(hash_set<_Val, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	 hash_set<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { __hs1.swap(__hs2); }
 
-  template <class _Value,
+  template<class _Value,
 	    class _HashFcn = hash<_Value>,
 	    class _EqualKey = equal_to<_Value>,
 	    class _Alloc = allocator<_Value> >
     class hash_multiset;
 
-  template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Val, class _HashFcn, class _EqualKey, class _Alloc>
     inline bool
     operator==(const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	       const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2);
@@ -301,7 +302,7 @@ public:
    *  @ingroup SGIextensions
    *  @doctodo
    */
-  template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
     class hash_multiset
     {
       // concept requirements
@@ -359,23 +360,23 @@ public:
 		    const allocator_type& __a = allocator_type())
       : _M_ht(__n, __hf, __eql, __a) {}
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_multiset(_InputIterator __f, _InputIterator __l)
 	: _M_ht(100, hasher(), key_equal(), allocator_type())
         { _M_ht.insert_equal(__f, __l); }
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_multiset(_InputIterator __f, _InputIterator __l, size_type __n)
 	: _M_ht(__n, hasher(), key_equal(), allocator_type())
         { _M_ht.insert_equal(__f, __l); }
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_multiset(_InputIterator __f, _InputIterator __l, size_type __n,
 		      const hasher& __hf)
 	: _M_ht(__n, __hf, key_equal(), allocator_type())
         { _M_ht.insert_equal(__f, __l); }
 
-      template <class _InputIterator>
+      template<class _InputIterator>
         hash_multiset(_InputIterator __f, _InputIterator __l, size_type __n,
 		      const hasher& __hf, const key_equal& __eql,
 		      const allocator_type& __a = allocator_type())
@@ -399,7 +400,7 @@ public:
       swap(hash_multiset& hs)
       { _M_ht.swap(hs._M_ht); }
 
-      template <class _Val, class _HF, class _EqK, class _Al>
+      template<class _Val, class _HF, class _EqK, class _Al>
         friend bool
         operator==(const hash_multiset<_Val, _HF, _EqK, _Al>&,
 		   const hash_multiset<_Val, _HF, _EqK, _Al>&);
@@ -412,12 +413,12 @@ public:
       end() const
       { return _M_ht.end(); }
 
-public:
+    public:
       iterator
       insert(const value_type& __obj)
       { return _M_ht.insert_equal(__obj); }
   
-      template <class _InputIterator>
+      template<class _InputIterator>
         void
         insert(_InputIterator __f, _InputIterator __l)
         { _M_ht.insert_equal(__f,__l); }
@@ -472,32 +473,35 @@ public:
       { return _M_ht.elems_in_bucket(__n); }
     };
 
-  template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Val, class _HashFcn, class _EqualKey, class _Alloc>
     inline bool
     operator==(const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	       const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { return __hs1._M_ht == __hs2._M_ht; }
 
-  template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Val, class _HashFcn, class _EqualKey, class _Alloc>
     inline bool
     operator!=(const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	       const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { return !(__hs1 == __hs2); }
 
-  template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Val, class _HashFcn, class _EqualKey, class _Alloc>
     inline void
     swap(hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs1,
 	 hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { __hs1.swap(__hs2); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NESTED_NAMESPACE
+
+#ifdef _GLIBCXX_DEBUG
+# include <debug/hash_set>
+#endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Specialization of insert_iterator so that it will work for hash_set
   // and hash_multiset.
-
-  template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
     class insert_iterator<__gnu_cxx::hash_set<_Value, _HashFcn,
 					      _EqualKey, _Alloc> >
     {
@@ -540,7 +544,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return *this; }
     };
 
-  template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
     class insert_iterator<__gnu_cxx::hash_multiset<_Value, _HashFcn,
 						   _EqualKey, _Alloc> >
     {
@@ -584,9 +588,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
 _GLIBCXX_END_NAMESPACE
-
-#ifdef _GLIBCXX_DEBUG
-# include <debug/hash_set>
-#endif
 
 #endif

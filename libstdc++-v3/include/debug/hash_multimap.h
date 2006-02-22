@@ -36,18 +36,18 @@
 
 namespace __gnu_cxx
 {
-namespace __gnu_debug
+namespace __debug
 {
   template<typename _Value, typename _Tp,
 	   typename _HashFcn  = __gnu_cxx::hash<_Value>,
 	   typename _EqualKey = std::equal_to<_Value>,
 	   typename _Alloc =  std::allocator<_Value> >
     class hash_multimap
-    : public __gnu_cxx::hash_multimap<_Value,_Tp,_HashFcn, _EqualKey,_Alloc>,
+    : public _GLIBCXX_EXT::hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>,
       public __gnu_debug::_Safe_sequence<hash_multimap<_Value, _Tp, _HashFcn,
 						       _EqualKey, _Alloc> >
     {
-      typedef __gnu_cxx::hash_multimap<_Value,_Tp,_HashFcn, _EqualKey,_Alloc>
+      typedef _GLIBCXX_EXT::hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>
 							_Base;
       typedef __gnu_debug::_Safe_sequence<hash_multimap> _Safe_base;
 
@@ -258,7 +258,7 @@ namespace __gnu_debug
     swap(hash_multimap<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>& __x,
 	 hash_multimap<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>& __y)
     { __x.swap(__y); }
-} // namespace __gnu_debug
+} // namespace __debug
 } // namespace __gnu_cxx
 
 #endif

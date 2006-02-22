@@ -1,6 +1,6 @@
 // Safe sequence implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
+// Copyright (C) 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,8 +36,6 @@
 #include <debug/functions.h>
 #include <debug/safe_base.h>
 
-namespace std
-{
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
@@ -180,6 +178,5 @@ namespace __gnu_debug
         }
       }
 } // namespace __gnu_debug
-} // namespace std
 
 #endif

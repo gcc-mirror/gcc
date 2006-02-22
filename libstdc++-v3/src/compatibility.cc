@@ -44,7 +44,6 @@
 #define ignore ignoreXX
 #define eq eqXX
 #define _List_node_base _List_node_baseXX
-#define __gnu_debug __gnu_debugXX
 #endif
 
 #include <string>
@@ -368,30 +367,15 @@ _GLIBCXX_END_NAMESPACE
 #include <bits/compatibility.h>
 #undef _GLIBCXX_APPLY_SYMVER
 
+
 /* gcc-3.4.0
 _ZN10__gnu_norm15_List_node_base4hookEPS0_;
 _ZN10__gnu_norm15_List_node_base4swapERS0_S1_;
 _ZN10__gnu_norm15_List_node_base6unhookEv;
 _ZN10__gnu_norm15_List_node_base7reverseEv;
 _ZN10__gnu_norm15_List_node_base8transferEPS0_S1_;
-_ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
-_ZN11__gnu_debug19_Safe_iterator_base9_M_detachEv;
-_ZNK11__gnu_debug19_Safe_iterator_base11_M_singularEv;
-_ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_;
-_ZN11__gnu_debug19_Safe_sequence_base13_M_detach_allEv;
-_ZN11__gnu_debug19_Safe_sequence_base18_M_detach_singularEv;
-_ZN11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv;
-_ZN11__gnu_debug19_Safe_sequence_base7_M_swapERS0_;
-_ZNK11__gnu_debug16_Error_formatter8_M_errorEv;
-_ZNK11__gnu_debug16_Error_formatter10_M_messageENS_13_Debug_msg_idE;
-_ZNK11__gnu_debug16_Error_formatter10_Parameter14_M_print_fieldEPKS0_PKc;
-_ZNK11__gnu_debug16_Error_formatter10_Parameter20_M_print_descriptionEPKS0_;
-_ZNK11__gnu_debug16_Error_formatter13_M_print_wordEPKc;
-_ZNK11__gnu_debug16_Error_formatter15_M_print_stringEPKc;
 */
-#include "debug_list.cc"
-#include "debug.cc"
-
+#include "list.cc"
 _GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX4hookEPS_, \
 _ZN10__gnu_norm15_List_node_base4hookEPS0_, \
 GLIBCXX_3.4)
@@ -411,62 +395,7 @@ GLIBCXX_3.4)
 _GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX8transferEPS_S0_, \
 _ZN10__gnu_norm15_List_node_base8transferEPS0_S1_, \
 GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb, \
-_ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb, \
-		    GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_iterator_base9_M_detachEv, \
-_ZN11__gnu_debug19_Safe_iterator_base9_M_detachEv, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX19_Safe_iterator_base11_M_singularEv,\
-_ZNK11__gnu_debug19_Safe_iterator_base11_M_singularEv, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX19_Safe_iterator_base14_M_can_compareERKS0_, \
-_ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base13_M_detach_allEv, \
-_ZN11__gnu_debug19_Safe_sequence_base13_M_detach_allEv, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base18_M_detach_singularEv, \
-_ZN11__gnu_debug19_Safe_sequence_base18_M_detach_singularEv, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base22_M_revalidate_singularEv, \
-_ZN11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base7_M_swapERS0_, \
-_ZN11__gnu_debug19_Safe_sequence_base7_M_swapERS0_, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter8_M_errorEv, \
-_ZNK11__gnu_debug16_Error_formatter8_M_errorEv, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter10_M_messageENS_13_Debug_msg_idE, \
-_ZNK11__gnu_debug16_Error_formatter10_M_messageENS_13_Debug_msg_idE, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter10_Parameter14_M_print_fieldEPKS0_PKc, \
-_ZNK11__gnu_debug16_Error_formatter10_Parameter14_M_print_fieldEPKS0_PKc, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter10_Parameter20_M_print_descriptionEPKS0_, \
-_ZNK11__gnu_debug16_Error_formatter10_Parameter20_M_print_descriptionEPKS0_, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter13_M_print_wordEPKc, \
-_ZNK11__gnu_debug16_Error_formatter13_M_print_wordEPKc, \
-GLIBCXX_3.4)
-
-_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter15_M_print_stringEPKc, \
-_ZNK11__gnu_debug16_Error_formatter15_M_print_stringEPKc, \
-GLIBCXX_3.4)
+#undef _List_node_base
 
 // gcc-4.1.0
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT

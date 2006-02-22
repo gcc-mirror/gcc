@@ -40,14 +40,14 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCXX__ 
 
-// Macros for various namespace association schemes and modes.
+// Macros for controlling various namespace association schemes and modes.
 #ifdef _GLIBCXX_DEBUG
 # define _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG 1
 #endif
 
 #define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION 
 
-// Macros for namespaces.
+// Macros for namespace scope.
 // _GLIBCXX_BEGIN_NAMESPACE
 // _GLIBCXX_END_NAMESPACE
 // _GLIBCXX_BEGIN_NESTED_NAMESPACE
@@ -84,12 +84,6 @@ namespace __gnu_cxx
   using namespace _6 __attribute__ ((strong));
 }
 
-namespace __gnu_ext
-{ 
-  namespace _6 { }
-  using namespace _6 __attribute__ ((strong));
-}
-
 namespace std
 {
   namespace tr1 
@@ -104,19 +98,20 @@ namespace std
 #if _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
 namespace std
 { 
-  namespace __gnu_norm { }
-
-#if 1
-  namespace __gnu_debug_def { }
-  namespace __gnu_debug { using namespace __gnu_debug_def; } 
-  using namespace __gnu_debug_def __attribute__ ((strong));
-#else
-  namespace __gnu_debug { namespace detail { } }
-  using namespace __gnu_debug __attribute__ ((strong));
-#endif
+  namespace __norm { }
+  namespace __debug { }
+  using namespace __debug __attribute__ ((strong)); 
 }
 
-# define _GLIBCXX_STD __gnu_norm
+namespace __gnu_cxx
+{
+  namespace __norm { }
+  namespace __debug { }
+  using namespace __debug __attribute__ ((strong)); 
+}
+
+# define _GLIBCXX_STD __norm
+# define _GLIBCXX_EXT __norm
 # define _GLIBCXX_EXTERN_TEMPLATE 0
 # if __NO_INLINE__ && !__GXX_WEAK__
 #  warning debug mode without inlining may fail due to lack of weak symbols
@@ -124,8 +119,10 @@ namespace std
 #else
 #if _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
 # define _GLIBCXX_STD _6
+# define _GLIBCXX_EXT _6
 #else
 # define _GLIBCXX_STD std
+# define _GLIBCXX_EXT __gnu_cxx
 #endif
 #endif
 
@@ -147,6 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 # define _GLIBCXX_END_LDBL_NAMESPACE
 #endif
 _GLIBCXX_END_NAMESPACE
+
 
 // Allow use of "export template." This is currently not a feature
 // that g++ supports.

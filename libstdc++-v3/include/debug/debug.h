@@ -28,37 +28,52 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _GLIBCXX_DEBUG_DEBUG_H
-#define _GLIBCXX_DEBUG_DEBUG_H 1
+#ifndef _GLIBCXX_DEBUG_MACRO_SWITCH_H
+#define _GLIBCXX_DEBUG_MACRO_SWITCH_H 1
 
-/** Macros used by the implementation outside of debug wrappers to
- *  verify certain properties. The __glibcxx_requires_xxx macros are
- *  merely wrappers around the __glibcxx_check_xxx wrappers when we
- *  are compiling with debug mode, but disappear when we are in
- *  release mode so that there is no checking performed in, e.g., the
- *  standard library algorithms.
+/** Macros and namespaces used by the implementation outside of debug
+ *  wrappers to verify certain properties. The __glibcxx_requires_xxx
+ *  macros are merely wrappers around the __glibcxx_check_xxx wrappers
+ *  when we are compiling with debug mode, but disappear when we are
+ *  in release mode so that there is no checking performed in, e.g.,
+ *  the standard library algorithms.
 */
 
+// Debug mode namespaces.
 namespace std 
 { 
-  namespace __gnu_debug_def { } 
-  namespace __gnu_debug { using namespace __gnu_debug_def; } 
-  namespace debug = __gnu_debug;
+  namespace __debug { } 
 }
 
 namespace __gnu_cxx
 { 
-  namespace __gnu_debug { };
-  namespace debug = __gnu_debug;
+  namespace __debug { };
 }
 
 namespace __gnu_debug
 {
-  using namespace std::debug;
-  using namespace __gnu_cxx::debug;
+  using namespace std::__debug;
+  using namespace __gnu_cxx::__debug;
 }
 
-#ifdef _GLIBCXX_DEBUG
+#ifndef _GLIBCXX_DEBUG
+
+# define _GLIBCXX_DEBUG_ASSERT(_Condition)
+# define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
+# define __glibcxx_requires_cond(_Cond,_Msg)
+# define __glibcxx_requires_valid_range(_First,_Last)
+# define __glibcxx_requires_sorted(_First,_Last)
+# define __glibcxx_requires_sorted_pred(_First,_Last,_Pred)
+# define __glibcxx_requires_partitioned(_First,_Last,_Value)
+# define __glibcxx_requires_partitioned_pred(_First,_Last,_Value,_Pred)
+# define __glibcxx_requires_heap(_First,_Last)
+# define __glibcxx_requires_heap_pred(_First,_Last,_Pred)
+# define __glibcxx_requires_nonempty()
+# define __glibcxx_requires_string(_String)
+# define __glibcxx_requires_string_len(_String,_Len)
+# define __glibcxx_requires_subscript(_N)
+
+#else
 
 # include <cstdlib>
 # include <cstdio>
@@ -66,73 +81,59 @@ namespace __gnu_debug
 
 namespace std
 {
-namespace __gnu_debug
-{ 
-  // Avoid the use of assert, because we're trying to keep the <cassert>
-  // include out of the mix.
-  inline void
-  __replacement_assert(const char* __file, int __line, const char* __function,
-		       const char* __condition)
-  {
-    std::printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
-		__function, __condition);
-    std::abort();
-  }
-} // namespace __gnu_debug
+  namespace __debug
+  { 
+    // Avoid the use of assert, because we're trying to keep the <cassert>
+    // include out of the mix.
+    inline void
+    __replacement_assert(const char* __file, int __line, 
+			 const char* __function, const char* __condition)
+    {
+      printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
+	     __function, __condition);
+      abort();
+    }
+  } // namespace __debug
 } // namespace std
 
-#define _GLIBCXX_DEBUG_ASSERT(_Condition)                               \
-  do {                                                                  \
-    if (! (_Condition))                                                 \
-      std::__gnu_debug::__replacement_assert(__FILE__, __LINE__,           \
-				   __PRETTY_FUNCTION__,                 \
-				   #_Condition);                        \
+#define _GLIBCXX_DEBUG_ASSERT(_Condition)                                   \
+  do 									    \
+  {									    \
+    if (! (_Condition))                                                     \
+      std::__debug::__replacement_assert(__FILE__, __LINE__,		    \
+					 __PRETTY_FUNCTION__, #_Condition); \
   } while (false)
 
-#  ifdef _GLIBCXX_DEBUG_PEDANTIC
-#    define _GLIBCXX_DEBUG_PEDASSERT(_Condition) _GLIBCXX_DEBUG_ASSERT(_Condition)
-#  else
-#    define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
-#  endif
-
-#  define __glibcxx_requires_cond(_Cond,_Msg) _GLIBCXX_DEBUG_VERIFY(_Cond,_Msg)
-#  define __glibcxx_requires_valid_range(_First,_Last) \
-     __glibcxx_check_valid_range(_First,_Last)
-#  define __glibcxx_requires_sorted(_First,_Last) \
-     __glibcxx_check_sorted(_First,_Last)
-#  define __glibcxx_requires_sorted_pred(_First,_Last,_Pred) \
-     __glibcxx_check_sorted_pred(_First,_Last,_Pred)
-#  define __glibcxx_requires_partitioned(_First,_Last,_Value)	\
-     __glibcxx_check_partitioned(_First,_Last,_Value)
-#  define __glibcxx_requires_partitioned_pred(_First,_Last,_Value,_Pred) \
-     __glibcxx_check_partitioned_pred(_First,_Last,_Value,_Pred)
-#  define __glibcxx_requires_heap(_First,_Last) \
-     __glibcxx_check_heap(_First,_Last)
-#  define __glibcxx_requires_heap_pred(_First,_Last,_Pred) \
-     __glibcxx_check_heap_pred(_First,_Last,_Pred)
-#  define __glibcxx_requires_nonempty() __glibcxx_check_nonempty()
-#  define __glibcxx_requires_string(_String) __glibcxx_check_string(_String)
-#  define __glibcxx_requires_string_len(_String,_Len)	\
-     __glibcxx_check_string_len(_String,_Len)
-#  define __glibcxx_requires_subscript(_N) __glibcxx_check_subscript(_N)
-
-#  include <debug/functions.h>
-#  include <debug/formatter.h>
+#ifdef _GLIBCXX_DEBUG_PEDANTIC
+# define _GLIBCXX_DEBUG_PEDASSERT(_Condition) _GLIBCXX_DEBUG_ASSERT(_Condition)
 #else
-#  define _GLIBCXX_DEBUG_ASSERT(_Condition)
-#  define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
-#  define __glibcxx_requires_cond(_Cond,_Msg)
-#  define __glibcxx_requires_valid_range(_First,_Last)
-#  define __glibcxx_requires_sorted(_First,_Last)
-#  define __glibcxx_requires_sorted_pred(_First,_Last,_Pred)
-#  define __glibcxx_requires_partitioned(_First,_Last,_Value)
-#  define __glibcxx_requires_partitioned_pred(_First,_Last,_Value,_Pred)
-#  define __glibcxx_requires_heap(_First,_Last)
-#  define __glibcxx_requires_heap_pred(_First,_Last,_Pred)
-#  define __glibcxx_requires_nonempty()
-#  define __glibcxx_requires_string(_String)
-#  define __glibcxx_requires_string_len(_String,_Len)
-#  define __glibcxx_requires_subscript(_N)
+# define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
 #endif
 
+# define __glibcxx_requires_cond(_Cond,_Msg) _GLIBCXX_DEBUG_VERIFY(_Cond,_Msg)
+# define __glibcxx_requires_valid_range(_First,_Last) \
+     __glibcxx_check_valid_range(_First,_Last)
+# define __glibcxx_requires_sorted(_First,_Last) \
+     __glibcxx_check_sorted(_First,_Last)
+# define __glibcxx_requires_sorted_pred(_First,_Last,_Pred) \
+     __glibcxx_check_sorted_pred(_First,_Last,_Pred)
+# define __glibcxx_requires_partitioned(_First,_Last,_Value)	\
+     __glibcxx_check_partitioned(_First,_Last,_Value)
+# define __glibcxx_requires_partitioned_pred(_First,_Last,_Value,_Pred) \
+     __glibcxx_check_partitioned_pred(_First,_Last,_Value,_Pred)
+# define __glibcxx_requires_heap(_First,_Last) \
+     __glibcxx_check_heap(_First,_Last)
+# define __glibcxx_requires_heap_pred(_First,_Last,_Pred) \
+     __glibcxx_check_heap_pred(_First,_Last,_Pred)
+# define __glibcxx_requires_nonempty() __glibcxx_check_nonempty()
+# define __glibcxx_requires_string(_String) __glibcxx_check_string(_String)
+# define __glibcxx_requires_string_len(_String,_Len)	\
+     __glibcxx_check_string_len(_String,_Len)
+# define __glibcxx_requires_subscript(_N) __glibcxx_check_subscript(_N)
+
+# include <debug/functions.h>
+# include <debug/formatter.h>
+
 #endif
+
+#endif // _GLIBCXX_DEBUG_MACRO_SWITCH_H

@@ -348,19 +348,19 @@ namespace std
 </pre>
   
 <p>In debug mode we include the release-mode container (which is now
-defined in in the namespace <code>__gnu_norm</code>) and also the
+defined in in the namespace <code>__norm</code>) and also the
 debug-mode container. The debug-mode container is defined within the
-namespace <code>__gnu_debug</code>, which is associated with namespace
-<code>std</code> via a "strong using" directive.  This method allows
-the debug- and release-mode versions of the same component to coexist
-at compile-time and link-time without causing an unreasonable
+namespace <code>__debug</code>, which is associated with namespace
+<code>std</code> via the GNU namespace association extension.  This
+method allows the debug and release versions of the same component to
+coexist at compile-time and link-time without causing an unreasonable
 maintenance burden, while minimizing confusion. Again, this boils down
 to C++ code as follows:</p>
 
 <pre>
 namespace std
 {
-  namespace __gnu_norm
+  namespace __norm
   {
     template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
       class list
@@ -369,18 +369,18 @@ namespace std
       };
   } // namespace __gnu_norm
 
-  namespace __gnu_debug
+  namespace __debug
   {
     template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
       class list
-      : public __gnu_norm::list&lt;_Tp, _Alloc&gt;,
+      : public __norm::list&lt;_Tp, _Alloc&gt;,
         public __gnu_debug::_Safe_sequence&lt;list&lt;_Tp, _Alloc&gt; &gt;
       {
         // ...
       };
-  } // namespace __gnu_norm
+  } // namespace __norm
 
-  using namespace __gnu_debug __attribute__ ((strong));
+  using namespace __debug __attribute__ ((strong));
 }
 </pre>
 

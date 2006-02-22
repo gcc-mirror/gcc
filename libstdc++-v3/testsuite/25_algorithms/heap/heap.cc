@@ -1,4 +1,5 @@
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,8 +22,6 @@
 #include <algorithm>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 const int A[] = {1, 11, 12, 3, 10, 6, 17, 4, 8, 2, 5, 13, 9, 15, 14, 16, 7};
 const int B[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
 const int C[] = {17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
@@ -34,28 +33,30 @@ const int N = sizeof(A) / sizeof(int);
 class Gt
 {
 public:
-  static int count() { return itsCount; }
-  static void reset() { itsCount = 0; }
+  static int count() { return _M_count; }
+  static void reset() { _M_count = 0; }
   
   bool
   operator()(const int& x, const int& y)
   {
-    ++itsCount;
+    ++_M_count;
     return x > y; 
   }
 
 private:
-  static int itsCount;
+  static int _M_count;
 };
 
-int Gt::itsCount = 0;
+int Gt::_M_count = 0;
 
-// Exercise all of the heap functions for operator<.  The
-// intermediate results between push_heap and pop_heap and
-// make_heap and sort_heap are not checked (they could be).
+// Exercise all of the heap functions for operator<.  The intermediate
+// results between push_heap and pop_heap and make_heap and sort_heap
+// are not checked (they could be).
 void
 test01()
 {
+  bool test __attribute__((unused)) = true;
+
   // sort array s1 using push_heap/pop_heap
   int s1[N];
   std::copy(A, A + N, s1);
@@ -84,8 +85,11 @@ test01()
 void
 test02()
 {
+  bool test __attribute__((unused)) = true;
+
   Gt gt;
-//    const int logN = static_cast<int>(std::log(static_cast<double>(N)) + 0.5);
+
+  //const int logN = static_cast<int>(std::log(static_cast<double>(N)) + 0.5);
   const int logN = 3;
   
   int s1[N];
@@ -95,14 +99,18 @@ test02()
   for (int i = 2; i <= N; ++i)
     {
       std::push_heap(s1, s1 + i, gt);
+#ifndef _GLIBCXX_DEBUG
       VERIFY(gt.count() <= logN);
+#endif
       gt.reset();
     }
 
   for (int i = N; i >= 2; --i)
     {
       std::pop_heap(s1, s1 + i, gt);
+#ifndef _GLIBCXX_DEBUG
       VERIFY(gt.count() <= 2 * logN);
+#endif
       gt.reset();
     }
 
@@ -114,11 +122,15 @@ test02()
   VERIFY(std::equal(s2, s2 + N, A));
   
   std::make_heap(s2, s2 + N, gt);
+#ifndef _GLIBCXX_DEBUG
   VERIFY(gt.count() <= 3 * N);
+#endif
   gt.reset();
 
   std::sort_heap(s2, s2 + N, gt);
+#ifndef _GLIBCXX_DEBUG
   VERIFY(gt.count() <= N * logN);
+#endif
   
   VERIFY(std::equal(s2, s2 + N, C));
 }

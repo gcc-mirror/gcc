@@ -1,3 +1,56 @@
+2006-02-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config: Simplify debug namespaces.
+	* include/ext/hash_set: Specialize insert_iterator after norm,
+	debug containers have been (optionally) declared. Use nested
+	namespaces.	
+	* include/ext/hash_map: Same.
+	* include/debug/hash_map.h (insert): Add specialization for value
+	pointer types.
+	* include/debug/hash_set.h (insert): Same.
+	* include/debug/hash_multimap.h: Change __gnu_debug_def to __debug.
+	* include/debug/set.h: Same.
+	* include/debug/bitset: Same.
+	* include/debug/multiset.h: Same.
+	* include/debug/hash_multiset.h: Same.
+	* include/debug/vector: Same.
+	* include/debug/map.h: Same.
+	* include/debug/deque: Same.
+	* include/debug/list: Same.
+	* include/debug/multimap.h. Same.
+	* include/debug/macros.h: Use __gnu_debug.
+	* include/debug/debug.h: Same.
+	* include/debug/formatter.h: Same.
+	* include/debug/safe_sequence.h: Same.
+	* include/debug/functions.h: Same.
+	* include/debug/safe_base.h: Same.
+	* include/debug/safe_iterator.h: Same.
+	* include/debug/safe_iterator.tcc: Same.
+	(_M_invalidate): Adjust compare order.
+	* include/debug/string: Change std::__gnu_debug to __gnu_debug.
+	* include/ext/hashtable.h: Formatting fixes.
+	* include/bits/stl_map.h: Formatting fixes.		
+	* src/compatibility.cc: Adjust compatibility symbols for old debug
+	mode model.	
+	* src/debug_list.cc: Tweak.
+	* src/debug.cc: Adjust namespaces.
+	* docs/html/debug_mode.html: Adjust namespace names.
+	* testsuite/25_algorithms/heap/heap.cc: Restore _GLIBCXX_DEBUG
+	macro guards, as count values differ when in debug mode.	
+	* testsuite/23_containers/vector/26412.cc: Move to...
+	* testsuite/23_containers/vector/26412-1.cc: ... here.
+	* testsuite/23_containers/vector/26412-2.cc: Add.
+
+	* include/ext/pb_assoc/detail/standard_policies.hpp
+	(PB_ASSOC_HASH_NAMESPACE): Remove, use __gnu_cxx::hash_map and
+	std::equal_to.
+
+	* configure.ac (libtool_VERSION): To 6:8:0.
+	* configure: Regenerate.
+	* config/abi/pre/gnu.ver: Revert to exporting __gnu_debug symbols.
+	(GLIBCXX_3.4.8): New.
+	* testsuite/testsuite_abi.cc: Add GLIBCXX_3.4.8 to known versions.
+	
 2006-02-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/hashtable: Trivial formatting fixes.

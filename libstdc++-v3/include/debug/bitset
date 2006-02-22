@@ -37,7 +37,7 @@
 
 namespace std
 {
-namespace __gnu_debug_def
+namespace __debug
 {
   template<size_t _Nb>
     class bitset
@@ -318,7 +318,7 @@ namespace __gnu_debug_def
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const bitset<_Nb>& __x)
     { return __os << __x._M_base(); }
-} // namespace __gnu_debug_def
+} // namespace __debug
 } // namespace std
 
 #endif

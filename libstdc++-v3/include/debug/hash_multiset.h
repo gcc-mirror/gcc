@@ -36,18 +36,18 @@
 
 namespace __gnu_cxx
 {
-namespace __gnu_debug
+namespace __debug
 {
   template<typename _Value,
 	   typename _HashFcn  = __gnu_cxx::hash<_Value>,
 	   typename _EqualKey = std::equal_to<_Value>,
 	   typename _Alloc =  std::allocator<_Value> >
     class hash_multiset
-    : public __gnu_cxx::hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc>,
+    : public _GLIBCXX_EXT::hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc>,
       public __gnu_debug::_Safe_sequence<hash_multiset<_Value, _HashFcn,
 						       _EqualKey, _Alloc> >
     {
-      typedef __gnu_cxx:: hash_multiset<_Value,_HashFcn, _EqualKey,_Alloc>
+      typedef _GLIBCXX_EXT:: hash_multiset<_Value,_HashFcn, _EqualKey,_Alloc>
 							_Base;
       typedef __gnu_debug::_Safe_sequence<hash_multiset> _Safe_base;
 
@@ -233,7 +233,7 @@ template<typename _Value, typename _HashFcn, typename _EqualKey, typename _Alloc
   swap(hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc>& __x,
        hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc>& __y)
   { __x.swap(__y); }
-} // namespace __gnu_debug
+} // namespace __debug
 } // namespace __gnu_cxx
 
 #endif
