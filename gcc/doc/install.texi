@@ -1259,6 +1259,14 @@ extension.  This is enabled by default only on PowerPC GNU/Linux
 systems.  Other systems may also support it, but require the user to
 specifically enable it.
 
+@item --with-long-double-128
+Specify if @code{long double} type should be 128-bit by default on selected
+GNU/Linux architectures.  If using @code{--without-long-double-128},
+@code{long double} will be by default 64-bit, the same as @code{double} type.
+When neither of these configure options are used, the default will be
+128-bit @code{long double} when built against GNU C Library 2.4 and later,
+64-bit @code{long double} otherwise.
+
 @end table
 
 @subheading Cross-Compiler-Specific Options

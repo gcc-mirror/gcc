@@ -1415,6 +1415,11 @@ override_options (void)
     }
   else if (s390_stack_guard)
     error ("-mstack-guard implies use of -mstack-size"); 
+
+#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
+  if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
+    target_flags |= MASK_LONG_DOUBLE_128;
+#endif
 }
 
 /* Map for smallest class containing reg regno.  */

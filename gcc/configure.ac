@@ -3176,6 +3176,39 @@ if test x$gcc_cv_libc_provides_ssp = xyes; then
 	    [Define if your target C library provides stack protector support])
 fi
 
+# Check if TFmode long double should be used by default or not.
+# Some glibc targets used DFmode long double, but with glibc 2.4
+# and later they can use TFmode.
+case "$target" in
+  powerpc*-*-*gnu* | \
+  sparc*-*-linux* | \
+  s390*-*-linux* | \
+  alpha*-*-linux*)
+    AC_ARG_WITH(long-double-128,
+[  --with-long-double-128  Use 128-bit long double by default.],
+      gcc_cv_target_ldbl128="$with_long_double_128",
+      [gcc_cv_target_ldbl128=no
+      if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+	if test "x$with_sysroot" = x; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
+	elif test "x$with_sysroot" = xyes; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-root/usr/include"
+	else
+	  glibc_header_dir="${with_sysroot}/usr/include"
+	fi
+      else
+	glibc_header_dir=/usr/include
+      fi
+      grep '^[ 	]*#[ 	]*define[ 	][ 	]*__LONG_DOUBLE_MATH_OPTIONAL' \
+        $glibc_header_dir/bits/wordsize.h > /dev/null 2>&1 \
+      && gcc_cv_target_ldbl128=yes])
+    ;;
+esac
+if test x$gcc_cv_target_ldbl128 = xyes; then
+  AC_DEFINE(TARGET_DEFAULT_LONG_DOUBLE_128, 1,
+	    [Define if TFmode long double should be the default])
+fi
+
 # Find out what GC implementation we want, or may, use.
 AC_ARG_WITH(gc,
 [  --with-gc={page,zone}   choose the garbage collection mechanism to use

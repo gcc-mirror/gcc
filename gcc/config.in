@@ -1283,6 +1283,12 @@
 #endif
 
 
+/* Define if TFmode long double should be the default */
+#ifndef USED_FOR_TARGET
+#undef TARGET_DEFAULT_LONG_DOUBLE_128
+#endif
+
+
 /* Define if your target C library provides stack protector support */
 #ifndef USED_FOR_TARGET
 #undef TARGET_LIBC_PROVIDES_SSP

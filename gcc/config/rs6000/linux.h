@@ -120,3 +120,8 @@
 #endif
 
 #define POWERPC_LINUX
+
+/* ppc linux has 128-bit long double support in glibc 2.4 and later.  */
+#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
+#define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128
+#endif
