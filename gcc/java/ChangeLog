@@ -1,3 +1,8 @@
+2006-02-20  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (parse_class_file): Set input_location from
+	current_class.
+
 2006-02-15  Andrew Haley  <aph@redhat.com>
 
 	* class.c (GEN_TABLE): Don't pushdecl *_SYMS_DECL here.
