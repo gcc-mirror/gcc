@@ -1,3 +1,28 @@
+2006-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add --with{,out}-long-double-128 configure option.
+	(TARGET_DEFAULT_LONG_DOUBLE_128): New test.
+	* configure: Rebuilt.
+	* config.in: Rebuilt.
+	* doc/install.texi (Options specification): Document
+	--with-long-double-128.
+
+	* config/rs6000/linux.h [TARGET_DEFAULT_LONG_DOUBLE_128]
+	(RS6000_DEFAULT_LONG_DOUBLE_SIZE): Define to 128.
+	* config/rs6000/linux64.h [TARGET_DEFAULT_LONG_DOUBLE_128]
+	(RS6000_DEFAULT_LONG_DOUBLE_SIZE): Define to 128.
+
+2006-02-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/s390/s390.c (override_options): Handle
+	TARGET_DEFAULT_LONG_DOUBLE_128.
+
+	* config/alpha/alpha.c (override_options): Handle
+	TARGET_DEFAULT_LONG_DOUBLE_128.
+
+	* config/sparc/sparc.c (sparc_override_options): Handle
+	TARGET_DEFAULT_LONG_DOUBLE_128.
+
 2006-02-22  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.in (stmp-fixinc): Use real-$(INSTALL_HEADERS_DIR).

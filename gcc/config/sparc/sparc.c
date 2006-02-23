@@ -791,6 +791,11 @@ sparc_override_options (void)
       sparc_costs = &ultrasparc3_costs;
       break;
     };
+
+#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
+  if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
+    target_flags |= MASK_LONG_DOUBLE_128;
+#endif
 }
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE

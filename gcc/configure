@@ -932,6 +932,7 @@ Optional Packages:
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
   --with-system-libunwind use installed libunwind
+  --with-long-double-128  Use 128-bit long double by default.
   --with-gc={page,zone}   choose the garbage collection mechanism to use
                           with the compiler
   --with-system-zlib      use installed libz
@@ -7612,7 +7613,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7615: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7616: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[4-9]*)
@@ -15671,6 +15672,46 @@ if test x$gcc_cv_libc_provides_ssp = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define TARGET_LIBC_PROVIDES_SSP 1
+_ACEOF
+
+fi
+
+# Check if TFmode long double should be used by default or not.
+# Some glibc targets used DFmode long double, but with glibc 2.4
+# and later they can use TFmode.
+case "$target" in
+  powerpc*-*-*gnu* | \
+  sparc*-*-linux* | \
+  s390*-*-linux* | \
+  alpha*-*-linux*)
+
+# Check whether --with-long-double-128 or --without-long-double-128 was given.
+if test "${with_long_double_128+set}" = set; then
+  withval="$with_long_double_128"
+  gcc_cv_target_ldbl128="$with_long_double_128"
+else
+  gcc_cv_target_ldbl128=no
+      if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+	if test "x$with_sysroot" = x; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
+	elif test "x$with_sysroot" = xyes; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-root/usr/include"
+	else
+	  glibc_header_dir="${with_sysroot}/usr/include"
+	fi
+      else
+	glibc_header_dir=/usr/include
+      fi
+      grep '^ 	*#[ 	]*define[ 	][ 	]*__LONG_DOUBLE_MATH_OPTIONAL' \
+        $glibc_header_dir/bits/wordsize.h > /dev/null 2>&1 \
+      && gcc_cv_target_ldbl128=yes
+fi;
+    ;;
+esac
+if test x$gcc_cv_target_ldbl128 = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define TARGET_DEFAULT_LONG_DOUBLE_128 1
 _ACEOF
 
 fi
