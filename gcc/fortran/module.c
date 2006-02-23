@@ -3189,12 +3189,6 @@ read_module (void)
       skip_list ();
 
       /* See if the symbol has already been loaded by a previous module.
-         If so, we reference the existing symbol and prevent it from
-         being loaded again.  */
-
-      sym = find_true_name (info->u.rsym.true_name, info->u.rsym.module);
-
-        /* See if the symbol has already been loaded by a previous module.
 	 If so, we reference the existing symbol and prevent it from
 	 being loaded again.  This should not happen if the symbol being
 	 read is an index for an assumed shape dummy array (ns != 1).  */
