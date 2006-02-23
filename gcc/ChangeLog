@@ -1,3 +1,7 @@
+2006-02-23  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* emit-rtl.c (immed_double_const): Cleanup.
+
 2006-02-23  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/26376
