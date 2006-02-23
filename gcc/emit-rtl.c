@@ -444,64 +444,28 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
   rtx value;
   unsigned int i;
 
+  /* There are the following cases (note that there are no modes with
+     HOST_BITS_PER_WIDE_INT < GET_MODE_BITSIZE (mode) < 2 * HOST_BITS_PER_WIDE_INT):
+
+     1) If GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT, then we use
+	gen_int_mode.
+     2) GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT, but the value of
+	the integer fits into HOST_WIDE_INT anyway (i.e., i1 consists only
+	from copies of the sign bit, and sign of i0 and i1 are the same),  then 
+	we return a CONST_INT for i0.
+     3) Otherwise, we create a CONST_DOUBLE for i0 and i1.  */
   if (mode != VOIDmode)
     {
-      int width;
-      
       gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
 		  || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT
 		  /* We can get a 0 for an error mark.  */
 		  || GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 		  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT);
 
-      /* We clear out all bits that don't belong in MODE, unless they and
-	 our sign bit are all one.  So we get either a reasonable negative
-	 value or a reasonable unsigned value for this mode.  */
-      width = GET_MODE_BITSIZE (mode);
-      if (width < HOST_BITS_PER_WIDE_INT
-	  && ((i0 & ((HOST_WIDE_INT) (-1) << (width - 1)))
-	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
-	i0 &= ((HOST_WIDE_INT) 1 << width) - 1, i1 = 0;
-      else if (width == HOST_BITS_PER_WIDE_INT
-	       && ! (i1 == ~0 && i0 < 0))
-	i1 = 0;
-      else
-	/* We should be able to represent this value as a constant.  */
-	gcc_assert (width <= 2 * HOST_BITS_PER_WIDE_INT);
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	return gen_int_mode (i0, mode);
 
-      /* If this would be an entire word for the target, but is not for
-	 the host, then sign-extend on the host so that the number will
-	 look the same way on the host that it would on the target.
-
-	 For example, when building a 64 bit alpha hosted 32 bit sparc
-	 targeted compiler, then we want the 32 bit unsigned value -1 to be
-	 represented as a 64 bit value -1, and not as 0x00000000ffffffff.
-	 The latter confuses the sparc backend.  */
-
-      if (width < HOST_BITS_PER_WIDE_INT
-	  && (i0 & ((HOST_WIDE_INT) 1 << (width - 1))))
-	i0 |= ((HOST_WIDE_INT) (-1) << width);
-
-      /* If MODE fits within HOST_BITS_PER_WIDE_INT, always use a
-	 CONST_INT.
-
-	 ??? Strictly speaking, this is wrong if we create a CONST_INT for
-	 a large unsigned constant with the size of MODE being
-	 HOST_BITS_PER_WIDE_INT and later try to interpret that constant
-	 in a wider mode.  In that case we will mis-interpret it as a
-	 negative number.
-
-	 Unfortunately, the only alternative is to make a CONST_DOUBLE for
-	 any constant in any mode if it is an unsigned constant larger
-	 than the maximum signed integer in an int on the host.  However,
-	 doing this will break everyone that always expects to see a
-	 CONST_INT for SImode and smaller.
-
-	 We have always been making CONST_INTs in this case, so nothing
-	 new is being broken.  */
-
-      if (width <= HOST_BITS_PER_WIDE_INT)
-	i1 = (i0 < 0) ? ~(HOST_WIDE_INT) 0 : 0;
+      gcc_assert (GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT);
     }
 
   /* If this integer fits in one word, return a CONST_INT.  */
