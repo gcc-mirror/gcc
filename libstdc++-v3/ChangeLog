@@ -1,7 +1,15 @@
+2006-02-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/codecvt/in/wchar_t/1.cc (test01): Change int
+	to size_t. Use explicit static_cast for casts.
+	* testsuite/22_locale/codecvt/in/wchar_t/6.cc (test06): Same.
+	* testsuite/22_locale/codecvt/in/wchar_t/5.cc (test05): Same.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/1.cc (test01): Same.
+	
 2006-02-22  Paolo Carlini  <pcarlini@suse.de>
 
-	* docs/html/ext/pb_assoc/basic_tree_assoc_cntnr_const_node_iterator.html:
-	Fix links
+	* docs/html/ext/pb_assoc/
+	basic_tree_assoc_cntnr_const_node_iterator.html:Fix links
 	* docs/html/ext/pb_assoc/basic_tree_assoc_cntnr_node_iterator.html:
 	Likewise.
 	* docs/html/ext/pb_assoc/hash_based_containers.html: Likewise.

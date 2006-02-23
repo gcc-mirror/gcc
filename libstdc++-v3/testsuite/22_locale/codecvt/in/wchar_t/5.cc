@@ -1,6 +1,6 @@
 // 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,11 +54,11 @@ void test05()
   const ext_type 	e_lit[] = { '\0', '\0', 'f', '\0' };
   const ext_type*       efrom_next;
   const int_type 	i_lit[] = { L'\0', L'\0', L'f', L'\0' };
-  int 			size = sizeof(e_lit);
+  size_t 		size = sizeof(e_lit);
   int_type* 		i_arr = new int_type[size + 1];
   int_type* 		i_ref = new int_type[size + 1];
-  wmemset(i_arr, 0xdeadbeef, size + 1);
-  wmemset(i_ref, 0xdeadbeef, size + 1);
+  wmemset(i_arr, static_cast<wchar_t>(0xdeadbeef), size + 1);
+  wmemset(i_ref, static_cast<wchar_t>(0xdeadbeef), size + 1);
   int_type*		ito_next;
 
   locale 		loc;
