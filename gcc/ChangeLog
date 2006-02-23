@@ -1,3 +1,9 @@
+2006-02-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26439
+	* tree-ssa-structalias.c (find_func_aliases): Handle complex types
+	like aggregate types.
+
 2006-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Add --with{,out}-long-double-128 configure option.
