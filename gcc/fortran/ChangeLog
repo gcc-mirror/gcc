@@ -1,3 +1,7 @@
+2006-02-23  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	* module.c (read_module): Remove redundant code lines.
+
 2006-02-20 Rafael Å¡vila de EspÅÌndola <rafael.espindola@gmail.com>
 	* Make-lang.in (FORTRAN): Remove
 	(.PHONY): Remove F95 and f95. Add fortran
