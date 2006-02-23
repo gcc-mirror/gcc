@@ -617,6 +617,9 @@ public abstract class Graphics
    */
   public boolean hitClip(int x, int y, int width, int height)
   {
+    Shape clip = getClip();
+    if (clip == null)
+      return true;
     return getClip().intersects(x, y, width, height);
   }
 

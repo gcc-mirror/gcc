@@ -1,3 +1,16 @@
+2006-02-23  Scott Gilbertson  <scottg@mantatest.com>
+
+	* gnu/awt/j2d/IntegerGraphicsState.java (getClip): Clone clip
+	before returning, handle null clip.
+	(getClipBounds): Handle null clip.
+	* gnu/awt/j2d/Graphics2DImpl.java (clipRect): Handle null clip.
+	* gnu/awt/xlib/XCanvasPeer.java (): 
+	(getLocationOnScreen): Implement.
+	* classpath/gnu/java/awt/peer/GLightweightPeer.java
+	(repaint): Merged with Classpath.
+	* classpath/java/awt/Graphics.java (hitClip): Merged with
+	Classpath.
+
 2006-02-21  Robert Schuster  <robertschuster@fsfe.org>
 
 	* link.cc: Added variant of create_error_method that

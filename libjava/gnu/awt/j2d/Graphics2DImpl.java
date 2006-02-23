@@ -175,6 +175,12 @@ public class Graphics2DImpl extends Graphics2D implements Cloneable
   public void clipRect(int x, int y, int width, int height)
   {
     Shape clip = state.getClip();
+    if (clip == null)
+    {
+      clip = new Rectangle (x,y,width,height);
+      setClip (clip);
+      return;
+    }
     if (clip instanceof Rectangle)
       {
 	Rectangle clipRect = (Rectangle) clip;
