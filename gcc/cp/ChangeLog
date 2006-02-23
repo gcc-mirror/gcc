@@ -1,3 +1,9 @@
+2006-02-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/26291
+	* decl.c (grok_op_properties): Check for ellipsis in arguments of
+	operators.
+
 2006-02-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26070

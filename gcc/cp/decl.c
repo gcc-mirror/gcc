@@ -9013,17 +9013,19 @@ grok_op_properties (tree decl, bool complain)
   tree name = DECL_NAME (decl);
   enum tree_code operator_code;
   int arity;
+  bool ellipsis_p;
   bool ok;
   tree class_type;
 
   /* Assume that the declaration is valid.  */
   ok = true;
 
-  /* Count the number of arguments.  */
+  /* Count the number of arguments. and check for ellipsis  */
   for (argtype = argtypes, arity = 0;
        argtype && argtype != void_list_node;
        argtype = TREE_CHAIN (argtype))
     ++arity;
+  ellipsis_p = !argtype;
 
   class_type = DECL_CONTEXT (decl);
   if (class_type && !CLASS_TYPE_P (class_type))
@@ -9163,11 +9165,14 @@ grok_op_properties (tree decl, bool complain)
 	    warning ("conversion to %s%s will never use a type conversion operator",
 		     ref ? "a reference to " : "", what);
 	}
+
       if (operator_code == COND_EXPR)
 	{
 	  /* 13.4.0.3 */
 	  error ("ISO C++ prohibits overloading operator ?:");
 	}
+      else if (ellipsis_p)
+	error ("`%D' must not have variable number of arguments", decl);
       else if (ambi_op_p (operator_code))
 	{
 	  if (arity == 1)
