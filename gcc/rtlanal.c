@@ -2033,16 +2033,25 @@ side_effects_p (rtx x)
   return 0;
 }
 
-/* Return nonzero if evaluating rtx X might cause a trap.  UNALIGNED_MEMS
-   controls whether nonzero is returned for unaligned memory accesses on
-   strict alignment machines.  */
+enum may_trap_p_flags
+{
+  MTP_UNALIGNED_MEMS = 1,
+  MTP_AFTER_MOVE = 2
+};
+/* Return nonzero if evaluating rtx X might cause a trap.
+   (FLAGS & MTP_UNALIGNED_MEMS) controls whether nonzero is returned for
+   unaligned memory accesses on strict alignment machines.  If
+   (FLAGS & AFTER_MOVE) is true, returns nonzero even in case the expression
+   cannot trap at its current location, but it might become trapping if moved
+   elsewhere.  */
 
 static int
-may_trap_p_1 (rtx x, bool unaligned_mems)
+may_trap_p_1 (rtx x, unsigned flags)
 {
   int i;
   enum rtx_code code;
   const char *fmt;
+  bool unaligned_mems = (flags & MTP_UNALIGNED_MEMS) != 0;
 
   if (x == 0)
     return 0;
@@ -2072,7 +2081,11 @@ may_trap_p_1 (rtx x, bool unaligned_mems)
 
       /* Memory ref can trap unless it's a static var or a stack slot.  */
     case MEM:
-      if (MEM_NOTRAP_P (x)
+      if (/* MEM_NOTRAP_P only relates to the actual position of the memory
+	     reference; moving it out of condition might cause its address
+	     become invalid.  */
+	  !(flags & MTP_AFTER_MOVE)
+	  && MEM_NOTRAP_P (x)
 	  && (!STRICT_ALIGNMENT || !unaligned_mems))
 	return 0;
       return
@@ -2152,14 +2165,14 @@ may_trap_p_1 (rtx x, bool unaligned_mems)
     {
       if (fmt[i] == 'e')
 	{
-	  if (may_trap_p_1 (XEXP (x, i), unaligned_mems))
+	  if (may_trap_p_1 (XEXP (x, i), flags))
 	    return 1;
 	}
       else if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (may_trap_p_1 (XVECEXP (x, i, j), unaligned_mems))
+	    if (may_trap_p_1 (XVECEXP (x, i, j), flags))
 	      return 1;
 	}
     }
@@ -2171,7 +2184,16 @@ may_trap_p_1 (rtx x, bool unaligned_mems)
 int
 may_trap_p (rtx x)
 {
-  return may_trap_p_1 (x, false);
+  return may_trap_p_1 (x, 0);
+}
+
+/* Return nonzero if evaluating rtx X might cause a trap, when the expression
+   is moved from its current location by some optimization.  */
+
+int
+may_trap_after_code_motion_p (rtx x)
+{
+  return may_trap_p_1 (x, MTP_AFTER_MOVE);
 }
 
 /* Same as above, but additionally return non-zero if evaluating rtx X might
@@ -2217,7 +2239,7 @@ may_trap_p (rtx x)
 int
 may_trap_or_fault_p (rtx x)
 {
-  return may_trap_p_1 (x, true);
+  return may_trap_p_1 (x, MTP_UNALIGNED_MEMS);
 }
 
 /* Return nonzero if X contains a comparison that is not either EQ or NE,
