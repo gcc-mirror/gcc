@@ -898,7 +898,7 @@ parse_class_file (void)
 	  continue;
 	}
 
-      input_location = file_start_location;
+      input_location = DECL_SOURCE_LOCATION (TYPE_NAME (current_class));
       if (DECL_LINENUMBERS_OFFSET (method))
 	{
 	  int i;
