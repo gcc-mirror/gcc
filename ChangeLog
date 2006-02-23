@@ -4,10 +4,10 @@
 	(Language Front End Maintainers):  Add myself as fortran 95 maintainer.
 
 2006-02-21 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
-	* Makefile.tpl  (BUILD_CONFIGDIRS): Remove
-	(TARGET_CONFIGDIRS): Remove
-	* configure.in: Remove AC_SUBST(target_configdirs)
-	* Makefile.in, configure: Regenerated
+	* Makefile.tpl  (BUILD_CONFIGDIRS): Remove.
+	(TARGET_CONFIGDIRS): Remove.
+	* configure.in: Remove AC_SUBST(target_configdirs).
+	* Makefile.in, configure: Regenerated.
 
 2006-02-20  Steven G. Kargl  <kargls@comcast.net>
 
