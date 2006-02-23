@@ -479,7 +479,7 @@ find_identical_invariants (htab_t eq, struct invariant *inv)
 
   if (dump_file && inv->eqto != inv->invno)
     fprintf (dump_file,
-	     "Invariant %d is equivalent to invariant %d.\n ",
+	     "Invariant %d is equivalent to invariant %d.\n",
 	     inv->invno, inv->eqto);
 }
 
@@ -775,7 +775,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
     return;
 
   /* We cannot make trapping insn executed, unless it was executed before.  */
-  if (may_trap_p (PATTERN (insn)) && !always_reached)
+  if (may_trap_after_code_motion_p (PATTERN (insn)) && !always_reached)
     return;
 
   depends_on = BITMAP_ALLOC (NULL);

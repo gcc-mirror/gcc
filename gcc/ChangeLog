@@ -1,5 +1,17 @@
 2006-02-23  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR rtl-optimization/26316
+	* rtlanal.c (enum may_trap_p_flags): New.
+	(may_trap_p_1): Take flags instead of unaligned_mems argument.  Ignore
+	MEM_NOTRAP_P if flags & MTP_AFTER_MOVE.
+	(may_trap_p, may_trap_or_fault_p): Pass flags to may_trap_p_1.
+	(may_trap_after_code_motion_p): New function.
+	* loop-invariant.c (find_identical_invariants): Fix dump formating.
+	(find_invariant_insn): Use may_trap_after_code_motion_p.
+	* rtl.h (may_trap_after_code_motion_p): Declare.
+
+2006-02-23  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* emit-rtl.c (immed_double_const): Cleanup.
 
 2006-02-23  Daniel Berlin  <dberlin@dberlin.org>
