@@ -3223,7 +3223,8 @@ find_func_aliases (tree origt)
       /* Only care about pointers and structures containing
 	 pointers.  */
       if (POINTER_TYPE_P (TREE_TYPE (PHI_RESULT (t)))
-	  || AGGREGATE_TYPE_P (TREE_TYPE (PHI_RESULT (t))))
+	  || AGGREGATE_TYPE_P (TREE_TYPE (PHI_RESULT (t)))
+	  || TREE_CODE (TREE_TYPE (PHI_RESULT (t))) == COMPLEX_TYPE)
 	{
 	  int i;
 	  unsigned int j;
@@ -3241,7 +3242,8 @@ find_func_aliases (tree origt)
 	      get_constraint_for (PHI_ARG_DEF (t, i), &rhsc);
 
 	      if (TREE_CODE (strippedrhs) == ADDR_EXPR
-		 && AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
+		 && (AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
+		     || TREE_CODE (TREE_TYPE (rhstype)) == COMPLEX_TYPE)
 		 && VEC_length (ce_s, rhsc) == 1)
 		{
 		  struct constraint_expr *origrhs;
@@ -3384,8 +3386,10 @@ find_func_aliases (tree origt)
       tree rhsop = TREE_OPERAND (t, 1);
       int i;
 
-      if (AGGREGATE_TYPE_P (TREE_TYPE (lhsop)) 
-	  && AGGREGATE_TYPE_P (TREE_TYPE (rhsop)))
+      if ((AGGREGATE_TYPE_P (TREE_TYPE (lhsop)) 
+	   || TREE_CODE (TREE_TYPE (lhsop)) == COMPLEX_TYPE)
+	  && (AGGREGATE_TYPE_P (TREE_TYPE (rhsop))
+	      || TREE_CODE (TREE_TYPE (lhsop)) == COMPLEX_TYPE))
 	{
 	  do_structure_copy (lhsop, rhsop);
 	}
@@ -3395,6 +3399,7 @@ find_func_aliases (tree origt)
 	     containing pointers, dereferences, and call expressions.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (lhsop))
 	      || AGGREGATE_TYPE_P (TREE_TYPE (lhsop))
+	      || TREE_CODE (TREE_TYPE (lhsop)) == COMPLEX_TYPE
 	      || TREE_CODE (rhsop) == CALL_EXPR)
 	    {
 	      get_constraint_for (lhsop, &lhsc);
@@ -3421,7 +3426,8 @@ find_func_aliases (tree origt)
 			
 			get_constraint_for (rhsop, &rhsc);
 			if (TREE_CODE (strippedrhs) == ADDR_EXPR
-			    && AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
+			    && (AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
+				|| TREE_CODE (TREE_TYPE (rhstype)) == COMPLEX_TYPE)
 			    && VEC_length (ce_s, rhsc) == 1)
 			  {
 			    struct constraint_expr *origrhs;
