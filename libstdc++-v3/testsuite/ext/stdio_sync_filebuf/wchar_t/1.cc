@@ -1,6 +1,6 @@
 // 2003-05-01 Petur Runolfsson <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +50,7 @@ void test01()
   VERIFY( getwc(fin) == L'X' );
 
   wchar_t buf[5];
-  wmemset(buf, 0xdeadbeef, 5);
+  wmemset(buf, static_cast<wchar_t>(0xdeadbeef), 5);
   VERIFY( wsbuf.sgetn(buf, 5) == 5 );
   VERIFY( !wmemcmp(buf, w_lit + 3, 5) );
   VERIFY( traits_type::to_char_type(getwc(fin)) == w_lit[8] );
