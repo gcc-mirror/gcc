@@ -3375,7 +3375,11 @@ vrp_visit_assignment (tree stmt, tree *output_p)
 
   /* We only keep track of ranges in integral and pointer types.  */
   if (TREE_CODE (lhs) == SSA_NAME
-      && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+      && ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	   /* It is valid to have NULL MIN/MAX values on a type.  See
+	      build_range_type.  */
+	   && TYPE_MIN_VALUE (TREE_TYPE (lhs))
+	   && TYPE_MAX_VALUE (TREE_TYPE (lhs)))
 	  || POINTER_TYPE_P (TREE_TYPE (lhs))))
     {
       struct loop *l;

@@ -1,3 +1,9 @@
+2006-02-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/26425
+	* tree-vrp.c (vrp_visit_assignment): If the LHS's type has a NULL
+	min/max, then assume its varying.
+
 2006-02-23  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/26316
