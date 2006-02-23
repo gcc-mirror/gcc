@@ -3291,7 +3291,6 @@ find_func_aliases (tree origt)
       tree lhsop;
       tree rhsop;
       unsigned int varid;
-      bool found = false;
       tree arglist;
       varinfo_t fi;
       int i = 1;
@@ -3313,14 +3312,12 @@ find_func_aliases (tree origt)
 	 we should still be able to handle.  */
       if (decl)
 	{
-	  found = lookup_id_for_tree (decl, &varid);
-	  gcc_assert (found);
+	  varid = get_id_for_tree (decl);
 	}
       else
 	{
 	  decl = TREE_OPERAND (rhsop, 0);
-	  found = lookup_id_for_tree (decl, &varid);
-	  gcc_assert (found);
+	  varid = get_id_for_tree (decl);
 	}
 
       /* Assign all the passed arguments to the appropriate incoming
@@ -3805,7 +3802,6 @@ create_function_info_for (tree decl, const char *name)
 
   
   arg = DECL_ARGUMENTS (decl);
-
 
   /* Set up variables for each argument.  */
   for (i = 1; i < vi->fullsize; i++)
