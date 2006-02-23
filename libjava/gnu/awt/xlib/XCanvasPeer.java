@@ -247,10 +247,12 @@ public class XCanvasPeer implements CanvasPeer
     gfx2d.setColor(component.getBackground());
     return gfx2d;
   }
-    
+
+  private Rectangle locationBounds;
   public Point getLocationOnScreen()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented");
+    locationBounds = window.getBounds (locationBounds);
+    return new Point (locationBounds.x,locationBounds.y);
   }
 
   public Dimension getMinimumSize ()

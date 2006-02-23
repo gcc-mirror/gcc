@@ -227,7 +227,12 @@ public class GLightweightPeer
 
   public void print(Graphics graphics) {}
 
-  public void repaint(long tm, int x, int y, int width, int height) {}
+  public void repaint(long tm, int x, int y, int width, int height)
+  {
+    Component p = comp.getParent ();
+    if(p != null)
+      p.repaint(tm,x+comp.getX(),y+comp.getY(),width,height);
+  }
 
   public void requestFocus() {}
 
