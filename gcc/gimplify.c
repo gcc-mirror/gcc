@@ -4267,7 +4267,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
   /* When adding a variable-sized variable, we have to handle all sorts
      of additional bits of data: the pointer replacement variable, and 
      the parameters of the type.  */
-  if (!TREE_CONSTANT (DECL_SIZE (decl)))
+  if (DECL_SIZE (decl) && !TREE_CONSTANT (DECL_SIZE (decl)))
     {
       /* Add the pointer replacement variable as PRIVATE if the variable
 	 replacement is private, else FIRSTPRIVATE since we'll need the
