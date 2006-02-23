@@ -1,5 +1,10 @@
 2006-02-23  Jeff Law  <law@redhat.com>
 
+	* tree.h (PHI_ARG_NONZERO): Remove.
+	* tree-phinodes.c (add_phi_arg): No longer initialize PHI_ARG_NONZERO.
+	(remove_phi_arg_num): No longer copy PHI_ARG_NONZERO from the old
+	node to the new node.
+
 	PR tree-optimization/26425
 	* tree-vrp.c (vrp_visit_assignment): If the LHS's type has a NULL
 	min/max, then assume its varying.
