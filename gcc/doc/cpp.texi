@@ -251,12 +251,8 @@ processing.  That set is what the C standard calls the @dfn{source}
 character set.  It must be isomorphic with ISO 10646, also known as
 Unicode.  CPP uses the UTF-8 encoding of Unicode.
 
-At present, GNU CPP does not implement conversion from arbitrary file
-encodings to the source character set.  Use of any encoding other than
-plain ASCII or UTF-8, except in comments, will cause errors.  Use of
-encodings that are not strict supersets of ASCII, such as Shift JIS,
-may cause errors even if non-ASCII characters appear only in comments.
-We plan to fix this in the near future.
+The character sets of the input files are specified using the
+@option{-finput-charset=} option.
 
 All preprocessing work (the subject of the rest of this manual) is
 carried out in the source character set.  If you request textual
