@@ -1,3 +1,10 @@
+2006-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
+        * Makefile.in (gnatlib): Fix regex, using \. instead of . when a
+	period is meant.
+	
 2006-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline:

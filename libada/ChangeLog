@@ -1,3 +1,9 @@
+2006-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
+	* Makefile.in (FLAGS_TO_PASS): Add GCC_FOR_TARGET.
+
 2005-04-27  James E Wilson  <wilson@specifixinc.com>
 
 	* Makefile.in (html): New.

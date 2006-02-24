@@ -1591,14 +1591,14 @@ GCC_FOR_TARGET=./xgcc -B./ $(FLAGS_FOR_TARGET)
 gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 	$(MAKE) -C rts \
 		CC="`echo \"$(GCC_FOR_TARGET)\" \
-		| sed -e 's^./xgcc^../../xgcc^' -e 's^-B./^-B../../^'`" \
+		| sed -e 's,^\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'`" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
                 CFLAGS="$(GNATLIBCFLAGS_FOR_C)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile $(LIBGNAT_OBJS)
 	$(MAKE) -C rts \
 		CC="`echo \"$(GCC_FOR_TARGET)\" \
-		| sed -e 's^\./xgcc^../../xgcc^' -e 's^-B./^-B../../^'`" \
+		| sed -e 's,^\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'`" \
 	        ADA_INCLUDES="" \
                 CFLAGS="$(GNATLIBCFLAGS)" \
 	        ADAFLAGS="$(GNATLIBFLAGS)" \
