@@ -1,6 +1,13 @@
 2006-02-23  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
+	2006-02-20  Roger Sayle  <roger@eyesopen.com>
+	* gthr-posix.h: On Tru64, map __gthr_foo as a weak reference to
+	__foo and not foo when _PTHREAD_USE_MANGLED_NAMES_ is defined.
+
+2006-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
 	2006-02-21  Jakub Jelinek  <jakub@redhat.com>
 	PR middle-end/26379
 	* combine.c (simplify_shift_const_1): Disable nested shifts
