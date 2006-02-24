@@ -542,8 +542,6 @@ resolve_contained_functions (gfc_namespace * ns)
   gfc_namespace *child;
   gfc_entry_list *el;
 
-  resolve_entries (ns);
-
   resolve_formal_arglists (ns);
 
   for (child = ns->contained; child; child = child->sibling)
@@ -6090,6 +6088,10 @@ resolve_types (gfc_namespace * ns)
 
   gfc_current_ns = ns;
 
+  resolve_entries (ns);
+
+  resolve_contained_functions (ns);
+
   gfc_traverse_ns (ns, resolve_symbol);
 
   resolve_fntype (ns);
@@ -6160,7 +6162,6 @@ gfc_resolve (gfc_namespace * ns)
 
   old_ns = gfc_current_ns;
 
-  resolve_contained_functions (ns);
   resolve_types (ns);
   resolve_codes (ns);
 
