@@ -7966,6 +7966,12 @@ rs6000_init_builtins (void)
     altivec_init_builtins ();
   if (TARGET_ALTIVEC || TARGET_SPE)
     rs6000_common_init_builtins ();
+
+#if TARGET_XCOFF
+  /* AIX libm provides clog as __clog.  */
+  if (built_in_decls [BUILT_IN_CLOG])
+    set_user_assembler_name (built_in_decls [BUILT_IN_CLOG], "__clog");
+#endif
 }
 
 /* Search through a set of builtins and enable the mask bits.
