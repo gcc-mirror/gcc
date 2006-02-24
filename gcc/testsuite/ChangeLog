@@ -1,3 +1,10 @@
+2006-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2006-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+	PR target/25603
+	* gfortran.dg/pr25603.f: New testcase.
+
 2006-02-19  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/26201
