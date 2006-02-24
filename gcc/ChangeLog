@@ -1,5 +1,11 @@
 2006-02-24  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/24952
+	* combine.c (try_combine): Explicitly check whether GET_CODE is
+	a SET or a CLOBBER, instead on checking that it isn't a USE.
+
+2006-02-24  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (fold_comparison): New subroutine of fold_binary
 	containing transformations common to both the equality and
 	ordering relational operators, factored out of fold_binary.
