@@ -1,3 +1,8 @@
+2006-02-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* except.c (expand_start_catch_block): Handle
+	flag_use_cxa_get_exception_ptr.
+
 2006-02-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26291

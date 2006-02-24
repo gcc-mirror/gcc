@@ -1,3 +1,20 @@
+2006-02-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/tm.texi (Run-time Target): Document C_COMMON_OVERRIDE_OPTIONS.
+	* doc/invoke.texi (C++ Dialect Options): Document 
+	-fno-use-cxa-get-exception-ptr.
+	* configure.ac: Define DEFAULT_USE_CXA_ATEXIT to 2 not 1.
+	* configure: Regenerate.
+	* c.opt (fuse-cxa-get-exception-ptr): New.
+	* c-opts.c (c_common_handle_option): Handle
+	OPT_fuse_cxa_get_exception_ptr.
+	* c-common.c (flag_use_cxa_atexit): Update documentation.
+	(flag_use_cxa_get_exception_ptr): New.
+	* c-common.h (flag_use_cxa_get_exception_ptr): New.
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Improve
+	documentation.
+	(C_COMMON_OVERRIDE_OPTIONS): New.
+
 2006-02-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/24952

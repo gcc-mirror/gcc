@@ -12346,7 +12346,7 @@ fi
   if test x$use_cxa_atexit = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
-#define DEFAULT_USE_CXA_ATEXIT 1
+#define DEFAULT_USE_CXA_ATEXIT 2
 _ACEOF
 
   fi

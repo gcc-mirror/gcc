@@ -713,6 +713,10 @@ fuse-cxa-atexit
 C++ ObjC++
 Use __cxa_atexit to register destructors
 
+fuse-cxa-get-exception-ptr
+C++ ObjC++
+Use __cxa_get_exception_ptr in exception handling
+
 fvisibility-inlines-hidden
 C++ ObjC++
 Marks all inlined methods as having hidden visibility

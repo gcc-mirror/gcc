@@ -424,9 +424,15 @@ int flag_weak = 1;
 int flag_working_directory = -1;
 
 /* Nonzero to use __cxa_atexit, rather than atexit, to register
-   destructors for local statics and global objects.  */
+   destructors for local statics and global objects.  '2' means it has been
+   set nonzero as a default, not by a command-line flag.  */
 
 int flag_use_cxa_atexit = DEFAULT_USE_CXA_ATEXIT;
+
+/* Nonzero to use __cxa_get_exception_ptr in C++ exception-handling
+   code.  '2' means it has not been set explicitly on the command line.  */
+
+int flag_use_cxa_get_exception_ptr = 2;
 
 /* Nonzero means make the default pedwarns warnings instead of errors.
    The value of this flag is ignored if -pedantic is specified.  */
