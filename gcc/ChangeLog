@@ -1,3 +1,10 @@
+2006-02-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Change
+	decl libname for clog to __clog on AIX.
+
+	* config/rs6000/xcoff.h (MAX_OFILE_ALIGNMENT): Define.
+
 2006-02-24  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/26453

@@ -56,6 +56,11 @@
 
 #define DOLLARS_IN_IDENTIFIERS 0
 
+/* AIX .align pseudo-op accept value from 0 to 12, corresponding to
+   log base 2 of the alignment in bytes; 12 = 4096 bytes = 32768 bits.  */
+
+#define MAX_OFILE_ALIGNMENT 32768
+
 /* Return nonzero if this entry is to be written into the constant
    pool in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF
    or a CONST containing one of them.  If -mfp-in-toc (the default),
