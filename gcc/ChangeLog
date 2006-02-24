@@ -1,4 +1,9 @@
-2005-10-20  Geoffrey Keating  <geoffk@apple.com>
+2006-02-23  Roger Sayle  <roger@eyesopen.com>
+	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gthr-posix.h (__gthrw): Fix typo in comment.
+
+2006-02-23  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/cpp.texi (Character sets): Document that we do support
 	input files to be in any character set.

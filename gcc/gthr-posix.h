@@ -67,7 +67,7 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 # define __gthrw_(name) name
 #endif
 
-/* Typically, __gthrw_foo is a weak refernce to symbol foo.  */
+/* Typically, __gthrw_foo is a weak reference to symbol foo.  */
 #define __gthrw(name) __gthrw2(name,name)
 
 /* On Tru64, /usr/include/pthread.h uses #pragma extern_prefix "__" to
