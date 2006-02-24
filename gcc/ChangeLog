@@ -1,6 +1,14 @@
 2006-02-23  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
+	2006-02-21  Jakub Jelinek  <jakub@redhat.com>
+	PR middle-end/26379
+	* combine.c (simplify_shift_const_1): Disable nested shifts
+	optimization for vector shifts.
+
+2006-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
 	2006-02-16  Denis Nagorny <denis_nagorny@linux.intel.com>
 	PR rtl-optimization/25603
 	* reload.c (reg_inc_found_and_valid_p): New. Check REG_INC note.
