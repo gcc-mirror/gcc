@@ -562,9 +562,15 @@ fd_sfree (unix_stream * s)
 static try
 fd_seek (unix_stream * s, gfc_offset offset)
 {
-  s->logical_offset = offset;
+  if (s->physical_offset == offset) /* Are we lucky and avoid syscall?  */
+    {
+      s->logical_offset = offset;
+      return SUCCESS;
+    }
 
-  return SUCCESS;
+  s->physical_offset = s->logical_offset = offset;
+
+  return (lseek (s->fd, offset, SEEK_SET) < 0) ? FAILURE : SUCCESS;
 }
 
 
@@ -666,8 +672,7 @@ fd_read (unix_stream * s, void * buf, size_t * nbytes)
       return errno;
     }
 
-  if (is_seekable ((stream *) s) && s->physical_offset != s->logical_offset 
-      && lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
+  if (is_seekable ((stream *) s) && fd_seek (s, s->logical_offset) == FAILURE)
     {
       *nbytes = 0;
       return errno;
@@ -715,8 +720,7 @@ fd_write (unix_stream * s, const void * buf, size_t * nbytes)
       return errno;
     }
 
-  if (is_seekable ((stream *) s) && s->physical_offset != s->logical_offset
-      && lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
+  if (is_seekable ((stream *) s) && fd_seek (s, s->logical_offset) == FAILURE)
     {
       *nbytes = 0;
       return errno;
