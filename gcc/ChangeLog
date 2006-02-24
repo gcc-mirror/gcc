@@ -1,3 +1,15 @@
+2006-02-24  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_comparison): New subroutine of fold_binary
+	containing transformations common to both the equality and
+	ordering relational operators, factored out of fold_binary.
+	(fold_binary): Separate out the equality operators (EQ_EXPR
+	and NE_EXPR) from the ordering operators (LT_EXPR, GT_EXPR,
+	LE_EXPR and GE_EXPR), calling fold_comparison to perform the
+	transformations common to both.
+	(fold_div_compare): Fix latent bugs in the previously unreachable 
+	LT_EXPR and GE_EXPR cases.
+
 2006-02-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_init_builtins): Change
