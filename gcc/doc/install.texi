@@ -284,7 +284,7 @@ obtained via FTP mirror sites.
 
 You must have GNU make installed to build GCC@.
 
-@item GNU tar version 1.12 (or later)
+@item GNU tar version 1.14 (or later)
 
 Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
