@@ -159,7 +159,7 @@ gfc_is_same_range (gfc_array_ref * ar1, gfc_array_ref * ar2, int n, int def)
     e1 = ar1->as->lower[n];
 
   if (ar2->as && !e2)
-    e2 = ar2->as->upper[n];
+    e2 = ar2->as->lower[n];
 
   /* Check we have values for both.  */
   if (!(e1 && e2))
@@ -538,15 +538,19 @@ gfc_check_section_vs_section (gfc_ref * lref, gfc_ref * rref, int n)
   gfc_expr *r_start;
   gfc_expr *r_stride;
 
-  gfc_array_ref	l_ar;
-  gfc_array_ref	r_ar;
+  gfc_array_ref l_ar;
+  gfc_array_ref r_ar;
 
   mpz_t no_of_elements;
-  mpz_t	X1, X2;
+  mpz_t X1, X2;
   gfc_dependency dep;
 
   l_ar = lref->u.ar;
   r_ar = rref->u.ar;
+  
+  /* If they are the same range, return without more ado.  */
+  if (gfc_is_same_range (&l_ar, &r_ar, n, 0))
+    return GFC_DEP_EQUAL;
 
   l_start = l_ar.start[n];
   l_end = l_ar.end[n];

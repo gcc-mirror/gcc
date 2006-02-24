@@ -1,3 +1,13 @@
+2006-02-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24519
+	* gfortran.dg/dependency_3.f90: New test.
+	* gfortran.fortran-torture/execute/vect-3.f90: Remove two of the
+	XFAILs.
+
+	PR fortran/25395
+	* gfortran.dg/equiv_6.f90: New test.
+
 2006-02-23  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/pr26425.c: New test.

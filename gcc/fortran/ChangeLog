@@ -1,3 +1,15 @@
+2006-02-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24519
+	* dependency.c (gfc_is_same_range): Correct typo.
+	(gfc_check_section_vs_section): Call gfc_is_same_range.
+
+	PR fortran/25395
+	* trans-common.c (add_equivalences): Add a new flag that is set when
+	an equivalence is seen that prevents more from being reset until the
+	start of a new traversal of the list, thus ensuring completion of
+	all the equivalences.
+
 2006-02-23  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* module.c (read_module): Remove redundant code lines.
