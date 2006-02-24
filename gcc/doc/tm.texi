@@ -778,6 +778,13 @@ Don't use this macro to turn on various extra optimizations for
 @option{-O}.  That is what @code{OPTIMIZATION_OPTIONS} is for.
 @end defmac
 
+@defmac C_COMMON_OVERRIDE_OPTIONS
+This is similar to @code{OVERRIDE_OPTIONS} but is only used in the C
+language frontends (C, Objective-C, C++, Objective-C++) and so can be
+used to alter option flag variables which only exist in those
+frontends.
+@end defmac
+
 @defmac OPTIMIZATION_OPTIONS (@var{level}, @var{size})
 Some machines may desire to change what optimizations are performed for
 various optimization levels.   This macro, if defined, is executed once

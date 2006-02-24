@@ -1,3 +1,9 @@
+2006-02-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/eh/uncaught1.C: Add dg-options for ppc-darwin.
+	* g++.dg/eh/uncaught2.C: New.
+	* g++.dg/eh/uncaught3.C: New.
+
 2006-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26423

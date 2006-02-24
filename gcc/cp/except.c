@@ -446,7 +446,8 @@ expand_start_catch_block (tree decl)
   /* If the C++ object needs constructing, we need to do that before
      calling __cxa_begin_catch, so that std::uncaught_exception gets
      the right value during the copy constructor.  */
-  else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+  else if (flag_use_cxa_get_exception_ptr 
+	   && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
     {
       exp = do_get_exception_ptr ();
       initialize_handler_parm (decl, exp);

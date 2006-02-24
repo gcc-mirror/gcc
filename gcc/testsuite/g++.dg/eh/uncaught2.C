@@ -1,6 +1,6 @@
-// PR libstdc++/10606
-// { dg-do run }
-// { dg-options "-fuse-cxa-get-exception-ptr" { target powerpc*-*-darwin* } }
+// { dg-do compile }
+// { dg-final { scan-assembler-not "__cxa_get_exception" } }
+// { dg-options "-fno-use-cxa-get-exception-ptr" }
 
 #include <exception>
 #include <cstdlib>

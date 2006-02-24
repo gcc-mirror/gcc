@@ -1581,6 +1581,12 @@ This option is required for fully standards-compliant handling of static
 destructors, but will only work if your C library supports
 @code{__cxa_atexit}.
 
+@item -fno-use-cxa-get-exception-ptr
+@opindex fno-use-cxa-get-exception-ptr
+Don't use the @code{__cxa_get_exception_ptr} runtime routine.  This
+will cause @code{std::uncaught_exception} to be incorrect, but is necessary
+if the runtime routine is not available.
+
 @item -fvisibility-inlines-hidden
 @opindex fvisibility-inlines-hidden
 Causes all inlined methods to be marked with
