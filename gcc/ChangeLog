@@ -1,3 +1,7 @@
+2006-02-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi: Require GNU tar version 1.14.
+
 2006-02-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/tm.texi (Run-time Target): Document C_COMMON_OVERRIDE_OPTIONS.
