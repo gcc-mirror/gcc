@@ -15153,8 +15153,6 @@ static void
 rs6000_output_function_epilogue (FILE *file,
 				 HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  rs6000_stack_t *info = rs6000_stack_info ();
-
   if (! HAVE_epilogue)
     {
       rtx insn = get_last_insn ();
@@ -15225,13 +15223,14 @@ rs6000_output_function_epilogue (FILE *file,
      System V.4 Powerpc's (and the embedded ABI derived from it) use a
      different traceback table.  */
   if (DEFAULT_ABI == ABI_AIX && ! flag_inhibit_size_directive
-      && rs6000_traceback != traceback_none)
+      && rs6000_traceback != traceback_none && !current_function_is_thunk)
     {
       const char *fname = NULL;
       const char *language_string = lang_hooks.name;
       int fixed_parms = 0, float_parms = 0, parm_info = 0;
       int i;
       int optional_tbtab;
+      rs6000_stack_t *info = rs6000_stack_info ();
 
       if (rs6000_traceback == traceback_full)
 	optional_tbtab = 1;
