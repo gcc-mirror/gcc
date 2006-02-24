@@ -1,3 +1,9 @@
+2006-02-24  Diego Novillo  <dnovillo@redhat.com>
+
+	* doc/invoke.texi: Move -fopenmp description to "Options for
+	Code Generation".
+	Remove reference to -lgomp.
+
 2006-02-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi: Require GNU tar version 1.14.

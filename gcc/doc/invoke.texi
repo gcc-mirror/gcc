@@ -4731,15 +4731,6 @@ instrumentation (and therefore faster execution) and still provides
 some protection against outright memory corrupting writes, but allows
 erroneously read data to propagate within a program.
 
-@item -fopenmp
-@opindex fopenmp
-@cindex openmp parallel
-Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
-@code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
-compiler generates parallel code according to the OpenMP Application
-Program Interface v2.5.  To generate the final exectuable, the runtime
-library @code{libgomp} must be linked in using @option{-lgomp}.
-
 @item -fstrength-reduce
 @opindex fstrength-reduce
 Perform the optimizations of loop strength reduction and
@@ -13305,6 +13296,14 @@ operator delete must always be of default visibility.
 
 An overview of these techniques, their benefits and how to use them
 is at @w{@uref{http://gcc.gnu.org/wiki/Visibility}}.
+
+@item -fopenmp
+@opindex fopenmp
+@cindex openmp parallel
+Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
+@code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
+compiler generates parallel code according to the OpenMP Application
+Program Interface v2.5 @w{@uref{http://www.openmp.org/}}.
 
 @end table
 
