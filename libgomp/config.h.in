@@ -9,6 +9,9 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
+/* Define if the POSIX Semaphores do not work on your system. */
+#undef HAVE_BROKEN_POSIX_SEMAPHORES
+
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 

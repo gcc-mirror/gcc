@@ -164,6 +164,15 @@ AC_LINK_IFELSE(
 # Check for functions needed.
 AC_CHECK_FUNCS(getloadavg clock_gettime)
 
+# Check for broken semaphore implementation on darwin.
+# sem_init returns: sem_init error: Function not implemented.
+case "$host" in
+  *-darwin*)
+    AC_DEFINE(HAVE_BROKEN_POSIX_SEMAPHORES, 1,
+	Define if the POSIX Semaphores do not work on your system.)
+    ;;
+esac
+
 # At least for glibc, clock_gettime is in librt.  But don't pull that
 # in if it still doesn't give us the function we want.
 if test $ac_cv_func_clock_gettime = no; then

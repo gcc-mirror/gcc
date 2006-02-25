@@ -1,3 +1,15 @@
+2006-02-25  Shantonu Sen  <ssen@opendarwin.org>
+
+	* config/posix/sem.h: Define BROKEN_POSIX_SEMAPHORES functions.
+	* config/posix/sem.c: Implement the above.
+
+2006-02-25  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac (HAVE_BROKEN_POSIX_SEMAPHORES): Check for darwin and
+	define HAVE_BROKEN_POSIX_SEMAPHORES.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+
 2006-02-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR bootstrap/26161

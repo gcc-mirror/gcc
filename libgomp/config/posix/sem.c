@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -13,7 +13,7 @@
    FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
    more details.
 
-   You should have received a copy of the GNU Lesser General Public License 
+   You should have received a copy of the GNU Lesser General Public License
    along with libgomp; see the file COPYING.LIB.  If not, write to the
    Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.  */
@@ -35,7 +35,86 @@
 
 #include "libgomp.h"
 
+#ifdef HAVE_BROKEN_POSIX_SEMAPHORES
+#include <stdlib.h>
 
+void gomp_sem_init (gomp_sem_t *sem, int value)
+{
+  int ret;
+
+  ret = pthread_mutex_init (&sem->mutex, NULL);
+  if (ret)
+    return;
+
+  ret = pthread_cond_init (&sem->cond, NULL);
+  if (ret)
+    return;
+
+  sem->value = value;
+}
+
+void gomp_sem_wait (gomp_sem_t *sem)
+{
+  int ret;
+
+  ret = pthread_mutex_lock (&sem->mutex);
+  if (ret)
+    return;
+
+  if (sem->value > 0)
+    {
+      sem->value--;
+      ret = pthread_mutex_unlock (&sem->mutex);
+      return;
+    }
+
+  while (sem->value <= 0)
+    {
+      ret = pthread_cond_wait (&sem->cond, &sem->mutex);
+      if (ret)
+	{
+	  pthread_mutex_unlock (&sem->mutex);
+	  return;
+	}
+    }
+
+  sem->value--;
+  ret = pthread_mutex_unlock (&sem->mutex);
+  return;
+}
+
+void gomp_sem_post (gomp_sem_t *sem)
+{
+  int ret;
+
+  ret = pthread_mutex_lock (&sem->mutex);
+  if (ret)
+    return;
+
+  sem->value++;
+
+  ret = pthread_mutex_unlock (&sem->mutex);
+  if (ret)
+    return;
+
+  ret = pthread_cond_signal (&sem->cond);
+
+  return;
+}
+
+void gomp_sem_destroy (gomp_sem_t *sem)
+{
+  int ret;
+
+  ret = pthread_mutex_destroy (&sem->mutex);
+  if (ret)
+    return;
+
+  ret = pthread_cond_destroy (&sem->cond);
+
+  return;
+}
+#else /* HAVE_BROKEN_POSIX_SEMAPHORES  */
 void
 gomp_sem_wait (gomp_sem_t *sem)
 {
@@ -44,3 +123,4 @@ gomp_sem_wait (gomp_sem_t *sem)
   while (sem_wait (sem) != 0)
     continue;
 }
+#endif
