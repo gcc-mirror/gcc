@@ -1,3 +1,8 @@
+2006-02-25  Juergen Weigert  <jw@suse.de>
+	Richard Guenther  <rguenther@suse.de>
+
+	* scan-decls.c (scan_decls): Don't fetch new statement after CPP_EOF.
+
 2006-02-24  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (gen_lowpart_or_truncate): Call
