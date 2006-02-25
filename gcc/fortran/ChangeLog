@@ -1,3 +1,11 @@
+2006-02-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/23092
+	* trans-intrinsic.c (gfc_conv_intrinsic_arith):  If the
+	mask expression exists and has rank 0, enclose the generated
+	loop in an "if (mask)".
+	* (gfc_conv_intrinsic_minmaxloc):  Likewise.
+
 2006-02-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26409

@@ -1474,7 +1474,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, int op)
   actual = actual->next->next;
   gcc_assert (actual);
   maskexpr = actual->expr;
-  if (maskexpr)
+  if (maskexpr && maskexpr->rank != 0)
     {
       maskss = gfc_walk_expr (maskexpr);
       gcc_assert (maskss != gfc_ss_terminator);
@@ -1535,8 +1535,27 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, int op)
   gfc_add_expr_to_block (&body, tmp);
 
   gfc_trans_scalarizing_loops (&loop, &body);
-  gfc_add_block_to_block (&se->pre, &loop.pre);
-  gfc_add_block_to_block (&se->pre, &loop.post);
+
+  /* For a scalar mask, enclose the loop in an if statement.  */
+  if (maskexpr && maskss == NULL)
+    {
+      gfc_init_se (&maskse, NULL);
+      gfc_conv_expr_val (&maskse, maskexpr);
+      gfc_init_block (&block);
+      gfc_add_block_to_block (&block, &loop.pre);
+      gfc_add_block_to_block (&block, &loop.post);
+      tmp = gfc_finish_block (&block);
+
+      tmp = build3_v (COND_EXPR, maskse.expr, tmp, build_empty_stmt ());
+      gfc_add_expr_to_block (&block, tmp);
+      gfc_add_block_to_block (&se->pre, &block);
+    }
+  else
+    {
+      gfc_add_block_to_block (&se->pre, &loop.pre);
+      gfc_add_block_to_block (&se->pre, &loop.post);
+    }
+
   gfc_cleanup_loop (&loop);
 
   se->expr = resvar;
@@ -1762,7 +1781,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
   actual = actual->next->next;
   gcc_assert (actual);
   maskexpr = actual->expr;
-  if (maskexpr)
+  if (maskexpr && maskexpr->rank != 0)
     {
       maskss = gfc_walk_expr (maskexpr);
       gcc_assert (maskss != gfc_ss_terminator);
@@ -1824,8 +1843,26 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
 
   gfc_trans_scalarizing_loops (&loop, &body);
 
-  gfc_add_block_to_block (&se->pre, &loop.pre);
-  gfc_add_block_to_block (&se->pre, &loop.post);
+  /* For a scalar mask, enclose the loop in an if statement.  */
+  if (maskexpr && maskss == NULL)
+    {
+      gfc_init_se (&maskse, NULL);
+      gfc_conv_expr_val (&maskse, maskexpr);
+      gfc_init_block (&block);
+      gfc_add_block_to_block (&block, &loop.pre);
+      gfc_add_block_to_block (&block, &loop.post);
+      tmp = gfc_finish_block (&block);
+
+      tmp = build3_v (COND_EXPR, maskse.expr, tmp, build_empty_stmt ());
+      gfc_add_expr_to_block (&block, tmp);
+      gfc_add_block_to_block (&se->pre, &block);
+    }
+  else
+    {
+      gfc_add_block_to_block (&se->pre, &loop.pre);
+      gfc_add_block_to_block (&se->pre, &loop.post);
+    }
+
   gfc_cleanup_loop (&loop);
 
   se->expr = limit;
