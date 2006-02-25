@@ -3512,7 +3512,8 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
     {
       if (INTVAL (op1) == 0 && COMPARISON_P (op0))
 	{
-	  /* If op0 is a comparison, extract the comparison arguments form it.  */
+	  /* If op0 is a comparison, extract the comparison arguments
+	     from it.  */
 	  if (code == NE)
 	    {
 	      if (GET_MODE (op0) == mode)
@@ -3560,6 +3561,37 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
     return GET_MODE_SIZE (mode) > GET_MODE_SIZE (cmp_mode)
 	   ? simplify_gen_unary (ZERO_EXTEND, mode, op0, cmp_mode)
 	   : lowpart_subreg (mode, op0, cmp_mode);
+
+  /* (eq/ne (xor x y) 0) simplifies to (eq/ne x y).  */
+  if ((code == EQ || code == NE)
+      && op1 == const0_rtx
+      && op0code == XOR)
+    return simplify_gen_relational (code, mode, cmp_mode,
+				    XEXP (op0, 0), XEXP (op0, 1));
+
+  /* (eq/ne (xor x y) x) simplifies to (eq/ne x 0).  */
+  if ((code == EQ || code == NE)
+      && op0code == XOR
+      && rtx_equal_p (XEXP (op0, 0), op1)
+      && !side_effects_p (XEXP (op0, 1)))
+    return simplify_gen_relational (code, mode, cmp_mode, op1, const0_rtx);
+  /* Likewise (eq/ne (xor x y) y) simplifies to (eq/ne y 0).  */
+  if ((code == EQ || code == NE)
+      && op0code == XOR
+      && rtx_equal_p (XEXP (op0, 1), op1)
+      && !side_effects_p (XEXP (op0, 0)))
+    return simplify_gen_relational (code, mode, cmp_mode, op1, const0_rtx);
+
+  /* (eq/ne (xor x C1) C2) simplifies to (eq/ne x (C1^C2)).  */
+  if ((code == EQ || code == NE)
+      && op0code == XOR
+      && (GET_CODE (op1) == CONST_INT
+	  || GET_CODE (op1) == CONST_DOUBLE)
+      && (GET_CODE (XEXP (op0, 1)) == CONST_INT
+	  || GET_CODE (XEXP (op0, 1)) == CONST_DOUBLE))
+    return simplify_gen_relational (code, mode, cmp_mode, XEXP (op0, 0),
+				    simplify_gen_binary (XOR, cmp_mode,
+							 XEXP (op0, 1), op1));
 
   return NULL_RTX;
 }
