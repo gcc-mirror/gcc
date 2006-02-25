@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -13,7 +13,7 @@
    FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
    more details.
 
-   You should have received a copy of the GNU Lesser General Public License 
+   You should have received a copy of the GNU Lesser General Public License
    along with libgomp; see the file COPYING.LIB.  If not, write to the
    Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.  */
@@ -46,6 +46,28 @@
 # pragma GCC visibility pop
 #endif
 
+#ifdef HAVE_BROKEN_POSIX_SEMAPHORES
+#include <pthread.h>
+
+struct gomp_sem
+{
+  pthread_mutex_t	mutex;
+  pthread_cond_t	cond;
+  int			value;
+};
+
+typedef struct gomp_sem gomp_sem_t;
+
+extern void gomp_sem_init (gomp_sem_t *sem, int value);
+
+extern void gomp_sem_wait (gomp_sem_t *sem);
+
+extern void gomp_sem_post (gomp_sem_t *sem);
+
+extern void gomp_sem_destroy (gomp_sem_t *sem);
+
+#else /* HAVE_BROKEN_POSIX_SEMAPHORES  */
+
 typedef sem_t gomp_sem_t;
 
 static inline void gomp_sem_init (gomp_sem_t *sem, int value)
@@ -64,5 +86,5 @@ static inline void gomp_sem_destroy (gomp_sem_t *sem)
 {
   sem_destroy (sem);
 }
-
-#endif /* GOMP_SEM_H */
+#endif /* doesn't HAVE_BROKEN_POSIX_SEMAPHORES  */
+#endif /* GOMP_SEM_H  */
