@@ -6777,7 +6777,7 @@ gen_lowpart_or_truncate (enum machine_mode mode, rtx x)
       || (REG_P (x) && reg_truncated_to_mode (mode, x)))
     return gen_lowpart (mode, x);
   else
-    return gen_rtx_TRUNCATE (mode, x);
+    return simplify_gen_unary (TRUNCATE, mode, x, GET_MODE (x));
 }
 
 /* See if X can be simplified knowing that we will only refer to it in
