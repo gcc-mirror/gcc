@@ -202,6 +202,8 @@ scan_decls (cpp_reader *pfile, int argc ATTRIBUTE_UNUSED,
 		 parameter list */
 	      while (token->type != CPP_SEMICOLON && token->type != CPP_EOF)
 		token = get_a_token (pfile);
+	      if (token->type == CPP_EOF)
+		return 0;
 	      goto new_statement;
 	    }
 	  break;
