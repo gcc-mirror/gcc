@@ -1,3 +1,11 @@
+2006-02-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/23673
+	* fold-const.c (fold_binary) <EQ_EXPR>:  Fold (X^Y) == 0 as X == Y
+	and (X^Y) != 0 as X != Y.  Fold (X^Y) == Y as X == 0, and some
+	symmetry related transformations.  Fold (X^C1) == C2 as
+	X == (C1^C2).
+
 2006-02-25  Juergen Weigert  <jw@suse.de>
 	Richard Guenther  <rguenther@suse.de>
 
