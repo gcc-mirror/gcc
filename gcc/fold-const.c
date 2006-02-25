@@ -9767,6 +9767,32 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 	}
 
+      /* (X ^ Y) == 0 becomes X == Y, and (X ^ Y) != 0 becomes X != Y.  */
+      if (integer_zerop (arg1)
+	  && TREE_CODE (arg0) == BIT_XOR_EXPR)
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			    TREE_OPERAND (arg0, 1));
+
+      /* (X ^ Y) == Y becomes X == 0.  We know that Y has no side-effects.  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			    build_int_cst (TREE_TYPE (arg1), 0));
+      /* Likewise (X ^ Y) == X becomes Y == 0.  X has no side-effects.  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 1),
+			    build_int_cst (TREE_TYPE (arg1), 0));
+
+      /* (X ^ C1) op C2 can be rewritten as X op (C1 ^ C2).  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			    fold_build2 (BIT_XOR_EXPR, TREE_TYPE (arg1),
+					 TREE_OPERAND (arg0, 1), arg1));
+
       if (integer_zerop (arg1)
 	  && tree_expr_nonzero_p (arg0))
         {
