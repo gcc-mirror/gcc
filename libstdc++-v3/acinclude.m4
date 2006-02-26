@@ -1330,6 +1330,9 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
               <tr1/cinttypes> in namespace std::tr1.])
   fi
 
+  # Check for the existence of the <stdbool.h> header.	
+  AC_CHECK_HEADERS(stdbool.h)
+
   AC_LANG_RESTORE
 ])
 

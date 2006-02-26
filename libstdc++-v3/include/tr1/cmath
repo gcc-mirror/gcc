@@ -295,4 +295,32 @@ _GLIBCXX_END_NAMESPACE
 
 #endif
 
+// namespace std::tr1
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
+#if _GLIBCXX_USE_C99_MATH
+#if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
+  using std::signbit;
+  
+  using std::fpclassify;
+
+  using std::isfinite;
+  using std::isinf;
+  using std::isnan;
+  using std::isnormal;
+
+  using std::isgreater;
+  using std::isgreaterequal;
+  using std::isless;
+  using std::islessequal;
+  using std::islessgreater;
+  using std::isunordered;
+#endif
+#endif
+
+_GLIBCXX_END_NAMESPACE
+}
+
 #endif
