@@ -1,3 +1,9 @@
+2006-02-26  Zack Weinberg  <zackw@panix.com>
+
+	* doc/md.texi (Machine Constraints): Refer to all files with paths
+	relative to gcc directory (i.e. config/CPU/file).  Add missing
+	@table @code ... @end table to M32C subsection.
+
 2006-02-26  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_binary) <BIT_XOR_EXPR>: Fold (X & 1) ^ 1 as
@@ -56,7 +62,7 @@
 2006-02-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/tm.texi (Run-time Target): Document C_COMMON_OVERRIDE_OPTIONS.
-	* doc/invoke.texi (C++ Dialect Options): Document 
+	* doc/invoke.texi (C++ Dialect Options): Document
 	-fno-use-cxa-get-exception-ptr.
 	* configure.ac: Define DEFAULT_USE_CXA_ATEXIT to 2 not 1.
 	* configure: Regenerate.
@@ -85,7 +91,7 @@
 	and NE_EXPR) from the ordering operators (LT_EXPR, GT_EXPR,
 	LE_EXPR and GE_EXPR), calling fold_comparison to perform the
 	transformations common to both.
-	(fold_div_compare): Fix latent bugs in the previously unreachable 
+	(fold_div_compare): Fix latent bugs in the previously unreachable
 	LT_EXPR and GE_EXPR cases.
 
 2006-02-24  David Edelsohn  <edelsohn@gnu.org>
@@ -139,7 +145,7 @@
 	* emit-rtl.c (immed_double_const): Cleanup.
 
 2006-02-23  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/26376
 	* tree-ssa-structalias.c (find_func_aliases):  Use get_id_for_tree,
 	remove assert.
@@ -289,11 +295,11 @@
 	of loops surrounding the references from the callers, and initialize
 	DDR_SIZE_VECT to nb_loops.  Use both base_addr_differ_p and
 	base_object_differ_p analyzers.
-	(analyze_ziv_subscript, analyze_siv_subscript_cst_affine, 
+	(analyze_ziv_subscript, analyze_siv_subscript_cst_affine,
 	compute_overlap_steps_for_affine_1_2,
 	analyze_subscript_affine_affine): Count the classified dependences.
 	Print a message when a test failed.
-	(can_use_analyze_subscript_affine_affine): New.	
+	(can_use_analyze_subscript_affine_affine): New.
 	(analyze_siv_subscript): Compute the data dependences on symbolic
 	scevs that verify can_use_analyze_subscript_affine_affine.
 	(chrec_steps_divide_constant_p): Returns true, false, or unknown.
@@ -302,32 +308,32 @@
 	(analyze_overlapping_iterations): Let symbolic affine scevs to be
 	analyzed.
 	(subscript_dependence_tester): Moved...
-	(build_classic_dist_vector, build_classic_dir_vector): Don't use 
+	(build_classic_dist_vector, build_classic_dir_vector): Don't use
 	lambda_vector_clear on newly allocated vectors.  Get nb_loops from
 	DDR_SIZE_VECT instead of getting it in parameter.
-	(subscript_dependence_tester): ... here.  Take as a parameter 
+	(subscript_dependence_tester): ... here.  Take as a parameter
 	loop_nest_depth.  Call build_classic_dist_vector and
 	build_classic_dir_vector.
-	(compute_affine_dependence): Update subscript_dependence_tester 
-	parameters.  Update datadep_stats counters.  Call 
+	(compute_affine_dependence): Update subscript_dependence_tester
+	parameters.  Update datadep_stats counters.  Call
 	compute_subscript_distance.
-	(compute_self_dependence): Save the dist and dir vectors.  Call 
+	(compute_self_dependence): Save the dist and dir vectors.  Call
 	compute_subscript_distance.
 	(ddr_p, DEF_VEC_P(ddr_p), DEF_VEC_ALLOC_P(ddr_p,heap)): Moved...
 	(compute_all_dependences): Reorder parameters as they were before
 	conversion to VEC.  Pass nb_loops and loop_nest_depth.  Don't call
-	compute_subscript_distance.  Update the use of 
+	compute_subscript_distance.  Update the use of
 	compute_affine_dependence and initialize_data_dependence_relation.
 	(find_data_references_in_loop): Handle COMPONENT_REF.
 	(compute_data_dependences_for_loop): Initialize dependence_stats.
 	Don't call build_classic_dist_vector and build_classic_dir_vector.
-	Update the parameters of initialize_data_dependence_relation and 
+	Update the parameters of initialize_data_dependence_relation and
 	compute_all_dependences.  Print the statistics from datadep_stats.
 	(analyze_all_data_dependences): Static.  Not used until the pass for
 	checking the data dependences is contributed.
 	* tree-data-ref.h (ddr_p, DEF_VEC_P(ddr_p),
 	DEF_VEC_ALLOC_P(ddr_p,heap)): ... here.
-	(initialize_data_dependence_relation, compute_affine_dependence, 
+	(initialize_data_dependence_relation, compute_affine_dependence,
 	analyze_all_data_dependences, compute_subscript_distance): Removed.
 	(print_direction_vector): New.
 	* lambda.h (gcd): ... here.
@@ -376,9 +382,9 @@
 	* tree-pass.h (PROP_tmt_usage): New property.
 	(TODO_update_tmt_usage): New todo.
 	* tree-ssa-alias.c (updating_used_alone): New variable.
-	(recalculate_used_alone): New function.	  
+	(recalculate_used_alone): New function.
 	(compute_may_aliases): Set updating_used_alone, call
-	recalculate_used_alone. 
+	recalculate_used_alone.
 	* tree-sra.c (pass_sra): Note that this pass destroys
 	PROP_tmt_usage, and add TODO_update_tmt_usage.
 	* tree-ssa-forwprop.c (pass_forwprop): Ditto.
@@ -389,7 +395,7 @@
 	* tree-ssa-operands.c (add_virtual_operand): Only append bare def
 	for clobber if used alone, and add assert to verify used_alone
 	status.
-	
+
 2006-02-20  Angel Nunez Mencias  <anunez@de.ibm.com>
 
 	* config/s390/s390.c (legitimize_pic_address): Assertions checking
@@ -411,7 +417,7 @@
 	that were configured.  For all the other variables except
 	lang_specs_files, include all the languages in the tree.
 	* configure: Regenerate.
-	
+
 	* Makefile.in (stmp-fixinc): Copy includes from the prev-gcc directory,
 	if there is one.  Run the commands to run fixincludes in the same
 	subshell.
@@ -729,7 +735,7 @@
 	PR middle-end/25600
 	* fold-const.c (fold_binary): Fold (X >> C) != 0 into X < 0 when
 	C is one less than the width of X (and related transformations).
-	* simplify_rtx.c (simplify_unary_operation_1): Transform 
+	* simplify_rtx.c (simplify_unary_operation_1): Transform
 	(neg (lt x 0)) into either (ashiftrt X C) or (lshiftrt X C)
 	depending on STORE_FLAG_VALUE, were C is one less then the
 	width of X.
@@ -737,7 +743,7 @@
 2006-02-17  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/26341
-	* tree-ssa-operands.c (add_virtual_operand): Remove assert 
+	* tree-ssa-operands.c (add_virtual_operand): Remove assert
 	about NAME_MEMORY_TAG's.
 
 2006-02-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -749,7 +755,7 @@
 	general and floating-point registers to the 32-bit pattern.
 	* pa.c (pa_secondary_reload): Don't abort if reload tries to find a
 	secondary reload to load a QI or HI mode constant into a floating
-	point register. 
+	point register.
 	* pa32-regs.h (VALID_FP_MODE_P): Allow QImode and HImode.
 	* pa64-regs.h (VALID_FP_MODE_P): Likewise.
 
@@ -798,7 +804,7 @@
 	PR rtl-optimization/25603
 	* reload.c (reg_inc_found_and_valid_p): New. Check REG_INC note.
 	(regno_clobbered_p): Use it. Reusing SETS argument for REG_INC case.
-	* reload1.c (choose_reload_regs): Added call of regno_clobbered_p 
+	* reload1.c (choose_reload_regs): Added call of regno_clobbered_p
 	with new meaning of SETS.
 
 2006-02-16  Joseph S. Myers  <joseph@codesourcery.com>
@@ -886,7 +892,7 @@
 	(add_virtual_operand): Here.  Add offset, size, and for_clobber
 	arguments.  Prune alias sets.
 	(add_call_clobber_ops): Call add_virtual_operand.
-	
+
 2006-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26300
@@ -998,7 +1004,7 @@
 	* params.def (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE): Ditto.
 	* tree-ssa-structalias.c (create_variable_info_for): Use
 	MAX_FIELDS_FOR_FIELD_SENSITIVE.
-	
+
 2006-02-14  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* doc/invoke.texi (-fprefetch-loop-arrays, -fprefetch-loop-arrays-rtl):
@@ -1131,7 +1137,7 @@
 2006-02-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* doc/invoke.texi (-Write-strings): Document that it is enabled by
-	default. 
+	default.
 	* c.opt (-Wwrite-strings): Declare variable warn_write_strings.
 	Clarify documentation.
 	* c-common.h (warn_write_strings): Remove.
@@ -1289,13 +1295,13 @@
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/26134
-	* fold-const.c (fold_indirect_ref_1): Fold 
+	* fold-const.c (fold_indirect_ref_1): Fold
 	"*(foo *)&complexfoo" to "__real__ complexfoo"
 	and "((foo*)&complexfoo)[1]" to "__imag__ complexfoo".
 
 2006-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* tree-flow-inline.h (var_can_have_subvars): 
+	* tree-flow-inline.h (var_can_have_subvars):
 	Volatile variables should not have subvariables.
 
 2006-02-09  Diego Novillo  <dnovillo@redhat.com>
@@ -1324,7 +1330,7 @@
 	Do return slot optimization if we have an INIT_EXPR.
 
 	PR tree-opt/24365
-	* tree-inline.c (declare_return_variable): Also clear 
+	* tree-inline.c (declare_return_variable): Also clear
 	DECL_COMPLEX_GIMPLE_REG_P as needed in the modify_dest case.
 
 	PR c++/16405
@@ -1579,7 +1585,7 @@
 
 2006-02-07  Pete Steinmetz  <steinmtz@us.ibm.com>
 
-        * sched-rgn.c (compute_dom_prob_ps, compute_trg_info): Eradicate
+	* sched-rgn.c (compute_dom_prob_ps, compute_trg_info): Eradicate
 	use of float in probability computations.  Use edge probabilities
 	in place of statically computed probabilities.
 	(min_spec_prob): New static variable.
@@ -1785,7 +1791,7 @@
 	(insert_aux): Move AGGREGATE_TYPE_P check here.
 	(compute_avail): Set bb local stmt uids.
 	(pass_pre): Use TODO_update_ssa_only_virtuals.
-	
+
 2006-02-06  Ben Elliston  <bje@au.ibm.com>
 
 	* configure.ac: Unconditionally disable decimal float by default.
@@ -1931,7 +1937,7 @@
 	* config/s390/2084.md ("x_fsimptf", "x_fmultf", "x_fdivtf",
 	"x_floadtf", "x_ftrunctf", "x_ftruncdf"): New insn reservations.
 	* config/s390/fixdfdi.h (__fixunstfdi, __fixtfdi): New functions.
-	* config/s390/s390.c (struct processor_costs): Add mxbr, sqxbr, dxbr 
+	* config/s390/s390.c (struct processor_costs): Add mxbr, sqxbr, dxbr
 	and dxr fields.
 	(z900_cost, z990_cost, z9_109_cost): Values for the new fields added.
 	(s390_rtx_costs): Use the new fields to calculate rtx costs.
@@ -1943,41 +1949,41 @@
 	builtin define.
 	(LONG_DOUBLE_TYPE_SIZE): Set to 128 or 64.
 	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE, WIDEST_HARDWARE_FP_SIZE): Define.
-	(HARD_REGNO_NREGS, HARD_REGNO_MODE_OK, CLASS_MAX_NREGS, 
+	(HARD_REGNO_NREGS, HARD_REGNO_MODE_OK, CLASS_MAX_NREGS,
 	CANNOT_CHANGE_MODE_CLASS): Consider TFmode.
-	* config/s390/s390.md ("type" attribute): Add fsimptf, floadtf, fmultf, 
+	* config/s390/s390.md ("type" attribute): Add fsimptf, floadtf, fmultf,
 	fdivtf, fsqrttf, ftrunctf, ftruncdf as possible values.
 	(FPR mode macro): Add TFmode.
 	(DSF mode macro): New.
 	(<de>, <dee> mode attributes): Removed.
 	(<xde>, <xdee>, <RRe>, <RXe>, <Rf> mode attributes): New.
-	("*cmp<mode>_ccs_0", "*cmp<mode>_ccs_0_ibm", "*cmp<mode>_ccs", 
-	"*cmp<mode>_ccs_ibm", "fix_trunc<FPR:mode><GPR:mode>2_ieee", 
-	"floatdi<mode>2", "floatsi<mode>2_ieee", "*add<mode>3", 
-	"*add<mode>3_cc", "*add<mode>3_cconly", "*add<mode>3_ibm", 
-	"*sub<mode>3", "*sub<mode>3_cc", "*sub<mode>3_cconly", 
+	("*cmp<mode>_ccs_0", "*cmp<mode>_ccs_0_ibm", "*cmp<mode>_ccs",
+	"*cmp<mode>_ccs_ibm", "fix_trunc<FPR:mode><GPR:mode>2_ieee",
+	"floatdi<mode>2", "floatsi<mode>2_ieee", "*add<mode>3",
+	"*add<mode>3_cc", "*add<mode>3_cconly", "*add<mode>3_ibm",
+	"*sub<mode>3", "*sub<mode>3_cc", "*sub<mode>3_cconly",
 	"*sub<mode>3_ibm", "*mul<mode>3_ibm", "*fmadd<mode>", "*fmsub<mode>",
-	"*div<mode>3", "*div<mode>3_ibm", "*neg<mode>2_cc", 
-	"*neg<mode>2_cconly", "*neg<mode>2", "*neg<mode>2_ibm", 
+	"*div<mode>3", "*div<mode>3_ibm", "*neg<mode>2_cc",
+	"*neg<mode>2_cconly", "*neg<mode>2", "*neg<mode>2_ibm",
 	"*abs<mode>2_cc", "*abs<mode>2_cconly", "*abs<mode>2",
-	"*abs<mode>2_ibm", "*negabs<mode>2_cc", "*negabs<mode>2_cconly", 
+	"*abs<mode>2_ibm", "*negabs<mode>2_cc", "*negabs<mode>2_cconly",
 	"*negabs<mode>2", "sqrt<mode>2"):
 	Changed <de> to <xde>. R constraint replaced by <Rf>.
-	("*mul<mode>3"): Changed <dee> to <xdee>. R constraint replaced by 
+	("*mul<mode>3"): Changed <dee> to <xdee>. R constraint replaced by
 	<Rf>.
 	("fix_trunc<FPR:mode>di2"): 'FPR:' removed.
-        ("*fmadd<mode>", "*fmsub<mode>"): FPR mode replaced by DSF.
-	("*movtf_64", "*movtf_31"): New insn definitions followed by 5 
+	("*fmadd<mode>", "*fmsub<mode>"): FPR mode replaced by DSF.
+	("*movtf_64", "*movtf_31"): New insn definitions followed by 5
 	splitters.
-	("movtf", "reload_outtf", "reload_intf", "trunctfdf2", "trunctfsf2", 
+	("movtf", "reload_outtf", "reload_intf", "trunctfdf2", "trunctfsf2",
 	"extenddftf2", "extendsftf2"): New expanders.
-	("*trunctfdf2_ieee", "*trunctfdf2_ibm", "*trunctfsf2_ieee", 
+	("*trunctfdf2_ieee", "*trunctfdf2_ibm", "*trunctfsf2_ieee",
 	"*trunctfsf2_ibm", "*extenddftf2_ieee", "*extenddftf2_ibm",
 	"*extendsftf2_ieee", "*extendsftf2_ibm"): New insn patterns.
 	* config/s390/s390.opt (mlong-double-128, mlong-double-64):
 	New options.
 	* config/s390/t-crtstuff (TARGET_LIBGCC2_CFLAGS): Macro defined.
-	* config/s390/libgcc-glibc.ver (__divtc3, __multc3, __powitf2, 
+	* config/s390/libgcc-glibc.ver (__divtc3, __multc3, __powitf2,
 	__fixtfti, __fixunstfti, __floattitf, __fixtfdi, __fixunstfdi,
 	__floatditf): Add a GCC_4.1.0 symbol version tag.
 	* doc/invoke.texi (-mlong-double-128, -mlong-double-64): Document
