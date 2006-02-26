@@ -1,3 +1,9 @@
+2006-02-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26421
+	* tree-ssa-alias.c (find_used_portions): Don't treat parameters
+	in function calls that are ADDR_EXPRs as using the whole structure.
+
 2006-02-26  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* common.opt (-floop-optimize, -frerun-loop-opt): Remove.
