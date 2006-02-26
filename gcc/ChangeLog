@@ -1,3 +1,12 @@
+2006-02-26  Roger Sayle  <roger@eyesopen.com>
+	    James A. Morrison  <phython@gcc.gnu.org>
+
+	PR middle-end/21137
+	* fold-const.c (fold_binary) <EQ_EXPR>:  Fold ((X>>C1)&C2) eq/ne 0,
+	when C2 is a power of two, as either (X&(C2<<C1)) eq/ne 0 if the
+	new constant C2<<C1, or as (X<0) or (X,false) depending upon the
+	signedness of the shift operation.
+
 2006-02-26  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/26359
