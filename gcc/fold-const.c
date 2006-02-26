@@ -8740,6 +8740,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			    fold_convert (type, TREE_OPERAND (arg0, 0)),
 			    fold_convert (type, TREE_OPERAND (arg1, 0)));
 
+      /* Fold (X & 1) ^ 1 as (X & 1) == 0.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && integer_onep (TREE_OPERAND (arg0, 1))
+	  && integer_onep (arg1))
+	return fold_build2 (EQ_EXPR, type, arg0,
+			    build_int_cst (TREE_TYPE (arg0), 0));
+
       /* See if this can be simplified into a rotate first.  If that
 	 is unsuccessful continue in the association code.  */
       goto bit_rotate;
@@ -8791,6 +8798,28 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0)
 	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
 	return omit_one_operand (type, arg0, TREE_OPERAND (arg1, 0));
+
+      /* Fold (X ^ 1) & 1 as (X & 1) == 0.  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && integer_onep (TREE_OPERAND (arg0, 1))
+	  && integer_onep (arg1))
+	{
+	  tem = TREE_OPERAND (arg0, 0);
+	  return fold_build2 (EQ_EXPR, type,
+			      fold_build2 (BIT_AND_EXPR, TREE_TYPE (tem), tem,
+					   build_int_cst (TREE_TYPE (tem), 1)),
+			      build_int_cst (TREE_TYPE (tem), 0));
+	}
+      /* Fold ~X & 1 as (X & 1) == 0.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && integer_onep (arg1))
+	{
+	  tem = TREE_OPERAND (arg0, 0);
+	  return fold_build2 (EQ_EXPR, type,
+			      fold_build2 (BIT_AND_EXPR, TREE_TYPE (tem), tem,
+					   build_int_cst (TREE_TYPE (tem), 1)),
+			      build_int_cst (TREE_TYPE (tem), 0));
+	}
 
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
