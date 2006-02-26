@@ -1,5 +1,11 @@
 2006-02-26  Dorit Nuzman  <dorit@il.ibm.com>
 
+	PR tree-optimization/25125
+	* gcc.dg/vect/wrapv-vect-7.c, gcc.dg/vect/wrapv-vect-reduc-2char.c,
+	gcc.dg/vect/wrapv-vect-reduc-2short.c: New tests.
+
+2006-02-26  Dorit Nuzman  <dorit@il.ibm.com>
+
 	PR tree-optimizations/26359
 	* gcc.dg/vect/vect.exp: Compile tests prefixed with "dump-tree-dceloop" 
 	with -fdump-tree-dceloop-details.
