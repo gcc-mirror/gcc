@@ -118,7 +118,6 @@ extern int target_flags_explicit;
 extern bool user_defined_section_attribute;
 
 /* See toplev.c.  */
-extern int flag_loop_optimize;
 extern int flag_crossjumping;
 extern int flag_if_conversion;
 extern int flag_if_conversion2;

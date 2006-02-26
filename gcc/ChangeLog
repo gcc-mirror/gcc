@@ -1,3 +1,21 @@
+2006-02-26  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* common.opt (-floop-optimize, -frerun-loop-opt): Remove.
+	* tree-pass.h (pass_loop_optimize): Remove.
+	* passes.c (pass_loop_optimize): Never run it.
+	* toplev.c (backend_init): Don't call init_loop.
+	* opts.c (flag_loop_optimize_set): Remove.
+	(decode_options): Never set flag_loop_optimize or flag_rerun_loop_opt.
+	(common_handle_option) <OPT_floop_optimize>: Remove.  Don't disable
+	the old RTL loop optimizer when profiling enabled.
+	* predict.c (tree_estimate_probability): Always strip builtin_expect.
+	* cfgcleanup.c (try_forward_edges): Don't avoid killing loop
+	pre-headers for the sake of the old RTL loop optimizer.
+	* Makefile.in: Remove all references to loop.o.
+
+	* doc/invoke.texi: Remove all references to -floop-optimize
+	and -frerun-loop-opt.
+
 2006-02-26  Zack Weinberg  <zackw@panix.com>
 
 	* doc/md.texi (Machine Constraints): Refer to all files with paths

@@ -100,7 +100,6 @@ static bool profile_arc_flag_set, flag_profile_values_set;
 static bool flag_unroll_loops_set, flag_tracer_set;
 static bool flag_value_profile_transformations_set;
 static bool flag_peel_loops_set, flag_branch_probabilities_set;
-static bool flag_loop_optimize_set;
 
 /* Input file names.  */
 const char **in_fnames;
@@ -526,7 +525,6 @@ decode_options (unsigned int argc, const char **argv)
 #endif
       flag_guess_branch_prob = 1;
       flag_cprop_registers = 1;
-      flag_loop_optimize = 1;
       flag_if_conversion = 1;
       flag_if_conversion2 = 1;
       flag_ipa_pure_const = 1;
@@ -568,7 +566,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_ipa_type_escape = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
-      flag_rerun_loop_opt = 1;
       flag_caller_saves = 1;
       flag_peephole2 = 1;
 #ifdef INSN_SCHEDULING
@@ -859,10 +856,6 @@ common_handle_option (size_t scode, const char *arg, int value,
       flag_branch_probabilities_set = true;
       break;
 
-    case OPT_floop_optimize:
-      flag_loop_optimize_set = true;
-      break;
-
     case OPT_fcall_used_:
       fix_register (arg, 0, 1);
       break;
@@ -939,9 +932,6 @@ common_handle_option (size_t scode, const char *arg, int value,
         flag_tracer = value;
       if (!flag_value_profile_transformations_set)
         flag_value_profile_transformations = value;
-      /* Old loop optimizer is incompatible with tree profiling.  */
-      if (!flag_loop_optimize_set)
-	flag_loop_optimize = 0;
       break;
 
     case OPT_fprofile_generate:
