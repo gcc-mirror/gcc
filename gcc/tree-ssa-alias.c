@@ -2712,6 +2712,9 @@ new_type_alias (tree ptr, tree var)
 	    add_may_alias (tag, al);
 	}
     }    
+
+  TREE_READONLY (tag) = TREE_READONLY (var);
+  MTAG_GLOBAL (tag) = is_global_var (var);
 }
 
 

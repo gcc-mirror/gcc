@@ -1,3 +1,10 @@
+2006-02-26  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimizations/26359
+	* gcc.dg/vect/vect.exp: Compile tests prefixed with "dump-tree-dceloop" 
+	with -fdump-tree-dceloop-details.
+	* gcc.dg/vect/dump-tree-dceloop-pr26359.c: New test.
+
 2006-02-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/23673

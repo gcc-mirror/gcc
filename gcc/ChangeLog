@@ -1,3 +1,8 @@
+2006-02-26  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/26359
+	* tree-ssa-alias.c (new_type_alias): Set fields for new tag.
+
 2006-02-25  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_relational_operation_1):  Simplify
