@@ -1,4 +1,10 @@
 2006-02-26  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_binary) <BIT_XOR_EXPR>: Fold (X & 1) ^ 1 as
+	(X & 1) == 0.
+	<BIT_AND_EXPR>: Fold (X ^ 1) & 1 and ~X & 1 as (X & 1) == 0.
+
+2006-02-26  Roger Sayle  <roger@eyesopen.com>
 	    James A. Morrison  <phython@gcc.gnu.org>
 
 	PR middle-end/21137

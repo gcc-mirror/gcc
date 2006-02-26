@@ -1,5 +1,9 @@
 2006-02-26  Roger Sayle  <roger@eyesopen.com>
 
+	* gcc.dg/fold-even-1.c: New test case.
+
+2006-02-26  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/21137
 	* gcc.dg/fold-eqandshift-1.c: New test case.
 
