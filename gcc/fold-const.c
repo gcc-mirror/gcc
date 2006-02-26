@@ -9653,6 +9653,52 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			      fold_convert (newtype, arg1));
 	}
 
+      /* Fold ((X >> C1) & C2) == 0 and ((X >> C1) & C2) != 0 where
+	 C1 is a valid shift constant, and C2 is a power of two, i.e.
+	 a single bit.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == RSHIFT_EXPR
+	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+	     == INTEGER_CST
+	  && integer_pow2p (TREE_OPERAND (arg0, 1))
+	  && integer_zerop (arg1))
+	{
+	  tree itype = TREE_TYPE (arg0);
+	  unsigned HOST_WIDE_INT prec = TYPE_PRECISION (itype);
+	  tree arg001 = TREE_OPERAND (TREE_OPERAND (arg0, 0), 1);
+
+	  /* Check for a valid shift count.  */
+	  if (TREE_INT_CST_HIGH (arg001) == 0
+	      && TREE_INT_CST_LOW (arg001) < prec)
+	    {
+	      tree arg01 = TREE_OPERAND (arg0, 1);
+	      tree arg000 = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+	      unsigned HOST_WIDE_INT log2 = tree_log2 (arg01);
+	      /* If (C2 << C1) doesn't overflow, then ((X >> C1) & C2) != 0
+		 can be rewritten as (X & (C2 << C1)) != 0.  */
+	      if ((log2 + TREE_INT_CST_LOW (arg01)) < prec)
+		{
+		  tem = fold_build2 (LSHIFT_EXPR, itype, arg01, arg001);
+		  tem = fold_build2 (BIT_AND_EXPR, itype, arg000, tem);
+		  return fold_build2 (code, type, tem, arg1);
+		}
+	      /* Otherwise, for signed (arithmetic) shifts,
+		 ((X >> C1) & C2) != 0 is rewritten as X < 0, and
+		 ((X >> C1) & C2) == 0 is rewritten as X >= 0.  */
+	      else if (!TYPE_UNSIGNED (itype))
+		return fold_build2 (code == EQ_EXPR ? GE_EXPR : LT_EXPR, type,
+				    arg000, build_int_cst (itype, 0));
+	      /* Otherwise, of unsigned (logical) shifts,
+		 ((X >> C1) & C2) != 0 is rewritten as (X,false), and
+		 ((X >> C1) & C2) == 0 is rewritten as (X,true).  */
+	      else
+		return omit_one_operand (type,
+					 code == EQ_EXPR ? integer_one_node
+							 : integer_zero_node,
+					 arg000);
+	    }
+	}
+
       /* If this is an NE comparison of zero with an AND of one, remove the
 	 comparison since the AND will give the correct value.  */
       if (code == NE_EXPR
