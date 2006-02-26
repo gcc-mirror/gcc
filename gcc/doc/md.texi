@@ -1654,7 +1654,7 @@ However, here is a summary of the machine-dependent constraints
 available on some particular machines.
 
 @table @emph
-@item ARM family---@file{arm.h}
+@item ARM family---@file{config/arm/arm.h}
 @table @code
 @item f
 Floating-point register
@@ -1707,7 +1707,7 @@ A memory reference suitable for iWMMXt load/store instructions.
 A memory reference suitable for the ARMv4 ldrsb instruction.
 @end table
 
-@item AVR family---@file{avr.h}
+@item AVR family---@file{config/avr/avr.h}
 @table @code
 @item l
 Registers from r0 to r15
@@ -1770,7 +1770,7 @@ Constant integer 1
 A floating point constant 0.0
 @end table
 
-@item CRX Architecture---@file{crx.h}
+@item CRX Architecture---@file{config/crx/crx.h}
 @table @code
 
 @item b
@@ -1801,7 +1801,7 @@ Constant that is one of -1, 4, -4, 7, 8, 12, 16, 20, 32, 48
 Floating point constant that is legal for store immediate
 @end table
 
-@item PowerPC and IBM RS6000---@file{rs6000.h}
+@item PowerPC and IBM RS6000---@file{config/rs6000/rs6000.h}
 @table @code
 @item b
 Address base register
@@ -1879,7 +1879,7 @@ Constant suitable as a 32-bit mask operand
 System V Release 4 small data area reference
 @end table
 
-@item MorphoTech family---@file{mt.h}
+@item MorphoTech family---@file{config/mt/mt.h}
 @table @code
 @item I
 Constant for an arithmetic insn (16-bit signed integer).
@@ -1908,7 +1908,7 @@ A 15-bit signed integer constant.
 A positive 16-bit constant.
 @end table
 
-@item Intel 386---@file{i386.h}
+@item Intel 386---@file{config/i386/i386.h}
 @table @code
 @item q
 @samp{a}, @code{b}, @code{c}, or @code{d} register for the i386.
@@ -1997,7 +1997,7 @@ Constant in range @minus{}2147483648 to 2147483647 or symbolic reference known t
 Standard 80387 floating point constant
 @end table
 
-@item Intel IA-64---@file{ia64.h}
+@item Intel IA-64---@file{config/ia64/ia64.h}
 @table @code
 @item a
 General register @code{r0} to @code{r3} for @code{addl} instruction
@@ -2060,7 +2060,7 @@ Integer constant in the range 1 to 4 for @code{shladd} instruction
 Memory operand except postincrement and postdecrement
 @end table
 
-@item FRV---@file{frv.h}
+@item FRV---@file{config/frv/frv.h}
 @table @code
 @item a
 Register in the class @code{ACC_REGS} (@code{acc0} to @code{acc7}).
@@ -2153,7 +2153,7 @@ range of 1 to 2047.
 
 @end table
 
-@item Blackfin family---@file{bfin.h}
+@item Blackfin family---@file{config/bfin/bfin.h}
 @table @code
 @item a
 P register
@@ -2249,8 +2249,8 @@ An integer constant with all bits set except exactly one.
 Any SYMBOL_REF.
 @end table
 
-@item M32C---@file{m32c.c}
-
+@item M32C---@file{config/m32c/m32c.c}
+@table @code
 @item Rsp
 @itemx Rfb
 @itemx Rsb
@@ -2376,9 +2376,9 @@ Memory addressed using the small base register ($sb).
 
 @item S1
 $r1h
+@end table
 
-
-@item MIPS---@file{mips.h}
+@item MIPS---@file{config/mips/mips.h}
 @table @code
 @item d
 General-purpose integer register
@@ -2442,7 +2442,7 @@ Memory reference in external OSF/rose PIC format
 (@samp{m} is preferable for @code{asm} statements)
 @end table
 
-@item Motorola 680x0---@file{m68k.h}
+@item Motorola 680x0---@file{config/m68k/m68k.h}
 @table @code
 @item a
 Address register
@@ -2472,7 +2472,7 @@ Signed number whose magnitude is greater than 0x100
 Floating point constant that is not a 68881 constant
 @end table
 
-@item Motorola 68HC11 & 68HC12 families---@file{m68hc11.h}
+@item Motorola 68HC11 & 68HC12 families---@file{config/m68hc11/m68hc11.h}
 @table @code
 @item a
 Register `a'
@@ -2531,7 +2531,7 @@ Constants in the range @minus{}8 to 2
 @end table
 
 @need 1000
-@item SPARC---@file{sparc.h}
+@item SPARC---@file{config/sparc/sparc.h}
 @table @code
 @item f
 Floating-point register on the SPARC-V8 architecture and
@@ -2615,7 +2615,7 @@ Vector zero
 
 @end table
 
-@item TMS320C3x/C4x---@file{c4x.h}
+@item TMS320C3x/C4x---@file{config/c4x/c4x.h}
 @table @code
 @item a
 Auxiliary (address) register (ar0-ar7)
@@ -2697,7 +2697,7 @@ Symbolic address
 
 @end table
 
-@item S/390 and zSeries---@file{s390.h}
+@item S/390 and zSeries---@file{config/s390/s390.h}
 @table @code
 @item a
 Address register (general purpose register except r0)
@@ -2770,7 +2770,7 @@ Shift count operand.
 
 @end table
 
-@item Xstormy16---@file{stormy16.h}
+@item Xstormy16---@file{config/stormy16/stormy16.h}
 @table @code
 @item a
 Register r0.
@@ -2840,7 +2840,7 @@ The constant 0.
 
 @end table
 
-@item Xtensa---@file{xtensa.h}
+@item Xtensa---@file{config/xtensa/xtensa.h}
 @table @code
 @item a
 General-purpose 32-bit register
