@@ -1,3 +1,8 @@
+2006-02-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26421
+	* gcc.dg/tree-ssa/pr26421.c: New testcase.
+
 2006-02-26  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* gcc.dg/20031201-1.c: Don't use -frerun-loop-opt.
