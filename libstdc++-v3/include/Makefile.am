@@ -493,6 +493,7 @@ tr1_headers = \
 	${tr1_srcdir}/common.h \
 	${tr1_srcdir}/complex \
 	${tr1_srcdir}/cstdarg \
+	${tr1_srcdir}/cstdbool \
 	${tr1_srcdir}/cstdint \
 	${tr1_srcdir}/cstdio \
 	${tr1_srcdir}/cstdlib \
@@ -514,6 +515,7 @@ tr1_headers = \
 	${tr1_srcdir}/ref_wrap_iterate.h \
 	${tr1_srcdir}/repeat.h \
 	${tr1_srcdir}/stdarg.h \
+	${tr1_srcdir}/stdbool.h \
 	${tr1_srcdir}/stdint.h \
 	${tr1_srcdir}/stdio.h \
 	${tr1_srcdir}/stdlib.h \

@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2006-02-02  Paolo Carlini  <pcarlini@suse.de>
+// 2006-02-26  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,39 +20,44 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-#include <tr1/array>
-#include <tr1/cctype>
-#include <tr1/cfenv>
-#include <tr1/cfloat>
-#include <tr1/cinttypes>
-#include <tr1/climits>
+// 8.16 Additions to header <cmath>
+
 #include <tr1/cmath>
-#include <tr1/complex>
-#include <tr1/cstdarg>
-#include <tr1/cstdbool>
-#include <tr1/cstdint>
-#include <tr1/cstdio>
-#include <tr1/cstdlib>
-#include <tr1/ctime>
-#include <tr1/ctype.h>
-#include <tr1/cwchar>
-#include <tr1/cwctype>
-#include <tr1/fenv.h>
-#include <tr1/float.h>
-#include <tr1/functional>
-#include <tr1/inttypes.h>
-#include <tr1/limits.h>
-#include <tr1/math.h>
-#include <tr1/memory>
-#include <tr1/stdarg.h>
-#include <tr1/stdbool.h>
-#include <tr1/stdint.h>
-#include <tr1/stdio.h>
-#include <tr1/stdlib.h>
-#include <tr1/tuple>
-#include <tr1/type_traits>
-#include <tr1/unordered_set>
-#include <tr1/unordered_map>
-#include <tr1/utility>
-#include <tr1/wchar.h>
-#include <tr1/wctype.h>
+
+#if _GLIBCXX_USE_C99
+#if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
+
+template<typename T>
+  void test01_do()
+  {
+    T x = T();
+    
+    bool ret;
+    int iret;
+
+    ret = std::tr1::signbit(x);
+    
+    iret = std::tr1::fpclassify(x);
+    
+    ret = std::tr1::isfinite(x);
+    ret = std::tr1::isinf(x);
+    ret = std::tr1::isnan(x);
+    ret = std::tr1::isnormal(x);
+    
+    ret = std::tr1::isgreater(x, x);
+    ret = std::tr1::isgreaterequal(x, x);
+    ret = std::tr1::isless(x, x);
+    ret = std::tr1::islessequal(x, x);
+    ret = std::tr1::islessgreater(x, x);
+    ret = std::tr1::isunordered(x, x);
+  }
+
+void test01()
+{
+  test01_do<float>();
+  test01_do<double>();
+  test01_do<long double>();
+}
+
+#endif
+#endif

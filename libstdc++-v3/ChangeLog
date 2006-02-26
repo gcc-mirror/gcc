@@ -1,3 +1,17 @@
+2006-02-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cmath: Add templates (8.16.3).	
+	* include/tr1/cstbool: New.
+	* include/tr1/stdbool.h: Likewise.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/8_c_compatibility/cmath/templates.cc: New.
+	* testsuite/tr1/headers.cc: Update.
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add <stdbool.h> check.
+	* docs/html/ext/tr1.html: Update.
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
 2006-02-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/array (array<>::swap, assign): Implement.
