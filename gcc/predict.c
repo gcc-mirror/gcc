@@ -1387,8 +1387,7 @@ tree_estimate_probability (void)
   FOR_EACH_BB (bb)
     combine_predictions_for_bb (bb);
 
-  if (!flag_loop_optimize)
-    strip_builtin_expect ();
+  strip_builtin_expect ();
   estimate_bb_frequencies (&loops_info);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();

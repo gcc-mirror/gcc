@@ -310,7 +310,7 @@ Objective-C and Objective-C++ Dialects}.
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -ffunction-sections @gol
 -fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
--floop-optimize -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
+-fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-functions-called-once @gol
 -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
@@ -4401,7 +4401,6 @@ compilation time.
 -fdelayed-branch @gol
 -fguess-branch-probability @gol
 -fcprop-registers @gol
--floop-optimize @gol
 -fif-conversion @gol
 -fif-conversion2 @gol
 -ftree-ccp @gol
@@ -4775,12 +4774,6 @@ performed.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
-@item -frerun-loop-opt
-@opindex frerun-loop-opt
-Run the loop optimizer twice.
-
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
-
 @item -fgcse
 @opindex fgcse
 Perform a global common subexpression elimination pass.
@@ -4825,13 +4818,6 @@ Not enabled at any optimization level.
 When @option{-fgcse-after-reload} is enabled, a redundant load elimination
 pass is performed after reload.  The purpose of this pass is to cleanup
 redundant spilling.
-
-@item -floop-optimize
-@opindex floop-optimize
-Perform loop optimizations: move constant expressions out of loops, simplify
-exit test conditions and optionally do strength-reduction as well.
-
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -funsafe-loop-optimizations
 @opindex funsafe-loop-optimizations
@@ -5452,8 +5438,7 @@ Enable profile feedback directed optimizations, and optimizations
 generally profitable only with profile feedback available.
 
 The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
-@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer},
-@code{-fno-loop-optimize}.
+@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}
 
 @end table
 
@@ -5705,7 +5690,7 @@ Enabled with @option{-fprofile-use}.
 
 @item -fmove-loop-invariants
 @opindex fmove-loop-invariants
-Enables the loop invariant motion pass in the new loop optimizer.  Enabled
+Enables the loop invariant motion pass in the RTL loop optimizer.  Enabled
 at level @option{-O1}
 
 @item -funswitch-loops

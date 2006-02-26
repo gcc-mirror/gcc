@@ -633,7 +633,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_jump2);
   NEXT_PASS (pass_cse);
   NEXT_PASS (pass_gcse);
-  NEXT_PASS (pass_loop_optimize);
   NEXT_PASS (pass_jump_bypass);
   NEXT_PASS (pass_cfg);
   NEXT_PASS (pass_branch_prob);
