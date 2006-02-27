@@ -1,5 +1,5 @@
 /* Header file for the ARM EABI unwinder
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -249,6 +249,9 @@ extern "C" {
   /* Return the address of the instruction, not the actual IP value.  */
 #define _Unwind_GetIP(context) \
   (_Unwind_GetGR (context, 15) & ~(_Unwind_Word)1)
+
+#define _Unwind_GetIP(context, ip_before_insn) \
+  (*ip_before_insn = 0, _Unwind_GetGR (context, 15) & ~(_Unwind_Word)1)
 
   static inline void
   _Unwind_SetGR (_Unwind_Context *context, int regno, _Unwind_Word val)

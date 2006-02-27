@@ -1,3 +1,16 @@
+2006-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/26208
+	* exception.cc (PERSONALITY_FUNCTION): Use _Unwind_GetIPInfo instead
+	of _Unwind_GetIP.
+	* include/i386-signal.h (MAKE_THROW_FRAME): Change into empty macro.
+	(HANDLE_DIVIDE_OVERFLOW): Don't adjust _res->eip if falling through
+	to throw.
+	* include/x86_64-signal.h (MAKE_THROW_FRAME): Change into empty
+	macro.
+	* include/powerpc-signal.h (MAKE_THROW_FRAME): Change into empty
+	macro.
+
 2006-02-23  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/j2d/IntegerGraphicsState.java (getClip): Clone clip

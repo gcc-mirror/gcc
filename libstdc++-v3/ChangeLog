@@ -1,3 +1,9 @@
+2006-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/26208
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Use
+	_Unwind_GetIPInfo instead of _Unwind_GetIP.
+
 2006-02-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14866

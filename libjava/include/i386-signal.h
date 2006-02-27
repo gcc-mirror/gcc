@@ -1,7 +1,7 @@
 // i386-signal.h - Catch runtime signals and turn them into exceptions
 // on an i386 based Linux system.
 
-/* Copyright (C) 1998, 1999, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -22,19 +22,7 @@ details.  */
 #define SIGNAL_HANDLER(_name)	\
 static void _name (int _dummy __attribute__ ((__unused__)))
 
-#define MAKE_THROW_FRAME(_exception)					\
-do									\
-{									\
-  void **_p = (void **)&_dummy;						\
-  volatile struct sigcontext_struct *_regs = (struct sigcontext_struct *)++_p;	\
-									\
-  /* Advance the program counter so that it is after the start of the	\
-     instruction:  the x86 exception handler expects			\
-     the PC to point to the instruction after a call. */		\
-  _regs->eip += 2;							\
-									\
-}									\
-while (0)
+#define MAKE_THROW_FRAME(_exception)
 
 #define HANDLE_DIVIDE_OVERFLOW						\
 do									\
@@ -90,14 +78,6 @@ do									\
 	  _eip += 2;							\
 	  _regs->eip = (unsigned long)_eip;				\
 	  return;							\
-	}								\
-      else								\
-	{								\
-	  /* Advance the program counter so that it is after the start	\
-	     of the instruction: this is because the x86 exception	\
-	     handler expects the PC to point to the instruction after a	\
-	     call. */							\
-	  _regs->eip += 2;						\
 	}								\
     }									\
 }									\

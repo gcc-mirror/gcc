@@ -1,7 +1,7 @@
 // x86_64-signal.h - Catch runtime signals and turn them into exceptions
 // on an x86_64 based GNU/Linux system.
 
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -34,16 +34,7 @@ extern "C"
   };
 }
 
-#define MAKE_THROW_FRAME(_exception)					     \
-do									     \
-{									     \
-  /* Advance the program counter so that it is after the start of the	     \
-     instruction:  the x86_64 exception handler expects			     \
-     the PC to point to the instruction after a call. */		     \
-  struct ucontext *_uc = (struct ucontext *)_p;				     \
-  _uc->uc_mcontext.gregs[REG_RIP] += 2;				     	     \
-}									     \
-while (0)
+#define MAKE_THROW_FRAME(_exception)
 
 #define RESTORE(name, syscall) RESTORE2 (name, syscall)
 #define RESTORE2(name, syscall)			\

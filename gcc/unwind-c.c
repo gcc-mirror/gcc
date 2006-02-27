@@ -127,6 +127,7 @@ PERSONALITY_FUNCTION (int version,
   lsda_header_info info;
   const unsigned char *language_specific_data, *p, *action_record;
   _Unwind_Ptr landing_pad, ip;
+  int ip_before_insn = 0;
 
 #ifdef __ARM_EABI_UNWINDER__
   if ((state & _US_ACTION_MASK) != _US_UNWIND_FRAME_STARTING)
@@ -156,7 +157,9 @@ PERSONALITY_FUNCTION (int version,
 
   /* Parse the LSDA header.  */
   p = parse_lsda_header (context, language_specific_data, &info);
-  ip = _Unwind_GetIP (context) - 1;
+  ip = _Unwind_GetIPInfo (context, &ip_before_insn);
+  if (! ip_before_insn)
+    --ip;
   landing_pad = 0;
 
 #ifdef __USING_SJLJ_EXCEPTIONS__

@@ -1,6 +1,6 @@
 // Functions for Exception Support for Java.
 
-/* Copyright (C) 1998, 1999, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -197,6 +197,7 @@ PERSONALITY_FUNCTION (int version,
   int handler_switch_value;
   bool saw_cleanup;
   bool saw_handler;
+  int ip_before_insn = 0;
 
 
   // Interface version check.
@@ -212,10 +213,10 @@ PERSONALITY_FUNCTION (int version,
       goto install_context;
     }
 
-  // FIXME: In Phase 1, record _Unwind_GetIP in xh->obj as a part of
+  // FIXME: In Phase 1, record _Unwind_GetIPInfo in xh->obj as a part of
   // the stack trace for this exception.  This will only collect Java
   // frames, but perhaps that is acceptable.
-  // FIXME2: _Unwind_GetIP is nonsensical for SJLJ, being a call-site
+  // FIXME2: _Unwind_GetIPInfo is nonsensical for SJLJ, being a call-site
   // index instead of a PC value.  We could perhaps arrange for
   // _Unwind_GetRegionStart to return context->fc->jbuf[1], which
   // is the address of the handler label for __builtin_longjmp, but
@@ -230,7 +231,9 @@ PERSONALITY_FUNCTION (int version,
 
   // Parse the LSDA header.
   p = parse_lsda_header (context, language_specific_data, &info);
-  ip = _Unwind_GetIP (context) - 1;
+  ip = _Unwind_GetIPInfo (context, &ip_before_insn);
+  if (! ip_before_insn)
+    --ip;
   landing_pad = 0;
   action_record = 0;
   handler_switch_value = 0;

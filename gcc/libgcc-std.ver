@@ -272,4 +272,5 @@ GCC_4.2.0 {
   __floatuntisf
   __floatuntixf
   __floatuntitf
+  _Unwind_GetIPInfo
 }

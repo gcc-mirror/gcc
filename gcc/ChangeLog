@@ -1,3 +1,33 @@
+2006-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/26208
+	* unwind-dw2.c (struct _Unwind_Context): Add signal_frame field.
+	(extract_cie_info): Handle S flag in augmentation string.
+	(execute_cfa_program): If context->signal_frame, execute also
+	fs->pc == context->ra instructions.
+	(uw_frame_state_for): If context->signal_frame, don't subtract one
+	from context->ra to find FDE.
+	(uw_update_context_1): Set context->signal_frame to
+	fs->signal_frame.
+	(_Unwind_GetIPInfo): New function.
+	* unwind-dw2.h (_Unwind_FrameState): Add signal_frame field.
+	* unwind-c.c (PERSONALITY_FUNCTION): Use _Unwind_GetIPInfo instead
+	of _Unwind_GetIP.
+	* unwind-sjlj.c (_Unwind_GetIPInfo): New function.
+	* unwind-generic.h (_Unwind_GetIPInfo): New prototype.
+	* unwind-compat.c (_Unwind_GetIPInfo): New function.
+	* libgcc-std.ver (_Unwind_GetIPInfo): Export @@GCC_4.2.0.
+	* config/ia64/unwind-ia64.c (_Unwind_GetIPInfo): New function.
+	* config/arm/unwind-arm.h (_Unwind_GetIPInfo): Define.
+	* config/i386/linux-unwind.h (x86_fallback_frame_state,
+	x86_64_fallback_frame_state): Set fs->signal_frame.
+	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Likewise.
+	(MD_FROB_UPDATE_CONTEXT): Define unconditionally.
+	(frob_update_context): Likewise.  Workaround missing S flag in
+	Linux 2.6.12 - 2.6.16 kernel vDSOs.
+	* config/s390/linux-unwind.h (s390_fallback_frame_state): Likewise.
+	Remove the psw_addr + 1 hack.
+
 2006-02-27  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (get_constraint_for): Move code to deal

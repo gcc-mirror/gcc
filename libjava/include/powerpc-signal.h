@@ -1,7 +1,7 @@
 // powerpc-signal.h - Catch runtime signals and turn them into exceptions
 // on a powerpc based Linux system.
 
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -22,18 +22,12 @@ details.  */
 #define SIGNAL_HANDLER(_name)						\
   static void _name (int /* _signal */, struct sigcontext *_sc)
 
-/* PPC either leaves PC pointing at a faulting instruction or the
-   following instruction, depending on the signal.  SEGV always does
-   the former, so we adjust the saved PC to point to the following
-   instruction. This is what the handler in libgcc expects.  */
+/* MD_FALBACK_FRAME_STATE_FOR takes care of special casing PC
+   before the faulting instruction, so we don't need to do anything
+   here.  */
 
-#define MAKE_THROW_FRAME(_exception)					\
-do									\
-  {									\
-    _sc->regs->nip += 4;						\
-  }									\
-while (0)
-  
+#define MAKE_THROW_FRAME(_exception)
+
 /* For an explanation why we cannot simply use sigaction to
    install the handlers, see i386-signal.h.  */
 
