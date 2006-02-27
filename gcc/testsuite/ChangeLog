@@ -1,3 +1,8 @@
+2006-02-26  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.target/i386/20000614-2.c: Do not use -fno-strength-reduce.
+	* gcc.dg/20030324-1.c: Do not use -fstrength-reduce.
+
 2006-02-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26421

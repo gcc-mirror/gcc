@@ -416,7 +416,7 @@ tree_ssa_loop_prefetch (void)
 static bool
 gate_tree_ssa_loop_prefetch (void)
 {
-  return flag_prefetch_loop_arrays == 1;
+  return flag_prefetch_loop_arrays != 0;
 }
 
 struct tree_opt_pass pass_loop_prefetch =
