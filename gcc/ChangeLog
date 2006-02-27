@@ -1,3 +1,8 @@
+2006-02-27  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code.c (can_convert_to_perfect_nest): Allow any type of
+	scalar operation to be put back into the loop.
+
 2006-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/26208
