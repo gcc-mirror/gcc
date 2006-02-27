@@ -2484,6 +2484,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	      struct constraint_expr *c;
 	      unsigned int i;
 	      tree exp = TREE_OPERAND (t, 0);
+	      tree pttype = TREE_TYPE (TREE_TYPE (t));
 
 	      get_constraint_for (exp, results);
 	      /* Make sure we capture constraints to all elements
@@ -2507,6 +2508,26 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 		      VEC_safe_push (ce_s, heap, *results, &tmp);
 		    }
 		}
+	      else if (VEC_length (ce_s, *results) == 1
+		       && (AGGREGATE_TYPE_P (pttype)
+			   || TREE_CODE (pttype) == COMPLEX_TYPE))
+		{
+		  struct constraint_expr *origrhs;
+		  varinfo_t origvar;
+		  struct constraint_expr tmp;
+
+		  gcc_assert (VEC_length (ce_s, *results) == 1);
+		  origrhs = VEC_last (ce_s, *results);
+		  tmp = *origrhs;
+		  VEC_pop (ce_s, *results);
+		  origvar = get_varinfo (origrhs->var);
+		  for (; origvar; origvar = origvar->next)
+		    {
+		      tmp.var = origvar->id;
+		      VEC_safe_push (ce_s, heap, *results, &tmp);
+		    }
+		}
+	      
 	      for (i = 0; VEC_iterate (ce_s, *results, i, c); i++)
 		{
 		  if (c->type == DEREF)
@@ -3220,10 +3241,11 @@ find_func_aliases (tree origt)
   /* Now build constraints expressions.  */
   if (TREE_CODE (t) == PHI_NODE)
     {
+      gcc_assert (!AGGREGATE_TYPE_P (TREE_TYPE (PHI_RESULT (t))));
+
       /* Only care about pointers and structures containing
 	 pointers.  */
       if (POINTER_TYPE_P (TREE_TYPE (PHI_RESULT (t)))
-	  || AGGREGATE_TYPE_P (TREE_TYPE (PHI_RESULT (t)))
 	  || TREE_CODE (TREE_TYPE (PHI_RESULT (t))) == COMPLEX_TYPE)
 	{
 	  int i;
@@ -3240,27 +3262,6 @@ find_func_aliases (tree origt)
 	      STRIP_NOPS (strippedrhs);
 	      rhstype = TREE_TYPE (strippedrhs);
 	      get_constraint_for (PHI_ARG_DEF (t, i), &rhsc);
-
-	      if (TREE_CODE (strippedrhs) == ADDR_EXPR
-		 && (AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
-		     || TREE_CODE (TREE_TYPE (rhstype)) == COMPLEX_TYPE)
-		 && VEC_length (ce_s, rhsc) == 1)
-		{
-		  struct constraint_expr *origrhs;
-		  varinfo_t origvar;
-		  struct constraint_expr tmp;
-
-		  gcc_assert (VEC_length (ce_s, rhsc) == 1);
-		  origrhs = VEC_last (ce_s, rhsc);
-		  tmp = *origrhs;
-		  VEC_pop (ce_s, rhsc);
-		  origvar = get_varinfo (origrhs->var);
-		  for (; origvar; origvar = origvar->next)
-		    {
-		      tmp.var = origvar->id;
-		      VEC_safe_push (ce_s, heap, rhsc, &tmp);
-		    }
-		}
 
 	      for (j = 0; VEC_iterate (ce_s, lhsc, j, c); j++)
 		{
@@ -3413,36 +3414,8 @@ find_func_aliases (tree origt)
 		  case tcc_unary:
 		      {
 			unsigned int j;
-			tree strippedrhs = rhsop;
-			tree rhstype;
 
-			/* XXX: Push this back into the ADDR_EXPR
-			   case, and remove anyoffset handling.  */
-			STRIP_NOPS (strippedrhs);
-			rhstype = TREE_TYPE (strippedrhs);
-			
 			get_constraint_for (rhsop, &rhsc);
-			if (TREE_CODE (strippedrhs) == ADDR_EXPR
-			    && (AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
-				|| TREE_CODE (TREE_TYPE (rhstype)) == COMPLEX_TYPE)
-			    && VEC_length (ce_s, rhsc) == 1)
-			  {
-			    struct constraint_expr *origrhs;
-			    varinfo_t origvar;
-			    struct constraint_expr tmp;
-
-			    gcc_assert (VEC_length (ce_s, rhsc) == 1);
-			    origrhs = VEC_last (ce_s, rhsc);
-			    tmp = *origrhs;
-			    VEC_pop (ce_s, rhsc);
-			    origvar = get_varinfo (origrhs->var);
-			    for (; origvar; origvar = origvar->next)
-			      {
-				tmp.var = origvar->id;
-				VEC_safe_push (ce_s, heap, rhsc, &tmp);
-			      }
-			  }
-
 			for (j = 0; VEC_iterate (ce_s, lhsc, j, c); j++)
 			  {
 			    struct constraint_expr *c2;
