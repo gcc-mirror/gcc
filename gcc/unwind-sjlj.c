@@ -214,6 +214,13 @@ _Unwind_GetIP (struct _Unwind_Context *context)
   return context->fc->call_site + 1;
 }
 
+_Unwind_Ptr
+_Unwind_GetIPInfo (struct _Unwind_Context *context, int *ip_before_insn)
+{
+  *ip_before_insn = 0;
+  return context->fc->call_site + 1;
+}
+
 /* Set the return landing pad index in CONTEXT.  */
 
 void

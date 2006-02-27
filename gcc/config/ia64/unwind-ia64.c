@@ -1704,6 +1704,13 @@ _Unwind_GetIP (struct _Unwind_Context *context)
   return context->rp;
 }
 
+inline _Unwind_Ptr
+_Unwind_GetIPInfo (struct _Unwind_Context *context, int *ip_before_insn)
+{
+  *ip_before_insn = 0;
+  return context->rp;
+}
+
 /* Overwrite the return address for CONTEXT with VAL.  */
 
 inline void

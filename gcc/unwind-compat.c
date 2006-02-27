@@ -1,5 +1,5 @@
 /* Backward compatibility unwind routines.
-   Copyright (C) 2004, 2005
+   Copyright (C) 2004, 2005, 2006
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -135,6 +135,13 @@ _Unwind_GetIP (struct _Unwind_Context *context)
   return __libunwind_Unwind_GetIP (context);
 }
 symver (_Unwind_GetIP, GCC_3.0);
+
+_Unwind_Ptr
+_Unwind_GetIPInfo (struct _Unwind_Context *context, int *ip_before_insn)
+{
+  *ip_before_insn = 0;
+  return __libunwind_Unwind_GetIP (context);
+}
 
 extern void *__libunwind_Unwind_GetLanguageSpecificData
   (struct _Unwind_Context *);

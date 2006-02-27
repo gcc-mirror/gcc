@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2004, 2006 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -155,6 +155,7 @@ extern _Unwind_Word _Unwind_GetGR (struct _Unwind_Context *, int);
 extern void _Unwind_SetGR (struct _Unwind_Context *, int, _Unwind_Word);
 
 extern _Unwind_Ptr _Unwind_GetIP (struct _Unwind_Context *);
+extern _Unwind_Ptr _Unwind_GetIPInfo (struct _Unwind_Context *, int *);
 extern void _Unwind_SetIP (struct _Unwind_Context *, _Unwind_Ptr);
 
 /* @@@ Retrieve the CFA of the given context.  */

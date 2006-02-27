@@ -83,6 +83,7 @@ typedef struct
   unsigned char fde_encoding;
   unsigned char lsda_encoding;
   unsigned char saw_z;
+  unsigned char signal_frame;
   void *eh_ptr;
 } _Unwind_FrameState;
 

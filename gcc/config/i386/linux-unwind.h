@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for AMD x86-64 and x86.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -100,6 +100,7 @@ x86_64_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[16].how = REG_SAVED_OFFSET;
   fs->regs.reg[16].loc.offset = (long)&sc->rip - new_cfa;
   fs->retaddr_column = 16;
+  fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
 
@@ -172,6 +173,7 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[8].how = REG_SAVED_OFFSET;
   fs->regs.reg[8].loc.offset = (long)&sc->REG_NAME(eip) - new_cfa;
   fs->retaddr_column = 8;
+  fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
 #endif /* not glibc 2.0 */

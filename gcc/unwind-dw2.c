@@ -1,5 +1,5 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -71,6 +71,7 @@ struct _Unwind_Context
   void *lsda;
   struct dwarf_eh_bases bases;
   _Unwind_Word args_size;
+  char signal_frame;
 };
 
 /* Byte size of every register managed by these routines.  */
@@ -207,6 +208,16 @@ _Unwind_GetIP (struct _Unwind_Context *context)
   return (_Unwind_Ptr) context->ra;
 }
 
+/* Retrieve the return address and flag whether that IP is before
+   or after first not yet fully executed instruction.  */
+
+inline _Unwind_Ptr
+_Unwind_GetIPInfo (struct _Unwind_Context *context, int *ip_before_insn)
+{
+  *ip_before_insn = context->signal_frame != 0;
+  return (_Unwind_Ptr) context->ra;
+}
+
 /* Overwrite the return address for CONTEXT with VAL.  */
 
 inline void
@@ -324,6 +335,13 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
 	  
 	  p = read_encoded_value (context, *p, p + 1, &personality);
 	  fs->personality = (_Unwind_Personality_Fn) personality;
+	  aug += 1;
+	}
+
+      /* "S" indicates a signal frame.  */
+      else if (aug[0] == 'S')
+	{
+	  fs->signal_frame = 1;
 	  aug += 1;
 	}
 
@@ -761,8 +779,10 @@ execute_cfa_program (const unsigned char *insn_ptr,
      a different stack configuration that we are not interested in.  We
      assume that the call itself is unwind info-neutral; if not, or if
      there are delay instructions that adjust the stack, these must be
-     reflected at the point immediately before the call insn.  */
-  while (insn_ptr < insn_end && fs->pc < context->ra)
+     reflected at the point immediately before the call insn.
+     In signal frames, return address is after last completed instruction,
+     so we add 1 to return address to make the comparison <=.  */
+  while (insn_ptr < insn_end && fs->pc < context->ra + context->signal_frame)
     {
       unsigned char insn = *insn_ptr++;
       _Unwind_Word reg, utmp;
@@ -974,7 +994,8 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   if (context->ra == 0)
     return _URC_END_OF_STACK;
 
-  fde = _Unwind_Find_FDE (context->ra - 1, &context->bases);
+  fde = _Unwind_Find_FDE (context->ra + context->signal_frame - 1,
+			  &context->bases);
   if (fde == NULL)
     {
 #ifdef MD_FALLBACK_FRAME_STATE_FOR
@@ -1191,6 +1212,8 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	}
 	break;
       }
+
+  context->signal_frame = fs->signal_frame;
 
 #ifdef MD_FROB_UPDATE_CONTEXT
   MD_FROB_UPDATE_CONTEXT (context, fs);
