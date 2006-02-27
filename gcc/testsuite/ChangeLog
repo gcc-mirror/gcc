@@ -1,5 +1,9 @@
 2006-02-26  Roger Sayle  <roger@eyesopen.com>
 
+	* gcc.dg/fold-eqandnot-1.c: New test case.
+
+2006-02-26  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/19983
 	* gcc.c-torture/execute/ieee/builtin-nan-1.c: New test case.
 

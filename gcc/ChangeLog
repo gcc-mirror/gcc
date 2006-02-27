@@ -1,5 +1,12 @@
 2006-02-26  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (fold_binary) <EQ_EXPR>:  Fold (~X & C) eq/ne 0 as
+	(X & C) ne/eq 0, where C is a single bit, i.e. a power of two.
+	Fold both "((X & C) ^ C) eq/ne 0" and "((X ^ C) & C) eq/ne 0"
+	as (X & C) ne/eq 0.
+
+2006-02-26  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/19983
 	* real.c (real_nan): Allow both 0x and 0X as hexadecimal prefixes.
 
