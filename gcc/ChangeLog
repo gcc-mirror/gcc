@@ -1,3 +1,10 @@
+2006-02-27  Steven Bosscher  <steven.gcc@gmail.com>
+
+	Backport from mainline and the GCC 4.1 branch:
+	PR rtl-optimization/25196
+	* postreload-gcse.c (record_last_set_info): Notice stack pointer
+	changes in push insns without REG_INC notes.
+
 2006-02-18  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/13408
