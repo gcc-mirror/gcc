@@ -1,3 +1,8 @@
+2006-02-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19983
+	* real.c (real_nan): Allow both 0x and 0X as hexadecimal prefixes.
+
 2006-02-26  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* opts.c (decode_options): Do not handle flag_strength_reduce.
