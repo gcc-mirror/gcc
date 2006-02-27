@@ -2193,8 +2193,12 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
 	str++;
       if (*str == '0')
 	{
-	  if (*++str == 'x')
-	    str++, base = 16;
+	  str++;
+	  if (*str == 'x' || *str == 'X')
+	    {
+	      base = 16;
+	      str++;
+	    }
 	  else
 	    base = 8;
 	}
