@@ -107,7 +107,7 @@ the directories are searched in the order specified.
 
 Many options have long names starting with @samp{-f} or with
 @samp{-W}---for example, 
-@option{-fstrength-reduce}, @option{-Wformat} and so on.  Most of
+@option{-fmove-loop-invariants}, @option{-Wformat} and so on.  Most of
 these have both positive and negative forms; the negative form of
 @option{-ffoo} would be @option{-fno-foo}.  This manual documents
 only one of these two forms, whichever one is not the default.
@@ -321,11 +321,11 @@ Objective-C and Objective-C++ Dialects}.
 -funsafe-math-optimizations  -funsafe-loop-optimizations  -ffinite-math-only @gol
 -fno-toplevel-reorder -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
--foptimize-sibling-calls  -fprefetch-loop-arrays -fprefetch-loop-arrays-rtl @gol
+-foptimize-sibling-calls  -fprefetch-loop-arrays @gol
 -fprofile-generate -fprofile-use @gol
 -fregmove  -frename-registers @gol
 -freorder-blocks  -freorder-blocks-and-partition -freorder-functions @gol
--frerun-cse-after-loop  -frerun-loop-opt @gol
+-frerun-cse-after-loop @gol
 -frounding-math -frtl-abstract-sequences @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
@@ -335,7 +335,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsched2-use-traces -freschedule-modulo-scheduled-loops @gol
 -fsection-anchors  -fsignaling-nans  -fsingle-precision-constant @gol
 -fstack-protector  -fstack-protector-all @gol
--fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
+-fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -fsplit-ivs-in-unroller -funswitch-loops @gol
 -fvariable-expansion-in-unroller @gol
@@ -4434,8 +4434,7 @@ also turns on the following optimization flags:
 -fcse-follow-jumps  -fcse-skip-blocks @gol
 -fgcse  -fgcse-lm  @gol
 -fexpensive-optimizations @gol
--fstrength-reduce @gol
--frerun-cse-after-loop  -frerun-loop-opt @gol
+-frerun-cse-after-loop  @gol
 -fcaller-saves @gol
 -fpeephole2 @gol
 -fschedule-insns  -fschedule-insns2 @gol
@@ -4670,8 +4669,7 @@ register, compare it against zero, then branch based upon the result.
 This option is only meaningful on architectures that support such
 instructions, which include x86, PowerPC, IA-64 and S/390.
 
-The default is @option{-fbranch-count-reg}, enabled when
-@option{-fstrength-reduce} is enabled.
+The default is @option{-fbranch-count-reg}.
 
 @item -fno-function-cse
 @opindex fno-function-cse
@@ -4729,13 +4727,6 @@ instrumentation should ignore pointer reads.  This produces less
 instrumentation (and therefore faster execution) and still provides
 some protection against outright memory corrupting writes, but allows
 erroneously read data to propagate within a program.
-
-@item -fstrength-reduce
-@opindex fstrength-reduce
-Perform the optimizations of loop strength reduction and
-elimination of iteration variables.
-
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fthread-jumps
 @opindex fthread-jumps
@@ -5130,9 +5121,9 @@ better job.
 @item -funroll-loops
 @opindex funroll-loops
 Unroll loops whose number of iterations can be determined at compile
-time or upon entry to the loop.  @option{-funroll-loops} implies both
-@option{-fstrength-reduce} and @option{-frerun-cse-after-loop}.  This
-option makes code larger, and may or may not make it run faster.
+time or upon entry to the loop.  @option{-funroll-loops} implies
+@option{-frerun-cse-after-loop}.  This option makes code larger,
+and may or may not make it run faster.
 
 @item -funroll-all-loops
 @opindex funroll-all-loops
@@ -5160,14 +5151,14 @@ With this option, the compiler will create multiple copies of some
 local variables when unrolling a loop which can result in superior code.
 
 @item -fprefetch-loop-arrays
-@itemx -fprefetch-loop-arrays-rtl
 @opindex fprefetch-loop-arrays
-@opindex fprefetch-loop-arrays-rtl
 If supported by the target machine, generate instructions to prefetch
 memory to improve the performance of loops that access large arrays.
 
-These options may generate better or worse code; results are highly
+This option may generate better or worse code; results are highly
 dependent on the structure of loops within the source code.
+
+Disabled at level @option{-Os}.
 
 @item -fno-peephole
 @itemx -fno-peephole2
@@ -5697,15 +5688,6 @@ at level @option{-O1}
 @opindex funswitch-loops
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
-
-@item -fprefetch-loop-arrays
-@itemx -fprefetch-loop-arrays-rtl
-@opindex fprefetch-loop-arrays
-@opindex fprefetch-loop-arrays-rtl
-If supported by the target machine, generate instructions to prefetch
-memory to improve the performance of loops that access large arrays.
-
-Disabled at level @option{-Os}.
 
 @item -ffunction-sections
 @itemx -fdata-sections

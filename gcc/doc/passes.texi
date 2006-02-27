@@ -574,20 +574,15 @@ are in @file{lcm.c}.
 
 @item Loop optimization
 
-This pass moves constant expressions out of loops, and optionally does
-strength-reduction as well.  The pass is located in @file{loop.c}.
-Loop dependency analysis routines are contained in @file{dependence.c}.
-This pass is seriously out-of-date and is supposed to be replaced by
-a new one described below in near future.
-
-A second loop optimization pass takes care of basic block level
-optimizations---unrolling, peeling and unswitching loops.  The source
-files are @file{cfgloopanal.c} and @file{cfgloopmanip.c} containing
-generic loop analysis and manipulation code, @file{loop-init.c} with
-initialization and finalization code, @file{loop-unswitch.c} for loop
-unswitching and @file{loop-unroll.c} for loop unrolling and peeling.
-It also contains a separate loop invariant motion pass implemented in
-@file{loop-invariant.c}.
+This pass performs several loop related optimizations.
+The source files @file{cfgloopanal.c} and @file{cfgloopmanip.c} contain
+generic loop analysis and manipulation code.  Initialization and finalization
+of loop structures is handled by @file{loop-init.c}.
+A loop invariant motion pass is implemented in @file{loop-invariant.c}.
+Basic block level optimizations---unrolling, peeling and unswitching loops---
+are implemented in @file{loop-unswitch.c} and @file{loop-unroll.c}.
+Replacing of the exit condition of loops by special machine-dependent
+instructions is handled by @file{loop-doloop.c}.
 
 @item Jump bypassing
 

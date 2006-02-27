@@ -564,7 +564,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_gcse = 1;
       flag_expensive_optimizations = 1;
       flag_ipa_type_escape = 1;
-      flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
       flag_caller_saves = 1;
       flag_peephole2 = 1;
@@ -1081,6 +1080,12 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fforce_mem:
       warning (0, "-f[no-]force-mem is nop and option will be removed in 4.2");
+      break;
+
+    case OPT_floop_optimize:
+    case OPT_frerun_loop_opt:
+    case OPT_fstrength_reduce:
+      /* These are no-ops, preserved for backward compatability.  */
       break;
 
     default:

@@ -555,6 +555,10 @@ fleading-underscore
 Common Report Var(flag_leading_underscore) Init(-1)
 Give external symbols a leading underscore
 
+floop-optimize
+Common
+Does nothing.  Preserved for backward compatability.
+
 fmath-errno
 Common Report Var(flag_errno_math) Init(1)
 Set errno after built-in math functions
@@ -659,11 +663,7 @@ Common Report Var(flag_pie,1) VarExists
 Generate position-independent code for executables if possible (small mode)
 
 fprefetch-loop-arrays
-Common Report Var(flag_prefetch_loop_arrays,1)
-Generate prefetch instructions, if available, for arrays in loops
-
-fprefetch-loop-arrays-rtl
-Common Report Var(flag_prefetch_loop_arrays,2)
+Common Report Var(flag_prefetch_loop_arrays)
 Generate prefetch instructions, if available, for arrays in loops
 
 fprofile
@@ -720,6 +720,10 @@ Reorder functions to improve code placement
 frerun-cse-after-loop
 Common Report Var(flag_rerun_cse_after_loop) Init(2)
 Add a common subexpression elimination pass after loop optimizations
+
+frerun-loop-opt
+Common
+Does nothing.  Preserved for backward compatability.
 
 frounding-math
 Common Report Var(flag_rounding_math)
@@ -837,8 +841,8 @@ Common Report RejectNegative Var(flag_stack_protect, 2) VarExists
 Use a stack protection method for every function
 
 fstrength-reduce
-Common Report Var(flag_strength_reduce)
-Perform strength reduction optimizations
+Common
+Does nothing.  Preserved for backward compatability.
 
 ; Nonzero if we should do (language-dependent) alias analysis.
 ; Typically, this analysis will assume that expressions of certain

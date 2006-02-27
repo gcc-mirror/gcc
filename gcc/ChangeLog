@@ -1,3 +1,20 @@
+2006-02-26  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* opts.c (decode_options): Do not handle flag_strength_reduce.
+	(common_handle_option): Handle OPT_floop_optimize, OPT_frerun_loop_opt
+	and OPT_fstrength_reduce.
+	* tree-ssa-loop.c (tree_ssa_loop_prefetch): Only test
+	flag_prefetch_loop_arrays for being nonzero.
+	* common.opt (floop-optimize, frerun-loop-opt): Resurrected as
+	no-ops.
+	(fprefetch-loop-arrays-rtl): Removed.
+	(flag_prefetch_loop_arrays): Do not specify the value.
+
+	* doc/passes.texi: Update documentation of loop optimizer
+	passes.
+	* doc/invoke.texi (-fstrength-reduce, -fprefetch-loop-arrays-rtl,
+	-frerun-loop-opt): Remove.
+
 2006-02-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26421
