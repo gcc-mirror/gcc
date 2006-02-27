@@ -1,3 +1,9 @@
+2006-02-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14866
+	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: Redirect
+	stderr instead.
+
 2006-02-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cmath: Add templates (8.16.3).	
