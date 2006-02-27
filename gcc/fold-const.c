@@ -9868,6 +9868,50 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			    fold_build2 (BIT_XOR_EXPR, TREE_TYPE (arg1),
 					 TREE_OPERAND (arg0, 1), arg1));
 
+      /* Fold (~X & C) == 0 into (X & C) != 0 and (~X & C) != 0 into
+	 (X & C) == 0 when C is a single bit.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == BIT_NOT_EXPR
+	  && integer_zerop (arg1)
+	  && integer_pow2p (TREE_OPERAND (arg0, 1)))
+	{
+	  tem = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+			     TREE_OPERAND (TREE_OPERAND (arg0, 0), 0),
+			     TREE_OPERAND (arg0, 1));
+	  return fold_build2 (code == EQ_EXPR ? NE_EXPR : EQ_EXPR,
+			      type, tem, arg1);
+	}
+
+      /* Fold ((X & C) ^ C) eq/ne 0 into (X & C) ne/eq 0, when the
+	 constant C is a power of two, i.e. a single bit.  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == BIT_AND_EXPR
+	  && integer_zerop (arg1)
+	  && integer_pow2p (TREE_OPERAND (arg0, 1))
+	  && operand_equal_p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1),
+			      TREE_OPERAND (arg0, 1), OEP_ONLY_CONST))
+	{
+	  tree arg00 = TREE_OPERAND (arg0, 0);
+	  return fold_build2 (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
+			      arg00, build_int_cst (TREE_TYPE (arg00), 0));
+	}
+
+      /* Likewise, fold ((X ^ C) & C) eq/ne 0 into (X & C) ne/eq 0,
+	 when is C is a power of two, i.e. a single bit.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == BIT_XOR_EXPR
+	  && integer_zerop (arg1)
+	  && integer_pow2p (TREE_OPERAND (arg0, 1))
+	  && operand_equal_p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1),
+			      TREE_OPERAND (arg0, 1), OEP_ONLY_CONST))
+	{
+	  tree arg000 = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+	  tem = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg000),
+			     arg000, TREE_OPERAND (arg0, 1));
+	  return fold_build2 (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
+			      tem, build_int_cst (TREE_TYPE (tem), 0));
+	}
+
       if (integer_zerop (arg1)
 	  && tree_expr_nonzero_p (arg0))
         {
