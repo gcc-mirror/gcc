@@ -1,7 +1,7 @@
 2006-02-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cmath: Add templates (8.16.3).	
-	* include/tr1/cstbool: New.
+	* include/tr1/cstdbool: New.
 	* include/tr1/stdbool.h: Likewise.
 	* include/Makefile.am: Add.
 	* testsuite/tr1/8_c_compatibility/cmath/templates.cc: New.
