@@ -2931,7 +2931,7 @@ The machine mode of @var{op}.
 @code{const_double}.
 @item rval
 @samp{CONST_DOUBLE_REAL_VALUE (@var{op})}, if @var{op} is a floating-point
-@code{const_@/double}.
+@code{const_double}.
 @end table
 
 The @var{*val} variables should only be used once another piece of the
