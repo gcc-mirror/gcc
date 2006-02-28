@@ -1047,6 +1047,7 @@ extern unsigned int subreg_regno (rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (rtx, enum machine_mode);
 extern unsigned int num_sign_bit_copies (rtx, enum machine_mode);
 extern bool constant_pool_constant_p (rtx);
+extern bool truncated_to_mode (enum machine_mode, rtx);
 
 
 /* 1 if RTX is a subreg containing a reg that is already known to be
@@ -2277,8 +2278,9 @@ struct rtl_hooks
 			   unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT *);
   rtx (*reg_num_sign_bit_copies) (rtx, enum machine_mode, rtx, enum machine_mode,
 				  unsigned int, unsigned int *);
+  bool (*reg_truncated_to_mode) (enum machine_mode, rtx);
 
-  /* Whenever you add entries here, make sure you adjust hosthooks-def.h.  */
+  /* Whenever you add entries here, make sure you adjust rtlhooks-def.h.  */
 };
 
 /* Each pass can provide its own.  */

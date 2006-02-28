@@ -457,6 +457,9 @@ static rtx gen_lowpart_or_truncate (enum machine_mode, rtx);
 #undef RTL_HOOKS_REG_NUM_SIGN_BIT_COPIES
 #define RTL_HOOKS_REG_NUM_SIGN_BIT_COPIES  reg_num_sign_bit_copies_for_combine
 
+#undef RTL_HOOKS_REG_TRUNCATED_TO_MODE
+#define RTL_HOOKS_REG_TRUNCATED_TO_MODE    reg_truncated_to_mode
+
 static const struct rtl_hooks combine_rtl_hooks = RTL_HOOKS_INITIALIZER;
 
 

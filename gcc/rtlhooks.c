@@ -117,6 +117,13 @@ reg_nonzero_bits_general (rtx x ATTRIBUTE_UNUSED,
   return NULL;
 }
 
+bool
+reg_truncated_to_mode_general (enum machine_mode mode ATTRIBUTE_UNUSED,
+			       rtx x ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a fixed-point
    number, return an rtx (MEM, SUBREG, or CONST_INT) that refers to the
    least-significant part of X.
