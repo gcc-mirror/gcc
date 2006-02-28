@@ -1,3 +1,10 @@
+2006-03-01  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.special/unwindtest.cc (closure_test_fn): Mark cif,
+	args and userdata unused.
+	(closure_test_fn1): Mark cif and userdata unused.
+	(main): Remove unused res.
+
 2006-02-28  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libffi.call/call.exp: Adjust FSF address. Add test runs for

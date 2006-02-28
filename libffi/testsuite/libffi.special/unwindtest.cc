@@ -8,15 +8,16 @@
 #include "ffitestcxx.h"
 
 void
-closure_test_fn(ffi_cif* cif, void* resp, void** args, void* userdata)
+closure_test_fn(ffi_cif* cif __UNUSED__, void* resp __UNUSED__,
+		void** args __UNUSED__, void* userdata __UNUSED__)
 {
   throw 9;
 }
 
 typedef void (*closure_test_type)();
 
-void closure_test_fn1(ffi_cif* cif,void* resp,void** args,
-			     void* userdata)
+void closure_test_fn1(ffi_cif* cif __UNUSED__, void* resp,
+		      void** args, void* userdata __UNUSED__)
  {
     *(ffi_arg*)resp =
       (int)*(float *)args[0] +(int)(*(float *)args[1]) +
@@ -54,7 +55,6 @@ int main (void)
 #endif
   ffi_closure *pcl;
   ffi_type * cl_arg_types[17];
-  int res;
 #ifdef USING_MMAP
   pcl = (ffi_closure *) allocate_mmap (sizeof(ffi_closure));
 #else
