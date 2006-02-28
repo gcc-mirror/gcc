@@ -13291,9 +13291,7 @@ memory_address_length (rtx addr)
       /* Find the length of the displacement constant.  */
       if (disp)
 	{
-	  if (GET_CODE (disp) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (disp), 'K')
-	      && base)
+	  if (base && satisfies_constraint_K (disp))
 	    len = 1;
 	  else
 	    len = 4;
@@ -13326,9 +13324,7 @@ ix86_attr_length_immediate_default (rtx insn, int shortform)
     if (CONSTANT_P (recog_data.operand[i]))
       {
 	gcc_assert (!len);
-	if (shortform
-	    && GET_CODE (recog_data.operand[i]) == CONST_INT
-	    && CONST_OK_FOR_LETTER_P (INTVAL (recog_data.operand[i]), 'K'))
+	if (shortform && satisfies_constraint_K (recog_data.operand[i]))
 	  len = 1;
 	else
 	  {

@@ -752,6 +752,33 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define DEFAULT_USE_CXA_ATEXIT 0
 #endif
 
+/* If none of these macros are defined, the port must use the new
+   technique of defining constraints in the machine description.
+   tm_p.h will define those macros that machine-independent code
+   still uses.  */
+#if  !defined CONSTRAINT_LEN			\
+  && !defined REG_CLASS_FROM_LETTER		\
+  && !defined REG_CLASS_FROM_CONSTRAINT		\
+  && !defined CONST_OK_FOR_LETTER_P		\
+  && !defined CONST_OK_FOR_CONSTRAINT_P		\
+  && !defined CONST_DOUBLE_OK_FOR_LETTER_P	\
+  && !defined CONST_DOUBLE_OK_FOR_CONSTRAINT_P  \
+  && !defined EXTRA_CONSTRAINT			\
+  && !defined EXTRA_CONSTRAINT_STR		\
+  && !defined EXTRA_MEMORY_CONSTRAINT		\
+  && !defined EXTRA_ADDRESS_CONSTRAINT
+
+#define USE_MD_CONSTRAINTS
+
+#if GCC_VERSION >= 3000 && defined IN_GCC
+/* These old constraint macros shouldn't appear anywhere in a
+   configuration using MD constraint definitions.  */
+#pragma GCC poison REG_CLASS_FROM_LETTER CONST_OK_FOR_LETTER_P \
+                   CONST_DOUBLE_OK_FOR_LETTER_P EXTRA_CONSTRAINT
+#endif
+
+#else /* old constraint mechanism in use */
+
 /* Determine whether extra constraint letter should be handled
    via address reload (like 'o').  */
 #ifndef EXTRA_MEMORY_CONSTRAINT
@@ -790,6 +817,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #if defined (EXTRA_CONSTRAINT) && ! defined (EXTRA_CONSTRAINT_STR)
 #define EXTRA_CONSTRAINT_STR(OP, C,STR) EXTRA_CONSTRAINT (OP, C)
 #endif
+
+#endif /* old constraint mechanism in use */
 
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(m, x, y) 2

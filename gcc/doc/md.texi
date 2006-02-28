@@ -1051,6 +1051,8 @@ have.  Constraints can also require two operands to match.
 * Class Preferences::   Constraints guide which hard register to put things in.
 * Modifiers::           More precise control over effects of constraints.
 * Machine Constraints:: Existing constraints for some particular machines.
+* Define Constraints::  How to define machine-specific constraints.
+* C Constraint Interface:: How to test constraints from C code.
 @end menu
 @end ifset
 
@@ -1273,15 +1275,6 @@ Other letters can be defined in machine-dependent fashion to stand for
 particular classes of registers or other arbitrary operand types.
 @samp{d}, @samp{a} and @samp{f} are defined on the 68000/68020 to stand
 for data, address and floating point registers.
-
-@ifset INTERNALS
-The machine description macro @code{REG_CLASS_FROM_LETTER} has first
-cut at the otherwise unused letters.  If it evaluates to @code{NO_REGS},
-then @code{EXTRA_CONSTRAINT} is evaluated.
-
-A typical use for @code{EXTRA_CONSTRAINT} would be to distinguish certain
-types of memory references that affect other insn operands.
-@end ifset
 @end table
 
 @ifset INTERNALS
@@ -1624,35 +1617,16 @@ general-purpose registers respectively; @pxref{Simple Constraints}), and
 @samp{I}, usually the letter indicating the most common
 immediate-constant format.
 
-For each machine architecture, the
-@file{config/@var{machine}/@var{machine}.h} file defines additional
-constraints.  These constraints are used by the compiler itself for
-instruction generation, as well as for @code{asm} statements; therefore,
-some of the constraints are not particularly interesting for @code{asm}.
-The constraints are defined through these macros:
-
-@table @code
-@item REG_CLASS_FROM_LETTER
-Register class constraints (usually lowercase).
-
-@item CONST_OK_FOR_LETTER_P
-Immediate constant constraints, for non-floating point constants of
-word size or smaller precision (usually uppercase).
-
-@item CONST_DOUBLE_OK_FOR_LETTER_P
-Immediate constant constraints, for all floating point constants and for
-constants of greater than word size precision (usually uppercase).
-
-@item EXTRA_CONSTRAINT
-Special cases of registers or memory.  This macro is not required, and
-is only defined for some machines.
-@end table
-
-Inspecting these macro definitions in the compiler source for your
-machine is the best way to be certain you have the right constraints.
-However, here is a summary of the machine-dependent constraints
-available on some particular machines.
-
+Each architecture defines additional constraints.  These constraints
+are used by the compiler itself for instruction generation, as well as
+for @code{asm} statements; therefore, some of the constraints are not
+particularly useful for @code{asm}.  Here is a summary of some of the
+machine-dependent constraints available on some particular machines;
+it includes both constraints that are useful for @code{asm} and
+constraints that aren't.  The compiler source file mentioned in the
+table heading for each architecture is the definitive reference for
+the meanings of that architecture's constraints.
+ 
 @table @emph
 @item ARM family---@file{config/arm/arm.h}
 @table @code
@@ -1908,93 +1882,109 @@ A 15-bit signed integer constant.
 A positive 16-bit constant.
 @end table
 
-@item Intel 386---@file{config/i386/i386.h}
+@item Intel 386---@file{config/i386/predicates.md}
 @table @code
+@item R
+Legacy register---the eight integer registers available on all
+i386 processors (@code{a}, @code{b}, @code{c}, @code{d},
+@code{si}, @code{di}, @code{bp}, @code{sp}).
+
 @item q
-@samp{a}, @code{b}, @code{c}, or @code{d} register for the i386.
-For x86-64 it is equivalent to @samp{r} class (for 8-bit instructions that
-do not use upper halves).
+Any register accessible as @code{@var{r}l}.  In 32-bit mode, @code{a},
+@code{b}, @code{c}, and @code{d}; in 64-bit mode, any integer register.
 
 @item Q
-@samp{a}, @code{b}, @code{c}, or @code{d} register (for 8-bit instructions,
-that do use upper halves).
+Any register accessible as @code{@var{r}h}: @code{a}, @code{b},
+@code{c}, and @code{d}.
 
-@item R
-Legacy register---equivalent to @code{r} class in i386 mode.
-(for non-8-bit registers used together with 8-bit upper halves in a single
-instruction)
-
-@item A
-Specifies the @samp{a} or @samp{d} registers.  This is primarily useful
-for 64-bit integer values (when in 32-bit mode) intended to be returned
-with the @samp{d} register holding the most significant bits and the
-@samp{a} register holding the least significant bits.
-
-@item f
-Floating point register
-
-@item t
-First (top of stack) floating point register
-
-@item u
-Second floating point register
+@ifset INTERNALS
+@item l
+Any register that can be used as the index in a base+index memory
+access: that is, any general register except the stack pointer.
+@end ifset
 
 @item a
-@samp{a} register
+The @code{a} register.
 
 @item b
-@samp{b} register
+The @code{b} register.
 
 @item c
-@samp{c} register
-
-@item C
-Specifies constant that can be easily constructed in SSE register without
-loading it from memory.
+The @code{c} register.
 
 @item d
-@samp{d} register
-
-@item D
-@samp{di} register
+The @code{d} register.
 
 @item S
-@samp{si} register
+The @code{si} register.
 
-@item x
-@samp{xmm} SSE register
+@item D
+The @code{di} register.
+
+@item A
+The @code{a} and @code{d} registers, as a pair (for instructions that
+return half the result in one and half in the other).
+
+@item f
+Any 80387 floating-point (stack) register.
+
+@item t
+Top of 80387 floating-point stack (@code{%st(0)}).
+
+@item u
+Second from top of 80387 floating-point stack (@code{%st(1)}).
 
 @item y
-MMX register
+Any MMX register.
+
+@item x
+Any SSE register.
+
+@ifset INTERNALS
+@item Y
+Any SSE2 register.
+@end ifset
 
 @item I
-Constant in range 0 to 31 (for 32-bit shifts)
+Integer constant in the range 0 @dots{} 31, for 32-bit shifts.
 
 @item J
-Constant in range 0 to 63 (for 64-bit shifts)
+Integer constant in the range 0 @dots{} 63, for 64-bit shifts.
 
 @item K
-@samp{0xff}
+Signed 8-bit integer constant.
 
 @item L
-@samp{0xffff}
+@code{0xFF} or @code{0xFFFF}, for andsi as a zero-extending move.
 
 @item M
-0, 1, 2, or 3 (shifts for @code{lea} instruction)
+0, 1, 2, or 3 (shifts for the @code{lea} instruction).
 
 @item N
-Constant in range 0 to 255 (for @code{out} instruction)
+Unsigned 8-bit integer constant (for @code{in} and @code{out} 
+instructions).
 
-@item Z
-Constant in range 0 to @code{0xffffffff} or symbolic reference known to fit specified range.
-(for using immediates in zero extending 32-bit to 64-bit x86-64 instructions)
-
-@item e
-Constant in range @minus{}2147483648 to 2147483647 or symbolic reference known to fit specified range.
-(for using immediates in 64-bit x86-64 instructions)
+@ifset INTERNALS
+@item O
+Integer constant in the range 0 @dots{} 127, for 128-bit shifts.
+@end ifset
 
 @item G
-Standard 80387 floating point constant
+Standard 80387 floating point constant.
+
+@item C
+Standard SSE floating point constant.
+
+@item e
+32-bit signed integer constant, or a symbolic reference known
+to fit that range (for immediate operands in sign-extending x86-64
+instructions).
+
+@item Z
+32-bit unsigned integer constant, or a symbolic reference known
+to fit that range (for immediate operands in zero-extending x86-64
+instructions).
+
 @end table
 
 @item Intel IA-64---@file{config/ia64/ia64.h}
@@ -2868,6 +2858,257 @@ Unsigned constant valid for BccUI instructions
 @end table
 
 @ifset INTERNALS
+@node Define Constraints
+@subsection Defining Machine-Specific Constraints
+@cindex defining constraints
+@cindex constraints, defining
+
+Machine-specific constraints fall into two categories: register and
+non-register constraints.  Within the latter category, constraints
+which allow subsets of all possible memory or address operands should
+be specially marked, to give @code{reload} more information.
+
+Machine-specific constraints can be given names of arbitrary length,
+but they must be entirely composed of letters, digits, underscores
+(@samp{_}), and angle brackets (@samp{< >}).  Like C identifiers, they
+must begin with a letter or underscore. 
+
+In order to avoid ambiguity in operand constraint strings, no
+constraint can have a name that begins with any other constraint's
+name.  For example, if @code{x} is defined as a constraint name,
+@code{xy} may not be, and vice versa.  As a consequence of this rule,
+no constraint may begin with one of the generic constraint letters:
+@samp{E F V X g i m n o p r s}.
+
+Register constraints correspond directly to register classes.
+@xref{Register Classes}.  There is thus not much flexibility in their
+definitions.
+
+@deffn {MD Expression} define_register_constraint name regclass docstring
+All three arguments are string constants.
+@var{name} is the name of the constraint, as it will appear in
+@code{match_operand} expressions.  @var{regclass} can be either the
+name of the corresponding register class (@pxref{Register Classes}),
+or a C expression which evaluates to the appropriate register class.
+If it is an expression, it must have no side effects, and it cannot
+look at the operand.  The usual use of expressions is to map some
+register constraints to @code{NO_REGS} when the register class
+is not available on a given subarchitecture.
+
+@var{docstring} is a sentence documenting the meaning of the
+constraint.  Docstrings are explained further below.
+@end deffn
+
+Non-register constraints are more like predicates: the constraint
+definition gives a Boolean expression which indicates whether the
+constraint matches.
+
+@deffn {MD Expression} define_constraint name docstring exp
+The @var{name} and @var{docstring} arguments are the same as for
+@code{define_register_constraint}, but note that the docstring comes
+immediately after the name for these expressions.  @var{exp} is an RTL
+expression, obeying the same rules as the RTL expressions in predicate
+definitions.  @xref{Defining Predicates}, for details.  If it
+evaluates true, the constraint matches; if it evaluates false, it
+doesn't. Constraint expressions should indicate which RTL codes they
+might match, just like predicate expressions.
+
+@code{match_test} C expressions have access to the
+following variables:
+
+@table @var
+@item op
+The RTL object defining the operand.
+@item mode
+The machine mode of @var{op}.
+@item ival
+@samp{INTVAL (@var{op})}, if @var{op} is a @code{const_int}.
+@item hval
+@samp{CONST_DOUBLE_HIGH (@var{op})}, if @var{op} is an integer
+@code{const_double}.
+@item lval
+@samp{CONST_DOUBLE_LOW (@var{op})}, if @var{op} is an integer
+@code{const_double}.
+@item rval
+@samp{CONST_DOUBLE_REAL_VALUE (@var{op})}, if @var{op} is a floating-point
+@code{const_@/double}.
+@end table
+
+The @var{*val} variables should only be used once another piece of the
+expression has verified that @var{op} is the appropriate kind of RTL
+object.
+@end deffn
+
+Most non-register constraints should be defined with
+@code{define_constraint}.  The remaining two definition expressions
+are only appropriate for constraints that should be handled specially
+by @code{reload} if they fail to match.
+
+@deffn {MD Expression} define_memory_constraint name docstring exp
+Use this expression for constraints that match a subset of all memory
+operands: that is, @code{reload} can make them match by converting the
+operand to the form @samp{@w{(mem (reg @var{X}))}}, where @var{X} is a
+base register (from the register class specified by
+@code{BASE_REG_CLASS}, @pxref{Register Classes}).
+
+For example, on the S/390, some instructions do not accept arbitrary
+memory references, but only those that do not make use of an index
+register.  The constraint letter @samp{Q} is defined to represent a
+memory address of this type.  If @samp{Q} is defined with
+@code{define_memory_constraint}, a @samp{Q} constraint can handle any
+memory operand, because @code{reload} knows it can simply copy the
+memory address into a base register if required.  This is analogous to
+the way a @samp{o} constraint can handle any memory operand.
+
+The syntax and semantics are otherwise identical to
+@code{define_constraint}.
+@end deffn
+
+@deffn {MD Expression} define_address_constraint name docstring exp
+Use this expression for constraints that match a subset of all address
+operands: that is, @code{reload} can make the constraint match by
+converting the operand to the form @samp{@w{(reg @var{X})}}, again
+with @var{X} a base register.
+
+Constraints defined with @code{define_address_constraint} can only be
+used with the @code{address_operand} predicate, or machine-specific
+predicates that work the same way.  They are treated analogously to
+the generic @samp{p} constraint.
+
+The syntax and semantics are otherwise identical to
+@code{define_constraint}.
+@end deffn
+
+For historical reasons, names beginning with the letters @samp{G H}
+are reserved for constraints that match only @code{const_double}s, and
+names beginning with the letters @samp{I J K L M N O P} are reserved
+for constraints that match only @code{const_int}s.  This may change in
+the future.  For the time being, constraints with these names must be
+written in a stylized form, so that @code{genpreds} can tell you did
+it correctly:
+
+@smallexample
+@group
+(define_constraint "[@var{GHIJKLMNOP}]@dots{}"
+  "@var{doc}@dots{}"
+  (and (match_code "const_int")  ; @r{@code{const_double} for G/H}
+       @var{condition}@dots{}))            ; @r{usually a @code{match_test}}
+@end group
+@end smallexample
+@c the semicolons line up in the formatted manual
+
+It is fine to use names beginning with other letters for constraints
+that match @code{const_double}s or @code{const_int}s.
+
+Each docstring in a constraint definition should be one or more complete
+sentences, marked up in Texinfo format.  @emph{They are currently unused.}
+In the future they will be copied into the GCC manual, in @ref{Machine
+Constraints}, replacing the hand-maintained tables currently found in
+that section.  Also, in the future the compiler may use this to give
+more helpful diagnostics when poor choice of @code{asm} constraints
+causes a reload failure.
+
+If you put the pseudo-Texinfo directive @samp{@@internal} at the
+beginning of a docstring, then (in the future) it will appear only in
+the internals manual's version of the machine-specific constraint tables.
+Use this for constraints that should not appear in @code{asm} statements.
+
+@node C Constraint Interface
+@subsection Testing constraints from C
+@cindex testing constraints
+@cindex constraints, testing
+
+It is occasionally useful to test a constraint from C code rather than
+implicitly via the constraint string in a @code{match_operand}.  The
+generated file @file{tm_p.h} declares a few interfaces for working
+with machine-specific constraints.  None of these interfaces work with
+the generic constraints described in @ref{Simple Constraints}.  This
+may change in the future.
+
+@strong{Warning:} @file{tm_p.h} may declare other functions that
+operate on constraints, besides the ones documented here.  Do not use
+those functions from machine-dependent code.  They exist to implement
+the old constraint interface that machine-independent components of
+the compiler still expect.  They will change or disappear in the
+future.
+
+Some valid constraint names are not valid C identifiers, so there is a
+mangling scheme for referring to them from C@.  Constraint names that
+do not contain angle brackets or underscores are left unchanged.
+Underscores are doubled, each @samp{<} is replaced with @samp{_l}, and
+each @samp{>} with @samp{_g}.  Here are some examples:
+
+@c the @c's prevent double blank lines in the printed manual.
+@example
+@multitable {Original} {Mangled}
+@headitem Original @tab Mangled        @c
+@item @code{x}     @tab @code{x}       @c
+@item @code{P42x}  @tab @code{P42x}    @c
+@item @code{P4_x}  @tab @code{P4__x}   @c
+@item @code{P4>x}  @tab @code{P4_gx}   @c
+@item @code{P4>>}  @tab @code{P4_g_g}  @c
+@item @code{P4_g>} @tab @code{P4__g_g} @c
+@end multitable
+@end example
+
+Throughout this section, the variable @var{c} is either a constraint
+in the abstract sense, or a constant from @code{enum constraint_num};
+the variable @var{m} is a mangled constraint name (usually as part of
+a larger identifier).
+
+@deftp Enum constraint_num
+For each machine-specific constraint, there is a corresponding
+enumeration constant: @samp{CONSTRAINT_} plus the mangled name of the
+constraint.  Functions that take an @code{enum constraint_num} as an
+argument expect one of these constants.
+
+Machine-independent constraints do not have associated constants.
+This may change in the future.
+@end deftp
+
+@deftypefun {inline bool} satisfies_constraint_@var{m} (rtx @var{exp})
+For each machine-specific, non-register constraint @var{m}, there is
+one of these functions; it returns @code{true} if @var{exp} satisfies the
+constraint.  These functions are only visible if @file{rtl.h} was included
+before @file{tm_p.h}.
+@end deftypefun
+
+@deftypefun bool constraint_satisfied_p (rtx @var{exp}, enum constraint_num @var{c})
+Like the @code{satisfies_constraint_@var{m}} functions, but the
+constraint to test is given as an argument, @var{c}.  If @var{c}
+specifies a register constraint, this function will always return
+@code{false}.
+@end deftypefun
+
+@deftypefun {enum reg_class} regclass_for_constraint (enum constraint_num @var{c})
+Returns the register class associated with @var{c}.  If @var{c} is not
+a register constraint, or those registers are not available for the
+currently selected subtarget, returns @code{NO_REGS}.
+@end deftypefun
+
+Here is an example use of @code{satisfies_constraint_@var{m}}.  In
+peephole optimizations (@pxref{Peephole Definitions}), operand
+constraint strings are ignored, so if there are relevant constraints,
+they must be tested in the C condition.  In the example, the
+optimization is applied if operand 2 does @emph{not} satisfy the
+@samp{K} constraint.  (This is a simplified version of a peephole
+definition from the i386 machine description.)
+
+@smallexample
+(define_peephole2
+  [(match_scratch:SI 3 "r")
+   (set (match_operand:SI 0 "register_operand" "")
+	(mult:SI (match_operand:SI 1 "memory_operand" "")
+		 (match_operand:SI 2 "immediate_operand" "")))]
+
+  "!satisfies_constraint_K (operands[2])"
+
+  [(set (match_dup 3) (match_dup 1))
+   (set (match_dup 0) (mult:SI (match_dup 3) (match_dup 2)))]
+
+  "")
+@end smallexample
+
 @node Standard Names
 @section Standard Pattern Names For Generation
 @cindex standard pattern names

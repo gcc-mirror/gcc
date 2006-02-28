@@ -33,6 +33,7 @@ through the macros defined in the @file{.h} file.
 * Type Layout::         Defining sizes and properties of basic user data types.
 * Registers::           Naming and describing the hardware registers.
 * Register Classes::    Defining the classes of hardware registers.
+* Old Constraints::     The old way to define machine-specific constraints.
 * Stack and Calling::   Defining which way the stack grows and by how much.
 * Varargs::		Defining the varargs macros.
 * Trampolines::         Code set up at run time to enter a nested function.
@@ -2300,36 +2301,6 @@ address where its value is either multiplied by a scale factor or
 added to another register (as well as added to a displacement).
 @end defmac
 
-@defmac CONSTRAINT_LEN (@var{char}, @var{str})
-For the constraint at the start of @var{str}, which starts with the letter
-@var{c}, return the length.  This allows you to have register class /
-constant / extra constraints that are longer than a single letter;
-you don't need to define this macro if you can do with single-letter
-constraints only.  The definition of this macro should use
-DEFAULT_CONSTRAINT_LEN for all the characters that you don't want
-to handle specially.
-There are some sanity checks in genoutput.c that check the constraint lengths
-for the md file, so you can also use this macro to help you while you are
-transitioning from a byzantine single-letter-constraint scheme: when you
-return a negative length for a constraint you want to re-use, genoutput
-will complain about every instance where it is used in the md file.
-@end defmac
-
-@defmac REG_CLASS_FROM_LETTER (@var{char})
-A C expression which defines the machine-dependent operand constraint
-letters for register classes.  If @var{char} is such a letter, the
-value should be the register class corresponding to it.  Otherwise,
-the value should be @code{NO_REGS}.  The register letter @samp{r},
-corresponding to class @code{GENERAL_REGS}, will not be passed
-to this macro; you do not need to handle it.
-@end defmac
-
-@defmac REG_CLASS_FROM_CONSTRAINT (@var{char}, @var{str})
-Like @code{REG_CLASS_FROM_LETTER}, but you also get the constraint string
-passed in @var{str}, so that you can use suffixes to distinguish between
-different variants.
-@end defmac
-
 @defmac REGNO_OK_FOR_BASE_P (@var{num})
 A C expression which is nonzero if register number @var{num} is
 suitable for use as a base register in operand addresses.  It may be
@@ -2682,8 +2653,45 @@ as below:
 @end smallexample
 @end defmac
 
-Three other special macros describe which operands fit which constraint
-letters.
+@node Old Constraints
+@section Obsolete Macros for Defining Constraints
+@cindex defining constraints, obsolete method
+@cindex constraints, defining, obsolete method
+
+Machine-specific constraints can be defined with these macros instead
+of the machine description constructs described in @ref{Define
+Constraints}.  This mechanism is obsolete.  New ports should not use
+it; old ports should convert to the new mechanism.
+
+@defmac CONSTRAINT_LEN (@var{char}, @var{str})
+For the constraint at the start of @var{str}, which starts with the letter
+@var{c}, return the length.  This allows you to have register class /
+constant / extra constraints that are longer than a single letter;
+you don't need to define this macro if you can do with single-letter
+constraints only.  The definition of this macro should use
+DEFAULT_CONSTRAINT_LEN for all the characters that you don't want
+to handle specially.
+There are some sanity checks in genoutput.c that check the constraint lengths
+for the md file, so you can also use this macro to help you while you are
+transitioning from a byzantine single-letter-constraint scheme: when you
+return a negative length for a constraint you want to re-use, genoutput
+will complain about every instance where it is used in the md file.
+@end defmac
+
+@defmac REG_CLASS_FROM_LETTER (@var{char})
+A C expression which defines the machine-dependent operand constraint
+letters for register classes.  If @var{char} is such a letter, the
+value should be the register class corresponding to it.  Otherwise,
+the value should be @code{NO_REGS}.  The register letter @samp{r},
+corresponding to class @code{GENERAL_REGS}, will not be passed
+to this macro; you do not need to handle it.
+@end defmac
+
+@defmac REG_CLASS_FROM_CONSTRAINT (@var{char}, @var{str})
+Like @code{REG_CLASS_FROM_LETTER}, but you also get the constraint string
+passed in @var{str}, so that you can use suffixes to distinguish between
+different variants.
+@end defmac
 
 @defmac CONST_OK_FOR_LETTER_P (@var{value}, @var{c})
 A C expression that defines the machine-dependent operand constraint

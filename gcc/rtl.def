@@ -874,6 +874,61 @@ DEF_RTL_EXPR(DEFINE_COND_EXEC, "define_cond_exec", "Ess", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_PREDICATE, "define_predicate", "ses", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_SPECIAL_PREDICATE, "define_special_predicate", "ses", RTX_EXTRA)
 
+/* Definition of a register operand constraint.  This simply maps the
+   constraint string to a register class.
+
+   Operand:
+   0: The name of the constraint (often, but not always, a single letter).
+   1: A C expression which evaluates to the appropriate register class for
+      this constraint.  If this is not just a constant, it should look only
+      at -m switches and the like.
+   2: A docstring for this constraint, in Texinfo syntax; not currently
+      used, in future will be incorporated into the manual's list of
+      machine-specific operand constraints.  */
+DEF_RTL_EXPR(DEFINE_REGISTER_CONSTRAINT, "define_register_constraint", "sss", RTX_EXTRA)
+
+/* Definition of a non-register operand constraint.  These look at the
+   operand and decide whether it fits the constraint.
+
+   DEFINE_CONSTRAINT gets no special treatment if it fails to match.
+   It is appropriate for constant-only constraints, and most others.
+
+   DEFINE_MEMORY_CONSTRAINT tells reload that this constraint can be made
+   to match, if it doesn't already, by converting the operand to the form
+   (mem (reg X)) where X is a base register.  It is suitable for constraints
+   that describe a subset of all memory references.
+
+   DEFINE_ADDRESS_CONSTRAINT tells reload that this constraint can be made
+   to match, if it doesn't already, by converting the operand to the form
+   (reg X) where X is a base register.  It is suitable for constraints that
+   describe a subset of all address references.
+
+   When in doubt, use plain DEFINE_CONSTRAINT.  
+
+   Operand:
+   0: The name of the constraint (often, but not always, a single letter).
+   1: A docstring for this constraint, in Texinfo syntax; not currently
+      used, in future will be incorporated into the manual's list of
+      machine-specific operand constraints.
+   2: A boolean expression which computes whether or not the constraint
+      matches.  It should follow the same rules as a define_predicate
+      expression, including the bit about specifying the set of RTX codes
+      that could possibly match.  MATCH_TEST subexpressions may make use of
+      these variables:
+        `op'    - the RTL object defining the operand.
+        `mode'  - the mode of `op'.
+	`ival'  - INTVAL(op), if op is a CONST_INT.
+        `hval'  - CONST_DOUBLE_HIGH(op), if op is an integer CONST_DOUBLE.
+        `lval'  - CONST_DOUBLE_LOW(op), if op is an integer CONST_DOUBLE.
+        `rval'  - CONST_DOUBLE_REAL_VALUE(op), if op is a floating-point
+                  CONST_DOUBLE.
+      Do not use ival/hval/lval/rval if op is not the appropriate kind of
+      RTL object.  */
+DEF_RTL_EXPR(DEFINE_CONSTRAINT, "define_constraint", "sse", RTX_EXTRA)
+DEF_RTL_EXPR(DEFINE_MEMORY_CONSTRAINT, "define_memory_constraint", "sse", RTX_EXTRA)
+DEF_RTL_EXPR(DEFINE_ADDRESS_CONSTRAINT, "define_address_constraint", "sse", RTX_EXTRA)
+   
+
 /* Constructions for CPU pipeline description described by NDFAs.  */
 
 /* (define_cpu_unit string [string]) describes cpu functional
