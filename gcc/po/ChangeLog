@@ -1,3 +1,7 @@
+2006-02-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2006-01-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* zh_CN.po: Update.
