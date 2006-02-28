@@ -631,14 +631,17 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 				   GET_MODE (XEXP (SUBREG_REG (op), 0)));
 
       /* If we know that the value is already truncated, we can
-         replace the TRUNCATE with a SUBREG if TRULY_NOOP_TRUNCATION
-         is nonzero for the corresponding modes.  But don't do this
-         for an (LSHIFTRT (MULT ...)) since this will cause problems
-         with the umulXi3_highpart patterns.  */
-      if (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+         replace the TRUNCATE with a SUBREG.  Note that this is also
+         valid if TRULY_NOOP_TRUNCATION is false for the corresponding
+         modes we just have to apply a different definition for
+         truncation.  But don't do this for an (LSHIFTRT (MULT ...)) 
+         since this will cause problems with the umulXi3_highpart
+         patterns.  */
+      if ((TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				 GET_MODE_BITSIZE (GET_MODE (op)))
-	  && num_sign_bit_copies (op, GET_MODE (op))
-	     >= (unsigned int) (GET_MODE_BITSIZE (mode) + 1)
+	   ? (num_sign_bit_copies (op, GET_MODE (op))
+	      >= (unsigned int) (GET_MODE_BITSIZE (mode) + 1))
+	   : truncated_to_mode (mode, op))
 	  && ! (GET_CODE (op) == LSHIFTRT
 		&& GET_CODE (XEXP (op, 0)) == MULT))
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);

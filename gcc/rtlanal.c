@@ -4808,6 +4808,16 @@ get_condition (rtx jump, rtx *earliest, int allow_cc_mode, int valid_at_insn_p)
 				 allow_cc_mode, valid_at_insn_p);
 }
 
+/* Suppose that truncation from the machine mode of X to MODE is not a
+   no-op.  See if there is anything special about X so that we can
+   assume it already contains a truncated value of MODE.  */
+
+bool
+truncated_to_mode (enum machine_mode mode, rtx x)
+{
+  return REG_P (x) && rtl_hooks.reg_truncated_to_mode (mode, x);
+}
+
 
 /* Initialize non_rtx_starting_operands, which is used to speed up
    for_each_rtx.  */

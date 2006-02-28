@@ -1,3 +1,16 @@
+2006-02-28  Paolo Bonzini  <bonzini@gnu.org>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	* rtl.h (truncated_to_mode): Declare it.
+	(struct rtl_hooks): Add reg_truncated_to_mode hook.
+	* rtlhooks-def.h (RTL_HOOKS_REG_TRUNCATED_TO_MODE): New macro.
+	(RTL_HOOKS_INITIALIZER): Include it.
+	* rtlhooks.c (reg_truncated_to_mode_general): New function.
+	* combine.c (RTL_HOOKS_REG_TRUNCATED_TO_MODE): Override to
+	reg_truncated_to_mode.
+	* rtlanal.c (truncated_to_mode): Define it.
+	* simplify-rtx.c (simplify_unary_operation_1): Use it.
+
 2006-02-28  Jeff Law  <law@redhat.com>
 
 	* tree-chrec.c (chrec_convert_aggressive): Do not eliminate
