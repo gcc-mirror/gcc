@@ -1,3 +1,7 @@
+2006-02-28  Release Manager
+
+	* GCC 4.1.0 released.
+
 2005-10-04  James E Wilson  <wilson@specifix.com>
 
 	* configure.ac (mudflap_cv_entry_point): Use quadrigraphs to declare
