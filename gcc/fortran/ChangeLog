@@ -1,3 +1,7 @@
+2006-02-28  Release Manager
+
+	* GCC 4.1.0 released.
+
 2006-02-20  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/26201
