@@ -10,7 +10,7 @@
 #include "ffitest.h"
 
 
-static void closure_test_fn1(ffi_cif* cif,void* resp,void** args,
+static void closure_test_fn1(ffi_cif* cif __UNUSED__, void* resp, void** args,
 			     void* userdata)
 {
   *(ffi_arg*)resp =

@@ -19,7 +19,8 @@ signed char test_func_fn(signed char a1, signed char a2)
 
 }
 
-static void test_func_gn(ffi_cif *cif, void *rval, void **avals, void *data)
+static void test_func_gn(ffi_cif *cif __UNUSED__, void *rval, void **avals,
+			 void *data __UNUSED__)
 {
   signed char a1, a2;
 
@@ -67,7 +68,7 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(test_func_fn), &res_call, args_dbl);
   /* { dg-output "2 125: 127" } */
-  printf("res: %d\n", res_call);
+  printf("res: %d\n", (signed char)res_call);
   /* { dg-output "\nres: 127" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, test_func_gn, NULL)  == FFI_OK);

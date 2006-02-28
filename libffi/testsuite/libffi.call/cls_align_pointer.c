@@ -19,16 +19,19 @@ cls_struct_align cls_struct_align_fn(struct cls_struct_align a1,
   struct cls_struct_align result;
 
   result.a = a1.a + a2.a;
-  result.b = (void *)((size_t)a1.b + (size_t)a2.b);
+  result.b = (void *)((unsigned long)a1.b + (unsigned long)a2.b);
   result.c = a1.c + a2.c;
 
-  printf("%d %d %d %d %d %d: %d %d %d\n", a1.a, (size_t)a1.b, a1.c, a2.a, (size_t)a2.b, a2.c, result.a, (size_t)result.b, result.c);
+  printf("%d %lu %d %d %lu %d: %d %lu %d\n", a1.a, (unsigned long)a1.b, a1.c,
+	 a2.a, (unsigned long)a2.b, a2.c, result.a, (unsigned long)result.b,
+	 result.c);
 
-  return  result;
+  return result;
 }
 
 static void
-cls_struct_align_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
+cls_struct_align_gn(ffi_cif* cif __UNUSED__, void* resp, void** args,
+		    void* userdata __UNUSED__)
 {
 
   struct cls_struct_align a1, a2;
@@ -84,14 +87,14 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_align_fn), &res_dbl, args_dbl);
   /* { dg-output "12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %d %d\n", res_dbl.a, (size_t)res_dbl.b, res_dbl.c);
+  printf("res: %d %lu %d\n", res_dbl.a, (unsigned long)res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_align_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_align(*)(cls_struct_align, cls_struct_align))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %d %d\n", res_dbl.a, (size_t)res_dbl.b, res_dbl.c);
+  printf("res: %d %lu %d\n", res_dbl.a, (unsigned long)res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
   exit(0);

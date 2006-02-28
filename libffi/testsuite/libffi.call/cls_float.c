@@ -7,8 +7,8 @@
 /* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
-static void cls_ret_float_fn(ffi_cif* cif,void* resp,void** args,
-			     void* userdata)
+static void cls_ret_float_fn(ffi_cif* cif __UNUSED__, void* resp, void** args,
+			     void* userdata __UNUSED__)
  {
    *(float *)resp = *(float *)args[0];
 

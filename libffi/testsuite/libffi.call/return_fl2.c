@@ -7,6 +7,9 @@
 /* { dg-do run } */
 #include "ffitest.h"
 
+/* To avoid a false negative on ix86 do not declare the return_fl static.
+   See PR323.
+*/
 float return_fl(float fl1, float fl2, float fl3, float fl4)
 {
   return fl1 + fl2 + fl3 + fl4;

@@ -40,8 +40,8 @@ static B B_fn(struct A b2, struct B b3, struct C b4)
 }
 
 static void
-B_gn(ffi_cif* cif __attribute__((unused)), void* resp, void** args,
-     void* userdata __attribute__((unused)))
+B_gn(ffi_cif* cif __UNUSED__, void* resp, void** args,
+     void* userdata __UNUSED__)
 {
   struct A b0;
   struct B b1;

@@ -107,7 +107,7 @@ int main(void)
 
 	ffi_call(&cif, FFI_FN(doit), &result, values);
 
-	printf ("The result is %d\n", result);
+	printf ("The result is %d\n", (int)result);
 
 	}
 	exit(0);

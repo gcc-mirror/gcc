@@ -1,3 +1,134 @@
+2006-02-28  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/call.exp: Adjust FSF address. Add test runs for
+	-O2, -O3, -Os and the warning flags -W -Wall.
+	* testsuite/libffi.special/special.exp: Likewise.
+	* testsuite/libffi.call/ffitest.h: Add an __UNUSED__ macro to mark
+	unused parameter unused for gcc or else do nothing.
+	* testsuite/libffi.special/ffitestcxx.h: Likewise.
+	* testsuite/libffi.call/cls_12byte.c (cls_struct_12byte_gn): Mark cif
+	and userdata unused.
+	* testsuite/libffi.call/cls_16byte.c (cls_struct_16byte_gn): Likewise.
+	* testsuite/libffi.call/cls_18byte.c (cls_struct_18byte_gn): Likewise.
+	* testsuite/libffi.call/cls_19byte.c (cls_struct_19byte_gn): Likewise.
+	* testsuite/libffi.call/cls_1_1byte.c (cls_struct_1_1byte_gn): Likewise.
+	* testsuite/libffi.call/cls_20byte.c (cls_struct_20byte_gn): Likewise.
+	* testsuite/libffi.call/cls_20byte1.c (cls_struct_20byte_gn): Likewise.
+	* testsuite/libffi.call/cls_24byte.c (cls_struct_24byte_gn): Likewise.
+	* testsuite/libffi.call/cls_2byte.c (cls_struct_2byte_gn): Likewise.
+	* testsuite/libffi.call/cls_3_1byte.c (cls_struct_3_1byte_gn): Likewise.
+	* testsuite/libffi.call/cls_3byte1.c (cls_struct_3byte_gn): Likewise.
+	* testsuite/libffi.call/cls_3byte2.c (cls_struct_3byte_gn1): Likewise.
+	* testsuite/libffi.call/cls_4_1byte.c (cls_struct_4_1byte_gn): Likewise.
+	* testsuite/libffi.call/cls_4byte.c (cls_struct_4byte_gn): Likewise.
+	* testsuite/libffi.call/cls_5_1_byte.c (cls_struct_5byte_gn): Likewise.
+	* testsuite/libffi.call/cls_5byte.c (cls_struct_5byte_gn): Likewise.
+	* testsuite/libffi.call/cls_64byte.c (cls_struct_64byte_gn): Likewise.
+	* testsuite/libffi.call/cls_6_1_byte.c (cls_struct_6byte_gn): Likewise.
+	* testsuite/libffi.call/cls_6byte.c (cls_struct_6byte_gn): Likewise.
+	* testsuite/libffi.call/cls_7_1_byte.c (cls_struct_7byte_gn): Likewise.
+	* testsuite/libffi.call/cls_7byte.c (cls_struct_7byte_gn): Likewise.
+	* testsuite/libffi.call/cls_8byte.c (cls_struct_8byte_gn): Likewise.
+	* testsuite/libffi.call/cls_9byte1.c (cls_struct_9byte_gn): Likewise.
+	* testsuite/libffi.call/cls_9byte2.c (cls_struct_9byte_gn): Likewise.
+	* testsuite/libffi.call/cls_align_double.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_align_float.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_align_longdouble.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_align_pointer.c (cls_struct_align_fn): Cast
+	void* to avoid compiler warning.
+	(main): Likewise.
+	(cls_struct_align_gn): Mark cif and userdata unused.
+	* testsuite/libffi.call/cls_align_sint16.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_align_sint32.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_align_sint64.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_align_uint16.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_align_uint32.c (cls_struct_align_gn):
+	Likewise.
+	* testsuite/libffi.call/cls_double.c (cls_ret_double_fn): Likewise.
+	* testsuite/libffi.call/cls_float.c (cls_ret_float_fn): Likewise.
+	* testsuite/libffi.call/cls_multi_schar.c (test_func_gn): Mark cif and
+	data unused.
+	(main): Cast res_call to silence gcc.
+	* testsuite/libffi.call/cls_multi_sshort.c (test_func_gn): Mark cif and
+	data unused.
+	(main): Cast res_call to silence gcc.
+	* testsuite/libffi.call/cls_multi_sshortchar.c (test_func_gn): Mark cif
+	and data unused.
+	(main): Cast res_call to silence gcc.
+	* testsuite/libffi.call/cls_multi_uchar.c (test_func_gn): Mark cif and
+	data unused.
+	(main): Cast res_call to silence gcc.
+	* testsuite/libffi.call/cls_multi_ushort.c (test_func_gn): Mark cif and
+	data unused.
+	(main): Cast res_call to silence gcc.
+	* testsuite/libffi.call/cls_multi_ushortchar.c (test_func_gn): Mark cif
+	and data unused.
+	(main): Cast res_call to silence gcc.
+	* testsuite/libffi.call/cls_schar.c (cls_ret_schar_fn): Mark cif and
+	userdata unused.
+	(cls_ret_schar_fn): Cast printf parameter to silence gcc.
+	* testsuite/libffi.call/cls_sint.c (cls_ret_sint_fn): Mark cif and
+	userdata unused.
+	(cls_ret_sint_fn): Cast printf parameter to silence gcc.
+	* testsuite/libffi.call/cls_sshort.c (cls_ret_sshort_fn): Mark cif and
+	userdata unused.
+	(cls_ret_sshort_fn): Cast printf parameter to silence gcc.
+	* testsuite/libffi.call/cls_uchar.c (cls_ret_uchar_fn):  Mark cif and
+	userdata unused.
+	(cls_ret_uchar_fn): Cast printf parameter to silence gcc.
+	* testsuite/libffi.call/cls_uint.c (cls_ret_uint_fn): Mark cif and
+	userdata unused.
+	(cls_ret_uint_fn): Cast printf parameter to silence gcc.
+	* testsuite/libffi.call/cls_ulonglong.c (cls_ret_ulonglong_fn): Mark cif
+	and userdata unused.
+	* testsuite/libffi.call/cls_ushort.c (cls_ret_ushort_fn): Mark cif and
+	userdata unused.
+	(cls_ret_ushort_fn): Cast printf parameter to silence gcc.
+	* testsuite/libffi.call/float.c (floating): Remove unused parameter e.
+	* testsuite/libffi.call/float1.c (main): Remove unused variable i.
+	Cleanup white spaces.
+	* testsuite/libffi.call/negint.c (checking): Remove unused variable i.
+	* testsuite/libffi.call/nested_struct.c (cls_struct_combined_gn): Mark
+	cif and userdata unused.
+	* testsuite/libffi.call/nested_struct1.c (cls_struct_combined_gn):
+	Likewise.
+	* testsuite/libffi.call/nested_struct10.c (B_gn): Likewise.
+	* testsuite/libffi.call/nested_struct2.c (B_fn): Adjust printf
+	formatters to silence gcc.
+	(B_gn): Mark cif and userdata unused.
+	* testsuite/libffi.call/nested_struct3.c (B_gn): Mark cif and userdata
+	unused.
+	* testsuite/libffi.call/nested_struct4.c: Mention related PR.
+	(B_gn): Mark cif and userdata unused.
+	* testsuite/libffi.call/nested_struct5.c (B_gn): Mark cif and userdata
+	unused.
+	* testsuite/libffi.call/nested_struct6.c: Mention related PR.
+	(B_gn): Mark cif and userdata unused.
+	* testsuite/libffi.call/nested_struct7.c (B_gn): Mark cif and userdata
+	unused.
+	* testsuite/libffi.call/nested_struct8.c (B_gn): Likewise.
+	* testsuite/libffi.call/nested_struct9.c (B_gn): Likewise.
+	* testsuite/libffi.call/problem1.c (stub): Likewise.
+	* testsuite/libffi.call/pyobjc-tc.c (main): Cast the result to silence
+	gcc.
+	* testsuite/libffi.call/return_fl2.c (return_fl): Add the note mentioned
+	in the last commit for this test case in the test case itself.
+	* testsuite/libffi.call/closure_fn0.c (closure_test_fn0): Mark cif as
+	unused.
+	* testsuite/libffi.call/closure_fn1.c (closure_test_fn1): Likewise.
+	* testsuite/libffi.call/closure_fn2.c (closure_test_fn2): Likewise.
+	* testsuite/libffi.call/closure_fn3.c (closure_test_fn3): Likewise.
+	* testsuite/libffi.call/closure_fn4.c (closure_test_fn0): Likewise.
+	* testsuite/libffi.call/closure_fn5.c (closure_test_fn5): Likewise.
+	* testsuite/libffi.call/closure_fn6.c (closure_test_fn0): Likewise.
+
 2006-02-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/sysv.S: Fix register numbers in the FDE for

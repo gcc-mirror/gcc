@@ -27,14 +27,15 @@ B B_fn(struct A b0, struct B b1)
   result.x.b = b0.b + b1.x.b + b1.y;
   result.y = b0.b + b1.x.b;
 
-  printf("%d %d %d %d %d: %d %d %d\n", b0.a, b0.b, b1.x.a, b1.x.b, b1.y,
+  printf("%lu %d %lu %d %d: %lu %d %d\n", b0.a, b0.b, b1.x.a, b1.x.b, b1.y,
 	 result.x.a, result.x.b, result.y);
 
   return result;
 }
 
 static void
-B_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
+B_gn(ffi_cif* cif __UNUSED__, void* resp, void** args,
+     void* userdata __UNUSED__)
 {
   struct A b0;
   struct B b1;
