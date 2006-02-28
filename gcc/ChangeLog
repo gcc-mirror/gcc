@@ -1,3 +1,10 @@
+2006-02-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/14752
+	* c-common.c (c_common_truthvalue_conversion) <MINUS_EXPR,
+	BIT_XOR_EXPR, BIT_AND_EXPR>: Delete.  Let fold optimize these
+	cases via the construction of "expr != 0".
+
 2006-02-28  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* alias.c (alias_invariant, alias_invariant_size): Remove.

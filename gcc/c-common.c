@@ -2537,37 +2537,6 @@ c_common_truthvalue_conversion (tree expr)
 	return c_common_truthvalue_conversion (TREE_OPERAND (expr, 0));
       break;
 
-    case MINUS_EXPR:
-      /* Perhaps reduce (x - y) != 0 to (x != y).  The expressions
-	 aren't guaranteed to the be same for modes that can represent
-	 infinity, since if x and y are both +infinity, or both
-	 -infinity, then x - y is not a number.
-
-	 Note that this transformation is safe when x or y is NaN.
-	 (x - y) is then NaN, and both (x - y) != 0 and x != y will
-	 be false.  */
-      if (HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (TREE_OPERAND (expr, 0)))))
-	break;
-      /* Fall through....  */
-    case BIT_XOR_EXPR:
-      /* This and MINUS_EXPR can be changed into a comparison of the
-	 two objects.  */
-      if (TREE_TYPE (TREE_OPERAND (expr, 0))
-	  == TREE_TYPE (TREE_OPERAND (expr, 1)))
-	return fold_build2 (NE_EXPR, truthvalue_type_node,
-			    TREE_OPERAND (expr, 0), TREE_OPERAND (expr, 1));
-      return fold_build2 (NE_EXPR, truthvalue_type_node,
-			  TREE_OPERAND (expr, 0),
-			  fold_convert (TREE_TYPE (TREE_OPERAND (expr, 0)),
-					TREE_OPERAND (expr, 1)));
-
-    case BIT_AND_EXPR:
-      if (integer_onep (TREE_OPERAND (expr, 1))
-	  && TREE_TYPE (expr) != truthvalue_type_node)
-	/* Using convert here would cause infinite recursion.  */
-	return build1 (NOP_EXPR, truthvalue_type_node, expr);
-      break;
-
     case MODIFY_EXPR:
       if (!TREE_NO_WARNING (expr))
 	warning (OPT_Wparentheses,
