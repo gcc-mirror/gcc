@@ -17,7 +17,6 @@
 static char rcsid[] = "$NetBSD: k_rem_pio2f.c,v 1.4 1995/05/10 20:46:28 jtc Exp $";
 #endif
 
-#include "math.h"
 #include "math_private.h"
 
 /* In the float version, the input parameter x contains 8 bit

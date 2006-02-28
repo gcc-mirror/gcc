@@ -21,7 +21,6 @@ static char rcsid[] = "$NetBSD: s_scalbn.c,v 1.8 1995/05/10 20:48:08 jtc Exp $";
  * exponentiation or a multiplication.
  */
 
-#include "math.h"
 #include "math_private.h"
 
 #ifdef __STDC__

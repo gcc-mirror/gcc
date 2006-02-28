@@ -20,7 +20,6 @@ static char rcsid[] = "$NetBSD: e_rem_pio2.c,v 1.8 1995/05/10 20:46:02 jtc Exp $
  * use __kernel_rem_pio2()
  */
 
-#include "math.h"
 #include "math_private.h"
 
 /*
@@ -90,7 +89,7 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	double x,y[];
 #endif
 {
-	double z,w,t,r,fn;
+	double z=z,w,t,r,fn;
 	double tx[3];
 	int32_t e0,i,j,nx,n,ix,hx;
 	uint32_t low;

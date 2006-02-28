@@ -232,6 +232,11 @@ extern float __kernel_cosf (float,float);
 extern float __kernel_tanf (float,float,int);
 extern int   __kernel_rem_pio2f (float*,float*,int,int,int, const int32_t*);
 
+extern float __atanf (float);
+extern float __scalbnf (float x, int n);
+extern float __floorf(float x);
+extern int __isinff(float x);
+
 /* internal functions.  */
 extern float __copysignf (float x, float __y);
 
@@ -318,5 +323,11 @@ extern double __mpcos1 (double __x);
 extern double __slowexp (double __x);
 extern double __slowpow (double __x, double __y, double __z);
 extern void __docos (double __x, double __dx, double __v[]);
+extern double __scalbn (double x, int n);
+extern double __floor(double x);
+
+/* Prototypes for C99 math functions provided by GCC builtins.  */
+extern double fabs(double);
+extern float fabsf(float);
 
 #endif /* _MATH_PRIVATE_H_ */

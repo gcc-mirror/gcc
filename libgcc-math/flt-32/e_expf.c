@@ -52,7 +52,6 @@
 #endif
 #include <float.h>
 #include <ieee754.h>
-#include <math.h>
 #include <math_private.h>
 
 extern const float __exp_deltatable[178];
@@ -67,7 +66,7 @@ __ieee754_expf (float x)
   static const float himark = 88.72283935546875;
   static const float lomark = -103.972084045410;
   /* Check for usual case.  */
-  if (isless (x, himark) && isgreater (x, lomark))
+  if (__builtin_isless (x, himark) && __builtin_isgreater (x, lomark))
     {
       static const float THREEp42 = 13194139533312.0;
       static const float THREEp22 = 12582912.0;
@@ -115,7 +114,7 @@ __ieee754_expf (float x)
       return (float) result;
     }
   /* Exceptional cases:  */
-  else if (isless (x, himark))
+  else if (__builtin_isless (x, himark))
     {
       if (__isinff (x))
 	/* e^-inf == 0, with no error.  */
