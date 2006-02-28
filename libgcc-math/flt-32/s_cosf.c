@@ -17,7 +17,6 @@
 static char rcsid[] = "$NetBSD: s_cosf.c,v 1.4 1995/05/10 20:47:03 jtc Exp $";
 #endif
 
-#include "math.h"
 #include "math_private.h"
 
 #ifdef __STDC__

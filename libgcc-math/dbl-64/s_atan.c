@@ -42,7 +42,6 @@
 #include "MathLib.h"
 #include "uatan.tbl"
 #include "atnat.h"
-#include "math.h"
 
 void __mpatan(mp_no *,mp_no *,int);          /* see definition in mpatan.c */
 static double atanMp(double,const int[]);

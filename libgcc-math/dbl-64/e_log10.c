@@ -47,7 +47,6 @@ static char rcsid[] = "$NetBSD: e_log10.c,v 1.9 1995/05/10 20:45:51 jtc Exp $";
  * shown.
  */
 
-#include "math.h"
 #include "math_private.h"
 
 #ifdef __STDC__

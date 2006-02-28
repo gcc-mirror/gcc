@@ -17,7 +17,6 @@
 static char rcsid[] = "$NetBSD: k_tanf.c,v 1.4 1995/05/10 20:46:39 jtc Exp $";
 #endif
 
-#include "math.h"
 #include "math_private.h"
 #ifdef __STDC__
 static const float 

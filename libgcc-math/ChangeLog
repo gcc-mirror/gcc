@@ -1,3 +1,54 @@
+2006-02-28  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/26055
+	Revert
+	* configure.ac: Disable libgcc-math if we cannot mix
+	declaration of __isinf and math.h inclusion.
+	* configure: Re-generate.
+
+	* i386/Makefile.am: Use -std=c99, do not use -ffinite-math-only,
+	do not define __NO_MATH_INLINES.
+	* i386/Makefile.in: Re-generate.
+	* include/math_private.h (__atanf): Declare.
+	(__scalbnf): Likewise.
+	(__floorf): Likewise.
+	(__isinff): Likewise.
+	(__scalbn): Likewise.
+	(__floor): Likewise.
+	(fabs): Likewise.
+	(fabsf): Likewise.
+	* flt-32/e_acosf.c: Do not include math.h
+	* flt-32/s_isinff.c: Likewise.
+	* flt-32/k_tanf.c: Likewise.
+	* flt-32/e_sqrtf.c: Likewise.
+	* flt-32/e_asinf.c: Likewise.
+	* flt-32/k_cosf.c: Likewise.
+	* flt-32/k_sinf.c: Likewise.
+	* flt-32/s_floorf.c: Likewise.
+	* flt-32/s_tanf.c: Likewise.
+	* flt-32/s_atanf.c: Likewise.
+	* flt-32/s_cosf.c: Likewise.
+	* flt-32/e_atan2f.c: Likewise.
+	* flt-32/e_powf.c: Likewise.
+	* flt-32/s_sinf.c: Likewise.
+	* flt-32/e_rem_pio2f.c: Likewise.
+	* flt-32/s_scalbnf.c: Likewise.
+	* flt-32/e_logf.c: Likewise.
+	* flt-32/e_log10f.c: Likewise.
+	* flt-32/k_rem_pio2f.c: Likewise.
+	* flt-32/e_expf.c: Likewise.  Use __builtin_isless and
+	__builtin_isgreater.
+	* dbl-64/s_floor.c: Do not include math.h.
+	* dbl-64/e_log10.c: Likewise.
+	* dbl-64/k_rem_pio2.c: Likewise.
+	* dbl-64/s_atan.c: Likewise.
+	* dbl-64/s_scalbn.c: Likewise.
+	* dbl-64/s_isinf.c: Likewise.
+	* dbl-64/s_tan.c: Likewise.
+	* dbl-64/e_rem_pio2.c: Likewise.  Avoid uninitialized variable
+	warning.
+	* dbl-64/mpa.c: Likewise.
+
 2006-02-08  Richard Guenther  <rguenther@suse.de>
 
 	* dbl-64/mpa.c: Do not include sys/param.h.

@@ -132,7 +132,7 @@ static void norm(const mp_no *x, double *y, int p)
 #if 0
   int k;
 #endif
-  double a,c,u,v,z[5];
+  double a,c=c,u,v,z[5];
   if (p<5) {
     if      (p==1) c = X[1];
     else if (p==2) c = X[1] + R* X[2];

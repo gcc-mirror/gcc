@@ -37,7 +37,6 @@
 #include "dla.h"
 #include "mpa.h"
 #include "MathLib.h"
-#include "math.h"
 
 static double tanMp(double);
 void __mptan(double, mp_no *, int);
