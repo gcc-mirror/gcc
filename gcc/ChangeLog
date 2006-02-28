@@ -1,3 +1,72 @@
+2006-02-27  Zack Weinberg  <zackw@panix.com>
+
+	* rtl.def (define_constraint, define_register_constraint)
+	(define_memory_constraint, define_address_constraint): New MD forms.
+	* gensupport.c (process_rtx): Put define_constraint etc on the
+	predicate queue.
+	* genpreds.c (process_define_predicate): Adjust comment.  Validate
+	the name, and call validate_exp to validate the expression.
+	(mark_mode_tests, write_extract_subexp): Can assume correct input.
+	(write_predicate_expr): Likewise.  NAME argument no longer necessary;
+	all callers changed.
+	(validate_exp, needs_variable, struct constraint_data)
+	(constraints_by_letter_table, first_constraint, last_constraint_ptr)
+	(FOR_ALL_CONSTRAINTS, generic_constraint_letters, const_int_constraints)
+	(const_dbl_constraints, constraint_max_namelen)
+	(have_register_constraints, have_memory_constraints)
+	(have_address_constraints, have_address_constraints)
+	(have_extra_constraints, have_const_int_constraints)
+	(have_const_dbl_constraints, mangle, add_constraint)
+	(process_define_constraint, process_define_register_constraint)
+	(write_enum_constraint_num, write_lookup_constraint)
+	(write_insn_constraint_len, write_regclass_for_constraint)
+	(write_constraint_satisfied_p, write_insn_const_int_ok_for_constraint)
+	(write_insn_extra_memory_constraint)
+	(write_insn_extra_address_constraint)
+	(write_satisfies_constraint_fns): New.
+	(write_tm_preds_h): If we have new-style constraint definitions,
+	prototype the functions generated from them, and define the
+	old constraint interface (still used by generic code) in terms of
+	those functions.
+	(write_insn_preds_c): If we have new-style constraint definitions,
+	generate all relevant functions from those definitions.
+	(main): Handle define_constraint etc.
+	* genoutput.c (struct constraint_data, indep_constraints)
+	(mdep_constraint_letters, constraints_by_letter_table, note_constraint)
+	(mdep_constraint_len): New data structures and functions, defined
+	#ifdef USE_MD_CONSTRAINTS.
+	(check_constraint_len): Don't define #ifdef USE_MD_CONSTRAINTS.
+	(validate_insn_alternatives): If USE_MD_CONSTRAINTS is defined,
+	use new logic to validate operand constraints against constraint
+	definitions.
+	(main): Process define_constraint etc. if USE_MD_CONSTRAINTS is
+	defined.
+	* defaults.h: If none of the old-style constraint macros are
+	defined, define USE_MD_CONSTRAINTS; do not provide defaults for any
+	old-style macros; and poison REG_CLASS_FROM_LETTER,
+	CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P, and
+	EXTRA_CONSTRAINT.
+	* recog.c (reg_fits_class_p): If cl is NO_REGS, return 0 immediately.
+	* doc/md.texi: Document new constraint-definition mechanism and the
+	C interface it provides.  Remove references to old mechanism
+ 	elsewhere in the document.
+	(Machine Constraints): Use pathnames relative to gcc directory,
+	i.e. config/ARCH/FILE.  Change i386 section to refer to
+	config/i386/predicates.md; update that section to match docstrings.
+	* doc/tm.texi: Move all documentation of the old constraint-
+	definition macros to their own section, clearly mark as obsolete.
+
+	* config/i386/predicates.md (R, q, Q, l, a, b, c, d, S, D, A, f, t)
+	(u, y, x, Y, I, J, K, L, M, N, O, G, C, e, Z): New constraint
+	definitions.
+	* config/i386/i386.h (REG_CLASS_FROM_LETTER, CONST_OK_FOR_LETTER_P)
+	(CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_CONSTRAINT): Delete.
+	* config/i386/i386.md (*movdf_nointeger): Remove stray 'H' from
+	constraint strings.
+	(splits and peepholes): Use satisfies_constraint_*.
+	* config/i386/i386.c (memory_address_length)
+	(ix86_attr_length_immediate_default): Use satisfies_constraint_*.
+
 2006-02-27  Daniel Berlin  <dberlin@dberlin.org>
 
 	* lambda-code.c (can_convert_to_perfect_nest): Allow any type of

@@ -2664,6 +2664,10 @@ reg_fits_class_p (rtx operand, enum reg_class cl, int offset,
 		  enum machine_mode mode)
 {
   int regno = REGNO (operand);
+
+  if (cl == NO_REGS)
+    return 0;
+
   if (regno < FIRST_PSEUDO_REGISTER
       && TEST_HARD_REG_BIT (reg_class_contents[(int) cl],
 			    regno + offset))

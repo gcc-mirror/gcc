@@ -54,12 +54,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      a. `predicate', an int-valued function, is the match_operand predicate
      for this operand.
 
-     b. `constraint' is the constraint for this operand.  This exists
-     only if register constraints appear in match_operand rtx's.
+     b. `constraint' is the constraint for this operand.
 
      c. `address_p' indicates that the operand appears within ADDRESS
-     rtx's.  This exists only if there are *no* register constraints
-     in the match_operand rtx's.
+     rtx's.
 
      d. `mode' is the machine mode that that operand is supposed to have.
 
@@ -189,8 +187,35 @@ static void gen_insn (rtx, int);
 static void gen_peephole (rtx, int);
 static void gen_expand (rtx, int);
 static void gen_split (rtx, int);
+
+#ifdef USE_MD_CONSTRAINTS
+
+struct constraint_data
+{
+  struct constraint_data *next_this_letter;
+  int lineno;
+  unsigned int namelen;
+  const char name[1];
+};
+
+/* This is a complete list (unlike the one in genpreds.c) of constraint
+   letters and modifiers with machine-independent meaning.  The only
+   omission is digits, as these are handled specially.  */
+static const char indep_constraints[] = ",=+%*?!#&<>EFVXgimnoprs";
+
+static struct constraint_data *
+constraints_by_letter_table[1 << CHAR_BIT];
+
+static int mdep_constraint_len (const char *, int, int);
+static void note_constraint (rtx, int);
+
+#else  /* !USE_MD_CONSTRAINTS */
+
 static void check_constraint_len (void);
 static int constraint_len (const char *, int);
+
+#endif /* !USE_MD_CONSTRAINTS */
+
 
 static void
 output_prologue (void)
@@ -725,6 +750,20 @@ validate_insn_alternatives (struct data *d)
 
 	for (p = d->operand[start].constraint; (c = *p); p += len)
 	  {
+#ifdef USE_MD_CONSTRAINTS
+	    if (ISSPACE (c) || strchr (indep_constraints, c))
+	      len = 1;
+	    else if (ISDIGIT (c))
+	      {
+		const char *q = p;
+		do
+		  q++;
+		while (ISDIGIT (*q));
+		len = q - p;
+	      }
+	    else
+	      len = mdep_constraint_len (p, d->lineno, start);
+#else
 	    len = CONSTRAINT_LEN (c, p);
 
 	    if (len < 1 || (len > 1 && strchr (",#*+=&%!0123456789", c)))
@@ -735,6 +774,7 @@ validate_insn_alternatives (struct data *d)
 		len = 1;
 		have_error = 1;
 	      }
+#endif
 
 	    if (c == ',')
 	      {
@@ -826,7 +866,9 @@ gen_insn (rtx insn, int lineno)
   d->n_operands = max_opno + 1;
   d->n_dups = num_dups;
 
+#ifndef USE_MD_CONSTRAINTS
   check_constraint_len ();
+#endif
   validate_insn_operands (d);
   validate_insn_alternatives (d);
   place_operands (d);
@@ -983,15 +1025,37 @@ main (int argc, char **argv)
       if (desc == NULL)
 	break;
 
-      if (GET_CODE (desc) == DEFINE_INSN)
-	gen_insn (desc, line_no);
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE)
-	gen_peephole (desc, line_no);
-      if (GET_CODE (desc) == DEFINE_EXPAND)
-	gen_expand (desc, line_no);
-      if (GET_CODE (desc) == DEFINE_SPLIT
-	  || GET_CODE (desc) == DEFINE_PEEPHOLE2)
-	gen_split (desc, line_no);
+      switch (GET_CODE (desc))
+	{
+	case DEFINE_INSN:
+	  gen_insn (desc, line_no);
+	  break;
+
+	case DEFINE_PEEPHOLE:
+	  gen_peephole (desc, line_no);
+	  break;
+
+	case DEFINE_EXPAND:
+	  gen_expand (desc, line_no);
+	  break;
+
+	case DEFINE_SPLIT:
+	case DEFINE_PEEPHOLE2:
+	  gen_split (desc, line_no);
+	  break;
+
+#ifdef USE_MD_CONSTRAINTS
+	case DEFINE_CONSTRAINT:
+	case DEFINE_REGISTER_CONSTRAINT:
+	case DEFINE_ADDRESS_CONSTRAINT:
+	case DEFINE_MEMORY_CONSTRAINT:
+	  note_constraint (desc, line_no);
+	  break;
+#endif
+
+	default:
+	  break;
+	}
       next_index_number++;
     }
 
@@ -1043,6 +1107,102 @@ strip_whitespace (const char *s)
   return q;
 }
 
+#ifdef USE_MD_CONSTRAINTS
+
+/* Record just enough information about a constraint to allow checking
+   of operand constraint strings above, in validate_insn_alternatives.
+   Does not validate most properties of the constraint itself; does
+   enforce no duplicate names, no overlap with MI constraints, and no
+   prefixes.  EXP is the define_*constraint form, LINENO the line number
+   reported by the reader.  */
+static void
+note_constraint (rtx exp, int lineno)
+{
+  const char *name = XSTR (exp, 0);
+  unsigned int namelen = strlen (name);
+  struct constraint_data **iter, **slot, *new;
+
+  if (strchr (indep_constraints, name[0]))
+    {
+      if (name[1] == '\0')
+	message_with_line (lineno, "constraint letter '%s' cannot be "
+			   "redefined by the machine description", name);
+      else
+	message_with_line (lineno, "constraint name '%s' cannot be defined by "
+			   "the machine description, as it begins with '%c'",
+			   name, name[0]);
+      have_error = 1;
+      return;
+    }
+
+  slot = &constraints_by_letter_table[(unsigned int)name[0]];
+  for (iter = slot; *iter; iter = &(*iter)->next_this_letter)
+    {
+      /* This causes slot to end up pointing to the
+	 next_this_letter field of the last constraint with a name
+	 of equal or greater length than the new constraint; hence
+	 the new constraint will be inserted after all previous
+	 constraints with names of the same length.  */
+      if ((*iter)->namelen >= namelen)
+	slot = iter;
+
+      if (!strcmp ((*iter)->name, name))
+	{
+	  message_with_line (lineno, "redefinition of constraint '%s'", name);
+	  message_with_line ((*iter)->lineno, "previous definition is here");
+	  have_error = 1;
+	  return;
+	}
+      else if (!strncmp ((*iter)->name, name, (*iter)->namelen))
+	{
+	  message_with_line (lineno, "defining constraint '%s' here", name);
+	  message_with_line ((*iter)->lineno, "renders constraint '%s' "
+			     "(defined here) a prefix", (*iter)->name);
+	  have_error = 1;
+	  return;
+	}
+      else if (!strncmp ((*iter)->name, name, namelen))
+	{
+	  message_with_line (lineno, "constraint '%s' is a prefix", name);
+	  message_with_line ((*iter)->lineno, "of constraint '%s' "
+			     "(defined here)", (*iter)->name);
+	  have_error = 1;
+	  return;
+	}
+    }
+  new = xmalloc (sizeof (struct constraint_data) + namelen);
+  strcpy ((char *)new + offsetof(struct constraint_data, name), name);
+  new->namelen = namelen;
+  new->lineno = lineno;
+  new->next_this_letter = *slot;
+  *slot = new;
+}
+
+/* Return the length of the constraint name beginning at position S
+   of an operand constraint string, or issue an error message if there
+   is no such constraint.  Does not expect to be called for generic
+   constraints.  */
+static int
+mdep_constraint_len (const char *s, int lineno, int opno)
+{
+  struct constraint_data *p;
+
+  p = constraints_by_letter_table[(unsigned int)s[0]];
+
+  if (p)
+    for (; p; p = p->next_this_letter)
+      if (!strncmp (s, p->name, p->namelen))
+	return p->namelen;
+
+  message_with_line (lineno,
+		     "error: undefined machine-specific constraint "
+		     "at this point: \"%s\"", s);
+  message_with_line (lineno, "note:  in operand %d", opno);
+  have_error = 1;
+  return 1; /* safe */
+}
+
+#else
 /* Verify that DEFAULT_CONSTRAINT_LEN is used properly and not
    tampered with.  This isn't bullet-proof, but it should catch
    most genuine mistakes.  */
@@ -1076,3 +1236,4 @@ constraint_len (const char *p, int genoutput_default_constraint_len)
 #undef DEFAULT_CONSTRAINT_LEN
 #define DEFAULT_CONSTRAINT_LEN(C,STR) 1
 }
+#endif

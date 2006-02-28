@@ -287,6 +287,10 @@ process_rtx (rtx desc, int lineno)
 
     case DEFINE_PREDICATE:
     case DEFINE_SPECIAL_PREDICATE:
+    case DEFINE_CONSTRAINT:
+    case DEFINE_REGISTER_CONSTRAINT:
+    case DEFINE_MEMORY_CONSTRAINT:
+    case DEFINE_ADDRESS_CONSTRAINT:
       queue_pattern (desc, &define_pred_tail, read_rtx_filename, lineno);
       break;
 
