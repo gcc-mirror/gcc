@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2003, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -161,7 +161,11 @@ st_backspace (st_parameter_filepos *fpp)
   /* Check for special cases involving the ENDFILE record first.  */
 
   if (u->endfile == AFTER_ENDFILE)
-    u->endfile = AT_ENDFILE;
+    {
+      u->endfile = AT_ENDFILE;
+      flush (u->s);
+      struncate (u->s);
+    }
   else
     {
       if (file_position (u->s) == 0)
