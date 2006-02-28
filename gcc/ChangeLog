@@ -1,3 +1,12 @@
+2006-02-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* Backport
+	2004-04-28  Serge Belyshev  <1319@bot.ru>
+	
+	PR 14944
+	* coverage.c (read_counts_file): Fix usage of warning () call.
+	* pretty-print.c (pp_base_format_text): Fix typo in the comment.
+
 2006-02-18  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/13408
