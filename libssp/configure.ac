@@ -1,10 +1,12 @@
 # Process this file with autoconf to produce a configure script, like so:
-# aclocal && autoconf && autoheader && automake
+# 
+# aclocal -I .. -I ../config && autoconf && autoheader && automake
 
 AC_PREREQ(2.59)
 AC_INIT(libssp, 1.0)
 AC_CONFIG_SRCDIR(ssp.c)
 AC_CANONICAL_SYSTEM
+ACX_NONCANONICAL_TARGET
 
 AM_INIT_AUTOMAKE
 
