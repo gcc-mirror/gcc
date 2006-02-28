@@ -1,3 +1,7 @@
+2006-02-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* gennews (files): Update for GCC 4.1.
+
 2006-01-24  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc_update (files_and_dependencies): Handle
