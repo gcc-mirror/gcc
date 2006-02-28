@@ -1,3 +1,7 @@
+2006-02-28  Release Manager
+
+	* GCC 4.1.0 released.
+
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in: Regenrate with Automake 1.9.3.
