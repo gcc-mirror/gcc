@@ -1,3 +1,9 @@
+2006-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/25682
+	* c-typeck.c (build_unary_op): Fold offsetof-like expressions
+	even when the pointer is not NULL.
+
 2006-02-27  Steven Bosscher  <steven.gcc@gmail.com>
 
 	Backport from mainline and the GCC 4.1 branch:

@@ -1,3 +1,9 @@
+2006-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/25682
+	* gcc.dg/pr25682.c: New test.
+	* g++.dg/parse/array-size2.C: New test.
+
 2006-02-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26291

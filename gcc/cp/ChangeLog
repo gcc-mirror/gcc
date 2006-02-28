@@ -1,3 +1,9 @@
+2006-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/25682
+	* decl.c (compute_array_index_type): After issuing not an integral
+	constant-expression error, set size to 1 to avoid ICEs later on.
+
 2006-02-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26291
