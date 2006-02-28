@@ -1,3 +1,11 @@
+2006-02-28  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* alias.c (alias_invariant, alias_invariant_size): Remove.
+	(record_base_value): Remove.
+	(memrefs_conflict_p): Don't look at alias_invariant.
+	(end_alias_analysis): Don't free it.
+	* alias.h (record_base_value): Remove prototype.
+
 2006-02-28  Paolo Bonzini  <bonzini@gnu.org>
 	    Adam Nemet  <anemet@caviumnetworks.com>
 
