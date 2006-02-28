@@ -222,17 +222,6 @@ static GTY (()) rtx static_reg_base_value[FIRST_PSEUDO_REGISTER];
   (reg_base_value && REGNO (X) < VARRAY_SIZE (reg_base_value) \
    ? VARRAY_RTX (reg_base_value, REGNO (X)) : 0)
 
-/* Vector of known invariant relationships between registers.  Set in
-   loop unrolling.  Indexed by register number, if nonzero the value
-   is an expression describing this register in terms of another.
-
-   The length of this array is REG_BASE_VALUE_SIZE.
-
-   Because this array contains only pseudo registers it has no effect
-   after reload.  */
-static GTY((length("alias_invariant_size"))) rtx *alias_invariant;
-static GTY(()) unsigned int alias_invariant_size;
-
 /* Vector indexed by N giving the initial (unchanging) value known for
    pseudo-register N.  This array is initialized in init_alias_analysis,
    and does not change until end_alias_analysis is called.  */
@@ -1079,31 +1068,6 @@ record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
   reg_seen[regno] = 1;
 }
 
-/* Called from loop optimization when a new pseudo-register is
-   created.  It indicates that REGNO is being set to VAL.  f INVARIANT
-   is true then this value also describes an invariant relationship
-   which can be used to deduce that two registers with unknown values
-   are different.  */
-
-void
-record_base_value (unsigned int regno, rtx val, int invariant)
-{
-  if (invariant && alias_invariant && regno < alias_invariant_size)
-    alias_invariant[regno] = val;
-
-  if (regno >= VARRAY_SIZE (reg_base_value))
-    VARRAY_GROW (reg_base_value, max_reg_num ());
-
-  if (REG_P (val))
-    {
-      VARRAY_RTX (reg_base_value, regno)
-	 = REG_BASE_VALUE (val);
-      return;
-    }
-  VARRAY_RTX (reg_base_value, regno)
-     = find_base_value (val);
-}
-
 /* Clear alias info for a register.  This is used if an RTL transformation
    changes the value of a register.  This is used in flow by AUTO_INC_DEC
    optimizations.  We don't need to clear reg_base_value, since flow only
@@ -1791,25 +1755,6 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	  c /= INTVAL (x1);
 	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
 	}
-
-      case REG:
-	/* Are these registers known not to be equal?  */
-	if (alias_invariant)
-	  {
-	    unsigned int r_x = REGNO (x), r_y = REGNO (y);
-	    rtx i_x, i_y;	/* invariant relationships of X and Y */
-
-	    i_x = r_x >= alias_invariant_size ? 0 : alias_invariant[r_x];
-	    i_y = r_y >= alias_invariant_size ? 0 : alias_invariant[r_y];
-
-	    if (i_x == 0 && i_y == 0)
-	      break;
-
-	    if (! memrefs_conflict_p (xsize, i_x ? i_x : x,
-				      ysize, i_y ? i_y : y, c))
-	      return 0;
-	  }
-	break;
 
       default:
 	break;
@@ -2696,12 +2641,6 @@ end_alias_analysis (void)
   reg_known_value_size = 0;
   free (reg_known_equiv_p);
   reg_known_equiv_p = 0;
-  if (alias_invariant)
-    {
-      ggc_free (alias_invariant);
-      alias_invariant = 0;
-      alias_invariant_size = 0;
-    }
 }
 
 /* Do control and data flow analysis; write some of the results to the
