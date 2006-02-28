@@ -1,3 +1,7 @@
+2006-02-28  Release Manager
+
+	* GCC 4.1.0 released.
+
 2005-10-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* objc-act.c (synth_module_prologue): Clear TREE_NOTHROW
