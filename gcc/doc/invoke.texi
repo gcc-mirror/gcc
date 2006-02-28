@@ -4203,9 +4203,28 @@ Enable all the available tree dumps with the flags provided in this option.
 @item -ftree-vectorizer-verbose=@var{n}
 @opindex ftree-vectorizer-verbose
 This option controls the amount of debugging output the vectorizer prints.
-This information is written to standard error, unless @option{-fdump-tree-all}
-or @option{-fdump-tree-vect} is specified, in which case it is output to the
-usual dump listing file, @file{.vect}.
+This information is written to standard error, unless 
+@option{-fdump-tree-all} or @option{-fdump-tree-vect} is specified, 
+in which case it is output to the usual dump listing file, @file{.vect}.
+For @var{n}=0 no diagnostic information is reported.
+If @var{n}=1 the vectorizer reports each loop that got vectorized, 
+and the total number of loops that got vectorized.
+If @var{n}=2 the vectorizer also reports non-vectorized loops that passed 
+the first analysis phase (vect_analyze_loop_form) - i.e. countable, 
+inner-most, single-bb, single-entry/exit loops.  This is the same verbosity 
+level that @option{-fdump-tree-vect-stats} uses.
+Higher verbosity levels mean either more information dumped for each 
+reported loop, or same amount of information reported for more loops:
+If @var{n}=3, alignment related information is added to the reports.
+If @var{n}=4, data-references related information (e.g. memory dependences, 
+memory access-patterns) is added to the reports.
+If @var{n}=5, the vectorizer reports also non-vectorized inner-most loops 
+that did not pass the first analysis phase (i.e. may not be countable, or 
+may have complicated control-flow).
+If @var{n}=6, the vectorizer reports also non-vectorized nested loops.
+For @var{n}=7, all the information the vectorizer generates during its 
+analysis and transformation is reported.  This is the same verbosity level
+that @option{-fdump-tree-vect-details} uses.
 
 @item -frandom-seed=@var{string}
 @opindex frandom-string
