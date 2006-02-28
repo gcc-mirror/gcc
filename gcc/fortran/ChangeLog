@@ -1,3 +1,10 @@
+2006-02-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc):
+	If the mask expression exists and has rank 0, enclose the
+	generated loop in an "if (mask)".  Put the default
+	initialization into the else branch.
+
 2006-02-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/23092

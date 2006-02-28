@@ -1567,9 +1567,11 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   stmtblock_t body;
   stmtblock_t block;
   stmtblock_t ifblock;
+  stmtblock_t elseblock;
   tree limit;
   tree type;
   tree tmp;
+  tree elsetmp;
   tree ifbody;
   tree cond;
   gfc_loopinfo loop;
@@ -1602,7 +1604,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   actual = actual->next->next;
   gcc_assert (actual);
   maskexpr = actual->expr;
-  if (maskexpr)
+  if (maskexpr && maskexpr->rank != 0)
     {
       maskss = gfc_walk_expr (maskexpr);
       gcc_assert (maskss != gfc_ss_terminator);
@@ -1712,8 +1714,39 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 
   gfc_trans_scalarizing_loops (&loop, &body);
 
-  gfc_add_block_to_block (&se->pre, &loop.pre);
-  gfc_add_block_to_block (&se->pre, &loop.post);
+  /* For a scalar mask, enclose the loop in an if statement.  */
+  if (maskexpr && maskss == NULL)
+    {
+      gfc_init_se (&maskse, NULL);
+      gfc_conv_expr_val (&maskse, maskexpr);
+      gfc_init_block (&block);
+      gfc_add_block_to_block (&block, &loop.pre);
+      gfc_add_block_to_block (&block, &loop.post);
+      tmp = gfc_finish_block (&block);
+
+      /* For the else part of the scalar mask, just initialize
+	 the pos variable the same way as above.  */
+
+      gfc_init_block (&elseblock);
+
+      elsetmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			     loop.from[0], gfc_index_one_node);
+      cond = fold_build2 (GE_EXPR, boolean_type_node,
+			  loop.to[0], loop.from[0]);
+      elsetmp = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
+			  loop.from[0], elsetmp);
+      gfc_add_modify_expr (&elseblock, pos, elsetmp);
+      elsetmp = gfc_finish_block (&elseblock);
+
+      tmp = build3_v (COND_EXPR, maskse.expr, tmp, elsetmp);
+      gfc_add_expr_to_block (&block, tmp);
+      gfc_add_block_to_block (&se->pre, &block);
+    }
+  else
+    {
+      gfc_add_block_to_block (&se->pre, &loop.pre);
+      gfc_add_block_to_block (&se->pre, &loop.post);
+    }
   gfc_cleanup_loop (&loop);
 
   /* Return a value in the range 1..SIZE(array).  */
