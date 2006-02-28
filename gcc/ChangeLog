@@ -1,3 +1,7 @@
+2006-02-28  Jeff Law  <law@redhat.com>
+
+	* tree.h (strct phi_arg_d): Remove unused NONZERO field.
+
 2006-02-28  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/26419

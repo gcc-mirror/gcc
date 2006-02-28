@@ -1746,7 +1746,6 @@ struct phi_arg_d GTY(())
      pointer arithmetic with it.  See phi_arg_index_from_use.  */
   struct ssa_use_operand_d imm_use;
   tree def;
-  bool nonzero;
 };
 
 struct tree_phi_node GTY(())
