@@ -1,3 +1,9 @@
+2006-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26092
+	* gimplify.c (gimplify_call_expr): When trying again, call
+	get_callee_fndecl first to verify it is still a builtin.
+
 2005-02-28  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR c++/25632

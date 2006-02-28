@@ -1796,17 +1796,21 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
     TREE_OPERAND (*expr_p, 1) = nreverse (TREE_OPERAND (*expr_p, 1));
 
   /* Try this again in case gimplification exposed something.  */
-  if (ret != GS_ERROR && decl && DECL_BUILT_IN (decl))
+  if (ret != GS_ERROR)
     {
-      tree new = fold_builtin (*expr_p, !want_value);
-
-      if (new && new != *expr_p)
+      decl = get_callee_fndecl (*expr_p);
+      if (decl && DECL_BUILT_IN (decl))
 	{
-	  /* There was a transformation of this call which computes the
-	     same value, but in a more efficient way.  Return and try
-	     again.  */
-	  *expr_p = new;
-	  return GS_OK;
+	  tree new = fold_builtin (*expr_p, !want_value);
+
+	  if (new && new != *expr_p)
+	    {
+	      /* There was a transformation of this call which computes the
+		 same value, but in a more efficient way.  Return and try
+		 again.  */
+	      *expr_p = new;
+	      return GS_OK;
+	    }
 	}
     }
 
