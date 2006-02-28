@@ -1615,7 +1615,7 @@ constant_value_1 (tree decl, bool integral_p)
 		 || TREE_CODE (init) == CONSTRUCTOR
 		 || TREE_CODE (init) == STRING_CST)))
 	break;
-      decl = init;
+      decl = unshare_expr (init);
     }
   return decl;
 }

@@ -1,3 +1,8 @@
+2005-02-28  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR c++/25632
+	* init.c (constant_value_1): Unshare use of DECL_INITIAL.
+
 2006-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/25682
