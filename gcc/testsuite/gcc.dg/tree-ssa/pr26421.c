@@ -8,11 +8,12 @@ typedef struct {
 } Foo;
 
 void bar(Foo*);
-void foo(void)
+int foo(void)
 {
   Foo a;
   a.i = 1;
   bar(&a);
+  return a.i;
 }
 
 /* { dg-final { scan-tree-dump-times "V_MAY_DEF" 1 "alias1" } } */
