@@ -1,3 +1,7 @@
+2006-02-28  Release Manager
+
+	* GCC 4.1.0 released.
+
 2005-10-31  Mark Kettenis  <kettenis@gnu.org>
 
 	* floatformat.h (enum floatformat_byteorders): Add
