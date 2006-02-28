@@ -29,8 +29,8 @@ cls_struct_9byte cls_struct_9byte_fn(struct cls_struct_9byte b1,
   return result;
 }
 
-static void cls_struct_9byte_gn(ffi_cif* cif, void* resp, void** args,
-				void* userdata)
+static void cls_struct_9byte_gn(ffi_cif* cif __UNUSED__, void* resp,
+				void** args, void* userdata __UNUSED__)
 {
   struct cls_struct_9byte b1, b2;
 

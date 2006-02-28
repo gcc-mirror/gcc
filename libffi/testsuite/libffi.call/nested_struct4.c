@@ -3,7 +3,7 @@
 		Contains structs as parameter of the struct itself.
 		Sample taken from Alan Modras patch to src/prep_cif.c.
    Limitations:	none.
-   PR:		none.
+   PR:		PR 25630.
    Originator:	<andreast@gcc.gnu.org> 20051010	 */
 
 /* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* powerpc*-*-darwin* } } */
@@ -35,8 +35,8 @@ static B B_fn(struct A b2, struct B b3)
 }
 
 static void
-B_gn(ffi_cif* cif __attribute__((unused)), void* resp, void** args,
-     void* userdata __attribute__((unused)))
+B_gn(ffi_cif* cif __UNUSED__, void* resp, void** args,
+     void* userdata __UNUSED__)
 {
   struct A b0;
   struct B b1;

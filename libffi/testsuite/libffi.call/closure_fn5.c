@@ -7,11 +7,11 @@
    Originator:	<andreast@gcc.gnu.org> 20031026	 */
 
 /* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
-
 #include "ffitest.h"
 
 static void
-closure_test_fn5(ffi_cif* cif,void* resp,void** args, void* userdata)
+closure_test_fn5(ffi_cif* cif __UNUSED__, void* resp, void** args,
+		 void* userdata)
 {
   *(ffi_arg*)resp =
     (int)*(unsigned long long *)args[0] + (int)*(unsigned long long *)args[1] +

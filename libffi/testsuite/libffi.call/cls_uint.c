@@ -7,14 +7,14 @@
 /* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
-static void cls_ret_uint_fn(ffi_cif* cif,void* resp,void** args,
-			     void* userdata)
- {
-   *(ffi_arg *)resp = *(unsigned int *)args[0];
+static void cls_ret_uint_fn(ffi_cif* cif __UNUSED__, void* resp, void** args,
+			    void* userdata __UNUSED__)
+{
+  *(ffi_arg *)resp = *(unsigned int *)args[0];
 
-   printf("%d: %d\n",*(unsigned int *)args[0],
-	  *(ffi_arg *)resp);
- }
+  printf("%d: %d\n",*(unsigned int *)args[0],
+	 (int)*(ffi_arg *)(resp));
+}
 typedef unsigned int (*cls_ret_uint)(unsigned int);
 
 int main (void)

@@ -8,7 +8,7 @@
 
 #include "ffitest.h"
 
-static int floating(int a, float b, double c, long double d, int e)
+static int floating(int a, float b, double c, long double d)
 {
   int i;
 
@@ -28,7 +28,6 @@ int main (void)
   signed int si1;
   double d;
   long double ld;
-  signed int si2;
 
   args[0] = &ffi_type_sint;
   values[0] = &si1;
@@ -38,26 +37,23 @@ int main (void)
   values[2] = &d;
   args[3] = &ffi_type_longdouble;
   values[3] = &ld;
-  args[4] = &ffi_type_sint;
-  values[4] = &si2;
 
   /* Initialize the cif */
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 5,
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 4,
 		     &ffi_type_sint, args) == FFI_OK);
 
   si1 = 6;
   f = 3.14159;
   d = (double)1.0/(double)3.0;
   ld = 2.71828182846L;
-  si2 = 10;
 
-  floating (si1, f, d, ld, si2);
+  floating (si1, f, d, ld);
 
   ffi_call(&cif, FFI_FN(floating), &rint, values);
 
-  printf ("%d vs %d\n", (int)rint, floating (si1, f, d, ld, si2));
+  printf ("%d vs %d\n", (int)rint, floating (si1, f, d, ld));
 
-  CHECK(rint == floating(si1, f, d, ld, si2));
+  CHECK((int)rint == floating(si1, f, d, ld));
 
   exit (0);
 }

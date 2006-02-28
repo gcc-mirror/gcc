@@ -7,14 +7,14 @@
 /* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
-static void cls_ret_ulonglong_fn(ffi_cif* cif,void* resp,void** args,
-			     void* userdata)
- {
-   *(unsigned long long *)resp=  *(unsigned long long *)args[0];
+static void cls_ret_ulonglong_fn(ffi_cif* cif __UNUSED__, void* resp,
+				 void** args, void* userdata __UNUSED__)
+{
+  *(unsigned long long *)resp=  *(unsigned long long *)args[0];
 
-   printf("%llu: %llu\n",*(unsigned long long *)args[0],
-	  *(unsigned long long *)resp);
- }
+  printf("%llu: %llu\n",*(unsigned long long *)args[0],
+	 *(unsigned long long *)(resp));
+}
 typedef unsigned long long (*cls_ret_ulonglong)(unsigned long long);
 
 int main (void)
