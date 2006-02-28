@@ -1219,6 +1219,26 @@ chrec_convert_aggressive (tree type, tree chrec)
   if (!rc)
     rc = chrec_convert (type, right, NULL_TREE);
 
+  /* Ada creates sub-types where TYPE_MIN_VALUE/TYPE_MAX_VALUE do not
+     cover the entire range of values allowed by TYPE_PRECISION.
+
+     We do not want to optimize away conversions to such types.  Long
+     term I'd rather see the Ada front-end fixed.  */
+  if (INTEGRAL_TYPE_P (type))
+    {
+      tree t;
+
+      t = upper_bound_in_type (type, inner_type);
+      if (! TYPE_MAX_VALUE (type)
+	  || ! operand_equal_p (TYPE_MAX_VALUE (type), t, 0))
+	return NULL_TREE;
+
+      t = lower_bound_in_type (type, inner_type);
+      if (! TYPE_MIN_VALUE (type)
+	  || ! operand_equal_p (TYPE_MIN_VALUE (type), t, 0))
+	return NULL_TREE;
+    }
+  
   return build_polynomial_chrec (CHREC_VARIABLE (chrec), lc, rc);
 }
 

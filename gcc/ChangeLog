@@ -1,5 +1,9 @@
 2006-02-28  Jeff Law  <law@redhat.com>
 
+	* tree-chrec.c (chrec_convert_aggressive): Do not eliminate
+	conversions where TYPE_MIN_VALUE/TYPE_MAX_VALUE do not cover
+	the range allowed by TYPE_PRECISION.
+
 	* tree.h (strct phi_arg_d): Remove unused NONZERO field.
 
 2006-02-28  Dorit Nuzman  <dorit@il.ibm.com>
