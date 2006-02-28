@@ -2159,7 +2159,6 @@ export_proto(st_read_done);
 void
 st_read_done (st_parameter_dt *dtp)
 {
-  flush(dtp->u.p.current_unit->s);
   finalize_transfer (dtp);
   free_format_data (dtp);
   free_ionml (dtp);
