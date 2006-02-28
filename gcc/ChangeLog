@@ -1,3 +1,9 @@
+2006-02-28  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/26419
+	* doc/invoke.texi (ftree-vectorizer-verbose): Add information on
+	values of n.
+
 2006-02-27  Zack Weinberg  <zackw@panix.com>
 
 	* doc/md.texi: Fix typo in previous change.
