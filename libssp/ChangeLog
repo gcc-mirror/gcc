@@ -1,3 +1,15 @@
+2006-02-27  Mark Mitchell  <mark@codesourcery.com>
+	
+	PR 26473
+	* configure.ac (ACX_NONCANONICAL_TARGET): Use it.
+	* Makefile.am (target_noncanonical): Define.
+	(libsubincludedir): New variable.
+	(nobase_libsubinclude_HEADERS): Likewise.
+	(nobase_include_HEADERS): Remove.
+	* configure: Regenerated.
+	* Makefile.in: Likewise.
+	* aclocal.m4: Regenerated.
+
 2006-01-20  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Use -fPIC for symbol versioning test.
