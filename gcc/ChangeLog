@@ -1,4 +1,21 @@
-2006-01-23  Andrew Pinski  <pinskia@physics.uc.edu>
+2006-03-01  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-operands.c: Cleanup whitespace.
+	(get_asm_expr_operands): Move before first invocation.
+	(get_indirect_ref_operands): Likewise.
+	(get_tmr_operands): Likewise.
+	(get_call_expr_operands): Likewise.
+	(append_def): Likewise.
+	(append_use): Likewise.
+	(append_v_may_def): Likewise.
+	(append_v_must_def): Likewise.
+	(add_call_clobber_ops): Likewise.
+	(add_call_read_ops): Likewise.
+	(add_stmt_operand): Likewise.
+	(add_virtual_operand): Likewise.
+	(build_ssa_operands): Likewise.
+
+2006-03-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/26022
 	Revert:
