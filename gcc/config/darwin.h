@@ -793,6 +793,8 @@ enum machopic_addr_class {
 	goto DONE;									\
       }
 
+#define TARGET_ASM_OUTPUT_ANCHOR darwin_asm_output_anchor
+
 /* Experimentally, putting jump tables in text is faster on SPEC.
    Also this is needed for correctness for coalesced functions.  */
 
