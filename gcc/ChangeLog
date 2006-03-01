@@ -1,3 +1,8 @@
+2006-03-01  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-vrp.c (extract_range_from_assert): Remove special
+	handling for types with super-types.
+
 2006-03-01  Ben Elliston  <bje@au.ibm.com>
 
 	* config.gcc: Add t-dfprules to $tmake_file for powerpc-*-linux*
