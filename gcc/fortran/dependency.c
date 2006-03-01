@@ -359,6 +359,51 @@ gfc_check_fncall_dependency (gfc_expr * other, sym_intent intent,
 }
 
 
+/* Return 1 if e1 and e2 are equivalenced arrays, either
+   directly or indirectly; ie. equivalence (a,b) for a and b
+   or equivalence (a,c),(b,c).  This function uses the equiv_
+   lists, generated in trans-common(add_equivalences), that are
+   guaranteed to pick up indirect equivalences.  A rudimentary
+   use is made of the offset to ensure that cases where the
+   source elements are moved down to the destination are not
+   identified as dependencies.  */
+
+int
+gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
+{
+  gfc_equiv_list *l;
+  gfc_equiv_info *s, *fl1, *fl2;
+
+  gcc_assert (e1->expr_type == EXPR_VARIABLE
+		&& e2->expr_type == EXPR_VARIABLE);
+
+  if (!e1->symtree->n.sym->attr.in_equivalence
+	|| !e2->symtree->n.sym->attr.in_equivalence
+	|| !e1->rank
+	|| !e2->rank)
+    return 0;
+
+  /* Go through the equiv_lists and return 1 if the variables
+     e1 and e2 are members of the same group and satisfy the
+     requirement on their relative offsets.  */
+  for (l = gfc_current_ns->equiv_lists; l; l = l->next)
+    {
+      fl1 = NULL;
+      fl2 = NULL;
+      for (s = l->equiv; s; s = s->next)
+	{
+	  if (s->sym == e1->symtree->n.sym)
+	    fl1 = s;
+	  if (s->sym == e2->symtree->n.sym)
+	    fl2 = s;
+	  if (fl1 && fl2 && (fl1->offset > fl2->offset))
+	    return 1;
+	}
+    }
+return 0;
+}
+
+
 /* Return true if the statement body redefines the condition.  Returns
    true if expr2 depends on expr1.  expr1 should be a single term
    suitable for the lhs of an assignment.  The IDENTICAL flag indicates
@@ -404,6 +449,10 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
 	  if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
 	    return 1;
 	}
+
+      /* Return 1 if expr1 and expr2 are equivalenced arrays.  */
+      if (gfc_are_equivalenced_arrays (expr1, expr2))
+	return 1;
 
       if (expr1->symtree->n.sym != expr2->symtree->n.sym)
 	return 0;

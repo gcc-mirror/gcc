@@ -2424,6 +2424,31 @@ gfc_free_dt_list (gfc_dt_list * dt)
 }
 
 
+/* Free the gfc_equiv_info's.  */
+
+static void
+gfc_free_equiv_infos (gfc_equiv_info * s)
+{
+  if (s == NULL)
+    return;
+  gfc_free_equiv_infos (s->next);
+  gfc_free (s);
+}
+
+
+/* Free the gfc_equiv_lists.  */
+
+static void
+gfc_free_equiv_lists (gfc_equiv_list * l)
+{
+  if (l == NULL)
+    return;
+  gfc_free_equiv_lists (l->next);
+  gfc_free_equiv_infos (l->equiv);
+  gfc_free (l);
+}
+
+
 /* Free a namespace structure and everything below it.  Interface
    lists associated with intrinsic operators are not freed.  These are
    taken care of when a specific name is freed.  */
@@ -2459,6 +2484,7 @@ gfc_free_namespace (gfc_namespace * ns)
   free_st_labels (ns->st_labels);
 
   gfc_free_equiv (ns->equiv);
+  gfc_free_equiv_lists (ns->equiv_lists);
 
   gfc_free_dt_list (ns->derived_types);
 

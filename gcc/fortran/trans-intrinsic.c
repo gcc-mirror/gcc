@@ -1561,6 +1561,104 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, int op)
   se->expr = resvar;
 }
 
+
+/* Inline implementation of the dot_product intrinsic. This function
+   is based on gfc_conv_intrinsic_arith (the previous function).  */
+static void
+gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
+{
+  tree resvar;
+  tree type;
+  stmtblock_t body;
+  stmtblock_t block;
+  tree tmp;
+  gfc_loopinfo loop;
+  gfc_actual_arglist *actual;
+  gfc_ss *arrayss1, *arrayss2;
+  gfc_se arrayse1, arrayse2;
+  gfc_expr *arrayexpr1, *arrayexpr2;
+
+  type = gfc_typenode_for_spec (&expr->ts);
+
+  /* Initialize the result.  */
+  resvar = gfc_create_var (type, "val");
+  if (expr->ts.type == BT_LOGICAL)
+    tmp = convert (type, integer_zero_node);
+  else
+    tmp = gfc_build_const (type, integer_zero_node);
+
+  gfc_add_modify_expr (&se->pre, resvar, tmp);
+
+  /* Walk argument #1.  */
+  actual = expr->value.function.actual;
+  arrayexpr1 = actual->expr;
+  arrayss1 = gfc_walk_expr (arrayexpr1);
+  gcc_assert (arrayss1 != gfc_ss_terminator);
+
+  /* Walk argument #2.  */
+  actual = actual->next;
+  arrayexpr2 = actual->expr;
+  arrayss2 = gfc_walk_expr (arrayexpr2);
+  gcc_assert (arrayss2 != gfc_ss_terminator);
+
+  /* Initialize the scalarizer.  */
+  gfc_init_loopinfo (&loop);
+  gfc_add_ss_to_loop (&loop, arrayss1);
+  gfc_add_ss_to_loop (&loop, arrayss2);
+
+  /* Initialize the loop.  */
+  gfc_conv_ss_startstride (&loop);
+  gfc_conv_loop_setup (&loop);
+
+  gfc_mark_ss_chain_used (arrayss1, 1);
+  gfc_mark_ss_chain_used (arrayss2, 1);
+
+  /* Generate the loop body.  */
+  gfc_start_scalarized_body (&loop, &body);
+  gfc_init_block (&block);
+
+  /* Make the tree expression for [conjg(]array1[)].  */
+  gfc_init_se (&arrayse1, NULL);
+  gfc_copy_loopinfo_to_se (&arrayse1, &loop);
+  arrayse1.ss = arrayss1;
+  gfc_conv_expr_val (&arrayse1, arrayexpr1);
+  if (expr->ts.type == BT_COMPLEX)
+    arrayse1.expr = build1 (CONJ_EXPR, type, arrayse1.expr);
+  gfc_add_block_to_block (&block, &arrayse1.pre);
+
+  /* Make the tree expression for array2.  */
+  gfc_init_se (&arrayse2, NULL);
+  gfc_copy_loopinfo_to_se (&arrayse2, &loop);
+  arrayse2.ss = arrayss2;
+  gfc_conv_expr_val (&arrayse2, arrayexpr2);
+  gfc_add_block_to_block (&block, &arrayse2.pre);
+
+  /* Do the actual product and sum.  */
+  if (expr->ts.type == BT_LOGICAL)
+    {
+      tmp = build2 (TRUTH_AND_EXPR, type, arrayse1.expr, arrayse2.expr);
+      tmp = build2 (TRUTH_OR_EXPR, type, resvar, tmp);
+    }
+  else
+    {
+      tmp = build2 (MULT_EXPR, type, arrayse1.expr, arrayse2.expr);
+      tmp = build2 (PLUS_EXPR, type, resvar, tmp);
+    }
+  gfc_add_modify_expr (&block, resvar, tmp);
+
+  /* Finish up the loop block and the loop.  */
+  tmp = gfc_finish_block (&block);
+  gfc_add_expr_to_block (&body, tmp);
+
+  gfc_trans_scalarizing_loops (&loop, &body);
+  gfc_add_block_to_block (&se->pre, &loop.pre);
+  gfc_add_block_to_block (&se->pre, &loop.post);
+  gfc_cleanup_loop (&loop);
+
+  se->expr = resvar;
+}
+
+
 static void
 gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 {
@@ -3135,6 +3233,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_dim (se, expr);
       break;
 
+    case GFC_ISYM_DOT_PRODUCT:
+      gfc_conv_intrinsic_dot_product (se, expr);
+      break;
+
     case GFC_ISYM_DPROD:
       gfc_conv_intrinsic_dprod (se, expr);
       break;
@@ -3304,7 +3406,6 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_CHDIR:
-    case GFC_ISYM_DOT_PRODUCT:
     case GFC_ISYM_ETIME:
     case GFC_ISYM_FGET:
     case GFC_ISYM_FGETC:

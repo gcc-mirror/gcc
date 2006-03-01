@@ -30,3 +30,4 @@ int gfc_is_same_range (gfc_array_ref *, gfc_array_ref *, int, int);
 int gfc_expr_is_one (gfc_expr *, int);
 
 int gfc_dep_resolver(gfc_ref *, gfc_ref *);
+int gfc_are_equivalenced_arrays (gfc_expr *, gfc_expr *);
