@@ -8,11 +8,11 @@ del {background-color:#FFFFA0}</style></head>
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1926=05-0186</td>
+<td align="left">N1949=06-0019</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">2005-12-16</td>
+<td align="left">2006-02-24</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -23,7 +23,7 @@ del {background-color:#FFFFA0}</style></head>
 <td align="left">Howard Hinnant &lt;howard.hinnant@gmail.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Active Issues List (Revision R40)</h1>
+<h1>C++ Standard Library Active Issues List (Revision R41)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
   <ul>
@@ -91,6 +91,12 @@ del {background-color:#FFFFA0}</style></head>
   directory as the issues list files.  </p>
 <h2>Revision History</h2>
 <ul>
+<li>R41: 
+2006-02-24 pre-Berlin mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#536">536</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#566">566</a>.
+Moved <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#342">342</a> from Ready to Open.
+Reopened <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#309">309</a>.
+</li>
 <li>R40: 
 2005-12-16 mid-term mailing.
 Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#529">529</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#535">535</a>.
@@ -1159,7 +1165,246 @@ with a return type of convertible to <tt>T</tt> and operational semantics of
   iterator redesign]</i></p>
 
 <hr>
-<a name="342"><h3>342.&nbsp;seek and eofbit</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;09 Oct 2001</p>
+<a name="309"></a><h3><a name="309">309.&nbsp;Does sentry catch exceptions?</a></h3><p><b>Section:</b>&nbsp;27.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostream.format"> [lib.iostream.format]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;19 Mar 2001</p>
+<p>
+The descriptions of the constructors of basic_istream&lt;&gt;::sentry
+(27.6.1.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>) and basic_ostream&lt;&gt;::sentry
+(27.6.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream::sentry"> [lib.ostream::sentry]</a>) do not explain what the functions do in
+case an exception is thrown while they execute. Some current
+implementations allow all exceptions to propagate, others catch them
+and set ios_base::badbit instead, still others catch some but let
+others propagate.
+</p>
+
+<p>
+The text also mentions that the functions may call setstate(failbit)
+(without actually saying on what object, but presumably the stream
+argument is meant).  That may have been fine for
+basic_istream&lt;&gt;::sentry prior to issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#195">195</a>, since
+the function performs an input operation which may fail. However,
+issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#195">195</a> amends 27.6.1.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>, p2 to
+clarify that the function should actually call setstate(failbit |
+eofbit), so the sentence in p3 is redundant or even somewhat
+contradictory.
+</p>
+
+<p>
+The same sentence that appears in 27.6.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream::sentry"> [lib.ostream::sentry]</a>, p3
+doesn't seem to be very meaningful for basic_istream&lt;&gt;::sentry
+which performs no input. It is actually rather misleading since it
+would appear to guide library implementers to calling
+setstate(failbit) when os.tie()-&gt;flush(), the only called function,
+throws an exception (typically, it's badbit that's set in response to
+such an event).
+</p>
+
+<p><b>Additional comments from Martin, who isn't comfortable with the
+    current proposed resolution</b> (see c++std-lib-11530)</p>
+
+<p>
+The istream::sentry ctor says nothing about how the function
+deals with exemptions (27.6.1.1.2, p1 says that the class is
+responsible for doing "exception safe"(*) prefix and suffix
+operations but it doesn't explain what level of exception
+safety the class promises to provide). The mockup example
+of a "typical implementation of the sentry ctor" given in
+27.6.1.1.2, p6, removed in ISO/IEC 14882:2003, doesn't show
+exception handling, either. Since the ctor is not classified
+as a formatted or unformatted input function, the text in
+27.6.1.1, p1 through p4 does not apply. All this would seem
+to suggest that the sentry ctor should not catch or in any
+way handle exceptions thrown from any functions it may call.
+Thus, the typical implementation of an istream extractor may
+look something like [1].
+</p>
+
+<p>
+The problem with [1] is that while it correctly sets ios::badbit
+if an exception is thrown from one of the functions called from
+the sentry ctor, if the sentry ctor reaches EOF while extracting
+whitespace from a stream that has eofbit or failbit set in
+exceptions(), it will cause an ios::failure to be thrown, which
+will in turn cause the extractor to set ios::badbit.
+</p>
+
+<p>
+The only straightforward way to prevent this behavior is to
+move the definition of the sentry object in the extractor
+above the try block (as suggested by the example in 22.2.8,
+p9 and also indirectly supported by 27.6.1.3, p1). See [2].
+But such an implementation will allow exceptions thrown from
+functions called from the ctor to freely propagate to the
+caller regardless of the setting of ios::badbit in the stream
+object's exceptions().
+</p>
+
+<p>
+So since neither [1] nor [2] behaves as expected, the only
+possible solution is to have the sentry ctor catch exceptions
+thrown from called functions, set badbit, and propagate those
+exceptions if badbit is also set in exceptions(). (Another
+solution exists that deals with both kinds of sentries, but
+the code is non-obvious and cumbersome -- see [3].)
+</p>
+
+<p>
+Please note that, as the issue points out, current libraries
+do not behave consistently, suggesting  that implementors are
+not quite clear on the exception handling in istream::sentry,
+despite the fact that some LWG members might feel otherwise.
+(As documented by the parenthetical comment here:
+http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/papers/2003/n1480.html#309)
+</p>
+
+<p>
+Also please note that those LWG members who in Copenhagen
+felt that "a sentry's constructor should not catch exceptions,
+because sentries should only be used within (un)formatted input
+functions and that exception handling is the responsibility of
+those functions, not of the sentries," as noted here
+http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/papers/2001/n1310.html#309
+would in effect be either arguing for the behavior described
+in [1] or for extractors implemented along the lines of [3].
+</p>
+
+<p>
+The original proposed resolution (Revision 25 of the issues
+list) clarifies the role of the sentry ctor WRT exception
+handling by making it clear that extractors (both library
+or user-defined) should be implemented along the lines of
+[2] (as opposed to [1]) and that no exception thrown from
+the callees should propagate out of either function unless
+badbit is also set in exceptions().
+</p>
+
+
+<p>[1] Extractor that catches exceptions thrown from sentry:</p>
+
+<blockquote>
+<pre>struct S { long i; };
+
+istream&amp; operator&gt;&gt; (istream &amp;strm, S &amp;s)
+{
+    ios::iostate err = ios::goodbit;
+    try {
+        const istream::sentry guard (strm, false);
+        if (guard) {
+            use_facet&lt;num_get&lt;char&gt; &gt;(strm.getloc ())
+                .get (istreambuf_iterator&lt;char&gt;(strm),
+                      istreambuf_iterator&lt;char&gt;(),
+                      strm, err, s.i);
+        }
+    }
+    catch (...) {
+        bool rethrow;
+        try {
+            strm.setstate (ios::badbit);
+            rethrow = false;
+        }
+        catch (...) {
+            rethrow = true;
+        }
+        if (rethrow)
+            throw;
+    }
+    if (err)
+        strm.setstate (err);
+    return strm;
+}
+</pre>
+</blockquote>
+
+<p>[2] Extractor that propagates exceptions thrown from sentry:</p>
+
+<blockquote>
+<pre>istream&amp; operator&gt;&gt; (istream &amp;strm, S &amp;s)
+{
+    istream::sentry guard (strm, false);
+    if (guard) {
+        ios::iostate err = ios::goodbit;
+        try {
+            use_facet&lt;num_get&lt;char&gt; &gt;(strm.getloc ())
+                .get (istreambuf_iterator&lt;char&gt;(strm),
+                      istreambuf_iterator&lt;char&gt;(),
+                      strm, err, s.i);
+        }
+        catch (...) {
+            bool rethrow;
+            try {
+                strm.setstate (ios::badbit);
+                rethrow = false;
+            }
+            catch (...) {
+                rethrow = true;
+            }
+            if (rethrow)
+                throw;
+        }
+        if (err)
+            strm.setstate (err);
+    }
+    return strm;
+}
+</pre>
+</blockquote>
+
+<p>
+[3] Extractor that catches exceptions thrown from sentry
+but doesn't set badbit if the exception was thrown as a
+result of a call to strm.clear().
+</p>
+
+<blockquote>
+<pre>istream&amp; operator&gt;&gt; (istream &amp;strm, S &amp;s)
+{
+    const ios::iostate state = strm.rdstate ();
+    const ios::iostate except = strm.exceptions ();
+    ios::iostate err = std::ios::goodbit;
+    bool thrown = true;
+    try {
+        const istream::sentry guard (strm, false);
+        thrown = false;
+        if (guard) {
+            use_facet&lt;num_get&lt;char&gt; &gt;(strm.getloc ())
+                .get (istreambuf_iterator&lt;char&gt;(strm),
+                      istreambuf_iterator&lt;char&gt;(),
+                      strm, err, s.i);
+        }
+    }
+    catch (...) {
+        if (thrown &amp;&amp; state &amp; except)
+            throw;
+        try {
+            strm.setstate (ios::badbit);
+            thrown = false;
+        }
+        catch (...) {
+            thrown = true;
+        }
+        if (thrown)
+            throw;
+    }
+    if (err)
+        strm.setstate (err);
+
+    return strm;
+}
+</pre>
+</blockquote>
+
+<p>
+[Pre-Berlin] Reopened at the request of Paolo Carlini and Steve Clamage.
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p><b>Rationale:</b></p>
+<p>The LWG agrees there is minor variation between implementations,
+  but believes that it doesn't matter. This is a rarely used corner
+  case. There is no evidence that this has any commercial importance
+  or that it causes actual portability problems for customers trying
+  to write code that runs on multiple implementations.</p>
+<hr>
+<a name="342"><h3>342.&nbsp;seek and eofbit</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;09 Oct 2001</p>
 <p>I think we have a defect.</p>
 
 <p>According to lwg issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#60">60</a> which is now a dr, the
@@ -1221,6 +1466,22 @@ modes than actual input.  If we do really mean that it's unformatted
 input, it should behave the same way as other unformatted input.  On
 the other hand, "principle of least surprise" is that seeking from EOF
 ought to be OK.</p>
+
+<p>
+Pre-Berlin:  Paolo points out several problems with the proposed resolution in
+Ready state:
+</p>
+
+<ul>
+<li>It should apply to both overloads of seekg.</li>
+<li>tellg has similar issues, except that it should not call clear().</li>
+<li>The point about clear() seems to apply to seekp().</li>
+<li>Depending on the outcome of
+<a href="file:///Volumes/Data/lwg/lwg-active.html#419">419</a> if the sentry
+sets <tt>failbit</tt> when it finds <tt>eofbit</tt> already set, then
+you can never seek away from the end of stream.</li>
+</ul>
+
 <p><b>Proposed resolution:</b></p>
 
 <p>Change 27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a> to:</p>
@@ -1996,7 +2257,7 @@ is <i>zero</i>. Otherwise, the element has the value 1.</p>
   fixed the analogous problem with the extractor in issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#303">303</a>.</p>
 
 <hr>
-<a name="397"><h3>397.&nbsp;ostream::sentry dtor throws exceptions</h3></a><p><b>Section:</b>&nbsp;27.6.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream::sentry"> [lib.ostream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;5 Jan 2003</p>
+<a name="397"></a><h3><a name="397">397.&nbsp;ostream::sentry dtor throws exceptions</a></h3><p><b>Section:</b>&nbsp;27.6.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream::sentry"> [lib.ostream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;5 Jan 2003</p>
     <p>
 17.4.4.8, p3 prohibits library dtors from throwing exceptions.
     </p>
@@ -2415,7 +2676,7 @@ object throws.
   might reasonably swallow the exception, or call abort, or do
   something even more drastic.]</i></p>
 <hr>
-<a name="419"></a><h3><a name="419">419.&nbsp;istream extractors not setting failbit if eofbit is already set</a></h3><p><b>Section:</b>&nbsp;27.6.1.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<a name="419"><h3>419.&nbsp;istream extractors not setting failbit if eofbit is already set</h3></a><p><b>Section:</b>&nbsp;27.6.1.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
         <p>
 
 27.6.1.1.2, p2 says that istream::sentry ctor prepares for input if is.good()
@@ -2485,6 +2746,13 @@ set failbit in the sentry [...] so that's the text that will need to be
 corrected. 
 
         </p>
+<p>
+Pre Berlin:  This issue is related to
+<a href="file:///Volumes/Data/lwg/lwg-active.html#342">342</a>.  If the sentry
+sets <tt>failbit</tt> when it finds <tt>eofbit</tt> already set, then
+you can never seek away from the end of stream.
+</p>
+
     <p><b>Proposed resolution:</b></p>
 <p>Kona: Possibly NAD.  If eofbit is set then good() will return false.  We
   then set <i>ok</i> to false.  We believe that the sentry's
@@ -2733,7 +3001,7 @@ ostream::write().
   negative.  Martin will do that review.]</i></p>
 
 <hr>
-<a name="424"></a><h3><a name="424">424.&nbsp;normative notes</a></h3><p><b>Section:</b>&nbsp;17.3.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.summary"> [lib.structure.summary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<a name="424"><h3>424.&nbsp;normative notes</h3></a><p><b>Section:</b>&nbsp;17.3.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.summary"> [lib.structure.summary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 
 <p>
 The text in 17.3.1.1, p1 says:
@@ -2845,7 +3113,7 @@ object (e.g., slice (2, 1, 1) for a valarray of size 1).
   performance, so we don't want to require specific checking.  We
   need wording to express this decision.]</i></p>
 <hr>
-<a name="431"></a><h3><a name="431">431.&nbsp;Swapping containers with unequal allocators</a></h3><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
+<a name="431"><h3>431.&nbsp;Swapping containers with unequal allocators</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
 <p>Clause 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> paragraph 4 says that implementations
   are permitted to supply containers that are unable to cope with
   allocator instances and that container implementations may assume
@@ -5411,6 +5679,11 @@ allow a number of small optimisations, such as caching values passed
 by const reference.
 </p>
 
+<p>
+Matt Austern adds that this issue also exists for the <tt>insert</tt> and
+<tt>erase</tt> members of the ordered and unordered associative containers.
+</p>
+
 <p><b>Proposed resolution:</b></p>
 <p>
 </p>
@@ -5662,25 +5935,6 @@ to:
 </p>
 </blockquote>
 <hr>
-<a name="533"><h3>533.&nbsp;typo in 2.2.3.10/1</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3.10 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.getdeleter"> [tr.util.smartptr.getdeleter]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;9 Nov 2005</p>
-<p>
-I'm seeing something that looks like a typo. The Return of <tt>get_deleter</tt>
-says:
-</p>
-<blockquote>
-If <tt>*this</tt> <i>owns</i> a deleter <tt>d</tt>...
-</blockquote>
-<p>
-but <tt>get_deleter</tt> is a free function!
-</p>
-<p><b>Proposed resolution:</b></p>
-<p>
-Therefore, I think should be:
-</p>
-<blockquote>
-If <tt><del>*this</del> <ins>p</ins></tt> <i>owns</i> a deleter <tt>d</tt>...
-</blockquote>
-<hr>
 <a name="534"><h3>534.&nbsp;Missing basic_string members</h3></a><p><b>Section:</b>&nbsp;21.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Alisdair Meredith&nbsp; <b>Date:</b>&nbsp;16 Nov 2005</p>
 <p>
 OK, we all know std::basic_string is bloated and already has way too
@@ -5765,5 +6019,1435 @@ characters that <del>were</del> <ins>was</ins> in <tt><i>s</i></tt>,
 <del>were</del> <ins>was</ins> in <tt>*this</tt>.
 </p>
 </blockquote>
+<hr>
+<a name="536"><h3>536.&nbsp;Container iterator constructor and explicit convertibility</h3></a><p><b>Section:</b>&nbsp;23.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Joaquín M López Muñoz&nbsp; <b>Date:</b>&nbsp;17 Dec 2005</p>
+<p>
+The iterator constructor X(i,j) for containers as defined in 23.1.1 and
+23.2.2 does only require that i and j be input iterators but
+nothing is said about their associated value_type. There are three
+sensible
+options:
+</p>
+<ol>
+<li>iterator's value_type is exactly X::value_type (modulo cv).</li>
+<li>iterator's value_type is *implicitly* convertible to X::value_type.</li>
+<li>iterator's value_type is *explicitly* convertible to X::value_type.</li>
+</ol>
+<p>
+The issue has practical implications, and stdlib vendors have
+taken divergent approaches to it: Dinkumware follows 2,
+libstdc++ follows 3.
+</p>
+<p>
+The same problem applies to the definition of insert(p,i,j) for
+sequences and insert(i,j) for associative contianers, as well as
+assign.
+</p>
+
+<p><i>[
+The following added by Howard and the example code was originally written by
+Dietmar.
+]</i></p>
+<p>
+Valid code below?
+</p>
+
+<blockquote><pre>#include &lt;vector&gt; 
+#include &lt;iterator&gt; 
+#include &lt;iostream&gt; 
+
+struct foo 
+{ 
+    explicit foo(int) {} 
+}; 
+
+int main() 
+{ 
+    std::vector&lt;int&gt; v_int; 
+    std::vector&lt;foo&gt; v_foo1(v_int.begin(), v_int.end()); 
+    std::vector&lt;foo&gt; v_foo2((std::istream_iterator&lt;int&gt;(std::cin)), 
+                             std::istream_iterator&lt;int&gt;()); 
+} 
+</pre></blockquote>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="537"><h3>537.&nbsp;Typos in the signatures in 27.6.1.3/42-43 and 27.6.2.4</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;12 Feb 2006</p>
+<p>
+In the most recent working draft, I'm still seeing:
+</p>
+
+<blockquote><pre>seekg(off_type&amp; off, ios_base::seekdir dir)
+</pre></blockquote>
+
+<p>
+and
+</p>
+
+<blockquote><pre>seekp(pos_type&amp; pos)
+
+seekp(off_type&amp; off, ios_base::seekdir dir)
+</pre></blockquote>
+
+<p>
+that is, by reference off and pos arguments.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+After 27.6.1.3p42 change:
+</p>
+
+<blockquote><pre>basic_istream&lt;charT,traits&gt;&amp; seekg(off_type<del>&amp;</del> <i>off</i>, ios_base::seekdir <i>dir</i>);
+</pre></blockquote>
+
+<p>
+After 27.6.2.4p1 change:
+</p>
+
+<blockquote><pre>basic_ostream&lt;charT,traits&gt;&amp; seekp(pos_type<del>&amp;</del> <i>pos</i>);
+</pre></blockquote>
+
+<p>
+After 27.6.2.4p3 change:
+</p>
+
+<blockquote><pre>basic_ostream&lt;charT,traits&gt;&amp; seekp(off_type<del>&amp;</del> <i>off</i>, ios_base::seekdir <i>dir</i>);
+</pre></blockquote>
+<hr>
+<a name="538"><h3>538.&nbsp;241 again: Does unique_copy() require CopyConstructible and Assignable?</h3></a><p><b>Section:</b>&nbsp;25.2.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.unique"> [lib.alg.unique]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;9 Feb 2006</p>
+<p>
+I believe I botched the resolution of
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#241">
+241 "Does unique_copy() require CopyConstructible and Assignable?"</a> which now
+has WP status.
+</p>
+
+<p>
+This talks about <tt>unique_copy</tt> requirements and currently reads:
+</p>
+
+<blockquote>
+-5- <i>Requires:</i> The ranges <tt>[<i>first</i>, <i>last</i>)</tt> and
+<tt>[<i>result</i>, <i>result</i>+(<i>last</i>-<i>first</i>))</tt>
+shall not overlap. The expression <tt>*<i>result</i> = *<i>first</i></tt> shall
+be valid. If neither <tt>InputIterator</tt> nor <tt>OutputIterator</tt> meets the
+requirements of forward iterator then the value type of <tt>InputIterator</tt>
+must be CopyConstructible (20.1.3). Otherwise CopyConstructible is not required.
+</blockquote>
+
+<p>
+The problem (which Paolo discovered) is that when the iterators are at their
+most restrictive (<tt>InputIterator</tt>, <tt>OutputIterator</tt>), then we want
+<tt>InputIterator::value_type</tt> to be both <tt>CopyConstructible</tt> and
+<tt>CopyAssignable</tt> (for the most efficient implementation).  However this
+proposed resolution only makes it clear that it is <tt>CopyConstructible</tt>,
+and that one can assign from <tt>*<i>first</i></tt> to <tt>*<i>result</i></tt>.
+This latter requirement does not necessarily imply that you can:
+</p>
+
+<blockquote><pre>*<i>first</i> = *<i>first</i>;
+</pre></blockquote>
+<p><b>Proposed resolution:</b></p>
+<blockquote>
+-5- <i>Requires:</i> The ranges <tt>[<i>first</i>, <i>last</i>)</tt> and
+<tt>[<i>result</i>, <i>result</i>+(<i>last</i>-<i>first</i>))</tt>
+shall not overlap. The expression <tt>*<i>result</i> = *<i>first</i></tt>
+<del>shall</del> <ins>must</ins>
+be valid. If neither <tt>InputIterator</tt> nor <tt>OutputIterator</tt> meets the
+requirements of forward iterator then the <del>value type</del> 
+<ins><tt>value_type</tt></ins> of <tt>InputIterator</tt>
+must be CopyConstructible (20.1.3) <ins>and CopyAssignable</ins>.
+Otherwise CopyConstructible is not required.
+</blockquote>
+<hr>
+<a name="539"><h3>539.&nbsp;partial_sum and adjacent_difference should mention requirements</h3></a><p><b>Section:</b>&nbsp;26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numeric.ops"> [lib.numeric.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Marc Schoolderman&nbsp; <b>Date:</b>&nbsp;6 Feb 2006</p>
+<p>
+There are some problems in the definition of partial_sum and
+adjacent_difference in 26.4 [lib.numeric.ops]
+</p>
+
+<p>
+Unlike <tt>accumulate</tt> and <tt>inner_product</tt>, these functions are not
+parametrized on a "type T", instead, 26.4.3 [lib.partial.sum] simply
+specifies the effects clause as;
+</p>
+
+<blockquote>
+Assigns to every element referred to by iterator <tt>i</tt> in the range
+<tt>[result,result + (last - first))</tt> a value correspondingly equal to
+<blockquote><pre>((...(* first + *( first + 1)) + ...) + *( first + ( i - result )))
+</pre></blockquote>
+</blockquote>
+
+<p>
+And similarly for BinaryOperation. Using just this definition, it seems
+logical to expect that:
+</p>
+
+
+<blockquote><pre>char i_array[4] = { 100, 100, 100, 100 };
+int  o_array[4];
+
+std::partial_sum(i_array, i_array+4, o_array);
+</pre></blockquote>
+
+<p>
+Is equivalent to
+</p>
+
+<blockquote><pre>int o_array[4] = { 100, 100+100, 100+100+100, 100+100+100+100 };
+</pre></blockquote>
+
+<p>
+i.e. 100, 200, 300, 400, with addition happening in the <tt>result type</tt>,
+<tt>int</tt>.
+</p>
+
+<p>
+Yet all implementations I have tested produce 100, -56, 44, -112,
+because they are using an accumulator of the <tt>InputIterator</tt>'s
+<tt>value_type</tt>, which in this case is <tt>char</tt>, not <tt>int</tt>.
+</p>
+
+<p>
+The issue becomes more noticeable when the result of the expression <tt>*i +
+*(i+1)</tt> or <tt>binary_op(*i, *i-1)</tt> can't be converted to the
+<tt>value_type</tt>. In a contrived example:
+</p>
+
+<blockquote><pre>enum not_int { x = 1, y = 2 };
+...
+not_int e_array[4] = { x, x, y, y };
+std::partial_sum(e_array, e_array+4, o_array);
+</pre></blockquote>
+
+<p>
+Is it the intent that the operations happen in the <tt>input type</tt>, or in
+the <tt>result type</tt>?
+</p>
+
+<p>
+If the intent is that operations happen in the <tt>result type</tt>, something
+like this should be added to the "Requires" clause of 26.4.3/4
+[lib.partial.sum]:
+</p>
+
+<blockquote>
+The type of <tt>*i + *(i+1)</tt> or <tt>binary_op(*i, *(i+1))</tt> shall meet the
+requirements of <tt>CopyConstructible</tt> (20.1.3) and <tt>Assignable</tt>
+(23.1) types.
+</blockquote>
+
+<p>
+(As also required for <tt>T</tt> in 26.4.1 [lib.accumulate] and 26.4.2
+[lib.inner.product].)
+</p>
+
+<p>
+The "auto initializer" feature proposed in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1894.pdf">N1894</a>
+is not required to
+implement <tt>partial_sum</tt> this way. The 'narrowing' behaviour can still be
+obtained by using the <tt>std::plus&lt;&gt;</tt> function object.
+</p>
+
+<p>
+If the intent is that operations happen in the <tt>input type</tt>, then
+something like this should be added instead;
+</p>
+
+<blockquote>
+The type of *first shall meet the requirements of
+<tt>CopyConstructible</tt> (20.1.3) and <tt>Assignable</tt> (23.1) types.
+The result of <tt>*i + *(i+1)</tt> or <tt>binary_op(*i, *(i+1))</tt> shall be
+convertible to this type.
+</blockquote>
+
+<p>
+The 'widening' behaviour can then be obtained by writing a custom proxy
+iterator, which is somewhat involved.
+</p>
+
+<p>
+In both cases, the semantics should probably be clarified.
+</p>
+
+<p>
+26.4.4 [lib.adjacent.difference] is similarly underspecified, although
+all implementations seem to perform operations in the 'result' type:
+</p>
+
+<blockquote><pre>unsigned char i_array[4] = { 4, 3, 2, 1 };
+int o_array[4];
+
+std::adjacent_difference(i_array, i_array+4, o_array);
+</pre></blockquote>
+
+<p>
+o_array is 4, -1, -1, -1 as expected, not 4, 255, 255, 255.
+</p>
+
+<p>
+In any case, <tt>adjacent_difference</tt> doesn't mention the requirements on the
+<tt>value_type</tt>; it can be brought in line with the rest of 26.4
+[lib.numeric.ops] by adding the following to 26.4.4/2
+[lib.adjacent.difference]:
+</p>
+
+<blockquote>
+The type of <tt>*first</tt> shall meet the requirements of
+<tt>CopyConstructible</tt> (20.1.3) and <tt>Assignable</tt> (23.1) types."
+</blockquote>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="540"><h3>540.&nbsp;shared_ptr&lt;void&gt;::operator*()</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.shared.obs"> [tr.util.smartptr.shared.obs]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2005</p>
+<p>
+I'm trying to reconcile the note in tr.util.smartptr.shared.obs, p6
+that talks about the operator*() member function of shared_ptr:
+</p>
+
+<blockquote>
+  Notes: When T is void, attempting to instantiate this member function
+  renders the program ill-formed. [Note: Instantiating shared_ptr&lt;void&gt;
+  does not necessarily result in instantiating this member function.
+  --end note]
+</blockquote>
+
+<p>
+with the requirement in temp.inst, p1:
+</p>
+
+<blockquote>
+  The implicit instantiation of a class template specialization causes
+  the implicit instantiation of the declarations, but not of the
+  definitions...
+</blockquote>
+
+<p>
+I assume that what the note is really trying to say is that
+"instantiating shared_ptr&lt;void&gt; *must not* result in instantiating
+this member function." That is, that this function must not be
+declared a member of shared_ptr&lt;void&gt;. Is my interpretation
+correct?
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 2.2.3.5p6
+</p>
+
+<blockquote>
+-6- <del><i>Notes:</i></del> When <tt>T</tt> is <tt>void</tt>, <del>attempting to instantiate
+this member function renders the program ill-formed. [<i>Note:</i>
+Instantiating <tt>shared_ptr&lt;void&gt;</tt> does not necessarily result in
+instantiating this member function. <i>--end note</i>]</del> <ins>it is
+unspecified whether this member function is declared or not, and if so, what its
+return type is, except that the declaration (although not necessarily the
+definition) of the function shall be well-formed.</ins>
+</blockquote>
+
+<hr>
+<a name="541"><h3>541.&nbsp;shared_ptr template assignment and void</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.shared"> [tr.util.smartptr.shared]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;16 Oct 2005</p>
+<p>
+Is the void specialization of the template assignment operator taking
+a shared_ptr&lt;void&gt; as an argument supposed be well-formed?
+</p>
+<p>
+I.e., is this snippet well-formed:
+</p>
+<blockquote><pre>shared_ptr&lt;void&gt; p;
+p.operator=&lt;void&gt;(p);
+</pre></blockquote>
+
+<p>
+Gcc complains about auto_ptr&lt;void&gt;::operator*() returning a reference
+to void. I suspect it's because shared_ptr has two template assignment
+operators, one of which takes auto_ptr, and the auto_ptr template gets
+implicitly instantiated in the process of overload resolution.
+</p>
+
+<p>
+The only way I see around it is to do the same trick with auto_ptr&lt;void&gt;
+operator*() as with the same operator in shared_ptr&lt;void&gt;.
+</p>
+
+<p>
+PS Strangely enough, the EDG front end doesn't mind the code, even
+though in a small test case (below) I can reproduce the error with
+it as well.
+</p>
+
+<blockquote><pre>template &lt;class T&gt;
+struct A { T&amp; operator*() { return *(T*)0; } };
+
+template &lt;class T&gt;
+struct B {
+    void operator= (const B&amp;) { }
+    template &lt;class U&gt;
+    void operator= (const B&lt;U&gt;&amp;) { }
+    template &lt;class U&gt;
+    void operator= (const A&lt;U&gt;&amp;) { }
+};
+
+int main ()
+{
+    B&lt;void&gt; b;
+    b.operator=&lt;void&gt;(b);
+}
+</pre></blockquote>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="542"><h3>542.&nbsp;shared_ptr observers</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.shared.obs"> [tr.util.smartptr.shared.obs]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Oct 2005</p>
+<p>
+Peter Dimov wrote:
+To: C++ libraries mailing list
+Message c++std-lib-15614
+[...]
+The intent is for both use_count() and unique() to work in a threaded environment.
+They are intrinsically prone to race conditions, but they never return garbage.
+</p>
+
+<p>
+This is a crucial piece of information that I really wish were
+captured in the text. Having this in a non-normative note would
+have made everything crystal clear to me and probably stopped
+me from ever starting this discussion :) Instead, the sentence
+in p12 "use only for debugging and testing purposes, not for
+production code" very strongly suggests that implementations
+can and even are encouraged to return garbage (when threads
+are involved) for performance reasons.
+</p>
+<p>
+How about adding an informative note along these lines:
+</p>
+<blockquote>
+  Note: Implementations are encouraged to provide well-defined
+  behavior for use_count() and unique() even in the presence of
+  multiple threads.
+</blockquote>
+<p>
+I don't necessarily insist on the exact wording, just that we
+capture the intent.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="543"><h3>543.&nbsp;valarray slice default constructor</h3></a><p><b>Section:</b>&nbsp;26.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.class.slice"> [lib.class.slice]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;3 Nov 2005</p>
+<p>
+If one explicitly constructs a slice or glice with the default
+constructor, does the standard require this slice to have any usable
+state?  It says "creates a slice which specifies no elements", which
+could be interpreted two ways:
+</p>
+<ol>
+<li>There are no elements to which the slice refers (i.e. undefined).</li>
+<li>The slice specifies an array with no elements in it (i.e. defined).</li>
+</ol>
+<p>
+Here is a bit of code to illustrate:
+</p>
+<blockquote><pre>#include &lt;iostream&gt;
+#include &lt;valarray&gt;
+
+int main()
+{
+    std::valarray&lt;int&gt; v(10);
+    std::valarray&lt;int&gt; v2 = v[std::slice()];
+    std::cout &lt;&lt; "v[slice()].size() = " &lt;&lt; v2.size() &lt;&lt; '\n';
+}
+</pre></blockquote>
+
+<p>
+Is the behavior undefined?  Or should the output be:
+</p>
+
+<blockquote>
+v[slice()].size() = 0
+</blockquote>
+
+<p>
+There is a similar question and wording for gslice at 26.3.6.1p1.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="544"><h3>544.&nbsp;minor NULL problems in C.2</h3></a><p><b>Section:</b>&nbsp;C.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/diff.html#diff.library"> [diff.library]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;25 Nov 2005</p>
+<p>
+According to C.2.2.3, p1, "the macro NULL, defined in any of &lt;clocale&gt;,
+&lt;cstddef&gt;, &lt;cstdio&gt;, &lt;cstdlib&gt;, &lt;cstring&gt;, &lt;ctime&gt;,
+or &lt;cwchar&gt;." This is consistent with the C standard.
+</p>
+<p>
+However, Table 95 in C.2 fails to mention &lt;clocale&gt; and &lt;cstdlib&gt;.
+</p>
+<p>
+In addition, C.2, p2 claims that "The C++ Standard library provides
+54 standard macros from the C library, as shown in Table 95." While
+table 95 does have 54 entries, since a couple of them (including the
+NULL macro) are listed more than once, the actual number of macros
+defined by the C++ Standard Library may not be 54.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+I propose we add &lt;clocale&gt; and &lt;cstdlib&gt; to Table 96 and remove the
+number of macros from C.2, p2 and reword the sentence as follows:
+</p>
+<blockquote>
+The C++ Standard library <del>provides 54 standard macros from</del>
+<ins>defines a number macros corresponding to those defined by</ins> the C 
+<ins>Standard</ins> library, as shown in Table 96.
+</blockquote>
+<hr>
+<a name="545"><h3>545.&nbsp;When is a deleter deleted?</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.shared.dest"> [tr.util.smartptr.shared.dest]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;10 Jan 2006</p>
+<p>
+The description of ~shared_ptr doesn't say when the shared_ptr's deleter, if
+any, is destroyed. In principle there are two possibilities: it is destroyed
+unconditionally whenever ~shared_ptr is executed (which, from an implementation
+standpoint, means that the deleter is copied whenever the shared_ptr is copied),
+or it is destroyed immediately after the owned pointer is destroyed (which, from
+an implementation standpoint, means that the deleter object is shared between
+instances). We should say which it is.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="546"><h3>546.&nbsp;_Longlong and _ULonglong are integer types</h3></a><p><b>Section:</b>&nbsp;TR1 5.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.rand.req"> [tr.rand.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;10 Jan 2006</p>
+<p>
+The TR sneaks in two new integer types, _Longlong and _Ulonglong, in [tr.c99].
+The rest of the TR should use that type.&nbsp; I believe this affects two places.
+First, the random number requirements, 5.1.1/10-11, lists all of the types with
+which template parameters named IntType and UIntType may be instantiated.
+_Longlong (or "long long", assuming it is added to C++0x) should be added to the
+IntType list, and UIntType (again, or "unsigned long long") should be added to
+the UIntType list.&nbsp; Second, 6.3.2 lists the types for which hash&lt;&gt; is
+required to be instantiable. _Longlong and _Ulonglong should be added to that
+list, so that people may use long long as a hash key.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="547"><h3>547.&nbsp;division should be floating-point, not integer</h3></a><p><b>Section:</b>&nbsp;TR1 5.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.rand.var"> [tr.rand.var]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;10 Jan 2006</p>
+<p>
+Paragraph 10 describes how a variate generator uses numbers produced by an
+engine to pass to a generator. The sentence that concerns me is: "Otherwise, if
+the value for engine_value_type::result_type is true and the value for
+Distribution::input_type is false [i.e. if the engine produces integers and the
+engine wants floating-point values], then the numbers in s_eng are divided by
+engine().max() - engine().min() + 1 to obtain the numbers in s_e." Since the
+engine is producing integers, both the numerator and the denominator are
+integers and we'll be doing integer division, which I don't think is what we
+want. Shouldn't we be performing a conversion to a floating-point type first?
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="548"><h3>548.&nbsp;May random_device block?</h3></a><p><b>Section:</b>&nbsp;TR1 5.1.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.rand.device"> [tr.rand.device]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;10 Jan 2006</p>
+<p>
+Class random_device "produces non-deterministic random numbers", using some
+external source of entropy. In most real-world systems, the amount of available
+entropy is limited. Suppose that entropy has been exhausted. What is an
+implementation permitted to do? In particular, is it permitted to block
+indefinitely until more random bits are available, or is the implementation
+required to detect failure immediately? This is not an academic question. On
+Linux a straightforward implementation would read from /dev/random, and "When
+the entropy pool is empty, reads to /dev/random will block until additional
+environmental noise is gathered." Programmers need to know whether random_device
+is permitted to (or possibly even required to?) behave the same way.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="549"><h3>549.&nbsp;Undefined variable in binomial_distribution</h3></a><p><b>Section:</b>&nbsp;TR1 5.1.7.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.rand.dist.bin"> [tr.rand.dist.bin]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;10 Jan 2006</p>
+<p>
+Paragraph 1 says that "A binomial distributon random distribution produces
+integer values i&gt;0 with p(i) = (n choose i) * p*i * (1-p)^(t-i), where t and
+p are the parameters of the distribution. OK, that tells us what t, p, and i
+are. What's n?
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="550"><h3>550.&nbsp;What should the return type of pow(float,int) be?</h3></a><p><b>Section:</b>&nbsp;26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;12 Jan 2006</p>
+<p>
+Assuming we adopt the
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">C
+compatibility package from C99</a>  what should be the return type of the
+following signature be:
+</p>
+<blockquote><pre>?  pow(float, int);
+</pre></blockquote>
+<p>
+C++03 says that the return type should be <tt>float</tt>. 
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
+TR1</a> and C90/99 say the return type should be <tt>double</tt>.  This can put
+clients into a situation where C++03 provides answers that are not as high
+quality as C90/C99/TR1.  For example:
+</p>
+<blockquote><pre>#include &lt;math.h&gt;
+
+int main()
+{
+    float x = 2080703.375F;
+    double y = pow(x, 2);
+}
+</pre></blockquote>
+<p>
+Assuming an IEEE 32 bit float and IEEE 64 bit double, C90/C99/TR1 all suggest:
+</p>
+
+<blockquote><pre>y = 4329326534736.390625
+</pre></blockquote>
+
+<p>
+which is exactly right.  While C++98/C++03 demands:
+</p>
+
+<blockquote><pre>y = 4329326510080.
+</pre></blockquote>
+
+<p>
+which is only approximately right.
+</p>
+
+<p>
+I recommend that C++0X adopt the mixed mode arithmetic already adopted by
+Fortran, C and TR1 and make the return type of <tt>pow(float,int)</tt> be
+<tt>double</tt>.
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="551"><h3>551.&nbsp;&lt;ccomplex&gt;</h3></a><p><b>Section:</b>&nbsp;TR1 8.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.c99.ccmplx"> [tr.c99.ccmplx]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;23 Jan 2006</p>
+<p>
+Previously xxx.h was parsable by C++.  But in the case of C99's &lt;complex.h&gt;
+it isn't.  Otherwise we could model it just like &lt;string.h&gt;, &lt;cstring&gt;, &lt;string&gt;:
+</p>
+
+<ul>
+<li>&lt;string&gt;   : C++ API in namespace std</li>
+<li>&lt;cstring&gt;  : C API in namespace std</li>
+<li>&lt;string.h&gt; : C API in global namespace</li>
+</ul>
+
+<p>
+In the case of C's complex, the C API won't compile in C++.  So we have:
+</p>
+
+<ul>
+<li>&lt;complex&gt;   : C++ API in namespace std</li>
+<li>&lt;ccomplex&gt;  : ?</li>
+<li>&lt;complex.h&gt; : ?</li>
+</ul>
+
+<p>
+The ? can't refer to the C API.  TR1 currently says:
+</p>
+
+<ul>
+<li>&lt;complex&gt;   : C++ API in namespace std</li>
+<li>&lt;ccomplex&gt;  : C++ API in namespace std</li>
+<li>&lt;complex.h&gt; : C++ API in global namespace</li>
+</ul>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Strike 8.2 and 8.3 (and any other references to &lt;ccomplex&gt; and
+&lt;complex.h&gt;).
+</p>
+<hr>
+<a name="552"><h3>552.&nbsp;random_shuffle and its generator</h3></a><p><b>Section:</b>&nbsp;25.2.11 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.random.shuffle"> [lib.alg.random.shuffle]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;25 Jan 2006</p>
+<p>
+...is specified to shuffle its range by calling swap but not how
+(or even that) it's supposed to use the RandomNumberGenerator
+argument passed to it.
+</p>
+<p>
+Shouldn't we require that the generator object actually be used
+by the algorithm to obtain a series of random numbers and specify
+how many times its operator() should be invoked by the algorithm?
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="553"><h3>553.&nbsp;very minor editorial change intptr_t / uintptr_t</h3></a><p><b>Section:</b>&nbsp;TR1 8.22.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.c99.cstdint.syn"> [tr.c99.cstdint.syn]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;30 Jan 2006</p>
+<p>
+In the synopsis, some types are identified as optional: int8_t, int16_t,
+and so on, consistently with C99, indeed.
+</p>
+<p>
+On the other hand, intptr_t and uintptr_t, are not marked as such and
+probably should, consistently with C99, 7.18.1.4.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="554"><h3>554.&nbsp;Problem with lwg DR 184 numeric_limits&lt;bool&gt;</h3></a><p><b>Section:</b>&nbsp;18.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.numeric.special"> [lib.numeric.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;29 Jan 2006</p>
+<p>
+I believe we have a bug in the resolution of:
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#184">lwg 184</a>
+(WP status).
+</p>
+
+<p>
+The resolution spells out each member of <tt>numeric_limits&lt;bool&gt;</tt>.
+The part I'm having a little trouble with is:
+</p>
+<blockquote><pre>static const bool traps = false;
+</pre></blockquote>
+
+<p>
+Should this not be implementation defined?  Given:
+</p>
+
+<blockquote><pre>int main()
+{
+     bool b1 = true;
+     bool b2 = false;
+     bool b3 = b1/b2;
+}
+</pre></blockquote>
+
+<p>
+If this causes a trap, shouldn't <tt>numeric_limits&lt;bool&gt;::traps</tt> be
+<tt>true</tt>?
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 18.2.1.5p3:
+</p>
+
+<blockquote>
+-3- The specialization for <tt>bool</tt> shall be provided as follows: 
+<blockquote><pre>namespace std { 
+   template &lt;&gt; class numeric_limits&lt;bool&gt; {
+      ...
+      static const bool traps = <del>false</del> <ins><i>implementation-defined</i></ins>;
+      ...
+   };
+}
+</pre></blockquote>
+</blockquote>
+
+<hr>
+<a name="555"><h3>555.&nbsp;TR1, 8.21/1: typo</h3></a><p><b>Section:</b>&nbsp;TR1 8.21 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.c99.boolh"> [tr.c99.boolh]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;2 Feb 2006</p>
+<p>
+This one, if nobody noticed it yet, seems really editorial:
+s/cstbool/cstdbool/
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 8.21p1:
+</p>
+<blockquote>
+-1- The header behaves as if it defines the additional macro defined in
+<tt>&lt;cst<ins>d</ins>bool&gt;</tt> by including the header <tt>&lt;cstdbool&gt;</tt>.
+</blockquote>
+<hr>
+<a name="556"><h3>556.&nbsp;is Compare a BinaryPredicate?</h3></a><p><b>Section:</b>&nbsp;25.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.sorting"> [lib.alg.sorting]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;5 Feb 2006</p>
+<p>
+In 25, p8 we allow BinaryPredicates to return a type that's convertible
+to bool but need not actually be bool. That allows predicates to return
+things like proxies and requires that implementations be careful about
+what kinds of expressions they use the result of the predicate in (e.g.,
+the expression in if (!pred(a, b)) need not be well-formed since the
+negation operator may be inaccessible or return a type that's not
+convertible to bool).
+</p>
+<p>
+Here's the text for reference:
+</p>
+<blockquote>
+  ...if an algorithm takes BinaryPredicate binary_pred as its argument
+ and first1 and first2 as its iterator arguments, it should work
+ correctly in the construct if (binary_pred(*first1, first2)){...}.
+</blockquote>
+
+<p>
+In 25.3, p2 we require that the Compare function object return true
+of false, which would seem to preclude such proxies. The relevant text
+is here:
+</p>
+<blockquote>
+  Compare is used as a function object which returns true if the first
+  argument is less than the second, and false otherwise...
+</blockquote>
+<p><b>Proposed resolution:</b></p>
+<p>
+I think we could fix this by rewording 25.3, p2 to read somthing like:
+</p>
+<blockquote>
+-2- <tt>Compare</tt> is <del>used as a function object which returns
+<tt>true</tt> if the first argument</del> <ins>a <tt>BinaryPredicate</tt>. The
+return value of the function call operator applied to an object of type
+<tt>Compare</tt>, when converted to type <tt>bool</tt>, yields <tt>true</tt>
+if the first argument of the call</ins> is less than the second, and
+<tt>false</tt> otherwise. <tt>Compare <i>comp</i></tt> is used throughout for
+algorithms assuming an ordering relation. It is assumed that <tt><i>comp</i></tt>
+will not apply any non-constant function through the dereferenced iterator.
+</blockquote>
+<hr>
+<a name="557"><h3>557.&nbsp;TR1: div(_Longlong, _Longlong) vs div(intmax_t, intmax_t)</h3></a><p><b>Section:</b>&nbsp;TR1 8.11.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.c99.cinttypes.syn"> [tr.c99.cinttypes.syn]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;6 Feb 2006</p>
+<p>
+I'm seeing a problem with such overloads: when, _Longlong == intmax_t ==
+long long we end up, essentially, with the same arguments and different
+return types (lldiv_t and imaxdiv_t, respectively). Similar issue with
+abs(_Longlong) and abs(intmax_t), of course.
+</p>
+<p>
+Comparing sections 8.25 and 8.11, I see an important difference,
+however: 8.25.3 and 8.25.4 carefully describe div and abs for _Longlong
+types (rightfully, because not moved over directly from C99), whereas
+there is no equivalent in 8.11: the abs and div overloads for intmax_t
+types appear only in the synopsis and are not described anywhere, in
+particular no mention in 8.11.2 (at variance with 8.25.2).
+</p>
+<p>
+I'm wondering whether we really, really, want div and abs for intmax_t...
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change the <tt>&lt;cstdint&gt;</tt> synopsis in 8.11.1:
+</p>
+<blockquote><pre>...
+intmax_t imaxabs(intmax_t i);
+<del>intmax_t abs(intmax_t i);</del>
+
+imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom);
+<del>imaxdiv_t div(intmax_t numer, intmax_t denom);</del>
+...
+</pre></blockquote>
+<hr>
+<a name="558"><h3>558.&nbsp;lib.input.iterators Defect</h3></a><p><b>Section:</b>&nbsp;24.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.input.iterators"> [lib.input.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;David Abrahams&nbsp; <b>Date:</b>&nbsp;9 Feb 2006</p>
+<blockquote>
+<p>
+  24.1.1 Input iterators [lib.input.iterators]
+</p>
+<p>
+  1 A class or a built-in type X satisfies the requirements of an
+  input iterator for the value type T if the following expressions are
+  valid, where U is the type of any specified member of type T, as
+  shown in Table 73.
+</p>
+</blockquote>
+<p>
+There is no capital U used in table 73.  There is a lowercase u, but
+that is clearly not meant to denote a member of type T.  Also, there's
+no description in 24.1.1 of what lowercase a means.  IMO the above
+should have been...Hah, a and b are already covered in 24.1/11, so maybe it
+should have just been:
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 24.1.1p1:
+</p>
+<blockquote>
+-1- A class or a built-in type <tt>X</tt> satisfies the requirements of an
+input iterator for the value type <tt>T</tt> if the following expressions 
+are valid<del>, where <tt>U</tt> is the type of any specified member of type
+<tt>T</tt>,</del> as shown in Table 73.
+</blockquote>
+<hr>
+<a name="559"><h3>559.&nbsp;numeric_limits&lt;const T&gt;</h3></a><p><b>Section:</b>&nbsp;18.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.support.limits"> [lib.support.limits]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;19 Feb 2006</p>
+        <p>
+
+18.2.1, p2 requires implementations  to provide specializations of the
+<code>numeric_limits</code> template for  each scalar type. While this
+could be interepreted to include cv-qualified forms of such types such
+an  interepretation   is  not  reflected   in  the  synopsis   of  the
+<code>&lt;limits&gt;</code> header.
+
+        </p>
+        <p>
+
+The absence  of specializations of the template  on cv-qualified forms
+of  fundamental types  makes <code>numeric_limits</code>  difficult to
+use in generic  code where the constness (or volatility)  of a type is
+not  always  immediately  apparent.  In  such  contexts,  the  primary
+template  ends   up  being   instantiated  instead  of   the  provided
+specialization, typically yielding unexpected behavior.
+
+        </p>
+<p><b>Proposed resolution:</b></p>
+        <p>
+
+Require   that  specializations   of   <code>numeric_limits</code>  on
+cv-qualified fundamental types have the same semantics as those on the
+unqualifed forms of the same types.
+
+        </p>
+        <p>
+
+Add  to  the   synopsis  of  the  <code>&lt;limits&gt;</code>  header,
+immediately  below  the  declaration  of  the  primary  template,  the
+following:
+
+</p><pre>
+template &lt;class T&gt; class numeric_limits&lt;const T&gt;;
+template &lt;class T&gt; class numeric_limits&lt;volatile T&gt;;
+template &lt;class T&gt; class numeric_limits&lt;const volatile T&gt;;
+
+</pre>
+
+        <p></p>
+        <p>
+
+Add  a new paragraph  to the  end of  18.2.1.1, with  the following
+text:
+
+        </p>
+        <p>
+
+-new-para- The  value of each member  of a <code>numeric_limits</code>
+specialization on a  cv-qualified T is equal to the  value of the same
+member of <code>numeric_limits&lt;T&gt;</code>.
+
+        </p>
+<hr>
+<a name="560"><h3>560.&nbsp;User-defined allocators without default constructor</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Sergey P. Derevyago&nbsp; <b>Date:</b>&nbsp;17 Feb 2006</p>
+<h4>1. The essence of the problem.</h4>
+<p>
+User-defined allocators without default constructor are not explicitly
+supported by the standard but they can be supported just like std::vector
+supports elements without default constructor.
+</p>
+<p>
+As a result, there exist implementations that work well with such allocators
+and implementations that don't.
+</p>
+
+<h4>2. The cause of the problem.</h4>
+<p>
+1) The standard doesn't explicitly state this intent but it should. In
+particular, 20.1.5p5 explicitly state the intent w.r.t. the allocator
+instances that compare non-equal. So it can similarly state the intent w.r.t.
+the user-defined allocators without default constructor.
+</p>
+<p>
+2) Some container operations are obviously underspecified. In particular,
+21.3.7.1p2 tells:
+</p>
+<blockquote>
+<pre>template&lt;class charT, class traits, class Allocator&gt;
+  basic_string&lt;charT,traits,Allocator&gt; operator+(
+    const charT* lhs,
+    const basic_string&lt;charT,traits,Allocator&gt;&amp; rhs
+  );
+</pre>
+Returns: <tt>basic_string&lt;charT,traits,Allocator&gt;(lhs) + rhs</tt>.
+</blockquote>
+<p>
+That leads to the basic_string&lt;charT,traits,Allocator&gt;(lhs, Allocator()) call.
+Obviously, the right requirement is:
+</p>
+<blockquote>
+Returns: <tt>basic_string&lt;charT,traits,Allocator&gt;(lhs, rhs.get_allocator()) + rhs</tt>.
+</blockquote>
+<p>
+It seems like a lot of DRs can be submitted on this "Absent call to
+get_allocator()" topic.
+</p>
+
+<h4>3. Proposed actions.</h4>
+<p>
+1) Explicitly state the intent to allow for user-defined allocators without
+default constructor in 20.1.5 Allocator requirements.
+</p>
+<p>
+2) Correct all the places, where a correct allocator object is available
+through the get_allocator() call but default Allocator() gets passed instead.
+</p>
+<h4>4. Code sample.</h4>
+<p>
+Let's suppose that the following memory pool is available:
+</p>
+<blockquote><pre>class mem_pool {
+      // ...
+      void* allocate(size_t size);
+      void deallocate(void* ptr, size_t size);
+};
+</pre></blockquote>
+<p>
+So the following allocator can be implemented via this pool:
+</p>
+<blockquote><pre>class stl_allocator {
+      mem_pool&amp; pool;
+
+ public:
+      explicit stl_allocator(mem_pool&amp; mp) : pool(mp) {}
+      stl_allocator(const stl_allocator&amp; sa) : pool(sa.pool) {}
+      template &lt;class U&gt;
+      stl_allocator(const stl_allocator&lt;U&gt;&amp; sa)  : pool(sa.get_pool()) {}
+      ~stl_allocator() {}
+
+      pointer allocate(size_type n, std::allocator&lt;void&gt;::const_pointer = 0)
+      {
+       return (n!=0) ? static_cast&lt;pointer&gt;(pool.allocate(n*sizeof(T))) : 0;
+      }
+
+      void deallocate(pointer p, size_type n)
+      {
+       if (n!=0) pool.deallocate(p, n*sizeof(T));
+      }
+
+      // ...
+};
+</pre></blockquote>
+<p>
+Then the following code works well on some implementations and doesn't work on
+another:
+</p>
+<blockquote><pre>typedef basic_string&lt;char, char_traits&lt;char&gt;, stl_allocator&lt;char&gt; &gt; 
+  tl_string;
+mem_pool mp;
+tl_string s1("abc", stl_allocator&lt;int&gt;(mp));
+printf("(%s)\n", ("def"+s1).c_str());
+</pre></blockquote>
+<p>
+In particular, on some implementations the code can't be compiled without
+default stl_allocator() constructor.
+</p>
+<p>
+The obvious way to solve the compile-time problems is to intentionally define
+a NULL pointer dereferencing default constructor
+</p>
+<blockquote><pre>stl_allocator() : pool(*static_cast&lt;mem_pool*&gt;(0)) {}
+</pre></blockquote>
+<p>
+in a hope that it will not be called. The problem is that it really gets
+called by operator+(const char*, const string&amp;) under the current 21.3.7.1p2
+wording.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="561"><h3>561.&nbsp;inserter overly generic</h3></a><p><b>Section:</b>&nbsp;24.4.2.6.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.inserter"> [lib.inserter]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;21 Feb 2006</p>
+<p>
+The declaration of <tt>std::inserter</tt> is:
+</p>
+
+<blockquote><pre>template &lt;class Container, class Iterator&gt;
+insert_iterator&lt;Container&gt;
+inserter(Container&amp; x, Iterator i);
+</pre></blockquote>
+
+<p>
+The template parameter <tt>Iterator</tt> in this function is completely unrelated
+to the template parameter <tt>Container</tt> when it doesn't need to be.  This
+causes the code to be overly generic.  That is, any type at all can be deduced
+as <tt>Iterator</tt>, whether or not it makes sense.  Now the same is true of
+<tt>Container</tt>.  However, for every free (unconstrained) template parameter
+one has in a signature, the opportunity for a mistaken binding grows geometrically.
+</p>
+
+<p>
+It would be much better if <tt>inserter</tt> had the following signature instead:
+</p>
+
+<blockquote><pre>template &lt;class Container&gt;
+insert_iterator&lt;Container&gt;
+inserter(Container&amp; x, typename Container::iterator i);
+</pre></blockquote>
+
+<p>
+Now there is only one free template parameter.  And the second argument to
+<tt>inserter</tt> must be implicitly convertible to the container's iterator,
+else the call will not be a viable overload (allowing other functions in the
+overload set to take precedence).  Furthermore, the first parameter must have a
+nested type named <tt>iterator</tt>, or again the binding to <tt>std::inserter</tt>
+is not viable.  Contrast this with the current situation
+where any type can bind to <tt>Container</tt> or <tt>Iterator</tt> and those
+types need not be anything closely related to containers or iterators.
+</p>
+
+<p>
+This can adversely impact well written code.  Consider:
+</p>
+
+<blockquote><pre>#include &lt;iterator&gt;
+#include &lt;string&gt;
+
+namespace my
+{
+
+template &lt;class String&gt;
+struct my_type {};
+
+struct my_container
+{
+template &lt;class String&gt;
+void push_back(const my_type&lt;String&gt;&amp;);
+};
+
+template &lt;class String&gt;
+void inserter(const my_type&lt;String&gt;&amp; m, my_container&amp; c) {c.push_back(m);}
+
+}  // my
+
+int main()
+{
+    my::my_container c;
+    my::my_type&lt;std::string&gt; m;
+    inserter(m, c);
+}
+</pre></blockquote>
+
+<p>
+Today this code fails because the call to <tt>inserter</tt> binds to
+<tt>std::inserter</tt> instead of to <tt>my::inserter</tt>.  However with the
+proposed change <tt>std::inserter</tt> will no longer be a viable function which
+leaves only <tt>my::inserter</tt> in the overload resolution set.  Everything
+works as the client intends.
+</p>
+
+<p>
+To make matters a little more insidious, the above example works today if you
+simply change the first argument to an rvalue:
+</p>
+
+<blockquote><pre>    inserter(my::my_type(), c);
+</pre></blockquote>
+
+<p>
+It will also work if instantiated with some string type other than
+<tt>std::string</tt> (or any other <tt>std</tt> type).  It will also work if
+<tt>&lt;iterator&gt;</tt> happens to not get included.
+</p>
+
+<p>
+And it will fail again for such inocuous reaons as <tt>my_type</tt> or
+<tt>my_container</tt> privately deriving from any <tt>std</tt> type.
+</p>
+
+<p>
+It seems unfortunate that such simple changes in the client's code can result
+in such radically differing behavior.
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 24.2:
+</p>
+
+<blockquote>
+<b>24.2 Header</b> <tt>&lt;iterator&gt;</tt> <b>synopsis</b>
+<blockquote><pre>...
+template &lt;class Container<del>, class Iterator</del>&gt;
+   insert_iterator&lt;Container&gt; inserter(Container&amp; x, <del>Iterator</del> <ins>typename Container::iterator</ins> i);
+...
+</pre></blockquote>
+</blockquote>
+
+<p>
+Change 24.4.2.5:
+</p>
+
+<blockquote>
+<b>24.4.2.5 Class template</b> <tt>insert_iterator</tt>
+<blockquote><pre>...
+template &lt;class Container<del>, class Iterator</del>&gt;
+   insert_iterator&lt;Container&gt; inserter(Container&amp; x, <del>Iterator</del> <ins>typename Container::iterator</ins> i);
+...
+</pre></blockquote>
+</blockquote>
+
+<p>
+Change 24.4.2.6.5:
+</p>
+
+<blockquote>
+<p>
+<b>24.4.2.6.5</b> <tt>inserter</tt>
+</p>
+<pre>template &lt;class Container<del>, class Inserter</del>&gt;
+   insert_iterator&lt;Container&gt; inserter(Container&amp; x, <del>Inserter</del> <ins>typename Container::iterator</ins> i);
+</pre>
+<blockquote>
+-1- <i>Returns:</i> <tt>insert_iterator&lt;Container&gt;(x,<del>typename Container::iterator(</del>i<del>)</del>)</tt>.
+</blockquote>
+</blockquote>
+
+<hr>
+<a name="562"><h3>562.&nbsp;stringbuf ctor inefficient</h3></a><p><b>Section:</b>&nbsp;27.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.string.streams"> [lib.string.streams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;23 Feb 2006</p>
+        <p>
+
+For  better efficiency,  the requirement  on the  stringbuf  ctor that
+takes  a  string  argument  should  be  loosened  up  to  let  it  set
+<code>epptr()</code>  beyond  just   one  past  the  last  initialized
+character  just like  <code>overflow()</code> has  been changed  to be
+allowed  to  do   (see  issue  432).  That  way   the  first  call  to
+<code>sputc()</code> on  an object won't  necessarily cause a  call to
+<code>overflow</code>. The corresponding change  should be made to the
+string overload of the <code>str()</code> member function.
+
+        </p>
+<p><b>Proposed resolution:</b></p>
+        <p>
+
+Change 27.7.1.1, p3 of the Working Draft, N1804, as follows:
+
+        </p>
+
+<blockquote>
+<pre>explicit basic_stringbuf(const basic_string&lt;charT,traits,Allocator&gt;&amp; <i>s<del>tr</del></i>,
+               ios_base::openmode <i>which</i> = ios_base::in | ios_base::out);
+</pre>
+
+<p>
+-3- <i>Effects:</i>  Constructs an object of class <tt>basic_stringbuf</tt>,
+initializing the base class with <tt>basic_streambuf()</tt>
+(27.5.2.1), and initializing <tt><i>mode</i></tt> with <tt><i>which</i></tt>.
+Then <ins>calls <tt>str(<i>s</i>)</tt>.</ins> <del>copies the content of
+<i>str</i> into the <tt>basic_stringbuf</tt> underlying character
+sequence. If <tt><i>which</i> &amp; ios_base::out</tt> is true, initializes the
+output sequence such that <tt>pbase()</tt> points to the first underlying
+character, <tt>epptr()</tt> points one past the last underlying character, and
+<tt>pptr()</tt> is equal to <tt>epptr()</tt> if <tt><i>which</i> &amp; ios_base::ate</tt>
+is true, otherwise <tt>pptr()</tt> is equal to <tt>pbase()</tt>. If
+<tt>which &amp; ios_base::in</tt> is true, initializes the input sequence such
+that <tt>eback()</tt> and <tt>gptr()</tt> point to the first underlying 
+character and <tt>egptr()</tt> points one past the last underlying character.</del>
+</p>
+</blockquote>
+
+        <p>
+
+Change the Effects clause of the <code>str()</code> in 27.7.1.2, p2 to
+read:
+
+        </p>
+<blockquote>
+<p>
+-2- <i>Effects:</i> Copies the content<ins>s</ins> of <tt><i>s</i></tt> into the
+<tt>basic_stringbuf</tt> underlying character sequence <ins>and
+initializes the input and output sequences according to <tt><i>mode</i></tt></ins>.
+<del>If
+<tt><i>mode</i> &amp; ios_base::out</tt> is true, initializes the output
+sequence such that <tt>pbase()</tt> points to the first underlying character, 
+<tt>epptr()</tt> points one past the last underlying character, and <tt>pptr()</tt>
+is equal to <tt>epptr()</tt> if <tt><i>mode</i> &amp; ios_base::in</tt>
+is true, otherwise <tt>pptr()</tt> is equal to <tt>pbase()</tt>. If
+<tt>mode &amp; ios_base::in</tt> is true, initializes the input sequence 
+such that <tt>eback()</tt> and <tt>gptr()</tt> point to the first underlying
+character and <tt>egptr()</tt> points one past the last underlying character.</del>
+</p>
+
+        <p>
+
+<ins>-3- <i>Postconditions:</i>  If  <code>mode  &amp; ios_base::out</code>  is  true,
+<code>pbase()</code>  points  to the  first  underlying character  and
+<code>(epptr() &gt;= pbase() + s.size())</code> holds; in addition, if
+<code>mode &amp; ios_base::in</code> is true, <code>(pptr() == pbase()
++ s.data())</code>  holds, otherwise <code>(pptr()  == pbase())</code>
+is   true.    If  <code>mode   &amp;   ios_base::in</code>  is   true,
+<code>eback()</code>  points to  the first  underlying  character, and
+<code>(gptr()  ==  eback())</code>  and  <code>(egptr() ==  eback()  +
+s.size())</code> hold.</ins>
+
+        </p>
+</blockquote>
+<hr>
+<a name="563"><h3>563.&nbsp;stringbuf seeking from end</h3></a><p><b>Section:</b>&nbsp;27.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;23 Feb 2006</p>
+<p>
+According to  Table 92  (unchanged by issue  432), when  <code>(way ==
+end)</code> the  <code>newoff</code> value in out mode  is computed as
+the difference between <code>epptr()</code> and <code>pbase()</code>.
+</p>
+        <p>
+
+This value  isn't meaningful unless the  value of <code>epptr()</code>
+can be  precisely controlled by a  program.  That used  to be possible
+until  we accepted the  resolution of  issue 432,  but since  then the
+requirements on <code>overflow()</code> have  been relaxed to allow it
+to  make  more than  1  write  position  available (i.e.,  by  setting
+<code>epptr()</code>     to     some     unspecified    value     past
+<code>pptr()</code>).      So    after     the    first     call    to
+<code>overflow()</code>  positioning the  output sequence  relative to
+end will have unspecified results.
+
+        </p>
+        <p>
+
+In  addition,  in <code>in|out</code>  mode,  since <code>(egptr()  ==
+epptr())</code> need not hold, there are two different possible values
+for   <code>newoff</code>:    <code>epptr()   -   pbase()</code>   and
+<code>egptr() - eback()</code>.
+
+        </p>
+<p><b>Proposed resolution:</b></p>
+        <p>
+
+Change the <code>newoff</code>  column in the last row  of Table 94 to
+read:
+
+        </p>
+<blockquote>
+
+the <del>end</del> <ins>high mark</ins> pointer minus the beginning 
+pointer (<code><del>xend</del> <ins>high_mark</ins> - xbeg</code>).
+
+</blockquote>
+<hr>
+<a name="564"><h3>564.&nbsp;stringbuf seekpos underspecified</h3></a><p><b>Section:</b>&nbsp;27.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;23 Feb 2006</p>
+<p>
+The   effects  of  the   <code>seekpos()</code>  member   function  of
+<code>basic_stringbuf</code>  simply say  that the  function positions
+the  input and/or  output  sequences  but fail  to  spell out  exactly
+how. This is in contrast  to the detail in which <code>seekoff()</code>
+is described.
+</p>
+<p><b>Proposed resolution:</b></p>
+        <p>
+
+Change 27.7.1.3, p13 to read:
+
+        </p>
+<blockquote>
+<p>
+-13- <i>Effects:</i> <ins>Same as <tt>seekoff(off_type(<i>sp</i>), ios_base::beg,
+<i>which</i>)</tt>.</ins> <del>Alters the stream position within the controlled sequences,
+if possible, to correspond to the stream position stored in <tt><i>sp</i></tt>
+(as described below).</del>
+</p>
+<ul>
+<li><del>If <tt>(<i>which</i> &amp; ios_base::in) != 0</tt>, positions the input sequence.</del></li>
+<li><del>If <tt>(<i>which</i> &amp; ios_base::out) != 0</tt>, positions the output sequence.</del></li>
+<li><del>If <tt><i>sp</i></tt> is an invalid stream position, or if the function
+positions neither sequence, the positioning operation fails. If <tt><i>sp</i></tt>
+has not been obtained by a previous successful call to one of the positioning
+functions (<tt>seekoff</tt>, <tt>seekpos</tt>, <tt>tellg</tt>, <tt>tellp</tt>)
+the effect is undefined.</del></li>
+</ul>
+</blockquote>
+<hr>
+<a name="565"><h3>565.&nbsp;xsputn inefficient</h3></a><p><b>Section:</b>&nbsp;27.5.2.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.streambuf.virt.put"> [lib.streambuf.virt.put]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;23 Feb 2006</p>
+        <p>
+
+<tt>streambuf::xsputn()</tt>  is  specified  to  have  the  effect  of
+"writing up to  <tt>n</tt> characters to the output  sequence as if by
+repeated calls to <tt>sputc(c)</tt>."
+
+        </p>
+        <p>
+
+Since  <tt>sputc()</tt> is required  to call  <tt>overflow()</tt> when
+<tt>(pptr()    ==   epptr())</tt>    is   true,    strictly   speaking
+<tt>xsputn()</tt>  should do  the same.   However, doing  so  would be
+suboptimal in  some interesting cases,  such as in unbuffered  mode or
+when the buffer is <tt>basic_stringbuf</tt>.
+
+        </p>
+        <p>
+
+Assuming  calling <tt>overflow()</tt>  is  not really  intended to  be
+required  and the  wording is  simply  meant to  describe the  general
+effect of appending to the end  of the sequence it would be worthwhile
+to  mention in  <tt>xsputn()</tt> that  the function  is  not actually
+required to cause a call to <tt>overflow()</tt>.
+
+        </p>
+<p><b>Proposed resolution:</b></p>
+        <p>
+
+Add the following sentence  to the <tt>xsputn()</tt> Effects clause in
+27.5.2.4.5, p1 (N1804):
+
+        </p>
+        <blockquote>    
+            <p>
+-1- <i>Effects:</i> Writes up to <tt><i>n</i></tt> characters to the output
+sequence as if by repeated calls to <tt>sputc(<i>c</i>)</tt>. The characters 
+written are obtained from successive elements of the array whose first element
+is designated by <tt><i>s</i></tt>. Writing stops when either <tt><i>n</i></tt>
+characters have been written or a call to <tt>sputc(<i>c</i>)</tt> would return
+<tt>traits::eof()</tt>. <ins>It is  uspecified whether the function  calls
+<tt>overflow()</tt> when <tt>(pptr() ==  epptr())</tt> becomes true or whether
+it achieves the same effects by other means.</ins>
+            </p>
+        </blockquote>    
+        <p>
+
+In addition,  I suggest to  add a footnote  to this function  with the
+same text as Footnote 292 to  make it extra clear that derived classes
+are permitted to override <tt>xsputn()</tt> for efficiency.
+
+        </p>
+<hr>
+<a name="566"><h3>566.&nbsp;array forms of unformatted input function undefined for zero-element arrays</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;23 Feb 2006</p>
+        <p>
+
+The array forms of unformatted input functions don't have well-defined
+semantics for zero-element  arrays in a couple of  cases. The affected
+ones (<tt>istream::get()</tt> and  <tt>getline()</tt>) are supposed to
+terminate when <tt>(n - 1)</tt> characters are stored, which obviously
+can never be true when <tt>(n == 0)</tt> to start with.
+
+        </p>
+<p><b>Proposed resolution:</b></p>
+        <p>
+
+I  propose  the following  changes  (references  are  relative to  the
+Working Draft (document N1804).
+
+        </p>
+        <p>
+
+Change 27.6.1.3, p8 (<tt>istream::get()</tt>), bullet 1 as follows:
+
+        </p>
+        <blockquote>
+            <p>
+
+<ins>if  <tt>(n  &lt; 1)</tt>  is  true  or  </ins> <tt>(n  -  1)</tt>
+characters are stored;
+
+            </p>
+        </blockquote>
+        <p>
+
+Similarly, change  27.6.1.3, p18 (<tt>istream::getline()</tt>), bullet
+3 as follows:
+
+        </p>
+        <blockquote>
+            <p>
+
+<ins><tt>(n &lt; 1)</tt> is  true or </ins><tt>(n - 1)</tt> characters
+are     stored     (in    which     case     the    function     calls
+<tt>setstate(failbit)</tt>).
+
+            </p>
+        </blockquote>
+        <p>
+
+Finally, change p21 as follows:
+
+        </p>
+        <blockquote>
+            <p>
+
+In any  case, <ins>provided  <tt>(n &gt; 0)</tt>  is true,  </ins>it then
+stores  a null  character  (using charT())  into  the next  successive
+location of the array.
+
+            </p>
+        </blockquote>
 <p>----- End of document -----</p>
 </body></html>

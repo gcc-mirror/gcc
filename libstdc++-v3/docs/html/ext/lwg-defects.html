@@ -8,11 +8,11 @@ del {background-color:#FFFFA0}</style></head>
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1927=05-0187</td>
+<td align="left">N1950=06-0020</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">2005-12-16</td>
+<td align="left">2006-02-24</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -23,7 +23,7 @@ del {background-color:#FFFFA0}</style></head>
 <td align="left">Howard Hinnant &lt;howard.hinnant@gmail.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Defect Report List (Revision R40)</h1>
+<h1>C++ Standard Library Defect Report List (Revision R41)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
     <ul>
@@ -45,6 +45,12 @@ del {background-color:#FFFFA0}</style></head>
   document.</p>
 <h2>Revision History</h2>
 <ul>
+<li>R41: 
+2006-02-24 pre-Berlin mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#536">536</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#566">566</a>.
+Moved <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#342">342</a> from Ready to Open.
+Reopened <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#309">309</a>.
+</li>
 <li>R40: 
 2005-12-16 mid-term mailing.
 Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#529">529</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#535">535</a>.
@@ -649,7 +655,7 @@ list maintainer's note: the IS is the same.]</p>
 <p>See 99-0040/N1216, October 22, 1999, by Stephen D. Clamage for the analysis
 supporting to the proposed resolution.</p>
 <hr>
-<a name="11"></a><h3><a name="11">11.&nbsp;Bitset minor problems</a></h3><p><b>Section:</b>&nbsp;23.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.template.bitset"> [lib.template.bitset]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Jan 1998</p>
+<a name="11"><h3>11.&nbsp;Bitset minor problems</h3></a><p><b>Section:</b>&nbsp;23.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.template.bitset"> [lib.template.bitset]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Jan 1998</p>
 <p>(1) bitset&lt;&gt;::operator[] is mentioned in the class synopsis (23.3.5), but it is
 not documented in 23.3.5.2. </p>
 
@@ -738,7 +744,7 @@ lists. </p>
 <tt>do_narrow</tt> and <tt>do_widen</tt> should be copied 
 from 22.2.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.ctype.special"> [lib.facet.ctype.special]</a>.</p>
 <hr>
-<a name="17"></a><h3><a name="17">17.&nbsp;Bad bool parsing</a></h3><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="17"><h3>17.&nbsp;Bad bool parsing</h3></a><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>This section describes the process of parsing a text boolean value from the input
 stream. It does not say it recognizes either of the sequences "true" or
 "false" and returns the corresponding bool value; instead, it says it recognizes
@@ -817,7 +823,7 @@ change "&amp;&amp;" to "&amp;".</p>
   <tt>err==str.failbit</tt>. --end example]</p>
 </blockquote>
 <hr>
-<a name="18"></a><h3><a name="18">18.&nbsp;Get(...bool&amp;) omitted</a></h3><p><b>Section:</b>&nbsp;22.2.2.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.members"> [lib.facet.num.get.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="18"><h3>18.&nbsp;Get(...bool&amp;) omitted</h3></a><p><b>Section:</b>&nbsp;22.2.2.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.members"> [lib.facet.num.get.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the list of num_get&lt;&gt; non-virtual members on page 22-23, the member
 that parses bool values was omitted from the list of definitions of non-virtual
 members, though it is listed in the class definition and the corresponding
@@ -2253,7 +2259,7 @@ unformatted output function (as described in 27.6.2.6, paragraph 1)."
 by Judy Ward and Matt Austern.  This proposed resolution is section
 VI of that paper.</p>
 <hr>
-<a name="61"></a><h3><a name="61">61.&nbsp;Ambiguity in iostreams exception policy</a></h3><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="61"><h3>61.&nbsp;Ambiguity in iostreams exception policy</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The introduction to the section on unformatted input (27.6.1.3)
 says that every unformatted input function catches all exceptions that
 were thrown during input, sets badbit, and then conditionally rethrows
@@ -2347,7 +2353,7 @@ elaboration of the first. </p>
   (27.4.4.3), then the caught exception is rethrown. </p>
 </blockquote>
 <hr>
-<a name="66"></a><h3><a name="66">66.&nbsp;Strstreambuf::setbuf</a></h3><p><b>Section:</b>&nbsp;D.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/future.html#depr.strstreambuf.virtuals"> [depr.strstreambuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;18 Aug 1998</p>
+<a name="66"><h3>66.&nbsp;Strstreambuf::setbuf</h3></a><p><b>Section:</b>&nbsp;D.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/future.html#depr.strstreambuf.virtuals"> [depr.strstreambuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;18 Aug 1998</p>
 <p>D.7.1.3, paragraph 19, says that strstreambuf::setbuf
 "Performs an operation that is defined separately for each class
 derived from strstreambuf". This is obviously an incorrect
@@ -6457,7 +6463,7 @@ resolution is the one proposed by Howard.]</i></p>
   to <tt>swap</tt>.  Also, in 26.3.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.transcend"> [lib.valarray.transcend]</a> paragraph 1,
   state that the valarray transcendentals use unqualified lookup.</p>
 <hr>
-<a name="227"></a><h3><a name="227">227.&nbsp;std::swap() should require CopyConstructible or DefaultConstructible arguments</a></h3><p><b>Section:</b>&nbsp;25.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.swap"> [lib.alg.swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;09 Apr 2000</p>
+<a name="227"><h3>227.&nbsp;std::swap() should require CopyConstructible or DefaultConstructible arguments</h3></a><p><b>Section:</b>&nbsp;25.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.swap"> [lib.alg.swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;09 Apr 2000</p>
 <p>25.2.2 reads:</p>
 <blockquote>
   <p><tt>  template&lt;class T&gt; void swap(T&amp; a, T&amp; b);</tt><br>
@@ -7036,7 +7042,7 @@ minor as not to require re-review.
 ]</i></p>
 
 <hr>
-<a name="242"></a><h3><a name="242">242.&nbsp;Side effects of function objects</a></h3><p><b>Section:</b>&nbsp;25.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.transform"> [lib.alg.transform]</a>, 26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numeric.ops"> [lib.numeric.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;May 15 2000</p>
+<a name="242"><h3>242.&nbsp;Side effects of function objects</h3></a><p><b>Section:</b>&nbsp;25.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.transform"> [lib.alg.transform]</a>, 26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numeric.ops"> [lib.numeric.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;May 15 2000</p>
 <p>The algorithms transform(), accumulate(), inner_product(),
 partial_sum(), and adjacent_difference() require that the function
 object supplied to them shall not have any side effects.</p>
@@ -12750,7 +12756,7 @@ longer allowable since [pbase(), epptr()) may now contain
 uninitialized characters.  Positioning is only allowable over the
 initialized range.</p>
 <hr>
-<a name="434"></a><h3><a name="434">434.&nbsp;bitset::to_string() hard to use</a></h3><p><b>Section:</b>&nbsp;23.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
+<a name="434"><h3>434.&nbsp;bitset::to_string() hard to use</h3></a><p><b>Section:</b>&nbsp;23.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
 <p>
 It has been pointed out a number of times that the bitset to_string() member
 function template is tedious to use since callers must explicitly specify the
@@ -13210,7 +13216,7 @@ In section 27.6.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-ios
 of <tt>sentry::operator bool()</tt> to const.
 </p>
 <hr>
-<a name="443"><h3>443.&nbsp;filebuf::close() inconsistent use of EOF</h3></a><p><b>Section:</b>&nbsp;27.8.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.filebuf.members"> [lib.filebuf.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Vincent Leloup&nbsp; <b>Date:</b>&nbsp;20 Nov 2003</p>
+<a name="443"></a><h3><a name="443">443.&nbsp;filebuf::close() inconsistent use of EOF</a></h3><p><b>Section:</b>&nbsp;27.8.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.filebuf.members"> [lib.filebuf.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Vincent Leloup&nbsp; <b>Date:</b>&nbsp;20 Nov 2003</p>
 <p>
 In section 27.8.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.filebuf.members"> [lib.filebuf.members]</a> par6, in effects description of
 basic_filebuf&lt;charT, traits&gt;::close(), overflow(EOF) is used twice;
@@ -13795,7 +13801,7 @@ imposed by Table 37 on compare() when char is signed.
   Post-Redmond: Martin provided wording.]</i></p>
 
 <hr>
-<a name="468"></a><h3><a name="468">468.&nbsp;unexpected consequences of ios_base::operator void*()</a></h3><p><b>Section:</b>&nbsp;27.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+<a name="468"><h3>468.&nbsp;unexpected consequences of ios_base::operator void*()</h3></a><p><b>Section:</b>&nbsp;27.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
 
 <p>The program below is required to compile but when run it typically
 produces unexpected results due to the user-defined conversion from
@@ -13893,5 +13899,24 @@ the non-template assign() function has the signature</p>
 <p>The type, T, is not defined in this context.</p>
 <p><b>Proposed resolution:</b></p>
 <p>Replace "T" with "value_type".</p>
+<hr>
+<a name="533"><h3>533.&nbsp;typo in 2.2.3.10/1</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3.10 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.getdeleter"> [tr.util.smartptr.getdeleter]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;9 Nov 2005</p>
+<p>
+I'm seeing something that looks like a typo. The Return of <tt>get_deleter</tt>
+says:
+</p>
+<blockquote>
+If <tt>*this</tt> <i>owns</i> a deleter <tt>d</tt>...
+</blockquote>
+<p>
+but <tt>get_deleter</tt> is a free function!
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Therefore, I think should be:
+</p>
+<blockquote>
+If <tt><del>*this</del> <ins>p</ins></tt> <i>owns</i> a deleter <tt>d</tt>...
+</blockquote>
 <p>----- End of document -----</p>
 </body></html>
