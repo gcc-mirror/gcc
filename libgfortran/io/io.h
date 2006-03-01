@@ -371,7 +371,9 @@ typedef struct st_parameter_dt
 	  void (*transfer) (struct st_parameter_dt *, bt, void *, int,
 			    size_t, size_t);
 	  struct gfc_unit *current_unit;
-	  int item_count; /* Item number in a formatted data transfer.  */
+	  /* Item number in a formatted data transfer.  Also used in namelist
+	       read_logical as an index into line_buffer.  */
+	  int item_count;
 	  unit_mode mode;
 	  unit_blank blank_status;
 	  enum {SIGN_S, SIGN_SS, SIGN_SP} sign_status;
@@ -409,7 +411,10 @@ typedef struct st_parameter_dt
 	     character string is being read so don't use commas to shorten a
 	     formatted field width.  */
 	  unsigned sf_read_comma : 1;
-	  /* 19 unused bits.  */
+          /* A namelist specific flag used to enable reading input from 
+	       line_buffer for logical reads.  */
+	  unsigned line_buffer_enabled : 1;
+	  /* 18 unused bits.  */
 
 	  char last_char;
 	  char nml_delim;

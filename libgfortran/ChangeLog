@@ -1,3 +1,15 @@
+2006-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26136
+	* io/io.h: Add flag for reading from line_buffer.
+	* io/list_read.c (l_push_char): New function to save namelist
+	input when reading logicals.
+	(free_line): New function to free line_buffer memory.
+	(next_char): Added feature to read from line_buffer.
+	(read_logical): Use new functions to test for '=' after reading a
+	logical value, checking for possible variable name.
+	(namelist_read): Use free_line when all done.
+
 2006-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26464
