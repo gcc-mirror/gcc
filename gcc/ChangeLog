@@ -1,3 +1,12 @@
+2006-03-01  Daniel Berlin  <dberlin@dberlin.org>
+ 
+	Fix PR tree-optimization/26443
+	* tree-vrp.c (pass_vrp): Add TODO_update_tmt_usage
+	to todo and PROP_tmt_usage to properties_destroyed.
+	* tree-ssa-ccp.c (pass_ccp): Ditto.
+	(pass_store_ccp): Ditto.
+	* tree-ssa-dom.c (pass_dominator): Ditto.
+
 2006-03-01  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c: Cleanup whitespace.

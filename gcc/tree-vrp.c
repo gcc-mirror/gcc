@@ -4571,12 +4571,13 @@ struct tree_opt_pass pass_vrp =
   TV_TREE_VRP,				/* tv_id */
   PROP_ssa | PROP_alias,		/* properties_required */
   0,					/* properties_provided */
-  0,					/* properties_destroyed */
+  PROP_tmt_usage,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_cleanup_cfg
     | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_dump_func
-    | TODO_update_ssa,			/* todo_flags_finish */
+    | TODO_update_ssa
+    | TODO_update_tmt_usage,			/* todo_flags_finish */
   0					/* letter */
 };
