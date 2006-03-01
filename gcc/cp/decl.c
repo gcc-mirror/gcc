@@ -8718,7 +8718,7 @@ copy_fn_p (tree d)
 
 void grok_special_member_properties (tree decl)
 {
-  if (!DECL_NONSTATIC_MEMBER_FUNCTION_P(decl))
+  if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
     ; /* Not special.  */
   else if (DECL_CONSTRUCTOR_P (decl))
     {
@@ -11031,7 +11031,7 @@ start_method (cp_decl_specifier_seq *declspecs,
   if (DECL_IN_AGGR_P (fndecl))
     {
       if (DECL_CONTEXT (fndecl)
-	  && TREE_CODE( DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
+	  && TREE_CODE (DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
 	error ("%qD is already defined in class %qT", fndecl,
 	       DECL_CONTEXT (fndecl));
       return error_mark_node;
