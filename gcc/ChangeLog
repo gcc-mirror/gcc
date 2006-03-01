@@ -1,3 +1,7 @@
+2006-03-01  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_copysign): Delete unreachable code.
+
 2006-03-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/25761

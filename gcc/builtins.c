@@ -8208,9 +8208,9 @@ fold_builtin_copysign (tree fndecl, tree arglist, tree type)
 
       c1 = TREE_REAL_CST (arg1);
       c2 = TREE_REAL_CST (arg2);
+      /* c1.sign := c2.sign.  */
       real_copysign (&c1, &c2);
       return build_real (type, c1);
-      c1.sign = c2.sign;
     }
 
   /* copysign(X, Y) is fabs(X) when Y is always non-negative.
