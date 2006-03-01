@@ -1,3 +1,11 @@
+2006-03-01  Tom Tromey  <tromey@redhat.com>
+
+	PR java/24321:
+	* testsuite/libjava.lang/pr24321.java: New file.
+	* testsuite/libjava.lang/pr24321.out: New file.
+	* java/lang/natClass.cc (isInstance): Don't initialize class.
+	(isAssignableFrom): Likewise.
+
 2006-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/26208
@@ -109,7 +117,7 @@
 	is_attribute_name): Likewise.
 	* prims.cc (_Jv_strLengthUtf8, _Jv_hashUtf8String, _Jv_Utf8Const::init,
 	_Jv_makeUtf8Const, _Jv_InitPrimClass): Likewise.
-	
+
 2006-02-08  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26063, PR libgcj/17978, PR libgcj/10598:

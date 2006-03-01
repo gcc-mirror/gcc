@@ -621,8 +621,9 @@ jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
 {
   // Arguments may not have been initialized, given ".class" syntax.
-  _Jv_InitClass (this);
-  _Jv_InitClass (klass);
+  // This ensures we can at least look at their superclasses.
+  _Jv_Linker::wait_for_state (this, JV_STATE_LOADING);
+  _Jv_Linker::wait_for_state (klass, JV_STATE_LOADING);
   return _Jv_IsAssignableFrom (klass, this);
 }
 
@@ -631,7 +632,6 @@ java::lang::Class::isInstance (jobject obj)
 {
   if (! obj)
     return false;
-  _Jv_InitClass (this);
   return _Jv_IsAssignableFrom (JV_CLASS (obj), this);
 }
 
