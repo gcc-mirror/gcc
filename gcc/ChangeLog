@@ -1,3 +1,18 @@
+2006-03-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/26389
+	* config/darwin-protos.h (darwin_asm_output_anchor):
+	Declare.
+	* config/darwin-sections.def (cstring_section):
+	Add SECTION_MERGE to the flags.
+	(literal4_section): Likewise.
+	(literal8_section): Likewise.
+	(objc_selector_refs_section): Likewise.
+	(objc_cls_refs_section): Likewise.
+	* config/darwin.c (darwin_asm_output_anchor): New
+	function.
+	* config/darwin.h (TARGET_ASM_OUTPUT_ANCHOR): Define.
+
 2006-03-01  Daniel Berlin  <dberlin@dberlin.org>
  
 	Fix PR tree-optimization/26443
