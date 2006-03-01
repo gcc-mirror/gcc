@@ -1,3 +1,9 @@
+2006-02-28  Eric Christopher  <echristo@apple.com>
+
+	* config/rs6000/darwin.h (ENABLE_STACK_EXECUTE): Define.
+	Set up IN_LIBGCC definition of TARGET_64BIT.
+	* config/i386/darwin.h (ENABLE_STACK_EXECUTE): Define.
+
 2006-02-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/14752

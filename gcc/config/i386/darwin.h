@@ -170,3 +170,50 @@ extern void darwin_x86_file_end (void);
    : (n) == 4 ? 5							\
    : (n) >= 11 && (n) <= 18 ? (n) + 1					\
    : (n))
+
+/* Attempt to turn on execute permission for the stack.  This may be
+    used by INITIALIZE_TRAMPOLINE of the target needs it (that is,
+    if the target machine can change execute permissions on a page).
+
+    There is no way to query the execute permission of the stack, so
+    we always issue the mprotect() call.
+
+    Note that we go out of our way to use namespace-non-invasive calls
+    here.  Unfortunately, there is no libc-internal name for mprotect().
+
+    Also note that no errors should be emitted by this code; it is
+    considered dangerous for library calls to send messages to
+    stdout/stderr.  */
+
+#define ENABLE_EXECUTE_STACK                                            \
+extern void __enable_execute_stack (void *);                            \
+void                                                                    \
+__enable_execute_stack (void *addr)                                     \
+{                                                                       \
+   extern int mprotect (void *, size_t, int);                           \
+   extern int __sysctl (int *, unsigned int, void *, size_t *,          \
+                       void *, size_t);                                 \
+                                                                        \
+   static int size;                                                     \
+   static long mask;                                                    \
+                                                                        \
+   char *page, *end;                                                    \
+                                                                        \
+   if (size == 0)                                                       \
+     {                                                                  \
+       int mib[2];                                                      \
+       size_t len;                                                      \
+                                                                        \
+       mib[0] = 6; /* CTL_HW */                                         \
+       mib[1] = 7; /* HW_PAGESIZE */                                    \
+       len = sizeof (size);                                             \
+       (void) __sysctl (mib, 2, &size, &len, NULL, 0);                  \
+       mask = ~((long) size - 1);                                       \
+     }                                                                  \
+                                                                        \
+   page = (char *) (((long) addr) & mask);                              \
+   end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
+                                                                        \
+   /* 7 == PROT_READ | PROT_WRITE | PROT_EXEC */                        \
+   (void) mprotect (page, end - page, 7);                               \
+}

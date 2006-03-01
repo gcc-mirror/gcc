@@ -27,6 +27,15 @@
 
 #define DEFAULT_ABI ABI_DARWIN
 
+#ifdef IN_LIBGCC2
+#undef TARGET_64BIT
+#ifdef __powerpc64__
+#define TARGET_64BIT 1
+#else
+#define TARGET_64BIT 0
+#endif
+#endif
+
 /* The object file format is Mach-O.  */
 
 #define TARGET_OBJECT_FORMAT OBJECT_MACHO
@@ -338,11 +347,11 @@ do {									\
 #undef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR (1)
 
-/* Given an rtx X being reloaded into a reg required to be      
-   in class CLASS, return the class of reg to actually use.     
+/* Given an rtx X being reloaded into a reg required to be
+   in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.
-  
+
    On the RS/6000, we have to return NO_REGS when we want to reload a
    floating-point CONST_DOUBLE to force it to be copied to memory.
 
@@ -439,3 +448,50 @@ do {									\
   (TARGET_64BIT							\
    || (darwin_macosx_version_min				\
        && strverscmp (darwin_macosx_version_min, "10.3") >= 0))
+
+/* Attempt to turn on execute permission for the stack.  This may be
+    used by INITIALIZE_TRAMPOLINE of the target needs it (that is,
+    if the target machine can change execute permissions on a page).
+
+    There is no way to query the execute permission of the stack, so
+    we always issue the mprotect() call.
+
+    Note that we go out of our way to use namespace-non-invasive calls
+    here.  Unfortunately, there is no libc-internal name for mprotect().
+
+    Also note that no errors should be emitted by this code; it is
+    considered dangerous for library calls to send messages to
+    stdout/stderr.  */
+
+#define ENABLE_EXECUTE_STACK                                            \
+extern void __enable_execute_stack (void *);                            \
+void                                                                    \
+__enable_execute_stack (void *addr)                                     \
+{                                                                       \
+   extern int mprotect (void *, size_t, int);                           \
+   extern int __sysctl (int *, unsigned int, void *, size_t *,          \
+                       void *, size_t);                                 \
+                                                                        \
+   static int size;                                                     \
+   static long mask;                                                    \
+                                                                        \
+   char *page, *end;                                                    \
+                                                                        \
+   if (size == 0)                                                       \
+     {                                                                  \
+       int mib[2];                                                      \
+       size_t len;                                                      \
+                                                                        \
+       mib[0] = 6; /* CTL_HW */                                         \
+       mib[1] = 7; /* HW_PAGESIZE */                                    \
+       len = sizeof (size);                                             \
+       (void) __sysctl (mib, 2, &size, &len, NULL, 0);                  \
+       mask = ~((long) size - 1);                                       \
+     }                                                                  \
+                                                                        \
+   page = (char *) (((long) addr) & mask);                              \
+   end  = (char *) ((((long) (addr + (TARGET_64BIT ? 48 : 40))) & mask) + size); \
+                                                                        \
+   /* 7 == PROT_READ | PROT_WRITE | PROT_EXEC */                        \
+   (void) mprotect (page, end - page, 7);                               \
+}
