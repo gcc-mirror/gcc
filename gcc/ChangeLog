@@ -1,3 +1,7 @@
+2006-02-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi: Require GNU tar version 1.14.
+
 2006-02-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* BASE-VER: 4.1.1.
