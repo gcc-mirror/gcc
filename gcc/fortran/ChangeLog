@@ -1,3 +1,11 @@
+2006-03-01  Roger Sayle  <roger@eyesopen.com>
+
+	* dependency.c (gfc_is_same_range): Compare the stride, lower and
+	upper bounds when testing array reference ranges for equality.
+	(gfc_check_dependency): Fix indentation whitespace.
+	(gfc_check_element_vs_element): Likewise.
+	(gfc_dep_resolver): Likewise.
+
 2006-02-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc):

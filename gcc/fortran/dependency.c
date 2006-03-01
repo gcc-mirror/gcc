@@ -150,28 +150,50 @@ gfc_is_same_range (gfc_array_ref * ar1, gfc_array_ref * ar2, int n, int def)
   /* Check the range start.  */
   e1 = ar1->start[n];
   e2 = ar2->start[n];
+  if (e1 || e2)
+    {
+      /* Use the bound of the array if no bound is specified.  */
+      if (ar1->as && !e1)
+	e1 = ar1->as->lower[n];
 
-  if (!(e1 || e2))
-    return 1;
+      if (ar2->as && !e2)
+	e2 = ar2->as->lower[n];
 
-  /* Use the bound of the array if no bound is specified.  */
-  if (ar1->as && !e1)
-    e1 = ar1->as->lower[n];
+      /* Check we have values for both.  */
+      if (!(e1 && e2))
+	return def;
 
-  if (ar2->as && !e2)
-    e2 = ar2->as->lower[n];
+      i = gfc_dep_compare_expr (e1, e2);
+      if (i == -2)
+	return def;
+      else if (i != 0)
+	return 0;
+    }
 
-  /* Check we have values for both.  */
-  if (!(e1 && e2))
-    return def;
+  /* Check the range end.  */
+  e1 = ar1->end[n];
+  e2 = ar2->end[n];
+  if (e1 || e2)
+    {
+      /* Use the bound of the array if no bound is specified.  */
+      if (ar1->as && !e1)
+	e1 = ar1->as->upper[n];
 
-  i = gfc_dep_compare_expr (e1, e2);
+      if (ar2->as && !e2)
+	e2 = ar2->as->upper[n];
 
-  if (i == -2)
-    return def;
-  else if (i == 0)
-    return 1;
-  return 0;
+      /* Check we have values for both.  */
+      if (!(e1 && e2))
+	return def;
+
+      i = gfc_dep_compare_expr (e1, e2);
+      if (i == -2)
+	return def;
+      else if (i != 0)
+	return 0;
+    }
+
+  return 1;
 }
 
 
@@ -406,8 +428,8 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
       if (expr2->inline_noncopying_intrinsic)
 	identical = 1;
       /* Remember possible differences between elemental and
-         transformational functions.  All functions inside a FORALL
-         will be pure.  */
+	 transformational functions.  All functions inside a FORALL
+	 will be pure.  */
       for (actual = expr2->value.function.actual;
 	   actual; actual = actual->next)
 	{
@@ -673,7 +695,7 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
       l_start = l_ar.start[n] ;
       r_start = r_ar.start[n] ;
       if (gfc_dep_compare_expr (r_start, l_start) == 0)
-        nIsDep = GFC_DEP_EQUAL;
+	nIsDep = GFC_DEP_EQUAL;
       else
 	nIsDep = GFC_DEP_NODEP;
   }
@@ -704,7 +726,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
   while (lref && rref)
     {
       /* We're resolving from the same base symbol, so both refs should be
-         the same type.  We traverse the reference chain intil we find ranges
+	 the same type.  We traverse the reference chain intil we find ranges
 	 that are not equal.  */
       gcc_assert (lref->type == rref->type);
       switch (lref->type)
@@ -725,7 +747,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 	  for (n=0; n < lref->u.ar.dimen; n++)
 	    {
 	      /* Assume dependency when either of array reference is vector
-	         subscript.  */
+		 subscript.  */
 	      if (lref->u.ar.dimen_type[n] == DIMEN_VECTOR
 		  || rref->u.ar.dimen_type[n] == DIMEN_VECTOR)
 		return 1;
@@ -741,7 +763,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 	      else 
 		{
 		  gcc_assert (rref->u.ar.dimen_type[n] == DIMEN_ELEMENT
-		          && lref->u.ar.dimen_type[n] == DIMEN_ELEMENT);
+			      && lref->u.ar.dimen_type[n] == DIMEN_ELEMENT);
 		  this_dep = gfc_check_element_vs_element (rref, lref, n);
 		}
 
@@ -750,7 +772,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 		return 0;
 
 	      /* Overlap codes are in order of priority.  We only need to
-	         know the worst one.*/
+		 know the worst one.*/
 	      if (this_dep > fin_dep)
 		fin_dep = this_dep;
 	    }
