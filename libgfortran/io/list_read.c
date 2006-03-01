@@ -117,6 +117,19 @@ free_saved (st_parameter_dt *dtp)
 }
 
 
+/* Free the line buffer if necessary.  */
+
+static void
+free_line (st_parameter_dt *dtp)
+{
+  if (dtp->u.p.line_buffer == NULL)
+    return;
+
+  free_mem (dtp->u.p.line_buffer);
+  dtp->u.p.line_buffer = NULL;
+}
+
+
 static char
 next_char (st_parameter_dt *dtp)
 {
@@ -132,7 +145,23 @@ next_char (st_parameter_dt *dtp)
       goto done;
     }
 
-  length = 1;
+  /* Read from line_buffer if enabled.  */
+
+  if (dtp->u.p.line_buffer_enabled)
+    {
+      dtp->u.p.at_eol = 0;
+
+      c = dtp->u.p.line_buffer[dtp->u.p.item_count];
+      if (c != '\0' && dtp->u.p.item_count < 64)
+	{
+	  dtp->u.p.line_buffer[dtp->u.p.item_count] = '\0';
+	  dtp->u.p.item_count++;
+	  goto done;
+	}
+
+        dtp->u.p.item_count = 0;
+	dtp->u.p.line_buffer_enabled = 0;
+    }    
 
   /* Handle the end-of-record condition for internal array unit */
   if (is_array_io(dtp) && dtp->u.p.current_unit->bytes_left == 0)
@@ -154,6 +183,9 @@ next_char (st_parameter_dt *dtp)
     }
 
   /* Get the next character and handle end-of-record conditions */
+
+  length = 1;
+
   p = salloc_r (dtp->u.p.current_unit->s, &length);
 
   if (is_internal_unit(dtp))
@@ -510,43 +542,73 @@ parse_repeat (st_parameter_dt *dtp)
 }
 
 
+/* To read a logical we have to look ahead in the input stream to make sure
+    there is not an equal sign indicating a variable name.  To do this we use 
+    line_buffer to point to a temporary buffer, pushing characters there for
+    possible later reading. */
+
+static void
+l_push_char (st_parameter_dt *dtp, char c)
+{
+  char *new;
+
+  if (dtp->u.p.line_buffer == NULL)
+    {
+      dtp->u.p.line_buffer = get_mem (SCRATCH_SIZE);
+      memset (dtp->u.p.line_buffer, 0, SCRATCH_SIZE);
+    }
+
+  dtp->u.p.line_buffer[dtp->u.p.item_count++] = c;
+}
+
+
 /* Read a logical character on the input.  */
 
 static void
 read_logical (st_parameter_dt *dtp, int length)
 {
   char c, message[100];
-  int v;
+  int i, v;
 
   if (parse_repeat (dtp))
     return;
 
-  c = next_char (dtp);
+  c = tolower (next_char (dtp));
+  l_push_char (dtp, c);
   switch (c)
     {
     case 't':
-    case 'T':
       v = 1;
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+
+      if (!is_separator(c))
+	goto possible_name;
+
+      unget_char (dtp, c);
       break;
     case 'f':
-    case 'F':
       v = 0;
-      break;
-
-    case '.':
       c = next_char (dtp);
+      l_push_char (dtp, c);
+
+      if (!is_separator(c))
+	goto possible_name;
+
+      unget_char (dtp, c);
+      break;
+    case '.':
+      c = tolower (next_char (dtp));
       switch (c)
 	{
-	case 't':
-	case 'T':
-	  v = 1;
-	  break;
-	case 'f':
-	case 'F':
-	  v = 0;
-	  break;
-	default:
-	  goto bad_logical;
+	  case 't':
+	    v = 1;
+	    break;
+	  case 'f':
+	    v = 0;
+	    break;
+	  default:
+	    goto bad_logical;
 	}
 
       break;
@@ -572,10 +634,43 @@ read_logical (st_parameter_dt *dtp, int length)
 
   unget_char (dtp, c);
   eat_separator (dtp);
-  free_saved (dtp);
+  dtp->u.p.item_count = 0;
+  dtp->u.p.line_buffer_enabled = 0;
   set_integer ((int *) dtp->u.p.value, v, length);
 
   return;
+
+ possible_name:
+
+  for(i = 0; i < 63; i++)
+    {
+      c = next_char (dtp);
+      if (is_separator(c))
+	{
+	  unget_char (dtp, c);
+	  eat_separator (dtp);
+	  c = next_char (dtp);
+	  if (c != '=')
+	    {
+	      unget_char (dtp, c);
+	      dtp->u.p.item_count = 0;
+	      dtp->u.p.line_buffer_enabled = 0;
+	      dtp->u.p.saved_type = BT_LOGICAL;
+	      dtp->u.p.saved_length = length;
+	      set_integer ((int *) dtp->u.p.value, v, length);
+	      return;
+	    }
+	}
+ 
+      l_push_char (dtp, c);
+      if (c == '=')
+	{
+	  dtp->u.p.nml_read_error = 1;
+	  dtp->u.p.line_buffer_enabled = 1;
+	  dtp->u.p.item_count = 0;
+	  return;
+	}
+     }
 
  bad_logical:
 
@@ -2435,6 +2530,7 @@ find_nml_name:
 
   dtp->u.p.eof_jump = NULL;
   free_saved (dtp);
+  free_line (dtp);
   return;
 
   /* All namelist error calls return from here */
@@ -2443,6 +2539,7 @@ nml_err_ret:
 
   dtp->u.p.eof_jump = NULL;
   free_saved (dtp);
+  free_line (dtp);
   generate_error (&dtp->common, ERROR_READ_VALUE, nml_err_msg);
   return;
 }
