@@ -1,3 +1,12 @@
+2006-03-01  Ben Elliston  <bje@au.ibm.com>
+
+	* mklibgcc.in: Add logic to handle $DFP_ENABLE and $DFP_CFLAGS.
+	Compile dfp-bit.c from the source directory using -DWIDTH and
+	$DFP_CFLAGS to control the compilation of that file, rather than
+	generating width-specific versions in the build directory.
+	* Makefile.in (libgcc.mk): Pass down DFP_ENABLE and DFP_CFLAGS.
+	(LIBGCC_DEPS): Replace $(D32PBIT) et al with config/dfp-bit.[hc].
+
 2006-02-28  Zack Weinberg  <zackw@panix.com>
 
 	* doc/md.texi: Avoid use of @headitem so that makeinfo <4.7
