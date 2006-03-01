@@ -1,3 +1,7 @@
+2006-03-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 41.
+
 2006-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/26208
