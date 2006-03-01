@@ -1415,6 +1415,8 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) specs \
 	DPBIT_FUNCS='$(DPBIT_FUNCS)' \
 	TPBIT='$(TPBIT)' \
 	TPBIT_FUNCS='$(TPBIT_FUNCS)' \
+	DFP_ENABLE='$(DFP_ENABLE)' \
+	DFP_CFLAGS='$(DFP_CFLAGS)' \
 	D32PBIT='$(D32PBIT)' \
 	D32PBIT_FUNCS='$(D32PBIT_FUNCS)' \
 	D64PBIT='$(D64PBIT)' \
@@ -1443,7 +1445,7 @@ LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	libgcc.mk $(srcdir)/libgcc2.c $(srcdir)/libgcov.c $(TCONFIG_H) \
 	$(MACHMODE_H) longlong.h gbl-ctors.h config.status $(srcdir)/libgcc2.h \
 	tsystem.h $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
-	$(D32PBIT) $(D64PBIT) $(D128PBIT) \
+	config/dfp-bit.h config/dfp-bit.c \
 	$(LIB2ADD_ST) $(LIB2ADDEH) $(LIB2ADDEHDEP) $(EXTRA_PARTS) \
 	$(srcdir)/config/$(LIB1ASMSRC) \
 	$(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h

@@ -25,6 +25,8 @@
 # FPBIT
 # FPBIT_FUNCS
 # LIB2_DIVMOD_FUNCS
+# DFP_ENABLE
+# DFP_CFLAGS
 # DPBIT
 # DPBIT_FUNCS
 # TPBIT
@@ -368,6 +370,11 @@ for ml in $MULTILIBS; do
   done
 
   if [ "@enable_decimal_float@" = "yes" -a -z "$libgcc_so" ]; then
+    # If $DFP_ENABLE is set, then we want all data type sizes.
+    if [ "$DFP_ENABLE" ] ; then
+	D32PBIT=1; D64PBIT=1; D128PBIT=1
+    fi
+
     # Bring in the DFP support code if D32PBIT, D64PBIT or D128PBIT are set.
     if [ -n "$D32PBIT" -o -n "$D64PBIT" -o -n "$D128PBIT" ] ; then
       dec_filenames="decContext decNumber decRound decLibrary decUtility"
@@ -396,14 +403,18 @@ for ml in $MULTILIBS; do
       dpfuncs_var="${dpbit_var}_FUNCS"
       eval dpbit=\$$dpbit_var
       eval dpfuncs=\$$dpfuncs_var
+      case "$dpbit_var" in
+	  D32PBIT)  dpwidth=32 ;;
+	  D64PBIT)  dpwidth=64 ;;
+	  D128PBIT) dpwidth=128 ;;
+      esac
 
       if [ "$dpbit" ]; then
         for name in $dpfuncs; do
           out="libgcc/${dir}/${name}${objext}"
-	  echo $out: $dpbit $fpbit_c_dep
-	  echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	    -c $dpbit -o $out
-
+	  echo $out: config/dfp-bit.c $fpbit_c_dep
+	  echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name -DWIDTH=$dpwidth \
+	      $DFP_CFLAGS -c $\(srcdir\)/config/dfp-bit.c -o $out
 	  echo $libgcc_a: $out
         done
       fi
