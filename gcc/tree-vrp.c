@@ -826,66 +826,6 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  || symbolic_range_p (limit_vr)))
     limit_vr = NULL;
 
-  /* Special handling for integral types with super-types.  Some FEs
-     construct integral types derived from other types and restrict
-     the range of values these new types may take.
-
-     It may happen that LIMIT is actually smaller than TYPE's minimum
-     value.  For instance, the Ada FE is generating code like this
-     during bootstrap:
-
-	    D.1480_32 = nam_30 - 300000361;
-	    if (D.1480_32 <= 1) goto <L112>; else goto <L52>;
-	    <L112>:;
-	    D.1480_94 = ASSERT_EXPR <D.1480_32, D.1480_32 <= 1>;
-
-     All the names are of type types__name_id___XDLU_300000000__399999999
-     which has min == 300000000 and max == 399999999.  This means that
-     the ASSERT_EXPR would try to create the range [3000000, 1] which
-     is invalid.
-
-     The fact that the type specifies MIN and MAX values does not
-     automatically mean that every variable of that type will always
-     be within that range, so the predicate may well be true at run
-     time.  If we had symbolic -INF and +INF values, we could
-     represent this range, but we currently represent -INF and +INF
-     using the type's min and max values.
-	 
-     So, the only sensible thing we can do for now is set the
-     resulting range to VR_VARYING.  TODO, would having symbolic -INF
-     and +INF values be worth the trouble?  */
-  if (TREE_CODE (limit) != SSA_NAME
-      && INTEGRAL_TYPE_P (type)
-      && TREE_TYPE (type))
-    {
-      if (cond_code == LE_EXPR || cond_code == LT_EXPR)
-	{
-	  tree type_min = TYPE_MIN_VALUE (type);
-	  int cmp = compare_values (limit, type_min);
-
-	  /* For < or <= comparisons, if LIMIT is smaller than
-	     TYPE_MIN, set the range to VR_VARYING.  */
-	  if (cmp == -1 || cmp == 0)
-	    {
-	      set_value_range_to_varying (vr_p);
-	      return;
-	    }
-	}
-      else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
-	{
-	  tree type_max = TYPE_MIN_VALUE (type);
-	  int cmp = compare_values (limit, type_max);
-
-	  /* For > or >= comparisons, if LIMIT is bigger than
-	     TYPE_MAX, set the range to VR_VARYING.  */
-	  if (cmp == 1 || cmp == 0)
-	    {
-	      set_value_range_to_varying (vr_p);
-	      return;
-	    }
-	}
-    }
-
   /* Initially, the new range has the same set of equivalences of
      VAR's range.  This will be revised before returning the final
      value.  Since assertions may be chained via mutually exclusive
