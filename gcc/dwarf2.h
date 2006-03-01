@@ -1,7 +1,7 @@
-/* Declarations and definitions of codes relating to the DWARF2 symbolic
-   debugging information format.
+/* Declarations and definitions of codes relating to the DWARF2 and
+   DWARF3 symbolic debugging information formats.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -187,6 +187,8 @@ enum dwarf_tag
     DW_TAG_unspecified_type = 0x3b,
     DW_TAG_partial_unit = 0x3c,
     DW_TAG_imported_unit = 0x3d,
+    DW_TAG_condition = 0x3f,
+    DW_TAG_shared_type = 0x40,
     /* SGI/MIPS Extensions.  */
     DW_TAG_MIPS_loop = 0x4081,
     /* HP extensions.  See: ftp://ftp.hp.com/pub/lang/tools/WDB/wdb-4.0.tar.gz .  */
@@ -317,6 +319,21 @@ enum dwarf_attribute
     DW_AT_call_column   = 0x57,
     DW_AT_call_file     = 0x58,
     DW_AT_call_line     = 0x59,
+    DW_AT_description   = 0x5a,
+    DW_AT_binary_scale  = 0x5b,
+    DW_AT_decimal_scale = 0x5c,
+    DW_AT_small         = 0x5d,
+    DW_AT_decimal_sign  = 0x5e,
+    DW_AT_digit_count   = 0x5f,
+    DW_AT_picture_string = 0x60,
+    DW_AT_mutable       = 0x61,
+    DW_AT_threads_scaled = 0x62,
+    DW_AT_explicit      = 0x63,
+    DW_AT_object_pointer = 0x64,
+    DW_AT_endianity     = 0x65,
+    DW_AT_elemental     = 0x66,
+    DW_AT_pure          = 0x67,
+    DW_AT_recursive     = 0x68,
     /* SGI/MIPS extensions.  */
     DW_AT_MIPS_fde = 0x2001,
     DW_AT_MIPS_loop_begin = 0x2002,
@@ -518,6 +535,9 @@ enum dwarf_location_atom
     DW_OP_call2 = 0x98,
     DW_OP_call4 = 0x99,
     DW_OP_call_ref = 0x9a,
+    DW_OP_form_tls_address = 0x9b,
+    DW_OP_call_frame_cfa = 0x9c,
+    DW_OP_bit_piece = 0x9d,
     /* GNU extensions.  */
     DW_OP_GNU_push_tls_address = 0xe0,
     /* HP extensions.  */
@@ -547,6 +567,11 @@ enum dwarf_type
     DW_ATE_unsigned_char = 0x8,
     /* DWARF 3.  */
     DW_ATE_imaginary_float = 0x9,
+    DW_ATE_packed_decimal = 0xa,
+    DW_ATE_numeric_string = 0xb,
+    DW_ATE_edited = 0xc,
+    DW_ATE_signed_fixed = 0xd,
+    DW_ATE_unsigned_fixed = 0xe,
     DW_ATE_decimal_float = 0xf,
     /* HP extensions.  */
     DW_ATE_HP_float80            = 0x80, /* Floating-point (80 bit).  */
@@ -560,6 +585,29 @@ enum dwarf_type
 
 #define	DW_ATE_lo_user 0x80
 #define	DW_ATE_hi_user 0xff
+
+/* Decimal sign encodings.  */
+enum dwarf_decimal_sign_encoding
+  {
+    /* DWARF 3.  */
+    DW_DS_unsigned = 0x01,
+    DW_DS_leading_overpunch = 0x02,
+    DW_DS_trailing_overpunch = 0x03,
+    DW_DS_leading_separate = 0x04,
+    DW_DS_trailing_separate = 0x05
+  };
+
+/* Endianity encodings.  */
+enum dwarf_endianity_encoding
+  {
+    /* DWARF 3.  */
+    DW_END_default = 0x00,
+    DW_END_big = 0x01,
+    DW_END_little = 0x02
+  };
+
+#define DW_END_lo_user 0x40
+#define DW_END_hi_user 0xff
 
 /* Array ordering names and codes.  */
 enum dwarf_array_dim_ordering
@@ -667,6 +715,9 @@ enum dwarf_line_number_x_ops
     DW_LNE_HP_define_proc              = 0x20
   };
 
+#define DW_LNE_lo_user 0x80
+#define DW_LNE_hi_user 0xff
+
 /* Call frame information.  */
 enum dwarf_call_frame_info
   {
@@ -694,6 +745,9 @@ enum dwarf_call_frame_info
     DW_CFA_offset_extended_sf = 0x11,
     DW_CFA_def_cfa_sf = 0x12,
     DW_CFA_def_cfa_offset_sf = 0x13,
+    DW_CFA_val_offset = 0x14,
+    DW_CFA_val_offset_sf = 0x15,
+    DW_CFA_val_expression = 0x16,
     /* SGI/MIPS specific.  */
     DW_CFA_MIPS_advance_loc8 = 0x1d,
     /* GNU extensions.  */
@@ -727,11 +781,16 @@ enum dwarf_source_language
     DW_LANG_Fortran90 = 0x0008,
     DW_LANG_Pascal83 = 0x0009,
     DW_LANG_Modula2 = 0x000a,
-    DW_LANG_Java = 0x000b,
     /* DWARF 3.  */
+    DW_LANG_Java = 0x000b,
     DW_LANG_C99 = 0x000c,
     DW_LANG_Ada95 = 0x000d,
     DW_LANG_Fortran95 = 0x000e,
+    DW_LANG_PLI = 0x000f,
+    DW_LANG_ObjC = 0x0010,
+    DW_LANG_ObjC_plus_plus = 0x0011,
+    DW_LANG_UPC = 0x0012,
+    DW_LANG_D = 0x0013,
     /* MIPS.  */
     DW_LANG_Mips_Assembler = 0x8001,
     /* UPC.  */
