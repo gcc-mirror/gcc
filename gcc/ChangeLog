@@ -1,3 +1,11 @@
+2006-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport
+	2005-11-03  James E Wilson  <wilson@specifix.com>
+
+	PR preprocessor/24202
+	* cppfiles.c (_cpp_pop_file_buffer): Set buffer_valid to false.
+
 2006-03-01  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21616
@@ -19,7 +27,7 @@
 
 2006-02-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	* Backport
+	Backport
 	2004-04-28  Serge Belyshev  <1319@bot.ru>
 	
 	PR 14944
