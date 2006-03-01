@@ -459,9 +459,9 @@ verify_flow_sensitive_alias_info (void)
 	continue;
 
       ann = var_ann (var);
-      if (pi->is_dereferenced && !pi->name_mem_tag && !ann->type_mem_tag)
+      if (pi->is_dereferenced && !pi->name_mem_tag && !ann->symbol_mem_tag)
 	{
-	  error ("dereferenced pointers should have a name or a type tag");
+	  error ("dereferenced pointers should have a name or a symbol tag");
 	  goto err;
 	}
 
@@ -498,8 +498,8 @@ DEF_VEC_ALLOC_P (bitmap,heap);
    points-to set is different from every other points-to set for other name
    tags.
 
-   Additionally, given a pointer P_i with name tag NMT and type tag
-   TMT, this function verified the alias set of TMT is a superset of
+   Additionally, given a pointer P_i with name tag NMT and symbol tag
+   SMT, this function verified the alias set of SMT is a superset of
    the alias set of NMT.  */
 
 static void
@@ -516,7 +516,7 @@ verify_name_tags (void)
   for (i = 0; i < num_ssa_names; i++)
     {
       struct ptr_info_def *pi;
-      tree tmt, ptr = ssa_name (i);
+      tree smt, ptr = ssa_name (i);
 
       if (ptr == NULL_TREE)
 	continue;
@@ -538,31 +538,31 @@ verify_name_tags (void)
       VEC_safe_push (tree, heap, name_tag_reps, ptr);
       VEC_safe_push (bitmap, heap, pt_vars_for_reps, pi->pt_vars);
 
-      /* Verify that alias set of PTR's type tag is a superset of the
+      /* Verify that alias set of PTR's symbol tag is a superset of the
 	 alias set of PTR's name tag.  */
-      tmt = var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
-      if (tmt)
+      smt = var_ann (SSA_NAME_VAR (ptr))->symbol_mem_tag;
+      if (smt)
 	{
 	  size_t i;
-	  VEC(tree,gc) *aliases = var_ann (tmt)->may_aliases;
+	  VEC(tree,gc) *aliases = var_ann (smt)->may_aliases;
 	  tree alias;
 
 	  bitmap_clear (type_aliases);
 	  for (i = 0; VEC_iterate (tree, aliases, i, alias); i++)
 	    bitmap_set_bit (type_aliases, DECL_UID (alias));
 
-	  /* When grouping, we may have added PTR's type tag into the
+	  /* When grouping, we may have added PTR's symbol tag into the
 	     alias set of PTR's name tag.  To prevent a false
-	     positive, pretend that TMT is in its own alias set.  */
-	  bitmap_set_bit (type_aliases, DECL_UID (tmt));
+	     positive, pretend that SMT is in its own alias set.  */
+	  bitmap_set_bit (type_aliases, DECL_UID (smt));
 
 	  if (bitmap_equal_p (type_aliases, pi->pt_vars))
 	    continue;
 
 	  if (!bitmap_intersect_compl_p (type_aliases, pi->pt_vars))
 	    {
-	      error ("alias set of a pointer's type tag should be a superset of the corresponding name tag");
-	      debug_variable (tmt);
+	      error ("alias set of a pointer's symbol tag should be a superset of the corresponding name tag");
+	      debug_variable (smt);
 	      debug_variable (pi->name_mem_tag);
 	      goto err;
 	    }

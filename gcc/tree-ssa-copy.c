@@ -108,8 +108,8 @@ may_propagate_copy (tree dest, tree orig)
       && POINTER_TYPE_P (type_d)
       && POINTER_TYPE_P (type_o))
     {
-      tree mt_dest = var_ann (SSA_NAME_VAR (dest))->type_mem_tag;
-      tree mt_orig = var_ann (SSA_NAME_VAR (orig))->type_mem_tag;
+      tree mt_dest = var_ann (SSA_NAME_VAR (dest))->symbol_mem_tag;
+      tree mt_orig = var_ann (SSA_NAME_VAR (orig))->symbol_mem_tag;
       if (mt_dest && mt_orig && mt_dest != mt_orig)
 	return false;
       else if (!lang_hooks.types_compatible_p (type_d, type_o))
@@ -187,16 +187,16 @@ merge_alias_info (tree orig, tree new)
 	      == get_alias_set (TREE_TYPE (TREE_TYPE (orig_sym))));
 #endif
 
-  /* Synchronize the type tags.  If both pointers had a tag and they
-     are different, then something has gone wrong.  Type tags can
+  /* Synchronize the symbol tags.  If both pointers had a tag and they
+     are different, then something has gone wrong.  Symbol tags can
      always be merged because they are flow insensitive, all the SSA
-     names of the same base DECL share the same type tag.  */
-  if (new_ann->type_mem_tag == NULL_TREE)
-    new_ann->type_mem_tag = orig_ann->type_mem_tag;
-  else if (orig_ann->type_mem_tag == NULL_TREE)
-    orig_ann->type_mem_tag = new_ann->type_mem_tag;
+     names of the same base DECL share the same symbol tag.  */
+  if (new_ann->symbol_mem_tag == NULL_TREE)
+    new_ann->symbol_mem_tag = orig_ann->symbol_mem_tag;
+  else if (orig_ann->symbol_mem_tag == NULL_TREE)
+    orig_ann->symbol_mem_tag = new_ann->symbol_mem_tag;
   else
-    gcc_assert (new_ann->type_mem_tag == orig_ann->type_mem_tag);
+    gcc_assert (new_ann->symbol_mem_tag == orig_ann->symbol_mem_tag);
 
   /* Check that flow-sensitive information is compatible.  Notice that
      we may not merge flow-sensitive information here.  This function

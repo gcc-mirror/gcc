@@ -208,8 +208,9 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
     }
 
   /* Don't coalesce if there are two different memory tags.  */
-  if (ann1->type_mem_tag && ann2->type_mem_tag
-      && ann1->type_mem_tag != ann2->type_mem_tag)
+  if (ann1->symbol_mem_tag
+      && ann2->symbol_mem_tag
+      && ann1->symbol_mem_tag != ann2->symbol_mem_tag)
     {
       if (debug)
 	fprintf (debug, " : 2 memory tags. No coalesce.\n");
@@ -270,10 +271,10 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 
   /* Update the various flag widgitry of the current base representative.  */
   ann3 = var_ann (SSA_NAME_VAR (partition_to_var (map, p3)));
-  if (ann1->type_mem_tag)
-    ann3->type_mem_tag = ann1->type_mem_tag;
+  if (ann1->symbol_mem_tag)
+    ann3->symbol_mem_tag = ann1->symbol_mem_tag;
   else
-    ann3->type_mem_tag = ann2->type_mem_tag;
+    ann3->symbol_mem_tag = ann2->symbol_mem_tag;
 
   if (debug)
     {

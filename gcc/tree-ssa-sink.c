@@ -168,7 +168,7 @@ is_hidden_global_store (tree stmt)
 	 variable.
 
 	 Therefore, we check the base address of the LHS.  If the
-	 address is a pointer, we check if its name tag or type tag is
+	 address is a pointer, we check if its name tag or symbol tag is
 	 a global variable.  Otherwise, we check if the base variable
 	 is a global.  */
       lhs = TREE_OPERAND (stmt, 0);
@@ -194,12 +194,12 @@ is_hidden_global_store (tree stmt)
 	  tree ptr = TREE_OPERAND (lhs, 0);
 	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
 	  tree nmt = (pi) ? pi->name_mem_tag : NULL_TREE;
-	  tree tmt = var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
+	  tree smt = var_ann (SSA_NAME_VAR (ptr))->symbol_mem_tag;
 
-	  /* If either the name tag or the type tag for PTR is a
+	  /* If either the name tag or the symbol tag for PTR is a
 	     global variable, then the store is necessary.  */
 	  if ((nmt && is_global_var (nmt))
-	      || (tmt && is_global_var (tmt)))
+	      || (smt && is_global_var (smt)))
 	    {
 	      return true;
 	    }

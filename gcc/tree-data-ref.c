@@ -129,9 +129,10 @@ static struct data_reference * init_data_ref (tree, tree, tree, tree, bool,
 					      struct ptr_info_def *,
 					      enum  data_ref_type);
 
+
 /* Determine if PTR and DECL may alias, the result is put in ALIASED.
-   Return FALSE if there is no type memory tag for PTR.
-*/
+   Return FALSE if there is no symbol memory tag for PTR.  */
+
 static bool
 ptr_decl_may_alias_p (tree ptr, tree decl, 
 		      struct data_reference *ptr_dr, 
@@ -141,7 +142,7 @@ ptr_decl_may_alias_p (tree ptr, tree decl,
    
   gcc_assert (TREE_CODE (ptr) == SSA_NAME && DECL_P (decl));
 
-  tag = get_var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
+  tag = get_var_ann (SSA_NAME_VAR (ptr))->symbol_mem_tag;
   if (!tag)
     tag = DR_MEMTAG (ptr_dr);
   if (!tag)
@@ -153,8 +154,8 @@ ptr_decl_may_alias_p (tree ptr, tree decl,
 
 
 /* Determine if two pointers may alias, the result is put in ALIASED.
-   Return FALSE if there is no type memory tag for one of the pointers.
-*/
+   Return FALSE if there is no symbol memory tag for one of the pointers.  */
+
 static bool
 ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b, 
 		     struct data_reference *dra, 
@@ -163,12 +164,12 @@ ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b,
 {  
   tree tag_a, tag_b;
 
-  tag_a = get_var_ann (SSA_NAME_VAR (ptr_a))->type_mem_tag;
+  tag_a = get_var_ann (SSA_NAME_VAR (ptr_a))->symbol_mem_tag;
   if (!tag_a)
     tag_a = DR_MEMTAG (dra);
   if (!tag_a)
     return false;
-  tag_b = get_var_ann (SSA_NAME_VAR (ptr_b))->type_mem_tag;
+  tag_b = get_var_ann (SSA_NAME_VAR (ptr_b))->symbol_mem_tag;
   if (!tag_b)
     tag_b = DR_MEMTAG (drb);
   if (!tag_b)
@@ -179,8 +180,8 @@ ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b,
 
 
 /* Determine if BASE_A and BASE_B may alias, the result is put in ALIASED.
-   Return FALSE if there is no type memory tag for one of the symbols.
-*/
+   Return FALSE if there is no symbol memory tag for one of the symbols.  */
+
 static bool
 may_alias_p (tree base_a, tree base_b,
 	     struct data_reference *dra,
@@ -1712,10 +1713,10 @@ object_analysis (tree memref, tree stmt, bool is_read,
       switch (TREE_CODE (base_address))
 	{
 	case SSA_NAME:
-	  *memtag = get_var_ann (SSA_NAME_VAR (base_address))->type_mem_tag;
+	  *memtag = get_var_ann (SSA_NAME_VAR (base_address))->symbol_mem_tag;
 	  if (!(*memtag) && TREE_CODE (TREE_OPERAND (memref, 0)) == SSA_NAME)
 	    *memtag = get_var_ann (
-		      SSA_NAME_VAR (TREE_OPERAND (memref, 0)))->type_mem_tag;
+		      SSA_NAME_VAR (TREE_OPERAND (memref, 0)))->symbol_mem_tag;
 	  break;
 	case ADDR_EXPR:
 	  *memtag = TREE_OPERAND (base_address, 0);

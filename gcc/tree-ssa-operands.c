@@ -954,23 +954,24 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	     This fixes the bug in gcc.c-torture/execute/20020503-1.c.
 	     
 	     It is also necessary to add bare defs on clobbers for
-	     TMT's, so that bare TMT uses caused by pruning all the
+	     SMT's, so that bare SMT uses caused by pruning all the
 	     aliases will link up properly with calls.   In order to
 	     keep the number of these bare defs we add down to the
-	     minimum necessary, we keep track of which TMT's were used
-	     alone in statement defs or vuses.  */
+	     minimum necessary, we keep track of which SMT's were used
+	     alone in statement vdefs or vuses.  */
 	  if (v_ann->is_aliased
 	      || none_added
-	      || (TREE_CODE (var) == TYPE_MEMORY_TAG && for_clobber
-		  && TMT_USED_ALONE (var)))
+	      || (TREE_CODE (var) == SYMBOL_MEMORY_TAG
+		  && for_clobber
+		  && SMT_USED_ALONE (var)))
 	    {
-	      /* Every bare tmt def we add should have TMT_USED_ALONE
+	      /* Every bare SMT def we add should have SMT_USED_ALONE
 		 set on it, or else we will get the wrong answer on
 		 clobbers.  */
-
-	      if (none_added && !updating_used_alone && aliases_computed_p
-		  && TREE_CODE (var) == TYPE_MEMORY_TAG)
-		gcc_assert (TMT_USED_ALONE (var));
+	      if (none_added
+		  && !updating_used_alone && aliases_computed_p
+		  && TREE_CODE (var) == SYMBOL_MEMORY_TAG)
+		gcc_assert (SMT_USED_ALONE (var));
 
 	      append_v_may_def (var);
 	    }
@@ -1084,7 +1085,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
       else
 	{
 	  /* If PTR is not an SSA_NAME or it doesn't have a name
-	     tag, use its type memory tag.  */
+	     tag, use its symbol memory tag.  */
 	  var_ann_t v_ann;
 
 	  /* If we are emitting debugging dumps, display a warning if
@@ -1106,8 +1107,8 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 	    ptr = SSA_NAME_VAR (ptr);
 	  v_ann = var_ann (ptr);
 
-	  if (v_ann->type_mem_tag)
-	    add_virtual_operand (v_ann->type_mem_tag, s_ann, flags,
+	  if (v_ann->symbol_mem_tag)
+	    add_virtual_operand (v_ann->symbol_mem_tag, s_ann, flags,
 				 full_ref, offset, size, false);
 	}
     }
@@ -1504,7 +1505,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 
     case SSA_NAME:
     case STRUCT_FIELD_TAG:
-    case TYPE_MEMORY_TAG:
+    case SYMBOL_MEMORY_TAG:
     case NAME_MEMORY_TAG:
      add_stmt_operand (expr_p, s_ann, flags);
      return;
