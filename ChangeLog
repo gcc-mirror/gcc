@@ -1,3 +1,8 @@
+2006-03-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcj/17311
+	* ltmain.sh: Don't use "$finalize_rpath" for compile.
+
 2006-02-21  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval):  Remove myself.
