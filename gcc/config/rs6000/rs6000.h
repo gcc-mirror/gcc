@@ -1492,11 +1492,8 @@ enum reg_class
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
 
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN) \
-  secondary_reload_class (CLASS, MODE, IN, 1)
-
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, IN) \
-  secondary_reload_class (CLASS, MODE, IN, 0)
+#define SECONDARY_RELOAD_CLASS(CLASS, MODE, IN) \
+  secondary_reload_class (CLASS, MODE, IN)
 
 /* If we are copying between FP or AltiVec registers and anything
    else, we need a memory location.  */
@@ -2671,8 +2668,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"lwa_operand", {SUBREG, MEM, REG}},					   \
   {"volatile_mem_operand", {MEM}},					   \
   {"offsettable_mem_operand", {MEM}},					   \
-  {"invalid_gpr_mem", {MEM}},						   \
-  {"base_reg_operand", {REG}},						   \
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},		   \
   {"add_operand", {SUBREG, REG, CONST_INT}},				   \
   {"non_add_cint_operand", {CONST_INT}},				   \

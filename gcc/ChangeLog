@@ -1,3 +1,22 @@
+2006-03-01  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/21616
+	Revert most of 2004-03-10 changes, apply mainline 2005-01-07.
+	* config/rs6000/rs6000.c (invalid_gpr_mem): Delete.
+	(base_reg_operand): Delete.
+	(legitimate_offset_address_p): Revert 2004-03-10 changes.
+	(secondary_reload_class): Likewise.
+	(rs6000_legitimize_reload_address): Convert non-word aligned
+	offset address using ld/std into indirect address.
+	* config/rs6000/rs6000.h (SECONDARY_RELOAD_CLASS): Define.
+	(SECONDARY_INPUT_RELOAD_CLASS, SECONDARY_OUTPUT_RELOAD_CLASS): Delete.
+	(PREDICATE_CODES): Delete invalid_gpr_mem and base_reg_operand.
+	* config/rs6000/rs6000-protos.h (secondary_reload_class): Update.
+	* config/rs6000/rs6000.md (movdf_hardfloat64): Remove m->b
+	alternative and split.
+	(movdi_internal64): Likewise.
+	(reload_outdf, reload_indf, reload_outdi, reload_indi): Delete.
+
 2006-02-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* Backport

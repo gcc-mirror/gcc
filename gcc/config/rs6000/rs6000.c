@@ -2497,43 +2497,6 @@ word_offset_memref_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return (off % 4) == 0;
 }
 
-/* Return true if operand is a (MEM (PLUS (REG) (offset))) where offset
-   is not divisible by four.  */
-
-int
-invalid_gpr_mem (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  rtx addr;
-  long off;
-
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  addr = XEXP (op, 0);
-  if (GET_CODE (addr) != PLUS
-      || GET_CODE (XEXP (addr, 0)) != REG
-      || GET_CODE (XEXP (addr, 1)) != CONST_INT)
-    return 0;
-
-  off = INTVAL (XEXP (addr, 1));
-  return (off & 3) != 0;
-}
-
-/* Return true if operand is a hard register that can be used as a base
-   register.  */
-
-int
-base_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  unsigned int regno;
-
-  if (!REG_P (op))
-    return 0;
-
-  regno = REGNO (op);
-  return regno != 0 && regno <= 31;
-}
-
 /* Return true if either operand is a general purpose register.  */
 
 bool
@@ -2658,16 +2621,18 @@ legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
 
     case DFmode:
     case DImode:
-      /* Both DFmode and DImode may end up in gprs.  If gprs are 32-bit,
-	 then we need to load/store at both offset and offset+4.  */
-      if (!TARGET_POWERPC64)
+      if (mode == DFmode || !TARGET_POWERPC64)
 	extra = 4;
+      else if (offset & 3)
+	return false;
       break;
 
     case TFmode:
     case TImode:
-      if (!TARGET_POWERPC64)
+      if (mode == TFmode || !TARGET_POWERPC64)
 	extra = 12;
+      else if (offset & 3)
+	return false;
       else
 	extra = 8;
       break;
@@ -3206,6 +3171,26 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       return x;
     }
 #endif
+
+  /* Force ld/std non-word aligned offset into base register by wrapping
+     in offset 0.  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (XEXP (x, 0)) < 32
+      && REG_MODE_OK_FOR_BASE_P (XEXP (x, 0), mode)
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && (INTVAL (XEXP (x, 1)) & 3) != 0
+      && GET_MODE_SIZE (mode) >= UNITS_PER_WORD
+      && TARGET_POWERPC64)
+    {
+      x = gen_rtx_PLUS (GET_MODE (x), x, GEN_INT (0));
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
+		   opnum, (enum reload_type) type);
+      *win = 1;
+      return x;
+    }
+
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == REG
       && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
@@ -3240,6 +3225,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       *win = 1;
       return x;
     }
+
 #if TARGET_MACHO
   if (GET_CODE (x) == SYMBOL_REF
       && DEFAULT_ABI == ABI_DARWIN
@@ -3269,6 +3255,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       return x;
     }
 #endif
+
   if (TARGET_TOC
       && constant_pool_expr_p (x)
       && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
@@ -8726,14 +8713,12 @@ addrs_ok_for_quad_peep (rtx addr1, rtx addr2)
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
-   NO_REGS is returned.  INP is nonzero if we are loading the reg, zero
-   for storing.  */
+   NO_REGS is returned.  */
 
 enum reg_class
 secondary_reload_class (enum reg_class class,
 			enum machine_mode mode,
-			rtx in,
-			int inp)
+			rtx in)
 {
   int regno;
 
@@ -8757,14 +8742,6 @@ secondary_reload_class (enum reg_class class,
               || GET_CODE (in) == CONST))
         return BASE_REGS;
     }
-
-  /* A 64-bit gpr load or store using an offset that isn't a multiple of
-     four needs a secondary reload.  */
-  if (TARGET_POWERPC64
-      && GET_MODE_UNIT_SIZE (mode) >= 8
-      && (!inp || class != BASE_REGS)
-      && invalid_gpr_mem (in, mode))
-    return BASE_REGS;
 
   if (GET_CODE (in) == REG)
     {
