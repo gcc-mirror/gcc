@@ -3041,7 +3041,7 @@ each @samp{>} with @samp{_g}.  Here are some examples:
 @c the @c's prevent double blank lines in the printed manual.
 @example
 @multitable {Original} {Mangled}
-@headitem Original @tab Mangled        @c
+@item @strong{Original} @tab @strong{Mangled}  @c
 @item @code{x}     @tab @code{x}       @c
 @item @code{P42x}  @tab @code{P42x}    @c
 @item @code{P4_x}  @tab @code{P4__x}   @c

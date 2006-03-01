@@ -1,3 +1,8 @@
+2006-02-28  Zack Weinberg  <zackw@panix.com>
+
+	* doc/md.texi: Avoid use of @headitem so that makeinfo <4.7
+	continues to work.
+
 2006-02-28  Eric Christopher  <echristo@apple.com>
 
 	* config/rs6000/darwin.h (ENABLE_STACK_EXECUTE): Define.
