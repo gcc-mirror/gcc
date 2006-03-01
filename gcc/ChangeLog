@@ -1,5 +1,9 @@
 2006-03-01  Ben Elliston  <bje@au.ibm.com>
 
+	* config.gcc: Add t-dfprules to $tmake_file for powerpc-*-linux*
+	and powerpc64-*-linux* configurations.
+	* config/t-dfprules: New file.
+
 	* mklibgcc.in: Add logic to handle $DFP_ENABLE and $DFP_CFLAGS.
 	Compile dfp-bit.c from the source directory using -DWIDTH and
 	$DFP_CFLAGS to control the compilation of that file, rather than
