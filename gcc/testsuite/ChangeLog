@@ -1,3 +1,7 @@
+2006-03-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	* g++.dg/tree-ssa/pr26443.C: New test case.
+
 2006-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/26022
