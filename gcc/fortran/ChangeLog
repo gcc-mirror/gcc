@@ -1,3 +1,27 @@
+2006-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	* iresolve.c (gfc_resolve_dot_product):  Remove any difference in
+	treatment of logical types.
+	* trans-intrinsic.c (gfc_conv_intrinsic_dot_product):  New function. 
+
+	PR fortran/26393
+	* trans-decl.c (gfc_get_symbol_decl): Extend condition that symbols
+	must be referenced to include unreferenced symbols in an interface
+	body. 
+
+	PR fortran/20938
+	* trans-array.c (gfc_conv_resolve_dependencies): Add call to
+	gfc_are_equivalenced_arrays.
+	* symbol.c (gfc_free_equiv_infos, gfc_free_equiv_lists): New
+	functions. (gfc_free_namespace): Call them.
+	* trans-common.c (copy_equiv_list_to_ns): New function.
+	(add_equivalences): Call it.
+	* gfortran.h: Add equiv_lists to gfc_namespace and define
+	gfc_equiv_list and gfc_equiv_info.
+	* dependency.c (gfc_are_equivalenced_arrays): New function.
+	(gfc_check_dependency): Call it.
+	* dependency.h: Prototype for gfc_are_equivalenced_arrays.
+
 2006-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	* dependency.c (gfc_is_same_range): Compare the stride, lower and

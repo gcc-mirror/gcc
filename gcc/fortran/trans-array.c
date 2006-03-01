@@ -2581,7 +2581,8 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
       if (ss->type != GFC_SS_SECTION)
 	continue;
 
-      if (gfc_could_be_alias (dest, ss))
+      if (gfc_could_be_alias (dest, ss)
+	    || gfc_are_equivalenced_arrays (dest->expr, ss->expr))
 	{
 	  nDepend = 1;
 	  break;
