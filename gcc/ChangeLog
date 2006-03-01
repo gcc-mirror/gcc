@@ -1,3 +1,19 @@
+2006-03-01  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree.def (SYMBOL_MEMORY_TAG): Rename from TYPE_MEMORY_TAG.
+	Update all users.
+	* tree-pass.h (PROP_smt_usage): Rename from PROP_tmt_usage.
+	Update all users.
+	(TODO_update_smt_usage): Rename from TODO_update_tmt_usage.
+	Update all users.
+	* tree.h (SMT_USED_ALONE): Rename from TMT_USED_ALONE.
+	Update all users.
+	* tree-flow.h (struct var_ann_d): Rename field 'type_mem_tag'
+	to 'symbol_mem_tag'.
+	Update all users.
+	* doc/tree-ssa.texi: Update documentation to reflect TMT->SMT
+	rename.
+
 2006-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_copysign): Delete unreachable code.
@@ -25,7 +41,7 @@
 	* config/darwin.h (TARGET_ASM_OUTPUT_ANCHOR): Define.
 
 2006-03-01  Daniel Berlin  <dberlin@dberlin.org>
- 
+
 	Fix PR tree-optimization/26443
 	* tree-vrp.c (pass_vrp): Add TODO_update_tmt_usage
 	to todo and PROP_tmt_usage to properties_destroyed.

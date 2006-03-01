@@ -1506,7 +1506,7 @@ int bar (void)
 @}
 @end smallexample
 
-If you copy the type tag for a variable for some reason, you probably
+If you copy the symbol tag for a variable for some reason, you probably
 also want to copy the subvariables for that variable.
 
 @item	Points-to and escape analysis.
@@ -1540,12 +1540,12 @@ the variables pointed-to by P_i (and its memory tag) also escape.
 
 We have two classes of memory tags.  Memory tags associated with
 the pointed-to data type of the pointers in the program.  These
-tags are called ``type memory tag'' (TMT)@.  The other class are
+tags are called ``symbol memory tag'' (SMT)@.  The other class are
 those associated with SSA_NAMEs, called ``name memory tag'' (NMT)@.
 The basic idea is that when adding operands for an INDIRECT_REF
 *P_i, we will first check whether P_i has a name tag, if it does
 we use it, because that will have more precise aliasing
-information.  Otherwise, we use the standard type tag.
+information.  Otherwise, we use the standard symbol tag.
 
 In this phase, we go through all the pointers we found in
 points-to analysis and create alias sets for the name memory tags
@@ -1555,11 +1555,11 @@ call-clobbered the variables it points to and its tag.
 
 @item	Compute flow-insensitive aliases
 
-This pass will compare the alias set of every type memory tag and
-every addressable variable found in the program.  Given a type
-memory tag TMT and an addressable variable V@.  If the alias sets
-of TMT and V conflict (as computed by may_alias_p), then V is
-marked as an alias tag and added to the alias set of TMT@.
+This pass will compare the alias set of every symbol memory tag and
+every addressable variable found in the program.  Given a symbol
+memory tag SMT and an addressable variable V@.  If the alias sets
+of SMT and V conflict (as computed by may_alias_p), then V is
+marked as an alias tag and added to the alias set of SMT@.
 @end enumerate
 
 For instance, consider the following function:
@@ -1581,7 +1581,7 @@ foo (int i)
 @}
 @end smallexample
 
-After aliasing analysis has finished, the type memory tag for
+After aliasing analysis has finished, the symbol memory tag for
 pointer @code{p} will have two aliases, namely variables @code{a} and
 @code{b}.
 Every time pointer @code{p} is dereferenced, we want to mark the

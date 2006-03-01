@@ -150,7 +150,7 @@ struct dump_file_info
 #define PROP_rtl		(1 << 8)
 #define PROP_alias		(1 << 9)
 #define PROP_gimple_lomp	(1 << 10)	/* lowered OpenMP directives */
-#define PROP_tmt_usage          (1 << 11)       /* which TMT's are
+#define PROP_smt_usage          (1 << 11)       /* which SMT's are
 						   used alone.  */
 
 #define PROP_trees \
@@ -212,9 +212,9 @@ struct dump_file_info
    for the passes that are handed to register_dump_files.  */
 #define TODO_set_props			(1 << 12)
 
-/* Set by passes that may make TMT's that were previously never used
+/* Set by passes that may make SMT's that were previously never used
    in statements, used.  */
-#define TODO_update_tmt_usage           (1 << 13)
+#define TODO_update_smt_usage           (1 << 13)
 
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\

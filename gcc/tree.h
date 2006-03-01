@@ -105,7 +105,7 @@ extern const enum tree_code_class tree_code_type[];
 #define MTAG_P(CODE) \
   (TREE_CODE (CODE) == STRUCT_FIELD_TAG		\
    || TREE_CODE (CODE) == NAME_MEMORY_TAG	\
-   || TREE_CODE (CODE) == TYPE_MEMORY_TAG)
+   || TREE_CODE (CODE) == SYMBOL_MEMORY_TAG)
         
 
 /* Nonzero if DECL represents a VAR_DECL or FUNCTION_DECL.  */
@@ -2298,12 +2298,21 @@ struct tree_decl_minimal GTY(())
 
 /* When computing aliasing information, we represent the memory pointed-to
    by pointers with artificial variables called "memory tags" (MT).  There
-   are two kinds of tags: type and name.  Type tags (TMT) are used in
-   type-based alias analysis, they represent all the pointed-to locations
-   and variables of the same alias set class.  Name tags (NMT) are used in
-   flow-sensitive points-to alias analysis, they represent the variables
-   and memory locations pointed-to by a specific SSA_NAME pointer.  */
+   are two kinds of tags, namely symbol and name:
+   
+   Symbol tags (SMT) are used in flow-insensitive alias analysis, they
+   represent all the pointed-to locations and variables pointed-to by
+   the same pointer symbol.  Usually, this set is computed using
+   type-based analysis (i.e., alias set classes), but this may not
+   always be the case.
 
+   Name tags (NMT) are used in flow-sensitive points-to alias
+   analysis, they represent the variables and memory locations
+   pointed-to by a specific SSA_NAME pointer.
+
+   In general, given a pointer P with a symbol tag SMT, the alias set
+   of SMT should be the union of all the alias sets of the NMTs of
+   every SSA_NAME for P.  */
 struct tree_memory_tag GTY(())
 {
   struct tree_decl_minimal common;
@@ -2313,9 +2322,10 @@ struct tree_memory_tag GTY(())
 
 #define MTAG_GLOBAL(NODE) (TREE_MEMORY_TAG_CHECK (NODE)->mtag.is_global)
 
-/* This flag is true if a TMT is used as the vdef or vuse operand directly,
-   because the access had all of the TMT's aliases pruned from it.  */
-#define TMT_USED_ALONE(NODE) (TYPE_MEMORY_TAG_CHECK (NODE)->mtag.is_used_alone)
+/* This flag is true if a SMT is used as the V_MAY_DEF or VUSE operand
+   directly, because the access had all of the SMT's aliases pruned
+   from it.  */
+#define SMT_USED_ALONE(NODE) (SYMBOL_MEMORY_TAG_CHECK (NODE)->mtag.is_used_alone)
 
 struct tree_struct_field_tag GTY(())
 {

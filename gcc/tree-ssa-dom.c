@@ -377,13 +377,13 @@ struct tree_opt_pass pass_dominator =
   TV_TREE_SSA_DOMINATOR_OPTS,		/* tv_id */
   PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
   0,					/* properties_provided */
-  PROP_tmt_usage,			/* properties_destroyed */
+  PROP_smt_usage,			/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func
     | TODO_update_ssa
     | TODO_cleanup_cfg
     | TODO_verify_ssa	
-    | TODO_update_tmt_usage,		/* todo_flags_finish */
+    | TODO_update_smt_usage,		/* todo_flags_finish */
   0					/* letter */
 };
 

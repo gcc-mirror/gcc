@@ -349,8 +349,8 @@ set_initial_properties (struct alias_info *ai)
 	  if (pi->name_mem_tag)
 	    mark_call_clobbered (pi->name_mem_tag, pi->escape_mask);
 
-	  if (v_ann->type_mem_tag)
-	    mark_call_clobbered (v_ann->type_mem_tag, pi->escape_mask);
+	  if (v_ann->symbol_mem_tag)
+	    mark_call_clobbered (v_ann->symbol_mem_tag, pi->escape_mask);
 
 	  if (pi->pt_vars)
 	    {
@@ -361,14 +361,15 @@ set_initial_properties (struct alias_info *ai)
 		  mark_call_clobbered (referenced_var (j), pi->escape_mask);
 	    }
 	}
-      /* If the name tag is call clobbered, so is the type tag
+
+      /* If the name tag is call clobbered, so is the symbol tag
 	 associated with the base VAR_DECL.  */
       if (pi->name_mem_tag
-	  && v_ann->type_mem_tag
+	  && v_ann->symbol_mem_tag
 	  && is_call_clobbered (pi->name_mem_tag))
-	mark_call_clobbered (v_ann->type_mem_tag, pi->escape_mask);
+	mark_call_clobbered (v_ann->symbol_mem_tag, pi->escape_mask);
 
-      /* Name tags and type tags that we don't know where they point
+      /* Name tags and symbol tags that we don't know where they point
 	 to, might point to global memory, and thus, are clobbered.
 
          FIXME:  This is not quite right.  They should only be
@@ -384,18 +385,19 @@ set_initial_properties (struct alias_info *ai)
 	}
       
       if ((pi->pt_global_mem || pi->pt_anything) 
-	  && pi->is_dereferenced && v_ann->type_mem_tag)
+	  && pi->is_dereferenced
+	  && v_ann->symbol_mem_tag)
 	{
-	  mark_call_clobbered (v_ann->type_mem_tag, ESCAPE_IS_GLOBAL);
-	  MTAG_GLOBAL (v_ann->type_mem_tag) = true;
+	  mark_call_clobbered (v_ann->symbol_mem_tag, ESCAPE_IS_GLOBAL);
+	  MTAG_GLOBAL (v_ann->symbol_mem_tag) = true;
 	}
     }
 }
 
-/* This variable is set to true if we are updating the used alone
-   information for TMT's, or are in a pass that is going to break it
-   temporarily.  */
 
+/* This variable is set to true if we are updating the used alone
+   information for SMTs, or are in a pass that is going to break it
+   temporarily.  */
 bool updating_used_alone;
 
 /* Compute which variables need to be marked call clobbered because
@@ -424,7 +426,8 @@ compute_call_clobbered (struct alias_info *ai)
 }
 
 
-/* Recalculate the used_alone information for TMT's . */
+/* Recalculate the used_alone information for SMTs . */
+
 void 
 recalculate_used_alone (void)
 {
@@ -436,19 +439,17 @@ recalculate_used_alone (void)
   referenced_var_iterator rvi;
   tree var;
   
-  /* First, reset all the TMT used alone bits to zero.  */
+  /* First, reset all the SMT used alone bits to zero.  */
   updating_used_alone = true;
   FOR_EACH_REFERENCED_VAR (var, rvi)
-    if (TREE_CODE (var) == TYPE_MEMORY_TAG)
-      TMT_USED_ALONE (var) = 0;
+    if (TREE_CODE (var) == SYMBOL_MEMORY_TAG)
+      SMT_USED_ALONE (var) = 0;
 
   /* Walk all the statements.
      Calls get put into a list of statements to update, since we will
      need to update operands on them if we make any changes.
-     If we see a bare use of a TMT anywhere in a real virtual use or virtual
-     def, mark the TMT as used alone, and for renaming.  */
-     
-     
+     If we see a bare use of a SMT anywhere in a real virtual use or virtual
+     def, mark the SMT as used alone, and for renaming.  */
   FOR_EACH_BB (bb)
     {
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
@@ -470,11 +471,11 @@ recalculate_used_alone (void)
 		  if(TREE_CODE (var) == SSA_NAME)
 		    svar = SSA_NAME_VAR (var);
 		  
-		  if (TREE_CODE (svar) == TYPE_MEMORY_TAG)
+		  if (TREE_CODE (svar) == SYMBOL_MEMORY_TAG)
 		    {
-		      if (!TMT_USED_ALONE (svar))
+		      if (!SMT_USED_ALONE (svar))
 			{
-			  TMT_USED_ALONE (svar) = true;
+			  SMT_USED_ALONE (svar) = true;
 			  mark_sym_for_renaming (svar);
 			}
 		    }
@@ -527,11 +528,11 @@ recalculate_used_alone (void)
 
    We have two classes of memory tags.  Memory tags associated with the
    pointed-to data type of the pointers in the program.  These tags are
-   called "type memory tag" (TMT).  The other class are those associated
+   called "symbol memory tag" (SMT).  The other class are those associated
    with SSA_NAMEs, called "name memory tag" (NMT). The basic idea is that
    when adding operands for an INDIRECT_REF *P_i, we will first check
    whether P_i has a name tag, if it does we use it, because that will have
-   more precise aliasing information.  Otherwise, we use the standard type
+   more precise aliasing information.  Otherwise, we use the standard symbol
    tag.
 
    In this phase, we go through all the pointers we found in points-to
@@ -542,11 +543,11 @@ recalculate_used_alone (void)
 
    3- Compute flow-insensitive aliases
 
-   This pass will compare the alias set of every type memory tag and every
-   addressable variable found in the program.  Given a type memory tag TMT
-   and an addressable variable V.  If the alias sets of TMT and V conflict
-   (as computed by may_alias_p), then V is marked as an alias tag and added
-   to the alias set of TMT.
+   This pass will compare the alias set of every symbol memory tag and
+   every addressable variable found in the program.  Given a symbol
+   memory tag SMT and an addressable variable V.  If the alias sets of
+   SMT and V conflict (as computed by may_alias_p), then V is marked
+   as an alias tag and added to the alias set of SMT.
 
    For instance, consider the following function:
 
@@ -564,7 +565,7 @@ recalculate_used_alone (void)
 	      return *p;
 	    }
 
-   After aliasing analysis has finished, the type memory tag for pointer
+   After aliasing analysis has finished, the symbol memory tag for pointer
    'p' will have two aliases, namely variables 'a' and 'b'.  Every time
    pointer 'p' is dereferenced, we want to mark the operation as a
    potential reference to 'a' and 'b'.
@@ -627,7 +628,7 @@ compute_may_aliases (void)
   /* Compute flow-sensitive, points-to based aliasing for all the name
      memory tags.  Note that this pass needs to be done before flow
      insensitive analysis because it uses the points-to information
-     gathered before to mark call-clobbered type tags.  */
+     gathered before to mark call-clobbered symbol tags.  */
   compute_flow_sensitive_aliasing (ai);
 
   /* Compute type-based flow-insensitive aliasing for all the type
@@ -860,7 +861,7 @@ init_alias_info (void)
 	     just because they are tags, though we will clear it if they
 	     aren't for global variables.  */
 	  if (TREE_CODE (var) == NAME_MEMORY_TAG
-	      || TREE_CODE (var) == TYPE_MEMORY_TAG
+	      || TREE_CODE (var) == SYMBOL_MEMORY_TAG
 	      || !is_global_var (var))
 	    clear_call_clobbered (var);
 	}
@@ -973,8 +974,7 @@ create_name_tags (void)
 	}
 
       /* Set pt_anything on the pointers without pt_vars filled in so
-	 that they are assigned a type tag.  */
-      
+	 that they are assigned a symbol tag.  */
       if (pi->pt_vars && !bitmap_empty_p (pi->pt_vars))	
 	VEC_safe_push (tree, heap, with_ptvars, ptr);
       else
@@ -1078,7 +1078,7 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 	EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
 	  {
 	    add_may_alias (pi->name_mem_tag, referenced_var (j));
-	    add_may_alias (v_ann->type_mem_tag, referenced_var (j));
+	    add_may_alias (v_ann->symbol_mem_tag, referenced_var (j));
 	  }
     }
 }
@@ -1088,8 +1088,8 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
    addressable variables found in setup_pointers_and_addressables.
    
    For every pointer P in AI->POINTERS and addressable variable V in
-   AI->ADDRESSABLE_VARS, add V to the may-alias sets of P's type
-   memory tag (TMT) if their alias sets conflict.  V is then marked as
+   AI->ADDRESSABLE_VARS, add V to the may-alias sets of P's symbol
+   memory tag (SMT) if their alias sets conflict.  V is then marked as
    an alias tag so that the operand scanner knows that statements
    containing V have aliased operands.  */
 
@@ -1105,12 +1105,12 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
   ai->total_alias_vops = 0;
 
   /* For every pointer P, determine which addressable variables may alias
-     with P's type memory tag.  */
+     with P's symbol memory tag.  */
   for (i = 0; i < ai->num_pointers; i++)
     {
       size_t j;
       struct alias_map_d *p_map = ai->pointers[i];
-      tree tag = var_ann (p_map->var)->type_mem_tag;
+      tree tag = var_ann (p_map->var)->symbol_mem_tag;
       var_ann_t tag_ann = var_ann (tag);
 
       p_map->total_alias_vops = 0;
@@ -1181,15 +1181,15 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
      tags with conflicting alias set numbers but no aliased symbols in
      common.
 
-     For example, suppose that we have two memory tags TMT.1 and TMT.2
+     For example, suppose that we have two memory tags SMT.1 and SMT.2
      such that
      
-     		may-aliases (TMT.1) = { a }
-		may-aliases (TMT.2) = { b }
+     		may-aliases (SMT.1) = { a }
+		may-aliases (SMT.2) = { b }
 
-     and the alias set number of TMT.1 conflicts with that of TMT.2.
+     and the alias set number of SMT.1 conflicts with that of SMT.2.
      Since they don't have symbols in common, loads and stores from
-     TMT.1 and TMT.2 will seem independent of each other, which will
+     SMT.1 and SMT.2 will seem independent of each other, which will
      lead to the optimizers making invalid transformations (see
      testsuite/gcc.c-torture/execute/pr15262-[12].c).
 
@@ -1200,13 +1200,13 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
     {
       size_t j;
       struct alias_map_d *p_map1 = ai->pointers[i];
-      tree tag1 = var_ann (p_map1->var)->type_mem_tag;
+      tree tag1 = var_ann (p_map1->var)->symbol_mem_tag;
       bitmap may_aliases1 = p_map1->may_aliases;
 
       for (j = i + 1; j < ai->num_pointers; j++)
 	{
 	  struct alias_map_d *p_map2 = ai->pointers[j];
-	  tree tag2 = var_ann (p_map2->var)->type_mem_tag;
+	  tree tag2 = var_ann (p_map2->var)->symbol_mem_tag;
 	  bitmap may_aliases2 = p_map2->may_aliases;
 
 	  /* If the pointers may not point to each other, do nothing.  */
@@ -1389,14 +1389,14 @@ group_aliases (struct alias_info *ai)
   for (i = 0; i < ai->num_pointers; i++)
     {
       size_t j;
-      tree tag1 = var_ann (ai->pointers[i]->var)->type_mem_tag;
+      tree tag1 = var_ann (ai->pointers[i]->var)->symbol_mem_tag;
       bitmap tag1_aliases = ai->pointers[i]->may_aliases;
 
       /* Skip tags that have been grouped already.  */
       if (ai->pointers[i]->grouped_p)
 	continue;
 
-      /* See if TAG1 had any aliases in common with other type tags.
+      /* See if TAG1 had any aliases in common with other symbol tags.
 	 If we find a TAG2 with common aliases with TAG1, add TAG2's
 	 aliases into TAG1.  */
       for (j = i + 1; j < ai->num_pointers; j++)
@@ -1405,7 +1405,7 @@ group_aliases (struct alias_info *ai)
 
           if (bitmap_intersect_p (tag1_aliases, tag2_aliases))
 	    {
-	      tree tag2 = var_ann (ai->pointers[j]->var)->type_mem_tag;
+	      tree tag2 = var_ann (ai->pointers[j]->var)->symbol_mem_tag;
 
 	      bitmap_ior_into (tag1_aliases, tag2_aliases);
 
@@ -1431,20 +1431,20 @@ group_aliases (struct alias_info *ai)
 
   /* Finally, all the variables that have been grouped cannot be in
      the may-alias set of name memory tags.  Suppose that we have
-     grouped the aliases in this code so that may-aliases(a) = TMT.20
+     grouped the aliases in this code so that may-aliases(a) = SMT.20
 
      	p_5 = &a;
 	...
 	# a_9 = V_MAY_DEF <a_8>
 	p_5->field = 0
-	... Several modifications to TMT.20 ... 
+	... Several modifications to SMT.20 ... 
 	# VUSE <a_9>
 	x_30 = p_5->field
 
      Since p_5 points to 'a', the optimizers will try to propagate 0
      into p_5->field, but that is wrong because there have been
-     modifications to 'TMT.20' in between.  To prevent this we have to
-     replace 'a' with 'TMT.20' in the name tag of p_5.  */
+     modifications to 'SMT.20' in between.  To prevent this we have to
+     replace 'a' with 'SMT.20' in the name tag of p_5.  */
   for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
     {
       size_t j;
@@ -1534,16 +1534,16 @@ setup_pointers_and_addressables (struct alias_info *ai)
   /* Create ADDRESSABLE_VARS and POINTERS.  Note that these arrays are
      always going to be slightly bigger than we actually need them
      because some TREE_ADDRESSABLE variables will be marked
-     non-addressable below and only pointers with unique type tags are
+     non-addressable below and only pointers with unique symbol tags are
      going to be added to POINTERS.  */
   ai->addressable_vars = XCNEWVEC (struct alias_map_d *, num_addressable_vars);
   ai->pointers = XCNEWVEC (struct alias_map_d *, num_pointers);
   ai->num_addressable_vars = 0;
   ai->num_pointers = 0;
 
-  /* Since we will be creating type memory tags within this loop, cache the
-     value of NUM_REFERENCED_VARS to avoid processing the additional tags
-     unnecessarily.  */
+  /* Since we will be creating symbol memory tags within this loop,
+     cache the value of NUM_REFERENCED_VARS to avoid processing the
+     additional tags unnecessarily.  */
   n_vars = num_referenced_vars;
 
   FOR_EACH_REFERENCED_VAR_SAFE (var, varvec, srvi)
@@ -1553,7 +1553,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 
       /* Name memory tags already have flow-sensitive aliasing
 	 information, so they need not be processed by
-	 compute_flow_insensitive_aliasing.  Similarly, type memory
+	 compute_flow_insensitive_aliasing.  Similarly, symbol memory
 	 tags are already accounted for when we process their
 	 associated pointer. 
       
@@ -1615,7 +1615,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	}
 
       /* Add pointer variables that have been dereferenced to the POINTERS
-         array and create a type memory tag for them.  */
+         array and create a symbol memory tag for them.  */
       if (POINTER_TYPE_P (TREE_TYPE (var)))
 	{
 	  if ((bitmap_bit_p (ai->dereferenced_ptrs_store, DECL_UID (var))
@@ -1630,20 +1630,20 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	      tag = get_tmt_for (var, ai);
 	      t_ann = var_ann (tag);
 
-	      /* The type tag will need to be renamed into SSA
+	      /* The symbol tag will need to be renamed into SSA
 		 afterwards. Note that we cannot do this inside
 		 get_tmt_for because aliasing may run multiple times
-		 and we only create type tags the first time.  */
+		 and we only create symbol tags the first time.  */
 	      mark_sym_for_renaming (tag);
 
 	      /* Similarly, if pointer VAR used to have another type
 		 tag, we will need to process it in the renamer to
 		 remove the stale virtual operands.  */
-	      if (v_ann->type_mem_tag)
-		mark_sym_for_renaming (v_ann->type_mem_tag);
+	      if (v_ann->symbol_mem_tag)
+		mark_sym_for_renaming (v_ann->symbol_mem_tag);
 
 	      /* Associate the tag with pointer VAR.  */
-	      v_ann->type_mem_tag = tag;
+	      v_ann->symbol_mem_tag = tag;
 
 	      /* If pointer VAR has been used in a store operation,
 		 then its memory tag must be marked as written-to.  */
@@ -1661,14 +1661,14 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	  else
 	    {
 	      /* The pointer has not been dereferenced.  If it had a
-		 type memory tag, remove it and mark the old tag for
+		 symbol memory tag, remove it and mark the old tag for
 		 renaming to remove it out of the IL.  */
 	      var_ann_t ann = var_ann (var);
-	      tree tag = ann->type_mem_tag;
+	      tree tag = ann->symbol_mem_tag;
 	      if (tag)
 		{
 		  mark_sym_for_renaming (tag);
-		  ann->type_mem_tag = NULL_TREE;
+		  ann->symbol_mem_tag = NULL_TREE;
 		}
 	    }
 	}
@@ -1796,7 +1796,7 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
   alias_stats.simple_queries++;
 
   /* By convention, a variable cannot alias itself.  */
-  mem = var_ann (ptr)->type_mem_tag;
+  mem = var_ann (ptr)->symbol_mem_tag;
   if (mem == var)
     {
       alias_stats.alias_noalias++;
@@ -1824,7 +1824,7 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
       return false;
     }
 
-  gcc_assert (TREE_CODE (mem) == TYPE_MEMORY_TAG);
+  gcc_assert (TREE_CODE (mem) == SYMBOL_MEMORY_TAG);
 
   alias_stats.tbaa_queries++;
 
@@ -2075,8 +2075,8 @@ static tree
 create_memory_tag (tree type, bool is_type_tag)
 {
   var_ann_t ann;
-  tree tag = create_tag_raw (is_type_tag ? TYPE_MEMORY_TAG : NAME_MEMORY_TAG,
-			     type, (is_type_tag) ? "TMT" : "NMT");
+  tree tag = create_tag_raw (is_type_tag ? SYMBOL_MEMORY_TAG : NAME_MEMORY_TAG,
+			     type, (is_type_tag) ? "SMT" : "NMT");
 
   /* By default, memory tags are local variables.  Alias analysis will
      determine whether they should be considered globals.  */
@@ -2086,7 +2086,7 @@ create_memory_tag (tree type, bool is_type_tag)
   TREE_ADDRESSABLE (tag) = 1;
 
   ann = get_var_ann (tag);
-  ann->type_mem_tag = NULL_TREE;
+  ann->symbol_mem_tag = NULL_TREE;
 
   /* Add the tag to the symbol table.  */
   add_referenced_tmp_var (tag);
@@ -2112,13 +2112,13 @@ get_nmt_for (tree ptr)
 }
 
 
-/* Return the type memory tag associated to pointer PTR.  A memory tag is an
-   artificial variable that represents the memory location pointed-to by
-   PTR.  It is used to model the effects of pointer de-references on
-   addressable variables.
+/* Return the symbol memory tag associated to pointer PTR.  A memory
+   tag is an artificial variable that represents the memory location
+   pointed-to by PTR.  It is used to model the effects of pointer
+   de-references on addressable variables.
    
-   AI points to the data gathered during alias analysis.  This function
-   populates the array AI->POINTERS.  */
+   AI points to the data gathered during alias analysis.  This
+   function populates the array AI->POINTERS.  */
 
 static tree
 get_tmt_for (tree ptr, struct alias_info *ai)
@@ -2139,7 +2139,7 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   for (i = 0, tag = NULL_TREE; i < ai->num_pointers; i++)
     {
       struct alias_map_d *curr = ai->pointers[i];
-      tree curr_tag = var_ann (curr->var)->type_mem_tag;
+      tree curr_tag = var_ann (curr->var)->symbol_mem_tag;
       if (tag_set == curr->set)
 	{
 	  tag = curr_tag;
@@ -2153,13 +2153,13 @@ get_tmt_for (tree ptr, struct alias_info *ai)
     {
       struct alias_map_d *alias_map;
 
-      /* If PTR did not have a type tag already, create a new TMT.*
+      /* If PTR did not have a symbol tag already, create a new SMT.*
 	 artificial variable representing the memory location
 	 pointed-to by PTR.  */
-      if (var_ann (ptr)->type_mem_tag == NULL_TREE)
+      if (var_ann (ptr)->symbol_mem_tag == NULL_TREE)
 	tag = create_memory_tag (tag_type, true);
       else
-	tag = var_ann (ptr)->type_mem_tag;
+	tag = var_ann (ptr)->symbol_mem_tag;
 
       /* Add PTR to the POINTERS array.  Note that we are not interested in
 	 PTR's alias set.  Instead, we cache the alias set for the memory that
@@ -2173,7 +2173,7 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   /* If the pointed-to type is volatile, so is the tag.  */
   TREE_THIS_VOLATILE (tag) |= TREE_THIS_VOLATILE (tag_type);
 
-  /* Make sure that the type tag has the same alias set as the
+  /* Make sure that the symbol tag has the same alias set as the
      pointed-to type.  */
   gcc_assert (tag_set == get_alias_set (tag));
 
@@ -2260,15 +2260,15 @@ dump_alias_info (FILE *file)
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       var_ann_t ann = var_ann (var);
-      if (ann->type_mem_tag)
+      if (ann->symbol_mem_tag)
 	dump_variable (file, var);
     }
 
-  fprintf (file, "\nType memory tags\n\n");
+  fprintf (file, "\nSymbol memory tags\n\n");
   
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      if (TREE_CODE (var) == TYPE_MEMORY_TAG)
+      if (TREE_CODE (var) == SYMBOL_MEMORY_TAG)
 	dump_variable (file, var);
     }
 
@@ -2560,8 +2560,8 @@ is_aliased_with (tree tag, tree sym)
 }
 
 
-/* Add VAR to the list of may-aliases of PTR's type tag.  If PTR
-   doesn't already have a type tag, create one.  */
+/* Add VAR to the list of may-aliases of PTR's symbol tag.  If PTR
+   doesn't already have a symbol tag, create one.  */
 
 void
 add_type_alias (tree ptr, tree var)
@@ -2573,19 +2573,19 @@ add_type_alias (tree ptr, tree var)
   VEC (tree, heap) *varvec = NULL;  
   unsigned i;
 
-  if (ann->type_mem_tag == NULL_TREE)
+  if (ann->symbol_mem_tag == NULL_TREE)
     {
       tree q = NULL_TREE;
       tree tag_type = TREE_TYPE (TREE_TYPE (ptr));
       HOST_WIDE_INT tag_set = get_alias_set (tag_type);
       safe_referenced_var_iterator rvi;
 
-      /* PTR doesn't have a type tag, create a new one and add VAR to
+      /* PTR doesn't have a symbol tag, create a new one and add VAR to
 	 the new tag's alias set.
 
 	 FIXME, This is slower than necessary.  We need to determine
 	 whether there is another pointer Q with the same alias set as
-	 PTR.  This could be sped up by having type tags associated
+	 PTR.  This could be sped up by having symbol tags associated
 	 with types.  */
       FOR_EACH_REFERENCED_VAR_SAFE (q, varvec, rvi)
 	{
@@ -2593,27 +2593,27 @@ add_type_alias (tree ptr, tree var)
 	      && tag_set == get_alias_set (TREE_TYPE (TREE_TYPE (q))))
 	    {
 	      /* Found another pointer Q with the same alias set as
-		 the PTR's pointed-to type.  If Q has a type tag, use
+		 the PTR's pointed-to type.  If Q has a symbol tag, use
 		 it.  Otherwise, create a new memory tag for PTR.  */
 	      var_ann_t ann1 = var_ann (q);
-	      if (ann1->type_mem_tag)
-		ann->type_mem_tag = ann1->type_mem_tag;
+	      if (ann1->symbol_mem_tag)
+		ann->symbol_mem_tag = ann1->symbol_mem_tag;
 	      else
-		ann->type_mem_tag = create_memory_tag (tag_type, true);
+		ann->symbol_mem_tag = create_memory_tag (tag_type, true);
 	      goto found_tag;
 	    }
 	}
 
-      /* Couldn't find any other pointer with a type tag we could use.
+      /* Couldn't find any other pointer with a symbol tag we could use.
 	 Create a new memory tag for PTR.  */
-      ann->type_mem_tag = create_memory_tag (tag_type, true);
+      ann->symbol_mem_tag = create_memory_tag (tag_type, true);
     }
 
 found_tag:
-  /* If VAR is not already PTR's type tag, add it to the may-alias set
-     for PTR's type tag.  */
+  /* If VAR is not already PTR's symbol tag, add it to the may-alias set
+     for PTR's symbol tag.  */
   gcc_assert (!MTAG_P (var));
-  tag = ann->type_mem_tag;
+  tag = ann->symbol_mem_tag;
 
   /* If VAR has subvars, add the subvars to the tag instead of the
      actual var.  */
@@ -2647,10 +2647,10 @@ found_tag:
 }
 
 
-/* Create a new type tag for PTR.  Construct the may-alias list of this type
+/* Create a new symbol tag for PTR.  Construct the may-alias list of this type
    tag so that it has the aliasing of VAR. 
 
-   Note, the set of aliases represented by the new type tag are not marked
+   Note, the set of aliases represented by the new symbol tag are not marked
    for renaming.  */
 
 void
@@ -2662,10 +2662,10 @@ new_type_alias (tree ptr, tree var)
   tree tag;
   subvar_t svars;
 
-  gcc_assert (p_ann->type_mem_tag == NULL_TREE);
+  gcc_assert (p_ann->symbol_mem_tag == NULL_TREE);
   gcc_assert (!MTAG_P (var));
 
-  /* Add VAR to the may-alias set of PTR's new type tag.  If VAR has
+  /* Add VAR to the may-alias set of PTR's new symbol tag.  If VAR has
      subvars, add the subvars to the tag instead of the actual var.  */
   if (var_can_have_subvars (var)
       && (svars = get_subvars_for_var (var)))
@@ -2673,7 +2673,7 @@ new_type_alias (tree ptr, tree var)
       subvar_t sv;
 
       tag = create_memory_tag (tag_type, true);
-      p_ann->type_mem_tag = tag;
+      p_ann->symbol_mem_tag = tag;
 
       for (sv = svars; sv; sv = sv->next)
         add_may_alias (tag, sv->var);
@@ -2691,15 +2691,15 @@ new_type_alias (tree ptr, tree var)
 	{
 	  tree ali = VEC_index (tree, aliases, 0);
 
-	  if (TREE_CODE (ali) == TYPE_MEMORY_TAG)
+	  if (TREE_CODE (ali) == SYMBOL_MEMORY_TAG)
 	    {
-	      p_ann->type_mem_tag = ali;
+	      p_ann->symbol_mem_tag = ali;
 	      return;
 	    }
 	}
 
       tag = create_memory_tag (tag_type, true);
-      p_ann->type_mem_tag = tag;
+      p_ann->symbol_mem_tag = tag;
 
       if (aliases == NULL)
 	add_may_alias (tag, var);
@@ -2846,7 +2846,7 @@ create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
 
   /* Add the new variable to REFERENCED_VARS.  */
   ann = get_var_ann (subvar);
-  ann->type_mem_tag = NULL;  	
+  ann->symbol_mem_tag = NULL;  	
   add_referenced_tmp_var (subvar);
   SFT_PARENT_VAR (subvar) = var;
   SFT_OFFSET (subvar) = offset;

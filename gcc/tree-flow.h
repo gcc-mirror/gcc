@@ -185,10 +185,10 @@ struct var_ann_d GTY(())
   unsigned in_v_may_def_list : 1;
 
   /* An artificial variable representing the memory location pointed-to by
-     all the pointers that TBAA (type-based alias analysis) considers
-     to be aliased.  If the variable is not a pointer or if it is never
-     dereferenced, this must be NULL.  */
-  tree type_mem_tag;
+     all the pointer symbols that flow-insensitive alias analysis
+     (mostly type-based) considers to be aliased.  If the variable is
+     not a pointer or if it is never dereferenced, this must be NULL.  */
+  tree symbol_mem_tag;
 
   /* Variables that may alias this variable.  */
   VEC(tree, gc) *may_aliases;

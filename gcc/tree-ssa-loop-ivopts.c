@@ -5342,8 +5342,8 @@ get_ref_tag (tree ref, tree orig)
 
   if (TREE_CODE (var) == INDIRECT_REF)
     {
-      /* In case the base is a dereference of a pointer, first check its name
-	 mem tag, and if it does not have one, use type mem tag.  */
+      /* If the base is a dereference of a pointer, first check its name memory
+	 tag.  If it does not have one, use its symbol memory tag.  */
       var = TREE_OPERAND (var, 0);
       if (TREE_CODE (var) != SSA_NAME)
 	return NULL_TREE;
@@ -5356,7 +5356,7 @@ get_ref_tag (tree ref, tree orig)
 	}
  
       var = SSA_NAME_VAR (var);
-      tag = var_ann (var)->type_mem_tag;
+      tag = var_ann (var)->symbol_mem_tag;
       gcc_assert (tag != NULL_TREE);
       return tag;
     }
@@ -5365,7 +5365,7 @@ get_ref_tag (tree ref, tree orig)
       if (!DECL_P (var))
 	return NULL_TREE;
 
-      tag = var_ann (var)->type_mem_tag;
+      tag = var_ann (var)->symbol_mem_tag;
       if (tag)
 	return tag;
 

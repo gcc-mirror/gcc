@@ -300,12 +300,12 @@ vect_create_data_ref_ptr (tree stmt,
   tag = DR_MEMTAG (dr);
   gcc_assert (tag);
 
-  /* If tag is a variable (and NOT_A_TAG) than a new type alias
+  /* If tag is a variable (and NOT_A_TAG) than a new symbol memory
      tag must be created with tag added to its may alias list.  */
   if (!MTAG_P (tag))
     new_type_alias (vect_ptr, tag);
   else
-    var_ann (vect_ptr)->type_mem_tag = tag;
+    var_ann (vect_ptr)->symbol_mem_tag = tag;
 
   var_ann (vect_ptr)->subvars = DR_SUBVARS (dr);
 

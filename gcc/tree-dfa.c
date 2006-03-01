@@ -344,10 +344,10 @@ dump_variable (FILE *file, tree var)
   fprintf (file, ", ");
   print_generic_expr (file, TREE_TYPE (var), dump_flags);
 
-  if (ann && ann->type_mem_tag)
+  if (ann && ann->symbol_mem_tag)
     {
-      fprintf (file, ", type memory tag: ");
-      print_generic_expr (file, ann->type_mem_tag, dump_flags);
+      fprintf (file, ", symbol memory tag: ");
+      print_generic_expr (file, ann->symbol_mem_tag, dump_flags);
     }
 
   if (ann && ann->is_aliased)
