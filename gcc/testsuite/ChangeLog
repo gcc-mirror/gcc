@@ -1,3 +1,8 @@
+2006-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/26022
+	* g++.dg/opt/return-slot1.C: New test.
+
 2006-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26136
