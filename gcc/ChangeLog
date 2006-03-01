@@ -1,5 +1,12 @@
 2006-03-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR target/25761
+	* config/darwin.h (MACHOPIC_JUST_INDIRECT): Check just
+	MACHO_DYNAMIC_NO_PIC_P.
+	(MACHOPIC_PURE): Check flag_pic and not MACHO_DYNAMIC_NO_PIC_P.
+
+2006-03-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR target/26389
 	* config/darwin-protos.h (darwin_asm_output_anchor):
 	Declare.
