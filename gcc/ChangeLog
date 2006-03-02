@@ -1,3 +1,10 @@
+2006-03-02  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (default_use_cxa_atexit): Extend the description of
+	this configure variable.  Set its default value to "yes" for
+	Linux, NetBSD and ELF targets on the assumption that they will
+	use C libraries with the __cxa_atexit function.
+
 2006-03-02  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/linux-unwind.h (frob_update_context): Mark `fs'

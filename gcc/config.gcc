@@ -34,9 +34,14 @@
 #			threads support was requested.
 #
 #  default_use_cxa_atexit
-#			"no" by default, can be set to "yes" if a target
-#			wishes to use __cxa_atexit() by default if the
-#			$enable___cxa_atexit variable is not set.
+#			  The default value for the $enable___cxa_atexit
+#			variable.  enable___cxa_atexit needs to be set to
+#			"yes" for the correct operation of C++ destructors
+#			but it relies upon the presence of a non-standard C
+#			library	function called	__cxa_atexit.
+#			  Since not all C libraries provide __cxa_atexit the
+#			default value of $default_use_cxa_atexit is set to
+#			"no" except for targets which are known to be OK.
 #
 #  gas_flag		Either yes or no depending on whether GNU as was
 #			requested.
@@ -461,6 +466,8 @@ case ${target} in
       tm_defines="${tm_defines} UCLIBC_DEFAULT=0"
       ;;
   esac
+  # Assume that glibc or uClibc are being used and so __cxa_atexit is provided.
+  default_use_cxa_atexit=yes
   ;;
 *-*-gnu*)
   # On the Hurd, the setup is just about the same on
@@ -482,6 +489,8 @@ case ${target} in
       tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
       ;;
   esac
+  # Assume that glibc is being used and so __cxa_atexit is provided.
+  default_use_cxa_atexit=yes
   ;;
 *-*-netbsd*)
   tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
@@ -550,6 +559,10 @@ case ${target} in
     "" | yes | vxworks) thread_file='vxworks' ;;
     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
   esac
+  ;;
+*-*-elf)
+  # Assume that newlib is being used and so __cxa_atexit is provided.
+  default_use_cxa_atexit=yes
   ;;
 esac
 
