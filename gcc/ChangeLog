@@ -1,3 +1,65 @@
+2006-03-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/tm.texi (TARGET_HAVE_SWITCHABLE_BSS_SECTIONS): Document.
+	(ASM_OUTPUT_BSS): Describe the two ways of handling global BSS,
+	and say that only one is needed.
+	* doc/rtl.texi (SYMBOL_REF_BLOCK): Say that the block can be null.
+	* target.h (have_switchable_bss_sections): New hook.
+	* explow.c (use_anchored_address): Check that the symbol is in a block.
+	* varasm.c (tls_comm_section, comm_section, lcomm_section)
+	(bss_noswitch_section): New variables.
+	(get_unnamed_section): Add SECTION_UNNAMED to the flags.
+	(get_noswitch_section): New function.
+	(get_block_for_section): Allow SECT to be null.
+	(unlikely_text_section_p): Use SECTION_STYLE.
+	(bss_initializer_p): New function.
+	(get_variable_section): Move earlier in file.  Take a new argument,
+	prefer_noswitch_p.  Move bss checks from assemble_variable to here.
+	Return one of the new *_sections in such cases.
+	(get_block_for_decl): New function, extracting some logic from
+	use_blocks_for_decl_p.
+	(change_symbol_section): Remove in favor of...
+	(change_symbol_block): ...this new function.
+	(use_blocks_for_decl_p): Remove checks now performed by
+	get_block_for_decl.
+	(make_decl_rtl): Use change_symbol_block and get_block_for_decl.
+	(ASM_EMIT_LOCAL, ASM_EMIT_BSS, ASM_EMIT_COMMON): Delete in favor of...
+	(emit_local, emit_bss, emit_common): ...these new functions.
+	Return true if the alignment was honored.
+	(emit_tls_common): New function.
+	(asm_emit_uninitialised): Delete.
+	(assemble_variable_noswitch): New function, split out from...
+	(assemble_variable): ...here.  Don't make decisions about common
+	variables here.  Globalize all public decls that go into non-common
+	sections.  Check whether SYMBOL_REF_BLOCK is null.
+	(output_constant_def_contents): Check whether SYMBOL_REF_BLOCK is null.
+	(output_constant_pool): Likewise.
+	(init_varasm_once): Initialize the new section variables.
+	(have_global_bss_p): New function.
+	(categorize_decl_for_section): Use bss_initializer_p.
+	(switch_to_section): Use SECTION_STYLE.  Abort for SECTION_NOSWITCH.
+	(place_block_symbol): Assert that the symbol must be in a block.
+	* target-def.h (TARGET_HAVE_SWITCHABLE_BSS_SECTIONS): New macro.
+	(TARGET_INITIALIZER): Include it.
+	* rtl.h (SYMBOL_REF_BLOCK): Document the null alternative.
+	* output.h (SECTION_STYLE_MASK, SECTION_COMMON): New macros.
+	(SECTION_MACH_DEP): Bump by two.
+	(SECTION_UNNAMED, SECTION_NOSWITCH): New macros.
+	(unnamed_section): Mention SECTION_UNNAMED in comment.
+	(named_section): Likewise SECTION_NAMED.
+	(noswitch_section_callback): New type.
+	(noswitch_section): New structure.
+	(section): Add a noswitch_section alternative.
+	(SECTION_STYLE): New macro.
+	(tls_comm_section, comm_section, lcomm_section): Declare.
+	(bss_noswitch_section, have_global_bss_p): Declare.
+	* config/elfos.h (TARGET_HAVE_SWITCHABLE_BSS_SECTIONS): Override.
+	* config/iq2000/iq2000.c (TARGET_HAVE_SWITCHABLE_BSS_SECTIONS):
+	Override.
+	* config/v850/v850.c (TARGET_HAVE_SWITCHABLE_BSS_SECTIONS): Override.
+	* config/stormy16/stormy16.c (TARGET_HAVE_SWITCHABLE_BSS_SECTIONS):
+	Override.
+
 2006-03-02  Daniel Berlin <dberlin@dberlin.org>
 
 	* gcc/tree-vrp.c (execute_vrp): Return value.

@@ -1,3 +1,8 @@
+2006-03-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* utils.c (create_var_decl): Use have_global_bss_p when deciding
+	whether to make the decl common.
+
 2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 	* Make-lang.in (Ada): Remove
 	(.PHONY): Remove Ada

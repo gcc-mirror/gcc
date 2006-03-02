@@ -1,3 +1,8 @@
+2006-03-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* decl.c (start_decl): Use have_global_bss_p when deciding
+	whether to make the decl common.
+
 2006-03-01  Mike Stump  <mrs@apple.com>
 
 	PR darwin/25908

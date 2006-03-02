@@ -528,7 +528,7 @@ the target's use.
 @findex SYMBOL_REF_BLOCK
 @item SYMBOL_REF_BLOCK (@var{x})
 If @samp{SYMBOL_REF_IN_BLOCK_P (@var{x})}, this is the @samp{object_block}
-structure to which the symbol belongs.  The value is always nonnull.
+structure to which the symbol belongs, or @code{NULL} if none.
 
 @findex SYMBOL_REF_BLOCK_OFFSET
 @item SYMBOL_REF_BLOCK_OFFSET (@var{x})

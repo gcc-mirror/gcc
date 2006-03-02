@@ -1331,8 +1331,8 @@ do {						\
 #define SYMBOL_FLAG_MACH_DEP_SHIFT	9
 #define SYMBOL_FLAG_MACH_DEP		(1 << SYMBOL_FLAG_MACH_DEP_SHIFT)
 
-/* The block to which the given SYMBOL_REF belongs.  Only valid if
-   SYMBOL_REF_IN_BLOCK_P (RTX).  */
+/* The block to which the given SYMBOL_REF belongs, or NULL if none.
+   Only valid if SYMBOL_REF_IN_BLOCK_P (RTX).  */
 #define SYMBOL_REF_BLOCK(RTX) (BLOCK_SYMBOL_CHECK (RTX)->block)
 
 /* The byte offset of the given SYMBOL_REF from the start of its block,

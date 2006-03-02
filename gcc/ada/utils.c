@@ -1293,10 +1293,10 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
      try to fiddle with DECL_COMMON.  However, on platforms that don't
      support global BSS sections, uninitialized global variables would
      go in DATA instead, thus increasing the size of the executable.  */
-#if !defined(ASM_OUTPUT_BSS) && !defined(ASM_OUTPUT_ALIGNED_BSS)
-  if (TREE_CODE (var_decl) == VAR_DECL)
-    DECL_COMMON   (var_decl) = !flag_no_common;
-#endif
+  if (!flag_no_common
+      && TREE_CODE (var_decl) == VAR_DECL
+      && !have_global_bss_p ())
+    DECL_COMMON (var_decl) = 1;
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
   DECL_EXTERNAL (var_decl) = extern_flag;
