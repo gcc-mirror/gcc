@@ -412,7 +412,7 @@ for ml in $MULTILIBS; do
       if [ "$dpbit" ]; then
         for name in $dpfuncs; do
           out="libgcc/${dir}/${name}${objext}"
-	  echo $out: config/dfp-bit.c $fpbit_c_dep
+	  echo $out: config/dfp-bit.h config/dfp-bit.c $fpbit_c_dep
 	  echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name -DWIDTH=$dpwidth \
 	      $DFP_CFLAGS -c $\(srcdir\)/config/dfp-bit.c -o $out
 	  echo $libgcc_a: $out
