@@ -1,3 +1,9 @@
+2006-03-02 Fariborz Jahanian <fjahanian@apple.com>
+
+	* objc-act.c (init_module_descriptor): Remove file name from
+	module descriptor.
+	(gen_type_name_0): Fix ICE when issuing warning.
+
 2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 	* Make-lang.in (OBJC): Remove
 	(OBJECTIVE-C): Remove
