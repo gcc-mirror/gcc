@@ -1,3 +1,7 @@
+2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* loop.c: Removed.
+
 2006-03-02  David S. Miller  <davem@sunset.davemloft.net>
 
 	Sun Niagara specific optimizations.
