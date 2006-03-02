@@ -1,3 +1,7 @@
+2006-03-01  Mike Stump  <mrs@apple.com>
+
+	* g++.dg/abi/key2.C: Add.
+
 2006-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/logical_dot_product.f90: New test. 

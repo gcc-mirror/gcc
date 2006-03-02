@@ -1784,9 +1784,14 @@ import_export_decl (tree decl)
 	      /* The generic C++ ABI says that class data is always
 		 COMDAT, even if there is a key function.  Some
 		 variants (e.g., the ARM EABI) says that class data
-		 only has COMDAT linkage if the class data might
-		 be emitted in more than one translation unit.  */
+		 only has COMDAT linkage if the class data might be
+		 emitted in more than one translation unit.  When the
+		 key method can be inline and is inline, we still have
+		 to arrange for comdat even though
+		 class_data_always_comdat is false.  */
 	      if (!CLASSTYPE_KEY_METHOD (class_type)
+		  || (DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (class_type))
+		      && targetm.cxx.key_method_may_be_inline ())
 		  || targetm.cxx.class_data_always_comdat ())
 		{
 		  /* The ABI requires COMDAT linkage.  Normally, we
@@ -1825,7 +1830,10 @@ import_export_decl (tree decl)
 	      if (CLASSTYPE_INTERFACE_KNOWN (type)
 		  && !CLASSTYPE_INTERFACE_ONLY (type))
 		{
-		  comdat_p = targetm.cxx.class_data_always_comdat ();
+		  comdat_p = (targetm.cxx.class_data_always_comdat ()
+			      || (CLASSTYPE_KEY_METHOD (type)
+				  && DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type))
+				  && targetm.cxx.key_method_may_be_inline ()));
 		  mark_needed (decl);
 		  if (!flag_weak)
 		    {
