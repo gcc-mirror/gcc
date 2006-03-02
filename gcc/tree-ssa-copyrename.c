@@ -292,7 +292,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
    then cause the SSA->normal pass to attempt to coalesce them all to the same 
    variable.  */
 
-static void
+static unsigned int
 rename_ssa_copies (void)
 {
   var_map map;
@@ -374,6 +374,7 @@ rename_ssa_copies (void)
     }
 
   delete_var_map (map);
+  return 0;
 }
 
 /* Return true if copy rename is to be performed.  */

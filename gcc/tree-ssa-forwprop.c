@@ -927,7 +927,7 @@ simplify_switch_expr (tree stmt)
 
 /* Main entry point for the forward propagation optimizer.  */
 
-static void
+static unsigned int
 tree_ssa_forward_propagate_single_use_vars (void)
 {
   basic_block bb;
@@ -991,6 +991,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 
   if (cfg_changed)
     cleanup_tree_cfg ();
+  return 0;
 }
 
 

@@ -1196,7 +1196,7 @@ warn_uninitialized_phi (tree phi)
     }
 }
 
-static void
+static unsigned int
 execute_early_warn_uninitialized (void)
 {
   block_stmt_iterator bsi;
@@ -1209,9 +1209,10 @@ execute_early_warn_uninitialized (void)
 	walk_tree (bsi_stmt_ptr (bsi), warn_uninitialized_var,
 		   context, NULL);
       }
+  return 0;
 }
 
-static void
+static unsigned int
 execute_late_warn_uninitialized (void)
 {
   basic_block bb;
@@ -1225,6 +1226,7 @@ execute_late_warn_uninitialized (void)
   FOR_EACH_BB (bb)
     for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
       warn_uninitialized_phi (phi);
+  return 0;
 }
 
 static bool

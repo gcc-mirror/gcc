@@ -106,7 +106,7 @@ static void make_switch_expr_edges (basic_block);
 static void make_goto_expr_edges (basic_block);
 static edge tree_redirect_edge_and_branch (edge, basic_block);
 static edge tree_try_redirect_by_replacing_jump (edge, basic_block);
-static void split_critical_edges (void);
+static unsigned int split_critical_edges (void);
 
 /* Various helpers.  */
 static inline bool stmt_starts_bb_p (tree, tree);
@@ -224,10 +224,11 @@ build_tree_cfg (tree *tp)
     dump_tree_cfg (dump_file, dump_flags);
 }
 
-static void
+static unsigned int
 execute_build_cfg (void)
 {
   build_tree_cfg (&DECL_SAVED_TREE (current_function_decl));
+  return 0;
 }
 
 struct tree_opt_pass pass_build_cfg =
@@ -1994,7 +1995,7 @@ remove_useless_stmts_1 (tree *tp, struct rus_data *data)
     }
 }
 
-static void
+static unsigned int
 remove_useless_stmts (void)
 {
   struct rus_data data;
@@ -2007,6 +2008,7 @@ remove_useless_stmts (void)
       remove_useless_stmts_1 (&DECL_SAVED_TREE (current_function_decl), &data);
     }
   while (data.repeat);
+  return 0;
 }
 
 
@@ -5445,7 +5447,7 @@ struct cfg_hooks tree_cfg_hooks = {
 
 /* Split all critical edges.  */
 
-static void
+static unsigned int
 split_critical_edges (void)
 {
   basic_block bb;
@@ -5465,6 +5467,7 @@ split_critical_edges (void)
 	  }
     }
   end_recording_case_labels ();
+  return 0;
 }
 
 struct tree_opt_pass pass_split_crit_edges = 
@@ -5559,7 +5562,7 @@ gimplify_build1 (block_stmt_iterator *bsi, enum tree_code code, tree type,
 
 /* Emit return warnings.  */
 
-static void
+static unsigned int
 execute_warn_function_return (void)
 {
 #ifdef USE_MAPPED_LOCATION
@@ -5632,6 +5635,7 @@ execute_warn_function_return (void)
 	    }
 	}
     }
+  return 0;
 }
 
 
@@ -5678,7 +5682,7 @@ struct tree_opt_pass pass_warn_function_return =
 
 /* Emit noreturn warnings.  */
 
-static void
+static unsigned int
 execute_warn_function_noreturn (void)
 {
   if (warn_missing_noreturn
@@ -5688,6 +5692,7 @@ execute_warn_function_noreturn (void)
     warning (OPT_Wmissing_noreturn, "%Jfunction might be possible candidate "
 	     "for attribute %<noreturn%>",
 	     cfun->decl);
+  return 0;
 }
 
 struct tree_opt_pass pass_warn_function_noreturn =

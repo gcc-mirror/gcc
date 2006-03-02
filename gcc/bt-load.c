@@ -1489,7 +1489,7 @@ gate_handle_branch_target_load_optimize (void)
 }
 
 
-static void
+static unsigned int
 rest_of_handle_branch_target_load_optimize (void)
 {
   static int warned = 0;
@@ -1508,6 +1508,7 @@ rest_of_handle_branch_target_load_optimize (void)
     }
 
   branch_target_load_optimize (epilogue_completed);
+  return 0;
 }
 
 struct tree_opt_pass pass_branch_target_load_optimize =

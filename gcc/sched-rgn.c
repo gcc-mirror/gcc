@@ -2635,7 +2635,7 @@ gate_handle_sched (void)
 }
 
 /* Run instruction scheduler.  */
-static void
+static unsigned int
 rest_of_handle_sched (void)
 {
 #ifdef INSN_SCHEDULING
@@ -2644,6 +2644,7 @@ rest_of_handle_sched (void)
 
   schedule_insns ();
 #endif
+  return 0;
 }
 
 static bool
@@ -2657,7 +2658,7 @@ gate_handle_sched2 (void)
 }
 
 /* Run second scheduling pass after reload.  */
-static void
+static unsigned int
 rest_of_handle_sched2 (void)
 {
 #ifdef INSN_SCHEDULING
@@ -2677,6 +2678,7 @@ rest_of_handle_sched2 (void)
   else
     schedule_insns ();
 #endif
+  return 0;
 }
 
 struct tree_opt_pass pass_sched =

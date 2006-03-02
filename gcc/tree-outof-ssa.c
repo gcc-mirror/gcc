@@ -2505,7 +2505,7 @@ insert_backedge_copies (void)
    R. Morgan, ``Building an Optimizing Compiler'',
    Butterworth-Heinemann, Boston, MA, 1998. pp 176-186.  */
 
-static void
+static unsigned int
 rewrite_out_of_ssa (void)
 {
   var_map map;
@@ -2548,6 +2548,7 @@ rewrite_out_of_ssa (void)
   delete_var_map (map);
 
   in_ssa_p = false;
+  return 0;
 }
 
 

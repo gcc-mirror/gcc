@@ -1480,7 +1480,7 @@ expand_complex_operations_1 (block_stmt_iterator *bsi)
 
 /* Entry point for complex operation lowering during optimization.  */
 
-static void
+static unsigned int
 tree_lower_complex (void)
 {
   int old_last_basic_block;
@@ -1488,7 +1488,7 @@ tree_lower_complex (void)
   basic_block bb;
 
   if (!init_dont_simulate_again ())
-    return;
+    return 0;
 
   complex_lattice_values = VEC_alloc (complex_lattice_t, heap, num_ssa_names);
   VEC_safe_grow (complex_lattice_t, heap,
@@ -1525,6 +1525,7 @@ tree_lower_complex (void)
   htab_delete (complex_variable_components);
   VEC_free (tree, heap, complex_ssa_name_components);
   VEC_free (complex_lattice_t, heap, complex_lattice_values);
+  return 0;
 }
 
 struct tree_opt_pass pass_lower_complex = 
@@ -1549,7 +1550,7 @@ struct tree_opt_pass pass_lower_complex =
 
 /* Entry point for complex operation lowering without optimization.  */
 
-static void
+static unsigned int
 tree_lower_complex_O0 (void)
 {
   int old_last_basic_block = last_basic_block;
@@ -1563,6 +1564,7 @@ tree_lower_complex_O0 (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	expand_complex_operations_1 (&bsi);
     }
+  return 0;
 }
 
 static bool

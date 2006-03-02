@@ -101,7 +101,7 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
    then we could either have the languages register the optimization or
    we could change the gating function to check the current language.  */
    
-static void
+static unsigned int
 tree_nrv (void)
 {
   tree result = DECL_RESULT (current_function_decl);
@@ -114,7 +114,7 @@ tree_nrv (void)
   /* If this function does not return an aggregate type in memory, then
      there is nothing to do.  */
   if (!aggregate_value_p (result, current_function_decl))
-    return;
+    return 0;
 
   /* Look through each block for assignments to the RESULT_DECL.  */
   FOR_EACH_BB (bb)
@@ -146,7 +146,7 @@ tree_nrv (void)
 		     than previous return statements, then we can not perform
 		     NRV optimizations.  */
 		  if (found != ret_expr)
-		    return;
+		    return 0;
 		}
 	      else
 		found = ret_expr;
@@ -161,13 +161,13 @@ tree_nrv (void)
 		  || DECL_ALIGN (found) > DECL_ALIGN (result)
 		  || !lang_hooks.types_compatible_p (TREE_TYPE (found), 
 						     result_type))
-		return;
+		return 0;
 	    }
 	}
     }
 
   if (!found)
-    return;
+    return 0;
 
   /* If dumping details, then note once and only the NRV replacement.  */
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -211,6 +211,7 @@ tree_nrv (void)
 
   /* FOUND is no longer used.  Ensure it gets removed.  */
   var_ann (found)->used = 0;
+  return 0;
 }
 
 struct tree_opt_pass pass_nrv = 
@@ -242,7 +243,7 @@ struct tree_opt_pass pass_nrv =
    escaped prior to the call.  If it has, modifications to the local
    variable will produce visible changes elsewhere, as in PR c++/19317.  */
 
-static void
+static unsigned int
 execute_return_slot_opt (void)
 {
   basic_block bb;
@@ -287,6 +288,7 @@ execute_return_slot_opt (void)
 	    }
 	}
     }
+  return 0;
 }
 
 struct tree_opt_pass pass_return_slot = 

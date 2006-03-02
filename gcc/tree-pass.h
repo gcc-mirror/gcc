@@ -97,8 +97,9 @@ struct tree_opt_pass
   bool (*gate) (void);
 
   /* This is the code to run.  If null, then there should be sub-passes
-     otherwise this pass does nothing.  */
-  void (*execute) (void);
+     otherwise this pass does nothing.  The return value contains
+     TODOs to execute in addition to those in TODO_flags_finish.   */
+  unsigned int (*execute) (void);
 
   /* A list of sub-passes to run, dependent on gate predicate.  */
   struct tree_opt_pass *sub;

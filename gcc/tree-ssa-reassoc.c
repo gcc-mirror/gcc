@@ -1489,7 +1489,7 @@ fini_reassoc (void)
 
 /* Gate and execute functions for Reassociation.  */
 
-static void
+static unsigned int
 execute_reassoc (void)
 {
   init_reassoc ();
@@ -1498,6 +1498,7 @@ execute_reassoc (void)
   repropagate_negates ();
 
   fini_reassoc ();
+  return 0;
 }
 
 struct tree_opt_pass pass_reassoc =

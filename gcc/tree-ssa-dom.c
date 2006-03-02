@@ -235,7 +235,7 @@ free_all_edge_infos (void)
    every new symbol exposed, its corresponding bit will be set in
    VARS_TO_RENAME.  */
 
-static void
+static unsigned int
 tree_ssa_dominator_optimize (void)
 {
   struct dom_walk_data walk_data;
@@ -358,6 +358,7 @@ tree_ssa_dominator_optimize (void)
   VEC_free (tree, heap, avail_exprs_stack);
   VEC_free (tree, heap, const_and_copies_stack);
   VEC_free (tree, heap, stmts_to_rescan);
+  return 0;
 }
 
 static bool

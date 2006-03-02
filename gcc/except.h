@@ -52,7 +52,7 @@ extern bool can_throw_external_1 (int, bool);
 extern bool can_throw_external (rtx);
 
 /* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
-extern void set_nothrow_function_flags (void);
+extern unsigned int set_nothrow_function_flags (void);
 
 /* After initial rtl generation, call back to finish generating
    exception support code.  */
@@ -65,7 +65,7 @@ extern rtx reachable_handlers (rtx);
 extern void maybe_remove_eh_handler (rtx);
 
 extern void convert_from_eh_region_ranges (void);
-extern void convert_to_eh_region_ranges (void);
+extern unsigned int convert_to_eh_region_ranges (void);
 extern void find_exception_handler_labels (void);
 extern bool current_function_has_exception_handlers (void);
 extern void output_function_exception_table (void);

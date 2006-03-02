@@ -2676,11 +2676,11 @@ vt_finalize (void)
 
 /* The entry point to variable tracking pass.  */
 
-void
+unsigned int
 variable_tracking_main (void)
 {
   if (n_basic_blocks > 500 && n_edges / n_basic_blocks >= 20)
-    return;
+    return 0;
 
   mark_dfs_back_edges ();
   vt_initialize ();
@@ -2689,7 +2689,7 @@ variable_tracking_main (void)
       if (!vt_stack_adjustments ())
 	{
 	  vt_finalize ();
-	  return;
+	  return 0;
 	}
     }
 
@@ -2703,6 +2703,7 @@ variable_tracking_main (void)
     }
 
   vt_finalize ();
+  return 0;
 }
 
 static bool

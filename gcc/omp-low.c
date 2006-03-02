@@ -3331,7 +3331,7 @@ build_omp_regions (void)
 
 /* Main entry point for expanding OMP-GIMPLE into runtime calls.  */
 
-static void
+static unsigned int
 execute_expand_omp (void)
 {
   build_omp_regions ();
@@ -3350,6 +3350,7 @@ execute_expand_omp (void)
       root_omp_region = NULL;
       omp_regions = NULL;
     }
+  return 0;
 }
 
 static bool
@@ -4105,7 +4106,7 @@ lower_omp (tree *stmt_p, omp_context *ctx)
 
 /* Main entry point.  */
 
-static void
+static unsigned int
 execute_lower_omp (void)
 {
   all_contexts = splay_tree_new (splay_tree_compare_pointers, 0,
@@ -4122,6 +4123,7 @@ execute_lower_omp (void)
       splay_tree_delete (all_contexts);
       all_contexts = NULL;
     }
+  return 0;
 }
 
 static bool

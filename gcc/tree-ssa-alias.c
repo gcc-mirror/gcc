@@ -603,7 +603,7 @@ recalculate_used_alone (void)
    max-aliased-vops}), alias sets are grouped to avoid severe
    compile-time slow downs and memory consumption.  See group_aliases.  */
 
-static void
+static unsigned int
 compute_may_aliases (void)
 {
   struct alias_info *ai;
@@ -676,6 +676,7 @@ compute_may_aliases (void)
   }
   recalculate_used_alone ();
   updating_used_alone = false;
+  return 0;
 }
 
 
@@ -3125,7 +3126,7 @@ find_used_portions (tree *tp, int *walk_subtrees, void *lhs_p)
 
 /* Create structure field variables for structures used in this function.  */
 
-static void
+static unsigned int
 create_structure_vars (void)
 {
   basic_block bb;
@@ -3158,7 +3159,7 @@ create_structure_vars (void)
     }
   htab_delete (used_portions);
   VEC_free (tree, heap, varvec);
-
+  return 0;
 }
 
 static bool

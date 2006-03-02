@@ -447,7 +447,7 @@ gate_cse_reciprocals (void)
 
 /* Go through all the floating-point SSA_NAMEs, and call
    execute_cse_reciprocals_1 on each of them.  */
-static void
+static unsigned int
 execute_cse_reciprocals (void)
 {
   basic_block bb;
@@ -496,6 +496,7 @@ execute_cse_reciprocals (void)
 
   free_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);
   free_alloc_pool (occ_pool);
+  return 0;
 }
 
 struct tree_opt_pass pass_cse_reciprocals =

@@ -387,7 +387,7 @@ gate_handle_tracer (void)
 }
 
 /* Run tracer.  */
-static void
+static unsigned int
 rest_of_handle_tracer (void)
 {
   if (dump_file)
@@ -395,6 +395,7 @@ rest_of_handle_tracer (void)
   tracer (0);
   cleanup_cfg (CLEANUP_EXPENSIVE);
   reg_scan (get_insns (), max_reg_num ());
+  return 0;
 }
 
 struct tree_opt_pass pass_tracer =

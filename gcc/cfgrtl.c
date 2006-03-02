@@ -414,13 +414,14 @@ compute_bb_for_insn (void)
 
 /* Release the basic_block_for_insn array.  */
 
-void
+unsigned int
 free_bb_for_insn (void)
 {
   rtx insn;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (!BARRIER_P (insn))
       BLOCK_FOR_INSN (insn) = NULL;
+  return 0;
 }
 
 struct tree_opt_pass pass_free_cfg =

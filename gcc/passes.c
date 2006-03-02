@@ -807,6 +807,7 @@ static bool
 execute_one_pass (struct tree_opt_pass *pass)
 {
   bool initializing_dump;
+  unsigned int todo_after = 0;
 
   /* See if we're supposed to run this pass.  */
   if (pass->gate && !pass->gate ())
@@ -858,7 +859,7 @@ execute_one_pass (struct tree_opt_pass *pass)
   /* Do it!  */
   if (pass->execute)
     {
-      pass->execute ();
+      todo_after = pass->execute ();
       last_verified = 0;
     }
 
@@ -880,7 +881,7 @@ execute_one_pass (struct tree_opt_pass *pass)
     }
 
   /* Run post-pass cleanup and verification.  */
-  execute_todo (pass->todo_flags_finish);
+  execute_todo (todo_after | pass->todo_flags_finish);
 
   /* Flush and close dump file.  */
   if (dump_file_name)

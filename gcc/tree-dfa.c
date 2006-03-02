@@ -103,7 +103,7 @@ htab_t default_defs;
    various attributes for each variable used by alias analysis and the
    optimizer.  */
 
-static void
+static unsigned int
 find_referenced_vars (void)
 {
   htab_t vars_found;
@@ -123,6 +123,7 @@ find_referenced_vars (void)
       }
 
   htab_delete (vars_found);
+  return 0;
 }
 
 struct tree_opt_pass pass_referenced_vars =

@@ -4518,7 +4518,7 @@ vrp_finalize (void)
    DON'T KNOW.  In the future, it may be worthwhile to propagate
    probabilities to aid branch prediction.  */
 
-static void
+static unsigned int
 execute_vrp (void)
 {
   insert_range_assertions ();
@@ -4551,7 +4551,7 @@ execute_vrp (void)
   update_ssa (TODO_update_ssa);
 
   finalize_jump_threads ();
-
+  return 0;
 }
 
 static bool

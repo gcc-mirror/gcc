@@ -234,7 +234,7 @@ do_tree_profiling (void)
   return false;
 }
 
-static void
+static unsigned int
 tree_profiling (void)
 {
   branch_prob ();
@@ -247,6 +247,7 @@ tree_profiling (void)
      easy to adjust it, if and when there is some.  */
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
+  return 0;
 }
 
 struct tree_opt_pass pass_tree_profile = 

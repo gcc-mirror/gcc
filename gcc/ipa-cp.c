@@ -1079,7 +1079,7 @@ ipcp_insert_stage (void)
 }
 
 /* The IPCP driver.  */
-void
+unsigned int
 ipcp_driver (void)
 {
   if (dump_file)
@@ -1117,6 +1117,7 @@ ipcp_driver (void)
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation end\n");
   cgraph_remove_unreachable_nodes (true, NULL);
+  return 0;
 }
 
 /* Gate for IPCP optimization.  */

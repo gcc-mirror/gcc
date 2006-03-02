@@ -469,7 +469,7 @@ gate_expand_vector_operations (void)
   return flag_tree_vectorize != 0;
 }
 
-static void
+static unsigned int
 expand_vector_operations (void)
 {
   block_stmt_iterator bsi;
@@ -483,6 +483,7 @@ expand_vector_operations (void)
 	  update_stmt_if_modified (bsi_stmt (bsi));
 	}
     }
+  return 0;
 }
 
 struct tree_opt_pass pass_lower_vector = 

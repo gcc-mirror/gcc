@@ -2645,7 +2645,7 @@ end_alias_analysis (void)
 
 /* Do control and data flow analysis; write some of the results to the
    dump file.  */
-static void
+static unsigned int
 rest_of_handle_cfg (void)
 {
   if (dump_file)
@@ -2653,6 +2653,7 @@ rest_of_handle_cfg (void)
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE
                  | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+  return 0;
 }
 
 struct tree_opt_pass pass_cfg =

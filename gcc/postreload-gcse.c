@@ -1365,12 +1365,13 @@ gate_handle_gcse2 (void)
 }
 
 
-static void
+static unsigned int
 rest_of_handle_gcse2 (void)
 {
   gcse_after_reload_main (get_insns ());
   rebuild_jump_labels (get_insns ());
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
+  return 0;
 }
 
 struct tree_opt_pass pass_gcse2 =

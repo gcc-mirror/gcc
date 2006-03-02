@@ -572,7 +572,7 @@ analyze_function (struct cgraph_node *fn)
    on the local information that was produced by ipa_analyze_function
    and ipa_analyze_variable.  */
 
-static void
+static unsigned int
 static_execute (void)
 {
   struct cgraph_node *node;
@@ -703,6 +703,7 @@ static_execute (void)
       }
 
   free (order);
+  return 0;
 }
 
 static bool
