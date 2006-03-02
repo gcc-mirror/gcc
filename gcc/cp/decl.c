@@ -3824,16 +3824,17 @@ start_decl (const cp_declarator *declarator,
   if (tem == error_mark_node)
     return error_mark_node;
 
-#if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
   /* Tell the back-end to use or not use .common as appropriate.  If we say
      -fconserve-space, we want this to save .data space, at the expense of
      wrong semantics.  If we say -fno-conserve-space, we want this to
      produce errors about redefs; to do this we force variables into the
      data segment.  */
-  DECL_COMMON (tem) = ((TREE_CODE (tem) != VAR_DECL
-			|| !DECL_THREAD_LOCAL_P (tem))
-		       && (flag_conserve_space || ! TREE_PUBLIC (tem)));
-#endif
+  if (flag_conserve_space
+      && TREE_CODE (tem) == VAR_DECL
+      && TREE_PUBLIC (tem)
+      && !DECL_THREAD_LOCAL_P (tem)
+      && !have_global_bss_p ())
+    DECL_COMMON (tem) = 1;
 
   if (! processing_template_decl)
     start_decl_1 (tem);

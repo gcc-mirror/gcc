@@ -734,6 +734,10 @@ struct gcc_target
   /* True if arbitrary sections are supported.  */
   bool have_named_sections;
 
+  /* True if we can create zeroed data by switching to a BSS section
+     and then using ASM_OUTPUT_SKIP to allocate the space.  */
+  bool have_switchable_bss_sections;
+
   /* True if "native" constructors and destructors are supported,
      false if we're using collect2 for the job.  */
   bool have_ctors_dtors;

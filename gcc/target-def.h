@@ -140,6 +140,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # endif
 #endif
 
+#ifndef TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
+#define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS false
+#endif
+
 #ifndef TARGET_ASM_INIT_SECTIONS
 #define TARGET_ASM_INIT_SECTIONS hook_void_void
 #endif
@@ -651,6 +655,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_EXTRA_LIVE_ON_ENTRY,                    \
   TARGET_UNWIND_TABLES_DEFAULT,			\
   TARGET_HAVE_NAMED_SECTIONS,			\
+  TARGET_HAVE_SWITCHABLE_BSS_SECTIONS,		\
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_HAVE_TLS,				\
   TARGET_HAVE_SRODATA_SECTION,			\

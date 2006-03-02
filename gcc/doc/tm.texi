@@ -6477,6 +6477,13 @@ specify an alignment within the section directive need pay attention to
 This flag is true if the target supports @code{TARGET_ASM_NAMED_SECTION}.
 @end deftypefn
 
+@anchor{TARGET_HAVE_SWITCHABLE_BSS_SECTIONS}
+@deftypefn {Target Hook} bool TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
+This flag is true if we can create zeroed data by switching to a BSS
+section and then using @code{ASM_OUTPUT_SKIP} to allocate the space.
+This is true on most ELF targets.
+@end deftypefn
+
 @deftypefn {Target Hook} {unsigned int} TARGET_SECTION_TYPE_FLAGS (tree @var{decl}, const char *@var{name}, int @var{reloc})
 Choose a set of section attributes for use by @code{TARGET_ASM_NAMED_SECTION}
 based on a variable or function decl, a section name, and whether or not the
@@ -6705,13 +6712,17 @@ defining this macro.  If unable, use the expression
 before and after that, output the additional assembler syntax for defining
 the name, and a newline.
 
-This macro controls how the assembler definitions of uninitialized global
-variables are output.  This macro exists to properly support languages like
-C++ which do not have @code{common} data.  However, this macro currently
-is not defined for all targets.  If this macro and
-@code{ASM_OUTPUT_ALIGNED_BSS} are not defined then @code{ASM_OUTPUT_COMMON}
-or @code{ASM_OUTPUT_ALIGNED_COMMON} or
-@code{ASM_OUTPUT_ALIGNED_DECL_COMMON} is used.
+There are two ways of handling global BSS.  One is to define either
+this macro or its aligned counterpart, @code{ASM_OUTPUT_ALIGNED_BSS}.
+The other is to have @code{TARGET_ASM_SELECT_SECTION} return a
+switchable BSS section (@pxref{TARGET_HAVE_SWITCHABLE_BSS_SECTIONS}).
+You do not need to do both.
+
+Some languages do not have @code{common} data, and require a
+non-common form of global BSS in order to handle uninitialized globals
+efficiently.  C++ is one example of this.  However, if the target does
+not support global BSS, the front end may choose to make globals
+common in order to save space in the object file.
 @end defmac
 
 @defmac ASM_OUTPUT_ALIGNED_BSS (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
