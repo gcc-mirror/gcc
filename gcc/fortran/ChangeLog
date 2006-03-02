@@ -1,3 +1,23 @@
+2006-03-01  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-stmt.c (generate_loop_for_temp_to_lhs): Add an additional
+	INVERT argument to invert the sense of the WHEREMASK argument.
+	Remove unneeded code to AND together a list of masks.
+	(generate_loop_for_rhs_to_temp): Likewise.
+	(gfc_trans_assign_need_temp): Likewise.
+	(gfc_trans_forall_1): Likewise.
+	(gfc_evaluate_where_mask): Likewise, add a new INVERT argument
+	to specify the sense of the MASK argument.
+	(gfc_trans_where_assign): Likewise.
+	(gfc_trans_where_2): Likewise.  Restructure code that decides
+	whether we need to allocate zero, one or two temporary masks.
+	If this is a top-level WHERE (i.e. the incoming MAKS is NULL),
+	we only need to allocate at most one temporary mask, and can
+	invert it's sense to provide the complementary pending execution
+	mask.  Only calculate the size of the required temporary arrays
+	if we need any.
+	(gfc_trans_where): Update call to gfc_trans_where_2.
+
 2006-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	* iresolve.c (gfc_resolve_dot_product):  Remove any difference in
