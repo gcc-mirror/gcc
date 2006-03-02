@@ -1,3 +1,8 @@
+2006-03-02  Ben Elliston  <bje@au.ibm.com>
+
+	* mklibgcc.in: Depend on config/dfp-bit.h in rules that compile
+	config/dfp-bit.c.
+
 2006-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR other/26489
