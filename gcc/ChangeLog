@@ -1,3 +1,39 @@
+2006-03-02  David S. Miller  <davem@sunset.davemloft.net>
+
+	Sun Niagara specific optimizations.
+	* config.gcc: Recognize niagara as target.
+	* config/sparc/sparc.h (SPARC_RELAXED_ORDERING): Mention Niagara.
+	(TARGET_CPU_niagara): Define.
+	(CPP_CPU64_DEFAULT_SPEC): Define __sparc_v9__ for Niagara.
+	(ASM_CPU64_DEFAULT_SPEC): Pass -Av9b for Niagara.
+	(CPP_CPU_SPEC): Handle -mcpu=niagara.
+	(ASM_CPU_SPEC): Likewise.
+	(PROCESSOR_NIAGARA): New enum entry.
+	(REGISTER_MOVE_COST): Handle Niagara.
+	(BRANCH_COST, PREFETCH_BLOCK, SIMULTANEOUS_PREFETCHES): Likewise.
+	* config/sparc/sparc.c (niagara_costs): New processor_costs entry.
+	(sparc_override_options): Recognize "niagara", set appropriate
+	default MASK_* values for it, and align functions to 32-bytes
+	by default just like ULTRASPARC/ULTRASPARC3.
+	(sparc_initialize_trampoline): Handle niagara like ultrasparc.
+	(sparc64_initialize_trampoline): Likewise.
+	(sparc_use_sched_lookahead): Use zero for niagara.
+	(sparc_issue_rate): Use one for niagara.
+	* config/sparc/niagara.md: New file.
+	* config/sparc/sparc.md: Include it.
+	* config/sparc/sol2-bi.h (CPP_CPU64_DEFAULT_SPEC,
+	ASM_CPU32_DEFAULT_SPEC, ASM_CPU64_DEFAULT_SPEC): Set appropriately
+	when default cpu is niagara.
+	(CPP_CPU_SPEC): Handle -mcpu=niagara.
+	(ASM_CPU_SPEC): Likewise.
+	* config/sparc/sol2.h (ASM_CPU_DEFAULT_SPEC): Set appropriately
+	when default cpu is niagara.
+	(ASM_CPU_SPEC): Handle -mcpu=niagara.
+	* config/sparc/linux64.h: Handle a default of TARGET_CPU_niagara
+	just like v9/ultrasparc/ultrasparc3.
+	* doc/invoke.texi: Add documentation for "niagara" and improve
+	existing documentation for ultrasparc variants.
+	
 2006-03-02  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c (update_stmt_operands): Update documentation.

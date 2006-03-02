@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1994, 1995, 1996, 1997, 1998, 1999
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -206,7 +206,7 @@ extern enum cmodel sparc_cmodel;
    which requires the following macro to be true if enabled.  Prior to V9,
    there are no instructions to even talk about memory synchronization.
    Note that the UltraSPARC III processors don't implement RMO, unlike the
-   UltraSPARC II processors.
+   UltraSPARC II processors.  Niagara does not implement RMO either.
 
    Default to false; for example, Solaris never enables RMO, only ever uses
    total memory ordering (TMO).  */
@@ -238,10 +238,12 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CPU_sparc64	7	/* alias */
 #define TARGET_CPU_ultrasparc	8
 #define TARGET_CPU_ultrasparc3	9
+#define TARGET_CPU_niagara	10
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
  || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
- || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
+ || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3 \
+ || TARGET_CPU_DEFAULT == TARGET_CPU_niagara
 
 #define CPP_CPU32_DEFAULT_SPEC ""
 #define ASM_CPU32_DEFAULT_SPEC ""
@@ -259,6 +261,10 @@ extern enum cmodel sparc_cmodel;
 #define ASM_CPU64_DEFAULT_SPEC "-Av9a"
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
+#define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
+#define ASM_CPU64_DEFAULT_SPEC "-Av9b"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_niagara
 #define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
 #define ASM_CPU64_DEFAULT_SPEC "-Av9b"
 #endif
@@ -352,6 +358,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
 %{mcpu=ultrasparc3:-D__sparc_v9__} \
+%{mcpu=niagara:-D__sparc_v9__} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
 "
 #define CPP_ARCH32_SPEC ""
@@ -401,6 +408,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=v9:-Av9} \
 %{mcpu=ultrasparc:%{!mv8plus:-Av9a}} \
 %{mcpu=ultrasparc3:%{!mv8plus:-Av9b}} \
+%{mcpu=niagara:%{!mv8plus:-Av9b}} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(asm_cpu_default)}}}}}}} \
 "
 
@@ -524,7 +532,8 @@ enum processor_type {
   PROCESSOR_TSC701,
   PROCESSOR_V9,
   PROCESSOR_ULTRASPARC,
-  PROCESSOR_ULTRASPARC3
+  PROCESSOR_ULTRASPARC3,
+  PROCESSOR_NIAGARA
 };
 
 /* This is set from -m{cpu,tune}=xxx.  */
@@ -2137,7 +2146,8 @@ do {                                                                    \
     || (GENERAL_OR_I64 (CLASS1) && FP_REG_CLASS_P (CLASS2)) \
     || (CLASS1) == FPCC_REGS || (CLASS2) == FPCC_REGS)		\
    ? ((sparc_cpu == PROCESSOR_ULTRASPARC \
-       || sparc_cpu == PROCESSOR_ULTRASPARC3) ? 12 : 6) : 2)
+       || sparc_cpu == PROCESSOR_ULTRASPARC3 \
+       || sparc_cpu == PROCESSOR_NIAGARA) ? 12 : 6) : 2)
 
 /* Provide the cost of a branch.  For pre-v9 processors we use
    a value of 3 to take into account the potential annulling of
@@ -2147,22 +2157,30 @@ do {                                                                    \
 
    On v9 and later, which have branch prediction facilities, we set
    it to the depth of the pipeline as that is the cost of a
-   mispredicted branch.  */
+   mispredicted branch.
+
+   On Niagara, normal branches insert 3 bubbles into the pipe
+   and annulled branches insert 4 bubbles.  */
 
 #define BRANCH_COST \
 	((sparc_cpu == PROCESSOR_V9 \
 	  || sparc_cpu == PROCESSOR_ULTRASPARC) \
 	 ? 7 \
          : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
-            ? 9 : 3))
+            ? 9 \
+	 : (sparc_cpu == PROCESSOR_NIAGARA \
+	    ? 4 \
+	 : 3)))
 
 #define PREFETCH_BLOCK \
 	((sparc_cpu == PROCESSOR_ULTRASPARC \
-          || sparc_cpu == PROCESSOR_ULTRASPARC3) \
+          || sparc_cpu == PROCESSOR_ULTRASPARC3 \
+	  || sparc_cpu == PROCESSOR_NIAGARA) \
          ? 64 : 32)
 
 #define SIMULTANEOUS_PREFETCHES \
-	((sparc_cpu == PROCESSOR_ULTRASPARC) \
+	((sparc_cpu == PROCESSOR_ULTRASPARC \
+	  || sparc_cpu == PROCESSOR_NIAGARA) \
          ? 2 \
          : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
             ? 8 : 3))

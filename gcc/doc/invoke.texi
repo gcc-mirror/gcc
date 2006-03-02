@@ -12268,8 +12268,8 @@ Set the instruction set, register set, and instruction scheduling parameters
 for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{sparclite},
 @samp{f930}, @samp{f934}, @samp{hypersparc}, @samp{sparclite86x},
-@samp{sparclet}, @samp{tsc701}, @samp{v9}, @samp{ultrasparc}, and
-@samp{ultrasparc3}.
+@samp{sparclet}, @samp{tsc701}, @samp{v9}, @samp{ultrasparc},
+@samp{ultrasparc3}, and @samp{niagara}.
 
 Default instruction scheduling parameters are used for values that select
 an architecture and not an implementation.  These are @samp{v7}, @samp{v8},
@@ -12283,7 +12283,7 @@ implementations.
     v8:             supersparc, hypersparc
     sparclite:      f930, f934, sparclite86x
     sparclet:       tsc701
-    v9:             ultrasparc, ultrasparc3
+    v9:             ultrasparc, ultrasparc3, niagara
 @end smallexample
 
 By default (unless configured otherwise), GCC generates code for the V7
@@ -12317,9 +12317,11 @@ With @option{-mcpu=v9}, GCC generates code for the V9 variant of the SPARC
 architecture.  This adds 64-bit integer and floating-point move instructions,
 3 additional floating-point condition code registers and conditional move
 instructions.  With @option{-mcpu=ultrasparc}, the compiler additionally
-optimizes it for the Sun UltraSPARC I/II chips.  With
+optimizes it for the Sun UltraSPARC I/II/IIi chips.  With
 @option{-mcpu=ultrasparc3}, the compiler additionally optimizes it for the
-Sun UltraSPARC III chip.
+Sun UltraSPARC III/III+/IIIi/IIIi+/IV/IV+ chips.  With
+@option{-mcpu=niagara}, the compiler additionally optimizes it for
+Sun UltraSPARC T1 chips.
 
 @item -mtune=@var{cpu_type}
 @opindex mtune
@@ -12331,8 +12333,8 @@ The same values for @option{-mcpu=@var{cpu_type}} can be used for
 @option{-mtune=@var{cpu_type}}, but the only useful values are those
 that select a particular cpu implementation.  Those are @samp{cypress},
 @samp{supersparc}, @samp{hypersparc}, @samp{f930}, @samp{f934},
-@samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, and
-@samp{ultrasparc3}.
+@samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
+@samp{ultrasparc3}, and @samp{niagara}.
 
 @item -mv8plus
 @itemx -mno-v8plus

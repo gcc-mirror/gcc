@@ -39,6 +39,15 @@
 #define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "b"
 #endif
 
+#if TARGET_CPU_DEFAULT == TARGET_CPU_niagara
+#undef CPP_CPU64_DEFAULT_SPEC
+#define CPP_CPU64_DEFAULT_SPEC ""
+#undef ASM_CPU32_DEFAULT_SPEC
+#define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plusb"
+#undef ASM_CPU64_DEFAULT_SPEC
+#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "b"
+#endif
+
 #if DEFAULT_ARCH32_P
 #define DEF_ARCH32_SPEC(__str) "%{!m64:" __str "}"
 #define DEF_ARCH64_SPEC(__str) "%{m64:" __str "}"
@@ -57,7 +66,7 @@
 %{mcpu=sparclite|mcpu-f930|mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{mcpu=supersparc:-D__supersparc__ " DEF_ARCH32_SPEC("-D__sparcv8") "} \
-%{mcpu=v9|mcpu=ultrasparc|mcpu=ultrasparc3:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
+%{mcpu=v9|mcpu=ultrasparc|mcpu=ultrasparc3|mcpu=niagara:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
 "
 
@@ -66,7 +75,8 @@
 %{mcpu=v9:" DEF_ARCH32_SPEC("-xarch=v8plus") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "} \
 %{mcpu=ultrasparc:" DEF_ARCH32_SPEC("-xarch=v8plusa") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "a") "} \
 %{mcpu=ultrasparc3:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "b") "} \
-%{!mcpu=ultrasparc3:%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "}}}} \
+%{mcpu=niagara:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "b") "} \
+%{!mcpu=niagara:%{!mcpu=ultrasparc3:%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "}}}}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
