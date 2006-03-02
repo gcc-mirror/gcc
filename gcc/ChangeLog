@@ -1105,7 +1105,7 @@
 	PR middle-end/25600
 	* fold-const.c (fold_binary): Fold (X >> C) != 0 into X < 0 when
 	C is one less than the width of X (and related transformations).
-	* simplify_rtx.c (simplify_unary_operation_1): Transform
+	* simplify-rtx.c (simplify_unary_operation_1): Transform
 	(neg (lt x 0)) into either (ashiftrt X C) or (lshiftrt X C)
 	depending on STORE_FLAG_VALUE, were C is one less then the
 	width of X.
