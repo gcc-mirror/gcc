@@ -59,30 +59,31 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #endif
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
-# define __gthrw2(name,name2) \
-  static __typeof(name) __gthrw_ ## name __attribute__ ((__weakref__(#name2)));
+# define __gthrw2(name,name2,type) \
+  static __typeof(type) name __attribute__ ((__weakref__(#name2)));
 # define __gthrw_(name) __gthrw_ ## name
 #else
-# define __gthrw2(name,name2)
+# define __gthrw2(name,name2,type)
 # define __gthrw_(name) name
 #endif
 
 /* Typically, __gthrw_foo is a weak reference to symbol foo.  */
-#define __gthrw(name) __gthrw2(name,name)
+#define __gthrw(name) __gthrw2(__gthrw_ ## name,name,name)
 
 /* On Tru64, /usr/include/pthread.h uses #pragma extern_prefix "__" to
    map a subset of the POSIX pthread API to mangled versions of their
    names.  */
 #if defined(__osf__) && defined(_PTHREAD_USE_MANGLED_NAMES_)
-__gthrw2(pthread_once,__pthread_once)
-__gthrw2(pthread_getspecific,__pthread_getspecific)
-__gthrw2(pthread_setspecific,__pthread_setspecific)
-__gthrw2(pthread_create,__pthread_create)
-__gthrw2(pthread_cancel,__pthread_cancel)
-__gthrw2(pthread_mutex_lock,__pthread_mutex_lock)
-__gthrw2(pthread_mutex_trylock,__pthread_mutex_trylock)
-__gthrw2(pthread_mutex_unlock,__pthread_mutex_unlock)
-__gthrw2(pthread_mutex_init,__pthread_mutex_init)
+#define __gthrw3(name) __gthrw2(__gthrw_ ## name, __ ## name, name)
+__gthrw3(pthread_once)
+__gthrw3(pthread_getspecific)
+__gthrw3(pthread_setspecific)
+__gthrw3(pthread_create)
+__gthrw3(pthread_cancel)
+__gthrw3(pthread_mutex_lock)
+__gthrw3(pthread_mutex_trylock)
+__gthrw3(pthread_mutex_unlock)
+__gthrw3(pthread_mutex_init)
 #else
 __gthrw(pthread_once)
 __gthrw(pthread_getspecific)
@@ -105,14 +106,14 @@ __gthrw(pthread_mutexattr_destroy)
 #if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
 /* Objective-C.  */
 #if defined(__osf__) && defined(_PTHREAD_USE_MANGLED_NAMES_)
-__gthrw2(pthread_cond_broadcast,__pthread_cond_broadcast)
-__gthrw2(pthread_cond_destroy,__pthread_cond_destroy)
-__gthrw2(pthread_cond_init,__pthread_cond_init)
-__gthrw2(pthread_cond_signal,__pthread_cond_signal)
-__gthrw2(pthread_cond_wait,__pthread_cond_wait)
-__gthrw2(pthread_exit,__pthread_exit)
-__gthrw2(pthread_mutex_destroy,__pthread_mutex_destroy)
-__gthrw2(pthread_self,__pthread_self)
+__gthrw3(pthread_cond_broadcast)
+__gthrw3(pthread_cond_destroy)
+__gthrw3(pthread_cond_init)
+__gthrw3(pthread_cond_signal)
+__gthrw3(pthread_cond_wait)
+__gthrw3(pthread_exit)
+__gthrw3(pthread_mutex_destroy)
+__gthrw3(pthread_self)
 #else
 __gthrw(pthread_cond_broadcast)
 __gthrw(pthread_cond_destroy)

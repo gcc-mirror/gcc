@@ -1,3 +1,11 @@
+2006-03-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR other/26489
+	* gthr-posix.h (__gthrw2): Define to take three parameters, the
+	declared name, the weak reference name, and the typeof name.
+	(__gthrw): Avoid expanding the declared name suffix.
+	(__gthrw3): New Tru64 specific macro to simplify the OSF/1 decls.
+
 2006-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DW_TAG_condition, DW_TAG_shared_type): New constants
