@@ -307,7 +307,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
 #define MD_FROB_UPDATE_CONTEXT frob_update_context
 
 static void
-frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
+frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATTRIBUTE_UNUSED)
 {
   const unsigned int *pc = (const unsigned int *) context->ra;
 
