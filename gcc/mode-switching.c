@@ -735,7 +735,7 @@ gate_mode_switching (void)
 #endif
 }
 
-static void
+static unsigned int
 rest_of_handle_mode_switching (void)
 {
 #ifdef OPTIMIZE_MODE_SWITCHING
@@ -743,6 +743,7 @@ rest_of_handle_mode_switching (void)
   optimize_mode_switching ();
   no_new_pseudos = 1;
 #endif /* OPTIMIZE_MODE_SWITCHING */
+  return 0;
 }
 
 

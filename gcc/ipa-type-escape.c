@@ -1670,7 +1670,7 @@ close_addressof_down (int uid)
 
 /* The main entry point for type escape analysis.  */
 
-static void
+static unsigned int
 type_escape_execute (void)
 {
   struct cgraph_node *node;
@@ -1817,6 +1817,7 @@ type_escape_execute (void)
   BITMAP_FREE (been_there_done_that);
   BITMAP_FREE (bitmap_tmp);
   BITMAP_FREE (results_of_malloc);
+  return 0;
 }
 
 static bool

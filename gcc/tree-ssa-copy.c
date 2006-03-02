@@ -1042,10 +1042,11 @@ gate_copy_prop (void)
   return flag_tree_copy_prop != 0;
 }
 
-static void
+static unsigned int
 do_copy_prop (void)
 {
   execute_copy_prop (false, false);
+  return 0;
 }
 
 struct tree_opt_pass pass_copy_prop =
@@ -1070,10 +1071,11 @@ struct tree_opt_pass pass_copy_prop =
 };
 
 
-static void
+static unsigned int
 do_phi_only_copy_prop (void)
 {
   execute_copy_prop (false, true);
+  return 0;
 }
 
 struct tree_opt_pass pass_phi_only_copy_prop =
@@ -1108,11 +1110,12 @@ gate_store_copy_prop (void)
   return flag_tree_store_copy_prop != 0 || flag_tree_copy_prop != 0;
 }
 
-static void
+static unsigned int
 store_copy_prop (void)
 {
   /* If STORE-COPY-PROP is not enabled, we just run regular COPY-PROP.  */
   execute_copy_prop (flag_tree_store_copy_prop != 0, false);
+  return 0;
 }
 
 struct tree_opt_pass pass_store_copy_prop =

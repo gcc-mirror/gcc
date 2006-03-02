@@ -1308,7 +1308,7 @@ call_expr:;
 }
 
 /* Predict branch probabilities and estimate profile of the tree CFG.  */
-static void
+static unsigned int
 tree_estimate_probability (void)
 {
   basic_block bb;
@@ -1396,6 +1396,7 @@ tree_estimate_probability (void)
     dump_tree_cfg (dump_file, dump_flags);
   if (profile_status == PROFILE_ABSENT)
     profile_status = PROFILE_GUESSED;
+  return 0;
 }
 
 /* __builtin_expect dropped tokens into the insn stream describing expected

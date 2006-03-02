@@ -58,7 +58,7 @@ static void lower_return_expr (tree_stmt_iterator *, struct lower_data *);
 
 /* Lowers the body of current_function_decl.  */
 
-static void
+static unsigned int
 lower_function_body (void)
 {
   struct lower_data data;
@@ -118,6 +118,7 @@ lower_function_body (void)
     = blocks_nreverse (BLOCK_SUBBLOCKS (data.block));
 
   clear_block_marks (data.block);
+  return 0;
 }
 
 struct tree_opt_pass pass_lower_cf = 
@@ -610,10 +611,11 @@ mark_blocks_with_used_vars (tree block)
 
 /* Mark the used attribute on blocks correctly.  */
   
-static void
+static unsigned int
 mark_used_blocks (void)
 {  
   mark_blocks_with_used_vars (DECL_INITIAL (current_function_decl));
+  return 0;
 }
 
 

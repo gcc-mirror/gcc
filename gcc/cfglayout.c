@@ -246,7 +246,7 @@ int epilogue_locator;
    represented via INSN_NOTEs.  Replace them by representation using
    INSN_LOCATORs.  */
 
-void
+unsigned int
 insn_locators_initialize (void)
 {
   tree block = NULL;
@@ -329,6 +329,7 @@ insn_locators_initialize (void)
   set_block_levels (DECL_INITIAL (cfun->decl), 0);
 
   free_block_changes ();
+  return 0;
 }
 
 struct tree_opt_pass pass_insn_locators_initialize =

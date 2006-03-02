@@ -717,7 +717,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 <L10>:;
 */
 
-static void
+static unsigned int
 merge_phi_nodes (void)
 {
   basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks);
@@ -797,6 +797,7 @@ merge_phi_nodes (void)
     }
 
   free (worklist);
+  return 0;
 }
 
 static bool

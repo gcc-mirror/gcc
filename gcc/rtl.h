@@ -1600,7 +1600,7 @@ extern enum rtx_code swap_condition (enum rtx_code);
 extern enum rtx_code unsigned_condition (enum rtx_code);
 extern enum rtx_code signed_condition (enum rtx_code);
 extern void mark_jump_label (rtx, rtx, int);
-extern void cleanup_barriers (void);
+extern unsigned int cleanup_barriers (void);
 
 /* In jump.c */
 extern bool squeeze_notes (rtx *, rtx *);
@@ -1781,7 +1781,7 @@ extern enum reg_class reg_preferred_class (int);
 extern enum reg_class reg_alternate_class (int);
 
 extern void split_all_insns (int);
-extern void split_all_insns_noflow (void);
+extern unsigned int split_all_insns_noflow (void);
 
 #define MAX_SAVED_CONST_INT 64
 extern GTY(()) rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
@@ -2027,7 +2027,7 @@ extern enum rtx_code reversed_comparison_code_parts (enum rtx_code,
 						     rtx, rtx, rtx);
 extern void delete_for_peephole (rtx, rtx);
 extern int condjump_in_parallel_p (rtx);
-extern void purge_line_number_notes (void);
+extern unsigned int purge_line_number_notes (void);
 
 /* In emit-rtl.c.  */
 extern int max_reg_num (void);
@@ -2049,7 +2049,7 @@ extern void init_emit_once (int);
 extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);
 extern void set_new_first_and_last_insn (rtx, rtx);
-extern void unshare_all_rtl (void);
+extern unsigned int unshare_all_rtl (void);
 extern void unshare_all_rtl_again (rtx);
 extern void unshare_all_rtl_in_chain (rtx);
 extern void verify_rtl_sharing (void);
@@ -2063,7 +2063,7 @@ extern void remove_insn (rtx);
 extern void emit_insn_after_with_line_notes (rtx, rtx, rtx);
 extern rtx emit (rtx);
 extern void renumber_insns (void);
-extern void remove_unnecessary_notes (void);
+extern unsigned int remove_unnecessary_notes (void);
 extern rtx delete_insn (rtx);
 extern rtx entry_of_function (void);
 extern void delete_insn_chain (rtx, rtx);
@@ -2133,7 +2133,7 @@ extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
 
 /* In flow.c */
-extern void recompute_reg_usage (void);
+extern unsigned int recompute_reg_usage (void);
 extern void delete_dead_jumptables (void);
 extern void print_rtl_with_bb (FILE *, rtx);
 extern void dump_flow_info (FILE *, int);
@@ -2256,7 +2256,7 @@ extern bool expensive_function_p (int);
 extern void tracer (unsigned int);
 
 /* In var-tracking.c */
-extern void variable_tracking_main (void);
+extern unsigned int variable_tracking_main (void);
 
 /* In stor-layout.c.  */
 extern void get_mode_bounds (enum machine_mode, int, enum machine_mode,

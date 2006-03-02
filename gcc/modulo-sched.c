@@ -2500,7 +2500,7 @@ gate_handle_sms (void)
 
 /* Run instruction scheduler.  */
 /* Perform SMS module scheduling.  */
-static void
+static unsigned int
 rest_of_handle_sms (void)
 {
 #ifdef INSN_SCHEDULING
@@ -2530,6 +2530,7 @@ rest_of_handle_sms (void)
   cfg_layout_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 #endif /* INSN_SCHEDULING */
+  return 0;
 }
 
 struct tree_opt_pass pass_sms =

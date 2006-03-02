@@ -679,7 +679,7 @@ insn_current_reference_address (rtx branch)
 /* Compute branch alignments based on frequency information in the
    CFG.  */
 
-static void
+static unsigned int
 compute_alignments (void)
 {
   int log, max_skip, max_log;
@@ -697,7 +697,7 @@ compute_alignments (void)
 
   /* If not optimizing or optimizing for size, don't assign any alignments.  */
   if (! optimize || optimize_size)
-    return;
+    return 0;
 
   FOR_EACH_BB (bb)
     {
@@ -760,6 +760,7 @@ compute_alignments (void)
       LABEL_TO_ALIGNMENT (label) = max_log;
       LABEL_TO_MAX_SKIP (label) = max_skip;
     }
+  return 0;
 }
 
 struct tree_opt_pass pass_compute_alignments =
@@ -3903,7 +3904,7 @@ debug_free_queue (void)
 }
 
 /* Turn the RTL into assembly.  */
-static void
+static unsigned int
 rest_of_handle_final (void)
 {
   rtx x;
@@ -3958,6 +3959,7 @@ rest_of_handle_final (void)
   timevar_push (TV_SYMOUT);
   (*debug_hooks->function_decl) (current_function_decl);
   timevar_pop (TV_SYMOUT);
+  return 0;
 }
 
 struct tree_opt_pass pass_final =
@@ -3978,11 +3980,12 @@ struct tree_opt_pass pass_final =
 };
 
 
-static void
+static unsigned int
 rest_of_handle_shorten_branches (void)
 {
   /* Shorten branches.  */
   shorten_branches (get_insns ());
+  return 0;
 }
  
 struct tree_opt_pass pass_shorten_branches =
@@ -4003,7 +4006,7 @@ struct tree_opt_pass pass_shorten_branches =
 };
 
 
-static void
+static unsigned int
 rest_of_clean_state (void)
 {
   rtx insn, next;
@@ -4065,6 +4068,7 @@ rest_of_clean_state (void)
   /* We're done with this function.  Free up memory if we can.  */
   free_after_parsing (cfun);
   free_after_compilation (cfun);
+  return 0;
 }
 
 struct tree_opt_pass pass_clean_state =

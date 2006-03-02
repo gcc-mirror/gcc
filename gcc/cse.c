@@ -7838,7 +7838,7 @@ gate_handle_cse (void)
   return optimize > 0;
 }
 
-static void
+static unsigned int
 rest_of_handle_cse (void)
 {
   int tem;
@@ -7865,6 +7865,7 @@ rest_of_handle_cse (void)
 
   if (tem || optimize > 1)
     cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+  return 0;
 }
 
 struct tree_opt_pass pass_cse =
@@ -7893,7 +7894,7 @@ gate_handle_cse2 (void)
 }
 
 /* Run second CSE pass after loop optimizations.  */
-static void
+static unsigned int
 rest_of_handle_cse2 (void)
 {
   int tem;
@@ -7922,6 +7923,7 @@ rest_of_handle_cse2 (void)
     }
   reg_scan (get_insns (), max_reg_num ());
   cse_not_expected = 1;
+  return 0;
 }
 
 

@@ -1414,7 +1414,7 @@ gate_rtl_seqabstr (void)
 
 /* The entry point of the sequence abstraction algorithm.  */
 
-static void
+static unsigned int
 rest_of_rtl_seqabstr (void)
 {
   life_analysis (PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
@@ -1425,6 +1425,7 @@ rest_of_rtl_seqabstr (void)
 
   /* Abstract out common insn sequences. */
   rtl_seqabstr ();
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_seqabstr = {

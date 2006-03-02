@@ -863,7 +863,7 @@ cgraph_decide_inlining_of_small_functions (void)
 /* Decide on the inlining.  We do so in the topological order to avoid
    expenses on updating data structures.  */
 
-static void
+static unsigned int
 cgraph_decide_inlining (void)
 {
   struct cgraph_node *node;
@@ -1034,6 +1034,7 @@ cgraph_decide_inlining (void)
 	     overall_insns);
   free (order);
   timevar_pop (TV_INLINE_HEURISTICS);
+  return 0;
 }
 
 /* Decide on the inlining.  We do so in the topological order to avoid
@@ -1132,7 +1133,7 @@ struct tree_opt_pass pass_ipa_inline =
 /* Do inlining of small functions.  Doing so early helps profiling and other
    passes to be somewhat more effective and avoids some code duplication in
    later real inlining pass for testcases with very many function calls.  */
-static void
+static unsigned int
 cgraph_early_inlining (void)
 {
   struct cgraph_node *node;
@@ -1142,7 +1143,7 @@ cgraph_early_inlining (void)
   int i;
 
   if (sorrycount || errorcount)
-    return;
+    return 0;
 #ifdef ENABLE_CHECKING
   for (node = cgraph_nodes; node; node = node->next)
     gcc_assert (!node->aux);
@@ -1163,6 +1164,7 @@ cgraph_early_inlining (void)
     gcc_assert (!node->global.inlined_to);
 #endif
   free (order);
+  return 0;
 }
 
 /* When inlining shall be performed.  */

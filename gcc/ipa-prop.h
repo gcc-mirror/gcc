@@ -199,6 +199,6 @@ void ipa_nodes_free (void);
 void ipa_method_tree_print (FILE *);
 void ipa_method_modify_print (FILE *);
 
-void ipcp_driver (void);
+unsigned int ipcp_driver (void);
 
 #endif /* IPA_PROP_H */

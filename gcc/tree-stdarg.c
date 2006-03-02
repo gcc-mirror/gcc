@@ -603,7 +603,7 @@ gate_optimize_stdarg (void)
 
 /* Entry point to the stdarg optimization pass.  */
 
-static void
+static unsigned int
 execute_optimize_stdarg (void)
 {
   basic_block bb;
@@ -903,6 +903,7 @@ finish:
 	fprintf (dump_file, "%d", cfun->va_list_fpr_size);
       fputs (" FPR units.\n", dump_file);
     }
+  return 0;
 }
 
 

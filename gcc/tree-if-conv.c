@@ -102,7 +102,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 
 /* local function prototypes */
-static void main_tree_if_conversion (void);
+static unsigned int main_tree_if_conversion (void);
 static tree tree_if_convert_stmt (struct loop *loop, tree, tree,
 				  block_stmt_iterator *);
 static void tree_if_convert_cond_expr (struct loop *, tree, tree,
@@ -1098,14 +1098,14 @@ bb_with_exit_edge_p (struct loop *loop, basic_block bb)
 
 /* Tree if-conversion pass management.  */
 
-static void
+static unsigned int
 main_tree_if_conversion (void)
 {
   unsigned i, loop_num;
   struct loop *loop;
 
   if (!current_loops)
-    return;
+    return 0;
 
   loop_num = current_loops->num;
   for (i = 0; i < loop_num; i++)
@@ -1116,7 +1116,7 @@ main_tree_if_conversion (void)
 
       tree_if_conversion (loop, true);
     }
-
+  return 0;
 }
 
 static bool

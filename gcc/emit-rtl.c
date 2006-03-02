@@ -2142,10 +2142,11 @@ unshare_all_rtl_again (rtx insn)
   unshare_all_rtl_1 (cfun->decl, insn);
 }
 
-void
+unsigned int
 unshare_all_rtl (void)
 {
   unshare_all_rtl_1 (current_function_decl, get_insns ());
+  return 0;
 }
 
 struct tree_opt_pass pass_unshare_all_rtl =
@@ -3678,7 +3679,7 @@ find_line_note (rtx insn)
 
 /* Remove unnecessary notes from the instruction stream.  */
 
-void
+unsigned int
 remove_unnecessary_notes (void)
 {
   rtx eh_stack = NULL_RTX;
@@ -3730,6 +3731,7 @@ remove_unnecessary_notes (void)
 
   /* Too many EH_REGION_BEG notes.  */
   gcc_assert (!eh_stack);
+  return 0;
 }
 
 struct tree_opt_pass pass_remove_unnecessary_notes =

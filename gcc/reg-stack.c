@@ -3136,7 +3136,7 @@ gate_handle_stack_regs (void)
 
 /* Convert register usage from flat register file usage to a stack
    register file.  */
-static void
+static unsigned int
 rest_of_handle_stack_regs (void)
 {
 #ifdef STACK_REGS
@@ -3151,6 +3151,7 @@ rest_of_handle_stack_regs (void)
         }
     }
 #endif
+  return 0;
 }
 
 struct tree_opt_pass pass_stack_regs =

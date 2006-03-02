@@ -537,10 +537,11 @@ execute_sink_code (void)
 
 /* Gate and execute functions for PRE.  */
 
-static void
+static unsigned int
 do_sink (void)
 {
   execute_sink_code ();
+  return 0;
 }
 
 static bool

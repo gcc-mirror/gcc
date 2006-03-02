@@ -12578,7 +12578,7 @@ gate_handle_combine (void)
 }
 
 /* Try combining insns through substitution.  */
-static void
+static unsigned int
 rest_of_handle_combine (void)
 {
   int rebuild_jump_labels_after_combine
@@ -12596,6 +12596,7 @@ rest_of_handle_combine (void)
       delete_dead_jumptables ();
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
     }
+  return 0;
 }
 
 struct tree_opt_pass pass_combine =

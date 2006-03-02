@@ -1665,7 +1665,7 @@ instantiate_decls (tree fndecl)
 /* Pass through the INSNS of function FNDECL and convert virtual register
    references to hard register references.  */
 
-static void
+static unsigned int
 instantiate_virtual_regs (void)
 {
   rtx insn;
@@ -1717,6 +1717,7 @@ instantiate_virtual_regs (void)
   /* Indicate that, from now on, assign_stack_local should use
      frame_pointer_rtx.  */
   virtuals_instantiated = 1;
+  return 0;
 }
 
 struct tree_opt_pass pass_instantiate_virtual_regs =
@@ -3934,7 +3935,7 @@ init_function_start (tree subr)
 
 /* Make sure all values used by the optimization passes have sane
    defaults.  */
-void
+unsigned int
 init_function_for_compilation (void)
 {
   reg_renumber = 0;
@@ -3944,6 +3945,7 @@ init_function_for_compilation (void)
   gcc_assert (VEC_length (int, prologue) == 0);
   gcc_assert (VEC_length (int, epilogue) == 0);
   gcc_assert (VEC_length (int, sibcall_epilogue) == 0);
+  return 0;
 }
 
 struct tree_opt_pass pass_init_function =
@@ -5568,13 +5570,14 @@ current_function_name (void)
 }
 
 
-static void
+static unsigned int
 rest_of_handle_check_leaf_regs (void)
 {
 #ifdef LEAF_REGISTERS
   current_function_uses_only_leaf_regs
     = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
 #endif
+  return 0;
 }
 
 struct tree_opt_pass pass_leaf_regs =

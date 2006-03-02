@@ -27,7 +27,7 @@ extern rtx has_hard_reg_initial_val (enum machine_mode, unsigned int);
    it, else return NULL_RTX.  */
 extern rtx get_hard_reg_initial_reg (struct function *, rtx);
 /* Called from rest_of_compilation.  */
-extern void emit_initial_value_sets (void);
+extern unsigned int emit_initial_value_sets (void);
 extern void allocate_initial_values (rtx *);
 
 /* Check whether there's any attribute in a function declaration that

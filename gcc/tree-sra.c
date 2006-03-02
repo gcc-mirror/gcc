@@ -2178,7 +2178,7 @@ sra_init_cache (void)
 
 /* Main entry point.  */
 
-static void
+static unsigned int
 tree_sra (void)
 {
   /* Initialize local variables.  */
@@ -2204,6 +2204,7 @@ tree_sra (void)
   BITMAP_FREE (sra_type_decomp_cache);
   BITMAP_FREE (sra_type_inst_cache);
   obstack_free (&sra_obstack, NULL);
+  return 0;
 }
 
 static bool

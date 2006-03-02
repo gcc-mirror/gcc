@@ -1378,10 +1378,11 @@ execute_ssa_ccp (bool store_ccp)
 }
 
 
-static void
+static unsigned int
 do_ssa_ccp (void)
 {
   execute_ssa_ccp (false);
+  return 0;
 }
 
 
@@ -1412,11 +1413,12 @@ struct tree_opt_pass pass_ccp =
 };
 
 
-static void
+static unsigned int
 do_ssa_store_ccp (void)
 {
   /* If STORE-CCP is not enabled, we just run regular CCP.  */
   execute_ssa_ccp (flag_tree_store_ccp != 0);
+  return 0;
 }
 
 static bool
@@ -2469,7 +2471,7 @@ convert_to_gimple_builtin (block_stmt_iterator *si_p, tree expr)
 /* A simple pass that attempts to fold all builtin functions.  This pass
    is run after we've propagated as many constants as we can.  */
 
-static void
+static unsigned int
 execute_fold_all_builtins (void)
 {
   bool cfg_changed = false;
@@ -2561,6 +2563,7 @@ execute_fold_all_builtins (void)
   /* Delete unreachable blocks.  */
   if (cfg_changed)
     cleanup_tree_cfg ();
+  return 0;
 }
 
 

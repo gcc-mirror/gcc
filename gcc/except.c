@@ -2694,7 +2694,7 @@ can_throw_external (rtx insn)
 
 /* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
 
-void
+unsigned int
 set_nothrow_function_flags (void)
 {
   rtx insn;
@@ -2710,7 +2710,7 @@ set_nothrow_function_flags (void)
   cfun->all_throwers_are_sibcalls = 1;
 
   if (! flag_exceptions)
-    return;
+    return 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (can_throw_external (insn))
@@ -2720,7 +2720,7 @@ set_nothrow_function_flags (void)
 	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
 	  {
 	    cfun->all_throwers_are_sibcalls = 0;
-	    return;
+	    return 0;
 	  }
       }
 
@@ -2733,9 +2733,10 @@ set_nothrow_function_flags (void)
 	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
 	  {
 	    cfun->all_throwers_are_sibcalls = 0;
-	    return;
+	    return 0;
 	  }
       }
+  return 0;
 }
 
 struct tree_opt_pass pass_set_nothrow_function_flags =
@@ -3141,7 +3142,7 @@ add_call_site (rtx landing_pad, int action)
    The new note numbers will not refer to region numbers, but
    instead to call site entries.  */
 
-void
+unsigned int
 convert_to_eh_region_ranges (void)
 {
   rtx insn, iter, note;
@@ -3153,7 +3154,7 @@ convert_to_eh_region_ranges (void)
   int call_site = 0;
 
   if (USING_SJLJ_EXCEPTIONS || cfun->eh->region_tree == NULL)
-    return;
+    return 0;
 
   VARRAY_UCHAR_INIT (cfun->eh->action_record_data, 64, "action_record_data");
 
@@ -3262,6 +3263,7 @@ convert_to_eh_region_ranges (void)
     }
 
   htab_delete (ar_hash);
+  return 0;
 }
 
 struct tree_opt_pass pass_convert_to_eh_region_ranges =
@@ -3858,12 +3860,13 @@ gate_handle_eh (void)
 }
 
 /* Complete generation of exception handling code.  */
-static void
+static unsigned int
 rest_of_handle_eh (void)
 {
   cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
   finish_eh_generation ();
   cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_eh =

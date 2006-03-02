@@ -994,10 +994,11 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
     add_virtual_phis ();
 }
 
-static void
+static unsigned int
 execute_tail_recursion (void)
 {
   tree_optimize_tail_calls_1 (false);
+  return 0;
 }
 
 static bool
@@ -1006,10 +1007,11 @@ gate_tail_calls (void)
   return flag_optimize_sibling_calls != 0;
 }
 
-static void
+static unsigned int
 execute_tail_calls (void)
 {
   tree_optimize_tail_calls_1 (true);
+  return 0;
 }
 
 struct tree_opt_pass pass_tail_recursion = 

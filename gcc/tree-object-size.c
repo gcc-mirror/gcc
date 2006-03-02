@@ -50,7 +50,7 @@ static void expr_object_size (struct object_size_info *, tree, tree);
 static bool merge_object_sizes (struct object_size_info *, tree, tree,
 				unsigned HOST_WIDE_INT);
 static bool plus_expr_object_size (struct object_size_info *, tree, tree);
-static void compute_object_sizes (void);
+static unsigned int compute_object_sizes (void);
 static void init_offset_limit (void);
 static void check_for_plus_in_loops (struct object_size_info *, tree);
 static void check_for_plus_in_loops_1 (struct object_size_info *, tree,
@@ -982,7 +982,7 @@ fini_object_sizes (void)
 
 /* Simple pass to optimize all __builtin_object_size () builtins.  */
 
-static void
+static unsigned int
 compute_object_sizes (void)
 {
   basic_block bb;
@@ -1054,6 +1054,7 @@ compute_object_sizes (void)
     }
 
   fini_object_sizes ();
+  return 0;
 }
 
 struct tree_opt_pass pass_object_sizes =

@@ -164,7 +164,7 @@ struct tree_opt_pass pass_loop2 =
 
 
 /* Initialization of the RTL loop passes.  */
-static void
+static unsigned int
 rtl_loop_init (void)
 {
   if (dump_file)
@@ -174,6 +174,7 @@ rtl_loop_init (void)
   cfg_layout_initialize (0);
 
   current_loops = loop_optimizer_init (LOOPS_NORMAL);
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_loop_init =
@@ -195,7 +196,7 @@ struct tree_opt_pass pass_rtl_loop_init =
 
 
 /* Finalization of the RTL loop passes.  */
-static void
+static unsigned int
 rtl_loop_done (void)
 {
   basic_block bb;
@@ -218,6 +219,7 @@ rtl_loop_done (void)
     dump_flow_info (dump_file, dump_flags);
 
   current_loops = NULL;
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_loop_done =
@@ -245,11 +247,12 @@ gate_rtl_move_loop_invariants (void)
   return flag_move_loop_invariants;
 }
 
-static void
+static unsigned int
 rtl_move_loop_invariants (void)
 {
   if (current_loops)
     move_loop_invariants (current_loops);
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_move_loop_invariants =
@@ -277,11 +280,12 @@ gate_rtl_unswitch (void)
   return flag_unswitch_loops;
 }
 
-static void
+static unsigned int
 rtl_unswitch (void)
 {
   if (current_loops)
     unswitch_loops (current_loops);
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_unswitch =
@@ -309,7 +313,7 @@ gate_rtl_unroll_and_peel_loops (void)
   return (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops);
 }
 
-static void
+static unsigned int
 rtl_unroll_and_peel_loops (void)
 {
   if (current_loops)
@@ -325,6 +329,7 @@ rtl_unroll_and_peel_loops (void)
 
       unroll_and_peel_loops (current_loops, flags);
     }
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_unroll_and_peel_loops =
@@ -356,13 +361,14 @@ gate_rtl_doloop (void)
 #endif
 }
 
-static void
+static unsigned int
 rtl_doloop (void)
 {
 #ifdef HAVE_doloop_end
   if (current_loops)
     doloop_optimize_loops (current_loops);
 #endif
+  return 0;
 }
 
 struct tree_opt_pass pass_rtl_doloop =

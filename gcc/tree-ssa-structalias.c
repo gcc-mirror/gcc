@@ -4552,7 +4552,7 @@ gate_ipa_pta (void)
 }
 
 /* Execute the driver for IPA PTA.  */
-static void
+static unsigned int
 ipa_pta_execute (void)
 {
   struct cgraph_node *node;
@@ -4647,6 +4647,7 @@ ipa_pta_execute (void)
   in_ipa_mode = 0;
   delete_alias_heapvars ();
   delete_points_to_sets ();
+  return 0;
 }
   
 struct tree_opt_pass pass_ipa_pta =

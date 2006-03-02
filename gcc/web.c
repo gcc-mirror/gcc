@@ -285,13 +285,14 @@ gate_handle_web (void)
   return (optimize > 0 && flag_web);
 }
 
-static void
+static unsigned int
 rest_of_handle_web (void)
 {
   web_main ();
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
   cleanup_cfg (CLEANUP_EXPENSIVE);
   reg_scan (get_insns (), max_reg_num ());
+  return 0;
 }
 
 struct tree_opt_pass pass_web =

@@ -1731,7 +1731,7 @@ mark_def_site_blocks (sbitmap interesting_blocks)
    Steps 3 and 4 are done using the dominator tree walker
    (walk_dominator_tree).  */
 
-static void
+static unsigned int
 rewrite_into_ssa (void)
 {
   bitmap *dfs;
@@ -1775,6 +1775,7 @@ rewrite_into_ssa (void)
 
   timevar_pop (TV_TREE_SSA_OTHER);
   in_ssa_p = true;
+  return 0;
 }
 
 

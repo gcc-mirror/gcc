@@ -3803,10 +3803,11 @@ execute_pre (bool do_fre)
 
 /* Gate and execute functions for PRE.  */
 
-static void
+static unsigned int
 do_pre (void)
 {
   execute_pre (false);
+  return 0;
 }
 
 static bool
@@ -3837,10 +3838,11 @@ struct tree_opt_pass pass_pre =
 
 /* Gate and execute functions for FRE.  */
 
-static void
+static unsigned int
 execute_fre (void)
 {
   execute_pre (true);
+  return 0;
 }
 
 static bool

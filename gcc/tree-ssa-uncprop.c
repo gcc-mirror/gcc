@@ -382,7 +382,7 @@ record_equiv (tree value, tree equivalence)
 
 /* Main driver for un-cprop.  */
 
-static void
+static unsigned int
 tree_ssa_uncprop (void)
 {
   struct dom_walk_data walk_data;
@@ -441,7 +441,7 @@ tree_ssa_uncprop (void)
 	    }
 	}
     }
-
+  return 0;
 }
 
 

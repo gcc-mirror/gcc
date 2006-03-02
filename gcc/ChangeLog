@@ -1,3 +1,169 @@
+2006-03-02  Daniel Berlin <dberlin@dberlin.org>
+
+	* gcc/tree-vrp.c (execute_vrp): Return value.
+	* gcc/regrename.c (rest_of_handle_regrename): Ditto.
+	* gcc/tree-into-ssa.c (rewrite_into_ssa): Ditto.
+	* gcc/tree-complex.c (tree_lower_complex): Ditto.
+	(tree_lower_complex_O0): Ditto.
+	* gcc/tracer.c (rest_of_handle_tracer): Ditto.
+	* gcc/postreload-gcse.c (rest_of_handle_gcse2): Ditto.
+	* gcc/postreload.c (rest_of_handle_postreload): Ditto.
+	* gcc/tree-tailcall.c (execute_tail_recursion): Ditto.
+	(execute_tail_calls): Ditto.
+	* gcc/tree-ssa-loop-ch.c (copy_loop_headers): Ditto.
+	* gcc/tree.h (init_function_for_compilation): Ditto.
+	* gcc/ipa-cp.c (ipcp_driver): Ditto.
+	* gcc/tree-scalar-evolution.c (scev_const_prop): Ditto.
+	* gcc/tree-scalar-evolution.h (scev_const_prop): Ditto.
+	* gcc/final.c (compute_alignments): Ditto.
+	(rest_of_handle_final): Ditto.
+	(rest_of_handle_shorten_branches): Ditto.
+	(rest_of_clean_state): Ditto.
+	* gcc/omp-low.c (execute_expand_omp): Ditto.
+	(execute_lower_omp): Ditto.
+	* gcc/tree-ssa-dse.c (tree_ssa_dse): Ditto.
+	* gcc/ipa-reference.c (static_execute): Ditto.
+	* gcc/tree-ssa-uncprop.c (tree_ssa_uncprop): Ditto.
+	* gcc/reorg.c (rest_of_handle_delay_slots): Ditto.
+	(rest_of_handle_machine_reorg): Ditto.
+	* gcc/cgraphunit.c (rebuild_cgraph_edges): Ditto.
+	* gcc/flow.c (recompute_reg_usage): Ditto.
+	(rest_of_handle_remove_death_notes): Ditto.
+	(rest_of_handle_life): Ditto.
+	(rest_of_handle_flow2): Ditto.
+	* gcc/tree-ssa-copyrename.c (rename_ssa_copies): Ditto.
+	* gcc/tree-ssa-ccp.c (do_ssa_ccp): Ditto.
+	(do_ssa_store_ccp): Ditto.
+	(execute_fold_all_builtins): Ditto.
+	* gcc/mode-switching.c (rest_of_handle_mode_switching): Ditto.
+	* gcc/modulo-sched.c (rest_of_handle_sms): Ditto.
+	* gcc/ipa-pure-const.c (static_execute): Ditto.
+	* gcc/cse.c (rest_of_handle_cse): Ditto.
+	(rest_of_handle_cse2): Ditto.
+	* gcc/web.c (rest_of_handle_web): Ditto.
+	* gcc/tree-stdarg.c (execute_optimize_stdarg): Ditto.
+	* gcc/tree-ssa-math-opts.c (execute_cse_reciprocals): Ditto.
+	* gcc/tree-ssa-dom.c (tree_ssa_dominator_optimize): Ditto.
+	* gcc/tree-nrv.c (tree_nrv): Ditto.
+	(execute_return_slot_opt): Ditto.
+	* gcc/tree-ssa-alias.c (compute_may_aliases): Ditto.
+	(create_structure_vars): Ditto.
+	* gcc/loop-init.c (rtl_loop_init): Ditto.
+	(rtl_loop_done): Ditto.
+	(rtl_move_loop_invariants): Ditto.
+	(rtl_unswitch): Ditto.
+	(rtl_unroll_and_peel_loops): Ditto.
+	(rtl_doloop): Ditto.
+	* gcc/gimple-low.c (lower_function_body): Ditto.
+	(mark_used_blocks): Ditto.
+	* gcc/tree-ssa-sink.c (execute_sink_code): Ditto.
+	* gcc/ipa-inline.c (cgraph_decide_inlining): Ditto.
+	(cgraph_early_inlining): Ditto.
+	* gcc/global.c (rest_of_handle_global_alloc): Ditto.
+	* gcc/jump.c (cleanup_barriers): Ditto.
+	(purge_line_number_notes): Ditto.
+	* gcc/ifcvt.c (rest_of_handle_if_conversion): Ditto.
+	(rest_of_handle_if_after_reload): Ditto.
+	* gcc/tree-ssa-loop.c (tree_ssa_loop_init): Ditto.
+	(tree_ssa_loop_im): Ditto.
+	(tree_ssa_loop_unswitch): Ditto.
+	(tree_vectorize): Ditto.
+	(tree_linear_transform): Ditto.
+	(tree_ssa_loop_ivcanon): Ditto.
+	(tree_ssa_empty_loop): Ditto.
+	(tree_ssa_loop_bounds): Ditto.
+	(tree_complete_unroll): Ditto.
+	(tree_ssa_loop_prefetch): Ditto.
+	(tree_ssa_loop_ivopts): Ditto.
+	(tree_ssa_loop_done): Ditto.
+	* gcc/predict.c (tree_estimate_probability): Ditto.
+	* gcc/recog.c (split_all_insns_noflow): Ditto.
+	(rest_of_handle_peephole2): Ditto.
+	(rest_of_handle_split_all_insns): Ditto.
+	* gcc/tree-eh.c (lower_eh_constructs): Ditto.
+	* gcc/regmove.c (rest_of_handle_regmove): Ditto.
+	(rest_of_handle_stack_adjustments): Ditto.
+	* gcc/local-alloc.c (rest_of_handle_local_alloc): Ditto.
+	* gcc/function.c (instantiate_virtual_regs): Ditto.
+	(init_function_for_compilation): Ditto.
+	(rest_of_handle_check_leaf_regs): Ditto.
+	* gcc/gcse.c (rest_of_handle_jump_bypass): Ditto.
+	(rest_of_handle_gcse): Ditto.
+	* gcc/ipa-type-escape.c (type_escape_execute): Ditto.
+	* gcc/alias.c (rest_of_handle_cfg): Ditto.
+	* gcc/tree-if-conv.c (main_tree_if_conversion): Ditto.
+	* gcc/profile.c (rest_of_handle_branch_prob): Ditto.
+	* gcc/tree-ssa-phiopt.c (tree_ssa_phiopt): Ditto.
+	* gcc/rtl-factoring.c (rest_of_rtl_seqabstr): Ditto.
+	* gcc/bt-load.c (rest_of_handle_branch_target_load_optimize): Ditto
+	* gcc/tree-dfa.c (find_referenced_vars): Ditto.
+	* gcc/except.c (set_nothrow_function_flags): Ditto.
+	(convert_to_eh_region_ranges): Ditto.
+	(rest_of_handle_eh): Ditto.
+	* gcc/emit-rtl.c (unshare_all_rtl): Ditto.
+	(remove_unnecessary_notes): Ditto.
+	* gcc/except.h (set_nothrow_function_flags): Ditto.
+	(convert_to_eh_region_ranges): Ditto.
+	* gcc/cfgexpand.c (tree_expand_cfg): Ditto.
+	* gcc/tree-cfgcleanup.c (merge_phi_nodes): Ditto.
+	* gcc/tree-ssa-pre.c (do_pre): Ditto.
+	(execute_fre): Ditto.
+	* gcc/cfgcleanup.c (rest_of_handle_jump): Ditto.
+	(rest_of_handle_jump2): Ditto.
+	* gcc/tree-sra.c (tree_sra): Ditto.
+	* gcc/tree-mudflap.c (execute_mudflap_function_ops): Ditto.
+	(execute_mudflap_function_decls): Ditto.
+	* gcc/tree-ssa-copy.c (do_copy_prop): Ditto.
+	(do_store_copy_prop): Ditto.
+	* gcc/ipa-prop.h (ipcp_driver): Ditto.
+	* gcc/cfglayout.c (insn_locators_initialize): Ditto.
+	* gcc/tree-ssa-forwprop.c
+	(tree_ssa_forward_propagate_single_use_vars): Ditto.
+	* gcc/cfglayout.h (insn_locators_initialize): Ditto.
+	* gcc/tree-ssa-dce.c (tree_ssa_dce): Ditto.
+	* gcc/tree-ssa.c (execute_early_warn_uninitialized): Ditto.
+	(execute_late_warn_uninitialized): Ditto.
+	* gcc/rtl.h (cleanup_barriers): Ditto.
+	(split_all_insns_noflow): Ditto.
+	(purge_line_number_notes): Ditto.
+	(unshare_all_rtl): Ditto.
+	(remove_unnecessary_notes): Ditto.
+	(recompute_reg_usage): Ditto.
+	(variable_tracking_main): Ditto.
+	* gcc/integrate.c (emit_initial_value_sets): Ditto.
+	* gcc/integrate.h (emit_initial_value_sets): Ditto.
+	* gcc/tree-optimize.c (execute_free_datastructures): Ditto
+	(execute_free_cfg_annotations): Ditto.
+	(execute_fixup_cfg): Ditto.
+	(execute_cleanup_cfg_pre_ipa): Ditto.
+	(execute_cleanup_cfg_post_optimizing): Ditto.
+	(execute_init_datastructures): Ditto.
+	* gcc/tree-object-size.c (compute_object_sizes): Ditto.
+	* gcc/combine.c (rest_of_handle_combine): Ditto.
+	* gcc/tree-outof-ssa.c (rewrite_out_of_ssa): Ditto.
+	* gcc/bb-reorder.c (duplicate_computed_gotos): Ditto.
+	(rest_of_handle_reorder_blocks): Ditto.
+	(rest_of_handle_partition_blocks): Ditto.
+	* gcc/var-tracking.c (variable_tracking_main): Ditto.
+	* gcc/tree-profile.c (tree_profiling): Ditto.
+	* gcc/tree-vect-generic.c (expand_vector_operations): Ditto.
+	* gcc/reg-stack.c (rest_of_handle_stack_regs): Ditto.
+	* gcc/sched-rgn.c (rest_of_handle_sched): Ditto.
+	(rest_of_handle_sched2): Ditto.
+	* gcc/basic-block.h (free_bb_insn): Ditto.
+	* gcc/tree-ssa-structalias.c (ipa_pta_execute): Ditto.
+	* gcc/tree-cfg.c (execute_build_cfg): Ditto.
+	(remove_useless_stmts): Ditto.
+	(split_critical_edges): Ditto.
+	(execute_warn_function_return): Ditto.
+	(execute_warn_function_noreturn): Ditto.
+	* gcc/tree-ssa-reassoc.c (execute_reassoc): Ditto.
+	* gcc/cfgrtl.c (free_bb_for_insn): Ditto.
+	* gcc/passes.c (execute_one_pass): Run additional
+	todos returned by execute function.
+	* gcc/tree-pass.h (struct tree_opt_pass): Make execute
+	return a value.
+
 2006-03-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (find_used_portions): Consider taking

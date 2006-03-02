@@ -6621,7 +6621,7 @@ gate_handle_jump_bypass (void)
 }
 
 /* Perform jump bypassing and control flow optimizations.  */
-static void
+static unsigned int
 rest_of_handle_jump_bypass (void)
 {
   cleanup_cfg (CLEANUP_EXPENSIVE);
@@ -6633,6 +6633,7 @@ rest_of_handle_jump_bypass (void)
       cleanup_cfg (CLEANUP_EXPENSIVE);
       delete_trivially_dead_insns (get_insns (), max_reg_num ());
     }
+  return 0;
 }
 
 struct tree_opt_pass pass_jump_bypass =
@@ -6661,7 +6662,7 @@ gate_handle_gcse (void)
 }
 
 
-static void
+static unsigned int
 rest_of_handle_gcse (void)
 {
   int save_csb, save_cfj;
@@ -6701,6 +6702,7 @@ rest_of_handle_gcse (void)
 
   flag_cse_skip_blocks = save_csb;
   flag_cse_follow_jumps = save_cfj;
+  return 0;
 }
 
 struct tree_opt_pass pass_gcse =

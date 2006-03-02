@@ -104,7 +104,7 @@ rebuild_jump_labels (rtx f)
    This simple pass moves barriers and removes duplicates so that the
    old code is happy.
  */
-void
+unsigned int
 cleanup_barriers (void)
 {
   rtx insn, next, prev;
@@ -120,6 +120,7 @@ cleanup_barriers (void)
 	    reorder_insns (insn, insn, prev);
 	}
     }
+  return 0;
 }
 
 struct tree_opt_pass pass_cleanup_barriers =
@@ -139,7 +140,7 @@ struct tree_opt_pass pass_cleanup_barriers =
   0                                     /* letter */
 };
 
-void
+unsigned int
 purge_line_number_notes (void)
 {
   rtx last_note = 0;
@@ -175,6 +176,7 @@ purge_line_number_notes (void)
 	    last_note = insn;
 	  }
       }
+  return 0;
 }
 
 struct tree_opt_pass pass_purge_lineno_notes =

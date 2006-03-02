@@ -1572,7 +1572,7 @@ gate_handle_postreload (void)
 }
 
 
-static void
+static unsigned int
 rest_of_handle_postreload (void)
 {
   /* Do a very simple CSE pass over just the hard registers.  */
@@ -1581,6 +1581,7 @@ rest_of_handle_postreload (void)
      Remove any EH edges associated with them.  */
   if (flag_non_call_exceptions)
     purge_all_dead_edges ();
+  return 0;
 }
 
 struct tree_opt_pass pass_postreload_cse =

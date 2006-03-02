@@ -926,24 +926,27 @@ perform_tree_ssa_dce (bool aggressive)
 }
 
 /* Pass entry points.  */
-static void
+static unsigned int
 tree_ssa_dce (void)
 {
   perform_tree_ssa_dce (/*aggressive=*/false);
+  return 0;
 }
 
-static void
+static unsigned int
 tree_ssa_dce_loop (void)
 {
   perform_tree_ssa_dce (/*aggressive=*/false);
   free_numbers_of_iterations_estimates (current_loops);
   scev_reset ();
+  return 0;
 }
 
-static void
+static unsigned int
 tree_ssa_cd_dce (void)
 {
   perform_tree_ssa_dce (/*aggressive=*/optimize >= 2);
+  return 0;
 }
 
 static bool

@@ -35,7 +35,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-dump.h"
 #include "langhooks.h"
 
-static void tree_ssa_phiopt (void);
+static unsigned int tree_ssa_phiopt (void);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, tree, tree, tree);
 static bool value_replacement (basic_block, basic_block,
@@ -133,7 +133,7 @@ static basic_block *blocks_in_phiopt_order (void);
 
    A similar transformation is done for MAX_EXPR.  */
 
-static void
+static unsigned int
 tree_ssa_phiopt (void)
 {
   basic_block bb;
@@ -237,6 +237,7 @@ tree_ssa_phiopt (void)
     }
 
   free (bb_order);
+  return 0;
 }
 
 /* Returns the list of basic blocks in the function in an order that guarantees

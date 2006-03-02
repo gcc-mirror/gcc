@@ -2813,7 +2813,7 @@ split_all_insns (int upd_life)
 /* Same as split_all_insns, but do not expect CFG to be available.
    Used by machine dependent reorg passes.  */
 
-void
+unsigned int
 split_all_insns_noflow (void)
 {
   rtx next, insn;
@@ -2843,6 +2843,7 @@ split_all_insns_noflow (void)
 	    split_insn (insn);
 	}
     }
+  return 0;
 }
 
 #ifdef HAVE_peephole2
@@ -3446,12 +3447,13 @@ gate_handle_peephole2 (void)
   return (optimize > 0 && flag_peephole2);
 }
 
-static void
+static unsigned int
 rest_of_handle_peephole2 (void)
 {
 #ifdef HAVE_peephole2
   peephole2_optimize ();
 #endif
+  return 0;
 }
 
 struct tree_opt_pass pass_peephole2 =
@@ -3471,10 +3473,11 @@ struct tree_opt_pass pass_peephole2 =
   'z'                                   /* letter */
 };
 
-static void
+static unsigned int
 rest_of_handle_split_all_insns (void)
 {
   split_all_insns (1);
+  return 0;
 }
 
 struct tree_opt_pass pass_split_all_insns =

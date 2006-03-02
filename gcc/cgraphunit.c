@@ -618,7 +618,7 @@ initialize_inline_failed (struct cgraph_node *node)
 
 /* Rebuild call edges from current function after a passes not aware
    of cgraph updating.  */
-static void
+static unsigned int
 rebuild_cgraph_edges (void)
 {
   basic_block bb;
@@ -643,6 +643,7 @@ rebuild_cgraph_edges (void)
       }
   initialize_inline_failed (node);
   gcc_assert (!node->global.inlined_to);
+  return 0;
 }
 
 struct tree_opt_pass pass_rebuild_cgraph_edges =

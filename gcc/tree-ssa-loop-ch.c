@@ -120,7 +120,7 @@ do_while_loop_p (struct loop *loop)
    of the loop.  This is beneficial since it increases efficiency of
    code motion optimizations.  It also saves one jump on entry to the loop.  */
 
-static void
+static unsigned int
 copy_loop_headers (void)
 {
   struct loops *loops;
@@ -135,7 +135,7 @@ copy_loop_headers (void)
   loops = loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 			       | LOOPS_HAVE_SIMPLE_LATCHES);
   if (!loops)
-    return;
+    return 0;
 
 #ifdef ENABLE_CHECKING
   verify_loop_structure (loops);
@@ -214,6 +214,7 @@ copy_loop_headers (void)
   free (copied_bbs);
 
   loop_optimizer_finalize (loops);
+  return 0;
 }
 
 static bool

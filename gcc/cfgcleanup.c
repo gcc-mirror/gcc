@@ -2268,13 +2268,14 @@ cleanup_cfg (int mode)
   return changed;
 }
 
-static void
+static unsigned int
 rest_of_handle_jump (void)
 {
   delete_unreachable_blocks ();
 
   if (cfun->tail_call_emit)
     fixup_tail_calls ();
+  return 0;
 }
 
 struct tree_opt_pass pass_jump =
@@ -2296,7 +2297,7 @@ struct tree_opt_pass pass_jump =
 };
 
 
-static void
+static unsigned int
 rest_of_handle_jump2 (void)
 {
   /* Turn NOTE_INSN_EXPECTED_VALUE into REG_BR_PROB.  Do this
@@ -2324,6 +2325,7 @@ rest_of_handle_jump2 (void)
      maximum instruction UID, so if we can reduce the maximum UID
      we'll save big on memory.  */
   renumber_insns ();
+  return 0;
 }
 
 

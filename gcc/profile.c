@@ -1338,7 +1338,7 @@ tree_register_profile_hooks (void)
 
 
 /* Do branch profiling and static profile estimation passes.  */
-static void
+static unsigned int
 rest_of_handle_branch_prob (void)
 {
   struct loops loops;
@@ -1357,6 +1357,7 @@ rest_of_handle_branch_prob (void)
 
   flow_loops_free (&loops);
   free_dominance_info (CDI_DOMINATORS);
+  return 0;
 }
 
 struct tree_opt_pass pass_branch_prob =

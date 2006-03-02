@@ -2671,7 +2671,7 @@ expression_expensive_p (tree expr)
    We only consider SSA names defined by phi nodes; rest is left to the
    ordinary constant propagation pass.  */
 
-void
+unsigned int
 scev_const_prop (void)
 {
   basic_block bb;
@@ -2681,7 +2681,7 @@ scev_const_prop (void)
   unsigned i;
 
   if (!current_loops)
-    return;
+    return 0;
 
   FOR_EACH_BB (bb)
     {
@@ -2802,4 +2802,5 @@ scev_const_prop (void)
 	  update_stmt (ass);
 	}
     }
+  return 0;
 }

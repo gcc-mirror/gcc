@@ -1671,7 +1671,7 @@ lower_eh_constructs_1 (struct leh_state *state, tree *tp)
     }
 }
 
-static void
+static unsigned int
 lower_eh_constructs (void)
 {
   struct leh_state null_state;
@@ -1687,6 +1687,7 @@ lower_eh_constructs (void)
   htab_delete (finally_tree);
 
   collect_eh_region_array ();
+  return 0;
 }
 
 struct tree_opt_pass pass_lower_eh =
