@@ -1861,9 +1861,7 @@ free_ssa_operands (stmt_operands_p ops)
 }
 
 
-/* Get the operands of statement STMT.  Note that repeated calls to
-   get_stmt_operands for the same statement will do nothing until the
-   statement is marked modified by a call to mark_stmt_modified().  */
+/* Get the operands of statement STMT.  */
 
 void
 update_stmt_operands (tree stmt)
