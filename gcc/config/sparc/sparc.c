@@ -197,6 +197,30 @@ struct processor_costs ultrasparc3_costs = {
   0, /* shift penalty */
 };
 
+static const
+struct processor_costs niagara_costs = {
+  COSTS_N_INSNS (3), /* int load */
+  COSTS_N_INSNS (3), /* int signed load */
+  COSTS_N_INSNS (3), /* int zeroed load */
+  COSTS_N_INSNS (9), /* float load */
+  COSTS_N_INSNS (8), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (8), /* fadd, fsub */
+  COSTS_N_INSNS (26), /* fcmp */
+  COSTS_N_INSNS (8), /* fmov, fmovr */
+  COSTS_N_INSNS (29), /* fmul */
+  COSTS_N_INSNS (54), /* fdivs */
+  COSTS_N_INSNS (83), /* fdivd */
+  COSTS_N_INSNS (100), /* fsqrts - not implemented in hardware */
+  COSTS_N_INSNS (100), /* fsqrtd - not implemented in hardware */
+  COSTS_N_INSNS (11), /* imul */
+  COSTS_N_INSNS (11), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (72), /* idiv */
+  COSTS_N_INSNS (72), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
 const struct processor_costs *sparc_costs = &cypress_costs;
 
 #ifdef HAVE_AS_RELAX_OPTION
@@ -597,6 +621,7 @@ sparc_override_options (void)
     { TARGET_CPU_v9, "v9" },
     { TARGET_CPU_ultrasparc, "ultrasparc" },
     { TARGET_CPU_ultrasparc3, "ultrasparc3" },
+    { TARGET_CPU_niagara, "niagara" },
     { 0, 0 }
   };
   const struct cpu_default *def;
@@ -632,6 +657,8 @@ sparc_override_options (void)
     /* TI ultrasparc III */
     /* ??? Check if %y issue still holds true in ultra3.  */
     { "ultrasparc3", PROCESSOR_ULTRASPARC3, MASK_ISA, MASK_V9|MASK_DEPRECATED_V8_INSNS},
+    /* UltraSPARC T1 */
+    { "niagara", PROCESSOR_NIAGARA, MASK_ISA, MASK_V9|MASK_DEPRECATED_V8_INSNS},
     { 0, 0, 0, 0 }
   };
   const struct cpu_table *cpu;
@@ -741,7 +768,8 @@ sparc_override_options (void)
   /* Supply a default value for align_functions.  */
   if (align_functions == 0
       && (sparc_cpu == PROCESSOR_ULTRASPARC
-	  || sparc_cpu == PROCESSOR_ULTRASPARC3))
+	  || sparc_cpu == PROCESSOR_ULTRASPARC3
+	  || sparc_cpu == PROCESSOR_NIAGARA))
     align_functions = 32;
 
   /* Validate PCC_STRUCT_RETURN.  */
@@ -789,6 +817,9 @@ sparc_override_options (void)
       break;
     case PROCESSOR_ULTRASPARC3:
       sparc_costs = &ultrasparc3_costs;
+      break;
+    case PROCESSOR_NIAGARA:
+      sparc_costs = &niagara_costs;
       break;
     };
 
@@ -7099,7 +7130,8 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
      aligned on a 16 byte boundary so one flush clears it all.  */
   emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode, tramp))));
   if (sparc_cpu != PROCESSOR_ULTRASPARC
-      && sparc_cpu != PROCESSOR_ULTRASPARC3)
+      && sparc_cpu != PROCESSOR_ULTRASPARC3
+      && sparc_cpu != PROCESSOR_NIAGARA)
     emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode,
 						     plus_constant (tramp, 8)))));
 
@@ -7141,7 +7173,8 @@ sparc64_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
   emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, tramp))));
 
   if (sparc_cpu != PROCESSOR_ULTRASPARC
-      && sparc_cpu != PROCESSOR_ULTRASPARC3)
+      && sparc_cpu != PROCESSOR_ULTRASPARC3
+      && sparc_cpu != PROCESSOR_NIAGARA)
     emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
@@ -7321,6 +7354,8 @@ sparc_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 static int
 sparc_use_sched_lookahead (void)
 {
+  if (sparc_cpu == PROCESSOR_NIAGARA)
+    return 0;
   if (sparc_cpu == PROCESSOR_ULTRASPARC
       || sparc_cpu == PROCESSOR_ULTRASPARC3)
     return 4;
@@ -7336,6 +7371,7 @@ sparc_issue_rate (void)
 {
   switch (sparc_cpu)
     {
+    case PROCESSOR_NIAGARA:
     default:
       return 1;
     case PROCESSOR_V9:

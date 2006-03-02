@@ -2830,7 +2830,7 @@ case "${target}" in
 			"" | sparc | sparcv9 | sparc64 | sparc86x \
 			| v7 | cypress | v8 | supersparc | sparclite | f930 \
 			| f934 | hypersparc | sparclite86x | sparclet | tsc701 \
-			| v9 | ultrasparc | ultrasparc3)
+			| v9 | ultrasparc | ultrasparc3 | niagara)
 				# OK
 				;;
 			*)

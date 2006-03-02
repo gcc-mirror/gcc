@@ -43,7 +43,8 @@ Boston, MA 02110-1301, USA.  */
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
     || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
+    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3 \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara
 /* A 64 bit v9 compiler with stack-bias,
    in a Medium/Low code model environment.  */
 
