@@ -1,3 +1,8 @@
+2006-03-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (find_used_portions): Consider taking
+	the address as making the variable not write-only.
+
 2006-03-02  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (default_use_cxa_atexit): Extend the description of

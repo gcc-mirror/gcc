@@ -3071,6 +3071,8 @@ find_used_portions (tree *tp, int *walk_subtrees, void *lhs_p)
 	    up->minused = 0;
 	    up->maxused = TREE_INT_CST_LOW (DECL_SIZE (var));
 	    up->implicit_uses = true;
+	    if (!lhs_p)
+	      up->write_only = false;
 
 	    up_insert (uid, up);
 	    *walk_subtrees = 0;
