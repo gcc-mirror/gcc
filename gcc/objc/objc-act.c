@@ -2254,9 +2254,10 @@ init_module_descriptor (tree type)
 		  size_in_bytes (objc_module_template));
   initlist = tree_cons (NULL_TREE, expr, initlist);
 
-  /* name = { ..., "foo.m", ... } */
+  /* Don't provide any file name for security reasons. */
+  /* name = { ..., "", ... } */
 
-  expr = add_objc_string (get_identifier (input_filename), class_names);
+  expr = add_objc_string (get_identifier (""), class_names);
   initlist = tree_cons (NULL_TREE, expr, initlist);
 
   /* symtab = { ..., _OBJC_SYMBOLS, ... } */
@@ -8883,7 +8884,9 @@ gen_type_name_0 (tree type)
   if (TREE_CODE (type) == TYPE_DECL && DECL_NAME (type))
     type = DECL_NAME (type);
 
-  strcat (errbuf, IDENTIFIER_POINTER (type));
+  strcat (errbuf, TREE_CODE (type) == IDENTIFIER_NODE
+	  	  ? IDENTIFIER_POINTER (type)
+		  : "");
 
   /* For 'id' and 'Class', adopted protocols are stored in the pointee.  */
   if (objc_is_id (orig))
