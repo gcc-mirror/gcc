@@ -1239,13 +1239,7 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
 struct tree_int_cst GTY(())
 {
   struct tree_common common;
-  /* A sub-struct is necessary here because the function `const_hash'
-     wants to scan both words as a unit and taking the address of the
-     sub-struct yields the properly inclusive bounded pointer.  */
-  struct tree_int_cst_lowhi {
-    unsigned HOST_WIDE_INT low;
-    HOST_WIDE_INT high;
-  } int_cst;
+  double_int int_cst;
 };
 
 /* In a REAL_CST node.  struct real_value is an opaque entity, with
