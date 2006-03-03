@@ -1,3 +1,9 @@
+2006-03-03  Steve Ellcey  <sje@cup.hp.com>
+
+	PR rtl-optimization/26345
+	PR target/19061
+	* config/ia64/predicates.md (basereg_operand): Don't look in subregs.
+
 2006-03-02  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/26453
