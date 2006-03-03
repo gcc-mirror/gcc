@@ -24,3 +24,5 @@ foo ()
   
   res = bar ();
 }
+
+/* { dg-final { cleanup-coverage-files } } */

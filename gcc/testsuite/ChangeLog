@@ -1,3 +1,11 @@
+2006-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/template/repo5.C: Cleanup repo files.
+	* gcc.dg/20051201-1.c: Cleanup coverage files.
+	* gcc.target/sparc/fexpand-2.c, gcc.target/sparc/fpmerge-2.c,
+	gcc.target/sparc/fpmul-2.c, gcc.target/sparc/pdist-2.c: Cleanup
+	tree dump files.
+
 2006-03-02  Fariborz Jahanian <fjahanian@apple.com>
 
 	* objc.dg/objc-nofilename-1.m: New test.
