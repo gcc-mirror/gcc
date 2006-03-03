@@ -641,6 +641,12 @@ GLIBCXX_3.4.7 {
 
 GLIBCXX_3.4.8 {
 
+    _ZSt17__copy_streambufsI[cw]St11char_traitsI[cw]EElPSt15basic_streambuf*;
+
+} GLIBCXX_3.4.7;
+
+GLIBCXX_3.4.9 {
+
     _ZNSt6__norm15_List_node_base4hook*;
     _ZNSt6__norm15_List_node_base4swap*;
     _ZNSt6__norm15_List_node_base6unhookEv;
@@ -653,7 +659,7 @@ GLIBCXX_3.4.8 {
     _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractI[^g]*;
 
     _ZSt21__copy_streambufs_eofI[cw]St11char_traitsI[cw]EE[il]PSt15basic_streambuf*;
-} GLIBCXX_3.4.7;
+} GLIBCXX_3.4.8;
 
 
 # Symbols in the support library (libsupc++) have their own tag.

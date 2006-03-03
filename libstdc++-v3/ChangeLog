@@ -1,3 +1,12 @@
+2006-03-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/26526
+	* config/abi/pre/gnu.ver (__copy_streambufs, 64-bit version): Add
+	@GLIBCXX_3.4.8; move existing symbols @GLIBCXX_3.4.8 to 3.4.9.
+	* configure.ac (libtool_VERSION): To 6:9:0.
+	* testsuite/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.9.
+	* configure: Regenerate.
+
 2006-03-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/abi/pre/gnu.ver: Adjust __copy_streambufs_eof export
