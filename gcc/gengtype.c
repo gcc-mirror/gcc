@@ -675,10 +675,11 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 
       if (i == SYMBOL_REF)
 	{
-	  /* Add the "block_sym" field if SYMBOL_REF_IN_BLOCK_P holds.  */
+	  /* Add the "block_sym" field if SYMBOL_REF_HAS_BLOCK_INFO_P holds.  */
 	  type_p field_tp = find_structure ("block_symbol", 0);
-	  subfields = create_optional_field (subfields, field_tp, "block_sym",
-					     "SYMBOL_REF_IN_BLOCK_P (&%0)");
+	  subfields
+	    = create_optional_field (subfields, field_tp, "block_sym",
+				     "SYMBOL_REF_HAS_BLOCK_INFO_P (&%0)");
 	}
 
       sname = xasprintf ("rtx_def_%s", rtx_name[i]);

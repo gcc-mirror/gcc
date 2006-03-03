@@ -175,7 +175,7 @@ rtvec_alloc (int n)
 unsigned int
 rtx_size (rtx x)
 {
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_IN_BLOCK_P (x))
+  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_HAS_BLOCK_INFO_P (x))
     return RTX_HDR_SIZE + sizeof (struct block_symbol);
   return RTX_CODE_SIZE (GET_CODE (x));
 }

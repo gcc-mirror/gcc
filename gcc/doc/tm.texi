@@ -5329,7 +5329,7 @@ is @code{NULL}, which disables the use of section anchors altogether.
 
 @deftypefn {Target Hook} bool TARGET_USE_ANCHORS_FOR_SYMBOL_P (rtx @var{x})
 Return true if GCC should attempt to use anchors to access @code{SYMBOL_REF}
-@var{x}.  You can assume @samp{SYMBOL_REF_IN_BLOCK_P (@var{x})} and
+@var{x}.  You can assume @samp{SYMBOL_REF_HAS_BLOCK_INFO_P (@var{x})} and
 @samp{!SYMBOL_REF_ANCHOR_P (@var{x})}.
 
 The default version is correct for most targets, but you might need to

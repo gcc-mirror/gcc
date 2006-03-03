@@ -566,7 +566,7 @@ use_anchored_address (rtx x)
 
   /* Check whether BASE is suitable for anchors.  */
   if (GET_CODE (base) != SYMBOL_REF
-      || !SYMBOL_REF_IN_BLOCK_P (base)
+      || !SYMBOL_REF_HAS_BLOCK_INFO_P (base)
       || SYMBOL_REF_ANCHOR_P (base)
       || SYMBOL_REF_BLOCK (base) == NULL
       || !targetm.use_anchors_for_symbol_p (base))
