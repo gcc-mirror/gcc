@@ -1,3 +1,18 @@
+2006-03-03  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-operands.c: Tidy whitespace.  Fix spelling.
+	(correct_use_link): Remove reference to get_stmt_operands.
+	(update_stmt_operands): Likewise.
+	(get_modify_expr_operands): New function factored out of
+	parse_ssa_operands and get_expr_operands.
+	Try to create V_MUST_DEFs for LHS by default.
+	(get_expr_operands) <case MODIFY_EXPR>: Call
+	get_modify_expr_operands.
+	<case ARRAY_RANGE_REF>: Handle together with ARRAY_REF.
+	<case BIT_FIELD_REF>: Clear opf_kill_def from FLAGS.
+	(parse_ssa_operands) <case MODIFY_EXPR>: Call
+	get_modify_expr_operands.
+
 2006-03-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-dfa.c (referenced_var_lookup_if_exists): Remove.
