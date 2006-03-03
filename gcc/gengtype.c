@@ -3037,6 +3037,7 @@ main(int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
 
   do_scalar_typedef ("CUMULATIVE_ARGS", &pos);
   do_scalar_typedef ("REAL_VALUE_TYPE", &pos);
+  do_scalar_typedef ("double_int", &pos);
   do_scalar_typedef ("uint8", &pos);
   do_scalar_typedef ("jword", &pos);
   do_scalar_typedef ("JCF_u2", &pos);

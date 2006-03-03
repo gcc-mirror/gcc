@@ -1,3 +1,13 @@
+2006-03-03  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gengtype.c (main): Handle double_int type.
+	* tree.h (struct tree_int_cst): Make type of int_cst double_int.
+	* double-int.c: New file.
+	* double-int.h: New file.
+	* system.h: Include doubleint.h.
+	* Makefile.in (SYSTEM_H): Include double-int.h.
+	(double-int.o): Add.
+
 2006-03-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/26478

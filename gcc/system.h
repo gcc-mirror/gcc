@@ -609,6 +609,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 # define FALSE false
 #endif /* !__cplusplus */
 
+/* Get definition of double_int.  */
+#include "double-int.h"
 
 /* Some compilers do not allow the use of unsigned char in bitfields.  */
 #define BOOL_BITFIELD unsigned int
