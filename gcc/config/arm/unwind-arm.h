@@ -250,7 +250,7 @@ extern "C" {
 #define _Unwind_GetIP(context) \
   (_Unwind_GetGR (context, 15) & ~(_Unwind_Word)1)
 
-#define _Unwind_GetIP(context, ip_before_insn) \
+#define _Unwind_GetIPInfo(context, ip_before_insn) \
   (*ip_before_insn = 0, _Unwind_GetGR (context, 15) & ~(_Unwind_Word)1)
 
   static inline void
