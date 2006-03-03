@@ -1259,7 +1259,8 @@ notice_global_symbol (tree decl)
   const char **type = &first_global_object_name;
 
   if (first_global_object_name
-      || !TREE_PUBLIC (decl) || DECL_EXTERNAL (decl)
+      || !TREE_PUBLIC (decl)
+      || DECL_EXTERNAL (decl)
       || !DECL_NAME (decl)
       || (TREE_CODE (decl) != FUNCTION_DECL
 	  && (TREE_CODE (decl) != VAR_DECL
