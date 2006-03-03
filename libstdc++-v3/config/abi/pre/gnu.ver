@@ -652,7 +652,7 @@ GLIBCXX_3.4.8 {
     _ZNSi10_M_extractI[^g]*;
     _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractI[^g]*;
 
-    _ZSt21__copy_streambufs_eofI[cw]St11char_traitsI[cw]EEiPSt15basic_streambuf*;
+    _ZSt21__copy_streambufs_eofI[cw]St11char_traitsI[cw]EE[il]PSt15basic_streambuf*;
 } GLIBCXX_3.4.7;
 
 
