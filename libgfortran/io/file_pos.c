@@ -161,7 +161,11 @@ st_backspace (st_parameter_filepos *fpp)
   /* Check for special cases involving the ENDFILE record first.  */
 
   if (u->endfile == AFTER_ENDFILE)
-    u->endfile = AT_ENDFILE;
+    {
+      u->endfile = AT_ENDFILE;
+      flush (u->s);
+      struncate (u->s);
+    }
   else
     {
       if (file_position (u->s) == 0)
