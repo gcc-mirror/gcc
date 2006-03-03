@@ -1,3 +1,14 @@
+2006-03-03  Roger Sayle  <roger@eyesopen.com>
+
+	* dependency.c (gfc_check_dependency): Call gfc_dep_resolver to
+	check whether two array references have a dependency.
+	(gfc_check_element_vs_element): Assume lref and rref must be
+	REF_ARRAYs.  If gfc_dep_compare_expr returns -2, assume these
+	references could potentially overlap.
+	(gfc_dep_resolver): Whitespace and comment tweaks.  Assume a
+	dependency if the references have different depths.  Rewrite
+	final term to clarrify we only have a dependency for overlaps.
+
 2006-03-03  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/25031
@@ -28,7 +39,7 @@
 	(gfc_trans_where_assign): Likewise.
 	(gfc_trans_where_2): Likewise.  Restructure code that decides
 	whether we need to allocate zero, one or two temporary masks.
-	If this is a top-level WHERE (i.e. the incoming MAKS is NULL),
+	If this is a top-level WHERE (i.e. the incoming MASK is NULL),
 	we only need to allocate at most one temporary mask, and can
 	invert it's sense to provide the complementary pending execution
 	mask.  Only calculate the size of the required temporary arrays

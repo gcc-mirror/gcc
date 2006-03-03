@@ -460,16 +460,11 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
       if (identical)
 	return 1;
 
-      /* Identical ranges return 0, overlapping ranges return 1.  */
-
+      /* Identical and disjoint ranges return 0,
+	 overlapping ranges return 1.  */
       /* Return zero if we refer to the same full arrays.  */
-      if (expr1->ref->type == REF_ARRAY
-	  && expr2->ref->type == REF_ARRAY
-	  && expr1->ref->u.ar.type == AR_FULL
-	  && expr2->ref->u.ar.type == AR_FULL
-	  && !expr1->ref->next
-	  && !expr2->ref->next)
-	return 0;
+      if (expr1->ref->type == REF_ARRAY && expr2->ref->type == REF_ARRAY)
+	return gfc_dep_resolver (expr1->ref, expr2->ref);
 
       return 1;
 
@@ -735,30 +730,25 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
   gfc_array_ref r_ar;
   gfc_expr *l_start;
   gfc_expr *r_start;
-  gfc_dependency nIsDep;
+  int i;
 
-  if (lref->type == REF_ARRAY && rref->type == REF_ARRAY)
-    {
-      l_ar = lref->u.ar;
-      r_ar = rref->u.ar;
-      l_start = l_ar.start[n] ;
-      r_start = r_ar.start[n] ;
-      if (gfc_dep_compare_expr (r_start, l_start) == 0)
-	nIsDep = GFC_DEP_EQUAL;
-      else
-	nIsDep = GFC_DEP_NODEP;
-  }
-  else
-    nIsDep = GFC_DEP_NODEP;
-
-  return nIsDep;
+  l_ar = lref->u.ar;
+  r_ar = rref->u.ar;
+  l_start = l_ar.start[n] ;
+  r_start = r_ar.start[n] ;
+  i = gfc_dep_compare_expr (r_start, l_start);
+  if (i == 0)
+    return GFC_DEP_EQUAL;
+  if (i == -2)
+    return GFC_DEP_OVERLAP;
+  return GFC_DEP_NODEP;
 }
 
 
 /* Finds if two array references are overlapping or not.
    Return value
    	1 : array references are overlapping.
-   	0 : array references are not overlapping.  */
+   	0 : array references are identical or not overlapping.  */
 
 int
 gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
@@ -792,7 +782,6 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 	  return 0;
 	
 	case REF_ARRAY:
-	  
 	  for (n=0; n < lref->u.ar.dimen; n++)
 	    {
 	      /* Assume dependency when either of array reference is vector
@@ -844,9 +833,10 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
   /* If we haven't seen any array refs then something went wrong.  */
   gcc_assert (fin_dep != GFC_DEP_ERROR);
 
-  if (fin_dep < GFC_DEP_OVERLAP)
-    return 0;
-  else
+  /* Assume the worst if we nest to different depths.  */
+  if (lref || rref)
     return 1;
+
+  return fin_dep == GFC_DEP_OVERLAP;
 }
 
