@@ -1,3 +1,8 @@
+2006-03-02  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/i386.c (machopic_output_stub): Add indirection to
+	jump.
+
 2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop.c: Removed.
@@ -37,7 +42,7 @@
 	just like v9/ultrasparc/ultrasparc3.
 	* doc/invoke.texi: Add documentation for "niagara" and improve
 	existing documentation for ultrasparc variants.
-	
+
 2006-03-02  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c (update_stmt_operands): Update documentation.

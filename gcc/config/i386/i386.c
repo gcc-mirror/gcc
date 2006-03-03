@@ -17120,7 +17120,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
     {
       fprintf (file, "\tcall LPC$%d\nLPC$%d:\tpopl %%eax\n", label, label);
       fprintf (file, "\tmovl %s-LPC$%d(%%eax),%%edx\n", lazy_ptr_name, label);
-      fprintf (file, "\tjmp %%edx\n");
+      fprintf (file, "\tjmp *%%edx\n");
     }
   else
     fprintf (file, "\tjmp *%s\n", lazy_ptr_name);
