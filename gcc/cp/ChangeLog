@@ -1,3 +1,8 @@
+2006-03-02  Mike Stump  <mrs@apple.com>
+
+	* decl2.c (import_export_decl): Remove redundant call to
+	targetm.cxx.key_method_may_be_inline ().
+
 2006-03-02  Richard Sandiford  <richard@codesourcery.com>
 
 	* decl.c (start_decl): Use have_global_bss_p when deciding

@@ -1790,8 +1790,7 @@ import_export_decl (tree decl)
 		 to arrange for comdat even though
 		 class_data_always_comdat is false.  */
 	      if (!CLASSTYPE_KEY_METHOD (class_type)
-		  || (DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (class_type))
-		      && targetm.cxx.key_method_may_be_inline ())
+		  || DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (class_type))
 		  || targetm.cxx.class_data_always_comdat ())
 		{
 		  /* The ABI requires COMDAT linkage.  Normally, we
@@ -1832,8 +1831,7 @@ import_export_decl (tree decl)
 		{
 		  comdat_p = (targetm.cxx.class_data_always_comdat ()
 			      || (CLASSTYPE_KEY_METHOD (type)
-				  && DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type))
-				  && targetm.cxx.key_method_may_be_inline ()));
+				  && DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type))));
 		  mark_needed (decl);
 		  if (!flag_weak)
 		    {
