@@ -1,3 +1,10 @@
+2006-03-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26423
+	* io/unix.c (fd_seek): Revert change from 25949.
+	(fd_read): Same.
+	(fd_write): Same.
+
 2006-02-28  Release Manager
 
 	* GCC 4.1.0 released.
