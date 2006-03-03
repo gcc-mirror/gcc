@@ -298,6 +298,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget xscale*-*-elf]
 	     || [istarget cris-*-*]
 	     || [istarget h8300-*-*]
+	     || [istarget m68k-*-elf]
 	     || [istarget mips*-*-elf]
 	     || [istarget xtensa-*-elf]
 	     || [istarget *-*-windiss] } {
