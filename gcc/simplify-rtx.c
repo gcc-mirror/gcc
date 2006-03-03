@@ -590,12 +590,28 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       if (GET_CODE (op) == LT
 	  && XEXP (op, 1) == const0_rtx)
 	{
+	  enum machine_mode inner = GET_MODE (XEXP (op, 0));
+	  int isize = GET_MODE_BITSIZE (inner);
 	  if (STORE_FLAG_VALUE == 1)
-	    return simplify_gen_binary (ASHIFTRT, mode, XEXP (op, 0),
-					GEN_INT (GET_MODE_BITSIZE (mode) - 1));
+	    {
+	      temp = simplify_gen_binary (ASHIFTRT, inner, XEXP (op, 0),
+					  GEN_INT (isize - 1));
+	      if (mode == inner)
+		return temp;
+	      if (GET_MODE_BITSIZE (mode) > isize)
+		return simplify_gen_unary (SIGN_EXTEND, mode, temp, inner);
+	      return simplify_gen_unary (TRUNCATE, mode, temp, inner);
+	    }
 	  else if (STORE_FLAG_VALUE == -1)
-	    return simplify_gen_binary (LSHIFTRT, mode, XEXP (op, 0),
-					GEN_INT (GET_MODE_BITSIZE (mode) - 1));
+	    {
+	      temp = simplify_gen_binary (LSHIFTRT, inner, XEXP (op, 0),
+					  GEN_INT (isize - 1));
+	      if (mode == inner)
+		return temp;
+	      if (GET_MODE_BITSIZE (mode) > isize)
+		return simplify_gen_unary (ZERO_EXTEND, mode, temp, inner);
+	      return simplify_gen_unary (TRUNCATE, mode, temp, inner);
+	    }
 	}
       break;
 
