@@ -587,6 +587,12 @@ GLIBCXX_3.4.7 {
 
 } GLIBCXX_3.4.6;
 
+GLIBCXX_3.4.8 {
+
+    _ZSt17__copy_streambufsI[cw]St11char_traitsI[cw]EElPSt15basic_streambuf*;
+
+} GLIBCXX_3.4.7;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 
