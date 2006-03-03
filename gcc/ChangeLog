@@ -1,3 +1,33 @@
+2006-03-03  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/tm.texi: Refer to SYMBOL_REF_HAS_BLOCK_INFO_P instead of
+	SYMBOL_REF_IN_BLOCK_P.
+	* doc/rtl.texi: Likewise.  Refer to SYMBOL_FLAG_HAS_BLOCK_INFO instead
+	of SYMBOL_FLAG_IN_BLOCK.
+	* gengtype.c (adjust_field_rtx_def): Use SYMBOL_REF_HAS_BLOCK_INFO_P
+	instead of SYMBOL_REF_IN_BLOCK_P.
+	* explow.c (use_anchored_address): Likewise.
+	* rtl.c (rtx_size): Likewise.
+	* varasm.c (create_block_symbol): Set SYMBOL_FLAG_HAS_BLOCK_INFO
+	instead of SYMBOL_FLAG_IN_BLOCK.
+	(make_decl_rtl): Use SYMBOL_REF_HAS_BLOCK_INFO_P instead of
+	SYMBOL_REF_IN_BLOCK_P.
+	(assemble_variable): Likewise.
+	(output_constant_def_contents): Likewise.
+	(output_constant_pool): Likewise.
+	(default_encode_section_info): Preserve SYMBOL_FLAG_HAS_BLOCK_INFO
+	instead of SYMBOL_FLAG_IN_BLOCK.
+	* rtl.h (block_symbol): Refer to SYMBOL_REF_HAS_BLOCK_INFO_P instead of
+	SYMBOL_REF_IN_BLOCK_P.
+	(SYMBOL_REF_BLOCK): Likewise.
+	(SYMBOL_REF_OFFSET): Likewise.
+	(BLOCK_SYMBOL_CHECK): Use SYMBOL_REF_HAS_BLOCK_INFO_P instead of
+	SYMBOL_REF_IN_BLOCK_P.
+	(SYMBOL_FLAG_IN_BLOCK): Replace with...
+	(SYMBOL_FLAG_HAS_BLOCK_INFO): ...this.
+	(SYMBOL_REF_IN_BLOCK_P): Replace with...
+	(SYMBOL_REF_HAS_BLOCK_INFO_P): ...this.
+
 2006-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/arm/unwind-arm.h (_Unwind_GetIPInfo): Fix pasto.

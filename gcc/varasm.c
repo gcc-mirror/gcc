@@ -365,7 +365,7 @@ create_block_symbol (const char *label, struct object_block *block,
   PUT_CODE (symbol, SYMBOL_REF);
   PUT_MODE (symbol, Pmode);
   XSTR (symbol, 0) = label;
-  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_IN_BLOCK;
+  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_HAS_BLOCK_INFO;
 
   /* Initialize the block_symbol stuff.  */
   SYMBOL_REF_BLOCK (symbol) = block;
@@ -986,11 +986,11 @@ make_decl_rtl (tree decl)
 	 decl attribute overrides another.  */
       targetm.encode_section_info (decl, DECL_RTL (decl), false);
 
-      /* If the old address was assigned to an object block, see whether
-	 that block is still in the right section.  */
+      /* If the symbol has a SYMBOL_REF_BLOCK field, update it based
+	 on the new decl information.  */
       if (MEM_P (x)
 	  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-	  && SYMBOL_REF_IN_BLOCK_P (XEXP (x, 0)))
+	  && SYMBOL_REF_HAS_BLOCK_INFO_P (XEXP (x, 0)))
 	change_symbol_block (XEXP (x, 0), get_block_for_decl (decl));
 
       /* Make this function static known to the mudflap runtime.  */
@@ -1819,7 +1819,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   /* If the decl is part of an object_block, make sure that the decl
      has been positioned within its block, but do not write out its
      definition yet.  output_object_blocks will do that later.  */
-  if (SYMBOL_REF_IN_BLOCK_P (symbol) && SYMBOL_REF_BLOCK (symbol))
+  if (SYMBOL_REF_HAS_BLOCK_INFO_P (symbol) && SYMBOL_REF_BLOCK (symbol))
     {
       gcc_assert (!dont_output_data);
       place_block_symbol (symbol);
@@ -2947,7 +2947,7 @@ output_constant_def_contents (rtx symbol)
   /* If the constant is part of an object block, make sure that the
      decl has been positioned within its block, but do not write out
      its definition yet.  output_object_blocks will do that later.  */
-  if (SYMBOL_REF_IN_BLOCK_P (symbol) && SYMBOL_REF_BLOCK (symbol))
+  if (SYMBOL_REF_HAS_BLOCK_INFO_P (symbol) && SYMBOL_REF_BLOCK (symbol))
     place_block_symbol (symbol);
   else
     {
@@ -3508,7 +3508,8 @@ output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
 	   the constant has been positioned within its block, but do not
 	   write out its definition yet.  output_object_blocks will do
 	   that later.  */
-	if (SYMBOL_REF_IN_BLOCK_P (desc->sym) && SYMBOL_REF_BLOCK (desc->sym))
+	if (SYMBOL_REF_HAS_BLOCK_INFO_P (desc->sym)
+	    && SYMBOL_REF_BLOCK (desc->sym))
 	  place_block_symbol (desc->sym);
 	else
 	  {
@@ -5683,7 +5684,7 @@ default_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   if (GET_CODE (symbol) != SYMBOL_REF)
     return;
 
-  flags = SYMBOL_REF_FLAGS (symbol) & SYMBOL_FLAG_IN_BLOCK;
+  flags = SYMBOL_REF_FLAGS (symbol) & SYMBOL_FLAG_HAS_BLOCK_INFO;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     flags |= SYMBOL_FLAG_FUNCTION;
   if (targetm.binds_local_p (decl))

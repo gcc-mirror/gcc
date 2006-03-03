@@ -178,7 +178,7 @@ typedef union rtunion_def rtunion;
 
 /* This structure remembers the position of a SYMBOL_REF within an
    object_block structure.  A SYMBOL_REF only provides this information
-   if SYMBOL_REF_IN_BLOCK_P is true.  */
+   if SYMBOL_REF_HAS_BLOCK_INFO_P is true.  */
 struct block_symbol GTY(()) {
   /* The usual SYMBOL_REF fields.  */
   rtunion GTY ((skip)) fld[3];
@@ -212,7 +212,7 @@ struct object_block GTY(())
      order of increasing offset and the following conditions will
      hold for each element X:
 
-	 SYMBOL_REF_IN_BLOCK_P (X)
+	 SYMBOL_REF_HAS_BLOCK_INFO_P (X)
 	 !SYMBOL_REF_ANCHOR_P (X)
 	 SYMBOL_REF_BLOCK (X) == [address of this structure]
 	 SYMBOL_REF_BLOCK_OFFSET (X) >= 0.  */
@@ -222,7 +222,7 @@ struct object_block GTY(())
      in order of increasing offset, and then increasing TLS model.
      The following conditions will hold for each element X in this vector:
 
-	 SYMBOL_REF_IN_BLOCK_P (X)
+	 SYMBOL_REF_HAS_BLOCK_INFO_P (X)
 	 SYMBOL_REF_ANCHOR_P (X)
 	 SYMBOL_REF_BLOCK (X) == [address of this structure]
 	 SYMBOL_REF_BLOCK_OFFSET (X) >= 0.  */
@@ -529,7 +529,7 @@ struct rtvec_def GTY(()) {
 #define BLOCK_SYMBOL_CHECK(RTX) __extension__				\
 ({ rtx const _symbol = (RTX);						\
    unsigned int flags = RTL_CHECKC1 (_symbol, 1, SYMBOL_REF).rt_int;	\
-   if ((flags & SYMBOL_FLAG_IN_BLOCK) == 0)				\
+   if ((flags & SYMBOL_FLAG_HAS_BLOCK_INFO) == 0)			\
      rtl_check_failed_block_symbol (__FILE__, __LINE__,			\
 				    __FUNCTION__);			\
    &_symbol->u.block_sym; })
@@ -1318,11 +1318,11 @@ do {						\
 #define SYMBOL_REF_EXTERNAL_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_EXTERNAL) != 0)
 /* Set if this symbol has a block_symbol structure associated with it.  */
-#define SYMBOL_FLAG_IN_BLOCK	(1 << 7)
-#define SYMBOL_REF_IN_BLOCK_P(RTX) \
-  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_IN_BLOCK) != 0)
+#define SYMBOL_FLAG_HAS_BLOCK_INFO (1 << 7)
+#define SYMBOL_REF_HAS_BLOCK_INFO_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_HAS_BLOCK_INFO) != 0)
 /* Set if this symbol is a section anchor.  SYMBOL_REF_ANCHOR_P implies
-   SYMBOL_REF_IN_BLOCK_P.  */
+   SYMBOL_REF_HAS_BLOCK_INFO_P.  */
 #define SYMBOL_FLAG_ANCHOR	(1 << 8)
 #define SYMBOL_REF_ANCHOR_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_ANCHOR) != 0)
@@ -1331,13 +1331,15 @@ do {						\
 #define SYMBOL_FLAG_MACH_DEP_SHIFT	9
 #define SYMBOL_FLAG_MACH_DEP		(1 << SYMBOL_FLAG_MACH_DEP_SHIFT)
 
-/* The block to which the given SYMBOL_REF belongs, or NULL if none.
-   Only valid if SYMBOL_REF_IN_BLOCK_P (RTX).  */
+/* If SYMBOL_REF_HAS_BLOCK_INFO_P (RTX), this is the object_block
+   structure to which the symbol belongs, or NULL if it has not been
+   assigned a block.  */
 #define SYMBOL_REF_BLOCK(RTX) (BLOCK_SYMBOL_CHECK (RTX)->block)
 
-/* The byte offset of the given SYMBOL_REF from the start of its block,
-   or a negative value if the symbol has not yet been assigned a position.
-   Only valid if SYMBOL_REF_IN_BLOCK_P (RTX).  */
+/* If SYMBOL_REF_HAS_BLOCK_INFO_P (RTX), this is the offset of RTX from
+   the first object in SYMBOL_REF_BLOCK (RTX).  The value is negative if
+   RTX has not yet been assigned to a block, or it has not been given an
+   offset within that block.  */
 #define SYMBOL_REF_BLOCK_OFFSET(RTX) (BLOCK_SYMBOL_CHECK (RTX)->offset)
 
 /* Define a macro to look for REG_INC notes,
