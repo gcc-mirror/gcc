@@ -1,3 +1,9 @@
+2006-03-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/26524
+	* tree-scalar-evolution.c (interpret_rhs_modify_expr): Use
+	fold_convert to create a constant of the appropriate type.
+
 2006-03-03  Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/tm.texi: Refer to SYMBOL_REF_HAS_BLOCK_INFO_P instead of
