@@ -739,8 +739,14 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
   i = gfc_dep_compare_expr (r_start, l_start);
   if (i == 0)
     return GFC_DEP_EQUAL;
+  /* Treat two scalar variables as potentially equal.  This allows
+     us to prove that a(i,:) and a(j,:) have no dependency.  See
+     Gerald Roth, "Evaluation of Array Syntax Dependence Analysis",
+     Proceedings of the International Conference on Parallel and
+     Distributed Processing Techniques and Applications (PDPTA2001),
+     Las Vegas, Nevada, June 2001.  This used to be GFC_DEP_OVERLAP.  */
   if (i == -2)
-    return GFC_DEP_OVERLAP;
+    return GFC_DEP_EQUAL;
   return GFC_DEP_NODEP;
 }
 
