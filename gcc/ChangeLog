@@ -1,3 +1,10 @@
+2006-03-02  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_unary_operation): When simplifying
+	(neg (lt X 0)) into (ashiftrt X C) or (lshiftrt X C), make sure
+	that we perform the right shift in the appropriate mode, and
+	then extend or truncate the result to requested mode.
+
 2006-03-03  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* gengtype.c (main): Handle double_int type.
@@ -16,7 +23,8 @@
 
 2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
 
-	* tree-vrp.c (remove_range_assertions): Do not update statements unnecessarily.
+	* tree-vrp.c (remove_range_assertions): Do not update statements
+	unnecessarily.
 
 2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
 
