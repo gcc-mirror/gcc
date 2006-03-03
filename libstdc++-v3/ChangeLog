@@ -1,3 +1,8 @@
+2006-03-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/abi/pre/gnu.ver: Adjust __copy_streambufs_eof export
+	vs 64-bit arches.
+
 2006-03-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 41.
