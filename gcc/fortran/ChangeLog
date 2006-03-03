@@ -1,5 +1,10 @@
 2006-03-03  Roger Sayle  <roger@eyesopen.com>
 
+	* dependency.c (gfc_check_element_vs_element): Consider two
+	unordered scalar subscripts as (potentially) equal.
+
+2006-03-03  Roger Sayle  <roger@eyesopen.com>
+
 	* dependency.c (gfc_check_dependency): Call gfc_dep_resolver to
 	check whether two array references have a dependency.
 	(gfc_check_element_vs_element): Assume lref and rref must be
