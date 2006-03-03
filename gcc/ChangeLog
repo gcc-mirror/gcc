@@ -1,3 +1,9 @@
+2006-03-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/26478
+	* Makefile.in (stmp-int-hdrs): Remove include/unwind.h before
+	copying over it.
+
 2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-vrp.c (remove_range_assertions): Do not update statements unnecessarily.
