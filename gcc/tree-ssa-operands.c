@@ -82,7 +82,7 @@ Boston, MA 02110-1301, USA.  */
 #define opf_none	0
 
 /* Operand is the target of an assignment expression or a 
-   call-clobbered variable  */
+   call-clobbered variable.  */
 #define opf_is_def 	(1 << 0)
 
 /* Operand is the target of an assignment expression.  */
@@ -96,8 +96,9 @@ Boston, MA 02110-1301, USA.  */
    VUSE for 'b'.  */
 #define opf_no_vops 	(1 << 2)
 
-/* Operand is a "non-specific" kill for call-clobbers and such.  This is used
-   to distinguish "reset the world" events from explicit MODIFY_EXPRs.  */
+/* Operand is a "non-specific" kill for call-clobbers and such.  This
+   is used to distinguish "reset the world" events from explicit
+   MODIFY_EXPRs.  */
 #define opf_non_specific  (1 << 3)
 
 /* Array for building all the def operands.  */
@@ -106,13 +107,13 @@ static VEC(tree,heap) *build_defs;
 /* Array for building all the use operands.  */
 static VEC(tree,heap) *build_uses;
 
-/* Array for building all the v_may_def operands.  */
+/* Array for building all the V_MAY_DEF operands.  */
 static VEC(tree,heap) *build_v_may_defs;
 
-/* Array for building all the vuse operands.  */
+/* Array for building all the VUSE operands.  */
 static VEC(tree,heap) *build_vuses;
 
-/* Array for building all the v_must_def operands.  */
+/* Array for building all the V_MUST_DEF operands.  */
 static VEC(tree,heap) *build_v_must_defs;
 
 /* These arrays are the cached operand vectors for call clobbered calls.  */
@@ -168,8 +169,10 @@ static inline void
 operand_build_sort_virtual (VEC(tree,heap) *list)
 {
   int num = VEC_length (tree, list);
+
   if (num < 2)
     return;
+
   if (num == 2)
     {
       if (get_name_decl (VEC_index (tree, list, 0)) 
@@ -182,6 +185,7 @@ operand_build_sort_virtual (VEC(tree,heap) *list)
 	}
       return;
     }
+
   /* There are 3 or more elements, call qsort.  */
   qsort (VEC_address (tree, list), 
 	 VEC_length (tree, list), 
@@ -190,7 +194,7 @@ operand_build_sort_virtual (VEC(tree,heap) *list)
 }
 
 
-/*  Return true if the ssa operands cache is active.  */
+/*  Return true if the SSA operands cache is active.  */
 
 bool
 ssa_operands_active (void)
@@ -208,23 +212,22 @@ static struct
      add_call_clobber_ops.  */
   unsigned int clobbered_vars;
 
-  /* Number of write-clobbers (v_may_defs) avoided by using
+  /* Number of write-clobbers (V_MAY_DEFs) avoided by using
      not_written information.  */
   unsigned int static_write_clobbers_avoided;
 
-  /* Number of reads (vuses) avoided by using not_read
-     information.  */
+  /* Number of reads (VUSEs) avoided by using not_read information.  */
   unsigned int static_read_clobbers_avoided;
   
   /* Number of write-clobbers avoided because the variable can't escape to
      this call.  */
   unsigned int unescapable_clobbers_avoided;
 
-  /* Number of readonly uses we attempt to add to calls in
+  /* Number of read-only uses we attempt to add to calls in
      add_call_read_ops.  */
   unsigned int readonly_clobbers;
 
-  /* Number of readonly uses we avoid using not_read information.  */
+  /* Number of read-only uses we avoid using not_read information.  */
   unsigned int static_readonly_clobbers_avoided;
 } clobber_stats;
   
@@ -244,7 +247,6 @@ init_ssa_operands (void)
   operand_memory_index = SSA_OPERAND_MEMORY_SIZE;
   ops_active = true;
   memset (&clobber_stats, 0, sizeof (clobber_stats));
-  
 }
 
 
@@ -282,9 +284,9 @@ fini_ssa_operands (void)
 	       clobber_stats.static_read_clobbers_avoided);
       fprintf (dump_file, "Unescapable clobbers avoided:%d\n",
 	       clobber_stats.unescapable_clobbers_avoided);
-      fprintf (dump_file, "Original readonly clobbers:%d\n",
+      fprintf (dump_file, "Original read-only clobbers:%d\n",
 	       clobber_stats.readonly_clobbers);
-      fprintf (dump_file, "Static readonly clobbers avoided:%d\n",
+      fprintf (dump_file, "Static read-only clobbers avoided:%d\n",
 	       clobber_stats.static_readonly_clobbers_avoided);
     }
 }
@@ -324,7 +326,7 @@ correct_use_link (use_operand_p ptr, tree stmt)
   use_operand_p prev;
   tree root;
 
-  /*  Fold_stmt () may have changed the stmt pointers.  */
+  /*  fold_stmt may have changed the stmt pointers.  */
   if (ptr->stmt != stmt)
     ptr->stmt = stmt;
 
@@ -335,8 +337,9 @@ correct_use_link (use_operand_p ptr, tree stmt)
       while (prev->use != NULL || prev->stmt == NULL)
 	prev = prev->prev;
 
-      /* Get the ssa_name of the list the node is in.  */
+      /* Get the SSA_NAME of the list the node is in.  */
       root = prev->stmt;
+
       /* If it's the right list, simply return.  */
       if (root == *(ptr->use))
 	return;
@@ -356,7 +359,7 @@ correct_use_link (use_operand_p ptr, tree stmt)
 static inline void
 set_virtual_use_link (use_operand_p ptr, tree stmt)
 {
-  /*  Fold_stmt () may have changed the stmt pointers.  */
+  /*  fold_stmt may have changed the stmt pointers.  */
   if (ptr->stmt != stmt)
     ptr->stmt = stmt;
 
@@ -434,7 +437,7 @@ finalize_ssa_uses (tree stmt)
 
     /* If the pointer to the operand is the statement itself, something is
        wrong.  It means that we are pointing to a local variable (the 
-       initial call to get_stmt_operands does not pass a pointer to a 
+       initial call to update_stmt_operands does not pass a pointer to a 
        statement).  */
     for (x = 0; x < num; x++)
       gcc_assert (*((tree *)VEC_index (tree, build_uses, x)) != stmt);
@@ -445,7 +448,7 @@ finalize_ssa_uses (tree stmt)
 }
                                                                               
                                                                               
-/* Return a new v_may_def operand vector for STMT, comparing to OLD_OPS_P.  */                                                                                
+/* Return a new V_MAY_DEF operand vector for STMT, comparing to OLD_OPS_P.  */                                                                                
 #define FINALIZE_OPBUILD	build_v_may_defs
 #define FINALIZE_OPBUILD_ELEM(I)	VEC_index (tree, build_v_may_defs, (I))
 #define FINALIZE_OPBUILD_BASE(I)	get_name_decl (VEC_index (tree,	\
@@ -477,7 +480,7 @@ finalize_ssa_v_may_defs (tree stmt)
 }
                                                                                
 
-/* Clear the in_list bits and empty the build array for v_may_defs.  */
+/* Clear the in_list bits and empty the build array for V_MAY_DEFs.  */
 
 static inline void
 cleanup_v_may_defs (void)
@@ -521,7 +524,7 @@ cleanup_v_may_defs (void)
 #include "tree-ssa-opfinalize.h"
 
 
-/* Return a new vuse operand vector, comparing to OLD_OPS_P.  */
+/* Return a new VUSE operand vector, comparing to OLD_OPS_P.  */
                                                                               
 static void
 finalize_ssa_vuses (tree stmt)
@@ -530,17 +533,16 @@ finalize_ssa_vuses (tree stmt)
   unsigned vuse_index;
 
   /* Remove superfluous VUSE operands.  If the statement already has a
-   V_MAY_DEF operation for a variable 'a', then a VUSE for 'a' is not
-   needed because V_MAY_DEFs imply a VUSE of the variable.  For instance,
-   suppose that variable 'a' is aliased:
+     V_MAY_DEF operation for a variable 'a', then a VUSE for 'a' is
+     not needed because V_MAY_DEFs imply a VUSE of the variable.  For
+     instance, suppose that variable 'a' is aliased:
 
 	      # VUSE <a_2>
 	      # a_3 = V_MAY_DEF <a_2>
 	      a = a + 1;
 
-  The VUSE <a_2> is superfluous because it is implied by the V_MAY_DEF
-  operation.  */
-
+     The VUSE <a_2> is superfluous because it is implied by the
+     V_MAY_DEF operation.  */
   num = VEC_length (tree, build_vuses);
   num_v_may_defs = VEC_length (tree, build_v_may_defs);
 
@@ -564,29 +566,32 @@ finalize_ssa_vuses (tree stmt)
 	}
     }
   else
-    /* Clear out the in_list bits.  */
-    for (vuse_index = 0;
-	 vuse_index < VEC_length (tree, build_vuses);
-	 vuse_index++)
-      {
-	tree t = VEC_index (tree, build_vuses, vuse_index);
-	if (TREE_CODE (t) != SSA_NAME)
-	  {
-	    var_ann_t ann = var_ann (t);
-	    ann->in_vuse_list = 0;
-	  }
-      }
+    {
+      /* Clear out the in_list bits.  */
+      for (vuse_index = 0;
+	  vuse_index < VEC_length (tree, build_vuses);
+	  vuse_index++)
+	{
+	  tree t = VEC_index (tree, build_vuses, vuse_index);
+	  if (TREE_CODE (t) != SSA_NAME)
+	    {
+	      var_ann_t ann = var_ann (t);
+	      ann->in_vuse_list = 0;
+	    }
+	}
+    }
 
   finalize_ssa_vuse_ops (stmt);
-  /* The v_may_def build vector wasn't cleaned up because we needed it.  */
+
+  /* The V_MAY_DEF build vector wasn't cleaned up because we needed it.  */
   cleanup_v_may_defs ();
                                                                               
-  /* Free the vuses build vector.  */
+  /* Free the VUSEs build vector.  */
   VEC_truncate (tree, build_vuses, 0);
 
 }
                                                                               
-/* Return a new v_must_def operand vector for STMT, comparing to OLD_OPS_P.  */
+/* Return a new V_MUST_DEF operand vector for STMT, comparing to OLD_OPS_P.  */
                                                                               
 #define FINALIZE_OPBUILD	build_v_must_defs
 #define FINALIZE_OPBUILD_ELEM(I)	VEC_index (tree, build_v_must_defs, (I))
@@ -615,11 +620,12 @@ finalize_ssa_vuses (tree stmt)
 static void
 finalize_ssa_v_must_defs (tree stmt)
 {
-  /* In the presence of subvars, there may be more than one V_MUST_DEF per
-     statement (one for each subvar).  It is a bit expensive to verify that
-     all must-defs in a statement belong to subvars if there is more than one
-     MUST-def, so we don't do it.  Suffice to say, if you reach here without
-     having subvars, and have num >1, you have hit a bug. */
+  /* In the presence of subvars, there may be more than one V_MUST_DEF
+     per statement (one for each subvar).  It is a bit expensive to
+     verify that all must-defs in a statement belong to subvars if
+     there is more than one must-def, so we don't do it.  Suffice to
+     say, if you reach here without having subvars, and have num >1,
+     you have hit a bug.  */
   finalize_ssa_v_must_def_ops (stmt);
   VEC_truncate (tree, build_v_must_defs, 0);
 }
@@ -693,7 +699,6 @@ append_v_may_def (tree var)
 static inline void
 append_vuse (tree var)
 {
-
   /* Don't allow duplicate entries.  */
   if (TREE_CODE (var) != SSA_NAME)
     {
@@ -958,7 +963,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	     aliases will link up properly with calls.   In order to
 	     keep the number of these bare defs we add down to the
 	     minimum necessary, we keep track of which SMT's were used
-	     alone in statement vdefs or vuses.  */
+	     alone in statement vdefs or VUSEs.  */
 	  if (v_ann->is_aliased
 	      || none_added
 	      || (TREE_CODE (var) == SYMBOL_MEMORY_TAG
@@ -1266,10 +1271,8 @@ add_call_clobber_ops (tree stmt, tree callee)
 	    clobber_stats.static_read_clobbers_avoided++;
 	}
       else
-	add_virtual_operand (var, s_ann, opf_is_def, 
-			     NULL, 0, -1, true);
+	add_virtual_operand (var, s_ann, opf_is_def, NULL, 0, -1, true);
     }
-  
 }
 
 
@@ -1310,8 +1313,8 @@ add_call_read_ops (tree stmt, tree callee)
       if (TREE_CODE (var) == STRUCT_FIELD_TAG)
 	real_var = SFT_PARENT_VAR (var);
 
-      not_read = not_read_b ? bitmap_bit_p (not_read_b, 
-					    DECL_UID (real_var)) : false;
+      not_read = not_read_b ? bitmap_bit_p (not_read_b, DECL_UID (real_var))
+	                    : false;
       
       if (not_read)
 	{
@@ -1382,10 +1385,10 @@ get_asm_expr_operands (tree stmt)
 
   for (i=0, link = ASM_OUTPUTS (stmt); link; ++i, link = TREE_CHAIN (link))
     {
-      oconstraints[i] = constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-      parse_output_constraint (&constraint, i, 0, 0,
-	  &allows_mem, &allows_reg, &is_inout);
+      constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      oconstraints[i] = constraint;
+      parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
+	                       &allows_reg, &is_inout);
 
       /* This should have been split in gimplify_asm_expr.  */
       gcc_assert (!allows_reg || !is_inout);
@@ -1462,9 +1465,34 @@ get_asm_expr_operands (tree stmt)
 }
 
 
+/* Scan operands for the assignment expression EXPR in statement STMT.  */
+
+static void
+get_modify_expr_operands (tree stmt, tree expr)
+{
+  /* First get operands from the RHS.  */
+  get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
+
+  /* For the LHS, use a regular definition (OPF_IS_DEF) for GIMPLE
+     registers.  If the LHS is a store to memory, we will either need
+     a preserving definition (V_MAY_DEF) or a killing definition
+     (V_MUST_DEF).
+
+     Preserving definitions are those that modify a part of an
+     aggregate object for which no subvars have been computed (or the
+     reference does not correspond exactly to one of them). Stores
+     through a pointer are also represented with V_MAY_DEF operators.
+
+     The determination of whether to use a preserving or a killing
+     definition is done while scanning the LHS of the assignment.  By
+     default, assume that we will emit a V_MUST_DEF.  */
+  get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_is_def|opf_kill_def);
+}
+
+
 /* Recursively scan the expression pointed to by EXPR_P in statement
-   referred to by INFO.  FLAGS is one of the OPF_* constants modifying
-   how to interpret the operands found.  */
+   STMT.  FLAGS is one of the OPF_* constants modifying how to
+   interpret the operands found.  */
 
 static void
 get_expr_operands (tree stmt, tree *expr_p, int flags)
@@ -1516,7 +1544,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       {
 	subvar_t svars;
 	
-	/* Add the subvars for a variable if it has subvars, to DEFS
+	/* Add the subvars for a variable, if it has subvars, to DEFS
 	   or USES.  Otherwise, add the variable itself.  Whether it
 	   goes to USES or DEFS depends on the operand flags.  */
 	if (var_can_have_subvars (expr)
@@ -1538,25 +1566,15 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 
     case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
-      get_indirect_ref_operands (stmt, expr, flags, NULL_TREE,
-				 0, -1, true);
+      get_indirect_ref_operands (stmt, expr, flags, NULL_TREE, 0, -1, true);
       return;
 
     case TARGET_MEM_REF:
       get_tmr_operands (stmt, expr, flags);
       return;
 
-    case ARRAY_RANGE_REF:
-      /* Treat array references as references to the virtual variable
-	 representing the array.  The virtual variable for an ARRAY_REF
-	 is the VAR_DECL for the array.  */
-      get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
-      get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
-      get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
-      get_expr_operands (stmt, &TREE_OPERAND (expr, 3), opf_none);
-      return;
-
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -1596,14 +1614,14 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	  }
 	else if (TREE_CODE (ref) == INDIRECT_REF)
 	  {
-	    get_indirect_ref_operands (stmt, ref, flags, expr, 
-				       offset, maxsize, false);
+	    get_indirect_ref_operands (stmt, ref, flags, expr, offset,
+		                       maxsize, false);
 	    flags |= opf_no_vops;
 	  }
 
 	/* Even if we found subvars above we need to ensure to see
 	   immediate uses for d in s.a[d].  In case of s.a having
-	   a subvar we'd miss it otherwise.  */
+	   a subvar or we would miss it otherwise.  */
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0),
 			   flags & ~opf_kill_def);
 	
@@ -1613,7 +1631,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	      s_ann->has_volatile_ops = true; 
 	    get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
 	  }
-	else if (code == ARRAY_REF)
+	else if (code == ARRAY_REF || code == ARRAY_RANGE_REF)
 	  {
             get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
             get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
@@ -1642,25 +1660,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       return;
 
     case MODIFY_EXPR:
-      {
-	int subflags;
-	tree op;
-
-	get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
-
-	op = TREE_OPERAND (expr, 0);
-	if (TREE_CODE (op) == WITH_SIZE_EXPR)
-	  op = TREE_OPERAND (expr, 0);
-	if (TREE_CODE (op) == ARRAY_RANGE_REF
-	    || TREE_CODE (op) == REALPART_EXPR
-	    || TREE_CODE (op) == IMAGPART_EXPR)
-	  subflags = opf_is_def;
-	else
-	  subflags = opf_is_def | opf_kill_def;
-
-	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), subflags);
-	return;
-      }
+      get_modify_expr_operands (stmt, expr);
+      return;
 
     case CONSTRUCTOR:
       {
@@ -1677,8 +1678,13 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	return;
       }
 
-    case TRUTH_NOT_EXPR:
     case BIT_FIELD_REF:
+      /* Stores using BIT_FIELD_REF are always preserving definitions.  */
+      flags &= ~opf_kill_def;
+
+      /* Fallthru  */
+
+    case TRUTH_NOT_EXPR:
     case VIEW_CONVERT_EXPR:
     do_unary:
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
@@ -1742,10 +1748,9 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 }
 
 
-/* Parse STMT looking for operands.  OLD_OPS is the original stmt operand
-   cache for STMT, if it existed before.  When finished, the various build_*
-   operand vectors will have potential operands. in them.  */
-                                                                                
+/* Parse STMT looking for operands.  When finished, the various
+   build_* operand vectors will have potential operands in them.  */
+
 static void
 parse_ssa_operands (tree stmt)
 {
@@ -1755,30 +1760,7 @@ parse_ssa_operands (tree stmt)
   switch (code)
     {
     case MODIFY_EXPR:
-      /* First get operands from the RHS.  For the LHS, we use a V_MAY_DEF if
-	 either only part of LHS is modified or if the RHS might throw,
-	 otherwise, use V_MUST_DEF.
-
-	 ??? If it might throw, we should represent somehow that it is killed
-	 on the fallthrough path.  */
-      {
-	tree lhs = TREE_OPERAND (stmt, 0);
-	int lhs_flags = opf_is_def;
-
-	get_expr_operands (stmt, &TREE_OPERAND (stmt, 1), opf_none);
-
-	/* If the LHS is a VIEW_CONVERT_EXPR, it isn't changing whether
-	   or not the entire LHS is modified; that depends on what's
-	   inside the VIEW_CONVERT_EXPR.  */
-	if (TREE_CODE (lhs) == VIEW_CONVERT_EXPR)
-	  lhs = TREE_OPERAND (lhs, 0);
-
-	if (TREE_CODE (lhs) != ARRAY_RANGE_REF
-	    && TREE_CODE (lhs) != BIT_FIELD_REF)
-	  lhs_flags |= opf_kill_def;
-
-        get_expr_operands (stmt, &TREE_OPERAND (stmt, 0), lhs_flags);
-      }
+      get_modify_expr_operands (stmt, stmt);
       break;
 
     case COND_EXPR:
@@ -1805,7 +1787,6 @@ parse_ssa_operands (tree stmt)
       get_expr_operands (stmt, &LABEL_EXPR_LABEL (stmt), opf_none);
       break;
 
-      /* These nodes contain no variable references.  */
     case BIND_EXPR:
     case CASE_LABEL_EXPR:
     case TRY_CATCH_EXPR:
@@ -1813,14 +1794,15 @@ parse_ssa_operands (tree stmt)
     case EH_FILTER_EXPR:
     case CATCH_EXPR:
     case RESX_EXPR:
+      /* These nodes contain no variable references.  */
       break;
 
     default:
-      /* Notice that if get_expr_operands tries to use &STMT as the operand
-	 pointer (which may only happen for USE operands), we will fail in
-	 append_use.  This default will handle statements like empty
-	 statements, or CALL_EXPRs that may appear on the RHS of a statement
-	 or as statements themselves.  */
+      /* Notice that if get_expr_operands tries to use &STMT as the
+	 operand pointer (which may only happen for USE operands), we
+	 will fail in add_stmt_operand.  This default will handle
+	 statements like empty statements, or CALL_EXPRs that may
+	 appear on the RHS of a statement or as statements themselves.  */
       get_expr_operands (stmt, &stmt, opf_none);
       break;
     }
@@ -1850,6 +1832,7 @@ build_ssa_operands (tree stmt)
 
 
 /* Free any operands vectors in OPS.  */
+
 void 
 free_ssa_operands (stmt_operands_p ops)
 {
@@ -1868,8 +1851,8 @@ update_stmt_operands (tree stmt)
 {
   stmt_ann_t ann = get_stmt_ann (stmt);
 
-  /* If get_stmt_operands is called before SSA is initialized, dont
-  do anything.  */
+  /* If update_stmt_operands is called before SSA is initialized, do
+     nothing.  */
   if (!ssa_operands_active ())
     return;
 
@@ -1883,15 +1866,13 @@ update_stmt_operands (tree stmt)
 
   build_ssa_operands (stmt);
 
-  /* Clear the modified bit for STMT.  Subsequent calls to
-     get_stmt_operands for this statement will do nothing until the
-     statement is marked modified by a call to mark_stmt_modified().  */
+  /* Clear the modified bit for STMT.  */
   ann->modified = 0;
 
   timevar_pop (TV_TREE_OPS);
 }
 
-  
+
 /* Copies virtual operands from SRC to DST.  */
 
 void
@@ -1923,8 +1904,6 @@ copy_virtual_operands (tree dest, tree src)
   finalize_ssa_vuses (dest);
 
   /* Finally, set the field to the same values as then originals.  */
-
-  
   t = op_iter_init_tree (&old_iter, src, SSA_OP_VUSE);
   FOR_EACH_SSA_USE_OPERAND (use_p, dest, iter, SSA_OP_VUSE)
     {
@@ -1974,7 +1953,7 @@ create_ssa_artficial_load_stmt (tree new_stmt, tree old_stmt)
 
   ann = get_stmt_ann (new_stmt);
 
-  /* process the stmt looking for operands.  */
+  /* Process the stmt looking for operands.  */
   start_ssa_stmt_operands ();
   parse_ssa_operands (new_stmt);
 
@@ -2029,8 +2008,9 @@ swap_tree_operands (tree stmt, tree *exp0, tree *exp1)
   op0 = *exp0;
   op1 = *exp1;
 
-  /* If the operand cache is active, attempt to preserve the relative positions
-     of these two operands in their respective immediate use lists.  */
+  /* If the operand cache is active, attempt to preserve the relative
+     positions of these two operands in their respective immediate use
+     lists.  */
   if (ssa_operands_active () && op0 != op1)
     {
       use_optype_p use0, use1, ptr;
@@ -2052,7 +2032,7 @@ swap_tree_operands (tree stmt, tree *exp0, tree *exp1)
 	  }
 
       /* If both uses don't have operand entries, there isn't much we can do
-         at this point.  Presumably we dont need to worry about it.  */
+         at this point.  Presumably we don't need to worry about it.  */
       if (use0 && use1)
         {
 	  tree *tmp = USE_OP_PTR (use1)->use;
@@ -2113,7 +2093,7 @@ add_to_addressable_set (tree ref, bitmap *addresses_taken)
 
 
 /* Scan the immediate_use list for VAR making sure its linked properly.
-   return RTUE iof there is a problem.  */
+   Return TRUE if there is a problem and emit an error message to F.  */
 
 bool
 verify_imm_links (FILE *f, tree var)
@@ -2241,6 +2221,7 @@ debug_immediate_uses (void)
 {
   dump_immediate_uses (stderr);
 }
+
 
 /* Dump def-use edges on stderr.  */
 
