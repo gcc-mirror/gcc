@@ -9,3 +9,4 @@ vec16 foo () {
 }
 
 /* { dg-final { scan-tree-dump "{ 16, 32, 64, 128 }" "final_cleanup" } } */
+/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
