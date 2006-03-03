@@ -3863,9 +3863,9 @@ gate_handle_eh (void)
 static unsigned int
 rest_of_handle_eh (void)
 {
-  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
+  cleanup_cfg (CLEANUP_NO_INSN_DEL);
   finish_eh_generation ();
-  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
+  cleanup_cfg (CLEANUP_NO_INSN_DEL);
   return 0;
 }
 
