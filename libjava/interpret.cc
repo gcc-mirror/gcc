@@ -3882,7 +3882,17 @@ _Jv_InterpreterEngine::do_allocate_static_fields (jclass klass,
   _Jv_InterpClass *iclass = (_Jv_InterpClass *) klass->aux_info;
 
   // Splitting the allocations here lets us scan reference fields and
-  // avoid scanning non-reference fields.
+  // avoid scanning non-reference fields.  How reference fields are
+  // scanned is a bit tricky: we allocate using _Jv_AllocRawObj, which
+  // means that this memory will be scanned conservatively (same
+  // difference, since we know all the contents here are pointers).
+  // Then we put pointers into this memory into the 'fields'
+  // structure.  Most of these are interior pointers, which is ok (but
+  // even so the pointer to the first reference field will be used and
+  // that is not an interior pointer).  The 'fields' array is also
+  // allocated with _Jv_AllocRawObj (see defineclass.cc), so it will
+  // be scanned.  A pointer to this array is held by Class and thus
+  // seen by the collector.
   char *reference_fields = (char *) _Jv_AllocRawObj (pointer_size);
   char *non_reference_fields = (char *) _Jv_AllocBytes (other_size);
 
