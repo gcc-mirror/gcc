@@ -393,7 +393,6 @@ extern GTY((param_is (struct int_tree_map))) htab_t referenced_vars;
 extern GTY((param_is (struct int_tree_map))) htab_t default_defs;
 
 extern tree referenced_var_lookup (unsigned int);
-extern tree referenced_var_lookup_if_exists (unsigned int);
 #define num_referenced_vars htab_elements (referenced_vars)
 #define referenced_var(i) referenced_var_lookup (i)
 
