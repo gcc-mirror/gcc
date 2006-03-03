@@ -1,5 +1,5 @@
 /* Memory mamagement routines.
-   Copyright 2002, 2005 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -233,6 +233,51 @@ allocate64 (void **mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
   allocate_size (mem, (size_t) size, stat);
 }
 
+/* Function to call in an ALLOCATE statement when the argument is an
+   allocatable array.  If the array is currently allocated, it is
+   an error to allocate it again.  32-bit version.  */
+
+extern void allocate_array (void **, GFC_INTEGER_4, GFC_INTEGER_4 *);
+export_proto(allocate_array);
+
+void
+allocate_array (void **mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
+{
+  if (*mem == NULL)
+    {
+      allocate (mem, size, stat);
+      return;
+    }
+  if (stat)
+    *stat = ERROR_ALLOCATION;
+  else
+    runtime_error ("Attempting to allocate already allocated array.");
+
+  return;
+}
+
+/* Function to call in an ALLOCATE statement when the argument is an
+   allocatable array.  If the array is currently allocated, it is
+   an error to allocate it again.  64-bit version.  */
+
+extern void allocate64_array (void **, GFC_INTEGER_8, GFC_INTEGER_4 *);
+export_proto(allocate64_array);
+
+void
+allocate64_array (void **mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
+{
+  if (*mem == NULL)
+    {
+      allocate64 (mem, size, stat);
+      return;
+    }
+  if (stat)
+    *stat = ERROR_ALLOCATION;
+  else
+    runtime_error ("Attempting to allocate already allocated array.");
+  
+  return;
+}
 
 /* User-deallocate; pointer is NULLified. */
 

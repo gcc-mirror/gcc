@@ -3389,7 +3389,6 @@ gfc_trans_allocate (gfc_code * code)
   gfc_se se;
   tree tmp;
   tree parm;
-  gfc_ref *ref;
   tree stat;
   tree pstat;
   tree error_label;
@@ -3428,21 +3427,7 @@ gfc_trans_allocate (gfc_code * code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      ref = expr->ref;
-
-      /* Find the last reference in the chain.  */
-      while (ref && ref->next != NULL)
-	{
-	  gcc_assert (ref->type != REF_ARRAY || ref->u.ar.type == AR_ELEMENT);
-	  ref = ref->next;
-	}
-
-      if (ref != NULL && ref->type == REF_ARRAY)
-	{
-	  /* An array.  */
-	  gfc_array_allocate (&se, ref, pstat);
-	}
-      else
+      if (!gfc_array_allocate (&se, expr, pstat))
 	{
 	  /* A scalar or derived type.  */
 	  tree val;

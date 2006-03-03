@@ -1,3 +1,20 @@
+2006-03-03  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/25031
+	* trans-array.h:  Adjust gfc_array_allocate prototype.
+	* trans-array.c (gfc_array_allocate):  Change type of
+	gfc_array_allocatate to bool.  Function returns true if
+	it operates on an array.  Change second argument to gfc_expr.
+	Find last reference in chain.
+	If the function operates on an allocatable array, emit call to
+	allocate_array() or allocate64_array().
+	* trans-stmt.c (gfc_trans_allocate):  Code to follow to last
+	reference has been moved to gfc_array_allocate.
+	* trans.h:  Add declaration for gfor_fndecl_allocate_array and
+	gfor_fndecl_allocate64_array.
+	(gfc_build_builtin_function_decls):  Add gfor_fndecl_allocate_array
+	and gfor_fndecl_allocate64_array.
+
 2006-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-stmt.c (generate_loop_for_temp_to_lhs): Add an additional

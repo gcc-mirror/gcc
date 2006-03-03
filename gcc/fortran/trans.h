@@ -455,6 +455,8 @@ extern GTY(()) tree gfor_fndecl_internal_realloc64;
 extern GTY(()) tree gfor_fndecl_internal_free;
 extern GTY(()) tree gfor_fndecl_allocate;
 extern GTY(()) tree gfor_fndecl_allocate64;
+extern GTY(()) tree gfor_fndecl_allocate_array;
+extern GTY(()) tree gfor_fndecl_allocate64_array;
 extern GTY(()) tree gfor_fndecl_deallocate;
 extern GTY(()) tree gfor_fndecl_pause_numeric;
 extern GTY(()) tree gfor_fndecl_pause_string;
