@@ -80,6 +80,8 @@ tree gfor_fndecl_internal_realloc64;
 tree gfor_fndecl_internal_free;
 tree gfor_fndecl_allocate;
 tree gfor_fndecl_allocate64;
+tree gfor_fndecl_allocate_array;
+tree gfor_fndecl_allocate64_array;
 tree gfor_fndecl_deallocate;
 tree gfor_fndecl_pause_numeric;
 tree gfor_fndecl_pause_string;
@@ -2190,6 +2192,16 @@ gfc_build_builtin_function_decls (void)
 
   gfor_fndecl_allocate64 =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate64")),
+				     void_type_node, 2, ppvoid_type_node,
+				     gfc_int8_type_node);
+
+  gfor_fndecl_allocate_array =
+    gfc_build_library_function_decl (get_identifier (PREFIX("allocate_array")),
+				     void_type_node, 2, ppvoid_type_node,
+				     gfc_int4_type_node);
+
+  gfor_fndecl_allocate64_array =
+    gfc_build_library_function_decl (get_identifier (PREFIX("allocate64_array")),
 				     void_type_node, 2, ppvoid_type_node,
 				     gfc_int8_type_node);
 
