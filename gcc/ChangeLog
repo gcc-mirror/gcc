@@ -1,3 +1,9 @@
+2006-03-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-dfa.c (referenced_var_lookup_if_exists): Remove.
+	* tree-flow.h: Remove the prototype for
+	referenced_var_lookup_if_exists.
+
 2006-03-03  Steve Ellcey  <sje@cup.hp.com>
 
 	PR rtl-optimization/26345

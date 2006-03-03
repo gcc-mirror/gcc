@@ -626,20 +626,6 @@ find_vars_r (tree *tp, int *walk_subtrees, void *data)
 
 
 /* Lookup UID in the referenced_vars hashtable and return the associated
-   variable or NULL if it is not there.  */
-
-tree 
-referenced_var_lookup_if_exists (unsigned int uid)
-{
-  struct int_tree_map *h, in;
-  in.uid = uid;
-  h = (struct int_tree_map *) htab_find_with_hash (referenced_vars, &in, uid);
-  if (h)
-    return h->to;
-  return NULL_TREE;
-}
-
-/* Lookup UID in the referenced_vars hashtable and return the associated
    variable.  */
 
 tree 
