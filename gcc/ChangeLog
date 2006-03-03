@@ -1,3 +1,7 @@
+2006-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/unwind-arm.h (_Unwind_GetIPInfo): Fix pasto.
+
 2006-03-02  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_unary_operation): When simplifying
