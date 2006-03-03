@@ -832,25 +832,23 @@ enum update_life_extent
 #define CLEANUP_CROSSJUMP	2	/* Do crossjumping.  */
 #define CLEANUP_POST_REGSTACK	4	/* We run after reg-stack and need
 					   to care REG_DEAD notes.  */
-#define CLEANUP_PRE_LOOP	8	/* Take care to preserve syntactic loop
-					   notes.  */
-#define CLEANUP_UPDATE_LIFE	16	/* Keep life information up to date.  */
-#define CLEANUP_THREADING	32	/* Do jump threading.  */
-#define CLEANUP_NO_INSN_DEL	64	/* Do not try to delete trivially dead
+#define CLEANUP_UPDATE_LIFE	8	/* Keep life information up to date.  */
+#define CLEANUP_THREADING	16	/* Do jump threading.  */
+#define CLEANUP_NO_INSN_DEL	32	/* Do not try to delete trivially dead
 					   insns.  */
-#define CLEANUP_CFGLAYOUT	128	/* Do cleanup in cfglayout mode.  */
-#define CLEANUP_LOG_LINKS	256	/* Update log links.  */
+#define CLEANUP_CFGLAYOUT	64	/* Do cleanup in cfglayout mode.  */
+#define CLEANUP_LOG_LINKS	128	/* Update log links.  */
 
 /* The following are ORed in on top of the CLEANUP* flags in calls to
    struct_equiv_block_eq.  */
-#define STRUCT_EQUIV_START	512	 /* Initializes the search range.  */
-#define STRUCT_EQUIV_RERUN	1024	/* Rerun to find register use in
+#define STRUCT_EQUIV_START	256	 /* Initializes the search range.  */
+#define STRUCT_EQUIV_RERUN	512	/* Rerun to find register use in
 					   found equivalence.  */
-#define STRUCT_EQUIV_FINAL	2048	/* Make any changes necessary to get
+#define STRUCT_EQUIV_FINAL	1024	/* Make any changes necessary to get
 					   actual equivalence.  */
-#define STRUCT_EQUIV_NEED_FULL_BLOCK 4096 /* struct_equiv_block_eq is required
+#define STRUCT_EQUIV_NEED_FULL_BLOCK 2048 /* struct_equiv_block_eq is required
 					     to match only full blocks  */
-#define STRUCT_EQUIV_MATCH_JUMPS 8192	/* Also include the jumps at the end of the block in the comparison.  */
+#define STRUCT_EQUIV_MATCH_JUMPS 4096	/* Also include the jumps at the end of the block in the comparison.  */
 
 extern void life_analysis (int);
 extern int update_life_info (sbitmap, enum update_life_extent, int);

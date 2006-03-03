@@ -1,3 +1,12 @@
+2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* cse.c (rest_of_handle_cse): Do not pass CLEANUP_PRE_LOOP to cfg
+	cleanup.
+	* gcse.c (rest_of_handle_gcse): Ditto.
+	* except.c (gate_handle_eh): Ditto.
+	* cfgcleanup.c (rest_of_handle_jump2): Ditto.
+	* basic-block.h (CLEANUP_PRE_LOOP): Remove.
+
 2006-03-02  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.c (machopic_output_stub): Add indirection to

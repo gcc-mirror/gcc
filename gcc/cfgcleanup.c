@@ -2309,7 +2309,7 @@ rest_of_handle_jump2 (void)
   reg_scan (get_insns (), max_reg_num ());
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
-  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP
+  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
                | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
   create_loop_notes ();
@@ -2317,7 +2317,7 @@ rest_of_handle_jump2 (void)
   purge_line_number_notes ();
 
   if (optimize)
-    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+    cleanup_cfg (CLEANUP_EXPENSIVE);
 
   /* Jump optimization, and the removal of NULL pointer checks, may
      have reduced the number of instructions substantially.  CSE, and

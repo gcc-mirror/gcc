@@ -7864,7 +7864,7 @@ rest_of_handle_cse (void)
     delete_dead_jumptables ();
 
   if (tem || optimize > 1)
-    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+    cleanup_cfg (CLEANUP_EXPENSIVE);
   return 0;
 }
 

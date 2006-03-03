@@ -6696,7 +6696,7 @@ rest_of_handle_gcse (void)
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       delete_dead_jumptables ();
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+      cleanup_cfg (CLEANUP_EXPENSIVE);
       timevar_pop (TV_JUMP);
     }
 
