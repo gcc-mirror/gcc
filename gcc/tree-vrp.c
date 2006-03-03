@@ -3198,21 +3198,19 @@ remove_range_assertions (void)
 	if (TREE_CODE (stmt) == MODIFY_EXPR
 	    && TREE_CODE (TREE_OPERAND (stmt, 1)) == ASSERT_EXPR)
 	  {
-	    tree rhs = TREE_OPERAND (stmt, 1);
+	    tree rhs = TREE_OPERAND (stmt, 1), var;
 	    tree cond = fold (ASSERT_EXPR_COND (rhs));
 	    use_operand_p use_p;
 	    imm_use_iterator iter;
 
 	    gcc_assert (cond != boolean_false_node);
-	    TREE_OPERAND (stmt, 1) = ASSERT_EXPR_VAR (rhs);
-	    update_stmt (stmt);
 
-	    /* The statement is now a copy.  Propagate the RHS into
-	       every use of the LHS.  */
+	    /* Propagate the RHS into every use of the LHS.  */
+	    var = ASSERT_EXPR_VAR (rhs);
 	    FOR_EACH_IMM_USE_SAFE (use_p, iter, TREE_OPERAND (stmt, 0))
 	      {
-		SET_USE (use_p, ASSERT_EXPR_VAR (rhs));
-		update_stmt (USE_STMT (use_p));
+		SET_USE (use_p, var);
+		gcc_assert (TREE_CODE (var) == SSA_NAME);
 	      }
 
 	    /* And finally, remove the copy, it is not needed.  */

@@ -1,5 +1,9 @@
 2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* tree-vrp.c (remove_range_assertions): Do not update statements unnecessarily.
+
+2006-03-02  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* cse.c (rest_of_handle_cse): Do not pass CLEANUP_PRE_LOOP to cfg
 	cleanup.
 	* gcse.c (rest_of_handle_gcse): Ditto.
