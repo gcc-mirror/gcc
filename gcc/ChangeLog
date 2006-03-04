@@ -1,3 +1,14 @@
+2006-03-03  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-sra.c (tree_sra): Return todoflags;
+	(generate_one_element): Set TODO_update_smt_usage if needed.
+	(pass_sra): Remove TODO_update_smt_usage.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Add some
+	parameter.
+	(tree_ssa_forward_propagate_single_use_vars): Return
+	TODO_update_smt_usage if we need to update SMT usage.
+	(pass_forwprop): Remove TODO_update_smt_usage.
+	
 2006-03-03  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c: Tidy whitespace.  Fix spelling.
