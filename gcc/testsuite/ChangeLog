@@ -1,3 +1,7 @@
+2006-03-04  Laurent GUERBY <laurent@guerby.net>
+	
+	* ada/acats/norun.lst: cdd2a03 now passes.
+
 2006-03-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR testsuite/25177
