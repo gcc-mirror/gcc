@@ -792,6 +792,8 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
 }
 
 /* STMT is a statement of the form SSA_NAME = ADDR_EXPR <whatever>.
+   SOME is a pointer to a boolean value indicating whether we
+   propagated the address expression anywhere.
 
    Try to forward propagate the ADDR_EXPR into all uses of the SSA_NAME.
    Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
@@ -799,7 +801,7 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
    Returns true, if all uses have been propagated into.  */
 
 static bool
-forward_propagate_addr_expr (tree stmt)
+forward_propagate_addr_expr (tree stmt, bool *some)
 {
   int stmt_loop_depth = bb_for_stmt (stmt)->loop_depth;
   tree name = TREE_OPERAND (stmt, 0);
@@ -809,6 +811,7 @@ forward_propagate_addr_expr (tree stmt)
 
   FOR_EACH_IMM_USE_SAFE (imm_use, iter, name)
     {
+      bool result;
       tree use_stmt = USE_STMT (imm_use);
 
       /* If the use is not in a simple assignment statement, then
@@ -827,8 +830,11 @@ forward_propagate_addr_expr (tree stmt)
 	  all = false;
 	  continue;
 	}
-
-      all = forward_propagate_addr_expr_1 (stmt, use_stmt) && all;
+      
+      result = forward_propagate_addr_expr_1 (stmt, use_stmt);
+      if (some)
+	*some |= result;
+      all &= result;
     }
 
   return all;
@@ -931,6 +937,7 @@ static unsigned int
 tree_ssa_forward_propagate_single_use_vars (void)
 {
   basic_block bb;
+  unsigned int todoflags = 0;
 
   cfg_changed = false;
 
@@ -959,10 +966,13 @@ tree_ssa_forward_propagate_single_use_vars (void)
 
 	      if (TREE_CODE (rhs) == ADDR_EXPR)
 		{
-		  if (forward_propagate_addr_expr (stmt))
+		  bool some = false;
+		  if (forward_propagate_addr_expr (stmt, &some))
 		    bsi_remove (&bsi, true);
 		  else
 		    bsi_next (&bsi);
+		  if (some)
+		    todoflags |= TODO_update_smt_usage;
 		}
 	      else if ((TREE_CODE (rhs) == BIT_NOT_EXPR
 		        || TREE_CODE (rhs) == NEGATE_EXPR)
@@ -991,7 +1001,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 
   if (cfg_changed)
     cleanup_tree_cfg ();
-  return 0;
+  return todoflags;
 }
 
 
@@ -1014,7 +1024,7 @@ struct tree_opt_pass pass_forwprop = {
   0,				/* properties_provided */
   PROP_smt_usage,		/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_update_smt_usage |TODO_dump_func /* todo_flags_finish */
+  TODO_dump_func /* todo_flags_finish */
   | TODO_ggc_collect
   | TODO_update_ssa | TODO_verify_ssa,
   0					/* letter */
