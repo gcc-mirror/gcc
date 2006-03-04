@@ -383,7 +383,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	 option.  */
       if (context->classify_diagnostic[diagnostic->option_index] != DK_UNSPECIFIED)
 	diagnostic->kind = context->classify_diagnostic[diagnostic->option_index];
-      /* This allows for future extenions, like temporarily disabling
+      /* This allows for future extensions, like temporarily disabling
 	 warnings for ranges of source code.  */
       if (diagnostic->kind == DK_IGNORED)
 	return;

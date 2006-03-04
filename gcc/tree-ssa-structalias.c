@@ -1040,7 +1040,7 @@ merge_graph_nodes (constraint_graph_t graph, unsigned int to,
 		       graph->zero_weight_succs[from]);
     }
 
-  /* Merge all the non-zero weighted predecessor edges.  */
+  /* Merge all the nonzero weighted predecessor edges.  */
   for (i = 0; VEC_iterate (constraint_edge_t, predvec, i, c); i++)
     {
       unsigned int d = c->dest;
@@ -1064,7 +1064,7 @@ merge_graph_nodes (constraint_graph_t graph, unsigned int to,
       
     }
   
-  /* Merge all the non-zero weighted successor edges.  */
+  /* Merge all the nonzero weighted successor edges.  */
   for (i = 0; VEC_iterate (constraint_edge_t, succvec, i, c); i++)
     {
       unsigned int d = c->dest;
@@ -4049,7 +4049,7 @@ intra_create_variable_infos (void)
       lhs.type = SCALAR;
       lhs.var  = create_variable_info_for (t, alias_get_name (t));
 
-      /* With flag_argument_noalias greater than one means that the incomming
+      /* With flag_argument_noalias greater than one means that the incoming
          argument cannot alias anything except for itself so create a HEAP
          variable.  */
       if (POINTER_TYPE_P (TREE_TYPE (t))

@@ -364,7 +364,7 @@ register_dump_files_1 (struct tree_opt_pass *pass, bool ipa, int properties)
 
 /* Register the dump files for the pipeline starting at PASS.  IPA is
    true if the pass is inter-procedural, and PROPERTIES reflects the
-   properties that are guarenteed to be available at the beginning of
+   properties that are guaranteed to be available at the beginning of
    the pipeline.  */
 
 static void 

@@ -811,7 +811,7 @@ thread_block (basic_block bb)
 }
 
 /* Walk through the registered jump threads and convert them into a
-   form convienent for this pass.
+   form convenient for this pass.
 
    Any block which has incoming edges threaded to outgoing edges
    will have its entry in THREADED_BLOCK set.

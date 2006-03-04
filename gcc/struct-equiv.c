@@ -483,7 +483,7 @@ rtx_equiv_p (rtx *xp, rtx y, int rvalue, struct equiv_info *info)
 		   pair, use the old one.  If the width is the same, use the
 		   old one if the modes match, but the new if they don't.
 		   We don't want to get too fancy with subreg_regno_offset
-		   here, so we just test two straightforwad cases each.  */
+		   here, so we just test two straightforward cases each.  */
 		if (info->live_update
 		    && (x_mode != GET_MODE (info->x_local[i])
 			? size >= size_i : size > size_i))

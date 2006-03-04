@@ -115,7 +115,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Magic constants follow.  These should be replaced by machine specific
    numbers.  */
 
-/* A number that should rouhgly correspond to the number of instructions
+/* A number that should roughly correspond to the number of instructions
    executed before the prefetch is completed.  */
 
 #ifndef PREFETCH_LATENCY
@@ -768,7 +768,7 @@ schedule_prefetches (struct mem_ref_group *groups, unsigned unroll_factor,
   /* For now we just take memory references one by one and issue
      prefetches for as many as possible.  The groups are sorted
      starting with the largest step, since the references with
-     large step are more likely to cause many cache mises.  */
+     large step are more likely to cause many cache misses.  */
 
   for (; groups; groups = groups->next)
     for (ref = groups->refs; ref; ref = ref->next)

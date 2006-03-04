@@ -2196,7 +2196,7 @@ may_trap_after_code_motion_p (rtx x)
   return may_trap_p_1 (x, MTP_AFTER_MOVE);
 }
 
-/* Same as above, but additionally return non-zero if evaluating rtx X might
+/* Same as above, but additionally return nonzero if evaluating rtx X might
    cause a fault.  We define a fault for the purpose of this function as a
    erroneous execution condition that cannot be encountered during the normal
    execution of a valid program; the typical example is an unaligned memory

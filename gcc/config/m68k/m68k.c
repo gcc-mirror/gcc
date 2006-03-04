@@ -2342,7 +2342,7 @@ fp_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    normally.
 
    Note SCRATCH_REG may not be in the proper mode depending on how it
-   will be used.  This routine is resposible for creating a new copy
+   will be used.  This routine is responsible for creating a new copy
    of SCRATCH_REG in the proper mode.  */
 
 int
@@ -3647,7 +3647,7 @@ m68k_regno_mode_ok (int regno, enum machine_mode mode)
 /* Return floating point values in a 68881 register.  This makes 68881 code
    a little bit faster.  It also makes -msoft-float code incompatible with
    hard-float code, so people have to be careful not to mix the two.
-   For ColdFire it was decided the ABI incopmatibility is undesirable.
+   For ColdFire it was decided the ABI incompatibility is undesirable.
    If there is need for a hard-float ABI it is probably worth doing it
    properly and also passing function arguments in FP registers.  */
 rtx

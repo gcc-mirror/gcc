@@ -557,7 +557,7 @@ Give external symbols a leading underscore
 
 floop-optimize
 Common
-Does nothing.  Preserved for backward compatability.
+Does nothing.  Preserved for backward compatibility.
 
 fmath-errno
 Common Report Var(flag_errno_math) Init(1)
@@ -723,7 +723,7 @@ Add a common subexpression elimination pass after loop optimizations
 
 frerun-loop-opt
 Common
-Does nothing.  Preserved for backward compatability.
+Does nothing.  Preserved for backward compatibility.
 
 frounding-math
 Common Report Var(flag_rounding_math)
@@ -842,7 +842,7 @@ Use a stack protection method for every function
 
 fstrength-reduce
 Common
-Does nothing.  Preserved for backward compatability.
+Does nothing.  Preserved for backward compatibility.
 
 ; Nonzero if we should do (language-dependent) alias analysis.
 ; Typically, this analysis will assume that expressions of certain

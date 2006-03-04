@@ -415,7 +415,7 @@ DFP_TO_INT (DFP_C_TYPE x)
   decNumberFromString (&qval, (char *) "1.0", &context);
   /* Force the exponent to zero.  */
   decNumberQuantize (&n1, &n2, &qval, &context);
-  /* This is based on text in N1107 secton 5.1; it might turn out to be
+  /* This is based on text in N1107 section 5.1; it might turn out to be
      undefined behavior instead.  */
   if (context.status & DEC_Invalid_operation)
     {
@@ -510,7 +510,7 @@ BFP_TO_DFP (BFP_TYPE x)
 
   /* Use a C library function to write the floating point value to a string.  */
 #ifdef BFP_VIA_TYPE
-  /* FIXME: Is threre a better way to output an XFmode variable in C?  */
+  /* FIXME: Is there a better way to output an XFmode variable in C?  */
   sprintf (buf, BFP_FMT, (BFP_VIA_TYPE) x);
 #else
   sprintf (buf, BFP_FMT, x);

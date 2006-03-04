@@ -80,12 +80,12 @@ calls to add a problem for a given instance of df must occur before
 the first call to DF_RESCAN_BLOCKS or DF_ANALYZE.
 
 For all of the problems defined in df-problems.c, there are
-convienence functions named DF_*_ADD_PROBLEM.
+convenience functions named DF_*_ADD_PROBLEM.
 
 
 Problems can be dependent on other problems.  For instance, solving
 def-use or use-def chains is dependant on solving reaching
-definitions. As long as these dependancies are listed in the problem
+definitions. As long as these dependencies are listed in the problem
 definition, the order of adding the problems is not material.
 Otherwise, the problems will be solved in the order of calls to
 df_add_problem.  Note that it is not necessary to have a problem.  In
@@ -100,7 +100,7 @@ to analyze the entire function and no call to df_set_blocks is made.
 When a subset is given, the analysis behaves as if the function only
 contains those blocks and any edges that occur directly between the
 blocks in the set.  Care should be taken to call df_set_blocks right
-before the call to analyze in order to eliminate the possiblity that
+before the call to analyze in order to eliminate the possibility that
 optimizations that reorder blocks invalidate the bitvector.
 
 
@@ -220,7 +220,7 @@ There are 4 ways to obtain access to refs:
      register and are put there to keep the code from forgetting about
      them.
 
-     Artifical defs occur at the end of the entry block.  These arise
+     Artificial defs occur at the end of the entry block.  These arise
      from registers that are live at entry to the function.
 
 2) All of the uses and defs associated with each pseudo or hard

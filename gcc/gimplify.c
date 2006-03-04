@@ -404,8 +404,8 @@ find_single_pointer_decl (tree t)
 
   if (walk_tree (&t, find_single_pointer_decl_1, &decl, NULL))
     {
-      /* find_single_pointer_decl_1 returns a non-zero value, causing
-	 walk_tree to return a non-zero value, to indicate that it
+      /* find_single_pointer_decl_1 returns a nonzero value, causing
+	 walk_tree to return a nonzero value, to indicate that it
 	 found more than one pointer DECL.  */
       return NULL_TREE;
     }
@@ -4884,7 +4884,7 @@ gimplify_omp_atomic_fetch_op (tree *expr_p, tree addr, tree rhs, int index)
 }
 
 /* A subroutine of gimplify_omp_atomic_pipeline.  Walk *EXPR_P and replace
-   appearences of *LHS_ADDR with LHS_VAR.  If an expression does not involve
+   appearances of *LHS_ADDR with LHS_VAR.  If an expression does not involve
    the lhs, evaluate it into a temporary.  Return 1 if the lhs appeared as
    a subexpression, 0 if it did not, or -1 if an error was encountered.  */
 

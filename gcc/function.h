@@ -386,7 +386,7 @@ struct function GTY(())
   unsigned int calls_alloca : 1;
 
   /* Nonzero if function being compiled called builtin_return_addr or
-     builtin_frame_address with non-zero count.  */
+     builtin_frame_address with nonzero count.  */
   unsigned int accesses_prior_frames : 1;
 
   /* Nonzero if the function calls __builtin_eh_return.  */

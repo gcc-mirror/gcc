@@ -1058,7 +1058,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	     there are three cases to consider.
 
 
-	     1. The VR_ANTI_RANGE range is competely within the 
+	     1. The VR_ANTI_RANGE range is completely within the 
 		VR_RANGE and the endpoints of the ranges are
 		different.  In that case the resulting range
 		should be whichever range is more precise.

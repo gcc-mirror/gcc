@@ -683,7 +683,7 @@ mt_legitimate_simple_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 
-/* Helper function of GO_IF_LEGITIMATE_ADDRESS.  Return non-zero if
+/* Helper function of GO_IF_LEGITIMATE_ADDRESS.  Return nonzero if
    XINSN is a legitimate address on MT.  */
 int
 mt_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
@@ -1648,9 +1648,9 @@ void mt_add_loop (void)
 }
 
 
-/* Maxium loop nesting depth.  */
+/* Maximum loop nesting depth.  */
 #define MAX_LOOP_DEPTH 4
-/* Maxium size of a loop (allows some headroom for delayed branch slot
+/* Maximum size of a loop (allows some headroom for delayed branch slot
    filling.  */
 #define MAX_LOOP_LENGTH (200 * 4)
 
@@ -1850,7 +1850,7 @@ mt_scan_loop (loop_info loop, rtx reg, rtx dbnz)
    loop iterations.  It can be nested with an automatically maintained
    stack of counter and end address registers.  It's an ideal
    candidate for doloop.  Unfortunately, gcc presumes that loops
-   always end with an explicit instriction, and the doloop_begin
+   always end with an explicit instruction, and the doloop_begin
    instruction is not a flow control instruction so it can be
    scheduled earlier than just before the start of the loop.  To make
    matters worse, the optimization pipeline can duplicate loop exit
