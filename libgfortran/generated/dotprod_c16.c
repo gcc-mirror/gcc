@@ -48,7 +48,6 @@ dot_product_c16 (gfc_array_c16 * a, gfc_array_c16 * b)
   GFC_COMPLEX_16 *pa;
   GFC_COMPLEX_16 *pb;
   GFC_COMPLEX_16 res;
-  GFC_COMPLEX_16 conjga;
   index_type count;
   index_type astride;
   index_type bstride;
@@ -70,8 +69,7 @@ dot_product_c16 (gfc_array_c16 * a, gfc_array_c16 * b)
 
   while (count--)
     {
-      COMPLEX_ASSIGN(conjga, REALPART (*pa), -IMAGPART (*pa));
-      res += conjga * *pb;
+      res += __builtin_conjl (*pa) * *pb;
       pa += astride;
       pb += bstride;
     }
