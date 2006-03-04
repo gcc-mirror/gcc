@@ -671,9 +671,6 @@ extern tree gnat_truthvalue_conversion (tree expr);
 /* Return the base type of TYPE.  */
 extern tree get_base_type (tree type);
 
-/* Likewise, but only return types known at Ada source.  */
-extern tree get_ada_base_type (tree type);
-
 /* EXP is a GCC tree representing an address.  See if we can find how
    strictly the object at that address is aligned.   Return that alignment
    strictly the object at that address is aligned.   Return that alignment

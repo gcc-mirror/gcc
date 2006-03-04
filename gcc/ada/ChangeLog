@@ -1,3 +1,9 @@
+2006-03-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gigi.h (get_ada_base_type): Delete.
+	* utils2.c (get_ada_base_type): Likewise.
+	* trans.c (convert_with_check): Operate in the real base type.
+
 2006-03-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* uintp.adb (Num_Bits): Handle Uint_Int_First specially.
