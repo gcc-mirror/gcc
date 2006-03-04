@@ -590,7 +590,10 @@ package body Uintp is
       Num  : Nat;
 
    begin
-      if UI_Is_In_Int_Range (Input) then
+      if Input = Uint_Int_First then
+         return Int'Size;
+
+      elsif UI_Is_In_Int_Range (Input) then
          Num := abs (UI_To_Int (Input));
          Bits := 0;
 
