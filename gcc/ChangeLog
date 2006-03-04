@@ -1,5 +1,10 @@
 2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
 
+	* tree.c (add_var_to_bind_expr): Remove.
+	* tree.h: Remove the prototype for add_var_to_bind_expr.
+
+2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
+
 	* regclass.c (n_non_fixed_regs): Remove.
 	(init_reg_sets_1, globalize_reg): Remove all uses of
 	n_non_fixed_regs.

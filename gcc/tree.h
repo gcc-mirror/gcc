@@ -3893,10 +3893,6 @@ extern void categorize_ctor_elements (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				      HOST_WIDE_INT *, bool *);
 extern HOST_WIDE_INT count_type_elements (tree, bool);
 
-/* add_var_to_bind_expr (bind_expr, var) binds var to bind_expr.  */
-
-extern void add_var_to_bind_expr (tree, tree);
-
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0.  */
 
 extern int integer_zerop (tree);
