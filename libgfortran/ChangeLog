@@ -1,5 +1,14 @@
 2006-03-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/21303
+	* runtime/error.c (notification_std): New function.
+	* libgfortran.h (notification): New enumeration.
+	* io/io.h (notification_std): Prototype for the new function. 
+	* io/format.c (parse_format_list): Handle the case of a L format
+	descriptor without a width.
+
+2006-03-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/24903
 	* m4/dotprodc.m4: Use __builtin_conj instead of assigning real
 	and imaginary parts separately.

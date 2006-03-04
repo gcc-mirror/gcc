@@ -1,3 +1,12 @@
+2006-03-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/21303
+	* gfortran.h (notification): New enumeration.
+	(gfc_notification_std): Prototype for the new function.
+	* error.c (gfc_notification_std): New function.
+	* io.c (check_format): Handle the case of a L format descriptor
+	without a width.
+
 2006-02-28  Release Manager
 
 	* GCC 4.1.0 released.

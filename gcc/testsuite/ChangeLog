@@ -1,3 +1,8 @@
+2006-03-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/21303
+	* gcc/testsuite/gfortran.dg/fmt_l.f90: New test.
+
 2006-03-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26136

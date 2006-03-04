@@ -498,6 +498,25 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
 }
 
 
+/* Whether, for a feature included in a given standard set (GFC_STD_*),
+   we should issue an error or a warning, or be quiet.  */
+
+notification
+notification_std (int std)
+{
+  int warning;
+
+  if (!compile_options.pedantic)
+    return SILENT;
+
+  warning = compile_options.warn_std & std;
+  if ((compile_options.allow_std & std) != 0 && !warning)
+    return SILENT;
+
+  return warning ? WARNING : ERROR;
+}
+
+
 
 /* Possibly issue a warning/error about use of a nonstandard (or deleted)
    feature.  An error/warning will be issued if the currently selected
