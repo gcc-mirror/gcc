@@ -123,19 +123,6 @@ get_base_type (tree type)
 
   return type;
 }
-
-/* Likewise, but only return types known to the Ada source.  */
-tree
-get_ada_base_type (tree type)
-{
-  while (TREE_TYPE (type)
-	 && (TREE_CODE (type) == INTEGER_TYPE
-	     || TREE_CODE (type) == REAL_TYPE)
-	 && !TYPE_EXTRA_SUBTYPE_P (type))
-    type = TREE_TYPE (type);
-
-  return type;
-}
 
 /* EXP is a GCC tree representing an address.  See if we can find how
    strictly the object at that address is aligned.   Return that alignment

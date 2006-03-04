@@ -5323,7 +5323,6 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
   tree gnu_in_type = TREE_TYPE (gnu_expr);
   tree gnu_in_basetype = get_base_type (gnu_in_type);
   tree gnu_base_type = get_base_type (gnu_type);
-  tree gnu_ada_base_type = get_ada_base_type (gnu_type);
   tree gnu_result = gnu_expr;
 
   /* If we are not doing any checks, the output is an integral type, and
@@ -5415,7 +5414,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 
   /* Now convert to the result base type.  If this is a non-truncating
      float-to-integer conversion, round.  */
-  if (INTEGRAL_TYPE_P (gnu_ada_base_type) && FLOAT_TYPE_P (gnu_in_basetype)
+  if (INTEGRAL_TYPE_P (gnu_base_type) && FLOAT_TYPE_P (gnu_in_basetype)
       && !truncatep)
     {
       REAL_VALUE_TYPE half_minus_pred_half, pred_half;
@@ -5474,12 +5473,12 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 			   gnu_add_pred_half, gnu_subtract_pred_half);
     }
 
-  if (TREE_CODE (gnu_ada_base_type) == INTEGER_TYPE
-      && TYPE_HAS_ACTUAL_BOUNDS_P (gnu_ada_base_type)
+  if (TREE_CODE (gnu_base_type) == INTEGER_TYPE
+      && TYPE_HAS_ACTUAL_BOUNDS_P (gnu_base_type)
       && TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF)
-    gnu_result = unchecked_convert (gnu_ada_base_type, gnu_result, false);
+    gnu_result = unchecked_convert (gnu_base_type, gnu_result, false);
   else
-    gnu_result = convert (gnu_ada_base_type, gnu_result);
+    gnu_result = convert (gnu_base_type, gnu_result);
 
   /* Finally, do the range check if requested.  Note that if the
      result type is a modular type, the range check is actually
