@@ -936,7 +936,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
   {
     /* Hoisting constant pool constants into stack regs may cost more than
        just single register.  On x87, the balance is affected both by the
-       small number of FP registers, and by its register stack organisation,
+       small number of FP registers, and by its register stack organization,
        that forces us to add compensation code in and around the loop to
        shuffle the operands to the top of stack before use, and pop them
        from the stack after the loop finishes.

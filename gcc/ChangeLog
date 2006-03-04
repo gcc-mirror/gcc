@@ -1,5 +1,20 @@
 2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
 
+	* builtins.c, c-pragma.h, c-typeck.c, cgraph.c, cgraphunit.c,
+	combine.c, common.opt, config/dfp-bit.c, config/i386/i386.c,
+	config/m68k/m68k.c, config/m68k/m68k.md, config/mt/mt.c,
+	config/mt/mt.h, config/s390/s390.md, df-core.c, df-problems.c,
+	df-scan.c, df.h, diagnostic.c, expr.c, function.h, gimplify.c,
+	loop-invariant.c, omp-low.c, opts.c, passes.c,
+	rtl-factoring.c, rtlanal.c, struct-equiv.c, tree-cfgcleanup.c,
+	tree-ssa-loop-niter.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-structalias.c, tree-ssa-threadedge.c,
+	tree-ssa-threadupdate.c, tree-vect-patterns.c,
+	tree-vect-transform.c, tree-vectorizer.h, tree-vrp.c,
+	unwind-dw2.c: Fix comment typos.  Follow spelling conventions.
+
+2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
+
 	* dwarf2out.c (dwarf2out_add_library_unit_info): Remove.
 	* dwarf2out.h: Remove the prototype for
 	dwarf2out_add_library_unit_info.

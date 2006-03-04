@@ -549,7 +549,7 @@ df_ref_create (struct df *df, rtx reg, rtx *loc, rtx insn,
 ----------------------------------------------------------------------------*/
 
 
-/* Get the artifical uses for a basic block.  */
+/* Get the artificial uses for a basic block.  */
 
 struct df_ref *
 df_get_artificial_defs (struct df *df, unsigned int bb_index)
@@ -559,7 +559,7 @@ df_get_artificial_defs (struct df *df, unsigned int bb_index)
 }
 
 
-/* Get the artifical uses for a basic block.  */
+/* Get the artificial uses for a basic block.  */
 
 struct df_ref *
 df_get_artificial_uses (struct df *df, unsigned int bb_index)
@@ -797,7 +797,7 @@ df_bb_refs_delete (struct dataflow *dflow, int bb_index)
 	}
     }
   
-  /* Get rid of any artifical uses or defs.  */
+  /* Get rid of any artificial uses or defs.  */
   if (bb_info)
     {
       def = bb_info->artificial_defs;

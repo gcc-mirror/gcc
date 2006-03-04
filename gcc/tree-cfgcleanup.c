@@ -782,7 +782,7 @@ merge_phi_nodes (void)
 		break;
 	    }
 
-	  /* If the loop above iterated thorugh all the PHI nodes
+	  /* If the loop above iterated through all the PHI nodes
 	     in BB, then we can merge the PHIs from BB into DEST.  */
 	  if (!phi)
 	    *current++ = bb;

@@ -271,7 +271,7 @@ struct df_ref_info
   unsigned int bitmap_size;	/* Number of refs seen.  */
 
   /* True if refs table is organized so that every reference for a
-     pseudo is contigious.  */
+     pseudo is contiguous.  */
   bool refs_organized;
   /* True if the next refs should be added immediately or false to
      defer to later to reorganize the table.  */

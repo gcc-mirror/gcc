@@ -47,7 +47,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    phases.  The first phase scans the function looking for OMP statements
    and then for variables that must be replaced to satisfy data sharing
    clauses.  The second phase expands code for the constructs, as well as
-   re-gimplifing things when variables have been replaced with complex
+   re-gimplifying things when variables have been replaced with complex
    expressions.
 
    Final code generation is done by pass_expand_omp.  The flowgraph is
@@ -2042,7 +2042,7 @@ expand_parallel_call (struct omp_region *region, basic_block bb, tree ws_args)
   clauses = OMP_PARALLEL_CLAUSES (region->entry);
   push_gimplify_context ();
 
-  /* Determine what flavour of GOMP_parallel_start we will be
+  /* Determine what flavor of GOMP_parallel_start we will be
      emitting.  */
   start_ix = BUILT_IN_GOMP_PARALLEL_START;
   if (is_combined_parallel (region))

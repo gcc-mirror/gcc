@@ -8456,7 +8456,7 @@ c_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED,
 }
 
 
-/* Like c_begin_compound_stmt, except force the retension of the BLOCK.  */
+/* Like c_begin_compound_stmt, except force the retention of the BLOCK.  */
 
 tree
 c_begin_omp_parallel (void)

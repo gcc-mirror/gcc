@@ -25,7 +25,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include <cpplib.h> /* For enum cpp_ttype.  */
 
 /* Pragma identifiers built in to the front end parsers.  Identifiers
-   for anciliary handlers will follow these.  */
+   for ancillary handlers will follow these.  */
 typedef enum pragma_kind {
   PRAGMA_NONE = 0,
 

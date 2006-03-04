@@ -1692,7 +1692,7 @@ save_inline_function_body (struct cgraph_node *node)
   cgraph_lower_function (node);
 
   /* In non-unit-at-a-time we construct full fledged clone we never output to
-     assembly file.  This clone is pointed out by inline_decl of orginal function
+     assembly file.  This clone is pointed out by inline_decl of original function
      and inlining infrastructure knows how to deal with this.  */
   if (!flag_unit_at_a_time)
     {

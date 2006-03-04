@@ -11123,7 +11123,7 @@ record_truncated_value (rtx x)
 
       x = SUBREG_REG (x);
     }
-  /* ??? For hard-regs we now record everthing.  We might be able to
+  /* ??? For hard-regs we now record everything.  We might be able to
      optimize this using last_set_mode.  */
   else if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
     truncated_mode = GET_MODE (x);

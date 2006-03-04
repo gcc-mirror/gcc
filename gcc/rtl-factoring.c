@@ -125,7 +125,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    TODO:
    - Use REG_ALLOC_ORDER when choosing link register.
    - Handle JUMP_INSNs. Also handle volatile function calls (handle them
-     simmilar to unconditional jumps.)
+     similar to unconditional jumps.)
    - Test command line option -fpic.
 */
 
@@ -227,7 +227,7 @@ typedef struct seq_block_def
   struct seq_block_def *next_seq_block;
 } *seq_block;
 
-/* Contains same sequence candidates for futher searching.  */
+/* Contains same sequence candidates for further searching.  */
 typedef struct hash_bucket_def
 {
   /* The hash value of the group.  */
@@ -888,7 +888,7 @@ determine_seq_blocks (void)
         }
 
       /* Ensure that SB contains a seq_block with the appropriate length.
-         Insert a new seq_block if neccessary.  */
+         Insert a new seq_block if necessary.  */
       if (!seq_blocks || ((*mseq)->abstracted_length < seq_blocks->length))
         {
           sb = (seq_block) xmalloc (sizeof (struct seq_block_def));
@@ -979,7 +979,7 @@ split_blocks_after_seqs (void)
     }
 }
 
-/* Splits the best pattern sequence accoring to SEQ_BLOCKS. Emits pseudo-call
+/* Splits the best pattern sequence according to SEQ_BLOCKS. Emits pseudo-call
    and -return insns before and after the sequence.  */
 
 static void
@@ -1373,7 +1373,7 @@ rtl_seqabstr (void)
   /* Iterate until there are no sequences to abstract.  */
   for (iter = 1;; iter++)
     {
-      /* Recompute gain for sequences if neccessary and select sequence with
+      /* Recompute gain for sequences if necessary and select sequence with
          biggest gain.  */
       recompute_gain ();
       if (!pattern_seqs)

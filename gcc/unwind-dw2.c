@@ -228,7 +228,7 @@ _Unwind_SetGRValue (struct _Unwind_Context *context, int index,
   context->reg[index] = (void *) (_Unwind_Internal_Ptr) val;
 }
 
-/* Return non-zero if register INDEX is stored by value rather than
+/* Return nonzero if register INDEX is stored by value rather than
    by reference.  */
 
 static inline int

@@ -41,7 +41,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "recog.h"
 #include "toplev.h"
 
-/* Funcion prototypes */
+/* Function prototypes */
 static void vect_pattern_recog_1 
   (tree (* ) (tree, tree *, tree *), block_stmt_iterator);
 static bool widened_name_p (tree, tree, tree *, tree *);
@@ -133,7 +133,7 @@ widened_name_p (tree name, tree use_stmt, tree *half_type, tree *def_stmt)
      S7  sum_1 = prod + sum_0;
 
    where 'TYPE1' is exactly double the size of type 'type', and 'TYPE2' is the 
-   same size of 'TYPE1' or bigger. This is a sepcial case of a reduction 
+   same size of 'TYPE1' or bigger. This is a special case of a reduction 
    computation.
       
    Input:
@@ -455,7 +455,7 @@ vect_recog_widen_sum_pattern (tree last_stmt, tree *type_in, tree *type_out)
    If 'TYPE_OUT' is also returned by PATTERN_RECOG_FUNC, we check that it fits
    to the available target pattern.
 
-   This function also does some bookeeping, as explained in the documentation 
+   This function also does some bookkeeping, as explained in the documentation 
    for vect_recog_pattern.  */
 
 static void
@@ -578,7 +578,7 @@ vect_pattern_recog_1 (
    remain irrelevant unless used by stmts other than S4.
 
    If vectorization succeeds, vect_transform_stmt will skip over {S1,S2,S3}
-   (because they are marked as irrelevent). It will vectorize S6, and record
+   (because they are marked as irrelevant). It will vectorize S6, and record
    a pointer to the new vector stmt VS6 both from S6 (as usual), and also 
    from S4. We do that so that when we get to vectorizing stmts that use the
    def of S4 (like S5 that uses a_0), we'll know where to take the relevant

@@ -6282,7 +6282,7 @@ expand_operands (tree exp0, tree exp1, rtx target, rtx *op0, rtx *op1,
 }
 
 
-/* Return a MEM that constains constant EXP.  DEFER is as for
+/* Return a MEM that contains constant EXP.  DEFER is as for
    output_constant_def and MODIFIER is as for expand_expr.  */
 
 static rtx

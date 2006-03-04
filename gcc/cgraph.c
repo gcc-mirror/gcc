@@ -114,7 +114,7 @@ struct cgraph_node *cgraph_nodes;
 struct cgraph_node *cgraph_nodes_queue;
 
 /* Queue of cgraph nodes scheduled to be expanded.  This is a
-   secondary queue used during optimization to accomodate passes that
+   secondary queue used during optimization to accommodate passes that
    may generate new functions that need to be optimized and expanded.  */
 struct cgraph_node *cgraph_expand_queue;
 

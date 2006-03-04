@@ -120,7 +120,7 @@ remove_temporary_equivalences (VEC(tree, heap) **stack)
 
       dest = VEC_pop (tree, *stack);
 
-      /* A NULL value indicates we should stop unwinding, oherwise
+      /* A NULL value indicates we should stop unwinding, otherwise
 	 pop off the next entry as they're recorded in pairs.  */
       if (dest == NULL)
 	break;

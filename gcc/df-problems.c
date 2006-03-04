@@ -184,7 +184,7 @@ df_get_live_out (struct df *df, basic_block bb)
 ----------------------------------------------------------------------------*/
 
 /* Generic versions to get the void* version of the block info.  Only
-   used inside the problem instace vectors.  */
+   used inside the problem instance vectors.  */
 
 /* Grow the bb_info array.  */
 
@@ -2781,7 +2781,7 @@ df_chain_bb_reset (struct dataflow *dflow, unsigned int bb_index)
 	}
     }
   
-  /* Get rid of any chains in artifical uses or defs.  */
+  /* Get rid of any chains in artificial uses or defs.  */
   if (problem_data->flags & DF_DU_CHAIN)
     {
       struct df_ref *def;

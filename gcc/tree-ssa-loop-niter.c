@@ -623,7 +623,7 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
 	return false;
     }
 
-  /* If the loop exits immediatelly, there is nothing to do.  */
+  /* If the loop exits immediately, there is nothing to do.  */
   if (zero_p (fold_build2 (code, boolean_type_node, iv0->base, iv1->base)))
     {
       niter->niter = build_int_cst_type (unsigned_type_for (type), 0);

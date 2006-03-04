@@ -742,7 +742,7 @@ const int x86_use_sahf = m_PPRO | m_K6 | m_PENT4 | m_NOCONA | m_GENERIC32; /*m_G
 /* We probably ought to watch for partial register stalls on Generic32
    compilation setting as well.  However in current implementation the
    partial register stalls are not eliminated very well - they can
-   be introduced via subregs synthetized by combine and can happen
+   be introduced via subregs synthesized by combine and can happen
    in caller/callee saving sequences.
    Because this option pays back little on PPro based chips and is in conflict
    with partial reg. dependencies used by Athlon/P4 based chips, it is better
@@ -777,7 +777,7 @@ const int x86_prologue_using_move = m_ATHLON_K8 | m_PPRO | m_GENERIC;
 const int x86_epilogue_using_move = m_ATHLON_K8 | m_PPRO | m_GENERIC;
 const int x86_shift1 = ~m_486;
 const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
-/* In Generic model we have an confict here in between PPro/Pentium4 based chips
+/* In Generic model we have an conflict here in between PPro/Pentium4 based chips
    that thread 128bit SSE registers as single units versus K8 based chips that
    divide SSE registers to two 64bit halves.
    x86_sse_partial_reg_dependency promote all store destinations to be 128bit
