@@ -13088,28 +13088,6 @@ gen_decl_die (tree decl, dw_die_ref context_die)
     }
 }
 
-/* Add Ada "use" clause information for SGI Workshop debugger.  */
-
-void
-dwarf2out_add_library_unit_info (const char *filename, const char *context_list)
-{
-  unsigned int file_index;
-
-  if (filename != NULL)
-    {
-      dw_die_ref unit_die = new_die (DW_TAG_module, comp_unit_die, NULL);
-      tree context_list_decl
-	= build_decl (LABEL_DECL, get_identifier (context_list),
-		      void_type_node);
-
-      TREE_PUBLIC (context_list_decl) = TRUE;
-      add_name_attribute (unit_die, context_list);
-      file_index = lookup_filename (filename);
-      add_AT_unsigned (unit_die, DW_AT_decl_file, file_index);
-      add_pubname (context_list_decl, unit_die);
-    }
-}
-
 /* Output debug information for global decl DECL.  Called from toplev.c after
    compilation proper has finished.  */
 

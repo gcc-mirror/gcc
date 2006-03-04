@@ -1,5 +1,11 @@
 2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
 
+	* dwarf2out.c (dwarf2out_add_library_unit_info): Remove.
+	* dwarf2out.h: Remove the prototype for
+	dwarf2out_add_library_unit_info.
+
+2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
+
 	* tree.c (add_var_to_bind_expr): Remove.
 	* tree.h: Remove the prototype for add_var_to_bind_expr.
 
