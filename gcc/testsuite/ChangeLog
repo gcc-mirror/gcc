@@ -1,3 +1,8 @@
+2006-03-04  Krister Walfridsson  <cato@df.lth.se>
+
+	* objc.dg/bad-receiver-type.m: Add space before bracket in dg
+	directive.
+
 2006-03-03  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/dependency_9.f90: New test case.
