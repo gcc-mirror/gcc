@@ -1,5 +1,12 @@
 2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
 
+	* regclass.c (n_non_fixed_regs): Remove.
+	(init_reg_sets_1, globalize_reg): Remove all uses of
+	n_non_fixed_regs.
+	* hard-reg-set.h: Remove the extern for n_non_fixed_regs.
+
+2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
+
 	* rtlanal.c (insns_safe_to_move_p): Remove.
 	* rtl.h: Remove the prototype for insns_safe_to_move_p.
 

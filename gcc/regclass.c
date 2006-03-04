@@ -123,10 +123,6 @@ char call_fixed_regs[FIRST_PSEUDO_REGISTER];
 
 HARD_REG_SET call_fixed_reg_set;
 
-/* Number of non-fixed registers.  */
-
-int n_non_fixed_regs;
-
 /* Indexed by hard register number, contains 1 for registers
    that are being used for global register decls.
    These must be exempt from ordinary flow analysis
@@ -425,8 +421,6 @@ init_reg_sets_1 (void)
 
   memcpy (call_fixed_regs, fixed_regs, sizeof call_fixed_regs);
 
-  n_non_fixed_regs = 0;
-
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       /* call_used_regs must include fixed_regs.  */
@@ -438,8 +432,6 @@ init_reg_sets_1 (void)
 
       if (fixed_regs[i])
 	SET_HARD_REG_BIT (fixed_reg_set, i);
-      else
-	n_non_fixed_regs++;
 
       if (call_used_regs[i])
 	SET_HARD_REG_BIT (call_used_reg_set, i);
@@ -796,7 +788,6 @@ globalize_reg (int i)
 #ifdef CALL_REALLY_USED_REGISTERS
   call_really_used_regs[i] = 1;
 #endif
-  n_non_fixed_regs--;
 
   SET_HARD_REG_BIT (fixed_reg_set, i);
   SET_HARD_REG_BIT (call_used_reg_set, i);

@@ -474,10 +474,6 @@ extern enum reg_class reg_class_subunion[N_REG_CLASSES][N_REG_CLASSES];
 
 extern enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
 
-/* Number of non-fixed registers.  */
-
-extern int n_non_fixed_regs;
-
 /* Vector indexed by hardware reg giving its name.  */
 
 extern const char * reg_names[FIRST_PSEUDO_REGISTER];
