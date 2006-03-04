@@ -1,3 +1,8 @@
+2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* expmed.c (expand_mult_add): Remove.
+	* expr.h: Remove the prototype for expand_mult_add.
+
 2006-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* unwind-dw2.h (_Unwind_FrameState): Add REG_SAVED_VAL_OFFSET

@@ -5025,31 +5025,6 @@ make_tree (tree type, rtx x)
       return t;
     }
 }
-
-/* Return an rtx representing the value of X * MULT + ADD.
-   TARGET is a suggestion for where to store the result (an rtx).
-   MODE is the machine mode for the computation.
-   X and MULT must have mode MODE.  ADD may have a different mode.
-   So can X (defaults to same as MODE).
-   UNSIGNEDP is nonzero to do unsigned multiplication.
-   This may emit insns.  */
-
-rtx
-expand_mult_add (rtx x, rtx target, rtx mult, rtx add, enum machine_mode mode,
-		 int unsignedp)
-{
-  tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
-  tree add_type = (GET_MODE (add) == VOIDmode
-		   ? type: lang_hooks.types.type_for_mode (GET_MODE (add),
-							   unsignedp));
-  tree result = fold_build2 (PLUS_EXPR, type,
-			     fold_build2 (MULT_EXPR, type,
-					  make_tree (type, x),
-					  make_tree (type, mult)),
-			     make_tree (add_type, add));
-
-  return expand_expr (result, target, VOIDmode, 0);
-}
 
 /* Compute the logical-and of OP0 and OP1, storing it in TARGET
    and returning TARGET.

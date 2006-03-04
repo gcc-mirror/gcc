@@ -731,7 +731,6 @@ extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
 			      unsigned HOST_WIDE_INT, int, rtx,
 			      enum machine_mode, enum machine_mode);
 extern rtx expand_mult (enum machine_mode, rtx, rtx, rtx, int);
-extern rtx expand_mult_add (rtx, rtx, rtx, rtx,enum machine_mode, int);
 extern rtx expand_mult_highpart_adjust (enum machine_mode, rtx, rtx, rtx, rtx, int);
 
 extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
