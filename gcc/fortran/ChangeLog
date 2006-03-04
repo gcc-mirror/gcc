@@ -1,3 +1,20 @@
+2006-03-04  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/25045
+	PR fortran/25075
+	backport from mainline
+        * check.c (dim_check):  Perform all checks if dim is optional.
+        (gfc_check_minloc_maxloc):  Use dim_check and dim_rank_check
+        to check dim argument.
+        (check_reduction):  Likewise.
+	check.c (identical_dimen_shape):  New function.
+	(check_dot_product):  Use identical_dimen_shape() to check sizes
+	for dot_product.
+	(gfc_check_matmul):  Likewise.
+	(gfc_check_merge):  Check conformance between tsource and fsource
+	and between tsource and mask.
+	(gfc_check_pack):  Check conformance between array and mask.
+
 2006-03-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/21303
