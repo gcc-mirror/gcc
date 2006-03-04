@@ -1,3 +1,9 @@
+2006-03-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR testsuite/25177
+	* gcc.target/powerpc/pr18096-1.c: Change where the error
+	would match.
+
 2006-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/cleanup-1.c: New test.
