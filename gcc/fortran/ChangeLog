@@ -1,5 +1,9 @@
 2006-03-03  Roger Sayle  <roger@eyesopen.com>
 
+	* dependency.c (gfc_check_element_vs_element): Revert last change.
+
+2006-03-03  Roger Sayle  <roger@eyesopen.com>
+
 	* dependency.c (gfc_check_element_vs_element): Consider two
 	unordered scalar subscripts as (potentially) equal.
 
