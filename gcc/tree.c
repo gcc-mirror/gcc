@@ -6804,16 +6804,6 @@ initializer_zerop (tree init)
     }
 }
 
-void
-add_var_to_bind_expr (tree bind_expr, tree var)
-{
-  BIND_EXPR_VARS (bind_expr)
-    = chainon (BIND_EXPR_VARS (bind_expr), var);
-  if (BIND_EXPR_BLOCK (bind_expr))
-    BLOCK_VARS (BIND_EXPR_BLOCK (bind_expr))
-      = BIND_EXPR_VARS (bind_expr);
-}
-
 /* Build an empty statement.  */
 
 tree
