@@ -1,3 +1,8 @@
+2006-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/cleanup-1.c: New test.
+	* gcc.target/i386/cleanup-2.c: New test.
+
 2006-03-04  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/dependency_9.f90: Remove for the time being.

@@ -1,3 +1,17 @@
+2006-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.h (_Unwind_FrameState): Add REG_SAVED_VAL_OFFSET
+	and REG_SAVED_VAL_EXP constants.
+	* unwind-dw2.c (struct _Unwind_Context): Add by_value array.
+	(_Unwind_GetGR, _Unwind_SetGR, _Unwind_GetGRPtr, _Unwind_SetGRPtr):
+	Handle regs stored by value.
+	(_Unwind_SetGRValue, _Unwind_GRByValue): New functions.
+	(execute_cfa_program): Handle DW_CFA_val_offset,
+	DW_CFA_val_offset_sf and DW_CFA_val_expression.
+	(uw_update_context_1): Handle REG_SAVED_REG with regs stored by
+	value specially.  Handle REG_SAVED_VAL_OFFSET and REG_SAVED_VAL_EXP.
+	(uw_install_context_1): Handle target regs stored by value.
+
 2006-03-03  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-sra.c (tree_sra): Return todoflags;
