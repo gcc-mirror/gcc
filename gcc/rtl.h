@@ -1734,7 +1734,6 @@ extern rtx regno_use_in (unsigned int, rtx);
 extern int auto_inc_p (rtx);
 extern int in_expr_list_p (rtx, rtx);
 extern void remove_node_from_expr_list (rtx, rtx *);
-extern int insns_safe_to_move_p (rtx, rtx, rtx *);
 extern int loc_mentioned_in_p (rtx *, rtx);
 extern rtx find_first_parameter_load (rtx, rtx);
 extern bool keep_with_call_p (rtx);

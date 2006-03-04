@@ -1,5 +1,10 @@
 2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
 
+	* rtlanal.c (insns_safe_to_move_p): Remove.
+	* rtl.h: Remove the prototype for insns_safe_to_move_p.
+
+2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
+
 	* expmed.c (expand_mult_add): Remove.
 	* expr.h: Remove the prototype for expand_mult_add.
 
