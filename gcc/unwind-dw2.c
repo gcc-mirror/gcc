@@ -72,6 +72,7 @@ struct _Unwind_Context
   struct dwarf_eh_bases bases;
   _Unwind_Word args_size;
   char signal_frame;
+  char by_value[DWARF_FRAME_REGISTERS+1];
 };
 
 /* Byte size of every register managed by these routines.  */
@@ -118,7 +119,7 @@ read_8u (const void *p) { const union unaligned *up = p; return up->u8; }
 static inline unsigned long
 read_8s (const void *p) { const union unaligned *up = p; return up->s8; }
 
-/* Get the value of register REG as saved in CONTEXT.  */
+/* Get the value of register INDEX as saved in CONTEXT.  */
 
 inline _Unwind_Word
 _Unwind_GetGR (struct _Unwind_Context *context, int index)
@@ -135,6 +136,9 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
   gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
   size = dwarf_reg_size_table[index];
   ptr = context->reg[index];
+
+  if (context->by_value[index])
+    return (_Unwind_Word) (_Unwind_Internal_Ptr) ptr;
 
   /* This will segfault if the register hasn't been saved.  */
   if (size == sizeof(_Unwind_Ptr))
@@ -160,7 +164,7 @@ _Unwind_GetCFA (struct _Unwind_Context *context)
   return (_Unwind_Ptr) context->cfa;
 }
 
-/* Overwrite the saved value for register REG in CONTEXT with VAL.  */
+/* Overwrite the saved value for register INDEX in CONTEXT with VAL.  */
 
 inline void
 _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
@@ -171,6 +175,13 @@ _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
   gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
   size = dwarf_reg_size_table[index];
+
+  if (context->by_value[index])
+    {
+      context->reg[index] = (void *) (_Unwind_Internal_Ptr) val;
+      return;
+    }
+
   ptr = context->reg[index];
 
   if (size == sizeof(_Unwind_Ptr))
@@ -188,6 +199,8 @@ static inline void *
 _Unwind_GetGRPtr (struct _Unwind_Context *context, int index)
 {
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  if (context->by_value[index])
+    return &context->reg[index];
   return context->reg[index];
 }
 
@@ -197,7 +210,32 @@ static inline void
 _Unwind_SetGRPtr (struct _Unwind_Context *context, int index, void *p)
 {
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  context->by_value[index] = 0;
   context->reg[index] = p;
+}
+
+/* Overwrite the saved value for register INDEX in CONTEXT with VAL.  */
+
+static inline void
+_Unwind_SetGRValue (struct _Unwind_Context *context, int index,
+		    _Unwind_Word val)
+{
+  index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
+  gcc_assert (dwarf_reg_size_table[index] == sizeof (_Unwind_Ptr));
+
+  context->by_value[index] = 1;
+  context->reg[index] = (void *) (_Unwind_Internal_Ptr) val;
+}
+
+/* Return non-zero if register INDEX is stored by value rather than
+   by reference.  */
+
+static inline int
+_Unwind_GRByValue (struct _Unwind_Context *context, int index)
+{
+  index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  return context->by_value[index];
 }
 
 /* Retrieve the return address for CONTEXT.  */
@@ -922,7 +960,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr += utmp;
 	  break;
 
-	  /* From the dwarf3 draft.  */
+	  /* Dwarf3.  */
 	case DW_CFA_offset_extended_sf:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_sleb128 (insn_ptr, &stmp);
@@ -943,6 +981,33 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_sleb128 (insn_ptr, &fs->cfa_offset);
 	  fs->cfa_offset *= fs->data_align;
 	  /* cfa_how deliberately not set.  */
+	  break;
+
+	case DW_CFA_val_offset:
+	  insn_ptr = read_uleb128 (insn_ptr, &reg);
+	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
+	  offset = (_Unwind_Sword) utmp * fs->data_align;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
+	    = REG_SAVED_VAL_OFFSET;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
+	  break;
+
+	case DW_CFA_val_offset_sf:
+	  insn_ptr = read_uleb128 (insn_ptr, &reg);
+	  insn_ptr = read_sleb128 (insn_ptr, &stmp);
+	  offset = stmp * fs->data_align;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
+	    = REG_SAVED_VAL_OFFSET;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
+	  break;
+
+	case DW_CFA_val_expression:
+	  insn_ptr = read_uleb128 (insn_ptr, &reg);
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
+	    = REG_SAVED_VAL_EXP;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.exp = insn_ptr;
+	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
+	  insn_ptr += utmp;
 	  break;
 
 	case DW_CFA_GNU_window_save:
@@ -1113,7 +1178,7 @@ typedef union { _Unwind_Ptr ptr; _Unwind_Word word; } _Unwind_SpTmp;
 
 static inline void
 _Unwind_SetSpColumn (struct _Unwind_Context *context, void *cfa,
-                     _Unwind_SpTmp *tmp_sp)
+		     _Unwind_SpTmp *tmp_sp)
 {
   int size = dwarf_reg_size_table[__builtin_dwarf_sp_column ()];
   
@@ -1194,9 +1259,14 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	break;
 
       case REG_SAVED_REG:
-	_Unwind_SetGRPtr
-	  (context, i,
-	   _Unwind_GetGRPtr (&orig_context, fs->regs.reg[i].loc.reg));
+	if (_Unwind_GRByValue (&orig_context, fs->regs.reg[i].loc.reg))
+	  _Unwind_SetGRValue (context, i,
+			      _Unwind_GetGR (&orig_context,
+					     fs->regs.reg[i].loc.reg));
+	else
+	  _Unwind_SetGRPtr (context, i,
+			    _Unwind_GetGRPtr (&orig_context,
+					      fs->regs.reg[i].loc.reg));
 	break;
 
       case REG_SAVED_EXP:
@@ -1209,6 +1279,25 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	  val = execute_stack_op (exp, exp + len, &orig_context,
 				  (_Unwind_Ptr) cfa);
 	  _Unwind_SetGRPtr (context, i, (void *) val);
+	}
+	break;
+
+      case REG_SAVED_VAL_OFFSET:
+	_Unwind_SetGRValue (context, i,
+			    (_Unwind_Internal_Ptr)
+			    (cfa + fs->regs.reg[i].loc.offset));
+	break;
+
+      case REG_SAVED_VAL_EXP:
+	{
+	  const unsigned char *exp = fs->regs.reg[i].loc.exp;
+	  _Unwind_Word len;
+	  _Unwind_Ptr val;
+
+	  exp = read_uleb128 (exp, &len);
+	  val = execute_stack_op (exp, exp + len, &orig_context,
+				  (_Unwind_Ptr) cfa);
+	  _Unwind_SetGRValue (context, i, val);
 	}
 	break;
       }
@@ -1327,14 +1416,31 @@ uw_install_context_1 (struct _Unwind_Context *current,
   /* If the target frame does not have a saved stack pointer,
      then set up the target's CFA.  */
   if (!_Unwind_GetGRPtr (target, __builtin_dwarf_sp_column ()))
-	_Unwind_SetSpColumn (target, target->cfa, &sp_slot);
+    _Unwind_SetSpColumn (target, target->cfa, &sp_slot);
 
   for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
     {
       void *c = current->reg[i];
       void *t = target->reg[i];
 
-      if (t && c && t != c)
+      gcc_assert (current->by_value[i] == 0);
+      if (target->by_value[i] && c)
+	{
+	  _Unwind_Word w;
+	  _Unwind_Ptr p;
+	  if (dwarf_reg_size_table[i] == sizeof (_Unwind_Word))
+	    {
+	      w = (_Unwind_Internal_Ptr) t;
+	      memcpy (c, &w, sizeof (_Unwind_Word));
+	    }
+	  else
+	    {
+	      gcc_assert (dwarf_reg_size_table[i] == sizeof (_Unwind_Ptr));
+	      p = (_Unwind_Internal_Ptr) t;
+	      memcpy (c, &p, sizeof (_Unwind_Ptr));
+	    }
+	}
+      else if (t && c && t != c)
 	memcpy (c, t, dwarf_reg_size_table[i]);
     }
 
