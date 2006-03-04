@@ -1,3 +1,9 @@
+2006-03-04  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/26132
+	* include/tr1/hashtable (hashtable<>::rehash): Define.
+	* testsuite/tr1/6_containers/unordered/hashtable/26132.cc: New.
+
 2006-03-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/26526

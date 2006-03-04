@@ -1,6 +1,6 @@
 // Internal header for TR1 unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1222,7 +1222,7 @@ namespace tr1
       clear();
 
     public:
-      // Set number of buckets to be apropriate for container of n element.
+      // Set number of buckets to be appropriate for container of n element.
       void rehash(size_type n);
       
     private:
@@ -1824,6 +1824,19 @@ namespace tr1
     {
       m_deallocate_nodes(m_buckets, m_bucket_count);
       m_element_count = 0;
+    }
+
+  template<typename K, typename V, 
+	   typename A, typename Ex, typename Eq,
+	   typename H1, typename H2, typename H, typename RP,
+	   bool c, bool ci, bool u>
+    void
+    hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
+    rehash(size_type n)
+    {
+      m_rehash(std::max(m_rehash_policy.next_bkt(n),
+			m_rehash_policy.bkt_for_elements(m_element_count
+							 + 1)));
     }
 
   template<typename K, typename V, 
