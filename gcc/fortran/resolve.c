@@ -2914,6 +2914,13 @@ resolve_deallocate_expr (gfc_expr * e)
 		 "ALLOCATABLE or a POINTER", &e->where);
     }
 
+  if (e->symtree->n.sym->attr.intent == INTENT_IN)
+    {
+      gfc_error ("Can't deallocate INTENT(IN) variable '%s' at %L",
+                 e->symtree->n.sym->name, &e->where);
+      return FAILURE;
+    }
+
   return SUCCESS;
 }
 
@@ -3012,6 +3019,13 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
     {
       gfc_error ("Expression in ALLOCATE statement at %L must be "
 		 "ALLOCATABLE or a POINTER", &e->where);
+      return FAILURE;
+    }
+
+  if (e->symtree->n.sym->attr.intent == INTENT_IN)
+    {
+      gfc_error ("Can't allocate INTENT(IN) variable '%s' at %L",
+                 e->symtree->n.sym->name, &e->where);
       return FAILURE;
     }
 

@@ -1,3 +1,20 @@
+2005-03-05  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/16136
+	* symbol.c (conf_std): New macro.
+	(check_conflict): Use it to allow ALLOCATABLE dummy
+	arguments for F2003.
+	* trans-expr.c (gfc_conv_function_call): Pass the
+	address of the array descriptor when dummy argument is
+	ALLOCATABLE.
+	* interface.c (compare_allocatable): New function.
+	(compare_actual_formal): Use it.
+	* resolve.c (resolve_deallocate_expr,
+	resolve_allocate_expr): Check that INTENT(IN) variables
+	aren't (de)allocated.
+	* gfortran.texi (Fortran 2003 status): List ALLOCATABLE
+	dummy arguments as supported.
+
 2006-03-03  Roger Sayle  <roger@eyesopen.com>
 
 	* dependency.c (gfc_check_element_vs_element): Revert last change.

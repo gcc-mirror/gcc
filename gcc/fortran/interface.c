@@ -1065,6 +1065,26 @@ symbol_rank (gfc_symbol * sym)
 
 
 /* Given a symbol of a formal argument list and an expression, if the
+   formal argument is allocatable, check that the actual argument is
+   allocatable. Returns nonzero if compatible, zero if not compatible.  */
+
+static int
+compare_allocatable (gfc_symbol * formal, gfc_expr * actual)
+{
+  symbol_attribute attr;
+
+  if (formal->attr.allocatable)
+    {
+      attr = gfc_expr_attr (actual);
+      if (!attr.allocatable)
+	return 0;
+    }
+
+  return 1;
+}
+
+
+/* Given a symbol of a formal argument list and an expression, if the
    formal argument is a pointer, see if the actual argument is a
    pointer. Returns nonzero if compatible, zero if not compatible.  */
 
@@ -1272,6 +1292,15 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 	{
 	  if (where)
 	    gfc_error ("Actual argument for '%s' must be a pointer at %L",
+		       f->sym->name, &a->expr->where);
+	  return 0;
+	}
+
+      if (a->expr->expr_type != EXPR_NULL
+	  && compare_allocatable (f->sym, a->expr) == 0)
+	{
+	  if (where)
+	    gfc_error ("Actual argument for '%s' must be ALLOCATABLE at %L",
 		       f->sym->name, &a->expr->where);
 	  return 0;
 	}
