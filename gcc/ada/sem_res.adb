@@ -6975,29 +6975,85 @@ package body Sem_Res is
    --------------------------------
 
    procedure Set_String_Literal_Subtype (N : Node_Id; Typ : Entity_Id) is
+      Loc        : constant Source_Ptr := Sloc (N);
+      Low_Bound  : constant Node_Id :=
+                        Type_Low_Bound (Etype (First_Index (Typ)));
       Subtype_Id : Entity_Id;
 
    begin
       if Nkind (N) /= N_String_Literal then
          return;
-      else
-         Subtype_Id := Create_Itype (E_String_Literal_Subtype, N);
       end if;
 
+      Subtype_Id := Create_Itype (E_String_Literal_Subtype, N);
       Set_String_Literal_Length (Subtype_Id, UI_From_Int
                                                (String_Length (Strval (N))));
-      Set_Etype                 (Subtype_Id, Base_Type (Typ));
-      Set_Is_Constrained        (Subtype_Id);
+      Set_Etype          (Subtype_Id, Base_Type (Typ));
+      Set_Is_Constrained (Subtype_Id);
+      Set_Etype          (N, Subtype_Id);
+
+      if Is_OK_Static_Expression (Low_Bound) then
 
       --  The low bound is set from the low bound of the corresponding
       --  index type. Note that we do not store the high bound in the
-      --  string literal subtype, but it can be deduced if necssary
+      --  string literal subtype, but it can be deduced if necessary
       --  from the length and the low bound.
 
-      Set_String_Literal_Low_Bound
-        (Subtype_Id, Type_Low_Bound (Etype (First_Index (Typ))));
+         Set_String_Literal_Low_Bound (Subtype_Id, Low_Bound);
 
-      Set_Etype (N, Subtype_Id);
+      else
+         Set_String_Literal_Low_Bound
+           (Subtype_Id, Make_Integer_Literal (Loc, 1));
+         Set_Etype (String_Literal_Low_Bound (Subtype_Id), Standard_Positive);
+
+         --  Build bona fide subtypes for the string, and wrap it in an
+         --  unchecked conversion, because the backend expects  the
+         --  String_Literal_Subtype to have a static lower bound.
+
+         declare
+            Index_List    : constant List_Id    := New_List;
+            Index_Type    : constant Entity_Id := Etype (First_Index (Typ));
+            High_Bound    : constant Node_Id :=
+                               Make_Op_Add (Loc,
+                                  Left_Opnd => New_Copy_Tree (Low_Bound),
+                                  Right_Opnd =>
+                                    Make_Integer_Literal (Loc,
+                                      String_Length (Strval (N)) - 1));
+            Array_Subtype : Entity_Id;
+            Index_Subtype : Entity_Id;
+            Drange        : Node_Id;
+            Index         : Node_Id;
+
+         begin
+            Index_Subtype :=
+              Create_Itype (Subtype_Kind (Ekind (Index_Type)), N);
+            Drange := Make_Range (Loc, Low_Bound, High_Bound);
+            Set_Scalar_Range (Index_Subtype, Drange);
+            Set_Parent (Drange, N);
+            Analyze_And_Resolve (Drange, Index_Type);
+
+            Set_Etype        (Index_Subtype, Index_Type);
+            Set_Size_Info    (Index_Subtype, Index_Type);
+            Set_RM_Size      (Index_Subtype, RM_Size (Index_Type));
+
+            Array_Subtype := Create_Itype (E_Array_Subtype, N);
+
+            Index := New_Occurrence_Of (Index_Subtype, Loc);
+            Set_Etype (Index, Index_Subtype);
+            Append (Index, Index_List);
+
+            Set_First_Index    (Array_Subtype, Index);
+            Set_Etype          (Array_Subtype, Base_Type (Typ));
+            Set_Is_Constrained (Array_Subtype, True);
+            Init_Size_Align    (Array_Subtype);
+
+            Rewrite (N,
+              Make_Unchecked_Type_Conversion (Loc,
+                Subtype_Mark => New_Occurrence_Of (Array_Subtype, Loc),
+                Expression => Relocate_Node (N)));
+            Set_Etype (N, Array_Subtype);
+         end;
+      end if;
    end Set_String_Literal_Subtype;
 
    -----------------------------
