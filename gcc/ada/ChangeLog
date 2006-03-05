@@ -1,7 +1,7 @@
 2006-03-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline:
-	2006-02-13  Ed Schonberg  <schonberg@adacore.com>
+	2006-02-13  Ed Schonberg  <schonberg@adacore.com>
 	PR ada/25885
 	* sem_res.adb (Set_Literal_String_Subtype): If the lower bound is not
 	static, wrap the literal in an unchecked conversion, because GCC 4.x
