@@ -1,3 +1,9 @@
+2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
+
+	* regclass.c (reg_scan_update): Remove.
+	(reg_scan_mark_refs): Remove the last argument.
+	* rtl.h: Remove the prototype for reg_scan_update.
+
 2006-03-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* builtins.c, c-pragma.h, c-typeck.c, cgraph.c, cgraphunit.c,
