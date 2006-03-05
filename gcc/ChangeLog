@@ -11,6 +11,9 @@
 	* flow.c (recompute_reg_usage): Make it static.
 	* rtl.h: Remove the prototype for recompute_reg_usage.
 
+	* function.c (use_return_register): Make it static.
+	* function.h: Remove the prototype.
+
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* recog.c (volatile_mem_p, validate_change_maybe_volatile):
