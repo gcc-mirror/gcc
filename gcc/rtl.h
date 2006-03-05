@@ -1723,7 +1723,6 @@ extern int may_trap_after_code_motion_p (rtx);
 extern int may_trap_or_fault_p (rtx);
 extern int inequality_comparisons_p (rtx);
 extern rtx replace_rtx (rtx, rtx, rtx);
-extern rtx replace_regs (rtx, rtx *, unsigned int, int);
 extern int replace_label (rtx *, void *);
 extern int rtx_referenced_p (rtx, rtx);
 extern bool tablejump_p (rtx, rtx *, rtx *);
