@@ -1012,7 +1012,8 @@ find_common_loop (struct loop *loop_s, struct loop *loop_d)
 }
 
 /* Cancels the LOOP; it must be innermost one.  */
-void
+
+static void
 cancel_loop (struct loops *loops, struct loop *loop)
 {
   basic_block *bbs;

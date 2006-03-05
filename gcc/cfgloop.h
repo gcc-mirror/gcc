@@ -272,7 +272,6 @@ extern edge loop_latch_edge (const struct loop *);
 extern void add_bb_to_loop (basic_block, struct loop *);
 extern void remove_bb_from_loops (basic_block);
 
-extern void cancel_loop (struct loops *, struct loop *);
 extern void cancel_loop_tree (struct loops *, struct loop *);
 
 extern basic_block loop_split_edge_with (edge, rtx);

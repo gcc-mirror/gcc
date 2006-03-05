@@ -5,6 +5,9 @@
 	* basic-block.h: Remove the extern for
 	rediscover_loops_after_threading.
 
+	* cfgloop.c (cancel_loop): Make it static.
+	* cfgloop.h: Remove the prototype for cancel_loop.
+
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* recog.c (volatile_mem_p, validate_change_maybe_volatile):
