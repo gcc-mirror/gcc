@@ -1870,16 +1870,15 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
             }
 	  else
 	    {
-	      /* If the procedure requires an explicit interface, the
-		 actual argument is passed according to the
-		 corresponding formal argument.  If the corresponding
-		 formal argument is a POINTER or assumed shape, we do
-		 not use g77's calling convention, and pass the
-		 address of the array descriptor instead. Otherwise we
-		 use g77's calling convention.  */
+              /* If the procedure requires an explicit interface, the actual
+                 argument is passed according to the corresponding formal
+                 argument.  If the corresponding formal argument is a POINTER,
+                 ALLOCATABLE or assumed shape, we do not use g77's calling
+                 convention, and pass the address of the array descriptor
+                 instead. Otherwise we use g77's calling convention.  */
 	      int f;
 	      f = (formal != NULL)
-		  && !formal->sym->attr.pointer
+		  && !(formal->sym->attr.pointer || formal->sym->attr.allocatable)
 		  && formal->sym->as->type != AS_ASSUMED_SHAPE;
 	      f = f || !sym->attr.always_explicit;
 	      if (arg->expr->expr_type == EXPR_VARIABLE

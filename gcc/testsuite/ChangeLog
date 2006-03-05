@@ -1,3 +1,9 @@
+2005-03-05  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/16136
+	* allocatable_dummy_1.f90: New.
+	* allocatable_dummy_2.f90: New.
+
 2006-03-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26554
