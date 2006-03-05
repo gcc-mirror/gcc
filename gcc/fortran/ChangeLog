@@ -1,5 +1,18 @@
 2006-03-05  Thomas Koenig <Thomas.Koenig@online.de>
 
+	PR fortran/23092
+	backport from mainline
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc):
+	If the mask expression exists and has rank 0, enclose the
+	generated loop in an "if (mask)".  Put the default
+	initialization into the else branch.
+	* trans-intrinsic.c (gfc_conv_intrinsic_arith):  If the
+	mask expression exists and has rank 0, enclose the generated
+	loop in an "if (mask)".
+	* (gfc_conv_intrinsic_minmaxloc):  Likewise.
+
+2006-03-05  Thomas Koenig <Thomas.Koenig@online.de>
+
 	backport from mainline
 	* gfortran.texi:  Document environment variables which
 	influence runtime behavior.
