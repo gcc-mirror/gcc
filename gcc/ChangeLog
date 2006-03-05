@@ -8,6 +8,9 @@
 	* cfgloop.c (cancel_loop): Make it static.
 	* cfgloop.h: Remove the prototype for cancel_loop.
 
+	* flow.c (recompute_reg_usage): Make it static.
+	* rtl.h: Remove the prototype for recompute_reg_usage.
+
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* recog.c (volatile_mem_p, validate_change_maybe_volatile):
