@@ -4409,7 +4409,7 @@ debug_regset (regset r)
    It might be worthwhile to update REG_LIVE_LENGTH, REG_BASIC_BLOCK and
    possibly other information which is used by the register allocators.  */
 
-unsigned int
+static unsigned int
 recompute_reg_usage (void)
 {
   allocate_reg_life_data ();
