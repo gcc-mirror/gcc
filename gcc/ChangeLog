@@ -1,5 +1,12 @@
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
 
+	* recog.c (volatile_mem_p, validate_change_maybe_volatile):
+	Remove.
+	* recog.h: Remove the prototype for
+	validate_change_maybe_volatile.
+
+2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
+
 	* rtlanal.c (replace_reg): Remove.
 	* rtl.h: Remove the prototype for replace_reg.
 
