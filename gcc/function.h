@@ -547,7 +547,6 @@ extern void init_varasm_status (struct function *);
 #ifdef RTX_CODE
 extern void diddle_return_value (void (*)(rtx, void*), void*);
 extern void clobber_return_register (void);
-extern void use_return_register (void);
 #endif
 
 extern rtx get_arg_pointer_save_area (struct function *);
