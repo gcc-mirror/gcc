@@ -1,3 +1,9 @@
+2006-03-05  Thomas Koenig <Thomas.Koenig@online.de>
+
+	backport from mainline
+	* gfortran.texi:  Document environment variables which
+	influence runtime behavior.
+
 2006-03-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/25045
