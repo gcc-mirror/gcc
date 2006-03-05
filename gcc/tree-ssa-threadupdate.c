@@ -131,8 +131,6 @@ struct redirection_data
 /* Main data structure to hold information for duplicates of BB.  */
 static htab_t redirection_data;
 
-bool rediscover_loops_after_threading;
-
 /* Data structure of information to pass to hash table traversal routines.  */
 struct local_info
 {
@@ -735,30 +733,6 @@ thread_block (basic_block bb)
 	  update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
 					   e->count, e->aux);
 
-	  /* If we thread to a loop exit edge, then we will need to 
-	     rediscover the loop exit edges.  While it may seem that
-	     the new edge is a loop exit edge, that is not the case.
-	     Consider threading the edge (5,6) to E in the CFG on the
-	     left which creates the CFG on the right:
-
-
-                      0<--+            0<---+
-                     / \  |           / \   |
-                    1   2 |          1   2  |
-                   / \  | |         / \  |  |
-                  3   4 | |        3   4 6--+
-                   \ /  | |         \ /
-                    5   | |          5
-                     \ /  |          |
-                      6---+          E
-                      |
-                      E
-
-	     After threading, the edge (0, 1)  is the loop exit edge and
-	     the nodes 0, 2, 6 are the only nodes in the loop.  */
-	  if (e2->flags & EDGE_LOOP_EXIT)
-	    rediscover_loops_after_threading = true;
-
 	  /* Insert the outgoing edge into the hash table if it is not
 	     already in the hash table.  */
 	  lookup_redirection_data (e2, e, INSERT);
@@ -859,7 +833,6 @@ thread_through_all_blocks (void)
     return false;
 
   threaded_blocks = BITMAP_ALLOC (NULL);
-  rediscover_loops_after_threading = false;
   memset (&thread_stats, 0, sizeof (thread_stats));
 
   mark_threaded_blocks (threaded_blocks);

@@ -414,10 +414,6 @@ struct control_flow_graph GTY(())
 #define BASIC_BLOCK(N)		(VEC_index (basic_block, basic_block_info, (N)))
 #define SET_BASIC_BLOCK(N,BB)	(VEC_replace (basic_block, basic_block_info, (N), (BB)))
 
-/* TRUE if we should re-run loop discovery after threading jumps, FALSE
-   otherwise.  */
-extern bool rediscover_loops_after_threading;
-
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
   for (BB = FROM; BB != TO; BB = BB->DIR)

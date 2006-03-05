@@ -1,5 +1,12 @@
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
 
+	* tree-ssa-threadupdate.c (rediscover_loops_after_threading):
+	Remove.
+	* basic-block.h: Remove the extern for
+	rediscover_loops_after_threading.
+
+2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
+
 	* recog.c (volatile_mem_p, validate_change_maybe_volatile):
 	Remove.
 	* recog.h: Remove the prototype for
