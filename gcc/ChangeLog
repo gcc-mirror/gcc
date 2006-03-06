@@ -1,3 +1,8 @@
+2006-03-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.h (OPTIMIZATION_OPTIONS): Remove reference to
+	flag_strength_reduce.
+
 2006-03-06  Ben Elliston  <bje@au.ibm.com>
 
 	* config.gcc: Add t-dfprules to $tmake_file for i*86-*-linux* and
