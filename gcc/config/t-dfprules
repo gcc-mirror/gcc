@@ -5,7 +5,6 @@
 DFP_ENABLE = true
 
 # DFP_CFLAGS can be used to pass target-specific CFLAGS when compiling
-# dfp-bit.c.  This is useful for overriding the definition of CMPtype
-# and other macros.
+# dfp-bit.c.  This is useful for overriding the definition of macros.
 #
 # DFP_CFLAGS = -DFOO=bar
