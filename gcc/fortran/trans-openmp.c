@@ -182,6 +182,9 @@ gfc_trans_add_clause (tree node, tree tail)
   return node;
 }
 
+/* TODO make references to parent function results, as done in
+   gfc_conv_variable.  */
+
 static tree
 gfc_trans_omp_variable (gfc_symbol *sym)
 {
@@ -191,7 +194,7 @@ gfc_trans_omp_variable (gfc_symbol *sym)
      Self recursive functions must have an explicit return value.  */
   if (t == current_function_decl && sym->attr.function
       && (sym->result == sym))
-    t = gfc_get_fake_result_decl (sym);
+    t = gfc_get_fake_result_decl (sym, 0);
 
   /* Similarly for alternate entry points.  */
   else if (sym->attr.function && sym->attr.entry
@@ -203,7 +206,7 @@ gfc_trans_omp_variable (gfc_symbol *sym)
       for (el = sym->ns->entries; el; el = el->next)
 	if (sym == el->sym)
 	  {
-	    t = gfc_get_fake_result_decl (sym);
+	    t = gfc_get_fake_result_decl (sym, 0);
 	    break;
 	  }
     }
@@ -212,7 +215,7 @@ gfc_trans_omp_variable (gfc_symbol *sym)
 	   && sym->ns->proc_name->backend_decl == current_function_decl
 	   && sym->ns->proc_name->attr.entry_master
 	   && !gfc_return_by_reference (sym->ns->proc_name))
-    t = gfc_get_fake_result_decl (sym);
+    t = gfc_get_fake_result_decl (sym, 0);
 
   return t;
 }

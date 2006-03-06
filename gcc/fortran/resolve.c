@@ -1357,7 +1357,7 @@ resolve_function (gfc_expr * expr)
 
   need_full_assumed_size = temp;
 
-  if (!pure_function (expr, &name))
+  if (!pure_function (expr, &name) && name)
     {
       if (forall_flag)
 	{

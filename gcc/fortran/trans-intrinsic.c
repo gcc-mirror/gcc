@@ -2269,7 +2269,7 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
 	    decl = gfc_get_symbol_decl (sym);
 	    if (decl == current_function_decl && sym->attr.function
 		&& (sym->result == sym))
-	      decl = gfc_get_fake_result_decl (sym);
+	      decl = gfc_get_fake_result_decl (sym, 0);
 
 	    len = sym->ts.cl->backend_decl;
 	    gcc_assert (len);
