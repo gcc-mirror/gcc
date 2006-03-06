@@ -4,6 +4,7 @@
 	x86_64-*-linux* configurations.
 
 	* config/dfp-bit.h (CMPtype): Typedef to a word mode integer.
+	(LIBGCC2_WORDS_BIG_ENDIAN): Define.
 
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
 
