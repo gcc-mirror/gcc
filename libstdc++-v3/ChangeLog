@@ -1,3 +1,16 @@
+2006-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_sstream.h (basic_stringbuf<>::setbuf): Simply
+	clear the internal _M_string, adjust _M_sync call.
+	* include/bits/sstream.tcc (basic_stringbuf<>::_M_sync): Adjust
+	consistently for calls from setbuf.
+
+2006-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_sstream.h (basic_stringbuf<>::_M_sync): Move out
+	of line...
+	* include/bits/sstream.tcc: ... here.
+
 2006-03-04  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/26132
