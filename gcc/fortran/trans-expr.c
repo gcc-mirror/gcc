@@ -1914,6 +1914,16 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		gfc_conv_aliased_arg (&parmse, arg->expr, f);
 	      else
 	        gfc_conv_array_parameter (&parmse, arg->expr, argss, f);
+
+              /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
+                 allocated on entry, it must be deallocated.  */
+              if (formal && formal->sym->attr.allocatable
+                  && formal->sym->attr.intent == INTENT_OUT)
+                {
+                  tmp = gfc_trans_dealloc_allocated (arg->expr->symtree->n.sym);
+                  gfc_add_expr_to_block (&se->pre, tmp);
+                }
+
 	    } 
 	}
 
