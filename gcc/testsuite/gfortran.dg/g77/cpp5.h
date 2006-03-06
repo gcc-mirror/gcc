@@ -1,3 +1,3 @@
-	FUNCTION FOO()
+        FUNCTION FOO()
 #include "cpp5inc.h"
-	END FUNCTION
+        END FUNCTION

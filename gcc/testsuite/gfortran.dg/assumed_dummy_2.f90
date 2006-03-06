@@ -9,7 +9,7 @@ contains
   end subroutine foo
   subroutine bar (arr)
     double precision :: arr(5,*)
-    call foo (arr)	! { dg-error "cannot be an assumed-size array" }
+    call foo (arr)   ! { dg-error "cannot be an assumed-size array" }
     call foo (arr (:, :8))
   end subroutine
 end

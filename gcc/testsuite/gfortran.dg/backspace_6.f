@@ -27,7 +27,7 @@
        backspace 11
        read(11,end=        1004 )idata
        if(idata(1).ne.-2 .or.idata(datasize).ne.-3) call abort()
-       stop	
+       stop
  1004  continue
        end
        

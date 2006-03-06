@@ -14,11 +14,11 @@
       read(r,'(3(2x,i4/)/3(3x,i6/))') i
       if (any(i.ne.(/(j,j=1,6)/))) call abort()
       do j=1,12
-	do k=1,2
-	  if ((j.gt.8.and.k.eq.1).or.(k.eq.2)) then
-	    if (r(j,k).ne.'0123456789AB') call abort()
-	  end if
-	end do
+         do k=1,2
+            if ((j.gt.8.and.k.eq.1).or.(k.eq.2)) then
+              if (r(j,k).ne.'0123456789AB') call abort()
+            end if
+         end do
       end do
 
  ! Write to a portion of a character array      
