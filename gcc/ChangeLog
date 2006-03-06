@@ -1,3 +1,17 @@
+2006-03-06    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/23706
+	Backport from 4.1:
+	* lcm.c (optimize_mode_switching): Clear transp bit for
+	block with incomming abnormal edges.
+
+	PR target/22553
+	Backport from 4.1:
+	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Set flag_schedule_insns
+	to 2 if it's already non-zero.
+	(OVERRIDE_OPTIONS): Clear flag_schedule_insns if flag_exceptions
+	is set and warn about it if flag_schedule_insns is 1.
+
 2006-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26092
