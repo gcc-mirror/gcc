@@ -1,3 +1,7 @@
+2006-03-06  Ben Elliston  <bje@au.ibm.com>
+
+	* config/dfp-bit.h (CMPtype): Typedef to a word mode integer.
+
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-ssa-threadupdate.c (rediscover_loops_after_threading):
