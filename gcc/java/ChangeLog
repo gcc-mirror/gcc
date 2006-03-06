@@ -1,3 +1,7 @@
+2006-03-05  Release Manager
+
+	* GCC 3.4.6 released.
+
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* jv-scan.c (version), jcf-dump.c (version), gjavah.c (version):
