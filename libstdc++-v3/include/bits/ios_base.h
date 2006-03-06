@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -253,65 +253,65 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     typedef _Ios_Fmtflags fmtflags;
 
     /// Insert/extract @c bool in alphabetic rather than numeric format.
-    static const fmtflags boolalpha =   fmtflags(__ios_flags::_S_boolalpha);
+    static const fmtflags boolalpha =   _S_boolalpha;
 
     /// Converts integer input or generates integer output in decimal base.
-    static const fmtflags dec =         fmtflags(__ios_flags::_S_dec);
+    static const fmtflags dec =         _S_dec;
 
     /// Generate floating-point output in fixed-point notation.
-    static const fmtflags fixed =       fmtflags(__ios_flags::_S_fixed);
+    static const fmtflags fixed =       _S_fixed;
 
     /// Converts integer input or generates integer output in hexadecimal base.
-    static const fmtflags hex =         fmtflags(__ios_flags::_S_hex);
+    static const fmtflags hex =         _S_hex;
 
     /// Adds fill characters at a designated internal point in certain
     /// generated output, or identical to @c right if no such point is
     /// designated.
-    static const fmtflags internal =    fmtflags(__ios_flags::_S_internal);
+    static const fmtflags internal =    _S_internal;
 
     /// Adds fill characters on the right (final positions) of certain
     /// generated output.  (I.e., the thing you print is flush left.)
-    static const fmtflags left =        fmtflags(__ios_flags::_S_left);
+    static const fmtflags left =        _S_left;
 
     /// Converts integer input or generates integer output in octal base.
-    static const fmtflags oct =         fmtflags(__ios_flags::_S_oct);
+    static const fmtflags oct =         _S_oct;
 
     /// Adds fill characters on the left (initial positions) of certain
     /// generated output.  (I.e., the thing you print is flush right.)
-    static const fmtflags right =       fmtflags(__ios_flags::_S_right);
+    static const fmtflags right =       _S_right;
 
     /// Generates floating-point output in scientific notation.
-    static const fmtflags scientific =  fmtflags(__ios_flags::_S_scientific);
+    static const fmtflags scientific =  _S_scientific;
 
     /// Generates a prefix indicating the numeric base of generated integer
     /// output.
-    static const fmtflags showbase =    fmtflags(__ios_flags::_S_showbase);
+    static const fmtflags showbase =    _S_showbase;
 
     /// Generates a decimal-point character unconditionally in generated
     /// floating-point output.
-    static const fmtflags showpoint =   fmtflags(__ios_flags::_S_showpoint);
+    static const fmtflags showpoint =   _S_showpoint;
 
     /// Generates a + sign in non-negative generated numeric output.
-    static const fmtflags showpos =     fmtflags(__ios_flags::_S_showpos);
+    static const fmtflags showpos =     _S_showpos;
 
     /// Skips leading white space before certain input operations.
-    static const fmtflags skipws =      fmtflags(__ios_flags::_S_skipws);
+    static const fmtflags skipws =      _S_skipws;
 
     /// Flushes output after each output operation.
-    static const fmtflags unitbuf =     fmtflags(__ios_flags::_S_unitbuf);
+    static const fmtflags unitbuf =     _S_unitbuf;
 
     /// Replaces certain lowercase letters with their uppercase equivalents
     /// in generated output.
-    static const fmtflags uppercase =   fmtflags(__ios_flags::_S_uppercase);
+    static const fmtflags uppercase =   _S_uppercase;
 
     /// A mask of left|right|internal.  Useful for the 2-arg form of @c setf.
-    static const fmtflags adjustfield = fmtflags(__ios_flags::_S_adjustfield);
+    static const fmtflags adjustfield = _S_adjustfield;
 
     /// A mask of dec|oct|hex.  Useful for the 2-arg form of @c setf.
-    static const fmtflags basefield =   fmtflags(__ios_flags::_S_basefield);
+    static const fmtflags basefield =   _S_basefield;
 
     /// A mask of scientific|fixed.  Useful for the 2-arg form of @c setf.
-    static const fmtflags floatfield =  fmtflags(__ios_flags::_S_floatfield);
+    static const fmtflags floatfield =  _S_floatfield;
 
     // 27.4.2.1.3  Type ios_base::iostate
     /**
@@ -329,18 +329,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     /// Indicates a loss of integrity in an input or output sequence (such
     /// as an irrecoverable read error from a file).
-    static const iostate badbit =	iostate(__ios_flags::_S_badbit);
+    static const iostate badbit =	_S_badbit;
 
     /// Indicates that an input operation reached the end of an input sequence.
-    static const iostate eofbit =	iostate(__ios_flags::_S_eofbit);
+    static const iostate eofbit =	_S_eofbit;
 
     /// Indicates that an input operation failed to read the expected
     /// characters, or that an output operation failed to generate the
     /// desired characters.
-    static const iostate failbit =	iostate(__ios_flags::_S_failbit);
+    static const iostate failbit =	_S_failbit;
 
     /// Indicates all is well.
-    static const iostate goodbit =	iostate(0);
+    static const iostate goodbit =	_S_goodbit;
 
     // 27.4.2.1.4  Type ios_base::openmode
     /**
@@ -359,25 +359,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     typedef _Ios_Openmode openmode;
 
     /// Seek to end before each write.
-    static const openmode app =		openmode(__ios_flags::_S_app);
+    static const openmode app =		_S_app;
 
     /// Open and seek to end immediately after opening.
-    static const openmode ate =		openmode(__ios_flags::_S_ate);
+    static const openmode ate =		_S_ate;
 
     /// Perform input and output in binary mode (as opposed to text mode).
     /// This is probably not what you think it is; see
     /// http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#3 and
     /// http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#7 for more.
-    static const openmode binary =	openmode(__ios_flags::_S_bin);
+    static const openmode binary =	_S_bin;
 
     /// Open for input.  Default for @c ifstream and fstream.
-    static const openmode in =		openmode(__ios_flags::_S_in);
+    static const openmode in =		_S_in;
 
     /// Open for output.  Default for @c ofstream and fstream.
-    static const openmode out =		openmode(__ios_flags::_S_out);
+    static const openmode out =		_S_out;
 
     /// Open for input.  Default for @c ofstream.
-    static const openmode trunc =	openmode(__ios_flags::_S_trunc);
+    static const openmode trunc =	_S_trunc;
 
     // 27.4.2.1.5  Type ios_base::seekdir
     /**
@@ -392,13 +392,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     typedef _Ios_Seekdir seekdir;
 
     /// Request a seek relative to the beginning of the stream.
-    static const seekdir beg =		seekdir(0);
+    static const seekdir beg =		_S_beg;
 
     /// Request a seek relative to the current position within the sequence.
-    static const seekdir cur =		seekdir(SEEK_CUR);
+    static const seekdir cur =		_S_cur;
 
     /// Request a seek relative to the current end of the sequence.
-    static const seekdir end =		seekdir(SEEK_END);
+    static const seekdir end =		_S_end;
 
     // Annex D.6
     typedef int io_state;
@@ -505,7 +505,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     // Guaranteed storage.
     // The first 5 iword and pword slots are reserved for internal use.
-    static const int	_S_local_word_size = 8;
+    enum { _S_local_word_size = 8 };
     _Words		_M_local_word[_S_local_word_size];
 
     // Allocated storage.

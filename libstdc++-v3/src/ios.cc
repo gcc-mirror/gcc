@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -38,38 +38,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // XXX GLIBCXX_ABI Deprecated
-   // Definitions for static const data members of __ios_flags.
-  const __ios_flags::__int_type __ios_flags::_S_boolalpha;
-  const __ios_flags::__int_type __ios_flags::_S_dec;
-  const __ios_flags::__int_type __ios_flags::_S_fixed;
-  const __ios_flags::__int_type __ios_flags::_S_hex;
-  const __ios_flags::__int_type __ios_flags::_S_internal;
-  const __ios_flags::__int_type __ios_flags::_S_left;
-  const __ios_flags::__int_type __ios_flags::_S_oct;
-  const __ios_flags::__int_type __ios_flags::_S_right;
-  const __ios_flags::__int_type __ios_flags::_S_scientific;
-  const __ios_flags::__int_type __ios_flags::_S_showbase;
-  const __ios_flags::__int_type __ios_flags::_S_showpoint;
-  const __ios_flags::__int_type __ios_flags::_S_showpos;
-  const __ios_flags::__int_type __ios_flags::_S_skipws;
-  const __ios_flags::__int_type __ios_flags::_S_unitbuf;
-  const __ios_flags::__int_type __ios_flags::_S_uppercase;
-  const __ios_flags::__int_type __ios_flags::_S_adjustfield;
-  const __ios_flags::__int_type __ios_flags::_S_basefield;
-  const __ios_flags::__int_type __ios_flags::_S_floatfield;
-
-  const __ios_flags::__int_type __ios_flags::_S_badbit;
-  const __ios_flags::__int_type __ios_flags::_S_eofbit;
-  const __ios_flags::__int_type __ios_flags::_S_failbit;
-
-  const __ios_flags::__int_type __ios_flags::_S_app;
-  const __ios_flags::__int_type __ios_flags::_S_ate;
-  const __ios_flags::__int_type __ios_flags::_S_bin;
-  const __ios_flags::__int_type __ios_flags::_S_in;
-  const __ios_flags::__int_type __ios_flags::_S_out;
-  const __ios_flags::__int_type __ios_flags::_S_trunc;
-
   // Definitions for static const members of ios_base.
   const ios_base::fmtflags ios_base::boolalpha;
   const ios_base::fmtflags ios_base::dec;
@@ -105,8 +73,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   const ios_base::seekdir ios_base::beg;
   const ios_base::seekdir ios_base::cur;
   const ios_base::seekdir ios_base::end;
-
-  const int ios_base::_S_local_word_size;
 
   _Atomic_word ios_base::Init::_S_refcount;
 

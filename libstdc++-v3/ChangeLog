@@ -1,3 +1,15 @@
+2006-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR target/26532
+	* config/io/c_io_stdio.h (struct __ios_flags): Remove.
+	* include/bits/ios_base.h: Adjust consistently.
+	(ios_base::_S_local_word_size): Change to an anonymous enum.
+	* src/ios.cc: Do not define static const data of __ios_flags,
+	likewise for ios_base::_S_local_word_size.	
+	* include/bits/locale_classes.h (locale::_S_categories_size):
+	Change to an anonymous enum.
+	* src/locale.cc: Don't define.
+
 2006-03-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/26526

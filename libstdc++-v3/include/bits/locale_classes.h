@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -307,7 +307,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     // macros. For GNU systems, the following are also valid:
     // LC_PAPER, LC_NAME, LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT,
     // and LC_IDENTIFICATION.
-    static const size_t _S_categories_size = 6 + _GLIBCXX_NUM_CATEGORIES;
+    enum { _S_categories_size = 6 + _GLIBCXX_NUM_CATEGORIES };
 
 #ifdef __GTHREADS
     static __gthread_once_t _S_once;
