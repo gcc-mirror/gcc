@@ -1,3 +1,7 @@
+2006-03-05  Steven G. Kargl  <kargls@comcast.net>
+
+	* simplify.c (gfc_simplify_verify):  Fix return when SET=''.
+
 2005-03-05  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/16136
