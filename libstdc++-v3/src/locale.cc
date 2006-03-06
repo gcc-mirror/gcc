@@ -71,7 +71,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // These are no longer exported.
   locale::_Impl*                locale::_S_classic;
   locale::_Impl* 		locale::_S_global; 
-  const size_t 			locale::_S_categories_size;
 
 #ifdef __GTHREADS
   __gthread_once_t 		locale::_S_once = __GTHREAD_ONCE_INIT;
