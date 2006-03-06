@@ -1,5 +1,8 @@
 2006-03-06  Ben Elliston  <bje@au.ibm.com>
 
+	* config.gcc: Add t-dfprules to $tmake_file for i*86-*-linux* and
+	x86_64-*-linux* configurations.
+
 	* config/dfp-bit.h (CMPtype): Typedef to a word mode integer.
 
 2006-03-05  Kazu Hirata  <kazu@codesourcery.com>
