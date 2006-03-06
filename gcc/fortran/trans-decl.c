@@ -50,6 +50,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* Holds the result of the function if no result variable specified.  */
 
 static GTY(()) tree current_fake_result_decl;
+static GTY(()) tree parent_fake_result_decl;
 
 static GTY(()) tree current_function_return_label;
 
@@ -1733,28 +1734,49 @@ gfc_create_function_decl (gfc_namespace * ns)
   create_function_arglist (ns->proc_name);
 }
 
-/* Return the decl used to hold the function return value.  */
+/* Return the decl used to hold the function return value.  If
+   parent_flag is set, the context is the parent_scope*/
 
 tree
-gfc_get_fake_result_decl (gfc_symbol * sym)
+gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 {
-  tree decl, length;
+  tree decl;
+  tree length;
+  tree this_fake_result_decl;
+  tree this_function_decl;
 
   char name[GFC_MAX_SYMBOL_LEN + 10];
 
+  if (parent_flag)
+    {
+      this_fake_result_decl = parent_fake_result_decl;
+      this_function_decl = DECL_CONTEXT (current_function_decl);
+    }
+  else
+    {
+      this_fake_result_decl = current_fake_result_decl;
+      this_function_decl = current_function_decl;
+    }
+
   if (sym
-      && sym->ns->proc_name->backend_decl == current_function_decl
+      && sym->ns->proc_name->backend_decl == this_function_decl
       && sym->ns->proc_name->attr.entry_master
       && sym != sym->ns->proc_name)
     {
       tree t = NULL, var;
-      if (current_fake_result_decl != NULL)
-	for (t = TREE_CHAIN (current_fake_result_decl); t; t = TREE_CHAIN (t))
+      if (this_fake_result_decl != NULL)
+	for (t = TREE_CHAIN (this_fake_result_decl); t; t = TREE_CHAIN (t))
 	  if (strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)), sym->name) == 0)
 	    break;
       if (t)
 	return TREE_VALUE (t);
-      decl = gfc_get_fake_result_decl (sym->ns->proc_name);
+      decl = gfc_get_fake_result_decl (sym->ns->proc_name, parent_flag);
+
+      if (parent_flag)
+	this_fake_result_decl = parent_fake_result_decl;
+      else
+	this_fake_result_decl = current_fake_result_decl;
+
       if (decl && sym->ns->proc_name->attr.mixed_entry_master)
 	{
 	  tree field;
@@ -1769,18 +1791,24 @@ gfc_get_fake_result_decl (gfc_symbol * sym)
 	  decl = build3 (COMPONENT_REF, TREE_TYPE (field), decl, field,
 			 NULL_TREE);
 	}
-      var = gfc_create_var (TREE_TYPE (decl), sym->name);
-      GFC_DECL_RESULT (var) = 1;
+
+      var = create_tmp_var_raw (TREE_TYPE (decl), sym->name);
+      if (parent_flag)
+	gfc_add_decl_to_parent_function (var);
+      else
+	gfc_add_decl_to_function (var);
+
       SET_DECL_VALUE_EXPR (var, decl);
       DECL_HAS_VALUE_EXPR_P (var) = 1;
-      TREE_CHAIN (current_fake_result_decl)
-	= tree_cons (get_identifier (sym->name), var,
-		     TREE_CHAIN (current_fake_result_decl));
+
+      TREE_CHAIN (this_fake_result_decl)
+	  = tree_cons (get_identifier (sym->name), var,
+		       TREE_CHAIN (this_fake_result_decl));
       return var;
     }
 
-  if (current_fake_result_decl != NULL_TREE)
-    return TREE_VALUE (current_fake_result_decl);
+  if (this_fake_result_decl != NULL_TREE)
+    return TREE_VALUE (this_fake_result_decl);
 
   /* Only when gfc_get_fake_result_decl is called by gfc_trans_return,
      sym is NULL.  */
@@ -1800,9 +1828,9 @@ gfc_get_fake_result_decl (gfc_symbol * sym)
 
   if (gfc_return_by_reference (sym))
     {
-      decl = DECL_ARGUMENTS (current_function_decl);
+      decl = DECL_ARGUMENTS (this_function_decl);
 
-      if (sym->ns->proc_name->backend_decl == current_function_decl
+      if (sym->ns->proc_name->backend_decl == this_function_decl
 	  && sym->ns->proc_name->attr.entry_master)
 	decl = TREE_CHAIN (decl);
 
@@ -1813,10 +1841,10 @@ gfc_get_fake_result_decl (gfc_symbol * sym)
   else
     {
       sprintf (name, "__result_%.20s",
-	       IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+	       IDENTIFIER_POINTER (DECL_NAME (this_function_decl)));
 
       decl = build_decl (VAR_DECL, get_identifier (name),
-			 TREE_TYPE (TREE_TYPE (current_function_decl)));
+			 TREE_TYPE (TREE_TYPE (this_function_decl)));
 
       DECL_ARTIFICIAL (decl) = 1;
       DECL_EXTERNAL (decl) = 0;
@@ -1826,10 +1854,16 @@ gfc_get_fake_result_decl (gfc_symbol * sym)
 
       layout_decl (decl, 0);
 
-      gfc_add_decl_to_function (decl);
+      if (parent_flag)
+	gfc_add_decl_to_parent_function (decl);
+      else
+	gfc_add_decl_to_function (decl);
     }
 
-  current_fake_result_decl = build_tree_list (NULL, decl);
+  if (parent_flag)
+    parent_fake_result_decl = build_tree_list (NULL, decl);
+  else
+    current_fake_result_decl = build_tree_list (NULL, decl);
 
   return decl;
 }
@@ -2834,12 +2868,24 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* Translate COMMON blocks.  */
   gfc_trans_common (ns);
 
+  /* Null the parent fake result declaration if this namespace is
+     a module function or an external procedures.  */
+  if ((ns->parent && ns->parent->proc_name->attr.flavor == FL_MODULE)
+	|| ns->parent == NULL)
+    parent_fake_result_decl = NULL_TREE;
+
   gfc_generate_contained_functions (ns);
 
   generate_local_vars (ns);
   
-  /* Will be created as needed.  */
-  current_fake_result_decl = NULL_TREE;
+  /* Keep the parent fake result declaration in module functions
+     or external procedures.  */
+  if ((ns->parent && ns->parent->proc_name->attr.flavor == FL_MODULE)
+	|| ns->parent == NULL)
+    current_fake_result_decl = parent_fake_result_decl;
+  else
+    current_fake_result_decl = NULL_TREE;
+
   current_function_return_label = NULL;
 
   /* Now generate the code for the body of this function.  */
@@ -2901,7 +2947,7 @@ gfc_generate_function_code (gfc_namespace * ns)
       && sym->attr.subroutine)
     {
       tree alternate_return;
-      alternate_return = gfc_get_fake_result_decl (sym);
+      alternate_return = gfc_get_fake_result_decl (sym, 0);
       gfc_add_modify_expr (&body, alternate_return, integer_zero_node);
     }
 

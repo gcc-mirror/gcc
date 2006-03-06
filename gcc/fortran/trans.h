@@ -361,7 +361,7 @@ tree gfc_build_label_decl (tree);
 
 /* Return the decl used to hold the function return value.
    Do not use if the function has an explicit result variable.  */
-tree gfc_get_fake_result_decl (gfc_symbol *);
+tree gfc_get_fake_result_decl (gfc_symbol *, int);
 
 /* Get the return label for the current function.  */
 tree gfc_get_return_label (void);

@@ -309,7 +309,7 @@ gfc_trans_return (gfc_code * code ATTRIBUTE_UNUSED)
          in a subroutine and current_fake_result_decl has already
 	 been generated.  */
 
-      result = gfc_get_fake_result_decl (NULL);
+      result = gfc_get_fake_result_decl (NULL, 0);
       if (!result)
         {
           gfc_warning ("An alternate return at %L without a * dummy argument",

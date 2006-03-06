@@ -1,3 +1,14 @@
+2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26107
+	* pure_dummy_length_1.f90: New test.
+
+	PR fortran/19546
+	* gfortran.dg/parent_result_ref_1.f90: New test.
+	* gfortran.dg/parent_result_ref_2.f90: New test.
+	* gfortran.dg/parent_result_ref_3.f90: New test.
+	* gfortran.dg/parent_result_ref_4.f90: New test.
+
 2006-03-06  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/verify_2.f90: New test.
@@ -29,7 +40,7 @@
 	PR c++/15759
 	* g++.dg/other/default4.C: New test.
 
-2005-03-05  Erik Edelmann  <eedelman@gcc.gnu.org>
+2006-03-05  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/16136
 	* allocatable_dummy_1.f90: New.
@@ -300,7 +311,7 @@
 	PR fortran/26201
 	* gfortran.dg/convert_1.f90: New.
 
-2005-02-19  Paul Thomas  <pault@gcc.gnu.org>
+2006-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25054
 	* gfortran.dg/namelist_5.f90: New test.
@@ -396,7 +407,7 @@
 	vect-reduc-pattern-1a.c, vect-reduc-pattern-1b.c and
 	vect-reduc-pattern-1c.c
 
-2005-02-16  Paul Thomas  <pault@gcc.gnu.org>
+2006-02-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24557
         * gfortran.dg/assumed_charlen_needed_1.f90: New test.
@@ -710,7 +721,7 @@
 	* g++.old-deja/g++.pt/ttp26.C: Likewise.
 	* g++.old-deja/g++.pt/ttp36.C: Likewise.
 
-2005-02-06  Thomas Koenig  <Thomas.Koenig@online.de>
+2006-02-06  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23815
 	* unf_io_convert_4.f90:  New test.
@@ -876,7 +887,7 @@
 	* gcc.target/i386/sselibm-4.c: Likewise.
 	* gcc.target/i386/sselibm-5.c: Likewise.
 
-2005-01-30  Erik Edelmann  <eedelman@gcc.gnu.org>
+2006-01-30  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24266
 	* gfortran.dg/arrayio_derived_2.f90: New.
@@ -971,7 +982,7 @@
 
 	* gcc.dg/pragma-re-4.c: New test.
 
-2005-01-27  Paul Thomas  <pault@gcc.gnu.org>
+2006-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25964
 	* gfortran.dg/assumed_size_refs_3.f90: New test.
@@ -989,7 +1000,7 @@
 	* ada/acats/tests/c9/c97305c.ada: Likewise.
 	* ada/acats/tests/c9/c99004a.ada: Likewise.
 
-2005-01-26  Paul Thomas  <pault@gcc.gnu.org>
+2006-01-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25964
 	* gfortran.dg/global_references_2.f90: New test.
@@ -1112,7 +1123,7 @@
 	* gcc.dg/torture/pr25654.c: New testcase.
 	* gcc.target/i386/pr25654.c: Likewise.
 
-2005-01-23  Paul Thomas  <pault@gcc.gnu.org>
+2006-01-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25901
 	* gfortran.dg/internal references_2.f90: New test.
@@ -1142,7 +1153,7 @@
 	PR c++/25858
 	* g++.dg/template/crash44.C: New test.
 
-2005-01-21  Paul Thomas  <pault@gcc.gnu.org>
+2006-01-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25124
 	PR fortran/25625
