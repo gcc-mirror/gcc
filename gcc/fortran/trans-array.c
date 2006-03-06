@@ -4297,6 +4297,34 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
 }
 
 
+/* Generate code to deallocate the symbol 'sym', if it is allocated.  */
+
+tree
+gfc_trans_dealloc_allocated (gfc_symbol * sym)
+{ 
+  tree tmp;
+  tree descriptor;
+  tree deallocate;
+  stmtblock_t block;
+
+  gcc_assert (sym->attr.allocatable);
+
+  gfc_start_block (&block);
+  descriptor = sym->backend_decl;
+  deallocate = gfc_array_deallocate (descriptor, null_pointer_node);
+
+  tmp = gfc_conv_descriptor_data_get (descriptor);
+  tmp = build2 (NE_EXPR, boolean_type_node, tmp,
+                build_int_cst (TREE_TYPE (tmp), 0));
+  tmp = build3_v (COND_EXPR, tmp, deallocate, build_empty_stmt ());
+  gfc_add_expr_to_block (&block, tmp);
+
+  tmp = gfc_finish_block (&block);
+
+  return tmp;
+}
+
+
 /* NULLIFY an allocatable/pointer array on function entry, free it on exit.  */
 
 tree
@@ -4305,8 +4333,6 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
   tree type;
   tree tmp;
   tree descriptor;
-  tree deallocate;
-  stmtblock_t block;
   stmtblock_t fnblock;
   locus loc;
 
@@ -4359,18 +4385,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
   /* Allocatable arrays need to be freed when they go out of scope.  */
   if (sym->attr.allocatable)
     {
-      gfc_start_block (&block);
-
-      /* Deallocate if still allocated at the end of the procedure.  */
-      deallocate = gfc_array_deallocate (descriptor, null_pointer_node);
-
-      tmp = gfc_conv_descriptor_data_get (descriptor);
-      tmp = build2 (NE_EXPR, boolean_type_node, tmp, 
-		    build_int_cst (TREE_TYPE (tmp), 0));
-      tmp = build3_v (COND_EXPR, tmp, deallocate, build_empty_stmt ());
-      gfc_add_expr_to_block (&block, tmp);
-
-      tmp = gfc_finish_block (&block);
+      tmp = gfc_trans_dealloc_allocated (sym);
       gfc_add_expr_to_block (&fnblock, tmp);
     }
 

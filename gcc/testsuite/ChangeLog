@@ -1,3 +1,9 @@
+2005-03-06  Paul Thomas  <pault@gcc.gnu.org>
+            Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	* gfortran.dg/allocatable_dummy_1.f90: Take into account that
+	INTENT(OUT) arguments shall be deallocated upon procedure entry.
+
 2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26107
