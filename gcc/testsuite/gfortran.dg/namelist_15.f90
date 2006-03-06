@@ -46,14 +46,14 @@ program namelist_15
   if (.not. ((x(1)%i(1) == 3)          .and. &
              (x(1)%i(2) == 4)          .and. &
              (x(1)%m(1)%ch(1) == "dz") .and. &
-	     (x(1)%m(1)%ch(2) == "ez") .and. &
+             (x(1)%m(1)%ch(2) == "ez") .and. &
              (x(1)%m(2)%ch(1) == "fz") .and. &
-	     (x(1)%m(2)%ch(2) == "gz") .and. &
+             (x(1)%m(2)%ch(2) == "gz") .and. &
              (x(2)%i(1) == -3)         .and. &
              (x(2)%i(2) == -4)         .and. &
              (x(2)%m(1)%ch(1) == "hz") .and. &
-	     (x(2)%m(1)%ch(2) == "qz") .and. &
+             (x(2)%m(1)%ch(2) == "qz") .and. &
              (x(2)%m(2)%ch(1) == "wz") .and. &
-	     (x(2)%m(2)%ch(2) == "kz"))) call abort ()
+             (x(2)%m(2)%ch(2) == "kz"))) call abort ()
 
 end program namelist_15

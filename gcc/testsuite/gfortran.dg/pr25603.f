@@ -41,7 +41,7 @@ C
       DIMENSION  WORK(*)
 
       if (XSTART .NE. 201.0) then
-	call abort
+       call abort
       endif
 
       CALL BAR2(NX,NY,NZ,NT,NTIME,NWINDX,NWINDY,NSINKS,NFILT,XSTART,

@@ -17,12 +17,12 @@
      write(r((i-1):(i+1),i), f)
 
      if ( r(1,1).ne.'hello       ' .or. &
-	  r(2,1).ne.'world       ' .or. &
-	  r(3,1).ne.'0123456789ab' .or. &
-	  r(4,1).ne.'0123456789ab' .or. &
-	  r(1,2).ne.'HELLO !     ' .or. &
-	  r(2,2).ne.'WORLD       ' .or. &
-	  r(3,2).ne.'0123456789ab' .or. &
-	  r(4,2).ne.'0123456789ab') call abort()
+          r(2,1).ne.'world       ' .or. &
+          r(3,1).ne.'0123456789ab' .or. &
+          r(4,1).ne.'0123456789ab' .or. &
+          r(1,2).ne.'HELLO !     ' .or. &
+          r(2,2).ne.'WORLD       ' .or. &
+          r(3,2).ne.'0123456789ab' .or. &
+          r(4,2).ne.'0123456789ab') call abort()
 
      end program arrayio_2 

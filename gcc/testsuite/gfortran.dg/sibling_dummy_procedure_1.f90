@@ -15,7 +15,7 @@ contains
    subroutine bar(self, z)
       interface
          function self(z) result(res)
-	    real z
+        real z
             real(kind=kind(1.0d0)) :: res
          end function
       end interface
@@ -23,7 +23,7 @@ contains
    subroutine xxx(self,z)
       interface
          function self(z) result(res)
-	    real z
+        real z
             real(kind=kind(1.0d0)) :: res
          end function
       end interface

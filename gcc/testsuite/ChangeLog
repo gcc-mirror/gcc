@@ -1,3 +1,25 @@
+2006-03-06  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/equiv_1.f90: Replace tab(s) with spaces.
+	* gfortran.dg/arrayio_1.f90: Ditto.
+	* gfortran.dg/pr25603.f: Ditto.
+	* gfortran.dg/assumed_dummy_2.f90: Ditto.
+	* gfortran.dg/equiv_2.f90: Ditto.
+	* gfortran.dg/arrayio_2.f90: Ditto.
+	* gfortran.dg/namelist_14.f90: Ditto.
+	* gfortran.dg/g77/cpp6.f: Ditto.
+	* gfortran.dg/g77/cpp5inc.h: Ditto.
+	* gfortran.dg/g77/cpp5.F: Ditto.
+	* gfortran.dg/g77/cpp5.h: Ditto.
+	* gfortran.dg/namelist_15.f90: Ditto.
+	* gfortran.dg/badline.f: Ditto.
+	* gfortran.dg/sibling_dummy_procedure_1.f90: Ditto.
+	* gfortran.dg/sibling_dummy_procedure_2.f90: Ditto.
+	* gfortran.dg/backspace_6.f: Ditto.
+	* gfortran.dg/altreturn_1.f90: Ditto.
+	* gfortran.dg/entry_4.f90: Ditto.
+	* gfortran.dg/implicit_5.f90: Ditto.
+
 2006-03-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/15759
