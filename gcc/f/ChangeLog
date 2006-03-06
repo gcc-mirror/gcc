@@ -1,3 +1,7 @@
+2006-03-05  Release Manager
+
+	* GCC 3.4.6 released.
+
 2006-01-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* g77spec.c (lang_specific_driver): Update copyright notice date.
