@@ -40,7 +40,7 @@ static int show_level = 0;
 
 /* Forward declaration because this one needs all, and all need
    this one.  */
-static void gfc_show_expr (gfc_expr *);
+
 
 /* Do indentation for a specific level.  */
 
@@ -301,7 +301,7 @@ gfc_show_constructor (gfc_constructor * c)
 
 /* Show an expression.  */
 
-static void
+void
 gfc_show_expr (gfc_expr * p)
 {
   const char *c;

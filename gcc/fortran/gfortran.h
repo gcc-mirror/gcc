@@ -886,6 +886,10 @@ typedef struct gfc_namespace
 
   /* Points to the equivalences set up in this namespace.  */
   struct gfc_equiv *equiv;
+
+  /* Points to the equivalence groups produced by trans_common.  */
+  struct gfc_equiv_list *equiv_lists;
+
   gfc_interface *operator[GFC_INTRINSIC_OPS];
 
   /* Points to the parent namespace, i.e. the namespace of a module or
@@ -1276,6 +1280,20 @@ gfc_equiv;
 
 #define gfc_get_equiv() gfc_getmem(sizeof(gfc_equiv))
 
+/* Holds a single equivalence member after processing.  */
+typedef struct gfc_equiv_info
+{
+  gfc_symbol *sym;
+  HOST_WIDE_INT offset;
+  struct gfc_equiv_info *next;
+} gfc_equiv_info;
+
+/* Holds equivalence groups, after they have been processed.  */
+typedef struct gfc_equiv_list
+{
+  gfc_equiv_info *equiv;
+  struct gfc_equiv_list *next;
+} gfc_equiv_list;
 
 /* gfc_case stores the selector list of a case statement.  The *low
    and *high pointers can point to the same expression in the case of
@@ -1981,5 +1999,8 @@ void global_used (gfc_gsymbol *, locus *);
 
 /* dependency.c */
 int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
+
+/* dump_parse_tree.c  */
+void gfc_show_expr (gfc_expr *);
 
 #endif /* GCC_GFORTRAN_H  */

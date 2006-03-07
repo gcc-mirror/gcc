@@ -115,6 +115,7 @@ fortran 95		Paul Brook		paul@codesourcery.com
 fortran 95		Steven Bosscher		stevenb@suse.de
 fortran 95		Thomas Koenig		Thomas.Koenig@online.de
 fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
+fortran 95		Paul Thomas		pault@gcc.gnu.org
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -327,7 +328,6 @@ Richard Stallman				rms@gnu.org
 Graham Stott					graham.stott@btinternet.com
 Mike Stump					mrs@apple.com
 Jeff Sturm					jsturm@gcc.gnu.org
-Paul Thomas					pault@gcc.gnu.org
 Kresten Krab Thorup				krab@gcc.gnu.org
 Caroline Tice					ctice@apple.com
 Michael Tiemann					tiemann@redhat.com

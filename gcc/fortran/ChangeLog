@@ -1,3 +1,58 @@
+2006-03-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26107
+	* resolve.c (resolve_function): Add name after test for pureness.
+
+	* iresolve.c (gfc_resolve_dot_product):  Remove any difference in
+	treatment of logical types.
+	* trans-intrinsic.c (gfc_conv_intrinsic_dot_product):  New function. 
+
+	PR fortran/26393
+	* trans-decl.c (gfc_get_symbol_decl): Extend condition that symbols
+	must be referenced to include unreferenced symbols in an interface
+	body. 
+
+	PR fortran/20938
+	* trans-array.c (gfc_conv_resolve_dependencies): Add call to
+	gfc_are_equivalenced_arrays.
+	* symbol.c (gfc_free_equiv_infos, gfc_free_equiv_lists): New
+	functions. (gfc_free_namespace): Call them.
+	* trans-common.c (copy_equiv_list_to_ns): New function.
+	(add_equivalences): Call it.
+	* gfortran.h: Add equiv_lists to gfc_namespace and define
+	gfc_equiv_list and gfc_equiv_info.
+	* dependency.c (gfc_are_equivalenced_arrays): New function.
+	(gfc_check_dependency): Call it.
+	* dependency.h: Prototype for gfc_are_equivalenced_arrays.
+
+	PR fortran/24519
+	* dependency.c (gfc_is_same_range): Correct typo.
+	(gfc_check_section_vs_section): Call gfc_is_same_range.
+
+	PR fortran/25395
+	* trans-common.c (add_equivalences): Add a new flag that is set when
+	an equivalence is seen that prevents more from being reset until the
+	start of a new traversal of the list, thus ensuring completion of
+	all the equivalences.
+
+	PR fortran/25054
+	* resolve.c (is_non_constant_shape_array): New function.
+	(resolve_fl_variable): Remove code for the new function and call it.
+	(resolve_fl_namelist): New function.  Add test for namelist array
+	with non-constant shape, using is_non_constant_shape_array.
+	(resolve_symbol): Remove code for resolve_fl_namelist and call it.
+
+	PR fortran/25089
+	* match.c (match_namelist): Increment the refs field of an accepted
+	namelist object symbol.
+	* resolve.c (resolve_fl_namelist): Test namelist objects for a conflict
+	with contained or module procedures.
+
+	PR fortran/24557
+	* trans-expr.c (gfc_add_interface_mapping): Use the actual argument
+	for character(*) arrays, rather than casting to the type and kind
+	parameters of the formal argument.
+
 2006-03-05  Thomas Koenig <Thomas.Koenig@online.de>
 
 	PR fortran/23092

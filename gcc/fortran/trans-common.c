@@ -119,6 +119,7 @@ typedef struct segment_info
 static segment_info * current_segment;
 static gfc_namespace *gfc_common_ns = NULL;
 
+
 /* Make a segment_info based on a symbol.  */
 
 static segment_info *
@@ -140,6 +141,34 @@ get_segment_info (gfc_symbol * sym, HOST_WIDE_INT offset)
 
   return s;
 }
+
+
+/* Add a copy of a segment list to the namespace.  This is specifically for
+   equivalence segments, so that dependency checking can be done on
+   equivalence group members.  */
+
+static void
+copy_equiv_list_to_ns (segment_info *c)
+{
+  segment_info *f;
+  gfc_equiv_info *s;
+  gfc_equiv_list *l;
+
+  l = (gfc_equiv_list *) gfc_getmem (sizeof (gfc_equiv_list));
+
+  l->next = c->sym->ns->equiv_lists;
+  c->sym->ns->equiv_lists = l;
+
+  for (f = c; f; f = f->next)
+    {
+      s = (gfc_equiv_info *) gfc_getmem (sizeof (gfc_equiv_info));
+      s->next = l->equiv;
+      l->equiv = s;
+      s->sym = f->sym;
+      s->offset = f->offset;
+    }
+}
+
 
 /* Add combine segment V and segment LIST.  */
 
@@ -745,15 +774,20 @@ find_equivalence (segment_info *n)
 }
 
 
-/* Add all symbols equivalenced within a segment.  We need to scan the
-   segment list multiple times to include indirect equivalences.  */
+  /* Add all symbols equivalenced within a segment.  We need to scan the
+   segment list multiple times to include indirect equivalences.  Since
+   a new segment_info can inserted at the beginning of the segment list,
+   depending on its offset, we have to force a final pass through the
+   loop by demanding that completion sees a pass with no matches; ie.
+   all symbols with equiv_built set and no new equivalences found.  */
 
 static void
 add_equivalences (bool *saw_equiv)
 {
   segment_info *f;
-  bool more;
+  bool seen_one, more;
 
+  seen_one = false;
   more = TRUE;
   while (more)
     {
@@ -763,12 +797,18 @@ add_equivalences (bool *saw_equiv)
 	  if (!f->sym->equiv_built)
 	    {
 	      f->sym->equiv_built = 1;
-	      more = find_equivalence (f);
-	      if (more)
-		*saw_equiv = true;
+	      seen_one = find_equivalence (f);
+	      if (seen_one)
+		{
+		  *saw_equiv = true;
+		  more = true;
+		}
 	    }
 	}
     }
+
+  /* Add a copy of this segment list to the namespace.  */
+  copy_equiv_list_to_ns (current_segment);
 }
 
 

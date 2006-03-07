@@ -549,21 +549,13 @@ gfc_resolve_dot_product (gfc_expr * f, gfc_expr * a, gfc_expr * b)
 {
   gfc_expr temp;
 
-  if (a->ts.type == BT_LOGICAL && b->ts.type == BT_LOGICAL)
-    {
-      f->ts.type = BT_LOGICAL;
-      f->ts.kind = gfc_default_logical_kind;
-    }
-  else
-    {
-      temp.expr_type = EXPR_OP;
-      gfc_clear_ts (&temp.ts);
-      temp.value.op.operator = INTRINSIC_NONE;
-      temp.value.op.op1 = a;
-      temp.value.op.op2 = b;
-      gfc_type_convert_binary (&temp);
-      f->ts = temp.ts;
-    }
+  temp.expr_type = EXPR_OP;
+  gfc_clear_ts (&temp.ts);
+  temp.value.op.operator = INTRINSIC_NONE;
+  temp.value.op.op1 = a;
+  temp.value.op.op2 = b;
+  gfc_type_convert_binary (&temp);
+  f->ts = temp.ts;
 
   f->value.function.name =
     gfc_get_string (PREFIX("dot_product_%c%d"), gfc_type_letter (f->ts.type),
