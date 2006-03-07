@@ -30,9 +30,7 @@ details.  */
 // but uses more memory.
 #define DIRECT_THREADED
 
-extern "C" {
 #include <ffi.h>
-}
 
 struct _Jv_ResolvedMethod;
 
