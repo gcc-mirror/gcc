@@ -1,3 +1,29 @@
+2006-03-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* hooks.c (hook_bool_mode_rtx_true): New function.
+	* hooks.h (hook_bool_mode_rtx_true): Declare.
+	* toplev.c (compile_file): Call output_shared_constant_pool.
+	* varasm.c (shared_constant_pool): New variable.
+	(assemble_start_function, assemble_end_function): Remove arguments
+	from call to output_constant_pool.
+	(create_constant_pool): New function, split out from...
+	(init_varasm_status): ...here.
+	(force_const_mem): Choose between the shared and per-function constant
+	pools.  Set current_function_uses_const_pool when reusing old entries
+	as well as when creating new ones.
+	(mark_constant): Ignore data argument.
+	(mark_constants): Remove pool argument.
+	(mark_constant_pool): Likewise.  Use current_function_uses_const_pool
+	to decide whether the function uses a constant pool.
+	(output_constant_pool_contents): New function, split out from...
+	(output_constant_pool): ...here.
+	(output_shared_constant_pool): New function.
+	(init_varasm_once): Initialize shared_constant_pool.
+	* output.h (output_constant_pool): Delete.
+	(output_shared_constant_pool): Declare.
+	* config/s390/s390-protos.h (s390_output_constant_pool): Delete.
+	* config/i386/i386.c (TARGET_USE_BLOCKS_FOR_CONSTANT_P): Override.
+
 2006-03-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32r/m32r.h (OPTIMIZATION_OPTIONS): Remove reference to

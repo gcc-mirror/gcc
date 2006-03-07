@@ -272,8 +272,7 @@ extern int get_pool_size (void);
 extern rtx peephole (rtx);
 #endif
 
-/* Write all the constants in the constant pool.  */
-extern void output_constant_pool (const char *, tree);
+extern void output_shared_constant_pool (void);
 
 extern void output_object_blocks (void);
 

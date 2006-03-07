@@ -77,6 +77,14 @@ hook_bool_mode_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
   return false;
 }
 
+/* Generic hook that takes (enum machine_mode, rtx) and returns true.  */
+bool
+hook_bool_mode_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
+			 rtx value ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 /* Generic hook that takes (FILE *, const char *) and does nothing.  */
 void
 hook_void_FILEptr_constcharptr (FILE *a ATTRIBUTE_UNUSED, const char *b ATTRIBUTE_UNUSED)
