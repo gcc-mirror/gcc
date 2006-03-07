@@ -1,3 +1,12 @@
+2006-03-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/26041
+	PR fortran/26064
+	Backport from mainline
+	* resolve.c (resolve_types): New function.
+	(resolve_codes): Likewise.
+	(gfc_resolve): Use them.
+
 2006-03-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26107

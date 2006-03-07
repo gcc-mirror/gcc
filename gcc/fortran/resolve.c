@@ -5960,21 +5960,20 @@ resolve_fntype (gfc_namespace * ns)
 }
 
 
-/* This function is called after a complete program unit has been compiled.
-   Its purpose is to examine all of the expressions associated with a program
-   unit, assign types to all intermediate expressions, make sure that all
-   assignments are to compatible types and figure out which names refer to
-   which functions or subroutines.  */
+/* Examine all of the expressions associated with a program unit,
+   assign types to all intermediate expressions, make sure that all
+   assignments are to compatible types and figure out which names
+   refer to which functions or subroutines.  It doesn't check code
+   block, which is handled by resolve_code.  */
 
-void
-gfc_resolve (gfc_namespace * ns)
+static void
+resolve_types (gfc_namespace * ns)
 {
-  gfc_namespace *old_ns, *n;
+  gfc_namespace *n;
   gfc_charlen *cl;
   gfc_data *d;
   gfc_equiv *eq;
 
-  old_ns = gfc_current_ns;
   gfc_current_ns = ns;
 
   resolve_entries (ns);
@@ -5992,7 +5991,7 @@ gfc_resolve (gfc_namespace * ns)
 		   "also be PURE", n->proc_name->name,
 		   &n->proc_name->declared_at);
 
-      gfc_resolve (n);
+      resolve_types (n);
     }
 
   forall_flag = 0;
@@ -6016,12 +6015,43 @@ gfc_resolve (gfc_namespace * ns)
   for (eq = ns->equiv; eq; eq = eq->next)
     resolve_equivalence (eq);
 
-  cs_base = NULL;
-  resolve_code (ns->code, ns);
-
   /* Warn about unused labels.  */
   if (gfc_option.warn_unused_labels)
     warn_unused_label (ns);
+}
+
+
+/* Call resolve_code recursively.  */
+
+static void
+resolve_codes (gfc_namespace * ns)
+{
+  gfc_namespace *n;
+
+  for (n = ns->contained; n; n = n->sibling)
+    resolve_codes (n);
+
+  gfc_current_ns = ns;
+  cs_base = NULL;
+  resolve_code (ns->code, ns);
+}
+
+
+/* This function is called after a complete program unit has been compiled.
+   Its purpose is to examine all of the expressions associated with a program
+   unit, assign types to all intermediate expressions, make sure that all
+   assignments are to compatible types and figure out which names refer to
+   which functions or subroutines.  */
+
+void
+gfc_resolve (gfc_namespace * ns)
+{
+  gfc_namespace *old_ns;
+
+  old_ns = gfc_current_ns;
+
+  resolve_types (ns);
+  resolve_codes (ns);
 
   gfc_current_ns = old_ns;
 }
