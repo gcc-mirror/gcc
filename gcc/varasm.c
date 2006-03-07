@@ -139,6 +139,7 @@ static void asm_output_aligned_bss (FILE *, tree, const char *,
 #endif
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_weak (tree);
+static void output_constant_pool (void);
 
 /* Well-known sections, each one associated with some sort of *_ASM_OP.  */
 section *text_section;
@@ -195,6 +196,9 @@ static GTY((param_is (struct object_block))) htab_t object_block_htab;
 
 /* The next number to use for internal anchor labels.  */
 static GTY(()) int anchor_labelno;
+
+/* A pool of constants that can be shared between functions.  */
+static GTY(()) struct rtx_constant_pool *shared_constant_pool;
 
 /* Helper routines for maintaining section_htab.  */
 
@@ -1328,7 +1332,7 @@ assemble_start_function (tree decl, const char *fnname)
   app_disable ();
 
   if (CONSTANT_POOL_BEFORE_FUNCTION)
-    output_constant_pool (fnname, decl);
+    output_constant_pool ();
 
   resolve_unique_section (decl, 0, flag_function_sections);
 
@@ -1446,7 +1450,7 @@ assemble_end_function (tree decl, const char *fnname)
 #endif
   if (! CONSTANT_POOL_BEFORE_FUNCTION)
     {
-      output_constant_pool (fnname, decl);
+      output_constant_pool ();
       switch_to_section (function_section (decl)); /* need to switch back */
     }
   /* Output labels for end of hot/cold text sections (to be used by
@@ -3122,25 +3126,34 @@ const_rtx_hash (rtx x)
 }
 
 
+/* Create and return a new rtx constant pool.  */
+
+static struct rtx_constant_pool *
+create_constant_pool (void)
+{
+  struct rtx_constant_pool *pool;
+
+  pool = ggc_alloc (sizeof (struct rtx_constant_pool));
+  pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
+					  const_desc_rtx_eq, NULL);
+  pool->first = NULL;
+  pool->last = NULL;
+  pool->offset = 0;
+  return pool;
+}
+
 /* Initialize constant pool hashing for a new function.  */
 
 void
 init_varasm_status (struct function *f)
 {
   struct varasm_status *p;
-  struct rtx_constant_pool *pool;
 
   p = ggc_alloc (sizeof (struct varasm_status));
   f->varasm = p;
 
-  pool = ggc_alloc (sizeof (struct rtx_constant_pool));
-  p->pool = pool;
+  p->pool = create_constant_pool ();
   p->deferred_constants = 0;
-
-  pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
-					  const_desc_rtx_eq, NULL);
-  pool->first = pool->last = NULL;
-  pool->offset = 0;
 }
 
 /* Given a MINUS expression, simplify it if both sides
@@ -3160,7 +3173,7 @@ rtx
 force_const_mem (enum machine_mode mode, rtx x)
 {
   struct constant_descriptor_rtx *desc, tmp;
-  struct rtx_constant_pool *pool = cfun->varasm->pool;
+  struct rtx_constant_pool *pool;
   char label[256];
   rtx def, symbol;
   hashval_t hash;
@@ -3170,6 +3183,14 @@ force_const_mem (enum machine_mode mode, rtx x)
   /* If we're not allowed to drop X into the constant pool, don't.  */
   if (targetm.cannot_force_const_mem (x))
     return NULL_RTX;
+
+  /* Record that this function has used a constant pool entry.  */
+  current_function_uses_const_pool = 1;
+
+  /* Decide which pool to use.  */
+  pool = (targetm.use_blocks_for_constant_p (mode, x)
+	  ? shared_constant_pool
+	  : cfun->varasm->pool);
 
   /* Lookup the value in the hashtable.  */
   tmp.constant = x;
@@ -3233,7 +3254,6 @@ force_const_mem (enum machine_mode mode, rtx x)
   SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LOCAL;
   CONSTANT_POOL_ADDRESS_P (symbol) = 1;
   SET_SYMBOL_REF_CONSTANT (symbol, desc);
-  current_function_uses_const_pool = 1;
 
   /* Construct the MEM.  */
   desc->mem = def = gen_const_mem (mode, symbol);
@@ -3404,9 +3424,8 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
    be used with for_each_rtx to mark all SYMBOL_REFs in an rtx.  */
 
 static int
-mark_constant (rtx *current_rtx, void *data)
+mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
 {
-  struct rtx_constant_pool *pool = data;
   rtx x = *current_rtx;
 
   if (x == NULL_RTX || GET_CODE (x) != SYMBOL_REF)
@@ -3418,7 +3437,7 @@ mark_constant (rtx *current_rtx, void *data)
       if (desc->mark == 0)
 	{
 	  desc->mark = 1;
-	  for_each_rtx (&desc->constant, mark_constant, pool);
+	  for_each_rtx (&desc->constant, mark_constant, NULL);
 	}
     }
   else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
@@ -3440,7 +3459,7 @@ mark_constant (rtx *current_rtx, void *data)
    deferred strings that are used.  */
 
 static void
-mark_constants (struct rtx_constant_pool *pool, rtx insn)
+mark_constants (rtx insn)
 {
   if (!INSN_P (insn))
     return;
@@ -3456,11 +3475,11 @@ mark_constants (struct rtx_constant_pool *pool, rtx insn)
 	{
 	  rtx subinsn = XVECEXP (seq, 0, i);
 	  if (INSN_P (subinsn))
-	    for_each_rtx (&PATTERN (subinsn), mark_constant, pool);
+	    for_each_rtx (&PATTERN (subinsn), mark_constant, NULL);
 	}
     }
   else
-    for_each_rtx (&PATTERN (insn), mark_constant, pool);
+    for_each_rtx (&PATTERN (insn), mark_constant, NULL);
 }
 
 /* Look through the instructions for this function, and mark all the
@@ -3468,39 +3487,28 @@ mark_constants (struct rtx_constant_pool *pool, rtx insn)
    which have indeed been used.  */
 
 static void
-mark_constant_pool (struct rtx_constant_pool *pool)
+mark_constant_pool (void)
 {
   rtx insn, link;
 
-  if (pool->first == 0 && n_deferred_constants == 0)
+  if (!current_function_uses_const_pool && n_deferred_constants == 0)
     return;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    mark_constants (pool, insn);
+    mark_constants (insn);
 
   for (link = current_function_epilogue_delay_list;
        link;
        link = XEXP (link, 1))
-    mark_constants (pool, XEXP (link, 0));
+    mark_constants (XEXP (link, 0));
 }
 
-/* Write all the constants in the constant pool.  */
+/* Write all the constants in POOL.  */
 
-void
-output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
-		      tree fndecl ATTRIBUTE_UNUSED)
+static void
+output_constant_pool_contents (struct rtx_constant_pool *pool)
 {
-  struct rtx_constant_pool *pool = cfun->varasm->pool;
   struct constant_descriptor_rtx *desc;
-
-  /* It is possible for gcc to call force_const_mem and then to later
-     discard the instructions which refer to the constant.  In such a
-     case we do not need to output the constant.  */
-  mark_constant_pool (pool);
-
-#ifdef ASM_OUTPUT_POOL_PROLOGUE
-  ASM_OUTPUT_POOL_PROLOGUE (asm_out_file, fnname, fndecl, pool->offset);
-#endif
 
   for (desc = pool->first; desc ; desc = desc->next)
     if (desc->mark)
@@ -3519,10 +3527,38 @@ output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
 	    output_constant_pool_1 (desc, desc->align);
 	  }
       }
+}
+
+/* Mark all constants that are used in the current function, then write
+   out the function's private constant pool.  */
+
+static void
+output_constant_pool (void)
+{
+  struct rtx_constant_pool *pool = cfun->varasm->pool;
+
+  /* It is possible for gcc to call force_const_mem and then to later
+     discard the instructions which refer to the constant.  In such a
+     case we do not need to output the constant.  */
+  mark_constant_pool ();
+
+#ifdef ASM_OUTPUT_POOL_PROLOGUE
+  ASM_OUTPUT_POOL_PROLOGUE (asm_out_file, fnname, fndecl, pool->offset);
+#endif
+
+  output_constant_pool_contents (pool);
 
 #ifdef ASM_OUTPUT_POOL_EPILOGUE
   ASM_OUTPUT_POOL_EPILOGUE (asm_out_file, fnname, fndecl, pool->offset);
 #endif
+}
+
+/* Write the contents of the shared constant pool.  */
+
+void
+output_shared_constant_pool (void)
+{
+  output_constant_pool_contents (shared_constant_pool);
 }
 
 /* Determine what kind of relocations EXP may need.  */
@@ -5064,6 +5100,7 @@ init_varasm_once (void)
 				     const_desc_eq, NULL);
 
   const_alias_set = new_alias_set ();
+  shared_constant_pool = create_constant_pool ();
 
 #ifdef TEXT_SECTION_ASM_OP
   text_section = get_unnamed_section (SECTION_CODE, output_section_asm_op,

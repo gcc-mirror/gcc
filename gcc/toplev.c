@@ -1022,6 +1022,7 @@ compile_file (void)
   if (flag_mudflap)
     mudflap_finish_file ();
 
+  output_shared_constant_pool ();
   output_object_blocks ();
 
   /* Write out any pending weak symbol declarations.  */
