@@ -1,5 +1,9 @@
 2006-03-07  Richard Sandiford  <richard@codesourcery.com>
 
+	* varasm.c (assemble_variable): Fix setting of DECL_IN_TEXT_SECTION.
+
+2006-03-07  Richard Sandiford  <richard@codesourcery.com>
+
 	* hooks.c (hook_bool_mode_rtx_true): New function.
 	* hooks.h (hook_bool_mode_rtx_true): Declare.
 	* toplev.c (compile_file): Call output_shared_constant_pool.

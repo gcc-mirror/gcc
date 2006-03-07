@@ -1818,7 +1818,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     output_addressed_constants (DECL_INITIAL (decl));
 
   /* dbxout.c needs to know this.  */
-  if (in_section && (in_section->common.flags & SECTION_CODE) != 0)
+  if (sect && (sect->common.flags & SECTION_CODE) != 0)
     DECL_IN_TEXT_SECTION (decl) = 1;
 
   /* If the decl is part of an object_block, make sure that the decl
