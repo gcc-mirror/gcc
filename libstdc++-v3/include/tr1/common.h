@@ -49,15 +49,27 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     struct __promote<_Tp, false>
     { typedef _Tp __type; };
 
-  template<typename _Tp, typename _Up> 
+  template<typename _Tp, typename _Up>
     struct __promote_2
     {
     private:
       typedef typename __promote<_Tp>::__type __type1;
-      typedef typename __promote<_Up>::__type __type2;    
-      
+      typedef typename __promote<_Up>::__type __type2;
+
     public:
-      typedef __typeof__(__type1() + __type2()) __type; 
+      typedef __typeof__(__type1() + __type2()) __type;
+    };
+
+  template<typename _Tp, typename _Up, typename _Vp>
+    struct __promote_3
+    {
+    private:
+      typedef typename __promote<_Tp>::__type __type1;
+      typedef typename __promote<_Up>::__type __type2;
+      typedef typename __promote<_Vp>::__type __type3;
+
+    public:
+      typedef __typeof__(__type1() + __type2() + __type3()) __type;
     };
 
 _GLIBCXX_END_NAMESPACE
