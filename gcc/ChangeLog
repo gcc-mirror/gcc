@@ -1,3 +1,9 @@
+2006-03-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR gomp/26238
+	* doc/passes.texi (Tree-SSA passes): Document omp lowering and
+	expansion.
+
 2006-03-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26587

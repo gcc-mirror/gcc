@@ -202,6 +202,25 @@ declarations of static variables whose lifetimes extend to the entire
 program.  The pass is located in @file{tree-mudflap.c} and is described
 by @code{pass_mudflap_1}.
 
+@item OpenMP lowerering
+
+If OpenMP generation (@option{-fopenmp}) is enabled, this pass lowers
+OpenMP constructs into GIMPLE.
+
+Lowering of OpenMP constructs involves creating replacement
+expressions for local variables that have been mapped using data
+sharing clauses, exposing the control flow of most synchronization
+directives and adding region markers to facilitate the creation of the
+control flow graph.  The pass is located in @file{omp-low.c} and is
+described by @code{pass_lower_omp}.
+
+@item OpenMP expansion
+
+If OpenMP generation (@option{-fopenmp}) is enabled, this pass expands
+parallel regions into their own functions to be invoked by the thread
+library.  The pass is located in @file{omp-low.c} and is described by
+@code{pass_expand_omp}.
+
 @item Lower control flow
 
 This pass flattens @code{if} statements (@code{COND_EXPR}) and
