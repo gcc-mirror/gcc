@@ -81,7 +81,10 @@ java::lang::ClassLoader::loadClassFromSig(jstring name)
   int len = _Jv_GetStringUTFLength (name);
   char sig[len + 1];
   _Jv_GetStringUTFRegion (name, 0, name->length(), sig);
-  return _Jv_FindClassFromSignature(sig, this);
+  jclass result = _Jv_FindClassFromSignature(sig, this);
+  if (result == NULL)
+    throw new ClassNotFoundException(name);
+  return result;
 }
 
 
