@@ -15,6 +15,10 @@ details.  */
 
 #include <stdio.h>
 
+#ifdef USE_LIBFFI
+#include <ffi.h>
+#endif
+
 #include <java-interp.h>
 
 #include <jvm.h>

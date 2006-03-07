@@ -1,3 +1,7 @@
+2006-03-07  David Daney  <ddaney@avtrex.com>
+
+	* link.cc: Include ffi.h if USE_LIBFFI defined.
+	
 2006-03-03  Tom Tromey  <tromey@redhat.com>
 
 	* interpret.cc (do_allocate_static_fields): Added comment.
