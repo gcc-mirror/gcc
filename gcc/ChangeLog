@@ -1,3 +1,8 @@
+2006-03-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26587
+	* tree-ssa-structalias.c (handle_ptr_arith): Handle MINUS_EXPR.
+
 2006-03-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* varasm.c (assemble_variable): Fix setting of DECL_IN_TEXT_SECTION.

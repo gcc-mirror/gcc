@@ -1,3 +1,8 @@
+2006-03-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26587
+	* gcc.dg/torture/pr26587.c: New testcase.
+
 2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
             Erik Edelmann  <eedelman@gcc.gnu.org>
 
