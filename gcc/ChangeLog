@@ -1,3 +1,8 @@
+2006-03-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26587
+	* tree-ssa-structalias.c (handle_ptr_arith): Handle MINUS_EXPR.
+
 2006-03-03  Steve Ellcey  <sje@cup.hp.com>
 
 	PR rtl-optimization/26345

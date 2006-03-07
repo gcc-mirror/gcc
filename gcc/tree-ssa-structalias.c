@@ -2837,7 +2837,8 @@ handle_ptr_arith (struct constraint_expr lhs, tree expr)
   tree op0, op1;
   struct constraint_expr base, offset;
 
-  if (TREE_CODE (expr) != PLUS_EXPR)
+  if (TREE_CODE (expr) != PLUS_EXPR
+      && TREE_CODE (expr) != MINUS_EXPR)
     return false;
 
   op0 = TREE_OPERAND (expr, 0);
