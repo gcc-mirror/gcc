@@ -147,8 +147,8 @@ void test01()
   fret = nextafterf(f0, f0);
   ldret = nextafterl(ld0, ld0);
 
-  ret = nexttoward(d0, d0);
-  fret = nexttowardf(f0, f0);
+  ret = nexttoward(d0, ld0);
+  fret = nexttowardf(f0, ld0);
   ldret = nexttowardl(ld0, ld0);
 
   ret = remainder(d0, d0);

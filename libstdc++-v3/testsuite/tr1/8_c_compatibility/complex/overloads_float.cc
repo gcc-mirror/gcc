@@ -1,3 +1,5 @@
+// { dg-do compile }
+
 // 2006-01-12  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
@@ -100,10 +102,4 @@ void test01()
   check_ret_type<float>(real(f1));
   check_ret_type<double>(real(d1));
   check_ret_type<long double>(real(ld1));
-}
-    
-int main()
-{
-  test01();
-  return 0;
 }

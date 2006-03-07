@@ -1,3 +1,12 @@
+2006-03-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cmath: Add C99 overloads.
+	* include/tr1/common.h (struct __promote_3): Add.
+	* testsuite/tr1/8_c_compatibility/cmath/overloads.cc: New.
+
+	* testsuite/tr1/8_c_compatibility/cmath/functions.cc: Tweak.
+	* testsuite/tr1/8_c_compatibility/complex/overloads_float.cc: Likewise.
+
 2006-03-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR target/26532
