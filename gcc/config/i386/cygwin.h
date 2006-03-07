@@ -232,3 +232,9 @@ while (0)
 /* Binutils does not handle weak symbols from dlls correctly.  For now,
    do not use them unnecessarily in gthr-posix.h.  */
 #define GTHREAD_USE_WEAK 0
+
+/* Every program on cygwin links against cygwin1.dll which contains 
+   the pthread routines.  There is no need to explicitly link them
+   and the -pthread flag is not recognised.  */
+#undef GOMP_SELF_SPECS
+#define GOMP_SELF_SPECS ""
