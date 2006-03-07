@@ -1,5 +1,9 @@
 2006-03-07  David Daney  <ddaney@avtrex.com>
 
+	* include/java-interp.h: Removed extern "C" around #include <ffi.h>.
+
+2006-03-07  David Daney  <ddaney@avtrex.com>
+
 	* link.cc: Include ffi.h if USE_LIBFFI defined.
 	
 2006-03-03  Tom Tromey  <tromey@redhat.com>
