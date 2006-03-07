@@ -1,4 +1,4 @@
-2005-03-06  Paul Thomas  <pault@gcc.gnu.org>
+2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
             Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* trans-array.c (gfc_trans_dealloc_allocated): New function.
