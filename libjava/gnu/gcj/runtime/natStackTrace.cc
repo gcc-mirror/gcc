@@ -1,6 +1,6 @@
 // natStackTrace.cc - native helper methods for Throwable
 
-/* Copyright (C) 2000, 2002, 2003  Free Software Foundation, Inc
+/* Copyright (C) 2000, 2002, 2003, 2006  Free Software Foundation, Inc
 
    This file is part of libgcj.
 
@@ -118,6 +118,8 @@ gnu::gcj::runtime::StackTrace::fillInStackTrace (jint maxlen, jint offset)
   else
     frame = NULL;
 
+  if (addrs != NULL)
+    _Jv_Free (addrs);
   addrs = reinterpret_cast<gnu::gcj::RawData *> (frame);
 #else // HAVE_BACKTRACE
   (void)maxlen;
