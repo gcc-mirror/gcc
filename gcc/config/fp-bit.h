@@ -107,9 +107,10 @@ typedef int DItype __attribute__ ((mode (DI)));
 typedef int TItype __attribute__ ((mode (TI)));
 #endif
 
-/* The type of the result of a fp compare */
+/* The type of the result of a floating point comparison.  This must
+   match `word_mode' in GCC for the target.  */
 #ifndef CMPtype
-#define CMPtype SItype
+typedef int CMPtype __attribute__ ((mode (word)));
 #endif
 
 typedef unsigned int UHItype __attribute__ ((mode (HI)));
