@@ -1,3 +1,11 @@
+2006-03-07  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/26103:
+	* java/lang/ClassLoader.java (loadClass): Don't throw
+	StringIndexOutOfBoundsException if name is empty.
+	* java/lang/natClassLoader.cc (loadClassFromSig): Throw exception
+	if class not found.
+
 2006-03-07  David Daney  <ddaney@avtrex.com>
 
 	* include/java-interp.h: Removed extern "C" around #include <ffi.h>.

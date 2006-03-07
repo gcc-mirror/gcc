@@ -1,5 +1,5 @@
 /* ClassLoader.java -- responsible for loading classes into the VM
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -288,7 +288,7 @@ public abstract class ClassLoader
   {
     // Arrays are handled specially.
     Class c;
-    if (name.charAt(0) == '[')
+    if (name.length() > 0 && name.charAt(0) == '[')
       c = loadClassFromSig(name);
     else
       {
