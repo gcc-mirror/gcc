@@ -1,3 +1,9 @@
+2006-03-07  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20030730-1.c: Temporarily xfail.
+	* gcc.dg/tree-ssa/20030730-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-2.c: Likewise.
+
 2006-03-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26587
