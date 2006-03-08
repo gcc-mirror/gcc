@@ -1,5 +1,7 @@
 2006-03-07  Geoffrey Keating  <geoffk@apple.com>
 
+	* varasm.c (assemble_end_function): Say that 'fnname' is unused.
+
 	* config/i386/i386.c (ix86_delegitimize_address): Handle Darwin
 	addresses with offsets; reorganize.
 
