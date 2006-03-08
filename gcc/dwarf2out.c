@@ -411,7 +411,7 @@ static void def_cfa_1 (const char *, dw_cfa_location *);
 rtx
 expand_builtin_dwarf_sp_column (void)
 {
-  int dwarf_regnum = DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
+  unsigned int dwarf_regnum = DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
   return GEN_INT (DWARF2_FRAME_REG_OUT (dwarf_regnum, 1));
 }
 
@@ -438,7 +438,7 @@ stripattributes (const char *s)
 void
 expand_builtin_init_dwarf_reg_sizes (tree address)
 {
-  int i;
+  unsigned int i;
   enum machine_mode mode = TYPE_MODE (char_type_node);
   rtx addr = expand_normal (address);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
