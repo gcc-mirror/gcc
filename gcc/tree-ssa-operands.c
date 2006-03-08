@@ -130,6 +130,19 @@ static vuse_optype_p free_vuses = NULL;
 static maydef_optype_p free_maydefs = NULL;
 static mustdef_optype_p free_mustdefs = NULL;
 
+/* Allocates operand OP of given TYPE from the appropriate free list,
+   or of the new value if the list is empty.  */
+
+#define ALLOC_OPTYPE(OP, TYPE)				\
+  do							\
+    {							\
+      TYPE##_optype_p ret = free_##TYPE##s;		\
+      if (ret)						\
+	free_##TYPE##s = ret->next;			\
+      else						\
+	ret = ssa_operand_alloc (sizeof (*ret));	\
+      (OP) = ret;					\
+    } while (0) 
 
 /* Return the DECL_UID of the base variable of T.  */
 
@@ -368,24 +381,185 @@ set_virtual_use_link (use_operand_p ptr, tree stmt)
     link_imm_use (ptr, *(ptr->use));
 }
 
+/* Appends ELT after TO, and moves the TO pointer to ELT.  */
 
-#define FINALIZE_OPBUILD		build_defs
-#define FINALIZE_OPBUILD_BASE(I)	(tree *)VEC_index (tree,	\
-							   build_defs, (I))
-#define FINALIZE_OPBUILD_ELEM(I)	(tree *)VEC_index (tree,	\
-							   build_defs, (I))
-#define FINALIZE_FUNC			finalize_ssa_def_ops
-#define FINALIZE_ALLOC			alloc_def
-#define FINALIZE_FREE			free_defs
-#define FINALIZE_TYPE			struct def_optype_d
-#define FINALIZE_ELEM(PTR)		((PTR)->def_ptr)
-#define FINALIZE_OPS			DEF_OPS
-#define FINALIZE_BASE(VAR)		VAR
-#define FINALIZE_BASE_TYPE		tree *
-#define FINALIZE_BASE_ZERO		NULL
-#define FINALIZE_INITIALIZE(PTR, VAL, STMT)	FINALIZE_ELEM (PTR) = (VAL)
-#include "tree-ssa-opfinalize.h"
+#define APPEND_OP_AFTER(ELT, TO)	\
+  do					\
+    {					\
+      (TO)->next = (ELT);		\
+      (TO) = (ELT);			\
+    } while (0)
 
+/* Appends head of list FROM after TO, and move both pointers
+   to their successors.  */
+
+#define MOVE_HEAD_AFTER(FROM, TO)	\
+  do					\
+    {					\
+      APPEND_OP_AFTER (FROM, TO);	\
+      (FROM) = (FROM)->next;		\
+    } while (0)
+
+/* Moves OP to appropriate freelist.  OP is set to its successor.  */
+
+#define MOVE_HEAD_TO_FREELIST(OP, TYPE)			\
+  do							\
+    {							\
+      TYPE##_optype_p next = (OP)->next;		\
+      (OP)->next = free_##TYPE##s;			\
+      free_##TYPE##s = (OP);				\
+      (OP) = next;					\
+    } while (0)
+
+/* Initializes immediate use at USE_PTR to value VAL, and links it to the list
+   of immeditate uses.  STMT is the current statement.  */
+
+#define INITIALIZE_USE(USE_PTR, VAL, STMT)		\
+  do							\
+    {							\
+      (USE_PTR)->use = (VAL);				\
+      link_imm_use_stmt ((USE_PTR), *(VAL), (STMT));	\
+    } while (0)
+
+/* Adds OP to the list of defs after LAST, and moves
+   LAST to the new element.  */
+
+static inline void
+add_def_op (tree *op, def_optype_p *last)
+{
+  def_optype_p new;
+
+  ALLOC_OPTYPE (new, def);
+  DEF_OP_PTR (new) = op;
+  APPEND_OP_AFTER (new, *last);  
+}
+
+/* Adds OP to the list of uses of statement STMT after LAST, and moves
+   LAST to the new element.  */
+
+static inline void
+add_use_op (tree stmt, tree *op, use_optype_p *last)
+{
+  use_optype_p new;
+
+  ALLOC_OPTYPE (new, use);
+  INITIALIZE_USE (USE_OP_PTR (new), op, stmt);
+  APPEND_OP_AFTER (new, *last);  
+}
+
+/* Adds OP to the list of vuses of statement STMT after LAST, and moves
+   LAST to the new element.  */
+
+static inline void
+add_vuse_op (tree stmt, tree op, vuse_optype_p *last)
+{
+  vuse_optype_p new;
+
+  ALLOC_OPTYPE (new, vuse);
+  VUSE_OP (new) = op;
+  INITIALIZE_USE (VUSE_OP_PTR (new), &VUSE_OP (new), stmt);
+  APPEND_OP_AFTER (new, *last);  
+}
+
+/* Adds OP to the list of maydefs of statement STMT after LAST, and moves
+   LAST to the new element.  */
+
+static inline void
+add_maydef_op (tree stmt, tree op, maydef_optype_p *last)
+{
+  maydef_optype_p new;
+
+  ALLOC_OPTYPE (new, maydef);
+  MAYDEF_RESULT (new) = op;
+  MAYDEF_OP (new) = op;
+  INITIALIZE_USE (MAYDEF_OP_PTR (new), &MAYDEF_OP (new), stmt);
+  APPEND_OP_AFTER (new, *last);  
+}
+
+/* Adds OP to the list of mustdefs of statement STMT after LAST, and moves
+   LAST to the new element.  */
+
+static inline void
+add_mustdef_op (tree stmt, tree op, mustdef_optype_p *last)
+{
+  mustdef_optype_p new;
+
+  ALLOC_OPTYPE (new, mustdef);
+  MUSTDEF_RESULT (new) = op;
+  MUSTDEF_KILL (new) = op;
+  INITIALIZE_USE (MUSTDEF_KILL_PTR (new), &MUSTDEF_KILL (new), stmt);
+  APPEND_OP_AFTER (new, *last);
+}
+
+/* Takes elements from build_defs and turns them into def operands of STMT.
+   TODO -- Given that def operands list is not neccessarily sorted, merging
+	   the operands this way does not make much sense.
+	-- Make build_defs VEC of tree *.  */
+
+static inline void
+finalize_ssa_def_ops (tree stmt)
+{
+  unsigned new_i;
+  struct def_optype_d new_list;
+  def_optype_p old_ops, ptr, last;
+  tree *old_base;
+
+  new_list.next = NULL;
+  last = &new_list;
+
+  old_ops = DEF_OPS (stmt);
+
+  new_i = 0;
+  while (old_ops && new_i < VEC_length (tree, build_defs))
+    {
+      tree *new_base = (tree *) VEC_index (tree, build_defs, new_i);
+      old_base = DEF_OP_PTR (old_ops);
+
+      if (old_base == new_base)
+        {
+	  /* if variables are the same, reuse this node.  */
+	  MOVE_HEAD_AFTER (old_ops, last);
+	  new_i++;
+	}
+      else if (old_base < new_base)
+	{
+	  /* if old is less than new, old goes to the free list.  */
+	  MOVE_HEAD_TO_FREELIST (old_ops, def);
+	}
+      else
+	{
+	  /* This is a new operand.  */
+	  add_def_op (new_base, &last);
+	  new_i++;
+	}
+    }
+
+  /* If there is anything remaining in the build_defs list, simply emit it.  */
+  for ( ; new_i < VEC_length (tree, build_defs); new_i++)
+    add_def_op ((tree *) VEC_index (tree, build_defs, new_i), &last);
+
+  last->next = NULL;
+
+  /* If there is anything in the old list, free it.  */
+  if (old_ops)
+    {
+      old_ops->next = free_defs;
+      free_defs = old_ops;
+    }
+
+  /* Now set the stmt's operands.  */
+  DEF_OPS (stmt) = new_list.next;
+
+#ifdef ENABLE_CHECKING
+  {
+    unsigned x = 0;
+    for (ptr = DEF_OPS (stmt); ptr; ptr = ptr->next)
+      x++;
+
+    gcc_assert (x == VEC_length (tree, build_defs));
+  }
+#endif
+}
 
 /* This routine will create stmt operands for STMT from the def build list.  */
 
@@ -403,27 +577,79 @@ finalize_ssa_defs (tree stmt)
   VEC_truncate (tree, build_defs, 0);
 }
 
-#define FINALIZE_OPBUILD	build_uses
-#define FINALIZE_OPBUILD_BASE(I)	(tree *)VEC_index (tree,	\
-							   build_uses, (I))
-#define FINALIZE_OPBUILD_ELEM(I)	(tree *)VEC_index (tree,	\
-							   build_uses, (I))
-#define FINALIZE_FUNC		finalize_ssa_use_ops
-#define FINALIZE_ALLOC		alloc_use
-#define FINALIZE_FREE		free_uses
-#define FINALIZE_TYPE		struct use_optype_d
-#define FINALIZE_ELEM(PTR)	((PTR)->use_ptr.use)
-#define FINALIZE_OPS		USE_OPS
-#define FINALIZE_USE_PTR(PTR)	USE_OP_PTR (PTR)
-#define FINALIZE_CORRECT_USE	correct_use_link
-#define FINALIZE_BASE(VAR)	VAR
-#define FINALIZE_BASE_TYPE	tree *
-#define FINALIZE_BASE_ZERO	NULL
-#define FINALIZE_INITIALIZE(PTR, VAL, STMT)				\
-				(PTR)->use_ptr.use = (VAL);             \
-				link_imm_use_stmt (&((PTR)->use_ptr),   \
-						   *(VAL), (STMT))
-#include "tree-ssa-opfinalize.h"
+/* Takes elements from build_uses and turns them into use operands of STMT.
+   TODO -- Given that use operands list is not neccessarily sorted, merging
+	   the operands this way does not make much sense.
+	-- Make build_uses VEC of tree *.  */
+
+static inline void
+finalize_ssa_use_ops (tree stmt)
+{
+  unsigned new_i;
+  struct use_optype_d new_list;
+  use_optype_p old_ops, ptr, last;
+  tree *old_base, *new_base;
+
+  new_list.next = NULL;
+  last = &new_list;
+
+  old_ops = USE_OPS (stmt);
+
+  new_i = 0;
+  while (old_ops && new_i < VEC_length (tree, build_uses))
+    {
+      new_base = (tree *) VEC_index (tree, build_uses, new_i);
+      old_base = USE_OP_PTR (old_ops)->use;
+
+      if (old_base == new_base)
+        {
+	  /* if variables are the same, reuse this node.  */
+	  MOVE_HEAD_AFTER (old_ops, last);
+	  correct_use_link (USE_OP_PTR (last), stmt);
+	  new_i++;
+	}
+      else if (old_base < new_base)
+	{
+	  /* if old is less than new, old goes to the free list.  */
+	  delink_imm_use (USE_OP_PTR (old_ops));
+	  MOVE_HEAD_TO_FREELIST (old_ops, use);
+	}
+      else
+	{
+	  /* This is a new operand.  */
+	  add_use_op (stmt, new_base, &last);
+	  new_i++;
+	}
+    }
+
+  /* If there is anything remaining in the build_uses list, simply emit it.  */
+  for ( ; new_i < VEC_length (tree, build_uses); new_i++)
+    add_use_op (stmt, (tree *) VEC_index (tree, build_uses, new_i), &last);
+
+  last->next = NULL;
+
+  /* If there is anything in the old list, free it.  */
+  if (old_ops)
+    {
+      for (ptr = old_ops; ptr; ptr = ptr->next)
+	delink_imm_use (USE_OP_PTR (ptr));
+      old_ops->next = free_uses;
+      free_uses = old_ops;
+    }
+
+  /* Now set the stmt's operands.  */
+  USE_OPS (stmt) = new_list.next;
+
+#ifdef ENABLE_CHECKING
+  {
+    unsigned x = 0;
+    for (ptr = USE_OPS (stmt); ptr; ptr = ptr->next)
+      x++;
+
+    gcc_assert (x == VEC_length (tree, build_uses));
+  }
+#endif
+}
 
 /* Return a new use operand vector for STMT, comparing to OLD_OPS_P.  */
                                                                               
@@ -446,33 +672,82 @@ finalize_ssa_uses (tree stmt)
   finalize_ssa_use_ops (stmt);
   VEC_truncate (tree, build_uses, 0);
 }
-                                                                              
-                                                                              
-/* Return a new V_MAY_DEF operand vector for STMT, comparing to OLD_OPS_P.  */                                                                                
-#define FINALIZE_OPBUILD	build_v_may_defs
-#define FINALIZE_OPBUILD_ELEM(I)	VEC_index (tree, build_v_may_defs, (I))
-#define FINALIZE_OPBUILD_BASE(I)	get_name_decl (VEC_index (tree,	\
-							build_v_may_defs, (I)))
-#define FINALIZE_FUNC		finalize_ssa_v_may_def_ops
-#define FINALIZE_ALLOC		alloc_maydef
-#define FINALIZE_FREE		free_maydefs
-#define FINALIZE_TYPE		struct maydef_optype_d
-#define FINALIZE_ELEM(PTR)	MAYDEF_RESULT (PTR)
-#define FINALIZE_OPS		MAYDEF_OPS
-#define FINALIZE_USE_PTR(PTR)	MAYDEF_OP_PTR (PTR)
-#define FINALIZE_CORRECT_USE	set_virtual_use_link
-#define FINALIZE_BASE_ZERO	0
-#define FINALIZE_BASE(VAR)	get_name_decl (VAR)
-#define FINALIZE_BASE_TYPE	unsigned
-#define FINALIZE_INITIALIZE(PTR, VAL, STMT)				\
-				(PTR)->def_var = (VAL);			\
-				(PTR)->use_var = (VAL);			\
-				(PTR)->use_ptr.use = &((PTR)->use_var);	\
-				link_imm_use_stmt (&((PTR)->use_ptr),	\
-						   (VAL), (STMT))
-#include "tree-ssa-opfinalize.h"
-                                                                              
-                                                                              
+
+
+/* Takes elements from build_v_may_defs and turns them into maydef operands of
+   STMT.  */
+
+static inline void
+finalize_ssa_v_may_def_ops (tree stmt)
+{
+  unsigned new_i;
+  struct maydef_optype_d new_list;
+  maydef_optype_p old_ops, ptr, last;
+  tree act;
+  unsigned old_base, new_base;
+
+  new_list.next = NULL;
+  last = &new_list;
+
+  old_ops = MAYDEF_OPS (stmt);
+
+  new_i = 0;
+  while (old_ops && new_i < VEC_length (tree, build_v_may_defs))
+    {
+      act = VEC_index (tree, build_v_may_defs, new_i);
+      new_base = get_name_decl (act);
+      old_base = get_name_decl (MAYDEF_OP (old_ops));
+
+      if (old_base == new_base)
+        {
+	  /* if variables are the same, reuse this node.  */
+	  MOVE_HEAD_AFTER (old_ops, last);
+	  set_virtual_use_link (MAYDEF_OP_PTR (last), stmt);
+	  new_i++;
+	}
+      else if (old_base < new_base)
+	{
+	  /* if old is less than new, old goes to the free list.  */
+	  delink_imm_use (MAYDEF_OP_PTR (old_ops));
+	  MOVE_HEAD_TO_FREELIST (old_ops, maydef);
+	}
+      else
+	{
+	  /* This is a new operand.  */
+	  add_maydef_op (stmt, act, &last);
+	  new_i++;
+	}
+    }
+
+  /* If there is anything remaining in the build_v_may_defs list, simply emit it.  */
+  for ( ; new_i < VEC_length (tree, build_v_may_defs); new_i++)
+    add_maydef_op (stmt, VEC_index (tree, build_v_may_defs, new_i), &last);
+
+  last->next = NULL;
+
+  /* If there is anything in the old list, free it.  */
+  if (old_ops)
+    {
+      for (ptr = old_ops; ptr; ptr = ptr->next)
+	delink_imm_use (MAYDEF_OP_PTR (ptr));
+      old_ops->next = free_maydefs;
+      free_maydefs = old_ops;
+    }
+
+  /* Now set the stmt's operands.  */
+  MAYDEF_OPS (stmt) = new_list.next;
+
+#ifdef ENABLE_CHECKING
+  {
+    unsigned x = 0;
+    for (ptr = MAYDEF_OPS (stmt); ptr; ptr = ptr->next)
+      x++;
+
+    gcc_assert (x == VEC_length (tree, build_v_may_defs));
+  }
+#endif
+}
+
 static void
 finalize_ssa_v_may_defs (tree stmt)
 {
@@ -500,30 +775,81 @@ cleanup_v_may_defs (void)
   VEC_truncate (tree, build_v_may_defs, 0);
 }                                                                             
 
+
+/* Takes elements from build_vuses and turns them into vuse operands of
+   STMT.  */
+
+static inline void
+finalize_ssa_vuse_ops (tree stmt)
+{
+  unsigned new_i;
+  struct vuse_optype_d new_list;
+  vuse_optype_p old_ops, ptr, last;
+  tree act;
+  unsigned old_base, new_base;
+
+  new_list.next = NULL;
+  last = &new_list;
+
+  old_ops = VUSE_OPS (stmt);
+
+  new_i = 0;
+  while (old_ops && new_i < VEC_length (tree, build_vuses))
+    {
+      act = VEC_index (tree, build_vuses, new_i);
+      new_base = get_name_decl (act);
+      old_base = get_name_decl (VUSE_OP (old_ops));
+
+      if (old_base == new_base)
+        {
+	  /* if variables are the same, reuse this node.  */
+	  MOVE_HEAD_AFTER (old_ops, last);
+	  set_virtual_use_link (VUSE_OP_PTR (last), stmt);
+	  new_i++;
+	}
+      else if (old_base < new_base)
+	{
+	  /* if old is less than new, old goes to the free list.  */
+	  delink_imm_use (USE_OP_PTR (old_ops));
+	  MOVE_HEAD_TO_FREELIST (old_ops, vuse);
+	}
+      else
+	{
+	  /* This is a new operand.  */
+	  add_vuse_op (stmt, act, &last);
+	  new_i++;
+	}
+    }
+
+  /* If there is anything remaining in the build_vuses list, simply emit it.  */
+  for ( ; new_i < VEC_length (tree, build_vuses); new_i++)
+    add_vuse_op (stmt, VEC_index (tree, build_vuses, new_i), &last);
+
+  last->next = NULL;
+
+  /* If there is anything in the old list, free it.  */
+  if (old_ops)
+    {
+      for (ptr = old_ops; ptr; ptr = ptr->next)
+	delink_imm_use (VUSE_OP_PTR (ptr));
+      old_ops->next = free_vuses;
+      free_vuses = old_ops;
+    }
+
+  /* Now set the stmt's operands.  */
+  VUSE_OPS (stmt) = new_list.next;
+
+#ifdef ENABLE_CHECKING
+  {
+    unsigned x = 0;
+    for (ptr = VUSE_OPS (stmt); ptr; ptr = ptr->next)
+      x++;
+
+    gcc_assert (x == VEC_length (tree, build_vuses));
+  }
+#endif
+}
                                                                               
-#define FINALIZE_OPBUILD	build_vuses
-#define FINALIZE_OPBUILD_ELEM(I)	VEC_index (tree, build_vuses, (I))
-#define FINALIZE_OPBUILD_BASE(I)	get_name_decl (VEC_index (tree,	\
-							build_vuses, (I)))
-#define FINALIZE_FUNC		finalize_ssa_vuse_ops
-#define FINALIZE_ALLOC		alloc_vuse
-#define FINALIZE_FREE		free_vuses
-#define FINALIZE_TYPE		struct vuse_optype_d
-#define FINALIZE_ELEM(PTR)	VUSE_OP (PTR)
-#define FINALIZE_OPS		VUSE_OPS
-#define FINALIZE_USE_PTR(PTR)	VUSE_OP_PTR (PTR)
-#define FINALIZE_CORRECT_USE	set_virtual_use_link
-#define FINALIZE_BASE_ZERO	0
-#define FINALIZE_BASE(VAR)	get_name_decl (VAR)
-#define FINALIZE_BASE_TYPE	unsigned
-#define FINALIZE_INITIALIZE(PTR, VAL, STMT)				\
-				(PTR)->use_var = (VAL);			\
-				(PTR)->use_ptr.use = &((PTR)->use_var);	\
-				link_imm_use_stmt (&((PTR)->use_ptr),	\
-						   (VAL), (STMT))
-#include "tree-ssa-opfinalize.h"
-
-
 /* Return a new VUSE operand vector, comparing to OLD_OPS_P.  */
                                                                               
 static void
@@ -590,32 +916,80 @@ finalize_ssa_vuses (tree stmt)
   VEC_truncate (tree, build_vuses, 0);
 
 }
-                                                                              
-/* Return a new V_MUST_DEF operand vector for STMT, comparing to OLD_OPS_P.  */
-                                                                              
-#define FINALIZE_OPBUILD	build_v_must_defs
-#define FINALIZE_OPBUILD_ELEM(I)	VEC_index (tree, build_v_must_defs, (I))
-#define FINALIZE_OPBUILD_BASE(I)	get_name_decl (VEC_index (tree,	\
-							build_v_must_defs, (I)))
-#define FINALIZE_FUNC		finalize_ssa_v_must_def_ops
-#define FINALIZE_ALLOC		alloc_mustdef
-#define FINALIZE_FREE		free_mustdefs
-#define FINALIZE_TYPE		struct mustdef_optype_d
-#define FINALIZE_ELEM(PTR)	MUSTDEF_RESULT (PTR)
-#define FINALIZE_OPS		MUSTDEF_OPS
-#define FINALIZE_USE_PTR(PTR)	MUSTDEF_KILL_PTR (PTR)
-#define FINALIZE_CORRECT_USE	set_virtual_use_link
-#define FINALIZE_BASE_ZERO	0
-#define FINALIZE_BASE(VAR)	get_name_decl (VAR)
-#define FINALIZE_BASE_TYPE	unsigned
-#define FINALIZE_INITIALIZE(PTR, VAL, STMT)				\
-				(PTR)->def_var = (VAL);			\
-				(PTR)->kill_var = (VAL);		\
-				(PTR)->use_ptr.use = &((PTR)->kill_var);\
-				link_imm_use_stmt (&((PTR)->use_ptr),	\
-						   (VAL), (STMT))
-#include "tree-ssa-opfinalize.h"
 
+/* Takes elements from build_v_must_defs and turns them into mustdef operands of
+   STMT.  */
+
+static inline void
+finalize_ssa_v_must_def_ops (tree stmt)
+{
+  unsigned new_i;
+  struct mustdef_optype_d new_list;
+  mustdef_optype_p old_ops, ptr, last;
+  tree act;
+  unsigned old_base, new_base;
+
+  new_list.next = NULL;
+  last = &new_list;
+
+  old_ops = MUSTDEF_OPS (stmt);
+
+  new_i = 0;
+  while (old_ops && new_i < VEC_length (tree, build_v_must_defs))
+    {
+      act = VEC_index (tree, build_v_must_defs, new_i);
+      new_base = get_name_decl (act);
+      old_base = get_name_decl (MUSTDEF_KILL (old_ops));
+
+      if (old_base == new_base)
+        {
+	  /* If variables are the same, reuse this node.  */
+	  MOVE_HEAD_AFTER (old_ops, last);
+	  set_virtual_use_link (MUSTDEF_KILL_PTR (last), stmt);
+	  new_i++;
+	}
+      else if (old_base < new_base)
+	{
+	  /* If old is less than new, old goes to the free list.  */
+	  delink_imm_use (MUSTDEF_KILL_PTR (old_ops));
+	  MOVE_HEAD_TO_FREELIST (old_ops, mustdef);
+	}
+      else
+	{
+	  /* This is a new operand.  */
+	  add_mustdef_op (stmt, act, &last);
+	  new_i++;
+	}
+    }
+
+  /* If there is anything remaining in the build_v_must_defs list, simply emit it.  */
+  for ( ; new_i < VEC_length (tree, build_v_must_defs); new_i++)
+    add_mustdef_op (stmt, VEC_index (tree, build_v_must_defs, new_i), &last);
+
+  last->next = NULL;
+
+  /* If there is anything in the old list, free it.  */
+  if (old_ops)
+    {
+      for (ptr = old_ops; ptr; ptr = ptr->next)
+	delink_imm_use (MUSTDEF_KILL_PTR (ptr));
+      old_ops->next = free_mustdefs;
+      free_mustdefs = old_ops;
+    }
+
+  /* Now set the stmt's operands.  */
+  MUSTDEF_OPS (stmt) = new_list.next;
+
+#ifdef ENABLE_CHECKING
+  {
+    unsigned x = 0;
+    for (ptr = MUSTDEF_OPS (stmt); ptr; ptr = ptr->next)
+      x++;
+
+    gcc_assert (x == VEC_length (tree, build_v_must_defs));
+  }
+#endif
+}
 
 static void
 finalize_ssa_v_must_defs (tree stmt)

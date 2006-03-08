@@ -1,3 +1,15 @@
+2006-03-07  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-opfinalize.h: Removed.
+	* Makefile.in (tree-ssa-operands.o): Remove tree-ssa-opfinalize.h
+	dependency.
+	* tree-ssa-operands.c: Do not include tree-ssa-opfinalize.h.
+	(ALLOC_OPTYPE, APPEND_OP_AFTER, MOVE_HEAD_AFTER, MOVE_HEAD_TO_FREELIST,
+	INITIALIZE_USE, add_def_op, add_use_op, add_vuse_op, add_maydef_op,
+	add_mustdef_op, finalize_ssa_def_ops, finalize_ssa_use_ops,
+	finalize_ssa_v_may_def_ops, finalize_ssa_vuse_ops,
+	finalize_ssa_v_must_def_ops): New.
+
 2006-03-07  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df-scan.c: (df_bb_refs_record): Fix obvious typo with wrong
