@@ -1,5 +1,4 @@
-## GCJ LOCAL: don't install this library
-noinst_LTLIBRARIES = libxmlj.la
+nativelib_LTLIBRARIES = libxmlj.la
 
 libxmlj_la_SOURCES = \
 xmlj_dom.c \

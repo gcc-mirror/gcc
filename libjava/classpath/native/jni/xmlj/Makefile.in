@@ -54,7 +54,15 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+am__installdirs = "$(DESTDIR)$(nativelibdir)"
+nativelibLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(nativelib_LTLIBRARIES)
 libxmlj_la_DEPENDENCIES = $(top_builddir)/native/jni/classpath/jcl.lo
 am_libxmlj_la_OBJECTS = xmlj_dom.lo xmlj_error.lo xmlj_io.lo \
 	xmlj_node.lo xmlj_sax.lo xmlj_transform.lo xmlj_util.lo \
@@ -268,7 +276,7 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 vm_classes = @vm_classes@
-noinst_LTLIBRARIES = libxmlj.la
+nativelib_LTLIBRARIES = libxmlj.la
 libxmlj_la_SOURCES = \
 xmlj_dom.c \
 xmlj_dom.h \
@@ -325,17 +333,35 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+install-nativelibLTLIBRARIES: $(nativelib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(nativelibdir)" || $(mkdir_p) "$(DESTDIR)$(nativelibdir)"
+	@list='$(nativelib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(LIBTOOL) --mode=install $(nativelibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(nativelibdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(nativelibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(nativelibdir)/$$f"; \
+	  else :; fi; \
+	done
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
+uninstall-nativelibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@set -x; list='$(nativelib_LTLIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(nativelibdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(nativelibdir)/$$p"; \
+	done
+
+clean-nativelibLTLIBRARIES:
+	-test -z "$(nativelib_LTLIBRARIES)" || rm -f $(nativelib_LTLIBRARIES)
+	@list='$(nativelib_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
 libxmlj.la: $(libxmlj_la_OBJECTS) $(libxmlj_la_DEPENDENCIES) 
-	$(LINK)  $(libxmlj_la_LDFLAGS) $(libxmlj_la_OBJECTS) $(libxmlj_la_LIBADD) $(LIBS)
+	$(LINK) -rpath $(nativelibdir) $(libxmlj_la_LDFLAGS) $(libxmlj_la_OBJECTS) $(libxmlj_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -462,6 +488,9 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
+	for dir in "$(DESTDIR)$(nativelibdir)"; do \
+	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
+	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -488,7 +517,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+clean-am: clean-generic clean-libtool clean-nativelibLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -507,7 +536,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-nativelibLTLIBRARIES
 
 install-exec-am:
 
@@ -535,19 +564,20 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-nativelibLTLIBRARIES
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES ctags distclean \
+	clean-libtool clean-nativelibLTLIBRARIES ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-exec \
 	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-info-am
+	install-nativelibLTLIBRARIES install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-info-am \
+	uninstall-nativelibLTLIBRARIES
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
