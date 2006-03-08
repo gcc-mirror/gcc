@@ -1440,7 +1440,7 @@ assemble_start_function (tree decl, const char *fnname)
    function.  DECL describes the function.  NAME is the function's name.  */
 
 void
-assemble_end_function (tree decl, const char *fnname)
+assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   /* We could have switched section in the middle of the function.  */
