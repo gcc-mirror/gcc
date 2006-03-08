@@ -1,3 +1,12 @@
+2006-03-08  David Daney  <ddaney@avtrex.com>
+
+	* configure.ac (LD): Add AC_CHECK_TOOL for ld.
+	(LD_START_STATIC_SPEC): New AC_SUBST, set with ld check.
+	(LD_FINISH_STATIC_SPEC): Ditto
+	* configure: Regenerated.
+	* libgcj.spec.in: Wrap -lgcj in LD_START_STATIC_SPEC and
+	LD_FINISH_STATIC_SPEC.
+	
 2006-03-07  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26103:

@@ -4,6 +4,6 @@
 # to link with libgcj.
 #
 %rename lib liborig
-*lib: -lgcj -lm @LIBICONV@ @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
+*lib: @LD_START_STATIC_SPEC@ -lgcj @LD_FINISH_STATIC_SPEC@ -lm @LIBICONV@ @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
 
 *jc1: @HASH_SYNC_SPEC@ @DIVIDESPEC@ @CHECKREFSPEC@ @JC1GCSPEC@ @EXCEPTIONSPEC@ @BACKTRACESPEC@ @IEEESPEC@ -fkeep-inline-functions

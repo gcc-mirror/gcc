@@ -420,6 +420,20 @@ Create an application whose command-line processing is that
 of the @code{gij} command.
 
 This option is an alternative to using @code{--main}; you cannot use both.
+
+@item -static-libgcj
+This option causes linking to be done against a static version of the
+libgcj runtime library.  This option is only available if
+corresponding linker support exists.
+
+@strong{Caution:} Static linking of libgcj may cause essential parts
+of libgcj to be omitted.  Some parts of libgcj use reflection to load
+classes at runtime.  Since the linker does not see these references at
+link time, it can omit the referred to classes.  The result is usually
+(but not always) a @code{ClassNotFoundException} being thrown at
+runtime. Caution must be used when using this option.  For more
+details see:
+@w{@uref{http://gcc.gnu.org/wiki/Statically%20linking%20libgcj}}
 @end table
 
 @node Code Generation
