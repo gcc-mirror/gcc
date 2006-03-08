@@ -431,6 +431,8 @@ ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
 ada.dvi: doc/gnat_ugn_unw.dvi \
       doc/gnat_rm.dvi doc/gnat-style.dvi
 
+ada.html:
+
 doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi $(docdir)/include/fdl.texi	\
 	$(docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<

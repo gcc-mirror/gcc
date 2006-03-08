@@ -116,6 +116,9 @@ c++.all.cross: g++-cross$(exeext)
 c++.start.encap: g++$(exeext)
 c++.rest.encap:
 c++.info:
+c++.install-info:
+c++.dvi:
+c++.html:
 c++.srcinfo:
 c++.srcextra:
 

@@ -87,6 +87,9 @@ objc.all.cross:
 objc.start.encap:
 objc.rest.encap:
 objc.info:
+objc.install-info:
+objc.dvi:
+objc.html:
 objc.man:
 objc.srcinfo:
 objc.srcman:
