@@ -1,3 +1,11 @@
+2006-03-08  Paolo Carlini  <pcarlini@suse.de>
+
+	Implement the resolution of DR 455, [DR].
+	* src/ios_init.cc (ios_base::Init::Init()): Do it.
+	* testsuite/27_io/objects/char/dr455.cc: New.
+	* testsuite/27_io/objects/wchar_t/dr455.cc: Likewise.
+	* docs/html/ext/howto.html: Add an entry for DR 455.
+
 2006-03-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cmath: Add C99 overloads.
