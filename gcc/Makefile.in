@@ -1945,8 +1945,7 @@ tree-dfa.o : tree-dfa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
 tree-ssa-operands.o : tree-ssa-operands.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(GGC_H) $(DIAGNOSTIC_H) errors.h $(TREE_INLINE_H) \
    $(FLAGS_H) $(FUNCTION_H) $(TM_H) $(TIMEVAR_H) tree-pass.h toplev.h \
-   gt-tree-ssa-operands.h coretypes.h langhooks.h tree-ssa-opfinalize.h \
-   $(IPA_REFERENCE_H)
+   gt-tree-ssa-operands.h coretypes.h langhooks.h $(IPA_REFERENCE_H)
 tree-eh.o : tree-eh.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_H) $(FLAGS_H) $(FUNCTION_H) except.h langhooks.h \
    $(GGC_H) tree-pass.h coretypes.h $(TIMEVAR_H) $(TM_P_H) \
