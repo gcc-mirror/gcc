@@ -647,18 +647,17 @@ read_logical (st_parameter_dt *dtp, int length)
       c = next_char (dtp);
       if (is_separator(c))
 	{
+	  /* All done if this is not a namelist read.  */
+	  if (!dtp->u.p.namelist_mode)
+	    goto logical_done;
+
 	  unget_char (dtp, c);
 	  eat_separator (dtp);
 	  c = next_char (dtp);
 	  if (c != '=')
 	    {
 	      unget_char (dtp, c);
-	      dtp->u.p.item_count = 0;
-	      dtp->u.p.line_buffer_enabled = 0;
-	      dtp->u.p.saved_type = BT_LOGICAL;
-	      dtp->u.p.saved_length = length;
-	      set_integer ((int *) dtp->u.p.value, v, length);
-	      return;
+	      goto logical_done;
 	    }
 	}
  
@@ -670,7 +669,8 @@ read_logical (st_parameter_dt *dtp, int length)
 	  dtp->u.p.item_count = 0;
 	  return;
 	}
-     }
+      
+    }
 
  bad_logical:
 
@@ -681,6 +681,15 @@ read_logical (st_parameter_dt *dtp, int length)
 	      dtp->u.p.item_count);
 
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
+  return;
+
+ logical_done:
+  
+  dtp->u.p.item_count = 0;
+  dtp->u.p.line_buffer_enabled = 0;
+  dtp->u.p.saved_type = BT_LOGICAL;
+  dtp->u.p.saved_length = length;
+  set_integer ((int *) dtp->u.p.value, v, length);
 }
 
 
