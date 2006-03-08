@@ -1,3 +1,9 @@
+2006-03-08  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20030730-1.c: No longer expected to fail.
+	* gcc.dg/tree-ssa/20030730-2.c: No longer expected to fail.
+	* g++.dg/tree-ssa/pr26406.C: New test.
+
 2006-03-07  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/20030730-1.c: Temporarily xfail.
