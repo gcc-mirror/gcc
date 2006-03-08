@@ -1,3 +1,8 @@
+2006-03-07  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df-scan.c: (df_bb_refs_record): Fix obvious typo with wrong
+	block as parameter.
+
 2006-03-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* varasm.c (assemble_end_function): Say that 'fnname' is unused.

@@ -1599,7 +1599,7 @@ df_bb_refs_record (struct dataflow *dflow, basic_block bb)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (EH_USES (i))
 	  df_uses_record (dflow, &regno_reg_rtx[i], 
-			  DF_REF_REG_USE, EXIT_BLOCK_PTR, NULL,
+			  DF_REF_REG_USE, bb, NULL,
 			  DF_REF_ARTIFICIAL | DF_REF_AT_TOP);
 #endif
 
