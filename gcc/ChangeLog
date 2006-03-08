@@ -1,5 +1,8 @@
 2006-03-07  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/i386/i386.c (ix86_delegitimize_address): Handle Darwin
+	addresses with offsets; reorganize.
+
 	* dwarf2out.c (DWARF2_FRAME_REG_OUT): Move up in file.
 	(expand_builtin_dwarf_sp_column): Call DWARF2_FRAME_REG_OUT.
 	(expand_builtin_init_dwarf_reg_sizes): Likewise.
