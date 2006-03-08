@@ -1,3 +1,9 @@
+2006-03-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (DWARF2_FRAME_REG_OUT): Move up in file.
+	(expand_builtin_dwarf_sp_column): Call DWARF2_FRAME_REG_OUT.
+	(expand_builtin_init_dwarf_reg_sizes): Likewise.
+
 2006-03-08  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR target/26588

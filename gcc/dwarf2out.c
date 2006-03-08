@@ -99,6 +99,13 @@ static void dwarf2out_source_line (unsigned int, const char *);
 # endif
 #endif
 
+/* Map register numbers held in the call frame info that gcc has
+   collected using DWARF_FRAME_REGNUM to those that should be output in
+   .debug_frame and .eh_frame.  */
+#ifndef DWARF2_FRAME_REG_OUT
+#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) (REGNO)
+#endif
+
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
@@ -404,7 +411,8 @@ static void def_cfa_1 (const char *, dw_cfa_location *);
 rtx
 expand_builtin_dwarf_sp_column (void)
 {
-  return GEN_INT (DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
+  int dwarf_regnum = DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
+  return GEN_INT (DWARF2_FRAME_REG_OUT (dwarf_regnum, 1));
 }
 
 /* Return a pointer to a copy of the section string name S with all
@@ -437,27 +445,31 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
   bool wrote_return_column = false;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (DWARF_FRAME_REGNUM (i) < DWARF_FRAME_REGISTERS)
-      {
-	HOST_WIDE_INT offset = DWARF_FRAME_REGNUM (i) * GET_MODE_SIZE (mode);
-	enum machine_mode save_mode = reg_raw_mode[i];
-	HOST_WIDE_INT size;
-
-	if (HARD_REGNO_CALL_PART_CLOBBERED (i, save_mode))
-	  save_mode = choose_hard_reg_mode (i, 1, true);
-	if (DWARF_FRAME_REGNUM (i) == DWARF_FRAME_RETURN_COLUMN)
-	  {
-	    if (save_mode == VOIDmode)
-	      continue;
-	    wrote_return_column = true;
-	  }
-	size = GET_MODE_SIZE (save_mode);
-	if (offset < 0)
-	  continue;
-
-	emit_move_insn (adjust_address (mem, mode, offset),
-			gen_int_mode (size, mode));
-      }
+    {
+      int rnum = DWARF2_FRAME_REG_OUT (DWARF_FRAME_REGNUM (i), 1);
+      
+      if (rnum < DWARF_FRAME_REGISTERS)
+	{
+	  HOST_WIDE_INT offset = rnum * GET_MODE_SIZE (mode);
+	  enum machine_mode save_mode = reg_raw_mode[i];
+	  HOST_WIDE_INT size;
+	  
+	  if (HARD_REGNO_CALL_PART_CLOBBERED (i, save_mode))
+	    save_mode = choose_hard_reg_mode (i, 1, true);
+	  if (DWARF_FRAME_REGNUM (i) == DWARF_FRAME_RETURN_COLUMN)
+	    {
+	      if (save_mode == VOIDmode)
+		continue;
+	      wrote_return_column = true;
+	    }
+	  size = GET_MODE_SIZE (save_mode);
+	  if (offset < 0)
+	    continue;
+	  
+	  emit_move_insn (adjust_address (mem, mode, offset),
+			  gen_int_mode (size, mode));
+	}
+    }
 
 #ifdef DWARF_ALT_FRAME_RETURN_COLUMN
   gcc_assert (wrote_return_column);
@@ -2010,13 +2022,6 @@ switch_to_eh_frame_section (void)
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
     }
 }
-
-/* Map register numbers held in the call frame info that gcc has
-   collected using DWARF_FRAME_REGNUM to those that should be output in
-   .debug_frame and .eh_frame.  */
-#ifndef DWARF2_FRAME_REG_OUT
-#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) (REGNO)
-#endif
 
 /* Output a Call Frame Information opcode and its operand(s).  */
 
