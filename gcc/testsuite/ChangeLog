@@ -1,3 +1,10 @@
+2006-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2006-01-18  Jeff Law  <law@redhat.com>
+	
+	* gcc.dg/tree-ssa/pr23109.c: Remove the .lim file too.
+
 2006-03-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/26041
