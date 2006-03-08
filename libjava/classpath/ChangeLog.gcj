@@ -1,3 +1,10 @@
+2006-03-08  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/24183:
+	* native/jni/xmlj/Makefile.in: Rebuilt.
+	* native/jni/xmlj/Makefile.am (nativelib_LTLIBRARIES): Renamed
+	(reverted local patch).
+
 2006-01-16  Mark Wielaard  <mark@klomp.org>
 
 	* native/fdlibm/namespace.h: Empty for gcj.
