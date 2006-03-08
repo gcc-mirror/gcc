@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -99,7 +99,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	new (&clog) ostream(&buf_cerr_sync);
 	cin.tie(&cout);
 	cerr.flags(ios_base::unitbuf);
-	
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 455. cerr::tie() and wcerr::tie() are overspecified.
+	cerr.tie(&cout);
+
 #ifdef _GLIBCXX_USE_WCHAR_T
 	new (&buf_wcout_sync) stdio_sync_filebuf<wchar_t>(stdout);
 	new (&buf_wcin_sync) stdio_sync_filebuf<wchar_t>(stdin);
@@ -111,6 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	new (&wclog) wostream(&buf_wcerr_sync);
 	wcin.tie(&wcout);
 	wcerr.flags(ios_base::unitbuf);
+	wcerr.tie(&wcout);	
 #endif
 	
 	// NB: Have to set refcount above one, so that standard
