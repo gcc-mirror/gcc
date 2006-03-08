@@ -2440,16 +2440,16 @@ infer_value_range (tree stmt, tree op, enum tree_code *comp_code_p, tree *val_p)
   if (stmt_ends_bb_p (stmt) && EDGE_COUNT (bb_for_stmt (stmt)->succs) == 0)
     return false;
 
-  if (POINTER_TYPE_P (TREE_TYPE (op)))
+  /* We can only assume that a pointer dereference will yield
+     non-NULL if -fdelete-null-pointer-checks is enabled.  */
+  if (flag_delete_null_pointer_checks && POINTER_TYPE_P (TREE_TYPE (op)))
     {
       bool is_store;
       unsigned num_uses, num_derefs;
 
       count_uses_and_derefs (op, stmt, &num_uses, &num_derefs, &is_store);
-      if (num_derefs > 0 && flag_delete_null_pointer_checks)
+      if (num_derefs > 0)
 	{
-	  /* We can only assume that a pointer dereference will yield
-	     non-NULL if -fdelete-null-pointer-checks is enabled.  */
 	  *val_p = build_int_cst (TREE_TYPE (op), 0);
 	  *comp_code_p = NE_EXPR;
 	  return true;
@@ -2952,21 +2952,50 @@ find_assert_locations (basic_block bb)
 	     operands it was looking for was present in the sub-graph.  */
 	  SET_BIT (found_in_subgraph, SSA_NAME_VERSION (op));
 
-	  /* If OP is used only once, namely in this STMT, don't
-	     bother creating an ASSERT_EXPR for it.  Such an
-	     ASSERT_EXPR would do nothing but increase compile time.
-	     Experiments show that with this simple check, we can save
-	     more than 20% of ASSERT_EXPRs.  */
-	  if (has_single_use (op))
-	    continue;
-
 	  /* If OP is used in such a way that we can infer a value
 	     range for it, and we don't find a previous assertion for
 	     it, create a new assertion location node for OP.  */
 	  if (infer_value_range (stmt, op, &comp_code, &value))
 	    {
-	      register_new_assert_for (op, comp_code, value, bb, NULL, si);
-	      need_assert = true;
+	      /* If we are able to infer a non-zero value range for OP,
+		 then walk backwards through the use-def chain to see if OP
+		 was set via a typecast.
+
+		 If so, then we can also infer a nonzero value range
+		 for the operand of the NOP_EXPR.  */
+	      if (comp_code == NE_EXPR && integer_zerop (value))
+		{
+		  tree t = op;
+		  tree def_stmt = SSA_NAME_DEF_STMT (t);
+	
+		  while (TREE_CODE (def_stmt) == MODIFY_EXPR
+			 && TREE_CODE (TREE_OPERAND (def_stmt, 1)) == NOP_EXPR
+			 && TREE_CODE (TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0)) == SSA_NAME
+			 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0))))
+		    {
+		      t = TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0);
+		      def_stmt = SSA_NAME_DEF_STMT (t);
+
+		      /* Note we want to register the assert for the
+			 operand of the NOP_EXPR after SI, not after the
+			 conversion.  */
+		      if (! has_single_use (t))
+			{
+			  register_new_assert_for (t, comp_code, value,
+						   bb, NULL, si);
+			  need_assert = true;
+			}
+		    }
+		}
+
+	      /* If OP is used only once, namely in this STMT, don't
+		 bother creating an ASSERT_EXPR for it.  Such an
+		 ASSERT_EXPR would do nothing but increase compile time.  */
+	      if (!has_single_use (op))
+		{
+		  register_new_assert_for (op, comp_code, value, bb, NULL, si);
+		  need_assert = true;
+		}
 	    }
 	}
 

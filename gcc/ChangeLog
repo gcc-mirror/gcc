@@ -1,3 +1,14 @@
+2006-03-08  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (infer_value_range): Only count pointer uses
+	and dereferences if -fdelete-null-pointer-checks is enabled.
+
+	* tree-vrp.c (find_assert_locations): Infer value ranges for
+	single use pointers, but do not create ASSERT_EXPRs for them.
+	When a non-null range is inferred for a pointer, backwards
+	propagate that range to other equivalent pointers through the
+	use-def chain.
+
 2006-03-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/26500
