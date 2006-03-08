@@ -1,3 +1,8 @@
+2006-03-08  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* tree-ssa-operands.c (finalize_ssa_def_ops): Move the declaration
+	of ptr into the ENABLE_CHECKING section.
+
 2006-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (infer_value_range): Only count pointer uses

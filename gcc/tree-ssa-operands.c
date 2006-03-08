@@ -501,7 +501,7 @@ finalize_ssa_def_ops (tree stmt)
 {
   unsigned new_i;
   struct def_optype_d new_list;
-  def_optype_p old_ops, ptr, last;
+  def_optype_p old_ops, last;
   tree *old_base;
 
   new_list.next = NULL;
@@ -552,6 +552,7 @@ finalize_ssa_def_ops (tree stmt)
 
 #ifdef ENABLE_CHECKING
   {
+    def_optype_p ptr;
     unsigned x = 0;
     for (ptr = DEF_OPS (stmt); ptr; ptr = ptr->next)
       x++;
