@@ -3378,7 +3378,7 @@ $(htmldir)/gccint/index.html: $(TEXI_GCCINT_FILES)
 $(htmldir)/cppinternals/index.html: $(TEXI_CPPINT_FILES)
 
 dvi:: doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
-      doc/cppinternals.dvi
+      doc/cppinternals.dvi lang.dvi
 
 doc/%.dvi: %.texi
 	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
@@ -3389,7 +3389,7 @@ doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
 
 html:: $(htmldir)/cpp/index.html $(htmldir)/gcc/index.html \
        $(htmldir)/gccinstall/index.html $(htmldir)/gccint/index.html \
-       $(htmldir)/cppinternals/index.html
+       $(htmldir)/cppinternals/index.html lang.html
 
 $(htmldir)/%/index.html: %.texi
 	$(mkinstalldirs) $(@D)
@@ -3672,7 +3672,8 @@ install-info:: doc installdirs \
 	$(DESTDIR)$(infodir)/gcc.info \
 	$(DESTDIR)$(infodir)/cppinternals.info \
 	$(DESTDIR)$(infodir)/gccinstall.info \
-	$(DESTDIR)$(infodir)/gccint.info
+	$(DESTDIR)$(infodir)/gccint.info \
+	lang.install-info
 
 $(DESTDIR)$(infodir)/%.info: doc/%.info installdirs
 	rm -f $@

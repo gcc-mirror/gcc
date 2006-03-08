@@ -96,6 +96,9 @@ obj-c++.all.cross:
 obj-c++.start.encap:
 obj-c++.rest.encap:
 obj-c++.info:
+obj-c++.install-info:
+obj-c++.dvi:
+obj-c++.html:
 obj-c++.srcinfo:
 obj-c++.srcextra:
 obj-c++.man:
