@@ -2405,6 +2405,7 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
   ss = gfc_walk_expr (actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
   argse.want_pointer = 1;
+  argse.data_not_needed = 1;
   gfc_conv_expr_descriptor (&argse, actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);

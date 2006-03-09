@@ -1,3 +1,11 @@
+2006-03-09 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/26257
+	* trans-array.c (gfc_conv_expr_descriptor): Exclude calculation of
+	the offset and data when se->data_not_needed is set.
+	* trans.h: Include the data_not_need bit in gfc_se.
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Set it for SIZE.
+
 2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
             Erik Edelmann  <eedelman@gcc.gnu.org>
 
