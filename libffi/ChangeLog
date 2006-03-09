@@ -1,3 +1,7 @@
+2006-03-09  Release Manager
+
+	* GCC 4.0.3 released.
+
 2005-09-30  Tom Tromey  <tromey@redhat.com>
 
 	PR libffi/24148
