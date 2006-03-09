@@ -108,6 +108,8 @@ static int all_ones_mask_p (tree, int);
 static tree sign_bit_p (tree, tree);
 static int simple_operand_p (tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
+static tree range_predecessor (tree);
+static tree range_successor (tree);
 static tree make_range (tree, int *, tree *, tree *);
 static tree build_range_check (tree, tree, int, tree, tree);
 static int merge_ranges (int *, tree *, tree *, int, tree, tree, int, tree,
@@ -3722,6 +3724,32 @@ range_binop (enum tree_code code, tree type, tree arg0, int upper0_p,
   return constant_boolean_node (result, type);
 }
 
+/* Return the predecessor of VAL in its type, handling the infinite case.  */
+
+static tree
+range_predecessor (tree val)
+{
+  tree type = TREE_TYPE (val);
+
+  if (INTEGRAL_TYPE_P (type) && val == TYPE_MIN_VALUE (type))
+    return 0;
+  else
+    return range_binop (MINUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
+}
+
+/* Return the successor of VAL in its type, handling the infinite case.  */
+
+static tree
+range_successor (tree val)
+{
+  tree type = TREE_TYPE (val);
+
+  if (INTEGRAL_TYPE_P (type) && val == TYPE_MAX_VALUE (type))
+    return 0;
+  else
+    return range_binop (PLUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
+}
+
 /* Given EXP, a logical expression, set the range it is testing into
    variables denoted by PIN_P, PLOW, and PHIGH.  Return the expression
    actually being tested.  *PLOW and *PHIGH will be made of the same type
@@ -4089,60 +4117,59 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 	}
     }
 
-  value = const_binop (MINUS_EXPR, high, low, 0);
-  if (value != 0 && (!flag_wrapv || TREE_OVERFLOW (value))
-      && ! TYPE_UNSIGNED (etype))
+  /* Optimize (c>=low) && (c<=high) into (c-low>=0) && (c-low<=high-low).
+     This requires wrap-around arithmetics for the type of the expression.  */
+  switch (TREE_CODE (etype))
+    {
+    case INTEGER_TYPE:
+      /* There is no requirement that LOW be within the range of ETYPE
+	 if the latter is a subtype.  It must, however, be within the base
+	 type of ETYPE.  So be sure we do the subtraction in that type.  */
+      if (TREE_TYPE (etype))
+	etype = TREE_TYPE (etype);
+      break;
+
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+      etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype),
+					      TYPE_UNSIGNED (etype));
+      break;
+
+    default:
+      break;
+    }
+
+  /* If we don't have wrap-around arithmetics upfront, try to force it.  */
+  if (TREE_CODE (etype) == INTEGER_TYPE
+      && !TYPE_UNSIGNED (etype) && !flag_wrapv)
     {
       tree utype, minv, maxv;
 
       /* Check if (unsigned) INT_MAX + 1 == (unsigned) INT_MIN
 	 for the type in question, as we rely on this here.  */
-      switch (TREE_CODE (etype))
-	{
-	case INTEGER_TYPE:
-	case ENUMERAL_TYPE:
-	  /* There is no requirement that LOW be within the range of ETYPE
-	     if the latter is a subtype.  It must, however, be within the base
-	     type of ETYPE.  So be sure we do the subtraction in that type.  */
-	  if (TREE_TYPE (etype))
-	    etype = TREE_TYPE (etype);
-	  utype = lang_hooks.types.unsigned_type (etype);
-	  maxv = fold_convert (utype, TYPE_MAX_VALUE (etype));
-	  maxv = range_binop (PLUS_EXPR, NULL_TREE, maxv, 1,
-			      integer_one_node, 1);
-	  minv = fold_convert (utype, TYPE_MIN_VALUE (etype));
-	  if (integer_zerop (range_binop (NE_EXPR, integer_type_node,
-					  minv, 1, maxv, 1)))
-	    {
-	      etype = utype;
-	      high = fold_convert (etype, high);
-	      low = fold_convert (etype, low);
-	      exp = fold_convert (etype, exp);
-	      value = const_binop (MINUS_EXPR, high, low, 0);
-	    }
-	  break;
-	default:
-	  break;
-	}
+      utype = lang_hooks.types.unsigned_type (etype);
+      maxv = fold_convert (utype, TYPE_MAX_VALUE (etype));
+      maxv = range_binop (PLUS_EXPR, NULL_TREE, maxv, 1,
+			  integer_one_node, 1);
+      minv = fold_convert (utype, TYPE_MIN_VALUE (etype));
+
+      if (integer_zerop (range_binop (NE_EXPR, integer_type_node,
+				      minv, 1, maxv, 1)))
+	etype = utype;
+      else
+	return 0;
     }
 
-  if (value != 0 && ! TREE_OVERFLOW (value))
-    {
-      /* There is no requirement that LOW be within the range of ETYPE
-	 if the latter is a subtype.  It must, however, be within the base
-	 type of ETYPE.  So be sure we do the subtraction in that type.  */
-      if (INTEGRAL_TYPE_P (etype) && TREE_TYPE (etype))
-	{
-	  etype = TREE_TYPE (etype);
-	  exp = fold_convert (etype, exp);
-	  low = fold_convert (etype, low);
-	  value = fold_convert (etype, value);
-	}
+  high = fold_convert (etype, high);
+  low = fold_convert (etype, low);
+  exp = fold_convert (etype, exp);
 
-      return build_range_check (type,
-				fold_build2 (MINUS_EXPR, etype, exp, low),
-				1, build_int_cst (etype, 0), value);
-    }
+  value = const_binop (MINUS_EXPR, high, low, 0);
+
+  if (value != 0 && !TREE_OVERFLOW (value))
+    return build_range_check (type,
+			      fold_build2 (MINUS_EXPR, etype, exp, low),
+			      1, build_int_cst (etype, 0), value);
 
   return 0;
 }
@@ -4208,7 +4235,7 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
       /* If they don't overlap, the result is the first range.  If they are
 	 equal, the result is false.  If the second range is a subset of the
 	 first, and the ranges begin at the same place, we go from just after
-	 the end of the first range to the end of the second.  If the second
+	 the end of the second range to the end of the first.  If the second
 	 range is not a subset of the first, or if it is a subset and both
 	 ranges end at the same place, the range starts at the start of the
 	 first range and ends just before the second range.
@@ -4219,15 +4246,15 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 	in_p = 0, low = high = 0;
       else if (subset && lowequal)
 	{
-	  in_p = 1, high = high0;
-	  low = range_binop (PLUS_EXPR, NULL_TREE, high1, 0,
-			     integer_one_node, 0);
+	  low = range_successor (high1);
+	  high = high0;
+	  in_p = (low != 0);
 	}
       else if (! subset || highequal)
 	{
-	  in_p = 1, low = low0;
-	  high = range_binop (MINUS_EXPR, NULL_TREE, low1, 0,
-			      integer_one_node, 0);
+	  low = low0;
+	  high = range_predecessor (low1);
+	  in_p = (high != 0);
 	}
       else
 	return 0;
@@ -4245,9 +4272,9 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 	in_p = 0, low = high = 0;
       else
 	{
-	  in_p = 1, high = high1;
-	  low = range_binop (PLUS_EXPR, NULL_TREE, high0, 1,
-			     integer_one_node, 0);
+	  low = range_successor (high0);
+	  high = high1;
+	  in_p = (low != 0);
 	}
     }
 
@@ -4262,9 +4289,7 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
       if (no_overlap)
 	{
 	  if (integer_onep (range_binop (EQ_EXPR, integer_type_node,
-					 range_binop (PLUS_EXPR, NULL_TREE,
-						      high0, 1,
-						      integer_one_node, 1),
+					 range_successor (high0),
 					 1, low1, 0)))
 	    in_p = 0, low = low0, high = high1;
 	  else
