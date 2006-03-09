@@ -1,3 +1,9 @@
+2006-03-09  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/24461:
+	* java/util/zip/InflaterInputStream.java (fill): Throw exception
+	if stream is truncated.
+
 2006-03-07  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26103:
