@@ -1,3 +1,9 @@
+2006-03-09  Roger Sayle  <roger@eyesopen.com>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/26561
+	* gcc.c-torture/execute/divcmp-5.c: New test case.
+
 2006-03-09 Paul Thomas <pault@gcc.gnu.org>
 
 	* PR fortran/26257
