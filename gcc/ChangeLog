@@ -1,3 +1,7 @@
+2006-03-09  Release Manager
+
+	* GCC 4.0.3 released.
+
 2006-03-06    Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/23706
