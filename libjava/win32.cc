@@ -1,6 +1,6 @@
 // win32.cc - Helper functions for Microsoft-flavored OSs.
 
-/* Copyright (C) 2002, 2003  Free Software Foundation
+/* Copyright (C) 2002, 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -277,6 +277,12 @@ _Jv_platform_gettimeofday ()
   struct timeb t;
   ftime (&t);
   return t.time * 1000LL + t.millitm;
+}
+
+jlong
+_Jv_platform_nanotime ()
+{
+  return _Jv_platform_gettimeofday () * 1000LL;
 }
 
 // The following definitions "fake out" mingw to think that -mthreads

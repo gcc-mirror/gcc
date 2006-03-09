@@ -1,3 +1,14 @@
+2006-03-09  Tom Tromey  <tromey@redhat.com>
+
+	* win32.cc (_Jv_platform_nanotime): New function.
+	* include/win32.h (_Jv_platform_nanotime): Declare.
+	* posix.cc (_Jv_platform_nanotime): New function.
+	* include/posix.h (_Jv_platform_nanotime): Declare.
+	* java/lang/natSystem.cc (nanoTime): New method.
+	* java/lang/System.java (nanoTime): Declare.
+	* include/config.h.in, configure: Rebuilt.
+	* configure.ac: Check for clock_gettime.
+
 2006-03-08  David Daney  <ddaney@avtrex.com>
 
 	* configure.ac (LD): Add AC_CHECK_TOOL for ld.

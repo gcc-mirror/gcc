@@ -1,6 +1,6 @@
 // win32.h -- Helper functions for Microsoft-flavored OSs.
 
-/* Copyright (C) 2002, 2003  Free Software Foundation
+/* Copyright (C) 2002, 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -154,6 +154,7 @@ _Jv_ThrowSocketException ();
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 extern jlong _Jv_platform_gettimeofday ();
+extern jlong _Jv_platform_nanotime ();
 extern int _Jv_pipe (int filedes[2]);
 
 extern void
