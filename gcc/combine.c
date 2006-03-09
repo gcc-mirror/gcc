@@ -9199,7 +9199,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 				GET_MODE_MASK (result_mode) >> orig_count);
 
   /* Do the remainder of the processing in RESULT_MODE.  */
-  x = gen_lowpart (result_mode, x);
+  x = gen_lowpart_or_truncate (result_mode, x);
 
   /* If COMPLEMENT_P is set, we have to complement X before doing the outer
      operation.  */
