@@ -1,3 +1,14 @@
+2006-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (build_range_check): Make sure to use a valid type to
+	apply the "(c>=low) && (c<=high) into (c-low>=0) && (c-low<=high-low)"
+	transformation.
+
+	(range_predecessor): New static function.
+	(range_successor): Likewise.
+	(merge_ranges): Use them to compute predecessors and successors of
+	range bounds.
+
 2006-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26561
