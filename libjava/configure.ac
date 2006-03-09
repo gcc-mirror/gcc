@@ -1016,6 +1016,14 @@ else
 	    AC_DEFINE(HAVE_SCHED_YIELD)
 	    THREADLIBS="$THREADLIBS -lposix4"
 	    THREADSPEC="$THREADSPEC -lposix4"])])])
+
+      AC_CHECK_LIB(rt, clock_gettime, [
+         AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if you have clock_gettime()])
+	 case "$THREADSPEC" in
+	   *-lrt*) ;;
+	   *) THREADSPEC="$THREADSPEC -lrt" ;;
+	 esac])
+
       LIBS="$save_LIBS"
 
       # We can save a little space at runtime if the mutex has m_count

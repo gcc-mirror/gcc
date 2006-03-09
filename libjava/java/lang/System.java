@@ -1,5 +1,5 @@
 /* System.java -- useful methods to interface with the system
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -206,6 +206,15 @@ public final class System
    * @see java.util.Date
    */
   public static native long currentTimeMillis();
+
+  /**
+   * Get the current time, measured in nanoseconds.  The result is as
+   * precise as possible, and is measured against a fixed epoch.
+   * However, unlike currentTimeMillis(), the epoch chosen is
+   * arbitrary and may vary by platform, etc.
+   * @since 1.5
+   */
+  public static native long nanoTime();
 
   /**
    * Copy one array onto another from <code>src[srcStart]</code> ...
