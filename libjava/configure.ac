@@ -1021,7 +1021,10 @@ else
          AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if you have clock_gettime()])
 	 case "$THREADSPEC" in
 	   *-lrt*) ;;
-	   *) THREADSPEC="$THREADSPEC -lrt" ;;
+	   *)
+ 	     THREADSPEC="$THREADSPEC -lrt"
+	     THREADLIBS="$THREADLIBS -lrt"
+	     ;;
 	 esac])
 
       LIBS="$save_LIBS"

@@ -12456,7 +12456,10 @@ _ACEOF
 
 	 case "$THREADSPEC" in
 	   *-lrt*) ;;
-	   *) THREADSPEC="$THREADSPEC -lrt" ;;
+	   *)
+ 	     THREADSPEC="$THREADSPEC -lrt"
+	     THREADLIBS="$THREADLIBS -lrt"
+	     ;;
 	 esac
 fi
 
