@@ -1,5 +1,11 @@
 2006-03-09  Tom Tromey  <tromey@redhat.com>
 
+	* configure: Rebuilt.
+	* configure.ac (HAVE_CLOCK_GETTIME): Put -lrt in THREADLIBS as
+	well.
+
+2006-03-09  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/24461:
 	* java/util/zip/InflaterInputStream.java (fill): Throw exception
 	if stream is truncated.
