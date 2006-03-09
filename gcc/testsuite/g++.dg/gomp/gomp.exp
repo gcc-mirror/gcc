@@ -1,0 +1,11 @@
+# Load support procs.
+load_lib g++-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" "-fopenmp"
+
+# All done.
+dg-finish
