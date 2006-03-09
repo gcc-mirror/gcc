@@ -1,3 +1,7 @@
+2006-03-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* testsuite/libgomp.c++: New directory.
+
 2006-02-25  Shantonu Sen  <ssen@opendarwin.org>
 
 	* config/posix/sem.h: Define BROKEN_POSIX_SEMAPHORES functions.

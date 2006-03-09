@@ -40,6 +40,7 @@ set tests [prune $tests $srcdir/$subdir/pch/*]
 set tests [prune $tests $srcdir/$subdir/special/*]
 set tests [prune $tests $srcdir/$subdir/tls/*]
 set tests [prune $tests $srcdir/$subdir/vect/*]
+set tests [prune $tests $srcdir/$subdir/gomp/*]
 
 # Main loop.
 dg-runtest $tests "" $DEFAULT_CXXFLAGS

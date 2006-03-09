@@ -4736,6 +4736,8 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	  if (uid >= dest_cfun->last_label_uid)
 	    dest_cfun->last_label_uid = uid + 1;
 	}
+
+      remove_stmt_from_eh_region (stmt);
     }
 }
 

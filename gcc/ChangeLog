@@ -1,3 +1,8 @@
+2006-03-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-cfg.c (move_block_to_fn): Remove the statements from the
+	original fn's eh regions.
+
 2006-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (build_range_check): Make sure to use a valid type to

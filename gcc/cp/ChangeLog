@@ -1,3 +1,452 @@
+2006-03-09  Diego Novillo  <dnovillo@redhat.com>
+
+	Merge from gomp-20050608-branch
+
+	2006-02-02  Diego Novillo  <dnovillo@redhat.com>
+
+		* decl.c (pop_labels_1): Use appropriate pointer casting.
+		(poplevel_named_label_1): Likewise.
+		(named_label_entry_hash): Likewise.
+		(named_label_entry_eq): Likewise.
+		(check_goto): Likewise.
+		(define_label): Likewise.
+
+	2006-01-26  Diego Novillo  <dnovillo@redhat.com>
+
+		* cp-tree.h (CP_OMP_CLAUSE_INFO): Use TREE_TYPE instead
+		of TREE_BLOCK.
+		* pt.c: Use OMP_CLAUSE_CODE and OMP_CLAUSE_OPERAND
+		instead of TREE_CODE/TREE_OPERAND.
+		* semantics.c: Likewise.
+		* parser.c: Likewise.
+
+	2005-11-10  Diego Novillo  <dnovillo@redhat.com>
+
+		* parser.c (cp_parser_omp_threadprivate): Emit diagnostic if
+		target does not support TLS.
+
+	2005-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+		* decl.c (redeclaration_error_message): Don't error about
+		DECL_THREAD_LOCAL_P mismatches if CP_DECL_THREADPRIVATE_P
+		(olddecl).
+
+	2005-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+		PR c++/24735
+		* semantics.c (finish_omp_barrier, finish_omp_flush): New
+		  functions.
+		* parser.c (cp_parser_omp_barrier): Call finish_omp_barrier.
+		(cp_parser_omp_flush): Call finish_omp_flush.
+		* cp-tree.h (finish_omp_barrier, finish_omp_flush): New
+		  prototypes.
+
+		PR c++/24734
+		* pt.c (tsubst_expr): Handle OMP_MASTER and OMP_ORDERED.
+
+	2005-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+		* semantics.c (finish_omp_threadprivate): Error on class-scope
+		variables.
+
+	2005-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+		* parser.c (cp_parser_omp_all_clauses): If some clause
+		type is not allowed, don't remove just one of the
+		clauses, but all clauses added in that loop round.
+
+		* semantics.c (finish_omp_clauses): Fix function
+		comment. Don't handle non-const or mutable specially,
+		as const and not mutable is predetermined shared and
+		that leads to double error. Don't ICE if copyin var is
+		PARM_DECL.
+
+		PR c++/24613
+		* parser.c (cp_parser_pragma): Diagnose
+		PRAGMA_OMP_SECTION outside of PRAGMA_OMP_SECTIONS
+		construct.
+
+		* semantics.c (finish_omp_threadprivate): Error if V
+		  is automatic variable or has incomplete type.
+
+	2005-11-01  Diego Novillo  <dnovillo@redhat.com>
+
+		* parser.c (cp_parser_omp_all_clauses): Use
+		OMP_CLAUSE_CHAIN instead of TREE_CHAIN.
+
+	2005-11-01  Diego Novillo  <dnovillo@redhat.com>
+
+		* parser.c (cp_parser_omp_all_clauses): When emitting an
+		error message, remove the invalid clause from the list.
+
+	2005-10-31  Diego Novillo  <dnovillo@redhat.com>
+
+		* parser.c (cp_parser_omp_parallel): Do not allow 'nowait' in
+		combined parallel+workshare directives.
+
+	2005-10-31  Richard Henderson  <rth@redhat.com>
+
+		* cp-objcp-common.h (LANG_HOOKS_OMP_CLAUSE_DTOR):
+		Use cxx_omp_clause_dtor.
+		* cp-tree.h (CP_OMP_CLAUSE_INFO): New.
+		(cxx_omp_clause_dtor): New.
+		* cp-gimplify.c (cxx_omp_clause_apply_fn): New.
+		(cxx_omp_clause_default_ctor): Use it.
+		(cxx_omp_clause_copy_ctor, cxx_omp_clause_assign_op):
+		Likewise.
+		(cxx_omp_clause_dtor): New.
+		* semantics.c (finish_omp_clauses): Rewrite cdtor
+		checking to fill in CP_OMP_CLAUSE_INFO.  Don't
+		specialcase LASTPRIVATE for removal.
+		(cxx_omp_clause_default_ctor, cxx_omp_clause_copy_ctor,
+		cxx_omp_clause_assign_op): Move to cp-gimplify.c.
+
+	2005-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+		* semantics.c (finish_omp_threadprivate): If
+		  DECL_RTL_SET_P, call make_decl_rtl again so that
+		  encode_section_info can update SYMBOL_REF's flags.
+
+	2005-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+		* semantics.c (finish_omp_for): Don't segfault if COND
+		or INCR is NULL.  If not calling c_finish_omp_for
+		right away and one of COND and INCR is NULL, issue
+		error and don't expand anything.
+
+		PR c++/24512
+		* cp-tree.h (finish_omp_for): Add PRE_BODY argument.
+		* semantics.c (finish_omp_for): Likewise.  Set
+		OMP_FOR_PRE_BODY to PRE_BODY if deferring, add it
+		into the current statement list if not processing
+		template decl or pass it to c_finish_omp_for.
+
+		* parser.c (cp_parser_omp_for_loop): Expand optional DECL_EXPRs
+		into PRE_BODY statement list.  Pass it to finish_omp_for.
+		* pt.c (tsubst_expr) <case OMP_FOR>: tsubst_expr also
+		OMP_FOR_PRE_BODY into PRE_BODY stmt list, pass it to
+		finish_omp_for.  Put all the statements into sk_omp
+		scope.
+
+	2005-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+		PR c++/24516
+		* parser.c (struct cp_parser): Rename in_iteration_statement
+		field to in_statement.
+		(IN_SWITCH_STMT, IN_ITERATION_STMT): Define.
+		(IN_OMP_BLOCK, IN_OMP_FOR): Change values.
+		(cp_parser_new, cp_parser_begin_omp_structured_block,
+		cp_parser_end_omp_structured_block,
+		cp_parser_omp_for_loop): Adjust for
+		in_iteration_statement renaming.
+		(cp_parser_selection_statement): Save
+		parser->in_iteration, or it temporarily with
+		IN_SWITCH_STMT for the
+		cp_parser_implicitly_scoped_statement call.
+		(cp_parser_iteration_statement): Adjust for
+		in_iteration_statement renaming.  Use
+		IN_ITERATION_STMT rather than true.
+		(cp_parser_jump_statement): Adjust for
+		in_iteration_statement renaming and new values.  Don't
+		error on break in a switch statement within OMP_FOR or
+		OpenMP structured block.
+
+		PR c++/24513
+		* parser.c (cp_parser_cache_group): Don't stop if next
+		token is CPP_PRAGMA_EOL and end is CPP_PRAGMA_EOL as
+		well.  If current token is CPP_PRAGMA, consume
+		everything until CPP_PRAGMA_EOL inclusive.
+
+	2005-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+		PR c++/24502
+		* semantics.c (finish_omp_for): Handle MODOP_EXPR in
+		addition to MODIFY_EXPR.
+
+	2005-10-23  Richard Henderson  <rth@redhat.com>
+
+		* cp-gimplify.c (struct cp_gimplify_ctx): Remove.
+		(bc_label): New.
+		(begin_bc_block, finish_bc_block): Use it.
+		(push_context, pop_context): Remove.
+		(cp_genericize): Don't use them.  Assert bc_label is null.
+		* semantics.c (finish_omp_clauses): Create a fake data
+		element of TYPE for probing ctors.
+
+	2005-10-23  Richard Henderson  <rth@redhat.com>
+
+		* cp-objcp-common.h (LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR): New.
+		(LANG_HOOKS_OMP_CLAUSE_COPY_CTOR): New.
+		(LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP): New.
+		(LANG_HOOKS_OMP_CLAUSE_DTOR): New.
+		* semantics.c (finish_omp_clauses): Look through
+		arrays when looking up special member calls.  Also
+		remove FIRSTPRIVATE when LASTPRIVATE fails.
+		(cxx_omp_clause_default_ctor, cxx_omp_clause_copy_ctor): New.
+		(cxx_omp_clause_assign_op): New.
+		* cp-tree.h: Declare them.
+
+	2005-10-21  Richard Henderson  <rth@redhat.com>
+
+		* decl.c (check_previous_goto_1): Return false if error.
+		(check_switch_goto): Likewise.
+		(finish_case_label): Don't emit the case label on error.
+		* parser.c (struct cp_parser): Revert
+		in_switch_statement_p changes.
+		(cp_parser_labeled_statement,
+		cp_parser_selection_statement): Likewise.
+		(cp_parser_begin_omp_structured_block): Don't save...
+		(cp_parser_end_omp_structured_block): or restore
+		in_switch_statement_p.
+
+	2005-10-21  Richard Henderson  <rth@redhat.com>
+
+		* semantics.c (finish_omp_threadprivate): Set
+		decl_flags.u2sel when necessary.
+
+	2005-10-21  Richard Henderson  <rth@redhat.com>
+
+		* decl.c (poplevel_named_label_1): Restore creation of the
+		bad_decls list.
+		(decl_jump_unsafe): Check for error_mark_node types.
+		(check_goto): Don't check cdtor_label.  Don't use identify_goto.                * semantics.c (finish_return_stmt): Do check_omp_return before
+		converting to cdtor_label goto.
+
+	2005-10-21  Richard Henderson  <rth@redhat.com>
+
+		PR c++/24451
+		* decl.c (check_omp_return): Return false on error.
+		* cp-tree.h (check_omp_return): Update decl.
+		* semantics.c (finish_return_stmt): Avoid adding
+		return on error.
+
+	2005-10-21  Richard Henderson  <rth@redhat.com>
+
+		* cp-tree.h (struct language_function): Remove
+		x_named_label_uses.
+		Change x_named_labels to a hashtable.
+		(check_omp_return): Declare.
+		* decl.c (struct named_label_use_entry): Rename from
+		named_label_use_list.  Remove label_decl.
+		(struct named_label_entry): Rename from
+		named_label_list.  Remove old_value and next.  Change
+		in_try_scope and in_catch_scope to bool. Add
+		in_omp_scope.
+		(pop_labels_1): New.
+		(pop_labels): Use it.
+		(pop_local_label, poplevel_named_label_1): New.
+		(poplevel): Use them.
+		(named_label_entry_hash, named_label_entry_eq): New.
+		(make_label_decl): Create named_labels.  Move label
+		creation bits from lookup_label.
+		(declare_local_label): Tidy.
+		(identify_goto): Split out from ...
+		(check_previous_goto_1): Add exited_omp argument.
+		Handle omp scopes.
+
+		(use_label): Merge into...
+		(check_goto): ... here.  Handle omp scopes.
+		(check_omp_return): New.
+		(check_previous_gotos): Merge into...
+		(define_label): ... here.
+		(save_function_data): Remove x_named_label_uses reference.
+		(finish_function): Likewise.
+		* name-lookup.h (sk_omp): New.
+		* name-lookup.c (begin_scope): Handle it.
+		* parser.c (cp_parser_omp_for): Don't create extra
+		compound stmt.
+
+		(cp_parser_omp_sections): Likewise.
+		* semantics.c (finish_return_stmt): Call check_omp_return.
+		(begin_omp_structured_block): Use sk_omp.
+		(finish_omp_structured_block): Use do_poplevel.  Don't build a
+		MUST_NOT_THROW expression here.
+		(begin_omp_parallel, finish_omp_parallel): Don't create extra
+		compound statements.
+
+	2005-10-21  Diego Novillo  <dnovillo@redhat.com>
+
+		PR 24455
+		* cp/cp-tree.h (struct lang_decl_flags): Add field
+		threadprivate_p.
+		(CP_DECL_IS_THREADPRIVATE): Define.
+		* cp/semantics.c (finish_omp_threadprivate): Set.  Do
+		not error out if CP_DECL_IS_THREADPRIVATE is set
+		already.
+		* cp/decl.c (duplicate_decls): Merge
+		CP_DECL_THREADPRIVATE_P.
+
+	2005-10-20  Richard Henderson  <rth@redhat.com>
+
+		* cp-gimplify.c (cp_gimplify_omp_for): New.
+		(cp_gimplify_expr): Call it.
+		* cp-tree.h (OMP_FOR_GIMPLIFYING_P): New.
+		* parser.c (struct cp_parser): Rename
+		in_iteration_statement_p to in_iteration_statement and
+		change to unsigned char.  Similarly with
+		in_switch_statement.  Update all users.
+		(IN_OMP_BLOCK, IN_OMP_FOR): New.
+		(cp_parser_labeled_statement): Diagnose case labels
+		binding closer to an openmp block nested than the
+		switch.
+		(cp_parser_jump_statement): Diagnose break and
+		continue labels binding closer to an openmp block than
+		an iteration or switch.
+		(cp_parser_omp_for_loop): Mark in_iteration_statement
+		for an omp for.
+		(cp_parser_begin_omp_structured_block): New.
+		(cp_parser_end_omp_structured_block): New.
+		(cp_parser_omp_structured_block): Use them.
+		(cp_parser_omp_for, cp_parser_omp_sections_scope): Likewise.
+		(cp_parser_omp_parallel): Likewise.
+
+	2005-10-20  Richard Henderson  <rth@redhat.com>
+
+		* semantics.c (begin_omp_structured_block): New.
+		(finish_omp_structured_block): New.
+		(begin_omp_parallel, finish_omp_parallel): Use them.
+		* parser.c (cp_parser_omp_structured_block): Likewise.
+		(cp_parser_omp_for): Likewise.
+		(cp_parser_omp_sections_scope): Likewise.
+		* cp-tree.h: Declare them.
+
+	2005-10-20  Richard Henderson  <rth@redhat.com>
+
+		* parser.c (cp_parser_omp_master): Return the statement.
+		(cp_parser_omp_ordered): Likewise.
+		(cp_parser_omp_construct): Set the locus for them.
+
+	2005-10-19  Richard Henderson  <rth@redhat.com>
+
+		* semantics.c (finish_omp_atomic): Revert to
+		uses_template_parms.
+
+	2005-10-19  Richard Henderson  <rth@redhat.com>
+
+		* semantics.c (finish_omp_clauses): Avoid
+		DECL_THREAD_LOCAL_P on a PARM_DECL.  Remove some
+		stub asserts guaranteed to fail.
+
+	2005-10-19  Richard Henderson  <rth@redhat.com>
+
+		* cp-tree.h (OMP_ATOMIC_DEPENDENT_P, OMP_ATOMIC_CODE): New.
+		(finish_omp_clauses, finish_omp_for, finish_omp_atomic): New.
+		* parser.c (cp_parser_omp_clause_copyin): Remove.
+		(cp_parser_omp_all_clauses): Use cp_parser_omp_var_list instead.                Call finish_omp_clauses.
+		(cp_parser_omp_clause_if): Don't do error checking here.
+		(cp_parser_omp_clause_num_threads): Likewise.
+		(cp_parser_omp_clause_schedule): Likewise.
+		(cp_parser_omp_atomic): Use finish_omp_atomic.
+		(cp_parser_omp_for_loop): Don't discard DECL_EXPR.
+		Don't decompose assignment statment here.  Use
+		finish_omp_for.
+
+		* pt.c (tsubst_omp_clauses): New.
+		(tsubst_expr): Handle OMP_PARALLEL, OMP_FOR, OMP_SECTIONS,
+		OMP_SINGLE, OMP_SECTION, OMP_CRITICAL, OMP_ATOMIC.
+		* semantics.c (finish_omp_clauses): New.
+		(begin_omp_parallel, finish_omp_parallel): Know Less about the
+		internals of the stmt_list stack.
+		(finish_omp_for, finish_omp_atomic): New.
+
+	2005-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+		* semantics.c (cxx_omp_predetermined_sharing): New function.
+		* cp-tree.h (cxx_omp_predetermined_sharing): New prototype.
+		* cp-objcp-common.h
+		(LANG_HOOKS_OMP_PREDETERMINED_SHARING): Redefine.
+
+	2005-10-18  Richard Henderson  <rth@redhat.com>
+
+		* parser.c (cp_parser_omp_single): Use make_node and accessors
+		instead of build.
+
+	2005-10-17  Richard Henderson  <rth@redhat.com>
+
+		* parser.c (cp_parser_omp_for_loop): Handle declarations.
+
+	2005-10-12  Richard Henderson  <rth@redhat.com>
+
+		* Make-lang.in (CXX_C_OBJS): Add c-omp.o.
+		* cp-tree.h (begin_omp_parallel, finish_omp_parallel): Declare.
+		(finish_omp_threadprivate): Declare.
+		* parser.c (struct cp_lexer): Add in_pragma.
+		(cp_lexer_consume_token): Don't consume a PRAGMA_EOL
+		when in_pragma.
+		(cp_parser_skip_to_closing_parenthesis): Stop at PRAGMA_EOL.
+		(cp_parser_skip_to_end_of_statement): Likewise.
+		(cp_parser_skip_to_end_of_block_or_statement): Likewise.
+		(cp_parser_skip_to_closing_brace): Likewise.
+		(cp_parser_skip_to_pragma_eol): Reset in_pragma.
+		(cp_parser_require_pragma_eol): New.
+		(cp_parser_statement): Add in_compound argument;
+		update all callers.
+		Restart if a non-statement pragma seen outside a
+		compound.
+		(cp_parser_statement_seq_opt): Stop at PRAGMA_EOL.
+		(cp_parser_declaration_seq_opt): Likewise.
+		(cp_parser_member_specification_opt): Likewise.
+		(cp_parser_function_definition_after_decl): Likewise.
+		(cp_parser_skip_until_found): Likewise.
+		(cp_parser_cache_group): Likewise.
+		(enum pragma_omp_clause, cp_parser_omp_clause_name,
+		check_no_duplicate_clause,
+		cp_parser_omp_var_list_no_open,
+		cp_parser_omp_var_list, cp_parser_omp_clause_copyin,
+		cp_parser_omp_clause_default, cp_parser_omp_clause_if,
+		cp_parser_omp_clause_nowait,
+		cp_parser_omp_clause_num_threads,
+		cp_parser_omp_clause_ordered,
+		cp_parser_omp_clause_reduction,
+		cp_parser_omp_clause_schedule,
+		cp_parser_omp_all_clauses,
+		cp_parser_omp_structured_block, cp_parser_omp_atomic,
+		cp_parser_omp_barrier, cp_parser_omp_critical,
+		cp_parser_omp_flush, cp_parser_omp_for_loop,
+		cp_parser_omp_for, cp_parser_omp_master,
+		cp_parser_omp_ordered, cp_parser_omp_sections_scope,
+		cp_parser_omp_sections, cp_parser_omp_parallel,
+		cp_parser_omp_single, cp_parser_omp_threadprivate,
+		cp_parser_omp_construct): New.
+		(cp_parser_pragma): Handle OpenMP pragmas.
+		* semantics.c (finish_omp_threadprivate): New.
+		(begin_omp_parallel, finish_omp_parallel): New.
+
+	2005-10-11  Richard Henderson  <rth@redhat.com>
+
+		* parser.c (struct cp_token): Add pragma_kind.
+		(eof_token): Initialize it.
+		(cp_lexer_handle_pragma): Remove.
+		(cp_parser_initial_pragma): New.
+		(cp_lexer_new_main): Use it.
+		(cp_lexer_get_preprocessor_token): Initialize pragma_kind.
+		(cp_lexer_print_token): Don't handle CPP_PRAGMA.
+		(cp_parser_skip_to_pragma_eol): New.
+		(cp_parser_error): Use it.
+		(pragma_lex): New.
+
+	2005-10-09  Richard Henderson  <rth@redhat.com>
+
+		* lex.c (parse_strconst_pragma): Update for c_lex name change.
+		(handle_pragma_java_exceptions): Likewise.
+		* parser.c (cp_lexer_new_main): Likewise.
+
+	2005-10-06  Richard Henderson  <rth@redhat.com>
+
+		* parser.c (cp_lexer_new_main): Comment out defer_pragmas.
+		(cp_lexer_handle_pragma): Comment out
+		cpp_handle_deferred_pragma.
+
+	2005-10-01  Richard Henderson  <rth@redhat.com>
+
+		* name-lookup.c (lookup_name): Remove prefer_type argument.
+		(lookup_name_prefer_type): New function.
+		* name-lookup.h (lookup_name_prefer_type): Declare it.
+		* decl.c (lookup_and_check_tag): Use it.
+		* pt.c (tsubst_friend_class): Likewise. Update for
+		lookup_name change.
+		(lookup_template_class, tsubst_copy_and_build): Likewise.
+
 2006-03-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/15759
@@ -27,7 +476,7 @@
 
 	PR c++/26291
 	* decl.c (grok_op_properties): Check for ellipsis in arguments of
-        operators.
+	operators.
 
 2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
@@ -443,10 +892,10 @@
 
 2006-01-20  Dirk Mueller  <dmueller@suse.com>
 
-        PR c++/5520
-        * semantics.c (finish_if_stmt): Call empty_body_warning.
-        * parser.c (cp_parser_implicitly_scoped_statement):
-        Mark empty statement with an empty stmt.
+	PR c++/5520
+	* semantics.c (finish_if_stmt): Call empty_body_warning.
+	* parser.c (cp_parser_implicitly_scoped_statement):
+	Mark empty statement with an empty stmt.
 
 2006-01-19  Mark Mitchell  <mark@codesourcery.com>
 
@@ -572,8 +1021,8 @@
 
 2006-01-04  Chris Lattner  <sabre@gnu.org>
 
-        * typeck2.c: update copyright to 2006
-        (split_nonconstant_init_1):  Set TREE_CONSTANT to true.
+	* typeck2.c: update copyright to 2006
+	(split_nonconstant_init_1):  Set TREE_CONSTANT to true.
 
 2006-01-04  Mark Mitchell  <mark@codesourcery.com>
 
@@ -814,7 +1263,7 @@
 2005-12-06  Aldy Hernandez  <aldyh@redhat.com>
 
        PR C++/24138
-        * decl.c (reshape_init_array_1): Handle max_index of -1.
+	* decl.c (reshape_init_array_1): Handle max_index of -1.
 
 2005-12-06  Roger Sayle  <roger@eyesopen.com>
 
@@ -1479,7 +1928,7 @@
 2005-10-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 	    Mark Mitchell  <mark@codesourcery.com>
 
-        PR c++/23437
+	PR c++/23437
 	* parser.c (cp_parser_template_argument_list): Do not treat
 	contents of argument list as part of a constant expression.
 
@@ -1977,27 +2426,27 @@
 
 2005-08-15 Fariborz Jahanian <fjahanian@apple.com>
 
-        * cp-tree.h (can_convert_arg, fn_type_unification): New argument.
-        * call.c (add_template_candidate_real): Pass down 'flags' to
-        fn_type_unification.
-        (can_convert_arg): New 'flags' argument. Pass it to call to
-        implicit_conversion instead of LOOKUP_NORMAL.
+	* cp-tree.h (can_convert_arg, fn_type_unification): New argument.
+	* call.c (add_template_candidate_real): Pass down 'flags' to
+	fn_type_unification.
+	(can_convert_arg): New 'flags' argument. Pass it to call to
+	implicit_conversion instead of LOOKUP_NORMAL.
 	(can_convert): Add LOOKUP_NORMAL to call to can_convert_arg.
-        * class.c (resolve_address_of_overloaded_function): Ditto.
-        (resolve_address_of_overloaded_function): Ditto.
-        * decl.c (reshape_init, check_default_argument): Ditto.
-        * typeck.c (build_ptrmemfunc): Ditto.
-        * pt.c (type_unification_real): Add 'flags' argument.
-        (fn_type_unification): Pass 'flags' to type_unification_real.
-        (type_unification_real): Pass new 'flags' argument to call to
-        can_convert_arg.
+	* class.c (resolve_address_of_overloaded_function): Ditto.
+	(resolve_address_of_overloaded_function): Ditto.
+	* decl.c (reshape_init, check_default_argument): Ditto.
+	* typeck.c (build_ptrmemfunc): Ditto.
+	* pt.c (type_unification_real): Add 'flags' argument.
+	(fn_type_unification): Pass 'flags' to type_unification_real.
+	(type_unification_real): Pass new 'flags' argument to call to
+	can_convert_arg.
 
 2005-08-12  Giovanni Bajo  <giovannibajo@libero.it>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21799
 	PR c++/8271
-        * pt.c (unify) <METHOD_TYPE>: Check this-pointer cv-qualifiers
+	* pt.c (unify) <METHOD_TYPE>: Check this-pointer cv-qualifiers
 	explicitly.
 
 2005-08-12  Nathan Sidwell  <nathan@codesourcery.com>
@@ -2327,7 +2776,7 @@
 	diagnostics.
 
 2005-07-02  Zack Weinberg  <zack@codesourcery.com>
-            Joseph S. Myers  <joseph@codesourcery.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	* error.c (location_of): Add comment.
 	(locate_error, cp_error_at, cp_warning_at, cp_pedwarn_at): Remove.
