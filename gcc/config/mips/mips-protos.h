@@ -212,8 +212,9 @@ extern int mips_register_move_cost (enum machine_mode, enum reg_class,
 
 extern int mips_adjust_insn_length (rtx, int);
 extern const char *mips_output_load_label (void);
-extern const char *mips_output_conditional_branch (rtx, rtx *, int, int,
-						   int, int);
+extern const char *mips_output_conditional_branch (rtx, rtx *, const char *,
+						   const char *);
+extern const char *mips_output_order_conditional_branch (rtx, rtx *, bool);
 extern const char *mips_output_division (const char *, rtx *);
 extern unsigned int mips_hard_regno_nregs (int, enum machine_mode);
 extern bool mips_linked_madd_p (rtx, rtx);

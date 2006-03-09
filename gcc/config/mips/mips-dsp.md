@@ -1046,11 +1046,10 @@
 ;; BPOSGE32
 (define_insn "mips_bposge"
   [(set (pc)
-	(if_then_else
-	   (ge:CCDSP (reg:CCDSP CCDSP_PO_REGNUM)
-		     (match_operand:SI 0 "immediate_operand" "I"))
-	   (label_ref (match_operand 1 "" ""))
-	   (pc)))]
+	(if_then_else (ge (reg:CCDSP CCDSP_PO_REGNUM)
+			  (match_operand:SI 0 "immediate_operand" "I"))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
   "TARGET_DSP"
   "%*bposge%0\t%1%/"
   [(set_attr "type"	"branch")
