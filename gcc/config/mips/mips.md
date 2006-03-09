@@ -146,6 +146,7 @@
 )
 
 (include "predicates.md")
+(include "constraints.md")
 
 ;; ....................
 ;;

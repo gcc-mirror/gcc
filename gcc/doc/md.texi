@@ -2368,68 +2368,65 @@ Memory addressed using the small base register ($sb).
 $r1h
 @end table
 
-@item MIPS---@file{config/mips/mips.h}
+@item MIPS---@file{config/mips/constraints.md}
 @table @code
 @item d
-General-purpose integer register
+An address register.  This is equivalent to @code{r} unless
+generating MIPS16 code.
 
 @item f
-Floating-point register (if available)
+A floating-point register (if available).
 
 @item h
-@samp{Hi} register
+The @code{hi} register.
 
 @item l
-@samp{Lo} register
+The @code{lo} register.
 
 @item x
-@samp{Hi} or @samp{Lo} register
+The @code{hi} and @code{lo} registers.
+
+@item c
+A register suitable for use in an indirect jump.  This will always be
+@code{$25} for @option{-mabicalls}.
 
 @item y
-General-purpose integer register
+Equivalent to @code{r}; retained for backwards compatibility.
 
 @item z
-Floating-point status register
+A floating-point condition code register.
 
 @item I
-Signed 16-bit constant (for arithmetic instructions)
+A signed 16-bit constant (for arithmetic instructions).
 
 @item J
-Zero
+Integer zero.
 
 @item K
-Zero-extended 16-bit constant (for logic instructions)
+An unsigned 16-bit constant (for logic instructions).
 
 @item L
-Constant with low 16 bits zero (can be loaded with @code{lui})
+A signed 32-bit constant in which the lower 16 bits are zero.
+Such constants can be loaded using @code{lui}.
 
 @item M
-32-bit constant which requires two instructions to load (a constant
-which is not @samp{I}, @samp{K}, or @samp{L})
+A constant that cannot be loaded using @code{lui}, @code{addiu}
+or @code{ori}.
 
 @item N
-Negative 16-bit constant
+A constant in the range -65535 to -1 (inclusive).
 
 @item O
-Exact power of two
+A signed 15-bit constant.
 
 @item P
-Positive 16-bit constant
+A constant in the range 1 to 65535 (inclusive).
 
 @item G
-Floating point zero
-
-@item Q
-Memory reference that can be loaded with more than one instruction
-(@samp{m} is preferable for @code{asm} statements)
+Floating-point zero.
 
 @item R
-Memory reference that can be loaded with one instruction
-(@samp{m} is preferable for @code{asm} statements)
-
-@item S
-Memory reference in external OSF/rose PIC format
-(@samp{m} is preferable for @code{asm} statements)
+An address that can be used in a non-macro load or store.
 @end table
 
 @item Motorola 680x0---@file{config/m68k/m68k.h}

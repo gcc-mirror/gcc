@@ -1,3 +1,19 @@
+2006-03-09  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/md.texi: Update documentation of MIPS constraints.
+	* config/mips/constraints.md: New file.
+	* config/mips/mips.md: Include it.
+	* config/mips/mips.c (mips_char_to_class): Delete.
+	(override_options): Don't initialize mips_char_to_class.
+	* config/mips/mips.h (mips_char_to_class): Delete.
+	(REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_LETTER_P): Delete.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT_Y): Delete.
+	(EXTRA_CONSTRAINT_STR): Delete.
+	(CONSTRAINT_LEN): Delete.
+	(EXTRA_MEMORY_CONSTRAINT): Delete.
+
 2006-03-09  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-cfg.c (move_block_to_fn): Remove the statements from the
