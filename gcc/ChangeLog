@@ -1,3 +1,69 @@
+2006-03-08  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/addsub.md (addqi3): Disparage a0/a1.
+	(addpsi3): Expand to include memory operands.  Remove
+	reload-specific splits.
+	* config/m32c/bitops.md (bset_qi, bset_hi, bclr_qi): New.
+	(andqi3_16, andhi3_16, iorqi3_16, iorhi3_16): New.
+	(andqi3_24, andhi3_24, iorqi3_24, iorhi3_24): New.
+	(andqi3, andhi3, iorqi3, iorhi3): Convert to expanders.
+	(shift1_qi, shift1_hi, insv): New.
+	* config/m32c/cond.md (cbranchqi4, cbranchhi4): Remove.
+	(cbranch<mode>4, stzx_16, stzx_24_<mode>, stzx_reversed,
+	cmp<mode>, b<code>, s<code>, s<code>_24, movqicc, movhicc,
+	cond_to_int): New.
+	* config/m32c/m32c-protos.h: Update as needed.
+	* config/m32c/m32c.c (m32c_reg_class_from_constraint): Don't
+	default the Rcr, Rcl, Raw, and Ral constraints.  Add Ra0 and Ra1.
+	Fail for unrecognized R* constraints.
+	(m32c_cannot_change_mode_class): Be more picky about pseudos.
+	(m32c_const_ok_for_constraint_p): Add Imb, Imw, and I00.
+	(m32c_extra_constraint_p2): Allow (mem (plus (plus fb int) int)).
+	Add Sp constraint.
+	(m32c_init_libfuncs): New.
+	(m32c_legitimate_address_p): Add debug wrapper.
+	(m32c_rtx_costs): New.
+	(m32c_address_cost): New.
+	(conversions): Add 'B' prefix.
+	(m32c_print_operand): 'h' and 'H' pick lower and upper halves of
+	operands, or word regnames for QI operands.  'B' prints bit
+	position.
+	(m32c_expand_setmemhi): New.
+	(m32c_expand_movmemhi): New.
+	(m32c_expand_movstr): New.
+	(m32c_expand_cmpstr): New.
+	(m32c_prepare_shift): Shift counts are limited to 16 bits at a time.
+	(m32c_expand_neg_mulpsi3): Handle non-ints.
+	(m32c_cmp_flg_0): New.
+	(m32c_expand_movcc): New.
+	(m32c_expand_insv): New.
+	(m32c_scc_pattern): New.
+	* config/m32c/m32c.h (reg classes): Add AO_REGS and A1_REGS.  Take
+	a0/a1 out of SIregs.
+	(STORE_FLAG_VALUE): New.
+	* config/m32c/m32c.md: Add unspecs for string moves.  Define various mode and
+	code macros.
+	(no_insn): New.
+	* config/m32c/mov.md: Make constraints more liberal.
+	(zero_extendqihi2): Optimize r0/r1 case.
+	* config/m32c/muldiv.md (mulpsi3): Check for intvals.
+	* config/m32c/predicates.md (m32c_any_operand): New.
+	(m32c_nonimmediate_operand): New.
+	(m32c_hl_operand): New.
+	(m32c_r3_operand): New.
+	(ap_operand): New.
+	(ma_operand): New.
+	(memsym_operand): New.
+	(memimmed_operand): New.
+	(a_qi_operand): New.
+	(m32c_eqne_operator): New.
+	(m32c_1bit8_operand): New.
+	(m32c_1bit16_operand): New.
+	(m32c_1mask8_operand): New.
+	(m32c_1mask16_operand): New.
+	* config/m32c/blkmov.md: New file.
+	* config/m32c/t-m32c (MD_FILES): Add blkmov.
+
 2006-03-08  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* dwarf2out.c (expand_builtin_dwarf_sp_column): Make dwarf_regnum

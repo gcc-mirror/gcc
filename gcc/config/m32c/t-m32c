@@ -48,7 +48,7 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 
 md_file = md
 
-MD_FILES = m32c predicates addsub bitops cond jump minmax mov muldiv prologue shift
+MD_FILES = m32c predicates addsub bitops blkmov cond jump minmax mov muldiv prologue shift
 
 # Doing it this way lets the gen* programs report the right line numbers.
 

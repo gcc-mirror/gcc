@@ -143,7 +143,8 @@
 	(mult:PSI (match_operand:PSI 1 "mra_operand" "%0")
 		  (match_operand 2 "m32c_psi_scale" "Ilb")))]
   "TARGET_A24"
-  "if (INTVAL(operands[2]) < 0)
+  "if (GET_CODE (operands[2]) != CONST_INT
+       || INTVAL(operands[2]) < 0)
      {
        m32c_expand_neg_mulpsi3 (operands);
        DONE;

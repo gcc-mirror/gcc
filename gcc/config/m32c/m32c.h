@@ -261,10 +261,12 @@ machine_function;
   { 0x0000000a }, /* R23 - r2 r3 */\
   { 0x0000000f }, /* R03 - r0r2 r1r3 */\
   { 0x0000000f }, /* DI  - r0r2r1r3 + mems */\
+  { 0x00000010 }, /* A0  - a0 */\
+  { 0x00000020 }, /* A1  - a1 */\
   { 0x00000030 }, /* A   - a0 a1 */\
   { 0x000000f0 }, /* AD  - a0 a1 sb fp */\
   { 0x000001f0 }, /* PS  - a0 a1 sb fp sp */\
-  { 0x0000003f }, /* SI  - r0r2 r1r3 a0a1 */\
+  { 0x0000000f }, /* SI  - r0r2 r1r3 a0a1 */\
   { 0x0000003f }, /* HI  - r0 r1 r2 r3 a0 a1 */\
   { 0x0000003f }, /* RA  - r0..r3 a0 a1 */\
   { 0x0000007f }, /* GENERAL */\
@@ -297,6 +299,8 @@ enum reg_class
   R23_REGS,
   R03_REGS,
   DI_REGS,
+  A0_REGS,
+  A1_REGS,
   A_REGS,
   AD_REGS,
   PS_REGS,
@@ -335,6 +339,8 @@ enum reg_class
 "R23_REGS", \
 "R03_REGS", \
 "DI_REGS", \
+"A0_REGS", \
+"A1_REGS", \
 "A_REGS", \
 "AD_REGS", \
 "PS_REGS", \
@@ -655,6 +661,8 @@ typedef struct m32c_cumulative_args
 
 #define MOVE_MAX 4
 #define TRULY_NOOP_TRUNCATION(op,ip) 1
+
+#define STORE_FLAG_VALUE 1
 
 /* 16 or 24 bit pointers */
 #define Pmode (TARGET_A16 ? HImode : PSImode)
