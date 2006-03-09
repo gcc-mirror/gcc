@@ -13,6 +13,8 @@ program alloc_dummy
     call useit(a, b)
     if (.NOT.all(b == [ 1, 2, 3 ])) call abort()
 
+    if (.NOT.all(whatever(a) == [ 1, 2, 3 ])) call abort()
+
     call kill(a)
     if (allocated(a)) call abort()
 
@@ -34,6 +36,13 @@ contains
         allocate (y(3))
         y = x
     end subroutine useit
+
+    function whatever(x)
+        integer, allocatable :: x(:)
+        integer :: whatever(size(x))
+        
+        whatever = x
+    end function whatever
 
     subroutine kill(x)
         integer, allocatable, intent(out) :: x(:)

@@ -1316,6 +1316,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   new_sym->attr.referenced = 1;
   new_sym->attr.dimension = sym->attr.dimension;
   new_sym->attr.pointer = sym->attr.pointer;
+  new_sym->attr.allocatable = sym->attr.allocatable;
   new_sym->attr.flavor = sym->attr.flavor;
 
   /* Create a fake symtree for it.  */
@@ -1367,8 +1368,9 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
 	value = build_fold_indirect_ref (value);
     }
 
-  /* If the argument is a scalar or a pointer to an array, dereference it.  */
-  else if (!sym->attr.dimension || sym->attr.pointer)
+  /* If the argument is a scalar, a pointer to an array or an allocatable,
+     dereference it.  */
+  else if (!sym->attr.dimension || sym->attr.pointer || sym->attr.allocatable)
     value = build_fold_indirect_ref (se->expr);
   
   /* For character(*), use the actual argument's descriptor.  */  
