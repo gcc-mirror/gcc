@@ -690,9 +690,6 @@ const enum reg_class mips_regno_to_class[] =
   ALL_REGS,	ALL_REGS,	ALL_REGS,	ALL_REGS
 };
 
-/* Map register constraint character to register class.  */
-enum reg_class mips_char_to_class[256];
-
 /* Table of machine dependent attributes.  */
 const struct attribute_spec mips_attribute_table[] =
 {
@@ -4843,27 +4840,6 @@ override_options (void)
   mips_print_operand_punct['$'] = 1;
   mips_print_operand_punct['+'] = 1;
   mips_print_operand_punct['~'] = 1;
-
-  mips_char_to_class['d'] = TARGET_MIPS16 ? M16_REGS : GR_REGS;
-  mips_char_to_class['t'] = T_REG;
-  mips_char_to_class['f'] = (TARGET_HARD_FLOAT ? FP_REGS : NO_REGS);
-  mips_char_to_class['h'] = HI_REG;
-  mips_char_to_class['l'] = LO_REG;
-  mips_char_to_class['x'] = MD_REGS;
-  mips_char_to_class['b'] = ALL_REGS;
-  mips_char_to_class['c'] = (TARGET_ABICALLS ? PIC_FN_ADDR_REG :
-			     TARGET_MIPS16 ? M16_NA_REGS :
-			     GR_REGS);
-  mips_char_to_class['e'] = LEA_REGS;
-  mips_char_to_class['j'] = PIC_FN_ADDR_REG;
-  mips_char_to_class['v'] = V1_REG;
-  mips_char_to_class['y'] = GR_REGS;
-  mips_char_to_class['z'] = ST_REGS;
-  mips_char_to_class['B'] = COP0_REGS;
-  mips_char_to_class['C'] = COP2_REGS;
-  mips_char_to_class['D'] = COP3_REGS;
-  mips_char_to_class['A'] = DSP_ACC_REGS;
-  mips_char_to_class['a'] = ACC_REGS;
 
   /* Set up array to map GCC register number to debug register number.
      Ignore the special purpose register numbers.  */
