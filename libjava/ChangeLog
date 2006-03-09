@@ -1,5 +1,11 @@
 2006-03-09  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/24461:
+	* java/util/zip/InflaterInputStream.java (fill): Throw exception
+	if stream is truncated.
+
+2006-03-09  Tom Tromey  <tromey@redhat.com>
+
 	* win32.cc (_Jv_platform_nanotime): New function.
 	* include/win32.h (_Jv_platform_nanotime): Declare.
 	* posix.cc (_Jv_platform_nanotime): New function.
