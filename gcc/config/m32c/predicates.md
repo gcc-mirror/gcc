@@ -22,6 +22,19 @@
 
 ;; Predicates
 
+; TRUE for any valid operand.  We do this because general_operand
+; refuses to match volatile memory refs.
+
+(define_predicate "m32c_any_operand"
+  (ior (match_operand 0 "general_operand")
+       (match_operand 1 "memory_operand")))
+
+; Likewise for nonimmediate_operand.
+
+(define_predicate "m32c_nonimmediate_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_operand 1 "memory_operand")))
+
 ; TRUE if the operand is a pseudo-register.
 (define_predicate "m32c_pseudo"
   (ior (and (match_code "reg")
@@ -63,11 +76,24 @@
        (and (match_code "reg")
 	    (match_test "REGNO(op) == R1_REGNO"))))
 
+; TRUE for HL_CLASS (r0 or r1)
+(define_predicate "m32c_hl_operand"
+  (ior (match_operand 0 "m32c_pseudo" "")
+       (and (match_code "reg")
+	    (match_test "REGNO(op) == R0_REGNO || REGNO(op) == R1_REGNO"))))
+
+
 ; TRUE for r2
 (define_predicate "m32c_r2_operand"
   (ior (match_operand 0 "m32c_pseudo" "")
        (and (match_code "reg")
 	    (match_test "REGNO(op) == R2_REGNO"))))
+
+; TRUE for r3
+(define_predicate "m32c_r3_operand"
+  (ior (match_operand 0 "m32c_pseudo" "")
+       (and (match_code "reg")
+	    (match_test "REGNO(op) == R3_REGNO"))))
 
 ; TRUE for any general operand except r2.
 (define_predicate "m32c_notr2_operand"
@@ -89,9 +115,14 @@
 
 ; TRUE for $a0 or $a1.
 (define_predicate "a_operand"
-  (match_code "reg")
-  "return (REGNO (op) == A0_REGNO
-           || REGNO (op) == A1_REGNO);")
+  (and (match_code "reg")
+       (match_test "REGNO (op) == A0_REGNO || REGNO (op) == A1_REGNO")))
+
+; TRUE for $a0 or $a1 or a pseudo
+(define_predicate "ap_operand"
+  (ior (match_operand 0 "m32c_pseudo" "")
+       (and (match_code "reg")
+	    (match_test "REGNO (op) == A0_REGNO || REGNO (op) == A1_REGNO"))))
 
 ; TRUE for r0 through r3, or a0 or a1.
 (define_predicate "ra_operand"
@@ -112,7 +143,7 @@
 
 ; TRUE for memory, r0..r3, a0..a1, or immediates.
 (define_predicate "mrai_operand"
-  (and (and (match_operand 0 "general_operand" "")
+  (and (and (match_operand 0 "m32c_any_operand" "")
 	    (not (match_operand 1 "cr_operand" "")))
        (not (match_operand 2 "m32c_wide_subreg" ""))))
 
@@ -126,7 +157,22 @@
   (and (match_operand 0 "mra_operand" "")
        (not (match_operand 1 "a_operand" ""))))
 
-; TRUE for r1h.  This complicated since r1h isn't a register GCC
+; TRUE for a0..a1 or memory.
+(define_predicate "ma_operand"
+  (ior (match_operand 0 "a_operand" "")
+       (match_operand 1 "memory_operand" "")))
+
+; TRUE for memory operands that are not indexed
+(define_predicate "memsym_operand"
+  (and (match_operand 0 "memory_operand" "")
+       (match_test "m32c_extra_constraint_p (op, 'S', \"Si\")")))
+
+; TRUE for memory operands with small integer addresses
+(define_predicate "memimmed_operand"
+  (and (match_operand 0 "memory_operand" "")
+       (match_test "m32c_extra_constraint_p (op, 'S', \"Sp\")")))
+
+; TRUE for r1h.  This is complicated since r1h isn't a register GCC
 ; normally knows about.
 (define_predicate "r1h_operand"
   (match_code "zero_extract")
@@ -175,18 +221,25 @@
 
 ; These two are only for movqi - no subreg limit
 (define_predicate "mra_qi_operand"
-  (and (and (match_operand 0 "nonimmediate_operand" "")
+  (and (and (match_operand 0 "m32c_nonimmediate_operand" "")
 	    (not (match_operand 1 "cr_operand" "")))
        (not (match_operand 1 "m32c_r2r3a_operand" ""))))
 
 (define_predicate "mrai_qi_operand"
-  (and (and (match_operand 0 "general_operand" "")
+  (and (and (match_operand 0 "m32c_any_operand" "")
 	    (not (match_operand 1 "cr_operand" "")))
        (not (match_operand 1 "m32c_r2r3a_operand" ""))))
+
+(define_predicate "a_qi_operand"
+  (ior (match_operand 0 "m32c_pseudo" "")
+       (match_operand 1 "a_operand" "")))
 
 ; TRUE for comparisons we support.
 (define_predicate "m32c_cmp_operator"
   (match_code "eq,ne,gt,gtu,lt,ltu,ge,geu,le,leu"))
+
+(define_predicate "m32c_eqne_operator"
+  (match_code "eq,ne"))
 
 ; TRUE for mem0
 (define_predicate "m32c_mem0_operand"
@@ -204,3 +257,21 @@
 (define_predicate "m32c_psi_scale"
   (and (match_operand 0 "const_int_operand")
        (match_test "m32c_const_ok_for_constraint_p(INTVAL(op), 'I', \"Ilb\")")))
+
+; TRUE for one bit set (bit) or clear (mask) out of N bits.
+
+(define_predicate "m32c_1bit8_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "m32c_const_ok_for_constraint_p(INTVAL(op), 'I', \"Ilb\")")))
+
+(define_predicate "m32c_1bit16_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "m32c_const_ok_for_constraint_p(INTVAL(op), 'I', \"Ilw\")")))
+
+(define_predicate "m32c_1mask8_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "m32c_const_ok_for_constraint_p(INTVAL(op), 'I', \"Imb\")")))
+
+(define_predicate "m32c_1mask16_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "m32c_const_ok_for_constraint_p(INTVAL(op), 'I', \"Imw\")")))

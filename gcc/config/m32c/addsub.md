@@ -24,22 +24,22 @@
 
 (define_insn "addqi3"
   [(set (match_operand:QI 0 "mra_or_sp_operand"
-		  "=SdRhl,SdRhl,??Rmm,??Rmm, Raa,Raa,SdRhl,??Rmm")
+		  "=SdRhl,SdRhl,??Rmm,??Rmm, *Raa,*Raa,SdRhl,??Rmm")
 	(plus:QI (match_operand:QI 1 "mra_operand"
 		  "%0,0,0,0, 0,0,0,0")
 		 (match_operand:QI 2 "mrai_operand"
-		  "iSdRhl,?Rmm,iSdRhl,?Rmm, iSdRhl,?Rmm,Raa,Raa")))]
+		  "iSdRhl,?Rmm,iSdRhl,?Rmm, iSdRhl,?Rmm,*Raa,*Raa")))]
   ""
   "add.b\t%2,%0"
   [(set_attr "flags" "oszc")]
   )
 
 (define_insn "addhi3"
-  [(set (match_operand:HI 0 "nonimmediate_operand"
+  [(set (match_operand:HI 0 "m32c_nonimmediate_operand"
 	 	  "=SdRhi,SdRhi,??Rmm,??Rmm, SdRhi,??Rmm, Rhi, Raw, Raw, !Rsp")
-	(plus:HI (match_operand:HI 1 "general_operand"
+	(plus:HI (match_operand:HI 1 "m32c_any_operand"
 		  "%0,0,0,0, 0,0, Raw, Rfb, Rfb, 0")
-		 (match_operand:HI 2 "general_operand"
+		 (match_operand:HI 2 "m32c_any_operand"
 		  "IU2sSdRhi,?Rmm,IU2sSdRhi,?Rmm, IM2,IM2, IS2IU2, I00, IS1, i")))]
   ""
   "@
@@ -57,45 +57,19 @@
   )
 
 (define_insn "addpsi3"
-  [(set (match_operand:PSI 0 "nonimmediate_operand" "=SdRpi,SdRpi,Rsp*Rmm, Rpi,Rpi,Rhi,&Rhi")
-	(plus:PSI (match_operand:PSI 1 "nonimmediate_operand" "0,0,0, Raa,Rad,!Rcl,Rhi")
-		  (match_operand:PSI 2 "general_operand" "iSdRpi,?Rmm,i, i,IS2,i,!Rcl")))]
+  [(set (match_operand:PSI 0 "m32c_nonimmediate_operand" "=Rpi,Raa,SdRpi,SdRpi,Rsp*Rmm, Rpi,Rpi")
+	(plus:PSI (match_operand:PSI 1 "m32c_nonimmediate_operand" "0,0,0,0,0, Raa,Rad")
+		  (match_operand:PSI 2 "m32c_any_operand" "Is3,IS1,iSdRpi,?Rmm,i, i,IS2")))]
   "TARGET_A24"
   "@
-   add.%&\t%2,%0
-   add.%&\t%2,%0
-   add.%&\t%2,%0
+   add.l:q\t%2,%0
+   addx\t%2,%0
+   add.l\t%2,%0
+   add.l\t%2,%0
+   add.l\t%2,%0
    mova\t%d2[%1],%0
-   mova\t%D2[%1],%0
-   #
-   #"
-  [(set_attr "flags" "oszc,oszc,oszc,*,*,oszc,oszc")]
-  )
-
-; This is needed for reloading large frames.
-(define_split
-  [(set (match_operand:PSI 0 "ra_operand" "")
-	(plus:PSI (match_operand:PSI 1 "cr_operand" "")
-		 (match_operand:PSI 2 "immediate_operand" "")))]
-  ""
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 0)
-	(plus:PSI (match_dup 0)
-		 (match_dup 2)))]
-  ""
-  )
-
-; This is needed for reloading large frames.
-(define_split
-  [(set (match_operand:PSI 0 "ra_operand" "")
-	(plus:PSI (match_operand:PSI 1 "ra_operand" "")
-		 (match_operand:PSI 2 "cr_operand" "")))]
-  ""
-  [(set (match_dup 0) (match_dup 2))
-   (set (match_dup 0)
-	(plus:PSI (match_dup 0)
-		 (match_dup 1)))]
-  ""
+   mova\t%D2[%1],%0"
+  [(set_attr "flags" "oszc,oszc,oszc,oszc,oszc,*,*")]
   )
 
 (define_insn "subqi3"
