@@ -72,6 +72,7 @@
    (UNSPEC_RSQRT2		209)
    (UNSPEC_RECIP1		210)
    (UNSPEC_RECIP2		211)
+   (UNSPEC_SINGLE_CC		212)
 
    ;; MIPS DSP ASE Revision 0.98 3/24/2005
    (UNSPEC_ADDQ			300)
@@ -4272,85 +4273,65 @@
 
 ;; Conditional branches on floating-point equality tests.
 
-(define_insn "branch_fp"
+(define_insn "*branch_fp"
   [(set (pc)
         (if_then_else
-         (match_operator:CC 0 "comparison_operator"
-                            [(match_operand:CC 2 "register_operand" "z")
-			     (const_int 0)])
+         (match_operator 0 "equality_operator"
+                         [(match_operand:CC 2 "register_operand" "z")
+			  (const_int 0)])
          (label_ref (match_operand 1 "" ""))
          (pc)))]
   "TARGET_HARD_FLOAT"
 {
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/0,
-					 /*float_p=*/1,
-					 /*inverted_p=*/0,
-					 get_attr_length (insn));
+  return mips_output_conditional_branch (insn, operands,
+					 MIPS_BRANCH ("b%F0", "%2,%1"),
+					 MIPS_BRANCH ("b%W0", "%2,%1"));
 }
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])
 
-(define_insn "branch_fp_inverted"
+(define_insn "*branch_fp_inverted"
   [(set (pc)
         (if_then_else
-         (match_operator:CC 0 "comparison_operator"
-                            [(match_operand:CC 2 "register_operand" "z")
-			     (const_int 0)])
+         (match_operator 0 "equality_operator"
+                         [(match_operand:CC 2 "register_operand" "z")
+			  (const_int 0)])
          (pc)
          (label_ref (match_operand 1 "" ""))))]
   "TARGET_HARD_FLOAT"
 {
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/0,
-					 /*float_p=*/1,
-					 /*inverted_p=*/1,
-					 get_attr_length (insn));
+  return mips_output_conditional_branch (insn, operands,
+					 MIPS_BRANCH ("b%W0", "%2,%1"),
+					 MIPS_BRANCH ("b%F0", "%2,%1"));
 }
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])
 
-;; Conditional branches on comparisons with zero.
+;; Conditional branches on ordered comparisons with zero.
 
-(define_insn "*branch_zero<mode>"
+(define_insn "*branch_order<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "comparison_operator"
+	 (match_operator 0 "order_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
 			  (const_int 0)])
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))]
   "!TARGET_MIPS16"
-{
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/0,
-					 /*float_p=*/0,
-					 /*inverted_p=*/0,
-					 get_attr_length (insn));
-}
+  { return mips_output_order_conditional_branch (insn, operands, false); }
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
-(define_insn "*branch_zero<mode>_inverted"
+(define_insn "*branch_order<mode>_inverted"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "comparison_operator"
+	 (match_operator 0 "order_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
 			  (const_int 0)])
 	 (pc)
 	 (label_ref (match_operand 1 "" ""))))]
   "!TARGET_MIPS16"
-{
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/0,
-					 /*float_p=*/0,
-					 /*inverted_p=*/1,
-					 get_attr_length (insn));
-}
+  { return mips_output_order_conditional_branch (insn, operands, true); }
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
@@ -4361,17 +4342,14 @@
 	(if_then_else
 	 (match_operator 0 "equality_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
-			  (match_operand:GPR 3 "register_operand" "d")])
+			  (match_operand:GPR 3 "reg_or_0_operand" "dJ")])
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))]
   "!TARGET_MIPS16"
 {
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/1,
-					 /*float_p=*/0,
-					 /*inverted_p=*/0,
-					 get_attr_length (insn));
+  return mips_output_conditional_branch (insn, operands,
+					 MIPS_BRANCH ("b%C0", "%2,%z3,%1"),
+					 MIPS_BRANCH ("b%N0", "%2,%z3,%1"));
 }
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
@@ -4381,17 +4359,14 @@
 	(if_then_else
 	 (match_operator 0 "equality_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
-			  (match_operand:GPR 3 "register_operand" "d")])
+			  (match_operand:GPR 3 "reg_or_0_operand" "dJ")])
 	 (pc)
 	 (label_ref (match_operand 1 "" ""))))]
   "!TARGET_MIPS16"
 {
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/1,
-					 /*float_p=*/0,
-					 /*inverted_p=*/1,
-					 get_attr_length (insn));
+  return mips_output_conditional_branch (insn, operands,
+					 MIPS_BRANCH ("b%N0", "%2,%z3,%1"),
+					 MIPS_BRANCH ("b%C0", "%2,%z3,%1"));
 }
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
@@ -4438,6 +4413,13 @@
   gen_conditional_branch (operands, <CODE>);
   DONE;
 })
+
+;; Used to implement built-in functions.
+(define_expand "condjump"
+  [(set (pc)
+	(if_then_else (match_operand 0)
+		      (label_ref (match_operand 1))
+		      (pc)))])
 
 ;;
 ;;  ....................

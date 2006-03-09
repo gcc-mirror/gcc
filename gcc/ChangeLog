@@ -1,5 +1,48 @@
 2006-03-09  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips-protos.h (mips_output_conditional_branch): Change
+	interface.
+	(mips_output_order_conditional_branch): Declare.
+	* config/mips/mips.h (MIPS_BRANCH): New macro.
+	* config/mips/mips.c (gen_conditional_branch): Use VOIDmode
+	for the comparison.  Use gen_condjump.
+	(mips_output_conditional_branch): Rework interface to take the
+	asm templates for a direct branch and the inverse of a direct branch.
+	(mips_output_order_conditional_branch): New function.
+	(mips_builtin_branch_and_move): New function.
+	(mips_expand_builtin_compare): Use it.  Use VOIDmode for the
+	branch condition.  Use gen_single_cc as the condition for
+	__builtin_mips_upper_* or __builtin_mips_lower_*.
+	(mips_expand_builtin_bposge): Use mips_builtin_branch_and_move.
+	Use VOIDmode for the branch condition.
+	* config/mips/predicates.md (order_operator): New predicate.
+	* config/mips/mips.md (UNSPEC_SINGLE_CC): New constant.
+	(branch_fp): Rename to...
+	(*branch_fp): ...this.  Remove mode from comparison operator.
+	Use new mips_output_conditional_branch interface.
+	(branch_fp_inverted): Rename to...
+	(*branch_fp_inverted): ...this and update as for *branch_fp.
+	(*branch_zero<mode>): Rename to...
+	(*branch_order<mode>): ...this.  Remove mode from comparison operator.
+	Use mips_output_order_conditional_branch.  Only accept ordered
+	comparisons.  
+	(*branch_zero<mode>_inverted): Rename to...
+	(*branch_order<mode>_inverted): ...this and update as for
+	*branch_order<mode>.
+	(*branch_equality<mode>): Accept zero as the second operand to
+	the equality operator.  Use the new mips_output_conditional_branch
+	interface.
+	(*branch_equality<mode>_inverted): Likewise.
+	(condjump): New expander.
+	* config/mips/mips-dsp.md (mips_bposge): Remove mode from comparison
+	operator.
+	* config/mips/mips-ps-3d.md (bc1any4t, bc1any4f): Likewise.
+	(bc1any2t, bc1any2f): Likewise.
+	(single_cc): New expander.
+	(*branch_upper_lower, *branch_upper_lower_inverted): New patterns.
+
+2006-03-09  Richard Sandiford  <richard@codesourcery.com>
+
 	* doc/md.texi: Update documentation of MIPS constraints.
 	* config/mips/constraints.md: New file.
 	* config/mips/mips.md: Include it.

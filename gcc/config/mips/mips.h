@@ -2272,6 +2272,12 @@ typedef struct mips_args {
    be updated with the correct length of the insn.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   ((LENGTH) = mips_adjust_insn_length ((INSN), (LENGTH)))
+
+/* Return the asm template for a non-MIPS16 conditional branch instruction.
+   OPCODE is the opcode's mnemonic and OPERANDS is the asm template for
+   its operands.  */
+#define MIPS_BRANCH(OPCODE, OPERANDS) \
+  "%*" OPCODE "%?\t" OPERANDS "%/"
 
 /* Control the assembler format that we output.  */
 

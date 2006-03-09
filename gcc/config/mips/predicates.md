@@ -212,6 +212,9 @@
 (define_predicate "trap_comparison_operator"
   (match_code "eq,ne,lt,ltu,ge,geu"))
 
+(define_predicate "order_operator"
+  (match_code "lt,ltu,le,leu,ge,geu,gt,gtu"))
+
 
 (define_predicate "small_data_pattern"
   (and (match_code "set,parallel,unspec,unspec_volatile,prefetch")

@@ -3186,15 +3186,11 @@ mips_emit_scc (enum rtx_code code, rtx target)
 void
 gen_conditional_branch (rtx *operands, enum rtx_code code)
 {
-  rtx op0, op1, target;
+  rtx op0, op1, condition;
 
   mips_emit_compare (&code, &op0, &op1, TARGET_MIPS16);
-  target = gen_rtx_IF_THEN_ELSE (VOIDmode,
-				 gen_rtx_fmt_ee (code, GET_MODE (op0),
-						 op0, op1),
-				 gen_rtx_LABEL_REF (VOIDmode, operands[0]),
-				 pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, target));
+  condition = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
+  emit_jump_insn (gen_condjump (condition, operands[0]));
 }
 
 /* Emit the common code for conditional moves.  OPERANDS is the array
@@ -9127,217 +9123,126 @@ mips_output_load_label (void)
     }
 }
 
+/* Return the assembly code for INSN, which has the operands given by
+   OPERANDS, and which branches to OPERANDS[1] if some condition is true.
+   BRANCH_IF_TRUE is the asm template that should be used if OPERANDS[1]
+   is in range of a direct branch.  BRANCH_IF_FALSE is an inverted
+   version of BRANCH_IF_TRUE.  */
 
-/* Output assembly instructions to peform a conditional branch.
-
-   INSN is the branch instruction.  OPERANDS[0] is the condition.
-   OPERANDS[1] is the target of the branch.  OPERANDS[2] is the target
-   of the first operand to the condition.  If TWO_OPERANDS_P is
-   nonzero the comparison takes two operands; OPERANDS[3] will be the
-   second operand.
-
-   If INVERTED_P is nonzero we are to branch if the condition does
-   not hold.  If FLOAT_P is nonzero this is a floating-point comparison.
-
-   LENGTH is the length (in bytes) of the sequence we are to generate.
-   That tells us whether to generate a simple conditional branch, or a
-   reversed conditional branch around a `jr' instruction.  */
 const char *
-mips_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
-				int float_p, int inverted_p, int length)
+mips_output_conditional_branch (rtx insn, rtx *operands,
+				const char *branch_if_true,
+				const char *branch_if_false)
 {
-  static char buffer[200];
-  /* The kind of comparison we are doing.  */
-  enum rtx_code code = GET_CODE (operands[0]);
-  /* Nonzero if the opcode for the comparison needs a `z' indicating
-     that it is a comparison against zero.  */
-  int need_z_p;
-  /* A string to use in the assembly output to represent the first
-     operand.  */
-  const char *op1 = "%z2";
-  /* A string to use in the assembly output to represent the second
-     operand.  Use the hard-wired zero register if there's no second
-     operand.  */
-  const char *op2 = (two_operands_p ? ",%z3" : ",%.");
-  /* The operand-printing string for the comparison.  */
-  const char *const comp = (float_p ? "%F0" : "%C0");
-  /* The operand-printing string for the inverted comparison.  */
-  const char *const inverted_comp = (float_p ? "%W0" : "%N0");
+  unsigned int length;
+  rtx taken, not_taken;
 
-  /* The MIPS processors (for levels of the ISA at least two), have
-     "likely" variants of each branch instruction.  These instructions
-     annul the instruction in the delay slot if the branch is not
-     taken.  */
-  mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
-
-  if (!two_operands_p)
+  length = get_attr_length (insn);
+  if (length <= 8)
     {
-      /* To compute whether than A > B, for example, we normally
-	 subtract B from A and then look at the sign bit.  But, if we
-	 are doing an unsigned comparison, and B is zero, we don't
-	 have to do the subtraction.  Instead, we can just check to
-	 see if A is nonzero.  Thus, we change the CODE here to
-	 reflect the simpler comparison operation.  */
-      switch (code)
-	{
-	case GTU:
-	  code = NE;
-	  break;
-
-	case LEU:
-	  code = EQ;
-	  break;
-
-	case GEU:
-	  /* A condition which will always be true.  */
-	  code = EQ;
-	  op1 = "%.";
-	  break;
-
-	case LTU:
-	  /* A condition which will always be false.  */
-	  code = NE;
-	  op1 = "%.";
-	  break;
-
-	default:
-	  /* Not a special case.  */
-	  break;
-	}
+      /* Just a simple conditional branch.  */
+      mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
+      return branch_if_true;
     }
 
-  /* Relative comparisons are always done against zero.  But
-     equality comparisons are done between two operands, and therefore
-     do not require a `z' in the assembly language output.  */
-  need_z_p = (!float_p && code != EQ && code != NE);
-  /* For comparisons against zero, the zero is not provided
-     explicitly.  */
-  if (need_z_p)
-    op2 = "";
+  /* Generate a reversed branch around a direct jump.  This fallback does
+     not use branch-likely instructions.  */
+  mips_branch_likely = false;
+  not_taken = gen_label_rtx ();
+  taken = operands[1];
 
-  /* Begin by terminating the buffer.  That way we can always use
-     strcat to add to it.  */
-  buffer[0] = '\0';
+  /* Generate the reversed branch to NOT_TAKEN.  */
+  operands[1] = not_taken;
+  output_asm_insn (branch_if_false, operands);
 
-  switch (length)
+  /* If INSN has a delay slot, we must provide delay slots for both the
+     branch to NOT_TAKEN and the conditional jump.  We must also ensure
+     that INSN's delay slot is executed in the appropriate cases.  */
+  if (final_sequence)
     {
-    case 4:
-    case 8:
-      /* Just a simple conditional branch.  */
-      if (float_p)
-	sprintf (buffer, "%%*b%s%%?\t%%Z2%%1%%/",
-		 inverted_p ? inverted_comp : comp);
+      /* This first delay slot will always be executed, so use INSN's
+	 delay slot if is not annulled.  */
+      if (!INSN_ANNULLED_BRANCH_P (insn))
+	{
+	  final_scan_insn (XVECEXP (final_sequence, 0, 1),
+			   asm_out_file, optimize, 1, NULL);
+	  INSN_DELETED_P (XVECEXP (final_sequence, 0, 1)) = 1;
+	}
       else
-	sprintf (buffer, "%%*b%s%s%%?\t%s%s,%%1%%/",
-		 inverted_p ? inverted_comp : comp,
-		 need_z_p ? "z" : "",
-		 op1,
-		 op2);
-      return buffer;
+	output_asm_insn ("nop", 0);
+      fprintf (asm_out_file, "\n");
+    }
 
-    case 12:
-    case 16:
-    case 24:
-    case 28:
-      {
-	/* Generate a reversed conditional branch around ` j'
-	   instruction:
+  /* Output the unconditional branch to TAKEN.  */
+  if (length <= 16)
+    output_asm_insn ("j\t%0%/", &taken);
+  else
+    {
+      output_asm_insn (mips_output_load_label (), &taken);
+      output_asm_insn ("jr\t%@%]%/", 0);
+    }
 
-		.set noreorder
-		.set nomacro
-		bc    l
-		delay_slot or #nop
-		j     target
-		#nop
-	     l:
-		.set macro
-		.set reorder
+  /* Now deal with its delay slot; see above.  */
+  if (final_sequence)
+    {
+      /* This delay slot will only be executed if the branch is taken.
+	 Use INSN's delay slot if is annulled.  */
+      if (INSN_ANNULLED_BRANCH_P (insn))
+	{
+	  final_scan_insn (XVECEXP (final_sequence, 0, 1),
+			   asm_out_file, optimize, 1, NULL);
+	  INSN_DELETED_P (XVECEXP (final_sequence, 0, 1)) = 1;
+	}
+      else
+	output_asm_insn ("nop", 0);
+      fprintf (asm_out_file, "\n");
+    }
 
-	   If the original branch was a likely branch, the delay slot
-	   must be executed only if the branch is taken, so generate:
+  /* Output NOT_TAKEN.  */
+  (*targetm.asm_out.internal_label) (asm_out_file, "L",
+				     CODE_LABEL_NUMBER (not_taken));
+  return "";
+}
 
-		.set noreorder
-		.set nomacro
-		bc    l
-		#nop
-		j     target
-		delay slot or #nop
-	     l:
-		.set macro
-		.set reorder
+/* Return the assembly code for INSN, which branches to OPERANDS[1]
+   if some ordered condition is true.  The condition is given by
+   OPERANDS[0] if !INVERTED_P, otherwise it is the inverse of
+   OPERANDS[0].  OPERANDS[2] is the comparison's first operand;
+   its second is always zero.  */
 
-	   When generating PIC, instead of:
+const char *
+mips_output_order_conditional_branch (rtx insn, rtx *operands, bool inverted_p)
+{
+  const char *branch[2];
 
-	        j     target
+  /* Make BRANCH[1] branch to OPERANDS[1] when the condition is true.
+     Make BRANCH[0] branch on the inverse condition.  */
+  switch (GET_CODE (operands[0]))
+    {
+      /* These cases are equivalent to comparisons against zero.  */
+    case LEU:
+      inverted_p = !inverted_p;
+      /* Fall through.  */
+    case GTU:
+      branch[!inverted_p] = MIPS_BRANCH ("bne", "%2,%.,%1");
+      branch[inverted_p] = MIPS_BRANCH ("beq", "%2,%.,%1");
+      break;
 
-	   we emit:
-
-	        .set noat
-	        la    $at, target
-		jr    $at
-		.set at
-	*/
-
-        rtx orig_target;
-	rtx target = gen_label_rtx ();
-
-        orig_target = operands[1];
-        operands[1] = target;
-	/* Generate the reversed comparison.  This takes four
-	   bytes.  */
-	if (float_p)
-	  sprintf (buffer, "%%*b%s\t%%Z2%%1",
-		   inverted_p ? comp : inverted_comp);
-	else
-	  sprintf (buffer, "%%*b%s%s\t%s%s,%%1",
-		   inverted_p ? comp : inverted_comp,
-		   need_z_p ? "z" : "",
-		   op1,
-		   op2);
-        output_asm_insn (buffer, operands);
-
-        if (length != 16 && length != 28 && ! mips_branch_likely)
-          {
-            /* Output delay slot instruction.  */
-            rtx insn = final_sequence;
-            final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file,
-                             optimize, 1, NULL);
-            INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
-          }
-	else
-	  output_asm_insn ("%#", 0);
-
-	if (length <= 16)
-	  output_asm_insn ("j\t%0", &orig_target);
-	else
-	  {
-	    output_asm_insn (mips_output_load_label (), &orig_target);
-	    output_asm_insn ("jr\t%@%]", 0);
-	  }
-
-        if (length != 16 && length != 28 && mips_branch_likely)
-          {
-            /* Output delay slot instruction.  */
-            rtx insn = final_sequence;
-            final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file,
-                             optimize, 1, NULL);
-            INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
-          }
-	else
-	  output_asm_insn ("%#", 0);
-
-        (*targetm.asm_out.internal_label) (asm_out_file, "L",
-                                   CODE_LABEL_NUMBER (target));
-
-        return "";
-      }
+      /* These cases are always true or always false.  */
+    case LTU:
+      inverted_p = !inverted_p;
+      /* Fall through.  */
+    case GEU:
+      branch[!inverted_p] = MIPS_BRANCH ("beq", "%.,%.,%1");
+      branch[inverted_p] = MIPS_BRANCH ("bne", "%.,%.,%1");
+      break;
 
     default:
-      gcc_unreachable ();
+      branch[!inverted_p] = MIPS_BRANCH ("b%C0z", "%2,%1");
+      branch[inverted_p] = MIPS_BRANCH ("b%N0z", "%2,%1");
+      break;
     }
-
-  /* NOTREACHED */
-  return 0;
+  return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
 }
 
 /* Used to output div or ddiv instruction DIVISION, which has the operands
@@ -10591,6 +10496,34 @@ mips_expand_builtin_movtf (enum mips_builtin_type type,
   return target;
 }
 
+/* Move VALUE_IF_TRUE into TARGET if CONDITION is true; move VALUE_IF_FALSE
+   into TARGET otherwise.  Return TARGET.  */
+
+static rtx
+mips_builtin_branch_and_move (rtx condition, rtx target,
+			      rtx value_if_true, rtx value_if_false)
+{
+  rtx true_label, done_label;
+
+  true_label = gen_label_rtx ();
+  done_label = gen_label_rtx ();
+
+  /* First assume that CONDITION is false.  */
+  emit_move_insn (target, value_if_false);
+
+  /* Branch to TRUE_LABEL if CONDITION is true and DONE_LABEL otherwise.  */
+  emit_jump_insn (gen_condjump (condition, true_label));
+  emit_jump_insn (gen_jump (done_label));
+  emit_barrier ();
+
+  /* Fix TARGET if CONDITION is true.  */
+  emit_label (true_label);
+  emit_move_insn (target, value_if_true);
+
+  emit_label (done_label);
+  return target;
+}
+
 /* Expand a comparison builtin of type BUILTIN_TYPE.  ICODE is the code
    of the comparison instruction and COND is the condition it should test.
    ARGLIST is the list of function arguments and TARGET, if nonnull,
@@ -10601,10 +10534,8 @@ mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
 			     enum insn_code icode, enum mips_fp_condition cond,
 			     rtx target, tree arglist)
 {
-  rtx label1, label2, if_then_else;
-  rtx pat, cmp_result, ops[MAX_RECOG_OPERANDS];
-  rtx target_if_equal, target_if_unequal;
-  int cmp_value, i;
+  rtx offset, condition, cmp_result, ops[MAX_RECOG_OPERANDS];
+  int i;
 
   if (target == 0 || GET_MODE (target) != SImode)
     target = gen_reg_rtx (SImode);
@@ -10617,12 +10548,12 @@ mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
   switch (insn_data[icode].n_operands)
     {
     case 4:
-      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2], GEN_INT (cond));
+      emit_insn (GEN_FCN (icode) (cmp_result, ops[1], ops[2], GEN_INT (cond)));
       break;
 
     case 6:
-      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2],
-			     ops[3], ops[4], GEN_INT (cond));
+      emit_insn (GEN_FCN (icode) (cmp_result, ops[1], ops[2],
+				  ops[3], ops[4], GEN_INT (cond)));
       break;
 
     default:
@@ -10631,71 +10562,35 @@ mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
 
   /* If the comparison sets more than one register, we define the result
      to be 0 if all registers are false and -1 if all registers are true.
-     The value of the complete result is indeterminate otherwise.  It is
-     possible to test individual registers using SUBREGs.
-
-     Set up CMP_RESULT, CMP_VALUE, TARGET_IF_EQUAL and TARGET_IF_UNEQUAL so
-     that the result should be TARGET_IF_EQUAL if (EQ CMP_RESULT CMP_VALUE)
-     and TARGET_IF_UNEQUAL otherwise.  */
-  if (builtin_type == MIPS_BUILTIN_CMP_ALL)
+     The value of the complete result is indeterminate otherwise.  */
+  switch (builtin_type)
     {
-      cmp_value = -1;
-      target_if_equal = const1_rtx;
-      target_if_unequal = const0_rtx;
+    case MIPS_BUILTIN_CMP_ALL:
+      condition = gen_rtx_NE (VOIDmode, cmp_result, constm1_rtx);
+      return mips_builtin_branch_and_move (condition, target,
+					   const0_rtx, const1_rtx);
+
+    case MIPS_BUILTIN_CMP_UPPER:
+    case MIPS_BUILTIN_CMP_LOWER:
+      offset = GEN_INT (builtin_type == MIPS_BUILTIN_CMP_UPPER);
+      condition = gen_single_cc (cmp_result, offset);
+      return mips_builtin_branch_and_move (condition, target,
+					   const1_rtx, const0_rtx);
+
+    default:
+      condition = gen_rtx_NE (VOIDmode, cmp_result, const0_rtx);
+      return mips_builtin_branch_and_move (condition, target,
+					   const1_rtx, const0_rtx);
     }
-  else
-    {
-      cmp_value = 0;
-      target_if_equal = const0_rtx;
-      target_if_unequal = const1_rtx;
-      if (builtin_type == MIPS_BUILTIN_CMP_UPPER)
-	cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 4);
-      else if (builtin_type == MIPS_BUILTIN_CMP_LOWER)
-	cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 0);
-    }
-
-  /* First assume that CMP_RESULT == CMP_VALUE.  */
-  emit_move_insn (target, target_if_equal);
-
-  /* Branch to LABEL1 if CMP_RESULT != CMP_VALUE.  */
-  emit_insn (pat);
-  label1 = gen_label_rtx ();
-  label2 = gen_label_rtx ();
-  if_then_else
-    = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (NE, GET_MODE (cmp_result),
-					    cmp_result, GEN_INT (cmp_value)),
-			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else));
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-			       gen_rtx_LABEL_REF (VOIDmode, label2)));
-  emit_barrier ();
-  emit_label (label1);
-
-  /* Fix TARGET for CMP_RESULT != CMP_VALUE.  */
-  emit_move_insn (target, target_if_unequal);
-  emit_label (label2);
-
-  return target;
 }
 
 /* Expand a bposge builtin of type BUILTIN_TYPE.  TARGET, if nonnull,
-   suggests a good place to put the boolean result.
-
-   The sequence we want is
-
-	li	target, 0
-	bposge*	label1
-	j	label2
-   label1:
-	li 	target, 1
-   label2:  */
+   suggests a good place to put the boolean result.  */
 
 static rtx
 mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
 {
-  rtx label1, label2, if_then_else;
-  rtx cmp_result;
+  rtx condition, cmp_result;
   int cmp_value;
 
   if (target == 0 || GET_MODE (target) != SImode)
@@ -10708,29 +10603,9 @@ mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
   else
     gcc_assert (0);
 
-  /* Move 0 to target */
-  emit_move_insn (target, const0_rtx);
-
-  /* Generate two labels */
-  label1 = gen_label_rtx ();
-  label2 = gen_label_rtx ();
-
-  /* Generate if_then_else */
-  if_then_else
-    = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (GE, CCDSPmode,
-					    cmp_result, GEN_INT (cmp_value)),
-			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
-
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else));
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-                               gen_rtx_LABEL_REF (VOIDmode, label2)));
-  emit_barrier ();
-  emit_label (label1);
-  emit_move_insn (target, const1_rtx);
-  emit_label (label2);
-
-  return target;
+  condition = gen_rtx_GE (VOIDmode, cmp_result, GEN_INT (cmp_value));
+  return mips_builtin_branch_and_move (condition, target,
+				       const1_rtx, const0_rtx);
 }
 
 /* Set SYMBOL_REF_FLAGS for the SYMBOL_REF inside RTL, which belongs to DECL.
