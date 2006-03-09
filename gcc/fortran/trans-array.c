@@ -4172,14 +4172,19 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  dim++;
 	}
 
-      /* Point the data pointer at the first element in the section.  */
-      tmp = gfc_conv_array_data (desc);
-      tmp = build_fold_indirect_ref (tmp);
-      tmp = gfc_build_array_ref (tmp, offset);
-      offset = gfc_build_addr_expr (gfc_array_dataptr_type (desc), tmp);
-      gfc_conv_descriptor_data_set (&loop.pre, parm, offset);
+      if (se->data_not_needed)
+	gfc_conv_descriptor_data_set (&loop.pre, parm, gfc_index_zero_node);
+      else
+	{
+	  /* Point the data pointer at the first element in the section.  */
+	  tmp = gfc_conv_array_data (desc);
+	  tmp = build_fold_indirect_ref (tmp);
+	  tmp = gfc_build_array_ref (tmp, offset);
+	  offset = gfc_build_addr_expr (gfc_array_dataptr_type (desc), tmp);
+	  gfc_conv_descriptor_data_set (&loop.pre, parm, offset);
+	}
 
-      if (se->direct_byref)
+      if (se->direct_byref && !se->data_not_needed)
 	{
 	  /* Set the offset.  */
 	  tmp = gfc_conv_descriptor_offset (parm);
