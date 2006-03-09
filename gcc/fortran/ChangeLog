@@ -1,3 +1,9 @@
+2006-03-09  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	* trans-expr.c (gfc_add_interface_mapping): Copy 'allocatable'
+	attribute from sym to new_sym.  Call build_fold_indirect_ref()
+	for allocatable arguments.
+
 2006-03-09 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/26257
