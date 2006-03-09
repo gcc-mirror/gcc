@@ -6014,6 +6014,7 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
   tree arg01 = TREE_OPERAND (arg0, 1);
   unsigned HOST_WIDE_INT lpart;
   HOST_WIDE_INT hpart;
+  bool neg_overflow;
   int overflow;
 
   /* We have to do this the hard way to detect unsigned overflow.
@@ -6024,6 +6025,7 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 			 TREE_INT_CST_HIGH (arg1), &lpart, &hpart);
   prod = build_int_cst_wide (TREE_TYPE (arg00), lpart, hpart);
   prod = force_fit_type (prod, -1, overflow, false);
+  neg_overflow = false;
 
   if (TYPE_UNSIGNED (TREE_TYPE (arg0)))
     {
@@ -6046,6 +6048,7 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
       switch (tree_int_cst_sgn (arg1))
 	{
 	case -1:
+	  neg_overflow = true;
 	  lo = int_const_binop (MINUS_EXPR, prod, tmp, 0);
 	  hi = prod;
 	  break;
@@ -6083,7 +6086,8 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 	  break;
 
 	case  1:
-          lo = int_const_binop (PLUS_EXPR, prod, tmp, 0);
+	  neg_overflow = true;
+	  lo = int_const_binop (PLUS_EXPR, prod, tmp, 0);
 	  hi = prod;
 	  break;
 
@@ -6114,22 +6118,34 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 
     case LT_EXPR:
       if (TREE_OVERFLOW (lo))
-	return omit_one_operand (type, integer_one_node, arg00);
+	{
+	  tmp = neg_overflow ? integer_zero_node : integer_one_node;
+	  return omit_one_operand (type, tmp, arg00);
+	}
       return fold_build2 (LT_EXPR, type, arg00, lo);
 
     case LE_EXPR:
       if (TREE_OVERFLOW (hi))
-	return omit_one_operand (type, integer_one_node, arg00);
+	{
+	  tmp = neg_overflow ? integer_zero_node : integer_one_node;
+	  return omit_one_operand (type, tmp, arg00);
+	}
       return fold_build2 (LE_EXPR, type, arg00, hi);
 
     case GT_EXPR:
       if (TREE_OVERFLOW (hi))
-	return omit_one_operand (type, integer_zero_node, arg00);
+	{
+	  tmp = neg_overflow ? integer_one_node : integer_zero_node;
+	  return omit_one_operand (type, tmp, arg00);
+	}
       return fold_build2 (GT_EXPR, type, arg00, hi);
 
     case GE_EXPR:
       if (TREE_OVERFLOW (lo))
-	return omit_one_operand (type, integer_zero_node, arg00);
+	{
+	  tmp = neg_overflow ? integer_one_node : integer_zero_node;
+	  return omit_one_operand (type, tmp, arg00);
+	}
       return fold_build2 (GE_EXPR, type, arg00, lo);
 
     default:
