@@ -923,22 +923,22 @@ m32c_const_ok_for_constraint_p (HOST_WIDE_INT value,
   if (memcmp (str, "Ilb", 3) == 0)
     {
       int b = exact_log2 (value);
-      return (b >= 1 && b <= 8);
+      return (b >= 0 && b <= 7);
     }
   if (memcmp (str, "Imb", 3) == 0)
     {
       int b = exact_log2 ((value ^ 0xff) & 0xff);
-      return (b >= 1 && b <= 8);
+      return (b >= 0 && b <= 7);
     }
   if (memcmp (str, "Ilw", 3) == 0)
     {
       int b = exact_log2 (value);
-      return (b >= 1 && b <= 16);
+      return (b >= 0 && b <= 15);
     }
   if (memcmp (str, "Imw", 3) == 0)
     {
       int b = exact_log2 ((value ^ 0xffff) & 0xffff);
-      return (b >= 1 && b <= 16);
+      return (b >= 0 && b <= 15);
     }
   if (memcmp (str, "I00", 3) == 0)
     {
@@ -3455,13 +3455,17 @@ m32c_expand_insv (rtx *operands)
       mask >>= 8;
     }
 
-  if (INTVAL (operands[3]))
+  /* First, we generate a mask with the correct polarity.  If we are
+     storing a zero, we want an AND mask, so invert it.  */
+  if (INTVAL (operands[3]) == 0)
     {
       if (GET_MODE (op0) == HImode)
 	mask ^= 0xffff;
       else
 	mask ^= 0xff;
     }
+  /* Now we need to properly sign-extend the mask in case we need to
+     fall back to an AND or OR opcode.  */
   if (GET_MODE (op0) == HImode)
     {
       if (mask & 0x8000)
