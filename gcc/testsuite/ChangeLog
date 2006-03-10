@@ -1,106 +1,17 @@
-2006-03-09  Eric Christopher  <echristo@apple.com>
+2006-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	* gcc.c-torture/compile/20060309-1.c: New.
-
-2006-03-09  Erik Edelmann  <eedelman@gcc.gnu.org>
-
-	* gfortran.dg/allocatable_dummy_1.f90: Test for functions returning
-	arrays too.
-
-2006-03-09  Diego Novillo  <dnovillo@redhat.com>
-
-        * gcc/testsuite/g++.dg/gomp: New directory.
-        * gcc/testsuite/g++.dg/dg.exp: Gather tests in gomp/.
-
-2006-03-09  Roger Sayle  <roger@eyesopen.com>
-	    Eric Botcazou  <ebotcazou@libertysurf.fr>
-
-	PR middle-end/26561
-	* gcc.c-torture/execute/divcmp-5.c: New test case.
-
-2006-03-09 Paul Thomas <pault@gcc.gnu.org>
-
-	* PR fortran/26257
-	gfortran.dg/auto_char_len_3.f90: New test
-
-2006-03-08  Jeff Law  <law@redhat.com>
-
-	* gcc.dg/tree-ssa/20030730-1.c: No longer expected to fail.
-	* gcc.dg/tree-ssa/20030730-2.c: No longer expected to fail.
-	* g++.dg/tree-ssa/pr26406.C: New test.
-
-2006-03-07  Jeff Law  <law@redhat.com>
-
-	* gcc.dg/tree-ssa/20030730-1.c: Temporarily xfail.
-	* gcc.dg/tree-ssa/20030730-2.c: Likewise.
-	* gcc.dg/tree-ssa/20030807-2.c: Likewise.
-
-2006-03-07  Richard Guenther  <rguenther@suse.de>
-
-	PR tree-optimization/26587
-	* gcc.dg/torture/pr26587.c: New testcase.
-
-2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
-            Erik Edelmann  <eedelman@gcc.gnu.org>
-
-	* gfortran.dg/allocatable_dummy_1.f90: Take into account that
-	INTENT(OUT) arguments shall be deallocated upon procedure entry.
-
-2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/26107
-	* pure_dummy_length_1.f90: New test.
-
-	PR fortran/19546
-	* gfortran.dg/parent_result_ref_1.f90: New test.
-	* gfortran.dg/parent_result_ref_2.f90: New test.
-	* gfortran.dg/parent_result_ref_3.f90: New test.
-	* gfortran.dg/parent_result_ref_4.f90: New test.
-
-2006-03-06  Steven G. Kargl  <kargls@comcast.net>
-
-	* gfortran.dg/verify_2.f90: New test.
-
-2006-03-06  Steven G. Kargl  <kargls@comcast.net>
-
-	* gfortran.dg/equiv_1.f90: Replace tab(s) with spaces.
-	* gfortran.dg/arrayio_1.f90: Ditto.
-	* gfortran.dg/pr25603.f: Ditto.
-	* gfortran.dg/assumed_dummy_2.f90: Ditto.
-	* gfortran.dg/equiv_2.f90: Ditto.
-	* gfortran.dg/arrayio_2.f90: Ditto.
-	* gfortran.dg/namelist_14.f90: Ditto.
-	* gfortran.dg/g77/cpp6.f: Ditto.
-	* gfortran.dg/g77/cpp5inc.h: Ditto.
-	* gfortran.dg/g77/cpp5.F: Ditto.
-	* gfortran.dg/g77/cpp5.h: Ditto.
-	* gfortran.dg/namelist_15.f90: Ditto.
-	* gfortran.dg/badline.f: Ditto.
-	* gfortran.dg/sibling_dummy_procedure_1.f90: Ditto.
-	* gfortran.dg/sibling_dummy_procedure_2.f90: Ditto.
-	* gfortran.dg/backspace_6.f: Ditto.
-	* gfortran.dg/altreturn_1.f90: Ditto.
-	* gfortran.dg/entry_4.f90: Ditto.
-	* gfortran.dg/implicit_5.f90: Ditto.
-
-2006-03-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
-
-	PR c++/15759
-	* g++.dg/other/default4.C: New test.
-
-2006-03-05  Erik Edelmann  <eedelman@gcc.gnu.org>
-
-	PR fortran/16136
-	* allocatable_dummy_1.f90: New.
-	* allocatable_dummy_2.f90: New.
-
+	PR libgfortran/26499
+	* gfortran.dg/write_back.f: New test.
+	* gfortran.dg/write_rewind_1.f: New test.
+	* gfortran.dg/write_rewind_2.f: New test.
+	
 2006-03-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26554
 	* gfortran.dg/read_logical.f90: New test.
 
 2006-03-04  Laurent GUERBY <laurent@guerby.net>
-
+	
 	* ada/acats/norun.lst: cdd2a03 now passes.
 
 2006-03-04  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -174,7 +85,7 @@
 
 2006-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gfortran.dg/logical_dot_product.f90: New test.
+	* gfortran.dg/logical_dot_product.f90: New test. 
 
 	PR fortran/26393
 	* gfortran.dg/used_interface_ref.f90: New test.
@@ -262,7 +173,7 @@
 2006-02-26  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimizations/26359
-	* gcc.dg/vect/vect.exp: Compile tests prefixed with "dump-tree-dceloop"
+	* gcc.dg/vect/vect.exp: Compile tests prefixed with "dump-tree-dceloop" 
 	with -fdump-tree-dceloop-details.
 	* gcc.dg/vect/dump-tree-dceloop-pr26359.c: New test.
 
@@ -359,7 +270,7 @@
 	PR fortran/26201
 	* gfortran.dg/convert_1.f90: New.
 
-2006-02-19  Paul Thomas  <pault@gcc.gnu.org>
+2005-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25054
 	* gfortran.dg/namelist_5.f90: New test.
@@ -455,7 +366,7 @@
 	vect-reduc-pattern-1a.c, vect-reduc-pattern-1b.c and
 	vect-reduc-pattern-1c.c
 
-2006-02-16  Paul Thomas  <pault@gcc.gnu.org>
+2005-02-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24557
         * gfortran.dg/assumed_charlen_needed_1.f90: New test.
@@ -552,7 +463,7 @@
 2006-02-13  Josh Conner  <jconner@apple.com>
 
 	PR target/25376
-	* gcc.dg/pr25376.c: New test.
+	* gcc.dg/pr25376.c: New test.	
 
 	* gcc.c-torture/compile/pr23237.c: Only compile test -- don't
 	assemble.
@@ -716,7 +627,7 @@
 	* gcc.dg/tree-ssa/pr21086.c: Likewise
 	* gcc.dg/tree-ssa/pr21959.c: Likewise
 	* gcc.dg/tree-ssa/vrp21.c: Likewise
-	* gcc.dg/tree-ssa/vrp04.c: Likewise
+	* gcc.dg/tree-ssa/vrp04.c: Likewise 
 	* gcc.dg/tree-ssa/pr25485.c: Likewise
 	* gcc.dg/tree-ssa/pr22026.c: Likewise
 	* gcc.dg/tree-ssa/vrp22.c: Likewise
@@ -769,7 +680,7 @@
 	* g++.old-deja/g++.pt/ttp26.C: Likewise.
 	* g++.old-deja/g++.pt/ttp36.C: Likewise.
 
-2006-02-06  Thomas Koenig  <Thomas.Koenig@online.de>
+2005-02-06  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23815
 	* unf_io_convert_4.f90:  New test.
@@ -822,7 +733,7 @@
 	* g++.old-deja/g++.brendan/ptolemy1.C (InterpTableEntry::name):
 	Change type to const char*.
 	* g++.old-deja/g++.brendan/ptolemy2.C (InterpTableEntry::name):
-	Likewise.
+	Likewise. 
 	* g++.old-deja/g++.jason/default2.C (bar::memberfunction): Change
 	second parameter type to const char*.
 	* g++.old-deja/g++.jason/opeq.C (X::X): Likewise.
@@ -855,7 +766,7 @@
 	* g++.old-deja/g++.mike/p811.C (X::stringify): Match for
 	deprecated conversion warning.
 	* g++.old-deja/g++.other/init15.C (A::name): Change type to const
-	char*.
+	char*. 
 	* g++.old-deja/g++.other/inline12.C: Adjust for const correctness.
 	* g++.old-deja/g++.other/sibcall1.C (foo): Likewise.
 	* g++.old-deja/g++.pt/explicit8.C: Likewise.
@@ -935,7 +846,7 @@
 	* gcc.target/i386/sselibm-4.c: Likewise.
 	* gcc.target/i386/sselibm-5.c: Likewise.
 
-2006-01-30  Erik Edelmann  <eedelman@gcc.gnu.org>
+2005-01-30  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24266
 	* gfortran.dg/arrayio_derived_2.f90: New.
@@ -1030,7 +941,7 @@
 
 	* gcc.dg/pragma-re-4.c: New test.
 
-2006-01-27  Paul Thomas  <pault@gcc.gnu.org>
+2005-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25964
 	* gfortran.dg/assumed_size_refs_3.f90: New test.
@@ -1048,7 +959,7 @@
 	* ada/acats/tests/c9/c97305c.ada: Likewise.
 	* ada/acats/tests/c9/c99004a.ada: Likewise.
 
-2006-01-26  Paul Thomas  <pault@gcc.gnu.org>
+2005-01-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25964
 	* gfortran.dg/global_references_2.f90: New test.
@@ -1171,7 +1082,7 @@
 	* gcc.dg/torture/pr25654.c: New testcase.
 	* gcc.target/i386/pr25654.c: Likewise.
 
-2006-01-23  Paul Thomas  <pault@gcc.gnu.org>
+2005-01-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25901
 	* gfortran.dg/internal references_2.f90: New test.
@@ -1201,7 +1112,7 @@
 	PR c++/25858
 	* g++.dg/template/crash44.C: New test.
 
-2006-01-21  Paul Thomas  <pault@gcc.gnu.org>
+2005-01-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25124
 	PR fortran/25625
