@@ -1,3 +1,7 @@
+2006-03-10  J"orn Rennecke <joern.rennecke@st.com>
+
+	* struct-equiv.c (rtx_equiv_p): Fix POST_MODIFY case.
+
 2006-03-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-ssa-phiopt.c (tree_ssa_phiopt): Add cfgchanged variable.
