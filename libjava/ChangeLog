@@ -1,5 +1,19 @@
 2006-03-09  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/23495:
+	* java/lang/natString.cc (_Jv_NewString): Use memcpy.
+	(equals): Use memcmp.
+	(contentEquals): Likewise.
+	(getChars): Use memcpy.
+	(toCharArray): Likewise.
+	(regionMatches): Use memcmp.
+	(regionMatches): Likewise.
+	(startsWith): Likewise.
+	(concat): Use memcpy.
+	(valueOf): Likewise.
+
+2006-03-09  Tom Tromey  <tromey@redhat.com>
+
 	* configure: Rebuilt.
 	* configure.ac (HAVE_CLOCK_GETTIME): Put -lrt in THREADLIBS as
 	well.
