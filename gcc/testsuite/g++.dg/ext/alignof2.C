@@ -1,0 +1,23 @@
+// PRs 16387 and 16389
+// We were treating alignof (sa.a) as alignof (typeof (sa.a)), which is
+// wrong for some fields.
+
+extern "C" void abort();
+
+struct A
+{
+  double a; 
+} sa;
+
+struct B
+{
+  char c;
+  double b;
+} sb;
+
+int main()
+{
+  if (__alignof (sa) != __alignof (sa.a)
+      || __alignof (sb) != __alignof (sb.b))
+    abort();
+}
