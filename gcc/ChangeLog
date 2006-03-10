@@ -1,3 +1,9 @@
+2006-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c/26004
+	* gimplify.c (gimplify_modify_expr_rhs): Don't do return slot opt if 
+	the target was declared 'register'.
+
 2006-03-10  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* genpreds.c (write_insn_constraint_len): Change definition of
