@@ -1,3 +1,9 @@
+2006-03-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26565
+	* builtins.c (get_pointer_alignment): Handle component
+	references for field alignment.
+
 2006-03-10  J"orn Rennecke <joern.rennecke@st.com>
 
 	* config.gcc (sh*-superh-elf, sh*elf (newlib)): Use newlib.h
