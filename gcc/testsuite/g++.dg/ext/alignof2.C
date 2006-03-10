@@ -2,6 +2,8 @@
 // We were treating alignof (sa.a) as alignof (typeof (sa.a)), which is
 // wrong for some fields.
 
+// { dg-do run }
+
 extern "C" void abort();
 
 struct A
