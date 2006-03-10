@@ -33,6 +33,7 @@
 #include <tr1/cstdint>
 #include <tr1/cstdio>
 #include <tr1/cstdlib>
+#include <tr1/ctgmath>
 #include <tr1/ctime>
 #include <tr1/ctype.h>
 #include <tr1/cwchar>
@@ -49,6 +50,7 @@
 #include <tr1/stdint.h>
 #include <tr1/stdio.h>
 #include <tr1/stdlib.h>
+#include <tr1/tgmath.h>
 #include <tr1/tuple>
 #include <tr1/type_traits>
 #include <tr1/unordered_set>

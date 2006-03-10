@@ -716,6 +716,7 @@ tr1_headers = \
 	${tr1_srcdir}/cstdint \
 	${tr1_srcdir}/cstdio \
 	${tr1_srcdir}/cstdlib \
+	${tr1_srcdir}/ctgmath \
 	${tr1_srcdir}/ctime \
 	${tr1_srcdir}/ctype.h \
 	${tr1_srcdir}/cwchar \
@@ -738,6 +739,7 @@ tr1_headers = \
 	${tr1_srcdir}/stdint.h \
 	${tr1_srcdir}/stdio.h \
 	${tr1_srcdir}/stdlib.h \
+	${tr1_srcdir}/tgmath.h \
 	${tr1_srcdir}/tuple \
 	${tr1_srcdir}/tuple_iterate.h \
 	${tr1_srcdir}/type_traits \

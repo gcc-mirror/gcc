@@ -43,145 +43,145 @@ void test01()
   long lret;
   long long llret;
 
-  ret = acosh(d0);
-  fret = acoshf(f0);
-  ldret = acoshl(ld0);
+  ret = std::tr1::acosh(d0);
+  fret = std::tr1::acoshf(f0);
+  ldret = std::tr1::acoshl(ld0);
 
-  ret = asinh(d0);
-  fret = asinhf(f0);
-  ldret = asinhl(ld0);
+  ret = std::tr1::asinh(d0);
+  fret = std::tr1::asinhf(f0);
+  ldret = std::tr1::asinhl(ld0);
 
-  ret = atanh(d0);
-  fret = atanhf(f0);
-  ldret = atanhl(ld0);
+  ret = std::tr1::atanh(d0);
+  fret = std::tr1::atanhf(f0);
+  ldret = std::tr1::atanhl(ld0);
 
-  ret = cbrt(d0);
-  fret = cbrtf(f0);
-  ldret = cbrtl(ld0);
+  ret = std::tr1::cbrt(d0);
+  fret = std::tr1::cbrtf(f0);
+  ldret = std::tr1::cbrtl(ld0);
 
-  ret = copysign(d0, d0);
-  fret = copysignf(f0, f0);
-  ldret = copysignl(ld0, ld0);
+  ret = std::tr1::copysign(d0, d0);
+  fret = std::tr1::copysignf(f0, f0);
+  ldret = std::tr1::copysignl(ld0, ld0);
 
-  ret = erf(d0);
-  fret = erff(f0);
-  ldret = erfl(ld0);
+  ret = std::tr1::erf(d0);
+  fret = std::tr1::erff(f0);
+  ldret = std::tr1::erfl(ld0);
 
-  ret = erfc(d0);
-  fret = erfcf(f0);
-  ldret = erfcl(ld0);
+  ret = std::tr1::erfc(d0);
+  fret = std::tr1::erfcf(f0);
+  ldret = std::tr1::erfcl(ld0);
 
-  ret = exp2(d0);
-  fret = exp2f(f0);
-  ldret = exp2l(ld0);
+  ret = std::tr1::exp2(d0);
+  fret = std::tr1::exp2f(f0);
+  ldret = std::tr1::exp2l(ld0);
 
-  ret = expm1(d0);
-  fret = expm1f(f0);
-  ldret = expm1l(ld0);
+  ret = std::tr1::expm1(d0);
+  fret = std::tr1::expm1f(f0);
+  ldret = std::tr1::expm1l(ld0);
 
-  ret = fdim(d0, d0);
-  fret = fdimf(f0, f0);
-  ldret = fdiml(ld0, ld0);
+  ret = std::tr1::fdim(d0, d0);
+  fret = std::tr1::fdimf(f0, f0);
+  ldret = std::tr1::fdiml(ld0, ld0);
 
-  ret = fma(d0, d0, d0);
-  fret = fmaf(f0, f0, f0);
-  ldret = fmal(ld0, ld0, ld0);
+  ret = std::tr1::fma(d0, d0, d0);
+  fret = std::tr1::fmaf(f0, f0, f0);
+  ldret = std::tr1::fmal(ld0, ld0, ld0);
 
-  ret = fmax(d0, d0);
-  fret = fmaxf(f0, f0);
-  ldret = fmaxl(ld0, ld0);
+  ret = std::tr1::fmax(d0, d0);
+  fret = std::tr1::fmaxf(f0, f0);
+  ldret = std::tr1::fmaxl(ld0, ld0);
 
-  ret = fmin(d0, d0);
-  fret = fminf(f0, f0);
-  ldret = fminl(ld0, ld0);
+  ret = std::tr1::fmin(d0, d0);
+  fret = std::tr1::fminf(f0, f0);
+  ldret = std::tr1::fminl(ld0, ld0);
 
-  ret = hypot(d0, d0);
-  fret = hypotf(f0, f0);
-  ldret = hypotl(ld0, ld0);
+  ret = std::tr1::hypot(d0, d0);
+  fret = std::tr1::hypotf(f0, f0);
+  ldret = std::tr1::hypotl(ld0, ld0);
 
-  iret = ilogb(d0);
-  iret = ilogbf(f0);
-  iret = ilogbl(ld0);
+  iret = std::tr1::ilogb(d0);
+  iret = std::tr1::ilogbf(f0);
+  iret = std::tr1::ilogbl(ld0);
 
-  ret = lgamma(d0);
-  fret = lgammaf(f0);
-  ldret = lgammal(ld0);
+  ret = std::tr1::lgamma(d0);
+  fret = std::tr1::lgammaf(f0);
+  ldret = std::tr1::lgammal(ld0);
 
-  llret = llrint(d0);
-  llret = llrintf(f0);
-  llret = llrintl(ld0);
+  llret = std::tr1::llrint(d0);
+  llret = std::tr1::llrintf(f0);
+  llret = std::tr1::llrintl(ld0);
 
-  llret = llround(d0);
-  llret = llroundf(f0);
-  llret = llroundl(ld0);
+  llret = std::tr1::llround(d0);
+  llret = std::tr1::llroundf(f0);
+  llret = std::tr1::llroundl(ld0);
 
-  ret = log1p(d0);
-  fret = log1pf(f0);
-  ldret = log1pl(ld0);
+  ret = std::tr1::log1p(d0);
+  fret = std::tr1::log1pf(f0);
+  ldret = std::tr1::log1pl(ld0);
 
-  ret = log2(d0);
-  fret = log2f(f0);
-  ldret = log2l(ld0);
+  ret = std::tr1::log2(d0);
+  fret = std::tr1::log2f(f0);
+  ldret = std::tr1::log2l(ld0);
 
-  ret = logb(d0);
-  fret = logbf(f0);
-  ldret = logbl(ld0);
+  ret = std::tr1::logb(d0);
+  fret = std::tr1::logbf(f0);
+  ldret = std::tr1::logbl(ld0);
 
-  lret = lrint(d0);
-  lret = lrintf(f0);
-  lret = lrintl(ld0);
+  lret = std::tr1::lrint(d0);
+  lret = std::tr1::lrintf(f0);
+  lret = std::tr1::lrintl(ld0);
 
-  lret = lround(d0);
-  lret = lroundf(f0);
-  lret = lroundl(ld0);
+  lret = std::tr1::lround(d0);
+  lret = std::tr1::lroundf(f0);
+  lret = std::tr1::lroundl(ld0);
 
-  ret = nan(str);
-  fret = nanf(str);
-  ldret = nanl(str);
+  ret = std::tr1::nan(str);
+  fret = std::tr1::nanf(str);
+  ldret = std::tr1::nanl(str);
 
-  ret = nearbyint(d0);
-  fret = nearbyintf(f0);
-  ldret = nearbyintl(ld0);
+  ret = std::tr1::nearbyint(d0);
+  fret = std::tr1::nearbyintf(f0);
+  ldret = std::tr1::nearbyintl(ld0);
 
-  ret = nextafter(d0, d0);
-  fret = nextafterf(f0, f0);
-  ldret = nextafterl(ld0, ld0);
+  ret = std::tr1::nextafter(d0, d0);
+  fret = std::tr1::nextafterf(f0, f0);
+  ldret = std::tr1::nextafterl(ld0, ld0);
 
-  ret = nexttoward(d0, ld0);
-  fret = nexttowardf(f0, ld0);
-  ldret = nexttowardl(ld0, ld0);
+  ret = std::tr1::nexttoward(d0, ld0);
+  fret = std::tr1::nexttowardf(f0, ld0);
+  ldret = std::tr1::nexttowardl(ld0, ld0);
 
-  ret = remainder(d0, d0);
-  fret = remainderf(f0, f0);
-  ldret = remainderl(ld0, ld0);
+  ret = std::tr1::remainder(d0, d0);
+  fret = std::tr1::remainderf(f0, f0);
+  ldret = std::tr1::remainderl(ld0, ld0);
 
-  ret = remquo(d0, d0, pquo);
-  fret = remquo(f0, f0, pquo);
-  ldret = remquo(ld0, ld0, pquo);
+  ret = std::tr1::remquo(d0, d0, pquo);
+  fret = std::tr1::remquo(f0, f0, pquo);
+  ldret = std::tr1::remquo(ld0, ld0, pquo);
 
-  ret = rint(d0);
-  fret = rintf(f0);
-  ldret = rintl(ld0);
+  ret = std::tr1::rint(d0);
+  fret = std::tr1::rintf(f0);
+  ldret = std::tr1::rintl(ld0);
 
-  ret = round(d0);
-  fret = roundf(f0);
-  ldret = roundl(ld0);
+  ret = std::tr1::round(d0);
+  fret = std::tr1::roundf(f0);
+  ldret = std::tr1::roundl(ld0);
 
-  ret = scalbln(d0, lex);
-  fret = scalblnf(f0, lex);
-  ldret = scalblnl(ld0, lex);
+  ret = std::tr1::scalbln(d0, lex);
+  fret = std::tr1::scalblnf(f0, lex);
+  ldret = std::tr1::scalblnl(ld0, lex);
 
-  ret = scalbn(d0, ex);
-  fret = scalbnf(f0, ex);
-  ldret = scalbnl(ld0, ex);
+  ret = std::tr1::scalbn(d0, ex);
+  fret = std::tr1::scalbnf(f0, ex);
+  ldret = std::tr1::scalbnl(ld0, ex);
 
-  ret = tgamma(d0);
-  fret = tgammaf(f0);
-  ldret = tgammal(ld0);
+  ret = std::tr1::tgamma(d0);
+  fret = std::tr1::tgammaf(f0);
+  ldret = std::tr1::tgammal(ld0);
 
-  ret = trunc(d0);
-  fret = truncf(f0);
-  ldret = truncl(ld0);
+  ret = std::tr1::trunc(d0);
+  fret = std::tr1::truncf(f0);
+  ldret = std::tr1::truncl(ld0);
   
 #endif
 }

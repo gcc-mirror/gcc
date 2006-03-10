@@ -30651,7 +30651,9 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-acosh(0.0);
+typedef double_t  my_double_t;
+	          typedef float_t   my_float_t;
+	          acosh(0.0);
 	          acoshf(0.0f);
 	          acoshl(0.0l);
 	          asinh(0.0);

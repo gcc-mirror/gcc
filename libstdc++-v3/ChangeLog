@@ -1,3 +1,31 @@
+2006-03-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cmath: Add atan2 and pow bits; add using declarations.	
+	* include/tr1/math.h: Add using declarations.
+	* include/tr1/complex: Add using declarations.
+	* testsuite/tr1/8_c_compatibility/cmath/functions.cc: Fully
+	qualify calls.
+	* testsuite/tr1/8_c_compatibility/cmath/overloads.cc: Likewise;
+	add atan2 and pow bits.
+	* testsuite/tr1/8_c_compatibility/complex/overloads_float.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/complex/overloads_int.cc: Likewise;
+	adjust polar bits.
+
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add checks for double_t
+	and float_t typedefs.
+	* include/tr1/cmath: Add double_t and float_t.
+	* testsuite/tr1/8_c_compatibility/cmath/types.cc: New.
+
+	* include/tr1/ctgmath: New.
+	* include/tr1/tgmath.h: Likewise.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/headers.cc: Update.
+
+	* include/Makefile.in: Regenerate.
+	* configure: Likewise.
+
+	* docs/html/ext/tr1.html: Update.
+
 2006-03-08  Paolo Carlini  <pcarlini@suse.de>
 
 	Implement the resolution of DR 455, [DR].
