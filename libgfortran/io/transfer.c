@@ -2189,7 +2189,8 @@ st_write_done (st_parameter_dt *dtp)
 
   /* Deal with endfile conditions associated with sequential files.  */
 
-  if (dtp->u.p.current_unit != NULL && dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
+  if (dtp->u.p.current_unit != NULL 
+      && dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
     switch (dtp->u.p.current_unit->endfile)
       {
       case AT_ENDFILE:		/* Remain at the endfile record.  */
@@ -2200,12 +2201,10 @@ st_write_done (st_parameter_dt *dtp)
 	break;
 
       case NO_ENDFILE:
-	if (dtp->u.p.current_unit->current_record > dtp->u.p.current_unit->last_record)
-	  {
-	    /* Get rid of whatever is after this record.  */
-	    if (struncate (dtp->u.p.current_unit->s) == FAILURE)
-	      generate_error (&dtp->common, ERROR_OS, NULL);
-	  }
+	/* Get rid of whatever is after this record.  */
+	flush (dtp->u.p.current_unit->s);
+	if (struncate (dtp->u.p.current_unit->s) == FAILURE)
+	  generate_error (&dtp->common, ERROR_OS, NULL);
 
 	dtp->u.p.current_unit->endfile = AT_ENDFILE;
 	break;
