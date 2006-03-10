@@ -23,13 +23,11 @@
 // 8.1 Additions to header <complex>
 
 #include <tr1/complex>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  using namespace std::tr1;
-  using namespace __gnu_test;
+  using __gnu_test::check_ret_type;
 
   typedef std::complex<float>       cmplx_f_type;
   typedef std::complex<double>      cmplx_d_type;
@@ -43,63 +41,63 @@ void test01()
   const cmplx_d_type  c_d1(d1, d1);
   const cmplx_ld_type c_ld1(ld1, ld1);
 
-  check_ret_type<float>(arg(f1));
-  check_ret_type<double>(arg(d1));
-  check_ret_type<long double>(arg(ld1));
+  check_ret_type<float>(std::tr1::arg(f1));
+  check_ret_type<double>(std::tr1::arg(d1));
+  check_ret_type<long double>(std::tr1::arg(ld1));
 
-  check_ret_type<cmplx_f_type>(conj(f1));
-  check_ret_type<cmplx_d_type>(conj(d1));
-  check_ret_type<cmplx_ld_type>(conj(ld1));
+  check_ret_type<cmplx_f_type>(std::tr1::conj(f1));
+  check_ret_type<cmplx_d_type>(std::tr1::conj(d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::conj(ld1));
   
-  check_ret_type<float>(imag(f1));
-  check_ret_type<double>(imag(d1));
-  check_ret_type<long double>(imag(ld1));
+  check_ret_type<float>(std::tr1::imag(f1));
+  check_ret_type<double>(std::tr1::imag(d1));
+  check_ret_type<long double>(std::tr1::imag(ld1));
   
-  check_ret_type<float>(norm(f1));
-  check_ret_type<double>(norm(d1));
-  check_ret_type<long double>(norm(ld1));
+  check_ret_type<float>(std::tr1::norm(f1));
+  check_ret_type<double>(std::tr1::norm(d1));
+  check_ret_type<long double>(std::tr1::norm(ld1));
 
-  check_ret_type<cmplx_f_type>(polar(f1, f1));
-  check_ret_type<cmplx_d_type>(polar(d1, f1));
-  check_ret_type<cmplx_d_type>(polar(f1, d1));
-  check_ret_type<cmplx_d_type>(polar(d1, d1));
-  check_ret_type<cmplx_ld_type>(polar(ld1, d1));
-  check_ret_type<cmplx_ld_type>(polar(d1, ld1));
-  check_ret_type<cmplx_ld_type>(polar(ld1, f1));
-  check_ret_type<cmplx_ld_type>(polar(f1, ld1));
-  check_ret_type<cmplx_ld_type>(polar(ld1, ld1));
+  check_ret_type<cmplx_f_type>(std::tr1::polar(f1, f1));
+  check_ret_type<cmplx_d_type>(std::tr1::polar(d1, f1));
+  check_ret_type<cmplx_d_type>(std::tr1::polar(f1, d1));
+  check_ret_type<cmplx_d_type>(std::tr1::polar(d1, d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::polar(ld1, d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::polar(d1, ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::polar(ld1, f1));
+  check_ret_type<cmplx_ld_type>(std::tr1::polar(f1, ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::polar(ld1, ld1));
 
-  check_ret_type<cmplx_f_type>(pow(c_f1, f1));
-  check_ret_type<cmplx_d_type>(pow(c_d1, f1));
-  check_ret_type<cmplx_d_type>(pow(c_f1, d1));
-  check_ret_type<cmplx_d_type>(pow(c_d1, d1));
-  check_ret_type<cmplx_ld_type>(pow(c_ld1, d1));
-  check_ret_type<cmplx_ld_type>(pow(c_d1, ld1));
-  check_ret_type<cmplx_ld_type>(pow(c_ld1, f1));
-  check_ret_type<cmplx_ld_type>(pow(c_f1, ld1));
-  check_ret_type<cmplx_ld_type>(pow(c_ld1, ld1));
+  check_ret_type<cmplx_f_type>(std::tr1::pow(c_f1, f1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(c_d1, f1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(c_f1, d1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(c_d1, d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_ld1, d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_d1, ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_ld1, f1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_f1, ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_ld1, ld1));
 
-  check_ret_type<cmplx_f_type>(pow(f1, c_f1));
-  check_ret_type<cmplx_d_type>(pow(d1, c_f1));
-  check_ret_type<cmplx_d_type>(pow(f1, c_d1));
-  check_ret_type<cmplx_d_type>(pow(d1, c_d1));
-  check_ret_type<cmplx_ld_type>(pow(ld1, c_d1));
-  check_ret_type<cmplx_ld_type>(pow(d1, c_ld1));
-  check_ret_type<cmplx_ld_type>(pow(ld1, c_f1));
-  check_ret_type<cmplx_ld_type>(pow(f1, c_ld1));
-  check_ret_type<cmplx_ld_type>(pow(ld1, c_ld1));
+  check_ret_type<cmplx_f_type>(std::tr1::pow(f1, c_f1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(d1, c_f1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(f1, c_d1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(d1, c_d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(ld1, c_d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(d1, c_ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(ld1, c_f1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(f1, c_ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(ld1, c_ld1));
 
-  check_ret_type<cmplx_f_type>(pow(c_f1, c_f1));
-  check_ret_type<cmplx_d_type>(pow(c_d1, c_f1));
-  check_ret_type<cmplx_d_type>(pow(c_f1, c_d1));
-  check_ret_type<cmplx_d_type>(pow(c_d1, c_d1));
-  check_ret_type<cmplx_ld_type>(pow(c_ld1, c_d1));
-  check_ret_type<cmplx_ld_type>(pow(c_d1, c_ld1));
-  check_ret_type<cmplx_ld_type>(pow(c_ld1, c_f1));
-  check_ret_type<cmplx_ld_type>(pow(c_f1, c_ld1));
-  check_ret_type<cmplx_ld_type>(pow(c_ld1, c_ld1));
+  check_ret_type<cmplx_f_type>(std::tr1::pow(c_f1, c_f1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(c_d1, c_f1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(c_f1, c_d1));
+  check_ret_type<cmplx_d_type>(std::tr1::pow(c_d1, c_d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_ld1, c_d1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_d1, c_ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_ld1, c_f1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_f1, c_ld1));
+  check_ret_type<cmplx_ld_type>(std::tr1::pow(c_ld1, c_ld1));
 
-  check_ret_type<float>(real(f1));
-  check_ret_type<double>(real(d1));
-  check_ret_type<long double>(real(ld1));
+  check_ret_type<float>(std::tr1::real(f1));
+  check_ret_type<double>(std::tr1::real(d1));
+  check_ret_type<long double>(std::tr1::real(ld1));
 }

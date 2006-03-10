@@ -146,11 +146,35 @@
 #undef truncf
 #undef truncl
 
+// Workaround for c++/21682.
+namespace __gnu_internal
+{
+  template<typename _Tp, typename _Up>
+    inline typename
+    std::__enable_if<typename std::tr1::__promote_2<_Tp, _Up>::__type,
+		     (std::__is_floating<_Tp>::__value
+		      || std::__is_floating<_Up>::__value)>::__type
+    atan2(_Tp __y, _Up __x)
+    {
+      typedef typename std::tr1::__promote_2<_Tp, _Up>::__type __type;
+      return std::atan2(__type(__y), __type(__x));
+    }
+}
+
+#endif
+
 // namespace std::tr1
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
+#if _GLIBCXX_USE_C99_MATH_TR1
+
+  // types
+  using ::double_t;
+  using ::float_t;
+
+  // functions
   using ::acosh;
   using ::acoshf;
   using ::acoshl;
@@ -291,18 +315,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   using ::truncf;
   using ::truncl;
 
-_GLIBCXX_END_NAMESPACE
-}
-
 #endif
-
-// namespace std::tr1
-namespace std
-{
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 #if _GLIBCXX_USE_C99_MATH
 #if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
+
+  /// @brief Function template definitions [8.16.3].
+  //
   using std::signbit;
   
   using std::fpclassify;
@@ -325,6 +344,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
   /// @brief Additional overloads [8.16.4].
   //
+  using std::acos;
+
   inline float
   acosh(float __x)
   { return __builtin_acoshf(__x); }
@@ -341,6 +362,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return acosh(__type(__x));
     }
 
+  using std::asin;
+
   inline float
   asinh(float __x)
   { return __builtin_asinhf(__x); }
@@ -356,6 +379,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename __promote<_Tp>::__type __type;
       return asinh(__type(__x));
     }
+
+  using std::atan;
+  using std::atan2;
+
+  // Workaround for c++/21682.
+  using __gnu_internal::atan2;
 
   inline float
   atanh(float __x)
@@ -389,6 +418,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return cbrt(__type(__x));
     }
 
+  using std::ceil;
+
   inline float
   copysign(float __x, float __y)
   { return __builtin_copysignf(__x, __y); }
@@ -404,6 +435,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename __promote_2<_Tp, _Up>::__type __type;
       return copysign(__type(__x), __type(__y));
     }
+
+  using std::cos;
+  using std::cosh;  
 
   inline float
   erf(float __x)
@@ -437,6 +471,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return erfc(__type(__x));
     }
 
+  using std::exp;
+
   inline float
   exp2(float __x)
   { return __builtin_exp2f(__x); }
@@ -469,6 +505,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return expm1(__type(__x));
     }
 
+  using std::fabs;
+
   inline float
   fdim(float __x, float __y)
   { return __builtin_fdimf(__x, __y); }
@@ -484,6 +522,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename __promote_2<_Tp, _Up>::__type __type;
       return fdim(__type(__x), __type(__y));
     }
+
+  using std::floor;
 
   inline float
   fma(float __x, float __y, float __z)
@@ -533,6 +573,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return fmin(__type(__x), __type(__y));
     }
 
+  using std::fmod;
+  using std::frexp;
+
   inline float
   hypot(float __x, float __y)
   { return __builtin_hypotf(__x, __y); }
@@ -564,6 +607,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename __promote<_Tp>::__type __type;
       return ilogb(__type(__x));
     }
+
+  using std::ldexp;
 
   inline float
   lgamma(float __x)
@@ -613,6 +658,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return llround(__type(__x));
     }
 
+  using std::log;
+  using std::log10;
+
   inline float
   log1p(float __x)
   { return __builtin_log1pf(__x); }
@@ -629,6 +677,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return log1p(__type(__x));
     }
 
+  // DR 568.
   inline float
   log2(float __x)
   { return __builtin_log2f(__x); }
@@ -741,6 +790,17 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return nexttoward(__type(__x), __y);
     }
 
+  using std::pow;
+
+  // DR 550.
+  template<typename _Tp, typename _Up>
+    inline typename __promote_2<_Tp, _Up>::__type
+    pow(_Tp __x, _Up __y)
+    {
+      typedef typename __promote_2<_Tp, _Up>::__type __type;
+      return pow(__type(__x), __type(__y));
+    }
+
   inline float
   remainder(float __x, float __y)
   { return __builtin_remainderf(__x, __y); }
@@ -836,6 +896,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename __promote<_Tp>::__type __type;
       return scalbn(__type(__x), __ex);
     }
+
+  using std::sin;
+  using std::sinh;
+  using std::sqrt;
+  using std::tan;
+  using std::tanh;
 
   inline float
   tgamma(float __x)

@@ -1194,7 +1194,9 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   AC_MSG_CHECKING([for ISO C99 support to TR1 in <math.h>])
   AC_CACHE_VAL(ac_c99_math_tr1, [
   AC_TRY_COMPILE([#include <math.h>],
-	         [acosh(0.0);
+	         [typedef double_t  my_double_t;
+	          typedef float_t   my_float_t;
+	          acosh(0.0);
 	          acoshf(0.0f);
 	          acoshl(0.0l);
 	          asinh(0.0);
