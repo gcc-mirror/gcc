@@ -139,6 +139,7 @@ tree_ssa_phiopt (void)
   basic_block bb;
   basic_block *bb_order;
   unsigned n, i;
+  bool cfgchanged = false;
 
   /* Search every basic block for COND_EXPR we may be able to optimize.
 
@@ -227,17 +228,19 @@ tree_ssa_phiopt (void)
 
       /* Do the replacement of conditional if it can be done.  */
       if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
-	;
+	cfgchanged = true;
       else if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
-	;
+	cfgchanged = true;
       else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
-	;
-      else
-	minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1);
+	cfgchanged = true;
+      else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	cfgchanged = true;
     }
 
   free (bb_order);
-  return 0;
+  
+  /* If the CFG has changed, we should cleanup the CFG. */
+  return cfgchanged ? TODO_cleanup_cfg : 0;
 }
 
 /* Returns the list of basic blocks in the function in an order that guarantees
@@ -1010,8 +1013,7 @@ struct tree_opt_pass pass_phiopt =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_dump_func
+  TODO_dump_func
     | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_verify_flow

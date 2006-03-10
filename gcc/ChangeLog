@@ -1,3 +1,10 @@
+2006-03-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-ssa-phiopt.c (tree_ssa_phiopt): Add cfgchanged variable.
+	Set it when one of the replacement functions returned true.
+	Return TODO_cleanup_cfg if cfgchanged is true.
+	(pass_phiopt) <todo_flags_finish>: Remove TODO_cleanup_cfg.
+
 2006-03-09  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (simplify_shift_const_1): Use gen_lowpart_or_truncate
