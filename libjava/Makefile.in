@@ -4254,11 +4254,11 @@ classpath/java/util/zip/CheckedOutputStream.java \
 classpath/java/util/zip/Checksum.java \
 classpath/java/util/zip/DataFormatException.java \
 java/util/zip/Deflater.java \
-java/util/zip/DeflaterOutputStream.java \
-java/util/zip/GZIPInputStream.java \
-java/util/zip/GZIPOutputStream.java \
+classpath/java/util/zip/DeflaterOutputStream.java \
+classpath/java/util/zip/GZIPInputStream.java \
+classpath/java/util/zip/GZIPOutputStream.java \
 java/util/zip/Inflater.java \
-java/util/zip/InflaterInputStream.java \
+classpath/java/util/zip/InflaterInputStream.java \
 classpath/java/util/zip/ZipConstants.java \
 classpath/java/util/zip/ZipEntry.java \
 classpath/java/util/zip/ZipException.java \
