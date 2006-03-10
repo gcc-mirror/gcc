@@ -1647,9 +1647,9 @@ interpret_rhs_modify_expr (struct loop *loop, tree at_stmt,
       opnd10 = TREE_OPERAND (opnd1, 0);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
       chrec10 = chrec_convert (type, chrec10, at_stmt);
-      res = chrec_fold_multiply (type, chrec10, SCALAR_FLOAT_TYPE_P (type)
-				  ? build_real (type, dconstm1)
-				  : build_int_cst_type (type, -1));
+      /* TYPE may be integer, real or complex, so use fold_convert.  */
+      res = chrec_fold_multiply (type, chrec10,
+				 fold_convert (type, integer_minus_one_node));
       break;
 
     case MULT_EXPR:

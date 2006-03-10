@@ -1,3 +1,8 @@
+2006-03-09  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/26524
+	* gfortran.dg/pr26524.f: New test case.
+
 2006-03-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26554
