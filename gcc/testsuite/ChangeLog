@@ -1,3 +1,7 @@
+2006-03-09  Eric Christopher  <echristo@apple.com>
+
+	* gcc.c-torture/compile/20060309-1.c: New.
+
 2006-03-09  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* gfortran.dg/allocatable_dummy_1.f90: Test for functions returning
@@ -96,7 +100,7 @@
 	* gfortran.dg/read_logical.f90: New test.
 
 2006-03-04  Laurent GUERBY <laurent@guerby.net>
-	
+
 	* ada/acats/norun.lst: cdd2a03 now passes.
 
 2006-03-04  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -170,7 +174,7 @@
 
 2006-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gfortran.dg/logical_dot_product.f90: New test. 
+	* gfortran.dg/logical_dot_product.f90: New test.
 
 	PR fortran/26393
 	* gfortran.dg/used_interface_ref.f90: New test.
@@ -258,7 +262,7 @@
 2006-02-26  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimizations/26359
-	* gcc.dg/vect/vect.exp: Compile tests prefixed with "dump-tree-dceloop" 
+	* gcc.dg/vect/vect.exp: Compile tests prefixed with "dump-tree-dceloop"
 	with -fdump-tree-dceloop-details.
 	* gcc.dg/vect/dump-tree-dceloop-pr26359.c: New test.
 
@@ -548,7 +552,7 @@
 2006-02-13  Josh Conner  <jconner@apple.com>
 
 	PR target/25376
-	* gcc.dg/pr25376.c: New test.	
+	* gcc.dg/pr25376.c: New test.
 
 	* gcc.c-torture/compile/pr23237.c: Only compile test -- don't
 	assemble.
@@ -712,7 +716,7 @@
 	* gcc.dg/tree-ssa/pr21086.c: Likewise
 	* gcc.dg/tree-ssa/pr21959.c: Likewise
 	* gcc.dg/tree-ssa/vrp21.c: Likewise
-	* gcc.dg/tree-ssa/vrp04.c: Likewise 
+	* gcc.dg/tree-ssa/vrp04.c: Likewise
 	* gcc.dg/tree-ssa/pr25485.c: Likewise
 	* gcc.dg/tree-ssa/pr22026.c: Likewise
 	* gcc.dg/tree-ssa/vrp22.c: Likewise
@@ -818,7 +822,7 @@
 	* g++.old-deja/g++.brendan/ptolemy1.C (InterpTableEntry::name):
 	Change type to const char*.
 	* g++.old-deja/g++.brendan/ptolemy2.C (InterpTableEntry::name):
-	Likewise. 
+	Likewise.
 	* g++.old-deja/g++.jason/default2.C (bar::memberfunction): Change
 	second parameter type to const char*.
 	* g++.old-deja/g++.jason/opeq.C (X::X): Likewise.
@@ -851,7 +855,7 @@
 	* g++.old-deja/g++.mike/p811.C (X::stringify): Match for
 	deprecated conversion warning.
 	* g++.old-deja/g++.other/init15.C (A::name): Change type to const
-	char*. 
+	char*.
 	* g++.old-deja/g++.other/inline12.C: Adjust for const correctness.
 	* g++.old-deja/g++.other/sibcall1.C (foo): Likewise.
 	* g++.old-deja/g++.pt/explicit8.C: Likewise.
