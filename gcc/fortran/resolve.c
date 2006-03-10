@@ -5152,6 +5152,7 @@ resolve_symbol (gfc_symbol * sym)
 	      sym->as = gfc_copy_array_spec (sym->result->as);
 	      sym->attr.dimension = sym->result->attr.dimension;
 	      sym->attr.pointer = sym->result->attr.pointer;
+	      sym->attr.allocatable = sym->result->attr.allocatable;
 	    }
 	}
     }

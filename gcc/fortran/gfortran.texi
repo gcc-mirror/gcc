@@ -1332,8 +1332,16 @@ Support for the declaration of enumeration constants via the
 @command{-fshort-enums} command line option is given.
 
 @item
+@cindex TR 15581
+The following parts of TR 15581:
+@itemize
+@item
 @cindex @code{ALLOCATABLE} dummy arguments
 The @code{ALLOCATABLE} attribute for dummy arguments.
+@item
+@cindex @code{ALLOCATABLE} function results
+@code{ALLOCATABLE} function results
+@end itemize
 
 @end itemize
 
