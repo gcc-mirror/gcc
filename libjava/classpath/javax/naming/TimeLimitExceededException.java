@@ -1,5 +1,5 @@
 /* TimeLimitExceededException.java --
-   Copyright (C) 2000, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,8 @@ package javax.naming;
  
 public class TimeLimitExceededException extends LimitExceededException
 {
+  private static final long serialVersionUID = - 3597009011385034696L;
+
   public TimeLimitExceededException ()
   {
     super ();

@@ -48,6 +48,7 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.Serializable;
@@ -113,7 +114,7 @@ public class JViewport extends JComponent implements Accessible
     /**
      * Creates a new instance of <code>AccessibleJViewport</code>.
      */
-    public AccessibleJViewport()
+    protected AccessibleJViewport()
     {
       // Nothing to do here.
     }
@@ -250,6 +251,13 @@ public class JViewport extends JComponent implements Accessible
    * need a new double buffer, or can reuse the old one.
    */
   boolean sizeChanged = true;
+
+  /**
+   * Indicates if this JViewport is the paint root or not. If it is not, then
+   * we may not assume that the offscreen buffer still has the right content
+   * because parent components may have cleared the background already.
+   */
+  private boolean isPaintRoot = false;
 
   /**
    * Initializes the default setting for the scrollMode property.
@@ -635,11 +643,19 @@ public class JViewport extends JComponent implements Accessible
    */
   public void repaint(long tm, int x, int y, int w, int h)
   {
-    Component parent = getParent();
-    if (parent != null)
-      {
-        parent.repaint(tm, x + getX(), y + getY(), w, h);
-      }
+//    Component parent = getParent();
+//    if (parent != null)
+//      parent.repaint(tm, x + getX(), y + getY(), w, h);
+//    else
+//      super.repaint(tm, x, y, w, h);
+
+    // The specs suggest to implement something like the above. This however
+    // breaks blit painting, because the parent (most likely a JScrollPane)
+    // clears the background of the offscreen area of the JViewport, thus
+    // destroying the pieces that we want to clip. So we simply call super here
+    // instead.
+    super.repaint(tm, x, y, w, h);
+    
   }
 
   protected void addImpl(Component comp, Object constraints, int index)
@@ -710,9 +726,11 @@ public class JViewport extends JComponent implements Accessible
   protected boolean computeBlit(int dx, int dy, Point blitFrom, Point blitTo,
                                 Dimension blitSize, Rectangle blitPaint)
   {
-    if ((dx != 0 && dy != 0) || damaged)
+    if ((dx != 0 && dy != 0) || (dy == 0 && dy == 0) || damaged)
       // We cannot blit if the viewport is scrolled in both directions at
-      // once.
+      // once. Also, we do not want to blit if the viewport is not scrolled at
+      // all, because that probably means the view component repaints itself
+      // and the buffer needs updating.
       return false;
 
     Rectangle portBounds = SwingUtilities.calculateInnerArea(this, getBounds());
@@ -791,6 +809,8 @@ public class JViewport extends JComponent implements Accessible
 
     Point pos = getViewPosition();
     Component view = getView();
+    Shape oldClip = g.getClip();
+    g.clipRect(0, 0, getWidth(), getHeight());
     boolean translated = false;
     try
       {
@@ -802,6 +822,7 @@ public class JViewport extends JComponent implements Accessible
       {
         if (translated)
           g.translate (pos.x, pos.y);
+        g.setClip(oldClip);
       }
   }
 
@@ -854,6 +875,11 @@ public class JViewport extends JComponent implements Accessible
         // everything.
         else
           {
+            // If the image has not been scrolled at all, only the changed
+            // clip must be updated in the buffer.
+            if (dx==0 && dy==0)
+              g2.setClip(g.getClip());
+            
             paintSimple(g2);
           }
         g2.dispose();
@@ -877,23 +903,49 @@ public class JViewport extends JComponent implements Accessible
    */
   void paintBlit(Graphics g)
   {
-    // We cannot perform blitted painting as it is described in Sun's API docs.
-    // There it is suggested that this painting method should blit directly
-    // on the parent window's surface. This is not possible because when using
-    // Swing's double buffering (at least our implementation), it would
-    // immediatly be painted when the buffer is painted on the screen. For this
-    // to work we would need a kind of hole in the buffer image. And honestly
-    // I find this method not very elegant.
-    // The alternative, blitting directly on the buffer image, is also not
-    // possible because the buffer image gets cleared everytime when an opaque
-    // parent component is drawn on it.
+    // First we move the part that remains visible after scrolling, then
+    // we only need to paint the bit that becomes newly visible.
+    Point viewPosition = getViewPosition();
+    int dx = viewPosition.x - lastPaintPosition.x;
+    int dy = viewPosition.y - lastPaintPosition.y;
+    boolean canBlit = computeBlit(dx, dy, cachedBlitFrom, cachedBlitTo,
+                                  cachedBlitSize, cachedBlitPaint);
+    if (canBlit && isPaintRoot)
+      {
+        // Copy the part that remains visible during scrolling.
+        g.copyArea(cachedBlitFrom.x, cachedBlitFrom.y,
+                   cachedBlitSize.width, cachedBlitSize.height,
+                   cachedBlitTo.x - cachedBlitFrom.x,
+                   cachedBlitTo.y - cachedBlitFrom.y);
+        // Now paint the part that becomes newly visible.
+        Shape oldClip = g.getClip();
+        g.clipRect(cachedBlitPaint.x, cachedBlitPaint.y,
+                  cachedBlitPaint.width, cachedBlitPaint.height);
+        try
+          {
+            paintSimple(g);
+          }
+        finally
+          {
+            g.setClip(oldClip);
+          }
+      }
+    // If blitting is not possible for some reason, fall back to repainting
+    // everything.
+    else
+      paintSimple(g);
+    lastPaintPosition.setLocation(getViewPosition());
+  }
 
-    // What we do instead is falling back to the backing store approach which
-    // is in fact a mixed blitting/backing store approach where the blitting
-    // is performed on the backing store image and this is then drawn to the
-    // graphics context. This is very robust and works independent of the
-    // painting mechanism that is used by Swing. And it should have comparable
-    // performance characteristics as the blitting method.
-    paintBackingStore(g);
+  /**
+   * Overridden from JComponent to set the {@link #isPaintRoot} flag.
+   *
+   * @param r the rectangle to paint
+   */
+  void paintImmediately2(Rectangle r)
+  {
+    isPaintRoot = true;
+    super.paintImmediately2(r);
+    isPaintRoot = false;
   }
 }

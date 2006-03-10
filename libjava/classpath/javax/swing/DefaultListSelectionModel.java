@@ -447,6 +447,9 @@ public class DefaultListSelectionModel implements Cloneable,
    */
   public void addSelectionInterval(int index0, int index1) 
   {
+    if (index0 == -1 || index1 == -1)
+      return;
+    
     int lo = Math.min(index0, index1);
     int hi = Math.max(index0, index1);
     oldSel = sel.clone();
@@ -508,6 +511,9 @@ public class DefaultListSelectionModel implements Cloneable,
   public void removeSelectionInterval(int index0,
                                       int index1)
   {
+    if (index0 == -1 || index1 == -1)
+      return;
+    
     oldSel = sel.clone();
     int lo = Math.min(index0, index1);
     int hi = Math.max(index0, index1);
@@ -551,6 +557,9 @@ public class DefaultListSelectionModel implements Cloneable,
    */
   public void setSelectionInterval(int index0, int index1)
   {
+    if (index0 == -1 || index1 == -1)
+      return;
+    
     oldSel = sel.clone();
     sel.clear();
     if (selectionMode == SINGLE_SELECTION)

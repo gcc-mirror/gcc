@@ -178,7 +178,7 @@ public final class PrinterStateReasons extends HashMap
     if (severity == null)
       throw new NullPointerException("severity is null");
     
-    return put((PrinterStateReason) reason, (Severity) severity);
+    return super.put((PrinterStateReason) reason, (Severity) severity);
   }   
   
   /**

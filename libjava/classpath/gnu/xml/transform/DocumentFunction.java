@@ -126,9 +126,7 @@ final class DocumentFunction
         Object arg1 = values.get(0);
         Object arg2 = values.get(1);
         if (!(arg2 instanceof Collection))
-          {
-            throw new RuntimeException("second argument is not a node-set");
-          }
+          throw new RuntimeException("second argument is not a node-set");
         Collection arg2ns = (Collection) arg2;
         String base2 = arg2ns.isEmpty() ? null :
           ((Node) arg2ns.iterator().next()).getBaseURI();
@@ -166,9 +164,7 @@ final class DocumentFunction
   Collection document(String uri, String base)
   {
     if ("".equals(uri) || uri == null)
-      {
-        uri = this.base.getBaseURI();
-      }
+      uri = this.base.getBaseURI();
     
     // Get fragment
     Expr fragment = null;
@@ -197,10 +193,10 @@ final class DocumentFunction
             source = resolver.resolveDOM(null, base, uri);
           }
         Node node = source.getNode();
+        // Strip whitespace
+        TransformerImpl.strip(stylesheet, node);
         if (fragment == null)
-          {
-            return Collections.singleton(node);
-          }
+          return Collections.singleton(node);
         else
           {
             Object ret = fragment.evaluate(node, 1, 1);
@@ -216,9 +212,7 @@ final class DocumentFunction
       {
         String msg = "can't open " + uri;
         if (base != null)
-          {
-            msg += " with base " + base;
-          }
+          msg += " with base " + base;
         throw new RuntimeException(msg);
       }
   }
@@ -227,16 +221,12 @@ final class DocumentFunction
   {
     Stylesheet s = stylesheet;
     if (context instanceof Stylesheet)
-      {
-        s = (Stylesheet) context;
-      }
+      s = (Stylesheet) context;
     DocumentFunction f = new DocumentFunction(s, base);
     int len = args.size();
     List args2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
-      {
-        args2.add(((Expr) args.get(i)).clone(context));
-      }
+      args2.add(((Expr) args.get(i)).clone(context));
     f.setArguments(args2);
     return f;
   }
@@ -246,9 +236,7 @@ final class DocumentFunction
     for (Iterator i = args.iterator(); i.hasNext(); )
       {
         if (((Expr) i.next()).references(var))
-          {
-            return true;
-          }
+          return true;
       }
     return false;
   }

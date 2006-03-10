@@ -1,5 +1,5 @@
 /* LineInputStream.java --
-   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,6 @@ package gnu.java.net;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -50,8 +49,14 @@ import java.io.InputStream;
  * @author Chris Burdess (dog@gnu.org)
  */
 public class LineInputStream
-  extends FilterInputStream
+  extends InputStream
 {
+
+  /**
+   * The underlying input stream.
+   */
+  protected InputStream in;
+  
   /*
    * Line buffer.
    */
@@ -88,12 +93,30 @@ public class LineInputStream
    */
   public LineInputStream(InputStream in, String encoding)
   {
-    super(in);
+    this.in = in;
     buf = new ByteArrayOutputStream();
     this.encoding = encoding;
     eof = false;
     // If it is already buffered, additional buffering gains nothing.
     blockReads = !(in instanceof BufferedInputStream) && in.markSupported();
+  }
+
+  public int read()
+    throws IOException
+  {
+    return in.read();
+  }
+
+  public int read(byte[] buf)
+    throws IOException
+  {
+    return in.read(buf);
+  }
+  
+  public int read(byte[] buf, int off, int len)
+    throws IOException
+  {
+    return in.read(buf, off, len);
   }
 
   /**

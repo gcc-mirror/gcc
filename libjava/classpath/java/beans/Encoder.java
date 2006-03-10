@@ -1,5 +1,5 @@
 /* Encoder.java
- Copyright (C) 2005 Free Software Foundation, Inc.
+ Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -38,21 +38,16 @@
 
 package java.beans;
 
+import gnu.java.beans.DefaultExceptionListener;
 import gnu.java.beans.encoder.ArrayPersistenceDelegate;
 import gnu.java.beans.encoder.ClassPersistenceDelegate;
 import gnu.java.beans.encoder.CollectionPersistenceDelegate;
 import gnu.java.beans.encoder.MapPersistenceDelegate;
 import gnu.java.beans.encoder.PrimitivePersistenceDelegate;
 
-import java.util.ArrayList;
+import java.util.AbstractCollection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
 
 /**
  * @author Robert Schuster (robertschuster@fsfe.org)
@@ -123,31 +118,11 @@ public class Encoder
         delegates.put(Object[].class, new ArrayPersistenceDelegate());
 
         pd = new CollectionPersistenceDelegate();
-        delegates.put(ArrayList.class, pd);
-        delegates.put(LinkedList.class, pd);
-        delegates.put(Vector.class, pd);
-        delegates.put(HashSet.class, pd);
-        delegates.put(LinkedHashSet.class, pd);
-        delegates.put(TreeSet.class, pd);
+        delegates.put(AbstractCollection.class, pd);
         
         pd = new MapPersistenceDelegate();
-        delegates.put(HashMap.class, pd);
-        delegates.put(TreeMap.class, pd);
+        delegates.put(java.util.AbstractMap.class, pd);
         delegates.put(java.util.Hashtable.class, pd);
-        delegates.put(java.util.IdentityHashMap.class, pd);
-        
-        delegates.put(java.util.LinkedHashMap.class, pd);
-        delegates.put(java.util.Properties.class, pd);
-
-        delegates.put(java.awt.RenderingHints.class, pd);
-        delegates.put(java.util.WeakHashMap.class, pd);
-        delegates.put(javax.swing.UIDefaults.class, pd);
-        
-        // TODO: These classes need to be implemented first
-        //delegates.put(java.security.AuthProvider.class, pd);
-        //delegates.put(java.util.concurrent.ConcurrentHashMap.class, pd);
-        //delegates.put(java.util.EnumMap.class, pd);
-        //delegates.put(javax.management.openmbean.TabularDataSupport.class, pd);
         
         defaultPersistenceDelegate = new DefaultPersistenceDelegate();
         delegates.put(Object.class, defaultPersistenceDelegate);
@@ -194,14 +169,8 @@ public class Encoder
    */
   public void setExceptionListener(ExceptionListener listener)
   {
-    exceptionListener = (listener != null) ? listener : new ExceptionListener()
-    {
-      public void exceptionThrown(Exception e)
-      {
-        System.err.println("exception thrown: " + e);
-        e.printStackTrace();
-      }
-    };
+    exceptionListener = (listener != null) 
+	? listener : DefaultExceptionListener.INSTANCE;
   }
 
   /**

@@ -69,6 +69,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
@@ -193,8 +194,23 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
     if (selectedIndex > comboBox.getMaximumRowCount())
       scrollbar.setValue(getPopupHeightForRowCount(selectedIndex));
 
+    // We put the autoclose-registration inside an InvocationEvent, so that
+    // the same event that triggered this show() call won't hide the popup
+    // immediately.
+    SwingUtilities.invokeLater
+    (new Runnable()
+     {
+       public void run()
+       {
+         // Register this popup to be autoclosed when user clicks outside the
+         // popup.
+         BasicLookAndFeel laf = (BasicLookAndFeel) UIManager.getLookAndFeel();
+         laf.registerForAutoClose(BasicComboPopup.this);
+       }});
+
     // location specified is relative to comboBox
     super.show(comboBox, 0, cbBounds.height);
+
   }
 
   /**

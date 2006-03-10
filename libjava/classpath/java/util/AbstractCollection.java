@@ -423,7 +423,9 @@ public abstract class AbstractCollection implements Collection
    * of the form "[a, b, ...]" where a and b etc are the results of calling
    * toString on the elements of the collection. This implementation obtains an
    * Iterator over the Collection and adds each element to a StringBuffer as it
-   * is returned by the iterator.
+   * is returned by the iterator. "<this>" is inserted when the collection
+   * contains itself (only works for direct containment, not for collections
+   * inside collections).
    *
    * @return a String representation of the Collection
    */
@@ -431,10 +433,16 @@ public abstract class AbstractCollection implements Collection
   {
     Iterator itr = iterator();
     StringBuffer r = new StringBuffer("[");
-    for (int pos = size(); pos > 0; pos--)
+    boolean hasNext = itr.hasNext();
+    while (hasNext)
       {
-        r.append(itr.next());
-        if (pos > 1)
+        Object o = itr.next();
+	if (o == this)
+	  r.append("<this>");
+	else
+	  r.append(o);
+	hasNext = itr.hasNext();
+        if (hasNext)
           r.append(", ");
       }
     r.append("]");

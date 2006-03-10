@@ -1,5 +1,6 @@
 /* NotBoundException.java -- attempt to use a registry name with no binding
-   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,10 +43,10 @@ package java.rmi;
  * associated binding.
  *
  * @author unknown
- * @see Naming#lookup(String)
- * @see Naming#unbind(String)
- * @see Registry#lookup(String)
- * @see Registry#unbind(String)
+ * @see java.rmi.Naming#lookup(String)
+ * @see java.rmi.Naming#unbind(String)
+ * @see java.rmi.registry.Registry#lookup(String)
+ * @see java.rmi.registry.Registry#unbind(String)
  * @since 1.1
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* AbstractPreferences -- Partial implementation of a Preference node
-   Copyright (C) 2001, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +38,13 @@ exception statement from your version. */
 
 package java.util.prefs;
 
+import gnu.java.util.prefs.EventDispatcher;
 import gnu.java.util.prefs.NodeWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -68,7 +70,7 @@ public abstract class AbstractPreferences extends Preferences {
     /**
      * Set to true in the contructor if the node did not exist in the backing
      * store when this preference node object was created. Should be set in
-     * the contructor of a subclass. Defaults to false. Used to fire node
+     * the constructor of a subclass. Defaults to false. Used to fire node
      * changed events.
      */
     protected boolean newNode = false;
@@ -96,6 +98,16 @@ public abstract class AbstractPreferences extends Preferences {
      * invocations and that have not been removed.
      */
     private HashMap childCache = new HashMap();
+
+    /**
+     * A list of all the registered NodeChangeListener objects.
+     */
+    private ArrayList nodeListeners;
+
+    /**
+     * A list of all the registered PreferenceChangeListener objects.
+     */
+    private ArrayList preferenceListeners;
 
     // constructor
 
@@ -256,7 +268,7 @@ public abstract class AbstractPreferences extends Preferences {
      * @exception IllegalArgumentException if the path contains two or more
      * consecutive '/' characters, ends with a '/' charactor and is not the
      * string "/" (indicating the root node) or any name on the path is more
-     * then 80 characters long
+     * than 80 characters long
      */
     public Preferences node(String path) {
         synchronized(lock) {
@@ -325,8 +337,9 @@ public abstract class AbstractPreferences extends Preferences {
 
             // Not in childCache yet so create a new sub node
             child = childSpi(childName);
-            // XXX - check if node is new
             childCache.put(childName, child);
+            if (child.newNode && nodeListeners != null)
+              fire(new NodeChangeEvent(this, child), true);
         }
 
         // Lock the child and go down
@@ -477,9 +490,7 @@ public abstract class AbstractPreferences extends Preferences {
 
     // export methods
 
-    /**
-     * XXX
-     */
+    // Inherit javadoc.
     public void exportNode(OutputStream os)
                                     throws BackingStoreException,
                                            IOException
@@ -488,9 +499,7 @@ public abstract class AbstractPreferences extends Preferences {
         nodeWriter.writePrefs();
     }
 
-    /**
-     * XXX
-     */
+    // Inherit javadoc.
     public void exportSubtree(OutputStream os)
                                     throws BackingStoreException,
                                            IOException
@@ -765,8 +774,8 @@ public abstract class AbstractPreferences extends Preferences {
      * Key and value cannot be null, the key cannot exceed 80 characters
      * and the value cannot exceed 8192 characters.
      * <p>
-     * The result will be immediatly visible in this VM, but may not be
-     * immediatly written to the backing store.
+     * The result will be immediately visible in this VM, but may not be
+     * immediately written to the backing store.
      * <p>
      * Checks that key and value are valid, locks this node, and checks that
      * the node has not been removed. Then it calls <code>putSpi()</code>.
@@ -789,7 +798,8 @@ public abstract class AbstractPreferences extends Preferences {
 
             putSpi(key, value);
 
-            // XXX - fire events
+            if (preferenceListeners != null)
+              fire(new PreferenceChangeEvent(this, key, value));
         }
             
     }
@@ -804,9 +814,7 @@ public abstract class AbstractPreferences extends Preferences {
      * @exception IllegalStateException when this node has been removed
      */
     public void putBoolean(String key, boolean value) {
-        put(key, String.valueOf(value));
-        // XXX - Use when using 1.4 compatible Boolean
-        // put(key, Boolean.toString(value));
+        put(key, Boolean.toString(value));
     }
 
     /**
@@ -935,8 +943,8 @@ public abstract class AbstractPreferences extends Preferences {
     /**
      * Removes the preferences entry from this preferences node.
      * <p>     
-     * The result will be immediatly visible in this VM, but may not be
-     * immediatly written to the backing store.
+     * The result will be immediately visible in this VM, but may not be
+     * immediately written to the backing store.
      * <p>
      * This implementation checks that the key is not larger then 80
      * characters, gets the lock of this node, checks that the node has
@@ -955,6 +963,9 @@ public abstract class AbstractPreferences extends Preferences {
                 throw new IllegalStateException("Node removed");
 
             removeSpi(key);
+
+            if (preferenceListeners != null)
+              fire(new PreferenceChangeEvent(this, key, null));
         }
     }
 
@@ -962,7 +973,7 @@ public abstract class AbstractPreferences extends Preferences {
      * Removes all entries from this preferences node. May need access to the
      * backing store to get and clear all entries.
      * <p>
-     * The result will be immediatly visible in this VM, but may not be
+     * The result will be immediately visible in this VM, but may not be
      * immediatly written to the backing store.
      * <p>
      * This implementation locks this node, checks that the node has not been
@@ -1049,7 +1060,7 @@ public abstract class AbstractPreferences extends Preferences {
             for (int i = 0; i < keys.length; i++) {
                 // Have to lock this node again to access the childCache
                 AbstractPreferences subNode;
-                synchronized(this) {
+                synchronized(lock) {
                     subNode = (AbstractPreferences) childCache.get(keys[i]);
                 }
 
@@ -1087,8 +1098,8 @@ public abstract class AbstractPreferences extends Preferences {
         if (parent == null)
             throw new UnsupportedOperationException("Cannot remove root node");
 
-        synchronized(parent) {
-            synchronized(this) {
+        synchronized (parent.lock) {
+            synchronized(this.lock) {
                 if (isRemoved())
                     throw new IllegalStateException("Node Removed");
 
@@ -1122,7 +1133,7 @@ public abstract class AbstractPreferences extends Preferences {
         Iterator i = childCache.values().iterator();
         while (i.hasNext()) {
             AbstractPreferences node = (AbstractPreferences) i.next();
-            synchronized(node) {
+            synchronized(node.lock) {
                 node.purge();
             }
         }
@@ -1134,30 +1145,131 @@ public abstract class AbstractPreferences extends Preferences {
         removeNodeSpi();
         removed = true;
 
-        // XXX - check for listeners
+        if (nodeListeners != null)
+          fire(new NodeChangeEvent(parent, this), false);
     }
 
     // listener methods
 
     /**
-     * XXX
+     * Add a listener which is notified when a sub-node of this node
+     * is added or removed.
+     * @param listener the listener to add
      */
-    public void addNodeChangeListener(NodeChangeListener listener) {
-        // XXX
-    }
-
-    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
-        // XXX
-    }
-
-    public void removeNodeChangeListener(NodeChangeListener listener) {
-        // XXX
-    }
-
-    public void removePreferenceChangeListener
-                            (PreferenceChangeListener listener)
+    public void addNodeChangeListener(NodeChangeListener listener)
     {
-        // XXX
+      synchronized (lock)
+        {
+          if (isRemoved())
+            throw new IllegalStateException("node has been removed");
+          if (listener == null)
+            throw new NullPointerException("listener is null");
+          if (nodeListeners == null)
+            nodeListeners = new ArrayList();
+          nodeListeners.add(listener);
+        }
+    }
+
+    /**
+     * Add a listener which is notified when a value in this node
+     * is added, changed, or removed.
+     * @param listener the listener to add
+     */
+    public void addPreferenceChangeListener(PreferenceChangeListener listener)
+    {
+      synchronized (lock)
+        {
+          if (isRemoved())
+            throw new IllegalStateException("node has been removed");
+          if (listener == null)
+            throw new NullPointerException("listener is null");
+          if (preferenceListeners == null)
+            preferenceListeners = new ArrayList();
+          preferenceListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove the indicated node change listener from the list of
+     * listeners to notify.
+     * @param listener the listener to remove
+     */
+    public void removeNodeChangeListener(NodeChangeListener listener)
+    {
+      synchronized (lock)
+        {
+          if (isRemoved())
+            throw new IllegalStateException("node has been removed");
+          if (listener == null)
+            throw new NullPointerException("listener is null");
+          if (nodeListeners != null)
+            nodeListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Remove the indicated preference change listener from the list of
+     * listeners to notify.
+     * @param listener the listener to remove
+     */
+    public void removePreferenceChangeListener (PreferenceChangeListener listener)
+    {
+      synchronized (lock)
+        {
+          if (isRemoved())
+            throw new IllegalStateException("node has been removed");
+          if (listener == null)
+            throw new NullPointerException("listener is null");
+          if (preferenceListeners != null)
+            preferenceListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Send a preference change event to all listeners.  Note that
+     * the caller is responsible for holding the node's lock, and
+     * for checking that the list of listeners is not null.
+     * @param event the event to send
+     */
+    private void fire(final PreferenceChangeEvent event)
+    {
+      Iterator it = preferenceListeners.iterator();
+      while (it.hasNext())
+        {
+          final PreferenceChangeListener l = (PreferenceChangeListener) it.next();
+          EventDispatcher.dispatch(new Runnable()
+                                   {
+                                     public void run()
+                                     {
+                                       l.preferenceChange(event);
+                                     }
+                                   });
+        }
+    }
+
+    /**
+     * Send a node change event to all listeners.  Note that
+     * the caller is responsible for holding the node's lock, and
+     * for checking that the list of listeners is not null.
+     * @param event the event to send
+     */
+    private void fire(final NodeChangeEvent event, final boolean added)
+    {
+      Iterator it = nodeListeners.iterator();
+      while (it.hasNext())
+        {
+          final NodeChangeListener l = (NodeChangeListener) it.next();
+          EventDispatcher.dispatch(new Runnable()
+                                   {
+                                     public void run()
+                                     {
+                                       if (added)
+                                         l.childAdded(event);
+                                       else
+                                         l.childRemoved(event);
+                                     }
+                                   });
+        }
     }
 
     // abstract spi methods
@@ -1214,7 +1326,7 @@ public abstract class AbstractPreferences extends Preferences {
     /**
      * Sets the value of the given preferences entry for this node.
      * The implementation is not required to propagate the change to the
-     * backing store immediatly. It may not throw an exception when it tries
+     * backing store immediately. It may not throw an exception when it tries
      * to write to the backing store and that operation fails, the failure
      * should be registered so a later invocation of <code>flush()</code>
      * or <code>sync()</code> can signal the failure.
@@ -1227,7 +1339,7 @@ public abstract class AbstractPreferences extends Preferences {
     /**
      * Removes the given key entry from this preferences node.
      * The implementation is not required to propagate the change to the
-     * backing store immediatly.  It may not throw an exception when it tries
+     * backing store immediately.  It may not throw an exception when it tries
      * to write to the backing store and that operation fails, the failure
      * should be registered so a later invocation of <code>flush()</code>
      * or <code>sync()</code> can signal the failure.

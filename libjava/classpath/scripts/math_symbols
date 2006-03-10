@@ -7,10 +7,14 @@ sin
 tan
 cosh
 sinh
+tanh
 exp
 frexp
 ldexp
+expm1
 log
+log10
+log1p
 modf
 pow
 sqrt

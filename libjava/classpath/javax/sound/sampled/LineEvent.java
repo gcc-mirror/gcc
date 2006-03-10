@@ -38,16 +38,24 @@ exception statement from your version. */
 
 package javax.sound.sampled;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.EventObject;
-
-// FIXME: attempts to serialize this should fail
 
 /**
  * This class holds information about a state change of a Line.
+ * @specnote This class is not really serializable, and attempts to
+ * serialize it will throw {@link NotSerializableException}.
  * @since 1.3
  */
 public class LineEvent extends EventObject
 {
+  // We define this even though this class can't be serialized, in
+  // order to placate the compiler.
+  private static final long serialVersionUID = -1274246333383880410L;
+
   /**
    * This class represents the kinds of state changes that can occur
    * to a Line.  The standard states are availabe as static instances.
@@ -146,5 +154,17 @@ public class LineEvent extends EventObject
   {
     return ("type=" + type + "; framePosition=" + framePosition
 	    + "line=" + line);
+  }
+  
+  private void readObject(ObjectInputStream ois)
+    throws IOException
+  {
+    throw new NotSerializableException("LineEvent is not serializable");
+  }
+  
+  private void writeObject(ObjectOutputStream oos)
+    throws IOException
+  {
+    throw new NotSerializableException("LineEvent is not serializable");
   }
 }

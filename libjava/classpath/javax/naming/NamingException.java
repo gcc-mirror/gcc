@@ -223,7 +223,7 @@ public class NamingException extends Exception
   /**
    * Gets the message given to the constructor or null if no message was given.
    *
-   * @see Throwable#getMessage();
+   * @see Throwable#getMessage()
    */
   public String getExplanation()
   {

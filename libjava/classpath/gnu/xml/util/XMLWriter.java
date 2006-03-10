@@ -102,6 +102,8 @@ import org.xml.sax.helpers.*;
  * @see gnu.xml.pipeline.TextConsumer
  *
  * @author David Brownell
+ *
+ * @deprecated Please use the javax.xml.stream APIs instead
  */
 public class XMLWriter
     implements ContentHandler, LexicalHandler, DTDHandler, DeclHandler

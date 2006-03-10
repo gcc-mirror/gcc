@@ -1,5 +1,6 @@
 /* Frame.java -- AWT toplevel window
-   Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,143 +58,156 @@ import javax.accessibility.AccessibleStateSet;
   */
 public class Frame extends Window implements MenuContainer
 {
-/**
-  * Constant for the default cursor.
-  * @deprecated Replaced by <code>Cursor.DEFAULT_CURSOR</code> instead.
-  */
-public static final int DEFAULT_CURSOR = Cursor.DEFAULT_CURSOR;
 
-/**
-  * Constant for a cross-hair cursor.
-  * @deprecated Use <code>Cursor.CROSSHAIR_CURSOR</code> instead.
-  */
-public static final int CROSSHAIR_CURSOR = Cursor.CROSSHAIR_CURSOR;
+  /**
+   * Constant for the default cursor.
+   *
+   * @deprecated Replaced by <code>Cursor.DEFAULT_CURSOR</code> instead.
+   */
+  public static final int DEFAULT_CURSOR = Cursor.DEFAULT_CURSOR;
 
-/**
-  * Constant for a cursor over a text field.
-  * @deprecated Use <code>Cursor.TEXT_CURSOR</code> instead.
-  */
-public static final int TEXT_CURSOR = Cursor.TEXT_CURSOR;
+  /**
+   * Constant for a cross-hair cursor.
+   *
+   * @deprecated Use <code>Cursor.CROSSHAIR_CURSOR</code> instead.
+   */
+  public static final int CROSSHAIR_CURSOR = Cursor.CROSSHAIR_CURSOR;
 
-/**
-  * Constant for a cursor to display while waiting for an action to complete.
-  * @deprecated Use <code>Cursor.WAIT_CURSOR</code>.
-  */
-public static final int WAIT_CURSOR = Cursor.WAIT_CURSOR;
+  /**
+   * Constant for a cursor over a text field.
+   *
+   * @deprecated Use <code>Cursor.TEXT_CURSOR</code> instead.
+   */
+  public static final int TEXT_CURSOR = Cursor.TEXT_CURSOR;
 
-/**
-  * Cursor used over SW corner of window decorations.
-  * @deprecated Use <code>Cursor.SW_RESIZE_CURSOR</code> instead.
-  */
-public static final int SW_RESIZE_CURSOR = Cursor.SW_RESIZE_CURSOR;
+  /**
+   * Constant for a cursor to display while waiting for an action to complete.
+   *
+   * @deprecated Use <code>Cursor.WAIT_CURSOR</code>.
+   */
+  public static final int WAIT_CURSOR = Cursor.WAIT_CURSOR;
 
-/**
-  * Cursor used over SE corner of window decorations.
-  * @deprecated Use <code>Cursor.SE_RESIZE_CURSOR</code> instead.
-  */
-public static final int SE_RESIZE_CURSOR = Cursor.SE_RESIZE_CURSOR;
+  /**
+   * Cursor used over SW corner of window decorations.
+   *
+   * @deprecated Use <code>Cursor.SW_RESIZE_CURSOR</code> instead.
+   */
+  public static final int SW_RESIZE_CURSOR = Cursor.SW_RESIZE_CURSOR;
 
-/**
-  * Cursor used over NW corner of window decorations.
-  * @deprecated Use <code>Cursor.NW_RESIZE_CURSOR</code> instead.
-  */
-public static final int NW_RESIZE_CURSOR = Cursor.NW_RESIZE_CURSOR;
+  /**
+   * Cursor used over SE corner of window decorations.
+   * @deprecated Use <code>Cursor.SE_RESIZE_CURSOR</code> instead.
+   */
+  public static final int SE_RESIZE_CURSOR = Cursor.SE_RESIZE_CURSOR;
 
-/**
-  * Cursor used over NE corner of window decorations.
-  * @deprecated Use <code>Cursor.NE_RESIZE_CURSOR</code> instead.
-  */
-public static final int NE_RESIZE_CURSOR = Cursor.NE_RESIZE_CURSOR;
+  /**
+   * Cursor used over NW corner of window decorations.
+   *
+   * @deprecated Use <code>Cursor.NW_RESIZE_CURSOR</code> instead.
+   */
+  public static final int NW_RESIZE_CURSOR = Cursor.NW_RESIZE_CURSOR;
 
-/**
-  * Cursor used over N edge of window decorations.
-  * @deprecated Use <code>Cursor.N_RESIZE_CURSOR</code> instead.
-  */
-public static final int N_RESIZE_CURSOR = Cursor.N_RESIZE_CURSOR;
+  /**
+   * Cursor used over NE corner of window decorations.
+   *
+   * @deprecated Use <code>Cursor.NE_RESIZE_CURSOR</code> instead.
+   */
+  public static final int NE_RESIZE_CURSOR = Cursor.NE_RESIZE_CURSOR;
 
-/**
-  * Cursor used over S edge of window decorations.
-  * @deprecated Use <code>Cursor.S_RESIZE_CURSOR</code> instead.
-  */
-public static final int S_RESIZE_CURSOR = Cursor.S_RESIZE_CURSOR;
+  /**
+   * Cursor used over N edge of window decorations.
+   *
+   * @deprecated Use <code>Cursor.N_RESIZE_CURSOR</code> instead.
+   */
+  public static final int N_RESIZE_CURSOR = Cursor.N_RESIZE_CURSOR;
 
-/**
-  * Cursor used over E edge of window decorations.
-  * @deprecated Use <code>Cursor.E_RESIZE_CURSOR</code> instead.
-  */
-public static final int E_RESIZE_CURSOR = Cursor.E_RESIZE_CURSOR;
+  /**
+   * Cursor used over S edge of window decorations.
+   *
+   * @deprecated Use <code>Cursor.S_RESIZE_CURSOR</code> instead.
+   */
+  public static final int S_RESIZE_CURSOR = Cursor.S_RESIZE_CURSOR;
 
-/**
-  * Cursor used over W edge of window decorations.
-  * @deprecated Use <code>Cursor.W_RESIZE_CURSOR</code> instead.
-  */
-public static final int W_RESIZE_CURSOR = Cursor.W_RESIZE_CURSOR;
+  /**
+   * Cursor used over E edge of window decorations.
+   *
+   * @deprecated Use <code>Cursor.E_RESIZE_CURSOR</code> instead.
+   */
+  public static final int E_RESIZE_CURSOR = Cursor.E_RESIZE_CURSOR;
 
-/**
-  * Constant for a hand cursor.
-  * @deprecated Use <code>Cursor.HAND_CURSOR</code> instead.
-  */
-public static final int HAND_CURSOR = Cursor.HAND_CURSOR;
+  /**
+   * Cursor used over W edge of window decorations.
+   *
+   * @deprecated Use <code>Cursor.W_RESIZE_CURSOR</code> instead.
+   */
+  public static final int W_RESIZE_CURSOR = Cursor.W_RESIZE_CURSOR;
 
-/**
-  * Constant for a cursor used during window move operations.
-  * @deprecated Use <code>Cursor.MOVE_CURSOR</code> instead.
-  */
-public static final int MOVE_CURSOR = Cursor.MOVE_CURSOR;
+  /**
+   * Constant for a hand cursor.
+   *
+   * @deprecated Use <code>Cursor.HAND_CURSOR</code> instead.
+   */
+  public static final int HAND_CURSOR = Cursor.HAND_CURSOR;
 
-public static final int ICONIFIED = 1;
-public static final int MAXIMIZED_BOTH = 6;
-public static final int MAXIMIZED_HORIZ = 2;
-public static final int MAXIMIZED_VERT = 4;
-public static final int NORMAL = 0;
+  /**
+   * Constant for a cursor used during window move operations.
+   *
+   * @deprecated Use <code>Cursor.MOVE_CURSOR</code> instead.
+   */
+  public static final int MOVE_CURSOR = Cursor.MOVE_CURSOR;
 
-// Serialization version constant
-private static final long serialVersionUID = 2673458971256075116L;
+  public static final int ICONIFIED = 1;
+  public static final int MAXIMIZED_BOTH = 6;
+  public static final int MAXIMIZED_HORIZ = 2;
+  public static final int MAXIMIZED_VERT = 4;
+  public static final int NORMAL = 0;
 
-/**
-  * @serial The version of the class data being serialized
-  * // FIXME: what is this value?
-  */
-private int frameSerializedDataVersion;
+//Serialization version constant
+  private static final long serialVersionUID = 2673458971256075116L;
 
-/**
-  * @serial Image used as the icon when this frame is minimized.
-  */
-private Image icon;
+  /**
+   * @serial The version of the class data being serialized
+   * FIXME: what is this value?
+   */
+  private int frameSerializedDataVersion;
 
-/**
-  * @serial Constant used by the JDK Motif peer set.  Not used in
-  * this implementation.
-  */
-private boolean mbManagement;
+  /**
+   * @serial Image used as the icon when this frame is minimized.
+   */
+  private Image icon;
 
-/**
-  * @serial The menu bar for this frame.
-  */
-//private MenuBar menuBar = new MenuBar();
-private MenuBar menuBar;
+  /**
+   * @serial Constant used by the JDK Motif peer set.  Not used in
+   * this implementation.
+   */
+  private boolean mbManagement;
 
-/**
-  * @serial A list of other top-level windows owned by this window.
-  */
-Vector ownedWindows = new Vector();
+  /**
+   * @serial The menu bar for this frame.
+   */
+  private MenuBar menuBar;
 
-/**
-  * @serial Indicates whether or not this frame is resizable.
-  */
-private boolean resizable = true;
+  /**
+   * @serial A list of other top-level windows owned by this window.
+   */
+  Vector ownedWindows = new Vector();
 
-/**
-  * @serial The state of this frame.
-  * // FIXME: What are the values here?
-  * This is package-private to avoid an accessor method.
-  */
-int state;
+  /**
+   * @serial Indicates whether or not this frame is resizable.
+   */
+  private boolean resizable = true;
 
-/**
-  * @serial The title of the frame.
-  */
-private String title = "";
+  /**
+   * @serial The state of this frame.
+   * // FIXME: What are the values here?
+   * This is package-private to avoid an accessor method.
+   */
+  int state;
+
+  /**
+   * @serial The title of the frame.
+   */
+  private String title = "";
 
   /**
    * Maximized bounds for this frame.
@@ -210,223 +224,235 @@ private String title = "";
    */
   private static transient long next_frame_number;
 
-/**
-  * Initializes a new instance of <code>Frame</code> that is not visible
-  * and has no title.
-  */
-public
-Frame()
-{
-  this("");
-  noteFrame(this);
-}
+  /**
+   * Initializes a new instance of <code>Frame</code> that is not visible
+   * and has no title.
+   */
+  public Frame()
+  {
+    this("");
+    noteFrame(this);
+  }
 
-/**
-  * Initializes a new instance of <code>Frame</code> that is not visible
-  * and has the specified title.
-  *
-  * @param title The title of this frame.
-  */
-public
-Frame(String title)
-{
-  super();
-  this.title = title;
-  // Top-level frames are initially invisible.
-  visible = false;
-  noteFrame(this);
-}
+  /**
+   * Initializes a new instance of <code>Frame</code> that is not visible
+   * and has the specified title.
+   *
+   * @param title the title of this frame
+   */
+  public Frame(String title)
+  {
+    super();
+    this.title = title;
+    // Top-level frames are initially invisible.
+    visible = false;
+    noteFrame(this);
+  }
 
-public
-Frame(GraphicsConfiguration gc)
-{
-  super(gc);
-  visible = false;
-  noteFrame(this);
-}
+  public Frame(GraphicsConfiguration gc)
+  {
+    super(gc);
+    visible = false;
+    noteFrame(this);
+  }
 
-public
-Frame(String title, GraphicsConfiguration gc)
-{
-  super(gc);
-  setTitle(title);
-  visible = false;
-  noteFrame(this);
-}
+  public Frame(String title, GraphicsConfiguration gc)
+  {
+    super(gc);
+    setTitle(title);
+    visible = false;
+    noteFrame(this);
+  }
 
-/**
-  * Returns this frame's title string.
-  *
-  * @return This frame's title string.
-  */
-public String
-getTitle()
-{
-  return(title);
-}
+  /**
+   * Returns this frame's title string.
+   *
+   * @return this frame's title string
+   */
+  public String getTitle()
+  {
+    return title;
+  }
 
-/*
- * Sets this frame's title to the specified value.
- *
- * @param title The new frame title.
- */
-public synchronized void
-setTitle(String title)
-{
-  this.title = title;
-  if (peer != null)
-    ((FramePeer) peer).setTitle(title);
-}
+  /**
+   * Sets this frame's title to the specified value.
+   *
+   * @param title the new frame title
+   */
+  public synchronized void setTitle(String title)
+  {
+    this.title = title;
+    if (peer != null)
+      ((FramePeer) peer).setTitle(title);
+  }
 
-/**
-  * Returns this frame's icon.
-  *
-  * @return This frame's icon, or <code>null</code> if this frame does not
-  * have an icon.
-  */
-public Image
-getIconImage()
-{
-  return(icon);
-}
+  /**
+   * Returns this frame's icon.
+   *
+   * @return this frame's icon, or <code>null</code> if this frame does not
+   *         have an icon
+   */
+  public Image getIconImage()
+  {
+    return icon;
+  }
 
-/**
-  * Sets this frame's icon to the specified value.
-  *
-  * @icon The new icon for this frame.
-  */
-public synchronized void
-setIconImage(Image icon)
-{
-  this.icon = icon;
-  if (peer != null)
-    ((FramePeer) peer).setIconImage(icon);
-}
+  /**
+   * Sets this frame's icon to the specified value.
+   *
+   * @icon the new icon for this frame
+   */
+  public synchronized void setIconImage(Image icon)
+  {
+    this.icon = icon;
+    if (peer != null)
+      ((FramePeer) peer).setIconImage(icon);
+  }
 
-/**
-  * Returns this frame's menu bar.
-  *
-  * @return This frame's menu bar, or <code>null</code> if this frame
-  * does not have a menu bar.
-  */
-public MenuBar
-getMenuBar()
-{
-  return(menuBar);
-}
+  /**
+   * Returns this frame's menu bar.
+   *
+   * @return this frame's menu bar, or <code>null</code> if this frame
+   *         does not have a menu bar
+   */
+  public MenuBar getMenuBar()
+  {
+    return menuBar;
+  }
 
-/**
-  * Sets this frame's menu bar.
-  *
-  * @param menuBar The new menu bar for this frame.
-  */
-public synchronized void
-setMenuBar(MenuBar menuBar)
-{
-  if (peer != null)
+  /**
+   * Sets this frame's menu bar. Removes any existing menu bar. If the
+   * given menu bar is part of another frame it will be removed from
+   * that frame.
+   *
+   * @param menuBar the new menu bar for this frame
+   */
+  public synchronized void setMenuBar(MenuBar menuBar)
   {
     if (this.menuBar != null)
-      this.menuBar.removeNotify();  
+      remove(this.menuBar);
+
+    this.menuBar = menuBar;
+    if (menuBar != null)
+      {
+	MenuContainer parent = menuBar.getParent();
+	if (parent != null)
+	  parent.remove(menuBar);
+	menuBar.setParent(this);
+
+	if (peer != null)
+	  {
+	    if (menuBar != null)
+	      menuBar.addNotify();
+	    invalidateTree();
+	    ((FramePeer) peer).setMenuBar(menuBar);
+	  }
+      }
+  }
+
+  /**
+   * Tests whether or not this frame is resizable.  This will be 
+   * <code>true</code> by default.
+   *
+   * @return <code>true</code> if this frame is resizable, <code>false</code>
+   *         otherwise
+   */
+  public boolean isResizable()
+  {
+    return resizable;
+  }
+
+  /**
+   * Sets the resizability of this frame to the specified value.
+   *
+   * @param resizable <code>true</code> to make the frame resizable,
+   * <code>false</code> to make it non-resizable
+   */
+  public synchronized void setResizable(boolean resizable)
+  {
+    this.resizable = resizable;
+    if (peer != null)
+      ((FramePeer) peer).setResizable(resizable);
+  }
+
+  /**
+   * Returns the cursor type of the cursor for this window.  This will
+   * be one of the constants in this class.
+   *
+   * @return the cursor type for this frame
+   *
+   * @deprecated Use <code>Component.getCursor()</code> instead.
+   */
+  public int getCursorType()
+  {
+    return getCursor().getType();
+  }
+
+  /**
+   * Sets the cursor for this window to the specified type.  The specified
+   * type should be one of the constants in this class.
+   *
+   * @param type the cursor type
+   *
+   * @deprecated Use <code>Component.setCursor(Cursor)</code> instead.
+   */
+  public void setCursor(int type)
+  {
+    setCursor(new Cursor(type));
+  }
+
+  /**
+   * Removes the specified menu component from this frame. If it is
+   * the current MenuBar it is removed from the frame. If it is a
+   * Popup it is removed from this component. If it is any other menu
+   * component it is ignored.
+   *
+   * @param menu the menu component to remove
+   */
+  public void remove(MenuComponent menu)
+  {
+    if (menu == menuBar)
+      {
+	if (menuBar != null)
+	  {
+	    if (peer != null)
+	      {
+		((FramePeer) peer).setMenuBar(null);
+		menuBar.removeNotify();
+	      }
+	    menuBar.setParent(null);
+	  }
+	menuBar = null;
+      }
+    else
+      super.remove(menu);
+  }
+
+  public void addNotify()
+  {
     if (menuBar != null)
       menuBar.addNotify();
-    invalidateTree ();
-    ((FramePeer) peer).setMenuBar(menuBar);
+    if (peer == null)
+      peer = getToolkit ().createFrame (this);
+
+    super.addNotify();
   }
-  this.menuBar = menuBar;
-}
 
-/**
-  * Tests whether or not this frame is resizable.  This will be 
-  * <code>true</code> by default.
-  *
-  * @return <code>true</code> if this frame is resizable, <code>false</code>
-  * otherwise.
-  */
-public boolean
-isResizable()
-{
-  return(resizable);
-}
-
-/**
-  * Sets the resizability of this frame to the specified value.
-  *
-  * @param resizable <code>true</code> to make the frame resizable,
-  * <code>false</code> to make it non-resizable.
-  */
-public synchronized void
-setResizable(boolean resizable)
-{
-  this.resizable = resizable;
-  if (peer != null)
-    ((FramePeer) peer).setResizable(resizable);
-}
-
-/**
-  * Returns the cursor type of the cursor for this window.  This will
-  * be one of the constants in this class.
-  *
-  * @return The cursor type for this frame.
-  *
-  * @deprecated Use <code>Component.getCursor()</code> instead.
-  */
-public int
-getCursorType()
-{
-  return(getCursor().getType());
-}
-
-/**
-  * Sets the cursor for this window to the specified type.  The specified
-  * type should be one of the constants in this class.
-  *
-  * @param type The cursor type.
-  *
-  * @deprecated Use <code>Component.setCursor(Cursor)</code> instead.
-  */
-public void
-setCursor(int type)
-{
-  setCursor(new Cursor(type));
-}
-
-/**
-  * Removes the specified component from this frame's menu.
-  *
-  * @param menu The menu component to remove.
-  */
-public void
-remove(MenuComponent menu)
-{
-  menuBar.remove(menu);
-}
-
-public void
-addNotify()
-{
-  if (menuBar != null)
-    menuBar.addNotify();
-  if (peer == null)
-    peer = getToolkit ().createFrame (this);
-
-  super.addNotify();
-}
-
-public void removeNotify()
-{
-  if (menuBar != null)
-    menuBar.removeNotify();
-  super.removeNotify();
-}
+  public void removeNotify()
+  {
+    if (menuBar != null)
+      menuBar.removeNotify();
+    super.removeNotify();
+  }
 
   /**
    * Returns a debugging string describing this window.
    *
-   * @return A debugging string describing this window.
+   * @return a debugging string describing this window
    */
-  protected String paramString ()
+  protected String paramString()
   {
-    String title = getTitle ();
+    String title = getTitle();
 
     String resizable = "";
     if (isResizable ())
@@ -455,17 +481,17 @@ public void removeNotify()
     return super.paramString () + ",title=" + title + resizable + state;
   }
 
-private static ArrayList weakFrames = new ArrayList();
+  private static ArrayList weakFrames = new ArrayList();
 
-private static void noteFrame(Frame f)
-{
-  weakFrames.add(new WeakReference(f));
-}
+  private static void noteFrame(Frame f)
+  {
+    weakFrames.add(new WeakReference(f));
+  }
 
-public static Frame[] getFrames()
-{
-  int n = 0;
-  synchronized (weakFrames)
+  public static Frame[] getFrames()
+  {
+    int n = 0;
+    synchronized (weakFrames)
     {
       Iterator i = weakFrames.iterator();
       while (i.hasNext())
@@ -490,32 +516,31 @@ public static Frame[] getFrames()
           return frames;
         }
     }
-}
+  }
 
-  public void setState (int state)
+  public void setState(int state)
   {
     int current_state = getExtendedState ();
 
     if (state == NORMAL
         && (current_state & ICONIFIED) != 0)
-      setExtendedState (current_state | ICONIFIED);
+      setExtendedState(current_state | ICONIFIED);
     
     if (state == ICONIFIED
         && (current_state & ~ICONIFIED) == 0)
-      setExtendedState (current_state & ~ICONIFIED);
+      setExtendedState(current_state & ~ICONIFIED);
   }
 
-  public int getState ()
+  public int getState()
   {
-    /* FIXME: State might have changed in the peer... Must check. */
-  
+    // FIXME: State might have changed in the peer... Must check.
     return (state & ICONIFIED) != 0 ? ICONIFIED : NORMAL;
   }
 
   /**
    * @since 1.4
    */
-  public void setExtendedState (int state)
+  public void setExtendedState(int state)
   {
     this.state = state;
   }
@@ -523,7 +548,7 @@ public static Frame[] getFrames()
   /**
    * @since 1.4
    */
-  public int getExtendedState ()
+  public int getExtendedState()
   {
     return state;
   }
@@ -531,7 +556,7 @@ public static Frame[] getFrames()
   /**
    * @since 1.4
    */
-  public void setMaximizedBounds (Rectangle maximizedBounds)
+  public void setMaximizedBounds(Rectangle maximizedBounds)
   {
     this.maximizedBounds = maximizedBounds;
   }
@@ -539,11 +564,11 @@ public static Frame[] getFrames()
   /**
    * Returns the maximized bounds of this frame.
    *
-   * @return the maximized rectangle, may be null.
+   * @return the maximized rectangle, may be null
    *
    * @since 1.4
    */
-  public Rectangle getMaximizedBounds ()
+  public Rectangle getMaximizedBounds()
   {
     return maximizedBounds;
   }
@@ -553,7 +578,7 @@ public static Frame[] getFrames()
    * 
    * @since 1.4
    */
-  public boolean isUndecorated ()
+  public boolean isUndecorated()
   {
     return undecorated;
   }
@@ -562,14 +587,14 @@ public static Frame[] getFrames()
    * Disables or enables decorations for this frame. This method can only be
    * called while the frame is not displayable.
    * 
-   * @exception IllegalComponentStateException If this frame is displayable.
+   * @throws IllegalComponentStateException if this frame is displayable
    * 
    * @since 1.4
    */
-  public void setUndecorated (boolean undecorated)
+  public void setUndecorated(boolean undecorated)
   {
-    if (isDisplayable ())
-      throw new IllegalComponentStateException ();
+    if (isDisplayable())
+      throw new IllegalComponentStateException();
 
     this.undecorated = undecorated;
   }
@@ -577,14 +602,14 @@ public static Frame[] getFrames()
   /**
    * Generate a unique name for this frame.
    *
-   * @return A unique name for this frame.
+   * @return a unique name for this frame
    */
-  String generateName ()
+  String generateName()
   {
-    return "frame" + getUniqueLong ();
+    return "frame" + getUniqueLong();
   }
 
-  private static synchronized long getUniqueLong ()
+  private static synchronized long getUniqueLong()
   {
     return next_frame_number++;
   }
@@ -617,10 +642,9 @@ public static Frame[] getFrames()
    */
   public AccessibleContext getAccessibleContext()
   {
-    /* Create the context if this is the first request */
+    // Create the context if this is the first request.
     if (accessibleContext == null)
       accessibleContext = new AccessibleAWTFrame();
     return accessibleContext;
   }
-
 }

@@ -1,5 +1,5 @@
 /* CancelablePrintJob.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,14 +39,29 @@ exception statement from your version. */
 package javax.print;
 
 /**
+ * <code>CancelablePrintJob</code> represents a print job which can be 
+ * canceled.
+ * <p>
+ * It is implemented by <code>DocPrintJob</code>s which support to cancel 
+ * a print job during processing. Clients need to explicitly test if a given 
+ * <code>DocPrintJob</code> object from a print service implementes this 
+ * interface and therefore supports cancelling.
+ * </p><p>
+ * Implementor of java print services should implement this interface if
+ * cancelling is supported by the underlying print system. If implemented the
+ * corresponding print job event 
+ * {@link javax.print.event.PrintJobEvent#JOB_CANCELED} should be delivered to 
+ * registered clients. Implementations have to be thread-safe.
+ * </p>
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface CancelablePrintJob extends DocPrintJob
 {
   /**
-   * Cancel print job.
+   * Cancel the print job.
    *
-   * @exception PrintException if an error occured
+   * @exception PrintException if an error during cancellation occurs.
    */
   void cancel() throws PrintException;
 }

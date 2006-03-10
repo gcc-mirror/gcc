@@ -1,3 +1,22 @@
+2006-03-09  Mark Wielaard  <mark@klomp.org>
+
+	Imported GNU Classpath 0.90
+	* scripts/makemake.tcl: Set gnu/java/awt/peer/swing to ignore.
+	* gnu/classpath/jdwp/VMFrame.java (SIZE): New constant.
+	* java/lang/VMCompiler.java: Use gnu.java.security.hash.MD5.
+	* java/lang/Math.java: New override file.
+	* java/lang/Character.java: Merged from Classpath.
+	(start, end): Now 'int's.
+	(canonicalName): New field.
+	(CANONICAL_NAME, NO_SPACES_NAME, CONSTANT_NAME): New constants.
+	(UnicodeBlock): Added argument.
+	(of): New overload.
+	(forName): New method.
+	Updated unicode blocks.
+	(sets): Updated.
+	* sources.am: Regenerated.
+	* Makefile.in: Likewise.
+
 2006-03-09  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/23495:

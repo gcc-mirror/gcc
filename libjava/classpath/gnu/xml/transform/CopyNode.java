@@ -1,5 +1,5 @@
 /* CopyNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,13 +65,9 @@ final class CopyNode
   {
     TemplateNode ret = new CopyNode(uas);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -102,44 +98,32 @@ final class CopyNode
               {
                 NamedNodeMap attrs = parent.getAttributes();
                 if (attrs != null)
-                  {
-                    attrs.setNamedItemNS(copy);
-                  }
+                  attrs.setNamedItemNS(copy);
               }
           }
         else
           {
             if (nextSibling != null)
-              {
-                parent.insertBefore(copy, nextSibling);
-              }
+              parent.insertBefore(copy, nextSibling);
             else
-              {
-                parent.appendChild(copy);
-              }
+              parent.appendChild(copy);
           }
       }
     if (uas != null)
       {
         StringTokenizer st = new StringTokenizer(uas, " ");
         while (st.hasMoreTokens())
-          {
-            addAttributeSet(stylesheet, mode, context, pos, len,
-                            copy, null, st.nextToken());
-          }
+          addAttributeSet(stylesheet, mode, context, pos, len,
+                          copy, null, st.nextToken());
       }
     if (children != null)
-      {
-        children.apply(stylesheet, mode,
-                       context, pos, len,
-                       copy, null);
-      }
+      children.apply(stylesheet, mode,
+                     context, pos, len,
+                     copy, null);
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
   
   void addAttributeSet(Stylesheet stylesheet, QName mode,
@@ -151,32 +135,31 @@ final class CopyNode
       {
         AttributeSet as = (AttributeSet) i.next();
         if (!as.name.equals(attributeSet))
-          {
-            continue;
-          }
+          continue;
         if (as.uas != null)
           {
             StringTokenizer st = new StringTokenizer(as.uas, " ");
             while (st.hasMoreTokens())
-              {
-                addAttributeSet(stylesheet, mode, context, pos, len,
-                                parent, nextSibling, st.nextToken());
-              }
+              addAttributeSet(stylesheet, mode, context, pos, len,
+                              parent, nextSibling, st.nextToken());
           }
         if (as.children != null)
-          {
-            as.children.apply(stylesheet, mode,
-                              context, pos, len,
-                              parent, nextSibling);
-          }
+          as.children.apply(stylesheet, mode,
+                            context, pos, len,
+                            parent, nextSibling);
       }
   }
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
-    buf.append('[');
-    buf.append(']');
+    StringBuffer buf = new StringBuffer("copy");
+    if (uas != null)
+      {
+        buf.append('[');
+        buf.append("uas=");
+        buf.append(uas);
+        buf.append(']');
+      }
     return buf.toString();
   }
 

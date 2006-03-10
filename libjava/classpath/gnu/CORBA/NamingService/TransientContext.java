@@ -59,7 +59,7 @@ import java.util.Map;
 
 /**
  * This class implements the transient naming service, defined by
- * {@link NamingContex}. The 'transient' means that the service does
+ * {@link NamingContext}. The 'transient' means that the service does
  * not store its state into the persistent memory. If the service is
  * restarted, the named objects must be re-registered again.
  *
@@ -72,14 +72,39 @@ public class TransientContext
   implements NamingContext, NamingContextOperations
 {
   /**
+   * Use serial version UID for interoperability.
+   */
+  private static final long serialVersionUID = 2;
+  
+  /**
    * The already named contexts.
    */
-  protected final NamingMap named_contexts = new NamingMap();
+  protected final NamingMap named_contexts;
 
   /**
    * The already named objects.
    */
-  protected final NamingMap named_objects = new NamingMap();
+  protected final NamingMap named_objects;
+  
+  /**
+   * Create the naming conetxt with default (transient) naming maps.
+   */
+  public TransientContext()
+  {
+    this(new NamingMap(), new NamingMap());
+  }
+  
+  /**
+   * Create the naming conetxt with the two provided naming maps.
+   * 
+   * @param context_map the map for contexts
+   * @param object_map the map for objectss
+   */
+  public TransientContext(NamingMap context_map, NamingMap object_map)
+  {
+    named_contexts = context_map;
+    named_objects = object_map;
+  }
 
   /**
    * Gives the object a name, valid in this context.
@@ -376,7 +401,7 @@ public class TransientContext
   /**
    * Create a binding.
    *
-   * @param entry the entry, defining the bound object.
+   * @param an_entry the entry, defining the bound object.
    * @param type the binding type.
    * @return the created binding.
    */
@@ -396,7 +421,7 @@ public class TransientContext
    * name, and pass the remainder (without the first node)
    * of the name for that context to resolve.
    *
-   * @param name the name to resolve.
+   * @param a_name the name to resolve.
    *
    * @return the resolved context
    */

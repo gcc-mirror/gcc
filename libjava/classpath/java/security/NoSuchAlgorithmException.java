@@ -1,5 +1,5 @@
 /* NoSuchAlgorithmException.java -- an algorithm was not available
-   Copyright (C) 1998, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,5 +66,27 @@ public class NoSuchAlgorithmException extends GeneralSecurityException
   public NoSuchAlgorithmException(String msg)
   {
     super(msg);
+  }
+
+  /**
+   * Create a new instance with a descriptive error message and
+   * a cause.
+   * @param s the descriptive error message
+   * @param cause the cause
+   * @since 1.5
+   */
+  public NoSuchAlgorithmException(String s, Throwable cause)
+  {
+    super(s, cause);
+  }
+
+  /**
+   * Create a new instance with a cause.
+   * @param cause the cause
+   * @since 1.5
+   */
+  public NoSuchAlgorithmException(Throwable cause)
+  {
+    super(cause);
   }
 }

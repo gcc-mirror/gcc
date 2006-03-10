@@ -37,6 +37,9 @@ set package_map(.) package
 set package_map(gnu/test) ignore
 set package_map(gnu/javax/swing/plaf/gtk) ignore
 
+# This package doesn't really work yet, and seems to trigger bug #26390
+set package_map(gnu/java/awt/peer/swing) ignore
+
 set package_map(gnu/xml) bc
 set package_map(javax/imageio) bc
 set package_map(javax/xml) bc

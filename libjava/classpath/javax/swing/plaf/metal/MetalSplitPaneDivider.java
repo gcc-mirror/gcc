@@ -42,11 +42,13 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 
 import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 
@@ -93,6 +95,12 @@ class MetalSplitPaneDivider extends BasicSplitPaneDivider
   public void paint(Graphics g)
   {
     Dimension s = getSize();
+
+    // Paint border if one exists.
+    Border border = getBorder();
+    if (border != null)
+      border.paintBorder(this, g, 0, 0, s.width, s.height);
+
     MetalUtils.fillMetalPattern(splitPane, g, 2, 2, s.width - 4, s.height - 4,
                                 light, dark);
     if (splitPane.isOneTouchExpandable())

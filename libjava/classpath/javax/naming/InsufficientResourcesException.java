@@ -1,5 +1,5 @@
 /* InsufficientResourcesException.java --
-   Copyright (C) 2000, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,8 @@ package javax.naming;
  
 public class InsufficientResourcesException extends NamingException
 {
+  private static final long serialVersionUID = 6227672693037844532L;
+
   public InsufficientResourcesException ()
   {
     super ();

@@ -1,5 +1,5 @@
 /* CertificateParsingException.java -- Certificate Parsing Exception
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.security.cert;
  *
  * @author Mark Benvenuto
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.5
 */
 public class CertificateParsingException extends CertificateException
 {
@@ -67,5 +67,27 @@ public class CertificateParsingException extends CertificateException
   public CertificateParsingException(String msg)
   {
     super(msg);
+  }
+
+  /**
+   * Create a new instance with a descriptive error message and
+   * a cause.
+   * @param s the descriptive error message
+   * @param cause the cause
+   * @since 1.5
+   */
+  public CertificateParsingException(String s, Throwable cause)
+  {
+    super(s, cause);
+  }
+
+  /**
+   * Create a new instance with a cause.
+   * @param cause the cause
+   * @since 1.5
+   */
+  public CertificateParsingException(Throwable cause)
+  {
+    super(cause);
   }
 }

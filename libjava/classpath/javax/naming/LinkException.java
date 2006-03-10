@@ -1,5 +1,5 @@
 /* LinkException.java --
-   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,6 +46,8 @@ package javax.naming;
 
 public class LinkException extends NamingException
 {
+  private static final long serialVersionUID = - 7967662604076777712L;
+
   // Serialized fields.
   protected Name linkResolvedName;
   protected Object linkResolvedObj;

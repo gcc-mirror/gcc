@@ -866,7 +866,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
 
   /* This class resizes popup menu and repaints popup menu appropriately if one
    of item's action has changed */
-  protected class ActionChangeListener implements PropertyChangeListener
+  private class ActionChangeListener implements PropertyChangeListener
   {
     public void propertyChange(PropertyChangeEvent evt)
     {

@@ -1,5 +1,5 @@
 /* GtkImage.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -327,6 +327,24 @@ public class GtkImage extends Image
     observers = null;
     offScreen = false;
     props = new Hashtable();
+  }
+
+  // The singleton GtkImage that is returned on errors by GtkToolkit.
+  private static GtkImage errorImage;
+
+  /**
+   * Returns an empty GtkImage with the errorLoading flag set.
+   * Called from GtkToolKit when some error occured, but an image needs
+   * to be returned anyway.
+   */
+  static synchronized GtkImage getErrorImage()
+  {
+    if (errorImage == null)
+      {
+	errorImage = new GtkImage();
+	errorImage.errorLoading = true;
+      }
+    return errorImage;
   }
 
   /**

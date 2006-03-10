@@ -67,7 +67,8 @@ libjavalang_la_DEPENDENCIES = $(wildcard \
 	$(top_builddir)/native/fdlibm/*.lo) \
 	$(top_builddir)/native/jni/classpath/jcl.lo
 am_libjavalang_la_OBJECTS = java_lang_VMSystem.lo java_lang_VMFloat.lo \
-	java_lang_VMDouble.lo java_lang_Math.lo java_lang_VMProcess.lo
+	java_lang_VMDouble.lo java_lang_VMMath.lo \
+	java_lang_VMProcess.lo
 libjavalang_la_OBJECTS = $(am_libjavalang_la_OBJECTS)
 libjavalangreflect_la_LIBADD =
 am_libjavalangreflect_la_OBJECTS = java_lang_reflect_Array.lo
@@ -106,6 +107,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLASSPATH_INCLUDES = @CLASSPATH_INCLUDES@
 CLASSPATH_MODULE = @CLASSPATH_MODULE@
+COLLECTIONS_PREFIX = @COLLECTIONS_PREFIX@
 CP = @CP@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -113,6 +115,8 @@ CREATE_ALSA_LIBRARIES_FALSE = @CREATE_ALSA_LIBRARIES_FALSE@
 CREATE_ALSA_LIBRARIES_TRUE = @CREATE_ALSA_LIBRARIES_TRUE@
 CREATE_API_DOCS_FALSE = @CREATE_API_DOCS_FALSE@
 CREATE_API_DOCS_TRUE = @CREATE_API_DOCS_TRUE@
+CREATE_COLLECTIONS_FALSE = @CREATE_COLLECTIONS_FALSE@
+CREATE_COLLECTIONS_TRUE = @CREATE_COLLECTIONS_TRUE@
 CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
@@ -143,6 +147,7 @@ EGREP = @EGREP@
 ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
+FASTJAR = @FASTJAR@
 FIND = @FIND@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
@@ -154,6 +159,8 @@ FOUND_JIKES_FALSE = @FOUND_JIKES_FALSE@
 FOUND_JIKES_TRUE = @FOUND_JIKES_TRUE@
 FOUND_KJC_FALSE = @FOUND_KJC_FALSE@
 FOUND_KJC_TRUE = @FOUND_KJC_TRUE@
+FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
+FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
 GJDOC = @GJDOC@
@@ -204,6 +211,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
@@ -285,7 +293,7 @@ nativelib_LTLIBRARIES = libjavalang.la libjavalangreflect.la
 libjavalang_la_SOURCES = java_lang_VMSystem.c \
 			 java_lang_VMFloat.c \
 			 java_lang_VMDouble.c \
-			 java_lang_Math.c \
+			 java_lang_VMMath.c \
 			 java_lang_VMProcess.c
 
 libjavalang_la_LIBADD = $(wildcard $(top_builddir)/native/fdlibm/*.lo) \
@@ -366,9 +374,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_lang_Math.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_lang_VMDouble.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_lang_VMFloat.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_lang_VMMath.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_lang_VMProcess.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_lang_VMSystem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_lang_reflect_Array.Plo@am__quote@

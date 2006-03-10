@@ -50,6 +50,7 @@ exception statement from your version. */
 /* Exception Classes */
 #define BIND_EXCEPTION "java/net/BindException"
 #define IO_EXCEPTION "java/io/IOException"
+#define CONNECT_EXCEPTION "java/net/ConnectException"
 #define SOCKET_EXCEPTION "java/net/SocketException"
 #define UNKNOWN_HOST_EXCEPTION "java/net/UnknownHostException"
 

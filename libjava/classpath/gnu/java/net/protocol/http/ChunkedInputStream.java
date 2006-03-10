@@ -1,5 +1,5 @@
 /* ChunkedInputStream.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,17 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ProtocolException;
+
+
+//
+// Note that we rely on the implemtation of skip() in the super class
+// (InputStream) calling our read methods to account for chunk headers
+// while skipping.
+//
+
 
 /**
  * Input stream wrapper for the "chunked" transfer-coding.
@@ -49,17 +56,28 @@ import java.net.ProtocolException;
  * @author Chris Burdess (dog@gnu.org)
  */
 public class ChunkedInputStream
-  extends FilterInputStream
+  extends InputStream
 {
 
   private static final byte CR = 0x0d;
   private static final byte LF = 0x0a;
 
-  int size;
-  int count;
-  boolean meta;
-  boolean eof;
   Headers headers;
+
+  /** The underlying stream. */
+  private InputStream in;
+
+  /** Size of the chunk we're reading.  */
+  int size;
+  /** Number of bytes we've read in this chunk.  */
+  int count;
+  /**
+   * True when we should read meta-information, false when we should
+   * read data.
+   */
+  boolean meta;
+  /** True when we've hit EOF.  */
+  boolean eof;
 
   /**
    * Constructor.
@@ -68,7 +86,7 @@ public class ChunkedInputStream
    */
   public ChunkedInputStream(InputStream in, Headers headers)
   {
-    super(in);
+    this.in = in;
     this.headers = headers;
     size = -1;
     count = 0;
@@ -84,21 +102,10 @@ public class ChunkedInputStream
       {
         return -1;
       }
-    int ret = (int) buf[0];
-    if (ret < 0)
-      {
-        ret += 0x100;
-      }
-    return ret;
+    return 0xff & buf[0];
   }
 
-  public int read(byte[] buffer)
-    throws IOException
-  {
-    return read(buffer, 0, buffer.length);
-  }
-
-  public int read(byte[] buffer, int offset, int length)
+  public synchronized int read(byte[] buffer, int offset, int length)
     throws IOException
   {
     if (eof)
@@ -120,7 +127,18 @@ public class ChunkedInputStream
               }
             else if (c == 0x0a && last == 0x0d) // CRLF
               {
-                size = Integer.parseInt(buf.toString(), 16);
+                try
+                  {
+                    size = Integer.parseInt(buf.toString(), 16);
+                  }
+                catch (NumberFormatException nfe)
+                  {
+                    IOException ioe = new IOException("Bad chunk header");
+                    ioe.initCause(nfe);
+                    // Unrecoverable.  Don't try to read more.
+                    in.close();
+                    throw ioe;
+                  }
                 break;
               }
             else if (!seenSemi && c >= 0x30)
@@ -142,17 +160,22 @@ public class ChunkedInputStream
       }
     else
       {
-        int diff = length - offset;
-        int max = size - count;
-        max = (diff < max) ? diff : max;
-        int len = (max > 0) ? in.read(buffer, offset, max) : 0;
+	int canRead = Math.min(size - count, length);
+	int len = in.read(buffer, offset, canRead);
+	if (len == -1)
+	  {
+	    // This is an error condition but it isn't clear what we
+	    // should do with it.
+	    eof = true;
+	    return -1;
+	  }
         count += len;
         if (count == size)
           {
             // Read CRLF
             int c1 = in.read();
             int c2 = in.read();
-            if (c1 == -1 && c2 == -1)
+            if (c1 == -1 || c2 == -1)
               {
                 // EOF before CRLF: bad, but ignore
                 eof = true;
@@ -166,6 +189,37 @@ public class ChunkedInputStream
           }
         return len;
       }
+  }
+
+  /**
+   * This method returns the number of bytes that can be read from
+   * this stream before a read might block.  Even if the underlying
+   * InputStream has data available past the end of the current chunk,
+   * we have no way of knowing how large the next chunk header will
+   * be. So we cannot report available data past the current chunk.
+   *
+   * @return The number of bytes that can be read before a read might
+   * block
+   *
+   * @exception IOException If an error occurs
+   */
+  public int available() throws IOException
+  {
+    if (meta)
+      return 0;
+    
+    return Math.min(in.available(), size - count);
+  }
+
+  /**
+   * This method closes the ChunkedInputStream by closing the underlying
+   * InputStream.
+   * 
+   * @exception IOException If an error occurs
+   */
+  public void close() throws IOException
+  {
+    in.close();
   }
   
 }

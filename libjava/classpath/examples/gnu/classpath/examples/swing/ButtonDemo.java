@@ -1,5 +1,5 @@
 /* ButtonDemo.java -- An example showing various buttons in Swing.
-   Copyright (C) 2005,  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath examples.
 
@@ -46,6 +46,8 @@ public class ButtonDemo
   implements ActionListener 
 {
  
+  private JPanel content;
+
   private JCheckBox buttonState;  
   private JButton button1;
   private JButton button2;
@@ -77,6 +79,19 @@ public class ButtonDemo
   {
     super(title);
     JPanel content = createContent();
+    // initFrameContent() is only called (from main) when running this app 
+    // standalone
+  }
+  
+  /**
+   * When the demo is run independently, the frame is displayed, so we should
+   * initialise the content panel (including the demo content and a close 
+   * button).  But when the demo is run as part of the Swing activity board,
+   * only the demo content panel is used, the frame itself is never displayed,
+   * so we can avoid this step.
+   */
+  public void initFrameContent() 
+  {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
@@ -95,13 +110,16 @@ public class ButtonDemo
    */       
   JPanel createContent() 
   {
-    JPanel content = new JPanel(new BorderLayout());
-    JPanel panel = new JPanel(new GridLayout(4, 1));
-    panel.add(createButtonPanel());
-    panel.add(createTogglePanel());
-    panel.add(createCheckBoxPanel());
-    panel.add(createRadioPanel());
-    content.add(panel);
+    if (content == null)
+      {
+        content = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new GridLayout(4, 1));
+        panel.add(createButtonPanel());
+        panel.add(createTogglePanel());
+        panel.add(createCheckBoxPanel());
+        panel.add(createRadioPanel());
+        content.add(panel);
+      }
     return content;        
   }
     
@@ -277,6 +295,7 @@ public class ButtonDemo
   public static void main(String[] args) 
   {
     ButtonDemo app = new ButtonDemo("Button Demo");
+    app.initFrameContent();
     app.pack();
     app.setVisible(true);
   }

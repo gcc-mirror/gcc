@@ -1,5 +1,5 @@
 /* BasicStroke.java -- 
-   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,38 +41,89 @@ package java.awt;
 import java.util.Arrays;
 
 /**
- * STUB CLASS ONLY
+ * A general purpose {@link Stroke} implementation that can represent a wide
+ * variety of line styles for use with subclasses of {@link Graphics2D}.
+ * <p>
+ * The line cap and join styles can be set using the options illustrated 
+ * here:
+ * <p>
+ * <img src="doc-files/capjoin.png" width="350" height="180"
+ * alt="Illustration of line cap and join styles" />
+ * <p>
+ * A dash array can be used to specify lines with alternating opaque and
+ * transparent sections.
  */
 public class BasicStroke implements Stroke
 {
+  /** 
+   * Indicates a mitered line join style. See the class overview for an
+   * illustration.
+   */
   public static final int JOIN_MITER = 0;
+  
+  /** 
+   * Indicates a rounded line join style. See the class overview for an
+   * illustration.
+   */
   public static final int JOIN_ROUND = 1;
+  
+  /** 
+   * Indicates a bevelled line join style. See the class overview for an
+   * illustration.
+   */
   public static final int JOIN_BEVEL = 2;
 
+  /** 
+   * Indicates a flat line cap style. See the class overview for an
+   * illustration.
+   */
   public static final int CAP_BUTT = 0;
+  
+  /** 
+   * Indicates a rounded line cap style. See the class overview for an
+   * illustration.
+   */
   public static final int CAP_ROUND = 1;
+  
+  /** 
+   * Indicates a square line cap style. See the class overview for an
+   * illustration.
+   */
   public static final int CAP_SQUARE = 2;
 
+  /** The stroke width. */
   private final float width;
+  
+  /** The line cap style. */
   private final int cap;
+  
+  /** The line join style. */
   private final int join;
+  
+  /** The miter limit. */
   private final float limit;
+  
+  /** The dash array. */
   private final float[] dash;
+  
+  /** The dash phase. */
   private final float phase;
 
   /**
-   * Creates a basic stroke.
+   * Creates a new <code>BasicStroke</code> instance with the given attributes.
    *
-   * @param width May not be negative .
-   * @param cap May be either CAP_BUTT, CAP_ROUND or CAP_SQUARE.
-   * @param join May be either JOIN_ROUND, JOIN_BEVEL, or JOIN_MITER.
-   * @param miterlimit the limit to trim the miter join. The miterlimit must be
+   * @param width  the line width (>= 0.0f).
+   * @param cap  the line cap style (one of {@link #CAP_BUTT}, 
+   *             {@link #CAP_ROUND} or {@link #CAP_SQUARE}).
+   * @param join  the line join style (one of {@link #JOIN_ROUND}, 
+   *              {@link #JOIN_BEVEL}, or {@link #JOIN_MITER}).
+   * @param miterlimit  the limit to trim the miter join. The miterlimit must be
    * greater than or equal to 1.0f.
    * @param dash The array representing the dashing pattern. There must be at
    * least one non-zero entry.
    * @param dashPhase is negative and dash is not null.
    *
-   * @exception IllegalArgumentException If one input parameter doesn't meet
+   * @throws IllegalArgumentException If one input parameter doesn't meet
    * its needs.
    */
   public BasicStroke(float width, int cap, int join, float miterlimit,
@@ -122,15 +173,17 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Creates a basic stroke.
+   * Creates a new <code>BasicStroke</code> instance with the given attributes.
    *
-   * @param width The width of the BasicStroke. May not be negative .
-   * @param cap May be either CAP_BUTT, CAP_ROUND or CAP_SQUARE.
-   * @param join May be either JOIN_ROUND, JOIN_BEVEL, or JOIN_MITER.
+   * @param width  the line width (>= 0.0f).
+   * @param cap  the line cap style (one of {@link #CAP_BUTT}, 
+   *             {@link #CAP_ROUND} or {@link #CAP_SQUARE}).
+   * @param join  the line join style (one of {@link #JOIN_ROUND}, 
+   *              {@link #JOIN_BEVEL}, or {@link #JOIN_MITER}).
    * @param miterlimit the limit to trim the miter join. The miterlimit must be
    * greater than or equal to 1.0f.
    * 
-   * @exception IllegalArgumentException If one input parameter doesn't meet
+   * @throws IllegalArgumentException If one input parameter doesn't meet
    * its needs.
    */
   public BasicStroke(float width, int cap, int join, float miterlimit)
@@ -139,15 +192,17 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Creates a basic stroke.
+   * Creates a new <code>BasicStroke</code> instance with the given attributes.
+   * The miter limit defaults to <code>10.0</code>.
    *
-   * @param width The width of the BasicStroke. May not be nehative.
-   * @param cap May be either CAP_BUTT, CAP_ROUND or CAP_SQUARE.
-   * @param join May be either JOIN_ROUND, JOIN_BEVEL, or JOIN_MITER.
+   * @param width  the line width (>= 0.0f).
+   * @param cap  the line cap style (one of {@link #CAP_BUTT}, 
+   *             {@link #CAP_ROUND} or {@link #CAP_SQUARE}).
+   * @param join  the line join style (one of {@link #JOIN_ROUND}, 
+   *              {@link #JOIN_BEVEL}, or {@link #JOIN_MITER}).
    * 
-   * @exception IllegalArgumentException If one input parameter doesn't meet
+   * @throws IllegalArgumentException If one input parameter doesn't meet
    * its needs.
-   * @exception IllegalArgumentException FIXME
    */
   public BasicStroke(float width, int cap, int join)
   {
@@ -155,11 +210,17 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Creates a basic stroke.
-   *
-   * @param width The width of the BasicStroke.
+   * Creates a new <code>BasicStroke</code> instance with the given line
+   * width.  The default values are:
+   * <ul>
+   * <li>line cap style: {@link #CAP_SQUARE};</li>
+   * <li>line join style: {@link #JOIN_MITER};</li>
+   * <li>miter limit: <code>10.0f</code>.
+   * </ul>
    * 
-   * @exception IllegalArgumentException If width is negative.
+   * @param width  the line width (>= 0.0f).
+   * 
+   * @throws IllegalArgumentException If <code>width</code> is negative.
    */
   public BasicStroke(float width)
   {
@@ -167,43 +228,92 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Creates a basic stroke.
+   * Creates a new <code>BasicStroke</code> instance.  The default values are:
+   * <ul>
+   * <li>line width: <code>1.0f</code>;</li>
+   * <li>line cap style: {@link #CAP_SQUARE};</li>
+   * <li>line join style: {@link #JOIN_MITER};</li>
+   * <li>miter limit: <code>10.0f</code>.
+   * </ul>
    */
   public BasicStroke()
   {
     this(1, CAP_SQUARE, JOIN_MITER, 10, null, 0);
   }
   
+  /**
+   * Creates a shape representing the stroked outline of the given shape.
+   * THIS METHOD IS NOT YET IMPLEMENTED.
+   * 
+   * @param s  the shape.
+   */
   public Shape createStrokedShape(Shape s)
   {
+    // FIXME: Implement this
     throw new Error("not implemented");
   }
 
+  /**
+   * Returns the line width.
+   * 
+   * @return The line width.
+   */
   public float getLineWidth()
   {
     return width;
   }
 
+  /**
+   * Returns a code indicating the line cap style (one of {@link #CAP_BUTT},
+   * {@link #CAP_ROUND}, {@link #CAP_SQUARE}).
+   * 
+   * @return A code indicating the line cap style.
+   */
   public int getEndCap()
   {
     return cap;
   }
 
+  /**
+   * Returns a code indicating the line join style (one of {@link #JOIN_BEVEL},
+   * {@link #JOIN_MITER} or {@link #JOIN_ROUND}).
+   * 
+   * @return A code indicating the line join style.
+   */
   public int getLineJoin()
   {
     return join;
   }
 
+  /**
+   * Returns the miter limit.
+   * 
+   * @return The miter limit.
+   */
   public float getMiterLimit()
   {
     return limit;
   }
 
+  /**
+   * Returns the dash array, which defines the length of alternate opaque and 
+   * transparent sections in lines drawn with this stroke.  If 
+   * <code>null</code>, a continuous line will be drawn.
+   * 
+   * @return The dash array (possibly <code>null</code>).
+   */
   public float[] getDashArray()
   {
     return dash;
   }
 
+  /**
+   * Returns the dash phase for the stroke.  This is the offset from the start
+   * of a path at which the pattern defined by {@link #getDashArray()} is 
+   * rendered.
+   * 
+   * @return The dash phase.
+   */
   public float getDashPhase()
   {
     return phase;
@@ -215,6 +325,8 @@ public class BasicStroke implements Stroke
    * (converted to <code>int</code> first with
    * <code>Float.floatToIntBits()</code> if the value is a
    * <code>float</code>).
+   * 
+   * @return The hash code.
    */
   public int hashCode()
   {
@@ -233,9 +345,18 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Returns true if the given Object is an instance of BasicStroke
-   * and the width, cap, join, limit, dash array and phase are all
-   * equal.
+   * Compares this <code>BasicStroke</code> for equality with an arbitrary 
+   * object.  This method returns <code>true</code> if and only if:
+   * <ul>
+   * <li><code>o</code> is an instanceof <code>BasicStroke</code>;<li>
+   * <li>this object has the same width, line cap style, line join style,
+   * miter limit, dash array and dash phase as <code>o</code>.</li>
+   * </ul>
+   * 
+   * @param o  the object (<code>null</code> permitted).
+   * 
+   * @return <code>true</code> if this stroke is equal to <code>o</code> and
+   *         <code>false</code> otherwise.
    */
   public boolean equals(Object o)
   {
@@ -245,4 +366,4 @@ public class BasicStroke implements Stroke
     return width == s.width && cap == s.cap && join == s.join
       && limit == s.limit && Arrays.equals(dash, s.dash) && phase == s.phase;
   }
-} // class BasicStroke
+} 

@@ -1,5 +1,5 @@
 /* Reference.java --
-   Copyright (C) 2000, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,8 @@ import java.util.Vector;
  */
 public class Reference implements Cloneable, Serializable
 {
+  private static final long serialVersionUID = - 1673475790065791735L;
+
   public Reference (String className)
   {
     this.className = className;

@@ -1,5 +1,6 @@
 /* GtkComponentPeer.java -- Implements ComponentPeer with GTK
-   Copyright (C) 1998, 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,10 +47,10 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Insets;
@@ -86,8 +87,6 @@ public class GtkComponentPeer extends GtkGenericPeer
   Insets insets;
 
   boolean isInRepaint;
-
-  static final Timer repaintTimer = new Timer (true);
 
   /* this isEnabled differs from Component.isEnabled, in that it
      knows if a parent is disabled.  In that case Component.isEnabled 
@@ -146,12 +145,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 
     Component parent = awtComponent.getParent ();
 
-    // Only set our parent on the GTK side if our parent on the AWT
-    // side is not showing.  Otherwise the gtk peer will be shown
-    // before we've had a chance to position and size it properly.
-    if (awtComponent instanceof Window
-        || (parent != null && ! parent.isShowing ()))
-      setParentAndBounds ();
+    setParentAndBounds ();
 
     setNativeEventMask ();
 
@@ -202,11 +196,6 @@ public class GtkComponentPeer extends GtkGenericPeer
   void setComponentBounds ()
   {
     Rectangle bounds = awtComponent.getBounds ();
-
-    if (bounds.x == 0 && bounds.y == 0
-        && bounds.width == 0 && bounds.height == 0)
-      return;
-
     setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
   }
 
@@ -303,29 +292,29 @@ public class GtkComponentPeer extends GtkGenericPeer
       {
       case PaintEvent.PAINT:
       case PaintEvent.UPDATE:
-        {
-          try 
-            {
-              Graphics g = getGraphics ();
-          
-              // Some peers like GtkFileDialogPeer are repainted by Gtk itself
-              if (g == null)
-                break;
+      {
+        try
+          {
+            Graphics g = getGraphics();
 
-              g.setClip (((PaintEvent) event).getUpdateRect());
+            if (!awtComponent.isShowing()  || awtComponent.getWidth() < 1 
+                || awtComponent.getHeight() < 1 || g == null)
+              break; 
 
-              if (id == PaintEvent.PAINT)
-                awtComponent.paint (g);
-              else
-                awtComponent.update (g);
+            g.setClip(((PaintEvent) event).getUpdateRect());
 
-              g.dispose ();
-            }
-          catch (InternalError e)
-            {
-              System.err.println (e);
-            }
-        }
+            if (id == PaintEvent.PAINT)
+              awtComponent.paint(g);
+            else
+              awtComponent.update(g);
+                
+            g.dispose();
+          }
+        catch (InternalError e)
+          {
+            System.err.println(e);
+          }
+      }
         break;
       case KeyEvent.KEY_PRESSED:
         ke = (KeyEvent) event;
@@ -383,25 +372,42 @@ public class GtkComponentPeer extends GtkGenericPeer
     if (x == 0 && y == 0 && width == 0 && height == 0)
       return;
 
-    repaintTimer.schedule(new RepaintTimerTask(x, y, width, height), tm);
+    if (tm <= 0)
+      q().postEvent(new PaintEvent(awtComponent, PaintEvent.UPDATE,
+				   new Rectangle(x, y, width, height)));
+    else
+      RepaintTimerTask.schedule(tm, x, y, width, height, awtComponent);
   }
 
-  private class RepaintTimerTask extends TimerTask
+  /**
+   * Used for scheduling delayed paint updates on the event queue.
+   */
+  private static class RepaintTimerTask extends TimerTask
   {
-    private int x, y, width, height;
+    private static final Timer repaintTimer = new Timer(true);
 
-    RepaintTimerTask(int x, int y, int width, int height)
+    private int x, y, width, height;
+    private Component awtComponent;
+
+    RepaintTimerTask(Component c, int x, int y, int width, int height)
     {
       this.x = x;
       this.y = y;
       this.width = width;
       this.height = height;
+      this.awtComponent = c;
     }
 
     public void run()
     {
       q().postEvent (new PaintEvent (awtComponent, PaintEvent.UPDATE,
                                      new Rectangle (x, y, width, height)));
+    }
+
+    static void schedule(long tm, int x, int y, int width, int height,
+			 Component c)
+    {
+      repaintTimer.schedule(new RepaintTimerTask(c, x, y, width, height), tm);
     }
   }
 
@@ -429,8 +435,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     int new_y = y;
 
     Component parent = awtComponent.getParent ();
-    Component next_parent;
-
+    
     // Heavyweight components that are children of one or more
     // lightweight containers have to be handled specially.  Because
     // calls to GLightweightPeer.setBounds do nothing, GTK has no
@@ -441,33 +446,19 @@ public class GtkComponentPeer extends GtkGenericPeer
     // so we need to continue adding offsets until we reach a
     // container whose position GTK knows -- that is, the first
     // non-lightweight.
-    boolean lightweightChild = false;
-    Insets i;
-    while (parent.isLightweight ())
+    Insets i;    
+    while (parent.isLightweight())
       {
-	lightweightChild = true;
-
-        next_parent = parent.getParent ();
-
-	i = ((Container) parent).getInsets ();
-
-        if (next_parent instanceof Window)
-          {
-            new_x += i.left;
-            new_y += i.top;
-          }
-        else
-          {
-            new_x += parent.getX () + i.left;
-            new_y += parent.getY () + i.top;
-          }
-
-	parent = next_parent;
+        i = ((Container) parent).getInsets();
+        
+        new_x += parent.getX() + i.left;
+        new_y += parent.getY() + i.top;
+        
+        parent = parent.getParent();
       }
-
     // We only need to convert from Java to GTK coordinates if we're
     // placing a heavyweight component in a Window.
-    if (parent instanceof Window && !lightweightChild)
+    if (parent instanceof Window)
       {
         GtkWindowPeer peer = (GtkWindowPeer) parent.getPeer ();
         // important: we want the window peer's insets here, not the
@@ -479,12 +470,17 @@ public class GtkComponentPeer extends GtkGenericPeer
         int menuBarHeight = 0;
         if (peer instanceof GtkFramePeer)
           menuBarHeight = ((GtkFramePeer) peer).getMenuBarHeight ();
-
-        new_x = x - insets.left;
-        new_y = y - insets.top + menuBarHeight;
+        
+        new_x -= insets.left;
+        new_y -= insets.top;
+        new_y += menuBarHeight;
       }
 
     setNativeBounds (new_x, new_y, width, height);
+
+    // If the height or width were (or are now) smaller than zero
+    // then we want to adjust the visibility.
+    setVisible(awtComponent.isVisible());
   }
 
   void setCursor ()
@@ -535,6 +531,13 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void setVisible (boolean b)
   {
+    // Only really set visible when component is bigger than zero pixels.
+    if (b)
+      {
+        Rectangle bounds = awtComponent.getBounds();
+	b = (bounds.width > 0) && (bounds.height > 0);
+      }
+
     if (Thread.currentThread() == GtkToolkit.mainThread)
       setVisibleNativeUnlocked (b);
     else
@@ -571,6 +574,8 @@ public class GtkComponentPeer extends GtkGenericPeer
     KeyEvent keyEvent = new KeyEvent (awtComponent, id, when, mods,
                                       keyCode, keyChar, keyLocation);
 
+    EventQueue q = q();
+
     // Also post a KEY_TYPED event if keyEvent is a key press that
     // doesn't represent an action or modifier key.
     if (keyEvent.getID () == KeyEvent.KEY_PRESSED
@@ -579,15 +584,17 @@ public class GtkComponentPeer extends GtkGenericPeer
             && keyCode != KeyEvent.VK_CONTROL
             && keyCode != KeyEvent.VK_ALT))
       {
-        synchronized (q)
-          {
-            q().postEvent (keyEvent);
-            q().postEvent (new KeyEvent (awtComponent, KeyEvent.KEY_TYPED, when, mods,
-                                        KeyEvent.VK_UNDEFINED, keyChar, keyLocation));
+        synchronized(q)
+	  {
+	    q.postEvent(keyEvent);
+	    keyEvent = new KeyEvent(awtComponent, KeyEvent.KEY_TYPED, when,
+				    mods, KeyEvent.VK_UNDEFINED, keyChar,
+				    keyLocation);
+	    q.postEvent(keyEvent);
           }
       }
     else
-      q().postEvent (keyEvent);
+      q.postEvent(keyEvent);
   }
 
   protected void postFocusEvent (int id, boolean temporary)

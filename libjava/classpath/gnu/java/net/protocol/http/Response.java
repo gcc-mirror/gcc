@@ -1,5 +1,5 @@
 /* Response.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -187,6 +187,28 @@ public class Response
   public Date getDateHeader(String name)
   {
     return headers.getDateValue(name);
+  }
+  
+  /**
+   * Tests whether this response indicates a redirection.
+   * 
+   * @return <code>true</code> if, <code>false</code> otherwise.
+   */
+  public boolean isRedirect()
+  {
+    return (code != 304 && getCodeClass() == 3);
+  }
+  
+  /**
+   * Tests whether this response indicates an error.
+   * Errors are the response codes <code>4xx</code> - Client error and
+   * <code>5xx</code> - Server error.
+   * 
+   * @return <code>true</code> if, <code>false</code> otherwise.
+   */
+  public boolean isError()
+  {
+    return (getCodeClass() == 4 || getCodeClass() == 5);
   }
 
   /**

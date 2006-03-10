@@ -117,7 +117,7 @@ public class CardLayout implements LayoutManager2, Serializable
   /**
    * Cause the first component in the container to be displayed.
    *
-   * @param parent The parent container
+   * @param parent The parent container, not <code>null</code>.
    */
   public void first (Container parent)
   {
@@ -181,7 +181,7 @@ public class CardLayout implements LayoutManager2, Serializable
   /**
    * Cause the last component in the container to be displayed.
    * 
-   * @param parent The parent container
+   * @param parent The parent container, not <code>null</code>.
    */
   public void last (Container parent)
   {
@@ -247,7 +247,7 @@ public class CardLayout implements LayoutManager2, Serializable
    * this current card is the  last one in the deck, the first
    * component is displayed.
    * 
-   * @param parent The parent container
+   * @param parent The parent container, not <code>null</code>.
    */
   public void next (Container parent)
   {
@@ -271,7 +271,7 @@ public class CardLayout implements LayoutManager2, Serializable
    * If this current card is the first one in the deck, the last
    * component is displayed.
    * 
-   * @param parent The parent container
+   * @param parent The parent container, not <code>null</code>.
    */
   public void previous (Container parent)
   {
@@ -321,13 +321,19 @@ public class CardLayout implements LayoutManager2, Serializable
 
   /**
    * Cause the named component to be shown.  If the component name is
-   * unknown, this method does nothing.
+   * unknown or <code>null</code>, this method does nothing.
    * 
-   * @param parent The parent container
-   * @param name The name of the component to show
+   * @param parent The parent container, not <code>null</code>.
+   * @param name The name of the component to show 
    */
   public void show (Container parent, String name)
   {
+    if (name == null)
+      return;
+   
+    if (parent.getLayout() != this)
+      throw new IllegalArgumentException("parent's layout is not this CardLayout");
+    
     Object target = tab.get (name);
     if (target != null)
       {
@@ -362,9 +368,15 @@ public class CardLayout implements LayoutManager2, Serializable
    * 
    * @param parent The parent container
    * @param what The type of goto: FIRST, LAST, NEXT or PREV
+   * 
+   * @throws IllegalArgumentException if parent has not this 
+   * CardLayout set as its layout.
    */
   private void gotoComponent (Container parent, int what)
   {
+    if (parent.getLayout() != this)
+      throw new IllegalArgumentException("parent's layout is not this CardLayout");
+    
     synchronized (parent.getTreeLock ())
       {
 	int num = parent.ncomponents;

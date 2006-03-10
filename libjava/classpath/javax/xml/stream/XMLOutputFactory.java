@@ -1,5 +1,5 @@
 /* XMLOutputFactory.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Properties;
-//import javax.xml.transform.Result;
+import javax.xml.transform.Result;
 
 /**
  * Factory for obtaining XML stream and event writers for various kinds of
@@ -77,8 +77,8 @@ public abstract class XMLOutputFactory
    * If true, the writer will create a namespace declaration for any
    * attribute that doesn't have a namespace declaration in scope.
    */
-  public static final java.lang.String IS_PREFIX_DEFAULTING = 
-    "javax.xml.stream.isPrefixDefaulting";
+  public static final java.lang.String IS_REPAIRING_NAMESPACES = 
+    "javax.xml.stream.isRepairingNamespaces";
 
   protected XMLOutputFactory()
   {
@@ -219,16 +219,16 @@ public abstract class XMLOutputFactory
    * @exception UnsupportedOperationException if this method is not
    * supported
    */
-  //public abstract XMLStreamWriter createXMLStreamWriter(Result result)
-  //  throws XMLStreamException;
+  public abstract XMLStreamWriter createXMLStreamWriter(Result result)
+    throws XMLStreamException;
   
   /**
    * Creates a new event writer.
    * @exception UnsupportedOperationException if this method is not
    * supported
    */
-  //public abstract XMLEventWriter createXMLEventWriter(Result result)
-  //  throws XMLStreamException;
+  public abstract XMLEventWriter createXMLEventWriter(Result result)
+    throws XMLStreamException;
 
   /**
    * Creates a new event writer.
@@ -264,23 +264,9 @@ public abstract class XMLOutputFactory
     throws IllegalArgumentException;
 
   /**
-   * Indicates whether writers created by this factory will perform prefix
-   * defaulting.
-   * @see #IS_PREFIX_DEFAULTING
-   */
-  public abstract boolean isPrefixDefaulting();
-
-  /**
    * Indicates whether the specified property is supported.
    */
   public abstract boolean isPropertySupported(String name);
 
-  /**
-   * Sets whether writers created by this factory will perform prefix
-   * defaulting.
-   * @see #IS_PREFIX_DEFAULTING
-   */
-  public abstract void setPrefixDefaulting(boolean value);
-  
 }
 

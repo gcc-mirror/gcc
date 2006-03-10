@@ -67,7 +67,7 @@ public class JCheckBox extends JToggleButton implements Accessible
     /**
      * Creates a new instance of <code>AccessibleJCheckBox</code>.
      */
-    public AccessibleJCheckBox()
+    protected AccessibleJCheckBox()
     {
       // Nothing to do here.
     }

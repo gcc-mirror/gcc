@@ -1,5 +1,5 @@
 /* LangFunction.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -91,9 +91,15 @@ final class LangFunction
 
   String getLang(Node node)
   {
-    if (node.getNodeType() == Node.ELEMENT_NODE)
+    while (node != null)
       {
-        return ((Element) node).getAttribute("xml:lang");
+        if (node.getNodeType() == Node.ELEMENT_NODE)
+          {
+            String lang = ((Element) node).getAttribute("xml:lang");
+            if (lang != null)
+              return lang;
+          }
+        node = node.getParentNode();
       }
     return null;
   }

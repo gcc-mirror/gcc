@@ -1,6 +1,6 @@
 /* VirtualMachineCommandSet.java -- class to implement the VirtualMachine
    Command Set
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
  
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMFrame;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
@@ -298,12 +299,11 @@ public class VirtualMachineCommandSet
   private void executeIDsizes(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    ObjectId oid = new ObjectId();
-    os.writeInt(oid.size()); // fieldId
-    os.writeInt(oid.size()); // methodId
-    os.writeInt(oid.size()); // objectId
-    os.writeInt(new ReferenceTypeId((byte) 0x00).size()); // referenceTypeId
-    os.writeInt(oid.size()); // frameId
+    os.writeInt(ObjectId.SIZE); // fieldId FIXME
+    os.writeInt(ObjectId.SIZE); // methodId FIXME
+    os.writeInt(ObjectId.SIZE); // objectId
+    os.writeInt(ReferenceTypeId.SIZE); // referenceTypeId
+    os.writeInt(VMFrame.SIZE); // frameId
   }
 
   private void executeSuspend(ByteBuffer bb, DataOutputStream os)

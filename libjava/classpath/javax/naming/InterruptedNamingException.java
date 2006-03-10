@@ -1,5 +1,5 @@
 /* InterruptedNamingException.java --
-   Copyright (C) 2000, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,8 @@ package javax.naming;
  
 public class InterruptedNamingException extends NamingException
 {
+  private static final long serialVersionUID = 6404516648893194728L;
+
   public InterruptedNamingException ()
   {
     super ();

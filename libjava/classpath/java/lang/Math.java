@@ -1,5 +1,5 @@
-/* java.lang.Math -- common mathematical functions, native allowed
-   Copyright (C) 1998, 2001, 2002, 2003 Free Software Foundation, Inc.
+/* java.lang.Math -- common mathematical functions, native allowed (VMMath)
+   Copyright (C) 1998, 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,23 +52,31 @@ import java.util.Random;
  * @author Paul Fisher
  * @author John Keiser
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.0
  */
 public final class Math
 {
+
+  // FIXME - This is here because we need to load the "javalang" system
+  // library somewhere late in the bootstrap cycle. We cannot do this
+  // from VMSystem or VMRuntime since those are used to actually load
+  // the library. This is mainly here because historically Math was
+  // late enough in the bootstrap cycle to start using System after it
+  // was initialized (called from the java.util classes).
+  static
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("javalang");
+      }
+  }
+
   /**
    * Math is non-instantiable
    */
   private Math()
   {
-  }
-
-  static
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-	System.loadLibrary("javalang");
-      }
   }
 
   /**
@@ -298,7 +306,10 @@ public final class Math
    * @param a the angle (in radians)
    * @return sin(a)
    */
-  public static native double sin(double a);
+  public static double sin(double a)
+  {
+    return VMMath.sin(a);
+  }
 
   /**
    * The trigonometric function <em>cos</em>. The cosine of NaN or infinity is
@@ -307,7 +318,10 @@ public final class Math
    * @param a the angle (in radians)
    * @return cos(a)
    */
-  public static native double cos(double a);
+  public static double cos(double a)
+  {
+    return VMMath.cos(a);
+  }
 
   /**
    * The trigonometric function <em>tan</em>. The tangent of NaN or infinity
@@ -317,7 +331,10 @@ public final class Math
    * @param a the angle (in radians)
    * @return tan(a)
    */
-  public static native double tan(double a);
+  public static double tan(double a)
+  {
+    return VMMath.tan(a);
+  }
 
   /**
    * The trigonometric function <em>arcsin</em>. The range of angles returned
@@ -328,7 +345,10 @@ public final class Math
    * @param a the sin to turn back into an angle
    * @return arcsin(a)
    */
-  public static native double asin(double a);
+  public static double asin(double a)
+  {
+    return VMMath.asin(a);
+  }
 
   /**
    * The trigonometric function <em>arccos</em>. The range of angles returned
@@ -339,7 +359,10 @@ public final class Math
    * @param a the cos to turn back into an angle
    * @return arccos(a)
    */
-  public static native double acos(double a);
+  public static double acos(double a)
+  {
+    return VMMath.acos(a);
+  }
 
   /**
    * The trigonometric function <em>arcsin</em>. The range of angles returned
@@ -351,7 +374,10 @@ public final class Math
    * @return arcsin(a)
    * @see #atan2(double, double)
    */
-  public static native double atan(double a);
+  public static double atan(double a)
+  {
+    return VMMath.atan(a);
+  }
 
   /**
    * A special version of the trigonometric function <em>arctan</em>, for
@@ -400,7 +426,10 @@ public final class Math
    * @return <em>theta</em> in the conversion of (x, y) to (r, theta)
    * @see #atan(double)
    */
-  public static native double atan2(double y, double x);
+  public static double atan2(double y, double x)
+  {
+    return VMMath.atan2(y,x);
+  }
 
   /**
    * Take <em>e</em><sup>a</sup>.  The opposite of <code>log()</code>. If the
@@ -414,7 +443,10 @@ public final class Math
    * @see #log(double)
    * @see #pow(double, double)
    */
-  public static native double exp(double a);
+  public static double exp(double a)
+  {
+    return VMMath.exp(a);
+  }
 
   /**
    * Take ln(a) (the natural log).  The opposite of <code>exp()</code>. If the
@@ -430,7 +462,10 @@ public final class Math
    * @return the natural log of <code>a</code>
    * @see #exp(double)
    */
-  public static native double log(double a);
+  public static double log(double a)
+  {
+    return VMMath.log(a);
+  }
 
   /**
    * Take a square root. If the argument is NaN or negative, the result is
@@ -438,13 +473,18 @@ public final class Math
    * infinity; and if the result is either zero, the result is the same.
    * This is accurate within the limits of doubles.
    *
-   * <p>For other roots, use pow(a, 1 / rootNumber).
+   * <p>For a cube root, use <code>cbrt</code>.  For other roots, use
+   * <code>pow(a, 1 / rootNumber)</code>.</p>
    *
    * @param a the numeric argument
    * @return the square root of the argument
+   * @see #cbrt(double)
    * @see #pow(double, double)
    */
-  public static native double sqrt(double a);
+  public static double sqrt(double a)
+  {
+    return VMMath.sqrt(a);
+  }
 
   /**
    * Raise a number to a power. Special cases:<ul>
@@ -514,7 +554,10 @@ public final class Math
    * @param b the power to raise it to
    * @return a<sup>b</sup>
    */
-  public static native double pow(double a, double b);
+  public static double pow(double a, double b)
+  {
+    return VMMath.pow(a,b);
+  }
 
   /**
    * Get the IEEE 754 floating point remainder on two numbers. This is the
@@ -530,7 +573,10 @@ public final class Math
    * @return the IEEE 754-defined floating point remainder of x/y
    * @see #rint(double)
    */
-  public static native double IEEEremainder(double x, double y);
+  public static double IEEEremainder(double x, double y)
+  {
+    return VMMath.IEEEremainder(x,y);
+  }
 
   /**
    * Take the nearest integer that is that is greater than or equal to the
@@ -541,7 +587,10 @@ public final class Math
    * @param a the value to act upon
    * @return the nearest integer &gt;= <code>a</code>
    */
-  public static native double ceil(double a);
+  public static double ceil(double a)
+  {
+    return VMMath.ceil(a);
+  }
 
   /**
    * Take the nearest integer that is that is less than or equal to the
@@ -551,7 +600,10 @@ public final class Math
    * @param a the value to act upon
    * @return the nearest integer &lt;= <code>a</code>
    */
-  public static native double floor(double a);
+  public static double floor(double a)
+  {
+    return VMMath.floor(a);
+  }
 
   /**
    * Take the nearest integer to the argument.  If it is exactly between
@@ -561,7 +613,10 @@ public final class Math
    * @param a the value to act upon
    * @return the nearest integer to <code>a</code>
    */
-  public static native double rint(double a);
+  public static double rint(double a)
+  {
+    return VMMath.rint(a);
+  }
 
   /**
    * Take the nearest integer to the argument.  This is equivalent to
@@ -647,4 +702,250 @@ public final class Math
   {
     return (rads * 180) / PI;
   }
+
+  /**
+   * <p>
+   * Take a cube root. If the argument is <code>NaN</code>, an infinity or
+   * zero, then the original value is returned.  The returned result is
+   * within 1 ulp of the exact result.  For a finite value, <code>x</code>,
+   * the cube root of <code>-x</code> is equal to the negation of the cube root
+   * of <code>x</code>. 
+   * </p>
+   * <p>
+   * For a square root, use <code>sqrt</code>.  For other roots, use
+   * <code>pow(a, 1 / rootNumber)</code>.
+   * </p>
+   *
+   * @param a the numeric argument
+   * @return the cube root of the argument
+   * @see #sqrt(double)
+   * @see #pow(double, double)
+   * @since 1.5
+   */
+  public static double cbrt(double a)
+  {
+    return VMMath.cbrt(a);
+  }
+
+  /**
+   * <p>
+   * Returns the hyperbolic cosine of the given value.  For a value,
+   * <code>x</code>, the hyperbolic cosine is <code>(e<sup>x</sup> + 
+   * e<sup>-x</sup>)/2</code>
+   * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
+   * result is within 2.5 ulps of the exact result.
+   * </p>
+   * <p>
+   * If the supplied value is <code>NaN</code>, then the original value is
+   * returned.  For either infinity, positive infinity is returned.
+   * The hyperbolic cosine of zero is 1.0.
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return the hyperbolic cosine of <code>a</code>.
+   * @since 1.5
+   */
+  public static double cosh(double a)
+  {
+    return VMMath.cosh(a);
+  }
+
+  /**
+   * <p>
+   * Returns <code>e<sup>a</sup> - 1.  For values close to 0, the
+   * result of <code>expm1(a) + 1</code> tend to be much closer to the
+   * exact result than simply <code>exp(x)</code>.  The result is within
+   * 1 ulp of the exact result, and results are semi-monotonic.  For finite
+   * inputs, the returned value is greater than or equal to -1.0.  Once
+   * a result enters within half a ulp of this limit, the limit is returned.
+   * </p>   
+   * <p>
+   * For <code>NaN</code>, positive infinity and zero, the original value
+   * is returned.  Negative infinity returns a result of -1.0 (the limit).
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return <code>e<sup>a</sup> - 1</code>
+   * @since 1.5
+   */
+  public static double expm1(double a)
+  {
+    return VMMath.expm1(a);
+  }
+
+  /**
+   * <p>
+   * Returns the hypotenuse, <code>a<sup>2</sup> + b<sup>2</sup></code>,
+   * without intermediate overflow or underflow.  The returned result is
+   * within 1 ulp of the exact result.  If one parameter is held constant,
+   * then the result in the other parameter is semi-monotonic.
+   * </p>
+   * <p>
+   * If either of the arguments is an infinity, then the returned result
+   * is positive infinity.  Otherwise, if either argument is <code>NaN</code>,
+   * then <code>NaN</code> is returned.
+   * </p>
+   * 
+   * @param a the first parameter.
+   * @param b the second parameter.
+   * @return the hypotenuse matching the supplied parameters.
+   * @since 1.5
+   */
+  public static double hypot(double a, double b)
+  {
+    return VMMath.hypot(a,b);
+  }
+
+  /**
+   * <p>
+   * Returns the base 10 logarithm of the supplied value.  The returned
+   * result is within 1 ulp of the exact result, and the results are
+   * semi-monotonic.
+   * </p>
+   * <p>
+   * Arguments of either <code>NaN</code> or less than zero return
+   * <code>NaN</code>.  An argument of positive infinity returns positive
+   * infinity.  Negative infinity is returned if either positive or negative
+   * zero is supplied.  Where the argument is the result of
+   * <code>10<sup>n</sup</code>, then <code>n</code> is returned.
+   * </p>
+   *
+   * @param a the numeric argument.
+   * @return the base 10 logarithm of <code>a</code>.
+   * @since 1.5
+   */
+  public static double log10(double a)
+  {
+    return VMMath.log10(a);
+  }
+
+  /**
+   * <p>
+   * Returns the natural logarithm resulting from the sum of the argument,
+   * <code>a</code> and 1.  For values close to 0, the
+   * result of <code>log1p(a)</code> tend to be much closer to the
+   * exact result than simply <code>log(1.0+a)</code>.  The returned
+   * result is within 1 ulp of the exact result, and the results are
+   * semi-monotonic.
+   * </p>
+   * <p>
+   * Arguments of either <code>NaN</code> or less than -1 return
+   * <code>NaN</code>.  An argument of positive infinity or zero
+   * returns the original argument.  Negative infinity is returned from an
+   * argument of -1.
+   * </p>
+   *
+   * @param a the numeric argument.
+   * @return the natural logarithm of <code>a</code> + 1.
+   * @since 1.5
+   */
+  public static double log1p(double a)
+  {
+    return VMMath.log1p(a);
+  }
+
+  /**
+   * <p>
+   * Returns the sign of the argument as follows:
+   * </p>
+   * <ul>
+   * <li>If <code>a</code> is greater than zero, the result is 1.0.</li>
+   * <li>If <code>a</code> is less than zero, the result is -1.0.</li>
+   * <li>If <code>a</code> is <code>NaN</code>, the result is <code>NaN</code>.
+   * <li>If <code>a</code> is positive or negative zero, the result is the
+   * same.</li>
+   * </ul>
+   * 
+   * @param a the numeric argument.
+   * @return the sign of the argument.
+   * @since 1.5.
+   */
+  public static double signum(double a)
+  {
+    if (Double.isNaN(a))
+      return Double.NaN;
+    if (a > 0)
+      return 1.0;
+    if (a < 0)
+      return -1.0;
+    return a;
+  }
+
+  /**
+   * <p>
+   * Returns the sign of the argument as follows:
+   * </p>
+   * <ul>
+   * <li>If <code>a</code> is greater than zero, the result is 1.0f.</li>
+   * <li>If <code>a</code> is less than zero, the result is -1.0f.</li>
+   * <li>If <code>a</code> is <code>NaN</code>, the result is <code>NaN</code>.
+   * <li>If <code>a</code> is positive or negative zero, the result is the
+   * same.</li>
+   * </ul>
+   * 
+   * @param a the numeric argument.
+   * @return the sign of the argument.
+   * @since 1.5.
+   */
+  public static float signum(float a)
+  {
+    if (Float.isNaN(a))
+      return Float.NaN;
+    if (a > 0)
+      return 1.0f;
+    if (a < 0)
+      return -1.0f;
+    return a;
+  }
+
+  /**
+   * <p>
+   * Returns the hyperbolic sine of the given value.  For a value,
+   * <code>x</code>, the hyperbolic sine is <code>(e<sup>x</sup> - 
+   * e<sup>-x</sup>)/2</code>
+   * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
+   * result is within 2.5 ulps of the exact result.
+   * </p>
+   * <p>
+   * If the supplied value is <code>NaN</code>, an infinity or a zero, then the
+   * original value is returned.
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return the hyperbolic sine of <code>a</code>.
+   * @since 1.5
+   */
+  public static double sinh(double a)
+  {
+    return VMMath.sinh(a);
+  }
+
+  /**
+   * <p>
+   * Returns the hyperbolic tangent of the given value.  For a value,
+   * <code>x</code>, the hyperbolic tangent is <code>(e<sup>x</sup> - 
+   * e<sup>-x</sup>)/(e<sup>x</sup> + e<sup>-x</sup>)</code>
+   * (i.e. <code>sinh(a)/cosh(a)</code>)
+   * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
+   * result is within 2.5 ulps of the exact result.  The absolute value
+   * of the exact result is always less than 1.  Computed results are thus
+   * less than or equal to 1 for finite arguments, with results within
+   * half a ulp of either positive or negative 1 returning the appropriate
+   * limit value (i.e. as if the argument was an infinity).
+   * </p>
+   * <p>
+   * If the supplied value is <code>NaN</code> or zero, then the original
+   * value is returned.  Positive infinity returns +1.0 and negative infinity
+   * returns -1.0.
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return the hyperbolic tangent of <code>a</code>.
+   * @since 1.5
+   */
+  public static double tanh(double a)
+  {
+    return VMMath.tanh(a);
+  }
+
 }

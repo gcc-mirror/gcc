@@ -104,9 +104,11 @@ public class StateEdit
    * System (RCS).  This certainly should not be part of the API
    * specification. But in order to be API-compatible with
    * Sun&#x2019;s reference implementation, GNU Classpath also has to
-   * provide this field. However, we do not try to match its value.
+   * provide this field and match its value. The value used here has
+   * been in every JDK release at least from 1.2 to 1.5.
    */
-  protected static final String RCSID = "";
+  protected static final String RCSID = "$" +
+    "Id: StateEdit.java,v 1.6 1997/10/01 20:05:51 sandipc Exp $";
 
 
   /**

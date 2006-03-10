@@ -168,6 +168,8 @@ public class XMLEncoder extends Encoder
             // an erroneous state to the ScanEngine without behaving different
             // to the JDK.            
             scanEngine.revoke();
+            
+            return;
           }
         
         writeObject(value);

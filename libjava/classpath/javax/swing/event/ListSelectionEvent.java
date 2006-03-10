@@ -1,5 +1,5 @@
 /* ListSelectionEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,90 +37,99 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventObject;
 
+import javax.swing.ListSelectionModel;
+
 /**
- * ListSelectionEvent
+ * An event that indicates a change to a list selection, including the source
+ * of the change (a {@link ListSelectionModel}) and the range of items in the
+ * list that have potentially changed their selection status.
+ * 
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class ListSelectionEvent extends EventObject {
+public class ListSelectionEvent extends EventObject 
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /** 
+   * The index of the first list item in the range of items that has 
+   * potentially had its selection status modified. 
+   */
+  private int firstIndex = 0;
 
-	/**
-	 * firstIndex
-	 */
-	private int		firstIndex	= 0;
-	
-	/**
-	 * lastIndex
-	 */
-	private int		lastIndex	= 0;
-	
-	/**
-	 * isAdjusting
-	 */
-	private boolean	isAdjusting	= false;
+  /** 
+   * The index of the last list item in the range of items that has 
+   * potentially had its selection status modified. 
+   */
+  private int lastIndex = 0;
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /** A flag that indicates that this event is one in a series of events. */
+  private boolean isAdjusting = false;
 
-	/**
-	 * Constructor ListSelectionEvent
-	 * @param source Source
-	 * @param firstIndex First index
-	 * @param lastIndex Last index
-	 * @param isAdjusting Is Adjusting?
-	 */
-	public ListSelectionEvent(Object source, int firstIndex,
-								int lastIndex, boolean isAdjusting) {
-		super(source);
-		this.firstIndex		= firstIndex;
-		this.lastIndex		= lastIndex;
-		this.isAdjusting	= isAdjusting;
-	} // ListSelectionEvent()
+  /**
+   * Creates a new <code>ListSelectionEvent</code>.
+   * 
+   * @param source  the event source (<code>null</code> not permitted).
+   * @param firstIndex  the first index.
+   * @param lastIndex  the last index.
+   * @param isAdjusting  a flag indicating that this event is one in a series 
+   *                     of events updating a selection.
+   * 
+   * @throws IllegalArgumentException if <code>source</code> is 
+   *         <code>null</code>.
+   */
+  public ListSelectionEvent(Object source, int firstIndex,
+      int lastIndex, boolean isAdjusting) 
+  {
+    super(source);
+    this.firstIndex = firstIndex;
+    this.lastIndex = lastIndex;
+    this.isAdjusting = isAdjusting;
+  }
+ 
+  /**
+   * Returns the first index.
+   * 
+   * @return The first index.
+   */
+  public int getFirstIndex() 
+  {
+    return firstIndex;
+  }
 
+  /**
+   * Returns the last index.
+   * 
+   * @return The last index.
+   */
+  public int getLastIndex() 
+  {
+    return lastIndex;
+  }
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Returns the flag that indicates that this event is one in a series of 
+   * events updating a selection.
+   * 
+   * @return A boolean.
+   */
+  public boolean getValueIsAdjusting() 
+  {
+    return isAdjusting;
+  }
 
-	/**
-	 * getFirstIndex
-	 * @returns firstIndex
-	 */
-	public int getFirstIndex() {
-		return firstIndex;
-	} // getFirstIndex()
+  /**
+   * Returns a string representation of the event, typically used for debugging
+   * purposes.
+   * 
+   * @return A string representation of the event.
+   */
+  public String toString() 
+  {
+    return this.getClass().toString() + "[ source=" + source.toString() 
+        + " firstIndex= " + firstIndex + " lastIndex= " + lastIndex 
+        + " isAdjusting= " + isAdjusting + " ]";
+  }
 
-	/**
-	 * getLastIndex
-	 * @returns lastIndex
-	 */
-	public int getLastIndex() {
-		return lastIndex;
-	} // getLastIndex()
-
-	/**
-	 * getValueIsAdjusting
-	 * @returns isAdjusting
-	 */
-	public boolean getValueIsAdjusting() {
-		return isAdjusting;
-	} // getValueIsAdjusting()
-
-	/**
-	 * String representation
-	 * @returns String representation
-	 */
-	public String toString() {
-		return null; // TODO
-	} // toString()
-
-
-} // ListSelectionEvent
+}

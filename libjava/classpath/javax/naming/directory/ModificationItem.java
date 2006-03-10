@@ -1,5 +1,5 @@
 /* ModificationItem.java --
-   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,7 @@ import java.io.Serializable;
 
 public class ModificationItem implements Serializable
 {
+  private static final long serialVersionUID = 7573258562534746850L;
   // Serialized fields.
   private int mod_op;
   private Attribute attr;

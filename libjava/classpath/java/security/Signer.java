@@ -38,35 +38,29 @@ exception statement from your version. */
 package java.security;
 
 /**
- * <p>This class is used to represent an {@link Identity} that can also
- * digitally sign data.</p>
- *
- * <p>The management of a signer's private keys is an important and sensitive
- * issue that should be handled by subclasses as appropriate to their intended
- * use.</p>
+ * <code>Signer</code> is a subclass of {@link Identity}. It is used to store a
+ * digital signature key with an <i>Identity</i>.
  *
  * @author Mark Benvenuto (ivymccough@worldnet.att.net)
- * @deprecated This class is no longer used. Its functionality has been replaced
- * by <code>java.security.KeyStore</code>, the <code>java.security.cert</code>
- * package, and <code>java.security.Principal</code>.
+ * @deprecated Replaced by <code>java.security.KeyStore</code>, the
+ * <code>java.security.cert</code> package, and <code>java.security.Principal</code>.
  */
 public abstract class Signer extends Identity
 {
   private static final long serialVersionUID = -1763464102261361480L;
   private PrivateKey privateKey = null;
 
-  /**
-   * Creates a <code>Signer</code>. This constructor should only be used for
-   * serialization.
-   */
+  /** Trivial constructor for serialization purposes. */
   protected Signer()
   {
   }
 
   /**
-   * Creates a <code>Signer</code> with the specified identity name.
-   *
-   * @param name the identity name.
+   * Constructs a new instance of <code>Signer</code> with the specified
+   * identity name.
+   * 
+   * @param name
+   *          the name of the identity to use.
    */
   public Signer(String name)
   {
@@ -74,12 +68,16 @@ public abstract class Signer extends Identity
   }
 
   /**
-   * Creates a <code>Signer</code> with the specified identity name and scope.
-   *
-   * @param name the identity name.
-   * @param scope the scope of the identity.
-   * @throws KeyManagementException if there is already an identity with the
-   * same name in the scope.
+   * Constructs a new instance of <code>Signer</code> with the specified
+   * identity name and {@link IdentityScope}.
+   * 
+   * @param name
+   *          the name of the the identity to use.
+   * @param scope
+   *          the {@link IdentityScope} to use.
+   * @throws KeyManagementException
+   *           if a duplicate identity <code>name</code> exists within
+   *           <code>scope</code>.
    */
   public Signer(String name, IdentityScope scope) throws KeyManagementException
   {
@@ -87,18 +85,12 @@ public abstract class Signer extends Identity
   }
 
   /**
-   * <p>Returns this signer's private key.</p>
-   *
-   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
-   * </code> method is called with <code>"getSignerPrivateKey"</code> as its
-   * argument to see if it's ok to return the private key.</p>
-   *
-   * @return this signer's private key, or <code>null</code> if the private key
-   * has not yet been set.
-   * @throws SecurityException if a security manager exists and its
-   * <code>checkSecurityAccess()</code> method doesn't allow returning the
-   * private key.
-   * @see SecurityManager#checkSecurityAccess(String)
+   * Returns the private key of this <code>Signer</code>.
+   * 
+   * @returns the private key of this <code>Signer</code>.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed which disallows this
+   *           operation.
    */
   public PrivateKey getPrivateKey()
   {
@@ -110,20 +102,17 @@ public abstract class Signer extends Identity
   }
 
   /**
-   * <p>Sets the key pair (public key and private key) for this signer.</p>
-   *
-   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
-   * </code> method is called with <code>"setSignerKeyPair"</code> as its
-   * argument to see if it's ok to set the key pair.</p>
-   *
-   * @param pair an initialized key pair.
-   * @throws InvalidParameterException if the key pair is not properly
-   * initialized.
-   * @throws KeyException if the key pair cannot be set for any other reason.
-   * @throws SecurityException if a security manager exists and its
-   * <code>checkSecurityAccess()</code> method doesn't allow setting the key
-   * pair.
-   * @see SecurityManager#checkSecurityAccess(String)
+   * Specifies the {@link KeyPair} associated with this <code>Signer</code>.
+   * 
+   * @param pair
+   *          the {@link KeyPair} to use.
+   * @throws InvalidParameterException
+   *           if the key-pair is invalid.
+   * @throws KeyException
+   *           if any another key-related error occurs.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed which disallows this
+   *           operation.
    */
   public final void setKeyPair(KeyPair pair)
     throws InvalidParameterException, KeyException
@@ -151,12 +140,7 @@ public abstract class Signer extends Identity
       throw new InvalidParameterException();
   }
 
-  /**
-   * Returns a string of information about the signer.
-   *
-   * @return a string of information about the signer.
-   * @see SecurityManager#checkSecurityAccess(String)
-   */
+  /** @returns a string representing this <code>Signer</code>. */
   public String toString()
   {
     return (getName() + ": " + privateKey);

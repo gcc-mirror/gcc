@@ -58,11 +58,11 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.CellRendererPane;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.LookAndFeel;
@@ -74,8 +74,8 @@ import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.InputMapUIResource;
 import javax.swing.plaf.TableUI;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -193,10 +193,31 @@ public class BasicTableUI extends TableUI
             colModel.setSelectionInterval(lo_col, hi_col);
         }
     }
-
-    public void mouseClicked(MouseEvent e) 
+    
+    /**
+     * For the double click, start the cell editor.
+     */
+    public void mouseClicked(MouseEvent e)
     {
-      // TODO: What should be done here, if anything?
+      Point p = e.getPoint();
+      int row = table.rowAtPoint(p);
+      int col = table.columnAtPoint(p);
+      if (table.isCellEditable(row, col))
+        {
+          // If the cell editor is the default editor, we request the
+          // number of the required clicks from it. Otherwise,
+          // require two clicks (double click).
+          TableCellEditor editor = table.getCellEditor(row, col);
+          if (editor instanceof DefaultCellEditor)
+            {
+              DefaultCellEditor ce = (DefaultCellEditor) editor;
+              if (e.getClickCount() < ce.getClickCountToStart())
+                return;
+            }
+          else if (e.getClickCount() < 2)
+            return;
+          table.editCellAt(row, col);
+        }
     }
 
     public void mouseDragged(MouseEvent e) 
@@ -354,7 +375,8 @@ public class BasicTableUI extends TableUI
       maxTotalColumnWidth += table.getColumnModel().getColumn(i).getMaxWidth();
     if (maxTotalColumnWidth == 0 || table.getRowCount() == 0)
       return null;
-    return new Dimension(maxTotalColumnWidth, table.getRowCount()*table.getRowHeight());
+    return new Dimension(maxTotalColumnWidth, table.getRowCount()*
+                         (table.getRowHeight()+table.getRowMargin()));
   }
 
   /**
@@ -380,7 +402,7 @@ public class BasicTableUI extends TableUI
   public Dimension getPreferredSize(JComponent comp) 
   {
     int width = table.getColumnModel().getTotalColumnWidth();
-    int height = table.getRowCount() * table.getRowHeight();
+    int height = table.getRowCount() * (table.getRowHeight()+table.getRowMargin());
     return new Dimension(width, height);
   }
 
@@ -854,6 +876,10 @@ public class BasicTableUI extends TableUI
           rowModel.setAnchorSelectionIndex(rowLead);
           colModel.setAnchorSelectionIndex(colLead);
         }
+      else if (command.equals("stopEditing"))
+        {
+          table.editingStopped(new ChangeEvent(command));
+        }
       else 
         {
           // If we're here that means we bound this TableAction class
@@ -1185,30 +1211,17 @@ public class BasicTableUI extends TableUI
    * system beginning at <code>(0,0)</code> in the upper left corner of the
    * table
    * @param rend A cell renderer to paint with
-   * @param data The data to provide to the cell renderer
-   * @param rowLead The lead selection for the rows of the table.
-   * @param colLead The lead selection for the columns of the table.
    */
   void paintCell(Graphics g, int row, int col, Rectangle bounds,
-                 TableCellRenderer rend, TableModel data,
-                 int rowLead, int colLead)
+                 TableCellRenderer rend)
   {
     Component comp = table.prepareRenderer(rend, row, col);
     rendererPane.paintComponent(g, comp, table, bounds);
-
-    // FIXME: this is manual painting of the Caret, why doesn't the 
-    // JTextField take care of this itself?
-    if (comp instanceof JTextField)
-      {
-        Rectangle oldClip = g.getClipBounds();
-        g.translate(bounds.x, bounds.y);
-        g.clipRect(0, 0, bounds.width, bounds.height);
-        ((JTextField)comp).getCaret().paint(g);
-        g.translate(-bounds.x, -bounds.y);
-        g.setClip(oldClip);
-      }
   }
   
+  /**
+   * Paint the associated table.
+   */
   public void paint(Graphics gfx, JComponent ignored) 
   {
     int ncols = table.getColumnCount();
@@ -1217,59 +1230,72 @@ public class BasicTableUI extends TableUI
       return;
 
     Rectangle clip = gfx.getClipBounds();
-    TableColumnModel cols = table.getColumnModel();
 
-    int height = table.getRowHeight();
-    int x0 = 0, y0 = 0;
-    int x = x0;
-    int y = y0;
+    // Determine the range of cells that are within the clip bounds.
+    Point p1 = new Point(clip.x, clip.y);
+    int c0 = table.columnAtPoint(p1);
+    if (c0 == -1)
+      c0 = 0;
+    int r0 = table.rowAtPoint(p1);
+    if (r0 == -1)
+      r0 = 0;
+    Point p2 = new Point(clip.x + clip.width, clip.y + clip.height);
+    int cn = table.columnAtPoint(p2);
+    if (cn == -1)
+      cn = table.getColumnCount() - 1;
+    int rn = table.rowAtPoint(p2);
+    if (rn == -1)
+      rn = table.getRowCount() - 1;
 
-    Dimension gap = table.getIntercellSpacing();
-    int ymax = clip.y + clip.height;
-    int xmax = clip.x + clip.width;
-
-    // paint the cell contents
-    for (int c = 0; c < ncols && x < xmax; ++c)
+    TableColumnModel cmodel = table.getColumnModel();
+    int [] widths = new int[cn+1];
+    for (int i = c0; i <=cn ; i++)
       {
-        y = y0;
-        TableColumn col = cols.getColumn(c);
-        int width = col.getWidth();
-        int halfGapWidth = gap.width / 2;
-        int halfGapHeight = gap.height / 2;
-        for (int r = 0; r < nrows && y < ymax; ++r)
-          {
-            Rectangle bounds = new Rectangle(x + halfGapWidth,
-                                             y + halfGapHeight + 1,
-                                             width - gap.width + 1,
-                                             height - gap.height);
-            if (bounds.intersects(clip))
-              {           
-                paintCell(gfx, r, c, bounds, table.getCellRenderer(r, c),
-                          table.getModel(),
-                          table.getSelectionModel().getLeadSelectionIndex(),
-                          table.getColumnModel().getSelectionModel().getLeadSelectionIndex());
-              }
-            y += height;
-          }
-        x += width;
+        widths[i] = cmodel.getColumn(i).getWidth();
       }
-
-    // tighten up the x and y max bounds
-    ymax = y;
-    xmax = x;
-
+    
+    Rectangle bounds = table.getCellRect(r0, c0, false);
+    bounds.height = table.getRowHeight()+table.getRowMargin();
+    
+    // The left boundary of the area being repainted.
+    int left = bounds.x;
+    
+    // The top boundary of the area being repainted.
+    int top = bounds.y;
+    
+    // The bottom boundary of the area being repainted.
+    int bottom;
+    
+    // The cell height.
+    int height = bounds.height;
+    
+    // paint the cell contents
     Color grid = table.getGridColor();    
+    for (int r = r0; r <= rn; ++r)
+      {
+        for (int c = c0; c <= cn; ++c)
+          {
+            bounds.width = widths[c];
+            paintCell(gfx, r, c, bounds, table.getCellRenderer(r, c));
+            bounds.x += widths[c];
+          }
+        bounds.y += height;
+        bounds.x = left;
+      }
+    
+    bottom = bounds.y;
 
     // paint vertical grid lines
     if (grid != null && table.getShowVerticalLines())
       {    
-        x = x0;
         Color save = gfx.getColor();
         gfx.setColor(grid);
-        for (int c = 0; c < ncols && x < xmax; ++c)
+        int x = left;
+        
+        for (int c = c0; c <= cn; ++c)
           {
-            x += cols.getColumn(c).getWidth();
-            gfx.drawLine(x, y0, x, ymax);
+            gfx.drawLine(x, top, x, bottom);
+            x += widths[c];
           }
         gfx.setColor(save);
       }
@@ -1277,13 +1303,13 @@ public class BasicTableUI extends TableUI
     // paint horizontal grid lines    
     if (grid != null && table.getShowHorizontalLines())
       {    
-        y = y0;
         Color save = gfx.getColor();
         gfx.setColor(grid);
-        for (int r = 0; r < nrows && y < ymax; ++r)
+        int y = top;
+        for (int r = r0; r <= rn; ++r)
           {
+            gfx.drawLine(left, y, p2.x, y);
             y += height;
-            gfx.drawLine(x0, y, xmax, y);
           }
         gfx.setColor(save);
       }

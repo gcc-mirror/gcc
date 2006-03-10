@@ -104,6 +104,9 @@ public class XMLStreamWriterImpl
   private NamespaceSupport namespaces;
   private int count = 0;
 
+  private boolean xml11;
+  private boolean hasXML11RestrictedChars;
+
   /**
    * Constructor.
    * @see #writer
@@ -145,6 +148,9 @@ public class XMLStreamWriterImpl
   {
     try
       {
+        if (!isName(localName))
+          throw new IllegalArgumentException("illegal Name: " + localName);
+
         endStartElement();
         namespaces.pushContext();
         
@@ -167,6 +173,11 @@ public class XMLStreamWriterImpl
   {
     try
       {
+        if (namespaceURI != null && !isURI(namespaceURI))
+          throw new IllegalArgumentException("illegal URI: " + namespaceURI);
+        if (!isName(localName))
+          throw new IllegalArgumentException("illegal Name: " + localName);
+
         endStartElement();
         namespaces.pushContext();
         
@@ -190,7 +201,7 @@ public class XMLStreamWriterImpl
         inStartElement = true;
         if (!isDeclared)
           {
-            writeNamespace(prefix, namespaceURI);
+            writeNamespaceImpl(prefix, namespaceURI);
           }
         
         elements.addLast(new String[] { prefix, localName });
@@ -229,6 +240,13 @@ public class XMLStreamWriterImpl
   {
     try
       {
+        if (namespaceURI != null && !isURI(namespaceURI))
+          throw new IllegalArgumentException("illegal URI: " + namespaceURI);
+        if (prefix != null && !isNCName(prefix))
+          throw new IllegalArgumentException("illegal NCName: " + prefix);
+        if (!isNCName(localName))
+          throw new IllegalArgumentException("illegal NCName: " + localName);
+
         endStartElement();
         namespaces.pushContext();
         
@@ -243,7 +261,7 @@ public class XMLStreamWriterImpl
         writer.write(localName);
         if (prefixDefaulting && !isCurrent)
           {
-            writeNamespace(prefix, namespaceURI);
+            writeNamespaceImpl(prefix, namespaceURI);
           }
         
         elements.addLast(new String[] { prefix, localName });
@@ -343,11 +361,19 @@ public class XMLStreamWriterImpl
       throw new IllegalStateException();
     try
       {
+        if (!isName(localName))
+          throw new IllegalArgumentException("illegal Name: " + localName);
+        if (!isChars(value))
+          throw new IllegalArgumentException("illegal character: " + value);
+
         writer.write(' ');
         writer.write(localName);
         writer.write('=');
         writer.write('"');
-        writeEncoded(value, true);
+        if (hasXML11RestrictedChars)
+          writeEncodedWithRestrictedChars(value, true);
+        else
+          writeEncoded(value, true);
         writer.write('"');
       }
     catch (IOException e)
@@ -366,11 +392,20 @@ public class XMLStreamWriterImpl
       throw new IllegalStateException();
     try
       {
+        if (namespaceURI != null && !isURI(namespaceURI))
+          throw new IllegalArgumentException("illegal URI: " + namespaceURI);
+        if (prefix != null && !isNCName(prefix))
+          throw new IllegalArgumentException("illegal NCName: " + prefix);
+        if (!isNCName(localName))
+          throw new IllegalArgumentException("illegal NCName: " + localName);
+        if (!isChars(value))
+          throw new IllegalArgumentException("illegal character: " + value);
+
         String currentPrefix = getPrefix(namespaceURI);
         if (currentPrefix == null)
           {
             if (prefixDefaulting)
-              writeNamespace(prefix, namespaceURI);
+              writeNamespaceImpl(prefix, namespaceURI);
             else
               throw new XMLStreamException("namespace " + namespaceURI +
                                            " is not bound");
@@ -388,7 +423,10 @@ public class XMLStreamWriterImpl
         writer.write(localName);
         writer.write('=');
         writer.write('"');
-        writeEncoded(value, true);
+        if (hasXML11RestrictedChars)
+          writeEncodedWithRestrictedChars(value, true);
+        else
+          writeEncoded(value, true);
         writer.write('"');
       }
     catch (IOException e)
@@ -407,13 +445,20 @@ public class XMLStreamWriterImpl
       throw new IllegalStateException();
     try
       {
+        if (namespaceURI != null && !isURI(namespaceURI))
+          throw new IllegalArgumentException("illegal URI: " + namespaceURI);
+        if (!isName(localName))
+          throw new IllegalArgumentException("illegal Name: " + localName);
+        if (!isChars(value))
+          throw new IllegalArgumentException("illegal character: " + value);
+        
         String prefix = getPrefix(namespaceURI);
         if (prefix == null)
           {
             if (prefixDefaulting)
               {
                 prefix = XMLConstants.DEFAULT_NS_PREFIX;
-                writeNamespace(prefix, namespaceURI);
+                writeNamespaceImpl(prefix, namespaceURI);
               }
             else
               throw new XMLStreamException("namespace " + namespaceURI +
@@ -428,7 +473,10 @@ public class XMLStreamWriterImpl
         writer.write(localName);
         writer.write('=');
         writer.write('"');
-        writeEncoded(value, true);
+        if (hasXML11RestrictedChars)
+          writeEncodedWithRestrictedChars(value, true);
+        else
+          writeEncoded(value, true);
         writer.write('"');
       }
     catch (IOException e)
@@ -444,6 +492,25 @@ public class XMLStreamWriterImpl
   {
     if (!inStartElement)
       throw new IllegalStateException();
+    try
+      {
+        if (!isURI(namespaceURI))
+          throw new IllegalArgumentException("illegal URI: " + namespaceURI);
+        if (!isNCName(prefix))
+          throw new IllegalArgumentException("illegal NCName: " + prefix);
+      }
+    catch (IOException e)
+      {
+        XMLStreamException e2 = new XMLStreamException(e);
+        e2.initCause(e);
+        throw e2;
+      }
+    writeNamespaceImpl(prefix, namespaceURI);
+  }
+
+  private void writeNamespaceImpl(String prefix, String namespaceURI)
+    throws XMLStreamException
+  {
     try
       {
         if (prefix == null)
@@ -474,21 +541,41 @@ public class XMLStreamWriterImpl
   public void writeDefaultNamespace(String namespaceURI)
     throws XMLStreamException
   {
-    writeNamespace(XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
+    if (!inStartElement)
+      throw new IllegalStateException();
+    if (!isURI(namespaceURI))
+      throw new IllegalArgumentException("illegal URI: " + namespaceURI);
+    writeNamespaceImpl(XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
   }
 
   public void writeComment(String data)
     throws XMLStreamException
   {
+    if (data == null)
+      return;
     try
       {
+        if (!isChars(data))
+          throw new IllegalArgumentException("illegal XML character: " + data);
+        if (data.indexOf("--") != -1)
+          throw new IllegalArgumentException("illegal comment: " + data);
+
         endStartElement();
         
-        if (data != null && data.indexOf("--") != -1)
-          throw new IllegalArgumentException(data);
-        
         writer.write("<!--");
-        if (data != null)
+        if (hasXML11RestrictedChars)
+          {
+            int[] seq = UnicodeReader.toCodePointArray(data);
+            for (int i = 0; i < seq.length; i++)
+              {
+                int c = seq[i];
+                if (XMLParser.isXML11RestrictedChar(c))
+                  writer.write("&#x" + Integer.toHexString(c) + ";");
+                else
+                  writer.write(Character.toChars(i));
+              }
+          }
+        else
           writer.write(data);
         writer.write("-->");
       }
@@ -511,6 +598,11 @@ public class XMLStreamWriterImpl
   {
     try
       {
+        if (!isName(target) || "xml".equalsIgnoreCase(target))
+          throw new IllegalArgumentException("illegal PITarget: " + target);
+        if (data != null && !isChars(data))
+          throw new IllegalArgumentException("illegal XML character: " + data);
+
         endStartElement();
 
         writer.write('<');
@@ -519,7 +611,20 @@ public class XMLStreamWriterImpl
         if (data != null)
           {
             writer.write(' ');
-            writer.write(data);
+            if (hasXML11RestrictedChars)
+              {
+                int[] seq = UnicodeReader.toCodePointArray(data);
+                for (int i = 0; i < seq.length; i++)
+                  {
+                    int c = seq[i];
+                    if (XMLParser.isXML11RestrictedChar(c))
+                      writer.write("&#x" + Integer.toHexString(c) + ";");
+                    else
+                      writer.write(Character.toChars(i));
+                  }
+              }
+            else
+              writer.write(data);
           }
         writer.write('?');
         writer.write('>');
@@ -537,10 +642,12 @@ public class XMLStreamWriterImpl
   {
     try
       {
-        endStartElement();
-
+        if (!isChars(data) || hasXML11RestrictedChars)
+          throw new IllegalArgumentException("illegal XML character: " + data);
         if (data.indexOf("]]") != -1)
-          throw new IllegalArgumentException(data);
+          throw new IllegalArgumentException("illegal CDATA section: " + data);
+        
+        endStartElement();
 
         writer.write("<![CDATA[");
         writer.write(data);
@@ -557,8 +664,12 @@ public class XMLStreamWriterImpl
   public void writeDTD(String dtd)
     throws XMLStreamException
   {
+    // Really thoroughly pointless method...
     try
       {
+        if (!isName(dtd))
+          throw new IllegalArgumentException("illegal Name: " + dtd);
+
         writer.write("<!DOCTYPE ");
         writer.write(dtd);
         writer.write('>');
@@ -576,6 +687,9 @@ public class XMLStreamWriterImpl
   {
     try
       {
+        if (!isName(name))
+          throw new IllegalArgumentException("illegal Name: " + name);
+
         endStartElement();
 
         writer.write('&');
@@ -607,6 +721,8 @@ public class XMLStreamWriterImpl
   {
     if (version == null)
       version = "1.0";
+    else if ("1.1".equals(version))
+      xml11 = true;
     encoding = this.encoding; // YES: the parameter must be ignored
     if (encoding == null)
       encoding = "UTF-8";
@@ -632,11 +748,18 @@ public class XMLStreamWriterImpl
   public void writeCharacters(String text)
     throws XMLStreamException
   {
+    if (text == null)
+      return;
     try
       {
+        if (!isChars(text))
+          throw new IllegalArgumentException("illegal XML character: " + text);
+
         endStartElement();
 
-        if (text != null)
+        if (hasXML11RestrictedChars)
+          writeEncodedWithRestrictedChars(text, false);
+        else
           writeEncoded(text, false);
       }
     catch (IOException e)
@@ -650,39 +773,7 @@ public class XMLStreamWriterImpl
   public void writeCharacters(char[] text, int start, int len)
     throws XMLStreamException
   {
-    try
-      {
-        endStartElement();
-
-        int end = start + len;
-        len = 0;
-        for (int i = start; i < end; i++)
-          {
-            char c = text[i];
-            if (c == '<' || c == '>' || c == '&')
-              {
-                writer.write(text, start, len);
-                if (c == '<')
-                  writer.write("&lt;");
-                else if (c == '>')
-                  writer.write("&gt;");
-                else
-                  writer.write("&amp;");
-                start = i + 1;
-                len = 0;
-              }
-            else
-              len++;
-          }
-        if (len > 0)
-          writer.write(text, start, len);
-      }
-    catch (IOException e)
-      {
-        XMLStreamException e2 = new XMLStreamException(e);
-        e2.initCause(e);
-        throw e2;
-      }
+    writeCharacters(new String(text, start, len));
   }
 
   public String getPrefix(String uri)
@@ -697,6 +788,19 @@ public class XMLStreamWriterImpl
   public void setPrefix(String prefix, String uri)
     throws XMLStreamException
   {
+    try
+      {
+        if (!isURI(uri))
+          throw new IllegalArgumentException("illegal URI: " + uri);
+        if (!isNCName(prefix))
+          throw new IllegalArgumentException("illegal NCName: " + prefix);
+      }
+    catch (IOException e)
+      {
+        XMLStreamException e2 = new XMLStreamException(e);
+        e2.initCause(e);
+        throw e2;
+      }
     if (!namespaces.declarePrefix(prefix, uri))
       throw new XMLStreamException("illegal prefix " + prefix);
   }
@@ -704,6 +808,8 @@ public class XMLStreamWriterImpl
   public void setDefaultNamespace(String uri)
     throws XMLStreamException
   {
+    if (!isURI(uri))
+      throw new IllegalArgumentException("illegal URI: " + uri);
     if (!namespaces.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri))
       throw new XMLStreamException("illegal default namespace prefix");
   }
@@ -768,6 +874,131 @@ public class XMLStreamWriterImpl
       }
     if (len > 0)
       writer.write(chars, start, len);
+  }
+
+  /**
+   * Writes the specified text, in the knowledge that some of the
+   * characters are XML 1.1 restricted characters.
+   */
+  private void writeEncodedWithRestrictedChars(String text, boolean inAttr)
+    throws IOException
+  {
+    int[] seq = UnicodeReader.toCodePointArray(text);
+    for (int i = 0; i < seq.length; i++)
+      {
+        int c = seq[i];
+        switch (c)
+          {
+          case 0x3c: // '<'
+            writer.write("&lt;");
+            break;
+          case 0x3e: // '>'
+            writer.write("&gt;");
+            break;
+          case 0x26: // '&'
+            writer.write("&amp;");
+            break;
+          case 0x22: // '"'
+            if (inAttr)
+              writer.write("&quot;");
+            else
+              writer.write(c);
+            break;
+          case 0x27: // '\''
+            if (inAttr)
+              writer.write("&apos;");
+            else
+              writer.write(c);
+            break;
+          default:
+            if (XMLParser.isXML11RestrictedChar(c))
+              writer.write("&#x" + Integer.toHexString(c) + ";");
+            else
+              {
+                char[] chars = Character.toChars(c);
+                writer.write(chars, 0, chars.length);
+              }
+          }
+      }
+  }
+
+  private boolean isName(String text)
+    throws IOException
+  {
+    if (text == null)
+      return false;
+    int[] seq = UnicodeReader.toCodePointArray(text);
+    if (seq.length < 1)
+      return false;
+    if (!XMLParser.isNameStartCharacter(seq[0], xml11))
+      return false;
+    for (int i = 1; i < seq.length; i++)
+      {
+        if (!XMLParser.isNameCharacter(seq[i], xml11))
+          return false;
+      }
+    return true;
+  }
+
+  private boolean isNCName(String text)
+    throws IOException
+  {
+    if (text == null)
+      return false;
+    int[] seq = UnicodeReader.toCodePointArray(text);
+    if (seq.length < 1)
+      return false;
+    if (!XMLParser.isNameStartCharacter(seq[0], xml11) || seq[0] == 0x3a)
+      return false;
+    for (int i = 1; i < seq.length; i++)
+      {
+        if (!XMLParser.isNameCharacter(seq[i], xml11) || seq[i] == 0x3a)
+          return false;
+      }
+    return true;
+  }
+
+  private boolean isChars(String text)
+    throws IOException
+  {
+    if (text == null)
+      return false;
+    int[] seq = UnicodeReader.toCodePointArray(text);
+    hasXML11RestrictedChars = false;
+    if (xml11)
+      {
+        for (int i = 0; i < seq.length; i++)
+          {
+            if (!XMLParser.isXML11Char(seq[i]))
+              return false;
+            if (XMLParser.isXML11RestrictedChar(seq[i]))
+              hasXML11RestrictedChars = true;
+          }
+      }
+    else
+      {
+        for (int i = 0; i < seq.length; i++)
+          {
+            if (!XMLParser.isChar(seq[i]))
+              return false;
+          }
+      }
+    return true;
+  }
+
+  private boolean isURI(String text)
+  {
+    if (text == null)
+      return false;
+    char[] chars = text.toCharArray();
+    if (chars.length < 1)
+      return false;
+    for (int i = 0; i < chars.length; i++)
+      {
+        if (chars[i] < 0x20 || chars[i] >= 0x7f)
+          return false;
+      }
+    return true;
   }
   
 }

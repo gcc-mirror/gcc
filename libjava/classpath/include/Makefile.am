@@ -128,9 +128,9 @@ $(top_srcdir)/include/gnu_java_nio_charset_iconv_IconvDecoder.h \
 $(top_srcdir)/include/java_io_VMFile.h \
 $(top_srcdir)/include/java_io_VMObjectInputStream.h \
 $(top_srcdir)/include/java_io_VMObjectStreamClass.h \
-$(top_srcdir)/include/java_lang_Math.h \
 $(top_srcdir)/include/java_lang_VMDouble.h \
 $(top_srcdir)/include/java_lang_VMFloat.h \
+$(top_srcdir)/include/java_lang_VMMath.h \
 $(top_srcdir)/include/java_lang_VMProcess.h \
 $(top_srcdir)/include/java_lang_VMSystem.h \
 $(top_srcdir)/include/java_lang_reflect_Array.h \
@@ -179,8 +179,8 @@ $(top_srcdir)/include/java_io_VMObjectInputStream.h: $(top_srcdir)/vm/reference/
 	$(JAVAH) -o $@ java.io.VMObjectInputStream
 $(top_srcdir)/include/java_io_VMObjectStreamClass.h: $(top_srcdir)/vm/reference/java/io/VMObjectStreamClass.java
 	$(JAVAH) -o $@ java.io.VMObjectStreamClass
-$(top_srcdir)/include/java_lang_Math.h: $(top_srcdir)/java/lang/Math.java
-	$(JAVAH) -o $@ java.lang.Math
+$(top_srcdir)/include/java_lang_VMMath.h: $(top_srcdir)/vm/reference/java/lang/VMMath.java
+	$(JAVAH) -o $@ java.lang.VMMath
 $(top_srcdir)/include/java_lang_VMDouble.h: $(top_srcdir)/vm/reference/java/lang/VMDouble.java
 	$(JAVAH) -o $@ java.lang.VMDouble
 $(top_srcdir)/include/java_lang_VMFloat.h: $(top_srcdir)/vm/reference/java/lang/VMFloat.java

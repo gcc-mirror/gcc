@@ -1,57 +1,16 @@
 
-/* @(#)s_atan.c 5.1 93/09/24 */
+/* @(#)s_atan.c 1.3 95/01/18 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  *
  */
-
-/*
-FUNCTION
-        <<atan>>, <<atanf>>---arc tangent
-
-INDEX
-   atan
-INDEX
-   atanf
-
-ANSI_SYNOPSIS
-        #include <math.h>
-        double atan(double <[x]>);
-        float atanf(float <[x]>);
-
-TRAD_SYNOPSIS
-        #include <math.h>
-        double atan(<[x]>);
-        double <[x]>;
-
-        float atanf(<[x]>);
-        float <[x]>;
-
-DESCRIPTION
-
-<<atan>> computes the inverse tangent (arc tangent) of the input value.
-
-<<atanf>> is identical to <<atan>>, save that it operates on <<floats>>.
-
-RETURNS
-@ifinfo
-<<atan>> returns a value in radians, in the range of -pi/2 to pi/2.
-@end ifinfo
-@tex
-<<atan>> returns a value in radians, in the range of $-\pi/2$ to $\pi/2$.
-@end tex
-
-PORTABILITY
-<<atan>> is ANSI C.  <<atanf>> is an extension.
-
-*/
 
 /* atan(x)
  * Method
@@ -67,9 +26,9 @@ PORTABILITY
  *      [39/16,INF]   atan(x) = atan(INF) + atan( -1/t )
  *
  * Constants:
- * The hexadecimal values are the intended ones for the following
- * constants. The decimal values may be used, provided that the
- * compiler will convert from decimal to binary accurately enough
+ * The hexadecimal values are the intended ones for the following 
+ * constants. The decimal values may be used, provided that the 
+ * compiler will convert from decimal to binary accurately enough 
  * to produce the hexadecimal values shown.
  */
 
@@ -118,9 +77,9 @@ static double aT[] = {
 };
 
 #ifdef __STDC__
-	static const double
+	static const double 
 #else
-	static double
+	static double 
 #endif
 one   = 1.0,
 huge   = 1.0e300;
@@ -138,7 +97,8 @@ huge   = 1.0e300;
 	GET_HIGH_WORD(hx,x);
 	ix = hx&0x7fffffff;
 	if(ix>=0x44100000) {	/* if |x| >= 2^66 */
-	    uint32_t low;
+   	    uint32_t low;
+
 	    GET_LOW_WORD(low,x);
 	    if(ix>0x7ff00000||
 		(ix==0x7ff00000&&(low!=0)))
@@ -154,9 +114,9 @@ huge   = 1.0e300;
 	x = fabs(x);
 	if (ix < 0x3ff30000) {		/* |x| < 1.1875 */
 	    if (ix < 0x3fe60000) {	/* 7/16 <=|x|<11/16 */
-		id = 0; x = (2.0*x-one)/(2.0+x);
+		id = 0; x = (2.0*x-one)/(2.0+x); 
 	    } else {			/* 11/16<=|x|< 19/16 */
-		id = 1; x  = (x-one)/(x+one);
+		id = 1; x  = (x-one)/(x+one); 
 	    }
 	} else {
 	    if (ix < 0x40038000) {	/* |x| < 2.4375 */
@@ -177,5 +137,4 @@ huge   = 1.0e300;
 	    return (hx<0)? -z:z;
 	}
 }
-
 #endif /* _DOUBLE_IS_32BITS */

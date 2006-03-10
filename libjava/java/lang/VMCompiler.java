@@ -1,5 +1,5 @@
 /* VMClassLoader.java -- Reference implementation of compiler interface
-   Copyright (C) 2004, 2005 Free Software Foundation
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import gnu.gcj.runtime.SharedLibHelper;
 import gnu.gcj.runtime.PersistentByteMap;
+import gnu.java.security.hash.MD5;
 
 /**
  * This class is just a per-VM reflection of java.lang.Compiler.
@@ -90,8 +91,8 @@ final class VMCompiler
   // interpreted bytecode -- before we're able to use this class to
   // load precompiled classes.
 
-  private static final MessageDigest md5Digest
-    = new gnu.java.security.provider.MD5();
+  private static final MD5 md5Digest
+    = new gnu.java.security.hash.MD5();
 
   static
   {
@@ -193,8 +194,9 @@ final class VMCompiler
 
     try
       {
-	MessageDigest md = (MessageDigest) md5Digest.clone();
-	digest = md.digest(data);
+	MD5 md = (MD5) md5Digest.clone();
+	md.update(data);
+	digest = md.digest();
       }
     catch (CloneNotSupportedException _)
       {

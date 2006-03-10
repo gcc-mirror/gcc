@@ -327,9 +327,11 @@ public class JTextPane
     if (start == dot && end == dot)
       // There is no selection, update insertAttributes instead
       {
-	MutableAttributeSet inputAttributes =
-	  getStyledEditorKit().getInputAttributes();
-	inputAttributes.addAttributes(attribute);
+        MutableAttributeSet inputAttributes =
+          getStyledEditorKit().getInputAttributes();
+        if (replace)
+          inputAttributes.removeAttributes(inputAttributes);
+        inputAttributes.addAttributes(attribute);
       }
     else
       getStyledDocument().setCharacterAttributes(start, end - start, attribute,

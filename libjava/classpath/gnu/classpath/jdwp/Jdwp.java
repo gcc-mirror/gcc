@@ -1,5 +1,5 @@
 /* Jdwp.java -- Virtual machine to JDWP back-end programming interface
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -159,7 +159,7 @@ public class Jdwp
 	{
 	  AccessController.doPrivileged (_packetProcessor);
 	}
-      });
+      }, "packet processor");
     _ppThread.start ();
   }
 
@@ -258,7 +258,7 @@ public class Jdwp
 	break;
 
       case EventRequest.SUSPEND_THREAD:
-	VMVirtualMachine.suspendThread (this);
+	VMVirtualMachine.suspendThread (Thread.currentThread ());
 	break;
 
       case EventRequest.SUSPEND_ALL:

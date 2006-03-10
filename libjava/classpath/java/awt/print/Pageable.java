@@ -1,5 +1,5 @@
 /* Pageable.java -- Pages to be printed
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,75 +39,52 @@ exception statement from your version. */
 package java.awt.print;
 
 /**
-  * This interface represents pages that are to be printed.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface represents pages that are to be printed.
+ * 
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public interface Pageable
 {
+  /**
+   * This constant is returned when <code>getNumberOfPages()</code> cannot
+   * determine the number of pages available for printing.
+   */
+  int UNKNOWN_NUMBER_OF_PAGES = - 1;
 
-/*
- * Static Variables
- */
+  /**
+   * This method returns the number of pages this object contains, or
+   * <code>UNKNOWN_NUMBER_OF_PAGES</code> if it cannot determine the number 
+   * of pages to be printed.
+   * 
+   * @return The number of pages to be printed, or
+   *         <code>UNKNOWN_NUMBER_OF_PAGES</code> if this is unknown.
+   */
+  int getNumberOfPages();
 
-/**
-  * This constant is returned when <code>getNumberOfPages()</code>
-  * cannot determine the number of pages available for printing.
-  */
-int UNKNOWN_NUMBER_OF_PAGES = -1;
+  /**
+   * This method returns the <code>PageFormat</code> instance for the
+   * specified page. Page numbers start at zero. An exception is thrown if the
+   * requested page does not exist.
+   * 
+   * @param pageIndex The index of the page to return the
+   *          <code>PageFormat</code> for.
+   * @return The <code>PageFormat</code> for the requested page.
+   * @exception IndexOutOfBoundsException If the requested page number does 
+   *            not exist.
+   */
+  PageFormat getPageFormat(int pageIndex) throws IndexOutOfBoundsException;
 
-/*************************************************************************/
+  /**
+   * This method returns the <code>Printable</code> instance for the specified
+   * page. Page numbers start at zero. An exception is thrown if the requested
+   * page does not exist.
+   * 
+   * @param pageIndex The index of the page to return the 
+   *        <code>Printable</code> for.
+   * @return The <code>Printable</code> for the requested page.
+   * @exception IndexOutOfBoundsException If the requested page number does 
+   *            not exist.
+   */
+  Printable getPrintable(int pageIndex) throws IndexOutOfBoundsException;
 
-/*
- * Instance Methods
- */
-
-/**
-  * This method returns the number of pages this object contains, or
-  * <code>UNKNOWN_NUMBER_OF_PAGES</code> if it cannot determine the number
-  * of pages to be printed.
-  *
-  * @return The number of pages to be printed, or 
-  * <code>UNKNOWN_NUMBER_OF_PAGES</code> if this is unknown.
-  */
-int
-getNumberOfPages();
-
-/*************************************************************************/
-
-/**
-  * This method returns the <code>PageFormat</code> instance for the
-  * specified page.  Page numbers start at zero.  An exception is thrown if 
-  * the requested page does not exist.
-  *
-  * @param pageIndex The index of the page to return the 
-  * <code>PageFormat</code> for.
-  *
-  * @return The <code>PageFormat</code> for the requested page.
-  *
-  * @exception IndexOutOfBoundsException If the requested page number does
-  * not exist.
-  */
-PageFormat
-getPageFormat(int pageIndex) throws IndexOutOfBoundsException;
-
-/*************************************************************************/
-
-/**
-  * This method returns the <code>Printable</code> instance for the
-  * specified page.  Page numbers start at zero.  An exception is thrown if 
-  * the requested page does not exist.
-  *
-  * @param pageIndex The index of the page to return the 
-  * <code>Printable</code> for.
-  *
-  * @return The <code>Printable</code> for the requested page.
-  *
-  * @exception IndexOutOfBoundsException If the requested page number does
-  * not exist.
-  */
-Printable
-getPrintable(int pageIndex) throws IndexOutOfBoundsException;
-
-} // interface Pageable
-
+}

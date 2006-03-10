@@ -54,7 +54,7 @@ import javax.swing.event.DocumentEvent;
  * 
  * @author Roman Kennke (kennke@aicas.com)
  */
-public class TableView
+public abstract class TableView
   extends BoxView
 {
 
@@ -90,6 +90,18 @@ public class TableView
     public void replace(int offset, int length, View[] views)
     {
       super.replace(offset, length, views);
+      int viewCount = getViewCount();
+      if (columnRequirements == null
+          || viewCount > columnRequirements.length)
+        {
+          columnRequirements = new SizeRequirements[viewCount];
+          for (int i = 0; i < columnRequirements.length; i++)
+            columnRequirements[i] = new SizeRequirements();
+        }
+      if (columnOffsets == null || columnOffsets.length < viewCount)
+        columnOffsets = new int[viewCount];
+      if (columnSpans == null || columnSpans.length < viewCount)
+        columnSpans = new int[viewCount];
       layoutChanged(X_AXIS);
     }
 
@@ -108,8 +120,6 @@ public class TableView
     protected void layoutMajorAxis(int targetSpan, int axis, int[] offsets,
                                    int[] spans)
     {
-      // TODO: Maybe prepare columnSpans and columnOffsets.
-
       // Some sanity checks. If these preconditions are not met, then the
       // following code will not work. Also, there must be something
       // seriously wrong then.
@@ -140,7 +150,7 @@ public class TableView
     {
       // FIXME: Figure out how to fetch the row heights from the TableView's
       // element.
-      super.layoutMajorAxis(targetSpan, axis, offsets, spans);
+      super.layoutMinorAxis(targetSpan, axis, offsets, spans);
     }
 
     /**
@@ -303,7 +313,7 @@ public class TableView
   /**
    * The size requirements of the columns.
    */
-  private SizeRequirements[] columnRequirements;
+  SizeRequirements[] columnRequirements = new SizeRequirements[0];
 
   /**
    * Creates a new instance of <code>TableView</code>.
@@ -313,15 +323,6 @@ public class TableView
   public TableView(Element el)
   {
     super(el, Y_AXIS);
-    int numChildren = el.getElementCount();
-    View[] rows = new View[numChildren];
-    for (int i = 0; i < numChildren; ++i)
-      {
-        Element rowEl = el.getElement(i);
-        TableRow rowView = createTableRow(rowEl);
-        rows[i] = rowView;
-      }
-    replace(0, 0, rows);
   }
 
   /**
@@ -385,7 +386,10 @@ public class TableView
   protected void layoutColumns(int targetSpan, int[] offsets, int spans[],
                                SizeRequirements[] reqs)
   {
-    // TODO: Figure out what exactly to do here. 
+    updateColumnRequirements();
+    SizeRequirements r = calculateMinorAxisRequirements(X_AXIS, null);
+    SizeRequirements.calculateTiledPositions(targetSpan, r, columnRequirements,
+                                             offsets, spans);
   }
 
   /**
@@ -461,5 +465,27 @@ public class TableView
     // FIXME: Do not call super here. Instead walk through the child views
     // and look for a range that contains the given position.
     return super.getViewAtPosition(pos, a);
+  }
+
+  /**
+   * Updates the column requirements.
+   */
+  private void updateColumnRequirements()
+  {
+    int rowCount = getViewCount();
+    for (int r = 0; r < rowCount; ++r)
+      {
+        TableRow row = (TableRow) getView(r);
+        int columnCount = row.getViewCount();
+        for (int c = 0; c < columnCount; ++c)
+          {
+            View cell = row.getView(c);
+            SizeRequirements cr = columnRequirements[c];
+            cr.minimum = Math.max(cr.minimum, (int) cell.getMinimumSpan(X_AXIS));
+            cr.preferred = Math.max(cr.preferred,
+                                    (int) cell.getPreferredSpan(X_AXIS));
+            cr.maximum = Math.max(cr.maximum, (int) cell.getMaximumSpan(X_AXIS));
+          }
+      }
   }
 }

@@ -196,12 +196,7 @@ final class LiteralNode
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
-    buf.append('[');
-    buf.append("source=");
-    buf.append(source);
-    buf.append(']');
-    return buf.toString();
+    return source.toString();
   }
   
 }

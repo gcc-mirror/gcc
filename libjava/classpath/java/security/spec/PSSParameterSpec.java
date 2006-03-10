@@ -38,9 +38,9 @@ exception statement from your version. */
 package java.security.spec;
 
 /**
- * This class specifies a parameter spec for RSA PSS encoding scheme, as
- * defined in the PKCS#1 v2.1.
- *
+ * An implementation of {@link AlgorithmParameterSpec} for the RSA PSS encoding
+ * scheme.
+ * 
  * @since 1.4
  * @see AlgorithmParameterSpec
  * @see java.security.Signature
@@ -56,12 +56,13 @@ public class PSSParameterSpec implements AlgorithmParameterSpec
   // --------------------------------------------------------------------------
 
   /**
-   * Creates a new <code>PSSParameterSpec</code> given the salt length as
-   * defined in PKCS#1.
-   *
-   * @param saltLen the length of salt in bits to be used in PKCS#1 PSS encoding.
-   * @throws IllegalArgumentException if <code>saltLen</code> is less than
-   * <code>0</code>.
+   * Construct a new instance of <code>PSSParameterSpec</code> given a salt
+   * length.
+   * 
+   * @param saltLen
+   *          the length in bits of the salt.
+   * @throws IllegalArgumentException
+   *           if <code>saltLen</code> is less than <code>0</code>.
    */
   public PSSParameterSpec(int saltLen)
   {
@@ -78,11 +79,7 @@ public class PSSParameterSpec implements AlgorithmParameterSpec
   // Instance methods
   // --------------------------------------------------------------------------
 
-  /**
-   * Returns the salt length in bits.
-   *
-   * @return the salt length.
-   */
+  /** @return the length (in bits) of the salt. */
   public int getSaltLength()
   {
     return this.saltLen;

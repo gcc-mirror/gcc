@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.java.awt.peer.GLightweightPeer;
+
 import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -46,6 +48,7 @@ import java.awt.dnd.DragGestureRecognizer;
 import java.awt.dnd.DragSource;
 import java.awt.dnd.peer.DragSourceContextPeer;
 import java.awt.event.AWTEventListener;
+import java.awt.event.AWTEventListenerProxy;
 import java.awt.event.KeyEvent;
 import java.awt.im.InputMethodHighlight;
 import java.awt.image.ColorModel;
@@ -76,6 +79,7 @@ import java.awt.peer.WindowPeer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
@@ -114,10 +118,17 @@ public abstract class Toolkit
     = new PropertyChangeSupport(this);
 
   /**
+   * All registered AWTEventListener objects. This is package private, so the
+   * event queue can efficiently access this list.
+   */
+  AWTEventListenerProxy[] awtEventListeners;
+
+  /**
    * Default constructor for subclasses.
    */
   public Toolkit()
   {
+    awtEventListeners = new AWTEventListenerProxy[0];
   }
 
   /**
@@ -349,7 +360,7 @@ public abstract class Toolkit
    */
   protected LightweightPeer createComponent(Component target)
   {
-    return new gnu.java.awt.peer.GLightweightPeer (target);
+    return new GLightweightPeer(target);
   }
 
   /**
@@ -462,7 +473,7 @@ public abstract class Toolkit
    */
   public Insets getScreenInsets(GraphicsConfiguration gc)
   {
-    return null;
+    return new Insets(0, 0, 0, 0);
   }
 
   /**
@@ -965,33 +976,230 @@ public abstract class Toolkit
     return desktopPropsSupport.getPropertyChangeListeners(name);
   }
 
+  /**
+   * Adds an AWTEventListener to this toolkit. This listener is informed about
+   * all events that pass the eventqueue that match the specified
+   * <code>evenMask</code>. The <code>eventMask</code> is an ORed combination
+   * of event masks as defined in {@link AWTEvent}.
+   *
+   * If a security manager is installed, it is asked first if an
+   * <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code> is allowed.
+   * This may result in a <code>SecurityException</code> beeing thrown.
+   *
+   * It is not recommended to use this kind of notification for normal
+   * applications. It is intended solely for the purpose of debugging and to
+   * support special facilities.
+   *
+   * @param listener the listener to add
+   * @param eventMask the event mask of event types which the listener is
+   *        interested in
+   *
+   * @since 1.2
+   *
+   * @throws SecurityException if there is a <code>SecurityManager</code> that
+   *         doesn't grant
+   *         <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code>
+   *
+   * @see #getAWTEventListeners()
+   * @see #getAWTEventListeners(long)
+   * @see #removeAWTEventListener(AWTEventListener)
+   */
   public void addAWTEventListener(AWTEventListener listener, long eventMask)
   {
-    // SecurityManager s = System.getSecurityManager();
-    // if (s != null)
-    //  s.checkPermission(AWTPermission("listenToAllAWTEvents"));
-    // FIXME
-  }
+    // First we must check the security permissions.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkPermission(new AWTPermission("listenToAllAWTEvents"));
 
-  public void removeAWTEventListener(AWTEventListener listener)
-  {
-    // FIXME
+    // Go through the list and check if the requested listener is already
+    // registered.
+    boolean found = false;
+    for (int i = 0; i < awtEventListeners.length; ++i)
+      {
+        AWTEventListenerProxy proxy = awtEventListeners[i];
+        if (proxy.getListener() == listener)
+          {
+            found = true;
+            // Modify the proxies event mask to include the new event mask.
+            AWTEventListenerProxy newProxy =
+              new AWTEventListenerProxy(proxy.getEventMask() | eventMask,
+                                        listener);
+            awtEventListeners[i] = newProxy;
+            break;
+          }
+      }
+
+    // If that listener was not found, then add it.
+    if (! found)
+      {
+        AWTEventListenerProxy proxy =
+          new AWTEventListenerProxy(eventMask, listener);
+        AWTEventListenerProxy[] newArray =
+          new AWTEventListenerProxy[awtEventListeners.length + 1];
+        System.arraycopy(awtEventListeners, 0, newArray, 0,
+                         awtEventListeners.length);
+        newArray[newArray.length - 1] = proxy;
+        awtEventListeners = newArray;
+      }
   }
 
   /**
+   * Removes an AWT event listener from this toolkit. This listener is no
+   * longer informed of any event types it was registered in.
+   *
+   * If a security manager is installed, it is asked first if an
+   * <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code> is allowed.
+   * This may result in a <code>SecurityException</code> beeing thrown.
+   *
+   * It is not recommended to use this kind of notification for normal
+   * applications. It is intended solely for the purpose of debugging and to
+   * support special facilities.
+   *
+   * @param listener the listener to remove
+   *
+   * @throws SecurityException if there is a <code>SecurityManager</code> that
+   *         doesn't grant
+   *         <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code>
+   *
+   * @since 1.2
+   *
+   * @see #addAWTEventListener(AWTEventListener, long)
+   * @see #getAWTEventListeners()
+   * @see #getAWTEventListeners(long)
+   */
+  public void removeAWTEventListener(AWTEventListener listener)
+  {
+    // First we must check the security permissions.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkPermission(new AWTPermission("listenToAllAWTEvents"));
+
+
+    // Find the index of the listener.
+    int index = -1;
+    for (int i = 0; i < awtEventListeners.length; ++i)
+      {
+        AWTEventListenerProxy proxy = awtEventListeners[i];
+        if (proxy.getListener() == listener)
+          {
+            index = i;
+            break;
+          }
+      }
+
+    // Copy over the arrays and leave out the removed element.
+    if (index != -1)
+      {
+        AWTEventListenerProxy[] newArray =
+          new AWTEventListenerProxy[awtEventListeners.length - 1];
+        if (index > 0)
+          System.arraycopy(awtEventListeners, 0, newArray, 0, index);
+        if (index < awtEventListeners.length - 1)
+          System.arraycopy(awtEventListeners, index + 1, newArray, index,
+                           awtEventListeners.length - index - 1);
+        awtEventListeners = newArray;
+      }
+  }
+
+  /**
+   * Returns all registered AWT event listeners. This method returns a copy of
+   * the listener array, so that application cannot trash the listener list.
+   *
+   * If a security manager is installed, it is asked first if an
+   * <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code> is allowed.
+   * This may result in a <code>SecurityException</code> beeing thrown.
+   *
+   * It is not recommended to use this kind of notification for normal
+   * applications. It is intended solely for the purpose of debugging and to
+   * support special facilities.
+   *
+   * @return all registered AWT event listeners
+   *
+   * @throws SecurityException if there is a <code>SecurityManager</code> that
+   *         doesn't grant
+   *         <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code>
+   *
    * @since 1.4
+   *
+   * @see #addAWTEventListener(AWTEventListener, long)
+   * @see #removeAWTEventListener(AWTEventListener)
+   * @see #getAWTEventListeners(long)
    */
   public AWTEventListener[] getAWTEventListeners()
   {
-    return null;
+    // First we must check the security permissions.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkPermission(new AWTPermission("listenToAllAWTEvents"));
+
+    // Create a copy of the array.
+    AWTEventListener[] copy = new AWTEventListener[awtEventListeners.length];
+    System.arraycopy(awtEventListeners, 0, copy, 0, awtEventListeners.length);
+    return copy;
   }
 
   /**
+   * Returns all registered AWT event listeners that listen for events with
+   * the specified <code>eventMask</code>. This method returns a copy of
+   * the listener array, so that application cannot trash the listener list.
+   *
+   * If a security manager is installed, it is asked first if an
+   * <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code> is allowed.
+   * This may result in a <code>SecurityException</code> beeing thrown.
+   *
+   * It is not recommended to use this kind of notification for normal
+   * applications. It is intended solely for the purpose of debugging and to
+   * support special facilities.
+   *
+   * @param mask the event mask
+   *
+   * @throws SecurityException if there is a <code>SecurityManager</code> that
+   *         doesn't grant
+   *         <code>AWTPermission(&quot;listenToAllAWTEvents&quot;)</code>
+   *
+   *
    * @since 1.4
+   *
+   * @see #addAWTEventListener(AWTEventListener, long)
+   * @see #removeAWTEventListener(AWTEventListener)
+   * @see #getAWTEventListeners()
    */
   public AWTEventListener[] getAWTEventListeners(long mask)
   {
-    return null;
+    // First we must check the security permissions.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkPermission(new AWTPermission("listenToAllAWTEvents"));
+
+    // Create a copy of the array with only the requested listeners in it.
+    ArrayList l = new ArrayList(awtEventListeners.length);
+    for (int i = 0; i < awtEventListeners.length; ++i)
+      {
+        if ((awtEventListeners[i].getEventMask() & mask) != 0)
+          l.add(awtEventListeners[i]);
+      }
+
+    return (AWTEventListener[] ) l.toArray(new AWTEventListener[l.size()]);
+  }
+
+
+  /**
+   * Dispatches events to listeners registered to this Toolkit. This is called
+   * by {@link Component#dispatchEventImpl(AWTEvent)} in order to dispatch
+   * events globally.
+   *
+   * @param ev the event to dispatch
+   */
+  void globalDispatchEvent(AWTEvent ev)
+  {
+    // We do not use the accessor methods here because they create new
+    // arrays each time. We must be very efficient, so we access this directly.
+    for (int i = 0; i < awtEventListeners.length; ++i)
+      {
+        AWTEventListenerProxy proxy = awtEventListeners[i];
+        if ((proxy.getEventMask() & AWTEvent.eventIdToMask(ev.getID())) != 0)
+          proxy.eventDispatched(ev);
+      }
   }
 
   /**

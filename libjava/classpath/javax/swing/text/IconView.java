@@ -130,8 +130,6 @@ public class IconView
     throws BadLocationException
   {
     Element el = getElement();
-    if (pos < el.getStartOffset() || pos >= el.getEndOffset())
-      throw new BadLocationException("Illegal offset for this view", pos);
     Rectangle r = a.getBounds();
     Icon icon = StyleConstants.getIcon(el.getAttributes());
     return new Rectangle(r.x, r.y, icon.getIconWidth(), icon.getIconHeight());

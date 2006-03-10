@@ -1,4 +1,4 @@
-/* BasicPanelUI.java --
+/* BasicRootPaneUI.java --
    Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,7 +43,6 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
-import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.RootPaneUI;
 
@@ -75,8 +74,7 @@ public class BasicRootPaneUI extends RootPaneUI
    */
   protected void installDefaults(JRootPane rp)
   {
-    // Is this ok?
-    rp.setBackground(UIManager.getColor("control"));
+    // TODO: What to do here, if anything? (might be a hook method)
   }
 
   /**

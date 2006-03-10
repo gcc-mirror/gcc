@@ -1,5 +1,5 @@
 /* gnu/regexp/CharIndexedStringBuffer.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998-2001, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -58,5 +58,14 @@ class CharIndexedStringBuffer implements CharIndexed, Serializable {
 
   public boolean move(int index) {
     return ((anchor += index) < s.length());
+  }
+
+  public CharIndexed lookBehind(int index, int length) {
+    if (length > (anchor + index)) length = anchor + index;
+    return new CharIndexedStringBuffer(s, anchor + index - length);
+  }
+
+  public int length() {
+    return s.length() - anchor;
   }
 }

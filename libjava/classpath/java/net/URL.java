@@ -399,40 +399,59 @@ public final class URL implements Serializable
         && ! spec.regionMatches(colon, "://:", 0, 4))
       context = null;
 
+    boolean protocolSpecified = false;
+
     if ((colon = spec.indexOf(':')) > 0
         && (colon < slash || slash < 0))
       {
-	// Protocol specified in spec string.
+	// Protocol may have been specified in spec string.
+        protocolSpecified = true;
 	protocol = spec.substring(0, colon).toLowerCase();
-	if (context != null && context.protocol.equals(protocol))
-	  {
-	    // The 1.2 doc specifically says these are copied to the new URL.
-	    host = context.host;
-	    port = context.port;
-            userInfo = context.userInfo;
-	    authority = context.authority;
-	  }
+	if (context != null)
+          {
+            if (context.protocol.equals(protocol))
+              {
+                // The 1.2 doc specifically says these are copied to the new URL.
+                host = context.host;
+                port = context.port;
+                userInfo = context.userInfo;
+                authority = context.authority;
+              }
+            else
+              {
+                // There was a colon in the spec.  Check to see if
+                // what precedes it is a valid protocol.  If it was
+                // not, assume that it is relative to the context.
+                URLStreamHandler specPh = getURLStreamHandler(protocol.trim());
+                if (null == specPh)
+                    protocolSpecified = false;
+              }
+          }
       }
-    else if (context != null)
+
+    if (!protocolSpecified)
       {
-	// Protocol NOT specified in spec string.
-	// Use context fields (except ref) as a foundation for relative URLs.
-	colon = -1;
-	protocol = context.protocol;
-	host = context.host;
-	port = context.port;
-        userInfo = context.userInfo;
-	if (spec.indexOf(":/", 1) < 0)
-	  {
-	    file = context.file;
-	    if (file == null || file.length() == 0)
-	      file = "/";
-	  }
-	authority = context.authority;
+        if (context != null)
+          {
+            // Protocol NOT specified in spec string.
+            // Use context fields (except ref) as a foundation for relative URLs.
+            colon = -1;
+            protocol = context.protocol;
+            host = context.host;
+            port = context.port;
+            userInfo = context.userInfo;
+            if (spec.indexOf(":/", 1) < 0)
+              {
+                file = context.file;
+                if (file == null || file.length() == 0)
+                  file = "/";
+              }
+            authority = context.authority;
+          }
+        else // Protocol NOT specified in spec. and no context available.
+          throw new MalformedURLException("Absolute URL required with null"
+                                          + " context: " + spec);
       }
-    else // Protocol NOT specified in spec. and no context available.
-      throw new MalformedURLException("Absolute URL required with null"
-				      + " context: " + spec);
 
     protocol = protocol.trim();
 

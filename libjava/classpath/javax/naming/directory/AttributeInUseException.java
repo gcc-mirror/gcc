@@ -1,5 +1,5 @@
 /* AttributeInUseException.java --
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,8 @@ import javax.naming.NamingException;
 
 public class AttributeInUseException extends NamingException
 {
+  private static final long serialVersionUID = 4437710305529322564L;
+
   public AttributeInUseException ()
   {
     super ();

@@ -559,6 +559,8 @@ public class JInternalFrame extends JComponent implements Accessible,
     this.iconable = iconifiable;
     storedBounds = new Rectangle();
     setRootPane(createRootPane());
+    // JInternalFrames are invisible by default.
+    setVisible(false);
     updateUI();
     setRootPaneCheckingEnabled(true); // Done the init stage, now adds go to content pane.
   }
@@ -616,7 +618,7 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void dispose()
   {
-    hide();
+    setVisible(false);
     JDesktopPane pane = getDesktopPane();
     if (pane != null)
       pane.setSelectedFrame(null);
@@ -647,11 +649,11 @@ public class JInternalFrame extends JComponent implements Accessible,
     switch (getDefaultCloseOperation())
       {
       case HIDE_ON_CLOSE:
-	hide();
-	break;
+	    setVisible(false);
+	    break;
       case DISPOSE_ON_CLOSE:
-	dispose();
-	break;
+	    dispose();
+	    break;
       }
   }
 
@@ -1257,13 +1259,14 @@ public class JInternalFrame extends JComponent implements Accessible,
   {
     if (b && ! isClosed())
       {
-	fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_CLOSING);
-	fireVetoableChange(IS_CLOSED_PROPERTY, false, true);
+        fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_CLOSING);
+        fireVetoableChange(IS_CLOSED_PROPERTY, false, true);
 
-	isClosed = b;
+        isClosed = b;
+        dispose();
 
-	firePropertyChange(IS_CLOSED_PROPERTY, false, true);
-	fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_CLOSED);
+        firePropertyChange(IS_CLOSED_PROPERTY, false, true);
+        fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_CLOSED);
       }
   }
 
@@ -1628,27 +1631,27 @@ public class JInternalFrame extends JComponent implements Accessible,
   {
     if (! isVisible())
       {
-	super.show();
+        super.show();
 
-	JDesktopPane pane = getDesktopPane();
-	if (pane != null)
-	  pane.setSelectedFrame(this);
-	else
-	  {
-	    try
-	      {
-		setSelected(true);
-	      }
-	    catch (PropertyVetoException e)
-	      {
-		// Do nothing. if they don't want to be selected.
-	      }
-	  }
-	if (isFirstTimeVisible)
-	  {
-	    isFirstTimeVisible = false;
-	    fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_OPENED);
-	  }
+        JDesktopPane pane = getDesktopPane();
+        if (pane != null)
+          pane.setSelectedFrame(this);
+        else
+          {
+            try
+              {
+                setSelected(true);
+              }
+            catch (PropertyVetoException e)
+              {
+                // Do nothing. if they don't want to be selected.
+              }
+          }
+        if (isFirstTimeVisible)
+          {
+            isFirstTimeVisible = false;
+            fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_OPENED);
+          }
       }
   }
 

@@ -49,6 +49,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -70,6 +71,7 @@ public final class JAXPFactory
   private static final String	FEATURE = "http://xml.org/sax/features/";
   
   private SAXParserFactory	pf;
+  private boolean secureProcessing;
   
   /**
    * Default constructor.
@@ -138,6 +140,27 @@ public final class JAXPFactory
     throw new IllegalArgumentException(name);
   }
 
+  public void setFeature(String name, boolean value)
+    throws ParserConfigurationException
+  {
+    if (name == null)
+      throw new NullPointerException();
+    if (XMLConstants.FEATURE_SECURE_PROCESSING.equals(name))
+      {
+        secureProcessing = true;
+        return;
+      }
+    throw new ParserConfigurationException(name);
+  }
+
+  public boolean getFeature(String name)
+    throws ParserConfigurationException
+  {
+    if (XMLConstants.FEATURE_SECURE_PROCESSING.equals(name))
+      return secureProcessing;
+    throw new ParserConfigurationException(name);
+  }
+  
   static final class JAXPBuilder
     extends DocumentBuilder
     implements ErrorHandler

@@ -1,5 +1,5 @@
 /* InvalidNameException.java -- Exception indicating an invalid component/name
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,8 @@ package javax.naming;
  */
 public class InvalidNameException extends NamingException
 {
+  private static final long serialVersionUID = - 8370672380823801105L;
+
   /**
    * Creates a new exception without setting any of its fields.
    */

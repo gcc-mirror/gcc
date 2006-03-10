@@ -205,13 +205,13 @@ public class ImageIcon
   private static final long serialVersionUID = 532615968316031794L;
 
   /** A dummy Component that is used in the MediaTracker. */
-  protected static Component component = new Component()
+  protected static final Component component = new Component()
   {
     // No need to implement this. 
   };
 
   /** The MediaTracker used to monitor the loading of images. */
-  protected static MediaTracker tracker = new MediaTracker(component);
+  protected static final MediaTracker tracker = new MediaTracker(component);
 
   /** The ID that is used in the tracker. */
   private static int id;

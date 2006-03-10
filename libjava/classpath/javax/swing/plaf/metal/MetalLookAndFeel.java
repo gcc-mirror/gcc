@@ -1171,6 +1171,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
       "Spinner.arrowButtonInsets", new InsetsUIResource(0, 0, 0, 0),
       "Spinner.background", getControl(),
+      "Spinner.border", MetalBorders.getTextFieldBorder(),
       "Spinner.font", new FontUIResource("Dialog", Font.BOLD, 12),
       "Spinner.foreground", getControl(),
 
@@ -1341,5 +1342,17 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   public static MetalTheme getCurrentTheme()
   {
     return theme;
+  }
+
+  /**
+   * Returns <code>true</code> because the Metal look
+   * and feel supports window decorations for toplevel
+   * containers.
+   *
+   * @return <code>true</code>
+   */
+  public boolean getSupportsWindowDecorations()
+  {
+    return true;
   }
 }

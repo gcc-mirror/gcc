@@ -1,5 +1,5 @@
 /* CRLFReader.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -153,13 +153,14 @@ class CRLFReader
     throws IOException
   {
     doReset = false;
-    int lm1 = len - 1;
-    for (int i = off; i < len; i++)
+    int end = off + len;
+    int em1 = end - 1;
+    for (int i = off; i < end; i++)
       {
         if (b[i] == '\r') // CR
           {
             int d;
-            if (i == lm1)
+            if (i == em1)
               {
                 d = in.read();
                 doReset = true;

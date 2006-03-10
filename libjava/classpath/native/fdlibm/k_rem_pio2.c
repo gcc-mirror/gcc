@@ -1,12 +1,12 @@
 
-/* @(#)k_rem_pio2.c 5.1 93/09/24 */
+/* @(#)k_rem_pio2.c 1.3 95/01/18 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  */
@@ -14,12 +14,12 @@
 /*
  * __kernel_rem_pio2(x,y,e0,nx,prec,ipio2)
  * double x[],y[]; int e0,nx,prec; int ipio2[];
- *
- * __kernel_rem_pio2 return the last three digits of N with
+ * 
+ * __kernel_rem_pio2 return the last three digits of N with 
  *		y = x - N*pi/2
  * so that |y| < pi/2.
  *
- * The method is to compute the integer (mod 8) and fraction parts of
+ * The method is to compute the integer (mod 8) and fraction parts of 
  * (2/pi)*x without doing the full multiplication. In general we
  * skip the part of the product that are known to be a huge integer (
  * more accurately, = 0 mod 8 ). Thus the number of operations are
@@ -28,10 +28,10 @@
  * (2/pi) is represented by an array of 24-bit integers in ipio2[].
  *
  * Input parameters:
- * 	x[]	The input value (must be positive) is broken into nx
+ * 	x[]	The input value (must be positive) is broken into nx 
  *		pieces of 24-bit integers in double precision format.
- *		x[i] will be the i-th 24 bit of x. The scaled exponent
- *		of x[0] is given in input parameter e0 (i.e., x[0]*2^e0
+ *		x[i] will be the i-th 24 bit of x. The scaled exponent 
+ *		of x[0] is given in input parameter e0 (i.e., x[0]*2^e0 
  *		match x's up to 24 bits.
  *
  *		Example of breaking a double positive z into x[0]+x[1]+x[2]:
@@ -68,8 +68,8 @@
  *			3	113 bits (quad)
  *
  *	ipio2[]
- *		integer array, contains the (24*i)-th to (24*i+23)-th
- *		bit of 2/pi after binary point. The corresponding
+ *		integer array, contains the (24*i)-th to (24*i+23)-th 
+ *		bit of 2/pi after binary point. The corresponding 
  *		floating value is
  *
  *			ipio2[i] * 2^(-24(i+1)).
@@ -84,8 +84,8 @@
  *		in the computation. The recommended value is 2,3,4,
  *		6 for single, double, extended,and quad.
  *
- * 	jz	local integer variable indicating the number of
- *		terms of ipio2[] used.
+ * 	jz	local integer variable indicating the number of 
+ *		terms of ipio2[] used. 
  *
  *	jx	nx - 1
  *
@@ -105,9 +105,9 @@
  *		exponent for q[i] would be q0-24*i.
  *
  *	PIo2[]	double precision array, obtained by cutting pi/2
- *		into 24 bits chunks.
+ *		into 24 bits chunks. 
  *
- *	f[]	ipio2[] in floating point
+ *	f[]	ipio2[] in floating point 
  *
  *	iq[]	integer array by breaking up q[] in 24-bits chunk.
  *
@@ -121,20 +121,18 @@
 
 /*
  * Constants:
- * The hexadecimal values are the intended ones for the following
- * constants. The decimal values may be used, provided that the
- * compiler will convert from decimal to binary accurately enough
+ * The hexadecimal values are the intended ones for the following 
+ * constants. The decimal values may be used, provided that the 
+ * compiler will convert from decimal to binary accurately enough 
  * to produce the hexadecimal values shown.
  */
 
 #include "fdlibm.h"
 
-#ifndef _DOUBLE_IS_32BITS
-
 #ifdef __STDC__
 static const int init_jk[] = {2,3,4,6}; /* initial value for jk */
 #else
-static int init_jk[] = {2,3,4,6};
+static int init_jk[] = {2,3,4,6}; 
 #endif
 
 #ifdef __STDC__
@@ -153,9 +151,9 @@ static double PIo2[] = {
 };
 
 #ifdef __STDC__
-static const double
+static const double			
 #else
-static double
+static double			
 #endif
 zero   = 0.0,
 one    = 1.0,
@@ -163,13 +161,13 @@ two24   =  1.67772160000000000000e+07, /* 0x41700000, 0x00000000 */
 twon24  =  5.96046447753906250000e-08; /* 0x3E700000, 0x00000000 */
 
 #ifdef __STDC__
-	int __kernel_rem_pio2(double *x, double *y, int e0, int nx, int prec, const int32_t *ipio2)
+	int __kernel_rem_pio2(double *x, double *y, int e0, int nx, int prec, const int *ipio2) 
 #else
-	int __kernel_rem_pio2(x,y,e0,nx,prec,ipio2)
-	double x[], y[]; int e0,nx,prec; int32_t ipio2[];
+	int __kernel_rem_pio2(x,y,e0,nx,prec,ipio2) 	
+	double x[], y[]; int e0,nx,prec; int ipio2[];
 #endif
 {
-	int32_t jz,jx,jv,jp,jk,carry,n,iq[20],i,j,k,m,q0,ih;
+	int jz,jx,jv,jp,jk,carry,n,iq[20],i,j,k,m,q0,ih;
 	double z,fw,f[20],fq[20],q[20];
 
     /* initialize jk*/
@@ -194,22 +192,22 @@ twon24  =  5.96046447753906250000e-08; /* 0x3E700000, 0x00000000 */
 recompute:
     /* distill q[] into iq[] reversingly */
 	for(i=0,j=jz,z=q[jz];j>0;i++,j--) {
-	    fw    =  (double)((int32_t)(twon24* z));
-	    iq[i] =  (int32_t)(z-two24*fw);
+	    fw    =  (double)((int)(twon24* z));
+	    iq[i] =  (int)(z-two24*fw);
 	    z     =  q[j-1]+fw;
 	}
 
     /* compute n */
-	z  = scalbn(z,(int)q0);		/* actual value of z */
+	z  = scalbn(z,q0);		/* actual value of z */
 	z -= 8.0*floor(z*0.125);		/* trim off integer >= 8 */
-	n  = (int32_t) z;
+	n  = (int) z;
 	z -= (double)n;
 	ih = 0;
 	if(q0>0) {	/* need iq[jz-1] to determine n */
 	    i  = (iq[jz-1]>>(24-q0)); n += i;
 	    iq[jz-1] -= i<<(24-q0);
 	    ih = iq[jz-1]>>(23-q0);
-	}
+	} 
 	else if(q0==0) ih = iq[jz-1]>>23;
 	else if(z>=0.5) ih=2;
 
@@ -233,7 +231,7 @@ recompute:
 	    }
 	    if(ih==2) {
 		z = one - z;
-		if(carry!=0) z -= scalbn(one,(int)q0);
+		if(carry!=0) z -= scalbn(one,q0);
 	    }
 	}
 
@@ -259,17 +257,17 @@ recompute:
 	    jz -= 1; q0 -= 24;
 	    while(iq[jz]==0) { jz--; q0-=24;}
 	} else { /* break z into 24-bit if necessary */
-	    z = scalbn(z,-(int)q0);
-	    if(z>=two24) {
-		fw = (double)((int32_t)(twon24*z));
-		iq[jz] = (int32_t)(z-two24*fw);
+	    z = scalbn(z,-q0);
+	    if(z>=two24) { 
+		fw = (double)((int)(twon24*z));
+		iq[jz] = (int)(z-two24*fw);
 		jz += 1; q0 += 24;
-		iq[jz] = (int32_t) fw;
-	    } else iq[jz] = (int32_t) z ;
+		iq[jz] = (int) fw;
+	    } else iq[jz] = (int) z ;
 	}
 
     /* convert integer "bit" chunk to floating-point value */
-	fw = scalbn(one,(int)q0);
+	fw = scalbn(one,q0);
 	for(i=jz;i>=0;i--) {
 	    q[i] = fw*(double)iq[i]; fw*=twon24;
 	}
@@ -285,29 +283,29 @@ recompute:
 	    case 0:
 		fw = 0.0;
 		for (i=jz;i>=0;i--) fw += fq[i];
-		y[0] = (ih==0)? fw: -fw;
+		y[0] = (ih==0)? fw: -fw; 
 		break;
 	    case 1:
 	    case 2:
 		fw = 0.0;
-		for (i=jz;i>=0;i--) fw += fq[i];
-		y[0] = (ih==0)? fw: -fw;
+		for (i=jz;i>=0;i--) fw += fq[i]; 
+		y[0] = (ih==0)? fw: -fw; 
 		fw = fq[0]-fw;
 		for (i=1;i<=jz;i++) fw += fq[i];
-		y[1] = (ih==0)? fw: -fw;
+		y[1] = (ih==0)? fw: -fw; 
 		break;
 	    case 3:	/* painful */
 		for (i=jz;i>0;i--) {
-		    fw      = fq[i-1]+fq[i];
+		    fw      = fq[i-1]+fq[i]; 
 		    fq[i]  += fq[i-1]-fw;
 		    fq[i-1] = fw;
 		}
 		for (i=jz;i>1;i--) {
-		    fw      = fq[i-1]+fq[i];
+		    fw      = fq[i-1]+fq[i]; 
 		    fq[i]  += fq[i-1]-fw;
 		    fq[i-1] = fw;
 		}
-		for (fw=0.0,i=jz;i>=2;i--) fw += fq[i];
+		for (fw=0.0,i=jz;i>=2;i--) fw += fq[i]; 
 		if(ih==0) {
 		    y[0] =  fq[0]; y[1] =  fq[1]; y[2] =  fw;
 		} else {
@@ -316,5 +314,3 @@ recompute:
 	}
 	return n&7;
 }
-
-#endif /* defined(_DOUBLE_IS_32BITS) */

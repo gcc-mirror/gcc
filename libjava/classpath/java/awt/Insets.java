@@ -100,11 +100,31 @@ public class Insets implements Cloneable, Serializable
   }
 
   /**
+   * Set the contents of this Insets object to the specified values.
+   *
+   * @param top the top inset
+   * @param left the left inset
+   * @param bottom the bottom inset
+   * @param right the right inset
+   *
+   * @since 1.5
+   */
+  public void set(int top, int left, int bottom, int right)
+  {
+    this.top = top;
+    this.left = left;
+    this.bottom = bottom;
+    this.right = right;
+  }
+
+  /**
    * Tests whether this object is equal to the specified object. The other
    * object must be an instance of Insets with identical field values.
    *
    * @param obj the object to test against
    * @return true if the specified object is equal to this one
+   *
+   * @since 1.1
    */
   public boolean equals(Object obj)
   {

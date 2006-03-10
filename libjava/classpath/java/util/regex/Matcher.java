@@ -1,5 +1,5 @@
 /* Matcher.java -- Instance of a regular expression applied to a char sequence.
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.util.regex;
 
+import gnu.regexp.RE;
 import gnu.regexp.REMatch;
 
 /**
@@ -45,7 +46,7 @@ import gnu.regexp.REMatch;
  *
  * @since 1.4
  */
-public final class Matcher
+public final class Matcher implements MatchResult
 {
   private Pattern pattern;
   private CharSequence input;
@@ -74,7 +75,8 @@ public final class Matcher
     assertMatchOp();
     sb.append(input.subSequence(appendPosition,
 				match.getStartIndex()).toString());
-    sb.append(match.substituteInto(replacement));
+    sb.append(RE.getReplacement(replacement, match,
+	RE.REG_REPLACE_USE_BACKSLASHESCAPE));
     appendPosition = match.getEndIndex();
     return this;
   }
@@ -189,7 +191,8 @@ public final class Matcher
   {
     reset();
     // Semantics might not quite match
-    return pattern.getRE().substitute(input, replacement, position);
+    return pattern.getRE().substitute(input, replacement, position,
+	RE.REG_REPLACE_USE_BACKSLASHESCAPE);
   }
 
   /**
@@ -198,7 +201,8 @@ public final class Matcher
   public String replaceAll (String replacement)
   {
     reset();
-    return pattern.getRE().substituteAll(input, replacement, position);
+    return pattern.getRE().substituteAll(input, replacement, position,
+	RE.REG_REPLACE_USE_BACKSLASHESCAPE);
   }
   
   public int groupCount ()
@@ -233,10 +237,15 @@ public final class Matcher
    */
   public boolean matches ()
   {
-    if (lookingAt())
+    match = pattern.getRE().getMatch(input, 0, RE.REG_TRY_ENTIRE_MATCH);
+    if (match != null)
       {
-	if (position == input.length())
-	  return true;
+	if (match.getStartIndex() == 0)
+	  {
+	    position = match.getEndIndex();
+	    if (position == input.length())
+	        return true;
+	  }
 	match = null;
       }
     return false;

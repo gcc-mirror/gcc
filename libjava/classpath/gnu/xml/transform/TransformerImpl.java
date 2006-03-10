@@ -162,7 +162,7 @@ class TransformerImpl
           }
         // Make a copy of the source node, and strip it
         context = context.cloneNode(true);
-        strip(context);
+        strip(stylesheet, context);
         // XSLT transformation
         try
           {
@@ -321,7 +321,7 @@ class TransformerImpl
     if (indent)
       {
         parent.normalize();
-        strip(parent);
+        strip(stylesheet, parent);
         Document resultDoc = (parent instanceof Document) ?
           (Document) parent :
           parent.getOwnerDocument();
@@ -393,7 +393,7 @@ class TransformerImpl
   /**
    * Strip whitespace from the source tree.
    */
-  boolean strip(Node node)
+  static boolean strip(Stylesheet stylesheet, Node node)
     throws TransformerConfigurationException
   {
     short nt = node.getNodeType();
@@ -444,7 +444,7 @@ class TransformerImpl
         Node child = node.getFirstChild();
         while (child != null)
           {
-            boolean remove = strip(child);
+            boolean remove = strip(stylesheet, child);
             Node next = child.getNextSibling();
             if (remove)
               node.removeChild(child);
@@ -691,7 +691,7 @@ class TransformerImpl
                 for (Iterator i = children.iterator(); i.hasNext(); )
                   {
                     ctx = (Node) i.next();
-                    reindent(doc, ctx, offset + 1);
+                    reindent(doc, ctx, offset);
                   }
               }
             else
@@ -709,9 +709,9 @@ class TransformerImpl
                   }
                 buf = new StringBuffer();
                 buf.append('\n');
-                ws = buf.toString();
                 for (int i = 0; i < offset; i++)
                   buf.append(INDENT_WHITESPACE);
+                ws = buf.toString();
                 node.appendChild(doc.createTextNode(ws));
               }
           }

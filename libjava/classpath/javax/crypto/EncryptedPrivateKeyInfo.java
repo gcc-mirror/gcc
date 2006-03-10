@@ -92,6 +92,9 @@ public class EncryptedPrivateKeyInfo
   /** The OID of the encryption algorithm. */
   private OID algOid;
 
+  /** The encryption algorithm name. */
+  private String algName;
+
   /** The encryption algorithm's parameters. */
   private AlgorithmParameters params;
 
@@ -125,7 +128,8 @@ public class EncryptedPrivateKeyInfo
         throw new IllegalArgumentException("0-length encryptedData");
       }
     this.params = params;
-    algOid = new OID(params.getAlgorithm());
+    algName = params.getAlgorithm ();
+    algOid = getOid (algName);
     this.encryptedData = (byte[]) encryptedData.clone();
   }
 
@@ -168,8 +172,34 @@ public class EncryptedPrivateKeyInfo
       {
         throw new IllegalArgumentException("0-length encryptedData");
       }
-    this.algOid = new OID(algName);
+    this.algName = algName.toString (); // do NP check
+    this.algOid = getOid (algName);
     this.encryptedData = (byte[]) encryptedData.clone();
+  }
+
+  /**
+   * Return the OID for the given cipher name.
+   *
+   * @param str The string.
+   * @throws NoSuchAlgorithmException If the OID is not known.
+   */
+  private static OID getOid (final String str)
+    throws NoSuchAlgorithmException
+  {
+    if (str.equalsIgnoreCase ("DSA"))
+      {
+        return new OID ("1.2.840.10040.4.3");
+      }
+    // FIXME add more
+
+    try
+      {
+        return new OID (str);
+      }
+    catch (Throwable t)
+      {
+      }
+    throw new NoSuchAlgorithmException ("cannot determine OID for '" + str + "'");
   }
 
   // Instance methods.
@@ -196,6 +226,7 @@ public class EncryptedPrivateKeyInfo
           }
         catch (NoSuchAlgorithmException ignore)
           {
+            // FIXME throw exception?
           }
         catch (IOException ignore)
           {
@@ -272,7 +303,11 @@ public class EncryptedPrivateKeyInfo
     getAlgParameters();
     if (params != null)
       {
-        algId.add(DERReader.read(params.getEncoded()));
+        algId.add (DERReader.read (params.getEncoded()));
+      }
+    else
+      {
+        algId.add (new DERValue (DER.NULL, null));
       }
     List epki = new ArrayList(2);
     epki.add(new DERValue(DER.CONSTRUCTED|DER.SEQUENCE, algId));

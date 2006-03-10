@@ -1,5 +1,5 @@
 /* ServiceUnavailableException.java --
-   Copyright (C) 2000, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,8 @@ package javax.naming;
  
 public class ServiceUnavailableException extends NamingException
 {
+  private static final long serialVersionUID = - 4996964726566773444L;
+
   public ServiceUnavailableException ()
   {
     super ();

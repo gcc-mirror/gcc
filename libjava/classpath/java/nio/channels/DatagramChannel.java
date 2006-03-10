@@ -124,7 +124,6 @@ public abstract class DatagramChannel extends AbstractSelectableChannel
   /**
    * Tells whether or not this channel's socket is connected.
    *
-   * @exception IOException If an error occurs.
    * @exception NotYetConnectedException The channel's socket is not connected.
    */
   public abstract boolean isConnected();
@@ -200,7 +199,6 @@ public abstract class DatagramChannel extends AbstractSelectableChannel
   /**
    * Retrieves the valid operations for this channel.
    *
-   * @exception IOException If an error occurs.
    * @exception NotYetConnectedException The channel's socket is not connected.
    */
   public final int validOps()

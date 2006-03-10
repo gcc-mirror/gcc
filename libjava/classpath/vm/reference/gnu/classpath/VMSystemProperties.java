@@ -81,7 +81,7 @@ class VMSystemProperties
      * <dt>gnu.cpu.endian       <dd>"big" or "little"
      * </dl>
      *
-     * @param p the Properties object to insert the system properties into
+     * @param properties the Properties object to insert the system properties into
      */
     static native void preInit(Properties properties);
 

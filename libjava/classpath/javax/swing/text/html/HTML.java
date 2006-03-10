@@ -57,8 +57,7 @@ public class HTML
   /**
    * Represents a HTML attribute.
    */
-  public static class Attribute
-    implements Serializable
+  public static final class Attribute
   {
     /**
      * The action attribute
@@ -464,47 +463,18 @@ public class HTML
      *  The width attribute
      */
     public static final Attribute WIDTH = new Attribute("width");
+
+    /**
+     * The attribute name.
+     */
     private final String name;
 
     /**
      * Creates the attribute with the given name.
      */
-    protected Attribute(String a_name)
+    private Attribute(String a_name)
     {
       name = a_name;
-    }
-
-    /**
-     * Calls compareTo on the tag names (Strings)
-     */
-    public int compareTo(Object other)
-    {
-      return name.compareTo(((Attribute) other).name);
-    }
-
-    /**
-     * The attributes are equal if the names are equal
-     * (ignoring case)
-     */
-    public boolean equals(Object other)
-    {
-      if (other == this)
-        return true;
-
-      if (!(other instanceof Attribute))
-        return false;
-
-      Attribute that = (Attribute) other;
-
-      return that.name.equalsIgnoreCase(name);
-    }
-
-    /**
-     * Returns the hash code which corresponds to the string for this tag.
-     */
-    public int hashCode()
-    {
-      return name == null ? 0 : name.hashCode();
     }
 
     /**
@@ -559,7 +529,6 @@ public class HTML
    * Represents a HTML tag.
    */
   public static class Tag
-    implements Comparable, Serializable
   {
     /**
      * The &lt;a&gt; tag
@@ -1044,42 +1013,6 @@ public class HTML
     public boolean breaksFlow()
     {
       return (flags & BREAKS) != 0;
-    }
-
-    /**
-     * Calls compareTo on the tag names (Strings)
-     */
-    public int compareTo(Object other)
-    {
-      return name.compareTo(((Tag) other).name);
-    }
-
-    /**
-     * The tags are equal if the names are equal (ignoring case).
-     */
-    public boolean equals(Object other)
-    {
-      if (other == this)
-        {
-          return true;
-        }
-
-      if (!(other instanceof Tag))
-        {
-          return false;
-        }
-
-      Tag that = (Tag) other;
-
-      return that.name.equalsIgnoreCase(name);
-    }
-
-    /**
-     * Returns the hash code which corresponds to the string for this tag.
-     */
-    public int hashCode()
-    {
-      return name == null ? 0 : name.hashCode();
     }
 
     /**

@@ -1,5 +1,5 @@
 /* Binding.java --
-   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,8 @@ package javax.naming;
  */
 public class Binding extends NameClassPair
 {
+  private static final long serialVersionUID = 8839217842691845890L;
+
   public Binding (String name, Object obj)
   {
     super (name, null);

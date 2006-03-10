@@ -1,5 +1,5 @@
 /* MenuKeyEvent.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,66 +48,55 @@ import javax.swing.MenuSelectionManager;
  * MenuKeyEvent
  * @author Andrew Selkirk
  */
-public class MenuKeyEvent extends KeyEvent {
+public class MenuKeyEvent extends KeyEvent 
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * path
-	 */
-	private	MenuElement[]			path		= null;
+  /**
+   * path
+   */
+  private MenuElement[] path = null;
 	
-	/**
-	 * manager
-	 */
-	private	MenuSelectionManager	manager		= null;
+  /**
+   * manager
+   */
+  private MenuSelectionManager manager = null;
 
+  /**
+   * Constructor MenuKeyEvent
+   * @param source Source
+   * @param id KeyEvent ID
+   * @param when Time
+   * @param modifiers Modifier keys
+   * @param keyCode Key code
+   * @param keyChar Key char
+   * @param path Path
+   * @param manager MenuSelectionManager
+   */
+  public MenuKeyEvent(Component source, int id, long when, int modifiers,
+      int keyCode, char keyChar, MenuElement[] path,
+      MenuSelectionManager manager) 
+  {
+    super(source, id, when, modifiers, keyCode, keyChar);
+    this.path = path;
+    this.manager = manager;
+  } 
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * getPath
+   * @return path
+   */
+  public MenuElement[] getPath() 
+  {
+    return path;
+  }
 
-	/**
-	 * Constructor MenuKeyEvent
-	 * @param source Source
-	 * @param id KeyEvent ID
-	 * @param when Time
-	 * @param modifiers Modifier keys
-	 * @param keyCode Key code
-	 * @param keyChar Key char
-	 * @param path Path
-	 * @param manager MenuSelectionManager
-	 */
-	public MenuKeyEvent(Component source, int id, long when, int modifiers,
-						int keyCode, char keyChar, MenuElement[] path,
-						MenuSelectionManager manager) {
-		super(source, id, when, modifiers, keyCode, keyChar);
-		this.path = path;
-		this.manager = manager;
-	} // MenuKeyEvent()
+  /**
+   * getMenuSelectionManager
+   * @return MenuSelectionManager
+   */
+  public MenuSelectionManager getMenuSelectionManager() 
+  {
+    return manager;
+  }
 
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * getPath
-	 * @returns path
-	 */
-	public MenuElement[] getPath() {
-		return path;
-	} // getPath()
-
-	/**
-	 * getMenuSelectionManager
-	 * @returns MenuSelectionManager
-	 */
-	public MenuSelectionManager getMenuSelectionManager() {
-		return manager;
-	} // getMenuSelectionManager()
-
-
-} // MenuKeyEvent
+} 

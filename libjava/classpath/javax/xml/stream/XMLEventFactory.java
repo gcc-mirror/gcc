@@ -1,5 +1,5 @@
 /* XMLEventFactory.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -320,10 +320,8 @@ public abstract class XMLEventFactory
   /**
    * Create an entity reference event.
    */
-  //public abstract EntityReference createEntityReference(String name,
-  //                                                      EntityDeclaration declaration);
   public abstract EntityReference createEntityReference(String name,
-                                                        String replacementText);
+                                                        EntityDeclaration declaration);
 
   /**
    * Create a comment event.

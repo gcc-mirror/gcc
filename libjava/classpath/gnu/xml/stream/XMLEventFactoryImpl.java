@@ -1,5 +1,5 @@
 /* XMLEventFactoryImpl.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -233,12 +233,9 @@ public class XMLEventFactoryImpl
   }
 
   public EntityReference createEntityReference(String name,
-                                               //EntityDeclaration declaration)
-                                               String replacementText)
+                                               EntityDeclaration declaration)
   {
-    //return new EntityReferenceImpl(location, declaration, name);
-    return new EntityReferenceImpl(location, name, null, null, null,
-                                   replacementText);
+    return new EntityReferenceImpl(location, declaration, name);
   }
 
   public Comment createComment(String text)

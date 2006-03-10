@@ -43,49 +43,43 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * <p>This is an abstract class for representing the system security policy for
- * a Java application environment (specifying which permissions are available
- * for code from various sources). That is, the security policy is represented
- * by a <code>Policy</code> subclass providing an implementation of the abstract
- * methods in this <code>Policy</code> class.</p>
- *
- * <p>There is only one <code>Policy</code> object in effect at any given time.
- * </p>
- *
- * <p>The source location for the policy information utilized by the
- * <code>Policy</code> object is up to the <code>Policy</code> implementation.
- * The policy configuration may be stored, for example, as a flat ASCII file, as
- * a serialized binary file of the <code>Policy</code> class, or as a database.
- * </p>
- *
- * <p>The currently-installed <code>Policy</code> object can be obtained by
- * calling the <code>getPolicy()</code> method, and it can be changed by a call
- * to the <code>setPolicy()</code> method (by code with permission to reset the
- * <code>Policy</code>).</p>
- *
- * <p>The <code>refresh()</code> method causes the policy object to refresh /
- * reload its current configuration.</p>
- *
- * <p>This is implementation-dependent. For example, if the policy object stores
- * its policy in configuration files, calling <code>refresh()</code> will cause
- * it to re-read the configuration policy files. The refreshed policy may not
- * have an effect on classes in a particular {@link ProtectionDomain}. This is
- * dependent on the <code>Policy</code> provider's implementation of the
- * <code>implies()</code> method and the {@link PermissionCollection} caching
- * strategy.</p>
- *
+ * <code>Policy</code> is an abstract class for managing the system security
+ * policy for the Java application environment. It specifies which permissions
+ * are available for code from various sources. The security policy is
+ * represented through a subclass of <code>Policy</code>.
+ * 
+ * <p>Only one <code>Policy</code> is in effect at any time. A
+ * {@link ProtectionDomain} initializes itself with information from this class
+ * on the set of permssions to grant.</p>
+ * 
+ * <p>The location for the actual <code>Policy</code> could be anywhere in any
+ * form because it depends on the Policy implementation. The default system is
+ * in a flat ASCII file or it could be in a database.</p>
+ * 
+ * <p>The current installed <code>Policy</code> can be accessed with
+ * {@link #getPolicy()} and changed with {@link #setPolicy(Policy)} if the code
+ * has the correct permissions.</p>
+ * 
+ * <p>The {@link #refresh()} method causes the <code>Policy</code> instance to
+ * refresh/reload its configuration. The method used to refresh depends on the
+ * <code>Policy</code> implementation.</p>
+ * 
+ * <p>When a protection domain initializes its permissions, it uses code like
+ * the following:</p>
+ * 
+ * <code>
+ * policy = Policy.getPolicy();
+ * PermissionCollection perms = policy.getPermissions(myCodeSource);
+ * </code>
+ * 
+ * <p>The protection domain passes the <code>Policy</code> handler a
+ * {@link CodeSource} instance which contains the codebase URL and a public key.
+ * The <code>Policy</code> implementation then returns the proper set of
+ * permissions for that {@link CodeSource}.</p>
+ * 
  * <p>The default <code>Policy</code> implementation can be changed by setting
- * the value of the <code>"policy.provider"</code> security property (in the
- * Java security properties file) to the fully qualified name of the desired
- * <code>Policy</code> implementation class. The Java security properties file
- * is located in the file named <code>&lt;JAVA_HOME>/lib/security/java.security
- * </code>, where <code>&lt;JAVA_HOME></code> refers to the directory where the
- * SDK was installed.</p>
- *
- * <p><b>IMPLEMENTATION NOTE:</b> This implementation attempts to read the
- * System property named <code>policy.provider</code> to find the concrete
- * implementation of the <code>Policy</code>. If/when this fails, it falls back
- * to a default implementation, which <b>allows everything</b>.
+ * the "policy.provider" security provider in the "java.security" file to the
+ * correct <code>Policy</code> implementation class.</p>
  *
  * @author Mark Benvenuto
  * @see CodeSource
@@ -106,18 +100,14 @@ public abstract class Policy
   }
 
   /**
-   * Returns the installed <code>Policy</code> object. This value should not be
-   * cached, as it may be changed by a call to <code>setPolicy()</code>. This
-   * method first calls {@link SecurityManager#checkPermission(Permission)} with
-   * a <code>SecurityPermission("getPolicy")</code> permission to ensure it's ok
-   * to get the <code>Policy</code> object.
-   *
-   * @return the installed <code>Policy</code>.
-   * @throws SecurityException if a security manager exists and its
-   * <code>checkPermission()</code> method doesn't allow getting the
-   * <code>Policy</code> object.
-   * @see SecurityManager#checkPermission(Permission)
-   * @see #setPolicy(Policy)
+   * Returns the currently installed <code>Policy</code> handler. The value
+   * should not be cached as it can be changed any time by
+   * {@link #setPolicy(Policy)}.
+   * 
+   * @return the current <code>Policy</code>.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed which disallows this
+   *           operation.
    */
   public static Policy getPolicy()
   {
@@ -129,17 +119,13 @@ public abstract class Policy
   }
 
   /**
-   * Sets the system-wide <code>Policy</code> object. This method first calls
-   * {@link SecurityManager#checkPermission(Permission)} with a
-   * <code>SecurityPermission("setPolicy")</code> permission to ensure it's ok
-   * to set the <code>Policy</code>.
-   *
-   * @param policy the new system <code>Policy</code> object.
-   * @throws SecurityException if a security manager exists and its
-   * <code>checkPermission()</code> method doesn't allow setting the
-   * <code>Policy</code>.
-   * @see SecurityManager#checkPermission(Permission)
-   * @see #getPolicy()
+   * Sets the <code>Policy</code> handler to a new value.
+   * 
+   * @param policy
+   *          the new <code>Policy</code> to use.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed which disallows this
+   *           operation.
    */
   public static void setPolicy(Policy policy)
   {
@@ -213,28 +199,27 @@ public abstract class Policy
   }
 
   /**
-   * Evaluates the global policy and returns a {@link PermissionCollection}
-   * object specifying the set of permissions allowed for code from the
-   * specified code source.
-   *
-   * @param codesource the {@link CodeSource} associated with the caller. This
-   * encapsulates the original location of the code (where the code came from)
-   * and the public key(s) of its signer.
-   * @return the set of permissions allowed for code from codesource according
-   * to the policy. The returned set of permissions must be a new mutable
-   * instance and it must support heterogeneous {@link Permission} types.
+   * Returns the set of Permissions allowed for a given {@link CodeSource}.
+   * 
+   * @param codesource
+   *          the {@link CodeSource} for which, the caller needs to find the
+   *          set of granted permissions.
+   * @return a set of permissions for {@link CodeSource} specified by the
+   *         current <code>Policy</code>.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed which disallows this
+   *           operation.
    */
   public abstract PermissionCollection getPermissions(CodeSource codesource);
 
   /**
-   * Evaluates the global policy and returns a {@link PermissionCollection}
-   * object specifying the set of permissions allowed given the characteristics
-   * of the protection domain.
-   *
-   * @param domain the {@link ProtectionDomain} associated with the caller.
-   * @return the set of permissions allowed for the domain according to the
-   * policy. The returned set of permissions must be a new mutable instance and
-   * it must support heterogeneous {@link Permission} types.
+   * Returns the set of Permissions allowed for a given {@link ProtectionDomain}.
+   * 
+   * @param domain
+   *          the {@link ProtectionDomain} for which, the caller needs to find
+   *          the set of granted permissions.
+   * @return a set of permissions for {@link ProtectionDomain} specified by the
+   *         current <code>Policy.</code>.
    * @since 1.4
    * @see ProtectionDomain
    * @see SecureClassLoader
@@ -270,14 +255,16 @@ public abstract class Policy
   }
 
   /**
-   * Evaluates the global policy for the permissions granted to the {@link
-   * ProtectionDomain} and tests whether the <code>permission</code> is granted.
-   *
-   * @param domain the {@link ProtectionDomain} to test.
-   * @param permission the {@link Permission} object to be tested for
-   * implication.
-   * @return <code>true</code> if <code>permission</code> is a proper subset of
-   * a permission granted to this {@link ProtectionDomain}.
+   * Checks if the designated {@link Permission} is granted to a designated
+   * {@link ProtectionDomain}.
+   * 
+   * @param domain
+   *          the {@link ProtectionDomain} to test.
+   * @param permission
+   *          the {@link Permission} to check.
+   * @return <code>true</code> if <code>permission</code> is implied by a
+   *         permission granted to this {@link ProtectionDomain}. Returns
+   *         <code>false</code> otherwise.
    * @since 1.4
    * @see ProtectionDomain
    */
@@ -302,9 +289,9 @@ public abstract class Policy
   }
 
   /**
-   * Refreshes/reloads the policy configuration. The behavior of this method
-   * depends on the implementation. For example, calling refresh on a file-based
-   * policy will cause the file to be re-read.
+   * Causes this <code>Policy</code> instance to refresh / reload its
+   * configuration. The method used to refresh depends on the concrete
+   * implementation.
    */
   public abstract void refresh();
 }

@@ -1,5 +1,5 @@
 /* EventFilter.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,6 @@ import javax.xml.stream.events.XMLEvent;
  * Simple filter interface for XML events.
  */
 public interface EventFilter
-  extends XMLFilter
 {
 
   /**

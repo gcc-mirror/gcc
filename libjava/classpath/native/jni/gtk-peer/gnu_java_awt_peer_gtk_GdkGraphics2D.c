@@ -1,5 +1,5 @@
 /* gnu_java_awt_peer_gtk_GdkGraphics2d.c
-   Copyright (C) 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006  Free Software Foundation, Inc.
 
    This file is part of GNU Classpath.
    
@@ -35,6 +35,7 @@
    obligated to do so.  If you do not wish to do so, delete this
    exception statement from your version. */
 
+#include "jcl.h"
 #include "gtkcairopeer.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkGraphics2D.h"
@@ -261,7 +262,14 @@ init_graphics2d_as_renderable (struct graphics2d *gr)
 static void
 begin_drawing_operation (JNIEnv *env, struct graphics2d * gr)
 {  
-  g_assert(cairo_status (gr->cr) == CAIRO_STATUS_SUCCESS);
+  cairo_status_t cst = cairo_status (gr->cr);
+  if (cst != CAIRO_STATUS_SUCCESS)
+    {
+      const char *detail = cairo_status_to_string (cst);
+      JCL_ThrowException (env, "java/lang/InternalError", detail);
+      (*env)->ExceptionDescribe (env);
+      return;
+    }
 
   switch (gr->mode)
     {
@@ -312,7 +320,19 @@ begin_drawing_operation (JNIEnv *env, struct graphics2d * gr)
 static void
 end_drawing_operation (JNIEnv *env, struct graphics2d * gr)
 {
-  g_assert(cairo_status (gr->cr) == CAIRO_STATUS_SUCCESS);
+  cairo_status_t cst = cairo_status (gr->cr);
+  if (cst != CAIRO_STATUS_SUCCESS)
+    {
+      /* Report error. */
+      const char *detail = cairo_status_to_string (cst);
+      JCL_ThrowException (env, "java/lang/InternalError", detail);
+      (*env)->ExceptionDescribe (env);
+
+      /* Recreate cairo status. */
+      cairo_destroy (gr->cr);
+      gr->cr = cairo_create (gr->surface);
+      return;
+    }
 
   switch (gr->mode)
     {

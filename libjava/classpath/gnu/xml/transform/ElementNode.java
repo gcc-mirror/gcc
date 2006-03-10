@@ -1,5 +1,5 @@
 /* ElementNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -238,7 +238,7 @@ final class ElementNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("element");
     buf.append('[');
     buf.append("name=");
     if (namespace != null)

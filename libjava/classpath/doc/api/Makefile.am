@@ -44,6 +44,7 @@ create_html:
 	-licensetext \
 	-linksource \
 	-splitindex \
+	-validhtml \
 	-d html \
 	-doctitle "GNU Classpath $(VERSION)" \
 	-windowtitle "GNU Classpath $(VERSION) Documentation" \

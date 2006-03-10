@@ -40,7 +40,6 @@ package gnu.java.security.x509;
 
 import gnu.classpath.debug.Component;
 import gnu.classpath.debug.SystemLogger;
-
 import gnu.java.security.OID;
 import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;
@@ -88,8 +87,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.x500.X500Principal;
@@ -661,10 +658,7 @@ public class X509Certificate extends java.security.cert.X509Certificate
     der.skip(spki.getLength());
     logger.log (Component.X509, "read subjectPublicKey == {0}", subjectKey);
 
-    if (version > 1)
-      {
-        val = der.read();
-      }
+    val = der.read();
     if (version >= 2 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 1)
       {
         byte[] b = (byte[]) val.getValue();

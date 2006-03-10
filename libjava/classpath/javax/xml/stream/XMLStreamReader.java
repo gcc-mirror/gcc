@@ -1,5 +1,5 @@
 /* XMLStreamReader.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -136,7 +136,7 @@ public interface XMLStreamReader
   /**
    * Returns the QName of the attribute at the given index.
    */
-  QName getAttributeQName(int index);
+  QName getAttributeName(int index);
 
   /**
    * Returns the namespace URI of the attribute at the given index.
@@ -146,7 +146,7 @@ public interface XMLStreamReader
   /**
    * Returns the local-name of the attribute at the given index.
    */
-  String getAttributeName(int index);
+  String getAttributeLocalName(int index);
 
   /**
    * Returns the namespace prefix of the attribute at the given index.

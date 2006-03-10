@@ -89,9 +89,9 @@ public final class Component extends Level
   public static final Component SSL_HANDSHAKE = new Component ("SSL HANDSHAKE", 0);
 
   /**
-   * Traces the application messages during SSL communications.
+   * Traces record layer messages during SSL communications.
    */
-  public static final Component SSL_APPLICATION = new Component ("SSL APPLICATION", 1);
+  public static final Component SSL_RECORD_LAYER = new Component ("SSL RECORD LAYER", 1);
 
   /**
    * Trace details about the SSL key exchange.

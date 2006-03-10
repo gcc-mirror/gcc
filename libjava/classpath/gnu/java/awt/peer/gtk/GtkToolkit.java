@@ -1,5 +1,6 @@
 /* GtkToolkit.java -- Implements an AWT Toolkit using GTK for peers
-   Copyright (C) 1998, 1999, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -159,137 +160,93 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   }
 
   /** 
-   * A helper class to return to clients in cases where a BufferedImage is
-   * desired but its construction fails.
+   * Helper to return either a Image -- the argument -- or a
+   * GtkImage with the errorLoading flag set if the argument is null.
    */
-  private class GtkErrorImage extends Image
-  {
-    public GtkErrorImage()
-    {
-    }
-
-    public int getWidth(ImageObserver observer)
-    {
-      return -1;
-    }
-
-    public int getHeight(ImageObserver observer)
-    {
-      return -1;
-    }
-
-    public ImageProducer getSource()
-    {
-
-      return new ImageProducer() 
-        {          
-          HashSet consumers = new HashSet();          
-          public void addConsumer(ImageConsumer ic)
-          {
-            consumers.add(ic);
-          }
-
-          public boolean isConsumer(ImageConsumer ic)
-          {
-            return consumers.contains(ic);
-          }
-
-          public void removeConsumer(ImageConsumer ic)
-          {
-            consumers.remove(ic);
-          }
-
-          public void startProduction(ImageConsumer ic)
-          {
-            consumers.add(ic);
-            Iterator i = consumers.iterator();
-            while(i.hasNext())
-              {
-                ImageConsumer c = (ImageConsumer) i.next();
-                c.imageComplete(ImageConsumer.IMAGEERROR);
-              }
-          }
-          public void requestTopDownLeftRightResend(ImageConsumer ic)
-          {
-            startProduction(ic);
-          }        
-        };
-    }
-
-    public Graphics getGraphics() 
-    { 
-      return null; 
-    }
-
-    public Object getProperty(String name, ImageObserver observer)
-    {
-      return null;
-    }
-    public Image getScaledInstance(int width, int height, int flags)
-    {
-      return new GtkErrorImage();
-    }
-
-    public void flush() 
-    {
-    }
-  }
-
-
-  /** 
-   * Helper to return either a BufferedImage -- the argument -- or a
-   * GtkErrorImage if the argument is null.
-   */
-
-  private Image bufferedImageOrError(BufferedImage b)
+  private Image imageOrError(Image b)
   {
     if (b == null) 
-      return new GtkErrorImage();
+      return GtkImage.getErrorImage();
     else
       return b;
   }
-
 
   public Image createImage (String filename)
   {
     if (filename.length() == 0)
       return new GtkImage ();
-
-    if (useGraphics2D())
-      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (filename));
-    else
-      return new GtkImage (filename);
+    
+    Image image;
+    try
+      {
+	if (useGraphics2D())
+	  image = GdkPixbufDecoder.createBufferedImage(filename);
+	else
+	  image = new GtkImage(filename);
+      }
+    catch (IllegalArgumentException iae)
+      {
+	image = null;
+      }
+    return imageOrError(image);
   }
 
   public Image createImage (URL url)
   {
-    if (useGraphics2D())
-      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (url));
-    else
-      return new GtkImage (url);
+    Image image;
+    try
+      {
+	if (useGraphics2D())
+	  image = GdkPixbufDecoder.createBufferedImage(url);
+	else
+	  image = new GtkImage(url);
+      }
+    catch (IllegalArgumentException iae)
+      {
+	image = null;
+      }
+    return imageOrError(image);
   }
 
   public Image createImage (ImageProducer producer) 
   {
-    if (useGraphics2D())
-      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (producer));
-    else
-      return new GtkImage (producer);
+    Image image;
+    try
+      {
+	if (useGraphics2D())
+	  image = GdkPixbufDecoder.createBufferedImage(producer);
+	else
+	  image = new GtkImage(producer);
+      }
+    catch (IllegalArgumentException iae)
+      {
+	image = null;
+      }
+    return imageOrError(image);
   }
 
   public Image createImage (byte[] imagedata, int imageoffset,
 			    int imagelength)
   {
-    if (useGraphics2D())
-      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (imagedata,
-                                                   imageoffset, 
-                                                                        imagelength));
-    else
+    Image image;
+    try
       {
-        byte[] datacopy = new byte[imagelength];
-        System.arraycopy (imagedata, imageoffset, datacopy, 0, imagelength);
-        return new GtkImage (datacopy);
+	if (useGraphics2D())
+	  image = GdkPixbufDecoder.createBufferedImage(imagedata,
+						       imageoffset, 
+						       imagelength);
+	else
+	  {
+	    byte[] datacopy = new byte[imagelength];
+	    System.arraycopy(imagedata, imageoffset, datacopy, 0, imagelength);
+	    return new GtkImage(datacopy);
+	  }
       }
+    catch (IllegalArgumentException iae)
+      {
+	image = null;
+      }
+    return imageOrError(image);
   }
   
   /**
@@ -608,7 +565,6 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
         if (q == null)
           {
             q = new EventQueue();
-            GtkGenericPeer.enableQueue (q);
           }
       }    
     return q;

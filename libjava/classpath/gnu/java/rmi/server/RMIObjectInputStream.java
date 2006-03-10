@@ -46,6 +46,7 @@ import java.io.ObjectStreamClass;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.rmi.server.RMIClassLoader;
+import java.util.ArrayList;
 
 public class RMIObjectInputStream
 	extends ObjectInputStream {
@@ -76,28 +77,51 @@ protected Object getAnnotation()
     return readObject();
 }
 	
-protected Class resolveProxyClass(String intfs[])
-        throws IOException, ClassNotFoundException
-{
-    String annotation = (String)getAnnotation();
-	
+
+  protected Class resolveProxyClass(String intfs[]) throws IOException,
+      ClassNotFoundException
+  {
+    String annotation = (String) getAnnotation();
+
     Class clss[] = new Class[intfs.length];
-    if(annotation == null)
-        clss[0] = RMIClassLoader.loadClass(intfs[0]);
-    else
-        clss[0] = RMIClassLoader.loadClass(annotation, intfs[0]);
-    
-    //assume all interfaces can be loaded by the same classloader
-    ClassLoader loader = clss[0].getClassLoader();
+
     for (int i = 0; i < intfs.length; i++)
-        clss[i] = Class.forName(intfs[i], false, loader);
-        
-    try {
-    return Proxy.getProxyClass(loader, clss);
-	} catch (IllegalArgumentException e) {
-	    throw new ClassNotFoundException(null, e);
-	}  
-}
+      {
+        if (annotation == null)
+          clss[i] = RMIClassLoader.loadClass(intfs[i]);
+        else
+          clss[i] = RMIClassLoader.loadClass(annotation, intfs[i]);
+      }
+    
+    ClassLoader loader;
+    
+    if (clss.length > 0)
+      {
+        // Chain all class loaders (they may differ).
+        ArrayList loaders = new ArrayList(intfs.length);
+        ClassLoader cx;
+        for (int i = 0; i < clss.length; i++)
+          {
+            cx = clss[i].getClassLoader();
+            if (!loaders.contains(cx))
+              {
+                loaders.add(0, cx);
+              }
+          }
+        loader = new CombinedClassLoader(loaders);
+      }
+    else
+       loader = ClassLoader.getSystemClassLoader();
+
+    try
+      {
+        return Proxy.getProxyClass(loader, clss);
+      }
+    catch (IllegalArgumentException e)
+      {
+        throw new ClassNotFoundException(null, e);
+      }
+  }
 
 protected Object readValue(Class valueClass) throws IOException, ClassNotFoundException {
     if(valueClass.isPrimitive()){

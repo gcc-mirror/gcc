@@ -1,5 +1,5 @@
 /* ProcessingInstructionNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,19 +66,15 @@ final class ProcessingInstructionNode
   {
     TemplateNode ret = new ProcessingInstructionNode(name);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
   void doApply(Stylesheet stylesheet, QName mode,
-             Node context, int pos, int len,
-             Node parent, Node nextSibling)
+               Node context, int pos, int len,
+               Node parent, Node nextSibling)
     throws TransformerException
   {
     String data = null;
@@ -98,24 +94,18 @@ final class ProcessingInstructionNode
     ProcessingInstruction pi = doc.createProcessingInstruction(name, data);
     // Insert into result tree
     if (nextSibling != null)
-      {
-        parent.insertBefore(pi, nextSibling);
-      }
+      parent.insertBefore(pi, nextSibling);
     else
-      {
-        parent.appendChild(pi);
-      }
+      parent.appendChild(pi);
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("processing-instruction");
     buf.append('[');
     buf.append("name=");
     buf.append(name);

@@ -1,5 +1,5 @@
 /* ForEachNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -70,19 +70,13 @@ final class ForEachNode
     int len = sortKeys.size();
     List sortKeys2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
-      {
-        sortKeys2.add(((Key) sortKeys.get(i)).clone(stylesheet));
-      }
+      sortKeys2.add(((Key) sortKeys.get(i)).clone(stylesheet));
     TemplateNode ret = new ForEachNode(select.clone(stylesheet),
                                        sortKeys2);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -113,9 +107,7 @@ final class ForEachNode
                 Collections.sort(list, new XSLComparator(sortKeys));
               }
             else
-              {
-                Collections.sort(list, documentOrderComparator);
-              }
+              Collections.sort(list, documentOrderComparator);
             // Perform children for each node
             int l = list.size();
             int p = 1;
@@ -132,27 +124,21 @@ final class ForEachNode
         stylesheet.currentTemplate = saved;
       }
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
 
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
-      {
-        return true;
-      }
+      return true;
     if (sortKeys != null)
       {
         for (Iterator i = sortKeys.iterator(); i.hasNext(); )
           {
             if (((SortKey) i.next()).references(var))
-              {
-                return true;
-              }
+              return true;
           }
       }
     return super.references(var);
@@ -160,7 +146,7 @@ final class ForEachNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("for-each");
     buf.append('[');
     buf.append("select=");
     buf.append(select);

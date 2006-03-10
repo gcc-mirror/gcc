@@ -1,5 +1,6 @@
 /* RemoteException.java -- common superclass for exceptions in java.rmi
-   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -86,7 +87,7 @@ public class RemoteException extends IOException
    * Create an exception with the given message and cause.
    *
    * @param s the message
-   * @param ex the cause
+   * @param e the cause
    */
   public RemoteException(String s, Throwable e)
   {

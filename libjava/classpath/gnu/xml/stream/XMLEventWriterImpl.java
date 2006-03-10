@@ -155,7 +155,7 @@ public class XMLEventWriterImpl
     throws XMLStreamException
   {
     while (reader.hasNext())
-      add(reader.next());
+      add(reader.nextEvent());
   }
 
   public String getPrefix(String uri)

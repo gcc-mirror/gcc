@@ -41,6 +41,7 @@ package java.util.regex;
  * Indicates illegal pattern for regular expression.
  * Includes state to inspect the pattern and what and where the expression
  * was not valid regular expression.
+ * @since 1.4
  */
 public class PatternSyntaxException extends IllegalArgumentException
 {

@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.xml.libxmlj.dom;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,8 +48,10 @@ import javax.xml.parsers.ParserConfigurationException;
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class GnomeDocumentBuilderFactory
-extends DocumentBuilderFactory
+  extends DocumentBuilderFactory
 {
+
+  private boolean secureProcessing;
 
   public GnomeDocumentBuilderFactory ()
   {
@@ -89,6 +92,27 @@ extends DocumentBuilderFactory
   public void setAttribute (String name, Object value)
   {
     // TODO
+  }
+  
+  public void setFeature(String name, boolean value)
+    throws ParserConfigurationException
+  {
+    if (name == null)
+      throw new NullPointerException();
+    if (XMLConstants.FEATURE_SECURE_PROCESSING.equals(name))
+      {
+        secureProcessing = true;
+        return;
+      }
+    throw new ParserConfigurationException(name);
+  }
+
+  public boolean getFeature(String name)
+    throws ParserConfigurationException
+  {
+    if (XMLConstants.FEATURE_SECURE_PROCESSING.equals(name))
+      return secureProcessing;
+    throw new ParserConfigurationException(name);
   }
   
 }

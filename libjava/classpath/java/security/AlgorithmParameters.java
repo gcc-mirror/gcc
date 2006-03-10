@@ -45,36 +45,9 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidParameterSpecException;
 
 /**
- * <p>This class is used as an opaque representation of cryptographic
- * parameters.</p>
- *
- * <p>An <code>AlgorithmParameters</code> object for managing the parameters
- * for a particular algorithm can be obtained by calling one of the
- * <code>getInstance()</code> factory methods (static methods that return
- * instances of a given class).</p>
- *
- * <p>There are two ways to request such an implementation: by specifying
- * either just an algorithm name, or both an algorithm name and a package
- * provider.</p>
- *
- * <ul>
- *    <li>If just an algorithm name is specified, the system will determine if
- *    there is an AlgorithmParameters implementation for the algorithm requested
- *    available in the environment, and if there is more than one, if there is
- *    a preferred one.</li>
- *    <li>If both an algorithm name and a package provider are specified, the
- *    system will determine if there is an implementation in the package
- *    requested, and throw an exception if there is not.</li>
- * </ul>
- *
- * <p>Once an <code>AlgorithmParameters</code> object is returned, it must be
- * initialized via a call to <code>init()</code>, using an appropriate
- * parameter specification or parameter encoding.</p>
- *
- * <p>A transparent parameter specification is obtained from an
- * <code>AlgorithmParameters</code> object via a call to
- * <code>getParameterSpec()</code>, and a byte encoding of the parameters is
- * obtained via a call to <code>getEncoded()</code>.</p>
+ * <code>AlgorithmParameters</code> is an Algorithm Parameters class which
+ * provides an interface through which the user can manage the parameters of an
+ * Algorithm.
  *
  * @author Mark Benvenuto
  * @since 1.2
@@ -92,11 +65,14 @@ public class AlgorithmParameters
   private String algorithm;
 
   /**
-   * Creates an <code>AlgorithmParameters</code> object.
-   *
-   * @param paramSpi the delegate.
-   * @param provider the provider.
-   * @param algorithm the algorithm.
+   * Constructs a new instance of <code>AlgorithmParameters</code>.
+   * 
+   * @param paramSpi
+   *          the engine to use.
+   * @param provider
+   *          the provider to use.
+   * @param algorithm
+   *          the algorithm to use.
    */
   protected AlgorithmParameters(AlgorithmParametersSpi paramSpi,
                                 Provider provider, String algorithm)
@@ -106,32 +82,24 @@ public class AlgorithmParameters
     this.algorithm = algorithm;
   }
 
-  /**
-   * Returns the name of the algorithm associated with this parameter object.
-   *
-   * @return the algorithm name.
-   */
+  /** @return A string with the name of the algorithm used. */
   public final String getAlgorithm()
   {
     return algorithm;
   }
 
   /**
-   * <p>Generates a parameter object for the specified algorithm.</p>
-   *
-   * <p>If the default provider package provides an implementation of the
-   * requested algorithm, an instance of <code>AlgorithmParameters</code>
-   * containing that implementation is returned. If the algorithm is not
-   * available in the default package, other packages are searched.</p>
-   *
-   * <p>The returned parameter object must be initialized via a call to
-   * <code>init()</code>, using an appropriate parameter specification or
-   * parameter encoding.</p>
-   *
-   * @param algorithm the name of the algorithm requested.
-   * @return the new parameter object.
-   * @throws NoSuchAlgorithmException if the algorithm is not available in the
-   * environment.
+   * Returns a new instance of <code>AlgorithmParameters</code> representing
+   * the specified algorithm parameters.
+   * 
+   * <p>The returned <code>AlgorithmParameters</code> must still be initialized
+   * with an <code>init()</code> method.</p>
+   * 
+   * @param algorithm
+   *          the algorithm to use.
+   * @return the new instance repesenting the desired algorithm.
+   * @throws NoSuchAlgorithmException
+   *           if the algorithm is not implemented by any provider.
    */
   public static AlgorithmParameters getInstance(String algorithm)
     throws NoSuchAlgorithmException
@@ -152,23 +120,24 @@ public class AlgorithmParameters
   }
 
   /**
-   * <p>Generates a parameter object for the specified algorithm, as supplied
-   * by the specified provider, if such an algorithm is available from the
-   * provider.</p>
-   *
-   * <p>The returned parameter object must be initialized via a call to
-   * <code>init()</code>, using an appropriate parameter specification or
-   * parameter encoding.</p>
-   *
-   * @param algorithm the name of the algorithm requested.
-   * @param provider the name of the provider.
-   * @return the new parameter object.
-   * @throws NoSuchAlgorithmException if the algorithm is not available in the
-   * package supplied by the requested provider.
-   * @throws NoSuchProviderException if the provider is not available in the
-   * environment.
-   * @throws IllegalArgumentException if the provider name is null or empty.
-   * @see Provider
+   * Returns a new instance of <code>AlgorithmParameters</code> representing
+   * the specified algorithm parameters from a named provider.
+   * 
+   * <p>The returned <code>AlgorithmParameters</code> must still be intialized
+   * with an <code>init()</code> method.</p>
+   * 
+   * @param algorithm
+   *          the algorithm to use.
+   * @param provider
+   *          the name of the {@link Provider} to use.
+   * @return the new instance repesenting the desired algorithm.
+   * @throws NoSuchAlgorithmException
+   *           if the algorithm is not implemented by the named provider.
+   * @throws NoSuchProviderException
+   *           if the named provider was not found.
+   * @throws IllegalArgumentException
+   *           if <code>provider</code> is <code>null</code> or is an empty
+   *           string.
    */
   public static AlgorithmParameters getInstance(String algorithm, String provider)
     throws NoSuchAlgorithmException, NoSuchProviderException
@@ -184,18 +153,21 @@ public class AlgorithmParameters
   }
 
   /**
-   * Generates an <code>AlgorithmParameterGenerator</code> object for the
-   * requested algorithm, as supplied from the specified provider, if such a
-   * parameter generator is available from the provider. Note: the
-   * <code>provider</code> doesn't have to be registered.
-   *
-   * @param algorithm the string name of the algorithm.
-   * @param provider the provider.
-   * @return the new <code>AlgorithmParameterGenerator</code> object.
-   * @throws NoSuchAlgorithmException if the <code>algorithm</code> is not
-   * available from the <code>provider</code>.
-   * @throws IllegalArgumentException if the <code>provider</code> is
-   * <code>null</code>.
+   * Returns a new instance of <code>AlgorithmParameters</code> representing
+   * the specified algorithm parameters from the specified {@link Provider}.
+   * 
+   * <p>The returned <code>AlgorithmParameters</code> must still be intialized
+   * with an <code>init()</code> method.</p>
+   * 
+   * @param algorithm
+   *          the algorithm to use.
+   * @param provider
+   *          the {@link Provider} to use.
+   * @return the new instance repesenting the desired algorithm.
+   * @throws NoSuchAlgorithmException
+   *           if the algorithm is not implemented by the {@link Provider}.
+   * @throws IllegalArgumentException
+   *           if <code>provider</code> is <code>null</code>.
    * @since 1.4
    */
   public static AlgorithmParameters getInstance(String algorithm,
@@ -221,24 +193,19 @@ public class AlgorithmParameters
       }
   }
 
-  /**
-   * Returns the provider of this parameter object.
-   *
-   * @return the provider of this parameter object.
-   */
+  /** @return the provider of this parameter object. */
   public final Provider getProvider()
   {
     return provider;
   }
 
   /**
-   * Initializes this parameter object using the parameters specified in
-   * <code>paramSpec</code>.
-   *
-   * @param paramSpec the parameter specification.
-   * @throws InvalidParameterSpecException if the given parameter specification
-   * is inappropriate for the initialization of this parameter object, or if
-   * this parameter object has already been initialized.
+   * Initializes the engine with the specified {@link AlgorithmParameterSpec}.
+   * 
+   * @param paramSpec
+   *          A {@link AlgorithmParameterSpec} to use.
+   * @throws InvalidParameterSpecException
+   *           if <code>paramSpec</code> is invalid.
    */
   public final void init(AlgorithmParameterSpec paramSpec)
     throws InvalidParameterSpecException
@@ -247,13 +214,15 @@ public class AlgorithmParameters
   }
 
   /**
-   * Imports the specified parameters and decodes them according to the primary
-   * decoding format for parameters. The primary decoding format for parameters
-   * is ASN.1, if an ASN.1 specification for this type of parameters exists.
-   *
-   * @param params the encoded parameters.
-   * @throws IOException on decoding errors, or if this parameter object has
-   * already been initialized.
+   * Initializes the engine with the specified parameters stored in the byte
+   * array and decodes them according to the ASN.1 specification. If the ASN.1
+   * specification exists then it succeeds otherwise an {@link IOException} is
+   * thrown.
+   * 
+   * @param params
+   *          the parameters to use.
+   * @throws IOException
+   *           if a decoding error occurs.
    */
   public final void init(byte[]params) throws IOException
   {
@@ -261,15 +230,18 @@ public class AlgorithmParameters
   }
 
   /**
-   * Imports the parameters from params and decodes them according to the
-   * specified decoding scheme. If <code>format</code> is <code>null</code>,
-   * the primary decoding format for parameters is used. The primary decoding
-   * format is ASN.1, if an ASN.1 specification for these parameters exists.
-   *
-   * @param params the encoded parameters.
-   * @param format the name of the decoding scheme.
-   * @throws IOException on decoding errors, or if this parameter object has
-   * already been initialized.
+   * Initializes the engine with the specified parameters stored in the byte
+   * array and decodes them according to the specified decoding specification.
+   * If <code>format</code> is <code>null</code>, then this method decodes the
+   * byte array using the ASN.1 specification if it exists, otherwise it throws
+   * an {@link IOException}.
+   * 
+   * @param params
+   *          the parameters to use.
+   * @param format
+   *          the name of decoding format to use.
+   * @throws IOException
+   *           if a decoding error occurs.
    */
   public final void init(byte[]params, String format) throws IOException
   {
@@ -277,19 +249,14 @@ public class AlgorithmParameters
   }
 
   /**
-   * Returns a (transparent) specification of this parameter object.
-   * <code>paramSpec</code> identifies the specification class in which the
-   * parameters should be returned. It could, for example, be
-   * <code>DSAParameterSpec.class</code>, to indicate that the parameters should
-   * be returned in an instance of the {@link java.security.spec.DSAParameterSpec}
-   * class.
-   *
-   * @param paramSpec the specification class in which the parameters should be
-   * returned.
+   * Returns a new instance of <code>AlgorithmParameters</code> as a
+   * designated parameter specification {@link Class}.
+   * 
+   * @param paramSpec
+   *          the {@link Class} to use.
    * @return the parameter specification.
-   * @throws InvalidParameterSpecException if the requested parameter
-   * specification is inappropriate for this parameter object, or if this
-   * parameter object has not been initialized.
+   * @throws InvalidParameterSpecException
+   *           if <code>paramSpec</code> is invalid.
    */
   public final AlgorithmParameterSpec getParameterSpec(Class paramSpec)
     throws InvalidParameterSpecException
@@ -298,13 +265,10 @@ public class AlgorithmParameters
   }
 
   /**
-   * Returns the parameters in their primary encoding format. The primary
-   * encoding format for parameters is ASN.1, if an ASN.1 specification for
-   * this type of parameters exists.
-   *
-   * @return the parameters encoded using their primary encoding format.
-   * @throws IOException on encoding errors, or if this parameter object has not
-   * been initialized.
+   * Returns the parameters in the default encoding format. The primary encoding
+   * format is ASN.1 if it exists for the specified type.
+   * 
+   * @return byte array representing the parameters.
    */
   public final byte[] getEncoded() throws IOException
   {
@@ -312,15 +276,16 @@ public class AlgorithmParameters
   }
 
   /**
-   * Returns the parameters encoded in the specified scheme. If format is
-   * <code>null</code>, the primary encoding format for parameters is used. The
-   * primary encoding format is ASN.1, if an ASN.1 specification for these
-   * parameters exists.
-   *
-   * @param format the name of the encoding format.
+   * Returns the parameters in the specified encoding format. If
+   * <code>format</code> is <code>null</code> then the ASN.1 encoding
+   * format is used if it exists for the specified type.
+   * 
+   * @param format
+   *          the name of the encoding format to use.
    * @return the parameters encoded using the specified encoding scheme.
-   * @throws IOException on encoding errors, or if this parameter object has
-   * not been initialized.
+   * @throws IOException
+   *           if an encoding exception occurs, or if this parameter object has
+   *           not been initialized.
    */
   public final byte[] getEncoded(String format) throws IOException
   {
@@ -328,10 +293,9 @@ public class AlgorithmParameters
   }
 
   /**
-   * Returns a formatted string describing the parameters.
-   *
-   * @return a formatted string describing the parameters, or <code>null</code>
-   * if this parameter object has not been initialized.
+   * Returns a string representation of the encoded form.
+   * 
+   * @return a string representation of the encoded form.
    */
   public final String toString()
   {

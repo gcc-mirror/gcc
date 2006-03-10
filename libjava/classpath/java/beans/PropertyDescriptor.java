@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.beans;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -342,6 +344,71 @@ public class PropertyDescriptor extends FeatureDescriptor
     public void setPropertyEditorClass(Class propertyEditorClass)
     {
         this.propertyEditorClass = propertyEditorClass;
+    }
+
+    /**
+     * Instantiate a property editor using the property editor class.
+     * If no property editor class has been set, this will return null.
+     * If the editor class has a public constructor which takes a single
+     * argument, that will be used and the bean parameter will be passed
+     * to it.  Otherwise, a public no-argument constructor will be used,
+     * if available.  This method will return null if no constructor is
+     * found or if construction fails for any reason.
+     * @param bean the argument to the constructor
+     * @return a new PropertyEditor, or null on error
+     * @since 1.5
+     */
+    public PropertyEditor createPropertyEditor(Object bean)
+    {
+      if (propertyEditorClass == null)
+        return null;
+      Constructor c = findConstructor(propertyEditorClass,
+                                      new Class[] { Object.class });
+      if (c != null)
+        return instantiateClass(c, new Object[] { bean });
+      c = findConstructor(propertyEditorClass, null);
+      if (c != null)
+        return instantiateClass(c, null);
+      return null;
+    }
+
+    // Helper method to look up a constructor and return null if it is not
+    // found.
+    private Constructor findConstructor(Class k, Class[] argTypes)
+    {
+      try
+        {
+          return k.getConstructor(argTypes);
+        }
+      catch (NoSuchMethodException _)
+        {
+          return null;
+        }
+    }
+
+    // Helper method to instantiate an object but return null on error.
+    private PropertyEditor instantiateClass(Constructor c, Object[] args)
+    {
+      try
+        {
+          return (PropertyEditor) c.newInstance(args);
+        }
+      catch (InstantiationException _)
+        {
+          return null;
+        }
+      catch (InvocationTargetException _)
+        {
+          return null;
+        }
+      catch (IllegalAccessException _)
+        {
+          return null;
+        }
+      catch (ClassCastException _)
+        {
+          return null;
+        }
     }
 
     private void findMethods(

@@ -55,6 +55,8 @@ import java.io.Writer;
  * data loss.
  *
  * @author David Brownell
+ *
+ * @deprecated Please use the javax.xml.stream APIs instead
  */
 public class XHTMLWriter extends XMLWriter
 {

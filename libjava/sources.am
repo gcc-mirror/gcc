@@ -257,6 +257,7 @@ gnu/classpath.list: $(gnu_classpath_source_files)
 gnu_classpath_debug_source_files = \
 classpath/gnu/classpath/debug/Component.java \
 classpath/gnu/classpath/debug/PreciseFilter.java \
+classpath/gnu/classpath/debug/Simple1LineFormatter.java \
 classpath/gnu/classpath/debug/SystemLogger.java
 
 gnu_classpath_debug_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_debug_source_files)))
@@ -826,6 +827,7 @@ gnu-java-awt-peer-qt.lo: $(gnu_java_awt_peer_qt_source_files)
 
 gnu_java_beans_source_files = \
 classpath/gnu/java/beans/BeanInfoEmbryo.java \
+classpath/gnu/java/beans/DefaultExceptionListener.java \
 classpath/gnu/java/beans/DummyAppletContext.java \
 classpath/gnu/java/beans/DummyAppletStub.java \
 classpath/gnu/java/beans/ExplicitBeanInfo.java \
@@ -844,7 +846,6 @@ classpath/gnu/java/beans/decoder/ClassHandler.java \
 classpath/gnu/java/beans/decoder/ConstructorContext.java \
 classpath/gnu/java/beans/decoder/Context.java \
 classpath/gnu/java/beans/decoder/DecoderContext.java \
-classpath/gnu/java/beans/decoder/DefaultExceptionListener.java \
 classpath/gnu/java/beans/decoder/DoubleHandler.java \
 classpath/gnu/java/beans/decoder/DummyContext.java \
 classpath/gnu/java/beans/decoder/DummyHandler.java \
@@ -1475,6 +1476,7 @@ gnu/java/rmi/registry.list: $(gnu_java_rmi_registry_source_files)
 
 
 gnu_java_rmi_server_source_files = \
+classpath/gnu/java/rmi/server/CombinedClassLoader.java \
 classpath/gnu/java/rmi/server/ConnectionRunnerPool.java \
 classpath/gnu/java/rmi/server/ProtocolConstants.java \
 classpath/gnu/java/rmi/server/RMIClassLoaderImpl.java \
@@ -1508,7 +1510,9 @@ gnu/java/rmi/server.list: $(gnu_java_rmi_server_source_files)
 gnu_java_security_source_files = \
 classpath/gnu/java/security/Engine.java \
 classpath/gnu/java/security/OID.java \
-classpath/gnu/java/security/PolicyFile.java
+classpath/gnu/java/security/PolicyFile.java \
+classpath/gnu/java/security/Properties.java \
+classpath/gnu/java/security/Registry.java
 
 gnu_java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_source_files)))
 
@@ -1581,6 +1585,189 @@ gnu/java/security/der.list: $(gnu_java_security_der_source_files)
 -include gnu/java/security/der.deps
 
 
+gnu_java_security_hash_source_files = \
+classpath/gnu/java/security/hash/BaseHash.java \
+classpath/gnu/java/security/hash/HashFactory.java \
+classpath/gnu/java/security/hash/Haval.java \
+classpath/gnu/java/security/hash/IMessageDigest.java \
+classpath/gnu/java/security/hash/MD2.java \
+classpath/gnu/java/security/hash/MD4.java \
+classpath/gnu/java/security/hash/MD5.java \
+classpath/gnu/java/security/hash/RipeMD128.java \
+classpath/gnu/java/security/hash/RipeMD160.java \
+classpath/gnu/java/security/hash/Sha160.java \
+classpath/gnu/java/security/hash/Sha256.java \
+classpath/gnu/java/security/hash/Sha384.java \
+classpath/gnu/java/security/hash/Sha512.java \
+classpath/gnu/java/security/hash/Tiger.java \
+classpath/gnu/java/security/hash/Whirlpool.java
+
+gnu_java_security_hash_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_hash_source_files)))
+
+gnu/java/security/hash.list: $(gnu_java_security_hash_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_hash_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/hash.list
+
+-include gnu/java/security/hash.deps
+
+
+gnu_java_security_jce_hash_source_files = \
+classpath/gnu/java/security/jce/hash/HavalSpi.java \
+classpath/gnu/java/security/jce/hash/MD2Spi.java \
+classpath/gnu/java/security/jce/hash/MD4Spi.java \
+classpath/gnu/java/security/jce/hash/MD5Spi.java \
+classpath/gnu/java/security/jce/hash/MessageDigestAdapter.java \
+classpath/gnu/java/security/jce/hash/RipeMD128Spi.java \
+classpath/gnu/java/security/jce/hash/RipeMD160Spi.java \
+classpath/gnu/java/security/jce/hash/Sha160Spi.java \
+classpath/gnu/java/security/jce/hash/Sha256Spi.java \
+classpath/gnu/java/security/jce/hash/Sha384Spi.java \
+classpath/gnu/java/security/jce/hash/Sha512Spi.java \
+classpath/gnu/java/security/jce/hash/TigerSpi.java \
+classpath/gnu/java/security/jce/hash/WhirlpoolSpi.java
+
+gnu_java_security_jce_hash_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_jce_hash_source_files)))
+
+gnu/java/security/jce/hash.list: $(gnu_java_security_jce_hash_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_jce_hash_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/jce/hash.list
+
+-include gnu/java/security/jce/hash.deps
+
+
+gnu_java_security_jce_prng_source_files = \
+classpath/gnu/java/security/jce/prng/HavalRandomSpi.java \
+classpath/gnu/java/security/jce/prng/MD2RandomSpi.java \
+classpath/gnu/java/security/jce/prng/MD4RandomSpi.java \
+classpath/gnu/java/security/jce/prng/MD5RandomSpi.java \
+classpath/gnu/java/security/jce/prng/RipeMD128RandomSpi.java \
+classpath/gnu/java/security/jce/prng/RipeMD160RandomSpi.java \
+classpath/gnu/java/security/jce/prng/SecureRandomAdapter.java \
+classpath/gnu/java/security/jce/prng/Sha160RandomSpi.java \
+classpath/gnu/java/security/jce/prng/Sha256RandomSpi.java \
+classpath/gnu/java/security/jce/prng/Sha384RandomSpi.java \
+classpath/gnu/java/security/jce/prng/Sha512RandomSpi.java \
+classpath/gnu/java/security/jce/prng/TigerRandomSpi.java \
+classpath/gnu/java/security/jce/prng/WhirlpoolRandomSpi.java
+
+gnu_java_security_jce_prng_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_jce_prng_source_files)))
+
+gnu/java/security/jce/prng.list: $(gnu_java_security_jce_prng_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_jce_prng_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/jce/prng.list
+
+-include gnu/java/security/jce/prng.deps
+
+
+gnu_java_security_jce_sig_source_files = \
+classpath/gnu/java/security/jce/sig/DSSKeyFactory.java \
+classpath/gnu/java/security/jce/sig/DSSKeyPairGeneratorSpi.java \
+classpath/gnu/java/security/jce/sig/DSSParameters.java \
+classpath/gnu/java/security/jce/sig/DSSParametersGenerator.java \
+classpath/gnu/java/security/jce/sig/DSSRawSignatureSpi.java \
+classpath/gnu/java/security/jce/sig/EncodedKeyFactory.java \
+classpath/gnu/java/security/jce/sig/KeyPairGeneratorAdapter.java \
+classpath/gnu/java/security/jce/sig/MD2withRSA.java \
+classpath/gnu/java/security/jce/sig/MD5withRSA.java \
+classpath/gnu/java/security/jce/sig/RSAKeyFactory.java \
+classpath/gnu/java/security/jce/sig/RSAKeyPairGeneratorSpi.java \
+classpath/gnu/java/security/jce/sig/RSAPSSRawSignatureSpi.java \
+classpath/gnu/java/security/jce/sig/SHA160withDSS.java \
+classpath/gnu/java/security/jce/sig/SHA160withRSA.java \
+classpath/gnu/java/security/jce/sig/SHA256withRSA.java \
+classpath/gnu/java/security/jce/sig/SHA384withRSA.java \
+classpath/gnu/java/security/jce/sig/SHA512withRSA.java \
+classpath/gnu/java/security/jce/sig/SignatureAdapter.java
+
+gnu_java_security_jce_sig_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_jce_sig_source_files)))
+
+gnu/java/security/jce/sig.list: $(gnu_java_security_jce_sig_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_jce_sig_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/jce/sig.list
+
+-include gnu/java/security/jce/sig.deps
+
+
+gnu_java_security_key_source_files = \
+classpath/gnu/java/security/key/IKeyPairCodec.java \
+classpath/gnu/java/security/key/IKeyPairGenerator.java \
+classpath/gnu/java/security/key/KeyPairCodecFactory.java \
+classpath/gnu/java/security/key/KeyPairGeneratorFactory.java
+
+gnu_java_security_key_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_key_source_files)))
+
+gnu/java/security/key.list: $(gnu_java_security_key_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_key_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/key.list
+
+-include gnu/java/security/key.deps
+
+
+gnu_java_security_key_dss_source_files = \
+classpath/gnu/java/security/key/dss/DSSKey.java \
+classpath/gnu/java/security/key/dss/DSSKeyPairGenerator.java \
+classpath/gnu/java/security/key/dss/DSSKeyPairPKCS8Codec.java \
+classpath/gnu/java/security/key/dss/DSSKeyPairRawCodec.java \
+classpath/gnu/java/security/key/dss/DSSKeyPairX509Codec.java \
+classpath/gnu/java/security/key/dss/DSSPrivateKey.java \
+classpath/gnu/java/security/key/dss/DSSPublicKey.java \
+classpath/gnu/java/security/key/dss/FIPS186.java
+
+gnu_java_security_key_dss_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_key_dss_source_files)))
+
+gnu/java/security/key/dss.list: $(gnu_java_security_key_dss_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_key_dss_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/key/dss.list
+
+-include gnu/java/security/key/dss.deps
+
+
+gnu_java_security_key_rsa_source_files = \
+classpath/gnu/java/security/key/rsa/GnuRSAKey.java \
+classpath/gnu/java/security/key/rsa/GnuRSAPrivateKey.java \
+classpath/gnu/java/security/key/rsa/GnuRSAPublicKey.java \
+classpath/gnu/java/security/key/rsa/RSAKeyPairGenerator.java \
+classpath/gnu/java/security/key/rsa/RSAKeyPairPKCS8Codec.java \
+classpath/gnu/java/security/key/rsa/RSAKeyPairRawCodec.java \
+classpath/gnu/java/security/key/rsa/RSAKeyPairX509Codec.java
+
+gnu_java_security_key_rsa_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_key_rsa_source_files)))
+
+gnu/java/security/key/rsa.list: $(gnu_java_security_key_rsa_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_key_rsa_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/key/rsa.list
+
+-include gnu/java/security/key/rsa.deps
+
+
 gnu_java_security_pkcs_source_files = \
 classpath/gnu/java/security/pkcs/PKCS7SignedData.java \
 classpath/gnu/java/security/pkcs/SignerInfo.java
@@ -1598,33 +1785,35 @@ gnu/java/security/pkcs.list: $(gnu_java_security_pkcs_source_files)
 -include gnu/java/security/pkcs.deps
 
 
+gnu_java_security_prng_source_files = \
+classpath/gnu/java/security/prng/BasePRNG.java \
+classpath/gnu/java/security/prng/EntropySource.java \
+classpath/gnu/java/security/prng/IRandom.java \
+classpath/gnu/java/security/prng/LimitReachedException.java \
+classpath/gnu/java/security/prng/MDGenerator.java \
+classpath/gnu/java/security/prng/PRNGFactory.java \
+classpath/gnu/java/security/prng/RandomEvent.java \
+classpath/gnu/java/security/prng/RandomEventListener.java
+
+gnu_java_security_prng_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_prng_source_files)))
+
+gnu/java/security/prng.list: $(gnu_java_security_prng_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_prng_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/prng.list
+
+-include gnu/java/security/prng.deps
+
+
 gnu_java_security_provider_source_files = \
 classpath/gnu/java/security/provider/CollectionCertStoreImpl.java \
-classpath/gnu/java/security/provider/DSAKeyFactory.java \
-classpath/gnu/java/security/provider/DSAKeyPairGenerator.java \
 classpath/gnu/java/security/provider/DSAParameterGenerator.java \
-classpath/gnu/java/security/provider/DSAParameters.java \
-classpath/gnu/java/security/provider/DSASignature.java \
 classpath/gnu/java/security/provider/DefaultPolicy.java \
-classpath/gnu/java/security/provider/DiffieHellmanKeyFactoryImpl.java \
-classpath/gnu/java/security/provider/DiffieHellmanKeyPairGeneratorImpl.java \
-classpath/gnu/java/security/provider/EncodedKeyFactory.java \
 classpath/gnu/java/security/provider/Gnu.java \
-classpath/gnu/java/security/provider/GnuDHPublicKey.java \
-classpath/gnu/java/security/provider/GnuDSAPrivateKey.java \
-classpath/gnu/java/security/provider/GnuDSAPublicKey.java \
-classpath/gnu/java/security/provider/GnuRSAPrivateKey.java \
-classpath/gnu/java/security/provider/GnuRSAPublicKey.java \
-classpath/gnu/java/security/provider/MD2withRSA.java \
-classpath/gnu/java/security/provider/MD4withRSA.java \
-classpath/gnu/java/security/provider/MD5.java \
-classpath/gnu/java/security/provider/MD5withRSA.java \
 classpath/gnu/java/security/provider/PKIXCertPathValidatorImpl.java \
-classpath/gnu/java/security/provider/RSA.java \
-classpath/gnu/java/security/provider/RSAKeyFactory.java \
-classpath/gnu/java/security/provider/SHA.java \
-classpath/gnu/java/security/provider/SHA1PRNG.java \
-classpath/gnu/java/security/provider/SHA1withRSA.java \
 classpath/gnu/java/security/provider/X509CertificateFactory.java
 
 gnu_java_security_provider_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_provider_source_files)))
@@ -1640,8 +1829,80 @@ gnu/java/security/provider.list: $(gnu_java_security_provider_source_files)
 -include gnu/java/security/provider.deps
 
 
+gnu_java_security_sig_source_files = \
+classpath/gnu/java/security/sig/BaseSignature.java \
+classpath/gnu/java/security/sig/ISignature.java \
+classpath/gnu/java/security/sig/ISignatureCodec.java \
+classpath/gnu/java/security/sig/SignatureCodecFactory.java \
+classpath/gnu/java/security/sig/SignatureFactory.java
+
+gnu_java_security_sig_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_sig_source_files)))
+
+gnu/java/security/sig.list: $(gnu_java_security_sig_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_sig_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/sig.list
+
+-include gnu/java/security/sig.deps
+
+
+gnu_java_security_sig_dss_source_files = \
+classpath/gnu/java/security/sig/dss/DSSSignature.java \
+classpath/gnu/java/security/sig/dss/DSSSignatureRawCodec.java \
+classpath/gnu/java/security/sig/dss/DSSSignatureX509Codec.java
+
+gnu_java_security_sig_dss_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_sig_dss_source_files)))
+
+gnu/java/security/sig/dss.list: $(gnu_java_security_sig_dss_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_sig_dss_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/sig/dss.list
+
+-include gnu/java/security/sig/dss.deps
+
+
+gnu_java_security_sig_rsa_source_files = \
+classpath/gnu/java/security/sig/rsa/EME_PKCS1_V1_5.java \
+classpath/gnu/java/security/sig/rsa/EMSA_PKCS1_V1_5.java \
+classpath/gnu/java/security/sig/rsa/EMSA_PSS.java \
+classpath/gnu/java/security/sig/rsa/RSA.java \
+classpath/gnu/java/security/sig/rsa/RSAPKCS1V1_5Signature.java \
+classpath/gnu/java/security/sig/rsa/RSAPKCS1V1_5SignatureRawCodec.java \
+classpath/gnu/java/security/sig/rsa/RSAPKCS1V1_5SignatureX509Codec.java \
+classpath/gnu/java/security/sig/rsa/RSAPSSSignature.java \
+classpath/gnu/java/security/sig/rsa/RSAPSSSignatureRawCodec.java \
+classpath/gnu/java/security/sig/rsa/RSASignatureFactory.java
+
+gnu_java_security_sig_rsa_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_sig_rsa_source_files)))
+
+gnu/java/security/sig/rsa.list: $(gnu_java_security_sig_rsa_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_security_sig_rsa_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/security/sig/rsa.list
+
+-include gnu/java/security/sig/rsa.deps
+
+
 gnu_java_security_util_source_files = \
-classpath/gnu/java/security/util/Prime.java
+classpath/gnu/java/security/util/Base64.java \
+classpath/gnu/java/security/util/DerUtil.java \
+classpath/gnu/java/security/util/ExpirableObject.java \
+classpath/gnu/java/security/util/FormatUtil.java \
+classpath/gnu/java/security/util/PRNG.java \
+classpath/gnu/java/security/util/Prime.java \
+classpath/gnu/java/security/util/Prime2.java \
+classpath/gnu/java/security/util/Sequence.java \
+classpath/gnu/java/security/util/SimpleList.java \
+classpath/gnu/java/security/util/Util.java
 
 gnu_java_security_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_util_source_files)))
 
@@ -1754,7 +2015,9 @@ gnu/java/util.list: $(gnu_java_util_source_files)
 
 
 gnu_java_util_prefs_source_files = \
+classpath/gnu/java/util/prefs/EventDispatcher.java \
 classpath/gnu/java/util/prefs/FileBasedFactory.java \
+classpath/gnu/java/util/prefs/FileBasedPreferences.java \
 classpath/gnu/java/util/prefs/MemoryBasedFactory.java \
 classpath/gnu/java/util/prefs/MemoryBasedPreferences.java \
 classpath/gnu/java/util/prefs/NodeReader.java \
@@ -1774,8 +2037,6 @@ gnu/java/util/prefs.list: $(gnu_java_util_prefs_source_files)
 
 
 gnu_javax_crypto_source_files = \
-classpath/gnu/javax/crypto/DiffieHellmanImpl.java \
-classpath/gnu/javax/crypto/GnuDHPrivateKey.java \
 classpath/gnu/javax/crypto/RSACipherImpl.java
 
 gnu_javax_crypto_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_source_files)))
@@ -1789,6 +2050,624 @@ gnu/javax/crypto.list: $(gnu_javax_crypto_source_files)
 	done > gnu/javax/crypto.list
 
 -include gnu/javax/crypto.deps
+
+
+gnu_javax_crypto_assembly_source_files = \
+classpath/gnu/javax/crypto/assembly/Assembly.java \
+classpath/gnu/javax/crypto/assembly/Cascade.java \
+classpath/gnu/javax/crypto/assembly/CascadeStage.java \
+classpath/gnu/javax/crypto/assembly/CascadeTransformer.java \
+classpath/gnu/javax/crypto/assembly/DeflateTransformer.java \
+classpath/gnu/javax/crypto/assembly/Direction.java \
+classpath/gnu/javax/crypto/assembly/LoopbackTransformer.java \
+classpath/gnu/javax/crypto/assembly/ModeStage.java \
+classpath/gnu/javax/crypto/assembly/Operation.java \
+classpath/gnu/javax/crypto/assembly/PaddingTransformer.java \
+classpath/gnu/javax/crypto/assembly/Stage.java \
+classpath/gnu/javax/crypto/assembly/Transformer.java \
+classpath/gnu/javax/crypto/assembly/TransformerException.java
+
+gnu_javax_crypto_assembly_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_assembly_source_files)))
+
+gnu/javax/crypto/assembly.list: $(gnu_javax_crypto_assembly_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_assembly_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/assembly.list
+
+-include gnu/javax/crypto/assembly.deps
+
+
+gnu_javax_crypto_cipher_source_files = \
+classpath/gnu/javax/crypto/cipher/Anubis.java \
+classpath/gnu/javax/crypto/cipher/BaseCipher.java \
+classpath/gnu/javax/crypto/cipher/Blowfish.java \
+classpath/gnu/javax/crypto/cipher/Cast5.java \
+classpath/gnu/javax/crypto/cipher/CipherFactory.java \
+classpath/gnu/javax/crypto/cipher/DES.java \
+classpath/gnu/javax/crypto/cipher/IBlockCipher.java \
+classpath/gnu/javax/crypto/cipher/IBlockCipherSpi.java \
+classpath/gnu/javax/crypto/cipher/Khazad.java \
+classpath/gnu/javax/crypto/cipher/NullCipher.java \
+classpath/gnu/javax/crypto/cipher/Rijndael.java \
+classpath/gnu/javax/crypto/cipher/Serpent.java \
+classpath/gnu/javax/crypto/cipher/Square.java \
+classpath/gnu/javax/crypto/cipher/TripleDES.java \
+classpath/gnu/javax/crypto/cipher/Twofish.java \
+classpath/gnu/javax/crypto/cipher/WeakKeyException.java
+
+gnu_javax_crypto_cipher_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_cipher_source_files)))
+
+gnu/javax/crypto/cipher.list: $(gnu_javax_crypto_cipher_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_cipher_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/cipher.list
+
+-include gnu/javax/crypto/cipher.deps
+
+
+gnu_javax_crypto_jce_source_files = \
+classpath/gnu/javax/crypto/jce/DiffieHellmanImpl.java \
+classpath/gnu/javax/crypto/jce/GnuCrypto.java \
+classpath/gnu/javax/crypto/jce/GnuSasl.java \
+classpath/gnu/javax/crypto/jce/PBKDF2SecretKeyFactory.java
+
+gnu_javax_crypto_jce_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_source_files)))
+
+gnu/javax/crypto/jce.list: $(gnu_javax_crypto_jce_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce.list
+
+-include gnu/javax/crypto/jce.deps
+
+
+gnu_javax_crypto_jce_cipher_source_files = \
+classpath/gnu/javax/crypto/jce/cipher/AESSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/ARCFourSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/AnubisSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/BlowfishSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/Cast5Spi.java \
+classpath/gnu/javax/crypto/jce/cipher/CipherAdapter.java \
+classpath/gnu/javax/crypto/jce/cipher/DESSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/KhazadSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/NullCipherSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/PBES2.java \
+classpath/gnu/javax/crypto/jce/cipher/RijndaelSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/SerpentSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/SquareSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/TripleDESSpi.java \
+classpath/gnu/javax/crypto/jce/cipher/TwofishSpi.java
+
+gnu_javax_crypto_jce_cipher_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_cipher_source_files)))
+
+gnu/javax/crypto/jce/cipher.list: $(gnu_javax_crypto_jce_cipher_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_cipher_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/cipher.list
+
+-include gnu/javax/crypto/jce/cipher.deps
+
+
+gnu_javax_crypto_jce_key_source_files = \
+classpath/gnu/javax/crypto/jce/key/AnubisKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/AnubisSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/BlowfishKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/BlowfishSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/Cast5KeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/Cast5SecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/DESKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/DESSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/DESedeSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/KhazadKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/KhazadSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/RijndaelKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/RijndaelSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/SecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/SecretKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/SerpentKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/SerpentSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/SquareKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/SquareSecretKeyFactoryImpl.java \
+classpath/gnu/javax/crypto/jce/key/TripleDESKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/TwofishKeyGeneratorImpl.java \
+classpath/gnu/javax/crypto/jce/key/TwofishSecretKeyFactoryImpl.java
+
+gnu_javax_crypto_jce_key_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_key_source_files)))
+
+gnu/javax/crypto/jce/key.list: $(gnu_javax_crypto_jce_key_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_key_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/key.list
+
+-include gnu/javax/crypto/jce/key.deps
+
+
+gnu_javax_crypto_jce_keyring_source_files = \
+classpath/gnu/javax/crypto/jce/keyring/GnuKeyring.java
+
+gnu_javax_crypto_jce_keyring_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_keyring_source_files)))
+
+gnu/javax/crypto/jce/keyring.list: $(gnu_javax_crypto_jce_keyring_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_keyring_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/keyring.list
+
+-include gnu/javax/crypto/jce/keyring.deps
+
+
+gnu_javax_crypto_jce_mac_source_files = \
+classpath/gnu/javax/crypto/jce/mac/HMacHavalSpi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacMD2Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacMD4Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacMD5Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacRipeMD128Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacRipeMD160Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacSHA160Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacSHA256Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacSHA384Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacSHA512Spi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacTigerSpi.java \
+classpath/gnu/javax/crypto/jce/mac/HMacWhirlpoolSpi.java \
+classpath/gnu/javax/crypto/jce/mac/MacAdapter.java \
+classpath/gnu/javax/crypto/jce/mac/OMacAnubisImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacBlowfishImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacCast5Impl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacDESImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacKhazadImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacRijndaelImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacSerpentImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacSquareImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacTripleDESImpl.java \
+classpath/gnu/javax/crypto/jce/mac/OMacTwofishImpl.java \
+classpath/gnu/javax/crypto/jce/mac/TMMH16Spi.java \
+classpath/gnu/javax/crypto/jce/mac/UHash32Spi.java \
+classpath/gnu/javax/crypto/jce/mac/UMac32Spi.java
+
+gnu_javax_crypto_jce_mac_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_mac_source_files)))
+
+gnu/javax/crypto/jce/mac.list: $(gnu_javax_crypto_jce_mac_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_mac_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/mac.list
+
+-include gnu/javax/crypto/jce/mac.deps
+
+
+gnu_javax_crypto_jce_params_source_files = \
+classpath/gnu/javax/crypto/jce/params/BlockCipherParameters.java \
+classpath/gnu/javax/crypto/jce/params/DEREncodingException.java \
+classpath/gnu/javax/crypto/jce/params/DERReader.java \
+classpath/gnu/javax/crypto/jce/params/DERWriter.java
+
+gnu_javax_crypto_jce_params_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_params_source_files)))
+
+gnu/javax/crypto/jce/params.list: $(gnu_javax_crypto_jce_params_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_params_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/params.list
+
+-include gnu/javax/crypto/jce/params.deps
+
+
+gnu_javax_crypto_jce_prng_source_files = \
+classpath/gnu/javax/crypto/jce/prng/ARCFourRandomSpi.java \
+classpath/gnu/javax/crypto/jce/prng/CSPRNGSpi.java \
+classpath/gnu/javax/crypto/jce/prng/FortunaImpl.java \
+classpath/gnu/javax/crypto/jce/prng/ICMRandomSpi.java \
+classpath/gnu/javax/crypto/jce/prng/UMacRandomSpi.java
+
+gnu_javax_crypto_jce_prng_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_prng_source_files)))
+
+gnu/javax/crypto/jce/prng.list: $(gnu_javax_crypto_jce_prng_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_prng_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/prng.list
+
+-include gnu/javax/crypto/jce/prng.deps
+
+
+gnu_javax_crypto_jce_sig_source_files = \
+classpath/gnu/javax/crypto/jce/sig/DHKeyFactory.java \
+classpath/gnu/javax/crypto/jce/sig/DHKeyPairGeneratorSpi.java \
+classpath/gnu/javax/crypto/jce/sig/DHParameters.java \
+classpath/gnu/javax/crypto/jce/sig/DHParametersGenerator.java
+
+gnu_javax_crypto_jce_sig_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_sig_source_files)))
+
+gnu/javax/crypto/jce/sig.list: $(gnu_javax_crypto_jce_sig_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_sig_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/sig.list
+
+-include gnu/javax/crypto/jce/sig.deps
+
+
+gnu_javax_crypto_jce_spec_source_files = \
+classpath/gnu/javax/crypto/jce/spec/BlockCipherParameterSpec.java \
+classpath/gnu/javax/crypto/jce/spec/TMMHParameterSpec.java \
+classpath/gnu/javax/crypto/jce/spec/UMac32ParameterSpec.java
+
+gnu_javax_crypto_jce_spec_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_jce_spec_source_files)))
+
+gnu/javax/crypto/jce/spec.list: $(gnu_javax_crypto_jce_spec_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_jce_spec_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/jce/spec.list
+
+-include gnu/javax/crypto/jce/spec.deps
+
+
+gnu_javax_crypto_key_source_files = \
+classpath/gnu/javax/crypto/key/BaseKeyAgreementParty.java \
+classpath/gnu/javax/crypto/key/GnuSecretKey.java \
+classpath/gnu/javax/crypto/key/IKeyAgreementParty.java \
+classpath/gnu/javax/crypto/key/IncomingMessage.java \
+classpath/gnu/javax/crypto/key/KeyAgreementException.java \
+classpath/gnu/javax/crypto/key/KeyAgreementFactory.java \
+classpath/gnu/javax/crypto/key/OutgoingMessage.java
+
+gnu_javax_crypto_key_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_key_source_files)))
+
+gnu/javax/crypto/key.list: $(gnu_javax_crypto_key_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_key_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/key.list
+
+-include gnu/javax/crypto/key.deps
+
+
+gnu_javax_crypto_key_dh_source_files = \
+classpath/gnu/javax/crypto/key/dh/DHKeyPairPKCS8Codec.java \
+classpath/gnu/javax/crypto/key/dh/DHKeyPairRawCodec.java \
+classpath/gnu/javax/crypto/key/dh/DHKeyPairX509Codec.java \
+classpath/gnu/javax/crypto/key/dh/DiffieHellmanKeyAgreement.java \
+classpath/gnu/javax/crypto/key/dh/DiffieHellmanReceiver.java \
+classpath/gnu/javax/crypto/key/dh/DiffieHellmanSender.java \
+classpath/gnu/javax/crypto/key/dh/ElGamalKeyAgreement.java \
+classpath/gnu/javax/crypto/key/dh/ElGamalReceiver.java \
+classpath/gnu/javax/crypto/key/dh/ElGamalSender.java \
+classpath/gnu/javax/crypto/key/dh/GnuDHKey.java \
+classpath/gnu/javax/crypto/key/dh/GnuDHKeyPairGenerator.java \
+classpath/gnu/javax/crypto/key/dh/GnuDHPrivateKey.java \
+classpath/gnu/javax/crypto/key/dh/GnuDHPublicKey.java \
+classpath/gnu/javax/crypto/key/dh/RFC2631.java
+
+gnu_javax_crypto_key_dh_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_key_dh_source_files)))
+
+gnu/javax/crypto/key/dh.list: $(gnu_javax_crypto_key_dh_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_key_dh_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/key/dh.list
+
+-include gnu/javax/crypto/key/dh.deps
+
+
+gnu_javax_crypto_key_srp6_source_files = \
+classpath/gnu/javax/crypto/key/srp6/SRP6Host.java \
+classpath/gnu/javax/crypto/key/srp6/SRP6KeyAgreement.java \
+classpath/gnu/javax/crypto/key/srp6/SRP6SaslClient.java \
+classpath/gnu/javax/crypto/key/srp6/SRP6SaslServer.java \
+classpath/gnu/javax/crypto/key/srp6/SRP6TLSClient.java \
+classpath/gnu/javax/crypto/key/srp6/SRP6TLSServer.java \
+classpath/gnu/javax/crypto/key/srp6/SRP6User.java \
+classpath/gnu/javax/crypto/key/srp6/SRPAlgorithm.java \
+classpath/gnu/javax/crypto/key/srp6/SRPKey.java \
+classpath/gnu/javax/crypto/key/srp6/SRPKeyPairGenerator.java \
+classpath/gnu/javax/crypto/key/srp6/SRPKeyPairRawCodec.java \
+classpath/gnu/javax/crypto/key/srp6/SRPPrivateKey.java \
+classpath/gnu/javax/crypto/key/srp6/SRPPublicKey.java
+
+gnu_javax_crypto_key_srp6_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_key_srp6_source_files)))
+
+gnu/javax/crypto/key/srp6.list: $(gnu_javax_crypto_key_srp6_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_key_srp6_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/key/srp6.list
+
+-include gnu/javax/crypto/key/srp6.deps
+
+
+gnu_javax_crypto_keyring_source_files = \
+classpath/gnu/javax/crypto/keyring/AuthenticatedEntry.java \
+classpath/gnu/javax/crypto/keyring/BaseKeyring.java \
+classpath/gnu/javax/crypto/keyring/BinaryDataEntry.java \
+classpath/gnu/javax/crypto/keyring/CertPathEntry.java \
+classpath/gnu/javax/crypto/keyring/CertificateEntry.java \
+classpath/gnu/javax/crypto/keyring/CompressedEntry.java \
+classpath/gnu/javax/crypto/keyring/EncryptedEntry.java \
+classpath/gnu/javax/crypto/keyring/Entry.java \
+classpath/gnu/javax/crypto/keyring/EnvelopeEntry.java \
+classpath/gnu/javax/crypto/keyring/GnuPrivateKeyring.java \
+classpath/gnu/javax/crypto/keyring/GnuPublicKeyring.java \
+classpath/gnu/javax/crypto/keyring/IKeyring.java \
+classpath/gnu/javax/crypto/keyring/IPrivateKeyring.java \
+classpath/gnu/javax/crypto/keyring/IPublicKeyring.java \
+classpath/gnu/javax/crypto/keyring/MalformedKeyringException.java \
+classpath/gnu/javax/crypto/keyring/MaskableEnvelopeEntry.java \
+classpath/gnu/javax/crypto/keyring/MeteredInputStream.java \
+classpath/gnu/javax/crypto/keyring/PasswordAuthenticatedEntry.java \
+classpath/gnu/javax/crypto/keyring/PasswordEncryptedEntry.java \
+classpath/gnu/javax/crypto/keyring/PasswordProtectedEntry.java \
+classpath/gnu/javax/crypto/keyring/PrimitiveEntry.java \
+classpath/gnu/javax/crypto/keyring/PrivateKeyEntry.java \
+classpath/gnu/javax/crypto/keyring/Properties.java \
+classpath/gnu/javax/crypto/keyring/PublicKeyEntry.java
+
+gnu_javax_crypto_keyring_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_keyring_source_files)))
+
+gnu/javax/crypto/keyring.list: $(gnu_javax_crypto_keyring_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_keyring_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/keyring.list
+
+-include gnu/javax/crypto/keyring.deps
+
+
+gnu_javax_crypto_mac_source_files = \
+classpath/gnu/javax/crypto/mac/BaseMac.java \
+classpath/gnu/javax/crypto/mac/HMac.java \
+classpath/gnu/javax/crypto/mac/HMacFactory.java \
+classpath/gnu/javax/crypto/mac/IMac.java \
+classpath/gnu/javax/crypto/mac/MacFactory.java \
+classpath/gnu/javax/crypto/mac/MacInputStream.java \
+classpath/gnu/javax/crypto/mac/MacOutputStream.java \
+classpath/gnu/javax/crypto/mac/OMAC.java \
+classpath/gnu/javax/crypto/mac/TMMH16.java \
+classpath/gnu/javax/crypto/mac/UHash32.java \
+classpath/gnu/javax/crypto/mac/UMac32.java
+
+gnu_javax_crypto_mac_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_mac_source_files)))
+
+gnu/javax/crypto/mac.list: $(gnu_javax_crypto_mac_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_mac_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/mac.list
+
+-include gnu/javax/crypto/mac.deps
+
+
+gnu_javax_crypto_mode_source_files = \
+classpath/gnu/javax/crypto/mode/BaseMode.java \
+classpath/gnu/javax/crypto/mode/CBC.java \
+classpath/gnu/javax/crypto/mode/CFB.java \
+classpath/gnu/javax/crypto/mode/CTR.java \
+classpath/gnu/javax/crypto/mode/EAX.java \
+classpath/gnu/javax/crypto/mode/ECB.java \
+classpath/gnu/javax/crypto/mode/IAuthenticatedMode.java \
+classpath/gnu/javax/crypto/mode/ICM.java \
+classpath/gnu/javax/crypto/mode/IMode.java \
+classpath/gnu/javax/crypto/mode/ModeFactory.java \
+classpath/gnu/javax/crypto/mode/OFB.java
+
+gnu_javax_crypto_mode_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_mode_source_files)))
+
+gnu/javax/crypto/mode.list: $(gnu_javax_crypto_mode_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_mode_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/mode.list
+
+-include gnu/javax/crypto/mode.deps
+
+
+gnu_javax_crypto_pad_source_files = \
+classpath/gnu/javax/crypto/pad/BasePad.java \
+classpath/gnu/javax/crypto/pad/IPad.java \
+classpath/gnu/javax/crypto/pad/PKCS1_V1_5.java \
+classpath/gnu/javax/crypto/pad/PKCS7.java \
+classpath/gnu/javax/crypto/pad/PadFactory.java \
+classpath/gnu/javax/crypto/pad/SSL3.java \
+classpath/gnu/javax/crypto/pad/TBC.java \
+classpath/gnu/javax/crypto/pad/TLS1.java \
+classpath/gnu/javax/crypto/pad/WrongPaddingException.java
+
+gnu_javax_crypto_pad_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_pad_source_files)))
+
+gnu/javax/crypto/pad.list: $(gnu_javax_crypto_pad_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_pad_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/pad.list
+
+-include gnu/javax/crypto/pad.deps
+
+
+gnu_javax_crypto_prng_source_files = \
+classpath/gnu/javax/crypto/prng/ARCFour.java \
+classpath/gnu/javax/crypto/prng/CSPRNG.java \
+classpath/gnu/javax/crypto/prng/Fortuna.java \
+classpath/gnu/javax/crypto/prng/ICMGenerator.java \
+classpath/gnu/javax/crypto/prng/IPBE.java \
+classpath/gnu/javax/crypto/prng/PBKDF2.java \
+classpath/gnu/javax/crypto/prng/PRNGFactory.java \
+classpath/gnu/javax/crypto/prng/UMacGenerator.java
+
+gnu_javax_crypto_prng_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_prng_source_files)))
+
+gnu/javax/crypto/prng.list: $(gnu_javax_crypto_prng_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_prng_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/prng.list
+
+-include gnu/javax/crypto/prng.deps
+
+
+gnu_javax_crypto_sasl_source_files = \
+classpath/gnu/javax/crypto/sasl/AuthInfo.java \
+classpath/gnu/javax/crypto/sasl/AuthInfoProviderFactory.java \
+classpath/gnu/javax/crypto/sasl/ClientFactory.java \
+classpath/gnu/javax/crypto/sasl/ClientMechanism.java \
+classpath/gnu/javax/crypto/sasl/ConfidentialityException.java \
+classpath/gnu/javax/crypto/sasl/IAuthInfoProvider.java \
+classpath/gnu/javax/crypto/sasl/IAuthInfoProviderFactory.java \
+classpath/gnu/javax/crypto/sasl/IllegalMechanismStateException.java \
+classpath/gnu/javax/crypto/sasl/InputBuffer.java \
+classpath/gnu/javax/crypto/sasl/IntegrityException.java \
+classpath/gnu/javax/crypto/sasl/NoSuchMechanismException.java \
+classpath/gnu/javax/crypto/sasl/NoSuchUserException.java \
+classpath/gnu/javax/crypto/sasl/OutputBuffer.java \
+classpath/gnu/javax/crypto/sasl/SaslEncodingException.java \
+classpath/gnu/javax/crypto/sasl/SaslInputStream.java \
+classpath/gnu/javax/crypto/sasl/SaslOutputStream.java \
+classpath/gnu/javax/crypto/sasl/SaslUtil.java \
+classpath/gnu/javax/crypto/sasl/ServerFactory.java \
+classpath/gnu/javax/crypto/sasl/ServerMechanism.java \
+classpath/gnu/javax/crypto/sasl/UserAlreadyExistsException.java
+
+gnu_javax_crypto_sasl_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_sasl_source_files)))
+
+gnu/javax/crypto/sasl.list: $(gnu_javax_crypto_sasl_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_sasl_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/sasl.list
+
+-include gnu/javax/crypto/sasl.deps
+
+
+gnu_javax_crypto_sasl_anonymous_source_files = \
+classpath/gnu/javax/crypto/sasl/anonymous/AnonymousClient.java \
+classpath/gnu/javax/crypto/sasl/anonymous/AnonymousServer.java \
+classpath/gnu/javax/crypto/sasl/anonymous/AnonymousUtil.java
+
+gnu_javax_crypto_sasl_anonymous_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_sasl_anonymous_source_files)))
+
+gnu/javax/crypto/sasl/anonymous.list: $(gnu_javax_crypto_sasl_anonymous_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_sasl_anonymous_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/sasl/anonymous.list
+
+-include gnu/javax/crypto/sasl/anonymous.deps
+
+
+gnu_javax_crypto_sasl_crammd5_source_files = \
+classpath/gnu/javax/crypto/sasl/crammd5/CramMD5AuthInfoProvider.java \
+classpath/gnu/javax/crypto/sasl/crammd5/CramMD5Client.java \
+classpath/gnu/javax/crypto/sasl/crammd5/CramMD5Registry.java \
+classpath/gnu/javax/crypto/sasl/crammd5/CramMD5Server.java \
+classpath/gnu/javax/crypto/sasl/crammd5/CramMD5Util.java \
+classpath/gnu/javax/crypto/sasl/crammd5/PasswordFile.java
+
+gnu_javax_crypto_sasl_crammd5_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_sasl_crammd5_source_files)))
+
+gnu/javax/crypto/sasl/crammd5.list: $(gnu_javax_crypto_sasl_crammd5_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_sasl_crammd5_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/sasl/crammd5.list
+
+-include gnu/javax/crypto/sasl/crammd5.deps
+
+
+gnu_javax_crypto_sasl_plain_source_files = \
+classpath/gnu/javax/crypto/sasl/plain/PasswordFile.java \
+classpath/gnu/javax/crypto/sasl/plain/PlainAuthInfoProvider.java \
+classpath/gnu/javax/crypto/sasl/plain/PlainClient.java \
+classpath/gnu/javax/crypto/sasl/plain/PlainRegistry.java \
+classpath/gnu/javax/crypto/sasl/plain/PlainServer.java
+
+gnu_javax_crypto_sasl_plain_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_sasl_plain_source_files)))
+
+gnu/javax/crypto/sasl/plain.list: $(gnu_javax_crypto_sasl_plain_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_sasl_plain_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/sasl/plain.list
+
+-include gnu/javax/crypto/sasl/plain.deps
+
+
+gnu_javax_crypto_sasl_srp_source_files = \
+classpath/gnu/javax/crypto/sasl/srp/CALG.java \
+classpath/gnu/javax/crypto/sasl/srp/ClientStore.java \
+classpath/gnu/javax/crypto/sasl/srp/IALG.java \
+classpath/gnu/javax/crypto/sasl/srp/KDF.java \
+classpath/gnu/javax/crypto/sasl/srp/PasswordFile.java \
+classpath/gnu/javax/crypto/sasl/srp/SRP.java \
+classpath/gnu/javax/crypto/sasl/srp/SRPAuthInfoProvider.java \
+classpath/gnu/javax/crypto/sasl/srp/SRPClient.java \
+classpath/gnu/javax/crypto/sasl/srp/SRPRegistry.java \
+classpath/gnu/javax/crypto/sasl/srp/SRPServer.java \
+classpath/gnu/javax/crypto/sasl/srp/SecurityContext.java \
+classpath/gnu/javax/crypto/sasl/srp/ServerStore.java \
+classpath/gnu/javax/crypto/sasl/srp/StoreEntry.java
+
+gnu_javax_crypto_sasl_srp_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_sasl_srp_source_files)))
+
+gnu/javax/crypto/sasl/srp.list: $(gnu_javax_crypto_sasl_srp_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_sasl_srp_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto/sasl/srp.list
+
+-include gnu/javax/crypto/sasl/srp.deps
 
 
 gnu_javax_imageio_bmp_source_files = \
@@ -1820,6 +2699,104 @@ gnu/javax/imageio/bmp.list: $(gnu_javax_imageio_bmp_source_files)
 -include gnu/javax/imageio/bmp.deps
 
 
+gnu_javax_net_ssl_source_files = \
+classpath/gnu/javax/net/ssl/Base64.java \
+classpath/gnu/javax/net/ssl/EntropySource.java \
+classpath/gnu/javax/net/ssl/NullManagerParameters.java \
+classpath/gnu/javax/net/ssl/PrivateCredentials.java \
+classpath/gnu/javax/net/ssl/SRPManagerParameters.java \
+classpath/gnu/javax/net/ssl/SRPTrustManager.java \
+classpath/gnu/javax/net/ssl/StaticTrustAnchors.java
+
+gnu_javax_net_ssl_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_net_ssl_source_files)))
+
+gnu/javax/net/ssl.list: $(gnu_javax_net_ssl_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_net_ssl_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/net/ssl.list
+
+-include gnu/javax/net/ssl.deps
+
+
+gnu_javax_net_ssl_provider_source_files = \
+classpath/gnu/javax/net/ssl/provider/Alert.java \
+classpath/gnu/javax/net/ssl/provider/AlertException.java \
+classpath/gnu/javax/net/ssl/provider/Certificate.java \
+classpath/gnu/javax/net/ssl/provider/CertificateRequest.java \
+classpath/gnu/javax/net/ssl/provider/CertificateType.java \
+classpath/gnu/javax/net/ssl/provider/CertificateVerify.java \
+classpath/gnu/javax/net/ssl/provider/CipherSuite.java \
+classpath/gnu/javax/net/ssl/provider/ClientHello.java \
+classpath/gnu/javax/net/ssl/provider/ClientKeyExchange.java \
+classpath/gnu/javax/net/ssl/provider/CompressionMethod.java \
+classpath/gnu/javax/net/ssl/provider/Constructed.java \
+classpath/gnu/javax/net/ssl/provider/ContentType.java \
+classpath/gnu/javax/net/ssl/provider/Context.java \
+classpath/gnu/javax/net/ssl/provider/DiffieHellman.java \
+classpath/gnu/javax/net/ssl/provider/DigestInputStream.java \
+classpath/gnu/javax/net/ssl/provider/DigestOutputStream.java \
+classpath/gnu/javax/net/ssl/provider/Enumerated.java \
+classpath/gnu/javax/net/ssl/provider/Extension.java \
+classpath/gnu/javax/net/ssl/provider/Extensions.java \
+classpath/gnu/javax/net/ssl/provider/Finished.java \
+classpath/gnu/javax/net/ssl/provider/GNUSecurityParameters.java \
+classpath/gnu/javax/net/ssl/provider/Handshake.java \
+classpath/gnu/javax/net/ssl/provider/JCESecurityParameters.java \
+classpath/gnu/javax/net/ssl/provider/JDBCSessionContext.java \
+classpath/gnu/javax/net/ssl/provider/Jessie.java \
+classpath/gnu/javax/net/ssl/provider/JessieDHPrivateKey.java \
+classpath/gnu/javax/net/ssl/provider/JessieDHPublicKey.java \
+classpath/gnu/javax/net/ssl/provider/JessieRSAPrivateKey.java \
+classpath/gnu/javax/net/ssl/provider/JessieRSAPublicKey.java \
+classpath/gnu/javax/net/ssl/provider/KeyPool.java \
+classpath/gnu/javax/net/ssl/provider/MacException.java \
+classpath/gnu/javax/net/ssl/provider/OverflowException.java \
+classpath/gnu/javax/net/ssl/provider/ProtocolVersion.java \
+classpath/gnu/javax/net/ssl/provider/Random.java \
+classpath/gnu/javax/net/ssl/provider/RecordInput.java \
+classpath/gnu/javax/net/ssl/provider/RecordInputStream.java \
+classpath/gnu/javax/net/ssl/provider/RecordOutputStream.java \
+classpath/gnu/javax/net/ssl/provider/RecordingInputStream.java \
+classpath/gnu/javax/net/ssl/provider/SRPTrustManagerFactory.java \
+classpath/gnu/javax/net/ssl/provider/SSLHMac.java \
+classpath/gnu/javax/net/ssl/provider/SSLRSASignature.java \
+classpath/gnu/javax/net/ssl/provider/SSLRandom.java \
+classpath/gnu/javax/net/ssl/provider/SSLServerSocket.java \
+classpath/gnu/javax/net/ssl/provider/SSLServerSocketFactory.java \
+classpath/gnu/javax/net/ssl/provider/SSLSocket.java \
+classpath/gnu/javax/net/ssl/provider/SSLSocketFactory.java \
+classpath/gnu/javax/net/ssl/provider/SSLSocketInputStream.java \
+classpath/gnu/javax/net/ssl/provider/SSLSocketOutputStream.java \
+classpath/gnu/javax/net/ssl/provider/SecurityParameters.java \
+classpath/gnu/javax/net/ssl/provider/ServerHello.java \
+classpath/gnu/javax/net/ssl/provider/ServerKeyExchange.java \
+classpath/gnu/javax/net/ssl/provider/Session.java \
+classpath/gnu/javax/net/ssl/provider/SessionContext.java \
+classpath/gnu/javax/net/ssl/provider/Signature.java \
+classpath/gnu/javax/net/ssl/provider/SynchronizedRandom.java \
+classpath/gnu/javax/net/ssl/provider/TLSHMac.java \
+classpath/gnu/javax/net/ssl/provider/TLSRandom.java \
+classpath/gnu/javax/net/ssl/provider/Util.java \
+classpath/gnu/javax/net/ssl/provider/X509KeyManagerFactory.java \
+classpath/gnu/javax/net/ssl/provider/X509TrustManagerFactory.java \
+classpath/gnu/javax/net/ssl/provider/XMLSessionContext.java
+
+gnu_javax_net_ssl_provider_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_net_ssl_provider_source_files)))
+
+gnu/javax/net/ssl/provider.list: $(gnu_javax_net_ssl_provider_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_net_ssl_provider_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/net/ssl/provider.list
+
+-include gnu/javax/net/ssl/provider.deps
+
+
 gnu_javax_rmi_source_files = \
 classpath/gnu/javax/rmi/CORBA/CorbaInput.java \
 classpath/gnu/javax/rmi/CORBA/CorbaOutput.java \
@@ -1837,6 +2814,61 @@ gnu-javax-rmi.lo: $(gnu_javax_rmi_source_files)
 	@find classpath/lib/gnu/javax/rmi -name '*.class' > gnu-javax-rmi.list
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-javax-rmi.lo @gnu-javax-rmi.list
 	@rm -f gnu-javax-rmi.list
+
+gnu_javax_security_auth_source_files = \
+classpath/gnu/javax/security/auth/Password.java
+
+gnu_javax_security_auth_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_security_auth_source_files)))
+
+gnu/javax/security/auth.list: $(gnu_javax_security_auth_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_security_auth_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/security/auth.list
+
+-include gnu/javax/security/auth.deps
+
+
+gnu_javax_security_auth_callback_source_files = \
+classpath/gnu/javax/security/auth/callback/AWTCallbackHandler.java \
+classpath/gnu/javax/security/auth/callback/AbstractCallbackHandler.java \
+classpath/gnu/javax/security/auth/callback/ConsoleCallbackHandler.java \
+classpath/gnu/javax/security/auth/callback/DefaultCallbackHandler.java \
+classpath/gnu/javax/security/auth/callback/GnuCallbacks.java \
+classpath/gnu/javax/security/auth/callback/SwingCallbackHandler.java
+
+gnu_javax_security_auth_callback_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_security_auth_callback_source_files)))
+
+gnu/javax/security/auth/callback.list: $(gnu_javax_security_auth_callback_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_security_auth_callback_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/security/auth/callback.list
+
+-include gnu/javax/security/auth/callback.deps
+
+
+gnu_javax_security_auth_login_source_files = \
+classpath/gnu/javax/security/auth/login/ConfigFileParser.java \
+classpath/gnu/javax/security/auth/login/ConfigFileTokenizer.java \
+classpath/gnu/javax/security/auth/login/GnuConfiguration.java
+
+gnu_javax_security_auth_login_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_security_auth_login_source_files)))
+
+gnu/javax/security/auth/login.list: $(gnu_javax_security_auth_login_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_security_auth_login_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/security/auth/login.list
+
+-include gnu/javax/security/auth/login.deps
+
 
 gnu_javax_sound_midi_source_files = \
 classpath/gnu/javax/sound/midi/alsa/AlsaInputPortDevice.java \
@@ -1953,7 +2985,10 @@ classpath/gnu/regexp/RETokenBackRef.java \
 classpath/gnu/regexp/RETokenChar.java \
 classpath/gnu/regexp/RETokenEnd.java \
 classpath/gnu/regexp/RETokenEndSub.java \
+classpath/gnu/regexp/RETokenIndependent.java \
 classpath/gnu/regexp/RETokenLookAhead.java \
+classpath/gnu/regexp/RETokenLookBehind.java \
+classpath/gnu/regexp/RETokenNamedProperty.java \
 classpath/gnu/regexp/RETokenOneOf.java \
 classpath/gnu/regexp/RETokenPOSIX.java \
 classpath/gnu/regexp/RETokenRange.java \
@@ -2143,12 +3178,10 @@ classpath/gnu/xml/stream/CommentImpl.java \
 classpath/gnu/xml/stream/DTDImpl.java \
 classpath/gnu/xml/stream/EndDocumentImpl.java \
 classpath/gnu/xml/stream/EndElementImpl.java \
-classpath/gnu/xml/stream/EndEntityImpl.java \
 classpath/gnu/xml/stream/EntityDeclarationImpl.java \
 classpath/gnu/xml/stream/EntityReferenceImpl.java \
 classpath/gnu/xml/stream/FilteredEventReader.java \
 classpath/gnu/xml/stream/FilteredStreamReader.java \
-classpath/gnu/xml/stream/LocationImpl.java \
 classpath/gnu/xml/stream/NamespaceImpl.java \
 classpath/gnu/xml/stream/NotationDeclarationImpl.java \
 classpath/gnu/xml/stream/ProcessingInstructionImpl.java \
@@ -2156,7 +3189,6 @@ classpath/gnu/xml/stream/SAXParser.java \
 classpath/gnu/xml/stream/SAXParserFactory.java \
 classpath/gnu/xml/stream/StartDocumentImpl.java \
 classpath/gnu/xml/stream/StartElementImpl.java \
-classpath/gnu/xml/stream/StartEntityImpl.java \
 classpath/gnu/xml/stream/UnicodeReader.java \
 classpath/gnu/xml/stream/XIncludeFilter.java \
 classpath/gnu/xml/stream/XMLEventAllocatorImpl.java \
@@ -2167,7 +3199,6 @@ classpath/gnu/xml/stream/XMLEventWriterImpl.java \
 classpath/gnu/xml/stream/XMLInputFactoryImpl.java \
 classpath/gnu/xml/stream/XMLOutputFactoryImpl.java \
 classpath/gnu/xml/stream/XMLParser.java \
-classpath/gnu/xml/stream/XMLStreamReaderImpl.java \
 classpath/gnu/xml/stream/XMLStreamWriterImpl.java \
 classpath/gnu/xml/transform/AbstractNumberNode.java \
 classpath/gnu/xml/transform/ApplyImportsNode.java \
@@ -2228,6 +3259,116 @@ classpath/gnu/xml/util/SAXNullTransformerFactory.java \
 classpath/gnu/xml/util/XCat.java \
 classpath/gnu/xml/util/XHTMLWriter.java \
 classpath/gnu/xml/util/XMLWriter.java \
+classpath/gnu/xml/validation/datatype/Annotation.java \
+classpath/gnu/xml/validation/datatype/AnySimpleType.java \
+classpath/gnu/xml/validation/datatype/AnyType.java \
+classpath/gnu/xml/validation/datatype/AnyURIType.java \
+classpath/gnu/xml/validation/datatype/AtomicSimpleType.java \
+classpath/gnu/xml/validation/datatype/Base64BinaryType.java \
+classpath/gnu/xml/validation/datatype/BooleanType.java \
+classpath/gnu/xml/validation/datatype/ByteType.java \
+classpath/gnu/xml/validation/datatype/DateTimeType.java \
+classpath/gnu/xml/validation/datatype/DateType.java \
+classpath/gnu/xml/validation/datatype/DecimalType.java \
+classpath/gnu/xml/validation/datatype/DoubleType.java \
+classpath/gnu/xml/validation/datatype/DurationType.java \
+classpath/gnu/xml/validation/datatype/EntitiesType.java \
+classpath/gnu/xml/validation/datatype/EntityType.java \
+classpath/gnu/xml/validation/datatype/EnumerationFacet.java \
+classpath/gnu/xml/validation/datatype/Facet.java \
+classpath/gnu/xml/validation/datatype/FloatType.java \
+classpath/gnu/xml/validation/datatype/FractionDigitsFacet.java \
+classpath/gnu/xml/validation/datatype/GDayType.java \
+classpath/gnu/xml/validation/datatype/GMonthDayType.java \
+classpath/gnu/xml/validation/datatype/GMonthType.java \
+classpath/gnu/xml/validation/datatype/GYearMonthType.java \
+classpath/gnu/xml/validation/datatype/GYearType.java \
+classpath/gnu/xml/validation/datatype/HexBinaryType.java \
+classpath/gnu/xml/validation/datatype/IDRefType.java \
+classpath/gnu/xml/validation/datatype/IDRefsType.java \
+classpath/gnu/xml/validation/datatype/IDType.java \
+classpath/gnu/xml/validation/datatype/IntType.java \
+classpath/gnu/xml/validation/datatype/IntegerType.java \
+classpath/gnu/xml/validation/datatype/LanguageType.java \
+classpath/gnu/xml/validation/datatype/LengthFacet.java \
+classpath/gnu/xml/validation/datatype/ListSimpleType.java \
+classpath/gnu/xml/validation/datatype/LongType.java \
+classpath/gnu/xml/validation/datatype/MaxExclusiveFacet.java \
+classpath/gnu/xml/validation/datatype/MaxInclusiveFacet.java \
+classpath/gnu/xml/validation/datatype/MaxLengthFacet.java \
+classpath/gnu/xml/validation/datatype/MinExclusiveFacet.java \
+classpath/gnu/xml/validation/datatype/MinInclusiveFacet.java \
+classpath/gnu/xml/validation/datatype/MinLengthFacet.java \
+classpath/gnu/xml/validation/datatype/NCNameType.java \
+classpath/gnu/xml/validation/datatype/NMTokenType.java \
+classpath/gnu/xml/validation/datatype/NMTokensType.java \
+classpath/gnu/xml/validation/datatype/NameType.java \
+classpath/gnu/xml/validation/datatype/NegativeIntegerType.java \
+classpath/gnu/xml/validation/datatype/NonNegativeIntegerType.java \
+classpath/gnu/xml/validation/datatype/NonPositiveIntegerType.java \
+classpath/gnu/xml/validation/datatype/NormalizedStringType.java \
+classpath/gnu/xml/validation/datatype/NotationType.java \
+classpath/gnu/xml/validation/datatype/PatternFacet.java \
+classpath/gnu/xml/validation/datatype/PositiveIntegerType.java \
+classpath/gnu/xml/validation/datatype/QNameType.java \
+classpath/gnu/xml/validation/datatype/ShortType.java \
+classpath/gnu/xml/validation/datatype/SimpleType.java \
+classpath/gnu/xml/validation/datatype/StringType.java \
+classpath/gnu/xml/validation/datatype/TimeType.java \
+classpath/gnu/xml/validation/datatype/TokenType.java \
+classpath/gnu/xml/validation/datatype/TotalDigitsFacet.java \
+classpath/gnu/xml/validation/datatype/Type.java \
+classpath/gnu/xml/validation/datatype/TypeBuilder.java \
+classpath/gnu/xml/validation/datatype/TypeLibrary.java \
+classpath/gnu/xml/validation/datatype/TypeLibraryFactory.java \
+classpath/gnu/xml/validation/datatype/UnionSimpleType.java \
+classpath/gnu/xml/validation/datatype/UnsignedByteType.java \
+classpath/gnu/xml/validation/datatype/UnsignedIntType.java \
+classpath/gnu/xml/validation/datatype/UnsignedLongType.java \
+classpath/gnu/xml/validation/datatype/UnsignedShortType.java \
+classpath/gnu/xml/validation/datatype/WhiteSpaceFacet.java \
+classpath/gnu/xml/validation/relaxng/AnyNameNameClass.java \
+classpath/gnu/xml/validation/relaxng/AttributePattern.java \
+classpath/gnu/xml/validation/relaxng/ChoiceNameClass.java \
+classpath/gnu/xml/validation/relaxng/ChoicePattern.java \
+classpath/gnu/xml/validation/relaxng/DataPattern.java \
+classpath/gnu/xml/validation/relaxng/Define.java \
+classpath/gnu/xml/validation/relaxng/ElementPattern.java \
+classpath/gnu/xml/validation/relaxng/EmptyPattern.java \
+classpath/gnu/xml/validation/relaxng/FullSyntaxBuilder.java \
+classpath/gnu/xml/validation/relaxng/Grammar.java \
+classpath/gnu/xml/validation/relaxng/GrammarException.java \
+classpath/gnu/xml/validation/relaxng/GrammarValidator.java \
+classpath/gnu/xml/validation/relaxng/GroupPattern.java \
+classpath/gnu/xml/validation/relaxng/InterleavePattern.java \
+classpath/gnu/xml/validation/relaxng/ListPattern.java \
+classpath/gnu/xml/validation/relaxng/NSNameNameClass.java \
+classpath/gnu/xml/validation/relaxng/NameClass.java \
+classpath/gnu/xml/validation/relaxng/NameNameClass.java \
+classpath/gnu/xml/validation/relaxng/NotAllowedPattern.java \
+classpath/gnu/xml/validation/relaxng/OneOrMorePattern.java \
+classpath/gnu/xml/validation/relaxng/Param.java \
+classpath/gnu/xml/validation/relaxng/Pattern.java \
+classpath/gnu/xml/validation/relaxng/RELAXNGSchemaFactory.java \
+classpath/gnu/xml/validation/relaxng/RefPattern.java \
+classpath/gnu/xml/validation/relaxng/TextPattern.java \
+classpath/gnu/xml/validation/relaxng/ValuePattern.java \
+classpath/gnu/xml/validation/xmlschema/AnyAttribute.java \
+classpath/gnu/xml/validation/xmlschema/AttributeDeclaration.java \
+classpath/gnu/xml/validation/xmlschema/AttributeUse.java \
+classpath/gnu/xml/validation/xmlschema/ComplexType.java \
+classpath/gnu/xml/validation/xmlschema/ElementDeclaration.java \
+classpath/gnu/xml/validation/xmlschema/Particle.java \
+classpath/gnu/xml/validation/xmlschema/ValidationException.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchema.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaAttributeTypeInfo.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaBuilder.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaElementTypeInfo.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaSchemaFactory.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaTypeInfo.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaTypeInfoProvider.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaValidator.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaValidatorHandler.java \
 classpath/gnu/xml/xpath/AndExpr.java \
 classpath/gnu/xml/xpath/ArithmeticExpr.java \
 classpath/gnu/xml/xpath/BooleanFunction.java \
@@ -2377,6 +3518,7 @@ classpath/java/awt/KeyboardFocusManager.java \
 classpath/java/awt/Label.java \
 classpath/java/awt/LayoutManager.java \
 classpath/java/awt/LayoutManager2.java \
+classpath/java/awt/LightweightDispatcher.java \
 classpath/java/awt/List.java \
 classpath/java/awt/MediaTracker.java \
 classpath/java/awt/Menu.java \
@@ -2821,6 +3963,7 @@ java/awt/peer.list: $(java_awt_peer_source_files)
 
 java_awt_print_source_files = \
 classpath/java/awt/print/Book.java \
+classpath/java/awt/print/NoPrinterJob.java \
 classpath/java/awt/print/PageFormat.java \
 classpath/java/awt/print/Pageable.java \
 classpath/java/awt/print/Paper.java \
@@ -3065,7 +4208,7 @@ classpath/java/lang/InternalError.java \
 classpath/java/lang/InterruptedException.java \
 classpath/java/lang/LinkageError.java \
 classpath/java/lang/Long.java \
-classpath/java/lang/Math.java \
+java/lang/Math.java \
 classpath/java/lang/NegativeArraySizeException.java \
 classpath/java/lang/NoClassDefFoundError.java \
 classpath/java/lang/NoSuchFieldError.java \
@@ -3548,6 +4691,7 @@ classpath/java/rmi/server/RMIServerSocketFactory.java \
 classpath/java/rmi/server/RMISocketFactory.java \
 classpath/java/rmi/server/RemoteCall.java \
 classpath/java/rmi/server/RemoteObject.java \
+classpath/java/rmi/server/RemoteObjectInvocationHandler.java \
 classpath/java/rmi/server/RemoteRef.java \
 classpath/java/rmi/server/RemoteServer.java \
 classpath/java/rmi/server/RemoteStub.java \
@@ -4033,6 +5177,7 @@ java/util/prefs.list: $(java_util_prefs_source_files)
 
 
 java_util_regex_source_files = \
+classpath/java/util/regex/MatchResult.java \
 classpath/java/util/regex/Matcher.java \
 classpath/java/util/regex/Pattern.java \
 classpath/java/util/regex/PatternSyntaxException.java
@@ -4229,6 +5374,7 @@ classpath/javax/imageio/metadata/IIOMetadataController.java \
 classpath/javax/imageio/metadata/IIOMetadataFormat.java \
 classpath/javax/imageio/metadata/IIOMetadataFormatImpl.java \
 classpath/javax/imageio/metadata/IIOMetadataNode.java \
+classpath/javax/imageio/plugins/bmp/BMPImageWriteParam.java \
 classpath/javax/imageio/spi/IIORegistry.java \
 classpath/javax/imageio/spi/IIOServiceProvider.java \
 classpath/javax/imageio/spi/ImageInputStreamSpi.java \
@@ -4513,7 +5659,9 @@ classpath/javax/print/PrintException.java \
 classpath/javax/print/PrintService.java \
 classpath/javax/print/PrintServiceLookup.java \
 classpath/javax/print/ServiceUIFactory.java \
+classpath/javax/print/SimpleDoc.java \
 classpath/javax/print/StreamPrintService.java \
+classpath/javax/print/StreamPrintServiceFactory.java \
 classpath/javax/print/URIException.java
 
 javax_print_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_print_source_files)))
@@ -5487,6 +6635,30 @@ javax/swing/plaf/multi.list: $(javax_swing_plaf_multi_source_files)
 -include javax/swing/plaf/multi.deps
 
 
+javax_swing_plaf_synth_source_files = \
+classpath/javax/swing/plaf/synth/ColorType.java \
+classpath/javax/swing/plaf/synth/Region.java \
+classpath/javax/swing/plaf/synth/SynthConstants.java \
+classpath/javax/swing/plaf/synth/SynthContext.java \
+classpath/javax/swing/plaf/synth/SynthGraphicsUtils.java \
+classpath/javax/swing/plaf/synth/SynthLookAndFeel.java \
+classpath/javax/swing/plaf/synth/SynthPainter.java \
+classpath/javax/swing/plaf/synth/SynthStyle.java \
+classpath/javax/swing/plaf/synth/SynthStyleFactory.java
+
+javax_swing_plaf_synth_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_synth_source_files)))
+
+javax/swing/plaf/synth.list: $(javax_swing_plaf_synth_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(javax_swing_plaf_synth_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > javax/swing/plaf/synth.list
+
+-include javax/swing/plaf/synth.deps
+
+
 javax_swing_table_source_files = \
 classpath/javax/swing/table/AbstractTableModel.java \
 classpath/javax/swing/table/DefaultTableCellRenderer.java \
@@ -5515,6 +6687,7 @@ javax/swing/table.list: $(javax_swing_table_source_files)
 javax_swing_text_source_files = \
 classpath/javax/swing/text/AbstractDocument.java \
 classpath/javax/swing/text/AbstractWriter.java \
+classpath/javax/swing/text/AsyncBoxView.java \
 classpath/javax/swing/text/AttributeSet.java \
 classpath/javax/swing/text/BadLocationException.java \
 classpath/javax/swing/text/BoxView.java \
@@ -5592,10 +6765,17 @@ javax_swing_text_html_source_files = \
 classpath/javax/swing/text/html/BlockView.java \
 classpath/javax/swing/text/html/CSS.java \
 classpath/javax/swing/text/html/CSSParser.java \
+classpath/javax/swing/text/html/FormView.java \
 classpath/javax/swing/text/html/HTML.java \
 classpath/javax/swing/text/html/HTMLDocument.java \
 classpath/javax/swing/text/html/HTMLEditorKit.java \
 classpath/javax/swing/text/html/HTMLFrameHyperlinkEvent.java \
+classpath/javax/swing/text/html/HTMLTableView.java \
+classpath/javax/swing/text/html/InlineView.java \
+classpath/javax/swing/text/html/NullView.java \
+classpath/javax/swing/text/html/ObjectView.java \
+classpath/javax/swing/text/html/Option.java \
+classpath/javax/swing/text/html/ParagraphView.java \
 classpath/javax/swing/text/html/StyleSheet.java
 
 javax_swing_text_html_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_text_html_source_files)))
@@ -5783,9 +6963,7 @@ classpath/javax/xml/stream/StreamFilter.java \
 classpath/javax/xml/stream/XMLEventFactory.java \
 classpath/javax/xml/stream/XMLEventReader.java \
 classpath/javax/xml/stream/XMLEventWriter.java \
-classpath/javax/xml/stream/XMLFilter.java \
 classpath/javax/xml/stream/XMLInputFactory.java \
-classpath/javax/xml/stream/XMLIterator.java \
 classpath/javax/xml/stream/XMLOutputFactory.java \
 classpath/javax/xml/stream/XMLReporter.java \
 classpath/javax/xml/stream/XMLResolver.java \
@@ -5799,7 +6977,6 @@ classpath/javax/xml/stream/events/Comment.java \
 classpath/javax/xml/stream/events/DTD.java \
 classpath/javax/xml/stream/events/EndDocument.java \
 classpath/javax/xml/stream/events/EndElement.java \
-classpath/javax/xml/stream/events/EndEntity.java \
 classpath/javax/xml/stream/events/EntityDeclaration.java \
 classpath/javax/xml/stream/events/EntityReference.java \
 classpath/javax/xml/stream/events/Namespace.java \
@@ -5807,7 +6984,6 @@ classpath/javax/xml/stream/events/NotationDeclaration.java \
 classpath/javax/xml/stream/events/ProcessingInstruction.java \
 classpath/javax/xml/stream/events/StartDocument.java \
 classpath/javax/xml/stream/events/StartElement.java \
-classpath/javax/xml/stream/events/StartEntity.java \
 classpath/javax/xml/stream/events/XMLEvent.java \
 classpath/javax/xml/stream/util/EventReaderDelegate.java \
 classpath/javax/xml/stream/util/ReaderDelegate.java \
@@ -6662,8 +7838,19 @@ all_packages_source_files = \
   gnu/java/security/action.list \
   gnu/java/security/ber.list \
   gnu/java/security/der.list \
+  gnu/java/security/hash.list \
+  gnu/java/security/jce/hash.list \
+  gnu/java/security/jce/prng.list \
+  gnu/java/security/jce/sig.list \
+  gnu/java/security/key.list \
+  gnu/java/security/key/dss.list \
+  gnu/java/security/key/rsa.list \
   gnu/java/security/pkcs.list \
+  gnu/java/security/prng.list \
   gnu/java/security/provider.list \
+  gnu/java/security/sig.list \
+  gnu/java/security/sig/dss.list \
+  gnu/java/security/sig/rsa.list \
   gnu/java/security/util.list \
   gnu/java/security/x509.list \
   gnu/java/security/x509/ext.list \
@@ -6671,7 +7858,36 @@ all_packages_source_files = \
   gnu/java/util.list \
   gnu/java/util/prefs.list \
   gnu/javax/crypto.list \
+  gnu/javax/crypto/assembly.list \
+  gnu/javax/crypto/cipher.list \
+  gnu/javax/crypto/jce.list \
+  gnu/javax/crypto/jce/cipher.list \
+  gnu/javax/crypto/jce/key.list \
+  gnu/javax/crypto/jce/keyring.list \
+  gnu/javax/crypto/jce/mac.list \
+  gnu/javax/crypto/jce/params.list \
+  gnu/javax/crypto/jce/prng.list \
+  gnu/javax/crypto/jce/sig.list \
+  gnu/javax/crypto/jce/spec.list \
+  gnu/javax/crypto/key.list \
+  gnu/javax/crypto/key/dh.list \
+  gnu/javax/crypto/key/srp6.list \
+  gnu/javax/crypto/keyring.list \
+  gnu/javax/crypto/mac.list \
+  gnu/javax/crypto/mode.list \
+  gnu/javax/crypto/pad.list \
+  gnu/javax/crypto/prng.list \
+  gnu/javax/crypto/sasl.list \
+  gnu/javax/crypto/sasl/anonymous.list \
+  gnu/javax/crypto/sasl/crammd5.list \
+  gnu/javax/crypto/sasl/plain.list \
+  gnu/javax/crypto/sasl/srp.list \
   gnu/javax/imageio/bmp.list \
+  gnu/javax/net/ssl.list \
+  gnu/javax/net/ssl/provider.list \
+  gnu/javax/security/auth.list \
+  gnu/javax/security/auth/callback.list \
+  gnu/javax/security/auth/login.list \
   gnu/javax/swing/text/html/parser.list \
   gnu/javax/swing/text/html/parser/models.list \
   gnu/javax/swing/text/html/parser/support.list \
@@ -6761,6 +7977,7 @@ all_packages_source_files = \
   javax/swing/plaf/basic.list \
   javax/swing/plaf/metal.list \
   javax/swing/plaf/multi.list \
+  javax/swing/plaf/synth.list \
   javax/swing/table.list \
   javax/swing/text.list \
   javax/swing/text/html.list \
@@ -6816,8 +8033,19 @@ ordinary_header_files = \
   $(gnu_java_security_action_header_files) \
   $(gnu_java_security_ber_header_files) \
   $(gnu_java_security_der_header_files) \
+  $(gnu_java_security_hash_header_files) \
+  $(gnu_java_security_jce_hash_header_files) \
+  $(gnu_java_security_jce_prng_header_files) \
+  $(gnu_java_security_jce_sig_header_files) \
+  $(gnu_java_security_key_header_files) \
+  $(gnu_java_security_key_dss_header_files) \
+  $(gnu_java_security_key_rsa_header_files) \
   $(gnu_java_security_pkcs_header_files) \
+  $(gnu_java_security_prng_header_files) \
   $(gnu_java_security_provider_header_files) \
+  $(gnu_java_security_sig_header_files) \
+  $(gnu_java_security_sig_dss_header_files) \
+  $(gnu_java_security_sig_rsa_header_files) \
   $(gnu_java_security_util_header_files) \
   $(gnu_java_security_x509_header_files) \
   $(gnu_java_security_x509_ext_header_files) \
@@ -6825,7 +8053,36 @@ ordinary_header_files = \
   $(gnu_java_util_header_files) \
   $(gnu_java_util_prefs_header_files) \
   $(gnu_javax_crypto_header_files) \
+  $(gnu_javax_crypto_assembly_header_files) \
+  $(gnu_javax_crypto_cipher_header_files) \
+  $(gnu_javax_crypto_jce_header_files) \
+  $(gnu_javax_crypto_jce_cipher_header_files) \
+  $(gnu_javax_crypto_jce_key_header_files) \
+  $(gnu_javax_crypto_jce_keyring_header_files) \
+  $(gnu_javax_crypto_jce_mac_header_files) \
+  $(gnu_javax_crypto_jce_params_header_files) \
+  $(gnu_javax_crypto_jce_prng_header_files) \
+  $(gnu_javax_crypto_jce_sig_header_files) \
+  $(gnu_javax_crypto_jce_spec_header_files) \
+  $(gnu_javax_crypto_key_header_files) \
+  $(gnu_javax_crypto_key_dh_header_files) \
+  $(gnu_javax_crypto_key_srp6_header_files) \
+  $(gnu_javax_crypto_keyring_header_files) \
+  $(gnu_javax_crypto_mac_header_files) \
+  $(gnu_javax_crypto_mode_header_files) \
+  $(gnu_javax_crypto_pad_header_files) \
+  $(gnu_javax_crypto_prng_header_files) \
+  $(gnu_javax_crypto_sasl_header_files) \
+  $(gnu_javax_crypto_sasl_anonymous_header_files) \
+  $(gnu_javax_crypto_sasl_crammd5_header_files) \
+  $(gnu_javax_crypto_sasl_plain_header_files) \
+  $(gnu_javax_crypto_sasl_srp_header_files) \
   $(gnu_javax_imageio_bmp_header_files) \
+  $(gnu_javax_net_ssl_header_files) \
+  $(gnu_javax_net_ssl_provider_header_files) \
+  $(gnu_javax_security_auth_header_files) \
+  $(gnu_javax_security_auth_callback_header_files) \
+  $(gnu_javax_security_auth_login_header_files) \
   $(gnu_javax_swing_text_html_parser_header_files) \
   $(gnu_javax_swing_text_html_parser_models_header_files) \
   $(gnu_javax_swing_text_html_parser_support_header_files) \
@@ -6915,6 +8172,7 @@ ordinary_header_files = \
   $(javax_swing_plaf_basic_header_files) \
   $(javax_swing_plaf_metal_header_files) \
   $(javax_swing_plaf_multi_header_files) \
+  $(javax_swing_plaf_synth_header_files) \
   $(javax_swing_table_header_files) \
   $(javax_swing_text_header_files) \
   $(javax_swing_text_html_header_files) \

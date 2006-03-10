@@ -1,5 +1,5 @@
 /* Template.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,51 +66,77 @@ class Template
   final double priority;
   final int precedence;
   final QName mode;
+  final boolean isAnyNode; // is the match simply "node()"?
 
   Template(Stylesheet stylesheet, 
            QName name, Pattern match, TemplateNode node,
-           int precedence, double priority, QName mode)
+           int precedence, String priorityAttr, QName mode)
   {
     this.stylesheet = stylesheet;
     this.name = name;
     this.match = match;
     this.node = node;
-    // adjust priority if necessary
-    // see XSLT section 5.5
-    Test test = getNodeTest(match);
-    if (test != null)
+    this.precedence = precedence;
+    this.mode = mode;
+    
+    double p = DEFAULT_PRIORITY;
+    boolean a = false;
+    if (priorityAttr != null)
+      p = Double.parseDouble(priorityAttr);
+    else
       {
-        if (test instanceof NameTest)
+        // adjust priority if necessary
+        // see XSLT section 5.5
+        if (match instanceof Selector)
           {
-            NameTest nameTest = (NameTest) test;
-            if (nameTest.matchesAny() ||
-                nameTest.matchesAnyLocalName())
+            Selector selector = (Selector) match;
+            Test[] tests = selector.getTests();
+            if (tests.length > 0)
               {
-                priority = -0.25d;
-              }
-            else
-              {
-                priority = 0.0d;
-              }
-          }
-        else
-          {
-            NodeTypeTest nodeTypeTest = (NodeTypeTest) test;
-            if (nodeTypeTest.getNodeType() ==
-                Node.PROCESSING_INSTRUCTION_NODE &&
-                nodeTypeTest.getData() != null)
-              {
-                priority = 0.0d;
-              }
-            else
-              {
-                priority = -0.5d;
+                Test test = tests[0];
+                if (test instanceof NameTest)
+                  {
+                    NameTest nameTest = (NameTest) test;
+                    if (nameTest.matchesAny())
+                      p = -0.25d;
+                    else if (nameTest.matchesAnyLocalName())
+                      p = -0.20d;
+                    else
+                      p = 0.0d;
+                  }
+                else
+                  {
+                    NodeTypeTest nodeTypeTest = (NodeTypeTest) test;
+                    if (nodeTypeTest.getNodeType() ==
+                        Node.PROCESSING_INSTRUCTION_NODE &&
+                        nodeTypeTest.getData() != null)
+                      p = 0.0d;
+                    else
+                      p = -0.5d;
+                    a = (nodeTypeTest.getNodeType() == 0);
+                  }
+                // Add a small difference for predicates
+                if (tests.length > 1)
+                  p += ((double) tests.length - 1) * 0.001;
               }
           }
       }
+    this.priority = p;
+    this.isAnyNode = a;
+  }
+  
+  private Template(Stylesheet stylesheet, 
+           QName name, Pattern match, TemplateNode node,
+           int precedence, double priority, QName mode, boolean isAnyNode)
+  {
+    this.stylesheet = stylesheet;
+    this.name = name;
+    this.match = match;
+    this.node = node;
     this.precedence = precedence;
     this.priority = priority;
     this.mode = mode;
+    this.isAnyNode = isAnyNode;
   }
 
   Template clone(Stylesheet stylesheet)
@@ -124,7 +150,8 @@ class Template
                         (node == null) ? null : node.clone(stylesheet),
                         precedence,
                         priority,
-                        mode);
+                        mode,
+                        isAnyNode);
   }
   
   public int compareTo(Object other)
@@ -134,29 +161,16 @@ class Template
         Template t = (Template) other;
         int d = t.precedence - precedence;
         if (d != 0)
-          {
-            return d;
-          }
+          return d;
         double d2 = t.priority - priority;
         if (d2 != 0.0d)
-          {
-            return (int) Math.round(d2 * 1000.0d);
-          }
+          return (int) Math.round(d2 * 1000.0d);
       }
     return 0;
   }
 
   Test getNodeTest(Expr expr)
   {
-    if (expr instanceof Selector)
-      {
-        Selector selector = (Selector) expr;
-        Test[] tests = selector.getTests();
-        if (tests.length > 0)
-          {
-            return tests[0];
-          }
-      }
     return null;
   }
 
@@ -164,13 +178,11 @@ class Template
   {
     if ((mode == null && this.mode != null) ||
         (mode != null && !mode.equals(this.mode)))
-      {
-        return false;
-      }
+      return false;
     if (match == null)
-      {
-        return false;
-      }
+      return false;
+    if (isAnyNode && node.getNodeType() == Node.DOCUMENT_NODE)
+      return false; // don't match document node
     return match.matches(node);
   }
 
@@ -186,9 +198,7 @@ class Template
          ctx = ctx.parent)
       {
         if (ctx == stylesheet)
-          {
-            return true;
-          }
+          return true;
       }
     return false;
   }
@@ -206,13 +216,12 @@ class Template
              Node parent, Node nextSibling)
     throws TransformerException
   {
-    System.err.println("...applying " + toString() + " to " + context);
+    if (stylesheet.debug)
+      System.err.println("...applying " + toString() + " to " + context);
     if (node != null)
-      {
-        node.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      node.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
 
   public String toString()
@@ -244,9 +253,7 @@ class Template
   {
     out.println(toString());
     if (node != null)
-      {
-        node.list(1, out, true);
-      }
+      node.list(1, out, true);
   }
 
 }

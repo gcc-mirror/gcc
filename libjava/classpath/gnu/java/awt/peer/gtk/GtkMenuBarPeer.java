@@ -1,5 +1,5 @@
 /* GtkMenuBarPeer.java -- Implements MenuBarPeer with GTK+
-   Copyright (C) 1999, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,38 +48,69 @@ import java.awt.peer.MenuPeer;
 public class GtkMenuBarPeer extends GtkMenuComponentPeer
   implements MenuBarPeer
 {
+  /** Whether we already have an help menu set on this peer. */
+  private boolean hasHelpMenu;
 
-  native void create ();
-  native void addMenu (MenuPeer menu);
+  /**
+   * Creates the gtk+ widget for this peer and puts it in the nsa
+   * table. Called from the (super class) constructor.
+   */
+  protected native void create();
 
-  public GtkMenuBarPeer (MenuBar target)
+  /**
+   * Adds a new GtkMenuPeer to the end of the GtkMenuBarPeer.
+   */
+  private native void addMenu(GtkMenuPeer menu);
+
+  /**
+   * Creates a new GtkMenuBarPeer associated with the given MenuBar.
+   */
+  public GtkMenuBarPeer(MenuBar menubar)
   {
-    super (target);
+    super(menubar);
   }
 
-  void setFont ()
-  {
-    MenuComponent mc = (MenuComponent) awtWidget;
-    Font f = mc.getFont ();
-
-    if (f == null)
-      mc.setFont (new Font ("Dialog", Font.PLAIN, 12));
-  }
-
-  // FIXME: remove this method or replace it with one that does
-  // something useful.
-  /* In Gnome, help menus are no longer right flushed. */
-  native void nativeSetHelpMenu(MenuPeer menuPeer);
-
+  /**
+   * Adds a help menu to this MenuBar. Gnome styleguides say the help
+   * menu is just the last item in the menubar (they are NOT right
+   * justified).
+   */
   public void addHelpMenu (Menu menu)
   {
-    // nativeSetHelpMenu((MenuPeer) menu.getPeer());
+    if (hasHelpMenu)
+      {
+	// Remove the (help) menu, which is after all the other items.
+	delMenu(((MenuBar) awtWidget).getMenuCount());
+	hasHelpMenu = false;
+      }
+
+    if (menu != null)
+      {
+	addMenu(menu);
+	hasHelpMenu = true;
+      }
   }
 
+  /**
+   * Deletes the menu at (zero-based) index from this GtkMenuBar.
+   */
   public native void delMenu(int index);
 
-  public void addMenu (Menu m)
+  /**
+   * Adds the GtkMenuPeer associated with the Menu to this
+   * GtkMenuBarPeer. Makes sure that any help menus keep the last menu
+   * on the bar.
+   */
+  public void addMenu(Menu m)
   {
-    // FIXME: implement
+    // Make sure the help menu is the last one.
+    if (hasHelpMenu)
+      {
+	addHelpMenu(null);
+	addMenu((GtkMenuPeer) m.getPeer());
+	addHelpMenu(((MenuBar) awtWidget).getHelpMenu());
+      }
+    else
+      addMenu((GtkMenuPeer) m.getPeer());
   }
 }

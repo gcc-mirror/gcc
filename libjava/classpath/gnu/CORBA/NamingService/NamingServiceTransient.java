@@ -136,7 +136,7 @@ public class NamingServiceTransient
         System.out.println("GNU Classpath transient naming service "
           + "started at " + iorr.Internet.host + ":" + iorr.Internet.port
           + " key 'NameService'.\n\n"
-          + "Copyright (C) 2005 Free Software Foundation\n"
+          + "Copyright (C) 2006 Free Software Foundation\n"
           + "This tool comes with ABSOLUTELY NO WARRANTY. "
           + "This is free software, and you are\nwelcome to "
           + "redistribute it under conditions, defined in "

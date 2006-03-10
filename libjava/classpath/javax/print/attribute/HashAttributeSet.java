@@ -1,5 +1,5 @@
 /* HashAttributeSet.java -- 
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package javax.print.attribute;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,8 +52,8 @@ public class HashAttributeSet implements AttributeSet, Serializable
 {
   private static final long serialVersionUID = 5311560590283707917L;
   
-  private Class interfaceName;
-  private HashMap attributeMap = new HashMap();
+  private Class myInterface;
+  private transient HashMap attributeMap = new HashMap();
 
   /**
    * Creates an empty <code>HashAttributeSet</code> object.
@@ -112,7 +115,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
     if (interfaceName == null)
       throw new NullPointerException("interfaceName may not be null");
     
-    this.interfaceName = interfaceName;
+    myInterface = interfaceName;
   }
   
   /**
@@ -192,7 +195,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    */
   public boolean add(Attribute attribute)
   {
-    return addInternal(attribute, interfaceName);
+    return addInternal(attribute, myInterface);
   }
 
   private boolean addInternal(Attribute attribute, Class interfaceName)
@@ -201,7 +204,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
       throw new NullPointerException("attribute may not be null");
 
     AttributeSetUtilities.verifyAttributeCategory(interfaceName,
-						  this.interfaceName);
+                                                  myInterface);
 
     Object old = attributeMap.put
       (attribute.getCategory(), AttributeSetUtilities.verifyAttributeValue
@@ -220,7 +223,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    */
   public boolean addAll(AttributeSet attributes)
   {
-    return addAllInternal(attributes, interfaceName);
+    return addAllInternal(attributes, myInterface);
   }
 
   private boolean addAllInternal(AttributeSet attributes, Class interfaceName)
@@ -392,5 +395,25 @@ public class HashAttributeSet implements AttributeSet, Serializable
       }
     
     return array;
+  }
+  
+  // Implemented as specified in serialized form
+  private void readObject(ObjectInputStream s)
+    throws ClassNotFoundException, IOException
+  {
+    myInterface = (Class) s.readObject();
+    int size = s.readInt();
+    attributeMap = new HashMap(size);
+    for (int i=0; i < size; i++)
+      add((Attribute) s.readObject());
+  }
+         
+  private void writeObject(ObjectOutputStream s) throws IOException
+  {
+    s.writeObject(myInterface);
+    s.writeInt(size());
+    Iterator it = attributeMap.values().iterator();
+    while (it.hasNext())
+      s.writeObject(it.next());    
   }
 }

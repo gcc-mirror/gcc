@@ -1,5 +1,5 @@
 /* NoInitialContextException.java --
-   Copyright (C) 2000, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,8 @@ package javax.naming;
  
 public class NoInitialContextException extends NamingException
 {
+  private static final long serialVersionUID = - 3413733186901258623L;
+
   public NoInitialContextException()
   {
     super();

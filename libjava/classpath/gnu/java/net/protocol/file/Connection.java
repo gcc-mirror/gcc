@@ -135,21 +135,18 @@ public class Connection extends URLConnection
    * @exception MalformedURLException If the given string contains invalid
    * escape sequences.
    *
-   * Sadly the same as URI.unquote, but there's nothing we can do to
-   * make it accessible.
-   *
    */
   public static String unquote(String str) throws MalformedURLException
   {
     if (str == null)
       return null;
-    byte[] buf = new byte[str.length()];
+
+    final int MAX_BYTES_PER_UTF_8_CHAR = 3;
+    byte[] buf = new byte[str.length()*MAX_BYTES_PER_UTF_8_CHAR];
     int pos = 0;
     for (int i = 0; i < str.length(); i++)
       {
 	char c = str.charAt(i);
-	if (c > 127)
-	  throw new MalformedURLException(str + " : Invalid character");
 	if (c == '%')
 	  {
 	    if (i + 2 >= str.length())
@@ -160,6 +157,15 @@ public class Connection extends URLConnection
 	      throw new MalformedURLException(str + " : Invalid quoted character");
 	    buf[pos++] = (byte) (hi * 16 + lo);
 	  }
+ 	else if (c > 127) {
+	    try {
+		byte [] c_as_bytes = Character.toString(c).getBytes("utf-8");
+		System.arraycopy(c_as_bytes, 0, buf, pos, c_as_bytes.length);
+	    }
+	    catch (java.io.UnsupportedEncodingException x2) {
+		throw (Error) new InternalError().initCause(x2);
+	    }
+	}    
 	else
 	  buf[pos++] = (byte) c;
       }

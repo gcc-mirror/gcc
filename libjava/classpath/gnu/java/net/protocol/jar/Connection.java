@@ -1,5 +1,5 @@
 /* Connection - jar url connection for java.net
-   Copyright (C) 1999, 2002, 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.net.protocol.jar;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -145,7 +146,7 @@ public final class Connection extends JarURLConnection
         jar_entry = (JarEntry) jar_file.getEntry (entry_name);
 
         if(jar_entry == null)
-          throw new IOException ("No entry for " + entry_name + " exists.");
+          throw new FileNotFoundException("No entry for " + entry_name + " exists.");
       }
 
     connected = true;
@@ -158,9 +159,6 @@ public final class Connection extends JarURLConnection
 
     if (! doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
-    
-    if (jar_entry == null)
-      throw new IOException (jar_url + " couldn't be found.");
     
     return jar_file.getInputStream (jar_entry);
   }

@@ -397,6 +397,7 @@ addNotify()
     return;
 
   setPeer((ComponentPeer)getToolkit().createTextField(this));
+  super.addNotify();
 }
 
 /*************************************************************************/

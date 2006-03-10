@@ -1,5 +1,5 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -555,8 +555,7 @@ public class ObjectInputStream extends InputStream
     classLookupTable.put(clazz, osc);
     setBlockDataMode(oldmode);
 
-    // find the first non-serializable, non-abstract
-    // class in clazz's inheritance hierarchy
+    // find the first non-serializable class in clazz's inheritance hierarchy
     Class first_nonserial = clazz.getSuperclass();
     // Maybe it is a primitive class, those don't have a super class,
     // or Object itself.  Otherwise we can keep getting the superclass
@@ -565,9 +564,8 @@ public class ObjectInputStream extends InputStream
     if (first_nonserial == null)
       first_nonserial = clazz;
     else
-      while (Serializable.class.isAssignableFrom(first_nonserial)
-	     || Modifier.isAbstract(first_nonserial.getModifiers()))
-	first_nonserial = first_nonserial.getSuperclass();
+      while (Serializable.class.isAssignableFrom(first_nonserial))
+        first_nonserial = first_nonserial.getSuperclass();
 
     final Class local_constructor_class = first_nonserial;
 
@@ -1596,7 +1594,14 @@ public class ObjectInputStream extends InputStream
 
   private void readNextBlock() throws IOException
   {
-    readNextBlock(this.realInputStream.readByte());
+    byte marker = this.realInputStream.readByte();
+    while (marker == TC_RESET)
+      {
+        if(dump) dumpElementln("RESET");
+        clearHandles();
+        marker = this.realInputStream.readByte();
+      }
+    readNextBlock(marker);
   }
 
   private void readNextBlock(byte marker) throws IOException

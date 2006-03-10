@@ -41,11 +41,40 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.ObjID;
 
-public interface DGC extends Remote
+/**
+ * The DGC implementation is used for the server side during the distributed
+ * garbage collection. This interface contains the two methods: dirty and clean.
+ * A dirty call is made when a remote reference is unmarshaled in a client. A
+ * corresponding clean call is made by client it no longer uses that remote
+ * reference. A reference to a remote object is also automatically released
+ * after so called lease period that starts after the dirty call is received. It
+ * is the client's responsibility to renew the leases, by making additional
+ * dirty calls before such leases expire.
+ */
+public interface DGC
+    extends Remote
 {
-  Lease dirty (ObjID[] ids, long sequenceNum, Lease lease)
-    throws RemoteException;
+  /**
+   * Mark the given objects referecnes as used on the client side.
+   * 
+   * @param ids the ids of the used objects.
+   * @param sequenceNum the number of the call (used to detect and discard late
+   *          calls).
+   * @param lease the requested lease
+   * @return the granted lease
+   */
+  Lease dirty(ObjID[] ids, long sequenceNum, Lease lease)
+      throws RemoteException;
 
-  void clean (ObjID[] ids, long sequenceNum, VMID vmid, boolean strong)
-    throws RemoteException;
+  /**
+   * Mark the given objects as no longer used on the client side.
+   * 
+   * @param ids the ids of the objects that are no longer used.
+   * @param sequenceNum the number of the call (used to detect and discard late
+   * @param vmid the VMID of the client.
+   * @param strong make the "strong" clean call ("strong" calls are scheduled
+   * after the failed dirty calls).
+   */
+  void clean(ObjID[] ids, long sequenceNum, VMID vmid, boolean strong)
+      throws RemoteException;
 }

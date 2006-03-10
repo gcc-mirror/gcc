@@ -1,5 +1,5 @@
 /* EntityReference.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,34 +45,14 @@ public interface EntityReference
 {
 
   /**
-   * Returns the base URI for the entity.
-   */
-  String getBaseUri();
-
-  /**
-   * Returns the public identifier for the entity.
-   */
-  String getPublicId();
-
-  /**
-   * Returns the system identifierfor the entity.
-   */
-  String getSystemId();
-
-  /**
    * Returns the declaration of this reference.
    */
-  //EntityDeclaration getDeclaration();
+  EntityDeclaration getDeclaration();
 
   /**
    * Returns the entity name.
    */
   String getName();
 
-  /**
-   * Returns the replacement text for the entity.
-   */
-  String getReplacementText();
-  
 }
 

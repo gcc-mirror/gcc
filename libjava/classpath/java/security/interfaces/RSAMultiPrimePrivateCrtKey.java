@@ -54,6 +54,7 @@ public interface RSAMultiPrimePrivateCrtKey extends RSAPrivateKey
 {
   // Constants
   // --------------------------------------------------------------------------
+
   long serialVersionUID = 618058533534628008L;
 
   // Methods
@@ -67,45 +68,45 @@ public interface RSAMultiPrimePrivateCrtKey extends RSAPrivateKey
   BigInteger getPublicExponent();
 
   /**
-   * Returns the primeP.
+   * Returns the prime p.
    *
-   * @return the primeP.
+   * @return the prime p.
    */
   BigInteger getPrimeP();
 
   /**
-   * Returns the primeQ.
+   * Returns the prime q.
    *
-   * @return the primeQ.
+   * @return the prime q.
    */
   BigInteger getPrimeQ();
 
   /**
-   * Returns the primeExponentP.
+   * Returns the prime's exponent p.
    *
-   * @return the primeExponentP.
+   * @return the prime's exponent p.
    */
   BigInteger getPrimeExponentP();
 
   /**
-   * Returns the primeExponentQ.
+   * Returns the prime's exponent q.
    *
-   * @return the primeExponentQ.
+   * @return the prime's exponent q.
    */
   BigInteger getPrimeExponentQ();
 
   /**
-   * Returns the crtCoefficient.
+   * Returns the CRT Coefficient.
    *
-   * @return the crtCoefficient.
+   * @return the CRT Coefficient.
    */
   BigInteger getCrtCoefficient();
 
   /**
-   * Returns the otherPrimeInfo or <code>null</code> if there are only two
-   * prime factors (p and q).
+   * Returns the <i>OtherPrimeInfo</i> triplet MPIs or <code>null</code> if
+   * there are only two known prime factors (p and q).
    *
-   * @return the otherPrimeInfo.
+   * @return the <i>OtherPrimeInfo</i> INTEGERs.
    */
   RSAOtherPrimeInfo[] getOtherPrimeInfo();
 }

@@ -43,11 +43,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -119,6 +115,7 @@ import javax.accessibility.AccessibleRole;
  * component indexing and position order</p>
  *
  * @author Graydon Hoare (graydon@redhat.com)
+ * @author Roman Kennke (kennke@aicas.com)
  */
 public class JLayeredPane extends JComponent implements Accessible
 {
@@ -131,7 +128,7 @@ public class JLayeredPane extends JComponent implements Accessible
     /**
      * Creates a new instance of <code>AccessibleJLayeredPane</code>.
      */
-    public AccessibleJLayeredPane()
+    protected AccessibleJLayeredPane()
     {
       // Nothing to do here.
     }
@@ -150,22 +147,18 @@ public class JLayeredPane extends JComponent implements Accessible
   
   public static final String LAYER_PROPERTY = "layeredContainerLayer";
 
-  public static Integer FRAME_CONTENT_LAYER = new Integer (-30000);
+  public static final Integer FRAME_CONTENT_LAYER = new Integer (-30000);
 
-  public static Integer DEFAULT_LAYER = new Integer (0);
-  public static Integer PALETTE_LAYER = new Integer (100);
-  public static Integer MODAL_LAYER   = new Integer (200);
-  public static Integer POPUP_LAYER   = new Integer (300);
-  public static Integer DRAG_LAYER    = new Integer (400);
+  public static final Integer DEFAULT_LAYER = new Integer (0);
+  public static final Integer PALETTE_LAYER = new Integer (100);
+  public static final Integer MODAL_LAYER   = new Integer (200);
+  public static final Integer POPUP_LAYER   = new Integer (300);
+  public static final Integer DRAG_LAYER    = new Integer (400);
 
-  TreeMap layers;               // Layer Number (Integer) -> Layer Size (Integer)
-  Hashtable componentToLayer;   // Component -> Layer Number (Integer)
+  private Hashtable componentToLayer;   // Component -> Layer Number (Integer)
 
-  private transient Rectangle rectCache;
-  
   public JLayeredPane()
   {
-    layers = new TreeMap ();
     componentToLayer = new Hashtable ();
     setLayout(null);
   }
@@ -173,47 +166,50 @@ public class JLayeredPane extends JComponent implements Accessible
   /** 
    * Looks up the layer a child component is currently assigned to.
    *
+   * If <code>c</code> is an instance of {@link JComponent}, then the layer
+   * is fetched from the client property with the key {@link #LAYER_PROPERTY}.
+   * Otherwise it is looked up in an internal hashtable that maps
+   * non-JComponent components to layers. If the components cannot be found
+   * in either way, the {@link #DEFAULT_LAYER} is returned.
+   *
    * @param c the component to look up.
-   * @return the layer the component is currently assigned to, in this container.
-   * @throws IllegalArgumentException if the component is not a child of this container.
+   *
+   * @return the layer the component is currently assigned to; if the component
+   *         is not in this layered pane, then 0 (DEFAULT_LAYER) is returned
    */
   public int getLayer(Component c)
   {
-    Component myComp = c;
-    while(! componentToLayer.containsKey(myComp))
+    Integer layerObj;
+    if (c instanceof JComponent)
       {
-	myComp = myComp.getParent();
-	if (myComp == null)
-	  break;
+        JComponent jc = (JComponent) c;
+        layerObj = (Integer) jc.getClientProperty(LAYER_PROPERTY);
       }
-    if (myComp == null)
-      throw new IllegalArgumentException
-	("component is not in this JLayeredPane");
-    Integer layerObj = (Integer) componentToLayer.get(myComp);
+    else
+      layerObj = (Integer) componentToLayer.get(c);
+
+    if (layerObj == null)
+      layerObj = DEFAULT_LAYER;
+
     return layerObj.intValue();
   }
 
   /**
-   * Looks up the layer of <code>comp</code> in the component's nearest
-   * JLayeredPane ancestor. If <code>comp</code> is not contained
-   * in a JLayeredPane, the value 0 (default layer) is returned.
-   *
+   * Looks up the layer in the client property with the key
+   * {@link #LAYER_PROPERTY} of <code>comp</code>. If no such property can be
+   * found, we return <code>0</code> ({@link #DEFAULT_LAYER}).
+   * 
    * @param comp the component for which the layer is looked up
    *
-   * @return the layer of <code>comp</code> in its nearest JLayeredPane
-   *     ancestor
+   * @return the layer of <code>comp</code> as stored in the corresponding
+   *         client property, or <code>0</code> if there is no such property
    */
   public static int getLayer(JComponent comp)
   {
-    JLayeredPane lp = (JLayeredPane) SwingUtilities.getAncestorOfClass
-      (JLayeredPane.class, comp);
-    if (lp == null)
-      return 0;
-    else
-      // The cast here forces the call to the instance method getLayer()
-      // instead of the static method (this would lead to infinite
-      // recursion).
-      return lp.getLayer((Component) comp);
+    Integer layerObj = (Integer) comp.getClientProperty(LAYER_PROPERTY);
+    if (layerObj == null)
+      layerObj = DEFAULT_LAYER;
+    return layerObj.intValue();
   }
 
   /**
@@ -236,105 +232,49 @@ public class JLayeredPane extends JComponent implements Accessible
   }
 
   /**
-   * <p>Returns a pair of ints representing a half-open interval 
-   * <code>[top, bottom)</code>, which is the range of component indices 
-   * the provided layer number corresponds to.</p>
-   *
-   * <p>Note that "bottom" is <em>not</em> included in the interval of
-   * component indices in this layer: a layer with 0 elements in it has
-   * <code>ret[0] == ret[1]</code>.</p>
-   *
-   * @param layer the layer to look up.
-   * @return the half-open range of indices this layer spans.
-   * @throws IllegalArgumentException if layer does not refer to an active layer
-   * in this container.
-   */
-  private int[] layerToRange (Integer layer)
-  {
-    int[] ret = new int[2];
-    ret[1] = getComponents ().length;
-    Iterator i = layers.entrySet ().iterator ();
-    while (i.hasNext())
-      {
-        Map.Entry pair = (Map.Entry) i.next();
-        Integer layerNum = (Integer) pair.getKey ();
-        Integer layerSz = (Integer) pair.getValue ();
-        int layerInt = layerNum.intValue();
-        if (layerInt == layer.intValue())
-          {
-            ret[0] = ret[1] - layerSz.intValue ();
-            break;
-          }
-        // In the following case there exists no layer with the specified
-        // number, so we return an empty interval here with the index at which
-        // such a layer would be inserted
-        else if (layerInt > layer.intValue())
-          {
-            ret[1] = ret[0];
-            break;
-          }
-        else
-          {
-            ret[1] -= layerSz.intValue ();
-          }
-      }
-    return ret;
-  }
-
-  /**
-   * Increments the recorded size of a given layer.
-   *
-   * @param layer the layer number to increment.
-   * @see #incrLayer
-   */
-  private void incrLayer(Integer layer)
-  {
-    int sz = 1;
-    if (layers.containsKey (layer))
-	    sz += ((Integer)(layers.get (layer))).intValue ();
-    layers.put (layer, new Integer(sz));
-  }
-
-  /**
-   * Decrements the recorded size of a given layer.
-   *
-   * @param layer the layer number to decrement.
-   * @see #incrLayer
-   */
-  private void decrLayer(Integer layer)
-  {
-    int sz = 0;
-    if (layers.containsKey (layer))
-	    sz = ((Integer)(layers.get (layer))).intValue () - 1;
-    layers.put (layer, new Integer(sz));
-  }
-
-  /**
    * Return the greatest layer number currently in use, in this container.
    * This number may legally be positive <em>or</em> negative.
    *
-   * @return the least layer number.
+   * @return the highest layer number
+   *
    * @see #lowestLayer()
    */
   public int highestLayer()
   {
-    if (layers.size() == 0)
-	    return 0;
-    return ((Integer)(layers.lastKey ())).intValue ();
+    Component[] components = getComponents();
+    int highest;
+    if (components.length == 0)
+      highest = 0;
+    else
+      {
+        highest = Integer.MIN_VALUE;
+        for (int i = 0; i < components.length; i++)
+          highest = Math.max(highest, getLayer(components[i]));
+      }
+    return highest;
   }
 
   /**
    * Return the least layer number currently in use, in this container.
    * This number may legally be positive <em>or</em> negative.
    *
-   * @return the least layer number.
+   * @return the least layer number
+   *
    * @see #highestLayer()
    */
   public int lowestLayer()
   {
-    if (layers.size() == 0)
-	    return 0;
-    return ((Integer)(layers.firstKey ())).intValue ();
+    Component[] components = getComponents();
+    int lowest;
+    if (components.length == 0)
+      lowest = 0;
+    else
+      {
+        lowest = Integer.MAX_VALUE;
+        for (int i = 0; i < components.length; i++)
+          lowest = Math.max(lowest, getLayer(components[i]));
+      }
+    return lowest;
   }
 
   /**
@@ -343,9 +283,8 @@ public class JLayeredPane extends JComponent implements Accessible
    * layer, so is usually the component which occludes the most other
    * components in its layer.
    *
-   * @param c the component to move to the front of its layer.
-   * @throws IllegalArgumentException if the component is not a child of
-   * this container.
+   * @param c the component to move to the front of its layer
+   *
    * @see #moveToBack
    */
   public void moveToFront(Component c)
@@ -363,8 +302,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * other components in its layer.</p>
    *
    * @param c the component to move to the back of its layer.
-   * @throws IllegalArgumentException if the component is not a child of
-   * this container.
+   *
    * @see #moveToFront
    */
   public void moveToBack(Component c)
@@ -377,25 +315,30 @@ public class JLayeredPane extends JComponent implements Accessible
    * from the "front" (position 0) to the "back" (position N-1), and drawn from 
    * the back towards the front.
    *
-   * @param c the component to get the position of.
-   * @throws IllegalArgumentException if the component is not a child of
-   * this container.
+   * @param c the component to get the position of
+   *
+   * @return the position of <code>c</code> within its layer or -1 if
+   *         <code>c</code> is not a child of this layered pane
+   *
    * @see #setPosition
    */
   public int getPosition(Component c)
   {
-    int layer = getLayer (c);
-    int[] range = layerToRange(new Integer(layer));
-    int top = range[0];
-    int bot = range[1];
-    Component[] comps = getComponents ();
-    for (int i = top; i < bot; ++i)
-	    {
-        if (comps[i] == c)
-          return i - top;
-	    }
-    // should have found it
-    throw new IllegalArgumentException ();
+    int pos = -1;
+    int index = getIndexOf(c);
+    Component[] components = getComponents();
+    int layer = getLayer(c);
+    if (index >= 0)
+      {
+        for (int i = index; i >= 0; --i)
+          {
+            if (layer == getLayer(components[i]))
+              pos++;
+            else
+              break;
+          }
+      }
+    return pos;
   }
 
   /**
@@ -403,47 +346,16 @@ public class JLayeredPane extends JComponent implements Accessible
    * from the "front" (position 0) to the "back" (position N-1), and drawn from 
    * the back towards the front.
    *
-   * @param c the component to change the position of.
-   * @param position the position to assign the component to.
-   * @throws IllegalArgumentException if the component is not a child of
-   * this container.
+   * @param c the component to change the position of
+   * @param position the position to assign the component to
+   *
    * @see #getPosition
    */
   public void setPosition(Component c, int position)
   {
-    int layer = getLayer (c);
-    int[] range = layerToRange(new Integer(layer));
-    if (range[0] == range[1])
-      throw new IllegalArgumentException ();
-
-    int top = range[0];
-    int bot = range[1];
-    if (position == -1)
-      position = (bot - top) - 1;
-    int targ = Math.min(top + position, bot-1);
-    int curr = -1;
-
-    Component[] comps = getComponents();
-    for (int i = top; i < bot; ++i)
-      {
-        if (comps[i] == c)
-          {
-            curr = i;
-            break;
-          }
-      }
-    if (curr == -1)
-      // should have found it
-      throw new IllegalArgumentException();
-
-    if (curr == 0)
-      super.swapComponents(curr, targ);
-    else
-      while (curr > 0)
-        super.swapComponents (curr, --curr);
-    
-    revalidate();
-    repaint();
+    int layer = getLayer(c);
+    int index = insertIndexForLayer(layer, position);
+    setComponentZOrder(c, index);
   }
     
   /**
@@ -451,39 +363,44 @@ public class JLayeredPane extends JComponent implements Accessible
    * container. Components are ordered front-to-back, with the "front"
    * element (which draws last) at position 0 of the returned array.
    *
-   * @param layer the layer to return components from.
-   * @return the components in the layer.
+   * @param layer the layer to return components from
+   *
+   * @return the components in the layer
    */
   public Component[] getComponentsInLayer(int layer)
   {
-    int[] range = layerToRange (getObjectForLayer (layer));
-    if (range[0] == range[1])
-	    return new Component[0];
-    else
-	    {
-        Component[] comps = getComponents ();
-        int sz = range[1] - range[0];
-        Component[] nc = new Component[sz];
-        for (int i = 0; i < sz; ++i)
-          nc[i] = comps[range[0] + i];
-        return nc;
-	    }
+    Component[] inLayer = new Component[getComponentCountInLayer(layer)];
+    Component[] components = getComponents();
+    int j = 0;
+    for (int i = 0; i < components.length; ++i)
+      {
+        if (layer == getLayer(components[i]))
+          {
+            inLayer[j] = components[i];
+            j++;
+          }
+      }
+    return inLayer;
   }
 
   /**
    * Return the number of components within a layer of this
    * container.
    *
-   * @param layer the layer count components in.
-   * @return the number of components in the layer.
+   * @param layer the layer count components in
+   *
+   * @return the number of components in the layer
    */
   public int getComponentCountInLayer(int layer)
   {
-    int[] range = layerToRange (getObjectForLayer (layer));
-    if (range[0] == range[1])
-	    return 0;
-    else
-	    return (range[1] - range[0]);
+    Component[] components = getComponents();
+    int count = 0;
+    for (int i = components.length - 1; i >= 0; --i)
+      {
+        if (getLayer(components[i]) == layer)
+          count++;
+      }
+    return count;
   }
 
   /**
@@ -502,23 +419,14 @@ public class JLayeredPane extends JComponent implements Accessible
    * drawing order of all children of the container.
    *
    * @param c the component to look up.
-   * @return the external index of the component.
-   * @throws IllegalArgumentException if the component is not a child of
-   * this container.
+   *
+   * @return the external index of the component or <code>-1</code> if
+   *         <code>c</code> is not a child of this layered pane 
    */
   public int getIndexOf(Component c) 
   {
-    int layer = getLayer (c);
-    int[] range = layerToRange(new Integer(layer));
-    Component[] comps = getComponents();
-    for (int i = range[0]; i < range[1]; ++i)
-	    {
-        if (comps[i] == c)
-          return i;
-	    }
-    // should have found the component during iteration
-    throw new IllegalArgumentException ();
-  }    
+    return getComponentZOrder(c);
+  }
 
   /**
    * Return an Integer object which holds the same int value as the
@@ -526,6 +434,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * identical Integer objects which we allocate.
    *
    * @param layer the layer number as an int.
+   *
    * @return the layer number as an Integer, possibly shared.
    */
   protected Integer getObjectForLayer(int layer)
@@ -564,25 +473,39 @@ public class JLayeredPane extends JComponent implements Accessible
    *
    * @param layer the layer in which to insert a component.
    * @param position the position in the layer at which to insert a component.
+   *
    * @return the index at which to insert the component.
    */
   protected int insertIndexForLayer(int layer, int position)
   {
+    // position < 0 means insert at greatest position within layer.
+    if (position < 0)
+      position = Integer.MAX_VALUE;
 
-    Integer lobj = getObjectForLayer (layer);
-    if (! layers.containsKey(lobj))
-      layers.put (lobj, new Integer (0));
-    int[] range = layerToRange (lobj);
-    if (range[0] == range[1])
-        return range[0];
-	
-    int top = range[0];
-    int bot = range[1];
+    Component[] components = getComponents();
+    int index = 0;
 
-    if (position == -1 || position > (bot - top))
-        return bot;
-    else
-        return top + position;
+    // Try to find the start index of the specified layer.
+    int p = -1;
+    for (int i = 0; i < components.length; i++)
+      {
+        int l = getLayer(components[i]);
+        if (l > layer)
+          index++;
+        // If we are in the layer we look for, try to find the position.
+        else if (l == layer)
+          {
+            p++;
+            if (p < position)
+              index++;
+            else
+              break;
+          }
+        // No need to look further if the layer at i is smaller than layer.
+        else
+          break;
+      }
+    return index;
   }
 
   /**
@@ -594,12 +517,20 @@ public class JLayeredPane extends JComponent implements Accessible
   public void remove(int index)
   {
     Component c = getComponent(index);
-    int layer = getLayer(c);
-    decrLayer(new Integer(layer));
-    componentToLayer.remove(c);
+    if (! (c instanceof JComponent))
+      componentToLayer.remove(c);
     super.remove(index);
-    // FIXME: Figure out if this call is correct.
-    revalidate();
+  }
+
+  /**
+   * Removes all components from this container.
+   *
+   * @since 1.5
+   */
+  public void removeAll()
+  {
+	componentToLayer.clear();
+	super.removeAll();
   }
 
   /**
@@ -615,7 +546,7 @@ public class JLayeredPane extends JComponent implements Accessible
    */
   public void setLayer(Component c, int layer)
   {
-    componentToLayer.put (c, getObjectForLayer (layer));
+    setLayer(c, layer, -1);
   }
 
   /**
@@ -625,15 +556,20 @@ public class JLayeredPane extends JComponent implements Accessible
    * @param layer the layer number to assign to the component.
    * @param position the position number to assign to the component.
    */
-  public void setLayer(Component c,
-                       int layer,
-                       int position)
+  public void setLayer(Component c, int layer, int position)
   {
-    remove(c);
-    add(c, getObjectForLayer (layer));
-    setPosition(c, position);
-    revalidate();
-    repaint();
+    Integer layerObj = getObjectForLayer(layer);
+    if (c instanceof JComponent)
+      {
+        JComponent jc = (JComponent) c;
+        jc.putClientProperty(LAYER_PROPERTY, layerObj);
+      }
+    else
+      componentToLayer.put (c, layerObj);
+
+    // Set position only of component is already added to this layered pane.
+    if (getIndexOf(c) != -1)
+      setPosition(c, position);
   }
 
   /**
@@ -642,26 +578,27 @@ public class JLayeredPane extends JComponent implements Accessible
    * Integer}, specifying the layer to which the component will be added
    * (at the bottom position).
    *
-   * @param comp the component to add.
-   * @param layerConstraint an integer specifying the layer to add the component to.
-   * @param index an ignored parameter, for compatibility.
+   * The argument <code>index</code> specifies the position within the layer
+   * at which the component should be added, where <code>0</code> is the top
+   * position greater values specify positions below that and <code>-1</code>
+   * specifies the bottom position.
+   *
+   * @param comp the component to add
+   * @param layerConstraint an integer specifying the layer to add the
+   *        component to
+   * @param index the position within the layer
    */
   protected void addImpl(Component comp, Object layerConstraint, int index) 
   {
-    Integer layer;
+    int layer;
     if (layerConstraint != null && layerConstraint instanceof Integer)
-      layer = (Integer) layerConstraint;
-    else if (componentToLayer.containsKey (comp))
-	    layer = (Integer) componentToLayer.remove (comp);
+      layer = ((Integer) layerConstraint).intValue();
     else
-	    layer = DEFAULT_LAYER;
+	  layer = getLayer(comp);
 
-    int newIdx = insertIndexForLayer(layer.intValue (), index);
-
-    componentToLayer.put (comp, layer);
-    incrLayer (layer);
-	
-    super.addImpl(comp, null, newIdx);
+    int newIdx = insertIndexForLayer(layer, index);
+    setLayer(comp, layer);
+    super.addImpl(comp, layerConstraint, newIdx);
   }
 
   /**
@@ -672,7 +609,7 @@ public class JLayeredPane extends JComponent implements Accessible
    */
   public static void putLayer(JComponent component, int layer)
   {
-    getLayeredPaneAbove(component).setLayer(component, layer);
+    component.putClientProperty(LAYER_PROPERTY, new Integer(layer));
   }
 
   /**
@@ -711,13 +648,42 @@ public class JLayeredPane extends JComponent implements Accessible
   }
 
   /**
-   * Overridden to return <code>false</code>, since <code>JLayeredPane</code>
-   * cannot guarantee that its children don't overlap.
+   * Returns <code>false</code> if components in this layered pane can overlap,
+   * otherwise <code>true</code>.
    *
-   * @return <code>false</code>
+   * @return <code>false</code> if components in this layered pane can overlap,
+   *         otherwise <code>true</code>
    */
   public boolean isOptimizedDrawingEnabled()
   {
-    return false;
+    int numChildren = getComponentCount();
+    boolean result = true;
+    for (int i = 0; i < numChildren; ++i)
+      {
+    	Component c1 = getComponent(i);
+    	if (! c1.isVisible())
+          continue;
+    	Rectangle r1 = c1.getBounds();
+    	if (r1.isEmpty())
+          continue;
+
+    	for (int j = i + 1; j < numChildren; ++j)
+          {
+            Component c2 = getComponent(j);
+            if (! c2.isVisible())
+              continue;
+            Rectangle r2 = c2.getBounds();
+            if (r2.isEmpty())
+              continue;
+            if (r1.intersects(r2))
+              {
+                result = false;
+                break;
+              }
+            if (result == false)
+              break;
+          }
+      }
+    return result;
   }
 }

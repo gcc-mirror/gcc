@@ -197,7 +197,7 @@ public class JOptionPane extends JComponent implements Accessible
   public static final String WANTS_INPUT_PROPERTY = "wantsInput";
 
   /** The value returned when the inputValue is uninitialized. */
-  public static Object UNINITIALIZED_VALUE = "uninitializedValue";
+  public static final Object UNINITIALIZED_VALUE = "uninitializedValue";
 
   /** The icon displayed in the dialog/internal frame. */
   protected Icon icon;
@@ -236,7 +236,7 @@ public class JOptionPane extends JComponent implements Accessible
   protected boolean wantsInput;
 
   /** The common frame used when no parent is provided. */
-  private static Frame privFrame = SwingUtilities.getOwnerFrame();
+  private static Frame privFrame = (Frame) SwingUtilities.getOwnerFrame(null);
 
   /**
    * Creates a new JOptionPane object using a message of "JOptionPane

@@ -41,6 +41,7 @@ package javax.swing.plaf.metal;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -48,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -465,11 +467,60 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    */
   protected Dimension getMinimumThumbSize()
   {
-    if (isFreeStanding)
-      return MIN_THUMB_SIZE_FREE_STANDING;
+    Dimension retVal;
+    if (scrollbar != null)
+      {
+        if (isFreeStanding)
+          retVal = MIN_THUMB_SIZE_FREE_STANDING;
+        else
+          retVal = MIN_THUMB_SIZE;
+      }
     else
-      return MIN_THUMB_SIZE;
+      retVal = new Dimension(0, 0);
+    return retVal;
   }
-  
+
+  /**
+   * Returns the <code>preferredSize</code> for the specified scroll bar.
+   * For a vertical scrollbar the height is the sum of the preferred heights
+   * of the buttons plus <code>30</code>. The width is fetched from the
+   * <code>UIManager</code> property <code>ScrollBar.width</code>.
+   *
+   * For horizontal scrollbars the width is the sum of the preferred widths
+   * of the buttons plus <code>30</code>. The height is fetched from the
+   * <code>UIManager</code> property <code>ScrollBar.height</code>.
+   *
+   * @param c the scrollbar for which to calculate the preferred size
+   *
+   * @return the <code>preferredSize</code> for the specified scroll bar
+   */
+  public Dimension getPreferredSize(JComponent c)
+  {
+    int height;
+    int width;
+    height = width = 0;
+
+    if (scrollbar.getOrientation() == SwingConstants.HORIZONTAL)
+      {
+        width += incrButton.getPreferredSize().getWidth();
+        width += decrButton.getPreferredSize().getWidth();
+        width += 30;
+        height = UIManager.getInt("ScrollBar.width");
+      }
+    else
+      {
+        height += incrButton.getPreferredSize().getHeight();
+        height += decrButton.getPreferredSize().getHeight();
+        height += 30;
+        width = UIManager.getInt("ScrollBar.width");
+      }
+
+    Insets insets = scrollbar.getInsets();
+
+    height += insets.top + insets.bottom;
+    width += insets.left + insets.right;
+
+    return new Dimension(width, height);
+  } 
 }
 

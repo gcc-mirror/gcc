@@ -1,5 +1,5 @@
 /* DomDocumentBuilder.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,9 +37,11 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
@@ -157,8 +159,18 @@ class DomDocumentBuilder
           }
         else
           {
-            URL url = new URL(systemId);
-            input.setByteStream(url.openStream());
+            try
+              {
+                URL url = new URL(systemId);
+                input.setByteStream(url.openStream());
+              }
+            catch (MalformedURLException e)
+              {
+                // Maybe this is a relative file URL
+                File cwd = new File(System.getProperty("user.dir"));
+                URL url = new URL(cwd.toURL(), systemId);
+                input.setByteStream(url.openStream());
+              }
           }
       }
     input.setPublicId(is.getPublicId());

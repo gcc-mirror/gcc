@@ -81,7 +81,8 @@ public final class Provider extends CharsetProvider
    */
   private boolean extendedLoaded;
 
-  private Provider ()
+  // Package private to avoid an accessor method in PrivilegedAction below.
+  Provider ()
   {
     extendedLoaded = false;
     canonicalNames = new HashMap ();

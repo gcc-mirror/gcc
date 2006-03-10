@@ -1,5 +1,5 @@
 /* TableModelListener.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,16 +40,21 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * TableModelListener public interface
+ * A <code>TableModelListener</code> can register with a 
+ * {@link javax.swing.table.TableModel} and receive notification of updates to
+ * the model.
+ * 
  * @author Andrew Selkirk
  */
-public interface TableModelListener extends EventListener {
+public interface TableModelListener extends EventListener 
+{
 
-	/**
-	 * Table changed
-	 * @param event Table Model Event
-	 */
-	void tableChanged(TableModelEvent event);
+  /**
+   * Called to notify the listener that the 
+   * {@link javax.swing.table.TableModel} has been updated.
+   * 
+   * @param event  contains details of the update.
+   */
+  void tableChanged(TableModelEvent event);
 
-
-} // TableModelListener
+} 

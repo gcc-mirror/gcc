@@ -1,5 +1,6 @@
 /* Component.java -- a graphics component
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2006
+   Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -40,6 +41,7 @@ package java.awt;
 
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
+import java.awt.event.AdjustmentEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -900,7 +902,7 @@ public abstract class Component
         // Avoid NullPointerExceptions by creating a local reference.
         ComponentPeer currentPeer=peer;
         if (currentPeer != null)
-            currentPeer.setVisible(true);
+            currentPeer.show();
 
         // The JDK repaints the component before invalidating the parent.
         // So do we.
@@ -1388,18 +1390,20 @@ public abstract class Component
     int oldy = this.y;
     int oldwidth = this.width;
     int oldheight = this.height;
-
-    if (this.x == x && this.y == y
-        && this.width == width && this.height == height)
+    
+    if (this.x == x && this.y == y && this.width == width
+        && this.height == height)
       return;
-    invalidate ();
+
+    invalidate();
+    
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     if (peer != null)
       peer.setBounds (x, y, width, height);
-
+    
     // Erase old bounds and repaint new bounds for lightweights.
     if (isLightweight() && isShowing())
       {
@@ -1598,16 +1602,18 @@ public abstract class Component
   public Dimension preferredSize()
   {
     if (prefSize == null)
-      if (peer == null)
-	return new Dimension(width, height);
-      else 
-        prefSize = peer.getPreferredSize();
+      {
+        if (peer == null)
+          prefSize = minimumSize();
+        else
+          prefSize = peer.getPreferredSize();
+      }
     return prefSize;
   }
 
   /**
    * Returns the component's minimum size.
-   *
+   * 
    * @return the component's minimum size
    * @see #getPreferredSize()
    * @see LayoutManager
@@ -1882,8 +1888,7 @@ public abstract class Component
    */
   public void repaint()
   {   
-    if (isShowing())
-      repaint(0, 0, 0, width, height);
+    repaint(0, 0, 0, width, height);
   }
 
   /**
@@ -1897,8 +1902,7 @@ public abstract class Component
    */
   public void repaint(long tm)
   {
-    if (isShowing())
-      repaint(tm, 0, 0, width, height);
+    repaint(tm, 0, 0, width, height);
   }
 
   /**
@@ -1915,8 +1919,7 @@ public abstract class Component
    */
   public void repaint(int x, int y, int w, int h)
   {
-    if (isShowing())
-      repaint(0, x, y, w, h);
+    repaint(0, x, y, w, h);
   }
 
   /**
@@ -2308,6 +2311,10 @@ public abstract class Component
    */
   public final void dispatchEvent(AWTEvent e)
   {
+    Event oldEvent = translateEvent(e);
+    if (oldEvent != null)
+      postEvent (oldEvent);
+
     // Some subclasses in the AWT package need to override this behavior,
     // hence the use of dispatchEventImpl().
     dispatchEventImpl(e);
@@ -3419,10 +3426,11 @@ public abstract class Component
   }
 
   /**
-   * Called to inform this component it has been added to a container.
-   * A native peer - if any - is created at this time. This method is
-   * called automatically by the AWT system and should not be called by
-   * user level code.
+   * Called when the parent of this Component is made visible or when
+   * the Component is added to an already visible Container and needs
+   * to be shown.  A native peer - if any - is created at this
+   * time. This method is called automatically by the AWT system and
+   * should not be called by user level code.
    *
    * @see #isDisplayable()
    * @see #removeNotify()
@@ -3431,6 +3439,8 @@ public abstract class Component
   {
     if (peer == null)
       peer = getToolkit().createComponent(this);
+    else if (parent != null && parent.isLightweight())
+      new HeavyweightInLightweightListener(parent);
     /* Now that all the children has gotten their peers, we should
        have the event mask needed for this component and its
        lightweight subcomponents. */
@@ -4481,6 +4491,109 @@ p   * <li>the set of backward traversal keys
   }
 
   /**
+   * Report a change in a bound property to any registered property listeners.
+   *
+   * @param propertyName the property that changed
+   * @param oldValue the old property value
+   * @param newValue the new property value
+   *
+   * @since 1.5
+   */
+  public void firePropertyChange(String propertyName, byte oldValue,
+                                    byte newValue)
+  {
+    if (changeSupport != null)
+      changeSupport.firePropertyChange(propertyName, new Byte(oldValue),
+                                       new Byte(newValue));
+  }
+
+  /**
+   * Report a change in a bound property to any registered property listeners.
+   *
+   * @param propertyName the property that changed
+   * @param oldValue the old property value
+   * @param newValue the new property value
+   *
+   * @since 1.5
+   */
+  public void firePropertyChange(String propertyName, char oldValue,
+                                    char newValue)
+  {
+    if (changeSupport != null)
+      changeSupport.firePropertyChange(propertyName, new Character(oldValue),
+                                       new Character(newValue));
+  }
+
+  /**
+   * Report a change in a bound property to any registered property listeners.
+   *
+   * @param propertyName the property that changed
+   * @param oldValue the old property value
+   * @param newValue the new property value
+   *
+   * @since 1.5
+   */
+  public void firePropertyChange(String propertyName, short oldValue,
+                                    short newValue)
+  {
+    if (changeSupport != null)
+      changeSupport.firePropertyChange(propertyName, new Short(oldValue),
+                                       new Short(newValue));
+  }
+
+  /**
+   * Report a change in a bound property to any registered property listeners.
+   *
+   * @param propertyName the property that changed
+   * @param oldValue the old property value
+   * @param newValue the new property value
+   *
+   * @since 1.5
+   */
+  public void firePropertyChange(String propertyName, long oldValue,
+                                    long newValue)
+  {
+    if (changeSupport != null)
+      changeSupport.firePropertyChange(propertyName, new Long(oldValue),
+                                       new Long(newValue));
+  }
+
+  /**
+   * Report a change in a bound property to any registered property listeners.
+   *
+   * @param propertyName the property that changed
+   * @param oldValue the old property value
+   * @param newValue the new property value
+   *
+   * @since 1.5
+   */
+  public void firePropertyChange(String propertyName, float oldValue,
+                                    float newValue)
+  {
+    if (changeSupport != null)
+      changeSupport.firePropertyChange(propertyName, new Float(oldValue),
+                                       new Float(newValue));
+  }
+
+
+  /**
+   * Report a change in a bound property to any registered property listeners.
+   *
+   * @param propertyName the property that changed
+   * @param oldValue the old property value
+   * @param newValue the new property value
+   *
+   * @since 1.5
+   */
+  public void firePropertyChange(String propertyName, double oldValue,
+                                 double newValue)
+  {
+    if (changeSupport != null)
+      changeSupport.firePropertyChange(propertyName, new Double(oldValue),
+                                       new Double(newValue));
+  }
+
+  /**
    * Sets the text layout orientation of this component. New components default
    * to UNKNOWN (which behaves like LEFT_TO_RIGHT). This method affects only
    * the current component, while
@@ -4597,7 +4710,7 @@ p   * <li>the set of backward traversal keys
    */
   static Event translateEvent (AWTEvent e)
   {
-    Component target = (Component) e.getSource ();
+    Object target = e.getSource ();
     Event translated = null;
 
     if (e instanceof InputEvent)
@@ -4770,6 +4883,25 @@ p   * <li>the set of backward traversal keys
                                     0, 0, oldKey, oldMods);
           }
       }
+    else if (e instanceof AdjustmentEvent)
+      {
+	AdjustmentEvent ae = (AdjustmentEvent) e;
+	int type = ae.getAdjustmentType();
+	int oldType;
+	if (type == AdjustmentEvent.BLOCK_DECREMENT)
+	  oldType = Event.SCROLL_PAGE_UP;
+	else if (type == AdjustmentEvent.BLOCK_INCREMENT)
+	  oldType = Event.SCROLL_PAGE_DOWN;
+	else if (type == AdjustmentEvent.TRACK)
+	  oldType = Event.SCROLL_ABSOLUTE;
+	else if (type == AdjustmentEvent.UNIT_DECREMENT)
+	  oldType = Event.SCROLL_LINE_UP;
+	else if (type == AdjustmentEvent.UNIT_INCREMENT)
+	  oldType = Event.SCROLL_LINE_DOWN;
+	else
+	  oldType = type;
+	translated = new Event(target, oldType, new Integer(ae.getValue()));
+      }
     else if (e instanceof ActionEvent)
       translated = new Event (target, Event.ACTION_EVENT,
                               ((ActionEvent) e).getActionCommand ());
@@ -4790,16 +4922,16 @@ p   * <li>the set of backward traversal keys
 
   void dispatchEventImpl(AWTEvent e)
   {
-    Event oldEvent = translateEvent (e);
+    // Give toolkit a chance to dispatch the event
+    // to globally registered listeners.
+    Toolkit.getDefaultToolkit().globalDispatchEvent(e);
+
     // This boolean tells us not to process focus events when the focus
     // opposite component is the same as the focus component.
     boolean ignoreFocus = 
       (e instanceof FocusEvent && 
        ((FocusEvent)e).getComponent() == ((FocusEvent)e).getOppositeComponent());
     
-    if (oldEvent != null)
-      postEvent (oldEvent);
-
     if (eventTypeEnabled (e.id))
       {
         // the trick we use to communicate between dispatch and redispatch
@@ -4925,16 +5057,6 @@ p   * <li>the set of backward traversal keys
     Rectangle r1 = queuedEvent.getUpdateRect();
     Rectangle r2 = newEvent.getUpdateRect();
     Rectangle union = r1.union(r2);
-
-    int r1a = r1.width * r1.height;
-    int r2a = r2.width * r2.height;
-    int ua  = union.width * union.height;
-
-    if (ua > (r1a+r2a)*2)
-      return null;
-    /* The 2 factor should maybe be reconsidered. Perhaps 3/2
-       would be better? */
-
     newEvent.setUpdateRect(union);
     return newEvent;
   }
@@ -5014,9 +5136,76 @@ p   * <li>the set of backward traversal keys
     s.writeObject(null);
   }
 
-
+  
   // Nested classes.
+  
+  /**
+   * This class fixes the bounds for a Heavyweight component that
+   * is placed inside a Lightweight container. When the lightweight is
+   * moved or resized, setBounds for the lightweight peer does nothing.
+   * Therefore, it was never moved on the screen. This class is 
+   * attached to the lightweight, and it adjusts the position and size
+   * of the peer when notified.
+   * This is the same for show and hide.
+   */
+  class HeavyweightInLightweightListener
+      implements ComponentListener
+  {
+    
+    /**
+     * Constructor. Adds component listener to lightweight parent.
+     * 
+     * @param parent - the lightweight container.
+     */
+    public HeavyweightInLightweightListener(Container parent)
+    {
+      parent.addComponentListener(this);
+    }
+    
+    /**
+     * This method is called when the component is resized.
+     * 
+     * @param event the <code>ComponentEvent</code> indicating the resize
+     */
+    public void componentResized(ComponentEvent event)
+    {
+      // Nothing to do here, componentMoved will be called.
+    }
 
+    /**
+     * This method is called when the component is moved.
+     * 
+     * @param event the <code>ComponentEvent</code> indicating the move
+     */
+    public void componentMoved(ComponentEvent event)
+    {
+      if (peer != null)
+        peer.setBounds(x, y, width, height);
+    }
+
+    /**
+     * This method is called when the component is made visible.
+     * 
+     * @param event the <code>ComponentEvent</code> indicating the visibility
+     */
+    public void componentShown(ComponentEvent event)
+    {
+      if (isShowing())
+        peer.show();
+    }
+
+    /**
+     * This method is called when the component is hidden.
+     * 
+     * @param event the <code>ComponentEvent</code> indicating the visibility
+     */
+    public void componentHidden(ComponentEvent event)
+    {
+      if (!isShowing())
+        peer.hide();
+    }
+  }
+  
   /**
    * This class provides accessibility support for subclasses of container.
    *

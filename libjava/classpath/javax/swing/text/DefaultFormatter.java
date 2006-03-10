@@ -219,7 +219,6 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
     commitsOnValidEdit = true;
     overwriteMode = true;
     allowsInvalid = true;
-    valueClass = Object.class;
   }
 
   /**
@@ -368,7 +367,11 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
     Object value = string;
     Class valueClass = getValueClass();
     if (valueClass == null)
-      valueClass = getFormattedTextField().getValue().getClass();
+      {
+        JFormattedTextField jft = getFormattedTextField();
+        if (jft != null)
+          valueClass = jft.getValue().getClass();
+      }
     if (valueClass != null)
       try
         {

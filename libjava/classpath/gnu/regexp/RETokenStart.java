@@ -44,6 +44,10 @@ class RETokenStart extends REToken {
 	super(subIndex);
 	this.newline = newline;
     }
+
+    int getMaximumLength() {
+        return 0;
+    }
     
     boolean match(CharIndexed input, REMatch mymatch) {
 	// charAt(index-n) may be unknown on a Reader/InputStream. FIXME

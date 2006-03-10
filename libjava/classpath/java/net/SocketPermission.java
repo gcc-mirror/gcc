@@ -1,5 +1,6 @@
 /* SocketPermission.java -- Class modeling permissions for socket operations
-   Copyright (C) 1998, 2000, 2001, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001, 2002, 2004, 2006 Free Software
+   Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,9 +38,13 @@ exception statement from your version. */
 
 package java.net;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.util.StringTokenizer;
 
 
 /**
@@ -104,23 +109,51 @@ import java.security.PermissionCollection;
  *
  * @since 1.2
  *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Written by Aaron M. Renn (arenn@urbanophile.com)
+ * @author Extensively modified by Gary Benson (gbenson@redhat.com)
  */
 public final class SocketPermission extends Permission implements Serializable
 {
   static final long serialVersionUID = -7204263841984476862L;
 
-// FIXME: Needs serialization work, including readObject/writeObject methods.
-
   /**
-   * A hostname/port combination as described above
+   * A hostname (possibly wildcarded) or IP address (IPv4 or IPv6).
    */
-  private transient String hostport;
+  private transient String host;
 
   /**
-   * A comma separated list of actions for which we have permission
+   * A range of ports.
+   */
+  private transient int minport;
+  private transient int maxport;
+
+  /**
+   * Values used for minimum and maximum ports when one or both bounds
+   * are omitted.  This class is essentially independent of the
+   * networking code it describes, so we do not limit ports to the
+   * usual network limits of 1 and 65535.
+   */
+  private static final int MIN_PORT = 0;
+  private static final int MAX_PORT = Integer.MAX_VALUE;
+
+  /**
+   * The actions for which we have permission.  This field is present
+   * to make the serialized form correct and should not be used by
+   * anything other than writeObject: everything else should use
+   * actionmask.
    */
   private String actions;
+
+  /**
+   * A bitmask representing the actions for which we have permission.
+   */
+  private transient int actionmask;
+
+  /**
+   * The available actions, in the canonical order required for getActions().
+   */
+  private static final String[] ACTIONS = new String[] {
+    "connect", "listen", "accept", "resolve"};
 
   /**
    * Initializes a new instance of <code>SocketPermission</code> with the
@@ -133,8 +166,137 @@ public final class SocketPermission extends Permission implements Serializable
   {
     super(hostport);
 
-    this.hostport = hostport;
-    this.actions = actions;
+    setHostPort(hostport);
+    setActions(actions);
+  }
+
+  /**
+   * Parse the hostport argument to the constructor.
+   */
+  private void setHostPort(String hostport)
+  {
+    // Split into host and ports
+    String ports;
+    if (hostport.length() == 0)
+      {
+	host = ports = "";
+      }
+    else if (hostport.charAt(0) == '[')
+      {
+	// host is a bracketed IPv6 address
+	int end = hostport.indexOf("]");
+	if (end == -1)
+	  throw new IllegalArgumentException("Unmatched '['");
+	host = hostport.substring(1, end);
+
+	if (end == hostport.length() - 1)
+	  ports = "";
+	else if (hostport.charAt(end + 1) == ':')
+	  ports = hostport.substring(end + 2);
+	else
+	  throw new IllegalArgumentException("Bad character after ']'");
+      }
+    else
+      {
+	// host is a hostname or IPv4 address
+	int sep = hostport.indexOf(":");
+	if (sep == -1)
+	  {
+	    host = hostport;
+	    ports = "";
+	  }
+	else
+	  {
+	    host = hostport.substring(0, sep);
+	    ports = hostport.substring(sep + 1);
+	  }
+      }
+    if (ports.indexOf(":") != -1)
+      throw new IllegalArgumentException("Unexpected ':'");
+
+    // Parse and validate the ports
+    if (ports.length() == 0)
+      {
+	minport = MIN_PORT;
+	maxport = MAX_PORT;
+      }
+    else
+      {
+	int sep = ports.indexOf("-");
+	if (sep == -1)
+	  {
+	    // a single port
+	    minport = maxport = Integer.parseInt(ports);
+	  }
+	else
+	  {
+	    if (ports.indexOf("-", sep + 1) != -1)
+	      throw new IllegalArgumentException("Unexpected '-'");
+
+	    if (sep == 0)
+	      {
+		// an upper bound
+		minport = MIN_PORT;
+		maxport = Integer.parseInt(ports.substring(1));
+	      }
+	    else if (sep == ports.length() - 1)
+	      {
+		// a lower bound
+		minport =
+		  Integer.parseInt(ports.substring(0, ports.length() - 1));
+		maxport = MAX_PORT;
+	      }
+	    else
+	      {
+		// a range with two bounds
+		minport = Integer.parseInt(ports.substring(0, sep));
+		maxport = Integer.parseInt(ports.substring(sep + 1));
+	      }
+	  }
+      }
+  }
+  
+  /**
+   * Parse the actions argument to the constructor.
+   */
+  private void setActions(String actionstring)
+  {
+    actionmask = 0;
+
+    boolean resolve_needed = false;
+    boolean resolve_present = false;
+    
+    StringTokenizer t = new StringTokenizer(actionstring, ",");
+    while (t.hasMoreTokens())
+      {
+	String action = t.nextToken();
+	action = action.trim().toLowerCase();
+	setAction(action);
+
+	if (action.equals("resolve"))
+	  resolve_present = true;
+	else
+	  resolve_needed = true;
+      }
+
+    if (resolve_needed && !resolve_present)
+      setAction("resolve");
+  }
+
+  /**
+   * Parse one element of the actions argument to the constructor.
+   */
+  private void setAction(String action)
+  {
+    for (int i = 0; i < ACTIONS.length; i++)
+      {
+	if (action.equals(ACTIONS[i]))
+	  {
+	    actionmask |= 1 << i;
+	    return;
+	  }
+      }
+    throw new IllegalArgumentException("Unknown action " + action);
   }
 
   /**
@@ -150,14 +312,17 @@ public final class SocketPermission extends Permission implements Serializable
    */
   public boolean equals(Object obj)
   {
-    if (! (obj instanceof SocketPermission))
+    SocketPermission p;
+
+    if (obj instanceof SocketPermission)
+      p = (SocketPermission) obj;
+    else
       return false;
 
-    if (((SocketPermission) obj).hostport.equals(hostport))
-      if (((SocketPermission) obj).actions.equals(actions))
-	return true;
-
-    return false;
+    return p.actionmask == actionmask &&
+      p.minport == minport &&
+      p.maxport == maxport &&
+      p.host.equals(host);
   }
 
   /**
@@ -168,12 +333,7 @@ public final class SocketPermission extends Permission implements Serializable
    */
   public int hashCode()
   {
-    int hash = 100;
-    if (hostport != null)
-      hash += hostport.hashCode();
-    if (actions != null)
-      hash += actions.hashCode();
-    return hash;
+    return actionmask + minport + maxport + host.hashCode();
   }
 
   /**
@@ -184,37 +344,17 @@ public final class SocketPermission extends Permission implements Serializable
    */
   public String getActions()
   {
-    boolean found = false;
     StringBuffer sb = new StringBuffer("");
 
-    if (actions.indexOf("connect") != -1)
+    for (int i = 0; i < ACTIONS.length; i++)
       {
-	sb.append("connect");
-	found = true;
+	if ((actionmask & (1 << i)) != 0)
+	  {
+	    if (sb.length() != 0)
+	      sb.append(",");
+	    sb.append(ACTIONS[i]);
+	  }
       }
-
-    if (actions.indexOf("listen") != -1)
-      if (found)
-	sb.append(",listen");
-      else
-        {
-	  sb.append("listen");
-	  found = true;
-        }
-
-    if (actions.indexOf("accept") != -1)
-      if (found)
-	sb.append(",accept");
-      else
-        {
-	  sb.append("accept");
-	  found = true;
-        }
-
-    if (found)
-      sb.append(",resolve");
-    else if (actions.indexOf("resolve") != -1)
-      sb.append("resolve");
 
     return sb.toString();
   }
@@ -268,141 +408,79 @@ public final class SocketPermission extends Permission implements Serializable
       return false;
 
     // Next check the actions
-    String ourlist = getActions();
-    String theirlist = p.getActions();
+    if ((p.actionmask & actionmask) != p.actionmask)
+	return false;
 
-    if (! ourlist.startsWith(theirlist))
+    // Then check the ports
+    if ((p.minport < minport) || (p.maxport > maxport))
       return false;
 
-    // Now check ports
-    int ourfirstport = 0;
-
-    // Now check ports
-    int ourlastport = 0;
-
-    // Now check ports
-    int theirfirstport = 0;
-
-    // Now check ports
-    int theirlastport = 0;
-
-    // Get ours
-    if (hostport.indexOf(":") == -1)
-      {
-	ourfirstport = 0;
-	ourlastport = 65535;
-      }
-    else
-      {
-	// FIXME:  Needs bulletproofing.
-	// This will dump if hostport if all sorts of bad data was passed to
-	// the constructor
-	String range = hostport.substring(hostport.indexOf(":") + 1);
-	if (range.startsWith("-"))
-	  ourfirstport = 0;
-	else if (range.indexOf("-") == -1)
-	  ourfirstport = Integer.parseInt(range);
-	else
-	  ourfirstport =
-	    Integer.parseInt(range.substring(0, range.indexOf("-")));
-
-	if (range.endsWith("-"))
-	  ourlastport = 65535;
-	else if (range.indexOf("-") == -1)
-	  ourlastport = Integer.parseInt(range);
-	else
-	  ourlastport =
-	    Integer.parseInt(range.substring(range.indexOf("-") + 1,
-	                                     range.length()));
-      }
-
-    // Get theirs
-    if (p.hostport.indexOf(":") == -1)
-      {
-	theirfirstport = 0;
-	ourlastport = 65535;
-      }
-    else
-      {
-	// This will dump if hostport if all sorts of bad data was passed to
-	// the constructor
-	String range = p.hostport.substring(hostport.indexOf(":") + 1);
-	if (range.startsWith("-"))
-	  theirfirstport = 0;
-	else if (range.indexOf("-") == -1)
-	  theirfirstport = Integer.parseInt(range);
-	else
-	  theirfirstport =
-	    Integer.parseInt(range.substring(0, range.indexOf("-")));
-
-	if (range.endsWith("-"))
-	  theirlastport = 65535;
-	else if (range.indexOf("-") == -1)
-	  theirlastport = Integer.parseInt(range);
-	else
-	  theirlastport =
-	    Integer.parseInt(range.substring(range.indexOf("-") + 1,
-	                                     range.length()));
-      }
-
-    // Now check them
-    if ((theirfirstport < ourfirstport) || (theirlastport > ourlastport))
-      return false;
-
-    // Finally we can check the hosts
-    String ourhost;
-
-    // Finally we can check the hosts
-    String theirhost;
-
-    // Get ours
-    if (hostport.indexOf(":") == -1)
-      ourhost = hostport;
-    else
-      ourhost = hostport.substring(0, hostport.indexOf(":"));
-
-    // Get theirs
-    if (p.hostport.indexOf(":") == -1)
-      theirhost = p.hostport;
-    else
-      theirhost = p.hostport.substring(0, p.hostport.indexOf(":"));
-
-    // Are they equal?
-    if (ourhost.equals(theirhost))
+    // Finally check the hosts
+    if (host.equals(p.host))
       return true;
 
     // Try the canonical names
     String ourcanonical = null;
-
-    // Try the canonical names
     String theircanonical = null;
     try
       {
-	ourcanonical = InetAddress.getByName(ourhost).getHostName();
-	theircanonical = InetAddress.getByName(theirhost).getHostName();
+	ourcanonical = InetAddress.getByName(host).getHostName();
+	theircanonical = InetAddress.getByName(p.host).getHostName();
       }
     catch (UnknownHostException e)
       {
 	// Who didn't resolve?  Just assume current address is canonical enough
 	// Is this ok to do?
 	if (ourcanonical == null)
-	  ourcanonical = ourhost;
+	  ourcanonical = host;
 	if (theircanonical == null)
-	  theircanonical = theirhost;
+	  theircanonical = p.host;
       }
 
     if (ourcanonical.equals(theircanonical))
       return true;
 
     // Well, last chance.  Try for a wildcard
-    if (ourhost.indexOf("*.") != -1)
+    if (host.indexOf("*.") != -1)
       {
-	String wild_domain = ourhost.substring(ourhost.indexOf("*" + 1));
+	String wild_domain =
+	  host.substring(host.indexOf("*" + 1));
 	if (theircanonical.endsWith(wild_domain))
 	  return true;
       }
 
     // Didn't make it
     return false;
+  }
+
+  /**
+   * Deserializes a <code>SocketPermission</code> object from
+   * an input stream.
+   *
+   * @param input the input stream.
+   * @throws IOException if an I/O error occurs in the stream.
+   * @throws ClassNotFoundException if the class of the
+   *         serialized object could not be found.
+   */
+  private void readObject(ObjectInputStream input)
+    throws IOException, ClassNotFoundException
+  {
+    input.defaultReadObject();
+    setHostPort(getName());
+    setActions(actions);
+  }
+
+  /**
+   * Serializes a <code>SocketPermission</code> object to an
+   * output stream.
+   *
+   * @param output the output stream.
+   * @throws IOException if an I/O error occurs in the stream.
+   */
+  private void writeObject(ObjectOutputStream output)
+    throws IOException
+  {
+    actions = getActions();
+    output.defaultWriteObject();
   }
 }

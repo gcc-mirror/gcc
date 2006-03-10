@@ -51,13 +51,25 @@ final class RETokenBackRef extends REToken {
   // should implement getMinimumLength() -- any ideas?
 
     boolean match(CharIndexed input, REMatch mymatch) {
+	if (num >= mymatch.start.length) return false;
+	if (num >= mymatch.end.length) return false;
 	int b,e;
 	b = mymatch.start[num];
 	e = mymatch.end[num];
 	if ((b==-1)||(e==-1)) return false; // this shouldn't happen, but...
 	for (int i=b; i<e; i++) {
-	    if (input.charAt(mymatch.index+i-b) != input.charAt(i)) {
-		return false;
+	    char c1 = input.charAt(mymatch.index+i-b);
+	    char c2 = input.charAt(i);
+	    if (c1 != c2) {
+		if (insens) {
+		    if (c1 != Character.toLowerCase(c2) &&
+			c1 != Character.toUpperCase(c2)) {
+			return false;
+		    }
+		}
+		else {
+		    return false;
+		}
 	    }
 	}
 	mymatch.index += e-b;

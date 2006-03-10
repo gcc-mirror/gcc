@@ -37,28 +37,20 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.LookAndFeel;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
-import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
-import javax.swing.event.MouseInputListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComponentUI;
@@ -72,9 +64,6 @@ public class BasicPopupMenuUI extends PopupMenuUI
 {
   /* popupMenu for which this UI delegate is for*/
   protected JPopupMenu popupMenu;
-
-  /* MouseInputListener listens to mouse events. Package private for inner classes. */
-  static transient MouseInputListener mouseInputListener;
 
   /* PopupMenuListener listens to popup menu events fired by JPopupMenu*/
   private transient PopupMenuListener popupMenuListener;
@@ -270,30 +259,9 @@ public class BasicPopupMenuUI extends PopupMenuUI
       // remove listener that listens to component events fired 
       // by the top - level window that this popup belongs to.
       Component invoker = popupMenu.getInvoker();
-
-      RootPaneContainer rootContainer = (RootPaneContainer) SwingUtilities
-                                        .getRoot(invoker);
+      Component rootContainer = SwingUtilities.getRoot(invoker);
       if (rootContainer != null)
-        {
-          ((Container) rootContainer).removeComponentListener(topWindowListener);
-
-          // If this popup menu is the last popup menu visible on the screen,
-          // then
-          // stop interrupting mouse events in the glass pane before hiding this
-          // last popup menu.
-          boolean topLevelMenu = (popupMenu.getInvoker() instanceof JMenu)
-                                 && ((JMenu) popupMenu.getInvoker()).isTopLevelMenu();
-
-          if (topLevelMenu || !(popupMenu.getInvoker() instanceof MenuElement))
-            {
-              // set glass pane not to interrupt mouse events and remove
-              // mouseInputListener
-              Container glassPane = (Container) rootContainer.getGlassPane();
-              glassPane.setVisible(false);
-              glassPane.removeMouseListener(mouseInputListener);
-              mouseInputListener = null;
-            }
-        }
+        rootContainer.removeComponentListener(topWindowListener);
     }
 
     /**
@@ -307,20 +275,8 @@ public class BasicPopupMenuUI extends PopupMenuUI
       // ComponentEvents fired by it. We need to cancel this popup menu
       // if topWindow to which this popup belongs was resized or moved.
       Component invoker = popupMenu.getInvoker();
-      RootPaneContainer rootContainer = (RootPaneContainer) SwingUtilities
-                                        .getRoot(invoker);
-      ((Container) rootContainer).addComponentListener(topWindowListener);
-
-      // Set the glass pane to interrupt all mouse events originating in root 
-      // container
-      if (mouseInputListener == null)
-        {
-	  Container glassPane = (Container) rootContainer.getGlassPane();
-	  glassPane.setVisible(true);
-	  mouseInputListener = new MouseInputHandler(rootContainer);
-	  glassPane.addMouseListener(mouseInputListener);
-	  glassPane.addMouseMotionListener(mouseInputListener);
-        }
+      Component rootContainer = SwingUtilities.getRoot(invoker);
+      rootContainer.addComponentListener(topWindowListener);
 
       // if this popup menu is a free floating popup menu,
       // then by default its first element should be always selected when
@@ -399,275 +355,4 @@ public class BasicPopupMenuUI extends PopupMenuUI
     }
   }
 
-  /**
-   * MouseInputHandler listens to all mouse events originated in the root
-   * container. This class is responsible for closing menu hierarchy when the
-   * user presses mouse over any component that do not belong to the current 
-   * menu hierarchy. This is acomplished by interrupting all mouse event in 
-   * the glass pane and checking if other component was pressed while menu 
-   * was open, before redestributing events further to intended components
-   */
-  private class MouseInputHandler implements MouseInputListener
-  {
-    private JLayeredPane layeredPane;
-    private Container glassPane;
-    private Cursor nativeCursor;
-    private transient Component mouseEventTarget;
-    private transient Component pressedComponent;
-    private transient Component lastComponentEntered;
-    private transient Component tempComponent;
-    private transient int pressCount;
-
-    /**
-     * Creates a new MouseInputHandler object.
-     *
-     * @param c the top most root container
-     */
-    public MouseInputHandler(RootPaneContainer c)
-    {
-      layeredPane = c.getLayeredPane();
-      glassPane = (Container) c.getGlassPane();
-    }
-
-    /**
-     * Handles mouse clicked event
-     *
-     * @param e Mouse event
-     */
-    public void mouseClicked(MouseEvent e)
-    {
-      handleEvent(e);
-    }
-
-    /**
-     * Handles mouseDragged event
-     *
-     * @param e MouseEvent
-     */
-    public void mouseDragged(MouseEvent e)
-    {
-      handleEvent(e);
-    }
-
-    /**
-     * Handles mouseEntered event
-     *
-     * @param e MouseEvent
-     */
-    public void mouseEntered(MouseEvent e)
-    {
-      handleEvent(e);
-    }
-
-    /**
-     * Handles mouseExited event
-     *
-     * @param e MouseEvent
-     */
-    public void mouseExited(MouseEvent e)
-    {
-      handleEvent(e);
-    }
-
-    /**
-     * Handles mouse moved event
-     *
-     * @param e MouseEvent
-     */
-    public void mouseMoved(MouseEvent e)
-    {
-      handleEvent(e);
-    }
-
-    /**
-     * Handles mouse pressed event
-     *
-     * @param e MouseEvent
-     */
-    public void mousePressed(MouseEvent e)
-    {
-      handleEvent(e);
-    }
-
-    /**
-     * Handles mouse released event
-     *
-     * @param e MouseEvent
-     */
-    public void mouseReleased(MouseEvent e)
-    {
-      handleEvent(e);
-    }
-
-    /*
-     * This method determines component that was intended to received mouse
-     * event, before it was interrupted within the glass pane. This method
-     * also redispatches mouse entered and mouse exited events to the
-     * appropriate components. This code is slightly modified code from
-     * Container.LightweightDispatcher class, which is private inside
-     * Container class and cannot be used here.
-     */
-    public void acquireComponentForMouseEvent(MouseEvent me)
-    {
-      int x = me.getX();
-      int y = me.getY();
-
-      // Find the candidate which should receive this event.
-      Component parent = layeredPane;
-      Component candidate = null;
-      Point p = me.getPoint();
-      while ((candidate == null) && (parent != null))
-        {
-	  p = SwingUtilities.convertPoint(glassPane, p.x, p.y, parent);
-	  candidate = SwingUtilities.getDeepestComponentAt(parent, p.x, p.y);
-
-	  if (candidate == null)
-	    {
-	      p = SwingUtilities.convertPoint(parent, p.x, p.y,
-	                                      parent.getParent());
-	      parent = parent.getParent();
-	    }
-        }
-
-      // If the only candidate we found was the native container itself,
-      // don't dispatch any event at all.  We only care about the lightweight
-      // children here.
-      if (candidate == layeredPane)
-	candidate = null;
-
-      // If our candidate is new, inform the old target we're leaving.
-      if ((lastComponentEntered != null) && lastComponentEntered.isShowing()
-          && (lastComponentEntered != candidate))
-        {
-	  // Old candidate could have been removed from 
-	  // the layeredPane so we check first.
-	  if (SwingUtilities.isDescendingFrom(lastComponentEntered, layeredPane))
-	    {
-	      Point tp = SwingUtilities.convertPoint(layeredPane, x, y,
-	                                             lastComponentEntered);
-	      MouseEvent exited = new MouseEvent(lastComponentEntered,
-	                                         MouseEvent.MOUSE_EXITED,
-	                                         me.getWhen(),
-	                                         me.getModifiersEx(), tp.x,
-	                                         tp.y, me.getClickCount(),
-	                                         me.isPopupTrigger(),
-	                                         me.getButton());
-
-              tempComponent = lastComponentEntered;
-              lastComponentEntered = null;
-	      tempComponent.dispatchEvent(exited);
-	    }
-
-	  lastComponentEntered = null;
-        }
-
-      // If we have a candidate, maybe enter it.
-      if (candidate != null)
-        {
-	  mouseEventTarget = candidate;
-
-	  if (candidate.isLightweight() && candidate.isShowing()
-	      && (candidate != layeredPane)
-	      && (candidate != lastComponentEntered))
-	    {
-	      lastComponentEntered = mouseEventTarget;
-
-	      Point cp = SwingUtilities.convertPoint(layeredPane, x, y,
-	                                             lastComponentEntered);
-	      MouseEvent entered = new MouseEvent(lastComponentEntered,
-	                                          MouseEvent.MOUSE_ENTERED,
-	                                          me.getWhen(),
-	                                          me.getModifiersEx(), cp.x,
-	                                          cp.y, me.getClickCount(),
-	                                          me.isPopupTrigger(),
-	                                          me.getButton());
-	      lastComponentEntered.dispatchEvent(entered);
-	    }
-        }
-
-      if ((me.getID() == MouseEvent.MOUSE_RELEASED)
-          || ((me.getID() == MouseEvent.MOUSE_PRESSED) && (pressCount > 0))
-          || (me.getID() == MouseEvent.MOUSE_DRAGGED))
-        {
-	  // If any of the following events occur while a button is held down,
-	  // they should be dispatched to the same component to which the
-	  // original MOUSE_PRESSED event was dispatched:
-	  //   - MOUSE_RELEASED
-	  //   - MOUSE_PRESSED: another button pressed while the first is held down
-	  //   - MOUSE_DRAGGED
-	  if (SwingUtilities.isDescendingFrom(pressedComponent, layeredPane))
-	    mouseEventTarget = pressedComponent;
-	  else if (me.getID() == MouseEvent.MOUSE_CLICKED)
-	    {
-	      // Don't dispatch CLICKED events whose target is not the same as the
-	      // target for the original PRESSED event.
-	      if (candidate != pressedComponent)
-		mouseEventTarget = null;
-	      else if (pressCount == 0)
-		pressedComponent = null;
-	    }
-        }
-    }
-
-    /*
-     * This method handles mouse events interrupted by glassPane. It
-     * redispatches the mouse events appropriately to the intended components.
-     * The code in this method is also taken from
-     * Container.LightweightDispatcher class. The code is slightly modified
-     * to handle the case when mouse is released over non-menu component. In
-     * this case this method closes current menu hierarchy before 
-     * redispatching the event further.
-     */
-    public void handleEvent(AWTEvent e)
-    {
-      if (e instanceof MouseEvent)
-        {
-	  MouseEvent me = (MouseEvent) e;
-
-	  acquireComponentForMouseEvent(me);
-
-	  // Avoid dispatching ENTERED and EXITED events twice.
-	  if (mouseEventTarget != null && mouseEventTarget.isShowing()
-	      && (e.getID() != MouseEvent.MOUSE_ENTERED)
-	      && (e.getID() != MouseEvent.MOUSE_EXITED))
-	    {
-	      MouseEvent newEvt = SwingUtilities.convertMouseEvent(glassPane,
-	                                                           me,
-	                                                           mouseEventTarget);
-
-	      mouseEventTarget.dispatchEvent(newEvt);
-
-	      // If mouse was clicked over the component that is not part 
-	      // of menu hierarchy,then must close the menu hierarchy */
-	      if (e.getID() == MouseEvent.MOUSE_RELEASED)
-	        {
-		  boolean partOfMenuHierarchy = false;
-		  MenuSelectionManager manager = MenuSelectionManager
-		                                 .defaultManager();
-
-		  partOfMenuHierarchy = manager.isComponentPartOfCurrentMenu(mouseEventTarget);
-
-		  if (! partOfMenuHierarchy)
-		    manager.clearSelectedPath();
-	        }
-
-	      switch (e.getID())
-	        {
-		case MouseEvent.MOUSE_PRESSED:
-		  if (pressCount++ == 0)
-		    pressedComponent = mouseEventTarget;
-		  break;
-		case MouseEvent.MOUSE_RELEASED:
-		  // Clear our memory of the original PRESSED event, only if
-		  // we're not expecting a CLICKED event after this. If
-		  // there is a CLICKED event after this, it will do clean up.
-		  if ((--pressCount == 0)
-		      && (mouseEventTarget != pressedComponent))
-		    pressedComponent = null;
-		  break;
-	        }
-	    }
-        }
-    }
-  }
 }

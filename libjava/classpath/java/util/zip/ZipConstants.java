@@ -1,5 +1,5 @@
 /* java.util.zip.ZipConstants
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ interface ZipConstants
 {
   /* The local file header */
   int LOCHDR = 30;
-  int LOCSIG = 'P'|('K'<<8)|(3<<16)|(4<<24);
+  long LOCSIG = 'P'|('K'<<8)|(3<<16)|(4<<24);
 
   int LOCVER =  4;
   int LOCFLG =  6;
@@ -54,7 +54,7 @@ interface ZipConstants
   int LOCEXT = 28;
 
   /* The Data descriptor */
-  int EXTSIG = 'P'|('K'<<8)|(7<<16)|(8<<24);
+  long EXTSIG = 'P'|('K'<<8)|(7<<16)|(8<<24);
   int EXTHDR = 16;
 
   int EXTCRC =  4;
@@ -62,7 +62,7 @@ interface ZipConstants
   int EXTLEN = 12;
 
   /* The central directory file header */
-  int CENSIG = 'P'|('K'<<8)|(1<<16)|(2<<24);
+  long CENSIG = 'P'|('K'<<8)|(1<<16)|(2<<24);
   int CENHDR = 46;
 
   int CENVEM =  4;
@@ -82,7 +82,7 @@ interface ZipConstants
   int CENOFF = 42;
 
   /* The entries in the end of central directory */
-  int ENDSIG = 'P'|('K'<<8)|(5<<16)|(6<<24);
+  long ENDSIG = 'P'|('K'<<8)|(5<<16)|(6<<24);
   int ENDHDR = 22;
 
   /* The following two fields are missing in SUN JDK */

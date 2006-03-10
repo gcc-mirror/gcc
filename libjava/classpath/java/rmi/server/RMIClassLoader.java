@@ -38,10 +38,13 @@ exception statement from your version. */
 
 package java.rmi.server;
 
+import gnu.classpath.ServiceFactory;
+import gnu.classpath.SystemProperties;
 import gnu.java.rmi.server.RMIClassLoaderImpl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 
 /**
  * This class provides a set of public static utility methods for supporting
@@ -82,6 +85,16 @@ public class RMIClassLoader
     if (spi == null)
       spi = getDefaultProviderInstance(); 
     return spi.loadClass(codebase, name, defaultLoader);
+  }
+
+  public static Class loadProxyClass (String codeBase, String[] interfaces,
+                                      ClassLoader defaultLoader)
+    throws MalformedURLException, ClassNotFoundException
+  {
+    RMIClassLoaderSpi spi = getProviderInstance();
+    if (spi == null)
+      spi = getDefaultProviderInstance();
+    return spi.loadProxyClass(codeBase, interfaces, defaultLoader);
   }
 
   /**
@@ -171,7 +184,20 @@ public class RMIClassLoader
    */
   private static RMIClassLoaderSpi getProviderInstance()
   {
-    // TODO: Do something more useful here.
-    return null;
+    // If the user asked for the default, return it.  We do a special
+    // check here because our standard service lookup function does not
+    // handle this -- nor should it.
+    String prop = SystemProperties.getProperty("java.rmi.server.RMIClassLoaderSpi");
+    if ("default".equals(prop))
+      return null;
+    Iterator it = ServiceFactory.lookupProviders(RMIClassLoaderSpi.class,
+                                                 null);
+    if (it == null || ! it.hasNext())
+      return null;
+    // FIXME: the spec says we ought to throw an Error of some kind if
+    // the specified provider is not suitable for some reason.  However
+    // our service factory simply logs the problem and moves on to the next
+    // provider in this situation.
+    return (RMIClassLoaderSpi) it.next();
   }
 }

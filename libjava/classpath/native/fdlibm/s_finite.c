@@ -19,13 +19,13 @@
 #include "fdlibm.h"
 
 #ifdef __STDC__
-       int finite(double x)
+	int finite(double x)
 #else
-       int finite(x)
-       double x;
+	int finite(x)
+	double x;
 #endif
 {
-       uint32_t high; 
-       GET_HIGH_WORD(high,x);
-       return  (unsigned)((high&0x7fffffff)-0x7ff00000)>>31;
+	uint32_t hx;
+	GET_HIGH_WORD(hx,x);
+	return  (unsigned)((hx&0x7fffffff)-0x7ff00000)>>31;
 }

@@ -78,9 +78,11 @@ public interface StateEditable
    * System (RCS).  This certainly should not be part of the API
    * specification. But in order to be API-compatible with
    * Sun&#x2019;s reference implementation, GNU Classpath also has to
-   * provide this field. However, we do not try to match its value.
+   * provide this field and match its value. The value used here has
+   * been in every JDK release at least from 1.2 to 1.5.
    */
-  String RCSID = "";
+  String RCSID = "$" +
+    "Id: StateEditable.java,v 1.2 1997/09/08 19:39:08 marklin Exp $";
 
 
   /**

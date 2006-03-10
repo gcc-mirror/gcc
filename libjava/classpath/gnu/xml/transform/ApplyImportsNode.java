@@ -1,5 +1,5 @@
 /* ApplyImportsNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,13 +54,9 @@ final class ApplyImportsNode
   {
     TemplateNode ret = new ApplyImportsNode();
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
   
@@ -71,15 +67,16 @@ final class ApplyImportsNode
   {
     TemplateNode t = stylesheet.getTemplate(mode, context, true);
     if (t != null)
-      {
-        t.apply(stylesheet, mode, context, pos, len,
-                parent, nextSibling);
-      }
+      t.apply(stylesheet, mode, context, pos, len,
+              parent, nextSibling);
     if (next != null)
-      {
-        next.apply(stylesheet, mode, context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode, context, pos, len,
+                 parent, nextSibling);
+  }
+
+  public String toString()
+  {
+    return "apply-imports";
   }
 
 }

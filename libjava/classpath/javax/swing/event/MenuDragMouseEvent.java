@@ -1,5 +1,5 @@
 /* MenuDragMouseEvent.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,68 +48,57 @@ import javax.swing.MenuSelectionManager;
  * MenuDragMouseEvent
  * @author Andrew Selkirk
  */
-public class MenuDragMouseEvent extends MouseEvent {
+public class MenuDragMouseEvent extends MouseEvent 
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * path
-	 */
-	private	MenuElement[]			path		= null;
+  /**
+   * path
+   */
+  private MenuElement[] path = null;
 	
-	/**
-	 * manager
-	 */
-	private	MenuSelectionManager	manager		= null;
+  /**
+   * manager
+   */
+  private MenuSelectionManager manager = null;
 
+  /**
+   * Constructor MenuDragMouseEvent
+   * @param source Source
+   * @param id MouseEvent type
+   * @param when Time
+   * @param modifiers Key modifiers
+   * @param x Horizontal position
+   * @param y Vertical position
+   * @param clickCount Click count
+   * @param popupTrigger Popup trigger?
+   * @param path Path
+   * @param manager MenuSelectionManager
+   */
+  public MenuDragMouseEvent(Component source, int id, long when, int modifiers,
+      int x, int y, int clickCount, boolean popupTrigger,
+      MenuElement[] path, MenuSelectionManager manager) 
+  {
+    super(source, id, when, modifiers, x, y, clickCount, popupTrigger);
+    this.path = path;
+    this.manager = manager;
+  } 
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Get path
+   * @return path
+   */
+  public MenuElement[] getPath() 
+  {
+    return path;
+  } 
 
-	/**
-	 * Constructor MenuDragMouseEvent
-	 * @param source Source
-	 * @param id MouseEvent type
-	 * @param when Time
-	 * @param modifiers Key modifiers
-	 * @param x Horizontal position
-	 * @param y Vertical position
-	 * @param clickCount Click count
-	 * @param popupTrigger Popup trigger?
-	 * @param path Path
-	 * @param manager MenuSelectionManager
-	 */
-	public MenuDragMouseEvent(Component source, int id, long when, int modifiers,
-						int x, int y, int clickCount, boolean popupTrigger,
-						MenuElement[] path, MenuSelectionManager manager) {
-		super(source, id, when, modifiers, x, y, clickCount, popupTrigger);
-		this.path = path;
-		this.manager = manager;
-	} // MenuDragMouseEvent()
+  /**
+   * Get menu selection manager
+   * @return manager
+   */
+  public MenuSelectionManager getMenuSelectionManager() 
+  {
+    return manager;
+  }
 
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Get path
-	 * @returns path
-	 */
-	public MenuElement[] getPath() {
-		return path;
-	} // getPath()
-
-	/**
-	 * Get menu selection manager
-	 * @returns manager
-	 */
-	public MenuSelectionManager getMenuSelectionManager() {
-		return manager;
-	} // getMenuSelectionManager()
-
-
-} // MenuDragMouseEvent
+} 

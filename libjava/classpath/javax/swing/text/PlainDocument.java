@@ -1,5 +1,5 @@
 /* PlainDocument.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,15 @@ package javax.swing.text;
 
 import java.util.ArrayList;
 
+/**
+ * A simple document class which maps lines to {@link Element}s.
+ *
+ * @author Anthony Balkissoon (abalkiss@redhat.com)
+ * @author Graydon Hoare (graydon@redhat.com)
+ * @author Roman Kennke (roman@kennke.org)
+ * @author Michael Koch (konqueror@gmx.de)
+ * @author Robert Schuster (robertschuster@fsfe.org)
+ */
 public class PlainDocument extends AbstractDocument
 {
   private static final long serialVersionUID = 4758290289196893664L;
@@ -109,18 +118,21 @@ public class PlainDocument extends AbstractDocument
                               AttributeSet attributes)
   {
     int offset = event.getOffset();
+    int eventLength = event.getLength();
     int end = offset + event.getLength();
-    int elementIndex = rootElement.getElementIndex(offset);
+    int oldElementIndex, elementIndex = rootElement.getElementIndex(offset);
     Element firstElement = rootElement.getElement(elementIndex);
-    
+    oldElementIndex = elementIndex;
+        
     // If we're inserting immediately after a newline we have to fix the 
-    // Element structure.
-    if (offset > 0)
+    // Element structure (but only if we are dealing with a line which
+    // has not existed as Element before).
+    if (offset > 0 && firstElement.getStartOffset() != offset)
       {
         try
         {
           String s = getText(offset - 1, 1);
-          if (s.equals("\n"))
+          if (s.equals("\n") )
             {
               int newEl2EndOffset = end;
               boolean replaceNext = false;
@@ -159,33 +171,43 @@ public class PlainDocument extends AbstractDocument
     Element[] added;
     try 
       {
-        String str = content.getString(0, content.length());
+        String str = content.getString(offset, eventLength);
         ArrayList elts = new ArrayList();
 
         // Determine how many NEW lines were added by finding the newline
         // characters within the newly inserted text
         int j = firstElement.getStartOffset();
-        int i = str.indexOf('\n', offset);
-        while (i != -1 && i <= end)
+        int i = str.indexOf('\n', 0);
+        int contentLength = content.length();
+          
+        while (i != -1 && i <= eventLength)
           {            
             // For each new line, create a new element
             elts.add(createLeafElement(rootElement, SimpleAttributeSet.EMPTY,
-                                       j, i + 1));
-            j = i + 1;
-            if (j >= str.length())
-              break;
-            i = str.indexOf('\n', j);
+                                       j, offset + i + 1));
+                  
+            j = offset + i + 1;
+            if (j >= contentLength)
+                break;
+            i = str.indexOf('\n', i + 1);
           }
+
         // If there were new lines added we have to add an ElementEdit to 
         // the DocumentEvent and we have to call rootElement.replace to 
         // insert the new lines
         if (elts.size() != 0)
           {
+            // If we have created new lines test whether there are remaining
+            // characters in firstElement after the inserted text and if so
+            // create a new element for them.
+            if (j < firstElement.getEndOffset())
+              elts.add(createLeafElement(rootElement, SimpleAttributeSet.EMPTY, j, firstElement.getEndOffset()));
+
             // Set up the ElementEdit by filling the added and removed 
             // arrays with the proper Elements
             added = new Element[elts.size()];
-            for (int k = 0; k < elts.size(); ++k)
-              added[k] = (Element) elts.get(k);
+            elts.toArray(added);
+            
             removed[0] = firstElement;
             
             // Now create and add the ElementEdit
@@ -204,6 +226,7 @@ public class PlainDocument extends AbstractDocument
         ae.initCause(e);
         throw ae;
       }
+    
     super.insertUpdate(event, attributes);
   }
 

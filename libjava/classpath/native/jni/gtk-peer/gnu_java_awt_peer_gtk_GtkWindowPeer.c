@@ -1,5 +1,6 @@
 /* gtkwindowpeer.c -- Native implementation of GtkWindowPeer
-   Copyright (C) 1998, 1999, 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1393,6 +1394,32 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBounds
 }
 
 JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetLocationUnlocked
+  (JNIEnv *env, jobject obj, jint x, jint y)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gtk_window_move (GTK_WINDOW(ptr), x, y);
+
+  if (GTK_WIDGET (ptr)->window != NULL)
+    gdk_window_move (GTK_WIDGET (ptr)->window, x, y);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetLocation
+  (JNIEnv *env, jobject obj, jint x, jint y)
+{
+  gdk_threads_enter ();
+
+  Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetLocationUnlocked
+    (env, obj, x, y);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBoundsUnlocked
   (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
 {
@@ -1437,20 +1464,20 @@ window_get_frame_extents (GtkWidget *window,
 
   /* Guess frame extents in case _NET_FRAME_EXTENTS is not
      supported. */
-  if (gtk_window_get_decorated (GTK_WINDOW (window)))
-    {
-      *top = 23;
-      *left = 6;
-      *bottom = 6;
-      *right = 6;
-    }
-  else
+  if (!gtk_window_get_decorated (GTK_WINDOW (window)))
     {
       *top = 0;
       *left = 0;
       *bottom = 0;
       *right = 0;
+
+      return;
     }
+
+  *top = 23;
+  *left = 6;
+  *bottom = 6;
+  *right = 6;
 
   /* Request that the window manager set window's
      _NET_FRAME_EXTENTS property. */

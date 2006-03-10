@@ -1,5 +1,5 @@
 /* Remote.java
-   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,5 +37,22 @@ exception statement from your version. */
 
 package java.rmi;
 
+/**
+ * Marker interface for interfaces which methods are invokable
+ * from outside of this virtual machine through remote method calls.
+ * <p>
+ * Remote invokable methods of remote object implementations are specified
+ * as the methods defined in the implemented remote interfaces. Typically 
+ * remote object implementations are subclasses of the convenience classes 
+ * {@link java.rmi.server.UnicastRemoteObject} or 
+ * {@link java.rmi.activation.Activatable} implementing one or more remote
+ * interfaces indicating their remotely accessible methods. The convenience
+ * classes provide implementations for correct remote object creation, 
+ * hash, equals and toString methods.
+ * </p>
+ * 
+ * @author unknown
+ */
 public interface Remote {
+  // marker interface
 }

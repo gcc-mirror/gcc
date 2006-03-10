@@ -317,7 +317,7 @@ abstract class AbstractNumberNode
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("number");
     buf.append('[');
     buf.append("format=");
     buf.append(format);

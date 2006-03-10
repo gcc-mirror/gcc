@@ -160,14 +160,17 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_delItem
 {
   void *ptr;
   GList *list;
-
+  GtkWidget *menu;
+  
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_container_get_children (GTK_CONTAINER (ptr));
+  menu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(ptr));
+
+  list = gtk_container_get_children (GTK_CONTAINER (menu));
   list = g_list_nth (list, index);
-  gtk_container_remove (GTK_CONTAINER (ptr), GTK_WIDGET (list->data));
+  gtk_container_remove (GTK_CONTAINER (menu), GTK_WIDGET (list->data));
 
   gdk_threads_leave ();
 }

@@ -1,5 +1,5 @@
 /* Scrollbar.java -- AWT Scrollbar widget
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -593,13 +593,33 @@ public class Scrollbar extends Component implements Accessible, Adjustable
       adjustment_listeners.adjustmentValueChanged(event);
   }
 
+  /**
+   * Package private method to determine whether to call
+   * processEvent() or not.  Will handle events from peer and update
+   * the current value.
+   */
   void dispatchEventImpl(AWTEvent e)
   {
     if (e.id <= AdjustmentEvent.ADJUSTMENT_LAST 
-      && e.id >= AdjustmentEvent.ADJUSTMENT_FIRST
-      && (adjustment_listeners != null 
-	  || (eventMask & AWTEvent.ADJUSTMENT_EVENT_MASK) != 0))
-      processEvent(e);
+	&& e.id >= AdjustmentEvent.ADJUSTMENT_FIRST)
+      {
+	AdjustmentEvent ae = (AdjustmentEvent) e;
+	boolean adjusting = ae.getValueIsAdjusting();
+	if (adjusting)
+	  setValueIsAdjusting(true);
+	try
+	  {
+	    setValue(((AdjustmentEvent) e).getValue());
+	    if (adjustment_listeners != null 
+		|| (eventMask & AWTEvent.ADJUSTMENT_EVENT_MASK) != 0)
+	      processEvent(e);
+	  }
+	finally
+	  {
+	    if (adjusting)
+	      setValueIsAdjusting(false);
+	  }
+      }
     else
       super.dispatchEventImpl(e);
   }

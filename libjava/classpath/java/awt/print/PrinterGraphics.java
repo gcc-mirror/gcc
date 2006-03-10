@@ -1,5 +1,5 @@
 /* PrinterGraphics.java -- Hook to return print job controller.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,23 +39,20 @@ exception statement from your version. */
 package java.awt.print;
 
 /**
-  * This interface is implemented by the <code>Graphics</code> instance
-  * that is used for rendering pages.  It provides a hook to return the
-  * object that is controlling the print job.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface is implemented by the <code>Graphics</code> instance that is
+ * used for rendering pages. It provides a hook to return the object that is
+ * controlling the print job.
+ * 
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public interface PrinterGraphics
 {
+  /**
+   * This method returns the instance of <code>PrinterJob</code> that is
+   * controlling this print job.
+   * 
+   * @return The <code>PrinterJob</code> that is controlling this print job.
+   */
+  PrinterJob getPrinterJob();
 
-/**
-  * This method returns the instance of <code>PrinterJob</code> that is
-  * controlling this print job.
-  *
-  * @return The <code>PrinterJob</code> that is controlling this print job.
-  */
-PrinterJob
-getPrinterJob();
-
-} // interface PrinterGraphics
-
+}

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.security.der;
 
+import gnu.java.security.x509.Util;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -108,7 +110,9 @@ public class DERValue implements DER
           }
         catch (IOException ioe)
           {
-            encoded = new byte[0];
+            IllegalArgumentException iae = new IllegalArgumentException ();
+            iae.initCause (ioe);
+            throw iae;
           }
       }
     return length;
@@ -138,7 +142,9 @@ public class DERValue implements DER
           }
         catch (IOException ioe)
           {
-            encoded = new byte[0];
+            IllegalArgumentException iae = new IllegalArgumentException ();
+            iae.initCause (ioe);
+            throw iae;
           }
       }
     return (byte[]) encoded.clone();
@@ -156,7 +162,9 @@ public class DERValue implements DER
           }
         catch (IOException ioe)
           {
-            encoded = new byte[0];
+            IllegalArgumentException iae = new IllegalArgumentException ();
+            iae.initCause (ioe);
+            throw iae;
           }
       }
     return encoded.length;
@@ -164,7 +172,18 @@ public class DERValue implements DER
 
   public String toString()
   {
-    return "DERValue [ tag=" + tag + ", class=" + tagClass + ", constructed="
-      + constructed + ", value=" + value + " ]";
+    String start = "DERValue ( [";
+    if (tagClass == DER.UNIVERSAL) 
+      start = start + "UNIVERSAL ";
+    else if (tagClass == DER.PRIVATE) 
+      start = start + "PRIVATE ";
+    else if (tagClass == DER.APPLICATION) 
+      start = start + "APPLICATION ";
+    start = start + tag + "] constructed=" + constructed + ", value=";
+    if (constructed)
+     start = start + "\n" + Util.hexDump(getEncoded(), "\t");
+    else
+     start = start + value;
+    return start + " )";
   }
 }

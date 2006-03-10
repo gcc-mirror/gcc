@@ -1,5 +1,5 @@
 /* SearchResult.java --
-   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,7 @@ import javax.naming.Binding;
 
 public class SearchResult extends Binding
 {
+  private static final long serialVersionUID = - 9158063327699723172L;
   // Serialized fields.
   private Attributes attrs;
 

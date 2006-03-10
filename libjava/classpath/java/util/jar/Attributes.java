@@ -427,16 +427,13 @@ public class Attributes implements Cloneable, Map
    * Attributes map.
    * When the name already exists the value is replaced and the old value
    * is returned.
-   * <p>
-   * I don't know why there is no public method with this signature. I think
-   * there should be one.
    *
    * @param name the attribite name to add/replace
    * @param value the (new) value of the attribute name
    * @returns the old value of the attribute name or null if it didn't exist
    * yet
    */
-  String putValue(Name name, String value)
+  public String putValue(Name name, String value)
   {
     return (String) put(name, value);
   }

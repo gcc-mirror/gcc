@@ -46,27 +46,121 @@ import java.util.Locale;
  */
 public class ImageWriteParam extends IIOParam
 {
+  
+  /** 
+   * Can be passed to setTilingMode, setProgressiveMode and
+   * setCompressionMode to disable feature.
+   */
   public static final int MODE_DISABLED = 0;
+  
+  /** 
+   * Can be passed to setTilingMode, setProgressiveMode and 
+   * setCompressionMode to enable feature.
+   */
   public static final int MODE_DEFAULT = 1;
+  
+  /** 
+   * Can be passed to setTilingMode, setCompressionMode to disable feature.
+   */
   public static final int MODE_EXPLICIT = 2;
+  
+  /** 
+   * Can be passed to setTilingMode, setProgressiveMode and 
+   * setCompressionMode to enable feature.
+   */
   public static final int MODE_COPY_FROM_METADATA = 3;
   
+  /**
+   * True if tiling grid offset parameters can be set.
+   */
   protected boolean canOffsetTiles;
+  
+  /**
+   * True if this writer can write images using compression.
+   */
   protected boolean canWriteCompressed;
+  
+  /**
+   * True if images can be written as a progressive sequence
+   * of increasing quality.
+   */
   protected boolean canWriteProgressive;
+  
+  /**
+   * True if tile width and height parameters can be set.
+   */
   protected boolean canWriteTiles;
+  
+  /**
+   * Controls compression settings, which must be set to one of the four
+   * MODE_* values.
+   */
   protected int compressionMode = MODE_COPY_FROM_METADATA;
+  
+  /**
+   * Contains the current compression quality setting.
+   */
   protected float compressionQuality;
+  
+  /**
+   * Contains the name of the available compression types.
+   */
   protected String compressionType;
+  
+  /**
+   * Array of the names of the available compression types.
+   */
   protected String[] compressionTypes;
+  
+  /**
+   * Localizes compression type names and quality descriptions,
+   * or null to use default Locale.
+   */
   protected Locale locale;
+  
+  /**
+   * Preferred tile size range pairs.
+   */
   protected Dimension[] preferredTileSizes;
+  
+  /**
+   * The mode controlling progressive encoding, which must
+   * be set to one of the four MODE_* values, except
+   * MODE_EXPLICIT.
+   */
   protected int progressiveMode = MODE_COPY_FROM_METADATA;
+  
+  /**
+   * The amount by which the tile grid origin should be offset
+   * horizontally from the image origin if tiling has been set.
+   */
   protected int tileGridXOffset;
+  
+  /**
+   * The amount by which the tile grid origin should be offset
+   * vertically from the image origin if tiling has been set.
+   */
   protected int tileGridYOffset;
+  
+  /**
+   * The height of each tile if tiling has been set.
+   */
   protected int tileHeight;
+  
+  /**
+   * The width of each tile if tiling has been set.
+   */
   protected int tileWidth;
+  
+  /**
+   * The mode controlling tiling settings, which must be
+   * set to one of the four MODE_* values.
+   */
   protected int tilingMode;
+  
+  /**
+   * True if the tiling parameters have been specified.
+   */
   protected boolean tilingSet;
 
   /**

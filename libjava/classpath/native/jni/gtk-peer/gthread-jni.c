@@ -1258,7 +1258,7 @@ exitMonitor (JNIEnv * env, jobject mutexObj, const char monName[])
 static jobject
 getThreadFromThreadID (JNIEnv * env, gpointer gThreadID)
 {
-  jint threadNum = (jint) gThreadID;
+  jint threadNum = GPOINTER_TO_INT(gThreadID);
   jobject thread;
 
   if (threadNum < 0)
@@ -1305,7 +1305,7 @@ getThreadIDFromThread (JNIEnv * env, jobject thread)
   SHOW_OLD_TROUBLE ();
 
 done:
-  return (gpointer) threadNum;
+  return GINT_TO_POINTER(threadNum);
 }
 
 

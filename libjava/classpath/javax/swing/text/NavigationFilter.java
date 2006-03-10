@@ -68,4 +68,31 @@ public class NavigationFilter
   {
     fb.setDot(dot, bias);
   }
+
+  /**
+   * Returns the next visual position in the specified direction at which one
+   * would place a caret. The default implementation forwards to the text
+   * component's root view. Subclasses may wish to restrict that more.
+   *
+   * @param c the text component
+   * @param pos the current model position
+   * @param bias the bias of <code>pos</code>
+   * @param dir the direction, one of {@link javax.swing.SwingConstants#NORTH},
+   *        {@link javax.swing.SwingConstants#SOUTH},
+   *        {@link javax.swing.SwingConstants#WEST} or
+   *        {@link javax.swing.SwingConstants#EAST}
+   * @param retBias the bias of the returned position
+   *
+   * @return the next model location to place the caret
+   *
+   * @throws BadLocationException when <code>pos</code> is not a valid model
+   *         position
+   */
+  public int getNextVisualPositionFrom(JTextComponent c, int pos,
+                                       Position.Bias bias, int dir,
+                                       Position.Bias[] retBias)
+    throws BadLocationException
+  {
+    return c.getUI().getNextVisualPositionFrom(c, pos, bias, dir, retBias);
+  }
 }

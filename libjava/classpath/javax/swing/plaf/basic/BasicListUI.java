@@ -64,6 +64,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
@@ -135,6 +136,7 @@ public class BasicListUI extends ListUI
      */
     public void contentsChanged(ListDataEvent e)
     {
+      updateLayoutStateNeeded |= modelChanged;
       list.revalidate();
     }
 
@@ -145,6 +147,7 @@ public class BasicListUI extends ListUI
      */
     public void intervalAdded(ListDataEvent e)
     {
+      updateLayoutStateNeeded |= modelChanged;
       list.revalidate();
     }
 
@@ -155,6 +158,7 @@ public class BasicListUI extends ListUI
      */
     public void intervalRemoved(ListDataEvent e)
     {
+      updateLayoutStateNeeded |= modelChanged;
       list.revalidate();
     }
   }
@@ -541,17 +545,21 @@ public class BasicListUI extends ListUI
      */
     public void propertyChange(PropertyChangeEvent e)
     {
-      if (e.getSource() == BasicListUI.this.list)
+      if (e.getPropertyName().equals("model"))
         {
           if (e.getOldValue() != null && e.getOldValue() instanceof ListModel)
-            ((ListModel) e.getOldValue()).removeListDataListener(BasicListUI.this.listDataListener);
-
+            {
+              ListModel oldModel = (ListModel) e.getOldValue();
+              oldModel.removeListDataListener(listDataListener);
+            }
           if (e.getNewValue() != null && e.getNewValue() instanceof ListModel)
-            ((ListModel) e.getNewValue()).addListDataListener(BasicListUI.this.listDataListener);
+            {
+              ListModel newModel = (ListModel) e.getNewValue();
+              newModel.addListDataListener(BasicListUI.this.listDataListener);
+            }
+
+          updateLayoutStateNeeded |= modelChanged;
         }
-      // Update the updateLayoutStateNeeded flag.
-      if (e.getPropertyName().equals("model"))
-        updateLayoutStateNeeded |= modelChanged;
       else if (e.getPropertyName().equals("selectionModel"))
         updateLayoutStateNeeded |= selectionModelChanged;
       else if (e.getPropertyName().equals("font"))
@@ -720,14 +728,20 @@ public class BasicListUI extends ListUI
     int minIndex = Math.min(index1, index2);
     int maxIndex = Math.max(index1, index2);
     Point loc = indexToLocation(list, minIndex);
-    Rectangle bounds = new Rectangle(loc.x, loc.y, cellWidth,
+
+    // When the layoutOrientation is VERTICAL, then the width == the list
+    // width. Otherwise the cellWidth field is used.
+    int width = cellWidth;
+    if (l.getLayoutOrientation() == JList.VERTICAL)
+      width = l.getWidth();
+
+    Rectangle bounds = new Rectangle(loc.x, loc.y, width,
                                      getCellHeight(minIndex));
     for (int i = minIndex + 1; i <= maxIndex; i++)
       {
         Point hiLoc = indexToLocation(list, i);
-        Rectangle hibounds = new Rectangle(hiLoc.x, hiLoc.y, cellWidth,
-                                           getCellHeight(i));
-        bounds = bounds.union(hibounds);
+        bounds = SwingUtilities.computeUnion(hiLoc.x, hiLoc.y, width,
+                                             getCellHeight(i), bounds);
       }
 
     return bounds;
@@ -883,8 +897,6 @@ public class BasicListUI extends ListUI
             Dimension dim = flyweight.getPreferredSize();
             cellWidth = Math.max(cellWidth, dim.width);
           }
-        if (list.getLayoutOrientation() == JList.VERTICAL)
-          cellWidth = Math.max(cellWidth, list.getSize().width);
       }
   }
 
@@ -894,7 +906,7 @@ public class BasicListUI extends ListUI
    */
   protected void maybeUpdateLayoutState()
   {
-    if (updateLayoutStateNeeded != 0 || !list.isValid())
+    if (updateLayoutStateNeeded != 0)
       {
         updateLayoutState();
         updateLayoutStateNeeded = 0;

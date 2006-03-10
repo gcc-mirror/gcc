@@ -1,5 +1,6 @@
 /* AlreadyBoundException.java -- thrown if a binding is already bound
-   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,8 +43,8 @@ package java.rmi;
  * bound.
  *
  * @author unknown
- * @see Naming#bind(String, Remote)
- * @see Registry#bind(String, Remote)
+ * @see java.rmi.Naming#bind(String, Remote)
+ * @see java.rmi.registry.Registry#bind(String, Remote)
  * @since 1.1
  * @status updated to 1.4
  */

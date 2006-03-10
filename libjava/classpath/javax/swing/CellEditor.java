@@ -1,5 +1,5 @@
 /* CellEditor.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package javax.swing;
 import java.util.EventObject;
 
 import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 
 /**
  * Provides edit capabilities for components that display cells like
@@ -51,46 +52,57 @@ import javax.swing.event.CellEditorListener;
 public interface CellEditor
 {
   /**
-   * getCellEditorValue
-   * @returns Object
+   * Returns the current value for the <code>CellEditor</code>.
+   * 
+   * @return The value.
    */
   Object getCellEditorValue();
 
   /**
-   * isCellEditable
-   * @param event TODO
-   * @returns boolean
+   * Returns <code>true</code> if the specified event makes the editor 
+   * editable, and <code>false</code> otherwise.
+   * 
+   * @param event  the event.
+   * 
+   * @return A boolean.
    */
   boolean isCellEditable(EventObject event);
 
   /**
    * shouldSelectCell
    * @param event TODO
-   * @returns boolean
+   * @return boolean
    */
   boolean shouldSelectCell(EventObject event);
 
   /**
-   * stopCellEditing
-   * @returns boolean
+   * Signals to the <code>CellEditor</code> that it should stop editing, 
+   * accepting the current cell value, and returns <code>true</code> if the
+   * editor actually stops editing, and <code>false</code> otherwise.
+   * 
+   * @return A boolean.
    */
   boolean stopCellEditing();
 
   /**
-   * cancelCellEditing
+   * Signals to the <code>CellEditor</code> that it should cancel editing.
    */
   void cancelCellEditing();
 
   /**
-   * addCellEditorListener
-   * @param listener TODO
+   * Registers a listener to receive {@link ChangeEvent} notifications from the 
+   * <code>CellEditor</code>.
+   * 
+   * @param listener  the listener.
    */
   void addCellEditorListener(CellEditorListener listener);
 
   /**
-   * removeCellEditorListener
-   * @param listener TODO
+   * Deregisters a listener so that it no longer receives {@link ChangeEvent} 
+   * notifications from the <code>CellEditor</code>.
+   * 
+   * @param listener  the listener.
    */
   void removeCellEditorListener(CellEditorListener listener);
 
-} // CellEditor
+}

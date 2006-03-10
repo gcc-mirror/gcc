@@ -1,3 +1,74 @@
+New in release 0.90 (March 6, 2006)
+
+* Free Swing improvements: JTable columns are rearrangeable and
+  resizeable with mouse. Painting and scrolling are now much
+  faster. Plain text components now support highlighting and
+  copy+paste to the system clipboard. Support for styled text has been
+  improved, including some very basic HTML support. JFileChooser is
+  now usable. Global event dispatching has been implemented. Memory
+  consumption of Swing components has been reduced. Lots of general
+  bugfixes. Added new system property to turn off Graphics2D use in
+  Swing, even if Graphics2D is available: gnu.javax.swing.noGraphics2D
+
+* AWT. Improved support for mixing "lightweight" and "heavyweight"
+  Components in Containers. Better support for dynamically updated
+  menus. Better 1.0 event model support for Scrollbars. Better class
+  documentation of gtk+ awt peers.
+
+* GNU Crypto and Jessie have been merged into GNU Classpath; this
+  provides Classpath with a wide array of cryptographic algorithms
+  (ciphers, message digests, etc.) and implementations of SSL version
+  3 and TLS version 1. These roughly complement the public
+  `java.security.' `javax.crypto,' and `javax.net.ssl' packages, and
+  are service providers implementing the underlying algorithms.
+ 
+* Updated HTTP and FTP URLConnection protocol handlers. HTTPS support
+  out of the box.
+
+* Unicode 4.0.0 is supported. Character now includes support for using
+  ether a char or an int to identify code points.
+
+* More correct handling of Object methods and serialization support
+  for Proxy and abstract classes.
+
+* The new folder tools includes GIOP and RMI stub and tie source code
+  generators, IOR parser and both transient and persistent GIOP naming
+  services.
+
+* Added experimental support for dynamic creation of the RMI stubs
+  using proxy classes. The rmic compiler is no longer required (unless
+  for research and specific stubs).
+
+* XML validaton support for RELAX NG and W3C XML schema namespace
+  URIs. RELAX NG pluggable XML schema datatype library API and an
+  implementation for XML Schema Datatypes
+  (http://www.w3.org/TR/xmlschema-2/).
+
+* Updated StAX implementaton to be compatible with final JSWDP 2.0.
+
+* The default back end for java.util.prefs has been changed.  The new
+  default is capable of saving and restoring preferences to and from
+  the file system.
+
+* javax.imageio.plugins.bmp implementation.
+
+* Added --enable-collections configure option which builds
+  "collections.jar", a 1.1 VM compatibility jar.
+
+* gnu.regexp updated from GNU/Posix syntax to support util.regex
+  syntax including various Unicode blocks, categories and properties.
+
+Runtime interface changes:
+
+* A new class, VMMath, is now available which separates the native
+  mathematical functions from java.lang.Math.  The previous fdlibm
+  implementation now forms the reference material for this class.
+
+* Updated VMObjectInputStream class to return Thread context class
+  loader if no other class loader is found.
+
+* Updated documentation on InstrumentationImpl in vmintegration guide.
+
 New in release 0.20 (Jan 13, 2006)
 
 * New StAX pull parser and SAX-over-StAX driver. Lots of DOM, SAX/StAX,

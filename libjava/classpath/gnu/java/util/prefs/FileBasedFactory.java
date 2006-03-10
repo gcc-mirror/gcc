@@ -47,11 +47,19 @@ import java.util.prefs.*;
  */
 public class FileBasedFactory implements PreferencesFactory {
 
+    // We don't save or read any system preferences for the
+    // time being.
+    private static final Preferences systemPreferences
+      = new MemoryBasedPreferences(null, "", false);
+
+    private static final Preferences userPreferences
+      = new FileBasedPreferences();
+
     public Preferences systemRoot() {
-        return null;
+        return systemPreferences;
     }
 
     public Preferences userRoot() {
-        return null;
+        return userPreferences;
     }
 }

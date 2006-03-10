@@ -39,6 +39,8 @@ exception statement from your version. */
 package gnu.java.security.provider;
 
 import gnu.java.security.OID;
+import gnu.java.security.Registry;
+import gnu.java.security.key.dss.DSSPublicKey;
 import gnu.java.security.x509.GnuPKIExtension;
 import gnu.java.security.x509.PolicyNodeImpl;
 import gnu.java.security.x509.X509CRLSelectorImpl;
@@ -241,8 +243,11 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
                     if (!(prevKey instanceof DSAPublicKey))
                       throw new InvalidKeyException("DSA keys not chainable");
                     dsa = ((DSAPublicKey) prevKey).getParams();
-                    pubKey = new GnuDSAPublicKey(((DSAPublicKey) pubKey).getY(),
-                      dsa.getP(), dsa.getQ(), dsa.getG());
+                    pubKey = new DSSPublicKey(Registry.X509_ENCODING_ID,
+                                              dsa.getP(),
+                                              dsa.getQ(),
+                                              dsa.getG(),
+                                              ((DSAPublicKey) pubKey).getY());
                   }
               }
             if (sigProvider == null)

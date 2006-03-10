@@ -1,5 +1,5 @@
 /* Compression.java --
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -91,7 +91,7 @@ public class Compression extends EnumSyntax
    *
    * @return The class <code>Compression</code> itself.
    */
-  public Class getCategory()
+  public final Class getCategory()
   {
     return Compression.class;
   }
@@ -101,7 +101,7 @@ public class Compression extends EnumSyntax
    *
    * @return The name "compression".
    */
-  public String getName()
+  public final String getName()
   {
     return "compression";
   }

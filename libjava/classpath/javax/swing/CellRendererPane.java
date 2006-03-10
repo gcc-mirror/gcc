@@ -1,5 +1,5 @@
 /* CellRendererPane.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -75,7 +75,7 @@ public class CellRendererPane extends Container implements Accessible
 
     /**
      * getAccessibleRole
-     * @returns AccessibleRole
+     * @return AccessibleRole
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -169,24 +169,32 @@ public class CellRendererPane extends Container implements Accessible
     addImpl(c, null, 0);
 
     Rectangle oldClip = graphics.getClipBounds();
-    // translate to (x,y)
-    graphics.translate(x, y);
-    graphics.clipRect(0, 0, w, h);
-    // set bounds of c
-    c.setBounds(0, 0, w, h);
-
-    // validate if necessary
-    if (shouldValidate)
+    boolean translated = false;
+    try
       {
-        c.validate();
+        // translate to (x,y)
+        graphics.translate(x, y);
+        translated = true;
+        graphics.clipRect(0, 0, w, h);
+        // set bounds of c
+        c.setBounds(0, 0, w, h);
+
+        // validate if necessary
+        if (shouldValidate)
+          {
+            c.validate();
+          }
+
+        // paint component
+        c.paint(graphics);
       }
-
-    // paint component
-    c.paint(graphics);
-
-    // untranslate g
-    graphics.translate(-x, -y);
-    graphics.setClip(oldClip);
+    finally
+      {
+        // untranslate g
+        if (translated)
+          graphics.translate(-x, -y);
+        graphics.setClip(oldClip);
+      }
   }
 
   /**

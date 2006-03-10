@@ -52,6 +52,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.security.auth.x500.X500Principal;
+
 public class GeneralNames
 {
 
@@ -81,12 +83,14 @@ public class GeneralNames
     if (!nameList.isConstructed())
       throw new IOException("malformed GeneralNames");
     int len = 0;
+    int i = 0;
     while (len < nameList.getLength())
       {
         DERValue name = der.read();
         List namePair = new ArrayList(2);
-        if (name.getTagClass() != DER.APPLICATION)
-          throw new IOException("malformed GeneralName");
+        int tagClass = name.getTagClass();
+        if (tagClass != DER.CONTEXT)
+          throw new IOException("malformed GeneralName: Tag class is " + tagClass);
         namePair.add(new Integer(name.getTag()));
         DERValue val = null;
         switch (name.getTag())
@@ -99,6 +103,15 @@ public class GeneralNames
             break;
 
           case OTHER_NAME:
+            // MUST return the encoded bytes of the OID/OctetString sequence
+            byte[] anotherName = name.getEncoded();
+            anotherName[0] = (byte) (DER.CONSTRUCTED|DER.SEQUENCE);
+            namePair.add(anotherName);
+            // DERReader goes back on Constructed things so we need to skip over them
+            DERValue skip = der.read(); // skip OID
+            skip = der.read(); // skip Octet String
+            break;
+            
           case EDI_PARTY_NAME:
             namePair.add(name.getValue());
             break;
@@ -106,7 +119,9 @@ public class GeneralNames
           case DIRECTORY_NAME:
             byte[] b = name.getEncoded();
             b[0] = (byte) (DER.CONSTRUCTED|DER.SEQUENCE);
-            namePair.add(new X500DistinguishedName(b).toString());
+            DERReader r = new DERReader (b);
+            r.read ();
+            namePair.add(new X500Principal(r.read ().getEncoded ()).toString());
             break;
 
           case IP_ADDRESS:

@@ -227,6 +227,7 @@ become operable.
 * java.lang.VMString::
 * java.lang.VMThread::
 * java.lang.VMInstrumentationImpl::
+* java.lang.VMMath::
 @end menu
 
 @node java.lang.VMClass, java.lang.VMObject ,java.lang,java.lang
@@ -684,17 +685,18 @@ having returned true, and is thus deprecated as a result.
 @end itemize
 @end itemize
 
-@node java.lang.VMInstrumentationImpl,, java.lang.VMThread, java.lang
+@node java.lang.VMInstrumentationImpl, java.lang.VMMath, java.lang.VMThread, java.lang
 @subsection @code{java.lang.VMInstrumentationImpl}
 
 The @code{java.lang.VMInstrumentationImpl} and
-@code{java.lang.InstrumentationImpl} provides an implementation of the
+@code{java.lang.InstrumentationImpl} classes provide an implementation of the
 @code{java.lang.instrument.Instrument} interface. This interface is for java
 1.5 and is only in the generics branch.
-A @code{InstrumentationImpl} object should be given to any agent
-given in the command line (see the @code{java.lang.instrument} package
-documentation). A VM has to implement the static native methods of the
-@code{VMInstrumentationImpl} class.
+A @code{InstrumentationImpl} object should be created by the VM when agents
+are given in the command line (see the @code{java.lang.instrument} package
+documentation). The VM has to set the static field
+@code{VMClassLoader.instrumenter} to this object. The VM should implement the
+static native methods of the @code{VMInstrumentationImpl} class.
 
 @itemize @bullet
 @item @code{isRedefineClassesSupported()} -- Returns true if the JVM supports
@@ -707,21 +709,72 @@ by a specific class loader.
 @item @code{getObjectSize()} -- Gives the size of an object.
 @end itemize
 
-When agents are defined, the VM has to call transformers of the
-@code{InstrumentImpl} object each time a class is loaded, eg a call to
-@code{VMClassLoader.defineClass}. The @code{InstrumentationImpl} class defines
-a method that has to be called before reading a class file in the VM.
+Instrumentation allows to modify the bytecode of a class before it gets read
+by the VM. In GNU Classpath, the @code{ClassLoader.defineClass} method calls
+the @code{VMClassLoader.defineClassWithTransformers} method which first checks
+if @code{VMClassLoader.instrumenter} is @code{null}. If it's the case, it
+directly calls @code{VMClassLoader.defineClass}. If it's not the case, the
+method calls at first the @code{InstrumentationImpl.callTransformers} method,
+which calls each transformer registered to the @code{InstrumentationImpl}
+object and returns a new bytecode array. Then, it calls the
+@code{VMClassLoader.defineClass} method with this new bytecode array.
+
+The second use of instrumentation is to redefine a class after it has been
+loaded by the VM. This is done in the Java application by calling the
+@code{Instrumentation.redefineClasses} method of the standard interface on
+a @code{Instrumentation} object. The @code{InstrumentationImpl.redefineClasses}
+method calls the @code{VMInstrumentationImpl.redefineClasses} native method
+which must be implemented by the VM. The implementation should call the
+@code{InstrumentationImpl.callTransformers} method.
+
+@node java.lang.VMMath, , java.lang.VMInstrumentationImpl, java.lang
+@subsection @code{java.lang.VMMath}
+
+The @code{VMMath} class provides a series of native methods
+for some of the mathematical functions present in @code{java.lang.Math}.
+Classpath provides a default implementation of these which maps the
+functions to those provided by @code{fdlibm}.  VM implementors are welcome
+to replace this with more efficent implementations, as long as the accuracy
+contract of these methods, specified in @code{java.lang.Math}, is maintained.
 
 @itemize @bullet
-@item @code{callTransformers} -- Calls each transformer registered to
-the @code{InstrumentationImpl} object and returns a new bytecode file.
+@item 1.0
+@itemize @bullet
+@item @code{sin(double)} -- Returns the sine value for the given angle.
+@item @code{cos(double)} -- Returns the cosine value for the given angle.
+@item @code{tan(double)} -- Returns the tangent value for the given angle.
+@item @code{asin(double)} -- Returns the arc sine value for the given angle.
+@item @code{acos(double)} -- Returns the arc cosine value for the given angle.
+@item @code{atan(double)} -- Returns the arc tangent value for the given angle.
+@item @code{atan2(double,double)} -- Returns the arc tangent of the ratio of
+the two arguments.
+@item @code{exp(double)} -- Returns the exponent raised to the given power.
+@item @code{log(double)} -- Returns the natural logarithm for the given value.
+@item @code{sqrt(double)} -- Returns the square root of the value.
+@item @code{pow(double,double)} -- Returns x to the power of y.
+@item @code{IEEEremainder(double,double)} -- Returns the IEEE 754 remainder
+for the two values.
+@item @code{ceil(double)} -- Returns the nearest integer >= the value.
+@item @code{floor(double)} -- Returns the nearest integer <= the value.
+@item @code{rint(double)} -- Returns the nearest integer or the even one
+if the distance between the two is equal.
 @end itemize
-
-No default implementation is provided in gnu classpath for the
-@code{VMInstrumentationImpl} methods. A default implementation will perhaps
-be written, but it might break the @code{ClassLoader/VMClassLoader} interface
-for calling the @code{InstrumentationImpl.callTransformers} when a class byte
-code is defined with @code{ClassLoader.defineClass}.
+@item 1.5
+@itemize @bullet
+@item @code{cbrt(double)} -- Returns the cube root of the value.
+@item @code{cosh(double)} -- Returns the hyperbolic cosine value for the given
+angle.
+@item @code{expm1(double)} -- Returns the exponent of the value minus one.
+@item @code{hypot(double,double)} -- Returns the hypotenuse corresponding to
+x and y.
+@item @code{log10(double)} -- Returns the base 10 logarithm of the given value.
+@item @code{log1p(double)} -- Returns the natural logarithm of the value plus
+one.
+@item @code{sinh(double)} -- Returns the hyperbolic sine value for the given
+angle.
+@item @code{tanh(double)} -- Returns the hyperbolic tangent value for the given angle.
+@end itemize
+@end itemize
 
 @node gnu.classpath, java.util, java.lang, Classpath Hooks
 @section @code{gnu.classpath}

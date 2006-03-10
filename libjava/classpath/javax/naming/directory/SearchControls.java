@@ -1,5 +1,5 @@
 /* SearchControls.java --
-   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,7 @@ import java.io.Serializable;
 
 public class SearchControls implements Serializable
 {
+  private static final long serialVersionUID = - 2480540967773454797L;
   public static final int OBJECT_SCOPE = 0;
   public static final int ONELEVEL_SCOPE = 1;
   public static final int SUBTREE_SCOPE = 2;

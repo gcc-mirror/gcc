@@ -1,5 +1,6 @@
 /* Naming.java --
-   Copyright (c) 1996, 1997, 1998, 1999, 2004  Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2004, 2006  
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,136 +77,150 @@ import java.rmi.registry.Registry;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.1
  */
-public final class Naming {
-
+public final class Naming
+{
   /**
    * This class isn't intended to be instantiated.
    */
-  private Naming() {}
-
-/**
- * Looks for the remote object that is associated with the named service.
- * Name and location is given in form of a URL without a scheme:
- *
- * <pre>
- * //host:port/service-name
- * </pre>
- *  
- * The port is optional.
- * 
- * @param name the service name and location
- * @return Remote-object that implements the named service
- * @throws NotBoundException if no object implements the service
- * @throws MalformedURLException 
- * @throws RemoteException
- */
-public static Remote lookup(String name) throws NotBoundException, MalformedURLException, RemoteException {
-        URL u = parseURL(name);
-	String serviceName = getName(u);
-	return (getRegistry(u).lookup(serviceName));
-}
-
-/**
- * Try to bind the given object to the given service name. 
- * @param name
- * @param obj
- * @throws AlreadyBoundException
- * @throws MalformedURLException
- * @throws RemoteException
- */
-public static void bind(String name, Remote obj) throws AlreadyBoundException, MalformedURLException, RemoteException {
-        URL u = parseURL(name);
-	String serviceName = getName(u);
-	getRegistry(u).bind(serviceName, obj);
-}
-
-/**
- * Remove a binding for a given service name.
- * @param name
- * @throws RemoteException
- * @throws NotBoundException
- * @throws MalformedURLException
- */
-public static void unbind(String name) throws RemoteException, NotBoundException, MalformedURLException {
-        URL u = parseURL(name);
-	String serviceName = getName(u);
-	getRegistry(u).unbind(serviceName);
-}
-
-/**
- * Forces the binding between the given Remote-object and the given service name, even 
- * if there was already an object bound to this name. 
- * @param name
- * @param obj
- * @throws RemoteException
- * @throws MalformedURLException
- */
-public static void rebind(String name, Remote obj) throws RemoteException, MalformedURLException {
-        URL u = parseURL(name);
-	String serviceName = getName(u);
-	getRegistry(u).rebind(serviceName, obj);
-}
-
-/**
- * Lists all services at the named registry.
- * @param name url that specifies the registry
- * @return list of services at the name registry
- * @throws RemoteException
- * @throws MalformedURLException
- */
-public static String[] list(String name) throws RemoteException, MalformedURLException {
-	return (getRegistry(parseURL(name)).list());
-}
-
-private static Registry getRegistry(URL u) throws RemoteException {
-	if (u.getPort() == -1) {
-		return (LocateRegistry.getRegistry(u.getHost()));
-	}
-	else {
-		return (LocateRegistry.getRegistry(u.getHost(), u.getPort()));
-	}
-}
+  private Naming()
+  {
+  }
 
   /**
-   * Parses the supplied URL and converts it to use the HTTP
-   * protocol.  From an RMI perspective, the scheme is irrelevant
-   * and we want to be able to create a URL for which a handler is
-   * available.
-   *
-   * @param name the URL in String form.
-   * @throws MalformedURLException if the URL is invalid.
+   * Looks for the remote object that is associated with the named service. 
+   * Name and location is given in form of a URL without a scheme:
+   * 
+   * <pre>
+   * //host:port/service-name
+   * </pre>
+   * 
+   * The port is optional.
+   * 
+   * @param name the service name and location
+   * @return Remote-object that implements the named service
+   * @throws NotBoundException if no object implements the service
+   * @throws MalformedURLException
+   * @throws RemoteException
    */
-  private static URL parseURL(String name)
-    throws MalformedURLException
+  public static Remote lookup(String name) throws NotBoundException,
+    MalformedURLException, RemoteException
   {
-    try
+    URL u = parseURL(name);
+    String serviceName = getName(u);
+    return (getRegistry(u).lookup(serviceName));
+  }
+
+  /**
+   * Try to bind the given object to the given service name.
+   * 
+   * @param name
+   * @param obj
+   * @throws AlreadyBoundException
+   * @throws MalformedURLException
+   * @throws RemoteException
+   */
+  public static void bind(String name, Remote obj)
+    throws AlreadyBoundException, MalformedURLException, RemoteException
+  {
+    URL u = parseURL(name);
+    String serviceName = getName(u);
+    getRegistry(u).bind(serviceName, obj);
+  }
+
+  /**
+   * Remove a binding for a given service name.
+   * 
+   * @param name
+   * @throws RemoteException
+   * @throws NotBoundException
+   * @throws MalformedURLException
+   */
+  public static void unbind(String name) throws RemoteException,
+    NotBoundException, MalformedURLException
+  {
+    URL u = parseURL(name);
+    String serviceName = getName(u);
+    getRegistry(u).unbind(serviceName);
+  }
+
+  /**
+   * Forces the binding between the given Remote-object and the given service
+   * name, even if there was already an object bound to this name.
+   * 
+   * @param name
+   * @param obj
+   * @throws RemoteException
+   * @throws MalformedURLException
+   */
+  public static void rebind(String name, Remote obj) throws RemoteException,
+    MalformedURLException
+  {
+    URL u = parseURL(name);
+    String serviceName = getName(u);
+    getRegistry(u).rebind(serviceName, obj);
+  }
+
+  /**
+   * Lists all services at the named registry.
+   * 
+   * @param name url that specifies the registry
+   * @return list of services at the name registry
+   * @throws RemoteException
+   * @throws MalformedURLException
+   */
+  public static String[] list(String name) throws RemoteException,
+    MalformedURLException
+  {
+    return (getRegistry(parseURL(name)).list());
+  }
+
+  private static Registry getRegistry(URL u) throws RemoteException
+  {
+    if (u.getPort() == - 1)
       {
-	URI uri = new URI(name);
-	String host = uri.getHost();
-	int port = uri.getPort();
-	String query = uri.getQuery();
-	String path = uri.getPath();
-	return new URL("http", 
-		       (host == null ? "localhost" : host),
-		       (port == -1 ? 1099 : port),
-		       uri.getPath() + (query == null ? "" : query));
+        return (LocateRegistry.getRegistry(u.getHost()));
       }
-    catch (URISyntaxException e)
+    else
       {
-	throw new MalformedURLException("The URL syntax was invalid: " + 
-					e.getMessage());
+        return (LocateRegistry.getRegistry(u.getHost(), u.getPort()));
       }
   }
 
   /**
-   * Checks that the URL contains a name, and removes any leading
-   * slashes.
-   *
+   * Parses the supplied URL and converts it to use the HTTP protocol. From an
+   * RMI perspective, the scheme is irrelevant and we want to be able to create
+   * a URL for which a handler is available.
+   * 
+   * @param name the URL in String form.
+   * @throws MalformedURLException if the URL is invalid.
+   */
+  private static URL parseURL(String name) throws MalformedURLException
+  {
+    try
+      {
+        URI uri = new URI(name);
+        String host = uri.getHost();
+        int port = uri.getPort();
+        String query = uri.getQuery();
+        String path = uri.getPath();
+        return new URL("http", (host == null ? "localhost" : host),
+            (port == - 1 ? 1099 : port), uri.getPath()
+                                         + (query == null ? "" : query));
+      }
+    catch (URISyntaxException e)
+      {
+        throw new MalformedURLException("The URL syntax was invalid: "
+                                        + e.getMessage());
+      }
+  }
+
+  /**
+   * Checks that the URL contains a name, and removes any leading slashes.
+   * 
    * @param url the URL to check.
    * @throws MalformedURLException if no name is specified.
-   */ 
-  private static String getName(URL url)
-    throws MalformedURLException
+   */
+  private static String getName(URL url) throws MalformedURLException
   {
     String filename = url.getFile();
     if (filename.length() == 0)
@@ -216,5 +231,4 @@ private static Registry getRegistry(URL u) throws RemoteException {
       return filename.substring(1);
     return filename;
   }
-
 }

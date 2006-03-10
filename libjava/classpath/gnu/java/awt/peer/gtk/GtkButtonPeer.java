@@ -1,5 +1,5 @@
 /* GtkButtonPeer.java -- Implements ButtonPeer with GTK
-   Copyright (C) 1998, 1999, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,10 @@ public class GtkButtonPeer extends GtkComponentPeer
 
   public native void connectSignals ();
 
-  native void gtkWidgetModifyFont (String name, int style, int size);
+  /**
+   * Overridden to set Font of Label inside Button inside EventBox.
+   */
+  protected native void gtkWidgetModifyFont(String name, int style, int size);
   native void gtkSetLabel (String label);
   native void gtkWidgetSetForeground (int red, int green, int blue);
   native void gtkWidgetSetBackground (int red, int green, int blue);

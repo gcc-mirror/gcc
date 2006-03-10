@@ -115,7 +115,7 @@ import java.util.ListIterator;
  *
  * <li><code>%h</code> - replaced by the location of the home
  *     directory of the current user.  This value is taken from the
- *     system property <code>file.separator</code>.</li>
+ *     system property <code>user.home</code>.</li>
  *
  * <li><code>%g</code> - replaced by a generation number for
  *     distinguisthing the individual items in the rotating set 

@@ -219,6 +219,8 @@ public class Cursor implements java.io.Serializable
 
   public String toString()
   {
-    return (this.getClass() + "[" + getName() + "]");
+    return (this.getClass()
+	    + "[type=" + getType()
+	    + ",name=" + getName() + "]");
   }
 }

@@ -231,7 +231,7 @@ final class AttributeNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("attribute");
     buf.append('[');
     buf.append("name=");
     buf.append(name);

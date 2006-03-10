@@ -22,6 +22,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_toBack (JNIEnv *
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_toFront (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBounds (JNIEnv *env, jobject, jint, jint, jint, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBoundsUnlocked (JNIEnv *env, jobject, jint, jint, jint, jint);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetLocation (JNIEnv *env, jobject, jint, jint);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetLocationUnlocked (JNIEnv *env, jobject, jint, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setSize (JNIEnv *env, jobject, jint, jint);
 #undef gnu_java_awt_peer_gtk_GtkWindowPeer_GDK_WINDOW_TYPE_HINT_NORMAL
 #define gnu_java_awt_peer_gtk_GtkWindowPeer_GDK_WINDOW_TYPE_HINT_NORMAL 0L

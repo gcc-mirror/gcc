@@ -1,7 +1,7 @@
 /* VMIdManager.java -- A reference/example implementation of a manager for
    JDWP object/reference type IDs
 
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -76,6 +76,10 @@ import java.util.Iterator;
  * <b>NOTE:</b> All IDs handled by the ID manager (all object and reference
  * type IDs) are assumed to be of type <code>long</code>.
  *
+ * <b>NOTE:</b> This class does not manage virtual machine-specific types,
+ * like methods, fields, and frames. These already have unique IDs within
+ * the virtual machine and do not need further abstraction here.
+ *
  * @author Keith Seitz  (keiths@redhat.com)
  */
 public class VMIdManager
@@ -99,9 +103,6 @@ public class VMIdManager
       // ObjectId and ArrayId are special cases. See newObjectId.
       _idList.put (ClassLoaderId.typeClass, ClassLoaderId.class);
       _idList.put (ClassObjectId.typeClass, ClassObjectId.class);
-      //_idList.put (FieldId.typeClass, FieldId.class);
-      //_idList.put (FrameId.typeClass, FrameId.class);
-      //_idList.put (MethodId.typeClass, MethodId.class);
       _idList.put (StringId.typeClass, StringId.class);
       _idList.put (ThreadId.typeClass, ThreadId.class);
       _idList.put (ThreadGroupId.typeClass, ThreadGroupId.class);
@@ -187,6 +188,7 @@ public class VMIdManager
 	id = new InterfaceReferenceTypeId ();
       else
 	id = new ClassReferenceTypeId ();
+      id.setReference (ref);
       synchronized (_ridLock)
 	{
 	  id.setId (++_lastRid);

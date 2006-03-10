@@ -1,10 +1,10 @@
 
-/* @(#)e_scalb.c 5.1 93/09/24 */
+/* @(#)e_scalb.c 1.3 95/01/18 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
  * software is freely granted, provided that this notice 
  * is preserved.
@@ -18,8 +18,6 @@
  */
 
 #include "fdlibm.h"
-
-#ifndef _DOUBLE_IS_32BITS
 
 #ifdef _SCALB_INT
 #ifdef __STDC__
@@ -51,5 +49,3 @@
 	return scalbn(x,(int)fn);
 #endif
 }
-
-#endif /* defined(_DOUBLE_IS_32BITS) */

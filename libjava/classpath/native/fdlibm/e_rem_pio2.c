@@ -1,46 +1,46 @@
 
-/* @(#)e_rem_pio2.c 5.1 93/09/24 */
+/* @(#)e_rem_pio2.c 1.4 95/01/18 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  *
  */
 
 /* __ieee754_rem_pio2(x,y)
- *
- * return the remainder of x rem pi/2 in y[0]+y[1]
+ * 
+ * return the remainder of x rem pi/2 in y[0]+y[1] 
  * use __kernel_rem_pio2()
  */
 
 #include "fdlibm.h"
 
-#ifndef _DOUBLE_IS_32BITS
+#ifndef _DOUBLE_IS_32BITS  
 
 /*
- * Table of constants for 2/pi, 396 Hex digits (476 decimal) of 2/pi
+ * Table of constants for 2/pi, 396 Hex digits (476 decimal) of 2/pi 
  */
 #ifdef __STDC__
 static const int32_t two_over_pi[] = {
 #else
 static int32_t two_over_pi[] = {
 #endif
-0xA2F983, 0x6E4E44, 0x1529FC, 0x2757D1, 0xF534DD, 0xC0DB62,
-0x95993C, 0x439041, 0xFE5163, 0xABDEBB, 0xC561B7, 0x246E3A,
-0x424DD2, 0xE00649, 0x2EEA09, 0xD1921C, 0xFE1DEB, 0x1CB129,
-0xA73EE8, 0x8235F5, 0x2EBB44, 0x84E99C, 0x7026B4, 0x5F7E41,
-0x3991D6, 0x398353, 0x39F49C, 0x845F8B, 0xBDF928, 0x3B1FF8,
-0x97FFDE, 0x05980F, 0xEF2F11, 0x8B5A0A, 0x6D1F6D, 0x367ECF,
-0x27CB09, 0xB74F46, 0x3F669E, 0x5FEA2D, 0x7527BA, 0xC7EBE5,
-0xF17B3D, 0x0739F7, 0x8A5292, 0xEA6BFB, 0x5FB11F, 0x8D5D08,
-0x560330, 0x46FC7B, 0x6BABF0, 0xCFBC20, 0x9AF436, 0x1DA9E3,
-0x91615E, 0xE61B08, 0x659985, 0x5F14A0, 0x68408D, 0xFFD880,
-0x4D7327, 0x310606, 0x1556CA, 0x73A8C9, 0x60E27B, 0xC08C6B,
+0xA2F983, 0x6E4E44, 0x1529FC, 0x2757D1, 0xF534DD, 0xC0DB62, 
+0x95993C, 0x439041, 0xFE5163, 0xABDEBB, 0xC561B7, 0x246E3A, 
+0x424DD2, 0xE00649, 0x2EEA09, 0xD1921C, 0xFE1DEB, 0x1CB129, 
+0xA73EE8, 0x8235F5, 0x2EBB44, 0x84E99C, 0x7026B4, 0x5F7E41, 
+0x3991D6, 0x398353, 0x39F49C, 0x845F8B, 0xBDF928, 0x3B1FF8, 
+0x97FFDE, 0x05980F, 0xEF2F11, 0x8B5A0A, 0x6D1F6D, 0x367ECF, 
+0x27CB09, 0xB74F46, 0x3F669E, 0x5FEA2D, 0x7527BA, 0xC7EBE5, 
+0xF17B3D, 0x0739F7, 0x8A5292, 0xEA6BFB, 0x5FB11F, 0x8D5D08, 
+0x560330, 0x46FC7B, 0x6BABF0, 0xCFBC20, 0x9AF436, 0x1DA9E3, 
+0x91615E, 0xE61B08, 0x659985, 0x5F14A0, 0x68408D, 0xFFD880, 
+0x4D7327, 0x310606, 0x1556CA, 0x73A8C9, 0x60E27B, 0xC08C6B, 
 };
 
 #ifdef __STDC__
@@ -67,9 +67,9 @@ static int32_t npio2_hw[] = {
  */
 
 #ifdef __STDC__
-static const double
+static const double 
 #else
-static double
+static double 
 #endif
 zero =  0.00000000000000000000e+00, /* 0x00000000, 0x00000000 */
 half =  5.00000000000000000000e-01, /* 0x3FE00000, 0x00000000 */
@@ -89,7 +89,7 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	double x,y[];
 #endif
 {
-	double z = 0., w, t, r, fn;
+	double z = 0.,w,t,r,fn;
 	double tx[3];
 	int32_t i,j,n,ix,hx;
 	int e0,nx;
@@ -100,7 +100,7 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	if(ix<=0x3fe921fb)   /* |x| ~<= pi/4 , no need for reduction */
 	    {y[0] = x; y[1] = 0; return 0;}
 	if(ix<0x4002d97c) {  /* |x| < 3pi/4, special case with n=+-1 */
-	    if(hx>0) {
+	    if(hx>0) { 
 		z = x - pio2_1;
 		if(ix!=0x3ff921fb) { 	/* 33+53 bit pi is good enough */
 		    y[0] = z - pio2_1t;
@@ -130,27 +130,28 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	    fn = (double)n;
 	    r  = t-fn*pio2_1;
 	    w  = fn*pio2_1t;	/* 1st round good to 85 bit */
-	    if(n<32&&ix!=npio2_hw[n-1]) {
+	    if(n<32&&ix!=npio2_hw[n-1]) {	
 		y[0] = r-w;	/* quick check no cancellation */
 	    } else {
-	        uint32_t high;
+ 	        uint32_t high;
+
 	        j  = ix>>20;
 	        y[0] = r-w;
-		GET_HIGH_WORD(high,y[0]);
+		GET_HIGH_WORD(high, y[0]);
 	        i = j-((high>>20)&0x7ff);
 	        if(i>16) {  /* 2nd iteration needed, good to 118 */
 		    t  = r;
-		    w  = fn*pio2_2;
+		    w  = fn*pio2_2;	
 		    r  = t-w;
-		    w  = fn*pio2_2t-((t-r)-w);
+		    w  = fn*pio2_2t-((t-r)-w);	
 		    y[0] = r-w;
 		    GET_HIGH_WORD(high,y[0]);
 		    i = j-((high>>20)&0x7ff);
 		    if(i>49)  {	/* 3rd iteration need, 151 bits acc */
 		    	t  = r;	/* will cover all possible cases */
-		    	w  = fn*pio2_3;
+		    	w  = fn*pio2_3;	
 		    	r  = t-w;
-		    	w  = fn*pio2_3t-((t-r)-w);
+		    	w  = fn*pio2_3t-((t-r)-w);	
 		    	y[0] = r-w;
 		    }
 		}
@@ -159,7 +160,7 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	    if(hx<0) 	{y[0] = -y[0]; y[1] = -y[1]; return -n;}
 	    else	 return n;
 	}
-    /*
+    /* 
      * all other (large) arguments
      */
 	if(ix>=0x7ff00000) {		/* x is inf or NaN */
@@ -168,8 +169,8 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
     /* set z = scalbn(|x|,ilogb(x)-23) */
 	GET_LOW_WORD(low,x);
 	SET_LOW_WORD(z,low);
-	e0 	= (int)((ix>>20)-1046);	/* e0 = ilogb(z)-23; */
-	SET_HIGH_WORD(z, ix - ((int32_t)e0<<20));
+	e0 	= (int32_t)(ix>>20)-1046;	/* e0 = ilogb(z)-23; */
+	SET_HIGH_WORD(z,ix - (e0<<20));
 	for(i=0;i<2;i++) {
 		tx[i] = (double)((int32_t)(z));
 		z     = (z-tx[i])*two24;
@@ -181,5 +182,4 @@ pio2_3t =  8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 	if(hx<0) {y[0] = -y[0]; y[1] = -y[1]; return -n;}
 	return n;
 }
-
 #endif /* defined(_DOUBLE_IS_32BITS) */

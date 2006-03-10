@@ -1,5 +1,5 @@
 /* Media.java --
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -105,7 +105,7 @@ public abstract class Media extends EnumSyntax
    *
    * @return The class <code>Media</code> itself.
    */
-  public Class getCategory()
+  public final Class getCategory()
   {
     return Media.class;
   }
@@ -115,7 +115,7 @@ public abstract class Media extends EnumSyntax
    *
    * @return The name "media".
    */
-  public String getName()
+  public final String getName()
   {
     return "media";
   }

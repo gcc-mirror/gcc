@@ -1,5 +1,6 @@
 /* PropertyChangeSupport.java -- support to manage property change listeners
-   Copyright (C) 1998, 1999, 2000, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -120,14 +121,17 @@ public class PropertyChangeSupport implements Serializable
    * property change events will be sent to this listener. The listener add
    * is not unique: that is, <em>n</em> adds with the same listener will
    * result in <em>n</em> events being sent to that listener for every
-   * property change. Adding a null listener may cause a NullPointerException
-   * down the road. This method will unwrap a PropertyChangeListenerProxy,
+   * property change. Adding a null listener is silently ignored.
+   * This method will unwrap a PropertyChangeListenerProxy,
    * registering the underlying delegate to the named property list.
    *
    * @param l the listener to add
    */
   public synchronized void addPropertyChangeListener(PropertyChangeListener l)
   {
+    if (l == null)
+      return;
+
     if (l instanceof PropertyChangeListenerProxy)
       {
         PropertyChangeListenerProxy p = (PropertyChangeListenerProxy) l;
@@ -216,8 +220,8 @@ public class PropertyChangeSupport implements Serializable
    * cumulative, too; if you are registered to listen to receive events on
    * all property changes, and then you register on a particular property,
    * you will receive change events for that property twice. Adding a null
-   * listener may cause a NullPointerException down the road. This method
-   * will unwrap a PropertyChangeListenerProxy, registering the underlying
+   * listener is silently ignored. This method will unwrap a
+   * PropertyChangeListenerProxy, registering the underlying
    * delegate to the named property list if the names match, and discarding
    * it otherwise.
    *
@@ -228,6 +232,9 @@ public class PropertyChangeSupport implements Serializable
   public synchronized void addPropertyChangeListener(String propertyName,
                                                      PropertyChangeListener l)
   {
+    if (l == null)
+      return;
+
     while (l instanceof PropertyChangeListenerProxy)
       {
         PropertyChangeListenerProxy p = (PropertyChangeListenerProxy) l;
@@ -290,17 +297,16 @@ public class PropertyChangeSupport implements Serializable
 
   /**
    * Returns an array of all property change listeners registered under the
-   * given property name. If there are no registered listeners, this returns
-   * an empty array.
+   * given property name. If there are no registered listeners, or
+   * propertyName is null, this returns an empty array.
    *
    * @return the array of registered listeners
-   * @throws NullPointerException if propertyName is null
    * @since 1.4
    */
   public synchronized PropertyChangeListener[]
     getPropertyChangeListeners(String propertyName)
   {
-    if (children == null)
+    if (children == null || propertyName == null)
       return new PropertyChangeListener[0];
     PropertyChangeSupport s
       = (PropertyChangeSupport) children.get(propertyName);
@@ -455,7 +461,6 @@ public class PropertyChangeSupport implements Serializable
    *
    * @param propertyName the property that may be listened on
    * @return whether the property is being listened on
-   * @throws NullPointerException if propertyName is null
    */
   public synchronized boolean hasListeners(String propertyName)
   {

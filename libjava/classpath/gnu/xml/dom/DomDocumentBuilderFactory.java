@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -59,6 +60,7 @@ public class DomDocumentBuilderFactory
 
   final DOMImplementation impl;
   final DOMImplementationLS ls;
+  private boolean secureProcessing;
 
   public DomDocumentBuilderFactory()
   {
@@ -122,6 +124,27 @@ public class DomDocumentBuilderFactory
   public void setAttribute(String name, Object value)
   {
     // TODO
+  }
+  
+  public void setFeature(String name, boolean value)
+    throws ParserConfigurationException
+  {
+    if (name == null)
+      throw new NullPointerException();
+    if (XMLConstants.FEATURE_SECURE_PROCESSING.equals(name))
+      {
+        secureProcessing = true;
+        return;
+      }
+    throw new ParserConfigurationException(name);
+  }
+
+  public boolean getFeature(String name)
+    throws ParserConfigurationException
+  {
+    if (XMLConstants.FEATURE_SECURE_PROCESSING.equals(name))
+      return secureProcessing;
+    throw new ParserConfigurationException(name);
   }
   
 }

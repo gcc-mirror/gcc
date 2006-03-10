@@ -68,7 +68,7 @@ public class JWindow extends Window implements Accessible, RootPaneContainer
     /**
      * Creates a new instance of <code>AccessibleJWindow</code>.
      */
-    public AccessibleJWindow()
+    protected AccessibleJWindow()
     {
       super();
       // Nothing to do here.
@@ -86,33 +86,73 @@ public class JWindow extends Window implements Accessible, RootPaneContainer
 
   protected AccessibleContext accessibleContext;
 
+  /**
+   * Creates a new <code>JWindow</code> that has a shared invisible owner frame
+   * as its parent.
+   */
   public JWindow()
   {
-    super(SwingUtilities.getOwnerFrame());
+    super(SwingUtilities.getOwnerFrame(null));
     windowInit();
   }
 
+  /**
+   * Creates a new <code>JWindow</code> that uses the specified graphics
+   * environment. This can be used to open a window on a different screen for
+   * example.
+   *
+   * @param gc the graphics environment to use
+   */
   public JWindow(GraphicsConfiguration gc)
   {
-    super(SwingUtilities.getOwnerFrame(), gc);
+    super(SwingUtilities.getOwnerFrame(null), gc);
     windowInit();
   }
-  
+
+  /**
+   * Creates a new <code>JWindow</code> that has the specified
+   * <code>owner</code> frame. If <code>owner</code> is <code>null</code>, then
+   * an invisible shared owner frame is installed as owner frame.
+   *
+   * @param owner the owner frame of this window; if <code>null</code> a shared
+   *        invisible owner frame is used
+   */
   public JWindow(Frame owner)
   {
-    super(owner);
+    super(SwingUtilities.getOwnerFrame(owner));
     windowInit();
   }
 
+  /**
+   * Creates a new <code>JWindow</code> that has the specified
+   * <code>owner</code> window. If <code>owner</code> is <code>null</code>,
+   * then an invisible shared owner frame is installed as owner frame.
+   *
+   * @param owner the owner window of this window; if <code>null</code> a
+   *        shared invisible owner frame is used
+   */
   public JWindow(Window owner)
   {
-    super(owner);
+    super(SwingUtilities.getOwnerFrame(owner));
     windowInit();
   }
 
+  /**
+   * Creates a new <code>JWindow</code> for the given graphics configuration
+   * and that has the specified <code>owner</code> window. If
+   * <code>owner</code> is <code>null</code>, then an invisible shared owner
+   * frame is installed as owner frame.
+   *
+   * The <code>gc</code> parameter can be used to open the window on a
+   * different screen for example.
+   *
+   * @param owner the owner window of this window; if <code>null</code> a
+   *        shared invisible owner frame is used
+   * @param gc the graphics configuration to use
+   */
   public JWindow(Window owner, GraphicsConfiguration gc)
   {
-    super(owner, gc);
+    super(SwingUtilities.getOwnerFrame(owner), gc);
     windowInit();
   }
 

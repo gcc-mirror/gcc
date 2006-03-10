@@ -1,5 +1,5 @@
 /* IfNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,19 +62,15 @@ final class IfNode
   {
     TemplateNode ret = new IfNode(test.clone(stylesheet));
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
   void doApply(Stylesheet stylesheet, QName mode,
-             Node context, int pos, int len,
-             Node parent, Node nextSibling)
+               Node context, int pos, int len,
+               Node parent, Node nextSibling)
     throws TransformerException
   {
     Object ret = test.evaluate(context, pos, len);
@@ -84,32 +80,26 @@ final class IfNode
     if (success)
       {
         if (children != null)
-          {
-            children.apply(stylesheet, mode,
-                           context, pos, len,
-                           parent, nextSibling);
-          }
+          children.apply(stylesheet, mode,
+                         context, pos, len,
+                         parent, nextSibling);
       }
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
   
   public boolean references(QName var)
   {
     if (test != null && test.references(var))
-      {
-        return true;
-      }
+      return true;
     return super.references(var);
   }
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("if");
     buf.append('[');
     buf.append("test=");
     buf.append(test);

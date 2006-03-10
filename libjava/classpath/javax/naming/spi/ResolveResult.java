@@ -1,5 +1,5 @@
 /* ResolveResult.java --
-   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,6 +51,8 @@ import javax.naming.Name;
 
 public class ResolveResult implements Serializable
 {
+  private static final long serialVersionUID = - 4552108072002407559L;
+
   // Serialized fields.
   protected Object resolvedObj;
   protected Name remainingName;

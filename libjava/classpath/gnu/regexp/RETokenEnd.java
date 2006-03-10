@@ -49,6 +49,10 @@ final class RETokenEnd extends REToken {
     this.newline = newline;
   }
 
+  int getMaximumLength() {
+    return 0;
+  }
+
     boolean match(CharIndexed input, REMatch mymatch) {
 	char ch = input.charAt(mymatch.index);
 	if (ch == CharIndexed.OUT_OF_BOUNDS)

@@ -1,5 +1,5 @@
 /* XMLInputFactory.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -324,17 +324,17 @@ public abstract class XMLInputFactory
 
   /**
    * Creates a new stream reader.
-   *
+   */
   public abstract XMLStreamReader createXMLStreamReader(String systemId,
                                                         InputStream stream)
-    throws XMLStreamException;*/
+    throws XMLStreamException;
 
   /**
    * Creates a new stream reader.
-   *
+   */
   public abstract XMLStreamReader createXMLStreamReader(String systemId,
                                                         Reader reader)
-    throws XMLStreamException;*/
+    throws XMLStreamException;
 
   /**
    * Creates a new event reader.
@@ -344,10 +344,10 @@ public abstract class XMLInputFactory
 
   /**
    * Creates a new event reader.
-   *
+   */
   public abstract XMLEventReader createXMLEventReader(String systemId,
                                                       Reader reader)
-    throws XMLStreamException;*/
+    throws XMLStreamException;
   
   /**
    * Creates a new event reader.
@@ -376,10 +376,10 @@ public abstract class XMLInputFactory
 
   /**
    * Creates a new event reader.
-   *
+   */
   public abstract XMLEventReader createXMLEventReader(String systemId,
                                                       InputStream stream)
-    throws XMLStreamException;*/
+    throws XMLStreamException;
 
   /**
    * Create a new filtered reader.
@@ -444,15 +444,5 @@ public abstract class XMLInputFactory
    */
   public abstract XMLEventAllocator getEventAllocator();
 
-  /**
-   * Sets whether text will be coalesced.
-   */
-  public abstract void setCoalescing(boolean coalescing);
-
-  /**
-   * Indicates whether text will be coalesced.
-   */
-  public abstract boolean isCoalescing();
-  
 }
 

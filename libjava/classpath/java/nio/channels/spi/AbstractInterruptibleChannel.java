@@ -40,6 +40,7 @@ package java.nio.channels.spi;
 import java.io.IOException;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.Channel;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.InterruptibleChannel;
 
 
@@ -86,7 +87,6 @@ public abstract class AbstractInterruptibleChannel
    * @param completed true if the task completed successfully,
    * false otherwise
    *
-   * @exception IOException if an error occurs
    * @exception AsynchronousCloseException If the channel was asynchronously
    * closed.
    * @exception ClosedByInterruptException If the thread blocked in the

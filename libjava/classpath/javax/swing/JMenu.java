@@ -906,7 +906,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   /**
    * This class listens to PropertyChangeEvents occuring in menu's action
    */
-  protected class ActionChangedListener implements PropertyChangeListener
+  private class ActionChangedListener implements PropertyChangeListener
   {
     /** menu item associated with the action */
     private JMenuItem menuItem;

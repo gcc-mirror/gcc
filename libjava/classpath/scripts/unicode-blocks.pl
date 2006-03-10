@@ -76,6 +76,47 @@ my %additions = ("SYRIAC" => "1.4",
                  "CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A" => "1.4",
                  "YI_SYLLABLES" => "1.4",
                  "YI_RADICALS" => "1.4",
+		 "CYRILLIC_SUPPLEMENTARY" => "1.5",
+		 "TAGALOG" => "1.5",
+		 "HANUNOO" => "1.5",
+		 "BUHID" => "1.5",
+		 "TAGBANWA" => "1.5",
+		 "LIMBU" => "1.5",
+		 "TAI_LE" => "1.5",
+		 "KHMER_SYMBOLS" => "1.5",
+		 "PHONETIC_EXTENSIONS" => "1.5",
+		 "MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A" => "1.5",
+		 "SUPPLEMENTAL_ARROWS_A" => "1.5",
+		 "SUPPLEMENTAL_ARROWS_B" => "1.5",
+		 "MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B" => "1.5",
+		 "SUPPLEMENTAL_MATHEMATICAL_OPERATORS" => "1.5",
+		 "MISCELLANEOUS_SYMBOLS_AND_ARROWS" => "1.5",
+		 "KATAKANA_PHONETIC_EXTENSIONS" => "1.5",
+		 "YIJING_HEXAGRAM_SYMBOLS" => "1.5",
+		 "VARIATION_SELECTORS" => "1.5",
+		 "LINEAR_B_SYLLABARY" => "1.5",
+		 "LINEAR_B_IDEOGRAMS" => "1.5",
+		 "AEGEAN_NUMBERS" => "1.5",
+		 "OLD_ITALIC" => "1.5",
+		 "GOTHIC" => "1.5",
+		 "UGARITIC" => "1.5",
+		 "DESERET" => "1.5",
+		 "SHAVIAN" => "1.5",
+		 "OSMANYA" => "1.5",
+		 "CYPRIOT_SYLLABARY" => "1.5",
+		 "BYZANTINE_MUSICAL_SYMBOLS" => "1.5",
+		 "MUSICAL_SYMBOLS" => "1.5",
+		 "TAI_XUAN_JING_SYMBOLS" => "1.5",
+		 "MATHEMATICAL_ALPHANUMERIC_SYMBOLS" => "1.5",
+		 "CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B" => "1.5",
+		 "CJK_COMPATIBILITY_IDEOGRAPHS_SUPPLEMENT" => "1.5",
+		 "TAGS" => "1.5",
+		 "VARIATION_SELECTORS_SUPPLEMENT" => "1.5",
+		 "SUPPLEMENTARY_PRIVATE_USE_AREA_A" => "1.5",
+		 "SUPPLEMENTARY_PRIVATE_USE_AREA_B" => "1.5",
+		 "HIGH_SURROGATES" => "1.5",
+		 "HIGH_PRIVATE_USE_SURROGATES" => "1.5",
+		 "LOW_SURROGATES" => "1.5"
                  );
 
 print <<'EOF';
@@ -87,7 +128,7 @@ print <<'EOF';
    * <code>$ARGV[0]</code>, by some perl scripts.
    * This Unicode definition file can be found on the
    * <a href="http://www.unicode.org">http://www.unicode.org</a> website.
-   * JDK 1.4 uses Unicode version 3.0.0.
+   * JDK 1.5 uses Unicode version 4.0.0.
    *
    * @author scripts/unicode-blocks.pl (written by Eric Blake)
    * @since 1.2
@@ -95,10 +136,18 @@ print <<'EOF';
   public static final class UnicodeBlock extends Subset
   {
     /** The start of the subset. */
-    private final char start;
+    private final int start;
 
     /** The end of the subset. */
-    private final char end;
+    private final int end;
+
+    /** The canonical name of the block according to the Unicode standard. */
+    private final String canonicalName;
+
+    /** Constants for the <code>forName()</code> method */
+    private static final int CANONICAL_NAME = 0;
+    private static final int NO_SPACES_NAME = 1;
+    private static final int CONSTANT_NAME = 2;
 
     /**
      * Constructor for strictly defined blocks.
@@ -106,25 +155,46 @@ print <<'EOF';
      * @param start the start character of the range
      * @param end the end character of the range
      * @param name the block name
+     * @param canonicalName the name of the block as defined in the Unicode
+     *        standard.
      */
-    private UnicodeBlock(char start, char end, String name)
+    private UnicodeBlock(int start, int end, String name,
+			 String canonicalName)
     {
       super(name);
       this.start = start;
       this.end = end;
+      this.canonicalName = canonicalName;
     }
 
     /**
      * Returns the Unicode character block which a character belongs to.
+     * <strong>Note</strong>: This method does not support the use of
+     * supplementary characters.  For such support, <code>of(int)</code>
+     * should be used instead.
      *
      * @param ch the character to look up
      * @return the set it belongs to, or null if it is not in one
      */
     public static UnicodeBlock of(char ch)
     {
-      // Special case, since SPECIALS contains two ranges.
-      if (ch == '\uFEFF')
-        return SPECIALS;
+      return of((int) ch);
+    }
+
+    /**
+     * Returns the Unicode character block which a code point belongs to.
+     *
+     * @param codePoint the character to look up
+     * @return the set it belongs to, or null if it is not in one.
+     * @throws IllegalArgumentException if the specified code point is
+     *         invalid.
+     * @since 1.5
+     */
+    public static UnicodeBlock of(int codePoint)
+    {
+      if (codePoint > MAX_CODE_POINT)
+	throw new IllegalArgumentException("The supplied integer value is " +
+					   "too large to be a codepoint.");
       // Simple binary search for the correct block.
       int low = 0;
       int hi = sets.length - 1;
@@ -132,67 +202,161 @@ print <<'EOF';
         {
           int mid = (low + hi) >> 1;
           UnicodeBlock b = sets[mid];
-          if (ch < b.start)
+          if (codePoint < b.start)
             hi = mid - 1;
-          else if (ch > b.end)
+          else if (codePoint > b.end)
             low = mid + 1;
           else
             return b;
         }
       return null;
     }
+
+    /**
+     * <p>
+     * Returns the <code>UnicodeBlock</code> with the given name, as defined
+     * by the Unicode standard.  The version of Unicode in use is defined by
+     * the <code>Character</code> class, and the names are given in the
+     * <code>Blocks-<version>.txt</code> file corresponding to that version.
+     * The name may be specified in one of three ways:
+     * </p>
+     * <ol>
+     * <li>The canonical, human-readable name used by the Unicode standard.
+     * This is the name with all spaces and hyphens retained.  For example,
+     * `Basic Latin' retrieves the block, UnicodeBlock.BASIC_LATIN.</li>
+     * <li>The canonical name with all spaces removed e.g. `BasicLatin'.</li>
+     * <li>The name used for the constants specified by this class, which
+     * is the canonical name with all spaces and hyphens replaced with
+     * underscores e.g. `BASIC_LATIN'</li>
+     * </ol>
+     * <p>
+     * The names are compared case-insensitively using the case comparison
+     * associated with the U.S. English locale.  The method recognises the
+     * previous names used for blocks as well as the current ones.  At
+     * present, this simply means that the deprecated `SURROGATES_AREA'
+     * will be recognised by this method (the <code>of()</code> methods
+     * only return one of the three new surrogate blocks).
+     * </p>
+     *
+     * @param blockName the name of the block to look up.
+     * @return the specified block.
+     * @throws NullPointerException if the <code>blockName</code> is
+     *         <code>null</code>.
+     * @throws IllegalArgumentException if the name does not match any Unicode
+     *         block.
+     * @since 1.5
+     */
+    public static final UnicodeBlock forName(String blockName)
+    {
+      int type;
+      if (blockName.indexOf(' ') != -1)
+        type = CANONICAL_NAME;
+      else if (blockName.indexOf('_') != -1)
+        type = CONSTANT_NAME;
+      else
+        type = NO_SPACES_NAME;
+      Collator usCollator = Collator.getInstance(Locale.US);
+      usCollator.setStrength(Collator.PRIMARY);
+      /* Special case for deprecated blocks not in sets */
+      switch (type)
+      {
+        case CANONICAL_NAME:
+          if (usCollator.compare(blockName, "Surrogates Area") == 0)
+            return SURROGATES_AREA;
+          break;
+        case NO_SPACES_NAME:
+          if (usCollator.compare(blockName, "SurrogatesArea") == 0)
+            return SURROGATES_AREA;
+          break;
+        case CONSTANT_NAME:
+          if (usCollator.compare(blockName, "SURROGATES_AREA") == 0) 
+            return SURROGATES_AREA;
+          break;
+      }
+      /* Other cases */
+      int setLength = sets.length;
+      switch (type)
+      {
+        case CANONICAL_NAME:
+          for (int i = 0; i < setLength; i++)
+            {
+              UnicodeBlock block = sets[i];
+              if (usCollator.compare(blockName, block.canonicalName) == 0)
+                return block;
+            }
+          break;
+        case NO_SPACES_NAME:
+          for (int i = 0; i < setLength; i++)
+            {
+              UnicodeBlock block = sets[i];
+	      String nsName = block.canonicalName.replaceAll(" ","");
+	      if (usCollator.compare(blockName, nsName) == 0)
+		return block;
+	    }
+	  break;
+        case CONSTANT_NAME:
+          for (int i = 0; i < setLength; i++)
+            {
+              UnicodeBlock block = sets[i];
+              if (usCollator.compare(blockName, block.toString()) == 0)
+                return block;
+	    }
+          break;
+      }
+      throw new IllegalArgumentException("No Unicode block found for " +
+                                         blockName + ".");
+    }
 EOF
 
-my $seenSpecials = 0;
-my $seenSurrogates = 0;
-my $surrogateStart = 0;
 my @names = ();
 while (<BLOCKS>) {
     next if /^\#/;
-    my ($start, $end, $block) = split(/; /);
+    my ($range, $block) = split(/; /);
+    my ($start, $end) = split /\.\./, $range;
     next unless defined $block;
     chomp $block;
     $block =~ s/ *$//;
-    if (! $seenSpecials and $block =~ /Specials/) {
-        # Special case SPECIALS, since it is two disjoint ranges
-        $seenSpecials = 1;
-        next;              
-    }
-    if ($block =~ /Surrogates/) {
-        # Special case SURROGATES_AREA, since it one range, not three
-        # consecutive, in Java
-        $seenSurrogates++;
-        if ($seenSurrogates == 1) {
-            $surrogateStart = $start;
-            next;
-        } elsif ($seenSurrogates == 2) {
-            next;
-        } else {
-            $start = $surrogateStart;
-            $block = "Surrogates Area";
-        }
-    }
-    # Special case the name of PRIVATE_USE_AREA.
-    $block =~ s/(Private Use)/$1 Area/;
 
+    # Translate new Unicode names which have the old name in Java
+    $block = "Greek" if $block =~ /Greek and Coptic/;
+    $block = "Combining Marks for Symbols" 
+      if $block =~ /Combining Diacritical Marks for Symbols/;
+ 
     (my $name = $block) =~ tr/a-z -/A-Z__/;
     push @names, $name;
     my $since = (defined $additions{$name}
                  ? "\n     * \@since $additions{$name}" : "");
-    my $extra = ($block =~ /Specials/ ? "'\\uFEFF', " : "");
     print <<EOF;
 
     /**
      * $block.
-     * $extra'\\u$start' - '\\u$end'.$since
+     * 0x$start - 0x$end.$since
      */
     public static final UnicodeBlock $name
-      = new UnicodeBlock('\\u$start', '\\u$end',
-                         "$name");
+      = new UnicodeBlock(0x$start, 0x$end,
+                         "$name", 
+                         "$block");
 EOF
 }
 
 print <<EOF;
+
+    /**
+     * Surrogates Area.
+     * '\uD800' - '\uDFFF'.
+     * \@deprecated As of 1.5, the three areas, 
+     * <a href="#HIGH_SURROGATES">HIGH_SURROGATES</a>,
+     * <a href="#HIGH_PRIVATE_USE_SURROGATES">HIGH_PRIVATE_USE_SURROGATES</a>
+     * and <a href="#LOW_SURROGATES">LOW_SURROGATES</a>, as defined
+     * by the Unicode standard, should be used in preference to
+     * this.  These are also returned from calls to <code>of(int)</code>
+     * and <code>of(char)</code>.
+     */
+    \@Deprecated
+    public static final UnicodeBlock SURROGATES_AREA
+      = new UnicodeBlock(0xD800, 0xDFFF,
+                         "SURROGATES_AREA",
+			 "Surrogates Area");
 
     /**
      * The defined subsets.

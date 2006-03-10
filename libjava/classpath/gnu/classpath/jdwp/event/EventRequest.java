@@ -1,5 +1,5 @@
 /* EventRequest.java -- an event request from the debugger
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -44,8 +44,9 @@ import gnu.classpath.jdwp.event.filters.*;
 import gnu.classpath.jdwp.exception.JdwpIllegalArgumentException;
 import gnu.classpath.jdwp.id.*;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.ListIterator;
 
 /**
  * A class which represents a request by the debugger for an event
@@ -320,6 +321,14 @@ public class EventRequest
   }
 
   /**
+   * Returns the filters attached to this request
+   */
+  public Collection getFilters ()
+  {
+    return _filters;
+  }
+
+  /**
    * Returns the suspend policy for this request
    */
   public byte getSuspendPolicy ()
@@ -363,7 +372,7 @@ public class EventRequest
     // Loop through filters; all must match
     // Note that we must allow EVERY filter to evaluate. This way
     // things like CountFilter will work.
-    ListIterator iter = _filters.listIterator ();
+    Iterator iter = _filters.iterator ();
     while (iter.hasNext ())
       {
 	IEventFilter filter = (IEventFilter) iter.next ();

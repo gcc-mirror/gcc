@@ -1,5 +1,5 @@
 /* AppConfigurationEntry.java
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,6 @@ import java.util.Map;
 
 public class AppConfigurationEntry
 {
-
   // Fields.
   // -------------------------------------------------------------------------
 
@@ -61,13 +60,16 @@ public class AppConfigurationEntry
   {
     if (loginModuleName == null || loginModuleName.length() == 0)
       throw new IllegalArgumentException ("module name cannot be null nor empty");
+
     if (LoginModuleControlFlag.OPTIONAL != controlFlag &&
         LoginModuleControlFlag.REQUIRED != controlFlag &&
         LoginModuleControlFlag.REQUISITE != controlFlag &&
         LoginModuleControlFlag.SUFFICIENT != controlFlag)
       throw new IllegalArgumentException ("invalid controlFlag");
+
     if (options == null)
       throw new IllegalArgumentException ("options cannot be null");
+
     this.loginModuleName = loginModuleName;
     this.controlFlag = controlFlag;
     this.options = Collections.unmodifiableMap (new HashMap (options));
@@ -91,7 +93,17 @@ public class AppConfigurationEntry
     return options;
   }
 
-// Inner class.
+  // Object methods ----------------------------------------------------------
+
+  public String toString()
+  {
+    
+    return loginModuleName + "\t"
+        + String.valueOf(controlFlag) + "\t"
+        + String.valueOf(options);
+  }
+
+  // Inner class.
   // -------------------------------------------------------------------------
 
   public static class LoginModuleControlFlag
@@ -117,19 +129,15 @@ public class AppConfigurationEntry
 
     public String toString()
     {
-      StringBuffer buf = new StringBuffer (LoginModuleControlFlag.class.getName());
-      buf.append ('.');
-      if (this == OPTIONAL)
-        buf.append ("OPTIONAL");
-      else if (this == REQUIRED)
-        buf.append ("REQUIRED");
-      else if (this == REQUISITE)
-        buf.append ("REQUISITE");
-      else if (this == SUFFICIENT)
-        buf.append ("SUFFICIENT");
-      else
-        buf.append ("HARVEY_THE_RABBIT");
-      return buf.toString();
+      if (this == LoginModuleControlFlag.REQUIRED)
+        return "REQUIRED";
+      if (this == LoginModuleControlFlag.REQUISITE)
+        return "REQUISITE";
+      if (this == LoginModuleControlFlag.SUFFICIENT)
+        return "SUFFICIENT";
+      if (this == LoginModuleControlFlag.OPTIONAL)
+        return "OPTIONAL";
+      return "???";
     }
   }
 }

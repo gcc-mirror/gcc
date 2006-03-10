@@ -47,7 +47,29 @@ import java.rmi.RemoteException;
 public interface Registry extends Remote
 {
   int REGISTRY_PORT = 1099;
-
+  
+  /**
+   * Find and return the reference to the object that was previously bound
+   * to the registry by this name. For remote objects, this method returns
+   * the stub instances, containing the code for remote invocations.
+   * 
+   * Since jdk 1.5 this method does not longer require the stub class 
+   * (nameImpl_Stub) to be present. If such class is not found, the stub is 
+   * replaced by the dynamically constructed proxy class. No attempt to find 
+   * and load the stubs is made if the system property 
+   * java.rmi.server.ignoreStubClasses is set to true (set to reduce the 
+   * starting time if the stubs are surely not present and exclusively 1.2
+   * RMI is used).
+   * 
+   * @param name the name of the object
+   * 
+   * @return the reference to that object on that it is possible to invoke
+   * the (usually remote) object methods.
+   * 
+   * @throws RemoteException
+   * @throws NotBoundException
+   * @throws AccessException
+   */
   Remote lookup(String name)
     throws RemoteException, NotBoundException, AccessException;
 

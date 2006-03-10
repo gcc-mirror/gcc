@@ -45,6 +45,7 @@ import javax.swing.plaf.basic.BasicTextUI;
  * all text components is now {@link BasicTextUI}.
  *
  * @author Roman Kennke (kennke@aicas.com)
+ * @deprecated as of 1.5 use {@link BasicTextUI} instead
  */
 public abstract class DefaultTextUI extends BasicTextUI
 {

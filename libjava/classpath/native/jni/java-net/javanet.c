@@ -559,7 +559,7 @@ _javanet_connect (JNIEnv * env, jobject this, jobject addr, jint port,
 	  && (TARGET_NATIVE_LAST_ERROR ()
 	      != TARGET_NATIVE_ERROR_INTERRUPT_FUNCTION_CALL))
 	{
-	  JCL_ThrowException (env, IO_EXCEPTION,
+	  JCL_ThrowException (env, CONNECT_EXCEPTION,
 			      TARGET_NATIVE_LAST_ERROR_STRING ());
 	  return;
 	}
