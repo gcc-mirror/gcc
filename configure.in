@@ -305,7 +305,6 @@ AC_ARG_ENABLE(libada,
 ENABLE_LIBADA=$enableval,
 ENABLE_LIBADA=yes)
 if test "${ENABLE_LIBADA}" != "yes" ; then
-  noconfigdirs="$noconfigdirs target-libada"
   noconfigdirs="$noconfigdirs gnattools"
 fi
 
@@ -313,9 +312,6 @@ AC_ARG_ENABLE(libssp,
 [  --enable-libssp        Builds libssp directory],
 ENABLE_LIBSSP=$enableval,
 ENABLE_LIBSSP=yes)
-if test "${ENABLE_LIBSSP}" != "yes" ; then
-  noconfigdirs="$noconfigdirs target-libssp"
-fi
 
 # Set the default so we build libgcc-math for ix86 and x86_64
 AC_ARG_ENABLE(libgcc-math,
@@ -328,9 +324,6 @@ case "${target}" in
     enable_libgcc_math=no ;;
 esac
 ])
-if test "${enable_libgcc_math}" != "yes"; then
-  noconfigdirs="$noconfigdirs target-libgcc-math"
-fi
 
 # Save it here so that, even in case of --enable-libgcj, if the Java
 # front-end isn't enabled, we still get libgcj disabled.
@@ -349,14 +342,8 @@ no)
 esac
 
 
-# Allow --disable-libmudflap to exclude target-libmudflap
-case $enable_libmudflap in
-yes)
-    ;;
-no)
-    noconfigdirs="$noconfigdirs target-libmudflap"
-    ;;
-"")
+# Disable libmudflap on some systems.
+if test x$enable_libmudflap = x ; then
     case "${target}" in
     *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
         # Enable libmudflap by default in GNU and friends.
@@ -369,16 +356,10 @@ no)
 	noconfigdirs="$noconfigdirs target-libmudflap"
 	;;
     esac
-esac
+fi
 
-# Allow --disable-libgomp to exclude target-libgomp
-case $enable_libgomp in
-yes)
-    ;;
-no)
-    noconfigdirs="$noconfigdirs target-libgomp"
-    ;;
-"")
+# Disable libgomp on non POSIX hosted systems.
+if test x$enable_libgomp = x ; then
     # Enable libgomp by default on hosted POSIX systems.
     case "${target}" in
     *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
@@ -393,7 +374,7 @@ no)
 	noconfigdirs="$noconfigdirs target-libgomp"
 	;;
     esac
-esac
+fi
 
 
 case "${target}" in
@@ -1336,6 +1317,14 @@ Recognised languages are: ${potential_languages}])
   enable_languages="$new_enable_languages"
   ac_configure_args=`echo " $ac_configure_args" | sed -e 's/ --enable-languages=[[^ ]]*//' -e 's/$/ --enable-languages='"$enable_languages"/ `
 fi
+
+# Handle --disable-<component> generically.
+for dir in $configdirs $build_configdirs $target_configdirs ; do
+  dirname=`echo $dir | sed -e s/target-//g -e s/build-//g -e s/-/_/g`
+  if eval test x\${enable_${dirname}} "=" xno ; then
+    noconfigdirs="$noconfigdirs $dir"
+  fi
+done
 
 # Remove the entries in $skipdirs and $noconfigdirs from $configdirs,
 # $build_configdirs and $target_configdirs.
