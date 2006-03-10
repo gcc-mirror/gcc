@@ -1,3 +1,13 @@
+2006-03-10  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/25713:
+	* java/util/zip/Deflater.java (flush): New method.
+	* sources.am, Makefile.in: Rebuilt.
+	* java/util/zip/DeflaterOutputStream.java: Removed.
+	* java/util/zip/InflaterInputStream.java: Likewise.
+	* java/util/zip/GZIPInputStream.java: Likewise.
+	* java/util/zip/GZIPOutputStream.java: Likewise.
+
 2006-03-10  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* include/powerpc-signal.h: Fix typo in comment.
