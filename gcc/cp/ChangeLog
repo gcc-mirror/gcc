@@ -1,3 +1,9 @@
+2006-03-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16387, c++/16389
+	* typeck.c (cxx_alignof_expr, cxx_sizeof_expr): New functions.
+	(cxx_sizeof_or_alignof_expr): Split out from here.
+
 2006-03-09  Diego Novillo  <dnovillo@redhat.com>
 
 	Merge from gomp-20050608-branch
@@ -209,7 +215,8 @@
 		* decl.c (poplevel_named_label_1): Restore creation of the
 		bad_decls list.
 		(decl_jump_unsafe): Check for error_mark_node types.
-		(check_goto): Don't check cdtor_label.  Don't use identify_goto.                * semantics.c (finish_return_stmt): Do check_omp_return before
+		(check_goto): Don't check cdtor_label.  Don't use identify_goto.
+                * semantics.c (finish_return_stmt): Do check_omp_return before
 		converting to cdtor_label goto.
 
 	2005-10-21  Richard Henderson  <rth@redhat.com>

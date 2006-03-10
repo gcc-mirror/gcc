@@ -1267,20 +1267,17 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
   return value;
 }
 
-/* Process a sizeof or alignof expression where the operand is an
-   expression.  */
+/* Process a sizeof expression where the operand is an expression.  */
 
-tree
-cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
+static tree
+cxx_sizeof_expr (tree e)
 {
-  const char *op_name = operator_name_info[(int) op].name;
-
   if (e == error_mark_node)
     return error_mark_node;
 
   if (processing_template_decl)
     {
-      e = build_min (op, size_type_node, e);
+      e = build_min (SIZEOF_EXPR, size_type_node, e);
       TREE_SIDE_EFFECTS (e) = 0;
       TREE_READONLY (e) = 1;
 
@@ -1291,13 +1288,13 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
       && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL
       && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
     {
-      error ("invalid application of %qs to a bit-field", op_name);
+      error ("invalid application of %<sizeof%> to a bit-field");
       e = char_type_node;
     }
   else if (is_overloaded_fn (e))
     {
-      pedwarn ("ISO C++ forbids applying %qs to an expression of "
-	       "function type", op_name);
+      pedwarn ("ISO C++ forbids applying %<sizeof%> to an expression of "
+	       "function type");
       e = char_type_node;
     }
   else if (type_unknown_p (e))
@@ -1308,9 +1305,71 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
   else
     e = TREE_TYPE (e);
 
-  return cxx_sizeof_or_alignof_type (e, op, true);
+  return cxx_sizeof_or_alignof_type (e, SIZEOF_EXPR, true);
 }
 
+/* Implement the __alignof keyword: Return the minimum required
+   alignment of EXPR, measured in bytes.  For VAR_DECL's and
+   FIELD_DECL's return DECL_ALIGN (which can be set from an
+   "aligned" __attribute__ specification).  */
+
+static tree
+cxx_alignof_expr (tree e)
+{
+  tree t;
+  
+  if (e == error_mark_node)
+    return error_mark_node;
+
+  if (processing_template_decl)
+    {
+      e = build_min (ALIGNOF_EXPR, size_type_node, e);
+      TREE_SIDE_EFFECTS (e) = 0;
+      TREE_READONLY (e) = 1;
+
+      return e;
+    }
+
+  if (TREE_CODE (e) == VAR_DECL)
+    t = size_int (DECL_ALIGN_UNIT (e));
+  else if (TREE_CODE (e) == COMPONENT_REF
+	   && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL
+	   && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
+    {
+      error ("invalid application of %<__alignof%> to a bit-field");
+      t = size_one_node;
+    }
+  else if (TREE_CODE (e) == COMPONENT_REF
+	   && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL)
+    t = size_int (DECL_ALIGN_UNIT (TREE_OPERAND (e, 1)));
+  else if (is_overloaded_fn (e))
+    {
+      pedwarn ("ISO C++ forbids applying %<__alignof%> to an expression of "
+	       "function type");
+      t = size_one_node;
+    }
+  else if (type_unknown_p (e))
+    {
+      cxx_incomplete_type_error (e, TREE_TYPE (e));
+      t = size_one_node;
+    }
+  else
+    return cxx_sizeof_or_alignof_type (TREE_TYPE (e), ALIGNOF_EXPR, true);
+
+  return fold_convert (size_type_node, t);
+}
+
+/* Process a sizeof or alignof expression where the operand is an
+   expression.  */
+
+tree
+cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
+{
+  if (op == SIZEOF_EXPR)
+    return cxx_sizeof_expr (e);
+  else
+    return cxx_alignof_expr (e);
+}
 
 /* EXPR is being used in a context that is not a function call.
    Enforce:
