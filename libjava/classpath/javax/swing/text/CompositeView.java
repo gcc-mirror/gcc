@@ -218,20 +218,43 @@ public abstract class CompositeView
     throws BadLocationException
   {
     int childIndex = getViewIndex(pos, bias);
+    Shape ret = null;
     if (childIndex != -1)
       {
         View child = getView(childIndex);
-        Rectangle r = a.getBounds();
-        childAllocation(childIndex, r);
-        Shape result = child.modelToView(pos, r, bias);
-        if (result == null)
-          throw new AssertionError("" + child.getClass().getName()
-                                   + ".modelToView() must not return null");
-        return result;
+        Shape childAlloc = getChildAllocation(childIndex, a);
+        if (childAlloc == null)
+          ret = createDefaultLocation(a, bias);
+        Shape result = child.modelToView(pos, childAlloc, bias);
+        if (result != null)
+          ret = result;
+        else
+          ret =  createDefaultLocation(a, bias);
       }
     else
-      throw new BadLocationException("No child view for the specified location",
-                                     pos);
+      ret = createDefaultLocation(a, bias);
+    return ret;
+  }
+
+  /**
+   * A helper method for {@link #modelToView(int, Position.Bias, int,
+   * Position.Bias, Shape)}. This creates a default location when there is
+   * no child view that can take responsibility for mapping the position to
+   * view coordinates. Depending on the specified bias this will be the
+   * left or right edge of this view's allocation.
+   *
+   * @param a the allocation for this view
+   * @param bias the bias
+   *
+   * @return a default location
+   */
+  private Shape createDefaultLocation(Shape a, Position.Bias bias)
+  {
+    Rectangle alloc = a.getBounds();
+    Rectangle location = new Rectangle(alloc.x, alloc.y, 1, alloc.height);
+    if (bias == Position.Bias.Forward)
+      location.x = alloc.x + alloc.width;
+    return location;
   }
 
   /**
@@ -350,7 +373,8 @@ public abstract class CompositeView
    */
   public int getViewIndex(int pos, Position.Bias b)
   {
-    // FIXME: Handle bias somehow.
+    if (b == Position.Bias.Backward && pos != 0)
+      pos -= 1;
     return getViewIndexAtPosition(pos);
   }
 

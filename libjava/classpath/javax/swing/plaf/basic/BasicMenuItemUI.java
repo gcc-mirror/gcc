@@ -610,8 +610,7 @@ public class BasicMenuItemUI extends MenuItemUI
     Font f = m.getFont();
     g.setFont(f);
     FontMetrics fm = g.getFontMetrics(f);
-    SwingUtilities.calculateInnerArea(m, br);
-    SwingUtilities.calculateInsetArea(br, m.getInsets(), vr);
+    SwingUtilities.calculateInnerArea(m, vr);
     paintBackground(g, m, background);
 
     /*

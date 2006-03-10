@@ -38,9 +38,12 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Window;
+import java.awt.event.PaintEvent;
 import java.awt.event.WindowEvent;
 import java.awt.peer.WindowPeer;
 
@@ -123,7 +126,23 @@ public class GtkWindowPeer extends GtkContainerPeer
 
   native void nativeSetBounds (int x, int y, int width, int height);
   native void nativeSetBoundsUnlocked (int x, int y, int width, int height);
+  native void nativeSetLocation (int x, int y);
+  native void nativeSetLocationUnlocked (int x, int y);
 
+  public void setLocation (int x, int y)
+  {
+    // prevent window_configure_cb -> awtComponent.setSize ->
+    // peer.setBounds -> nativeSetBounds self-deadlock on GDK lock.
+    if (Thread.currentThread() == GtkToolkit.mainThread)
+      return;
+    nativeSetLocation (x, y);
+  }
+
+  public void setLocationUnlocked (int x, int y)
+  {
+    nativeSetLocationUnlocked (x, y);
+  }
+  
   public void setBounds (int x, int y, int width, int height)
   {
     // prevent window_configure_cb -> awtComponent.setSize ->
@@ -192,12 +211,7 @@ public class GtkWindowPeer extends GtkContainerPeer
 
   public void show ()
   {
-    // Prevent the window manager from automatically placing this
-    // window when it is shown.
-    setBounds (awtComponent.getX(),
-	       awtComponent.getY(),
-	       awtComponent.getWidth(),
-	       awtComponent.getHeight());
+    setLocation(awtComponent.getX(), awtComponent.getY());
     setVisible (true);
   }
 
@@ -234,5 +248,33 @@ public class GtkWindowPeer extends GtkContainerPeer
   {
     // TODO Auto-generated method stub
     return false;
+  }
+  
+  public void handleEvent(AWTEvent event)
+  {
+    int id = event.getID();
+    if (id == PaintEvent.UPDATE || id == PaintEvent.PAINT)
+      {
+        try
+          {
+            Graphics g = getGraphics();
+            if (! awtComponent.isShowing() || awtComponent.getWidth() < 1
+                || awtComponent.getHeight() < 1 || g == null)
+              return;
+
+            g.setClip(((PaintEvent) event).getUpdateRect());
+
+            // Do not want to clear anything before painting.
+            awtComponent.paint(g);
+
+            g.dispose();
+            return;
+          }
+        catch (InternalError e)
+          {
+            System.err.println(e);
+          }
+      }
+    super.handleEvent(event);
   }
 }

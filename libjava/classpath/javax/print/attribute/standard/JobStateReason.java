@@ -1,5 +1,5 @@
 /* JobStateReason.java --
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -262,7 +262,7 @@ public class JobStateReason extends EnumSyntax
    *
    * @return The class <code>JobStateReason</code> itself.
    */
-  public Class getCategory()
+  public final Class getCategory()
   {
     return JobStateReason.class;
   }
@@ -272,7 +272,7 @@ public class JobStateReason extends EnumSyntax
    *
    * @return The name "job-state-reason".
    */
-  public String getName()
+  public final String getName()
   {
     return "job-state-reason";
   }

@@ -72,6 +72,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLASSPATH_INCLUDES = @CLASSPATH_INCLUDES@
 CLASSPATH_MODULE = @CLASSPATH_MODULE@
+COLLECTIONS_PREFIX = @COLLECTIONS_PREFIX@
 CP = @CP@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -79,6 +80,8 @@ CREATE_ALSA_LIBRARIES_FALSE = @CREATE_ALSA_LIBRARIES_FALSE@
 CREATE_ALSA_LIBRARIES_TRUE = @CREATE_ALSA_LIBRARIES_TRUE@
 CREATE_API_DOCS_FALSE = @CREATE_API_DOCS_FALSE@
 CREATE_API_DOCS_TRUE = @CREATE_API_DOCS_TRUE@
+CREATE_COLLECTIONS_FALSE = @CREATE_COLLECTIONS_FALSE@
+CREATE_COLLECTIONS_TRUE = @CREATE_COLLECTIONS_TRUE@
 CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
@@ -109,6 +112,7 @@ EGREP = @EGREP@
 ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
+FASTJAR = @FASTJAR@
 FIND = @FIND@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
@@ -120,6 +124,8 @@ FOUND_JIKES_FALSE = @FOUND_JIKES_FALSE@
 FOUND_JIKES_TRUE = @FOUND_JIKES_TRUE@
 FOUND_KJC_FALSE = @FOUND_KJC_FALSE@
 FOUND_KJC_TRUE = @FOUND_KJC_TRUE@
+FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
+FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
 GJDOC = @GJDOC@
@@ -170,6 +176,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
@@ -372,9 +379,9 @@ $(top_srcdir)/include/gnu_java_nio_charset_iconv_IconvDecoder.h \
 $(top_srcdir)/include/java_io_VMFile.h \
 $(top_srcdir)/include/java_io_VMObjectInputStream.h \
 $(top_srcdir)/include/java_io_VMObjectStreamClass.h \
-$(top_srcdir)/include/java_lang_Math.h \
 $(top_srcdir)/include/java_lang_VMDouble.h \
 $(top_srcdir)/include/java_lang_VMFloat.h \
+$(top_srcdir)/include/java_lang_VMMath.h \
 $(top_srcdir)/include/java_lang_VMProcess.h \
 $(top_srcdir)/include/java_lang_VMSystem.h \
 $(top_srcdir)/include/java_lang_reflect_Array.h \
@@ -603,8 +610,8 @@ uninstall-am: uninstall-info-am
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.io.VMObjectInputStream
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_io_VMObjectStreamClass.h: $(top_srcdir)/vm/reference/java/io/VMObjectStreamClass.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.io.VMObjectStreamClass
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_lang_Math.h: $(top_srcdir)/java/lang/Math.java
-@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.lang.Math
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_lang_VMMath.h: $(top_srcdir)/vm/reference/java/lang/VMMath.java
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.lang.VMMath
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_lang_VMDouble.h: $(top_srcdir)/vm/reference/java/lang/VMDouble.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.lang.VMDouble
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_lang_VMFloat.h: $(top_srcdir)/vm/reference/java/lang/VMFloat.java

@@ -40,7 +40,6 @@ package javax.swing;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.HeadlessException;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -658,8 +657,7 @@ public class JFileChooser extends JComponent implements Accessible
 
     retval = ERROR_OPTION;
 
-    Insets i = d.getInsets();
-    d.setSize(500 + i.top + i.bottom, d.getPreferredSize().height);
+    d.pack();
     d.show();
     return retval;
   }
@@ -683,8 +681,7 @@ public class JFileChooser extends JComponent implements Accessible
 
     retval = ERROR_OPTION;
 
-    Insets i = d.getInsets();
-    d.setSize(500 + i.top + i.bottom, d.getPreferredSize().height);
+    d.pack();
     d.show();
     return retval;
   }
@@ -710,8 +707,7 @@ public class JFileChooser extends JComponent implements Accessible
 
     retval = ERROR_OPTION;
 
-    Insets i = d.getInsets();
-    d.setSize(500 + i.top + i.bottom, d.getPreferredSize().height);
+    d.pack();
     d.show();
     return retval;
   }
@@ -729,7 +725,7 @@ public class JFileChooser extends JComponent implements Accessible
   {
     Frame toUse = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parent);
     if (toUse == null)
-      toUse = SwingUtilities.getOwnerFrame();
+      toUse = (Frame) SwingUtilities.getOwnerFrame(null);
 
     JDialog dialog = new JDialog(toUse);
     setSelectedFile(null);

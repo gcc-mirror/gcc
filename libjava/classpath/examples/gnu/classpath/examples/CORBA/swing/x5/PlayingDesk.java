@@ -433,7 +433,6 @@ public class PlayingDesk
         else
           {
             blacks.add(new Point(x, y));
-            repaint();
 
             if (victory != null)
               {
@@ -447,7 +446,8 @@ public class PlayingDesk
                 frame.talk(Color.black, "Partner goes " + x + "-" + y
                   + ". Your move?");
                 player.set_current_state(I_THINK);
-              }
+              }            
+            repaint();            
           }
       }
     catch (RemoteException rex)

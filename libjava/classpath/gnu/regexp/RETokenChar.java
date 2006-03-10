@@ -52,6 +52,10 @@ final class RETokenChar extends REToken {
     return ch.length;
   }
   
+  int getMaximumLength() {
+    return ch.length;
+  }
+  
     boolean match(CharIndexed input, REMatch mymatch) {
 	int z = ch.length;
 	char c;
@@ -68,7 +72,7 @@ final class RETokenChar extends REToken {
 
   // Overrides REToken.chain() to optimize for strings
   boolean chain(REToken next) {
-    if (next instanceof RETokenChar) {
+    if (next instanceof RETokenChar && ((RETokenChar)next).insens == insens) {
       RETokenChar cnext = (RETokenChar) next;
       // assume for now that next can only be one character
       int newsize = ch.length + cnext.ch.length;

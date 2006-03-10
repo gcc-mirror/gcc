@@ -1,5 +1,5 @@
 /* SwingDemo.java -- An example of using the javax.swing UI.
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath examples.
 
@@ -163,18 +163,6 @@ public class Demo
     new PopUpAction("Buttons",
 		    (new ButtonDemo("Button Demo")).createContent(),
 		    examples);
-    
-    new PopUpAction("Toggles",
-		    mkToggle("cool and refreshing"),
-		    examples);
-
-    new PopUpAction("Checkbox",
-		    mkCheckbox("ice cold"),
-		    examples);
-
-    new PopUpAction("Radio",
-		    mkRadio("delicious"),
-		    examples);
 
     new PopUpAction("Slider",
 		    (new SliderDemo("Slider Demo")).createContent(),
@@ -214,8 +202,7 @@ public class Demo
 		    examples);
 
     new PopUpAction("Spinner",
-		    mkSpinner(),
-		    examples);
+		    new SpinnerDemo("Spinner Demo").createContent(), examples);
 
     new PopUpAction("TextField",
 		    (new TextFieldDemo("TextField Demo")).createContent(),
@@ -715,6 +702,7 @@ public class Demo
     main.add(mkButtonBar());
     component.add(main, BorderLayout.CENTER);
     frame.pack();
+    frame.setSize(800, 600);
     frame.show();
   }
 
@@ -730,26 +718,6 @@ public class Demo
   public static void main(String args[])
   {
     SwingUtilities.invokeLater(new LaterMain());
-  }
-
-  public static JCheckBox mkCheckbox(String label)
-  {
-    JCheckBox c = new JCheckBox(label);
-    c.setFont(new Font("Luxi", Font.PLAIN, 14));
-    return c;
-  }
-
-  public static JPanel mkRadio(String label)
-  {
-    JPanel p = new JPanel();
-    JRadioButton c = new JRadioButton(label);
-    JRadioButton d = new JRadioButton("not " + label);
-    ButtonGroup bg = new ButtonGroup();
-    bg.add(c);
-    bg.add(d);
-    p.add(c);
-    p.add(d);
-    return p;
   }
 
   public static JList mkList(Object[] elts)
@@ -775,26 +743,12 @@ public class Demo
     return box;
   }
 
-  public static JSpinner mkSpinner()
-  {
-    JSpinner spinner = new JSpinner();
-    return spinner;
-  }
-
   public static JButton mkBigButton(String title)
   {
     JButton b = new JButton(title);
     b.setMargin(new Insets(5,5,5,5));
     //b.setFont(new Font("Luxi", Font.PLAIN, 14));
     return b;
-  }
-
-  public static JToggleButton mkToggle(String title)
-  {
-    JToggleButton b = new JToggleButton(title);
-    b.setMargin(new Insets(5,5,5,5));
-    b.setFont(new Font("Luxi", Font.PLAIN, 14));
-    return b;    
   }
 
   public static JPanel mkPanel(JComponent[] inners)
@@ -947,37 +901,16 @@ public class Demo
     return editorPane;
   }
   
-  private static JTree mkTree()
+  /**
+   * Create the tree.
+   * 
+   * @return thr scroll pane, containing the tree.
+   */
+  private static JComponent mkTree()
   {
     DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root node");
-    DefaultMutableTreeNode child1 = new DefaultMutableTreeNode("Child node 1");
-    DefaultMutableTreeNode child11 =
-      new DefaultMutableTreeNode("Child node 1.1");
-    DefaultMutableTreeNode child12 =
-      new DefaultMutableTreeNode("Child node 1.2");
-    DefaultMutableTreeNode child13 =
-      new DefaultMutableTreeNode("Child node 1.3");
-    DefaultMutableTreeNode child2 = new DefaultMutableTreeNode("Child node 2");
-    DefaultMutableTreeNode child21 =
-      new DefaultMutableTreeNode("Child node 2.1");
-    DefaultMutableTreeNode child22 =
-      new DefaultMutableTreeNode("Child node 2.2");
-    DefaultMutableTreeNode child23 =
-      new DefaultMutableTreeNode("Child node 2.3");
-    DefaultMutableTreeNode child24 =
-      new DefaultMutableTreeNode("Child node 2.4");
-
-    DefaultMutableTreeNode child3 = new DefaultMutableTreeNode("Child node 3");
-    root.add(child1);
-    root.add(child2);
-    root.add(child3);
-    child1.add(child11);
-    child1.add(child12);
-    child1.add(child13);
-    child2.add(child21);
-    child2.add(child22);
-    child2.add(child23);
-    child2.add(child24);
+    
+    addChildren("Node", root, 12);
 
     JTree tree = new JTree(root);
     tree.setLargeModel(true);
@@ -985,60 +918,58 @@ public class Demo
     dtsm.setSelectionMode(DefaultTreeSelectionModel.SINGLE_TREE_SELECTION);
     tree.setSelectionModel(dtsm);
     
-    return tree;
+    // Make it editable.
+    tree.setEditable(true);
+    
+    JComponent t = mkScrollPane(tree);
+    t.setPreferredSize(new Dimension(200,200));
+    return t;
   }
-
-  private static JTable mkTable()
+  
+  /**
+   * Add the specified number of children to this parent node. For each
+   * child, the method is called recursively adding the nChildren-3 number of 
+   * grandchildren.
+   * 
+   * @param parent the parent node
+   * @param nChildren the number of children
+   */
+  private static void addChildren(String name, DefaultMutableTreeNode parent,
+                                                int nChildren)
   {
-    Object[][] tableData = new Object[][] {
+    for (int i = 0; i < nChildren; i++)
       {
-        "Field 1", "Field 2" , "Field 3"
-      },
-      {
-        "Field 4", "Field 5" , "Field 6"
-      },
-      {
-        "Field 7", "Field 8" , "Field 9"
-      },
-      {
-        "Field 10", "Field 11" , "Field 12"
+        String child_name = parent+"."+i;
+        DefaultMutableTreeNode child = new DefaultMutableTreeNode
+         (child_name);
+        parent.add(child);
+        addChildren(child_name, child, nChildren-3);
       }
-    };
-    Object[] columnNames = new Object[] {"Column 1", "Column 2", "Column 3"};
-
-    JTable table = new JTable(tableData, columnNames);
-    return table;
+  }
+  
+  /**
+   * Make a sample table component.
+   */
+  private static JPanel mkTable()
+  {
+    return new TableDemo("Table demo, double click to edit")
+                      .createContent();
   }
   
   private JPanel mkButtonBar()
   {    
-    JPanel panel = new JPanel (new GridLayout(2, 1));
-    JPanel panelA = new JPanel(new FlowLayout());
-    JPanel panelB = new JPanel(new FlowLayout());
-
+    JPanel panel = new JPanel(new FlowLayout());
     new PopUpAction("Buttons",
 		    (new ButtonDemo("Button Demo")).createContent(),
-		    panelA);
-    
-    new PopUpAction("Toggles",
-		    mkToggle("cool and refreshing"),
-		    panelA);
-
-    new PopUpAction("Checkbox",
-		    mkCheckbox("ice cold"),
-		    panelA);
-
-    new PopUpAction("Radio",
-		    mkRadio("delicious"),
-		    panelA);
+		    panel);
 
     new PopUpAction("Slider",
 		    (new SliderDemo("Slider Demo")).createContent(),
-		    panelA);
+		    panel);
 
     new PopUpAction("ProgressBar",
             ProgressBarDemo.createContent(),
-             panelA);
+             panel);
 
 
     new PopUpAction("List",
@@ -1050,60 +981,59 @@ public class Demo
                                                "that",
                                                "wraps",
                                                "over"}),
-		    panelA);
+		    panel);
 
     new PopUpAction("Scrollbar",
 		    (new ScrollBarDemo("ScrollBar Demo")).createContent(),
-		    panelA);
+		    panel);
 
     new PopUpAction("Viewport",
 		    mkViewportBox(mkBigButton("View Me!")),
-		    panelA);
+		    panel);
 
     new PopUpAction("ScrollPane",
 		    mkScrollPane(mkBigButton("Scroll Me!")),
-		    panelA);
+		    panel);
 
     new PopUpAction("TabPane",
 		    mkTabs(new String[] {"happy",
 					 "sad",
 					 "indifferent"}),
-		    panelB);
+		    panel);
 
-    new PopUpAction("Spinner",
-		    mkSpinner(),
-		    panelB);
+    new PopUpAction("Spinner", 
+		    new SpinnerDemo("Spinner Demo").createContent(), panel);
 
     new PopUpAction("TextField",
 		    (new TextFieldDemo("TextField Demo")).createContent(),
-		    panelB);
+		    panel);
 
     new PopUpAction("FileChooser",
                     (new FileChooserDemo("FileChooser Demo")).createContent(),
-                    panelB);
+                    panel);
 
     new PopUpAction("ColorChooser",
 		    mkColorChooser(),
-		    panelB);
+		    panel);
 
     new PopUpAction("ComboBox",
 		    (new ComboBoxDemo("ComboBox Demo")).createContent(),
-		    panelB);
+		    panel);
 
     new PopUpAction("Editor",
                     mkEditorPane(),
-                    panelB);
+                    panel);
     
     new PopUpAction("Tree",
                     mkTree(),
-                    panelB);
+                    panel);
     
     new PopUpAction("Table",
                     mkTable(),
-                    panelB);
+                    panel);
     
     JButton exitDisposer = mkDisposerButton(frame);
-    panelB.add(exitDisposer);
+    panel.add(exitDisposer);
     exitDisposer.addActionListener(new ActionListener()
       {
 	public void actionPerformed(ActionEvent e)
@@ -1111,8 +1041,6 @@ public class Demo
 	  System.exit(1);
 	}
       });
-    panel.add(panelA);
-    panel.add(panelB);
     return panel;
   }
 }

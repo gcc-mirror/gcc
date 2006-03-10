@@ -1,5 +1,5 @@
 /* XMLStreamConstants.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -109,24 +109,14 @@ public interface XMLStreamConstants
   static final int NAMESPACE = 13;
 
   /**
-   * A start-entity event.
-   */
-  static final int START_ENTITY = 14;
-
-  /**
-   * An end-entity event.
-   */
-  static final int END_ENTITY = 15;
-  
-  /**
    * A notation declaration event.
    */
-  static final int NOTATION_DECLARATION = 16;
+  static final int NOTATION_DECLARATION = 14;
 
   /**
    * An entity declaration event.
    */
-  static final int ENTITY_DECLARATION = 17;
+  static final int ENTITY_DECLARATION = 15;
   
 }
 

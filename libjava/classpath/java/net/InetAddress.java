@@ -651,9 +651,9 @@ public class InetAddress implements Serializable
   /*
    * Needed for serialization
    */
-  private void readResolve() throws ObjectStreamException
+  private Object readResolve() throws ObjectStreamException
   {
-    // FIXME: implement this
+    return new Inet4Address(addr, hostName);
   }
 
   private void readObject(ObjectInputStream ois)

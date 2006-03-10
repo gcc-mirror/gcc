@@ -1,5 +1,5 @@
 /* JSpinner.java --
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,9 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -53,10 +55,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.SpinnerUI;
 import javax.swing.text.DateFormatter;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 
 /**
- * A JSpinner is a component which typically contains a numeric value and a
- * way to manipulate the value.
+ * A <code>JSpinner</code> is a component that displays a single value from
+ * a sequence of values, and provides a convenient means for selecting the
+ * previous and next values in the sequence.  Typically the spinner displays
+ * a numeric value, but it is possible to display dates or arbitrary items
+ * from a list.
  *
  * @author Ka-Hing Cheung
  * 
@@ -65,12 +72,15 @@ import javax.swing.text.DateFormatter;
 public class JSpinner extends JComponent
 {
   /**
-   * DOCUMENT ME!
+   * The base class for the editor used by the {@link JSpinner} component.  
+   * The editor is in fact a panel containing a {@link JFormattedTextField}
+   * component.
    */
-  public static class DefaultEditor extends JPanel implements ChangeListener,
-                                                              PropertyChangeListener,
-                                                              LayoutManager
+  public static class DefaultEditor 
+    extends JPanel 
+    implements ChangeListener, PropertyChangeListener, LayoutManager
   {
+    /** The spinner that the editor is allocated to. */
     private JSpinner spinner;
 
     /** The JFormattedTextField that backs the editor. */
@@ -82,7 +92,8 @@ public class JSpinner extends JComponent
     private static final long serialVersionUID = -5317788736173368172L;
 
     /**
-     * Creates a new <code>DefaultEditor</code> object.
+     * Creates a new <code>DefaultEditor</code> object.  The editor is 
+     * registered with the spinner as a {@link ChangeListener} here.
      *
      * @param spinner the <code>JSpinner</code> associated with this editor
      */
@@ -94,11 +105,15 @@ public class JSpinner extends JComponent
       ftf = new JFormattedTextField();
       add(ftf);
       ftf.setValue(spinner.getValue());
+      ftf.addPropertyChangeListener(this);
       spinner.addChangeListener(this);
     }
 
     /**
-     * Returns the <code>JSpinner</code> object for this editor.
+     * Returns the <code>JSpinner</code> component that the editor is assigned
+     * to.
+     * 
+     * @return The spinner that the editor is assigned to.
      */
     public JSpinner getSpinner()
     {
@@ -114,9 +129,10 @@ public class JSpinner extends JComponent
     }
 
     /**
-     * DOCUMENT ME!
+     * Removes the editor from the {@link ChangeListener} list maintained by
+     * the specified <code>spinner</code>.
      *
-     * @param spinner DOCUMENT ME!
+     * @param spinner  the spinner (<code>null</code> not permitted).
      */
     public void dismiss(JSpinner spinner)
     {
@@ -124,9 +140,10 @@ public class JSpinner extends JComponent
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the text field used to display and edit the current value in 
+     * the spinner.
      *
-     * @return DOCUMENT ME!
+     * @return The text field.
      */
     public JFormattedTextField getTextField()
     {
@@ -134,9 +151,10 @@ public class JSpinner extends JComponent
     }
     
     /**
-     * DOCUMENT ME!
+     * Sets the bounds for the child components in this container.  In this
+     * case, the text field is the only component to be laid out.
      *
-     * @param parent DOCUMENT ME!
+     * @param parent the parent container.
      */
     public void layoutContainer(Container parent)
     {
@@ -148,11 +166,13 @@ public class JSpinner extends JComponent
     }
     
     /**
-     * DOCUMENT ME!
+     * Calculates the minimum size for this component.  In this case, the
+     * text field is the only subcomponent, so the return value is the minimum
+     * size of the text field plus the insets of this component.
      *
-     * @param parent DOCUMENT ME!
+     * @param parent  the parent container.
      *
-     * @return DOCUMENT ME!
+     * @return The minimum size.
      */
     public Dimension minimumLayoutSize(Container parent)
     {
@@ -163,11 +183,13 @@ public class JSpinner extends JComponent
     }
     
     /**
-     * DOCUMENT ME!
+     * Calculates the preferred size for this component.  In this case, the
+     * text field is the only subcomponent, so the return value is the 
+     * preferred size of the text field plus the insets of this component.
      *
-     * @param parent DOCUMENT ME!
+     * @param parent  the parent container.
      *
-     * @return DOCUMENT ME!
+     * @return The preferred size.
      */
     public Dimension preferredLayoutSize(Container parent)
     {
@@ -178,35 +200,51 @@ public class JSpinner extends JComponent
     }
     
     /**
-     * DOCUMENT ME!
+     * Receives notification of property changes.  If the text field's 'value' 
+     * property changes, the spinner's model is updated accordingly.
      *
-     * @param event DOCUMENT ME!
+     * @param event the event.
      */
     public void propertyChange(PropertyChangeEvent event)
     {
-      // TODO: Implement this properly.
+      if (event.getSource() == ftf) 
+        {
+          if (event.getPropertyName().equals("value"))
+            spinner.getModel().setValue(event.getNewValue());
+        }
     }
     
     /**
-     * DOCUMENT ME!
+     * Receives notification of changes in the state of the {@link JSpinner}
+     * that the editor belongs to - the content of the text field is updated
+     * accordingly.  
      *
-     * @param event DOCUMENT ME!
+     * @param event  the change event.
      */
     public void stateChanged(ChangeEvent event)
     {
-      // TODO: Implement this properly.
+      ftf.setValue(spinner.getValue());
     }
     
+    /**
+     * This method does nothing.  It is required by the {@link LayoutManager}
+     * interface, but since this component has a single child, there is no
+     * need to use this method.
+     * 
+     * @param child  the child component to remove.
+     */
     public void removeLayoutComponent(Component child)
     {
       // Nothing to do here.
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param name DOCUMENT ME!
-     * @param child DOCUMENT ME!
+     * This method does nothing.  It is required by the {@link LayoutManager}
+     * interface, but since this component has a single child, there is no
+     * need to use this method.
+     * 
+     * @param name  the name.
+     * @param child  the child component to add.
      */
     public void addLayoutComponent(String name, Component child)
     {
@@ -215,7 +253,11 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * DOCUMENT ME!
+   * A panel containing a {@link JFormattedTextField} that is configured for
+   * displaying and editing numbers.  The panel is used as a subcomponent of
+   * a {@link JSpinner}.
+   * 
+   * @see JSpinner#createEditor(SpinnerModel)
    */
   public static class NumberEditor extends DefaultEditor
   {
@@ -225,38 +267,70 @@ public class JSpinner extends JComponent
     private static final long serialVersionUID = 3791956183098282942L;
 
     /**
-     * Creates a new NumberEditor object.
+     * Creates a new <code>NumberEditor</code> object for the specified 
+     * <code>spinner</code>.  The editor is registered with the spinner as a 
+     * {@link ChangeListener}.
      *
-     * @param spinner DOCUMENT ME!
+     * @param spinner the component the editor will be used with.
      */
     public NumberEditor(JSpinner spinner)
     {
       super(spinner);
+      NumberEditorFormatter nef = new NumberEditorFormatter();
+      nef.setMinimum(getModel().getMinimum());
+      nef.setMaximum(getModel().getMaximum());
+      ftf.setFormatterFactory(new DefaultFormatterFactory(nef));
     }
 
     /**
-     * Creates a new NumberEditor object.
+     * Creates a new <code>NumberEditor</code> object.
      *
-     * @param spinner DOCUMENT ME!
+     * @param spinner  the spinner.
+     * @param decimalFormatPattern  the number format pattern.
      */
     public NumberEditor(JSpinner spinner, String decimalFormatPattern)
     {
       super(spinner);
+      NumberEditorFormatter nef 
+          = new NumberEditorFormatter(decimalFormatPattern);
+      nef.setMinimum(getModel().getMinimum());
+      nef.setMaximum(getModel().getMaximum());
+      ftf.setFormatterFactory(new DefaultFormatterFactory(nef));
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the format used by the text field.
      *
-     * @return DOCUMENT ME!
+     * @return The format used by the text field.
      */
     public DecimalFormat getFormat()
     {
-      return null;
+      NumberFormatter formatter = (NumberFormatter) ftf.getFormatter();
+      return (DecimalFormat) formatter.getFormat();
     }
 
+    /**
+     * Returns the model used by the editor's {@link JSpinner} component,
+     * cast to a {@link SpinnerNumberModel}.
+     * 
+     * @return The model.
+     */
     public SpinnerNumberModel getModel()
     {
       return (SpinnerNumberModel) getSpinner().getModel();
+    }
+  }
+  
+  static class NumberEditorFormatter 
+    extends NumberFormatter
+  {
+    public NumberEditorFormatter() 
+    {
+      super(NumberFormat.getInstance());
+    }
+    public NumberEditorFormatter(String decimalFormatPattern)
+    {
+      super(new DecimalFormat(decimalFormatPattern));
     }
   }
 
@@ -279,6 +353,11 @@ public class JSpinner extends JComponent
       super(spinner);
     }
 
+    /**
+     * Returns the spinner's model cast as a {@link SpinnerListModel}.
+     * 
+     * @return The spinner's model.
+     */
     public SpinnerListModel getModel()
     {
       return (SpinnerListModel) getSpinner().getModel();
@@ -299,9 +378,6 @@ public class JSpinner extends JComponent
     /** The serialVersionUID. */
     private static final long serialVersionUID = -4279356973770397815L;
 
-    /** The DateFormat instance used to format the date. */
-    SimpleDateFormat dateFormat;
-
     /**
      * Creates a new instance of DateEditor for the specified
      * <code>JSpinner</code>.
@@ -312,7 +388,10 @@ public class JSpinner extends JComponent
     public DateEditor(JSpinner spinner)
     {
       super(spinner);
-      init(new SimpleDateFormat());
+      DateEditorFormatter nef = new DateEditorFormatter();
+      nef.setMinimum(getModel().getStart());
+      nef.setMaximum(getModel().getEnd());
+      ftf.setFormatterFactory(new DefaultFormatterFactory(nef));
     }
 
     /**
@@ -329,26 +408,10 @@ public class JSpinner extends JComponent
     public DateEditor(JSpinner spinner, String dateFormatPattern)
     {
       super(spinner);
-      init(new SimpleDateFormat(dateFormatPattern));
-    }
-
-    /**
-     * Initializes the JFormattedTextField for this editor.
-     *
-     * @param format the date format to use in the formatted text field
-     */
-    private void init(SimpleDateFormat format)
-    {
-      dateFormat = format;
-      getTextField().setFormatterFactory(
-        new JFormattedTextField.AbstractFormatterFactory()
-        {
-          public JFormattedTextField.AbstractFormatter
-          getFormatter(JFormattedTextField ftf)
-          {
-            return new DateFormatter(dateFormat);
-          }
-        });
+      DateEditorFormatter nef = new DateEditorFormatter(dateFormatPattern);
+      nef.setMinimum(getModel().getStart());
+      nef.setMaximum(getModel().getEnd());
+      ftf.setFormatterFactory(new DefaultFormatterFactory(nef));
     }
 
     /**
@@ -360,7 +423,8 @@ public class JSpinner extends JComponent
      */
     public SimpleDateFormat getFormat()
     {
-      return dateFormat;
+      DateFormatter formatter = (DateFormatter) ftf.getFormatter();
+      return (SimpleDateFormat) formatter.getFormat();
     }
 
     /**
@@ -374,25 +438,59 @@ public class JSpinner extends JComponent
     }
   }
 
-  private static final long serialVersionUID = 3412663575706551720L;
+  static class DateEditorFormatter 
+    extends DateFormatter
+  {
+    public DateEditorFormatter() 
+    {
+      super(DateFormat.getInstance());
+    }
+    public DateEditorFormatter(String dateFormatPattern)
+    {
+      super(new SimpleDateFormat(dateFormatPattern));
+    }
+  }
 
-  /** DOCUMENT ME! */
+  /** 
+   * A listener that forwards {@link ChangeEvent} notifications from the model
+   * to the {@link JSpinner}'s listeners. 
+   */
+  class ModelListener implements ChangeListener
+  {
+    /**
+     * Creates a new listener.
+     */
+    public ModelListener()
+    {
+      // nothing to do here
+    }
+    
+    /**
+     * Receives notification from the model that its state has changed.
+     * 
+     * @param event  the event (ignored).
+     */
+    public void stateChanged(ChangeEvent event)
+    {
+      fireStateChanged();
+    }
+  }
+
+  /** 
+   * The model that defines the current value and permitted values for the 
+   * spinner. 
+   */
   private SpinnerModel model;
 
-  /** DOCUMENT ME! */
+  /** The current editor. */
   private JComponent editor;
 
-  /** DOCUMENT ME! */
-  private ChangeListener listener = new ChangeListener()
-    {
-      public void stateChanged(ChangeEvent evt)
-      {
-	fireStateChanged();
-      }
-    };
+  private static final long serialVersionUID = 3412663575706551720L;
 
   /**
-   * Creates a JSpinner with <code>SpinnerNumberModel</code>
+   * Creates a new <code>JSpinner</code> with default instance of 
+   * {@link SpinnerNumberModel} (that is, a model with value 0, step size 1, 
+   * and no upper or lower limit).
    *
    * @see javax.swing.SpinnerNumberModel
    */
@@ -402,15 +500,19 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * Creates a JSpinner with the specific model and sets the default editor
+   * Creates a new <code>JSpinner with the specified model.  The 
+   * {@link #createEditor(SpinnerModel)} method is used to create an editor
+   * that is suitable for the model.
    *
-   * @param model DOCUMENT ME!
+   * @param model the model (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>model</code> is <code>null</code>.
    */
   public JSpinner(SpinnerModel model)
   {
     this.model = model;
-    model.addChangeListener(listener);
-    setEditor(createEditor(model));
+    this.editor = createEditor(model);
+    model.addChangeListener(new ModelListener());
     updateUI();
   }
 
@@ -439,12 +541,13 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * Changes the current editor to the new editor. This methods should remove
-   * the old listeners (if any) and adds the new listeners (if any).
+   * Changes the current editor to the new editor. The old editor is
+   * removed from the spinner's {@link ChangeEvent} list.
    *
-   * @param editor the new editor
+   * @param editor the new editor (<code>null</code> not permitted.
    *
-   * @throws IllegalArgumentException DOCUMENT ME!
+   * @throws IllegalArgumentException if <code>editor</code> is 
+   *                                  <code>null</code>.
    *
    * @see #getEditor
    */
@@ -453,21 +556,22 @@ public class JSpinner extends JComponent
     if (editor == null)
       throw new IllegalArgumentException("editor may not be null");
 
-    if (this.editor instanceof DefaultEditor)
-      ((DefaultEditor) editor).dismiss(this);
-    else if (this.editor instanceof ChangeListener)
-      removeChangeListener((ChangeListener) this.editor);
-
-    if (editor instanceof ChangeListener)
-      addChangeListener((ChangeListener) editor);
-
+    JComponent oldEditor = this.editor;
+    if (oldEditor instanceof DefaultEditor)
+      ((DefaultEditor) oldEditor).dismiss(this);
+    else if (oldEditor instanceof ChangeListener)
+      removeChangeListener((ChangeListener) oldEditor);
+    
     this.editor = editor;
+    firePropertyChange("editor", oldEditor, editor);
   }
 
   /**
-   * Gets the underly model.
+   * Returns the model used by the {@link JSpinner} component.
    *
-   * @return the underly model
+   * @return The model.
+   * 
+   * @see #setModel(SpinnerModel)
    */
   public SpinnerModel getModel()
   {
@@ -492,9 +596,7 @@ public class JSpinner extends JComponent
     SpinnerModel oldModel = model;
     model = newModel;
     firePropertyChange("model", oldModel, newModel);
-
-    if (editor == null)
-      setEditor(createEditor(model));
+    setEditor(createEditor(model));
   }
 
   /**
@@ -545,9 +647,9 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets the value in the model.
    *
-   * @param value DOCUMENT ME!
+   * @param value the new value.
    */
   public void setValue(Object value)
   {
@@ -555,10 +657,10 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * This method returns a name to identify which look and feel class will be
+   * Returns the ID that identifies which look and feel class will be
    * the UI delegate for this spinner.
    *
-   * @return The UIClass identifier. "SpinnerUI"
+   * @return <code>"SpinnerUI"</code>.
    */
   public String getUIClassID()
   {
@@ -575,7 +677,7 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * This method sets the spinner's UI delegate.
+   * Sets the UI delegate for the component.
    *
    * @param ui The spinner's UI delegate.
    */
@@ -628,14 +730,11 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * Creates an editor for this <code>JSpinner</code>. Really, it should be a
-   * <code>JSpinner.DefaultEditor</code>, but since that should be
-   * implemented by a JFormattedTextField, and one is not written, I am just
-   * using a dummy one backed by a JLabel.
+   * Creates an editor that is appropriate for the specified <code>model</code>.
    *
-   * @param model DOCUMENT ME!
+   * @param model the model.
    *
-   * @return the default editor
+   * @return The editor.
    */
   protected JComponent createEditor(SpinnerModel model)
   {
@@ -643,6 +742,8 @@ public class JSpinner extends JComponent
       return new DateEditor(this);
     else if (model instanceof SpinnerNumberModel)
       return new NumberEditor(this);
+    else if (model instanceof SpinnerListModel)
+      return new ListEditor(this);
     else
       return new DefaultEditor(this);
   }

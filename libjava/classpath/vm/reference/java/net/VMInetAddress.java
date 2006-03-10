@@ -40,13 +40,7 @@ package java.net;
 
 import gnu.classpath.Configuration;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.StringTokenizer;
 
 class VMInetAddress implements Serializable
 {

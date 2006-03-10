@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.Component;
+import java.awt.Dimension;
+
 /**
  * Calculates the space between component edges, that are layed out by
  * {@link SpringLayout}.
@@ -165,6 +168,139 @@ public abstract class Spring
   public static Spring sum(Spring s1, Spring s2)
   {
     return new AddSpring(s1, s2);
+  }
+
+  /**
+   * Return a new Spring which computes its values by scaling
+   * the values of another spring by a constant factor.  If the
+   * factor is negative, the minimum and maximum values of
+   * the argument spring will be interchanged.
+   * @param spring the spring to track
+   * @param factor the factor by which to scale
+   * @return a new multiplicative Spring
+   * @since 1.5
+   */
+  public static Spring scale(final Spring spring, final float factor)
+  {
+    if (spring == null)
+      throw new NullPointerException("spring argument is null");
+    return new Spring()
+    {
+      public int getMaximumValue()
+      {
+        return (int) ((factor < 0 ? spring.getMinimumValue()
+                            : spring.getMaximumValue())
+                      * factor);
+      }
+
+      public int getMinimumValue()
+      {
+        return (int) ((factor < 0 ? spring.getMaximumValue()
+                                  : spring.getMinimumValue())
+                            * factor);
+      }
+
+      public int getPreferredValue()
+      {
+        return (int) (spring.getPreferredValue() * factor);
+      }
+
+      public int getValue()
+      {
+        return (int) (spring.getValue() * factor);
+      }
+
+      public void setValue(int value)
+      {
+        spring.setValue((int) (value / factor));
+      }
+    };
+  }
+
+  /**
+   * Return a new Spring which takes its values from the specified
+   * Component.  In particular, the maximum value is taken from
+   * the maximumSize, the minimum value is taken from the minimumSize,
+   * the preferred value is taken from the preferredSize, and the
+   * value is taken from the component's current size.  These values
+   * change as the component changes size.
+   * @param component the component
+   * @return a new Spring which tracks the component's width
+   * @since 1.5
+   */
+  public static Spring width(final Component component)
+  {
+    return new Spring()
+    {
+      public int getMaximumValue()
+      {
+        return component.getMaximumSize().width;
+      }
+
+      public int getMinimumValue()
+      {
+        return component.getMinimumSize().width;
+      }
+
+      public int getPreferredValue()
+      {
+        return component.getPreferredSize().width;
+      }
+
+      public int getValue()
+      {
+        return component.getSize().width;
+      }
+
+      public void setValue(int value)
+      {
+        Dimension d = component.getSize();
+        component.setSize(value, d.height);
+      }
+    };
+  }
+
+  /**
+   * Return a new Spring which takes its values from the specified
+   * Component.  In particular, the maximum value is taken from
+   * the maximumSize, the minimum value is taken from the minimumSize,
+   * the preferred value is taken from the preferredSize, and the
+   * value is taken from the component's current size.  These values
+   * change as the component changes size.
+   * @param component the component
+   * @return a new Spring which tracks the component's height
+   * @since 1.5
+   */
+  public static Spring height(final Component component)
+  {
+    return new Spring()
+    {
+      public int getMaximumValue()
+      {
+        return component.getMaximumSize().height;
+      }
+
+      public int getMinimumValue()
+      {
+        return component.getMinimumSize().height;
+      }
+
+      public int getPreferredValue()
+      {
+        return component.getPreferredSize().height;
+      }
+
+      public int getValue()
+      {
+        return component.getSize().height;
+      }
+
+      public void setValue(int value)
+      {
+        Dimension d = component.getSize();
+        component.setSize(d.width, value);
+      }
+    };
   }
 
   /**

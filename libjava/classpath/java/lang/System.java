@@ -178,6 +178,23 @@ public final class System
     if (SecurityManager.current != null)
       SecurityManager.current.checkPermission
         (new RuntimePermission("setSecurityManager"));
+
+    // java.security.Security's class initialiser loads and parses the
+    // policy files.  If it hasn't been run already it will be run
+    // during the first permission check.  That initialisation will
+    // fail if a very restrictive security manager is in force, so we
+    // preload it here.
+    if (SecurityManager.current == null)
+      {
+	try
+	  {
+	    Class.forName("java.security.Security");
+	  }
+	catch (ClassNotFoundException e)
+	  {
+	  }
+      }
+    
     SecurityManager.current = sm;
   }
 

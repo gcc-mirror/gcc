@@ -66,7 +66,7 @@ public class JApplet extends Applet
     /**
      * Creates a new instance of <code>AccessibleJApplet</code>.
      */
-    public AccessibleJApplet()
+    protected AccessibleJApplet()
     {
       super();
       // Nothing to do here.

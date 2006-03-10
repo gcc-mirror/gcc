@@ -1,5 +1,5 @@
 /* GtkMenuComponentPeer.java -- Implements MenuComponentPeer with GTK+
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,31 +39,66 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Font;
+import java.awt.MenuComponent;
+import java.awt.MenuContainer;
 import java.awt.peer.MenuComponentPeer;
 
-public class GtkMenuComponentPeer extends GtkGenericPeer
+public abstract class GtkMenuComponentPeer extends GtkGenericPeer
   implements MenuComponentPeer
 {
-  void create ()
+  /**
+   * Creates the associated gtk+ widget and stores it in the nsa table
+   * for this peer. Called by the constructor.
+   */
+  protected abstract void create ();
+
+  /**
+   * Sets font based on MenuComponent font, or containing menu(bar)
+   * parent font.
+   */
+  private void setFont()
   {
-    throw new RuntimeException ();
+    MenuComponent mc = ((MenuComponent) awtWidget);
+    Font f = mc.getFont();
+    
+    if (f == null)
+      {
+        MenuContainer parent = mc.getParent ();
+	// Submenus inherit the font of their containing Menu(Bar).
+	if (parent instanceof MenuComponent)
+	  f = parent.getFont ();
+      }
+
+    setFont(f);
   }
 
-  void setFont ()
+  /**
+   * Will call the abstract <code>create()</code> that needs to be
+   * overridden by subclasses, to create the MenuComponent. It will
+   * then correctly setup the font for the component based on the
+   * component and/or its containing parent component.
+   */
+  public GtkMenuComponentPeer(MenuComponent component)
   {
+    super(component);
+    create();
+    setFont();
   }
 
-  public GtkMenuComponentPeer (Object awtWidget)
-  {
-    super (awtWidget);
-    create ();
-    setFont ();
-  }
-
+  /**
+   * Removes the awtWidget components from the native state tables.
+   * Subclasses should call <code>super.dispose()</code> if they don't
+   * remove these themselves.
+   */
   public native void dispose();
 
+  /**
+   * Sets the font for this particular MenuComponent only (not any
+   * containing items, if any).
+   */
   public void setFont(Font font)
   {
-  // FIXME: implement  
+    if (font != null)
+      gtkWidgetModifyFont(font);
   }
 }

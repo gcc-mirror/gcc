@@ -141,10 +141,9 @@ public class BasicColorChooserUI extends ColorChooserUI
   protected PropertyChangeListener propertyChangeListener;
 
   /**
-   * The JColorChooser.
-   * This is package-private to avoid an accessor method.
+   * The JColorChooser this is installed on.
    */
-  JColorChooser chooser;
+  protected JColorChooser chooser;
 
   /** The JTabbedPane that is used. */
   JTabbedPane pane;

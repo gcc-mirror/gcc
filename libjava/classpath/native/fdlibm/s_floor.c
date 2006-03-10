@@ -1,68 +1,15 @@
 
-/* @(#)s_floor.c 5.1 93/09/24 */
+/* @(#)s_floor.c 1.3 95/01/18 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  */
-
-/*
-FUNCTION
-<<floor>>, <<floorf>>, <<ceil>>, <<ceilf>>---floor and ceiling
-INDEX
-	floor
-INDEX
-	floorf
-INDEX
-	ceil
-INDEX
-	ceilf
-
-ANSI_SYNOPSIS
-	#include <math.h>
-	double floor(double <[x]>);
-        float floorf(float <[x]>);
-        double ceil(double <[x]>);
-        float ceilf(float <[x]>);
-
-TRAD_SYNOPSIS
-	#include <math.h>
-        double floor(<[x]>)
-	double <[x]>;
-        float floorf(<[x]>)
-	float <[x]>;
-        double ceil(<[x]>)
-	double <[x]>;
-        float ceilf(<[x]>)
-	float <[x]>;
-
-DESCRIPTION
-<<floor>> and <<floorf>> find
-@tex
-$\lfloor x \rfloor$,
-@end tex
-the nearest integer less than or equal to <[x]>.
-<<ceil>> and <<ceilf>> find
-@tex
-$\lceil x\rceil$,
-@end tex
-the nearest integer greater than or equal to <[x]>.
-
-RETURNS
-<<floor>> and <<ceil>> return the integer result as a double.
-<<floorf>> and <<ceilf>> return the integer result as a float.
-
-PORTABILITY
-<<floor>> and <<ceil>> are ANSI.
-<<floorf>> and <<ceilf>> are extensions.
-
-
-*/
 
 /*
  * floor(x)
@@ -97,7 +44,7 @@ static double huge = 1.0e300;
 	if(j0<20) {
 	    if(j0<0) { 	/* raise inexact if x != 0 */
 		if(huge+x>0.0) {/* return 0*sign(x) if |x|<1 */
-		    if(i0>=0) {i0=i1=0;}
+		    if(i0>=0) {i0=i1=0;} 
 		    else if(((i0&0x7fffffff)|i1)!=0)
 			{ i0=0xbff00000;i1=0;}
 		}
@@ -117,7 +64,7 @@ static double huge = 1.0e300;
 	    if((i1&i)==0) return x;	/* x is integral */
 	    if(huge+x>0.0) { 		/* raise inexact flag */
 		if(i0<0) {
-		    if(j0==20) i0+=1;
+		    if(j0==20) i0+=1; 
 		    else {
 			j = i1+(1<<(52-j0));
 			if(j<(uint32_t)i1) i0 +=1 ; 	/* got a carry */
@@ -130,5 +77,4 @@ static double huge = 1.0e300;
 	INSERT_WORDS(x,i0,i1);
 	return x;
 }
-
 #endif /* _DOUBLE_IS_32BITS */

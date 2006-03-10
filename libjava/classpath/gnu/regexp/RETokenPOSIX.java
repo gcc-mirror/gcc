@@ -81,6 +81,10 @@ final class RETokenPOSIX extends REToken {
 	return 1;
     }
 
+    int getMaximumLength() {
+	return 1;
+    }
+
     boolean match(CharIndexed input, REMatch mymatch) {
     char ch = input.charAt(mymatch.index);
     if (ch == CharIndexed.OUT_OF_BOUNDS)

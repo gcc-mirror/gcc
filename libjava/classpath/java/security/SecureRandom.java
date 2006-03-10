@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.security;
 
 import gnu.java.security.Engine;
+import gnu.java.security.jce.prng.Sha160RandomSpi;
 
 import java.util.Enumeration;
 import java.util.Random;
@@ -126,7 +127,7 @@ public class SecureRandom extends Random
       }
 
     // Nothing found. Fall back to SHA1PRNG
-    secureRandomSpi = new gnu.java.security.provider.SHA1PRNG();
+    secureRandomSpi = new Sha160RandomSpi();
   }
 
   /**

@@ -1,5 +1,5 @@
 /* AttributeModificationException.java --
-   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,7 @@ import javax.naming.NamingException;
 
 public class AttributeModificationException extends NamingException
 {
+  private static final long serialVersionUID = 8060676069678710186L;
   // Serialized fields.
   private ModificationItem[] unexecs;
 

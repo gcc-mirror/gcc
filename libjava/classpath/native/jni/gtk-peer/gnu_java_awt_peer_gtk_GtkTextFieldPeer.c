@@ -224,39 +224,6 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setEchoChar
   gdk_threads_leave ();
 }
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkWidgetModifyFont
-  (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
-{
-  const char *font_name;
-  void *ptr;
-  PangoFontDescription *font_desc;
-
-  gdk_threads_enter();
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  font_name = (*env)->GetStringUTFChars (env, name, NULL);
-
-  font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc,
-                                   size * cp_gtk_dpi_conversion_factor);
-
-  if (style & AWT_STYLE_BOLD)
-    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
-
-  if (style & AWT_STYLE_ITALIC)
-    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
-
-  gtk_widget_modify_font (GTK_WIDGET (ptr), font_desc);
-
-  pango_font_description_free (font_desc);
-
-  (*env)->ReleaseStringUTFChars (env, name, font_name);
-
-  gdk_threads_leave();
-}
-
 JNIEXPORT jint JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_getCaretPosition
   (JNIEnv *env, jobject obj)

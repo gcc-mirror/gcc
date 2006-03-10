@@ -1,5 +1,5 @@
 /* CopyOfNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -70,13 +70,9 @@ final class CopyOfNode
   {
     TemplateNode ret = new CopyOfNode(select.clone(stylesheet));
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -102,9 +98,7 @@ final class CopyOfNode
                 // Use document element
                 src = ((Document) src).getDocumentElement();
                 if (src == null)
-                  {
-                    continue;
-                  }
+                  continue;
                 nodeType = Node.ELEMENT_NODE;
               }
             else if (nodeType == Node.ATTRIBUTE_NODE)
@@ -128,20 +122,14 @@ final class CopyOfNode
               {
                 NamedNodeMap attrs = parent.getAttributes();
                 if (attrs != null)
-                  {
-                    attrs.setNamedItemNS(node);
-                  }
+                  attrs.setNamedItemNS(node);
               }
             else
               {
                 if (nextSibling != null)
-                  {
-                    parent.insertBefore(node, nextSibling);
-                  }
+                  parent.insertBefore(node, nextSibling);
                 else
-                  {
-                    parent.appendChild(node);
-                  }
+                  parent.appendChild(node);
               }
           }
       }
@@ -152,36 +140,28 @@ final class CopyOfNode
           {
             Text textNode = doc.createTextNode(value);
             if (nextSibling != null)
-              {
-                parent.insertBefore(textNode, nextSibling);
-              }
+              parent.insertBefore(textNode, nextSibling);
             else
-              {
-                parent.appendChild(textNode);
-              }
+              parent.appendChild(textNode);
           }
       }
     // copy-of doesn't process children
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
   
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
-      {
-        return true;
-      }
+      return true;
     return super.references(var);
   }
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("copy-of");
     buf.append('[');
     buf.append("select=");
     buf.append(select);

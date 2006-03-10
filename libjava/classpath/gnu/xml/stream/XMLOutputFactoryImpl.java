@@ -42,6 +42,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.io.UnsupportedEncodingException;
 
+import javax.xml.transform.Result;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -94,6 +96,22 @@ public class XMLOutputFactoryImpl
       }
   }
 
+  public XMLStreamWriter createXMLStreamWriter(Result result)
+    throws XMLStreamException
+  {
+    if (result instanceof StreamResult)
+      {
+        StreamResult sr = (StreamResult) result;
+        OutputStream out = sr.getOutputStream();
+        if (out != null)
+          return createXMLStreamWriter(out);
+        Writer writer = sr.getWriter();
+        if (writer != null)
+          return createXMLStreamWriter(writer);
+      }
+    throw new UnsupportedOperationException();
+  }
+
   public XMLEventWriter createXMLEventWriter(OutputStream stream)
     throws XMLStreamException
   {
@@ -116,10 +134,26 @@ public class XMLOutputFactoryImpl
     return new XMLEventWriterImpl(writer);
   }
 
+  public XMLEventWriter createXMLEventWriter(Result result)
+    throws XMLStreamException
+  {
+    if (result instanceof StreamResult)
+      {
+        StreamResult sr = (StreamResult) result;
+        OutputStream out = sr.getOutputStream();
+        if (out != null)
+          return createXMLEventWriter(out);
+        Writer writer = sr.getWriter();
+        if (writer != null)
+          return createXMLEventWriter(writer);
+      }
+    throw new UnsupportedOperationException();
+  }
+  
   public void setProperty(String name, Object value)
     throws IllegalArgumentException
   {
-    if (IS_PREFIX_DEFAULTING.equals(name))
+    if (IS_REPAIRING_NAMESPACES.equals(name))
       prefixDefaulting = ((Boolean) value).booleanValue();
     else
       throw new IllegalArgumentException(name);
@@ -128,14 +162,14 @@ public class XMLOutputFactoryImpl
   public Object getProperty(String name)
     throws IllegalArgumentException
   {
-    if (IS_PREFIX_DEFAULTING.equals(name))
+    if (IS_REPAIRING_NAMESPACES.equals(name))
       return new Boolean(prefixDefaulting);
     throw new IllegalArgumentException(name);
   }
 
   public boolean isPropertySupported(String name)
   {
-    if (IS_PREFIX_DEFAULTING.equals(name))
+    if (IS_REPAIRING_NAMESPACES.equals(name))
       return true;
     return false;
   }

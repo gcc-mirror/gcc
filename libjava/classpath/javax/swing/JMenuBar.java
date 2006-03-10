@@ -1,5 +1,5 @@
 /* JMenuBar.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,6 +50,8 @@ import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
 import javax.accessibility.AccessibleStateSet;
 import javax.swing.plaf.MenuBarUI;
+
+import javax.swing.border.Border;
 
 /**
  * JMenuBar is a container for menu's. For a menu bar to be seen on the
@@ -437,8 +439,12 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   protected void paintBorder(Graphics g)
   {
     if (borderPainted)
-      getBorder().paintBorder(this, g, 0, 0, getSize(null).width,
-                              getSize(null).height);
+      {
+        Border border = getBorder();
+        if (border != null)
+          getBorder().paintBorder(this, g, 0, 0, getSize(null).width,
+                                  getSize(null).height);
+      }
   }
 
   /**

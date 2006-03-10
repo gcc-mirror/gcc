@@ -107,8 +107,6 @@ public class PasswordView
   protected int drawSelectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {
-    // FIXME: Throw BadLocationException somehow.
-
     // Update font metrics.
     updateMetrics();
 
@@ -119,25 +117,18 @@ public class PasswordView
     g.setColor(selectedColor);
     g.setColor(Color.BLACK);
 
-    // Initialize buffer for faster drawing of all characters.
-    int len = p1 - p0;
-    char[] buffer = new char[len];
-    for (int index = 0; index < len; ++index)
-      buffer[index] = ch;
-
-    // Draw echo charaters.
-    g.drawChars(buffer, 0, len, x, y);
-
-    // Return new x position right of all drawn characters.
-    return x + len * metrics.charWidth(ch);
+    // Draw echo character using drawEchoCharacter() method.
+    for (int index = p0; index < p1; ++index)
+      x = drawEchoCharacter(g, x, y, ch);
+    return x;
   }
 
   /**
    * Draws unselected text at a given position.
    *
    * @param g the <code>Graphics</code> object to draw to
-   * @param x the x-position
-   * @param y the y-position
+   * @param x the x-position of the start of the baseline
+   * @param y the y-position of the start of the baseline
    * @param p0 the position of the first character to draw
    * @param p1 the position of the first character not to draw
    *
@@ -146,35 +137,20 @@ public class PasswordView
   protected int drawUnselectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {
-    // FIXME: Throw BadLocationException somehow.
-
     // Update font metrics.
     updateMetrics();
 
     // Get echo character.
     char ch = getEchoChar();
-    Segment segment = new Segment();
 
     // Set color for unselected text.
     g.setColor(unselectedColor);
     g.setColor(Color.BLACK);
 
-    // Initialize buffer for faster drawing of all characters.
-    p1--;
-    getDocument().getText(p0, p1 - p0, segment);
-    int len = segment.toString().length();
-    
-    char[] buffer = new char[len];
-    for (int index = 0; index < len; ++index)
-      buffer[index] = ch;
-    
-    y += getPreferredSpan(Y_AXIS)/2;
-    
-    // Draw echo charaters.
-    g.drawChars(buffer, 0, len, x, y);
-    
-    // Return new x position right of all drawn characters.
-    return x + (len * metrics.charWidth(ch));
+    // Draw echo character using drawEchoCharacter() method.
+    for (int index = p0; index < p1; ++index)
+      x = drawEchoCharacter(g, x, y, ch);
+    return x;
   }
 
   /**

@@ -1,6 +1,6 @@
 /* gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c -- Native
    implementation of GtkEmbeddedWindowPeer
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,6 +52,8 @@ Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create
   NSA_SET_GLOBAL_REF (env, obj);
 
   window = gtk_plug_new ((GdkNativeWindow) socket_id);
+
+  gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
 
   fixed = gtk_fixed_new ();
   gtk_container_add (GTK_CONTAINER (window), fixed);

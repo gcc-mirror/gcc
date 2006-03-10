@@ -1,5 +1,5 @@
 /* GtkGenericPeer.java - Has a hashcode.  Yuck.
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,23 +39,28 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
 public class GtkGenericPeer
 {
+  // Used by Native State Association (NSA) functions to map
+  // gtk_widget to peer object.
   final int native_state = getUniqueInteger ();
 
   // Next native state value we will assign.
   private static int next_native_state = 0;
 
   // The widget or other java-side object we wrap.
-  protected Object awtWidget;
+  protected final Object awtWidget;
 
-  // Global event queue.
-  protected static EventQueue q = null;
-
-  // Dispose of our native state.
+  /**
+   * Dispose of our native state.  Calls gtk_widget_destroy on the
+   * native widget and removes the awtWidget from the native state
+   * tables. Should be overridden by subclasses if this is not (all)
+   * that needs to be done.
+   */
   public native void dispose ();
 
   static EventQueue q ()
@@ -66,12 +71,6 @@ public class GtkGenericPeer
   protected GtkGenericPeer (Object awtWidget)
   {
     this.awtWidget = awtWidget;
-  }
-
-  public static void enableQueue (EventQueue sq) 
-  {
-    if (q == null)
-      q = sq;
   }
 
   protected void postActionEvent (String command, int mods) 
@@ -88,8 +87,20 @@ public class GtkGenericPeer
     // Let's assume this will never wrap.
     return next_native_state++;
   }
+  
+  /**
+   * Helper method to set Font for Gtk Widget.
+   */
+  protected void gtkWidgetModifyFont(Font f)
+  {
+    gtkWidgetModifyFont(f.getName(), f.getStyle(), f.getSize());
+  }
 
-  native void gtkWidgetModifyFont (String name, int style, int size);
+  /**
+   * Sets font for this Gtk Widget. Should be overridden by peers which
+   * are composed of different widgets or are contained in bins.
+   */
+  protected native void gtkWidgetModifyFont(String name, int style, int size);
 
   static void printCurrentThread ()
   {

@@ -70,7 +70,7 @@ public class ClassNotFoundException extends Exception
    */
   public ClassNotFoundException()
   {
-    this(null, null);
+    this(null);
   }
 
   /**
@@ -81,7 +81,8 @@ public class ClassNotFoundException extends Exception
    */
   public ClassNotFoundException(String s)
   {
-    this(s, null);
+    super(s);
+    ex = null;
   }
 
   /**

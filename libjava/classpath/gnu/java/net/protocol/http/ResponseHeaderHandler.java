@@ -41,7 +41,7 @@ package gnu.java.net.protocol.http;
 /**
  * Callback interface for objects that wish to be notified of response
  * header values.
- * @see Request#setHeaderHandler(String)
+ * @see Request#setResponseHeaderHandler(String, ResponseHeaderHandler)
  *
  * @author Chris Burdess (dog@gnu.org)
  */

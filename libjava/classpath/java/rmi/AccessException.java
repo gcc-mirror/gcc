@@ -1,5 +1,6 @@
 /* AccessException.java -- thrown if the caller does not have access
-   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +44,7 @@ package java.rmi;
  *
  * @author unknown
  * @see Naming
- * @see ActivationSystem
+ * @see java.rmi.activation.ActivationSystem
  * @since 1.1
  */
 public class AccessException extends RemoteException

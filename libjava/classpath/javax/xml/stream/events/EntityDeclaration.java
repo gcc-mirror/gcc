@@ -1,5 +1,5 @@
 /* EntityDeclaration.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,12 +67,12 @@ public interface EntityDeclaration
   /**
    * Returns the replacement text for the entity.
    */
-  //String getReplacementText();
+  String getReplacementText();
 
   /**
    * Returns the base URI for the entity.
    */
-  //String getBaseURI();
+  String getBaseURI();
 
 }
 

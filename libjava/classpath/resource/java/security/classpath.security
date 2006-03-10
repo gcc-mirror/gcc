@@ -37,3 +37,6 @@
 
 
 security.provider.1=gnu.java.security.provider.Gnu
+security.provider.2=gnu.javax.crypto.jce.GnuCrypto
+security.provider.3=gnu.javax.crypto.jce.GnuSasl
+security.provider.4=gnu.javax.net.ssl.provider.Jessie

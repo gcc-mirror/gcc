@@ -1,0 +1,289 @@
+#!wml --include=..
+
+#use wml::std::page
+#use wml::std::lang
+#use wml::fmt::isolatin
+#use wml::std::case global=upper
+
+<lang:star:slice:>
+
+<set-var last-modified-author="mjw">
+
+#include <include/macros.wml>
+
+<header title="GNU Classpath 0.20 Announcement (2006-01-13)"> 
+<pre>
+GNU Classpath 0.20 released
+
+GNU Classpath, essential libraries for java, is a project to create
+free core class libraries for use with runtimes, compilers and tools
+for the java programming language.
+
+The GNU Classpath developer snapshot releases are not directly aimed
+at the end user but are meant to be integrated into larger development
+platforms. For example the GCC (gcj) and Kaffe projects will use the
+developer snapshots as a base for future versions. More projects based
+on GNU Classpath: http://www.gnu.org/software/classpath/stories.html
+
+Some highlights of changes in this release (more extensive list below):
+
+  New StAX pull parser and SAX-over-StAX driver. Full XMLEncoder
+  implementation. The packages javax.sound.sampled, javax.print.attribute
+  and javax.print.event have been implemented. Lots of new datatransfer,
+  print, swing and swing.text work. Performance improvements in the
+  painting/layout mechanism. Additional 1.5 support, including (separate)
+  generic branch release. SecurityManager cleanups and start of review
+  of all Permission checks. Buildable on cygwin. Fully buildable as
+  "in-workspace" library-plus-vm inside (native) Eclipse. Real world
+  Free Swing and CORBA example added.
+
+GNU Classpath 0.20 also comes in a "generic" version.
+classpath-0.20-generics contains a version of the core library
+that uses the new 1.5 language features such as generics and
+enumerations. ECJ, JamVM, IKVM and Cacao are known to support the
+generics release (*). And you should be able to run Eclipse 3.1 with
+it to develop programs that use the new 1.5 language and core library
+additions. classpath-generics is a work in progress and not as
+extensively tested as our regular releases. But please try it out if
+you want to help us test the new 1.5 support of the core libraries.
+
+(*) There is one additional VM interface needed for the VMClassLoader
+    static final Class defineClassWithTransformers(ClassLoader loader,
+        String name, byte[] data, int offset, int len, ProtectionDomain pd)
+    Which is used for the new java.management.instrumentation support.
+    See the VM Integration Guide for more details:
+    http://www.gnu.org/software/classpath/docs/vmintegration.html
+
+Thanks to a donation of Berkeley Signal Inc GNU Classpath now has an
+official autobuilder machine which is used for quality assurance,
+regression testing, conformance reports and for publishing continous
+snapshots. The machine can be reached as http://builder.classpath.org/
+
+40 people actively contributed to this release and made
+605 CVS commits during the last two months of development
+(excluding the generics branch work). diffstat since 0.19:
+ 617 files changed, 89622 insertions(+), 37478 deletions(-)
+
+More details about the various changes and contributions below.
+
+A full list of bug reports fixed for this release can be found at:
+http://gcc.gnu.org/bugzilla/buglist.cgi?product=classpath&target_milestone=0.20
+
+The GNU Classpath developers site http://developer.classpath.org/
+provides detailed information on how to start with helping the GNU
+Classpath project and gives an overview of the core class library
+packages currently provided.  For each snapshot release generated
+documentation is provided through the GNU Classpath Tools gjdoc
+project.  A documentation generation framework for java source
+files used by the GNU project. Full documentation on the currently
+implementated packages and classes can be found at:
+http://developer.classpath.org/doc/
+
+For more information about the project see also:
+
+- GNU Classpath home page:
+  http://www.gnu.org/software/classpath/
+
+- Developer information (wiki):
+  http://developer.classpath.org/
+
+- Full class documentation
+  http://developer.classpath.org/doc/
+
+- GNU Classpath hackers:
+  http://planet.classpath.org/
+
+- Autobuilder, current build status, build snapshots:
+  http://builder.classpath.org/
+
+- Application test pages (wiki)
+  http://developer.classpath.org/mediation/FreeAWTTestApps
+  http://developer.classpath.org/mediation/FreeSwingTestApps
+  http://developer.classpath.org/mediation/FreeSWTTestApps
+
+- GNU Classpath hacking with Eclipse (wiki)
+  http://developer.classpath.org/mediation/ClasspathHackingWithEclipse
+
+- GNU Classpath promotion banners:
+  http://developer.classpath.org/mediation/ClasspathBanners
+
+- GNU Classpath and Friends meeting (Feb 25/26, Brussels, Fosdem):
+  http://www.gnu.org/software/classpath/events/fosdem06.html
+
+This release depends on gtk+ 2.4 for AWT support. But gtk+ 2.6 or
+higher is recommended. Included, but not activated by default in this
+release is a Graphics2D implementation based on the Cairo Graphics
+framework (http://www.cairographics.org). Enabling this makes programs
+like JFreeChart and JEdit start up on GNU Classpath based runtimes.
+To enable this support install the cairo 0.5.x snapshot, configure GNU
+Classpath with --enable-gtk-cairo.
+
+One of the major focuses of the GNU Classpath project is expanding and
+using the Mauve test suite for Compatibility, Completeness and
+Correctness checking.  Various groups around GNU Classpath collaborate
+on the free software Mauve test suite which contains around 36.000
+core library tests.  Mauve has various modules for testing core class
+library implementations, byte code verifiers, source to byte code and
+native code compiler tests.  Mauve also contains the Wonka visual test
+suite and the Jacks Compiler Killer Suite.
+See for more information: http://www.sourceware.org/mauve/
+This release passes 35534 out of 36255 Mauve core library tests.
+
+Conformance reports for the included jaxp support can be found in the
+doc/README.jaxp file.
+
+GNU Classpath 0.20 can be downloaded from
+ftp://ftp.gnu.org/pub/gnu/classpath/
+or one of the ftp.gnu.org mirrors
+http://www.gnu.org/order/ftp.html
+
+File: classpath-0.20.tar.gz
+MD5sum: 21e34b8e8acb4f7b31296bfaf4ad560a
+SHA1sum: c1a38c6c6b67d8c8092cc6af6d86d8c99dad272a
+
+File: classpath-0.20-generics.tar.gz (EXPERIMENTAL)
+MD5sum: db3c235b1ea497d7d2e5852f167d2b31
+SHA1sum: 3d5f5cdd3dc51651f8b2c3765e30454931f45419
+
+New in release 0.20 (Jan 13, 2006)
+(See the ChangeLog file for a full list of changes.)
+
+* New StAX pull parser and SAX-over-StAX driver. Lots of DOM, SAX/StAX,
+  XPath and XSLT improvements.  Support for XInclude and XML Base added.
+  Conformance is now regularly tested against various test-suites at
+  http://builder.classpath.org/xml/ See also doc/README.jaxp.
+
+* Full beans XMLEncoder implementation.
+
+* javax.sound.sampled implementation.
+
+* javax.print.attribute and javax.print.event implementated.
+
+* Lots of new datatransfer, print swing and swing.text work and optimization.
+
+* Additional 1.5 support. Including new (separate) generic branch release.
+
+* SecurityManager cleanups and start of review of all Permission checks
+  (includes adding lots of new checks to the Mauve test-suite).
+
+* Buildable on cygwin.
+
+* Fully buildable as "in-workspace" library-plus-vm inside (native) Eclipse
+  see http://developer.classpath.org/mediation/ClasspathHackingWithEclipse
+
+* Full example that shows a real world CORBA and Free Swing implementation.
+  See examples/gnu/classpath/examples/CORBA/swing/README.html
+
+Runtime interface changes:
+
+* New method VMStackWalker.getClassLoader() was added to avoid an infinite
+  loop between getCallingClassLoader() and Class.getClassLoader().
+
+* The included fdlibm implementation has seen several cleanups to handle
+  new architectures and namespacing issues (in particular for ppc, darwin
+  and non-C99 compilers). Please double check any arithmetic test against
+  new platforms/runtimes.
+
+* The gnu.java.net.Plain[Datagram]Socket implementations have been
+  turned into VM reference classes with JNI/Posix implementations.
+
+New/Untested/Disabled Features:
+
+  The following new features are included, but not ready for
+  production yet. They are explicitly disabled and not supported. But
+  if you want to help with the development of these new features we
+  are interested in feedback. You will have to explicitly enable them
+  to try them out (and they will most likely contain bugs). If you are
+  interested in any of these then please join the mailing-list and
+  follow development in CVS.
+
+* Cairo Gtk+ Graphics2D support, enabled by giving configure
+  --enable-gtk-cairo.
+* QT4 AWT peers, enable by giving configure --enable-qt-peer.
+
+The following people helped with this release:
+
+Andreas Tobler
+  Qt-4.1 support
+Andrew Haley
+  Jar work and Jonas fixes
+Andrew John Hughes
+  1.5 generics language work
+Anthony Balkissoon
+  Free Swing work
+Anthony Green
+  Socket work
+Archie Cobbs
+  New VMStackWalker work and JCVM integration
+Audrius Meskauskas
+  Free CORBA work and various Free Swing fixes
+Bryce McKinlay
+  Jar fixes
+Caolan McNamara
+  Dom fixes and OpenOffice fixes
+Casey Marshall
+  Crypto work
+Chris Burdess
+  XML GNU JAXP work
+Christian Thalinger
+  Various fixes, 64bit work and Cacao integration
+Dalibor Topic
+  Build cleanups and Kaffe integration
+David Daney
+  libgcj integration
+David Gilbert
+  Free Swing work
+Freebeans
+  Mysaifu Windows CE port and bug reports
+Fridjof Siebert
+  Hashtable work
+Gary Benson
+  Securitymanager and Permission work
+Guilhem Lavaux
+  fdlibm cleanups, performance work and Kaffe integration
+Ingo Proetel
+  Various fixes
+Ito Kazumitsu
+  Regex, text and character conversion support
+Jan Roehrich
+  Datatransfer work
+Jeroen Frijters
+  SecurityManager, collections and IKVM integration
+Joao Victor
+  Free Swing Timer work
+John Zigman
+  SocketChannel testing
+Keith Seitz
+  JDWP work
+Lillian Angel
+  Free Swing work
+Mark Wielaard
+  Bug fixes, packaging and release management
+Nicolas Geoffray
+  1.5 Class Instrumentation work
+Paul Jenner
+  Installation and cygwin work
+Petteri Raty
+  Configuration and Gentoo integration work
+Raif S. Naffah
+  Security work and Eclipse integration
+Riccardo Mottola
+  Powerpc work
+Robert Schuster
+  XMLEncoder and beans work
+Roman Kennke
+  Free Swing and AWT work, VM interface
+Roman Schnider
+  AWT work
+Sven de Marothy
+  Print and GTK+ work
+Thomas Fitzsimmons
+  Free Swing and AWT work
+Tom Tromey
+  Eclipse, gcj and gcjx integration
+Wolfgang Baer
+  javax.print and friends
+
+We would also like to thank the numerous bug reporters and testers!
+</pre>
+<footer>

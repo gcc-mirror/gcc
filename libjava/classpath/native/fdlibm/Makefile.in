@@ -57,13 +57,15 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libfdlibm_la_LIBADD =
 am_libfdlibm_la_OBJECTS = dtoa.lo e_acos.lo e_asin.lo e_atan2.lo \
-	e_exp.lo e_fmod.lo e_log.lo e_pow.lo e_remainder.lo \
-	e_rem_pio2.lo e_scalb.lo e_sqrt.lo k_cos.lo k_rem_pio2.lo \
-	k_sin.lo k_tan.lo mprec.lo s_atan.lo s_ceil.lo s_copysign.lo \
-	s_cos.lo s_fabs.lo sf_fabs.lo s_finite.lo s_floor.lo \
-	sf_rint.lo s_rint.lo s_scalbn.lo s_sin.lo s_tan.lo strtod.lo \
-	w_acos.lo w_asin.lo w_atan2.lo w_exp.lo w_fmod.lo w_log.lo \
-	w_pow.lo w_remainder.lo w_sqrt.lo
+	e_cosh.lo e_exp.lo e_fmod.lo e_hypot.lo e_log.lo e_log10.lo \
+	e_pow.lo e_remainder.lo e_rem_pio2.lo e_scalb.lo e_sinh.lo \
+	e_sqrt.lo k_cos.lo k_rem_pio2.lo k_sin.lo k_tan.lo mprec.lo \
+	s_atan.lo s_cbrt.lo s_ceil.lo s_copysign.lo s_cos.lo \
+	s_expm1.lo s_fabs.lo sf_fabs.lo s_finite.lo s_floor.lo \
+	s_log1p.lo sf_rint.lo s_rint.lo s_scalbn.lo s_sin.lo s_tan.lo \
+	s_tanh.lo strtod.lo w_acos.lo w_asin.lo w_atan2.lo w_cosh.lo \
+	w_exp.lo w_fmod.lo w_hypot.lo w_log.lo w_log10.lo w_pow.lo \
+	w_remainder.lo w_sinh.lo w_sqrt.lo
 libfdlibm_la_OBJECTS = $(am_libfdlibm_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -98,6 +100,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLASSPATH_INCLUDES = @CLASSPATH_INCLUDES@
 CLASSPATH_MODULE = @CLASSPATH_MODULE@
+COLLECTIONS_PREFIX = @COLLECTIONS_PREFIX@
 CP = @CP@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -105,6 +108,8 @@ CREATE_ALSA_LIBRARIES_FALSE = @CREATE_ALSA_LIBRARIES_FALSE@
 CREATE_ALSA_LIBRARIES_TRUE = @CREATE_ALSA_LIBRARIES_TRUE@
 CREATE_API_DOCS_FALSE = @CREATE_API_DOCS_FALSE@
 CREATE_API_DOCS_TRUE = @CREATE_API_DOCS_TRUE@
+CREATE_COLLECTIONS_FALSE = @CREATE_COLLECTIONS_FALSE@
+CREATE_COLLECTIONS_TRUE = @CREATE_COLLECTIONS_TRUE@
 CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
@@ -135,6 +140,7 @@ EGREP = @EGREP@
 ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
+FASTJAR = @FASTJAR@
 FIND = @FIND@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
@@ -146,6 +152,8 @@ FOUND_JIKES_FALSE = @FOUND_JIKES_FALSE@
 FOUND_JIKES_TRUE = @FOUND_JIKES_TRUE@
 FOUND_KJC_FALSE = @FOUND_KJC_FALSE@
 FOUND_KJC_TRUE = @FOUND_KJC_TRUE@
+FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
+FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
 GJDOC = @GJDOC@
@@ -196,6 +204,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
@@ -279,13 +288,17 @@ libfdlibm_la_SOURCES = \
 			e_acos.c \
 			e_asin.c \
 			e_atan2.c \
+			e_cosh.c \
 			e_exp.c \
 			e_fmod.c \
+			e_hypot.c \
 			e_log.c \
+			e_log10.c \
 			e_pow.c \
 			e_remainder.c \
 			e_rem_pio2.c \
 			e_scalb.c \
+			e_sinh.c \
 			e_sqrt.c \
 			fdlibm.h \
 			ieeefp.h \
@@ -296,27 +309,35 @@ libfdlibm_la_SOURCES = \
 			mprec.c \
 			mprec.h \
 			s_atan.c \
+			s_cbrt.c \
 			s_ceil.c \
 			s_copysign.c \
 			s_cos.c \
+			s_expm1.c \
 			s_fabs.c \
 			sf_fabs.c \
 			s_finite.c \
 			s_floor.c \
+			s_log1p.c \
 			sf_rint.c \
 			s_rint.c \
 			s_scalbn.c \
 			s_sin.c \
 			s_tan.c \
+			s_tanh.c \
 			strtod.c \
 			w_acos.c \
 			w_asin.c \
 			w_atan2.c \
+			w_cosh.c \
 			w_exp.c \
 			w_fmod.c \
+			w_hypot.c \
 			w_log.c \
+			w_log10.c \
 			w_pow.c \
 			w_remainder.c \
+			w_sinh.c \
 			w_sqrt.c \
 			namespace.h
 
@@ -376,13 +397,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_acos.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_asin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_atan2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_cosh.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_exp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_fmod.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_hypot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_log.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_log10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_pow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_rem_pio2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_remainder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_scalb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_sinh.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/e_sqrt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/k_cos.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/k_rem_pio2.Plo@am__quote@
@@ -390,27 +415,35 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/k_tan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mprec.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_atan.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_cbrt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_ceil.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_copysign.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_cos.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_expm1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_fabs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_finite.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_floor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_log1p.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_rint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_scalbn.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_sin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_tan.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s_tanh.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sf_fabs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sf_rint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/strtod.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_acos.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_asin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_atan2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_cosh.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_exp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_fmod.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_hypot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_log.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_log10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_pow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_remainder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_sinh.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w_sqrt.Plo@am__quote@
 
 .c.o:

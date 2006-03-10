@@ -41,6 +41,7 @@ package java.util.logging;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -295,6 +296,28 @@ public class LogManager
     if (parent != logger.getParent())
       logger.setParent(parent);
 
+    // The level of the newly added logger must be specified.
+    // The easiest case is if there is a level for exactly this logger
+    // in the properties. If no such level exists the level needs to be 
+    // searched along the hirachy. So if there is a new logger 'foo.blah.blub'
+    // and an existing parent logger 'foo' the properties 'foo.blah.blub.level'
+    // and 'foo.blah.level' need to be checked. If both do not exist in the 
+    // properties the level of the new logger is set to 'null' (i.e. it uses the
+    // level of its parent 'foo').
+    Level logLevel = logger.getLevel();
+    String searchName = name;
+    String parentName = parent != null ? parent.getName() : "";
+    while (logLevel == null && ! searchName.equals(parentName))
+      {
+        logLevel = getLevelProperty(searchName + ".level", logLevel);
+        int index = searchName.lastIndexOf('.');
+        if(index > -1)
+          searchName = searchName.substring(0,index);
+        else
+          searchName = "";      
+      }
+    logger.setLevel(logLevel);
+
     /* It can happen that existing loggers should be children of
      * the newly added logger. For example, assume that there
      * already exist loggers under the names "", "foo", and "foo.bar.baz".
@@ -488,23 +511,37 @@ public class LogManager
     path = System.getProperty("java.util.logging.config.file");
     if ((path == null) || (path.length() == 0))
       {
-	String url = (System.getProperty("gnu.classpath.home.url")
-	             + "/logging.properties");
-	inputStream = new URL(url).openStream();
+        String url = (System.getProperty("gnu.classpath.home.url")
+                      + "/logging.properties");
+        try
+          {
+            inputStream = new URL(url).openStream();
+          } 
+        catch (Exception e)
+          {
+            inputStream=null;
+          }
+
+        // If no config file could be found use a default configuration.
+        if(inputStream == null)
+        {
+          String defaultConfig = "handlers = java.util.logging.ConsoleHandler   \n"
+              + ".level=INFO \n";
+          inputStream = new ByteArrayInputStream(defaultConfig.getBytes());
+        }
       }
     else
       inputStream = new java.io.FileInputStream(path);
 
     try
       {
-	readConfiguration(inputStream);
+        readConfiguration(inputStream);
       }
     finally
       {
-	/* Close the stream in order to save
-	 * resources such as file descriptors.
-	 */
-	inputStream.close();
+        // Close the stream in order to save
+        // resources such as file descriptors.
+        inputStream.close();
       }
   }
 

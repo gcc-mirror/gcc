@@ -74,7 +74,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
     /**
      * Creates a new instance of <code>AccessibleJDialog</code>.
      */
-    public AccessibleJDialog()
+    protected AccessibleJDialog()
     {
       super();
       // Nothing to do here.
@@ -107,7 +107,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
    */
   public JDialog()
   {
-    this(SwingUtilities.getOwnerFrame(), "", false, null);
+    this((Frame) SwingUtilities.getOwnerFrame(null), "", false, null);
   }
 
   /**
@@ -234,8 +234,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   public JDialog(Frame owner, String title, boolean modal,
                  GraphicsConfiguration gc)
   {
-    super((owner == null) ? SwingUtilities.getOwnerFrame() : owner, 
-          title, modal, gc);
+    super((Frame) SwingUtilities.getOwnerFrame(owner), title, modal, gc);
     dialogInit();
   }
 

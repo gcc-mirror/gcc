@@ -1,5 +1,5 @@
 /* UndoableEditEvent.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,46 +47,34 @@ import javax.swing.undo.UndoableEdit;
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class UndoableEditEvent extends EventObject {
+public class UndoableEditEvent extends EventObject 
+{
 
   private static final long serialVersionUID = 4418044561759134484L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * edit
+   */
+  private UndoableEdit edit;
 
-	/**
-	 * edit
-	 */
-	private UndoableEdit edit;
+  /**
+   * Constructor UndoableEditEvent
+   * @param source TODO
+   * @param edit TODO
+   */
+  public UndoableEditEvent(Object source, UndoableEdit edit) 
+  {
+    super(source);
+    this.edit = edit;
+  } 
 
+  /**
+   * getEdit
+   * @return UndoableEdit
+   */
+  public UndoableEdit getEdit() 
+  {
+    return edit;
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor UndoableEditEvent
-	 * @param source TODO
-	 * @param edit TODO
-	 */
-	public UndoableEditEvent(Object source, UndoableEdit edit) {
-		super(source);
-		this.edit = edit;
-	} // UndoableEditEvent()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * getEdit
-	 * @returns UndoableEdit
-	 */
-	public UndoableEdit getEdit() {
-		return edit;
-	} // getEdit()
-
-
-} // UndoableEditEvent
+} 

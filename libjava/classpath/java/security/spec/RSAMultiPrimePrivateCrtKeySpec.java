@@ -40,9 +40,9 @@ package java.security.spec;
 import java.math.BigInteger;
 
 /**
- * This class specifies an RSA multi-prime private key, as defined in the
+ * This class represents an RSA multi-prime private key, as defined in the
  * PKCS#1 v2.1, using the <i>Chinese Remainder Theorem</i> (CRT) information
- * values for efficiency.
+ * values.
  *
  * @since 1.4
  * @see java.security.Key
@@ -70,29 +70,35 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   // --------------------------------------------------------------------------
 
   /**
-   * <p>Creates a new <code>RSAMultiPrimePrivateCrtKeySpec</code> given the
-   * modulus, publicExponent, privateExponent, primeP, primeQ, primeExponentP,
-   * primeExponentQ, crtCoefficient, and otherPrimeInfo as defined in PKCS#1
-   * v2.1.</p>
-   *
+   * Constructs a new instance of <code>RSAMultiPrimePrivateCrtKeySpec</code>
+   * given the various PKCS#1 v2.1 parameters.
+   * 
    * <p>Note that <code>otherPrimeInfo</code> is cloned when constructing this
    * object.</p>
-   *
-   * @param modulus the modulus n.
-   * @param publicExponent the public exponent e.
-   * @param privateExponent the private exponent d.
-   * @param primeP the prime factor p of n.
-   * @param primeQ the prime factor q of n.
-   * @param primeExponentP this is d mod (p-1).
-   * @param primeExponentQ this is d mod (q-1).
-   * @param crtCoefficient the Chinese Remainder Theorem coefficient q-1 mod p.
-   * @param otherPrimeInfo triplets of the rest of primes, <code>null</code>
-   * can be specified if there are only two prime factors (p and q).
-   * @throws NullPointerException if any of the parameters, i.e. modulus,
-   * publicExponent, privateExponent, primeP, primeQ, primeExponentP,
-   * primeExponentQ, crtCoefficient, is <code>null</code>.
-   * @throws IllegalArgumentException if an empty, i.e. 0-length,
-   * otherPrimeInfo is specified.
+   * 
+   * @param modulus
+   *          the modulus n.
+   * @param publicExponent
+   *          the public exponent e.
+   * @param privateExponent
+   *          the private exponent d.
+   * @param primeP
+   *          the prime factor p of n.
+   * @param primeQ
+   *          the prime factor q of n.
+   * @param primeExponentP
+   *          this is d mod (p-1).
+   * @param primeExponentQ
+   *          this is d mod (q-1).
+   * @param crtCoefficient
+   *          the Chinese Remainder Theorem coefficient q-1 mod p.
+   * @param otherPrimeInfo
+   *          triplets of the rest of primes, <code>null</code> can be
+   *          specified if there are only two prime factors (p and q).
+   * @throws NullPointerException
+   *           if any of the parameters is <code>null</code>.
+   * @throws IllegalArgumentException
+   *           if an empty <code>otherPrimeInfo</code> is specified.
    */
   public RSAMultiPrimePrivateCrtKeySpec(BigInteger modulus,
                                         BigInteger publicExponent,
@@ -153,9 +159,9 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   }
 
   /**
-   * Returns the primeP.
+   * Returns the prime p.
    *
-   * @return the primeP.
+   * @return the prime p.
    */
   public BigInteger getPrimeP()
   {
@@ -163,9 +169,9 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   }
 
   /**
-   * Returns the primeQ.
+   * Returns the prime q.
    *
-   * @return the primeQ.
+   * @return the prime q.
    */
   public BigInteger getPrimeQ()
   {
@@ -173,9 +179,9 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   }
 
   /**
-   * Returns the primeExponentP.
+   * Returns d mod (p-1).
    *
-   * @return the primeExponentP.
+   * @return d mod (p-1).
    */
   public BigInteger getPrimeExponentP()
   {
@@ -183,9 +189,9 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   }
 
   /**
-   * Returns the primeExponentQ.
+   * Returns d mod (q-1).
    *
-   * @return the primeExponentQ.
+   * @return d mod (q-1).
    */
   public BigInteger getPrimeExponentQ()
   {
@@ -193,9 +199,9 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   }
 
   /**
-   * Returns the crtCoefficient.
+   * Returns the CRT Coefficient q-1 mod p.
    *
-   * @return the crtCoefficient.
+   * @return the CRT Coefficient q-1 mod p.
    */
   public BigInteger getCrtCoefficient()
   {
@@ -203,10 +209,10 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   }
 
   /**
-   * Returns a copy of the otherPrimeInfo or <code>null</code> if there are
-   * only two prime factors (p and q).
+   * Returns a clone of <code>otherPrimeInfo</code> or <code>null</code> if
+   * it was <code>null</code> at construction time.
    *
-   * @return the otherPrimeInfo.
+   * @return a cloned copy of <code>otherPrimeInfo</code>.
    */
   public RSAOtherPrimeInfo[] getOtherPrimeInfo()
   {

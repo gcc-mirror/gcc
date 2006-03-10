@@ -1,5 +1,5 @@
 /* NameClassPair.java --
-   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,6 +46,8 @@ import java.io.Serializable;
  */
 public class NameClassPair implements Serializable
 {
+  private static final long serialVersionUID = 5620776610160863339L;
+
   public NameClassPair (String name, String className)
   {
     this (name, className, true);

@@ -1,5 +1,5 @@
 /* GtkListPeer.java -- Implements ListPeer with GTK
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,7 +59,12 @@ public class GtkListPeer extends GtkComponentPeer
 
   native void create (int rows);
   native void connectSignals ();
-  native void gtkWidgetModifyFont (String name, int style, int size);
+
+  /**
+   * Overridden to set the Font of the text insode the gtk_scrolled_window.
+   */
+  protected native void gtkWidgetModifyFont (String name, int style, int size);
+
   native void gtkWidgetRequestFocus ();
 
   native void getSize (int rows, int visibleRows, int dims[]);

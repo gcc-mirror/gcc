@@ -1,5 +1,5 @@
 /* MultipleDocumentHandling.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -108,7 +108,7 @@ public class MultipleDocumentHandling extends EnumSyntax
    *
    * @return The class <code>MultipleDocumentHandling</code> itself.
    */
-  public Class getCategory()
+  public final Class getCategory()
   {
     return MultipleDocumentHandling.class;
   }
@@ -118,7 +118,7 @@ public class MultipleDocumentHandling extends EnumSyntax
    *
    * @return The name "multiple-document-handling".
    */
-  public String getName()
+  public final String getName()
   {
     return "multiple-document-handling";
   }

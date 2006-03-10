@@ -2182,6 +2182,7 @@ loop:
                   {
                     nest++;
                   }
+                break;
               case ']':
                 if (tryRead("]>"))
                   {

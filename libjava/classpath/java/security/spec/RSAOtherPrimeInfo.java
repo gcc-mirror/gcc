@@ -40,17 +40,8 @@ package java.security.spec;
 import java.math.BigInteger;
 
 /**
- * This class represents the triplet (prime, exponent, and coefficient) inside
- * RSA's OtherPrimeInfo structure, as defined in the PKCS#1 v2.1. The ASN.1
- * syntax of RSA's OtherPrimeInfo is as follows:
- *
- * <pre>
- *  OtherPrimeInfo ::= SEQUENCE {
- *    prime INTEGER,
- *    exponent INTEGER,
- *    coefficient INTEGER
- *  }
- * </pre>
+ * An in-memory representation of the RSA triplet (prime, exponent, and
+ * coefficient) inside a PKCS#1 v2.1 <i>OtherPrimeInfo</i> structure.
  *
  * @since 1.4
  * @see RSAPrivateCrtKeySpec
@@ -69,14 +60,16 @@ public class RSAOtherPrimeInfo
   // --------------------------------------------------------------------------
 
   /**
-   * Creates a new <code>RSAOtherPrimeInfo</code> given the prime,
-   * primeExponent, and crtCoefficient as defined in PKCS#1.
-   *
-   * @param prime the prime factor of n.
-   * @param primeExponent the exponent.
-   * @param crtCoefficient the Chinese Remainder Theorem coefficient.
-   * @throws NullPointerException if any of the parameters, i.e. prime,
-   * primeExponent, crtCoefficient, is <code>null</code>.
+   * Constructs a new <code>RSAOtherPrimeInfo</code> given the PKCS#1 MPIs.
+   * 
+   * @param prime
+   *          the prime factor of n.
+   * @param primeExponent
+   *          the exponent.
+   * @param crtCoefficient
+   *          the Chinese Remainder Theorem coefficient.
+   * @throws NullPointerException
+   *           if any of the parameters is <code>null</code>.
    */
   public RSAOtherPrimeInfo(BigInteger prime, BigInteger primeExponent,
                            BigInteger crtCoefficient)
@@ -122,9 +115,9 @@ public class RSAOtherPrimeInfo
   }
 
   /**
-   * Returns the prime's crtCoefficient.
+   * Returns the CRT Coefficient.
    *
-   * @return the crtCoefficient.
+   * @return the CRT Coefficient.
    */
   public final BigInteger getCrtCoefficient()
   {

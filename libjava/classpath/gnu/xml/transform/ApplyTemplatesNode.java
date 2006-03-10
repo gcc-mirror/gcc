@@ -1,5 +1,5 @@
 /* ApplyTemplatesNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,29 +76,21 @@ final class ApplyTemplatesNode
 
   TemplateNode clone(Stylesheet stylesheet)
   {
-    int len = sortKeys.size();
+    int len = sortKeys != null ? sortKeys.size() : 0;
     List sortKeys2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
-      {
-        sortKeys2.add(((Key) sortKeys.get(i)).clone(stylesheet));
-      }
+      sortKeys2.add(((Key) sortKeys.get(i)).clone(stylesheet));
     len = withParams.size();
     List withParams2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
-      {
-        withParams2.add(((WithParam) withParams.get(i)).clone(stylesheet));
-      }
+      withParams2.add(((WithParam) withParams.get(i)).clone(stylesheet));
     TemplateNode ret = new ApplyTemplatesNode(select.clone(stylesheet),
                                               mode, sortKeys2, withParams2,
                                               isDefault);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -147,9 +139,7 @@ final class ApplyTemplatesNode
             Collections.sort(nodes, new XSLComparator(sortKeys));
           }
         else
-          {
-            Collections.sort(nodes, documentOrderComparator);
-          }
+          Collections.sort(nodes, documentOrderComparator);
         int l = nodes.size();
         QName effectiveMode = isDefault ? mode : this.mode;
         for (int i = 0; i < l; i++)
@@ -172,27 +162,21 @@ final class ApplyTemplatesNode
       }
     // apply-templates doesn't have processable children
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
 
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
-      {
-        return true;
-      }
+      return true;
     if (withParams != null)
       {
         for (Iterator i = withParams.iterator(); i.hasNext(); )
           {
             if (((WithParam) i.next()).references(var))
-              {
-                return true;
-              }
+              return true;
           }
       }
     if (sortKeys != null)
@@ -200,9 +184,7 @@ final class ApplyTemplatesNode
         for (Iterator i = sortKeys.iterator(); i.hasNext(); )
           {
             if (((SortKey) i.next()).references(var))
-              {
-                return true;
-              }
+              return true;
           }
       }
     return super.references(var);
@@ -210,7 +192,7 @@ final class ApplyTemplatesNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("apply-templates");
     buf.append('[');
     boolean o = false;
     if (select != null)

@@ -44,12 +44,14 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
+import javax.accessibility.AccessibleStateSet;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TabbedPaneUI;
@@ -136,7 +138,12 @@ public class JTabbedPane extends JComponent implements Serializable,
      */
     public Accessible getAccessibleChild(int i)
     {
-      return null;
+      // Testing shows that the reference implementation returns instances
+      // of page here.
+      Accessible child = null;
+      if (i >= 0 && i < tabs.size())
+        child = (Page) tabs.get(i);
+      return child;
     }
 
     /**
@@ -273,6 +280,8 @@ public class JTabbedPane extends JComponent implements Serializable,
    * A private class that holds all the information  for each tab.
    */
   private class Page
+    extends AccessibleContext
+    implements Accessible
   {
     /** The tooltip string. */
     private String tip;
@@ -552,6 +561,74 @@ public class JTabbedPane extends JComponent implements Serializable,
 	index = -1;
 
       underlinedChar = index;
+    }
+
+    /**
+     * Returns the accessible context, which is this object itself.
+     *
+     * @return the accessible context, which is this object itself
+     */
+    public AccessibleContext getAccessibleContext()
+    {
+      return this;
+    }
+
+    /**
+     * Returns the accessible role of this tab, which is always
+     * {@link AccessibleRole#PAGE_TAB}.
+     *
+     * @return the accessible role of this tab
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.PAGE_TAB;
+    }
+
+    public AccessibleStateSet getAccessibleStateSet()
+    {
+      // FIXME: Implement this properly.
+      return null;
+    }
+
+    public int getAccessibleIndexInParent()
+    {
+      // FIXME: Implement this properly.
+      return 0;
+    }
+
+    /**
+     * Returns the number of accessible children, which is always one (the
+     * component of this tab).
+     *
+     * @return the number of accessible children
+     */
+    public int getAccessibleChildrenCount()
+    {
+      return 1;
+    }
+
+    /**
+     * Returns the accessible child of this tab, which is the component
+     * displayed by the tab.
+     *
+     * @return the accessible child of this tab
+     */
+    public Accessible getAccessibleChild(int i)
+    {
+      // A quick test shows that this method always returns the component
+      // displayed by the tab, regardless of the index.
+      return (Accessible) component;
+    }
+
+    /**
+     * Returns the locale of this accessible object.
+     *
+     * @return the locale of this accessible object
+     */
+    public Locale getLocale()
+    {
+      // TODO: Is this ok?
+      return Locale.getDefault();
     }
   }
 
@@ -1088,7 +1165,7 @@ public class JTabbedPane extends JComponent implements Serializable,
    */
   public void remove(int index)
   {
-    remove(getComponentAt(index));
+    super.remove(index);
     removeTabAt(index);
   }
 

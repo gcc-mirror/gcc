@@ -38,10 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
-import java.net.URL;
-
 import java.io.IOException;
-
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Stack;
 import java.util.Vector;
@@ -131,16 +129,17 @@ public class HTMLDocument extends DefaultStyledDocument
   }
   
   /**
-   * Replaces the contents of the document with the given element specifications.
-   * This is called before insert if the loading is done in bursts. This is the
-   * only method called if loading the document entirely in one burst.
+   * Replaces the contents of the document with the given element
+   * specifications. This is called before insert if the loading is done
+   * in bursts. This is the only method called if loading the document
+   * entirely in one burst.
    * 
    * @param data - the date that replaces the content of the document
    */
   protected void create(DefaultStyledDocument.ElementSpec[] data)
   {
-    // FIXME: Not implemented
-    System.out.println("create not implemented");
+    // Once the super behaviour is properly implemented it should be sufficient
+    // to simply call super.create(data).
     super.create(data);
   }
   
@@ -149,11 +148,35 @@ public class HTMLDocument extends DefaultStyledDocument
    * 
    * @return the new default root
    */
-  protected AbstractDocument.AbstractElement createDefaultRoot()
+  protected AbstractElement createDefaultRoot()
   {
-    // FIXME: Not implemented
-    System.out.println("createDefaultRoot not implemented");
-    return super.createDefaultRoot();
+    AbstractDocument.AttributeContext ctx = getAttributeContext();
+
+    // Create html element.
+    AttributeSet atts = ctx.getEmptySet();
+    atts = ctx.addAttribute(atts, StyleConstants.NameAttribute, HTML.Tag.HTML);
+    BranchElement html = (BranchElement) createBranchElement(null, atts);
+
+    // Create body element.
+    atts = ctx.getEmptySet();
+    atts = ctx.addAttribute(atts, StyleConstants.NameAttribute, HTML.Tag.BODY);
+    BranchElement body = (BranchElement) createBranchElement(html, atts);
+    html.replace(0, 0, new Element[] { body });
+
+    // Create p element.
+    atts = ctx.getEmptySet();
+    atts = ctx.addAttribute(atts, StyleConstants.NameAttribute, HTML.Tag.P);
+    BranchElement p = (BranchElement) createBranchElement(body, atts);
+    body.replace(0, 0, new Element[] { p });
+
+    // Create an empty leaf element.
+    atts = ctx.getEmptySet();
+    atts = ctx.addAttribute(atts, StyleConstants.NameAttribute,
+                            HTML.Tag.CONTENT);
+    Element leaf = createLeafElement(p, atts, 0, 1);
+    p.replace(0, 0, new Element[]{ leaf });
+
+    return html;
   }
   
   /**
@@ -165,28 +188,29 @@ public class HTMLDocument extends DefaultStyledDocument
    * @param a - the attributes for the element
    * @param p0 - the beginning of the range >= 0
    * @param p1 - the end of the range >= p0
+   *
    * @return the new element
    */
   protected Element createLeafElement(Element parent, AttributeSet a, int p0,
                                       int p1)
   {
-    // FIXME: Not implemented
-    System.out.println("createLeafElement not implemented");
-    return super.createLeafElement(parent, a, p0, p1);
+    RunElement el = new RunElement(parent, a, p0, p1);
+    el.addAttribute(StyleConstants.NameAttribute, HTML.Tag.CONTENT);
+    return new RunElement(parent, a, p0, p1);
   }
 
-  /** This method returns an HTMLDocument.BlockElement object representing the
+  /**
+   * This method returns an HTMLDocument.BlockElement object representing the
    * attribute set a and attached to parent.
    * 
    * @param parent - the parent element
    * @param a - the attributes for the element
+   *
    * @return the new element
    */
   protected Element createBranchElement(Element parent, AttributeSet a)
   {
-    // FIXME: Not implemented
-    System.out.println("createBranchElement not implemented");
-    return super.createBranchElement(parent, a);
+    return new BlockElement(parent, a);
   }
   
   /**
@@ -204,9 +228,9 @@ public class HTMLDocument extends DefaultStyledDocument
    */
   protected void insert(int offset, DefaultStyledDocument.ElementSpec[] data)
     throws BadLocationException
-    {
-      super.insert(offset, data);
-    }
+  {
+    super.insert(offset, data);
+  }
   
   /**
    * Updates document structure as a result of text insertion. This will happen
@@ -451,7 +475,7 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     public BlockElement (Element parent, AttributeSet a)
     {
-      super (parent, a);
+      super(parent, a);
     }
     
     /**
@@ -470,10 +494,14 @@ public class HTMLDocument extends DefaultStyledDocument
      */
     public String getName()
     {
-      return (String) getAttribute(StyleConstants.NameAttribute); 
+      Object tag = getAttribute(StyleConstants.NameAttribute);
+      String name = null;
+      if (tag != null)
+        name = tag.toString();
+      return name;
     }
   }
-  
+
   /**
    * RunElement represents a section of text that has a set of 
    * HTML character level attributes assigned to it.
@@ -502,7 +530,11 @@ public class HTMLDocument extends DefaultStyledDocument
      */
     public String getName()
     {
-      return (String) getAttribute(StyleConstants.NameAttribute);      
+      Object tag = getAttribute(StyleConstants.NameAttribute);
+      String name = null;
+      if (tag != null)
+        name = tag.toString();
+      return name;
     }
     
     /**
@@ -531,7 +563,13 @@ public class HTMLDocument extends DefaultStyledDocument
     
     /** A stack for character attribute sets **/
     Stack charAttrStack = new Stack();
-    
+
+    /**
+     * The parse stack. This stack holds HTML.Tag objects that reflect the
+     * current position in the parsing process.
+     */
+    private Stack parseStack = new Stack();
+   
     /** A mapping between HTML.Tag objects and the actions that handle them **/
     HashMap tagToAction;
     
@@ -699,8 +737,8 @@ public class HTMLDocument extends DefaultStyledDocument
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
       {
-        // FIXME: Implement.
-        print ("ParagraphAction.start not implemented");
+        // FIXME: What else must be done here?
+        blockOpen(t, a);
       }
       
       /**
@@ -709,8 +747,8 @@ public class HTMLDocument extends DefaultStyledDocument
        */
       public void end(HTML.Tag t)
       {
-        // FIXME: Implement.
-        print ("ParagraphAction.end not implemented");
+        // FIXME: What else must be done here?
+        blockClose(t);
       } 
     }
     
@@ -1102,7 +1140,11 @@ public class HTMLDocument extends DefaultStyledDocument
       elements = new DefaultStyledDocument.ElementSpec[parseBuffer.size()];
       parseBuffer.copyInto(elements);
       parseBuffer.removeAllElements();
-      insert(offset, elements);
+      if (offset == 0)
+        create(elements);
+      else
+        insert(offset, elements);
+
       offset += HTMLDocument.this.getLength() - offset;
     }
     
@@ -1250,12 +1292,27 @@ public class HTMLDocument extends DefaultStyledDocument
     {
       printBuffer();
       DefaultStyledDocument.ElementSpec element;
-      element = new DefaultStyledDocument.ElementSpec(attr.copyAttributes(),
-			DefaultStyledDocument.ElementSpec.StartTagType);
+
+      // If the previous tag is content and the parent is p-implied, then
+      // we must also close the p-implied.
+      if (parseStack.size() > 0 && parseStack.peek() == HTML.Tag.IMPLIED)
+        {
+          element = new DefaultStyledDocument.ElementSpec(null,
+                                    DefaultStyledDocument.ElementSpec.EndTagType);
+          parseBuffer.addElement(element);
+          parseStack.pop();
+        }
+
+      parseStack.push(t);
+      AbstractDocument.AttributeContext ctx = getAttributeContext();
+      AttributeSet copy = attr.copyAttributes();
+      copy = ctx.addAttribute(copy, StyleConstants.NameAttribute, t);
+      element = new DefaultStyledDocument.ElementSpec(copy,
+                               DefaultStyledDocument.ElementSpec.StartTagType);
       parseBuffer.addElement(element);
       printBuffer();
     }
-    
+
     /**
      * Instructs the parse buffer to close the block element associated with 
      * the given HTML.Tag
@@ -1266,10 +1323,40 @@ public class HTMLDocument extends DefaultStyledDocument
     {
       printBuffer();
       DefaultStyledDocument.ElementSpec element;
+
+      // If the previous tag is a start tag then we insert a synthetic
+      // content tag.
+      DefaultStyledDocument.ElementSpec prev;
+      prev = (DefaultStyledDocument.ElementSpec)
+	      parseBuffer.get(parseBuffer.size() - 1);
+      if (prev.getType() == DefaultStyledDocument.ElementSpec.StartTagType)
+        {
+          AbstractDocument.AttributeContext ctx = getAttributeContext();
+          AttributeSet attributes = ctx.getEmptySet();
+          attributes = ctx.addAttribute(attributes, StyleConstants.NameAttribute,
+                                        HTML.Tag.CONTENT);
+          element = new DefaultStyledDocument.ElementSpec(attributes,
+			  DefaultStyledDocument.ElementSpec.ContentType,
+                                    new char[0], 0, 0);
+          parseBuffer.add(element);
+        }
+      // If the previous tag is content and the parent is p-implied, then
+      // we must also close the p-implied.
+      else if (parseStack.peek() == HTML.Tag.IMPLIED)
+        {
+          element = new DefaultStyledDocument.ElementSpec(null,
+                                 DefaultStyledDocument.ElementSpec.EndTagType);
+          parseBuffer.addElement(element);
+          if (parseStack.size() > 0)
+            parseStack.pop();
+        }
+
       element = new DefaultStyledDocument.ElementSpec(null,
 				DefaultStyledDocument.ElementSpec.EndTagType);
       parseBuffer.addElement(element);
       printBuffer();
+      if (parseStack.size() > 0)
+        parseStack.pop();
     }
     
     /**
@@ -1298,16 +1385,42 @@ public class HTMLDocument extends DefaultStyledDocument
     protected void addContent(char[] data, int offs, int length,
                               boolean generateImpliedPIfNecessary)
     {
+      AbstractDocument.AttributeContext ctx = getAttributeContext();
+      DefaultStyledDocument.ElementSpec element;
+      AttributeSet attributes = null;
+
+      // Content must always be embedded inside a paragraph element,
+      // so we create this if the previous element is not one of
+      // <p>, <h1> .. <h6>.
+      boolean createImpliedParagraph = false;
+      HTML.Tag parent = (HTML.Tag) parseStack.peek();
+      if (parent != HTML.Tag.P && parent != HTML.Tag.H1
+          && parent != HTML.Tag.H2
+          && parent != HTML.Tag.H3 && parent != HTML.Tag.H4
+          && parent != HTML.Tag.H5 && parent != HTML.Tag.H6
+          && parent != HTML.Tag.TD)
+        {
+          attributes = ctx.getEmptySet();
+          attributes = ctx.addAttribute(attributes,
+                                        StyleConstants.NameAttribute,
+                                        HTML.Tag.IMPLIED);
+          element = new DefaultStyledDocument.ElementSpec(attributes,
+                       DefaultStyledDocument.ElementSpec.StartTagType);
+          parseBuffer.add(element);
+          parseStack.push(HTML.Tag.IMPLIED);
+        }
+
       // Copy the attribute set, don't use the same object because 
       // it may change
-      AttributeSet attributes = null;
       if (charAttr != null)
         attributes = charAttr.copyAttributes();
-
-      DefaultStyledDocument.ElementSpec element;
+      else
+        attributes = ctx.getEmptySet();
+      attributes = ctx.addAttribute(attributes, StyleConstants.NameAttribute,
+                                    HTML.Tag.CONTENT);
       element = new DefaultStyledDocument.ElementSpec(attributes,
-			      DefaultStyledDocument.ElementSpec.ContentType,
-                              data, offs, length);
+                                DefaultStyledDocument.ElementSpec.ContentType,
+                                data, offs, length);
       
       printBuffer();
       // Add the element to the buffer

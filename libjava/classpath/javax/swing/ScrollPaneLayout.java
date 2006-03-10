@@ -285,20 +285,20 @@ public class ScrollPaneLayout
     // Sun's implementation simply throws a ClassCastException if
     // parent is no JScrollPane, so do we.
     JScrollPane sc = (JScrollPane) parent;
-    Dimension viewportSize = viewport.getMinimumSize();
-    int width = viewportSize.width;
-    int height = viewportSize.height;
-    if (hsb != null && hsb.isVisible())
-      height += hsb.getMinimumSize().height;
-    if (vsb != null && vsb.isVisible())
-      width += vsb.getMinimumSize().width;
-    if (rowHead != null && rowHead.isVisible())
-      width += rowHead.getMinimumSize().width;
-    if (colHead != null && colHead.isVisible())
-      height += colHead.getMinimumSize().height;
     Insets i = sc.getInsets();
-    return new Dimension(width + i.left + i.right,
-                         height + i.top + i.bottom);
+    Dimension viewportMinSize = sc.getViewport().getMinimumSize();
+
+    int width = i.left + i.right + viewportMinSize.width;
+    if (sc.getVerticalScrollBarPolicy()
+        != JScrollPane.VERTICAL_SCROLLBAR_NEVER)
+      width += sc.getVerticalScrollBar().getMinimumSize().width;
+
+    int height = i.top + i.bottom + viewportMinSize.height;
+    if (sc.getHorizontalScrollBarPolicy()
+        != JScrollPane.HORIZONTAL_SCROLLBAR_NEVER)
+      height += sc.getHorizontalScrollBar().getMinimumSize().height;
+
+    return new Dimension(width, height);
   }
 
   /**

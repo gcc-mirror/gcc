@@ -1,5 +1,5 @@
 /* DomCharacterData.java -- 
-   Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
+   Copyright (C) 1999,2000,2001,2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,8 @@ package gnu.xml.dom;
 
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.events.MutationEvent;
 
 
@@ -54,6 +56,30 @@ public abstract class DomCharacterData
   extends DomNode
   implements CharacterData
 {
+
+  /**
+   * Empty node list representing the children of character data nodes.
+   */
+  static class EmptyNodeList
+    implements NodeList
+  {
+
+    public int getLength()
+    {
+      return 0;
+    }
+
+    public Node item(int index)
+    {
+      return null;
+    }
+    
+  }
+
+  /**
+   * Singleton empty node list for character data nodes.
+   */
+  static final NodeList CHILD_NODES = new EmptyNodeList();
 
   private String text;
   
@@ -277,6 +303,15 @@ public abstract class DomCharacterData
           }
         throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
+  }
+
+  /**
+   * Returns an empty node list.
+   * Character data nodes do not have children.
+   */
+  public NodeList getChildNodes()
+  {
+    return CHILD_NODES;
   }
 
   /**

@@ -42,6 +42,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
@@ -121,7 +122,17 @@ class XIncludeFilter
                  boolean expandERefs)
   {
     super(reader);
-    this.systemId = XMLParser.absolutize(null, systemId);
+    try
+      {
+        this.systemId = XMLParser.absolutize(null, systemId);
+      }
+    catch (MalformedURLException e)
+      {
+        RuntimeException e2 = new RuntimeException("unsupported URL: " +
+                                                   systemId);
+        e2.initCause(e);
+        throw e2;
+      }
     this.namespaceAware = namespaceAware;
     this.validating = validating;
     this.expandERefs = expandERefs;
@@ -137,7 +148,7 @@ class XIncludeFilter
     return super.getAttributeCount();
   }
 
-  public String getAttributeName(int index)
+  public String getAttributeLocalName(int index)
   {
     if (current != null)
       {
@@ -147,7 +158,7 @@ class XIncludeFilter
         Node attr = attrs.item(index);
         return attr.getLocalName();
       }
-    return super.getAttributeName(index);
+    return super.getAttributeLocalName(index);
   }
 
   public String getAttributeNamespace(int index)
@@ -176,7 +187,7 @@ class XIncludeFilter
     return super.getAttributePrefix(index);
   }
 
-  public QName getAttributeQName(int index)
+  public QName getAttributeName(int index)
   {
     if (current != null)
       {
@@ -189,7 +200,7 @@ class XIncludeFilter
         String prefix = attr.getPrefix();
         return new QName(uri, localName, prefix);
       }
-    return super.getAttributeQName(index);
+    return super.getAttributeName(index);
   }
 
   public String getAttributeType(int index)

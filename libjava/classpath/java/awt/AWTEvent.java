@@ -39,6 +39,19 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ContainerEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InvocationEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.PaintEvent;
+import java.awt.event.TextEvent;
+import java.awt.event.WindowEvent;
 import java.util.EventObject;
 
 /**
@@ -274,5 +287,95 @@ public abstract class AWTEvent extends EventObject
   protected boolean isConsumed()
   {
     return consumed;
+  }
+
+  /**
+   * Converts an event id to the appropriate event mask.
+   *
+   * @param id the event id
+   *
+   * @return the event mask for the specified id
+   */
+  static long eventIdToMask(int id)
+  {
+    long mask = 0;
+    switch (id)
+    {
+      case ActionEvent.ACTION_PERFORMED:
+        mask = ACTION_EVENT_MASK;
+        break;
+      case AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED:
+        mask = ADJUSTMENT_EVENT_MASK;
+        break;
+      case ComponentEvent.COMPONENT_MOVED:
+      case ComponentEvent.COMPONENT_RESIZED:
+      case ComponentEvent.COMPONENT_SHOWN:
+      case ComponentEvent.COMPONENT_HIDDEN:
+        mask = COMPONENT_EVENT_MASK;
+        break;
+      case ContainerEvent.COMPONENT_ADDED:
+      case ContainerEvent.COMPONENT_REMOVED:
+        mask = CONTAINER_EVENT_MASK;
+        break;
+      case FocusEvent.FOCUS_GAINED:
+      case FocusEvent.FOCUS_LOST:
+        mask = FOCUS_EVENT_MASK;
+        break;
+      case InputMethodEvent.INPUT_METHOD_TEXT_CHANGED:
+      case InputMethodEvent.CARET_POSITION_CHANGED:
+        mask = INPUT_METHOD_EVENT_MASK;
+        break;
+      case InvocationEvent.INVOCATION_DEFAULT:
+        mask = INVOCATION_EVENT_MASK;
+        break;
+      case ItemEvent.ITEM_STATE_CHANGED:
+        mask = ITEM_EVENT_MASK;
+        break;
+      case KeyEvent.KEY_TYPED:
+      case KeyEvent.KEY_PRESSED:
+      case KeyEvent.KEY_RELEASED:
+        mask = KEY_EVENT_MASK;
+        break;
+      case MouseEvent.MOUSE_CLICKED:
+      case MouseEvent.MOUSE_PRESSED:
+      case MouseEvent.MOUSE_RELEASED:
+        mask = MOUSE_EVENT_MASK;
+        break;
+      case MouseEvent.MOUSE_MOVED:
+      case MouseEvent.MOUSE_ENTERED:
+      case MouseEvent.MOUSE_EXITED:
+      case MouseEvent.MOUSE_DRAGGED:
+        mask = MOUSE_MOTION_EVENT_MASK;
+        break;
+      case MouseEvent.MOUSE_WHEEL:
+        mask = MOUSE_WHEEL_EVENT_MASK;
+        break;
+      case PaintEvent.PAINT:
+      case PaintEvent.UPDATE:
+        mask = PAINT_EVENT_MASK;
+        break;
+      case TextEvent.TEXT_VALUE_CHANGED:
+        mask = TEXT_EVENT_MASK;
+        break;
+      case WindowEvent.WINDOW_OPENED:
+      case WindowEvent.WINDOW_CLOSING:
+      case WindowEvent.WINDOW_CLOSED:
+      case WindowEvent.WINDOW_ICONIFIED:
+      case WindowEvent.WINDOW_DEICONIFIED:
+      case WindowEvent.WINDOW_ACTIVATED:
+      case WindowEvent.WINDOW_DEACTIVATED:
+        mask = WINDOW_EVENT_MASK;
+        break;
+      case WindowEvent.WINDOW_GAINED_FOCUS:
+      case WindowEvent.WINDOW_LOST_FOCUS:
+        mask = WINDOW_FOCUS_EVENT_MASK;
+        break;
+      case WindowEvent.WINDOW_STATE_CHANGED:
+        mask = WINDOW_STATE_EVENT_MASK;
+        break;
+      default:
+        mask = 0;
+    }
+    return mask;
   }
 } // class AWTEvent

@@ -1,5 +1,5 @@
 /* ComboBoxModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,31 +37,33 @@ exception statement from your version. */
 
 package javax.swing;
 
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 /**
- * The data model for {@link JComboBox}. This model keeps
- * track of elements contained in the JComboBox as well as the current
- * combo box selection. Whenever selection in the JComboBox changes, the
- * ComboBoxModel should fire ListDataEvents to ComboBox's ListDataListeners.
+ * The data model for a {@link JComboBox}. This model keeps track of elements 
+ * contained in the <code>JComboBox</code> as well as the current
+ * combo box selection. Whenever the selection in the <code>JComboBox</code> 
+ * changes, the <code>ComboBoxModel</code> should fire a {@link ListDataEvent}
+ * to the model's {@link ListDataListener}s.
  *
  * @author Andrew Selkirk
  */
 public interface ComboBoxModel extends ListModel
 {
   /**
-   * This method sets the selected item in the combo box. Class
-   * implementing this interface should fire ListDataEvents to
-   * all registered ListDataListeners to indicated that the
-   * selection has changed.
+   * Sets the selected item in the combo box. Classes implementing this 
+   * interface should fire a {@link ListDataEvent} to all registered 
+   * {@link ListDataListener}s to indicate that the selection has changed.
    *
-   * @param item item in the combo box that should be selected
+   * @param item  the selected item (<code>null</code> permitted).
    */
   void setSelectedItem(Object item);
 
   /**
-   * The method returns currently selected item in the combo box
+   * Returns the currently selected item in the combo box.
    *
-   * @returns item that is currently selected in the combo box.
+   * @return The selected item (possibly <code>null</code>).
    */
   Object getSelectedItem();
-} // ComboBoxModel
+}

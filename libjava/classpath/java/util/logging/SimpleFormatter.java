@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.util.logging;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -113,6 +115,14 @@ public class SimpleFormatter
     buf.append(formatMessage(record));
 
     buf.append(lineSep);
+
+    Throwable throwable = record.getThrown();
+    if (throwable != null)
+      {
+        StringWriter sink = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sink, true));
+        buf.append(sink.toString());
+      }
 
     return buf.toString();
   }

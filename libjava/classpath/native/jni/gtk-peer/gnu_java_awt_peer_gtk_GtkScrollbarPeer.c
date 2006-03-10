@@ -1,5 +1,5 @@
 /* gtkscrollbarpeer.c -- Native implementation of GtkScrollbarPeer
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -86,6 +86,14 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create
 
   gdk_threads_enter ();
 
+  /* A little hack because gtk_range_set_range() doesn't allow min == max. */
+  if (min == max)
+    {
+      if (visible_amount == 0)
+	visible_amount = 1;
+      max++;
+    }
+
   adj = gtk_adjustment_new ((gdouble) value,
                             (gdouble) min,
                             (gdouble) max,
@@ -171,7 +179,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setPageIncrement
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setValues
+Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setBarValues
   (JNIEnv *env, jobject obj, jint value, jint visible, jint min, jint max)
 {
   void *ptr;
@@ -180,6 +188,14 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setValues
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
+
+  /* A little hack because gtk_range_set_range() doesn't allow min == max. */
+  if (min == max)
+    {
+      if (visible == 0)
+	visible = 1;
+      max++;
+    }
 
   adj = gtk_range_get_adjustment (GTK_RANGE (ptr));
   adj->page_size = (gdouble) visible;

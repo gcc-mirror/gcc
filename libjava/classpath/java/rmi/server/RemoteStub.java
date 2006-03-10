@@ -37,21 +37,40 @@ exception statement from your version. */
 
 package java.rmi.server;
 
+/**
+ * This is a base class for the automatically generated RMI stubs. 
+ */
 public abstract class RemoteStub extends RemoteObject
 {
+  /**
+   * Use serialVersionUID for interoperability.
+   */
   static final long serialVersionUID = -1585587260594494182l;
-
+  
+  /**
+   * Constructs the remote stub with no reference set.
+   */
   protected RemoteStub ()
   {
     super ();
   }
-
+  
+  /**
+   * Constructs the remote stub that uses given remote reference for the
+   * method invocations.
+   * 
+   * @param ref the remote reference for the method invocation.
+   */
   protected RemoteStub (RemoteRef ref)
   {
     super (ref);
   }
 
   /**
+   * Sets the given remote reference for the given stub. This method is 
+   * deprecated. Pass the stub remote reference to the RemoteStub
+   * constructor instead.
+   * 
    * @deprecated
    */
   protected static void setRef (RemoteStub stub,  RemoteRef ref)

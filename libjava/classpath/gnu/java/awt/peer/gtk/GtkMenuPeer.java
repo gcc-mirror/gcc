@@ -1,5 +1,5 @@
 /* GtkMenuPeer.java -- Implements MenuPeer with GTK+
-   Copyright (C) 1999, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,10 +49,28 @@ import java.awt.peer.MenuPeer;
 public class GtkMenuPeer extends GtkMenuItemPeer
   implements MenuPeer
 {
-  native void create (String label);
-  native void addItem (MenuItemPeer item, int key, boolean shiftModifier);
+  /**
+   * Creates the associated gtk+ widget and stores it in the nsa table
+   * for this peer. Called by the create() method with the label name
+   * of the associated MenuItem. Overridden to greate a Menu widget.
+   */
+  protected native void create (String label);
+
+  private native void addItem(MenuItemPeer item, int key,
+			      boolean shiftModifier);
+
+  /** XXX - Document this and the override in GtkPopupMenuPeer. */
   native void setupAccelGroup (GtkGenericPeer container);
-  native void addTearOff ();
+
+  private native void addTearOff ();
+
+  /**
+   * Overridden to not connect any signals.
+   */
+  protected void connectSignals()
+  {
+    // No signals to connect.
+  }
 
   public GtkMenuPeer (Menu menu)
   {
@@ -63,11 +81,11 @@ public class GtkMenuPeer extends GtkMenuItemPeer
 
     MenuContainer parent = menu.getParent ();
     if (parent instanceof Menu)
-      setupAccelGroup ((GtkGenericPeer)((Menu)parent).getPeer ());
+      setupAccelGroup ((GtkMenuPeer)((Menu)parent).getPeer ());
     else if (parent instanceof Component)
-      setupAccelGroup ((GtkGenericPeer)((Component)parent).getPeer ());
+      setupAccelGroup ((GtkComponentPeer)((Component)parent).getPeer ());
     else
-      setupAccelGroup (null);
+      setupAccelGroup (null); // XXX, should we warn about unknown parent?
   }
 
   public void addItem (MenuItem item)

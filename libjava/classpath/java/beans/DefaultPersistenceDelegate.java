@@ -157,6 +157,23 @@ public class DefaultPersistenceDelegate extends PersistenceDelegate
   protected void initialize(Class type, Object oldInstance, Object newInstance,
                             Encoder out)
   {
+    // Calling the supertype's implementation of initialize makes it
+    // possible that descendants of classes like AbstractHashMap
+    // or Hashtable are serialized correctly. This mechanism grounds on
+    // two other facts:
+    // * Each class which has not registered a special purpose
+    //   PersistenceDelegate is handled by a DefaultPersistenceDelegate
+    //   instance.
+    // * PersistenceDelegate.initialize() is implemented in a way that it
+    //   calls the initialize method of the superclass' persistence delegate.
+    super.initialize(type, oldInstance, newInstance, out);
+    
+    // Suppresses the writing of property setting statements when this delegate
+    // is not used for the exact instance type. By doing so the following code
+    // is called only once per object.
+    if (type != oldInstance.getClass())
+      return;
+    
     try
       {
         PropertyDescriptor[] propertyDescs = Introspector.getBeanInfo(

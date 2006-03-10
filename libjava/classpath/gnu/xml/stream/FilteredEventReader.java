@@ -1,5 +1,5 @@
 /* FilteredEventReader.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -56,22 +56,35 @@ class FilteredEventReader
   }
 
   public boolean hasNext()
-    throws XMLStreamException
   {
     // XXX ???
     return super.hasNext();
   }
 
-  public XMLEvent next()
+  public XMLEvent nextEvent()
     throws XMLStreamException
   {
     XMLEvent ret;
     do
       {
-        ret = super.next();
+        ret = super.nextEvent();
       }
     while (!filter.accept(ret));
     return ret;
+  }
+  
+  public Object next()
+  {
+    try
+      {
+        return nextEvent();
+      }
+    catch (XMLStreamException e)
+      {
+        RuntimeException e2 = new RuntimeException();
+        e2.initCause(e);
+        throw e2;
+      }
   }
   
   public XMLEvent peek()

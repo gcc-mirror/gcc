@@ -1,5 +1,5 @@
 /* UnsupportedLookAndFeelException.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,11 +37,21 @@ exception statement from your version. */
 
 package javax.swing;
 
-
+/**
+ * Thrown by the {@link UIManager#setLookAndFeel(LookAndFeel)} method when the
+ * specified look and feel is not supported on the current platform.
+ * 
+ * @see LookAndFeel#isSupportedLookAndFeel()
+ */
 public class UnsupportedLookAndFeelException extends Exception
 {
-  public UnsupportedLookAndFeelException(String a)
+  /**
+   * Creates a new exception instance with the specified message.
+   * 
+   * @param s  the exception message.
+   */
+  public UnsupportedLookAndFeelException(String s)
   {
-    super(a);
+    super(s);
   }
 }

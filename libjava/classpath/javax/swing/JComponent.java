@@ -1,5 +1,5 @@
 /* JComponent.java -- Every component in swing inherits from this class.
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -64,10 +64,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.awt.peer.LightweightPeer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
@@ -88,7 +88,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.EventListenerList;
-import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.plaf.ComponentUI;
 
 /**
@@ -165,11 +164,11 @@ public abstract class JComponent extends Container implements Serializable
     /**
      * Manages the property change listeners;
      */
-    private SwingPropertyChangeSupport changeSupport;
+    private PropertyChangeSupport changeSupport;
 
     protected AccessibleJComponent()
     {
-      changeSupport = new SwingPropertyChangeSupport(this);
+      changeSupport = new PropertyChangeSupport(this);
     }
 
     /**
@@ -528,14 +527,6 @@ public abstract class JComponent extends Container implements Serializable
   protected EventListenerList listenerList = new EventListenerList();
 
   /** 
-   * Support for {@link PropertyChangeEvent} events. This is constructed
-   * lazily when the component gets its first {@link
-   * PropertyChangeListener} subscription; until then it's an empty slot.
-   */
-  private SwingPropertyChangeSupport changeSupport;
-
-
-  /** 
    * Storage for "client properties", which are key/value pairs associated
    * with this component by a "client", such as a user application or a
    * layout manager. This is lazily constructed when the component gets its
@@ -697,36 +688,6 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Unregister a <code>PropertyChangeListener</code>.
-   *
-   * @param listener The listener to register
-   *
-   * @see #addPropertyChangeListener(PropertyChangeListener)
-   * @see #changeSupport
-   */
-  public void removePropertyChangeListener(PropertyChangeListener listener)
-  {
-    if (changeSupport != null)
-      changeSupport.removePropertyChangeListener(listener);
-  }
-
-  /**
-   * Unregister a <code>PropertyChangeListener</code>.
-   *
-   * @param propertyName The property name to unregister the listener from
-   * @param listener The listener to unregister
-   *
-   * @see #addPropertyChangeListener(String, PropertyChangeListener)
-   * @see #changeSupport
-   */
-  public void removePropertyChangeListener(String propertyName,
-                                           PropertyChangeListener listener)
-  {
-    if (changeSupport != null)
-      changeSupport.removePropertyChangeListener(propertyName, listener);
-  }
-
-  /**
    * Unregister a <code>VetoableChangeChangeListener</code>.
    *
    * @param listener The listener to unregister
@@ -748,24 +709,6 @@ public abstract class JComponent extends Container implements Serializable
   public void addAncestorListener(AncestorListener listener)
   {
     listenerList.add(AncestorListener.class, listener);
-  }
-
-  /**
-   * Register a <code>PropertyChangeListener</code>. This listener will
-   * receive any PropertyChangeEvent, regardless of property name. To
-   * listen to a specific property name, use {@link
-   * #addPropertyChangeListener(String,PropertyChangeListener)} instead.
-   *
-   * @param listener The listener to register
-   *
-   * @see #removePropertyChangeListener(PropertyChangeListener)
-   * @see #changeSupport
-   */
-  public void addPropertyChangeListener(PropertyChangeListener listener)
-  {
-    if (changeSupport == null)
-      changeSupport = new SwingPropertyChangeSupport(this);
-    changeSupport.addPropertyChangeListener(listener);
   }
 
   /**
@@ -819,7 +762,10 @@ public abstract class JComponent extends Container implements Serializable
    */
   public EventListener[] getListeners(Class listenerType)
   {
-    return listenerList.getListeners(listenerType);
+    if (listenerType == PropertyChangeListener.class)
+      return getPropertyChangeListeners();
+    else
+      return listenerList.getListeners(listenerType);
   }
 
   /**
@@ -845,134 +791,48 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Return all <code>PropertyChangeListener</code> objects registered to listen
-   * for a particular property.
-   *
-   * @param property The property to return the listeners of
-   *
-   * @return The set of <code>PropertyChangeListener</code> objects in 
-   *     {@link #changeSupport} registered to listen on the specified property
-   */
-  public PropertyChangeListener[] getPropertyChangeListeners(String property)
-  {
-    return changeSupport == null ? new PropertyChangeListener[0]
-                          : changeSupport.getPropertyChangeListeners(property);
-  }
-
-  /**
    * A variant of {@link #firePropertyChange(String,Object,Object)} 
    * for properties with <code>boolean</code> values.
+   *
+   * @specnote It seems that in JDK1.5 all property related methods have been 
+   *           moved to java.awt.Component, except this and 2 others. We call
+   *           super here. I guess this will also be removed in one of the next
+   *           releases.
    */
   public void firePropertyChange(String propertyName, boolean oldValue,
                                  boolean newValue)
   {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, Boolean.valueOf(oldValue),
-                                       Boolean.valueOf(newValue));
-  }
-
-  /**
-   * A variant of {@link #firePropertyChange(String,Object,Object)} 
-   * for properties with <code>byte</code> values.
-   */
-  public void firePropertyChange(String propertyName, byte oldValue,
-                                 byte newValue)
-  {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, new Byte(oldValue),
-                                       new Byte(newValue));
+    super.firePropertyChange(propertyName, oldValue, newValue);
   }
 
   /**
    * A variant of {@link #firePropertyChange(String,Object,Object)} 
    * for properties with <code>char</code> values.
+   *
+   * @specnote It seems that in JDK1.5 all property related methods have been 
+   *           moved to java.awt.Component, except this and 2 others. We call
+   *           super here. I guess this will also be removed in one of the next
+   *           releases.
    */
   public void firePropertyChange(String propertyName, char oldValue,
                                  char newValue)
   {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, new Character(oldValue),
-                                       new Character(newValue));
-  }
-
-  /**
-   * A variant of {@link #firePropertyChange(String,Object,Object)} 
-   * for properties with <code>double</code> values.
-   */
-  public void firePropertyChange(String propertyName, double oldValue,
-                                 double newValue)
-  {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, new Double(oldValue),
-                                       new Double(newValue));
-  }
-
-  /**
-   * A variant of {@link #firePropertyChange(String,Object,Object)} 
-   * for properties with <code>float</code> values.
-   */
-  public void firePropertyChange(String propertyName, float oldValue,
-                                 float newValue)
-  {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, new Float(oldValue),
-                                       new Float(newValue));
+    super.firePropertyChange(propertyName, oldValue, newValue);
   }
 
   /**
    * A variant of {@link #firePropertyChange(String,Object,Object)} 
    * for properties with <code>int</code> values.
+   *
+   * @specnote It seems that in JDK1.5 all property related methods have been 
+   *           moved to java.awt.Component, except this and 2 others. We call
+   *           super here. I guess this will also be removed in one of the next
+   *           releases.
    */
   public void firePropertyChange(String propertyName, int oldValue,
                                  int newValue)
   {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, new Integer(oldValue),
-                                       new Integer(newValue));
-  }
-
-  /**
-   * A variant of {@link #firePropertyChange(String,Object,Object)} 
-   * for properties with <code>long</code> values.
-   */
-  public void firePropertyChange(String propertyName, long oldValue,
-                                 long newValue)
-  {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, new Long(oldValue),
-                                       new Long(newValue));
-  }
-
-  /**
-   * Call {@link PropertyChangeListener#propertyChange} on all listeners
-   * registered to listen to a given property. Any method which changes
-   * the specified property of this component should call this method.
-   *
-   * @param propertyName The property which changed
-   * @param oldValue The old value of the property
-   * @param newValue The new value of the property
-   *
-   * @see #changeSupport
-   * @see #addPropertyChangeListener(PropertyChangeListener)
-   * @see #removePropertyChangeListener(PropertyChangeListener)
-   */
-  protected void firePropertyChange(String propertyName, Object oldValue,
-                                    Object newValue)
-  {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, oldValue, newValue);
-  }
-
-  /**
-   * A variant of {@link #firePropertyChange(String,Object,Object)} 
-   * for properties with <code>short</code> values.
-   */
-  public void firePropertyChange(String propertyName, short oldValue,
-                                 short newValue)
-  {
-    if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, new Short(oldValue),
-                                       new Short(newValue));
+    super.firePropertyChange(propertyName, oldValue, newValue);
   }
 
   /**
@@ -1518,9 +1378,8 @@ public abstract class JComponent extends Container implements Serializable
       {
         ((JComponent) c).computeVisibleRect(rect);
         rect.translate(-getX(), -getY());
-        Rectangle2D.intersect(rect,
-                              new Rectangle(0, 0, getWidth(), getHeight()),
-                              rect);
+        rect = SwingUtilities.computeIntersection(0, 0, getWidth(),
+                                                  getHeight(), rect);
       }
     else
       rect.setRect(0, 0, getWidth(), getHeight());
@@ -1530,7 +1389,7 @@ public abstract class JComponent extends Container implements Serializable
    * Return the component's visible rectangle in a new {@link Rectangle},
    * rather than via a return slot.
    *
-   * @return The component's visible rectangle
+   * @return the component's visible rectangle
    *
    * @see #computeVisibleRect(Rectangle)
    */
@@ -1691,7 +1550,10 @@ public abstract class JComponent extends Container implements Serializable
     // screen.
     if (!isPaintingDoubleBuffered && isDoubleBuffered()
         && rm.isDoubleBufferingEnabled())
-      paintDoubleBuffered(g);
+      {
+        Rectangle clip = g.getClipBounds();
+        paintDoubleBuffered(clip);
+      }
     else
       {
         if (g.getClip() == null)
@@ -1755,11 +1617,10 @@ public abstract class JComponent extends Container implements Serializable
     // optimizedDrawingEnabled (== it tiles its children).
     if (! isOptimizedDrawingEnabled())
       {
-        Rectangle clip = g.getClipBounds();
         for (int i = 0; i < children.length; i++)
           {
             Rectangle childBounds = children[i].getBounds();
-            if (children[i].isOpaque()
+            if (children[i].isOpaque() && children[i].isVisible()
                 && SwingUtilities.isRectangleContainingRectangle(childBounds,
                                                             g.getClipBounds()))
               {
@@ -1892,33 +1753,29 @@ public abstract class JComponent extends Container implements Serializable
   void paintImmediately2(Rectangle r)
   {
     RepaintManager rm = RepaintManager.currentManager(this);
-    Graphics g = getGraphics();
-    g.setClip(r.x, r.y, r.width, r.height);
     if (rm.isDoubleBufferingEnabled() && isDoubleBuffered())
-      paintDoubleBuffered(g);
+      paintDoubleBuffered(r);
     else
-      paintSimple(g);
-    g.dispose();
+      paintSimple(r);
   }
 
   /**
    * Performs double buffered repainting.
-   *
-   * @param g the graphics context to paint to
    */
-  void paintDoubleBuffered(Graphics g)
+  private void paintDoubleBuffered(Rectangle r)
   {
-    
-    Rectangle r = g.getClipBounds();
-    if (r == null)
-      r = new Rectangle(0, 0, getWidth(), getHeight());
     RepaintManager rm = RepaintManager.currentManager(this);
 
     // Paint on the offscreen buffer.
-    Image buffer = rm.getOffscreenBuffer(this, getWidth(), getHeight());
+    Component root = SwingUtilities.getRoot(this);
+    Image buffer = rm.getOffscreenBuffer(this, root.getWidth(),
+                                         root.getHeight());
+    //Rectangle targetClip = SwingUtilities.convertRectangle(this, r, root);
+    Point translation = SwingUtilities.convertPoint(this, 0, 0, root);
     Graphics g2 = buffer.getGraphics();
-    g2 = getComponentGraphics(g2);
+    g2.translate(translation.x, translation.y);
     g2.setClip(r.x, r.y, r.width, r.height);
+    g2 = getComponentGraphics(g2);
     isPaintingDoubleBuffered = true;
     try
       {
@@ -1929,20 +1786,27 @@ public abstract class JComponent extends Container implements Serializable
         isPaintingDoubleBuffered = false;
         g2.dispose();
       }
-    
+
     // Paint the buffer contents on screen.
-    g.drawImage(buffer, 0, 0, this);
+    rm.commitBuffer(root, new Rectangle(translation.x + r.x,
+                                        translation.y + r.y, r.width,
+                                        r.height));
   }
 
   /**
    * Performs normal painting without double buffering.
    *
-   * @param g the graphics context to use
+   * @param r the area that should be repainted
    */
-  void paintSimple(Graphics g)
+  void paintSimple(Rectangle r)
   {
+    Graphics g = getGraphics();
     Graphics g2 = getComponentGraphics(g);
+    g2.setClip(r);
     paint(g2);
+    g2.dispose();
+    if (g != g2)
+      g.dispose();
   }
 
   /**
@@ -2339,12 +2203,8 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void repaint(long tm, int x, int y, int width, int height)
   {
-    Rectangle dirty = new Rectangle(x, y, width, height);
-    Rectangle vis = getVisibleRect();
-    dirty = dirty.intersection(vis);
-    RepaintManager.currentManager(this).addDirtyRegion(this, dirty.x, dirty.y,
-                                                       dirty.width,
-                                                       dirty.height);
+     RepaintManager.currentManager(this).addDirtyRegion(this, x, y, width,
+                                                        height);
   }
 
   /**
@@ -2356,8 +2216,8 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void repaint(Rectangle r)
   {
-    repaint((long) 0, (int) r.getX(), (int) r.getY(), (int) r.getWidth(),
-            (int) r.getHeight());
+    RepaintManager.currentManager(this).addDirtyRegion(this, r.x, r.y, r.width,
+                                                       r.height);
   }
 
   /**
@@ -2879,7 +2739,7 @@ public abstract class JComponent extends Container implements Serializable
    *
    * @since 1.4
    */
-  public boolean requestFocusInWindow(boolean temporary)
+  protected boolean requestFocusInWindow(boolean temporary)
   {
     return super.requestFocusInWindow(temporary);
   }
@@ -3046,19 +2906,6 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Return all <code>PropertyChangeListener</code> objects registered.
-   *
-   * @return The set of <code>PropertyChangeListener</code> objects
-   */
-  public PropertyChangeListener[] getPropertyChangeListeners()
-  {
-    if (changeSupport == null)
-      return new PropertyChangeListener[0];
-    else
-      return changeSupport.getPropertyChangeListeners();
-  }
-
-  /**
    * Prints this component to the given Graphics context. A call to this
    * method results in calls to the methods {@link #printComponent},
    * {@link #printBorder} and {@link #printChildren} in this order.
@@ -3098,7 +2945,7 @@ public abstract class JComponent extends Container implements Serializable
    *
    * @since 1.3
    */
-  public void printComponent(Graphics g)
+  protected void printComponent(Graphics g)
   {
     paintComponent(g);
   }
@@ -3112,7 +2959,7 @@ public abstract class JComponent extends Container implements Serializable
    *
    * @since 1.3
    */
-  public void printChildren(Graphics g)
+  protected void printChildren(Graphics g)
   {
     paintChildren(g);
   }
@@ -3126,7 +2973,7 @@ public abstract class JComponent extends Container implements Serializable
    *
    * @since 1.3
    */
-  public void printBorder(Graphics g)
+  protected void printBorder(Graphics g)
   {
     paintBorder(g);
   }
@@ -3245,62 +3092,25 @@ public abstract class JComponent extends Container implements Serializable
     while (parent != null && !(parent instanceof Window))
       {
         Container newParent = parent.getParent();
-        if (newParent == null)
+        if (newParent == null || newParent instanceof Window)
           break;
         // If the parent is optimizedDrawingEnabled, then its children are
         // tiled and cannot have an overlapping child. Go directly to next
         // parent.
-        if (newParent instanceof JComponent
-            && ((JComponent) newParent).isOptimizedDrawingEnabled())
+        if ((newParent instanceof JComponent
+            && ((JComponent) newParent).isOptimizedDrawingEnabled()))
+          
           {
             parent = newParent;
             continue;
           }
-
-        // First we must check if the new parent itself somehow clips the
-        // target rectangle. This can happen in JViewports.
-        Rectangle parRect = new Rectangle(0, 0, newParent.getWidth(),
-                                          newParent.getHeight());
+        // If the parent is not optimizedDrawingEnabled, we must paint the
+        // parent.
         Rectangle target = SwingUtilities.convertRectangle(found,
                                                            currentClip,
                                                            newParent);
-        if (! target.intersection(parRect).equals(target))
-          {
-            found = newParent;
-            currentClip = target;
-            parent = newParent;
-            continue;
-          }
-
-        // Otherwise we must check if one of the children of this parent
-        // overlaps with the current component.
-        Component[] children = newParent.getComponents();
-        // This flag is used to skip components that are 'below' the component
-        // in question.
-        boolean skip = true;
-        for (int i = children.length - 1; i >= 0; i--)
-          {
-            boolean nextSkip = skip;
-            if (children[i] == parent)
-              nextSkip = false;
-            if (skip)
-              continue;
-            skip = nextSkip;
-            Component c = children[i];
-            Rectangle compBounds = c.getBounds();
-            // If the component completely overlaps the clip in question, we
-            // don't need to repaint. Return null.
-            if (compBounds.contains(target))
-              return null;
-            if (compBounds.intersects(target))
-              {
-                // We found a parent whose children overlap with our current
-                // component. Make this the current component.
-                found = newParent;
-                currentClip = target;
-                break;
-              }
-          }
+        found = newParent;
+        currentClip = target;
         parent = newParent;
       }
     return found;

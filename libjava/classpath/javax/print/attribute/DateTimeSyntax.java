@@ -102,4 +102,14 @@ public abstract class DateTimeSyntax implements Cloneable, Serializable
   {
     return value.hashCode();
   }
+  
+  /**
+   * Returns the string representation for this object.
+   *
+   * @return The string representation.
+   */
+  public String toString() 
+  {
+    return value.toString();    
+  }
 }

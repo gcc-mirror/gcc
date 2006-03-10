@@ -126,7 +126,7 @@ final class ValueOfNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("value-of");
     buf.append('[');
     buf.append("select=");
     buf.append(select);

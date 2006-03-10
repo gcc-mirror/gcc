@@ -1,5 +1,5 @@
 /* ObjectId.java -- object IDs
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -80,14 +80,6 @@ public class ObjectId
   public ObjectId (byte tag)
   {
     super (tag);
-  }
-
-  /**
-   * Returns the size of this id type
-   */
-  public int size ()
-  {
-    return 8;
   }
 
   /**

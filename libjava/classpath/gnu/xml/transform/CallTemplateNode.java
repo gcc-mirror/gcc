@@ -1,5 +1,5 @@
 /* CallTemplateNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -69,18 +69,12 @@ final class CallTemplateNode
     int len = withParams.size();
     List withParams2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
-      {
-        withParams2.add(((WithParam) withParams.get(i)).clone(stylesheet));
-      }
+      withParams2.add(((WithParam) withParams.get(i)).clone(stylesheet));
     TemplateNode ret = new CallTemplateNode(name, withParams2);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -89,52 +83,52 @@ final class CallTemplateNode
                Node parent, Node nextSibling)
     throws TransformerException
   {
-    if (withParams != null)
-      {
-        // compute the parameter values
-        LinkedList values = new LinkedList();
-        for (Iterator i = withParams.iterator(); i.hasNext(); )
-          {
-            WithParam p = (WithParam) i.next();
-            Object value = p.getValue(stylesheet, mode, context, pos, len);
-            Object[] pair = new Object[2];
-            pair[0] = p.name;
-            pair[1] = value;
-            values.add(pair);
-          }
-        // push the parameter context
-        stylesheet.bindings.push(Bindings.WITH_PARAM);
-        // set the parameters
-        for (Iterator i = values.iterator(); i.hasNext(); )
-          {
-            Object[] pair = (Object[]) i.next();
-            QName name = (QName) pair[0];
-            Object value = pair[1];
-            stylesheet.bindings.set(name, value, Bindings.WITH_PARAM);
-            if (stylesheet.debug)
-              {
-                System.err.println("with-param: " + name + " = " + value);
-              }
-          }
-      }
     TemplateNode t = stylesheet.getTemplate(mode, name);
     if (t != null)
       {
+        if (withParams != null)
+          {
+            // compute the parameter values
+            LinkedList values = new LinkedList();
+            for (Iterator i = withParams.iterator(); i.hasNext(); )
+              {
+                WithParam p = (WithParam) i.next();
+                if (t.hasParam(p.name)) // ignore parameters not specified
+                  {
+                    Object value = p.getValue(stylesheet, mode, context,
+                                              pos, len);
+                    Object[] pair = new Object[2];
+                    pair[0] = p.name;
+                    pair[1] = value;
+                    values.add(pair);
+                  }
+              }
+            // push the parameter context
+            stylesheet.bindings.push(Bindings.WITH_PARAM);
+            // set the parameters
+            for (Iterator i = values.iterator(); i.hasNext(); )
+              {
+                Object[] pair = (Object[]) i.next();
+                QName name = (QName) pair[0];
+                Object value = pair[1];
+                stylesheet.bindings.set(name, value, Bindings.WITH_PARAM);
+                if (stylesheet.debug)
+                  System.err.println("with-param: " + name + " = " + value);
+              }
+          }
         t.apply(stylesheet, mode, context, pos, len,
                 parent, nextSibling);
-      }
-    if (withParams != null)
-      {
-        // pop the variable context
-        stylesheet.bindings.pop(Bindings.WITH_PARAM);
+        if (withParams != null)
+          {
+            // pop the variable context
+            stylesheet.bindings.pop(Bindings.WITH_PARAM);
+          }
       }
     // call-template doesn't have processable children
     if (next != null)
-      {
         next.apply(stylesheet, mode,
                    context, pos, len,
                    parent, nextSibling);
-      }
   }
   
   public boolean references(QName var)
@@ -144,9 +138,7 @@ final class CallTemplateNode
         for (Iterator i = withParams.iterator(); i.hasNext(); )
           {
             if (((WithParam) i.next()).references(var))
-              {
-                return true;
-              }
+              return true;
           }
       }
     return super.references(var);
@@ -154,7 +146,7 @@ final class CallTemplateNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    StringBuffer buf = new StringBuffer("call-template");
     buf.append('[');
     buf.append("name=");
     buf.append(name);

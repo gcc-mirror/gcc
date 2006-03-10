@@ -1,5 +1,6 @@
 /* StubNotFoundException.java -- thrown if a valid stub is not found
-   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,8 +42,8 @@ package java.rmi;
  * Thrown if a valid stub class is not found for an object when it is exported.
  *
  * @author unknown
- * @see UnicastRemoteObject
- * @see Activatable
+ * @see java.rmi.server.UnicastRemoteObject
+ * @see java.rmi.activation.Activatable
  * @since 1.1
  * @status updated to 1.4
  */

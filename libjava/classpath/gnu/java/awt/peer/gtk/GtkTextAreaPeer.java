@@ -55,7 +55,11 @@ public class GtkTextAreaPeer extends GtkComponentPeer
 
   native void create (int width, int height, int scrollbarVisibility);
 
-  native void gtkWidgetModifyFont (String name, int style, int size);
+  /**
+   * Overridden to set Font for text widget inside scrolled window.
+   */
+  protected native void gtkWidgetModifyFont(String name, int style, int size);
+
   native void gtkWidgetRequestFocus ();
 
   public native void connectSignals ();

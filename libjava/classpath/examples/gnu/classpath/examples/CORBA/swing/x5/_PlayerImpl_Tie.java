@@ -58,11 +58,8 @@ import org.omg.PortableServer.Servant;
  * rmic -iiop -poa -keep gnu.classpath.examples.CORBA.swing.x5.PlayerImpl
  * (the compiled package must be present in the current folder).
  * 
- * This class is normally generated with rmic from the {@link PlayerImpl}:
- * <pre>
- * rmic -iiop -poa -keep gnu.classpath.examples.CORBA.swing.x5.PlayerImpl
- * </pre>
- * (the compiled package must be present in the current folder).
+ * This class is normally generated with rmic or grmic from the 
+ * {@link PlayerImpl}. See tools/gnu/classpath/tools/giop/README.
  * 
  * In this example the class was manually edited and commented for better 
  * understanding of functionality.

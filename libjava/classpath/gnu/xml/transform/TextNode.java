@@ -1,5 +1,5 @@
 /* TextNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,19 +65,15 @@ final class TextNode
   {
     TemplateNode ret = new TextNode(disableOutputEscaping);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
   void doApply(Stylesheet stylesheet, QName mode,
-             Node context, int pos, int len,
-             Node parent, Node nextSibling)
+               Node context, int pos, int len,
+               Node parent, Node nextSibling)
     throws TransformerException
   {
     String value = "";
@@ -96,24 +92,28 @@ final class TextNode
       }
     Text text = doc.createTextNode(value);
     if (disableOutputEscaping)
-      {
-        text.setUserData("disable-output-escaping", "yes", stylesheet);
-      }
+      text.setUserData("disable-output-escaping", "yes", stylesheet);
     // Insert into result tree
     if (nextSibling != null)
-      {
-        parent.insertBefore(text, nextSibling);
-      }
+      parent.insertBefore(text, nextSibling);
     else
-      {
-        parent.appendChild(text);
-      }
+      parent.appendChild(text);
     if (next != null)
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
+  }
+
+  public String toString()
+  {
+    StringBuffer buf = new StringBuffer("text");
+    if (disableOutputEscaping)
       {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
+        buf.append('[');
+        buf.append("disable-output-escaping");
+        buf.append(']');
       }
+    return buf.toString();
   }
   
 }

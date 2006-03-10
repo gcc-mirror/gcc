@@ -40,7 +40,7 @@ package gnu.java.util.prefs;
 import java.util.prefs.*;
 
 /**
- * Memory based PreferencesFactory usefull for testing.
+ * Memory based PreferencesFactory useful for testing.
  * Returns completely empty Preferences for system and user roots.
  * All changes are only backed by the current instances in memory.
  *

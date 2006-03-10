@@ -1,5 +1,5 @@
 /* GtkCheckboxMenuItemPeer.java -- Implements CheckboxMenuItemPeer with GTK+
-   Copyright (C) 1999, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.awt.peer.CheckboxMenuItemPeer;
 public class GtkCheckboxMenuItemPeer extends GtkMenuItemPeer
   implements CheckboxMenuItemPeer
 {
-  native void create (String label);
+  protected native void create (String label);
 
   public GtkCheckboxMenuItemPeer (CheckboxMenuItem menu)
   {
@@ -56,6 +56,11 @@ public class GtkCheckboxMenuItemPeer extends GtkMenuItemPeer
 
   public native void setState(boolean t);
 
+  /**
+   * Called from the signal handler of the gtk widget.  Posts a
+   * ItemEvent to indicate a state changed, then calls super to post
+   * an ActionEvent.
+   */
   protected void postMenuActionEvent ()
   {
     CheckboxMenuItem item = (CheckboxMenuItem)awtWidget;

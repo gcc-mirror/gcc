@@ -1,5 +1,5 @@
 /* XMLEventImpl.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -114,16 +114,6 @@ public abstract class XMLEventImpl
   public boolean isEndDocument()
   {
     return getEventType() == END_DOCUMENT;
-  }
-
-  public boolean isStartEntity()
-  {
-    return getEventType() == START_ENTITY;
-  }
-
-  public boolean isEndEntity()
-  {
-    return getEventType() == END_ENTITY;
   }
 
   public StartElement asStartElement()

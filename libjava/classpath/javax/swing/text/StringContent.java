@@ -1,5 +1,5 @@
 /* StringContent.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,8 @@ import javax.swing.undo.UndoableEdit;
  * 
  * <p>Do not use this class for large size.</p>
  */
-public final class StringContent implements AbstractDocument.Content, Serializable
+public final class StringContent 
+  implements AbstractDocument.Content, Serializable
 {
   /** The serialization UID (compatible with JDK1.5). */
   private static final long serialVersionUID = 4755994433709540381L;
@@ -87,7 +88,8 @@ public final class StringContent implements AbstractDocument.Content, Serializab
       try
         {
           StringContent.this.checkLocation(this.start, this.length);
-          this.redoContent = new String(StringContent.this.content, this.start, this.length);
+          this.redoContent = new String(StringContent.this.content, this.start,
+              this.length);
           StringContent.this.remove(this.start, this.length);
         }
       catch (BadLocationException b)
@@ -175,11 +177,20 @@ public final class StringContent implements AbstractDocument.Content, Serializab
     }
   }
 
+  /**
+   * Creates a new instance containing the string "\n".
+   */
   public StringContent()
   {
     this(1);
   }
 
+  /**
+   * Creates a new instance containing the string "\n".
+   * 
+   * @param initialLength  the initial length of the underlying character 
+   *                       array used to store the content.
+   */
   public StringContent(int initialLength)
   {
     super();
@@ -198,7 +209,7 @@ public final class StringContent implements AbstractDocument.Content, Serializab
     Iterator iter = this.positions.iterator();
     while(iter.hasNext())
       {
-        Position p = (Position)iter.next();
+        Position p = (Position) iter.next();
         if ((offset <= p.getOffset())
             && (p.getOffset() <= (offset + length)))
           refPos.add(p);
@@ -206,6 +217,16 @@ public final class StringContent implements AbstractDocument.Content, Serializab
     return refPos;
   }
 
+  /**
+   * Creates a position reference for the character at the given offset.  The
+   * position offset will be automatically updated when new characters are
+   * inserted into or removed from the content.
+   * 
+   * @param offset  the character offset.
+   * 
+   * @throws BadLocationException if offset is outside the bounds of the 
+   *         content.
+   */
   public Position createPosition(int offset) throws BadLocationException
   {
     if (offset < this.count || offset > this.count)
@@ -215,11 +236,27 @@ public final class StringContent implements AbstractDocument.Content, Serializab
     return sp;
   }
   
+  /**
+   * Returns the length of the string content, including the '\n' character at
+   * the end.
+   * 
+   * @return The length of the string content.
+   */
   public int length()
   {
     return this.count;
   }
   
+  /**
+   * Inserts <code>str</code> at the given position and returns an 
+   * {@link UndoableEdit} that enables undo/redo support.
+   * 
+   * @param where  the insertion point (must be less than 
+   *               <code>length()</code>).
+   * @param str  the string to insert (<code>null</code> not permitted).
+   * 
+   * @return An object that can undo the insertion.
+   */
   public UndoableEdit insertString(int where, String str)
     throws BadLocationException
   {
@@ -235,13 +272,15 @@ public final class StringContent implements AbstractDocument.Content, Serializab
     if (where > 0)
       System.arraycopy(this.content, 0, temp, 0, where);
     System.arraycopy(insert, 0, temp, where, insert.length);
-    System.arraycopy(this.content, where, temp, (where + insert.length), (temp.length - where - insert.length));
+    System.arraycopy(this.content, where, temp, (where + insert.length), 
+        (temp.length - where - insert.length));
     if (this.content.length < temp.length)
       this.content = new char[temp.length];
     // Copy the result in the original char array.
     System.arraycopy(temp, 0, this.content, 0, temp.length);
     // Move all the positions.
-    Vector refPos = getPositionsInRange(this.positions, where, temp.length - where);
+    Vector refPos = getPositionsInRange(this.positions, where, 
+                                        temp.length - where);
     Iterator iter = refPos.iterator();
     while (iter.hasNext())
       {
@@ -252,20 +291,35 @@ public final class StringContent implements AbstractDocument.Content, Serializab
     return iundo;
   }
   
+  /**
+   * Removes the specified range of characters and returns an 
+   * {@link UndoableEdit} that enables undo/redo support.
+   * 
+   * @param where  the starting index.
+   * @param nitems  the number of characters.
+   * 
+   * @return An object that can undo the removal.
+   * 
+   * @throws BadLocationException if the character range extends outside the
+   *         bounds of the content OR includes the last character.
+   */
   public UndoableEdit remove(int where, int nitems) throws BadLocationException
   {
-    checkLocation(where, nitems);
+    checkLocation(where, nitems + 1);
     char[] temp = new char[(this.content.length - nitems)];
     this.count = this.count - nitems;
-    RemoveUndo rundo = new RemoveUndo(where, new String(this.content, where, nitems));
+    RemoveUndo rundo = new RemoveUndo(where, new String(this.content, where, 
+        nitems));
     // Copy array.
     System.arraycopy(this.content, 0, temp, 0, where);
-    System.arraycopy(this.content, where + nitems, temp, where, this.content.length - where - nitems);
+    System.arraycopy(this.content, where + nitems, temp, where, 
+        this.content.length - where - nitems);
     this.content = new char[temp.length];
     // Then copy the result in the original char array.
     System.arraycopy(temp, 0, this.content, 0, this.content.length);
     // Move all the positions.
-    Vector refPos = getPositionsInRange(this.positions, where, this.content.length + nitems - where);
+    Vector refPos = getPositionsInRange(this.positions, where, 
+        this.content.length + nitems - where);
     Iterator iter = refPos.iterator();
     while (iter.hasNext())
       {
@@ -278,31 +332,75 @@ public final class StringContent implements AbstractDocument.Content, Serializab
     return rundo;
   }
   
+  /**
+   * Returns a new <code>String</code> containing the characters in the 
+   * specified range.
+   * 
+   * @param where  the start index.
+   * @param len  the number of characters.
+   * 
+   * @return A string.
+   * 
+   * @throws BadLocationException if the requested range of characters extends 
+   *         outside the bounds of the content.
+   */
   public String getString(int where, int len) throws BadLocationException
   {
     checkLocation(where, len);
-    return new String (this.content, where, len);
+    return new String(this.content, where, len);
   }
   
-  public void getChars(int where, int len, Segment txt) throws BadLocationException
+  /**
+   * Updates <code>txt</code> to contain a direct reference to the underlying 
+   * character array.
+   * 
+   * @param where  the index of the first character.
+   * @param len  the number of characters.
+   * @param txt  a carrier for the return result (<code>null</code> not 
+   *             permitted).
+   *             
+   * @throws BadLocationException if the requested character range is not 
+   *                              within the bounds of the content.
+   * @throws NullPointerException if <code>txt</code> is <code>null</code>.
+   */
+  public void getChars(int where, int len, Segment txt) 
+    throws BadLocationException
   {
     checkLocation(where, len);
-    if (txt != null)
-      {
-        txt.array = this.content;
-        txt.offset = where;
-        txt.count = len;
-      }
+    txt.array = this.content;
+    txt.offset = where;
+    txt.count = len;
   }
 
-  // This is package-private to avoid an accessor method.
+
+  /**
+   * @specnote This method is not very well specified and the positions vector
+   *           is implementation specific. The undo positions are managed
+   *           differently in this implementation, this method is only here
+   *           for binary compatibility.
+   */
+  protected void updateUndoPositions(Vector positions)
+  {
+    // We do nothing here.
+  }
+
+  /** 
+   * A utility method that checks the validity of the specified character
+   * range.
+   * 
+   * @param where  the first character in the range.
+   * @param len  the number of characters in the range.
+   * 
+   * @throws BadLocationException if the specified range is not within the
+   *         bounds of the content.
+   */
   void checkLocation(int where, int len) throws BadLocationException
   {
     if (where < 0)
       throw new BadLocationException("Invalid location", 1);
     else if (where > this.count)
       throw new BadLocationException("Invalid location", this.count);
-    else if ((where + len)>this.count)
+    else if ((where + len) > this.count)
       throw new BadLocationException("Invalid range", this.count);
   }
   

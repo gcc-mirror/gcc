@@ -1,5 +1,5 @@
 /* MetalBorders.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -249,30 +249,27 @@ public class MetalBorders
     /**
      * Returns the insets of the <code>ButtonBorder</code>.
      *
-     * @param c the component for which the border is used
+     * @param c the component for which the border is used (ignored).
      *
-     * @return The insets of the ButtonBorder
+     * @return The insets of the <code>ButtonBorder</code>.
      */
     public Insets getBorderInsets(Component c)
     {
-      return getBorderInsets(c, null);
+      return borderInsets;
     }
 
     /**
      * Returns the insets of the <code>ButtonBorder</code> in the specified 
      * <code>newInsets</code> object.
      *
-     * @param c the component for which the border is used
-     * @param newInsets the insets object where to put the values (if 
-     *        <code>null</code>, a new instance is created).
+     * @param c the component for which the border is used (ignored).
+     * @param newInsets the insets object where to put the values (
+     *                  <code>null</code> not permitted).
      *
-     * @return The insets.
+     * @return The <code>newInsets</code> reference.
      */
     public Insets getBorderInsets(Component c, Insets newInsets)
     {
-      if (newInsets == null)
-        newInsets = new Insets(0, 0, 0, 0);
-
       newInsets.bottom = borderInsets.bottom;
       newInsets.left = borderInsets.left;
       newInsets.right = borderInsets.right;
@@ -352,6 +349,8 @@ public class MetalBorders
   public static class Flush3DBorder extends AbstractBorder
     implements UIResource
   {
+    private static final Insets borderInsets = new Insets(2, 2, 2, 2);
+    
     /**
      * Creates a new border instance.
      */
@@ -369,26 +368,25 @@ public class MetalBorders
      */
     public Insets getBorderInsets(Component c)
     {
-      return getBorderInsets(c, null);
+      return borderInsets;
     }
     
     /**
      * Returns the border insets.
      * 
      * @param c  the component (ignored).
-     * @return The border insets.
+     * @param newInsets  an existing insets instance, that will be populated
+     *                   with the border insets and returned as the result
+     *                   (<code>null</code> not permitted).
+     *                   
+     * @return The <code>newInsets</code> reference.
      */
     public Insets getBorderInsets(Component c, Insets newInsets)
     {
-      if (newInsets == null)
-        newInsets = new Insets(2, 2, 2, 2);
-      else
-        {
-          newInsets.top = 2;
-          newInsets.left = 2;
-          newInsets.bottom = 2;
-          newInsets.right = 2;
-        }
+      newInsets.top = borderInsets.top;
+      newInsets.left = borderInsets.left;
+      newInsets.bottom = borderInsets.bottom;
+      newInsets.right = borderInsets.right;
       return newInsets;  
     }
     
@@ -427,6 +425,8 @@ public class MetalBorders
   public static class PaletteBorder extends AbstractBorder
     implements UIResource
   {
+    private static final Insets borderInsets = new Insets(1, 1, 1, 1);
+
     /**
      * Creates a new <code>PaletteBorder</code>.
      */
@@ -444,29 +444,25 @@ public class MetalBorders
      */
     public Insets getBorderInsets(Component c)
     {
-      return getBorderInsets(c, null);
+      return borderInsets;
     }
 
     /**
      * Returns the border insets.
      * 
      * @param c  the component (ignored).
-     * @param newInsets  the insets object that, if non-<code>null</code>, will 
-     *                   be populated with the result from this method.
-     * 
-     * @return The border insets.
+     * @param newInsets  an existing insets instance, that will be populated
+     *                   with the border insets and returned as the result
+     *                   (<code>null</code> not permitted).
+     *                   
+     * @return The <code>newInsets</code> reference.
      */
     public Insets getBorderInsets(Component c, Insets newInsets)
     {        
-      if (newInsets == null)
-        newInsets = new Insets(1, 1, 1, 1);
-      else
-        {
-          newInsets.top = 1;
-          newInsets.left = 1;
-          newInsets.bottom = 1;
-          newInsets.right = 1;
-        }
+      newInsets.top = borderInsets.top;
+      newInsets.left = borderInsets.left;
+      newInsets.bottom = borderInsets.bottom;
+      newInsets.right = borderInsets.right;
       return newInsets;  
     }
     
@@ -555,6 +551,8 @@ public class MetalBorders
   public static class InternalFrameBorder extends AbstractBorder
     implements UIResource
   {
+    private static final Insets borderInsets = new Insets(5, 5, 5, 5);
+
     /**
      * Creates a new border instance.
      */
@@ -572,26 +570,25 @@ public class MetalBorders
      */
     public Insets getBorderInsets(Component c)
     {
-      return getBorderInsets(c, null);
+      return borderInsets;
     }
     
     /**
      * Returns the border insets.
      * 
      * @param c  the component (ignored).
-     * @return The border insets.
+     * @param newInsets  an existing insets instance, that will be populated
+     *                   with the border insets and returned as the result
+     *                   (<code>null</code> not permitted).
+     *                   
+     * @return The <code>newInsets</code> reference.
      */
     public Insets getBorderInsets(Component c, Insets newInsets)
     {
-      if (newInsets == null)
-        newInsets = new Insets(5, 5, 5, 5);
-      else
-        {
-          newInsets.top = 5;
-          newInsets.left = 5;
-          newInsets.bottom = 5;
-          newInsets.right = 5;
-        }
+      newInsets.top = borderInsets.top;
+      newInsets.left = borderInsets.left;
+      newInsets.bottom = borderInsets.bottom;
+      newInsets.right = borderInsets.right;
       return newInsets;  
     }
     
@@ -763,7 +760,7 @@ public class MetalBorders
     implements UIResource
   {
     /** The border insets. */
-    protected static Insets borderInsets = new Insets(1, 1, 1, 1);
+    protected static Insets borderInsets = new Insets(2, 2, 2, 2);
     
     /**
      * Creates a new border instance.

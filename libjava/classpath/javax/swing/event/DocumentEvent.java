@@ -1,5 +1,5 @@
 /* DocumentEvent.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,25 +54,25 @@ public interface DocumentEvent
   {
     /**
      * getIndex
-     * @returns int
+     * @return int
      */
     int getIndex();
 
     /**
      * getElement
-     * @returns Element
+     * @return Element
      */
     Element getElement();
 
     /**
      * getChildrenRemoved
-     * @returns Element[]
+     * @return Element[]
      */
     Element[] getChildrenRemoved();
 
     /**
      * getChildrenAdded
-     * @returns Element[]
+     * @return Element[]
      */
     Element[] getChildrenAdded();
     
@@ -81,7 +81,7 @@ public interface DocumentEvent
   /**
    * EventType
    */
-  class EventType
+  final class EventType
   {
     /**
      * INSERT
@@ -114,7 +114,7 @@ public interface DocumentEvent
 
     /**
      * toString
-     * @returns String
+     * @return String
      */
     public String toString()
     {
@@ -124,32 +124,32 @@ public interface DocumentEvent
 
   /**
    * getType
-   * @returns EventType
+   * @return EventType
    */
   EventType getType();
 
   /**
    * getOffset
-   * @returns int
+   * @return int
    */
   int getOffset();
 
   /**
    * getLength
-   * @returns int
+   * @return int
    */
   int getLength();
 
   /**
    * getDocument
-   * @returns Document
+   * @return Document
    */
   Document getDocument();
 
   /**
    * getChange
    * @param element TODO
-   * @returns ElementChange
+   * @return ElementChange
    */
   ElementChange getChange(Element element);
 

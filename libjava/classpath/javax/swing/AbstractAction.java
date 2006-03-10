@@ -1,5 +1,5 @@
 /* AbstractAction.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -74,28 +75,30 @@ public abstract class AbstractAction
   private transient HashMap store = new HashMap();
 
   /**
-   * Creates a new action with an empty string for the name.  All other 
-   * properties are initialised to <code>null</code>
+   * Creates a new action with no properties set.
    */
   public AbstractAction()
   {
-    this(null);
+    // Nothing to do.
   }
 
   /**
-   * Creates a new action with the specified name.  All other properties are
-   * initialised to <code>null</code>.
+   * Creates a new action with the specified name.  The name is stored as a 
+   * property with the key {@link Action#NAME}, and no other properties are
+   * initialised.
    *
    * @param name  the name (<code>null</code> permitted).
    */
   public AbstractAction(String name)
   {
-    this(name, null);
+    putValue(NAME, name);
   }
 
   /**
-   * Creates a new action with the specified name and icon.  All other 
-   * properties are initialised to <code>null</code>.
+   * Creates a new action with the specified name and icon.  The name is stored
+   * as a property with the key {@link Action#NAME}, the icon is stored as a
+   * property with the key {@link Action#SMALL_ICON}, and no other properties 
+   * are initialised.
    *
    * @param name  the name (<code>null</code> permitted).
    * @param icon  the icon (<code>null</code> permitted).
@@ -133,11 +136,12 @@ public abstract class AbstractAction
   }
 
   /**
-   * clone
+   * Returns a clone of the action.
    *
-   * @return Object
+   * @return A clone of the action.
    *
-   * @exception CloneNotSupportedException TODO
+   * @exception CloneNotSupportedException if there is a problem cloning the
+   *            action.
    */
   protected Object clone() throws CloneNotSupportedException
   {
@@ -153,6 +157,8 @@ public abstract class AbstractAction
    * 
    * @return The value associated with the specified key, or 
    *         <code>null</code> if the key is not found.
+   *         
+   * @see #putValue(String, Object)
    */
   public Object getValue(String key)
   {
@@ -162,11 +168,17 @@ public abstract class AbstractAction
   /**
    * Sets the value associated with the specified key and sends a 
    * {@link java.beans.PropertyChangeEvent} to all registered listeners.  
-   * The standard keys are: {@link #NAME}, {@link #SHORT_DESCRIPTION}, 
-   * {@link #LONG_DESCRIPTION}, {@link #SMALL_ICON}, 
-   * {@link #ACTION_COMMAND_KEY}, {@link #ACCELERATOR_KEY} and 
-   * {@link #MNEMONIC_KEY}. Any existing value associated with the key will be 
-   * overwritten.
+   * The standard keys are: 
+   * <ul>
+   * <li>{@link #NAME}</li>
+   * <li>{@link #SHORT_DESCRIPTION}</li> 
+   * <li>{@link #LONG_DESCRIPTION}</li>
+   * <li>{@link #SMALL_ICON}</li> 
+   * <li>{@link #ACTION_COMMAND_KEY}</li>
+   * <li>{@link #ACCELERATOR_KEY}</li> 
+   * <li>{@link #MNEMONIC_KEY}</li>
+   * </ul>
+   * Any existing value associated with the key will be overwritten.
    * 
    * @param key  the key (not <code>null</code>).
    * @param value  the value (<code>null</code> permitted).
@@ -174,7 +186,7 @@ public abstract class AbstractAction
   public void putValue(String key, Object value)
   {
     Object old = getValue(key);
-    if (old == null || !old.equals(value))
+    if ((old == null && value != null) || (old != null && !old.equals(value)))
     {
       store.put(key, value);
       firePropertyChange(key, old, value);
@@ -185,6 +197,8 @@ public abstract class AbstractAction
    * Returns the flag that indicates whether or not the action is enabled.
    *
    * @return The flag.
+   * 
+   * @see #setEnabled(boolean)
    */
   public boolean isEnabled()
   {
@@ -194,9 +208,12 @@ public abstract class AbstractAction
   /**
    * Sets the flag that indicates whether or not the action is enabled and, if
    * the value of the flag changed from the previous setting, sends a 
-   * {@link java.beans.PropertyChangeEvent} to all registered listeners.
+   * {@link java.beans.PropertyChangeEvent} to all registered listeners (using 
+   * the property name 'enabled').
    *
    * @param enabled  the new flag value.
+   * 
+   * @see #isEnabled()
    */
   public void setEnabled(boolean enabled)
   {
@@ -208,8 +225,11 @@ public abstract class AbstractAction
   }
 
   /**
-   * getKeys
-   * @returns Object[]
+   * Returns an array of the keys for the property values that have been 
+   * defined via the {@link #putValue(String, Object)} method (or the class
+   * constructor).
+   * 
+   * @return An array of keys.
    */
   public Object[] getKeys()
   {
@@ -217,12 +237,12 @@ public abstract class AbstractAction
   }
 
   /**
-   * This method fires a PropertyChangeEvent given the propertyName 
-   * and the old and new values.
+   * Sends a {@link PropertyChangeEvent} for the named property to all 
+   * registered listeners.
    *
-   * @param propertyName The property that changed.
-   * @param oldValue The old value of the property.
-   * @param newValue The new value of the property.
+   * @param propertyName  the property name.
+   * @param oldValue  the old value of the property.
+   * @param newValue  the new value of the property.
    */
   protected void firePropertyChange(String propertyName, Object oldValue,
                                     Object newValue)
@@ -231,22 +251,27 @@ public abstract class AbstractAction
   }
   
   /**
-   * This convenience method fires a PropertyChangeEvent given 
-   * the propertyName and the old and new values.
+   * Sends a {@link PropertyChangeEvent} for the named property to all
+   * registered listeners.  This private method is called by the 
+   * {@link #setEnabled(boolean)} method.
    *
-   * @param propertyName The property that changed.
-   * @param oldValue The old value of the property.
-   * @param newValue The new value of the property.
+   * @param propertyName  the property name.
+   * @param oldValue  the old value of the property.
+   * @param newValue  the new value of the property.
    */
-  private void firePropertyChange(String propertyName, boolean oldValue, boolean newValue)
+  private void firePropertyChange(String propertyName, boolean oldValue, 
+                                  boolean newValue)
   {
     changeSupport.firePropertyChange(propertyName, oldValue, newValue);
   }
 
   /**
-   * addPropertyChangeListener
+   * Registers a listener to receive {@link PropertyChangeEvent} notifications
+   * from this action.
    *
-   * @param listener the listener to add
+   * @param listener the listener.
+   * 
+   * @see #removePropertyChangeListener(PropertyChangeListener)
    */
   public void addPropertyChangeListener(PropertyChangeListener listener)
   {
@@ -254,9 +279,12 @@ public abstract class AbstractAction
   }
 
   /**
-   * removePropertyChangeListener
+   * Deregisters a listener so that it no longer receives 
+   * {@link PropertyChangeEvent} notifications from this action.
    *
-   * @param listener the listener to remove
+   * @param listener the listener.
+   * 
+   * @see #addPropertyChangeListener(PropertyChangeListener)
    */
   public void removePropertyChangeListener(PropertyChangeListener listener)
   {
@@ -266,7 +294,7 @@ public abstract class AbstractAction
   /**
    * Returns all registered listeners.
    *
-   * @return array of listeners.
+   * @return An array of listeners.
    * 
    * @since 1.4
    */

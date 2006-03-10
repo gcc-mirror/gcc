@@ -1,5 +1,5 @@
 /* gnu/regexp/CharIndexedString.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998-2001, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,5 +60,14 @@ class CharIndexedString implements CharIndexed, Serializable {
     
     public boolean move(int index) {
 	return ((anchor += index) < len);
+    }
+
+    public CharIndexed lookBehind(int index, int length) {
+	if (length > (anchor + index)) length = anchor + index;
+	return new CharIndexedString(s, anchor + index - length);
+    }
+
+    public int length() {
+	return len - anchor;
     }
 }

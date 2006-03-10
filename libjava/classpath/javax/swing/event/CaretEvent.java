@@ -1,5 +1,5 @@
 /* CaretEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,43 +37,34 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventObject;
 
 /**
  * CaretEvent
  * @author Andrew Selkirk
  */
-public abstract class CaretEvent extends EventObject {
+public abstract class CaretEvent extends EventObject 
+{
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-	
-	/**
-	 * CaretEvent constructor
-	 * @param source Source object
-	 */
-	public CaretEvent(Object source) {
-		super(source);
-	} // CaretEvent()
+  /**
+   * CaretEvent constructor
+   * @param source Source object
+   */
+  public CaretEvent(Object source) 
+  {
+    super(source);
+  }
 
-	
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-	
-	/**
-	 * Get caret location
-	 * @returns the dot
-	 */
-	public abstract int getDot();
+  /**
+   * Get caret location
+   * @return the dot
+   */
+  public abstract int getDot();
 
-	/**
-	 * Get mark
-	 * @returns the mark
-	 */
-	public abstract int getMark();
+  /**
+   * Get mark
+   * @return the mark
+   */
+  public abstract int getMark();
 
-
-} // CaretEvent
+} 

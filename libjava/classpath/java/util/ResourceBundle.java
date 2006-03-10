@@ -1,5 +1,5 @@
 /* ResourceBundle -- aids in loading resource bundles
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -476,9 +476,7 @@ public abstract class ResourceBundle
 	if (ResourceBundle.class.isAssignableFrom(rbClass))
 	  bundle = (ResourceBundle) rbClass.newInstance();
       }
-    catch (IllegalAccessException ex) {}
-    catch (InstantiationException ex) {}
-    catch (ClassNotFoundException ex) {}
+    catch (Exception ex) {}
 
     if (bundle == null)
       {

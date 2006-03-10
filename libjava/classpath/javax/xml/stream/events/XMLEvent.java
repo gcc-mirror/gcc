@@ -1,5 +1,5 @@
 /* XMLEvent.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -104,16 +104,6 @@ public interface XMLEvent
    * Indicates whether this event is an end-document event.
    */
   boolean isEndDocument();
-
-  /**
-   * Indicates whether this event is a start-entity event.
-   */
-  boolean isStartEntity();
-
-  /**
-   * Indicates whether this event is an end-entity event.
-   */
-  boolean isEndEntity();
 
   /**
    * Returns this event as a start-element event.

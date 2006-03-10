@@ -299,9 +299,7 @@ public class BasicBorders
   public static Border getSplitPaneDividerBorder()
   {
     /* See comment in methods above for why this border is not shared. */
-    return new SplitPaneDividerBorder(
-      UIManager.getColor("SplitPane.highlight"),
-      UIManager.getColor("SplitPane.darkShadow"));
+    return new SplitPaneDividerBorder();
   }
 
 
@@ -1518,33 +1516,14 @@ public class BasicBorders
     implements Border, UIResource, Serializable
   {
     /**
-     * The highlight color, which is drawn on the left or top edge
-     * depending on the orientation of the JSplitPanel.
-     */
-    protected Color highlight;
-
-
-    /**
-     * The highlight color, which is drawn on the right or bottom edge
-     * depending on the orientation of the JSplitPanel.
-     */
-    protected Color shadow;
-
-
-    /**
      * Constructs a new border for drawing the divider of a JSplitPane
      * in the Basic look and feel.  The outer parts of the JSplitPane have
      * their own border class, <code>SplitPaneBorder</code>.
-     *
-     * @param shadow the shadow color.
-     * @param highlight the highlight color.
      */
-    public SplitPaneDividerBorder(Color highlight, Color shadow)
+    public SplitPaneDividerBorder()
     {
-      this.highlight = (highlight != null) ? highlight : Color.white;
-      this.shadow = (shadow != null) ? shadow : Color.black;
+      // Nothing to do here.
     }
-
 
     /**
      * Paints the border around the divider of a <code>JSplitPane</code>.
@@ -1564,6 +1543,8 @@ public class BasicBorders
     public void paintBorder(Component c, Graphics  g,
                             int x, int y, int width, int height)
     {
+      Color highlight = UIManager.getColor("SplitPane.highlight");
+      Color shadow = UIManager.getColor("SplitPane.shadow");
       Color oldColor, dcol;
       int x2, y2;
       JSplitPane sp;
@@ -1624,17 +1605,15 @@ public class BasicBorders
       return new Insets(1, 1, 1, 1);
     }
 
-
     /**
      * Determines whether this border fills every pixel in its area
      * when painting.
      *
-     * @return <code>true</code> if both highlight and shadow
-     *         color are fully opaque.
+     * @return <code>true</code>
      */
     public boolean isBorderOpaque()
     {
-      return (highlight.getAlpha() == 255) && (shadow.getAlpha() == 255);
+      return true;
     }
 
     
@@ -1785,4 +1764,5 @@ public class BasicBorders
       return insets;
     }
   }
+
 }

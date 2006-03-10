@@ -1,5 +1,5 @@
 /* FileChooserDemo.java -- An example showing file choosers in Swing.
-   Copyright (C) 2005,  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath examples.
 
@@ -63,7 +63,9 @@ public class FileChooserDemo extends JFrame implements ActionListener
         return false;
     }
   }
-    
+
+  private JPanel content;
+
   /** A label to display the selected file. */
   JLabel selectedFileLabel;
     
@@ -85,6 +87,19 @@ public class FileChooserDemo extends JFrame implements ActionListener
   {
     super(frameTitle);
     JPanel content = createContent();
+    // initFrameContent() is only called (from main) when running this app 
+    // standalone
+  }
+  
+  /**
+   * When the demo is run independently, the frame is displayed, so we should
+   * initialise the content panel (including the demo content and a close 
+   * button).  But when the demo is run as part of the Swing activity board,
+   * only the demo content panel is used, the frame itself is never displayed,
+   * so we can avoid this step.
+   */
+  public void initFrameContent() 
+  {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
@@ -102,52 +117,56 @@ public class FileChooserDemo extends JFrame implements ActionListener
    * added if this demo is being run as a standalone demo).
    */
   JPanel createContent()
-  {      
-    JPanel panel = new JPanel(new BorderLayout());
-     
-    // create a panel of buttons to select the different styles of file 
-    // chooser...
-    JPanel buttonPanel = new JPanel(new GridLayout(5, 1));
-    JButton openButton = new JButton("Open...");
-    openButton.setActionCommand("OPEN");
-    openButton.addActionListener(this);
-    buttonPanel.add(openButton);
-    JButton saveButton = new JButton("Save...");
-    saveButton.setActionCommand("SAVE");
-    saveButton.addActionListener(this);
-    buttonPanel.add(saveButton);
-    JButton queryButton = new JButton("Select Directory...");
-    queryButton.setActionCommand("SELECT_DIRECTORY");
-    queryButton.addActionListener(this);
-    buttonPanel.add(queryButton);
-    JButton openJavaButton = new JButton("Open Java file...");
-    openJavaButton.setActionCommand("OPEN_JAVA");
-    openJavaButton.addActionListener(this);
-    buttonPanel.add(openJavaButton);
-    JButton openMultiButton = new JButton("Open multiple files...");
-    openMultiButton.setActionCommand("OPEN_MULTI");
-    openMultiButton.addActionListener(this);
-    buttonPanel.add(openMultiButton);
-    panel.add(buttonPanel, BorderLayout.WEST);
-    
-    // create a panel to display the selected file(s) and the return code
-    JPanel displayPanel = new JPanel(new BorderLayout());
-     
-    selectedFileLabel = new JLabel("-");
-    selectedFileLabel.setBorder(BorderFactory.createTitledBorder("Selected File/Directory: "));
-    displayPanel.add(selectedFileLabel, BorderLayout.NORTH);
+  {
+    if (content == null)
+      {
+        JPanel panel = new JPanel(new BorderLayout());
         
-    selectedFilesList = new JList();
-    JScrollPane sp = new JScrollPane(selectedFilesList);
-    sp.setBorder(BorderFactory.createTitledBorder("Selected Files: "));
-    displayPanel.add(sp);
-
-    returnCodeLabel = new JLabel("0");
-    returnCodeLabel.setBorder(BorderFactory.createTitledBorder("Return Code:"));
-    displayPanel.add(returnCodeLabel, BorderLayout.SOUTH);
+        // create a panel of buttons to select the different styles of file 
+        // chooser...
+        JPanel buttonPanel = new JPanel(new GridLayout(5, 1));
+        JButton openButton = new JButton("Open...");
+        openButton.setActionCommand("OPEN");
+        openButton.addActionListener(this);
+        buttonPanel.add(openButton);
+        JButton saveButton = new JButton("Save...");
+        saveButton.setActionCommand("SAVE");
+        saveButton.addActionListener(this);
+        buttonPanel.add(saveButton);
+        JButton queryButton = new JButton("Select Directory...");
+        queryButton.setActionCommand("SELECT_DIRECTORY");
+        queryButton.addActionListener(this);
+        buttonPanel.add(queryButton);
+        JButton openJavaButton = new JButton("Open Java file...");
+        openJavaButton.setActionCommand("OPEN_JAVA");
+        openJavaButton.addActionListener(this);
+        buttonPanel.add(openJavaButton);
+        JButton openMultiButton = new JButton("Open multiple files...");
+        openMultiButton.setActionCommand("OPEN_MULTI");
+        openMultiButton.addActionListener(this);
+        buttonPanel.add(openMultiButton);
+        panel.add(buttonPanel, BorderLayout.WEST);
         
-    panel.add(displayPanel);
-    return panel;        
+        // create a panel to display the selected file(s) and the return code
+        JPanel displayPanel = new JPanel(new BorderLayout());
+        
+        selectedFileLabel = new JLabel("-");
+        selectedFileLabel.setBorder(BorderFactory.createTitledBorder("Selected File/Directory: "));
+        displayPanel.add(selectedFileLabel, BorderLayout.NORTH);
+        
+        selectedFilesList = new JList();
+        JScrollPane sp = new JScrollPane(selectedFilesList);
+        sp.setBorder(BorderFactory.createTitledBorder("Selected Files: "));
+        displayPanel.add(sp);
+        
+        returnCodeLabel = new JLabel("0");
+        returnCodeLabel.setBorder(BorderFactory.createTitledBorder("Return Code:"));
+        displayPanel.add(returnCodeLabel, BorderLayout.SOUTH);
+        
+        panel.add(displayPanel);
+        content = panel;
+      }
+    return content;        
   }
     
   /**
@@ -221,6 +240,7 @@ public class FileChooserDemo extends JFrame implements ActionListener
   public static void main(String[] args) 
   {
     FileChooserDemo app = new FileChooserDemo("File Chooser Demo");
+    app.initFrameContent();
     app.pack();
     app.setVisible(true);
   }

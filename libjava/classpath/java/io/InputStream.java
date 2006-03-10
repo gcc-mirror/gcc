@@ -193,10 +193,8 @@ public abstract class InputStream
    */
   public int read(byte[] b, int off, int len) throws IOException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
+    if (off < 0 || len < 0 || b.length - off < len)
       throw new IndexOutOfBoundsException();
-    if (b.length == 0)
-      return 0;
 
     int i, ch;
 

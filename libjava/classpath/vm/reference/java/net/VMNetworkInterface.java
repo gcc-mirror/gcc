@@ -40,7 +40,6 @@ package java.net;
 
 import gnu.classpath.Configuration;
 
-import java.util.Enumeration;
 import java.util.Vector;
 
 /**

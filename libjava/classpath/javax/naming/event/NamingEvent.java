@@ -1,5 +1,5 @@
 /* NamingEvent.java --
-   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,8 @@ import javax.naming.Binding;
  */
 public class NamingEvent extends EventObject
 {
+  private static final long serialVersionUID = - 7126752885365133499L;
+
   public static final int OBJECT_ADDED = 0;
   public static final int OBJECT_REMOVED = 1;
   public static final int OBJECT_RENAMED = 2;

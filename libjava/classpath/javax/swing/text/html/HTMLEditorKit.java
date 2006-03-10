@@ -56,17 +56,11 @@ import javax.accessibility.AccessibleContext;
 
 import javax.swing.Action;
 import javax.swing.JEditorPane;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.BoxView;
-import javax.swing.text.ComponentView;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
-import javax.swing.text.IconView;
-import javax.swing.text.LabelView;
 import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.ParagraphView;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledEditorKit;
@@ -532,8 +526,8 @@ public class HTMLEditorKit
     public View create(Element element)
     {
       View view = null;
-      Object attr = element.getAttributes().getAttribute(
-                                StyleConstants.NameAttribute);
+      Object attr =
+        element.getAttributes().getAttribute(StyleConstants.NameAttribute);
       if (attr instanceof HTML.Tag)
         {
           HTML.Tag tag = (HTML.Tag) attr;
@@ -553,8 +547,16 @@ public class HTMLEditorKit
             view = new BlockView(element, View.Y_AXIS);
           
           // FIXME: Uncomment when the views have been implemented
-         /* else if (tag.equals(HTML.Tag.CONTENT))
-            view = new InlineView(element); 
+          else if (tag.equals(HTML.Tag.CONTENT))
+            view = new InlineView(element);
+          else if (tag == HTML.Tag.HEAD)
+            view = new NullView(element);
+          else if (tag.equals(HTML.Tag.TABLE))
+            view = new HTMLTableView(element);
+          else if (tag.equals(HTML.Tag.TD))
+            view = new ParagraphView(element);
+
+          /*
           else if (tag.equals(HTML.Tag.MENU) || tag.equals(HTML.Tag.DIR)
                    || tag.equals(HTML.Tag.UL) || tag.equals(HTML.Tag.OL))
             view = new ListView(element);
@@ -564,8 +566,6 @@ public class HTMLEditorKit
             view = new HRuleView(element);
           else if (tag.equals(HTML.Tag.BR))
             view = new BRView(element);
-          else if (tag.equals(HTML.Tag.TABLE))
-            view = new TableView(element);
           else if (tag.equals(HTML.Tag.INPUT) || tag.equals(HTML.Tag.SELECT)
                    || tag.equals(HTML.Tag.TEXTAREA))
             view = new FormView(element);
@@ -575,21 +575,11 @@ public class HTMLEditorKit
             view = new FrameSetView(element);
           else if (tag.equals(HTML.Tag.FRAME))
             view = new FrameView(element); */
-        }      
-      
+        }
       if (view == null)
         {
-          String name = element.getName();
-          if (name.equals(AbstractDocument.ContentElementName))
-            view = new LabelView(element);
-          else if (name.equals(AbstractDocument.ParagraphElementName))
-            view = new ParagraphView(element);
-          else if (name.equals(AbstractDocument.SectionElementName))
-            view = new BoxView(element, View.Y_AXIS);
-          else if (name.equals(StyleConstants.ComponentElementName))
-            view = new ComponentView(element);
-          else if (name.equals(StyleConstants.IconElementName))
-            view = new IconView(element);
+          System.err.println("missing tag->view mapping for: " + element);
+          view = new NullView(element);
         }
       return view;
     }
@@ -958,7 +948,8 @@ public class HTMLEditorKit
           throw new IOException("Parser is null.");
         
         HTMLDocument hd = ((HTMLDocument) doc);
-        hd.setBase(editorPane.getPage());
+        if (editorPane != null)
+          hd.setBase(editorPane.getPage());
         ParserCallback pc = hd.getReader(pos);
         
         // FIXME: What should ignoreCharSet be set to?

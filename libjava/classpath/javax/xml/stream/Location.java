@@ -63,9 +63,14 @@ public interface Location
   int getCharacterOffset();
 
   /**
+   * Returns the public identifier for this location, if any.
+   */
+  String getPublicId();
+
+  /**
    * Returns the system identifier for the underlying source.
    */
-  String getLocationURI();
+  String getSystemId();
   
 }
 

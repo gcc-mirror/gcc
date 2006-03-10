@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import gnu.classpath.SystemProperties;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -88,7 +90,8 @@ class MetalUtils
   static void fillMetalPattern(Component c, Graphics g, int x, int y, int w, int h,
                                 Color light, Color dark)
   {
-    if (g instanceof Graphics2D)
+    if (g instanceof Graphics2D
+      && SystemProperties.getProperty("gnu.javax.swing.noGraphics2D") != null)
       fillMetalPattern2D((Graphics2D) g, x, y, w, h, light, dark);
     else
       {

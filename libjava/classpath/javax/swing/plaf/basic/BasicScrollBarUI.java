@@ -653,19 +653,17 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 
     if (scrollbar.getOrientation() == SwingConstants.HORIZONTAL)
       {
-	width += incrButton.getPreferredSize().getWidth();
-	width += decrButton.getPreferredSize().getWidth();
-
-	width += (scrollbar.getMaximum() - scrollbar.getMinimum());
-	height = UIManager.getInt("ScrollBar.width");
+        width += incrButton.getPreferredSize().getWidth();
+        width += decrButton.getPreferredSize().getWidth();
+        width += 16;
+        height = UIManager.getInt("ScrollBar.width");
       }
     else
       {
-	height += incrButton.getPreferredSize().getHeight();
-	height += decrButton.getPreferredSize().getHeight();
-
-	height += (scrollbar.getMaximum() - scrollbar.getMinimum());
-	width = UIManager.getInt("ScrollBar.width");
+        height += incrButton.getPreferredSize().getHeight();
+        height += decrButton.getPreferredSize().getHeight();
+        height += 16;
+        width = UIManager.getInt("ScrollBar.width");
       }
 
     Insets insets = scrollbar.getInsets();
@@ -721,18 +719,6 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
    */
   protected void installComponents()
   {
-    if (incrButton != null)
-      scrollbar.add(incrButton);
-    if (decrButton != null)
-      scrollbar.add(decrButton);
-  }
-
-  /**
-   * This method installs the defaults for the scrollbar specified by the
-   * Basic Look and Feel.
-   */
-  protected void installDefaults()
-  {
     int orientation = scrollbar.getOrientation();
     switch (orientation)
       {
@@ -746,6 +732,18 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
         break;
       }
 
+    if (incrButton != null)
+      scrollbar.add(incrButton);
+    if (decrButton != null)
+      scrollbar.add(decrButton);
+  }
+
+  /**
+   * This method installs the defaults for the scrollbar specified by the
+   * Basic Look and Feel.
+   */
+  protected void installDefaults()
+  {
     LookAndFeel.installColors(scrollbar, "ScrollBar.background",
                               "ScrollBar.foreground");
     LookAndFeel.installBorder(scrollbar, "ScrollBar.border");

@@ -55,7 +55,7 @@ import javax.print.attribute.PrintServiceAttribute;
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public class PrinterIsAcceptingJobs extends EnumSyntax
+public final class PrinterIsAcceptingJobs extends EnumSyntax
   implements PrintServiceAttribute
 {
   private static final long serialVersionUID = -5052010680537678061L;

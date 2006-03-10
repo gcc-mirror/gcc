@@ -3,7 +3,7 @@ nativelib_LTLIBRARIES = libjavalang.la libjavalangreflect.la
 libjavalang_la_SOURCES = java_lang_VMSystem.c \
 			 java_lang_VMFloat.c \
 			 java_lang_VMDouble.c \
-			 java_lang_Math.c \
+			 java_lang_VMMath.c \
 			 java_lang_VMProcess.c
 
 libjavalang_la_LIBADD = $(wildcard $(top_builddir)/native/fdlibm/*.lo) \

@@ -39,6 +39,7 @@ package javax.xml.validation;
 
 import java.io.File;
 import java.net.URL;
+import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import org.w3c.dom.ls.LSResourceResolver;
@@ -50,7 +51,7 @@ import org.xml.sax.SAXNotSupportedException;
 /**
  * Factory for obtaining schemata.
  *
- * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
+ * @author Chris Burdess (dog@gnu.org)
  * @since 1.3
  */
 public abstract class SchemaFactory
@@ -70,7 +71,10 @@ public abstract class SchemaFactory
    */
   public static final SchemaFactory newInstance(String schemaLanguage)
   {
-    // TODO
+    if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(schemaLanguage))
+      return new gnu.xml.validation.xmlschema.XMLSchemaSchemaFactory();
+    if (XMLConstants.RELAXNG_NS_URI.equals(schemaLanguage))
+      return new gnu.xml.validation.relaxng.RELAXNGSchemaFactory();
     throw new IllegalArgumentException(schemaLanguage);
   }
 

@@ -83,10 +83,10 @@ final class VMProxy
    *         were violated, except for problems with null
    * @throws NullPointerException if `interfaces' is null or contains
    *         a null entry, or if handler is null
-   * @see Configuration#HAVE_NATIVE_GET_PROXY_CLASS
+   * @see #HAVE_NATIVE_GET_PROXY_CLASS
    * @see #getProxyClass(ClassLoader, Class[])
    * @see #getProxyData(ClassLoader, Class[])
-   * @see #generateProxyClass(ProxyData)
+   * @see #generateProxyClass(ClassLoader, Proxy.ProxyData)
    */
   static native Class getProxyClass(ClassLoader loader, Class[] interfaces);
 
@@ -105,10 +105,10 @@ final class VMProxy
    *         were violated, except for problems with null
    * @throws NullPointerException if `interfaces' is null or contains
    *         a null entry, or if handler is null
-   * @see Configuration.HAVE_NATIVE_GET_PROXY_DATA
+   * @see #HAVE_NATIVE_GET_PROXY_DATA
    * @see #getProxyClass(ClassLoader, Class[])
    * @see #getProxyClass(ClassLoader, Class[])
-   * @see ProxyType#getProxyData()
+   * @see Proxy.ProxyData#getProxyData(Proxy.ProxyType)
    */
   static native Proxy.ProxyData getProxyData(ClassLoader loader,
                                              Class[] interfaces);
@@ -129,7 +129,6 @@ final class VMProxy
    * @throws IllegalArgumentException if VM limitations are exceeded
    * @see #getProxyClass(ClassLoader, Class[])
    * @see #getProxyClass(ClassLoader, Class[])
-   * @see ProxyData#generateProxyClass(ClassLoader)
    */
   static native Class generateProxyClass(ClassLoader loader,
                                          Proxy.ProxyData data);

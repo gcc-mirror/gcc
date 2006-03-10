@@ -63,7 +63,7 @@ public class JPanel extends JComponent implements Accessible
     /**
      * Creates a new instance of <code>AccessibleJPanel</code>.
      */
-    public AccessibleJPanel()
+    protected AccessibleJPanel()
     {
       // Nothing to do here.
     }

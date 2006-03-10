@@ -40,14 +40,10 @@ package java.security;
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
- * <p>This class defines the <i>Service Provider Interface (SPI)</i> for the
- * {@link Signature} class, which is used to provide the functionality of a
+ * <code>SignatureSpi</code> defines the Service Provider Interface (SPI) for
+ * the {@link Signature} class. The signature class provides an interface to a
  * digital signature algorithm. Digital signatures are used for authentication
- * and integrity assurance of digital data.</p>
- *
- * <p>All the abstract methods in this class must be implemented by each
- * cryptographic service provider who wishes to supply the implementation of a
- * particular signature algorithm.
+ * and integrity of data.
  *
  * @author Mark Benvenuto (ivymccough@worldnet.att.net)
  * @since 1.2
@@ -55,50 +51,51 @@ import java.security.spec.AlgorithmParameterSpec;
  */
 public abstract class SignatureSpi
 {
-  /** Application-specified source of randomness. */
+  /** Source of randomness. */
   protected SecureRandom appRandom;
 
+  /**
+   * Creates a new instance of <code>SignatureSpi</code>.
+   */
   public SignatureSpi()
   {
     appRandom = null;
   }
 
   /**
-   * Initializes this signature object with the specified public key for
-   * verification operations.
-   *
-   * @param publicKey the public key of the identity whose signature is going
-   * to be verified.
-   * @throws InvalidKeyException if the key is improperly encoded, parameters
-   * are missing, and so on.
+   * Initializes this instance with the public key for verification purposes.
+   * 
+   * @param publicKey
+   *          the public key to verify with.
+   * @throws InvalidKeyException
+   *           if the key is invalid.
    */
   protected abstract void engineInitVerify(PublicKey publicKey)
     throws InvalidKeyException;
 
   /**
-   * Initializes this signature object with the specified private key for
-   * signing operations.
-   *
-   * @param privateKey the private key of the identity whose signature will be
-   * generated.
-   * @throws InvalidKeyException if the key is improperly encoded, parameters
-   * are missing, and so on.
+   * Initializes this instance with the private key for signing purposes.
+   * 
+   * @param privateKey
+   *          the private key to sign with.
+   * @throws InvalidKeyException
+   *           if the key is invalid.
    */
   protected abstract void engineInitSign(PrivateKey privateKey)
     throws InvalidKeyException;
 
   /**
-   * <p>Initializes this signature object with the specified private key and
-   * source of randomness for signing operations.</p>
-   *
-   * <p>This concrete method has been added to this previously-defined abstract
-   * class. (For backwards compatibility, it cannot be abstract.)</p>
-   *
-   * @param privateKey the private key of the identity whose signature will be
-   * generated.
-   * @param random the source of randomness.
-   * @throws InvalidKeyException if the key is improperly encoded, parameters
-   * are missing, and so on.
+   * Initializes this instance with the private key and source of randomness for
+   * signing purposes.
+   * 
+   * <p>This method cannot be abstract for backward compatibility reasons.</p>
+   * 
+   * @param privateKey
+   *          the private key to sign with.
+   * @param random
+   *          the {@link SecureRandom} to use.
+   * @throws InvalidKeyException
+   *           if the key is invalid.
    * @since 1.2
    */
   protected void engineInitSign(PrivateKey privateKey, SecureRandom random)
@@ -109,57 +106,63 @@ public abstract class SignatureSpi
   }
 
   /**
-   * Updates the data to be signed or verified using the specified byte.
-   *
-   * @param b the byte to use for the update.
-   * @throws SignatureException if the engine is not initialized properly.
+   * Updates the data to be signed or verified with the specified byte.
+   * 
+   * @param b
+   *          byte to update with.
+   * @throws SignatureException
+   *           if the engine is not properly initialized.
    */
   protected abstract void engineUpdate(byte b) throws SignatureException;
 
   /**
-   * Updates the data to be signed or verified, using the specified array of
-   * bytes, starting at the specified offset.
-   *
-   * @param b the array of bytes.
-   * @param off the offset to start from in the array of bytes.
-   * @param len the number of bytes to use, starting at offset.
-   * @throws SignatureException if the engine is not initialized properly.
+   * Updates the data to be signed or verified with the specified bytes.
+   * 
+   * @param b
+   *          the array of bytes to use.
+   * @param off
+   *          the offset to start at in the array.
+   * @param len
+   *          the number of the bytes to use from the array.
+   * @throws SignatureException
+   *           if the engine is not properly initialized.
    */
   protected abstract void engineUpdate(byte[] b, int off, int len)
     throws SignatureException;
 
   /**
-   * Returns the signature bytes of all the data updated so far. The format of
-   * the signature depends on the underlying signature scheme.
-   *
-   * @return the signature bytes of the signing operation's result.
-   * @throws SignatureException if the engine is not initialized properly.
+   * Returns the signature bytes of all the data fed to this instance. The
+   * format of the output depends on the underlying signature algorithm.
+   * 
+   * @return the signature bytes.
+   * @throws SignatureException
+   *           if the engine is not properly initialized.
    */
   protected abstract byte[] engineSign() throws SignatureException;
 
   /**
-   * <p>Finishes this signature operation and stores the resulting signature
-   * bytes in the provided buffer <code>outbuf</code>, starting at <code>offset
-   * </code>. The format of the signature depends on the underlying signature
-   * scheme.</p>
-   *
-   * <p>The signature implementation is reset to its initial state (the state it
-   * was in after a call to one of the <code>engineInitSign()</code> methods)
-   * and can be reused to generate further signatures with the same private key.
-   * This method should be abstract, but we leave it concrete for binary
-   * compatibility. Knowledgeable providers should override this method.</p>
-   *
-   * @param outbuf buffer for the signature result.
-   * @param offset offset into outbuf where the signature is stored.
-   * @param len number of bytes within outbuf allotted for the signature. Both
-   * this default implementation and the <b>GNU</b> provider do not return
-   * partial digests. If the value of this parameter is less than the actual
-   * signature length, this method will throw a {@link SignatureException}. This
-   * parameter is ignored if its value is greater than or equal to the actual
-   * signature length.
-   * @return the number of bytes placed into <code>outbuf</code>.
-   * @throws SignatureException if an error occurs or len is less than the
-   * actual signature length.
+   * Generates signature bytes of all the data fed to this instance and stores
+   * the result in the designated array. The format of the output depends on
+   * the underlying signature algorithm.
+   * 
+   * <p>This method cannot be abstract for backward compatibility reasons.
+   * After calling this method, the signature is reset to its initial state and
+   * can be used to generate additional signatures.</p>
+   * 
+   * <p><b>IMPLEMENTATION NOTE:</b>: Neither this method nor the GNU provider
+   * will return partial digests. If <code>len</code> is less than the
+   * signature length, this method will throw a {@link SignatureException}. If
+   * it is greater than or equal then it is ignored.</p>
+   * 
+   * @param outbuf
+   *          the array of bytes to store the result in.
+   * @param offset
+   *          the offset to start at in the array.
+   * @param len
+   *          the number of the bytes to use in the array.
+   * @return the real number of bytes used.
+   * @throws SignatureException
+   *           if the engine is not properly initialized.
    * @since 1.2
    */
   protected int engineSign(byte[] outbuf, int offset, int len)
@@ -174,31 +177,32 @@ public abstract class SignatureSpi
   }
 
   /**
-   * Verifies the passed-in signature.
-   *
-   * @param sigBytes the signature bytes to be verified.
-   * @return <code>true</code> if the signature was verified, <code>false</code>
-   * if not.
-   * @throws SignatureException if the engine is not initialized properly, or
-   * the passed-in signature is improperly encoded or of the wrong type, etc.
+   * Verifies a designated signature.
+   * 
+   * @param sigBytes
+   *          the signature bytes to verify.
+   * @return <code>true</code> if verified, <code>false</code> otherwise.
+   * @throws SignatureException
+   *           if the engine is not properly initialized or if it is the wrong
+   *           signature.
    */
   protected abstract boolean engineVerify(byte[] sigBytes)
     throws SignatureException;
 
   /**
-   * <p>Verifies the passed-in <code>signature</code> in the specified array of
-   * bytes, starting at the specified <code>offset</code>.</p>
-   *
-   * <p>Note: Subclasses should overwrite the default implementation.</p>
-   *
-   * @param sigBytes the signature bytes to be verified.
-   * @param offset the offset to start from in the array of bytes.
-   * @param length the number of bytes to use, starting at offset.
-   * @return <code>true</code> if the signature was verified, <code>false</code>
-   * if not.
-   * @throws SignatureException if the engine is not initialized properly, or
-   * the passed-in <code>signature</code> is improperly encoded or of the wrong
-   * type, etc.
+   * Convenience method which calls the method with the same name and one
+   * argument after copying the designated bytes into a temporary byte array.
+   * Subclasses may override this method for performance reasons.
+   * 
+   * @param sigBytes
+   *          the array of bytes to use.
+   * @param offset
+   *          the offset to start from in the array of bytes.
+   * @param length
+   *          the number of bytes to use, starting at offset.
+   * @return <code>true</code> if verified, <code>false</code> otherwise.
+   * @throws SignatureException
+   *           if the engine is not properly initialized.
    */
   protected boolean engineVerify(byte[] sigBytes, int offset, int length)
     throws SignatureException
@@ -209,35 +213,32 @@ public abstract class SignatureSpi
   }
 
   /**
-   * Sets the specified algorithm parameter to the specified value. This method
-   * supplies a general-purpose mechanism through which it is possible to set
-   * the various parameters of this object. A parameter may be any settable
-   * parameter for the algorithm, such as a parameter size, or a source of
-   * random bits for signature generation (if appropriate), or an indication of
-   * whether or not to perform a specific but optional computation. A uniform
-   * algorithm-specific naming scheme for each parameter is desirable but left
-   * unspecified at this time.
-   *
-   * @param param the string identifier of the parameter.
-   * @param value the parameter value.
-   * @throws InvalidParameterException if <code>param</code> is an invalid
-   * parameter for this signature algorithm engine, the parameter is already set
-   * and cannot be set again, a security exception occurs, and so on.
-   * @deprecated Replaced by engineSetParameter(AlgorithmParameterSpec).
+   * Sets the specified algorithm parameter to the specified value.
+   * 
+   * @param param
+   *          the parameter name.
+   * @param value
+   *          the parameter value.
+   * @throws InvalidParameterException
+   *           if the parameter invalid, the parameter is already set and
+   *           cannot be changed, a security exception occured, etc.
+   * @deprecated use the other setParameter.
    */
   protected abstract void engineSetParameter(String param, Object value)
     throws InvalidParameterException;
 
   /**
-   * This method is overridden by providers to initialize this signature engine
-   * with the specified parameter set.
-   *
-   * @param params the parameters.
-   * @throws UnsupportedOperationException if this method is not overridden by
-   * a provider.
-   * @throws InvalidAlgorithmParameterException if this method is overridden by
-   * a provider and the the given parameters are inappropriate for this
-   * signature engine.
+   * Sets the signature engine with the specified {@link AlgorithmParameterSpec}.
+   * 
+   * <p>This method cannot be abstract for backward compatibility reasons. By
+   * default it always throws {@link UnsupportedOperationException} unless
+   * overridden.</p>
+   * 
+   * @param params
+   *          the parameters.
+   * @throws InvalidParameterException
+   *           if the parameter is invalid, the parameter is already set and
+   *           cannot be changed, a security exception occured, etc.
    */
   protected void engineSetParameter(AlgorithmParameterSpec params)
     throws InvalidAlgorithmParameterException
@@ -246,20 +247,16 @@ public abstract class SignatureSpi
   }
 
   /**
-   * <p>This method is overridden by providers to return the parameters used
-   * with this signature engine, or <code>null</code> if this signature engine
-   * does not use any parameters.</p>
-   *
-   * <p>The returned parameters may be the same that were used to initialize
-   * this signature engine, or may contain a combination of default and randomly
-   * generated parameter values used by the underlying signature implementation
-   * if this signature engine requires algorithm parameters but was not
-   * initialized with any.</p>
-   *
-   * @return the parameters used with this signature engine, or <code>null</code>
-   * if this signature engine does not use any parameters.
-   * @throws UnsupportedOperationException if this method is not overridden by
-   * a provider.
+   * The default implementaion of this method always throws a
+   * {@link UnsupportedOperationException}. It MUST be overridden by concrete
+   * implementations to return the appropriate {@link AlgorithmParameters} for
+   * this signature engine (or <code>null</code> when that engine does not use
+   * any parameters.
+   * 
+   * @return the parameters used with this signature engine, or
+   *         <code>null</code> if it does not use any parameters.
+   * @throws UnsupportedOperationException
+   *           always.
    */
   protected AlgorithmParameters engineGetParameters()
   {
@@ -267,33 +264,24 @@ public abstract class SignatureSpi
   }
 
   /**
-   * Gets the value of the specified algorithm parameter. This method supplies
-   * a general-purpose mechanism through which it is possible to get the various
-   * parameters of this object. A parameter may be any settable parameter for
-   * the algorithm, such as a parameter size, or a source of random bits for
-   * signature generation (if appropriate), or an indication of whether or not
-   * to perform a specific but optional computation. A uniform algorithm-specific
-   * naming scheme for each parameter is desirable but left unspecified at this
-   * time.
-   *
-   * @param param the string name of the parameter.
-   * @return the object that represents the parameter value, or <code>null</code>
-   * if there is none.
-   * @throws InvalidParameterException if <code>param</code> is an invalid
-   * parameter for this engine, or another exception occurs while trying to get
-   * this parameter.
-   * @deprecated
+   * Returns the value for the specified algorithm parameter.
+   * 
+   * @param param
+   *          the parameter name.
+   * @return the parameter value.
+   * @throws InvalidParameterException
+   *           if the parameter is invalid.
+   * @deprecated use the other getParameter
    */
   protected abstract Object engineGetParameter(String param)
     throws InvalidParameterException;
 
   /**
-   * Returns a clone if the implementation is cloneable.
-   *
-   * @return a clone if the implementation is cloneable.
-   * @throws CloneNotSupportedException if this is called on an implementation
-   * that does not support {@link Cloneable}.
-   * @see Cloneable
+   * Returns a clone of this instance.
+   * 
+   * @return a clone of this instance.
+   * @throws CloneNotSupportedException
+   *           if the implementation does not support cloning.
    */
   public Object clone() throws CloneNotSupportedException
   {

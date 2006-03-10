@@ -140,6 +140,27 @@ public class IOR
         b.append(' ');
         return b.toString();
       }
+      
+      /**
+       * Get a better formatted multiline string representation.
+       */
+      public String toStringFormatted()
+      {
+        StringBuffer b = new StringBuffer();
+        b.append("\n  Native set " + name(native_set));
+        if (conversion != null && conversion.length > 0)
+          {
+            b.append("\n  Other supported sets:\n    ");
+            for (int i = 0; i < conversion.length; i++)
+              {
+                b.append(name(conversion[i]));
+                b.append(' ');
+              }
+          }
+        b.append("\n");
+        return b.toString();
+      }
+      
 
       /**
        * Write into CDR stream.
@@ -590,6 +611,39 @@ public class IOR
 
     return b.toString();
   }
+  
+  /**
+   * Returns a multiline formatted human readable string representation of 
+   * this IOR object.
+   */
+  public String toStringFormatted()
+  {
+    StringBuffer b = new StringBuffer();
+    b.append("\nObject Id:\n  ");
+    b.append(Id);
+    b.append("\nObject is accessible at:\n  ");
+    b.append(Internet);
+
+    if (Big_Endian)
+      b.append("\n  Big endian encoding");
+    else
+      b.append("\n  Little endian encoding.");      
+
+    b.append("\nObject Key\n  ");
+
+    for (int i = 0; i < key.length; i++)
+      {
+        b.append(Integer.toHexString(key[i] & 0xFF));
+      }
+
+    b.append("\nSupported code sets:");
+    b.append("\n Wide:");
+    b.append(Internet.CodeSets.wide.toStringFormatted());
+    b.append(" Narrow:");
+    b.append(Internet.CodeSets.wide.toStringFormatted());
+
+    return b.toString();
+  }  
 
   /**
    * Returs a stringified reference.

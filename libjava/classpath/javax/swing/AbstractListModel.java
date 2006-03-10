@@ -1,5 +1,5 @@
 /* AbstractListModel.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -58,6 +58,9 @@ public abstract class AbstractListModel implements ListModel, Serializable
   /** List of ListDataListeners called for each change to the list. */
   protected EventListenerList listenerList;
 
+  /**
+   * Creates a new model instance - initialises the event listener list.
+   */
   public AbstractListModel()
   {
     listenerList = new EventListenerList();
@@ -88,7 +91,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
   /**
    * Call {@link ListDataListener#contentsChanged} on each element of the
    * {@link #listenerList} which is a {@link ListDataListener}. The event
-   * fired has type {@ListDataEvent.CONTENTS_CHANGED} and represents a
+   * fired has type {@link ListDataEvent#CONTENTS_CHANGED} and represents a
    * change to the data elements in the range [startIndex, endIndex]
    * inclusive.
    *
@@ -110,7 +113,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
   /**
    * Call {@link ListDataListener#intervalAdded} on each element of the
    * {@link #listenerList} which is a {@link ListDataListener}. The event
-   * fired has type {@ListDataEvent.INTERVAL_ADDED} and represents an
+   * fired has type {@link ListDataEvent#INTERVAL_ADDED} and represents an
    * addition of the data elements in the range [startIndex, endIndex]
    * inclusive.
    *
@@ -132,7 +135,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
   /**
    * Call {@link ListDataListener#intervalRemoved} on each element of the
    * {@link #listenerList} which is a {@link ListDataListener}. The event
-   * fired has type {@ListDataEvent.INTERVAL_REMOVED} and represents a
+   * fired has type {@link ListDataEvent#INTERVAL_REMOVED} and represents a
    * removal of the data elements in the range [startIndex, endIndex]
    * inclusive.
    *

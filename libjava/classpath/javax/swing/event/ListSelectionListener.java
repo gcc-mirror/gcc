@@ -1,5 +1,5 @@
 /* ListSelectionListener.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,21 +37,25 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventListener;
 
+import javax.swing.ListSelectionModel;
+
 /**
- * ListSelectionListener public interface
+ * A listener that receives {@link ListSelectionEvent} notifications, 
+ * typically from a {@link ListSelectionModel} when it is modified.
+ *
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public interface ListSelectionListener extends EventListener {
+public interface ListSelectionListener extends EventListener 
+{
 
-	/**
-	 * Value changed
-	 * @param event List Selection Event
-	 */
-	void valueChanged(ListSelectionEvent event);
+  /**
+   * Receives notification of a {@link ListSelectionEvent}.
+   * 
+   * @param event  the event.
+   */
+  void valueChanged(ListSelectionEvent event);
 
-
-} // ListSelectionListener
+}

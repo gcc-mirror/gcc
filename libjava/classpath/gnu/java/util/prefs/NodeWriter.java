@@ -1,5 +1,5 @@
 /* NodeWriter - Writes and exports preferences nodes to files
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import java.util.StringTokenizer;
@@ -67,23 +68,24 @@ public class NodeWriter {
     private boolean subtree;
 
     /**
-     * Creates a new NodeWriter for the given preferences node and writer.
-     */
-    public NodeWriter(Preferences prefs, Writer w) {
-        this.prefs = prefs;
-        if (w instanceof BufferedWriter) {
-            this.bw = (BufferedWriter) w;
-        } else {
-            this.bw = new BufferedWriter(w);
-        }
-    }
-
-    /**
      * Creates a new NodeWriter for the given preferences node and
      * outputstream. Creates a new OutputStreamWriter.
      */
     public NodeWriter(Preferences prefs, OutputStream os) {
-        this(prefs, new OutputStreamWriter(os));
+        this.prefs = prefs;
+        Writer w;
+        try
+          {
+            w = new OutputStreamWriter(os, "UTF-8");
+          }
+        catch (UnsupportedEncodingException uee)
+          {
+            // Shouldn't happen, since we always have UTF-8 available.
+            InternalError ie = new InternalError("UTF-8 encoding missing");
+            ie.initCause(uee);
+            throw ie;
+          }
+        this.bw = new BufferedWriter(w);
     }
 
     /**
@@ -111,6 +113,9 @@ public class NodeWriter {
      */
     private void writeHeader() throws BackingStoreException, IOException {
         bw.write("<?xml version=\"1.0\"?>");
+        bw.newLine();
+        bw.write("<!DOCTYPE preferences SYSTEM "
+                 + "\"http://java.sun.com/dtd/preferences.dtd\">");
         bw.newLine();
         bw.newLine();
         bw.write("<!-- GNU Classpath java.util.prefs Preferences ");

@@ -1,5 +1,5 @@
 /* Segment.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,20 +39,40 @@ package javax.swing.text;
 
 import java.text.CharacterIterator;
 
+/**
+ * A text fragment represented by a sequence of characters stored in an array.
+ */
 public class Segment implements Cloneable, CharacterIterator
 {
   private boolean partialReturn;
+  
+  /** The current index. */
   private int current;
   
+  /** Storage for the characters (may contain additional characters). */
   public char[] array;
+  
+  /** The number of characters in the segment. */
   public int count;
+  
+  /** The offset of the first character in the segment. */
   public int offset;
 
+  /**
+   * Creates a new <code>Segment</code>.
+   */
   public Segment()
   {
     // Nothing to do here.
   }
 
+  /**
+   * Creates a new <code>Segment</code>.
+   * 
+   * @param array  the underlying character data.
+   * @param offset  the offset of the first character in the segment.
+   * @param count  the number of characters in the segment.
+   */
   public Segment(char[] array, int offset, int count)
   {
     this.array = array;
@@ -60,6 +80,12 @@ public class Segment implements Cloneable, CharacterIterator
     this.count = count;
   }
   
+  /**
+   * Clones the segment (note that the underlying character array is not cloned,
+   * just the reference to it).
+   * 
+   * @return A clone of the segment.
+   */
   public Object clone()
   {
     try
@@ -72,6 +98,13 @@ public class Segment implements Cloneable, CharacterIterator
       }
   }
 
+  /**
+   * Returns the character at the current index.  If the segment consists of
+   * zero characters, or the current index has passed the end of the 
+   * characters in the segment, this method returns {@link #DONE}.
+   * 
+   * @return The character at the current index.
+   */
   public char current()
   {
     if (count == 0
@@ -81,6 +114,14 @@ public class Segment implements Cloneable, CharacterIterator
     return array[current];
   }
 
+  /**
+   * Sets the current index to the first character in the segment and returns
+   * that character.  If the segment contains zero characters, this method
+   * returns {@link #DONE}.
+   * 
+   * @return The first character in the segment, or {@link #DONE} if the 
+   *         segment contains zero characters.
+   */
   public char first()
   {
     if (count == 0)
@@ -90,21 +131,46 @@ public class Segment implements Cloneable, CharacterIterator
     return array[current];
   }
 
+  /**
+   * Returns the index of the first character in the segment.
+   * 
+   * @return The index of the first character.
+   */
   public int getBeginIndex()
   {
     return offset;
   }
 
+  /**
+   * Returns the end index for the segment (one position beyond the last 
+   * character in the segment - note that this can be outside the range of the 
+   * underlying character array).
+   * 
+   * @return The end index for the segment.
+   */
   public int getEndIndex()
   {
     return offset + count;
   }
 
+  /**
+   * Returns the index of the current character in the segment.
+   * 
+   * @return The index of the current character.
+   */
   public int getIndex()
   {
     return current;
   }
 
+  /**
+   * Sets the current index to point to the last character in the segment and 
+   * returns that character.  If the segment contains zero characters, this 
+   * method returns {@link #DONE}.
+   * 
+   * @return The last character in the segment, or {@link #DONE} if the 
+   *         segment contains zero characters.
+   */
   public char last()
   {
     if (count == 0)
@@ -114,6 +180,17 @@ public class Segment implements Cloneable, CharacterIterator
     return array[current];
   }
 
+  /**
+   * Sets the current index to point to the next character in the segment and 
+   * returns that character.  If the next character position is past the end of
+   * the segment, the index is set to {@link #getEndIndex()} and the method
+   * returns {@link #DONE}.  If the segment contains zero characters, this 
+   * method returns {@link #DONE}.
+   * 
+   * @return The next character in the segment or {@link #DONE} (if the next
+   *         character position is past the end of the segment or if the 
+   *         segment contains zero characters).
+   */
   public char next()
   {
     if (count == 0)
@@ -129,6 +206,16 @@ public class Segment implements Cloneable, CharacterIterator
     return array[current];
   }
 
+  /**
+   * Sets the current index to point to the previous character in the segment 
+   * and returns that character.  If the current index is equal to 
+   * {@link #getBeginIndex()}, or if the segment contains zero characters, this 
+   * method returns {@link #DONE}.
+   * 
+   * @return The previous character in the segment or {@link #DONE} (if the 
+   *         current character position is at the beginning of the segment or 
+   *         if the segment contains zero characters).
+   */
   public char previous()
   {
     if (count == 0
@@ -139,11 +226,26 @@ public class Segment implements Cloneable, CharacterIterator
     return array[current];
   }
 
+  /**
+   * Sets the current index and returns the character at that position (or
+   * {@link #DONE} if the index is equal to {@link #getEndIndex()}.
+   * 
+   * @param position  the current position.
+   * 
+   * @return The character at the specified <code>position</code>, or
+   *         {@link #DONE} if <code>position</code> is equal to 
+   *         {@link #getEndIndex()}.
+   *         
+   * @throws IllegalArgumentException if <code>position</code> is not in the
+   *         range {@link #getBeginIndex()} to {@link #getEndIndex()}.
+   */
   public char setIndex(int position)
   {
     if (position < getBeginIndex()
 	|| position > getEndIndex())
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("position: " + position
+                                         + ", beginIndex: " + getBeginIndex()
+                                         + ", endIndex: " + getEndIndex());
 
     current = position;
 
@@ -153,12 +255,23 @@ public class Segment implements Cloneable, CharacterIterator
     return array[current];
   }
 
+  /**
+   * Returns a <code>String</code> containing the same characters as this 
+   * <code>Segment</code>.
+   * 
+   * @return A <code>String</code> containing the same characters as this 
+   *         <code>Segment</code>.
+   */
   public String toString()
   {
     return new String(array, offset, count);
   }
 
   /**
+   * Sets the partial return flag.
+   * 
+   * @param p  the new value of the flag.
+   * 
    * @since 1.4
    */
   public void setPartialReturn(boolean p)
@@ -167,6 +280,9 @@ public class Segment implements Cloneable, CharacterIterator
   }
   
   /**
+   * Returns the partial return flag.
+   * 
+   * @return The partial return flag.
    * @since 1.4
    */
   public boolean isPartialReturn()

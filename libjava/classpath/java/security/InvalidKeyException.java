@@ -1,5 +1,5 @@
 /* InvalidKeyException -- thrown for an invalid key
-   Copyright (C) 2000, 2002 Free Software Foundation
+   Copyright (C) 2000, 2002, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -65,5 +65,27 @@ public class InvalidKeyException extends KeyException
   public InvalidKeyException(String msg)
   {
     super(msg);
+  }
+
+  /**
+   * Create a new instance with a descriptive error message and
+   * a cause.
+   * @param s the descriptive error message
+   * @param cause the cause
+   * @since 1.5
+   */
+  public InvalidKeyException(String s, Throwable cause)
+  {
+    super(s, cause);
+  }
+
+  /**
+   * Create a new instance with a cause.
+   * @param cause the cause
+   * @since 1.5
+   */
+  public InvalidKeyException(Throwable cause)
+  {
+    super(cause);
   }
 }

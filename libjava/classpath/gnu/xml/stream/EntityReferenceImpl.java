@@ -1,5 +1,5 @@
 /* EntityReferenceImpl.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.io.Writer;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-//import javax.xml.stream.events.EntityDeclaration;
+import javax.xml.stream.events.EntityDeclaration;
 import javax.xml.stream.events.EntityReference;
 
 /**
@@ -54,26 +54,16 @@ public class EntityReferenceImpl
   implements EntityReference
 {
 
-  //protected final EntityDeclaration decl;
+  protected final EntityDeclaration decl;
   protected final String name;
-  protected final String baseUri;
-  protected final String publicId;
-  protected final String systemId;
-  protected final String replacementText;
 
   protected EntityReferenceImpl(Location location,
-                                //EntityDeclaration decl,
-                                String name,
-                                String baseUri, String publicId,
-                                String systemId, String replacementText)
+                                EntityDeclaration decl,
+                                String name)
   {
     super(location);
-    //this.decl = decl;
+    this.decl = decl;
     this.name = name;
-    this.baseUri = baseUri;
-    this.publicId = publicId;
-    this.systemId = systemId;
-    this.replacementText = replacementText;
   }
 
   public int getEventType()
@@ -81,36 +71,16 @@ public class EntityReferenceImpl
     return ENTITY_REFERENCE;
   }
 
-  /*public EntityDeclaration getDeclaration()
+  public EntityDeclaration getDeclaration()
   {
     return decl;
-  }*/
+  }
 
   public String getName()
   {
     return name;
   }
 
-  public String getBaseUri()
-  {
-    return baseUri;
-  }
-
-  public String getPublicId()
-  {
-    return publicId;
-  }
-
-  public String getSystemId()
-  {
-    return systemId;
-  }
-
-  public String getReplacementText()
-  {
-    return replacementText;
-  }
-  
   public void writeAsEncodedUnicode(Writer writer)
     throws XMLStreamException
   {

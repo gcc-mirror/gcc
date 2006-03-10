@@ -1,10 +1,10 @@
 
-/* @(#)e_asin.c 5.1 93/09/24 */
+/* @(#)e_asin.c 1.4 96/03/07 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
  * software is freely granted, provided that this notice 
  * is preserved.
@@ -18,7 +18,7 @@
  *		asin(x) = x + x*x^2*R(x^2)
  *	where
  *		R(x^2) is a rational approximation of (asin(x)-x)/x^3 
- *	and its remez error is bounded by
+ *	and its Remes error is bounded by
  *		|(asin(x)-x)/x^3 - R(x^2)| < 2^(-58.75)
  *
  *	For x in [0.5,1]
@@ -75,7 +75,7 @@ qS4 =  7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
 	double x;
 #endif
 {
-	double t = 0., w, p, q, c, r, s;
+	double t,w,p,q,c,r,s;
 	int32_t hx,ix;
 	GET_HIGH_WORD(hx,x);
 	ix = hx&0x7fffffff;
@@ -116,5 +116,4 @@ qS4 =  7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
 	}    
 	if(hx>0) return t; else return -t;    
 }
-
 #endif /* defined(_DOUBLE_IS_32BITS) */

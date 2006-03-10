@@ -92,5 +92,17 @@ final class MessageNode
     if (next != null && !terminate)
       next.apply(stylesheet, mode, context, pos, len, parent, nextSibling);
   }
+
+  public String toString()
+  {
+    StringBuffer buf = new StringBuffer("message");
+    if (terminate)
+      {
+        buf.append('[');
+        buf.append("terminate");
+        buf.append(']');
+      }
+    return buf.toString();
+  }
   
 }

@@ -527,7 +527,7 @@ public final class FileChannelImpl extends FileChannel
     throws IOException
   {
     if (newPosition < 0)
-      throw new IllegalArgumentException ("newPostition: " + newPosition);
+      throw new IllegalArgumentException ("newPosition: " + newPosition);
 
     if (!isOpen ())
       throw new ClosedChannelException ();

@@ -52,6 +52,11 @@ final class RETokenWordBoundary extends REToken {
 	this.where = where;
 	this.negated = negated;
     }
+
+    int getMaximumLength() {
+        return 0;
+    }
+
     
     boolean match(CharIndexed input, REMatch mymatch) {
 	// Word boundary means input[index-1] was a word character

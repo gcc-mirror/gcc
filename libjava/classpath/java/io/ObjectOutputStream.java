@@ -1,5 +1,5 @@
 /* ObjectOutputStream.java -- Class used to write serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -421,6 +421,8 @@ public class ObjectOutputStream extends OutputStream
 	for (int i = 0; i < intfs.length; i++)
 	  realOutput.writeUTF(intfs[i].getName());
 
+        assignNewHandle(osc);
+    
         boolean oldmode = setBlockDataMode(true);
         annotateProxyClass(osc.forClass());
         setBlockDataMode(oldmode);

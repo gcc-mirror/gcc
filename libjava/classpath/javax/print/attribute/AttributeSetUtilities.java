@@ -1,5 +1,5 @@
 /* AttributeSetUtilities.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -78,14 +78,14 @@ public final class AttributeSetUtilities
   private static class UnmodifiableAttributeSet
     implements AttributeSet, Serializable
   {
-    private AttributeSet set;
+    private AttributeSet attrset;
 
     public UnmodifiableAttributeSet(AttributeSet attributeSet)
     {
       if (attributeSet == null)
         throw new NullPointerException("attributeSet may not be null");
 
-      this.set = attributeSet;
+      this.attrset = attributeSet;
     }
 
     public boolean add(Attribute attribute)
@@ -105,32 +105,32 @@ public final class AttributeSetUtilities
 
     public boolean containsKey(Class category)
     {
-      return set.containsKey(category);
+      return attrset.containsKey(category);
     }
 
     public boolean containsValue(Attribute attribute)
     {
-      return set.containsValue(attribute);
+      return attrset.containsValue(attribute);
     }
 
     public boolean equals(Object obj)
     {
-      return set.equals(obj);
+      return attrset.equals(obj);
     }
     
     public Attribute get(Class interfaceName)
     {
-      return set.get(interfaceName);
+      return attrset.get(interfaceName);
     }
 
     public int hashCode()
     {
-      return set.hashCode();
+      return attrset.hashCode();
     }
     
     public boolean isEmpty()
     {
-      return set.isEmpty();
+      return attrset.isEmpty();
     }
 
     public boolean remove(Class category)
@@ -145,12 +145,12 @@ public final class AttributeSetUtilities
 
     public int size()
     {
-      return set.size();
+      return attrset.size();
     }
 
     public Attribute[] toArray()
     {
-      return set.toArray();
+      return attrset.toArray();
     }
   }
 
@@ -197,79 +197,79 @@ public final class AttributeSetUtilities
   private static class SynchronizedAttributeSet
     implements AttributeSet, Serializable
   {
-    private AttributeSet set;
+    private AttributeSet attrset;
 
     public SynchronizedAttributeSet(AttributeSet attributeSet)
     {
       if (attributeSet == null)
         throw new NullPointerException("attributeSet may not be null");
 
-      this.set = attributeSet;
+      attrset = attributeSet;
     }
 
     public synchronized boolean add(Attribute attribute)
     {
-      return set.add(attribute);
+      return attrset.add(attribute);
     }
 
     public synchronized boolean addAll(AttributeSet attributes)
     {
-      return set.addAll(attributes);
+      return attrset.addAll(attributes);
     }
     
     public synchronized void clear()
     {
-      set.clear();
+      attrset.clear();
     }
 
     public synchronized boolean containsKey(Class category)
     {
-      return set.containsKey(category);
+      return attrset.containsKey(category);
     }
 
     public synchronized boolean containsValue(Attribute attribute)
     {
-      return set.containsValue(attribute);
+      return attrset.containsValue(attribute);
     }
 
     public synchronized boolean equals(Object obj)
     {
-      return set.equals(obj);
+      return attrset.equals(obj);
     }
     
     public synchronized Attribute get(Class interfaceName)
     {
-      return set.get(interfaceName);
+      return attrset.get(interfaceName);
     }
 
     public synchronized int hashCode()
     {
-      return set.hashCode();
+      return attrset.hashCode();
     }
     
     public synchronized boolean isEmpty()
     {
-      return set.isEmpty();
+      return attrset.isEmpty();
     }
 
     public synchronized boolean remove(Class category)
     {
-      return set.remove(category);
+      return attrset.remove(category);
     }
 
     public synchronized boolean remove(Attribute attribute)
     {
-      return set.remove(attribute);
+      return attrset.remove(attribute);
     }
 
     public synchronized int size()
     {
-      return set.size();
+      return attrset.size();
     }
 
     public synchronized Attribute[] toArray()
     {
-      return set.toArray();
+      return attrset.toArray();
     }
   }
 

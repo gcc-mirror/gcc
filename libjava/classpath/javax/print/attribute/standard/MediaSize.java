@@ -1,5 +1,5 @@
 /* MediaSize.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,7 +72,14 @@ public class MediaSize extends Size2DSyntax
   static
     {
       mediaCache = new ArrayList();
-
+      
+      // We call one instance of every container class to make sure it gets
+      // loaded during class initialization and therefore all other static
+      // fields of this container class also.
+      
+      // This is needed to put all MediaSize instance into the mediaCache
+      // for use by the static methods in this class.
+      
       MediaSize tmp = MediaSize.ISO.A0;
       tmp = MediaSize.JIS.B0;
       tmp = MediaSize.Engineering.A;
@@ -80,16 +87,21 @@ public class MediaSize extends Size2DSyntax
       tmp = MediaSize.Other.EXECUTIVE;
     }
   
-  private MediaSizeName media;
+  private MediaSizeName mediaName;
   
   /**
-   * Creates a <code>MediaSize</code> object.
+   * Creates a <code>MediaSize</code> object. The created object will be added 
+   * to an internal cache used in the static methods of this class for lookup 
+   * of available <code>MediaSize</code> instances.
    *
    * @param x the size in x direction
    * @param y the size in y direction
    * @param units the units to use for the sizes
    *
    * @exception IllegalArgumentException if x or y &lt; 0 or units &lt; 1
+   * 
+   * @see #findMedia(float, float, int)
+   * @see #getMediaSizeForName(MediaSizeName)
    */
   public MediaSize(float x, float y, int units)
   {
@@ -99,7 +111,9 @@ public class MediaSize extends Size2DSyntax
   
   /**
    * Creates a <code>MediaSize</code> object associated with the given
-   * media name.
+   * media name. The created object will be added to an internal cache used 
+   * in the static methods of this class for lookup of available 
+   * <code>MediaSize</code> instances.
    *
    * @param x the size in x direction
    * @param y the size in y direction
@@ -107,22 +121,30 @@ public class MediaSize extends Size2DSyntax
    * @param media the media name to associate
    *
    * @exception IllegalArgumentException if x or y &lt; 0 or units &lt; 1
+   * 
+   * @see #findMedia(float, float, int)
+   * @see #getMediaSizeForName(MediaSizeName)
    */
   public MediaSize(float x, float y, int units, MediaSizeName media)
   {
     super(x, y, units);
-    this.media = media;
+    mediaName = media;
     mediaCache.add(this);
   }
   
   /**
-   * Creates a <code>MediaSize</code> object.
+   * Creates a <code>MediaSize</code> object. The created object will be added 
+   * to an internal cache used in the static methods of this class for lookup 
+   * of available <code>MediaSize</code> instances.
    *
    * @param x the size in x direction
    * @param y the size in y direction
    * @param units the units to use for the sizes
    *
    * @exception IllegalArgumentException if x or y &lt; 0 or units &lt; 1
+   * 
+   * @see #findMedia(float, float, int)
+   * @see #getMediaSizeForName(MediaSizeName)
    */
   public MediaSize(int x, int y, int units)
   {
@@ -132,7 +154,9 @@ public class MediaSize extends Size2DSyntax
   
   /**
    * Creates a <code>MediaSize</code> object associated with the given
-   * media name.
+   * media name. The created object will be added to an internal cache used 
+   * in the static methods of this class for lookup of available 
+   * <code>MediaSize</code> instances.
    *
    * @param x the size in x direction
    * @param y the size in y direction
@@ -140,11 +164,14 @@ public class MediaSize extends Size2DSyntax
    * @param media the media name to associate
    *
    * @exception IllegalArgumentException if x or y &lt; 0 or units &lt; 1
+   * 
+   * @see #findMedia(float, float, int)
+   * @see #getMediaSizeForName(MediaSizeName)
    */
   public MediaSize(int x, int y, int units, MediaSizeName media)
   {
     super(x, y, units);
-    this.media = media;
+    mediaName = media;
     mediaCache.add(this);
   }
   
@@ -153,7 +180,7 @@ public class MediaSize extends Size2DSyntax
    *
    * @return The class <code>MediaSize</code> itself.
    */
-  public Class getCategory()
+  public final Class getCategory()
   {
     return MediaSize.class;
   }
@@ -246,7 +273,7 @@ public class MediaSize extends Size2DSyntax
    */
   public MediaSizeName getMediaSizeName()
   {
-    return media;
+    return mediaName;
   }
 
   /**
@@ -254,7 +281,7 @@ public class MediaSize extends Size2DSyntax
    *
    * @return The name "media-size".
    */
-  public String getName()
+  public final String getName()
   {
     return "media-size";
   }
@@ -266,7 +293,11 @@ public class MediaSize extends Size2DSyntax
    */
   public static final class ISO 
   {
-
+    private ISO()
+    {
+      // prevent instantiation
+    }
+    
     /**
      * ISO A0 paper, 841 mm x 1189 mm.
      */
@@ -415,6 +446,11 @@ public class MediaSize extends Size2DSyntax
    */
   public static final class NA
   {
+    private NA()
+    {
+      // prevent instantiation
+    }
+    
     /**
      * US Legal paper size, 8.5 inch x 14 inch
      */
@@ -530,6 +566,11 @@ public class MediaSize extends Size2DSyntax
    */
   public static final class Engineering 
   {
+    private Engineering()
+    {
+      // prevent instantiation
+    }
+    
     /**
      * ANSI A paper size. 8.5 inch x 11 inch
      */
@@ -568,6 +609,11 @@ public class MediaSize extends Size2DSyntax
    */
   public static final class JIS 
   {
+    private JIS()
+    {
+      // prevent instantiation
+    }
+    
     /**
      * JIS B0 paper. 1030 mm x 1456 mm
      * Note: The JIS B-series is not identical to the ISO B-series.
@@ -762,6 +808,11 @@ public class MediaSize extends Size2DSyntax
    */
   public static final class Other
   {
+    private Other()
+    {
+      // prevent instantiation
+    }
+    
     /**
      * US Executive paper size, 7.25 inch x 10.5 inch
      */
@@ -820,6 +871,13 @@ public class MediaSize extends Size2DSyntax
      * Japanese double postcard, 148 mm x 200 mm
      */
     public static final MediaSize JAPANESE_DOUBLE_POSTCARD = new MediaSize(148, 200, MediaSize.MM, MediaSizeName.JAPANESE_DOUBLE_POSTCARD);
+    
+    /**
+     * Tabloid size, 11 inch x 17 inch.
+     * @since 1.5
+     */
+    public static final MediaSize TABLOID = 
+      new MediaSize(11, 17, Size2DSyntax.INCH, MediaSizeName.TABLOID);
   }
 }
 

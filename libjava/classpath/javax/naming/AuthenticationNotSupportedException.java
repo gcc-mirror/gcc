@@ -1,5 +1,5 @@
 /* AuthenticationNotSupportedException.java --
-   Copyright (C) 2000, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,8 @@ package javax.naming;
 public class AuthenticationNotSupportedException
   extends NamingSecurityException
 {
+  private static final long serialVersionUID = - 7149033933259492300L;
+
   public AuthenticationNotSupportedException ()
   {
     super ();

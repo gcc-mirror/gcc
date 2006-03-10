@@ -343,10 +343,13 @@ public class JSplitPane extends JComponent implements Accessible
           throw new 
             IllegalArgumentException("Constraints is not a known identifier.");
 
+        // If no dividerLocation has been set, then we need to trigger an
+        // initial layout.
+        if (getDividerLocation() != -1)
+          resetToPreferredSizes();
+
         super.addImpl(comp, constraints, index);
       }
-    invalidate();
-    layout();
   }
 
   /**

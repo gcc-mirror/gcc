@@ -93,7 +93,7 @@ public class DefaultListCellRenderer extends JLabel
                                                 int index, boolean isSelected,
                                                 boolean cellHasFocus)
   {
-    String s = value.toString();
+    String s = value != null ? value.toString() : "";
     setText(s);
     setOpaque(true);
     setHorizontalAlignment(LEFT);

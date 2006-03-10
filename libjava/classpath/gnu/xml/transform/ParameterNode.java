@@ -1,5 +1,5 @@
 /* ParameterNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -73,13 +73,9 @@ final class ParameterNode
                                          select.clone(stylesheet),
                                          type);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -96,18 +92,14 @@ final class ParameterNode
       {
         stylesheet.bindings.set(name, value, type);
         if (stylesheet.debug)
-          {
-            System.err.println(this + ": set to " + value);
-          }
+          System.err.println(this + ": set to " + value);
       }
     // variable and param don't process children as such
     // all subsequent instructions are processed with that variable context
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
     // pop the variable context
     stylesheet.bindings.pop(type);
   }
@@ -117,9 +109,7 @@ final class ParameterNode
     throws TransformerException
   {
     if (select != null)
-      {
-        return select.evaluate(context, pos, len);
-      }
+      return select.evaluate(context, pos, len);
     else if (children != null)
       {
         Document doc = (context instanceof Document) ? (Document) context :
@@ -129,17 +119,13 @@ final class ParameterNode
         return Collections.singleton(fragment);
       }
     else
-      {
-        return null;
-      }
+      return null;
   }
   
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
-      {
-        return true;
-      }
+      return true;
     return super.references(var);
   }
 
@@ -151,33 +137,18 @@ final class ParameterNode
         boolean r1 = references(pn.name);
         boolean r2 = pn.references(name);
         if (r1 && r2)
-          {
-            throw new IllegalArgumentException("circular definitions");
-          }
+          throw new IllegalArgumentException("circular definitions");
         if (r1)
-          {
-            return 1;
-          }
+          return 1;
         if (r2)
-          {
-            return -1;
-          }
+          return -1;
       }
     return 0;
   }
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
-    buf.append('[');
-    buf.append("name=");
-    buf.append(name);
-    if (select != null)
-      {
-        buf.append(",select=");
-        buf.append(select);
-      }
-    buf.append(",type=");
+    StringBuffer buf = new StringBuffer();
     switch (type)
       {
       case Bindings.VARIABLE:
@@ -189,6 +160,14 @@ final class ParameterNode
       case Bindings.WITH_PARAM:
         buf.append("with-param");
         break;
+      }
+    buf.append('[');
+    buf.append("name=");
+    buf.append(name);
+    if (select != null)
+      {
+        buf.append(",select=");
+        buf.append(select);
       }
     buf.append(']');
     return buf.toString();

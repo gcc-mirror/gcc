@@ -1,5 +1,5 @@
 /* ReferenceTypeId.java -- a base class for all reference type IDs
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -59,14 +59,6 @@ public class ReferenceTypeId
   public ReferenceTypeId (byte tag)
   {
     super (tag);
-  }
-
-  /**
-   * Returns the size of this ID type
-   */
-  public int size ()
-  {
-    return 8;
   }
 
   /**

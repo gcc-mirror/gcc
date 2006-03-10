@@ -1,5 +1,5 @@
 /* Proxy.java -- build a proxy class that implements reflected interfaces
-   Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,7 @@ import gnu.java.lang.reflect.TypeSignature;
 
 import java.io.Serializable;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -732,6 +733,12 @@ public class Proxy implements Serializable
           int j = methods.length;
           while (--j >= 0)
             {
+              if (isCoreObjectMethod(methods[j]))
+                {
+                  // In the case of an attempt to redefine a public non-final
+                  // method of Object, we must skip it
+                  continue;
+                }
               ProxySignature sig = new ProxySignature(methods[j]);
               ProxySignature old = (ProxySignature) method_set.put(sig, sig);
               if (old != null)
@@ -752,6 +759,41 @@ public class Proxy implements Serializable
         }
       return data;
     }
+
+    /**
+     * Checks whether the method is similar to a public non-final method of
+     * Object or not (i.e. with the same name and parameter types). Note that we
+     * can't rely, directly or indirectly (via Collection.contains) on
+     * Method.equals as it would also check the declaring class, what we do not
+     * want. We only want to check that the given method have the same signature
+     * as a core method (same name and parameter types)
+     * 
+     * @param method the method to check
+     * @return whether the method has the same name and parameter types as
+     *         Object.equals, Object.hashCode or Object.toString
+     * @see java.lang.Object#equals(Object)
+     * @see java.lang.Object#hashCode()
+     * @see java.lang.Object#toString()
+     */
+    private static boolean isCoreObjectMethod(Method method)
+    {
+      String methodName = method.getName();
+      if (methodName.equals("equals"))
+        {
+          return Arrays.equals(method.getParameterTypes(),
+                               new Class[] { Object.class });
+        }
+      if (methodName.equals("hashCode"))
+        {
+          return method.getParameterTypes().length == 0;
+        }
+      if (methodName.equals("toString"))
+        {
+          return method.getParameterTypes().length == 0;
+        }
+      return false;
+    }
+    
   } // class ProxyData
 
   /**

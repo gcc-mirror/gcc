@@ -1,5 +1,5 @@
 /* SimpleAttributeSet.java --
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,33 +42,67 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+/**
+ * A set of attributes.
+ */
 public class SimpleAttributeSet
   implements MutableAttributeSet, Serializable, Cloneable
 {
   /** The serialization UID (compatible with JDK1.5). */
   private static final long serialVersionUID = 8267656273837665219L;
 
+  /** An empty attribute set. */
   public static final AttributeSet EMPTY = new SimpleAttributeSet();
 
+  /** Storage for the attributes. */
   Hashtable tab;
 
+  /**
+   * Creates a new attribute set that is initially empty.
+   */
   public SimpleAttributeSet()
   {
-    this(null);
+    tab = new Hashtable();
   }
   
+  /**
+   * Creates a new <code>SimpleAttributeSet</code> with the same attributes
+   * and resolve parent as the specified set.
+   * 
+   * @param a  the attributes (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>a</code> is <code>null</code>.
+   */
   public SimpleAttributeSet(AttributeSet a)
   {
     tab = new Hashtable();
-    if (a != null)
-      addAttributes(a);
+    addAttributes(a);
   }
 
+  /**
+   * Adds an attribute with the given <code>name</code> and <code>value</code>
+   * to the set.  If the set already contains an attribute with the given
+   * <code>name</code>, the attribute value is updated.
+   * 
+   * @param name  the attribute name (<code>null</code> not permitted).
+   * @param value  the value (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if either argument is <code>null</code>.
+   */
   public void addAttribute(Object name, Object value)
   {
     tab.put(name, value);
   }
 
+  /**
+   * Adds all the attributes from <code>attributes</code> to this set.
+   * 
+   * @param attributes  the set of attributes to add (<code>null</code> not
+   *                    permitted).
+   *                    
+   * @throws NullPointerException if <code>attributes</code> is 
+   *         <code>null</code>.
+   */
   public void addAttributes(AttributeSet attributes)
   {
     Enumeration e = attributes.getAttributeNames();
@@ -80,6 +114,11 @@ public class SimpleAttributeSet
       }
   }
 
+  /**
+   * Returns a clone of the attribute set.
+   * 
+   * @return A clone of the attribute set.
+   */
   public Object clone()
   {
     SimpleAttributeSet s = new SimpleAttributeSet();
@@ -97,9 +136,18 @@ public class SimpleAttributeSet
    */
   public boolean containsAttribute(Object name, Object value)
   {
-    return (tab.containsKey(name) && tab.get(name).equals(value)) || 
-      (getResolveParent() != null && getResolveParent().
-       containsAttribute(name, value));
+    if (value == null)
+      throw new NullPointerException("Null 'value' argument.");
+    if (tab.containsKey(name))
+      return tab.get(name).equals(value);
+    else
+      {
+        AttributeSet p = getResolveParent();
+        if (p != null)
+          return p.containsAttribute(name, value);
+        else
+          return false;
+      }
   }
   
   /**
@@ -115,6 +163,15 @@ public class SimpleAttributeSet
       && tab.get(name).equals(value);
   }
 
+  /**
+   * Returns <code>true</code> of this <code>AttributeSet</code> contains all
+   * of the specified <code>attributes</code>.
+   *
+   * @param attributes the requested attributes
+   *
+   * @return <code>true</code> of this <code>AttributeSet</code> contains all
+   *         of the specified <code>attributes</code>
+   */
   public boolean containsAttributes(AttributeSet attributes)
   {
     Enumeration e = attributes.getAttributeNames();
@@ -128,11 +185,24 @@ public class SimpleAttributeSet
     return true;
   }
 
+  /**
+   * Creates and returns a copy of this <code>AttributeSet</code>.
+   *
+   * @return a copy of this <code>AttributeSet</code>
+   */
   public AttributeSet copyAttributes()
   {
     return (AttributeSet) clone();
   }
 
+  /**
+   * Checks this set for equality with an arbitrary object.
+   * 
+   * @param obj  the object (<code>null</code> permitted).
+   * 
+   * @return <code>true</code> if this set is equal to <code>obj</code>, and
+   *         <code>false</code> otherwise. 
+   */
   public boolean equals(Object obj)
   {
     return 
@@ -140,44 +210,95 @@ public class SimpleAttributeSet
       && this.isEqual((AttributeSet) obj);
   }
 
+  /**
+   * Returns the value of the specified attribute, or <code>null</code> if 
+   * there is no attribute with that name.  If the attribute is not defined
+   * directly in this set, the parent hierarchy (if there is one) will be
+   * used.
+   * 
+   * @param name  the attribute (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>name</code> is <code>null</code>.
+   */
   public Object getAttribute(Object name)
   {
     Object val = tab.get(name);
     if (val != null) 
       return val;
 
-    Object p = getResolveParent();
-    if (p != null && p instanceof AttributeSet)
-      return (((AttributeSet)p).getAttribute(name));
+    AttributeSet p = getResolveParent();
+    if (p != null)
+      return p.getAttribute(name);
 
     return null;
   }
 
+  /**
+   * Returns the number of attributes stored in this set, plus 1 if a parent
+   * has been specified (the reference to the parent is stored as a special 
+   * attribute).  The attributes stored in the parent do NOT contribute
+   * to the count.
+   * 
+   * @return The attribute count.
+   */
   public int getAttributeCount()
   {
     return tab.size();
   }
 
+  /**
+   * Returns an enumeration of the attribute names.
+   * 
+   * @return An enumeration of the attribute names.
+   */
   public Enumeration getAttributeNames()
   {
     return tab.keys();
   }
 
+  /**
+   * Returns the resolving parent.
+   * 
+   * @return The resolving parent (possibly <code>null</code>).
+   * 
+   * @see #setResolveParent(AttributeSet)
+   */
   public AttributeSet getResolveParent()
   {
     return (AttributeSet) tab.get(ResolveAttribute);
   }
 
+  /**
+   * Returns a hash code for this instance.
+   * 
+   * @return A hash code.
+   */
   public int hashCode()
   {
     return tab.hashCode();
   }
 
+  /**
+   * Returns <code>true</code> if the given attribute is defined in this set,
+   * and <code>false</code> otherwise.  The parent attribute set is not
+   * checked.
+   * 
+   * @param attrName  the attribute name (<code>null</code> not permitted).
+   */
   public boolean isDefined(Object attrName)
   {
     return tab.containsKey(attrName);
   }
 
+  /**
+   * Returns <code>true</code> if the set contains no attributes, and 
+   * <code>false</code> otherwise.  Note that the resolving parent is 
+   * stored as an attribute, so this method will return <code>false</code> if 
+   * a resolving parent is set.
+   * 
+   * @return <code>true</code> if the set contains no attributes, and 
+   * <code>false</code> otherwise.
+   */
   public boolean isEmpty()
   {
     return tab.isEmpty();	
@@ -186,7 +307,13 @@ public class SimpleAttributeSet
   /**
    * Returns true if the given set has the same number of attributes
    * as this set and <code>containsAttributes(attr)</code> returns
-   * true.
+   * <code>true</code>.
+   * 
+   * @param attr  the attribute set (<code>null</code> not permitted).
+   * 
+   * @return A boolean.
+   * 
+   * @throws NullPointerException if <code>attr</code> is <code>null</code>.
    */
   public boolean isEqual(AttributeSet attr)
   {
@@ -194,6 +321,15 @@ public class SimpleAttributeSet
       && this.containsAttributes(attr);
   }
     
+  /**
+   * Removes the attribute with the specified <code>name</code>, if this 
+   * attribute is defined.  This method will only remove an attribute from
+   * this set, not from the resolving parent.
+   * 
+   * @param name  the attribute name (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>name</code> is <code>null</code>.
+   */
   public void removeAttribute(Object name)
   {
     tab.remove(name);
@@ -202,7 +338,12 @@ public class SimpleAttributeSet
   /**
    * Removes attributes from this set if they are found in the 
    * given set.  Only attributes whose key AND value are removed.
-   * Removes attributes only from this set, not from the resolving parent.
+   * Removes attributes only from this set, not from the resolving parent.  
+   * Since the resolving parent is stored as an attribute, if 
+   * <code>attributes</code> has the same resolving parent as this set, the
+   * parent will be removed from this set.
+   * 
+   * @param attributes  the attributes (<code>null</code> not permitted).
    */
   public void removeAttributes(AttributeSet attributes)
   {
@@ -216,6 +357,14 @@ public class SimpleAttributeSet
       }
   }
 
+  /**
+   * Removes the attributes listed in <code>names</code>.
+   * 
+   * @param names  the attribute names (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>names</code> is <code>null</code> 
+   *         or contains any <code>null</code> values.
+   */
   public void removeAttributes(Enumeration names)
   {
     while (names.hasMoreElements())
@@ -224,11 +373,31 @@ public class SimpleAttributeSet
       }	
   }
 
+  /**
+   * Sets the reolving parent for this set.  When looking up an attribute, if
+   * it is not found in this set, then the resolving parent is also used for
+   * the lookup.
+   * <p>
+   * Note that the parent is stored as an attribute, and will contribute 1 to 
+   * the count returned by {@link #getAttributeCount()}. 
+   * 
+   * @param parent  the parent attribute set (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>parent</code> is <code>null</code>.
+   * 
+   * @see #setResolveParent(AttributeSet)
+   */
   public void setResolveParent(AttributeSet parent)
   {
     addAttribute(ResolveAttribute, parent);
   }
-    
+  
+  /**
+   * Returns a string representation of this instance, typically used for
+   * debugging purposes.
+   * 
+   * @return A string representation of this instance.
+   */
   public String toString()
   {
     return tab.toString();

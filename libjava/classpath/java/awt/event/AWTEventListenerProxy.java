@@ -72,75 +72,15 @@ public class AWTEventListenerProxy extends EventListenerProxy
   }
 
   /**
-   * Forwards events on to the delegate if they meet the event mask.
+   * Forwards events on to the delegate.
    *
-   * @param event the property change event to filter
+   * @param event the to forward to the delagate listener
+   *
    * @throws NullPointerException if the delegate this was created with is null
    */
   public void eventDispatched(AWTEvent event)
   {
-    int id = event == null ? 0 : event.getID();
-    if (((mask & AWTEvent.ACTION_EVENT_MASK) != 0
-         && event instanceof ActionEvent)
-        || ((mask & AWTEvent.ADJUSTMENT_EVENT_MASK) != 0
-            && event instanceof AdjustmentEvent)
-        || ((mask & AWTEvent.COMPONENT_EVENT_MASK) != 0
-            && event instanceof ComponentEvent
-            && (id >= ComponentEvent.COMPONENT_FIRST
-                && id <= ComponentEvent.COMPONENT_LAST))
-        || ((mask & AWTEvent.CONTAINER_EVENT_MASK) != 0
-            && event instanceof ContainerEvent)
-        || ((mask & AWTEvent.FOCUS_EVENT_MASK) != 0
-            && event instanceof FocusEvent)
-        || ((mask & AWTEvent.HIERARCHY_BOUNDS_EVENT_MASK) != 0
-            && event instanceof HierarchyEvent
-            && (id == HierarchyEvent.ANCESTOR_MOVED
-                || id == HierarchyEvent.ANCESTOR_RESIZED))
-        || ((mask & AWTEvent.HIERARCHY_EVENT_MASK) != 0
-            && event instanceof HierarchyEvent
-            && id == HierarchyEvent.HIERARCHY_CHANGED)
-        || ((mask & AWTEvent.INPUT_METHOD_EVENT_MASK) != 0
-            && event instanceof InputMethodEvent)
-        || ((mask & AWTEvent.INVOCATION_EVENT_MASK) != 0
-            && event instanceof InvocationEvent)
-        || ((mask & AWTEvent.ITEM_EVENT_MASK) != 0
-            && event instanceof ItemEvent)
-        || ((mask & AWTEvent.KEY_EVENT_MASK) != 0
-            && event instanceof KeyEvent)
-        || ((mask & AWTEvent.MOUSE_EVENT_MASK) != 0
-            && event instanceof MouseEvent
-            && (id == MouseEvent.MOUSE_PRESSED
-                || id == MouseEvent.MOUSE_RELEASED
-                || id == MouseEvent.MOUSE_CLICKED
-                || id == MouseEvent.MOUSE_ENTERED
-                || id == MouseEvent.MOUSE_EXITED))
-        || ((mask & AWTEvent.MOUSE_MOTION_EVENT_MASK) != 0
-            && event instanceof MouseEvent
-            && (id == MouseEvent.MOUSE_MOVED
-                || id == MouseEvent.MOUSE_DRAGGED))
-        || ((mask & AWTEvent.MOUSE_WHEEL_EVENT_MASK) != 0
-            && event instanceof MouseWheelEvent)
-        || ((mask & AWTEvent.PAINT_EVENT_MASK) != 0
-            && event instanceof PaintEvent)
-        || ((mask & AWTEvent.TEXT_EVENT_MASK) != 0
-            && event instanceof TextEvent)
-        || ((mask & AWTEvent.WINDOW_EVENT_MASK) != 0
-            && event instanceof WindowEvent
-            && (id == WindowEvent.WINDOW_OPENED
-                || id == WindowEvent.WINDOW_CLOSING
-                || id == WindowEvent.WINDOW_CLOSED
-                || id == WindowEvent.WINDOW_ICONIFIED
-                || id == WindowEvent.WINDOW_DEICONIFIED
-                || id == WindowEvent.WINDOW_ACTIVATED
-                || id == WindowEvent.WINDOW_DEACTIVATED))
-        || ((mask & AWTEvent.WINDOW_FOCUS_EVENT_MASK) != 0
-            && event instanceof WindowEvent
-            && (id == WindowEvent.WINDOW_GAINED_FOCUS
-                || id == WindowEvent.WINDOW_LOST_FOCUS))
-        || ((mask & AWTEvent.WINDOW_STATE_EVENT_MASK) != 0
-            && event instanceof WindowEvent
-            && id == WindowEvent.WINDOW_STATE_CHANGED))
-      ((AWTEventListener) getListener()).eventDispatched(event);
+    ((AWTEventListener) getListener()).eventDispatched(event);
   }
 
   /**

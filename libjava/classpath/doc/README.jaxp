@@ -30,6 +30,7 @@ classes in the above packages.
 
 . org.xml.sax.* ... SAX2 interfaces
 . org.w3c.dom.* ... DOM Level 3 interfaces
+. org.relaxng.datatype.* ... RELAX NG pluggable datatypes API
 
 CONFORMANCE
 
@@ -175,3 +176,29 @@ using thread context variables.
 Update: thread context variables have been introduced. This is very
 untested though, libxmll therefore still has the single thread
 bottleneck.
+
+
+Validation
+===================================================
+
+Pluggable datatypes
+---------------------------------------------------
+Validators should use the RELAX NG pluggable datatypes API to retrieve
+datatype (XML Schema simple type) implementations in a schema-neutral
+fashion. The following code demonstrates looking up a W3C XML Schema
+nonNegativeInteger datatype:
+
+  DatatypeLibrary xsd = DatatypeLibraryLoader
+    .createDatatypeLibrary(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+  Datatype nonNegativeInteger = xsd.createDatatype("nonNegativeInteger");
+
+It is also possible to create new types by derivation. For instance,
+to create a datatype that will match a US ZIP code:
+
+  DatatypeBuilder b = xsd.createDatatypeBuilder("string");
+  b.addParameter("pattern", "(^[0-9]{5}$)|(^[0-9]{5}-[0-9]{4}$)");
+  Datatype zipCode = b.createDatatype();
+
+A datatype library implementation for XML Schema is provided; other
+library implementations may be added.
+

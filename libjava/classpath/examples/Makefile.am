@@ -95,7 +95,10 @@ $(EXAMPLE_ZIP): $(EXAMPLE_JAVA_FILES)
 	mkdir -p classes/gnu/classpath/examples/icons
 	cp $(EXAMPLE_ICONS) classes/gnu/classpath/examples/icons
 	$(JCOMPILER) -d classes $(EXAMPLE_JAVA_FILES) 
-	cd classes; $(ZIP) -r ../$(EXAMPLE_ZIP) .; cd ..
+	(cd classes; \
+	if test "$(ZIP)" != ""; then $(ZIP) -r ../$(EXAMPLE_ZIP) .; fi; \
+	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf ../$(EXAMPLE_ZIP) .; fi; \
+	cd ..)
 	rm -rf classes
 
 # Zip file be gone! (and make sure the classes are gone too)

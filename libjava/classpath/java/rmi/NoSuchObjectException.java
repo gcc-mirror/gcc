@@ -1,5 +1,6 @@
 /* NoSuchObjectException.java -- thrown if the remote object no longer exists
-   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,9 +44,9 @@ package java.rmi;
  * obey the semantics of "at most once".
  *
  * @author unknown
- * @see RemoteObject#toStub(Remote)
- * @see UnicastRemoteObject#unexportObject(Remote, boolean)
- * @see Activatable#unexportObject(Remote, boolean)
+ * @see java.rmi.server.RemoteObject#toStub(Remote)
+ * @see java.rmi.server.UnicastRemoteObject#unexportObject(Remote, boolean)
+ * @see java.rmi.activation.Activatable#unexportObject(Remote, boolean)
  * @since 1.1
  * @status updated to 1.4
  */

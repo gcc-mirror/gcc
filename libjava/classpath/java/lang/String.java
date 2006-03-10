@@ -555,6 +555,49 @@ public final class String implements Serializable, Comparable, CharSequence
   }
 
   /**
+   * Creates a new String containing the characters represented in the
+   * given subarray of Unicode code points.
+   * @param codePoints the entire array of code points
+   * @param offset the start of the subarray
+   * @param count the length of the subarray
+   * 
+   * @throws IllegalArgumentException if an invalid code point is found
+   * in the codePoints array
+   * @throws IndexOutOfBoundsException if offset is negative or offset + count
+   * is greater than the length of the array.
+   */
+  public String(int[] codePoints, int offset, int count)
+  {
+    // FIXME: This implementation appears to give correct internal
+    // representation of the String because: 
+    //   - length() is correct
+    //   - getting a char[] from toCharArray() and testing 
+    //     Character.codePointAt() on all the characters in that array gives
+    //     the appropriate results
+    // however printing the String gives incorrect results.  This may be 
+    // due to printing method errors (such as incorrectly looping through
+    // the String one char at a time rather than one "character" at a time.
+    
+    if (offset < 0)
+      throw new IndexOutOfBoundsException();
+    int end = offset + count;
+    int pos = 0;
+    // This creates a char array that is long enough for all of the code
+    // points to represent supplementary characters.  This is more than likely
+    // a waste of storage, so we use it only temporarily and then copy the 
+    // used portion into the value array.
+    char[] temp = new char[2 * codePoints.length];
+    for (int i = offset; i < end; i++)
+      {
+        pos += Character.toChars(codePoints[i], temp, pos);        
+      }
+    this.count = pos;
+    this.value = new char[pos];
+    System.arraycopy(temp, 0, value, 0, pos);
+    this.offset = 0;
+  }
+  
+  /**
    * Returns the number of characters contained in this String.
    *
    * @return the length of this String
@@ -1822,7 +1865,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   private static int upperCaseExpansion(char ch)
   {
-    return Character.direction[Character.readChar(ch) >> 7] & 3;
+    return Character.direction[0][Character.readCodePoint((int)ch) >> 7] & 3;
   }
 
   /**
@@ -1917,5 +1960,30 @@ public final class String implements Serializable, Comparable, CharSequence
         startPos = result.indexOf(targetString, startPos + replaceLength);
       }
     return result.toString();
+  }
+  
+  /**
+   * Return the index into this String that is offset from the given index by 
+   * <code>codePointOffset</code> code points.
+   * @param index the index at which to start
+   * @param codePointOffset the number of code points to offset
+   * @return the index into this String that is <code>codePointOffset</code>
+   * code points offset from <code>index</code>.
+   * 
+   * @throws IndexOutOfBoundsException if index is negative or larger than the
+   * length of this string.
+   * @throws IndexOutOfBoundsException if codePointOffset is positive and the
+   * substring starting with index has fewer than codePointOffset code points.
+   * @throws IndexOutOfBoundsException if codePointOffset is negative and the
+   * substring ending with index has fewer than (-codePointOffset) code points.
+   * @since 1.5
+   */
+  public int offsetByCodePoints(int index, int codePointOffset)
+  {
+    if (index < 0 || index > count)
+      throw new IndexOutOfBoundsException();
+    
+    return Character.offsetByCodePoints(value, offset, count, offset + index,
+                                        codePointOffset);
   }
 }

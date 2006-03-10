@@ -1,5 +1,5 @@
 /* Request.java --
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -94,11 +94,6 @@ public class Request
   protected RequestBodyWriter requestBodyWriter;
 
   /**
-   * Request body negotiation threshold for 100-continue expectations.
-   */
-  protected int requestBodyNegotiationThreshold;
-
-  /**
    * Map of response header handlers.
    */
   protected Map responseHeaderHandlers;
@@ -127,7 +122,6 @@ public class Request
     this.path = path;
     requestHeaders = new Headers();
     responseHeaderHandlers = new HashMap();
-    requestBodyNegotiationThreshold = 4096;
   }
 
   /**
@@ -251,21 +245,6 @@ public class Request
   }
 
   /**
-   * Sets the request body negotiation threshold.
-   * If this is set, it determines the maximum size that the request body
-   * may be before body negotiation occurs(via the
-   * <code>100-continue</code> expectation). This ensures that a large
-   * request body is not sent when the server wouldn't have accepted it
-   * anyway.
-   * @param threshold the body negotiation threshold, or &lt;=0 to disable
-   * request body negotation entirely
-   */
-  public void setRequestBodyNegotiationThreshold(int threshold)
-  {
-    requestBodyNegotiationThreshold = threshold;
-  }
-
-  /**
    * Dispatches this request.
    * A request can only be dispatched once; calling this method a second
    * time results in a protocol exception.
@@ -291,10 +270,10 @@ public class Request
     if (requestBodyWriter != null)
       {
         contentLength = requestBodyWriter.getContentLength();
-        if (contentLength > requestBodyNegotiationThreshold)
+        String expect = getHeader("Expect");
+        if (expect != null && expect.equals("100-continue"))
           {
             expectingContinue = true;
-            setHeader("Expect", "100-continue");
           }
         else
           {
@@ -323,12 +302,10 @@ public class Request
             String line = method + ' ' + requestUri + ' ' + version + CRLF;
             out.write(line.getBytes(US_ASCII));
             // Request headers
-            for (Iterator i = requestHeaders.keySet().iterator();
-                 i.hasNext(); )
+            for (Iterator i = requestHeaders.iterator(); i.hasNext(); )
               {
-                String name =(String) i.next();
-                String value =(String) requestHeaders.get(name);
-                line = name + HEADER_SEP + value + CRLF;
+                Headers.HeaderElement elt = (Headers.HeaderElement)i.next();
+                line = elt.name + HEADER_SEP + elt.value + CRLF;
                 out.write(line.getBytes(US_ASCII));
               }
             out.write(CRLF.getBytes(US_ASCII));
@@ -459,23 +436,17 @@ public class Request
 
   void notifyHeaderHandlers(Headers headers)
   {
-    for (Iterator i = headers.entrySet().iterator(); i.hasNext(); )
+    for (Iterator i = headers.iterator(); i.hasNext(); )
       {
-        Map.Entry entry = (Map.Entry) i.next();
-        String name =(String) entry.getKey();
+        Headers.HeaderElement entry = (Headers.HeaderElement) i.next();
         // Handle Set-Cookie
-        if ("Set-Cookie".equalsIgnoreCase(name))
-          {
-            String value = (String) entry.getValue();
-            handleSetCookie(value);
-          }
+        if ("Set-Cookie".equalsIgnoreCase(entry.name))
+            handleSetCookie(entry.value);
+
         ResponseHeaderHandler handler =
-          (ResponseHeaderHandler) responseHeaderHandlers.get(name);
+          (ResponseHeaderHandler) responseHeaderHandlers.get(entry.name);
         if (handler != null)
-          {
-            String value = (String) entry.getValue();
-            handler.setValue(value);
-          }
+            handler.setValue(entry.value);
       }
   }
 
@@ -528,6 +499,9 @@ public class Request
             throw new ProtocolException("Unsupported Content-Encoding: " +
                                         contentCoding);
           }
+	// Remove the Content-Encoding header because the content is
+	// no longer compressed.
+	responseHeaders.remove("Content-Encoding");
       }
     return in;
   }

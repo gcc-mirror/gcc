@@ -58,11 +58,11 @@ public class NamingMap
   /**
    * The actual map.
    */
-  private final TreeMap map;
+  protected final TreeMap map;
 
   /**
    * Creates an instance of the naming map, intialising the comparator
-   * to the {@link cmpNameComparator}.
+   * to the {@link NameComponentComparator}.
    */
   public NamingMap()
   {
@@ -70,7 +70,7 @@ public class NamingMap
   }
 
   /**
-   * Put the given CORBA object, specifying the given name as a key.
+   * Put the given GIOP object, specifying the given name as a key.
    * If the entry with the given name already exists, or if the given
    * object is already mapped under another name, the
    * {@link AlreadyBound} exception will be thrown.
@@ -93,8 +93,11 @@ public class NamingMap
     else
       {
         if (containsValue(object))
-          throw new AlreadyBound("Tha object has another name");
+          throw new AlreadyBound("The object has another name");
       }
+    
+    // There are no restrictions in binding the object.
+    rebind(name, object);
   }
 
   /**
@@ -141,7 +144,7 @@ public class NamingMap
   }
 
   /**
-   * Put the given CORBA object, specifying the given name as a key.
+   * Put the given GIOP object, specifying the given name as a key.
    * Remove all pre - existing mappings for the given name and object.
    *
    * @param name the name.

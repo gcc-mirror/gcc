@@ -1,5 +1,5 @@
 /* XMLEventAllocatorImpl.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -116,10 +116,9 @@ public class XMLEventAllocatorImpl
                                   namespaces);
       case XMLStreamConstants.ENTITY_REFERENCE:
         String name = reader.getLocalName();
-        //EntityDeclaration decl =
-        //  (EntityDeclaration) entityDeclarations.get(name);
-        //return new EntityReferenceImpl(location, decl, name);
-        return new EntityReferenceImpl(location, name, null, null, null, null);
+        EntityDeclaration decl =
+          (EntityDeclaration) entityDeclarations.get(name);
+        return new EntityReferenceImpl(location, decl, name);
       case XMLStreamConstants.PROCESSING_INSTRUCTION:
         return new ProcessingInstructionImpl(location,
                                              reader.getPITarget(),
@@ -132,7 +131,7 @@ public class XMLEventAllocatorImpl
         return new CharactersImpl(location, text,
                                   whitespace, false, ignorableWhitespace);
       case XMLStreamConstants.START_DOCUMENT:
-        String systemId = location.getLocationURI();
+        String systemId = location.getSystemId();
         String encoding = reader.getCharacterEncodingScheme();
         boolean encodingDeclared = encoding != null;
         if (encoding == null)
@@ -164,7 +163,7 @@ public class XMLEventAllocatorImpl
         List attributes = new LinkedList();
         for (int i = 0; i < len; i++)
           attributes.add(new AttributeImpl(location,
-                                           reader.getAttributeQName(i),
+                                           reader.getAttributeName(i),
                                            reader.getAttributeValue(i),
                                            QName.valueOf(reader.getAttributeType(i)),
                                            reader.isAttributeSpecified(i)));

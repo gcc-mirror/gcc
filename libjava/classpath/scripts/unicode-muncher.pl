@@ -42,20 +42,21 @@
 #
 # Inspired by code from Jochen Hoenicke.
 # author Eric Blake <ebb9@email.byu.edu>
+# updated to Unicode 4.0.0 by Anthony Balkissoon <abalkiss@redhat.com>
 #
 # Usage: ./unicode-muncher <UnicodeData> <SpecialCasing> <CharData.java>
 #   where <UnicodeData> and <SpecialCasing> are .txt files obtained from
-#   www.unicode.org (named UnicodeData-3.0.0.txt and SpecialCasing-2.txt for
-#   Unicode version 3.0.0), and <CharData.java> is the final location for the
+#   www.unicode.org (named UnicodeData-4.0.0.txt and SpecialCasing-4.0.0.txt for
+#   Unicode version 4.0.0), and <CharData.java> is the final location for the
 #   Java interface gnu.java.lang.CharData.
-#   As of JDK 1.4, use Unicode version 3.0.0 for best results.
+#   As of JDK 1.5, use Unicode version 4.0.0 for best results.
 
 ##
 ## Convert a 16-bit integer to a Java source code String literal character
 ##
 sub javaChar($) {
     my ($char) = @_;
-    die "Out of range: $char\n" if $char < -0x8000 or $char > 0xffff;
+    die "Out of range: $char\n" if $char < -0x8000 or $char > 0x10ffff;
     $char += 0x10000 if $char < 0;
     # Special case characters that must be escaped, or are shorter as ASCII
     return sprintf("\\%03o", $char) if $char < 0x20;
@@ -77,10 +78,34 @@ my $NOBREAK_FLAG  = 32;
 my $MIRRORED_FLAG = 64;
 
 my %special = ();
-my @info = ();
+
+# infoArray is an array where each element is a list of character information
+# for characters in a plane.  The index of each list is equal to the plane 
+# that it corresponds to even though most of these lists will currently be
+# empty.  This is done so that that this script can be easily modified to 
+# accomodate future versions of Unicode.
+my @infoArray = \((), (), (), (), (), (), (), (), 
+    (), (), (), (), (), (), (), (), ());
+
+# info is a reference to one of the lists in infoArray, depending on which 
+# plane we're currently parsing.
+my $info;
+
+# titlecase is a string of ordered pairs of characters to store the titlecase
+# conversions of characters that have them
 my $titlecase = "";
+
+# count is simply used to print "." to the screen every so often
 my $count = 0;
+
+# range is used when the UnicodeData file blocks out ranges of code points
 my $range = 0;
+
+# largeNums is an array of numerical values that are too large to fit 
+# into the 16 bit char where most numerical values are stored.  
+# What is stored in the char then is a number N such that (-N - 3) is 
+# the index into largeNums where the numerical value can be found.
+my @largeNums = ();
 
 die "Usage: $0 <UnicodeData.txt> <SpecialCasing.txt> <CharData.java>"
     unless @ARGV == 3;
@@ -88,7 +113,9 @@ $| = 1;
 print "GNU Classpath Unicode Attribute Database Generator 2.1\n";
 print "Copyright (C) 1998, 2002 Free Software Foundation, Inc.\n";
 
-# Stage 0: Parse the special casing file
+################################################################################
+################################################################################
+## Stage 0: Parse the special casing file
 print "Parsing special casing file\n";
 open (SPECIAL, "< $ARGV[1]") || die "Can't open special casing file: $!\n";
 while (<SPECIAL>) {
@@ -105,10 +132,11 @@ while (<SPECIAL>) {
     next unless defined $upper and $upper =~ / /;
     $special{hex $ch} = [map {hex} split ' ', $upper];
 }
-
 close SPECIAL;
 
-# Stage 1: Parse the attribute file
+################################################################################
+################################################################################
+## Stage 1: Parse the attribute file
 print "Parsing attributes file";
 open (UNICODE, "< $ARGV[0]") || die "Can't open Unicode attribute file: $!\n";
 while (<UNICODE>) {
@@ -118,10 +146,17 @@ while (<UNICODE>) {
     my ($ch, $name, $category, undef, $bidir, $decomp, undef, undef, $numeric,
         $mirrored, undef, undef, $upcase, $lowcase, $title) = split ';';
     $ch = hex($ch);
-    next if $ch > 0xffff; # Ignore surrogate pairs, since Java does
+
+    # plane tells us which Unicode code plane we're currently in and is an
+    # index into infoArray.
+    my $plane = int($ch / 0x10000);
+    my $planeBase = $plane * 0x10000;
+    $info = \@{$infoArray[$plane]};
 
     my ($type, $numValue, $upperchar, $lowerchar, $direction);
 
+    # Set the value of the $type variable, checking to make sure that it's valid
+    # and setting the mirrored and nobreak bits if necessary.
     $type = 0;
     while ($category !~ /^$TYPECODES[$type]$/) {
         if (++$type == @TYPECODES) {
@@ -131,9 +166,18 @@ while (<UNICODE>) {
     $type |= $NOBREAK_FLAG if ($decomp =~ /noBreak/);
     $type |= $MIRRORED_FLAG if ($mirrored =~ /Y/);
 
+    # Set the value of the $numeric variable checking the special cases of
+    # large numbers or 'a' - 'z' values.
     if ($numeric =~ /^[0-9]+$/) {
         $numValue = $numeric;
-        die "numValue too big: $ch, $numValue\n" if $numValue >= 0x7fff;
+        # If numeric takes more than 16 bits to store we want to store that 
+	# number in a separate array and store a number N in numValue such 
+	# that (-N - 3) is the offset into the separate array containing the
+	# large numerical value.
+	if ($numValue >= 0x7fff) {
+	    $numValue = -3 - @largeNums;
+	    push @largeNums, $numeric;	    
+	}
     } elsif ($numeric eq "") {
         # Special case sequences of 'a'-'z'
         if ($ch >= 0x0041 && $ch <= 0x005a) {
@@ -151,13 +195,20 @@ while (<UNICODE>) {
         $numValue = -2;
     }
 
+    # Set the uppercase and lowercase expansions for the character.
     $upperchar = $upcase ? hex($upcase) - $ch : 0;
     $lowerchar = $lowcase ? hex($lowcase) - $ch : 0;
+
+    # If this character has a special titlecase expansion then append it to
+    # the titlecase String.
     if ($title ne $upcase) {
         my $titlechar = $title ? hex($title) : $ch;
         $titlecase .= pack("n2", $ch, $titlechar);
     }
 
+    # Set the direction variable, use the lower 2 bits as a count of how many
+    # characters will be added to the String if this character undergoes an
+    # uppercase expansion.
     $direction = 0;
     while ($bidir !~ /^$DIRCODES[$direction]$/) {
         if (++$direction == @DIRCODES) {
@@ -168,159 +219,218 @@ while (<UNICODE>) {
     $direction <<= 2;
     $direction += $#{$special{$ch}} if defined $special{$ch};
 
+    # If the UnicodeData file blocks off ranges of code points give them all
+    # the same character information.
     if ($range) {
         die "Expecting end of range at $ch\n" unless $name =~ /Last>$/;
         for ($range + 1 .. $ch - 1) {
-            $info[$_] = pack("n5", $type, $numValue, $upperchar,
+            $info->[$_ - $planeBase] = pack("n5", $type, $numValue, $upperchar,
                              $lowerchar, $direction);
         }
         $range = 0;
     } elsif ($name =~ /First>$/) {
         $range = $ch;
     }
-    $info[$ch] = pack("n5", $type, $numValue, $upperchar, $lowerchar,
+
+    # Store all this parsed information into the element in infoArray that info
+    # points to.
+    $info->[$ch - $planeBase] = pack("n5", $type, $numValue, $upperchar, $lowerchar,
                       $direction);
 }
 close UNICODE;
 
-# Stage 2: Compress the data structures
+################################################################################
+################################################################################
+## Stage 2: Compress the data structures
 printf "\nCompressing data structures";
 $count = 0;
-my $info = ();
-my %charhash = ();
-my @charinfo = ();
 
-for my $ch (0 .. 0xffff) {
-    print "." unless $count++ % 0x1000;
-    $info[$ch] = pack("n5", 0, -1, 0, 0, -4) unless defined $info[$ch];
+# data is a String that will be used to create the DATA String containing 
+# character information and offsets into the attribute tables.
+my @data = ();
 
-    my ($type, $numVal, $upper, $lower, $direction) = unpack("n5", $info[$ch]);
-    if (! exists $charhash{$info[$ch]}) {
-        push @charinfo, [ $numVal, $upper, $lower, $direction ];
-        $charhash{$info[$ch]} = $#charinfo;
+# charhashArray is an array of hashtables used so that we can reuse character
+# attributes when characters share the same attributes ... this makes our
+# attribute tables smaller.  charhash is a pointer into this array.
+my @charhashArray = ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
+my $charhash = ();
+
+# charinfoArray is an array of arrays, one per plane, for storing character 
+# information.  charinfo is a pointer into this array.
+my @charinfoArray = \((), (), (), (), (), (), (), (), 
+    (), (), (), (), (), (), (), (), ());
+my $charinfo;
+
+# charlen is an array, one element per plane, that tells us how many unique
+# character attributes there are for that plane.
+my @charlen = ();
+
+for my $plane (0 .. 0x10) {
+    $info = \@{$infoArray[$plane]};
+    my $planeBase = $plane * 0x10000;
+    $charhash = \%{$charhashArray[$plane]};
+    $charinfo = \@{$charinfoArray[$plane]};
+
+    for my $ch ($planeBase .. $planeBase + 0xffff) {
+	my $index = $ch - $planeBase;
+	print "." unless $count++ % 0x1000;
+	$info->[$index] = pack("n5", 0, -1, 0, 0, -4) unless defined $info->[$index];
+	
+	my ($type, $numVal, $upper, $lower, $direction) = unpack("n5", $info->[$index]);
+	if (! exists $charhash->{$info->[$index]}) {
+	    # If we entered this loop that means the character we're looking at 
+	    # now has attributes that are unique from those that we've looked
+	    # at so far for this plane.  So we push its attributes into charinfo
+	    # and store in charhash the offset into charinfo where these
+	    # attributes can later be found.
+	    push @{$charinfo}, [ $numVal, $upper, $lower, $direction ];
+	    $charhash->{$info->[$index]} = @{$charinfo} - 1;
+	    # When the file is generaged, the number we just stored in charhas
+	    # will be the upper 9 bits in the DATA String that are an offset
+	    # into the attribute tables.
+	}
+	$data[$plane] .= pack("n", ($charhash->{$info->[$index]} << 7) | $type);
     }
-    $info .= pack("n", ($charhash{$info[$ch]} << 7) | $type);
+    $charlen[$plane] = scalar(@{$charinfoArray[$plane]});
 }
 
-my $charlen = @charinfo;
-my $bestshift;
+# the shift that results in the best compression of the table.  This is an array
+# because different shifts are better for the different tables for each plane.
+my @bestshift;
+
+# an initial guess.
 my $bestest = 1000000;
-my $bestblkstr;
-die "Too many unique character entries: $charlen\n" if $charlen > 512;
-print "\nUnique character entries: $charlen\n";
+my @bestblkstr;
+my @blksize = ();
 
-for my $i (3 .. 8) {
-    my $blksize = 1 << $i;
-    my %blocks = ();
-    my @blkarray = ();
-    my ($j, $k);
-    print "shift: $i";
+for my $plane (0 .. 0x10) {
+    print "\n\nplane: $plane\n";
+    print "Unique character entries: $charlen[$plane]\n";
+    $bestest = 1000000;
+    for my $i (3 .. 8) {
+        my $blksize = 1 << $i;
+        my %blocks = ();
+        my @blkarray = ();
+        my ($j, $k);
+        print "shift: $i";
 
-    for ($j = 0; $j < 0x10000; $j += $blksize) {
-        my $blkkey = substr $info, 2 * $j, 2 * $blksize;
-        if (! exists $blocks{$blkkey}) {
-            push @blkarray, $blkkey;
-            $blocks{$blkkey} = $#blkarray;
-        }
-    }
-    my $blknum = @blkarray;
-    my $blocklen = $blknum * $blksize;
-    printf " before %5d", $blocklen;
-
-    # Now we try to pack the blkarray as tight as possible by finding matching
-    # heads and tails.
-    for ($j = $blksize - 1; $j > 0; $j--) {
-        my %tails = ();
-        for $k (0 .. $#blkarray) {
-            next unless defined $blkarray[$k];
-            my $len = length $blkarray[$k];
-            my $tail = substr $blkarray[$k], $len - $j * 2;
-            if (exists $tails{$tail}) {
-                push @{$tails{$tail}}, $k;
-            } else {
-                $tails{$tail} = [ $k ];
+        for ($j = 0; $j < 0x10000; $j += $blksize) {
+            my $blkkey = substr $data[$plane], 2 * $j, 2 * $blksize;
+            if (! exists $blocks{$blkkey}) {
+	        push @blkarray, $blkkey;
+                $blocks{$blkkey} = $#blkarray;
             }
         }
 
-        # tails are calculated, now calculate the heads and merge.
-      BLOCK:
-        for $k (0 .. $#blkarray) {
-            next unless defined $blkarray[$k];
-            my $tomerge = $k;
-            while (1) {
-                my $head = substr($blkarray[$tomerge], 0, $j * 2);
-                my $entry = $tails{$head};
-                next BLOCK unless defined $entry;
+        my $blknum = @blkarray;
+        my $blocklen = $blknum * $blksize;
+        printf " before %5d", $blocklen;
 
-                my $other = shift @{$entry};
-                if ($other == $tomerge) {
-                    if (@{$entry}) {
-                        push @{$entry}, $other;
-                        $other = shift @{$entry};
-                    } else {
-                        push @{$entry}, $other;
+        # Now we try to pack the blkarray as tight as possible by finding matching
+        # heads and tails.
+        for ($j = $blksize - 1; $j > 0; $j--) {
+            my %tails = ();
+            for $k (0 .. $#blkarray) {
+                next unless defined $blkarray[$k];
+                my $len = length $blkarray[$k];
+                my $tail = substr $blkarray[$k], $len - $j * 2;
+                if (exists $tails{$tail}) {
+                    push @{$tails{$tail}}, $k;
+                } else {
+                    $tails{$tail} = [ $k ];
+                }
+            }
+
+            # tails are calculated, now calculate the heads and merge.
+          BLOCK:
+            for $k (0 .. $#blkarray) {
+                next unless defined $blkarray[$k];
+                my $tomerge = $k;
+                while (1) {
+                    my $head = substr($blkarray[$tomerge], 0, $j * 2);
+                    my $entry = $tails{$head};
+                    next BLOCK unless defined $entry;
+
+                    my $other = shift @{$entry};
+                    if ($other == $tomerge) {
+                        if (@{$entry}) {
+                            push @{$entry}, $other;
+                            $other = shift @{$entry};
+                        } else {
+                            push @{$entry}, $other;
+                            next BLOCK;
+                        }
+                    }
+                    if (@{$entry} == 0) {
+                        delete $tails{$head};
+                    }
+
+                    # a match was found
+                    my $merge = $blkarray[$other]
+                        . substr($blkarray[$tomerge], $j * 2);
+                    $blocklen -= $j;
+                    $blknum--;
+
+                    if ($other < $tomerge) {
+                        $blkarray[$tomerge] = undef;
+                        $blkarray[$other] = $merge;
+                        my $len = length $merge;
+                        my $tail = substr $merge, $len - $j * 2;
+                        $tails{$tail} = [ map { $_ == $tomerge ? $other : $_ }
+                                          @{$tails{$tail}} ];
                         next BLOCK;
                     }
+                    $blkarray[$tomerge] = $merge;
+                    $blkarray[$other] = undef;
                 }
-                if (@{$entry} == 0) {
-                    delete $tails{$head};
-                }
-
-                # a match was found
-                my $merge = $blkarray[$other]
-                    . substr($blkarray[$tomerge], $j * 2);
-                $blocklen -= $j;
-                $blknum--;
-
-                if ($other < $tomerge) {
-                    $blkarray[$tomerge] = undef;
-                    $blkarray[$other] = $merge;
-                    my $len = length $merge;
-                    my $tail = substr $merge, $len - $j * 2;
-                    $tails{$tail} = [ map { $_ == $tomerge ? $other : $_ }
-                                      @{$tails{$tail}} ];
-                    next BLOCK;
-                }
-                $blkarray[$tomerge] = $merge;
-                $blkarray[$other] = undef;
             }
         }
-    }
-    my $blockstr;
-    for $k (0 .. $#blkarray) {
-        $blockstr .= $blkarray[$k] if defined $blkarray[$k];
-    }
+        my $blockstr;
+        for $k (0 .. $#blkarray) {
+            $blockstr .= $blkarray[$k] if defined $blkarray[$k];
+        }
 
-    die "Unexpected $blocklen" if length($blockstr) != 2 * $blocklen;
-    my $estimate = 2 * $blocklen + (0x20000 >> $i);
+        die "Unexpected $blocklen" if length($blockstr) != 2 * $blocklen;
+        my $estimate = 2 * $blocklen + (0x20000 >> $i);
+  
+        printf " after merge %5d: %6d bytes\n", $blocklen, $estimate;
+        if ($estimate < $bestest) {
+            $bestest = $estimate;
+            $bestshift[$plane] = $i;
+            $bestblkstr[$plane] = $blockstr;
+        }
+    }
+    $blksize[$plane] = 1 << $bestshift[$plane];
+    print "best shift: ", $bestshift[$plane];
+    print "     blksize: ", $blksize[$plane];
+}
+my @blocksArray = \((), (), (), (), (), (), (), (), 
+    (), (), (), (), (), (), (), (), ());
 
-    printf " after merge %5d: %6d bytes\n", $blocklen, $estimate;
-    if ($estimate < $bestest) {
-        $bestest = $estimate;
-        $bestshift = $i;
-        $bestblkstr = $blockstr;
+for my $plane (0 .. 0x10) {
+    for (my $j = 0; $j < 0x10000; $j += $blksize[$plane]) {
+	my $blkkey = substr $data[$plane], 2 * $j, 2 * $blksize[$plane];
+        my $index = index $bestblkstr[$plane], $blkkey;
+        while ($index & 1) {
+            die "not found: $j" if $index == -1;
+            $index = index $bestblkstr[$plane], $blkkey, $index + 1;
+        }
+        push @{$blocksArray[$plane]}, ($index / 2 - $j) & 0xffff;
     }
 }
 
-my @blocks;
-my $blksize = 1 << $bestshift;
-for (my $j = 0; $j < 0x10000; $j += $blksize) {
-    my $blkkey = substr $info, 2 * $j, 2 * $blksize;
-    my $index = index $bestblkstr, $blkkey;
-    while ($index & 1) {
-        die "not found: $j" if $index == -1;
-        $index = index $bestblkstr, $blkkey, $index + 1;
-    }
-    push @blocks, ($index / 2 - $j) & 0xffff;
+################################################################################
+################################################################################
+## Stage 3: Generate the file
+for my $plane (0 .. 0x10) {
+    die "UTF-8 limit of blocks may be exceeded for plane $plane: " . scalar(@{$blocksArray[$plane]}) . "\n"
+        if @{$blocksArray[$plane]} > 0xffff / 3;
+    die "UTF-8 limit of data may be exceeded for plane $plane: " . length($bestblkstr[$plane]) . "\n"
+        if length($bestblkstr[$plane]) > 0xffff / 3;
 }
 
-# Phase 3: Generate the file
-die "UTF-8 limit of blocks may be exceeded: " . scalar(@blocks) . "\n"
-    if @blocks > 0xffff / 3;
-die "UTF-8 limit of data may be exceeded: " . length($bestblkstr) . "\n"
-    if length($bestblkstr) > 0xffff / 3;
 {
-    print "Generating $ARGV[2] with shift of $bestshift";
+    print "\nGenerating $ARGV[2].";
     my ($i, $j);
 
     open OUTPUT, "> $ARGV[2]" or die "Failed creating output file: $!\n";
@@ -372,18 +482,22 @@ package gnu.java.lang;
  * <code>$ARGV[1]</code>, by some
  * perl scripts. These Unicode definition files can be found on the
  * <a href="http://www.unicode.org">http://www.unicode.org</a> website.
- * JDK 1.4 uses Unicode version 3.0.0.
+ * JDK 1.5 uses Unicode version 4.0.0.
  *
  * The data is stored as string constants, but Character will convert these
- * Strings to their respective <code>char[]</code> components.  The field
+ * Strings to their respective <code>char[]</code> components.  The fields
+ * are stored in arrays of 17 elements each, one element per Unicode plane.
  * <code>BLOCKS</code> stores the offset of a block of 2<sup>SHIFT</sup>
  * characters within <code>DATA</code>.  The DATA field, in turn, stores
  * information about each character in the low order bits, and an offset
  * into the attribute tables <code>UPPER</code>, <code>LOWER</code>,
  * <code>NUM_VALUE</code>, and <code>DIRECTION</code>.  Notice that the
  * attribute tables are much smaller than 0xffff entries; as many characters
- * in Unicode share common attributes.  The DIRECTION table also contains
- * a field for detecting characters with multi-character uppercase expansions.
+ * in Unicode share common attributes.  Numbers that are too large to fit
+ * into NUM_VALUE as 16 bit chars are stored in LARGENUMS and a number N is
+ * stored in NUM_VALUE such that (-N - 3) is the offset into LARGENUMS for 
+ * the particular character. The DIRECTION table also contains a field for
+ * detecting characters with multi-character uppercase expansions.
  * Next, there is a listing for <code>TITLE</code> exceptions (most characters
  * just have the same title case as upper case).  Finally, there are two
  * tables for multi-character capitalization, <code>UPPER_SPECIAL</code>
@@ -404,30 +518,81 @@ public interface CharData
 
   /**
    * The character shift amount to look up the block offset. In other words,
-   * <code>(char) (BLOCKS.value[ch >> SHIFT] + ch)</code> is the index where
-   * <code>ch</code> is described in <code>DATA</code>.
+   * <code>(char) (BLOCKS.value[ch >> SHIFT[p]] + ch)</code> is the index 
+   * where <code>ch</code> is described in <code>DATA</code> if <code>ch</code>
+   * is in Unicode plane <code>p</code>.  Note that <code>p</code> is simply
+   * the integer division of ch and 0x10000.
    */
-  int SHIFT = $bestshift;
+  int[] SHIFT
+EOF
+  for ($i = 0; $i < @bestshift - 1; $i++) {
+      if ($i == 0){
+	  print OUTPUT "    = new int[] {";
+      }
+      print OUTPUT $bestshift[$i], ", ";
+  }
+  if (scalar(@bestshift) > 0){
+    print OUTPUT $bestshift[-1], "}";
+  }
+  else {
+    print OUTPUT "    = null";
+  }
+  print OUTPUT <<EOF;
+;
 
   /**
    * The mapping of character blocks to their location in <code>DATA</code>.
    * Each entry has been adjusted so that the 16-bit sum with the desired
    * character gives the actual index into <code>DATA</code>.
    */
-  String BLOCKS
+   String[] BLOCKS = new String[]{
 EOF
-
-    for ($i = 0; $i < @blocks / 11; $i++) {
-        print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 10) {
-            last if @blocks <= $i * 11 + $j;
-            my $val = $blocks[$i * 11 + $j];
-            print OUTPUT javaChar($val);
-        }
-        print OUTPUT "\"";
+    for ($plane = 0; $plane <= 0x10; $plane++) {
+	# The following if statement handles the cases of unassigned planes
+	# specially so we don't waste space with unused Strings.  As of 
+	# Unicode version 4.0.0 only planes 0, 1, 2, and 14 are used.  If
+	# you are updating this script to work with a later version of 
+	# Unicode you may have to alter this if statement.
+	if ($plane > 2 && $plane != 14) {
+	    print OUTPUT ($plane == 0x10) ? "    \"\"}" : "    \"\",\n\n";
+	}
+	else {
+	    for ($i = 0; $i < @{$blocksArray[$plane]} / 11; $i++) {
+		print OUTPUT $i ? "\n    + " : "    ";
+		print OUTPUT "\"";
+		for $j (0 .. 10) {
+		    last if @{$blocksArray[$plane]} <= $i * 11 + $j;
+		    my $val = $blocksArray[$plane]->[$i * 11 + $j];
+		    print OUTPUT javaChar($val);
+		}
+		print OUTPUT "\"";
+	    }
+	    print OUTPUT ",\n\n";
+	}
     }
-
     print OUTPUT <<EOF;
+;
+
+  /**
+   * The array containing the numeric values that are too large to be stored as
+   * chars in NUM_VALUE.  NUM_VALUE in this case will contain a negative integer
+   * N such that LARGENUMS[-N - 3] contains the correct numeric value.
+   */
+  int[] LARGENUMS
+EOF
+  for ($i = 0; $i < @largeNums - 1; $i++) {
+      if ($i == 0){
+	  print OUTPUT "    = new int[] {";
+      }
+      print OUTPUT $largeNums[$i], ", ";
+  }
+  if (scalar(@largeNums) > 0){
+    print OUTPUT $largeNums[-1], "}";
+  }
+  else {
+    print OUTPUT "    = null";
+  }
+  print OUTPUT <<EOF;
 ;
 
   /**
@@ -436,22 +601,34 @@ EOF
    * next bit is a flag for mirrored directionality.  The high order 9 bits
    * form the offset into the attribute tables.  Note that this limits the
    * number of unique character attributes to 512, which is not a problem
-   * as of Unicode version 3.2.0, but may soon become one.
+   * as of Unicode version 4.0.0, but may soon become one.
    */
-  String DATA
+   String[] DATA = new String[]{
 EOF
-
-    my $len = length($bestblkstr) / 2;
-    for ($i = 0; $i < $len / 11; $i++) {
-        print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 10) {
-            last if $len <= $i * 11 + $j;
-            my $val = unpack "n", substr($bestblkstr, 2 * ($i * 11 + $j), 2);
-            print OUTPUT javaChar($val);
-        }
-        print OUTPUT "\"";
+    for ($plane = 0; $plane <= 0x10; $plane++) {
+	# The following if statement handles the cases of unassigned planes
+	# specially so we don't waste space with unused Strings.  As of 
+	# Unicode version 4.0.0 only planes 0, 1, 2, and 14 are used.  If
+	# you are updating this script to work with a later version of 
+	# Unicode you may have to alter this if statement.
+	if ($plane > 2 && $plane != 14) {
+	    print OUTPUT ($plane == 0x10) ? "    \"\"}" : "    \"\",\n\n";
+	}
+	else {
+	    my $len = length($bestblkstr[$plane]) / 2;
+	    for ($i = 0; $i < $len / 11; $i++) {
+		print OUTPUT $i ? "\n    + " : "    ";
+		print OUTPUT "\"";
+		for $j (0 .. 10) {
+		    last if $len <= $i * 11 + $j;
+		    my $val = unpack "n", substr($bestblkstr[$plane], 2 * ($i * 11 + $j), 2);
+		    print OUTPUT javaChar($val);
+		}
+		print OUTPUT "\"";
+	    }
+	    print OUTPUT ",\n\n";
+	}
     }
-
     print OUTPUT <<EOF;
 ;
 
@@ -462,20 +639,33 @@ EOF
    * Note that this is a signed value, but stored as an unsigned char
    * since this is a String literal.
    */
-  String NUM_VALUE
+   String[] NUM_VALUE = new String[]{
 EOF
 
-    $len = @charinfo;
-    for ($i = 0; $i < $len / 11; $i++) {
-        print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 10) {
-            last if $len <= $i * 11 + $j;
-            my $val = $charinfo[$i * 11 + $j][0];
-            print OUTPUT javaChar($val);
-        }
-        print OUTPUT "\"";
+    for ($plane = 0; $plane <= 0x10; $plane++) {
+	# The following if statement handles the cases of unassigned planes
+	# specially so we don't waste space with unused Strings.  As of 
+	# Unicode version 4.0.0 only planes 0, 1, 2, and 14 are used.  If
+	# you are updating this script to work with a later version of 
+	# Unicode you may have to alter this if statement.
+	if ($plane > 2 && $plane != 14) {
+	    print OUTPUT ($plane == 0x10) ? "    \"\"}" : "    \"\",\n\n";
+	}
+	else {
+	    $len = @{$charinfoArray[$plane]};
+	    for ($i = 0; $i < $len / 11; $i++) {
+		print OUTPUT $i ? "\n    + " : "   ";
+		print OUTPUT "\"";
+		for $j (0 .. 10) {
+		    last if $len <= $i * 11 + $j;
+		    my $val = $charinfoArray[$plane]->[$i * 11 + $j][0];
+		    print OUTPUT javaChar($val);
+		}
+		print OUTPUT "\"";
+	    }
+	    print OUTPUT ",\n\n";
+	}
     }
-
     print OUTPUT <<EOF;
 ;
 
@@ -487,20 +677,33 @@ EOF
    * capitalizing a String, you must first check if a multi-character uppercase
    * sequence exists before using this character.
    */
-  String UPPER
+  String[] UPPER = new String[]{
 EOF
 
-    $len = @charinfo;
-    for ($i = 0; $i < $len / 11; $i++) {
-        print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 10) {
-            last if $len <= $i * 11 + $j;
-            my $val = $charinfo[$i * 11 + $j][1];
-            print OUTPUT javaChar($val);
-        }
-        print OUTPUT "\"";
+    for ($plane = 0; $plane <= 0x10; $plane++) {
+	# The following if statement handles the cases of unassigned planes
+	# specially so we don't waste space with unused Strings.  As of 
+	# Unicode version 4.0.0 only planes 0, 1, 2, and 14 are used.  If
+	# you are updating this script to work with a later version of 
+	# Unicode you may have to alter this if statement.
+	if ($plane > 2 && $plane != 14) {
+	    print OUTPUT ($plane == 0x10) ? "    \"\"}" : "    \"\",\n\n";
+	}
+	else {
+	    $len = @{$charinfoArray[$plane]};
+	    for ($i = 0; $i < $len / 11; $i++) {
+		print OUTPUT $i ? "\n    + " : "   ";
+		print OUTPUT "\"";
+		for $j (0 .. 10) {
+		    last if $len <= $i * 11 + $j;
+		    my $val = $charinfoArray[$plane]->[$i * 11 + $j][1];
+		    print OUTPUT javaChar($val);
+		}
+		print OUTPUT "\"";
+	    }
+	    print OUTPUT ",\n\n";
+	}
     }
-
     print OUTPUT <<EOF;
 ;
 
@@ -510,20 +713,33 @@ EOF
    * character and its lowercase version.  Note that this is stored as an
    * unsigned char since this is a String literal.
    */
-  String LOWER
+   String[] LOWER = new String[]{
 EOF
 
-    $len = @charinfo;
-    for ($i = 0; $i < $len / 13; $i++) {
-        print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 12) {
-            last if $len <= $i * 13 + $j;
-            my $val = $charinfo[$i * 13 + $j][2];
-            print OUTPUT javaChar($val);
-        }
-        print OUTPUT "\"";
+    for ($plane = 0; $plane <= 0x10; $plane++) {
+	# The following if statement handles the cases of unassigned planes
+	# specially so we don't waste space with unused Strings.  As of 
+	# Unicode version 4.0.0 only planes 0, 1, 2, and 14 are used.  If
+	# you are updating this script to work with a later version of 
+	# Unicode you may have to alter this if statement.
+	if ($plane > 2 && $plane != 14) {
+	    print OUTPUT ($plane == 0x10) ? "    \"\"}" : "    \"\",\n\n";
+	}
+	else {
+	    $len = @{$charinfoArray[$plane]};
+	    for ($i = 0; $i < $len / 11; $i++) {
+		print OUTPUT $i ? "\n    + " : "   ";
+		print OUTPUT "\"";
+		for $j (0 .. 10) {
+		    last if $len <= $i * 11 + $j;
+		    my $val = $charinfoArray[$plane]->[$i * 11 + $j][2];
+		    print OUTPUT javaChar($val);
+		}
+		print OUTPUT "\"";
+	    }
+	    print OUTPUT ",\n\n";
+	}
     }
-
     print OUTPUT <<EOF;
 ;
 
@@ -539,20 +755,33 @@ EOF
    * when performing the case conversion. Note that this information is stored
    * as an unsigned char since this is a String literal.
    */
-  String DIRECTION
+  String[] DIRECTION = new String[]{
 EOF
 
-    $len = @charinfo;
-    for ($i = 0; $i < $len / 17; $i++) {
-        print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 16) {
-            last if $len <= $i * 17 + $j;
-            my $val = $charinfo[$i * 17 + $j][3];
-            print OUTPUT javaChar($val);
-        }
-        print OUTPUT "\"";
+    for ($plane = 0; $plane <= 0x10; $plane++) {
+	# The following if statement handles the cases of unassigned planes
+	# specially so we don't waste space with unused Strings.  As of 
+	# Unicode version 4.0.0 only planes 0, 1, 2, and 14 are used.  If
+	# you are updating this script to work with a later version of 
+	# Unicode you may have to alter this if statement.
+	if ($plane > 2 && $plane != 14) {
+	    print OUTPUT ($plane == 0x10) ? "    \"\"}" : "    \"\",\n\n";
+	}
+	else {
+	    $len = @{$charinfoArray[$plane]};
+	    for ($i = 0; $i < $len / 11; $i++) {
+		print OUTPUT $i ? "\n    + " : "   ";
+		print OUTPUT "\"";
+		for $j (0 .. 10) {
+		    last if $len <= $i * 11 + $j;
+		    my $val = $charinfoArray[$plane]->[$i * 11 + $j][3];
+		    print OUTPUT javaChar($val);
+		}
+		print OUTPUT "\"";
+	    }
+	    print OUTPUT ",\n\n";
+	}
     }
-
     print OUTPUT <<EOF;
 ;
 

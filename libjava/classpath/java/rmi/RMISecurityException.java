@@ -1,5 +1,6 @@
 /* RMISecurityException.java -- deprecated version of SecurityException
-   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +39,12 @@ exception statement from your version. */
 package java.rmi;
 
 /**
- * Never thrown, but originally intended to wrap a java.lang.SecurityException.
+ * Never thrown, but originally intended to wrap a 
+ * {@link java.lang.SecurityException} in the case of RMI.
  *
  * @author unknown
  * @since 1.1
- * @deprecated use {@link SecurityException} instead
+ * @deprecated use {@link java.lang.SecurityException} instead
  * @status updated to 1.4
  */
 public class RMISecurityException extends SecurityException
@@ -55,7 +57,7 @@ public class RMISecurityException extends SecurityException
   /**
    * Create an exception with a message.
    *
-   * @param s the message
+   * @param n the message
    * @deprecated no longer needed
    */
   public RMISecurityException(String n)
@@ -66,8 +68,8 @@ public class RMISecurityException extends SecurityException
   /**
    * Create an exception with a message and a cause.
    *
-   * @param s the message
-   * @param e the cause
+   * @param n the message
+   * @param a the cause (ignored)
    * @deprecated no longer needed
    */
   public RMISecurityException(String n, String a)

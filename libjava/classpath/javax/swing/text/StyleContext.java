@@ -48,6 +48,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.EventListener;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 import javax.swing.event.ChangeEvent;
@@ -370,7 +371,7 @@ public class StyleContext
     {
       StringBuffer sb = new StringBuffer();
       sb.append("[StyleContext.SmallattributeSet:");
-      for (int i = 0; i < attrs.length; ++i)
+      for (int i = 0; i < attrs.length - 1; ++i)
         {
           sb.append(" (");
           sb.append(attrs[i].toString());
@@ -406,7 +407,12 @@ public class StyleContext
 
   static StyleContext defaultStyleContext = new StyleContext();
   static final int compressionThreshold = 9;
-  
+
+  /**
+   * These attribute keys are handled specially in serialization.
+   */
+  private static HashSet staticAttributeKeys = new HashSet();
+
   EventListenerList listenerList;
   Hashtable styleTable;
   
@@ -736,5 +742,20 @@ public class StyleContext
     throws IOException
   {
     throw new InternalError("not implemented");
+  }
+
+  /**
+   * Registers an attribute key as a well-known keys. When an attribute with
+   * such a key is written to a stream,, a special syntax is used so that it
+   * can be recognized when it is read back in. All attribute keys defined
+   * in <code>StyleContext</code> are registered as static keys. If you define
+   * additional attribute keys that you want to exist as nonreplicated objects,
+   * then you should register them using this method.
+   *
+   * @param key the key to register as static attribute key
+   */
+  public static void registerStaticAttributeKey(Object key)
+  {
+    staticAttributeKeys.add(key);
   }
 }

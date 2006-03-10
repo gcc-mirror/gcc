@@ -45,7 +45,6 @@ import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
 /**

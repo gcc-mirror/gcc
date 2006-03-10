@@ -1,5 +1,5 @@
 /* SpinnerNumberModel.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,11 +39,13 @@ package javax.swing;
 
 import java.io.Serializable;
 
+import javax.swing.event.ChangeEvent;
+
 /**
- * SpinnerNumberModel
+ * A model used by the {@link JSpinner} component.
  *
  * @author Ka-Hing Cheung
- * @version 1.0
+ * @since 1.4
  */
 public class SpinnerNumberModel extends AbstractSpinnerModel
   implements Serializable
@@ -53,16 +55,16 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    */
   private static final long serialVersionUID = 7279176385485777821L;
 
-  /** DOCUMENT ME! */
+  /** The current value. */
   private Number value;
 
-  /** DOCUMENT ME! */
+  /** The minimum value (or <code>null</code>). */
   private Comparable minimum;
 
-  /** DOCUMENT ME! */
+  /** The maximum value (or <code>null</code>). */
   private Comparable maximum;
 
-  /** DOCUMENT ME! */
+  /** The step size. */
   private Number stepSize;
 
   /**
@@ -75,14 +77,14 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   }
 
   /**
-   * Creates a <code>SpinnerNumberModel</code> with double precision
+   * Creates a <code>SpinnerNumberModel</code> with double precision.
    *
    * @param value the initial value
    * @param minimum the minimum value
    * @param maximum the maximum value
    * @param stepSize the step size
-   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does not
-   *                                  hold
+   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does 
+   *         not hold.
    */
   public SpinnerNumberModel(double value, double minimum, double maximum,
                             double stepSize)
@@ -92,14 +94,14 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   }
 
   /**
-   * Creates a <code>SpinnerNumberModel</code> with integer precision
+   * Creates a <code>SpinnerNumberModel</code> with integer precision.
    *
    * @param value the initial value
    * @param minimum the minimum value
    * @param maximum the maximum value
    * @param stepSize the step size
-   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does not
-   *                                  hold
+   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does 
+   *         not hold.
    */
   public SpinnerNumberModel(int value, int minimum, int maximum, int stepSize)
   {
@@ -108,16 +110,19 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   }
 
   /**
-   * Creates a <code>SpinnerNumberModel</code> with <code>Number</code>s and
-   * <code>Comparable</code>s.
+   * Creates a <code>SpinnerNumberModel</code> with the given attributes.
    *
-   * @param value the initial value
-   * @param minimum the minimum value, if null there's no minimum
-   * @param maximum the maximum value, if null there's no maximum
-   * @param stepSize the step size
+   * @param value the initial value.
+   * @param minimum the minimum value (<code>null</code> permitted).
+   * @param maximum the maximum value (<code>null</code> permitted).
+   * @param stepSize the step size.
    *
    * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum
    *         does not hold
+   * @throws IllegalArgumentException if <code>value</code> is 
+   *         <code>null</code>.
+   * @throws IllegalArgumentException if <code>stepSize</code> is 
+   *         <code>null</code>.
    */
   public SpinnerNumberModel(Number value, Comparable minimum,
                             Comparable maximum, Number stepSize)
@@ -128,33 +133,14 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
       throw new IllegalArgumentException("value may not be null");
     if (minimum != null)
       {
-	if (minimum.compareTo(value) > 0)
-	  throw new IllegalArgumentException("minimum is not <= value");
+        if (minimum.compareTo(value) > 0)
+          throw new IllegalArgumentException("minimum is not <= value");
       }
-    else
-      minimum = new Comparable()
-	  {
-	    public int compareTo(Object obj)
-	    {
-	      return -1;
-	    }
-	  };
-
-
     if (maximum != null)
       {
-	if (maximum.compareTo(value) < 0)
-	  throw new IllegalArgumentException("maximum is not >= value");
+        if (maximum.compareTo(value) < 0)
+          throw new IllegalArgumentException("maximum is not >= value");
       }
-    else
-      maximum = new Comparable()
-	  {
-	    public int compareTo(Object obj)
-	    {
-	      return 1;
-	    }
-	  };
-
 
     this.value = value;
     this.stepSize = stepSize;
@@ -163,26 +149,31 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   }
 
   /**
-   * Sets the new value and fire a change event
+   * Sets the current value and, if the new value is different to the old
+   * value, sends a {@link ChangeEvent} to all registered listeners.
    *
-   * @param value the new value
+   * @param value the new value (<code>null</code> not permitted, must be an
+   *              instance of <code>Number</code>).
    *
-   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum
-   *         does not hold
+   * @throws IllegalArgumentException if <code>value</code> is not an instance
+   *         of <code>Number</code>.
    */
   public void setValue(Object value)
   {
     if (! (value instanceof Number))
       throw new IllegalArgumentException("value must be a Number");
 
-    this.value = (Number) value;
-    fireStateChanged();
+    if (!this.value.equals(value)) 
+      {
+        this.value = (Number) value;
+        fireStateChanged();
+      }
   }
 
   /**
-   * Gets the current value
+   * Returns the current value.
    *
-   * @return the current value
+   * @return The current value.
    */
   public Object getValue()
   {
@@ -190,10 +181,12 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   }
 
   /**
-   * Gets the next value without changing the current value, or null if the
-   * current value is maximum.
+   * Returns the next value, or <code>null</code> if adding the step size to
+   * the current value results in a value greater than the maximum value.  
+   * The current value is not changed.
    *
-   * @return the next value
+   * @return The next value, or <code>null</code> if the current value is the 
+   *         maximum value represented by this model.
    */
   public Object getNextValue()
   {
@@ -211,15 +204,21 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
       num = new Short((short) (value.shortValue() + stepSize.shortValue()));
     else
       num = new Byte((byte) (value.byteValue() + stepSize.byteValue()));
-
-    return maximum.compareTo(num) >= 0 ? num : null;
+    
+    // check upper bound if set
+    if ((maximum != null) && maximum.compareTo(num) < 0)
+      num = null;
+    
+    return num;
   }
 
   /**
-   * Gets the previous value without changing the current value, or null if
-   * the current value is minimum.
+   * Returns the previous value, or <code>null</code> if subtracting the
+   * step size from the current value results in a value less than the minimum
+   * value.  The current value is not changed.
    *
-   * @return the previous value
+   * @return The previous value, or <code>null</code> if the current value
+   *         is the minimum value represented by this model.
    */
   public Object getPreviousValue()
   {
@@ -237,62 +236,110 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
       num = new Short((short) (value.shortValue() - stepSize.shortValue()));
     else
       num = new Byte((byte) (value.byteValue() - stepSize.byteValue()));
+    
+    // check lower bound if set
+    if ((minimum != null) && minimum.compareTo(num) > 0)
+      num = null;
 
-    return minimum.compareTo(num) <= 0 ? num : null;
+    return num;
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the current value.
    *
-   * @return DOCUMENT ME!
+   * @return The current value.
    */
   public Number getNumber()
   {
     return value;
   }
 
+  /**
+   * Returns the minimum value, or <code>null</code> if there is no minimum.
+   * 
+   * @return The minimum value.
+   */
   public Comparable getMinimum()
   {
     return minimum;
   }
 
+  /**
+   * Sets the minimum value and, if the new value is different to the old
+   * value, sends a {@link ChangeEvent} to all registered listeners.  A 
+   * <code>null</code> value is interpreted as "no minimum value".  No check
+   * is made to ensure that the new minimum is less than or equal to the 
+   * current value, the caller is responsible for ensuring that this 
+   * relationship holds.
+   * 
+   * @param newMinimum  the new minimum value (<code>null</code> permitted).
+   */
   public void setMinimum(Comparable newMinimum)
   {
-    if (minimum != newMinimum)
+    if (minimum != null ? !minimum.equals(newMinimum) : newMinimum != null)
       {
-	minimum = newMinimum;
-	fireStateChanged();
+        minimum = newMinimum;
+        fireStateChanged();
       }
   }
 
+  /**
+   * Returns the maximum value, or <code>null</code> if there is no maximum.
+   * 
+   * @return The maximum value.
+   */
   public Comparable getMaximum()
   {
     return maximum;
   }
 
+  /**
+   * Sets the maximum value and, if the new value is different to the old
+   * value, sends a {@link ChangeEvent} to all registered listeners.  A 
+   * <code>null</code> value is interpreted as "no maximum value".  No check
+   * is made to ensure that the new maximum is greater than or equal to the 
+   * current value, the caller is responsible for ensuring that this 
+   * relationship holds.
+   * 
+   * @param newMaximum  the new maximum (<code>null</code> permitted).
+   */
   public void setMaximum(Comparable newMaximum)
   {
-    if (maximum != newMaximum)
+    if (maximum != null ? !maximum.equals(newMaximum) : newMaximum != null)
       {
-	maximum = newMaximum;
-	fireStateChanged();
+        maximum = newMaximum;
+        fireStateChanged();
       }
   }
 
+  /**
+   * Returns the step size.
+   * 
+   * @return The step size.
+   */
   public Number getStepSize()
   {
     return stepSize;
   }
 
+  /**
+   * Sets the step size and, if the new step size is different to the old
+   * step size, sends a {@link ChangeEvent} to all registered listeners.
+   * 
+   * @param newStepSize  the new step size (<code>null</code> not permitted).
+   * 
+   * @throws IllegalArgumentException if <code>newStepSize</code> is 
+   *         <code>null</code>.
+   */
   public void setStepSize(Number newStepSize)
   {
     if (newStepSize == null)
       throw new IllegalArgumentException();
 
-    if (stepSize != newStepSize)
+    if (!stepSize.equals(newStepSize))
       {
-	stepSize = newStepSize;
-	fireStateChanged();
+        stepSize = newStepSize;
+        fireStateChanged();
       }
   }
 }

@@ -37,9 +37,11 @@ exception statement from your version. */
 
 package java.lang;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /*
  * This class is a reference version, mainly for compiling a class library
@@ -188,7 +190,7 @@ final class VMClass
    * @param ignoreInnerClassesAttrib if set, return the real modifiers, not
    * the ones specified in the InnerClasses attribute.
    * @return the modifiers of this class
-   * @see Modifer
+   * @see Modifier
    * @since 1.1
    */
   static native int getModifiers(Class klass, boolean ignoreInnerClassesAttrib);
@@ -207,7 +209,7 @@ final class VMClass
    * Like <code>getDeclaredClasses()</code> but without the security checks.
    *
    * @param klass the Class object that's calling us
-   * @param pulicOnly Only public classes should be returned
+   * @param publicOnly Only public classes should be returned
    */
   static native Class[] getDeclaredClasses(Class klass, boolean publicOnly);
 
@@ -215,7 +217,7 @@ final class VMClass
    * Like <code>getDeclaredFields()</code> but without the security checks.
    *
    * @param klass the Class object that's calling us
-   * @param pulicOnly Only public fields should be returned
+   * @param publicOnly Only public fields should be returned
    */
   static native Field[] getDeclaredFields(Class klass, boolean publicOnly);
 
@@ -223,7 +225,7 @@ final class VMClass
    * Like <code>getDeclaredMethods()</code> but without the security checks.
    *
    * @param klass the Class object that's calling us
-   * @param pulicOnly Only public methods should be returned
+   * @param publicOnly Only public methods should be returned
    */
   static native Method[] getDeclaredMethods(Class klass, boolean publicOnly);
 
@@ -232,7 +234,7 @@ final class VMClass
    * the security checks.
    *
    * @param klass the Class object that's calling us
-   * @param pulicOnly Only public constructors should be returned
+   * @param publicOnly Only public constructors should be returned
    */
   static native Constructor[] getDeclaredConstructors(Class klass, boolean publicOnly);
 

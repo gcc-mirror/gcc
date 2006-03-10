@@ -1,5 +1,5 @@
 /* TreeSelectionEvent.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,10 +49,6 @@ import javax.swing.tree.TreePath;
  */
 public class TreeSelectionEvent extends EventObject {
 
-  //-------------------------------------------------------------
-  // Variables --------------------------------------------------
-  //-------------------------------------------------------------
-
   /**
    * paths
    */
@@ -73,11 +69,6 @@ public class TreeSelectionEvent extends EventObject {
    */
   protected TreePath newLeadSelectionPath;
 
-
-  //-------------------------------------------------------------
-  // Initialization ---------------------------------------------
-  //-------------------------------------------------------------
-
   /**
    * Constructor TreeSelectionEvent
    * @param source TODO
@@ -95,7 +86,7 @@ public class TreeSelectionEvent extends EventObject {
     this.areNew					= areNew;
     this.oldLeadSelectionPath	= oldLeadSelectionPath;
     this.newLeadSelectionPath	= newLeadSelectionPath;
-  } // TreeSelectionEvent()
+  }
 
   /**
    * Constructor TreeSelectionEvent
@@ -114,29 +105,24 @@ public class TreeSelectionEvent extends EventObject {
     this.areNew = new boolean[]{isNew};
     this.oldLeadSelectionPath	= oldLeadSelectionPath;
     this.newLeadSelectionPath	= newLeadSelectionPath;
-  } // TreeSelectionEvent()
-
-
-  //-------------------------------------------------------------
-  // Methods ----------------------------------------------------
-  //-------------------------------------------------------------
+  }
 
   /**
-   * @returns the first path element
+   * @return the first path element
    */
   public TreePath getPath()
   {
     return paths[0];
-  } // getPath()
+  } 
 
   /**
    * 
-   * @returns the paths with selection changed
+   * @return the paths with selection changed
    */
   public TreePath[] getPaths()
   {
     return (TreePath[]) paths.clone();
-  } // getPaths()
+  } 
 
   /**
    * @return true if the first path is added to the selection, false otherwise
@@ -144,7 +130,7 @@ public class TreeSelectionEvent extends EventObject {
   public boolean isAddedPath()
   {
     return areNew[0];
-  } // isAddedPath()
+  } 
 
   /**
    * @param path the path to check
@@ -157,7 +143,7 @@ public class TreeSelectionEvent extends EventObject {
 	return areNew[i];
 
     return false;
-  } // isAddedPath()
+  } 
 
   /**
    * @param index the index'th path
@@ -166,7 +152,7 @@ public class TreeSelectionEvent extends EventObject {
   public boolean isAddedPath(int index)
   {
     return areNew[index];
-  } // isAddedPath()
+  }
 
   /**
    * @return the previous lead selection path
@@ -174,15 +160,15 @@ public class TreeSelectionEvent extends EventObject {
   public TreePath getOldLeadSelectionPath()
   {
     return oldLeadSelectionPath;
-  } // getOldLeadSelectionPath()
+  } 
 
   /**
-   * @returns the current lead selection path
+   * @return the current lead selection path
    */
   public TreePath getNewLeadSelectionPath()
   {
     return newLeadSelectionPath;
-  } // getNewLeadSelectionPath()
+  }
 
   /**
    * @param source the new event source
@@ -193,7 +179,6 @@ public class TreeSelectionEvent extends EventObject {
     return new TreeSelectionEvent (source, paths, areNew,
 				   oldLeadSelectionPath,
 				   newLeadSelectionPath);
-  } // cloneWithSource()
+  } 
 
-
-} // TreeSelectionEvent
+} 

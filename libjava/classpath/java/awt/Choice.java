@@ -468,15 +468,16 @@ getSelectedIndex()
 public synchronized void
 select(int index)
 {
-  if ((index < 0) || (index > getItemCount()))
+  if ((index < 0) || (index >= getItemCount()))
     throw new IllegalArgumentException("Bad index: " + index);
 
-  this.selectedIndex = index;
-  if (peer != null)
-    {
+  if (pItems.size() > 0) {
+      selectedIndex = index;
       ChoicePeer cp = (ChoicePeer) peer;
-      cp.select (index);
-    }
+      if (cp != null) {
+          cp.select(index);
+      }
+  }
 }
 
 /*************************************************************************/
@@ -571,18 +572,6 @@ processItemEvent(ItemEvent event)
     this.selectedIndex = index;
   if (item_listeners != null)
     item_listeners.itemStateChanged(event);
-}
-
-void
-dispatchEventImpl(AWTEvent e)
-{
-  if (e.id <= ItemEvent.ITEM_LAST
-      && e.id >= ItemEvent.ITEM_FIRST
-      && (item_listeners != null 
-	  || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0))
-    processEvent(e);
-  else
-    super.dispatchEventImpl(e);
 }
 
 /*************************************************************************/

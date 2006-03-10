@@ -1,5 +1,5 @@
 /* NodeChangeEvent - ObjectEvent fired when a Preference node is added/removed
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,10 @@ exception statement from your version. */
 
 package java.util.prefs;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.EventObject;
 
 /**
@@ -44,12 +48,16 @@ import java.util.EventObject;
  * This event is only generated when a new subnode is added or a subnode is
  * removed from a preference node. Changes in the entries of a preference node
  * are indicated with a <code>PreferenceChangeEvent</code>.
+ * <p>
+ * Note that although this class is marked as serializable, attempts to
+ * serialize it will fail with NotSerializableException.
  *
  * @since 1.4
  * @author Mark Wielaard (mark@klomp.org)
  */
 public class NodeChangeEvent extends EventObject {
 
+  // We have this to placate the compiler.
   private static final long serialVersionUID =8068949086596572957L; 
   
     /**
@@ -87,5 +95,17 @@ public class NodeChangeEvent extends EventObject {
      */
     public Preferences getChild() {
         return child;
+    }
+
+    private void readObject(ObjectInputStream ois)
+      throws IOException
+    {
+      throw new NotSerializableException("LineEvent is not serializable");
+    }
+  
+    private void writeObject(ObjectOutputStream oos)
+      throws IOException
+    {
+      throw new NotSerializableException("LineEvent is not serializable");
     }
 }

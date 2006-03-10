@@ -14,6 +14,7 @@ echo "Adding java source files from srcdir '@top_srcdir@'."
 @FIND@ @top_srcdir@/java @top_srcdir@/javax @top_srcdir@/gnu \
        @top_srcdir@/org \
        @top_srcdir@/external/w3c_dom @top_srcdir@/external/sax \
+       @top_srcdir@/external/relaxngDatatype \
        -follow -type f -print | sort -r | grep '\.java$' \
        > ${top_builddir}/lib/classes.1
 

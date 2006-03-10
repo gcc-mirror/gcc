@@ -67,7 +67,7 @@ public class XMLEventReaderImpl
     this.systemId = systemId;
   }
 
-  public XMLEvent next()
+  public XMLEvent nextEvent()
     throws XMLStreamException
   {
     XMLEvent ret = peek();
@@ -75,10 +75,32 @@ public class XMLEventReaderImpl
     return ret;
   }
 
-  public boolean hasNext()
-    throws XMLStreamException
+  public Object next()
   {
-    return peekEvent != null || reader.hasNext();
+    try
+      {
+        return nextEvent();
+      }
+    catch (XMLStreamException e)
+      {
+        RuntimeException e2 = new RuntimeException();
+        e2.initCause(e);
+        throw e2;
+      }
+  }
+
+  public boolean hasNext()
+  {
+    if (peekEvent != null)
+      return true;
+    try
+      {
+        return reader.hasNext();
+      }
+    catch (XMLStreamException e)
+      {
+        return false;
+      }
   }
   
   public XMLEvent peek()
@@ -119,6 +141,17 @@ public class XMLEventReaderImpl
     throws IllegalArgumentException
   {
     return reader.getProperty(name);
+  }
+
+  public void close()
+    throws XMLStreamException
+  {
+    reader.close();
+  }
+
+  public void remove()
+  {
+    throw new UnsupportedOperationException();
   }
 
 }

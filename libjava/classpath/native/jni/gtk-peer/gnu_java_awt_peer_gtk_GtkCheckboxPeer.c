@@ -1,5 +1,6 @@
 /* gtkcheckboxpeer.c -- Native implementation of GtkCheckboxPeer
-   Copyright (C) 1998, 1999, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003, 2004, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +53,7 @@ cp_gtk_checkbox_init_jni (void)
 
   postItemEventID = (*cp_gtk_gdk_env())->GetMethodID (cp_gtk_gdk_env(), gtkcheckboxpeer,
                                                "postItemEvent", 
-                                               "(Ljava/lang/Object;I)V");
+                                               "(Ljava/lang/Object;Z)V");
 }
 
 static void item_toggled_cb (GtkToggleButton *item, jobject peer);
@@ -230,7 +231,5 @@ item_toggled_cb (GtkToggleButton *item, jobject peer)
   (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
                                 postItemEventID,
                                 peer,
-                                item->active ?
-                                (jint) AWT_ITEM_SELECTED :
-                                (jint) AWT_ITEM_DESELECTED);
+                                item->active);
 }

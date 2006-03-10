@@ -1,5 +1,5 @@
 /* Preferences -- Preference node containing key value entries and subnodes
-   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -90,12 +90,9 @@ public abstract class Preferences {
     /**
      * Default PreferencesFactory class used when the system property
      * "java.util.prefs.PreferencesFactory" is not set.
-	 * <p>
-	 * XXX - Currently set to MemoryBasedFactory, should be changed
-	 * when FileBasedPreferences backend works.
      */
     private static final String defaultFactoryClass
-        = "gnu.java.util.prefs.MemoryBasedFactory";
+        = "gnu.java.util.prefs.FileBasedFactory";
 
     /** Permission needed to access system or user root. */
     private static final Permission prefsPermission
@@ -219,8 +216,7 @@ public abstract class Preferences {
 		catch (Exception e)
 		  {
                     throw new RuntimeException ("Couldn't load default factory"
-                        + " '"+ defaultFactoryClass +"'");
-                    // XXX - when using 1.4 compatible throwables add cause
+                        + " '"+ defaultFactoryClass +"'", e);
                   }
               }
 
@@ -288,7 +284,13 @@ public abstract class Preferences {
     }
 
     /**
-     * XXX
+     * Import preferences from the given input stream.  This expects
+     * preferences to be represented in XML as emitted by
+     * {@link #exportNode(OutputStream)} and
+     * {@link #exportSubtree(OutputStream)}.
+     * @throws IOException if there is an error while reading
+     * @throws InvalidPreferencesFormatException if the XML is not properly
+     * formatted
      */
     public static void importPreferences(InputStream is) 
                                     throws InvalidPreferencesFormatException,
@@ -385,14 +387,28 @@ public abstract class Preferences {
     // abstract methods (export)
 
     /**
-     * XXX
+     * Export this node, but not its descendants, as XML to the 
+     * indicated output stream.  The XML will be encoded using UTF-8 
+     * and will use a specified document type:<br>
+     * <code>&lt;!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd"&gt;</code><br>
+     * @param os the output stream to which the XML is sent
+     * @throws BackingStoreException if preference data cannot be read
+     * @throws IOException if an error occurs while writing the XML
+     * @throws IllegalStateException if this node or an ancestor has been removed
      */
     public abstract void exportNode(OutputStream os)
                                 throws BackingStoreException,
                                        IOException;
 
     /**
-     * XXX
+     * Export this node and all its descendants as XML to the 
+     * indicated output stream.  The XML will be encoded using UTF-8 
+     * and will use a specified document type:<br>
+     * <code>&lt;!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd"&gt;</code><br>
+     * @param os the output stream to which the XML is sent
+     * @throws BackingStoreException if preference data cannot be read
+     * @throws IOException if an error occurs while writing the XML
+     * @throws IllegalStateException if this node or an ancestor has been removed
      */
     public abstract void exportSubtree(OutputStream os)
                                 throws BackingStoreException,

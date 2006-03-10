@@ -40,17 +40,14 @@ package java.security;
 import gnu.classpath.SystemProperties;
 
 /**
- * <p>This <code>ProtectionDomain</code> class encapsulates the characteristics
- * of a domain, which encloses a set of classes whose instances are granted a
- * set of permissions when being executed on behalf of a given set of
- * <i>Principals</i>.
- *
- * <p>A static set of permissions can be bound to a <code>ProtectionDomain</code>
- * when it is constructed; such permissions are granted to the domain regardless
- * of the {@link Policy} in force. However, to support dynamic security
- * policies, a <code>ProtectionDomain</code> can also be constructed such that
- * it is dynamically mapped to a set of permissions by the current {@link
- * Policy} whenever a permission is checked.</p>
+ * This class represents a group of classes, along with their granted
+ * permissions. The classes are identified by a {@link CodeSource}. Thus, any
+ * class loaded from the specified {@link CodeSource} is treated as part of
+ * this domain. The set of permissions is represented by an instance of
+ * {@link PermissionCollection}.
+ * 
+ * <p>Every class in the system will belong to one and only one
+ * <code>ProtectionDomain</code>.</p>
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @version 0.0
@@ -73,15 +70,17 @@ public class ProtectionDomain
   private boolean staticBinding;
 
   /**
-   * Creates a new <code>ProtectionDomain</code> with the given {@link
-   * CodeSource} and {@link Permissions}. If the permissions object is not
-   * <code>null</code>, then <code>setReadOnly()</code> will be called on the
-   * passed in {@link Permissions} object. The only permissions granted to this
-   * domain are the ones specified; the current {@link Policy} will not be
-   * consulted.
-   *
-   * @param codesource the codesource associated with this domain.
-   * @param permissions the permissions granted to this domain
+   * Initializes a new instance of <code>ProtectionDomain</code> representing
+   * the specified {@link CodeSource} and set of permissions. No permissions
+   * can be added later to the {@link PermissionCollection} and this contructor
+   * will call the <code>setReadOnly</code> method on the specified set of
+   * permissions.
+   * 
+   * @param codesource
+   *          The {@link CodeSource} for this domain.
+   * @param permissions
+   *          The set of permissions for this domain.
+   * @see PermissionCollection#setReadOnly()
    */
   public ProtectionDomain(CodeSource codesource, PermissionCollection permissions)
   {
@@ -89,28 +88,25 @@ public class ProtectionDomain
   }
 
   /**
-   * <p>Creates a new ProtectionDomain qualified by the given CodeSource,
-   * Permissions, ClassLoader and array of Principals. If the permissions
-   * object is not null, then <code>setReadOnly()</code> will be called on the
-   * passed in Permissions object. The permissions granted to this domain are
-   * dynamic; they include both the static permissions passed to this
-   * constructor, and any permissions granted to this domain by the current
-   * Policy at the time a permission is checked.</p>
-   *
-   * <p>This constructor is typically used by {@link ClassLoader}s and {@link
-   * DomainCombiner}s which delegate to <code>Policy</code> to actively
-   * associate the permissions granted to this domain. This constructor affords
-   * the Policy provider the opportunity to augment the supplied
-   * PermissionCollection to reflect policy changes.</p>
-   *
-   * @param codesource the CodeSource associated with this domain.
-   * @param permissions the permissions granted to this domain.
-   * @param classloader the ClassLoader associated with this domain.
-   * @param principals the array of Principals associated with this domain.
+   * This method initializes a new instance of <code>ProtectionDomain</code>
+   * given its {@link CodeSource}, granted permissions, associated
+   * {@link ClassLoader} and {@link Principal}s.
+   * 
+   * <p>Similar to the previous constructor, if the designated set of
+   * permissions is not <code>null</code>, the <code>setReadOnly</code> method
+   * is called on that set.</p>
+   * 
+   * @param codesource
+   *          The {@link CodeSource} for this domain.
+   * @param permissions
+   *          The permission set for this domain.
+   * @param classloader
+   *          the ClassLoader associated with this domain.
+   * @param principals
+   *          the array of {@link Principal}s associated with this domain.
    * @since 1.4
-   * @see Policy#refresh()
-   * @see Policy#getPermissions(ProtectionDomain)
-  */
+   * @see PermissionCollection#setReadOnly()
+   */
   public ProtectionDomain(CodeSource codesource,
                           PermissionCollection permissions,
                           ClassLoader classloader, Principal[] principals)
@@ -140,8 +136,8 @@ public class ProtectionDomain
 
   /**
    * Returns the {@link CodeSource} of this domain.
-   *
-   * @return the {@link CodeSource} of this domain which may be <code>null</code>.
+   * 
+   * @return the {@link CodeSource} of this domain.
    * @since 1.2
    */
   public final CodeSource getCodeSource()
@@ -151,9 +147,8 @@ public class ProtectionDomain
 
   /**
    * Returns the {@link ClassLoader} of this domain.
-   *
-   * @return the {@link ClassLoader} of this domain which may be
-   * <code>null</code>.
+   * 
+   * @return the {@link ClassLoader} of this domain.
    * @since 1.4
    */
   public final ClassLoader getClassLoader()
@@ -162,10 +157,9 @@ public class ProtectionDomain
   }
 
   /**
-   * Returns an array of principals for this domain.
-   *
-   * @return returns a non-null array of principals for this domain. Changes to
-   * this array will have no impact on the <code>ProtectionDomain</code>.
+   * Returns a clone of the {@link Principal}s of this domain.
+   * 
+   * @return a clone of the {@link Principal}s of this domain.
    * @since 1.4
    */
   public final Principal[] getPrincipals()
@@ -174,12 +168,9 @@ public class ProtectionDomain
   }
 
   /**
-   * Returns the static permissions granted to this domain.
-   *
-   * @return the static set of permissions for this domain which may be
-   * <code>null</code>.
-   * @see Policy#refresh()
-   * @see Policy#getPermissions(ProtectionDomain)
+   * Returns the {@link PermissionCollection} of this domain.
+   * 
+   * @return The {@link PermissionCollection} of this domain.
    */
   public final PermissionCollection getPermissions()
   {
@@ -187,26 +178,13 @@ public class ProtectionDomain
   }
 
   /**
-   * <p>Check and see if this <code>ProtectionDomain</code> implies the
-   * permissions expressed in the <code>Permission</code> object.</p>
-   *
-   * <p>The set of permissions evaluated is a function of whether the
-   * <code>ProtectionDomain</code> was constructed with a static set of
-   * permissions or it was bound to a dynamically mapped set of permissions.</p>
-   *
-   * <p>If the <code>ProtectionDomain</code> was constructed to a statically
-   * bound {@link PermissionCollection} then the permission will only be checked
-   * against the {@link PermissionCollection} supplied at construction.</p>
-   *
-   * <p>However, if the <code>ProtectionDomain</code> was constructed with the
-   * constructor variant which supports dynamically binding permissions, then
-   * the permission will be checked against the combination of the
-   * {@link PermissionCollection} supplied at construction and the current
-   * {@link Policy} binding.
-   *
-   * @param permission the {@link Permission} object to check.
-   * @return <code>true</code> if <code>permission</code> is implicit to this
-   * <code>ProtectionDomain</code>.
+   * Tests whether or not the specified {@link Permission} is implied by the
+   * set of permissions granted to this domain.
+   * 
+   * @param permission
+   *          the {@link Permission} to test.
+   * @return <code>true</code> if the specified {@link Permission} is implied
+   *         for this domain, <code>false</code> otherwise.
    */
   public boolean implies(Permission permission)
   {
@@ -218,9 +196,10 @@ public class ProtectionDomain
   }
 
   /**
-   * Convert a <code>ProtectionDomain</code> to a String.
-   *
-   * @return a string representation of the object.
+   * Returns a string representation of this object. It will include the
+   * {@link CodeSource} and set of permissions associated with this domain.
+   * 
+   * @return A string representation of this object.
    */
   public String toString()
   {

@@ -64,9 +64,7 @@ abstract class TemplateNode
     throws TransformerException
   {
     if (stylesheet.terminated)
-      {
-        return;
-      }
+      return;
     if (Thread.currentThread().isInterrupted())
       {
         // Try to head off any infinite loops at the pass
@@ -91,13 +89,9 @@ abstract class TemplateNode
   public boolean references(QName var)
   {
     if (children != null && children.references(var))
-      {
-        return true;
-      }
+      return true;
     if (next != null && next.references(var))
-      {
-        return true;
-      }
+      return true;
     return false;
   }
 
@@ -107,18 +101,30 @@ abstract class TemplateNode
   void list(int depth, PrintStream out, boolean listNext)
   {
     for (int i = 0; i < depth; i++)
-      {
-        out.print("  ");
-      }
+      out.print("  ");
     out.println(toString());
     if (children != null)
-      {
-        children.list(depth + 1, out, true);
-      }
+      children.list(depth + 1, out, true);
     if (listNext && next != null)
+      next.list(depth, out, listNext);
+  }
+
+  /**
+   * Indicates whether the template for which this template node is the
+   * first node specifies the given parameter.
+   */
+  boolean hasParam(QName name)
+  {
+    for (TemplateNode ctx = this; ctx != null; ctx = ctx.next)
       {
-        next.list(depth, out, listNext);
+        if (ctx instanceof ParameterNode)
+          {
+            ParameterNode param = (ParameterNode) ctx;
+            if (param.type == Bindings.PARAM && param.name.equals(name))
+              return true;
+          }
       }
+    return false;
   }
 
 }

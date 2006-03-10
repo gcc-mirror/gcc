@@ -1,5 +1,6 @@
 /* Lease.java
    Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,29 +40,61 @@ package java.rmi.dgc;
 
 import java.io.Serializable;
 
+/**
+ * A lease object is used to request and grant leases for the remote objects. It
+ * contains the lease duration and the unique VM indentifier.
+ */
 public final class Lease
-	implements Serializable {
+    implements Serializable
+{
 
-static final long serialVersionUID = -5713411624328831948L;
+  static final long serialVersionUID = - 5713411624328831948L;
 
-private VMID vmid;
-private long value;
+  private VMID vmid;
 
-public Lease(VMID id, long duration) {
-	vmid = id;
-	value = duration;
-}
+  private long value;
 
-public VMID getVMID() {
-	return (vmid);
-}
+  /**
+   * Create the new lease with the given id and duration
+   * 
+   * @param id the lease id
+   * @param duration the lease duration
+   */
+  public Lease(VMID id, long duration)
+  {
+    vmid = id;
+    value = duration;
+  }
 
-public long getValue() {
-	return (value);
-}
+  /**
+   * Get the lease id.
+   * 
+   * @return the lease id
+   */
+  public VMID getVMID()
+  {
+    return (vmid);
+  }
 
-public String toString() {
-	return ("[" + vmid.toString() + ", " + Long.toString(value) + "]");
-}
+  /**
+   * Get the lease duration
+   * 
+   * @return the lease duration
+   */
+  public long getValue()
+  {
+    return (value);
+  }
+
+  /**
+   * Get the string representation of this lease
+   * 
+   * @return the string represenation (lease id, followed by the lease
+   *         duration).
+   */
+  public String toString()
+  {
+    return ("[" + vmid.toString() + ", " + Long.toString(value) + "]");
+  }
 
 }

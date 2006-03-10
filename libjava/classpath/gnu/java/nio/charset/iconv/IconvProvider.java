@@ -40,8 +40,6 @@ package gnu.java.nio.charset.iconv;
 
 import java.nio.charset.Charset;
 import java.nio.charset.spi.CharsetProvider;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 

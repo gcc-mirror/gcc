@@ -451,6 +451,8 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
             }
         }
       runCount = runs;
+      if (runCount > tabRuns.length)
+        expandTabRunsArray();
 
       tabRuns[0] = 0;
       normalizeTabRuns(tabPlacement, tabCount, start, max);
@@ -1025,6 +1027,8 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
             }
         }
       runCount = runs;
+      if (runCount > tabRuns.length)
+        expandTabRunsArray();
 
       padSelectedTab(tabPlacement, tabPane.getSelectedIndex());
     }
@@ -1732,9 +1736,6 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
     // we WANT to paint the outermost run first and then work our way in.
     int tabCount = tabPane.getTabCount();
     int currRun = 1;
-    
-    if (tabCount > runCount)
-      runCount = tabCount;
     
     if (tabCount < 1)
       return;

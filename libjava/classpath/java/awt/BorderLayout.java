@@ -460,27 +460,30 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
   }
 
   /**
-   * Lays out the specified container according to the constraints
-   * in this object.
-   *
+   * Lays out the specified container according to the constraints in this
+   * object.
+   * 
    * @param target The container to lay out.
    */
   public void layoutContainer(Container target)
   {
-    synchronized (target.getTreeLock ())
+    synchronized (target.getTreeLock())
       {
         Insets i = target.getInsets();
+        int top = i.top;
+        int bottom = target.height - i.bottom;
+        int left = i.left;
+        int right = target.width - i.right;
 
-        ComponentOrientation orient = target.getComponentOrientation ();
-        boolean left_to_right = orient.isLeftToRight ();
+        boolean left_to_right = target.getComponentOrientation().isLeftToRight();
 
         Component my_north = north;
         Component my_east = east;
         Component my_south = south;
         Component my_west = west;
 
-        // Note that we currently don't handle vertical layouts.  Neither
-        // does JDK 1.3.
+        // Note that we currently don't handle vertical layouts.
+        // Neither does JDK 1.3.
         if (firstLine != null)
           my_north = firstLine;
         if (lastLine != null)
@@ -500,65 +503,42 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
               my_west = lastItem;
           }
 
-        Dimension c = calcCompSize(center, PREF);
-        Dimension n = calcCompSize(my_north, PREF);
-        Dimension s = calcCompSize(my_south, PREF);
-        Dimension e = calcCompSize(my_east, PREF);
-        Dimension w = calcCompSize(my_west, PREF);
-        int targetWidth = target.getWidth();
-        int targetHeight = target.getHeight();
+        if (my_north != null)
+          {
+            Dimension n = calcCompSize(my_north, PREF);
+            my_north.setBounds(left, top, right - left, n.height);
+            top += n.height + vgap;
+          }
 
-        /*
-	<-> hgap     <-> hgap
-	+----------------------------+          }
-	|t                           |          } i.top
-	|  +----------------------+  |  --- y1  }
-	|  |n                     |  |
-	|  +----------------------+  |          } vgap
-	|  +---+ +----------+ +---+  |  --- y2  }        }
-	|  |w  | |c         | |e  |  |                   } hh
-	|  +---+ +----------+ +---+  |          } vgap   }
-	|  +----------------------+  |  --- y3  }
-	|  |s                     |  |
-	|  +----------------------+  |          }
-	|                            |          } i.bottom
-	+----------------------------+          }
-	|x1   |x2          |x3
-	<---------------------->
-	<-->         ww           <-->
-	i.left                    i.right
-        */
+        if (my_south != null)
+          {
+            Dimension s = calcCompSize(my_south, PREF);
+            my_south.setBounds(left, bottom - s.height, right - left, s.height);
+            bottom -= s.height + vgap;
+          }
 
-        int x1 = i.left;
-        int x2 = x1 + w.width + (w.width == 0 ? 0 : hgap);
-        int x3;
-        if (targetWidth <= i.right + e.width)
-          x3 = x2 + w.width + (w.width == 0 ? 0 : hgap);
-        else
-          x3 = targetWidth - i.right - e.width;
-        int ww = targetWidth - i.right - i.left;
+        if (my_east != null)
+          {
+            Dimension e = calcCompSize(my_east, PREF);
+            my_east.setBounds(right - e.width, top, e.width, bottom - top);
+            right -= e.width + hgap;
+          }
 
-        int y1 = i.top;
-        int y2 = y1 + n.height + (n.height == 0 ? 0 : vgap);
-        int midh = Math.max(e.height, Math.max(w.height, c.height));
-        int y3;
-        if (targetHeight <= i.bottom + s.height)
-          y3 = y2 + midh + vgap;
-        else
-          y3 = targetHeight - i.bottom - s.height;
-        int hh = y3-y2-(s.height == 0 ? 0 : vgap);
+        if (my_west != null)
+          {
+            Dimension w = calcCompSize(my_west, PREF);
+            my_west.setBounds(left, top, w.width, bottom - top);
+            left += w.width + hgap;
+          }
 
-        setBounds(center, x2, y2, x3-x2-(w.width == 0 ? 0 : hgap), hh);
-        setBounds(my_north, x1, y1, ww, n.height);
-        setBounds(my_south, x1, y3, ww, s.height);
-        setBounds(my_west, x1, y2, w.width, hh);
-        setBounds(my_east, x3, y2, e.width, hh);
+        if (center != null)
+          center.setBounds(left, top, right - left, bottom - top);
       }
   }
 
   /**
    * Returns a string representation of this layout manager.
-   *
+   * 
    * @return A string representation of this object.
    */
   public String toString()
@@ -566,20 +546,9 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
     return getClass().getName() + "[hgap=" + hgap + ",vgap=" + vgap + "]";
   }
 
-  /**
-   * This is a convenience method to set the bounds on a component.
-   * If the indicated component is null, nothing is done.
-   */
-  private void setBounds(Component comp, int x, int y, int w, int h)
-  {
-    if (comp == null)
-      return;
-    comp.setBounds(x, y, w, h);
-  }
-
   private Dimension calcCompSize(Component comp, int what)
   {
-    if (comp == null || !comp.isVisible())
+    if (comp == null || ! comp.isVisible())
       return new Dimension(0, 0);
     if (what == MIN)
       return comp.getMinimumSize();
@@ -589,12 +558,12 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
   }
 
   /**
-   * This is a helper function used to compute the various sizes for
-   * this layout.
+   * This is a helper function used to compute the various sizes for this
+   * layout.
    */
   private Dimension calcSize(Container target, int what)
   {
-    synchronized (target.getTreeLock ())
+    synchronized (target.getTreeLock())
       {
         Insets ins = target.getInsets();
 

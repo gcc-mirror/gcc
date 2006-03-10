@@ -1,5 +1,5 @@
 /* CertificateException.java -- Certificate Exception
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.security.GeneralSecurityException;
  * @author Mark Benvenuto
  * @see Certificate
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.5
  */
 public class CertificateException extends GeneralSecurityException
 {
@@ -70,5 +70,27 @@ public class CertificateException extends GeneralSecurityException
   public CertificateException(String msg)
   {
     super(msg);
+  }
+
+  /**
+   * Create a new instance with a descriptive error message and
+   * a cause.
+   * @param s the descriptive error message
+   * @param cause the cause
+   * @since 1.5
+   */
+  public CertificateException(String s, Throwable cause)
+  {
+    super(s, cause);
+  }
+
+  /**
+   * Create a new instance with a cause.
+   * @param cause the cause
+   * @since 1.5
+   */
+  public CertificateException(Throwable cause)
+  {
+    super(cause);
   }
 }

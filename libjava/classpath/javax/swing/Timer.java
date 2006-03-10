@@ -68,11 +68,11 @@ public class Timer
     public void run()
     {
       if (logTimers)
-	System.out.println("javax.swing.Timer -> queueEvent()");
+        System.out.println("javax.swing.Timer -> queueEvent()");
       queueEvent();
 
       if (!repeats)
-	task = null;
+        task = null;
     }
   }
 
@@ -141,8 +141,9 @@ public class Timer
 
   /**
    * The task that calls queueEvent(). When null this Timer is stopped.
+   * This is package private to avoid synthetic accessor method.
    */
-  private Task task;
+  Task task;
 
   /**
    * This object manages a "queue" of virtual actionEvents, maintained as a

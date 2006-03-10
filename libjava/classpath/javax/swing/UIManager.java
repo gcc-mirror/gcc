@@ -43,11 +43,11 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.Locale;
 
 import javax.swing.border.Border;
-import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
@@ -138,8 +138,8 @@ public class UIManager implements Serializable
   static UIDefaults userUIDefaults;
 
   /** Property change listener mechanism. */
-  static SwingPropertyChangeSupport listeners 
-      = new SwingPropertyChangeSupport(UIManager.class);
+  static PropertyChangeSupport listeners
+      = new PropertyChangeSupport(UIManager.class);
 
   static
   {

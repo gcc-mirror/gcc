@@ -22,8 +22,8 @@
 # the Free Software Foundation, 51 Franklin St, Fifth Floor,
 # Boston, MA  02110-1301  USA
 
-my $destpath=pop || "gnu/java/util/collections";
-my $classpath="..";
+my $destpath=@COLLECTIONS_PREFIX@;
+my $classpath=pop;
 my @javalangclasses=qw(UnsupportedOperationException
 		       Comparable);
 my @javautilclasses=qw(AbstractCollection
@@ -33,7 +33,6 @@ my @javautilclasses=qw(AbstractCollection
 		       AbstractSet
 		       ArrayList
 		       Arrays
-		       BasicMapEntry
 		       List
 		       Collection
 		       Collections
@@ -48,6 +47,7 @@ my @javautilclasses=qw(AbstractCollection
 		       Map
 		       NoSuchElementException
 		       Random
+		       RandomAccess
 		       Set
 		       SortedMap
 		       SortedSet

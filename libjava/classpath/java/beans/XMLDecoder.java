@@ -1,5 +1,5 @@
 /* java.beans.XMLDecoder --
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.beans;
 
-import gnu.java.beans.decoder.DefaultExceptionListener;
+import gnu.java.beans.DefaultExceptionListener;
 import gnu.java.beans.decoder.PersistenceParser;
 
 import java.io.IOException;
@@ -289,7 +289,7 @@ public class XMLDecoder
 		// uses a default implementation when null 
 		if (listener == null)
 		{
-			listener = new DefaultExceptionListener();
+			listener = DefaultExceptionListener.INSTANCE;
 		}
 		exceptionListener = listener;
 	}

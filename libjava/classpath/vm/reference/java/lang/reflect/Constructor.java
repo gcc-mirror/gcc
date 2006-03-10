@@ -66,8 +66,8 @@ import java.util.Arrays;
  * @author Eric Blake <ebb9@email.byu.edu>
  * @see Member
  * @see Class
- * @see java.lang.Class#getConstructor(Object[])
- * @see java.lang.Class#getDeclaredConstructor(Object[])
+ * @see java.lang.Class#getConstructor(Class[])
+ * @see java.lang.Class#getDeclaredConstructor(Class[])
  * @see java.lang.Class#getConstructors()
  * @see java.lang.Class#getDeclaredConstructors()
  * @since 1.1

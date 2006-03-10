@@ -159,6 +159,14 @@ public abstract class AbstractButton extends JComponent
     private static final long serialVersionUID = 1471056094226600578L;
 
     /**
+     * The spec has no public/protected constructor for this class, so do we.
+     */
+    ButtonChangeListener()
+    {
+      // Nothing to do here.
+    }
+
+    /**
      * Notified when the target of the listener changes its state.
      *
      * @param ev the ChangeEvent describing the change

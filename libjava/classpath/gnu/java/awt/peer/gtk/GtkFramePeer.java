@@ -43,10 +43,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MenuBar;
 import java.awt.Rectangle;
-import java.awt.Window;
-import java.awt.event.ComponentEvent;
 import java.awt.event.PaintEvent;
-import java.awt.image.ColorModel;
 import java.awt.peer.FramePeer;
 import java.awt.peer.MenuBarPeer;
 
@@ -77,7 +74,10 @@ public class GtkFramePeer extends GtkWindowPeer
         removeMenuBarPeer ();
         insets.top -= menuBarHeight;
         menuBarHeight = 0;
-        awtComponent.validate ();
+        // if component has already been validated, we need to revalidate.
+        // otherwise, it will be validated when it is shown.
+        if (awtComponent.isValid())
+          awtComponent.validate ();
         gtkFixedSetVisible (true);
       }
     else if (bar != null && menuBar == null)
@@ -92,7 +92,10 @@ public class GtkFramePeer extends GtkWindowPeer
           setMenuBarWidth (menuBar, menuBarWidth);
         menuBarHeight = getMenuBarHeight ();
         insets.top += menuBarHeight;
-        awtComponent.validate ();
+        // if component has already been validated, we need to revalidate.
+        // otherwise, it will be validated when it is shown.
+        if (awtComponent.isValid())
+          awtComponent.validate ();
         gtkFixedSetVisible (true);
       }
     else if (bar != null && menuBar != null)

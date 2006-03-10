@@ -228,8 +228,9 @@ public class ComponentView extends View
    *
    * @param p the parent view to set
    */
-  void setParentImpl(View p)
+  private void setParentImpl(View p)
   {
+    super.setParent(p);
     if (p != null)
       {
         Component c = getComponent();

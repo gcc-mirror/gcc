@@ -48,9 +48,9 @@ import java.security.PrivilegedExceptionAction;
  * <code>PriviledgedAction</code> in order to restrict the loaded
  * service providers to the {@link java.security.AccessControlContext}
  * that was active when {@link
- * gnu.classpath.ServiceFactory#lookupProviders} was called, even
- * though the actual loading is delayed to the time when the provider
- * is actually needed.
+ * gnu.classpath.ServiceFactory#lookupProviders(Class, ClassLoader)} was
+ * called, even though the actual loading is delayed to the time when the
+ * provider is actually needed.
  *
  * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
  */

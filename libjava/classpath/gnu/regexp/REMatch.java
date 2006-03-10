@@ -1,5 +1,5 @@
 /* gnu/regexp/REMatch.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,6 +67,10 @@ public final class REMatch implements Serializable, Cloneable {
     int[] start; // start positions (relative to offset) for each (sub)exp.
     int[] end;   // end positions for the same
     REMatch next; // other possibility (to avoid having to use arrays)
+    boolean empty; // empty string matched. This flag is used only within
+		   // RETokenRepeated.
+    int matchFlags; // flags passed to match methods
+    static final int MF_FIND_ALL = 0x01;
 
     public Object clone() {
 	try {
@@ -177,7 +181,9 @@ public final class REMatch implements Serializable, Cloneable {
      * @param sub Index of the subexpression.
      */
     public String toString(int sub) {
-	if ((sub >= start.length) || (start[sub] == -1)) return "";
+	if ((sub >= start.length) || sub < 0)
+	    throw new IndexOutOfBoundsException("No group " + sub);
+	if (start[sub] == -1) return null;
 	return (matchedText.substring(start[sub],end[sub]));
     }
     
@@ -242,6 +248,8 @@ public final class REMatch implements Serializable, Cloneable {
      * <code>$0</code> through <code>$9</code>.  <code>$0</code> matches
      * the full substring matched; <code>$<i>n</i></code> matches
      * subexpression number <i>n</i>.
+     * <code>$10, $11, ...</code> may match the 10th, 11th, ... subexpressions
+     * if such subexpressions exist.
      *
      * @param input A string consisting of literals and <code>$<i>n</i></code> tokens.
      */
@@ -252,6 +260,16 @@ public final class REMatch implements Serializable, Cloneable {
 	for (pos = 0; pos < input.length()-1; pos++) {
 	    if ((input.charAt(pos) == '$') && (Character.isDigit(input.charAt(pos+1)))) {
 		int val = Character.digit(input.charAt(++pos),10);
+		int pos1 = pos + 1;
+		while (pos1 < input.length() &&
+		       Character.isDigit(input.charAt(pos1))) {
+		    int val1 = val*10 + Character.digit(input.charAt(pos1),10);
+		    if (val1 >= start.length) break;
+		    pos1++;
+		    val = val1;
+		}
+		pos = pos1 - 1;
+
 		if (val < start.length) {
 		    output.append(toString(val));
 		} 
@@ -260,4 +278,42 @@ public final class REMatch implements Serializable, Cloneable {
 	if (pos < input.length()) output.append(input.charAt(pos));
 	return output.toString();
     }
+
+    static class REMatchList {
+        REMatch head;
+	REMatch tail;
+        REMatchList() {
+	    head = tail = null;
+	}
+	/* Not used now. But we may need this some day?
+	void addHead(REMatch newone) {
+            if (head == null) {
+                head = newone;
+                tail = newone;
+                while (tail.next != null) {
+                    tail = tail.next;
+                }
+            }
+	    else {
+                REMatch tmp = newone;
+                while (tmp.next != null) tmp = tmp.next;
+                tmp.next = head;
+	        head = newone;
+	    }
+	}
+	*/
+	void addTail(REMatch newone) {
+            if (head == null) {
+                head = newone;
+                tail = newone;
+            }
+            else {
+                tail.next = newone;
+            }
+            while (tail.next != null) {
+                tail = tail.next;
+            }
+	}
+    }
+
 }

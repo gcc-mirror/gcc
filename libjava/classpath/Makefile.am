@@ -1,8 +1,8 @@
 ## Input file for automake to generate the Makefile.in used by configure
 
 # lib first, to compile .class files before native code, last examples
-SUBDIRS = lib doc external include native resource scripts $(EXAMPLESDIR)
-DIST_SUBDIRS = lib doc external include native resource scripts examples
+SUBDIRS = lib doc external include native resource scripts tools $(EXAMPLESDIR)
+DIST_SUBDIRS = lib doc external include native resource scripts tools examples
 
 ## GCJ LOCAL: we need an extra -I here.
 ACLOCAL_AMFLAGS = -I m4 -I ../.. -I ../../config

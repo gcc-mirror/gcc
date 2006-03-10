@@ -281,50 +281,53 @@ public class Window extends Container implements Accessible
   public void show()
   {
     synchronized (getTreeLock())
-    {
-    if (parent != null && !parent.isDisplayable())
-      parent.addNotify();
-    if (peer == null)
-      addNotify();
-
-    // Show visible owned windows.
-	Iterator e = ownedWindows.iterator();
-	while(e.hasNext())
-	  {
-	    Window w = (Window)(((Reference) e.next()).get());
-	    if (w != null)
-	      {
-		if (w.isVisible())
-		  w.getPeer().setVisible(true);
-	      }
-     	    else
-	      // Remove null weak reference from ownedWindows.
-	      // Unfortunately this can't be done in the Window's
-	      // finalize method because there is no way to guarantee
-	      // synchronous access to ownedWindows there.
-	      e.remove();
-	  }
-    validate();
-    super.show();
-    toFront();
-
-    KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
-    manager.setGlobalFocusedWindow (this);
-    
-    if (!shown)
       {
-        FocusTraversalPolicy policy = getFocusTraversalPolicy ();
-        Component initialFocusOwner = null;
+        if (parent != null && ! parent.isDisplayable())
+          parent.addNotify();
+        if (peer == null)
+          addNotify();
 
-        if (policy != null)
-          initialFocusOwner = policy.getInitialComponent (this);
+        validate();
+        if (visible)
+          toFront();
+        else
+          {
+            super.show();
+            // Show visible owned windows.
+            Iterator e = ownedWindows.iterator();
+            while (e.hasNext())
+              {
+                Window w = (Window) (((Reference) e.next()).get());
+                if (w != null)
+                  {
+                    if (w.isVisible())
+                      w.getPeer().setVisible(true);
+                  }
+                else
+                  // Remove null weak reference from ownedWindows.
+                  // Unfortunately this can't be done in the Window's
+                  // finalize method because there is no way to guarantee
+                  // synchronous access to ownedWindows there.
+                  e.remove();
+              }
+          }
+        KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        manager.setGlobalFocusedWindow(this);
 
-        if (initialFocusOwner != null)
-          initialFocusOwner.requestFocusInWindow ();
+        if (! shown)
+          {
+            FocusTraversalPolicy policy = getFocusTraversalPolicy();
+            Component initialFocusOwner = null;
 
-        shown = true;
+            if (policy != null)
+              initialFocusOwner = policy.getInitialComponent(this);
+
+            if (initialFocusOwner != null)
+              initialFocusOwner.requestFocusInWindow();
+
+            shown = true;
+          }
       }
-    }
   }
 
   public void hide()

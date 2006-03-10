@@ -1,5 +1,5 @@
 /* StreamPrintService.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,15 @@ import java.io.OutputStream;
 
 
 /**
+ * <code>StreamPrintService</code> is a special print service capable of
+ * printing into a supplied output stream.
+ * <p>
+ * Beside providing the same functionality as a print service it additionally
+ * allows to specify the output stream for the print data. A stream print 
+ * service is obtained via the {@link javax.print.StreamPrintServiceFactory} 
+ * by looking for services supporting a given output format type.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class StreamPrintService implements PrintService
@@ -68,16 +77,18 @@ public abstract class StreamPrintService implements PrintService
   }
 
   /**
-   * Returns the document format emited by this print service.
+   * Returns the document format emitted by this print service.
+   * The returned string is a MIME type compatible with the 
+   * {@link DocFlavor} class.
    * 
-   * @return the document format
+   * @return The document format of the output.
    */
   public abstract String getOutputFormat();
 
   /**
    * Returns the <code>OutputStream</code> of this object.
    * 
-   * @return the <code>OutputStream</code>
+   * @return The <code>OutputStream</code>
    */
   public OutputStream getOutputStream()
   {

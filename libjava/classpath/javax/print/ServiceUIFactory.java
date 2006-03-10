@@ -1,5 +1,5 @@
 /* ServiceUIFactory.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,18 +39,47 @@ exception statement from your version. */
 package javax.print;
 
 /**
+ * <code>ServiceUIFactory</code> enables print services to provide additional 
+ * user interface dialogs.
+ * <p>
+ * A print service may provide a <code>ServiceUIFactory</code> implementation 
+ * if its <code>getServiceUIFactory()</code> method is called. If a factory
+ * object is returned it can be queried for provided user interface dialogs. 
+ * Different roles are defined to denote dialogs providing informations about
+ * the print service, dialogs for administration of a print service and for 
+ * end-user browsing dialogs.
+ * </p><p>
+ * The factory can support providing these UI roles in different dialog types 
+ * (AWT, Swing, JComponent, Panel). The support and use of Swing interfaces is
+ * however preferred.
+ * </p>
+ * 
  * @author Michael Koch
  */
 public abstract class ServiceUIFactory
 {
+  /** A user interface providing informations about the print service. */
   public static final int ABOUT_UIROLE = 1;
+  
+  /** A user interface to administer the print service. */
   public static final int ADMIN_UIROLE = 2;
+  
+  /** A user interface for end-user browsing of the print service. */
   public static final int MAIN_UIROLE = 3;
+  
+  /** Role IDs greater than this may be used for other private roles. */
   public static final int RESERVED_UIROLE = 99;
 
+  /** Identifies a UI provided as an AWT dialog. */
   public static final String DIALOG_UI = "java.awt.Dialog";
+  
+  /** Identifies a UI provided as a Swing JComponent. */
   public static final String JCOMPONENT_UI = "javax.swing.JComponent";
+  
+  /** Identifies a UI provided as a Swing JDialog. */
   public static final String JDIALOG_UI = "javax.swing.JDialog";
+  
+  /** Identifies a UI provided as an AWT Panel. */
   public static final String PANEL_UI = "java.awt.Panel";
 
   /**

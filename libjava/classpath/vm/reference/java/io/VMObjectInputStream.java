@@ -55,25 +55,36 @@ final class VMObjectInputStream
       }
   }
 
-  // PrivilegedAction needed for Class.getClassLoader()
+  /**
+   * PrivilegedAction needed for Class.getClassLoader()
+   */ 
   private static PrivilegedAction loaderAction = new PrivilegedAction()
+  {
+   /**
+     * Returns the first user defined class loader on the call stack, or the
+     * context class loader of the current thread, when no non-null class loader
+     * was found.
+     */
+    public Object run()
     {
-      public Object run()
-      {
-	Class[] ctx = VMStackWalker.getClassContext();
-	for (int i = 0; i < ctx.length; i++)
-	  {
-	    ClassLoader cl = ctx[i].getClassLoader();
-	    if (cl != null)
-	      return cl;
-	  }
-	return null;
-      }
+      Class[] ctx = VMStackWalker.getClassContext();
+
+      for (int i = 0; i < ctx.length; i++)
+        {
+          ClassLoader cl = ctx[i].getClassLoader();
+          if (cl != null)
+            return cl;
+        }
+      return Thread.currentThread().getContextClassLoader();
+    }
     };
 
   /**
-   * Returns the first user defined class loader on the call stack, or
-   * null when no non-null class loader was found.
+   * Returns the first user defined class loader on the call stack, or the
+   * context class loader of the current thread, when no non-null class loader
+   * was found.
+   * 
+   * @return the class loader
    */
   static ClassLoader currentClassLoader()
   {

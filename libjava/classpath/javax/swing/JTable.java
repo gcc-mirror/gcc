@@ -1,5 +1,5 @@
 /* JTable.java -- 
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,8 +46,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -86,8 +84,16 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import javax.swing.text.Caret;
 
+/**
+ * The table component, displaying information, organized in rows and columns.
+ * The table can be placed in the scroll bar and have the optional header
+ * that is always visible. Cell values may be editable after double clicking
+ * on the cell. Cell columns may have various data types, that are 
+ * displayed and edited by the different renderers and editors. It is possible
+ * to set different column width. The columns are also resizeable by 
+ * dragging the column boundary in the header.
+ */
 public class JTable
   extends JComponent
   implements TableModelListener, Scrollable, TableColumnModelListener,
@@ -588,7 +594,7 @@ public class JTable
         return lastColumn;
       }
     }
-
+   
     /**
      * Creates a new <code>AccessibleJTable</code>.
      *
@@ -979,9 +985,9 @@ public class JTable
   class TableColumnPropertyChangeHandler implements PropertyChangeListener
   {
     /**
-     * Receives notification that a property of the observed TableColumns
-     * has changed.
-     *
+     * Receives notification that a property of the observed TableColumns has
+     * changed.
+     * 
      * @param ev the property change event
      */
     public void propertyChange(PropertyChangeEvent ev)
@@ -989,13 +995,15 @@ public class JTable
       if (ev.getPropertyName().equals("preferredWidth"))
         {
           JTableHeader header = getTableHeader();
-	  if (header != null)
-	    {
-	      TableColumn col = (TableColumn) ev.getSource();
-	      header.setResizingColumn(col);
-	      doLayout();
-	      header.setResizingColumn(null);
-	    }
+          if (header != null)
+            // Do nothing if the table is in the resizing mode.
+            if (header.getResizingColumn() == null)
+              {
+                TableColumn col = (TableColumn) ev.getSource();
+                header.setResizingColumn(col);
+                doLayout();
+                header.setResizingColumn(null);
+              }
         }
     }
   }
@@ -1006,11 +1014,30 @@ public class JTable
   private class BooleanCellRenderer
     extends DefaultTableCellRenderer
   {
-
     /**
      * The CheckBox that is used for rendering.
      */
-    private JCheckBox checkBox = new JCheckBox();
+    private final JCheckBox checkBox = new JCheckBox();
+    
+    /**
+     * The check box must have the text field background and be centered.
+     */
+    private BooleanCellRenderer()
+    {
+      // Render the checkbox identically as the text field.
+      JTextField f = new JTextField();
+      checkBox.setForeground(f.getForeground());
+      checkBox.setBackground(f.getBackground());
+      checkBox.setHorizontalAlignment(SwingConstants.CENTER);      
+    }
+    
+    /**
+     * Get the check box.
+     */
+    JCheckBox getCheckBox()
+    {
+      return checkBox;
+    }
 
     /**
      * Returns the component that is used for rendering the value.
@@ -1029,8 +1056,14 @@ public class JTable
                                                    boolean hasFocus, int row,
                                                    int column)
     {
-      Boolean boolValue = (Boolean) value;
-      checkBox.setSelected(boolValue.booleanValue());
+      // Null is rendered as false.
+      if (value == null)
+        checkBox.setSelected(false);
+      else
+        {
+          Boolean boolValue = (Boolean) value;
+          checkBox.setSelected(boolValue.booleanValue());
+        }
       return checkBox;
     }
   }
@@ -1200,12 +1233,52 @@ public class JTable
         {
           Icon iconValue = (Icon) value;
           setIcon(iconValue);
+          setText("");
         }
       return this;
     }
   }
+  
+    /**
+     * The JTable text component (used in editing) always has the table
+     * as its parent. The scrollRectToVisible must be adjusted taking the
+     * relative component position.
+     *
+     * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
+     */
+    private class TableTextField extends JTextField
+    {
+      /**
+       * Create the text field without the border.
+       */
+      TableTextField()
+      {
+        setBorder(null);
+      }
+    
+      /**
+       * Scroll the table, making the given rectangle of this component
+       * visible. Mind the component position with relate to the table. 
+       * With not this method overridden, the scroll pane scrolls to the
+       * top left cornec (untranslated position of the caret) after the first
+       * keystroke.
+       */
+      public void scrollRectToVisible(Rectangle r)
+      {
+        // In private class we known that the rectangle data will not be
+        // reused and we need not to clone it.
+        r.translate(getX(), getY());
+        super.scrollRectToVisible(r);
+      }
+    }    
+  
 
   private static final long serialVersionUID = 3876025080382781659L;
+  
+  /**
+   * This table, for referring identically name methods from inner classes.
+   */
+  final JTable this_table = this;
 
 
   /**
@@ -1343,7 +1416,7 @@ public class JTable
   protected boolean rowSelectionAllowed;
 
   /**
-   * @deprecated Use {@link #rowSelectionAllowed}, {@link 
+   * Obsolete. Use {@link #rowSelectionAllowed}, {@link 
    * #getColumnSelectionAllowed}, or the combined methods {@link
    * #getCellSelectionEnabled} and {@link #setCellSelectionEnabled(boolean)}.
    */
@@ -1477,27 +1550,6 @@ public class JTable
   protected JTableHeader tableHeader;
 
   /**
-   * The row of the cell being edited.
-   */
-  int rowBeingEdited = -1;
-
-  /**
-   * The column of the cell being edited.
-   */
-  int columnBeingEdited = -1;
-
-  /**
-   * The action listener for the editor's Timer.
-   */
-  Timer editorTimer = new EditorUpdateTimer();
-
-  /**
-   * Stores the old value of a cell before it was edited, in case
-   * editing is cancelled
-   */
-  Object oldCellValue;
-
-  /**
    * The property handler for this table's columns.
    */
   TableColumnPropertyChangeHandler tableColumnPropertyChangeHandler =
@@ -1510,6 +1562,11 @@ public class JTable
   private boolean surrendersFocusOnKeystroke = false;
 
   /**
+   * A Rectangle object to be reused in {@link #getCellRect}. 
+   */
+  private Rectangle rectCache = new Rectangle();
+
+  /**
    * Creates a new <code>JTable</code> instance.
    */
   public JTable ()
@@ -1518,7 +1575,8 @@ public class JTable
   }
 
   /**
-   * Creates a new <code>JTable</code> instance.
+   * Creates a new <code>JTable</code> instance with the given number
+   * of rows and columns.
    *
    * @param numRows an <code>int</code> value
    * @param numColumns an <code>int</code> value
@@ -1529,10 +1587,12 @@ public class JTable
   }
 
   /**
-   * Creates a new <code>JTable</code> instance.
+   * Creates a new <code>JTable</code> instance, storing the given data 
+   * array and heaving the given column names. To see the column names,
+   * you must place the JTable into the {@link JScrollPane}.
    *
-   * @param data an <code>Object[][]</code> value
-   * @param columnNames an <code>Object[]</code> value
+   * @param data an <code>Object[][]</code> the table data
+   * @param columnNames an <code>Object[]</code> the column headers
    */
   public JTable(Object[][] data, Object[] columnNames)
   {
@@ -1540,20 +1600,31 @@ public class JTable
   }
 
   /**
-   * Creates a new <code>JTable</code> instance.
-   *
-   * @param dm a <code>TableModel</code> value
+   * Creates a new <code>JTable</code> instance, using the given data model
+   * object that provides information about the table content. The table model
+   * object is asked for the table size, other features and also receives
+   * notifications in the case when the table has been edited by the user.
+   * 
+   * @param model
+   *          the table model.
    */
-  public JTable (TableModel dm)
+  public JTable (TableModel model)
   {
-    this(dm, null, null);
+    this(model, null, null);
   }
 
   /**
-   * Creates a new <code>JTable</code> instance.
-   *
-   * @param dm a <code>TableModel</code> value
-   * @param cm a <code>TableColumnModel</code> value
+   * Creates a new <code>JTable</code> instance, using the given model object
+   * that provides information about the table content. The table data model
+   * object is asked for the table size, other features and also receives
+   * notifications in the case when the table has been edited by the user. The
+   * table column model provides more detailed control on the table column
+   * related features.
+   * 
+   * @param dm
+   *          the table data mode
+   * @param cm
+   *          the table column model
    */
   public JTable (TableModel dm, TableColumnModel cm)
   {
@@ -1561,11 +1632,13 @@ public class JTable
   }
 
   /**
-   * Creates a new <code>JTable</code> instance.
+   * Creates a new <code>JTable</code> instance, providing data model,
+   * column model and list selection model. The list selection model
+   * manages the selections.
    *
-   * @param dm a <code>TableModel</code> value
-   * @param cm a <code>TableColumnModel</code> value
-   * @param sm a <code>ListSelectionModel</code> value
+   * @param dm data model (manages table data)
+   * @param cm column model (manages table columns)
+   * @param sm list selection model (manages table selections)
    */
   public JTable (TableModel dm, TableColumnModel cm, ListSelectionModel sm)
   {
@@ -1593,8 +1666,23 @@ public class JTable
     columnModel.getSelectionModel().setAnchorSelectionIndex(0);
     columnModel.getSelectionModel().setLeadSelectionIndex(0);
     updateUI();
-  }    
-
+  }
+  
+  /**
+   * Creates a new <code>JTable</code> instance that uses data and column
+   * names, stored in {@link Vector}s.
+   *
+   * @param data the table data
+   * @param columnNames the table column names.
+   */
+  public JTable(Vector data, Vector columnNames)
+  {
+    this(new DefaultTableModel(data, columnNames));
+  }  
+  
+  /**
+   * Initialize local variables to default values.
+   */
   protected void initializeLocalVars()
   {
     setTableHeader(createDefaultTableHeader());
@@ -1623,63 +1711,18 @@ public class JTable
     this.editingRow = -1;
     setIntercellSpacing(new Dimension(1,1));
   }
-
+  
   /**
-   * Creates a new <code>JTable</code> instance.
-   *
-   * @param data a <code>Vector</code> value
-   * @param columnNames a <code>Vector</code> value
+   * Add the new table column. The table column class allows to specify column
+   * features more precisely, setting the preferred width, column data type
+   * (column class) and table headers.
+   * 
+   * There is no need the add columns to the table if the default column 
+   * handling is sufficient.
+   * 
+   * @param column
+   *          the new column to add.
    */
-  public JTable(Vector data, Vector columnNames)
-  {
-    this(new DefaultTableModel(data, columnNames));
-  }
-
-  /**
-   * The timer that updates the editor component.
-   */
-  private class EditorUpdateTimer
-    extends Timer
-    implements ActionListener
-  {
-    /**
-     * Creates a new EditorUpdateTimer object with a default delay of 0.5 seconds.
-     */
-    public EditorUpdateTimer()
-    {
-      super(500, null);
-      addActionListener(this);
-    }
-
-    /**
-     * Lets the caret blink and repaints the table.
-     */
-    public void actionPerformed(ActionEvent ev)
-    {
-      Caret c = ((JTextField)JTable.this.editorComp).getCaret();
-      if (c != null)
-        c.setVisible(!c.isVisible());
-      JTable.this.repaint();
-    }
-
-    /**
-     * Updates the blink delay according to the current caret.
-     */
-    public void update()
-    {
-      stop();
-      Caret c = ((JTextField)JTable.this.editorComp).getCaret();
-      if (c != null)
-	{
-	  setDelay(c.getBlinkRate());
-	  if (((JTextField)JTable.this.editorComp).isEditable())
-	    start();
-	  else
-	    c.setVisible(false);
-	}
-    }
-  }
-
   public void addColumn(TableColumn column)
   {
     if (column.getHeaderValue() == null)
@@ -1691,12 +1734,24 @@ public class JTable
     columnModel.addColumn(column);
     column.addPropertyChangeListener(tableColumnPropertyChangeHandler);
   }
-
+  
+  /**
+   * Create the default editors for this table. The default method creates
+   * the editor for Booleans.
+   * 
+   * Other fields are edited as strings at the moment.
+   */
   protected void createDefaultEditors()
   {
-    //FIXME: Create the editor object.
+    JCheckBox box = new BooleanCellRenderer().getCheckBox();
+    setDefaultEditor(Boolean.class, new DefaultCellEditor(box));
   }
-
+  
+  /**
+   * Create the default renderers for this table. The default method creates
+   * renderers for Boolean, Number, Double, Date, Icon and ImageIcon.
+   *
+   */
   protected void createDefaultRenderers()
   {
     setDefaultRenderer(Boolean.class, new BooleanCellRenderer());
@@ -1705,6 +1760,7 @@ public class JTable
     setDefaultRenderer(Double.class, new FloatCellRenderer());
     setDefaultRenderer(Date.class, new DateCellRenderer());
     setDefaultRenderer(Icon.class, new IconCellRenderer());
+    setDefaultRenderer(ImageIcon.class, new IconCellRenderer());    
   }
   
   /**
@@ -1714,112 +1770,148 @@ public class JTable
   {
     return new JScrollPane(table);
   }
-
+  
+  /**
+   * Create the default table column model that is used if the user-defined
+   * column model is not provided. The default method creates
+   * {@link DefaultTableColumnModel}.
+   * 
+   * @return the created table column model.
+   */
   protected TableColumnModel createDefaultColumnModel()
   {
     return new DefaultTableColumnModel();
   }
 
+  /**
+   * Create the default table data model that is used if the user-defined
+   * data model is not provided. The default method creates
+   * {@link DefaultTableModel}.
+   * 
+   * @return the created table data model.
+   */
   protected TableModel createDefaultDataModel()
   {
     return new DefaultTableModel();
   }
 
+  /**
+   * Create the default table selection model that is used if the user-defined
+   * selection model is not provided. The default method creates
+   * {@link DefaultListSelectionModel}.
+   * 
+   * @return the created table data model.
+   */
   protected ListSelectionModel createDefaultSelectionModel()
   {
     return new DefaultListSelectionModel();
   }
-
+  
+  /**
+   * Create the default table header, if the user - defined table header is not
+   * provided.
+   * 
+   * @return the default table header.
+   */
   protected JTableHeader createDefaultTableHeader()
   {
     return new JTableHeader(columnModel);
   }
- 
-  // listener support 
-
+  
+  /**
+   * Invoked when the column is added. Revalidates and repains the table.
+   */
   public void columnAdded (TableColumnModelEvent event)
   {
     revalidate();
     repaint();
   }
 
+  /**
+   * Invoked when the column margin is changed. 
+   * Revalidates and repains the table.
+   */
   public void columnMarginChanged (ChangeEvent event)
   {
     revalidate();
     repaint();
   }
 
+  /**
+   * Invoked when the column is moved. Revalidates and repains the table.
+   */
   public void columnMoved (TableColumnModelEvent event)
   {
     revalidate();
     repaint();
   }
 
+  /**
+   * Invoked when the column is removed. Revalidates and repains the table.
+   */
   public void columnRemoved (TableColumnModelEvent event)
   {
     revalidate();
     repaint();
   }
   
+  /**
+   * Invoked when the the column selection changes.
+   */
   public void columnSelectionChanged (ListSelectionEvent event)
   {
     repaint();
   }
-
+  
+  /**
+   * Invoked when the editing is cancelled.
+   */
   public void editingCanceled (ChangeEvent event)
   {
-    if (rowBeingEdited > -1 && columnBeingEdited > -1)
+    if (editorComp!=null)
       {
-        if (getValueAt(rowBeingEdited, columnBeingEdited) instanceof JTextField)
-          {
-            remove ((Component)getValueAt(rowBeingEdited, columnBeingEdited));
-            setValueAt(oldCellValue, rowBeingEdited, columnBeingEdited);
-          }
-        rowBeingEdited = -1;
-        columnBeingEdited = -1;
+        remove(editorComp);
+        repaint(editorComp.getBounds());        
+        editorComp = null;
       }
-    editorTimer.stop();
-    editorComp = null;
-    cellEditor = null;
-    requestFocusInWindow(false);
-    repaint();
   }
-
+  
+  /**
+   * Finish the current editing session and update the table with the
+   * new value by calling {@link #setValueAt}.
+   * 
+   * @param event the change event
+   */
   public void editingStopped (ChangeEvent event)
   {
-    if (rowBeingEdited > -1 && columnBeingEdited > -1)
+    if (editorComp!=null)
       {
-        if (getValueAt(rowBeingEdited, columnBeingEdited) instanceof JTextField)
-          {
-            remove((Component)getValueAt(rowBeingEdited, columnBeingEdited));
-            setValueAt(((JTextField)editorComp).getText(), 
-                       rowBeingEdited, columnBeingEdited);
-          }
-        rowBeingEdited = -1;
-        columnBeingEdited = -1;
+        remove(editorComp);        
+        setValueAt(cellEditor.getCellEditorValue(), editingRow, editingColumn);            
+        repaint(editorComp.getBounds());
+        editorComp = null;
       }
-    editorTimer.stop();
-    editorComp = null;
-    cellEditor = null;
-    requestFocusInWindow(false);
-    repaint();
+    requestFocusInWindow();
   }
 
+  /**
+   * Invoked when the table changes.
+   * <code>null</code> means everything changed.
+   */
   public void tableChanged (TableModelEvent event)
   {
     // update the column model from the table model if the structure has
     // changed and the flag autoCreateColumnsFromModel is set
-    if ((event.getFirstRow() ==TableModelEvent.HEADER_ROW)
-        && autoCreateColumnsFromModel)
-
+    if ((event == null || (event.getFirstRow() == TableModelEvent.HEADER_ROW))
+	&& autoCreateColumnsFromModel)
       createDefaultColumnsFromModel();
 
     // If the structure changes, we need to revalidate, since that might
     // affect the size parameters of the JTable. Otherwise we only need
     // to perform a repaint to update the view.
-    if (event.getType() == TableModelEvent.INSERT)
+    if (event == null || event.getType() == TableModelEvent.INSERT)
       revalidate();
-    else if (event.getType() == TableModelEvent.DELETE)
+    if (event == null || event.getType() == TableModelEvent.DELETE)
       {
         if (dataModel.getRowCount() == 0)
           clearSelection();
@@ -1828,6 +1920,9 @@ public class JTable
     repaint();
   }
 
+  /**
+   * Invoked when another table row is selected.
+   */
   public void valueChanged (ListSelectionEvent event)
   {
     repaint();
@@ -1863,29 +1958,30 @@ public class JTable
   }
 
   /**
-   * Returns index of the row that contains specified point or 
-   * -1 if this table doesn't contain this point.
-   *
-   * @param point point to identify the row
-   * @return index of the row that contains specified point or 
-   * -1 if this table doesn't contain this point.
+   * Returns index of the row that contains specified point or -1 if this table
+   * doesn't contain this point.
+   * 
+   * @param point
+   *          point to identify the row
+   * @return index of the row that contains specified point or -1 if this table
+   *         doesn't contain this point.
    */
   public int rowAtPoint(Point point)
   {
     if (point != null)
       {
         int nrows = getRowCount();
-        int height = getRowHeight();
+        int height = getRowHeight() + getRowMargin();
         int y = point.y;
 
-        for (int i = 0; i < nrows; ++i)
-          {
-            if (0 <= y && y < height)
-              return i;
-            y -= height;
-          }
+        int r = y / height;
+        if (r < 0 || r >= nrows)
+          return -1;
+        else
+          return r;
       }
-    return -1;
+    else
+      return -1;
   }
 
   /** 
@@ -1908,6 +2004,9 @@ public class JTable
                                int column,
                                boolean includeSpacing)
   {
+    // moveToCellBeingEdited expects the cached value and clones it.
+    // If the caching would be removed later, uplate moveToCellBeingEdited
+    // as well.
     int height = getRowHeight(row);
     int width = columnModel.getColumn(column).getWidth();
     int x_gap = columnModel.getColumnMargin();
@@ -1923,9 +2022,10 @@ public class JTable
       x += columnModel.getColumn(i).getWidth();
 
     if (includeSpacing)
-      return new Rectangle(x, y, width, height);
+      rectCache.setBounds(x, y, width, height +y_gap);
     else
-      return new Rectangle(x, y, width - x_gap, height - y_gap);
+      rectCache.setBounds(x, y, width - x_gap, height);
+    return rectCache;
   }
 
   public void clearSelection()
@@ -2008,44 +2108,88 @@ public class JTable
   }
 
 
+  /**
+   * Get the cell editor, suitable for editing the given cell. The default
+   * method requests the editor from the column model. If the column model does
+   * not provide the editor, the call is forwarded to the
+   * {@link #getDefaultEditor(Class)} with the parameter, obtained from
+   * {@link TableModel#getColumnClass(int)}.
+   * 
+   * @param row the cell row
+   * @param column the cell column
+   * @return the editor to edit that cell
+   */
   public TableCellEditor getCellEditor(int row, int column)
   {
     TableCellEditor editor = columnModel.getColumn(column).getCellEditor();
 
     if (editor == null)
-      editor = getDefaultEditor(dataModel.getColumnClass(column));
-    
+      {
+        int mcolumn = convertColumnIndexToModel(column);
+        editor = getDefaultEditor(dataModel.getColumnClass(mcolumn));
+      }
+
     return editor;
   }
-
+  
+  /**
+   * Get the default editor for editing values of the given type
+   * (String, Boolean and so on).
+   * 
+   * @param columnClass the class of the value that will be edited.
+   * 
+   * @return the editor, suitable for editing this data type
+   */
   public TableCellEditor getDefaultEditor(Class columnClass)
   {
     if (defaultEditorsByColumnClass.containsKey(columnClass))
       return (TableCellEditor) defaultEditorsByColumnClass.get(columnClass);
     else
       {
-	// FIXME: We have at least an editor for Object.class in our defaults.
-        TableCellEditor r = new DefaultCellEditor(new JTextField());
+        JTextField t = new TableTextField();        
+        TableCellEditor r = new DefaultCellEditor(t);
         defaultEditorsByColumnClass.put(columnClass, r);
         return r;
       }
   }
-
+  
+  /**
+   * Get the cell renderer for rendering the given cell.
+   * 
+   * @param row the cell row
+   * @param column the cell column
+   * @return the cell renderer to render that cell.
+   */
   public TableCellRenderer getCellRenderer(int row, int column)
   {
-    TableCellRenderer renderer =
-      columnModel.getColumn(column).getCellRenderer();
+    TableCellRenderer renderer = columnModel.getColumn(column).getCellRenderer();
     if (renderer == null)
-      renderer = getDefaultRenderer(getColumnClass(column));
-
+      {
+        int mcolumn = convertColumnIndexToModel(column);
+        renderer = getDefaultRenderer(dataModel.getColumnClass(mcolumn));
+      }
     return renderer;
   }
-
+  
+  /**
+   * Set default renderer for rendering the given data type.
+   * 
+   * @param columnClass the data type (String, Boolean and so on) that must be
+   *          rendered.
+   * @param rend the renderer that will rend this data type
+   */
   public void setDefaultRenderer(Class columnClass, TableCellRenderer rend)
   {
     defaultRenderersByColumnClass.put(columnClass, rend);
   }
-
+  
+  /**
+   * Get the default renderer for rendering the given data type.
+   * 
+   * @param columnClass the data that must be rendered
+   * 
+   * @return the appropriate defauld renderer for rendering that data type.
+   */
   public TableCellRenderer getDefaultRenderer(Class columnClass)
   {
     if (defaultRenderersByColumnClass.containsKey(columnClass))
@@ -2057,7 +2201,19 @@ public class JTable
         return r;
       }
   }
-
+  
+  /**
+   * Convert the table model index into the table column number.
+   * The model number need not match the real column position. The columns
+   * may be rearranged by the user with mouse at any time by dragging the
+   * column headers.
+   *
+   * @param vc the column number (0=first).
+   * 
+   * @return the table column model index of this column.
+   * 
+   * @see TableColumn#getModelIndex()
+   */
   public int convertColumnIndexToModel(int vc)
   {
     if (vc < 0)
@@ -2065,7 +2221,19 @@ public class JTable
     else
       return columnModel.getColumn(vc).getModelIndex();
   }
-
+  
+  /**
+   * Convert the table column number to the table column model index.
+   * The model number need not match the real column position. The columns
+   * may be rearranged by the user with mouse at any time by dragging the
+   * column headers.
+   *  
+   * @param mc the table column index (0=first).
+   * 
+   * @return the table column number in the model
+   * 
+   * @see TableColumn#getModelIndex() 
+   */
   public int convertColumnIndexToView(int mc)
   {
     if (mc < 0)
@@ -2078,7 +2246,16 @@ public class JTable
       }
     return -1;
   }
-
+  
+  /**
+   * Prepare the renderer for rendering the given cell.
+   * 
+   * @param renderer the renderer being prepared
+   * @param row the row of the cell being rendered
+   * @param column the column of the cell being rendered
+   * 
+   * @return the component which .paint() method will paint the cell.
+   */
   public Component prepareRenderer(TableCellRenderer renderer,
                                    int row,
                                    int column)
@@ -2640,8 +2817,13 @@ public class JTable
     if (dataModel != null && columnModel != null)
       {
         int ncols = getColumnCount();
+        TableColumn column;
         for (int i = 0; i < ncols; ++i)
-          columnModel.getColumn(i).setHeaderValue(dataModel.getColumnName(i));
+          {
+            column = columnModel.getColumn(i); 
+            if (column.getHeaderValue()==null)
+              column.setHeaderValue(dataModel.getColumnName(i));
+          }
       }
 
     // according to Sun's spec we also have to set the tableHeader's
@@ -2899,10 +3081,36 @@ public class JTable
     for (int i = 0; i < cols.length; i++)
       {
         if (cols[i] != null)
-          cols[i].setWidth(cols[i].getWidth() + average);
+          cols[i].setWidth(cols[i].getPreferredWidth() + average);
       }
   }
-
+  
+  /**
+   * This distributes the superfluous width in a table, setting the width of the
+   * column being resized strictly to its preferred width.
+   */
+  private void distributeSpillResizing(TableColumn[] cols, int spill,
+                                       TableColumn resizeIt)
+  {
+    int average = 0;
+    if (cols.length != 1)
+      average = spill / (cols.length-1);
+    for (int i = 0; i < cols.length; i++)
+      {
+        if (cols[i] != null && !cols[i].equals(resizeIt))
+          cols[i].setWidth(cols[i].getPreferredWidth() + average);
+      }
+    resizeIt.setWidth(resizeIt.getPreferredWidth());
+  }  
+  
+  /**
+   * Set the widths of all columns, taking they preferred widths into
+   * consideration. The excess space, if any, will be distrubuted between
+   * all columns. This method also handles special cases when one of the
+   * collumns is currently being resized.
+   * 
+   * @see TableColumn#setPreferredWidth(int)
+   */
   public void doLayout()
   {
     TableColumn resizingColumn = null;
@@ -2911,7 +3119,6 @@ public class JTable
     if (ncols < 1)
       return;
 
-    int[] pref = new int[ncols];
     int prefSum = 0;
     int rCol = -1;
 
@@ -2921,8 +3128,7 @@ public class JTable
     for (int i = 0; i < ncols; ++i)
       {
         TableColumn col = columnModel.getColumn(i);
-        int p = col.getWidth();
-        pref[i] = p;
+        int p = col.getPreferredWidth();
         prefSum += p;
         if (resizingColumn == col)
           rCol = i;
@@ -2951,14 +3157,38 @@ public class JTable
             cols = new TableColumn[ncols];
             for (int i = 0; i < ncols; ++i)
               cols[i] = columnModel.getColumn(i);
-            distributeSpill(cols, spill);
+            distributeSpillResizing(cols, spill, resizingColumn);
             break;
 
           case AUTO_RESIZE_SUBSEQUENT_COLUMNS:
-            cols = new TableColumn[ncols];
-            for (int i = rCol; i < ncols; ++i)
-              cols[i] = columnModel.getColumn(i);
-            distributeSpill(cols, spill);
+            
+            // Subtract the width of the non-resized columns from the spill.
+            int w = 0;
+            int wp = 0;
+            TableColumn column;
+            for (int i = 0; i < rCol; i++)
+              {
+                column = columnModel.getColumn(i);
+                w += column.getWidth();
+                wp+= column.getPreferredWidth();
+              }
+
+            // The number of columns right from the column being resized.
+            int n = ncols-rCol-1;
+            if (n>0)
+              {
+                // If there are any columns on the right sied to resize.
+                spill = (getWidth()-w) - (prefSum-wp);
+                int average = spill / n;
+            
+                 // For all columns right from the column being resized:
+                for (int i = rCol+1; i < ncols; i++)
+                  {
+                    column = columnModel.getColumn(i);
+                    column.setWidth(column.getPreferredWidth() + average);
+                  }
+              }
+            resizingColumn.setWidth(resizingColumn.getPreferredWidth());
             break;
 
           case AUTO_RESIZE_OFF:
@@ -2974,6 +3204,16 @@ public class JTable
           cols[i] = columnModel.getColumn(i);
         distributeSpill(cols, spill);        
       }
+    
+    if (editorComp!=null)
+      moveToCellBeingEdited(editorComp);
+    
+    // Repaint fixes the invalid view after the first keystroke if the cell
+    // editing is started immediately after the program start or cell
+    // resizing. 
+    repaint();
+    if (tableHeader!=null)
+      tableHeader.repaint();
   }
   
   /**
@@ -2983,7 +3223,7 @@ public class JTable
   {
     doLayout();
   }
-
+  
   /**
    * Obsolete since JDK 1.4. Please use <code>doLayout()</code>.
    */
@@ -3023,48 +3263,109 @@ public class JTable
     revalidate();
     repaint();
   }
-
+  
+  /**
+   * Get the class (datatype) of the column. The cells are rendered and edited
+   * differently, depending from they data type.
+   * 
+   * @param column the column (not the model index).
+   * 
+   * @return the class, defining data type of that column (String.class for
+   * String, Boolean.class for boolean and so on).
+   */
   public Class getColumnClass(int column)
   {
-    return getModel().getColumnClass(column);
+    return getModel().getColumnClass(convertColumnIndexToModel(column));
   }
   
+  /**
+   * Get the name of the column. If the column has the column identifier set,
+   * the return value is the result of the .toString() method call on that
+   * identifier. If the identifier is not explicitly set, the returned value
+   * is calculated by 
+   * {@link javax.swing.table.AbstractTableModel#getColumnName(int)}.
+   * 
+   * @param column the column
+   * 
+   * @return the name of that column.
+   */
   public String getColumnName(int column)
   {
     int modelColumn = columnModel.getColumn(column).getModelIndex();
     return dataModel.getColumnName(modelColumn);
   }
-
+  
+  /**
+   * Get the column, currently being edited
+   * 
+   * @return the column, currently being edited.
+   */
   public int getEditingColumn()
   {
     return editingColumn;
   }
-
+  
+  /**
+   * Set the column, currently being edited
+   * 
+   * @param column the column, currently being edited.
+   */
   public void setEditingColumn(int column)
   {
     editingColumn = column;
   }
   
+  /**
+   * Get the row currently being edited.
+   * 
+   * @return the row, currently being edited.
+   */
   public int getEditingRow()
   {
     return editingRow;
   }
-
-  public void setEditingRow(int column)
+  
+  /**
+   * Set the row currently being edited.
+   * 
+   * @param row the row, that will be edited
+   */
+  public void setEditingRow(int row)
   {
-    editingRow = column;
+    editingRow = row;
   }
   
+  /**
+   * Get the editor component that is currently editing one of the cells
+   * 
+   * @return the editor component or null, if none of the cells is being
+   * edited.
+   */
   public Component getEditorComponent()
   {
     return editorComp;
   }
   
+  /**
+   * Check if one of the table cells is currently being edited.
+   * 
+   * @return true if there is a cell being edited.
+   */
   public boolean isEditing()
   {
     return editorComp != null;
   }
-
+  
+  /**
+   * Set the default editor for the given column class (column data type).
+   * By default, String is handled by text field and Boolean is handled by
+   * the check box.
+   *  
+   * @param columnClass the column data type
+   * @param editor the editor that will edit this data type
+   * 
+   * @see TableModel#getColumnClass(int)
+   */
   public void setDefaultEditor(Class columnClass, TableCellEditor editor)
   {
     if (editor != null)
@@ -3072,7 +3373,7 @@ public class JTable
     else
       defaultEditorsByColumnClass.remove(columnClass);
   }
-
+  
   public void addColumnSelectionInterval(int index0, int index1)
   {
     if ((index0 < 0 || index0 > (getColumnCount()-1)
@@ -3127,21 +3428,49 @@ public class JTable
     getSelectionModel().removeSelectionInterval(index0, index1);
   }
   
+  /**
+   * Checks if the given column is selected.
+   * 
+   * @param column the column
+   * 
+   * @return true if the column is selected (as reported by the selection
+   * model, associated with the column model), false otherwise.
+   */
   public boolean isColumnSelected(int column)
   {
     return getColumnModel().getSelectionModel().isSelectedIndex(column);
   }
-
+  
+  /**
+   * Checks if the given row is selected.
+   * 
+   * @param row the row
+   * 
+   * @return true if the row is selected (as reported by the selection model),
+   * false otherwise.
+   */
   public boolean isRowSelected(int row)
   {
     return getSelectionModel().isSelectedIndex(row);
   }
-
+  
+  /**
+   * Checks if the given cell is selected. The cell is selected if both
+   * the cell row and the cell column are selected.
+   * 
+   * @param row the cell row
+   * @param column the cell column
+   * 
+   * @return true if the cell is selected, false otherwise
+   */
   public boolean isCellSelected(int row, int column)
   {
     return isRowSelected(row) && isColumnSelected(column);
   }
   
+  /**
+   * Select all table.
+   */
   public void selectAll()
   {
     // rowLead and colLead store the current lead selection indices
@@ -3156,22 +3485,51 @@ public class JTable
     addColumnSelectionInterval(colLead,colLead);
     addRowSelectionInterval(rowLead, rowLead);
   }
-
+  
+  /**
+   * Get the cell value at the given position.
+   * 
+   * @param row the row to get the value
+   * @param column the actual column number (not the model index) 
+   * to get the value.
+   * 
+   * @return the cell value, as returned by model.
+   */
   public Object getValueAt(int row, int column)
   {
     return dataModel.getValueAt(row, convertColumnIndexToModel(column));
   }
-
+  
+  /**
+   * Set value for the cell at the given position. If the cell is not 
+   * editable, this method returns without action. The modified cell is
+   * repainted.
+   * 
+   * @param value the value to set
+   * @param row the row of the cell being modified
+   * @param column the column of the cell being modified
+   */
   public void setValueAt(Object value, int row, int column)
   {
     if (!isCellEditable(row, column))
       return;
-
-    if (value instanceof Component)
-      add((Component)value);
     dataModel.setValueAt(value, row, convertColumnIndexToModel(column));
+    
+    repaint(getCellRect(row, column, true));
   }
-
+  
+  /**
+   * Get table column with the given identified.
+   * 
+   * @param identifier the column identifier
+   * 
+   * @return the table column with this identifier
+   * 
+   * @throws IllegalArgumentException if <code>identifier</code> is 
+   *         <code>null</code> or there is no column with that identifier.
+   * 
+   * @see TableColumn#setIdentifier(Object)
+   */
   public TableColumn getColumn(Object identifier)
   {
     return columnModel.getColumn(columnModel.getColumnIndex(identifier));
@@ -3184,7 +3542,7 @@ public class JTable
    * @param row  the row index.
    * @param column  the column index.
    *
-   * @return A boolean.
+   * @return true if the cell is editable, false otherwise.
    */
   public boolean isCellEditable(int row, int column)
   {
@@ -3273,16 +3631,47 @@ public class JTable
    */
   public boolean editCellAt (int row, int column)
   {
-    oldCellValue = getValueAt(row, column);
+    // Complete the previous editing session, if still active.
+    if (isEditing())
+      editingStopped(new ChangeEvent("editingStopped"));
+    
+    editingRow = row;
+    editingColumn = column;
+
     setCellEditor(getCellEditor(row, column));
     editorComp = prepareEditor(cellEditor, row, column);
-    cellEditor.addCellEditorListener(this);
-    rowBeingEdited = row;
-    columnBeingEdited = column;
-    setValueAt(editorComp, row, column);
-    ((JTextField)editorComp).requestFocusInWindow(false);
-    editorTimer.start();
+    
+    // Remove the previous editor components, if present. Only one
+    // editor component at time is allowed in the table.
+    removeAll();
+    add(editorComp);    
+    moveToCellBeingEdited(editorComp);
+    scrollRectToVisible(editorComp.getBounds());
+    editorComp.requestFocusInWindow();
     return true;
+  }
+
+  /**
+   * Move the given component under the cell being edited. 
+   * The table must be in the editing mode.
+   * 
+   * @param component the component to move.
+   */
+  private void moveToCellBeingEdited(Component component)
+  {
+     Rectangle r = getCellRect(editingRow, editingColumn, true);
+     // Place the text field so that it would not touch the table
+     // border.
+     
+     // TODO Figure out while 5 and which constant should here be.
+     int xOffset = 5;
+     r.x+=xOffset;
+     r.y++;
+     r.width -=xOffset;
+     r.height --;
+     
+     // Clone rectangle as getCellRect returns the cached value.
+     component.setBounds(new Rectangle(r));
   }
 
   /**
@@ -3343,7 +3732,7 @@ public class JTable
     // TODO: Implement functionality of this property (in UI impl).
     surrendersFocusOnKeystroke = value;
   }
-
+  
   /**
    * Returns whether cell editors of this table should receive keyboard focus
    * when the editor is activated by a keystroke. The default setting is

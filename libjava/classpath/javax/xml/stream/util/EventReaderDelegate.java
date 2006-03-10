@@ -1,5 +1,5 @@
 /* EventReaderDelegate.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -82,8 +82,15 @@ public class EventReaderDelegate
     return parent;
   }
 
-  public XMLEvent next()
+  public XMLEvent nextEvent()
     throws XMLStreamException
+  {
+    if (parent != null)
+      return parent.nextEvent();
+    throw new NoSuchElementException();
+  }
+
+  public Object next()
   {
     if (parent != null)
       return parent.next();
@@ -91,7 +98,6 @@ public class EventReaderDelegate
   }
 
   public boolean hasNext()
-    throws XMLStreamException
   {
     if (parent != null)
       return parent.hasNext();
@@ -128,6 +134,18 @@ public class EventReaderDelegate
     if (parent != null)
       return parent.getProperty(name);
     throw new IllegalArgumentException(name);
+  }
+
+  public void close()
+    throws XMLStreamException
+  {
+    if (parent != null)
+      parent.close();
+  }
+
+  public void remove()
+  {
+    throw new UnsupportedOperationException();
   }
 
 }

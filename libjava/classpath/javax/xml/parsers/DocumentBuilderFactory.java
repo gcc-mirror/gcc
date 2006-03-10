@@ -309,6 +309,7 @@ public abstract class DocumentBuilderFactory
   /**
    * Returns the schema.
    * @see #setSchema
+   * @since 1.5
    */
   public Schema getSchema()
   {
@@ -318,6 +319,7 @@ public abstract class DocumentBuilderFactory
   /**
    * Sets the schema.
    * @see #getSchema
+   * @since 1.5
    */
   public void setSchema(Schema schema)
   {
@@ -327,7 +329,7 @@ public abstract class DocumentBuilderFactory
   /**
    * Indicates whether parsers obtained from this factory will be XInclude
    * aware.
-   * @since 1.3
+   * @since 1.5
    */
   public boolean isXIncludeAware()
   {
@@ -336,11 +338,32 @@ public abstract class DocumentBuilderFactory
 
   /**
    * Sets whether parsers obtained from this factory will be XInclude aware.
-   * @since 1.3
+   * @since 1.5
    */
   public void setXIncludeAware(boolean state)
   {
     xIncludeAware = state;
   }
+
+  /**
+   * Sets the value of the specified feature.
+   * @param name the feature name (URI)
+   * @param value whether to enable the feature or not
+   * @exception ParserConfigurationException if the feature is not
+   * supported.
+   * @since 1.5
+   */
+  public abstract void setFeature(String name, boolean value)
+    throws ParserConfigurationException;
+
+  /**
+   * Returns the value of the specified feature.
+   * @param name the feature name (URI)
+   * @exception ParserConfigurationException if the feature is not
+   * supported.
+   * @since 1.5
+   */
+  public abstract boolean getFeature(String name)
+    throws ParserConfigurationException;
   
 }

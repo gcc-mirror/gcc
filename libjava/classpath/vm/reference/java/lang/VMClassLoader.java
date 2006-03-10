@@ -170,7 +170,6 @@ final class VMClassLoader
    *
    * @param name the resource to find
    * @return an enumeration of resources
-   * @throws IOException if one occurs
    */
   static Enumeration getResources(String name)
   {

@@ -188,7 +188,7 @@ public class EventListenerList
 
   /**
    * Get a list of listenerType/listener pairs
-   * @returns Listener list
+   * @return Listener list
    */
   public Object[] getListenerList()
   {
@@ -214,7 +214,7 @@ public class EventListenerList
    * @throws NullPointerException if <code>c</code> is
    * <code>null</code>.
    *
-   * @returns an array of <code>c</code> whose elements are the
+   * @return an array of <code>c</code> whose elements are the
    * currently subscribed listeners of the specified type.  If there
    * are no such listeners, an empty array is returned.
    *

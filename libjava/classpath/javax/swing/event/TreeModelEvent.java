@@ -1,5 +1,5 @@
 /* TreeModelEvent.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,128 +46,123 @@ import javax.swing.tree.TreePath;
  * TreeModelEvent
  * @author Andrew Selkirk
  */
-public class TreeModelEvent extends EventObject {
+public class TreeModelEvent extends EventObject 
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * childIndices
+   */
+  protected int[] childIndices = null;
+
+  /**
+   * children
+   */
+  protected Object[] children = null;
+
+  /**
+   * path
+   */
+  protected TreePath path = null;
 	
-	/**
-	 * childIndices
-	 */
-	protected int[]		childIndices	= null;
+  /**
+   * Constructor TreeModelEvent
+   * @param source Source object
+   * @param path
+   */
+  public TreeModelEvent(Object source, Object[] path) 
+  {
+    super(source);
+    this.path = new TreePath(path);
+  } 
 
-	/**
-	 * children
-	 */
-	protected Object[]	children		= null;
+  /**
+   * Constructor TreeModelEvent
+   * @param source Source object
+   * @param path path
+   * @param childIndices Child indices
+   * @param children Children
+   */
+  public TreeModelEvent(Object source, Object[] path,
+      int[] childIndices, Object[] children) 
+  {
+    super(source);
+    this.path = new TreePath(path);
+    this.childIndices = childIndices;
+    this.children = children;
+  } 
 
-	/**
-	 * path
-	 */
-	protected TreePath	path			= null;
+  /**
+   * Constructor TreeModelEvent
+   * @param source Source object
+   * @param path Path
+   */
+  public TreeModelEvent(Object source, TreePath path) 
+  {
+    super(source);
+    this.path = path;
+  } 
 
+  /**
+   * Constructor TreeModelEvent
+   * @param source Source object
+   * @param path Path
+   * @param childIndices Child indices
+   * @param children Children
+   */
+  public TreeModelEvent(Object source, TreePath path,
+      int[] childIndices, Object[] children) 
+  {
+    super(source);
+    this.path = path;
+    this.childIndices = childIndices;
+    this.children = children;
+  } 
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-	
-	/**
-	 * Constructor TreeModelEvent
-	 * @param source Source object
-	 * @param path
-	 */
-	public TreeModelEvent(Object source, Object[] path) {
-		super(source);
-		this.path = new TreePath(path);
-	} // TreeModelEvent()
+  /**
+   * getChildIndices
+   * @return child indices
+   */
+  public int[] getChildIndices()  
+  {
+    return childIndices;
+  } 
 
-	/**
-	 * Constructor TreeModelEvent
-	 * @param source Source object
-	 * @param path path
-	 * @param childIndices Child indices
-	 * @param children Children
-	 */
-	public TreeModelEvent(Object source, Object[] path,
-						int[] childIndices, Object[] children) {
-		super(source);
-		this.path		 	= new TreePath(path);
-		this.childIndices	= childIndices;
-		this.children		= children;
-	} // TreeModelEvent()
+  /**
+   * getChildren
+   * @return children
+   */
+  public Object[] getChildren()  
+  {
+    return children;
+  } 
 
-	/**
-	 * Constructor TreeModelEvent
-	 * @param source Source object
-	 * @param path Path
-	 */
-	public TreeModelEvent(Object source, TreePath path) {
-		super(source);
-		this.path = path;
-	} // TreeModelEvent()
+  /**
+   * getPath
+   * @return path
+   */
+  public Object[] getPath() 
+  {
+    return path.getPath();
+  } 
 
-	/**
-	 * Constructor TreeModelEvent
-	 * @param source Source object
-	 * @param path Path
-	 * @param childIndices Child indices
-	 * @param children Children
-	 */
-	public TreeModelEvent(Object source, TreePath path,
-						int[] childIndices, Object[] children) {
-		super(source);
-		this.path		 	= path;
-		this.childIndices	= childIndices;
-		this.children		= children;
-	} // TreeModelEvent()
+  /**
+   * getTreePath
+   * @return TreePath
+   */
+  public TreePath getTreePath() 
+  {
+    return path;
+  } 
 
+  /**  
+   * String representation
+   * @return String representation
+   */
+  public String toString() 
+  {
+    return getClass() + " [Source: " + getSource() + ", TreePath: " 
+        + getTreePath() + ", Child Indicies: " + getChildIndices() 
+        + ", Children: " + getChildren() + ", Path: " + getPath() +"]";
+  } 
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * getChildIndices
-	 * @returns child indices
-	 */
-	public int[] getChildIndices() {
-		return childIndices;
-	} // getChildIndices()
-
-	/**
-	 * getChildren
-	 * @returns children
-	 */
-	public Object[] getChildren() {
-		return children;
-	} // getChildren()
-
-	/**
-	 * getPath
-	 * @returns path
-	 */
-	public Object[] getPath() {
-		return path.getPath();
-	} // getPath()
-
-	/**
-	 * getTreePath
-	 * @returns TreePath
-	 */
-	public TreePath getTreePath() {
-		return path;
-	} // getTreePath()
-
-	/**
-	 * String representation
-	 * @returns String representation
-	 */
-	public String toString() {
-		return getClass() + " [Source: " + getSource() + ", TreePath: " + getTreePath() +
-        ", Child Indicies: " + getChildIndices() + ", Children: " + getChildren() + 
-        ", Path: " + getPath() +"]";
-	} // toString()
-
-
-} // TreeModelEvent
+} 

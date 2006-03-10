@@ -486,7 +486,10 @@ public class DefaultTableModel extends AbstractTableModel
   }
 
   /**
-   * Returns the name of the specified column.
+   * Get the name of the column. If the column has the column identifier set,
+   * the return value is the result of the .toString() method call on that
+   * identifier. If the identifier is not explicitly set, the returned value
+   * is calculated by {@link AbstractTableModel#getColumnName(int)}.
    * 
    * @param column the column index.
    * 

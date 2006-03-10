@@ -270,8 +270,7 @@ public class WrappedPlainView extends BoxView implements TabExpander
   protected int calculateBreakPosition(int p0, int p1)
   {
     Container c = getContainer();
-    Rectangle alloc = c.isValid() ? c.getBounds()
-                                 : new Rectangle(c.getPreferredSize());
+    Rectangle alloc = new Rectangle(0, 0, getWidth(), getHeight());
     updateMetrics();
     try
       {

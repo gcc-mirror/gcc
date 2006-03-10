@@ -1,5 +1,5 @@
 /* OtherwiseNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,13 +54,9 @@ final class OtherwiseNode
   {
     TemplateNode ret = new OtherwiseNode();
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -70,25 +66,18 @@ final class OtherwiseNode
     throws TransformerException
   {
     if (children != null)
-      {
-        children.apply(stylesheet, mode,
-                       context, pos, len,
-                       parent, nextSibling);
-      }
+      children.apply(stylesheet, mode,
+                     context, pos, len,
+                     parent, nextSibling);
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
-    buf.append('[');
-    buf.append(']');
-    return buf.toString();
+    return "otherwise";
   }
   
 }

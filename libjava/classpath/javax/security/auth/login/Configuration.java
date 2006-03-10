@@ -1,5 +1,5 @@
 /* Configuration.java
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.security.auth.login;
 
+import gnu.javax.security.auth.login.GnuConfiguration;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Security;
@@ -46,7 +48,6 @@ import javax.security.auth.AuthPermission;
 
 public abstract class Configuration
 {
-
   // Fields.
   // -------------------------------------------------------------------------
 
@@ -108,11 +109,11 @@ public abstract class Configuration
             if (conf != null)
               config = (Configuration) Class.forName (conf).newInstance();
             else
-              config = new NullConfiguration();
+              config = new GnuConfiguration();
           }
         catch (Exception x)
           {
-            config = new NullConfiguration();
+            config = new GnuConfiguration();
           }
       }
     return config;

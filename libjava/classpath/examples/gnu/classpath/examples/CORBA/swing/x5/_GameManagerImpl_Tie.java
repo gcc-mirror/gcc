@@ -57,13 +57,8 @@ import org.omg.PortableServer.Servant;
  * Tie on the client side. The Game Manager methods contain the code for remote
  * invocation.
  * 
- * This class is normally generated with rmic from the {@link GameManagerImpl}:
- * 
- * <pre>
- *   rmic -iiop -poa -keep gnu.classpath.examples.CORBA.swing.x5.GameManagerImpl
- * </pre>
- * 
- * (the compiled package must be present in the current folder).
+ * This class is normally generated with rmic or grmic from the 
+ * {@link GameManagerImpl}. See tools/gnu/classpath/tools/giop/README.
  * 
  * In this example the class was manually edited and commented for better
  * understanding of functionality.

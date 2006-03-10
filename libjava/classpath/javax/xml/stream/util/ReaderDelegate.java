@@ -1,5 +1,5 @@
 /* ReaderDelegate.java -- 
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -186,10 +186,10 @@ public class ReaderDelegate
     return 0;
   }
 
-  public QName getAttributeQName(int index)
+  public QName getAttributeName(int index)
   {
     if (parent != null)
-      return parent.getAttributeQName(index);
+      return parent.getAttributeName(index);
     return null;
   }
 
@@ -207,10 +207,10 @@ public class ReaderDelegate
     return null;
   }
 
-  public String getAttributeName(int index)
+  public String getAttributeLocalName(int index)
   {
     if (parent != null)
-      return parent.getAttributeName(index);
+      return parent.getAttributeLocalName(index);
     return null;
   }
 

@@ -282,7 +282,7 @@ public final class ServiceFactory
    * An iterator over service providers that are listed in service
    * provider configuration files, which get passed as an Enumeration
    * of URLs. This is a helper class for {@link
-   * ServiceFactory#lookupProviders}.
+   * ServiceFactory#lookupProviders(Class, ClassLoader)}.
    *
    * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
    */
@@ -314,7 +314,8 @@ public final class ServiceFactory
      * The security context used when loading and initializing service
      * providers. We want to load and initialize all plug-in service
      * providers under the same security context, namely the one that
-     * was active when {@link #lookupProviders} has been called.
+     * was active when {@link #lookupProviders(Class, ClassLoader)} has
+     * been called.
      */
     private final AccessControlContext securityContext;
 
@@ -527,7 +528,7 @@ public final class ServiceFactory
    * framework. This call returns very quickly if no log message will
    * be produced, so there is not much overhead in the standard case.
    *
-   * @param the severity of the message, for instance {@link
+   * @param level the severity of the message, for instance {@link
    * Level#WARNING}.
    *
    * @param msg the log message, for instance <code>&#x201c;Could not

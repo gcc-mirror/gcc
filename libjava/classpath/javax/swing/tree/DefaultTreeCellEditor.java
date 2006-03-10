@@ -45,7 +45,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -60,26 +59,52 @@ import javax.swing.Icon;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
 /**
- * DefaultTreeCellEditor
+ * Participates in the tree cell editing.
+ * 
  * @author Andrew Selkirk
+ * @author Audrius Meskauskas
  */
 public class DefaultTreeCellEditor
   implements ActionListener, TreeCellEditor, TreeSelectionListener
 {
   /**
-   * EditorContainer
+   * The gap between the icon and editing component during editing. 
+   */
+  static int ICON_TEXT_GAP = 3;
+  
+  /**
+   * The left margin of the editing container (the gap between the tree and
+   * the editing component of the editing icon.
+   */
+  static int TREE_ICON_GAP = ICON_TEXT_GAP;
+  
+  /**
+   * The number of the fast mouse clicks, required to start the editing 
+   * session.
+   */
+  static int CLICK_COUNT_TO_START = 3;
+  
+  /**
+   * This container that appears on the tree during editing session.
+   * It contains the editing component displays various other editor - 
+   * specific parts like editing icon. 
    */
   public class EditorContainer extends Container
   {
+   /**
+    * Use v 1.5 serial version UID for interoperability.
+    */
+    static final long serialVersionUID = 6470339600449699810L;
+    
     /**
      * Creates an <code>EditorContainer</code> object.
      */
@@ -96,17 +121,11 @@ public class DefaultTreeCellEditor
     {
       // Do nothing here.
     }
-
-    /**
-     * Returns the preferred size for the Container.
-     * 
-     * @return Dimension of EditorContainer
-     */
-    public Dimension getPreferredSize()
+   
+    public void setBounds(Rectangle bounds)
     {
-      Dimension containerSize = super.getPreferredSize();
-      containerSize.width += DefaultTreeCellEditor.this.offset;
-      return containerSize;
+      super.setBounds(bounds);
+      doLayout();
     }
 
     /**
@@ -118,63 +137,68 @@ public class DefaultTreeCellEditor
      */
     public void paint(Graphics g)
     {
-      Rectangle tr = tree.getPathBounds(lastPath);
-      if (tr != null)
+      if (editingIcon != null)
         {
-          Insets i = ((DefaultTextField) editingComponent).getBorder()
-                                                  .getBorderInsets(this);
-          int textIconGap = 3;
-          tr.x -= i.left;
-          
-          // paints icon
-          if (editingIcon != null)
-            {
-              editingIcon.paintIcon(this, g, tr.x - editingIcon.
-                                              getIconWidth()/2, tr.y + i.top + i.bottom);
-              tr.x += editingIcon.getIconWidth()/2 + textIconGap;
-            }
-          
-          tr.width += offset;
-          
-          // paint background
-          g.translate(tr.x, tr.y);
-          editingComponent.setSize(new Dimension(tr.width, tr.height));
-          editingComponent.paint(g);
-          g.translate(-tr.x, -tr.y);
+          // From the previous version, the left margin is taken as half
+          // of the icon width.
+          editingIcon.paintIcon(this, g, TREE_ICON_GAP, 0);
         }
       super.paint(g);
     }
 
     /**
-     * Lays out this Container. If editing, the editor will be placed at offset
-     * in the x direction and 0 for y.
+     * Lays out this Container, moving the editor component to the left
+     * (leaving place for the icon).
      */
     public void doLayout()
     {
-      if (DefaultTreeCellEditor.this.tree.isEditing())
-        setLocation(offset, 0);
-      super.doLayout();
+      // The offset of the editing component.
+      int eOffset;
+
+      // Move the component to the left, leaving room for the editing icon:
+      if (editingIcon != null)
+        eOffset = TREE_ICON_GAP + editingIcon.getIconWidth() + ICON_TEXT_GAP;
+      else
+        eOffset = 0;
+
+      Rectangle bounds = getBounds();
+      Component c = getComponent(0);
+      c.setLocation(eOffset, 0);
+
+      // Span the editing component near over all window width.
+      c.setSize(bounds.width - eOffset - TREE_ICON_GAP, bounds.height);
+      /*
+       * @specnote the Sun sets some more narrow editing component width (it is
+       * not documented how does it is calculated). However as our text field is
+       * still not able to auto - scroll horizontally, replicating such strategy
+       * would prevent adding extra characters to the text being edited.
+       */
     }
   }
 
   /**
-   * DefaultTextField
+   * The default text field, used in the editing sessions.
    */
   public class DefaultTextField extends JTextField
   {
+   /**
+    * Use v 1.5 serial version UID for interoperability.
+    */
+    static final long serialVersionUID = -6629304544265300143L; 
+    
     /**
-     * border
+     * The border of the text field.
      */
     protected Border border;
 
     /**
      * Creates a <code>DefaultTextField</code> object.
      *
-     * @param border the border to use
+     * @param aBorder the border to use
      */
-    public DefaultTextField(Border border)
+    public DefaultTextField(Border aBorder)
     {
-      this.border = border;
+      border = aBorder;
     }
 
     /**
@@ -226,6 +250,31 @@ public class DefaultTreeCellEditor
                                fm.getHeight());
         }
       return renderer.getPreferredSize();
+    }
+  }
+  
+  /**
+   * Listens for the events from the realEditor.
+   */
+  class RealEditorListener implements CellEditorListener
+  {
+    /**
+     * The method is called when the editing has been cancelled.
+     * @param event unused
+     */
+    public void editingCanceled(ChangeEvent event)
+    {
+      cancelCellEditing();
+    }
+
+    /**
+     * The method is called after completing the editing session.
+     * 
+     * @param event unused
+     */
+    public void editingStopped(ChangeEvent event)
+    {
+      stopCellEditing();
     }
   }
 
@@ -334,6 +383,9 @@ public class DefaultTreeCellEditor
     
     if (editor == null)
       editor = createTreeCellEditor();
+    else
+      editor.addCellEditorListener(new RealEditorListener());
+    
     realEditor = editor;
     
     lastPath = tree.getLeadSelectionPath();
@@ -342,7 +394,6 @@ public class DefaultTreeCellEditor
     setFont(UIManager.getFont("Tree.font"));
     setBorderSelectionColor(UIManager.getColor("Tree.selectionBorderColor"));
     editingIcon = renderer.getIcon();
-    timer = new javax.swing.Timer(1200, this);
   }
 
   /**
@@ -371,7 +422,7 @@ public class DefaultTreeCellEditor
         else
           renderer.setIcon(renderer.getClosedIcon());
         editingIcon = renderer.getIcon();
-
+        
         editingComponent = getTreeCellEditorComponent(tree, val, true,
                                                       expanded, isLeaf, lastRow);
       }
@@ -470,20 +521,21 @@ public class DefaultTreeCellEditor
                                               boolean leaf, int row)
   {
     if (realEditor == null)
-      createTreeCellEditor();
+      realEditor = createTreeCellEditor();
 
     return realEditor.getTreeCellEditorComponent(tree, value, isSelected,
                                                         expanded, leaf, row);
   }
 
   /**
-   * Returns the value currently being edited.
+   * Returns the value currently being edited (requests it from the
+   * {@link realEditor}.
    * 
    * @return the value currently being edited
    */
   public Object getCellEditorValue()
   {
-    return editingComponent;
+    return realEditor.getCellEditorValue();
   }
   
   /**
@@ -503,12 +555,6 @@ public class DefaultTreeCellEditor
         prepareForEditing();
         return true;
       }
-    
-    // Cell may not be currently editable, but may need to start timer.
-    if (shouldStartEditingTimer(event))
-      startEditingTimer();
-    else if (timer.isRunning())
-      timer.stop();
     return false;
   }
 
@@ -532,9 +578,11 @@ public class DefaultTreeCellEditor
    */
   public boolean stopCellEditing()
   {
-    if (editingComponent != null && realEditor.stopCellEditing())
+    if (editingComponent != null)
       {
-        timer.stop();
+        stopEditingTimer();
+        tree.stopEditing();
+        editingComponent = null;
         return true;
       }
     return false;
@@ -548,15 +596,26 @@ public class DefaultTreeCellEditor
   {
     if (editingComponent != null)
       {
-        timer.stop();
-        realEditor.cancelCellEditing();
+        tree.cancelEditing();
+        editingComponent = null;
       }
+    stopEditingTimer();
+  }
+  
+  /**
+   * Stop the editing timer, if it is installed and running.
+   */
+  private void stopEditingTimer()
+  {
+    if (timer != null && timer.isRunning())
+      timer.stop();
   }
 
   /**
    * Adds a <code>CellEditorListener</code> object to this editor.
-   *
-   * @param listener the listener to add
+   * 
+   * @param listener
+   *          the listener to add
    */
   public void addCellEditorListener(CellEditorListener listener)
   {
@@ -595,21 +654,16 @@ public class DefaultTreeCellEditor
     tPath = lastPath;
     lastPath = e.getNewLeadSelectionPath();
     lastRow = tree.getRowForPath(lastPath);
-    configureEditingComponent(tree, renderer, realEditor);
+    stopCellEditing();
   }
   
   /**
-   * Messaged when the timer fires, this will start the editing session.
+   * Messaged when the timer fires.
    * 
    * @param e the event that characterizes the action.
    */
   public void actionPerformed(ActionEvent e)
   {
-    if (lastPath != null && tPath != null && tPath.equals(lastPath))
-      {
-        tree.startEditingAtPath(lastPath);
-        timer.stop();
-      }
   }
 
   /**
@@ -639,13 +693,11 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * Starts the editing timer.
+   * Starts the editing timer (if one installed). 
    */
   protected void startEditingTimer()
   {
-    if (timer == null)
-      timer = new javax.swing.Timer(1200, this);
-    if (!timer.isRunning())
+    if (timer != null)
       timer.start();
   }
 
@@ -713,6 +765,7 @@ public class DefaultTreeCellEditor
    */
   protected void prepareForEditing()
   {
+    editingContainer.removeAll();
     editingContainer.add(editingComponent);
   }
 
@@ -734,8 +787,11 @@ public class DefaultTreeCellEditor
    */
   protected TreeCellEditor createTreeCellEditor()
   {
-    realEditor = new DefaultCellEditor(new DefaultTreeCellEditor.DefaultTextField(
+    DefaultCellEditor editor = new DefaultCellEditor(new DefaultTreeCellEditor.DefaultTextField(
                                   UIManager.getBorder("Tree.selectionBorder")));
-    return realEditor;
+    editor.addCellEditorListener(new RealEditorListener());
+    editor.setClickCountToStart(CLICK_COUNT_TO_START);
+    realEditor = editor;
+    return editor;
   }
 }
