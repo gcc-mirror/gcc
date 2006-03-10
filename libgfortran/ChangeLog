@@ -1,3 +1,12 @@
+2006-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26499
+	* io/file_pos (st_rewind): Flush always.
+	* io/unix.c (fd_truncate): Return SUCCESS rather than FAILURE for
+	special files like /dev/null.
+	* io/transfer.c (st_write_done): Remove broken logic that prevented
+	calling fd_truncate.
+
 2006-03-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26554
