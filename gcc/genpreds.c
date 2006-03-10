@@ -904,7 +904,7 @@ write_insn_constraint_len (void)
   if (constraint_max_namelen == 1)
     return;
 
-  puts ("unsigned int\n"
+  puts ("size_t\n"
 	"insn_constraint_len (enum constraint_num c)\n"
 	"{\n"
 	"  switch (c)\n"
