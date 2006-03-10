@@ -22,7 +22,7 @@ details.  */
 #define SIGNAL_HANDLER(_name)						\
   static void _name (int /* _signal */, struct sigcontext *_sc)
 
-/* MD_FALBACK_FRAME_STATE_FOR takes care of special casing PC
+/* MD_FALLBACK_FRAME_STATE_FOR takes care of special casing PC
    before the faulting instruction, so we don't need to do anything
    here.  */
 
