@@ -30,10 +30,9 @@ bool gfc_array_allocate (gfc_se *, gfc_expr *, tree);
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,
 					  gfc_se *, gfc_array_spec *);
 
-/* Generate code to allocate a temporary array.  */
-tree gfc_trans_allocate_temp_array (stmtblock_t *, stmtblock_t *,
-                                    gfc_loopinfo *, gfc_ss_info *, tree, bool,
-                                    bool);
+/* Generate code to create a temporary array.  */
+tree gfc_trans_create_temp_array (stmtblock_t *, stmtblock_t *, gfc_loopinfo *,
+                                  gfc_ss_info *, tree, bool, bool, bool);
 
 /* Generate function entry code for allocation of compiler allocated array
    variables.  */

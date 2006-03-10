@@ -558,20 +558,24 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 }
 
 
-/* Generate code to allocate and initialize the descriptor for a temporary
+/* Generate code to create and initialize the descriptor for a temporary
    array.  This is used for both temporaries needed by the scalarizer, and
-   functions returning arrays.  Adjusts the loop variables to be zero-based,
-   and calculates the loop bounds for callee allocated arrays.
-   Also fills in the descriptor, data and offset fields of info if known.
-   Returns the size of the array, or NULL for a callee allocated array.
+   functions returning arrays.  Adjusts the loop variables to be
+   zero-based, and calculates the loop bounds for callee allocated arrays.
+   Allocate the array unless it's callee allocated (we have a callee
+   allocated array if 'callee_alloc' is true, or if loop->to[n] is
+   NULL_TREE for any n).  Also fills in the descriptor, data and offset
+   fields of info if known.  Returns the size of the array, or NULL for a
+   callee allocated array.
 
    PRE, POST, DYNAMIC and DEALLOC are as for gfc_trans_allocate_array_storage.
  */
 
 tree
-gfc_trans_allocate_temp_array (stmtblock_t * pre, stmtblock_t * post,
-                               gfc_loopinfo * loop, gfc_ss_info * info,
-                               tree eltype, bool dynamic, bool dealloc)
+gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
+			     gfc_loopinfo * loop, gfc_ss_info * info,
+			     tree eltype, bool dynamic, bool dealloc,
+			     bool callee_alloc)
 {
   tree type;
   tree desc;
@@ -662,12 +666,14 @@ gfc_trans_allocate_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   /* Get the size of the array.  */
   nelem = size;
-  if (size)
+  if (size && !callee_alloc)
     size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
 			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+  else
+    size = NULL_TREE;
 
   gfc_trans_allocate_array_storage (pre, post, info, size, nelem, dynamic,
-                                    dealloc);
+			            dealloc);
 
   if (info->dimen > loop->temp_dim)
     loop->temp_dim = info->dimen;
@@ -1417,8 +1423,8 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
       mpz_clear (size);
     }
 
-  gfc_trans_allocate_temp_array (&loop->pre, &loop->post, loop,
-                                 &ss->data.info, type, dynamic, true);
+  gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, &ss->data.info,
+			       type, dynamic, true, false);
 
   desc = ss->data.info.descriptor;
   offset = gfc_index_zero_node;
@@ -2834,9 +2840,9 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       memset (&loop->temp_ss->data.info, 0, sizeof (gfc_ss_info));
       loop->temp_ss->type = GFC_SS_SECTION;
       loop->temp_ss->data.info.dimen = n;
-      gfc_trans_allocate_temp_array (&loop->pre, &loop->post, loop,
-                                     &loop->temp_ss->data.info, tmp, false,
-                                     true);
+      gfc_trans_create_temp_array (&loop->pre, &loop->post, loop,
+				   &loop->temp_ss->data.info, tmp, false, true,
+				   false);
     }
 
   for (n = 0; n < loop->temp_dim; n++)

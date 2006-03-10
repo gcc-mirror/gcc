@@ -322,6 +322,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (pointer, external);
   conf (pointer, intrinsic);
   conf (pointer, elemental);
+  conf (allocatable, elemental);
 
   conf (target, external);
   conf (target, intrinsic);
@@ -337,8 +338,8 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 
   conf (allocatable, pointer);
   conf_std (allocatable, dummy, GFC_STD_F2003);
-  conf (allocatable, function);	/* TODO: Allowed in Fortran 200x.  */
-  conf (allocatable, result);	/* TODO: Allowed in Fortran 200x.  */
+  conf_std (allocatable, function, GFC_STD_F2003);
+  conf_std (allocatable, result, GFC_STD_F2003);
   conf (elemental, recursive);
 
   conf (in_common, dummy);
