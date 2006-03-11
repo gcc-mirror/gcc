@@ -5,7 +5,7 @@ program main
   implicit none
   integer :: i = 1
 
-  enum, bind (c)  ! { dg-warning "New in Fortran 2003" } 
+  enum, bind (c)
     enumerator :: sun, mon = 2    
     i = 2  ! { dg-error "Unexpected" }  
     enumerator :: wed = 1    

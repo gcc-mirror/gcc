@@ -1,3 +1,9 @@
+2006-03-11  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/26054
+	* options.c: Do not warn for Fortran 2003 features
+	by default.
+
 2006-03-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/26041
