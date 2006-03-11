@@ -1,3 +1,8 @@
+2006-03-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* crontab: Don't build snapshot for 3.4.x anymore.
+	* update_version_svn (IGNORE_BRANCHES): Add 3_4-branch.
+
 2006-01-12  Ben Elliston  <bje@au.ibm.com>
 
 	* update_version_svn (ADD_BRANCHES): Remove dfp-branch.
