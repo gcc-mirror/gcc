@@ -53,6 +53,7 @@ Boston, MA 02110-1301, USA.  */
 #include "ggc.h"
 #include "tree-gimple.h"
 #include "cfgloop.h"
+#include "alloc-pool.h"
 
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
@@ -2964,6 +2965,14 @@ gen_datalabel_ref (rtx sym)
 }
 
 
+static alloc_pool label_ref_list_pool;
+
+typedef struct label_ref_list_d
+{
+  rtx label;
+  struct label_ref_list_d *next;
+} *label_ref_list_t;
+
 /* The SH cannot load a large constant into a register, constants have to
    come from a pc relative load.  The reference of a pc relative load
    instruction must be less than 1k in front of the instruction.  This
@@ -3021,7 +3030,7 @@ typedef struct
 {
   rtx value;			/* Value in table.  */
   rtx label;			/* Label of value.  */
-  rtx wend;			/* End of window.  */
+  label_ref_list_t wend;	/* End of window.  */
   enum machine_mode mode;	/* Mode of value.  */
 
   /* True if this constant is accessed as part of a post-increment
@@ -3055,7 +3064,8 @@ static rtx
 add_constant (rtx x, enum machine_mode mode, rtx last_value)
 {
   int i;
-  rtx lab, new, ref, newref;
+  rtx lab, new;
+  label_ref_list_t ref, newref;
 
   /* First see if we've already got it.  */
   for (i = 0; i < pool_size; i++)
@@ -3081,9 +3091,10 @@ add_constant (rtx x, enum machine_mode mode, rtx last_value)
 		}
 	      if (lab && pool_window_label)
 		{
-		  newref = gen_rtx_LABEL_REF (VOIDmode, pool_window_label);
+		  newref = (label_ref_list_t) pool_alloc (label_ref_list_pool);
+		  newref->label = pool_window_label;
 		  ref = pool_vector[pool_window_last].wend;
-		  LABEL_NEXTREF (newref) = ref;
+		  newref->next = ref;
 		  pool_vector[pool_window_last].wend = newref;
 		}
 	      if (new)
@@ -3105,13 +3116,14 @@ add_constant (rtx x, enum machine_mode mode, rtx last_value)
     lab = gen_label_rtx ();
   pool_vector[pool_size].mode = mode;
   pool_vector[pool_size].label = lab;
-  pool_vector[pool_size].wend = NULL_RTX;
+  pool_vector[pool_size].wend = NULL;
   pool_vector[pool_size].part_of_sequence_p = (lab == 0);
   if (lab && pool_window_label)
     {
-      newref = gen_rtx_LABEL_REF (VOIDmode, pool_window_label);
+      newref = (label_ref_list_t) pool_alloc (label_ref_list_pool);
+      newref->label = pool_window_label;
       ref = pool_vector[pool_window_last].wend;
-      LABEL_NEXTREF (newref) = ref;
+      newref->next = ref;
       pool_vector[pool_window_last].wend = newref;
     }
   if (lab)
@@ -3133,7 +3145,8 @@ dump_table (rtx start, rtx barrier)
   rtx scan = barrier;
   int i;
   int need_align = 1;
-  rtx lab, ref;
+  rtx lab;
+  label_ref_list_t ref;
   int have_df = 0;
 
   /* Do two passes, first time dump out the HI sized constants.  */
@@ -3153,9 +3166,9 @@ dump_table (rtx start, rtx barrier)
 	    scan = emit_label_after (lab, scan);
 	  scan = emit_insn_after (gen_consttable_2 (p->value, const0_rtx),
 				  scan);
-	  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	  for (ref = p->wend; ref; ref = ref->next)
 	    {
-	      lab = XEXP (ref, 0);
+	      lab = ref->label;
 	      scan = emit_insn_after (gen_consttable_window_end (lab), scan);
 	    }
 	}
@@ -3203,9 +3216,9 @@ dump_table (rtx start, rtx barrier)
 		    emit_label_before (lab, align_insn);
 		  emit_insn_before (gen_consttable_4 (p->value, const0_rtx),
 				    align_insn);
-		  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+		  for (ref = p->wend; ref; ref = ref->next)
 		    {
-		      lab = XEXP (ref, 0);
+		      lab = ref->label;
 		      emit_insn_before (gen_consttable_window_end (lab),
 					align_insn);
 		    }
@@ -3241,9 +3254,9 @@ dump_table (rtx start, rtx barrier)
 
 	  if (p->mode != HImode)
 	    {
-	      for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	      for (ref = p->wend; ref; ref = ref->next)
 		{
-		  lab = XEXP (ref, 0);
+		  lab = ref->label;
 		  scan = emit_insn_after (gen_consttable_window_end (lab),
 					  scan);
 		}
@@ -3293,9 +3306,9 @@ dump_table (rtx start, rtx barrier)
 
       if (p->mode != HImode)
 	{
-	  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	  for (ref = p->wend; ref; ref = ref->next)
 	    {
-	      lab = XEXP (ref, 0);
+	      lab = ref->label;
 	      scan = emit_insn_after (gen_consttable_window_end (lab), scan);
 	    }
 	}
@@ -4517,9 +4530,12 @@ sh_reorg (void)
       mdep_reorg_phase = SH_SHORTEN_BRANCHES0;
       shorten_branches (first);
     }
+
   /* Scan the function looking for move instructions which have to be
      changed to pc-relative loads and insert the literal tables.  */
-
+  label_ref_list_pool = create_alloc_pool ("label references list",
+					   sizeof (struct label_ref_list_d),
+					   30);
   mdep_reorg_phase = SH_FIXUP_PCLOAD;
   for (insn = first, num_mova = 0; insn; insn = NEXT_INSN (insn))
     {
@@ -4700,7 +4716,8 @@ sh_reorg (void)
 	  insn = barrier;
 	}
     }
-
+  free_alloc_pool (label_ref_list_pool);
+  
   mdep_reorg_phase = SH_SHORTEN_BRANCHES1;
   INSN_ADDRESSES_FREE ();
   split_branches (first);
