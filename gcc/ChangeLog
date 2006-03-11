@@ -1,3 +1,8 @@
+2006-03-11  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* rtl.def (LABEL_REF): Remove the field for LABEL_NEXTREF.
+	* rtl.h (LABEL_NEXTREF): Remove field accessor.
+
 2006-03-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.h (frame_offset_overflow): Declare.

@@ -961,13 +961,6 @@ enum label_kind
    The chain eventually winds up at the CODE_LABEL: it is circular.  */
 #define LABEL_REFS(LABEL) XCEXP (LABEL, 5, CODE_LABEL)
 
-/* This is the field in the LABEL_REF through which the circular chain
-   of references to a particular label is linked.
-   FIXME: This chain is used in loop.c and in the SH backend.
-	  Since loop.c is about to go away, it could be a win to replace
-	  the uses of this in the SH backend with something else.  */
-#define LABEL_NEXTREF(REF) XCEXP (REF, 1, LABEL_REF)
-
 /* For a REG rtx, REGNO extracts the register number.  ORIGINAL_REGNO holds
    the number the register originally had; for a pseudo register turned into
    a hard reg this will hold the old pseudo register number.  */
