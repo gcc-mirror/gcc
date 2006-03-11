@@ -97,6 +97,57 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 	return 0;
       return -2;
 
+    case EXPR_OP:
+      /* Intrinsic operators are the same if their operands are the same.  */
+      if (e1->value.op.operator != e2->value.op.operator)
+	return -2;
+      if (e1->value.op.op2 == 0)
+	{
+	  i = gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1);
+	  return i == 0 ? 0 : -2;
+	}
+      if (gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1) == 0
+	  && gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2) == 0)
+	return 0;
+      /* TODO Handle commutative binary operators here?  */
+      return -2;
+
+    case EXPR_FUNCTION:
+      /* We can only compare calls to the same intrinsic function.  */
+      if (e1->value.function.isym == 0
+	  || e2->value.function.isym == 0
+	  || e1->value.function.isym != e2->value.function.isym)
+	return -2;
+
+      /* We should list the "constant" intrinsic functions.  Those
+	 without side-effects that provide equal results given equal
+	 argument lists.  */
+      switch (e1->value.function.isym->generic_id)
+	{
+	case GFC_ISYM_CONVERSION:
+	case GFC_ISYM_REAL:
+	case GFC_ISYM_LOGICAL:
+	case GFC_ISYM_DBLE:
+	  break;
+
+	default:
+	  return -2;
+	}
+
+      /* Compare the argument lists for equality.  */
+      {
+	gfc_actual_arglist *args1 = e1->value.function.actual;
+	gfc_actual_arglist *args2 = e2->value.function.actual;
+	while (args1 && args2)
+	  {
+	    if (gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
+	      return -2;
+	    args1 = args1->next;
+	    args2 = args2->next;
+	  }
+	return (args1 || args2) ? -2 : 0;
+      }
+      
     default:
       return -2;
     }

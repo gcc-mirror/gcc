@@ -1,20 +1,27 @@
+2003-03-11  Roger Sayle  <roger@eyesopen.com>
+
+	* dependency.c (gfc_dep_compare_expr) <EXPR_OP>: Allow unary and
+	binary operators to compare equal if their operands are equal.
+	<EXPR_FUNCTION>: Allow "constant" intrinsic conversion functions
+	to compare equal, if their operands are equal.
+
 2006-03-11  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* symbol.c (check_conflict): Allow allocatable function results,
-	  except for elemental functions.
+	except for elemental functions.
 	* trans-array.c (gfc_trans_allocate_temp_array): Rename to ...
-	  (gfc_trans_create_temp_array): ... this, and add new argument
-	  callee_alloc.
-	  (gfc_trans_array_constructor, gfc_conv_loop_setup): Update call
-	  to gfc_trans_allocate_temp_array.
+	(gfc_trans_create_temp_array): ... this, and add new argument
+	callee_alloc.
+	(gfc_trans_array_constructor, gfc_conv_loop_setup): Update call
+	to gfc_trans_allocate_temp_array.
 	* trans-array.h (gfc_trans_allocate_temp_array): Update prototype.
 	* trans-expr.c (gfc_conv_function_call): Use new arg of
-	  gfc_trans_create_temp_array avoid pre-allocation of temporary
-	  result variables of pointer AND allocatable functions.
-	  (gfc_trans_arrayfunc_assign): Return NULL for allocatable
-	  functions.
+	gfc_trans_create_temp_array avoid pre-allocation of temporary
+	result variables of pointer AND allocatable functions.
+	(gfc_trans_arrayfunc_assign): Return NULL for allocatable
+	functions.
 	* resolve.c (resolve_symbol): Copy value of 'allocatable' attribute
-	  from sym->result to sym.
+	from sym->result to sym.
 
 2006-03-09  Erik Edelmann  <eedelman@gcc.gnu.org>
 
