@@ -339,7 +339,6 @@ extern enum m32r_sdata m32r_sdata;
       if (SIZE)					\
 	{					\
 	  flag_omit_frame_pointer = TRUE;	\
-	  flag_strength_reduce = FALSE;		\
 	}					\
       						\
       SUBTARGET_OPTIMIZATION_OPTIONS		\
