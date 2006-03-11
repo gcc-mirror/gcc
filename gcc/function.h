@@ -534,6 +534,11 @@ extern void free_block_changes (void);
    the caller may have to do that.  */
 extern HOST_WIDE_INT get_frame_size (void);
 
+/* Issue an error message and return TRUE if frame OFFSET overflows in
+   the signed target pointer arithmetics for function FUNC.  Otherwise
+   return FALSE.  */
+extern bool frame_offset_overflow (HOST_WIDE_INT, tree);
+
 /* A pointer to a function to create target specific, per-function
    data structures.  */
 extern struct machine_function * (*init_machine_status) (void);

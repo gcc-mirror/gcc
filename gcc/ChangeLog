@@ -1,3 +1,10 @@
+2006-03-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.h (frame_offset_overflow): Declare.
+	* function.c (frame_offset_overflow): New function.
+	(assign_stack_local_1): Call it to detect that the offset overflows.
+	* cfgexpand.c (alloc_stack_frame_space): Likewise.
+
 2006-03-11  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* config/sh/sh.c: Include alloc-pool.h.
