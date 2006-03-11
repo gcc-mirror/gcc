@@ -692,17 +692,6 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	{
 	case EQ:
 	  if (GET_CODE (y) == CONST_INT
-	      && UINT16_P (INTVAL (y))		/* Reg equal to small const.  */
-	      && y != const0_rtx)
-	    {
-	      rtx tmp = gen_reg_rtx (SImode);		
-	      
-	      emit_insn (gen_xorsi3 (tmp, x, GEN_INT (INTVAL (y))));
-	      x = tmp;
-	      y = const0_rtx;
-	    }
-#if 0 /* Removed for miss optimizing at simplify_relational_operation().  */
-	  else if (GET_CODE (y) == CONST_INT
 	      && CMP_INT16_P (INTVAL (y))		/* Reg equal to small const.  */
 	      && y != const0_rtx)
 	    {
@@ -712,7 +701,6 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	      x = tmp;
 	      y = const0_rtx;
 	    }
-#endif
 	  else if (CONSTANT_P (y))			/* Reg equal to const.  */
 	    {
 	      rtx tmp = force_reg (GET_MODE (x), y);
@@ -827,17 +815,6 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
       /* Reg/smallconst equal comparison.  */
       if (compare_code == EQ
 	  && GET_CODE (y) == CONST_INT
-	  && UINT16_P (INTVAL (y)))
-	{
-	  rtx tmp = gen_reg_rtx (SImode);
-
-	  emit_insn (gen_xorsi3 (tmp, x, GEN_INT (INTVAL (y))));
-	  return gen_rtx_fmt_ee (code, CCmode, tmp, const0_rtx);
-	}
-      
-#if 0 /* Removed for miss optimizing at simplify_relational_operation().  */
-      if (compare_code == EQ
-	  && GET_CODE (y) == CONST_INT
 	  && CMP_INT16_P (INTVAL (y)))
 	{
 	  rtx tmp = gen_reg_rtx (SImode);
@@ -845,7 +822,6 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	  emit_insn (gen_addsi3 (tmp, x, GEN_INT (-INTVAL (y))));
 	  return gen_rtx_fmt_ee (code, CCmode, tmp, const0_rtx);
 	}
-#endif
       
       /* Reg/const equal comparison.  */
       if (compare_code == EQ
