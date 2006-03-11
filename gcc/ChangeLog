@@ -1,3 +1,15 @@
+2006-03-11  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* config/sh/sh.c: Include alloc-pool.h.
+	(label_ref_list_pool): New alloc pool.
+	(label_ref_list_t): New type for lists of labels.
+	(struct pool_node): Make wend a label_ref_list_t.
+	(add_constant): Use the new type, eradicate LABEL_NEXTREF
+	references.
+	(dump_table): Likewise.
+	(sh_reorg): Set up the alloc pool before using add_constant and
+	dump_table, and destroy it when finishing.
+
 2006-03-11  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c: Remove redundant comment.
