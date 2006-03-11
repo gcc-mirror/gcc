@@ -1160,9 +1160,6 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 #define TARGET_ATTRIBUTE_TABLE mips_attribute_table
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
-/* With -mabicalls (which is the default on GNU/Linux),
-   PIC_FUNCTION_ADDR_REGNUM is live on function entry and is to
-   initialize $28, which is PIC_OFFSET_TABLE_REGNUM.  */
 #define TARGET_EXTRA_LIVE_ON_ENTRY mips_extra_live_on_entry
 
 struct gcc_target targetm = TARGET_INITIALIZER;
