@@ -192,6 +192,9 @@ alloc_stack_frame_space (HOST_WIDE_INT size, HOST_WIDE_INT align)
     }
   frame_offset = new_frame_offset;
 
+  if (frame_offset_overflow (frame_offset, cfun->decl))
+    frame_offset = offset = 0;
+
   return offset;
 }
 
