@@ -1,3 +1,10 @@
+2006-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2005-03-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test Directives): Describe cleanup-* procs.
+
 2006-03-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c: Bump version number.

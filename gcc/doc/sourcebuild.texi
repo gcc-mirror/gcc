@@ -1056,6 +1056,22 @@ The GCC testsuite defines the following directives to be used within
 @code{dg-final}.
 
 @table @code
+@item cleanup-coverage-files
+Removes coverage data files generated for this test.
+
+@item cleanup-repo-files
+Removes files generated for this test for @option{-frepo}.
+
+@item cleanup-rtl-dump @var{suffix}
+Removes RTL dump files generated for this test.
+
+@item cleanup-tree-dump @var{suffix}
+Removes tree dump files matching @var{suffix} which were generated for
+this test.
+
+@item cleanup-saved-temps
+Removes files for the current test which were kept for @option{--save-temps}.
+
 @item scan-file @var{filename} @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if @var{regexp} matches text in @var{filename}.
 
