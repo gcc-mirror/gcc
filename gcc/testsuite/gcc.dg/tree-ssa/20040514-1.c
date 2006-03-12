@@ -16,3 +16,4 @@ end:
 
 /* Should have no ifs left after straightening.  */
 /* { dg-final { scan-tree-dump-times "if " 0 "phiopt1"} } */
+/* { dg-final { cleanup-tree-dump "phiopt1" } } */

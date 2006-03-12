@@ -18,3 +18,5 @@ a1 = { 100, 200, 300, 400 };
 vector_float f1 = { 1.0, 2.0, 3.0, 4.0 };  
 vector_float_foo = { 3.0, 4.0, 5.0, 6.0 };
 vector_float_bar_eq { 8.0, 7.0, 6.0, 5.0 };
+
+/* { dg-final { cleanup-saved-temps } } */

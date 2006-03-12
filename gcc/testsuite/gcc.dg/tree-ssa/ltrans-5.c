@@ -16,3 +16,4 @@ int main(void)
 
 /* { dg-final { scan-tree-dump-times "Linear expression:  constant: 1   invariants:   denominator: 1" 1 "ltrans" } } */
 /* { dg-final { scan-tree-dump-times "transformed loop" 1 "ltrans"} } */ 
+/* { dg-final { cleanup-tree-dump "ltrans" } } */

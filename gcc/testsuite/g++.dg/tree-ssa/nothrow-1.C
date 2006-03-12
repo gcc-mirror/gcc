@@ -17,3 +17,4 @@ void q()
 }
 /* We shouldnotice nothrow attribute.  */
 /* { dg-final { scan-tree-dump-times "exception" 0 "cfg"} } */
+/* { dg-final { cleanup-tree-dump "cfg" } } */

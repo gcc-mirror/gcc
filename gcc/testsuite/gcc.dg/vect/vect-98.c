@@ -38,3 +38,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "not vectorized: complicated access pattern" 1 "vect" } } */
+/* { dg-final { cleanup-tree-dump "vect" } } */

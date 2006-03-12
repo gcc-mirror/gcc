@@ -22,3 +22,4 @@ int foo(int N, int *res)
 }
 /* { dg-final { scan-tree-dump-times "transformed loop" 1 "ltrans"} {
    xfail *-*-*} } */ 
+/* { dg-final { cleanup-tree-dump "ltrans" } } */

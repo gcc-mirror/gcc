@@ -37,3 +37,4 @@ int main (void)
 /* Need misalignment support, or cgraph to delay emitting the arrays until
    after vectorization can force-align them.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { cleanup-tree-dump "vect" } } */

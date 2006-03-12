@@ -50,3 +50,4 @@ output_location_lists (die)
 
 /* There should be exactly one IF conditional, in output_location_lists.  */
 /* { dg-final { scan-tree-dump-times "if " 1 "dom3"} } */
+/* { dg-final { cleanup-tree-dump "dom3" } } */

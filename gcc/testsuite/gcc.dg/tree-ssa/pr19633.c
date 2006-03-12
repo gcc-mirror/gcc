@@ -23,3 +23,4 @@ foo (int a, struct T b)
 /* Make sure that .GLOBAL_VAR is not created when there are no
    clobbering calls.  */
 /* { dg-final { scan-tree-dump-times "GLOBAL_VAR" 0 "ssa"} } */
+/* { dg-final { cleanup-tree-dump "ssa" } } */

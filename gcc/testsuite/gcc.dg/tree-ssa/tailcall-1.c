@@ -17,3 +17,4 @@ t(int a)
 	return r;
 }
 /* { dg-final { scan-tree-dump-times "Found tail call" 1 "tailc"} } */
+/* { dg-final { cleanup-tree-dump "tailc" } } */

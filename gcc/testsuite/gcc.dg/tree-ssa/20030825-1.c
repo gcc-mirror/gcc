@@ -26,3 +26,4 @@ xxx:;
 
 /* Bla should not be optimized away.  */
 /* { dg-final { scan-tree-dump-times "bla" 1 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

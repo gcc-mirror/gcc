@@ -10,4 +10,4 @@ int f(int i, int j)
 }
 
 /* { dg-final { scan-tree-dump-times "i == j" 0 "gimple" } } */
-
+/* { dg-final { cleanup-tree-dump "gimple" } } */

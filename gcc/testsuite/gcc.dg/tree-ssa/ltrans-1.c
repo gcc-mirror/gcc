@@ -20,3 +20,4 @@ int foo(int N, int *res)
 /* { dg-final { scan-tree-dump-times "converted loop nest to perfect
    loop nest" 1 "ltrans"} } */ 
 /* { dg-final { scan-tree-dump-times "transformed loop" 1 "ltrans"} } */ 
+/* { dg-final { cleanup-tree-dump "ltrans" } } */

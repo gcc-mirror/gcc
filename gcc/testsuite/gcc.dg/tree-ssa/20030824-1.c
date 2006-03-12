@@ -20,3 +20,4 @@ int foo (int x, int y)
 
 /* The addition should be optimized into 'y+x'.  */
 /* { dg-final { scan-tree-dump-times "\[xy\] \\+ \[xy]" 1 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

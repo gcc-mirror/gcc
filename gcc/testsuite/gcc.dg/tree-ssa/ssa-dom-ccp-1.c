@@ -15,3 +15,4 @@ ccp(int b)
 }
 /* We should propagate constant 4 into return.  */
 /* { dg-final { scan-tree-dump-times "Replaced.*with constant '4'" 1 "dom1"} } */
+/* { dg-final { cleanup-tree-dump "dom1" } } */

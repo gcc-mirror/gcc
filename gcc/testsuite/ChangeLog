@@ -1,3 +1,155 @@
+2006-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:	
+	2005-03-31  Janis Johnson  <janis187@us.ibm.com>
+	
+	* g++.dg/opt/nothrow1.C: Use cleanup-tree-dump.
+	g++.dg/tree-ssa/empty-1.C, g++.dg/tree-ssa/nothrow-1.C,
+	g++.dg/tree-ssa/pointer-reference-alias.C,
+	g++.dg/tree-ssa/pr15791-3.C, g++.dg/tree-ssa/pr15791-4.C,
+	g++.dg/tree-ssa/pr15791-5.C, g++.dg/tree-ssa/ssa-cast-1.C
+	g++.dg/tree-ssa/ssa-sra-1.C, g++.dg/tree-ssa/ssa-sra-2.C: Ditto
+	g++.dg/vect/pr19951.cc: Ditto.
+	* gcc.dg/builtins-43.c, gcc.dg/builtins-44.c, gcc.dg/builtins-45.c,
+	gcc.dg/builtins-47.c: Ditto.
+	* gcc.dg/pr15784-1.c, gcc.dg/pr15784-2.c, gcc.dg/pr15784-3.c,
+	gcc.dg/pr20115-1.c: Ditto.
+	* gcc.dg/tree-ssa/20030530-2.c,
+	gcc.dg/tree-ssa/20030611-1.c, gcc.dg/tree-ssa/20030703-1.c,
+	gcc.dg/tree-ssa/20030703-2.c, gcc.dg/tree-ssa/20030708-1.c,
+	gcc.dg/tree-ssa/20030709-1.c, gcc.dg/tree-ssa/20030709-2.c,
+	gcc.dg/tree-ssa/20030709-3.c, gcc.dg/tree-ssa/20030710-1.c,
+	gcc.dg/tree-ssa/20030711-1.c, gcc.dg/tree-ssa/20030711-2.c,
+	gcc.dg/tree-ssa/20030711-3.c, gcc.dg/tree-ssa/20030714-1.c,
+	gcc.dg/tree-ssa/20030714-2.c, gcc.dg/tree-ssa/20030728-1.c,
+	gcc.dg/tree-ssa/20030729-1.c, gcc.dg/tree-ssa/20030730-1.c,
+	gcc.dg/tree-ssa/20030730-2.c, gcc.dg/tree-ssa/20030731-1.c,
+	gcc.dg/tree-ssa/20030731-2.c, gcc.dg/tree-ssa/20030807-1.c,
+	gcc.dg/tree-ssa/20030807-10.c, gcc.dg/tree-ssa/20030807-11.c,
+	gcc.dg/tree-ssa/20030807-2.c, gcc.dg/tree-ssa/20030807-3.c,
+	gcc.dg/tree-ssa/20030807-5.c, gcc.dg/tree-ssa/20030807-6.c,
+	gcc.dg/tree-ssa/20030807-7.c, gcc.dg/tree-ssa/20030807-8.c,
+	gcc.dg/tree-ssa/20030807-9.c, gcc.dg/tree-ssa/20030808-1.c,
+	gcc.dg/tree-ssa/20030814-1.c, gcc.dg/tree-ssa/20030814-2.c,
+	gcc.dg/tree-ssa/20030814-3.c, gcc.dg/tree-ssa/20030814-4.c,
+	gcc.dg/tree-ssa/20030814-5.c, gcc.dg/tree-ssa/20030814-6.c,
+	gcc.dg/tree-ssa/20030814-7.c, gcc.dg/tree-ssa/20030815-1.c,
+	gcc.dg/tree-ssa/20030824-1.c,
+	gcc.dg/tree-ssa/20030824-2.c, gcc.dg/tree-ssa/20030825-1.c,
+	gcc.dg/tree-ssa/20030907-1.c, gcc.dg/tree-ssa/20030917-1.c,
+	gcc.dg/tree-ssa/20030917-3.c, gcc.dg/tree-ssa/20030922-1.c,
+	gcc.dg/tree-ssa/20030922-2.c, gcc.dg/tree-ssa/20031015-1.c,
+	gcc.dg/tree-ssa/20031021-1.c, gcc.dg/tree-ssa/20031022-1.c,
+	gcc.dg/tree-ssa/20031106-1.c, gcc.dg/tree-ssa/20031106-2.c,
+	gcc.dg/tree-ssa/20031106-3.c, gcc.dg/tree-ssa/20031106-4.c,
+	gcc.dg/tree-ssa/20031106-5.c, gcc.dg/tree-ssa/20031106-6.c,
+	gcc.dg/tree-ssa/20031216-1.c, gcc.dg/tree-ssa/20040204-1.c,
+	gcc.dg/tree-ssa/20040210-1.c, gcc.dg/tree-ssa/20040211-1.c,
+	gcc.dg/tree-ssa/20040216-1.c, gcc.dg/tree-ssa/20040305-1.c,
+	gcc.dg/tree-ssa/20040430-1.c, gcc.dg/tree-ssa/20040513-1.c,
+	gcc.dg/tree-ssa/20040513-2.c, gcc.dg/tree-ssa/20040514-1.c,
+	gcc.dg/tree-ssa/20040514-2.c, gcc.dg/tree-ssa/20040517-1.c,
+	gcc.dg/tree-ssa/20040518-1.c, gcc.dg/tree-ssa/20040518-2.c,
+	gcc.dg/tree-ssa/20040615-1.c, gcc.dg/tree-ssa/20040624-1.c,
+	gcc.dg/tree-ssa/20040703-1.c, gcc.dg/tree-ssa/20040721-1.c,
+	gcc.dg/tree-ssa/20040729-1.c, gcc.dg/tree-ssa/20040911-1.c,
+	gcc.dg/tree-ssa/20041002-1.c, gcc.dg/tree-ssa/20041122-1.c,
+	gcc.dg/tree-ssa/20050128-1.c, gcc.dg/tree-ssa/20050215-1.c,
+	gcc.dg/tree-ssa/asm-1.c, gcc.dg/tree-ssa/asm-2.c,
+	gcc.dg/tree-ssa/asm-3.c, gcc.dg/tree-ssa/cfgcleanup-1.c,
+	gcc.dg/tree-ssa/complex-1.c, gcc.dg/tree-ssa/complex-2.c,
+	gcc.dg/tree-ssa/copy-headers.c, gcc.dg/tree-ssa/ifc-20040816-1.c,
+	gcc.dg/tree-ssa/ifc-20040816-2.c, gcc.dg/tree-ssa/inline_asm-1.c,
+	gcc.dg/tree-ssa/inline_asm-2.c, gcc.dg/tree-ssa/loop-1.c,
+	gcc.dg/tree-ssa/loop-2.c, gcc.dg/tree-ssa/loop-3.c,
+	gcc.dg/tree-ssa/loop-4.c, gcc.dg/tree-ssa/loop-5.c,
+	gcc.dg/tree-ssa/loop-6.c, gcc.dg/tree-ssa/loop-7.c,
+	gcc.dg/tree-ssa/ltrans-1.c, gcc.dg/tree-ssa/ltrans-2.c,
+	gcc.dg/tree-ssa/ltrans-3.c, gcc.dg/tree-ssa/ltrans-4.c,
+	gcc.dg/tree-ssa/ltrans-5.c, gcc.dg/tree-ssa/pr15349.c,
+	gcc.dg/tree-ssa/pr15791-3.c, gcc.dg/tree-ssa/pr15791-4.c,
+	gcc.dg/tree-ssa/pr15791-5.c, gcc.dg/tree-ssa/pr16721.c,
+	gcc.dg/tree-ssa/pr19633.c, gcc.dg/tree-ssa/sra-1.c,
+	gcc.dg/tree-ssa/sra-2.c, gcc.dg/tree-ssa/sra-3.c,
+	gcc.dg/tree-ssa/ssa-ccp-1.c, gcc.dg/tree-ssa/ssa-ccp-10.c,
+	gcc.dg/tree-ssa/ssa-ccp-11.c, gcc.dg/tree-ssa/ssa-ccp-2.c,
+	gcc.dg/tree-ssa/ssa-ccp-3.c, gcc.dg/tree-ssa/ssa-ccp-7.c,
+	gcc.dg/tree-ssa/ssa-ccp-9.c, gcc.dg/tree-ssa/ssa-dce-1.c,
+	gcc.dg/tree-ssa/ssa-dce-2.c, gcc.dg/tree-ssa/ssa-dce-3.c,
+	gcc.dg/tree-ssa/ssa-dom-ccp-1.c, gcc.dg/tree-ssa/ssa-dom-cse-1.c,
+	gcc.dg/tree-ssa/ssa-dom-thread-1.c, gcc.dg/tree-ssa/ssa-pre-1.c,
+	gcc.dg/tree-ssa/ssa-pre-2.c, gcc.dg/tree-ssa/ssa-pre-3.c,
+	gcc.dg/tree-ssa/ssa-pre-4.c, gcc.dg/tree-ssa/ssa-pre-5.c,
+	gcc.dg/tree-ssa/ssa-pre-6.c, gcc.dg/tree-ssa/tailcall-1.c,
+	gcc.dg/tree-ssa/tailcall-2.c, gcc.dg/tree-ssa/tailrecursion-1.c,
+	gcc.dg/tree-ssa/tailrecursion-2.c, gcc.dg/tree-ssa/tailrecursion-3.c,
+	gcc.dg/tree-ssa/tailrecursion-4.c, gcc.dg/tree-ssa/tailrecursion-5.c,
+	gcc.dg/tree-ssa/useless-1.c: Ditto.
+	gcc.dg/vect/pr16105.c, gcc.dg/vect/pr18308.c, gcc.dg/vect/pr18400.c,
+	gcc.dg/vect/pr18425.c, gcc.dg/vect/pr18536.c, gcc.dg/vect/vect-1.c,
+	gcc.dg/vect/vect-10.c, gcc.dg/vect/vect-11.c, gcc.dg/vect/vect-12.c,
+	gcc.dg/vect/vect-13.c, gcc.dg/vect/vect-14.c, gcc.dg/vect/vect-15.c,
+	gcc.dg/vect/vect-16.c, gcc.dg/vect/vect-17.c, gcc.dg/vect/vect-18.c,
+	gcc.dg/vect/vect-19.c, gcc.dg/vect/vect-2.c, gcc.dg/vect/vect-20.c,
+	gcc.dg/vect/vect-21.c, gcc.dg/vect/vect-22.c, gcc.dg/vect/vect-23.c,
+	gcc.dg/vect/vect-24.c, gcc.dg/vect/vect-25.c, gcc.dg/vect/vect-26.c,
+	gcc.dg/vect/vect-27.c, gcc.dg/vect/vect-28.c, gcc.dg/vect/vect-29.c,
+	gcc.dg/vect/vect-3.c, gcc.dg/vect/vect-30.c, gcc.dg/vect/vect-31.c,
+	gcc.dg/vect/vect-32.c, gcc.dg/vect/vect-33.c, gcc.dg/vect/vect-34.c,
+	gcc.dg/vect/vect-35.c, gcc.dg/vect/vect-36.c, gcc.dg/vect/vect-37.c,
+	gcc.dg/vect/vect-38.c, gcc.dg/vect/vect-4.c, gcc.dg/vect/vect-40.c,
+	gcc.dg/vect/vect-41.c, gcc.dg/vect/vect-42.c, gcc.dg/vect/vect-43.c,
+	gcc.dg/vect/vect-44.c, gcc.dg/vect/vect-45.c, gcc.dg/vect/vect-46.c,
+	gcc.dg/vect/vect-47.c, gcc.dg/vect/vect-48.c, gcc.dg/vect/vect-49.c,
+	gcc.dg/vect/vect-5.c, gcc.dg/vect/vect-50.c, gcc.dg/vect/vect-51.c,
+	gcc.dg/vect/vect-52.c, gcc.dg/vect/vect-53.c, gcc.dg/vect/vect-54.c,
+	gcc.dg/vect/vect-55.c, gcc.dg/vect/vect-56.c, gcc.dg/vect/vect-57.c,
+	gcc.dg/vect/vect-58.c, gcc.dg/vect/vect-59.c, gcc.dg/vect/vect-6.c,
+	gcc.dg/vect/vect-60.c, gcc.dg/vect/vect-61.c, gcc.dg/vect/vect-62.c,
+	gcc.dg/vect/vect-63.c, gcc.dg/vect/vect-64.c, gcc.dg/vect/vect-65.c,
+	gcc.dg/vect/vect-66.c, gcc.dg/vect/vect-67.c, gcc.dg/vect/vect-68.c,
+	gcc.dg/vect/vect-69.c, gcc.dg/vect/vect-7.c, gcc.dg/vect/vect-70.c,
+	gcc.dg/vect/vect-71.c, gcc.dg/vect/vect-72.c, gcc.dg/vect/vect-73.c,
+	gcc.dg/vect/vect-74.c, gcc.dg/vect/vect-75.c, gcc.dg/vect/vect-76.c,
+	gcc.dg/vect/vect-77.c, gcc.dg/vect/vect-78.c, gcc.dg/vect/vect-79.c,
+	gcc.dg/vect/vect-8.c, gcc.dg/vect/vect-80.c, gcc.dg/vect/vect-82.c,
+	gcc.dg/vect/vect-82_64.c, gcc.dg/vect/vect-83.c,
+	gcc.dg/vect/vect-83_64.c, gcc.dg/vect/vect-85.c,
+	gcc.dg/vect/vect-86.c, gcc.dg/vect/vect-87.c, gcc.dg/vect/vect-88.c,
+	gcc.dg/vect/vect-89.c, gcc.dg/vect/vect-9.c, gcc.dg/vect/vect-96.c,
+	gcc.dg/vect/vect-97.c, gcc.dg/vect/vect-98.c, gcc.dg/vect/vect-all.c,
+	gcc.dg/vect/vect-none.c: Ditto.
+	* treelang/compile/extrafunc.tree, treelang/compile/extravar.tree,
+	treelang/compile/unsigned.tree: Ditto.
+	
+	* gcc.dg/altivec-16.c: Use cleanup-saved-temps.
+	* gcc.dg/cpp/direct2s.c: Ditto.
+	* gcc.dg/cpp/paste4.c: Ditto.
+	* gcc.dg/cpp/separate-1.c: Ditto.
+	* gcc.dg/pch/save-temps-1.c: Ditto.
+	* g++.dg/ext/altivec-10.C: Ditto.
+	* g++.dg/pch/pch.C: Ditto.
+	
+	* g++.dg/other/static11.C: Use cleanup-rtl-dump.
+	
+	* g++.dg/parse/repo1.C: Use cleanup-repo-files.
+	* g++.dg/template/repo1.C: Ditto.
+	* g++.dg/template/repo2.C: Ditto.
+	* g++.dg/template/repo3.C: Ditto.
+	* g++.old-deja/g++.pt/instantiate4.C: Ditto.
+	* g++.old-deja/g++.pt/instantiate6.C: Ditto.
+	* g++.old-deja/g++.pt/repo1.C: Ditto.
+	* g++.old-deja/g++.pt/repo2.C: Ditto.
+	* g++.old-deja/g++.pt/repo3.C: Ditto.
+	* g++.old-deja/g++.pt/repo4.C: Ditto.
+	
+	* gcc.dg/20020201-1.c: Use cleanup-coverage_files.
+	* gcc.dg/20030107-1.c: Ditto.
+	* gcc.dg/20030702-1.c: Ditto.
+	* gcc.dg/profile-generate-1.c: Ditto.
+	* g++.dg/other/profile1.C: Ditto.
+	* g++.old-deja/g++.robertl/eb83.C: Ditto.
+
 2006-03-09  Release Manager
 
 	* GCC 4.0.3 released.

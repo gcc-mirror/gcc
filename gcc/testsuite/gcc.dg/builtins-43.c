@@ -47,7 +47,8 @@ main ()
 
 /* Check that all instances of __builtin_isnan were folded.  */
 /* { dg-final { scan-tree-dump-times "isnan" 0 "generic" } } */
+/* { dg-final { cleanup-tree-dump "generic" } } */
 
 /* Check that all instances of link_error were subject to DCE.  */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" } } */
-
+/* { dg-final { cleanup-tree-dump "optimized" } } */

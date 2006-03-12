@@ -12,3 +12,4 @@ int bar()
 
 /* Check that we only have one call to foo.  */
 /* { dg-final { scan-tree-dump-times "foo" 1 "dom1" } } */
+/* { dg-final { cleanup-tree-dump "dom1" } } */

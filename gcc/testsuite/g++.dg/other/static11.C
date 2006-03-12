@@ -30,3 +30,5 @@ int main()
   C<int> c;
   return r;
 }
+
+// { dg-final { cleanup-rtl-dump "*" } }

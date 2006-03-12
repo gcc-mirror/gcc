@@ -24,4 +24,4 @@ int test7 (int a)
 /* There should be not link_error calls, if there is any the
    optimization has failed */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "ccp"} } */
-
+/* { dg-final { cleanup-tree-dump "ccp" } } */

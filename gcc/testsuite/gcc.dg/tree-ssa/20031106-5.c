@@ -26,3 +26,4 @@ void foo2 (struct s*  r, struct s*  p)
 
 /* There should be no link_error calls.  */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" { xfail *-*-* } } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

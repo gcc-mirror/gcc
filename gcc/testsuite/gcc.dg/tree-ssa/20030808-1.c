@@ -38,3 +38,4 @@ delete_dead_jumptables ()
 /* There should be no IF statements.  */
 /* { dg-final { scan-tree-dump-times "if " 0 "cddce"} } */
 
+/* { dg-final { cleanup-tree-dump "cddce" } } */

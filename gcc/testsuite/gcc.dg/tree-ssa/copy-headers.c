@@ -13,3 +13,4 @@ void bla (void)
 
 /* There should be a header duplicated.  */
 /* { dg-final { scan-tree-dump-times "Duplicating header" 1 "ch"} } */
+/* { dg-final { cleanup-tree-dump "ch" } } */

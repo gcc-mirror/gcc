@@ -9,5 +9,5 @@ int f(int *a)
 }
 
 /* There should be only one dereferencing of a. */
-/* { dg-final { scan-tree-dump-times "\\*a" 1 "vars"} } */
-
+/* { dg-final { scan-tree-dump-times "\\*a" 1 "vars" } } */
+/* { dg-final { cleanup-tree-dump "vars" } } */

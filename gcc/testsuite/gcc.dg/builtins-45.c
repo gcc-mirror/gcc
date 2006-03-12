@@ -44,4 +44,4 @@ main ()
 
 /* Check that all instances of link_error were subject to DCE.  */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" } } */
-
+/* { dg-final { cleanup-tree-dump "optimized" } } */

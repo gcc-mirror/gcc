@@ -14,3 +14,5 @@ main()
   int j = 7;
   test_swap(i, j);
 }
+
+/* { dg-final { cleanup-coverage-files } } */

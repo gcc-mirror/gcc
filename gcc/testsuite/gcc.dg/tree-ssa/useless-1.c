@@ -14,3 +14,4 @@ foo (void)
    GIMPLE lowering, at the cost of an extra statement, label,
    and basic block.  */
 /* { dg-final { scan-tree-dump-times "goto" 3 "useless"} } */ 
+/* { dg-final { cleanup-tree-dump "useless" } } */

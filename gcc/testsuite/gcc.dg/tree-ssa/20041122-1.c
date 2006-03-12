@@ -35,5 +35,4 @@ find_unreachable_blocks (int frobit)
    modify e or e->dest.  The net result is that we only need one
    load of e->dest.  */
 /* { dg-final { scan-tree-dump-times "->dest" 1 "dom3" { xfail *-*-* } } } */
-
-
+/* { dg-final { cleanup-tree-dump "dom3" } } */

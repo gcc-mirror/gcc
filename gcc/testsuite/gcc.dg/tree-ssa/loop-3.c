@@ -25,3 +25,5 @@ void xxx(void)
 /* And original induction variable should be preserved.  */
 
 /* { dg-final { scan-tree-dump-times "int iter" 1 "vars" } } */
+
+/* { dg-final { cleanup-tree-dump "vars" } } */

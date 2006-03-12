@@ -22,3 +22,4 @@ ext
 }
 
 // { dg-final { scan-tree-dump-not "baz" "optimized" } }
+// { dg-final { cleanup-tree-dump "optimized" } }

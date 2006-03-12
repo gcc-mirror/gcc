@@ -70,3 +70,4 @@ copystruct111111 (teststruct param)
 
 /* There should be no referenc to link_error. */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

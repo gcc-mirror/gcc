@@ -15,3 +15,4 @@ t(int a)
 	return r;
 }
 /* { dg-final { scan-tree-dump-times "Eliminated tail recursion" 2 "tailr"} } */
+/* { dg-final { cleanup-tree-dump "tailr" } } */

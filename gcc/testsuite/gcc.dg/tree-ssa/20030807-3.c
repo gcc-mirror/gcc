@@ -24,4 +24,4 @@ cpp_parse_escape (pstr, limit, wide)
 /* There should be precisely three IF statements.  If there is
    more than two, then the dominator optimizations failed.  */
 /* { dg-final { scan-tree-dump-times "if " 3 "dom3"} } */
-
+/* { dg-final { cleanup-tree-dump "dom3" } } */

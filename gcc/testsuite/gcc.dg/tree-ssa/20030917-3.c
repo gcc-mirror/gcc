@@ -21,5 +21,4 @@ main ()
 
 /* The argument to "printf" should be a constant, not a variable.  */
 /* { dg-final { scan-tree-dump-times "printf.*, 0" 1 "ccp"} } */
-  
-
+/* { dg-final { cleanup-tree-dump "ccp" } } */
