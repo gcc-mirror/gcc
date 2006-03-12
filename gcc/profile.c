@@ -1336,46 +1336,3 @@ tree_register_profile_hooks (void)
   profile_hooks = &tree_profile_hooks;
 }
 
-
-/* Do branch profiling and static profile estimation passes.  */
-static unsigned int
-rest_of_handle_branch_prob (void)
-{
-  struct loops loops;
-
-  /* Discover and record the loop depth at the head of each basic
-     block.  The loop infrastructure does the real job for us.  */
-  flow_loops_find (&loops);
-
-  if (dump_file)
-    flow_loops_dump (&loops, dump_file, NULL, 0);
-
-  /* Estimate using heuristics if no profiling info is available.  */
-  if (flag_guess_branch_prob
-      && profile_status == PROFILE_ABSENT)
-    estimate_probability (&loops);
-
-  flow_loops_free (&loops);
-  free_dominance_info (CDI_DOMINATORS);
-  return 0;
-}
-
-struct tree_opt_pass pass_branch_prob =
-{
-  "bp",                                 /* name */
-  NULL,                                 /* gate */   
-  rest_of_handle_branch_prob,           /* execute */       
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_BRANCH_PROB,                       /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
-  'b'                                   /* letter */
-};
-
-
-

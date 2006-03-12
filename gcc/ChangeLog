@@ -1,3 +1,14 @@
+2006-03-12  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* predict.c (estimate_probability): Remove.
+	* profile.c (rest_of_handle_branch_prob, pass_branch_prob): Remove.
+	* basic-block.h (estimate_probability): Remove prototype.
+	* passes.c (finish_optimization_passes): Dump branch prediction or
+	profiling heuristics to the .profile tree dump.
+	(init_optimization_passes): Unqueue pass_branch_prob.
+
+	* doc/invoke.texi (-fdump-rtl-bp): Remove.
+
 2006-03-11  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* rtl.def (LABEL_REF): Remove the field for LABEL_NEXTREF.

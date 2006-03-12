@@ -3712,12 +3712,6 @@ letters for use in @var{letters} and @var{pass}, and their meanings:
 @opindex dA
 Annotate the assembler output with miscellaneous debugging information.
 
-@item -db
-@itemx -fdump-rtl-bp
-@opindex db
-@opindex fdump-rtl-bp
-Dump after computing branch probabilities, to @file{@var{file}.09.bp}.
-
 @item -dB
 @itemx -fdump-rtl-bbro
 @opindex dB
