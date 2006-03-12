@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -55,8 +55,7 @@ namespace std
 
   // These are no longer exported.
   locale::_Impl*                locale::_S_classic;
-  locale::_Impl* 		locale::_S_global; 
-  const size_t 			locale::_S_categories_size;
+  locale::_Impl* 		locale::_S_global;
 
 #ifdef __GTHREADS
   __gthread_once_t 		locale::_S_once = __GTHREAD_ONCE_INIT;
