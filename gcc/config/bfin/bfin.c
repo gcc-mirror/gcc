@@ -1264,8 +1264,6 @@ print_operand (FILE *file, rtx x, char code)
 
 	case SYMBOL_REF:
 	  output_addr_const (file, x);
-	  if (code == 'G' && flag_pic)
-	    fprintf (file, "@GOT");
 	  break;
 
 	case CONST_DOUBLE:

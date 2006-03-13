@@ -7,6 +7,13 @@
 	* config/bfin/crti.S: Use it instead of __PIC__.
 	* config/bfin/crtn.S: Likewise.
 
+	* config/bfin/bfin.md (call_value_symbol, sibcall_value_symbol,
+	call_symbol, sibcall_symbol): Disallow if TARGET_ID_SHARED_LIBRARY,
+	not if flag_pic.
+	Lose 'G' modifier for call operand.
+	* config/bfin/bfin.c (print_operand) <case SYMBOL_REF>: Don't
+	recognize 'G' modifier.
+
 2006-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/18859
