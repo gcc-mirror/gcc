@@ -1,5 +1,5 @@
 /* Definitions for PA_RISC with ELF-32 format
-   Copyright (C) 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,5 +35,27 @@ Boston, MA 02110-1301, USA.  */
     __attribute__ ((__unused__, section(".ctors"),			\
 		    aligned(sizeof(func_ptr))))				\
     = { (func_ptr) (-1) }
+
+/* This is a PIC version of CRT_CALL_STATIC_FUNCTION.  The PIC
+   register has to be saved before the call and restored after
+   the call.  We assume that register %r4 is available for this
+   purpose.  The hack prevents GCC from deleting the restore.  */
+#ifdef CRTSTUFFS_O
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+static void __attribute__((__used__))			\
+call_ ## FUNC (void)					\
+{							\
+  asm (SECTION_OP);					\
+  asm volatile ("bl " #FUNC ",%%r2\n\t"			\
+		"copy %%r19,%%r4\n\t"			\
+		"copy %%r4,%%r19\n"			\
+		:					\
+		:					\
+		: "r1", "r2", "r4", "r20", "r21",	\
+		  "r22", "r24", "r24", "r25", "r26",	\
+		  "r27", "r28", "r29", "r31");		\
+  asm (TEXT_SECTION_ASM_OP);				\
+}
+#endif
 
 #define MD_UNWIND_SUPPORT "config/pa/linux-unwind.h"
