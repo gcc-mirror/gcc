@@ -127,8 +127,7 @@ flow_loop_dump (const struct loop *loop, FILE *file,
   if (! loop || ! loop->header)
     return;
 
-  fprintf (file, ";;\n;; Loop %d:%s\n", loop->num,
-	     loop->invalid ? " invalid" : "");
+  fprintf (file, ";;\n;; Loop %d\n", loop->num);
 
   fprintf (file, ";;  header %d, latch %d\n",
 	   loop->header->index, loop->latch->index);

@@ -78,14 +78,6 @@ struct loop
   /* Average number of executed insns per iteration.  */
   unsigned av_ninsns;
 
-  /* The first block in the loop.  This is not necessarily the same as
-     the loop header.  */
-  basic_block first;
-
-  /* The last block in the loop.  This is not necessarily the same as
-     the loop latch.  */
-  basic_block last;
-
   /* Number of blocks contained within the loop.  */
   unsigned num_nodes;
 
@@ -111,45 +103,8 @@ struct loop
   /* Loop that is copy of this loop.  */
   struct loop *copy;
 
-  /* Nonzero if the loop is invalid (e.g., contains setjmp.).  */
-  int invalid;
-
   /* Auxiliary info specific to a pass.  */
   void *aux;
-
-  /* The following are currently used by loop.c but they are likely to
-     disappear when loop.c is replaced and removed.  */
-
-  /* The NOTE_INSN_LOOP_BEG.  */
-  rtx start;
-
-  /* The NOTE_INSN_LOOP_END.  */
-  rtx end;
-
-  /* For a rotated loop that is entered near the bottom,
-     this is the label at the top.  Otherwise it is zero.  */
-  rtx top;
-
-  /* Place in the loop where control enters.  */
-  rtx scan_start;
-
-  /* The position where to sink insns out of the loop.  */
-  rtx sink;
-
-  /* List of all LABEL_REFs which refer to code labels outside the
-     loop.  Used by routines that need to know all loop exits, such as
-     final_biv_value and final_giv_value.
-
-     This does not include loop exits due to return instructions.
-     This is because all bivs and givs are pseudos, and hence must be
-     dead after a return, so the presence of a return does not affect
-     any of the optimizations that use this info.  It is simpler to
-     just not include return instructions on this list.  */
-  rtx exit_labels;
-
-  /* The number of LABEL_REFs on exit_labels for this loop and all
-     loops nested inside it.  */
-  int exit_count;
 
   /* The probable number of times the loop is executed at runtime.
      This is an INTEGER_CST or an expression containing symbolic
