@@ -132,7 +132,7 @@ minloc1_8_r4 (gfc_array_i8 * const restrict retarray,
 
   GFC_REAL_4 minval;
   minval = GFC_REAL_4_HUGE;
-  result = 1;
+  result = 0;
         if (len <= 0)
 	  *dest = 0;
 	else
@@ -140,7 +140,7 @@ minloc1_8_r4 (gfc_array_i8 * const restrict retarray,
 	    for (n = 0; n < len; n++, src += delta)
 	      {
 
-  if (*src < minval)
+  if (*src < minval || !result)
     {
       minval = *src;
       result = (GFC_INTEGER_8)n + 1;
@@ -299,7 +299,7 @@ mminloc1_8_r4 (gfc_array_i8 * const restrict retarray,
 
   GFC_REAL_4 minval;
   minval = GFC_REAL_4_HUGE;
-  result = 1;
+  result = 0;
         if (len <= 0)
 	  *dest = 0;
 	else
@@ -307,7 +307,7 @@ mminloc1_8_r4 (gfc_array_i8 * const restrict retarray,
 	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	      {
 
-  if (*msrc && *src < minval)
+  if (*msrc && (*src < minval || !result))
     {
       minval = *src;
       result = (GFC_INTEGER_8)n + 1;

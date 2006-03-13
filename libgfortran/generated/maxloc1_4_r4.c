@@ -132,7 +132,7 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 
   GFC_REAL_4 maxval;
   maxval = -GFC_REAL_4_HUGE;
-  result = 1;
+  result = 0;
         if (len <= 0)
 	  *dest = 0;
 	else
@@ -140,7 +140,7 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	    for (n = 0; n < len; n++, src += delta)
 	      {
 
-  if (*src > maxval)
+  if (*src > maxval || !result)
     {
       maxval = *src;
       result = (GFC_INTEGER_4)n + 1;
@@ -299,7 +299,7 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 
   GFC_REAL_4 maxval;
   maxval = -GFC_REAL_4_HUGE;
-  result = 1;
+  result = 0;
         if (len <= 0)
 	  *dest = 0;
 	else
@@ -307,7 +307,7 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	      {
 
-  if (*msrc && *src > maxval)
+  if (*msrc && (*src > maxval || !result))
     {
       maxval = *src;
       result = (GFC_INTEGER_4)n + 1;

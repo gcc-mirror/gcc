@@ -106,7 +106,7 @@ minloc0_8_r16 (gfc_array_i8 * const restrict retarray,
 
   /* Initialize the return value.  */
   for (n = 0; n < rank; n++)
-    dest[n * dstride] = 1;
+    dest[n * dstride] = 0;
   {
 
   GFC_REAL_16 minval;
@@ -118,7 +118,7 @@ minloc0_8_r16 (gfc_array_i8 * const restrict retarray,
       {
         /* Implementation start.  */
 
-  if (*base < minval)
+  if (*base < minval || !dest[0])
     {
       minval = *base;
       for (n = 0; n < rank; n++)
@@ -241,7 +241,7 @@ mminloc0_8_r16 (gfc_array_i8 * const restrict retarray,
 
   /* Initialize the return value.  */
   for (n = 0; n < rank; n++)
-    dest[n * dstride] = 1;
+    dest[n * dstride] = 0;
   {
 
   GFC_REAL_16 minval;
@@ -253,7 +253,7 @@ mminloc0_8_r16 (gfc_array_i8 * const restrict retarray,
       {
         /* Implementation start.  */
 
-  if (*mbase && *base < minval)
+  if (*mbase && (*base < minval || !dest[0]))
     {
       minval = *base;
       for (n = 0; n < rank; n++)
