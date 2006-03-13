@@ -3716,13 +3716,13 @@ Annotate the assembler output with miscellaneous debugging information.
 @itemx -fdump-rtl-bbro
 @opindex dB
 @opindex fdump-rtl-bbro
-Dump after block reordering, to @file{@var{file}.30.bbro}.
+Dump after block reordering, to @file{@var{file}.148r.bbro}.
 
 @item -dc
 @itemx -fdump-rtl-combine
 @opindex dc
 @opindex fdump-rtl-combine
-Dump after instruction combination, to the file @file{@var{file}.17.combine}.
+Dump after instruction combination, to the file @file{@var{file}.129r.combine}.
 
 @item -dC
 @itemx -fdump-rtl-ce1
@@ -3731,9 +3731,9 @@ Dump after instruction combination, to the file @file{@var{file}.17.combine}.
 @opindex fdump-rtl-ce1
 @opindex fdump-rtl-ce2
 @option{-dC} and @option{-fdump-rtl-ce1} enable dumping after the
-first if conversion, to the file @file{@var{file}.11.ce1}.  @option{-dC}
+first if conversion, to the file @file{@var{file}.117r.ce1}.  @option{-dC}
 and @option{-fdump-rtl-ce2} enable dumping after the second if
-conversion, to the file @file{@var{file}.18.ce2}.
+conversion, to the file @file{@var{file}.130r.ce2}.
 
 @item -dd
 @itemx -fdump-rtl-btl
@@ -3755,7 +3755,7 @@ normal output.
 @itemx -fdump-rtl-ce3
 @opindex dE
 @opindex fdump-rtl-ce3
-Dump after the third if conversion, to @file{@var{file}.28.ce3}.
+Dump after the third if conversion, to @file{@var{file}.146r.ce3}.
 
 @item -df
 @itemx -fdump-rtl-cfg
@@ -3764,15 +3764,15 @@ Dump after the third if conversion, to @file{@var{file}.28.ce3}.
 @opindex fdump-rtl-cfg
 @opindex fdump-rtl-life
 @option{-df} and @option{-fdump-rtl-cfg} enable dumping after control
-and data flow analysis, to @file{@var{file}.08.cfg}.  @option{-df}
+and data flow analysis, to @file{@var{file}.116r.cfg}.  @option{-df}
 and @option{-fdump-rtl-cfg} enable dumping dump after life analysis,
-to @file{@var{file}.16.life}.
+to @file{@var{file}.128r.life1} and @file{@var{file}.135r.life2}.
 
 @item -dg
 @itemx -fdump-rtl-greg
 @opindex dg
 @opindex fdump-rtl-greg
-Dump after global register allocation, to @file{@var{file}.23.greg}.
+Dump after global register allocation, to @file{@var{file}.139r.greg}.
 
 @item -dG
 @itemx -fdump-rtl-gcse
@@ -3781,9 +3781,9 @@ Dump after global register allocation, to @file{@var{file}.23.greg}.
 @opindex fdump-rtl-gcse
 @opindex fdump-rtl-bypass
 @option{-dG} and @option{-fdump-rtl-gcse} enable dumping after GCSE, to
-@file{@var{file}.05.gcse}.  @option{-dG} and @option{-fdump-rtl-bypass}
+@file{@var{file}.114r.gcse}.  @option{-dG} and @option{-fdump-rtl-bypass}
 enable dumping after jump bypassing and control flow optimizations, to
-@file{@var{file}.07.bypass}.
+@file{@var{file}.115r.bypass}.
 
 @item -dh
 @itemx -fdump-rtl-eh
@@ -3795,25 +3795,25 @@ Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
 @itemx -fdump-rtl-sibling
 @opindex di
 @opindex fdump-rtl-sibling
-Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
+Dump after sibling call optimizations, to @file{@var{file}.106r.sibling}.
 
 @item -dj
 @itemx -fdump-rtl-jump
 @opindex dj
 @opindex fdump-rtl-jump
-Dump after the first jump optimization, to @file{@var{file}.03.jump}.
+Dump after the first jump optimization, to @file{@var{file}.112r.jump}.
 
 @item -dk
 @itemx -fdump-rtl-stack
 @opindex dk
 @opindex fdump-rtl-stack
-Dump after conversion from registers to stack, to @file{@var{file}.33.stack}.
+Dump after conversion from registers to stack, to @file{@var{file}.152r.stack}.
 
 @item -dl
 @itemx -fdump-rtl-lreg
 @opindex dl
 @opindex fdump-rtl-lreg
-Dump after local register allocation, to @file{@var{file}.22.lreg}.
+Dump after local register allocation, to @file{@var{file}.138r.lreg}.
 
 @item -dL
 @itemx -fdump-rtl-loop2
@@ -3822,33 +3822,33 @@ Dump after local register allocation, to @file{@var{file}.22.lreg}.
 @option{-dL} and @option{-fdump-rtl-loop2} enable dumping after the
 loop optimization pass, to @file{@var{file}.119r.loop2},
 @file{@var{file}.120r.loop2_init},
-@file{@var{file}.121r.loop2_invariant},
+@file{@var{file}.121r.loop2_invariant}, and
 @file{@var{file}.125r.loop2_done}.
 
 @item -dm
 @itemx -fdump-rtl-sms
 @opindex dm
 @opindex fdump-rtl-sms
-Dump after modulo scheduling, to @file{@var{file}.20.sms}.
+Dump after modulo scheduling, to @file{@var{file}.136r.sms}.
 
 @item -dM
 @itemx -fdump-rtl-mach
 @opindex dM
 @opindex fdump-rtl-mach
 Dump after performing the machine dependent reorganization pass, to
-@file{@var{file}.35.mach}.
+@file{@var{file}.155r.mach}.
 
 @item -dn
 @itemx -fdump-rtl-rnreg
 @opindex dn
 @opindex fdump-rtl-rnreg
-Dump after register renumbering, to @file{@var{file}.29.rnreg}.
+Dump after register renumbering, to @file{@var{file}.147r.rnreg}.
 
 @item -dN
 @itemx -fdump-rtl-regmove
 @opindex dN
 @opindex fdump-rtl-regmove
-Dump after the register move pass, to @file{@var{file}.19.regmove}.
+Dump after the register move pass, to @file{@var{file}.132r.regmove}.
 
 @item -do
 @itemx -fdump-rtl-postreload
@@ -3860,20 +3860,20 @@ Dump after post-reload optimizations, to @file{@var{file}.24.postreload}.
 @itemx -fdump-rtl-expand
 @opindex dr
 @opindex fdump-rtl-expand
-Dump after RTL generation, to @file{@var{file}.00.expand}.
+Dump after RTL generation, to @file{@var{file}.104r.expand}.
 
 @item -dR
 @itemx -fdump-rtl-sched2
 @opindex dR
 @opindex fdump-rtl-sched2
-Dump after the second scheduling pass, to @file{@var{file}.32.sched2}.
+Dump after the second scheduling pass, to @file{@var{file}.150r.sched2}.
 
 @item -ds
 @itemx -fdump-rtl-cse
 @opindex ds
 @opindex fdump-rtl-cse
 Dump after CSE (including the jump optimization that sometimes follows
-CSE), to @file{@var{file}.04.cse}.
+CSE), to @file{@var{file}.113r.cse}.
 
 @item -dS
 @itemx -fdump-rtl-sched
@@ -3886,13 +3886,13 @@ Dump after the first scheduling pass, to @file{@var{file}.21.sched}.
 @opindex dt
 @opindex fdump-rtl-cse2
 Dump after the second CSE pass (including the jump optimization that
-sometimes follows CSE), to @file{@var{file}.15.cse2}.
+sometimes follows CSE), to @file{@var{file}.127r.cse2}.
 
 @item -dT
 @itemx -fdump-rtl-tracer
 @opindex dT
 @opindex fdump-rtl-tracer
-Dump after running tracer, to @file{@var{file}.12.tracer}.
+Dump after running tracer, to @file{@var{file}.118r.tracer}.
 
 @item -dV
 @itemx -fdump-rtl-vpt
@@ -3903,25 +3903,25 @@ Dump after running tracer, to @file{@var{file}.12.tracer}.
 @option{-dV} and @option{-fdump-rtl-vpt} enable dumping after the value
 profile transformations, to @file{@var{file}.10.vpt}.  @option{-dV}
 and @option{-fdump-rtl-vartrack} enable dumping after variable tracking,
-to @file{@var{file}.34.vartrack}.
+to @file{@var{file}.154r.vartrack}.
 
 @item -dw
 @itemx -fdump-rtl-flow2
 @opindex dw
 @opindex fdump-rtl-flow2
-Dump after the second flow pass, to @file{@var{file}.26.flow2}.
+Dump after the second flow pass, to @file{@var{file}.142r.flow2}.
 
 @item -dz
 @itemx -fdump-rtl-peephole2
 @opindex dz
 @opindex fdump-rtl-peephole2
-Dump after the peephole pass, to @file{@var{file}.27.peephole2}.
+Dump after the peephole pass, to @file{@var{file}.145r.peephole2}.
 
 @item -dZ
 @itemx -fdump-rtl-web
 @opindex dZ
 @opindex fdump-rtl-web
-Dump after live range splitting, to @file{@var{file}.14.web}.
+Dump after live range splitting, to @file{@var{file}.126r.web}.
 
 @item -da
 @itemx -fdump-rtl-all

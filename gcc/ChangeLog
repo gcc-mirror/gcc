@@ -3,6 +3,8 @@
 	* doc/invoke.texi (-fdump-rtl-loop): Remove.
 	(-dL, -fdump-rtl-loop2): Update the dump file names 
 
+	* doc/invoke.texi: Update dump file names.
+
 2006-03-12  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* predict.c (estimate_probability): Remove.
