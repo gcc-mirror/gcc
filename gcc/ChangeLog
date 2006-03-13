@@ -1,5 +1,10 @@
 2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* final.c (shorten_branches): Remove outdated comment, and turn
+	the if branch that guards it to continue.
+
+2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* cfgloop.c (flow_loop_dump): Do not dump loop->invalid field.
 	* cfgloop.h (struct loop): Remove unused fields.
 
