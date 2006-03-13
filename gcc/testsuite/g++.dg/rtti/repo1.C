@@ -13,3 +13,5 @@ struct function1
 function1<1> b;
 
 int main () {}
+
+// { dg-final { cleanup-repo-files } }

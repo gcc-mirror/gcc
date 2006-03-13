@@ -1,5 +1,6 @@
 // PR c++/25625
 // { dg-options "-frepo" } 
+// { dg-final { cleanup-repo-files } }
 
 template< typename T, T N > struct integral_c {
   static const T value = N;

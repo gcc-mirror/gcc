@@ -26,3 +26,4 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "SVR" 1 "vars"} } */
+/* { dg-final { cleanup-tree-dump "vars" } } */

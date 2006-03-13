@@ -21,3 +21,4 @@ y: ;
 }
 
 /* { dg-final { scan-tree-dump-times "dont_remove \\(\\)" 1 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

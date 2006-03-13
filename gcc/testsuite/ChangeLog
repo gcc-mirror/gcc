@@ -1,3 +1,36 @@
+2006-03-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/template/repo4.C: Cleanup repo files.
+	* gcc.dg/tree-ssa/pr21171.c: Cleanup tree dump.
+	* gcc.dg/tree-ssa/pr22051-1.c: Likewise.	
+	* gcc.dg/tree-ssa/pr22051-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr22321.c: Likewise.
+	
+	Backport:
+	2006-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/template/repo5.C: Cleanup repo files.
+	
+	2005-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	
+	* g++.dg/rtti/repo1.C: Call cleanup-repo-files.
+
+	2005-09-30  Uros Bizjak  <uros@kss-loka.si>
+	
+	* gcc.dg/20050309-1.c: Clean up temp files.
+	* gcc.dg/20050325-1.c: Clean up temp files.
+	
+	2005-09-13  Janis Johnson  <janis187@us.ibm.com>
+	* gcc.dg/tree-ssa/pr21985.c: Clean up dump files.
+	
+	2005-05-03  David Billinghurst  <David.Billinghurst@riotinto.com>
+	 
+	* gcc.dg/vect/pr20122.c:  Clean up .vect file.
+	
+	2005-04-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/tree-ssa/20030821-1.c: Use cleanup-tree-dump.
+	
 2006-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:	

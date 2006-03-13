@@ -35,3 +35,4 @@ test(char *ret, int *counter, void *schema,
   return 0;
 }
 
+/* { dg-final { cleanup-coverage-files } } */
