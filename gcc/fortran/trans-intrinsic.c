@@ -1671,7 +1671,6 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   tree tmp;
   tree elsetmp;
   tree ifbody;
-  tree cond;
   gfc_loopinfo loop;
   gfc_actual_arglist *actual;
   gfc_ss *arrayss;
@@ -1744,17 +1743,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 
   gcc_assert (loop.dimen == 1);
 
-  /* Initialize the position to the first element.  If the array has zero
-     size we need to return zero.  Otherwise use the first element of the
-     array, in case all elements are equal to the limit.
-     i.e. pos = (ubound >= lbound) ? lbound, lbound - 1;  */
-  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-		     loop.from[0], gfc_index_one_node);
-  cond = fold_build2 (GE_EXPR, boolean_type_node,
-		      loop.to[0], loop.from[0]);
-  tmp = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
-		     loop.from[0], tmp);
-  gfc_add_modify_expr (&loop.pre, pos, tmp);
+  /* Initialize the position to zero, following Fortran 2003.  We are free
+     to do this because Fortran 95 allows the result of an entirely false
+     mask to be processor dependent.  */
+  gfc_add_modify_expr (&loop.pre, pos, gfc_index_zero_node);
 
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskss)
@@ -1794,8 +1786,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 
   ifbody = gfc_finish_block (&ifblock);
 
-  /* If it is a more extreme value.  */
-  tmp = build2 (op, boolean_type_node, arrayse.expr, limit);
+  /* If it is a more extreme value or pos is still zero.  */
+  tmp = build2 (TRUTH_OR_EXPR, boolean_type_node,
+		  build2 (op, boolean_type_node, arrayse.expr, limit),
+		  build2 (EQ_EXPR, boolean_type_node, pos, gfc_index_zero_node));
   tmp = build3_v (COND_EXPR, tmp, ifbody, build_empty_stmt ());
   gfc_add_expr_to_block (&block, tmp);
 
@@ -1826,14 +1820,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 	 the pos variable the same way as above.  */
 
       gfc_init_block (&elseblock);
-
-      elsetmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-			     loop.from[0], gfc_index_one_node);
-      cond = fold_build2 (GE_EXPR, boolean_type_node,
-			  loop.to[0], loop.from[0]);
-      elsetmp = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
-			  loop.from[0], elsetmp);
-      gfc_add_modify_expr (&elseblock, pos, elsetmp);
+      gfc_add_modify_expr (&elseblock, pos, gfc_index_zero_node);
       elsetmp = gfc_finish_block (&elseblock);
 
       tmp = build3_v (COND_EXPR, maskse.expr, tmp, elsetmp);

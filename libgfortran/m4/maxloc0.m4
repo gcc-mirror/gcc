@@ -45,7 +45,7 @@ FOREACH_FUNCTION(
 
   maxval = atype_min;'
 ,
-`  if (*base > maxval)
+`  if (*base > maxval || !dest[0])
     {
       maxval = *base;
       for (n = 0; n < rank; n++)
@@ -57,7 +57,7 @@ MASKED_FOREACH_FUNCTION(
 
   maxval = atype_min;'
 ,
-`  if (*mbase && *base > maxval)
+`  if (*mbase && (*base > maxval || !dest[0]))
     {
       maxval = *base;
       for (n = 0; n < rank; n++)
