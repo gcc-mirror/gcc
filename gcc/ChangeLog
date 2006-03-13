@@ -1,3 +1,8 @@
+2006-03-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/pa32-linux.h (CRT_CALL_STATIC_FUNCTION): Define when CRTSTUFFS_O
+	is defined.
+
 2006-03-13  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.md (*branch_fp): Use %Z2 for the condition.
