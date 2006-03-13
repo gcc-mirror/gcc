@@ -182,40 +182,56 @@ gfc_trans_add_clause (tree node, tree tail)
   return node;
 }
 
-/* TODO make references to parent function results, as done in
-   gfc_conv_variable.  */
-
 static tree
 gfc_trans_omp_variable (gfc_symbol *sym)
 {
   tree t = gfc_get_symbol_decl (sym);
+  tree parent_decl;
+  int parent_flag;
+  bool return_value;
+  bool alternate_entry;
+  bool entry_master;
+
+  return_value = sym->attr.function && sym->result == sym;
+  alternate_entry = sym->attr.function && sym->attr.entry
+		    && sym->result == sym;
+  entry_master = sym->attr.result
+		 && sym->ns->proc_name->attr.entry_master
+		 && !gfc_return_by_reference (sym->ns->proc_name);
+  parent_decl = DECL_CONTEXT (current_function_decl);
+
+  if ((t == parent_decl && return_value)
+       || (sym->ns && sym->ns->proc_name
+	   && sym->ns->proc_name->backend_decl == parent_decl
+	   && (alternate_entry || entry_master)))
+    parent_flag = 1;
+  else
+    parent_flag = 0;
 
   /* Special case for assigning the return value of a function.
      Self recursive functions must have an explicit return value.  */
-  if (t == current_function_decl && sym->attr.function
-      && (sym->result == sym))
-    t = gfc_get_fake_result_decl (sym, 0);
+  if (return_value && (t == current_function_decl || parent_flag))
+    t = gfc_get_fake_result_decl (sym, parent_flag);
 
   /* Similarly for alternate entry points.  */
-  else if (sym->attr.function && sym->attr.entry
-	   && (sym->result == sym)
-	   && sym->ns->proc_name->backend_decl == current_function_decl)
+  else if (alternate_entry
+	   && (sym->ns->proc_name->backend_decl == current_function_decl
+	       || parent_flag))
     {
       gfc_entry_list *el = NULL;
 
       for (el = sym->ns->entries; el; el = el->next)
 	if (sym == el->sym)
 	  {
-	    t = gfc_get_fake_result_decl (sym, 0);
+	    t = gfc_get_fake_result_decl (sym, parent_flag);
 	    break;
 	  }
     }
 
-  else if (sym->attr.result
-	   && sym->ns->proc_name->backend_decl == current_function_decl
-	   && sym->ns->proc_name->attr.entry_master
-	   && !gfc_return_by_reference (sym->ns->proc_name))
-    t = gfc_get_fake_result_decl (sym, 0);
+  else if (entry_master
+	   && (sym->ns->proc_name->backend_decl == current_function_decl
+	       || parent_flag))
+    t = gfc_get_fake_result_decl (sym, parent_flag);
 
   return t;
 }
@@ -408,7 +424,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
 
 static tree
 gfc_trans_omp_reduction_list (gfc_namelist *namelist, tree list, 
-                              enum tree_code reduction_code, locus where)
+			      enum tree_code reduction_code, locus where)
 {
   for (; namelist != NULL; namelist = namelist->next)
     if (namelist->sym->attr.referenced)
