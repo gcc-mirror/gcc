@@ -1,3 +1,8 @@
+2006-03-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26630
+	* gcc.dg/torture/pr26630.c: New testcase.
+
 2006-03-11  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/26054
