@@ -1,3 +1,9 @@
+2006-03-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/26557
+	* stmt.c (emit_case_nodes): Handle the case where the index is a
+	CONST_INT, where the comparison mode is specified by the index type.
+
 2006-03-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/pa32-linux.h (CRT_CALL_STATIC_FUNCTION): Define when CRTSTUFFS_O
