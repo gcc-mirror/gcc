@@ -1,3 +1,7 @@
+2006-03-13  Jim Blandy  <jimb@red-bean.com>
+
+	* MAINTAINERS: Update my E-mail address.
+
 2006-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* configure.in: Handle --disable-<component> generically.
