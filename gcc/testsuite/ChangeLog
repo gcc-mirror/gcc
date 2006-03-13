@@ -1,4 +1,9 @@
-2003-03-11  Roger Sayle  <roger@eyesopen.com>
+2006-03-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26630
+	* gcc.dg/torture/pr26630.c: New testcase.
+
+2006-03-11  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/dependency_10.f90: New test case.
 	* gfortran.dg/dependency_11.f90: Likewise.
