@@ -1,3 +1,7 @@
+2006-03-12  Jim Blandy  <jimb@red-bean.com>
+
+	* pex-common.h (struct pex_obj): Doc fixes.
+
 2006-03-11  Jim Blandy  <jimb@red-bean.com>
 
 	* functions.texi: Regenerate.

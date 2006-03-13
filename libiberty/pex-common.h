@@ -61,7 +61,7 @@ struct pex_obj
   int next_input_name_allocated;
   /* Number of child processes.  */
   int count;
-  /* PIDs of child processes; array allocated using maloc.  */
+  /* PIDs of child processes; array allocated using malloc.  */
   long *children;
   /* Exit statuses of child processes; array allocated using malloc.  */
   int *status;
@@ -88,10 +88,11 @@ struct pex_funcs
 {
   /* Open file NAME for reading.  If BINARY is non-zero, open in
      binary mode.  Return >= 0 on success, -1 on error.  */
-  int (*open_read) (struct pex_obj *, const char *name, int binary);
+  int (*open_read) (struct pex_obj *, const char */* name */, int /* binary */);
   /* Open file NAME for writing.  If BINARY is non-zero, open in
      binary mode.  Return >= 0 on success, -1 on error.  */
-  int (*open_write) (struct pex_obj *, const char *name, int binary);
+  int (*open_write) (struct pex_obj *, const char */* name */,
+                     int /* binary */);
   /* Execute a child process.  FLAGS, EXECUTABLE, ARGV, ERR are from
      pex_run.  IN, OUT, ERRDES are each a descriptor, from open_read,
      open_write, or pipe, or they are one of STDIN_FILE_NO,
@@ -99,25 +100,27 @@ struct pex_funcs
      should be closed.  The function should handle the
      PEX_STDERR_TO_STDOUT flag.  Return >= 0 on success, or -1 on
      error and set *ERRMSG and *ERR.  */
-  long (*exec_child) (struct pex_obj *, int flags, const char *executable,
-		      char * const * argv, int in, int out, int errdes,
-		      const char **errmsg, int *err);
+  long (*exec_child) (struct pex_obj *, int /* flags */,
+                      const char */* executable */, char * const * /* argv */,
+                      int /* in */, int /* out */, int /* errdes */,
+		      const char **/* errmsg */, int */* err */);
   /* Close a descriptor.  Return 0 on success, -1 on error.  */
   int (*close) (struct pex_obj *, int);
   /* Wait for a child to complete, returning exit status in *STATUS
      and time in *TIME (if it is not null).  CHILD is from fork.  DONE
      is 1 if this is called via pex_free.  ERRMSG and ERR are as in
      fork.  Return 0 on success, -1 on error.  */
-  int (*wait) (struct pex_obj *, long, int *status, struct pex_time *time,
-	       int done, const char **errmsg, int *err);
+  int (*wait) (struct pex_obj *, long /* child */, int * /* status */,
+               struct pex_time * /* time */, int /* done */,
+               const char ** /* errmsg */, int * /* err */);
   /* Create a pipe (only called if PEX_USE_PIPES is set) storing two
-     descriptin in *P.  If BINARY is non-zero, open in binary mode.
-     Return 0 on success, -1 on error.  */
-  int (*pipe) (struct pex_obj *, int *p, int binary);
+     descriptors in P[0] and P[1].  If BINARY is non-zero, open in
+     binary mode.  Return 0 on success, -1 on error.  */
+  int (*pipe) (struct pex_obj *, int * /* p */, int /* binary */);
   /* Get a FILE pointer to read from a file descriptor (only called if
      PEX_USE_PIPES is set).  If BINARY is non-zero, open in binary
      mode.  Return pointer on success, NULL on error.  */
-  FILE * (*fdopenr) (struct pex_obj *, int fd, int binary);
+  FILE * (*fdopenr) (struct pex_obj *, int /* fd */, int /* binary */);
   /* Free any system dependent data associated with OBJ.  May be
      NULL if there is nothing to do.  */
   void (*cleanup) (struct pex_obj *);
