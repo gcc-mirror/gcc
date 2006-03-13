@@ -1,3 +1,7 @@
+2006-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/retval2.f90: New test.
+
 2006-03-09  Diego Novillo  <dnovillo@redhat.com>
 
 	* testsuite/libgomp.c++: New directory.
