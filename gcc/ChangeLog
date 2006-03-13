@@ -1,3 +1,9 @@
+2006-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/18859
+	* gimplify.c (gimplify_switch_expr): Discard empty ranges.
+	* stmt.c (expand_case): Likewise.
+
 2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/26254

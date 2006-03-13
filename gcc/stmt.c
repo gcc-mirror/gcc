@@ -2286,7 +2286,7 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 #define HAVE_tablejump 0
 #endif
 
-/* Terminate a case (Pascal) or switch (C) statement
+/* Terminate a case (Pascal/Ada) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
    type as given in the source before any compiler conversions.
@@ -2348,10 +2348,18 @@ expand_case (tree exp)
 
       for (i = TREE_VEC_LENGTH (vec) - 1; --i >= 0; )
 	{
+	  tree low, high;
 	  elt = TREE_VEC_ELT (vec, i);
-	  gcc_assert (CASE_LOW (elt));
-	  case_list = add_case_node (case_list, index_type,
-				     CASE_LOW (elt), CASE_HIGH (elt),
+
+	  low = CASE_LOW (elt);
+	  gcc_assert (low);
+	  high = CASE_HIGH (elt);
+
+	  /* Discard empty ranges.  */
+	  if (high && INT_CST_LT (high, low))
+	    continue;
+
+	  case_list = add_case_node (case_list, index_type, low, high,
 				     CASE_LABEL (elt));
 	}
 

@@ -1327,20 +1327,34 @@ gimplify_switch_expr (tree *expr_p, tree *pre_p)
       labels = gimplify_ctxp->case_labels;
       gimplify_ctxp->case_labels = saved_labels;
 
-      len = VEC_length (tree, labels);
-
-      for (i = 0; i < len; ++i)
+      i = 0;
+      while (i < VEC_length (tree, labels))
 	{
-	  tree t = VEC_index (tree, labels, i);
-	  if (!CASE_LOW (t))
+	  tree elt = VEC_index (tree, labels, i);
+	  tree low = CASE_LOW (elt);
+	  bool remove_element = FALSE;
+
+	  if (low)
+	    {
+	      /* Discard empty ranges.  */
+	      tree high = CASE_HIGH (elt);
+	      if (high && INT_CST_LT (high, low))
+	        remove_element = TRUE;
+	    }
+	  else
 	    {
 	      /* The default case must be the last label in the list.  */
-	      default_case = t;
-	      VEC_replace (tree, labels, i, VEC_index (tree, labels, len - 1));
-	      len--;
-	      break;
+	      gcc_assert (!default_case);
+	      default_case = elt;
+	      remove_element = TRUE;
 	    }
+
+	  if (remove_element)
+	    VEC_ordered_remove (tree, labels, i);
+	  else
+	    i++;
 	}
+      len = i;
 
       label_vec = make_tree_vec (len + 1);
       SWITCH_LABELS (*expr_p) = label_vec;
