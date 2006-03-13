@@ -1,3 +1,7 @@
+2006-03-11  Jim Blandy  <jimb@red-bean.com>
+
+	* functions.texi: Regenerate.
+
 2006-02-21  Ben Elliston  <bje@au.ibm.com>
 
 	* pexecute.c (pwait): Syntax fix for previous change.
