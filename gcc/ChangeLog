@@ -1,5 +1,10 @@
 2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* jump.c (follow_jumps): Do not check for loop notes.  Move check for
+	flag_test_coverage out of loop.
+
+2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* final.c (shorten_branches): Remove outdated comment, and turn
 	the if branch that guards it to continue.
 
