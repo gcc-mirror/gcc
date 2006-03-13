@@ -4284,8 +4284,8 @@
   "TARGET_HARD_FLOAT"
 {
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%F0", "%2,%1"),
-					 MIPS_BRANCH ("b%W0", "%2,%1"));
+					 MIPS_BRANCH ("b%F0", "%Z2%1"),
+					 MIPS_BRANCH ("b%W0", "%Z2%1"));
 }
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
@@ -4301,8 +4301,8 @@
   "TARGET_HARD_FLOAT"
 {
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%W0", "%2,%1"),
-					 MIPS_BRANCH ("b%F0", "%2,%1"));
+					 MIPS_BRANCH ("b%W0", "%Z2%1"),
+					 MIPS_BRANCH ("b%F0", "%Z2%1"));
 }
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
