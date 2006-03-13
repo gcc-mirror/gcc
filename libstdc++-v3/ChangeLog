@@ -1,3 +1,9 @@
+006-03-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/postypes.h (fpos<>::operator==, operator!=): Remove,
+	exploit conversion to streamoff.
+	* testsuite/27_io/fpos/mbstate_t/5.cc: New.
+
 2006-03-12  Howard Hinnant  <hhinnant@apple.com>
 
 	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc:
