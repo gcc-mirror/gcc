@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 3.3\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-11-20 16:34+0000\n"
+"POT-Creation-Date: 2006-02-28 00:12-0800\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -171,236 +171,236 @@ msgstr "ubusa Inyuguti"
 msgid "failure to convert %s to %s"
 msgstr "OYA GUHINDURA Kuri"
 
-#: directives.c:219 directives.c:245
+#: directives.c:220 directives.c:246
 #, fuzzy, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr "Birenga ku Impera Bya"
 
-#: directives.c:346
+#: directives.c:347
 #, fuzzy, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%sni a Umugereka"
 
-#: directives.c:358
+#: directives.c:359
 #, fuzzy
 msgid "suggest not using #elif in traditional C"
 msgstr "OYA ikoresha in C"
 
-#: directives.c:361
+#: directives.c:362
 #, fuzzy, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "C Na: i hariho marije"
 
-#: directives.c:365
+#: directives.c:366
 #, fuzzy, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "Bivuye C Na: hariho marije"
 
-#: directives.c:391
+#: directives.c:392
 #, fuzzy
 msgid "embedding a directive within macro arguments is not portable"
 msgstr "a muri Makoro ingingo ni OYA"
 
-#: directives.c:411
+#: directives.c:412
 #, fuzzy
 msgid "style of line directive is a GCC extension"
 msgstr "IMISUSIRE Bya Umurongo ni a Umugereka"
 
-#: directives.c:461
+#: directives.c:462
 #, fuzzy, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "Sibyo"
 
-#: directives.c:532
+#: directives.c:533
 #, fuzzy
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "\"Nka a Makoro Izina:"
 
-#: directives.c:538
+#: directives.c:539
 #, fuzzy, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "\"%s\"Nka a Makoro Izina: Nka ni Mukoresha in C"
 
-#: directives.c:541
+#: directives.c:542
 #, fuzzy, c-format
 msgid "no macro name given in #%s directive"
 msgstr "Oya Makoro Izina: in"
 
-#: directives.c:544
+#: directives.c:545
 #, fuzzy
 msgid "macro names must be identifiers"
 msgstr "Makoro Amazina"
 
-#: directives.c:585
+#: directives.c:586
 #, c-format
 msgid "undefining \"%s\""
 msgstr ""
 
-#: directives.c:640
+#: directives.c:641
 #, fuzzy
 msgid "missing terminating > character"
 msgstr "Ibuze Inyuguti"
 
-#: directives.c:695
+#: directives.c:696
 #, fuzzy, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%sCyangwa"
 
-#: directives.c:735
+#: directives.c:736
 #, fuzzy, c-format
 msgid "empty filename in #%s"
 msgstr "ubusa IDOSIYE Izina: in"
 
-#: directives.c:745
+#: directives.c:746
 #, fuzzy
 msgid "#include nested too deeply"
 msgstr "#Gushyiramo"
 
-#: directives.c:786
+#: directives.c:787
 #, fuzzy
 msgid "#include_next in primary source file"
 msgstr "#in Inkomoko IDOSIYE"
 
-#: directives.c:812
+#: directives.c:813
 #, fuzzy, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "Sibyo Ibendera in Umurongo"
 
-#: directives.c:864
+#: directives.c:865
 #, fuzzy, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\"Nyuma Umurongo ni OYA a Umubare wuzuye"
 
-#: directives.c:870
+#: directives.c:871
 #, fuzzy
 msgid "line number out of range"
 msgstr "Umurongo Umubare Inyuma Bya Urutonde"
 
-#: directives.c:883 directives.c:960
+#: directives.c:884 directives.c:961
 #, fuzzy, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\"ni OYA a Byemewe Izina ry'idosiye:"
 
-#: directives.c:920
+#: directives.c:921
 #, fuzzy, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\"Nyuma ni OYA a Umubare wuzuye"
 
-#: directives.c:1022
+#: directives.c:1023
 #, fuzzy, c-format
 msgid "invalid #%s directive"
 msgstr "Sibyo"
 
-#: directives.c:1111
+#: directives.c:1112
 #, fuzzy, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "Nka Byombi a Na a"
 
-#: directives.c:1114
+#: directives.c:1115
 #, fuzzy, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#ni"
 
-#: directives.c:1117
+#: directives.c:1118
 #, fuzzy, c-format
 msgid "#pragma %s is already registered"
 msgstr "#ni"
 
-#: directives.c:1317
+#: directives.c:1362
 #, fuzzy
 msgid "#pragma once in main file"
 msgstr "#Rimwe in IDOSIYE"
 
-#: directives.c:1340
+#: directives.c:1385
 #, fuzzy
 msgid "invalid #pragma GCC poison directive"
 msgstr "Sibyo"
 
-#: directives.c:1349
+#: directives.c:1394
 #, fuzzy, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "Makoro"
 
-#: directives.c:1370
+#: directives.c:1415
 #, fuzzy
 msgid "#pragma system_header ignored outside include file"
 msgstr "#Hanze Gushyiramo IDOSIYE"
 
-#: directives.c:1394
+#: directives.c:1439
 #, fuzzy, c-format
 msgid "cannot find source file %s"
 msgstr "Gushaka Inkomoko"
 
-#: directives.c:1398
+#: directives.c:1443
 #, fuzzy, c-format
 msgid "current file is older than %s"
 msgstr "KIGEZWEHO IDOSIYE ni"
 
-#: directives.c:1512
+#: directives.c:1557
 #, fuzzy
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "a Ikurikiranyanyuguti"
 
-#: directives.c:1613
+#: directives.c:1658
 #, fuzzy
 msgid "#else without #if"
 msgstr "#Ikindi NIBA"
 
-#: directives.c:1618
+#: directives.c:1663
 #, fuzzy
 msgid "#else after #else"
 msgstr "#Ikindi Nyuma Ikindi"
 
-#: directives.c:1620 directives.c:1653
+#: directives.c:1665 directives.c:1698
 #, fuzzy
 msgid "the conditional began here"
 msgstr "i"
 
-#: directives.c:1646
+#: directives.c:1691
 #, fuzzy
 msgid "#elif without #if"
 msgstr "#NIBA"
 
-#: directives.c:1651
+#: directives.c:1696
 #, fuzzy
 msgid "#elif after #else"
 msgstr "#Nyuma Ikindi"
 
-#: directives.c:1681
+#: directives.c:1726
 #, fuzzy
 msgid "#endif without #if"
 msgstr "#NIBA"
 
-#: directives.c:1758
+#: directives.c:1803
 #, fuzzy
 msgid "missing '(' after predicate"
 msgstr "Ibuze Nyuma"
 
-#: directives.c:1773
+#: directives.c:1818
 #, fuzzy
 msgid "missing ')' to complete answer"
 msgstr "Ibuze Kuri Byuzuye"
 
-#: directives.c:1793
+#: directives.c:1838
 #, fuzzy
 msgid "predicate's answer is empty"
 msgstr "ni ubusa"
 
-#: directives.c:1820
+#: directives.c:1865
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.c:1822
+#: directives.c:1867
 #, fuzzy
 msgid "predicate must be an identifier"
 msgstr "Ikiranga"
 
-#: directives.c:1908
+#: directives.c:1953
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2132
+#: directives.c:2177
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
@@ -659,42 +659,42 @@ msgstr "Oya Gushyiramo Inzira in Kuri Gushaka"
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Gushyiramo Gicurasi kugirango"
 
-#: init.c:400
+#: init.c:406
 #, fuzzy
 msgid "cppchar_t must be an unsigned type"
 msgstr "Bitashizweho umukono Ubwoko"
 
-#: init.c:404
+#: init.c:410
 #, fuzzy, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "Kinini Bya Intego"
 
-#: init.c:411
+#: init.c:417
 #, fuzzy
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "ku Nka Nka a Intego INT"
 
-#: init.c:414
+#: init.c:420
 #, fuzzy
 msgid "target char is less than 8 bits wide"
 msgstr "Intego INYUGUTI ni Birutwa 8"
 
-#: init.c:418
+#: init.c:424
 #, fuzzy
 msgid "target wchar_t is narrower than target char"
 msgstr "Intego ni Intego INYUGUTI"
 
-#: init.c:422
+#: init.c:428
 #, fuzzy
 msgid "target int is narrower than target char"
 msgstr "Intego INT ni Intego INYUGUTI"
 
-#: init.c:427
+#: init.c:433
 #, fuzzy
 msgid "CPP half-integer narrower than CPP character"
 msgstr "Umubare wuzuye Inyuguti"
 
-#: init.c:431
+#: init.c:437
 #, fuzzy, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "ku iyi Ubuturo Inyuguti KURI i Intego"
@@ -822,122 +822,122 @@ msgstr ",Bivuye"
 msgid "macro \"%s\" is not used"
 msgstr "Makoro ni OYA"
 
-#: macro.c:124 macro.c:287
+#: macro.c:124 macro.c:283
 #, fuzzy, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "Sibyo in Makoro"
 
-#: macro.c:221
+#: macro.c:217
 #, fuzzy
 msgid "could not determine date and time"
 msgstr "OYA Itariki Na Igihe"
 
-#: macro.c:391
+#: macro.c:387
 #, fuzzy
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "Sibyo Ikurikiranyanyuguti"
 
-#: macro.c:474
+#: macro.c:470
 #, fuzzy, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "Na OYA a Byemewe"
 
-#: macro.c:512
+#: macro.c:508
 #, fuzzy
 msgid "ISO C99 requires rest arguments to be used"
 msgstr "ingingo Kuri"
 
-#: macro.c:517
+#: macro.c:513
 #, fuzzy, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "Makoro ingingo"
 
-#: macro.c:522
+#: macro.c:518
 #, fuzzy, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "Makoro ingingo"
 
-#: macro.c:633 traditional.c:675
+#: macro.c:629 traditional.c:675
 #, fuzzy, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "Urutonde Makoro"
 
-#: macro.c:736
+#: macro.c:732
 #, fuzzy, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "Umumaro nka Makoro Na: ingingo in C"
 
-#: macro.c:1252
+#: macro.c:1248
 #, fuzzy, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "Gusubiramo Makoro"
 
-#: macro.c:1298
+#: macro.c:1294
 #, fuzzy, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "\"%s\"Gicurasi OYA Kugaragara in Makoro Urutonde"
 
-#: macro.c:1306
+#: macro.c:1302
 #, fuzzy
 msgid "macro parameters must be comma-separated"
 msgstr "Makoro Ibigenga Akitso"
 
-#: macro.c:1323
+#: macro.c:1319
 #, fuzzy
 msgid "parameter name missing"
 msgstr "Izina: Ibuze"
 
-#: macro.c:1340
+#: macro.c:1336
 #, fuzzy
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "Makoro in"
 
-#: macro.c:1345
+#: macro.c:1341
 #, fuzzy
 msgid "ISO C does not permit named variadic macros"
 msgstr "C OYA Makoro"
 
-#: macro.c:1354
+#: macro.c:1350
 #, fuzzy
 msgid "missing ')' in macro parameter list"
 msgstr "Ibuze in Makoro Urutonde"
 
-#: macro.c:1432
+#: macro.c:1428
 #, fuzzy
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "C Nyuma i Makoro Izina:"
 
-#: macro.c:1456
+#: macro.c:1452
 #, fuzzy
 msgid "missing whitespace after the macro name"
 msgstr "C Nyuma i Makoro Izina:"
 
-#: macro.c:1486
+#: macro.c:1482
 #, fuzzy
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#'ni OYA ku a Makoro"
 
-#: macro.c:1505
+#: macro.c:1501
 #, fuzzy
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##'Kugaragara ku Impera Bya a Makoro"
 
-#: macro.c:1603
+#: macro.c:1599
 #, c-format
 msgid "\"%s\" redefined"
 msgstr ""
 
-#: macro.c:1608
+#: macro.c:1604
 #, fuzzy
 msgid "this is the location of the previous definition"
 msgstr "iyi ni i Ahantu Bya i Ibanjirije Insobanuro"
 
-#: macro.c:1658
+#: macro.c:1654
 #, fuzzy, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "Makoro in C"
 
-#: macro.c:1681
+#: macro.c:1677
 #, fuzzy, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "Sibyo Ubwoko in"

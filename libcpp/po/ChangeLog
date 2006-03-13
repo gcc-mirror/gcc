@@ -1,3 +1,9 @@
+2006-03-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* be.po, ca.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po,
+	rw.po, sv.po, tr.po, vi.po, zh_CN.po: Update.
+	* zh_TW.po: New file.
+
 2005-12-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* vi.po: Update.
