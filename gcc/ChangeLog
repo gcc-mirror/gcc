@@ -1,3 +1,8 @@
+2006-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/18859
+	* stmt.c (expand_case): Discard empty ranges.
+
 2006-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c/26004

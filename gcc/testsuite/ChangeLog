@@ -1,3 +1,7 @@
+2006-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/switch-9.c: New test.
+
 2006-03-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/26630
