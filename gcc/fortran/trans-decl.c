@@ -1800,6 +1800,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 
       SET_DECL_VALUE_EXPR (var, decl);
       DECL_HAS_VALUE_EXPR_P (var) = 1;
+      GFC_DECL_RESULT (var) = 1;
 
       TREE_CHAIN (this_fake_result_decl)
 	  = tree_cons (get_identifier (sym->name), var,
