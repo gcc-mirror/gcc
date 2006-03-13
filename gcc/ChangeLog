@@ -1,3 +1,8 @@
+2006-03-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/lib1funcs.asm (___umodsi3): Use stack to save contents
+	of RETS.
+
 2006-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/18859
