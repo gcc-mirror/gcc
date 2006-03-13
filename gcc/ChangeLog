@@ -1,3 +1,7 @@
+2006-03-13  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/uclinux.h: Define _GNU_SOURCE in CPLUSPLUS_CPP_SPEC.
+
 2006-03-13  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (stmt_interesting_for_vrp): Some statements with
