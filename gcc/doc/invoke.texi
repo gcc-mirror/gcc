@@ -3816,15 +3816,14 @@ Dump after conversion from registers to stack, to @file{@var{file}.33.stack}.
 Dump after local register allocation, to @file{@var{file}.22.lreg}.
 
 @item -dL
-@itemx -fdump-rtl-loop
 @itemx -fdump-rtl-loop2
 @opindex dL
-@opindex fdump-rtl-loop
 @opindex fdump-rtl-loop2
-@option{-dL} and @option{-fdump-rtl-loop} enable dumping after the first
-loop optimization pass, to @file{@var{file}.06.loop}.  @option{-dL} and
-@option{-fdump-rtl-loop2} enable dumping after the second pass, to
-@file{@var{file}.13.loop2}.
+@option{-dL} and @option{-fdump-rtl-loop2} enable dumping after the
+loop optimization pass, to @file{@var{file}.119r.loop2},
+@file{@var{file}.120r.loop2_init},
+@file{@var{file}.121r.loop2_invariant},
+@file{@var{file}.125r.loop2_done}.
 
 @item -dm
 @itemx -fdump-rtl-sms
