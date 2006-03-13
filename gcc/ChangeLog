@@ -1,5 +1,13 @@
 2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* cfgrtl.c (last_loop_beg_note, back_edge_of_syntactic_loop_p):
+	Removed.
+	(force_nonfallthru_and_redirect): Do not use last_loop_beg_note.
+	(rtl_split_edge): Do not use back_edge_of_syntactic_loop_p.
+	(commit_one_edge_insertion): Do not look for loop notes.
+
+2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* jump.c (follow_jumps): Do not check for loop notes.  Move check for
 	flag_test_coverage out of loop.
 
