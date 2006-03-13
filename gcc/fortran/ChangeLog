@@ -1,3 +1,8 @@
+2006-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (gfc_get_fake_result_decl): Re-add setting of
+	GFC_DECL_RESULT flag.
+
 2003-03-11  Roger Sayle  <roger@eyesopen.com>
 
 	* dependency.c (gfc_dep_compare_expr) <EXPR_OP>: Allow unary and
