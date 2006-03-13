@@ -1,5 +1,11 @@
 2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR rtl-optimization/26254
+	* loop-invariant.c (seq_insns_valid_p): New function.
+	(move_invariant_reg): Only emit new code if it is valid.
+
+2006-03-13  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* cfgrtl.c (last_loop_beg_note, back_edge_of_syntactic_loop_p):
 	Removed.
 	(force_nonfallthru_and_redirect): Do not use last_loop_beg_note.

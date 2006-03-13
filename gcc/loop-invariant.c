@@ -1109,22 +1109,38 @@ find_invariants_to_move (void)
     }
 }
 
-/* Move invariant INVNO out of the LOOP.  */
+/* Returns true if all insns in SEQ are valid.  */
 
-static void
+static bool
+seq_insns_valid_p (rtx seq)
+{
+  rtx x;
+
+  for (x = seq; x; x = NEXT_INSN (x))
+    if (insn_invalid_p (x))
+      return false;
+
+  return true;
+}
+
+/* Move invariant INVNO out of the LOOP.  Returns true if this succeeds, false
+   otherwise.  */
+
+static bool
 move_invariant_reg (struct loop *loop, unsigned invno)
 {
   struct invariant *inv = VEC_index (invariant_p, invariants, invno);
   struct invariant *repr = VEC_index (invariant_p, invariants, inv->eqto);
   unsigned i;
   basic_block preheader = loop_preheader_edge (loop)->src;
-  rtx reg, set, seq, op;
+  rtx reg, set, dest, seq, op;
   struct use *use;
   bitmap_iterator bi;
 
-  if (inv->reg
-      || !repr->move)
-    return;
+  if (inv->reg)
+    return true;
+  if (!repr->move)
+    return false;
 
   /* If this is a representative of the class of equivalent invariants,
      really move the invariant.  Otherwise just replace its use with
@@ -1135,7 +1151,8 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	{
 	  EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, i, bi)
 	    {
-	      move_invariant_reg (loop, i);
+	      if (!move_invariant_reg (loop, i))
+		goto fail;
 	    }
 	}
 
@@ -1145,14 +1162,15 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	 would not be dominated by it, we may just move it (TODO).  Otherwise we
 	 need to create a temporary register.  */
       set = single_set (inv->insn);
-      reg = gen_reg_rtx (GET_MODE (SET_DEST (set)));
-      emit_insn_after (gen_move_insn (SET_DEST (set), reg), inv->insn);
+      dest = SET_DEST (set);
+      reg = gen_reg_rtx (GET_MODE (dest));
 
-      /* If the SET_DEST of the invariant insn is a reg, we can just move
+      /* If the SET_DEST of the invariant insn is a pseudo, we can just move
 	 the insn out of the loop.  Otherwise, we have to use gen_move_insn
 	 to let emit_move_insn produce a valid instruction stream.  */
-      if (REG_P (SET_DEST (set)))
+      if (REG_P (dest) && !HARD_REGISTER_P (dest))
 	{
+	  emit_insn_after (gen_move_insn (dest, reg), inv->insn);
 	  SET_DEST (set) = reg;
 	  reorder_insns (inv->insn, inv->insn, BB_END (preheader));
 	}
@@ -1165,13 +1183,18 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	  seq = get_insns ();
 	  end_sequence ();
 
+	  if (!seq_insns_valid_p (seq))
+	    goto fail;
 	  emit_insn_after (seq, BB_END (preheader));
+      
+	  emit_insn_after (gen_move_insn (dest, reg), inv->insn);
 	  delete_insn (inv->insn);
 	}
     }
   else
     {
-      move_invariant_reg (loop, repr->invno);
+      if (!move_invariant_reg (loop, repr->invno))
+	goto fail;
       reg = repr->reg;
       set = single_set (inv->insn);
       emit_insn_after (gen_move_insn (SET_DEST (set), reg), inv->insn);
@@ -1188,6 +1211,17 @@ move_invariant_reg (struct loop *loop, unsigned invno)
       for (use = inv->def->uses; use; use = use->next)
 	*use->pos = reg;
     }
+
+  return true;
+
+fail:
+  /* If we failed, clear move flag, so that we do not try to move inv
+     again.  */
+  if (dump_file)
+    fprintf (dump_file, "Failed to move invariant %d\n", invno);
+  inv->move = false;
+  inv->reg = NULL_RTX;
+  return false;
 }
 
 /* Move selected invariant out of the LOOP.  Newly created regs are marked
