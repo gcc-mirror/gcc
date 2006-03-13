@@ -3266,11 +3266,19 @@ stmt_interesting_for_vrp (tree stmt)
   else if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
       tree lhs = TREE_OPERAND (stmt, 0);
+      tree rhs = TREE_OPERAND (stmt, 1);
 
+      /* In general, assignments with virtual operands are not useful
+	 for deriving ranges, with the obvious exception of calls to
+	 builtin functions.  */
       if (TREE_CODE (lhs) == SSA_NAME
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
-	  && ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+	  && ((TREE_CODE (rhs) == CALL_EXPR
+	       && TREE_CODE (TREE_OPERAND (rhs, 0)) == ADDR_EXPR
+	       && DECL_P (TREE_OPERAND (TREE_OPERAND (rhs, 0), 0))
+	       && DECL_IS_BUILTIN (TREE_OPERAND (TREE_OPERAND (rhs, 0), 0)))
+	      || ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS)))
 	return true;
     }
   else if (TREE_CODE (stmt) == COND_EXPR || TREE_CODE (stmt) == SWITCH_EXPR)
@@ -3739,9 +3747,20 @@ vrp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
     }
 
   ann = stmt_ann (stmt);
-  if (TREE_CODE (stmt) == MODIFY_EXPR
-      && ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
-    return vrp_visit_assignment (stmt, output_p);
+  if (TREE_CODE (stmt) == MODIFY_EXPR)
+    {
+      tree rhs = TREE_OPERAND (stmt, 1);
+
+      /* In general, assignments with virtual operands are not useful
+	 for deriving ranges, with the obvious exception of calls to
+	 builtin functions.  */
+      if ((TREE_CODE (rhs) == CALL_EXPR
+	   && TREE_CODE (TREE_OPERAND (rhs, 0)) == ADDR_EXPR
+	   && DECL_P (TREE_OPERAND (TREE_OPERAND (rhs, 0), 0))
+	   && DECL_IS_BUILTIN (TREE_OPERAND (TREE_OPERAND (rhs, 0), 0)))
+	  || ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+	return vrp_visit_assignment (stmt, output_p);
+    }
   else if (TREE_CODE (stmt) == COND_EXPR || TREE_CODE (stmt) == SWITCH_EXPR)
     return vrp_visit_cond_stmt (stmt, taken_edge_p);
 
