@@ -128,8 +128,8 @@ by type.  Explanations are in the following sections.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{
 -fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wall  -Waliasing  -Wconversion @gol
--Wimplicit-interface  -Wnonstd-intrinsics  -Wsurprising  -Wunderflow @gol
+-w  -Wall  -Waliasing  -Wconversion -Wimplicit-interface @gol
+-Wtabs -Wnonstd-intrinsics -Wsurprising -Wunderflow @gol
 -Wunused-labels -Wline-truncation -W}
 
 @item Debugging Options
@@ -378,8 +378,8 @@ Inhibit all warning messages.
 Enables commonly used warning options that which pertain to usage that
 we recommend avoiding and that we believe is easy to avoid.
 This currently includes @option{-Wunused-labels}, @option{-Waliasing},
-@option{-Wsurprising}, @option{-Wnonstd-intrinsic} and
-@option{-Wline-truncation}.
+@option{-Wsurprising}, @option{-Wnonstd-intrinsic},  @option{-Wno-tabs},
+and @option{-Wline-truncation}.
 
 
 @cindex -Waliasing option
@@ -444,6 +444,15 @@ lower value is greater than its upper value.
 @item
 A LOGICAL SELECT construct has three CASE statements.
 @end itemize
+
+@cindex -Wtabs
+@cindex options, -Wtabs
+@item -Wtabs
+@cindex Tabs
+By default, tabs are accepted as whitespace, but tabs are not members
+of the Fortran Character Set.  @option{-Wno-tabs} will cause a warning
+to be issued if a tab is encountered. Note, @option{-Wno-tabs} is active
+for @option{-pedantic}, @option{-std=f95}, and @option{-Wall}.
 
 @cindex -Wunderflow
 @cindex options, -Wunderflow

@@ -1,6 +1,6 @@
 /* gfortran header file
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software 
-   Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1605,8 +1605,9 @@ typedef struct
   int warn_conversion;
   int warn_implicit_interface;
   int warn_line_truncation;
-  int warn_underflow;
   int warn_surprising;
+  int warn_tabs;
+  int warn_underflow;
   int warn_unused_labels;
 
   int flag_default_double;
