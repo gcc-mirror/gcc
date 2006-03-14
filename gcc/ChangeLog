@@ -1,3 +1,14 @@
+2006-03-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Makefile.in (reg-stack.o): Don't depend on gt-reg-stack.h.
+	* reg-stack.c (stack_regs_mentioned_data): Change the type to
+	VEC(char,heap) *.
+	(stack_regs_mentioned): Update the uses of
+	stack_regs_mentioned_data.  Don't access the array beyond its
+	end.
+	(reg_to_stack): Update the uses of stack_regs_mentioned_data.
+	Don't include gt-reg-stack.h.
+
 2006-03-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/pa32-linux.h (CRT_CALL_STATIC_FUNCTION): Fix typo.
