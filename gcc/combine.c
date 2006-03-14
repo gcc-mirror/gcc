@@ -139,12 +139,6 @@ static int max_uid_cuid;
 #define INSN_CUID(INSN) \
 (INSN_UID (INSN) > max_uid_cuid ? insn_cuid (INSN) : uid_cuid[INSN_UID (INSN)])
 
-/* In case BITS_PER_WORD == HOST_BITS_PER_WIDE_INT, shifting by
-   BITS_PER_WORD would invoke undefined behavior.  Work around it.  */
-
-#define UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD(val) \
-  (((unsigned HOST_WIDE_INT) (val) << (BITS_PER_WORD - 1)) << 1)
-
 /* Maximum register number, which is the size of the tables below.  */
 
 static unsigned int combine_max_regno;

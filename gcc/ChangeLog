@@ -12,6 +12,8 @@
 	* config/bfin/bfin.h (UNALIGNED_WORD_ASM_OP): Remove.
 	* system.h (UNALIGNED_WORD_ASM_OP): Poison.
 
+	* combine.c (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD): Remove.
+
 2006-03-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/pa32-linux.h (CRT_CALL_STATIC_FUNCTION): Fix typo.
