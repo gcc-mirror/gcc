@@ -275,21 +275,24 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	case ADDR_EXPR:
 	  /* See what we are pointing at and look at its alignment.  */
 	  exp = TREE_OPERAND (exp, 0);
+	  inner = max_align;
 	  while (handled_component_p (exp))
 	    {
 	      if (TREE_CODE (exp) == COMPONENT_REF)
-		align = MIN (align, DECL_ALIGN (TREE_OPERAND (exp, 1)));
+		inner = MIN (inner, DECL_ALIGN (TREE_OPERAND (exp, 1)));
 	      exp = TREE_OPERAND (exp, 0);
 	    }
 	  if (TREE_CODE (exp) == FUNCTION_DECL)
-	    align = MIN (align, FUNCTION_BOUNDARY);
+	    align = FUNCTION_BOUNDARY;
 	  else if (DECL_P (exp))
-	    align = MIN (align, DECL_ALIGN (exp));
+	    align = MIN (inner, DECL_ALIGN (exp));
 #ifdef CONSTANT_ALIGNMENT
 	  else if (CONSTANT_CLASS_P (exp))
-	    align = MIN (align, (unsigned)CONSTANT_ALIGNMENT (exp, align));
+	    align = CONSTANT_ALIGNMENT (exp, align);
 #endif
-	  return align;
+	  else
+	    align = MIN (align, inner);
+	  return MIN (align, max_align);
 
 	default:
 	  return align;

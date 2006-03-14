@@ -1,3 +1,9 @@
+2006-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26659
+	* builtins.c (get_pointer_alignment): Prefer alignment
+	information from decls over that from types.
+
 2006-03-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/26657
