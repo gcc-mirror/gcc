@@ -1,5 +1,11 @@
 2006-03-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/26672
+	* tree-ssa-propagate.c (set_rhs): Don't walk DEFs if not in
+	SSA form.
+
+2006-03-14  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/26667
 	* ipa-inline.c (cgraph_check_inline_limits): Walk the correct
 	node for the callees.  Always allow inlining if it will shrink
