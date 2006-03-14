@@ -1,3 +1,7 @@
+2006-03-14  Richard Guenther  <rguenther@suse.de>
+
+	* configure: Regenerate with autoconf 2.13.
+
 2006-03-13  Jim Blandy  <jimb@codesourcery.com>
 
 	* MAINTAINERS: Use my work address.
