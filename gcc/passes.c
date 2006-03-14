@@ -634,7 +634,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_cse);
   NEXT_PASS (pass_gcse);
   NEXT_PASS (pass_jump_bypass);
-  NEXT_PASS (pass_cfg);
   NEXT_PASS (pass_rtl_ifcvt);
   NEXT_PASS (pass_tracer);
   /* Perform loop optimizations.  It might be better to do them a bit

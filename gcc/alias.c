@@ -2642,36 +2642,5 @@ end_alias_analysis (void)
   free (reg_known_equiv_p);
   reg_known_equiv_p = 0;
 }
-
-/* Do control and data flow analysis; write some of the results to the
-   dump file.  */
-static unsigned int
-rest_of_handle_cfg (void)
-{
-  if (dump_file)
-    dump_flow_info (dump_file, dump_flags);
-  if (optimize)
-    cleanup_cfg (CLEANUP_EXPENSIVE
-                 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
-  return 0;
-}
-
-struct tree_opt_pass pass_cfg =
-{
-  "cfg",                                /* name */
-  NULL,					/* gate */   
-  rest_of_handle_cfg,                   /* execute */       
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_FLOW,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
-  'f'                                   /* letter */
-};
-
 
 #include "gt-alias.h"
