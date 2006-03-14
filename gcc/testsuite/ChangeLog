@@ -1,3 +1,8 @@
+2006-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26672
+	* gcc.dg/torture/pr26672.c: New testcase.
+
 2006-03-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.target/powerpc/405-dlmzb-strlen-1.c,

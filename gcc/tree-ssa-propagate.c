@@ -632,7 +632,8 @@ set_rhs (tree *stmt_p, tree expr)
       *stmt_p = TREE_SIDE_EFFECTS (expr) ? expr : build_empty_stmt ();
       (*stmt_p)->common.ann = (tree_ann_t) ann;
 
-      if (TREE_SIDE_EFFECTS (expr))
+      if (in_ssa_p
+	  && TREE_SIDE_EFFECTS (expr))
 	{
 	  /* Fix all the SSA_NAMEs created by *STMT_P to point to its new
 	     replacement.  */
