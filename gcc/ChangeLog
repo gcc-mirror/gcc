@@ -1,5 +1,12 @@
 2006-03-14  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/19543
+	Backport from mainline.
+	* varasm.c (compare_constant) <INTEGER_CST>: Integer constants are
+	only equivalent if the have both the same mode and precision.
+
+2006-03-14  Roger Sayle  <roger@eyesopen.com>
+
 	PR other/26489
 	Backport from mainline.
 	* gthr-posix.h (__gthrw2): Define to take three parameters, the
