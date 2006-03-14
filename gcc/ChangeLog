@@ -9,6 +9,9 @@
 	(reg_to_stack): Update the uses of stack_regs_mentioned_data.
 	Don't include gt-reg-stack.h.
 
+	* config/bfin/bfin.h (UNALIGNED_WORD_ASM_OP): Remove.
+	* system.h (UNALIGNED_WORD_ASM_OP): Poison.
+
 2006-03-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/pa32-linux.h (CRT_CALL_STATIC_FUNCTION): Fix typo.
