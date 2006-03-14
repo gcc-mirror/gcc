@@ -1309,7 +1309,7 @@ cxx_sizeof_expr (tree e)
 }
 
 /* Implement the __alignof keyword: Return the minimum required
-   alignment of EXPR, measured in bytes.  For VAR_DECL's and
+   alignment of E, measured in bytes.  For VAR_DECL's and
    FIELD_DECL's return DECL_ALIGN (which can be set from an
    "aligned" __attribute__ specification).  */
 
@@ -1359,8 +1359,8 @@ cxx_alignof_expr (tree e)
   return fold_convert (size_type_node, t);
 }
 
-/* Process a sizeof or alignof expression where the operand is an
-   expression.  */
+/* Process a sizeof or alignof expression E with code OP where the operand
+   is an expression.  */
 
 tree
 cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
