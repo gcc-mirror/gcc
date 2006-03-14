@@ -1,3 +1,19 @@
+2006-03-14  Steven G. Kargl  <kargls@comcast.net>
+
+	PR 18537
+	* gfortran.h: Wrap Copyright line.
+	(gfc_option_t): add warn_tabs member.
+	* lang.opt: Update Coyright year.  Add the Wtabs.
+	* invoke.texi: Document -Wtabs.
+	* scanner.c (gfc_gobble_whitespace): Use warn_tabs.  Add linenum to
+	suppress multiple warnings.
+	(load_line): Use warn_tabs.  Add linenum, current_line, seen_comment
+	to suppress multiple warnings.
+	* options.c (gfc_init_options): Initialize warn_tabs.
+	(set_Wall): set warn_tabs for -Wall.
+	(gfc_post_options): Adjust flag_tabs depending on -pedantic.
+	(gfc_handle_option):  Process command-line option -W[no-]tabs
+
 2006-03-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25378

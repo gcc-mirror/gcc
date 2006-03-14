@@ -836,6 +836,7 @@ gfc_error_recovery (void)
 void
 gfc_gobble_whitespace (void)
 {
+  static int linenum = 0;
   locus old_loc;
   int c;
 
@@ -843,6 +844,15 @@ gfc_gobble_whitespace (void)
     {
       old_loc = gfc_current_locus;
       c = gfc_next_char_literal (0);
+      /* Issue a warning for nonconforming tabs.  We keep track of the line
+	 number because the Fortran matchers will often back up and the same
+	 line will be scanned multiple times.  */
+      if (!gfc_option.warn_tabs && c == '\t'
+	  && gfc_current_locus.lb->linenum != linenum)
+	{
+	  linenum = gfc_current_locus.lb->linenum;
+	  gfc_warning_now ("Nonconforming tab character at %C");
+	}
     }
   while (gfc_is_whitespace (c));
 
@@ -865,8 +875,9 @@ gfc_gobble_whitespace (void)
 static int
 load_line (FILE * input, char **pbuf, int *pbuflen)
 {
+  static int linenum = 0, current_line = 1;
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
-  int trunc_flag = 0;
+  int trunc_flag = 0, seen_comment = 0;
   char *buffer;
 
   /* Determine the maximum allowed line length.
@@ -932,8 +943,24 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
 	  break;
 	}
 
+      /* Is this a fixed-form comment?  */
+      if (gfc_current_form == FORM_FIXED && i == 0
+	  && (c == '*' || c == 'c' || c == 'd'))
+	seen_comment = 1;
+
       if (gfc_current_form == FORM_FIXED && c == '\t' && i <= 6)
-	{			/* Tab expansion.  */
+	{
+	  /* The error machinery isn't available at this point, so we can't
+	     easily report line and column numbers consistent with other 
+	     parts of gfortran.  */
+	  if (!gfc_option.warn_tabs && seen_comment == 0
+	      && current_line != linenum)
+	    {
+	      linenum = current_line;
+	      gfc_warning_now (
+		"Nonconforming tab character in column 1 of line %d", linenum);
+	    }
+
 	  while (i <= 6)
 	    {
 	      *buffer++ = ' ';
@@ -985,6 +1012,7 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
 
   *buffer = '\0';
   *pbuflen = buflen;
+  current_line++;
 
   return trunc_flag;
 }
