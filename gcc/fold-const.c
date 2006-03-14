@@ -3724,32 +3724,6 @@ range_binop (enum tree_code code, tree type, tree arg0, int upper0_p,
   return constant_boolean_node (result, type);
 }
 
-/* Return the predecessor of VAL in its type, handling the infinite case.  */
-
-static tree
-range_predecessor (tree val)
-{
-  tree type = TREE_TYPE (val);
-
-  if (INTEGRAL_TYPE_P (type) && val == TYPE_MIN_VALUE (type))
-    return 0;
-  else
-    return range_binop (MINUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
-}
-
-/* Return the successor of VAL in its type, handling the infinite case.  */
-
-static tree
-range_successor (tree val)
-{
-  tree type = TREE_TYPE (val);
-
-  if (INTEGRAL_TYPE_P (type) && val == TYPE_MAX_VALUE (type))
-    return 0;
-  else
-    return range_binop (PLUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
-}
-
 /* Given EXP, a logical expression, set the range it is testing into
    variables denoted by PIN_P, PLOW, and PHIGH.  Return the expression
    actually being tested.  *PLOW and *PHIGH will be made of the same type
@@ -4174,6 +4148,32 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
   return 0;
 }
 
+/* Return the predecessor of VAL in its type, handling the infinite case.  */
+
+static tree
+range_predecessor (tree val)
+{
+  tree type = TREE_TYPE (val);
+
+  if (INTEGRAL_TYPE_P (type) && val == TYPE_MIN_VALUE (type))
+    return 0;
+  else
+    return range_binop (MINUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
+}
+
+/* Return the successor of VAL in its type, handling the infinite case.  */
+
+static tree
+range_successor (tree val)
+{
+  tree type = TREE_TYPE (val);
+
+  if (INTEGRAL_TYPE_P (type) && val == TYPE_MAX_VALUE (type))
+    return 0;
+  else
+    return range_binop (PLUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
+}
+
 /* Given two ranges, see if we can merge them into one.  Return 1 if we
    can, 0 if we can't.  Set the output range into the specified parameters.  */
 
@@ -4348,10 +4348,8 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 	         return + [x + 1, y - 1].  */
 	      if (low0 == 0 && high1 == 0)
 	        {
-		  low = range_binop (PLUS_EXPR, NULL_TREE, high0, 1,
-				     integer_one_node, 1);
-		  high = range_binop (MINUS_EXPR, NULL_TREE, low1, 0,
-				      integer_one_node, 0);
+		  low = range_successor (high0);
+		  high = range_predecessor (low1);
 		  if (low == 0 || high == 0)
 		    return 0;
 
