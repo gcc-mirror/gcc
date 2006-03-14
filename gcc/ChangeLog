@@ -1,3 +1,7 @@
+2006-03-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/pa32-linux.h (CRT_CALL_STATIC_FUNCTION): Fix typo.
+
 2006-03-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26672
