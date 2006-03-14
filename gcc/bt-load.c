@@ -1,5 +1,6 @@
 /* Perform branch target register load optimizations.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -911,6 +912,7 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 	{
 	  if (full_range)
 	    IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[new_bb->index]);
+	  free (tos);
 	  return;
 	}
       *tos++ = new_bb;

@@ -658,6 +658,7 @@ create_file_names (const char *file_name)
   strcpy (da_file_name, name);
   strcpy (da_file_name + length, GCOV_DATA_SUFFIX);
 
+  free (name);
   return;
 }
 
