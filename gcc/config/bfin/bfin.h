@@ -1126,10 +1126,6 @@ extern struct rtx_def *bfin_cc_rtx, *bfin_rets_rtx;
 /* This works for GAS and some other assemblers.  */
 #define SET_ASM_OP              ".set "
 
-/* Don't know how to order these.  UNALIGNED_WORD_ASM_OP is in
-   dwarf2.out. */
-#define UNALIGNED_WORD_ASM_OP ".4byte"
-
 /* DBX register number for a given compiler register number */
 #define DBX_REGISTER_NUMBER(REGNO)  (REGNO) 
 
