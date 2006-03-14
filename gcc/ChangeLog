@@ -1,5 +1,12 @@
 2006-03-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/26667
+	* ipa-inline.c (cgraph_check_inline_limits): Walk the correct
+	node for the callees.  Always allow inlining if it will shrink
+	the function size.
+
+2006-03-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/26659
 	* builtins.c (get_pointer_alignment): Prefer alignment
 	information from decls over that from types.
