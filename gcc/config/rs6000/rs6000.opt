@@ -72,6 +72,10 @@ mmulhw
 Target Report Mask(MULHW)
 Use 4xx half-word multiply instructions
 
+mdlmzb
+Target Report Mask(DLMZB)
+Use 4xx string-search dlmzb instruction
+
 mmultiple
 Target Report Mask(MULTIPLE)
 Generate load/store multiple instructions
@@ -113,11 +117,11 @@ Target Report RejectNegative InverseMask(NO_FUSED_MADD, FUSED_MADD)
 Generate fused multiply/add instructions
 
 msched-prolog
-Target Report Mask(SCHED_PROLOG)
+Target Report Var(TARGET_SCHED_PROLOG) Init(1)
 Schedule the start and end of the procedure
 
 msched-epilog
-Target Undocumented Mask(SCHED_PROLOG) MaskExists
+Target Undocumented Var(TARGET_SCHED_PROLOG) VarExists
 
 maix-struct-return
 Target Report RejectNegative Var(aix_struct_return)

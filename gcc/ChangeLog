@@ -1,3 +1,13 @@
+2006-03-14  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.opt (mdlmzb): New option.
+	(msched-prolog, msched-epilog): Use Var not Mask.
+	* doc/invoke.texi (-mdlmzb): Document.
+	* config/rs6000/rs6000.c (TARGET_DEFAULT_TARGET_FLAGS): Remove
+	MASK_SCHED_PROLOG.
+	(rs6000_override_options): Enable -mdlmzb for 405 and 440.
+	* config/rs6000/rs6000.md: Add dlmzb support for 405 and 440.
+
 2006-03-13  Uttam Pawar  <uttamp@us.ibm.com>
 
 	PR rtl-optimization/25739
