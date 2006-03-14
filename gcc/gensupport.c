@@ -1,5 +1,5 @@
 /* Support routines for the various generation passes.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -468,6 +468,8 @@ identify_predicable_attribute (void)
       message_with_line (elem->lineno,
 			 "attribute `predicable' is not a boolean");
       errors = 1;
+      if (p_false)
+        free (p_false);
       return;
     }
   p_true[-1] = '\0';
@@ -485,12 +487,16 @@ identify_predicable_attribute (void)
       message_with_line (elem->lineno,
 			 "attribute `predicable' cannot be const");
       errors = 1;
+      if (p_false)
+	free (p_false);
       return;
 
     default:
       message_with_line (elem->lineno,
 			 "attribute `predicable' must have a constant default");
       errors = 1;
+      if (p_false)
+	free (p_false);
       return;
     }
 
@@ -505,6 +511,9 @@ identify_predicable_attribute (void)
 			 value);
       errors = 1;
     }
+
+  if (p_false)
+    free (p_false);
 }
 
 /* Return the number of alternatives in constraint S.  */

@@ -1,3 +1,12 @@
+2006-03-13  Uttam Pawar  <uttamp@us.ibm.com>
+
+	PR rtl-optimization/25739
+	* bt-load.c (augment_live_range): Free tos pointer.
+
+	* gensupport.c (identify_predicable_attribute): Free
+	p_false pointer.
+	* gcov.c (create_file_names): Free name pointer.
+
 2006-03-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26557
