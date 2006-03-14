@@ -1,3 +1,9 @@
+2006-03-14  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* tree-pass.h (pass_cfg): Remove.
+	* alias.c (rest_of_handle_cfg, pass_cfg): Remove.
+	* passes.c (pass_cfg): Don't run it.
+
 2006-03-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (reg-stack.o): Don't depend on gt-reg-stack.h.
