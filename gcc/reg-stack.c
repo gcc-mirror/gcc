@@ -177,6 +177,8 @@
 DEF_VEC_I(char);
 DEF_VEC_ALLOC_I(char,heap);
 
+#ifdef STACK_REGS
+
 /* We use this array to cache info about insns, because otherwise we
    spend too much time in stack_regs_mentioned_p.
 
@@ -184,8 +186,6 @@ DEF_VEC_ALLOC_I(char,heap);
    the insn uses stack registers, two indicates the insn does not use
    stack registers.  */
 static VEC(char,heap) *stack_regs_mentioned_data;
-
-#ifdef STACK_REGS
 
 #define REG_STACK_SIZE (LAST_STACK_REG - FIRST_STACK_REG + 1)
 

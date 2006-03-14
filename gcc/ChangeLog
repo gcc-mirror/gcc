@@ -14,6 +14,10 @@
 
 	* combine.c (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD): Remove.
 
+	PR middle-end/26684
+	* reg-stack.c (stack_regs_mentioned_data): Put it undef #ifdef
+	STACK_REGS.
+
 2006-03-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/pa32-linux.h (CRT_CALL_STATIC_FUNCTION): Fix typo.
