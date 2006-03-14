@@ -1,3 +1,8 @@
+2006-03-14  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.target/powerpc/405-dlmzb-strlen-1.c,
+	gcc.target/powerpc/440-dlmzb-strlen-1.c: New tests.
+
 2006-03-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26557
