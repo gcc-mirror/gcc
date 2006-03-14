@@ -1,3 +1,8 @@
+2006-03-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/26657
+	* config/darwin.h (LINK_COMMAND_SPEC): Handle -fopenmp.
+
 2006-03-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.opt (mdlmzb): New option.
