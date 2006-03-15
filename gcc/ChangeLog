@@ -1,3 +1,11 @@
+2006-03-15  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (minipool_pad): New.
+	(add_minipool_forward_ref): Unclude pool alignment padding in address
+	calculation.
+	(push_minipool_fix): Set minipool_pad.
+	(minipool_pad): Ditto.
+
 2006-03-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/vax/vax.c (split_quadword_operands): Use MEM_P()
