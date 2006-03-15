@@ -648,7 +648,7 @@
 {
   if (operands[2] == const1_rtx && rtx_equal_p (operands[0], operands[1]))
     return \"addl2 %0,%0\";
-  if (GET_CODE (operands[1]) == REG
+  if (REG_P (operands[1])
       && GET_CODE (operands[2]) == CONST_INT)
     {
       int i = INTVAL (operands[2]);
@@ -761,7 +761,7 @@
 	(match_operand:SI 3 "general_operand" "g"))]
    "(INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
    && INTVAL (operands[2]) % INTVAL (operands[1]) == 0
-   && (GET_CODE (operands[0]) == REG
+   && (REG_P (operands[0])
        || ! mode_dependent_address_p (XEXP (operands[0], 0)))"
   "*
 {
@@ -789,7 +789,7 @@
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
-   && (GET_CODE (operands[1]) == REG
+   && (REG_P (operands[1])
        || ! mode_dependent_address_p (XEXP (operands[1], 0)))"
   "*
 {
@@ -816,7 +816,7 @@
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
-   && (GET_CODE (operands[1]) == REG
+   && (REG_P (operands[1])
        || ! mode_dependent_address_p (XEXP (operands[1], 0)))"
   "*
 {
@@ -872,7 +872,7 @@
   "*
 {
   if (GET_CODE (operands[3]) != CONST_INT || GET_CODE (operands[2]) != CONST_INT
-      || GET_CODE (operands[0]) != REG
+      || !REG_P (operands[0])
       || (INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 16))
     return \"extv %3,%2,%1,%0\";
   if (INTVAL (operands[2]) == 8)
@@ -889,7 +889,7 @@
   "*
 {
   if (GET_CODE (operands[3]) != CONST_INT || GET_CODE (operands[2]) != CONST_INT
-      || GET_CODE (operands[0]) != REG)
+      || !REG_P (operands[0]))
     return \"extzv %3,%2,%1,%0\";
   if (INTVAL (operands[2]) == 8)
     return \"rotl %R3,%1,%0\;movzbl %0,%0\";
@@ -934,12 +934,12 @@
   ""
   "*
 {
-  if (GET_CODE (operands[0]) != REG || GET_CODE (operands[2]) != CONST_INT
+  if (!REG_P (operands[0]) || GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
       || (INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 16)
       || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])
-      || (GET_CODE (operands[1]) == MEM
+      || (MEM_P (operands[1])
 	  && mode_dependent_address_p (XEXP (operands[1], 0))))
     return \"extv %3,%2,%1,%0\";
   if (INTVAL (operands[2]) == 8)
@@ -963,11 +963,11 @@
   ""
   "*
 {
-  if (GET_CODE (operands[0]) != REG || GET_CODE (operands[2]) != CONST_INT
+  if (! REG_P (operands[0]) || GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
       || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])
-      || (GET_CODE (operands[1]) == MEM
+      || (MEM_P (operands[1])
 	  && mode_dependent_address_p (XEXP (operands[1], 0))))
     return \"extzv %3,%2,%1,%0\";
   if (INTVAL (operands[2]) == 8)
