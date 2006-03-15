@@ -2513,9 +2513,6 @@ if test x$with_cpu = x ; then
       ;;
     sparc*-*-*)
       with_cpu="`echo ${target} | sed 's/-.*$//'`"
-      if [ x$with_cpu = xsparc64 ]; then
-        with_cpu=v9
-      fi
       ;;
   esac
 fi
