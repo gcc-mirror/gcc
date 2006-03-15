@@ -1,5 +1,10 @@
 2006-03-15  David Daney  <ddaney@avtrex.com>
 
+	* java-tree.h : Moved comment for TYPE_DOT_CLASS adjacent to its
+	declaration.
+
+2006-03-15  David Daney  <ddaney@avtrex.com>
+
 	* lang.opt (-freduced-reflection): New option.
 	* lang.c (java_post_options): Generate an error if
 	-freduced-reflection used with -fjni or -findirect-dispatch.
