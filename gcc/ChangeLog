@@ -1,3 +1,8 @@
+2006-03-15  Andreas Schwab  <schwab@suse.de>
+
+	* gensupport.c (identify_predicable_attribute): Don't free p_false
+	when it is still in use.
+
 2006-03-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config.gcc (default with_cpu setting) <sparc*-*-*>: Do not modify
