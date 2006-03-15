@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 2003, 2004 Kaz Kojima
+   sysv.S - Copyright (c) 2003, 2004, 2006 Kaz Kojima
    
    SuperH SHmedia Foreign Function Interface 
 
@@ -84,6 +84,7 @@ ENTRY(ffi_call_SYSV)
 	addi	r15, 64, r22
 	movi	0, r0
 	movi	0, r1
+	movi	-1, r23
 
 	pt/l	1f, tr1
 	bnei/l	r29, FFI_TYPE_STRUCT, tr1
@@ -106,9 +107,6 @@ ENTRY(ffi_call_SYSV)
 
 .L_pass_d:
 	addi	r0, 1, r0
-	addi	r1, 1, r1
-	andi	r1, ~1, r1
-
 	pt/l	3f, tr0
 	movi	12, r20
 	bge/l	r1, r20, tr0
@@ -158,13 +156,23 @@ ENTRY(ffi_call_SYSV)
 	addi.l	r15, 8, r15
 3:
 	pt/l	.L_pass, tr0
-	addi	r1, 1, r1
 	blink	tr0, r63
 
 .L_pop_f:
 	pt/l	.L_pop_f_tbl, tr1
+	pt/l	5f, tr2
 	gettr	tr1, r20
+	bge/l	r23, r63, tr2
+	add	r1, r63, r23 
 	shlli	r1, 3, r21
+	addi	r1, 2, r1
+	add	r20, r21, r20
+	ptabs/l	r20, tr1
+	blink	tr1, r63
+5:
+	addi	r23, 1, r21
+	movi	-1, r23
+	shlli	r21, 3, r21
 	add	r20, r21, r20
 	ptabs/l	r20, tr1
 	blink	tr1, r63
