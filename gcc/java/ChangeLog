@@ -1,3 +1,17 @@
+2006-03-15  David Daney  <ddaney@avtrex.com>
+
+	* lang.opt (-freduced-reflection): New option.
+	* lang.c (java_post_options): Generate an error if
+	-freduced-reflection used with -fjni or -findirect-dispatch.
+	* java-tree.h (flag_reduced_reflection): Declare new variable.
+	* boehm.c (get_boehm_type_descriptor): Indicate all pointers
+	if bitmap overflows and flag_reduced_reflection set.
+	* class.c (uses_jv_markobj_p): New function.
+	(make_class_data): Moved generation of vtable to before
+	reflection data, generate less reflection data if
+	flag_reduced_reflection set.
+	* gcj.texi: Document -freduced-reflection.
+
 2006-03-15  Tom Tromey  <tromey@redhat.com>
 
 	PR java/26638:

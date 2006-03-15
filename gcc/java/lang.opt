@@ -164,6 +164,10 @@ Enable optimization of static class initialization code
 foutput-class-dir=
 Java Joined RejectNegative
 
+freduced-reflection
+Java Var(flag_reduced_reflection)
+Reduce the amount of reflection meta-data generated
+
 fstore-check
 Java Var(flag_store_check) Init(1)
 Enable assignability checks for stores into object arrays

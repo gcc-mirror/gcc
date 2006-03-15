@@ -608,6 +608,15 @@ java_post_options (const char **pfilename)
   if (! flag_indirect_dispatch)
     flag_verify_invocations = true;
 
+  if (flag_reduced_reflection)
+    {
+      if (flag_indirect_dispatch)
+        error ("-findirect-dispatch is incompatible "
+               "with -freduced-reflection");
+      if (flag_jni)
+        error ("-fjni is incompatible with -freduced-reflection");
+    }
+
   /* Open input file.  */
 
   if (filename == 0 || !strcmp (filename, "-"))

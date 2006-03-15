@@ -1548,6 +1548,16 @@ supers_all_compiled (tree type)
   return 1;
 }
 
+/* The forth (index of 3) element in the vtable is the GC descriptor.
+   A value of 2 indicates that the class uses _Jv_MarkObj. */
+static int
+uses_jv_markobj_p(tree dtable)
+{
+  tree v;
+  v = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (dtable), 3)->value;
+  return (2 == TREE_INT_CST_LOW (v));
+}
+
 void
 make_class_data (tree type)
 {
@@ -1570,7 +1580,10 @@ make_class_data (tree type)
   tree constant_pool_constructor;
   tree interfaces = null_pointer_node;
   int interface_len = 0;
+  int uses_jv_markobj = 0;
   tree type_decl = TYPE_NAME (type);
+  tree id_main = get_identifier("main");
+  tree id_class = get_identifier("java.lang.Class");
   /** Offset from start of virtual function table declaration
       to where objects actually point at, following new g++ ABI. */
   tree dtable_start_offset = build_int_cst (NULL_TREE,
@@ -1578,6 +1591,22 @@ make_class_data (tree type)
 
   this_class_addr = build_class_ref (type);
   decl = TREE_OPERAND (this_class_addr, 0);
+
+  if (supers_all_compiled (type) && ! CLASS_INTERFACE (type_decl)
+      && !flag_indirect_dispatch)
+    {
+      tree dtable = get_dispatch_table (type, this_class_addr);
+      uses_jv_markobj = uses_jv_markobj_p(dtable);
+      dtable_decl = build_dtable_decl (type);
+      DECL_INITIAL (dtable_decl) = dtable;
+      TREE_STATIC (dtable_decl) = 1;
+      DECL_ARTIFICIAL (dtable_decl) = 1;
+      DECL_IGNORED_P (dtable_decl) = 1;
+      TREE_PUBLIC (dtable_decl) = 1;
+      rest_of_decl_compilation (dtable_decl, 1, 0);
+      if (type == class_type_node)
+	class_dtable_decl = dtable_decl;
+    }
 
   /* Build Field array. */
   field = TYPE_FIELDS (type);
@@ -1589,9 +1618,11 @@ make_class_data (tree type)
     {
       if (! DECL_ARTIFICIAL (field))
 	{
-	  tree init = make_field_value (field);
 	  if (FIELD_STATIC (field))
 	    {
+              /* We must always create reflection data for static fields
+                 as it is used in the creation of the field itself. */
+              tree init = make_field_value (field);
 	      tree initial = DECL_INITIAL (field);
 	      static_field_count++;
 	      static_fields = tree_cons (NULL_TREE, init, static_fields);
@@ -1603,8 +1634,9 @@ make_class_data (tree type)
 	      rest_of_decl_compilation (field, 1, 1);
 	      DECL_INITIAL (field) = initial;
 	    }
-	  else
+	  else if (uses_jv_markobj || !flag_reduced_reflection)
 	    {
+              tree init = make_field_value (field);
 	      instance_field_count++;
 	      instance_fields = tree_cons (NULL_TREE, init, instance_fields);
 	    }
@@ -1643,9 +1675,35 @@ make_class_data (tree type)
 	 which we don't have a .class file.  */
       if (METHOD_DUMMY (method))
 	continue;
-      init = make_method_value (method);
-      method_count++;
-      methods = tree_cons (NULL_TREE, init, methods);
+
+      /* Generate method reflection data if:
+
+          - !flag_reduced_reflection.
+
+          - <clinit> -- The runtime uses reflection to initialize the
+            class.
+
+          - Any method in class java.lang.Class -- Class.forName() and
+            perhaps other things require it.
+
+          - class$ -- It does not work if reflection data missing.
+
+          - main -- Reflection is used to find main(String[]) methods.
+
+          - public not static -- It is potentially part of an
+            interface.  The runtime uses reflection data to build
+            interface dispatch tables.  */
+      if (!flag_reduced_reflection
+          || DECL_CLINIT_P (method)
+          || DECL_NAME (type_decl) == id_class
+          || DECL_NAME (method) == id_main
+          || (METHOD_PUBLIC (method) && !METHOD_STATIC (method))
+          || TYPE_DOT_CLASS (type) == method)
+        {
+          init = make_method_value (method);
+          method_count++;
+          methods = tree_cons (NULL_TREE, init, methods);
+        }
     }
   method_array_type = build_prim_array_type (method_type_node, method_count);
   methods_decl = build_decl (VAR_DECL, mangled_classname ("_MT_", type),
@@ -1656,21 +1714,6 @@ make_class_data (tree type)
   DECL_ARTIFICIAL (methods_decl) = 1;
   DECL_IGNORED_P (methods_decl) = 1;
   rest_of_decl_compilation (methods_decl, 1, 0);
-
-  if (supers_all_compiled (type) && ! CLASS_INTERFACE (type_decl)
-      && !flag_indirect_dispatch)
-    {
-      tree dtable = get_dispatch_table (type, this_class_addr);
-      dtable_decl = build_dtable_decl (type);
-      DECL_INITIAL (dtable_decl) = dtable;
-      TREE_STATIC (dtable_decl) = 1;
-      DECL_ARTIFICIAL (dtable_decl) = 1;
-      DECL_IGNORED_P (dtable_decl) = 1;
-      TREE_PUBLIC (dtable_decl) = 1;
-      rest_of_decl_compilation (dtable_decl, 1, 0);
-      if (type == class_type_node)
-	class_dtable_decl = dtable_decl;
-    }
 
   if (class_dtable_decl == NULL_TREE)
     {
@@ -1781,7 +1824,8 @@ make_class_data (tree type)
 		    CLASS_INTERFACE (type_decl) ? null_pointer_node : super);
   PUSH_FIELD_VALUE (cons, "constants", constant_pool_constructor);
   PUSH_FIELD_VALUE (cons, "methods",
-		    build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
+                    methods_decl == NULL_TREE ? null_pointer_node
+		    : build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
   PUSH_FIELD_VALUE (cons, "method_count",
 		    build_int_cst (NULL_TREE, method_count));
 
