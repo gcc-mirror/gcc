@@ -989,9 +989,7 @@ unlink_other_notes (rtx insn, rtx tail)
 	PREV_INSN (next) = prev;
 
       /* See sched_analyze to see how these are handled.  */
-      if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
-	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
-	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
+      if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END)
 	{
@@ -1615,7 +1613,7 @@ move_insn1 (rtx insn, rtx last)
 }
 
 /* Search INSN for REG_SAVE_NOTE note pairs for
-   NOTE_INSN_{LOOP,EHREGION}_{BEG,END}; and convert them back into
+   NOTE_INSN_EHREGION_{BEG,END}; and convert them back into
    NOTEs.  The REG_SAVE_NOTE note following first one is contains the
    saved value for NOTE_BLOCK_NUMBER which is useful for
    NOTE_INSN_EH_REGION_{BEG,END} NOTEs.  LAST is the last instruction

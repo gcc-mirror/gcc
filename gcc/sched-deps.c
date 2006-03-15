@@ -96,7 +96,7 @@ static void fixup_sched_groups (rtx);
 static void flush_pending_lists (struct deps *, rtx, int, int);
 static void sched_analyze_1 (struct deps *, rtx, rtx);
 static void sched_analyze_2 (struct deps *, rtx, rtx);
-static void sched_analyze_insn (struct deps *, rtx, rtx, rtx);
+static void sched_analyze_insn (struct deps *, rtx, rtx);
 
 static rtx sched_get_condition (rtx);
 static int conditions_mutex_p (rtx, rtx);
@@ -881,7 +881,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 /* Analyze an INSN with pattern X to find all dependencies.  */
 
 static void
-sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
+sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
 {
   RTX_CODE code = GET_CODE (x);
   rtx link;
@@ -1000,28 +1000,6 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	  add_dependence_list (insn, deps->last_pending_memory_flush, 1,
 			       REG_DEP_ANTI);
 	}
-    }
-
-  /* If there is a {LOOP,EHREGION}_{BEG,END} note in the middle of a basic
-     block, then we must be sure that no instructions are scheduled across it.
-     Otherwise, the reg_n_refs info (which depends on loop_depth) would
-     become incorrect.  */
-  if (loop_notes)
-    {
-      rtx link;
-
-      /* Update loop_notes with any notes from this insn.  */
-      link = loop_notes;
-      while (XEXP (link, 1))
-	{
-	  gcc_assert (INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_BEG
-		      || INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_END);
-
-	  reg_pending_barrier = MOVE_BARRIER;
-	  link = XEXP (link, 1);
-	}
-      XEXP (link, 1) = REG_NOTES (insn);
-      REG_NOTES (insn) = loop_notes;
     }
 
   /* If this instruction can throw an exception, then moving it changes
@@ -1245,7 +1223,6 @@ void
 sched_analyze (struct deps *deps, rtx head, rtx tail)
 {
   rtx insn;
-  rtx loop_notes = 0;
 
   if (current_sched_info->use_cselib)
     cselib_init (true);
@@ -1279,8 +1256,7 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 		deps->last_pending_memory_flush
 		  = alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
 	    }
-	  sched_analyze_insn (deps, PATTERN (insn), insn, loop_notes);
-	  loop_notes = 0;
+	  sched_analyze_insn (deps, PATTERN (insn), insn);
 	}
       else if (CALL_P (insn))
 	{
@@ -1334,8 +1310,7 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 	  add_dependence_list_and_free (insn, &deps->sched_before_next_call, 1,
 					REG_DEP_ANTI);
 
-	  sched_analyze_insn (deps, PATTERN (insn), insn, loop_notes);
-	  loop_notes = 0;
+	  sched_analyze_insn (deps, PATTERN (insn), insn);
 
 	  /* In the absence of interprocedural alias analysis, we must flush
 	     all pending reads and writes, and start new dependencies starting
@@ -1358,19 +1333,6 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
       if (NOTE_P (insn))
 	gcc_assert (NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
 		    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END);
-
-      /* See comments on reemit_notes as to why we do this.
-	 ??? Actually, the reemit_notes just say what is done, not why.  */
-
-      if (NOTE_P (insn)
-	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
-	{
-	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
-					GEN_INT (NOTE_LINE_NUMBER (insn)),
-					loop_notes);
-	  CONST_OR_PURE_CALL_P (loop_notes) = CONST_OR_PURE_CALL_P (insn);
-	}
 
       if (current_sched_info->use_cselib)
 	cselib_process_insn (insn);
