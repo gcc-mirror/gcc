@@ -41,6 +41,10 @@ Waliasing
 Fortran
 Warn about possible aliasing of dummy arguments
 
+Wampersand
+Fortran
+Warn about missing ampersand in continued character constants
+
 Wconversion
 Fortran
 Warn about implicit conversion

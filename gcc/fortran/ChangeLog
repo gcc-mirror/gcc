@@ -1,3 +1,16 @@
+2006-03-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/19101
+	* gfortran.h: Add warn_ampersand.
+	* invoke.texi: Add documentation for new option.
+	* lang.opt: Add Wampersand.
+	* options.c (gfc_init_options): Initialize warn_ampersand.
+	(gfc_post_options): Set the warn if pedantic.
+	(set_Wall): Set warn_ampersand.
+	(gfc_handle_option: Add Wampersand for itself, -std=f95, and -std=f2003.
+	* scanner.c (gfc_next_char_literal): Add test for missing '&' in
+	continued character constant and give warning if missing.
+
 2006-03-14  Steven G. Kargl  <kargls@comcast.net>
 
 	PR 18537
