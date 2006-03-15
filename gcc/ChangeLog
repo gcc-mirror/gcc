@@ -1,3 +1,10 @@
+2006-03-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-ssa-dce.c (EXECUTE_IF_CONTROL_DEPENDENT): Make it an
+	iterator-style macro.
+	(mark_control_dependent_edges_necessary): Update the use of
+	EXECUTE_IF_CONTROL_DEPENDENT.
+
 2006-03-15  J"orn Rennecke <joern.rennecke@st.com>
 
 	* config/sh/predicates.md (cache_address_operand): Special.

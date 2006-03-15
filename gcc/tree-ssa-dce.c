@@ -105,17 +105,12 @@ static sbitmap visited_control_parents;
    to be recomputed.  */
 static bool cfg_altered;
 
-/* Execute CODE for each edge (given number EDGE_NUMBER within the CODE)
-   for which the block with index N is control dependent.  */
-#define EXECUTE_IF_CONTROL_DEPENDENT(N, EDGE_NUMBER, CODE)		      \
-  {									      \
-    bitmap_iterator bi;							      \
-									      \
-    EXECUTE_IF_SET_IN_BITMAP (control_dependence_map[N], 0, EDGE_NUMBER, bi)  \
-      {									      \
-	CODE;								      \
-      }									      \
-  }
+/* Execute code that follows the macro for each edge (given number
+   EDGE_NUMBER within the CODE) for which the block with index N is
+   control dependent.  */
+#define EXECUTE_IF_CONTROL_DEPENDENT(BI, N, EDGE_NUMBER)	\
+  EXECUTE_IF_SET_IN_BITMAP (control_dependence_map[(N)], 0,	\
+			    (EDGE_NUMBER), (BI))
 
 /* Local function prototypes.  */
 static inline void set_control_dependence_map_bit (basic_block, int);
@@ -443,6 +438,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 static void
 mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
 {
+  bitmap_iterator bi;
   unsigned edge_number;
 
   gcc_assert (bb != EXIT_BLOCK_PTR);
@@ -450,7 +446,7 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
   if (bb == ENTRY_BLOCK_PTR)
     return;
 
-  EXECUTE_IF_CONTROL_DEPENDENT (bb->index, edge_number,
+  EXECUTE_IF_CONTROL_DEPENDENT (bi, bb->index, edge_number)
     {
       tree t;
       basic_block cd_bb = INDEX_EDGE_PRED_BB (el, edge_number);
@@ -462,7 +458,7 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
       t = last_stmt (cd_bb);
       if (t && is_ctrl_stmt (t))
 	mark_stmt_necessary (t, true);
-    });
+    }
 }
 
 /* Propagate necessity using the operands of necessary statements.  Process
