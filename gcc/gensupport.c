@@ -510,10 +510,9 @@ identify_predicable_attribute (void)
 			 "unknown value `%s' for `predicable' attribute",
 			 value);
       errors = 1;
+      if (p_false)
+	free (p_false);
     }
-
-  if (p_false)
-    free (p_false);
 }
 
 /* Return the number of alternatives in constraint S.  */
