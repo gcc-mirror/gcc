@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2003, 2004 Kaz Kojima
+   ffi.c - Copyright (c) 2003, 2004, 2006 Kaz Kojima
    
    SuperH SHmedia Foreign Function Interface 
 
@@ -160,6 +160,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   int n, m;
   int greg;
   int freg;
+  int fpair = -1;
 
   greg = (return_type (cif->rtype) == FFI_TYPE_STRUCT ? 1 : 0);
   freg = 0;
@@ -175,7 +176,13 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 	  cif->bytes += sizeof (UINT64) - sizeof (float);
 	  if (freg >= NFREGARG - 1)
 	    continue;
-	  freg++;
+	  if (fpair < 0)
+	    {
+	      fpair = freg;
+	      freg += 2;
+	    }
+	  else
+	    fpair = -1;
 	  cif->flags2 += ((cif->arg_types)[i]->type) << (2 * j++);
 	  break;
 
@@ -184,7 +191,6 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 	    continue;
 	  if ((freg + 1) < NFREGARG)
 	    {
-	      freg = (freg + 1) & ~1;
 	      freg += 2;
 	      cif->flags2 += ((cif->arg_types)[i]->type) << (2 * j++);
 	    }
@@ -350,6 +356,7 @@ ffi_closure_helper_SYSV (ffi_closure *closure, UINT64 *rvalue,
   int i, avn;
   int greg, freg;
   ffi_cif *cif;
+  int fpair = -1;
 
   cif = closure->cif;
   avalue = alloca (cif->nargs * sizeof (void *));
@@ -358,7 +365,7 @@ ffi_closure_helper_SYSV (ffi_closure *closure, UINT64 *rvalue,
      returns the data directly to the caller.  */
   if (return_type (cif->rtype) == FFI_TYPE_STRUCT)
     {
-      rvalue = *pgr;
+      rvalue = (UINT64 *) *pgr;
       greg = 1;
     }
   else
@@ -402,11 +409,24 @@ ffi_closure_helper_SYSV (ffi_closure *closure, UINT64 *rvalue,
 	  if ((*p_arg)->type == FFI_TYPE_FLOAT)
 	    {
 	      if (freg < NFREGARG - 1)
+		{
+		  if (fpair >= 0)
+		    {
+		      avalue[i] = (UINT32 *) pfr + fpair;
+		      fpair = -1;
+		    }
+		  else
+		    {
 #ifdef __LITTLE_ENDIAN__
-		avalue[i] = (UINT32 *) pfr + (1 ^ freg++);
+		      fpair = freg;
+		      avalue[i] = (UINT32 *) pfr + (1 ^ freg);
 #else
-		avalue[i] = (UINT32 *) pfr + freg++;
+		      fpair = 1 ^ freg;
+		      avalue[i] = (UINT32 *) pfr + freg;
 #endif
+		      freg += 2;
+		    }
+		}
 	      else
 #ifdef __LITTLE_ENDIAN__
 		avalue[i] = pgr + greg;
@@ -428,7 +448,6 @@ ffi_closure_helper_SYSV (ffi_closure *closure, UINT64 *rvalue,
 	    avalue[i] = pgr + greg;
 	  else
 	    {
-	      freg = (freg + 1) & ~1;
 	      avalue[i] = pfr + (freg >> 1);
 	      freg += 2;
 	    }

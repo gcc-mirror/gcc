@@ -1,3 +1,10 @@
+2006-03-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh64/ffi.c (ffi_prep_cif_machdep): Handle float arguments
+	passed with FP registers correctly.
+	(ffi_closure_helper_SYSV): Likewise.
+	* src/sh64/sysv.S: Likewise.
+
 2006-03-01  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libffi.special/unwindtest.cc (closure_test_fn): Mark cif,
