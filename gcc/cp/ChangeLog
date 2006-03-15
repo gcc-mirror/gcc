@@ -1,3 +1,10 @@
+2006-03-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/6634
+	decl.c (grokdeclarator): Do not accept long long double.
+	Reorganize checks for invalid (combinations of) type modifiers.
+	Quote modifiers in messages.
+
 2006-03-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/16387, c++/16389

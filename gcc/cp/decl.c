@@ -7085,7 +7085,7 @@ grokdeclarator (const cp_declarator *declarator,
      and check for invalid combinations.  */
 
   /* Long double is a special combination.  */
-  if (long_p && TYPE_MAIN_VARIANT (type) == double_type_node)
+  if (long_p && !longlong && TYPE_MAIN_VARIANT (type) == double_type_node)
     {
       long_p = false;
       type = build_qualified_type (long_double_type_node,
@@ -7098,18 +7098,20 @@ grokdeclarator (const cp_declarator *declarator,
     {
       int ok = 0;
 
-      if (TREE_CODE (type) == REAL_TYPE)
-	error ("short, signed or unsigned invalid for %qs", name);
-      else if (TREE_CODE (type) != INTEGER_TYPE)
-	error ("long, short, signed or unsigned invalid for %qs", name);
-      else if (long_p && short_p)
-	error ("long and short specified together for %qs", name);
-      else if ((long_p || short_p) && explicit_char)
-	error ("long or short specified with char for %qs", name);
-      else if ((long_p|| short_p) && TREE_CODE (type) == REAL_TYPE)
-	error ("long or short specified with floating type for %qs", name);
+      if ((signed_p || unsigned_p) && TREE_CODE (type) != INTEGER_TYPE)
+	error ("%<signed%> or %<unsigned%> invalid for %qs", name);
       else if (signed_p && unsigned_p)
-	error ("signed and unsigned given together for %qs", name);
+	error ("%<signed%> and %<unsigned%> specified together for %qs", name);
+      else if (longlong && TREE_CODE (type) != INTEGER_TYPE)
+	error ("%<long long%> invalid for %qs", name);
+      else if (long_p && TREE_CODE (type) == REAL_TYPE)
+	error ("%<long%> invalid for %qs", name);
+      else if (short_p && TREE_CODE (type) == REAL_TYPE)
+	error ("%<short%> invalid for %qs", name);
+      else if ((long_p || short_p) && explicit_char)
+	error ("%<long%> or %<short%> specified with char for %qs", name);
+      else if (long_p && short_p)
+	error ("%<long%> and %<short%> specified together for %qs", name);
       else
 	{
 	  ok = 1;
