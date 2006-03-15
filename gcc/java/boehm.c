@@ -1,5 +1,5 @@
 /* Functions related to the Boehm garbage collector.
-   Copyright (C) 2000, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -184,7 +184,7 @@ get_boehm_type_descriptor (tree type)
   /* If the object is all pointers, or if the part with pointers fits
      in our bitmap, then we are ok.  Otherwise we have to allocate it
      a different way.  */
-  if (all_bits_set != -1)
+  if (all_bits_set != -1 || (pointer_after_end && flag_reduced_reflection))
     {
       /* In this case the initial part of the object is all reference
 	 fields, and the end of the object is all non-reference
@@ -193,7 +193,12 @@ get_boehm_type_descriptor (tree type)
 	 this:
 	 value = DS_LENGTH | WORDS_TO_BYTES (last_set_index + 1);
 	 DS_LENGTH is 0.
-	 WORDS_TO_BYTES shifts by log2(bytes-per-pointer).  */
+	 WORDS_TO_BYTES shifts by log2(bytes-per-pointer).
+
+         In the case of flag_reduced_reflection and the bitmap would
+         overflow, we tell the gc that the object is all pointers so
+         that we don't have to emit reflection data for run time
+         marking. */
       count = 0;
       low = 0;
       high = 0;
