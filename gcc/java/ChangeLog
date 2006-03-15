@@ -1,6 +1,6 @@
 2006-03-15  Tom Tromey  <tromey@redhat.com>
 
-	PR java/26390:
+	PR java/26638:
 	* class.c (get_interface_method_index): Don't put <clinit> into
 	interface table.
 
