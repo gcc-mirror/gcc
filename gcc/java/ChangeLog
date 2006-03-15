@@ -1,3 +1,7 @@
+2006-03-15  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (analyze_clinit_body): Ignore empty statements.
+
 2006-03-08  David Daney  <ddaney@avtrex.com>
 
 	* gcj.texi: Document -static-libgcj option.

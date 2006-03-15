@@ -1,6 +1,6 @@
 /* Source code parsing and tree node generation for the GNU compiler
    for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
@@ -8006,7 +8006,8 @@ maybe_generate_pre_expand_clinit (tree class_type)
 }
 
 /* Analyzes a method body and look for something that isn't a
-   MODIFY_EXPR with a constant value.  */
+   MODIFY_EXPR with a constant value.  Return true if <clinit> is
+   needed, false otherwise.  */
 
 static int
 analyze_clinit_body (tree this_class, tree bbody)
@@ -8044,6 +8045,11 @@ analyze_clinit_body (tree this_class, tree bbody)
 	return (! TREE_CONSTANT (TREE_OPERAND (bbody, 1))
 		|| ! DECL_INITIAL (TREE_OPERAND (bbody, 0))
 		|| DECL_CONTEXT (TREE_OPERAND (bbody, 0)) != this_class);
+
+      case NOP_EXPR:
+	/* We might see an empty statement here, which is
+	   ignorable.  */
+	return ! IS_EMPTY_STMT (bbody);
 
       default:
 	return 1;
