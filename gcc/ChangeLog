@@ -1,3 +1,23 @@
+2006-03-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/vax.c (split_quadword_operands): Use MEM_P()
+	instead of GET_CODE() == MEM and REG_P() instead of
+	GET_CODE() == REG.
+	(print_operand_address): Likewise.
+	(vax_address_cost): Likewise.
+	(vax_rtx_costs): Likewise.
+	(vax_notice_update_cc): Likewise.
+	(vax_output_int_add): Likewise.
+	(INDEX_REGISTER_P): Likewise.
+	(BASE_REGISTER_P): Likewise.
+	(nonindexed_address_p): Likewise.
+	(vax_mode_dependent_address_p): Likewise.
+	* config/vax/vax.h (EXTRA_CONSTRAINT): Likewise.
+	(PRINT_OPERAND): Likewise.
+	* config/vax/vax.md (ashlsi3): Likewise.
+	(ashlsi3): Likewise.
+	(some more unnamed insns): Likewise.
+
 2006-03-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-ssa-dce.c (EXECUTE_IF_CONTROL_DEPENDENT): Make it an
