@@ -699,9 +699,18 @@ _Jv_Linker::get_interfaces (jclass klass, _Jv_ifaces *ifaces)
 	  result += get_interfaces (klass->interfaces[i], ifaces);
 	}
     }
-    
+
   if (klass->isInterface())
-    result += klass->method_count + 1;
+    {
+      // We want to add 1 plus the number of interface methods here.
+      // But, we take special care to skip <clinit>.
+      ++result;
+      for (int i = 0; i < klass->method_count; ++i)
+	{
+	  if (klass->methods[i].name->first() != '<')
+	    ++result;
+	}
+    }
   else if (klass->superclass)
     result += get_interfaces (klass->superclass, ifaces);
   return result;
@@ -817,7 +826,7 @@ _Jv_ThrowAbstractMethodError ()
 // Returns the offset at which the next partial ITable should be appended.
 jshort
 _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
-				     void **itable, jshort pos)
+				   void **itable, jshort pos)
 {
   using namespace java::lang::reflect;
 
@@ -826,6 +835,10 @@ _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
   
   for (int j=0; j < iface->method_count; j++)
     {
+      // Skip '<clinit>' here.
+      if (iface->methods[j].name->first() == '<')
+	continue;
+
       meth = NULL;
       for (jclass cl = klass; cl; cl = cl->getSuperclass())
         {
@@ -836,12 +849,7 @@ _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
 	    break;
 	}
 
-      if (meth && (meth->name->first() == '<'))
-	{
-	  // leave a placeholder in the itable for hidden init methods.
-          itable[pos] = NULL;	
-	}
-      else if (meth)
+      if (meth)
         {
 	  if ((meth->accflags & Modifier::STATIC) != 0)
 	    throw new java::lang::IncompatibleClassChangeError

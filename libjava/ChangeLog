@@ -1,3 +1,9 @@
+2006-03-15  Tom Tromey  <tromey@redhat.com>
+
+	PR java/26390:
+	* link.cc (get_interfaces): Skip <clinit>.
+	(append_partial_itable): Likewise.
+
 2006-03-10  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/25713:

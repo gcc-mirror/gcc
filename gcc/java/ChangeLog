@@ -1,5 +1,11 @@
 2006-03-15  Tom Tromey  <tromey@redhat.com>
 
+	PR java/26390:
+	* class.c (get_interface_method_index): Don't put <clinit> into
+	interface table.
+
+2006-03-15  Tom Tromey  <tromey@redhat.com>
+
 	* parse.y (analyze_clinit_body): Ignore empty statements.
 
 2006-03-08  David Daney  <ddaney@avtrex.com>

@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2303,18 +2303,21 @@ layout_class_methods (tree this_class)
   TYPE_NVIRTUALS (this_class) = dtable_count;
 }
 
-/* Return the index of METHOD in INTERFACE.  This index begins at 1 and is used as an
-   argument for _Jv_LookupInterfaceMethodIdx(). */
+/* Return the index of METHOD in INTERFACE.  This index begins at 1
+   and is used as an argument for _Jv_LookupInterfaceMethodIdx(). */
 int
 get_interface_method_index (tree method, tree interface)
 {
   tree meth;
   int i = 1;
 
-  for (meth = TYPE_METHODS (interface); ; meth = TREE_CHAIN (meth), i++)
+  for (meth = TYPE_METHODS (interface); ; meth = TREE_CHAIN (meth))
     {
       if (meth == method)
 	return i;
+      /* We don't want to put <clinit> into the interface table.  */
+      if (! ID_CLINIT_P (DECL_NAME (meth)))
+	++i;
       gcc_assert (meth != NULL_TREE);
     }
 }
