@@ -1,3 +1,9 @@
+2006-03-15  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* haifa-sched.c (unlink_other_notes, reemit_notes): Do not handle
+	loop notes.
+	* sched-deps.c (sched_analyze_insn, sched_analyze): Ditto.
+
 2006-03-15  Andreas Schwab  <schwab@suse.de>
 
 	* gensupport.c (identify_predicable_attribute): Don't free p_false
