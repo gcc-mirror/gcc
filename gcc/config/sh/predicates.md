@@ -216,9 +216,10 @@
   (and (match_code "and,ior,xor")
        (match_test "GET_MODE (op) == mode")))
 
-;; TODO: Add a comment here.
+;; Return 1 of OP is an address suitable for a cache manipulation operation.
+;; MODE has the meaning as in address_operand.
 
-(define_predicate "cache_address_operand"
+(define_special_predicate "cache_address_operand"
   (match_code "plus,reg")
 {
   if (GET_CODE (op) == PLUS)
@@ -749,9 +750,9 @@
   return extend_reg_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
+;; Return 1 of OP is an address suitable for an unaligned access instruction.
 
-(define_predicate "ua_address_operand"
+(define_special_predicate "ua_address_operand"
   (match_code "subreg,reg,plus")
 {
   if (GET_CODE (op) == PLUS
