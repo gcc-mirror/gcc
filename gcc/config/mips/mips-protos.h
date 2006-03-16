@@ -106,7 +106,6 @@ enum mips_symbol_type {
 #define NUM_SYMBOL_TYPES (SYMBOL_64_LOW + 1)
 
 extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_type *);
-extern bool mips_atomic_symbolic_constant_p (rtx);
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
 extern bool mips_stack_address_p (rtx, enum machine_mode);
 extern int mips_address_insns (rtx, enum machine_mode);
@@ -116,8 +115,10 @@ extern int mips_idiv_insns (void);
 extern int fp_register_operand (rtx, enum machine_mode);
 extern int lo_operand (rtx, enum machine_mode);
 extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
+extern rtx mips_split_symbol (rtx, rtx);
 extern rtx mips_unspec_address (rtx, enum mips_symbol_type);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);
+extern void mips_move_integer (rtx, rtx, unsigned HOST_WIDE_INT);
 extern bool mips_legitimize_move (enum machine_mode, rtx, rtx);
 
 extern int m16_uimm3_b (rtx, enum machine_mode);

@@ -274,10 +274,10 @@ static bool mips_symbolic_address_p (enum mips_symbol_type, enum machine_mode);
 static bool mips_classify_address (struct mips_address_info *, rtx,
 				   enum machine_mode, int);
 static bool mips_cannot_force_const_mem (rtx);
+static bool mips_use_blocks_for_constant_p (enum machine_mode, rtx);
 static int mips_symbol_insns (enum mips_symbol_type);
 static bool mips16_unextended_reference_p (enum machine_mode mode, rtx, rtx);
 static rtx mips_force_temporary (rtx, rtx);
-static rtx mips_split_symbol (rtx, rtx);
 static rtx mips_unspec_offset_high (rtx, rtx, rtx, enum mips_symbol_type);
 static rtx mips_add_offset (rtx, rtx, HOST_WIDE_INT);
 static unsigned int mips_build_shift (struct mips_integer_op *, HOST_WIDE_INT);
@@ -285,7 +285,6 @@ static unsigned int mips_build_lower (struct mips_integer_op *,
 				      unsigned HOST_WIDE_INT);
 static unsigned int mips_build_integer (struct mips_integer_op *,
 					unsigned HOST_WIDE_INT);
-static void mips_move_integer (rtx, unsigned HOST_WIDE_INT);
 static void mips_legitimize_const_move (enum machine_mode, rtx, rtx);
 static int m16_check_op (rtx, int, int, int);
 static bool mips_rtx_costs (rtx, int, int, int *);
@@ -333,6 +332,7 @@ static section *mips_select_rtx_section (enum machine_mode, rtx,
 					 unsigned HOST_WIDE_INT);
 static section *mips_function_rodata_section (tree);
 static bool mips_in_small_data_p (tree);
+static bool mips_use_anchors_for_symbol_p (rtx);
 static int mips_fpr_return_fields (tree, tree *);
 static bool mips_return_in_msb (tree);
 static rtx mips_return_fpr_pair (enum machine_mode mode,
@@ -628,7 +628,7 @@ static GTY (()) int mips_output_filename_first_time = 1;
 
 /* mips_split_p[X] is true if symbols of type X can be split by
    mips_split_symbol().  */
-static bool mips_split_p[NUM_SYMBOL_TYPES];
+bool mips_split_p[NUM_SYMBOL_TYPES];
 
 /* mips_lo_relocs[X] is the relocation to use when a symbol of type X
    appears in a LO_SUM.  It can be null if such LO_SUMs aren't valid or
@@ -1162,6 +1162,15 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY mips_extra_live_on_entry
 
+#undef TARGET_MIN_ANCHOR_OFFSET
+#define TARGET_MIN_ANCHOR_OFFSET -32768
+#undef TARGET_MAX_ANCHOR_OFFSET
+#define TARGET_MAX_ANCHOR_OFFSET 32767
+#undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P mips_use_blocks_for_constant_p
+#undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
+#define TARGET_USE_ANCHORS_FOR_SYMBOL_P mips_use_anchors_for_symbol_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Classify symbol X, which must be a SYMBOL_REF or a LABEL_REF.  */
@@ -1256,7 +1265,7 @@ mips_split_const (rtx x, rtx *base, HOST_WIDE_INT *offset)
 
 
 /* Return true if SYMBOL is a SYMBOL_REF and OFFSET + SYMBOL points
-   to the same object as SYMBOL.  */
+   to the same object as SYMBOL, or to the same object_block.  */
 
 static bool
 mips_offset_within_object_p (rtx symbol, HOST_WIDE_INT offset)
@@ -1272,6 +1281,13 @@ mips_offset_within_object_p (rtx symbol, HOST_WIDE_INT offset)
   if (SYMBOL_REF_DECL (symbol) != 0
       && offset >= 0
       && offset < int_size_in_bytes (TREE_TYPE (SYMBOL_REF_DECL (symbol))))
+    return true;
+
+  if (SYMBOL_REF_HAS_BLOCK_INFO_P (symbol)
+      && SYMBOL_REF_BLOCK (symbol)
+      && SYMBOL_REF_BLOCK_OFFSET (symbol) >= 0
+      && ((unsigned HOST_WIDE_INT) offset + SYMBOL_REF_BLOCK_OFFSET (symbol)
+	  < (unsigned HOST_WIDE_INT) SYMBOL_REF_BLOCK (symbol)->size))
     return true;
 
   return false;
@@ -1354,17 +1370,6 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
       return false;
     }
   gcc_unreachable ();
-}
-
-
-/* Return true if X is a symbolic constant whose value is not split
-   into separate relocations.  */
-
-bool
-mips_atomic_symbolic_constant_p (rtx x)
-{
-  enum mips_symbol_type type;
-  return mips_symbolic_constant_p (x, &type) && !mips_split_p[type];
 }
 
 
@@ -1542,10 +1547,42 @@ mips_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
 static bool
 mips_cannot_force_const_mem (rtx x)
 {
-  if (! TARGET_HAVE_TLS)
-    return false;
+  rtx base;
+  HOST_WIDE_INT offset;
 
-  return for_each_rtx (&x, &mips_tls_symbol_ref_1, 0);
+  if (!TARGET_MIPS16)
+    {
+      /* As an optimization, reject constants that mips_legitimize_move
+	 can expand inline.
+
+	 Suppose we have a multi-instruction sequence that loads constant C
+	 into register R.  If R does not get allocated a hard register, and
+	 R is used in an operand that allows both registers and memory
+	 references, reload will consider forcing C into memory and using
+	 one of the instruction's memory alternatives.  Returning false
+	 here will force it to use an input reload instead.  */
+      if (GET_CODE (x) == CONST_INT)
+	return true;
+
+      mips_split_const (x, &base, &offset);
+      if (symbolic_operand (base, VOIDmode) && SMALL_OPERAND (offset))
+	return true;
+    }
+
+  if (TARGET_HAVE_TLS && for_each_rtx (&x, &mips_tls_symbol_ref_1, 0))
+    return true;
+
+  return false;
+}
+
+/* Implement TARGET_USE_BLOCKS_FOR_CONSTANT_P.  MIPS16 uses per-function
+   constant pools, but normal-mode code doesn't need to.  */
+
+static bool
+mips_use_blocks_for_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+				rtx x ATTRIBUTE_UNUSED)
+{
+  return !TARGET_MIPS16;
 }
 
 /* Return the number of instructions needed to load a symbol of the
@@ -1845,7 +1882,7 @@ mips_force_temporary (rtx dest, rtx value)
 /* Return a LO_SUM expression for ADDR.  TEMP is as for mips_force_temporary
    and is used to load the high part into a register.  */
 
-static rtx
+rtx
 mips_split_symbol (rtx temp, rtx addr)
 {
   rtx high;
@@ -2175,10 +2212,10 @@ mips_build_integer (struct mips_integer_op *codes,
 }
 
 
-/* Move VALUE into register DEST.  */
+/* Load VALUE into DEST, using TEMP as a temporary register if need be.  */
 
-static void
-mips_move_integer (rtx dest, unsigned HOST_WIDE_INT value)
+void
+mips_move_integer (rtx dest, rtx temp, unsigned HOST_WIDE_INT value)
 {
   struct mips_integer_op codes[MIPS_MAX_INTEGER_OPS];
   enum machine_mode mode;
@@ -2194,7 +2231,10 @@ mips_move_integer (rtx dest, unsigned HOST_WIDE_INT value)
   for (i = 1; i < cost; i++)
     {
       if (no_new_pseudos)
-	emit_move_insn (dest, x), x = dest;
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, temp, x));
+	  x = temp;
+	}
       else
 	x = force_reg (mode, x);
       x = gen_rtx_fmt_ee (codes[i].code, mode, x, GEN_INT (codes[i].value));
@@ -2213,30 +2253,24 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
 {
   rtx base;
   HOST_WIDE_INT offset;
-  enum mips_symbol_type symbol_type;
 
-  /* Split moves of big integers into smaller pieces.  In mips16 code,
-     it's better to force the constant into memory instead.  */
-  if (GET_CODE (src) == CONST_INT && !TARGET_MIPS16)
+  /* Split moves of big integers into smaller pieces.  */
+  if (splittable_const_int_operand (src, mode))
     {
-      mips_move_integer (dest, INTVAL (src));
+      mips_move_integer (dest, dest, INTVAL (src));
+      return;
+    }
+
+  /* Split moves of symbolic constants into high/low pairs.  */
+  if (splittable_symbolic_operand (src, mode))
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, dest, mips_split_symbol (dest, src)));
       return;
     }
 
   if (mips_tls_operand_p (src))
     {
       emit_move_insn (dest, mips_legitimize_tls_address (src));
-      return;
-    }
-
-  /* See if the symbol can be split.  For mips16, this is often worse than
-     forcing it in the constant pool since it needs the single-register form
-     of addiu or daddiu.  */
-  if (!TARGET_MIPS16
-      && mips_symbolic_constant_p (src, &symbol_type)
-      && mips_split_p[symbol_type])
-    {
-      emit_move_insn (dest, mips_split_symbol (dest, src));
       return;
     }
 
@@ -7204,6 +7238,25 @@ mips_in_small_data_p (tree decl)
 
   size = int_size_in_bytes (TREE_TYPE (decl));
   return (size > 0 && size <= mips_section_threshold);
+}
+
+/* Implement TARGET_USE_ANCHORS_FOR_SYMBOL_P.  We don't want to use
+   anchors for small data: the GP register acts as an anchor in that
+   case.  We also don't want to use them for PC-relative accesses,
+   where the PC acts as an anchor.  */
+
+static bool
+mips_use_anchors_for_symbol_p (rtx symbol)
+{
+  switch (mips_classify_symbol (symbol))
+    {
+    case SYMBOL_CONSTANT_POOL:
+    case SYMBOL_SMALL_DATA:
+      return false;
+
+    default:
+      return true;
+    }
 }
 
 /* See whether VALTYPE is a record whose fields should be returned in
