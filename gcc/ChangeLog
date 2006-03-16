@@ -1,4 +1,13 @@
 2006-03-16  Roger Sayle  <roger@eyesopen.com>
+	    Daniel Speyer  <dspeyer@wam.umd.edu>
+
+	PR middle-end/18259
+	* tree-dump.c (dump_real): New function.
+	(dequeue_and_dump) <REAL_CST>: Use it to dump FP constants.
+	* Makefile.in (REAL_H): New macro for dependencies on real.h.
+	(tree-dump.o): Add $(REAL_H) to the dependencies.
+
+2006-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/21781
 	* real.c (real_from_string): If the mantissa is zero, don't bother
