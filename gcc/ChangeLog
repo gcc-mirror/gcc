@@ -1,3 +1,18 @@
+2006-03-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.gcc (*-*-darwin*): Don't build crt2.o for all Darwin ports.
+	Do switch on default_use_cxa_atexit.
+	(powerpc*-*-darwin*): Build crt2.o on powerpc.
+	* config/darwin-crt3.o: New.
+	* config/darwin.h (LINK_SPEC): If -shared-libgcc, make linker default
+	to 10.3.  Pass '-multiply_defined suppress' if crt3.o is in use.
+	(STARTFILE_SPEC): Add crt3.o when -shared-libgcc and appropriate
+	OS version.
+	* config/rs6000/t-darwin: Move crt2.o building to here.
+	* config/rs6000/darwin.h (C_COMMON_OVERRIDE_OPTIONS): Update
+	Mac OS version for using __cxa_get_exception_ptr.  Don't test versions
+	of __cxa_atexit.
+
 2006-03-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/vax/vax.c (nonindexed_address_p): Change logical negation
