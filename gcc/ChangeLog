@@ -378,7 +378,7 @@
 2006-03-15  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (minipool_pad): New.
-	(add_minipool_forward_ref): Unclude pool alignment padding in address
+	(add_minipool_forward_ref): Include pool alignment padding in address
 	calculation.
 	(push_minipool_fix): Set minipool_pad.
 	(minipool_pad): Ditto.
