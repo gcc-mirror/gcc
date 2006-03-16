@@ -1501,7 +1501,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 mips64*-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h mips/linux64.h"
 	tmake_file="${tmake_file} mips/t-linux64"
-	tm_defines="MIPS_ABI_DEFAULT=ABI_N32"
+	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	gnu_ld=yes
 	gas=yes
 	;;
@@ -1510,7 +1510,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	case ${target} in
         mipsisa32*-*)
                 target_cpu_default="MASK_SOFT_FLOAT"
-		tm_defines="MIPS_ISA_DEFAULT=32"
+		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
                 ;;
         esac
 	;;
