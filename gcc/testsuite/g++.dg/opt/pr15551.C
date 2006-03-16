@@ -18,5 +18,8 @@ int main () {
   char expList[20000];
   strcpy(expList, "foo");
 
+  delete logfile;
+  unlink ("bar");
+
   return 0;
 }
