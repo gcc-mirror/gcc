@@ -1753,6 +1753,9 @@ void free_EXPR_LIST_node		(rtx);
 void free_INSN_LIST_node		(rtx);
 rtx alloc_INSN_LIST			(rtx, rtx);
 rtx alloc_EXPR_LIST			(int, rtx, rtx);
+void free_DEPS_LIST_list (rtx *);
+rtx alloc_DEPS_LIST (rtx, rtx, HOST_WIDE_INT);
+void remove_free_DEPS_LIST_elem (rtx, rtx *);
 
 /* regclass.c */
 

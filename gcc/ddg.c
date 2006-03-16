@@ -401,8 +401,7 @@ build_intra_loop_deps (ddg_ptr g)
 	  if (!src_node)
 	    continue;
 
-      	  add_forward_dependence (XEXP (link, 0), dest_node->insn,
-				  REG_NOTE_KIND (link));
+      	  add_forw_dep (dest_node->insn, link);
 	  create_ddg_dependence (g, src_node, dest_node,
 				 INSN_DEPEND (src_node->insn));
 	}

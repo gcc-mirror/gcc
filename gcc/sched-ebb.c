@@ -205,7 +205,9 @@ static struct sched_info ebb_sched_info =
 
   NULL, NULL,
   NULL, NULL,
-  0, 1, 0
+  0, 1, 0,
+
+  0
 };
 
 /* It is possible that ebb scheduling eliminated some blocks.
@@ -421,7 +423,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
   basic_block last_block = NULL, bb;
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    if (JUMP_P (insn))
+    if (control_flow_insn_p (insn))
       {
 	bb = BLOCK_FOR_INSN (insn);
 	bb->aux = last_block;
@@ -455,9 +457,27 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 	    /* We can not change the mode of the backward
 	       dependency because REG_DEP_ANTI has the lowest
 	       rank.  */
-	    if (! sched_insns_conditions_mutex_p (insn, prev)
-		&& add_dependence (insn, prev, REG_DEP_ANTI))
-	      add_forward_dependence (prev, insn, REG_DEP_ANTI);
+	    if (! sched_insns_conditions_mutex_p (insn, prev))
+	      {
+		if (!(current_sched_info->flags & DO_SPECULATION))
+		  {
+		    enum DEPS_ADJUST_RESULT res;
+		    
+		    res = add_or_update_back_dep (insn, prev,
+						  REG_DEP_ANTI, DEP_ANTI);
+
+		    if (res == DEP_CREATED)
+		      add_forw_dep (insn, LOG_LINKS (insn));
+		    else
+		      gcc_assert (res != DEP_CHANGED);
+		  }
+		else
+		  add_or_update_back_forw_dep (insn, prev, REG_DEP_ANTI,
+					       set_dep_weak (DEP_ANTI,
+							     BEGIN_CONTROL,
+							     MAX_DEP_WEAK));
+	      }
+
             break;
 
           default:
@@ -571,9 +591,11 @@ schedule_ebbs (void)
   if (n_basic_blocks == NUM_FIXED_BLOCKS)
     return;
 
-  sched_init ();
-
+  /* We need current_sched_info in init_dependency_caches, which is
+     invoked via sched_init.  */
   current_sched_info = &ebb_sched_info;
+
+  sched_init ();
 
   compute_bb_for_insn ();
 

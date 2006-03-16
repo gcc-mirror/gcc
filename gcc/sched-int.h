@@ -36,6 +36,12 @@ extern state_t curr_state;
 /* Forward declaration.  */
 struct ready_list;
 
+/* Type to represent status of a dependence.  A convinient short alias.  */
+typedef HOST_WIDE_INT ds_t;
+
+/* Type to represent weakness of speculative dependence.  */
+typedef int dw_t;
+
 /* Describe state of dependencies used during sched_analyze phase.  */
 struct deps
 {
@@ -180,6 +186,10 @@ struct sched_info
 
   /* Maximum priority that has been assigned to an insn.  */
   int sched_max_insns_priority;
+
+  /* ??? FIXME: should use straight bitfields inside sched_info instead of
+     this flag field.  */
+  unsigned int flags;
 };
 
 extern struct sched_info *current_sched_info;
@@ -231,6 +241,10 @@ struct haifa_insn_data
 
   /* Nonzero if priority has been computed already.  */
   unsigned int priority_known : 1;
+
+  /* Nonzero if instruction has internal dependence
+     (e.g. add_dependence was invoked with (insn == elem)).  */
+  unsigned int has_internal_dep : 1;
 };
 
 extern struct haifa_insn_data *h_i_d;
@@ -245,6 +259,137 @@ extern struct haifa_insn_data *h_i_d;
 #define INSN_PRIORITY_KNOWN(INSN) (h_i_d[INSN_UID (INSN)].priority_known)
 #define INSN_COST(INSN)		(h_i_d[INSN_UID (INSN)].cost)
 #define INSN_REG_WEIGHT(INSN)	(h_i_d[INSN_UID (INSN)].reg_weight)
+#define HAS_INTERNAL_DEP(INSN)  (h_i_d[INSN_UID (INSN)].has_internal_dep)
+
+/* DEP_STATUS of the link incapsulates information, that is needed for
+   speculative scheduling.  Namely, it is 4 integers in the range
+   [0, MAX_DEP_WEAK] and 3 bits.
+   The integers correspond to the probability of the dependence to *not*
+   exist, it is the probability, that overcoming of this dependence will
+   not be followed by execution of the recovery code.  Nevertheless,
+   whatever high the probability of success is, recovery code should still
+   be generated to preserve semantics of the program.  To find a way to
+   get/set these integers, please refer to the {get, set}_dep_weak ()
+   functions in sched-deps.c .
+   The 3 bits in the DEP_STATUS correspond to 3 dependence types: true-,
+   output- and anti- dependence.  It is not enough for speculative scheduling
+   to know just the major type of all the dependence between two instructions,
+   as only true dependence can be overcome.
+   There also is the 4-th bit in the DEP_STATUS (HARD_DEP), that is reserved
+   for using to describe instruction's status.  It is set whenever instuction
+   has at least one dependence, that cannot be overcome.
+   See also: check_dep_status () in sched-deps.c .  */
+#define DEP_STATUS(LINK) XWINT (LINK, 2)
+
+/* We exclude sign bit.  */
+#define BITS_PER_DEP_STATUS (HOST_BITS_PER_WIDE_INT - 1)
+
+/* First '4' stands for 3 dep type bits and HARD_DEP bit.
+   Second '4' stands for BEGIN_{DATA, CONTROL}, BE_IN_{DATA, CONTROL}
+   dep weakness.  */
+#define BITS_PER_DEP_WEAK ((BITS_PER_DEP_STATUS - 4) / 4)
+
+/* Mask of speculative weakness in dep_status.  */
+#define DEP_WEAK_MASK ((1 << BITS_PER_DEP_WEAK) - 1)
+
+/* This constant means that dependence is fake with 99.999...% probability.
+   This is the maximum value, that can appear in dep_status.
+   Note, that we don't want MAX_DEP_WEAK to be the same as DEP_WEAK_MASK for
+   debugging reasons.  Though, it can be set to DEP_WEAK_MASK, and, when
+   done so, we'll get fast (mul for)/(div by) NO_DEP_WEAK.  */
+#define MAX_DEP_WEAK (DEP_WEAK_MASK - 1)
+
+/* This constant means that dependence is 99.999...% real and it is a really
+   bad idea to overcome it (though this can be done, preserving program
+   semantics).  */
+#define MIN_DEP_WEAK 1
+
+/* This constant represents 100% probability.
+   E.g. it is used to represent weakness of dependence, that doesn't exist.  */
+#define NO_DEP_WEAK (MAX_DEP_WEAK + MIN_DEP_WEAK)
+
+/* Default weakness of speculative dependence.  Used when we can't say
+   neither bad nor good about the dependence.  */
+#define UNCERTAIN_DEP_WEAK (MAX_DEP_WEAK - MAX_DEP_WEAK / 4)
+
+/* Offset for speculative weaknesses in dep_status.  */
+enum SPEC_TYPES_OFFSETS {
+  BEGIN_DATA_BITS_OFFSET = 0,
+  BE_IN_DATA_BITS_OFFSET = BEGIN_DATA_BITS_OFFSET + BITS_PER_DEP_WEAK,
+  BEGIN_CONTROL_BITS_OFFSET = BE_IN_DATA_BITS_OFFSET + BITS_PER_DEP_WEAK,
+  BE_IN_CONTROL_BITS_OFFSET = BEGIN_CONTROL_BITS_OFFSET + BITS_PER_DEP_WEAK
+};
+
+/* The following defines provide numerous constants used to distinguish between
+   different types of speculative dependencies.  */
+
+/* Dependence can be overcomed with generation of new data speculative
+   instruction.  */
+#define BEGIN_DATA (((ds_t) DEP_WEAK_MASK) << BEGIN_DATA_BITS_OFFSET)
+
+/* This dependence is to the instruction in the recovery block, that was
+   formed to recover after data-speculation failure.
+   Thus, this dependence can overcomed with generating of the copy of
+   this instruction in the recovery block.  */
+#define BE_IN_DATA (((ds_t) DEP_WEAK_MASK) << BE_IN_DATA_BITS_OFFSET)
+
+/* Dependence can be overcomed with generation of new control speculative
+   instruction.  */
+#define BEGIN_CONTROL (((ds_t) DEP_WEAK_MASK) << BEGIN_CONTROL_BITS_OFFSET)
+
+/* This dependence is to the instruction in the recovery block, that was
+   formed to recover after control-speculation failure.
+   Thus, this dependence can overcomed with generating of the copy of
+   this instruction in the recovery block.  */
+#define BE_IN_CONTROL (((ds_t) DEP_WEAK_MASK) << BE_IN_CONTROL_BITS_OFFSET)
+
+/* Few convinient combinations.  */
+#define BEGIN_SPEC (BEGIN_DATA | BEGIN_CONTROL)
+#define DATA_SPEC (BEGIN_DATA | BE_IN_DATA)
+#define CONTROL_SPEC (BEGIN_CONTROL | BE_IN_CONTROL)
+#define SPECULATIVE (DATA_SPEC | CONTROL_SPEC)
+#define BE_IN_SPEC (BE_IN_DATA | BE_IN_CONTROL)
+
+/* Constants, that are helpful in iterating through dep_status.  */
+#define FIRST_SPEC_TYPE BEGIN_DATA
+#define LAST_SPEC_TYPE BE_IN_CONTROL
+#define SPEC_TYPE_SHIFT BITS_PER_DEP_WEAK
+
+/* Dependence on instruction can be of multiple types
+   (e.g. true and output). This fields enhance REG_NOTE_KIND information
+   of the dependence.  */
+#define DEP_TRUE (((ds_t) 1) << (BE_IN_CONTROL_BITS_OFFSET + BITS_PER_DEP_WEAK))
+#define DEP_OUTPUT (DEP_TRUE << 1)
+#define DEP_ANTI (DEP_OUTPUT << 1)
+
+#define DEP_TYPES (DEP_TRUE | DEP_OUTPUT | DEP_ANTI)
+
+/* Instruction has non-speculative dependence.  This bit represents the
+   property of an instruction - not the one of a dependence.
+   Therefore, it can appear only in TODO_SPEC field of an instruction.  */
+#define HARD_DEP (DEP_ANTI << 1)
+
+/* This represents the results of calling sched-deps.c functions, 
+   which modify dependencies.  Possible choices are: a dependence
+   is already present and nothing has been changed; a dependence type
+   has been changed; brand new dependence has been created.  */
+enum DEPS_ADJUST_RESULT {
+  DEP_PRESENT = 1,
+  DEP_CHANGED = 2,
+  DEP_CREATED = 3
+};
+
+/* Represents the bits that can be set in the flags field of the 
+   sched_info structure.  */
+enum SCHED_FLAGS {
+  /* If set, generate links between instruction as DEPS_LIST.
+     Otherwise, generate usual INSN_LIST links.  */
+  USE_DEPS_LIST = 1,
+  /* Perform data or control (or both) speculation.
+     Results in generation of data and control speculative dependencies.
+     Requires USE_DEPS_LIST set.  */
+  DO_SPECULATION = USE_DEPS_LIST << 1
+};
 
 extern FILE *sched_dump;
 extern int sched_verbose;
@@ -332,17 +477,23 @@ extern void print_insn (char *, rtx, int);
 
 /* Functions in sched-deps.c.  */
 extern bool sched_insns_conditions_mutex_p (rtx, rtx);
-extern int add_dependence (rtx, rtx, enum reg_note);
+extern void add_dependence (rtx, rtx, enum reg_note);
 extern void sched_analyze (struct deps *, rtx, rtx);
 extern void init_deps (struct deps *);
 extern void free_deps (struct deps *);
 extern void init_deps_global (void);
 extern void finish_deps_global (void);
-extern void add_forward_dependence (rtx, rtx, enum reg_note);
+extern void add_forw_dep (rtx, rtx);
 extern void compute_forward_dependences (rtx, rtx);
 extern rtx find_insn_list (rtx, rtx);
 extern void init_dependency_caches (int);
 extern void free_dependency_caches (void);
+extern enum DEPS_ADJUST_RESULT add_or_update_back_dep (rtx, rtx, 
+						       enum reg_note, ds_t);
+extern void add_or_update_back_forw_dep (rtx, rtx, enum reg_note, ds_t);
+extern void add_back_forw_dep (rtx, rtx, enum reg_note, ds_t);
+extern void delete_back_forw_dep (rtx, rtx);
+extern ds_t set_dep_weak (ds_t, ds_t, dw_t);
 
 /* Functions in haifa-sched.c.  */
 extern int haifa_classify_insn (rtx);

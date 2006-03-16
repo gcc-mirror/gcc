@@ -99,8 +99,8 @@ REG_NOTE (LABEL)
 
 /* REG_DEP_ANTI and REG_DEP_OUTPUT are used in LOG_LINKS to represent
    write-after-read and write-after-write dependencies respectively.  */
-REG_NOTE (DEP_ANTI)
 REG_NOTE (DEP_OUTPUT)
+REG_NOTE (DEP_ANTI)
 
 /* REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs.  It has an
    integer value.  For jumps, it is the probability that this is a
