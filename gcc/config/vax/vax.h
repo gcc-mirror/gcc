@@ -104,7 +104,7 @@ Boston, MA 02110-1301, USA.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
-#define PCC_BITFIELD_TYPE_MATTERS (! TARGET_VAXC_ALIGNMENT)
+#define PCC_BITFIELD_TYPE_MATTERS (!TARGET_VAXC_ALIGNMENT)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 32
@@ -289,9 +289,9 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    For the VAX, `Q' means that OP is a MEM that does not have a mode-dependent
    address.  */
 
-#define EXTRA_CONSTRAINT(OP, C)						\
-  ((C) == 'Q'								\
-   ? MEM_P (OP) && ! mode_dependent_address_p (XEXP (OP, 0))	\
+#define EXTRA_CONSTRAINT(OP, C)					\
+  ((C) == 'Q'							\
+   ? MEM_P (OP) && !mode_dependent_address_p (XEXP (OP, 0))	\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
