@@ -38,6 +38,9 @@ AM_INIT_AUTOMAKE([1.9.0 gnu std-options tar-ustar])
 AC_CONFIG_HEADERS([include/config.h])
 AC_PREFIX_DEFAULT(/usr/local/classpath)
 
+dnl GCC LOCAL
+GCC_NO_EXECUTABLES
+
 dnl -----------------------------------------------------------
 dnl Enable JNI libraries (enabled by default)
 dnl -----------------------------------------------------------
@@ -226,9 +229,6 @@ AC_PROG_INSTALL
 dnl -----------------------------------------------------------
 dnl Checks for programs.
 dnl -----------------------------------------------------------
-
-dnl GCC LOCAL
-GCC_NO_EXECUTABLES
 
 dnl Initialize libtool
 AC_DISABLE_STATIC
