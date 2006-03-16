@@ -375,7 +375,6 @@ do									\
   TREE_STATIC (TYPE_## TABLE ##_SYMS_DECL (TYPE)) = 1;			\
   TREE_CONSTANT (TYPE_## TABLE ##_SYMS_DECL (TYPE)) = 1;		\
   DECL_IGNORED_P (TYPE_## TABLE ##_SYMS_DECL (TYPE)) = 1;		\
-  pushdecl (TYPE_## TABLE ##_SYMS_DECL (TYPE));				\
 }									\
 while (0)
 
@@ -1821,6 +1820,7 @@ make_class_data (tree type)
     }
   else
     {
+      pushdecl_top_level (TYPE_OTABLE_SYMS_DECL (type));
       PUSH_FIELD_VALUE (cons, "otable",
 			build1 (ADDR_EXPR, otable_ptr_type, TYPE_OTABLE_DECL (type)));
       PUSH_FIELD_VALUE (cons, "otable_syms",
@@ -1836,6 +1836,7 @@ make_class_data (tree type)
     }
   else
     {
+      pushdecl_top_level (TYPE_ATABLE_SYMS_DECL (type));
       PUSH_FIELD_VALUE (cons, "atable",
 			build1 (ADDR_EXPR, atable_ptr_type, TYPE_ATABLE_DECL (type)));
       PUSH_FIELD_VALUE (cons, "atable_syms",
@@ -1851,6 +1852,7 @@ make_class_data (tree type)
     }
   else
     {
+      pushdecl_top_level (TYPE_ITABLE_SYMS_DECL (type));
       PUSH_FIELD_VALUE (cons, "itable",
 			build1 (ADDR_EXPR, itable_ptr_type, TYPE_ITABLE_DECL (type)));
       PUSH_FIELD_VALUE (cons, "itable_syms",
