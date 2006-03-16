@@ -6183,6 +6183,15 @@ The maximum number of iterations through CFG to extend regions.
 N - do at most N iterations.
 The default value is 2.
 
+@item max-sched-insn-conflict-delay
+The maximum conflict delay for an insn to be considered for speculative motion.
+The default value is 3.
+
+@item sched-spec-prob-cutoff
+The minimal probability of speculation success (in percents), so that
+speculative insn will be scheduled.
+The default value is 40.
+
 @item max-last-value-rtl
 
 The maximum size measured as number of RTLs that can be recorded in an expression

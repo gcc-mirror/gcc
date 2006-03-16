@@ -51,6 +51,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include "insn-modes.h"
 
 struct stdarg_info;
+struct spec_info_def;
 
 /* The struct used by the secondary_reload target hook.  */
 typedef struct secondary_reload_info
@@ -306,6 +307,58 @@ struct gcc_target
        between the already scheduled insn (first parameter) and the
        the second insn (second parameter).  */
     bool (* is_costly_dependence) (rtx, rtx, rtx, int, int);
+
+    /* Given the current cost, COST, of an insn, INSN, calculate and
+       return a new cost based on its relationship to DEP_INSN through the
+       dependence of type DEP_TYPE.  The default is to make no adjustment.  */
+    int (* adjust_cost_2) (rtx insn, int, rtx def_insn, int cost);
+
+    /* The following member value is a pointer to a function called
+       by the insn scheduler. This hook is called to notify the backend
+       that new instructions were emitted.  */
+    void (* h_i_d_extended) (void);
+    
+    /* The following member value is a pointer to a function called
+       by the insn scheduler.
+       The first parameter is an instruction, the second parameter is the type
+       of the requested speculation, and the third parameter is a pointer to the
+       speculative pattern of the corresponding type (set if return value == 1).
+       It should return
+       -1, if there is no pattern, that will satisfy the requested speculation
+       type,
+       0, if current pattern satisfies the requested speculation type,
+       1, if pattern of the instruction should be changed to the newly
+       generated one.  */
+    int (* speculate_insn) (rtx, HOST_WIDE_INT, rtx *);
+
+    /* The following member value is a pointer to a function called
+       by the insn scheduler.  It should return true if the check instruction
+       corresponding to the instruction passed as the parameter needs a
+       recovery block.  */
+    bool (* needs_block_p) (rtx);
+
+    /* The following member value is a pointer to a function called
+       by the insn scheduler.  It should return a pattern for the check
+       instruction.
+       The first parameter is a speculative instruction, the second parameter
+       is the label of the corresponding recovery block (or null, if it is a
+       simple check).  If the mutation of the check is requested (e.g. from
+       ld.c to chk.a), the third parameter is true - in this case the first
+       parameter is the previous check.  */
+    rtx (* gen_check) (rtx, rtx, bool);
+
+    /* The following member value is a pointer to a function controlling
+       what insns from the ready insn queue will be considered for the
+       multipass insn scheduling.  If the hook returns zero for the insn
+       passed as the parameter, the insn will not be chosen to be
+       issued.  This hook is used to discard speculative instructions,
+       that stand at the first position of the ready list.  */
+    bool (* first_cycle_multipass_dfa_lookahead_guard_spec) (rtx);
+
+    /* The following member value is a pointer to a function that provides
+       information about the speculation capabilities of the target.
+       The parameter is a pointer to spec_info variable.  */
+    void (* set_sched_flags) (struct spec_info_def *);
   } sched;
 
   /* Functions relating to vectorization.  */

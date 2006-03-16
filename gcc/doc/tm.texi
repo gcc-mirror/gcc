@@ -5838,8 +5838,8 @@ acceptable, you could use the hook to modify them too.  See also
 
 @deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx @var{insn}, int @var{priority})
 This hook adjusts the integer scheduling priority @var{priority} of
-@var{insn}.  It should return the new priority.  Reduce the priority to
-execute @var{insn} earlier, increase the priority to execute @var{insn}
+@var{insn}.  It should return the new priority.  Increase the priority to
+execute @var{insn} earlier, reduce the priority to execute @var{insn}
 later.  Do not define this hook if you do not need to adjust the
 scheduling priorities of insns.
 @end deftypefn
@@ -6012,6 +6012,70 @@ that will be formed, and (c) correctly emulating the grouping can be very
 important.  In such targets one may want to allow issuing dependent insns
 closer to one another---i.e., closer than the dependence distance;  however,
 not in cases of "costly dependences", which this hooks allows to define.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST_2 (rtx @var{insn}, int @var{dep_type}, rtx @var{dep_insn}, int @var{cost})
+This hook is a modified version of @samp{TARGET_SCHED_ADJUST_COST}.  Instead
+of passing dependence as a second parameter, it passes a type of that
+dependence.  This is useful to calculate cost of dependence between insns
+not having the corresponding link.  If @samp{TARGET_SCHED_ADJUST_COST_2} is
+definded it is used instead of @samp{TARGET_SCHED_ADJUST_COST}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_H_I_D_EXTENDED (void)
+This hook is called by the insn scheduler after emitting a new instruction to
+the instruction stream.  The hook notifies a target backend to extend its
+per instruction data structures.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, int @var{request}, rtx *@var{new_pat})
+This hook is called by the insn scheduler when @var{insn} has only 
+speculative dependencies and therefore can be scheduled speculatively.  
+The hook is used to check if the pattern of @var{insn} has a speculative 
+version and, in case of successful check, to generate that speculative 
+pattern.  The hook should return 1, if the instruction has a speculative form, 
+or -1, if it doesn't.  @var{request} describes the type of requested 
+speculation.  If the return value equals 1 then @var{new_pat} is assigned
+the generated speculative pattern.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_NEEDS_BLOCK_P (rtx @var{insn})
+This hook is called by the insn scheduler during generation of recovery code
+for @var{insn}.  It should return non-zero, if the corresponding check
+instruction should branch to recovery code, or zero otherwise.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_CHECK (rtx @var{insn}, rtx @var{label}, int @var{mutate_p})
+This hook is called by the insn scheduler to generate a pattern for recovery
+check instruction.  If @var{mutate_p} is zero, then @var{insn} is a 
+speculative instruction for which the check should be generated.  
+@var{label} is either a label of a basic block, where recovery code should 
+be emitted, or a null pointer, when requested check doesn't branch to 
+recovery code (a simple check).  If @var{mutate_p} is non-zero, then 
+a pattern for a branchy check corresponding to a simple check denoted by 
+@var{insn} should be generated.  In this case @var{label} can't be null.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC (rtx @var{insn})
+This hook is used as a workaround for
+@samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD} not being
+called on the first instruction of the ready list.  The hook is used to
+discard speculative instruction that stand first in the ready list from
+being scheduled on the current cycle.  For non-speculative instructions, 
+the hook should always return non-zero.  For example, in the ia64 backend
+the hook is used to cancel data speculative insns when the ALAT table
+is nearly full.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_SET_SCHED_FLAGS (unsigned int *@var{flags}, spec_info_t @var{spec_info})
+This hook is used by the insn scheduler to find out what features should be 
+enabled/used.  @var{flags} initially may have either the SCHED_RGN or SCHED_EBB
+bit set.  This denotes the scheduler pass for which the data should be 
+provided.  The target backend should modify @var{flags} by modifying
+the bits correponding to the following features: USE_DEPS_LIST, USE_GLAT,
+DETACH_LIFE_INFO, and DO_SPECULATION.  For the DO_SPECULATION feature 
+an additional structure @var{spec_info} should be filled by the target.  
+The structure describes speculation types that can be used in the scheduler.
 @end deftypefn
 
 @node Sections

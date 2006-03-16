@@ -112,8 +112,6 @@ static void adjust_add_sorted_back_dep (rtx, rtx, rtx *);
 static void adjust_back_add_forw_dep (rtx, rtx *);
 static void delete_forw_dep (rtx, rtx);
 static dw_t estimate_dep_weak (rtx, rtx);
-static dw_t get_dep_weak (ds_t, ds_t);
-static ds_t ds_merge (ds_t, ds_t);
 #ifdef INSN_SCHEDULING
 #ifdef ENABLE_CHECKING
 static void check_dep_status (enum reg_note, ds_t, bool);
@@ -1777,19 +1775,35 @@ init_dependency_caches (int luid)
      what we consider "very high".  */
   if (luid / n_basic_blocks > 100 * 5)
     {
-      int i;
+      cache_size = 0;
+      extend_dependency_caches (luid, true);
+    }
+}
 
-      true_dependency_cache = XNEWVEC (bitmap_head, luid);
-      anti_dependency_cache = XNEWVEC (bitmap_head, luid);
-      output_dependency_cache = XNEWVEC (bitmap_head, luid);
+/* Create or extend (depending on CREATE_P) dependency caches to
+   size N.  */
+void
+extend_dependency_caches (int n, bool create_p)
+{
+  if (create_p || true_dependency_cache)
+    {
+      int i, luid = cache_size + n;
+
+      true_dependency_cache = XRESIZEVEC (bitmap_head, true_dependency_cache,
+					  luid);
+      output_dependency_cache = XRESIZEVEC (bitmap_head,
+					    output_dependency_cache, luid);
+      anti_dependency_cache = XRESIZEVEC (bitmap_head, anti_dependency_cache,
+					  luid);
 #ifdef ENABLE_CHECKING
-      forward_dependency_cache = XNEWVEC (bitmap_head, luid);
+      forward_dependency_cache = XRESIZEVEC (bitmap_head,
+					     forward_dependency_cache, luid);
 #endif
       if (current_sched_info->flags & DO_SPECULATION)
         spec_dependency_cache = XRESIZEVEC (bitmap_head, spec_dependency_cache,
 					    luid);
 
-      for (i = 0; i < luid; i++)
+      for (i = cache_size; i < luid; i++)
 	{
 	  bitmap_initialize (&true_dependency_cache[i], 0);
 	  bitmap_initialize (&output_dependency_cache[i], 0);
@@ -2037,7 +2051,7 @@ delete_back_forw_dep (rtx insn, rtx elem)
 }
 
 /* Return weakness of speculative type TYPE in the dep_status DS.  */
-static dw_t
+dw_t
 get_dep_weak (ds_t ds, ds_t type)
 {
   ds = ds & type;
@@ -2074,7 +2088,7 @@ set_dep_weak (ds_t ds, ds_t type, dw_t dw)
 }
 
 /* Return the join of two dep_statuses DS1 and DS2.  */
-static ds_t
+ds_t
 ds_merge (ds_t ds1, ds_t ds2)
 {
   ds_t ds, t;

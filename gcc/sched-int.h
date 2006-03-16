@@ -148,10 +148,12 @@ struct sched_info
   int (*can_schedule_ready_p) (rtx);
   /* Return nonzero if there are more insns that should be scheduled.  */
   int (*schedule_more_p) (void);
-  /* Called after an insn has all its dependencies resolved.  Return nonzero
-     if it should be moved to the ready list or the queue, or zero if we
-     should silently discard it.  */
-  int (*new_ready) (rtx);
+  /* Called after an insn has all its hard dependencies resolved. 
+     Adjusts status of instruction (which is passed through second parameter)
+     to indicate if instruction should be moved to the ready list or the
+     queue, or if it should silently discard it (until next resolved
+     dependence).  */
+  ds_t (*new_ready) (rtx, ds_t);
   /* Compare priority of two insns.  Return a positive number if the second
      insn is to be preferred for scheduling, and a negative one if the first
      is to be preferred.  Zero if they are equally good.  */
@@ -187,10 +189,72 @@ struct sched_info
   /* Maximum priority that has been assigned to an insn.  */
   int sched_max_insns_priority;
 
+  /* Hooks to support speculative scheduling.  */
+
+  /* Called to notify frontend that instruction is being added (second
+     parameter == 0) or removed (second parameter == 1).  */     
+  void (*add_remove_insn) (rtx, int);
+
+  /* Called to notify frontend that instruction is being scheduled.
+     The first parameter - instruction to scheduled, the second parameter -
+     last scheduled instruction.  */
+  void (*begin_schedule_ready) (rtx, rtx);
+
+  /* Called to notify frontend, that new basic block is being added.
+     The first parameter - new basic block.
+     The second parameter - block, after which new basic block is being added,
+     or EXIT_BLOCK_PTR, if recovery block is being added,
+     or NULL, if standalone block is being added.  */
+  void (*add_block) (basic_block, basic_block);
+
+  /* If the second parameter is not NULL, return nonnull value, if the
+     basic block should be advanced.
+     If the second parameter is NULL, return the next basic block in EBB.
+     The first parameter is the current basic block in EBB.  */
+  basic_block (*advance_target_bb) (basic_block, rtx);
+
+  /* Called after blocks were rearranged due to movement of jump instruction.
+     The first parameter - index of basic block, in which jump currently is.
+     The second parameter - index of basic block, in which jump used
+     to be.
+     The third parameter - index of basic block, that follows the second
+     parameter.  */
+  void (*fix_recovery_cfg) (int, int, int);
+
+#ifdef ENABLE_CHECKING
+  /* If the second parameter is zero, return nonzero, if block is head of the
+     region.
+     If the second parameter is nonzero, return nonzero, if block is leaf of
+     the region.
+     global_live_at_start should not change in region heads and
+     global_live_at_end should not change in region leafs due to scheduling.  */
+  int (*region_head_or_leaf_p) (basic_block, int);
+#endif
+
   /* ??? FIXME: should use straight bitfields inside sched_info instead of
      this flag field.  */
   unsigned int flags;
 };
+
+/* This structure holds description of the properties for speculative
+   scheduling.  */
+struct spec_info_def
+{
+  /* Holds types of allowed speculations: BEGIN_{DATA|CONTROL},
+     BE_IN_{DATA_CONTROL}.  */
+  int mask;
+
+  /* A dump file for additional information on speculative scheduling.  */
+  FILE *dump;
+
+  /* Minimal cumulative weakness of speculative instruction's
+     dependencies, so that insn will be scheduled.  */
+  dw_t weakness_cutoff;
+
+  /* Flags from the enum SPEC_SCHED_FLAGS.  */
+  int flags;
+};
+typedef struct spec_info_def *spec_info_t;
 
 extern struct sched_info *current_sched_info;
 
@@ -256,9 +320,26 @@ struct haifa_insn_data
   /* Nonzero if instruction has internal dependence
      (e.g. add_dependence was invoked with (insn == elem)).  */
   unsigned int has_internal_dep : 1;
+  
+  /* What speculations are neccessary to apply to schedule the instruction.  */
+  ds_t todo_spec;
+  /* What speculations were already applied.  */
+  ds_t done_spec; 
+  /* What speculations are checked by this instruction.  */
+  ds_t check_spec;
+
+  /* Recovery block for speculation checks.  */
+  basic_block recovery_block;
+
+  /* Original pattern of the instruction.  */
+  rtx orig_pat;
 };
 
 extern struct haifa_insn_data *h_i_d;
+/* Used only if (current_sched_info->flags & USE_GLAT) != 0.
+   These regsets store global_live_at_{start, end} information
+   for each basic block.  */
+extern regset *glat_start, *glat_end;
 
 /* Accessor macros for h_i_d.  There are more in haifa-sched.c and
    sched-rgn.c.  */
@@ -272,6 +353,11 @@ extern struct haifa_insn_data *h_i_d;
 #define INSN_COST(INSN)		(h_i_d[INSN_UID (INSN)].cost)
 #define INSN_REG_WEIGHT(INSN)	(h_i_d[INSN_UID (INSN)].reg_weight)
 #define HAS_INTERNAL_DEP(INSN)  (h_i_d[INSN_UID (INSN)].has_internal_dep)
+#define TODO_SPEC(INSN)         (h_i_d[INSN_UID (INSN)].todo_spec)
+#define DONE_SPEC(INSN)         (h_i_d[INSN_UID (INSN)].done_spec)
+#define CHECK_SPEC(INSN)        (h_i_d[INSN_UID (INSN)].check_spec)
+#define RECOVERY_BLOCK(INSN)    (h_i_d[INSN_UID (INSN)].recovery_block)
+#define ORIG_PAT(INSN)          (h_i_d[INSN_UID (INSN)].orig_pat)
 
 /* DEP_STATUS of the link incapsulates information, that is needed for
    speculative scheduling.  Namely, it is 4 integers in the range
@@ -400,8 +486,26 @@ enum SCHED_FLAGS {
   /* Perform data or control (or both) speculation.
      Results in generation of data and control speculative dependencies.
      Requires USE_DEPS_LIST set.  */
-  DO_SPECULATION = USE_DEPS_LIST << 1
+  DO_SPECULATION = USE_DEPS_LIST << 1,
+  SCHED_RGN = DO_SPECULATION << 1,
+  SCHED_EBB = SCHED_RGN << 1,
+  /* Detach register live information from basic block headers.
+     This is necessary to invoke functions, that change CFG (e.g. split_edge).
+     Requires USE_GLAT.  */
+  DETACH_LIFE_INFO = SCHED_EBB << 1,
+  /* Save register live information from basic block headers to
+     glat_{start, end} arrays.  */
+  USE_GLAT = DETACH_LIFE_INFO << 1
 };
+
+enum SPEC_SCHED_FLAGS {
+  COUNT_SPEC_IN_CRITICAL_PATH = 1,
+  PREFER_NON_DATA_SPEC = COUNT_SPEC_IN_CRITICAL_PATH << 1,
+  PREFER_NON_CONTROL_SPEC = PREFER_NON_DATA_SPEC << 1
+};
+
+#define NOTE_NOT_BB_P(NOTE) (NOTE_P (NOTE) && (NOTE_LINE_NUMBER (NOTE)	\
+					       != NOTE_INSN_BASIC_BLOCK))
 
 extern FILE *sched_dump;
 extern int sched_verbose;
@@ -500,16 +604,19 @@ extern void compute_forward_dependences (rtx, rtx);
 extern rtx find_insn_list (rtx, rtx);
 extern void init_dependency_caches (int);
 extern void free_dependency_caches (void);
+extern void extend_dependency_caches (int, bool);
 extern enum DEPS_ADJUST_RESULT add_or_update_back_dep (rtx, rtx, 
 						       enum reg_note, ds_t);
 extern void add_or_update_back_forw_dep (rtx, rtx, enum reg_note, ds_t);
 extern void add_back_forw_dep (rtx, rtx, enum reg_note, ds_t);
 extern void delete_back_forw_dep (rtx, rtx);
+extern dw_t get_dep_weak (ds_t, ds_t);
 extern ds_t set_dep_weak (ds_t, ds_t, dw_t);
+extern ds_t ds_merge (ds_t, ds_t);
 
 /* Functions in haifa-sched.c.  */
 extern int haifa_classify_insn (rtx);
-extern void get_block_head_tail (int, rtx *, rtx *);
+extern void get_ebb_head_tail (basic_block, basic_block, rtx *, rtx *);
 extern int no_real_insns_p (rtx, rtx);
 
 extern void rm_line_notes (rtx, rtx);
@@ -521,10 +628,18 @@ extern void rm_other_notes (rtx, rtx);
 extern int insn_cost (rtx, rtx, rtx);
 extern int set_priorities (rtx, rtx);
 
-extern void schedule_block (int, int);
+extern void schedule_block (basic_block *, int);
 extern void sched_init (void);
 extern void sched_finish (void);
 
 extern int try_ready (rtx);
+extern void * xrecalloc (void *, size_t, size_t, size_t);
+extern void unlink_bb_notes (basic_block, basic_block);
+extern void add_block (basic_block, basic_block);
+extern void attach_life_info (void);
+
+#ifdef ENABLE_CHECKING
+extern void check_reg_live (void);
+#endif
 
 #endif /* GCC_SCHED_INT_H */

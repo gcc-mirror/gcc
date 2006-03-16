@@ -250,6 +250,7 @@ main (int argc, char **argv)
       printf ("   define_insn_reservation will be changed after\n");
       printf ("   last call of dfa_start.  */\n");
       printf ("extern void dfa_clean_insn_cache (void);\n\n");
+      printf ("extern void dfa_clear_single_insn_cache (rtx);\n\n");      
       printf ("/* Initiate and finish work with DFA.  They should be\n");
       printf ("   called as the first and the last interface\n");
       printf ("   functions.  */\n");
