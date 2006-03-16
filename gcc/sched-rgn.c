@@ -1884,7 +1884,7 @@ static int sched_n_insns;
 static int last_was_jump;
 
 /* Implementations of the sched_info functions for region scheduling.  */
-static void init_ready_list (struct ready_list *);
+static void init_ready_list (void);
 static int can_schedule_ready_p (rtx);
 static int new_ready (rtx);
 static int schedule_more_p (void);
@@ -1905,7 +1905,7 @@ schedule_more_p (void)
    once before scheduling a set of insns.  */
 
 static void
-init_ready_list (struct ready_list *ready)
+init_ready_list (void)
 {
   rtx prev_head = current_sched_info->prev_head;
   rtx next_tail = current_sched_info->next_tail;
@@ -1943,15 +1943,8 @@ init_ready_list (struct ready_list *ready)
   /* Initialize ready list with all 'ready' insns in target block.
      Count number of insns in the target block being scheduled.  */
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
-    {
-      if (INSN_DEP_COUNT (insn) == 0)
-	{
-	  ready_add (ready, insn);
-
-	  if (targetm.sched.adjust_priority)
-	    INSN_PRIORITY (insn) =
-	      targetm.sched.adjust_priority (insn, INSN_PRIORITY (insn));
-	}
+    {      
+      try_ready (insn);
       target_n_insns++;
     }
 
@@ -1970,26 +1963,8 @@ init_ready_list (struct ready_list *ready)
 	src_head = head;
 
 	for (insn = src_head; insn != src_next_tail; insn = NEXT_INSN (insn))
-	  {
-	    if (! INSN_P (insn))
-	      continue;
-
-	    if (!CANT_MOVE (insn)
-		&& (!IS_SPECULATIVE_INSN (insn)
-		    || ((recog_memoized (insn) < 0
-			 || min_insn_conflict_delay (curr_state,
-						     insn, insn) <= 3)
-			&& check_live (insn, bb_src)
-			&& is_exception_free (insn, bb_src, target_bb))))
-	      if (INSN_DEP_COUNT (insn) == 0)
-		{
-		  ready_add (ready, insn); 
-
-		  if (targetm.sched.adjust_priority)
-		    INSN_PRIORITY (insn) =
-		      targetm.sched.adjust_priority (insn, INSN_PRIORITY (insn));
-		}
-	  }
+	  if (INSN_P (insn))
+	    try_ready (insn);
       }
 }
 
@@ -2638,6 +2613,7 @@ schedule_region (int rgn)
     }
 
   /* Set priorities.  */
+  current_sched_info->sched_max_insns_priority = 0;
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
       rtx head, tail;
@@ -2645,6 +2621,7 @@ schedule_region (int rgn)
 
       rgn_n_insns += set_priorities (head, tail);
     }
+  current_sched_info->sched_max_insns_priority++;
 
   /* Compute interblock info: probabilities, split-edges, dominators, etc.  */
   if (current_nr_blocks > 1)
@@ -2727,8 +2704,8 @@ schedule_region (int rgn)
 
       target_bb = bb;
 
-      current_sched_info->queue_must_finish_empty
-	= current_nr_blocks > 1 && !flag_schedule_interblock;
+      gcc_assert (flag_schedule_interblock || current_nr_blocks == 1);
+      current_sched_info->queue_must_finish_empty = current_nr_blocks == 1;
 
       schedule_block (b, rgn_n_insns);
       sched_rgn_n_insns += sched_n_insns;

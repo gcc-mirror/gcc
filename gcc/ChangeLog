@@ -1,5 +1,51 @@
 2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
 
+        * sched-int.h (struct haifa_insn_data): New fields: resolved_deps,
+	inter_tick, queue_index.
+	(struct sched_info): Change signature of init_ready_list field.
+	Adjust all initializations.
+	(RESOLVED_DEPS): New access macro.
+	(ready_add): Remove prototype.
+	(try_ready): Add prototype.
+	* sched-rgn.c (init_ready_list): Use try_ready.
+	(schedule_region): Initialize
+	current_sched_info->{sched_max_insns_priority, queue_must_finish_empty}.
+	* sched-ebb.c (new_ready): Remove.  Adjust ebb_sched_info.
+	(init_ready_list): Use try_ready.
+	(schedule_ebb): Initialize current_sched_info->sched_max_insns_priority.
+	* lists.c (remove_list_elem): Remove `static'.
+	(remove_free_INSN_LIST_elem): New function.
+	* rtl.h (remove_list_elem, remove_free_INSN_LIST_elem): Add prototypes.
+	* haifa-sched.c (INTER_TICK, QUEUE_INDEX): New macros.
+	(INVALID_TICK, MIN_TICK, QUEUE_SCHEDULED, QUEUE_NOWHERE, QUEUE_READY):
+	New constants.
+	(readyp): New variable.
+	(queue_remove, ready_remove_insn, fix_inter_tick, fix_tick_ready,
+	change_queue_index, resolve_dep): New static functions.
+	(try_ready): New function.  Adjust callers in sched-rgn.c and
+	sched-ebb.c to use it instead of ready_add.
+	(clock_var): Move at the begining of file.
+	(rank_for_schedule): Fix typo.
+	(queue_insn): Add assertion.  Handle QUEUE_INDEX.
+	(ready_lastpos): Enforce assertion.
+	(ready_add): Make it static.  Handle QUEUE_INDEX.  Add new argument,
+	update all callers.
+	(ready_remove_first, ready_remove): Handle QUEUE_INDEX.
+	(schedule_insn): Rewrite to use try_ready and resolve_dep.
+	(queue_to_ready): Use free_INSN_LIST_list.
+	(early_queue_to_ready): Fix typo.
+	(schedule_block): Init readyp.  Move init_ready_list call after the
+	initialization of clock_var.  Fix error in rejecting insn by
+	targetm.sched.dfa_new_cycle.  Add call to fix_inter_tick.  Remove code
+	that previously	corrected INSN_TICKs.  Add code for handling
+	QUEUE_INDEX.
+	(set_priorities): Fix typo.
+	(sched_init): Initialize INSN_TICK, INTER_TICK and QUEUE_INDEX.
+	Clarify comment and code that keeps current_sched_info->next_tail
+	non-null.
+
+2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
+
 	* sched-rgn.c (extend_rgns): New static function.
 	(find_rgns): Use it.
 	(gather_region_statistics, print_region_statistics): New static

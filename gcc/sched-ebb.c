@@ -49,9 +49,8 @@ static int target_n_insns;
 static int sched_n_insns;
 
 /* Implementations of the sched_info functions for region scheduling.  */
-static void init_ready_list (struct ready_list *);
+static void init_ready_list (void);
 static int can_schedule_ready_p (rtx);
-static int new_ready (rtx);
 static int schedule_more_p (void);
 static const char *ebb_print_insn (rtx, int);
 static int rank (rtx, rtx);
@@ -76,7 +75,7 @@ schedule_more_p (void)
    once before scheduling a set of insns.  */
 
 static void
-init_ready_list (struct ready_list *ready)
+init_ready_list (void)
 {
   rtx prev_head = current_sched_info->prev_head;
   rtx next_tail = current_sched_info->next_tail;
@@ -95,8 +94,7 @@ init_ready_list (struct ready_list *ready)
      Count number of insns in the target block being scheduled.  */
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
     {
-      if (INSN_DEP_COUNT (insn) == 0)
-	ready_add (ready, insn);
+      try_ready (insn);
       target_n_insns++;
     }
 }
@@ -108,15 +106,6 @@ static int
 can_schedule_ready_p (rtx insn ATTRIBUTE_UNUSED)
 {
   sched_n_insns++;
-  return 1;
-}
-
-/* Called after INSN has all its dependencies resolved.  Return nonzero
-   if it should be moved to the ready list or the queue, or zero if we
-   should silently discard it.  */
-static int
-new_ready (rtx next ATTRIBUTE_UNUSED)
-{
   return 1;
 }
 
@@ -197,7 +186,7 @@ static struct sched_info ebb_sched_info =
   init_ready_list,
   can_schedule_ready_p,
   schedule_more_p,
-  new_ready,
+  NULL,
   rank,
   ebb_print_insn,
   contributes_to_priority,
@@ -524,7 +513,9 @@ schedule_ebb (rtx head, rtx tail)
     targetm.sched.dependencies_evaluation_hook (head, tail);
 
   /* Set priorities.  */
+  current_sched_info->sched_max_insns_priority = 0;
   n_insns = set_priorities (head, tail);
+  current_sched_info->sched_max_insns_priority++;
 
   current_sched_info->prev_head = PREV_INSN (head);
   current_sched_info->next_tail = NEXT_INSN (tail);
