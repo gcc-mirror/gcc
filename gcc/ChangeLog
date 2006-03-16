@@ -1,3 +1,9 @@
+2006-03-16  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Change
+	decl libname for clog to __clog on AIX.
+
 2006-03-16  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/25917
@@ -14,7 +20,7 @@
 
 2006-03-16  Paul Brook  <paul@codesourcery.com>
 
-	Backport form mainline.
+	Backport from mainline.
 	* gcc/config/arm/arm.c (minipool_pad): New.
 	(add_minipool_forward_ref): Include pool alignment padding in address
 	calculation.
