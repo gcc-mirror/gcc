@@ -1816,7 +1816,9 @@ static struct sched_info region_sched_info =
 
   NULL, NULL,
   NULL, NULL,
-  0, 0, 0
+  0, 0, 0,
+
+  0
 };
 
 /* Determine if PAT sets a CLASS_LIKELY_SPILLED_P register.  */
@@ -2512,6 +2514,11 @@ schedule_insns (void)
 
   nr_inter = 0;
   nr_spec = 0;
+
+  /* We need current_sched_info in init_dependency_caches, which is
+     invoked via sched_init.  */
+  current_sched_info = &region_sched_info;
+
   sched_init ();
 
   min_spec_prob = ((PARAM_VALUE (PARAM_MIN_SPEC_PROB) * REG_BR_PROB_BASE)
@@ -2519,7 +2526,6 @@ schedule_insns (void)
 
   init_regions ();
 
-  current_sched_info = &region_sched_info;
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
     schedule_region (rgn);

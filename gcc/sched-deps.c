@@ -75,8 +75,9 @@ static enum reg_pending_barrier_mode reg_pending_barrier;
    the insn chain.  All bitmap for true dependencies cache is
    allocated then the rest two ones are also allocated.  */
 static bitmap_head *true_dependency_cache;
-static bitmap_head *anti_dependency_cache;
 static bitmap_head *output_dependency_cache;
+static bitmap_head *anti_dependency_cache;
+static bitmap_head *spec_dependency_cache;
 static int cache_size;
 
 /* To speed up checking consistency of formed forward insn
@@ -100,6 +101,24 @@ static void sched_analyze_insn (struct deps *, rtx, rtx);
 
 static rtx sched_get_condition (rtx);
 static int conditions_mutex_p (rtx, rtx);
+
+static enum DEPS_ADJUST_RESULT maybe_add_or_update_back_dep_1 (rtx, rtx, 
+			       enum reg_note, ds_t, rtx, rtx, rtx **);
+static enum DEPS_ADJUST_RESULT add_or_update_back_dep_1 (rtx, rtx, 
+                               enum reg_note, ds_t, rtx, rtx, rtx **);
+static void add_back_dep (rtx, rtx, enum reg_note, ds_t);
+
+static void adjust_add_sorted_back_dep (rtx, rtx, rtx *);
+static void adjust_back_add_forw_dep (rtx, rtx *);
+static void delete_forw_dep (rtx, rtx);
+static dw_t estimate_dep_weak (rtx, rtx);
+static dw_t get_dep_weak (ds_t, ds_t);
+static ds_t ds_merge (ds_t, ds_t);
+#ifdef INSN_SCHEDULING
+#ifdef ENABLE_CHECKING
+static void check_dep_status (enum reg_note, ds_t, bool);
+#endif
+#endif
 
 /* Return nonzero if a load of the memory reference MEM can cause a trap.  */
 
@@ -209,38 +228,57 @@ sched_insns_conditions_mutex_p (rtx insn1, rtx insn2)
 }
 
 /* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
-   LOG_LINKS of INSN, if not already there.  DEP_TYPE indicates the
-   type of dependence that this link represents.  The function returns
-   nonzero if a new entry has been added to insn's LOG_LINK.  */
+   LOG_LINKS of INSN, if it is not already there.  DEP_TYPE indicates the
+   type of dependence that this link represents.  DS, if non-zero,
+   indicates speculations, through which this dependence can be overcome.
+   MEM1 and MEM2, if non-null, corresponds to memory locations in case of
+   data speculation.  The function returns a value indicating if an old entry
+   has been changed or a new entry has been added to insn's LOG_LINK.
+   In case of changed entry CHANGED_LINKPP sets to its address.
+   See also the definition of enum DEPS_ADJUST_RESULT in sched-int.h.  
+   Actual manipulation of dependence data structures is performed in 
+   add_or_update_back_dep_1.  */
 
-int
-add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
+static enum DEPS_ADJUST_RESULT
+maybe_add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type,
+				ds_t ds, rtx mem1, rtx mem2,
+				rtx **changed_linkpp)
 {
-  rtx link;
-  int present_p;
+  gcc_assert (INSN_P (insn) && INSN_P (elem));
 
   /* Don't depend an insn on itself.  */
   if (insn == elem)
-    return 0;
-
-  /* We can get a dependency on deleted insns due to optimizations in
-     the register allocation and reloading or due to splitting.  Any
-     such dependency is useless and can be ignored.  */
-  if (NOTE_P (elem))
-    return 0;
-
-  present_p = 1;
+    {
 #ifdef INSN_SCHEDULING
-  /* ??? No good way to tell from here whether we're doing interblock
-     scheduling.  Possibly add another callback.  */
-#if 0
-  /* (This code is guarded by INSN_SCHEDULING, otherwise INSN_BB is undefined.)
-     No need for interblock dependences with calls, since
-     calls are not moved between blocks.   Note: the edge where
-     elem is a CALL is still required.  */
-  if (CALL_P (insn)
-      && (INSN_BB (elem) != INSN_BB (insn)))
-    return 0;
+      if (current_sched_info->flags & DO_SPECULATION)
+        /* INSN has an internal dependence, which we can't overcome.  */
+        HAS_INTERNAL_DEP (insn) = 1;
+#endif
+      return 0;
+    }
+
+  return add_or_update_back_dep_1 (insn, elem, dep_type,
+				   ds, mem1, mem2, changed_linkpp);
+}
+
+/* This function has the same meaning of parameters and return values
+   as maybe_add_or_update_back_dep_1.  The only difference between these
+   two functions is that INSN and ELEM are guaranteed not to be the same
+   in this one.  */
+static enum DEPS_ADJUST_RESULT
+add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type, 
+			  ds_t ds ATTRIBUTE_UNUSED,
+			  rtx mem1 ATTRIBUTE_UNUSED, rtx mem2 ATTRIBUTE_UNUSED,
+			  rtx **changed_linkpp ATTRIBUTE_UNUSED)
+{
+  bool maybe_present_p = true, present_p = false;
+
+  gcc_assert (INSN_P (insn) && INSN_P (elem) && insn != elem);
+  
+#ifdef INSN_SCHEDULING
+
+#ifdef ENABLE_CHECKING
+  check_dep_status (dep_type, ds, mem1 != NULL);
 #endif
 
   /* If we already have a dependency for ELEM, then we do not need to
@@ -248,100 +286,284 @@ add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
      dramatically for some code.  */
   if (true_dependency_cache != NULL)
     {
-      enum reg_note present_dep_type = 0;
-
-      gcc_assert (anti_dependency_cache);
+      enum reg_note present_dep_type;
+      
       gcc_assert (output_dependency_cache);
-      if (bitmap_bit_p (&true_dependency_cache[INSN_LUID (insn)],
-			INSN_LUID (elem)))
-	/* Do nothing (present_set_type is already 0).  */
-	;
-      else if (bitmap_bit_p (&anti_dependency_cache[INSN_LUID (insn)],
-			 INSN_LUID (elem)))
-	present_dep_type = REG_DEP_ANTI;
-      else if (bitmap_bit_p (&output_dependency_cache[INSN_LUID (insn)],
-			 INSN_LUID (elem)))
-	present_dep_type = REG_DEP_OUTPUT;
+      gcc_assert (anti_dependency_cache);
+      if (!(current_sched_info->flags & USE_DEPS_LIST))
+        {          
+          if (bitmap_bit_p (&true_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem)))
+            present_dep_type = REG_DEP_TRUE;
+          else if (bitmap_bit_p (&output_dependency_cache[INSN_LUID (insn)],
+				 INSN_LUID (elem)))
+            present_dep_type = REG_DEP_OUTPUT;
+          else if (bitmap_bit_p (&anti_dependency_cache[INSN_LUID (insn)],
+				 INSN_LUID (elem)))
+            present_dep_type = REG_DEP_ANTI;
+          else
+            maybe_present_p = false;
+
+	  if (maybe_present_p)
+	    {
+	      if ((int) dep_type >= (int) present_dep_type)
+		return DEP_PRESENT;
+	      
+	      present_p = true;
+	    }
+        }
       else
-	present_p = 0;
-      if (present_p && (int) dep_type >= (int) present_dep_type)
-	return 0;
+        {      
+          ds_t present_dep_types = 0;
+          
+          if (bitmap_bit_p (&true_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem)))
+            present_dep_types |= DEP_TRUE;
+          if (bitmap_bit_p (&output_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem)))
+            present_dep_types |= DEP_OUTPUT;
+          if (bitmap_bit_p (&anti_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem)))
+            present_dep_types |= DEP_ANTI;
+
+          if (present_dep_types)
+	    {
+	      if (!(current_sched_info->flags & DO_SPECULATION)
+		  || !bitmap_bit_p (&spec_dependency_cache[INSN_LUID (insn)],
+				    INSN_LUID (elem)))
+		{
+		  if ((present_dep_types | (ds & DEP_TYPES))
+		      == present_dep_types)
+		    /* We already have all these bits.  */
+		    return DEP_PRESENT;
+		}
+	      else
+		{
+		  /* Only true dependencies can be data speculative and
+		     only anti dependencies can be control speculative.  */
+		  gcc_assert ((present_dep_types & (DEP_TRUE | DEP_ANTI))
+			      == present_dep_types);
+		  
+		  /* if (additional dep is SPECULATIVE) then
+ 		       we should update DEP_STATUS
+		     else
+		       we should reset existing dep to non-speculative.  */
+		}
+	  	
+	      present_p = true;
+	    }
+	  else
+	    maybe_present_p = false;
+        }
     }
 #endif
 
   /* Check that we don't already have this dependence.  */
-  if (present_p)
-    for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-      if (XEXP (link, 0) == elem)
-	{
+  if (maybe_present_p)
+    {
+      rtx *linkp;
+
+      for (linkp = &LOG_LINKS (insn); *linkp; linkp = &XEXP (*linkp, 1))
+        {
+          rtx link = *linkp;
+
+	  gcc_assert (true_dependency_cache == 0 || present_p);
+	  
+          if (XEXP (link, 0) == elem)
+            {
+              enum DEPS_ADJUST_RESULT changed_p = DEP_PRESENT;
+
 #ifdef INSN_SCHEDULING
-	  /* Clear corresponding cache entry because type of the link
-             may be changed.  */
-	  if (true_dependency_cache != NULL)
-	    {
-	      enum reg_note kind = REG_NOTE_KIND (link);
-	      switch (kind)
+              if (current_sched_info->flags & USE_DEPS_LIST)
+                {
+                  ds_t new_status = ds | DEP_STATUS (link);
+
+		  if (new_status & SPECULATIVE)
+		    {
+		      if (!(ds & SPECULATIVE)
+			  || !(DEP_STATUS (link) & SPECULATIVE))
+			/* Then this dep can't be speculative.  */
+			{
+			  new_status &= ~SPECULATIVE;
+			  if (true_dependency_cache
+			      && (DEP_STATUS (link) & SPECULATIVE))
+			    bitmap_clear_bit (&spec_dependency_cache
+					      [INSN_LUID (insn)],
+					      INSN_LUID (elem));
+			}
+		      else
+			{
+			  /* Both are speculative.  Merging probabilities.  */
+			  if (mem1)
+			    {
+			      dw_t dw;
+
+			      dw = estimate_dep_weak (mem1, mem2);
+			      ds = set_dep_weak (ds, BEGIN_DATA, dw);
+			    }
+							 
+			  new_status = ds_merge (DEP_STATUS (link), ds);
+			}
+		    }
+
+		  ds = new_status;
+                }
+
+              /* Clear corresponding cache entry because type of the link
+                 may have changed.  Keep them if we use_deps_list.  */
+              if (true_dependency_cache != NULL
+		  && !(current_sched_info->flags & USE_DEPS_LIST))
 		{
-		case REG_DEP_ANTI:
-		  bitmap_clear_bit (&anti_dependency_cache[INSN_LUID (insn)],
-				    INSN_LUID (elem));
-		  break;
-		case REG_DEP_OUTPUT:
-		  gcc_assert (output_dependency_cache);
-		  bitmap_clear_bit (&output_dependency_cache[INSN_LUID (insn)],
-				    INSN_LUID (elem));
-		  break;
-		default:
-		  gcc_unreachable ();
+		  enum reg_note kind = REG_NOTE_KIND (link);
+
+		  switch (kind)
+		    {
+		    case REG_DEP_OUTPUT:
+		      bitmap_clear_bit (&output_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+		      break;
+		    case REG_DEP_ANTI:
+		      bitmap_clear_bit (&anti_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+		      break;
+		    default:
+		      gcc_unreachable ();                        
+                    }
+                }
+
+              if ((current_sched_info->flags & USE_DEPS_LIST)
+		  && DEP_STATUS (link) != ds)
+		{
+		  DEP_STATUS (link) = ds;
+		  changed_p = DEP_CHANGED;
 		}
-	    }
 #endif
 
-	  /* If this is a more restrictive type of dependence than the existing
-	     one, then change the existing dependence to this type.  */
-	  if ((int) dep_type < (int) REG_NOTE_KIND (link))
-	    PUT_REG_NOTE_KIND (link, dep_type);
+              /* If this is a more restrictive type of dependence than the
+		 existing one, then change the existing dependence to this
+		 type.  */
+              if ((int) dep_type < (int) REG_NOTE_KIND (link))
+                {
+                  PUT_REG_NOTE_KIND (link, dep_type);
+                  changed_p = DEP_CHANGED;
+                }
 
 #ifdef INSN_SCHEDULING
-	  /* If we are adding a dependency to INSN's LOG_LINKs, then
-	     note that in the bitmap caches of dependency information.  */
-	  if (true_dependency_cache != NULL)
-	    {
-	      if ((int) REG_NOTE_KIND (link) == 0)
-		bitmap_set_bit (&true_dependency_cache[INSN_LUID (insn)],
-				INSN_LUID (elem));
-	      else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
-		bitmap_set_bit (&anti_dependency_cache[INSN_LUID (insn)],
-				INSN_LUID (elem));
-	      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
-		bitmap_set_bit (&output_dependency_cache[INSN_LUID (insn)],
-				INSN_LUID (elem));
-	    }
+              /* If we are adding a dependency to INSN's LOG_LINKs, then
+                 note that in the bitmap caches of dependency information.  */
+              if (true_dependency_cache != NULL)
+                {
+                  if (!(current_sched_info->flags & USE_DEPS_LIST))
+                    {
+                      if (REG_NOTE_KIND (link) == REG_DEP_TRUE)
+                        bitmap_set_bit (&true_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+                      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+                        bitmap_set_bit (&output_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+                      else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+                        bitmap_set_bit (&anti_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+                    }
+                  else
+                    {
+                      if (ds & DEP_TRUE)
+                        bitmap_set_bit (&true_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+                      if (ds & DEP_OUTPUT)
+                        bitmap_set_bit (&output_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+                      if (ds & DEP_ANTI)
+                        bitmap_set_bit (&anti_dependency_cache
+					[INSN_LUID (insn)], INSN_LUID (elem));
+                      /* Note, that dep can become speculative only 
+                         at the moment of creation. Thus, we don't need to 
+		         check for it here.  */
+                    }
+                }
+              
+              if (changed_linkpp && changed_p == DEP_CHANGED)
+                *changed_linkpp = linkp;
 #endif
-	  return 0;
-	}
-  /* Might want to check one level of transitivity to save conses.  */
+              return changed_p;
+            }	  
+        }
+      /* We didn't find a dep. It shouldn't be present in the cache.  */
+      gcc_assert (!present_p);
+    }
 
-  link = alloc_INSN_LIST (elem, LOG_LINKS (insn));
-  LOG_LINKS (insn) = link;
+  /* Might want to check one level of transitivity to save conses.
+     This check should be done in maybe_add_or_update_back_dep_1.
+     Since we made it to add_or_update_back_dep_1, we must create
+     (or update) a link.  */
 
+  if (mem1)
+    {
+      gcc_assert (current_sched_info->flags & DO_SPECULATION);
+      ds = set_dep_weak (ds, BEGIN_DATA, estimate_dep_weak (mem1, mem2));
+    }
+  
+  add_back_dep (insn, elem, dep_type, ds);
+  
+  return DEP_CREATED;
+}
+
+/* This function creates a link between INSN and ELEM under any
+   conditions.  DS describes speculative status of the link.  */
+static void
+add_back_dep (rtx insn, rtx elem, enum reg_note dep_type, ds_t ds)
+{
+  gcc_assert (INSN_P (insn) && INSN_P (elem) && insn != elem);
+
+  if (current_sched_info->flags & USE_DEPS_LIST)
+    LOG_LINKS (insn) = alloc_DEPS_LIST (elem, LOG_LINKS (insn), ds);
+  else
+    LOG_LINKS (insn) = alloc_INSN_LIST (elem, LOG_LINKS (insn));
+  
   /* Insn dependency, not data dependency.  */
-  PUT_REG_NOTE_KIND (link, dep_type);
-
+  PUT_REG_NOTE_KIND (LOG_LINKS (insn), dep_type);
+    
 #ifdef INSN_SCHEDULING
+#ifdef ENABLE_CHECKING
+  check_dep_status (dep_type, ds, false);
+#endif
+
   /* If we are adding a dependency to INSN's LOG_LINKs, then note that
      in the bitmap caches of dependency information.  */
   if (true_dependency_cache != NULL)
     {
-      if ((int) dep_type == 0)
-	bitmap_set_bit (&true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
-      else if (dep_type == REG_DEP_ANTI)
-	bitmap_set_bit (&anti_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
-      else if (dep_type == REG_DEP_OUTPUT)
-	bitmap_set_bit (&output_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+      if (!(current_sched_info->flags & USE_DEPS_LIST))
+        {
+          if (dep_type == REG_DEP_TRUE)
+            bitmap_set_bit (&true_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem));
+          else if (dep_type == REG_DEP_OUTPUT)
+            bitmap_set_bit (&output_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem));
+          else if (dep_type == REG_DEP_ANTI)
+                bitmap_set_bit (&anti_dependency_cache[INSN_LUID (insn)],
+				INSN_LUID (elem));
+        }
+      else
+        {
+          if (ds & DEP_TRUE)
+            bitmap_set_bit (&true_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem));
+          if (ds & DEP_OUTPUT)
+            bitmap_set_bit (&output_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem));
+          if (ds & DEP_ANTI)
+            bitmap_set_bit (&anti_dependency_cache[INSN_LUID (insn)],
+			    INSN_LUID (elem));
+          if (ds & SPECULATIVE)
+	    {
+	      gcc_assert (current_sched_info->flags & DO_SPECULATION);
+	      bitmap_set_bit (&spec_dependency_cache[INSN_LUID (insn)],
+			      INSN_LUID (elem));
+	    }
+        }
     }
 #endif
-  return 1;
 }
 
 /* A convenience wrapper to operate on an entire list.  */
@@ -383,12 +605,21 @@ delete_all_dependences (rtx insn)
   if (true_dependency_cache != NULL)
     {
       bitmap_clear (&true_dependency_cache[INSN_LUID (insn)]);
-      bitmap_clear (&anti_dependency_cache[INSN_LUID (insn)]);
       bitmap_clear (&output_dependency_cache[INSN_LUID (insn)]);
+      bitmap_clear (&anti_dependency_cache[INSN_LUID (insn)]);
+      /* We don't have to clear forward_dependency_cache here,
+	 because it is formed later.  */
+      if (current_sched_info->flags & DO_SPECULATION)
+        bitmap_clear (&spec_dependency_cache[INSN_LUID (insn)]);
     }
 #endif
 
-  free_INSN_LIST_list (&LOG_LINKS (insn));
+  if (!(current_sched_info->flags & USE_DEPS_LIST))
+    /* In this case LOG_LINKS are formed from the DEPS_LISTs,
+       not the INSN_LISTs.  */
+    free_INSN_LIST_list (&LOG_LINKS (insn));  
+  else
+    free_DEPS_LIST_list (&LOG_LINKS (insn));
 }
 
 /* All insns in a scheduling group except the first should only have
@@ -430,8 +661,8 @@ fixup_sched_groups (rtx insn)
 
    (0) read dependence: read follows read
    (1) true dependence: read follows write
-   (2) anti dependence: write follows read
-   (3) output dependence: write follows write
+   (2) output dependence: write follows write
+   (3) anti dependence: write follows read
 
    We are careful to build only dependencies which actually exist, and
    use transitivity to avoid building too many links.  */
@@ -787,7 +1018,15 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	    if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
 				 t, rtx_varies_p)
 		&& ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-	      add_dependence (insn, XEXP (pending, 0), REG_DEP_TRUE);
+              {
+                if (current_sched_info->flags & DO_SPECULATION)
+                  maybe_add_or_update_back_dep_1 (insn, XEXP (pending, 0),
+						  REG_DEP_TRUE,
+						  BEGIN_DATA | DEP_TRUE,
+						  XEXP (pending_mem, 0), t, 0);
+                else
+                  add_dependence (insn, XEXP (pending, 0), REG_DEP_TRUE);
+              }
 
 	    pending = XEXP (pending, 1);
 	    pending_mem = XEXP (pending_mem, 1);
@@ -1391,9 +1630,11 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
    given DEP_TYPE.  The forward dependence should be not exist before.  */
 
 void
-add_forward_dependence (rtx from, rtx to, enum reg_note dep_type)
+add_forw_dep (rtx to, rtx link)
 {
-  rtx new_link;
+  rtx new_link, from;
+
+  from = XEXP (link, 0);
 
 #ifdef ENABLE_CHECKING
   /* If add_dependence is working properly there should never
@@ -1402,23 +1643,25 @@ add_forward_dependence (rtx from, rtx to, enum reg_note dep_type)
 
      However, if we have enabled checking we might as well go
      ahead and verify that add_dependence worked properly.  */
-  gcc_assert (!NOTE_P (from));
+  gcc_assert (INSN_P (from));
   gcc_assert (!INSN_DELETED_P (from));
-  if (forward_dependency_cache)
-    gcc_assert (!bitmap_bit_p (&forward_dependency_cache[INSN_LUID (from)],
-			       INSN_LUID (to)));
+  if (true_dependency_cache)
+    {
+      gcc_assert (!bitmap_bit_p (&forward_dependency_cache[INSN_LUID (from)],
+				 INSN_LUID (to)));
+      bitmap_set_bit (&forward_dependency_cache[INSN_LUID (from)],
+		      INSN_LUID (to));
+    }
   else
     gcc_assert (!find_insn_list (to, INSN_DEPEND (from)));
-
-  /* ??? If bitmap_bit_p is a predicate, what is this supposed to do? */
-  if (forward_dependency_cache != NULL)
-    bitmap_bit_p (&forward_dependency_cache[INSN_LUID (from)],
-		  INSN_LUID (to));
 #endif
 
-  new_link = alloc_INSN_LIST (to, INSN_DEPEND (from));
+  if (!(current_sched_info->flags & USE_DEPS_LIST))
+    new_link = alloc_INSN_LIST (to, INSN_DEPEND (from));
+  else
+    new_link = alloc_DEPS_LIST (to, INSN_DEPEND (from), DEP_STATUS (link));
 
-  PUT_REG_NOTE_KIND (new_link, dep_type);
+  PUT_REG_NOTE_KIND (new_link, REG_NOTE_KIND (link));
 
   INSN_DEPEND (from) = new_link;
   INSN_DEP_COUNT (to) += 1;
@@ -1431,17 +1674,32 @@ add_forward_dependence (rtx from, rtx to, enum reg_note dep_type)
 void
 compute_forward_dependences (rtx head, rtx tail)
 {
-  rtx insn, link;
+  rtx insn;
   rtx next_tail;
 
   next_tail = NEXT_INSN (tail);
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
+      rtx link;
+      
       if (! INSN_P (insn))
 	continue;
+      
+      if (current_sched_info->flags & DO_SPECULATION)
+        {
+          rtx new = 0, link, next;
+
+          for (link = LOG_LINKS (insn); link; link = next)
+            {
+              next = XEXP (link, 1);
+              adjust_add_sorted_back_dep (insn, link, &new);
+            }
+
+          LOG_LINKS (insn) = new;
+        }
 
       for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-	add_forward_dependence (XEXP (link, 0), insn, REG_NOTE_KIND (link));
+        add_forw_dep (insn, link);
     }
 }
 
@@ -1520,20 +1778,27 @@ init_dependency_caches (int luid)
   if (luid / n_basic_blocks > 100 * 5)
     {
       int i;
+
       true_dependency_cache = XNEWVEC (bitmap_head, luid);
       anti_dependency_cache = XNEWVEC (bitmap_head, luid);
       output_dependency_cache = XNEWVEC (bitmap_head, luid);
 #ifdef ENABLE_CHECKING
       forward_dependency_cache = XNEWVEC (bitmap_head, luid);
 #endif
+      if (current_sched_info->flags & DO_SPECULATION)
+        spec_dependency_cache = XRESIZEVEC (bitmap_head, spec_dependency_cache,
+					    luid);
+
       for (i = 0; i < luid; i++)
 	{
 	  bitmap_initialize (&true_dependency_cache[i], 0);
-	  bitmap_initialize (&anti_dependency_cache[i], 0);
 	  bitmap_initialize (&output_dependency_cache[i], 0);
+	  bitmap_initialize (&anti_dependency_cache[i], 0);
 #ifdef ENABLE_CHECKING
 	  bitmap_initialize (&forward_dependency_cache[i], 0);
 #endif
+          if (current_sched_info->flags & DO_SPECULATION)
+            bitmap_initialize (&spec_dependency_cache[i], 0);
 	}
       cache_size = luid;
     }
@@ -1551,22 +1816,29 @@ free_dependency_caches (void)
       for (i = 0; i < cache_size; i++)
 	{
 	  bitmap_clear (&true_dependency_cache[i]);
-	  bitmap_clear (&anti_dependency_cache[i]);
 	  bitmap_clear (&output_dependency_cache[i]);
+	  bitmap_clear (&anti_dependency_cache[i]);
 #ifdef ENABLE_CHECKING
 	  bitmap_clear (&forward_dependency_cache[i]);
 #endif
+          if (current_sched_info->flags & DO_SPECULATION)
+            bitmap_clear (&spec_dependency_cache[i]);
 	}
       free (true_dependency_cache);
       true_dependency_cache = NULL;
-      free (anti_dependency_cache);
-      anti_dependency_cache = NULL;
       free (output_dependency_cache);
       output_dependency_cache = NULL;
+      free (anti_dependency_cache);
+      anti_dependency_cache = NULL;
 #ifdef ENABLE_CHECKING
       free (forward_dependency_cache);
       forward_dependency_cache = NULL;
 #endif
+      if (current_sched_info->flags & DO_SPECULATION)
+        {
+          free (spec_dependency_cache);
+          spec_dependency_cache = NULL;
+        }
     }
 }
 
@@ -1591,3 +1863,325 @@ finish_deps_global (void)
   FREE_REG_SET (reg_pending_clobbers);
   FREE_REG_SET (reg_pending_uses);
 }
+
+/* Insert LINK into the dependence chain pointed to by LINKP and 
+   maintain the sort order.  */
+static void
+adjust_add_sorted_back_dep (rtx insn, rtx link, rtx *linkp)
+{
+  gcc_assert (current_sched_info->flags & DO_SPECULATION);
+  
+  /* If the insn cannot move speculatively, but the link is speculative,   
+     make it hard dependence.  */
+  if (HAS_INTERNAL_DEP (insn)
+      && (DEP_STATUS (link) & SPECULATIVE))
+    {      
+      DEP_STATUS (link) &= ~SPECULATIVE;
+      
+      if (true_dependency_cache)
+        bitmap_clear_bit (&spec_dependency_cache[INSN_LUID (insn)],
+			  INSN_LUID (XEXP (link, 0)));
+    }
+
+  /* Non-speculative links go at the head of LOG_LINKS, followed by
+     speculative links.  */
+  if (DEP_STATUS (link) & SPECULATIVE)
+    while (*linkp && !(DEP_STATUS (*linkp) & SPECULATIVE))
+      linkp = &XEXP (*linkp, 1);
+
+  XEXP (link, 1) = *linkp;
+  *linkp = link;
+}
+
+/* Move the dependence pointed to by LINKP to the back dependencies  
+   of INSN, and also add this dependence to the forward ones.  All LOG_LINKS,
+   except one pointed to by LINKP, must be sorted.  */
+static void
+adjust_back_add_forw_dep (rtx insn, rtx *linkp)
+{
+  rtx link;
+
+  gcc_assert (current_sched_info->flags & DO_SPECULATION);
+
+  link = *linkp;
+  *linkp = XEXP (*linkp, 1);  
+
+  adjust_add_sorted_back_dep (insn, link, &LOG_LINKS (insn));
+  add_forw_dep (insn, link);
+}
+
+/* Remove forward dependence ELEM from the DEPS_LIST of INSN.  */
+static void
+delete_forw_dep (rtx insn, rtx elem)
+{
+  gcc_assert (current_sched_info->flags & DO_SPECULATION);
+
+#ifdef ENABLE_CHECKING
+  if (true_dependency_cache)
+    bitmap_clear_bit (&forward_dependency_cache[INSN_LUID (elem)],
+		      INSN_LUID (insn));
+#endif
+
+  remove_free_DEPS_LIST_elem (insn, &INSN_DEPEND (elem));    
+  INSN_DEP_COUNT (insn)--;
+}
+
+/* Estimate the weakness of dependence between MEM1 and MEM2.  */
+static dw_t
+estimate_dep_weak (rtx mem1, rtx mem2)
+{
+  rtx r1, r2;
+
+  if (mem1 == mem2)
+    /* MEMs are the same - don't speculate.  */
+    return MIN_DEP_WEAK;
+
+  r1 = XEXP (mem1, 0);
+  r2 = XEXP (mem2, 0);
+
+  if (r1 == r2
+      || (REG_P (r1) && REG_P (r2)
+	  && REGNO (r1) == REGNO (r2)))
+    /* Again, MEMs are the same.  */
+    return MIN_DEP_WEAK;
+  else if ((REG_P (r1) && !REG_P (r2))
+	   || (!REG_P (r1) && REG_P (r2)))
+    /* Different addressing modes - reason to be more speculative,
+       than usual.  */
+    return NO_DEP_WEAK - (NO_DEP_WEAK - UNCERTAIN_DEP_WEAK) / 2;
+  else
+    /* We can't say anything about the dependence.  */
+    return UNCERTAIN_DEP_WEAK;
+}
+
+/* Add or update backward dependence between INSN and ELEM with type DEP_TYPE.
+   This function can handle same INSN and ELEM (INSN == ELEM).
+   It is a convenience wrapper.  */
+void
+add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
+{
+  ds_t ds;
+  
+  if (dep_type == REG_DEP_TRUE)
+    ds = DEP_TRUE;
+  else if (dep_type == REG_DEP_OUTPUT)
+    ds = DEP_OUTPUT;
+  else if (dep_type == REG_DEP_ANTI)
+    ds = DEP_ANTI;
+  else
+    gcc_unreachable ();
+
+  maybe_add_or_update_back_dep_1 (insn, elem, dep_type, ds, 0, 0, 0);
+}
+
+/* Add or update backward dependence between INSN and ELEM
+   with given type DEP_TYPE and dep_status DS.
+   This function is a convenience wrapper.  */
+enum DEPS_ADJUST_RESULT
+add_or_update_back_dep (rtx insn, rtx elem, enum reg_note dep_type, ds_t ds)
+{
+  return add_or_update_back_dep_1 (insn, elem, dep_type, ds, 0, 0, 0);
+}
+
+/* Add or update both backward and forward dependencies between INSN and ELEM
+   with given type DEP_TYPE and dep_status DS.  */
+void
+add_or_update_back_forw_dep (rtx insn, rtx elem, enum reg_note dep_type,
+			     ds_t ds)
+{
+  enum DEPS_ADJUST_RESULT res;
+  rtx *linkp;
+
+  res = add_or_update_back_dep_1 (insn, elem, dep_type, ds, 0, 0, &linkp);
+
+  if (res == DEP_CHANGED || res == DEP_CREATED)
+    {
+      if (res == DEP_CHANGED)
+	delete_forw_dep (insn, elem);
+      else if (res == DEP_CREATED)
+	linkp = &LOG_LINKS (insn);
+
+      adjust_back_add_forw_dep (insn, linkp);
+    }
+}
+
+/* Add both backward and forward dependencies between INSN and ELEM
+   with given type DEP_TYPE and dep_status DS.  */
+void
+add_back_forw_dep (rtx insn, rtx elem, enum reg_note dep_type, ds_t ds)
+{
+  add_back_dep (insn, elem, dep_type, ds);  
+  adjust_back_add_forw_dep (insn, &LOG_LINKS (insn));    
+}
+
+/* Remove both backward and forward dependencies between INSN and ELEM.  */
+void
+delete_back_forw_dep (rtx insn, rtx elem)
+{
+  gcc_assert (current_sched_info->flags & DO_SPECULATION);
+
+  if (true_dependency_cache != NULL)
+    {
+      bitmap_clear_bit (&true_dependency_cache[INSN_LUID (insn)],
+			INSN_LUID (elem));
+      bitmap_clear_bit (&anti_dependency_cache[INSN_LUID (insn)],
+			INSN_LUID (elem));
+      bitmap_clear_bit (&output_dependency_cache[INSN_LUID (insn)],
+			INSN_LUID (elem));
+      bitmap_clear_bit (&spec_dependency_cache[INSN_LUID (insn)],
+			INSN_LUID (elem));
+    }
+
+  remove_free_DEPS_LIST_elem (elem, &LOG_LINKS (insn));
+  delete_forw_dep (insn, elem);
+}
+
+/* Return weakness of speculative type TYPE in the dep_status DS.  */
+static dw_t
+get_dep_weak (ds_t ds, ds_t type)
+{
+  ds = ds & type;
+  switch (type)
+    {
+    case BEGIN_DATA: ds >>= BEGIN_DATA_BITS_OFFSET; break;
+    case BE_IN_DATA: ds >>= BE_IN_DATA_BITS_OFFSET; break;
+    case BEGIN_CONTROL: ds >>= BEGIN_CONTROL_BITS_OFFSET; break;
+    case BE_IN_CONTROL: ds >>= BE_IN_CONTROL_BITS_OFFSET; break;
+    default: gcc_unreachable ();
+    }
+
+  gcc_assert (MIN_DEP_WEAK <= ds && ds <= MAX_DEP_WEAK);
+  return (dw_t) ds;
+}
+
+/* Return the dep_status, which has the same parameters as DS, except for
+   speculative type TYPE, that will have weakness DW.  */
+ds_t
+set_dep_weak (ds_t ds, ds_t type, dw_t dw)
+{
+  gcc_assert (MIN_DEP_WEAK <= dw && dw <= MAX_DEP_WEAK);
+
+  ds &= ~type;
+  switch (type)
+    {
+    case BEGIN_DATA: ds |= ((ds_t) dw) << BEGIN_DATA_BITS_OFFSET; break;
+    case BE_IN_DATA: ds |= ((ds_t) dw) << BE_IN_DATA_BITS_OFFSET; break;
+    case BEGIN_CONTROL: ds |= ((ds_t) dw) << BEGIN_CONTROL_BITS_OFFSET; break;
+    case BE_IN_CONTROL: ds |= ((ds_t) dw) << BE_IN_CONTROL_BITS_OFFSET; break;
+    default: gcc_unreachable ();
+    }
+  return ds;
+}
+
+/* Return the join of two dep_statuses DS1 and DS2.  */
+static ds_t
+ds_merge (ds_t ds1, ds_t ds2)
+{
+  ds_t ds, t;
+
+  gcc_assert ((ds1 & SPECULATIVE) && (ds2 & SPECULATIVE));
+
+  ds = (ds1 & DEP_TYPES) | (ds2 & DEP_TYPES);
+
+  t = FIRST_SPEC_TYPE;
+  do
+    {
+      if ((ds1 & t) && !(ds2 & t))
+	ds |= ds1 & t;
+      else if (!(ds1 & t) && (ds2 & t))
+	ds |= ds2 & t;
+      else if ((ds1 & t) && (ds2 & t))
+	{
+	  ds_t dw;
+
+	  dw = ((ds_t) get_dep_weak (ds1, t)) * ((ds_t) get_dep_weak (ds2, t));
+	  dw /= MAX_DEP_WEAK;
+	  if (dw < MIN_DEP_WEAK)
+	    dw = MIN_DEP_WEAK;
+
+	  ds = set_dep_weak (ds, t, (dw_t) dw);
+	}
+
+      if (t == LAST_SPEC_TYPE)
+	break;
+      t <<= SPEC_TYPE_SHIFT;
+    }
+  while (1);
+
+  return ds;
+}
+
+#ifdef INSN_SCHEDULING
+#ifdef ENABLE_CHECKING
+/* Verify that dependence type and status are consistent.
+   If RELAXED_P is true, then skip dep_weakness checks.  */
+static void
+check_dep_status (enum reg_note dt, ds_t ds, bool relaxed_p)
+{
+  /* Check that dependence type contains the same bits as the status.  */
+  if (dt == REG_DEP_TRUE)
+    gcc_assert (ds & DEP_TRUE);
+  else if (dt == REG_DEP_OUTPUT)
+    gcc_assert ((ds & DEP_OUTPUT)
+		&& !(ds & DEP_TRUE));    
+  else 
+    gcc_assert ((dt == REG_DEP_ANTI)
+		&& (ds & DEP_ANTI)
+		&& !(ds & (DEP_OUTPUT | DEP_TRUE)));
+
+  /* HARD_DEP can not appear in dep_status of a link.  */
+  gcc_assert (!(ds & HARD_DEP));	  
+
+  /* Check that dependence status is set correctly when speculation is not
+     supported.  */
+  if (!(current_sched_info->flags & DO_SPECULATION))
+    gcc_assert (!(ds & SPECULATIVE));
+  else if (ds & SPECULATIVE)
+    {
+      if (!relaxed_p)
+	{
+	  ds_t type = FIRST_SPEC_TYPE;
+
+	  /* Check that dependence weakness is in proper range.  */
+	  do
+	    {
+	      if (ds & type)
+		get_dep_weak (ds, type);
+
+	      if (type == LAST_SPEC_TYPE)
+		break;
+	      type <<= SPEC_TYPE_SHIFT;
+	    }
+	  while (1);
+	}
+
+      if (ds & BEGIN_SPEC)
+	{
+	  /* Only true dependence can be data speculative.  */
+	  if (ds & BEGIN_DATA)
+	    gcc_assert (ds & DEP_TRUE);
+
+	  /* Control dependencies in the insn scheduler are represented by
+	     anti-dependencies, therefore only anti dependence can be
+	     control speculative.  */
+	  if (ds & BEGIN_CONTROL)
+	    gcc_assert (ds & DEP_ANTI);
+	}
+      else
+	{
+	  /* Subsequent speculations should resolve true dependencies.  */
+	  gcc_assert ((ds & DEP_TYPES) == DEP_TRUE);
+	}
+          
+      /* Check that true and anti depencies can't have other speculative 
+	 statuses.  */
+      if (ds & DEP_TRUE)
+	gcc_assert (ds & (BEGIN_DATA | BE_IN_SPEC));
+      /* An output dependence can't be speculative at all.  */
+      gcc_assert (!(ds & DEP_OUTPUT));
+      if (ds & DEP_ANTI)
+	gcc_assert (ds & BEGIN_CONTROL);
+    }
+}
+#endif
+#endif  

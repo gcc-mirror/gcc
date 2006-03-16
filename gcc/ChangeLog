@@ -1,3 +1,66 @@
+2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
+            Andrey Belevantsev <abel@ispras.ru>
+
+	* ddg.c (build_intra_loop_deps): Adjust add_forward_dependence call.
+        * lists.c (unused_deps_list): New variable.
+	(free_list): Add assertions to verify the proper distinguishing 
+        between INSN_LISTs and DEPS_LISTs.
+        (find_list_elem, remove_list_elem, remove_list_node): New static
+	functions.
+        (alloc_DEPS_LIST, free_DEPS_LIST, free_DEPS_LIST_node,
+        remove_free_INSN_LIST_elem, remove_free_DEPS_LIST_elem,
+        remove_free_INSN_LIST_node, remove_free_DEPS_LIST_node): New functions.
+        (alloc_INSN_LIST): Assert that the list we're working on is indeed
+	an INSN_LIST.
+        (free_INSN_LIST_node): Likewise.
+	* modulo-sched.c (current_sched_info): Initialize flags field.
+	* reg-notes.def: Exchange DEP_ANTI and DEP_OUTPUT.
+	* rtl.def (DEPS_LIST): Define.
+        * rtl.h: Declare new functions from lists.c.
+        * sched-deps.c (spec_dependency_cache): New static variable.
+        (maybe_add_or_update_back_dep_1, add_back_dep): New static functions.
+        (add_dependence): Change return type to void.  Move the logic to ...
+        (add_or_update_back_dep_1): ... here.  Handle speculative dependencies.
+        (delete_all_dependences): Add comment about forward_dependency_cache.
+	Handle spec_dependency_cache.  Handle DEPS_LISTs.
+        (fixup_sched_groups): Clarify the change of priority of output
+        and anti dependencies.
+        (sched_analyze_2): Adjust add_dependence calls to create data
+	speculative dependence.
+        (add_forward_dependence): Renamed to add_forw_dep, change prototype.
+	Adjust all callers.  Handle DEPS_LISTS.
+        (compute_forward_dependences): Use add_forw_dep.  Sort LOG_LINKs in
+	presence of speculation.
+        (init_dependency_caches, free_dependency_caches):
+	Handle spec_dependency_cache.
+        (adjust_add_sorted_back_dep, adjust_back_add_forw_dep, delete_forw_dep,
+	estimate_dep_weak, get_dep_weak, ds_merge, check_dep_status):
+	New static functions.
+        (add_or_update_back_dep, add_or_update_back_forw_dep,
+	add_back_forw_dep, delete_back_forw_dep): New functions.
+	* sched-int.h (ds_t, dw_t): New typedefs.
+	(struct sched_info): Add new field flags.
+	(struct haifa_insn_data): Add new bitfield has_internal_dep.
+	Prototype new sched-deps.c functions.
+        (HAS_INTERNAL_DEP, DEP_STATUS): New access macros.
+	(BITS_PER_DEP_STATUS, BITS_PER_DEP_WEAK, DEP_WEAK_MASK, MAX_DEP_WEAK,
+	MIN_DEP_WEAK, NO_DEP_WEAK, UNCERTAIN_DEP_WEAK, BEGIN_DATA, BE_IN_DATA,
+	BEGIN_CONTROL, BE_IN_CONTROL, BEGIN_SPEC, DATA_SPEC, CONTROL_SPEC,
+	SPECULATIVE, BE_IN_SPEC, FIRST_SPEC_TYPE, LAST_SPEC_TYPE,
+	SPEC_TYPE_SHIFT, DEP_TRUE, DEP_OUTPUT, DEP_ANTI, DEP_TYPES, HARD_DEP):
+	New constants.
+        (enum SPEC_TYPES_OFFSETS, enum DEPS_ADJUST_RESULT, enum SCHED_FLAGS):
+	New enums.
+	* sched-rgn.c (current_sched_info): Initialize flags field.
+	(schedule_insns): Initialize current_sched_info before the sched_init
+	call.
+	* sched-ebb.c (current_sched_info): Initialize flags field.
+	(add_deps_for_risky_insns): Use control_flow_insn_p instead of JUMP_P.
+	Call add_or_update_back_dep instead of add_dependence.
+	Create control speculative dependencies.
+	(schedule_insns): Initialize current_sched_info before the sched_init
+	call.
+
 2006-03-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-unwind.h (shmedia_fallback_frame_state): Set

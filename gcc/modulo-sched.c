@@ -263,7 +263,9 @@ static struct sched_info sms_sched_info =
   compute_jump_reg_dependencies,
   NULL, NULL,
   NULL, NULL,
-  0, 0, 0
+  0, 0, 0,
+
+  0
 };
 
 
