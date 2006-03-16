@@ -1,3 +1,9 @@
+2006-03-16  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/26706:
+	* aclocal.m4, configure: Rebuilt.
+	* configure.ac (GCC_NO_EXECUTABLES): Moved earlier.
+
 2006-03-15  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26688:
