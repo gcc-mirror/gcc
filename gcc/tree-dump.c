@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
@@ -32,6 +32,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
+#include "real.h"
 
 static unsigned int queue (dump_info_p, tree, int);
 static void dump_index (dump_info_p, unsigned int);
@@ -178,6 +179,19 @@ dump_int (dump_info_p di, const char *field, int i)
   fprintf (di->stream, "%-4s: %-7d ", field, i);
   di->column += 14;
 }
+
+/* Dump the floating point value R, using FIELD to identify it.  */
+
+static void
+dump_real (dump_info_p di, const char *field, const REAL_VALUE_TYPE *r)
+{
+  char buf[32];
+  real_to_decimal (buf, r, sizeof (buf), 0, true);
+  dump_maybe_newline (di);
+  fprintf (di->stream, "%-4s: %s ", field, buf);
+  di->column += strlen (buf) + 7;
+}
+
 
 /* Dump the string S.  */
 
@@ -529,6 +543,10 @@ dequeue_and_dump (dump_info_p di)
     case STRING_CST:
       fprintf (di->stream, "strg: %-7s ", TREE_STRING_POINTER (t));
       dump_int (di, "lngt", TREE_STRING_LENGTH (t));
+      break;
+
+    case REAL_CST:
+      dump_real (di, "valu", TREE_REAL_CST_PTR (t));
       break;
 
     case TRUTH_NOT_EXPR:
