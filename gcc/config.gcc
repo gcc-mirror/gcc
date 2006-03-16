@@ -608,7 +608,7 @@ alpha*-*-netbsd*)
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
 	;;
 alpha*-*-openbsd*)
-	tm_defines="OBSD_NO_DYNAMIC_LIBRARIES OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
+	tm_defines="${tm_defines} OBSD_NO_DYNAMIC_LIBRARIES OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
 	tm_file="alpha/alpha.h openbsd.h alpha/openbsd.h"
 	# default x-alpha is only appropriate for dec-osf.
 	target_cpu_default="MASK_GAS"
@@ -632,12 +632,12 @@ alpha*-dec-osf[45]*)
 	    # Define TARGET_SUPPORT_ARCH except on 4.0a.
 	    case ${target} in
 		*-*-osf4.0a) ;;
-		*) tm_defines="TARGET_SUPPORT_ARCH=1"
+		*) tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
 	    esac
 	    ;;
 	  *-*-osf5*)
 	    tm_file="${tm_file} alpha/osf5.h"
-	    tm_defines="TARGET_SUPPORT_ARCH=1"
+	    tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
 	    ;;
 	esac
 	case ${enable_threads} in
@@ -1402,19 +1402,19 @@ m68k-*-aout*)
 	;;
 m68k-*-coff*)
 	tmake_file=m68k/t-m68kbare
-	tm_defines="MOTOROLA USE_GAS"
+	tm_defines="${tm_defines} MOTOROLA USE_GAS"
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kemb.h dbxcoff.h m68k/coff.h dbx.h"
 	use_fixproto=yes
 	;;
 m68020-*-elf* | m68k-*-elf*)
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
-	tm_defines="MOTOROLA USE_GAS"
+	tm_defines="${tm_defines} MOTOROLA USE_GAS"
 	tmake_file=m68k/t-m68kelf
 	extra_parts="crtbegin.o crtend.o"
 	;;
 m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h m68k/netbsd-elf.h"
-	tm_defines="MOTOROLA USE_GAS"
+	tm_defines="${tm_defines} MOTOROLA USE_GAS"
 	case ${target} in
 	m68010*)
 		target_cpu_default="0"
@@ -1426,7 +1426,7 @@ m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 	;;
 m68k*-*-openbsd*)
 	# needed to unconfuse gdb
-	tm_defines="OBSD_OLD_GAS TARGET_DEFAULT=(MASK_68020|MASK_68881|MASK_BITFIELD)"
+	tm_defines="${tm_defines} OBSD_OLD_GAS TARGET_DEFAULT=(MASK_68020|MASK_68881|MASK_BITFIELD)"
 	tm_file="m68k/m68k.h openbsd.h m68k/openbsd.h"
 	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 	# we need collect2 until our bug is fixed...
@@ -1434,7 +1434,7 @@ m68k*-*-openbsd*)
 	;;
 m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux with uClibc
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux.h"
- 	tm_defines="MOTOROLA USE_GAS"
+ 	tm_defines="${tm_defines} MOTOROLA USE_GAS"
 	tmake_file=m68k/t-uclinux
 	use_fixproto=no
 	;;
@@ -1443,7 +1443,7 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# aka the GNU/Linux C library 6.
 	tm_file="m68k/m68k.h dbxelf.h elfos.h svr4.h linux.h m68k/linux.h"
 	extra_options="${extra_options} m68k/ieee.opt"
-	tm_defines="MOTOROLA USE_GAS"
+	tm_defines="${tm_defines} MOTOROLA USE_GAS"
 	# if not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number
 	if test x$sjlj != x1; then
@@ -1453,7 +1453,7 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 m68k-*-rtems*)
 	tmake_file="m68k/t-m68kbare m68k/t-crtstuff t-rtems m68k/t-rtems"
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h m68k/rtemself.h rtems.h"
-	tm_defines="MOTOROLA USE_GAS"
+	tm_defines="${tm_defines} MOTOROLA USE_GAS"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 mcore-*-elf)
@@ -1478,7 +1478,7 @@ mips-sgi-irix[56]*)
 	*-*-irix6*)
 		tm_file="${tm_file} mips/iris6.h"
 		tmake_file="${tmake_file} mips/t-iris6"
-		tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
+		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
 		;;
 	esac
 	if test "x$stabs" = xyes
@@ -1515,7 +1515,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
         esac
 	;;
 mips*-*-openbsd*)
-	tm_defines="OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
+	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="mips/mips.h openbsd.h mips/openbsd.h mips/sdb.h"
 	case ${target} in
@@ -1527,34 +1527,34 @@ mips*-*-openbsd*)
 mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
-	tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_EABI"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
 	;;
 mipsisa32r2-*-elf* | mipsisa32r2el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
-	tm_defines="MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_EABI"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
 	;;
 mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
-	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_EABI"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
 	;;
 mipsisa64sr71k-*-elf*)
         tm_file="elfos.h ${tm_file} mips/elf.h"
         tmake_file=mips/t-sr71k
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
-	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-elf
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
-	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
 	use_fixproto=yes
 	;;
 mips-*-elf* | mipsel-*-elf*)
@@ -1566,7 +1566,7 @@ mips64-*-elf* | mips64el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-elf
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
-	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	use_fixproto=yes
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
@@ -1578,7 +1578,7 @@ mips64orion-*-elf* | mips64orionel-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elforion.h mips/elf.h"
 	tmake_file=mips/t-elf
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
-	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	use_fixproto=yes
 	;;
 mips*-*-rtems*)

@@ -1,3 +1,8 @@
+2006-03-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config.gcc (tm_defines): Always add to previous value rather
+	than replacing it.
+
 2006-03-16  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/predicates.md (splittable_const_int_operand): New,
