@@ -1,3 +1,10 @@
+2006-03-15  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/26688:
+	* lib/Makefile.in: Rebuilt.
+	* lib/Makefile.am (propertydirs): Ignore .svn directories.
+	(metafiles): Likewise.
+
 2006-02-13  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
 	Fixes bug #26166
