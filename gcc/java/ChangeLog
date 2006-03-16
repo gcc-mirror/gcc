@@ -1,3 +1,8 @@
+2006-03-15  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-write.c (generate_bytecode_insns): Use qualifying type for
+	non-static method calls.
+
 2006-03-15  David Daney  <ddaney@avtrex.com>
 
 	* java-tree.h : Moved comment for TYPE_DOT_CLASS adjacent to its

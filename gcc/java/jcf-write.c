@@ -1,5 +1,5 @@
 /* Write out a Java(TM) class file.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2610,26 +2610,36 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	    tree context = DECL_CONTEXT (f);
 	    int index, interface = 0;
 	    RESERVE (5);
+
+	    /* If the method is not static, use the qualifying type.
+	       However, don't use the qualifying type if the method
+	       was declared in Object.  */
+	    if (! METHOD_STATIC (f)
+		&& ! DECL_CONSTRUCTOR_P (f)
+		&& ! METHOD_PRIVATE (f)
+		&& DECL_CONTEXT (f) != object_type_node)
+	      {
+		tree arg1 = TREE_VALUE (TREE_OPERAND (exp, 1));
+		context = TREE_TYPE (TREE_TYPE (arg1));
+	      }
+
 	    if (METHOD_STATIC (f))
 	      OP1 (OPCODE_invokestatic);
 	    else if (DECL_CONSTRUCTOR_P (f) || CALL_USING_SUPER (exp)
-		|| METHOD_PRIVATE (f))
+		     || METHOD_PRIVATE (f))
 	      OP1 (OPCODE_invokespecial);
 	    else
 	      {
 		if (CLASS_INTERFACE (TYPE_NAME (context)))
-		  {
-		    tree arg1 = TREE_VALUE (TREE_OPERAND (exp, 1));
-		    context = TREE_TYPE (TREE_TYPE (arg1));
-		    if (CLASS_INTERFACE (TYPE_NAME (context)))
-		      interface = 1;
-		  }
+		  interface = 1;
 		if (interface)
 		  OP1 (OPCODE_invokeinterface);
 		else
 		  OP1 (OPCODE_invokevirtual);
 	      }
-	    index = find_methodref_with_class_index (&state->cpool, f, context);
+
+	    index = find_methodref_with_class_index (&state->cpool, f,
+						     context);
 	    OP2 (index);
 	    if (interface)
 	      {
