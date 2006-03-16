@@ -158,7 +158,17 @@ static void ia64_dependencies_evaluation_hook (rtx, rtx);
 static void ia64_init_dfa_pre_cycle_insn (void);
 static rtx ia64_dfa_pre_cycle_insn (void);
 static int ia64_first_cycle_multipass_dfa_lookahead_guard (rtx);
+static bool ia64_first_cycle_multipass_dfa_lookahead_guard_spec (rtx);
 static int ia64_dfa_new_cycle (FILE *, int, rtx, int, int, int *);
+static void ia64_h_i_d_extended (void);
+static int ia64_mode_to_int (enum machine_mode);
+static void ia64_set_sched_flags (spec_info_t);
+static int ia64_speculate_insn (rtx, ds_t, rtx *);
+static rtx ia64_gen_spec_insn (rtx, ds_t, int, bool, bool);
+static bool ia64_needs_block_p (rtx);
+static rtx ia64_gen_check (rtx, rtx, bool);
+static int ia64_spec_check_p (rtx);
+static int ia64_spec_check_src_p (rtx);
 static rtx gen_tls_get_addr (void);
 static rtx gen_thread_pointer (void);
 static int find_gr_spill (int);
@@ -200,8 +210,10 @@ static void ia64_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void ia64_output_function_end_prologue (FILE *);
 
 static int ia64_issue_rate (void);
-static int ia64_adjust_cost (rtx, rtx, rtx, int);
+static int ia64_adjust_cost_2 (rtx, int, rtx, int);
 static void ia64_sched_init (FILE *, int, int);
+static void ia64_sched_init_global (FILE *, int, int);
+static void ia64_sched_finish_global (FILE *, int);
 static void ia64_sched_finish (FILE *, int);
 static int ia64_dfa_sched_reorder (FILE *, int, rtx *, int *, int, int);
 static int ia64_sched_reorder (FILE *, int, rtx *, int *, int);
@@ -313,8 +325,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P  ia64_in_small_data_p
 
-#undef TARGET_SCHED_ADJUST_COST
-#define TARGET_SCHED_ADJUST_COST ia64_adjust_cost
+#undef TARGET_SCHED_ADJUST_COST_2
+#define TARGET_SCHED_ADJUST_COST_2 ia64_adjust_cost_2
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE ia64_issue_rate
 #undef TARGET_SCHED_VARIABLE_ISSUE
@@ -323,6 +335,10 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_SCHED_INIT ia64_sched_init
 #undef TARGET_SCHED_FINISH
 #define TARGET_SCHED_FINISH ia64_sched_finish
+#undef TARGET_SCHED_INIT_GLOBAL
+#define TARGET_SCHED_INIT_GLOBAL ia64_sched_init_global
+#undef TARGET_SCHED_FINISH_GLOBAL
+#define TARGET_SCHED_FINISH_GLOBAL ia64_sched_finish_global
 #undef TARGET_SCHED_REORDER
 #define TARGET_SCHED_REORDER ia64_sched_reorder
 #undef TARGET_SCHED_REORDER2
@@ -345,6 +361,25 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_SCHED_DFA_NEW_CYCLE
 #define TARGET_SCHED_DFA_NEW_CYCLE ia64_dfa_new_cycle
+
+#undef TARGET_SCHED_H_I_D_EXTENDED
+#define TARGET_SCHED_H_I_D_EXTENDED ia64_h_i_d_extended
+
+#undef TARGET_SCHED_SET_SCHED_FLAGS
+#define TARGET_SCHED_SET_SCHED_FLAGS ia64_set_sched_flags
+
+#undef TARGET_SCHED_SPECULATE_INSN
+#define TARGET_SCHED_SPECULATE_INSN ia64_speculate_insn
+
+#undef TARGET_SCHED_NEEDS_BLOCK_P
+#define TARGET_SCHED_NEEDS_BLOCK_P ia64_needs_block_p
+
+#undef TARGET_SCHED_GEN_CHECK
+#define TARGET_SCHED_GEN_CHECK ia64_gen_check
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC\
+  ia64_first_cycle_multipass_dfa_lookahead_guard_spec
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL ia64_function_ok_for_sibcall
@@ -5414,13 +5449,15 @@ update_set_flags (rtx x, struct reg_flags *pflags)
       return;
 
     case IF_THEN_ELSE:
-      /* There are three cases here:
+      /* There are four cases here:
 	 (1) The destination is (pc), in which case this is a branch,
 	 nothing here applies.
 	 (2) The destination is ar.lc, in which case this is a
 	 doloop_end_internal,
 	 (3) The destination is an fp register, in which case this is
 	 an fselect instruction.
+	 (4) The condition has (unspec [(reg)] UNSPEC_LDC), in which case 
+	 this is a check load.
 	 In all cases, nothing we do in this function applies.  */
       return;
 
@@ -5465,18 +5502,29 @@ set_src_needs_barrier (rtx x, struct reg_flags flags, int pred)
       /* X is a conditional branch.  */
       /* ??? This seems redundant, as the caller sets this bit for
 	 all JUMP_INSNs.  */
-      flags.is_branch = 1;
+      if (!ia64_spec_check_src_p (src))
+	flags.is_branch = 1;
       return rtx_needs_barrier (src, flags, pred);
     }
 
-  need_barrier = rtx_needs_barrier (src, flags, pred);
+  if (ia64_spec_check_src_p (src))
+    /* Avoid checking one register twice (in condition 
+       and in 'then' section) for ldc pattern.  */
+    {
+      gcc_assert (REG_P (XEXP (src, 2)));
+      need_barrier = rtx_needs_barrier (XEXP (src, 2), flags, pred);
+		  
+      /* We process MEM below.  */
+      src = XEXP (src, 1);
+    }
+
+  need_barrier |= rtx_needs_barrier (src, flags, pred);
 
   dst = SET_DEST (x);
   if (GET_CODE (dst) == ZERO_EXTRACT)
     {
       need_barrier |= rtx_needs_barrier (XEXP (dst, 1), flags, pred);
       need_barrier |= rtx_needs_barrier (XEXP (dst, 2), flags, pred);
-      dst = XEXP (dst, 0);
     }
   return need_barrier;
 }
@@ -5725,6 +5773,11 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	case UNSPEC_SETF_EXP:
         case UNSPEC_ADDP4:
 	case UNSPEC_FR_SQRT_RECIP_APPROX:
+	case UNSPEC_LDA:
+	case UNSPEC_LDS:
+	case UNSPEC_LDSA:
+	case UNSPEC_CHKACLR:
+        case UNSPEC_CHKS:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
 
@@ -5872,7 +5925,8 @@ group_barrier_needed (rtx insn)
       break;
 
     case JUMP_INSN:
-      flags.is_branch = 1;
+      if (!ia64_spec_check_p (insn))
+	flags.is_branch = 1;
 
       /* Don't bundle a jump following a call.  */
       if ((pat = prev_active_insn (insn))
@@ -6126,7 +6180,15 @@ static state_t prev_cycle_state = NULL;
 /* The following array element values are TRUE if the corresponding
    insn requires to add stop bits before it.  */
 
-static char *stops_p;
+static char *stops_p = NULL;
+
+/* The following array element values are ZERO for non-speculative
+   instructions and hold corresponding speculation check number for
+   speculative instructions.  */
+static int *spec_check_no = NULL;
+
+/* Size of spec_check_no array.  */
+static int max_uid = 0;
 
 /* The following variable is used to set up the mentioned above array.  */
 
@@ -6147,6 +6209,9 @@ static int *clocks;
    added to improve insn scheduling for MM_insns for Itanium1.  */
 
 static int *add_cycles;
+
+/* The following variable value is number of data speculations in progress.  */
+static int pending_data_specs = 0;
 
 static rtx ia64_single_set (rtx);
 static void ia64_emit_insn_before (rtx, rtx);
@@ -6197,16 +6262,18 @@ ia64_single_set (rtx insn)
   return ret;
 }
 
-/* Adjust the cost of a scheduling dependency.  Return the new cost of
-   a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
+/* Adjust the cost of a scheduling dependency.
+   Return the new cost of a dependency of type DEP_TYPE or INSN on DEP_INSN.
+   COST is the current cost.  */
 
 static int
-ia64_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+ia64_adjust_cost_2 (rtx insn, int dep_type1, rtx dep_insn, int cost)
 {
+  enum reg_note dep_type = (enum reg_note) dep_type1;
   enum attr_itanium_class dep_class;
   enum attr_itanium_class insn_class;
 
-  if (REG_NOTE_KIND (link) != REG_DEP_OUTPUT)
+  if (dep_type != REG_DEP_OUTPUT)
     return cost;
 
   insn_class = ia64_safe_itanium_class (insn);
@@ -6291,6 +6358,26 @@ ia64_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 #endif
   last_scheduled_insn = NULL_RTX;
   init_insn_group_barriers ();
+}
+
+/* We're beginning a scheduling pass.  Check assertion.  */
+
+static void
+ia64_sched_init_global (FILE *dump ATTRIBUTE_UNUSED,
+                        int sched_verbose ATTRIBUTE_UNUSED,
+                        int max_ready ATTRIBUTE_UNUSED)
+{  
+  gcc_assert (!pending_data_specs);
+}
+
+/* Scheduling pass is now finished.  Free/reset static variable.  */
+static void
+ia64_sched_finish_global (FILE *dump ATTRIBUTE_UNUSED,
+			  int sched_verbose ATTRIBUTE_UNUSED)
+{
+  free (spec_check_no);
+  spec_check_no = 0;
+  max_uid = 0;
 }
 
 /* We are about to being issuing insns for this clock cycle.
@@ -6415,6 +6502,16 @@ ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 		     rtx insn ATTRIBUTE_UNUSED,
 		     int can_issue_more ATTRIBUTE_UNUSED)
 {
+  if (current_sched_info->flags & DO_SPECULATION)
+    /* Modulo scheduling does not extend h_i_d when emitting
+       new instructions.  Deal with it.  */
+    {
+      if (DONE_SPEC (insn) & BEGIN_DATA)
+	pending_data_specs++;
+      if (CHECK_SPEC (insn) & BEGIN_DATA)
+	pending_data_specs--;
+    }
+
   last_scheduled_insn = insn;
   memcpy (prev_cycle_state, curr_state, dfa_state_size);
   if (reload_completed)
@@ -6437,8 +6534,22 @@ static int
 ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn)
 {
   gcc_assert (insn  && INSN_P (insn));
-  return (!reload_completed
-	  || !safe_group_barrier_needed (insn));
+  return ((!reload_completed
+	   || !safe_group_barrier_needed (insn))
+	  && ia64_first_cycle_multipass_dfa_lookahead_guard_spec (insn));
+}
+
+/* We are choosing insn from the ready queue.  Return nonzero if INSN
+   can be chosen.  */
+
+static bool
+ia64_first_cycle_multipass_dfa_lookahead_guard_spec (rtx insn)
+{
+  gcc_assert (insn  && INSN_P (insn));
+  /* Size of ALAT is 32.  As far as we perform conservative data speculation,
+     we keep ALAT half-empty.  */
+  return (pending_data_specs < 16
+	  || !(TODO_SPEC (insn) & BEGIN_DATA));
 }
 
 /* The following variable value is pseudo-insn used by the DFA insn
@@ -6526,6 +6637,578 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
   return 0;
 }
 
+/* Implement targetm.sched.h_i_d_extended hook.
+   Extend internal data structures.  */
+static void
+ia64_h_i_d_extended (void)
+{
+  if (current_sched_info->flags & DO_SPECULATION)
+    {
+      int new_max_uid = get_max_uid () + 1;
+
+      spec_check_no = xrecalloc (spec_check_no, new_max_uid,
+				 max_uid, sizeof (*spec_check_no));
+      max_uid = new_max_uid;
+    }
+
+  if (stops_p != NULL) 
+    {
+      int new_clocks_length = get_max_uid () + 1;
+      
+      stops_p = xrecalloc (stops_p, new_clocks_length, clocks_length, 1);
+      
+      if (ia64_tune == PROCESSOR_ITANIUM)
+	{
+	  clocks = xrecalloc (clocks, new_clocks_length, clocks_length,
+			      sizeof (int));
+	  add_cycles = xrecalloc (add_cycles, new_clocks_length, clocks_length,
+				  sizeof (int));
+	}
+      
+      clocks_length = new_clocks_length;
+    }
+}
+
+/* Constants that help mapping 'enum machine_mode' to int.  */
+enum SPEC_MODES
+  {
+    SPEC_MODE_INVALID = -1,
+    SPEC_MODE_FIRST = 0,
+    SPEC_MODE_FOR_EXTEND_FIRST = 1,
+    SPEC_MODE_FOR_EXTEND_LAST = 3,
+    SPEC_MODE_LAST = 8
+  };
+
+/* Return index of the MODE.  */
+static int
+ia64_mode_to_int (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case BImode: return 0; /* SPEC_MODE_FIRST  */
+    case QImode: return 1; /* SPEC_MODE_FOR_EXTEND_FIRST  */
+    case HImode: return 2;
+    case SImode: return 3; /* SPEC_MODE_FOR_EXTEND_LAST  */
+    case DImode: return 4;
+    case SFmode: return 5;
+    case DFmode: return 6;
+    case XFmode: return 7;
+    case TImode:
+      /* ??? This mode needs testing.  Bypasses for ldfp8 instruction are not
+	 mentioned in itanium[12].md.  Predicate fp_register_operand also
+	 needs to be defined.  Bottom line: better disable for now.  */
+      return SPEC_MODE_INVALID;
+    default:     return SPEC_MODE_INVALID;
+    }
+}
+
+/* Provide information about speculation capabilities.  */
+static void
+ia64_set_sched_flags (spec_info_t spec_info)
+{
+  unsigned int *flags = &(current_sched_info->flags);
+
+  if (*flags & SCHED_RGN
+      || *flags & SCHED_EBB)  
+    {
+      int mask = 0;
+
+      if ((mflag_sched_br_data_spec && !reload_completed)
+	  || (mflag_sched_ar_data_spec && reload_completed))
+	{
+	  mask |= BEGIN_DATA;
+	  
+	  if ((mflag_sched_br_in_data_spec && !reload_completed)
+	      || (mflag_sched_ar_in_data_spec && reload_completed))
+	    mask |= BE_IN_DATA;
+	}
+      
+      if (mflag_sched_control_spec)
+	{
+	  mask |= BEGIN_CONTROL;
+	  
+	  if (mflag_sched_in_control_spec)
+	    mask |= BE_IN_CONTROL;
+	}
+
+      gcc_assert (*flags & USE_GLAT);
+
+      if (mask)
+	{
+	  *flags |= USE_DEPS_LIST | DETACH_LIFE_INFO | DO_SPECULATION;
+	  
+	  spec_info->mask = mask;
+	  spec_info->flags = 0;
+      
+	  if ((mask & DATA_SPEC) && mflag_sched_prefer_non_data_spec_insns)
+	    spec_info->flags |= PREFER_NON_DATA_SPEC;
+
+	  if ((mask & CONTROL_SPEC)
+	      && mflag_sched_prefer_non_control_spec_insns)
+	    spec_info->flags |= PREFER_NON_CONTROL_SPEC;
+
+	  if (mflag_sched_spec_verbose)
+	    {
+	      if (sched_verbose >= 1)
+		spec_info->dump = sched_dump;
+	      else
+		spec_info->dump = stderr;
+	    }
+	  else
+	    spec_info->dump = 0;
+	  
+	  if (mflag_sched_count_spec_in_critical_path)
+	    spec_info->flags |= COUNT_SPEC_IN_CRITICAL_PATH;
+	}
+    }
+}
+
+/* Implement targetm.sched.speculate_insn hook.
+   Check if the INSN can be TS speculative.
+   If 'no' - return -1.
+   If 'yes' - generate speculative pattern in the NEW_PAT and return 1.
+   If current pattern of the INSN already provides TS speculation, return 0.  */
+static int
+ia64_speculate_insn (rtx insn, ds_t ts, rtx *new_pat)
+{  
+  rtx pat, reg, mem, mem_reg;
+  int mode_no, gen_p = 1;
+  bool extend_p;
+  
+  gcc_assert (!(ts & ~BEGIN_SPEC) && ts);
+           
+  pat = PATTERN (insn);
+
+  if (GET_CODE (pat) == COND_EXEC)
+    pat = COND_EXEC_CODE (pat);
+
+  if (GET_CODE (pat) != SET)
+    return -1;
+  reg = SET_DEST (pat);
+  if (!REG_P (reg))
+    return -1;
+
+  mem = SET_SRC (pat);  
+  if (GET_CODE (mem) == ZERO_EXTEND)
+    {
+      mem = XEXP (mem, 0);
+      extend_p = true;      
+    }
+  else
+    extend_p = false;
+
+  if (GET_CODE (mem) == UNSPEC)
+    {
+      int code;
+      
+      code = XINT (mem, 1);
+      if (code != UNSPEC_LDA && code != UNSPEC_LDS && code != UNSPEC_LDSA)
+	return -1;
+
+      if ((code == UNSPEC_LDA && !(ts & BEGIN_CONTROL))
+	  || (code == UNSPEC_LDS && !(ts & BEGIN_DATA))
+	  || code == UNSPEC_LDSA)
+	gen_p = 0;
+
+      mem = XVECEXP (mem, 0, 0);
+      gcc_assert (MEM_P (mem));
+    }
+  if (!MEM_P (mem))
+    return -1;
+  mem_reg = XEXP (mem, 0);
+  if (!REG_P (mem_reg))
+    return -1;
+     
+  /* We should use MEM's mode since REG's mode in presence of ZERO_EXTEND
+     will always be DImode.  */
+  mode_no = ia64_mode_to_int (GET_MODE (mem));
+  
+  if (mode_no == SPEC_MODE_INVALID
+      || (extend_p
+	  && !(SPEC_MODE_FOR_EXTEND_FIRST <= mode_no
+	       && mode_no <= SPEC_MODE_FOR_EXTEND_LAST)))
+    return -1;
+
+  extract_insn_cached (insn);
+  gcc_assert (reg == recog_data.operand[0] && mem == recog_data.operand[1]);
+  *new_pat = ia64_gen_spec_insn (insn, ts, mode_no, gen_p != 0, extend_p);
+
+  return gen_p;
+}
+
+enum
+  {
+    /* Offset to reach ZERO_EXTEND patterns.  */
+    SPEC_GEN_EXTEND_OFFSET = SPEC_MODE_LAST - SPEC_MODE_FOR_EXTEND_FIRST + 1,
+    /* Number of patterns for each speculation mode.  */
+    SPEC_N = (SPEC_MODE_LAST
+              + SPEC_MODE_FOR_EXTEND_LAST - SPEC_MODE_FOR_EXTEND_FIRST + 2)
+  };
+
+enum SPEC_GEN_LD_MAP
+  {
+    /* Offset to ld.a patterns.  */
+    SPEC_GEN_A = 0 * SPEC_N,
+    /* Offset to ld.s patterns.  */
+    SPEC_GEN_S = 1 * SPEC_N,
+    /* Offset to ld.sa patterns.  */
+    SPEC_GEN_SA = 2 * SPEC_N,
+    /* Offset to ld.sa patterns.  For this patterns corresponding ld.c will
+       mutate to chk.s.  */
+    SPEC_GEN_SA_FOR_S = 3 * SPEC_N
+  };
+
+/* These offsets are used to get (4 * SPEC_N).  */
+enum SPEC_GEN_CHECK_OFFSET
+  {
+    SPEC_GEN_CHKA_FOR_A_OFFSET = 4 * SPEC_N - SPEC_GEN_A,
+    SPEC_GEN_CHKA_FOR_SA_OFFSET = 4 * SPEC_N - SPEC_GEN_SA
+  };
+
+/* If GEN_P is true, calculate the index of needed speculation check and return
+   speculative pattern for INSN with speculative mode TS, machine mode
+   MODE_NO and with ZERO_EXTEND (if EXTEND_P is true).
+   If GEN_P is false, just calculate the index of needed speculation check.  */
+static rtx
+ia64_gen_spec_insn (rtx insn, ds_t ts, int mode_no, bool gen_p, bool extend_p)
+{
+  rtx pat, new_pat;
+  int load_no;
+  int shift = 0;
+
+  static rtx (* const gen_load[]) (rtx, rtx) = {
+    gen_movbi_advanced,
+    gen_movqi_advanced,
+    gen_movhi_advanced,
+    gen_movsi_advanced,
+    gen_movdi_advanced,
+    gen_movsf_advanced,
+    gen_movdf_advanced,
+    gen_movxf_advanced,
+    gen_movti_advanced,
+    gen_zero_extendqidi2_advanced,
+    gen_zero_extendhidi2_advanced,
+    gen_zero_extendsidi2_advanced,
+
+    gen_movbi_speculative,
+    gen_movqi_speculative,
+    gen_movhi_speculative,
+    gen_movsi_speculative,
+    gen_movdi_speculative,
+    gen_movsf_speculative,
+    gen_movdf_speculative,
+    gen_movxf_speculative,
+    gen_movti_speculative,
+    gen_zero_extendqidi2_speculative,
+    gen_zero_extendhidi2_speculative,
+    gen_zero_extendsidi2_speculative,
+
+    gen_movbi_speculative_advanced,
+    gen_movqi_speculative_advanced,
+    gen_movhi_speculative_advanced,
+    gen_movsi_speculative_advanced,
+    gen_movdi_speculative_advanced,
+    gen_movsf_speculative_advanced,
+    gen_movdf_speculative_advanced,
+    gen_movxf_speculative_advanced,
+    gen_movti_speculative_advanced,
+    gen_zero_extendqidi2_speculative_advanced,
+    gen_zero_extendhidi2_speculative_advanced,
+    gen_zero_extendsidi2_speculative_advanced,
+
+    gen_movbi_speculative_advanced,
+    gen_movqi_speculative_advanced,
+    gen_movhi_speculative_advanced,
+    gen_movsi_speculative_advanced,
+    gen_movdi_speculative_advanced,
+    gen_movsf_speculative_advanced,
+    gen_movdf_speculative_advanced,
+    gen_movxf_speculative_advanced,
+    gen_movti_speculative_advanced,
+    gen_zero_extendqidi2_speculative_advanced,
+    gen_zero_extendhidi2_speculative_advanced,
+    gen_zero_extendsidi2_speculative_advanced
+  };
+
+  load_no = extend_p ? mode_no + SPEC_GEN_EXTEND_OFFSET : mode_no;
+
+  if (ts & BEGIN_DATA)
+    {
+      /* We don't need recovery because even if this is ld.sa
+	 ALAT entry will be allocated only if NAT bit is set to zero. 
+	 So it is enough to use ld.c here.  */	  
+
+      if (ts & BEGIN_CONTROL)
+	{	      
+	  load_no += SPEC_GEN_SA;
+
+	  if (!mflag_sched_ldc)
+	    shift = SPEC_GEN_CHKA_FOR_SA_OFFSET;
+	}
+      else
+	{
+	  load_no += SPEC_GEN_A;
+
+	  if (!mflag_sched_ldc)		
+	    shift = SPEC_GEN_CHKA_FOR_A_OFFSET;
+	}
+    }
+  else if (ts & BEGIN_CONTROL)
+    {
+      /* ld.sa can be used instead of ld.s to avoid basic block splitting.  */
+      if (!mflag_control_ldc)
+	load_no += SPEC_GEN_S;
+      else
+	{
+	  gcc_assert (mflag_sched_ldc);
+	  load_no += SPEC_GEN_SA_FOR_S;
+	}
+    }
+  else
+    gcc_unreachable ();
+
+  /* Set the desired check index.  We add '1', because zero element in this
+     array means, that instruction with such uid is non-speculative.  */
+  spec_check_no[INSN_UID (insn)] = load_no + shift + 1;
+
+  if (!gen_p)
+    return 0;
+
+  new_pat = gen_load[load_no] (copy_rtx (recog_data.operand[0]),
+			       copy_rtx (recog_data.operand[1]));
+
+  pat = PATTERN (insn);
+  if (GET_CODE (pat) == COND_EXEC)
+    new_pat = gen_rtx_COND_EXEC (VOIDmode, copy_rtx 
+				 (COND_EXEC_TEST (pat)), new_pat);
+
+  return new_pat;
+}
+
+/* Offset to branchy checks.  */
+enum { SPEC_GEN_CHECK_MUTATION_OFFSET = 5 * SPEC_N };
+
+/* Return nonzero, if INSN needs branchy recovery check.  */
+static bool
+ia64_needs_block_p (rtx insn)
+{
+  int check_no;
+
+  check_no = spec_check_no[INSN_UID(insn)] - 1;
+  gcc_assert (0 <= check_no && check_no < SPEC_GEN_CHECK_MUTATION_OFFSET);
+
+  return ((SPEC_GEN_S <= check_no && check_no < SPEC_GEN_S + SPEC_N)
+	  || (4 * SPEC_N <= check_no && check_no < 4 * SPEC_N + SPEC_N));
+}
+
+/* Generate (or regenerate, if (MUTATE_P)) recovery check for INSN.
+   If (LABEL != 0 || MUTATE_P), generate branchy recovery check.
+   Otherwise, generate a simple check.  */
+static rtx
+ia64_gen_check (rtx insn, rtx label, bool mutate_p)
+{
+  rtx op1, pat, check_pat;
+
+  static rtx (* const gen_check[]) (rtx, rtx) = {
+    gen_movbi_clr,
+    gen_movqi_clr,
+    gen_movhi_clr,
+    gen_movsi_clr,
+    gen_movdi_clr,
+    gen_movsf_clr,
+    gen_movdf_clr,
+    gen_movxf_clr,
+    gen_movti_clr,
+    gen_zero_extendqidi2_clr,
+    gen_zero_extendhidi2_clr,
+    gen_zero_extendsidi2_clr,
+
+    gen_speculation_check_bi,
+    gen_speculation_check_qi,
+    gen_speculation_check_hi,
+    gen_speculation_check_si,
+    gen_speculation_check_di,
+    gen_speculation_check_sf,
+    gen_speculation_check_df,
+    gen_speculation_check_xf,
+    gen_speculation_check_ti,
+    gen_speculation_check_di,
+    gen_speculation_check_di,
+    gen_speculation_check_di,
+
+    gen_movbi_clr,
+    gen_movqi_clr,
+    gen_movhi_clr,
+    gen_movsi_clr,
+    gen_movdi_clr,
+    gen_movsf_clr,
+    gen_movdf_clr,
+    gen_movxf_clr,
+    gen_movti_clr,
+    gen_zero_extendqidi2_clr,
+    gen_zero_extendhidi2_clr,
+    gen_zero_extendsidi2_clr,
+
+    gen_movbi_clr,
+    gen_movqi_clr,
+    gen_movhi_clr,
+    gen_movsi_clr,
+    gen_movdi_clr,
+    gen_movsf_clr,
+    gen_movdf_clr,
+    gen_movxf_clr,
+    gen_movti_clr,
+    gen_zero_extendqidi2_clr,
+    gen_zero_extendhidi2_clr,
+    gen_zero_extendsidi2_clr,
+
+    gen_advanced_load_check_clr_bi,
+    gen_advanced_load_check_clr_qi,
+    gen_advanced_load_check_clr_hi,
+    gen_advanced_load_check_clr_si,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_sf,
+    gen_advanced_load_check_clr_df,
+    gen_advanced_load_check_clr_xf,
+    gen_advanced_load_check_clr_ti,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_di,
+
+    /* Following checks are generated during mutation.  */
+    gen_advanced_load_check_clr_bi,
+    gen_advanced_load_check_clr_qi,
+    gen_advanced_load_check_clr_hi,
+    gen_advanced_load_check_clr_si,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_sf,
+    gen_advanced_load_check_clr_df,
+    gen_advanced_load_check_clr_xf,
+    gen_advanced_load_check_clr_ti,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_di,
+
+    0,0,0,0,0,0,0,0,0,0,0,0,
+
+    gen_advanced_load_check_clr_bi,
+    gen_advanced_load_check_clr_qi,
+    gen_advanced_load_check_clr_hi,
+    gen_advanced_load_check_clr_si,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_sf,
+    gen_advanced_load_check_clr_df,
+    gen_advanced_load_check_clr_xf,
+    gen_advanced_load_check_clr_ti,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_di,
+    gen_advanced_load_check_clr_di,
+
+    gen_speculation_check_bi,
+    gen_speculation_check_qi,
+    gen_speculation_check_hi,
+    gen_speculation_check_si,
+    gen_speculation_check_di,
+    gen_speculation_check_sf,
+    gen_speculation_check_df,
+    gen_speculation_check_xf,
+    gen_speculation_check_ti,
+    gen_speculation_check_di,
+    gen_speculation_check_di,
+    gen_speculation_check_di
+  };
+
+  extract_insn_cached (insn);
+
+  if (label)
+    {
+      gcc_assert (mutate_p || ia64_needs_block_p (insn));
+      op1 = label;
+    }
+  else
+    {
+      gcc_assert (!mutate_p && !ia64_needs_block_p (insn));
+      op1 = copy_rtx (recog_data.operand[1]);
+    }
+      
+  if (mutate_p)
+    /* INSN is ld.c.
+       Find the speculation check number by searching for original
+       speculative load in the RESOLVED_DEPS list of INSN.
+       As long as patterns are unique for each instruction, this can be
+       accomplished by matching ORIG_PAT fields.  */
+    {
+      rtx link;
+      int check_no = 0;
+      rtx orig_pat = ORIG_PAT (insn);
+
+      for (link = RESOLVED_DEPS (insn); link; link = XEXP (link, 1))
+	{
+	  rtx x = XEXP (link, 0);
+
+	  if (ORIG_PAT (x) == orig_pat)
+	    check_no = spec_check_no[INSN_UID (x)];
+	}
+      gcc_assert (check_no);
+
+      spec_check_no[INSN_UID (insn)] = (check_no
+					+ SPEC_GEN_CHECK_MUTATION_OFFSET);
+    }
+
+  check_pat = (gen_check[spec_check_no[INSN_UID (insn)] - 1]
+	       (copy_rtx (recog_data.operand[0]), op1));
+    
+  pat = PATTERN (insn);
+  if (GET_CODE (pat) == COND_EXEC)
+    check_pat = gen_rtx_COND_EXEC (VOIDmode, copy_rtx (COND_EXEC_TEST (pat)),
+				   check_pat);
+
+  return check_pat;
+}
+
+/* Return nonzero, if X is branchy recovery check.  */
+static int
+ia64_spec_check_p (rtx x)
+{
+  x = PATTERN (x);
+  if (GET_CODE (x) == COND_EXEC)
+    x = COND_EXEC_CODE (x);
+  if (GET_CODE (x) == SET)
+    return ia64_spec_check_src_p (SET_SRC (x));
+  return 0;
+}
+
+/* Return nonzero, if SRC belongs to recovery check.  */
+static int
+ia64_spec_check_src_p (rtx src)
+{
+  if (GET_CODE (src) == IF_THEN_ELSE)
+    {
+      rtx t;
+
+      t = XEXP (src, 0);
+      if (GET_CODE (t) == NE)
+	{
+	  t = XEXP (t, 0);	    
+
+	  if (GET_CODE (t) == UNSPEC)
+	    {
+	      int code;
+	      
+	      code = XINT (t, 1);
+	     
+	      if (code == UNSPEC_CHKACLR
+		  || code == UNSPEC_CHKS
+		  || code == UNSPEC_LDCCLR)
+		{
+		  gcc_assert (code != 0);
+		  return code;
+		}
+	    }
+	}
+    }
+  return 0;
+}
 
 
 /* The following page contains abstract data `bundle states' which are
@@ -6996,7 +7679,7 @@ get_next_important_insn (rtx insn, rtx tail)
    automata only says that we can issue an insn possibly inserting
    some nops before it and using some template.  Therefore insn
    bundling in this function is implemented by using DFA
-   (deterministic finite automata).  We follows all possible insn
+   (deterministic finite automata).  We follow all possible insn
    sequences by inserting 0-2 nops (that is what the NDFA describe for
    insn scheduling) before/after each insn being bundled.  We know the
    start of simulated processor cycle from insn scheduling (insn
@@ -7086,7 +7769,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	      break;
 	    }
       }
-  /* Froward pass: generation of bundle states.  */
+  /* Forward pass: generation of bundle states.  */
   for (insn = get_next_important_insn (NEXT_INSN (prev_head_insn), tail);
        insn != NULL_RTX;
        insn = next_insn)
@@ -7619,10 +8302,26 @@ ia64_ld_address_bypass_p (rtx producer, rtx consumer)
   gcc_assert (src);
   mem = SET_SRC (src);
   gcc_assert (mem);
+ 
   if (GET_CODE (mem) == UNSPEC && XVECLEN (mem, 0) > 0)
     mem = XVECEXP (mem, 0, 0);
+  else if (GET_CODE (mem) == IF_THEN_ELSE)
+    /* ??? Is this bypass neccessary for ld.c?  */
+    {
+      gcc_assert (XINT (XEXP (XEXP (mem, 0), 0), 1) == UNSPEC_LDCCLR);
+      mem = XEXP (mem, 1);
+    }
+     
   while (GET_CODE (mem) == SUBREG || GET_CODE (mem) == ZERO_EXTEND)
     mem = XEXP (mem, 0);
+
+  if (GET_CODE (mem) == UNSPEC)
+    {
+      int c = XINT (mem, 1);
+
+      gcc_assert (c == UNSPEC_LDA || c == UNSPEC_LDS || c == UNSPEC_LDSA);
+      mem = XVECEXP (mem, 0, 0);
+    }
 
   /* Note that LO_SUM is used for GOT loads.  */
   gcc_assert (GET_CODE (mem) == LO_SUM || GET_CODE (mem) == MEM);
@@ -7804,6 +8503,7 @@ ia64_reorg (void)
 	  free (clocks);
 	}
       free (stops_p);
+      stops_p = NULL;
       emit_insn_group_barriers (dump_file);
 
       ia64_final_schedule = 0;

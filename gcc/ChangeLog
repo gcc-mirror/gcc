@@ -1,5 +1,82 @@
 2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
 
+        * config/ia64/ia64.c (stops_p): Added explicit initialization.
+        (ia64_first_cycle_multipass_dfa_lookahead_guard_spec,
+        ia64_h_i_d_extended, ia64_set_sched_flags, ia64_speculate_insn,
+        ia64_needs_block_p, ia64_gen_check, ia64_sched_init_global,
+	ia64_sched_finish_global): New static functions to implement
+	hooks from gcc_target.sched.
+	(spec_check_no, max_uid, pending_data_specs): New static variables.
+        (ia64_mode_to_int, ia64_gen_spec_insn, ia64_spec_check_p,
+	ia64_spec_check_src_p): New static functions.
+        (ia64_adjust_cost): Renamed to ia64_adjust_cost_2.
+        (TARGET_SCHED_ADJUST_COST): Removed.
+        (TARGET_SCHED_ADJUST_COST_2, TARGET_SCHED_INIT_GLOBAL,
+	TARGET_SCHED_FINISH_GLOBAL, TARGET_SCHED_H_I_D_EXTENDED,
+	TARGET_SCHED_SPECULATE_INSN, TARGET_SCHED_NEEDS_BLOCK_P,
+	TARGET_SCHED_GEN_CHECK,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC,
+        TARGET_SCHED_SET_SCHED_FLAGS): New macros.
+        (update_set_flags, group_barrier_needed, set_src_needs_barrier):
+	Fixed to handle speculation checks.
+        (rtx_needs_barrier): Fixed to handle speculative loads and
+        their checks.
+        (ia64_variable_issue): Added code to count speculative loads and their
+        checks.
+        (ia64_first_cycle_multipass_dfa_lookahead_guard): Fixed to handle
+        speculative loads.
+        (enum SPEC_MODES, enum SPEC_GEN_LD_MAP, SPEC_GEN_CHECK_OFFSET):
+        New enumerations.
+        (SPEC_GEN_EXTEND_OFFSET, SPEC_N, SPEC_GEN_CHECK_MUTATION_OFFSET):
+        New constants.
+        (ia64_ld_address_bypass_p): Fixed to handle speculative loads.
+	(ia64_reorg): Reset stops_p to NULL after it is freed.
+        * config/ia64/ia64.md (UNSPEC_LDA, UNSPEC_LDS, UNSPEC_LDSA,
+	UNSPEC_LDCCLR, UNSPEC_CHKACLR, UNSPEC_CHKS): New constants.
+        (itanium_class): chk_s renamed to chk_s_i.  New constants: chk_s_f,
+        chk_a.
+        (data_speculative, control_speculative, check_load): New attributes.
+        (mov<mode>_advanced, mov<mode>_speculative,
+        mov<mode>_speculative_advanced, zero_extend<mode>di2_advanced,
+        zero_extend<mode>di2_speculative,
+        zero_extend<mode>di2_speculative_advanced): New patterns for
+        data and control speculative loads.
+        (mov<mode>_clr, zero_extend<mode>di2_clr): New patterns for
+        check loads.
+        (advanced_load_check_clr_<mode>, speculation_check_<mode>):
+        New pattern for data and control speculation checks.
+	(MODE, MODE_FOR_EXTEND, output_a, output_s, output_sa, output_c_clr,
+	ld_reg_constr, ldc_reg_constr, chk_reg_constr, mem_constr,
+	reg_pred_prefix, ld_class, chka_class, chks_class, attr_yes):
+	Auxiliary definitions for the patterns.
+        * config/ia64/itanium1.md (1_fldc, 1_fldpc, 1_ldc, 1_chk_s_f, 1_chk_a,
+        1b_fldc, 1b_fldpc, 1b_ldc, 1b_chk_s_f, 1b_chk_a): New resource
+        constraints.
+	(1_fld, 1_fldp, 1_ld, 1b_fld, 1b_fldp, 1b_ld): Add a condition
+        for speculation.
+        (1_chk_s, 1b_chk_s): Renamed to 1_chk_s_i, 1b_chk_s_i.
+        * config/ia64/itanium2.md (2_flda, 2_fldc, 2_fldpc, 2_ldc, 2_chk_s_f,
+	2_chk_a, 2b_flda, 2b_fldc, 2b_fldpc, 2b_ldc, 2b_chk_s_f, 2b_chk_a):
+	New resource constraints.
+	(2_fld, 2_fldp, 2_ld, 2b_fld, 2b_fldp, 2b_ld): Add a condition
+        for speculation.
+        (2_chk_s, 2b_chk_s): Renamed to 2_chk_s_i, 2b_chk_s_i.
+        * config/ia64/ia64.opt (msched-br-data-spec, msched-ar-data-spec,
+        msched-control-spec, msched-br-in-data-spec, msched-ar-in-data-spec,
+        msched-in-control-spec, msched-ldc, msched-control-ldc,
+        msched-spec-verbose, msched-prefer-non-data-spec-insns,
+        msched-prefer-non-control-spec-insns,
+	msched-count-spec-in-critical-path): New flags to tune speculative
+	scheduling.
+	* doc/invoke.texi (msched-br-data-spec, msched-ar-data-spec,
+        msched-control-spec, msched-br-in-data-spec, msched-ar-in-data-spec,
+        msched-in-control-spec, msched-ldc, msched-control-ldc,
+        msched-spec-verbose, msched-prefer-non-data-spec-insns,
+        msched-prefer-non-control-spec-insns,
+	msched-count-spec-in-critical-path): Document new flags.
+
+2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
+
         * target.h (struct spec_info_def): New opaque declaration.
         (struct gcc_target.sched): New fields: adjust_cost_2, h_i_d_extended,
         speculate_insn, needs_block_p, gen_check,

@@ -549,7 +549,13 @@ Objective-C and Objective-C++ Dialects}.
 -minline-sqrt-min-latency -minline-sqrt-max-throughput @gol
 -mno-dwarf2-asm -mearly-stop-bits @gol
 -mfixed-range=@var{register-range} -mtls-size=@var{tls-size} @gol
--mtune=@var{cpu-type} -mt -pthread -milp32 -mlp64}
+-mtune=@var{cpu-type} -mt -pthread -milp32 -mlp64 @gol
+-mno-sched-br-data-spec -msched-ar-data-spec -mno-sched-control-spec @gol
+-msched-br-in-data-spec -msched-ar-in-data-spec -msched-in-control-spec @gol
+-msched-ldc -mno-sched-control-ldc -mno-sched-spec-verbose @gol
+-mno-sched-prefer-non-data-spec-insns @gol
+-mno-sched-prefer-non-control-spec-insns @gol
+-mno-sched-count-spec-in-critical-path}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2 -m32rx -m32r @gol
@@ -9733,6 +9739,113 @@ Generate code for a 32-bit or 64-bit environment.
 The 32-bit environment sets int, long and pointer to 32 bits.
 The 64-bit environment sets int to 32 bits and long and pointer
 to 64 bits.  These are HP-UX specific flags.
+
+@item -mno-sched-br-data-spec
+@itemx -msched-br-data-spec
+@opindex -mno-sched-br-data-spec
+@opindex -msched-br-data-spec
+(Dis/En)able data speculative scheduling before reload.
+This will result in generation of the ld.a instructions and
+the corresponding check instructions (ld.c / chk.a).
+The default is 'disable'.
+
+@item -msched-ar-data-spec
+@itemx -mno-sched-ar-data-spec
+@opindex -msched-ar-data-spec
+@opindex -mno-sched-ar-data-spec
+(En/Dis)able data speculative scheduling after reload.
+This will result in generation of the ld.a instructions and
+the corresponding check instructions (ld.c / chk.a).
+The default is 'enable'.
+
+@item -mno-sched-control-spec
+@itemx -msched-control-spec
+@opindex -mno-sched-control-spec
+@opindex -msched-control-spec
+(Dis/En)able control speculative scheduling.  This feature is
+available only during region scheduling (i.e. before reload).
+This will result in generation of the ld.s instructions and
+the corresponding check instructions chk.s .
+The default is 'disable'.
+
+@item -msched-br-in-data-spec
+@itemx -mno-sched-br-in-data-spec
+@opindex -msched-br-in-data-spec
+@opindex -mno-sched-br-in-data-spec
+(En/Dis)able speculative scheduling of the instructions that
+are dependent on the data speculative loads before reload.
+This is effective only with @option{-msched-br-data-spec} enabled.
+The default is 'enable'.
+
+@item -msched-ar-in-data-spec
+@itemx -mno-sched-ar-in-data-spec
+@opindex -msched-ar-in-data-spec
+@opindex -mno-sched-ar-in-data-spec
+(En/Dis)able speculative scheduling of the instructions that
+are dependent on the data speculative loads after reload.
+This is effective only with @option{-msched-ar-data-spec} enabled.
+The default is 'enable'.
+
+@item -msched-in-control-spec
+@itemx -mno-sched-in-control-spec
+@opindex -msched-in-control-spec
+@opindex -mno-sched-in-control-spec
+(En/Dis)able speculative scheduling of the instructions that
+are dependent on the control speculative loads.
+This is effective only with @option{-msched-control-spec} enabled.
+The default is 'enable'.
+
+@item -msched-ldc
+@itemx -mno-sched-ldc
+@opindex -msched-ldc
+@opindex -mno-sched-ldc
+(En/Dis)able use of simple data speculation checks ld.c .
+If disabled, only chk.a instructions will be emitted to check
+data speculative loads.
+The default is 'enable'.
+
+@item -mno-sched-control-ldc
+@itemx -msched-control-ldc
+@opindex -mno-sched-control-ldc
+@opindex -msched-control-ldc 
+(Dis/En)able use of ld.c instructions to check control speculative loads.
+If enabled, in case of control speculative load with no speculatively
+scheduled dependent instructions this load will be emitted as ld.sa and
+ld.c will be used to check it.
+The default is 'disable'.
+
+@item -mno-sched-spec-verbose
+@itemx -msched-spec-verbose
+@opindex -mno-sched-spec-verbose
+@opindex -msched-spec-verbose
+(Dis/En)able printing of the information about speculative motions.
+
+@item -mno-sched-prefer-non-data-spec-insns
+@itemx -msched-prefer-non-data-spec-insns
+@opindex -mno-sched-prefer-non-data-spec-insns
+@opindex -msched-prefer-non-data-spec-insns
+If enabled, data speculative instructions will be choosen for schedule
+only if there are no other choices at the moment.  This will make
+the use of the data speculation much more conservative.
+The default is 'disable'.
+
+@item -mno-sched-prefer-non-control-spec-insns
+@itemx -msched-prefer-non-control-spec-insns
+@opindex -mno-sched-prefer-non-control-spec-insns
+@opindex -msched-prefer-non-control-spec-insns
+If enabled, control speculative instructions will be choosen for schedule
+only if there are no other choices at the moment.  This will make
+the use of the control speculation much more conservative.
+The default is 'disable'.
+
+@item -mno-sched-count-spec-in-critical-path
+@itemx -msched-count-spec-in-critical-path
+@opindex -mno-sched-count-spec-in-critical-path
+@opindex -msched-count-spec-in-critical-path
+If enabled, speculative depedencies will be considered during
+computation of the instructions priorities.  This will make the use of the
+speculation a bit more conservative.
+The default is 'disable'.
 
 @end table
 
