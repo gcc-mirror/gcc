@@ -762,7 +762,7 @@
    "(INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
    && INTVAL (operands[2]) % INTVAL (operands[1]) == 0
    && (REG_P (operands[0])
-       || ! mode_dependent_address_p (XEXP (operands[0], 0)))"
+       || !mode_dependent_address_p (XEXP (operands[0], 0)))"
   "*
 {
   if (REG_P (operands[0]))
@@ -790,7 +790,7 @@
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (REG_P (operands[1])
-       || ! mode_dependent_address_p (XEXP (operands[1], 0)))"
+       || !mode_dependent_address_p (XEXP (operands[1], 0)))"
   "*
 {
   if (REG_P (operands[1]))
@@ -817,7 +817,7 @@
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (REG_P (operands[1])
-       || ! mode_dependent_address_p (XEXP (operands[1], 0)))"
+       || !mode_dependent_address_p (XEXP (operands[1], 0)))"
   "*
 {
   if (REG_P (operands[1]))
@@ -963,7 +963,7 @@
   ""
   "*
 {
-  if (! REG_P (operands[0]) || GET_CODE (operands[2]) != CONST_INT
+  if (!REG_P (operands[0]) || GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
       || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])

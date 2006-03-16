@@ -1,3 +1,11 @@
+2006-03-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/vax.c (nonindexed_address_p): Change logical negation
+	from '! xxx' to '!xxx' for coding-style conformance.
+	* config/vax/vax.h (PCC_BITFIELD_TYPE_MATTERS): Likewise.
+	(EXTRA_CONSTRAINT): Likewise.
+	* config/vax/vax.md (four unnamed insns): Likewise.
+	
 2006-03-15  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (minipool_pad): New.

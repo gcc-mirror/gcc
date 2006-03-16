@@ -1182,7 +1182,7 @@ nonindexed_address_p (rtx x, int strict)
   if (REG_P (x))
     {
       extern rtx *reg_equiv_mem;
-      if (! reload_in_progress
+      if (!reload_in_progress
 	  || reg_equiv_mem[REGNO (x)] == 0
 	  || indirectable_address_p (reg_equiv_mem[REGNO (x)], strict))
 	return 1;
