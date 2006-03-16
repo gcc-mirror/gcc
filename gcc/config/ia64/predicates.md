@@ -486,6 +486,11 @@
   (and (match_code "const_int")
        (match_test "CONST_OK_FOR_M (INTVAL (op))")))
 
+;; True if OP-1 is a 6 bit immediate operand, used in extr instruction.
+(define_predicate "extr_len_operand"
+  (and (match_code "const_int")
+       (match_test "CONST_OK_FOR_M (INTVAL (op) - 1)")))
+
 ;; True if OP is a 5 bit immediate operand.
 (define_predicate "shift_32bit_count_operand"
    (and (match_code "const_int")

@@ -1,3 +1,17 @@
+2006-03-16  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/25917
+	Backport from mainline.
+	* config/ia64/predicates.md (extr_len_operand): New predicate.
+	* config/ia64/ia64.md (extv): Tighten constraints.
+	(extzv): Ditto.
+	(*tbit_and_2): Ditto.
+	(*tbit_and_3): Ditto.
+	(*tbit_or_2): Ditto.
+	(*tbit_or_3): Ditto.
+	(*bit_zero): Ditto.
+	(*bit_one): Ditto.
+
 2006-03-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26557
