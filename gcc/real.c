@@ -1862,6 +1862,11 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	      str++;
 	    }
 	}
+
+      /* If the mantissa is zero, ignore the exponent.  */
+      if (!cmp_significand_0 (r))
+	goto underflow;
+
       if (*str == 'p' || *str == 'P')
 	{
 	  bool exp_neg = false;
@@ -1933,6 +1938,10 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	      exp--;
 	    }
 	}
+
+      /* If the mantissa is zero, ignore the exponent.  */
+      if (r->cl == rvc_zero)
+	goto underflow;
 
       if (*str == 'e' || *str == 'E')
 	{

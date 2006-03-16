@@ -1,3 +1,9 @@
+2006-03-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/21781
+	* real.c (real_from_string): If the mantissa is zero, don't bother
+	parsing the exponent as the result should always be zero.
+
 2006-03-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* simplify-rtx.c (simplify_plus_minus): Simplify within CONST terms.
