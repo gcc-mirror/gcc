@@ -499,6 +499,11 @@ DEFPARAM(PARAM_MIN_SPEC_PROB,
          "The minimum probability of reaching a source block for interblock speculative scheduling",
          40, 0, 0)
 
+DEFPARAM(PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS,
+         "max-sched-extend-regions-iters",
+         "The maximum number of iterations through CFG to extend regions",
+         2, 0, 0)
+
 DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
 	 "max-last-value-rtl",
 	 "The maximum number of RTL nodes that can be recorded as combiner's last value",

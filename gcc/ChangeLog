@@ -1,4 +1,13 @@
 2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
+
+	* sched-rgn.c (extend_rgns): New static function.
+	(find_rgns): Use it.
+	(gather_region_statistics, print_region_statistics): New static
+	functions.
+	* params.def (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS): New parameter.
+        * doc/invoke.texi (max-sched-extend-regions-iters): Document.
+
+2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
             Andrey Belevantsev <abel@ispras.ru>
 
 	* ddg.c (build_intra_loop_deps): Adjust add_forward_dependence call.

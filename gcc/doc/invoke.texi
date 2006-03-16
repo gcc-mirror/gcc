@@ -6177,6 +6177,12 @@ interblock scheduling.  The default value is 100.
 The minimum probability (in percents) of reaching a source block
 for interblock speculative scheduling.  The default value is 40.
 
+@item max-sched-extend-regions-iters
+The maximum number of iterations through CFG to extend regions.
+0 - disable region extension,
+N - do at most N iterations.
+The default value is 2.
+
 @item max-last-value-rtl
 
 The maximum size measured as number of RTLs that can be recorded in an expression
