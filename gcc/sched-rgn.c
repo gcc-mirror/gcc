@@ -131,6 +131,7 @@ static int min_spec_prob;
 void debug_regions (void);
 static void find_single_block_region (void);
 static void find_rgns (void);
+static void extend_rgns (int *, int *, sbitmap, int *);
 static bool too_large (int, int *, int *);
 
 extern void debug_live (int, int);
@@ -648,7 +649,13 @@ find_rgns (void)
      blocks.  */
   if (!unreachable)
     {
-      int *queue;
+      int *queue, *degree1 = NULL;
+      /* We use EXTENDED_RGN_HEADER as an addition to HEADER and put
+	 there basic blocks, which are forced to be region heads.
+	 This is done to try to assemble few smaller regions 
+	 from a too_large region.  */
+      sbitmap extended_rgn_header = NULL;
+      bool extend_regions_p;
 
       if (no_loops)
 	SET_BIT (header, 0);
@@ -657,6 +664,14 @@ find_rgns (void)
 	 block of each region.  */
 
       queue = XNEWVEC (int, n_basic_blocks);
+      
+      extend_regions_p = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS) > 0;
+      if (extend_regions_p)
+        {
+          degree1 = xmalloc (last_basic_block * sizeof (int));
+          extended_rgn_header = sbitmap_alloc (last_basic_block);
+          sbitmap_zero (extended_rgn_header);
+	}
 
       /* Find blocks which are inner loop headers.  We still have non-reducible
 	 loops to consider at this point.  */
@@ -704,6 +719,12 @@ find_rgns (void)
 	      too_large_failure = 0;
 	      loop_head = max_hdr[bb->index];
 
+              if (extend_regions_p)
+                /* We save degree in case when we meet a too_large region 
+		   and cancel it.  We need a correct degree later when 
+                   calling extend_rgns.  */
+                memcpy (degree1, degree, last_basic_block * sizeof (int));
+	      
 	      /* Decrease degree of all I's successors for topological
 		 ordering.  */
 	      FOR_EACH_EDGE (e, ei, bb->succs)
@@ -862,9 +883,34 @@ find_rgns (void)
 		    }
 		  ++nr_regions;
 		}
+              else if (extend_regions_p)
+                {
+                  /* Restore DEGREE.  */
+                  int *t = degree;
+
+                  degree = degree1;
+                  degree1 = t;
+                  
+                  /* And force successors of BB to be region heads.
+		     This may provide several smaller regions instead
+		     of one too_large region.  */
+                  FOR_EACH_EDGE (e, ei, bb->succs)
+                    if (e->dest != EXIT_BLOCK_PTR)
+                      SET_BIT (extended_rgn_header, e->dest->index);
+                }
 	    }
 	}
       free (queue);
+
+      if (extend_regions_p)
+        {
+          free (degree1);
+          
+          sbitmap_a_or_b (header, header, extended_rgn_header);
+          sbitmap_free (extended_rgn_header);
+ 
+          extend_rgns (degree, &idx, header, max_hdr);
+        }
     }
 
   /* Any block that did not end up in a region is placed into a region
@@ -880,12 +926,321 @@ find_rgns (void)
       }
 
   free (max_hdr);
-  free (dfs_nr);
+  free (degree);
   free (stack);
   sbitmap_free (header);
   sbitmap_free (inner);
   sbitmap_free (in_queue);
   sbitmap_free (in_stack);
+}
+
+static int gather_region_statistics (int **);
+static void print_region_statistics (int *, int, int *, int);
+
+/* Calculate the histogram that shows the number of regions having the 
+   given number of basic blocks, and store it in the RSP array.  Return 
+   the size of this array.  */
+static int
+gather_region_statistics (int **rsp)
+{
+  int i, *a = 0, a_sz = 0;
+
+  /* a[i] is the number of regions that have (i + 1) basic blocks.  */
+  for (i = 0; i < nr_regions; i++)
+    {
+      int nr_blocks = RGN_NR_BLOCKS (i);
+
+      gcc_assert (nr_blocks >= 1);
+
+      if (nr_blocks > a_sz)
+	{	 
+	  a = xrealloc (a, nr_blocks * sizeof (*a));
+	  do
+	    a[a_sz++] = 0;
+	  while (a_sz != nr_blocks);
+	}
+
+      a[nr_blocks - 1]++;
+    }
+
+  *rsp = a;
+  return a_sz;
+}
+
+/* Print regions statistics.  S1 and S2 denote the data before and after 
+   calling extend_rgns, respectively.  */
+static void
+print_region_statistics (int *s1, int s1_sz, int *s2, int s2_sz)
+{
+  int i;
+  
+  /* We iterate until s2_sz because extend_rgns does not decrease 
+     the maximal region size.  */
+  for (i = 1; i < s2_sz; i++)
+    {
+      int n1, n2;
+
+      n2 = s2[i];
+
+      if (n2 == 0)
+	continue;
+
+      if (i >= s1_sz)
+	n1 = 0;
+      else
+	n1 = s1[i];
+
+      fprintf (sched_dump, ";; Region extension statistics: size %d: " \
+	       "was %d + %d more\n", i + 1, n1, n2 - n1);
+    }
+}
+
+/* Extend regions.
+   DEGREE - Array of incoming edge count, considering only
+   the edges, that don't have their sources in formed regions yet.
+   IDXP - pointer to the next available index in rgn_bb_table.
+   HEADER - set of all region heads.
+   LOOP_HDR - mapping from block to the containing loop
+   (two blocks can reside within one region if they have
+   the same loop header).  */
+static void
+extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
+{
+  int *order, i, rescan = 0, idx = *idxp, iter = 0, max_iter, *max_hdr;
+  int nblocks = n_basic_blocks - NUM_FIXED_BLOCKS;
+
+  max_iter = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS);
+
+  max_hdr = xmalloc (last_basic_block * sizeof (*max_hdr));
+
+  order = xmalloc (last_basic_block * sizeof (*order));
+  post_order_compute (order, false);
+
+  for (i = nblocks - 1; i >= 0; i--)
+    {
+      int bbn = order[i];
+      if (degree[bbn] >= 0)
+	{
+	  max_hdr[bbn] = bbn;
+	  rescan = 1;
+	}
+      else
+        /* This block already was processed in find_rgns.  */
+        max_hdr[bbn] = -1;
+    }
+  
+  /* The idea is to topologically walk through CFG in top-down order.
+     During the traversal, if all the predecessors of a node are
+     marked to be in the same region (they all have the same max_hdr),
+     then current node is also marked to be a part of that region. 
+     Otherwise the node starts its own region.
+     CFG should be traversed until no further changes are made.  On each 
+     iteration the set of the region heads is extended (the set of those 
+     blocks that have max_hdr[bbi] == bbi).  This set is upper bounded by the 
+     set of all basic blocks, thus the algorithm is guaranteed to terminate.  */
+
+  while (rescan && iter < max_iter)
+    {
+      rescan = 0;
+      
+      for (i = nblocks - 1; i >= 0; i--)
+	{
+	  edge e;
+	  edge_iterator ei;
+	  int bbn = order[i];
+	
+	  if (max_hdr[bbn] != -1 && !TEST_BIT (header, bbn))
+	    {
+	      int hdr = -1;
+
+	      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (bbn)->preds)
+		{
+		  int predn = e->src->index;
+
+		  if (predn != ENTRY_BLOCK
+		      /* If pred wasn't processed in find_rgns.  */
+		      && max_hdr[predn] != -1
+		      /* And pred and bb reside in the same loop.
+			 (Or out of any loop).  */
+		      && loop_hdr[bbn] == loop_hdr[predn])
+		    {
+		      if (hdr == -1)
+			/* Then bb extends the containing region of pred.  */
+			hdr = max_hdr[predn];
+		      else if (hdr != max_hdr[predn])
+			/* Too bad, there are at least two predecessors
+			   that reside in different regions.  Thus, BB should
+			   begin its own region.  */
+			{
+			  hdr = bbn;
+			  break;
+			}		    
+		    }
+		  else
+		    /* BB starts its own region.  */
+		    {
+		      hdr = bbn;
+		      break;
+		    }		
+		}
+	    
+	      if (hdr == bbn)
+		{
+		  /* If BB start its own region,
+		     update set of headers with BB.  */
+		  SET_BIT (header, bbn);
+		  rescan = 1;
+		}
+	      else
+		gcc_assert (hdr != -1);	    
+
+	      max_hdr[bbn] = hdr;
+	    }
+	}
+
+      iter++;
+    }
+  
+  /* Statistics were gathered on the SPEC2000 package of tests with
+     mainline weekly snapshot gcc-4.1-20051015 on ia64.
+     
+     Statistics for SPECint:
+     1 iteration : 1751 cases (38.7%)
+     2 iterations: 2770 cases (61.3%)
+     Blocks wrapped in regions by find_rgns without extension: 18295 blocks
+     Blocks wrapped in regions by 2 iterations in extend_rgns: 23821 blocks
+     (We don't count single block regions here).
+     
+     Statistics for SPECfp:
+     1 iteration : 621 cases (35.9%)
+     2 iterations: 1110 cases (64.1%)
+     Blocks wrapped in regions by find_rgns without extension: 6476 blocks
+     Blocks wrapped in regions by 2 iterations in extend_rgns: 11155 blocks
+     (We don't count single block regions here).
+
+     By default we do at most 2 iterations.
+     This can be overriden with max-sched-extend-regions-iters parameter:
+     0 - disable region extension,
+     N > 0 - do at most N iterations.  */
+  
+  if (sched_verbose && iter != 0)
+    fprintf (sched_dump, ";; Region extension iterations: %d%s\n", iter,
+	     rescan ? "... failed" : "");
+    
+  if (!rescan && iter != 0)
+    {
+      int *s1 = NULL, s1_sz = 0;
+
+      /* Save the old statistics for later printout.  */
+      if (sched_verbose >= 6)
+	s1_sz = gather_region_statistics (&s1);
+
+      /* We have succeeded.  Now assemble the regions.  */
+      for (i = nblocks - 1; i >= 0; i--)
+	{
+	  int bbn = order[i];
+
+	  if (max_hdr[bbn] == bbn)
+	    /* BBN is a region head.  */
+	    {
+	      edge e;
+	      edge_iterator ei;
+	      int num_bbs = 0, j, num_insns = 0, large;
+	
+	      large = too_large (bbn, &num_bbs, &num_insns);
+
+	      degree[bbn] = -1;
+	      rgn_bb_table[idx] = bbn;
+	      RGN_BLOCKS (nr_regions) = idx++;
+	      CONTAINING_RGN (bbn) = nr_regions;
+	      BLOCK_TO_BB (bbn) = 0;
+
+	      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (bbn)->succs)
+		if (e->dest != EXIT_BLOCK_PTR)
+		  degree[e->dest->index]--;
+
+	      if (!large)
+		/* Here we check whether the region is too_large.  */
+		for (j = i - 1; j >= 0; j--)
+		  {
+		    int succn = order[j];
+		    if (max_hdr[succn] == bbn)
+		      {
+			if ((large = too_large (succn, &num_bbs, &num_insns)))
+			  break;
+		      }
+		  }
+
+	      if (large)
+		/* If the region is too_large, then wrap every block of
+		   the region into single block region.
+		   Here we wrap region head only.  Other blocks are
+		   processed in the below cycle.  */
+		{
+		  RGN_NR_BLOCKS (nr_regions) = 1;
+		  nr_regions++;
+		}          
+
+	      num_bbs = 1;
+
+	      for (j = i - 1; j >= 0; j--)
+		{
+		  int succn = order[j];
+
+		  if (max_hdr[succn] == bbn)
+		    /* This cycle iterates over all basic blocks, that 
+		       are supposed to be in the region with head BBN,
+		       and wraps them into that region (or in single
+		       block region).  */
+		    {
+		      gcc_assert (degree[succn] == 0);
+
+		      degree[succn] = -1;
+		      rgn_bb_table[idx] = succn;		 
+		      BLOCK_TO_BB (succn) = large ? 0 : num_bbs++;
+		      CONTAINING_RGN (succn) = nr_regions;
+
+		      if (large)
+			/* Wrap SUCCN into single block region.  */
+			{
+			  RGN_BLOCKS (nr_regions) = idx;
+			  RGN_NR_BLOCKS (nr_regions) = 1;
+			  nr_regions++;
+			}
+
+		      idx++;
+				
+		      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (succn)->succs)
+			if (e->dest != EXIT_BLOCK_PTR)
+			  degree[e->dest->index]--;
+		    }
+		}
+
+	      if (!large)
+		{
+		  RGN_NR_BLOCKS (nr_regions) = num_bbs;
+		  nr_regions++;
+		}
+	    }
+	}
+
+      if (sched_verbose >= 6)
+	{
+	  int *s2, s2_sz;
+
+          /* Get the new statistics and print the comparison with the 
+             one before calling this function.  */
+	  s2_sz = gather_region_statistics (&s2);
+	  print_region_statistics (s1, s1_sz, s2, s2_sz);
+	  free (s1);
+	  free (s2);
+	}
+    }
+  
+  free (order);
+  free (max_hdr);
+
+  *idxp = idx; 
 }
 
 /* Functions for regions scheduling information.  */
