@@ -1,3 +1,7 @@
+2006-03-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/opt/pr15551.C: Cleanup temp file.
+
 2006-03-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/6634
