@@ -1,3 +1,9 @@
+2006-03-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from 4.1:
+	* config/sh/sh.c (prepare_move_operands): Handle the address
+	constant which is a tls symbolic address plus a constant.
+
 2006-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26379
