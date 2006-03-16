@@ -142,7 +142,7 @@ struct sched_info
 {
   /* Add all insns that are initially ready to the ready list.  Called once
      before scheduling a set of insns.  */
-  void (*init_ready_list) (struct ready_list *);
+  void (*init_ready_list) (void);
   /* Called after taking an insn from the ready list.  Returns nonzero if
      this insn can be scheduled, nonzero if we should silently discard it.  */
   int (*can_schedule_ready_p) (rtx);
@@ -203,6 +203,10 @@ struct haifa_insn_data
      it represents forward dependencies.  */
   rtx depend;
 
+  /* A list of scheduled producers of the instruction.  Links are being moved
+     from LOG_LINKS to RESOLVED_DEPS during scheduling.  */
+  rtx resolved_deps;
+  
   /* The line number note in effect for each insn.  For line number
      notes, this indicates whether the note may be reused.  */
   rtx line_note;
@@ -224,6 +228,13 @@ struct haifa_insn_data
   /* The minimum clock tick at which the insn becomes ready.  This is
      used to note timing constraints for the insns in the pending list.  */
   int tick;
+
+  /* INTER_TICK is used to adjust INSN_TICKs of instructions from the
+     subsequent blocks in a region.  */
+  int inter_tick;
+  
+  /* See comment on QUEUE_INDEX macro in haifa-sched.c.  */
+  int queue_index;
 
   short cost;
 
@@ -252,6 +263,7 @@ extern struct haifa_insn_data *h_i_d;
 /* Accessor macros for h_i_d.  There are more in haifa-sched.c and
    sched-rgn.c.  */
 #define INSN_DEPEND(INSN)	(h_i_d[INSN_UID (INSN)].depend)
+#define RESOLVED_DEPS(INSN)     (h_i_d[INSN_UID (INSN)].resolved_deps)
 #define INSN_LUID(INSN)		(h_i_d[INSN_UID (INSN)].luid)
 #define CANT_MOVE(insn)		(h_i_d[INSN_UID (insn)].cant_move)
 #define INSN_DEP_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].dep_count)
@@ -513,6 +525,6 @@ extern void schedule_block (int, int);
 extern void sched_init (void);
 extern void sched_finish (void);
 
-extern void ready_add (struct ready_list *, rtx);
+extern int try_ready (rtx);
 
 #endif /* GCC_SCHED_INT_H */

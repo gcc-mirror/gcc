@@ -98,7 +98,7 @@ remove_list_node (rtx *listp)
 
 /* Removes corresponding to ELEM node from the list pointed to by LISTP.
    Returns that node.  */
-static rtx
+rtx
 remove_list_elem (rtx elem, rtx *listp)
 {
   rtx node;
@@ -239,6 +239,14 @@ void
 remove_free_DEPS_LIST_elem (rtx elem, rtx *listp)
 {
   free_DEPS_LIST_node (remove_list_elem (elem, listp));
+}
+
+/* Remove and free corresponding to ELEM node in the INSN_LIST pointed to
+   by LISTP.  */
+void
+remove_free_INSN_LIST_elem (rtx elem, rtx *listp)
+{
+  free_INSN_LIST_node (remove_list_elem (elem, listp));
 }
 
 #include "gt-lists.h"

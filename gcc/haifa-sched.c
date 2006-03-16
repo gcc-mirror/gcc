@@ -187,6 +187,13 @@ struct haifa_insn_data *h_i_d;
 
 #define LINE_NOTE(INSN)		(h_i_d[INSN_UID (INSN)].line_note)
 #define INSN_TICK(INSN)		(h_i_d[INSN_UID (INSN)].tick)
+#define INTER_TICK(INSN)        (h_i_d[INSN_UID (INSN)].inter_tick)
+
+/* If INSN_TICK of an instruction is equal to INVALID_TICK,
+   then it should be recalculated from scratch.  */
+#define INVALID_TICK (-(max_insn_queue_index + 1))
+/* The minimal value of the INSN_TICK of an instruction.  */
+#define MIN_TICK (-max_insn_queue_index)
 
 /* Vector indexed by basic block number giving the starting line-number
    for each basic block.  */
@@ -236,7 +243,7 @@ static rtx note_list;
 
 /* Implement a circular buffer to delay instructions until sufficient
    time has passed.  For the new pipeline description interface,
-   MAX_INSN_QUEUE_INDEX is a power of two minus one which is larger
+   MAX_INSN_QUEUE_INDEX is a power of two minus one which is not less
    than maximal time of instruction execution computed by genattr.c on
    the base maximal time of functional unit reservations and getting a
    result.  This is the longest time an insn may be queued.  */
@@ -246,6 +253,17 @@ static int q_ptr = 0;
 static int q_size = 0;
 #define NEXT_Q(X) (((X)+1) & max_insn_queue_index)
 #define NEXT_Q_AFTER(X, C) (((X)+C) & max_insn_queue_index)
+
+#define QUEUE_SCHEDULED (-3)
+#define QUEUE_NOWHERE   (-2)
+#define QUEUE_READY     (-1)
+/* QUEUE_SCHEDULED - INSN is scheduled.
+   QUEUE_NOWHERE   - INSN isn't scheduled yet and is neither in
+   queue or ready list.
+   QUEUE_READY     - INSN is in ready list.
+   N >= 0 - INSN queued for X [where NEXT_Q_AFTER (q_ptr, X) == N] cycles.  */
+   
+#define QUEUE_INDEX(INSN) (h_i_d[INSN_UID (INSN)].queue_index)
 
 /* The following variable value refers for all current and future
    reservations of the processor units.  */
@@ -274,6 +292,12 @@ struct ready_list
   int first;
   int n_ready;
 };
+
+/* The pointer to the ready list.  */
+static struct ready_list *readyp;
+
+/* Scheduling clock.  */
+static int clock_var;
 
 static int may_trap_exp (rtx, int);
 
@@ -442,7 +466,7 @@ static int priority (rtx);
 static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx *, int);
 static void queue_insn (rtx, int);
-static int schedule_insn (rtx, struct ready_list *, int);
+static int schedule_insn (rtx);
 static int find_set_reg_weight (rtx);
 static void find_insn_reg_weight (int);
 static void adjust_priority (rtx);
@@ -476,6 +500,7 @@ static rtx unlink_line_notes (rtx, rtx);
 static rtx reemit_notes (rtx, rtx);
 
 static rtx *ready_lastpos (struct ready_list *);
+static void ready_add (struct ready_list *, rtx, bool);
 static void ready_sort (struct ready_list *);
 static rtx ready_remove_first (struct ready_list *);
 
@@ -491,9 +516,15 @@ static rtx move_insn (rtx, rtx);
    on the first cycle.  */
 static rtx ready_element (struct ready_list *, int);
 static rtx ready_remove (struct ready_list *, int);
+static void ready_remove_insn (rtx);
 static int max_issue (struct ready_list *, int *);
 
 static rtx choose_ready (struct ready_list *);
+
+static void fix_inter_tick (rtx, rtx);
+static int fix_tick_ready (rtx);
+static void change_queue_index (rtx, int);
+static void resolve_dep (rtx, rtx);
 
 #endif /* INSN_SCHEDULING */
 
@@ -663,7 +694,7 @@ rank_for_schedule (const void *x, const void *y)
     return info_val;
 
   /* Compare insns based on their relation to the last-scheduled-insn.  */
-  if (last_scheduled_insn)
+  if (INSN_P (last_scheduled_insn))
     {
       /* Classify the instructions into three classes:
          1) Data dependent on last schedule insn.
@@ -736,6 +767,9 @@ queue_insn (rtx insn, int n_cycles)
 {
   int next_q = NEXT_Q_AFTER (q_ptr, n_cycles);
   rtx link = alloc_INSN_LIST (insn, insn_queue[next_q]);
+
+  gcc_assert (n_cycles <= max_insn_queue_index);
+
   insn_queue[next_q] = link;
   q_size += 1;
 
@@ -746,6 +780,18 @@ queue_insn (rtx insn, int n_cycles)
 
       fprintf (sched_dump, "queued for %d cycles.\n", n_cycles);
     }
+  
+  QUEUE_INDEX (insn) = next_q;
+}
+
+/* Remove INSN from queue.  */
+static void
+queue_remove (rtx insn)
+{
+  gcc_assert (QUEUE_INDEX (insn) >= 0);
+  remove_free_INSN_LIST_elem (insn, &insn_queue[QUEUE_INDEX (insn)]);
+  q_size--;
+  QUEUE_INDEX (insn) = QUEUE_NOWHERE;
 }
 
 /* Return a pointer to the bottom of the ready list, i.e. the insn
@@ -754,25 +800,45 @@ queue_insn (rtx insn, int n_cycles)
 HAIFA_INLINE static rtx *
 ready_lastpos (struct ready_list *ready)
 {
-  gcc_assert (ready->n_ready);
+  gcc_assert (ready->n_ready >= 1);
   return ready->vec + ready->first - ready->n_ready + 1;
 }
 
-/* Add an element INSN to the ready list so that it ends up with the lowest
-   priority.  */
+/* Add an element INSN to the ready list so that it ends up with the
+   lowest/highest priority dependending on FIRST_P.  */
 
-HAIFA_INLINE void
-ready_add (struct ready_list *ready, rtx insn)
+HAIFA_INLINE static void
+ready_add (struct ready_list *ready, rtx insn, bool first_p)
 {
-  if (ready->first == ready->n_ready)
+  if (!first_p)
     {
-      memmove (ready->vec + ready->veclen - ready->n_ready,
-	       ready_lastpos (ready),
-	       ready->n_ready * sizeof (rtx));
-      ready->first = ready->veclen - 1;
+      if (ready->first == ready->n_ready)
+	{
+	  memmove (ready->vec + ready->veclen - ready->n_ready,
+		   ready_lastpos (ready),
+		   ready->n_ready * sizeof (rtx));
+	  ready->first = ready->veclen - 1;
+	}
+      ready->vec[ready->first - ready->n_ready] = insn;
     }
-  ready->vec[ready->first - ready->n_ready] = insn;
+  else
+    {
+      if (ready->first == ready->veclen - 1)
+	{
+	  if (ready->n_ready)
+	    /* ready_lastpos() fails when called with (ready->n_ready == 0).  */
+	    memmove (ready->vec + ready->veclen - ready->n_ready - 1,
+		     ready_lastpos (ready),
+		     ready->n_ready * sizeof (rtx));
+	  ready->first = ready->veclen - 2;
+	}
+      ready->vec[++(ready->first)] = insn;
+    }
+
   ready->n_ready++;
+
+  gcc_assert (QUEUE_INDEX (insn) != QUEUE_READY);
+  QUEUE_INDEX (insn) = QUEUE_READY;
 }
 
 /* Remove the element with the highest priority from the ready list and
@@ -789,6 +855,10 @@ ready_remove_first (struct ready_list *ready)
   /* If the queue becomes empty, reset it.  */
   if (ready->n_ready == 0)
     ready->first = ready->veclen - 1;
+
+  gcc_assert (QUEUE_INDEX (t) == QUEUE_READY);
+  QUEUE_INDEX (t) = QUEUE_NOWHERE;
+
   return t;
 }
 
@@ -825,9 +895,24 @@ ready_remove (struct ready_list *ready, int index)
   ready->n_ready--;
   for (i = index; i < ready->n_ready; i++)
     ready->vec[ready->first - i] = ready->vec[ready->first - i - 1];
+  QUEUE_INDEX (t) = QUEUE_NOWHERE;
   return t;
 }
 
+/* Remove INSN from the ready list.  */
+static void
+ready_remove_insn (rtx insn)
+{
+  int i;
+
+  for (i = 0; i < readyp->n_ready; i++)
+    if (ready_element (readyp, i) == insn)
+      {
+        ready_remove (readyp, i);
+        return;
+      }
+  gcc_unreachable ();
+}
 
 /* Sort the ready list READY by ascending priority, using the SCHED_SORT
    macro.  */
@@ -883,11 +968,10 @@ static int last_clock_var;
    zero for insns in a schedule group).  */
 
 static int
-schedule_insn (rtx insn, struct ready_list *ready, int clock)
+schedule_insn (rtx insn)
 {
   rtx link;
   int advance = 0;
-  int premature_issue = 0;
 
   if (sched_verbose >= 1)
     {
@@ -895,7 +979,7 @@ schedule_insn (rtx insn, struct ready_list *ready, int clock)
 
       print_insn (buf, insn, 0);
       buf[40] = 0;
-      fprintf (sched_dump, ";;\t%3i--> %-40s:", clock, buf);
+      fprintf (sched_dump, ";;\t%3i--> %-40s:", clock_var, buf);
 
       if (recog_memoized (insn) < 0)
 	fprintf (sched_dump, "nothing");
@@ -904,52 +988,44 @@ schedule_insn (rtx insn, struct ready_list *ready, int clock)
       fputc ('\n', sched_dump);
     }
 
-  if (INSN_TICK (insn) > clock)
-    {
-      /* 'insn' has been prematurely moved from the queue to the
-	 ready list.  */
-      premature_issue = INSN_TICK (insn) - clock;
-    }
+  /* Scheduling instruction should have all its dependencies resolved and
+     should have been removed from the ready list.  */
+  gcc_assert (INSN_DEP_COUNT (insn) == 0);
+  gcc_assert (!LOG_LINKS (insn));
+  gcc_assert (QUEUE_INDEX (insn) == QUEUE_NOWHERE);
 
-  for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
+  QUEUE_INDEX (insn) = QUEUE_SCHEDULED;
+  
+  /* Now we can free RESOLVED_DEPS list.  */
+  if (current_sched_info->flags & USE_DEPS_LIST)
+    free_DEPS_LIST_list (&RESOLVED_DEPS (insn));
+  else
+    free_INSN_LIST_list (&RESOLVED_DEPS (insn));
+    
+  gcc_assert (INSN_TICK (insn) >= MIN_TICK);
+  if (INSN_TICK (insn) > clock_var)
+    /* INSN has been prematurely moved from the queue to the ready list.
+       This is possible only if following flag is set.  */
+    gcc_assert (flag_sched_stalled_insns);    
+
+  /* ??? Probably, if INSN is scheduled prematurely, we should leave
+     INSN_TICK untouched.  This is a machine-dependent issue, actually.  */
+  INSN_TICK (insn) = clock_var;
+
+  /* Update dependent instructions.  */
+  for (link = INSN_DEPEND (insn); link; link = XEXP (link, 1))
     {
+      int effective_cost;      
       rtx next = XEXP (link, 0);
-      int cost = insn_cost (insn, link, next);
 
-      INSN_TICK (next) = MAX (INSN_TICK (next), clock + cost + premature_issue);
+      resolve_dep (next, insn);
 
-      if ((INSN_DEP_COUNT (next) -= 1) == 0)
-	{
-	  int effective_cost = INSN_TICK (next) - clock;
-
-	  if (! (*current_sched_info->new_ready) (next))
-	    continue;
-
-	  if (sched_verbose >= 2)
-	    {
-	      fprintf (sched_dump, ";;\t\tdependences resolved: insn %s ",
-		       (*current_sched_info->print_insn) (next, 0));
-
-	      if (effective_cost < 1)
-		fprintf (sched_dump, "into ready\n");
-	      else
-		fprintf (sched_dump, "into queue with cost=%d\n",
-			 effective_cost);
-	    }
-
-	  /* Adjust the priority of NEXT and either put it on the ready
-	     list or queue it.  */
-	  adjust_priority (next);
-	  if (effective_cost < 1)
-	    ready_add (ready, next);
-	  else
-	    {
-	      queue_insn (next, effective_cost);
-
-	      if (SCHED_GROUP_P (next) && advance < effective_cost)
-		advance = effective_cost;
-	    }
-	}
+      effective_cost = try_ready (next);
+      
+      if (effective_cost >= 0
+	  && SCHED_GROUP_P (next)
+	  && advance < effective_cost)
+	advance = effective_cost;
     }
 
   /* Annotate the instruction with issue information -- TImode
@@ -962,9 +1038,10 @@ schedule_insn (rtx insn, struct ready_list *ready, int clock)
       && GET_CODE (PATTERN (insn)) != CLOBBER)
     {
       if (reload_completed)
-	PUT_MODE (insn, clock > last_clock_var ? TImode : VOIDmode);
-      last_clock_var = clock;
+	PUT_MODE (insn, clock_var > last_clock_var ? TImode : VOIDmode);
+      last_clock_var = clock_var;
     }
+
   return advance;
 }
 
@@ -1354,9 +1431,6 @@ find_insn_reg_weight (int b)
     }
 }
 
-/* Scheduling clock, modified in schedule_block() and queue_to_ready ().  */
-static int clock_var;
-
 /* Move insns that became ready to fire from queue to ready list.  */
 
 static void
@@ -1378,11 +1452,11 @@ queue_to_ready (struct ready_list *ready)
 	fprintf (sched_dump, ";;\t\tQ-->Ready: insn %s: ",
 		 (*current_sched_info->print_insn) (insn, 0));
 
-      ready_add (ready, insn);
+      ready_add (ready, insn, false);
       if (sched_verbose >= 2)
 	fprintf (sched_dump, "moving to ready without stalls\n");
     }
-  insn_queue[q_ptr] = 0;
+  free_INSN_LIST_list (&insn_queue[q_ptr]);
 
   /* If there are no ready insns, stall until one is ready and add all
      of the pending insns at that point to the ready list.  */
@@ -1403,11 +1477,11 @@ queue_to_ready (struct ready_list *ready)
 		    fprintf (sched_dump, ";;\t\tQ-->Ready: insn %s: ",
 			     (*current_sched_info->print_insn) (insn, 0));
 
-		  ready_add (ready, insn);
+		  ready_add (ready, insn, false);
 		  if (sched_verbose >= 2)
 		    fprintf (sched_dump, "moving to ready with %d stalls\n", stalls);
 		}
-	      insn_queue[NEXT_Q_AFTER (q_ptr, stalls)] = 0;
+	      free_INSN_LIST_list (&insn_queue[NEXT_Q_AFTER (q_ptr, stalls)]);
 
 	      advance_one_cycle ();
 
@@ -1542,7 +1616,7 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
 		    {
 		      /* move from Q to R */
 		      q_size -= 1;
-		      ready_add (ready, insn);
+		      ready_add (ready, insn, false);
 
 		      if (prev_link)   
 			XEXP (prev_link, 1) = next_link;
@@ -1557,7 +1631,8 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
 
 		      insns_removed++;
 		      if (insns_removed == flag_sched_stalled_insns)
-			/* Remove only one insn from Q at a time.  */
+			/* Remove no more than flag_sched_stalled_insns insns
+			   from Q at a time.  */
 			return insns_removed;
 		    }
 		}
@@ -1872,6 +1947,7 @@ schedule_block (int b, int rgn_n_insns)
   state_reset (curr_state);
 
   /* Allocate the ready list.  */
+  readyp = &ready;
   ready.veclen = rgn_n_insns + 1 + issue_rate;
   ready.first = ready.veclen - 1;
   ready.vec = XNEWVEC (rtx, ready.veclen);
@@ -1883,8 +1959,6 @@ schedule_block (int b, int rgn_n_insns)
   choice_stack = XNEWVEC (struct choice_entry, rgn_n_insns + 1);
   for (i = 0; i <= rgn_n_insns; i++)
     choice_stack[i].state = xmalloc (dfa_state_size);
-
-  (*current_sched_info->init_ready_list) (&ready);
 
   if (targetm.sched.md_init)
     targetm.sched.md_init (sched_dump, sched_verbose, ready.veclen);
@@ -1899,10 +1973,16 @@ schedule_block (int b, int rgn_n_insns)
 
   insn_queue = alloca ((max_insn_queue_index + 1) * sizeof (rtx));
   memset (insn_queue, 0, (max_insn_queue_index + 1) * sizeof (rtx));
-  last_clock_var = -1;
 
   /* Start just before the beginning of time.  */
   clock_var = -1;
+
+  /* We need queue and ready lists and clock_var be initialized 
+     in try_ready () (which is called through init_ready_list ()).  */
+  (*current_sched_info->init_ready_list) ();
+
+  last_clock_var = -1;
+
   advance = 0;
 
   sort_p = TRUE;
@@ -2002,9 +2082,20 @@ schedule_block (int b, int rgn_n_insns)
 	      && targetm.sched.dfa_new_cycle (sched_dump, sched_verbose,
 					      insn, last_clock_var,
 					      clock_var, &sort_p))
+	    /* SORT_P is used by the target to override sorting
+	       of the ready list.  This is needed when the target
+	       has modified its internal structures expecting that
+	       the insn will be issued next.  As we need the insn
+	       to have the highest priority (so it will be returned by
+	       the ready_remove_first call above), we invoke
+	       ready_add (&ready, insn, true).
+	       But, still, there is one issue: INSN can be later 
+	       discarded by scheduler's front end through 
+	       current_sched_info->can_schedule_ready_p, hence, won't
+	       be issued next.  */ 
 	    {
-	      ready_add (&ready, insn);
-	      break;
+	      ready_add (&ready, insn, true);
+              break;
 	    }
 
 	  sort_p = TRUE;
@@ -2051,8 +2142,10 @@ schedule_block (int b, int rgn_n_insns)
 	  last_scheduled_insn = move_insn (insn, last_scheduled_insn);
 
 	  if (memcmp (curr_state, temp_state, dfa_state_size) != 0)
-	    cycle_issued_insns++;
-	  memcpy (curr_state, temp_state, dfa_state_size);
+            {
+              cycle_issued_insns++;
+              memcpy (curr_state, temp_state, dfa_state_size);
+            }
 
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
@@ -2064,7 +2157,7 @@ schedule_block (int b, int rgn_n_insns)
 		   && GET_CODE (PATTERN (insn)) != CLOBBER)
 	    can_issue_more--;
 
-	  advance = schedule_insn (insn, &ready, clock_var);
+	  advance = schedule_insn (insn);
 
 	  /* After issuing an asm insn we should start a new cycle.  */
 	  if (advance == 0 && asm_p)
@@ -2094,9 +2187,6 @@ schedule_block (int b, int rgn_n_insns)
 	}
     }
 
-  if (targetm.sched.md_finish)
-    targetm.sched.md_finish (sched_dump, sched_verbose);
-
   /* Debug info.  */
   if (sched_verbose)
     {
@@ -2104,17 +2194,24 @@ schedule_block (int b, int rgn_n_insns)
       debug_ready_list (&ready);
     }
 
-  /* Sanity check -- queue must be empty now.  Meaningless if region has
-     multiple bbs.  */
-  gcc_assert (!current_sched_info->queue_must_finish_empty || !q_size);
-
-  /* Update head/tail boundaries.  */
-  head = NEXT_INSN (prev_head);
-  tail = last_scheduled_insn;
-
-  if (!reload_completed)
+  if (current_sched_info->queue_must_finish_empty)
+    /* Sanity check -- queue must be empty now.  Meaningless if region has
+       multiple bbs.  */
+    gcc_assert (!q_size && !ready.n_ready);
+  else 
     {
-      rtx insn, link, next;
+      /* We must maintain QUEUE_INDEX between blocks in region.  */
+      for (i = ready.n_ready - 1; i >= 0; i--)
+	QUEUE_INDEX (ready_element (&ready, i)) = QUEUE_NOWHERE;
+
+      if (q_size)   
+	for (i = 0; i <= max_insn_queue_index; i++)
+	  {
+	    rtx link;
+	    for (link = insn_queue[i]; link; link = XEXP (link, 1))
+	      QUEUE_INDEX (XEXP (link, 0)) = QUEUE_NOWHERE;
+	    free_INSN_LIST_list (&insn_queue[i]);
+	  }
 
       /* INSN_TICK (minimum clock tick at which the insn becomes
          ready) may be not correct for the insn in the subsequent
@@ -2122,16 +2219,15 @@ schedule_block (int b, int rgn_n_insns)
          `clock_var' or modify INSN_TICK.  It is better to keep
          clock_var value equal to 0 at the start of a basic block.
          Therefore we modify INSN_TICK here.  */
-      for (insn = head; insn != tail; insn = NEXT_INSN (insn))
-	if (INSN_P (insn))
-	  {
-	    for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
-	      {
-		next = XEXP (link, 0);
-		INSN_TICK (next) -= clock_var;
-	      }
-	  }
+      fix_inter_tick (NEXT_INSN (prev_head), last_scheduled_insn);
     }
+
+  if (targetm.sched.md_finish)
+    targetm.sched.md_finish (sched_dump, sched_verbose);
+
+  /* Update head/tail boundaries.  */
+  head = NEXT_INSN (prev_head);
+  tail = last_scheduled_insn;
 
   /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
      previously found among the insns.  Insert them at the beginning
@@ -2183,16 +2279,15 @@ set_priorities (rtx head, rtx tail)
 	current_sched_info->sched_max_insns_priority;
   rtx prev_head;
 
-  prev_head = PREV_INSN (head);
-
   if (head == tail && (! INSN_P (head)))
     return 0;
 
   n_insn = 0;
-  sched_max_insns_priority = 0;
+
+  prev_head = PREV_INSN (head);
   for (insn = tail; insn != prev_head; insn = PREV_INSN (insn))
     {
-      if (NOTE_P (insn))
+      if (!INSN_P (insn))
 	continue;
 
       n_insn++;
@@ -2202,9 +2297,8 @@ set_priorities (rtx head, rtx tail)
 	sched_max_insns_priority =
 	  MAX (sched_max_insns_priority, INSN_PRIORITY (insn)); 
     }
-  sched_max_insns_priority += 1;
-  current_sched_info->sched_max_insns_priority =
-	sched_max_insns_priority;
+
+  current_sched_info->sched_max_insns_priority = sched_max_insns_priority;
 
   return n_insn;
 }
@@ -2253,7 +2347,12 @@ sched_init (void)
   h_i_d = XCNEWVEC (struct haifa_insn_data, old_max_uid);
 
   for (i = 0; i < old_max_uid; i++)
-    h_i_d [i].cost = -1;
+    {
+      h_i_d[i].cost = -1;
+      h_i_d[i].queue_index = QUEUE_NOWHERE;
+      h_i_d[i].tick = INVALID_TICK;
+      h_i_d[i].inter_tick = INVALID_TICK;
+    }
 
   if (targetm.sched.init_dfa_pre_cycle_insn)
     targetm.sched.init_dfa_pre_cycle_insn ();
@@ -2320,8 +2419,7 @@ sched_init (void)
 	}
     }
 
-  /* ??? Add a NOTE after the last insn of the last basic block.  It is not
-     known why this is done.  */
+  /* The following is done to keep current_sched_info->next_tail non null.  */
 
   insn = BB_END (EXIT_BLOCK_PTR->prev_bb);
   if (NEXT_INSN (insn) == 0
@@ -2330,9 +2428,9 @@ sched_init (void)
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
 	  && !BARRIER_P (NEXT_INSN (insn))))
     {
-      emit_note_after (NOTE_INSN_DELETED, BB_END (EXIT_BLOCK_PTR->prev_bb));
+      emit_note_after (NOTE_INSN_DELETED, insn);
       /* Make insn to appear outside BB.  */
-      BB_END (EXIT_BLOCK_PTR->prev_bb) = PREV_INSN (BB_END (EXIT_BLOCK_PTR->prev_bb));
+      BB_END (EXIT_BLOCK_PTR->prev_bb) = insn;
     }
 
   /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
@@ -2362,4 +2460,208 @@ sched_finish (void)
 
   current_sched_info = NULL;
 }
+
+/* Fix INSN_TICKs of the instructions in the current block as well as
+   INSN_TICKs of their dependants.
+   HEAD and TAIL are the begin and the end of the current scheduled block.  */
+static void
+fix_inter_tick (rtx head, rtx tail)
+{
+  /* Set of instructions with corrected INSN_TICK.  */
+  bitmap_head processed;
+  int next_clock = clock_var + 1;
+
+  bitmap_initialize (&processed, 0);
+  
+  /* Iterates over scheduled instructions and fix their INSN_TICKs and
+     INSN_TICKs of dependent instructions, so that INSN_TICKs are consistent
+     across different blocks.  */
+  for (tail = NEXT_INSN (tail); head != tail; head = NEXT_INSN (head))
+    {
+      if (INSN_P (head))
+	{
+	  int tick;
+	  rtx link;
+                  
+	  tick = INSN_TICK (head);
+	  gcc_assert (tick >= MIN_TICK);
+	  
+	  /* Fix INSN_TICK of instruction from just scheduled block.  */
+	  if (!bitmap_bit_p (&processed, INSN_LUID (head)))
+	    {
+	      bitmap_set_bit (&processed, INSN_LUID (head));
+	      tick -= next_clock;
+	      
+	      if (tick < MIN_TICK)
+		tick = MIN_TICK;
+	      
+	      INSN_TICK (head) = tick;		 
+	    }
+	  
+	  for (link = INSN_DEPEND (head); link; link = XEXP (link, 1))
+	    {
+	      rtx next;
+	      
+	      next = XEXP (link, 0);
+	      tick = INSN_TICK (next);
+
+	      if (tick != INVALID_TICK
+		  /* If NEXT has its INSN_TICK calculated, fix it.
+		     If not - it will be properly calculated from
+		     scratch later in fix_tick_ready.  */
+		  && !bitmap_bit_p (&processed, INSN_LUID (next)))
+		{
+		  bitmap_set_bit (&processed, INSN_LUID (next));
+		  tick -= next_clock;
+		  
+		  if (tick < MIN_TICK)
+		    tick = MIN_TICK;
+		  
+		  if (tick > INTER_TICK (next))
+		    INTER_TICK (next) = tick;
+		  else
+		    tick = INTER_TICK (next);
+		  
+		  INSN_TICK (next) = tick;
+		}
+	    }
+	}
+    }
+  bitmap_clear (&processed);
+}
+  
+/* Check if NEXT is ready to be added to the ready or queue list.
+   If "yes", add it to the proper list.
+   Returns:
+      -1 - is not ready yet,
+       0 - added to the ready list,
+   0 < N - queued for N cycles.  */
+int
+try_ready (rtx next)
+{
+  if (LOG_LINKS (next)
+      || (current_sched_info->new_ready
+	  && !current_sched_info->new_ready (next)))
+    {
+      gcc_assert (QUEUE_INDEX (next) == QUEUE_NOWHERE);
+      return -1;
+    }
+
+  if (sched_verbose >= 2)
+    fprintf (sched_dump, ";;\t\tdependencies resolved: insn %s\n",
+	     (*current_sched_info->print_insn) (next, 0));          
+        
+  adjust_priority (next);
+
+  return fix_tick_ready (next);
+}
+
+/* Calculate INSN_TICK of NEXT and add it to either ready or queue list.  */
+static int
+fix_tick_ready (rtx next)
+{
+  rtx link;
+  int tick, delay;
+
+  link = RESOLVED_DEPS (next);
+      
+  if (link)
+    {
+      int full_p;
+
+      tick = INSN_TICK (next);
+      /* if tick is note equals to INVALID_TICK, then update
+	 INSN_TICK of NEXT with the most recent resolved dependence
+	 cost.  Overwise, recalculate from scratch.  */
+      full_p = tick == INVALID_TICK;
+      do
+        {        
+          rtx pro;
+          int tick1;
+              
+          pro = XEXP (link, 0);
+	  gcc_assert (INSN_TICK (pro) >= MIN_TICK);
+          /* We should specify FORWARD link to insn_cost,
+	     but are giving a BACKWARD one.
+             This is ok, because only REG_NOTE_KIND of link is used.
+             May be substitute LINK with REG_NOTE_KIND?  */
+          tick1 = INSN_TICK (pro) + insn_cost (pro, link, next);
+          if (tick1 > tick)
+            tick = tick1;
+        }
+      while ((link = XEXP (link, 1)) && full_p);
+    }
+  else
+    tick = -1;
+
+  INSN_TICK (next) = tick;
+
+  delay = tick - clock_var;
+  if (delay <= 0)
+    delay = QUEUE_READY;
+
+  change_queue_index (next, delay);
+  
+  return delay;
+}
+
+/* Move NEXT to the proper queue list with (DELAY >= 1),
+   or add it to the ready list (DELAY == QUEUE_READY),
+   or remove it from ready and queue lists at all (DELAY == QUEUE_NOWHERE).  */
+static void
+change_queue_index (rtx next, int delay)
+{
+  int i = QUEUE_INDEX (next);
+
+  gcc_assert (QUEUE_NOWHERE <= delay && delay <= max_insn_queue_index 
+	      && delay != 0);
+  gcc_assert (i != QUEUE_SCHEDULED);
+  
+  if ((delay > 0 && NEXT_Q_AFTER (q_ptr, delay) == i)
+      || (delay < 0 && delay == i))
+    /* We have nothing to do.  */
+    return;
+
+  /* Remove NEXT from whereever it is now.  */
+  if (i == QUEUE_READY)
+    ready_remove_insn (next);
+  else if (i >= 0)
+    queue_remove (next);
+    
+  /* Add it to the proper place.  */
+  if (delay == QUEUE_READY)
+    ready_add (readyp, next, false);
+  else if (delay >= 1)
+    queue_insn (next, delay);
+    
+  if (sched_verbose >= 2)
+    {	      
+      fprintf (sched_dump, ";;\t\ttick updated: insn %s",
+	       (*current_sched_info->print_insn) (next, 0));
+      
+      if (delay == QUEUE_READY)
+	fprintf (sched_dump, " into ready\n");
+      else if (delay >= 1)
+	fprintf (sched_dump, " into queue with cost=%d\n", delay);
+      else
+	fprintf (sched_dump, " removed from ready or queue lists\n");
+    }
+}
+
+/* INSN is being scheduled.  Resolve the dependence between INSN and NEXT.  */
+static void
+resolve_dep (rtx next, rtx insn)
+{
+  rtx dep;
+
+  INSN_DEP_COUNT (next)--;
+  
+  dep = remove_list_elem (insn, &LOG_LINKS (next));
+  XEXP (dep, 1) = RESOLVED_DEPS (next);
+  RESOLVED_DEPS (next) = dep;
+  
+  gcc_assert ((INSN_DEP_COUNT (next) != 0 || !LOG_LINKS (next))
+	      && (LOG_LINKS (next) || INSN_DEP_COUNT (next) == 0));
+}
+
 #endif /* INSN_SCHEDULING */
