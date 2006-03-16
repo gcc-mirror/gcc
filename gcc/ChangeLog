@@ -1,3 +1,9 @@
+2006-03-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux-unwind.h (shmedia_fallback_frame_state): Set
+	fs->signal_frame.
+	(sh_fallback_frame_state): Likewise.
+
 2006-03-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* config.gcc (*-*-darwin*): Don't build crt2.o for all Darwin ports.
