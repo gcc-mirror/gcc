@@ -1,4 +1,4 @@
-// { dg-do run { xfail { ! "powerpc*-*-linux*" } } }
+// { dg-do run }
 // Objects must be destructed in decreasing cnt order
 // Original test attributed to James Kanze <jkanze@otelo.ibmmail.com>
 

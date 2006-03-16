@@ -12,11 +12,12 @@ darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 gt-darwin.h : s-gtype ; @true
 
-# Explain how to build crt2.o
-$(T)crt2$(objext): $(srcdir)/config/darwin-crt2.c $(GCC_PASSES) \
+# How to build crt3.o
+EXTRA_MULTILIB_PARTS=crt3.o
+$(T)crt3$(objext): $(srcdir)/config/darwin-crt3.c $(GCC_PASSES) \
 	$(TCONFIG_H) stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) \
-	  -c $(srcdir)/config/darwin-crt2.c -o $(T)crt2$(objext)
+	  -c $(srcdir)/config/darwin-crt3.c -o $(T)crt3$(objext)
 
 # Use unwind-dw2-fde-darwin
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-darwin.c \

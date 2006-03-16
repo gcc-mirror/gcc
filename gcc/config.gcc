@@ -368,8 +368,8 @@ case ${target} in
   extra_options="${extra_options} darwin.opt"
   c_target_objs="darwin-c.o"
   cxx_target_objs="darwin-c.o"
-  extra_parts="crt2.o"
   extra_objs="darwin.o"
+  default_use_cxa_atexit=yes
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
@@ -1664,6 +1664,7 @@ powerpc-*-beos*)
 	;;
 powerpc-*-darwin*)
 	extra_options="${extra_options} rs6000/darwin.opt"
+	extra_parts="crt2.o"
 	case ${target} in
 	  *-darwin1[0-9]* | *-darwin[8-9]*)
 	    tmake_file="${tmake_file} rs6000/t-darwin8" 
