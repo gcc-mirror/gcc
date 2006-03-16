@@ -1,5 +1,35 @@
 2006-03-16  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/predicates.md (splittable_const_int_operand): New,
+	split from move_operand.
+	(splittable_symbolic_operand): New.
+	(move_operand): Add commentary.  Use splittable_const_int_operand.
+	Inline mips_atomic_symbolic_constant_p.
+	* config/mips/mips.md: Add combine splitters for handling moves
+	of splittable_const_int_operands and splittable_symbolic_operands.
+	* config/mips/mips-protos.h (mips_atomic_symbolic_constant_p): Delete.
+	(mips_split_symbol): Declare.
+	(mips_move_integer): Declare.
+	* config/mips/mips.c (mips_split_p): Make global.
+	(TARGET_MIN_ANCHOR_OFFSET): Override default.
+	(TARGET_MAX_ANCHOR_OFFSET): Likewise.
+	(TARGET_USE_BLOCKS_FOR_CONSTANT_P): Likewise.
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Likewise.
+	(mips_offset_within_object_p): Handle block symbols.
+	(mips_atomic_symbolic_constant_p): Delete.
+	(mips_cannot_force_const_mem): Return false for constants that
+	mips_legitimize_move can handle.
+	(mips_use_blocks_for_constant_p): New function.
+	(mips_split_symbol): Make global.
+	(mips_move_integer): Likewise.  Add a temporary register argument.
+	(mips_legitimize_const_move): Use splittable_const_int_operand and
+	splittable_symbolic_operand.
+	(mips_use_anchors_for_symbol_p): New function.
+	* config/mips/mips.h: Protect externs with !USED_FOR_TARGET.
+	(mips_split_p): Declare.  
+
+2006-03-16  Richard Sandiford  <richard@codesourcery.com>
+
 	* config.gcc (mips64*-*-linux*): Keep existing tm_defines.
 	(mips*-*-linux*): Likewise.
 

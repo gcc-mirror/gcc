@@ -3194,6 +3194,28 @@
    (set_attr "mode" "<MODE>")
    (set_attr "length" "8")])
 
+;; Allow combine to split complex const_int load sequences, using operand 2
+;; to store the intermediate results.  See move_operand for details.
+(define_split
+  [(set (match_operand:GPR 0 "register_operand")
+	(match_operand:GPR 1 "splittable_const_int_operand"))
+   (clobber (match_operand:GPR 2 "register_operand"))]
+  ""
+  [(const_int 0)]
+{
+  mips_move_integer (operands[0], operands[2], INTVAL (operands[1]));
+  DONE;
+})
+
+;; Likewise, for symbolic operands.
+(define_split
+  [(set (match_operand:P 0 "register_operand")
+	(match_operand:P 1 "splittable_symbolic_operand"))
+   (clobber (match_operand:P 2 "register_operand"))]
+  ""
+  [(set (match_dup 0) (match_dup 1))]
+  { operands[1] = mips_split_symbol (operands[2], operands[1]); })
+
 ;; 64-bit integer moves
 
 ;; Unlike most other insns, the move insns can't be split with
