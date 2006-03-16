@@ -504,6 +504,16 @@ DEFPARAM(PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS,
          "The maximum number of iterations through CFG to extend regions",
          2, 0, 0)
 
+DEFPARAM(PARAM_MAX_SCHED_INSN_CONFLICT_DELAY,
+         "max-sched-insn-conflict-delay",
+         "The maximum conflict delay for an insn to be considered for speculative motion",
+         3, 1, 10)
+
+DEFPARAM(PARAM_SCHED_SPEC_PROB_CUTOFF,
+         "sched-spec-prob-cutoff",
+         "The minimal probability of speculation success (in percents), so that speculative insn will be scheduled.",
+         40, 0, 100)
+
 DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
 	 "max-last-value-rtl",
 	 "The maximum number of RTL nodes that can be recorded as combiner's last value",

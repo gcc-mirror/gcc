@@ -382,7 +382,7 @@ build_intra_loop_deps (ddg_ptr g)
   init_deps (&tmp_deps);
 
   /* Do the intra-block data dependence analysis for the given block.  */
-  get_block_head_tail (g->bb->index, &head, &tail);
+  get_ebb_head_tail (g->bb, g->bb, &head, &tail);
   sched_analyze (&tmp_deps, head, tail);
 
   /* Build intra-loop data dependencies using the scheduler dependency

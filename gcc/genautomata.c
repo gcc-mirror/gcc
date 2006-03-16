@@ -6852,6 +6852,8 @@ output_reserved_units_table_name (FILE *f, automaton_t automaton)
 
 #define DFA_CLEAN_INSN_CACHE_FUNC_NAME  "dfa_clean_insn_cache"
 
+#define DFA_CLEAR_SINGLE_INSN_CACHE_FUNC_NAME "dfa_clear_single_insn_cache"
+
 #define DFA_START_FUNC_NAME  "dfa_start"
 
 #define DFA_FINISH_FUNC_NAME "dfa_finish"
@@ -8335,7 +8337,8 @@ output_cpu_unit_reservation_p (void)
   fprintf (output_file, "  return 0;\n}\n\n");
 }
 
-/* The function outputs PHR interface function `dfa_clean_insn_cache'.  */
+/* The function outputs PHR interface functions `dfa_clean_insn_cache'
+   and 'dfa_clear_single_insn_cache'.  */
 static void
 output_dfa_clean_insn_cache_func (void)
 {
@@ -8347,6 +8350,16 @@ output_dfa_clean_insn_cache_func (void)
 	   I_VARIABLE_NAME, I_VARIABLE_NAME,
 	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME, I_VARIABLE_NAME,
 	   DFA_INSN_CODES_VARIABLE_NAME, I_VARIABLE_NAME);
+
+  fprintf (output_file,
+           "void\n%s (rtx %s)\n{\n  int %s;\n\n",
+           DFA_CLEAR_SINGLE_INSN_CACHE_FUNC_NAME, INSN_PARAMETER_NAME,
+	   I_VARIABLE_NAME);
+  fprintf (output_file,
+           "  %s = INSN_UID (%s);\n  if (%s < %s)\n    %s [%s] = -1;\n}\n\n",
+           I_VARIABLE_NAME, INSN_PARAMETER_NAME, I_VARIABLE_NAME,
+	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME, DFA_INSN_CODES_VARIABLE_NAME,
+	   I_VARIABLE_NAME);
 }
 
 /* The function outputs PHR interface function `dfa_start'.  */

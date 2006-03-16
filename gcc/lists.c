@@ -249,4 +249,20 @@ remove_free_INSN_LIST_elem (rtx elem, rtx *listp)
   free_INSN_LIST_node (remove_list_elem (elem, listp));
 }
 
+/* Create and return a copy of the DEPS_LIST LIST.  */
+rtx
+copy_DEPS_LIST_list (rtx list)
+{
+  rtx res = NULL_RTX, *resp = &res;
+
+  while (list)
+    {
+      *resp = alloc_DEPS_LIST (XEXP (list, 0), 0, XWINT (list, 2));
+      PUT_REG_NOTE_KIND (*resp, REG_NOTE_KIND (list));
+      resp = &XEXP (*resp, 1);
+      list = XEXP (list, 1);
+    }
+  return res;
+}
+
 #include "gt-lists.h"

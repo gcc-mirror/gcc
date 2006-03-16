@@ -1,5 +1,148 @@
 2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
 
+        * target.h (struct spec_info_def): New opaque declaration.
+        (struct gcc_target.sched): New fields: adjust_cost_2, h_i_d_extended,
+        speculate_insn, needs_block_p, gen_check,
+        first_cycle_multipass_dfa_lookahead_guard_spec, set_sched_flags.
+        * target-def.h (TARGET_SCHED_ADJUST_COST_2,
+        TARGET_SCHED_H_I_D_EXTENDED, TARGET_SCHED_SPECULATE_INSN,
+        TARGET_SCHED_NEEDS_BLOCK_P, TARGET_SCHED_GEN_CHECK,
+        TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC,
+        TARGET_SCHED_SET_SCHED_FLAGS): New macros to initialize fields in
+        gcc_target.sched.
+        (TARGET_SCHED): Use new macros.
+        * rtl.h (copy_DEPS_LIST_list): New prototype.
+        * sched-int.h (struct sched_info): Change signature of new_ready field,
+	adjust all initializations. New fields: add_remove_insn,
+        begin_schedule_ready, add_block, advance_target_bb, fix_recovery_cfg,
+	region_head_or_leaf_p.
+        (struct spec_info_def): New structure declaration.
+        (spec_info_t): New typedef.
+        (struct haifa_insn_data): New fields: todo_spec, done_spec, check_spec,
+        recovery_block, orig_pat.
+        (glat_start, glat_end): New variables declaraions.
+        (TODO_SPEC, DONE_SPEC, CHECK_SPEC, RECOVERY_BLOCK, ORIG_PAT):
+	New access macros.
+        (enum SCHED_FLAGS): New constants: SCHED_RGN, SCHED_EBB,
+        DETACH_LIFE_INFO, USE_GLAT.
+        (enum SPEC_SCHED_FLAGS): New enumeration.
+        (NOTE_NOTE_BB_P): New macro.
+        (extend_dependency_caches, xrecalloc, unlink_bb_notes, add_block,
+        attach_life_info, debug_spec_status, check_reg_live): New functions.
+        (get_block_head_tail): Change signature to get_ebb_head_tail, adjust
+        all uses in ddg.c, modulo-sched.c, haifa-sched.c, sched-rgn.c,
+        sched-ebb.c
+	(get_dep_weak, ds_merge): Prototype functions from sched-deps.c .
+        * ddg.c (get_block_head_tail): Adjust all uses.
+        * modulo-sched.c (get_block_head_tail): Adjust all uses.
+	(sms_sched_info): Initialize new fields.
+	(contributes_to_priority): Removed.
+        * haifa-sched.c (params.h): New include.
+	(get_block_head_tail): Adjust all uses.
+        (ISSUE_POINTS): New macro.
+        (glat_start, glat_end): New global variables.
+        (spec_info_var, spec_info, added_recovery_block_p, nr_begin_data,
+	nr_be_in_data, nr_begin_control, nr_be_in_control, bb_header,
+	old_last_basic_block, before_recovery, current_sched_info_var,
+	rgn_n_insns, luid): New static variables.
+        (insn_cost1): New function.  Move logic from insn_cost to here.
+        (find_insn_reg_weight1): New function.  Move logic from
+        find_insn_reg_weight to here.
+        (reemit_notes, move_insn, max_issue): Change signature.
+        (move_insn1): Removed.
+        (extend_h_i_d, extend_ready, extend_global, extend_all, init_h_i_d,
+        extend_bb): New static functions to support extension of scheduler's
+        data structures.
+        (generate_recovery_code, process_insn_depend_be_in_spec,
+        begin_speculative_block, add_to_speculative_block,
+        init_before_recovery, create_recovery_block, create_check_block_twin,
+        fix_recovery_deps): New static functions to support
+        generation of recovery code.
+        (fix_jump_move, find_fallthru_edge, dump_new_block_header,
+        restore_bb_notes, move_block_after_check, move_succs): New static
+        functions to support ebb scheduling.
+        (init_glat, init_glat1, attach_life_info1, free_glat): New static
+        functions to support handling of register live information.
+        (associate_line_notes_with_blocks, change_pattern, speculate_insn,
+	sched_remove_insn, clear_priorities, calc_priorities, bb_note,
+	add_jump_dependencies):	New static functions.
+        (check_cfg, has_edge_p, check_sched_flags): New static functions for
+	consistancy checking.
+	(debug_spec_status): New function to call from debugger.
+	(priority): Added code to handle speculation checks.
+	(rank_for_schedule): Added code to distinguish speculative instructions.
+	(schedule_insn): Added code to handle speculation checks.
+	(unlink_other_notes, rm_line_notes, restore_line_notes, rm_other_notes):
+	Fixed to handle ebbs.
+        (move_insn): Added code to handle ebb scheduling.
+	(max_issue): Added code to use ISSUE_POINTS of instructions.
+        (choose_ready): Added code to choose between speculative and
+        non-speculative instructions.
+        (schedule_block): Added code to handle ebb scheduling and scheduling of
+        speculative instructions.
+        (sched_init): Initialize new variables.
+        (sched_finish): Free new variables.  Print statistics.
+        (try_ready): Added code to handle speculative instructions.
+        * lists.c (copy_DEPS_LIST_list): New function.
+        * sched-deps.c (extend_dependency_caches): New function.  Move logic
+        from create_dependency_caches to here.
+	(get_dep_weak, ds_merge): Make global.
+        * genattr.c (main): Code to output prototype for
+        dfa_clear_single_insn_cache.
+        * genautomata.c (DFA_CLEAR_SINGLE_INSN_CACHE_FUNC_NAME): New macros.
+        (output_dfa_clean_insn_cache_func): Code to output
+        dfa_clear_single_insn_cache function.
+        * sched-ebb.c (target_n_insns): Remove.  Adjust all users to use
+	n_insns.
+        (can_schedule_ready_p, fix_basic_block_boundaries, add_missing_bbs):
+        Removed.
+        (n_insns, dont_calc_deps, ebb_head, ebb_tail, last_bb):
+        New static variables.
+        (begin_schedule_ready, add_remove_insn, add_block1, advance_target_bb,
+	fix_recovery_cfg, ebb_head_or_leaf_p): Implement hooks from
+	struct sched_info.
+        (ebb_sched_info): Initialize new fields.
+	(get_block_head_tail): Adjust all uses.
+	(compute_jump_reg_dependencies): Fixed to use glat_start.
+	(schedule_ebb): Code to remove unreachable last block.
+        (schedule_ebbs): Added code to update register live information.
+        * sched-rgn.c (region_sched_info): Initialize new fields.
+	(get_block_head_tail): Adjust all uses.
+	(last_was_jump): Removed.  Adjust users.
+        (begin_schedule_ready, add_remove_insn, insn_points, extend_regions,
+	add_block1, fix_recovery_cfg, advance_target_bb, region_head_or_leaf_p):
+	Implement new hooks.
+        (check_dead_notes1): New static function.
+        (struct region): New fields: dont_calc_deps, has_real_ebb.
+        (RGN_DONT_CALC_DEPS, RGN_HAS_REAL_EBB): New access macros.
+        (BB_TO_BLOCK): Fixed to handle EBBs.
+        (EBB_FIRST_BB, EBB_LAST_BB): New macros.
+        (ebb_head): New static variable.
+        (debug_regions, contributes_to_priority): Fixed to handle EBBs.
+        (find_single_block_regions, find_rgns, find_more_rgns): Initialize
+	new fields.
+	(compute_dom_prob_ps): New assertion.
+        (check_live_1, update_live_1): Fixed to work with glat_start instead of
+        global_live_at_start.
+	(init_ready_list): New assertions.
+	(can_schedule_ready_p): Split update code to begin_schedule_ready.
+	(new_ready): Add support for BEGIN_CONTROL speculation.
+        (schedule_insns): Fixed code that updates register live information
+        to handle EBBs.
+        (schedule_region): Fixed to handle EBBs.
+	(init_regions): Use extend_regions and check_dead_notes1.
+        * params.def (PARAM_MAX_SCHED_INSN_CONFLICT_DELAY,
+        PARAM_SCHED_SPEC_PROB_CUTOFF): New parameters.
+	* doc/tm.texi (TARGET_SCHED_ADJUST_COST_2, TARGET_SCHED_H_I_D_EXTENDED,
+	TARGET_SCHED_SPECULATE_INSN, TARGET_SCHED_NEEDS_BLOCK_P,
+	TARGET_SCHED_GEN_CHECK,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC,
+	TARGET_SCHED_SET_SCHED_FLAGS): Document.
+        * doc/invoke.texi (max-sched-insn-conflict-delay,
+	sched-spec-prob-cutoff): Document.
+
+2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
+
         * sched-int.h (struct haifa_insn_data): New fields: resolved_deps,
 	inter_tick, queue_index.
 	(struct sched_info): Change signature of init_ready_list field.
