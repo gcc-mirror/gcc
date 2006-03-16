@@ -1,3 +1,7 @@
+2006-03-16  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* simplify-rtx.c (simplify_plus_minus): Simplify within CONST terms.
+
 2006-03-16  Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
 
         * config/ia64/ia64.c (stops_p): Added explicit initialization.

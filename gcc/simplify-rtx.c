@@ -3320,8 +3320,21 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		else if (swap_commutative_operands_p (lhs, rhs))
 		  tem = lhs, lhs = rhs, rhs = tem;
 
-		tem = simplify_binary_operation (ncode, mode, lhs, rhs);
+		if ((GET_CODE (lhs) == CONST || GET_CODE (lhs) == CONST_INT)
+		    && (GET_CODE (rhs) == CONST || GET_CODE (rhs) == CONST_INT))
+		  {
+		    rtx tem_lhs, tem_rhs;
 
+		    tem_lhs = GET_CODE (lhs) == CONST ? XEXP (lhs, 0) : lhs;
+		    tem_rhs = GET_CODE (rhs) == CONST ? XEXP (rhs, 0) : rhs;
+		    tem = simplify_binary_operation (ncode, mode, tem_lhs, tem_rhs);
+
+		    if (tem && !CONSTANT_P (tem))
+		      tem = gen_rtx_CONST (GET_MODE (tem), tem);
+		  }
+		else
+		  tem = simplify_binary_operation (ncode, mode, lhs, rhs);
+		
 		/* Reject "simplifications" that just wrap the two
 		   arguments in a CONST.  Failure to do so can result
 		   in infinite recursion with simplify_binary_operation
