@@ -1,3 +1,11 @@
+2006-03-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/26379
+	Backport from mainline.
+	2006-02-21  Jakub Jelinek  <jakub@redhat.com>
+	* combine.c (simplify_shift_const_1): Disable nested shifts
+	optimization for vector shifts.
+
 2006-03-16  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/25917

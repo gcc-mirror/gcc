@@ -1,3 +1,10 @@
+2006-03-16  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline.
+	PR middle-end/26379
+	2006-02-21  Jakub Jelinek  <jakub@redhat.com>
+	* gcc.target/i386/mmx-7.c: New test.
+
 2006-03-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26557
