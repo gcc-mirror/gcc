@@ -1,7 +1,7 @@
 // sh-signal.h - Catch runtime signals and turn them into exceptions
 // on a SuperH based Linux system.
 
-/* Copyright (C) 2004  Free Software Foundation
+/* Copyright (C) 2004, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -33,28 +33,7 @@ typedef struct _sig_ucontext {
 #define SIGNAL_HANDLER(_name)						\
   static void _name (int , siginfo_t *, sig_ucontext_t *_uc)
 
-/* SH either leaves PC pointing at a faulting instruction or the
-   following instruction, depending on the signal.  SEGV always does
-   the former, so we adjust the saved PC to point to the following
-   instruction. This is what the handler in libgcc expects.  */
-
-#ifdef __SH5__
-#define MAKE_THROW_FRAME(_exception)					\
-do									\
-  {									\
-    volatile struct sigcontext *_sc = &_uc->uc_mcontext;		\
-    _sc->sc_pc += 4;							\
-  }									\
-while (0)
-#else
-#define MAKE_THROW_FRAME(_exception)					\
-do									\
-  {									\
-    volatile struct sigcontext *_sc = &_uc->uc_mcontext;		\
-    _sc->sc_pc += 2;							\
-  }									\
-while (0)
-#endif
+#define MAKE_THROW_FRAME(_exception)
 
 /* For an explanation why we cannot simply use sigaction to
    install the handlers, see i386-signal.h.  */

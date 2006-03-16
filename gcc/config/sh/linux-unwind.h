@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SH Linux.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -137,6 +137,7 @@ shmedia_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[63].loc.offset
     = (long)&(sc->sc_pc) - new_cfa;
   fs->retaddr_column = 63;
+  fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
 
@@ -246,6 +247,7 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[SH_DWARF_FRAME_PC].loc.offset
     = (long)&(sc->sc_pc) - new_cfa;
   fs->retaddr_column = SH_DWARF_FRAME_PC;
+  fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
 #endif /* defined (__SH5__) */
