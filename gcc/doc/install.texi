@@ -995,6 +995,10 @@ options and for @option{-mhard-float} or @option{-msoft-float}.  As with
 @option{--with-cpu}, which switches will be accepted and acceptable values
 of the arguments depend on the target.
 
+@item --with-mode=@var{mode}
+Specify if the compiler should default to @option{-marm} or @option{-mthumb}.
+This option is only supported on ARM targets.
+
 @item --with-divide=@var{type}
 Specify how the compiler should generate code for checking for
 division by zero.  This option is only supported on the MIPS target.

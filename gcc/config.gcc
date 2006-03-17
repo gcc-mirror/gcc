@@ -2564,7 +2564,7 @@ case "${target}" in
 		;;
 
 	arm*-*-*)
-		supported_defaults="arch cpu float tune fpu abi"
+		supported_defaults="arch cpu float tune fpu abi mode"
 		for which in cpu tune; do
 			# See if it matches any of the entries in arm-cores.def
 			eval "val=\$with_$which"
@@ -2628,6 +2628,17 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown ABI used in --with-abi=$with_abi"
+			exit 1
+			;;
+		esac
+
+		case "$with_mode" in
+		"" \
+		| arm | thumb )
+			#OK
+			;;
+		*)
+			echo "Unknown mode used in --with-mode=$with_mode"
 			exit 1
 			;;
 		esac
