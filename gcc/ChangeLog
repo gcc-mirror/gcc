@@ -1,3 +1,10 @@
+2006-03-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26721
+	* builtins.c (get_pointer_alignment): For component style references
+	adjust alignment to the component type alignment.  Make sure
+	to adjust alignment for component access of constants.
+
 2006-03-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (strlensi): Emit barrier after

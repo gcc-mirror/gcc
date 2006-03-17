@@ -278,8 +278,13 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	  inner = max_align;
 	  while (handled_component_p (exp))
 	    {
+	      /* Fields in a structure can be packed, honour DECL_ALIGN
+		 of the FIELD_DECL.  For all other references the conservative 
+		 alignment is the element type alignment.  */
 	      if (TREE_CODE (exp) == COMPONENT_REF)
 		inner = MIN (inner, DECL_ALIGN (TREE_OPERAND (exp, 1)));
+	      else
+		inner = MIN (inner, TYPE_ALIGN (TREE_TYPE (exp)));
 	      exp = TREE_OPERAND (exp, 0);
 	    }
 	  if (TREE_CODE (exp) == FUNCTION_DECL)
@@ -288,7 +293,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	    align = MIN (inner, DECL_ALIGN (exp));
 #ifdef CONSTANT_ALIGNMENT
 	  else if (CONSTANT_CLASS_P (exp))
-	    align = CONSTANT_ALIGNMENT (exp, align);
+	    align = MIN (inner, (unsigned)CONSTANT_ALIGNMENT (exp, align));
 #endif
 	  else
 	    align = MIN (align, inner);
