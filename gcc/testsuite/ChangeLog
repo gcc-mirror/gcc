@@ -1,5 +1,9 @@
 2006-03-16  Roger Sayle  <roger@eyesopen.com>
 
+	* gfortran.dg/dependency_13.f90: New test case.
+
+2006-03-16  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/21781
 	* gcc.dg/real-const-1.c: New test case.
 

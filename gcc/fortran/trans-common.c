@@ -169,6 +169,7 @@ copy_equiv_list_to_ns (segment_info *c)
       l->equiv = s;
       s->sym = f->sym;
       s->offset = f->offset;
+      s->length = f->length;
     }
 }
 
