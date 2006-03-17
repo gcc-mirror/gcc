@@ -1072,7 +1072,7 @@ stack_adjust_offset (rtx pattern)
    much extra space it needs to pop off the stack.  */
 
 static void
-dwarf2out_stack_adjust (rtx insn, bool after_p)
+dwarf2out_stack_adjust (rtx insn, bool after_p ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT offset;
   const char *label;
@@ -1085,31 +1085,7 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
   if (prologue_epilogue_contains (insn) || sibcall_epilogue_contains (insn))
     return;
 
-  /* If only calls can throw, and we have a frame pointer,
-     save up adjustments until we see the CALL_INSN.  */
-  if (!flag_asynchronous_unwind_tables && cfa.reg != STACK_POINTER_REGNUM)
-    {
-      if (CALL_P (insn) && !after_p)
-	{
-	  /* Extract the size of the args from the CALL rtx itself.  */
-	  insn = PATTERN (insn);
-	  if (GET_CODE (insn) == PARALLEL)
-	    insn = XVECEXP (insn, 0, 0);
-	  if (GET_CODE (insn) == SET)
-	    insn = SET_SRC (insn);
-	  gcc_assert (GET_CODE (insn) == CALL);
-	  dwarf2out_args_size ("", INTVAL (XEXP (insn, 1)));
-	}
-      return;
-    }
-
-  if (CALL_P (insn) && !after_p)
-    {
-      if (!flag_asynchronous_unwind_tables)
-	dwarf2out_args_size ("", args_size);
-      return;
-    }
-  else if (BARRIER_P (insn))
+  if (BARRIER_P (insn))
     {
       /* When we see a BARRIER, we know to reset args_size to 0.  Usually
 	 the compiler will have already emitted a stack adjustment, but
@@ -1131,8 +1107,19 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
 	if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET)
 	  offset += stack_adjust_offset (XVECEXP (PATTERN (insn), 0, i));
     }
+  else if (GET_CODE (insn) == CALL_INSN)
+    offset = 0;
   else
     return;
+
+  /* We handle this separately because we want stack adjustments in a
+     CALL_INSN to be handled.  */;
+  if (GET_CODE (insn) == CALL_INSN)
+    {
+      /* If only calls can throw, adjust args_size only at call sites.  */
+      if (!flag_asynchronous_unwind_tables)
+	dwarf2out_args_size ("", args_size);
+    }
 
   if (offset == 0)
     return;
@@ -1147,6 +1134,16 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
   args_size += offset;
   if (args_size < 0)
     args_size = 0;
+
+  /* If only calls can throw and we have a frame pointer, we'll save
+     up adjustments until we see the CALL_INSN.  We used to return
+     early and derive args_size from NARGS in the CALL_INSN itself,
+     but that doesn't compute the right value if we have nested call
+     expansions, e.g., stack adjustments for a call have already been
+     emitted, and then we issue another call to compute an argument
+     for the enclosing call (i.e., bar (foo ())).  */
+  if (!flag_asynchronous_unwind_tables && cfa.reg != STACK_POINTER_REGNUM)
+    return;
 
   label = dwarf2out_cfi_label ();
   def_cfa_1 (label, &cfa);

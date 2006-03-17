@@ -1,3 +1,9 @@
+2006-03-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	* dwarf2out.c (dwarf2out_stack_adjust): Always track the stack
+	pointer, instead of assuming it is possible to derive the
+	correct args size from a call insn.
+
 2006-03-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* rtl.h (CONST_INT_P): Define.
