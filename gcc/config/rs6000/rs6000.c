@@ -18048,6 +18048,7 @@ rs6000_darwin_file_start (void)
   size_t i;
 
   rs6000_file_start ();
+  darwin_file_start ();
 
   /* Determine the argument to -mcpu=.  Default to G3 if not specified.  */
   for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)

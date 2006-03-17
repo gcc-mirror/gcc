@@ -37,13 +37,13 @@ Boston, MA 02110-1301, USA.  */
 /* Use section relative relocations for debugging offsets.  Unlike
    other targets that fake this by putting the section VMA at 0, PE
    won't allow it.  */
-#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL)    \
-  do {                                                \
-    if (SIZE != 4)                                    \
-      abort ();                                       \
-                                                      \
-    fputs ("\t.secrel32\t", FILE);                    \
-    assemble_name (FILE, LABEL);                      \
+#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL, SECTION)	\
+  do {								\
+    if (SIZE != 4)						\
+      abort ();							\
+								\
+    fputs ("\t.secrel32\t", FILE);				\
+    assemble_name (FILE, LABEL);				\
   } while (0)
 #endif
 

@@ -1,3 +1,56 @@
+2006-03-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/tm.texi (SDB and DWARF): Add extra parameter to
+	ASM_OUTPUT_DWARF_OFFSET.  Use @var to indicate metavariables.
+	* dwarf2asm.h (dw2_asm_output_offset): Add section parameter.
+	* dwarf2asm.c (dw2_asm_output_offset): Add base section parameter.
+	Pass to ASM_OUTPUT_DWARF_OFFSET.
+	* dwarf2out.c (debug_frame_section): New.
+	(output_call_frame_info): Use debug_frame_section.  Pass it to
+	dw2_asm_output_offset.
+	(output_die): Pass appropriate section to dw2_asm_output_offset.
+	(output_compilation_unit_header): Likewise.
+	(output_pubnames): Likewise.
+	(output_aranges): Likewise.
+	(enum dw_val_class): Break dw_val_class_lbl_offset into
+	dw_val_class_lineptr and dw_val_class_macptr.
+	(add_AT_lbl_offset): Delete.
+	(add_AT_lineptr): New.
+	(add_AT_macptr): New.
+	(AT_lbl): Expect a lineptr or macptr.
+	(print_die): Handle dw_val_class_lineptr and dw_val_class_macptr.
+	(attr_checksum): Likewise.
+	(same_dw_val_p): Likewise.
+	(size_of_die): Likewise.
+	(value_format): Likewise.
+	(output_die): Likewise.
+	(dwarf2out_finish): Call add_AT_lineptr and add_AT_macptr instead of
+	add_AT_lbl_offset.
+	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Add extra parameter.
+	* config/i386/i386.c (x86_file_start): Call darwin_file_start.
+	* config/darwin-protos.h (darwin_file_start): New.
+	(darwin_asm_output_dwarf_offset): New.
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): Add extra parameter.
+	* config/rs6000/rs6000.c (rs6000_darwin_file_start): Call
+	darwin_file_start.
+	* config/darwin.c (darwin_emit_unwind_label): Don't output label
+	if not EH section; simplify.
+	(darwin_file_start): New.
+	(darwin_asm_output_dwarf_offset): New.
+	* config/darwin.h (DEBUG_FRAME_SECTION): In __DWARF segment,
+	mark as 'debug'.
+	(DEBUG_INFO_SECTION): Likewise.
+	(DEBUG_ABBREV_SECTION): Likewise.
+	(DEBUG_ARANGES_SECTION): Likewise.
+	(DEBUG_MACINFO_SECTION): Likewise.
+	(DEBUG_LINE_SECTION): Likewise.
+	(DEBUG_LOC_SECTION): Likewise.
+	(DEBUG_PUBNAMES_SECTION): Likewise.
+	(DEBUG_STR_SECTION): Likewise.
+	(DEBUG_RANGES_SECTION): Likewise.
+	(FRAME_BEGIN_LABEL): Must start with 'L' in debug section.
+	(ASM_OUTPUT_DWARF_OFFSET): New.
+
 2006-03-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config.gcc (tm_defines): Always add to previous value rather

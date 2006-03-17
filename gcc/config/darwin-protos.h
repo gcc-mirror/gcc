@@ -66,6 +66,7 @@ extern void darwin_pragma_ignore (struct cpp_reader *);
 extern void darwin_pragma_options (struct cpp_reader *);
 extern void darwin_pragma_unused (struct cpp_reader *);
 
+extern void darwin_file_start (void);
 extern void darwin_file_end (void);
 
 extern void darwin_mark_decl_preserved (const char *);
@@ -78,6 +79,8 @@ extern void darwin_globalize_label (FILE *, const char *);
 extern void darwin_assemble_visibility (tree, int);
 extern void darwin_asm_output_dwarf_delta (FILE *, int, const char *,
 					   const char *);
+extern void darwin_asm_output_dwarf_offset (FILE *, int, const char *,
+					    section *);
 extern bool darwin_binds_local_p (tree);
 extern void darwin_cpp_builtins (struct cpp_reader *);
 extern void darwin_asm_output_anchor (rtx symbol);

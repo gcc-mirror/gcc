@@ -119,14 +119,15 @@ dw2_asm_output_delta (int size, const char *lab1, const char *lab2,
   va_end (ap);
 }
 
-/* Output a section-relative reference to a label.  In general this
-   can only be done for debugging symbols.  E.g. on most targets with
-   the GNU linker, this is accomplished with a direct reference and
-   the knowledge that the debugging section will be placed at VMA 0.
-   Some targets have special relocations for this that we must use.  */
+/* Output a section-relative reference to a LABEL, which was placed in
+   BASE.  In general this can only be done for debugging symbols.
+   E.g. on most targets with the GNU linker, this is accomplished with
+   a direct reference and the knowledge that the debugging section
+   will be placed at VMA 0.  Some targets have special relocations for
+   this that we must use.  */
 
 void
-dw2_asm_output_offset (int size, const char *label,
+dw2_asm_output_offset (int size, const char *label, section * base,
 		       const char *comment, ...)
 {
   va_list ap;
@@ -134,7 +135,7 @@ dw2_asm_output_offset (int size, const char *label,
   va_start (ap, comment);
 
 #ifdef ASM_OUTPUT_DWARF_OFFSET
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, size, label);
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, size, label, base);
 #else
   dw2_assemble_integer (size, gen_rtx_SYMBOL_REF (Pmode, label));
 #endif
