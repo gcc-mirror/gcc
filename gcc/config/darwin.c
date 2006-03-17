@@ -1328,31 +1328,16 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
     ? DECL_ASSEMBLER_NAME (decl)
     : DECL_NAME (decl);
 
-  const char *prefix = user_label_prefix;
-
   const char *base = IDENTIFIER_POINTER (id);
-  unsigned int base_len = IDENTIFIER_LENGTH (id);
 
-  const char *suffix = ".eh";
-
-  int need_quotes = name_needs_quotes (base);
-  int quotes_len = need_quotes ? 2 : 0;
+  bool need_quotes = name_needs_quotes (base);
   char *lab;
 
   if (! for_eh)
-    suffix = ".eh1";
+    return;
 
-  lab = XNEWVEC (char, strlen (prefix)
-		 + base_len + strlen (suffix) + quotes_len + 1);
-  lab[0] = '\0';
-
-  if (need_quotes)
-    strcat(lab, "\"");
-  strcat(lab, prefix);
-  strcat(lab, base);
-  strcat(lab, suffix);
-  if (need_quotes)
-    strcat(lab, "\"");
+  lab = concat (need_quotes ? "\"" : "", user_label_prefix, base, ".eh",
+		need_quotes ? "\"" : "", NULL);
 
   if (TREE_PUBLIC (decl))
     fprintf (file, "\t%s %s\n",
@@ -1455,6 +1440,63 @@ darwin_asm_output_dwarf_delta (FILE *file, int size,
   assemble_name_raw (file, lab2);
   if (islocaldiff)
     fprintf (file, "\n\t%s L$set$%d", directive, darwin_dwarf_label_counter++);
+}
+
+/* Output labels for the start of the DWARF sections if necessary.  */
+void
+darwin_file_start (void)
+{
+  if (write_symbols == DWARF2_DEBUG)
+    {
+      static const char * const debugnames[] = 
+	{
+	  DEBUG_FRAME_SECTION,
+	  DEBUG_INFO_SECTION,
+	  DEBUG_ABBREV_SECTION,
+	  DEBUG_ARANGES_SECTION,
+	  DEBUG_MACINFO_SECTION,
+	  DEBUG_LINE_SECTION,
+	  DEBUG_LOC_SECTION,
+	  DEBUG_PUBNAMES_SECTION,
+	  DEBUG_STR_SECTION,
+	  DEBUG_RANGES_SECTION
+	};
+      size_t i;
+
+      for (i = 0; i < ARRAY_SIZE (debugnames); i++)
+	{
+	  int namelen;
+
+	  switch_to_section (get_section (debugnames[i], SECTION_DEBUG, NULL));
+	  
+	  gcc_assert (strncmp (debugnames[i], "__DWARF,", 8) == 0);
+	  gcc_assert (strchr (debugnames[i] + 8, ','));
+	  
+	  namelen = strchr (debugnames[i] + 8, ',') - (debugnames[i] + 8);
+	  fprintf (asm_out_file, "Lsection%.*s:\n", namelen, debugnames[i] + 8);
+	}
+    }
+}
+
+/* Output an offset in a DWARF section on Darwin.  On Darwin, DWARF section
+   offsets are not represented using relocs in .o files; either the
+   section never leaves the .o file, or the linker or other tool is
+   responsible for parsing the DWARF and updating the offsets.  */
+
+void
+darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
+				section *base)
+{
+  char sname[64];
+  int namelen;
+  
+  gcc_assert (base->common.flags & SECTION_NAMED);
+  gcc_assert (strncmp (base->named.name, "__DWARF,", 8) == 0);
+  gcc_assert (strchr (base->named.name + 8, ','));
+
+  namelen = strchr (base->named.name + 8, ',') - (base->named.name + 8);
+  sprintf (sname, "*Lsection%.*s", namelen, base->named.name + 8);
+  darwin_asm_output_dwarf_delta (file, size, lab, sname);
 }
 
 void
