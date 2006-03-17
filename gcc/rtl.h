@@ -361,6 +361,9 @@ struct rtvec_def GTY(()) {
 /* Predicate yielding nonzero iff X is an rtx for a memory location.  */
 #define MEM_P(X) (GET_CODE (X) == MEM)
 
+/* Prediacte yielding nonzero iff X is an rtx for a constant integer.  */
+#define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
+
 /* Predicate yielding nonzero iff X is a label insn.  */
 #define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
 

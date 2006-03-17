@@ -872,24 +872,24 @@ VAX operand formatting codes:
     fputs (REGISTER_PREFIX, FILE);					\
   else if (CODE == 'C')							\
     fputs (rev_cond_name (X), FILE);					\
-  else if (CODE == 'D' && GET_CODE (X) == CONST_INT && INTVAL (X) < 0)	\
+  else if (CODE == 'D' && CONST_INT_P (X) && INTVAL (X) < 0)		\
     fprintf (FILE, "$" NEG_HWI_PRINT_HEX16, INTVAL (X));		\
-  else if (CODE == 'P' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'P' && CONST_INT_P (X))				\
     fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, INTVAL (X) + 1);	\
-  else if (CODE == 'N' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'N' && CONST_INT_P (X))				\
     fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, ~ INTVAL (X));		\
   /* rotl instruction cannot deal with negative arguments.  */		\
-  else if (CODE == 'R' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'R' && CONST_INT_P (X))				\
     fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, 32 - INTVAL (X));	\
-  else if (CODE == 'H' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'H' && CONST_INT_P (X))				\
     fprintf (FILE, "$%d", (int) (0xffff & ~ INTVAL (X)));		\
-  else if (CODE == 'h' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'h' && CONST_INT_P (X))				\
     fprintf (FILE, "$%d", (short) - INTVAL (x));			\
-  else if (CODE == 'B' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'B' && CONST_INT_P (X))				\
     fprintf (FILE, "$%d", (int) (0xff & ~ INTVAL (X)));			\
-  else if (CODE == 'b' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'b' && CONST_INT_P (X))				\
     fprintf (FILE, "$%d", (int) (0xff & - INTVAL (X)));			\
-  else if (CODE == 'M' && GET_CODE (X) == CONST_INT)			\
+  else if (CODE == 'M' && CONST_INT_P (X))				\
     fprintf (FILE, "$%d", ~((1 << INTVAL (x)) - 1));			\
   else if (REG_P (X))							\
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\

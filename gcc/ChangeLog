@@ -1,3 +1,22 @@
+2006-03-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* rtl.h (CONST_INT_P): Define.
+	* config/vax/vax.c (print_operand_address): Use CONST_INT_P()
+	instead of GET_CODE(x) == CONST_INT.
+	(vax_rtx_costs): Likewise.
+	(vax_output_int_move): Likewise.
+	(vax_output_int_add): Likewise.
+	(legitimate_constant_address_p): Likewise.
+	(index_term_p): Likewise.
+	* config/vax/vax.h (PRINT_OPERAND): Likewise.
+	* config/vax/vax.md (and<mode>3): Likewise.
+	(ashrsi3): Likewise.
+	(extv): Likewise.
+	(movstricthi): Likewise.
+	(movstrictqi): Likewise.
+	(rotrsi3): Likewise.
+	(five unnamed insns): Likewise.
+
 2006-03-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/tm.texi (SDB and DWARF): Add extra parameter to
