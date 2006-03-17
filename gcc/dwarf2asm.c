@@ -127,7 +127,8 @@ dw2_asm_output_delta (int size, const char *lab1, const char *lab2,
    this that we must use.  */
 
 void
-dw2_asm_output_offset (int size, const char *label, section * base,
+dw2_asm_output_offset (int size, const char *label,
+		       section *base ATTRIBUTE_UNUSED,
 		       const char *comment, ...)
 {
   va_list ap;
