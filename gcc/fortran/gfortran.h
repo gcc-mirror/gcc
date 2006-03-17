@@ -1352,6 +1352,7 @@ typedef struct gfc_equiv_info
 {
   gfc_symbol *sym;
   HOST_WIDE_INT offset;
+  HOST_WIDE_INT length;
   struct gfc_equiv_info *next;
 } gfc_equiv_info;
 

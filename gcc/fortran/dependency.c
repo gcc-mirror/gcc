@@ -414,10 +414,13 @@ gfc_check_fncall_dependency (gfc_expr * other, sym_intent intent,
    directly or indirectly; ie. equivalence (a,b) for a and b
    or equivalence (a,c),(b,c).  This function uses the equiv_
    lists, generated in trans-common(add_equivalences), that are
-   guaranteed to pick up indirect equivalences.  A rudimentary
-   use is made of the offset to ensure that cases where the
-   source elements are moved down to the destination are not
-   identified as dependencies.  */
+   guaranteed to pick up indirect equivalences.  We explicitly
+   check for overlap using the offset and length of the equivalence.
+   This function is symmetric.
+   TODO: This function only checks whether the full top-level
+   symbols overlap.  An improved implementation could inspect
+   e1->ref and e2->ref to determine whether the actually accessed
+   portions of these variables/arrays potentially overlap.  */
 
 int
 gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
@@ -444,14 +447,33 @@ gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
       for (s = l->equiv; s; s = s->next)
 	{
 	  if (s->sym == e1->symtree->n.sym)
-	    fl1 = s;
+	    {
+	      fl1 = s;
+	      if (fl2)
+		break;
+	    }
 	  if (s->sym == e2->symtree->n.sym)
-	    fl2 = s;
-	  if (fl1 && fl2 && (fl1->offset > fl2->offset))
+	    {
+	      fl2 = s;
+	      if (fl1)
+		break;
+	    }
+	}
+
+      if (s)
+	{
+	  /* Can these lengths be zero?  */
+	  if (fl1->length <= 0 || fl2->length <= 0)
+	    return 1;
+	  /* These can't overlap if [f11,fl1+length] is before 
+	     [fl2,fl2+length], or [fl2,fl2+length] is before
+	     [fl1,fl1+length], otherwise they do overlap.  */
+	  if (fl1->offset + fl1->length > fl2->offset
+	      && fl2->offset + fl2->length > fl1->offset)
 	    return 1;
 	}
     }
-return 0;
+  return 0;
 }
 
 
