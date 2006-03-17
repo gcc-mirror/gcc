@@ -288,11 +288,11 @@ print_operand_address (FILE * file, rtx addr)
 	    {
 	      if (offset)
 		{
-		  if (GET_CODE (offset) == CONST_INT)
+		  if (CONST_INT_P (offset))
 		    offset = plus_constant (XEXP (addr, 0), INTVAL (offset));
 		  else
 		    {
-		      gcc_assert (GET_CODE (XEXP (addr, 0)) == CONST_INT);
+		      gcc_assert (CONST_INT_P (XEXP (addr, 0)));
 		      offset = plus_constant (offset, INTVAL (XEXP (addr, 0)));
 		    }
 		}
@@ -317,11 +317,11 @@ print_operand_address (FILE * file, rtx addr)
 	    {
 	      if (offset)
 		{
-		  if (GET_CODE (offset) == CONST_INT)
+		  if (CONST_INT_P (offset))
 		    offset = plus_constant (XEXP (addr, 1), INTVAL (offset));
 		  else
 		    {
-		      gcc_assert (GET_CODE (XEXP (addr, 1)) == CONST_INT);
+		      gcc_assert (CONST_INT_P (XEXP (addr, 1)));
 		      offset = plus_constant (offset, INTVAL (XEXP (addr, 1)));
 		    }
 		}
@@ -669,7 +669,7 @@ vax_rtx_costs (rtx x, int code, int outer_code, int *total)
     case ROTATE:
     case ROTATERT:
       *total = 6;		/* 5 on VAX 2, 4 on VAX 9000 */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if (CONST_INT_P (XEXP (x, 1)))
 	fmt = "e"; 		/* all constant rotate counts are short */
       break;
 
@@ -677,7 +677,7 @@ vax_rtx_costs (rtx x, int code, int outer_code, int *total)
     case MINUS:
       *total = (mode == DFmode) ? 13 : 8; /* 6/8 on VAX 9000, 16/15 on VAX 2 */
       /* Small integer operands can use subl2 and addl2.  */
-      if ((GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if ((CONST_INT_P (XEXP (x, 1)))
 	  && (unsigned HOST_WIDE_INT)(INTVAL (XEXP (x, 1)) + 63) < 127)
 	fmt = "e";
       break;
@@ -690,7 +690,7 @@ vax_rtx_costs (rtx x, int code, int outer_code, int *total)
     case AND:
       /* AND is special because the first operand is complemented.  */
       *total = 3;
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
+      if (CONST_INT_P (XEXP (x, 0)))
 	{
 	  if ((unsigned HOST_WIDE_INT)~INTVAL (XEXP (x, 0)) > 63)
 	    *total = 4;
@@ -917,7 +917,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	}
       if (operands[1] == const0_rtx)
 	return "clrl %0";
-      if (GET_CODE (operands[1]) == CONST_INT
+      if (CONST_INT_P (operands[1])
 	  && (unsigned) INTVAL (operands[1]) >= 64)
 	{
 	  int i = INTVAL (operands[1]);
@@ -937,7 +937,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
       return "movl %1,%0";
 
     case HImode:
-      if (GET_CODE (operands[1]) == CONST_INT)
+      if (CONST_INT_P (operands[1]))
 	{
 	  int i = INTVAL (operands[1]);
 	  if (i == 0)
@@ -952,7 +952,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
       return "movw %1,%0";
 
     case QImode:
-      if (GET_CODE (operands[1]) == CONST_INT)
+      if (CONST_INT_P (operands[1]))
 	{
 	  int i = INTVAL (operands[1]);
 	  if (i == 0)
@@ -994,10 +994,10 @@ vax_output_int_add (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	    return "incl %0";
 	  if (operands[2] == constm1_rtx)
 	    return "decl %0";
-	  if (GET_CODE (operands[2]) == CONST_INT
+	  if (CONST_INT_P (operands[2])
 	      && (unsigned) (- INTVAL (operands[2])) < 64)
 	    return "subl2 $%n2,%0";
-	  if (GET_CODE (operands[2]) == CONST_INT
+	  if (CONST_INT_P (operands[2])
 	      && (unsigned) INTVAL (operands[2]) >= 64
 	      && REG_P (operands[1])
 	      && ((INTVAL (operands[2]) < 32767 && INTVAL (operands[2]) > -32768)
@@ -1009,18 +1009,18 @@ vax_output_int_add (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
       if (rtx_equal_p (operands[0], operands[2]))
 	return "addl2 %1,%0";
 
-      if (GET_CODE (operands[2]) == CONST_INT
+      if (CONST_INT_P (operands[2])
 	  && INTVAL (operands[2]) < 32767
 	  && INTVAL (operands[2]) > -32768
 	  && REG_P (operands[1])
 	  && push_operand (operands[0], SImode))
 	return "pushab %c2(%1)";
 
-      if (GET_CODE (operands[2]) == CONST_INT
+      if (CONST_INT_P (operands[2])
 	  && (unsigned) (- INTVAL (operands[2])) < 64)
 	return "subl3 $%n2,%1,%0";
 
-      if (GET_CODE (operands[2]) == CONST_INT
+      if (CONST_INT_P (operands[2])
 	  && (unsigned) INTVAL (operands[2]) >= 64
 	  && REG_P (operands[1])
 	  && ((INTVAL (operands[2]) < 32767 && INTVAL (operands[2]) > -32768)
@@ -1040,14 +1040,14 @@ vax_output_int_add (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	    return "incw %0";
 	  if (operands[2] == constm1_rtx)
 	    return "decw %0";
-	  if (GET_CODE (operands[2]) == CONST_INT
+	  if (CONST_INT_P (operands[2])
 	      && (unsigned) (- INTVAL (operands[2])) < 64)
 	    return "subw2 $%n2,%0";
 	  return "addw2 %2,%0";
 	}
       if (rtx_equal_p (operands[0], operands[2]))
 	return "addw2 %1,%0";
-      if (GET_CODE (operands[2]) == CONST_INT
+      if (CONST_INT_P (operands[2])
 	  && (unsigned) (- INTVAL (operands[2])) < 64)
 	return "subw3 $%n2,%1,%0";
       return "addw3 %1,%2,%0";
@@ -1059,14 +1059,14 @@ vax_output_int_add (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	    return "incb %0";
 	  if (operands[2] == constm1_rtx)
 	    return "decb %0";
-	  if (GET_CODE (operands[2]) == CONST_INT
+	  if (CONST_INT_P (operands[2])
 	      && (unsigned) (- INTVAL (operands[2])) < 64)
 	    return "subb2 $%n2,%0";
 	  return "addb2 %2,%0";
 	}
       if (rtx_equal_p (operands[0], operands[2]))
 	return "addb2 %1,%0";
-      if (GET_CODE (operands[2]) == CONST_INT
+      if (CONST_INT_P (operands[2])
 	  && (unsigned) (- INTVAL (operands[2])) < 64)
 	return "subb3 $%n2,%1,%0";
       return "addb3 %1,%2,%0";
@@ -1103,7 +1103,7 @@ int
 legitimate_constant_address_p (rtx x)
 {
   return (GET_CODE (x) == LABEL_REF || GET_CODE (x) == SYMBOL_REF
-	  || GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST
+	  || CONST_INT_P (x) || GET_CODE (x) == CONST
 	  || GET_CODE (x) == HIGH);
 }
 
@@ -1217,12 +1217,12 @@ index_term_p (rtx prod, enum machine_mode mode, int strict)
   xfoo0 = XEXP (prod, 0);
   xfoo1 = XEXP (prod, 1);
 
-  if (GET_CODE (xfoo0) == CONST_INT
+  if (CONST_INT_P (xfoo0)
       && INTVAL (xfoo0) == (int)GET_MODE_SIZE (mode)
       && INDEX_REGISTER_P (xfoo1, strict))
     return 1;
 
-  if (GET_CODE (xfoo1) == CONST_INT
+  if (CONST_INT_P (xfoo1)
       && INTVAL (xfoo1) == (int)GET_MODE_SIZE (mode)
       && INDEX_REGISTER_P (xfoo0, strict))
     return 1;
