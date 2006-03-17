@@ -1,3 +1,8 @@
+2006-03-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.target/powerpc/pr26350.c: New.
+	* gcc.target/powerpc/indexed-addr.c: New.
+
 2006-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/dependency_13.f90: New test case.
