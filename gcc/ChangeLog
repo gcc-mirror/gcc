@@ -1,3 +1,23 @@
+2006-03-17  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (max_labelno_before_reorg): New variable.
+	(sh_reorg): Initialize it.
+	(find_barrier): Check max_labelno_before_reorg before using
+	label_to_alignment.  Take length of explicit alignment insns
+	into account.  When seeing a UNSPECV_CONST_END, return it.
+
+	* sh.c (fixup_mova): Set mode of affected label to QImode.
+	(untangle_mova): New function.
+	(find_barrier): Use it.  Check mode of label before decrementing
+	num_mova.
+	(sh_reorg): Likewise.
+	Set mode of all insns back to VOIDmode.
+
+	* sh.c (MOVA_LABELREF): New macro.
+	(mova_p, fixup_mova, sh_reorg): Use it.
+	(find_barrier, sh_reorg): Don't count num_mova back to 0 unless
+	ADDR_DIFF_VEC matches mova.
+
 2006-03-17  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* dwarf2asm.c (dw2_asm_output_offset): Mark 'base' argument
