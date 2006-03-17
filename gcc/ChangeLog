@@ -1,3 +1,8 @@
+2006-03-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (strlensi): Emit barrier after
+	unconditional jump.
+
 2006-03-17  Paul Brook  <paul@codesourcery.com>
 
 	* doc/install.texi: Docuemnt --with-mode.
