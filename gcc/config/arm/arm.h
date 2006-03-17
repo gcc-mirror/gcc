@@ -220,7 +220,8 @@ extern GTY(()) rtx aof_pic_label;
   {"float", \
     "%{!msoft-float:%{!mhard-float:%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}}}" }, \
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
-  {"abi", "%{!mabi=*:-mabi=%(VALUE)}"},
+  {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
+  {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"},
 
 /* Which floating point model to use.  */
 enum arm_fp_model

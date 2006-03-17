@@ -1,3 +1,9 @@
+2006-03-17  Paul Brook  <paul@codesourcery.com>
+
+	* doc/install.texi: Docuemnt --with-mode.
+	* config.gcc: Add --with-mode for arm*-*-*.
+	* config/arm/arm.h (OPTION_DEFAULT_SPECS): Add "mode".
+
 2006-03-17  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (max_labelno_before_reorg): New variable.
