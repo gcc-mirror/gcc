@@ -1,3 +1,8 @@
+2006-03-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/980523-1.c, gcc.dg/980526-1.c, gcc.dg/switch-1.c: Use
+	target fpic.
+
 2006-03-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.dg/direct_io_1.f90, gfortran.dg/iostat_2.f90,

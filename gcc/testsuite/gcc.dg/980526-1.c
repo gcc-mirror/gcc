@@ -1,4 +1,4 @@
-/* { dg-do compile { target rs6000-*-linux* powerpc*-*-linux* } } */
+/* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
 
 int
