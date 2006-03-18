@@ -50,4 +50,5 @@
               if (x(i,k).ne.y(i,k)) call abort
          end do
       end do
+      close(nin, status='delete')
       end program d
