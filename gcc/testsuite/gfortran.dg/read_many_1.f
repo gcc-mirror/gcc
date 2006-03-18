@@ -20,4 +20,5 @@
       if (b(2).ne.5) call abort()
       if (a(3000).ne.1234) call abort()
       if (b(2048).ne.5678) call abort()
+      close(2, status='delete')
       end

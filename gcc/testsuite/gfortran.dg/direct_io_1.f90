@@ -28,5 +28,5 @@ program direct_io_1
   n = 1
   write(12, rec=n) mt, nt
   write(12, rec=n+1) (p(m), m=1, nt)
-  close(12)
+  close(12, status='delete')
 end program

@@ -35,5 +35,6 @@ program main
   backspace 10
   read (10) j
   if (j /= Z'5566770011223344') call abort
+  close (10, status="delete")
 
 end program main

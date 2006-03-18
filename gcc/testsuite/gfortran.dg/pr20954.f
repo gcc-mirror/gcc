@@ -8,4 +8,5 @@
       filename = 'input'
       open (2,file=filename)
       write (line, '(5a16)') (string(i),i=1,5)
+      close (2, status='delete')
       end

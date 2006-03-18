@@ -16,5 +16,6 @@
 !          PRINT*,'NEXTREC RETURNED ',J,' EXPECTED 4'
            CALL ABORT
        ENDIF
+       CLOSE(UNIT=10,STATUS='DELETE')
        END
 
