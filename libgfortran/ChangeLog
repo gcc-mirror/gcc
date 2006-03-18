@@ -1,3 +1,11 @@
+2006-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26509
+	* libgfortran.h: Add ERROR_DIRECT_EOR.
+	* runtime/error.c (translate_error): Add translation for new error.
+	* io/transfer.c (write_buf): Add check for EOR when mode is 
+	direct access.
+
 2006-03-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25378

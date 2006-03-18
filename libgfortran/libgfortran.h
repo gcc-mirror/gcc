@@ -380,6 +380,7 @@ typedef enum
   ERROR_INTERNAL,
   ERROR_INTERNAL_UNIT,
   ERROR_ALLOCATION,
+  ERROR_DIRECT_EOR,
   ERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 error_codes;
