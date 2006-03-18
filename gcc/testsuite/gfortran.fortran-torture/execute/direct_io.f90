@@ -13,6 +13,7 @@
             CALL ABORT
           ENDIF
        ENDDO
+       CLOSE(10,STATUS='DELETE')
        STOP
  10    CONTINUE
 !      PRINT*,' ERR= RETURN FROM READ OR WRITE'
