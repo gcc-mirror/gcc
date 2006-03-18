@@ -431,6 +431,10 @@ translate_error (int code)
       p = "Internal unit I/O error";
       break;
 
+    case ERROR_DIRECT_EOR:
+      p = "Write exceeds length of DIRECT access record";
+      break;
+
     default:
       p = "Unknown error code";
       break;
