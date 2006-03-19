@@ -1,3 +1,9 @@
+2006-03-19  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	(backport r110993)
+	PR fortran/26277
+	* io.c (match_ltag): Mark label as referenced.
+
 2006-03-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26741
