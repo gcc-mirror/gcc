@@ -1,6 +1,6 @@
 2006-03-19  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/26716
+	PR fortran/26741
 	*expr.c (external_spec_function): Permit elemental functions.
 
 	PR fortran/26716
