@@ -1167,7 +1167,7 @@ write_tm_preds_h (void)
 	puts ("#define EXTRA_MEMORY_CONSTRAINT(c_,s_) false\n");
       if (have_address_constraints)
 	puts ("extern bool "
-	      "insn_extra_address_constraint (enum constraint_num)"
+	      "insn_extra_address_constraint (enum constraint_num);\n"
 	      "#define EXTRA_ADDRESS_CONSTRAINT(c_,s_) "
 	      "insn_extra_address_constraint (lookup_constraint (s_))\n");
       else

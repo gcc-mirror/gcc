@@ -1,5 +1,10 @@
 2006-03-19  David Edelsohn  <edelsohn@gnu.org>
 
+	* genpreds.c (write_tm_preds_h): Add semicolon and newline at
+	end of insn_extra_address_constraint declaration.
+
+2006-03-19  David Edelsohn  <edelsohn@gnu.org>
+
 	* config/rs6000/rs6000.opt (no-fp-in-toc): Use Var not Mask.
 	(no-sum-in-toc): Same.
 	* config/rs6000/rs6000.c (rs6000_handle_option): Use new
