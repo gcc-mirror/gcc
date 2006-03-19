@@ -1,3 +1,9 @@
+2006-03-20  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/26453
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Don't
+	output traceback table for thunks.  Localise rs6000_stack_info call.
+
 2006-03-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from 4.1:
