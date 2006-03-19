@@ -1636,7 +1636,7 @@ external_spec_function (gfc_expr * e)
       return FAILURE;
     }
 
-  if (!f->attr.pure)
+  if (!f->attr.pure && !f->attr.elemental)
     {
       gfc_error ("Specification function '%s' at %L must be PURE", f->name,
 		 &e->where);
