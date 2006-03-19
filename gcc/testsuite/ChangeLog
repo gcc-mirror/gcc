@@ -1,6 +1,6 @@
 2006-03-19  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/26716
+	PR fortran/26741
 	* gfortran.dg/elemental_initializer_1.f90: New test.
 
 	PR fortran/26716
