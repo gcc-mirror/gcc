@@ -140,19 +140,19 @@ Target Report Var(swdiv)
 Generate software floating point divide for better throughput
 
 mno-fp-in-toc
-Target Report RejectNegative Mask(NO_FP_IN_TOC)
+Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC)
 Do not place floating point constants in TOC
 
 mfp-in-toc
-Target Report RejectNegative InverseMask(NO_FP_IN_TOC)
+Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC,0) VarExists
 Place floating point constants in TOC
 
 mno-sum-in-toc
-Target RejectNegative Mask(NO_SUM_IN_TOC)
+Target RejectNegative Var(TARGET_NO_SUM_IN_TOC)
 Do not place symbol+offset constants in TOC
 
 msum-in-toc
-Target RejectNegative InverseMask(NO_SUM_IN_TOC)
+Target RejectNegative Var(TARGET_NO_SUM_IN_TOC,0) VarExists
 Place symbol+offset constants in TOC
 
 ;  Output only one TOC entry per module.  Normally linking fails if
