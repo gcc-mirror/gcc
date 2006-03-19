@@ -1,3 +1,20 @@
+2006-03-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.opt (no-fp-in-toc): Use Var not Mask.
+	(no-sum-in-toc): Same.
+	* config/rs6000/rs6000.c (rs6000_handle_option): Use new
+	variables.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Set
+	NO_FP_IN_TOC for -fPIC instead of mask.
+
+	* config/rs6000/t-aix43 (T_ADAFLAGS): Delete.
+	(BOOT_LDFLAGS): Delete.
+	(LDFLAGS): Delete.
+	* config/rs6000/t-aix52: Same.
+
+	* config/rs6000/rs6000.md (store_multiple_power): Delete.
+	(stmsi[345678]_power): New.
+
 2006-03-17  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.opt: Add empty line to end of file.

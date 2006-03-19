@@ -221,7 +221,10 @@ do {									\
 									\
   /* Treat -fPIC the same as -mrelocatable.  */				\
   if (flag_pic > 1 && DEFAULT_ABI != ABI_AIX)				\
-    target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC; \
+    {									\
+      target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC;		\
+      TARGET_NO_FP_IN_TOC = 1;						\
+    }									\
 									\
   else if (TARGET_RELOCATABLE)						\
     flag_pic = 2;							\
