@@ -1,3 +1,15 @@
+2006-03-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26716
+	*expr.c (external_spec_function): Permit elemental functions.
+
+	PR fortran/26716
+	*interface.c (compare_actual_formal): Detect call for procedure
+	usage and require rank checking, in this case, for assumed shape
+	and deferred shape arrays.
+	(gfc_procedure_use): Revert to pre-PR25070 call to
+	compare_actual_formal that does not require rank checking..
+
 2006-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.h (gfc_equiv_info): Add length field.

@@ -1178,6 +1178,7 @@ compare_actual_formal (gfc_actual_arglist ** ap,
   gfc_actual_arglist **new, *a, *actual, temp;
   gfc_formal_arglist *f;
   int i, n, na;
+  bool rank_check;
 
   actual = *ap;
 
@@ -1260,11 +1261,14 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 	  return 0;
 	}
 
+      rank_check = where != NULL
+		     && !is_elemental
+		     && f->sym->as
+		     && (f->sym->as->type == AS_ASSUMED_SHAPE
+			   || f->sym->as->type == AS_DEFERRED);
+
       if (!compare_parameter
-	  (f->sym, a->expr,
-	   ranks_must_agree && f->sym->as
-	     && f->sym->as->type == AS_ASSUMED_SHAPE,
-	   is_elemental))
+	  (f->sym, a->expr, ranks_must_agree || rank_check, is_elemental))
 	{
 	  if (where)
 	    gfc_error ("Type/rank mismatch in argument '%s' at %L",
@@ -1595,9 +1599,6 @@ check_intents (gfc_formal_arglist * f, gfc_actual_arglist * a)
 void
 gfc_procedure_use (gfc_symbol * sym, gfc_actual_arglist ** ap, locus * where)
 {
-  int ranks_must_agree;
-  ranks_must_agree = !sym->attr.elemental && (sym->attr.contained
-			|| sym->attr.if_source == IFSRC_IFBODY);
 
   /* Warn about calls with an implicit interface.  */
   if (gfc_option.warn_implicit_interface
@@ -1606,7 +1607,7 @@ gfc_procedure_use (gfc_symbol * sym, gfc_actual_arglist ** ap, locus * where)
                  sym->name, where);
 
   if (sym->attr.if_source == IFSRC_UNKNOWN
-      || !compare_actual_formal (ap, sym->formal, ranks_must_agree,
+      || !compare_actual_formal (ap, sym->formal, 0,
 				 sym->attr.elemental, where))
     return;
 

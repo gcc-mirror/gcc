@@ -1,3 +1,11 @@
+2006-03-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26716
+	* gfortran.dg/elemental_initializer_1.f90: New test.
+
+	PR fortran/26716
+	* gfortran.dg/assumed_shape_ranks_2: New test.
+
 2006-03-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/980523-1.c, gcc.dg/980526-1.c, gcc.dg/switch-1.c: Use
