@@ -1,3 +1,8 @@
+2006-03-20  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_handle_option): Use
+	TARGET_NO_FP_IN_TOC inside #ifdef TARGET_USES_SYSV4_OPT too.
+
 2006-03-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* genpreds.c (write_tm_preds_h): Add semicolon and newline at
