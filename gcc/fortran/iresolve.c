@@ -1093,7 +1093,27 @@ gfc_resolve_maxloc (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
       gfc_resolve_dim_arg (dim);
     }
 
-  name = mask ? "mmaxloc" : "maxloc";
+  if (mask)
+    {
+      if (mask->rank == 0)
+	name = "smaxloc";
+      else
+	name = "mmaxloc";
+
+      /* The mask can be kind 4 or 8 for the array case.  For the
+	 scalar case, coerce it to default kind unconditionally.  */
+      if ((mask->ts.kind < gfc_default_logical_kind)
+	  || (mask->rank == 0 && mask->ts.kind != gfc_default_logical_kind))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_LOGICAL;
+	  ts.kind = gfc_default_logical_kind;
+	  gfc_convert_type_warn (mask, &ts, 2, 0);
+	}
+    }
+  else
+    name = "maxloc";
+
   f->value.function.name =
     gfc_get_string (PREFIX("%s%d_%d_%c%d"), name, dim != NULL, f->ts.kind,
                     gfc_type_letter (array->ts.type), array->ts.kind);
@@ -1104,6 +1124,8 @@ void
 gfc_resolve_maxval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		    gfc_expr * mask)
 {
+  const char *name;
+
   f->ts = array->ts;
 
   if (dim != NULL)
@@ -1112,8 +1134,29 @@ gfc_resolve_maxval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
       gfc_resolve_dim_arg (dim);
     }
 
+  if (mask)
+    {
+      if (mask->rank == 0)
+	name = "smaxval";
+      else
+	name = "mmaxval";
+
+      /* The mask can be kind 4 or 8 for the array case.  For the
+	 scalar case, coerce it to default kind unconditionally.  */
+      if ((mask->ts.kind < gfc_default_logical_kind)
+	  || (mask->rank == 0 && mask->ts.kind != gfc_default_logical_kind))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_LOGICAL;
+	  ts.kind = gfc_default_logical_kind;
+	  gfc_convert_type_warn (mask, &ts, 2, 0);
+	}
+    }
+  else
+    name = "maxval";
+
   f->value.function.name =
-    gfc_get_string (PREFIX("%s_%c%d"), mask ? "mmaxval" : "maxval",
+    gfc_get_string (PREFIX("%s_%c%d"), name,
 		    gfc_type_letter (array->ts.type), array->ts.kind);
 }
 
@@ -1157,7 +1200,27 @@ gfc_resolve_minloc (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
       gfc_resolve_dim_arg (dim);
     }
 
-  name = mask ? "mminloc" : "minloc";
+  if (mask)
+    {
+      if (mask->rank == 0)
+	name = "sminloc";
+      else
+	name = "mminloc";
+
+      /* The mask can be kind 4 or 8 for the array case.  For the
+	 scalar case, coerce it to default kind unconditionally.  */
+      if ((mask->ts.kind < gfc_default_logical_kind)
+	  || (mask->rank == 0 && mask->ts.kind != gfc_default_logical_kind))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_LOGICAL;
+	  ts.kind = gfc_default_logical_kind;
+	  gfc_convert_type_warn (mask, &ts, 2, 0);
+	}
+    }
+  else
+    name = "minloc";
+
   f->value.function.name =
     gfc_get_string (PREFIX("%s%d_%d_%c%d"), name, dim != NULL, f->ts.kind,
                     gfc_type_letter (array->ts.type), array->ts.kind);
@@ -1168,6 +1231,8 @@ void
 gfc_resolve_minval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		    gfc_expr * mask)
 {
+  const char *name;
+
   f->ts = array->ts;
 
   if (dim != NULL)
@@ -1176,8 +1241,29 @@ gfc_resolve_minval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
       gfc_resolve_dim_arg (dim);
     }
 
+  if (mask)
+    {
+      if (mask->rank == 0)
+	name = "sminval";
+      else
+	name = "mminval";
+
+      /* The mask can be kind 4 or 8 for the array case.  For the
+	 scalar case, coerce it to default kind unconditionally.  */
+      if ((mask->ts.kind < gfc_default_logical_kind)
+	  || (mask->rank == 0 && mask->ts.kind != gfc_default_logical_kind))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_LOGICAL;
+	  ts.kind = gfc_default_logical_kind;
+	  gfc_convert_type_warn (mask, &ts, 2, 0);
+	}
+    }
+  else
+    name = "minval";
+
   f->value.function.name =
-    gfc_get_string (PREFIX("%s_%c%d"), mask ? "mminval" : "minval",
+    gfc_get_string (PREFIX("%s_%c%d"), name,
 		    gfc_type_letter (array->ts.type), array->ts.kind);
 }
 
@@ -1311,6 +1397,8 @@ void
 gfc_resolve_product (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		     gfc_expr * mask)
 {
+  const char *name;
+
   f->ts = array->ts;
 
   if (dim != NULL)
@@ -1319,8 +1407,29 @@ gfc_resolve_product (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
       gfc_resolve_dim_arg (dim);
     }
 
+  if (mask)
+    {
+      if (mask->rank == 0)
+	name = "sproduct";
+      else
+	name = "mproduct";
+
+      /* The mask can be kind 4 or 8 for the array case.  For the
+	 scalar case, coerce it to default kind unconditionally.  */
+      if ((mask->ts.kind < gfc_default_logical_kind)
+	  || (mask->rank == 0 && mask->ts.kind != gfc_default_logical_kind))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_LOGICAL;
+	  ts.kind = gfc_default_logical_kind;
+	  gfc_convert_type_warn (mask, &ts, 2, 0);
+	}
+    }
+  else
+    name = "product";
+
   f->value.function.name =
-    gfc_get_string (PREFIX("%s_%c%d"), mask ? "mproduct" : "product",
+    gfc_get_string (PREFIX("%s_%c%d"), name,
 		    gfc_type_letter (array->ts.type), array->ts.kind);
 }
 
@@ -1733,7 +1842,30 @@ void
 gfc_resolve_sum (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		 gfc_expr * mask)
 {
+  const char *name;
+
   f->ts = array->ts;
+
+  if (mask)
+    {
+      if (mask->rank == 0)
+	name = "ssum";
+      else
+	name = "msum";
+
+      /* The mask can be kind 4 or 8 for the array case.  For the
+	 scalar case, coerce it to default kind unconditionally.  */
+      if ((mask->ts.kind < gfc_default_logical_kind)
+	  || (mask->rank == 0 && mask->ts.kind != gfc_default_logical_kind))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_LOGICAL;
+	  ts.kind = gfc_default_logical_kind;
+	  gfc_convert_type_warn (mask, &ts, 2, 0);
+	}
+    }
+  else
+    name = "sum";
 
   if (dim != NULL)
     {
@@ -1742,7 +1874,7 @@ gfc_resolve_sum (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
     }
 
   f->value.function.name =
-    gfc_get_string (PREFIX("%s_%c%d"), mask ? "msum" : "sum",
+    gfc_get_string (PREFIX("%s_%c%d"), name,
 		    gfc_type_letter (array->ts.type), array->ts.kind);
 }
 

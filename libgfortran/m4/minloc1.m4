@@ -60,4 +60,6 @@ MASKED_ARRAY_FUNCTION(0,
       result = (rtype_name)n + 1;
     }')
 
+SCALAR_ARRAY_FUNCTION(0)
+
 #endif
