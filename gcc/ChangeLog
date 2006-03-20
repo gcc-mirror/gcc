@@ -1,3 +1,8 @@
+2006-03-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* genpreds.c (write_insn_extra_address_constraint): Argument `c'
+	is operand of switch, not str[0].
+
 2006-03-20  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_handle_option): Use

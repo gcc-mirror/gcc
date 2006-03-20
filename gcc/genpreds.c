@@ -1088,7 +1088,7 @@ write_insn_extra_address_constraint (void)
   puts ("bool\n"
 	"insn_extra_address_constraint (enum constraint_num c)\n"
 	"{\n"
-	"  switch (str[0])\n"
+	"  switch (c)\n"
 	"    {");
 
   FOR_ALL_CONSTRAINTS (c)
