@@ -61,6 +61,26 @@ proc current_target_name { } {
     return $answer
 }
 
+# Implement an effective-target check for property PROP by invoking
+# the compiler and seeing if it prints any messages.  Assume that the
+# property holds if the compiler doesn't print anything.  The other
+# arguments are as for get_compiler_messages, starting with TYPE.
+proc check_no_compiler_messages {prop args} {
+    global et_cache
+
+    set target [current_target_name]
+    if {![info exists et_cache($prop,target)]
+	|| $et_cache($prop,target) != $target} {
+	verbose "check_effective_target $prop: compiling source for $target" 2
+	set et_cache($prop,target) $target
+	set et_cache($prop,value) \
+	    [string match "" [eval get_compiler_messages $prop $args]]
+    }
+    set value $et_cache($prop,value)
+    verbose "check_effective_target $prop: returning $value for $target" 2
+    return $value
+}
+
 ###############################
 # proc check_weak_available { }
 ###############################
@@ -127,7 +147,6 @@ proc check_weak_available { } {
 # The argument is the kind of visibility, default/protected/hidden/internal.
 
 proc check_visibility_available { what_kind } {
-    global visibility_available_saved
     global tool
     global target_triplet
 
@@ -138,27 +157,10 @@ proc check_visibility_available { what_kind } {
 
     if [string match "" $what_kind] { set what_kind "hidden" }
 
-    if { [info exists visibility_available_saved] } {
-	verbose "Saved result is <$visibility_available_saved>" 1
-	if { [ lsearch -exact $visibility_available_saved $what_kind ] != -1 } {
-	    return 1
-	} elseif { [ lsearch -exact $visibility_available_saved "!$what_kind" ] != -1 } {
-	    return 0
-	}
-    }
-
-    set lines [get_compiler_messages visibility object "
+    return [check_no_compiler_messages visibility_available_$what_kind object "
 	void f() __attribute__((visibility(\"$what_kind\")));
 	void f() {}
     "]
-    if [string match "" $lines] then {
-	set answer 1
-	lappend visibility_available_saved $what_kind
-    } else {
-	set answer 0
-	lappend visibility_available_saved "!$what_kind"
-    }
-    return $answer
 }
 
 ###############################
@@ -317,78 +319,23 @@ proc check_profiling_available { test_what } {
 # false.
 
 proc check_effective_target_default_packed { } {
-    global et_default_packed_saved
-    global et_default_packed_target_name
-
-    if { ![info exists et_default_packed_target_name] } {
-	set et_default_packed_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_default_packed_target_name } {
-	verbose "check_effective_target_default_packed: `$et_default_packed_target_name'" 2
-	set et_default_packed_target_name $current_target
-	if [info exists et_default_packed_saved] {
-	    verbose "check_effective_target_default_packed: removing cached result" 2
-	    unset et_default_packed_saved
-	}
-    }
-
-    if [info exists et_default_packed_saved] {
-	verbose "check_effective_target_default_packed: using cached result" 2
-    } else {
-	verbose "check_effective_target_default_packed: compiling source" 2
-
-	set et_default_packed_saved \
-	    [string match "" [get_compiler_messages default_packed assembly {
-	    struct x { char a; long b; } c;
-	    int s[sizeof (c) == sizeof (char) + sizeof (long) ? 1 : -1];
-	} ]]
-
-    }
-    verbose "check_effective_target_default_packed: returning $et_default_packed_saved" 2
-    return $et_default_packed_saved
+    return [check_no_compiler_messages default_packed assembly {
+	struct x { char a; long b; } c;
+	int s[sizeof (c) == sizeof (char) + sizeof (long) ? 1 : -1];
+    }]
 }
 
 # Return 1 if target has PCC_BITFIELD_TYPE_MATTERS defined.  See
 # documentation, where the test also comes from.
 
 proc check_effective_target_pcc_bitfield_type_matters { } {
-    global et_pcc_bitfield_type_matters_saved
-    global et_pcc_bitfield_type_matters_target_name
-
-    if { ![info exists et_pcc_bitfield_type_matters_target_name] } {
-	set et_pcc_bitfield_type_matters_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_pcc_bitfield_type_matters_target_name } {
-	verbose "check_effective_target_pcc_bitfield_type_matters: `$et_pcc_bitfield_type_matters_target_name'" 2
-	set et_pcc_bitfield_type_matters_target_name $current_target
-	if [info exists et_pcc_bitfield_type_matters_saved] {
-	    verbose "check_effective_target_pcc_bitfield_type_matters: removing cached result" 2
-	    unset et_pcc_bitfield_type_matters_saved
-	}
-    }
-
-    if [info exists et_pcc_bitfield_type_matters_saved] {
-	verbose "check_effective_target_pcc_bitfield_type_matters: using cached result" 2
-    } else {
-	verbose "check_effective_target_pcc_bitfield_type_matters: compiling source" 2
-
-	# PCC_BITFIELD_TYPE_MATTERS isn't just about unnamed or empty
-	# bitfields, but let's stick to the example code from the docs.
-	set et_pcc_bitfield_type_matters_saved \
-	    [string match "" [get_compiler_messages pcc_bitfield_type_matters assembly {
-	    struct foo1 { char x; char :0; char y; };
-	    struct foo2 { char x; int :0; char y; };
-	    int s[sizeof (struct foo1) != sizeof (struct foo2) ? 1 : -1];
-	} ]]
-    }
-    verbose "check_effective_target_pcc_bitfield_type_matters: returning $et_pcc_bitfield_type_matters_saved" 2
-    return $et_pcc_bitfield_type_matters_saved
+    # PCC_BITFIELD_TYPE_MATTERS isn't just about unnamed or empty
+    # bitfields, but let's stick to the example code from the docs.
+    return [check_no_compiler_messages pcc_bitfield_type_matters assembly {
+	struct foo1 { char x; char :0; char y; };
+	struct foo2 { char x; int :0; char y; };
+	int s[sizeof (struct foo1) != sizeof (struct foo2) ? 1 : -1];
+    }]
 }
 
 # Return 1 if thread local storage (TLS) is supported, 0 otherwise.
@@ -473,119 +420,37 @@ proc check_effective_target_tls_runtime {} {
 # code, 0 otherwise.
 
 proc check_effective_target_fopenmp {} {
-    global et_fopenmp_saved
-    global et_fopenmp_target_name
-
-    if { ![info exists et_fopenmp_target_name] } {
-	set et_fopenmp_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_fopenmp_target_name } {
-	verbose "check_effective_target_fopenmp: `$et_fopenmp_target_name'" 2
-	set et_fopenmp_target_name $current_target
-	if [info exists et_fopenmp_saved] {
-	    verbose "check_effective_target_fopenmp: removing cached result" 2
-	    unset et_fopenmp_saved
-	}
-    }
-
-    if [info exists et_fopenmp_saved] {
-	verbose "check_effective_target_fopenmp: using cached result" 2
-    } else {
-	verbose "check_effective_target_fopenmp: compiling source" 2
-
-	set et_fopenmp_saved [string match "" [get_compiler_messages fopenmp object {
-	    void foo (void) { }
-	} "-fopenmp"]]
-    }
-    verbose "check_effective_target_fopenmp: returning $et_fopenmp_saved" 2
-    return $et_fopenmp_saved
+    return [check_no_compiler_messages fopenmp object {
+	void foo (void) { }
+    } "-fopenmp"]
 }
 
 # Return 1 if compilation with -freorder-blocks-and-partition is error-free
 # for trivial code, 0 otherwise.
 
 proc check_effective_target_freorder {} {
-    global et_freorder_saved
-    global et_freorder_target_name
-
-    if { ![info exists et_freorder_target_name] } {
-	set et_freorder_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_freorder_target_name } {
-	verbose "check_effective_target_freorder: `$et_freorder_target_name'" 2
-	set et_freorder_target_name $current_target
-	if [info exists et_freorder_saved] {
-	    verbose "check_effective_target_freorder: removing cached result" 2
-	    unset et_freorder_saved
-	}
-    }
-
-    if [info exists et_freorder_saved] {
-	verbose "check_effective_target_freorder: using cached result" 2
-    } else {
-	verbose "check_effective_target_freorder: compiling source" 2
-
-	set et_freorder_saved [string match "" [get_compiler_messages freorder object {
-	    void foo (void) { }
-	} "-freorder-blocks-and-partition"]]
-    }
-    verbose "check_effective_target_freorder: returning $et_freorder_saved" 2
-    return $et_freorder_saved
+    return [check_no_compiler_messages freorder object {
+	void foo (void) { }
+    } "-freorder-blocks-and-partition"]
 }
 
 # Return 1 if -fpic and -fPIC are supported, as in no warnings or errors
 # emitted, 0 otherwise.  Whether a shared library can actually be built is
 # out of scope for this test.
-#
-# When the target name changes, replace the cached result.
 
 proc check_effective_target_fpic { } {
-    global et_fpic_saved
-    global et_fpic_target_name
-
-    if { ![info exists et_fpic_target_name] } {
-	set et_fpic_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_fpic_target_name } {
-	verbose "check_effective_target_fpic: `$et_fpic_target_name'" 2
-	set et_fpic_target_name $current_target
-	if [info exists et_fpic_saved] {
-	    verbose "check_effective_target_fpic: removing cached result" 2
-	    unset et_fpic_saved
-	}
-    }
-
-    if [info exists et_fpic_saved] {
-	verbose "check_effective_target_fpic: using cached result" 2
-    } else {
-	verbose "check_effective_target_fpic: compiling source" 2
-
-	# Note that M68K has a multilib that supports -fpic but not
-	# -fPIC, so we need to check both.  We test with a program that
-	# requires GOT references.
-	set et_fpic_saved [string match "" [get_compiler_messages fpic object {
+    # Note that M68K has a multilib that supports -fpic but not
+    # -fPIC, so we need to check both.  We test with a program that
+    # requires GOT references.
+    foreach arg {fpic fPIC} {
+	if [check_no_compiler_messages $arg object {
 	    extern int foo (void); extern int bar;
 	    int baz (void) { return foo () + bar; }
-	} "-fpic"]]
-
-	if { $et_fpic_saved != 0 } {
-	    set et_fpic_saved [string match "" [get_compiler_messages fpic object {
-		extern int foo (void); extern int bar;
-		int baz (void) { return foo () + bar; }
-	    } "-fPIC"]]
+	} "-$arg"] {
+	    return 1
 	}
     }
-    verbose "check_effective_target_fpic: returning $et_fpic_saved" 2
-    return $et_fpic_saved
+    return 0
 }
 
 # Return true if iconv is supported on the target. In particular IBM1047.
@@ -633,16 +498,11 @@ proc check_iconv_available { test_what } {
 }
 
 # Return true if named sections are supported on this target.
-# This proc does not cache results, because the answer may vary
-# when cycling over subtarget options (e.g. irix o32/n32/n64) in
-# the same test run.
+
 proc check_named_sections_available { } {
-    verbose "check_named_sections_available: compiling source" 2
-    set answer [string match "" [get_compiler_messages named assembly {
+    return [check_no_compiler_messages named_sections assembly {
 	int __attribute__ ((section("whatever"))) foo;
-    }]]
-    verbose "check_named_sections_available: returning $answer" 2
-    return $answer
+    }]
 }
 
 # Return 1 if the target supports Fortran real kinds larger than real(8),
@@ -1057,74 +917,24 @@ proc check_mkfifo_available {} {
 
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
-#
-# When the target name changes, replace the cached result.
 
 proc check_effective_target_ilp32 { } {
-    global et_ilp32_saved
-    global et_ilp32_target_name
-
-    if { ![info exists et_ilp32_target_name] } {
-	set et_ilp32_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_ilp32_target_name } {
-	verbose "check_effective_target_ilp32: `$et_ilp32_target_name' `$current_target'" 2
-	set et_ilp32_target_name $current_target
-	if { [info exists et_ilp32_saved] } {
-	    verbose "check_effective_target_ilp32: removing cached result" 2
-	    unset et_ilp32_saved
-	}
-    }
-
-    if [info exists et_ilp32_saved] {
-	verbose "check-effective_target_ilp32: using cached result" 2
-    } else {
-	verbose "check_effective_target_ilp32: compiling source" 2
-	set et_ilp32_saved [string match "" [get_compiler_messages ilp32 object {
-	    int dummy[(sizeof (int) == 4 && sizeof (void *) == 4 && sizeof (long) == 4 ) ? 1 : -1];
-	}]]
-    }
-    verbose "check_effective_target_ilp32: returning $et_ilp32_saved" 2
-    return $et_ilp32_saved
+    return [check_no_compiler_messages ilp32 object {
+	int dummy[sizeof (int) == 4
+		  && sizeof (void *) == 4
+		  && sizeof (long) == 4 ? 1 : -1];
+    }]
 }
 
 # Return 1 if we're generating 64-bit code using default options, 0
 # otherwise.
-#
-# When the target name changes, replace the cached result.
 
 proc check_effective_target_lp64 { } {
-    global et_lp64_saved
-    global et_lp64_target_name
-
-    if { ![info exists et_lp64_target_name] } {
-	set et_lp64_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_lp64_target_name } {
-	verbose "check_effective_target_lp64: `$et_lp64_target_name' `$current_target'" 2
-	set et_lp64_target_name $current_target
-	if [info exists et_lp64_saved] {
-	    verbose "check_effective_target_lp64: removing cached result" 2
-	    unset et_lp64_saved
-	}
-    }
-
-    if [info exists et_lp64_saved] {
-	verbose "check_effective_target_lp64: using cached result" 2
-    } else {
-	verbose "check_effective_target_lp64: compiling source" 2
-	set et_lp64_saved [string match "" [get_compiler_messages lp64 object {
-	    int dummy[(sizeof (int) == 4 && sizeof (void *) == 8 && sizeof (long) == 8 ) ? 1 : -1];
-	}]]
-    }
-    verbose "check_effective_target_lp64: returning $et_lp64_saved" 2
-    return $et_lp64_saved
+    return [check_no_compiler_messages lp64 object {
+	int dummy[sizeof (int) == 4
+		  && sizeof (void *) == 8
+		  && sizeof (long) == 8 ? 1 : -1];
+    }]
 }
 
 # Return 1 if the target supports compiling decimal floating point,
@@ -1799,38 +1609,9 @@ proc is-effective-target-keyword { arg } {
 # Return 1 if target default to short enums
 
 proc check_effective_target_short_enums { } {
-    global et_short_enums_saved
-    global et_short_enums_target_name
-
-    if { ![info exists et_short_enums_target_name] } {
-	set et_short_enums_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_short_enums_target_name } {
-	verbose "check_effective_target_short_enums: `$et_short_enums_target_name'" 2
-	set et_short_enums_target_name $current_target
-	if [info exists et_short_enums_saved] {
-	    verbose "check_effective_target_short_enums: removing cached result" 2
-	    unset et_short_enums_saved
-	}
-    }
-
-    if [info exists et_short_enums_saved] {
-	verbose "check_effective_target_short_enums: using cached result" 2
-    } else {
-	verbose "check_effective_target_short_enums: compiling source" 2
-
-	# PCC_BITFIELD_TYPE_MATTERS isn't just about unnamed or empty
-	# bitfields, but let's stick to the example code from the docs.
-	set et_short_enums_saved \
-	    [string match "" [get_compiler_messages short_enums assembly {
-	    enum foo { bar };
-	    int s[sizeof (enum foo) == 1 ? 1 : -1];
-	} ]]
-    }
-    verbose "check_effective_target_short_enums: returning $et_short_enums_saved" 2
-    return $et_short_enums_saved
+    return [check_no_compiler_messages short_enums assembly {
+	enum foo { bar };
+	int s[sizeof (enum foo) == 1 ? 1 : -1];
+    }]
 }
 
