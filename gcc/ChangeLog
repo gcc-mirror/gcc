@@ -1,3 +1,11 @@
+2006-03-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (untangle_mova): Initialize n_addr and n_target.
+
+	* config/sh/sh.c (find_regmode_weight): Change the type of the first
+	parameter and use get_ebb_head_tail.
+	(sh_md_init_global): Adjust uses of find_regmode_weight.
+
 2006-03-20  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* function.h (struct function) <x_tail_recursion_reentry>:
