@@ -322,7 +322,6 @@ extern struct tree_opt_pass pass_free_datastructures;
 extern struct tree_opt_pass pass_init_datastructures;
 extern struct tree_opt_pass pass_fixup_cfg;
 
-extern struct tree_opt_pass pass_remove_unnecessary_notes;
 extern struct tree_opt_pass pass_init_function;
 extern struct tree_opt_pass pass_jump;
 extern struct tree_opt_pass pass_insn_locators_initialize;

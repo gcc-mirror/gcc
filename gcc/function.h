@@ -239,7 +239,7 @@ struct function GTY(())
   rtx x_stack_slot_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
-  rtx x_tail_recursion_reentry;
+  rtx x_stack_check_probe_note;
 
   /* Location at which to save the argument pointer if it will need to be
      referenced.  There are two cases where this is done: if nonlocal gotos
@@ -503,7 +503,7 @@ extern int trampolines_created;
 #define stack_slot_list (cfun->x_stack_slot_list)
 #define parm_birth_insn (cfun->x_parm_birth_insn)
 #define frame_offset (cfun->x_frame_offset)
-#define tail_recursion_reentry (cfun->x_tail_recursion_reentry)
+#define stack_check_probe_note (cfun->x_stack_check_probe_note)
 #define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
 #define used_temp_slots (cfun->x_used_temp_slots)
 #define avail_temp_slots (cfun->x_avail_temp_slots)
