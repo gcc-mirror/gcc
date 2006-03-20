@@ -1177,32 +1177,78 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 
     case tcc_reference:
       {
-	tree oldop1 = TREE_OPERAND (expr, 0);
-	tree newop1;
+	tree oldop0 = TREE_OPERAND (expr, 0);
+	tree oldop1 = NULL;
+	tree newop0;
+	tree newop1 = NULL;
+	tree oldop2 = NULL;
+	tree newop2 = NULL;
+	tree oldop3 = NULL;
+	tree newop3 = NULL;
 	tree newexpr;
 	VEC (tree, gc) * oldvuses = NULL;
 	VEC (tree, gc) * newvuses = NULL;
 
 	if (TREE_CODE (expr) != INDIRECT_REF
-	    && TREE_CODE (expr) != COMPONENT_REF)
+	    && TREE_CODE (expr) != COMPONENT_REF
+	    && TREE_CODE (expr) != ARRAY_REF)
 	  return NULL;
 
-	newop1 = phi_translate (find_leader (set, oldop1),
+	newop0 = phi_translate (find_leader (set, oldop0),
 				set, pred, phiblock);
-	if (newop1 == NULL)
+	if (newop0 == NULL)
 	  return NULL;
+	
+	if (TREE_CODE (expr) == ARRAY_REF)
+	  {
+	    oldop1 = TREE_OPERAND (expr, 1);
+	    newop1 = phi_translate (find_leader (set, oldop1),
+				    set, pred, phiblock);
+	
+	    if (newop1 == NULL)
+	      return NULL;
+	    oldop2 = TREE_OPERAND (expr, 2);
+	    if (oldop2)
+	      {
+		newop2 = phi_translate (find_leader (set, oldop2),
+					set, pred, phiblock);
+	    
+		if (newop2 == NULL)
+		  return NULL;
+	      }
+	    oldop3 = TREE_OPERAND (expr, 3);
+	    if (oldop3)
+	      {
+		newop3 = phi_translate (find_leader (set, oldop3),
+					set, pred, phiblock);
+		
+		if (newop3 == NULL)
+		  return NULL;
+	      }
+	  }
 
 	oldvuses = VALUE_HANDLE_VUSES (get_value_handle (expr));
 	if (oldvuses)
 	  newvuses = translate_vuses_through_block (oldvuses, pred);
-
-	if (newop1 != oldop1 || newvuses != oldvuses)
+	
+	if (newop0 != oldop0 || newvuses != oldvuses
+	    || newop1 != oldop1 
+	    || newop2 != oldop2 
+	    || newop3 != oldop3)
 	  {
 	    tree t;
 
 	    newexpr = pool_alloc (reference_node_pool);
 	    memcpy (newexpr, expr, tree_size (expr));
-	    TREE_OPERAND (newexpr, 0) = get_value_handle (newop1);
+	    TREE_OPERAND (newexpr, 0) = get_value_handle (newop0);
+	    if (TREE_CODE (expr) == ARRAY_REF)
+	      {
+		TREE_OPERAND (newexpr, 1) = get_value_handle (newop1);
+		if (newop2)
+		  TREE_OPERAND (newexpr, 2) = get_value_handle (newop2);
+		if (newop3)
+		  TREE_OPERAND (newexpr, 3) = get_value_handle (newop3);
+	      }
 
 	    t = fully_constant_expression (newexpr);
 
@@ -1525,22 +1571,38 @@ valid_in_set (value_set_t set, tree expr, basic_block block)
     case tcc_reference:
       {
 	if (TREE_CODE (expr) == INDIRECT_REF 
-	    || TREE_CODE (expr) == COMPONENT_REF)
+	    || TREE_CODE (expr) == COMPONENT_REF
+            || TREE_CODE (expr) == ARRAY_REF)
 	  {
 	    tree op0 = TREE_OPERAND (expr, 0);
-	    if (is_gimple_min_invariant (op0)
-		|| TREE_CODE (op0) == VALUE_HANDLE)
+	    gcc_assert (is_gimple_min_invariant (op0)
+			|| TREE_CODE (op0) == VALUE_HANDLE);
+	    if (!set_contains_value (set, op0))
+	      return false;
+	    if (TREE_CODE (expr) == ARRAY_REF)
 	      {
-		bool retval = set_contains_value (set, op0);
-		if (retval)
-		  {
-		    return set_contains_value (ANTIC_SAFE_LOADS (block),
-					       vh)
-		      || !vuses_dies_in_block_x (VALUE_HANDLE_VUSES (vh),
-						 block);
-		  }
-		return false;
-	      }
+		tree op1 = TREE_OPERAND (expr, 1);
+		tree op2 = TREE_OPERAND (expr, 2);
+		tree op3 = TREE_OPERAND (expr, 3);
+		gcc_assert (is_gimple_min_invariant (op1)
+		            || TREE_CODE (op1) == VALUE_HANDLE);
+		if (!set_contains_value (set, op1))
+		  return false;
+		gcc_assert (!op2 || is_gimple_min_invariant (op2)
+		            || TREE_CODE (op2) == VALUE_HANDLE);
+		if (op2
+		    && !set_contains_value (set, op2))
+		  return false;
+		gcc_assert (!op3 || is_gimple_min_invariant (op3)
+		            || TREE_CODE (op3) == VALUE_HANDLE);
+		if (op3
+		    && !set_contains_value (set, op3))
+		  return false;
+	    }
+	  return set_contains_value (ANTIC_SAFE_LOADS (block),
+				     vh)
+	    || !vuses_dies_in_block_x (VALUE_HANDLE_VUSES (vh),
+				       block);
 	  }
       }
       return false;
@@ -2091,7 +2153,8 @@ can_PRE_operation (tree op)
     || COMPARISON_CLASS_P (op)
     || TREE_CODE (op) == INDIRECT_REF
     || TREE_CODE (op) == COMPONENT_REF
-    || TREE_CODE (op) == CALL_EXPR;
+    || TREE_CODE (op) == CALL_EXPR
+    || TREE_CODE (op) == ARRAY_REF;
 }
 
 
@@ -2105,8 +2168,8 @@ static VEC(tree,heap) *inserted_exprs;
    to see which expressions need to be put into GC'able memory  */
 static VEC(tree, heap) *need_creation;
 
-/* For COMPONENT_REF's, we can't have any intermediates for the
-   COMPONENT_REF or INDIRECT_REF portion, because we'd end up with
+/* For COMPONENT_REF's and ARRAY_REF's, we can't have any intermediates for the
+   COMPONENT_REF or INDIRECT_REF or ARRAY_REF portion, because we'd end up with
    trying to rename aggregates into ssa form directly, which is a no
    no.
 
@@ -2136,6 +2199,26 @@ create_component_ref_by_pieces (basic_block block, tree expr, tree stmts)
 
   switch TREE_CODE (genop)
     {
+    case ARRAY_REF:
+      {
+	tree op0;
+	tree op1, op2, op3;
+	op0 = create_component_ref_by_pieces (block, 
+					      TREE_OPERAND (genop, 0),
+					      stmts);
+	op1 = TREE_OPERAND (genop, 1);
+	if (TREE_CODE (op1) == VALUE_HANDLE)
+	  op1 = find_or_generate_expression (block, op1, stmts);
+	op2 = TREE_OPERAND (genop, 2);
+	if (op2 && TREE_CODE (op2) == VALUE_HANDLE)
+	  op2 = find_or_generate_expression (block, op2, stmts);
+	op3 = TREE_OPERAND (genop, 3);
+	if (op3 && TREE_CODE (op3) == VALUE_HANDLE)
+	  op3 = find_or_generate_expression (block, op3, stmts);
+	folded = build4 (ARRAY_REF, TREE_TYPE (genop), op0, op1, 
+			      op2, op3);
+	return folded;
+      }
     case COMPONENT_REF:
       {
 	tree op0;
@@ -2259,7 +2342,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
       break;
     case tcc_reference:
       {
-	if (TREE_CODE (expr) == COMPONENT_REF)
+	if (TREE_CODE (expr) == COMPONENT_REF
+	    || TREE_CODE (expr) == ARRAY_REF)
 	  {
 	    folded = create_component_ref_by_pieces (block, expr, stmts);
 	  }

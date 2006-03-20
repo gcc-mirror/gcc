@@ -1,3 +1,13 @@
+2006-03-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/26629
+	* tree-ssa-pre (phi_translate): Handle ARRAY_REF's operands.
+	(valid_in_set): Handle ARRAY_REF.
+	Change "if min_variant or VH" to asserts.
+	(create_component_ref_by_pieces): Handle ARRAY_REF.
+	(create_expression_by_pieces): Likewise.
+	(can_PRE_operation): ARRAY_REFs can now be PRE'd.
+
 2006-03-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* genpreds.c (write_insn_extra_address_constraint): Argument `c'
