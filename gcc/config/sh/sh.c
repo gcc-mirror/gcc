@@ -208,7 +208,7 @@ static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
 static short find_set_regmode_weight (rtx, enum machine_mode);
 static short find_insn_regmode_weight (rtx, enum machine_mode);
-static void find_regmode_weight (int, enum machine_mode);
+static void find_regmode_weight (basic_block, enum machine_mode);
 static void  sh_md_init_global (FILE *, int, int);
 static void  sh_md_finish_global (FILE *, int);
 static int rank_for_reorder (const void *, const void *);
@@ -3446,8 +3446,8 @@ fixup_mova (rtx mova)
 static int
 untangle_mova (int *num_mova, rtx *first_mova, rtx new_mova)
 {
-  int n_addr;
-  int f_target, n_target;
+  int n_addr = 0; /* Initialization to shut up spurious warning.  */
+  int f_target, n_target = 0; /* Likewise.  */
 
   if (optimize)
     {
@@ -8748,11 +8748,11 @@ find_insn_regmode_weight (rtx insn, enum machine_mode mode)
 
 /* Calculate regmode weights for all insns of a basic block.  */
 static void
-find_regmode_weight (int b, enum machine_mode mode)
+find_regmode_weight (basic_block b, enum machine_mode mode)
 {
   rtx insn, next_tail, head, tail;
 
-  get_block_head_tail (b, &head, &tail);
+  get_ebb_head_tail (b, b, &head, &tail);
   next_tail = NEXT_INSN (tail);
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
@@ -8833,8 +8833,8 @@ sh_md_init_global (FILE *dump ATTRIBUTE_UNUSED,
 
   FOR_EACH_BB_REVERSE (b)
   {
-    find_regmode_weight (b->index, SImode);
-    find_regmode_weight (b->index, SFmode);
+    find_regmode_weight (b, SImode);
+    find_regmode_weight (b, SFmode);
   }
 
   CURR_REGMODE_PRESSURE (SImode) = 0;
