@@ -622,7 +622,6 @@ init_optimization_passes (void)
   *p = NULL;
   
   p = &pass_rest_of_compilation.sub;
-  NEXT_PASS (pass_remove_unnecessary_notes);
   NEXT_PASS (pass_init_function);
   NEXT_PASS (pass_jump);
   NEXT_PASS (pass_insn_locators_initialize);

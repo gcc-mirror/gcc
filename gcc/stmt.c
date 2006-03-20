@@ -2364,18 +2364,8 @@ expand_case (tree exp)
 	}
 
 
-      /* Make sure start points to something that won't need any
-	 transformation before the end of this function.  */
-      start = get_last_insn ();
-      if (! NOTE_P (start))
-	{
-	  emit_note (NOTE_INSN_DELETED);
-	  start = get_last_insn ();
-	}
-
+      before_case = start = get_last_insn ();
       default_label = label_rtx (default_label_decl);
-
-      before_case = get_last_insn ();
 
       /* Get upper and lower bounds of case values.  */
 

@@ -1,3 +1,21 @@
+2006-03-20  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* function.h (struct function) <x_tail_recursion_reentry>:
+	Rename to x_stack_check_probe_note.
+	(tail_recursion_reentry): Rename to stack_check_probe_note.
+	* function.c: Replace tail_recursion_reentry with
+	stack_check_probe_note everywhere.
+	(expand_function_start): Only emit a note for
+	stack_check_probe_note with -fstack-protect.
+	* stmt.c (expand_case): Don't emit NOTE_INSN_DELETED notes.
+
+	* emit-rtl.c (remove_unnecessary_notes): Remove.
+	(pass_remove_unnecessary_notes): Remove.
+	* rtl.h (remove_unnecessary_notes): Remove prototype.
+	* final.c (final_start_function): Don't call remove_unnecessary_notes.
+	* tree-pass.h (pass_remove_unnecessary_notes): Remove.
+	* passes.c (pass_remove_unnecessary_notes): Don't run it.
+
 2006-03-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/26629

@@ -2065,7 +2065,6 @@ extern void remove_insn (rtx);
 extern void emit_insn_after_with_line_notes (rtx, rtx, rtx);
 extern rtx emit (rtx);
 extern void renumber_insns (void);
-extern unsigned int remove_unnecessary_notes (void);
 extern rtx delete_insn (rtx);
 extern rtx entry_of_function (void);
 extern void delete_insn_chain (rtx, rtx);
