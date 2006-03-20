@@ -1753,18 +1753,18 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_mrelocatable:
       if (value == 1)
 	{
-	  target_flags |= MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC;
-	  target_flags_explicit |= MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC;
+	  target_flags |= MASK_MINIMAL_TOC;
+	  target_flags_explicit |= MASK_MINIMAL_TOC;
+	  TARGET_NO_FP_IN_TOC = 1;
 	}
       break;
 
     case OPT_mrelocatable_lib:
       if (value == 1)
 	{
-	  target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC
-	    | MASK_NO_FP_IN_TOC;
-	  target_flags_explicit |= MASK_RELOCATABLE | MASK_MINIMAL_TOC
-	    | MASK_NO_FP_IN_TOC;
+	  target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC;
+	  target_flags_explicit |= MASK_RELOCATABLE | MASK_MINIMAL_TOC;
+	  TARGET_NO_FP_IN_TOC = 1;
 	}
       else
 	{
