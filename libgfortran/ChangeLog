@@ -1,3 +1,137 @@
+2006-03-20  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/20935
+	* m4/iforeach.m4:  Add SCALAR_FOREACH_FUNCTION macro.
+	* m4/ifunction.m4:  Add SCALAR_ARRAY_FUNCTION macro.
+	* m4/minloc0.m4:  Use SCALAR_FOREACH_FUNCTION.
+	* m4/minloc1.m4:  Use SCALAR_ARRAY_FUNCTION.
+	* m4/maxloc0.m4:  Use SCALAR_FOREACH_FUNCTION.
+	* m4/maxloc1.m4:  Use SCALAR_ARRAY_FUNCTION.
+	* m4/minval.m4:  Likewise.
+	* m4/maxval.m4:  Likewise.
+	* m4/product.m4:  Likewise.
+	* m4/sum.m4:  Likewise.
+	* minloc0_16_i16.c : Regenerated.
+	* minloc0_16_i4.c : Regenerated.
+	* minloc0_16_i8.c : Regenerated.
+	* minloc0_16_r10.c : Regenerated.
+	* minloc0_16_r16.c : Regenerated.
+	* minloc0_16_r4.c : Regenerated.
+	* minloc0_16_r8.c : Regenerated.
+	* minloc0_4_i16.c : Regenerated.
+	* minloc0_4_i4.c : Regenerated.
+	* minloc0_4_i8.c : Regenerated.
+	* minloc0_4_r10.c : Regenerated.
+	* minloc0_4_r16.c : Regenerated.
+	* minloc0_4_r4.c : Regenerated.
+	* minloc0_4_r8.c : Regenerated.
+	* minloc0_8_i16.c : Regenerated.
+	* minloc0_8_i4.c : Regenerated.
+	* minloc0_8_i8.c : Regenerated.
+	* minloc0_8_r10.c : Regenerated.
+	* minloc0_8_r16.c : Regenerated.
+	* minloc0_8_r4.c : Regenerated.
+	* minloc0_8_r8.c : Regenerated.
+	* minloc1_16_i16.c : Regenerated.
+	* minloc1_16_i4.c : Regenerated.
+	* minloc1_16_i8.c : Regenerated.
+	* minloc1_16_r10.c : Regenerated.
+	* minloc1_16_r16.c : Regenerated.
+	* minloc1_16_r4.c : Regenerated.
+	* minloc1_16_r8.c : Regenerated.
+	* minloc1_4_i16.c : Regenerated.
+	* minloc1_4_i4.c : Regenerated.
+	* minloc1_4_i8.c : Regenerated.
+	* minloc1_4_r10.c : Regenerated.
+	* minloc1_4_r16.c : Regenerated.
+	* minloc1_4_r4.c : Regenerated.
+	* minloc1_4_r8.c : Regenerated.
+	* minloc1_8_i16.c : Regenerated.
+	* minloc1_8_i4.c : Regenerated.
+	* minloc1_8_i8.c : Regenerated.
+	* minloc1_8_r10.c : Regenerated.
+	* minloc1_8_r16.c : Regenerated.
+	* minloc1_8_r4.c : Regenerated.
+	* minloc1_8_r8.c : Regenerated.
+	* maxloc0_16_i16.c : Regenerated.
+	* maxloc0_16_i4.c : Regenerated.
+	* maxloc0_16_i8.c : Regenerated.
+	* maxloc0_16_r10.c : Regenerated.
+	* maxloc0_16_r16.c : Regenerated.
+	* maxloc0_16_r4.c : Regenerated.
+	* maxloc0_16_r8.c : Regenerated.
+	* maxloc0_4_i16.c : Regenerated.
+	* maxloc0_4_i4.c : Regenerated.
+	* maxloc0_4_i8.c : Regenerated.
+	* maxloc0_4_r10.c : Regenerated.
+	* maxloc0_4_r16.c : Regenerated.
+	* maxloc0_4_r4.c : Regenerated.
+	* maxloc0_4_r8.c : Regenerated.
+	* maxloc0_8_i16.c : Regenerated.
+	* maxloc0_8_i4.c : Regenerated.
+	* maxloc0_8_i8.c : Regenerated.
+	* maxloc0_8_r10.c : Regenerated.
+	* maxloc0_8_r16.c : Regenerated.
+	* maxloc0_8_r4.c : Regenerated.
+	* maxloc0_8_r8.c : Regenerated.
+	* maxloc1_16_i16.c : Regenerated.
+	* maxloc1_16_i4.c : Regenerated.
+	* maxloc1_16_i8.c : Regenerated.
+	* maxloc1_16_r10.c : Regenerated.
+	* maxloc1_16_r16.c : Regenerated.
+	* maxloc1_16_r4.c : Regenerated.
+	* maxloc1_16_r8.c : Regenerated.
+	* maxloc1_4_i16.c : Regenerated.
+	* maxloc1_4_i4.c : Regenerated.
+	* maxloc1_4_i8.c : Regenerated.
+	* maxloc1_4_r10.c : Regenerated.
+	* maxloc1_4_r16.c : Regenerated.
+	* maxloc1_4_r4.c : Regenerated.
+	* maxloc1_4_r8.c : Regenerated.
+	* maxloc1_8_i16.c : Regenerated.
+	* maxloc1_8_i4.c : Regenerated.
+	* maxloc1_8_i8.c : Regenerated.
+	* maxloc1_8_r10.c : Regenerated.
+	* maxloc1_8_r16.c : Regenerated.
+	* maxloc1_8_r4.c : Regenerated.
+	* maxloc1_8_r8.c : Regenerated.
+	* maxval_i16.c : Regenerated.
+	* maxval_i4.c : Regenerated.
+	* maxval_i8.c : Regenerated.
+	* maxval_r10.c : Regenerated.
+	* maxval_r16.c : Regenerated.
+	* maxval_r4.c : Regenerated.
+	* maxval_r8.c : Regenerated.
+	* minval_i16.c : Regenerated.
+	* minval_i4.c : Regenerated.
+	* minval_i8.c : Regenerated.
+	* minval_r10.c : Regenerated.
+	* minval_r16.c : Regenerated.
+	* minval_r4.c : Regenerated.
+	* minval_r8.c : Regenerated.
+	* sum_c10.c : Regenerated.
+	* sum_c16.c : Regenerated.
+	* sum_c4.c : Regenerated.
+	* sum_c8.c : Regenerated.
+	* sum_i16.c : Regenerated.
+	* sum_i4.c : Regenerated.
+	* sum_i8.c : Regenerated.
+	* sum_r10.c : Regenerated.
+	* sum_r16.c : Regenerated.
+	* sum_r4.c : Regenerated.
+	* sum_r8.c : Regenerated.
+	* product_c10.c : Regenerated.
+	* product_c16.c : Regenerated.
+	* product_c4.c : Regenerated.
+	* product_c8.c : Regenerated.
+	* product_i16.c : Regenerated.
+	* product_i4.c : Regenerated.
+	* product_i8.c : Regenerated.
+	* product_r10.c : Regenerated.
+	* product_r16.c : Regenerated.
+	* product_r4.c : Regenerated.
+	* product_r8.c : Regenerated.
+
 2006-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26509

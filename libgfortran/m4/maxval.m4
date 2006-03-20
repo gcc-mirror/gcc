@@ -49,4 +49,6 @@ MASKED_ARRAY_FUNCTION(atype_min,
 `  if (*msrc && *src > result)
     result = *src;')
 
+SCALAR_ARRAY_FUNCTION(atype_min)
+
 #endif

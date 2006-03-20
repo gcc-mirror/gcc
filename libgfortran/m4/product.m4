@@ -47,4 +47,6 @@ MASKED_ARRAY_FUNCTION(1,
 `  if (*msrc)
     result *= *src;')
 
+SCALAR_ARRAY_FUNCTION(1)
+
 #endif

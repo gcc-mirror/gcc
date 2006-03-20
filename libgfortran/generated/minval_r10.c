@@ -339,4 +339,58 @@ mminval_r10 (gfc_array_r10 * const restrict retarray,
     }
 }
 
+
+extern void sminval_r10 (gfc_array_r10 * const restrict, 
+	gfc_array_r10 * const restrict, const index_type * const restrict,
+	GFC_LOGICAL_4 *);
+export_proto(sminval_r10);
+
+void
+sminval_r10 (gfc_array_r10 * const restrict retarray, 
+	gfc_array_r10 * const restrict array, 
+	const index_type * const restrict pdim, 
+	GFC_LOGICAL_4 * mask)
+{
+  index_type rank;
+  index_type n;
+  index_type dstride;
+  GFC_REAL_10 *dest;
+
+  if (*mask)
+    {
+      minval_r10 (retarray, array, pdim);
+      return;
+    }
+    rank = GFC_DESCRIPTOR_RANK (array);
+  if (rank <= 0)
+    runtime_error ("Rank of array needs to be > 0");
+
+  if (retarray->data == NULL)
+    {
+      retarray->dim[0].lbound = 0;
+      retarray->dim[0].ubound = rank-1;
+      retarray->dim[0].stride = 1;
+      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      retarray->offset = 0;
+      retarray->data = internal_malloc_size (sizeof (GFC_REAL_10) * rank);
+    }
+  else
+    {
+      if (GFC_DESCRIPTOR_RANK (retarray) != 1)
+	runtime_error ("rank of return array does not equal 1");
+
+      if (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound != rank)
+        runtime_error ("dimension of return array incorrect");
+
+      if (retarray->dim[0].stride == 0)
+	retarray->dim[0].stride = 1;
+    }
+
+    dstride = retarray->dim[0].stride;
+    dest = retarray->data;
+
+    for (n = 0; n < rank; n++)
+      dest[n * dstride] = GFC_REAL_10_HUGE ;
+}
+
 #endif
