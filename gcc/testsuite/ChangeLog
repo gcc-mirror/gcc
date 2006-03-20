@@ -1,3 +1,18 @@
+2006-03-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/26629
+	* gcc.dg/tree-ssa/loadpre12.c: New test.
+	* gcc.dg/tree-ssa/loadpre13.c: New test.
+	* gcc.dg/tree-ssa/loadpre14.c: New test.
+	* gcc.dg/tree-ssa/loadpre15.c: New test.
+	* gcc.dg/tree-ssa/loadpre16.c: New test.
+	* gcc.dg/tree-ssa/loadpre17.c: New test.
+	* gcc.dg/tree-ssa/loadpre18.c: New test.
+	* gcc.dg/tree-ssa/loadpre19.c: New test.
+	* gcc.dg/tree-ssa/loadpre20.c: New test.
+	* gcc.dg/tree-ssa/loadpre21.c: New test.
+	* gcc.dg/tree-ssa/loadpre22.c: New test.
+
 2006-03-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26741
