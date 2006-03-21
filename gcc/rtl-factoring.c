@@ -36,6 +36,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-flow.h"
 #include "timevar.h"
 #include "output.h"
+#include "addresses.h"
 
 /* Sequence abstraction:
 
@@ -689,8 +690,9 @@ recompute_gain_for_pattern_seq (pattern_seq pseq)
 #ifdef REGNO_OK_FOR_INDIRECT_JUMP_P
         || (!REGNO_OK_FOR_INDIRECT_JUMP_P (i, Pmode))
 #else
-        || (!REGNO_MODE_OK_FOR_BASE_P (i, Pmode))
-        || (!reg_class_subset_p (REGNO_REG_CLASS (i), BASE_REG_CLASS))
+        || (!ok_for_base_p_1 (i, Pmode, MEM, SCRATCH))
+        || (!reg_class_subset_p (REGNO_REG_CLASS (i),
+				 base_reg_class (VOIDmode, MEM, SCRATCH)))
 #endif
         || (hascall && call_used_regs[i])
         || (!call_used_regs[i] && !regs_ever_live[i]))

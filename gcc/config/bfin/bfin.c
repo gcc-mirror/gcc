@@ -1062,6 +1062,19 @@ effective_address_32bit_p (rtx op, enum machine_mode mode)
   return offset < 0 || offset > 30;
 }
 
+/* Returns true if X is a memory reference using an I register.  */
+bool
+bfin_dsp_memref_p (rtx x)
+{
+  if (! MEM_P (x))
+    return false;
+  x = XEXP (x, 0);
+  if (GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_INC
+      || GET_CODE (x) == POST_DEC || GET_CODE (x) == PRE_DEC)
+    x = XEXP (x, 0);
+  return IREG_P (x);
+}
+
 /* Return cost of the memory address ADDR.
    All addressing modes are equally cheap on the Blackfin.  */
 
@@ -2100,10 +2113,13 @@ bfin_valid_add (enum machine_mode mode, HOST_WIDE_INT value)
 }
 
 static bool
-bfin_valid_reg_p (unsigned int regno, int strict)
+bfin_valid_reg_p (unsigned int regno, int strict, enum machine_mode mode,
+		  enum rtx_code outer_code)
 {
-  return ((strict && REGNO_OK_FOR_BASE_STRICT_P (regno))
-	  || (!strict && REGNO_OK_FOR_BASE_NONSTRICT_P (regno)));
+  if (strict)
+    return REGNO_OK_FOR_BASE_STRICT_P (regno, mode, outer_code, SCRATCH);
+  else
+    return REGNO_OK_FOR_BASE_NONSTRICT_P (regno, mode, outer_code, SCRATCH);
 }
 
 bool
@@ -2111,12 +2127,12 @@ bfin_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 {
   switch (GET_CODE (x)) {
   case REG:
-    if (bfin_valid_reg_p (REGNO (x), strict))
+    if (bfin_valid_reg_p (REGNO (x), strict, mode, MEM))
       return true;
     break;
   case PLUS:
     if (REG_P (XEXP (x, 0))
-	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict)
+	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict, mode, PLUS)
 	&& (GET_CODE (XEXP (x, 1)) == UNSPEC
 	    || (GET_CODE (XEXP (x, 1)) == CONST_INT
 		&& bfin_valid_add (mode, INTVAL (XEXP (x, 1))))))
@@ -2126,13 +2142,13 @@ bfin_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
   case POST_DEC:
     if (LEGITIMATE_MODE_FOR_AUTOINC_P (mode)
 	&& REG_P (XEXP (x, 0))
-	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict))
+	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict, mode, POST_INC))
       return true;
   case PRE_DEC:
     if (LEGITIMATE_MODE_FOR_AUTOINC_P (mode)
 	&& XEXP (x, 0) == stack_pointer_rtx
 	&& REG_P (XEXP (x, 0))
-	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict))
+	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict, mode, PRE_DEC))
       return true;
     break;
   default:

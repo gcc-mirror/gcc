@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "hard-reg-set.h"
 #include "recog.h"
 #include "regs.h"
+#include "addresses.h"
 #include "expr.h"
 #include "function.h"
 #include "flags.h"
@@ -2157,7 +2158,7 @@ preprocess_constraints (void)
 		case 'p':
 		  op_alt[j].is_address = 1;
 		  op_alt[j].cl = reg_class_subunion[(int) op_alt[j].cl]
-		    [(int) MODE_BASE_REG_CLASS (VOIDmode)];
+		      [(int) base_reg_class (VOIDmode, ADDRESS, SCRATCH)];
 		  break;
 
 		case 'g':
@@ -2178,7 +2179,8 @@ preprocess_constraints (void)
 		      op_alt[j].cl
 			= (reg_class_subunion
 			   [(int) op_alt[j].cl]
-			   [(int) MODE_BASE_REG_CLASS (VOIDmode)]);
+			   [(int) base_reg_class (VOIDmode, ADDRESS,
+						  SCRATCH)]);
 		      break;
 		    }
 

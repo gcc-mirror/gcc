@@ -2294,6 +2294,16 @@ register address.  You should define this macro if base plus index
 addresses have different requirements than other base register uses.
 @end defmac
 
+@defmac MODE_CODE_BASE_REG_CLASS (@var{mode}, @var{outer_code}, @var{index_code})
+A C expression whose value is the register class to which a valid
+base register must belong.  @var{outer_code} and @var{index_code} define the
+context in which the base register occurs.  @var{outer_code} is the code of
+the immediately enclosing expression (@code{MEM} for the top level of an
+address, @code{ADDRESS} for something that occurs in an
+@code{address_operand}).  @var{index_code} is the code of the corresponding
+index expression if @var{outer_code} is @code{PLUS}; @code{SCRATCH} otherwise.
+@end defmac
+
 @defmac INDEX_REG_CLASS
 A macro whose definition is the name of the class to which a valid
 index register must belong.  An index register is one used in an
@@ -2314,7 +2324,9 @@ that expression may examine the mode of the memory reference in
 @var{mode}.  You should define this macro if the mode of the memory
 reference affects whether a register may be used as a base register.  If
 you define this macro, the compiler will use it instead of
-@code{REGNO_OK_FOR_BASE_P}.
+@code{REGNO_OK_FOR_BASE_P}.  The mode may be @code{VOIDmode} for addresses
+that appear outside a @code{MEM}, i.e. as an @code{address_operand}.
+
 @end defmac
 
 @defmac REGNO_MODE_OK_FOR_REG_BASE_P (@var{num}, @var{mode})
@@ -2324,6 +2336,20 @@ memory in mode @var{mode}.  It may be either a suitable hard register or a
 pseudo register that has been allocated such a hard register.  You should
 define this macro if base plus index addresses have different requirements
 than other base register uses.
+
+Use of this macro is deprecated; please use the more general
+@code{REGNO_MODE_CODE_OK_FOR_BASE_P}.
+@end defmac
+
+@defmac REGNO_MODE_CODE_OK_FOR_BASE_P (@var{num}, @var{mode}, @var{outer_code}, @var{index_code})
+A C expression that is just like @code{REGNO_MODE_OK_FOR_BASE_P}, except that
+that expression may examine the context in which the register appears in the
+memory reference.  @var{outer_code} is the code of the immediately enclosing
+expression (@code{MEM} if at the top level of the address, @code{ADDRESS} for
+something that occurs in an @code{address_operand}).  @var{index_code} is the
+code of the corresponding index expression if @var{outer_code} is @code{PLUS};
+@code{SCRATCH} otherwise.  The mode may be @code{VOIDmode} for addresses
+that appear outside a @code{MEM}, i.e. as an @code{address_operand}.
 @end defmac
 
 @defmac REGNO_OK_FOR_INDEX_P (@var{num})
@@ -5054,48 +5080,6 @@ into the @code{symbol_ref}, and then check for it here.  When you see a
 @code{const}, you will have to look inside it to find the
 @code{symbol_ref} in order to determine the section.  @xref{Assembler
 Format}.
-@end defmac
-
-@defmac REG_OK_FOR_BASE_P (@var{x})
-A C expression that is nonzero if @var{x} (assumed to be a @code{reg}
-RTX) is valid for use as a base register.  For hard registers, it
-should always accept those which the hardware permits and reject the
-others.  Whether the macro accepts or rejects pseudo registers must be
-controlled by @code{REG_OK_STRICT} as described above.  This usually
-requires two variant definitions, of which @code{REG_OK_STRICT}
-controls the one actually used.
-@end defmac
-
-@defmac REG_MODE_OK_FOR_BASE_P (@var{x}, @var{mode})
-A C expression that is just like @code{REG_OK_FOR_BASE_P}, except that
-that expression may examine the mode of the memory reference in
-@var{mode}.  You should define this macro if the mode of the memory
-reference affects whether a register may be used as a base register.  If
-you define this macro, the compiler will use it instead of
-@code{REG_OK_FOR_BASE_P}.
-@end defmac
-
-@defmac REG_MODE_OK_FOR_REG_BASE_P (@var{x}, @var{mode})
-A C expression which is nonzero if @var{x} (assumed to be a @code{reg} RTX)
-is suitable for use as a base register in base plus index operand addresses,
-accessing memory in mode @var{mode}.  It may be either a suitable hard
-register or a pseudo register that has been allocated such a hard register.
-You should define this macro if base plus index addresses have different
-requirements than other base register uses.
-@end defmac
-
-@defmac REG_OK_FOR_INDEX_P (@var{x})
-A C expression that is nonzero if @var{x} (assumed to be a @code{reg}
-RTX) is valid for use as an index register.
-
-The difference between an index register and a base register is that
-the index register may be scaled.  If an address involves the sum of
-two registers, neither one of them scaled, then either one may be
-labeled the ``base'' and the other the ``index''; but whichever
-labeling is used must fit the machine's constraints of which registers
-may serve in each capacity.  The compiler will try both labelings,
-looking for one that is valid, and will reload one or both registers
-only if neither labeling works.
 @end defmac
 
 @defmac FIND_BASE_TERM (@var{x})
