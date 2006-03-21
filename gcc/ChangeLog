@@ -1,3 +1,9 @@
+2006-03-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/26781
+	* tree-ssa-pre.c (create_component_ref_by_pieces):
+	Handle STRING_CST.
+
 2006-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/26690

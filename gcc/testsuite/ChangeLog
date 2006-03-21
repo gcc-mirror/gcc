@@ -1,3 +1,9 @@
+2006-03-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/26781
+	* gcc.c-torture/compile/pr26781-1.c: New test.
+	* gcc.c-torture/compile/pr26781-2.c: New test.
+
 2006-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/26690
