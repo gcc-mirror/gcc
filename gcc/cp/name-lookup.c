@@ -31,6 +31,7 @@ Boston, MA 02110-1301, USA.  */
 #include "toplev.h"
 #include "diagnostic.h"
 #include "debug.h"
+#include "c-pragma.h"
 
 /* The bindings for a particular name in a particular scope.  */
 
@@ -1330,11 +1331,16 @@ leave_scope (void)
       is_class_level = 0;
     }
 
+#ifdef HANDLE_PRAGMA_VISIBILITY
+  if (scope->has_visibility)
+    pop_visibility ();
+#endif
+
   /* Move one nesting level up.  */
   current_binding_level = scope->level_chain;
 
   /* Namespace-scopes are left most probably temporarily, not
-     completely; they can be reopen later, e.g. in namespace-extension
+     completely; they can be reopened later, e.g. in namespace-extension
      or any name binding activity that requires us to resume a
      namespace.  For classes, we cache some binding levels.  For other
      scopes, we just make the structure available for reuse.  */
@@ -2958,6 +2964,15 @@ current_decl_namespace (void)
 void
 push_namespace (tree name)
 {
+  push_namespace_with_attribs (name, NULL_TREE);
+}
+
+/* Same, but specify attributes to apply to the namespace.  The attributes
+   only apply to the current namespace-body, not to any later extensions. */
+
+void
+push_namespace_with_attribs (tree name, tree attributes)
+{
   tree d = NULL_TREE;
   int need_new = 1;
   int implicit_use = 0;
@@ -3004,6 +3019,7 @@ push_namespace (tree name)
       /* Make a new namespace, binding the name to it.  */
       d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
       DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
+      TREE_PUBLIC (d) = 1;
       pushdecl (d);
       if (anon)
 	{
@@ -3020,6 +3036,36 @@ push_namespace (tree name)
     do_using_directive (d);
   /* Enter the name space.  */
   current_namespace = d;
+
+#ifdef HANDLE_PRAGMA_VISIBILITY
+  /* Clear has_visibility in case a previous namespace-definition had a
+     visibility attribute and this one doesn't.  */
+  current_binding_level->has_visibility = 0;
+  for (d = attributes; d; d = TREE_CHAIN (d))
+    {
+      tree name = TREE_PURPOSE (d);
+      tree args = TREE_VALUE (d);
+      tree x;
+      
+      if (! is_attribute_p ("visibility", name))
+	{
+	  warning (OPT_Wattributes, "%qs attribute directive ignored",
+		   IDENTIFIER_POINTER (name));
+	  continue;
+	}
+
+      x = args ? TREE_VALUE (args) : NULL_TREE;
+      if (x == NULL_TREE || TREE_CODE (x) != STRING_CST)
+	{
+	  warning (OPT_Wattributes, "%qs attribute requires an NTBS argument",
+		   IDENTIFIER_POINTER (name));
+	  continue;
+	}
+
+      current_binding_level->has_visibility = 1;
+      push_visibility (TREE_STRING_POINTER (x));
+    }
+#endif
 
   timevar_pop (TV_NAME_LOOKUP);
 }

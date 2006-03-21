@@ -1,3 +1,10 @@
+2006-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/21764
+	* c-pragma.c (visstack): Move out of handle_pragma_visibility.
+	(push_visibility, pop_visibility): Likewise.
+	* c-pragma.h: Declare them.
+
 2006-03-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (untangle_mova): Initialize n_addr and n_target.
