@@ -85,7 +85,10 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 
   gfc_option.fpe = 0;
 
-  flag_argument_noalias = 2;
+  /* Argument pointers cannot point to anything
+     but their argument.  */
+  flag_argument_noalias = 3;
+
   flag_errno_math = 0;
 
   gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL

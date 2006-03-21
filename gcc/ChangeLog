@@ -1,3 +1,12 @@
+2006-03-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* doc/invoke.texi: Document new flag -fargument-noalias-anything.
+	* tree-ssa-alias.c (may_alias_p): If flag_argument_noalias > 2,
+	argument pointers may not alias any other storage.
+	* common.opt: Define option -fargument-noalias-anything.
+	* tree-ssa-structalias.c (intra_create_variable_infos): Fortran
+	alias semantics is specified by flag_argument_noalias > 2.
+
 2006-03-20  Jeff Law  <law@redhat.com>
 
 	* tree-pass.h (pass_phi_only_copy_prop): Delete.

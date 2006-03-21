@@ -4041,7 +4041,7 @@ intra_create_variable_infos (void)
   tree t;
 
   /* For each incoming argument arg, ARG = &ANYTHING or a dummy variable if
-     flag_argument_noalias > 1. */
+     flag_argument_noalias > 2. */
   for (t = DECL_ARGUMENTS (current_function_decl); t; t = TREE_CHAIN (t))
     {
       struct constraint_expr lhs;
@@ -4051,11 +4051,11 @@ intra_create_variable_infos (void)
       lhs.type = SCALAR;
       lhs.var  = create_variable_info_for (t, alias_get_name (t));
 
-      /* With flag_argument_noalias greater than one means that the incoming
+      /* With flag_argument_noalias greater than two means that the incoming
          argument cannot alias anything except for itself so create a HEAP
          variable.  */
       if (POINTER_TYPE_P (TREE_TYPE (t))
-	  && flag_argument_noalias > 1)
+	  && flag_argument_noalias > 2)
 	{
 	  varinfo_t vi;
 	  struct constraint_expr rhs;
