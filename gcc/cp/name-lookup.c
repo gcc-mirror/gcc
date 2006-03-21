@@ -3046,7 +3046,7 @@ push_namespace_with_attribs (tree name, tree attributes)
       tree name = TREE_PURPOSE (d);
       tree args = TREE_VALUE (d);
       tree x;
-      
+
       if (! is_attribute_p ("visibility", name))
 	{
 	  warning (OPT_Wattributes, "%qs attribute directive ignored",
@@ -3055,16 +3055,25 @@ push_namespace_with_attribs (tree name, tree attributes)
 	}
 
       x = args ? TREE_VALUE (args) : NULL_TREE;
-      if (x == NULL_TREE || TREE_CODE (x) != STRING_CST)
+      if (x == NULL_TREE || TREE_CODE (x) != STRING_CST || TREE_CHAIN (args))
 	{
-	  warning (OPT_Wattributes, "%qs attribute requires an NTBS argument",
+	  warning (OPT_Wattributes, "%qs attribute requires a single NTBS argument",
 		   IDENTIFIER_POINTER (name));
 	  continue;
 	}
 
       current_binding_level->has_visibility = 1;
       push_visibility (TREE_STRING_POINTER (x));
+      goto found;
     }
+  if (anon)
+    {
+      /* Anonymous namespaces default to hidden visibility.  This might
+	 change once we implement export.  */
+      current_binding_level->has_visibility = 1;
+      push_visibility ("hidden");
+    }
+ found:
 #endif
 
   timevar_pop (TV_NAME_LOOKUP);

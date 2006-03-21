@@ -7066,7 +7066,8 @@ cp_parser_declaration (cp_parser* parser)
 		&& (cp_lexer_peek_nth_token (parser->lexer, 3)->type
 		    != CPP_EQ))
 	       /* An unnamed namespace definition.  */
-	       || token2.type == CPP_OPEN_BRACE))
+	       || token2.type == CPP_OPEN_BRACE
+	       || token2.keyword == RID_ATTRIBUTE))
     cp_parser_namespace_definition (parser);
   /* Objective-C++ declaration/definition.  */
   else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1.keyword))
