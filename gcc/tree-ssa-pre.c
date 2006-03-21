@@ -2246,6 +2246,7 @@ create_component_ref_by_pieces (basic_block block, tree expr, tree stmts)
     case PARM_DECL:
     case RESULT_DECL:
     case SSA_NAME:
+    case STRING_CST:
       return genop;
     default:
       gcc_unreachable ();      
