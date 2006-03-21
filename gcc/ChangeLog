@@ -1,3 +1,12 @@
+2006-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config.gcc (i[34567]86-*-solaris2*): Add config/sol2-10.h to
+	tm_file on Solaris 10 and later.
+	(sparc64-*-solaris2*): Likewise.
+	(sparc-*-solaris2*): Likewise.
+	* config/sol26.h: Rename to config/sol2-6.h.
+	* config/sol2-10.h: New file.
+
 2006-03-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/26781

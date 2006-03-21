@@ -1,3 +1,13 @@
+2006-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/builtins-config.h (Solaris case): Define HAVE_C99_RUNTIME
+	if _STDC_C99 is defined.
+	* gcc.dg/builtins-18.c: Pass -std=c99 on Solaris.
+	* gcc.dg/builtins-20.c: Likewise.
+	* gcc.dg/builtins-53.c: Likewise.
+	* gcc.dg/single-precision-constant.c: Likewise. Also pass
+	-mmacosx-version-min=10.3 on PowerPC/Darwin.
+
 2006-03-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/26781

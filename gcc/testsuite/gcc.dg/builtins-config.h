@@ -11,8 +11,9 @@
 
 #if defined(__hppa) && defined(__hpux)
 /* PA HP-UX doesn't have the entire C99 runtime.  */
-#elif defined(__sun)
-/* Solaris doesn't have the entire C99 runtime.  */
+#elif defined(__sun) && ! defined (_STDC_C99)
+/* Solaris up to 9 doesn't have the entire C99 runtime.
+   Solaris 10 defines _STDC_C99 if __STDC_VERSION__ is >= 199901L.  */
 #elif defined(__sgi)
 /* Irix6 doesn't have the entire C99 runtime.  */
 #elif defined(__FreeBSD__) && (__FreeBSD__ < 5)

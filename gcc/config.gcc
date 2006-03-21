@@ -1149,7 +1149,11 @@ i[34567]86-*-solaris2*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h sol2.h"
 	case ${target} in
 	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*)
-		tm_file="${tm_file} sol26.h"
+		tm_file="${tm_file} sol2-6.h"
+		;;
+	*-*-solaris2.1[0-9]*)
+		tm_file="${tm_file} sol2-10.h"
+		;;
 	esac
 	tm_file="${tm_file} i386/sol2.h"
 	tmake_file="t-sol2 i386/t-sol2 t-svr4"
@@ -2113,7 +2117,13 @@ sparc-*-rtems*)
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
 sparc64-*-solaris2* | sparcv9-*-solaris2*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sol2-64.h sparc/sol2-bi.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h"
+	case ${target} in
+	*-*-solaris2.1[0-9]*)
+		tm_file="${tm_file} sol2-10.h"
+		;;
+	esac
+	tm_file="${tm_file} sparc/sol2.h sparc/sol2-64.h sparc/sol2-bi.h"
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h sparc/sol2-gld-bi.h"
 	fi
@@ -2142,7 +2152,11 @@ sparc-*-solaris2*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h"
 	case ${target} in
 	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*)
-		tm_file="${tm_file} sol26.h"
+		tm_file="${tm_file} sol2-6.h"
+		;;
+	*-*-solaris2.1[0-9]*)
+		tm_file="${tm_file} sol2-10.h"
+		;;
 	esac
 	tm_file="${tm_file} sparc/sol2.h"
 	if test x$gnu_ld = xyes; then
