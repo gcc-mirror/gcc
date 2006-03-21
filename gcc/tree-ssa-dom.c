@@ -2020,3 +2020,425 @@ avail_expr_eq (const void *p1, const void *p2)
 
   return false;
 }
+
+/* PHI-ONLY copy and constant propagation.  This pass is meant to clean
+   up degenerate PHIs created by or exposed by jump threading.  */
+
+/* Given PHI, return its RHS if the PHI is a degenerate, otherwise return
+   NULL.  */
+
+static tree
+degenerate_phi_result (tree phi)
+{
+  tree lhs = PHI_RESULT (phi);
+  tree val = NULL;
+  int i;
+
+  /* Ignoring arguments which are the same as LHS, if all the remaining
+     arguments are the same, then the PHI is a degenerate and has the
+     value of that common argument.  */
+  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+    {
+      tree arg = PHI_ARG_DEF (phi, i);
+
+      if (arg == lhs)
+	continue;
+      else if (!val)
+	val = arg;
+      else if (!operand_equal_p (arg, val, 0))
+	break;
+    }
+  return (i == PHI_NUM_ARGS (phi) ? val : NULL);
+}
+
+/* Given a tree node T, which is either a PHI_NODE or MODIFY_EXPR,
+   remove it from the IL.  */
+
+static void
+remove_stmt_or_phi (tree t)
+{
+  if (TREE_CODE (t) == PHI_NODE)
+    remove_phi_node (t, NULL);
+  else
+    {
+      block_stmt_iterator bsi = bsi_for_stmt (t);
+      bsi_remove (&bsi, true);
+    }
+}
+
+/* Given a tree node T, which is either a PHI_NODE or MODIFY_EXPR,
+   return the "rhs" of the node, in the case of a non-degenerate
+   PHI, NULL is returned.  */
+
+static tree
+get_rhs_or_phi_arg (tree t)
+{
+  if (TREE_CODE (t) == PHI_NODE)
+    return degenerate_phi_result (t);
+  else if (TREE_CODE (t) == MODIFY_EXPR)
+    return TREE_OPERAND (t, 1);
+  gcc_unreachable ();
+}
+
+
+/* Given a tree node T, which is either a PHI_NODE or a MODIFY_EXPR,
+   return the "lhs" of the node.  */
+
+static tree
+get_lhs_or_phi_result (tree t)
+{
+  if (TREE_CODE (t) == PHI_NODE)
+    return PHI_RESULT (t);
+  else if (TREE_CODE (t) == MODIFY_EXPR)
+    return TREE_OPERAND (t, 0);
+  gcc_unreachable ();
+}
+
+/* Propagate RHS into all uses of LHS (when possible).
+
+   RHS and LHS are derived from STMT, which is passed in solely so
+   that we can remove it if propagation is successful.
+
+   When propagating into a PHI node or into a statement which turns
+   into a trivial copy or constant initialization, set the
+   appropriate bit in INTERESTING_NAMEs so that we will visit those
+   nodes as well in an effort to pick up secondary optimization
+   opportunities.  */
+
+static void 
+propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
+{
+  /* First verify that propagation is valid and isn't going to move a
+     loop variant variable outside its loop.  */
+  if (! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs)
+      && (TREE_CODE (rhs) != SSA_NAME
+	  || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs))
+      && may_propagate_copy (lhs, rhs)
+      && loop_depth_of_name (lhs) >= loop_depth_of_name (rhs))
+    {
+      use_operand_p use_p;
+      imm_use_iterator iter;
+      bool all = true;
+
+      /* Dump details.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "  Replacing '");
+	  print_generic_expr (dump_file, lhs, dump_flags);
+	  fprintf (dump_file, "' with %s '",
+	           (TREE_CODE (rhs) != SSA_NAME ? "constant" : "variable"));
+		   print_generic_expr (dump_file, rhs, dump_flags);
+	  fprintf (dump_file, "'\n");
+	}
+
+      /* Walk over every use of LHS and try to replace the use with RHS. 
+	 At this point the only reason why such a propagation would not
+	 be successful would be if the use occurs in an ASM_EXPR.  */
+      FOR_EACH_IMM_USE_SAFE (use_p, iter, lhs)
+	{
+	  tree use_stmt = USE_STMT (use_p);
+	
+	  /* It's not always safe to propagate into an ASM_EXPR.  */
+	  if (TREE_CODE (use_stmt) == ASM_EXPR
+	      && ! may_propagate_copy_into_asm (lhs))
+	    {
+	      all = false;
+	      continue;
+	    }
+
+	  /* Dump details.  */
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "    Original statement:");
+	      print_generic_expr (dump_file, use_stmt, dump_flags);
+	      fprintf (dump_file, "\n");
+	    }
+
+	  /* Propagate, fold and update the statement.  Note this may
+	     expose new const/copy propagation opportunities as well
+	     collapse control statements.  */
+	  propagate_value (use_p, rhs);
+	  fold_stmt_inplace (use_stmt);
+	  update_stmt (use_stmt);
+
+	  /* Dump details.  */
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "    Updated statement:");
+	      print_generic_expr (dump_file, use_stmt, dump_flags);
+	      fprintf (dump_file, "\n");
+	    }
+
+	  /* Sometimes propagation can expose new operands to the
+	     renamer.  */
+	  mark_new_vars_to_rename (use_stmt);
+
+	  /* If we replaced a variable index with a constant, then
+	     we would need to update the invariant flag for ADDR_EXPRs.  */
+	  if (TREE_CODE (use_stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (use_stmt, 1)) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (TREE_OPERAND (use_stmt, 1));
+
+	  /* If we cleaned up EH information from the statement,
+             remove EH edges.  I'm not sure if this happens in 
+	     practice with this code, but better safe than sorry.  */
+	  if (maybe_clean_or_replace_eh_stmt (use_stmt, use_stmt))
+	    tree_purge_dead_eh_edges (bb_for_stmt (use_stmt));
+
+	  /* Propagation may expose new degenerate PHIs or
+	     trivial copy/constant propagation opportunities.  */
+	  if (TREE_CODE (use_stmt) == PHI_NODE
+	      || (TREE_CODE (use_stmt) == MODIFY_EXPR
+		  && TREE_CODE (TREE_OPERAND (use_stmt, 0)) == SSA_NAME
+		  && (TREE_CODE (TREE_OPERAND (use_stmt, 1)) == SSA_NAME
+		      || is_gimple_min_invariant (TREE_OPERAND (use_stmt, 1)))))
+	    {
+	      tree result = get_lhs_or_phi_result (use_stmt);
+	      bitmap_set_bit (interesting_names, SSA_NAME_VERSION (result));
+	    }
+
+	  /* Propagation into these nodes may make certain edges in
+	     the CFG unexecutable.  We want to identify them as PHI nodes
+	     at the destination of those unexecutable edges may become
+	     degenerates.  */
+	  else if (TREE_CODE (use_stmt) == COND_EXPR
+		   || TREE_CODE (use_stmt) == SWITCH_EXPR
+		   || TREE_CODE (use_stmt) == GOTO_EXPR)
+	    {
+	      tree val;
+
+	      if (TREE_CODE (use_stmt) == COND_EXPR)
+		val = COND_EXPR_COND (use_stmt);
+	      else if (TREE_CODE (use_stmt) == SWITCH_EXPR)
+		val = SWITCH_COND (use_stmt);
+	      else
+		val = GOTO_DESTINATION  (use_stmt);
+
+	      if (is_gimple_min_invariant (val))
+		{
+		  basic_block bb = bb_for_stmt (use_stmt);
+		  edge te = find_taken_edge (bb, val);
+		  edge_iterator ei;
+		  edge e;
+		  block_stmt_iterator bsi;
+
+		  /* Remove all outgoing edges except TE.  */
+		  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei));)
+		    {
+		      if (e != te)
+			{
+			  tree phi;
+
+			  /* Mark all the PHI nodes at the destination of
+			     the unexecutable edge as interesting.  */
+			  for (phi = phi_nodes (e->dest);
+			       phi;
+			       phi = PHI_CHAIN (phi))
+			    {
+			      tree result = PHI_RESULT (phi);
+			      int version = SSA_NAME_VERSION (result);
+
+			      bitmap_set_bit (interesting_names, version);
+			    }
+
+			  te->probability += e->probability;
+
+			  te->count += e->count;
+			  remove_edge (e);
+			  cfg_altered = 1;
+			}
+		      else
+			ei_next (&ei);
+		    }
+
+		  bsi = bsi_last (bb_for_stmt (use_stmt));
+		  bsi_remove (&bsi, true);
+
+		  /* And fixup the flags on the single remaining edge.  */
+		  te->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+		  te->flags &= ~EDGE_ABNORMAL;
+		  te->flags |= EDGE_FALLTHRU;
+		  if (te->probability > REG_BR_PROB_BASE)
+		    te->probability = REG_BR_PROB_BASE;
+	        }
+	    }
+	}
+
+      /* If we were able to propagate away all uses of LHS, then
+	 we can remove STMT.  */
+      if (all)
+	remove_stmt_or_phi (stmt);
+    }
+}
+
+/* T is either a PHI node (potentally a degenerate PHI node) or
+   a statement that is a trivial copy or constant initialization.
+
+   Attempt to eliminate T by propagating its RHS into all uses of
+   its LHS.  This may in turn set new bits in INTERESTING_NAMES
+   for nodes we want to revisit later.
+
+   All exit paths should clear INTERESTING_NAMES for the result
+   of T.  */
+
+static void
+eliminate_const_or_copy (tree t, bitmap interesting_names)
+{
+  tree lhs = get_lhs_or_phi_result (t);
+  tree rhs;
+  int version = SSA_NAME_VERSION (lhs);
+
+  /* If the LHS of this statement or PHI has no uses, then we can
+     just eliminate it.  This can occur if, for example, the PHI
+     was created by block duplication due to threading and its only
+     use was in the conditional at the end of the block which was
+     deleted.  */
+  if (has_zero_uses (lhs))
+    {
+      bitmap_clear_bit (interesting_names, version);
+      remove_stmt_or_phi (t);
+      return;
+    }
+
+  /* Get the RHS of the assignment or PHI node if the PHI is a
+     degenerate.  */
+  rhs = get_rhs_or_phi_arg (t);
+  if (!rhs)
+    {
+      bitmap_clear_bit (interesting_names, version);
+      return;
+    }
+
+  propagate_rhs_into_lhs (t, lhs, rhs, interesting_names);
+
+  /* Note that T may well have been deleted by now, so do
+     not access it, instead use the saved version # to clear
+     T's entry in the worklist.  */
+  bitmap_clear_bit (interesting_names, version);
+}
+
+/* The first phase in degenerate PHI elimination.
+
+   Eliminate the degenerate PHIs in BB, then recurse on the
+   dominator children of BB.  */
+
+static void
+eliminate_degenerate_phis_1 (basic_block bb, bitmap interesting_names)
+{
+  tree phi, next;
+  basic_block son;
+
+  for (phi = phi_nodes (bb); phi; phi = next)
+    {
+      next = PHI_CHAIN (phi);
+      eliminate_const_or_copy (phi, interesting_names);
+    }
+
+  /* Recurse into the dominator children of BB.  */
+  for (son = first_dom_son (CDI_DOMINATORS, bb);
+       son;
+       son = next_dom_son (CDI_DOMINATORS, son))
+    eliminate_degenerate_phis_1 (son, interesting_names);
+}
+
+
+/* A very simple pass to eliminate degenerate PHI nodes from the
+   IL.  This is meant to be fast enough to be able to be run several
+   times in the optimization pipeline.
+
+   Certain optimizations, particularly those which duplicate blocks
+   or remove edges from the CFG can create or expose PHIs which are
+   trivial copies or constant initializations.
+
+   While we could pick up these optimizations in DOM or with the
+   combination of copy-prop and CCP, those solutions are far too
+   heavy-weight for our needs.
+
+   This implementation has two phases so that we can efficiently
+   eliminate the first order degenerate PHIs and second order
+   degenerate PHIs.
+
+   The first phase performs a dominator walk to identify and eliminate
+   the vast majority of the degenerate PHIs.  When a degenerate PHI
+   is identified and eliminated any affected statements or PHIs
+   are put on a worklist.
+
+   The second phase eliminates degenerate PHIs and trivial copies
+   or constant initializations using the worklist.  This is how we
+   pick up the secondary optimization opportunities with minimal
+   cost.  */
+
+static unsigned int
+eliminate_degenerate_phis (void)
+{
+  bitmap interesting_names;
+
+  /* INTERESTING_NAMES is effectively our worklist, indexed by
+     SSA_NAME_VERSION.
+
+     A set bit indicates that the statement or PHI node which
+     defines the SSA_NAME should be (re)examined to determine if
+     it has become a degenerate PHI or trival const/copy propagation
+     opportunity. 
+
+     Experiments have show we generally get better compilation
+     time behavior with bitmaps rather than sbitmaps.  */
+  interesting_names = BITMAP_ALLOC (NULL);
+
+  /* First phase.  Elimiante degenerate PHIs via a domiantor
+     walk of the CFG.
+
+     Experiments have indicated that we generally get better
+     compile-time behavior by visiting blocks in the first
+     phase in dominator order.  Presumably this is because walking
+     in dominator order leaves fewer PHIs for later examination
+     by the worklist phase.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  eliminate_degenerate_phis_1 (ENTRY_BLOCK_PTR, interesting_names);
+
+  /* Second phase.  Eliminate second order degnerate PHIs as well
+     as trivial copies or constant initializations identified by
+     the first phase or this phase.  Basically we keep iterating
+     until our set of INTERESTING_NAMEs is empty.   */
+  while (!bitmap_empty_p (interesting_names))
+    {
+      unsigned int i;
+      bitmap_iterator bi;
+
+      EXECUTE_IF_SET_IN_BITMAP (interesting_names, 0, i, bi)
+	{
+	  tree name = ssa_name (i);
+
+	  /* Ignore SSA_NAMEs that have been released because
+	     their defining statement was deleted (unreachable).  */
+	  if (name)
+	    eliminate_const_or_copy (SSA_NAME_DEF_STMT (ssa_name (i)),
+				     interesting_names);
+	}
+    }
+
+  BITMAP_FREE (interesting_names);
+  if (cfg_altered)
+    free_dominance_info (CDI_DOMINATORS);
+  return 0;
+}
+
+struct tree_opt_pass pass_phi_only_cprop =
+{
+  "phicprop",                           /* name */
+  gate_dominator,                       /* gate */
+  eliminate_degenerate_phis,            /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_TREE_CCP,                          /* tv_id */
+  PROP_cfg | PROP_ssa | PROP_alias,     /* properties_required */
+  0,                                    /* properties_provided */
+  PROP_smt_usage,                       /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_cleanup_cfg | TODO_dump_func 
+    | TODO_ggc_collect | TODO_verify_ssa
+    | TODO_verify_stmts | TODO_update_smt_usage
+    | TODO_update_ssa, /* todo_flags_finish */
+  0                                     /* letter */
+};

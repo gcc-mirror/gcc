@@ -505,11 +505,12 @@ init_optimization_passes (void)
   NEXT_PASS (pass_dce);
   NEXT_PASS (pass_dominator);
 
-  /* The only copy propagation opportunities left after DOM
-     should be due to degenerate PHI nodes.  So rather than
-     run the full copy propagator, just discover and copy
-     propagate away the degenerate PHI nodes.  */
-  NEXT_PASS (pass_phi_only_copy_prop);
+  /* The only const/copy propagation opportunities left after
+     DOM should be due to degenerate PHI nodes.  So rather than
+     run the full propagators, run a specialized pass which
+     only examines PHIs to discover const/copy propagation
+     opportunities.  */
+  NEXT_PASS (pass_phi_only_cprop);
 
   NEXT_PASS (pass_phiopt);
   NEXT_PASS (pass_may_alias);
@@ -526,11 +527,12 @@ init_optimization_passes (void)
   NEXT_PASS (pass_rename_ssa_copies);
   NEXT_PASS (pass_dominator);
 
-  /* The only copy propagation opportunities left after DOM
-     should be due to degenerate PHI nodes.  So rather than
-     run the full copy propagator, just discover and copy
-     propagate away the degenerate PHI nodes.  */
-  NEXT_PASS (pass_phi_only_copy_prop);
+  /* The only const/copy propagation opportunities left after
+     DOM should be due to degenerate PHI nodes.  So rather than
+     run the full propagators, run a specialized pass which
+     only examines PHIs to discover const/copy propagation
+     opportunities.  */
+  NEXT_PASS (pass_phi_only_cprop);
 
   NEXT_PASS (pass_reassoc);
   NEXT_PASS (pass_dce);
@@ -556,11 +558,12 @@ init_optimization_passes (void)
   NEXT_PASS (pass_vrp);
   NEXT_PASS (pass_dominator);
 
-  /* The only copy propagation opportunities left after DOM
-     should be due to degenerate PHI nodes.  So rather than
-     run the full copy propagator, just discover and copy
-     propagate away the degenerate PHI nodes.  */
-  NEXT_PASS (pass_phi_only_copy_prop);
+  /* The only const/copy propagation opportunities left after
+     DOM should be due to degenerate PHI nodes.  So rather than
+     run the full propagators, run a specialized pass which
+     only examines PHIs to discover const/copy propagation
+     opportunities.  */
+  NEXT_PASS (pass_phi_only_cprop);
 
   NEXT_PASS (pass_cd_dce);
 
