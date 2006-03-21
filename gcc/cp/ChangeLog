@@ -1,3 +1,11 @@
+2006-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/21581
+	* parser.c (cp_parser_declaration): Support attributes on
+	anonymous namespaces.
+	* name-lookup.c (push_namespace_with_attribs): Anonymous 
+	namespaces default to hidden visibility.
+
 2006-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/21764, c++/19238
