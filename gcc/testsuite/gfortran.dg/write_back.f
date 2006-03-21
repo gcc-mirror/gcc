@@ -20,5 +20,6 @@
       read(11, end=250)idata
       call abort()
  250  continue
+      close(11, status="delete")
       end
 
