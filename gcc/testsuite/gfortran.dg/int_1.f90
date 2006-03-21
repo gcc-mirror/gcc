@@ -170,3 +170,5 @@ program test_int
    if (i4 /= 17_ik4 .or. i8 /= 17_ik8) call abort
    
 end program test_int
+
+! { dg-final { cleanup-modules "mykinds" } }

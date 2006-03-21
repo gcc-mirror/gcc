@@ -16,4 +16,4 @@ program blank_common
   if (z.ne.cmplx (a,b)) call abort ()
 end program blank_common
 
-
+! { dg-final { cleanup-modules "global" } }

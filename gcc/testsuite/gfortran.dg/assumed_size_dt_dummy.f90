@@ -15,3 +15,4 @@ END MODULE TEST
 
 end
 
+! { dg-final { cleanup-modules "TEST" } }

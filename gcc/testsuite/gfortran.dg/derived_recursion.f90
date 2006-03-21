@@ -22,3 +22,5 @@ end module snafu
 !  use snafu
 !  foo%v = 1
 !  end
+
+! { dg-final { cleanup-modules "snafu" } }

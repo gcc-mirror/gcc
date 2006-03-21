@@ -23,3 +23,4 @@ CONTAINS
   END SUBROUTINE TST
 END
 
+! { dg-final { cleanup-modules "addon" } }

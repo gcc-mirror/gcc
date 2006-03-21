@@ -57,3 +57,5 @@ program namelist_15
              (x(2)%m(2)%ch(2) == "kz"))) call abort ()
 
 end program namelist_15
+
+! { dg-final { cleanup-modules "global" } }

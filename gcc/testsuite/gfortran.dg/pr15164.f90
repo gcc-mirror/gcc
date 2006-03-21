@@ -14,3 +14,4 @@
       end subroutine split
       end module specfiles
 
+! { dg-final { cleanup-modules "specfiles" } }

@@ -17,3 +17,5 @@ program test
    c = bobo(5)
    if (c .ne. "12345") call abort
 end program test
+
+! { dg-final { cleanup-modules "para" } }

@@ -16,3 +16,5 @@ end module ints
 program size_test
   use ints
 end program size_test
+
+! { dg-final { cleanup-modules "ints" } }

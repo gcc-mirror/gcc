@@ -30,3 +30,5 @@ contains
       call bar_(self, z)
    end subroutine
 end
+
+! { dg-final { cleanup-modules "foo" } }

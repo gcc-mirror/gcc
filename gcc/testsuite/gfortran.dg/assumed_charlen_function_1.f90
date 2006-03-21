@@ -81,3 +81,4 @@ end function not_OK
 
 END
 
+! { dg-final { cleanup-modules "M1 INTEGER_SETS" } }

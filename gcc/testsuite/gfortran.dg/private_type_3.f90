@@ -31,3 +31,4 @@ module c
      end subroutine d
 end module c
 
+! { dg-final { cleanup-modules "a c" } }

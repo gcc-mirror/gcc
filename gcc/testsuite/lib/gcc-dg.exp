@@ -404,6 +404,13 @@ proc cleanup-saved-temps { } {
     }
 }
 
+# Remove files for specified Fortran modules.
+proc cleanup-modules { modlist } {
+    foreach modname $modlist {
+	remove-build-file [string tolower $modname].mod
+    }
+}
+
 # We need to make sure that additional_* are cleared out after every
 # test.  It is not enough to clear them out *before* the next test run
 # because gcc-target-compile gets run directly from some .exp files

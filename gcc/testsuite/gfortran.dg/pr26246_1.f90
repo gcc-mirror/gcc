@@ -16,3 +16,4 @@ end module pr26246_1
 
 ! { dg-final { scan-tree-dump-times "static int" 0 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
+! { dg-final { cleanup-modules "pr26246_1" } }

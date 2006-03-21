@@ -62,3 +62,5 @@ program test_assign
   if (any(reshape (i, (/4/)).ne.(/1,8,27,64/))) call abort ()
 
 end program test_assign
+
+! { dg-final { cleanup-modules "type assign" } }

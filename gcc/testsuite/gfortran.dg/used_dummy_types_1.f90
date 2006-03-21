@@ -34,3 +34,5 @@ end module atest
   call test (res)
   if (res%a.ne.42) call abort
 end  
+
+! { dg-final { cleanup-modules "mtyp atest" } }

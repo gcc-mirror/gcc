@@ -23,3 +23,5 @@ program entry_4_prog
   call bar(a)
   if (any (a .ne. (/3, 4/))) call abort
 end program
+
+! { dg-final { cleanup-modules "entry_4" } }

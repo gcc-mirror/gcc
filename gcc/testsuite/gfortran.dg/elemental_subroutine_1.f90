@@ -56,3 +56,5 @@ contains
     b = -a
   end subroutine foobar
 end
+
+! { dg-final { cleanup-modules "pr22146" } }
