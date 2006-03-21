@@ -712,8 +712,15 @@ cp_genericize (tree fndecl)
 static tree
 cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 {
+  tree defparm, parm;
+  int i;
+
   if (fn == NULL)
     return NULL;
+
+  defparm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
+  if (arg2)
+    defparm = TREE_CHAIN (defparm);
 
   if (TREE_CODE (TREE_TYPE (arg1)) == ARRAY_TYPE)
     {
@@ -757,11 +764,16 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       t = build1 (LABEL_EXPR, void_type_node, lab);
       append_to_statement_list (t, &ret);
 
-      t = NULL;
+      t = tree_cons (NULL, p1, NULL);
       if (arg2)
 	t = tree_cons (NULL, p2, t);
-      t = tree_cons (NULL, p1, t);
-      t = build_call (fn, t);
+      /* Handle default arguments.  */
+      i = 1 + (arg2 != NULL);
+      for (parm = defparm; parm != void_list_node; parm = TREE_CHAIN (parm))
+	t = tree_cons (NULL, convert_default_arg (TREE_VALUE (parm),
+						  TREE_PURPOSE (parm),
+						  fn, i++), t);
+      t = build_call (fn, nreverse (t));
       append_to_statement_list (t, &ret);
 
       t = fold_convert (TREE_TYPE (p1), TYPE_SIZE_UNIT (inner_type));
@@ -785,11 +797,16 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
     }
   else
     {
-      tree t = NULL;
+      tree t = tree_cons (NULL, build_fold_addr_expr (arg1), NULL);
       if (arg2)
 	t = tree_cons (NULL, build_fold_addr_expr (arg2), t);
-      t = tree_cons (NULL, build_fold_addr_expr (arg1), t);
-      return build_call (fn, t);
+      /* Handle default arguments.  */
+      i = 1 + (arg2 != NULL);
+      for (parm = defparm; parm != void_list_node; parm = TREE_CHAIN (parm))
+	t = tree_cons (NULL, convert_default_arg (TREE_VALUE (parm),
+						  TREE_PURPOSE (parm),
+						  fn, i++), t);
+      return build_call (fn, nreverse (t));
     }
 }
 
