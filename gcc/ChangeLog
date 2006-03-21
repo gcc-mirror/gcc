@@ -1,3 +1,20 @@
+2006-03-21  Michael Matz  <matz@suse.de>
+
+	* genautomata.c (<struct state>, num_out_arcs, presence_signature):
+	New members.
+	(remove_arc, add_arc): Update num_out_arcs member.
+	(set_out_arc_insns_equiv_num): Returns nothing instead of number
+	of out arcs.
+	(cache_presence): New function.
+	(compare_states_for_equiv): New function.
+	(state_is_differed): Don't take number of outargs, adjust callers.
+	Use new invariant for speeding up.
+	(init_equiv_class): Create initial classes based on sorted
+	input.
+	(partition_equiv_class): Don't track out_arcs_num.
+	(evaluate_equiv_classes): Call cache_presence on all states and
+	sort them.
+
 2006-03-21  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin-protos.h (bfin_dsp_memref_p): Declare.
