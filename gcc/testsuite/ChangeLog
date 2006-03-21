@@ -1,3 +1,7 @@
+2006-03-20  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20030807-2.c: Make sure to run VRP.
+
 2006-03-20  Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/target-supports.exp (check_no_compiler_messages): New procedure.
