@@ -1,3 +1,9 @@
+2006-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/26690
+	* g++.dg/gomp/pr26690-1.C: New test.
+	* g++.dg/gomp/pr26690-2.C: New test.
+
 2006-03-20  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/pr21829.c: New test.
