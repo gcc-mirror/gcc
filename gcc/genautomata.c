@@ -677,6 +677,7 @@ struct state
   /* The following field value is the first arc output from given
      state.  */
   arc_t first_out_arc;
+  unsigned int num_out_arcs;
   /* The following field is used to form NDFA.  */
   char it_was_placed_in_stack_for_NDFA_forming;
   /* The following field is used to form DFA.  */
@@ -700,6 +701,7 @@ struct state
      automaton.  The field value is state corresponding to equivalence
      class to which given state belongs.  */
   state_t equiv_class_state;
+  unsigned int *presence_signature;
   /* The following field value is the order number of given state.
      The states in final DFA is enumerated with the aid of the
      following field.  */
@@ -3862,6 +3864,7 @@ remove_arc (state_t from_state, arc_t arc)
     from_state->first_out_arc = arc->next_out_arc;
   else
     prev_arc->next_out_arc = arc->next_out_arc;
+  from_state->num_out_arcs--;
   free_arc (arc);
 }
 
@@ -3908,6 +3911,7 @@ add_arc (state_t from_state, state_t to_state, ainsn_t ainsn)
   ainsn->arc_exists_p = 1;
   new_arc->next_out_arc = from_state->first_out_arc;
   from_state->first_out_arc = new_arc;
+  from_state->num_out_arcs++;
   new_arc->next_arc_marked_by_insn = NULL;
   return new_arc;
 }
@@ -5614,24 +5618,20 @@ add_achieved_state (state_t state)
    out arcs of STATE by equiv_class_num_1 (if ODD_ITERATION_FLAG has
    nonzero value) or by equiv_class_num_2 of the destination state.
    The function returns number of out arcs of STATE.  */
-static int
+static void
 set_out_arc_insns_equiv_num (state_t state, int odd_iteration_flag)
 {
-  int state_out_arcs_num;
   arc_t arc;
 
-  state_out_arcs_num = 0;
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
     {
       gcc_assert (!arc->insn->insn_reserv_decl->equiv_class_num);
-      state_out_arcs_num++;
       arc->insn->insn_reserv_decl->equiv_class_num
 	= (odd_iteration_flag
            ? arc->to_state->equiv_class_num_1
 	   : arc->to_state->equiv_class_num_2);
       gcc_assert (arc->insn->insn_reserv_decl->equiv_class_num);
     }
-  return state_out_arcs_num;
 }
 
 /* The function clears equivalence numbers and alt_states in all insns
@@ -5666,6 +5666,26 @@ first_cycle_unit_presence (state_t state, int unit_num)
   return false;
 }
 
+/* This fills in the presence_signature[] member of STATE.  */
+static void
+cache_presence (state_t state)
+{
+  int i, num = 0;
+  unsigned int sz;
+  sz = (description->query_units_num + sizeof (int) * CHAR_BIT - 1)
+        / (sizeof (int) * CHAR_BIT);
+  
+  state->presence_signature = create_node (sz * sizeof (int));
+  for (i = 0; i < description->units_num; i++)
+    if (units_array [i]->query_p)
+      {
+	int presence1_p = first_cycle_unit_presence (state, i);
+	state->presence_signature[num / (sizeof (int) * CHAR_BIT)]
+	  |= (!!presence1_p) << (num % (sizeof (int) * CHAR_BIT));
+	num++;
+      }
+}
+
 /* The function returns nonzero value if STATE is not equivalent to
    ANOTHER_STATE from the same current partition on equivalence
    classes.  Another state has ANOTHER_STATE_OUT_ARCS_NUM number of
@@ -5673,52 +5693,89 @@ first_cycle_unit_presence (state_t state, int unit_num)
    by ODD_ITERATION_FLAG.  */
 static int
 state_is_differed (state_t state, state_t another_state,
-		   int another_state_out_arcs_num, int odd_iteration_flag)
+		   int odd_iteration_flag)
 {
   arc_t arc;
-  int state_out_arcs_num;
-  int i, presence1_p, presence2_p;
+  unsigned int sz, si;
 
-  state_out_arcs_num = 0;
+  gcc_assert (state->num_out_arcs == another_state->num_out_arcs);
+
+  sz = (description->query_units_num + sizeof (int) * CHAR_BIT - 1)
+	/ (sizeof (int) * CHAR_BIT);
+
+  for (si = 0; si < sz; si++)
+    gcc_assert (state->presence_signature[si]
+		== another_state->presence_signature[si]);
+
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
     {
-      state_out_arcs_num++;
       if ((odd_iteration_flag
            ? arc->to_state->equiv_class_num_1
 	   : arc->to_state->equiv_class_num_2)
           != arc->insn->insn_reserv_decl->equiv_class_num)
         return 1;
     }
-  if (state_out_arcs_num != another_state_out_arcs_num)
+
+  return 0;
+}
+
+/* Compares two states pointed to by STATE_PTR_1 and STATE_PTR_2
+   and return -1, 0 or 1.  This function can be used as predicate for
+   qsort().  It requires the member presence_signature[] of both
+   states be filled.  */
+static int
+compare_states_for_equiv (const void *state_ptr_1,
+			  const void *state_ptr_2)
+{
+  state_t s1 = *(state_t *)state_ptr_1;
+  state_t s2 = *(state_t *)state_ptr_2;
+  unsigned int sz, si;
+  if (s1->num_out_arcs < s2->num_out_arcs)
+    return -1;
+  else if (s1->num_out_arcs > s2->num_out_arcs)
     return 1;
-  /* Now we are looking at the states with the point of view of query
-     units.  */
-  for (i = 0; i < description->units_num; i++)
-    if (units_array [i]->query_p)
-      {
-	presence1_p = first_cycle_unit_presence (state, i);
-	presence2_p = first_cycle_unit_presence (another_state, i);
-	if ((presence1_p && !presence2_p) || (!presence1_p && presence2_p))
-	  return 1;
-      }
+
+  sz = (description->query_units_num + sizeof (int) * CHAR_BIT - 1)
+	/ (sizeof (int) * CHAR_BIT);
+
+  for (si = 0; si < sz; si++)
+    if (s1->presence_signature[si] < s2->presence_signature[si])
+      return -1;
+    else if (s1->presence_signature[si] > s2->presence_signature[si])
+      return 1;
   return 0;
 }
 
 /* The function makes initial partition of STATES on equivalent
-   classes.  */
-static state_t
-init_equiv_class (VEC(state_t,heap) *states)
+   classes and saves it into *CLASSES.  This function requires the input
+   to be sorted via compare_states_for_equiv().  */
+static int
+init_equiv_class (VEC(state_t,heap) *states, VEC (state_t,heap) **classes)
 {
   size_t i;
   state_t prev = 0;
+  int class_num = 1;
 
+  *classes = VEC_alloc (state_t,heap, 150);
   for (i = 0; i < VEC_length (state_t, states); i++)
     {
-      VEC_index (state_t, states, i)->equiv_class_num_1 = 1;
-      VEC_index (state_t, states, i)->next_equiv_class_state = prev;
-      prev = VEC_index (state_t, states, i);
+      state_t state = VEC_index (state_t, states, i);
+      if (prev)
+        {
+	  if (compare_states_for_equiv (&prev, &state) != 0)
+	    {
+	      VEC_safe_push (state_t,heap, *classes, prev);
+	      class_num++;
+	      prev = NULL;
+	    }
+        }
+      state->equiv_class_num_1 = class_num;
+      state->next_equiv_class_state = prev;
+      prev = state;
     }
-  return prev;
+  if (prev)
+    VEC_safe_push (state_t,heap, *classes, prev);
+  return class_num;
 }
 
 /* The function copies pointers to equivalent states from vla FROM
@@ -5729,6 +5786,7 @@ copy_equiv_class (VEC(state_t,heap) **to, VEC(state_t,heap) *from)
   VEC_free (state_t,heap, *to);
   *to = VEC_copy (state_t,heap, from);
 }
+
 /* The function processes equivalence class given by its first state,
    FIRST_STATE, on odd iteration if ODD_ITERATION_FLAG.  If there
    are not equivalent states, the function partitions the class
@@ -5746,7 +5804,6 @@ partition_equiv_class (state_t first_state, int odd_iteration_flag,
   state_t curr_state;
   state_t prev_state;
   state_t next_state;
-  int out_arcs_num;
 
   partition_p = 0;
 
@@ -5756,15 +5813,14 @@ partition_equiv_class (state_t first_state, int odd_iteration_flag,
       if (first_state->next_equiv_class_state != NULL)
 	{
 	  /* There are more one states in the class equivalence.  */
-	  out_arcs_num = set_out_arc_insns_equiv_num (first_state,
-						      odd_iteration_flag);
+	  set_out_arc_insns_equiv_num (first_state, odd_iteration_flag);
 	  for (prev_state = first_state,
 		 curr_state = first_state->next_equiv_class_state;
 	       curr_state != NULL;
 	       curr_state = next_state)
 	    {
 	      next_state = curr_state->next_equiv_class_state;
-	      if (state_is_differed (curr_state, first_state, out_arcs_num,
+	      if (state_is_differed (curr_state, first_state, 
 				     odd_iteration_flag))
 		{
 		  /* Remove curr state from the class equivalence.  */
@@ -5797,7 +5853,6 @@ static void
 evaluate_equiv_classes (automaton_t automaton,
 			VEC(state_t,heap) **equiv_classes)
 {
-  state_t new_equiv_class;
   int new_equiv_class_num;
   int odd_iteration_flag;
   int finish_flag;
@@ -5806,12 +5861,14 @@ evaluate_equiv_classes (automaton_t automaton,
 
   all_achieved_states = VEC_alloc (state_t,heap, 1500);
   pass_states (automaton, add_achieved_state);
-  new_equiv_class = init_equiv_class (all_achieved_states);
-  odd_iteration_flag = 0;
-  new_equiv_class_num = 1;
+  pass_states (automaton, cache_presence);
+  qsort (VEC_address (state_t, all_achieved_states),
+	 VEC_length (state_t, all_achieved_states),
+         sizeof (state_t), compare_states_for_equiv);
 
-  next_iteration_classes = VEC_alloc (state_t,heap, 150);
-  VEC_quick_push (state_t, next_iteration_classes, new_equiv_class);
+  odd_iteration_flag = 0;
+  new_equiv_class_num = init_equiv_class (all_achieved_states,
+  					  &next_iteration_classes);
 
   do
     {
