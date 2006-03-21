@@ -45,6 +45,7 @@
 #include <iosfwd>
 #include <bits/localefwd.h>
 #include <bits/ios_base.h>
+#include <bits/cpp_type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -55,10 +56,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   */
   template<typename _CharT, typename _Traits>
     streamsize
-    __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>* __sbin,
-			  basic_streambuf<_CharT, _Traits>* __sbout,
-			  bool& __ineof);
-  
+    __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>*,
+			  basic_streambuf<_CharT, _Traits>*, bool&);
+
+  template<typename _CharT>
+    typename __enable_if<_CharT*, __is_char<_CharT>::__value>::__type
+    __copy_aux(istreambuf_iterator<_CharT>,
+	       istreambuf_iterator<_CharT>, _CharT*);
+
+  template<typename _CharT>
+    typename __enable_if<istreambuf_iterator<_CharT>,
+			 __is_char<_CharT>::__value>::__type
+    find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>, _CharT);
+
   /**
    *  @brief  The actual work of input and output (interface).
    *
@@ -152,18 +162,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       friend class ostreambuf_iterator<char_type, traits_type>;
 
       friend streamsize
-      __copy_streambufs_eof<>(__streambuf_type* __sbin,
-			      __streambuf_type* __sbout, bool& __ineof);
-      
+      __copy_streambufs_eof<>(__streambuf_type*, __streambuf_type*, bool&);
+
+      template<typename _CharT2>
+        friend typename __enable_if<_CharT2*,
+				    __is_char<_CharT2>::__value>::__type
+        __copy_aux(istreambuf_iterator<_CharT2>,
+		   istreambuf_iterator<_CharT2>, _CharT2*);
+
+      template<typename _CharT2>
+        friend typename __enable_if<istreambuf_iterator<_CharT2>,
+				    __is_char<_CharT2>::__value>::__type
+        find(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
+	     _CharT2);
+
       template<typename _CharT2, typename _Traits2>
         friend basic_istream<_CharT2, _Traits2>&
         operator>>(basic_istream<_CharT2, _Traits2>&, _CharT2*);
-      
+
       template<typename _CharT2, typename _Traits2, typename _Alloc>
         friend basic_istream<_CharT2, _Traits2>&
         operator>>(basic_istream<_CharT2, _Traits2>&,
 		   basic_string<_CharT2, _Traits2, _Alloc>&);
-      
+
       template<typename _CharT2, typename _Traits2, typename _Alloc>
         friend basic_istream<_CharT2, _Traits2>&
         getline(basic_istream<_CharT2, _Traits2>&,

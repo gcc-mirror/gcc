@@ -295,6 +295,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
+   *  @if maint
+   *  This is an overload of find() for streambuf iterators.
+   *  @endif
+  */
+  template<typename _CharT>
+    typename __enable_if<istreambuf_iterator<_CharT>,
+			 __is_char<_CharT>::__value>::__type
+    find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>, _CharT);
+
+  /**
    *  @brief Find the first occurrence of a value in a sequence.
    *  @param  first  An input iterator.
    *  @param  last   An input iterator.
