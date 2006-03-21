@@ -773,8 +773,8 @@ See S/390 and zSeries Options.
 -fverbose-asm  -fpack-struct[=@var{n}]  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
 -fargument-alias  -fargument-noalias @gol
--fargument-noalias-global  -fleading-underscore @gol
--ftls-model=@var{model} @gol
+-fargument-noalias-global  -fargument-noalias-anything
+-fleading-underscore  -ftls-model=@var{model} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
 -fvisibility  -fopenmp}
 @end table
@@ -13332,9 +13332,11 @@ of 128KB@.  Note that this may only work with the GNU linker.
 @item -fargument-alias
 @itemx -fargument-noalias
 @itemx -fargument-noalias-global
+@itemx -fargument-noalias-anything
 @opindex fargument-alias
 @opindex fargument-noalias
 @opindex fargument-noalias-global
+@opindex fargument-noalias-anything
 Specify the possible relationships among parameters and between
 parameters and global data.
 
@@ -13344,6 +13346,8 @@ alias each other and may alias global storage.@*
 each other, but may alias global storage.@*
 @option{-fargument-noalias-global} specifies that arguments do not
 alias each other and do not alias global storage.
+@option{-fargument-noalias-anything} specifies that arguments do not
+alias any other storage.
 
 Each language will automatically use whatever option is required by
 the language standard.  You should not need to use these options yourself.
