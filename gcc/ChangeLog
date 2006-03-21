@@ -1,3 +1,8 @@
+2006-03-21  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (extract_range_from_unary_expr): Derive ranges for
+	type conversions of a VR_VARYING source to a wider type.
+
 2006-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config.gcc (i[34567]86-*-solaris2*): Add config/sol2-10.h to
@@ -106,7 +111,6 @@
 	* tree-ssa-structalias.c (intra_create_variable_infos): Fortran
 	alias semantics is specified by flag_argument_noalias > 2.
 
-2006-03-20  Jeff Law  <law@redhat.com>
 
 	* tree-pass.h (pass_phi_only_copy_prop): Delete.
 	(pass_phi_only_cprop): Declare.
