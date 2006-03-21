@@ -14,5 +14,6 @@
       rewind(11)
       read(11,*)stuff
       if (stuff.ne.1.0) call abort()
+      close(11, status='delete')
       end
 

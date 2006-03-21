@@ -17,5 +17,6 @@
  1011 continue
       backspace 11
       backspace 11
+      close(11, status='delete')
       end
 
