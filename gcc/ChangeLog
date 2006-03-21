@@ -1,3 +1,8 @@
+2006-03-21  Alexey Starovoytov  <alexey.starovoytov@sun.com>
+
+	* config.gcc (sparc-*-solaris2*): Change the default CPU setting
+	from V7 to V9 for Solaris 7 and above.
+
 2006-03-21  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* doc/invoke.texi: Document new flag -fargument-noalias-anything.
