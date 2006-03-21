@@ -1,8 +1,12 @@
 /* Test that double precision constants are correctly handled 
    when code is compiled with -fsingle-precision-constant */
 /* Origin: Carlos O'Donell <carlos@codesourcery.com> */
+
 /* { dg-do run } */
 /* { dg-options "-fsingle-precision-constant" } */
+/* { dg-options "-fsingle-precision-constant -mmacosx-version-min=10.3" { target powerpc-*-darwin* } } */
+/* { dg-options "-fsingle-precision-constant -std=c99" { target *-*-solaris2* } } */
+
 #include <math.h>
 #include <float.h>
 
