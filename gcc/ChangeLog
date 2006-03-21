@@ -1,3 +1,48 @@
+2006-03-21  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/predicates.md (const_call_insn_operand): Allow direct
+	calls to locally-defined functions if TARGET_ABSOLUTE_ABICALLS.
+	* config/mips/mips.md (jal_macro): Test TARGET_ABSOLUTE_ABICALLS.
+	Use TARGET_OLDABI instead of !TARGET_NEWABI.
+	(loadgp): Use mips_current_loadgp_style.
+	(loadgp_noshared): New pattern.
+	(sibcall_internal): Use MIPS_CALL.
+	(sibcall_value_internal): Likewise.
+	(sibcall_value_multiple_internal): Likewise.
+	(call_internal): Likewise.
+	(call_value_internal): Likewise.
+	(call_value_multiple_internal): Likewise.
+	(call_split): Use MIPS_CALL and add an 'S' constraint.
+	(call_value_split): Likewise.
+	(call_value_multiple_split): Likewise.
+	* config/mips/mips.opt (-mabicalls): Tweak docstring.
+	(-mshared): New option.
+	* config/mips/mips-protos.h (mips_loadgp_style): New enum.
+	(mips_current_loadgp_style): Declare.
+	* config/mips/mips.c (mips_classify_symbol): Avoid using
+	SYMBOL_GOT_LOCAL if TARGET_ABSOLUTE_ABICALLS.  Use SYMBOL_GENERAL
+	rather than SYMBOL_GOT_GLOBAL for locally-binding symbols if
+	TARGET_ABSOLUTE_ABICALLS.
+	(override_options): Adjust comments.  Improve the warning that is
+	issued when -mabicalls and -G are used together.
+	(mips_file_start): Remove comment.
+	(mips_current_loadgp_style): New function.
+	(mips_gnu_local_gp): New variable.
+	(mips_emit_loadgp): Use mips_current_loadgp_style.  Handle
+	LOADGP_ABSOLUTE.
+	(mips_output_function_prologue): Use mips_current_laodgp_style.
+	(mips_expand_prologue): Call mips_emit_loadgp before emitting
+	the cprestore instruction.
+	(mips_extra_live_on_entry): Fix reversed test.  Don't make $25
+	live for TARGET_ABSOLUTE_ABICALLS.
+	* config/mips/mips.h (TARGET_ABSOLUTE_ABICALLS): New macro.
+	(ASM_SPEC): Pass down -mshared and -mno-shared.
+	(MIPS_CALL): New macro.
+	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Remove __ABICALLS__
+	definition.
+	* doc/invoke.texi (-mabicalls): Update documentation.
+	(-mshared): Document.
+
 2006-03-21  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/unwind-hpux.c: New file.

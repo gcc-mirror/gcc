@@ -166,14 +166,15 @@
 ;; This attribute is YES if the instruction is a jal macro (not a
 ;; real jal instruction).
 ;;
-;; jal is always a macro in SVR4 PIC since it includes an instruction to
-;; restore $gp.  Direct jals are also macros in NewABI PIC since they
-;; load the target address into $25.
+;; jal is always a macro for o32 and o64 abicalls because it includes an
+;; instruction to restore $gp.  Direct jals are also macros for -mshared
+;; abicalls because they first load the target address into $25.
 (define_attr "jal_macro" "no,yes"
   (cond [(eq_attr "jal" "direct")
-	 (symbol_ref "TARGET_ABICALLS != 0")
+	 (symbol_ref "TARGET_ABICALLS
+		      && (TARGET_OLDABI || !TARGET_ABSOLUTE_ABICALLS)")
 	 (eq_attr "jal" "indirect")
-	 (symbol_ref "(TARGET_ABICALLS && !TARGET_NEWABI) != 0")]
+	 (symbol_ref "TARGET_ABICALLS && TARGET_OLDABI")]
 	(const_string "no")))
 
 ;; Classification of each insn.
@@ -3982,7 +3983,7 @@
 (define_insn_and_split "loadgp"
   [(unspec_volatile [(match_operand 0 "" "")
 		     (match_operand 1 "register_operand" "")] UNSPEC_LOADGP)]
-  "TARGET_ABICALLS && TARGET_NEWABI"
+  "mips_current_loadgp_style () == LOADGP_NEWABI"
   "#"
   ""
   [(set (match_dup 2) (match_dup 3))
@@ -3995,6 +3996,19 @@
   operands[5] = gen_rtx_LO_SUM (Pmode, operands[2], operands[0]);
 }
   [(set_attr "length" "12")])
+
+;; Likewise, for -mno-shared code.  Operand 0 is the __gnu_local_gp symbol.
+(define_insn_and_split "loadgp_noshared"
+  [(unspec_volatile [(match_operand 0 "" "")] UNSPEC_LOADGP)]
+  "mips_current_loadgp_style () == LOADGP_ABSOLUTE"
+  "#"
+  ""
+  [(const_int 0)]
+{
+  emit_move_insn (pic_offset_table_rtx, operands[0]);
+  DONE;
+}
+  [(set_attr "length" "8")])
 
 ;; The use of gp is hidden when not using explicit relocations.
 ;; This blockage instruction prevents the gp load from being
@@ -5060,9 +5074,7 @@
   [(call (mem:SI (match_operand 0 "call_insn_operand" "j,S"))
 	 (match_operand 1 "" ""))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
-  "@
-    %*jr\t%0%/
-    %*j\t%0%/"
+  { return MIPS_CALL ("j", operands, 0); }
   [(set_attr "type" "call")])
 
 (define_expand "sibcall_value"
@@ -5082,9 +5094,7 @@
         (call (mem:SI (match_operand 1 "call_insn_operand" "j,S"))
               (match_operand 2 "" "")))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
-  "@
-    %*jr\t%1%/
-    %*j\t%1%/"
+  { return MIPS_CALL ("j", operands, 1); }
   [(set_attr "type" "call")])
 
 (define_insn "sibcall_value_multiple_internal"
@@ -5095,9 +5105,7 @@
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
-  "@
-    %*jr\t%1%/
-    %*j\t%1%/"
+  { return MIPS_CALL ("j", operands, 1); }
   [(set_attr "type" "call")])
 
 (define_expand "call"
@@ -5153,7 +5161,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : "%*jal\t%0%/"; }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
   [(const_int 0)]
 {
@@ -5166,12 +5174,12 @@
    (set_attr "extended_mips16" "no,yes")])
 
 (define_insn "call_split"
-  [(call (mem:SI (match_operand 0 "call_insn_operand" "c"))
+  [(call (mem:SI (match_operand 0 "call_insn_operand" "cS"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  "%*jalr\t%0%/"
+  { return MIPS_CALL ("jal", operands, 0); }
   [(set_attr "type" "call")])
 
 (define_expand "call_value"
@@ -5193,7 +5201,7 @@
               (match_operand 2 "" "")))
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : "%*jal\t%1%/"; }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
   [(const_int 0)]
 {
@@ -5208,12 +5216,12 @@
 
 (define_insn "call_value_split"
   [(set (match_operand 0 "register_operand" "=df")
-        (call (mem:SI (match_operand 1 "call_insn_operand" "c"))
+        (call (mem:SI (match_operand 1 "call_insn_operand" "cS"))
               (match_operand 2 "" "")))
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  "%*jalr\t%1%/"
+  { return MIPS_CALL ("jal", operands, 1); }
   [(set_attr "type" "call")])
 
 ;; See comment for call_internal.
@@ -5226,7 +5234,7 @@
 	      (match_dup 2)))
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : "%*jal\t%1%/"; }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[4] = insn)"
   [(const_int 0)]
 {
@@ -5241,7 +5249,7 @@
 
 (define_insn "call_value_multiple_split"
   [(set (match_operand 0 "register_operand" "=df")
-        (call (mem:SI (match_operand 1 "call_insn_operand" "c"))
+        (call (mem:SI (match_operand 1 "call_insn_operand" "cS"))
               (match_operand 2 "" "")))
    (set (match_operand 3 "register_operand" "=df")
 	(call (mem:SI (match_dup 1))
@@ -5249,7 +5257,7 @@
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  "%*jalr\t%1%/"
+  { return MIPS_CALL ("jal", operands, 1); }
   [(set_attr "type" "call")])
 
 ;; Call subroutine returning any type.

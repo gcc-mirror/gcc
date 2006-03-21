@@ -103,6 +103,16 @@
   switch (symbol_type)
     {
     case SYMBOL_GENERAL:
+      /* We can only use direct calls for TARGET_ABSOLUTE_ABICALLS if we
+	 are sure that the target function does not need $25 to be live
+	 on entry.  This is true for any locally-defined function because
+	 any such function will use %hi/%lo accesses to set up $gp.  */
+      if (TARGET_ABSOLUTE_ABICALLS
+          && !(GET_CODE (op) == SYMBOL_REF
+	       && SYMBOL_REF_DECL (op)
+	       && !DECL_EXTERNAL (SYMBOL_REF_DECL (op))))
+	return false;
+
       /* If -mlong-calls, force all calls to use register addressing.  Also,
 	 if this function has the long_call attribute, we must use register
 	 addressing.  */

@@ -149,6 +149,19 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define TARGET_SPLIT_CALLS \
   (TARGET_EXPLICIT_RELOCS && TARGET_ABICALLS && !TARGET_NEWABI)
 
+/* True if we're generating a form of -mabicalls in which we can use
+   operators like %hi and %lo to refer to locally-binding symbols.
+   We can only do this for -mno-shared, and only then if we can use
+   relocation operations instead of assembly macros.  It isn't really
+   worth using absolute sequences for 64-bit symbols because GOT
+   accesses are so much shorter.  */
+
+#define TARGET_ABSOLUTE_ABICALLS	\
+  (TARGET_ABICALLS			\
+   && !TARGET_SHARED			\
+   && TARGET_EXPLICIT_RELOCS		\
+   && !ABI_HAS_64BIT_SYMBOLS)
+
 /* True if we can optimize sibling calls.  For simplicity, we only
    handle cases in which call_insn_operand will reject invalid
    sibcall addresses.  There are two cases in which this isn't true:
@@ -820,6 +833,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 %(subtarget_asm_debugging_spec) \
 %{mabi=*} %{!mabi*: %(asm_abi_default_spec)} \
 %{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
+%{mshared} %{mno-shared} \
 %{msym32} %{mno-sym32} \
 %{mtune=*} %{v} \
 %(subtarget_asm_spec)"
@@ -2281,6 +2295,26 @@ typedef struct mips_args {
    its operands.  */
 #define MIPS_BRANCH(OPCODE, OPERANDS) \
   "%*" OPCODE "%?\t" OPERANDS "%/"
+
+/* Return the asm template for a call.  INSN is the instruction's mnemonic
+   ("j" or "jal"), OPERANDS are its operands, and OPNO is the operand number
+   of the target.
+
+   When generating -mabicalls without explicit relocation operators,
+   all calls should use assembly macros.  Otherwise, all indirect
+   calls should use "jr" or "jalr"; we will arrange to restore $gp
+   afterwards if necessary.  Finally, we can only generate direct
+   calls for -mabicalls by temporarily switching to non-PIC mode.  */
+#define MIPS_CALL(INSN, OPERANDS, OPNO)				\
+  (TARGET_ABICALLS && !TARGET_EXPLICIT_RELOCS			\
+   ? "%*" INSN "\t%" #OPNO "%/"					\
+   : REG_P (OPERANDS[OPNO])					\
+   ? "%*" INSN "r\t%" #OPNO "%/"				\
+   : TARGET_ABICALLS						\
+   ? (".option\tpic0\n\t"					\
+      "%*" INSN "\t%" #OPNO "%/\n\t"				\
+      ".option\tpic2")						\
+   : "%*" INSN "\t%" #OPNO "%/")
 
 /* Control the assembler format that we output.  */
 
