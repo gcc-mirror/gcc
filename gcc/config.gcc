@@ -2174,6 +2174,7 @@ sparc-*-solaris2*)
 		tm_file="${tm_file} tm-dwarf2.h"
 		tmake_file="$tmake_file sparc/t-sol2-64"
 		need_64bit_hwint=yes
+		test x$with_cpu != x || with_cpu=v9
 		;;
 	esac
 	c_target_objs="sol2-c.o"
