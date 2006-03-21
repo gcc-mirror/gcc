@@ -1,3 +1,59 @@
+2006-03-21  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin-protos.h (bfin_dsp_memref_p): Declare.
+	* config/bfin/bfin.c (bfin_dsp_memref_p): New function.
+	(bfin_valid_reg_p): Test for pseudos explicitly and use only
+	REGNO_MODE_CODE_OK_FOR_BASE_P.  New args MODE and OUTER_CODE; all
+	callers changed.
+	* config/bfin/bfin.h (PREG_P): Use P_REGNO_P.
+	(IREG_P, P_REGNO_P, I_REGNO_P): New macros.
+	(enum reg_class, REG_CLASS_CONTENTS): Add IPREGS.
+	(BASE_REG_CLASS, REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
+	REGNO_OK_FOR_BASE_STRICT_P, REGNO_OK_FOR_BASE_NONSTRICT_P): Delete
+	macros.
+	(IREG_POSSIBLE_P, MODE_CODE_BASE_REG_CLASS,
+	REGNO_MODE_CODE_OK_FOR_BASE_P): New macros.
+	(REGNO_REG_CLASS): ARGP is in PREGS.
+	* config/bfin/bfin.md (movhi_insn): Allow for addresses containing
+	IREGS.
+	(zero_extendhisi2, extendhisi2): Likewise; changed to define_and_split
+	to deal with those addresses.
+	* addresses.h: New file.
+	* caller-save.c: Include "addresses.h".
+	(init_caller_save): Use new base_reg_class function.
+	* rtl-factoring.c: Include "addresses.h".
+	(recompute_gain_for_pattern_seq): Use new function ok_for_base_p_1.
+	* recog.c: Include "addresses.h".
+	(preprocess_constraints): Use new base_reg_class function.
+	* regrename.c: Include "addresses.h".
+	(scan_rtx_address): Use new regno_ok_for_base_p and base_reg_class
+	functions.  Keep track of a new var INDEX_CODE to compute valid
+	classes.
+	(replace_oldest_value_addr): Likewise.
+	(replace_oldest_value_mem): Use base_reg_class.
+	* reload.c: Include "addresses.h".
+	(REGNO_MODE_OK_FOR_BASE_P, REG_MODE_OK_FOR_BASE_P): Delete macros.
+	(find_reloads): Use new base_reg_class function.
+	(find_reloads_address): Likewise; also use regno_ok_for_base_p.
+	(find_reloads_address_1): Likewise. New args OUTER_CODE and INDEX_CODE;
+	all callers and prototype changed.
+	* reload1.c: Include "addresses.h".
+	(maybe_fix_stack_asms): Use base_reg_class.
+	* regclass.c: Include "addresses.h".
+	(ok_for_index_p_nonstrict, ok_for_base_p_nonstrict): New functions.
+	(init_reg_autoinc): Use new base_reg_class function.
+	(record_reg_classes): Likewise.
+	(record_address_regs): Delete arg CLASS; add args CONTEXT, MODE,
+	OUTER_CODE and INDEX_CODE.  All callers and prototype changed.
+	Use new args to compute necessary class.
+
+	* Makefile.in (regclass.o, reload.o, reload1.o, caller-save.o, recog.o,
+	regrename.o, rtl-factoring.o): Update dependencies.
+	* doc/tm.texi (MODE_CODE_BASE_REG_CLASS): Document.
+	(REGNO_MODE_CODE_OK_FOR_BASE_P): Likewise.
+	(REG_OK_FOR_BASE_P, REG_MODE_OK_FOR_BASE_P, REG_MODE_OK_FOR_REG_BASE_P,
+	REG_OK_FOR_INDEX_P): Delete documentation.
+
 2006-03-21  Alexey Starovoytov  <alexey.starovoytov@sun.com>
 
 	* config.gcc (sparc-*-solaris2*): Change the default CPU setting

@@ -631,40 +631,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define	TARGET_FLOAT_FORMAT	IEEE_FLOAT_FORMAT
 #endif
 
-/* Some macros can be defined by the backend in either a mode-dependent
-   or mode-independent form.  The compiler proper should only use the
-   mode-dependent form, providing VOIDmode when the mode is unknown.
-   We can't poison the macros because the backend may reference them.  */
-
-#ifndef REGNO_MODE_OK_FOR_BASE_P
-#define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) REGNO_OK_FOR_BASE_P (REGNO)
-#endif
-
-#ifndef REG_MODE_OK_FOR_BASE_P
-#define REG_MODE_OK_FOR_BASE_P(REG, MODE) REG_OK_FOR_BASE_P (REG)
-#endif
-
-/* Determine the register class for registers suitable to be the base
-   address register in a MEM.  Allow the choice to be dependent upon
-   the mode of the memory access.  */
-#ifndef MODE_BASE_REG_CLASS
-#define MODE_BASE_REG_CLASS(MODE) BASE_REG_CLASS
-#endif
-
-/* Some machines require a different base register class if the index
-   is a register.  By default, assume that a base register is acceptable.  */
-#ifndef MODE_BASE_REG_REG_CLASS
-#define MODE_BASE_REG_REG_CLASS(MODE) MODE_BASE_REG_CLASS(MODE)
-#endif
-
-#ifndef REGNO_MODE_OK_FOR_REG_BASE_P
-#define REGNO_MODE_OK_FOR_REG_BASE_P(REGNO, MODE) REGNO_MODE_OK_FOR_BASE_P (REGNO, MODE)
-#endif
-
-#ifndef REG_MODE_OK_FOR_REG_BASE_P
-#define REG_MODE_OK_FOR_REG_BASE_P(REGNO, MODE) REG_MODE_OK_FOR_BASE_P (REGNO, MODE)
-#endif
-
 #ifndef LARGEST_EXPONENT_IS_NORMAL
 #define LARGEST_EXPONENT_IS_NORMAL(SIZE) 0
 #endif

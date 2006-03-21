@@ -25,6 +25,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"
+#include "addresses.h"
 #include "insn-config.h"
 #include "flags.h"
 #include "hard-reg-set.h"
@@ -153,7 +154,7 @@ init_caller_save (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT
 	(reg_class_contents
-	 [(int) MODE_BASE_REG_CLASS (regno_save_mode [i][1])], i))
+	 [(int) base_reg_class (regno_save_mode [i][1], PLUS, CONST_INT)], i))
       break;
 
   gcc_assert (i < FIRST_PSEUDO_REGISTER);
