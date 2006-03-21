@@ -1182,7 +1182,7 @@ mips_classify_symbol (rtx x)
     {
       if (TARGET_MIPS16)
 	return SYMBOL_CONSTANT_POOL;
-      if (TARGET_ABICALLS)
+      if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
 	return SYMBOL_GOT_LOCAL;
       return SYMBOL_GENERAL;
     }
@@ -1197,13 +1197,8 @@ mips_classify_symbol (rtx x)
       if (TARGET_MIPS16)
 	return SYMBOL_CONSTANT_POOL;
 
-      if (TARGET_ABICALLS)
-	return SYMBOL_GOT_LOCAL;
-
       if (GET_MODE_SIZE (get_pool_mode (x)) <= mips_section_threshold)
 	return SYMBOL_SMALL_DATA;
-
-      return SYMBOL_GENERAL;
     }
 
   if (SYMBOL_REF_SMALL_P (x))
@@ -1212,32 +1207,43 @@ mips_classify_symbol (rtx x)
   if (TARGET_ABICALLS)
     {
       if (SYMBOL_REF_DECL (x) == 0)
-	return SYMBOL_REF_LOCAL_P (x) ? SYMBOL_GOT_LOCAL : SYMBOL_GOT_GLOBAL;
+	{
+	  if (!SYMBOL_REF_LOCAL_P (x))
+	    return SYMBOL_GOT_GLOBAL;
+	}
+      else
+	{
+	  /* Don't use GOT accesses for locally-binding symbols if
+	     TARGET_ABSOLUTE_ABICALLS.  Otherwise, there are three
+	     cases to consider:
 
-      /* There are three cases to consider:
+		- o32 PIC (either with or without explicit relocs)
+		- n32/n64 PIC without explicit relocs
+		- n32/n64 PIC with explicit relocs
 
-            - o32 PIC (either with or without explicit relocs)
-            - n32/n64 PIC without explicit relocs
-            - n32/n64 PIC with explicit relocs
+	     In the first case, both local and global accesses will use an
+	     R_MIPS_GOT16 relocation.  We must correctly predict which of
+	     the two semantics (local or global) the assembler and linker
+	     will apply.  The choice doesn't depend on the symbol's
+	     visibility, so we deliberately ignore decl_visibility and
+	     binds_local_p here.
 
-         In the first case, both local and global accesses will use an
-         R_MIPS_GOT16 relocation.  We must correctly predict which of
-         the two semantics (local or global) the assembler and linker
-         will apply.  The choice doesn't depend on the symbol's
-         visibility, so we deliberately ignore decl_visibility and
-         binds_local_p here.
+	     In the second case, the assembler will not use R_MIPS_GOT16
+	     relocations, but it chooses between local and global accesses
+	     in the same way as for o32 PIC.
 
-         In the second case, the assembler will not use R_MIPS_GOT16
-         relocations, but it chooses between local and global accesses
-         in the same way as for o32 PIC.
+	     In the third case we have more freedom since both forms of
+	     access will work for any kind of symbol.  However, there seems
+	     little point in doing things differently.  */
+	  if (DECL_P (SYMBOL_REF_DECL (x))
+	      && TREE_PUBLIC (SYMBOL_REF_DECL (x))
+	      && !(TARGET_ABSOLUTE_ABICALLS
+		   && targetm.binds_local_p (SYMBOL_REF_DECL (x))))
+	    return SYMBOL_GOT_GLOBAL;
+	}
 
-         In the third case we have more freedom since both forms of
-         access will work for any kind of symbol.  However, there seems
-         little point in doing things differently.  */
-      if (DECL_P (SYMBOL_REF_DECL (x)) && TREE_PUBLIC (SYMBOL_REF_DECL (x)))
-	return SYMBOL_GOT_GLOBAL;
-
-      return SYMBOL_GOT_LOCAL;
+      if (!TARGET_ABSOLUTE_ABICALLS)
+	return SYMBOL_GOT_LOCAL;
     }
 
   return SYMBOL_GENERAL;
@@ -4753,15 +4759,18 @@ override_options (void)
       target_flags &= ~MASK_ABICALLS;
     }
 
-  /* -fpic (-KPIC) is the default when TARGET_ABICALLS is defined.  We need
-     to set flag_pic so that the LEGITIMATE_PIC_OPERAND_P macro will work.  */
-  /* ??? -non_shared turns off pic code generation, but this is not
-     implemented.  */
   if (TARGET_ABICALLS)
     {
+      /* We need to set flag_pic for executables as well as DSOs
+	 because we may reference symbols that are not defined in
+	 the final executable.  (MIPS does not use things like
+	 copy relocs, for example.)
+
+	 Also, there is a body of code that uses __PIC__ to distinguish
+	 between -mabicalls and -mno-abicalls code.  */
       flag_pic = 1;
       if (mips_section_threshold > 0)
-	warning (0, "-G is incompatible with PIC code which is the default");
+	warning (0, "%<-G%> is incompatible with %<-mabicalls%>");
     }
 
   /* mips_split_addresses is a half-way house between explicit
@@ -5797,7 +5806,6 @@ mips_file_start (void)
 
   /* Generate the pseudo ops that System V.4 wants.  */
   if (TARGET_ABICALLS)
-    /* ??? but do not want this (or want pic0) if -non-shared? */
     fprintf (asm_out_file, "\t.abicalls\n");
 
   if (TARGET_MIPS16)
@@ -6493,22 +6501,55 @@ mips_output_cplocal (void)
     output_asm_insn (".cplocal %+", 0);
 }
 
+/* Return the style of GP load sequence that is being used for the
+   current function.  */
+
+enum mips_loadgp_style
+mips_current_loadgp_style (void)
+{
+  if (!TARGET_ABICALLS || cfun->machine->global_pointer == 0)
+    return LOADGP_NONE;
+
+  if (TARGET_ABSOLUTE_ABICALLS)
+    return LOADGP_ABSOLUTE;
+
+  return TARGET_NEWABI ? LOADGP_NEWABI : LOADGP_OLDABI;
+}
+
+/* The __gnu_local_gp symbol.  */
+
+static GTY(()) rtx mips_gnu_local_gp;
+
 /* If we're generating n32 or n64 abicalls, emit instructions
    to set up the global pointer.  */
 
 static void
 mips_emit_loadgp (void)
 {
-  if (TARGET_ABICALLS && TARGET_NEWABI && cfun->machine->global_pointer > 0)
-    {
-      rtx addr, offset, incoming_address;
+  rtx addr, offset, incoming_address;
 
+  switch (mips_current_loadgp_style ())
+    {
+    case LOADGP_ABSOLUTE:
+      if (mips_gnu_local_gp == NULL)
+	{
+	  mips_gnu_local_gp = gen_rtx_SYMBOL_REF (Pmode, "__gnu_local_gp");
+	  SYMBOL_REF_FLAGS (mips_gnu_local_gp) |= SYMBOL_FLAG_LOCAL;
+	}
+      emit_insn (gen_loadgp_noshared (mips_gnu_local_gp));
+      break;
+
+    case LOADGP_NEWABI:
       addr = XEXP (DECL_RTL (current_function_decl), 0);
       offset = mips_unspec_address (addr, SYMBOL_GOTOFF_LOADGP);
       incoming_address = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
       emit_insn (gen_loadgp (offset, incoming_address));
       if (!TARGET_EXPLICIT_RELOCS)
 	emit_insn (gen_loadgp_blockage ());
+      break;
+
+    default:
+      break;
     }
 }
 
@@ -6588,7 +6629,7 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	 HIGHEST_GP_SAVED == *FRAMEREG + FRAMESIZE + GPOFFSET => can find saved regs.  */
     }
 
-  if (TARGET_ABICALLS && !TARGET_NEWABI && cfun->machine->global_pointer > 0)
+  if (mips_current_loadgp_style () == LOADGP_OLDABI)
     {
       /* Handle the initialization of $gp for SVR4 PIC.  */
       if (!cfun->machine->all_noreorder_p)
@@ -6775,11 +6816,11 @@ mips_expand_prologue (void)
 					     stack_pointer_rtx)) = 1;
     }
 
+  mips_emit_loadgp ();
+
   /* If generating o32/o64 abicalls, save $gp on the stack.  */
   if (TARGET_ABICALLS && !TARGET_NEWABI && !current_function_is_leaf)
     emit_insn (gen_cprestore (GEN_INT (current_function_outgoing_args_size)));
-
-  mips_emit_loadgp ();
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  */
@@ -10674,13 +10715,13 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
     }
 }
 
-/* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  TARGET_ABICALLS makes
-   PIC_FUNCTION_ADDR_REGNUM live on entry to a function.  */
+/* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  PIC_FUNCTION_ADDR_REGNUM is live
+   on entry to a function when generating -mshared abicalls code.  */
 
 static void
 mips_extra_live_on_entry (bitmap regs)
 {
-  if (!TARGET_ABICALLS)
+  if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
     bitmap_set_bit (regs, PIC_FUNCTION_ADDR_REGNUM);
 }
 

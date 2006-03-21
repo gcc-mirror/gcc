@@ -25,7 +25,7 @@ Target RejectNegative Joined
 
 mabicalls
 Target Report Mask(ABICALLS)
-Use SVR4-style PIC
+Generate code that can be used in SVR4-style dynamic objects
 
 mad
 Target Report Var(TARGET_MAD)
@@ -184,6 +184,10 @@ Do not use MIPS-3D instructions
 mpaired-single
 Target Report Mask(PAIRED_SINGLE_FLOAT)
 Use paired-single floating-point instructions
+
+mshared
+Target Report Var(TARGET_SHARED) Init(1)
+When generating -mabicalls code, make the code suitable for use in shared libraries
 
 msingle-float
 Target Report RejectNegative Mask(SINGLE_FLOAT)
