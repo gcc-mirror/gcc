@@ -5801,6 +5801,9 @@ get_callee_fndecl (tree call)
 {
   tree addr;
 
+  if (call == error_mark_node)
+    return call;
+
   /* It's invalid to call this function with anything but a
      CALL_EXPR.  */
   gcc_assert (TREE_CODE (call) == CALL_EXPR);

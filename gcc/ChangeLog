@@ -1,3 +1,9 @@
+2006-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/26690
+	* tree.c (get_callee_fndecl): If CALL is error_mark_node,
+	return it immediately.
+
 2006-03-21  Michael Matz  <matz@suse.de>
 
 	* genautomata.c (<struct state>, num_out_arcs, presence_signature):
