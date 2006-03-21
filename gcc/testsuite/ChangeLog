@@ -1,3 +1,12 @@
+2006-03-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortran.dg/advance.f90, gfortran.dg/backspace_2.f,
+	gfortran.dg/comma.f, gfortran.dg/direct_io_2.f90,
+	gfortran.dg/tl_editing.f90, gfortran.dg/unf_io_convert_1.f90,
+	gfortran.dg/write_back.f,
+	gfortran.fortran-torture/execute/inquire_1.f90,
+	gfortran.fortran-torture/execute/inquire_3.f90: Delete temp file.
+
 2006-03-21  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp28.c: New test.

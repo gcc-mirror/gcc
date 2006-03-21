@@ -85,11 +85,11 @@ program main
      else
         call abort
      endif
-     ! use hexdump to look at the file "fort.9"
-     if (debug) then
-        close(9)
-     else
-        close(9,status='DELETE')
-     endif
   end if
+  ! use hexdump to look at the file "fort.9"
+  if (debug) then
+     close(9)
+  else
+     close(9,status='DELETE')
+  endif
 end program main

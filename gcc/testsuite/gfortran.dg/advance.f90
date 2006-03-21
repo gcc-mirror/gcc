@@ -9,4 +9,5 @@ program pr25463
   rewind (10)
   read (10, '(a)') str
   if (str.ne.'abc') call abort()
+  close (10, status='delete')
 end

@@ -27,6 +27,7 @@ program tl_editting
   rewind(10)
   read(10, '(a)') s
   if (s.ne.cline) call abort
+  close(10, status='delete')
   
 end program tl_editting
 
