@@ -22,3 +22,5 @@ program huj
     s = s_to_c(c)
 
 end program huj
+
+! { dg-final { cleanup-modules "foo" } }

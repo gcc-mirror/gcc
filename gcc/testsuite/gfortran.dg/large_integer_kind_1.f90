@@ -36,3 +36,5 @@ program test
   x = -huge(0_8)
   call testoutput (x,-huge(0_8),50,'(I50)')
 end program test
+
+! { dg-final { cleanup-modules "testmod" } }

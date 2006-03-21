@@ -17,3 +17,4 @@ contains
   end subroutine dummysub
 end module modboom
 
+! { dg-final { cleanup-modules "modboom" } }

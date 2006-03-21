@@ -20,3 +20,4 @@
 !  copyright 1996 Loren P. Meissner -- May be distributed if this line is included.
 !  Linked List operations with Pointer to Pointer
 
+! { dg-final { cleanup-modules "llo" } }

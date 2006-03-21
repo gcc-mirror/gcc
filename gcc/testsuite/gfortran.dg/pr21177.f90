@@ -51,3 +51,5 @@ program test
   if (tt(null(c4)) /= 3) call abort()
   if (tt(null(c8)) /= 4) call abort()
 end program test
+
+! { dg-final { cleanup-modules "mymod" } }

@@ -13,3 +13,4 @@ program y
   if (b(2) /= 'efghij') call abort
 end program y
 
+! { dg-final { cleanup-modules "z" } }

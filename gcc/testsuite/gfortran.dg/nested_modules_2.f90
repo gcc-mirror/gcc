@@ -36,3 +36,4 @@ program testfoobar
   if (all (l.ne.(/84,42,0/))) call abort ()
 end program testfoobar
 
+! { dg-final { cleanup-modules "foo bar foobar" } }

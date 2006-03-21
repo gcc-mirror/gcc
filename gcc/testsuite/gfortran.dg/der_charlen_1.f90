@@ -22,3 +22,5 @@ CONTAINS
     type(T), intent(in)          :: X
   end subroutine
 end module another_core
+
+! { dg-final { cleanup-modules "core another_core" } }

@@ -34,3 +34,5 @@ program test
    use innerfun
    call foo(3,f)
 end program test
+
+! { dg-final { cleanup-modules "innerfun outerfun" } }

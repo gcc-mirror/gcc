@@ -30,3 +30,5 @@ contains
     v = x%f2(:)
   end subroutine foo
 end module mod2
+
+! { dg-final { cleanup-modules "mod1 mod2" } }

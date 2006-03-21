@@ -9,3 +9,4 @@ implicit none
 common/rommel/aaa ! { dg-error "no IMPLICIT type" "no IMPLICIT type" }
 end
 
+! { dg-final { cleanup-modules "AHFinder_dat" } }

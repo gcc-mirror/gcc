@@ -26,3 +26,5 @@ y = (/1,2,3/)
 call baz(y,z)
 if (any (y /= z)) call abort ()
 end
+
+! { dg-final { cleanup-modules "FOO" } }

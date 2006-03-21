@@ -75,3 +75,5 @@ program test
   c2(1:1) = ' '
   if (c1 /= c2) call abort
 end program test
+
+! { dg-final { cleanup-modules "testmod" } }
