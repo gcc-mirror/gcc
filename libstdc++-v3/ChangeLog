@@ -1,3 +1,39 @@
+2006-03-21  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/25482
+	* include/bits/stl_algobase.h (__copy_aux(_CharT*, _CharT*,
+	ostreambuf_iterator<_CharT>), __copy_aux(const _CharT*, const _CharT*,
+	ostreambuf_iterator<_CharT>), __copy_aux(istreambuf_iterator<_CharT>,
+	istreambuf_iterator<_CharT>, _CharT*), copy(istreambuf_iterator<_CharT>,
+	istreambuf_iterator<_CharT>, ostreambuf_iterator<_CharT>)): Declare.
+	* include/bits/stl_algo.h (find(istreambuf_iterator<_CharT>,
+	istreambuf_iterator<_CharT>, _CharT)): Likewise.
+	* include/bits/streambuf_iterator.h (copy(istreambuf_iterator<_CharT>,
+	istreambuf_iterator<_CharT>, ostreambuf_iterator<_CharT>),
+	__copy_aux(_CharT*, _CharT*, ostreambuf_iterator<_CharT>),
+	__copy_aux(const _CharT*, const _CharT*, ostreambuf_iterator<_CharT>),
+	__copy_aux(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
+	_CharT*), find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
+	_CharT)): Define.
+	(class istreambuf_iterator<>, class ostreambuf_iterator<>): Declare
+	friends.
+	* include/std/std_streambuf.h (class basic_streambuf<>): Likewise.
+	* include/bits/cpp_type_traits.h (struct __is_char<>): Add.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/1.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/2.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/3.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/1.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/2.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/3.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/4.cc: New.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/1.cc: New.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/2.cc: New.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/1.cc: New.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/2.cc: New.
+	* testsuite/performance/25_algorithms/copy_streambuf_iterators.cc: New.
+	* testsuite/performance/25_algorithms/find_istreambuf_iterators.cc: New.
+
 006-03-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/postypes.h (fpos<>::operator==, operator!=): Remove,

@@ -1,6 +1,7 @@
 // Bits and pieces used in algorithms -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -165,8 +166,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	iter_swap(__a, __b);
     }
 
-  #undef min
-  #undef max
+#undef min
+#undef max
 
   /**
    *  @brief This does what you think it does.
@@ -316,6 +317,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return std::__copy<__simple, _Category>::copy(__first, __last, __result);
     }
 
+  // Helpers for streambuf iterators (either istream or ostream).
+  template<typename _CharT>
+    typename __enable_if<ostreambuf_iterator<_CharT>,
+			 __is_char<_CharT>::__value>::__type
+    __copy_aux(_CharT*, _CharT*, ostreambuf_iterator<_CharT>);
+
+  template<typename _CharT>
+    typename __enable_if<ostreambuf_iterator<_CharT>,
+			 __is_char<_CharT>::__value>::__type
+    __copy_aux(const _CharT*, const _CharT*, ostreambuf_iterator<_CharT>);
+
+  template<typename _CharT>
+    typename __enable_if<_CharT*, __is_char<_CharT>::__value>::__type
+    __copy_aux(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
+	       _CharT*);
+
   template<bool, bool>
     struct __copy_normal
     {
@@ -385,7 +402,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        return std::__copy_normal<__in, __out>::__copy_n(__first, __last,
 							__result);
     }
-  
+
+  // Overload for streambuf iterators.
+  template<typename _CharT>
+    typename __enable_if<ostreambuf_iterator<_CharT>,
+			 __is_char<_CharT>::__value>::__type
+    copy(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
+	 ostreambuf_iterator<_CharT>);
+
   template<bool, typename>
     struct __copy_backward
     {
