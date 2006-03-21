@@ -1,3 +1,8 @@
+2006-03-21  Steve Ellcey  <sje@cup.hp.com>
+
+	PR libgomp/26384
+	* config/pa/pa64-hpux.h (LIB_SPEC): Fix for -mt and -pthread options.
+
 2006-03-21  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (extract_range_from_unary_expr): Derive ranges for
