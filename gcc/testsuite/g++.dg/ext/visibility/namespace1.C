@@ -1,12 +1,12 @@
 // PR c++/21764
 // Test for namespace visibility attribute semantics.
 
-// { dg-do compile { target i?86-*-linux* x86_64-*-linux* powerpc*-*-linux* } }
-// { dg-final { scan-assembler "hidden\[ \t\]*_ZN3foo1fEv" } }
-// { dg-final { scan-assembler "hidden\[ \t\]*_ZN3foo1gEv" } }
-// { dg-final { scan-assembler "hidden\[ \t\]*_ZN3foo1A1mEv" } }
-// { dg-final { scan-assembler "hidden\[ \t\]*_ZN3foo1tIiEEvv" } }
-// { dg-final { scan-assembler-not "hidden\[ \t\]*_ZN3foo1hEv" } }
+// { dg-require-visibility "" }
+// { dg-final { scan-hidden "_ZN3foo1fEv" } }
+// { dg-final { scan-hidden "_ZN3foo1gEv" } }
+// { dg-final { scan-hidden "_ZN3foo1A1mEv" } }
+// { dg-final { scan-hidden "_ZN3foo1tIiEEvv" } }
+// { dg-final { scan-not-hidden "_ZN3foo1hEv" } }
 
 namespace foo __attribute ((visibility ("hidden")))
 {
