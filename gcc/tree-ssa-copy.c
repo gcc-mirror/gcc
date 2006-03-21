@@ -843,7 +843,7 @@ copy_prop_visit_phi_node (tree phi)
    opportunities.  */
 
 static void
-init_copy_prop (bool phis_only)
+init_copy_prop (void)
 {
   basic_block bb;
 
@@ -868,7 +868,7 @@ init_copy_prop (bool phis_only)
 	     lists of the propagator.  */
 	  if (stmt_ends_bb_p (stmt))
 	    DONT_SIMULATE_AGAIN (stmt) = false;
-	  else if (!phis_only && stmt_may_generate_copy (stmt))
+	  else if (stmt_may_generate_copy (stmt))
 	    DONT_SIMULATE_AGAIN (stmt) = false;
 	  else
 	    {
@@ -1027,10 +1027,10 @@ fini_copy_prop (void)
    x_53 and x_54 are both copies of x_898.  */
 
 static void
-execute_copy_prop (bool store_copy_prop, bool phis_only)
+execute_copy_prop (bool store_copy_prop)
 {
   do_store_copy_prop = store_copy_prop;
-  init_copy_prop (phis_only);
+  init_copy_prop ();
   ssa_propagate (copy_prop_visit_stmt, copy_prop_visit_phi_node);
   fini_copy_prop ();
 }
@@ -1045,7 +1045,7 @@ gate_copy_prop (void)
 static unsigned int
 do_copy_prop (void)
 {
-  execute_copy_prop (false, false);
+  execute_copy_prop (false);
   return 0;
 }
 
@@ -1070,36 +1070,6 @@ struct tree_opt_pass pass_copy_prop =
   0					/* letter */
 };
 
-
-static unsigned int
-do_phi_only_copy_prop (void)
-{
-  execute_copy_prop (false, true);
-  return 0;
-}
-
-struct tree_opt_pass pass_phi_only_copy_prop =
-{
-  "phionlycopyprop",			/* name */
-  gate_copy_prop,			/* gate */
-  do_phi_only_copy_prop,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_COPY_PROP,			/* tv_id */
-  PROP_ssa | PROP_alias | PROP_cfg,	/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_dump_func
-    | TODO_ggc_collect
-    | TODO_verify_ssa
-    | TODO_update_ssa,			/* todo_flags_finish */
-  0					/* letter */
-};
-
-
 static bool
 gate_store_copy_prop (void)
 {
@@ -1114,7 +1084,7 @@ static unsigned int
 store_copy_prop (void)
 {
   /* If STORE-COPY-PROP is not enabled, we just run regular COPY-PROP.  */
-  execute_copy_prop (flag_tree_store_copy_prop != 0, false);
+  execute_copy_prop (flag_tree_store_copy_prop != 0);
   return 0;
 }
 

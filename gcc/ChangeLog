@@ -1,3 +1,21 @@
+2006-03-20  Jeff Law  <law@redhat.com>
+
+	* tree-pass.h (pass_phi_only_copy_prop): Delete.
+	(pass_phi_only_cprop): Declare.
+	* passes.c (init_optimization_passes): Replace pass_phi_only_copy_prop
+	with phi_only_cprop
+	* tree-ssa-dom.c (degenerate_phi_result): New function.
+	(remove_stmt_or_phi, get_lhs_or_phi_result): Likewise.
+	(get_rhs_or_phi_arg, propagate_rhs_into_lhs): Likewise.
+	(eliminate_const_or_copy, eliminate_degenerate_phis_1): Likewise.
+	(eliminate_degenerate_phis): Likewise.
+	(pass_phi_only_cprop): New pass descriptor.
+	* tree-ssa-copy.c (init_copy_prop): Lose PHIS_ONLY argument and
+	support code.  Callers updated.
+	(execute_copy_prop, do_copy_prop): Likewise and corresponding changes.
+	(store_copy_prop): Likewise.
+	(do_phi_only_copy_prop, pass_phi_only_copy_prop): Remove.
+
 2006-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/21764
