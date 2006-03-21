@@ -9,10 +9,13 @@ MULTILIB_MATCHES =
 
 # Support routines for HP-UX 128 bit floats.
 
-LIB2FUNCS_EXTRA=quadlib.c $(srcdir)/config/floatunsitf.c
+LIB2FUNCS_EXTRA=quadlib.c $(srcdir)/config/floatunsitf.c unwind-hpux.c
 
 quadlib.c: $(srcdir)/config/ia64/quadlib.c
 	cat $(srcdir)/config/ia64/quadlib.c > quadlib.c
+
+unwind-hpux.c: $(srcdir)/config/ia64/unwind-hpux.c
+	cat $(srcdir)/config/ia64/unwind-hpux.c > unwind-hpux.c
 
 # We get an undefined main when building a cross compiler because our
 # linkspec has "-u main" and we want that for linking but it makes

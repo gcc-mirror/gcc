@@ -1,5 +1,10 @@
 2006-03-21  Steve Ellcey  <sje@cup.hp.com>
 
+	* config/ia64/unwind-hpux.c: New file.
+	* config/ia64/t-hpux: Add unwind-hpux.c to libgcc.
+
+2006-03-21  Steve Ellcey  <sje@cup.hp.com>
+
 	PR libgomp/26384
 	* config/pa/pa64-hpux.h (LIB_SPEC): Fix for -mt and -pthread options.
 
