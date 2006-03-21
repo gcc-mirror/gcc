@@ -1,3 +1,7 @@
+2006-03-21  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp28.c: New test.
+
 2006-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/builtins-config.h (Solaris case): Define HAVE_C99_RUNTIME

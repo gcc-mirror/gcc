@@ -1641,14 +1641,12 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
       return;
     }
 
-  /* Refuse to operate on varying and symbolic ranges.  Also, if the
-     operand is neither a pointer nor an integral type, set the
-     resulting range to VARYING.  TODO, in some cases we may be able
-     to derive anti-ranges (like nonzero values).  */
-  if (vr0.type == VR_VARYING
-      || (!INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	  && !POINTER_TYPE_P (TREE_TYPE (op0)))
-      || symbolic_range_p (&vr0))
+  /* Refuse to operate on symbolic ranges, or if neither operand is
+     a pointer or integral type.  */
+  if ((!INTEGRAL_TYPE_P (TREE_TYPE (op0))
+       && !POINTER_TYPE_P (TREE_TYPE (op0)))
+      || (vr0.type != VR_VARYING
+	  && symbolic_range_p (&vr0)))
     {
       set_value_range_to_varying (vr);
       return;
@@ -1681,20 +1679,36 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	 or equal to the new max, then we can safely use the newly
 	 computed range for EXPR.  This allows us to compute
 	 accurate ranges through many casts.  */
-      if (vr0.type == VR_RANGE)
+      if (vr0.type == VR_RANGE
+	  || (vr0.type == VR_VARYING
+	      && TYPE_PRECISION (outer_type) > TYPE_PRECISION (inner_type)))
 	{
-	  tree new_min, new_max;
+	  tree new_min, new_max, orig_min, orig_max;
 
-	  /* Convert VR0's min/max to OUTER_TYPE.  */
-	  new_min = fold_convert (outer_type, vr0.min);
-	  new_max = fold_convert (outer_type, vr0.max);
+	  /* Convert the input operand min/max to OUTER_TYPE.   If
+	     the input has no range information, then use the min/max
+	     for the input's type.  */
+	  if (vr0.type == VR_RANGE)
+	    {
+	      orig_min = vr0.min;
+	      orig_max = vr0.max;
+	    }
+	  else
+	    {
+	      orig_min = TYPE_MIN_VALUE (inner_type);
+	      orig_max = TYPE_MAX_VALUE (inner_type);
+	    }
+
+	  new_min = fold_convert (outer_type, orig_min);
+	  new_max = fold_convert (outer_type, orig_max);
 
 	  /* Verify the new min/max values are gimple values and
-	     that they compare equal to VR0's min/max values.  */
+	     that they compare equal to the orignal input's
+	     min/max values.  */
 	  if (is_gimple_val (new_min)
 	      && is_gimple_val (new_max)
-	      && tree_int_cst_equal (new_min, vr0.min)
-	      && tree_int_cst_equal (new_max, vr0.max)
+	      && tree_int_cst_equal (new_min, orig_min)
+	      && tree_int_cst_equal (new_max, orig_max)
 	      && compare_values (new_min, new_max) <= 0
 	      && compare_values (new_min, new_max) >= -1)
 	    {
@@ -1715,6 +1729,16 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	  set_value_range_to_varying (vr);
 	  return;
 	}
+    }
+
+  /* Conversion of a VR_VARYING value to a wider type can result
+     in a usable range.  So wait until after we've handled conversions
+     before dropping the result to VR_VARYING if we had a source
+     operand that is VR_VARYING.  */
+  if (vr0.type == VR_VARYING)
+    {
+      set_value_range_to_varying (vr);
+      return;
     }
 
   /* Apply the operation to each end of the range and see what we end
