@@ -1,7 +1,28 @@
+2006-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/21764, c++/19238
+	* decl.c (cp_finish_decl): Call determine_visibility later.
+	(start_preparsed_function): Likewise.
+	* cp-tree.h (CP_TYPE_CONTEXT, TYPE_NAMESPACE_SCOPE_P): New macros.
+	(TYPE_CLASS_SCOPE_P, TYPE_FUNCTION_SCOPE_P): New macros.
+	* name-lookup.h (struct cp_binding_level): Add has_visibility 
+	bitfield.
+	* name-lookup.c: Include c-pragma.h.
+	(push_namespace_with_attribs): Split out from push_namespace.
+	Push visibility if appropriate.  Set TREE_PUBLIC on namespaces.
+	(leave_scope): Pop visibility if appropriate.
+	* decl2.c (determine_visibility_from_class): Split out from...
+	(determine_visibility): ...here.  Handle function scope and 
+	nested classes.
+	(import_export_decl): Move visibility handling to 
+	determine_visibility_from_class.
+	* parser.c (cp_parser_declaration, cp_parser_namespace_name): Allow
+	attributes on namespace declarations.
+
 2006-03-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/6634
-	decl.c (grokdeclarator): Do not accept long long double.
+	* decl.c (grokdeclarator): Do not accept long long double.
 	Reorganize checks for invalid (combinations of) type modifiers.
 	Quote modifiers in messages.
 

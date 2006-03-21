@@ -5178,9 +5178,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	     the class specifier.  */
 	  if (!DECL_EXTERNAL (decl))
 	    var_definition_p = true;
-	  /* The variable is being defined, so determine its
-	     visibility.  */
-	  determine_visibility (decl);
 	}
       /* If the variable has an array type, lay out the type, even if
 	 there is no initializer.  It is valid to index through the
@@ -5243,6 +5240,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      else if (!TREE_STATIC (decl))
 		initialize_local_var (decl, init);
 	    }
+
+	  /* The variable is being defined, so determine its visibility.
+	     This needs to happen after the linkage is set. */
+	  determine_visibility (decl);
 
 	  /* If a variable is defined, and then a subsequent
 	     definition with external linkage is encountered, we will
@@ -10422,12 +10423,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	maybe_apply_pragma_weak (decl1);
     }
 
-  /* Determine the ELF visibility attribute for the function.  We must
-     not do this before calling "pushdecl", as we must allow
-     "duplicate_decls" to merge any attributes appropriately.  */
-  if (!DECL_CLONED_FUNCTION_P (decl1))
-    determine_visibility (decl1);
-
   /* Reset these in case the call to pushdecl changed them.  */
   current_function_decl = decl1;
   cfun->decl = decl1;
@@ -10545,6 +10540,13 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       else
 	DECL_INTERFACE_KNOWN (decl1) = 1;
     }
+
+  /* Determine the ELF visibility attribute for the function.  We must not
+     do this before calling "pushdecl", as we must allow "duplicate_decls"
+     to merge any attributes appropriately.  We also need to wait until
+     linkage is set.  */
+  if (!DECL_CLONED_FUNCTION_P (decl1))
+    determine_visibility (decl1);
 
   begin_scope (sk_function_parms, decl1);
 

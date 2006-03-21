@@ -259,7 +259,11 @@ struct cp_binding_level GTY(())
     unsigned more_cleanups_ok : 1;
     unsigned have_cleanups : 1;
 
-    /* 22 bits left to fill a 32-bit word.  */
+    /* Nonzero if this level has associated visibility which we should pop
+       when leaving the scope. */
+    unsigned has_visibility : 1;
+
+    /* 23 bits left to fill a 32-bit word.  */
   };
 
 /* The binding level currently in effect.  */
@@ -307,6 +311,7 @@ extern void pop_inner_scope (tree, tree);
 extern void push_binding_level (struct cp_binding_level *);
 
 extern void push_namespace (tree);
+extern void push_namespace_with_attribs (tree, tree);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);

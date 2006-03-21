@@ -75,6 +75,8 @@ extern struct cpp_reader* parse_in;
    visibility is not supported on the host OS platform the
    statements are ignored.  */
 #define HANDLE_PRAGMA_VISIBILITY 1
+extern void push_visibility (const char *);
+extern void pop_visibility (void);
 
 extern void init_pragma (void);
 

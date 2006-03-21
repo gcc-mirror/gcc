@@ -593,9 +593,42 @@ static void handle_pragma_visibility (cpp_reader *);
 typedef enum symbol_visibility visibility;
 DEF_VEC_I (visibility);
 DEF_VEC_ALLOC_I (visibility, heap);
+static VEC (visibility, heap) *visstack;
+
+/* Push the visibility indicated by STR onto the top of the #pragma
+   visibility stack.  */
+
+void
+push_visibility (const char *str)
+{
+  VEC_safe_push (visibility, heap, visstack,
+		 default_visibility);
+  if (!strcmp (str, "default"))
+    default_visibility = VISIBILITY_DEFAULT;
+  else if (!strcmp (str, "internal"))
+    default_visibility = VISIBILITY_INTERNAL;
+  else if (!strcmp (str, "hidden"))
+    default_visibility = VISIBILITY_HIDDEN;  
+  else if (!strcmp (str, "protected"))
+    default_visibility = VISIBILITY_PROTECTED;
+  else
+    GCC_BAD ("#pragma GCC visibility push() must specify default, internal, hidden or protected");
+  visibility_options.inpragma = 1;
+}
+
+/* Pop a level of the #pragma visibility stack.  */
+
+void
+pop_visibility (void)
+{
+  default_visibility = VEC_pop (visibility, visstack);
+  visibility_options.inpragma
+    = VEC_length (visibility, visstack) != 0;
+}  
 
 /* Sets the default visibility for symbols to something other than that
    specified on the command line.  */
+
 static void
 handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
 {
@@ -603,7 +636,6 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
   tree x;
   enum cpp_ttype token;
   enum { bad, push, pop } action = bad;
-  static VEC (visibility, heap) *visstack;
  
   token = pragma_lex (&x);
   if (token == CPP_NAME)
@@ -621,15 +653,9 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
       if (pop == action)
         {
           if (!VEC_length (visibility, visstack))
-            {
-              GCC_BAD ("no matching push for %<#pragma GCC visibility pop%>");
-            }
+	    GCC_BAD ("no matching push for %<#pragma GCC visibility pop%>");
           else
-            {
-	      default_visibility = VEC_pop (visibility, visstack);
-	      visibility_options.inpragma
-		= VEC_length (visibility, visstack) != 0;
-            }
+	    pop_visibility ();
         }
       else
         {
@@ -637,28 +663,9 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
             GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
           token = pragma_lex (&x);
           if (token != CPP_NAME)
-            {
-              GCC_BAD ("malformed #pragma GCC visibility push");
-            }
+	    GCC_BAD ("malformed #pragma GCC visibility push");
           else
-            {
-              const char *str = IDENTIFIER_POINTER (x);
-	      VEC_safe_push (visibility, heap, visstack,
-			     default_visibility);
-              if (!strcmp (str, "default"))
-                default_visibility = VISIBILITY_DEFAULT;
-              else if (!strcmp (str, "internal"))
-                default_visibility = VISIBILITY_INTERNAL;
-              else if (!strcmp (str, "hidden"))
-                default_visibility = VISIBILITY_HIDDEN;  
-              else if (!strcmp (str, "protected"))
-                default_visibility = VISIBILITY_PROTECTED;
-              else
-                {
-                  GCC_BAD ("#pragma GCC visibility push() must specify default, internal, hidden or protected");
-                }
-              visibility_options.inpragma = 1;
-            }
+	    push_visibility (IDENTIFIER_POINTER (x));
           if (pragma_lex (&x) != CPP_CLOSE_PAREN)
             GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
         }
