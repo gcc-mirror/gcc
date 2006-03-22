@@ -1,3 +1,8 @@
+2006-03-22  Jeff Law  <law@redhat.com>
+
+	* loop-unroll.c (analyze_iv_to_split_insn): Handle
+	iv_analyze_result returning false.
+
 2006-03-22  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.h (ASM_FORMAT_PRIVATE_NAME): Remove.
