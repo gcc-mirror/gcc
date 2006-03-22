@@ -5381,8 +5381,8 @@ expand_builtin_fork_or_exec (tree fn, tree arglist, rtx target, int ignore)
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   TREE_NOTHROW (decl) = 1;
-  DECL_VISIBILITY (fn) = VISIBILITY_DEFAULT;
-  DECL_VISIBILITY_SPECIFIED (fn) = 1;
+  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+  DECL_VISIBILITY_SPECIFIED (decl) = 1;
   call = build_function_call_expr (decl, arglist);
 
   return expand_call (call, target, ignore);
