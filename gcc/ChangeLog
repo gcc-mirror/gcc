@@ -189,6 +189,7 @@
 	* tree-ssa-structalias.c (intra_create_variable_infos): Fortran
 	alias semantics is specified by flag_argument_noalias > 2.
 
+2006-03-20  Jeff Law  <law@redhat.com>
 
 	* tree-pass.h (pass_phi_only_copy_prop): Delete.
 	(pass_phi_only_cprop): Declare.
