@@ -227,6 +227,8 @@ extern int errno;
 # endif
 #endif
 
+#define ICE_EXIT_CODE 4
+
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif

@@ -1,3 +1,8 @@
+2006-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR driver/22600
+	* error.c (gfc_fatal_error): Return ICE_EXIT_CODE instead of 4.
+
 2006-03-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/19303

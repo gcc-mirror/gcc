@@ -677,7 +677,7 @@ gfc_internal_error (const char *format, ...)
   error_print ("", format, argp);
   va_end (argp);
 
-  exit (4);
+  exit (ICE_EXIT_CODE);
 }
 
 

@@ -1,3 +1,14 @@
+2006-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR driver/22600
+	* system.h (ICE_EXIT_CODE): New macro.
+	* diagnostic.c (diagnostic_count_diagnostic): Exit with ICE_EXIT_CODE.
+	(diagnostic_action_after_output): Likewise.
+	* gcc.c (fatal_ice): New function.
+	(execute): Use it instead of fatal.
+	(fancy_abort): Likewise.
+	* doc/invoke.texi (-pass-exit-codes): Document return code for ICEs.
+
 2006-03-22  Jeff Law  <law@redhat.com>
 
 	* loop-unroll.c (analyze_iv_to_split_insn): Handle

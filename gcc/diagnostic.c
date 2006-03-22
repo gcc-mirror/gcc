@@ -188,7 +188,7 @@ diagnostic_count_diagnostic (diagnostic_context *context,
 	  expanded_location s = expand_location (diagnostic->location);
 	  fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
 		   s.file, s.line);
-	  exit (FATAL_EXIT_CODE);
+	  exit (ICE_EXIT_CODE);
 	}
 #endif
       if (context->internal_error)
@@ -263,7 +263,7 @@ diagnostic_action_after_output (diagnostic_context *context,
       fnotice (stderr, "Please submit a full bug report,\n"
 	       "with preprocessed source if appropriate.\n"
 	       "See %s for instructions.\n", bug_report_url);
-      exit (FATAL_EXIT_CODE);
+      exit (ICE_EXIT_CODE);
 
     case DK_FATAL:
       if (context->abort_on_error)
