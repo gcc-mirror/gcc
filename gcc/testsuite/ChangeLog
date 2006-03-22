@@ -1,3 +1,9 @@
+2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/17298
+	* gfortran.dg/transfer_array_intrinsic_1.f90: New test.
+	* gfortran.dg/transfer_array_intrinsic_2.f90: New test.
+
 2006-03-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/gcc-dg.exp (cleanup-modules): New proc.
