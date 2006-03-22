@@ -1,5 +1,7 @@
 2006-03-21  Jason Merrill  <jason@redhat.com>
 
+	* builtins.c (expand_builtin_fork_or_exec): Fix pasto.
+
 	PR middle-end/20297
 	* expr.c (init_block_move_fn): Force default visibility.
 	(init_block_clear_fn): Likewise.
