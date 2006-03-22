@@ -74,3 +74,29 @@ set_convert (int conv)
 {
   compile_options.convert = conv;
 }
+
+extern void set_record_marker (int);
+export_proto (set_record_marker);
+
+
+void
+set_record_marker (int val)
+{
+
+  switch(val)
+    {
+    case 4:
+      if (sizeof (GFC_INTEGER_4) != sizeof (gfc_offset))
+	compile_options.record_marker = sizeof (GFC_INTEGER_4);
+      break;
+
+    case 8:
+      if (sizeof (GFC_INTEGER_8) != sizeof (gfc_offset))
+	compile_options.record_marker = sizeof (GFC_INTEGER_8);
+      break;
+
+    default:
+      runtime_error ("Invalid value for record marker");
+      break;
+    }
+}

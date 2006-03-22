@@ -615,6 +615,14 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_fconvert_swap:
       gfc_option.convert = CONVERT_SWAP;
       break;
+
+    case OPT_frecord_marker_4:
+      gfc_option.record_marker = 4;
+      break;
+
+    case OPT_frecord_marker_8:
+      gfc_option.record_marker = 8;
+      break;
     }
 
   return result;

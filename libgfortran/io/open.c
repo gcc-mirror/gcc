@@ -399,7 +399,26 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   if ((opp->common.flags & IOPARM_OPEN_HAS_RECL_IN))
     u->recl = opp->recl_in;
   else
-    u->recl = max_offset;
+    {
+      switch (compile_options.record_marker)
+	{
+	case 0:
+	  u->recl = max_offset;
+	  break;
+
+	case sizeof (GFC_INTEGER_4):
+	  u->recl = GFC_INTEGER_4_HUGE;
+	  break;
+
+	case sizeof (GFC_INTEGER_8):
+	  u->recl = max_offset;
+	  break;
+
+	default:
+	  runtime_error ("Illegal value for record marker");
+	  break;
+	}
+    }
 
   /* If the file is direct access, calculate the maximum record number
      via a division now instead of letting the multiplication overflow
