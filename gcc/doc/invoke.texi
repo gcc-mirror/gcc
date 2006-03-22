@@ -596,9 +596,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips64 @gol
 -mips16  -mno-mips16  -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
--mxgot  -mno-xgot  -mgp32  -mgp64  -mfp32  -mfp64 @gol
--mhard-float  -msoft-float  -msingle-float  -mdouble-float @gol
--mdsp  -mpaired-single  -mips3d @gol
+-mshared  -mno-shared  -mxgot  -mno-xgot  -mgp32  -mgp64  @gol
+-mfp32  -mfp64  -mhard-float  -msoft-float  @gol
+-msingle-float  -mdouble-float  -mdsp  -mpaired-single  -mips3d @gol
 -mlong64  -mlong32  -msym32  -mno-sym32 @gol
 -G@var{num}  -membedded-data  -mno-embedded-data @gol
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
@@ -10464,8 +10464,29 @@ For information about the O64 ABI, see
 @itemx -mno-abicalls
 @opindex mabicalls
 @opindex mno-abicalls
-Generate (do not generate) SVR4-style position-independent code.
-@option{-mabicalls} is the default for SVR4-based systems.
+Generate (do not generate) code that is suitable for SVR4-style
+dynamic objects.  @option{-mabicalls} is the default for SVR4-based
+systems.
+
+@item -mshared
+@itemx -mno-shared
+Generate (do not generate) code that is fully position-independent.
+This option only affects @option{-mabicalls}.
+
+All @option{-mabicalls} code has traditionally been position-independent,
+regardless of options like @option{-fPIC} and @option{-fpic}.  However,
+as an extension, the GNU toolchain allows executables to use absolute
+accesses for locally-binding symbols.  It can also use shorter GP
+initialization sequences and generate direct calls to locally-defined
+functions.  This mode is selected by @option{-mno-shared}.
+
+@option{-mno-shared} depends on binutils 2.16 or higher and generates
+objects that can only be linked by the GNU linker.  However, the option
+does not affect the ABI of the final executable; it only affects the ABI
+of relocatable objects.  Using @option{-mno-shared} will generally make
+executables both smaller and quicker.
+
+@option{-mshared} is the default.
 
 @item -mxgot
 @itemx -mno-xgot
