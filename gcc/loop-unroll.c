@@ -1670,7 +1670,17 @@ analyze_iv_to_split_insn (rtx insn)
     return NULL;
 
   ok = iv_analyze_result (insn, dest, &iv);
-  gcc_assert (ok);
+
+  /* This used to be an assert under the assumption that if biv_p returns
+     true that iv_analyze_result must also return true.  However, that
+     assumption is not strictly correct as evidenced by pr25569.
+
+     Returning NULL when iv_analyze_result returns false is safe and
+     avoids the problems in pr25569 until the iv_analyze_* routines
+     can be fixed, which is apparently hard and time consuming
+     according to their author.  */
+  if (! ok)
+    return NULL;
 
   if (iv.step == const0_rtx
       || iv.mode != iv.extend_mode)
