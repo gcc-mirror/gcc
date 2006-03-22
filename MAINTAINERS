@@ -122,6 +122,7 @@ fortran 95		Steve Kargl		sgk@troutmask.apl.washington.edu
 fortran 95              Erik Edelmann           erik.edelmann@iki.fi
 fortran 95		Paul Thomas		pault@gcc.gnu.org
 fortran 95		Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
+fortran 95		Janne Blomqvist		jb@gcc.gnu.org
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -220,7 +221,6 @@ Laurynas Biveinis			        laurynas.biveinis@mif.vu.lt
 Uros Bizjak					uros@kss-loka.si
 Eric Blake					ericb@gcc.gnu.org
 Jim Blandy					jimb@codesourcery.com
-Janne Blomqvist					jb@gcc.gnu.org
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
 Segher Boessenkool				segher@kernel.crashing.org

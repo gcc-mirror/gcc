@@ -1,3 +1,8 @@
+2006-03-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Remove myself. 
+	(Language Front End Maintainers): Add myself as fortran 95 maintainer.
+
 2006-03-14  Richard Guenther  <rguenther@suse.de>
 
 	* configure: Regenerate with autoconf 2.13.
