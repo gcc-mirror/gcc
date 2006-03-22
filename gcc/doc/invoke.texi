@@ -10470,8 +10470,9 @@ systems.
 
 @item -mshared
 @itemx -mno-shared
-Generate (do not generate) code that is fully position-independent.
-This option only affects @option{-mabicalls}.
+Generate (do not generate) code that is fully position-independent,
+and that can therefore be linked into shared libraries.  This option
+only affects @option{-mabicalls}.
 
 All @option{-mabicalls} code has traditionally been position-independent,
 regardless of options like @option{-fPIC} and @option{-fpic}.  However,

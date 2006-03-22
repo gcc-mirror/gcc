@@ -1,5 +1,10 @@
 2006-03-22  Richard Sandiford  <richard@codesourcery.com>
 
+	* doc/md.texi (-mshared): Mention that -mshared code can be linked
+	into shared libraries.
+
+2006-03-22  Richard Sandiford  <richard@codesourcery.com>
+
 	* doc/md.texi: Refer to i386/constraints.md instead of
 	i386/predicates.md.
 	* config/i386/constraints.md: New file, extracted from...
