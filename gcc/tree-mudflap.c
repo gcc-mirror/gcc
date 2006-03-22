@@ -1256,6 +1256,9 @@ mudflap_finish_file (void)
         {
           gcc_assert (DECL_P (obj));
 
+          if (TREE_TYPE (obj) == error_mark_node)
+	    continue;
+
           if (mf_marked_p (obj))
             continue;
 
