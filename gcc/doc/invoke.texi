@@ -957,7 +957,8 @@ Normally the @command{gcc} program will exit with the code of 1 if any
 phase of the compiler returns a non-success return code.  If you specify
 @option{-pass-exit-codes}, the @command{gcc} program will instead return with
 numerically highest error produced by any phase that returned an error
-indication.
+indication.  The C, C++, and Fortran frontends return 4, if an internal
+compiler error is encountered.
 @end table
 
 If you only want some of the stages of compilation, you can use
