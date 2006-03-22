@@ -1,3 +1,7 @@
+2006-03-22  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.h (ASM_FORMAT_PRIVATE_NAME): Remove.
+
 2006-03-22  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/26084
