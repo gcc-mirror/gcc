@@ -2461,6 +2461,221 @@ gfc_conv_intrinsic_adjust (gfc_se * se, gfc_expr * expr, tree fndecl)
 }
 
 
+/* Array transfer statement.
+     DEST(1:N) = TRANSFER (SOURCE, MOLD[, SIZE])
+   where:
+     typeof<DEST> = typeof<MOLD>
+   and:
+     N = min (sizeof (SOURCE(:)), sizeof (DEST(:)),
+	      sizeof (DEST(0) * SIZE).  */
+
+static void
+gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
+{
+  tree tmp;
+  tree extent;
+  tree source;
+  tree source_bytes;
+  tree dest_word_len;
+  tree size_words;
+  tree size_bytes;
+  tree upper;
+  tree lower;
+  tree stride;
+  tree stmt;
+  gfc_actual_arglist *arg;
+  gfc_se argse;
+  gfc_ss *ss;
+  gfc_ss_info *info;
+  stmtblock_t block;
+  int n;
+
+  gcc_assert (se->loop);
+  info = &se->ss->data.info;
+
+  /* Convert SOURCE.  The output from this stage is:-
+	source_bytes = length of the source in bytes
+	source = pointer to the source data.  */
+  arg = expr->value.function.actual;
+  gfc_init_se (&argse, NULL);
+  ss = gfc_walk_expr (arg->expr);
+
+  source_bytes = gfc_create_var (gfc_array_index_type, NULL);
+
+  /* Obtain the pointer to source and the length of source in bytes.  */
+  if (ss == gfc_ss_terminator)
+    {
+      gfc_conv_expr_reference (&argse, arg->expr);
+      source = argse.expr;
+
+      /* Obtain the source word length.  */
+      tmp = size_in_bytes(TREE_TYPE(TREE_TYPE (source)));
+      tmp =  fold_convert (gfc_array_index_type, tmp);
+    }
+  else
+    {
+      gfc_init_se (&argse, NULL);
+      argse.want_pointer = 0;
+      gfc_conv_expr_descriptor (&argse, arg->expr, ss);
+      source = gfc_conv_descriptor_data_get (argse.expr);
+
+      /* Repack the source if not a full variable array.  */
+      if (!(arg->expr->expr_type == EXPR_VARIABLE
+	      && arg->expr->ref->u.ar.type == AR_FULL))
+	{
+	  tmp = build_fold_addr_expr (argse.expr);
+	  tmp = gfc_chainon_list (NULL_TREE, tmp);
+	  source = build_function_call_expr (gfor_fndecl_in_pack, tmp);
+	  source = gfc_evaluate_now (source, &argse.pre);
+
+	  /* Free the temporary.  */
+	  gfc_start_block (&block);
+	  tmp = convert (pvoid_type_node, source);
+	  tmp = gfc_chainon_list (NULL_TREE, tmp);
+	  tmp = build_function_call_expr (gfor_fndecl_internal_free, tmp);
+	  gfc_add_expr_to_block (&block, tmp);
+	  stmt = gfc_finish_block (&block);
+
+	  /* Clean up if it was repacked.  */
+	  gfc_init_block (&block);
+	  tmp = gfc_conv_array_data (argse.expr);
+	  tmp = build2 (NE_EXPR, boolean_type_node, source, tmp);
+	  tmp = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
+	  gfc_add_expr_to_block (&block, tmp);
+	  gfc_add_block_to_block (&block, &se->post);
+	  gfc_init_block (&se->post);
+	  gfc_add_block_to_block (&se->post, &block);
+	}
+
+      /* Obtain the source word length.  */
+      tmp = gfc_get_element_type (TREE_TYPE(argse.expr));
+      tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
+
+      /* Obtain the size of the array in bytes.  */
+      extent = gfc_create_var (gfc_array_index_type, NULL);
+      for (n = 0; n < arg->expr->rank; n++)
+	{
+	  tree idx;
+	  idx = gfc_rank_cst[n];
+	  gfc_add_modify_expr (&argse.pre, source_bytes, tmp);
+	  stride = gfc_conv_descriptor_stride (argse.expr, idx);
+	  lower = gfc_conv_descriptor_lbound (argse.expr, idx);
+	  upper = gfc_conv_descriptor_ubound (argse.expr, idx);
+	  tmp = build2 (MINUS_EXPR, gfc_array_index_type,
+			upper, lower);
+	  gfc_add_modify_expr (&argse.pre, extent, tmp);
+	  tmp = build2 (PLUS_EXPR, gfc_array_index_type,
+			extent, gfc_index_one_node);
+	  tmp = build2 (MULT_EXPR, gfc_array_index_type,
+			tmp, source_bytes);
+	}
+    }
+
+  gfc_add_modify_expr (&argse.pre, source_bytes, tmp);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  gfc_add_block_to_block (&se->post, &argse.post);
+
+  /* Now convert MOLD.  The sole output is:
+	dest_word_len = destination word length in bytes.  */
+  arg = arg->next;
+
+  gfc_init_se (&argse, NULL);
+  ss = gfc_walk_expr (arg->expr);
+
+  if (ss == gfc_ss_terminator)
+    {
+      gfc_conv_expr_reference (&argse, arg->expr);
+      tmp = TREE_TYPE(TREE_TYPE (argse.expr));
+      tmp =  fold_convert (gfc_array_index_type, size_in_bytes(tmp));
+    }
+  else
+    {
+      gfc_init_se (&argse, NULL);
+      argse.want_pointer = 0;
+      gfc_conv_expr_descriptor (&argse, arg->expr, ss);
+      tmp = gfc_get_element_type (TREE_TYPE(argse.expr));
+      tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
+    }
+
+  dest_word_len = gfc_create_var (gfc_array_index_type, NULL);
+  gfc_add_modify_expr (&se->pre, dest_word_len, tmp);
+
+  /* Finally convert SIZE, if it is present.  */
+  arg = arg->next;
+  size_words = gfc_create_var (gfc_array_index_type, NULL);
+
+  if (arg->expr)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_reference (&argse, arg->expr);
+      tmp = convert (gfc_array_index_type,
+			 build_fold_indirect_ref (argse.expr));
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+    }
+  else
+    tmp = NULL_TREE;
+
+  size_bytes = gfc_create_var (gfc_array_index_type, NULL);
+  if (tmp != NULL_TREE)
+    {
+      tmp = build2 (MULT_EXPR, gfc_array_index_type,
+		    tmp, dest_word_len);
+      tmp = build2 (MIN_EXPR, gfc_array_index_type, tmp, source_bytes);
+    }
+  else
+    tmp = source_bytes;
+
+  gfc_add_modify_expr (&se->pre, size_bytes, tmp);
+  gfc_add_modify_expr (&se->pre, size_words,
+		       build2 (CEIL_DIV_EXPR, gfc_array_index_type,
+			       size_bytes, dest_word_len));
+
+  /* Evaluate the bounds of the result.  If the loop range exists, we have
+     to check if it is too large.  If so, we modify loop->to be consistent
+     with min(size, size(source)).  Otherwise, size is made consistent with
+     the loop range, so that the right number of bytes is transferred.*/
+  n = se->loop->order[0];
+  if (se->loop->to[n] != NULL_TREE)
+    {
+      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			 se->loop->to[n], se->loop->from[n]);
+      tmp = build2 (PLUS_EXPR, gfc_array_index_type,
+		    tmp, gfc_index_one_node);
+      tmp = build2 (MIN_EXPR, gfc_array_index_type,
+		    tmp, size_words);
+      gfc_add_modify_expr (&se->pre, size_words, tmp);
+      gfc_add_modify_expr (&se->pre, size_bytes,
+			   build2 (MULT_EXPR, gfc_array_index_type,
+			   size_words, dest_word_len));
+      upper = build2 (PLUS_EXPR, gfc_array_index_type,
+		      size_words, se->loop->from[n]);
+      upper = build2 (MINUS_EXPR, gfc_array_index_type,
+		      upper, gfc_index_one_node);
+    }
+  else
+    {
+      upper = build2 (MINUS_EXPR, gfc_array_index_type,
+		      size_words, gfc_index_one_node);
+      se->loop->from[n] = gfc_index_zero_node;
+    }
+
+  se->loop->to[n] = upper;
+
+  /* Build a destination descriptor, using the pointer, source, as the
+     data field.  This is already allocated so set callee_alloc.  */
+  tmp = gfc_typenode_for_spec (&expr->ts);
+  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop,
+			       info, tmp, false, false, true);
+
+  tmp = fold_convert (pvoid_type_node, source);
+  gfc_conv_descriptor_data_set (&se->pre, info->descriptor, tmp);
+  se->expr = info->descriptor;
+  if (expr->ts.type == BT_CHARACTER)
+    se->string_length = dest_word_len;
+}
+
+
 /* Scalar transfer statement.
    TRANSFER (source, mold) = *(typeof<mold> *)&source.  */
 
@@ -2472,8 +2687,6 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   tree type;
   tree ptr;
   gfc_ss *ss;
-
-  gcc_assert (!se->ss);
 
   /* Get a pointer to the source.  */
   arg = expr->value.function.actual;
@@ -3374,7 +3587,20 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_TRANSFER:
-      gfc_conv_intrinsic_transfer (se, expr);
+      if (se->ss)
+	{
+	  if (se->ss->useflags)
+	    {
+	      /* Access the previously obtained result.  */
+	      gfc_conv_tmp_array_ref (se);
+	      gfc_advance_se_ss_chain (se);
+	      break;
+	    }
+	  else
+	    gfc_conv_intrinsic_array_transfer (se, expr);
+	}
+      else
+	gfc_conv_intrinsic_transfer (se, expr);
       break;
 
     case GFC_ISYM_TTYNAM:
@@ -3557,6 +3783,9 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
     case GFC_ISYM_LBOUND:
     case GFC_ISYM_UBOUND:
       return gfc_walk_intrinsic_bound (ss, expr);
+
+    case GFC_ISYM_TRANSFER:
+      return gfc_walk_intrinsic_libfunc (ss, expr);
 
     default:
       /* This probably meant someone forgot to add an intrinsic to the above

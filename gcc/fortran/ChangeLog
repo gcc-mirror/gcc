@@ -1,3 +1,13 @@
+2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/17298
+	*trans-intrinsic.c (gfc_conv_intrinsic_array_transfer): New
+	function to implement array valued TRANSFER intrinsic.
+	(gfc_conv_intrinsic_function): Call the new function if TRANSFER
+	and non-null se->ss.
+	(gfc_walk_intrinsic_function): Treat TRANSFER as one of the
+	special cases by calling gfc_walk_intrinsic_libfunc directly.
+
 2006-03-21  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* options.c (gfc_init_options): Initialize
