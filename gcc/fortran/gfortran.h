@@ -1641,6 +1641,7 @@ typedef struct
   int warn_nonstd_intrinsics;
   int fshort_enums;
   int convert;
+  int record_marker;
 }
 gfc_option_t;
 

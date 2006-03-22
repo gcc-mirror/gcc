@@ -1,3 +1,19 @@
+2006-03-22  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/19303
+	* libgfortran.h (compile_options_t):  Add record_marker.
+	* runtime/compile_options.c (set_record_marker):
+	New function.
+	* io/open.c:  If we have four-byte record markers, use
+	GFC_INTEGER_4_HUGE as default record length.
+	* io/file_pos.c (unformatted_backspace):  Handle
+	different size record markers.
+	* io/transfer.c (us_read):  Likewise.
+	(us_write):  Likewise.
+	(next_record_r):  Likewise.
+	(write_us_marker):  Likewise.
+	(next_record_w):  Likewise.
+
 2006-03-20  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/20935

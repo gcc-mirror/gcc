@@ -1,3 +1,10 @@
+2006-03-22  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/19303
+	* gfortran.dg/record_marker_1.f90:  New test case.
+	* gfortran.dg/record_marker_2.f:  New test case.
+	* gfortran.dg/record_marker_3.f90:  New test case.
+
 2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/17298

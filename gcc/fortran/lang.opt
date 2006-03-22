@@ -233,4 +233,12 @@ fconvert=swap
 Fortran RejectNegative
 Swap endianness for unformatted files
 
+frecord-marker=4
+Fortran RejectNegative
+Use a 4-byte record marker for unformatted files
+
+frecord-marker=8
+Fortran RejectNegative
+Use an 8-byte record marker for unformatted files
+
 ; This comment is to ensure we retain the blank line above.

@@ -1230,12 +1230,21 @@ us_read (st_parameter_dt *dtp)
 {
   char *p;
   int n;
+  int nr;
+  GFC_INTEGER_4 i4;
+  GFC_INTEGER_8 i8;
   gfc_offset i;
 
   if (dtp->u.p.current_unit->endfile == AT_ENDFILE)
     return;
 
-  n = sizeof (gfc_offset);
+  if (compile_options.record_marker == 0)
+    n = sizeof (gfc_offset);
+  else
+    n = compile_options.record_marker;
+
+  nr = n;
+
   p = salloc_r (dtp->u.p.current_unit->s, &n);
 
   if (n == 0)
@@ -1244,7 +1253,7 @@ us_read (st_parameter_dt *dtp)
       return;  /* end of file */
     }
 
-  if (p == NULL || n != sizeof (gfc_offset))
+  if (p == NULL || n != nr)
     {
       generate_error (&dtp->common, ERROR_BAD_US, NULL);
       return;
@@ -1252,10 +1261,50 @@ us_read (st_parameter_dt *dtp)
 
   /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
   if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
-    memcpy (&i, p, sizeof (gfc_offset));
+    {
+      switch (compile_options.record_marker)
+	{
+	case 0:
+	  memcpy (&i, p, sizeof(gfc_offset));
+	  break;
+
+	case sizeof(GFC_INTEGER_4):
+	  memcpy (&i4, p, sizeof (i4));
+	  i = i4;
+	  break;
+
+	case sizeof(GFC_INTEGER_8):
+	  memcpy (&i8, p, sizeof (i8));
+	  i = i8;
+	  break;
+
+	default:
+	  runtime_error ("Illegal value for record marker");
+	  break;
+	}
+    }
   else
-    reverse_memcpy (&i, p, sizeof (gfc_offset));
-    
+      switch (compile_options.record_marker)
+	{
+	case 0:
+	  reverse_memcpy (&i, p, sizeof(gfc_offset));
+	  break;
+
+	case sizeof(GFC_INTEGER_4):
+	  reverse_memcpy (&i4, p, sizeof (i4));
+	  i = i4;
+	  break;
+
+	case sizeof(GFC_INTEGER_8):
+	  reverse_memcpy (&i8, p, sizeof (i8));
+	  i = i8;
+	  break;
+
+	default:
+	  runtime_error ("Illegal value for record marker");
+	  break;
+	}
+
   dtp->u.p.current_unit->bytes_left = i;
 }
 
@@ -1270,7 +1319,11 @@ us_write (st_parameter_dt *dtp)
   gfc_offset dummy;
 
   dummy = 0;
-  nbytes = sizeof (gfc_offset);
+
+  if (compile_options.record_marker == 0)
+    nbytes = sizeof (gfc_offset);
+  else
+    nbytes = compile_options.record_marker ;
 
   if (swrite (dtp->u.p.current_unit->s, &dummy, &nbytes) != 0)
     generate_error (&dtp->common, ERROR_OS, NULL);
@@ -1673,7 +1726,9 @@ next_record_r (st_parameter_dt *dtp)
     case UNFORMATTED_SEQUENTIAL:
 
       /* Skip over tail */
-      dtp->u.p.current_unit->bytes_left += sizeof (gfc_offset);
+      dtp->u.p.current_unit->bytes_left +=
+	compile_options.record_marker == 0 ?
+	sizeof (gfc_offset) : compile_options.record_marker;
       
       /* Fall through...  */
 
@@ -1773,20 +1828,72 @@ next_record_r (st_parameter_dt *dtp)
 
 
 /* Small utility function to write a record marker, taking care of
-   byte swapping.  */
+   byte swapping and of choosing the correct size.  */
 
 inline static int
 write_us_marker (st_parameter_dt *dtp, const gfc_offset buf)
 {
-  size_t len = sizeof (gfc_offset);
+  size_t len;
+  GFC_INTEGER_4 buf4;
+  GFC_INTEGER_8 buf8;
+  char p[sizeof (GFC_INTEGER_8)];
+
+  if (compile_options.record_marker == 0)
+    len = sizeof (gfc_offset);
+  else
+    len = compile_options.record_marker;
+
   /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
   if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
-    return swrite (dtp->u.p.current_unit->s, &buf, &len);
-  else {
-    gfc_offset p;
-    reverse_memcpy (&p, &buf, sizeof (gfc_offset));
-    return swrite (dtp->u.p.current_unit->s, &p, &len);
-  }
+    {
+      switch (compile_options.record_marker)
+	{
+	case 0:
+	  return swrite (dtp->u.p.current_unit->s, &buf, &len);
+	  break;
+
+	case sizeof (GFC_INTEGER_4):
+	  buf4 = buf;
+	  return swrite (dtp->u.p.current_unit->s, &buf4, &len);
+	  break;
+
+	case sizeof (GFC_INTEGER_8):
+	  buf8 = buf;
+	  return swrite (dtp->u.p.current_unit->s, &buf8, &len);
+	  break;
+
+	default:
+	  runtime_error ("Illegal value for record marker");
+	  break;
+	}
+    }
+  else
+    {
+      switch (compile_options.record_marker)
+	{
+	case 0:
+	  reverse_memcpy (p, &buf, sizeof (gfc_offset));
+	  return swrite (dtp->u.p.current_unit->s, p, &len);
+	  break;
+
+	case sizeof (GFC_INTEGER_4):
+	  buf4 = buf;
+	  reverse_memcpy (p, &buf4, sizeof (GFC_INTEGER_4));
+	  return swrite (dtp->u.p.current_unit->s, p, &len);
+	  break;
+
+	case sizeof (GFC_INTEGER_8):
+	  buf8 = buf;
+	  reverse_memcpy (p, &buf8, sizeof (GFC_INTEGER_4));
+	  return swrite (dtp->u.p.current_unit->s, p, &len);
+	  break;
+
+	default:
+	  runtime_error ("Illegal value for record marker");
+	  break;
+	}
+    }
+
 }
 
 
@@ -1798,6 +1905,7 @@ next_record_w (st_parameter_dt *dtp, int done)
   gfc_offset c, m, record, max_pos;
   int length;
   char *p;
+  size_t record_marker;
 
   /* Zero counters for X- and T-editing.  */
   max_pos = dtp->u.p.max_pos;
@@ -1830,11 +1938,16 @@ next_record_w (st_parameter_dt *dtp, int done)
       if (write_us_marker (dtp, m) != 0)
 	goto io_error;
 
+      if (compile_options.record_marker == 4)
+	record_marker = sizeof(GFC_INTEGER_4);
+      else
+	record_marker = sizeof (gfc_offset);
+
       /* Seek to the head and overwrite the bogus length with the real
 	 length.  */
 
-      if (sseek (dtp->u.p.current_unit->s, c - m - sizeof (gfc_offset))
-		 == FAILURE)
+      if (sseek (dtp->u.p.current_unit->s, c - m - record_marker)
+	  == FAILURE)
 	goto io_error;
 
       if (write_us_marker (dtp, m) != 0)
@@ -1842,7 +1955,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 
       /* Seek past the end of the current record.  */
 
-      if (sseek (dtp->u.p.current_unit->s, c + sizeof (gfc_offset)) == FAILURE)
+      if (sseek (dtp->u.p.current_unit->s, c + record_marker) == FAILURE)
 	goto io_error;
 
       break;

@@ -145,7 +145,7 @@ by type.  Explanations are in the following sections.
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
 @gccoptlist{
--fconvert=@var{conversion}}
+-fconvert=@var{conversion} -frecord-marker=@var{length}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
@@ -613,6 +613,17 @@ representation for unformatted files.
 @emph{This option has an effect only when used in the main program.
 The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment
 variable override the default specified by -fconvert.}
+
+@cindex -frecord-marker=@var{length}
+@item -frecord-marker=@var{length}
+Specify the length of record markers for unformatted files.
+Valid values for @var{length} are 4 and 8.  Default is whatever
+@code{off_t} is specified to be on that particular system.
+Note that specifying @var{length} as 4 limits the record
+length of unformatted files to 2 GB.  This option does not
+extend the maximum possible record length on systems where
+@code{off_t} is a four_byte quantity.
+
 @end table
 
 @node Code Gen Options
