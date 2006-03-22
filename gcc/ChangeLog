@@ -1,3 +1,31 @@
+2006-03-22  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/26084
+	* except.c (duplicate_eh_regions_0): New.
+	(duplicate_eh_region_1): Duplicate the children of the node as
+	well as the node itself.  Link them up properly.
+	(duplicate_eh_region_2): Merge into ...
+	(duplicate_eh_regions): ... here.  Take copy_region argument, and
+	copy only a sub-tree if asked.  Simplify copying and fixup.
+	(eh_region_outer_p): New.
+	* except.h (duplicate_eh_regions): Update decl.
+	(eh_region_outer_p): Declare.
+	* omp-low.c (lower_omp_single): Fix eh region placement wrt OMP_RETURN.
+	(lower_omp_master): Likewise.
+	(lower_omp_ordered): Likewise.
+	* tree-cfg.c (struct move_stmt_d): Add new_label_map.
+	(move_stmt_r): Use it to remap labels.  Handle recursion vs
+	remap_decls_p properly.
+	(move_block_to_fn): Pass in new_label_map.  Remap RESX_EXPR.
+	(find_outermost_region_in_block): New.
+	(new_label_mapper): New.
+	(move_sese_region_to_fn): Copy eh information to the new function
+	properly.
+	* tree-inline.c (copy_cfg_body): Update for new duplicate_eh_regions
+	argument.
+	* tree-pretty-print.c (dump_generic_node): Dump RESX_EXPR region
+	number.
+
 2006-03-22  Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/md.texi (-mshared): Mention that -mshared code can be linked
