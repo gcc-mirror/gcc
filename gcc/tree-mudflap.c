@@ -728,6 +728,10 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
 
   t = *tp;
   type = TREE_TYPE (t);
+
+  if (type == error_mark_node)
+    return;
+
   size = TYPE_SIZE_UNIT (type);
 
   switch (TREE_CODE (t))
