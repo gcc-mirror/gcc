@@ -4591,6 +4591,7 @@ struct move_stmt_d
   tree from_context;
   tree to_context;
   bitmap vars_to_remove;
+  htab_t new_label_map;
   bool remap_decls_p;
 };
 
@@ -4599,39 +4600,62 @@ struct move_stmt_d
    variable referenced in *TP.  */
 
 static tree
-move_stmt_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+move_stmt_r (tree *tp, int *walk_subtrees, void *data)
 {
   struct move_stmt_d *p = (struct move_stmt_d *) data;
+  tree t = *tp;
 
-  if (p->block && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (*tp))))
-    TREE_BLOCK (*tp) = p->block;
+  if (p->block && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (t))))
+    TREE_BLOCK (t) = p->block;
 
-  if (OMP_DIRECTIVE_P (*tp))
+  if (OMP_DIRECTIVE_P (t) && TREE_CODE (t) != OMP_RETURN_EXPR)
     {
       /* Do not remap variables inside OMP directives.  Variables
 	 referenced in clauses and directive header belong to the
 	 parent function and should not be moved into the child
 	 function.  */
+      bool save_remap_decls_p = p->remap_decls_p;
       p->remap_decls_p = false;
+      *walk_subtrees = 0;
+
+      walk_tree (&OMP_BODY (t), move_stmt_r, p, NULL);
+
+      p->remap_decls_p = save_remap_decls_p;
     }
-
-  if (p->remap_decls_p
-      && DECL_P (*tp)
-      && DECL_CONTEXT (*tp) == p->from_context)
+  else if (DECL_P (t) && DECL_CONTEXT (t) == p->from_context)
     {
-      DECL_CONTEXT (*tp) = p->to_context;
-
-      if (TREE_CODE (*tp) == VAR_DECL)
+      if (TREE_CODE (t) == LABEL_DECL)
 	{
-	  struct function *f = DECL_STRUCT_FUNCTION (p->to_context);
-	  f->unexpanded_var_list = tree_cons (0, *tp, f->unexpanded_var_list);
+	  if (p->new_label_map)
+	    {
+	      struct tree_map in, *out;
+	      in.from = t;
+	      out = htab_find_with_hash (p->new_label_map, &in, DECL_UID (t));
+	      if (out)
+		*tp = t = out->to;
+	    }
 
-	  /* Mark *TP to be removed from the original function,
-	     otherwise it will be given a DECL_RTL when the original
-	     function is expanded.  */
-	  bitmap_set_bit (p->vars_to_remove, DECL_UID (*tp));
+	  DECL_CONTEXT (t) = p->to_context;
+	}
+      else if (p->remap_decls_p)
+	{
+	  DECL_CONTEXT (t) = p->to_context;
+
+	  if (TREE_CODE (t) == VAR_DECL)
+	    {
+	      struct function *f = DECL_STRUCT_FUNCTION (p->to_context);
+	      f->unexpanded_var_list
+		= tree_cons (0, t, f->unexpanded_var_list);
+
+	      /* Mark T to be removed from the original function,
+	         otherwise it will be given a DECL_RTL when the
+		 original function is expanded.  */
+	      bitmap_set_bit (p->vars_to_remove, DECL_UID (t));
+	    }
 	}
     }
+  else if (TYPE_P (t))
+    *walk_subtrees = 0;
 
   return NULL_TREE;
 }
@@ -4650,7 +4674,7 @@ move_stmt_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
 static void
 move_block_to_fn (struct function *dest_cfun, basic_block bb,
 		  basic_block after, bool update_edge_count_p,
-		  bitmap vars_to_remove)
+		  bitmap vars_to_remove, htab_t new_label_map, int eh_offset)
 {
   struct control_flow_graph *cfg;
   edge_iterator ei;
@@ -4701,10 +4725,12 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
     {
       tree stmt = bsi_stmt (si);
+      int region;
 
       d.from_context = cfun->decl;
       d.to_context = dest_cfun->decl;
       d.remap_decls_p = true;
+      d.new_label_map = new_label_map;
       if (TREE_BLOCK (stmt))
 	d.block = DECL_INITIAL (dest_cfun->decl);
 
@@ -4736,11 +4762,66 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	  if (uid >= dest_cfun->last_label_uid)
 	    dest_cfun->last_label_uid = uid + 1;
 	}
+      else if (TREE_CODE (stmt) == RESX_EXPR && eh_offset != 0)
+	TREE_OPERAND (stmt, 0) =
+	  build_int_cst (NULL_TREE,
+			 TREE_INT_CST_LOW (TREE_OPERAND (stmt, 0))
+			 + eh_offset);
 
-      remove_stmt_from_eh_region (stmt);
+      region = lookup_stmt_eh_region (stmt);
+      if (region >= 0)
+	{
+	  add_stmt_to_eh_region_fn (dest_cfun, stmt, region + eh_offset);
+	  remove_stmt_from_eh_region (stmt);
+	}
     }
 }
 
+/* Examine the statements in BB (which is in SRC_CFUN); find and return
+   the outermost EH region.  Use REGION as the incoming base EH region.  */
+
+static int
+find_outermost_region_in_block (struct function *src_cfun,
+				basic_block bb, int region)
+{
+  block_stmt_iterator si;
+  
+  for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+    {
+      tree stmt = bsi_stmt (si);
+      int stmt_region;
+
+      stmt_region = lookup_stmt_eh_region_fn (src_cfun, stmt);
+      if (stmt_region > 0
+	  && (region < 0 || eh_region_outer_p (src_cfun, stmt_region, region)))
+	region = stmt_region;
+    }
+
+  return region;
+}
+
+static tree
+new_label_mapper (tree decl, void *data)
+{
+  htab_t hash = (htab_t) data;
+  struct tree_map *m;
+  void **slot;
+
+  gcc_assert (TREE_CODE (decl) == LABEL_DECL);
+
+  m = xmalloc (sizeof (struct tree_map));
+  m->hash = DECL_UID (decl);
+  m->from = decl;
+  m->to = create_artificial_label ();
+  LABEL_DECL_UID (m->to) = LABEL_DECL_UID (decl);
+
+  slot = htab_find_slot_with_hash (hash, m, m->hash, INSERT);
+  gcc_assert (*slot == NULL);
+
+  *slot = m;
+
+  return m->to;
+}
 
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
    EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
@@ -4763,11 +4844,12 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   VEC(basic_block,heap) *bbs;
   basic_block after, bb, *entry_pred, *exit_succ;
   struct function *saved_cfun;
-  int *entry_flag, *exit_flag;
+  int *entry_flag, *exit_flag, eh_offset;
   unsigned i, num_entry_edges, num_exit_edges;
   edge e;
   edge_iterator ei;
   bitmap vars_to_remove;
+  htab_t new_label_map;
 
   saved_cfun = cfun;
 
@@ -4813,7 +4895,28 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   /* Switch context to the child function to initialize DEST_FN's CFG.  */
   gcc_assert (dest_cfun->cfg == NULL);
   cfun = dest_cfun;
+
   init_empty_tree_cfg ();
+
+  /* Initialize EH information for the new function.  */
+  eh_offset = 0;
+  new_label_map = NULL;
+  if (saved_cfun->eh)
+    {
+      int region = -1;
+
+      for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+	region = find_outermost_region_in_block (saved_cfun, bb, region);
+
+      init_eh_for_function ();
+      if (region != -1)
+	{
+	  new_label_map = htab_create (17, tree_map_hash, tree_map_eq, free);
+	  eh_offset = duplicate_eh_regions (saved_cfun, new_label_mapper,
+					    new_label_map, region, 0);
+	}
+    }
+
   cfun = saved_cfun;
 
   /* Move blocks from BBS into DEST_CFUN.  */
@@ -4825,9 +4928,13 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       /* No need to update edge counts on the last block.  It has
 	 already been updated earlier when we detached the region from
 	 the original CFG.  */
-      move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, vars_to_remove);
+      move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, vars_to_remove,
+	                new_label_map, eh_offset);
       after = bb;
     }
+
+  if (new_label_map)
+    htab_delete (new_label_map);
 
   /* Remove the variables marked in VARS_TO_REMOVE from
      CFUN->UNEXPANDED_VAR_LIST.  Otherwise, they will be given a

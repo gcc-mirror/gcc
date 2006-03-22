@@ -924,7 +924,8 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency,
       if (id->transform_new_cfg)
         init_eh_for_function ();
       id->eh_region_offset
-	= duplicate_eh_regions (cfun_to_copy, remap_decl_1, id, id->eh_region);
+	= duplicate_eh_regions (cfun_to_copy, remap_decl_1, id,
+				0, id->eh_region);
     }
   /* Use aux pointers to map the original blocks to copy.  */
   FOR_EACH_BB_FN (bb, cfun_to_copy)

@@ -82,7 +82,8 @@ extern rtx expand_builtin_extend_pointer (tree);
 extern rtx get_exception_pointer (struct function *);
 extern rtx get_exception_filter (struct function *);
 typedef tree (*duplicate_eh_regions_map) (tree, void *);
-extern int duplicate_eh_regions (struct function *, duplicate_eh_regions_map, void *, int);
+extern int duplicate_eh_regions (struct function *, duplicate_eh_regions_map,
+				 void *, int, int);
 
 extern void sjlj_emit_function_exit_after (rtx);
 extern void default_init_unwind_resume_libfunc (void);
@@ -106,6 +107,7 @@ extern void collect_eh_region_array (void);
 extern void expand_resx_expr (tree);
 extern void verify_eh_tree (struct function *);
 extern void dump_eh_tree (FILE *, struct function *);
+extern bool eh_region_outer_p (struct function *, int, int);
 
 /* tree-eh.c */
 extern void add_stmt_to_eh_region_fn (struct function *, tree, int);

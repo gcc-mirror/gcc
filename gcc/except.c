@@ -857,84 +857,145 @@ current_function_has_exception_handlers (void)
   return false;
 }
 
-static struct eh_region *
-duplicate_eh_region_1 (struct eh_region *o)
-{
-  struct eh_region *n = ggc_alloc_cleared (sizeof (struct eh_region));
-
-  *n = *o;
-
-  n->region_number = o->region_number + cfun->eh->last_region_number;
-  VEC_replace (eh_region, cfun->eh->region_array, n->region_number, n);
-  gcc_assert (!o->aka);
-
-  return n;
-}
+/* A subroutine of duplicate_eh_regions.  Search the region tree under O
+   for the miniumum and maximum region numbers.  Update *MIN and *MAX.  */
 
 static void
-duplicate_eh_region_2 (struct eh_region *o, struct eh_region **n_array,
-		       struct eh_region *prev_try)
+duplicate_eh_regions_0 (eh_region o, int *min, int *max)
 {
-  struct eh_region *n = n_array[o->region_number];
+  if (o->region_number < *min)
+    *min = o->region_number;
+  if (o->region_number > *max)
+    *max = o->region_number;
 
-  switch (n->type)
-    {
-    case ERT_TRY:
-      if (o->u.try.catch)
-        n->u.try.catch = n_array[o->u.try.catch->region_number];
-      if (o->u.try.last_catch)
-        n->u.try.last_catch = n_array[o->u.try.last_catch->region_number];
-      break;
-
-    case ERT_CATCH:
-      if (o->u.catch.next_catch)
-	n->u.catch.next_catch = n_array[o->u.catch.next_catch->region_number];
-      if (o->u.catch.prev_catch)
-	n->u.catch.prev_catch = n_array[o->u.catch.prev_catch->region_number];
-      break;
-
-    case ERT_CLEANUP:
-      if (o->u.cleanup.prev_try)
-	n->u.cleanup.prev_try = n_array[o->u.cleanup.prev_try->region_number];
-      else
-        n->u.cleanup.prev_try = prev_try;
-      break;
-
-    default:
-      break;
-    }
-
-  if (o->outer)
-    n->outer = n_array[o->outer->region_number];
   if (o->inner)
-    n->inner = n_array[o->inner->region_number];
-  if (o->next_peer)
-    n->next_peer = n_array[o->next_peer->region_number];
+    {
+      o = o->inner;
+      duplicate_eh_regions_0 (o, min, max);
+      while (o->next_peer)
+	{
+	  o = o->next_peer;
+	  duplicate_eh_regions_0 (o, min, max);
+	}
+    }
 }
 
-/* Duplicate the EH regions of IFUN into current function, root the tree in
-   OUTER_REGION and remap labels using MAP callback.  */
+/* A subroutine of duplicate_eh_regions.  Copy the region tree under OLD.
+   Root it at OUTER, and apply EH_OFFSET to the region number.  Don't worry
+   about the other internal pointers just yet, just the tree-like pointers.  */
+
+static eh_region
+duplicate_eh_regions_1 (eh_region old, eh_region outer, int eh_offset)
+{
+  eh_region ret, n;
+
+  ret = n = ggc_alloc (sizeof (struct eh_region));
+
+  *n = *old;
+  n->outer = outer;
+  gcc_assert (!old->aka);
+
+  n->region_number += eh_offset;
+  VEC_replace (eh_region, cfun->eh->region_array, n->region_number, n);
+
+  if (old->inner)
+    {
+      old = old->inner;
+      n = n->inner = duplicate_eh_regions_1 (old, ret, eh_offset);
+      while (old->next_peer)
+	{
+	  old = old->next_peer;
+	  n = n->next_peer = duplicate_eh_regions_1 (old, ret, eh_offset);
+	}
+    }
+
+  return ret;
+}
+
+/* Duplicate the EH regions of IFUN, rootted at COPY_REGION, into current
+   function and root the tree below OUTER_REGION.  Remap labels using MAP
+   callback.  The special case of COPY_REGION of 0 means all regions.  */
+
 int
 duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
-		      void *data, int outer_region)
+		      void *data, int copy_region, int outer_region)
 {
-  int ifun_last_region_number = ifun->eh->last_region_number;
-  struct eh_region **n_array, *root, *cur, *prev_try;
-  int i;
+  eh_region cur, prev_try, outer, *splice;
+  int i, min_region, max_region, eh_offset, cfun_last_region_number;
+  int num_regions;
 
-  if (ifun_last_region_number == 0 || !ifun->eh->region_tree)
+  if (!ifun->eh->region_tree)
     return 0;
 
-  n_array = xcalloc (ifun_last_region_number + 1, sizeof (*n_array));
-  VEC_safe_grow (eh_region, gc, cfun->eh->region_array,
-		 cfun->eh->last_region_number + 1 + ifun_last_region_number);
+  /* Find the range of region numbers to be copied.  The interface we 
+     provide here mandates a single offset to find new number from old,
+     which means we must look at the numbers present, instead of the
+     count or something else.  */
+  if (copy_region > 0)
+    {
+      min_region = INT_MAX;
+      max_region = 0;
 
-  /* We might've created new cfun->eh->region_array so zero out nonexisting region 0.  */
+      cur = VEC_index (eh_region, ifun->eh->region_array, copy_region);
+      duplicate_eh_regions_0 (cur, &min_region, &max_region);
+    }
+  else
+    min_region = 1, max_region = ifun->eh->last_region_number;
+  num_regions = max_region - min_region + 1;
+  cfun_last_region_number = cfun->eh->last_region_number;
+  eh_offset = cfun_last_region_number + 1 - min_region;
+
+  /* If we've not yet created a region array, do so now.  */
+  VEC_safe_grow (eh_region, gc, cfun->eh->region_array,
+		 cfun_last_region_number + 1 + num_regions);
+  cfun->eh->last_region_number = max_region + eh_offset;
+
+  /* We may have just allocated the array for the first time.
+     Make sure that element zero is null.  */
   VEC_replace (eh_region, cfun->eh->region_array, 0, 0);
 
-  for (i = cfun->eh->last_region_number + 1;
-       i < cfun->eh->last_region_number + 1 + ifun_last_region_number; i++)
-    VEC_replace (eh_region, cfun->eh->region_array, i, 0);
+  /* Zero all entries in the range allocated.  */
+  memset (VEC_address (eh_region, cfun->eh->region_array)
+	  + cfun_last_region_number + 1, 0, num_regions);
+
+  /* Locate the spot at which to insert the new tree.  */
+  if (outer_region > 0)
+    {
+      outer = VEC_index (eh_region, cfun->eh->region_array, outer_region);
+      splice = &outer->inner;
+    }
+  else
+    {
+      outer = NULL;
+      splice = &cfun->eh->region_tree;
+    }
+  while (*splice)
+    splice = &(*splice)->next_peer;
+
+  /* Copy all the regions in the subtree.  */
+  if (copy_region > 0)
+    {
+      cur = VEC_index (eh_region, ifun->eh->region_array, copy_region);
+      *splice = duplicate_eh_regions_1 (cur, outer, eh_offset);
+    }
+  else
+    {
+      eh_region n;
+
+      cur = ifun->eh->region_tree;
+      *splice = n = duplicate_eh_regions_1 (cur, outer, eh_offset);
+      while (cur->next_peer)
+	{
+	  cur = cur->next_peer;
+	  n = n->next_peer = duplicate_eh_regions_1 (cur, outer, eh_offset);
+	}
+    }
+
+  /* Remap all the labels in the new regions.  */
+  for (i = cfun_last_region_number + 1;
+       VEC_iterate (eh_region, cfun->eh->region_array, i, cur); ++i)
+    if (cur && cur->tree_label)
+      cur->tree_label = map (cur->tree_label, data);
 
   /* Search for the containing ERT_TRY region to fix up
      the prev_try short-cuts for ERT_CLEANUP regions.  */
@@ -945,67 +1006,77 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
 	 prev_try = prev_try->outer)
       ;
 
-  for (i = 1; i <= ifun_last_region_number; ++i)
+  /* Remap all of the internal catch and cleanup linkages.  Since we 
+     duplicate entire subtrees, all of the referenced regions will have
+     been copied too.  And since we renumbered them as a block, a simple
+     bit of arithmetic finds us the index for the replacement region.  */
+  for (i = cfun_last_region_number + 1;
+       VEC_iterate (eh_region, cfun->eh->region_array, i, cur); ++i)
     {
-      cur = VEC_index (eh_region, ifun->eh->region_array, i);
-      if (!cur || cur->region_number != i)
+      if (cur == NULL)
 	continue;
-      n_array[i] = duplicate_eh_region_1 (cur);
-      if (cur->tree_label)
+
+#define REMAP(REG) \
+	(REG) = VEC_index (eh_region, cfun->eh->region_array, \
+			   (REG)->region_number + eh_offset)
+
+      switch (cur->type)
 	{
-	  tree newlabel = map (cur->tree_label, data);
-	  n_array[i]->tree_label = newlabel;
+	case ERT_TRY:
+	  if (cur->u.try.catch)
+	    REMAP (cur->u.try.catch);
+	  if (cur->u.try.last_catch)
+	    REMAP (cur->u.try.last_catch);
+	  break;
+
+	case ERT_CATCH:
+	  if (cur->u.catch.next_catch)
+	    REMAP (cur->u.catch.next_catch);
+	  if (cur->u.catch.prev_catch)
+	    REMAP (cur->u.catch.prev_catch);
+	  break;
+
+	case ERT_CLEANUP:
+	  if (cur->u.cleanup.prev_try)
+	    REMAP (cur->u.cleanup.prev_try);
+	  else
+	    cur->u.cleanup.prev_try = prev_try;
+	  break;
+
+	default:
+	  break;
 	}
-      else
-	n_array[i]->tree_label = NULL;
+
+#undef REMAP
     }
-  for (i = 1; i <= ifun_last_region_number; ++i)
+
+  return eh_offset;
+}
+
+/* Return true if REGION_A is outer to REGION_B in IFUN.  */
+
+bool
+eh_region_outer_p (struct function *ifun, int region_a, int region_b)
+{
+  struct eh_region *rp_a, *rp_b;
+
+  gcc_assert (ifun->eh->last_region_number > 0);
+  gcc_assert (ifun->eh->region_tree);
+
+  rp_a = VEC_index (eh_region, ifun->eh->region_array, region_a);
+  rp_b = VEC_index (eh_region, ifun->eh->region_array, region_b);
+  gcc_assert (rp_a != NULL);
+  gcc_assert (rp_b != NULL);
+
+  do
     {
-      cur = VEC_index (eh_region, ifun->eh->region_array, i);
-      if (!cur || cur->region_number != i)
-	continue;
-      duplicate_eh_region_2 (cur, n_array, prev_try);
+      if (rp_a == rp_b)
+	return true;
+      rp_b = rp_b->outer;
     }
+  while (rp_b);
 
-  root = n_array[ifun->eh->region_tree->region_number];
-  gcc_assert (root->outer == NULL);
-  if (outer_region > 0)
-    {
-      struct eh_region *cur
-         = VEC_index (eh_region, cfun->eh->region_array, outer_region);
-      struct eh_region *p = cur->inner;
-
-      if (p)
-	{
-	  while (p->next_peer)
-	    p = p->next_peer;
-	  p->next_peer = root;
-	}
-      else
-        cur->inner = root;
-      for (i = 1; i <= ifun_last_region_number; ++i)
-	if (n_array[i] && n_array[i]->outer == NULL)
-	  n_array[i]->outer = cur;
-    }
-  else
-    {
-      struct eh_region *p = cfun->eh->region_tree;
-      if (p)
-	{
-	  while (p->next_peer)
-	    p = p->next_peer;
-	  p->next_peer = root;
-	}
-      else
-        cfun->eh->region_tree = root;
-    }
-
-  free (n_array);
-
-  i = cfun->eh->last_region_number;
-  cfun->eh->last_region_number = i + ifun_last_region_number;
-
-  return i;
+  return false;
 }
 
 static int
