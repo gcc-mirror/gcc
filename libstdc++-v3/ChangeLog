@@ -1,3 +1,10 @@
+2006-03-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/26777
+	* include/bits/fstream.tcc (basic_filebuf<>::_M_seek): Check
+	the return value of _M_file.seekoff.
+	* testsuite/27_io/basic_filebuf/seekoff/char/26777.cc: New.
+
 2006-03-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/25482
