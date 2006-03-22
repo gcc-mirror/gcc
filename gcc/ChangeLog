@@ -1,3 +1,11 @@
+2006-03-22  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/md.texi: Refer to i386/constraints.md instead of
+	i386/predicates.md.
+	* config/i386/constraints.md: New file, extracted from...
+	* config/i386/predicates.md: ...here.
+	* config/i386/i386.md: Include constraints.md.
+
 2006-03-21  Jason Merrill  <jason@redhat.com>
 
 	* builtins.c (expand_builtin_fork_or_exec): Fix pasto.
