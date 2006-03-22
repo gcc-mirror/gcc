@@ -116,6 +116,7 @@ fortran 95		Steven Bosscher		stevenb@suse.de
 fortran 95		Thomas Koenig		Thomas.Koenig@online.de
 fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
 fortran 95		Paul Thomas		pault@gcc.gnu.org
+fortran 95		Janne Blomqvist		jb@gcc.gnu.org
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -213,7 +214,6 @@ Laurynas Biveinis			        laurynas.biveinis@mif.vu.lt
 Uros Bizjak					uros@kss-loka.si
 Eric Blake					ericb@gcc.gnu.org
 Jim Blandy					jimb@redhat.com
-Janne Blomqvist					jb@gcc.gnu.org
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
 Segher Boessenkool				segher@kernel.crashing.org

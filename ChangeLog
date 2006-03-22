@@ -1,3 +1,8 @@
+2006-03-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Remove myself. 
+	(Language Front End Maintainers): Add myself as fortran 95 maintainer.
+
 2006-03-01  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* MAINTAINERS (Write After Approval):  Remove myself.
