@@ -1,3 +1,9 @@
+2006-03-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/26795
+	* tree-ssa-pre.c (create_value_expr_from): Don't reject
+	expressions which have overflowed constants.
+
 2006-03-23  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* cse.c (cse_end_of_basic_block): Do not check for LOOP_END note.
