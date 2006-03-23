@@ -1,3 +1,9 @@
+2006-03-24  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/26607
+	* config/rs6000/darwin-ldouble.c: Don't compile when __NO_FPRS__
+	or __LITTLE_ENDIAN__.
+
 2006-03-23  J"orn Rennecke <joern.rennecke@st.com>
 
 	* config/sh/divtab-sh4.c, config/sh/divcost-analysis: New files.
