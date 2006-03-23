@@ -6696,7 +6696,6 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	{
 	  for (q = PREV_INSN (JUMP_LABEL (p)); q; q = PREV_INSN (q))
 	    if ((!NOTE_P (q)
-		 || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END
 		 || (PREV_INSN (q) && CALL_P (PREV_INSN (q))
 		     && find_reg_note (PREV_INSN (q), REG_SETJMP, NULL)))
 		&& (!LABEL_P (q) || LABEL_NUSES (q) != 0))

@@ -1,5 +1,9 @@
 2006-03-23  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* cse.c (cse_end_of_basic_block): Do not check for LOOP_END note.
+
+2006-03-23  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* cfgloopmanip.c (create_loop_notes): Removed.
 	* final.c (final_scan_insn): Do not handle loop notes.
 	* jump.c (squeeze_notes): Ditto.
