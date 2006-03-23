@@ -1,3 +1,10 @@
+2006-03-23  Richard Sandiford  <richard@codesourcery.com>
+
+	* varasm.c (output_constant_pool): Restore fnname and fndecl
+	arguments.
+	(assemble_start_function): Adjust call accordingly.
+	(assemble_end_function): Likewise.
+
 2006-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR mudflap/26790

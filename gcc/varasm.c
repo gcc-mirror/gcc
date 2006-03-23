@@ -139,7 +139,7 @@ static void asm_output_aligned_bss (FILE *, tree, const char *,
 #endif
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_weak (tree);
-static void output_constant_pool (void);
+static void output_constant_pool (const char *, tree);
 
 /* Well-known sections, each one associated with some sort of *_ASM_OP.  */
 section *text_section;
@@ -1332,7 +1332,7 @@ assemble_start_function (tree decl, const char *fnname)
   app_disable ();
 
   if (CONSTANT_POOL_BEFORE_FUNCTION)
-    output_constant_pool ();
+    output_constant_pool (fnname, decl);
 
   resolve_unique_section (decl, 0, flag_function_sections);
 
@@ -1450,7 +1450,7 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
 #endif
   if (! CONSTANT_POOL_BEFORE_FUNCTION)
     {
-      output_constant_pool ();
+      output_constant_pool (fnname, decl);
       switch_to_section (function_section (decl)); /* need to switch back */
     }
   /* Output labels for end of hot/cold text sections (to be used by
@@ -3533,7 +3533,8 @@ output_constant_pool_contents (struct rtx_constant_pool *pool)
    out the function's private constant pool.  */
 
 static void
-output_constant_pool (void)
+output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
+		      tree fndecl ATTRIBUTE_UNUSED)
 {
   struct rtx_constant_pool *pool = cfun->varasm->pool;
 
