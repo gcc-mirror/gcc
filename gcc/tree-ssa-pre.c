@@ -2938,15 +2938,6 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
       if (op == NULL_TREE)
 	continue;
 
-      /* If OP is a constant that has overflowed, do not value number
-	 this expression.  */
-      if (CONSTANT_CLASS_P (op)
-	  && TREE_OVERFLOW (op))
-	{
-	  pool_free (pool, vexpr);
-	  return NULL;
-	}
-
       /* Recursively value-numberize reference ops and tree lists.  */
       if (REFERENCE_CLASS_P (op))
 	{
