@@ -260,11 +260,11 @@ mark_all_labels (rtx f)
       }
 }
 
-/* Move all block-beg, block-end, loop-beg, loop-cont, loop-vtop, loop-end,
-   notes between START and END out before START.  START and END may be such
-   notes.  Returns the values of the new starting and ending insns, which
-   may be different if the original ones were such notes.
-   Return true if there were only such notes and no real instructions.  */
+/* Move all block-beg, block-end and loop-beg notes between START and END out
+   before START.  START and END may be such notes.  Returns the values of the
+   new starting and ending insns, which may be different if the original ones
+   were such notes.  Return true if there were only such notes and no real
+   instructions.  */
 
 bool
 squeeze_notes (rtx* startp, rtx* endp)
@@ -282,9 +282,7 @@ squeeze_notes (rtx* startp, rtx* endp)
       next = NEXT_INSN (insn);
       if (NOTE_P (insn)
 	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG))
 	{
 	  /* BLOCK_BEG or BLOCK_END notes only exist in the `final' pass.  */
 	  gcc_assert (NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_BEG
