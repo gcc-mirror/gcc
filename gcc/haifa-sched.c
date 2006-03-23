@@ -2153,11 +2153,11 @@ choose_ready (struct ready_list *ready)
 	  && spec_info->flags & (PREFER_NON_DATA_SPEC
 				 | PREFER_NON_CONTROL_SPEC))
 	{
-	  rtx x;
-	  int s;
-
 	  for (i = 0, n = ready->n_ready; i < n; i++)
 	    {
+	      rtx x;
+	      ds_t s;
+
 	      x = ready_element (ready, i);
 	      s = TODO_SPEC (x);
 	      
@@ -2185,6 +2185,8 @@ choose_ready (struct ready_list *ready)
 	  || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
 	      && !targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
 	      (insn)))
+	/* Discard speculative instruction that stands first in the ready
+	   list.  */
 	{
 	  change_queue_index (insn, 1);
 	  return 0;
@@ -4625,9 +4627,12 @@ check_sched_flags (void)
     gcc_assert (f & USE_GLAT);
 }
 
-/* Checks global_live_at_{start, end} regsets.  */
+/* Check global_live_at_{start, end} regsets.
+   If FATAL_P is TRUE, then abort execution at the first failure.
+   Overwise, print diagnostics to STDERR (this mode is for calling
+   from debugger).  */
 void
-check_reg_live (void)
+check_reg_live (bool fatal_p)
 {
   basic_block bb;
 
@@ -4638,11 +4643,30 @@ check_reg_live (void)
       i = bb->index;
 
       if (glat_start[i])
-	gcc_assert (bitmap_equal_p (bb->il.rtl->global_live_at_start,
-				     glat_start[i]));
+	{
+	  bool b = bitmap_equal_p (bb->il.rtl->global_live_at_start,
+				   glat_start[i]);
+
+	  if (!b)
+	    {
+	      gcc_assert (!fatal_p);
+
+	      fprintf (stderr, ";; check_reg_live_at_start (%d) failed.\n", i);
+	    }
+	}
+
       if (glat_end[i])
-	gcc_assert (bitmap_equal_p (bb->il.rtl->global_live_at_end,
-				     glat_end[i]));
+	{
+	  bool b = bitmap_equal_p (bb->il.rtl->global_live_at_end,
+				   glat_end[i]);
+
+	  if (!b)
+	    {
+	      gcc_assert (!fatal_p);
+
+	      fprintf (stderr, ";; check_reg_live_at_end (%d) failed.\n", i);
+	    }
+	}
     }
 }
 #endif /* ENABLE_CHECKING */

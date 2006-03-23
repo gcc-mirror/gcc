@@ -6713,7 +6713,7 @@ ia64_set_sched_flags (spec_info_t spec_info)
     {
       int mask = 0;
 
-      if ((mflag_sched_br_data_spec && !reload_completed)
+      if ((mflag_sched_br_data_spec && !reload_completed && optimize > 0)
 	  || (mflag_sched_ar_data_spec && reload_completed))
 	{
 	  mask |= BEGIN_DATA;

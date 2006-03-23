@@ -639,7 +639,7 @@ extern void add_block (basic_block, basic_block);
 extern void attach_life_info (void);
 
 #ifdef ENABLE_CHECKING
-extern void check_reg_live (void);
+extern void check_reg_live (bool);
 #endif
 
 #endif /* GCC_SCHED_INT_H */
