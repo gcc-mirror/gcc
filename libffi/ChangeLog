@@ -1,3 +1,26 @@
+2006-03-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* src/powerpc/ffitarget.h (enum ffi_abi): Add FFI_LINUX.  Default
+	for 32-bit using IBM extended double format.  Fix FFI_LAST_ABI.
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Handle linux variant of
+	FFI_TYPE_LONGDOUBLE.
+	(ffi_prep_args64): Assert using IBM extended double.
+	(ffi_prep_cif_machdep): Don't munge FFI_TYPE_LONGDOUBLE type.
+	Handle FFI_LINUX FFI_TYPE_LONGDOUBLE return and args.
+	(ffi_call): Handle FFI_LINUX.
+	(ffi_closure_helper_SYSV): Non FFI_LINUX long double return needs
+	gpr3 return pointer as for struct return.  Handle FFI_LINUX
+	FFI_TYPE_LONGDOUBLE return and args.  Don't increment "nf"
+	unnecessarily.
+	* src/powerpc/ppc_closure.S (ffi_closure_SYSV): Load both f1 and f2
+	for FFI_TYPE_LONGDOUBLE.  Move epilogue insns into case table.
+	Don't use r6 as pointer to results, instead use sp offset.  Don't
+	make a special call to load lr with case table address, instead
+	use offset from previous call.
+	* src/powerpc/sysv.S (ffi_call_SYSV): Save long double return.
+	* src/powerpc/linux64.S (ffi_call_LINUX64): Simplify long double
+	return.
+
 2006-03-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh64/ffi.c (ffi_prep_cif_machdep): Handle float arguments
