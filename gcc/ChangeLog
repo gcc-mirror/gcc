@@ -1,5 +1,8 @@
 2006-03-23  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_legitimate_constant_p): Reject
+	tls symbols.
+
 	PR target/26347
 	* config/alpha/predicates.md (local_symbolic_operand): Reject
 	weak symbols.
