@@ -338,7 +338,9 @@
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
 
-  return SYMBOL_REF_LOCAL_P (op) && !SYMBOL_REF_TLS_MODEL (op);
+  return (SYMBOL_REF_LOCAL_P (op)
+	  && !SYMBOL_REF_WEAK (op)
+	  && !SYMBOL_REF_TLS_MODEL (op));
 })
 
 ;; Return true if OP is a SYMBOL_REF or CONST referencing a variable
