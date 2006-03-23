@@ -742,6 +742,9 @@ public class InetAddress implements Serializable
 	  }
 	catch (Exception ex)
 	  {
+	    UnknownHostException failure = new UnknownHostException(hostname);
+	    failure.initCause(ex);
+	    throw failure;
 	  }
       }
     else

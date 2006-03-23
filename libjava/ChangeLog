@@ -1,3 +1,8 @@
+2006-03-23  Andrew Haley  <aph@redhat.com>
+
+	* java/net/InetAddress.java: Throw an UnknownHostException if
+	lookup fails.
+
 2006-02-16  Andrew Haley  <aph@redhat.com>
 
 	* stacktrace.cc (GetStackTraceElements): Call
