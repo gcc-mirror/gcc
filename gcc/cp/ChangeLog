@@ -1,3 +1,8 @@
+2006-03-22  Jason Merrill  <jason@redhat.com>
+
+        * name-lookup.c (push_namespace_with_attribs): Only apply hidden
+        visibility to anonymous namespaces if HAVE_GAS_HIDDEN.
+
 2006-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/26691
