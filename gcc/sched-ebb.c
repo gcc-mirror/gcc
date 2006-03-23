@@ -667,7 +667,7 @@ schedule_ebbs (void)
       /* !!! We can't check reg_live_info here because of the fact,
 	 that destination registers of COND_EXEC's may be dead
 	 before scheduling (while they should be alive).  Don't know why.  */
-      /*check_reg_live ();*/
+      /*check_reg_live (true);*/
 #endif
     }
   sbitmap_free (large_region_blocks);

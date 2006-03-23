@@ -3020,7 +3020,7 @@ schedule_insns (void)
 			 : (PROP_DEATH_NOTES | PROP_REG_INFO)));
 
 #ifdef ENABLE_CHECKING
-      check_reg_live ();
+      check_reg_live (true);
 #endif
     }
 
@@ -3266,7 +3266,8 @@ region_head_or_leaf_p (basic_block bb, int leaf_p)
       i = CONTAINING_RGN (bb->index);
 
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (CONTAINING_RGN (e->dest->index) == i
+	if (e->dest != EXIT_BLOCK_PTR
+            && CONTAINING_RGN (e->dest->index) == i
 	    /* except self-loop.  */
 	    && e->dest != bb)
 	  return 0;

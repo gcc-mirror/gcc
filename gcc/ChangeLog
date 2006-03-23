@@ -1,3 +1,15 @@
+2006-03-23  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* haifa-sched.c (choose_ready): Fix type of the local variable.
+	Move local variables.  Add comment.
+	(check_reg_live): Change signature.  Make callable from debugger.
+	* sched-int.h (check_reg_live): Update signature.
+	* sched-ebb.c (check_reg_live): Update parameters.
+	* sched-rgn.c (check_reg_live): Ditto.
+	(region_head_or_leaf_p): Check pointer before dereferencing.
+	* config/ia64/ia64.c (ia64_set_sched_flags): Disable data speculation
+	before reload on optimization levels below 1.
+
 2006-03-23  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_legitimate_constant_p): Reject
