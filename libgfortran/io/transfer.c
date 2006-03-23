@@ -384,7 +384,10 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 {
   if (dtp->u.p.current_unit->bytes_left < nbytes)
     {
-      generate_error (&dtp->common, ERROR_EOR, NULL);
+      if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT)
+	generate_error (&dtp->common, ERROR_DIRECT_EOR, NULL);
+      else
+	generate_error (&dtp->common, ERROR_EOR, NULL);
       return FAILURE;
     }
 
