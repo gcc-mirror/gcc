@@ -1,3 +1,19 @@
+2006-03-23  J"orn Rennecke <joern.rennecke@st.com>
+
+	* config/sh/divtab-sh4.c, config/sh/divcost-analysis: New files.
+	* config/sh/lib1funcs.asm (div_table): Add !__SH5__ variant.
+	* config/sh/t-sh (LIB1ASMFUNCS): Add _div_table.
+	* config/sh/sh.opt (mdiv=): Amend description.
+	* config/sh/sh.h (TARGET_DIVIDE_CALL_DIV1): New macro.
+	(TARGET_DIVIDE_CALL_FP, TARGET_DIVIDE_CALL_TABLE): Likewise.
+	(sh_divide_strategy_e): Add new members SH_DIV_CALL_DIV1,
+	SH_DIV_CALL_FP, SH_DIV_CALL_TABLE and SH_DIV_INTRINSIC.
+	(OVERRIDE_OPTIONS): Also process sh_div_str for TARGET_SH1.
+	Calculate sh_divsi3_libfunc using TARGET_DIVIDE_* macros.
+	* config/sh/sh.md (udivsi3_i4_int, divsi3_i4_int): New patterns.
+	(udivsi3, divsi3): Use them.  Check TARGET_DIVIDE_CALL_TABLE /
+	TARGET_DIVIDE_CALL_FP.
+
 2006-03-23  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* haifa-sched.c (choose_ready): Fix type of the local variable.

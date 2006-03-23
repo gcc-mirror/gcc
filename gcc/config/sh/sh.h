@@ -234,6 +234,9 @@ do { \
 #define TARGET_DIVIDE_INV20L (sh_div_strategy == SH_DIV_INV20L)
 #define TARGET_DIVIDE_INV_CALL (sh_div_strategy == SH_DIV_INV_CALL)
 #define TARGET_DIVIDE_INV_CALL2 (sh_div_strategy == SH_DIV_INV_CALL2)
+#define TARGET_DIVIDE_CALL_DIV1 (sh_div_strategy == SH_DIV_CALL_DIV1)
+#define TARGET_DIVIDE_CALL_FP (sh_div_strategy == SH_DIV_CALL_FP)
+#define TARGET_DIVIDE_CALL_TABLE (sh_div_strategy == SH_DIV_CALL_TABLE)
 
 #define SELECT_SH1               (MASK_SH1)
 #define SELECT_SH2               (MASK_SH2 | SELECT_SH1)
@@ -467,7 +470,7 @@ do {									\
       sh_div_str = SH_DIV_STR_FOR_SIZE ;				\
     }									\
   /* We can't meaningfully test TARGET_SHMEDIA here, because -m options	\
-     haven't been parsed yet, hence we';d read only the default.	\
+     haven't been parsed yet, hence we'd read only the default.	\
      sh_target_reg_class will return NO_REGS if this is not SHMEDIA, so	\
      it's OK to always set flag_branch_target_load_optimize.  */	\
   if (LEVEL > 1)							\
@@ -492,16 +495,24 @@ do {									\
 extern int assembler_dialect;
 
 enum sh_divide_strategy_e {
+  /* SH5 strategies.  */
   SH_DIV_CALL,
   SH_DIV_CALL2,
-  SH_DIV_FP,
+  SH_DIV_FP, /* We could do this also for SH4.  */
   SH_DIV_INV,
   SH_DIV_INV_MINLAT,
   SH_DIV_INV20U,
   SH_DIV_INV20L,
   SH_DIV_INV_CALL,
   SH_DIV_INV_CALL2,
-  SH_DIV_INV_FP
+  SH_DIV_INV_FP,
+  /* SH1 .. SH4 strategies.  Because of the small number of registers
+     available, the compiler uses knowledge of the actual et of registers
+     being clobbed by the different functions called.  */
+  SH_DIV_CALL_DIV1, /* No FPU, medium size, highest latency.  */
+  SH_DIV_CALL_FP,     /* FPU needed, small size, high latency.  */
+  SH_DIV_CALL_TABLE,  /* No FPU, large size, medium latency. */
+  SH_DIV_INTRINSIC
 };
 
 extern enum sh_divide_strategy_e sh_div_strategy;
@@ -611,17 +622,46 @@ do {									\
        targetm.asm_out.aligned_op.di = NULL;				\
        targetm.asm_out.unaligned_op.di = NULL;				\
     }									\
+  if (TARGET_SH1)							\
+    {									\
+      if (! strcmp (sh_div_str, "call-div1"))				\
+	sh_div_strategy = SH_DIV_CALL_DIV1;				\
+      else if (! strcmp (sh_div_str, "call-fp")				\
+	       && (TARGET_FPU_DOUBLE					\
+		   || (TARGET_HARD_SH4 && TARGET_SH2E)			\
+		   || (TARGET_SHCOMPACT && TARGET_FPU_ANY)))		\
+	sh_div_strategy = SH_DIV_CALL_FP;				\
+      else if (! strcmp (sh_div_str, "call-table") && TARGET_SH3)	\
+	sh_div_strategy = SH_DIV_CALL_TABLE;				\
+      else								\
+	/* Pick one that makes most sense for the target in general.	\
+	   It is not much good to use different functions depending	\
+	   on -Os, since then we'll end up with two different functions	\
+	   when some of the code is compiled for size, and some for	\
+	   speed.  */							\
+									\
+	/* SH4 tends to emphasize speed.  */				\
+	if (TARGET_HARD_SH4)						\
+	  sh_div_strategy = SH_DIV_CALL_TABLE;				\
+	/* These have their own way of doing things.  */		\
+	else if (TARGET_SH2A)						\
+	  sh_div_strategy = SH_DIV_INTRINSIC;				\
+	/* ??? Should we use the integer SHmedia function instead?  */	\
+	else if (TARGET_SHCOMPACT && TARGET_FPU_ANY)			\
+	  sh_div_strategy = SH_DIV_CALL_FP;				\
+        /* SH1 .. SH3 cores often go into small-footprint systems, so	\
+	   default to the smallest implementation available.  */	\
+	else								\
+	  sh_div_strategy = SH_DIV_CALL_DIV1;				\
+    }									\
   if (sh_divsi3_libfunc[0])						\
     ; /* User supplied - leave it alone.  */				\
-  else if (TARGET_HARD_SH4 && TARGET_SH2E)				\
+  else if (TARGET_DIVIDE_CALL_FP)					\
     sh_divsi3_libfunc = "__sdivsi3_i4";					\
+  else if (TARGET_DIVIDE_CALL_TABLE)					\
+    sh_divsi3_libfunc = "__sdivsi3_i4i";				\
   else if (TARGET_SH5)							\
-    {									\
-      if (TARGET_FPU_ANY && TARGET_SH1)					\
-	sh_divsi3_libfunc = "__sdivsi3_i4";				\
-      else								\
-	sh_divsi3_libfunc = "__sdivsi3_1";				\
-    }									\
+    sh_divsi3_libfunc = "__sdivsi3_1";					\
   else									\
     sh_divsi3_libfunc = "__sdivsi3";					\
   if (TARGET_FMOVD)							\

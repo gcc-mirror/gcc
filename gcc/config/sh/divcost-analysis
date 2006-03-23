@@ -1,0 +1,76 @@
+Analysis of cycle costs for SH4:
+
+-> udiv_le128:            5
+-> udiv_ge64k:            6
+-> udiv udiv_25:         10
+-> pos_divisor:           3
+-> pos_result linear:     5
+-> pos_result - -:        5
+-> div_le128:             7
+-> div_ge64k:             9
+sdivsi3 -> udiv_25             13
+udiv25 -> div_ge64k_end:       15
+div_ge64k_end -> rts:          13
+div_le128 -> div_le128_2:       2, r1 latency 3
+udiv_le128 -> div_le128_2:      2, r1 latency 3
+(u)div_le128 -> div_by_1:       9
+(u)div_le128 -> rts:           17
+div_by_1(_neg) -> rts:          4
+div_ge64k -> div_r8:            2
+div_ge64k -> div_ge64k_2:       3
+udiv_ge64k -> udiv_r8:          3
+udiv_ge64k -> div_ge64k_2:      3 + LS
+(u)div_ge64k -> div_ge64k_end: 13
+div_r8 -> div_r8_2:             2
+udiv_r8 -> div_r8_2:            2 + LS
+(u)div_r8 -> rts:              21
+
+-> - + neg_result:             5
+-> + - neg_result:             5
+-> div_le128_neg:              7
+-> div_ge64k_neg:              9
+-> div_r8_neg:                11
+-> <64k div_ge64k_neg_end:    28
+-> >=64k div_ge64k_neg_end:   22
+div_ge64k_neg_end ft -> rts:  14
+div_r8_neg_end -> rts:         4
+div_r8_neg -> div_r8_neg_end: 18
+div_le128_neg -> div_by_1_neg: 4
+div_le128_neg -> rts          18
+
+                    absolute divisor range:
+            1  [2..128]  [129..64K) [64K..|divident|/256] >=64K,>|divident/256|
+udiv       18     22         38            32                   30
+sdiv pos:  20     24         41            35                   32
+sdiv neg:  15     25         42            36                   33
+
+
+fp-based:
+
+unsigned: 42 + 3 + 3 (lingering ftrc latency + sts fpul,rx) at caller's site
+signed: 33 + 3 + 3 (lingering ftrc latency + sts fpul,rx) at caller's site
+
+call-div1:    divisor range:
+              [1..64K)  >= 64K
+unsigned:       63        58
+signed:         76        76
+
+SFUNC_STATIC call overhead:
+mov.l 0f,r1
+bsrf r1
+
+SFUNC_GOT call overhead - current:
+mov.l 0f,r1
+mova 0f,r0
+mov.l 1f,r2
+add r1,r0
+mov.l @(r0,r2),r0
+jmp @r0
+; 3 cycles worse than SFUNC_STATIC
+
+SFUNC_GOT call overhead - improved assembler:
+mov.l 0f,r1
+mova 0f,r0
+mov.l @(r0,r1),r0
+jmp @r0
+; 2 cycles worse than SFUNC_STATIC

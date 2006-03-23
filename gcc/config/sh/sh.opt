@@ -1,6 +1,6 @@
 ; Options for the SH port of the compiler.
 
-; Copyright (C) 2005 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -158,7 +158,7 @@ Align doubles at 64-bit boundaries
 
 mdiv=
 Target RejectNegative Joined Var(sh_div_str) Init("")
-Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp
+Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp call-div1 call-fp call-table
 
 mdivsi3_libfunc=
 Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
