@@ -1,3 +1,8 @@
+2006-03-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26509
+	gfortran.dg/write_direct_eor.f90: New test.
+
 2006-03-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.dg/endfile_2.f90: Delete temp file.
