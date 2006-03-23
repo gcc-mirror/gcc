@@ -1,3 +1,14 @@
+2006-03-23  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* cfgloopmanip.c (create_loop_notes): Removed.
+	* final.c (final_scan_insn): Do not handle loop notes.
+	* jump.c (squeeze_notes): Ditto.
+	* cfglayout.c (skip_insns_after_block,
+	duplicate_insn_chain): Ditto.
+	* cfgcleanup.c (rest_of_handle_jump2): Do not call
+	create_loop_notes.
+	* cfgloop.h (create_loop_notes): Declaration removed.
+
 2006-03-23  Richard Sandiford  <richard@codesourcery.com>
 
 	* varasm.c (output_constant_pool): Restore fnname and fndecl

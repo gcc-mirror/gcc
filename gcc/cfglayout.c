@@ -99,7 +99,6 @@ skip_insns_after_block (basic_block bb)
 	case NOTE:
 	  switch (NOTE_LINE_NUMBER (insn))
 	    {
-	    case NOTE_INSN_LOOP_END:
 	    case NOTE_INSN_BLOCK_END:
 	      last_insn = insn;
 	      continue;
@@ -135,12 +134,12 @@ skip_insns_after_block (basic_block bb)
   /* It is possible to hit contradictory sequence.  For instance:
 
      jump_insn
-     NOTE_INSN_LOOP_BEG
+     NOTE_INSN_BLOCK_BEG
      barrier
 
      Where barrier belongs to jump_insn, but the note does not.  This can be
      created by removing the basic block originally following
-     NOTE_INSN_LOOP_BEG.  In such case reorder the notes.  */
+     NOTE_INSN_BLOCK_BEG.  In such case reorder the notes.  */
 
   for (insn = last_insn; insn != BB_END (bb); insn = prev)
     {
@@ -148,7 +147,6 @@ skip_insns_after_block (basic_block bb)
       if (NOTE_P (insn))
 	switch (NOTE_LINE_NUMBER (insn))
 	  {
-	  case NOTE_INSN_LOOP_END:
 	  case NOTE_INSN_BLOCK_END:
 	  case NOTE_INSN_DELETED:
 	  case NOTE_INSN_DELETED_LABEL:
@@ -986,10 +984,6 @@ duplicate_insn_chain (rtx from, rtx to)
 	         in first BB, we may want to copy the block.  */
 	    case NOTE_INSN_PROLOGUE_END:
 
-	    case NOTE_INSN_LOOP_BEG:
-	    case NOTE_INSN_LOOP_END:
-	      /* Strip down the loop notes - we don't really want to keep
-	         them consistent in loop copies.  */
 	    case NOTE_INSN_DELETED:
 	    case NOTE_INSN_DELETED_LABEL:
 	      /* No problem to strip these.  */
