@@ -43,10 +43,15 @@ typedef enum ffi_abi {
   FFI_SYSV,
   FFI_GCC_SYSV,
   FFI_LINUX64,
+  FFI_LINUX,
 # ifdef POWERPC64
   FFI_DEFAULT_ABI = FFI_LINUX64,
 # else
+#  if __LDBL_MANT_DIG__ == 106
+  FFI_DEFAULT_ABI = FFI_LINUX,
+#  else
   FFI_DEFAULT_ABI = FFI_GCC_SYSV,
+#  endif
 # endif
 #endif
 
@@ -69,7 +74,7 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_SYSV,
 #endif
 
-  FFI_LAST_ABI = FFI_DEFAULT_ABI + 1
+  FFI_LAST_ABI
 } ffi_abi;
 #endif
 

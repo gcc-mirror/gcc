@@ -120,12 +120,9 @@ ffi_call_LINUX64:
 	blr
 
 .Lfp_return_value:
-	bt	27, .Lfd_return_value
 	bf	28, .Lfloat_return_value
 	stfd	%f1, 0(%r30)
-	b	.Ldone_return_value
-.Lfd_return_value:
-	stfd	%f1, 0(%r30)
+	bf	27, .Ldone_return_value
 	stfd	%f2, 8(%r30)
 	b	.Ldone_return_value
 .Lfloat_return_value:
