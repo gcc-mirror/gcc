@@ -588,6 +588,7 @@ static unsigned toc_hash_function (const void *);
 static int toc_hash_eq (const void *, const void *);
 static int constant_pool_expr_1 (rtx, int *, int *);
 static bool constant_pool_expr_p (rtx);
+static bool legitimate_small_data_p (enum machine_mode, rtx);
 static bool legitimate_indexed_address_p (rtx, int);
 static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
 static struct machine_function * rs6000_init_machine_status (void);
@@ -2692,8 +2693,8 @@ legitimate_constant_pool_address_p (rtx x)
 	  && constant_pool_expr_p (XEXP (x, 1)));
 }
 
-bool
-rs6000_legitimate_small_data_p (enum machine_mode mode, rtx x)
+static bool
+legitimate_small_data_p (enum machine_mode mode, rtx x)
 {
   return (DEFAULT_ABI == ABI_V4
 	  && !flag_pic && !TARGET_TOC
@@ -3478,7 +3479,7 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
       && TARGET_UPDATE
       && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict))
     return 1;
-  if (rs6000_legitimate_small_data_p (mode, x))
+  if (legitimate_small_data_p (mode, x))
     return 1;
   if (legitimate_constant_pool_address_p (x))
     return 1;
@@ -3541,6 +3542,33 @@ rs6000_mode_dependent_address (rtx addr)
     }
 
   return false;
+}
+
+/* More elaborate version of recog's offsettable_memref_p predicate
+   that works around the ??? note of rs6000_mode_dependent_address.
+   In particular it accepts
+
+     (mem:DI (plus:SI (reg/f:SI 31 31) (const_int 32760 [0x7ff8])))
+
+   in 32-bit mode, that the recog predicate rejects.  */
+
+bool
+rs6000_offsettable_memref_p (rtx op)
+{
+  if (!MEM_P (op))
+    return false;
+
+  /* First mimic offsettable_memref_p.  */
+  if (offsettable_address_p (1, GET_MODE (op), XEXP (op, 0)))
+    return true;
+
+  /* offsettable_address_p invokes rs6000_mode_dependent_address, but
+     the latter predicate knows nothing about the mode of the memory
+     reference and, therefore, assumes that it is the largest supported
+     mode (TFmode).  As a consequence, legitimate offsettable memory
+     references are rejected.  rs6000_legitimate_offset_address_p contains
+     the correct logic for the PLUS case of rs6000_mode_dependent_address.  */
+  return rs6000_legitimate_offset_address_p (GET_MODE (op), XEXP (op, 0), 1);
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -12488,7 +12516,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 			 : gen_adddi3 (breg, breg, delta_rtx));
 	      src = replace_equiv_address (src, breg);
 	    }
-	  else if (! offsettable_memref_p (src))
+	  else if (! rs6000_offsettable_memref_p (src))
 	    {
 	      rtx basereg;
 	      basereg = gen_rtx_REG (Pmode, reg);
@@ -12541,7 +12569,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	      dst = replace_equiv_address (dst, breg);
 	    }
 	  else
-	    gcc_assert (offsettable_memref_p (dst));
+	    gcc_assert (rs6000_offsettable_memref_p (dst));
 	}
 
       for (i = 0; i < nregs; i++)

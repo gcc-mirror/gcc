@@ -42,8 +42,6 @@ extern bool invalid_e500_subreg (rtx, enum machine_mode);
 extern void validate_condition_mode (enum rtx_code, enum machine_mode);
 extern bool legitimate_constant_pool_address_p (rtx);
 extern bool legitimate_indirect_address_p (rtx, int);
-extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
-extern bool rs6000_legitimate_small_data_p (enum machine_mode, rtx);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
@@ -102,7 +100,9 @@ extern rtx rs6000_legitimize_address (rtx, rtx, enum machine_mode);
 extern rtx rs6000_legitimize_reload_address (rtx, enum machine_mode,
 					     int, int, int, int *);
 extern int rs6000_legitimate_address (enum machine_mode, rtx, int);
+extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
 extern bool rs6000_mode_dependent_address (rtx);
+extern bool rs6000_offsettable_memref_p (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
 extern HOST_WIDE_INT rs6000_initial_elimination_offset (int, int);
