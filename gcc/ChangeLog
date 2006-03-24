@@ -1,3 +1,15 @@
+2006-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_offsettable_memref_p): Declare.
+	(rs6000_legitimate_small_data_p): Delete.
+	* config/rs6000/rs6000.c (rs6000_offsettable_memref_p): New predicate.
+	(rs6000_legitimate_small_data_p): Rename to legitimate_small_data_p
+	and make static.  Add forward declaration.  Update uses.
+	(rs6000_split_multireg_move): Use rs6000_offsettable_memref_p instead
+	of offsettable_memref_p.
+	* config/rs6000/rs6000.md (movdf_hardfloat32): Revert 2005-08-23 fix.
+	Use rs6000_offsettable_memref_p instead of a less accurate predicate.
+
 2006-03-24  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (propagate_rhs_into_lhs): Temporarily work
