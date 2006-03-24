@@ -476,8 +476,8 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    or a pseudo register currently allocated to one such.  */
 #define REGNO_OK_FOR_INDEX_P(REGNO)					\
     (((REGNO) < FIRST_PSEUDO_REGISTER 					\
-     && REGNO_REG_CLASS ((REGNO)) == ADDR_REGS) 			\
-    || (reg_renumber[REGNO] > 0 && reg_renumber[REGNO] < 16))
+      && REGNO_REG_CLASS ((REGNO)) == ADDR_REGS) 			\
+     || ADDR_REGNO_P (reg_renumber[REGNO]))
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
 
 
@@ -728,38 +728,6 @@ CUMULATIVE_ARGS;
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 2
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx and check
-   its validity for a certain class.  We have two alternate definitions
-   for each of them.  The usual definition accepts all pseudo regs; the
-   other rejects them all.  The symbol REG_OK_STRICT causes the latter
-   definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that they will
-   get allocated to the class that the insn wants them to be in.
-   Some source files that are used after register allocation
-   need to be strict.  */
-
-#define REG_OK_FOR_INDEX_NONSTRICT_P(X)   	\
-((GET_MODE (X) == Pmode) &&			\
- ((REGNO (X) >= FIRST_PSEUDO_REGISTER) 		\
-  || REGNO_REG_CLASS (REGNO (X)) == ADDR_REGS))
-
-#define REG_OK_FOR_BASE_NONSTRICT_P(X)    REG_OK_FOR_INDEX_NONSTRICT_P (X)
-
-#define REG_OK_FOR_INDEX_STRICT_P(X) 				\
-((GET_MODE (X) == Pmode) && (REGNO_OK_FOR_INDEX_P (REGNO (X))))
-
-#define REG_OK_FOR_BASE_STRICT_P(X)				\
-((GET_MODE (X) == Pmode) && (REGNO_OK_FOR_BASE_P (REGNO (X))))
-
-#ifndef REG_OK_STRICT
-#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_NONSTRICT_P(X)
-#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_NONSTRICT_P(X)
-#else
-#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_STRICT_P(X)
-#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_STRICT_P(X)
-#endif
 
 /* S/390 has no mode dependent addresses.  */
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)

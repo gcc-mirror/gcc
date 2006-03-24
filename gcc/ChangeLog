@@ -1,3 +1,17 @@
+2006-03-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_address): Allow SImode for
+	index and base register.
+	(s390_expand_plug_operand, legitimate_address_p, preferred_la_operand_p,
+	print_operand_address, print_operand): Replaced REG_OK_FOR_BASE_STRICT_P
+	with REGNO_OK_FOR_BASE_P and REG_OK_FOR_INDEX_STRICT_P with
+	REGNO_OK_FOR_INDEX_P.
+	* config/s390/s390.h (REGNO_OK_FOR_INDEX_P): Replaced check with
+	ADDR_REGNO_P.
+	(REG_OK_FOR_INDEX_NONSTRICT_P, REG_OK_FOR_BASE_NONSTRICT_P,
+	REG_OK_FOR_INDEX_STRICT_P, REG_OK_FOR_BASE_STRICT_P, REG_OK_FOR_INDEX_P,
+	REG_OK_FOR_BASE_P): Definitions removed.
+
 2006-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26611
