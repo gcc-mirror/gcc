@@ -1,3 +1,10 @@
+2006-03-24  Andreas Tobler  <a.tobler@schweiz.ch>
+	John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* configure.ac (THREADS): Add REENTRANT for *-*-hpux11*.
+	Warn about POSIX threads not being supported for *-*-hpux10*.
+	* configure: Regenerate.
+
 2006-02-09  Tom Tromey  <tromey@redhat.com>
 
 	* pthread_support.c: Conditionally include dlfcn.h.

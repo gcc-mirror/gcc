@@ -140,8 +140,8 @@ case "$THREADS" in
 	AC_DEFINE(GC_AIX_THREADS,1,[support AIX threads])
 	AC_DEFINE(_REENTRANT,1)
 	;;
-     *-*-hpux*)
-	AC_MSG_WARN("Only HP/UX 11 threads are supported.")
+     *-*-hpux11*)
+	AC_MSG_WARN("Only HP-UX 11 POSIX threads are supported.")
 	AC_DEFINE(GC_HPUX_THREADS,1,[enables support for HP/UX 11 pthreads])
 	AC_DEFINE(_POSIX_C_SOURCE,199506L,[POSIX version of C Source])
 	if test "${enable_parallel_mark}" = yes; then
@@ -149,6 +149,11 @@ case "$THREADS" in
 	fi
 	AC_DEFINE(THREAD_LOCAL_ALLOC,1)
 	THREADLIBS="-lpthread -lrt"
+	# HPUX needs REENTRANT for the _r calls.
+	AC_DEFINE(_REENTRANT, 1, [Required define if using POSIX threads])
+	;;
+     *-*-hpux10*)
+	AC_MSG_WARN("Only HP-UX 11 POSIX threads are supported.")
 	;;
      *-*-freebsd*)
 	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
