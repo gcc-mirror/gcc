@@ -1,3 +1,8 @@
+2006-03-24  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/pr26833.c: New test.
+	* gfortran.fortran-torture/compile/pr26806.f90: New test.
+
 2006-03-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.dg/endfile_2.f90: Delete temp file.

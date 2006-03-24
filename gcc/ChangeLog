@@ -1,3 +1,8 @@
+2006-03-24  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Temporarily work
+	around bug in immediate-use iterator.
+
 2006-03-24  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/26607
