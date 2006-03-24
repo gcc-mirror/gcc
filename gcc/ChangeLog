@@ -1,3 +1,8 @@
+2006-03-24  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* regrename.c (scan_rtx_address): Initialize a variable to shut up
+	the compiler.
+
 2006-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_offsettable_memref_p): Declare.
