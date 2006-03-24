@@ -1,3 +1,9 @@
+2006-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26611
+	* g++.dg/gomp/pr26611-1.C: New test.
+	* g++.dg/gomp/pr26611-2.C: New test.
+
 2006-03-24  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/pr26833.c: New test.

@@ -1008,7 +1008,18 @@ gimplify_bind_expr (tree *expr_p, tree temp, tree *pre_p)
   for (t = BIND_EXPR_VARS (bind_expr); t ; t = TREE_CHAIN (t))
     {
       if (TREE_CODE (t) == VAR_DECL)
-	DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+	{
+	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+
+	  /* Mark variable as local.  */
+	  if (ctx && !is_global_var (t)
+	      && (! DECL_SEEN_IN_BIND_EXPR_P (t)
+		  || splay_tree_lookup (ctx->variables,
+					(splay_tree_key) t) == NULL))
+	    omp_add_variable (gimplify_omp_ctxp, t, GOVD_LOCAL | GOVD_SEEN);
+
+	  DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+	}
 
       /* Preliminarily mark non-addressed complex variables as eligible
 	 for promotion to gimple registers.  We'll transform their uses
@@ -1018,16 +1029,6 @@ gimplify_bind_expr (tree *expr_p, tree temp, tree *pre_p)
 	  && (TREE_CODE (t) == VAR_DECL && !DECL_HARD_REGISTER (t))
 	  && !needs_to_live_in_memory (t))
 	DECL_COMPLEX_GIMPLE_REG_P (t) = 1;
-    }
-
-  /* Mark variables seen in this bind expr as locals.  */
-  if (gimplify_omp_ctxp)
-    {
-      struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
-
-      for (t = BIND_EXPR_VARS (bind_expr); t ; t = TREE_CHAIN (t))
-	if (TREE_CODE (t) == VAR_DECL && !is_global_var (t))
-	  omp_add_variable (ctx, t, GOVD_LOCAL | GOVD_SEEN);
     }
 
   gimple_push_bind_expr (bind_expr);
