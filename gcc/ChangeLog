@@ -1,3 +1,10 @@
+2006-03-24  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 26793
+	* config/t-darwin (crt3.o): Work around bug 26840.
+	* config/darwin-crt3.c: Rewrite.
+	* config/darwin.h (STARTFILE_SPEC): Don't use -l for crt3.o.
+
 2006-03-24  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* doc/invoke.texi: Document -femit-class-debug-always

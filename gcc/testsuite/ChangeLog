@@ -1,3 +1,7 @@
+2006-03-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.old-deja/g++.other/init19.C: New.
+
 2006-03-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/eh/spbp.C: Skip on AIX.
