@@ -1,6 +1,7 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006
+   Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
    This file is part of GCC.
@@ -92,7 +93,7 @@ extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 
 extern enum reg_class preferred_reload_class (rtx x, enum reg_class class);
-extern int extra_constraint (rtx x, int c);
+extern int extra_constraint_Q (rtx x);
 extern rtx legitimize_address (rtx x, rtx oldx, enum machine_mode mode);
 extern int adjust_insn_length (rtx insn, int len);
 extern rtx avr_libcall_value (enum machine_mode mode);

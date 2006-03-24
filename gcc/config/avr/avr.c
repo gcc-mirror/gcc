@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -322,35 +322,6 @@ avr_regno_reg_class (int r)
   if (r <= 33)
     return reg_class_tab[r];
   return ALL_REGS;
-}
-
-
-/* A C expression which defines the machine-dependent operand
-   constraint letters for register classes.  If C is such a
-   letter, the value should be the register class corresponding to
-   it.  Otherwise, the value should be `NO_REGS'.  The register
-   letter `r', corresponding to class `GENERAL_REGS', will not be
-   passed to this macro; you do not need to handle it.  */
-
-enum reg_class
-avr_reg_class_from_letter  (int c)
-{
-  switch (c)
-    {
-    case 't' : return R0_REG;
-    case 'b' : return BASE_POINTER_REGS;
-    case 'e' : return POINTER_REGS;
-    case 'w' : return ADDW_REGS;
-    case 'd' : return LD_REGS;
-    case 'l' : return NO_LD_REGS;
-    case 'a' : return SIMPLE_LD_REGS;
-    case 'x' : return POINTER_X_REGS;
-    case 'y' : return POINTER_Y_REGS;
-    case 'z' : return POINTER_Z_REGS;
-    case 'q' : return STACK_REG;
-    default: break;
-    }
-  return NO_REGS;
 }
 
 /* Return nonzero if FUNC is a naked function.  */
@@ -5475,48 +5446,35 @@ avr_address_cost (rtx x)
   return 4;
 }
 
-/*  EXTRA_CONSTRAINT helper */
+/* Test for extra memory constraint 'Q'.
+   It's a memory address based on Y or Z pointer with valid displacement.  */
 
 int
-extra_constraint (rtx x, int c)
+extra_constraint_Q (rtx x)
 {
-  if (c == 'Q'
-      && GET_CODE (x) == MEM
-      && GET_CODE (XEXP (x,0)) == PLUS)
+  if (GET_CODE (XEXP (x,0)) == PLUS
+      && REG_P (XEXP (XEXP (x,0), 0))
+      && GET_CODE (XEXP (XEXP (x,0), 1)) == CONST_INT
+      && (INTVAL (XEXP (XEXP (x,0), 1))
+	  <= MAX_LD_OFFSET (GET_MODE (x))))
     {
-	  if (TARGET_ALL_DEBUG)
-	    {
-	      fprintf (stderr, ("extra_constraint:\n"
-				"reload_completed: %d\n"
-				"reload_in_progress: %d\n"),
-		       reload_completed, reload_in_progress);
-	      debug_rtx (x);
-	    }
-      if (GET_CODE (x) == MEM
-	  && GET_CODE (XEXP (x,0)) == PLUS
-	  && REG_P (XEXP (XEXP (x,0), 0))
-	  && GET_CODE (XEXP (XEXP (x,0), 1)) == CONST_INT
-	  && (INTVAL (XEXP (XEXP (x,0), 1))
-	      <= MAX_LD_OFFSET (GET_MODE (x))))
+      rtx xx = XEXP (XEXP (x,0), 0);
+      int regno = REGNO (xx);
+      if (TARGET_ALL_DEBUG)
 	{
-	  rtx xx = XEXP (XEXP (x,0), 0);
-	  int regno = REGNO (xx);
-	  if (TARGET_ALL_DEBUG)
-	    {
-	      fprintf (stderr, ("extra_constraint:\n"
-				"reload_completed: %d\n"
-				"reload_in_progress: %d\n"),
-		       reload_completed, reload_in_progress);
-	      debug_rtx (x);
-	    }
-	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    return 1;		/* allocate pseudos */
-	  else if (regno == REG_Z || regno == REG_Y)
-	    return 1;		/* strictly check */
-	  else if (xx == frame_pointer_rtx
-		   || xx == arg_pointer_rtx)
-	    return 1;		/* XXX frame & arg pointer checks */
+	  fprintf (stderr, ("extra_constraint:\n"
+			    "reload_completed: %d\n"
+			    "reload_in_progress: %d\n"),
+		   reload_completed, reload_in_progress);
+	  debug_rtx (x);
 	}
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	return 1;		/* allocate pseudos */
+      else if (regno == REG_Z || regno == REG_Y)
+	return 1;		/* strictly check */
+      else if (xx == frame_pointer_rtx
+	       || xx == arg_pointer_rtx)
+	return 1;		/* XXX frame & arg pointer checks */
     }
   return 0;
 }
