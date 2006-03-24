@@ -1,3 +1,10 @@
+2006-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26611
+	* gimplify.c (gimplify_bind_expr): Only call omp_add_variable on
+	non-global variables that don't have DECL_SEEN_IN_BIND_EXPR_P bit
+	set yet or weren't marked as local yet.
+
 2006-03-24  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* regrename.c (scan_rtx_address): Initialize a variable to shut up
