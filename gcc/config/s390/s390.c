@@ -1617,7 +1617,9 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	    return false;
 	  }
 
-      if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
+      if (!REG_P (base) 
+	  || (GET_MODE (base) != SImode 
+	      && GET_MODE (base) != Pmode))
 	return false;
 
       if (REGNO (base) == STACK_POINTER_REGNUM
@@ -1663,7 +1665,9 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	    return false;
 	  }
 
-      if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
+      if (!REG_P (indx) 
+	  || (GET_MODE (indx) != SImode
+	      && GET_MODE (indx) != Pmode))
 	return false;
 
       if (REGNO (indx) == STACK_POINTER_REGNUM
@@ -2678,8 +2682,8 @@ s390_expand_plus_operand (rtx target, rtx src,
 
   /* If the address is already strictly valid, there's nothing to do.  */
   if (!s390_decompose_address (src, &ad)
-      || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
-      || (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx)))
+      || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
+      || (ad.indx && !REGNO_OK_FOR_INDEX_P (REGNO (ad.indx))))
     {
       /* Otherwise, one of the operands cannot be an address register;
          we reload its value into the scratch register.  */
@@ -2727,19 +2731,24 @@ legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 
   if (strict)
     {
-      if (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
+      if (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
 	return false;
-      if (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx))
+
+      if (ad.indx && !REGNO_OK_FOR_INDEX_P (REGNO (ad.indx)))
 	return false;
     }
   else
     {
-      if (ad.base && !REG_OK_FOR_BASE_NONSTRICT_P (ad.base))
+      if (ad.base 
+	  && !(REGNO (ad.base) >= FIRST_PSEUDO_REGISTER
+	       || REGNO_REG_CLASS (REGNO (ad.base)) == ADDR_REGS))
 	return false;
-      if (ad.indx && !REG_OK_FOR_INDEX_NONSTRICT_P (ad.indx))
-	return false;
+      
+      if (ad.indx
+	  && !(REGNO (ad.indx) >= FIRST_PSEUDO_REGISTER
+	       || REGNO_REG_CLASS (REGNO (ad.indx)) == ADDR_REGS))
+	  return false;
     }
-
   return true;
 }
 
@@ -2770,9 +2779,9 @@ preferred_la_operand_p (rtx op1, rtx op2)
 
   if (!s390_decompose_address (op1, &addr))
     return false;
-  if (addr.base && !REG_OK_FOR_BASE_STRICT_P (addr.base))
+  if (addr.base && !REGNO_OK_FOR_BASE_P (REGNO (addr.base)))
     return false;
-  if (addr.indx && !REG_OK_FOR_INDEX_STRICT_P (addr.indx))
+  if (addr.indx && !REGNO_OK_FOR_INDEX_P (REGNO (addr.indx)))
     return false;
 
   if (!TARGET_64BIT && !addr.pointer)
@@ -4500,8 +4509,8 @@ print_operand_address (FILE *file, rtx addr)
   struct s390_address ad;
 
   if (!s390_decompose_address (addr, &ad)
-      || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
-      || (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx)))
+      || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
+      || (ad.indx && !REGNO_OK_FOR_INDEX_P (REGNO (ad.indx))))
     output_operand_lossage ("cannot decompose address");
 
   if (ad.disp)
@@ -4585,7 +4594,7 @@ print_operand (FILE *file, rtx x, int code)
         gcc_assert (GET_CODE (x) == MEM);
 	ret = s390_decompose_address (XEXP (x, 0), &ad);
 	gcc_assert (ret);
-	gcc_assert (!ad.base || REG_OK_FOR_BASE_STRICT_P (ad.base));
+	gcc_assert (!ad.base || REGNO_OK_FOR_BASE_P (REGNO (ad.base)));
 	gcc_assert (!ad.indx);
 
         if (ad.disp)
@@ -4603,7 +4612,7 @@ print_operand (FILE *file, rtx x, int code)
         gcc_assert (GET_CODE (x) == MEM);
 	ret = s390_decompose_address (XEXP (x, 0), &ad);
 	gcc_assert (ret);
-	gcc_assert (!ad.base || REG_OK_FOR_BASE_STRICT_P (ad.base));
+	gcc_assert (!ad.base || REGNO_OK_FOR_BASE_P (REGNO (ad.base)));
 	gcc_assert (!ad.indx);
 
         if (ad.base)
@@ -4621,7 +4630,7 @@ print_operand (FILE *file, rtx x, int code)
         gcc_assert (GET_CODE (x) == MEM);
 	ret = s390_decompose_address (XEXP (x, 0), &ad);
 	gcc_assert (ret);
-	gcc_assert (!ad.base || REG_OK_FOR_BASE_STRICT_P (ad.base));
+	gcc_assert (!ad.base || REGNO_OK_FOR_BASE_P (REGNO (ad.base)));
 	gcc_assert (!ad.indx);
 
 	if (ad.disp)
