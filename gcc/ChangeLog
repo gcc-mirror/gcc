@@ -1,3 +1,8 @@
+2006-03-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* doc/invoke.texi: Document -femit-class-debug-always
+	* common.opt: Add -femit-class-debug-always.
+
 2006-03-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_decompose_address): Allow SImode for

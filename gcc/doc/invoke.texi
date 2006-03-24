@@ -287,7 +287,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-vectorizer-verbose=@var{n} @gol
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
--feliminate-unused-debug-symbols -fmem-report -fprofile-arcs @gol
+-feliminate-unused-debug-symbols -femit-class-debug-always @gol
+-fmem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -ftest-coverage  -ftime-report -fvar-tracking @gol
 -g  -g@var{level}  -gcoff -gdwarf-2 @gol
@@ -3521,6 +3522,14 @@ On System V Release 4 systems this option requires the GNU assembler.
 @opindex feliminate-unused-debug-symbols
 Produce debugging information in stabs format (if that is supported),
 for only symbols that are actually used.
+
+@item -femit-class-debug-always
+Instead of emitting debugging information for a C++ class in only one
+object file, emit it in all object files using the class.  This option
+should be used only with debuggers that are unable to handle the way GCC
+normally emits debugging information for classes because using this
+option will increase the size of debugging information by as much as a
+factor of two.
 
 @item -gstabs+
 @opindex gstabs+

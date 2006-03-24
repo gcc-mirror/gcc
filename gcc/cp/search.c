@@ -2042,6 +2042,10 @@ maybe_suppress_debug_info (tree t)
   /* We might have set this earlier in cp_finish_decl.  */
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 0;
 
+  /* Always emit the information for each class every time. */
+  if (flag_emit_class_debug_always)
+    return;
+
   /* If we already know how we're handling this class, handle debug info
      the same way.  */
   if (CLASSTYPE_INTERFACE_KNOWN (t))
