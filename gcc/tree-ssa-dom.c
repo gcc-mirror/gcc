@@ -2160,7 +2160,11 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	     collapse control statements.  */
 	  propagate_value (use_p, rhs);
 	  fold_stmt_inplace (use_stmt);
-	  update_stmt (use_stmt);
+
+	  /* Sometimes propagation can expose new operands to the
+	     renamer.  Note this will call update_stmt at the 
+	     appropriate time.  */
+	  mark_new_vars_to_rename (use_stmt);
 
 	  /* Dump details.  */
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2169,10 +2173,6 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	      print_generic_expr (dump_file, use_stmt, dump_flags);
 	      fprintf (dump_file, "\n");
 	    }
-
-	  /* Sometimes propagation can expose new operands to the
-	     renamer.  */
-	  mark_new_vars_to_rename (use_stmt);
 
 	  /* If we replaced a variable index with a constant, then
 	     we would need to update the invariant flag for ADDR_EXPRs.  */

@@ -1,3 +1,7 @@
+2006-03-24  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/pr26840.c: New test.
+
 2006-03-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.old-deja/g++.other/init19.C: New.
