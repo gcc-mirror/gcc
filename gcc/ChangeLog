@@ -1,3 +1,8 @@
+2006-03-24  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Don't call update_stmt
+	directly.  Call mark_new_vars_to_rename slightly earlier.
+
 2006-03-24  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 26793
