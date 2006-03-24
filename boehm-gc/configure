@@ -5409,9 +5409,9 @@ _ACEOF
 _ACEOF
 
 	;;
-     *-*-hpux*)
-	{ echo "$as_me:$LINENO: WARNING: \"Only HP/UX 11 threads are supported.\"" >&5
-echo "$as_me: WARNING: \"Only HP/UX 11 threads are supported.\"" >&2;}
+     *-*-hpux11*)
+	{ echo "$as_me:$LINENO: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&5
+echo "$as_me: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&2;}
 
 cat >>confdefs.h <<\_ACEOF
 #define GC_HPUX_THREADS 1
@@ -5433,6 +5433,16 @@ _ACEOF
 _ACEOF
 
 	THREADLIBS="-lpthread -lrt"
+	# HPUX needs REENTRANT for the _r calls.
+
+cat >>confdefs.h <<\_ACEOF
+#define _REENTRANT 1
+_ACEOF
+
+	;;
+     *-*-hpux10*)
+	{ echo "$as_me:$LINENO: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&5
+echo "$as_me: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&2;}
 	;;
      *-*-freebsd*)
 	{ echo "$as_me:$LINENO: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&5
