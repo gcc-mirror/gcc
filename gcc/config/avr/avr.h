@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -206,11 +206,6 @@ enum reg_class {
 		   "GENERAL_REGS", /* r0 - r31 */		\
 		   "ALL_REGS" }
 
-#define REG_X 26
-#define REG_Y 28
-#define REG_Z 30
-#define REG_W 24
-
 #define REG_CLASS_CONTENTS {						\
   {0x00000000,0x00000000},	/* NO_REGS */				\
   {0x00000001,0x00000000},	/* R0_REG */                            \
@@ -238,8 +233,6 @@ enum reg_class {
 
 #define INDEX_REG_CLASS NO_REGS
 
-#define REG_CLASS_FROM_LETTER(C) avr_reg_class_from_letter(C)
-
 #define REGNO_OK_FOR_BASE_P(r) (((r) < FIRST_PSEUDO_REGISTER		\
 				 && ((r) == REG_X			\
 				     || (r) == REG_Y			\
@@ -261,23 +254,6 @@ enum reg_class {
 #define CLASS_LIKELY_SPILLED_P(c) class_likely_spilled_p(c)
 
 #define CLASS_MAX_NREGS(CLASS, MODE)   class_max_nregs (CLASS, MODE)
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)				\
-  ((C) == 'I' ? (VALUE) >= 0 && (VALUE) <= 63 :			\
-   (C) == 'J' ? (VALUE) <= 0 && (VALUE) >= -63:			\
-   (C) == 'K' ? (VALUE) == 2 :					\
-   (C) == 'L' ? (VALUE) == 0 :					\
-   (C) == 'M' ? (VALUE) >= 0 && (VALUE) <= 0xff :		\
-   (C) == 'N' ? (VALUE) == -1:					\
-   (C) == 'O' ? (VALUE) == 8 || (VALUE) == 16 || (VALUE) == 24:	\
-   (C) == 'P' ? (VALUE) == 1 :					\
-   0)
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
-  ((C) == 'G' ? (VALUE) == CONST0_RTX (SFmode)	\
-   : 0)
-
-#define EXTRA_CONSTRAINT(x, c) extra_constraint(x, c)
 
 #define STACK_PUSH_CODE POST_DEC
 
@@ -840,11 +816,5 @@ extern int avr_case_values_threshold;
 #define OUT_AS1(a,b) output_asm_insn (AS1(a,b), operands)
 #define OUT_AS2(a,b,c) output_asm_insn (AS2(a,b,c), operands)
 #define CR_TAB "\n\t"
-
-/* Temporary register r0 */
-#define TMP_REGNO 0
-
-/* zero register r1 */
-#define ZERO_REGNO 1
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
