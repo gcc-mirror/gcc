@@ -211,17 +211,10 @@ pex_run (struct pex_obj *obj, int flags, const char *executable,
 	  outname_allocated = 0;
 	}
 
-      if (!outname_allocated)
-	{
-	  obj->next_input_name = outname;
-	  obj->next_input_name_allocated = 0;
-	}
-      else
-	{
-	  obj->next_input_name = outname;
-	  outname_allocated = 0;
-	  obj->next_input_name_allocated = 1;
-	}
+      /* Hand off ownership of outname to the next stage.  */
+      obj->next_input_name = outname;
+      obj->next_input_name_allocated = outname_allocated;
+      outname_allocated = 0;
     }
   else
     {
