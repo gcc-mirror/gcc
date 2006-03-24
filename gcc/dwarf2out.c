@@ -5326,9 +5326,8 @@ is_c_family (void)
 {
   unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
 
-  return (lang == DW_LANG_C || lang == DW_LANG_C89 || lang == DW_LANG_ObjC
-	  || lang == DW_LANG_C99
-	  || lang == DW_LANG_C_plus_plus || lang == DW_LANG_ObjC_plus_plus);
+  return (lang == DW_LANG_C || lang == DW_LANG_C89
+	  || lang == DW_LANG_C_plus_plus);
 }
 
 /* Return TRUE if the language is C++.  */
@@ -5336,9 +5335,8 @@ is_c_family (void)
 static inline bool
 is_cxx (void)
 {
-  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
-  
-  return lang == DW_LANG_C_plus_plus || lang == DW_LANG_ObjC_plus_plus;
+  return (get_AT_unsigned (comp_unit_die, DW_AT_language)
+	  == DW_LANG_C_plus_plus);
 }
 
 /* Return TRUE if the language is Fortran.  */
@@ -9929,23 +9927,6 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
 }
 
-/* Determine whether the evaluation of EXPR references any variables
-   or functions which aren't otherwise used (and therefore may not be
-   output).  */
-static tree
-reference_to_unused (tree * tp, int * walk_subtrees,
-		     void * data ATTRIBUTE_UNUSED)
-{
-  if (! EXPR_P (*tp) && ! CONSTANT_CLASS_P (*tp))
-    *walk_subtrees = 0;
-  
-  if (DECL_P (*tp) && ! TREE_PUBLIC (*tp) && ! TREE_USED (*tp)
-      && ! TREE_ASM_WRITTEN (*tp))
-    return *tp;
-  else
-    return NULL_TREE;
-}
-
 /* Generate an RTL constant from a decl initializer INIT with decl type TYPE,
    for use in a later add_const_value_attribute call.  */
 
@@ -9972,16 +9953,15 @@ rtl_for_decl_init (tree init, tree type)
 	rtl = gen_rtx_CONST_STRING (VOIDmode,
 				    ggc_strdup (TREE_STRING_POINTER (init)));
     }
-  /* Although DWARF could easily handle other kinds of aggregates, we
-     have no way to represent such values as RTL constants, so skip
-     those.  */
-  else if (AGGREGATE_TYPE_P (type))
-    ;
   /* If the initializer is something that we know will expand into an
-     immediate RTL constant, expand it now.  We must be careful not to
-     reference variables which won't be output.  */
-  else if (initializer_constant_valid_p (init, type)
-	   && ! walk_tree (&init, reference_to_unused, NULL, NULL))
+     immediate RTL constant, expand it now.  Expanding anything else
+     tends to produce unresolved symbols; see debug/5770 and c++/6381.  */
+  /* Aggregate, vector, and complex types may contain constructors that may
+     result in code being generated when expand_expr is called, so we can't
+     handle them here.  Integer and float are useful and safe types to handle
+     here.  */
+  else if ((INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type))
+	   && initializer_constant_valid_p (init, type) == null_pointer_node)
     {
       rtl = expand_expr (init, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
 
@@ -10345,9 +10325,6 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       add_AT_location_description (die, attr, descr);
       return;
     }
-  /* None of that worked, so it must not really have a location;
-     try adding a constant value attribute from the DECL_INITIAL.  */
-  tree_add_const_value_attribute (die, decl);
 }
 
 /* If we don't have a copy of this variable in memory for some reason (such
@@ -12227,10 +12204,6 @@ gen_compile_unit_die (const char *filename)
     language = DW_LANG_Pascal83;
   else if (strcmp (language_string, "GNU Java") == 0)
     language = DW_LANG_Java;
-  else if (strcmp (language_string, "GNU Objective-C") == 0)
-    language = DW_LANG_ObjC;
-  else if (strcmp (language_string, "GNU Objective-C++") == 0)
-    language = DW_LANG_ObjC_plus_plus;
   else
     language = DW_LANG_C89;
 
@@ -13341,7 +13314,8 @@ dwarf2out_decl (tree decl)
 	{
 	  /* OK, we need to generate one for `bool' so GDB knows what type
 	     comparisons have.  */
-	  if (is_cxx ()
+	  if ((get_AT_unsigned (comp_unit_die, DW_AT_language)
+	       == DW_LANG_C_plus_plus)
 	      && TREE_CODE (TREE_TYPE (decl)) == BOOLEAN_TYPE
 	      && ! DECL_IGNORED_P (decl))
 	    modified_type_die (TREE_TYPE (decl), 0, 0, NULL);
