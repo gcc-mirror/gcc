@@ -1,3 +1,7 @@
+2006-03-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/eh/spbp.C: Skip on AIX.
+
 2006-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26611
