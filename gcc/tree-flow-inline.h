@@ -821,7 +821,10 @@ loop_containing_stmt (tree stmt)
 static inline bool
 is_call_clobbered (tree var)
 {
-  return bitmap_bit_p (call_clobbered_vars, DECL_UID (var));
+  if (!MTAG_P (var))
+    return DECL_CALL_CLOBBERED (var);
+  else
+    return bitmap_bit_p (call_clobbered_vars, DECL_UID (var)); 
 }
 
 /* Mark variable VAR as being clobbered by function calls.  */
@@ -829,6 +832,8 @@ static inline void
 mark_call_clobbered (tree var, unsigned int escape_type)
 {
   var_ann (var)->escape_mask |= escape_type;
+  if (!MTAG_P (var))
+    DECL_CALL_CLOBBERED (var) = true;
   bitmap_set_bit (call_clobbered_vars, DECL_UID (var));
 }
 
@@ -840,6 +845,8 @@ clear_call_clobbered (tree var)
   ann->escape_mask = 0;
   if (MTAG_P (var) && TREE_CODE (var) != STRUCT_FIELD_TAG)
     MTAG_GLOBAL (var) = 0;
+  if (!MTAG_P (var))
+    DECL_CALL_CLOBBERED (var) = false;
   bitmap_clear_bit (call_clobbered_vars, DECL_UID (var));
 }
 
@@ -847,6 +854,8 @@ clear_call_clobbered (tree var)
 static inline void
 mark_non_addressable (tree var)
 {
+  if (!MTAG_P (var))
+    DECL_CALL_CLOBBERED (var) = false;
   bitmap_clear_bit (call_clobbered_vars, DECL_UID (var));
   TREE_ADDRESSABLE (var) = 0;
 }

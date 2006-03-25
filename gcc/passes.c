@@ -487,6 +487,7 @@ init_optimization_passes (void)
 
   p = &pass_all_optimizations.sub;
   NEXT_PASS (pass_referenced_vars);
+  NEXT_PASS (pass_reset_cc_flags);
   NEXT_PASS (pass_create_structure_vars);
   NEXT_PASS (pass_build_ssa);
   NEXT_PASS (pass_may_alias);
