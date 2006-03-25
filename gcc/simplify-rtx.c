@@ -3517,8 +3517,7 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
     return simplify_relational_operation (code, mode, VOIDmode,
 				          XEXP (op0, 0), XEXP (op0, 1));
 
-  if (mode == VOIDmode
-      || GET_MODE_CLASS (cmp_mode) == MODE_CC
+  if (GET_MODE_CLASS (cmp_mode) == MODE_CC
       || CC0_P (op0))
     return NULL_RTX;
 
