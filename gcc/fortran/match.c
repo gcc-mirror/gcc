@@ -3370,6 +3370,9 @@ match_forall_iterator (gfc_forall_iterator ** result)
 	goto cleanup;
     }
 
+  /* Mark the iteration variable's symbol as used as a FORALL index.  */
+  iter->var->symtree->n.sym->forall_index = true;
+
   *result = iter;
   return MATCH_YES;
 

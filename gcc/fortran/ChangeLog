@@ -1,3 +1,14 @@
+2006-03-24  Roger Sayle  <roger@eyesopen.com>
+
+	* gfortran.h (gfc_symbol): Add a new "forall_index" bit field.
+	* match.c (match_forall_iterator): Set forall_index field on
+	the iteration variable's symbol.
+	* dependency.c (contains_forall_index_p): New function to
+	traverse a gfc_expr to check whether it contains a variable
+	with forall_index set in it's symbol.
+	(gfc_check_element_vs_element): Return GFC_DEP_EQUAL for scalar
+	constant expressions that don't variables used as FORALL indices.
+
 2006-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR driver/22600

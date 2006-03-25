@@ -1,3 +1,7 @@
+2006-03-24  Roger Sayle  <roger@eyesopen.com>
+
+	* gfortran.dg/dependency_9.f90: New (resurected) test case.
+
 2006-03-24  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/pr26840.c: New test.
