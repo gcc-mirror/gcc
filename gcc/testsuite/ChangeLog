@@ -1,3 +1,9 @@
+2006-03-25  Steven G. Kargl  <kargsl@comcast.net>
+
+	* gfortran.dg/transfer_array_intrinsic_1.f90: Restrict to i?86 and
+	X86_64 targets.
+	* gfortran.dg/transfer_array_intrinsic_2.f90: Ditto.
+
 2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/26735

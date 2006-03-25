@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target i?86-*-* x86_64-*-* } }
 ! Tests the patch to implement the array version of the TRANSFER
 ! intrinsic (PR17298).
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
