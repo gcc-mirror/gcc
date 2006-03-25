@@ -1,3 +1,19 @@
+2006-03-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (size_cost): Correct the comment for
+	cost of storing fp registers.
+	(i386_cost): Likewise.
+	(i486_cost): Likewise.
+	(pentium_cost): Likewise.
+	(pentiumpro_cost): Likewise.
+	(k6_cost): Likewise.
+	(athlon_cost): Likewise.
+	(k8_cost): Likewise.
+	(pentium4_cost): Likewise.
+	(nocona_cost): Likewise.
+	(generic64_cost): Likewise.
+	(generic32_cost): Likewise.
+
 2006-03-24  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (propagate_rhs_into_lhs): Don't call update_stmt
