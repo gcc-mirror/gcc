@@ -1,3 +1,9 @@
+2006-03-24  David Daney  <ddaney@avtrex.com)
+
+	* testsuite/libjava.lang/PR26858.java: New test.
+	* testsuite/libjava.lang/PR26858.out: Ditto.
+	* testsuite/libjava.lang/PR26858.xfail: Ditto.
+
 2006-03-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* include/sh-signal.h (MAKE_THROW_FRAME): Change into empty
