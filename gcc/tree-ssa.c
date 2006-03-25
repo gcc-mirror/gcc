@@ -613,6 +613,46 @@ err:
 }
 
 
+/* Verify the consistency of call clobbering information.  */
+static void
+verify_call_clobbering (void)
+{
+  unsigned int i;
+  bitmap_iterator bi;
+  tree var;
+  referenced_var_iterator rvi;
+
+  /* At all times, the result of the DECL_CALL_CLOBBERED flag should
+     match the result of the call_clobbered_vars bitmap.  Verify both
+     that everything in call_clobbered_vars is marked
+     DECL_CALL_CLOBBERED, and that everything marked
+     DECL_CALL_CLOBBERED is in call_clobbered_vars.  */
+  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
+    {
+      var = referenced_var (i);
+      if (!MTAG_P (var) && !DECL_CALL_CLOBBERED (var))
+	{
+	  error ("variable in call_clobbered_vars but not marked DECL_CALL_CLOBBERED");
+	  debug_variable (var);
+	  goto err;
+	}
+    }
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    {
+      if (!MTAG_P (var) && DECL_CALL_CLOBBERED (var)
+	  && !bitmap_bit_p (call_clobbered_vars, DECL_UID (var)))
+	{
+	  error ("variable marked DECL_CALL_CLOBBERED but not in call_clobbered_vars bitmap.");
+	  debug_variable (var);
+	  goto err;
+	}
+    }
+  return;
+
+ err:
+    internal_error ("verify_call_clobbering failed");
+}
+
 /* Verify the consistency of aliasing information.  */
 
 static void
@@ -620,6 +660,7 @@ verify_alias_info (void)
 {
   verify_flow_sensitive_alias_info ();
   verify_name_tags ();
+  verify_call_clobbering ();
   verify_flow_insensitive_alias_info ();
 }
 

@@ -1,3 +1,20 @@
+2006-03-25  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/26804
+	* tree.h (DECL_CALL_CLOBBERED): New macro.
+	(tree_decl_common): Add call_clobbered_flag.
+	* tree-flow-inline.h (is_call_clobbered): Use DECL_CALL_CLOBBERED.
+	(mark_call_clobbered): Set DECL_CALL_CLOBBERED.
+	(clear_call_clobbered): Clear DECL_CALL_CLOBBERED.
+	(mark_non_addressable): Ditto.
+	* tree-ssa.c (verify_call_clobbered): New function.
+	(verify_alias_info): Use it.
+	* tree-pass.h (pass_reset_cc_flags): New prototype.
+	* tree-ssa-alias.c (pass_reset_cc_flags): New structure.
+	(reset_cc_flags): New function.
+	* passes.c (init_optimization_passes): Call reset_cc_flags after
+	initializing referenced_vars.
+
 2006-03-25  Uros Bizjak  <uros@kss-loka.si>
 	    Roger Sayle  <roger@eyesopen.com>
 
