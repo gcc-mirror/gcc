@@ -1,3 +1,11 @@
+2006-03-25  Uros Bizjak  <uros@kss-loka.si>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/26717
+	* fold-const.c (fold_binary) [RDIV_EXPR]: Do not optimize A / A
+	to 1.0 for non-real operands. Implement A / A optimization for
+	complex operands.
+
 2006-03-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (size_cost): Correct the comment for
