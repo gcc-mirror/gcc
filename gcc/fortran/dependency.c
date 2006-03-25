@@ -494,15 +494,6 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
 
   gcc_assert (expr1->expr_type == EXPR_VARIABLE);
 
-  /* TODO: -fassume-no-pointer-aliasing */
-  if (expr1->symtree->n.sym->attr.pointer)
-    return 1;
-  for (ref = expr1->ref; ref; ref = ref->next)
-    {
-      if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
-	return 1;
-    }
-
   switch (expr2->expr_type)
     {
     case EXPR_OP:
@@ -514,21 +505,44 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
       return 0;
 
     case EXPR_VARIABLE:
-      if (expr2->symtree->n.sym->attr.pointer)
-	return 1;
-
-      for (ref = expr2->ref; ref; ref = ref->next)
-	{
-	  if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
-	    return 1;
-	}
-
-      /* Return 1 if expr1 and expr2 are equivalenced arrays.  */
-      if (gfc_are_equivalenced_arrays (expr1, expr2))
-	return 1;
-
+      /* The interesting cases are when the symbols don't match.  */
       if (expr1->symtree->n.sym != expr2->symtree->n.sym)
-	return 0;
+	{
+	  gfc_typespec *ts1 = &expr1->symtree->n.sym->ts;
+	  gfc_typespec *ts2 = &expr2->symtree->n.sym->ts;
+
+	  /* Return 1 if expr1 and expr2 are equivalenced arrays.  */
+	  if (gfc_are_equivalenced_arrays (expr1, expr2))
+	    return 1;
+
+	  /* Symbols can only alias if they have the same type.  */
+	  if (ts1->type != BT_UNKNOWN
+	      && ts2->type != BT_UNKNOWN
+	      && ts1->type != BT_DERIVED
+	      && ts2->type != BT_DERIVED)
+	    {
+	      if (ts1->type != ts2->type
+		  || ts1->kind != ts2->kind)
+		return 0;
+	    }
+
+	  /* If either variable is a pointer, assume the worst.  */
+	  /* TODO: -fassume-no-pointer-aliasing */
+	  if (expr1->symtree->n.sym->attr.pointer)
+	    return 1;
+	  for (ref = expr1->ref; ref; ref = ref->next)
+	    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
+	      return 1;
+
+	  if (expr2->symtree->n.sym->attr.pointer)
+	    return 1;
+	  for (ref = expr2->ref; ref; ref = ref->next)
+	    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
+	      return 1;
+
+	  /* Otherwise distinct symbols have no dependencies.  */
+	  return 0;
+	}
 
       if (identical)
 	return 1;

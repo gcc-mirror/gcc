@@ -1,3 +1,9 @@
+2006-03-25  Roger Sayle  <roger@eyesopen.com>
+
+	* dependency.c (gfc_check_dependency): Improve handling of pointers;
+	Two variables of different types can't have a dependency, and two
+	variables with the same symbol are equal, even if pointers.
+
 2006-03-24  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.h (gfc_symbol): Add a new "forall_index" bit field.
