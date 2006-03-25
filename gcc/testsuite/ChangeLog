@@ -4,6 +4,9 @@
 
 2006-03-24  Geoffrey Keating  <geoffk@apple.com>
 
+	* objc.dg/dwarf-2.m: New.
+	* obj-c++.dg/dwarf-2.mm: New.
+
 	* g++.old-deja/g++.other/init19.C: New.
 
 2006-03-24  David Edelsohn  <edelsohn@gnu.org>
