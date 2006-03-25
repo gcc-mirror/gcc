@@ -1,3 +1,8 @@
+2006-03-25  Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/26717
+	* gcc.dg/pr26717.c: New test.
+
 2006-03-25  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/dependency_12.f90: New test case.
