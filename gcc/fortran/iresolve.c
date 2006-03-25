@@ -1499,9 +1499,6 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
   switch (source->ts.type)
     {
     case BT_COMPLEX:
-      kind = source->ts.kind * 2;
-      break;
-
     case BT_REAL:
     case BT_INTEGER:
     case BT_LOGICAL:
@@ -1523,6 +1520,10 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
 	f->value.function.name =
 	  gfc_get_string (PREFIX("reshape_%c%d"),
 			  gfc_type_letter (BT_COMPLEX), source->ts.kind);
+      else if (source->ts.type == BT_REAL && kind == 10)
+	f->value.function.name =
+	  gfc_get_string (PREFIX("reshape_%c%d"),
+			  gfc_type_letter (BT_REAL), source->ts.kind);
       else
 	f->value.function.name =
 	  gfc_get_string (PREFIX("reshape_%d"), source->ts.kind);
@@ -1987,8 +1988,19 @@ gfc_resolve_transpose (gfc_expr * f, gfc_expr * matrix)
             gfc_get_string (PREFIX("transpose_c%d"), kind);
           break;
 
-        case BT_INTEGER:
         case BT_REAL:
+	  /* There is no kind=10 integer type.  We need to
+	     call the real version.  */
+	  if (kind == 10)
+	    {
+	      f->value.function.name =
+		gfc_get_string (PREFIX("transpose_r%d"), kind);
+	      break;
+	    }
+
+	  /* Fall through */
+
+        case BT_INTEGER:
         case BT_LOGICAL:
 	  /* Use the integer routines for real and logical cases.  This
 	     assumes they all have the same alignment requirements.  */

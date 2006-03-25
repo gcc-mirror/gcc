@@ -1,3 +1,11 @@
+2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/26769
+	* iresolve.c (gfc_resolve_reshape):  Remove doubling of
+	kind for complex. For real(kind=10), call reshape_r10.
+	(gfc_resolve_transpose):  For real(kind=10), call
+	transpose_r10.
+
 2006-03-25  Roger Sayle  <roger@eyesopen.com>
 
 	* dependency.c (gfc_check_dependency): Improve handling of pointers;

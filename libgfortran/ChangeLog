@@ -1,3 +1,14 @@
+2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/26769
+	* Makefile.am:  Add transpose_r10.c and reshape_r10.c.
+	* aclocal.m4:  Regenerate using aclocal 1.9.3.
+	* Makefile.in:  Regenerate using automake 1.9.3.
+	* m4/iparm.m4 (rtype_ccode):  If rtype_letter is `i',
+	evaluate to rtype_kind, otherwise to rtype_code.
+	* generated/transpose_r10.c:  Add.
+	* generated/reshape_r10.c:  Add.
+
 2006-03-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/19303
