@@ -1,5 +1,12 @@
 2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	PR libfortran/26735
+	* io/transfer.c (data_transfer_init):  Set u_flags.convert
+	on an unopened unit if specified by environment variable
+	(via get_unformatted_convert) or by compile-time option.
+
+2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
 	PR fortran/26769
 	* Makefile.am:  Add transpose_r10.c and reshape_r10.c.
 	* aclocal.m4:  Regenerate using aclocal 1.9.3.

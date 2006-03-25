@@ -1390,6 +1390,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   if (dtp->u.p.current_unit->s == NULL)
   {  /* Open the unit with some default flags.  */
      st_parameter_open opp;
+     unit_convert conv;
+
      if (dtp->common.unit < 0)
      {
        close_unit (dtp->u.p.current_unit);
@@ -1413,6 +1415,35 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
      u_flags.blank = BLANK_UNSPECIFIED;
      u_flags.pad = PAD_UNSPECIFIED;
      u_flags.status = STATUS_UNKNOWN;
+
+     conv = get_unformatted_convert (dtp->common.unit);
+
+     if (conv == CONVERT_NONE)
+       conv = compile_options.convert;
+
+     /* We use l8_to_l4_offset, which is 0 on little-endian machines
+	and 1 on big-endian machines.  */
+     switch (conv)
+       {
+       case CONVERT_NATIVE:
+       case CONVERT_SWAP:
+	 break;
+	 
+       case CONVERT_BIG:
+	 conv = l8_to_l4_offset ? CONVERT_NATIVE : CONVERT_SWAP;
+	 break;
+      
+       case CONVERT_LITTLE:
+	 conv = l8_to_l4_offset ? CONVERT_SWAP : CONVERT_NATIVE;
+	 break;
+	 
+       default:
+	 internal_error (&opp.common, "Illegal value for CONVERT");
+	 break;
+       }
+
+     u_flags.convert = conv;
+
      opp.common = dtp->common;
      opp.common.flags &= IOPARM_COMMON_MASK;
      dtp->u.p.current_unit = new_unit (&opp, dtp->u.p.current_unit, &u_flags);
