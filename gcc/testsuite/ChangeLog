@@ -1,5 +1,10 @@
 2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	PR libfortran/26735
+	* gfortran.dg/convert_implied_open.f90:  New test case.
+
+2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
 	PR fortran/26769
 	* gfortran.dg/transpose_reshape_r10.f90:  New test case.
 
