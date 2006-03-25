@@ -95,7 +95,8 @@ struct processor_costs size_cost = {	/* costs for tunning for size */
   2,					/* cost of reg,reg fld/fst */
   {2, 2, 2},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {2, 2, 2},				/* cost of loading integer registers */
+  {2, 2, 2},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   3,					/* cost of moving MMX register */
   {3, 3},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -148,7 +149,8 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   2,					/* cost of reg,reg fld/fst */
   {8, 8, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {8, 8, 8},				/* cost of loading integer registers */
+  {8, 8, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {4, 8},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -200,7 +202,8 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   2,					/* cost of reg,reg fld/fst */
   {8, 8, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {8, 8, 8},				/* cost of loading integer registers */
+  {8, 8, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {4, 8},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -252,7 +255,8 @@ struct processor_costs pentium_cost = {
   2,					/* cost of reg,reg fld/fst */
   {2, 2, 6},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of loading integer registers */
+  {4, 4, 6},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   8,					/* cost of moving MMX register */
   {8, 8},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -304,7 +308,8 @@ struct processor_costs pentiumpro_cost = {
   2,					/* cost of reg,reg fld/fst */
   {2, 2, 6},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of loading integer registers */
+  {4, 4, 6},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {2, 2},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -356,7 +361,8 @@ struct processor_costs k6_cost = {
   4,					/* cost of reg,reg fld/fst */
   {6, 6, 6},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 4},				/* cost of loading integer registers */
+  {4, 4, 4},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {2, 2},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -408,7 +414,8 @@ struct processor_costs athlon_cost = {
   4,					/* cost of reg,reg fld/fst */
   {4, 4, 12},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of loading integer registers */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {4, 4},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -460,7 +467,8 @@ struct processor_costs k8_cost = {
   4,					/* cost of reg,reg fld/fst */
   {4, 4, 12},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of loading integer registers */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {3, 3},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -512,7 +520,8 @@ struct processor_costs pentium4_cost = {
   2,					/* cost of reg,reg fld/fst */
   {2, 2, 6},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of loading integer registers */
+  {4, 4, 6},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {2, 2},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -564,7 +573,8 @@ struct processor_costs nocona_cost = {
   3,					/* cost of reg,reg fld/fst */
   {12, 12, 12},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 4},				/* cost of loading integer registers */
+  {4, 4, 4},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   6,					/* cost of moving MMX register */
   {12, 12},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -621,7 +631,8 @@ struct processor_costs generic64_cost = {
   4,					/* cost of reg,reg fld/fst */
   {12, 12, 12},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of loading integer registers */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {8, 8},				/* cost of loading MMX registers
 					   in SImode and DImode */
@@ -676,7 +687,8 @@ struct processor_costs generic32_cost = {
   4,					/* cost of reg,reg fld/fst */
   {12, 12, 12},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of loading integer registers */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {8, 8},				/* cost of loading MMX registers
 					   in SImode and DImode */
