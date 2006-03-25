@@ -5,6 +5,13 @@
 
 2006-03-24  Geoffrey Keating  <geoffk@apple.com>
 
+	* dwarf2out.c (is_c_family): Understand new DWARF3 language types.
+	(is_cxx): Likewise.
+	(gen_compile_unit_die): Use new language types for Objective-C and
+	Objective-C++.
+	(dwarf2out_decl): Use is_cxx rather than testing explicitly against
+	DW_LANG_C_plus_plus.
+
 	PR 26793
 	* config/t-darwin (crt3.o): Work around bug 26840.
 	* config/darwin-crt3.c: Rewrite.
