@@ -852,6 +852,8 @@ typedef struct gfc_symbol
   /* Nonzero if all equivalences associated with this symbol have been
      processed.  */
   unsigned equiv_built:1;
+  /* Set if this variable is used as an index name in a FORALL.  */
+  unsigned forall_index:1;
   int refs;
   struct gfc_namespace *ns;	/* namespace containing this symbol */
 

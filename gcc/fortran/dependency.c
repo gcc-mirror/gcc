@@ -794,6 +794,84 @@ gfc_check_element_vs_section( gfc_ref * lref, gfc_ref * rref, int n)
 }
 
 
+/* Traverse expr, checking all EXPR_VARIABLE symbols for their
+   forall_index attribute.  Return true if any variable may be
+   being used as a FORALL index.  Its safe to pessimistically
+   return true, and assume a dependency.  */
+
+static bool
+contains_forall_index_p (gfc_expr * expr)
+{
+  gfc_actual_arglist *arg;
+  gfc_constructor *c;
+  gfc_ref *ref;
+  int i;
+
+  if (!expr)
+    return false;
+
+  switch (expr->expr_type)
+    {
+    case EXPR_VARIABLE:
+      if (expr->symtree->n.sym->forall_index)
+	return true;
+      break;
+
+    case EXPR_OP:
+      if (contains_forall_index_p (expr->value.op.op1)
+	  || contains_forall_index_p (expr->value.op.op2))
+	return true;
+      break;
+
+    case EXPR_FUNCTION:
+      for (arg = expr->value.function.actual; arg; arg = arg->next)
+	if (contains_forall_index_p (arg->expr))
+	  return true;
+      break;
+
+    case EXPR_CONSTANT:
+    case EXPR_NULL:
+    case EXPR_SUBSTRING:
+      break;
+
+    case EXPR_STRUCTURE:
+    case EXPR_ARRAY:
+      for (c = expr->value.constructor; c; c = c->next)
+	if (contains_forall_index_p (c->expr))
+	  return true;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    switch (ref->type)
+      {
+      case REF_ARRAY:
+	for (i = 0; i < ref->u.ar.dimen; i++)
+	  if (contains_forall_index_p (ref->u.ar.start[i])
+	      || contains_forall_index_p (ref->u.ar.end[i])
+	      || contains_forall_index_p (ref->u.ar.stride[i]))
+	    return true;
+	break;
+
+      case REF_COMPONENT:
+	break;
+
+      case REF_SUBSTRING:
+	if (contains_forall_index_p (ref->u.ss.start)
+	    || contains_forall_index_p (ref->u.ss.end))
+	  return true;
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+  return false;
+}
+
 /* Determines overlapping for two single element array references.  */
 
 static gfc_dependency
@@ -812,9 +890,23 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
   i = gfc_dep_compare_expr (r_start, l_start);
   if (i == 0)
     return GFC_DEP_EQUAL;
-  if (i == -2)
+  if (i != -2)
+    return GFC_DEP_NODEP;
+
+  /* Treat two scalar variables as potentially equal.  This allows
+     us to prove that a(i,:) and a(j,:) have no dependency.  See
+     Gerald Roth, "Evaluation of Array Syntax Dependence Analysis",
+     Proceedings of the International Conference on Parallel and
+     Distributed Processing Techniques and Applications (PDPTA2001),
+     Las Vegas, Nevada, June 2001.  */
+  /* However, we need to be careful when either scalar expression
+     contains a FORALL index, as these can potentially change value
+     during the scalarization/traversal of this array reference.  */
+  if (contains_forall_index_p (r_start)
+      || contains_forall_index_p (l_start))
     return GFC_DEP_OVERLAP;
-  return GFC_DEP_NODEP;
+
+  return GFC_DEP_EQUAL;
 }
 
 
