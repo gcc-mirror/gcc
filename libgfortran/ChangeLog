@@ -1,3 +1,13 @@
+2006-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26661
+	* io/io.h: Add read_sf so it can be used by read_x.
+	* io/transfer.c (read_sf): Pass no_error flag to read_sf.  Use it to
+	break out rather than error on EOF or EOR conditions.
+	(read_block): Update call to read_sf.
+	(read_block_direct): Ditto.
+	* io/read.c (read_x): Use the modified read_sf instead of read_block.
+
 2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/26735
