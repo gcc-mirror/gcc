@@ -186,6 +186,10 @@ struct subscript
 #define SUB_LAST_CONFLICT(SUB) SUB->last_conflict
 #define SUB_DISTANCE(SUB) SUB->distance
 
+typedef struct loop *loop_p;
+DEF_VEC_P(loop_p);
+DEF_VEC_ALLOC_P (loop_p, heap);
+
 /* A data_dependence_relation represents a relation between two
    data_references A and B.  */
 
@@ -217,9 +221,8 @@ struct data_dependence_relation
      the data_dependence_relation.  */
   varray_type subscripts;
 
-  /* The size of the direction/distance vectors: the depth of the
-     analyzed loop nest.  */
-  int size_vect;
+  /* The analyzed loop nest.  */
+  VEC (loop_p, heap) *loop_nest;
 
   /* The classic direction vector.  */
   VEC(lambda_vector,heap) *dir_vects;
@@ -241,7 +244,11 @@ DEF_VEC_ALLOC_P(ddr_p,heap);
   VARRAY_GENERIC_PTR_INIT (DDR_SUBSCRIPTS (DDR), N, "subscripts_vector");
 #define DDR_SUBSCRIPT(DDR, I) VARRAY_GENERIC_PTR (DDR_SUBSCRIPTS (DDR), I)
 #define DDR_NUM_SUBSCRIPTS(DDR) VARRAY_ACTIVE_SIZE (DDR_SUBSCRIPTS (DDR))
-#define DDR_SIZE_VECT(DDR) DDR->size_vect
+
+#define DDR_LOOP_NEST(DDR) DDR->loop_nest
+/* The size of the direction/distance vectors: the number of loops in
+   the loop nest.  */
+#define DDR_NB_LOOPS(DDR) (VEC_length (loop_p, DDR_LOOP_NEST (DDR)))
 
 #define DDR_DIST_VECTS(DDR) ((DDR)->dist_vects)
 #define DDR_DIR_VECTS(DDR) ((DDR)->dir_vects)
@@ -260,11 +267,14 @@ extern tree find_data_references_in_loop (struct loop *, varray_type *);
 extern void compute_data_dependences_for_loop (struct loop *, bool,
 					       varray_type *, varray_type *);
 extern void print_direction_vector (FILE *, lambda_vector, int);
+extern void print_dir_vectors (FILE *, VEC (lambda_vector, heap) *, int);
+extern void print_dist_vectors (FILE *, VEC (lambda_vector, heap) *, int);
 extern void dump_subscript (FILE *, struct subscript *);
 extern void dump_ddrs (FILE *, varray_type);
 extern void dump_dist_dir_vectors (FILE *, varray_type);
 extern void dump_data_reference (FILE *, struct data_reference *);
 extern void dump_data_references (FILE *, varray_type);
+extern void debug_data_dependence_relation (struct data_dependence_relation *);
 extern void dump_data_dependence_relation (FILE *, 
 					   struct data_dependence_relation *);
 extern void dump_data_dependence_relations (FILE *, varray_type);
@@ -275,6 +285,22 @@ extern void free_dependence_relations (varray_type);
 extern void free_data_refs (varray_type);
 extern struct data_reference *analyze_array (tree, tree, bool);
 extern void estimate_iters_using_array (tree, tree);
+
+/* Return the index of the variable VAR in the LOOP_NEST array.  */
+
+static inline int
+index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
+{
+  struct loop *loopi;
+  int var_index;
+
+  for (var_index = 0; VEC_iterate (loop_p, loop_nest, var_index, loopi);
+       var_index++)
+    if (loopi->num == var)
+      break;
+
+  return var_index;
+}
 
 
 

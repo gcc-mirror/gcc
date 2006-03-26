@@ -584,12 +584,12 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   unsigned int i;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  unsigned int loop_depth = 0;
-  struct loop *loop_nest = loop;
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
   stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra)); 
   stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
+  lambda_vector dist_v;
+  unsigned int loop_depth;
          
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     return false;
@@ -619,16 +619,10 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       return true;
     }    
 
-  /* Find loop depth.  */
-  while (loop_nest && loop_nest->outer && loop_nest->outer->outer)
+  loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
+  for (i = 0; VEC_iterate (lambda_vector, DDR_DIST_VECTS (ddr), i, dist_v); i++)
     {
-      loop_nest = loop_nest->outer;
-      loop_depth++;
-    }
-
-  for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
-    {
-      int dist = DDR_DIST_VECT (ddr, i)[loop_depth];
+      int dist = dist_v[loop_depth];
 
       if (vect_print_dump_info (REPORT_DR_DETAILS))
 	fprintf (vect_dump, "dependence distance  = %d.", dist);
