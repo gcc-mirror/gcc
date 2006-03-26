@@ -1,3 +1,9 @@
+2006-03-27  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/26459
+	* config/rs6000/rs6000.md (DF reg move peephole): Prevent
+	peephole removing spe frob_di_df_2.
+
 2006-03-26  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-data-ref.c: Rename DDR_SIZE_VECT to DDR_NB_LOOPS.
