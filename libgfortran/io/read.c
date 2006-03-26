@@ -847,7 +847,7 @@ read_x (st_parameter_dt *dtp, int n)
 
   dtp->u.p.sf_read_comma = 0;
   if (n > 0)
-    read_block (dtp, &n);
+    read_sf (dtp, &n, 1);
   dtp->u.p.sf_read_comma = 1;
 
 }
