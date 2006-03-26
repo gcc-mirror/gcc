@@ -1,3 +1,8 @@
+2006-03-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* objc.dg/dwarf-1.m: Skip on AIX.
+	* objc.dg/dwarf-2.m: Skip on AIX.
+
 2006-03-25  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/26816 
