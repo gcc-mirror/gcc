@@ -1,3 +1,43 @@
+2006-03-26  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-data-ref.c: Rename DDR_SIZE_VECT to DDR_NB_LOOPS.
+	(subscript_dependence_tester_1): Declared.
+	(print_dir_vectors, print_dist_vectors): New.
+	(debug_data_dependence_relation): New.
+	(dump_data_dependence_relation): Print more details.
+	(initialize_data_dependence_relation): Initialize DDR_LOOP_NEST.
+	(analyze_subscript_affine_affine): Don't ICE when gcd_alpha_beta is 0.
+	(save_dist_v, save_dir_v, add_outer_distances,
+	build_classic_dist_vector_1): New.
+	(build_classic_dist_vector): Rewrite to work on DDR_LOOP_NEST.
+	Don't test for lambda_vector_lexico_pos.
+	(same_access_functions, add_multivariate_self_dist,
+	add_other_self_distances, dir_from_dist): New.
+	(build_classic_dir_vector): Replace implementation almost identical to 
+	build_classic_dist_vector with a walk of DDR_DIST_VECTS with a call to
+	dir_from_dist.
+	(subscript_dependence_tester_1): New.
+	(subscript_dependence_tester): Handle the lexicographically negative
+	distance vectors by recomputing the dependence relation.
+	(compute_affine_dependence): Remove parameter loop_nest_depth.
+	(compute_self_dependence): Don't call compute_subscript_distance.
+	(compute_all_dependences): Remove parameters nb_loops, loop_nest_depth.
+	Add a parameter for the loop_nest.
+	(find_loop_nest_1, find_loop_nest): New.
+	(compute_data_dependences_for_loop): Compute the loop nest, and give
+	up if the nest is not well formed.
+	* tree-data-ref.h (loop_p): New.
+	(struct data_dependence_relation): Replace size_vect field with 
+	loop_nest, a vec of loops.
+	(DDR_SIZE_VECT): Renamed DDR_NB_LOOPS.
+	(DDR_LOOP_NEST): New.
+	(print_dir_vectors, print_dist_vectors,
+	debug_data_dependence_relation): Declared.
+	(index_in_loop_nest): New.
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): Use
+	DDR_LOOP_NEST and index_in_loop_nest to determine the dependence
+	distance.
+
 2006-03-25  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* simplify-rtx.c (simplify_relational_operation): Call
