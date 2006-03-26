@@ -132,8 +132,8 @@ current_mode (st_parameter_dt *dtp)
    For larger allocations, we are forced to allocate memory on the
    heap.  Hopefully this won't happen very often.  */
 
-static char *
-read_sf (st_parameter_dt *dtp, int *length)
+char *
+read_sf (st_parameter_dt *dtp, int *length, int no_error)
 {
   char *base, *p, *q;
   int n, readlen, crlf;
@@ -171,6 +171,8 @@ read_sf (st_parameter_dt *dtp, int *length)
 	 EOR below.  */
       if (readlen < 1 && n == 0)
 	{
+	  if (no_error)
+	    break;
 	  generate_error (&dtp->common, ERROR_END, NULL);
 	  return NULL;
 	}
@@ -202,6 +204,8 @@ read_sf (st_parameter_dt *dtp, int *length)
 	     so we can just continue with a short read.  */
 	  if (dtp->u.p.current_unit->flags.pad == PAD_NO)
 	    {
+	      if (no_error)
+		break;
 	      generate_error (&dtp->common, ERROR_EOR, NULL);
 	      return NULL;
 	    }
@@ -265,7 +269,7 @@ read_block (st_parameter_dt *dtp, int *length)
 
   if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED &&
       dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
-    return read_sf (dtp, length);	/* Special case.  */
+    return read_sf (dtp, length, 0);	/* Special case.  */
 
   dtp->u.p.current_unit->bytes_left -= *length;
 
@@ -315,7 +319,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
       dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
     {
       length = (int *) nbytes;
-      data = read_sf (dtp, length);	/* Special case.  */
+      data = read_sf (dtp, length, 0);	/* Special case.  */
       memcpy (buf, data, (size_t) *length);
       return;
     }
