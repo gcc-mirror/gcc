@@ -1899,7 +1899,7 @@ add_functions (void)
 	     a, BT_UNKNOWN, dr, REQUIRED);
 
   add_sym_1 ("float", 1, 0, BT_REAL, dr, GFC_STD_F77,
-	     NULL, gfc_simplify_float, NULL,
+	     gfc_check_i, gfc_simplify_float, NULL,
 	     a, BT_INTEGER, di, REQUIRED);
 
   add_sym_1 ("sngl", 1, 0, BT_REAL, dr, GFC_STD_F77,

@@ -1,3 +1,9 @@
+2006-03-25  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/26816
+	* intrinsic.c (add_functions): Allow FLOAT to accept all integer kinds.
+	* intrinsic.texi: Document FLOAT.
+
 2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/26769
