@@ -88,6 +88,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{EXP}:           EXP,       Exponential function
 * @code{EXPONENT}:      EXPONENT,  Exponent function
 * @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
+* @code{FLOAT}:         FLOAT,     Convert integer to default real
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FNUM}:          FNUM,      File number function
 * @code{FREE}:          FREE,      Memory de-allocation subroutine
@@ -2839,6 +2840,41 @@ program test_fdate
     call fdate(date)
     print *, 'Program ended on ', date
 end program test_fdate
+@end smallexample
+@end table
+
+@node FLOAT
+@section @code{FLOAT} --- Convert integer to default real
+@findex @code{FLOAT} intrinsic
+@cindex floor
+
+@table @asis
+@item @emph{Description}:
+@code{FLOAT(I)} converts the integer @var{I} to a default real value.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{X = FLOAT(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type default @code{REAL}
+
+@item @emph{Example}:
+@smallexample
+program test_float
+    integer :: i = 1
+    if (float(i) /= 1.) call abort
+end program test_float
 @end smallexample
 @end table
 
