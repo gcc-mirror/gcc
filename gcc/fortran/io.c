@@ -2317,30 +2317,34 @@ if (condition) \
 
   if (dt->advance)
     {
-      const char * advance;
       int not_yes, not_no;
       expr = dt->advance;
-      advance = expr->value.character.string;
 
       io_constraint (dt->format_label == &format_asterisk,
 		     "List directed format(*) is not allowed with a "
 		     "ADVANCE=specifier at %L.", &expr->where);
 
-      not_no = strncasecmp (advance, "no", 2) != 0;
-      not_yes = strncasecmp (advance, "yes", 2) != 0;
+      if (expr->expr_type == EXPR_CONSTANT && expr->ts.type == BT_CHARACTER)
+	{
+	  const char * advance = expr->value.character.string;
+	  not_no = strncasecmp (advance, "no", 2) != 0;
+	  not_yes = strncasecmp (advance, "yes", 2) != 0;
+	}
+      else
+	{
+	  not_no = 0;
+	  not_yes = 0;
+	}
 
-      io_constraint (expr->expr_type == EXPR_CONSTANT
-		       && not_no && not_yes,
+      io_constraint (not_no && not_yes,
 		     "ADVANCE=specifier at %L must have value = "
 		     "YES or NO.", &expr->where);
 
-      io_constraint (dt->size && expr->expr_type == EXPR_CONSTANT
-		       && not_no && k == M_READ,
+      io_constraint (dt->size && not_no && k == M_READ,
 		     "SIZE tag at %L requires an ADVANCE = 'NO'",
 		     &dt->size->where);
 
-      io_constraint (dt->eor && expr->expr_type == EXPR_CONSTANT 
-		       && not_no && k == M_READ,
+      io_constraint (dt->eor && not_no && k == M_READ,
 		     "EOR tag at %L requires an ADVANCE = 'NO'",
 		     &dt->eor_where);      
     }
