@@ -331,6 +331,9 @@ struct machine_function GTY(())
 #define CONST_OK_FOR_On(x) \
         CONST_OK_FOR_CONSTRAINT_P((x), 'O', "On")
 
+#define REGNO_PAIR_OK(REGNO, MODE)                               \
+  (HARD_REGNO_NREGS ((REGNO), (MODE)) == 1 || !((REGNO) & 1))
+
 /* Set the has_landing_pad_p flag in struct machine_function to VALUE.  */
 
 void
@@ -6753,6 +6756,54 @@ s390_update_frame_layout (void)
     regs_ever_live[REGNO (cfun->machine->base_reg)] = 1;
 }
 
+/* Return true if it is legal to put a value with MODE into REGNO.  */
+
+bool
+s390_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
+{
+  switch (REGNO_REG_CLASS (regno))
+    {
+    case FP_REGS:
+      if (REGNO_PAIR_OK (regno, mode))
+	{
+	  if (mode == SImode || mode == DImode)
+	    return true;
+
+	  if (FLOAT_MODE_P (mode) && GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT)
+	    return true;
+	}
+      break;
+    case ADDR_REGS:
+      if (FRAME_REGNO_P (regno) && mode == Pmode)
+	return true;
+
+      /* fallthrough */
+    case GENERAL_REGS:
+      if (REGNO_PAIR_OK (regno, mode))
+	{
+	  if (TARGET_64BIT 
+	      || (mode != TFmode && mode != TCmode))
+	    return true;
+	}	  
+      break;
+    case CC_REGS:
+      if (GET_MODE_CLASS (mode) == MODE_CC)
+	return true;
+      break;
+    case ACCESS_REGS:
+      if (REGNO_PAIR_OK (regno, mode))
+	{
+	  if (mode == SImode || mode == Pmode)
+	    return true;
+	}
+      break;
+    default:
+      return false;
+    }
+  
+  return false;
+}
+
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
 
 bool
@@ -6766,6 +6817,27 @@ s390_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
       return false;
 
   return true;
+}
+
+/* Maximum number of registers to represent a value of mode MODE
+   in a register of class CLASS.  */
+
+bool
+s390_class_max_nregs (enum reg_class class, enum machine_mode mode)
+{
+  switch (class)
+    {
+    case FP_REGS:
+      if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+	return 2 * ((GET_MODE_SIZE (mode) / 2 + 8 - 1) / 8);
+      else
+	return (GET_MODE_SIZE (mode) + 8 - 1) / 8;
+    case ACCESS_REGS:
+      return (GET_MODE_SIZE (mode) + 4 - 1) / 4;
+    default:
+      break;
+    }
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
 /* Return true if register FROM can be eliminated via register TO.  */

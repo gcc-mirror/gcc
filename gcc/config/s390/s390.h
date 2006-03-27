@@ -355,36 +355,15 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 
    Condition code modes fit only into the CC register.  */
 
+/* Because all registers in a class have the same size HARD_REGNO_NREGS
+   is equivalent to CLASS_MAX_NREGS.  */
 #define HARD_REGNO_NREGS(REGNO, MODE)                           \
-  (FP_REGNO_P(REGNO)?                                           \
-   (GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ?                \
-    2 * ((GET_MODE_SIZE(MODE) / 2 + 8 - 1) / 8) : 		\
-    ((GET_MODE_SIZE(MODE) + 8 - 1) / 8)) :			\
-   GENERAL_REGNO_P(REGNO)?                                      \
-    ((GET_MODE_SIZE(MODE)+UNITS_PER_WORD-1) / UNITS_PER_WORD) : \
-   ACCESS_REGNO_P(REGNO)?					\
-    ((GET_MODE_SIZE(MODE) + 4 - 1) / 4) : 			\
-   1)
+  s390_class_max_nregs (REGNO_REG_CLASS (REGNO), (MODE))
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)                             \
-  (FP_REGNO_P(REGNO)?                                               \
-   (((MODE) == SImode || (MODE) == DImode                           \
-     || GET_MODE_CLASS(MODE) == MODE_FLOAT                          \
-     || GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT)                 \
-    && (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1))) :    \
-   GENERAL_REGNO_P(REGNO)?                                          \
-   ((HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1))	    \
-    && (((MODE) != TFmode && (MODE) != TCmode) || TARGET_64BIT)) :  \
-   CC_REGNO_P(REGNO)?                                               \
-     GET_MODE_CLASS (MODE) == MODE_CC :                             \
-   FRAME_REGNO_P(REGNO)?                                            \
-     (enum machine_mode) (MODE) == Pmode :                          \
-   ACCESS_REGNO_P(REGNO)?					    \
-     (((MODE) == SImode || ((enum machine_mode) (MODE) == Pmode))   \
-      && (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1))) :  \
-   0)
+#define HARD_REGNO_MODE_OK(REGNO, MODE)         \
+  s390_hard_regno_mode_ok ((REGNO), (MODE))
 
-#define HARD_REGNO_RENAME_OK(FROM, TO) \
+#define HARD_REGNO_RENAME_OK(FROM, TO)          \
   s390_hard_regno_rename_ok (FROM, TO)
 
 #define MODES_TIEABLE_P(MODE1, MODE2)		\
@@ -394,13 +373,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 /* Maximum number of registers to represent a value of mode MODE
    in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
-     ((CLASS) == FP_REGS ? 						\
-      (GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ?                     \
-       2 * (GET_MODE_SIZE (MODE) / 2 + 8 - 1) / 8 :		        \
-       (GET_MODE_SIZE (MODE) + 8 - 1) / 8) :				\
-      (CLASS) == ACCESS_REGS ?						\
-      (GET_MODE_SIZE (MODE) + 4 - 1) / 4 :				\
-      (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+  s390_class_max_nregs ((CLASS), (MODE))
 
 /* If a 4-byte value is loaded into a FPR, it is placed into the
    *upper* half of the register, not the lower.  Therefore, we

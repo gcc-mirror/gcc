@@ -1,3 +1,12 @@
+2006-03-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_hard_regno_mode_ok, 
+	s390_class_max_nregs): New function prototypes.
+	* config/s390/s390.c (REGNO_PAIR_OK): New macro.
+	(s390_hard_regno_mode_ok, s390_class_max_nregs): New functions.
+	* config/s390/s390.h (HARD_REGNO_NREGS, HARD_REGNO_MODE_OK,
+	CLASS_MAX_NREGS): Macro bodies replaced by function calls.
+
 2006-03-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (add_location_or_const_value_attribute): Call
