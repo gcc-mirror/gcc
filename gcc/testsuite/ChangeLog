@@ -1,3 +1,9 @@
+2006-03-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26661
+	PR libgfortran/26880
+	* gfortran.dg/read_x_past.f: New test.
+
 2006-03-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/darwin-20040809-2.c: Don't expect default debugging
