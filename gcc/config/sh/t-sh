@@ -81,17 +81,17 @@ EXTRA_MULTILIB_PARTS= $(IC_EXTRA_PARTS)
 $(T)ic_invalidate_array_4-100.o: $(srcdir)/config/sh/lib1funcs.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)ic_invalidate_array_4-100.o -DL_ic_invalidate_array -DWAYS=1 -DWAY_SIZE=0x2000 -x assembler-with-cpp $(srcdir)/config/sh/lib1funcs.asm
 $(T)libic_invalidate_array_4-100.a: $(T)ic_invalidate_array_4-100.o $(GCC_PASSES)
-	$(AR_CREATE_FOR_TARGET) $(T)ic_invalidate_array_4-100.a $(T)ic_invalidate_array_4-100.o
+	$(AR_CREATE_FOR_TARGET) $(T)libic_invalidate_array_4-100.a $(T)ic_invalidate_array_4-100.o
 
 $(T)ic_invalidate_array_4-200.o: $(srcdir)/config/sh/lib1funcs.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)ic_invalidate_array_4-200.o -DL_ic_invalidate_array -DWAYS=2 -DWAY_SIZE=0x2000 -x assembler-with-cpp $(srcdir)/config/sh/lib1funcs.asm
 $(T)libic_invalidate_array_4-200.a: $(T)ic_invalidate_array_4-200.o $(GCC_PASSES)
-	$(AR_CREATE_FOR_TARGET) $(T)ic_invalidate_array_4-200.a $(T)ic_invalidate_array_4-200.o
+	$(AR_CREATE_FOR_TARGET) $(T)libic_invalidate_array_4-200.a $(T)ic_invalidate_array_4-200.o
 
 $(T)ic_invalidate_array_4a.o: $(srcdir)/config/sh/lib1funcs.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)ic_invalidate_array_4a.o -DL_ic_invalidate_array -D__FORCE_SH4A__ -x assembler-with-cpp $(srcdir)/config/sh/lib1funcs.asm
 $(T)libic_invalidate_array_4a.a: $(T)ic_invalidate_array_4a.o $(GCC_PASSES)
-	$(AR_CREATE_FOR_TARGET) $(T)ic_invalidate_array_4a.a $(T)ic_invalidate_array_4a.o
+	$(AR_CREATE_FOR_TARGET) $(T)libic_invalidate_array_4a.a $(T)ic_invalidate_array_4a.o
 
 # Local Variables:
 # mode: Makefile
