@@ -1,5 +1,8 @@
 2006-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.dg/advance_2.f90: New test.
+	* gfortran.dg/advance_3.f90: New test.
+
 	* gfortran.fortran-torture/execute/equiv_5.f: New test.
 
 2006-03-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
