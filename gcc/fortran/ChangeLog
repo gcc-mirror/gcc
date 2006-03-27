@@ -1,5 +1,9 @@
 2006-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* io.c (check_io_constraints): Don't look at
+	dt->advance->value.charater.string, unless it is a CHARACTER
+	constant.
+
 	* f95-lang.c (gfc_get_alias_set): New function.
 	(LANG_HOOKS_GET_ALIAS_SET): Define.
 
