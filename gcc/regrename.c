@@ -1453,7 +1453,7 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 	rtx op1 = orig_op1;
 	rtx *locI = NULL;
 	rtx *locB = NULL;
-	enum rtx_code index_code;
+	enum rtx_code index_code = SCRATCH;
 
 	if (GET_CODE (op0) == SUBREG)
 	  {

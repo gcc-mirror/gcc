@@ -1,3 +1,8 @@
+2006-03-27  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* regrename.c (replace_oldest_value_addr): Initialize a variable to
+	shut up the compiler.
+
 2006-03-27  J"orn Rennecke <joern.rennecke@st.com>
 
 	* config/sh/t-sh ($(T)libic_invalidate_array_4-100.a): Fix rule
