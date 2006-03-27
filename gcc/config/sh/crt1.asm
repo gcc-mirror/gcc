@@ -688,6 +688,11 @@ __superh_trap_handler:
 	.section .bss
 old_vbr:
 	.long 0
+#ifdef PROFILE
+profiling_enabled:
+	.long 0
+#endif
+
 
 	.section .text
 	.global	start
@@ -764,6 +769,30 @@ set_sr:
 	jsr	@r0
 	nop
 
+#ifdef PROFILE
+	! arrange for exit to call _mcleanup (via stop_profiling)
+	mova    stop_profiling,r0
+	mov.l   atexit_k,r1
+	jsr     @r1
+	mov	r0, r4
+
+	! Call profiler startup code
+	mov.l monstartup_k, r0
+	mov.l start_k, r4
+	mov.l etext_k, r5
+	jsr @r0
+	nop
+
+	! enable profiling trap
+	! until now any trap 33s will have been ignored
+	! This means that all library functions called before this point
+	! (directly or indirectly) may have the profiling trap at the start.
+	! Therefore, only mcount itself may not have the extra header.
+	mov.l	profiling_enabled_k2, r0
+	mov	#1, r1
+	mov.l	r1, @r0
+#endif /* PROFILE */
+
 	! call init
 	mov.l	init_k,r0
 	jsr	@r0
@@ -780,6 +809,32 @@ set_sr:
 	jsr	@r0
 	nop
 	
+		.balign 4
+#ifdef PROFILE
+stop_profiling:
+	# stop mcount counting
+	mov.l	profiling_enabled_k2, r0
+	mov	#0, r1
+	mov.l	r1, @r0
+
+	# call mcleanup
+	mov.l	mcleanup_k, r0
+	jmp	@r0
+	nop
+		
+		.balign 4
+mcleanup_k:
+	.long __mcleanup
+monstartup_k:
+	.long ___monstartup
+profiling_enabled_k2:
+	.long profiling_enabled
+start_k:
+	.long _start
+etext_k:
+	.long __etext
+#endif /* PROFILE */
+
 	.align 2
 #if defined (__SH_FPU_ANY__)
 set_fpscr_k:
@@ -818,10 +873,18 @@ sr_initial_rtos:
 rtos_start_fn:
 	.long ___rtos_profiler_start_timer
 	
+#ifdef PROFILE
+sr_initial_bare:
+	! Privileged mode RB 1 BL 0. Keep BL 0 to allow default trap handlers to work.
+	! For bare machine, we need to enable interrupts to get profiling working
+	.long 0x60000001
+#else
+
 sr_initial_bare:
 	! Privileged mode RB 1 BL 0. Keep BL 0 to allow default trap handlers to work.
 	! Keep interrupts disabled - the application will enable as required.
 	.long 0x600000f1
+#endif
 
 	! supplied for backward compatibility only, in case of linking
 	! code whose main() was compiled with an older version of GCC.
@@ -849,6 +912,92 @@ vbr_start:
 
 	.balign 256
 vbr_100:
+	#ifdef PROFILE
+	! Note on register usage.
+	! we use r0..r3 as scratch in this code. If we are here due to a trapa for profiling
+	! then this is OK as we are just before executing any function code.
+	! The other r4..r7 we save explicityl on the stack
+	! Remaining registers are saved by normal ABI conventions and we assert we do not
+	! use floating point registers.
+	mov.l expevt_k1, r1
+	mov.l @r1, r1
+	mov.l event_mask, r0
+	and r0,r1
+	mov.l trapcode_k, r2
+	cmp/eq r1,r2
+	bt 1f
+	bra handler_100   ! if not a trapa, go to default handler
+	nop
+1:	
+	mov.l trapa_k, r0
+	mov.l @r0, r0
+	shlr2 r0      ! trapa code is shifted by 2.
+	cmp/eq #33, r0
+	bt 2f
+	bra handler_100
+	nop
+2:	
+	
+	! If here then it looks like we have trap #33
+	! Now we need to call mcount with the following convention
+	! Save and restore r4..r7
+	mov.l	r4,@-r15
+	mov.l	r5,@-r15
+	mov.l	r6,@-r15
+	mov.l	r7,@-r15
+	sts.l	pr,@-r15
+
+	! r4 is frompc.
+	! r5 is selfpc
+	! r0 is the branch back address.
+	! The code sequence emitted by gcc for the profiling trap is
+	! .align 2
+	! trapa #33
+	! .align 2
+	! .long lab Where lab is planted by the compiler. This is the address
+	! of a datum that needs to be incremented. 
+	sts pr,  r4     ! frompc
+	stc spc, r5	! selfpc
+	mov #2, r2
+	not r2, r2      ! pattern to align to 4
+	and r2, r5      ! r5 now has aligned address
+!	add #4, r5      ! r5 now has address of address
+	mov r5, r2      ! Remember it.
+!	mov.l @r5, r5   ! r5 has value of lable (lab in above example)
+	add #8, r2
+	ldc r2, spc     ! our return address avoiding address word
+
+	! only call mcount if profiling is enabled
+	mov.l profiling_enabled_k, r0
+	mov.l @r0, r0
+	cmp/eq #0, r0
+	bt 3f
+	! call mcount
+	mov.l mcount_k, r2
+	jsr @r2
+	nop
+3:
+	lds.l @r15+,pr
+	mov.l @r15+,r7
+	mov.l @r15+,r6
+	mov.l @r15+,r5
+	mov.l @r15+,r4
+	rte
+	nop
+	.balign 4
+event_mask:
+	.long 0xfff
+trapcode_k:	
+	.long 0x160
+expevt_k1:
+	.long 0xff000024 ! Address of expevt
+trapa_k:	
+	.long 0xff000020
+mcount_k:
+	.long __call_mcount
+profiling_enabled_k:
+	.long profiling_enabled
+#endif
 	! Non profiling case.
 handler_100:
 	mov.l 2f, r0     ! load the old vbr setting (if any)
@@ -899,13 +1048,12 @@ vbr_300:
 	bra handler
 	nop	
 1:	! there was a previous handler - chain them
-	add #0x7f, r0	 ! 0x7f
-	add #0x7f, r0	 ! 0xfe
-	add #0x7f, r0	 ! 0x17d
-	add #0x7f, r0    ! 0x1fc
-	add #0x7f, r0	 ! 0x27b
-	add #0x7f, r0    ! 0x2fa
-	add #0x6, r0     ! add 0x300 without corrupting another register
+	rotcr r0
+	rotcr r0
+	add #0x7f, r0	 ! 0x1fc
+	add #0x41, r0	 ! 0x300
+	rotcl r0
+	rotcl r0	 ! Add 0x300 without corrupting another register
 	jmp @r0
 	nop
 	.balign 4
@@ -920,15 +1068,13 @@ vbr_400:	! Should be at vbr+0x400
 	! no previous vbr - jump to own generic handler
 	bt handler
 	! there was a previous handler - chain them
-	add #0x7f, r0	 ! 0x7f
-	add #0x7f, r0	 ! 0xfe
-	add #0x7f, r0	 ! 0x17d
-	add #0x7f, r0    ! 0x1fc
-	add #0x7f, r0	 ! 0x27b
-	add #0x7f, r0    ! 0x2fa
-	add #0x7f, r0	 ! 0x379
-	add #0x7f, r0    ! 0x3f8
-	add #0x8, r0     ! add 0x400 without corrupting another register
+	rotcr r0
+	rotcr r0
+	add #0x7f, r0	 ! 0x1fc
+	add #0x7f, r0	 ! 0x3f8
+	add #0x02, r0	 ! 0x400
+	rotcl r0
+	rotcl r0	 ! Add 0x400 without corrupting another register
 	jmp @r0
 	nop
 	.balign 4
@@ -965,17 +1111,13 @@ vbr_500:
 	! no previous vbr - jump to own generic handler
 	bt handler
 	! there was a previous handler - chain them
-	add #0x7f, r0	 ! 0x7f
-	add #0x7f, r0	 ! 0xfe
-	add #0x7f, r0	 ! 0x17d
-	add #0x7f, r0    ! 0x1fc
-	add #0x7f, r0	 ! 0x27b
-	add #0x7f, r0    ! 0x2fa
-	add #0x7f, r0	 ! 0x379
-	add #0x7f, r0    ! 0x3f8
-	add #0x7f, r0	 ! 0x477
-	add #0x7f, r0    ! 0x4f6
-	add #0xa, r0     ! add 0x500 without corrupting another register
+	rotcr r0
+	rotcr r0
+	add #0x7f, r0	 ! 0x1fc
+	add #0x7f, r0	 ! 0x3f8
+	add #0x42, r0	 ! 0x500
+	rotcl r0
+	rotcl r0	 ! Add 0x500 without corrupting another register
 	jmp @r0
 	nop
 	.balign 4
@@ -984,30 +1126,58 @@ vbr_500:
 
 	.balign 256
 vbr_600:
-	mov.l 2f, r0     ! load the old vbr setting (if any)
+#ifdef PROFILE	
+	! Should be at vbr+0x600
+	! Now we are in the land of interrupts so need to save more state. 
+	! Save register state
+	mov.l interrupt_stack_k, r15 ! r15 has been saved to sgr.
+	mov.l	r0,@-r15	
+	mov.l	r1,@-r15
+	mov.l	r2,@-r15
+	mov.l	r3,@-r15
+	mov.l	r4,@-r15
+	mov.l	r5,@-r15
+	mov.l	r6,@-r15
+	mov.l	r7,@-r15
+	sts.l	pr,@-r15
+	! Pass interrupted pc to timer_handler as first parameter (r4).
+	stc    spc, r4
+	mov.l timer_handler_k, r0
+	jsr @r0
+	nop
+	lds.l @r15+,pr
+	mov.l @r15+,r7
+	mov.l @r15+,r6
+	mov.l @r15+,r5
+	mov.l @r15+,r4
+	mov.l @r15+,r3
+	mov.l @r15+,r2
+	mov.l @r15+,r1
+	mov.l @r15+,r0
+	stc sgr, r15    ! Restore r15, destroyed by this sequence. 
+	rte
+	nop
+#else
+	mov.l 2f, r0     ! Load the old vbr setting (if any).
 	mov.l @r0, r0
 	cmp/eq #0, r0
 	! no previous vbr - jump to own handler
 	bt chandler
 	! there was a previous handler - chain them
-	add #0x7f, r0	 ! 0x7f
-	add #0x7f, r0	 ! 0xfe
-	add #0x7f, r0	 ! 0x17d
-	add #0x7f, r0    ! 0x1fc
-	add #0x7f, r0	 ! 0x27b
-	add #0x7f, r0    ! 0x2fa
-	add #0x7f, r0	 ! 0x379
-	add #0x7f, r0    ! 0x3f8
-	add #0x7f, r0	 ! 0x477
-	add #0x7f, r0    ! 0x4f6
-	add #0x7f, r0	 ! 0x575
-	add #0x7f, r0    ! 0x5f4
-	add #0xc, r0     ! add 0x600 without corrupting another register
+	rotcr r0
+	rotcr r0
+	add #0x7f, r0	 ! 0x1fc
+	add #0x7f, r0	 ! 0x3f8
+	add #0x7f, r0	 ! 0x5f4
+	add #0x03, r0	 ! 0x600
+	rotcl r0
+	rotcl r0	 ! Add 0x600 without corrupting another register
 	jmp @r0
 	nop
 	.balign 4
 2:
 	.long old_vbr
+#endif	 /* PROFILE code */
 chandler:
 	mov.l expevt_k, r4
 	mov.l @r4, r4 ! r4 is value of expevt hence making this the return code
@@ -1020,6 +1190,12 @@ limbo:
 	bra limbo
 	nop
 	.balign 4
+#ifdef PROFILE
+interrupt_stack_k:
+	.long __timer_stack	! The high end of the stack
+timer_handler_k:
+	.long __profil_counter
+#endif
 expevt_k:
 	.long 0xff000024 ! Address of expevt
 chandler_k:	

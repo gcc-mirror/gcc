@@ -1,5 +1,5 @@
 EXTRA_MULTILIB_PARTS= crt1.o crti.o crtn.o \
-	crtbegin.o crtend.o crtbeginS.o crtendS.o
+	crtbegin.o crtend.o crtbeginS.o crtendS.o $(IC_EXTRA_PARTS)
 
 # Compile crtbeginS.o and crtendS.o with pic.
 CRTSTUFF_T_CFLAGS_S = -fPIC

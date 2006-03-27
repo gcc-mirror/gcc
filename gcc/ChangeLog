@@ -1,3 +1,52 @@
+2006-03-27  Andrew Stubbs <andrew.stubbs@st.com>
+	    J"orn Rennecke <joern.rennecke@st.com>
+
+	* superh.opt: New file.
+	* sh.c (boardtype, osruntime): Remove.
+	* superh.h (SUBTARGET_OPTIONS): Remove.
+	* config.gcc (sh*-superh-elf): Add sh/superh.opt to extra_options.
+
+	* config.gcc (sh*-*-*): Don't use c-c ranges for tr.  Quote sed
+	arguments with ^ and/or [].
+
+	* config.gcc (sh-*-*): Add quoting to account for quirk of
+	Solaris /bin/sh.
+	Replace == with = in enable_incomplete_targets test.
+
+	* config/sh/superh.h (SUBTARGET_LINK_SPEC): Replace LITTLE_ENDIAN_BIT
+	with MASK_LITTLE_ENDIAN.
+
+	* config.gcc (sh*-superh-elf): Add sh/superh.h to tm_file.
+	* config/sh/sh.opt: Added to some comments.
+	* config/sh/superh.h: Removed some chaff.
+
+	* config/sh/sh.opt: Add m4-[1234]00* options.
+	* config/sh/sh.c (sh_handle_option): Likewise.
+	* config/sh/t-sh (IC_EXTRA_PARTS, EXTRA_MULTILIB_PARTS): Define.
+	(ic_invalidate_array_4-100.o): New rule.
+	($(T)libic_invalidate_array_4-100.a): Likewise.
+	(ic_invalidate_array_4-200.o): Likewise.
+	($(T)libic_invalidate_array_4-200.a): Likewise.
+	(ic_invalidate_array_4a.o): Likewise.
+	($(T)libic_invalidate_array_4a.a): Likewise.
+	* config/sh/t-elf (EXTRA_MULTILIB_PARTS): Add IC_EXTRA_PARTS.
+	* config/sh/embed-elf.h (LIBGCC_SPEC): Add clauses for m4-100*,
+	m4-200*, and m4a*.
+	* config/sh/crt1.asm: Merged in profiling code.
+	* config/sh/superh.h (STARTFILE_SPEC): Override.
+	* config/sh/t-superh: Override EXTRA_MULTILIB_PARTS.
+	Add rules for $(T)crt1-mmu.o, $(T)gcrt1-mmu.o and $(T)gcrt1.o.
+	* config.gcc (sh*-superh-elf): Add t-superh to tmake_file.
+
+	* t-sh (MULTILIB_MATCHES): Add sh4-[1245]00* variants.
+	* config/sh/t-superh: Removed now-redundant MULTILIB_OPTIONS /
+	MULTILIB_DIRNAMES / MULTILIB_MATCHES settings.
+
+	* sh.opt (mpretend-cmove): New option.
+	* sh.h (OPERRIDE_OPTIONS): Switch it off if not TARGET_SH1.
+	* sh.md (movsicc_t_false, movsicc_t_tru): New patterns.
+	(movsicc): Add TARGET_PRETEND_CMOVE code.
+
 2006-03-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_hard_regno_mode_ok, 
