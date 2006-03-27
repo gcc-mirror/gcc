@@ -1,3 +1,10 @@
+2006-03-27  J"orn Rennecke <joern.rennecke@st.com>
+
+	* config/sh/t-sh ($(T)libic_invalidate_array_4-100.a): Fix rule
+	to use lib prefix for target.
+	($(T)libic_invalidate_array_4-200.a): Likewise.
+	($(T)libic_invalidate_array_4a.a): Likewise.
+
 2006-03-27  Andrew Stubbs <andrew.stubbs@st.com>
 	    J"orn Rennecke <joern.rennecke@st.com>
 
