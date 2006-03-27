@@ -1,3 +1,11 @@
+2006-03-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (add_location_or_const_value_attribute): Call
+	tree_add_const_value_attribute if nothing else works.
+	(reference_to_unused): New.
+	(rtl_for_decl_init): Use reference_to_unused to decide whether
+	to output an initializer.
+
 2006-03-27  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/26459
