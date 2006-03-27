@@ -99,6 +99,7 @@ void insert_block (tree);
 static void gfc_clear_binding_stack (void);
 static void gfc_be_parse_file (int);
 static void gfc_expand_function (tree);
+static HOST_WIDE_INT gfc_get_alias_set (tree);
 
 #undef LANG_HOOKS_NAME
 #undef LANG_HOOKS_INIT
@@ -116,6 +117,7 @@ static void gfc_expand_function (tree);
 #undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #undef LANG_HOOKS_CLEAR_BINDING_STACK
+#undef LANG_HOOKS_GET_ALIAS_SET
 
 /* Define lang hooks.  */
 #define LANG_HOOKS_NAME                 "GNU F95"
@@ -134,6 +136,7 @@ static void gfc_expand_function (tree);
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE gfc_signed_or_unsigned_type
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gfc_expand_function
 #define LANG_HOOKS_CLEAR_BINDING_STACK     gfc_clear_binding_stack
+#define LANG_HOOKS_GET_ALIAS_SET	   gfc_get_alias_set
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -680,6 +683,24 @@ gfc_mark_addressable (tree exp)
       default:
 	return true;
       }
+}
+
+/* Return the typed-based alias set for T, which may be an expression
+   or a type.  Return -1 if we don't do anything special.  */
+
+static HOST_WIDE_INT
+gfc_get_alias_set (tree t)
+{
+  tree u;
+
+  /* Permit type-punning when accessing an EQUIVALENCEd variable or
+     mixed type entry master's return value.  */
+  for (u = t; handled_component_p (u); u = TREE_OPERAND (u, 0))
+    if (TREE_CODE (u) == COMPONENT_REF
+	&& TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
+      return 0;
+
+  return -1;
 }
 
 /* press the big red button - garbage (ggc) collection is on */
