@@ -1,5 +1,6 @@
 /* Test to make sure that file name does not appear in the binary. */
-/* { dg-do compile } */
+/* { dg-do compile { target *-*-darwin* } } */
+
 #include <objc/objc.h>
 
 @interface Foo { Class isa; } @end
