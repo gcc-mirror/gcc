@@ -524,18 +524,26 @@ sh_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
       return true;
 
     case OPT_m4:
+    case OPT_m4_100:
+    case OPT_m4_200:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4;
       return true;
 
     case OPT_m4_nofpu:
+    case OPT_m4_400:
+    case OPT_m4_500:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_NOFPU;
       return true;
 
     case OPT_m4_single:
+    case OPT_m4_100_single:
+    case OPT_m4_200_single:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE;
       return true;
 
     case OPT_m4_single_only:
+    case OPT_m4_100_single_only:
+    case OPT_m4_200_single_only:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE_ONLY;
       return true;
 
@@ -10900,12 +10908,5 @@ sh_secondary_reload (bool in_p, rtx x, enum reg_class class,
 }
 
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;
-
-/* This defines the storage for the variable part of a -mboard= option.
-   It is only required when using the sh-superh-elf target */
-#ifdef _SUPERH_H
-const char * boardtype = "7750p2";
-const char * osruntime = "bare";
-#endif
 
 #include "gt-sh.h"

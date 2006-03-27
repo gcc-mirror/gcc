@@ -2141,7 +2141,8 @@ GLOBAL(ic_invalidate):
 #endif /* L_ic_invalidate */
 
 #ifdef L_ic_invalidate_array
-#if defined(__SH4A__)
+#if defined(__SH4A__) || (defined (__FORCE_SH4A__) && (defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || (defined(__SH4_NOFPU__) && !defined(__SH5__))))
+	.global GLOBAL(ic_invalidate_array)
 	/* This is needed when an SH4 dso with trampolines is used on SH4A.  */
 	.global GLOBAL(ic_invalidate_array)
 	FUNC(GLOBAL(ic_invalidate_array))

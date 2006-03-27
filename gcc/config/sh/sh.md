@@ -1180,19 +1180,72 @@
   DONE;
 }")
 
+(define_insn "*movsicc_t_false"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(if_then_else (eq (reg:SI T_REG) (const_int 0))
+		      (match_operand:SI 1 "general_movsrc_operand" "r,I08")
+		      (match_operand:SI 2 "arith_reg_operand" "0,0")))]
+  "TARGET_PRETEND_CMOVE
+   && (arith_reg_operand (operands[1], SImode)
+       || (immediate_operand (operands[1], SImode)
+	   && CONST_OK_FOR_I08 (INTVAL (operands[1]))))"
+  "bt 0f\;mov %1,%0\\n0:"
+  [(set_attr "type" "mt_group,arith") ;; poor approximation
+   (set_attr "length" "4")])
+
+(define_insn "*movsicc_t_true"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(if_then_else (ne (reg:SI T_REG) (const_int 0))
+		      (match_operand:SI 1 "general_movsrc_operand" "r,I08")
+		      (match_operand:SI 2 "arith_reg_operand" "0,0")))]
+  "TARGET_PRETEND_CMOVE
+   && (arith_reg_operand (operands[1], SImode)
+       || (immediate_operand (operands[1], SImode)
+	   && CONST_OK_FOR_I08 (INTVAL (operands[1]))))"
+  "bf 0f\;mov %1,%0\\n0:"
+  [(set_attr "type" "mt_group,arith") ;; poor approximation
+   (set_attr "length" "4")])
+
 (define_expand "movsicc"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
 	(if_then_else:SI (match_operand 1 "comparison_operator" "")
-			 (match_operand:SI 2 "register_operand" "")
-			 (match_operand:SI 3 "register_operand" "")))]
-  "TARGET_SHMEDIA"
+			 (match_operand:SI 2 "arith_reg_or_0_operand" "")
+			 (match_operand:SI 3 "arith_reg_operand" "")))]
+  "TARGET_SHMEDIA || TARGET_PRETEND_CMOVE"
   "
 {
   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
       && GET_MODE (sh_compare_op0) == SImode
+      && (TARGET_SHMEDIA
+	  || (REG_P (sh_compare_op0) && REGNO (sh_compare_op0) == T_REG))
       && sh_compare_op1 == const0_rtx)
     operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]), VOIDmode,
 				  sh_compare_op0, sh_compare_op1);
+  else if (TARGET_PRETEND_CMOVE)
+    {
+      enum rtx_code code = GET_CODE (operands[1]);
+      enum rtx_code new_code = code;
+      rtx tmp;
+
+      if (! currently_expanding_to_rtl)
+	FAIL;
+      switch (code)
+	{
+	case LT: case LE: case LEU: case LTU:
+	  if (GET_MODE_CLASS (GET_MODE (sh_compare_op0)) != MODE_INT)
+	    break;
+	case NE:
+	  new_code = reverse_condition (code);
+	  break;
+	case EQ: case GT: case GE: case GEU: case GTU:
+	  break;
+	default:
+	  FAIL;
+	}
+      tmp = prepare_scc_operands (new_code);
+      operands[1] = gen_rtx_fmt_ee (new_code == code ? NE : EQ, VOIDmode,
+				    tmp, const0_rtx);
+    }
   else
     {
       rtx tmp;

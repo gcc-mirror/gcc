@@ -654,6 +654,8 @@ do {									\
 	else								\
 	  sh_div_strategy = SH_DIV_CALL_DIV1;				\
     }									\
+  if (!TARGET_SH1)							\
+    TARGET_PRETEND_CMOVE = 0;						\
   if (sh_divsi3_libfunc[0])						\
     ; /* User supplied - leave it alone.  */				\
   else if (TARGET_DIVIDE_CALL_FP)					\

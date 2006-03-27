@@ -80,17 +80,51 @@ m4
 Target RejectNegative Mask(SH4) Condition(SUPPORT_SH4)
 Generate SH4 code
 
+m4-100
+Target RejectNegative Condition(SUPPORT_SH4)
+Generate SH4-100 code
+
+m4-200
+Target RejectNegative Condition(SUPPORT_SH4)
+Generate SH4-200 code
+
 m4-nofpu
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
 Generate SH4 FPU-less code
+
+m4-400
+Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
+Generate code for SH4 400 series (MMU/FPU-less)
+;; passes -isa=sh4-nommu-nofpu to the assembler.
+
+m4-500
+Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
+Generate code for SH4 500 series (FPU-less).
+;; passes -isa=sh4-nofpu to the assembler.
 
 m4-single
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE)
 Generate default single-precision SH4 code
 
+m4-100-single
+Target RejectNegative Condition(SUPPORT_SH4_SINGLE)
+Generate default single-precision SH4-100 code
+
+m4-200-single
+Target RejectNegative Condition(SUPPORT_SH4_SINGLE)
+Generate default single-precision SH4-200 code
+
 m4-single-only
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
 Generate only single-precision SH4 code
+
+m4-100-single-only
+Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
+Generate only single-precision SH4-100 code
+
+m4-200-single-only
+Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
+Generate only single-precision SH4-200 code
 
 m4a
 Target RejectNegative Mask(SH4A) Condition(SUPPORT_SH4A)
@@ -232,3 +266,9 @@ Cost to assume for a multiply insn
 musermode
 Target Report RejectNegative Mask(USERMODE)
 Generate library function call to invalidate instruction cache entries after fixing trampoline
+
+;; We might want to enable this by default for TARGET_HARD_SH4, because
+;; zero-offset branches have zero latency.  Needs some benchmarking.
+mpretend-cmove
+Target Var(TARGET_PRETEND_CMOVE)
+Pretend a branch-around-a-move is a conditional move.
