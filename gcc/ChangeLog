@@ -1,3 +1,11 @@
+2006-03-27  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* haifa-sched.c (Copyright): Update date.
+	(try_ready): Change condition to restore non-speculative pattern
+	of the instruction.
+	(process_insn_depend_be_in_spec): Code to keep probability of the
+	speculative dependence non-decreasing.
+
 2006-03-27  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* regrename.c (replace_oldest_value_addr): Initialize a variable to
