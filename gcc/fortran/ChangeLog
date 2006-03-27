@@ -1,3 +1,8 @@
+2006-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.c (gfc_get_alias_set): New function.
+	(LANG_HOOKS_GET_ALIAS_SET): Define.
+
 2006-03-25  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/26816
