@@ -45,7 +45,7 @@ FOREACH_FUNCTION(
 
   minval = atype_max;'
 ,
-`  if (*base < minval)
+`  if (*base < minval || !dest[0])
     {
       minval = *base;
       for (n = 0; n < rank; n++)
@@ -57,11 +57,12 @@ MASKED_FOREACH_FUNCTION(
 
   minval = atype_max;'
 ,
-`  if (*mbase && *base < minval)
+`  if (*mbase && (*base < minval || !dest[0]))
     {
       minval = *base;
       for (n = 0; n < rank; n++)
         dest[n * dstride] = count[n] + 1;
     }')
 
+SCALAR_FOREACH_FUNCTION(`0')
 #endif

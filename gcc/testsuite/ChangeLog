@@ -1,3 +1,19 @@
+2006-03-27  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/20935
+	Backport from mainline
+	* gfortran.dg/scalar_mask_2.f90:  New test case.
+
+2006-03-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25378
+	Backport from mainline
+	* gfortran.fortran-torture/execute/intrinsic_mmloc_3.f90: Expand
+	test to include more permuatations of mask and index.
+	* testsuite/gfortran.dg/scalar_mask_1.f90: Modify last test to
+	respond to F2003 spec. that the position returned for an all false
+	mask && condition is zero.
+
 2006-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/advance_2.f90: New test.

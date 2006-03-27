@@ -11,5 +11,5 @@ program main
   if (maxval (a, .true.) /= 3.0) call abort
   if (maxval (a, .false.) > -1e38) call abort
   if (maxloc (a, 1, .true.) /= 2) call abort
-  if (maxloc (a, 1, .false.) /= 1) call abort
+  if (maxloc (a, 1, .false.) /= 0) call abort ! Change to F2003 requirement.
 end program main

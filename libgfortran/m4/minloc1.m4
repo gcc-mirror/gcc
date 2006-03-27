@@ -43,8 +43,8 @@ include(ifunction.m4)dnl
 ARRAY_FUNCTION(0,
 `  atype_name minval;
   minval = atype_max;
-  result = 1;',
-`  if (*src < minval)
+  result = 0;',
+`  if (*src < minval || !result)
     {
       minval = *src;
       result = (rtype_name)n + 1;
@@ -53,11 +53,13 @@ ARRAY_FUNCTION(0,
 MASKED_ARRAY_FUNCTION(0,
 `  atype_name minval;
   minval = atype_max;
-  result = 1;',
-`  if (*msrc && *src < minval)
+  result = 0;',
+`  if (*msrc && (*src < minval || !result))
     {
       minval = *src;
       result = (rtype_name)n + 1;
     }')
+
+SCALAR_ARRAY_FUNCTION(0)
 
 #endif

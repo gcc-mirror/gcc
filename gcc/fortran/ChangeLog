@@ -1,3 +1,25 @@
+2006-03-27  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/20935
+	Backport from mainline
+	* iresolve.c (gfc_resolve_maxloc):   If mask is scalar,
+	prefix the function name with an "s".  If the mask is scalar
+	or if its kind is smaller than gfc_default_logical_kind,
+	coerce it to default kind.
+	(gfc_resolve_maxval):  Likewise.
+	(gfc_resolve_minloc):  Likewise.
+	(gfc_resolve_minval):  Likewise.
+	(gfc_resolve_product):  Likewise.
+	(gfc_resolve_sum):  Likewise.
+
+2006-03-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25378
+	Backport from mainline
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Set the
+	initial position to zero and modify the condition for updating
+	it, to implement the F2003 requirement for all(mask) is false.
+
 2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/17298
