@@ -1,5 +1,23 @@
 2006-03-27  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
+	* rtl.def (Copyright): Update date.
+	(DEPS_LIST): Change type of the second operand to 'int'.
+	* target.h (Copyright): Update date.
+	(struct gcc_target.speculate_insn): Change type of the second parameter
+	to 'int'.
+	* lists.c (Copyright): Update date.
+	(alloc_DEPS_LIST): Change signature.  Update reference to the second
+	operand of the DEPS_LIST.
+	(copy_DEPS_LIST_list): Update reference	to the second operand of the
+	DEPS_LIST.
+	* rtl.h (Copyright): Update date.
+	(alloc_DEPS_LIST): Update signature.
+	* sched-int.h (Copyright): Update date.
+	(ds_t): Change typedef to 'int'.
+	(DEP_STATUS, BITS_PER_DEP_STATUS): Update.
+
+2006-03-27  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
 	* haifa-sched.c (Copyright): Update date.
 	(try_ready): Change condition to restore non-speculative pattern
 	of the instruction.

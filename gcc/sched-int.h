@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,8 +36,8 @@ extern state_t curr_state;
 /* Forward declaration.  */
 struct ready_list;
 
-/* Type to represent status of a dependence.  A convinient short alias.  */
-typedef HOST_WIDE_INT ds_t;
+/* Type to represent status of a dependence.  */
+typedef int ds_t;
 
 /* Type to represent weakness of speculative dependence.  */
 typedef int dw_t;
@@ -377,10 +377,10 @@ extern regset *glat_start, *glat_end;
    for using to describe instruction's status.  It is set whenever instuction
    has at least one dependence, that cannot be overcome.
    See also: check_dep_status () in sched-deps.c .  */
-#define DEP_STATUS(LINK) XWINT (LINK, 2)
+#define DEP_STATUS(LINK) XINT (LINK, 2)
 
 /* We exclude sign bit.  */
-#define BITS_PER_DEP_STATUS (HOST_BITS_PER_WIDE_INT - 1)
+#define BITS_PER_DEP_STATUS (HOST_BITS_PER_INT - 1)
 
 /* First '4' stands for 3 dep type bits and HARD_DEP bit.
    Second '4' stands for BEGIN_{DATA, CONTROL}, BE_IN_{DATA, CONTROL}
