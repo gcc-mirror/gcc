@@ -1,3 +1,7 @@
+2006-03-28  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	Revert my 2006-03-27 patches.
+
 2006-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_unary) <NOP_EXPR>: Fold (T1)(~(T2)X) as
