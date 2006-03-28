@@ -1,7 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -3056,6 +3055,16 @@ try_ready (rtx next)
 	      || !RECOVERY_BLOCK (next)
 	      || RECOVERY_BLOCK (next) == EXIT_BLOCK_PTR);
   
+  if (*ts == 0 && ORIG_PAT (next) && !RECOVERY_BLOCK (next))
+    /* We should change pattern of every previously speculative 
+       instruction - and we determine if NEXT was speculative by using
+       ORIG_PAT field.  Except one case - simple checks have ORIG_PAT
+       pat too, hence we also check for the RECOVERY_BLOCK.  */
+    {
+      change_pattern (next, ORIG_PAT (next));
+      ORIG_PAT (next) = 0;
+    }
+
   if (*ts & HARD_DEP)
     {
       /* We can't assert (QUEUE_INDEX (next) == QUEUE_NOWHERE) here because
@@ -3065,15 +3074,6 @@ try_ready (rtx next)
       
       change_queue_index (next, QUEUE_NOWHERE);
       return -1;
-    }
-  else if (!(*ts & BEGIN_SPEC) && ORIG_PAT (next) && !RECOVERY_BLOCK (next))
-    /* We should change pattern of every previously speculative 
-       instruction - and we determine if NEXT was speculative by using
-       ORIG_PAT field.  Except one case - simple checks have ORIG_PAT
-       pat too, hence we also check for the RECOVERY_BLOCK.  */
-    {
-      change_pattern (next, ORIG_PAT (next));
-      ORIG_PAT (next) = 0;
     }
 
   if (sched_verbose >= 2)
@@ -3312,30 +3312,8 @@ process_insn_depend_be_in_spec (rtx link, rtx twin, ds_t fs)
 
       ds = DEP_STATUS (link);
 
-      if (/* If we want to create speculative dep.  */
-	  fs
-	  /* And we can do that because this is a true dep.  */
-	  && (ds & DEP_TYPES) == DEP_TRUE)
-	{
-	  gcc_assert (!(ds & BE_IN_SPEC));
-
-	  if (/* If this dep can be overcomed with 'begin speculation'.  */
-	      ds & BEGIN_SPEC)
-	    /* Then we have a choice: keep the dep 'begin speculative'
-	       or transform it into 'be in speculative'.  */
-	    {
-	      if (/* In try_ready we assert that if insn once became ready
-		     it can be removed from the ready (or queue) list only
-		     due to backend decision.  Hence we can't let the
-		     probability of the speculative dep to decrease.  */
-		  dep_weak (ds) <= dep_weak (fs))
-		/* Transform it to be in speculative.  */
-		ds = (ds & ~BEGIN_SPEC) | fs;
-	    }
-	  else
-	    /* Mark the dep as 'be in speculative'.  */
-	    ds |= fs;
-	}
+      if (fs && (ds & DEP_TYPES) == DEP_TRUE)
+	ds = (ds & ~BEGIN_SPEC) | fs;
 
       add_back_forw_dep (consumer, twin, REG_NOTE_KIND (link), ds);
     }

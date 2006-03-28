@@ -2,7 +2,7 @@
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2004,
-   2005, 2006
+   2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -95,8 +95,9 @@ DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", RTX_EXTRA)
 
 /* a linked list of dependencies. 
    The insns are represented in print by their uids. 
-   Operand 2 is the status of a dependence (see sched-int.h for more).  */
-DEF_RTL_EXPR(DEPS_LIST, "deps_list", "uei", RTX_EXTRA)
+   Operand 2 is a degree of speculativeness of the dependence.
+   Operand 3 is a degree of weakness of the dependence.  */
+DEF_RTL_EXPR(DEPS_LIST, "deps_list", "uew", RTX_EXTRA)
 
 /* SEQUENCE appears in the result of a `gen_...' function
    for a DEFINE_EXPAND that wants to make several insns.

@@ -1,6 +1,6 @@
 /* List management for the GCC expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   1999, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -159,7 +159,7 @@ alloc_EXPR_LIST (int kind, rtx val, rtx next)
    node available, we'll use it, otherwise a call to gen_rtx_DEPS_LIST
    is made.  */
 rtx
-alloc_DEPS_LIST (rtx val, rtx next, int ds)
+alloc_DEPS_LIST (rtx val, rtx next, HOST_WIDE_INT ds)
 {
   rtx r;
 
@@ -169,7 +169,7 @@ alloc_DEPS_LIST (rtx val, rtx next, int ds)
       unused_deps_list = XEXP (r, 1);
       XEXP (r, 0) = val;
       XEXP (r, 1) = next;
-      XINT (r, 2) = ds;
+      XWINT (r, 2) = ds;
       PUT_REG_NOTE_KIND (r, VOIDmode);
 
       gcc_assert (GET_CODE (r) == DEPS_LIST);
@@ -257,7 +257,7 @@ copy_DEPS_LIST_list (rtx list)
 
   while (list)
     {
-      *resp = alloc_DEPS_LIST (XEXP (list, 0), 0, XINT (list, 2));
+      *resp = alloc_DEPS_LIST (XEXP (list, 0), 0, XWINT (list, 2));
       PUT_REG_NOTE_KIND (*resp, REG_NOTE_KIND (list));
       resp = &XEXP (*resp, 1);
       list = XEXP (list, 1);
