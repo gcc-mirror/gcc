@@ -2465,7 +2465,7 @@ struct tree_opt_pass pass_phi_only_cprop =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_TREE_CCP,                          /* tv_id */
+  TV_TREE_PHI_CPROP,                    /* tv_id */
   PROP_cfg | PROP_ssa | PROP_alias,     /* properties_required */
   0,                                    /* properties_provided */
   PROP_smt_usage,                       /* properties_destroyed */
