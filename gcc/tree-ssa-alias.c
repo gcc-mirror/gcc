@@ -2853,6 +2853,7 @@ create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
   TREE_PUBLIC  (subvar) = TREE_PUBLIC (var);
   TREE_STATIC (subvar) = TREE_STATIC (var);
   TREE_READONLY (subvar) = TREE_READONLY (var);
+  TREE_ADDRESSABLE (subvar) = TREE_ADDRESSABLE (var);
 
   /* Add the new variable to REFERENCED_VARS.  */
   ann = get_var_ann (subvar);

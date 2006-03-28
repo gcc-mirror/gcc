@@ -1,3 +1,8 @@
+2006-03-28  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (create_sft): Initially inherit TREE_ADDRESSABLE
+	from parent_var.
+
 2006-03-27  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/22524
