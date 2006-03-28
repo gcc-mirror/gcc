@@ -7074,6 +7074,22 @@ fold_unary (enum tree_code code, tree type, tree op0)
 			   TREE_OPERAND (arg0, 1));
 	}
 
+      /* Convert (T1)(~(T2)X) into ~(T1)X if T1 and T2 are integral types
+	 of the same precision, and X is a integer type not narrower than
+	 types T1 or T2, i.e. the cast (T2)X isn't an extension.  */
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (op0) == BIT_NOT_EXPR
+	  && INTEGRAL_TYPE_P (TREE_TYPE (op0))
+	  && (TREE_CODE (TREE_OPERAND (op0, 0)) == NOP_EXPR
+	      || TREE_CODE (TREE_OPERAND (op0, 0)) == CONVERT_EXPR)
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (op0)))
+	{
+	  tem = TREE_OPERAND (TREE_OPERAND (op0, 0), 0);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (tem))
+	      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (tem)))
+	    return fold_build1 (BIT_NOT_EXPR, type, fold_convert (type, tem));
+	}
+
       tem = fold_convert_const (code, type, arg0);
       return tem ? tem : NULL_TREE;
 
