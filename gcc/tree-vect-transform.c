@@ -2769,16 +2769,14 @@ static void
 vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
 {
   unsigned int i;
-  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  struct data_reference *dr;
 
   if (vect_dump && (dump_flags & TDF_DETAILS))
     fprintf (vect_dump, "=== vect_update_inits_of_dr ===");
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-    {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
-      vect_update_init_of_dr (dr, niters);
-    }
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    vect_update_init_of_dr (dr, niters);
 }
 
 

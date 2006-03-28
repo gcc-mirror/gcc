@@ -32,7 +32,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree.h"
 #include "real.h"
 #include "diagnostic.h"
-#include "varray.h"
 #include "cfgloop.h"
 #include "tree-flow.h"
 #include "tree-chrec.h"

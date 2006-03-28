@@ -23,7 +23,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 #include "ggc.h"
-#include "varray.h"
 #include "tree.h"
 #include "lambda.h"
 

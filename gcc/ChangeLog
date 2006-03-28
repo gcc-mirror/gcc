@@ -1,3 +1,40 @@
+2006-03-27  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-loop-linear.c: Don't include varray.h.
+	(gather_interchange_stats, try_interchange_loops,
+	linear_transform_loops): Use VEC instead of VARRAY.
+	* lambda-mat.c: Don't include varray.h.
+	* tree-chrec.c: Same.
+	* lambda-trans.c: Same.
+	* tree-vectorizer.c (new_loop_vec_info, destroy_loop_vec_info): Use
+	VEC instead of VARRAY.
+	* tree-vectorizer.h: Idem.
+	* tree-data-ref.c (dump_data_references,
+	dump_data_dependence_relations, dump_dist_dir_vectors, dump_ddrs,
+	initialize_data_dependence_relation, finalize_ddr_dependent,
+	compute_all_dependences, find_data_references_in_loop,
+	compute_data_dependences_for_loop, analyze_all_data_dependences,
+	free_dependence_relation, free_dependence_relations,
+	free_data_refs): Idem.
+	* tree-data-ref.h (data_reference_p, subscript_p): New.
+	(data_dependence_relation, DDR_SUBSCRIPT, DDR_NUM_SUBSCRIPTS): Use
+	VEC instead of VARRAY.
+	(DDR_SUBSCRIPTS_VECTOR_INIT): Removed.
+	(find_data_references_in_loop, compute_data_dependences_for_loop,
+	dump_ddrs, dump_dist_dir_vectors, dump_data_references,
+	dump_data_dependence_relations, free_dependence_relations,
+	free_data_refs): Adjust declaration.
+	(lambda_transform_legal_p): Move declaration here...
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependences,
+	vect_compute_data_refs_alignment, vect_verify_datarefs_alignment,
+	vect_enhance_data_refs_alignment, vect_analyze_data_ref_accesses,
+	vect_analyze_data_refs): Use VEC instead of VARRAY.
+	* lambda.h (lambda_transform_legal_p): ...from here.
+	* lambda-code.c (lambda_transform_legal_p): Use VEC instead of VARRAY.
+	* tree-vect-transform.c (vect_update_inits_of_drs): Idem.
+	* Makefile.in (tree-loop-linear.o, lambda-mat.o, lambda-trans.o,
+	tree-chrec.o): Don't depend on VARRAY_H.
+
 2006-03-27  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* rtl.def (Copyright): Update date.

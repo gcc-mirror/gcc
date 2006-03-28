@@ -2578,7 +2578,7 @@ perfect_nestify (struct loops *loops,
 bool
 lambda_transform_legal_p (lambda_trans_matrix trans, 
 			  int nb_loops,
-			  varray_type dependence_relations)
+			  VEC (ddr_p, heap) *dependence_relations)
 {
   unsigned int i, j;
   lambda_vector distres;
@@ -2589,8 +2589,7 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
 
   /* When there is an unknown relation in the dependence_relations, we
      know that it is no worth looking at this loop nest: give up.  */
-  ddr = (struct data_dependence_relation *) 
-    VARRAY_GENERIC_PTR (dependence_relations, 0);
+  ddr = VEC_index (ddr_p, dependence_relations, 0);
   if (ddr == NULL)
     return true;
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
@@ -2599,11 +2598,8 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
   distres = lambda_vector_new (nb_loops);
 
   /* For each distance vector in the dependence graph.  */
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (dependence_relations); i++)
+  for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
     {
-      ddr = (struct data_dependence_relation *) 
-	VARRAY_GENERIC_PTR (dependence_relations, i);     
-
       /* Don't care about relations for which we know that there is no
 	 dependence, nor about read-read (aka. output-dependences):
 	 these data accesses can happen in any order.  */

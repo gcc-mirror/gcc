@@ -526,25 +526,26 @@ int_divides_p (int a, int b)
 /* Dump into FILE all the data references from DATAREFS.  */ 
 
 void 
-dump_data_references (FILE *file, 
-		      varray_type datarefs)
+dump_data_references (FILE *file, VEC (data_reference_p, heap) *datarefs)
 {
   unsigned int i;
-  
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-    dump_data_reference (file, VARRAY_GENERIC_PTR (datarefs, i));
+  struct data_reference *dr;
+
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    dump_data_reference (file, dr);
 }
 
-/* Dump into FILE all the dependence relations from DDR.  */ 
+/* Dump into FILE all the dependence relations from DDRS.  */ 
 
 void 
 dump_data_dependence_relations (FILE *file, 
-				varray_type ddr)
+				VEC (ddr_p, heap) *ddrs)
 {
   unsigned int i;
-  
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ddr); i++)
-    dump_data_dependence_relation (file, VARRAY_GENERIC_PTR (ddr, i));
+  struct data_dependence_relation *ddr;
+
+  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+    dump_data_dependence_relation (file, ddr);
 }
 
 /* Dump function for a DATA_REFERENCE structure.  */
@@ -790,52 +791,44 @@ dump_data_dependence_direction (FILE *file,
    considered nest.  */
 
 void 
-dump_dist_dir_vectors (FILE *file, varray_type ddrs)
+dump_dist_dir_vectors (FILE *file, VEC (ddr_p, heap) *ddrs)
 {
   unsigned int i, j;
+  struct data_dependence_relation *ddr;
+  lambda_vector v;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ddrs); i++)
-    {
-      struct data_dependence_relation *ddr = 
-	(struct data_dependence_relation *) 
-	VARRAY_GENERIC_PTR (ddrs, i);
-      if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
-	  && DDR_AFFINE_P (ddr))
-	{
-	  for (j = 0; j < DDR_NUM_DIST_VECTS (ddr); j++)
-	    {
-	      fprintf (file, "DISTANCE_V (");
-	      print_lambda_vector (file, DDR_DIST_VECT (ddr, j),
-				   DDR_NB_LOOPS (ddr));
-	      fprintf (file, ")\n");
-	    }
+  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+    if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE && DDR_AFFINE_P (ddr))
+      {
+	for (j = 0; VEC_iterate (lambda_vector, DDR_DIST_VECTS (ddr), j, v); j++)
+	  {
+	    fprintf (file, "DISTANCE_V (");
+	    print_lambda_vector (file, v, DDR_NB_LOOPS (ddr));
+	    fprintf (file, ")\n");
+	  }
 
-	  for (j = 0; j < DDR_NUM_DIR_VECTS (ddr); j++)
-	    {
-	      fprintf (file, "DIRECTION_V (");
-	      print_direction_vector (file, DDR_DIR_VECT (ddr, j),
-				      DDR_NB_LOOPS (ddr));
-	      fprintf (file, ")\n");
-	    }
-	}
-    }
+	for (j = 0; VEC_iterate (lambda_vector, DDR_DIR_VECTS (ddr), j, v); j++)
+	  {
+	    fprintf (file, "DIRECTION_V (");
+	    print_direction_vector (file, v, DDR_NB_LOOPS (ddr));
+	    fprintf (file, ")\n");
+	  }
+      }
+
   fprintf (file, "\n\n");
 }
 
 /* Dumps the data dependence relations DDRS in FILE.  */
 
 void 
-dump_ddrs (FILE *file, varray_type ddrs)
+dump_ddrs (FILE *file, VEC (ddr_p, heap) *ddrs)
 {
   unsigned int i;
+  struct data_dependence_relation *ddr;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ddrs); i++)
-    {
-      struct data_dependence_relation *ddr = 
-	(struct data_dependence_relation *) 
-	VARRAY_GENERIC_PTR (ddrs, i);
-      dump_data_dependence_relation (file, ddr);
-    }
+  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+    dump_data_dependence_relation (file, ddr);
+
   fprintf (file, "\n\n");
 }
 
@@ -2135,7 +2128,7 @@ initialize_data_dependence_relation (struct data_reference *a,
     
   DDR_AFFINE_P (res) = true;
   DDR_ARE_DEPENDENT (res) = NULL_TREE;
-  DDR_SUBSCRIPTS_VECTOR_INIT (res, DR_NUM_DIMENSIONS (a));
+  DDR_SUBSCRIPTS (res) = VEC_alloc (subscript_p, heap, DR_NUM_DIMENSIONS (a));
   DDR_LOOP_NEST (res) = loop_nest;
   DDR_DIR_VECTS (res) = NULL;
   DDR_DIST_VECTS (res) = NULL;
@@ -2149,9 +2142,9 @@ initialize_data_dependence_relation (struct data_reference *a,
       SUB_CONFLICTS_IN_B (subscript) = chrec_dont_know;
       SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
       SUB_DISTANCE (subscript) = chrec_dont_know;
-      VARRAY_PUSH_GENERIC_PTR (DDR_SUBSCRIPTS (res), subscript);
+      VEC_safe_push (subscript_p, heap, DDR_SUBSCRIPTS (res), subscript);
     }
-  
+
   return res;
 }
 
@@ -2170,7 +2163,7 @@ finalize_ddr_dependent (struct data_dependence_relation *ddr,
     }
 
   DDR_ARE_DEPENDENT (ddr) = chrec;  
-  varray_clear (DDR_SUBSCRIPTS (ddr));
+  VEC_free (subscript_p, heap, DDR_SUBSCRIPTS (ddr));
 }
 
 /* The dependence relation DDR cannot be represented by a distance
@@ -3776,17 +3769,18 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 {
   unsigned int i;
   tree last_conflicts;
+  struct subscript *subscript;
 
-  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
+  for (i = 0; VEC_iterate (subscript_p, DDR_SUBSCRIPTS (ddr), i, subscript);
+       i++)
     {
       tree overlaps_a, overlaps_b;
-      struct subscript *subscript = DDR_SUBSCRIPT (ddr, i);
-      
+
       analyze_overlapping_iterations (DR_ACCESS_FN (dra, i), 
 				      DR_ACCESS_FN (drb, i),
 				      &overlaps_a, &overlaps_b, 
 				      &last_conflicts);
-      
+
       if (chrec_contains_undetermined (overlaps_a)
  	  || chrec_contains_undetermined (overlaps_b))
  	{
@@ -3794,7 +3788,7 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 	  dependence_stats.num_dependence_undetermined++;
 	  return false;
  	}
-      
+
       else if (overlaps_a == chrec_known
  	       || overlaps_b == chrec_known)
  	{
@@ -3802,7 +3796,7 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 	  dependence_stats.num_dependence_independent++;
 	  return false;
  	}
-      
+
       else
  	{
  	  SUB_CONFLICTS_IN_A (subscript) = overlaps_a;
@@ -3916,11 +3910,11 @@ static void
 compute_self_dependence (struct data_dependence_relation *ddr)
 {
   unsigned int i;
+  struct subscript *subscript;
 
-  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
+  for (i = 0; VEC_iterate (subscript_p, DDR_SUBSCRIPTS (ddr), i, subscript);
+       i++)
     {
-      struct subscript *subscript = DDR_SUBSCRIPT (ddr, i);
-      
       /* The accessed index overlaps for each iteration.  */
       SUB_CONFLICTS_IN_A (subscript) = integer_zero_node;
       SUB_CONFLICTS_IN_B (subscript) = integer_zero_node;
@@ -3934,53 +3928,35 @@ compute_self_dependence (struct data_dependence_relation *ddr)
 
 /* Compute in DEPENDENCE_RELATIONS the data dependence graph for all
    the data references in DATAREFS, in the LOOP_NEST.  When
-   COMPUTE_SELF_AND_READ_READ_DEPENDENCES is FALSE, don't compute
-   read-read and self relations.  */
+   COMPUTE_SELF_AND_RR is FALSE, don't compute read-read and self
+   relations.  */
 
 static void 
-compute_all_dependences (varray_type datarefs,
-			 VEC(ddr_p,heap) **dependence_relations,
+compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
+			 VEC (ddr_p, heap) *dependence_relations,
 			 VEC (loop_p, heap) *loop_nest,
-			 bool compute_self_and_read_read_dependences)
+			 bool compute_self_and_rr)
 {
-  unsigned int i, j, N = VARRAY_ACTIVE_SIZE (datarefs);
+  struct data_dependence_relation *ddr;
+  struct data_reference *a, *b;
+  unsigned int i, j;
 
-  /* Note that we specifically skip i == j because it's a self dependence, and
-     use compute_self_dependence below.  */
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, a); i++)
+    for (j = i + 1; VEC_iterate (data_reference_p, datarefs, j, b); j++)
+      if (!DR_IS_READ (a) || !DR_IS_READ (b) || compute_self_and_rr)
+	{
+	  ddr = initialize_data_dependence_relation (a, b, loop_nest);
+	  VEC_safe_push (ddr_p, heap, dependence_relations, ddr);
+	  compute_affine_dependence (ddr);
+	}
 
-  for (i = 0; i < N; i++)
-    for (j = i + 1; j < N; j++)
+  if (compute_self_and_rr)
+    for (i = 0; VEC_iterate (data_reference_p, datarefs, i, a); i++)
       {
-	struct data_reference *a, *b;
-	struct data_dependence_relation *ddr;
-
-	a = VARRAY_GENERIC_PTR (datarefs, i);
-	b = VARRAY_GENERIC_PTR (datarefs, j);
-
-	if (DR_IS_READ (a) && DR_IS_READ (b)
-            && !compute_self_and_read_read_dependences)
-	  continue;
-
-	ddr = initialize_data_dependence_relation (a, b, loop_nest);
-	VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
-	compute_affine_dependence (ddr);
+	ddr = initialize_data_dependence_relation (a, a, loop_nest);
+	VEC_safe_push (ddr_p, heap, dependence_relations, ddr);
+	compute_self_dependence (ddr);
       }
-
-  if (!compute_self_and_read_read_dependences)
-    return;
-
-  /* Compute self dependence relation of each dataref to itself.  */
-  for (i = 0; i < N; i++)
-    {
-      struct data_reference *a, *b;
-      struct data_dependence_relation *ddr;
-
-      a = VARRAY_GENERIC_PTR (datarefs, i);
-      b = VARRAY_GENERIC_PTR (datarefs, i);
-      ddr = initialize_data_dependence_relation (a, b, loop_nest);
-      VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
-      compute_self_dependence (ddr);
-    }
 }
 
 /* Search the data references in LOOP, and record the information into
@@ -3991,7 +3967,8 @@ compute_all_dependences (varray_type datarefs,
    arithmetic as if they were array accesses, etc.  */
 
 tree 
-find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
+find_data_references_in_loop (struct loop *loop,
+			      VEC (data_reference_p, heap) *datarefs)
 {
   basic_block bb, *bbs;
   unsigned int i;
@@ -4035,7 +4012,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 		    dr = create_data_ref (opnd0, stmt, false);
 		    if (dr) 
 		      {
-			VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
+			VEC_safe_push (data_reference_p, heap, datarefs, dr);
 			one_inserted = true;
 		      }
 		  }
@@ -4047,7 +4024,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 		    dr = create_data_ref (opnd1, stmt, true);
 		    if (dr) 
 		      {
-			VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
+			VEC_safe_push (data_reference_p, heap, datarefs, dr);
 			one_inserted = true;
 		      }
 		  }
@@ -4072,7 +4049,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 		      dr = create_data_ref (TREE_VALUE (args), stmt, true);
 		      if (dr)
 			{
-			  VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
+			  VEC_safe_push (data_reference_p, heap, datarefs, dr);
 			  one_inserted = true;
 			}
 		    }
@@ -4103,7 +4080,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 		  DR_OFFSET_MISALIGNMENT (res) = NULL_TREE;
 		  DR_MEMTAG (res) = NULL_TREE;
 		  DR_PTR_INFO (res) = NULL;
-		  VARRAY_PUSH_GENERIC_PTR (*datarefs, res);
+		  VEC_safe_push (data_reference_p, heap, datarefs, res);
 
 		  free (bbs);
 		  return chrec_dont_know;
@@ -4164,20 +4141,17 @@ find_loop_nest (struct loop *loop, VEC (loop_p, heap) *loop_nest)
 }
 
 /* Given a loop nest LOOP, the following vectors are returned:
-   *DATAREFS is initialized to all the array elements contained in this loop, 
-   *DEPENDENCE_RELATIONS contains the relations between the data references.  
+   DATAREFS is initialized to all the array elements contained in this loop, 
+   DEPENDENCE_RELATIONS contains the relations between the data references.  
    Compute read-read and self relations if 
    COMPUTE_SELF_AND_READ_READ_DEPENDENCES is TRUE.  */
 
 void
 compute_data_dependences_for_loop (struct loop *loop, 
 				   bool compute_self_and_read_read_dependences,
-				   varray_type *datarefs,
-				   varray_type *dependence_relations)
+				   VEC (data_reference_p, heap) *datarefs,
+				   VEC (ddr_p, heap) *dependence_relations)
 {
-  unsigned int i;
-  VEC(ddr_p,heap) *allrelations;
-  struct data_dependence_relation *ddr;
   struct loop *loop_nest = loop;
   VEC (loop_p, heap) *vloops = VEC_alloc (loop_p, heap, 3);
 
@@ -4195,20 +4169,11 @@ compute_data_dependences_for_loop (struct loop *loop,
       /* Insert a single relation into dependence_relations:
 	 chrec_dont_know.  */
       ddr = initialize_data_dependence_relation (NULL, NULL, vloops);
-      VARRAY_PUSH_GENERIC_PTR (*dependence_relations, ddr);
+      VEC_safe_push (ddr_p, heap, dependence_relations, ddr);
     }
   else
-    {
-      allrelations = NULL;
-      compute_all_dependences (*datarefs, &allrelations, vloops,
-			       compute_self_and_read_read_dependences);
-			       
-
-      /* FIXME: We copy the contents of allrelations back to a VARRAY
-	 because the vectorizer has not yet been converted to use VECs.  */
-      for (i = 0; VEC_iterate (ddr_p, allrelations, i, ddr); i++)
-	VARRAY_PUSH_GENERIC_PTR (*dependence_relations, ddr);
-    }
+    compute_all_dependences (datarefs, dependence_relations, vloops,
+			     compute_self_and_read_read_dependences);
 
   if (dump_file && (dump_flags & TDF_STATS))
     {
@@ -4285,18 +4250,15 @@ static void
 analyze_all_data_dependences (struct loops *loops)
 {
   unsigned int i;
-  varray_type datarefs;
-  varray_type dependence_relations;
   int nb_data_refs = 10;
-
-  VARRAY_GENERIC_PTR_INIT (datarefs, nb_data_refs, "datarefs");
-  VARRAY_GENERIC_PTR_INIT (dependence_relations, 
-			   nb_data_refs * nb_data_refs,
-			   "dependence_relations");
+  VEC (data_reference_p, heap) *datarefs = 
+    VEC_alloc (data_reference_p, heap, nb_data_refs);
+  VEC (ddr_p, heap) *dependence_relations = 
+    VEC_alloc (ddr_p, heap, nb_data_refs * nb_data_refs);
 
   /* Compute DDs on the whole function.  */
   compute_data_dependences_for_loop (loops->parray[0], false,
-				     &datarefs, &dependence_relations);
+				     datarefs, dependence_relations);
 
   if (dump_file)
     {
@@ -4312,12 +4274,10 @@ analyze_all_data_dependences (struct loops *loops)
 	  unsigned nb_bot_relations = 0;
 	  unsigned nb_basename_differ = 0;
 	  unsigned nb_chrec_relations = 0;
+	  struct data_dependence_relation *ddr;
 
-	  for (i = 0; i < VARRAY_ACTIVE_SIZE (dependence_relations); i++)
+	  for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
 	    {
-	      struct data_dependence_relation *ddr;
-	      ddr = VARRAY_GENERIC_PTR (dependence_relations, i);
-	  
 	      if (chrec_contains_undetermined (DDR_ARE_DEPENDENT (ddr)))
 		nb_top_relations++;
 	  
@@ -4358,7 +4318,8 @@ free_dependence_relation (struct data_dependence_relation *ddr)
     return;
 
   if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE && DDR_SUBSCRIPTS (ddr))
-    varray_clear (DDR_SUBSCRIPTS (ddr));
+    VEC_free (subscript_p, heap, DDR_SUBSCRIPTS (ddr));
+
   free (ddr);
 }
 
@@ -4366,37 +4327,34 @@ free_dependence_relation (struct data_dependence_relation *ddr)
    DEPENDENCE_RELATIONS.  */
 
 void 
-free_dependence_relations (varray_type dependence_relations)
+free_dependence_relations (VEC (ddr_p, heap) *dependence_relations)
 {
   unsigned int i;
-  if (dependence_relations == NULL)
-    return;
+  struct data_dependence_relation *ddr;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (dependence_relations); i++)
-    free_dependence_relation (VARRAY_GENERIC_PTR (dependence_relations, i));
-  varray_clear (dependence_relations);
+  for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
+    free_dependence_relation (ddr);
+
+  VEC_free (ddr_p, heap, dependence_relations);
 }
 
 /* Free the memory used by the data references from DATAREFS.  */
 
 void
-free_data_refs (varray_type datarefs)
+free_data_refs (VEC (data_reference_p, heap) *datarefs)
 {
   unsigned int i;
-  
-  if (datarefs == NULL)
-    return;
+  struct data_reference *dr;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
     {
-      struct data_reference *dr = (struct data_reference *) 
-	VARRAY_GENERIC_PTR (datarefs, i);
-      if (dr)
-	{
-	  DR_FREE_ACCESS_FNS (dr);
-	  free (dr);
-	}
+      if (DR_TYPE(dr) == ARRAY_REF_TYPE)
+	VEC_free (tree, heap, (dr)->object_info.access_fns);
+      else
+	VEC_free (tree, heap, (dr)->first_location.access_fns);
+
+      free (dr);
     }
-  varray_clear (datarefs);
+  VEC_free (data_reference_p, heap, datarefs);
 }
 

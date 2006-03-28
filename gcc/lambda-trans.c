@@ -26,7 +26,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "tree.h"
 #include "target.h"
-#include "varray.h"
 #include "lambda.h"
 
 /* Allocate a new transformation matrix.  */

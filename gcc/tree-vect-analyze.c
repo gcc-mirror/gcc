@@ -679,18 +679,15 @@ static bool
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
 {
   unsigned int i;
-  varray_type ddrs = LOOP_VINFO_DDRS (loop_vinfo);
+  VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
+  struct data_dependence_relation *ddr;
 
   if (vect_print_dump_info (REPORT_DETAILS)) 
     fprintf (vect_dump, "=== vect_analyze_dependences ===");
      
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ddrs); i++)
-    {
-      struct data_dependence_relation *ddr = VARRAY_GENERIC_PTR (ddrs, i);
-     
-      if (vect_analyze_data_ref_dependence (ddr, loop_vinfo))
-        return false;
-    }
+  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo))
+      return false;
 
   return true;
 }
@@ -812,15 +809,13 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 static bool
 vect_compute_data_refs_alignment (loop_vec_info loop_vinfo)
 {
-  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  struct data_reference *dr;
   unsigned int i;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-    {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
-      if (!vect_compute_data_ref_alignment (dr))
-	return false;
-    }
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    if (!vect_compute_data_ref_alignment (dr))
+      return false;
 
   return true;
 }
@@ -884,13 +879,13 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
 static bool
 vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
 {
-  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  struct data_reference *dr;
   enum dr_alignment_support supportable_dr_alignment;
   unsigned int i;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
     {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
       supportable_dr_alignment = vect_supportable_dr_alignment (dr);
       if (!supportable_dr_alignment)
         {
@@ -1007,7 +1002,7 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
 static bool
 vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 {
-  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   enum dr_alignment_support supportable_dr_alignment;
   struct data_reference *dr0 = NULL;
   struct data_reference *dr;
@@ -1055,16 +1050,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
      TODO: Use a cost model.  */
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-    {
-      dr = VARRAY_GENERIC_PTR (datarefs, i);
-      if (!DR_IS_READ (dr) && !aligned_access_p (dr))
-        {
-          dr0 = dr;
-          do_peeling = true;
-          break;
-        }
-    }
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    if (!DR_IS_READ (dr) && !aligned_access_p (dr))
+      {
+	dr0 = dr;
+	do_peeling = true;
+	break;
+      }
 
   /* Often peeling for alignment will require peeling for loop-bound, which in 
      turn requires that we know how to adjust the loop ivs after the loop.  */
@@ -1088,13 +1080,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         }
 
       /* Ensure that all data refs can be vectorized after the peel.  */
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+      for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
         {
           int save_misalignment;
 
-	  dr = VARRAY_GENERIC_PTR (datarefs, i);
 	  if (dr == dr0)
 	    continue;
+
 	  save_misalignment = DR_MISALIGNMENT (dr);
 	  vect_update_misalignment_for_peel (dr, dr0, npeel);
 	  supportable_dr_alignment = vect_supportable_dr_alignment (dr);
@@ -1116,13 +1108,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
              by the peeling factor times the element size of DR_i (MOD the
              vectorization factor times the size).  Otherwise, the
              misalignment of DR_i must be set to unknown.  */
-	  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-	    {
-	      dr = VARRAY_GENERIC_PTR (datarefs, i);
-	      if (dr == dr0)
-	        continue;
+	  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+	    if (dr != dr0)
 	      vect_update_misalignment_for_peel (dr, dr0, npeel);
-	    }
 
           LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0;
           LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = DR_MISALIGNMENT (dr0);
@@ -1154,10 +1142,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   if (do_versioning)
     {
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+      for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
         {
-          dr = VARRAY_GENERIC_PTR (datarefs, i);
-
           if (aligned_access_p (dr))
             continue;
 
@@ -1303,21 +1289,19 @@ static bool
 vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo)
 {
   unsigned int i;
-  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  struct data_reference *dr;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_data_ref_accesses ===");
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-    {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
-      if (!vect_analyze_data_ref_access (dr))
-	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-	    fprintf (vect_dump, "not vectorized: complicated access pattern.");
-	  return false;
-	}
-    }
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    if (!vect_analyze_data_ref_access (dr))
+      {
+	if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	  fprintf (vect_dump, "not vectorized: complicated access pattern.");
+	return false;
+      }
 
   return true;
 }
@@ -1342,22 +1326,23 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned int i;
-  varray_type datarefs;
+  VEC (data_reference_p, heap) *datarefs;
+  struct data_reference *dr;
   tree scalar_type;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_data_refs ===");
 
   compute_data_dependences_for_loop (loop, false,
-                                     &(LOOP_VINFO_DATAREFS (loop_vinfo)),
-                                     &(LOOP_VINFO_DDRS (loop_vinfo)));
+                                     LOOP_VINFO_DATAREFS (loop_vinfo),
+                                     LOOP_VINFO_DDRS (loop_vinfo));
 
   /* Go through the data-refs, check that the analysis succeeded. Update pointer
      from stmt_vec_info struct to DR and vectype.  */
   datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
     {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
       tree stmt;
       stmt_vec_info stmt_info;
    
