@@ -266,6 +266,26 @@
 	(generic64_cost): Likewise.
 	(generic32_cost): Likewise.
 
+2006-03-24  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr-protos.h (extra_constraint): Delete.
+	(extra_constraint_Q): New declaration.
+	* config/avr/constraints.md: New file.
+	* config/avr/avr.md: Include it.
+	(REG_X, REG_Y, REG_Z, REG_W): New constants.
+	(TMP_REGNO, ZERO_REGNO): Likewise.
+	(UNSPEC_STRLEN, UNSPEC_INDEX_JMP): Likewise.
+	* config/avr/avr.c (avr_reg_class_from_letter): Delete.
+	(extra_constraint): Delete.
+	(extra_constraint_Q): Test for memory constraint 'Q'.
+	* config/avr/avr.h (REG_X,REG_Y,REG_Z,REG_W): Delete.
+	(REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_LETTER_P): Delete.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT): Delete.
+	(TMP_REGNO): Delete.
+	(ZERO_REGNO): Delete.
+
 2006-03-24  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (propagate_rhs_into_lhs): Don't call update_stmt
