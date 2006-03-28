@@ -4834,9 +4834,13 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
         }
     }
 
-  /* Ensure that derived type formal arguments of a public procedure
-     are not of a private type.  */
-  if (gfc_check_access(sym->attr.access, sym->ns->default_access))
+  /* Ensure that derived type for are not of a private type.  Internal
+     module procedures are excluded by 2.2.3.3 - ie. they are not
+     externally accessible and can access all the objects accesible in
+     the host. */
+  if (!(sym->ns->parent
+	    && sym->ns->parent->proc_name->attr.flavor == FL_MODULE)
+	&& gfc_check_access(sym->attr.access, sym->ns->default_access))
     {
       for (arg = sym->formal; arg; arg = arg->next)
 	{

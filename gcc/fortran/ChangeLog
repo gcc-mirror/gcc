@@ -1,3 +1,9 @@
+2006-03-28 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/26779
+	*resolve.c (resolve_fl_procedure): Do not check the access of
+	derived types for internal procedures.
+
 2006-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* io.c (check_io_constraints): Don't look at
