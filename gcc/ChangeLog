@@ -1,3 +1,8 @@
+2006-03-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (udivsi3_i4_int): Clobber MACH_REG and MACL_REG.
+	(divsi3_i4_int): Likewise.
+
 2006-03-28  Roger Sayle   <roger@eyesopen.com>
 
 	* expr.c (emit_group_store): Only create a new pseudo reg if the
