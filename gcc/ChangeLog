@@ -1,3 +1,8 @@
+2006-03-28  Jeff Law  <law@redhat.com>
+
+	* timevar.def (TV_TREE_PHI_CPROP): New timevar.
+	* tree-ssa-dom.c (pass_phi_only_cprop): Use it.
+
 2006-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_binary) <BIT_XOR_EXPR>: Fold (X & Y) ^ Y as
