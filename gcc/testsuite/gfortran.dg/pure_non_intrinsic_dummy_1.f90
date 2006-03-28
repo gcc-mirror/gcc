@@ -19,3 +19,5 @@ INTEGER FUNCTION SUB(XX)
   INTEGER :: XX
   SUB=XX()
 END
+
+! { dg-final { cleanup-modules "TT" } }

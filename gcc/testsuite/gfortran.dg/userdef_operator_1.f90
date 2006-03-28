@@ -33,3 +33,4 @@ program opshape
 
 end program opshape
 
+! { dg-final { cleanup-modules "geometry" } }

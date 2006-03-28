@@ -83,3 +83,4 @@ contains
   end subroutine foo
 END
 
+! { dg-final { cleanup-modules "global" } }

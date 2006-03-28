@@ -17,3 +17,4 @@ program d
   if (v.ne.u) call abort ()
 end program d
 
+! { dg-final { cleanup-modules "a" } }

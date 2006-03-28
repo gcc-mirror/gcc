@@ -34,3 +34,4 @@
     CALL TEST(x)         ! { dg-error "Type/rank mismatch in argument" }
   END
 
+! { dg-final { cleanup-modules "T1 T2" } }

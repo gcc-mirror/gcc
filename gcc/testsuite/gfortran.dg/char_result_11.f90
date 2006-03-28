@@ -113,3 +113,5 @@ program test
     print *, str
 
 end program test
+
+! { dg-final { cleanup-modules "cutils" } }

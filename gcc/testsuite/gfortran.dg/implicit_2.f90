@@ -46,3 +46,5 @@ subroutine bar()
   v%i = 42
 end subroutine
 end module
+
+! { dg-final { cleanup-modules "implicit_2" } }

@@ -27,3 +27,5 @@ CONTAINS
   END FUNCTION Compare_Float_Single
 
 END MODULE Compare_Float_Numbers
+
+! { dg-final { cleanup-modules "Compare_Float_Numbers" } }

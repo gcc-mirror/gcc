@@ -29,3 +29,5 @@ program namelist_use
 
   close (10)
 end program namelist_use
+
+! { dg-final { cleanup-modules "global" } }

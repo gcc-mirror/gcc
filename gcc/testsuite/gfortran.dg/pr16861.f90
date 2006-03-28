@@ -30,3 +30,5 @@ end subroutine quus
 program test
   call quus
 end program test
+
+! { dg-final { cleanup-modules "foo bar" } }

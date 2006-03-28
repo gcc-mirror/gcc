@@ -9,3 +9,5 @@ CONTAINS
     POINTER  :: LL ! { dg-error " POINTER attribute conflicts with ELEMENTAL attribute" }
   END FUNCTION LL
 END MODULE Test
+
+! { dg-final { cleanup-modules "Test" } }

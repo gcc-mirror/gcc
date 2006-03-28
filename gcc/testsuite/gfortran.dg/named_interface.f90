@@ -7,3 +7,5 @@ module snafu
     end subroutine really_snafu
   end interface foo
 end module snafu
+
+! { dg-final { cleanup-modules "snafu" } }

@@ -23,4 +23,4 @@ program module_equiv
   call foo ()
 end program module_equiv
 
-
+! { dg-final { cleanup-modules "test_equiv" } }

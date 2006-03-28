@@ -17,3 +17,5 @@ end module
 subroutine BAZ(X)
   use FOO
 end subroutine
+
+! { dg-final { cleanup-modules "FOO" } }

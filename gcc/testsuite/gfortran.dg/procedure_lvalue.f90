@@ -17,3 +17,5 @@ subroutine r
   b = 1.       ! { dg-error "l-value since it is a procedure" }
   y = a(1.)
 end subroutine r
+
+! { dg-final { cleanup-modules "t" } }

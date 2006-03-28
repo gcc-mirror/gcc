@@ -28,3 +28,5 @@ contains
   data foobar /0/       ! { dg-error "conflicts with FUNCTION" }
   end function foobar
 end
+
+! { dg-final { cleanup-modules "global" } }

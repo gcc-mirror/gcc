@@ -11,3 +11,4 @@ module foo
 
 end
 
+! { dg-final { cleanup-modules "foo" } }
