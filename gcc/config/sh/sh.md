@@ -1798,6 +1798,8 @@
    (clobber (reg:SI T_REG))
    (clobber (reg:SI R1_REG))
    (clobber (reg:SI PR_REG))
+   (clobber (reg:SI MACH_REG))
+   (clobber (reg:SI MACL_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
   "TARGET_SH1"
   "jsr	@%1%#"
@@ -2052,6 +2054,8 @@
    (clobber (reg:SI T_REG))
    (clobber (reg:SI PR_REG))
    (clobber (reg:SI R1_REG))
+   (clobber (reg:SI MACH_REG))
+   (clobber (reg:SI MACL_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
   "TARGET_SH1"
   "jsr	@%1%#"
