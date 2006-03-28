@@ -2169,6 +2169,21 @@ public final class Character implements Serializable, Comparable
   private static native char readChar(char ch);
 
   /**
+   * Grabs an attribute offset from the Unicode attribute database. The lower
+   * 5 bits are the character type, the next 2 bits are flags, and the top
+   * 9 bits are the offset into the attribute tables. Note that the top 9
+   * bits are meaningless in this context; they are useful only in the native
+   * code.
+   *
+   * @param codePoint the character to look up
+   * @return the character's attribute offset and type
+   * @see #TYPE_MASK
+   * @see #NO_BREAK_MASK
+   * @see #MIRROR_MASK
+   */
+  private static native char readCodePoint(int codePoint);
+
+  /**
    * Wraps up a character.
    *
    * @param value the character to wrap
@@ -2257,6 +2272,26 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character is a Unicode lowercase letter. For example,
+   * <code>'a'</code> is lowercase.  Unlike isLowerCase(char), this method
+   * supports supplementary Unicode code points.
+   * <br>
+   * lowercase = [Ll]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is a Unicode lowercase letter, else false
+   * @see #isUpperCase(int)
+   * @see #isTitleCase(int)
+   * @see #toLowerCase(int)
+   * @see #getType(int)
+   * @since 1.5
+   */
+  public static boolean isLowerCase(int codePoint)
+  {
+    return getType(codePoint) == LOWERCASE_LETTER;
+  }
+
+  /**
    * Determines if a character is a Unicode uppercase letter. For example,
    * <code>'A'</code> is uppercase.
    * <br>
@@ -2272,6 +2307,26 @@ public final class Character implements Serializable, Comparable
   public static boolean isUpperCase(char ch)
   {
     return getType(ch) == UPPERCASE_LETTER;
+  }
+
+  /**
+   * Determines if a character is a Unicode uppercase letter. For example,
+   * <code>'A'</code> is uppercase.  Unlike isUpperCase(char), this method
+   * supports supplementary Unicode code points.
+   * <br>
+   * uppercase = [Lu]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is a Unicode uppercase letter, else false
+   * @see #isLowerCase(int)
+   * @see #isTitleCase(int)
+   * @see #toUpperCase(int)
+   * @see #getType(int)
+   * @since 1.5
+   */
+  public static boolean isUpperCase(int codePoint)
+  {
+    return getType(codePoint) == UPPERCASE_LETTER;
   }
 
   /**
@@ -2293,6 +2348,27 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character is a Unicode titlecase letter. For example,
+   * the character "Lj" (Latin capital L with small letter j) is titlecase.
+   * Unlike isTitleCase(char), this method supports supplementary Unicode
+   * code points.
+   * <br>
+   * titlecase = [Lt]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is a Unicode titlecase letter, else false
+   * @see #isLowerCase(int)
+   * @see #isUpperCase(int)
+   * @see #toTitleCase(int)
+   * @see #getType(int)
+   * @since 1.5
+   */
+  public static boolean isTitleCase(int codePoint)
+  {
+    return getType(codePoint) == TITLECASE_LETTER;
+  }
+
+  /**
    * Determines if a character is a Unicode decimal digit. For example,
    * <code>'0'</code> is a digit.
    * <br>
@@ -2307,6 +2383,25 @@ public final class Character implements Serializable, Comparable
   public static boolean isDigit(char ch)
   {
     return getType(ch) == DECIMAL_DIGIT_NUMBER;
+  }
+
+  /**
+   * Determines if a character is a Unicode decimal digit. For example,
+   * <code>'0'</code> is a digit.  Unlike isDigit(char), this method
+   * supports supplementary Unicode code points.
+   * <br>
+   * Unicode decimal digit = [Nd]
+   *
+   * @param codePoint character to test
+   * @return true if ccodePoint is a Unicode decimal digit, else false
+   * @see #digit(int, int)
+   * @see #forDigit(int, int)
+   * @see #getType(int)
+   * @since 1.5
+   */
+  public static boolean isDigit(int codePoint)
+  {
+    return getType(codePoint) == DECIMAL_DIGIT_NUMBER;
   }
 
   /**
@@ -2330,6 +2425,28 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character is part of the Unicode Standard. This is an
+   * evolving standard, but covers every character in the data file.  Unlike
+   * isDefined(char), this method supports supplementary Unicode code points.
+   * <br>
+   * defined = not [Cn]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is a Unicode character, else false
+   * @see #isDigit(int)
+   * @see #isLetter(int)
+   * @see #isLetterOrDigit(int)
+   * @see #isLowerCase(int)
+   * @see #isTitleCase(int)
+   * @see #isUpperCase(int)
+   * @since 1.5
+   */
+  public static boolean isDefined(int codePoint)
+  {
+    return getType(codePoint) != UNASSIGNED;
+  }
+
+  /**
    * Determines if a character is a Unicode letter. Not all letters have case,
    * so this may return true when isLowerCase and isUpperCase return false.
    * <br>
@@ -2350,6 +2467,37 @@ public final class Character implements Serializable, Comparable
   public static boolean isLetter(char ch)
   {
     return ((1 << getType(ch))
+            & ((1 << UPPERCASE_LETTER)
+               | (1 << LOWERCASE_LETTER)
+               | (1 << TITLECASE_LETTER)
+               | (1 << MODIFIER_LETTER)
+               | (1 << OTHER_LETTER))) != 0;
+  }
+
+  /**
+   * Determines if a character is a Unicode letter. Not all letters have case,
+   * so this may return true when isLowerCase and isUpperCase return false.
+   * Unlike isLetter(char), this method supports supplementary Unicode code
+   * points.
+   * <br>
+   * letter = [Lu]|[Ll]|[Lt]|[Lm]|[Lo]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is a Unicode letter, else false
+   * @see #isDigit(int)
+   * @see #isJavaIdentifierStart(int)
+   * @see #isJavaLetter(int)
+   * @see #isJavaLetterOrDigit(int)
+   * @see #isLetterOrDigit(int)
+   * @see #isLowerCase(int)
+   * @see #isTitleCase(int)
+   * @see #isUnicodeIdentifierStart(int)
+   * @see #isUpperCase(int)
+   * @since 1.5
+   */
+  public static boolean isLetter(int codePoint)
+  {
+    return ((1 << getType(codePoint))
             & ((1 << UPPERCASE_LETTER)
                | (1 << LOWERCASE_LETTER)
                | (1 << TITLECASE_LETTER)
@@ -2384,6 +2532,34 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character is a Unicode letter or a Unicode digit. This
+   * is the combination of isLetter and isDigit.  Unlike isLetterOrDigit(char),
+   * this method supports supplementary Unicode code points.
+   * <br>
+   * letter or digit = [Lu]|[Ll]|[Lt]|[Lm]|[Lo]|[Nd]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is a Unicode letter or a Unicode digit, else false
+   * @see #isDigit(int)
+   * @see #isJavaIdentifierPart(int)
+   * @see #isJavaLetter(int)
+   * @see #isJavaLetterOrDigit(int)
+   * @see #isLetter(int)
+   * @see #isUnicodeIdentifierPart(int)
+   * @since 1.5
+   */
+  public static boolean isLetterOrDigit(int codePoint)
+  {
+    return ((1 << getType(codePoint)
+            & ((1 << UPPERCASE_LETTER)
+               | (1 << LOWERCASE_LETTER)
+               | (1 << TITLECASE_LETTER)
+               | (1 << MODIFIER_LETTER)
+               | (1 << OTHER_LETTER)
+               | (1 << DECIMAL_DIGIT_NUMBER))) != 0);
+  }
+
+  /**
    * Determines if a character can start a Java identifier. This is the
    * combination of isLetter, any character where getType returns
    * LETTER_NUMBER, currency symbols (like '$'), and connecting punctuation
@@ -2402,6 +2578,35 @@ public final class Character implements Serializable, Comparable
   public static boolean isJavaLetter(char ch)
   {
     return isJavaIdentifierStart(ch);
+  }
+
+  /**
+   * Determines if a character can start a Java identifier. This is the
+   * combination of isLetter, any character where getType returns
+   * LETTER_NUMBER, currency symbols (like '$'), and connecting punctuation
+   * (like '_'). Unlike isJavaIdentifierStart(char), this method supports
+   * supplementary Unicode code points.
+   * <br>
+   * Java identifier start = [Lu]|[Ll]|[Lt]|[Lm]|[Lo]|[Nl]|[Sc]|[Pc]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint can start a Java identifier, else false
+   * @see #isJavaIdentifierPart(int)
+   * @see #isLetter(int)
+   * @see #isUnicodeIdentifierStart(int)
+   * @since 1.5
+   */
+  public static boolean isJavaIdentifierStart(int codePoint)
+  {
+    return ((1 << getType(codePoint))
+            & ((1 << UPPERCASE_LETTER)
+               | (1 << LOWERCASE_LETTER)
+               | (1 << TITLECASE_LETTER)
+               | (1 << MODIFIER_LETTER)
+               | (1 << OTHER_LETTER)
+               | (1 << LETTER_NUMBER)
+               | (1 << CURRENCY_SYMBOL)
+               | (1 << CONNECTOR_PUNCTUATION))) != 0;
   }
 
   /**
@@ -2494,6 +2699,45 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character can follow the first letter in
+   * a Java identifier.  This is the combination of isJavaLetter (isLetter,
+   * type of LETTER_NUMBER, currency, connecting punctuation) and digit,
+   * numeric letter (like Roman numerals), combining marks, non-spacing marks,
+   * or isIdentifierIgnorable. Unlike isJavaIdentifierPart(char), this method
+   * supports supplementary Unicode code points.
+   * <br>
+   * Java identifier extender =
+   *   [Lu]|[Ll]|[Lt]|[Lm]|[Lo]|[Nl]|[Sc]|[Pc]|[Mn]|[Mc]|[Nd]|[Cf]
+   *   |U+0000-U+0008|U+000E-U+001B|U+007F-U+009F
+   *
+   * @param codePoint character to test
+   * @return true if codePoint can follow the first letter in a Java identifier
+   * @see #isIdentifierIgnorable(int)
+   * @see #isJavaIdentifierStart(int)
+   * @see #isLetterOrDigit(int)
+   * @see #isUnicodeIdentifierPart(int)
+   * @since 1.5
+   */
+  public static boolean isJavaIdentifierPart(int codePoint)
+  {
+    int category = getType(codePoint);
+    return ((1 << category)
+            & ((1 << UPPERCASE_LETTER)
+               | (1 << LOWERCASE_LETTER)
+               | (1 << TITLECASE_LETTER)
+               | (1 << MODIFIER_LETTER)
+               | (1 << OTHER_LETTER)
+               | (1 << NON_SPACING_MARK)
+               | (1 << COMBINING_SPACING_MARK)
+               | (1 << DECIMAL_DIGIT_NUMBER)
+               | (1 << LETTER_NUMBER)
+               | (1 << CURRENCY_SYMBOL)
+               | (1 << CONNECTOR_PUNCTUATION)
+               | (1 << FORMAT))) != 0
+      || (category == CONTROL && isIdentifierIgnorable(codePoint));
+  }
+
+  /**
    * Determines if a character can start a Unicode identifier.  Only
    * letters can start a Unicode identifier, but this includes characters
    * in LETTER_NUMBER.
@@ -2510,6 +2754,32 @@ public final class Character implements Serializable, Comparable
   public static boolean isUnicodeIdentifierStart(char ch)
   {
     return ((1 << getType(ch))
+            & ((1 << UPPERCASE_LETTER)
+               | (1 << LOWERCASE_LETTER)
+               | (1 << TITLECASE_LETTER)
+               | (1 << MODIFIER_LETTER)
+               | (1 << OTHER_LETTER)
+               | (1 << LETTER_NUMBER))) != 0;
+  }
+
+  /**
+   * Determines if a character can start a Unicode identifier.  Only
+   * letters can start a Unicode identifier, but this includes characters
+   * in LETTER_NUMBER.  Unlike isUnicodeIdentifierStart(char), this method
+   * supports supplementary Unicode code points.
+   * <br>
+   * Unicode identifier start = [Lu]|[Ll]|[Lt]|[Lm]|[Lo]|[Nl]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint can start a Unicode identifier, else false
+   * @see #isJavaIdentifierStart(int)
+   * @see #isLetter(int)
+   * @see #isUnicodeIdentifierPart(int)
+   * @since 1.5
+   */
+  public static boolean isUnicodeIdentifierStart(int codePoint)
+  {
+    return ((1 << getType(codePoint))
             & ((1 << UPPERCASE_LETTER)
                | (1 << LOWERCASE_LETTER)
                | (1 << TITLECASE_LETTER)
@@ -2555,6 +2825,44 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character can follow the first letter in
+   * a Unicode identifier. This includes letters, connecting punctuation,
+   * digits, numeric letters, combining marks, non-spacing marks, and
+   * isIdentifierIgnorable.  Unlike isUnicodeIdentifierPart(char), this method
+   * supports supplementary Unicode code points.
+   * <br>
+   * Unicode identifier extender =
+   *   [Lu]|[Ll]|[Lt]|[Lm]|[Lo]|[Nl]|[Mn]|[Mc]|[Nd]|[Pc]|[Cf]|
+   *   |U+0000-U+0008|U+000E-U+001B|U+007F-U+009F
+   *
+   * @param codePoint character to test
+   * @return true if codePoint can follow the first letter in a Unicode 
+   *         identifier
+   * @see #isIdentifierIgnorable(int)
+   * @see #isJavaIdentifierPart(int)
+   * @see #isLetterOrDigit(int)
+   * @see #isUnicodeIdentifierStart(int)
+   * @since 1.5
+   */
+  public static boolean isUnicodeIdentifierPart(int codePoint)
+  {
+    int category = getType(codePoint);
+    return ((1 << category)
+            & ((1 << UPPERCASE_LETTER)
+               | (1 << LOWERCASE_LETTER)
+               | (1 << TITLECASE_LETTER)
+               | (1 << MODIFIER_LETTER)
+               | (1 << OTHER_LETTER)
+               | (1 << NON_SPACING_MARK)
+               | (1 << COMBINING_SPACING_MARK)
+               | (1 << DECIMAL_DIGIT_NUMBER)
+               | (1 << LETTER_NUMBER)
+               | (1 << CONNECTOR_PUNCTUATION)
+               | (1 << FORMAT))) != 0
+      || (category == CONTROL && isIdentifierIgnorable(codePoint));
+  }
+
+  /**
    * Determines if a character is ignorable in a Unicode identifier. This
    * includes the non-whitespace ISO control characters (<code>'\u0000'</code>
    * through <code>'\u0008'</code>, <code>'\u000E'</code> through
@@ -2578,6 +2886,32 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character is ignorable in a Unicode identifier. This
+   * includes the non-whitespace ISO control characters (<code>'\u0000'</code>
+   * through <code>'\u0008'</code>, <code>'\u000E'</code> through
+   * <code>'\u001B'</code>, and <code>'\u007F'</code> through
+   * <code>'\u009F'</code>), and FORMAT characters.  Unlike 
+   * isIdentifierIgnorable(char), this method supports supplementary Unicode
+   * code points.
+   * <br>
+   * Unicode identifier ignorable = [Cf]|U+0000-U+0008|U+000E-U+001B
+   *    |U+007F-U+009F
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is ignorable in a Unicode or Java identifier
+   * @see #isJavaIdentifierPart(int)
+   * @see #isUnicodeIdentifierPart(int)
+   * @since 1.5
+   */
+  public static boolean isIdentifierIgnorable(int codePoint)
+  {
+    return ((codePoint >= 0 && codePoint <= 0x0008)
+        || (codePoint >= 0x000E && codePoint <= 0x001B)
+        || (codePoint >= 0x007F && codePoint <= 0x009F)
+            || getType(codePoint) == FORMAT);
+  }
+
+  /**
    * Converts a Unicode character into its lowercase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
    * Note that isLowerCase(toLowerCase(ch)) does not always return true.
@@ -2591,6 +2925,24 @@ public final class Character implements Serializable, Comparable
    * @see #toUpperCase(char)
    */
   public static native char toLowerCase(char ch);
+
+  /**
+   * Converts a Unicode character into its lowercase equivalent mapping.
+   * If a mapping does not exist, then the character passed is returned.
+   * Note that isLowerCase(toLowerCase(codePoint)) does not always return true.
+   * Unlike toLowerCase(char), this method supports supplementary Unicode
+   * code points.
+   *
+   * @param codePoint character to convert to lowercase
+   * @return lowercase mapping of codePoint, or codePoint if lowercase 
+   *         mapping does not exist
+   * @see #isLowerCase(int)
+   * @see #isUpperCase(int)
+   * @see #toTitleCase(int)
+   * @see #toUpperCase(int)
+   * @since 1.5
+   */
+  public static native int toLowerCase(int codePoint);
 
   /**
    * Converts a Unicode character into its uppercase equivalent mapping.
@@ -2608,6 +2960,24 @@ public final class Character implements Serializable, Comparable
   public static native char toUpperCase(char ch);
 
   /**
+   * Converts a Unicode character into its uppercase equivalent mapping.
+   * If a mapping does not exist, then the character passed is returned.
+   * Note that isUpperCase(toUpperCase(codePoint)) does not always return true.
+   * Unlike toUpperCase(char), this method supports supplementary 
+   * Unicode code points.
+   *
+   * @param codePoint character to convert to uppercase
+   * @return uppercase mapping of codePoint, or codePoint if uppercase 
+   *         mapping does not exist
+   * @see #isLowerCase(int)
+   * @see #isUpperCase(int)
+   * @see #toLowerCase(int)
+   * @see #toTitleCase(int)
+   * @since 1.5
+   */
+  public static native int toUpperCase(int codePoint);
+
+  /**
    * Converts a Unicode character into its titlecase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
    * Note that isTitleCase(toTitleCase(ch)) does not always return true.
@@ -2620,6 +2990,23 @@ public final class Character implements Serializable, Comparable
    * @see #toUpperCase(char)
    */
   public static native char toTitleCase(char ch);
+
+  /**
+   * Converts a Unicode character into its titlecase equivalent mapping.
+   * If a mapping does not exist, then the character passed is returned.
+   * Note that isTitleCase(toTitleCase(codePoint)) does not always return true.
+   * Unlike toTitleCase(char), this method supports supplementary 
+   * Unicode code points.
+   * 
+   * @param codePoint character to convert to titlecase
+   * @return titlecase mapping of codePoint, or codePoint if titlecase 
+   *         mapping does not exist
+   * @see #isTitleCase(int)
+   * @see #toLowerCase(int)
+   * @see #toUpperCase(int)
+   * @since 1.5
+   */
+  public static native int toTitleCase(int codePoint);
 
   /**
    * Converts a character into a digit of the specified radix. If the radix
@@ -2640,6 +3027,28 @@ public final class Character implements Serializable, Comparable
    * @see #getNumericValue(char)
    */
   public static native int digit(char ch, int radix);
+
+  /**
+   * Converts a character into a digit of the specified radix. If the radix
+   * exceeds MIN_RADIX or MAX_RADIX, or if the result of getNumericValue(int)
+   * exceeds the radix, or if codePoint is not a decimal digit or in the case
+   * insensitive set of 'a'-'z', the result is -1.  Unlike digit(char, int), 
+   * this method supports supplementary Unicode code points.
+   * <br>
+   * character argument boundary = [Nd]|U+0041-U+005A|U+0061-U+007A
+   *    |U+FF21-U+FF3A|U+FF41-U+FF5A
+   *
+   * @param codePoint character to convert into a digit
+   * @param radix radix in which codePoint is a digit
+   * @return digit which codePoint represents in radix, or -1 not a valid digit
+   * @see #MIN_RADIX
+   * @see #MAX_RADIX
+   * @see #forDigit(int, int)
+   * @see #isDigit(int)
+   * @see #getNumericValue(int)
+   * @since 1.5
+   */
+  public static native int digit(int codePoint, int radix);
 
   /**
    * Returns the Unicode numeric value property of a character. For example,
@@ -2669,6 +3078,38 @@ public final class Character implements Serializable, Comparable
    * @since 1.1
    */
   public static native int getNumericValue(char ch);
+
+  /**
+   * Returns the Unicode numeric value property of a character. For example,
+   * <code>'\\u216C'</code> (the Roman numeral fifty) returns 50.
+   *
+   * <p>This method also returns values for the letters A through Z, (not
+   * specified by Unicode), in these ranges: <code>'\u0041'</code>
+   * through <code>'\u005A'</code> (uppercase); <code>'\u0061'</code>
+   * through <code>'\u007A'</code> (lowercase); and <code>'\uFF21'</code>
+   * through <code>'\uFF3A'</code>, <code>'\uFF41'</code> through
+   * <code>'\uFF5A'</code> (full width variants).
+   *
+   * <p>If the character lacks a numeric value property, -1 is returned.
+   * If the character has a numeric value property which is not representable
+   * as a nonnegative integer, such as a fraction, -2 is returned.
+   *
+   * Unlike getNumericValue(char), this method supports supplementary Unicode
+   * code points.
+   *
+   * character argument boundary = [Nd]|[Nl]|[No]|U+0041-U+005A|U+0061-U+007A
+   *    |U+FF21-U+FF3A|U+FF41-U+FF5A
+   *
+   * @param codePoint character from which the numeric value property will
+   *        be retrieved
+   * @return the numeric value property of codePoint, or -1 if it does not 
+   *         exist, or -2 if it is not representable as a nonnegative integer
+   * @see #forDigit(int, int)
+   * @see #digit(int, int)
+   * @see #isDigit(int)
+   * @since 1.5
+   */
+  public static native int getNumericValue(int codePoint);
 
   /**
    * Determines if a character is a ISO-LATIN-1 space. This is only the five
@@ -2714,6 +3155,26 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character is a Unicode space character. This includes
+   * SPACE_SEPARATOR, LINE_SEPARATOR, and PARAGRAPH_SEPARATOR.  Unlike
+   * isSpaceChar(char), this method supports supplementary Unicode code points.
+   * <br>
+   * Unicode space = [Zs]|[Zp]|[Zl]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is a Unicode space, else false
+   * @see #isWhitespace(int)
+   * @since 1.5
+   */
+  public static boolean isSpaceChar(int codePoint)
+  {
+    return ((1 << getType(codePoint))
+            & ((1 << SPACE_SEPARATOR)
+               | (1 << LINE_SEPARATOR)
+               | (1 << PARAGRAPH_SEPARATOR))) != 0;
+  }
+
+  /**
    * Determines if a character is Java whitespace. This includes Unicode
    * space characters (SPACE_SEPARATOR, LINE_SEPARATOR, and
    * PARAGRAPH_SEPARATOR) except the non-breaking spaces
@@ -2751,6 +3212,47 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Determines if a character is Java whitespace. This includes Unicode
+   * space characters (SPACE_SEPARATOR, LINE_SEPARATOR, and
+   * PARAGRAPH_SEPARATOR) except the non-breaking spaces
+   * (<code>'\u00A0'</code>, <code>'\u2007'</code>, and <code>'\u202F'</code>);
+   * and these characters: <code>'\u0009'</code>, <code>'\u000A'</code>,
+   * <code>'\u000B'</code>, <code>'\u000C'</code>, <code>'\u000D'</code>,
+   * <code>'\u001C'</code>, <code>'\u001D'</code>, <code>'\u001E'</code>,
+   * and <code>'\u001F'</code>.  Unlike isWhitespace(char), this method
+   * supports supplementary Unicode code points.
+   * <br>
+   * Java whitespace = ([Zs] not Nb)|[Zl]|[Zp]|U+0009-U+000D|U+001C-U+001F
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is Java whitespace, else false
+   * @see #isSpaceChar(int)
+   * @since 1.5
+   */
+  public static boolean isWhitespace(int codePoint)
+  {
+    int plane = codePoint >>> 16;
+    if (plane > 2 && plane != 14)
+      return false;
+    int attr = readCodePoint(codePoint);
+    return ((((1 << (attr & TYPE_MASK))
+              & ((1 << SPACE_SEPARATOR)
+                 | (1 << LINE_SEPARATOR)
+                 | (1 << PARAGRAPH_SEPARATOR))) != 0)
+            && (attr & NO_BREAK_MASK) == 0)
+      || (codePoint <= '\u001F' && ((1 << codePoint)
+                             & ((1 << '\t')
+                                | (1 << '\n')
+                                | (1 << '\u000B')
+                                | (1 << '\u000C')
+                                | (1 << '\r')
+                                | (1 << '\u001C')
+                                | (1 << '\u001D')
+                                | (1 << '\u001E')
+                                | (1 << '\u001F'))) != 0);
+  }
+
+  /**
    * Determines if a character has the ISO Control property.
    * <br>
    * ISO Control = [Cc]
@@ -2764,6 +3266,24 @@ public final class Character implements Serializable, Comparable
   public static boolean isISOControl(char ch)
   {
     return getType(ch) == CONTROL;
+  }
+
+  /**
+   * Determines if a character has the ISO Control property.  Unlike
+   * isISOControl(char), this method supports supplementary unicode
+   * code points.
+   * <br>
+   * ISO Control = [Cc]
+   *
+   * @param codePoint character to test
+   * @return true if codePoint is an ISO Control character, else false
+   * @see #isSpaceChar(int)
+   * @see #isWhitespace(int)
+   * @since 1.5
+   */
+  public static boolean isISOControl(int codePoint)
+  {
+    return getType(codePoint) == CONTROL;
   }
 
   /**
@@ -2804,6 +3324,46 @@ public final class Character implements Serializable, Comparable
    * @since 1.1
    */
   public static native int getType(char ch);
+
+  /**
+   * Returns the Unicode general category property of a character.  Supports
+   * supplementary Unicode code points.
+   *
+   * @param codePoint character from which the general category property will
+   *        be retrieved
+   * @return the character category property of codePoint as an integer
+   * @see #UNASSIGNED
+   * @see #UPPERCASE_LETTER
+   * @see #LOWERCASE_LETTER
+   * @see #TITLECASE_LETTER
+   * @see #MODIFIER_LETTER
+   * @see #OTHER_LETTER
+   * @see #NON_SPACING_MARK
+   * @see #ENCLOSING_MARK
+   * @see #COMBINING_SPACING_MARK
+   * @see #DECIMAL_DIGIT_NUMBER
+   * @see #LETTER_NUMBER
+   * @see #OTHER_NUMBER
+   * @see #SPACE_SEPARATOR
+   * @see #LINE_SEPARATOR
+   * @see #PARAGRAPH_SEPARATOR
+   * @see #CONTROL
+   * @see #FORMAT
+   * @see #PRIVATE_USE
+   * @see #SURROGATE
+   * @see #DASH_PUNCTUATION
+   * @see #START_PUNCTUATION
+   * @see #END_PUNCTUATION
+   * @see #CONNECTOR_PUNCTUATION
+   * @see #OTHER_PUNCTUATION
+   * @see #MATH_SYMBOL
+   * @see #CURRENCY_SYMBOL
+   * @see #MODIFIER_SYMBOL
+   * @see #INITIAL_QUOTE_PUNCTUATION
+   * @see #FINAL_QUOTE_PUNCTUATION
+   * @since 1.5
+   */
+  public static native int getType(int codePoint);
 
   /**
    * Converts a digit into a character which represents that digit
@@ -2859,6 +3419,37 @@ public final class Character implements Serializable, Comparable
   public static native byte getDirectionality(char ch);
 
   /**
+   * Returns the Unicode directionality property of the character. This
+   * is used in the visual ordering of text.  Unlike getDirectionality(char),
+   * this method supports supplementary Unicode code points.
+   *
+   * @param codePoint the character to look up
+   * @return the directionality constant, or DIRECTIONALITY_UNDEFINED
+   * @see #DIRECTIONALITY_UNDEFINED
+   * @see #DIRECTIONALITY_LEFT_TO_RIGHT
+   * @see #DIRECTIONALITY_RIGHT_TO_LEFT
+   * @see #DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC
+   * @see #DIRECTIONALITY_EUROPEAN_NUMBER
+   * @see #DIRECTIONALITY_EUROPEAN_NUMBER_SEPARATOR
+   * @see #DIRECTIONALITY_EUROPEAN_NUMBER_TERMINATOR
+   * @see #DIRECTIONALITY_ARABIC_NUMBER
+   * @see #DIRECTIONALITY_COMMON_NUMBER_SEPARATOR
+   * @see #DIRECTIONALITY_NONSPACING_MARK
+   * @see #DIRECTIONALITY_BOUNDARY_NEUTRAL
+   * @see #DIRECTIONALITY_PARAGRAPH_SEPARATOR
+   * @see #DIRECTIONALITY_SEGMENT_SEPARATOR
+   * @see #DIRECTIONALITY_WHITESPACE
+   * @see #DIRECTIONALITY_OTHER_NEUTRALS
+   * @see #DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING
+   * @see #DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE
+   * @see #DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING
+   * @see #DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE
+   * @see #DIRECTIONALITY_POP_DIRECTIONAL_FORMAT
+   * @since 1.5
+   */
+  public static native byte getDirectionality(int codePoint);
+
+  /**
    * Determines whether the character is mirrored according to Unicode. For
    * example, <code>\u0028</code> (LEFT PARENTHESIS) appears as '(' in
    * left-to-right text, but ')' in right-to-left text.
@@ -2870,6 +3461,24 @@ public final class Character implements Serializable, Comparable
   public static boolean isMirrored(char ch)
   {
     return (readChar(ch) & MIRROR_MASK) != 0;
+  }
+
+  /**
+   * Determines whether the character is mirrored according to Unicode. For
+   * example, <code>\u0028</code> (LEFT PARENTHESIS) appears as '(' in
+   * left-to-right text, but ')' in right-to-left text.  Unlike 
+   * isMirrored(char), this method supports supplementary Unicode code points.
+   *
+   * @param codePoint the character to look up
+   * @return true if the character is mirrored
+   * @since 1.5
+   */
+  public static boolean isMirrored(int codePoint)
+  {
+    int plane = codePoint >>> 16;
+    if (plane > 2 && plane != 14)
+      return false;
+    return (readCodePoint(codePoint) & MIRROR_MASK) != 0;
   }
 
   /**

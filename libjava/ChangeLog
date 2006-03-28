@@ -1,3 +1,62 @@
+2006-03-28  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* scripts/unicode-muncher.pl: Removed this file.
+	* scripts/MakeCharTables.java: Likewise.
+	* scripts/unicode-to-chartables.pl: New file.
+	* java/lang/natCharacter.cc: 
+	(UNASSIGNED_TYPE): New field.
+	(UNASSIGNED_DIGIT): Likewise.
+	(UNASSIGNED_DIRECTION): Likewise.
+	(UNASSIGNED_NUMERIC_VALUE): Likewise.
+	(PRIVATE_TYPE): Likewise.
+	(PRIVATE_DIRECTION): Likewise.
+	(readCodePoint): New method.
+	(getType(jint)): Likewise.
+	(toLowerCase(jint)): Likewise.
+	(toUpperCase(jint)): Likewise.
+	(toTitleCase(jint)): Likewise.
+	(digit(jint, jint)): Likewise.
+	(getNumericValue(jint)): Likewise.
+	(getDirectionality(jint)): Likewise.
+	(readChar),
+	(getType(jchar)),
+	(toLowerCase(jchar)),
+	(toUpperCase(jchar)),
+	(toTitleCase(jchar)),
+	(digit(jchar, jint)),
+	(getNumericValue(jchar)),
+	(getDirectionality(jchar)): Changed references from data to data[0], 
+	blocks to blocks[0], direction to direction[0], numValue to 
+	numValue[0], upper to upper[0], lower to lower[0], and shift to 
+	shift[0] to reflect the new structures in java-chartables.h.	
+	* java/lang/Character.java:
+	(readCodePoint): Declared new native method.
+	(getType(int)): Likewise.
+	(toLowerCase(int)): Likewise.
+	(toUpperCase(int)): Likewise.
+	(toTitleCase(int)): Likewise.
+	(digit(int, int)): Likewise.
+	(getNumericValue(int)): Likewise.
+	(getDirectionality(int)): Likewise.
+	(isLowerCase(int)): New method.
+	(isUpperCase(int)): Likewise.
+	(itTitleCase(int)): Likewise.
+	(isDigit(int)): Likewise.
+	(isDefined(int)): Likewise.
+	(isLetter(int)): Likewise.
+	(isLetterOrDigit(int)): Likewise.
+	(isJavaIdentifierStart(int)): Likewise.
+	(isJavaIdentifierPart(int)): Likewise.
+	(isUnicodeIdentifierStart(int)): Likewise.
+	(isUnicodeIdentifierPart(int)): Likewise.
+	(isIdentifierIgnorable(int)): Likewise.
+	(isSpaceChar(int)): Likewise.
+	(isWhitespace(int)): Likewise.
+	(isISOControl(int)): Likewise.
+	(isMirrored(int)): Likewise.
+	* include/java-chartables.h: Generated from 
+	scripts/unicode-to-chartables.h.
+
 2006-03-24  David Daney  <ddaney@avtrex.com)
 
 	* testsuite/libjava.lang/PR26858.java: New test.

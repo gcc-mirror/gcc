@@ -45,30 +45,91 @@ exception statement from your version. */
 
 
 
+// These constants define the return values for characters that are unassigned
+// or reserved for private use.
+#define UNASSIGNED_TYPE 0
+#define UNASSIGNED_DIGIT -1
+#define UNASSIGNED_DIRECTION -1
+#define UNASSIGNED_NUMERIC_VALUE -1
+
+#define PRIVATE_TYPE 18
+#define PRIVATE_DIRECTION 0
+
+// The methods that take a char as an argument all have counterparts that 
+// take ints.  The ones that take chars only work for the BMP or plane 0 of the
+// Unicode standard but the ones that take ints work for all Unicode code
+// points.  However, the ones that take chars don't simply redirect the calls
+// because the BMP is by far the most used plane so saving a little time on
+// each call makes sense.
+
 jchar
 java::lang::Character::readChar(jchar ch)
 {
   // Perform 16-bit addition to find the correct entry in data.
-  return data[(jchar) (blocks[ch >> SHIFT] + ch)];
+  return data[0][(jchar) (blocks[0][ch >> shift[0]] + ch)];
+}
+
+jchar
+java::lang::Character::readCodePoint(jint codePoint)
+{
+  jint plane = codePoint >> 16;
+  jchar offset = (jchar)(codePoint & 0xffff);
+  // Be careful not to call this method with an unassigned character.  The only
+  // characters assigned as of Unicode 4.0.0 belong to planes 0, 1, 2, and 14.
+  return data[plane][(jchar) (blocks[plane][offset >> shift[plane]] + offset)];
 }
 
 jint
 java::lang::Character::getType(jchar ch)
 {
   // Perform 16-bit addition to find the correct entry in data.
-  return (jint) (data[(jchar) (blocks[ch >> SHIFT] + ch)] & TYPE_MASK);
+  return (jint) (data[0][(jchar) (blocks[0][ch >> shift[0]] + ch)] & TYPE_MASK);
+}
+
+jint
+java::lang::Character::getType(jint codePoint)
+{
+  jint plane = codePoint >> 16;
+  if (plane > 2 && plane != 14)
+    {
+      if (plane > 14 && ((codePoint & 0xffff) < 0xfffe))
+        return (jint) PRIVATE_TYPE;
+      return (jint) UNASSIGNED_TYPE;
+    }
+  jint offset = codePoint & 0xffff;
+  return (jint) 
+    (data[plane]
+     [(jchar) (blocks[plane][offset >> shift[plane]] + offset)] & TYPE_MASK);
 }
 
 jchar
 java::lang::Character::toLowerCase(jchar ch)
 {
-  return (jchar) (ch + lower[readChar(ch) >> 7]);
+  return (jchar) (ch + lower[0][readChar(ch) >> 7]);
+}
+
+jint
+java::lang::Character::toLowerCase(jint codePoint)
+{
+  jint plane = codePoint >> 16;
+  if (plane > 2 && plane != 14)
+    return codePoint;
+  return (lower[plane][readCodePoint(codePoint) >> 7]) + codePoint;
 }
 
 jchar
 java::lang::Character::toUpperCase(jchar ch)
 {
-  return (jchar) (ch + upper[readChar(ch) >> 7]);
+  return (jchar) (ch + upper[0][readChar(ch) >> 7]);
+}
+
+jint
+java::lang::Character::toUpperCase(jint codePoint)
+{
+  jint plane = codePoint >> 16;
+  if (plane > 2 && plane != 14)
+    return codePoint;
+  return (upper[plane][readCodePoint(codePoint) >> 7]) + codePoint;
 }
 
 jchar
@@ -79,6 +140,16 @@ java::lang::Character::toTitleCase(jchar ch)
     if (title[i] == ch)
       return title[i + 1];
   return toUpperCase(ch);
+}
+
+jint
+java::lang::Character::toTitleCase(jint codePoint)
+{
+  // As of Unicode 4.0.0 no characters outside of plane 0 have titlecase
+  // mappings that are different from their uppercase mapping.
+  if (codePoint < 0x10000)
+    return toTitleCase((jchar)codePoint);
+  return toUpperCase(codePoint);
 }
 
 jint
@@ -93,21 +164,74 @@ java::lang::Character::digit(jchar ch, jint radix)
           | (1 << DECIMAL_DIGIT_NUMBER))))
     {
       // Signedness doesn't matter; 0xffff vs. -1 are both rejected.
-      jint digit = (jint) numValue[attr >> 7];
+      jint digit = (jint) numValue[0][attr >> 7];
       return (digit >= 0 && digit < radix) ? digit : (jint) -1;
     }
   return (jint) -1;
 }
 
 jint
+java::lang::Character::digit(jint codePoint, jint radix)
+{
+  if (radix < MIN_RADIX || radix > MAX_RADIX)
+    return (jint) -1;
+
+  jint plane = codePoint >> 16;
+  if (plane > 2 && plane != 14)
+    return UNASSIGNED_DIGIT;
+
+  jchar attr = readCodePoint(codePoint);
+  if (((1 << (attr & TYPE_MASK))
+       & ((1 << UPPERCASE_LETTER)
+          | (1 << LOWERCASE_LETTER)
+          | (1 << DECIMAL_DIGIT_NUMBER))))
+    {
+      // Signedness doesn't matter; 0xffff vs. -1 are both rejected.
+      jint digit = (jint) numValue[plane][attr >> 7];
+      if (digit <= -3)
+        digit = largenums[-digit -3];
+      return (digit >= 0 && digit < radix) ? digit : (jint) -1;
+    }
+  return (jint) -1;
+
+}
+
+jint
 java::lang::Character::getNumericValue(jchar ch)
 {
   // numValue is stored as an array of jshort, since 10000 is the maximum.
-  return (jint) numValue[readChar(ch) >> 7];
+  return (jint) numValue[0][readChar(ch) >> 7];
+}
+
+jint
+java::lang::Character::getNumericValue(jint codePoint)
+{
+  jint plane = codePoint >> 16;
+  if (plane > 2 && plane != 14)
+    return UNASSIGNED_NUMERIC_VALUE;
+  jshort num = numValue[plane][readCodePoint(codePoint) >> 7];
+  if (num <= -3)
+    return largenums[-num - 3];
+  return num;
 }
 
 jbyte
 java::lang::Character::getDirectionality(jchar ch)
 {
-  return direction[readChar(ch) >> 7];
+  return direction[0][readChar(ch) >> 7];
 }
+
+jbyte
+java::lang::Character::getDirectionality(jint codePoint)
+{
+  jint plane = codePoint >> 16;
+  if (plane > 2 && plane != 14)
+    {
+      if (plane > 14 && ((codePoint & 0xffff) < 0xfffe))
+        return (jint) PRIVATE_DIRECTION;
+      return (jint) UNASSIGNED_DIRECTION;
+    }
+  return direction[plane][readCodePoint(codePoint) >> 7];
+}
+
+
