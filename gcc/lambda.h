@@ -143,7 +143,6 @@ lambda_loopnest lambda_loopnest_transform (lambda_loopnest, lambda_trans_matrix)
 struct loop;
 struct loops;
 bool perfect_nest_p (struct loop *);
-bool lambda_transform_legal_p (lambda_trans_matrix, int, varray_type);
 void print_lambda_loopnest (FILE *, lambda_loopnest, char);
 
 #define lambda_loop_new() (lambda_loop) ggc_alloc_cleared (sizeof (struct lambda_loop_s))

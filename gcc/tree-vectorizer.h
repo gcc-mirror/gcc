@@ -122,10 +122,10 @@ typedef struct _loop_vec_info {
   int ptr_mask;
 
   /* All data references in the loop.  */
-  varray_type datarefs;
+  VEC (data_reference_p, heap) *datarefs;
 
   /* All data dependences in the loop.  */
-  varray_type ddrs;
+  VEC (ddr_p, heap) *ddrs;
 
   /* Statements in the loop that have data references that are candidates for a
      runtime (loop versioning) misalignment check.  */
