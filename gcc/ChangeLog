@@ -1,3 +1,8 @@
+2006-03-28  Roger Sayle   <roger@eyesopen.com>
+
+	* expr.c (emit_group_store): Only create a new pseudo reg if the
+	quantity it needs to hold isn't already a suitable pseudo.
+
 2006-03-28  Jeff Law  <law@redhat.com>
 
 	* timevar.def (TV_TREE_PHI_CPROP): New timevar.
