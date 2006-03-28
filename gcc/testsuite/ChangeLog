@@ -1,5 +1,10 @@
 2006-03-28  Roger Sayle  <roger@eyesopen.com>
 
+	* gcc.dg/fold-andxor-1.c: New test case.
+	* gcc.dg/fold-xorand-1.c: Likewise.
+
+2006-03-28  Roger Sayle  <roger@eyesopen.com>
+
 	* gcc.dg/fold-convnotconv-1.c: New test case.
 
 2006-03-28 Paul Thomas <pault@gcc.gnu.org>

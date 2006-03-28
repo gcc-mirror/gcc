@@ -1,3 +1,10 @@
+2006-03-28  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_binary) <BIT_XOR_EXPR>: Fold (X & Y) ^ Y as
+	the equivalent ~X & Y, and the symmetry related transformations.
+	(fold_binary) <BIT_AND_EXPR>: Similarly, fold (X ^ Y) & Y as 
+	~X & Y, and symmetry related transforms.
+
 2006-03-28  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	Revert my 2006-03-27 patches.

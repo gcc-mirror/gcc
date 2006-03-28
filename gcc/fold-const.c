@@ -8803,6 +8803,45 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	return fold_build2 (EQ_EXPR, type, arg0,
 			    build_int_cst (TREE_TYPE (arg0), 0));
 
+      /* Fold (X & Y) ^ Y as ~X & Y.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg0, 0));
+	  return fold_build2 (BIT_AND_EXPR, type, 
+			      fold_build1 (BIT_NOT_EXPR, type, tem),
+			      fold_convert (type, arg1));
+	}
+      /* Fold (X & Y) ^ X as ~Y & X.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg0, 1));
+	  return fold_build2 (BIT_AND_EXPR, type,
+			      fold_build1 (BIT_NOT_EXPR, type, tem),
+			      fold_convert (type, arg1));
+	}
+      /* Fold X ^ (X & Y) as X & ~Y.  */
+      if (TREE_CODE (arg1) == BIT_AND_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg1, 1));
+	  return fold_build2 (BIT_AND_EXPR, type,
+			      fold_convert (type, arg0),
+			      fold_build1 (BIT_NOT_EXPR, type, tem));
+	}
+      /* Fold X ^ (Y & X) as ~Y & X.  */
+      if (TREE_CODE (arg1) == BIT_AND_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0)
+	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg1, 0));
+	  return fold_build2 (BIT_AND_EXPR, type,
+			      fold_build1 (BIT_NOT_EXPR, type, tem),
+			      fold_convert (type, arg0));
+	}
+
       /* See if this can be simplified into a rotate first.  If that
 	 is unsuccessful continue in the association code.  */
       goto bit_rotate;
@@ -8875,6 +8914,45 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			      fold_build2 (BIT_AND_EXPR, TREE_TYPE (tem), tem,
 					   build_int_cst (TREE_TYPE (tem), 1)),
 			      build_int_cst (TREE_TYPE (tem), 0));
+	}
+
+      /* Fold (X ^ Y) & Y as ~X & Y.  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg0, 0));
+	  return fold_build2 (BIT_AND_EXPR, type, 
+			      fold_build1 (BIT_NOT_EXPR, type, tem),
+			      fold_convert (type, arg1));
+	}
+      /* Fold (X ^ Y) & X as ~Y & X.  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg0, 1));
+	  return fold_build2 (BIT_AND_EXPR, type,
+			      fold_build1 (BIT_NOT_EXPR, type, tem),
+			      fold_convert (type, arg1));
+	}
+      /* Fold X & (X ^ Y) as X & ~Y.  */
+      if (TREE_CODE (arg1) == BIT_XOR_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg1, 1));
+	  return fold_build2 (BIT_AND_EXPR, type,
+			      fold_convert (type, arg0),
+			      fold_build1 (BIT_NOT_EXPR, type, tem));
+	}
+      /* Fold X & (Y ^ X) as ~Y & X.  */
+      if (TREE_CODE (arg1) == BIT_XOR_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0)
+	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
+	{
+	  tem = fold_convert (type, TREE_OPERAND (arg1, 0));
+	  return fold_build2 (BIT_AND_EXPR, type,
+			      fold_build1 (BIT_NOT_EXPR, type, tem),
+			      fold_convert (type, arg0));
 	}
 
       t1 = distribute_bit_expr (code, type, arg0, arg1);
