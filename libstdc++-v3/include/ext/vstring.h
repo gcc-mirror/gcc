@@ -449,7 +449,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       reference
       operator[](size_type __pos)
       {
-	_GLIBCXX_DEBUG_ASSERT(__pos < this->size());
+        // allow pos == size() as v3 extension:
+	_GLIBCXX_DEBUG_ASSERT(__pos <= this->size());
+        // but be strict in pedantic mode:
+	_GLIBCXX_DEBUG_PEDASSERT(__pos < this->size());
 	this->_M_leak();
 	return this->_M_data()[__pos];
       }
