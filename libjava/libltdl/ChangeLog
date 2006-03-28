@@ -1,3 +1,8 @@
+2006-03-28  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/26641:
+	* Merged libltdl 1.5.16 from vendor branch.
+
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in: Regenrate with Automake 1.9.3.

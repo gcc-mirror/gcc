@@ -20,7 +20,7 @@ endif
 CLEANFILES = libltdl.la libltdlc.la
 
 libltdl_la_SOURCES = ltdl.c
-libltdl_la_LDFLAGS = -no-undefined -version-info 4:0:1
+libltdl_la_LDFLAGS = -no-undefined -version-info 4:1:1
 libltdl_la_LIBADD = $(LIBADD_DL)
 
 libltdlc_la_SOURCES = ltdl.c
@@ -33,18 +33,19 @@ $(libltdl_la_OBJECTS) $(libltdlc_la_OBJECTS): libtool
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
 
-## This allows us to install libltdl without using ln and without creating
-## a world writeable directory.
-## FIXME:  Remove this rule once automake can do this properly by itself.
-local-install-files: $(DISTFILES)
-	-rm -rf $(DESTDIR)$(datadir)/libtool/libltdl
-	$(mkinstalldirs) $(DESTDIR)$(datadir)/libtool/libltdl
-	@for file in $(DISTFILES); do \
-	  d=$(srcdir); \
-	  if test -d $$d/$$file; then \
-	    cp -r $$d/$$file $(DESTDIR)$(datadir)/libtool/libltdl/$$file; \
-	  else \
-	    test -f $(DESTDIR)$(datadir)/libtool/libltdl/$$file \
-	    || cp $$d/$$file $(DESTDIR)$(datadir)/libtool/libltdl/$$file || :; \
-	  fi; \
-	done
+## These are installed as a subdirectory of pkgdatadir so that
+## libtoolize --ltdl can find them later:
+ltdldatadir = $(datadir)/libtool/libltdl
+ltdldatafiles = COPYING.LIB README acinclude.m4 aclocal.m4 \
+		Makefile.am Makefile.in configure.ac configure \
+		config-h.in config.guess config.sub \
+		install-sh missing ltmain.sh \
+		ltdl.c ltdl.h
+
+## To avoid spurious reconfiguration when the user installs these files
+## with libtoolize, we have to preserve their timestamps carefully:
+install-data-local:
+	-rm -rf $(DESTDIR)$(ltdldatadir)
+	$(mkinstalldirs) $(DESTDIR)$(ltdldatadir)
+	( cd $(srcdir) && $(AMTAR) chf - $(ltdldatafiles); ) \
+	  | ( umask 0 && cd $(DESTDIR)$(ltdldatadir) && $(AMTAR) xf -; )
