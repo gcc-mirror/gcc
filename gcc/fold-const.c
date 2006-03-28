@@ -8186,7 +8186,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (arg0) == NEGATE_EXPR
 	  && integer_onep (arg1))
-	return fold_build1 (BIT_NOT_EXPR, type, TREE_OPERAND (arg0, 0));
+	return fold_build1 (BIT_NOT_EXPR, type,
+			    fold_convert (type, TREE_OPERAND (arg0, 0)));
 
       /* Convert -1 - A to ~A.  */
       if (INTEGRAL_TYPE_P (type)
