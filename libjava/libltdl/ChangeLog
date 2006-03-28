@@ -1,6 +1,6 @@
 2006-03-28  Tom Tromey  <tromey@redhat.com>
 
-	PR libgcj/26641:
+	PR libgcj/26441:
 	* Merged libltdl 1.5.16 from vendor branch.
 
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
