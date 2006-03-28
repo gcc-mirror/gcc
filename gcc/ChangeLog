@@ -1,3 +1,10 @@
+2006-03-28  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/26796
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Queue blocks which
+	need EH edge cleanups rather than purging them immediately.
+	(eliminate_degenerate_phis): Handle queued EH cleanups.
+
 2006-03-28  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c (create_sft): Initially inherit TREE_ADDRESSABLE

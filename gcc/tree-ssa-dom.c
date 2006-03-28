@@ -2181,10 +2181,13 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	    recompute_tree_invariant_for_addr_expr (TREE_OPERAND (use_stmt, 1));
 
 	  /* If we cleaned up EH information from the statement,
-             remove EH edges.  I'm not sure if this happens in 
-	     practice with this code, but better safe than sorry.  */
+	     mark its containing block as needing EH cleanups.  */
 	  if (maybe_clean_or_replace_eh_stmt (use_stmt, use_stmt))
-	    tree_purge_dead_eh_edges (bb_for_stmt (use_stmt));
+	    {
+	      bitmap_set_bit (need_eh_cleanup, bb_for_stmt (use_stmt)->index);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "  Flagged to clear EH edges.\n");
+	    }
 
 	  /* Propagation may expose new degenerate PHIs or
 	     trivial copy/constant propagation opportunities.  */
@@ -2392,6 +2395,10 @@ eliminate_degenerate_phis (void)
 {
   bitmap interesting_names;
 
+  /* Bitmap of blocks which need EH information updated.  We can not
+     update it on-the-fly as doing so invalidates the dominator tree.  */
+  need_eh_cleanup = BITMAP_ALLOC (NULL);
+
   /* INTERESTING_NAMES is effectively our worklist, indexed by
      SSA_NAME_VERSION.
 
@@ -2434,6 +2441,14 @@ eliminate_degenerate_phis (void)
 	    eliminate_const_or_copy (SSA_NAME_DEF_STMT (ssa_name (i)),
 				     interesting_names);
 	}
+    }
+
+  /* Propagation of const and copies may make some EH edges dead.  Purge
+     such edges from the CFG as needed.  */
+  if (!bitmap_empty_p (need_eh_cleanup))
+    {
+      cfg_altered |= tree_purge_all_dead_eh_edges (need_eh_cleanup);
+      BITMAP_FREE (need_eh_cleanup);
     }
 
   BITMAP_FREE (interesting_names);
