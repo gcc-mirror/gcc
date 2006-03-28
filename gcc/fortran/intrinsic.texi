@@ -2846,7 +2846,7 @@ end program test_fdate
 @node FLOAT
 @section @code{FLOAT} --- Convert integer to default real
 @findex @code{FLOAT} intrinsic
-@cindex floor
+@cindex float
 
 @table @asis
 @item @emph{Description}:

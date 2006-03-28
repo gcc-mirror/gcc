@@ -1,3 +1,7 @@
+2006-03-28  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: s/floor/float in previous commit.
+
 2006-03-28 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/26779
