@@ -52,4 +52,4 @@ program prog
     write (*, *) zb
 end program prog
 
-
+! { dg-final { cleanup-modules "gfortran2" } }

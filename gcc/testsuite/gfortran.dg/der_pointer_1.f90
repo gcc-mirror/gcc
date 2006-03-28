@@ -16,3 +16,5 @@ module test
 
    type(x_t), pointer :: x
 end module test
+
+! { dg-final { cleanup-modules "test" } }

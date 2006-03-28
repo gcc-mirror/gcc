@@ -38,3 +38,5 @@ module z
     end function
 
 end module z
+
+! { dg-final { cleanup-modules "y z" } }

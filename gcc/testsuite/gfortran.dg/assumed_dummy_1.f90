@@ -44,4 +44,4 @@ contains
 end program test
 
 
-
+! { dg-final { cleanup-modules "global" } }

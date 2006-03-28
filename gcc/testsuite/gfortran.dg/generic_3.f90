@@ -28,3 +28,5 @@ subroutine mrqcof( x, y, sig, ndata, a, ia, ma )
      call gauss( x(i), a, yan, dyda, ma )
   end do
 end subroutine mrqcof
+
+! { dg-final { cleanup-modules "fit_functions" } }

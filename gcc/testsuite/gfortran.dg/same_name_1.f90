@@ -11,3 +11,5 @@ contains
   subroutine u
   end subroutine u
 end module m
+
+! { dg-final { cleanup-modules "n m" } }

@@ -32,3 +32,5 @@ program namelist_use_only
   if ((i.ne.0).or.(rrrr.ne.3.5).or.foo()) call abort ()
   close (10)
 end program namelist_use_only
+
+! { dg-final { cleanup-modules "global" } }
