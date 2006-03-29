@@ -6371,7 +6371,18 @@ AC_DEFUN([AC_LTDL_SHLIBEXT],
 AC_CACHE_CHECK([which extension is used for loadable modules],
   [libltdl_cv_shlibext],
 [
-module=yes
+# Here in libltdl for libgcj we don't build modules for darwin.
+# So we say no. Then the extension gets .dylib which is the right
+# thing for shared libraries on darwin. Please keep me next time you
+# import libltdl.
+case "$host_os" in
+darwin*)
+	module=no
+	;;
+*)
+	module=yes
+	;;
+esac
 eval libltdl_cv_shlibext=$shrext_cmds
   ])
 if test -n "$libltdl_cv_shlibext"; then

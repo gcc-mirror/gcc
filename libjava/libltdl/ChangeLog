@@ -1,3 +1,9 @@
+2006-03-29  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* acinclude.m4: Restore the situation that we don't build modules on
+	darwin.
+	* configure: Regenerated.
+
 2006-03-28  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26441:
