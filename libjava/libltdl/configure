@@ -20450,7 +20450,18 @@ if test "${libltdl_cv_shlibext+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
-module=yes
+# Here in libltdl for libgcj we don't build modules for darwin.
+# So we say no. Then the extension gets .dylib which is the right
+# thing for shared libraries on darwin. Please keep me next time you
+# import libltdl.
+case "$host_os" in
+darwin*)
+	module=no
+	;;
+*)
+	module=yes
+	;;
+esac
 eval libltdl_cv_shlibext=$shrext_cmds
 
 fi
@@ -21300,7 +21311,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 21303 "configure"
+#line 21314 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
