@@ -77,7 +77,7 @@
 (define_constraint "M"
   "constant greater than 31"
   (and (match_code "const_int")
-       (match_test "(ival) > 31")))
+       (match_test "ival > 31")))
 
 (define_constraint "N"
   "positive constant that is an exact power of two"
