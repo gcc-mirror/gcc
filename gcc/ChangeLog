@@ -1,3 +1,9 @@
+2006-03-28  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/26643
+	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Do not handle
+	bit_field_refs.
+
 2006-03-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (udivsi3_i4_int): Clobber MACH_REG and MACL_REG.
