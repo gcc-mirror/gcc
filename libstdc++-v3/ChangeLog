@@ -1,3 +1,24 @@
+2006-03-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/data/sgetn.txt:  Correct copyright holder.
+	* testsuite/data/wistream_extractor_other-1.tst: Same.
+	* testsuite/data/wistream_extractor_other-2.tst: Same.
+	* testsuite/data/istream_extractor_other-1.txt: Same.
+	* testsuite/data/filebuf_virtuals-1.txt: Same.
+	* testsuite/data/wostream_inserter_other-1.tst: Same.
+	* testsuite/data/wostream_inserter_other-2.tst: Same.
+	* testsuite/data/ostream_inserter_other-1.tst: Same.
+	* testsuite/data/ostream_inserter_other-2.tst: Same.
+	* testsuite/data/wistream_extractor_other-1.txt: Same.
+	* testsuite/data/istream_extractor_other-1.tst: Same.
+	* testsuite/data/istream_extractor_other-2.tst: Same.
+	* testsuite/data/filebuf_virtuals-1.tst: Same.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: Adjust test
+	conditions.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc: Same.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-in.cc: Same.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-io.cc: Same.
+
 2006-03-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/vstring.h (operator[]): Allow s[s.size()] in
