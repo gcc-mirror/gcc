@@ -1,5 +1,10 @@
 2006-03-29  Paul Brook  <paul@codesourcery.com>
 
+	* reload1.c (choose_reload_regs): Check for all RTX_AUTOINC operators.
+	(inc_for_reload): Handle PRE_MODIFY and POST_MODIFY addresses.
+
+2006-03-29  Paul Brook  <paul@codesourcery.com>
+
 	PR middle-end/23623
 	* targhooks.c (default_narrow_bitfield): New fuction.
 	* targhooks.h (default_narrow_bitfield): add prototype.
