@@ -378,6 +378,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"except.h\"\n");
   printf ("#include \"function.h\"\n");
+  printf ("#include \"toplev.h\"\n");
   printf ("#include \"tm-constrs.h\"\n\n");
 
   printf ("#ifdef HAVE_peephole\n");

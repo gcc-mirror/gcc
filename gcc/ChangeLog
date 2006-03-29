@@ -3,6 +3,7 @@
 	* genpreds.c (write_tm_constrs_h): Delete variable p.
 	* genconditions.c (write_header): Add tm-constrs.h to included
 	headers.
+	* genpeep.c (main): Add toplev.h to included headers.
 	* Makefile.in (build/gencondmd.o): Add tm-constrs.h dependency.
 	* config/rs6000/constraints.md: Add "W" constraint.
 
