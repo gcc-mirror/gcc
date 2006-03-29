@@ -1482,8 +1482,9 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
 
   /* Ignore bitfields for now.  Not really something terribly complicated
      to handle.  TODO.  */
-  if (TREE_CODE (base) == COMPONENT_REF
-      && DECL_NONADDRESSABLE_P (TREE_OPERAND (base, 1)))
+  if (TREE_CODE (base) == BIT_FIELD_REF
+      || (TREE_CODE (base) == COMPONENT_REF
+	  && DECL_NONADDRESSABLE_P (TREE_OPERAND (base, 1))))
     goto fail;
 
   if (STRICT_ALIGNMENT
