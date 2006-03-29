@@ -1,3 +1,11 @@
+2006-03-29  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR tree-optimization/26859
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined): Avoid
+	division by zero.
+	(convert_step): Remove TREE_OVERFLOW and TREE_CONSTANT_OVERFLOW flags
+	for the step after fold_convert.
+
 2006-03-29  Paul Brook  <paul@codesourcery.com>
 
 	* reload1.c (choose_reload_regs): Check for all RTX_AUTOINC operators.

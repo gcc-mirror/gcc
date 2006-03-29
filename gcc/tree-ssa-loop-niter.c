@@ -1582,9 +1582,13 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 		      diff = fold_build2 (MINUS_EXPR, utype,
 					  TYPE_MAX_VALUE (type), init);
 
-		    estimation = fold_build2 (CEIL_DIV_EXPR, utype, diff,
-					      step);
-		    record_estimate (loop, estimation, boolean_true_node, stmt);
+		    if (!integer_zerop (step))
+		      {
+			estimation = fold_build2 (CEIL_DIV_EXPR, utype, diff,
+						  step);
+			record_estimate (loop, estimation, boolean_true_node,
+					 stmt);
+		      }
 		  }
 
 		break;
@@ -2090,7 +2094,7 @@ tree
 convert_step (struct loop *loop, tree new_type, tree base, tree step,
 	      tree at_stmt)
 {
-  tree base_type;
+  tree res, base_type;
 
   if (chrec_contains_undetermined (base)
       || chrec_contains_undetermined (step))
@@ -2100,12 +2104,22 @@ convert_step (struct loop *loop, tree new_type, tree base, tree step,
 
   /* When not using wrapping arithmetic, signed types don't wrap.  */
   if (!flag_wrapv && !TYPE_UNSIGNED (base_type))
-    return fold_convert (new_type, step);
+    goto do_convert_step;
 
   if (TYPE_PRECISION (new_type) > TYPE_PRECISION (base_type))
     return convert_step_widening (loop, new_type, base, step, at_stmt);
 
-  return fold_convert (new_type, step);
+ do_convert_step:
+  
+  res = fold_convert (new_type, step);
+
+  if (TREE_CODE (res) == INTEGER_CST)
+    {
+      TREE_OVERFLOW (res) = 0;
+      TREE_CONSTANT_OVERFLOW (res) = 0;
+    }
+
+  return res;
 }
 
 /* Frees the information on upper bounds on numbers of iterations of LOOP.  */
