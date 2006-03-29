@@ -48,6 +48,7 @@ set package_map(gnu/java/awt/peer/qt) bc
 set package_map(gnu/javax/sound/midi) bc
 set package_map(org/xml) bc
 set package_map(org/w3c) bc
+set package_map(org/relaxng) bc
 set package_map(javax/rmi) bc
 set package_map(org/omg) bc
 set package_map(gnu/CORBA) bc
@@ -338,6 +339,7 @@ read_omit_file classpath/lib/standard.omit
 scan_packages classpath
 scan_packages classpath/external/sax
 scan_packages classpath/external/w3c_dom
+scan_packages classpath/external/relaxngDatatype
 # Now scan our own files; this will correctly override decisions made
 # when scanning classpath.
 scan_packages .

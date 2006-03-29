@@ -7618,6 +7618,23 @@ org-omg.lo: $(org_omg_source_files)
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-omg.lo @org-omg.list
 	@rm -f org-omg.list
 
+org_relaxng_source_files = \
+classpath/external/relaxngDatatype/org/relaxng/datatype/Datatype.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/DatatypeBuilder.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/DatatypeException.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/DatatypeLibrary.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/DatatypeLibraryFactory.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/DatatypeStreamingValidator.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/ValidationContext.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/helpers/DatatypeLibraryLoader.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/helpers/ParameterlessDatatypeBuilder.java \
+classpath/external/relaxngDatatype/org/relaxng/datatype/helpers/StreamingValidatorImpl.java
+
+org-relaxng.lo: $(org_relaxng_source_files)
+	@find classpath/lib/org/relaxng -name '*.class' > org-relaxng.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-relaxng.lo @org-relaxng.list
+	@rm -f org-relaxng.list
+
 org_w3c_source_files = \
 classpath/external/w3c_dom/org/w3c/dom/Attr.java \
 classpath/external/w3c_dom/org/w3c/dom/CDATASection.java \
@@ -8216,5 +8233,6 @@ bc_objects = \
   javax-rmi.lo \
   javax-xml.lo \
   org-omg.lo \
+  org-relaxng.lo \
   org-w3c.lo \
   org-xml.lo
