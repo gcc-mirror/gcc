@@ -2496,6 +2496,7 @@ write_header (void)
 #include \"resource.h\"\n\
 #include \"toplev.h\"\n\
 #include \"reload.h\"\n\
+#include \"tm-constrs.h\"\n\
 \n");
 
   puts ("\n\

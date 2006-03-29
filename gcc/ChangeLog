@@ -1,3 +1,42 @@
+2006-03-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* genemit.c (main): Add tm-constrs.h to included headers.
+	* genoutput.c (output_prologue): Add tm-constrs.h to included headers.
+	* genpeep.c (main): Add tm-constrs.h to included headers.
+	* genpreds.c (write_satisfies_constraint_fns): Rename to ...
+	(write_tm_constrs_h): this and write complete file.
+	(write_tm_preds_h): Do not emit satisfies_constraint fns.
+	(write_insn_preds_c): Add tm-constrs.h to included headers.
+	(gen_constrs): New variable.
+	(parse_option): Parse "-c".
+	(main): Invoke write_tm_constrs_h.
+	* genrecog.c (write_header): Add tm-constrs.h to included headers.
+	* Makefile.in (STAGECOPYSTUFF): Add tm-constrs.h.
+	(object_out_file): Add tm-constrs.h dependency.
+	(insn-emit.o): Same.
+	(insn-output.o): Same.
+	(insn-peep.o): Same.
+	(insn-preds.o): Same.
+	(insn-recog.o): Same.
+	(tm-constsr.h): New target.
+	(s-constrs-h): New target.
+
+	* config/rs6000/constraints.md: New file.
+	* config/rs6000/rs6000.c: Include tm-constrs.h.
+	(num_insn_constant_wide): Convert to satisfies_constraint.
+	(rs6000_rtx_costs): Convert to satisfies_constraint.
+	* config/rs6000/rs6000.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_LETTER_P): Delete.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT): Delete.
+	(EXTRA_MEMORY_CONSTRAINT): Delete.
+	(EXTRA_ADDRESS_CONSTRAINT): Delete.
+	* config/rs6000/predicates.md: Convert to satisfies_constraint.
+	* config/rs6000/rs6000.md: Include constraints.md.  Convert to
+	satisfies_constraint.
+
+	* config/i386/i386.c: Include tm-constrs.h.
+
 2006-03-29  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-loop-linear.c (compute_data_dependences_for_loop): Adjust calls.
