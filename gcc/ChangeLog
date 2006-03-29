@@ -1,3 +1,10 @@
+2006-03-29  Roger Sayle  <roger@eyesopen.com>
+
+	* convert.c (convert_to_pointer): Preserve the TREE_OVERFLOW
+	and TREE_CONSTANT_OVERFLOW bits of the argument.  Return
+	quickly if the argument is already of the correct type.
+	Call fold_build1 instead of build1.  Tidy up blank lines.
+
 2006-03-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* genemit.c (main): Add tm-constrs.h to included headers.
