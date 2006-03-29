@@ -87,7 +87,8 @@ write_header (void)
 #include \"hard-reg-set.h\"\n\
 #include \"resource.h\"\n\
 #include \"toplev.h\"\n\
-#include \"reload.h\"\n");
+#include \"reload.h\"\n\
+#include \"tm-constrs.h\"\n");
 
   if (saw_eh_return)
     puts ("#define HAVE_eh_return 1");
