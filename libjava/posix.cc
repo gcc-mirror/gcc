@@ -71,7 +71,15 @@ _Jv_platform_nanotime ()
 {
 #ifdef HAVE_CLOCK_GETTIME
   struct timespec now;
-  if (clock_gettime (CLOCK_REALTIME, &now) == 0)
+  int id;
+#ifdef CLOCK_MONOTONIC
+  id = CLOCK_MONOTONIC;
+#elif defined (CLOCK_HIGHRES)
+  id = CLOCK_HIGHRES;
+#else
+  id = CLOCK_REALTIME;
+#endif
+  if (clock_gettime (id, &now) == 0)
     {
       jlong result = (jlong) now.tv_sec;
       result = result * 1000 * 1000 + now.tv_nsec;
