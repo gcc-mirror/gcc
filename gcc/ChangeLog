@@ -3,6 +3,7 @@
 	* genpreds.c (write_tm_constrs_h): Delete variable p.
 	* genconditions.c (write_header): Add tm-constrs.h to included
 	headers.
+	* Makefile.in (build/gencondmd.o): Add tm-constrs.h dependency.
 
 2006-03-29  Roger Sayle  <roger@eyesopen.com>
 
