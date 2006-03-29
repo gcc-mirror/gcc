@@ -5,6 +5,7 @@
 	headers.
 	* genpeep.c (main): Add toplev.h to included headers.
 	* Makefile.in (build/gencondmd.o): Add tm-constrs.h dependency.
+	(build/genpeep.o): Add toplev.h dependency.
 	* config/rs6000/constraints.md: Add "W" constraint.
 
 2006-03-29  Roger Sayle  <roger@eyesopen.com>
