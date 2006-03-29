@@ -2148,13 +2148,17 @@ fixup_unsigned_type (tree type)
    If LARGEST_MODE is not VOIDmode, it means that we should not use a mode
    larger than LARGEST_MODE (usually SImode).
 
-   If no mode meets all these conditions, we return VOIDmode.  Otherwise, if
-   VOLATILEP is true or SLOW_BYTE_ACCESS is false, we return the smallest
-   mode meeting these conditions.
+   If no mode meets all these conditions, we return VOIDmode.
+   
+   If VOLATILEP is false and SLOW_BYTE_ACCESS is false, we return the
+   smallest mode meeting these conditions.
 
-   Otherwise (VOLATILEP is false and SLOW_BYTE_ACCESS is true), we return
-   the largest mode (but a mode no wider than UNITS_PER_WORD) that meets
-   all the conditions.  */
+   If VOLATILEP is false and SLOW_BYTE_ACCESS is true, we return the
+   largest mode (but a mode no wider than UNITS_PER_WORD) that meets
+   all the conditions.
+   
+   If VOLATILEP is true the narrow_volatile_bitfields target hook is used to
+   decide which of the above modes should be used.  */
 
 enum machine_mode
 get_best_mode (int bitsize, int bitpos, unsigned int align,
@@ -2184,7 +2188,8 @@ get_best_mode (int bitsize, int bitpos, unsigned int align,
       || (largest_mode != VOIDmode && unit > GET_MODE_BITSIZE (largest_mode)))
     return VOIDmode;
 
-  if (SLOW_BYTE_ACCESS && ! volatilep)
+  if ((SLOW_BYTE_ACCESS && ! volatilep)
+      || (volatilep && !targetm.narrow_volatile_bitfield()))
     {
       enum machine_mode wide_mode = VOIDmode, tmode;
 

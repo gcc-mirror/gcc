@@ -1221,6 +1221,14 @@ structure.  The hook should return true if the structure should inherit
 the alignment requirements of an unnamed bitfield's type.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_NARROW_VOLATILE_BITFIELDS (void)
+This target hook should return @code{true} if accesses to volatile bitfields
+should use the narrowest mode possible.  It should return @code{false} if
+these accesses should use the bitfield container type.
+
+The default is @code{!TARGET_STRICT_ALIGN}.
+@end deftypefn
+
 @defmac MEMBER_TYPE_FORCES_BLK (@var{field}, @var{mode})
 Return 1 if a structure or array containing @var{field} should be accessed using
 @code{BLKMODE}.

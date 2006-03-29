@@ -418,6 +418,10 @@ struct gcc_target
   /* Return true if anonymous bitfields affect structure alignment.  */
   bool (* align_anon_bitfield) (void);
 
+  /* Return true if volatile bitfields should use the narrowest type possible.
+     Return false if they should use the container type.  */
+  bool (* narrow_volatile_bitfield) (void);
+
   /* Set up target-specific built-in functions.  */
   void (* init_builtins) (void);
 
