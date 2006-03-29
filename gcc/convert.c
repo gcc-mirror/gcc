@@ -33,22 +33,31 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "toplev.h"
 #include "langhooks.h"
 #include "real.h"
-/* Convert EXPR to some pointer or reference type TYPE.
 
+/* Convert EXPR to some pointer or reference type TYPE.
    EXPR must be pointer, reference, integer, enumeral, or literal zero;
    in other cases error is called.  */
 
 tree
 convert_to_pointer (tree type, tree expr)
 {
+  if (TREE_TYPE (expr) == type)
+    return expr;
+
   if (integer_zerop (expr))
-    return build_int_cst (type, 0);
+    {
+      tree t = build_int_cst (type, 0);
+      if (TREE_OVERFLOW (expr) || TREE_CONSTANT_OVERFLOW (expr))
+	t = force_fit_type (t, 0, TREE_OVERFLOW (expr),
+			    TREE_CONSTANT_OVERFLOW (expr));
+      return t;
+    }
 
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      return build1 (NOP_EXPR, type, expr);
+      return fold_build1 (NOP_EXPR, type, expr);
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
