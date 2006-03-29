@@ -1,3 +1,23 @@
+2006-03-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortran.dg/direct_io_1.f90, gfortran.dg/iostat_2.f90,
+	gfortran.dg/open_new.f90, gfortran.dg/open_readonly_1.f90,
+	gfortran.dg/pr16935.f90, gfortran.dg/pr20954.f,
+	gfortran.fortran-torture/execute/direct_io.f90,
+	gfortran.fortran-torture/execute/inquire_2.f90,
+	gfortran.fortran-torture/execute/inquire_4.f90,
+	gfortran.fortran-torture/execute/list_read_1.f90,
+	gfortran.fortran-torture/execute/open_replace.f90,
+	gfortran.fortran-torture/execute/slash_edit.f90,
+	gfortran.fortran-torture/execute/unopened_unit_1.f90: Delete
+	temporary files from testcases.
+
+	* gfortran.dg/direct_io_2.f90,
+	gfortran.fortran-torture/execute/inquire_1.f90,
+	gfortran.fortran-torture/execute/inquire_3.f90: Delete temp file.
+
+	* gfortran.dg/endfile_2.f90: Delete temp file.
+
 2006-03-28  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline

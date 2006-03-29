@@ -9,6 +9,6 @@ program prog
   open (unit=10, file='PR19451.dat', action="read")
   write (10,*,err=20) "Hello World"
   call abort()
-  20 continue
+  20 close (10, status='delete')
 end program
 

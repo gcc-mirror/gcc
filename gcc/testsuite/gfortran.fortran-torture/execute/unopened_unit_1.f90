@@ -9,5 +9,6 @@ program unopened_unit_1
     Read(99,*)J
     If (J.ne.I) Call abort
   End Do
+  Close(99, Status='Delete')
 End program
 
