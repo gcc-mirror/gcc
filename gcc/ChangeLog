@@ -4,6 +4,7 @@
 	* genconditions.c (write_header): Add tm-constrs.h to included
 	headers.
 	* Makefile.in (build/gencondmd.o): Add tm-constrs.h dependency.
+	* config/rs6000/constraints.md: Add "W" constraint.
 
 2006-03-29  Roger Sayle  <roger@eyesopen.com>
 
