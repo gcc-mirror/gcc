@@ -312,6 +312,9 @@ static bool arm_tls_symbol_p (rtx x);
 #undef TARGET_ALIGN_ANON_BITFIELD
 #define TARGET_ALIGN_ANON_BITFIELD arm_align_anon_bitfield
 
+#undef TARGET_NARROW_VOLATILE_BITFIELD
+#define TARGET_NARROW_VOLATILE_BITFIELD hook_bool_void_false
+
 #undef TARGET_CXX_GUARD_TYPE
 #define TARGET_CXX_GUARD_TYPE arm_cxx_guard_type
 

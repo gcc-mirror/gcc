@@ -1,3 +1,14 @@
+2006-03-29  Paul Brook  <paul@codesourcery.com>
+
+	PR middle-end/23623
+	* targhooks.c (default_narrow_bitfield): New fuction.
+	* targhooks.h (default_narrow_bitfield): add prototype.
+	* target.h (gcc_target): Add narrow_volatile_bitfield.
+	* target-def.h (TARGET_NARROW_VOLATILE_BITFIELD): Define.
+	* stor-layout.c (get_best_mode): Use targetm.narrow_volatile_bitfield.
+	* doc/tm.texi: Document TARGET_NARROW_VOLATILE_BITFIELDS.
+	* config/arm/arm.c (TARGET_NARROW_VOLATILE_BITFIELD): Define.
+
 2006-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config.gcc (s390-*-linux-*, s390x-*-linux*): Add t-dfprules to 
