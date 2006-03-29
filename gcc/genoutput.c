@@ -244,6 +244,7 @@ output_prologue (void)
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"target.h\"\n");
+  printf ("#include \"tm-constrs.h\"\n");
 }
 
 static void

@@ -947,13 +947,19 @@ write_regclass_for_constraint (void)
 /* Write out the functions which compute whether a given value matches
    a given non-register constraint.  */
 static void
-write_satisfies_constraint_fns (void)
+write_tm_constrs_h (void)
 {
   struct constraint_data *c;
+  struct pred_data *p;
 
-  /* A fair number of places include tm_p.h without including rtl.h.  */
-  puts ("#ifdef GCC_RTL_H\n");
-  
+  printf ("\
+/* Generated automatically by the program '%s'\n\
+   from the machine description file '%s'.  */\n\n", progname, in_fname);
+
+  puts ("\
+#ifndef GCC_TM_CONSTRS_H\n\
+#define GCC_TM_CONSTRS_H\n");
+
   FOR_ALL_CONSTRAINTS (c)
     if (!c->is_register)
       {
@@ -995,8 +1001,7 @@ write_satisfies_constraint_fns (void)
 	write_predicate_expr (c->exp);
 	fputs (";\n}\n", stdout);
       }
-
-  puts ("\n#endif /* rtl.h visible */\n");
+  puts ("#endif /* tm-constrs.h */");
 }
 
 /* Write out the wrapper function, constraint_satisfied_p, that maps
@@ -1172,10 +1177,6 @@ write_tm_preds_h (void)
 	      "insn_extra_address_constraint (lookup_constraint (s_))\n");
       else
 	puts ("#define EXTRA_ADDRESS_CONSTRAINT(c_,s_) false\n");
-
-      if (have_const_int_constraints || have_const_dbl_constraints
-	  || have_extra_constraints)
-	write_satisfies_constraint_fns ();
     }
 
   puts ("#endif /* tm-preds.h */");
@@ -1216,7 +1217,8 @@ write_insn_preds_c (void)
 #include \"resource.h\"\n\
 #include \"toplev.h\"\n\
 #include \"reload.h\"\n\
-#include \"regs.h\"\n");
+#include \"regs.h\"\n\
+#include \"tm-constrs.h\"\n");
 
   FOR_ALL_PREDICATES (p)
     write_one_predicate_function (p);
@@ -1242,12 +1244,19 @@ write_insn_preds_c (void)
 
 /* Argument parsing.  */
 static bool gen_header;
+static bool gen_constrs;
+
 static bool
 parse_option (const char *opt)
 {
   if (!strcmp (opt, "-h"))
     {
       gen_header = true;
+      return 1;
+    }
+  else if (!strcmp (opt, "-c"))
+    {
+      gen_constrs = true;
       return 1;
     }
   else
@@ -1291,6 +1300,8 @@ main (int argc, char **argv)
 
   if (gen_header)
     write_tm_preds_h ();
+  else if (gen_constrs)
+    write_tm_constrs_h ();
   else
     write_insn_preds_c ();
 

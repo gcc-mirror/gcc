@@ -56,6 +56,7 @@
 #include "tree-gimple.h"
 #include "intl.h"
 #include "params.h"
+#include "tm-constrs.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -1992,11 +1993,11 @@ int
 num_insns_constant_wide (HOST_WIDE_INT value)
 {
   /* signed constant loadable with {cal|addi} */
-  if (CONST_OK_FOR_LETTER_P (value, 'I'))
+  if (satisfies_constraint_I (GEN_INT (value)))
     return 1;
 
   /* constant loadable with {cau|addis} */
-  else if (CONST_OK_FOR_LETTER_P (value, 'L'))
+  else if (satisfies_constraint_L (GEN_INT (value)))
     return 1;
 
 #if HOST_BITS_PER_WIDE_INT == 64
@@ -18515,19 +18516,21 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
       if (((outer_code == SET
 	    || outer_code == PLUS
 	    || outer_code == MINUS)
-	   && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-	       || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')))
+	   && (satisfies_constraint_I (x)
+	       || satisfies_constraint_L (x)))
 	  || (outer_code == AND
-	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
-		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
-					     mode == SImode ? 'L' : 'J'))
+	      && (satisfies_constraint_K (x)
+		  || (mode == SImode
+		      ? satisfies_constraint_L (x)
+		      : satisfies_constraint_J (x))
 		  || mask_operand (x, mode)
 		  || (mode == DImode
 		      && mask64_operand (x, DImode))))
 	  || ((outer_code == IOR || outer_code == XOR)
-	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
-		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
-					     mode == SImode ? 'L' : 'J'))))
+	      && (satisfies_constraint_K (x)
+		  || (mode == SImode
+		      ? satisfies_constraint_L (x)
+		      : satisfies_constraint_J (x))))
 	  || outer_code == ASHIFT
 	  || outer_code == ASHIFTRT
 	  || outer_code == LSHIFTRT
@@ -18535,22 +18538,23 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  || outer_code == ROTATERT
 	  || outer_code == ZERO_EXTRACT
 	  || (outer_code == MULT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (x), 'I'))
+	      && satisfies_constraint_I (x))
 	  || ((outer_code == DIV || outer_code == UDIV
 	       || outer_code == MOD || outer_code == UMOD)
 	      && exact_log2 (INTVAL (x)) >= 0)
 	  || (outer_code == COMPARE
-	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')))
+	      && (satisfies_constraint_I (x)
+		  || satisfies_constraint_K (x)))
 	  || (outer_code == EQ
-	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
-		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
-					     mode == SImode ? 'L' : 'J'))))
+	      && (satisfies_constraint_I (x)
+		  || satisfies_constraint_K (x)
+		  || (mode == SImode
+		      ? satisfies_constraint_L (x)
+		      : satisfies_constraint_J (x))))
 	  || (outer_code == GTU
-	      && CONST_OK_FOR_LETTER_P (INTVAL (x), 'I'))
+	      && satisfies_constraint_I (x))
 	  || (outer_code == LTU
-	      && CONST_OK_FOR_LETTER_P (INTVAL (x), 'P')))
+	      && satisfies_constraint_P (x)))
 	{
 	  *total = 0;
 	  return true;
@@ -18573,8 +18577,8 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
     case CONST_DOUBLE:
       if (mode == DImode
 	  && ((outer_code == AND
-	       && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
-		   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')
+	       && (satisfies_constraint_K (x)
+		   || satisfies_constraint_L (x)
 		   || mask_operand (x, DImode)
 		   || mask64_operand (x, DImode)))
 	      || ((outer_code == IOR || outer_code == XOR)
@@ -18664,7 +18668,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case MULT:
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
+	  && satisfies_constraint_I (XEXP (x, 1)))
 	{
 	  if (INTVAL (XEXP (x, 1)) >= -256
 	      && INTVAL (XEXP (x, 1)) <= 255)

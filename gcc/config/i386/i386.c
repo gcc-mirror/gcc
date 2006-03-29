@@ -49,6 +49,7 @@ Boston, MA 02110-1301, USA.  */
 #include "cgraph.h"
 #include "tree-gimple.h"
 #include "dwarf2.h"
+#include "tm-constrs.h"
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
