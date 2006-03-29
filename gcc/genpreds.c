@@ -950,7 +950,6 @@ static void
 write_tm_constrs_h (void)
 {
   struct constraint_data *c;
-  struct pred_data *p;
 
   printf ("\
 /* Generated automatically by the program '%s'\n\

@@ -1,3 +1,7 @@
+2006-03-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* genpreds.c (write_tm_constrs_h): Delete variable p.
+
 2006-03-29  Roger Sayle  <roger@eyesopen.com>
 
 	* stor-layout.c (mode_for_size_tree): Remove restiction on type
