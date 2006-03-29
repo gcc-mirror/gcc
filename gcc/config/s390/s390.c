@@ -334,6 +334,16 @@ struct machine_function GTY(())
 #define REGNO_PAIR_OK(REGNO, MODE)                               \
   (HARD_REGNO_NREGS ((REGNO), (MODE)) == 1 || !((REGNO) & 1))
 
+/* Return true if the back end supports mode MODE.  */
+static bool
+s390_scalar_mode_supported_p (enum machine_mode mode)
+{
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return true;
+  else
+    return default_scalar_mode_supported_p (mode);
+}
+
 /* Set the has_landing_pad_p flag in struct machine_function to VALUE.  */
 
 void
@@ -5259,12 +5269,12 @@ replace_ltrel_base (rtx *x)
 /* We keep a list of constants which we have to add to internal
    constant tables in the middle of large functions.  */
 
-#define NR_C_MODES 8
+#define NR_C_MODES 11
 enum machine_mode constant_modes[NR_C_MODES] =
 {
-  TFmode, TImode,
-  DFmode, DImode,
-  SFmode, SImode,
+  TFmode, TImode, TDmode,
+  DFmode, DImode, DDmode,
+  SFmode, SImode, SDmode,
   HImode,
   QImode
 };
@@ -6207,6 +6217,7 @@ s390_output_pool_entry (rtx exp, enum machine_mode mode, unsigned int align)
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_FLOAT:
+    case MODE_DECIMAL_FLOAT:
       gcc_assert (GET_CODE (exp) == CONST_DOUBLE);
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, exp);
@@ -6782,7 +6793,7 @@ s390_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
       if (REGNO_PAIR_OK (regno, mode))
 	{
 	  if (TARGET_64BIT 
-	      || (mode != TFmode && mode != TCmode))
+	      || (mode != TFmode && mode != TCmode && mode != TDmode))
 	    return true;
 	}	  
       break;
@@ -7601,7 +7612,7 @@ s390_function_arg_float (enum machine_mode mode, tree type)
 
   /* No type info available for some library calls ...  */
   if (!type)
-    return mode == SFmode || mode == DFmode;
+    return mode == SFmode || mode == DFmode || mode == SDmode || mode == DDmode;
 
   /* The ABI says that record types with a single member are treated
      just like that member would be.  */
@@ -7643,7 +7654,7 @@ s390_function_arg_integer (enum machine_mode mode, tree type)
   /* No type info available for some library calls ...  */
   if (!type)
     return GET_MODE_CLASS (mode) == MODE_INT
-	   || (TARGET_SOFT_FLOAT &&  GET_MODE_CLASS (mode) == MODE_FLOAT);
+	   || (TARGET_SOFT_FLOAT &&  SCALAR_FLOAT_MODE_P (mode));
 
   /* We accept small integral (and similar) types.  */
   if (INTEGRAL_TYPE_P (type)
@@ -7805,11 +7816,10 @@ s390_function_value (tree type, enum machine_mode mode)
       mode = promote_mode (type, TYPE_MODE (type), &unsignedp, 1);
     }
 
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
-               || GET_MODE_CLASS (mode) == MODE_FLOAT);
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT || SCALAR_FLOAT_MODE_P (mode));
   gcc_assert (GET_MODE_SIZE (mode) <= 8);
 
-  if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if (TARGET_HARD_FLOAT && SCALAR_FLOAT_MODE_P (mode))
     return gen_rtx_REG (mode, 16);
   else
     return gen_rtx_REG (mode, 2);
@@ -9302,6 +9312,9 @@ s390_reorg (void)
 #undef TARGET_MANGLE_FUNDAMENTAL_TYPE
 #define TARGET_MANGLE_FUNDAMENTAL_TYPE s390_mangle_fundamental_type
 #endif
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P s390_scalar_mode_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
