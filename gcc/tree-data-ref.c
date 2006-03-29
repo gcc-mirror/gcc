@@ -3968,7 +3968,7 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
 
 tree 
 find_data_references_in_loop (struct loop *loop,
-			      VEC (data_reference_p, heap) *datarefs)
+			      VEC (data_reference_p, heap) **datarefs)
 {
   basic_block bb, *bbs;
   unsigned int i;
@@ -4012,7 +4012,7 @@ find_data_references_in_loop (struct loop *loop,
 		    dr = create_data_ref (opnd0, stmt, false);
 		    if (dr) 
 		      {
-			VEC_safe_push (data_reference_p, heap, datarefs, dr);
+			VEC_safe_push (data_reference_p, heap, *datarefs, dr);
 			one_inserted = true;
 		      }
 		  }
@@ -4024,7 +4024,7 @@ find_data_references_in_loop (struct loop *loop,
 		    dr = create_data_ref (opnd1, stmt, true);
 		    if (dr) 
 		      {
-			VEC_safe_push (data_reference_p, heap, datarefs, dr);
+			VEC_safe_push (data_reference_p, heap, *datarefs, dr);
 			one_inserted = true;
 		      }
 		  }
@@ -4049,7 +4049,7 @@ find_data_references_in_loop (struct loop *loop,
 		      dr = create_data_ref (TREE_VALUE (args), stmt, true);
 		      if (dr)
 			{
-			  VEC_safe_push (data_reference_p, heap, datarefs, dr);
+			  VEC_safe_push (data_reference_p, heap, *datarefs, dr);
 			  one_inserted = true;
 			}
 		    }
@@ -4080,7 +4080,7 @@ find_data_references_in_loop (struct loop *loop,
 		  DR_OFFSET_MISALIGNMENT (res) = NULL_TREE;
 		  DR_MEMTAG (res) = NULL_TREE;
 		  DR_PTR_INFO (res) = NULL;
-		  VEC_safe_push (data_reference_p, heap, datarefs, res);
+		  VEC_safe_push (data_reference_p, heap, *datarefs, res);
 
 		  free (bbs);
 		  return chrec_dont_know;
@@ -4149,8 +4149,8 @@ find_loop_nest (struct loop *loop, VEC (loop_p, heap) *loop_nest)
 void
 compute_data_dependences_for_loop (struct loop *loop, 
 				   bool compute_self_and_read_read_dependences,
-				   VEC (data_reference_p, heap) *datarefs,
-				   VEC (ddr_p, heap) *dependence_relations)
+				   VEC (data_reference_p, heap) **datarefs,
+				   VEC (ddr_p, heap) **dependence_relations)
 {
   struct loop *loop_nest = loop;
   VEC (loop_p, heap) *vloops = VEC_alloc (loop_p, heap, 3);
@@ -4169,10 +4169,10 @@ compute_data_dependences_for_loop (struct loop *loop,
       /* Insert a single relation into dependence_relations:
 	 chrec_dont_know.  */
       ddr = initialize_data_dependence_relation (NULL, NULL, vloops);
-      VEC_safe_push (ddr_p, heap, dependence_relations, ddr);
+      VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
     }
   else
-    compute_all_dependences (datarefs, dependence_relations, vloops,
+    compute_all_dependences (*datarefs, *dependence_relations, vloops,
 			     compute_self_and_read_read_dependences);
 
   if (dump_file && (dump_flags & TDF_STATS))
@@ -4258,7 +4258,7 @@ analyze_all_data_dependences (struct loops *loops)
 
   /* Compute DDs on the whole function.  */
   compute_data_dependences_for_loop (loops->parray[0], false,
-				     datarefs, dependence_relations);
+				     &datarefs, &dependence_relations);
 
   if (dump_file)
     {
