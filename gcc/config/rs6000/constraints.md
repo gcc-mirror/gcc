@@ -156,3 +156,7 @@
 			      || !logical_operand (op, DImode))"))
 	    (not (match_operand 0 "mask_operand")))
        (not (match_operand 0 "mask64_operand"))))
+
+(define_constraint "W"
+  "vector constant that does not require memory"
+  (match_operand 0 "easy_vector_constant"))
