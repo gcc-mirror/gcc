@@ -234,9 +234,10 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/text/html/parser.lo javax/swing/text/rtf.lo \
 	javax/swing/tree.lo javax/swing/undo.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo
-am__DEPENDENCIES_3 = gnu-CORBA.lo gnu-java-beans.lo gnu-javax-rmi.lo \
-	gnu-javax-sound-midi.lo gnu-xml.lo javax-imageio.lo \
-	javax-rmi.lo javax-xml.lo org-omg.lo org-w3c.lo org-xml.lo
+am__DEPENDENCIES_3 = gnu-CORBA.lo gnu-java-awt-peer-swing.lo \
+	gnu-java-beans.lo gnu-javax-rmi.lo gnu-javax-sound-midi.lo \
+	gnu-xml.lo javax-imageio.lo javax-rmi.lo javax-xml.lo \
+	org-omg.lo org-w3c.lo org-xml.lo
 am__DEPENDENCIES_4 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
@@ -1371,6 +1372,22 @@ classpath/gnu/java/awt/peer/qt/QtTextFieldPeer.java \
 classpath/gnu/java/awt/peer/qt/QtToolkit.java \
 classpath/gnu/java/awt/peer/qt/QtVolatileImage.java \
 classpath/gnu/java/awt/peer/qt/QtWindowPeer.java
+
+gnu_java_awt_peer_swing_source_files = \
+classpath/gnu/java/awt/peer/swing/SwingButtonPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingCanvasPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingComponent.java \
+classpath/gnu/java/awt/peer/swing/SwingComponentPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingContainerPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingFramePeer.java \
+classpath/gnu/java/awt/peer/swing/SwingLabelPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingMenuBarPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingMenuItemPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingMenuPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingPanelPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingTextFieldPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingToolkit.java \
+classpath/gnu/java/awt/peer/swing/SwingWindowPeer.java
 
 gnu_java_beans_source_files = \
 classpath/gnu/java/beans/BeanInfoEmbryo.java \
@@ -6618,6 +6635,7 @@ ordinary_header_files = \
 
 bc_objects = \
   gnu-CORBA.lo \
+  gnu-java-awt-peer-swing.lo \
   gnu-java-beans.lo \
   gnu-javax-rmi.lo \
   gnu-javax-sound-midi.lo \
@@ -8661,6 +8679,11 @@ gnu-java-awt-peer-qt.lo: $(gnu_java_awt_peer_qt_source_files)
 	@find classpath/lib/gnu/java/awt/peer/qt -name '*.class' > gnu-java-awt-peer-qt.list
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-qt.lo @gnu-java-awt-peer-qt.list
 	@rm -f gnu-java-awt-peer-qt.list
+
+gnu-java-awt-peer-swing.lo: $(gnu_java_awt_peer_swing_source_files)
+	@find classpath/lib/gnu/java/awt/peer/swing -name '*.class' > gnu-java-awt-peer-swing.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-swing.lo @gnu-java-awt-peer-swing.list
+	@rm -f gnu-java-awt-peer-swing.list
 
 gnu-java-beans.lo: $(gnu_java_beans_source_files)
 	@find classpath/lib/gnu/java/beans -name '*.class' > gnu-java-beans.list
