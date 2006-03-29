@@ -1334,8 +1334,8 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
     fprintf (vect_dump, "=== vect_analyze_data_refs ===");
 
   compute_data_dependences_for_loop (loop, false,
-                                     LOOP_VINFO_DATAREFS (loop_vinfo),
-                                     LOOP_VINFO_DDRS (loop_vinfo));
+                                     &LOOP_VINFO_DATAREFS (loop_vinfo),
+                                     &LOOP_VINFO_DDRS (loop_vinfo));
 
   /* Go through the data-refs, check that the analysis succeeded. Update pointer
      from stmt_vec_info struct to DR and vectype.  */

@@ -1,3 +1,14 @@
+2006-03-29  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-loop-linear.c (compute_data_dependences_for_loop): Adjust calls.
+	* tree-data-ref.c (find_data_references_in_loop,
+	compute_data_dependences_for_loop): Use pointers to VEC.
+	(analyze_all_data_dependences): Adjust calls.
+	* tree-data-ref.h (find_data_references_in_loop,
+	compute_data_dependences_for_loop): Adjust declarations.
+	* tree-vect-analyze.c (vect_analyze_data_refs): Adjust call to
+	compute_data_dependences_for_loop.
+
 2006-03-29  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/vfp.md (movsf_vfp): Disparage w<->r alternatives.

@@ -289,8 +289,8 @@ linear_transform_loops (struct loops *loops)
  
       datarefs = VEC_alloc (data_reference_p, heap, 10);
       dependence_relations = VEC_alloc (ddr_p, heap, 10 * 10);
-      compute_data_dependences_for_loop (loop_nest, true, datarefs,
-					 dependence_relations);
+      compute_data_dependences_for_loop (loop_nest, true, &datarefs,
+					 &dependence_relations);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	dump_ddrs (dump_file, dependence_relations);
