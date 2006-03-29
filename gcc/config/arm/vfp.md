@@ -181,10 +181,12 @@
 
 
 ;; SFmode moves
+;; Disparage the w<->r cases because reloading an invalid address is
+;; preferable to loading the value via integer registers.
 
 (define_insn "*movsf_vfp"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,r,w  ,Uv,r ,m,w,r")
-	(match_operand:SF 1 "general_operand"	   " r,w,UvE,w, mE,r,w,r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,?r,w  ,Uv,r ,m,w,r")
+	(match_operand:SF 1 "general_operand"	   " ?r,w,UvE,w, mE,r,w,r"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
    && (   s_register_operand (operands[0], SFmode)
        || s_register_operand (operands[1], SFmode))"
@@ -207,8 +209,8 @@
 ;; DFmode moves
 
 (define_insn "*movdf_vfp"
-  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,r,r, m,w  ,Uv,w,r")
-	(match_operand:DF 1 "soft_df_operand"		   " r,w,mF,r,UvF,w, w,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,r, m,w  ,Uv,w,r")
+	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,mF,r,UvF,w, w,r"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
    && (   register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
