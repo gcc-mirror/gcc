@@ -1,5 +1,12 @@
 2006-03-28  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/26777
+	* include/bits/fstream.tcc (basic_filebuf<>::_M_seek): Check
+	the return value of _M_file.seekoff.
+	* testsuite/27_io/basic_filebuf/seekoff/char/26777.cc: New.
+
+2006-03-28  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/vstring.h (operator[]): Allow s[s.size()] in
 	debug mode, but not pedantic mode.
 
