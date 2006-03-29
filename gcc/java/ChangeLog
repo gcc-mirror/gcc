@@ -1,3 +1,10 @@
+2006-03-28  Tom Tromey  <tromey@redhat.com>
+
+	PR java/26390:
+	* parse.y (find_most_specific_methods_list): Added 'class'
+	argument.
+	(lookup_method_invoke): Updated.
+
 2006-03-15  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-write.c (generate_bytecode_insns): Use qualifying type for

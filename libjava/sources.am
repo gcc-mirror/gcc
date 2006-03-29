@@ -825,6 +825,27 @@ gnu-java-awt-peer-qt.lo: $(gnu_java_awt_peer_qt_source_files)
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-qt.lo @gnu-java-awt-peer-qt.list
 	@rm -f gnu-java-awt-peer-qt.list
 
+gnu_java_awt_peer_swing_source_files = \
+classpath/gnu/java/awt/peer/swing/SwingButtonPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingCanvasPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingComponent.java \
+classpath/gnu/java/awt/peer/swing/SwingComponentPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingContainerPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingFramePeer.java \
+classpath/gnu/java/awt/peer/swing/SwingLabelPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingMenuBarPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingMenuItemPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingMenuPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingPanelPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingTextFieldPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingToolkit.java \
+classpath/gnu/java/awt/peer/swing/SwingWindowPeer.java
+
+gnu-java-awt-peer-swing.lo: $(gnu_java_awt_peer_swing_source_files)
+	@find classpath/lib/gnu/java/awt/peer/swing -name '*.class' > gnu-java-awt-peer-swing.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-swing.lo @gnu-java-awt-peer-swing.list
+	@rm -f gnu-java-awt-peer-swing.list
+
 gnu_java_beans_source_files = \
 classpath/gnu/java/beans/BeanInfoEmbryo.java \
 classpath/gnu/java/beans/DefaultExceptionListener.java \
@@ -8186,6 +8207,7 @@ ordinary_header_files = \
 
 bc_objects = \
   gnu-CORBA.lo \
+  gnu-java-awt-peer-swing.lo \
   gnu-java-beans.lo \
   gnu-javax-rmi.lo \
   gnu-javax-sound-midi.lo \

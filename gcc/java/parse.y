@@ -134,7 +134,7 @@ static tree resolve_no_layout (tree, tree);
 static int invocation_mode (tree, int);
 static tree find_applicable_accessible_methods_list (int, tree, tree, tree);
 static void search_applicable_methods_list (int, tree, tree, tree, tree *, tree *);
-static tree find_most_specific_methods_list (tree);
+static tree find_most_specific_methods_list (tree, tree);
 static int argument_types_convertible (tree, tree);
 static tree patch_invoke (tree, tree, tree);
 static int maybe_use_access_method (int, tree *, tree *);
@@ -11249,7 +11249,7 @@ lookup_method_invoke (int lc, tree cl, tree class, tree name, tree arg_list)
   /* Find all candidates and then refine the list, searching for the
      most specific method. */
   list = find_applicable_accessible_methods_list (lc, class, name, atl);
-  list = find_most_specific_methods_list (list);
+  list = find_most_specific_methods_list (list, class);
   if (list && !TREE_CHAIN (list))
     return TREE_VALUE (list);
 
@@ -11441,7 +11441,7 @@ search_applicable_methods_list (int lc, tree method, tree name, tree arglist,
 /* 15.11.2.2 Choose the Most Specific Method */
 
 static tree
-find_most_specific_methods_list (tree list)
+find_most_specific_methods_list (tree list, tree class)
 {
   int max = 0;
   int abstract, candidates;
@@ -11464,8 +11464,23 @@ find_most_specific_methods_list (tree list)
 	  /* Compare arguments and location where methods where declared */
 	  if (argument_types_convertible (method_v, current_v))
 	    {
+	      /* We have a rather odd special case here.  The front
+		 end doesn't properly implement inheritance, so we
+		 work around it here.  The idea is, if we are
+		 comparing a method declared in a class to one
+		 declared in an interface, and the invocation's
+		 qualifying class is a class (and not an interface),
+		 then we consider the method's class to be the
+		 qualifying class of the invocation.  This lets us
+		 fake the result of ordinary inheritance.  */
+	      tree context_v = DECL_CONTEXT (current_v);
+	      if (TYPE_INTERFACE_P (DECL_CONTEXT (method_v))
+		  && ! TYPE_INTERFACE_P (context_v)
+		  && ! TYPE_INTERFACE_P (class))
+		context_v = class;
+
 	      if (valid_method_invocation_conversion_p
-		  (DECL_CONTEXT (method_v), DECL_CONTEXT (current_v)))
+		  (DECL_CONTEXT (method_v), context_v))
 		{
 		  int v = (DECL_SPECIFIC_COUNT (current_v) += 1);
 		  max = (v > max ? v : max);
