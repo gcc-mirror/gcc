@@ -1,5 +1,13 @@
 2006-03-29  Roger Sayle  <roger@eyesopen.com>
 
+	* stor-layout.c (mode_for_size_tree): Remove restiction on type
+	sizes by correctly testing whether the size fits a host integer.
+	(initialize_sizetypes): Use set_min_and_max_values_for_integral_type
+	to correctly set TYPE_MIN_VALUE and TYPE_MAX_VALUE to the full
+	SImode range for the default sizetype and bitsizetype.
+
+2006-03-29  Roger Sayle  <roger@eyesopen.com>
+
 	* convert.c (convert_to_pointer): Preserve the TREE_OVERFLOW
 	and TREE_CONSTANT_OVERFLOW bits of the argument.  Return
 	quickly if the argument is already of the correct type.

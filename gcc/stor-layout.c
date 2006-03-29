@@ -190,15 +190,16 @@ mode_for_size (unsigned int size, enum mode_class class, int limit)
 enum machine_mode
 mode_for_size_tree (tree size, enum mode_class class, int limit)
 {
-  if (TREE_CODE (size) != INTEGER_CST
-      || TREE_OVERFLOW (size)
-      /* What we really want to say here is that the size can fit in a
-	 host integer, but we know there's no way we'd find a mode for
-	 this many bits, so there's no point in doing the precise test.  */
-      || compare_tree_int (size, 1000) > 0)
+  unsigned HOST_WIDE_INT uhwi;
+  unsigned int ui;
+
+  if (!host_integerp (size, 1))
     return BLKmode;
-  else
-    return mode_for_size (tree_low_cst (size, 1), class, limit);
+  uhwi = tree_low_cst (size, 1);
+  ui = uhwi;
+  if (uhwi != ui)
+    return BLKmode;
+  return mode_for_size (ui, class, limit);
 }
 
 /* Similar, but never return BLKmode; return the narrowest mode that
@@ -1938,20 +1939,19 @@ void
 initialize_sizetypes (bool signed_p)
 {
   tree t = make_node (INTEGER_TYPE);
+  int precision = GET_MODE_BITSIZE (SImode);
 
   TYPE_MODE (t) = SImode;
   TYPE_ALIGN (t) = GET_MODE_ALIGNMENT (SImode);
   TYPE_USER_ALIGN (t) = 0;
   TYPE_IS_SIZETYPE (t) = 1;
   TYPE_UNSIGNED (t) = !signed_p;
-  TYPE_SIZE (t) = build_int_cst (t, GET_MODE_BITSIZE (SImode));
+  TYPE_SIZE (t) = build_int_cst (t, precision);
   TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode));
-  TYPE_PRECISION (t) = GET_MODE_BITSIZE (SImode);
-  TYPE_MIN_VALUE (t) = build_int_cst (t, 0);
+  TYPE_PRECISION (t) = precision;
 
-  /* 1000 avoids problems with possible overflow and is certainly
-     larger than any size value we'd want to be storing.  */
-  TYPE_MAX_VALUE (t) = build_int_cst (t, 1000);
+  /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE.  */
+  set_min_and_max_values_for_integral_type (t, precision, !signed_p);
 
   sizetype = t;
   bitsizetype = build_distinct_type_copy (t);
