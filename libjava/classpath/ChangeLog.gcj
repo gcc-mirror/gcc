@@ -1,3 +1,10 @@
+2006-03-29  Tom Tromey  <tromey@redhat.com>
+
+	PR gcc/26901:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (SUBDIRS): Remove 'tools'.
+	(DIST_SUBDIRS): Likewise.
+
 2006-03-16  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26706:
