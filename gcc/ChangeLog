@@ -1,3 +1,10 @@
+2006-03-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/17959
+	* expr.c (emit_group_store):  Optimize group stores into a pseudo
+	register by using a paradoxical subreg to initialize the destination
+	if the first or last member of the group specifies a "low part".
+
 2006-03-30  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR target/26734
