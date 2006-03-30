@@ -249,7 +249,12 @@ allocate_array (void **mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
       return;
     }
   if (stat)
-    *stat = ERROR_ALLOCATION;
+    {
+      free (*mem);
+      allocate (mem, size, stat);
+      *stat = ERROR_ALLOCATION;
+      return;
+    }
   else
     runtime_error ("Attempting to allocate already allocated array.");
 
@@ -272,10 +277,15 @@ allocate64_array (void **mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
       return;
     }
   if (stat)
-    *stat = ERROR_ALLOCATION;
+    {
+      free (*mem);
+      allocate (mem, size, stat);
+      *stat = ERROR_ALLOCATION;
+      return;
+    }
   else
     runtime_error ("Attempting to allocate already allocated array.");
-  
+
   return;
 }
 

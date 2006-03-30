@@ -1,3 +1,9 @@
+2006-03-30  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/25031
+	* gfortran.dg/multiple_allocation_1.f90:  Check that the
+	size has changed after a re-allocation with stat.
+
 2006-03-30  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.target/i386/sselibm-1.c: Adjust for libgcc-math partial

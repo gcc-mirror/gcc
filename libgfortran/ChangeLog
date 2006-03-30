@@ -1,3 +1,11 @@
+2006-03-30  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/25031
+	* runtime/memory.c (allocate_array):  If stat is present and
+	the variable is already allocated, free the variable, do
+	the allocation and set stat.
+	(allocate_array_64):  Likewise.  Whitespace fix.
+
 2006-03-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26880
