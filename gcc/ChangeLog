@@ -1,3 +1,7 @@
+2006-03-30  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Rename docdir to gcc_docdir.
+
 2006-03-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/17959

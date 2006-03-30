@@ -1,3 +1,7 @@
+2006-03-30  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Make-lang.in: Rename docdir to gcc_docdir.
+
 2006-03-30  Tom Tromey  <tromey@redhat.com>
 
 	PR java/26042:

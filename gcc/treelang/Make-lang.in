@@ -161,14 +161,14 @@ treelang.srcinfo: doc/treelang.info
 treelang.dvi: doc/treelang.dvi
 
 TEXI_TREELANG_FILES = treelang/treelang.texi \
-	 $(docdir)/include/gcc-common.texi \
-	 $(docdir)/include/gpl.texi \
-	 $(docdir)/include/fdl.texi \
-	 $(docdir)/include/funding.texi \
+	 $(gcc_docdir)/include/gcc-common.texi \
+	 $(gcc_docdir)/include/gpl.texi \
+	 $(gcc_docdir)/include/fdl.texi \
+	 $(gcc_docdir)/include/funding.texi \
 	 gcc-vers.texi
 
 doc/treelang.info: $(TEXI_TREELANG_FILES)
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir)/include -o $@ $<
+	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir)/include -o $@ $<
 
 doc/treelang.dvi: $(TEXI_TREELANG_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
@@ -178,7 +178,7 @@ treelang.html: $(htmldir)/treelang/index.html
 $(htmldir)/treelang/index.html: $(TEXI_TREELANG_FILES)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
-	$(TEXI2HTML) -I $(docdir)/include -I $(srcdir)/treelang -o $(@D) $<
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/treelang -o $(@D) $<
 
 #
 # Install hooks:

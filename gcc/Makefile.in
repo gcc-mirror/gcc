@@ -72,7 +72,7 @@ program_transform_name := @program_transform_name@
 
 # Directory where sources are, from where we are.
 srcdir = @srcdir@
-docdir = @srcdir@/doc
+gcc_docdir = @srcdir@/doc
 
 # Directory where sources are, absolute.
 abs_srcdir = @abs_srcdir@
@@ -105,7 +105,7 @@ VPATH = @srcdir@
 # pattern rule for everything.
 # This vpath could be extended within the Make-lang fragments.
 
-vpath %.texi $(docdir):$(docdir)/include
+vpath %.texi $(gcc_docdir):$(gcc_docdir)/include
 
 # ----
 # Default values for variables overridden in Makefile fragments.
@@ -3367,15 +3367,15 @@ doc/cppinternals.info: $(TEXI_CPPINT_FILES)
 
 doc/%.info: %.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
-		$(MAKEINFO) $(MAKEINFOFLAGS) -I . -I $(docdir) \
-			-I $(docdir)/include -o $@ $<; \
+		$(MAKEINFO) $(MAKEINFOFLAGS) -I . -I $(gcc_docdir) \
+			-I $(gcc_docdir)/include -o $@ $<; \
 	fi
 
 # Duplicate entry to handle renaming of gccinstall.info
 doc/gccinstall.info: $(TEXI_GCCINSTALL_FILES)
 	if [ x$(BUILD_INFO) = xinfo ]; then \
-		$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) \
-			-I $(docdir)/include -o $@ $<; \
+		$(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+			-I $(gcc_docdir)/include -o $@ $<; \
 	fi
 
 doc/cpp.dvi: $(TEXI_CPP_FILES)
@@ -3576,7 +3576,7 @@ maintainer-clean:
 	$(MAKE) lang.maintainer-clean distclean
 	-rm -f cpp.??s cpp.*aux
 	-rm -f gcc.??s gcc.*aux
-	-rm -f $(docdir)/*.info $(docdir)/*.1 $(docdir)/*.7 $(docdir)/*.dvi
+	-rm -f $(gcc_docdir)/*.info $(gcc_docdir)/*.1 $(gcc_docdir)/*.7 $(gcc_docdir)/*.dvi
 #
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.

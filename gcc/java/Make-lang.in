@@ -380,15 +380,15 @@ java/gjavah-jni.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
 		-DJNI_DEFAULT=1 \
 		$(srcdir)/java/gjavah.c $(OUTPUT_OPTION)
 
-TEXI_JAVA_FILES = java/gcj.texi $(docdir)/include/fdl.texi		\
-	 $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi   \
+TEXI_JAVA_FILES = java/gcj.texi $(gcc_docdir)/include/fdl.texi		\
+	 $(gcc_docdir)/include/gpl.texi $(gcc_docdir)/include/gcc-common.texi   \
 	 gcc-vers.texi
 
 # Documentation
 doc/gcj.info: $(TEXI_JAVA_FILES)
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f doc/gcj.info*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir)/include -o $@ $<; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir)/include -o $@ $<; \
 	else true; fi
 
 doc/gcj.dvi: $(TEXI_JAVA_FILES)
@@ -397,7 +397,7 @@ doc/gcj.dvi: $(TEXI_JAVA_FILES)
 $(htmldir)/java/index.html: $(TEXI_JAVA_FILES)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
-	$(TEXI2HTML) -I $(docdir)/include -I $(srcdir)/java -o $(@D) $<
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/java -o $(@D) $<
 
 .INTERMEDIATE: gcj.pod gcjh.pod jv-scan.pod jcf-dump.pod gij.pod \
   jv-convert.pod grmic.pod grmiregistry.pod gcj-dbtool.pod gjnih.pod

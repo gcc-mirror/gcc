@@ -1,3 +1,7 @@
+2006-03-29  Carlos O'Donell  <caros@codesourcery.com>
+
+	* Make-lang.in: Rename docdir to gcc_docdir.
+
 2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 	* Make-lang.in (.phony): Remove TREELANG
 	(TREELANG): Remove
