@@ -2212,7 +2212,8 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   TREE_SIDE_EFFECTS (controller) = 1;
 
   body = build1 (EXIT_EXPR, void_type_node,
-		 build2 (EQ_EXPR, boolean_type_node, base, tbase));
+		 build2 (EQ_EXPR, boolean_type_node, tbase,
+			 fold_convert (ptype, base)));
   body = build_compound_expr
     (body, build_modify_expr (tbase, NOP_EXPR,
 			      build2 (MINUS_EXPR, ptype, tbase, size_exp)));
