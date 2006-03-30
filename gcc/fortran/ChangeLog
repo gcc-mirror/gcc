@@ -1,3 +1,10 @@
+2006-03-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/22375
+	* trans.c (gfc_trans_runtime_check): Promote the arguments of
+	__builtin_expect to the correct types, and the result back to
+	boolean_type_node.
+
 2006-03-29  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Make-lang.in: Rename docdir to gcc_docdir.
