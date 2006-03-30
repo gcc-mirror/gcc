@@ -392,27 +392,27 @@ doc/gnat_ugn_unw.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words
 	   $(srcdir)/ada/ug_words doc/gnat_ugn_unw.texi
 
 doc/gnat_ugn_unw.info: doc/gnat_ugn_unw.texi			\
-   $(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi	\
+   $(gcc_docdir)/include/fdl.texi $(gcc_docdir)/include/gcc-common.texi	\
    gcc-vers.texi
 
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-doc/gnat_rm.info: ada/gnat_rm.texi $(docdir)/include/fdl.texi	\
-   $(docdir)/include/gcc-common.texi gcc-vers.texi
+doc/gnat_rm.info: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
+   $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-doc/gnat-style.info: ada/gnat-style.texi $(docdir)/include/fdl.texi
+doc/gnat-style.info: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
@@ -433,15 +433,15 @@ ada.dvi: doc/gnat_ugn_unw.dvi \
 
 ada.html:
 
-doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi $(docdir)/include/fdl.texi	\
-	$(docdir)/include/gcc-common.texi gcc-vers.texi
+doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi $(gcc_docdir)/include/fdl.texi	\
+	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
-doc/gnat_rm.dvi: ada/gnat_rm.texi $(docdir)/include/fdl.texi	\
-	$(docdir)/include/gcc-common.texi gcc-vers.texi
+doc/gnat_rm.dvi: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
+	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
-doc/gnat-style.dvi: ada/gnat-style.texi $(docdir)/include/fdl.texi
+doc/gnat-style.dvi: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 

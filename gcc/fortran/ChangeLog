@@ -1,3 +1,7 @@
+2006-03-29  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Make-lang.in: Rename docdir to gcc_docdir.
+
 2006-03-28  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi: s/floor/float in previous commit.

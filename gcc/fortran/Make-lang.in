@@ -165,7 +165,7 @@ doc/gfortran.dvi: $(GFORTRAN_TEXI)
 $(htmldir)/gfortran/index.html: $(GFORTRAN_TEXI)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
-	$(TEXI2HTML) -I $(docdir)/include -I $(srcdir)/fortran -o $(@D) $<
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/fortran -o $(@D) $<
 
 .INTERMEDIATE: gfortran.pod
 
