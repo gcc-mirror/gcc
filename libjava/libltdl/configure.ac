@@ -1,5 +1,5 @@
 ## Process this file with autoconf to create configure. -*- autoconf -*-
-# Copyright 2001  Free Software Foundation, Inc.
+# Copyright 2001, 2006  Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ AC_PREREQ(2.50)
 AC_INIT([libltdl], [1.2], [bug-libtool@gnu.org])
 AC_CONFIG_SRCDIR([ltdl.c])
 
+## GCJ LOCAL: gcc tree uses maintainer mode.
+AM_MAINTAINER_MODE
 
 ## ------------------------------- ##
 ## Libltdl specific configuration. ##
