@@ -1,3 +1,9 @@
+2006-03-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26712
+	* config/fpu-387.h: Add special case for handling of SSE
+	control bit on i386-darwin.
+
 2006-03-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/25031
