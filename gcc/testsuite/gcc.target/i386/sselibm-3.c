@@ -2,18 +2,18 @@
 /* { dg-options "-O1 -msse2 -mfpmath=sse -msselibm" } */
 /* { dg-require-effective-target ilp32 } */
 
-double sin(double);
-double (*mysin)(double) = sin;
+float sinf(float);
+float (*mysin)(float) = sinf;
 
-double f1(double x)
+float f1(float x)
 {
-  return sin(x);
+  return sinf(x);
 }
 
-double f2(double x)
+float f2(float x)
 {
-  /* Verify we do not expand the following call to __libm_sse2_sin.  */
+  /* Verify we do not expand the following call to __libm_sse2_sinf.  */
   return (*mysin)(x);
 }
 
-/* { dg-final { scan-assembler-times "__libm_sse2_sin" 1 } } */
+/* { dg-final { scan-assembler-times "__libm_sse2_sinf" 1 } } */

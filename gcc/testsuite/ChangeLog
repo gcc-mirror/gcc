@@ -1,3 +1,12 @@
+2006-03-30  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/sselibm-1.c: Adjust for libgcc-math partial
+	removal.
+	* gcc.target/i386/sselibm-2.c: Likewise.
+	* gcc.target/i386/sselibm-3.c: Likewise.
+	* gcc.target/i386/sselibm-4.c: Likewise.
+	* gcc.target/i386/sselibm-5.c: Likewise.
+
 2006-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/fold-andxor-1.c: New test case.

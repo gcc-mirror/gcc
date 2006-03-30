@@ -59,20 +59,7 @@ am_libsse2_la_OBJECTS = libsse2_la-e_acosf.lo libsse2_la-e_asinf.lo \
 	libsse2_la-k_sinf.lo libsse2_la-k_tanf.lo \
 	libsse2_la-e_rem_pio2f.lo libsse2_la-e_sqrtf.lo \
 	libsse2_la-s_scalbnf.lo libsse2_la-s_floorf.lo \
-	libsse2_la-s_isinff.lo libsse2_la-t_exp.lo \
-	libsse2_la-e_asin.lo libsse2_la-e_atan2.lo \
-	libsse2_la-s_atan.lo libsse2_la-branred.lo \
-	libsse2_la-doasin.lo libsse2_la-dosincos.lo \
-	libsse2_la-e_exp.lo libsse2_la-halfulp.lo \
-	libsse2_la-k_rem_pio2.lo libsse2_la-e_log10.lo \
-	libsse2_la-e_log.lo libsse2_la-mpa.lo libsse2_la-mpatan2.lo \
-	libsse2_la-mpatan.lo libsse2_la-mpexp.lo libsse2_la-mplog.lo \
-	libsse2_la-mpsqrt.lo libsse2_la-mptan.lo libsse2_la-e_pow.lo \
-	libsse2_la-e_rem_pio2.lo libsse2_la-s_sin.lo \
-	libsse2_la-sincos32.lo libsse2_la-slowexp.lo \
-	libsse2_la-slowpow.lo libsse2_la-e_sqrt.lo libsse2_la-s_tan.lo \
-	libsse2_la-s_scalbn.lo libsse2_la-s_floor.lo \
-	libsse2_la-s_isinf.lo
+	libsse2_la-s_isinff.lo
 libsse2_la_OBJECTS = $(am_libsse2_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -224,37 +211,7 @@ libsse2_la_SOURCES = \
   @srcdir@/../flt-32/e_sqrtf.c \
   @srcdir@/../flt-32/s_scalbnf.c \
   @srcdir@/../flt-32/s_floorf.c \
-  @srcdir@/../flt-32/s_isinff.c \
-  @srcdir@/../dbl-64/t_exp.c \
-  @srcdir@/../dbl-64/e_asin.c \
-  @srcdir@/../dbl-64/e_atan2.c \
-  @srcdir@/../dbl-64/s_atan.c \
-  @srcdir@/../dbl-64/branred.c \
-  @srcdir@/../dbl-64/doasin.c \
-  @srcdir@/../dbl-64/dosincos.c \
-  @srcdir@/../dbl-64/e_exp.c \
-  @srcdir@/../dbl-64/halfulp.c \
-  @srcdir@/../dbl-64/k_rem_pio2.c \
-  @srcdir@/../dbl-64/e_log10.c \
-  @srcdir@/../dbl-64/e_log.c \
-  @srcdir@/../dbl-64/mpa.c \
-  @srcdir@/../dbl-64/mpatan2.c \
-  @srcdir@/../dbl-64/mpatan.c \
-  @srcdir@/../dbl-64/mpexp.c \
-  @srcdir@/../dbl-64/mplog.c \
-  @srcdir@/../dbl-64/mpsqrt.c \
-  @srcdir@/../dbl-64/mptan.c \
-  @srcdir@/../dbl-64/e_pow.c \
-  @srcdir@/../dbl-64/e_rem_pio2.c \
-  @srcdir@/../dbl-64/s_sin.c \
-  @srcdir@/../dbl-64/sincos32.c \
-  @srcdir@/../dbl-64/slowexp.c \
-  @srcdir@/../dbl-64/slowpow.c \
-  @srcdir@/../dbl-64/e_sqrt.c \
-  @srcdir@/../dbl-64/s_tan.c \
-  @srcdir@/../dbl-64/s_scalbn.c \
-  @srcdir@/../dbl-64/s_floor.c \
-  @srcdir@/../dbl-64/s_isinf.c
+  @srcdir@/../flt-32/s_isinff.c
 
 
 # XXX hack alert
@@ -352,56 +309,26 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-branred.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-doasin.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-dosincos.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_acosf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_asin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_asinf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_atan2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_atan2f.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_exp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_expf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_log.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_log10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_log10f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_logf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_pow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_powf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_rem_pio2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_rem_pio2f.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_sqrt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-e_sqrtf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-halfulp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-k_cosf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-k_rem_pio2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-k_rem_pio2f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-k_sinf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-k_tanf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-mpa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-mpatan.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-mpatan2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-mpexp.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-mplog.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-mpsqrt.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-mptan.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_atan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_atanf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_cosf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_floor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_floorf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_isinf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_isinff.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_scalbn.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_scalbnf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_sin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_sinf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_tan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-s_tanf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-sincos32.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-slowexp.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-slowpow.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsse2_la-t_exp.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -563,216 +490,6 @@ libsse2_la-s_isinff.lo: @srcdir@/../flt-32/s_isinff.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../flt-32/s_isinff.c' object='libsse2_la-s_isinff.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-s_isinff.lo `test -f '@srcdir@/../flt-32/s_isinff.c' || echo '$(srcdir)/'`@srcdir@/../flt-32/s_isinff.c
-
-libsse2_la-t_exp.lo: @srcdir@/../dbl-64/t_exp.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-t_exp.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-t_exp.Tpo" -c -o libsse2_la-t_exp.lo `test -f '@srcdir@/../dbl-64/t_exp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/t_exp.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-t_exp.Tpo" "$(DEPDIR)/libsse2_la-t_exp.Plo"; else rm -f "$(DEPDIR)/libsse2_la-t_exp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/t_exp.c' object='libsse2_la-t_exp.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-t_exp.lo `test -f '@srcdir@/../dbl-64/t_exp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/t_exp.c
-
-libsse2_la-e_asin.lo: @srcdir@/../dbl-64/e_asin.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_asin.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_asin.Tpo" -c -o libsse2_la-e_asin.lo `test -f '@srcdir@/../dbl-64/e_asin.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_asin.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_asin.Tpo" "$(DEPDIR)/libsse2_la-e_asin.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_asin.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_asin.c' object='libsse2_la-e_asin.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_asin.lo `test -f '@srcdir@/../dbl-64/e_asin.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_asin.c
-
-libsse2_la-e_atan2.lo: @srcdir@/../dbl-64/e_atan2.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_atan2.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_atan2.Tpo" -c -o libsse2_la-e_atan2.lo `test -f '@srcdir@/../dbl-64/e_atan2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_atan2.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_atan2.Tpo" "$(DEPDIR)/libsse2_la-e_atan2.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_atan2.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_atan2.c' object='libsse2_la-e_atan2.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_atan2.lo `test -f '@srcdir@/../dbl-64/e_atan2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_atan2.c
-
-libsse2_la-s_atan.lo: @srcdir@/../dbl-64/s_atan.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-s_atan.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-s_atan.Tpo" -c -o libsse2_la-s_atan.lo `test -f '@srcdir@/../dbl-64/s_atan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_atan.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-s_atan.Tpo" "$(DEPDIR)/libsse2_la-s_atan.Plo"; else rm -f "$(DEPDIR)/libsse2_la-s_atan.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/s_atan.c' object='libsse2_la-s_atan.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-s_atan.lo `test -f '@srcdir@/../dbl-64/s_atan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_atan.c
-
-libsse2_la-branred.lo: @srcdir@/../dbl-64/branred.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-branred.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-branred.Tpo" -c -o libsse2_la-branred.lo `test -f '@srcdir@/../dbl-64/branred.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/branred.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-branred.Tpo" "$(DEPDIR)/libsse2_la-branred.Plo"; else rm -f "$(DEPDIR)/libsse2_la-branred.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/branred.c' object='libsse2_la-branred.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-branred.lo `test -f '@srcdir@/../dbl-64/branred.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/branred.c
-
-libsse2_la-doasin.lo: @srcdir@/../dbl-64/doasin.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-doasin.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-doasin.Tpo" -c -o libsse2_la-doasin.lo `test -f '@srcdir@/../dbl-64/doasin.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/doasin.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-doasin.Tpo" "$(DEPDIR)/libsse2_la-doasin.Plo"; else rm -f "$(DEPDIR)/libsse2_la-doasin.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/doasin.c' object='libsse2_la-doasin.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-doasin.lo `test -f '@srcdir@/../dbl-64/doasin.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/doasin.c
-
-libsse2_la-dosincos.lo: @srcdir@/../dbl-64/dosincos.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-dosincos.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-dosincos.Tpo" -c -o libsse2_la-dosincos.lo `test -f '@srcdir@/../dbl-64/dosincos.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/dosincos.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-dosincos.Tpo" "$(DEPDIR)/libsse2_la-dosincos.Plo"; else rm -f "$(DEPDIR)/libsse2_la-dosincos.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/dosincos.c' object='libsse2_la-dosincos.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-dosincos.lo `test -f '@srcdir@/../dbl-64/dosincos.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/dosincos.c
-
-libsse2_la-e_exp.lo: @srcdir@/../dbl-64/e_exp.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_exp.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_exp.Tpo" -c -o libsse2_la-e_exp.lo `test -f '@srcdir@/../dbl-64/e_exp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_exp.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_exp.Tpo" "$(DEPDIR)/libsse2_la-e_exp.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_exp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_exp.c' object='libsse2_la-e_exp.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_exp.lo `test -f '@srcdir@/../dbl-64/e_exp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_exp.c
-
-libsse2_la-halfulp.lo: @srcdir@/../dbl-64/halfulp.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-halfulp.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-halfulp.Tpo" -c -o libsse2_la-halfulp.lo `test -f '@srcdir@/../dbl-64/halfulp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/halfulp.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-halfulp.Tpo" "$(DEPDIR)/libsse2_la-halfulp.Plo"; else rm -f "$(DEPDIR)/libsse2_la-halfulp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/halfulp.c' object='libsse2_la-halfulp.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-halfulp.lo `test -f '@srcdir@/../dbl-64/halfulp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/halfulp.c
-
-libsse2_la-k_rem_pio2.lo: @srcdir@/../dbl-64/k_rem_pio2.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-k_rem_pio2.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-k_rem_pio2.Tpo" -c -o libsse2_la-k_rem_pio2.lo `test -f '@srcdir@/../dbl-64/k_rem_pio2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/k_rem_pio2.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-k_rem_pio2.Tpo" "$(DEPDIR)/libsse2_la-k_rem_pio2.Plo"; else rm -f "$(DEPDIR)/libsse2_la-k_rem_pio2.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/k_rem_pio2.c' object='libsse2_la-k_rem_pio2.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-k_rem_pio2.lo `test -f '@srcdir@/../dbl-64/k_rem_pio2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/k_rem_pio2.c
-
-libsse2_la-e_log10.lo: @srcdir@/../dbl-64/e_log10.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_log10.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_log10.Tpo" -c -o libsse2_la-e_log10.lo `test -f '@srcdir@/../dbl-64/e_log10.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_log10.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_log10.Tpo" "$(DEPDIR)/libsse2_la-e_log10.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_log10.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_log10.c' object='libsse2_la-e_log10.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_log10.lo `test -f '@srcdir@/../dbl-64/e_log10.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_log10.c
-
-libsse2_la-e_log.lo: @srcdir@/../dbl-64/e_log.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_log.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_log.Tpo" -c -o libsse2_la-e_log.lo `test -f '@srcdir@/../dbl-64/e_log.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_log.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_log.Tpo" "$(DEPDIR)/libsse2_la-e_log.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_log.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_log.c' object='libsse2_la-e_log.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_log.lo `test -f '@srcdir@/../dbl-64/e_log.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_log.c
-
-libsse2_la-mpa.lo: @srcdir@/../dbl-64/mpa.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-mpa.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-mpa.Tpo" -c -o libsse2_la-mpa.lo `test -f '@srcdir@/../dbl-64/mpa.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpa.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-mpa.Tpo" "$(DEPDIR)/libsse2_la-mpa.Plo"; else rm -f "$(DEPDIR)/libsse2_la-mpa.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/mpa.c' object='libsse2_la-mpa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-mpa.lo `test -f '@srcdir@/../dbl-64/mpa.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpa.c
-
-libsse2_la-mpatan2.lo: @srcdir@/../dbl-64/mpatan2.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-mpatan2.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-mpatan2.Tpo" -c -o libsse2_la-mpatan2.lo `test -f '@srcdir@/../dbl-64/mpatan2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpatan2.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-mpatan2.Tpo" "$(DEPDIR)/libsse2_la-mpatan2.Plo"; else rm -f "$(DEPDIR)/libsse2_la-mpatan2.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/mpatan2.c' object='libsse2_la-mpatan2.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-mpatan2.lo `test -f '@srcdir@/../dbl-64/mpatan2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpatan2.c
-
-libsse2_la-mpatan.lo: @srcdir@/../dbl-64/mpatan.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-mpatan.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-mpatan.Tpo" -c -o libsse2_la-mpatan.lo `test -f '@srcdir@/../dbl-64/mpatan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpatan.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-mpatan.Tpo" "$(DEPDIR)/libsse2_la-mpatan.Plo"; else rm -f "$(DEPDIR)/libsse2_la-mpatan.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/mpatan.c' object='libsse2_la-mpatan.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-mpatan.lo `test -f '@srcdir@/../dbl-64/mpatan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpatan.c
-
-libsse2_la-mpexp.lo: @srcdir@/../dbl-64/mpexp.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-mpexp.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-mpexp.Tpo" -c -o libsse2_la-mpexp.lo `test -f '@srcdir@/../dbl-64/mpexp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpexp.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-mpexp.Tpo" "$(DEPDIR)/libsse2_la-mpexp.Plo"; else rm -f "$(DEPDIR)/libsse2_la-mpexp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/mpexp.c' object='libsse2_la-mpexp.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-mpexp.lo `test -f '@srcdir@/../dbl-64/mpexp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpexp.c
-
-libsse2_la-mplog.lo: @srcdir@/../dbl-64/mplog.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-mplog.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-mplog.Tpo" -c -o libsse2_la-mplog.lo `test -f '@srcdir@/../dbl-64/mplog.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mplog.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-mplog.Tpo" "$(DEPDIR)/libsse2_la-mplog.Plo"; else rm -f "$(DEPDIR)/libsse2_la-mplog.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/mplog.c' object='libsse2_la-mplog.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-mplog.lo `test -f '@srcdir@/../dbl-64/mplog.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mplog.c
-
-libsse2_la-mpsqrt.lo: @srcdir@/../dbl-64/mpsqrt.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-mpsqrt.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-mpsqrt.Tpo" -c -o libsse2_la-mpsqrt.lo `test -f '@srcdir@/../dbl-64/mpsqrt.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpsqrt.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-mpsqrt.Tpo" "$(DEPDIR)/libsse2_la-mpsqrt.Plo"; else rm -f "$(DEPDIR)/libsse2_la-mpsqrt.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/mpsqrt.c' object='libsse2_la-mpsqrt.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-mpsqrt.lo `test -f '@srcdir@/../dbl-64/mpsqrt.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mpsqrt.c
-
-libsse2_la-mptan.lo: @srcdir@/../dbl-64/mptan.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-mptan.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-mptan.Tpo" -c -o libsse2_la-mptan.lo `test -f '@srcdir@/../dbl-64/mptan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mptan.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-mptan.Tpo" "$(DEPDIR)/libsse2_la-mptan.Plo"; else rm -f "$(DEPDIR)/libsse2_la-mptan.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/mptan.c' object='libsse2_la-mptan.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-mptan.lo `test -f '@srcdir@/../dbl-64/mptan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/mptan.c
-
-libsse2_la-e_pow.lo: @srcdir@/../dbl-64/e_pow.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_pow.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_pow.Tpo" -c -o libsse2_la-e_pow.lo `test -f '@srcdir@/../dbl-64/e_pow.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_pow.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_pow.Tpo" "$(DEPDIR)/libsse2_la-e_pow.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_pow.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_pow.c' object='libsse2_la-e_pow.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_pow.lo `test -f '@srcdir@/../dbl-64/e_pow.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_pow.c
-
-libsse2_la-e_rem_pio2.lo: @srcdir@/../dbl-64/e_rem_pio2.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_rem_pio2.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_rem_pio2.Tpo" -c -o libsse2_la-e_rem_pio2.lo `test -f '@srcdir@/../dbl-64/e_rem_pio2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_rem_pio2.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_rem_pio2.Tpo" "$(DEPDIR)/libsse2_la-e_rem_pio2.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_rem_pio2.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_rem_pio2.c' object='libsse2_la-e_rem_pio2.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_rem_pio2.lo `test -f '@srcdir@/../dbl-64/e_rem_pio2.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_rem_pio2.c
-
-libsse2_la-s_sin.lo: @srcdir@/../dbl-64/s_sin.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-s_sin.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-s_sin.Tpo" -c -o libsse2_la-s_sin.lo `test -f '@srcdir@/../dbl-64/s_sin.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_sin.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-s_sin.Tpo" "$(DEPDIR)/libsse2_la-s_sin.Plo"; else rm -f "$(DEPDIR)/libsse2_la-s_sin.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/s_sin.c' object='libsse2_la-s_sin.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-s_sin.lo `test -f '@srcdir@/../dbl-64/s_sin.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_sin.c
-
-libsse2_la-sincos32.lo: @srcdir@/../dbl-64/sincos32.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-sincos32.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-sincos32.Tpo" -c -o libsse2_la-sincos32.lo `test -f '@srcdir@/../dbl-64/sincos32.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/sincos32.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-sincos32.Tpo" "$(DEPDIR)/libsse2_la-sincos32.Plo"; else rm -f "$(DEPDIR)/libsse2_la-sincos32.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/sincos32.c' object='libsse2_la-sincos32.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-sincos32.lo `test -f '@srcdir@/../dbl-64/sincos32.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/sincos32.c
-
-libsse2_la-slowexp.lo: @srcdir@/../dbl-64/slowexp.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-slowexp.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-slowexp.Tpo" -c -o libsse2_la-slowexp.lo `test -f '@srcdir@/../dbl-64/slowexp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/slowexp.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-slowexp.Tpo" "$(DEPDIR)/libsse2_la-slowexp.Plo"; else rm -f "$(DEPDIR)/libsse2_la-slowexp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/slowexp.c' object='libsse2_la-slowexp.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-slowexp.lo `test -f '@srcdir@/../dbl-64/slowexp.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/slowexp.c
-
-libsse2_la-slowpow.lo: @srcdir@/../dbl-64/slowpow.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-slowpow.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-slowpow.Tpo" -c -o libsse2_la-slowpow.lo `test -f '@srcdir@/../dbl-64/slowpow.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/slowpow.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-slowpow.Tpo" "$(DEPDIR)/libsse2_la-slowpow.Plo"; else rm -f "$(DEPDIR)/libsse2_la-slowpow.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/slowpow.c' object='libsse2_la-slowpow.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-slowpow.lo `test -f '@srcdir@/../dbl-64/slowpow.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/slowpow.c
-
-libsse2_la-e_sqrt.lo: @srcdir@/../dbl-64/e_sqrt.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-e_sqrt.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-e_sqrt.Tpo" -c -o libsse2_la-e_sqrt.lo `test -f '@srcdir@/../dbl-64/e_sqrt.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_sqrt.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-e_sqrt.Tpo" "$(DEPDIR)/libsse2_la-e_sqrt.Plo"; else rm -f "$(DEPDIR)/libsse2_la-e_sqrt.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/e_sqrt.c' object='libsse2_la-e_sqrt.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-e_sqrt.lo `test -f '@srcdir@/../dbl-64/e_sqrt.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/e_sqrt.c
-
-libsse2_la-s_tan.lo: @srcdir@/../dbl-64/s_tan.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-s_tan.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-s_tan.Tpo" -c -o libsse2_la-s_tan.lo `test -f '@srcdir@/../dbl-64/s_tan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_tan.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-s_tan.Tpo" "$(DEPDIR)/libsse2_la-s_tan.Plo"; else rm -f "$(DEPDIR)/libsse2_la-s_tan.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/s_tan.c' object='libsse2_la-s_tan.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-s_tan.lo `test -f '@srcdir@/../dbl-64/s_tan.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_tan.c
-
-libsse2_la-s_scalbn.lo: @srcdir@/../dbl-64/s_scalbn.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-s_scalbn.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-s_scalbn.Tpo" -c -o libsse2_la-s_scalbn.lo `test -f '@srcdir@/../dbl-64/s_scalbn.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_scalbn.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-s_scalbn.Tpo" "$(DEPDIR)/libsse2_la-s_scalbn.Plo"; else rm -f "$(DEPDIR)/libsse2_la-s_scalbn.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/s_scalbn.c' object='libsse2_la-s_scalbn.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-s_scalbn.lo `test -f '@srcdir@/../dbl-64/s_scalbn.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_scalbn.c
-
-libsse2_la-s_floor.lo: @srcdir@/../dbl-64/s_floor.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-s_floor.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-s_floor.Tpo" -c -o libsse2_la-s_floor.lo `test -f '@srcdir@/../dbl-64/s_floor.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_floor.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-s_floor.Tpo" "$(DEPDIR)/libsse2_la-s_floor.Plo"; else rm -f "$(DEPDIR)/libsse2_la-s_floor.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/s_floor.c' object='libsse2_la-s_floor.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-s_floor.lo `test -f '@srcdir@/../dbl-64/s_floor.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_floor.c
-
-libsse2_la-s_isinf.lo: @srcdir@/../dbl-64/s_isinf.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -MT libsse2_la-s_isinf.lo -MD -MP -MF "$(DEPDIR)/libsse2_la-s_isinf.Tpo" -c -o libsse2_la-s_isinf.lo `test -f '@srcdir@/../dbl-64/s_isinf.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_isinf.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libsse2_la-s_isinf.Tpo" "$(DEPDIR)/libsse2_la-s_isinf.Plo"; else rm -f "$(DEPDIR)/libsse2_la-s_isinf.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='@srcdir@/../dbl-64/s_isinf.c' object='libsse2_la-s_isinf.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsse2_la_CFLAGS) $(CFLAGS) -c -o libsse2_la-s_isinf.lo `test -f '@srcdir@/../dbl-64/s_isinf.c' || echo '$(srcdir)/'`@srcdir@/../dbl-64/s_isinf.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
