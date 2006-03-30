@@ -550,14 +550,6 @@ copy_prop_visit_assignment (tree stmt, tree *result_p)
       if (!may_propagate_copy (lhs, rhs))
 	return SSA_PROP_VARYING;
 
-      /* Avoid copy propagation from an inner into an outer loop.
-	 Otherwise, this may move loop variant variables outside of
-	 their loops and prevent coalescing opportunities.  If the
-	 value was loop invariant, it will be hoisted by LICM and
-	 exposed for copy propagation.  */
-      if (loop_depth_of_name (rhs) > loop_depth_of_name (lhs))
-	return SSA_PROP_VARYING;
-
       /* Notice that in the case of assignments, we make the LHS be a
 	 copy of RHS's value, not of RHS itself.  This avoids keeping
 	 unnecessary copy-of chains (assignments cannot be in a cycle
@@ -671,7 +663,6 @@ copy_prop_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 static enum ssa_prop_result
 copy_prop_visit_stmt (tree stmt, edge *taken_edge_p, tree *result_p)
 {
-  stmt_ann_t ann;
   enum ssa_prop_result retval;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -680,8 +671,6 @@ copy_prop_visit_stmt (tree stmt, edge *taken_edge_p, tree *result_p)
       print_generic_stmt (dump_file, stmt, dump_flags);
       fprintf (dump_file, "\n");
     }
-
-  ann = stmt_ann (stmt);
 
   if (TREE_CODE (stmt) == MODIFY_EXPR
       && TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME
@@ -856,37 +845,54 @@ init_copy_prop (void)
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator si;
-      tree phi;
+      tree phi, def;
+      int depth = bb->loop_depth;
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
 	  tree stmt = bsi_stmt (si);
+	  ssa_op_iter iter;
 
 	  /* The only statements that we care about are those that may
 	     generate useful copies.  We also need to mark conditional
 	     jumps so that their outgoing edges are added to the work
-	     lists of the propagator.  */
+	     lists of the propagator.
+
+	     Avoid copy propagation from an inner into an outer loop.
+	     Otherwise, this may move loop variant variables outside of
+	     their loops and prevent coalescing opportunities.  If the
+	     value was loop invariant, it will be hoisted by LICM and
+	     exposed for copy propagation.  */
 	  if (stmt_ends_bb_p (stmt))
 	    DONT_SIMULATE_AGAIN (stmt) = false;
-	  else if (stmt_may_generate_copy (stmt))
+	  else if (stmt_may_generate_copy (stmt)
+		   && loop_depth_of_name (TREE_OPERAND (stmt, 1)) <= depth)
 	    DONT_SIMULATE_AGAIN (stmt) = false;
 	  else
-	    {
-	      tree def;
-	      ssa_op_iter iter;
+	    DONT_SIMULATE_AGAIN (stmt) = true;
 
-	      /* No need to simulate this statement anymore.  */
-	      DONT_SIMULATE_AGAIN (stmt) = true;
-
-	      /* Mark all the outputs of this statement as not being
-		 the copy of anything.  */
-	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
-		set_copy_of_val (def, def, NULL_TREE);
-	    }
+	  /* Mark all the outputs of this statement as not being
+	     the copy of anything.  */
+	  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
+	    if (DONT_SIMULATE_AGAIN (stmt))
+	      set_copy_of_val (def, def, NULL_TREE);
+	    else
+	      cached_last_copy_of[SSA_NAME_VERSION (def)] = def;
 	}
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	DONT_SIMULATE_AGAIN (phi) = false;
+	{
+	  def = PHI_RESULT (phi);
+	  if (!do_store_copy_prop && !is_gimple_reg (def))
+	    DONT_SIMULATE_AGAIN (phi) = true;
+	  else
+	    DONT_SIMULATE_AGAIN (phi) = false;
+
+	  if (DONT_SIMULATE_AGAIN (phi))
+	    set_copy_of_val (def, def, NULL_TREE);
+	  else
+	    cached_last_copy_of[SSA_NAME_VERSION (def)] = def;
+	}
     }
 }
 
