@@ -15349,7 +15349,7 @@ ix86_init_mmx_sse_builtins (void)
 static void
 ix86_init_sse_abi_builtins (void)
 {
-  tree dbl, flt, dbl2, flt2;
+  tree flt, flt2;
 
   /* Bail out in case the template definitions are not available.  */
   if (! built_in_decls [BUILT_IN_SIN]
@@ -15359,18 +15359,10 @@ ix86_init_sse_abi_builtins (void)
     return;
 
   /* Build the function types as variants of the existing ones.  */
-  dbl = build_variant_type_copy (TREE_TYPE (built_in_decls [BUILT_IN_SIN]));
-  TYPE_ATTRIBUTES (dbl)
-    = tree_cons (get_identifier ("sseregparm"),
-                 NULL_TREE, TYPE_ATTRIBUTES (dbl));
   flt = build_variant_type_copy (TREE_TYPE (built_in_decls [BUILT_IN_SINF]));
   TYPE_ATTRIBUTES (flt)
     = tree_cons (get_identifier ("sseregparm"),
                  NULL_TREE, TYPE_ATTRIBUTES (flt));
-  dbl2 = build_variant_type_copy (TREE_TYPE (built_in_decls [BUILT_IN_ATAN2]));
-  TYPE_ATTRIBUTES (dbl2)
-    = tree_cons (get_identifier ("sseregparm"),
-                 NULL_TREE, TYPE_ATTRIBUTES (dbl2));
   flt2 = build_variant_type_copy (TREE_TYPE (built_in_decls [BUILT_IN_ATAN2F]));
   TYPE_ATTRIBUTES (flt2)
     = tree_cons (get_identifier ("sseregparm"),
@@ -15383,25 +15375,15 @@ ix86_init_sse_abi_builtins (void)
 				   BUILT_IN_NORMAL,			\
 				   "__libm_sse2_" # name, NULL_TREE)
  
-  def_builtin (ACOS, acos, dbl);
   def_builtin (ACOSF, acosf, flt);
-  def_builtin (ASIN, asin, dbl);
   def_builtin (ASINF, asinf, flt);
-  def_builtin (ATAN, atan, dbl);
   def_builtin (ATANF, atanf, flt);
-  def_builtin (ATAN2, atan2, dbl2);
   def_builtin (ATAN2F, atan2f, flt2);
-  def_builtin (COS, cos, dbl);
   def_builtin (COSF, cosf, flt);
-  def_builtin (EXP, exp, dbl);
   def_builtin (EXPF, expf, flt);
-  def_builtin (LOG10, log10, dbl);
   def_builtin (LOG10F, log10f, flt);
-  def_builtin (LOG, log, dbl);
   def_builtin (LOGF, logf, flt);
-  def_builtin (SIN, sin, dbl);
   def_builtin (SINF, sinf, flt);
-  def_builtin (TAN, tan, dbl);
   def_builtin (TANF, tanf, flt);
 
 #undef def_builtin

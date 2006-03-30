@@ -2,11 +2,11 @@
 /* { dg-options "-msse2 -mfpmath=sse -msselibm" } */
 /* { dg-require-effective-target ilp32 } */
 
-double sin(double);
+float sinf(float);
 
-double foo(double x)
+float foo(float x)
 {
-  return sin(x);
+  return sinf(x);
 }
 
-/* { dg-final { scan-assembler "__libm_sse2_sin" } } */
+/* { dg-final { scan-assembler "__libm_sse2_sinf" } } */
