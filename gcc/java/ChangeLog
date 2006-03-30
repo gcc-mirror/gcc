@@ -1,3 +1,9 @@
+2006-03-30  Tom Tromey  <tromey@redhat.com>
+
+	PR java/26042:
+	* parse.y (java_reorder_fields): Reset superclass field's size as
+	well.
+
 2006-03-28  Tom Tromey  <tromey@redhat.com>
 
 	PR java/26390:

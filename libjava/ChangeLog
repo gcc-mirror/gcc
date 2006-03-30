@@ -1,3 +1,8 @@
+2006-03-30  Tom Tromey  <tromey@redhat.com>
+
+	PR java/26042:
+	* testsuite/libjava.compile/pr26042.java: New file.
+
 2006-03-29  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.
