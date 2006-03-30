@@ -340,9 +340,11 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
   else
     {
       /* Tell the compiler that this isn't likely.  */
+      cond = fold_convert (long_integer_type_node, cond);
       tmp = gfc_chainon_list (NULL_TREE, cond);
-      tmp = gfc_chainon_list (tmp, integer_zero_node);
+      tmp = gfc_chainon_list (tmp, build_int_cst (long_integer_type_node, 0));
       cond = build_function_call_expr (built_in_decls[BUILT_IN_EXPECT], tmp);
+      cond = fold_convert (boolean_type_node, cond);
 
       tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt ());
       gfc_add_expr_to_block (pblock, tmp);
