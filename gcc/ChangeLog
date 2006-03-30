@@ -1,3 +1,10 @@
+2006-03-30  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* haifa-sched.c (try_ready): Change condition to restore
+	non-speculative pattern	of the instruction.
+	(process_insn_depend_be_in_spec): Code to keep probability of the
+	speculative dependence non-decreasing.
+
 2006-03-30  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.c (single_move_for_strmov): Renamed to...
