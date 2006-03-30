@@ -1,3 +1,9 @@
+2006-03-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/22494
+	* init.c (build_vec_delete_1): Convert BASE pointer's type to
+	the base pointer type to avoid a type mismatch in the EQ_EXPR.
+
 2006-03-24  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* search.c (maybe_suppress_debug_info): If
