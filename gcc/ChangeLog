@@ -1,3 +1,8 @@
+2006-03-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Don't try to protect %S with
+	!Zdynamiclib.
+
 2006-03-30  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Rename docdir to gcc_docdir.
