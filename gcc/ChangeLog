@@ -1,3 +1,12 @@
+2006-03-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/26830
+
+	* tree-ssa-copy.c (copy_prop_visit_assignment): Do not check loop depth.
+	(copy_prop_visit_stmt): Remove write-only variable ann.
+	(init_copy_prop): Check variable loop depth here.  Do not simulate
+	memory-tag and virtual operand PHIs except for store copy prop.
+
 2006-03-30  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386.c: Remove builtins for SSE2 ABI intrinsic
