@@ -1,5 +1,6 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -329,7 +330,7 @@ struct gcc_target
        0, if current pattern satisfies the requested speculation type,
        1, if pattern of the instruction should be changed to the newly
        generated one.  */
-    int (* speculate_insn) (rtx, HOST_WIDE_INT, rtx *);
+    int (* speculate_insn) (rtx, int, rtx *);
 
     /* The following member value is a pointer to a function called
        by the insn scheduler.  It should return true if the check instruction
