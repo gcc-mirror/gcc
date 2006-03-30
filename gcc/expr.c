@@ -1857,7 +1857,7 @@ void
 emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 {
   rtx *tmps, dst;
-  int start, i;
+  int start, finish, i;
   enum machine_mode m = GET_MODE (orig_dst);
 
   gcc_assert (GET_CODE (src) == PARALLEL);
@@ -1883,11 +1883,12 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
     start = 0;
   else
     start = 1;
+  finish = XVECLEN (src, 0);
 
-  tmps = alloca (sizeof (rtx) * XVECLEN (src, 0));
+  tmps = alloca (sizeof (rtx) * finish);
 
   /* Copy the (probable) hard regs into pseudos.  */
-  for (i = start; i < XVECLEN (src, 0); i++)
+  for (i = start; i < finish; i++)
     {
       rtx reg = XEXP (XVECEXP (src, 0, i), 0);
       if (!REG_P (reg) || REGNO (reg) < FIRST_PSEUDO_REGISTER)
@@ -1923,14 +1924,56 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
     }
   else if (!MEM_P (dst) && GET_CODE (dst) != CONCAT)
     {
+      enum machine_mode outer = GET_MODE (dst);
+      enum machine_mode inner;
+      unsigned int bytepos;
+      bool done = false;
+      rtx temp;
+
       if (!REG_P (dst) || REGNO (dst) < FIRST_PSEUDO_REGISTER)
-	dst = gen_reg_rtx (GET_MODE (orig_dst));
+	dst = gen_reg_rtx (outer);
+
       /* Make life a bit easier for combine.  */
-      emit_move_insn (dst, CONST0_RTX (GET_MODE (orig_dst)));
+      /* If the first element of the vector is the low part
+	 of the destination mode, use a paradoxical subreg to
+	 initialize the destination.  */
+      if (start < finish)
+	{
+	  inner = GET_MODE (tmps[start]);
+	  bytepos = subreg_lowpart_offset (outer, inner);
+	  if (INTVAL (XEXP (XVECEXP (src, 0, start), 1)) == bytepos)
+	    {
+	      temp = simplify_gen_subreg (outer, tmps[start],
+					  inner, bytepos);
+	      emit_move_insn (dst, temp);
+	      done = true;
+	      start++;
+	    }
+	}
+
+      /* If the first element wasn't the low part, try the last.  */
+      if (!done
+	  && start < finish - 1)
+	{
+	  inner = GET_MODE (tmps[finish - 1]);
+	  bytepos = subreg_lowpart_offset (outer, inner);
+	  if (INTVAL (XEXP (XVECEXP (src, 0, finish - 1), 1)) == bytepos)
+	    {
+	      temp = simplify_gen_subreg (outer, tmps[finish - 1],
+					  inner, bytepos);
+	      emit_move_insn (dst, temp);
+	      done = true;
+	      finish--;
+	    }
+	}
+
+      /* Otherwise, simply initialize the result to zero.  */
+      if (!done)
+        emit_move_insn (dst, CONST0_RTX (outer));
     }
 
   /* Process the pieces.  */
-  for (i = start; i < XVECLEN (src, 0); i++)
+  for (i = start; i < finish; i++)
     {
       HOST_WIDE_INT bytepos = INTVAL (XEXP (XVECEXP (src, 0, i), 1));
       enum machine_mode mode = GET_MODE (tmps[i]);
