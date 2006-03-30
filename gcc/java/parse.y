@@ -7770,6 +7770,10 @@ java_reorder_fields (void)
 	if (!DECL_NAME (TYPE_FIELDS (current_class)))
 	  {
 	    tree fields = TYPE_FIELDS (current_class);
+	    /* This works around a problem where on some platforms,
+	       the field might be given its size incorrectly.  */
+	    DECL_SIZE (fields) = NULL_TREE;
+	    DECL_SIZE_UNIT (fields) = NULL_TREE;
 	    TREE_CHAIN (fields) = nreverse (TREE_CHAIN (fields));
 	    TYPE_SIZE (current_class) = NULL_TREE;
 	  }
