@@ -1,3 +1,12 @@
+2006-03-30  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.c (single_move_for_strmov): Renamed to...
+	(single_move_for_movmem): ... this. Also change all uses.
+	(bfin_expand_strmov): Renamed to...
+	(bfin_expand_movmem): ... this. Also change all uses.
+	* config/bfin/bfin.md (movstrsi): Renamed to...
+	(movstrsi): ...this.
+
 2006-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/26830

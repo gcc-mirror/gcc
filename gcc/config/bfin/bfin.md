@@ -1514,14 +1514,14 @@
   [(set_attr "type" "misc")
    (set_attr "length" "16")])
 
-(define_expand "movstrsi"
+(define_expand "movmemsi"
   [(match_operand:BLK 0 "general_operand" "")
    (match_operand:BLK 1 "general_operand" "")
    (match_operand:SI 2 "const_int_operand" "")
    (match_operand:SI 3 "const_int_operand" "")]
   ""
 {
-  if (bfin_expand_strmov (operands[0], operands[1], operands[2], operands[3]))
+  if (bfin_expand_movmem (operands[0], operands[1], operands[2], operands[3]))
     DONE;
   FAIL;
 })
