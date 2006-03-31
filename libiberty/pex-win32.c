@@ -41,6 +41,7 @@ Boston, MA 02110-1301, USA.  */
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 /* mingw32 headers may not define the following.  */
 
@@ -70,115 +71,6 @@ backslashify (char *s)
   while ((s = strchr (s, '/')) != NULL)
     *s = '\\';
   return;
-}
-
-/* This is a kludge to get around the Microsoft C spawn functions' propensity
-   to remove the outermost set of double quotes from all arguments.  */
-
-static const char * const *
-fix_argv (char * const *argvec)
-{
-  char **argv;
-  int i;
-  char *command0;
-
-  /* See whether we need to change anything.  */
-  for (command0 = argvec[0]; *command0 != '\0'; command0++)
-    if (*command0 == '/')
-      break;
-  if (*command0 == '\0')
-    {
-      for (i = 1; argvec[i] != NULL; i++)
-	if (strpbrk (argvec[i], "\" \t") != NULL)
-	  break;
-
-      if (argvec[i] == NULL)
-	return (const char * const *) argvec;
-    }
-
-  for (i = 0; argvec[i] != NULL; i++)
-    ;
-  argv = XNEWVEC (char *, i + 2);
-
-  argv++;	/* Leave space at the beginning of argv
-		   for potential #! handling */
-
-  for (i = 0; argvec[i] != NULL; i++)
-    argv[i] = xstrdup (argvec[i]);
-  argv[i] = NULL;
-
-  backslashify (argv[0]);
-
-  for (i = 1; argv[i] != 0; i++)
-    {
-      int len, j;
-      char *temp, *newtemp;
-
-      temp = argv[i];
-      len = strlen (temp);
-      for (j = 0; j < len; j++)
-        {
-          if (temp[j] == '"')
-            {
-              newtemp = XNEWVEC (char, len + 2);
-              strncpy (newtemp, temp, j);
-              newtemp [j] = '\\';
-              strncpy (&newtemp [j+1], &temp [j], len-j);
-              newtemp [len+1] = 0;
-              temp = newtemp;
-              len++;
-              j++;
-            }
-        }
-
-      if (argv[i] != temp)
-	{
-	  free (argv[i]);
-	  argv[i] = temp;
-	}
-    }
-
-  for (i = 0; argv[i] != 0; i++)
-    {
-      if (strpbrk (argv[i], " \t"))
-        {
-	  int len, trailing_backslash;
-	  char *temp;
-
-	  len = strlen (argv[i]);
-	  trailing_backslash = 0;
-
-	  /* There is an added complication when an arg with embedded white
-	     space ends in a backslash (such as in the case of -iprefix arg
-	     passed to cpp). The resulting quoted strings gets misinterpreted
-	     by the command interpreter -- it thinks that the ending quote
-	     is escaped by the trailing backslash and things get confused.
-	     We handle this case by escaping the trailing backslash, provided
-	     it was not escaped in the first place.  */
-	  if (len > 1
-	      && argv[i][len-1] == '\\'
-	      && argv[i][len-2] != '\\')
-	    {
-	      trailing_backslash = 1;
-	      ++len;			/* to escape the final backslash. */
-	    }
-
-	  len += 2;			/* and for the enclosing quotes. */
-
-	  temp = XNEWVEC (char, len + 1);
-	  temp[0] = '"';
-	  strcpy (temp + 1, argv[i]);
-	  if (trailing_backslash)
-	    temp[len - 2] = '\\';
-	  temp[len - 1] = '"';
-	  temp[len] = '\0';
-
-	  free (argv[i]);
-	  argv[i] = temp;
-	}
-    }
-
-  return (const char * const *) argv;
 }
 
 static int pex_win32_open_read (struct pex_obj *, const char *, int);
@@ -422,8 +314,225 @@ msys_rootify (const char *executable)
 }
 #endif
 
+/* Return a Windows command-line from ARGV.  It is the caller's
+   responsibility to free the string returned.  */
+
+static char *
+argv_to_cmdline (char *const *argv)
+{
+  char *cmdline;
+  char *p;
+  size_t cmdline_len;
+  int i, j, k;
+
+  cmdline_len = 0;
+  for (i = 0; argv[i]; i++)
+    {
+      /* We quote every last argument.  This simplifies the problem;
+	 we need only escape embedded double-quotes and immediately
+	 preceeding backslash characters.  A sequence of backslach characters
+	 that is not follwed by a double quote character will not be
+	 escaped.  */
+      for (j = 0; argv[i][j]; j++)
+	{
+	  if (argv[i][j] == '"')
+	    {
+	      /* Escape preceeding backslashes.  */
+	      for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
+		cmdline_len++;
+	      /* Escape the qote character.  */
+	      cmdline_len++;
+	    }
+	}
+      /* Trailing backslashes also need to be escaped because they will be
+         followed by the terminating quote.  */
+      for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
+	cmdline_len++;
+      cmdline_len += j;
+      cmdline_len += 3;  /* for leading and trailing quotes and space */
+    }
+  cmdline = xmalloc (cmdline_len);
+  p = cmdline;
+  for (i = 0; argv[i]; i++)
+    {
+      *p++ = '"';
+      for (j = 0; argv[i][j]; j++)
+	{
+	  if (argv[i][j] == '"')
+	    {
+	      for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
+		*p++ = '\\';
+	      *p++ = '\\';
+	    }
+	  *p++ = argv[i][j];
+	}
+      for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
+	*p++ = '\\';
+      *p++ = '"';
+      *p++ = ' ';
+    }
+  p[-1] = '\0';
+  return cmdline;
+}
+
+static const char *const
+std_suffixes[] = {
+  ".com",
+  ".exe",
+  ".bat",
+  ".cmd",
+  0
+};
+static const char *const
+no_suffixes[] = {
+  "",
+  0
+};
+
+/* Returns the full path to PROGRAM.  If SEARCH is true, look for
+   PROGRAM in each directory in PATH.  */
+
+static char *
+find_executable (const char *program, BOOL search)
+{
+  char *full_executable;
+  char *e;
+  size_t fe_len;
+  const char *path = 0;
+  const char *const *ext;
+  const char *p, *q;
+  size_t proglen = strlen (program);
+  int has_extension = !!strchr (program, '.');
+  int has_slash = (strchr (program, '/') || strchr (program, '\\'));
+  HANDLE h;
+
+  if (has_slash)
+    search = FALSE;
+
+  if (search)
+    path = getenv ("PATH");
+  if (!path)
+    path = "";
+
+  fe_len = 0;
+  for (p = path; *p; p = q)
+    {
+      q = p;
+      while (*q != ';' && *q != '\0')
+	q++;
+      if ((size_t)(q - p) > fe_len)
+	fe_len = q - p;
+      if (*q == ';')
+	q++;
+    }
+  fe_len = fe_len + 1 + proglen + (has_extension ? 1 : 5);
+  full_executable = xmalloc (fe_len);
+
+  p = path;
+  do
+    {
+      q = p;
+      while (*q != ';' && *q != '\0')
+	q++;
+
+      e = full_executable;
+      memcpy (e, p, q - p);
+      e += (q - p);
+      if (q - p)
+	*e++ = '\\';
+      strcpy (e, program);
+
+      if (*q == ';')
+	q++;
+
+      for (e = full_executable; *e; e++)
+	if (*e == '/')
+	  *e = '\\';
+
+      /* At this point, e points to the terminating NUL character for
+         full_executable.  */
+      for (ext = has_extension ? no_suffixes : std_suffixes; *ext; ext++)
+	{
+	  /* Remove any current extension.  */
+	  *e = '\0';
+	  /* Add the new one.  */
+	  strcat (full_executable, *ext);
+
+	  /* Attempt to open this file.  */
+	  h = CreateFile (full_executable, GENERIC_READ,
+			  FILE_SHARE_READ | FILE_SHARE_WRITE,
+			  0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	  if (h != INVALID_HANDLE_VALUE)
+	    goto found;
+	}
+      p = q;
+    }
+  while (*p);
+  free (full_executable);
+  return 0;
+
+ found:
+  CloseHandle (h);
+  return full_executable;
+}
+
+/* Low-level process creation function.  */
+
 static long
-spawn_script (const char *executable, const char * const * argv)
+win32_spawn (const char *executable,
+	     BOOL search,
+	     char *const *argv,
+	     DWORD dwCreationFlags,
+	     LPSTARTUPINFO si,
+	     LPPROCESS_INFORMATION pi)
+{
+  char *full_executable;
+  char *cmdline;
+
+  full_executable = NULL;
+  cmdline = NULL;
+
+  full_executable = find_executable (executable, search);
+  if (!full_executable)
+    goto error;
+  cmdline = argv_to_cmdline (argv);
+  if (!cmdline)
+    goto error;
+    
+  /* Create the child process.  */  
+  if (!CreateProcess (full_executable, cmdline, 
+		      /*lpProcessAttributes=*/NULL,
+		      /*lpThreadAttributes=*/NULL,
+		      /*bInheritHandles=*/TRUE,
+		      dwCreationFlags,
+		      /*lpEnvironment=*/NULL,
+		      /*lpCurrentDirectory=*/NULL,
+		      si,
+		      pi))
+    {
+      free (full_executable);
+      return -1;
+    }
+
+  /* Clean up.  */
+  CloseHandle (pi->hThread);
+  free (full_executable);
+
+  return (long) pi->hProcess;
+
+ error:
+  if (cmdline)
+    free (cmdline);
+  if (full_executable)
+    free (full_executable);
+  return -1;
+}
+
+static long
+spawn_script (const char *executable, char *const *argv,
+	      DWORD dwCreationFlags,
+	      LPSTARTUPINFO si,
+	      LPPROCESS_INFORMATION pi)
 {
   int pid = -1;
   int save_errno = errno;
@@ -455,17 +564,21 @@ spawn_script (const char *executable, const char * const * argv)
 	      executable = strrchr (executable1, '\\') + 1;
 	      if (!executable)
 		executable = executable1;
-	      pid = _spawnvp (_P_NOWAIT, executable, argv);
+	      pid = win32_spawn (executable, TRUE, argv, 
+				 dwCreationFlags, si, pi);
 #else
 	      if (strchr (executable1, '\\') == NULL)
-		pid = _spawnvp (_P_NOWAIT, executable1, argv);
+		pid = win32_spawn (executable1, TRUE, argv, 
+				   dwCreationFlags, si, pi);
 	      else if (executable1[0] != '\\')
-		pid = _spawnv (_P_NOWAIT, executable1, argv);
+		pid = win32_spawn (executable1, FALSE, argv, 
+				   dwCreationFlags, si, pi);
 	      else
 		{
 		  const char *newex = mingw_rootify (executable1);
 		  *avhere = newex;
-		  pid = _spawnv (_P_NOWAIT, newex, argv);
+		  pid = win32_spawn (newex, FALSE, argv, 
+				     dwCreationFlags, si, pi);
 		  if (executable1 != newex)
 		    free ((char *) newex);
 		  if (pid < 0)
@@ -474,7 +587,8 @@ spawn_script (const char *executable, const char * const * argv)
 		      if (newex != executable1)
 			{
 			  *avhere = newex;
-			  pid = _spawnv (_P_NOWAIT, newex, argv);
+			  pid = win32_spawn (newex, FALSE, argv, 
+					     dwCreationFlags, si, pi);
 			  free ((char *) newex);
 			}
 		    }
@@ -496,149 +610,95 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
 		      int in, int out, int errdes, const char **errmsg,
 		      int *err)
 {
-  int org_in, org_out, org_errdes;
   long pid;
-  const char * const * newargv;
+  HANDLE stdin_handle;
+  HANDLE stdout_handle;
+  HANDLE stderr_handle;
+  DWORD dwCreationFlags;
+  OSVERSIONINFO version_info;
+  STARTUPINFO si;
+  PROCESS_INFORMATION pi;
 
-  org_in = -1;
-  org_out = -1;
-  org_errdes = -1;
+  stdin_handle = INVALID_HANDLE_VALUE;
+  stdout_handle = INVALID_HANDLE_VALUE;
+  stderr_handle = INVALID_HANDLE_VALUE;
 
-  if (in != STDIN_FILE_NO)
+  stdin_handle = (HANDLE) _get_osfhandle (in);
+  stdout_handle = (HANDLE) _get_osfhandle (out);
+  if (!(flags & PEX_STDERR_TO_STDOUT))
+    stderr_handle = (HANDLE) _get_osfhandle (errdes);
+  else
+    stderr_handle = stdout_handle;
+
+  /* Determine the version of Windows we are running on.  */
+  version_info.dwOSVersionInfoSize = sizeof (version_info); 
+  GetVersionEx (&version_info);
+  if (version_info.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
+    /* On Windows 95/98/ME the CREATE_NO_WINDOW flag is not
+       supported, so we cannot avoid creating a console window.  */
+    dwCreationFlags = 0;
+  else
     {
-      org_in = _dup (STDIN_FILE_NO);
-      if (org_in < 0)
+      HANDLE conout_handle;
+
+      /* Determine whether or not we have an associated console.  */
+      conout_handle = CreateFile("CONOUT$", 
+				 GENERIC_WRITE,
+				 FILE_SHARE_WRITE,
+				 /*lpSecurityAttributes=*/NULL,
+				 OPEN_EXISTING,
+				 FILE_ATTRIBUTE_NORMAL,
+				 /*hTemplateFile=*/NULL);
+      if (conout_handle == INVALID_HANDLE_VALUE)
+	/* There is no console associated with this process.  Since
+	   the child is a console process, the OS would normally
+	   create a new console Window for the child.  Since we'll be
+	   redirecting the child's standard streams, we do not need
+	   the console window.  */ 
+	dwCreationFlags = CREATE_NO_WINDOW;
+      else 
 	{
-	  *err = errno;
-	  *errmsg = "_dup";
-	  return -1;
-	}
-      if (_dup2 (in, STDIN_FILE_NO) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup2";
-	  return -1;
-	}
-      if (_close (in) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_close";
-	  return -1;
+	  /* There is a console associated with the process, so the OS
+	     will not create a new console.  And, if we use
+	     CREATE_NO_WINDOW in this situation, the child will have
+	     no associated console.  Therefore, if the child's
+	     standard streams are connected to the console, the output
+	     will be discarded.  */
+	  CloseHandle(conout_handle);
+	  dwCreationFlags = 0;
 	}
     }
 
-  if (out != STDOUT_FILE_NO)
-    {
-      org_out = _dup (STDOUT_FILE_NO);
-      if (org_out < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup";
-	  return -1;
-	}
-      if (_dup2 (out, STDOUT_FILE_NO) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup2";
-	  return -1;
-	}
-      if (_close (out) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_close";
-	  return -1;
-	}
-    }
+  /* Since the child will be a console process, it will, by default,
+     connect standard input/output to its console.  However, we want
+     the child to use the handles specifically designated above.  In
+     addition, if there is no console (such as when we are running in
+     a Cygwin X window), then we must redirect the child's
+     input/output, as there is no console for the child to use.  */
+  memset (&si, 0, sizeof (si));
+  si.cb = sizeof (si);
+  si.dwFlags = STARTF_USESTDHANDLES;
+  si.hStdInput = stdin_handle;
+  si.hStdOutput = stdout_handle;
+  si.hStdError = stderr_handle;
 
-  if (errdes != STDERR_FILE_NO
-      || (flags & PEX_STDERR_TO_STDOUT) != 0)
-    {
-      org_errdes = _dup (STDERR_FILE_NO);
-      if (org_errdes < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup";
-	  return -1;
-	}
-      if (_dup2 ((flags & PEX_STDERR_TO_STDOUT) != 0 ? STDOUT_FILE_NO : errdes,
-		 STDERR_FILE_NO) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup2";
-	  return -1;
-	}
-      if (errdes != STDERR_FILE_NO)
-	{
-	  if (_close (errdes) < 0)
-	    {
-	      *err = errno;
-	      *errmsg = "_close";
-	      return -1;
-	    }
-	}
-    }
-
-  newargv = fix_argv (argv);
-  pid = (((flags & PEX_SEARCH) != 0 ? _spawnvp : _spawnv)
-	 (_P_NOWAIT, executable, newargv));
-
+  /* Create the child process.  */  
+  pid = win32_spawn (executable, (flags & PEX_SEARCH) != 0,
+		     argv, dwCreationFlags, &si, &pi);
   if (pid == -1)
-    pid = spawn_script (executable, newargv);
-
+    pid = spawn_script (executable, argv, dwCreationFlags, &si, &pi);
   if (pid == -1)
     {
-      *err = errno;
-      *errmsg = ((flags & PEX_SEARCH) != 0) ? "_spawnvp" : "_spawnv";
+      *err = ENOENT;
+      *errmsg = "CreateProcess";
     }
 
-  if (in != STDIN_FILE_NO)
-    {
-      if (_dup2 (org_in, STDIN_FILE_NO) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup2";
-	  return -1;
-	}
-      if (_close (org_in) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_close";
-	  return -1;
-	}
-    }
-
-  if (out != STDOUT_FILE_NO)
-    {
-      if (_dup2 (org_out, STDOUT_FILE_NO) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup2";
-	  return -1;
-	}
-      if (_close (org_out) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_close";
-	  return -1;
-	}
-    }
-
-  if (errdes != STDERR_FILE_NO
-      || (flags & PEX_STDERR_TO_STDOUT) != 0)
-    {
-      if (_dup2 (org_errdes, STDERR_FILE_NO) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_dup2";
-	  return -1;
-	}
-      if (_close (org_errdes) < 0)
-	{
-	  *err = errno;
-	  *errmsg = "_close";
-	  return -1;
-	}
-    }
+  /* Close the standard output and standard error handles in the
+     parent.  */ 
+  if (out != STDOUT_FILENO)
+    obj->funcs->close (obj, out);
+  if (errdes != STDERR_FILENO)
+    obj->funcs->close (obj, errdes);
 
   return pid;
 }
@@ -656,30 +716,34 @@ pex_win32_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, long pid,
 		int *status, struct pex_time *time, int done ATTRIBUTE_UNUSED,
 		const char **errmsg, int *err)
 {
-  int termstat;
+  DWORD termstat;
+  HANDLE h;
 
   if (time != NULL)
     memset (time, 0, sizeof *time);
 
+  h = (HANDLE) pid;
+
   /* FIXME: If done is non-zero, we should probably try to kill the
      process.  */
-
-  if (_cwait (&termstat, pid, WAIT_CHILD) < 0)
+  if (WaitForSingleObject (h, INFINITE) != WAIT_OBJECT_0)
     {
-      *err = errno;
-      *errmsg = "_cwait";
+      CloseHandle (h);
+      *err = ECHILD;
+      *errmsg = "WaitForSingleObject";
       return -1;
     }
 
-  /* cwait returns the child process exit code in termstat.  A value
-     of 3 indicates that the child caught a signal, but not which one.
-     Since only SIGABRT, SIGFPE and SIGINT do anything, we report
-     SIGABRT.  */
-
+  GetExitCodeProcess (h, &termstat);
+  CloseHandle (h);
+ 
+  /* A value of 3 indicates that the child caught a signal, but not
+     which one.  Since only SIGABRT, SIGFPE and SIGINT do anything, we
+     report SIGABRT.  */
   if (termstat == 3)
     *status = SIGABRT;
   else
-    *status = ((termstat & 0xff) << 8);
+    *status = (termstat & 0xff) << 8;
 
   return 0;
 }
