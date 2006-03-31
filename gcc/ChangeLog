@@ -1,3 +1,8 @@
+2006-03-30  Denis Chertykov  <denisc@overta.ru>
+
+	* doc/md.texi: Refer to avr/constraints.md instead of
+	avr/avr.h.
+
 2006-03-30  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (emit_group_store): Make BYTEPOS a HOST_WIDE_INT to
