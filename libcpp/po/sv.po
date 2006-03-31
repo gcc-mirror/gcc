@@ -1,16 +1,16 @@
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.1-b20051125\n"
+"Project-Id-Version: cpplib 4.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-02-28 00:12-0800\n"
-"PO-Revision-Date: 2005-11-27 22:26+0100\n"
+"PO-Revision-Date: 2006-03-11 11:50+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
