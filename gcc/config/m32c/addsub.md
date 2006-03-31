@@ -53,7 +53,7 @@
    stc\t%1,%0
    mova\t%D2[%1],%0
    add.w\t%2,%0"
-  [(set_attr "flags" "oszc,oszc,oszc,oszc,oszc,oszc,oszc,oszc,oszc,oszc")]
+  [(set_attr "flags" "oszc,oszc,oszc,oszc,oszc,oszc,n,n,n,oszc")]
   )
 
 (define_insn "addpsi3"
@@ -69,7 +69,7 @@
    add.l\t%2,%0
    mova\t%d2[%1],%0
    mova\t%D2[%1],%0"
-  [(set_attr "flags" "oszc,oszc,oszc,oszc,oszc,*,*")]
+  [(set_attr "flags" "oszc,oszc,oszc,oszc,oszc,n,n")]
   )
 
 (define_insn "subqi3"
@@ -134,7 +134,7 @@
 	(neg:SI (match_operand:SI 1 "mra_operand" "0,0")))]
   ""
   "not.w %h0 | not.w %H0 | add.w #1,%h0 | adcf.w %H0"
-  [(set_attr "flags" "oszc,oszc")]
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "absqi2"

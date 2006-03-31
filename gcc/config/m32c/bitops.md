@@ -47,7 +47,7 @@
 		(match_operand:QI 2 "" "0")))]
   "TARGET_A16"
   "bset\t%0[%1]"
-  [(set_attr "flags" "sz")]
+  [(set_attr "flags" "n")]
   )  
 
 (define_insn "bset_hi"
@@ -57,7 +57,7 @@
 	(const_int 1))]
   "TARGET_A16"
   "bset\t%0[%1]"
-  [(set_attr "flags" "sz")]
+  [(set_attr "flags" "n")]
   )  
 
 ;;----------------------------------------------------------------------
@@ -73,7 +73,7 @@
 	(const_int 0))]
   "TARGET_A16"
   "bclr\t%0[%1]"
-  [(set_attr "flags" "sz")]
+  [(set_attr "flags" "n")]
   )  
 
 
@@ -183,18 +183,17 @@
 
 
 (define_insn "iorqi3_24"
-  [(set (match_operand:QI 0 "mra_operand" "=Sd,Rqi,RqiSd,??Rmm,RqiSd,??Rmm")
-	(ior:QI (match_operand:QI 1 "mra_operand" "%0,0,0,0,0,0")
-		(match_operand:QI 2 "mrai_operand" "Ilb,Ilb,iRhlSd,iRhlSd,?Rmm,?Rmm")))]
+  [(set (match_operand:QI 0 "mra_operand" "=RqiSd,RqiSd,??Rmm,RqiSd,??Rmm")
+	(ior:QI (match_operand:QI 1 "mra_operand" "%0,0,0,0,0")
+		(match_operand:QI 2 "mrai_operand" "Ilb,iRhlSd,iRhlSd,?Rmm,?Rmm")))]
   "TARGET_A24"
   "@
-   bset\t%B2,%0
    bset\t%B2,%0
    or.b\t%x2,%0
    or.b\t%x2,%0
    or.b\t%x2,%0
    or.b\t%x2,%0"
-  [(set_attr "flags" "n,n,sz,sz,sz,sz")]
+  [(set_attr "flags" "n,sz,sz,sz,sz")]
   )
 
 (define_insn "iorhi3_24"

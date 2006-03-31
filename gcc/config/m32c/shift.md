@@ -39,6 +39,7 @@
   "@
    sha.b\t%2,%0
    mov.b\t%2,r1h\n\tsha.b\tr1h,%0"
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "ashrqi3_i"
@@ -50,6 +51,7 @@
   "@
    sha.b\t%2,%0
    mov.b\t%2,r1h\n\tsha.b\tr1h,%0"
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "lshrqi3_i"
@@ -61,6 +63,7 @@
   "@
    shl.b\t%2,%0
    mov.b\t%2,r1h\n\tshl.b\tr1h,%0"
+  [(set_attr "flags" "szc,szc")]
   )
 
 
@@ -105,6 +108,7 @@
   "@
    sha.w\t%2,%0
    mov.b\t%2,r1h\n\tsha.w\tr1h,%0"
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "ashrhi3_i"
@@ -116,6 +120,7 @@
   "@
    sha.w\t%2,%0
    mov.b\t%2,r1h\n\tsha.w\tr1h,%0"
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "lshrhi3_i"
@@ -127,6 +132,7 @@
   "@
    shl.w\t%2,%0
    mov.b\t%2,r1h\n\tshl.w\tr1h,%0"
+  [(set_attr "flags" "szc,szc")]
   )
 
 
@@ -175,6 +181,7 @@
   "@
    sha.l\t%2,%0
    mov.b\t%2,r1h\n\tsha.l\tr1h,%0"
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "ashrpsi3_i"
@@ -186,6 +193,7 @@
   "@
    sha.l\t%2,%0
    mov.b\t%2,r1h\n\tsha.l\tr1h,%0"
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "lshrpsi3_i"
@@ -197,6 +205,7 @@
   "@
    shl.l\t%2,%0
    mov.b\t%2,r1h\n\tshl.l\tr1h,%0"
+  [(set_attr "flags" "szc,szc")]
   )
 
 
@@ -248,7 +257,7 @@
   "@
    sha.l\t%2,%0
    mov.b\t%2,r1h\n\tsha.l\tr1h,%0"
-  [(set_attr "flags" "sz,sz")]
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "ashrsi3_16"
@@ -260,6 +269,7 @@
   "@
    sha.l\t%2,%0
    mov.b\t%2,r1h\n\tsha.l\tr1h,%0"
+  [(set_attr "flags" "oszc,oszc")]
   )
 
 (define_insn "lshrsi3_16"
@@ -271,6 +281,7 @@
   "@
    shl.l\t%2,%0
    mov.b\t%2,r1h\n\tshl.l\tr1h,%0"
+  [(set_attr "flags" "szc,szc")]
   )
 
 

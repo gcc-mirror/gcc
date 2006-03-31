@@ -84,6 +84,7 @@ int  m32c_memory_move_cost (MM, int, int);
 int  m32c_mode_dependent_address (rtx);
 int  m32c_modes_tieable_p (MM, MM);
 bool m32c_mov_ok (rtx *, MM);
+char * m32c_output_compare (rtx, rtx *);
 int  m32c_preferred_output_reload_class (rtx, int);
 int  m32c_preferred_reload_class (rtx, int);
 int  m32c_prepare_move (rtx *, MM);

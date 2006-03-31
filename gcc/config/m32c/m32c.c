@@ -3291,9 +3291,8 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
   else
     /* We'll only use it for the shift, no point emitting a move.  */
     temp = operands[2];
-    
 
-  if (TARGET_A16 && mode == SImode)
+  if (TARGET_A16 && GET_MODE_SIZE (mode) == 4)
     {
       /* The m16c has a limit of -16..16 for SI shifts, even when the
 	 shift count is in a register.  Since there are so many targets
@@ -3318,6 +3317,8 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
       rtx count;
       rtx label, lref, insn;
 
+      emit_move_insn (operands[0], operands[1]);
+
       count = temp;
       label = gen_label_rtx ();
       lref = gen_rtx_LABEL_REF (VOIDmode, label);
@@ -3328,8 +3329,8 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 	  /* This is a left shift.  We only need check positive counts.  */
 	  emit_jump_insn (gen_cbranchqi4 (gen_rtx_LE (VOIDmode, 0, 0),
 					  count, GEN_INT (16), label));
-	  emit_insn (func (operands[1], operands[1], GEN_INT (8)));
-	  emit_insn (func (operands[1], operands[1], GEN_INT (8)));
+	  emit_insn (func (operands[0], operands[0], GEN_INT (8)));
+	  emit_insn (func (operands[0], operands[0], GEN_INT (8)));
 	  insn = emit_insn (gen_addqi3 (count, count, GEN_INT (-16)));
 	  emit_label_after (label, insn);
 	}
@@ -3338,12 +3339,14 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 	  /* This is a right shift.  We only need check negative counts.  */
 	  emit_jump_insn (gen_cbranchqi4 (gen_rtx_GE (VOIDmode, 0, 0),
 					  count, GEN_INT (-16), label));
-	  emit_insn (func (operands[1], operands[1], GEN_INT (-8)));
-	  emit_insn (func (operands[1], operands[1], GEN_INT (-8)));
+	  emit_insn (func (operands[0], operands[0], GEN_INT (-8)));
+	  emit_insn (func (operands[0], operands[0], GEN_INT (-8)));
 	  insn = emit_insn (gen_addqi3 (count, count, GEN_INT (16)));
 	  emit_label_after (label, insn);
 	}
-
+      operands[1] = operands[0];
+      emit_insn (func (operands[0], operands[0], count));
+      return 1;
     }
 
   operands[2] = temp;
@@ -3459,6 +3462,7 @@ m32c_expand_insv (rtx *operands)
      storing a zero, we want an AND mask, so invert it.  */
   if (INTVAL (operands[3]) == 0)
     {
+      /* Storing a zero, use an AND mask */
       if (GET_MODE (op0) == HImode)
 	mask ^= 0xffff;
       else
@@ -3689,6 +3693,239 @@ m32c_emit_eh_epilogue (rtx ret_addr)
   emit_jump_insn (gen_eh_epilogue (ret_addr, cfun->machine->eh_stack_adjust));
   /*  emit_insn (gen_rtx_CLOBBER (HImode, gen_rtx_REG (HImode, R0L_REGNO))); */
   emit_barrier ();
+}
+
+/* Indicate which flags must be properly set for a given conditional.  */
+static int
+flags_needed_for_conditional (rtx cond)
+{
+  switch (GET_CODE (cond))
+    {
+    case LE:
+    case GT:
+      return FLAGS_OSZ;
+    case LEU:
+    case GTU:
+      return FLAGS_ZC;
+    case LT:
+    case GE:
+      return FLAGS_OS;
+    case LTU:
+    case GEU:
+      return FLAGS_C;
+    case EQ:
+    case NE:
+      return FLAGS_Z;
+    default:
+      return FLAGS_N;
+    }
+}
+
+#define DEBUG_CMP 0
+
+/* Returns true if a compare insn is redundant because it would only
+   set flags that are already set correctly.  */
+static bool
+m32c_compare_redundant (rtx cmp, rtx *operands)
+{
+  int flags_needed;
+  int pflags;
+  rtx prev, pp, next;
+  rtx op0, op1, op2;
+#if DEBUG_CMP
+  int prev_icode, i;
+#endif
+
+  op0 = operands[0];
+  op1 = operands[1];
+  op2 = operands[2];
+
+#if DEBUG_CMP
+  fprintf(stderr, "\n\033[32mm32c_compare_redundant\033[0m\n");
+  debug_rtx(cmp);
+  for (i=0; i<2; i++)
+    {
+      fprintf(stderr, "operands[%d] = ", i);
+      debug_rtx(operands[i]);
+    }
+#endif
+
+  next = next_nonnote_insn (cmp);
+  if (!next || !INSN_P (next))
+    {
+#if DEBUG_CMP
+      fprintf(stderr, "compare not followed by insn\n");
+      debug_rtx(next);
+#endif
+      return false;
+    }
+  if (GET_CODE (PATTERN (next)) == SET
+      && GET_CODE (XEXP ( PATTERN (next), 1)) == IF_THEN_ELSE)
+    {
+      next = XEXP (XEXP (PATTERN (next), 1), 0);
+    }
+  else if (GET_CODE (PATTERN (next)) == SET)
+    {
+      /* If this is a conditional, flags_needed will be something
+	 other than FLAGS_N, which we test below.  */
+      next = XEXP (PATTERN (next), 1);
+    }
+  else
+    {
+#if DEBUG_CMP
+      fprintf(stderr, "compare not followed by conditional\n");
+      debug_rtx(next);
+#endif
+      return false;
+    }
+#if DEBUG_CMP
+  fprintf(stderr, "conditional is: ");
+  debug_rtx(next);
+#endif
+
+  flags_needed = flags_needed_for_conditional (next);
+  if (flags_needed == FLAGS_N)
+    {
+#if DEBUG_CMP
+      fprintf(stderr, "compare not followed by conditional\n");
+      debug_rtx(next);
+#endif
+      return false;
+    }
+
+  /* Compare doesn't set overflow and carry the same way that
+     arithmetic instructions do, so we can't replace those.  */
+  if (flags_needed & FLAGS_OC)
+    return false;
+
+  prev = cmp;
+  do {
+    prev = prev_nonnote_insn (prev);
+    if (!prev)
+      {
+#if DEBUG_CMP
+	fprintf(stderr, "No previous insn.\n");
+#endif
+	return false;
+      }
+    if (!INSN_P (prev))
+      {
+#if DEBUG_CMP
+	fprintf(stderr, "Previous insn is a non-insn.\n");
+#endif
+	return false;
+      }
+    pp = PATTERN (prev);
+    if (GET_CODE (pp) != SET)
+      {
+#if DEBUG_CMP
+	fprintf(stderr, "Previous insn is not a SET.\n");
+#endif
+	return false;
+      }
+    pflags = get_attr_flags (prev);
+
+    /* Looking up attributes of previous insns corrupted the recog
+       tables.  */
+    INSN_UID (cmp) = -1;
+    recog (PATTERN (cmp), cmp, 0);
+
+    if (pflags == FLAGS_N
+	&& reg_mentioned_p (op0, pp))
+      {
+#if DEBUG_CMP
+	fprintf(stderr, "intermediate non-flags insn uses op:\n");
+	debug_rtx(prev);
+#endif
+	return false;
+      }
+  } while (pflags == FLAGS_N);
+#if DEBUG_CMP
+  fprintf(stderr, "previous flag-setting insn:\n");
+  debug_rtx(prev);
+  debug_rtx(pp);
+#endif
+
+  if (GET_CODE (pp) == SET
+      && GET_CODE (XEXP (pp, 0)) == REG
+      && REGNO (XEXP (pp, 0)) == FLG_REGNO
+      && GET_CODE (XEXP (pp, 1)) == COMPARE)
+    {
+      /* Adjacent cbranches must have the same operands to be
+	 redundant.  */
+      rtx pop0 = XEXP (XEXP (pp, 1), 0);
+      rtx pop1 = XEXP (XEXP (pp, 1), 1);
+#if DEBUG_CMP
+      fprintf(stderr, "adjacent cbranches\n");
+      debug_rtx(pop0);
+      debug_rtx(pop1);
+#endif
+      if (rtx_equal_p (op0, pop0)
+	  && rtx_equal_p (op1, pop1))
+	return true;
+#if DEBUG_CMP
+      fprintf(stderr, "prev cmp not same\n");
+#endif
+      return false;
+    }
+
+  /* Else the previous insn must be a SET, with either the source or
+     dest equal to operands[0], and operands[1] must be zero.  */
+
+  if (!rtx_equal_p (op1, const0_rtx))
+    {
+#if DEBUG_CMP
+      fprintf(stderr, "operands[1] not const0_rtx\n");
+#endif
+      return false;
+    }
+  if (GET_CODE (pp) != SET)
+    {
+#if DEBUG_CMP
+      fprintf (stderr, "pp not set\n");
+#endif
+      return false;
+    }
+  if (!rtx_equal_p (op0, SET_SRC (pp))
+      && !rtx_equal_p (op0, SET_DEST (pp)))
+    {
+#if DEBUG_CMP
+      fprintf(stderr, "operands[0] not found in set\n");
+#endif
+      return false;
+    }
+
+#if DEBUG_CMP
+  fprintf(stderr, "cmp flags %x prev flags %x\n", flags_needed, pflags);
+#endif
+  if ((pflags & flags_needed) == flags_needed)
+    return true;
+
+  return false;
+}
+
+/* Return the pattern for a compare.  This will be commented out if
+   the compare is redundant, else a normal pattern is returned.  Thus,
+   the assembler output says where the compare would have been.  */
+char *
+m32c_output_compare (rtx insn, rtx *operands)
+{
+  static char template[] = ";cmp.b\t%1,%0";
+  /*                             ^ 5  */
+
+  template[5] = " bwll"[GET_MODE_SIZE(GET_MODE(operands[0]))];
+  if (m32c_compare_redundant (insn, operands))
+    {
+#if DEBUG_CMP
+      fprintf(stderr, "cbranch: cmp not needed\n");
+#endif
+      return template;
+    }
+
+#if DEBUG_CMP
+  fprintf(stderr, "cbranch: cmp needed: `%s'\n", template);
+#endif
+  return template + 1;
 }
 
 /* The Global `targetm' Variable. */
