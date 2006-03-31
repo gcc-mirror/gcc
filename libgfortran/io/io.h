@@ -412,7 +412,7 @@ typedef struct st_parameter_dt
 	     formatted field width.  */
 	  unsigned sf_read_comma : 1;
           /* A namelist specific flag used to enable reading input from 
-	       line_buffer for logical reads.  */
+	     line_buffer for logical reads.  */
 	  unsigned line_buffer_enabled : 1;
 	  /* 18 unused bits.  */
 
@@ -434,8 +434,9 @@ typedef struct st_parameter_dt
 	     enough to hold a complex value (two reals) of the largest
 	     kind.  */
 	  char value[32];
+	  gfc_offset size_used;
 	} p;
-      char pad[16 * sizeof (char *) + 34 * sizeof (int)];
+      char pad[16 * sizeof (char *) + 34 * sizeof (int) - sizeof (gfc_offset)];
     } u;
 }
 st_parameter_dt;

@@ -233,7 +233,7 @@ read_sf (st_parameter_dt *dtp, int *length, int no_error)
   dtp->u.p.current_unit->bytes_left -= *length;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size += *length;
+    dtp->u.p.size_used += (gfc_offset) *length;
 
   return base;
 }
@@ -277,7 +277,7 @@ read_block (st_parameter_dt *dtp, int *length)
   source = salloc_r (dtp->u.p.current_unit->s, &nread);
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size += nread;
+    dtp->u.p.size_used += (gfc_offset) nread;
 
   if (nread != *length)
     {				/* Short read, this shouldn't happen.  */
@@ -334,7 +334,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
     }
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size += (GFC_INTEGER_4) nread;
+    dtp->u.p.size_used += (gfc_offset) nread;
 
   if (nread != *nbytes)
     {				/* Short read, e.g. if we hit EOF.  */
@@ -375,7 +375,7 @@ write_block (st_parameter_dt *dtp, int length)
     }
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size += length;
+    dtp->u.p.size_used += (gfc_offset) length;
 
   return dest;
 }
@@ -404,10 +404,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
     }
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    {
-      *dtp->size += (GFC_INTEGER_4) nbytes;
-      return FAILURE;
-    }
+    dtp->u.p.size_used += (gfc_offset) nbytes;
 
   return SUCCESS;
 }
@@ -1388,7 +1385,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   dtp->u.p.mode = read_flag ? READING : WRITING;
 
   if ((cf & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size = 0;		/* Initialize the count.  */
+    dtp->u.p.size_used = 0;  /* Initialize the count.  */
 
   dtp->u.p.current_unit = get_unit (dtp, 1);
   if (dtp->u.p.current_unit->s == NULL)
@@ -2146,6 +2143,9 @@ finalize_transfer (st_parameter_dt *dtp)
 {
   jmp_buf eof_jump;
   GFC_INTEGER_4 cf = dtp->common.flags;
+
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    *dtp->size = (GFC_INTEGER_4) dtp->u.p.size_used;
 
   if (dtp->u.p.eor_condition)
     {
