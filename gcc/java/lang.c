@@ -108,6 +108,14 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
+/* Table of machine-independent attributes.  */
+const struct attribute_spec java_attribute_table[] =
+{
+ { "nonnull",                0, -1, false, true, true,
+			      NULL },
+  { NULL,                     0, 0, false, false, false, NULL }
+};
+
 /* Used to avoid printing error messages with bogus function
    prototypes.  Starts out false.  */
 static bool inhibit_error_function_printing;
@@ -212,6 +220,9 @@ struct language_function GTY(())
 
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME java_mangle_decl
+
+#undef LANG_HOOKS_ATTRIBUTE_TABLE
+#define LANG_HOOKS_ATTRIBUTE_TABLE java_attribute_table
 
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
