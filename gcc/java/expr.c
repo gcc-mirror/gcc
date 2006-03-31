@@ -130,6 +130,10 @@ static GTY(()) tree quick_stack;
 /* A free-list of unused permanent TREE_LIST nodes.  */
 static GTY((deletable)) tree tree_list_free_list;
 
+/* The physical memory page size used in this computer.  See
+   build_field_ref().  */
+static GTY(()) tree page_size;
+
 /* The stack pointer of the Java virtual machine.
    This does include the size of the quick_stack. */
 
@@ -1678,11 +1682,28 @@ build_field_ref (tree self_value, tree self_class, tree name)
     }
   else
     {
-      int check = (flag_check_references
-		   && ! (DECL_P (self_value)
-			 && DECL_NAME (self_value) == this_identifier_node));
-
       tree base_type = promote_type (base_class);
+
+      /* CHECK is true if self_value is not the this pointer.  */
+      int check = (! (DECL_P (self_value)
+		      && DECL_NAME (self_value) == this_identifier_node));
+
+      /* Determine whether a field offset from NULL will lie within
+	 Page 0: this is necessary on those GNU/Linux/BSD systems that
+	 trap SEGV to generate NullPointerExceptions.  
+
+	 We assume that Page 0 will be mapped with NOPERM, and that
+	 memory may be allocated from any other page, so only field
+	 offsets < pagesize are guaratneed to trap.  We also assume
+	 the smallest page size we'll encounter is 4k bytes.  */
+      if (check && ! flag_check_references && ! flag_indirect_dispatch)
+	{
+	  tree field_offset = byte_position (field_decl);
+	  if (! page_size)
+	    page_size = size_int (4096); 	      
+	  check = ! INT_CST_LT_UNSIGNED (field_offset, page_size);
+	}
+
       if (base_type != TREE_TYPE (self_value))
 	self_value = fold_build1 (NOP_EXPR, base_type, self_value);
       if (! flag_syntax_only && flag_indirect_dispatch)
@@ -1708,6 +1729,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
 			field_offset);
 	  
 	  field_offset = fold (convert (sizetype, field_offset));
+	  self_value = java_check_reference (self_value, check);
 	  address 
 	    = fold_build2 (PLUS_EXPR, 
 			   build_pointer_type (TREE_TYPE (field_decl)),

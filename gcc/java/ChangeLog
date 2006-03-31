@@ -1,3 +1,14 @@
+2006-03-30  Andrew Haley  <aph@redhat.com>
+
+	PR java/26858
+	* lang.c (java_attribute_table): New.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Define.
+	* expr.c (build_field_ref): Add a null pointer check for all
+	fields of offset > 4k.  Don't do so for accesses via the this
+	pointer, which we know can never be null.
+	* class.c (build_java_method_type): Mark arg 1 of all nonstatic
+	methods nonnull.
+
 2006-03-30  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Make-lang.in: Rename docdir to gcc_docdir.
