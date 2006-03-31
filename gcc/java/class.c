@@ -681,7 +681,17 @@ build_java_method_type (tree fntype, tree this_class, int access_flags)
 {
   if (access_flags & ACC_STATIC)
     return fntype;
-  return build_method_type (this_class, fntype);
+  fntype = build_method_type (this_class, fntype);
+
+  /* We know that arg 1 of every nonstatic method is non-null; tell
+     the back-end so.  */
+  TYPE_ATTRIBUTES (fntype) = (tree_cons 
+			      (get_identifier ("nonnull"),
+			       tree_cons (NULL_TREE, 
+					  build_int_cst (NULL_TREE, 1),
+					  NULL_TREE),
+			       TYPE_ATTRIBUTES (fntype)));
+  return fntype;
 }
 
 tree
