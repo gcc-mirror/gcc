@@ -1,3 +1,15 @@
+2006-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/25741
+	Backport from mainline
+	2006-01-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lib/g++.exp (g++_init): Use $base_dir/../../ instead of
+	$base_dir/../.
+	* lib/gfortran.exp (gfortran_init): Likewise.
+	* lib/scanasm.exp (scan-assembler-dem): Likewise.
+	(scan-assembler-dem-not): Likewise.
+
 2006-03-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.dg/direct_io_1.f90, gfortran.dg/iostat_2.f90,
