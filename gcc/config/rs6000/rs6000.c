@@ -249,11 +249,12 @@ int rs6000_alignment_flags;
 struct {
   bool aix_struct_ret;		/* True if -maix-struct-ret was used.  */
   bool alignment;		/* True if -malign- was used.  */
-  bool abi;			/* True if -mabi= was used.  */
+  bool abi;			/* True if -mabi=spe/nospe was used.  */
   bool spe;			/* True if -mspe= was used.  */
   bool float_gprs;		/* True if -mfloat-gprs= was used.  */
   bool isel;			/* True if -misel was used. */
   bool long_double;	        /* True if -mlong-double- was used.  */
+  bool ieee;			/* True if -mabi=ieee/ibmlongdouble used.  */
 } rs6000_explicit_options;
 
 struct builtin_description
@@ -1322,7 +1323,7 @@ rs6000_override_options (const char *default_cpu)
     rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
 
 #ifndef POWERPC_LINUX
-  if (!rs6000_explicit_options.abi)
+  if (!rs6000_explicit_options.ieee)
     rs6000_ieeequad = 1;
 #endif
 
@@ -1777,23 +1778,31 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 #endif
 
     case OPT_mabi_:
-      rs6000_explicit_options.abi = true;
       if (!strcmp (arg, "altivec"))
 	{
+	  rs6000_explicit_options.abi = true;
 	  rs6000_altivec_abi = 1;
 	  rs6000_spe_abi = 0;
 	}
       else if (! strcmp (arg, "no-altivec"))
-	rs6000_altivec_abi = 0;
+	{
+	  /* ??? Don't set rs6000_explicit_options.abi here, to allow
+	     the default for rs6000_spe_abi to be chosen later.  */
+	  rs6000_altivec_abi = 0;
+	}
       else if (! strcmp (arg, "spe"))
 	{
+	  rs6000_explicit_options.abi = true;
 	  rs6000_spe_abi = 1;
 	  rs6000_altivec_abi = 0;
 	  if (!TARGET_SPE_ABI)
 	    error ("not configured for ABI: '%s'", arg);
 	}
       else if (! strcmp (arg, "no-spe"))
-	rs6000_spe_abi = 0;
+	{
+	  rs6000_explicit_options.abi = true;
+	  rs6000_spe_abi = 0;
+	}
 
       /* These are here for testing during development only, do not
 	 document in the manual please.  */
@@ -1810,11 +1819,13 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 
       else if (! strcmp (arg, "ibmlongdouble"))
 	{
+	  rs6000_explicit_options.ieee = true;
 	  rs6000_ieeequad = 0;
 	  warning (0, "Using IBM extended precision long double");
 	}
       else if (! strcmp (arg, "ieeelongdouble"))
 	{
+	  rs6000_explicit_options.ieee = true;
 	  rs6000_ieeequad = 1;
 	  warning (0, "Using IEEE extended precision long double");
 	}
