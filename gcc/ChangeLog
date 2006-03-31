@@ -1,3 +1,10 @@
+2006-03-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_explicit_options): Add ieee.
+	(rs6000_override_options): Use it.
+	(rs6000_handle_option): Set it.  Set rs6000_explicit_options.abi
+	only for -mabi=spe/no-spe and -mabi=altivec.
+
 2006-03-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Don't try to protect %S with
