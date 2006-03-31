@@ -1,16 +1,16 @@
 # Swedish messages for GCC.
-# Copyright © 2000, 2005 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.1-b20051125\n"
+"Project-Id-Version: gcc 4.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-02-28 00:11-0800\n"
-"PO-Revision-Date: 2005-11-29 21:25+0100\n"
+"PO-Revision-Date: 2006-03-11 11:59+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -471,9 +471,8 @@ msgid "redefined extern inline functions are not considered for inlining"
 msgstr "omdefinierade externa inline-funktioner beaktas inte för inline:ing"
 
 #: cgraph.c:305 cgraphunit.c:599
-#, fuzzy
 msgid "function not considered for inlining"
-msgstr "funktionen inte  \"%s\" kan inte deklareras som \"mutable\""
+msgstr "funktionen inte beaktad för inline:ing"
 
 #: cgraph.c:307 cgraphunit.c:597 ipa-inline.c:289
 #, fuzzy
@@ -538,7 +537,7 @@ msgstr "kan inte hitta \"%s\""
 #: collect2.c:1556 collect2.c:2045 collect2.c:2200 gcc.c:2809
 #, c-format
 msgid "pex_init failed"
-msgstr ""
+msgstr "pex_init misslyckades"
 
 #: collect2.c:1591
 #, c-format
@@ -555,14 +554,14 @@ msgstr ""
 "write_c_file - utdatanamn är %s, prefix är %s\n"
 
 #: collect2.c:2019
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find 'nm'"
 msgstr "kan inte hitta \"nm\""
 
 #: collect2.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "can't open nm output"
-msgstr "Kan inte öppna utdatafil \"%s\""
+msgstr "kan inte öppna nm-utdata"
 
 #: collect2.c:2110
 #, c-format
@@ -577,7 +576,7 @@ msgstr "fini-funktion funnen i objekt %s"
 #: collect2.c:2221
 #, fuzzy, c-format
 msgid "can't open ldd output"
-msgstr "Kan inte öppna utdatafil \"%s\""
+msgstr "kan inte öppna ldd-utdata"
 
 #: collect2.c:2224
 #, c-format
@@ -609,9 +608,9 @@ msgid "%s: cannot open as COFF file"
 msgstr "%s: kan inte öppna som COFF-fil"
 
 #: collect2.c:2585
-#, fuzzy, c-format
+#, c-format
 msgid "library lib%s not found"
-msgstr "Hittade inte bibliotek lib%s"
+msgstr "biblioteket lib%s finns inte"
 
 #: cppspec.c:106
 #, c-format
@@ -813,7 +812,7 @@ msgstr ""
 
 #: gcc.c:2848
 msgid "failed to get exit status"
-msgstr ""
+msgstr "misslyckades att få slutstatus"
 
 #: gcc.c:2854
 #, fuzzy
@@ -963,6 +962,8 @@ msgid ""
 "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
 "                           for headers and libraries\n"
 msgstr ""
+"  --sysroot=<katalog>      Använd <katalog> som rotkatalogen för huvuden och\n"
+"                           bibliotek\n"
 
 #: gcc.c:3076
 msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
@@ -1239,7 +1240,7 @@ msgstr "Inga indatafiler"
 #: gcc.c:6466
 #, c-format
 msgid "cannot specify -o with -c or -S with multiple files"
-msgstr ""
+msgstr "det går inte att ange -o med -c eller -S med flera filer"
 
 #: gcc.c:6500
 #, fuzzy, c-format
@@ -1284,7 +1285,7 @@ msgstr "för många argument till funktion"
 #: gcc.c:7748
 #, c-format
 msgid "unknown operator '%s' in %%:version-compare"
-msgstr ""
+msgstr "okänd operator \"%s\" i %%:version-compare"
 
 #: gcov.c:388
 #, c-format
@@ -1625,7 +1626,7 @@ msgstr "rekursiv inline:ing"
 
 #: ipa-inline.c:779
 msgid "call is unlikely"
-msgstr ""
+msgstr "anrop är osannolikt"
 
 #: ipa-inline.c:850
 msgid "--param inline-unit-growth limit reached"
@@ -1647,15 +1648,15 @@ msgstr "I funktion `%s':"
 
 #: loop-iv.c:2709 tree-ssa-loop-niter.c:1026
 msgid "assuming that the loop is not infinite"
-msgstr ""
+msgstr "antar att slingan inte är oändlig"
 
 #: loop-iv.c:2710 tree-ssa-loop-niter.c:1027
 msgid "cannot optimize possibly infinite loops"
-msgstr ""
+msgstr "kan inte optimera potentiellt oändliga slingor"
 
 #: loop-iv.c:2718 tree-ssa-loop-niter.c:1031
 msgid "assuming that the loop counter does not overflow"
-msgstr ""
+msgstr "antar att slingräknaren inte spiller över"
 
 #: loop-iv.c:2719 tree-ssa-loop-niter.c:1032
 msgid "cannot optimize loop, the loop counter may overflow"
@@ -29137,24 +29138,8 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "syntax error: cannot back up"
 #~ msgstr "syntaxfel: kan inte backa tillbaka"
 
-#, fuzzy
-#~ msgid "syntax error, unexpected %s"
-#~ msgstr "syntaxfel vid token \"%s\""
-
-#, fuzzy
-#~ msgid "syntax error, unexpected %s, expecting %s"
-#~ msgstr "syntaxfel vid token \"%s\""
-
 #~ msgid "syntax error"
 #~ msgstr "syntaxfel"
-
-#, fuzzy
-#~ msgid "Variable '%s' at %L cannot appear in an initialization expression"
-#~ msgstr "spill i konstant uttryck"
-
-#, fuzzy
-#~ msgid "Missing term"
-#~ msgstr "saknas '(' efter predikat"
 
 #~ msgid "parse error"
 #~ msgstr "parsningsfel"
@@ -29167,308 +29152,6 @@ msgstr "attributet `%s' ignorerat"
 
 #~ msgid "parse error: cannot back up"
 #~ msgstr "parsningsfel: kan inte backa tillbaka"
-
-#, fuzzy
-#~ msgid "Missing name"
-#~ msgstr "heltalsspill i uttryck"
-
-#, fuzzy
-#~ msgid "Class or interface declaration expected"
-#~ msgstr "Cirkulärt arv i interfacedeklaration för \"%s\""
-
-#, fuzzy
-#~ msgid "Missing class name"
-#~ msgstr "motstridande deklarationer av \"%s\""
-
-#, fuzzy
-#~ msgid "Missing super class name"
-#~ msgstr "motstridande deklarationer av \"%s\""
-
-#, fuzzy
-#~ msgid "Missing interface name"
-#~ msgstr "\"%s\" definierades tidigare här"
-
-#, fuzzy
-#~ msgid "Missing variable initializer"
-#~ msgstr "initierare saknas"
-
-#, fuzzy
-#~ msgid "Invalid declaration"
-#~ msgstr "ogiltig #indent"
-
-#, fuzzy
-#~ msgid "Invalid method declaration, method name required"
-#~ msgstr "omdeklaration av \"%s\""
-
-#, fuzzy
-#~ msgid "Invalid method declaration, return type required"
-#~ msgstr "ogiltig mottagartyp \"%s\""
-
-#, fuzzy
-#~ msgid "Missing formal parameter term"
-#~ msgstr "ogiltigt parametervärde \"%s\""
-
-#, fuzzy
-#~ msgid "Missing identifier"
-#~ msgstr "initierare saknas"
-
-#, fuzzy
-#~ msgid "Invalid interface type"
-#~ msgstr "ogiltig mottagartyp \"%s\""
-
-#, fuzzy
-#~ msgid "Invalid expression statement"
-#~ msgstr "ogiltigt uttryck som operand"
-
-#, fuzzy
-#~ msgid "Missing or invalid constant expression"
-#~ msgstr "spill i konstant uttryck"
-
-#, fuzzy
-#~ msgid "Invalid control expression"
-#~ msgstr "ogiltigt sanningsvärdeuttryck"
-
-#, fuzzy
-#~ msgid "Invalid update expression"
-#~ msgstr "ogiltigt sanningsvärdeuttryck"
-
-#, fuzzy
-#~ msgid "Invalid init statement"
-#~ msgstr "ogiltigt lvärde i asm-sats"
-
-#, fuzzy
-#~ msgid "'class' expected"
-#~ msgstr "tomt intervall angivet"
-
-#, fuzzy
-#~ msgid "']' expected, invalid type expression"
-#~ msgstr "ogiltigt sanningsvärdeuttryck"
-
-#, fuzzy
-#~ msgid "Invalid type expression"
-#~ msgstr "ogiltigt sanningsvärdeuttryck"
-
-#, fuzzy
-#~ msgid "Invalid reference type"
-#~ msgstr "ogiltig mottagartyp \"%s\""
-
-#, fuzzy
-#~ msgid "Only constructors can invoke constructors"
-#~ msgstr "konstruerare kan inte vara en statisk medlemsfunktion\""
-
-#, fuzzy
-#~ msgid "Generate multiply instructions"
-#~ msgstr "Generera sammansmälta multiplikations-/additionsinstruktioner"
-
-#, fuzzy
-#~ msgid "duplicate %<friend%>"
-#~ msgstr "flera \"%s\""
-
-#, fuzzy
-#~ msgid "Modifier %qs declared twice"
-#~ msgstr "fält \"%s\" deklarerad som en funktion"
-
-#, fuzzy
-#~ msgid ""
-#~ "%s.\n"
-#~ "%s"
-#~ msgstr "%s: %s"
-
-#, fuzzy
-#~ msgid "Missing return statement"
-#~ msgstr "heltalsspill i uttryck"
-
-#, fuzzy
-#~ msgid "Unreachable statement"
-#~ msgstr "Aktivera separat datasegment"
-
-#, fuzzy
-#~ msgid "%s name %qs clashes with imported type %qs"
-#~ msgstr "parameter \"%s\" deklarerad som void"
-
-#, fuzzy
-#~ msgid "Qualifier must be a reference"
-#~ msgstr "Använd stor minnesmodell"
-
-#, fuzzy
-#~ msgid "Duplicate variable declaration: %<%s %s%> was %<%s %s%> (%s:%d)"
-#~ msgstr "Cirkulärt arv i interfacedeklaration för \"%s\""
-
-#, fuzzy
-#~ msgid "%s: recursive invocation of constructor %qs"
-#~ msgstr "omdefiniering av \"struct %s\""
-
-#, fuzzy
-#~ msgid "Can't subclass final classes: %s"
-#~ msgstr "Kan inte hitta klass \"%s\""
-
-#, fuzzy
-#~ msgid "Type %qs not found in declaration of field %qs"
-#~ msgstr "två eller fler datatyper i deklaration av \"%s\""
-
-#, fuzzy
-#~ msgid "Type %qs not found in the declaration of the local variable %qs"
-#~ msgstr "Cirkulärt arv i interfacedeklaration för \"%s\""
-
-#, fuzzy
-#~ msgid "Duplicate %s declaration %qs"
-#~ msgstr "dubbel deklaration av etikett \"%s\""
-
-#, fuzzy
-#~ msgid "Package %qs not found in import"
-#~ msgstr "metod \"%s\" kan inte hittas i klassen"
-
-#, fuzzy
-#~ msgid "Type %qs also potentially defined in package %qs"
-#~ msgstr "kunde inte hitta klassen \"%s\""
-
-#, fuzzy
-#~ msgid "Undefined variable %qs"
-#~ msgstr "oanvänd variabel \"%s\""
-
-#, fuzzy
-#~ msgid "No variable %qs defined in class %qs"
-#~ msgstr "kunde inte hitta klassen \"%s\""
-
-#, fuzzy
-#~ msgid "Undefined variable or class name: %qs"
-#~ msgstr "motstridande deklarationer av \"%s\""
-
-#, fuzzy
-#~ msgid "Can't use type %qs as a qualifier"
-#~ msgstr "fält \"%s\" har en inkomplett typ"
-
-#, fuzzy
-#~ msgid "No variable %qs defined in type %qs"
-#~ msgstr "kan inte deklarera \"::main\" som en mall"
-
-#, fuzzy
-#~ msgid "The class %qs has been deprecated"
-#~ msgstr "tredje argumentet till \"%s\" är inte länge rekommenderat"
-
-#, fuzzy
-#~ msgid "Class %qs not found in type declaration"
-#~ msgstr "oanvändbart nyckelord eller typnamn i tom deklaration"
-
-#, fuzzy
-#~ msgid "Constant expression required"
-#~ msgstr "spill i konstant uttryck"
-
-#, fuzzy
-#~ msgid "Incompatible type for case. Can't convert %qs to %<int%>"
-#~ msgstr "inkompatibla typer i %s"
-
-#, fuzzy
-#~ msgid "Duplicate case label: %<default%>"
-#~ msgstr "upprepat case-värde"
-
-#, fuzzy
-#~ msgid "missing static field %qs"
-#~ msgstr "Nummer saknas efter %s"
-
-#, fuzzy
-#~ msgid "Invalid left hand side of assignment"
-#~ msgstr "ogiltigt lvalue i tilldelning"
-
-#, fuzzy
-#~ msgid "Incompatible type for %s. Can't convert %qs to %qs"
-#~ msgstr "inkompatibla typer i %s"
-
-#, fuzzy
-#~ msgid "Incompatible type for %s. Explicit cast needed to convert %qs to %qs"
-#~ msgstr "inkompatibla typer i %s"
-
-#, fuzzy
-#~ msgid "unregistered operator %s"
-#~ msgstr "ej igenkänd flagga `-%s'"
-
-#, fuzzy
-#~ msgid "Invalid argument %qs for %<instanceof%>"
-#~ msgstr "ogiltigt typargument till \"%s\""
-
-#, fuzzy
-#~ msgid "Incompatible type for %qs. Can't convert %qs to %qs"
-#~ msgstr "inkompatibla typer i %s"
-
-#, fuzzy
-#~ msgid "Invalid argument type %qs to %qs"
-#~ msgstr "ogiltigt parametervärde \"%s\""
-
-#, fuzzy
-#~ msgid "Invalid cast from %qs to %qs"
-#~ msgstr "ogiltig mottagartyp \"%s\""
-
-#, fuzzy
-#~ msgid "Incompatible type for %<[]%>. Can't convert %qs to %<int%>"
-#~ msgstr "inkompatibla typer i %s"
-
-#, fuzzy
-#~ msgid "Invalid array initializer for non-array type %qs"
-#~ msgstr "vektor initierad från icke-konstant vektoruttryck"
-
-#, fuzzy
-#~ msgid "Incompatible type for array. %s convert %qs to %qs"
-#~ msgstr "inkompatibla typer i %s"
-
-#, fuzzy
-#~ msgid "%<return%> inside instance initializer"
-#~ msgstr "tomt indexintervall i initierare"
-
-#, fuzzy
-#~ msgid "%<return%> inside static initializer"
-#~ msgstr "tomt indexintervall i initierare"
-
-#, fuzzy
-#~ msgid "%<return%> with value from constructor %qs"
-#~ msgstr "returnerar ett värde från en destruktor"
-
-#, fuzzy
-#~ msgid "Declaration of %qs shadows a previous label declaration"
-#~ msgstr "deklaration av \"%s\" döljer en parameter"
-
-#, fuzzy
-#~ msgid "This is the location of the previous declaration of label %qs"
-#~ msgstr "ingen tidigare deklaration av \"%s\""
-
-#, fuzzy
-#~ msgid "No label definition found for %qs"
-#~ msgstr "omdefiniering av \"%s\""
-
-#, fuzzy
-#~ msgid "%<continue%> must be in loop"
-#~ msgstr "continue-sats som inte är i en loop"
-
-#, fuzzy
-#~ msgid "continue label %qs does not name a loop"
-#~ msgstr "ISO C förbjuder typkonvertering till unionstyper"
-
-#, fuzzy
-#~ msgid "%<break%> must be in loop or switch"
-#~ msgstr "break-sats som inte är i en loop eller switch"
-
-#, fuzzy
-#~ msgid "duplicate case label: %<"
-#~ msgstr "upprepning av medlem \"%s\""
-
-#, fuzzy
-#~ msgid "original label is here"
-#~ msgstr "Justera alla etiketter"
-
-#, fuzzy
-#~ msgid "Exception %qs can't be thrown in initializer"
-#~ msgstr "tomt indexintervall i initierare"
-
-#, fuzzy
-#~ msgid "Incompatible type for %<?:%>. Can't convert %qs to %qs"
-#~ msgstr "inkompatibla typer i %s"
-
-#, fuzzy
-#~ msgid "Discouraged redundant use of %qs modifier in declaration of %s"
-#~ msgstr "flera lagringsklasser i deklaration av \"%s\""
-
-#, fuzzy
-#~ msgid "Discouraged redundant use of %qs modifier in declaration of %s %qs"
-#~ msgstr "flera lagringsklasser i deklaration av \"%s\""
 
 #~ msgid "parser stack overflow"
 #~ msgstr "parsestack överfull"
@@ -29514,10 +29197,6 @@ msgstr "attributet `%s' ignorerat"
 
 #~ msgid ";; Processing block from %d to %d, %d sets.\n"
 #~ msgstr ";; Bearbetar block från %d till %d, %d mängder.\n"
-
-#, fuzzy
-#~ msgid "  -m%-23s [undocumented]\n"
-#~ msgstr "  -m%-23.23s [odokumenterad]\n"
 
 #~ msgid ""
 #~ "\n"
@@ -29598,28 +29277,8 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "Select CPU to generate code for"
 #~ msgstr "Välj CPU att generera kod för"
 
-#, fuzzy
-#~ msgid "invalid operand for 'v' modifier"
-#~ msgstr "ogiltig operand för %V"
-
-#, fuzzy
-#~ msgid "invalid operand for 'P' modifier"
-#~ msgstr "ogiltig operand för %V"
-
 #~ msgid "unrecognized supposed constant in cris_global_pic_symbol"
 #~ msgstr "oväntad antagen konstant i cris_global_pic_symbol"
-
-#, fuzzy
-#~ msgid "Do not generate H8S code"
-#~ msgstr "Generera inte H8/S-kod"
-
-#, fuzzy
-#~ msgid "Do not generate H8SX code"
-#~ msgstr "Generera inte H8/S-kod"
-
-#, fuzzy
-#~ msgid "Do not generate H8S/2600 code"
-#~ msgstr "Generera inte kod för H8/S2600"
 
 #~ msgid "Do not use registers for argument passing"
 #~ msgstr "Använd inte register för argumentskickning"
@@ -29654,32 +29313,8 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "Do not inline all known string operations"
 #~ msgstr "Inline:a inte alla kända strängoperationer"
 
-#, fuzzy
-#~ msgid "Do not support MMX built-in functions"
-#~ msgstr "Stöd inte inbyggda funktioner med MMX"
-
-#, fuzzy
-#~ msgid "Do not support 3DNow! built-in functions"
-#~ msgstr "Stöd inte inbyggda funktioner med MMX"
-
-#, fuzzy
-#~ msgid "Do not support MMX and SSE built-in functions and code generation"
-#~ msgstr "Stöd inte inbyggda funktioner med MMX och SSE"
-
-#, fuzzy
-#~ msgid "Do not support MMX, SSE and SSE2 built-in functions and code generation"
-#~ msgstr "Stöd inte inbyggda funktioner med MMX och SSE"
-
-#, fuzzy
-#~ msgid "Do not support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-#~ msgstr "Stöd inte inbyggda funktioner med MMX och SSE"
-
 #~ msgid "Use gcc default bitfield layout"
 #~ msgstr "Använd gcc:s standardbitfältslayout"
-
-#, fuzzy
-#~ msgid "Do not use red-zone in the x86-64 code"
-#~ msgstr "Generera inte H8/S-kod"
 
 #~ msgid "Do not use direct references against %gs when accessing tls data"
 #~ msgstr "Använd inte direkta referenser mot %gs vid åtkomst av tls-data"
@@ -29713,10 +29348,6 @@ msgstr "attributet `%s' ignorerat"
 
 #~ msgid "Don't put uninitialized constants in ROM"
 #~ msgstr "Placera inte oinitierade konstanter i ROM"
-
-#, fuzzy
-#~ msgid "Do no generate code for a 68851"
-#~ msgstr "Generera kod för c1"
 
 #~ msgid "Disable separate data segment"
 #~ msgstr "Avaktivera separat datasegment"
@@ -29777,10 +29408,6 @@ msgstr "attributet `%s' ignorerat"
 
 #~ msgid "Don't generate fused multiply/add instructions"
 #~ msgstr "Generera inte sammansmälta multipikations-/additionsinstruktioner"
-
-#, fuzzy
-#~ msgid "Don't perform VR4130-specific alignment optimizations"
-#~ msgstr "Utför inte optimering för svansrekursion"
 
 #~ msgid "Don't work around early 4300 hardware bug"
 #~ msgstr "Gå inte runt hårdvarufel i tidiga 4300"
@@ -29851,10 +29478,6 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "Do not use register sb"
 #~ msgstr "Använd inte register sb"
 
-#, fuzzy
-#~ msgid "Do not use bit-field instructions"
-#~ msgstr "Använd inte bitfältsinstruktioner"
-
 #~ msgid "Generate code for high memory"
 #~ msgstr "Generera kod för högt minne"
 
@@ -29893,27 +29516,11 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "Do not put jumps in call delay slots"
 #~ msgstr "Placera inte hopp i fördröjda anropsfack"
 
-#, fuzzy
-#~ msgid "Do not disable indexed addressing"
-#~ msgstr "okänt registernamn: %s"
-
-#, fuzzy
-#~ msgid "Do not use portable calling conventions"
-#~ msgstr "Använd inte divisionsinstruktionen"
-
 #~ msgid "Do not assume code will be assembled by GAS"
 #~ msgstr "Anta inte att kod kommer assembleras av GAS"
 
-#, fuzzy
-#~ msgid "Do not use software floating point"
-#~ msgstr "Använd mjukvaruflytttal"
-
 #~ msgid "Do not emit long load/store sequences"
 #~ msgstr "Mata inte ut långa load-/store-sekvenser"
-
-#, fuzzy
-#~ msgid "Do not generate code for huge switch statements"
-#~ msgstr "Generera kod för Intel as"
 
 #~ msgid "Generate long calls only when needed"
 #~ msgstr "Generera långa anrop bara vid behov"
@@ -29946,22 +29553,6 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "Do not use POWER2 instruction set"
 #~ msgstr "Använd inte instruktionsuppsättning för POWER2"
 
-#, fuzzy
-#~ msgid "Do not use PowerPC General Purpose group optional instructions"
-#~ msgstr "Använd inte bitfältsinstruktioner"
-
-#, fuzzy
-#~ msgid "Do not use PowerPC Graphics group optional instructions"
-#~ msgstr "Använd inte bitfältsinstruktioner"
-
-#, fuzzy
-#~ msgid "Do not use PowerPC-64 instruction set"
-#~ msgstr "Använd inte bitfältsinstruktioner"
-
-#, fuzzy
-#~ msgid "Do not use AltiVec instructions"
-#~ msgstr "Använd inte bitfältsinstruktioner"
-
 #~ msgid "Place variable addresses in the regular TOC"
 #~ msgstr "Placera variabeladresser i den vanliga TOC"
 
@@ -29970,10 +29561,6 @@ msgstr "attributet `%s' ignorerat"
 
 #~ msgid "Do not generate string instructions for block moves"
 #~ msgstr "Generera inte stränginstruktioner för blockförflyttningar"
-
-#, fuzzy
-#~ msgid "Do not generate single field mfcr instruction"
-#~ msgstr "Använd inte bitfältsinstruktioner"
 
 #~ msgid "Specify yes/no if isel instructions should be generated"
 #~ msgstr "Ange med yes/no om isel-instruktioner skall genereras"
@@ -29996,18 +29583,6 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "Don't produce code relocatable at runtime"
 #~ msgstr "Producera inte kod som kan omlokaliserar vid körtillfället"
 
-#, fuzzy
-#~ msgid "Don't use EABI"
-#~ msgstr "Använd inte EABI."
-
-#, fuzzy
-#~ msgid "Don't use alternate register names"
-#~ msgstr "Använd inte alternativa registernamn."
-
-#, fuzzy
-#~ msgid "Don't use bras"
-#~ msgstr "Använd inte EABI."
-
 #~ msgid "Don't print additional debug prints"
 #~ msgstr "Skriv inte ytterligare felsökningsutskrifter"
 
@@ -30016,14 +29591,6 @@ msgstr "attributet `%s' ignorerat"
 
 #~ msgid "Disable tpf OS tracing code"
 #~ msgstr "Avaktivera spårningskod för OS:et tpf"
-
-#, fuzzy
-#~ msgid "Disable fused multiply/add instructions"
-#~ msgstr "Använd inte bitfältsinstruktioner"
-
-#, fuzzy
-#~ msgid "Don't maintain backchain pointer"
-#~ msgstr "Generera inte kod för stackkontroll"
 
 #~ msgid "Don't use packed stack layout"
 #~ msgstr "Använd inte packad stackutläggning"
@@ -30058,14 +29625,6 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "Do not optimize tail call instructions in assembler or linker"
 #~ msgstr "Optimera inte svansanropsinstruktioner i assembler och länkare"
 
-#, fuzzy
-#~ msgid "Compile for v850e1 processor"
-#~ msgstr "Kompilera för processorn v850"
-
-#, fuzzy
-#~ msgid "Compile for v850e processor"
-#~ msgstr "Kompilera för processorn v850"
-
 #~ msgid "Use PC-relative L32R instruction to load constants"
 #~ msgstr "Använd PC-relativ L32R-instruktion för att läsa konstanter"
 
@@ -30099,211 +29658,14 @@ msgstr "attributet `%s' ignorerat"
 #~ msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
 #~ msgstr "-iwithprefixbefore <kat>\tLägg till <kat> till slutet huvudsökvägen för inkluderingar"
 
-#, fuzzy
-#~ msgid "-pg or -p and -fomit-frame-pointer are incompatible"
-#~ msgstr "-pg och -fomit-frame-pointer är inkompatibla"
-
-#, fuzzy
-#~ msgid "attempt to take address of bit-field structure member %qs"
-#~ msgstr "kan inte ta adressen till bitfält \"%s\""
-
-#, fuzzy
-#~ msgid "%Jlabel %qD used but not defined"
-#~ msgstr "etikett \"%s\" använd men inte definierad"
-
-#, fuzzy
-#~ msgid "%Jlabel %qD defined but not used"
-#~ msgstr "etikett \"%s\" definierad men inte använd"
-
-#, fuzzy
-#~ msgid "%J%qD redeclared as different kind of symbol"
-#~ msgstr "\"%s\" omdeklarerad som en annan sorts symbol"
-
-#, fuzzy
-#~ msgid "%Jdeclaration of %qD shadows a parameter"
-#~ msgstr "deklaration av \"%s\" döljer en parameter"
-
-#, fuzzy
-#~ msgid "%Jdeclaration of %qD shadows a global declaration"
-#~ msgstr "deklaration av \"%s\" döljer en parameter"
-
-# local, det kan troligen vara både lokal variabel och lokal funktion??
-#, fuzzy
-#~ msgid "%Jdeclaration of %qD shadows a previous local"
-#~ msgstr "deklaration av \"%s\" döljer en tidigare lokal"
-
-#, fuzzy
-#~ msgid "label %qs referenced outside of any function"
-#~ msgstr "etikett %s är refererad till utanför en funktion"
-
-#, fuzzy
-#~ msgid "%Jinitializer fails to determine size of %qD"
-#~ msgstr "initierare misslyckas med att bestämma storlek på \"%s\""
-
-#, fuzzy
-#~ msgid "%Jarray size missing in %qD"
-#~ msgstr "fältstorlek saknas i \"%s\""
-
-#, fuzzy
-#~ msgid "%Jstorage size of %qD isn%'t known"
-#~ msgstr "lagringsstorlek på \"%s\" är okänd"
-
-#, fuzzy
-#~ msgid "%Jstorage size of %qD isn%'t constant"
-#~ msgstr "lagringsstorlek på \"%s\" är inte konstant"
-
 #~ msgid "-Wmissing-format-attribute ignored without -Wformat"
 #~ msgstr "-Wmissing-format-attribute ignorerad utan -Wformat"
 
-#, fuzzy
-#~ msgid "%qT has no member named %qs"
-#~ msgstr "%s har ingen medlem med namn \"%s\""
-
-#, fuzzy
-#~ msgid "warning: -pipe ignored because -time specified"
-#~ msgstr "Varning: -pipe ignorerad eftersom -time angiven"
-
-#, fuzzy
-#~ msgid "invalid option %qs"
-#~ msgstr "Ogiltig flagga %s"
-
-#, fuzzy
-#~ msgid "value-based profiling not yet implemented in trees."
-#~ msgstr "Profilering är inte implementerat ännu."
-
-#, fuzzy
-#~ msgid "-fspeculative-prefetching not supported for this target"
-#~ msgstr "-fdata-sections stöds inte för AIX"
-
-#, fuzzy
-#~ msgid "-fspeculative-prefetching not supported for this target (try -march switches)"
-#~ msgstr "-fdata-sections stöds inte för AIX"
-
-#, fuzzy
-#~ msgid "control may reach end of non-void function %qD being inlined"
-#~ msgstr "Programflödet når slutet på en icke-void-funktion"
-
-#, fuzzy
-#~ msgid "unsupported defining stmt"
-#~ msgstr "ej stödd version"
-
 #~ msgid "bad value (%s) for -mcpu switch"
 #~ msgstr "ogiltigt värde (%s) till flagga -mcpu"
-
-#, fuzzy
-#~ msgid "unexpected function type needing stack adjustment for __builtin_eh_return"
-#~ msgstr "funktion använder __builtin_eh_return"
-
-#, fuzzy
-#~ msgid "bad value (%s) for -tune= switch"
-#~ msgstr "ogiltigt värde (%s) till flagga -mcpu"
-
-#, fuzzy
-#~ msgid "The compiler does not support -march=%s."
-#~ msgstr "ISO C stöder inte formatstorlek i strftime"
-
-#, fuzzy
-#~ msgid "bad value (%s) for -flush-trap=n (0=<n<=15)"
-#~ msgstr "ogiltigt värde (%s) till flagga -mcpu"
-
-#, fuzzy
-#~ msgid "invalid option %<-mstack-increment=%s%>"
-#~ msgstr "Ogiltig flagga \"-mstack-increment=%s\""
-
-#, fuzzy
-#~ msgid "unrecognized option %<-mfix-vr4130%s%>"
-#~ msgstr "ej igenkänd flagga `-%s'"
-
-#, fuzzy
-#~ msgid "bad value (%s) for %s"
-#~ msgstr "ogiltigt värde (%s) till flagga %s"
-
-#, fuzzy
-#~ msgid "invalid value for -mwarn-framesize"
-#~ msgstr "Felaktigt värde för -mcall-%s"
-
-#, fuzzy
-#~ msgid "invalid value for -mstack-size"
-#~ msgstr "Felaktigt värde för -msdata-%s"
-
-#, fuzzy
-#~ msgid "invalid value for -mstack-guard"
-#~ msgstr "Felaktigt värde för -msdata-%s"
-
-#, fuzzy
-#~ msgid "%Hvariable %qD definition is marked dllimport."
-#~ msgstr "statisk variabel \"%s\" är markerad som dllimport"
-
-#, fuzzy
-#~ msgid "%s=%s is not numeric"
-#~ msgstr "%s=%s är för stor."
-
-#, fuzzy
-#~ msgid "%s=%s is too large"
-#~ msgstr "%s=%s är för stor."
-
-#, fuzzy
-#~ msgid "%J%s %+#D"
-#~ msgstr "%s: %s"
-
-#, fuzzy
-#~ msgid "%qD invalid in %qT"
-#~ msgstr "Ogiltig flagga \"%s\""
-
-#, fuzzy
-#~ msgid "using-declaration cannot name destructor"
-#~ msgstr "multiple deklaration av metod \"%s\""
-
-#, fuzzy
-#~ msgid "namespace %qT undeclared"
-#~ msgstr "parameter \"%s\" deklarerad som void"
-
-#, fuzzy
-#~ msgid "  first declared as %q#D here"
-#~ msgstr "\"%s\" är tidigare deklarerad här"
-
-#, fuzzy
-#~ msgid "  also declared as %q#D here"
-#~ msgstr "\"%s\" är tidigare deklarerad här"
 
 #~ msgid "creating array with size zero"
 #~ msgstr "skapar ett fält med storlek noll"
 
 #~ msgid "incomplete type unification"
 #~ msgstr "inkomplett typunifiering"
-
-#, fuzzy
-#~ msgid "ignoring extra initializers for %qT"
-#~ msgstr "kan inte initiera friend-funktion \"%s\""
-
-#, fuzzy
-#~ msgid "variable-sized object of type %qT may not be initialized"
-#~ msgstr "objekt med variabel storlek kan inte initieras"
-
-#, fuzzy
-#~ msgid "%Jlabel '%D' used but not defined"
-#~ msgstr "etikett \"%s\" använd men inte definierad"
-
-#, fuzzy
-#~ msgid "%Jlabel '%D' defined but not used"
-#~ msgstr "etikett \"%s\" definierad men inte använd"
-
-#, fuzzy
-#~ msgid "can't mangle %s"
-#~ msgstr "kan inte stänga %s"
-
-#, fuzzy
-#~ msgid "object does not conform to the %qs protocol"
-#~ msgstr "klass \"%s\" implementerar inte protokollet \"%s\""
-
-#, fuzzy
-#~ msgid "class %qs does not implement the %qs protocol"
-#~ msgstr "klass \"%s\" implementerar inte protokollet \"%s\""
-
-#, fuzzy
-#~ msgid "%Jprevious declaration of '%D'"
-#~ msgstr "tidigare deklaration av \"%s\""
-
-#, fuzzy
-#~ msgid "static access to object of type %<id%>"
-#~ msgstr "statisk access till objekt av typ \"id\""
