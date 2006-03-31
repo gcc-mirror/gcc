@@ -60,7 +60,9 @@
   "@
    stzx\t%1,%2,%0
    stz\t%1,%0
-   stnz\t%2,%0")
+   stnz\t%2,%0"
+  [(set_attr "flags" "n,n,n")]
+)
 
 (define_insn "stzx_24_<mode>"
   [(set (match_operand:QHI 0 "mrai_operand" "=RraSd,RraSd,RraSd")
@@ -71,7 +73,8 @@
   "@
    stzx.<bwl>\t%1,%2,%0
    stz.<bwl>\t%1,%0
-   stnz.<bwl>\t%2,%0")
+   stnz.<bwl>\t%2,%0"
+  [(set_attr "flags" "n,n,n")])
 
 (define_insn_and_split "stzx_reversed"
   [(set (match_operand 0 "m32c_r0_operand" "")
@@ -94,7 +97,8 @@
 	(compare (match_operand:QHPSI 0 "mra_operand" "RraSd")
 		 (match_operand:QHPSI 1 "mrai_operand" "RraSdi")))]
   ""
-  "cmp.<bwl>\t%1,%0")
+  "* return m32c_output_compare(insn, operands); "
+  [(set_attr "flags" "oszc")])
 
 (define_insn "b<code>"
   [(set (pc)
@@ -104,6 +108,7 @@
                       (pc)))]
   ""
   "j<code>\t%l0"
+  [(set_attr "flags" "n")]
 )
 
 ;; m32c_conditional_register_usage changes the setcc_gen_code array to
@@ -119,7 +124,9 @@
   [(set (match_operand:HI 0 "mra_operand" "=RhiSd")
 	(any_cond:HI (reg:CC FLG_REGNO) (const_int 0)))]
   "TARGET_A24"
-  "sc<code>\t%0")
+  "sc<code>\t%0"
+  [(set_attr "flags" "n")]
+)
 
 (define_expand "movqicc"
   [(set (match_operand:QI 0 "register_operand" "")
@@ -148,10 +155,10 @@
 ;; value.  This pattern recovers the sign of the discarded value based
 ;; on the flags.  Operand 0 is set to -1, 0, or 1.  This is used for
 ;; the cmpstr pattern.  For optimal code, this should be removed if
-;; followed by a suitable CMP insn, as SCMPU sets the flags correctly
-;; already (see the peephole following).  This pattern is 7 bytes and
-;; 5 cycles.  If you don't need specific values, a 5/4 pattern can be
-;; made with SCGT and BMLT to set the appropriate bits.
+;; followed by a suitable CMP insn (see the peephole following).  This
+;; pattern is 7 bytes and 5 cycles.  If you don't need specific
+;; values, a 5/4 pattern can be made with SCGT and BMLT to set the
+;; appropriate bits.
 
 (define_insn "cond_to_int"
   [(set (match_operand:HI 0 "mra_qi_operand" "=Rqi")
@@ -162,7 +169,7 @@
 					  (const_int -1))))]
   "TARGET_A24"
   "sceq\t%0\n\tbmgt\t1,%h0\n\tdec.w\t%0"
-  [(set_attr "flags" "sz")]
+  [(set_attr "flags" "x")]
   )  
 
 ;; A cond_to_int followed by a compare against zero is essentially a no-op.

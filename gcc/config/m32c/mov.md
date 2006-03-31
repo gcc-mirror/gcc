@@ -71,7 +71,7 @@
    pop.w\t%0
    pushc\t%1
    popc\t%0"
-  [(set_attr "flags" "sz,sz,sz,*,*,*,*,*,*")]
+  [(set_attr "flags" "sz,sz,sz,n,n,n,n,n,n")]
   )
 
 (define_expand "movhi"
@@ -97,7 +97,7 @@
    pushc\t%1
    popc\t%0
    #"
-  [(set_attr "flags" "sz,sz,*,*,*,*,*,*")]
+  [(set_attr "flags" "sz,sz,n,n,n,n,n,*")]
   )
 
 
@@ -182,6 +182,7 @@
 	(match_operand 0 "a_operand" "Raa"))]
   ""
   "push.l\t%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "movsi_24"
@@ -193,6 +194,7 @@
    mov.l\t%1,%0
    #
    push.l\t%1"
+  [(set_attr "flags" "sz,sz,*,n")]
   )
 
 (define_expand "movdi"
@@ -220,6 +222,7 @@
         (match_operand:QI 0 "mrai_operand" "iRqiSd*Rmm"))]
   ""
   "push.b\t%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_expand "pushhi"
@@ -240,6 +243,7 @@
   "@
    push.w\t%0
    pushc\t%0"
+  [(set_attr "flags" "n,n")]
   )
 
 (define_insn "pushhi_24"
@@ -247,6 +251,7 @@
         (match_operand:HI 0 "mrai_operand" "iRhiSd*Rmm"))]
   "TARGET_A24"
   "push.w\t%0"
+  [(set_attr "flags" "n")]
   )
 
 ;(define_insn "pushpi"
@@ -263,6 +268,7 @@
         (match_operand:SI 0 "mrai_operand" "iRsiSd*Rmm"))]
   "TARGET_A24"
   "push.l\t%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_expand "pophi"
@@ -283,6 +289,7 @@
   "@
    pop.w\t%0
    popc\t%0"
+  [(set_attr "flags" "n,n")]
   )
 
 (define_insn "pophi_24"
@@ -290,6 +297,7 @@
         (mem:HI (post_inc:PSI (reg:PSI SP_REGNO))))]
   "TARGET_A24"
   "pop.w\t%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "poppsi"
@@ -297,6 +305,7 @@
         (mem:PSI (post_inc:PSI (reg:PSI SP_REGNO))))]
   "TARGET_A24"
   "popc\t%0"
+  [(set_attr "flags" "n")]
   )
 
 
@@ -316,7 +325,7 @@
   "*
    if (REGNO(operands[0]) == 0) return \"exts.w\t%1\";
    else return \"mov.w r1,r3 | sha.w #-8,r3 | sha.w #-7,r3\";"
-  [(set_attr "flags" "sz")]
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "extendpsisi2"
@@ -324,6 +333,7 @@
 	(sign_extend:SI (match_operand:PSI 1 "mr_operand" "0")))]
   ""
   "; expand psi %1 to si %0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "zero_extendpsisi2"
@@ -331,6 +341,7 @@
 	(zero_extend:SI (match_operand:PSI 1 "mr_operand" "0")))]
   ""
   "; expand psi %1 to si %0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "zero_extendhipsi2"
@@ -338,6 +349,7 @@
 	(truncate:PSI (zero_extend:SI (match_operand:HI 1 "register_operand" "R03"))))]
   ""
   "mov.w\t%1,%0"
+  [(set_attr "flags" "sz")]
   )
 
 (define_insn "zero_extendhisi2"
@@ -345,6 +357,7 @@
 	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "0")))]
   ""
   "mov.w\t#0,%H0"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "zero_extendqihi2"
@@ -354,6 +367,7 @@
   "@
    mov.b\t#0,%H0
    and.w\t#255,%0"
+  [(set_attr "flags" "x,x")]
   )
 
 (define_insn "truncsipsi2_16"
@@ -365,6 +379,7 @@
    #
    ldc\t%1,%0
    stc\t%1,%0"
+  [(set_attr "flags" "n,*,n,n")]
   )
 
 (define_insn "trunchiqi2"
@@ -372,6 +387,7 @@
 	(truncate:QI (match_operand:HI 1 "mra_qi_operand" "0")))]
   ""
   "; no-op trunc hi %1 to qi %0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "truncsipsi2_24"
@@ -383,6 +399,7 @@
    mov.l\t%1,%0
    ldc\t%1,%0
    stc\t%1,%0"
+  [(set_attr "flags" "n,sz,n,n")]
   )
 
 (define_expand "truncsipsi2"

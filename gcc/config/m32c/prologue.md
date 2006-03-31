@@ -43,6 +43,7 @@
    ]
   "TARGET_A16"
   "enter\t%0"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "prologue_enter_24"
@@ -56,6 +57,7 @@
    ]
   "TARGET_A24"
   "enter\t%0"
+  [(set_attr "flags" "x")]
   )
 
 ; Just a comment, for debugging the assembler output.
@@ -63,6 +65,7 @@
   [(unspec_volatile [(const_int 0)] UNS_PROLOGUE_END)]
   ""
   "; end of prologue"
+  [(set_attr "flags" "n")]
   )
 
 
@@ -86,6 +89,7 @@
 			  ] UNS_EH_EPILOGUE))]
   ""
   "jmp.a\t__m32c_eh_return"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "epilogue_exitd"
@@ -100,6 +104,7 @@
    ]
   ""
   "exitd"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "epilogue_reit"
@@ -110,6 +115,7 @@
    ]
   ""
   "reit"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "epilogue_rts"
@@ -117,12 +123,14 @@
    ]
   ""
   "rts"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "epilogue_start"
   [(unspec_volatile [(const_int 0)] UNS_EPILOGUE_START)]
   ""
   "; start of epilogue"
+  [(set_attr "flags" "n")]
   )
 
 
@@ -131,9 +139,13 @@
 (define_insn "pushm"
   [(unspec [(match_operand 0 "const_int_operand" "i")] UNS_PUSHM)]
   ""
-  "pushm\t%p0")
+  "pushm\t%p0"
+  [(set_attr "flags" "n")]
+  )
 
 (define_insn "popm"
   [(unspec [(match_operand 0 "const_int_operand" "i")] UNS_POPM)]
   ""
-  "popm\t%p0")
+  "popm\t%p0"
+  [(set_attr "flags" "n")]
+  )

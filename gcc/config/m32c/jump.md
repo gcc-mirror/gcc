@@ -29,6 +29,7 @@
 ;  "jmpi.a\t%0"
   ; no 16 bit jmpi in r8c
   "push.b #0 | push.w\t%0 | rts"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "indirect_jump_24"
@@ -36,6 +37,7 @@
        (match_operand:PSI 0 "register_operand" "Rpi"))]
   "TARGET_A24"
   "jmpi.a\t%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_expand "indirect_jump"
@@ -56,6 +58,7 @@
 	(label_ref (match_operand 0 "" "")))]
   ""
   "jmp.a\t%l0"
+  [(set_attr "flags" "n")]
 )
 
 ; No 16 bit indirect calls on r8c/m16c.  */
@@ -70,6 +73,7 @@ switch (which_alternative) {
   case 1: return TARGET_A16 ? \"push.w %a0 | jsr.a\tm32c_jsri16\" : \"jsri.a\t%a0\";
   case 2: return \"jsri.a\t%a0\";
 }"
+  [(set_attr "flags" "x")]
   )
 
 (define_insn "call_value"
@@ -84,4 +88,5 @@ switch (which_alternative) {
   case 1: return TARGET_A16 ? \"push.w %a1 | jsr.a\tm32c_jsri16\" : \"jsri.a\t%a1\";
   case 2: return \"jsri.a\t%a1\";
 }"
+  [(set_attr "flags" "x,x,x")]
   )

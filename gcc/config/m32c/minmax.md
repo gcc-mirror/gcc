@@ -28,6 +28,7 @@
 		 (match_operand:QI 2 "mrai_operand" "iRhlSdRaa,?Rmm,iRhlSdRaa,?Rmm,iRhlSd,?Rmm")))]
   "TARGET_A24"
   "min.b\t%2,%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "sminhi3"
@@ -36,6 +37,7 @@
 		 (match_operand:HI 2 "mrai_operand" "iRhiSd,?Rmm,iRhiSd,?Rmm")))]
   "TARGET_A24"
   "min.w\t%2,%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "smaxqi3"
@@ -44,6 +46,7 @@
 		 (match_operand:QI 2 "mrai_operand" "iRhlSdRaa,?Rmm,iRhlSdRaa,?Rmm,iRhlSd,?Rmm")))]
   "TARGET_A24"
   "max.b\t%2,%0"
+  [(set_attr "flags" "n")]
   )
 
 (define_insn "smaxhi3"
@@ -52,4 +55,5 @@
 		 (match_operand:HI 2 "mrai_operand" "iRhiSd,?Rmm,iRhiSd,?Rmm")))]
   "TARGET_A24"
   "max.w\t%2,%0"
+  [(set_attr "flags" "n")]
   )

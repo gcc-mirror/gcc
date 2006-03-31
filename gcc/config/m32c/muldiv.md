@@ -29,6 +29,7 @@
                  (match_operand 2 "immediate_operand" "i,i")))]
   ""
   "mul.b\t%2,%1"
+  [(set_attr "flags" "o")]
 )
 
 ; Here is the pattern for registers and such.
@@ -38,6 +39,7 @@
                  (sign_extend:HI (match_operand:QI 2 "mra_operand" "RqiSd,?Rmm,RqiSd,?Rmm,RhlSd,?Rmm"))))]
   ""
   "mul.b\t%2,%1"
+  [(set_attr "flags" "o")]
 )
 
 ; Don't try to sign_extend a const_int.  Same for all other multiplies.
@@ -56,6 +58,7 @@
                  (match_operand 2 "immediate_operand" "i,i")))]
   ""
   "mulu.b\t%U2,%1"
+  [(set_attr "flags" "o")]
 )
 
 (define_insn "umulqihi3_r"
@@ -64,6 +67,7 @@
                  (zero_extend:HI (match_operand:QI 2 "mra_operand" "RqiSd,?Rmm,RqiSd,?Rmm,RhlSd,?Rmm"))))]
   ""
   "mulu.b\t%U2,%1"
+  [(set_attr "flags" "o")]
 )
 
 (define_expand "umulqihi3"
@@ -81,6 +85,7 @@
                  (match_operand 2 "immediate_operand" "i,i")))]
   ""
   "mul.w\t%2,%1"
+  [(set_attr "flags" "o")]
 )
 
 (define_insn "mulhisi3_r"
@@ -89,6 +94,7 @@
                  (sign_extend:SI (match_operand:HI 2 "mra_operand" "RhiSd,?Rmm,RhiSd,?Rmm"))))]
   ""
   "mul.w\t%2,%1"
+  [(set_attr "flags" "o")]
 )
 
 (define_expand "mulhisi3"
@@ -106,6 +112,7 @@
                  (match_operand 2 "immediate_operand" "i,i")))]
   ""
   "mulu.w\t%u2,%1"
+  [(set_attr "flags" "o")]
 )
 
 (define_insn "umulhisi3_r"
@@ -114,6 +121,7 @@
                  (zero_extend:SI (match_operand:HI 2 "mra_operand" "RhiSd,?Rmm,RhiSd,?Rmm"))))]
   ""
   "mulu.w\t%u2,%1"
+  [(set_attr "flags" "o")]
 )
 
 (define_expand "umulhisi3"
@@ -175,6 +183,7 @@
    ]
   "0"
   "div.b\t%2"
+  [(set_attr "flags" "o")]
   )
 
 (define_expand "udivmodqi4"
@@ -199,6 +208,7 @@
    ]
   "0"
   "divu.b\t%2"
+  [(set_attr "flags" "o")]
   )
 
 (define_expand "divmodhi4"
@@ -223,6 +233,7 @@
    ]
   ""
   "div.w\t%2"
+  [(set_attr "flags" "o")]
   )
 
 (define_expand "udivmodhi4"
@@ -247,4 +258,5 @@
    ]
   ""
   "divu.w\t%2"
+  [(set_attr "flags" "o")]
   )

@@ -1,3 +1,26 @@
+2006-03-31  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/cond.md: Set condition flags properly throughout.
+	* config/m32c/minmax.md: Likewise.
+	* config/m32c/prologue.md: Likewise.
+	* config/m32c/bitops.md: Likewise.
+	* config/m32c/muldiv.md: Likewise.
+	* config/m32c/mov.md: Likewise.
+	* config/m32c/addsub.md: Likewise.
+	* config/m32c/m32c.md: Likewise.
+	* config/m32c/jump.md: Likewise.
+	* config/m32c/shift.md: Likewise.
+
+	* config/m32c/cond.md (cmp<mode>): Call m32c_output_compare to
+	conditionally output the pattern for this.
+	* config/m32c/m32c.c (flags_needed_for_conditional): New.
+	(m32c_compare_redundant): New.
+	(m32c_output_compare): New.
+	* config/m32c/m32c-protos.h (m32c_output_compare): New.
+
+	* config/m32c/m32c.c (m32c_prepare_shift): Fix logic to clobber
+	dest, not src.  Allow other 4-byte modes.
+
 2006-03-30  Denis Chertykov  <denisc@overta.ru>
 
 	* doc/md.texi: Refer to avr/constraints.md instead of
