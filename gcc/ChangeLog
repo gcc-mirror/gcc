@@ -1,3 +1,18 @@
+2006-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/25741
+	Backport from mainline
+	2006-01-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (check-%): Depend on site.exp instead of
+	$(TESTSUITEDIR)/site.exp. Run "runtest" in separate language
+	directories.
+
+	2006-01-17  Shantonu Sen  <ssen@opendarwin.org>
+
+	* Makefile.in (check-%, check-consistency): Use $${srcdir}
+	instead of $(srcdir) and ${srcdir}.
+
 2006-03-31  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/26936

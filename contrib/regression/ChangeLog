@@ -1,3 +1,12 @@
+2006-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2006-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* btest-gcc.sh: gcc.sum has moved to gcc/testsuite/gcc/gcc.sum.
+	g++.sum has moved to gcc/testsuite/g++/g++.sum.
+	objc.sum has moved to gcc/testsuite/objc/objc.sum.
+
 2006-02-28  Release Manager
 
 	* GCC 4.1.0 released.
