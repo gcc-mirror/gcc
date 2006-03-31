@@ -1,3 +1,16 @@
+2006-03-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* pex-win32.c (<errno.h>): Include.
+	(fix_argv): Remove.
+	(argv_to_cmdline): New function.
+	(std_suffixes): New variable.
+	(no_suffixes): Likewise.
+	(find_executable): New function.
+	(win32_spawn): Likewise.
+	(spawn_script): Use win32_spawn instead of _spawnv[p].
+	(pex_win32_exec_child): Replace MSVCRT calls with Win32 API calls.
+	(pex_win32_wait): Likewise.
+
 2006-03-24  Jim Blandy  <jimb@codesourcery.com>
 
 	* pex-common.c (pex_run): Simplify output name handling.
