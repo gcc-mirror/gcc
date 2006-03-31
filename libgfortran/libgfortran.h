@@ -338,6 +338,7 @@ typedef struct
   int allow_std;
   int pedantic;
   int convert;
+  size_t record_marker;
 }
 compile_options_t;
 
