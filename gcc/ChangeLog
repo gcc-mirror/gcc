@@ -1,5 +1,9 @@
 2006-03-31  Alan Modra  <amodra@bigpond.net.au>
 
+	PR target/26459
+	* config/rs6000/rs6000.h (CANNOT_CHANGE_MODE_CLASS): Limit 2003-12-08
+	change to FLOAT_REGS.
+
 	* config/rs6000/rs6000.c (rs6000_explicit_options): Add ieee.
 	(rs6000_override_options): Use it.
 	(rs6000_handle_option): Set it.  Set rs6000_explicit_options.abi
