@@ -3061,16 +3061,17 @@ load_needed (pointer_info * p)
   gfc_namespace *ns;
   pointer_info *q;
   gfc_symbol *sym;
+  int rv;
 
+  rv = 0;
   if (p == NULL)
-    return 0;
-  if (load_needed (p->left))
-    return 1;
-  if (load_needed (p->right))
-    return 1;
+    return rv;
+
+  rv |= load_needed (p->left);
+  rv |= load_needed (p->right);
 
   if (p->type != P_SYMBOL || p->u.rsym.state != NEEDED)
-    return 0;
+    return rv;
 
   p->u.rsym.state = USED;
 
