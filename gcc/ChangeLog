@@ -1,3 +1,8 @@
+2006-03-31  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux-atomic.asm: New file.
+	* config/sh/t-linux (LIB2FUNCS_EXTRA): Add linux-atomic.asm.
+
 2006-03-31  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/cond.md: Set condition flags properly throughout.
