@@ -1926,7 +1926,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
     {
       enum machine_mode outer = GET_MODE (dst);
       enum machine_mode inner;
-      unsigned int bytepos;
+      HOST_WIDE_INT bytepos;
       bool done = false;
       rtx temp;
 
