@@ -1,3 +1,7 @@
+2006-03-31  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* posix.cc (_Jv_platform_nanotime): Declare id with clockid_t.
+
 2006-03-30  Tom Tromey  <tromey@redhat.com>
 
 	PR java/26042:

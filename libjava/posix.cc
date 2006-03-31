@@ -71,7 +71,7 @@ _Jv_platform_nanotime ()
 {
 #ifdef HAVE_CLOCK_GETTIME
   struct timespec now;
-  int id;
+  clockid_t id;
 #ifdef CLOCK_MONOTONIC
   id = CLOCK_MONOTONIC;
 #elif defined (CLOCK_HIGHRES)
