@@ -1,5 +1,10 @@
 2006-04-01  Roger Sayle  <roger@eyesopen.com>
 
+	* dependency.c (gfc_is_inside_range): Delete.
+	(gfc_check_element_vs_section): Significant rewrite.
+
+2006-04-01  Roger Sayle  <roger@eyesopen.com>
+
 	* dependency.c (gfc_dep_compare_expr): Strip parentheses and unary
 	plus operators when comparing expressions.  Handle comparisons of
 	the form "X+C vs. X", "X vs. X+C", "X-C vs. X" and "X vs. X-C" where
