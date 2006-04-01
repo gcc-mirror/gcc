@@ -30,10 +30,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "xtensa-config.h"
 
-# Note: These functions use a minimum stack frame size of 32.  This is
-# necessary for Xtensa configurations that only support a fixed register
-# window size of 8, where even leaf functions (such as these) need to
-# allocate space for a 4-word "extra save area".
+# Force each stack frame to contain an "Extra Save Area" (ESA) of at least
+# 16 bytes.  This is necessary for non-standard Xtensa configurations that
+# only support a fixed register window size of 8, where even leaf functions
+# (such as these) need the ESA for interrupt handlers.
+#define MIN_ESA 16
 
 # Define macros for the ABS and ADDX* instructions to handle cases
 # where they are not included in the Xtensa processor configuration.
@@ -75,20 +76,20 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #endif
 	.endm
 
-# Define macros for function entry and return, supporting either the
+# Define macros for leaf function entry and return, supporting either the
 # standard register windowed ABI or the non-windowed call0 ABI.  These
 # macros do not allocate any extra stack space, so they only work for
 # leaf functions that do not need to spill anything to the stack.
 
-	.macro abi_entry reg, size
+	.macro leaf_entry reg, size
 #if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
-	entry \reg, \size
+	entry \reg, \size + MIN_ESA
 #else
 	/* do nothing */
 #endif
 	.endm
 
-	.macro abi_return
+	.macro leaf_return
 #if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	retw
 #else
@@ -102,14 +103,14 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 	.global	__mulsi3
 	.type	__mulsi3,@function
 __mulsi3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 #if XCHAL_HAVE_MUL16
 	or	a4, a2, a3
 	srai	a4, a4, 16
 	bnez	a4, .LMUL16
 	mul16u	a2, a2, a3
-	abi_return
+	leaf_return
 .LMUL16:
 	srai	a4, a2, 16
 	srai	a5, a3, 16
@@ -165,7 +166,7 @@ __mulsi3:
 	bgeui	a3, 16, .Lmult_main_loop
 	neg	a3, a2
 	movltz	a2, a3, a5
-	abi_return
+	leaf_return
 
 	.align	4
 .Lmult_main_loop:
@@ -195,7 +196,7 @@ __mulsi3:
 
 #endif /* !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MAC16 */
 
-	abi_return
+	leaf_return
 	.size	__mulsi3,.-__mulsi3
 
 #endif /* L_mulsi3 */
@@ -264,7 +265,7 @@ __nsau_data:
 	.global	__udivsi3
 	.type	__udivsi3,@function
 __udivsi3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	bltui	a3, 2, .Lle_one	# check if the divisor <= 1
 
 	mov	a6, a2		# keep dividend in a6
@@ -297,24 +298,24 @@ __udivsi3:
 	bltu	a6, a3, .Lreturn
 	addi	a2, a2, 1	# increment quotient if dividend >= divisor
 .Lreturn:
-	abi_return
+	leaf_return
 
 .Lle_one:
 	beqz	a3, .Lerror	# if divisor == 1, return the dividend
-	abi_return
+	leaf_return
 
 .Lspecial:
 	# return dividend >= divisor
 	bltu	a6, a3, .Lreturn0
 	movi	a2, 1
-	abi_return
+	leaf_return
 
 .Lerror:
 	# just return 0; could throw an exception
 
 .Lreturn0:
 	movi	a2, 0
-	abi_return
+	leaf_return
 	.size	__udivsi3,.-__udivsi3
 
 #endif /* L_udivsi3 */
@@ -325,7 +326,7 @@ __udivsi3:
 	.global	__divsi3
 	.type	__divsi3,@function
 __divsi3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	xor	a7, a2, a3	# sign = dividend ^ divisor
 	do_abs	a6, a2, a4	# udividend = abs(dividend)
 	do_abs	a3, a3, a4	# udivisor = abs(divisor)
@@ -361,27 +362,27 @@ __divsi3:
 .Lreturn:
 	neg	a5, a2
 	movltz	a2, a5, a7	# return (sign < 0) ? -quotient : quotient
-	abi_return
+	leaf_return
 
 .Lle_one:
 	beqz	a3, .Lerror
 	neg	a2, a6		# if udivisor == 1, then return...
 	movgez	a2, a6, a7	# (sign < 0) ? -udividend : udividend
-	abi_return
+	leaf_return
 
 .Lspecial:
 	bltu	a6, a3, .Lreturn0 #  if dividend < divisor, return 0
 	movi	a2, 1
 	movi	a4, -1
 	movltz	a2, a4, a7	# else return (sign < 0) ? -1 :	 1 
-	abi_return
+	leaf_return
 
 .Lerror:
 	# just return 0; could throw an exception
 
 .Lreturn0:
 	movi	a2, 0
-	abi_return
+	leaf_return
 	.size	__divsi3,.-__divsi3
 
 #endif /* L_divsi3 */
@@ -392,7 +393,7 @@ __divsi3:
 	.global	__umodsi3
 	.type	__umodsi3,@function
 __umodsi3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	bltui	a3, 2, .Lle_one	# check if the divisor is <= 1
 
 	do_nsau	a5, a2, a6, a7	# dividend_shift = nsau(dividend)
@@ -422,13 +423,13 @@ __umodsi3:
 	bltu	a2, a3, .Lreturn
 	sub	a2, a2, a3	# subtract once more if dividend >= divisor
 .Lreturn:
-	abi_return
+	leaf_return
 
 .Lle_one:
 	# the divisor is either 0 or 1, so just return 0.
 	# someday we may want to throw an exception if the divisor is 0.
 	movi	a2, 0
-	abi_return
+	leaf_return
 	.size	__umodsi3,.-__umodsi3
 
 #endif /* L_umodsi3 */
@@ -439,7 +440,7 @@ __umodsi3:
 	.global	__modsi3
 	.type	__modsi3,@function
 __modsi3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	mov	a7, a2		# save original (signed) dividend
 	do_abs	a2, a2, a4	# udividend = abs(dividend)
 	do_abs	a3, a3, a4	# udivisor = abs(divisor)
@@ -474,13 +475,13 @@ __modsi3:
 	bgez	a7, .Lpositive
 	neg	a2, a2		# if (dividend < 0), return -udividend
 .Lpositive:	
-	abi_return
+	leaf_return
 
 .Lle_one:
 	# udivisor is either 0 or 1, so just return 0.
 	# someday we may want to throw an exception if udivisor is 0.
 	movi	a2, 0
-	abi_return
+	leaf_return
 	.size	__modsi3,.-__modsi3
 
 #endif /* L_modsi3 */
