@@ -93,7 +93,6 @@ void set_fpu (void)
       /* SSE */
       asm volatile ("stmxcsr %0" : "=m" (cw_sse));
       cw_sse &= 0xFFFF0000;
-#ifdef __APPLE__
       cw_sse |= (_FPU_MASK_IM | _FPU_MASK_DM | _FPU_MASK_ZM | _FPU_MASK_OM
 		 | _FPU_MASK_UM | _FPU_MASK_PM ) << 7;
       if (options.fpe & GFC_FPE_INVALID) cw_sse &= ~(_FPU_MASK_IM << 7);
@@ -103,14 +102,5 @@ void set_fpu (void)
       if (options.fpe & GFC_FPE_UNDERFLOW) cw_sse &= ~(_FPU_MASK_UM << 7);
       if (options.fpe & GFC_FPE_PRECISION) cw_sse &= ~(_FPU_MASK_PM << 7);
       asm volatile ("ldmxcsr %0" : : "m" (cw_sse));
-#else
-      if (options.fpe & GFC_FPE_INVALID) cw_sse |= 1 << 7;
-      if (options.fpe & GFC_FPE_DENORMAL) cw_sse |= 1 << 8;
-      if (options.fpe & GFC_FPE_ZERO) cw_sse |= 1 << 9;
-      if (options.fpe & GFC_FPE_OVERFLOW) cw_sse |= 1 << 10;
-      if (options.fpe & GFC_FPE_UNDERFLOW) cw_sse |= 1 << 11;
-      if (options.fpe & GFC_FPE_PRECISION) cw_sse |= 1 << 12;
-      asm volatile ("ldmxcsr %0" : : "m" (cw_sse));
-#endif
     }
 }
