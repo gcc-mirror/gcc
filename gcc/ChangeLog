@@ -1,3 +1,12 @@
+2004-03-31  Richard Henderson  <rth@redhat.com>
+
+	* tree-cfg.c (make_ctrl_stmt_edges, make_exit_edges): Merge into...
+	(make_edges): ... here.  Control fallthru creation with a local
+	variable.  Do not play with fake edges.
+	(make_omp_sections_edges): Don't set EDGE_ABNORMAL.
+	(make_goto_expr_edges): Don't play with fake edges.  Make for_call
+	a boolean.
+
 2006-04-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* dwarf2.h (DW64_CIE_ID): Define.
