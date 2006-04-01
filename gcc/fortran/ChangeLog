@@ -1,5 +1,15 @@
 2006-04-01  Roger Sayle  <roger@eyesopen.com>
 
+	PR fortran/25270
+	* trans-array.c (gfc_trans_allocate_array_storage): In array index
+	calculations use gfc_index_zero_node and gfc_index_one_node instead
+	of integer_zero_node and integer_one_node respectively.
+	(gfc_conv_array_transpose): Likewise.
+	(gfc_conv_ss_startstride): Likewise.
+	(gfc_trans_dummy_array_bias): Likewise.
+
+2006-04-01  Roger Sayle  <roger@eyesopen.com>
+
 	* dependency.c (gfc_is_inside_range): Delete.
 	(gfc_check_element_vs_section): Significant rewrite.
 

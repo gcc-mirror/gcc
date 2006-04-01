@@ -514,7 +514,7 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 	{
 	  /* Make a temporary variable to hold the data.  */
 	  tmp = fold_build2 (MINUS_EXPR, TREE_TYPE (nelem), nelem,
-			     integer_one_node);
+			     gfc_index_one_node);
 	  tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node,
 				  tmp);
 	  tmp = build_array_type (gfc_get_element_type (TREE_TYPE (desc)),
@@ -726,9 +726,9 @@ gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
   gcc_assert (src_info->dimen == 2);
   for (n = 0; n < 2; n++)
     {
-      dest_info->delta[n] = integer_zero_node;
-      dest_info->start[n] = integer_zero_node;
-      dest_info->stride[n] = integer_one_node;
+      dest_info->delta[n] = gfc_index_zero_node;
+      dest_info->start[n] = gfc_index_zero_node;
+      dest_info->stride[n] = gfc_index_one_node;
       dest_info->dim[n] = n;
 
       dest_index = gfc_rank_cst[n];
@@ -2445,7 +2445,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 
       gfc_start_block (&block);
 
-      fault = integer_zero_node;
+      fault = boolean_false_node;
       for (n = 0; n < loop->dimen; n++)
 	size[n] = NULL_TREE;
 
@@ -3545,7 +3545,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       partial = gfc_create_var (boolean_type_node, "partial");
       TREE_USED (partial) = 1;
       tmp = gfc_conv_descriptor_stride (dumdesc, gfc_rank_cst[0]);
-      tmp = fold_build2 (EQ_EXPR, boolean_type_node, tmp, integer_one_node);
+      tmp = fold_build2 (EQ_EXPR, boolean_type_node, tmp, gfc_index_one_node);
       gfc_add_modify_expr (&block, partial, tmp);
     }
   else
@@ -3561,7 +3561,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       stride = gfc_conv_descriptor_stride (dumdesc, gfc_rank_cst[0]);
       stride = gfc_evaluate_now (stride, &block);
 
-      tmp = build2 (EQ_EXPR, boolean_type_node, stride, integer_zero_node);
+      tmp = build2 (EQ_EXPR, boolean_type_node, stride, gfc_index_zero_node);
       tmp = build3 (COND_EXPR, gfc_array_index_type, tmp,
 		    gfc_index_one_node, stride);
       stride = GFC_TYPE_ARRAY_STRIDE (type, 0);
