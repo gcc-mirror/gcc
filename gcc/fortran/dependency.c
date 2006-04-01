@@ -72,7 +72,111 @@ gfc_expr_is_one (gfc_expr * expr, int def)
 int
 gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 {
+  gfc_actual_arglist *args1;
+  gfc_actual_arglist *args2;
   int i;
+
+  if (e1->expr_type == EXPR_OP
+      && (e1->value.op.operator == INTRINSIC_UPLUS
+          || e1->value.op.operator == INTRINSIC_PARENTHESES))
+    return gfc_dep_compare_expr (e1->value.op.op1, e2);
+  if (e2->expr_type == EXPR_OP
+      && (e2->value.op.operator == INTRINSIC_UPLUS
+          || e2->value.op.operator == INTRINSIC_PARENTHESES))
+    return gfc_dep_compare_expr (e1, e2->value.op.op1);
+
+  if (e1->expr_type == EXPR_OP
+      && e1->value.op.operator == INTRINSIC_PLUS)
+    {
+      /* Compare X+C vs. X.  */
+      if (e1->value.op.op2->expr_type == EXPR_CONSTANT
+	  && e1->value.op.op2->ts.type == BT_INTEGER
+	  && gfc_dep_compare_expr (e1->value.op.op1, e2) == 0)
+	return mpz_sgn (e1->value.op.op2->value.integer);
+
+      /* Compare P+Q vs. R+S.  */
+      if (e2->expr_type == EXPR_OP
+	  && e2->value.op.operator == INTRINSIC_PLUS)
+	{
+	  int l, r;
+
+	  l = gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1);
+	  r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2);
+	  if (l == 0 && r == 0)
+	    return 0;
+	  if (l == 0 && r != -2)
+	    return r;
+	  if (l != -2 && r == 0)
+	    return l;
+	  if (l == 1 && r == 1)
+	    return 1;
+	  if (l == -1 && r == -1)
+	    return -1;
+
+	  l = gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op2);
+	  r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op1);
+	  if (l == 0 && r == 0)
+	    return 0;
+	  if (l == 0 && r != -2)
+	    return r;
+	  if (l != -2 && r == 0)
+	    return l;
+	  if (l == 1 && r == 1)
+	    return 1;
+	  if (l == -1 && r == -1)
+	    return -1;
+	}
+    }
+
+  /* Compare X vs. X+C.  */
+  if (e2->expr_type == EXPR_OP
+      && e2->value.op.operator == INTRINSIC_PLUS)
+    {
+      if (e2->value.op.op2->expr_type == EXPR_CONSTANT
+	  && e2->value.op.op2->ts.type == BT_INTEGER
+	  && gfc_dep_compare_expr (e1, e2->value.op.op1) == 0)
+	return -mpz_sgn (e2->value.op.op2->value.integer);
+    }
+
+  /* Compare X-C vs. X.  */
+  if (e1->expr_type == EXPR_OP
+      && e1->value.op.operator == INTRINSIC_MINUS)
+    {
+      if (e1->value.op.op2->expr_type == EXPR_CONSTANT
+	  && e1->value.op.op2->ts.type == BT_INTEGER
+	  && gfc_dep_compare_expr (e1->value.op.op1, e2) == 0)
+	return -mpz_sgn (e1->value.op.op2->value.integer);
+
+      /* Compare P-Q vs. R-S.  */
+      if (e2->expr_type == EXPR_OP
+	  && e2->value.op.operator == INTRINSIC_MINUS)
+	{
+	  int l, r;
+
+	  l = gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1);
+	  r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2);
+	  if (l == 0 && r == 0)
+	    return 0;
+	  if (l != -2 && r == 0)
+	    return l;
+	  if (l == 0 && r != -2)
+	    return -r;
+	  if (l == 1 && r == -1)
+	    return 1;
+	  if (l == -1 && r == 1)
+	    return -1;
+	}
+    }
+
+  /* Compare X vs. X-C.  */
+  if (e2->expr_type == EXPR_OP
+      && e2->value.op.operator == INTRINSIC_MINUS)
+    {
+      if (e2->value.op.op2->expr_type == EXPR_CONSTANT
+	  && e2->value.op.op2->ts.type == BT_INTEGER
+	  && gfc_dep_compare_expr (e1, e2->value.op.op1) == 0)
+	return mpz_sgn (e2->value.op.op2->value.integer);
+    }
 
   if (e1->expr_type != e2->expr_type)
     return -2;
@@ -119,12 +223,29 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 	  || e1->value.function.isym != e2->value.function.isym)
 	return -2;
 
+      args1 = e1->value.function.actual;
+      args2 = e2->value.function.actual;
+
       /* We should list the "constant" intrinsic functions.  Those
 	 without side-effects that provide equal results given equal
 	 argument lists.  */
       switch (e1->value.function.isym->generic_id)
 	{
 	case GFC_ISYM_CONVERSION:
+	  /* Handle integer extensions specially, as __convert_i4_i8
+	     is not only "constant" but also "unary" and "increasing".  */
+	  if (args1 && !args1->next
+	      && args2 && !args2->next
+	      && e1->ts.type == BT_INTEGER
+	      && args1->expr->ts.type == BT_INTEGER
+	      && e1->ts.kind > args1->expr->ts.kind
+	      && e2->ts.type == e1->ts.type
+	      && e2->ts.kind == e1->ts.kind
+	      && args2->expr->ts.type == args1->expr->ts.type
+	      && args2->expr->ts.kind == args2->expr->ts.kind)
+	    return gfc_dep_compare_expr (args1->expr, args2->expr);
+	  break;
+
 	case GFC_ISYM_REAL:
 	case GFC_ISYM_LOGICAL:
 	case GFC_ISYM_DBLE:
@@ -135,18 +256,14 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 	}
 
       /* Compare the argument lists for equality.  */
-      {
-	gfc_actual_arglist *args1 = e1->value.function.actual;
-	gfc_actual_arglist *args2 = e2->value.function.actual;
-	while (args1 && args2)
-	  {
-	    if (gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
-	      return -2;
-	    args1 = args1->next;
-	    args2 = args2->next;
-	  }
-	return (args1 || args2) ? -2 : 0;
-      }
+      while (args1 && args2)
+	{
+	  if (gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
+	    return -2;
+	  args1 = args1->next;
+	  args2 = args2->next;
+	}
+      return (args1 || args2) ? -2 : 0;
       
     default:
       return -2;
@@ -904,8 +1021,6 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
   i = gfc_dep_compare_expr (r_start, l_start);
   if (i == 0)
     return GFC_DEP_EQUAL;
-  if (i != -2)
-    return GFC_DEP_NODEP;
 
   /* Treat two scalar variables as potentially equal.  This allows
      us to prove that a(i,:) and a(j,:) have no dependency.  See
@@ -920,6 +1035,8 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
       || contains_forall_index_p (l_start))
     return GFC_DEP_OVERLAP;
 
+  if (i != -2)
+    return GFC_DEP_NODEP;
   return GFC_DEP_EQUAL;
 }
 
