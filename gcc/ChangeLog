@@ -1,3 +1,12 @@
+2006-04-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* dwarf2.h (DW64_CIE_ID): Define.
+	* dwarf2out.c (DWARF_CIE_ID): Define.
+	(output_call_frame_info): Output 0xffffffff before standard 8-byte
+	length header.  Use DWARF_CIE_ID.
+	(value_format): Use DW_FORM_data4 or DW_FORM_data8 for
+	dw_val_class_loc_list depending on DWARF_OFFSET_SIZE.
+
 2006-03-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-atomic.asm: New file.
