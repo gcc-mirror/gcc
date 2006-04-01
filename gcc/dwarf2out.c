@@ -288,6 +288,14 @@ dw_fde_node;
 #endif
 #endif
 
+/* CIE identifier.  */
+#if HOST_BITS_PER_WIDE_INT >= 64
+#define DWARF_CIE_ID \
+  (unsigned HOST_WIDE_INT) (DWARF_OFFSET_SIZE == 4 ? DW_CIE_ID : DW64_CIE_ID)
+#else
+#define DWARF_CIE_ID DW_CIE_ID
+#endif
+
 /* A pointer to the base of a table that contains frame description
    information for each routine.  */
 static GTY((length ("fde_table_allocated"))) dw_fde_ref fde_table;
@@ -2218,6 +2226,9 @@ output_call_frame_info (int for_eh)
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+    dw2_asm_output_data (4, 0xffffffff,
+      "Initial length escape value indicating 64-bit DWARF extension");
   dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
 			"Length of Common Information Entry");
   ASM_OUTPUT_LABEL (asm_out_file, l1);
@@ -2225,7 +2236,7 @@ output_call_frame_info (int for_eh)
   /* Now that the CIE pointer is PC-relative for EH,
      use 0 to identify the CIE.  */
   dw2_asm_output_data ((for_eh ? 4 : DWARF_OFFSET_SIZE),
-		       (for_eh ? 0 : DW_CIE_ID),
+		       (for_eh ? 0 : DWARF_CIE_ID),
 		       "CIE Identifier Tag");
 
   dw2_asm_output_data (1, DW_CIE_VERSION, "CIE Version");
@@ -2350,6 +2361,9 @@ output_call_frame_info (int for_eh)
       targetm.asm_out.internal_label (asm_out_file, FDE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i * 2);
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+	dw2_asm_output_data (4, 0xffffffff,
+			     "Initial length escape value indicating 64-bit DWARF extension");
       dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
 			    "FDE Length");
       ASM_OUTPUT_LABEL (asm_out_file, l1);
@@ -6775,6 +6789,7 @@ value_format (dw_attr_ref a)
       return DW_FORM_addr;
     case dw_val_class_range_list:
     case dw_val_class_offset:
+    case dw_val_class_loc_list:
       switch (DWARF_OFFSET_SIZE)
 	{
 	case 4:
@@ -6784,10 +6799,6 @@ value_format (dw_attr_ref a)
 	default:
 	  gcc_unreachable ();
 	}
-    case dw_val_class_loc_list:
-      /* FIXME: Could be DW_FORM_data8, with a > 32 bit size
-	 .debug_loc section */
-      return DW_FORM_data4;
     case dw_val_class_loc:
       switch (constant_size (size_of_locs (AT_loc (a))))
 	{
