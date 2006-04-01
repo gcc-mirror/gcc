@@ -1,3 +1,8 @@
+2006-03-31  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/25358
+	*expr.c (gfc_check_assign): Allow cray pointee to be assumes-size.
+	
 2006-03-30  Paul Thomas <paulthomas2@wanadoo.fr>
             Bud Davis  <bdavis9659@sbcglobal.net>
 
