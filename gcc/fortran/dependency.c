@@ -858,70 +858,125 @@ gfc_check_section_vs_section (gfc_ref * lref, gfc_ref * rref, int n)
 }
 
 
-/* Checks if the expr chk is inside the range left-right.
-   Returns  GFC_DEP_NODEP if chk is outside the range,
-   GFC_DEP_OVERLAP otherwise.
-   Assumes left<=right.  */
-
-static gfc_dependency
-gfc_is_inside_range (gfc_expr * chk, gfc_expr * left, gfc_expr * right)
-{
-  int l;
-  int r;
-  int s;
-
-  s = gfc_dep_compare_expr (left, right);
-  if (s == -2)
-    return GFC_DEP_OVERLAP;
-
-  l = gfc_dep_compare_expr (chk, left);
-  r = gfc_dep_compare_expr (chk, right);
-
-  /* Check for indeterminate relationships.  */
-  if (l == -2 || r == -2 || s == -2)
-    return GFC_DEP_OVERLAP;
-
-  if (s == 1)
-    {
-      /* When left>right we want to check for right <= chk <= left.  */
-      if (l <= 0 || r >= 0)
-	return GFC_DEP_OVERLAP;
-    }
-  else
-    {
-      /* Otherwise check for left <= chk <= right.  */
-      if (l >= 0 || r <= 0)
-	return GFC_DEP_OVERLAP;
-    }
-  
-  return GFC_DEP_NODEP;
-}
-
-
 /* Determines overlapping for a single element and a section.  */
 
 static gfc_dependency
 gfc_check_element_vs_section( gfc_ref * lref, gfc_ref * rref, int n)
 {
-  gfc_array_ref l_ar;
-  gfc_array_ref r_ar;
-  gfc_expr *l_start;
-  gfc_expr *r_start;
-  gfc_expr *r_end;
+  gfc_array_ref *ref;
+  gfc_expr *elem;
+  gfc_expr *start;
+  gfc_expr *end;
+  gfc_expr *stride;
+  int s;
 
-  l_ar = lref->u.ar;
-  r_ar = rref->u.ar;
-  l_start = l_ar.start[n] ;
-  r_start = r_ar.start[n] ;
-  r_end = r_ar.end[n] ;
-  if (NULL == r_start && IS_ARRAY_EXPLICIT (r_ar.as))
-    r_start = r_ar.as->lower[n];
-  if (NULL == r_end && IS_ARRAY_EXPLICIT (r_ar.as))
-    r_end = r_ar.as->upper[n];
-  if (NULL == r_start || NULL == r_end || l_start == NULL)
+  elem = lref->u.ar.start[n];
+  if (!elem)
     return GFC_DEP_OVERLAP;
 
-  return gfc_is_inside_range (l_start, r_end, r_start);
+  ref = &rref->u.ar;
+  start = ref->start[n] ;
+  end = ref->end[n] ;
+  stride = ref->stride[n];
+
+  if (!start && IS_ARRAY_EXPLICIT (ref->as))
+    start = ref->as->lower[n];
+  if (!end && IS_ARRAY_EXPLICIT (ref->as))
+    end = ref->as->upper[n];
+
+  /* Determine whether the stride is positive or negative.  */
+  if (!stride)
+    s = 1;
+  else if (stride->expr_type == EXPR_CONSTANT
+	   && stride->ts.type == BT_INTEGER)
+    s = mpz_sgn (stride->value.integer);
+  else
+    s = -2;
+
+  /* Stride should never be zero.  */
+  if (s == 0)
+    return GFC_DEP_OVERLAP;
+
+  /* Positive strides.  */
+  if (s == 1)
+    {
+      /* Check for elem < lower.  */
+      if (start && gfc_dep_compare_expr (elem, start) == -1)
+	return GFC_DEP_NODEP;
+      /* Check for elem > upper.  */
+      if (end && gfc_dep_compare_expr (elem, end) == 1)
+	return GFC_DEP_NODEP;
+
+      if (start && end)
+	{
+	  s = gfc_dep_compare_expr (start, end);
+	  /* Check for an empty range.  */
+	  if (s == 1)
+	    return GFC_DEP_NODEP;
+	  if (s == 0 && gfc_dep_compare_expr (elem, start) == 0)
+	    return GFC_DEP_EQUAL;
+	}
+    }
+  /* Negative strides.  */
+  else if (s == -1)
+    {
+      /* Check for elem > upper.  */
+      if (end && gfc_dep_compare_expr (elem, start) == 1)
+	return GFC_DEP_NODEP;
+      /* Check for elem < lower.  */
+      if (start && gfc_dep_compare_expr (elem, end) == -1)
+	return GFC_DEP_NODEP;
+
+      if (start && end)
+	{
+	  s = gfc_dep_compare_expr (start, end);
+	  /* Check for an empty range.  */
+	  if (s == -1)
+	    return GFC_DEP_NODEP;
+	  if (s == 0 && gfc_dep_compare_expr (elem, start) == 0)
+	    return GFC_DEP_EQUAL;
+	}
+    }
+  /* Unknown strides.  */
+  else
+    {
+      if (!start || !end)
+	return GFC_DEP_OVERLAP;
+      s = gfc_dep_compare_expr (start, end);
+      if (s == -2)
+	return GFC_DEP_OVERLAP;
+      /* Assume positive stride.  */
+      if (s == -1)
+	{
+	  /* Check for elem < lower.  */
+	  if (gfc_dep_compare_expr (elem, start) == -1)
+	    return GFC_DEP_NODEP;
+	  /* Check for elem > upper.  */
+	  if (gfc_dep_compare_expr (elem, end) == 1)
+	    return GFC_DEP_NODEP;
+	}
+      /* Assume negative stride.  */
+      else if (s == 1)
+	{
+	  /* Check for elem > upper.  */
+	  if (gfc_dep_compare_expr (elem, start) == 1)
+	    return GFC_DEP_NODEP;
+	  /* Check for elem < lower.  */
+	  if (gfc_dep_compare_expr (elem, end) == -1)
+	    return GFC_DEP_NODEP;
+	}
+      /* Equal bounds.  */
+      else if (s == 0)
+	{
+	  s = gfc_dep_compare_expr (elem, start);
+	  if (s == 0)
+	    return GFC_DEP_EQUAL;
+	  if (s == 1 || s == -1)
+	    return GFC_DEP_NODEP;
+	}
+    }
+
+  return GFC_DEP_OVERLAP;
 }
 
 
