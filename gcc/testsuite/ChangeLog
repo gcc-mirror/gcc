@@ -1,7 +1,13 @@
+2006-04-01  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/26735
+	Backport from mainline
+	* gfortran.dg/convert_implied_open.f90:  New test case.
+
 2006-03-31  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/25358
-	gfortran.dg/cray_pointers_6.f90: New test.
+	* gfortran.dg/cray_pointers_6.f90: New test.
 
 2006-03-31  Thomas Koenig  <Thomas.Koenig@online.de>
 
