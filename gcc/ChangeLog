@@ -1,4 +1,12 @@
-2004-03-31  Richard Henderson  <rth@redhat.com>
+2006-03-31  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm: Rename abi_entry/abi_return macros
+	to leaf_entry/leaf_return.  Change leaf_entry to add 16 bytes to
+	the frame size.  Update to use the new macros.
+	* config/xtensa/ieee754-sf.S: Use new leaf_entry/leaf_return macros.
+	* config/xtensa/ieee754-df.S: Likewise.
+
+2006-03-31  Richard Henderson  <rth@redhat.com>
 
 	* tree-cfg.c (make_ctrl_stmt_edges, make_exit_edges): Merge into...
 	(make_edges): ... here.  Control fallthru creation with a local

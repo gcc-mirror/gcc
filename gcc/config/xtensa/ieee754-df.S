@@ -51,10 +51,10 @@
 	.global	__negdf2
 	.type	__negdf2, @function
 __negdf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a4, 0x80000000
 	xor	xh, xh, a4
-	abi_return
+	leaf_return
 
 #endif /* L_negdf2 */
 
@@ -74,13 +74,13 @@ __adddf3_aux:
 	slli	a7, xh, 12
 	or	a7, a7, xl
 	beqz	a7, .Ladd_ynan_or_inf
-1:	abi_return
+1:	leaf_return
 
 .Ladd_ynan_or_inf:
 	/* Return y.  */
 	mov	xh, yh
 	mov	xl, yl
-	abi_return
+	leaf_return
 
 .Ladd_opposite_signs:
 	/* Operand signs differ.  Do a subtraction.  */
@@ -92,7 +92,7 @@ __adddf3_aux:
 	.global	__adddf3
 	.type	__adddf3, @function
 __adddf3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 
 	/* Check if the two operands have the same sign.  */
@@ -166,7 +166,7 @@ __adddf3:
 	add	xh, xh, yh
 	bgeu	xl, yl, 1f
 	addi	xh, xh, 1
-1:	abi_return
+1:	leaf_return
 
 .Ladd_bigshifty:
 	/* Exponent difference > 64 -- just return the bigger value.  */
@@ -229,7 +229,7 @@ __adddf3:
 	/* Check if the leftover fraction is exactly 1/2.  */
 	slli	a9, a9, 1
 	beqz	a9, .Ladd_exactlyhalf
-1:	abi_return
+1:	leaf_return
 
 .Ladd_bigshiftx:
 	/* Mostly the same thing as "bigshifty"....  */
@@ -247,7 +247,7 @@ __adddf3:
 .Ladd_returny:
 	mov	xh, yh
 	mov	xl, yl
-	abi_return
+	leaf_return
 
 .Ladd_carry:	
 	/* The addition has overflowed into the exponent field, so the
@@ -288,7 +288,7 @@ __adddf3:
 	addi	xl, xl, 1
 	beqz	xl, .Ladd_roundcarry
 	beqz	a9, .Ladd_exactlyhalf
-1:	abi_return
+1:	leaf_return
 
 .Ladd_infinity:
 	/* Clear the mantissa.  */
@@ -299,20 +299,20 @@ __adddf3:
 	/* The sign bit may have been lost in a carry-out.  Put it back.  */
 	slli	a8, a8, 1
 	or	xh, xh, a8
-	abi_return
+	leaf_return
 
 .Ladd_exactlyhalf:
 	/* Round down to the nearest even value.  */
 	srli	xl, xl, 1
 	slli	xl, xl, 1
-	abi_return
+	leaf_return
 
 .Ladd_roundcarry:
 	/* xl is always zero when the rounding increment overflows, so
 	   there's no need to round it to an even value.  */
 	addi	xh, xh, 1
 	/* Overflow to the exponent is OK.  */
-	abi_return
+	leaf_return
 
 
 	/* Subtraction */
@@ -328,14 +328,14 @@ __subdf3_aux:
 	/* Both x and y are either NaN or Inf, so the result is NaN.  */
 	movi	a4, 0x80000	/* make it a quiet NaN */
 	or	xh, xh, a4
-1:	abi_return
+1:	leaf_return
 
 .Lsub_ynan_or_inf:
 	/* Negate y and return it.  */
 	slli	a7, a6, 11
 	xor	xh, yh, a7
 	mov	xl, yl
-	abi_return
+	leaf_return
 
 .Lsub_opposite_signs:
 	/* Operand signs differ.  Do an addition.  */
@@ -347,7 +347,7 @@ __subdf3_aux:
 	.global	__subdf3
 	.type	__subdf3, @function
 __subdf3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 
 	/* Check if the two operands have the same sign.  */
@@ -415,7 +415,7 @@ __subdf3:
 	/* The operands are equal.  Return 0.0.  */
 	movi	xh, 0
 	movi	xl, 0
-1:	abi_return
+1:	leaf_return
 
 .Lsub_yexpzero:
 	/* y is a subnormal value.  Replace its sign/exponent with zero,
@@ -493,7 +493,7 @@ __subdf3:
 	/* Check if the leftover fraction is exactly 1/2.  */
 	slli	a9, a9, 1
 	beqz	a9, .Lsub_exactlyhalf
-1:	abi_return
+1:	leaf_return
 
 .Lsub_xexpzero:
 	/* Same as "yexpzero".  */
@@ -523,7 +523,7 @@ __subdf3:
 	slli	a7, a6, 11
 	xor	xh, yh, a7
 	mov	xl, yl
-	abi_return
+	leaf_return
 
 .Lsub_borrow:	
 	/* The subtraction has underflowed into the exponent field, so the
@@ -560,14 +560,14 @@ __subdf3:
 	/* Round down to the nearest even value.  */
 	srli	xl, xl, 1
 	slli	xl, xl, 1
-	abi_return
+	leaf_return
 
 .Lsub_roundcarry:
 	/* xl is always zero when the rounding increment overflows, so
 	   there's no need to round it to an even value.  */
 	addi	xh, xh, 1
 	/* Overflow to the exponent is OK.  */
-	abi_return
+	leaf_return
 
 .Lsub_xhzero:
 	/* When normalizing the result, all the mantissa bits in the high
@@ -728,7 +728,7 @@ __muldf3_aux:
 	.global	__muldf3
 	.type	__muldf3, @function
 __muldf3:
-	abi_entry sp, 48
+	leaf_entry sp, 32
 #if __XTENSA_CALL0_ABI__
 	addi	sp, sp, -32
 	s32i	a12, sp, 16
@@ -1093,7 +1093,7 @@ __muldf3:
 	l32i	a15, sp, 28
 	addi	sp, sp, 32
 #endif
-	abi_return
+	leaf_return
 
 .Lmul_exactlyhalf:
 	/* Round down to the nearest even value.  */
@@ -1246,7 +1246,7 @@ __divdf3_aux:
 	movi	a4, 0x80000	/* make it a quiet NaN */
 	or	xh, xh, a4
 1:	movi	xl, 0
-	abi_return
+	leaf_return
 
 .Ldiv_xexpzero:
 	/* Clear the sign bit of x.  */
@@ -1287,7 +1287,7 @@ __divdf3_aux:
 	srli	xh, a7, 31
 	slli	xh, xh, 31
 	movi	xl, 0
-	abi_return
+	leaf_return
 
 .Ldiv_xnan_or_inf:
 	/* Set the sign bit of the result.  */
@@ -1298,7 +1298,7 @@ __divdf3_aux:
 	bnall	yh, a6, 1f
 	movi	a4, 0x80000	/* make it a quiet NaN */
 	or	xh, xh, a4
-1:	abi_return
+1:	leaf_return
 
 .Ldiv_ynan_or_inf:
 	/* If y is Infinity, return zero.  */
@@ -1308,7 +1308,7 @@ __divdf3_aux:
 	/* y is NaN; return it.  */
 	mov	xh, yh
 	mov	xl, yl
-	abi_return
+	leaf_return
 
 .Ldiv_highequal1:
 	bltu	xl, yl, 2f
@@ -1318,7 +1318,7 @@ __divdf3_aux:
 	.global	__divdf3
 	.type	__divdf3, @function
 __divdf3:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 
 	/* Get the sign of the result.  */
@@ -1431,7 +1431,7 @@ __divdf3:
 	srli	a7, a7, 31
 	slli	a7, a7, 31
 	or	xh, xh, a7
-	abi_return
+	leaf_return
 
 .Ldiv_highequal2:
 	bgeu	xl, yl, 2b
@@ -1510,7 +1510,7 @@ __divdf3:
 	srli	xh, a7, 31
 	slli	xh, xh, 31
 	movi	xl, 0
-	abi_return
+	leaf_return
 
 #endif /* L_divdf3 */
 
@@ -1524,7 +1524,7 @@ __divdf3:
 	.set	__nedf2, __eqdf2
 	.type	__eqdf2, @function
 __eqdf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	bne	xl, yl, 2f
 	bne	xh, yh, 4f
 
@@ -1534,11 +1534,11 @@ __eqdf2:
 
 	/* Equal.  */
 	movi	a2, 0
-	abi_return
+	leaf_return
 
 	/* Not equal.  */
 2:	movi	a2, 1
-	abi_return
+	leaf_return
 
 	/* Check if the mantissas are nonzero.  */
 3:	slli	a7, xh, 12
@@ -1555,7 +1555,7 @@ __eqdf2:
 5:	movi	a2, 0
 	movi	a3, 1
 	movnez	a2, a3, a7	
-	abi_return
+	leaf_return
 
 
 	/* Greater Than */
@@ -1564,7 +1564,7 @@ __eqdf2:
 	.global	__gtdf2
 	.type	__gtdf2, @function
 __gtdf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 	ball	xh, a6, 2f
 1:	bnall	yh, a6, .Lle_cmp
@@ -1574,14 +1574,14 @@ __gtdf2:
 	or	a7, a7, yl
 	beqz	a7, .Lle_cmp
 	movi	a2, 0
-	abi_return
+	leaf_return
 
 	/* Check if x is a NaN.  */
 2:	slli	a7, xh, 12
 	or	a7, a7, xl
 	beqz	a7, 1b
 	movi	a2, 0
-	abi_return
+	leaf_return
 
 
 	/* Less Than or Equal */
@@ -1590,7 +1590,7 @@ __gtdf2:
 	.global	__ledf2
 	.type	__ledf2, @function
 __ledf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 	ball	xh, a6, 2f
 1:	bnall	yh, a6, .Lle_cmp
@@ -1600,14 +1600,14 @@ __ledf2:
 	or	a7, a7, yl
 	beqz	a7, .Lle_cmp
 	movi	a2, 1
-	abi_return
+	leaf_return
 
 	/* Check if x is a NaN.  */
 2:	slli	a7, xh, 12
 	or	a7, a7, xl
 	beqz	a7, 1b
 	movi	a2, 1
-	abi_return
+	leaf_return
 
 .Lle_cmp:
 	/* Check if x and y have different signs.  */
@@ -1622,7 +1622,7 @@ __ledf2:
 	bne	xh, yh, 5f
 	bltu	yl, xl, 5f
 4:	movi	a2, 0
-	abi_return
+	leaf_return
 
 .Lle_xneg:
 	/* Check if y <= x.  */
@@ -1630,7 +1630,7 @@ __ledf2:
 	bne	yh, xh, 5f
 	bgeu	xl, yl, 4b
 5:	movi	a2, 1
-	abi_return
+	leaf_return
 
 .Lle_diff_signs:
 	bltz	xh, 4b
@@ -1643,7 +1643,7 @@ __ledf2:
 	movi	a2, 1
 	movi	a3, 0
 	moveqz	a2, a3, a7
-	abi_return
+	leaf_return
 
 
 	/* Greater Than or Equal */
@@ -1652,7 +1652,7 @@ __ledf2:
 	.global	__gedf2
 	.type	__gedf2, @function
 __gedf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 	ball	xh, a6, 2f
 1:	bnall	yh, a6, .Llt_cmp
@@ -1662,14 +1662,14 @@ __gedf2:
 	or	a7, a7, yl
 	beqz	a7, .Llt_cmp
 	movi	a2, -1
-	abi_return
+	leaf_return
 
 	/* Check if x is a NaN.  */
 2:	slli	a7, xh, 12
 	or	a7, a7, xl
 	beqz	a7, 1b
 	movi	a2, -1
-	abi_return
+	leaf_return
 
 
 	/* Less Than */
@@ -1678,7 +1678,7 @@ __gedf2:
 	.global	__ltdf2
 	.type	__ltdf2, @function
 __ltdf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 	ball	xh, a6, 2f
 1:	bnall	yh, a6, .Llt_cmp
@@ -1688,14 +1688,14 @@ __ltdf2:
 	or	a7, a7, yl
 	beqz	a7, .Llt_cmp
 	movi	a2, 0
-	abi_return
+	leaf_return
 
 	/* Check if x is a NaN.  */
 2:	slli	a7, xh, 12
 	or	a7, a7, xl
 	beqz	a7, 1b
 	movi	a2, 0
-	abi_return
+	leaf_return
 
 .Llt_cmp:
 	/* Check if x and y have different signs.  */
@@ -1710,7 +1710,7 @@ __ltdf2:
 	bne	xh, yh, 5f
 	bgeu	xl, yl, 5f
 4:	movi	a2, -1
-	abi_return
+	leaf_return
 
 .Llt_xneg:
 	/* Check if y < x.  */
@@ -1718,7 +1718,7 @@ __ltdf2:
 	bne	yh, xh, 5f
 	bltu	yl, xl, 4b
 5:	movi	a2, 0
-	abi_return
+	leaf_return
 
 .Llt_diff_signs:
 	bgez	xh, 5b
@@ -1731,7 +1731,7 @@ __ltdf2:
 	movi	a2, 0
 	movi	a3, -1
 	movnez	a2, a3, a7
-	abi_return
+	leaf_return
 
 
 	/* Unordered */
@@ -1740,24 +1740,24 @@ __ltdf2:
 	.global	__unorddf2
 	.type	__unorddf2, @function
 __unorddf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	movi	a6, 0x7ff00000
 	ball	xh, a6, 3f
 1:	ball	yh, a6, 4f
 2:	movi	a2, 0
-	abi_return
+	leaf_return
 
 3:	slli	a7, xh, 12
 	or	a7, a7, xl
 	beqz	a7, 1b
 	movi	a2, 1
-	abi_return
+	leaf_return
 
 4:	slli	a7, yh, 12
 	or	a7, a7, yl
 	beqz	a7, 2b
 	movi	a2, 1
-	abi_return
+	leaf_return
 
 #endif /* L_cmpdf2 */
 
@@ -1767,7 +1767,7 @@ __unorddf2:
 	.global	__fixdfsi
 	.type	__fixdfsi, @function
 __fixdfsi:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Check for NaN and Infinity.  */
 	movi	a6, 0x7ff00000
@@ -1792,7 +1792,7 @@ __fixdfsi:
 	/* Negate the result if sign != 0.  */
 	neg	a2, a5
 	movgez	a2, a5, a7
-	abi_return
+	leaf_return
 
 .Lfixdfsi_nan_or_inf:
 	/* Handle Infinity and NaN.  */
@@ -1808,11 +1808,11 @@ __fixdfsi:
 	addi	a5, a4, -1	/* 0x7fffffff */
 	movgez	a4, a5, xh
 	mov	a2, a4
-	abi_return
+	leaf_return
 
 .Lfixdfsi_zero:
 	movi	a2, 0
-	abi_return
+	leaf_return
 
 #endif /* L_fixdfsi */
 
@@ -1822,7 +1822,7 @@ __fixdfsi:
 	.global	__fixdfdi
 	.type	__fixdfdi, @function
 __fixdfdi:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Check for NaN and Infinity.  */
 	movi	a6, 0x7ff00000
@@ -1854,7 +1854,7 @@ __fixdfdi:
 	neg	xh, xh
 	beqz	xl, 1f
 	addi	xh, xh, -1
-1:	abi_return
+1:	leaf_return
 
 .Lfixdfdi_smallshift:
 	src	xl, xh, xl
@@ -1875,16 +1875,16 @@ __fixdfdi:
 	bgez	xh, 1f
 	mov	xh, a7
 	movi	xl, 0
-	abi_return
+	leaf_return
 
 1:	addi	xh, a7, -1	/* 0x7fffffff */
 	movi	xl, -1
-	abi_return
+	leaf_return
 
 .Lfixdfdi_zero:
 	movi	xh, 0
 	movi	xl, 0
-	abi_return
+	leaf_return
 
 #endif /* L_fixdfdi */
 
@@ -1894,7 +1894,7 @@ __fixdfdi:
 	.global	__fixunsdfsi
 	.type	__fixunsdfsi, @function
 __fixunsdfsi:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Check for NaN and Infinity.  */
 	movi	a6, 0x7ff00000
@@ -1921,7 +1921,7 @@ __fixunsdfsi:
 	/* Negate the result if sign != 0.  */
 	neg	a2, a5
 	movgez	a2, a5, a7
-	abi_return
+	leaf_return
 
 .Lfixunsdfsi_nan_or_inf:
 	/* Handle Infinity and NaN.  */
@@ -1931,28 +1931,28 @@ __fixunsdfsi:
 
 	/* Translate NaN to 0xffffffff.  */
 	movi	a2, -1
-	abi_return
+	leaf_return
 
 .Lfixunsdfsi_maxint:
 	slli	a4, a6, 11	/* 0x80000000 */
 	movi	a5, -1		/* 0xffffffff */
 	movgez	a4, a5, xh
 	mov	a2, a4
-	abi_return
+	leaf_return
 
 .Lfixunsdfsi_zero:
 	movi	a2, 0
-	abi_return
+	leaf_return
 
 .Lfixunsdfsi_bigexp:
 	/* Handle unsigned maximum exponent case.  */
 	bltz	xh, 1f
 	mov	a2, a5		/* no shift needed */
-	abi_return
+	leaf_return
 
 	/* Return 0x80000000 if negative.  */
 1:	slli	a2, a6, 11
-	abi_return
+	leaf_return
 
 #endif /* L_fixunsdfsi */
 
@@ -1962,7 +1962,7 @@ __fixunsdfsi:
 	.global	__fixunsdfdi
 	.type	__fixunsdfdi, @function
 __fixunsdfdi:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Check for NaN and Infinity.  */
 	movi	a6, 0x7ff00000
@@ -1996,7 +1996,7 @@ __fixunsdfdi:
 	neg	xh, xh
 	beqz	xl, 1f
 	addi	xh, xh, -1
-1:	abi_return
+1:	leaf_return
 
 .Lfixunsdfdi_smallshift:
 	src	xl, xh, xl
@@ -2012,23 +2012,23 @@ __fixunsdfdi:
 	/* Translate NaN to 0xffffffff.... */
 1:	movi	xh, -1
 	movi	xl, -1
-	abi_return
+	leaf_return
 
 .Lfixunsdfdi_maxint:
 	bgez	xh, 1b
 2:	slli	xh, a6, 11	/* 0x80000000 */
 	movi	xl, 0
-	abi_return
+	leaf_return
 
 .Lfixunsdfdi_zero:
 	movi	xh, 0
 	movi	xl, 0
-	abi_return
+	leaf_return
 
 .Lfixunsdfdi_bigexp:
 	/* Handle unsigned maximum exponent case.  */
 	bltz	a7, 2b
-	abi_return		/* no shift needed */
+	leaf_return		/* no shift needed */
 
 #endif /* L_fixunsdfdi */
 
@@ -2038,7 +2038,7 @@ __fixunsdfdi:
 	.global	__floatunsidf
 	.type	__floatunsidf, @function
 __floatunsidf:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 	beqz	a2, .Lfloatsidf_return_zero
 
 	/* Set the sign to zero and jump to the floatsidf code.  */
@@ -2049,7 +2049,7 @@ __floatunsidf:
 	.global	__floatsidf
 	.type	__floatsidf, @function
 __floatsidf:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Check for zero.  */
 	beqz	a2, .Lfloatsidf_return_zero
@@ -2084,11 +2084,11 @@ __floatsidf:
 	/* Add the sign and return. */
 	slli	a7, a7, 31
 	or	xh, xh, a7
-	abi_return
+	leaf_return
 
 .Lfloatsidf_return_zero:
 	movi	a3, 0
-	abi_return
+	leaf_return
 
 #endif /* L_floatsidf */
 
@@ -2098,7 +2098,7 @@ __floatsidf:
 	.global	__floatundidf
 	.type	__floatundidf, @function
 __floatundidf:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Check for zero.  */
 	or	a4, xh, xl
@@ -2112,7 +2112,7 @@ __floatundidf:
 	.global	__floatdidf
 	.type	__floatdidf, @function
 __floatdidf:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Check for zero.  */
 	or	a4, xh, xl
@@ -2161,7 +2161,7 @@ __floatdidf:
 	/* Check if the leftover fraction is exactly 1/2.  */
 	slli	a6, a6, 1
 	beqz	a6, .Lfloatdidf_exactlyhalf
-2:	abi_return
+2:	leaf_return
 
 .Lfloatdidf_bigshift:
 	/* xh is zero.  Normalize with first 1 bit of xl in the msb of xh.  */
@@ -2176,14 +2176,14 @@ __floatdidf:
 	/* Round down to the nearest even value.  */
 	srli	xl, xl, 1
 	slli	xl, xl, 1
-	abi_return
+	leaf_return
 
 .Lfloatdidf_roundcarry:
 	/* xl is always zero when the rounding increment overflows, so
 	   there's no need to round it to an even value.  */
 	addi	xh, xh, 1
 	/* Overflow to the exponent is OK.  */
-	abi_return
+	leaf_return
 
 #endif /* L_floatdidf */
 
@@ -2193,7 +2193,7 @@ __floatdidf:
 	.global	__truncdfsf2
 	.type	__truncdfsf2, @function
 __truncdfsf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Adjust the exponent bias.  */
 	movi	a4, (0x3ff - 0x7f) << 20
@@ -2228,13 +2228,13 @@ __truncdfsf2:
 	/* Check if the leftover fraction is exactly 1/2.  */
 	slli	a4, a4, 1
 	beqz	a4, .Ltrunc_exactlyhalf
-1:	abi_return
+1:	leaf_return
 
 .Ltrunc_exactlyhalf:
 	/* Round down to the nearest even value.  */
 	srli	a2, a2, 1
 	slli	a2, a2, 1
-	abi_return
+	leaf_return
 
 .Ltrunc_overflow:
 	/* Check if exponent == 0x7ff.  */
@@ -2254,7 +2254,7 @@ __truncdfsf2:
 	extui	a6, xh, 31, 1
 	ssai	1
 	src	a2, a6, a4
-	abi_return
+	leaf_return
 
 .Ltrunc_underflow:
 	/* Find shift count for a subnormal.  Flush to zero if >= 32.  */
@@ -2287,7 +2287,7 @@ __truncdfsf2:
 	/* Return +/- zero.  */
 1:	extui	a2, xh, 31, 1
 	slli	a2, a2, 31
-	abi_return
+	leaf_return
 
 #endif /* L_truncdfsf2 */
 
@@ -2297,7 +2297,7 @@ __truncdfsf2:
 	.global	__extendsfdf2
 	.type	__extendsfdf2, @function
 __extendsfdf2:
-	abi_entry sp, 32
+	leaf_entry sp, 16
 
 	/* Save the sign bit and then shift it off.  */
 	extui	a5, a2, 31, 1
@@ -2320,7 +2320,7 @@ __extendsfdf2:
 
 	/* Add the sign bit.  */
 	or	xh, a4, a5
-	abi_return
+	leaf_return
 
 .Lextend_nan_or_inf:
 	movi	a4, 0x7ff00000
@@ -2335,7 +2335,7 @@ __extendsfdf2:
 	/* Add the sign and return.  */
 1:	or	xh, a4, a5
 	movi	xl, 0
-	abi_return
+	leaf_return
 
 .Lextend_expzero:
 	beqz	a4, 1b
@@ -2358,7 +2358,7 @@ __extendsfdf2:
 
 	/* Add the sign and return.  */
 	or	xh, a4, a5
-	abi_return
+	leaf_return
 
 #endif /* L_extendsfdf2 */
 
