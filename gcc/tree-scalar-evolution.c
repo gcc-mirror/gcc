@@ -659,18 +659,19 @@ get_scalar_evolution (tree scalar)
    part for this loop.  */
 
 static tree
-add_to_evolution_1 (unsigned loop_nb, 
-		    tree chrec_before, 
-		    tree to_add)
+add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
+		    tree at_stmt)
 {
+  tree type, left, right;
+
   switch (TREE_CODE (chrec_before))
     {
     case POLYNOMIAL_CHREC:
       if (CHREC_VARIABLE (chrec_before) <= loop_nb)
 	{
 	  unsigned var;
-	  tree left, right;
-	  tree type = chrec_type (chrec_before);
+
+	  type = chrec_type (chrec_before);
 	  
 	  /* When there is no evolution part in this loop, build it.  */
 	  if (CHREC_VARIABLE (chrec_before) < loop_nb)
@@ -688,21 +689,30 @@ add_to_evolution_1 (unsigned loop_nb,
 	      right = CHREC_RIGHT (chrec_before);
 	    }
 
-	  return build_polynomial_chrec 
-	    (var, left, chrec_fold_plus (type, right, to_add));
+	  to_add = chrec_convert (type, to_add, at_stmt);
+	  right = chrec_convert (type, right, at_stmt);
+	  right = chrec_fold_plus (type, right, to_add);
+	  return build_polynomial_chrec (var, left, right);
 	}
       else
-	/* Search the evolution in LOOP_NB.  */
-	return build_polynomial_chrec 
-	  (CHREC_VARIABLE (chrec_before),
-	   add_to_evolution_1 (loop_nb, CHREC_LEFT (chrec_before), to_add),
-	   CHREC_RIGHT (chrec_before));
+	{
+	  /* Search the evolution in LOOP_NB.  */
+	  left = add_to_evolution_1 (loop_nb, CHREC_LEFT (chrec_before),
+				     to_add, at_stmt);
+	  right = CHREC_RIGHT (chrec_before);
+	  right = chrec_convert (chrec_type (left), right, at_stmt);
+	  return build_polynomial_chrec (CHREC_VARIABLE (chrec_before),
+					 left, right);
+	}
       
     default:
       /* These nodes do not depend on a loop.  */
       if (chrec_before == chrec_dont_know)
 	return chrec_dont_know;
-      return build_polynomial_chrec (loop_nb, chrec_before, to_add);
+
+      left = chrec_before;
+      right = chrec_convert (chrec_type (left), to_add, at_stmt);
+      return build_polynomial_chrec (loop_nb, left, right);
     }
 }
 
@@ -841,10 +851,8 @@ add_to_evolution_1 (unsigned loop_nb,
 */
 
 static tree 
-add_to_evolution (unsigned loop_nb, 
-		  tree chrec_before,
-		  enum tree_code code,
-		  tree to_add)
+add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
+		  tree to_add, tree at_stmt)
 {
   tree type = chrec_type (to_add);
   tree res = NULL_TREE;
@@ -874,7 +882,7 @@ add_to_evolution (unsigned loop_nb,
 				  ? build_real (type, dconstm1)
 				  : build_int_cst_type (type, -1));
 
-  res = add_to_evolution_1 (loop_nb, chrec_before, to_add);
+  res = add_to_evolution_1 (loop_nb, chrec_before, to_add, at_stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1094,7 +1102,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		*evolution_of_loop = add_to_evolution 
 		  (loop->num, 
 		   chrec_convert (type_rhs, evol, at_stmt), 
-		   PLUS_EXPR, rhs1);
+		   PLUS_EXPR, rhs1, at_stmt);
 	      
 	      else if (res == t_false)
 		{
@@ -1106,7 +1114,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		    *evolution_of_loop = add_to_evolution 
 		      (loop->num, 
 		       chrec_convert (type_rhs, *evolution_of_loop, at_stmt), 
-		       PLUS_EXPR, rhs0);
+		       PLUS_EXPR, rhs0, at_stmt);
 
 		  else if (res == t_dont_know)
 		    *evolution_of_loop = chrec_dont_know;
@@ -1127,7 +1135,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		*evolution_of_loop = add_to_evolution 
 		  (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
 					     at_stmt),
-		   PLUS_EXPR, rhs1);
+		   PLUS_EXPR, rhs1, at_stmt);
 
 	      else if (res == t_dont_know)
 		*evolution_of_loop = chrec_dont_know;
@@ -1145,7 +1153,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	    *evolution_of_loop = add_to_evolution 
 	      (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
 					 at_stmt),
-	       PLUS_EXPR, rhs0);
+	       PLUS_EXPR, rhs0, at_stmt);
 
 	  else if (res == t_dont_know)
 	    *evolution_of_loop = chrec_dont_know;
@@ -1175,7 +1183,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	  if (res == t_true)
 	    *evolution_of_loop = add_to_evolution 
 	      (loop->num, chrec_convert (type_rhs, *evolution_of_loop, at_stmt),
-	       MINUS_EXPR, rhs1);
+	       MINUS_EXPR, rhs1, at_stmt);
 
 	  else if (res == t_dont_know)
 	    *evolution_of_loop = chrec_dont_know;
@@ -2043,7 +2051,10 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
       if (CHREC_LEFT (chrec) != op0
 	  || CHREC_RIGHT (chrec) != op1)
-	chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
+	{
+	  op1 = chrec_convert (chrec_type (op0), op1, NULL_TREE);
+	  chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
+	}
       return chrec;
 
     case PLUS_EXPR:
