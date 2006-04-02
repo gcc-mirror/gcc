@@ -1930,8 +1930,8 @@ create_data_ref (tree memref, tree stmt, bool is_read)
 			       constant, type_size);
     }
   else
-    DR_INIT (dr) = init_cond = ssize_int (0);;
-  
+    DR_INIT (dr) = init_cond = ssize_int (0);
+
   if (invariant)
     DR_OFFSET (dr) = invariant;
   else
@@ -1957,6 +1957,8 @@ create_data_ref (tree memref, tree stmt, bool is_read)
       new_step = size_binop (TRUNC_DIV_EXPR,  
 			     fold_convert (ssizetype, step), type_size);
 
+      init_cond = chrec_convert (chrec_type (access_fn), init_cond, stmt);
+      new_step = chrec_convert (chrec_type (access_fn), new_step, stmt);
       access_fn = chrec_replace_initial_condition (access_fn, init_cond);
       access_fn = reset_evolution_in_loop (loop->num, access_fn, new_step);
 
@@ -2011,14 +2013,10 @@ all_chrecs_equal_p (tree chrec)
   int j;
 
   for (j = 0; j < TREE_VEC_LENGTH (chrec) - 1; j++)
-    {
-      tree chrec_j = TREE_VEC_ELT (chrec, j);
-      tree chrec_j_1 = TREE_VEC_ELT (chrec, j + 1);
-      if (!integer_zerop 
-	  (chrec_fold_minus 
-	   (integer_type_node, chrec_j, chrec_j_1)))
-	return false;
-    }
+    if (!eq_evolutions_p (TREE_VEC_ELT (chrec, j),
+			  TREE_VEC_ELT (chrec, j + 1)))
+      return false;
+
   return true;
 }
 
@@ -2063,6 +2061,10 @@ compute_subscript_distance (struct data_dependence_relation *ddr)
 		conflicts_b = TREE_VEC_ELT (conflicts_b, 0);
 	    }
 
+	  conflicts_b = chrec_convert (integer_type_node, conflicts_b,
+				       NULL_TREE);
+	  conflicts_a = chrec_convert (integer_type_node, conflicts_a,
+				       NULL_TREE);
 	  difference = chrec_fold_minus 
 	    (integer_type_node, conflicts_b, conflicts_a);
  	  
@@ -2250,6 +2252,8 @@ analyze_ziv_subscript (tree chrec_a,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(analyze_ziv_subscript \n");
   
+  chrec_a = chrec_convert (integer_type_node, chrec_a, NULL_TREE);
+  chrec_b = chrec_convert (integer_type_node, chrec_b, NULL_TREE);
   difference = chrec_fold_minus (integer_type_node, chrec_a, chrec_b);
   
   switch (TREE_CODE (difference))
@@ -2323,7 +2327,11 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 				  tree *last_conflicts)
 {
   bool value0, value1, value2;
-  tree difference = chrec_fold_minus 
+  tree difference;
+
+  chrec_a = chrec_convert (integer_type_node, chrec_a, NULL_TREE);
+  chrec_b = chrec_convert (integer_type_node, chrec_b, NULL_TREE);
+  difference = chrec_fold_minus 
     (integer_type_node, CHREC_LEFT (chrec_b), chrec_a);
   
   if (!chrec_is_positive (initial_condition (difference), &value0))
@@ -2641,32 +2649,52 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
       *overlaps_b = integer_zero_node;
       if (xz_p)
 	{
-	  TREE_VEC_ELT (*overlaps_a, 0) = 
-	    chrec_fold_plus (integer_type_node, TREE_VEC_ELT (*overlaps_a, 0),
-			     overlaps_a_xz);
-	  *overlaps_b = 
-	    chrec_fold_plus (integer_type_node, *overlaps_b, overlaps_b_xz);
+	  tree t0 = chrec_convert (integer_type_node, 
+				   TREE_VEC_ELT (*overlaps_a, 0), NULL_TREE);
+	  tree t1 = chrec_convert (integer_type_node, overlaps_a_xz,
+				   NULL_TREE);
+	  tree t2 = chrec_convert (integer_type_node, *overlaps_b,
+				   NULL_TREE);
+	  tree t3 = chrec_convert (integer_type_node, overlaps_b_xz,
+				   NULL_TREE);
+
+	  TREE_VEC_ELT (*overlaps_a, 0) = chrec_fold_plus (integer_type_node,
+							   t0, t1);
+	  *overlaps_b = chrec_fold_plus (integer_type_node, t2, t3);
 	  *last_conflicts = last_conflicts_xz;
 	}
       if (yz_p)
 	{
-	  TREE_VEC_ELT (*overlaps_a, 1) = 
-	    chrec_fold_plus (integer_type_node, TREE_VEC_ELT (*overlaps_a, 1),
-			     overlaps_a_yz);
-	  *overlaps_b = 
-	    chrec_fold_plus (integer_type_node, *overlaps_b, overlaps_b_yz);
+	  tree t0 = chrec_convert (integer_type_node,
+				   TREE_VEC_ELT (*overlaps_a, 1), NULL_TREE);
+	  tree t1 = chrec_convert (integer_type_node, overlaps_a_yz, NULL_TREE);
+	  tree t2 = chrec_convert (integer_type_node, *overlaps_b, NULL_TREE);
+	  tree t3 = chrec_convert (integer_type_node, overlaps_b_yz, NULL_TREE);
+
+	  TREE_VEC_ELT (*overlaps_a, 1) = chrec_fold_plus (integer_type_node,
+							   t0, t1);
+	  *overlaps_b = chrec_fold_plus (integer_type_node, t2, t3);
 	  *last_conflicts = last_conflicts_yz;
 	}
       if (xyz_p)
 	{
-	  TREE_VEC_ELT (*overlaps_a, 0) = 
-	    chrec_fold_plus (integer_type_node, TREE_VEC_ELT (*overlaps_a, 0),
-			     overlaps_a_xyz);
-	  TREE_VEC_ELT (*overlaps_a, 1) = 
-	    chrec_fold_plus (integer_type_node, TREE_VEC_ELT (*overlaps_a, 1),
-			     overlaps_a_xyz);
-	  *overlaps_b = 
-	    chrec_fold_plus (integer_type_node, *overlaps_b, overlaps_b_xyz);
+	  tree t0 = chrec_convert (integer_type_node,
+				   TREE_VEC_ELT (*overlaps_a, 0), NULL_TREE);
+	  tree t1 = chrec_convert (integer_type_node, overlaps_a_xyz,
+				   NULL_TREE);
+	  tree t2 = chrec_convert (integer_type_node,
+				   TREE_VEC_ELT (*overlaps_a, 1), NULL_TREE);
+	  tree t3 = chrec_convert (integer_type_node, overlaps_a_xyz,
+				   NULL_TREE);
+	  tree t4 = chrec_convert (integer_type_node, *overlaps_b, NULL_TREE);
+	  tree t5 = chrec_convert (integer_type_node, overlaps_b_xyz,
+				   NULL_TREE);
+
+	  TREE_VEC_ELT (*overlaps_a, 0) = chrec_fold_plus (integer_type_node,
+							   t0, t1);
+	  TREE_VEC_ELT (*overlaps_a, 1) = chrec_fold_plus (integer_type_node,
+							   t2, t3);
+	  *overlaps_b = chrec_fold_plus (integer_type_node, t4, t5);
 	  *last_conflicts = last_conflicts_xyz;
 	}
     }
@@ -2694,12 +2722,11 @@ analyze_subscript_affine_affine (tree chrec_a,
   int init_a, init_b, gamma, gcd_alpha_beta;
   int tau1, tau2;
   lambda_matrix A, U, S;
-  tree difference = chrec_fold_minus (integer_type_node, chrec_a, chrec_b);
 
-  if (integer_zerop (difference))
+  if (eq_evolutions_p (chrec_a, chrec_b))
     {
-      /* The difference is equal to zero: the accessed index
-	 overlaps for each iteration in the loop.  */
+      /* The accessed index overlaps for each iteration in the
+	 loop.  */
       *overlaps_a = integer_zero_node;
       *overlaps_b = integer_zero_node;
       *last_conflicts = chrec_dont_know;
@@ -2719,7 +2746,6 @@ analyze_subscript_affine_affine (tree chrec_a,
      there is no dependence.  This function outputs a description of
      the iterations that hold the intersections.  */
 
-  
   nb_vars_a = nb_vars_in_chrec (chrec_a);
   nb_vars_b = nb_vars_in_chrec (chrec_b);
 
@@ -3177,10 +3203,12 @@ analyze_miv_subscript (tree chrec_a,
   dependence_stats.num_miv++;
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(analyze_miv_subscript \n");
-  
+
+  chrec_a = chrec_convert (integer_type_node, chrec_a, NULL_TREE);
+  chrec_b = chrec_convert (integer_type_node, chrec_b, NULL_TREE);
   difference = chrec_fold_minus (integer_type_node, chrec_a, chrec_b);
   
-  if (chrec_zerop (difference))
+  if (eq_evolutions_p (chrec_a, chrec_b))
     {
       /* Access functions are the same: all the elements are accessed
 	 in the same order.  */
@@ -3502,15 +3530,9 @@ same_access_functions (struct data_dependence_relation *ddr)
   unsigned i;
 
   for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
-    {
-      tree access_fun_a = DR_ACCESS_FN (DDR_A (ddr), i);
-      tree access_fun_b = DR_ACCESS_FN (DDR_B (ddr), i);
-      tree difference = chrec_fold_minus (integer_type_node, access_fun_a,
-					  access_fun_b);
-      if (TREE_CODE (difference) != INTEGER_CST
-	  || !integer_zerop (difference))
-	return false;
-    }
+    if (!eq_evolutions_p (DR_ACCESS_FN (DDR_A (ddr), i),
+			  DR_ACCESS_FN (DDR_B (ddr), i)))
+      return false;
 
   return true;
 }

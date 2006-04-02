@@ -1,5 +1,33 @@
 2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
 
+	* tree-scalar-evolution.c (add_to_evolution_1): Pass an extra argument
+	at_stmt.  Convert the type of operands before calling 
+	build_polynomial_chrec.
+	(add_to_evolution): Pass an extra argument at_stmt.  Adjust the call to
+	add_to_evolution_1.
+	(follow_ssa_edge_in_rhs): Adjust call to add_to_evolution.
+	(instantiate_parameters_1): Convert the type of operands before calling 
+	build_polynomial_chrec.
+	* tree-chrec.c (chrec_fold_poly_cst, chrec_fold_plus_poly_poly,
+	chrec_fold_multiply_poly_poly, chrec_replace_initial_condition,
+	reset_evolution_in_loop): Insert asserts to check the types of the
+	operands.
+	(chrec_type): Moved...
+	(eq_evolutions_p): Use operand_equal_p.
+	* tree-chrec.h (build_polynomial_chrec): Insert an assert to check
+	the types of the operands.
+	(chrec_type): ...here.
+	* tree-data-ref.c (create_data_ref): Convert the operands before
+	calling chrec_replace_initial_condition.
+	(same_access_functions, analyze_subscript_affine_affine,
+	analyze_miv_subscript, all_chrecs_equal_p): Use eq_evolutions_p.
+	(compute_subscript_distance, analyze_ziv_subscript,
+	analyze_siv_subscript_cst_affine, compute_overlap_steps_for_affine_1_2,
+	analyze_miv_subscript): Convert the operands before calling
+	chrec_fold_minus or chrec_fold_plus.
+
+2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
+
 	* tree-data-ref.c (compute_all_dependences): Use a pointer to
 	the dependence_relations vector.
 	(compute_data_dependences_for_loop): Adjust call to
