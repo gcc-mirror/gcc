@@ -1,3 +1,10 @@
+2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-data-ref.c (compute_all_dependences): Use a pointer to
+	the dependence_relations vector.
+	(compute_data_dependences_for_loop): Adjust call to
+	compute_all_dependences.
+
 2006-04-01  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 

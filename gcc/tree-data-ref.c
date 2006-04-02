@@ -3933,7 +3933,7 @@ compute_self_dependence (struct data_dependence_relation *ddr)
 
 static void 
 compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
-			 VEC (ddr_p, heap) *dependence_relations,
+			 VEC (ddr_p, heap) **dependence_relations,
 			 VEC (loop_p, heap) *loop_nest,
 			 bool compute_self_and_rr)
 {
@@ -3946,7 +3946,7 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
       if (!DR_IS_READ (a) || !DR_IS_READ (b) || compute_self_and_rr)
 	{
 	  ddr = initialize_data_dependence_relation (a, b, loop_nest);
-	  VEC_safe_push (ddr_p, heap, dependence_relations, ddr);
+	  VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
 	  compute_affine_dependence (ddr);
 	}
 
@@ -3954,7 +3954,7 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
     for (i = 0; VEC_iterate (data_reference_p, datarefs, i, a); i++)
       {
 	ddr = initialize_data_dependence_relation (a, a, loop_nest);
-	VEC_safe_push (ddr_p, heap, dependence_relations, ddr);
+	VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
 	compute_self_dependence (ddr);
       }
 }
@@ -4172,7 +4172,7 @@ compute_data_dependences_for_loop (struct loop *loop,
       VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
     }
   else
-    compute_all_dependences (*datarefs, *dependence_relations, vloops,
+    compute_all_dependences (*datarefs, dependence_relations, vloops,
 			     compute_self_and_read_read_dependences);
 
   if (dump_file && (dump_flags & TDF_STATS))
