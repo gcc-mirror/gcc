@@ -1,3 +1,9 @@
+2006-04-02  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/26977
+	* expr.c (emit_group_store): Check whether simplify_gen_subreg returns
+	NULL_RTX, indicating it couldn't create a valid paradoxical subreg.
+
 2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR tree-optimization/26939

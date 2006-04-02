@@ -1945,9 +1945,12 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[start],
 					  inner, bytepos);
-	      emit_move_insn (dst, temp);
-	      done = true;
-	      start++;
+	      if (temp)
+		{
+		  emit_move_insn (dst, temp);
+		  done = true;
+		  start++;
+		}
 	    }
 	}
 
@@ -1961,9 +1964,12 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[finish - 1],
 					  inner, bytepos);
-	      emit_move_insn (dst, temp);
-	      done = true;
-	      finish--;
+	      if (temp)
+		{
+		  emit_move_insn (dst, temp);
+		  done = true;
+		  finish--;
+		}
 	    }
 	}
 
