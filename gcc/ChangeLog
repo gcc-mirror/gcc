@@ -1,3 +1,9 @@
+2006-04-01  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses) <OMP_CLAUSE_IF>: Call
+	gimple_boolify on the condition before calling gimplify_expr.
+
 2006-03-31  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/lib1funcs.asm: Rename abi_entry/abi_return macros
