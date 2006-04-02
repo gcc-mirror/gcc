@@ -783,7 +783,7 @@ chrec_merge (tree chrec1,
   if (chrec2 == chrec_not_analyzed_yet)
     return chrec1;
 
-  if (operand_equal_p (chrec1, chrec2, 0))
+  if (eq_evolutions_p (chrec1, chrec2))
     return chrec1;
 
   return chrec_dont_know;

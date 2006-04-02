@@ -1,5 +1,10 @@
 2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
 
+	PR tree-optimization/26939
+	* tree-chrec.c (chrec_merge): Use eq_evolutions_p.
+
+2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
+
 	* tree-scalar-evolution.c (add_to_evolution_1): Pass an extra argument
 	at_stmt.  Convert the type of operands before calling 
 	build_polynomial_chrec.
