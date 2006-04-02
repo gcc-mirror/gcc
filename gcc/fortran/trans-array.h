@@ -41,8 +41,8 @@ tree gfc_trans_auto_array_allocation (tree, gfc_symbol *, tree);
 tree gfc_trans_dummy_array_bias (gfc_symbol *, tree, tree);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 tree gfc_trans_g77_array (gfc_symbol *, tree);
-/* Generate code to deallocate the symbol 'sym', if it is allocated.  */
-tree gfc_trans_dealloc_allocated (gfc_symbol * sym);
+/* Generate code to deallocate an array, if it is allocated.  */
+tree gfc_trans_dealloc_allocated (tree);
 /* Add initialization for deferred arrays.  */
 tree gfc_trans_deferred_array (gfc_symbol *, tree);
 /* Generate an initializer for a static pointer or allocatable array.  */

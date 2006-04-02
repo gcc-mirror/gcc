@@ -33,7 +33,7 @@ contains
         integer, allocatable, intent(in)  :: x(:)
         integer, allocatable, intent(out) :: y(:)
         if (allocated(y)) call abort()
-        allocate (y(3))
+        call init(y)
         y = x
     end subroutine useit
 

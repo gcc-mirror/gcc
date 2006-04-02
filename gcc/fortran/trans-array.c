@@ -4308,20 +4308,16 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
 }
 
 
-/* Generate code to deallocate the symbol 'sym', if it is allocated.  */
+/* Generate code to deallocate an array, if it is allocated.  */
 
 tree
-gfc_trans_dealloc_allocated (gfc_symbol * sym)
+gfc_trans_dealloc_allocated (tree descriptor)
 { 
   tree tmp;
-  tree descriptor;
   tree deallocate;
   stmtblock_t block;
 
-  gcc_assert (sym->attr.allocatable);
-
   gfc_start_block (&block);
-  descriptor = sym->backend_decl;
   deallocate = gfc_array_deallocate (descriptor, null_pointer_node);
 
   tmp = gfc_conv_descriptor_data_get (descriptor);
@@ -4396,7 +4392,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
   /* Allocatable arrays need to be freed when they go out of scope.  */
   if (sym->attr.allocatable)
     {
-      tmp = gfc_trans_dealloc_allocated (sym);
+      tmp = gfc_trans_dealloc_allocated (sym->backend_decl);
       gfc_add_expr_to_block (&fnblock, tmp);
     }
 
