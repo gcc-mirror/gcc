@@ -1,3 +1,7 @@
+2006-04-03  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libjava.lang/Float_2.java: New file.
+
 2006-03-31  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* posix.cc (_Jv_platform_nanotime): Declare id with clockid_t.
