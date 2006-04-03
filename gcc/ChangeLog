@@ -1,3 +1,8 @@
+2006-04-03  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Avoid useless folding
+	and operand scanning in some common cases.
+
 2006-04-03  Paolo Bonzini  <bonzini@gnu.org>
 	    Dale Johannesen  <dalej@apple.com>
 
