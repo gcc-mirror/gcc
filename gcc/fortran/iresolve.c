@@ -1955,6 +1955,11 @@ gfc_resolve_transfer (gfc_expr * f, gfc_expr * source ATTRIBUTE_UNUSED,
     {
       f->rank = 1;
       f->value.function.name = transfer1;
+      if (size && gfc_is_constant_expr (size))
+	{
+	  f->shape = gfc_get_shape (1);
+	  mpz_init_set (f->shape[0], size->value.integer);
+	}
     }
 }
 

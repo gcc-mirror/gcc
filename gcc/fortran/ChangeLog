@@ -1,3 +1,17 @@
+2006-04-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26981
+	* trans.h : Prototype for gfc_conv_missing_dummy.
+	* trans-expr (gfc_conv_missing_dummy): New function
+	(gfc_conv_function_call): Call it and tidy up some of the code.
+	* trans-intrinsic (gfc_conv_intrinsic_function_args): The same.
+
+	PR fortran/26976
+	* array.c (gfc_array_dimen_size): If available, return shape[dimen].
+	* resolve.c (resolve_function): If available, use the argument shape for the
+	function expression.
+	* iresolve.c (gfc_resolve_transfer): Set shape[0] = size.
+
 2006-04-02  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* trans-array.c (gfc_trans_dealloc_allocated): Take a

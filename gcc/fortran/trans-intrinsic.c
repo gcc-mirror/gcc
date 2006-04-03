@@ -165,28 +165,42 @@ static tree
 gfc_conv_intrinsic_function_args (gfc_se * se, gfc_expr * expr)
 {
   gfc_actual_arglist *actual;
-  tree args;
+  gfc_expr *e;
+  gfc_intrinsic_arg  *formal;
   gfc_se argse;
+  tree args;
 
   args = NULL_TREE;
-  for (actual = expr->value.function.actual; actual; actual = actual->next)
+  formal = expr->value.function.isym->formal;
+
+  for (actual = expr->value.function.actual; actual; actual = actual->next,
+       formal = formal ? formal->next : NULL)
     {
+      e = actual->expr;
       /* Skip omitted optional arguments.  */
-      if (!actual->expr)
+      if (!e)
 	continue;
 
       /* Evaluate the parameter.  This will substitute scalarized
          references automatically.  */
       gfc_init_se (&argse, se);
 
-      if (actual->expr->ts.type == BT_CHARACTER)
+      if (e->ts.type == BT_CHARACTER)
 	{
-	  gfc_conv_expr (&argse, actual->expr);
+	  gfc_conv_expr (&argse, e);
 	  gfc_conv_string_parameter (&argse);
 	  args = gfc_chainon_list (args, argse.string_length);
 	}
       else
-        gfc_conv_expr_val (&argse, actual->expr);
+        gfc_conv_expr_val (&argse, e);
+
+      /* If an optional argument is itself an optional dummy argument,
+	 check its presence and substitute a null if absent.  */
+      if (e->expr_type ==EXPR_VARIABLE
+	    && e->symtree->n.sym->attr.optional
+	    && formal
+	    && formal->optional)
+	gfc_conv_missing_dummy (&argse, e, formal->ts);
 
       gfc_add_block_to_block (&se->pre, &argse.pre);
       gfc_add_block_to_block (&se->post, &argse.post);
