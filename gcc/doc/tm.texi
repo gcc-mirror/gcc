@@ -2404,12 +2404,22 @@ register, so @code{PREFERRED_RELOAD_CLASS} returns @code{NO_REGS} when
 into any kind of register, code generation will be better if
 @code{LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
 of using @code{PREFERRED_RELOAD_CLASS}.
+
+If an insn has pseudos in it after register allocation, reload will go
+through the alternatives and call repeatedly @code{PREFERRED_RELOAD_CLASS}
+to find the best one.  Returning @code{NO_REGS}, in this case, makes
+reload add a @code{!} in front of the constraint: the x86 back-end uses
+this feature to discourage usage of 387 registers when math is done in
+the SSE registers (and vice versa).
 @end defmac
 
 @defmac PREFERRED_OUTPUT_RELOAD_CLASS (@var{x}, @var{class})
 Like @code{PREFERRED_RELOAD_CLASS}, but for output reloads instead of
 input reloads.  If you don't define this macro, the default is to use
 @var{class}, unchanged.
+
+You can also use @code{PREFERRED_OUTPUT_RELOAD_CLASS} to discourage
+reload from using some alternatives, like @code{PREFERRED_RELOAD_CLASS}.
 @end defmac
 
 @defmac LIMIT_RELOAD_CLASS (@var{mode}, @var{class})

@@ -1,3 +1,27 @@
+2005-08-08  Paolo Bonzini  <bonzini@gnu.org>
+	    Dale Johannesen  <dalej@apple.com>
+
+	PR target/19653
+	* regclass.c (struct reg_pref): Update documentation.
+	(regclass): Set prefclass to NO_REGS if memory is the best option.
+	(record_reg_classes): Cope with a prefclass set to NO_REGS.
+	* reload.c (find_reloads): Take PREFERRED_OUTPUT_RELOAD_CLASS
+	into account.  For non-registers, equate an empty preferred
+	reload class to a `!' in the constraint; move the if clause to
+	do so after those that reject the insn.
+	(push_reload): Allow PREFERRED_*_RELOAD_CLASS to liberally
+	return NO_REGS.
+	(find_dummy_reload): Likewise.
+	* doc/tm.texi (Register Classes): Document what it means
+	if PREFERRED_*_RELOAD_CLASS return NO_REGS.
+	* config/i386/i386.c (ix86_preferred_reload_class): Force
+	using SSE registers (and return NO_REGS for floating-point
+	constants) if math is done with SSE.
+	(ix86_preferred_output_reload_class): New.
+	* config/i386/i386-protos.h (ix86_preferred_output_reload_class): New.
+	* config/i386/i386.h (PREFERRED_OUTPUT_RELOAD_CLASS): New.
+	* config/i386/i386.md: Remove # register preferences.
+
 2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR bootstrap/26992

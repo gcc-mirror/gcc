@@ -16361,14 +16361,27 @@ ix86_free_from_memory (enum machine_mode mode)
 enum reg_class
 ix86_preferred_reload_class (rtx x, enum reg_class class)
 {
+  enum machine_mode mode = GET_MODE (x);
+
   /* We're only allowed to return a subclass of CLASS.  Many of the 
      following checks fail for NO_REGS, so eliminate that early.  */
   if (class == NO_REGS)
     return NO_REGS;
 
   /* All classes can load zeros.  */
-  if (x == CONST0_RTX (GET_MODE (x)))
+  if (x == CONST0_RTX (mode))
     return class;
+
+  /* Force constants into memory if we are loading a (non-zero) constant into
+     an MMX or SSE register.  This is because there are no MMX/SSE instructions
+     to load from a constant.  */
+  if (CONSTANT_P (x)
+      && (MAYBE_MMX_CLASS_P (class) || MAYBE_SSE_CLASS_P (class)))
+    return NO_REGS;
+
+  /* Prefer SSE regs only, if we can use them for math.  */
+  if (TARGET_SSE_MATH && !TARGET_MIX_SSE_I387 && SSE_FLOAT_MODE_P (mode))
+    return SSE_CLASS_P (class) ? class : NO_REGS;
 
   /* Floating-point constants need more complex checks.  */
   if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
@@ -16381,8 +16394,6 @@ ix86_preferred_reload_class (rtx x, enum reg_class class)
 	 zero above.  We only want to wind up preferring 80387 registers if
 	 we plan on doing computation with them.  */
       if (TARGET_80387
-	  && (TARGET_MIX_SSE_I387 
-	      || !(TARGET_SSE_MATH && SSE_FLOAT_MODE_P (GET_MODE (x))))
 	  && standard_80387_constant_p (x))
 	{
 	  /* Limit class to non-sse.  */
@@ -16398,10 +16409,6 @@ ix86_preferred_reload_class (rtx x, enum reg_class class)
 
       return NO_REGS;
     }
-  if (MAYBE_MMX_CLASS_P (class) && CONSTANT_P (x))
-    return NO_REGS;
-  if (MAYBE_SSE_CLASS_P (class) && CONSTANT_P (x))
-    return NO_REGS;
 
   /* Generally when we see PLUS here, it's the function invariant
      (plus soft-fp const_int).  Which can only be computed into general
@@ -16418,6 +16425,33 @@ ix86_preferred_reload_class (rtx x, enum reg_class class)
       if (reg_class_subset_p (Q_REGS, class))
 	return Q_REGS;
       return NO_REGS;
+    }
+
+  return class;
+}
+
+/* Discourage putting floating-point values in SSE registers unless
+   SSE math is being used, and likewise for the 387 registers.  */
+enum reg_class
+ix86_preferred_output_reload_class (rtx x, enum reg_class class)
+{
+  enum machine_mode mode = GET_MODE (x);
+
+  /* Restrict the output reload class to the register bank that we are doing
+     math on.  If we would like not to return a subset of CLASS, reject this
+     alternative: if reload cannot do this, it will still use its choice.  */
+  mode = GET_MODE (x);
+  if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
+    return MAYBE_SSE_CLASS_P (class) ? SSE_REGS : NO_REGS;
+
+  if (TARGET_80387 && SCALAR_FLOAT_MODE_P (mode))
+    {
+      if (class == FP_TOP_SSE_REGS)
+	return FP_TOP_REG;
+      else if (class == FP_SECOND_SSE_REGS)
+	return FP_SECOND_REG;
+      else
+	return FLOAT_CLASS_P (class) ? class : NO_REGS;
     }
 
   return class;
