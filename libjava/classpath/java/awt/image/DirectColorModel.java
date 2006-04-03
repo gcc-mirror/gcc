@@ -167,7 +167,7 @@ public class DirectColorModel extends PackedColorModel
   private int extractAndNormalizeSample(int pixel, int component)
   {
     int value = extractAndScaleSample(pixel, component);
-    if (hasAlpha() && isAlphaPremultiplied())
+    if (hasAlpha() && isAlphaPremultiplied() && getAlpha(pixel) != 0)
       value = value*255/getAlpha(pixel);
     return value;
   }

@@ -1,3 +1,9 @@
+2006-04-03  Bernhard Rosenkraenzer  <bero@arklinux.org>
+
+	PR classpath/25924:
+	* java/awt/image/DirectColorModel.java (extractAndNormalizeSample):
+	Handle case where alpha==0.
+
 2006-03-16  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26706:
