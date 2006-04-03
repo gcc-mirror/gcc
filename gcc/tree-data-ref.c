@@ -3035,15 +3035,18 @@ end_analyze_subs_aa:
 static bool
 can_use_analyze_subscript_affine_affine (tree *chrec_a, tree *chrec_b)
 {
-  tree diff;
+  tree diff, type, left_a, left_b, right_b;
 
   if (chrec_contains_symbols (CHREC_RIGHT (*chrec_a))
       || chrec_contains_symbols (CHREC_RIGHT (*chrec_b)))
     /* FIXME: For the moment not handled.  Might be refined later.  */
     return false;
 
-  diff = chrec_fold_minus (chrec_type (*chrec_a), CHREC_LEFT (*chrec_a), 
-			   CHREC_LEFT (*chrec_b));
+  type = chrec_type (*chrec_a);
+  left_a = CHREC_LEFT (*chrec_a);
+  left_b = chrec_convert (type, CHREC_LEFT (*chrec_b), NULL_TREE);
+  diff = chrec_fold_minus (type, left_a, left_b);
+
   if (!evolution_function_is_constant_p (diff))
     return false;
 
@@ -3052,9 +3055,10 @@ can_use_analyze_subscript_affine_affine (tree *chrec_a, tree *chrec_b)
 
   *chrec_a = build_polynomial_chrec (CHREC_VARIABLE (*chrec_a), 
 				     diff, CHREC_RIGHT (*chrec_a));
+  right_b = chrec_convert (type, CHREC_RIGHT (*chrec_b), NULL_TREE);
   *chrec_b = build_polynomial_chrec (CHREC_VARIABLE (*chrec_b),
-				     integer_zero_node, 
-				     CHREC_RIGHT (*chrec_b));
+				     convert (type, integer_zero_node),
+				     right_b);
   return true;
 }
 

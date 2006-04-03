@@ -1,3 +1,13 @@
+2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR bootstrap/26992
+	* tree-scalar-evolution.c (compute_overall_effect_of_inner_loop,
+	chrec_is_positive, set_nb_iterations_in_loop): Use a variable for
+	the type of nb_iter.
+	(instantiate_parameters_1): Convert the operands before calling
+	chrec_fold_minus, chrec_fold_plus, or chrec_fold_multiply.
+	* tree-data-ref.c (can_use_analyze_subscript_affine_affine): Same.
+
 2006-04-02  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (dummy_object): Use build_int_cst instead of convert.
