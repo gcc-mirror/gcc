@@ -656,7 +656,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       if ((TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				 GET_MODE_BITSIZE (GET_MODE (op)))
 	   ? (num_sign_bit_copies (op, GET_MODE (op))
-	      >= (unsigned int) (GET_MODE_BITSIZE (mode) + 1))
+	      > (unsigned int) (GET_MODE_BITSIZE (GET_MODE (op))
+				- GET_MODE_BITSIZE (mode)))
 	   : truncated_to_mode (mode, op))
 	  && ! (GET_CODE (op) == LSHIFTRT
 		&& GET_CODE (XEXP (op, 0)) == MULT))
