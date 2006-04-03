@@ -4137,7 +4137,7 @@ array_size_for_constructor (tree val)
 {
   tree max_index, i;
   unsigned HOST_WIDE_INT cnt;
-  tree index, value;
+  tree index, value, tmp;
 
   /* This code used to attempt to handle string constants that are not
      arrays of single-bytes, but nothing else does, so there's no point in
@@ -4158,9 +4158,9 @@ array_size_for_constructor (tree val)
     return 0;
 
   /* Compute the total number of array elements.  */
-  i = size_binop (MINUS_EXPR, convert (sizetype, max_index),
-		  convert (sizetype,
-			   TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)))));
+  tmp = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)));
+  i = size_binop (MINUS_EXPR, fold_convert (sizetype, max_index),
+		  fold_convert (sizetype, tmp));
   i = size_binop (PLUS_EXPR, i, build_int_cst (sizetype, 1));
 
   /* Multiply by the array element unit size to find number of bytes.  */

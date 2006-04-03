@@ -2340,7 +2340,7 @@ gimple_boolify (tree expr)
     default:
       /* Other expressions that get here must have boolean values, but
 	 might need to be converted to the appropriate mode.  */
-      return convert (boolean_type_node, expr);
+      return fold_convert (boolean_type_node, expr);
     }
 }
 
@@ -3042,7 +3042,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	i = VEC_index (constructor_elt, elts, 1)->value;
 	if (r == NULL || i == NULL)
 	  {
-	    tree zero = convert (TREE_TYPE (type), integer_zero_node);
+	    tree zero = fold_convert (TREE_TYPE (type), integer_zero_node);
 	    if (r == NULL)
 	      r = zero;
 	    if (i == NULL)
@@ -3545,8 +3545,8 @@ gimplify_boolean_expr (tree *expr_p)
   tree type = TREE_TYPE (*expr_p);
 
   *expr_p = build3 (COND_EXPR, type, *expr_p,
-		    convert (type, boolean_true_node),
-		    convert (type, boolean_false_node));
+		    fold_convert (type, boolean_true_node),
+		    fold_convert (type, boolean_false_node));
 
   return GS_OK;
 }

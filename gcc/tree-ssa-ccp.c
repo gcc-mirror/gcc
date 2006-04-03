@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
@@ -1879,7 +1879,7 @@ maybe_fold_stmt_addition (tree expr)
 	      if (TREE_CODE (min_idx) != INTEGER_CST)
 		break;
 
-	      array_idx = convert (TREE_TYPE (min_idx), array_idx);
+	      array_idx = fold_convert (TREE_TYPE (min_idx), array_idx);
 	      if (!integer_zerop (min_idx))
 		array_idx = int_const_binop (MINUS_EXPR, array_idx,
 					     min_idx, 0);
@@ -1887,7 +1887,7 @@ maybe_fold_stmt_addition (tree expr)
 	}
 
       /* Convert the index to a byte offset.  */
-      array_idx = convert (sizetype, array_idx);
+      array_idx = fold_convert (sizetype, array_idx);
       array_idx = int_const_binop (MULT_EXPR, array_idx, elt_size, 0);
 
       /* Update the operands for the next round, or for folding.  */
