@@ -1,3 +1,9 @@
+2006-04-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/extend.texi (Other Builtins): Document that
+	__builtin_nan is a compile-time constant only when its argument
+	is valid.
+
 2006-04-03  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1) <TRUNCATE>: When

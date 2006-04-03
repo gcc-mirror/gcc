@@ -5734,8 +5734,9 @@ is at the least significant bit of the significand.  The number is
 truncated to fit the significand field provided.  The significand is
 forced to be a quiet NaN@.
 
-This function, if given a string literal, is evaluated early enough
-that it is considered a compile-time constant.
+This function, if given a string literal all of which would have been
+consumed by strtol, is evaluated early enough that it is considered a
+compile-time constant.
 @end deftypefn
 
 @deftypefn {Built-in Function} _Decimal32 __builtin_nand32 (const char *str)
