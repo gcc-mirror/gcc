@@ -277,7 +277,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
           && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
               != CODE_FOR_nothing))
         {
-          do_jump (convert (type, exp), if_false_label, if_true_label);
+          do_jump (fold_convert (type, exp), if_false_label, if_true_label);
           break;
         }
       goto normal;
@@ -336,7 +336,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
             && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
 		!= CODE_FOR_nothing))
           {
-            do_jump (convert (type, exp), if_false_label, if_true_label);
+            do_jump (fold_convert (type, exp), if_false_label, if_true_label);
             break;
           }
         goto normal;

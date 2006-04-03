@@ -4295,7 +4295,7 @@ build_va_arg_indirect_ref (tree addr)
 static tree
 dummy_object (tree type)
 {
-  tree t = convert (build_pointer_type (type), null_pointer_node);
+  tree t = build_int_cst (build_pointer_type (type), 0);
   return build1 (INDIRECT_REF, type, t);
 }
 

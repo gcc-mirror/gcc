@@ -1,5 +1,18 @@
 2006-04-02  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (dummy_object): Use build_int_cst instead of convert.
+	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Use fold_convert
+	instead of convert.
+	* dojump.c (do_jump): Likewise.
+	* expr.h (ADD_PARM_SIZE, SUB_PARM_SIZE, ARGS_SIZE_TREE): Likewise.
+	* gimplify.c (gimple_boolify, gimplify_init_constructor,
+	gimplify_boolean_expr): Likewise.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* varasm.c (array_size_for_constructor): Likewise.
+	* tree-object-size.c (compute_object_offset): Likewise.
+
+2006-04-02  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/26977
 	* expr.c (emit_group_store): Check whether simplify_gen_subreg returns
 	NULL_RTX, indicating it couldn't create a valid paradoxical subreg.

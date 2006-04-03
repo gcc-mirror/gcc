@@ -1,6 +1,7 @@
 /* Emit RTL for the GCC expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1596,8 +1597,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 				     index, low_bound);
 
 	      off_tree = size_binop (PLUS_EXPR,
-				     size_binop (MULT_EXPR, convert (sizetype,
-								     index),
+				     size_binop (MULT_EXPR,
+						 fold_convert (sizetype,
+							       index),
 						 unit_size),
 				     off_tree);
 	      t2 = TREE_OPERAND (t2, 0);
