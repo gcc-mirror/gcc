@@ -2155,10 +2155,46 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	      fprintf (dump_file, "\n");
 	    }
 
-	  /* Propagate, fold and update the statement.  Note this may
-	     expose new const/copy propagation opportunities as well
-	     collapse control statements.  */
+	  /* Propagate the RHS into this use of the LHS.  */
 	  propagate_value (use_p, rhs);
+
+	  /* Special cases to avoid useless calls into the folding
+	     routines, operand scanning, etc.
+
+	     First, propagation into a PHI may cause the PHI to become
+	     a degenerate, so mark the PHI as interesting.  No other
+	     actions are necessary.
+
+	     Second, if we're propagating a virtual operand and the
+	     propagation does not change the underlying _DECL node for
+	     the virtual operand, then no further actions are necessary.  */
+	  if (TREE_CODE (use_stmt) == PHI_NODE
+	      || (! is_gimple_reg (lhs)
+		  && TREE_CODE (rhs) == SSA_NAME
+		  && SSA_NAME_VAR (lhs) == SSA_NAME_VAR (rhs)))
+	    {
+	      /* Dump details.  */
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "    Updated statement:");
+		  print_generic_expr (dump_file, use_stmt, dump_flags);
+		  fprintf (dump_file, "\n");
+		}
+
+	      /* Propagation into a PHI may expose new degenerate PHIs,
+		 so mark the result of the PHI as interesting.  */
+	      if (TREE_CODE (use_stmt) == PHI_NODE)
+		{
+		  tree result = get_lhs_or_phi_result (use_stmt);
+		  bitmap_set_bit (interesting_names, SSA_NAME_VERSION (result));
+		}
+	      continue;
+	    }
+
+	  /* From this point onward we are propagating into a 
+	     real statement.  Folding may (or may not) be possible,
+	     we may expose new operands, expose dead EH edges,
+	     etc.  */
 	  fold_stmt_inplace (use_stmt);
 
 	  /* Sometimes propagation can expose new operands to the
@@ -2189,13 +2225,12 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 		fprintf (dump_file, "  Flagged to clear EH edges.\n");
 	    }
 
-	  /* Propagation may expose new degenerate PHIs or
-	     trivial copy/constant propagation opportunities.  */
-	  if (TREE_CODE (use_stmt) == PHI_NODE
-	      || (TREE_CODE (use_stmt) == MODIFY_EXPR
-		  && TREE_CODE (TREE_OPERAND (use_stmt, 0)) == SSA_NAME
-		  && (TREE_CODE (TREE_OPERAND (use_stmt, 1)) == SSA_NAME
-		      || is_gimple_min_invariant (TREE_OPERAND (use_stmt, 1)))))
+	  /* Propagation may expose new trivial copy/constant propagation
+	     opportunities.  */
+	  if (TREE_CODE (use_stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (use_stmt, 0)) == SSA_NAME
+	      && (TREE_CODE (TREE_OPERAND (use_stmt, 1)) == SSA_NAME
+		  || is_gimple_min_invariant (TREE_OPERAND (use_stmt, 1))))
 	    {
 	      tree result = get_lhs_or_phi_result (use_stmt);
 	      bitmap_set_bit (interesting_names, SSA_NAME_VERSION (result));
