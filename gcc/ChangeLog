@@ -1,3 +1,19 @@
+2006-04-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/26830
+	* tree-cfg.c (tree_duplicate_sese_region): Do not update SSA.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Count successfully duplicated
+	headers and, if there was any, update SSA at the end.
+        
+	Backport from mainline:
+	2006-03-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-ssa-copy.c (copy_prop_visit_assignment): Do not check loop depth.
+	(copy_prop_visit_stmt): Remove write-only variable ann.
+	(init_copy_prop): Check variable loop depth here.  Do not simulate
+	memory-tag and virtual operand PHIs except for store copy prop.
+
+
 2006-03-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/25741

@@ -131,6 +131,7 @@ copy_loop_headers (void)
   basic_block *bbs, *copied_bbs;
   unsigned n_bbs;
   unsigned bbs_size;
+  bool copied_p;
 
   loops = loop_optimizer_init (dump_file);
   if (!loops)
@@ -148,6 +149,7 @@ copy_loop_headers (void)
   copied_bbs = xmalloc (sizeof (basic_block) * n_basic_blocks);
   bbs_size = n_basic_blocks;
 
+  copied_p = 0;
   for (i = 1; i < loops->num; i++)
     {
       /* Copy at most 20 insns.  */
@@ -201,7 +203,9 @@ copy_loop_headers (void)
 
       entry = loop_preheader_edge (loop);
 
-      if (!tree_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
+      if (tree_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
+	copied_p = true;
+      else
 	{
 	  fprintf (dump_file, "Duplication failed.\n");
 	  continue;
@@ -212,6 +216,9 @@ copy_loop_headers (void)
       loop_split_edge_with (loop_preheader_edge (loop), NULL);
       loop_split_edge_with (loop_latch_edge (loop), NULL);
     }
+
+  if (copied_p)
+    update_ssa (TODO_update_ssa);
 
   free (bbs);
   free (copied_bbs);

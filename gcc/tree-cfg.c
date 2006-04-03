@@ -4304,10 +4304,10 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region)
    important exit edge EXIT.  By important we mean that no SSA name defined
    inside region is live over the other exit edges of the region.  All entry
    edges to the region must go to ENTRY->dest.  The edge ENTRY is redirected
-   to the duplicate of the region.  SSA form, dominance and loop information
-   is updated.  The new basic blocks are stored to REGION_COPY in the same
-   order as they had in REGION, provided that REGION_COPY is not NULL.
-   The function returns false if it is unable to copy the region,
+   to the duplicate of the region.  SSA form is not updated, but dominance
+   and loop information is.  The new basic blocks are stored to REGION_COPY
+   in the same order as they had in REGION, provided that REGION_COPY is not
+   NULL.  The function returns false if it is unable to copy the region,
    true otherwise.  */
 
 bool
@@ -4367,7 +4367,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
       free_region_copy = true;
     }
 
-  gcc_assert (!need_ssa_update_p ());
+  /* gcc_assert (!need_ssa_update_p ()); */
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
@@ -4436,9 +4436,6 @@ tree_duplicate_sese_region (edge entry, edge exit,
 
   /* Add the other PHI node arguments.  */
   add_phi_args_after_copy (region_copy, n_region);
-
-  /* Update the SSA web.  */
-  update_ssa (TODO_update_ssa);
 
   if (free_region_copy)
     free (region_copy);
