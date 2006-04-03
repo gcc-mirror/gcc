@@ -3058,8 +3058,8 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) $(SYSTEM_H) \
 	  $(DRIVER_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
-unprotoize.o: protoize.c $(srcdir)/../include/getopt.h \
-   $(CONFIG_H) $(SYSTEM_H) Makefile version.h
+unprotoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) \
+    $(SYSTEM_H) coretypes.h $(TM_H) Makefile version.h cppdefault.h intl.h
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c -DUNPROTOIZE $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
@@ -3171,8 +3171,8 @@ install-gcc-tooldir:
 macro_list: s-macro_list; @true
 s-macro_list : $(GCC_PASSES) 
 	echo | $(GCC_FOR_TARGET) -E -dM - | \
-	  sed -n 's/^#define \([^_][a-zA-Z0-9_]*\).*/\1/p ; \
-		s/^#define \(_[^_A-Z][a-zA-Z0-9_]*\).*/\1/p' | \
+	  sed -n -e 's/^#define \([^_][a-zA-Z0-9_]*\).*/\1/p' \
+		 -e 's/^#define \(_[^_A-Z][a-zA-Z0-9_]*\).*/\1/p' | \
 	  sort -u > tmp-macro_list
 	$(SHELL) $(srcdir)/../move-if-change tmp-macro_list macro_list
 	$(STAMP) s-macro_list
