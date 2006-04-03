@@ -1,3 +1,15 @@
+2006-04-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26981
+	* gfortran.dg/missing_optional_dummy_1.f90: New test.
+
+	PR fortran/26976
+	* gfortran.dg/compliant_elemental_intrinsics_1.f90: New test.
+	* gfortran.dg/initialization_1.f90: Make assignment compliant.
+	* gfortran.dg/transfer_array_intrinsic_1.f90: Simplify.
+	* gfortran.dg/transfer_array_intrinsic_2.f90: Make assignments compliant and detect
+	bigendian-ness.
+
 2006-04-02  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* gfortran.dg/allocatable_dummy_1.f90: Also check that allocatable

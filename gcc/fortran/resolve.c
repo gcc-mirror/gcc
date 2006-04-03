@@ -1205,6 +1205,7 @@ resolve_function (gfc_expr * expr)
   const char *name;
   try t;
   int temp;
+  int i;
 
   sym = NULL;
   if (expr->symtree)
@@ -1304,6 +1305,12 @@ resolve_function (gfc_expr * expr)
 	  if (arg->expr != NULL && arg->expr->rank > 0)
 	    {
 	      expr->rank = arg->expr->rank;
+	      if (!expr->shape && arg->expr->shape)
+		{
+		  expr->shape = gfc_get_shape (expr->rank);
+		  for (i = 0; i < expr->rank; i++)
+		    mpz_init_set (expr->shape[i], arg->expr->shape[i]);
+	        }
 	      break;
 	    }
 	}
