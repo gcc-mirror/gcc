@@ -1,3 +1,7 @@
+2006-04-04  Matthias Klose  <doko@debian.org>
+
+	* Makefile.in (unprotoize.o): Same dependencies as for protoize.o.
+
 2006-04-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/extend.texi (Other Builtins): Document that
