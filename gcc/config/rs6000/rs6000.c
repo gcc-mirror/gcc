@@ -2004,11 +2004,12 @@ int
 num_insns_constant_wide (HOST_WIDE_INT value)
 {
   /* signed constant loadable with {cal|addi} */
-  if (satisfies_constraint_I (GEN_INT (value)))
+  if ((unsigned HOST_WIDE_INT) (value + 0x8000) < 0x10000)
     return 1;
 
   /* constant loadable with {cau|addis} */
-  else if (satisfies_constraint_L (GEN_INT (value)))
+  else if ((value & 0xffff) == 0
+	   && (value >> 31 == -1 || value >> 31 == 0))
     return 1;
 
 #if HOST_BITS_PER_WIDE_INT == 64
