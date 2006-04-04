@@ -1,3 +1,8 @@
+2006-04-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Add Richard Henderson as libgomp maintainer.
+	Rearrange the entries of other libraries to have them in one place.
+
 2006-03-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Remove myself. 
