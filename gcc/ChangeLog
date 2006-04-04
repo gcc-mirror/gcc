@@ -1,3 +1,12 @@
+2006-04-04  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_sprintf): Use fold_convert instead of
+	convert in the middle-end.
+	* expr.c (store_expr, store_constructor, get_inner_reference,
+	expand_expr_real_1, string_constant, try_casesi, try_tablejump):
+	Likewise.
+	* tree.c (build_range_type): Likewise.
+
 2006-04-04  Tom Tromey  <tromey@redhat.com>
 
 	* doc/install.texi (Prerequisites): Mention jar.
