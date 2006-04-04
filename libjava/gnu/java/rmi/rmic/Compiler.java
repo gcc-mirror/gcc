@@ -82,11 +82,26 @@ public abstract class Compiler
     this.dest = dest;
   }
 
+   /** Get the classpath for compilation.  */
+   public String getClasspath ()
+   {
+     return classpath;
+   }
+
+  /** Set the classpath for compilation.  */
+  public void setClasspath (String classpath)
+  {
+    this.classpath = classpath;
+  }
+
   /** Compile the given file.  Throws exception on error.  */
   public abstract void compile (String name) throws Exception;
 
   /** The destination directory, or null if none set.  */
   protected String dest;
+
+  /** The classpath directory, or null if none set.  */
+  private String classpath;
 
   /** Class prefix used when trying to find instance.  */
   private static final String classPrefix = "gnu.java.rmi.rmic.Compile_";
