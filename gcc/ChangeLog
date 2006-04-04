@@ -1,3 +1,8 @@
+2006-04-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (num_insns_constant_wide): Change
+	satisfies_constraint_[IL] to explicit tests on value.
+
 2006-04-04  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-scalar-evolution.c (compute_overall_effect_of_inner_loop,
