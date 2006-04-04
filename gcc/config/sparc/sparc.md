@@ -7094,8 +7094,13 @@
   DONE;
 })
 
-;; This is a bit of a hack.  We're incrementing a fixed register (%i7),
-;; and parts of the compiler don't want to believe that the add is needed.
+;; Adjust the return address conditionally. If the value of op1 is equal
+;; to all zero then adjust the return address i.e. op0 = op0 + 4.
+;; This is technically *half* the check required by the 32-bit SPARC
+;; psABI. This check only ensures that an "unimp" insn was written by
+;; the caller, but doesn't check to see if the expected size matches
+;; (this is encoded in the 12 lower bits). This check is obsolete and
+;; only used by the above code "untyped_return".
 
 (define_insn "update_return"
   [(unspec:SI [(match_operand:SI 0 "register_operand" "r")

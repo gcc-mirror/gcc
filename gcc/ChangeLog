@@ -1,3 +1,16 @@
+2006-04-04  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* doc/tm.texi (TARGET_STRUCT_VALUE_RTX): Document
+	new value 2 for incoming.
+	* function.c (expand_function_start): Call struct_value_rtx
+	with incoming as 2.
+	* config/sparc/sparc.md: Comment updated_return.
+	* config/sparc/sparc.opt: Add -mstd-struct-return option.
+	* config/sparc/sparc.c (sparc_struct_value_rtx): Use standard
+	struct return if sparc_std_struct_return and incoming is 2.
+	(print_operand): Do not adjust return if
+	sparc_std_struct_return.
+
 2006-04-04  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_sprintf): Use fold_convert instead of

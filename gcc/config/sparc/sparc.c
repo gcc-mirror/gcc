@@ -5425,7 +5425,7 @@ sparc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
    Return where to find the structure return value address.  */
 
 static rtx
-sparc_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED, int incoming)
+sparc_struct_value_rtx (tree fndecl, int incoming)
 {
   if (TARGET_ARCH64)
     return 0;
@@ -5439,6 +5439,46 @@ sparc_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED, int incoming)
       else
 	mem = gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx,
 						 STRUCT_VALUE_OFFSET));
+
+      /* Only follow the SPARC ABI for fixed-size structure returns. 
+         Variable size structure returns are handled per the normal 
+         procedures in GCC. This is enabled by -mstd-struct-return */
+      if (incoming == 2 
+	  && sparc_std_struct_return
+	  && TYPE_SIZE_UNIT (TREE_TYPE (fndecl))
+	  && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (fndecl))) == INTEGER_CST)
+	{
+	  /* We must check and adjust the return address, as it is
+	     optional as to whether the return object is really
+	     provided.  */
+	  rtx ret_rtx = gen_rtx_REG (Pmode, 31);
+	  rtx scratch = gen_reg_rtx (SImode);
+	  rtx endlab = gen_label_rtx (); 
+
+	  /* Calculate the return object size */
+	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (fndecl));
+	  rtx size_rtx = GEN_INT (TREE_INT_CST_LOW (size) & 0xfff);
+	  /* Construct a temporary return value */
+	  rtx temp_val = assign_stack_local (Pmode, TREE_INT_CST_LOW (size), 0);
+
+	  /* Implement SPARC 32-bit psABI callee returns struck checking
+	     requirements: 
+	    
+	      Fetch the instruction where we will return to and see if
+	     it's an unimp instruction (the most significant 10 bits
+	     will be zero).  */
+	  emit_move_insn (scratch, gen_rtx_MEM (SImode,
+						plus_constant (ret_rtx, 8)));
+	  /* Assume the size is valid and pre-adjust */
+	  emit_insn (gen_add3_insn (ret_rtx, ret_rtx, GEN_INT (4)));
+	  emit_cmp_and_jump_insns (scratch, size_rtx, EQ, const0_rtx, SImode, 0, endlab);
+	  emit_insn (gen_sub3_insn (ret_rtx, ret_rtx, GEN_INT (4)));
+	  /* Assign stack temp: 
+	     Write the address of the memory pointed to by temp_val into
+	     the memory pointed to by mem */
+	  emit_move_insn (mem, XEXP (temp_val, 0));
+	  emit_label (endlab);
+	}
 
       set_mem_alias_set (mem, struct_value_alias_set);
       return mem;
@@ -6639,9 +6679,14 @@ print_operand (FILE *file, rtx x, int code)
 	 so we have to account for it.  This insn is used in the 32-bit ABI
 	 when calling a function that returns a non zero-sized structure. The
 	 64-bit ABI doesn't have it.  Be careful to have this test be the same
-	 as that used on the call.  */
+	 as that used on the call. The exception here is that when 
+	 sparc_std_struct_return is enabled, the psABI is followed exactly
+	 and the adjustment is made by the code in sparc_struct_value_rtx. 
+	 The call emitted is the same when sparc_std_struct_return is 
+	 present. */
      if (! TARGET_ARCH64
 	 && current_function_returns_struct
+	 && ! sparc_std_struct_return
 	 && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))
 	     == INTEGER_CST)
 	 && ! integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl))))
