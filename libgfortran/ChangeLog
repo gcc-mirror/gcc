@@ -1,3 +1,8 @@
+2006-04-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/write.c (output_float): Update condition to not error when
+	decimal precision in format specifier is zero.
+
 2006-04-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* config/fpu-387.h: Use previously added SSE code in all

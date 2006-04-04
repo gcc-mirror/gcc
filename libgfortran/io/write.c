@@ -473,7 +473,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
            ndigits - 1, value);
 
   /* Check the resulting string has punctuation in the correct places.  */
-  if (buffer[2] != '.' || buffer[ndigits + 2] != 'e')
+  if (d != 0 && (buffer[2] != '.' || buffer[ndigits + 2] != 'e'))
       internal_error (&dtp->common, "printf is broken");
 
   /* Read the exponent back in.  */
