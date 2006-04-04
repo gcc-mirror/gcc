@@ -2329,8 +2329,9 @@ inline assembly.
 
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} attribute
-The @code{visibility} attribute on ELF targets causes the declaration
-to be emitted with default, hidden, protected or internal visibility.
+This attribute affects the linkage of the declaration to which it is attached.
+There are four supported @var{visibility_type} values: default,
+hidden, protected or internal visibility.
 
 @smallexample
 void __attribute__ ((visibility ("protected")))
@@ -2338,40 +2339,75 @@ f () @{ /* @r{Do something.} */; @}
 int i __attribute__ ((visibility ("hidden")));
 @end smallexample
 
-See the ELF gABI for complete details, but the short story is:
+The possible values of @var{visibility_type} correspond to the
+visibility settings in the ELF gABI.
 
 @table @dfn
 @c keep this list of visibilities in alphabetical order.
 
 @item default
-Default visibility is the normal case for ELF@.  This value is
-available for the visibility attribute to override other options
-that may change the assumed visibility of symbols.
+Default visibility is the normal case for the object file format.
+This value is available for the visibility attribute to override other
+options that may change the assumed visibility of entities.
+
+On ELF, default visibility means that the declaration is visible to other
+modules and, in shared libraries, means that the declared entity may be
+overridden.
+
+On Darwin, default visibility means that the declaration is visible to
+other modules.
+
+Default visibility corresponds to ``external linkage'' in the language.
 
 @item hidden
-Hidden visibility indicates that the symbol will not be placed into
-the dynamic symbol table, so no other @dfn{module} (executable or
-shared library) can reference it directly.
+Hidden visibility indicates that the entity declared will have a new
+form of linkage, which we'll call ``hidden linkage''.  Two
+declarations of an object with hidden linkage refer to the same object
+if they are in the same shared object.
 
 @item internal
 Internal visibility is like hidden visibility, but with additional
-processor specific semantics.  Unless otherwise specified by the psABI,
-GCC defines internal visibility to mean that the function is @emph{never}
-called from another module.  Note that hidden symbols, while they cannot
-be referenced directly by other modules, can be referenced indirectly via
-function pointers.  By indicating that a symbol cannot be called from
-outside the module, GCC may for instance omit the load of a PIC register
-since it is known that the calling function loaded the correct value.
+processor specific semantics.  Unless otherwise specified by the
+psABI, GCC defines internal visibility to mean that a function is
+@emph{never} called from another module.  Compare this with hidden
+functions which, while they cannot be referenced directly by other
+modules, can be referenced indirectly via function pointers.  By
+indicating that a function cannot be called from outside the module,
+GCC may for instance omit the load of a PIC register since it is known
+that the calling function loaded the correct value.
 
 @item protected
-Protected visibility indicates that the symbol will be placed in the
-dynamic symbol table, but that references within the defining module
-will bind to the local symbol.  That is, the symbol cannot be overridden
-by another module.
+Protected visibility is like default visibility except that it
+indicates that references within the defining module will bind to the
+definition in that module.  That is, the declared entity cannot be
+overridden by another module.
 
 @end table
 
-Not all ELF targets support this attribute.
+All visibilities are supported on many, but not all, ELF targets
+(supported when the assembler supports the @samp{.visibility}
+pseudo-op).  Default visibility is supported everywhere.  Hidden
+visibility is supported on Darwin targets.
+
+The visibility attribute should be applied only to declarations which
+would otherwise have external linkage.  The attribute should be applied
+consistently, so that the same entity should not be declared with
+different settings of the attribute.
+
+In C++, the visibility attribute applies to types as well as functions
+and objects, because in C++ types have linkage.  There are some bugs
+in the C++ support for this flag, for example a template which has a
+hidden type as a parameter is not properly hidden.
+@c bugzilla 26612
+
+In C++, you can mark member functions and static member variables of a
+class with the visibility attribute.  This is useful if if you know a
+particular method or static member variable should only be used from
+one shared object; then you can mark it hidden while the rest of the
+class has default visibility.  Care must be taken to avoid breaking
+the One Definition Rule; for example, it is not useful to mark a
+method which is defined inside a class definition as hidden without
+marking the whole class as hidden.
 
 @item warn_unused_result
 @cindex @code{warn_unused_result} attribute
