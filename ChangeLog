@@ -1,3 +1,9 @@
+2006-04-04  Alex Deiter  <tiamat@komi.mts.ru>
+
+	PR bootstrap/27023
+	* Makefile.tpl (multilib.out): Remove trailing backslash.
+	* Makefile.in: Regenerate.
+
 2006-03-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Remove myself. 
