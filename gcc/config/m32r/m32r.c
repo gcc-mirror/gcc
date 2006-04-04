@@ -1872,8 +1872,16 @@ m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	  else if (reg_offset < 32768)
 	    fprintf (file, "\tadd3 %s,%s,%s%d\n",
 		     sp_str, sp_str, IMMEDIATE_PREFIX, reg_offset);
-	  else
+	  else if (reg_offset <= 0xffffff)
 	    fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n",
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset,
+		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
+	  else
+	    fprintf (file, "\tseth %s,%shigh(%d)\n\tor3 %s,%s,%slow(%d)\n\tadd %s,%s\n",
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset,
+		     reg_names[PROLOGUE_TMP_REGNUM],
 		     reg_names[PROLOGUE_TMP_REGNUM],
 		     IMMEDIATE_PREFIX, reg_offset,
 		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
@@ -1887,10 +1895,20 @@ m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	  else if (reg_offset < 32768)
 	    fprintf (file, "\tadd3 %s,%s,%s%d\n",
 		     sp_str, fp_str, IMMEDIATE_PREFIX, reg_offset);
-	  else
-	    fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n",
+	  else if (reg_offset <= 0xffffff)
+	    fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n\tmv %s,%s\n",
 		     reg_names[PROLOGUE_TMP_REGNUM],
 		     IMMEDIATE_PREFIX, reg_offset,
+		     reg_names[PROLOGUE_TMP_REGNUM], fp_str,
+		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
+	  else
+	    fprintf (file, "\tseth %s,%shigh(%d)\nor3 %s,%s,%slow(%d)\n\tadd %s,%s\n\tmv %s,%s\n",
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset,
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset,
+		     reg_names[PROLOGUE_TMP_REGNUM], fp_str,
 		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 	}
       else
@@ -1912,8 +1930,26 @@ m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
       /* Remove varargs area if present.  */
       if (current_frame_info.pretend_size != 0)
-	fprintf (file, "\taddi %s,%s%d\n",
-		 sp_str, IMMEDIATE_PREFIX, current_frame_info.pretend_size);
+        if (current_frame_info.pretend_size < 128)
+	  fprintf (file, "\taddi %s,%s%d\n",
+		     sp_str, IMMEDIATE_PREFIX, current_frame_info.pretend_size);
+        else if (current_frame_info.pretend_size < 32768)
+	  fprintf (file, "\tadd3 %s,%s,%s%d\n",
+		   sp_str, sp_str, IMMEDIATE_PREFIX,
+		   current_frame_info.pretend_size);
+        else if (current_frame_info.pretend_size <= 0xffffff)
+	  fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n",
+		   reg_names[PROLOGUE_TMP_REGNUM],
+		   IMMEDIATE_PREFIX, current_frame_info.pretend_size,
+		   sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
+        else
+	  fprintf (file, "\tseth %s,%shigh(%d)\n\tor3 %s,%s,%slow(%d)\n\tadd %s,%s\n",
+		   reg_names[PROLOGUE_TMP_REGNUM],
+		   IMMEDIATE_PREFIX, current_frame_info.pretend_size,
+		   reg_names[PROLOGUE_TMP_REGNUM],
+		   reg_names[PROLOGUE_TMP_REGNUM],
+		   IMMEDIATE_PREFIX, current_frame_info.pretend_size,
+		   sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 	
       /* Emit the return instruction.  */
       if (M32R_INTERRUPT_P (fn_type))

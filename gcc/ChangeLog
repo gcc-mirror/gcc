@@ -1,3 +1,11 @@
+2006-04-04  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	PR target/26775
+	PR target/26776
+	* config/m32r/m32r.c (m32r_output_function_epilogue): Case for
+	a large stack frame at epilogue. Use fp to recover a stack
+	pointer for alloca function at epilogue.
+
 2006-03-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/25741

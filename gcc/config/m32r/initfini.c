@@ -72,7 +72,7 @@ static void __do_global_dtors (void)
 asm ("__do_global_dtors") __attribute__ ((used, section (".text")));
 
 static void
-__do_global_dtors ()
+__do_global_dtors (void)
 {
   func_ptr *p;
 
@@ -137,7 +137,7 @@ static void __do_global_ctors (void)
 asm ("__do_global_ctors") __attribute__ ((used, section (".text")));
 
 static void
-__do_global_ctors ()
+__do_global_ctors (void)
 {
   func_ptr *p;
 
