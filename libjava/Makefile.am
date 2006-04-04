@@ -87,7 +87,6 @@ bin_SCRIPTS = addr2name.awk
 ##
 
 GCJH = @GCJH@
-ZIP = @ZIP@
 
 ## The compiler with whatever flags we want for both -c and -C
 ## compiles.
@@ -322,10 +321,7 @@ $(propertyo_files): %.lo: classpath/resource/%
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,$(@:.lo=)
 
 libgcj-$(gcc_version).jar:
-	jardir=`dirname $(ZIP)`; \
-	jardir=`cd $$jardir && pwd`; \
-	jarname=`basename $(ZIP)`; \
-	cd classpath/lib; $$jardir/$$jarname -cfM \
+	cd classpath/lib; $(JAR) -cfM \
 	    ../../libgcj-$(gcc_version).jar gnu java javax org
 
 CLEANFILES = libgcj-$(gcc_version).jar \
@@ -883,9 +879,10 @@ src.zip:
 	    echo $$file; \
 	  done ); \
 	) | \
-## Many of the above circumlocutions are because ZIP will most likely
-## be a relative path to fastjar.
-	$(ZIP) -cfM@ $$here/src.zip
+## Many of the above circumlocutions were because ZIP used to be a
+## relative path to fastjar.  It didn't seem worthwhile to change the
+## code when we moved to an external jar.
+	$(JAR) -cfM@ $$here/src.zip
 ## Override GNU Classpath sources with libgcj replacements.
 	here=`pwd`; \
 	( \
@@ -897,7 +894,7 @@ src.zip:
 	    echo $$file; \
 	  done ); \
 	) | \
-	$(ZIP) -ufM@ $$here/src.zip
+	$(JAR) -ufM@ $$here/src.zip
 
 ## We use a variable for this in case the user wants to override it.
 sourcesdir = $(jardir)
