@@ -1384,6 +1384,26 @@ There are several @code{TODO} flags that control the behavior of
       renaming are processed@.
 @end itemize
 
+@subsection Preserving the virtual SSA form
+@cindex preserving virtual SSA form
+
+The virtual SSA form is harder to preserve than the non-virtual SSA form
+mainly because the set of virtual operands for a statement may change at
+what some would consider unexpected times.  In general, any time you
+have modified a statement that has virtual operands, you should verify
+whether the list of virtual operands has changed, and if so, mark the
+newly exposed symbols by callnig @code{mark_new_vars_to_rename}.
+
+There is one additional caveat to preserving virtual SSA form.  When the
+entire set of virtual operands may be eliminated due to better
+disambiguation, a bare SMT will be added to the list of virtual
+operands, to signify the non-visible aliases that the are still being
+referenced.  If the set of bare SMT's may change,
+@code{TODO_update_smt_usage} should be added to the todo flags.
+
+With the current pruning code, this can only occur when constants are
+propagated into array references that were previously non-constant, or
+address expressions are propagated into their uses.
 
 @subsection Examining @code{SSA_NAME} nodes
 @cindex examining SSA_NAMEs
