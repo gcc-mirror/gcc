@@ -3057,7 +3057,7 @@ can_use_analyze_subscript_affine_affine (tree *chrec_a, tree *chrec_b)
 				     diff, CHREC_RIGHT (*chrec_a));
   right_b = chrec_convert (type, CHREC_RIGHT (*chrec_b), NULL_TREE);
   *chrec_b = build_polynomial_chrec (CHREC_VARIABLE (*chrec_b),
-				     convert (type, integer_zero_node),
+				     build_int_cst (type, 0),
 				     right_b);
   return true;
 }

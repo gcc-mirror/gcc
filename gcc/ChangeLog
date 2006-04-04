@@ -1,3 +1,11 @@
+2006-04-04  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-scalar-evolution.c (compute_overall_effect_of_inner_loop,
+	set_nb_iterations_in_loop): Use build_int_cst instead of
+	build_int_cst_type.
+	* tree-data-ref.c (can_use_analyze_subscript_affine_affine): Use
+	build_int_cst instead of convert.
+
 2006-04-04  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* doc/tm.texi (TARGET_STRUCT_VALUE_RTX): Document
