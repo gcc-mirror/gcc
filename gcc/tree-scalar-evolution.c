@@ -481,7 +481,7 @@ compute_overall_effect_of_inner_loop (struct loop *loop, tree evolution_fn)
 	      /* Number of iterations is off by one (the ssa name we
 		 analyze must be defined before the exit).  */
 	      nb_iter = chrec_fold_minus (type, nb_iter,
-					  build_int_cst_type (type, 1));
+					  build_int_cst (type, 1));
 	      
 	      /* evolution_fn is the evolution function in LOOP.  Get
 		 its value in the nb_iter-th iteration.  */
@@ -897,7 +897,7 @@ set_nb_iterations_in_loop (struct loop *loop,
 {
   tree type = chrec_type (res);
 
-  res = chrec_fold_plus (type, res, build_int_cst_type (type, 1));
+  res = chrec_fold_plus (type, res, build_int_cst (type, 1));
 
   /* FIXME HWI: However we want to store one iteration less than the
      count of the loop in order to be compatible with the other
