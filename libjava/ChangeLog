@@ -1,3 +1,15 @@
+2006-04-04  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/26990:
+	* prims.cc (_Jv_RunMain): Use exitNoChecksAccessor.
+	* gnu/java/lang/natMainThread.cc (call_main): Use
+	exitNoChecksAccessor.
+	* testsuite/libjava.lang/pr26990.out: New file.
+	* testsuite/libjava.lang/pr26990.java: New file.
+	* java/lang/Runtime.java (exitNoChecks): New method.
+	(exitNoChecksAccessor): Likewise.
+	(exit): Call exitNoChecks.
+
 2006-04-03  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

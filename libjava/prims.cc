@@ -1525,7 +1525,7 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
         ("Exception during runtime initialization"));
       t->printStackTrace();
       if (runtime)
-	runtime->exit (1);
+	java::lang::Runtime::exitNoChecksAccessor (1);
       // In case the runtime creation failed.
       ::exit (1);
     }
