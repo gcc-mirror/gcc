@@ -99,6 +99,9 @@ mcmodel=
 Target RejectNegative Joined Var(sparc_cmodel_string)
 Use given SPARC-V9 code model
 
+mstd-struct-return
+Target Report RejectNegative Var(sparc_std_struct_return)
+Enable strict 32-bit psABI struct return checking.
 
 Mask(LITTLE_ENDIAN)
 ;; Generate code for little-endian

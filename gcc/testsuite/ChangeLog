@@ -1,3 +1,7 @@
+2006-04-04  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* gcc.target/sparc/struct-ret-check.c: New test.
+
 2006-04-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/fmt_zero_digits.f90: New test for no error when

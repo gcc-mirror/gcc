@@ -4187,12 +4187,15 @@ On some architectures the place where the structure value address
 is found by the called function is not the same place that the
 caller put it.  This can be due to register windows, or it could
 be because the function prologue moves it to a different place.
-@var{incoming} is @code{true} when the location is needed in
-the context of the called function, and @code{false} in the context of
+@var{incoming} is @code{1} or @code{2} when the location is needed in
+the context of the called function, and @code{0} in the context of
 the caller.
 
-If @var{incoming} is @code{true} and the address is to be found on the
-stack, return a @code{mem} which refers to the frame pointer.
+If @var{incoming} is non-zero and the address is to be found on the
+stack, return a @code{mem} which refers to the frame pointer. If
+@var{incoming} is @code{2}, the result is being used to fetch the
+structure value address at the beginning of a function.  If you need 
+to emit adjusting code, you should do it at this point.
 @end deftypefn
 
 @defmac PCC_STATIC_STRUCT_RETURN

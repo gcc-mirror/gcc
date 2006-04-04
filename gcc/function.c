@@ -4120,7 +4120,7 @@ expand_function_start (tree subr)
       else
 #endif
 	{
-	  rtx sv = targetm.calls.struct_value_rtx (TREE_TYPE (subr), 1);
+	  rtx sv = targetm.calls.struct_value_rtx (TREE_TYPE (subr), 2);
 	  /* Expect to be passed the address of a place to store the value.
 	     If it is passed as an argument, assign_parms will take care of
 	     it.  */
