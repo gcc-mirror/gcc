@@ -146,9 +146,20 @@ public class Runtime
     SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkExit(status);
+    exitNoChecks(status);
+  }
 
+  // Accessor to avoid adding a vtable slot.
+  static void exitNoChecksAccessor(int status)
+  {
+    current.exitNoChecks(status);
+  }
+
+  // Private since we can't add a vtable slot in 4.1.x.
+  private void exitNoChecks(int status)
+  {
     if (runShutdownHooks())
-      halt(status);
+      exitInternal(status);
 
     // Someone else already called runShutdownHooks().
     // Make sure we are not/no longer in the shutdownHooks set.
@@ -171,7 +182,7 @@ public class Runtime
     // while finalization for exit is going on and the status is non-zero
     // we halt immediately.
     if (status != 0)
-      halt(status);
+      exitInternal(status);
 
     while (true)
       try

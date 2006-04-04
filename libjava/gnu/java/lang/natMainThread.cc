@@ -57,6 +57,5 @@ gnu::java::lang::MainThread::call_main (void)
   _Jv_ThreadWait ();
 
   int status = (int) ::java::lang::ThreadGroup::had_uncaught_exception;
-  ::java::lang::Runtime *runtime = ::java::lang::Runtime::getRuntime ();
-  runtime->exit (status);
+  ::java::lang::Runtime::exitNoChecksAccessor (status);
 }
