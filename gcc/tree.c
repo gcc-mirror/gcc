@@ -5021,8 +5021,8 @@ build_range_type (tree type, tree lowval, tree highval)
   if (type == NULL_TREE)
     type = sizetype;
 
-  TYPE_MIN_VALUE (itype) = convert (type, lowval);
-  TYPE_MAX_VALUE (itype) = highval ? convert (type, highval) : NULL;
+  TYPE_MIN_VALUE (itype) = fold_convert (type, lowval);
+  TYPE_MAX_VALUE (itype) = highval ? fold_convert (type, highval) : NULL;
 
   TYPE_PRECISION (itype) = TYPE_PRECISION (type);
   TYPE_MODE (itype) = TYPE_MODE (type);

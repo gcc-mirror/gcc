@@ -4288,14 +4288,14 @@ store_expr (tree exp, rtx target, int call_param_p)
 	{
 	  if (TYPE_UNSIGNED (TREE_TYPE (exp))
 	      != SUBREG_PROMOTED_UNSIGNED_P (target))
-	    exp = convert
+	    exp = fold_convert
 	      (lang_hooks.types.signed_or_unsigned_type
 	       (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)), exp);
 
-	  exp = convert (lang_hooks.types.type_for_mode
-			 (GET_MODE (SUBREG_REG (target)),
-			  SUBREG_PROMOTED_UNSIGNED_P (target)),
-			 exp);
+	  exp = fold_convert (lang_hooks.types.type_for_mode
+				(GET_MODE (SUBREG_REG (target)),
+				 SUBREG_PROMOTED_UNSIGNED_P (target)),
+			      exp);
 
 	  inner_target = SUBREG_REG (target);
 	}
@@ -4963,13 +4963,13 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  {
 		    type = lang_hooks.types.type_for_size
 		      (BITS_PER_WORD, TYPE_UNSIGNED (type));
-		    value = convert (type, value);
+		    value = fold_convert (type, value);
 		  }
 		
 		if (BYTES_BIG_ENDIAN)
 		  value
 		   = fold_build2 (LSHIFT_EXPR, type, value,
-				   build_int_cst (NULL_TREE,
+				   build_int_cst (type,
 						  BITS_PER_WORD - bitsize));
 		bitsize = BITS_PER_WORD;
 		mode = word_mode;
@@ -5167,13 +5167,17 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    emit_label (loop_start);
 
 		    /* Assign value to element index.  */
-		    position
-		      = convert (ssizetype,
-				 fold_build2 (MINUS_EXPR, TREE_TYPE (index),
-					      index, TYPE_MIN_VALUE (domain)));
-		    position = size_binop (MULT_EXPR, position,
-					   convert (ssizetype,
-						    TYPE_SIZE_UNIT (elttype)));
+		    position =
+		      fold_convert (ssizetype,
+				    fold_build2 (MINUS_EXPR,
+						 TREE_TYPE (index),
+						 index,
+						 TYPE_MIN_VALUE (domain)));
+
+		    position =
+			size_binop (MULT_EXPR, position,
+				    fold_convert (ssizetype,
+						  TYPE_SIZE_UNIT (elttype)));
 		    
 		    pos_rtx = expand_normal (position);
 		    xtarget = offset_address (target, pos_rtx,
@@ -5217,9 +5221,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 						     index,
 						     TYPE_MIN_VALUE (domain)));
 		
-		position = size_binop (MULT_EXPR, index,
-				       convert (ssizetype,
-						TYPE_SIZE_UNIT (elttype)));
+		position =
+		  size_binop (MULT_EXPR, index,
+			      fold_convert (ssizetype,
+					    TYPE_SIZE_UNIT (elttype)));
 		xtarget = offset_address (target,
 					  expand_normal (position),
 					  highest_pow2_factor (position));
@@ -5672,7 +5677,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 
 	    offset = size_binop (PLUS_EXPR, offset,
 			         size_binop (MULT_EXPR,
-					     convert (sizetype, index),
+					     fold_convert (sizetype, index),
 					     unit_size));
 	  }
 	  break;
@@ -5711,7 +5716,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   /* If OFFSET is constant, see if we can return the whole thing as a
      constant bit position.  Otherwise, split it up.  */
   if (host_integerp (offset, 0)
-      && 0 != (tem = size_binop (MULT_EXPR, convert (bitsizetype, offset),
+      && 0 != (tem = size_binop (MULT_EXPR,
+				 fold_convert (bitsizetype, offset),
 				 bitsize_unit_node))
       && 0 != (tem = size_binop (PLUS_EXPR, tem, bit_offset))
       && host_integerp (tem, 0))
@@ -8500,14 +8506,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    && integer_onep (DECL_SIZE (TREE_OPERAND (TREE_OPERAND (rhs, 1), 1))))
 	  {
 	    rtx label = gen_label_rtx ();
-
+	    int value = TREE_CODE (rhs) == BIT_IOR_EXPR;
 	    do_jump (TREE_OPERAND (rhs, 1),
-		     TREE_CODE (rhs) == BIT_IOR_EXPR ? label : 0,
-		     TREE_CODE (rhs) == BIT_AND_EXPR ? label : 0);
-	    expand_assignment (lhs, convert (TREE_TYPE (rhs),
-					     (TREE_CODE (rhs) == BIT_IOR_EXPR
-					      ? integer_one_node
-					      : integer_zero_node)));
+		     value ? label : 0,
+		     value ? 0 : label);
+	    expand_assignment (lhs, build_int_cst (TREE_TYPE (rhs), value));
 	    do_pending_stack_adjust ();
 	    emit_label (label);
 	    return const0_rtx;
@@ -8827,7 +8830,7 @@ string_constant (tree arg, tree *ptr_offset)
 
   if (TREE_CODE (array) == STRING_CST)
     {
-      *ptr_offset = convert (sizetype, offset);
+      *ptr_offset = fold_convert (sizetype, offset);
       return array;
     }
   else if (TREE_CODE (array) == VAR_DECL)
@@ -8854,7 +8857,7 @@ string_constant (tree arg, tree *ptr_offset)
 
       /* If variable is bigger than the string literal, OFFSET must be constant
 	 and inside of the bounds of the string literal.  */
-      offset = convert (sizetype, offset);
+      offset = fold_convert (sizetype, offset);
       if (compare_tree_int (DECL_SIZE_UNIT (array), length) > 0
 	  && (! host_integerp (offset, 1)
 	      || compare_tree_int (offset, length) >= 0))
@@ -9166,9 +9169,8 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
     {
       if (TYPE_MODE (index_type) != index_mode)
 	{
-	  index_expr = convert (lang_hooks.types.type_for_size
-				(index_bits, 0), index_expr);
-	  index_type = TREE_TYPE (index_expr);
+	  index_type = lang_hooks.types.type_for_size (index_bits, 0);
+	  index_expr = fold_convert (index_type, index_expr);
 	}
 
       index = expand_normal (index_expr);
@@ -9294,8 +9296,8 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
     return 0;
 
   index_expr = fold_build2 (MINUS_EXPR, index_type,
-			    convert (index_type, index_expr),
-			    convert (index_type, minval));
+			    fold_convert (index_type, index_expr),
+			    fold_convert (index_type, minval));
   index = expand_normal (index_expr);
   do_pending_stack_adjust ();
 
