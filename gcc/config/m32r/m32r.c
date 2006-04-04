@@ -1031,12 +1031,11 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	{
 	case EQ:
 	  if (GET_CODE (y) == CONST_INT
-	      && CMP_INT16_P (INTVAL (y))		/* Reg equal to small const.  */
-	      && y != const0_rtx)
+	      && UINT16_P (INTVAL (y)))
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);		
 	      
-	      emit_insn (gen_addsi3 (tmp, x, GEN_INT (-INTVAL (y))));
+	      emit_insn (gen_xorsi3 (tmp, x, GEN_INT (INTVAL (y))));
 	      x = tmp;
 	      y = const0_rtx;
 	    }
@@ -1154,11 +1153,11 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
       /* Reg/smallconst equal comparison.  */
       if (compare_code == EQ
 	  && GET_CODE (y) == CONST_INT
-	  && CMP_INT16_P (INTVAL (y)))
+	  && UINT16_P (INTVAL (y)))
 	{
 	  rtx tmp = gen_reg_rtx (SImode);
 
-	  emit_insn (gen_addsi3 (tmp, x, GEN_INT (-INTVAL (y))));
+	  emit_insn (gen_xorsi3 (tmp, x, GEN_INT (INTVAL (y))));
 	  return gen_rtx_fmt_ee (code, CCmode, tmp, const0_rtx);
 	}
       
