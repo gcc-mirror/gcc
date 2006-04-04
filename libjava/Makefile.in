@@ -488,6 +488,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INTERPRETER = @INTERPRETER@
+JAR = @JAR@
 JAVA_HOME = @JAVA_HOME@
 JAVA_HOME_SET_FALSE = @JAVA_HOME_SET_FALSE@
 JAVA_HOME_SET_TRUE = @JAVA_HOME_SET_TRUE@
@@ -579,7 +580,6 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 ZINCS = @ZINCS@
-ZIP = @ZIP@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
@@ -8423,10 +8423,7 @@ $(propertyo_files): %.lo: classpath/resource/%
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,$(@:.lo=)
 
 libgcj-$(gcc_version).jar:
-	jardir=`dirname $(ZIP)`; \
-	jardir=`cd $$jardir && pwd`; \
-	jarname=`basename $(ZIP)`; \
-	cd classpath/lib; $$jardir/$$jarname -cfM \
+	cd classpath/lib; $(JAR) -cfM \
 	    ../../libgcj-$(gcc_version).jar gnu java javax org
 
 mostlyclean-local:
@@ -10726,7 +10723,7 @@ src.zip:
 	    echo $$file; \
 	  done ); \
 	) | \
-	$(ZIP) -cfM@ $$here/src.zip
+	$(JAR) -cfM@ $$here/src.zip
 	here=`pwd`; \
 	( \
 	  ( cd $(srcdir); \
@@ -10737,7 +10734,7 @@ src.zip:
 	    echo $$file; \
 	  done ); \
 	) | \
-	$(ZIP) -ufM@ $$here/src.zip
+	$(JAR) -ufM@ $$here/src.zip
 
 install-src.zip: src.zip
 	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-$(gcc_version).zip
