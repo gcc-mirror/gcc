@@ -1,3 +1,8 @@
+2006-04-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	* doc/tree-ssa.texi (Preserving the virtual ssa form): New
+	subsection.
+
 2006-04-04  Matthias Klose  <doko@debian.org>
 
 	* Makefile.in (unprotoize.o): Same dependencies as for protoize.o.
