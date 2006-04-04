@@ -1,4 +1,20 @@
-2006-03-29  Tom Tromey  <tromey@redhat.com>
+2006-04-04  Tom Tromey  <tromey@redhat.com>
+
+	* lib/gen-classlist.sh.in: Correct handle generated files.
+
+2006-04-04  Mark Wielaard  <mark@klomp.org>
+
+	* lib/gen-classlist.sh.in: Use classes.tmp, not classes.2
+	as temporary file name.
+
+2006-04-04  Tom Tromey  <tromey@redhat.com>
+
+	* lib/split-for-gcj.sh: Updated for multi-field format.
+	* lib/Makefile.am (CLEANFILES): Added classes.2.
+	* lib/gen-classlist.sh.in (GCJ): Removed.  Create classes.1 and
+	classes.2 using multiple fields.
+
+2006-04-03  Bernhard Rosenkraenzer  <bero@arklinux.org>
 
 	PR gcc/26901:
 	* Makefile.in: Rebuilt.

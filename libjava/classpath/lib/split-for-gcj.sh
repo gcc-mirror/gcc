@@ -22,22 +22,24 @@
 # java/awt/BitwiseXORComposite.class: lists/java-awt.stamp
 # lists/java-awt.list: /home/aph/gcc/gcc/libjava/classpath/gnu/java/awt/BitwiseXORComposite.java
 
-# This uses a somewhat hacky procedure for finding the package of a
-# given file.
-
 echo "Splitting for gcj"
 rm -f Makefile.dtmp > /dev/null 2>&1
 test -d lists || mkdir lists
-for dir in java javax gnu org; do
-   fgrep /$dir/ classes | while read file; do
-      pkg=`echo "$file " | sed -n -e "s,^.*/\($dir/.*\)/[^/]*$,\1,p"`
-      list=lists/`echo $pkg | sed -e 's,/,-,g' | cut -f1-3 -d-`
-      echo "$file" >> ${list}.list.1
-      f2=`echo "$file" | sed -n -e "s,^.*/\($dir/.*\)$,\1,p"`
-      f2=`echo "$f2" | sed -e 's/.java$//'`.class
-      echo "$f2: ${list}.stamp" >> Makefile.dtmp
-      echo "${list}.list: $file" >> Makefile.dtmp
-   done
+# Much more efficient to do processing outside the loop...
+# The first expression computes the .class file name.
+# We only want the first three package components, and
+# we want them separated by '-'; this is the remaining expressions.
+sed -e 's, \(.*\)[.]java$, \1.java \1.class,' \
+   -e 's,^\([^/ ]*\)/\([^/ ]*\) ,\1-\2 ,' \
+   -e 's,^\([^/ ]*\)/\([^/ ]*\)/\([^/ ]*\) ,\1-\2-\3 ,' \
+   -e 's,^\([^/ ]*\)/\([^/ ]*\)/\([^/ ]*\)/[^ ]* ,\1-\2-\3 ,' \
+   classes.2 |
+while read pkg dir file f2; do
+   list=lists/$pkg
+   echo "$dir/$file" >> ${list}.list.1
+
+   echo "$f2: ${list}.stamp" >> Makefile.dtmp
+   echo "${list}.list: $dir/$file" >> Makefile.dtmp
 done
 
 # Only update a .list file if it changed.
