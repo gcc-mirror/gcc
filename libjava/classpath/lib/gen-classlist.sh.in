@@ -7,16 +7,34 @@
 LC_ALL=C; export LC_ALL
 LANG=C; export LANG
 
-# We use this to decide whether we need to invoke the split script.
-GCJ="@GCJ@"
-
 echo "Adding java source files from srcdir '@top_srcdir@'."
-@FIND@ @top_srcdir@/java @top_srcdir@/javax @top_srcdir@/gnu \
-       @top_srcdir@/org \
-       @top_srcdir@/external/w3c_dom @top_srcdir@/external/sax \
-       @top_srcdir@/external/relaxngDatatype \
-       -follow -type f -print | sort -r | grep '\.java$' \
-       > ${top_builddir}/lib/classes.1
+# We construct 'classes.1' as a series of lines.  Each line
+# has three fields, which are separated by spaces.  The first
+# field is the package of this class (separated by "/"s).
+# The second field is the name of the top-level directory for
+# this file, relative to the build directory.  E.g., it might
+# look like "../../classpath/vm/reference".
+# The third field is the file name, like "java/lang/Object.java".
+# We do this because it makes splitting for the gcj build much
+# cheaper.
+(cd @top_srcdir@
+ @FIND@ java javax gnu org -follow -name '*.java' -print |
+ sort -r | sed -e 's,/\([^/]*\)$, \1,' |
+ while read pkg file; do
+    echo $pkg @top_srcdir@ $pkg/$file
+ done) > ${top_builddir}/lib/classes.1
+
+# The same, but for the external code.
+# Right now all external code is in org/.
+for dir in @top_srcdir@/external/w3c_dom \
+   @top_srcdir@/external/sax @top_srcdir@/external/relaxngDatatype; do
+  (cd $dir
+  @FIND@ org -follow -name '*.java' -print |
+  sort -r | sed -e 's,/\([^/]*\)$, \1,' |
+  while read pkg file; do
+     echo $pkg $dir $pkg/$file
+  done)
+done >> ${top_builddir}/lib/classes.1
 
 # Generate files for the VM classes.
 : > vm.omit
@@ -29,18 +47,19 @@ for dir in $vm_dirlist; do
       if test -d $subdir; then
 	 @FIND@ $subdir -name '*.java' -print
       fi
-   done) |
-   while read f; do
-      echo $dir/$f >> vm.add
-      echo $f >> vm.omit
+   done) | sed -e 's,/\([^/]*\)$, \1,' |
+   while read pkg file; do
+      echo $pkg $dir $pkg/$file >> vm.add
+      echo $pkg/$file >> vm.omit
    done
 done
 
 # Only include generated files once.
 if test ! "${top_builddir}" -ef "@top_srcdir@"; then
   echo "Adding generated files in builddir '${top_builddir}'."
-  @FIND@ ${top_builddir}/gnu ${top_builddir}/java -follow -type f -print \
-  | sort | grep '\.java$' >> ${top_builddir}/lib/classes.1
+  # Currently the only generated files are in gnu.*.
+  @FIND@ ${top_builddir}/gnu -follow -name '*.java' -print \
+  | sort >> ${top_builddir}/lib/classes.1
 fi
 
 
@@ -51,9 +70,10 @@ for dir in $vm_dirlist; do
    fi
 done
 
+# FIXME: could be more efficient by constructing a series of greps.
 for filexp in `cat tmp.omit`; do
-   grep -v ${filexp} < ${top_builddir}/lib/classes.1 > ${top_builddir}/lib/classes.2
-   mv ${top_builddir}/lib/classes.2 ${top_builddir}/lib/classes.1
+   grep -v ${filexp} < ${top_builddir}/lib/classes.1 > ${top_builddir}/lib/classes.tmp
+   mv ${top_builddir}/lib/classes.tmp ${top_builddir}/lib/classes.1
 done
 
 
@@ -72,18 +92,20 @@ rm vm.add
 rm tmp.omit
 
 new=
-if test -e ${top_builddir}/lib/classes; then
-  p=`diff ${top_builddir}/lib/classes ${top_builddir}/lib/classes.1`
+if test -e ${top_builddir}/lib/classes.2; then
+  p=`diff ${top_builddir}/lib/classes.2 ${top_builddir}/lib/classes.1`
   if test "$p" != ""; then
     new="true"
-    cp ${top_builddir}/lib/classes.1 ${top_builddir}/lib/classes
   fi
 else
   new="true"
-  cp ${top_builddir}/lib/classes.1 ${top_builddir}/lib/classes
 fi
 
 if test "$new" = "true"; then
+  cp ${top_builddir}/lib/classes.1 ${top_builddir}/lib/classes.2
+  # Strip the package part.
+  sed -e 's/^[^ ]* //' -e 's, ,/,' < ${top_builddir}/lib/classes.1 \
+     > ${top_builddir}/lib/classes
   echo "JAVA_SRCS = \\" > ${top_builddir}/lib/java.dep
   for i in `cat ${top_builddir}/lib/classes` ; do
     echo $i "\\" >> ${top_builddir}/lib/java.dep
