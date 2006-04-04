@@ -35541,7 +35541,7 @@ multilib.out: maybe-all-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	echo "Checking multilib configuration..."; \
 	$(CC_FOR_TARGET) --print-multi-lib > multilib.tmp 2> /dev/null ; \
-	$(SHELL) $(srcdir)/move-if-change multilib.tmp multilib.out ; \
+	$(SHELL) $(srcdir)/move-if-change multilib.tmp multilib.out
 
 # Rebuilding Makefile.in, using autogen.
 AUTOGEN = autogen
