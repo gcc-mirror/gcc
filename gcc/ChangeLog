@@ -1,3 +1,7 @@
+2006-04-04  Tom Tromey  <tromey@redhat.com>
+
+	* doc/install.texi (Prerequisites): Mention jar.
+
 2006-04-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	* doc/tree-ssa.texi (Preserving the virtual ssa form): New

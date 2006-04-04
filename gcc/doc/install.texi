@@ -305,6 +305,10 @@ release (4.1.3) when configured with @option{--enable-mpfr}.
 The @option{--with-mpfr} or @option{--with-mpfr-dir} configure option should
 be used if your MPFR Library is not installed in your library search path.
 
+@item jar
+
+Necessary to build libgcj, the GCJ runtime.
+
 @end table
 
 
