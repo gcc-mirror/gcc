@@ -1598,17 +1598,27 @@ if the runtime routine is not available.
 
 @item -fvisibility-inlines-hidden
 @opindex fvisibility-inlines-hidden
-Causes all inlined methods to be marked with
+This switch declares that the user does not attempt to compare
+pointers to inline methods where the addresses of the two functions
+were taken in different shared objects.
+
+The effect of this is that GCC may, effectively, mark inline methods with
 @code{__attribute__ ((visibility ("hidden")))} so that they do not
 appear in the export table of a DSO and do not require a PLT indirection
 when used within the DSO@.  Enabling this option can have a dramatic effect
 on load and link times of a DSO as it massively reduces the size of the
-dynamic export table when the library makes heavy use of templates.  While
-it can cause bloating through duplication of code within each DSO where
-it is used, often the wastage is less than the considerable space occupied
-by a long symbol name in the export table which is typical when using
-templates and namespaces.  For even more savings, combine with the
-@option{-fvisibility=hidden} switch.
+dynamic export table when the library makes heavy use of templates.
+
+The behaviour of this switch is not quite the same as marking the
+methods as hidden directly.  Normally if there is a class with default
+visibility which has a hidden method, the effect of this is that the
+method must be defined in only one shared object.  This switch does
+not have this restriction.
+
+You may mark a method as having a visibility explicitly to negate the
+effect of the switch for that method.  For example, if you do want to
+compare pointers to a particular inline method, you might mark it as
+having default visibility.
 
 @item -fno-weak
 @opindex fno-weak
@@ -13447,6 +13457,12 @@ as hidden as so to avoid PLT indirection overheads---making this
 abundantly clear also aids readability and self-documentation of the code.
 Note that due to ISO C++ specification requirements, operator new and
 operator delete must always be of default visibility.
+
+Be aware that headers from outside your project, in particular system
+headers and headers from any other library you use, may not be
+expecting to be compiled with visibility other than the default.  You
+may need to explicitly say @samp{#pragma GCC visibility push(default)}
+before including any such headers.
 
 An overview of these techniques, their benefits and how to use them
 is at @w{@uref{http://gcc.gnu.org/wiki/Visibility}}.

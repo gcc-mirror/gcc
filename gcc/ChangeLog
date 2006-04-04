@@ -4,6 +4,14 @@
 
 2006-04-03  Geoffrey Keating  <geoffk@apple.com>
 
+	* doc/extend.texi (Function Attributes): Rewrite visibility 
+	attribute documentation.
+	* doc/invoke.texi (C++ Dialect Options): Rewrite
+	-fvisibility-inlines-hidden documentation to describe something
+	entirely different, although in practise compatible.
+	(Code Gen Options): Warn about system headers in -fvisibiltity=
+	documentation.
+
 	* doc/extend.texi (Other Builtins): Document that
 	__builtin_nan is a compile-time constant only when its argument
 	is valid.
