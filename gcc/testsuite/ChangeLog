@@ -1,3 +1,12 @@
+2006-04-04  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.c-torture/execute/loop-ivopts-3.c: New test.
+
+	Backport form mainline.
+	2005-01-14  Zdenek Dvorak <dvorakz@suse.cz>
+	* gcc.dg/tree-ssa/pr19210-1.c: Update outcome.  Add new test loop.
+	* gcc.dg/tree-ssa/pr19210-2.c: Ditto.
+
 2006-04-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR libfortran/24685
