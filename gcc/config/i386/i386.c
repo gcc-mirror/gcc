@@ -17154,24 +17154,24 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
 
   if (MACHOPIC_PURE)
     {
-      fprintf (file, "\tcall LPC$%d\nLPC$%d:\tpopl %%eax\n", label, label);
-      fprintf (file, "\tmovl %s-LPC$%d(%%eax),%%edx\n", lazy_ptr_name, label);
-      fprintf (file, "\tjmp *%%edx\n");
+      fprintf (file, "\tcall\tLPC$%d\nLPC$%d:\tpopl\t%%eax\n", label, label);
+      fprintf (file, "\tmovl\t%s-LPC$%d(%%eax),%%edx\n", lazy_ptr_name, label);
+      fprintf (file, "\tjmp\t*%%edx\n");
     }
   else
-    fprintf (file, "\tjmp *%s\n", lazy_ptr_name);
+    fprintf (file, "\tjmp\t*%s\n", lazy_ptr_name);
 
   fprintf (file, "%s:\n", binder_name);
 
   if (MACHOPIC_PURE)
     {
-      fprintf (file, "\tlea %s-LPC$%d(%%eax),%%eax\n", lazy_ptr_name, label);
-      fprintf (file, "\tpushl %%eax\n");
+      fprintf (file, "\tlea\t%s-LPC$%d(%%eax),%%eax\n", lazy_ptr_name, label);
+      fprintf (file, "\tpushl\t%%eax\n");
     }
   else
-    fprintf (file, "\t pushl $%s\n", lazy_ptr_name);
+    fprintf (file, "\tpushl\t$%s\n", lazy_ptr_name);
 
-  fprintf (file, "\tjmp dyld_stub_binding_helper\n");
+  fprintf (file, "\tjmp\tdyld_stub_binding_helper\n");
 
   switch_to_section (darwin_sections[machopic_lazy_symbol_ptr_section]);
   fprintf (file, "%s:\n", lazy_ptr_name);

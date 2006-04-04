@@ -2,14 +2,14 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O -ffast-math -mfpmath=387 -mno-fancy-math-387 -march=i386" } */
-/* { dg-final { scan-assembler "call\t_?sin" } } */
-/* { dg-final { scan-assembler "call\t_?cos" } } */
-/* { dg-final { scan-assembler "call\t_?sqrt" } } */
-/* { dg-final { scan-assembler "call\t_?atan2" } } */
-/* { dg-final { scan-assembler "call\t_?log" } } */
-/* { dg-final { scan-assembler "call\t_?exp" } } */
-/* { dg-final { scan-assembler "call\t_?tan" } } */
-/* { dg-final { scan-assembler "call\t_?fmod" } } */
+/* { dg-final { scan-assembler "call\t(.*)sin" } } */
+/* { dg-final { scan-assembler "call\t(.*)cos" } } */
+/* { dg-final { scan-assembler "call\t(.*)sqrt" } } */
+/* { dg-final { scan-assembler "call\t(.*)atan2" } } */
+/* { dg-final { scan-assembler "call\t(.*)log" } } */
+/* { dg-final { scan-assembler "call\t(.*)exp" } } */
+/* { dg-final { scan-assembler "call\t(.*)tan" } } */
+/* { dg-final { scan-assembler "call\t(.*)fmod" } } */
 
 double f1(double x) { return __builtin_sin(x); }
 double f2(double x) { return __builtin_cos(x); }

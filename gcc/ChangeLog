@@ -1,3 +1,8 @@
+2006-04-04  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/i386.c (machopic_output_stub): Output \t
+	between instructions and operands.
+
 2006-04-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (num_insns_constant_wide): Change
@@ -48,7 +53,7 @@
 
 2006-04-03  Geoffrey Keating  <geoffk@apple.com>
 
-	* doc/extend.texi (Function Attributes): Rewrite visibility 
+	* doc/extend.texi (Function Attributes): Rewrite visibility
 	attribute documentation.
 	* doc/invoke.texi (C++ Dialect Options): Rewrite
 	-fvisibility-inlines-hidden documentation to describe something
@@ -132,12 +137,12 @@
 2006-04-02  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-scalar-evolution.c (add_to_evolution_1): Pass an extra argument
-	at_stmt.  Convert the type of operands before calling 
+	at_stmt.  Convert the type of operands before calling
 	build_polynomial_chrec.
 	(add_to_evolution): Pass an extra argument at_stmt.  Adjust the call to
 	add_to_evolution_1.
 	(follow_ssa_edge_in_rhs): Adjust call to add_to_evolution.
-	(instantiate_parameters_1): Convert the type of operands before calling 
+	(instantiate_parameters_1): Convert the type of operands before calling
 	build_polynomial_chrec.
 	* tree-chrec.c (chrec_fold_poly_cst, chrec_fold_plus_poly_poly,
 	chrec_fold_multiply_poly_poly, chrec_replace_initial_condition,
@@ -411,7 +416,7 @@
 
 2006-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config.gcc (s390-*-linux-*, s390x-*-linux*): Add t-dfprules to 
+	* config.gcc (s390-*-linux-*, s390x-*-linux*): Add t-dfprules to
 	tmake_file.
 	* config/s390/s390.c (S390_scalar_mode_supported_p): New function.
 	(NR_C_MODES): Add TDmode, DDmode and SDmode.
@@ -419,7 +424,7 @@
 	(s390_hard_regno_mode_ok): Disallow TDmode in integer regs.
 	(s390_function_arg_float): Allow SDmode and DDmode values to be
 	passed in floating point registers.
-	(s390_function_arg_integer, s390_function_value): Replace MODE_FLOAT 
+	(s390_function_arg_integer, s390_function_value): Replace MODE_FLOAT
 	check with SCALAR_FLOAT_MODE_P.
 	(TARGET_SCALAR_MODE_SUPPORTED_P): Define target macro.
 
@@ -460,7 +465,7 @@
 
 	* fold-const.c (fold_binary) <BIT_XOR_EXPR>: Fold (X & Y) ^ Y as
 	the equivalent ~X & Y, and the symmetry related transformations.
-	(fold_binary) <BIT_AND_EXPR>: Similarly, fold (X ^ Y) & Y as 
+	(fold_binary) <BIT_AND_EXPR>: Similarly, fold (X ^ Y) & Y as
 	~X & Y, and symmetry related transforms.
 
 2006-03-28  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
@@ -617,7 +622,7 @@
 
 2006-03-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390-protos.h (s390_hard_regno_mode_ok, 
+	* config/s390/s390-protos.h (s390_hard_regno_mode_ok,
 	s390_class_max_nregs): New function prototypes.
 	* config/s390/s390.c (REGNO_PAIR_OK): New macro.
 	(s390_hard_regno_mode_ok, s390_class_max_nregs): New functions.
@@ -653,7 +658,7 @@
 	Don't test for lambda_vector_lexico_pos.
 	(same_access_functions, add_multivariate_self_dist,
 	add_other_self_distances, dir_from_dist): New.
-	(build_classic_dir_vector): Replace implementation almost identical to 
+	(build_classic_dir_vector): Replace implementation almost identical to
 	build_classic_dist_vector with a walk of DDR_DIST_VECTS with a call to
 	dir_from_dist.
 	(subscript_dependence_tester_1): New.
@@ -667,7 +672,7 @@
 	(compute_data_dependences_for_loop): Compute the loop nest, and give
 	up if the nest is not well formed.
 	* tree-data-ref.h (loop_p): New.
-	(struct data_dependence_relation): Replace size_vect field with 
+	(struct data_dependence_relation): Replace size_vect field with
 	loop_nest, a vec of loops.
 	(DDR_SIZE_VECT): Renamed DDR_NB_LOOPS.
 	(DDR_LOOP_NEST): New.
@@ -1380,7 +1385,7 @@
 	splittable_symbolic_operand.
 	(mips_use_anchors_for_symbol_p): New function.
 	* config/mips/mips.h: Protect externs with !USED_FOR_TARGET.
-	(mips_split_p): Declare.  
+	(mips_split_p): Declare.
 
 2006-03-16  Richard Sandiford  <richard@codesourcery.com>
 
@@ -1686,7 +1691,7 @@
 
 	* ddg.c (build_intra_loop_deps): Adjust add_forward_dependence call.
 	* lists.c (unused_deps_list): New variable.
-	(free_list): Add assertions to verify the proper distinguishing 
+	(free_list): Add assertions to verify the proper distinguishing
 	between INSN_LISTs and DEPS_LISTs.
 	(find_list_elem, remove_list_elem, remove_list_node): New static
 	functions.
@@ -1772,7 +1777,7 @@
 	* config/vax/vax.h (PCC_BITFIELD_TYPE_MATTERS): Likewise.
 	(EXTRA_CONSTRAINT): Likewise.
 	* config/vax/vax.md (four unnamed insns): Likewise.
-	
+
 2006-03-15  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (minipool_pad): New.
@@ -1988,7 +1993,7 @@
 2006-03-13  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/invoke.texi (-fdump-rtl-loop): Remove.
-	(-dL, -fdump-rtl-loop2): Update the dump file names 
+	(-dL, -fdump-rtl-loop2): Update the dump file names
 
 	* doc/invoke.texi: Update dump file names.
 
@@ -2034,7 +2039,7 @@
 2006-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c/26004
-	* gimplify.c (gimplify_modify_expr_rhs): Don't do return slot opt if 
+	* gimplify.c (gimplify_modify_expr_rhs): Don't do return slot opt if
 	the target was declared 'register'.
 
 2006-03-10  Adam Nemet  <anemet@caviumnetworks.com>
@@ -2059,7 +2064,7 @@
 	* config.gcc (sh*-superh-elf, sh*elf (newlib)): Use newlib.h
 	when building with libgloss.
 	(sh*elf): Implement --without-fp option.
-	(sh64-superh-linux*): Don't multilib. 
+	(sh64-superh-linux*): Don't multilib.
 
 2006-03-10  J"orn Rennecke <joern.rennecke@st.com>
 
@@ -2104,7 +2109,7 @@
 	(*branch_zero<mode>): Rename to...
 	(*branch_order<mode>): ...this.  Remove mode from comparison operator.
 	Use mips_output_order_conditional_branch.  Only accept ordered
-	comparisons.  
+	comparisons.
 	(*branch_zero<mode>_inverted): Rename to...
 	(*branch_order<mode>_inverted): ...this and update as for
 	*branch_order<mode>.
@@ -2447,7 +2452,7 @@
 	(tree_ssa_forward_propagate_single_use_vars): Return
 	TODO_update_smt_usage if we need to update SMT usage.
 	(pass_forwprop): Remove TODO_update_smt_usage.
-	
+
 2006-03-03  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c: Tidy whitespace.  Fix spelling.
