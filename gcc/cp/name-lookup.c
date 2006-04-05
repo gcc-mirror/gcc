@@ -3066,7 +3066,7 @@ push_namespace_with_attribs (tree name, tree attributes)
       push_visibility (TREE_STRING_POINTER (x));
       goto found;
     }
-#ifdef HAVE_GAS_HIDDEN
+#if 0
   if (anon)
     {
       /* Anonymous namespaces default to hidden visibility.  This might

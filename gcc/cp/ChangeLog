@@ -1,3 +1,8 @@
+2006-04-05  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (push_namespace_with_attribs): Temporarily disable
+	default hidden visibility for anonymous namespace.
+
 2006-03-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/22494
