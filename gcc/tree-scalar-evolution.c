@@ -1727,7 +1727,7 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
   basic_block bb;
   struct loop *def_loop;
 
-  if (loop == NULL)
+  if (loop == NULL || TREE_CODE (type) == VECTOR_TYPE)
     return chrec_dont_know;
 
   if (TREE_CODE (var) != SSA_NAME)
