@@ -50,6 +50,7 @@ public class Compile_jikes extends CompilerProcess
   public String[] computeArguments (String filename)
   {
     return computeTypicalArguments(COMPILER_ARGS,
+				   getClasspath(),
 				   getDestination(),
 				   filename);
   }

@@ -1,3 +1,18 @@
+2006-04-05  Archit Shah  <ashah@redhat.com>
+
+	PR java/25414
+	* gnu/java/rmi/rmic/CompilerProcess.java (computeTypicalArguments):
+	Add classpath argument.
+	* gnu/java/rmi/rmic/Compile_gcj.java (computeArguments): Adjust
+	caller.
+	* gnu/java/rmi/rmic/Compile_jikes.java (computeArguments): Likewise.
+	* gnu/java/rmi/rmic/Compile_kjc.java (computeArguments): Likewise.
+	* gnu/java/rmi/rmic/Compiler.java (getClasspath, setClasspath): New.
+	* gnu/java/rmi/rmic/RMIC.java: Set classpath for compiler, call
+	mkdirs for destination directory, correct handling of superclasses
+	and interfaces of the remote class, correct handling of exceptions
+	declared by remote methods.
+
 2006-04-04  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26990:

@@ -46,11 +46,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 
 public class RMIC
@@ -69,11 +76,15 @@ public class RMIC
   private Class clazz;
   private String classname;
   private String fullclassname;
+  private String fullstubname;
+  private String fullskelname;
   private MethodRef[] remotemethods;
   private String stubname;
   private String skelname;
+  private ClassLoader loader;
+  private String classpath;
   private int errorCount = 0;
-  private Class mRemoteInterface;
+  private List mRemoteInterfaces;
 
   public RMIC(String[] a)
   {
@@ -115,10 +126,23 @@ public class RMIC
     return (true);
   }
 
-  private boolean processClass(String classname) throws Exception
+  private boolean processClass(String cls) throws Exception
   {
+    // reset class specific vars
+    clazz = null;
+    classname = null;
+    fullclassname = null;
+    remotemethods = null;
+    stubname = null;
+    fullstubname = null;
+    skelname = null;
+    fullskelname = null;
+    mRemoteInterfaces = new ArrayList();
+
     errorCount = 0;
-    analyzeClass(classname);
+
+    analyzeClass(cls);
+
     if (errorCount > 0)
       System.exit(1);
     generateStub();
@@ -126,16 +150,15 @@ public class RMIC
       generateSkel();
     if (compile)
       {
-	compile(stubname.replace('.', File.separatorChar) + ".java");
+	compile(fullstubname);
 	if (need11Stubs)
-	  compile(skelname.replace('.', File.separatorChar) + ".java");
+	  compile(fullskelname);
       }
     if (! keep)
       {
-	(new File(stubname.replace('.', File.separatorChar) + ".java")).delete();
+	(new File(fullstubname)).delete();
 	if (need11Stubs)
-	  (new File(skelname.replace('.', File.separatorChar) + ".java"))
-	  .delete();
+	  (new File(fullskelname)).delete();
       }
     return (true);
   }
@@ -151,40 +174,8 @@ public class RMIC
       classname = cname;
     fullclassname = cname;
 
-    HashSet rmeths = new HashSet();
     findClass();
-
-    // get the remote interface
-    mRemoteInterface = getRemoteInterface(clazz);
-    if (mRemoteInterface == null)
-      return;
-    if (verbose)
-      System.out.println("[implements " + mRemoteInterface.getName() + "]");
-
-    // check if the methods of the remote interface declare RemoteExceptions
-    Method[] meths = mRemoteInterface.getDeclaredMethods();
-    for (int i = 0; i < meths.length; i++)
-      {
-	Class[] exceptions = meths[i].getExceptionTypes();
-	int index = 0;
-	for (; index < exceptions.length; index++)
-	  {
-	    if (exceptions[index].equals(RemoteException.class))
-	      break;
-	  }
-	if (index < exceptions.length)
-	  rmeths.add(meths[i]);
-	else
-	  logError("Method " + meths[i]
-	           + " does not throw a java.rmi.RemoteException");
-      }
-
-    // Convert into a MethodRef array and sort them
-    remotemethods = new MethodRef[rmeths.size()];
-    int c = 0;
-    for (Iterator i = rmeths.iterator(); i.hasNext();)
-      remotemethods[c++] = new MethodRef((Method) i.next());
-    Arrays.sort(remotemethods);
+    findRemoteMethods();
   }
 
   public Exception getException()
@@ -194,21 +185,42 @@ public class RMIC
 
   private void findClass() throws ClassNotFoundException
   {
-    clazz =
-      Class.forName(fullclassname, true, ClassLoader.getSystemClassLoader());
+    try
+      {
+        ClassLoader cl = (loader == null
+                          ? ClassLoader.getSystemClassLoader()
+                          : loader);
+        clazz = Class.forName(fullclassname, false, cl);
+      }
+    catch (ClassNotFoundException cnfe)
+      {
+        System.err.println(fullclassname + " not found in " + classpath);
+        throw new RuntimeException(cnfe);
+      }
+
+    if (! Remote.class.isAssignableFrom(clazz))
+      {
+        logError("Class " + clazz.getName() + " is not a remote object. "
+                 + "It does not implement an interface that is a "
+                 + "java.rmi.Remote-interface.");
+        throw new RuntimeException
+          ("Class " + clazz.getName() + " is not a remote object. "
+           + "It does not implement an interface that is a "
+           + "java.rmi.Remote-interface.");
+      }
   }
 
   private void generateStub() throws IOException
   {
     stubname = fullclassname + "_Stub";
     String stubclassname = classname + "_Stub";
+    fullstubname = (destination == null ? "" : destination + File.separator)
+      + stubname.replace('.', File.separatorChar) + ".java";
+    File file = new File(fullstubname);
+    if (file.getParentFile() != null)
+      file.getParentFile().mkdirs();
     ctrl =
-      new TabbedWriter(new FileWriter((destination == null ? ""
-                                                           : destination
-                                                           + File.separator)
-                                      + stubname.replace('.',
-                                                         File.separatorChar)
-                                      + ".java"));
+      new TabbedWriter(new FileWriter(file));
     out = new PrintWriter(ctrl);
 
     if (verbose)
@@ -230,16 +242,7 @@ public class RMIC
 
     // Output interfaces we implement
     out.print("implements ");
-    /* Scan implemented interfaces, and only print remote interfaces. */
-    Class[] ifaces = clazz.getInterfaces();
-    Set remoteIfaces = new HashSet();
-    for (int i = 0; i < ifaces.length; i++)
-      {
-	Class iface = ifaces[i];
-	if (java.rmi.Remote.class.isAssignableFrom(iface))
-	  remoteIfaces.add(iface);
-      }
-    Iterator iter = remoteIfaces.iterator();
+    Iterator iter = mRemoteInterfaces.iterator();
     while (iter.hasNext())
       {
 	/* Print remote interface. */
@@ -328,7 +331,7 @@ public class RMIC
 	  {
 	    Method m = remotemethods[i].meth;
 	    out.print("$method_" + m.getName() + "_" + i + " = ");
-	    out.print(mRemoteInterface.getName() + ".class.getMethod(\""
+	    out.print(m.getDeclaringClass().getName() + ".class.getMethod(\""
 	              + m.getName() + "\"");
 	    out.print(", new java.lang.Class[] {");
 	    // Output signature
@@ -631,13 +634,13 @@ public class RMIC
   {
     skelname = fullclassname + "_Skel";
     String skelclassname = classname + "_Skel";
+    fullskelname = (destination == null ? "" : destination + File.separator)
+      + skelname.replace('.', File.separatorChar) + ".java";
+    File file = new File(fullskelname);
+    if (file.getParentFile() != null)
+      file.getParentFile().mkdirs();
     ctrl =
-      new TabbedWriter(new FileWriter((destination == null ? ""
-                                                           : destination
-                                                           + File.separator)
-                                      + skelname.replace('.',
-                                                         File.separatorChar)
-                                      + ".java"));
+      new TabbedWriter(new FileWriter(file));
     out = new PrintWriter(ctrl);
 
     if (verbose)
@@ -882,6 +885,8 @@ public class RMIC
     if (verbose)
       System.out.println("[Compiling class " + name + "]");
     comp.setDestination(destination);
+    if (classpath != null)
+      comp.setClasspath(classpath);
     comp.compile(name);
   }
 
@@ -970,7 +975,27 @@ public class RMIC
 	else if (arg.equals("-nocompile"))
 	  compile = false;
 	else if (arg.equals("-classpath"))
-	  next++;
+          {
+            classpath = args[next];
+            next++;
+            StringTokenizer st =
+              new StringTokenizer(classpath, File.pathSeparator);
+            URL[] u = new URL[st.countTokens()];
+            for (int i = 0; i < u.length; i++)
+              {
+                String path = st.nextToken();
+                File f = new File(path);
+                try
+                  {
+                    u[i] = f.toURL();
+                  }
+                catch (MalformedURLException mue)
+                  {
+                    error("malformed classpath component " + path);
+                  }
+              }
+            loader = new URLClassLoader(u);
+          }
 	else if (arg.equals("-help"))
 	  usage();
 	else if (arg.equals("-version"))
@@ -996,22 +1021,75 @@ public class RMIC
       }
   }
 
-/**
- * Looks for the java.rmi.Remote interface that that is implemented by theClazz.
- * @param theClazz the class to look in
- * @return the Remote interface of theClazz or null if theClazz does not implement a Remote interface
- */
-  private Class getRemoteInterface(Class theClazz)
-  {
-    Class[] interfaces = theClazz.getInterfaces();
-    for (int i = 0; i < interfaces.length; i++)
+  private void findRemoteMethods() {
+    List rmeths = new ArrayList();
+    for (Class cur = clazz; cur != null; cur = cur.getSuperclass())
       {
-	if (java.rmi.Remote.class.isAssignableFrom(interfaces[i]))
-	  return interfaces[i];
+        Class[] interfaces = cur.getInterfaces();
+        for (int i = 0; i < interfaces.length; i++)
+          {
+            if (java.rmi.Remote.class.isAssignableFrom(interfaces[i]))
+              {
+                Class remoteInterface = interfaces[i];
+                if (verbose)
+                  System.out.println
+                    ("[implements " + remoteInterface.getName() + "]");
+
+                // check if the methods declare RemoteExceptions
+                Method[] meths = remoteInterface.getMethods();
+                for (int j = 0; j < meths.length; j++)
+                  {
+                    Method m = meths[j];
+                    Class[] exs = m.getExceptionTypes();
+
+                    boolean throwsRemote = false;
+                    for (int k = 0; k < exs.length; k++)
+                      {
+                        if (exs[k].isAssignableFrom(RemoteException.class))
+                          throwsRemote = true;
+                      }
+
+                    if (! throwsRemote)
+                      {
+                        logError("Method " + m
+                                 + " does not throw a RemoteException");
+                        continue;
+                      }
+
+                    rmeths.add(m);
+                  }
+
+                mRemoteInterfaces.add(remoteInterface);
+              }
+          }
       }
-    logError("Class " + theClazz.getName()
-             + " is not a remote object. It does not implement an interface that is a java.rmi.Remote-interface.");
-    return null;
+
+    // intersect exceptions for doubly inherited methods
+    boolean[] skip = new boolean[rmeths.size()];
+    for (int i = 0; i < skip.length; i++)
+      skip[i] = false;
+    List methrefs = new ArrayList();
+    for (int i = 0; i < rmeths.size(); i++)
+      {
+        if (skip[i]) continue;
+        Method current = (Method) rmeths.get(i);
+        MethodRef ref = new MethodRef(current);
+        for (int j = i+1; j < rmeths.size(); j++)
+          {
+            Method other = (Method) rmeths.get(j);
+            if (ref.isMatch(other))
+              {
+                ref.intersectExceptions(other);
+                skip[j] = true;
+              }
+          }
+        methrefs.add(ref);
+      }
+
+    // Convert into a MethodRef array and sort them
+    remotemethods = (MethodRef[])
+      methrefs.toArray(new MethodRef[methrefs.size()]);
+    Arrays.sort(remotemethods);
   }
 
 /**
@@ -1054,25 +1132,94 @@ public class RMIC
     System.exit(0);
   }
 
-  static class MethodRef
+  private static class MethodRef
     implements Comparable
   {
     Method meth;
-    String sig;
     long hash;
+    List exceptions;
+    private String sig;
 
     MethodRef(Method m)
     {
       meth = m;
-      // We match on the name - but what about overloading? - XXX
-      sig = m.getName();
+      sig = m.getName(); // XXX should be full signature used to compute hash
       hash = RMIHashes.getMethodHash(m);
+      // add exceptions removing subclasses
+      exceptions = removeSubclasses(m.getExceptionTypes());
     }
 
     public int compareTo(Object obj)
     {
       MethodRef that = (MethodRef) obj;
-      return (this.sig.compareTo(that.sig));
+      int name = this.meth.getName().compareTo(that.meth.getName());
+      if (name == 0) {
+        return this.sig.compareTo(that.sig);
+      }
+      return name;
+    }
+
+    public boolean isMatch(Method m)
+    {
+      if (!meth.getName().equals(m.getName()))
+        return false;
+
+      Class[] params1 = meth.getParameterTypes();
+      Class[] params2 = m.getParameterTypes();
+      if (params1.length != params2.length)
+        return false;
+
+      for (int i = 0; i < params1.length; i++)
+        if (!params1[i].equals(params2[i])) return false;
+
+      return true;
+    }
+
+    private static List removeSubclasses(Class[] classes)
+    {
+      List list = new ArrayList();
+      for (int i = 0; i < classes.length; i++)
+        {
+          Class candidate = classes[i];
+          boolean add = true;
+          for (int j = 0; j < classes.length; j++)
+            {
+              if (classes[j].equals(candidate))
+                continue;
+              else if (classes[j].isAssignableFrom(candidate))
+                add = false;
+            }
+          if (add) list.add(candidate);
+        }
+
+      return list;
+    }
+
+    public void intersectExceptions(Method m)
+    {
+      List incoming = removeSubclasses(m.getExceptionTypes());
+
+      List updated = new ArrayList();
+
+      for (int i = 0; i < exceptions.size(); i++)
+        {
+          Class outer = (Class) exceptions.get(i);
+          boolean addOuter = false;
+          for (int j = 0; j < incoming.size(); j++)
+            {
+              Class inner = (Class) incoming.get(j);
+
+              if (inner.equals(outer) || inner.isAssignableFrom(outer))
+                addOuter = true;
+              else if (outer.isAssignableFrom(inner))
+                updated.add(inner);
+            }
+
+          if (addOuter)
+            updated.add(outer);
+        }
+
+      exceptions = updated;
     }
   }
 }
