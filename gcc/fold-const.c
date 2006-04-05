@@ -7305,33 +7305,6 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
   if (tree_swap_operands_p (arg0, arg1, true))
     return fold_build2 (swap_tree_comparison (code), type, op1, op0);
 
-  /* If this is a comparison of two exprs that look like an
-     ARRAY_REF of the same object, then we can fold this to a
-     comparison of the two offsets.  */
-  {
-    tree base0, offset0, base1, offset1;
-
-    if (extract_array_ref (arg0, &base0, &offset0)
-	&& extract_array_ref (arg1, &base1, &offset1)
-	&& operand_equal_p (base0, base1, 0))
-      {
-	/* Handle no offsets on both sides specially.  */
-	if (offset0 == NULL_TREE && offset1 == NULL_TREE)
-	  return fold_build2 (code, type, integer_zero_node,
-			      integer_zero_node);
-
-	if (!offset0 || !offset1
-	    || TREE_TYPE (offset0) == TREE_TYPE (offset1))
-	  {
-	    if (offset0 == NULL_TREE)
-	      offset0 = build_int_cst (TREE_TYPE (offset1), 0);
-	    if (offset1 == NULL_TREE)
-	      offset1 = build_int_cst (TREE_TYPE (offset0), 0);
-	    return fold_build2 (code, type, offset0, offset1);
-	  }
-      }
-  }
-
   /* Transform comparisons of the form X +- C1 CMP C2 to X CMP C2 +- C1.  */
   if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
       && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
@@ -10061,6 +10034,34 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  return fold_build2 (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
 			      tem, build_int_cst (TREE_TYPE (tem), 0));
 	}
+
+      /* If this is a comparison of two exprs that look like an
+	 ARRAY_REF of the same object, then we can fold this to a
+	 comparison of the two offsets.  This is only safe for
+	 EQ_EXPR and NE_EXPR because of overflow issues.  */
+      {
+	tree base0, offset0, base1, offset1;
+
+	if (extract_array_ref (arg0, &base0, &offset0)
+	    && extract_array_ref (arg1, &base1, &offset1)
+	    && operand_equal_p (base0, base1, 0))
+          {
+	    /* Handle no offsets on both sides specially.  */
+	    if (offset0 == NULL_TREE && offset1 == NULL_TREE)
+	      return fold_build2 (code, type, integer_zero_node,
+				  integer_zero_node);
+
+	    if (!offset0 || !offset1
+		|| TREE_TYPE (offset0) == TREE_TYPE (offset1))
+	      {
+	        if (offset0 == NULL_TREE)
+		  offset0 = build_int_cst (TREE_TYPE (offset1), 0);
+		if (offset1 == NULL_TREE)
+	          offset1 = build_int_cst (TREE_TYPE (offset0), 0);
+		return fold_build2 (code, type, offset0, offset1);
+	      }
+	  }
+      }
 
       if (integer_zerop (arg1)
 	  && tree_expr_nonzero_p (arg0))
