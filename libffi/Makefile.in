@@ -59,7 +59,8 @@ target_triplet = @target@
 @X86_64_TRUE@am__append_18 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
 @SH_TRUE@am__append_19 = src/sh/sysv.S src/sh/ffi.c
 @SH64_TRUE@am__append_20 = src/sh64/sysv.S src/sh64/ffi.c
-@PA_TRUE@am__append_21 = src/pa/linux.S src/pa/ffi.c
+@PA_LINUX_TRUE@am__append_21 = src/pa/linux.S src/pa/ffi.c
+@PA_HPUX_TRUE@am__append_22 = src/pa/hpux32.S src/pa/ffi.c
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -123,7 +124,8 @@ am_libffi_la_OBJECTS = src/debug.lo src/prep_cif.lo src/types.lo \
 @X86_64_TRUE@	src/x86/ffi.lo src/x86/sysv.lo
 @SH_TRUE@am__objects_19 = src/sh/sysv.lo src/sh/ffi.lo
 @SH64_TRUE@am__objects_20 = src/sh64/sysv.lo src/sh64/ffi.lo
-@PA_TRUE@am__objects_21 = src/pa/linux.lo src/pa/ffi.lo
+@PA_LINUX_TRUE@am__objects_21 = src/pa/linux.lo src/pa/ffi.lo
+@PA_HPUX_TRUE@am__objects_22 = src/pa/hpux32.lo src/pa/ffi.lo
 nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
 	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
@@ -131,21 +133,22 @@ nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_12) $(am__objects_13) $(am__objects_14) \
 	$(am__objects_15) $(am__objects_16) $(am__objects_17) \
 	$(am__objects_18) $(am__objects_19) $(am__objects_20) \
-	$(am__objects_21)
+	$(am__objects_21) $(am__objects_22)
 libffi_la_OBJECTS = $(am_libffi_la_OBJECTS) \
 	$(nodist_libffi_la_OBJECTS)
 libffi_convenience_la_LIBADD =
-am__objects_22 = src/debug.lo src/prep_cif.lo src/types.lo \
+am__objects_23 = src/debug.lo src/prep_cif.lo src/types.lo \
 	src/raw_api.lo src/java_raw_api.lo
-am_libffi_convenience_la_OBJECTS = $(am__objects_22)
-am__objects_23 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
+am_libffi_convenience_la_OBJECTS = $(am__objects_23)
+am__objects_24 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
 	$(am__objects_16) $(am__objects_17) $(am__objects_18) \
-	$(am__objects_19) $(am__objects_20) $(am__objects_21)
-nodist_libffi_convenience_la_OBJECTS = $(am__objects_23)
+	$(am__objects_19) $(am__objects_20) $(am__objects_21) \
+	$(am__objects_22)
+nodist_libffi_convenience_la_OBJECTS = $(am__objects_24)
 libffi_convenience_la_OBJECTS = $(am_libffi_convenience_la_OBJECTS) \
 	$(nodist_libffi_convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -250,6 +253,8 @@ MIPS_IRIX_TRUE = @MIPS_IRIX_TRUE@
 MIPS_LINUX_FALSE = @MIPS_LINUX_FALSE@
 MIPS_LINUX_TRUE = @MIPS_LINUX_TRUE@
 OBJEXT = @OBJEXT@
+PA64_HPUX_FALSE = @PA64_HPUX_FALSE@
+PA64_HPUX_TRUE = @PA64_HPUX_TRUE@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -257,8 +262,10 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PA_FALSE = @PA_FALSE@
-PA_TRUE = @PA_TRUE@
+PA_HPUX_FALSE = @PA_HPUX_FALSE@
+PA_HPUX_TRUE = @PA_HPUX_TRUE@
+PA_LINUX_FALSE = @PA_LINUX_FALSE@
+PA_LINUX_TRUE = @PA_LINUX_TRUE@
 POWERPC_AIX_FALSE = @POWERPC_AIX_FALSE@
 POWERPC_AIX_TRUE = @POWERPC_AIX_TRUE@
 POWERPC_DARWIN_FALSE = @POWERPC_DARWIN_FALSE@
@@ -359,7 +366,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/sparc/ffi.c \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
-	src/pa/ffi.c src/pa/linux.S src/frv/eabi.S src/frv/ffitarget.h
+	src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
+	src/frv/eabi.S src/frv/ffitarget.h
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -412,7 +420,7 @@ nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) \
 	$(am__append_12) $(am__append_13) $(am__append_14) \
 	$(am__append_15) $(am__append_16) $(am__append_17) \
 	$(am__append_18) $(am__append_19) $(am__append_20) \
-	$(am__append_21)
+	$(am__append_21) $(am__append_22)
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 AM_CFLAGS = -Wall -g -fexceptions
@@ -695,6 +703,8 @@ src/pa/$(DEPDIR)/$(am__dirstamp):
 src/pa/linux.lo: src/pa/$(am__dirstamp) \
 	src/pa/$(DEPDIR)/$(am__dirstamp)
 src/pa/ffi.lo: src/pa/$(am__dirstamp) src/pa/$(DEPDIR)/$(am__dirstamp)
+src/pa/hpux32.lo: src/pa/$(am__dirstamp) \
+	src/pa/$(DEPDIR)/$(am__dirstamp)
 libffi.la: $(libffi_la_OBJECTS) $(libffi_la_DEPENDENCIES) 
 	$(LINK) -rpath $(toolexeclibdir) $(libffi_la_LDFLAGS) $(libffi_la_OBJECTS) $(libffi_la_LIBADD) $(LIBS)
 libffi_convenience.la: $(libffi_convenience_la_OBJECTS) $(libffi_convenience_la_DEPENDENCIES) 
@@ -742,6 +752,8 @@ mostlyclean-compile:
 	-rm -f src/mips/o32.lo
 	-rm -f src/pa/ffi.$(OBJEXT)
 	-rm -f src/pa/ffi.lo
+	-rm -f src/pa/hpux32.$(OBJEXT)
+	-rm -f src/pa/hpux32.lo
 	-rm -f src/pa/linux.$(OBJEXT)
 	-rm -f src/pa/linux.lo
 	-rm -f src/powerpc/aix.$(OBJEXT)
