@@ -235,10 +235,10 @@ described below.
 @heading Tools/packages necessary for building GCC
 @table @asis
 @item ISO C90 compiler
-Necessary to bootstrap the GCC package, although versions of GCC prior
+Necessary to bootstrap GCC, although versions of GCC prior
 to 3.4 also allow bootstrapping with a traditional (K&R) C compiler.
 
-To make all languages in a cross-compiler or other configuration where
+To build all languages in a cross-compiler or other configuration where
 3-stage bootstrap is not performed, you need to start with an existing
 GCC binary (version 2.95 or later) because source code for language
 frontends other than C might use GCC extensions.
@@ -254,8 +254,8 @@ specific information.
 
 Necessary when running @command{configure} because some
 @command{/bin/sh} shells have bugs and may crash when configuring the
-target libraries.  In other cases, @command{/bin/sh} or even some
-@command{ksh} have disastrous corner-case performance problems.  This
+target libraries.  In other cases, @command{/bin/sh} or @command{ksh}
+have disastrous corner-case performance problems.  This
 can cause target @command{configure} runs to literally take days to
 complete in some cases.
 
@@ -347,11 +347,11 @@ Necessary when modifying @command{gperf} input files, e.g.@:
 @file{gcc/cp/cfns.gperf} to regenerate its associated header file, e.g.@:
 @file{gcc/cp/cfns.h}.
 
-@item expect version ???
-@itemx tcl version ???
-@itemx dejagnu version 1.4.4 (or later)
+@item DejaGnu 1.4.4
+@itemx Expect
+@itemx Tcl
 
-Necessary to run the GCC testsuite.
+Necessary to run the GCC testsuite; see the section on testing for details.
 
 @item autogen version 5.5.4 (or later) and
 @itemx guile version 1.4.1 (or later)
@@ -359,19 +359,19 @@ Necessary to run the GCC testsuite.
 Necessary to regenerate @file{fixinc/fixincl.x} from
 @file{fixinc/inclhack.def} and @file{fixinc/*.tpl}.
 
-Necessary to run the @file{fixinc} @command{make check}.
+Necessary to run @samp{make check} for @file{fixinc}.
 
 Necessary to regenerate the top level @file{Makefile.in} file from
 @file{Makefile.tpl} and @file{Makefile.def}.
 
 @item GNU Bison version 1.28 (or later)
 Berkeley @command{yacc} (@command{byacc}) is also reported to work other
-than for java.
+than for GCJ.
 
 Necessary when modifying @file{*.y} files.
 
 Necessary to build GCC during development because the generated output
-files are not included in the CVS repository.  They are included in
+files are not included in the SVN repository.  They are included in
 releases.
 
 @item Flex version 2.5.4 (or later)
@@ -379,7 +379,7 @@ releases.
 Necessary when modifying @file{*.l} files.
 
 Necessary to build GCC during development because the generated output
-files are not included in the CVS repository.  They are included in
+files are not included in the SVN repository.  They are included in
 releases.
 
 @item Texinfo version 4.4 (or later)
@@ -388,7 +388,7 @@ Necessary for running @command{makeinfo} when modifying @file{*.texi}
 files to test your changes.
 
 Necessary to build GCC documentation during development because the
-generated output files are not included in the CVS repository.  They are
+generated output files are not included in the SVN repository.  They are
 included in releases.
 
 @item @TeX{} (any working version)
@@ -396,25 +396,25 @@ included in releases.
 Necessary for running @command{texi2dvi}, used when running
 @command{make dvi} to create DVI files.
 
-@item cvs version 1.10 (or later)
-@itemx ssh (any version)
+@item SVN (any version)
+@itemx SSH (any version)
 
-Necessary to access the CVS repository.  Public releases and weekly
+Necessary to access the SVN repository.  Public releases and weekly
 snapshots of the development sources are also available via FTP@.
 
-@item perl version 5.6.1 (or later)
+@item Perl version 5.6.1 (or later)
 
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
 Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
 Necessary when targetting Darwin, building libstdc++,
 and not using @option{--disable-symvers}.
-Used by various scripts to generate some files included in CVS (mainly
+Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
 
 @item GNU diffutils version 2.7 (or later)
 
-Necessary when creating changes to GCC source code to submit for review.
+Useful when submitting patches for the GCC source code.
 
 @item patch version 2.5.4 (or later)
 
@@ -444,7 +444,7 @@ own sources.
 @cindex Downloading GCC
 @cindex Downloading the Source
 
-GCC is distributed via @uref{http://gcc.gnu.org/cvs.html,,CVS} and FTP
+GCC is distributed via @uref{http://gcc.gnu.org/svn.html,,SVN} and FTP
 tarballs compressed with @command{gzip} or
 @command{bzip2}.  It is possible to download a full distribution or specific
 components.
@@ -503,7 +503,7 @@ for both native and cross targets.
 We use @var{srcdir} to refer to the toplevel source directory for
 GCC; we use @var{objdir} to refer to the toplevel build/object directory.
 
-If you obtained the sources via CVS, @var{srcdir} must refer to the top
+If you obtained the sources via SVN, @var{srcdir} must refer to the top
 @file{gcc} directory, the one where the @file{MAINTAINERS} can be found,
 and not its @file{gcc} subdirectory, otherwise the build will fail.
 
@@ -1053,18 +1053,18 @@ this.  Note that you need a recent version of the @code{gettext} tools
 to do so.
 
 @item --enable-generated-files-in-srcdir
-Neither the .c and .h files that are generated from bison and flex nor the
+Neither the .c and .h files that are generated from Bison and flex nor the
 info manuals and man pages that are built from the .texi files are present
-in the CVS development tree.  When building GCC from that development tree,
-or from a snapshot which are created from CVS, then those generated files
-are placed in your build directory, which allows for the source to be in a
-readonly directory.
+in the SVN development tree.  When building GCC from that development tree,
+or from one of our snapshots, those generated files are placed in your
+build directory, which allows for the source to be in a readonly
+directory.
 
 If you configure with @option{--enable-generated-files-in-srcdir} then those
 generated files will go into the source directory.  This is mainly intended
 for generating release or prerelease tarballs of the GCC sources, since it
-is not a requirement that the users of source releases to have flex, bison, or
-makeinfo.
+is not a requirement that the users of source releases to have flex, Bison,
+or makeinfo.
 
 @item --enable-version-specific-runtime-libs
 Specify
@@ -1187,7 +1187,7 @@ consistency checks of the requested complexity.  This does not change the
 generated code, but adds error checking within the compiler.  This will
 slow down the compiler and may only work properly if you are building
 the compiler with GCC@.  This is @samp{yes} by default when building
-from CVS or snapshots, but @samp{release} for releases.  More control
+from SVN or snapshots, but @samp{release} for releases.  More control
 over the checks may be had by specifying @var{list}.  The categories of
 checks available are @samp{yes} (most common checks
 @samp{assert,misc,tree,gc,rtlflag,runtime}), @samp{no} (no checks at
@@ -1565,13 +1565,12 @@ that type mismatches occur, this could be the cause.
 
 The solution is not to use such a directory for building GCC@.
 
-When building from CVS or snapshots, or if you modify parser sources,
-you need the Bison parser generator installed.  Any version 1.25 or
-later should work; older versions may also work.  If you do not modify
+When building from SVN or snapshots, or if you modify parser sources,
+you need the Bison parser generator installed.  If you do not modify
 parser sources, releases contain the Bison-generated files and you do
 not need Bison installed to build them.
 
-When building from CVS or snapshots, or if you modify Texinfo
+When building from SVN or snapshots, or if you modify Texinfo
 documentation, you need version 4.4 or later of Texinfo installed if you
 want Info documentation to be regenerated.  Releases contain Info
 documentation pre-built for the unmodified documentation in the release.
@@ -1585,8 +1584,7 @@ following steps:
 
 @itemize @bullet
 @item
-Build tools necessary to build the compiler such as texinfo, bison,
-gperf.
+Build tools necessary to build the compiler.
 
 @item
 Perform a 3-stage bootstrap of the compiler.  This includes building
@@ -1681,8 +1679,7 @@ following steps:
 
 @itemize @bullet
 @item
-Build host tools necessary to build the compiler such as texinfo, bison,
-gperf.
+Build host tools necessary to build the compiler.
 
 @item
 Build target tools for use by the compiler such as binutils (bfd,
@@ -1826,8 +1823,8 @@ These are part of the full distribution, but if you downloaded the
 separately.
 
 Second, you must have the testing tools installed.  This includes
-@uref{http://www.gnu.org/software/dejagnu/,,DejaGnu} 1.4.4 and later,
-Tcl, and Expect; the DejaGnu site has links to these.
+@uref{http://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
+the DejaGnu site has links to these.
 
 If the directories where @command{runtest} and @command{expect} were
 installed are not in the @env{PATH}, you may need to set the following
@@ -4081,7 +4078,7 @@ operating system may still cause problems.
 Support for older systems as targets for cross-compilation is less
 problematic than support for them as hosts for GCC; if an enthusiast
 wishes to make such a target work again (including resurrecting any of
-the targets that never worked with GCC 2, starting from the last CVS
+the targets that never worked with GCC 2, starting from the last
 version before they were removed), patches
 @uref{../contribute.html,,following the usual requirements} would be
 likely to be accepted, since they should not affect the support for more

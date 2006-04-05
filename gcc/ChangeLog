@@ -1,3 +1,22 @@
+2006-04-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): Refine some wording on
+	bootstrapping and ksh.
+	Move the version numbers of DejaGnu here from the testing section
+	and fix casing of names.
+	Fix markup and clarify wording for autogen requirements.
+	Refer to GCJ instead of just java.
+	Refer to SVN instead of CVS.
+	Describe diffutils as useful instead of necessary.
+	(Downloading the source): Refer to SVN instead of CVS.
+	Adjust a link to our web site accordingly.
+	(Configuration): Fix casing of Bison.
+	(Building): Refer to SVN instead of CVS.  
+	Fix a sentence on the use of Bison and remove duplicate (and
+	incorrect) version number of Bison requirement.
+	Remove one redundant list of packages needed for building.
+	(Specific): Avoid reference to CVS.
+
 2006-04-04  Eric Christopher  <echristo@apple.com>
 
 	* config/rs6000/rs6000.c (TARGET_MS_BITFIELD_LAYOUT_P): Define.
