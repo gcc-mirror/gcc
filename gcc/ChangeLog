@@ -1,3 +1,9 @@
+2006-04-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26919
+	* ipa-inline.c (cgraph_decide_inlining_incrementally): Fix argument
+	to cgraph_estimate_size_after_inlining.
+
 2006-04-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* reload.c (find_dummy_reload): Fix typo in 2006-04-03 change.

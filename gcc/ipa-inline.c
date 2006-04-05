@@ -1077,7 +1077,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	  && !e->callee->local.disregard_inline_limits
 	  && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
 	  && (!early
-	      || (cgraph_estimate_size_after_inlining (1, e->caller, node)
+	      || (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
 	          <= e->caller->global.insns))
 	  && cgraph_check_inline_limits (node, e->callee, &e->inline_failed)
 	  && (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))

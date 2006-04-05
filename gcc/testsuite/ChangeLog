@@ -1,5 +1,13 @@
 2006-04-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/26919
+	* gcc.dg/ipa/ipa-1.c: Use -fno-early-inlining.
+	* gcc.dg/ipa/ipa-2.c: Likewise.
+	* gcc.dg/ipa/ipa-3.c: Likewise.
+	* gcc.dg/ipa/ipa-5.c: Likewise.
+
+2006-04-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/26763
 	* gcc.dg/torture/pr26763-1.c: New testcase.
 	* gcc.dg/torture/pr26763-2.c: Likewise.
