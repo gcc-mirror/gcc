@@ -151,6 +151,7 @@ compile-classes: classes $(JAVA_SRCS) Makefile
 	  GCJ='$(GCJ)' \
 	  compile_classpath='$(top_builddir):$(compile_classpath)' \
 	  top_srcdir=$(top_srcdir)
+	touch compile-classes
 else
 compile-classes: classes $(JAVA_SRCS) Makefile
 	$(JAVAC)
