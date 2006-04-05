@@ -50,6 +50,15 @@
 	initial position to zero and modify the condition for updating
 	it, to implement the F2003 requirement for all(mask) is false.
 
+2006-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* io.c (check_io_constraints): Don't look at
+	dt->advance->value.charater.string, unless it is a CHARACTER
+	constant.
+
+	* f95-lang.c (gfc_get_alias_set): New function.
+	(LANG_HOOKS_GET_ALIAS_SET): Define.
+
 2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/17298
