@@ -1,3 +1,9 @@
+2006-04-05  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* configure.host: Add -fno-omit-frame-pointer to libgcj_flags for
+	MinGW since EBP is used for backtracking through call frames on this
+	platform.
+
 2006-04-05  Archit Shah  <ashah@redhat.com>
 
 	PR java/25414

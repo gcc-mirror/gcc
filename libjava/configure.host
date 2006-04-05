@@ -260,6 +260,7 @@ EOF
 	slow_pthread_self=
 	;;
   *-mingw*)
+        libgcj_flags="${libgcj_flags} -fno-omit-frame-pointer"
   	# FIXME: win32_exception_handler( ) in win32.cc does not do the
 	# right stuff yet w.r.t. SEH. Live with the following for now.
 	can_unwind_signal=no
