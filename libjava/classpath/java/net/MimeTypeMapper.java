@@ -1,5 +1,5 @@
 /* MimeTypeMapper.java -- A class for mapping file names to MIME types
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.net;
 
 import java.util.Hashtable;
+import gnu.gcj.io.MimeTypes;
 
 
 /**
@@ -206,7 +207,7 @@ class MimeTypeMapper implements FileNameMap
 
     String type = (String) mime_types.get(filename);
     if (type == null)
-      return "application/octet-stream";
+      return MimeTypes.getMimeTypeFromExtension(filename);
     else
       return type;
   }

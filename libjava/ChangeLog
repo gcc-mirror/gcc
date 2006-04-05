@@ -1,3 +1,11 @@
+2006-04-05  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/27024:
+	* java/net/URLConnection.java (guessContentTypeFromName):
+	Rewrote, using Classpath implementation.
+	(getFileNameMap): Likewise.
+	(guessContentTypeFromStream): Return application/octet-stream.
+
 2006-04-04  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26990:

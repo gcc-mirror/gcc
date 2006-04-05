@@ -1,3 +1,9 @@
+2006-04-05  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/27024:
+	* java/net/MimeTypeMapper.java (getContentTypeFor): Fall back
+        to MimeTypes.
+
 2006-04-05  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR classpath/27028

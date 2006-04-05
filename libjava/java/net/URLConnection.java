@@ -1,5 +1,5 @@
 /* URLConnection.java -- Abstract superclass for reading from URL's
-   Copyright (C) 1998, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -899,22 +899,7 @@ public abstract class URLConnection
    */
   public static String guessContentTypeFromName(String filename)
   {
-    int dot = filename.lastIndexOf(".");
-    
-    if (dot != -1)
-      {
-	if (dot == filename.length())
-	  return "application/octet-stream";
-	else
-	  filename = filename.substring(dot + 1);
-      }
-    
-    String type = MimeTypes.getMimeTypeFromExtension(filename);
-    
-    if (type == null)
-      return"application/octet-stream";
-
-    return type;
+    return getFileNameMap().getContentTypeFor(filename.toLowerCase());
   }
 
   /**
@@ -939,7 +924,7 @@ public abstract class URLConnection
     is.mark(1024);
     // FIXME: Implement this. Use system mimetype informations (like "file").
     is.reset();
-    return null;
+    return "application/octet-stream";
   }
 
   /**
@@ -950,8 +935,12 @@ public abstract class URLConnection
    *
    * @since 1.2
    */
-  public static FileNameMap getFileNameMap()
+  public static synchronized FileNameMap getFileNameMap()
   {
+    // Delayed initialization.
+    if (fileNameMap == null)
+      fileNameMap = new MimeTypeMapper();
+
     return fileNameMap;
   }
 
@@ -966,7 +955,7 @@ public abstract class URLConnection
    *
    * @since 1.2
    */
-  public static void setFileNameMap(FileNameMap map)
+  public static synchronized void setFileNameMap(FileNameMap map)
   {
     // Throw an exception if an extant security manager precludes
     // setting the factory.
