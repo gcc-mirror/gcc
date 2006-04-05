@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fipa-cp -fdump-ipa-cp"  } */
+/* { dg-options "-O3 -fipa-cp -fdump-ipa-cp -fno-early-inlining"  } */
 /* { dg-skip-if "PR 25442" { "*-*-*" } { "-fpic" "-fPIC" } { "" } } */
 
 /* Float & short constants.  */
