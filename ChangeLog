@@ -1,3 +1,8 @@
+2006-04-05  Ben Elliston  <bje@au.ibm.com>
+
+	* configure.in: Require makeinfo 4.4 or higher.
+	* configure: Regenerate.
+
 2006-04-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* MAINTAINERS: Add Richard Henderson as libgomp maintainer.
