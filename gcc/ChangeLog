@@ -1,3 +1,8 @@
+2006-04-05  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_legitimate_address_p): Disallow
+	got-relative addressing for anything but SImode.
+
 2006-04-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26919

@@ -2133,7 +2133,7 @@ bfin_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
   case PLUS:
     if (REG_P (XEXP (x, 0))
 	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict, mode, PLUS)
-	&& (GET_CODE (XEXP (x, 1)) == UNSPEC
+	&& ((GET_CODE (XEXP (x, 1)) == UNSPEC && mode == SImode)
 	    || (GET_CODE (XEXP (x, 1)) == CONST_INT
 		&& bfin_valid_add (mode, INTVAL (XEXP (x, 1))))))
       return true;
