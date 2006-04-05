@@ -1,5 +1,12 @@
 2006-04-05  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/26625:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj-$(gcc_version).jar): Depend on
+	classpath/lib/compile-classes.
+
+2006-04-05  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/27024:
 	* java/net/URLConnection.java (guessContentTypeFromName):
 	Rewrote, using Classpath implementation.

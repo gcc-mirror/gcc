@@ -324,7 +324,7 @@ $(propertyo_files): %.lo: classpath/resource/%
 	$(mkinstalldirs) `dirname $@`; \
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,$(@:.lo=)
 
-libgcj-$(gcc_version).jar:
+libgcj-$(gcc_version).jar: classpath/lib/compile-classes
 	jardir=`dirname $(ZIP)`; \
 	jardir=`cd $$jardir && pwd`; \
 	jarname=`basename $(ZIP)`; \

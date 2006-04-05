@@ -1,5 +1,11 @@
 2006-04-05  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/26625:
+	* lib/Makefile.in: Rebuilt.
+	* lib/Makefile.am (compile-classes): Touch the output file.
+
+2006-04-05  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/27024:
 	* java/net/MimeTypeMapper.java (getContentTypeFor): Fall back
         to MimeTypes.
