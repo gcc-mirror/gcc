@@ -1,3 +1,10 @@
+2006-04-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26763
+	* fold-const.c (fold_comparison): Move folding of
+	PTR + CST CMP PTR + CST ...
+	(fold_binary): ... here.  Fold only for EQ_EXPR and NE_EXPR.
+
 2006-04-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Prerequisites): Refine some wording on
