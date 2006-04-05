@@ -27,7 +27,7 @@
 
 2006-04-03  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/26981
+	PR fortran/26891
 	* gfortran.dg/missing_optional_dummy_1.f90: New test.
 
 	PR fortran/26976
