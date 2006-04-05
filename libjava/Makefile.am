@@ -320,7 +320,7 @@ $(propertyo_files): %.lo: classpath/resource/%
 	$(mkinstalldirs) `dirname $@`; \
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,$(@:.lo=)
 
-libgcj-$(gcc_version).jar:
+libgcj-$(gcc_version).jar: classpath/lib/compile-classes
 	cd classpath/lib; $(JAR) -cfM \
 	    ../../libgcj-$(gcc_version).jar gnu java javax org
 

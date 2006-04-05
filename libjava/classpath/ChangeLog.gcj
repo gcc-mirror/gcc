@@ -1,3 +1,9 @@
+2006-04-05  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/26625:
+	* lib/Makefile.in: Rebuilt.
+	* lib/Makefile.am (compile-classes): Touch the output file.
+
 2006-04-04  Tom Tromey  <tromey@redhat.com>
 
 	* lib/gen-classlist.sh.in: Correct handle generated files.

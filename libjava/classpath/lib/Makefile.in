@@ -537,6 +537,7 @@ $(JAVA_DEPEND): genclasses
 @FOUND_GCJ_TRUE@	  GCJ='$(GCJ)' \
 @FOUND_GCJ_TRUE@	  compile_classpath='$(top_builddir):$(compile_classpath)' \
 @FOUND_GCJ_TRUE@	  top_srcdir=$(top_srcdir)
+@FOUND_GCJ_TRUE@	touch compile-classes
 @FOUND_GCJ_FALSE@compile-classes: classes $(JAVA_SRCS) Makefile
 @FOUND_GCJ_FALSE@	$(JAVAC)
 @FOUND_GCJ_FALSE@	touch compile-classes
