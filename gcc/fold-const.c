@@ -8897,8 +8897,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       /* If this is a comparison of two exprs that look like an
 	 ARRAY_REF of the same object, then we can fold this to a
-	 comparison of the two offsets.  */
-      if (TREE_CODE_CLASS (code) == tcc_comparison)
+	 comparison of the two offsets.  This is only safe for
+	 EQ_EXPR and NE_EXPR because of overflow issues.  */
+      if (code == EQ_EXPR || code == NE_EXPR)
 	{
 	  tree base0, offset0, base1, offset1;
 

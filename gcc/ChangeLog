@@ -1,3 +1,9 @@
+2006-04-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26763
+	* fold-const.c (fold_binary): Fold PTR + CST CMP PTR + CST
+	only for EQ_EXPR and NE_EXPR.
+
 2006-04-04  Paul Brook  <paul@codesourcery.com>
 
 	Backport form mainline.
