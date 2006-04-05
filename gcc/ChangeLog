@@ -3,6 +3,9 @@
 	* config/bfin/bfin.c (bfin_legitimate_address_p): Disallow
 	got-relative addressing for anything but SImode.
 
+	* config/bfin/lib1funcs.asm (modsi): P1/P2 can be call-clobbered
+	even if the calling function doesn't modify them.
+
 2006-04-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26919
