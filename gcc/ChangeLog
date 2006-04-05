@@ -1,3 +1,10 @@
+2006-04-04  Eric Christopher  <echristo@apple.com>
+
+	* config/rs6000/rs6000.c (TARGET_MS_BITFIELD_LAYOUT_P): Define.
+	(TARGET_USE_MS_BITFIELD_LAYOUT): Ditto.
+	(rs6000_handle_struct_attribute): New.
+	(rs6000_ms_bitfield_layout_p): Ditto.
+
 2006-04-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin-crt3.c (atexit): Pass &__dso_handle rather than
