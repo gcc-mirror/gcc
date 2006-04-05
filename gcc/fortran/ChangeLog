@@ -10,7 +10,7 @@
 
 2006-04-03  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/26981
+	PR fortran/26891
 	* trans.h : Prototype for gfc_conv_missing_dummy.
 	* trans-expr (gfc_conv_missing_dummy): New function
 	(gfc_conv_function_call): Call it and tidy up some of the code.
