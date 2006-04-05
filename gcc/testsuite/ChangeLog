@@ -463,6 +463,10 @@
 	PR middle-end/26565
 	* gcc.dg/torture/pr26565.c: New testcase.
 
+2006-03-09  Eric Christopher  <echristo@apple.com>
+
+        * gcc.c-torture/compile/20060309-1.c: New.
+
 2006-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26499
