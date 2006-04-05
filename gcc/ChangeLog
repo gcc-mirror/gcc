@@ -1,3 +1,8 @@
+2006-04-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin-crt3.c (atexit): Pass &__dso_handle rather than
+	NULL for dso parameter to atexit_common.
+
 2006-04-04  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.c (machopic_output_stub): Output \t

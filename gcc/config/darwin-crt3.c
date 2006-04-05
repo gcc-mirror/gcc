@@ -518,11 +518,15 @@ __cxa_atexit (cxa_atexit_callback func, void* arg, const void* dso)
 
 int atexit (atexit_callback func) __attribute__((visibility("hidden")));
 
+/* Use __dso_handle to allow even bundles that call atexit() to be unloaded
+   on 10.4.  */
+extern void __dso_handle;
+
 int
 atexit (atexit_callback func)
 {
   struct one_atexit_routine r;
   r.callback.ac = func;
   r.has_arg = 0;
-  return atexit_common (&r, NULL);
+  return atexit_common (&r, &__dso_handle);
 }
