@@ -1896,7 +1896,7 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
      otherwise we might find a dummy now, but push_reload won't.  */
   {
     enum reg_class preferred_class = PREFERRED_RELOAD_CLASS (in, class);
-    if (class != NO_REGS)
+    if (preferred_class != NO_REGS)
       class = preferred_class;
   }
 
