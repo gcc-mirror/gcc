@@ -1,3 +1,13 @@
+2006-04-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/25619
+	* trans-array.c (gfc_conv_expr_descriptor): Only dereference
+	character pointer when copying temporary.
+
+	PR fortran/23634
+	* trans-array.c (gfc_conv_expr_descriptor): Properly copy
+	temporary character with non constant size.
+
 2006-04-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26981
