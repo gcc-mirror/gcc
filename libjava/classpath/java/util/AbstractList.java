@@ -327,12 +327,9 @@ while (i.hasNext())
        *
        * @return True if the end of the list has not yet been
        *         reached.
-       * @throws ConcurrentModificationException if the
-       *         list has been modified elsewhere.
        */
       public boolean hasNext()
       {
-        checkMod();
         return pos < size;
       }
 
@@ -461,12 +458,9 @@ while (i.hasNext())
        *
        * @return True if the end of the list has not yet been
        *         reached.
-       * @throws ConcurrentModificationException if the
-       *         list has been modified elsewhere.
        */
       public boolean hasNext()
       {
-        checkMod();
         return position < size;
       }
 
@@ -476,12 +470,9 @@ while (i.hasNext())
        *
        * @return True if objects exist prior to the current
        *         position of the iterator.
-       * @throws ConcurrentModificationException if the
-       *         list has been modified elsewhere.
        */
       public boolean hasPrevious()
       {
-        checkMod();
         return position > 0;
       }
 
@@ -526,12 +517,9 @@ while (i.hasNext())
        * list, which will be retrieved by <code>next()</code>
        *
        * @return The index of the next element.
-       * @throws ConcurrentModificationException if the list
-       *         has been modified elsewhere.
        */
       public int nextIndex()
       {
-        checkMod();
         return position;
       }
 
@@ -540,12 +528,9 @@ while (i.hasNext())
        * list, which will be retrieved by <code>previous()</code>
        *
        * @return The index of the previous element.
-       * @throws ConcurrentModificationException if the list
-       *         has been modified elsewhere.
        */
       public int previousIndex()
       {
-        checkMod();
         return position - 1;
       }
 
@@ -1030,12 +1015,9 @@ while (i.hasNext())
          *
          * @return True if the end of the list has not yet been
          *         reached.
-         * @throws ConcurrentModificationException if the
-         *         list has been modified elsewhere.
          */
         public boolean hasNext()
         {
-          checkMod();
           return position < size;
         }
 
@@ -1045,12 +1027,9 @@ while (i.hasNext())
          *
          * @return True if objects exist prior to the current
          *         position of the iterator.
-         * @throws ConcurrentModificationException if the
-         *         list has been modified elsewhere.
          */
         public boolean hasPrevious()
         {
-          checkMod();
           return position > 0;
         }
 
@@ -1093,8 +1072,6 @@ while (i.hasNext())
          * list, which will be retrieved by <code>next()</code>
          *
          * @return The index of the next element.
-         * @throws ConcurrentModificationException if the
-         *         list has been modified elsewhere.
          */
         public int nextIndex()
         {
@@ -1106,8 +1083,6 @@ while (i.hasNext())
          * list, which will be retrieved by <code>previous()</code>
          *
          * @return The index of the previous element.
-         * @throws ConcurrentModificationException if the
-         *         list has been modified elsewhere.
          */
         public int previousIndex()
         {

@@ -1,3 +1,23 @@
+2006-04-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR classpath/27028
+	PR classpath/24752
+	* java/util/AbstractList.java (hasNext): Don't throw
+	ConcurrentModificationException. Update Javadoc.
+	(hasPrevious): Likewise.
+	(nextIndex): Likewise.
+	(previousIndex): Likewise.
+	* java/util/HashMap.java (hasNext): Likewise.
+	* java/util/Hashtable.java (hasNext): Likewise.
+	* java/util/IdentityHashMap.java (hasNext): Likewise.
+	* java/util/LinkedHashMap.java (hasNext): Likewise.
+	* java/util/LinkedList.java (nextIndex): Likewise.
+	(previousIndex): Likewise.
+	(hasNext): Likewise.
+	(hasPrevious): Likewise.
+	* java/util/TreeMap.java (hasNext): Likewise.
+	* java/util/WeakHashMap.java (hasNext): Likewise.
+
 2006-04-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassNotFoundException.java: Imported from

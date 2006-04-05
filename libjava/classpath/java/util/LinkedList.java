@@ -804,11 +804,9 @@ public class LinkedList extends AbstractSequentialList
      * Returns the index of the next element.
      *
      * @return the next index
-     * @throws ConcurrentModificationException if the list was modified
      */
     public int nextIndex()
     {
-      checkMod();
       return position;
     }
 
@@ -816,11 +814,9 @@ public class LinkedList extends AbstractSequentialList
      * Returns the index of the previous element.
      *
      * @return the previous index
-     * @throws ConcurrentModificationException if the list was modified
      */
     public int previousIndex()
     {
-      checkMod();
       return position - 1;
     }
 
@@ -828,11 +824,9 @@ public class LinkedList extends AbstractSequentialList
      * Returns true if more elements exist via next.
      *
      * @return true if next will succeed
-     * @throws ConcurrentModificationException if the list was modified
      */
     public boolean hasNext()
     {
-      checkMod();
       return (next != null);
     }
 
@@ -840,11 +834,9 @@ public class LinkedList extends AbstractSequentialList
      * Returns true if more elements exist via previous.
      *
      * @return true if previous will succeed
-     * @throws ConcurrentModificationException if the list was modified
      */
     public boolean hasPrevious()
     {
-      checkMod();
       return (previous != null);
     }
 

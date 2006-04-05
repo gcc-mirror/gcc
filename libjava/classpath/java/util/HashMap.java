@@ -849,12 +849,9 @@ public class HashMap extends AbstractMap
     /**
      * Returns true if the Iterator has more elements.
      * @return true if there are more elements
-     * @throws ConcurrentModificationException if the HashMap was modified
      */
     public boolean hasNext()
     {
-      if (knownMod != modCount)
-        throw new ConcurrentModificationException();
       return count > 0;
     }
 
