@@ -1,3 +1,9 @@
+2006-04-05  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR tree-optimization/26996
+	* tree-scalar-evolution.c (analyze_scalar_evolution_1): Don't analyze
+	VECTOR_TYPE variables.
+
 2006-04-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26763
