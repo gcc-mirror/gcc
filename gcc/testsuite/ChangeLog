@@ -1,3 +1,9 @@
+2006-04-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/23634
+	PR fortran/25619
+	* gfortran.dg/actual_array_constructor_1.f90: New testcase.
+
 2006-04-04  Eric Christopher  <echristo@apple.com>
 
 	* gcc.target/i386/387-1.c: Allow regexp to match darwin
