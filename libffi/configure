@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS CCAS CCASFLAGS LN_S RANLIB ac_ct_RANLIB LIBTOOL MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP TESTSUBDIR_TRUE TESTSUBDIR_FALSE AM_RUNTESTFLAGS MIPS_IRIX_TRUE MIPS_IRIX_FALSE MIPS_LINUX_TRUE MIPS_LINUX_FALSE SPARC_TRUE SPARC_FALSE X86_TRUE X86_FALSE X86_WIN32_TRUE X86_WIN32_FALSE ALPHA_TRUE ALPHA_FALSE IA64_TRUE IA64_FALSE M32R_TRUE M32R_FALSE M68K_TRUE M68K_FALSE POWERPC_TRUE POWERPC_FALSE POWERPC_AIX_TRUE POWERPC_AIX_FALSE POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE POWERPC_FREEBSD_TRUE POWERPC_FREEBSD_FALSE ARM_TRUE ARM_FALSE LIBFFI_CRIS_TRUE LIBFFI_CRIS_FALSE FRV_TRUE FRV_FALSE S390_TRUE S390_FALSE X86_64_TRUE X86_64_FALSE SH_TRUE SH_FALSE SH64_TRUE SH64_FALSE PA_TRUE PA_FALSE ALLOCA HAVE_LONG_DOUBLE TARGET TARGETDIR toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS CCAS CCASFLAGS LN_S RANLIB ac_ct_RANLIB LIBTOOL MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP TESTSUBDIR_TRUE TESTSUBDIR_FALSE AM_RUNTESTFLAGS MIPS_IRIX_TRUE MIPS_IRIX_FALSE MIPS_LINUX_TRUE MIPS_LINUX_FALSE SPARC_TRUE SPARC_FALSE X86_TRUE X86_FALSE X86_WIN32_TRUE X86_WIN32_FALSE ALPHA_TRUE ALPHA_FALSE IA64_TRUE IA64_FALSE M32R_TRUE M32R_FALSE M68K_TRUE M68K_FALSE POWERPC_TRUE POWERPC_FALSE POWERPC_AIX_TRUE POWERPC_AIX_FALSE POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE POWERPC_FREEBSD_TRUE POWERPC_FREEBSD_FALSE ARM_TRUE ARM_FALSE LIBFFI_CRIS_TRUE LIBFFI_CRIS_FALSE FRV_TRUE FRV_FALSE S390_TRUE S390_FALSE X86_64_TRUE X86_64_FALSE SH_TRUE SH_FALSE SH64_TRUE SH64_FALSE PA_LINUX_TRUE PA_LINUX_FALSE PA_HPUX_TRUE PA_HPUX_FALSE PA64_HPUX_TRUE PA64_HPUX_FALSE ALLOCA HAVE_LONG_DOUBLE TARGET TARGETDIR toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -5417,7 +5417,9 @@ x86_64-*-linux* | x86_64-*-freebsd* | x86_64-*-kfreebsd*-gnu) TARGET=X86_64; TAR
 sh-*-linux* | sh[34]*-*-linux*) TARGET=SH; TARGETDIR=sh;;
 sh-*-rtems*) TARGET=SH; TARGETDIR=sh;;
 sh64-*-linux* | sh5*-*-linux*) TARGET=SH64; TARGETDIR=sh64;;
-hppa-*-linux* | parisc-*-linux*) TARGET=PA; TARGETDIR=pa;;
+hppa*-*-linux* | parisc*-*-linux*) TARGET=PA_LINUX; TARGETDIR=pa;;
+hppa*64-*-hpux*) TARGET=PA64_HPUX; TARGETDIR=pa;;
+hppa*-*-hpux*) TARGET=PA_HPUX; TARGETDIR=pa;;
 esac
 
 
@@ -5630,12 +5632,32 @@ fi
 
 
 
-if test x$TARGET = xPA; then
-  PA_TRUE=
-  PA_FALSE='#'
+if test x$TARGET = xPA_LINUX; then
+  PA_LINUX_TRUE=
+  PA_LINUX_FALSE='#'
 else
-  PA_TRUE='#'
-  PA_FALSE=
+  PA_LINUX_TRUE='#'
+  PA_LINUX_FALSE=
+fi
+
+
+
+if test x$TARGET = xPA_HPUX; then
+  PA_HPUX_TRUE=
+  PA_HPUX_FALSE='#'
+else
+  PA_HPUX_TRUE='#'
+  PA_HPUX_FALSE=
+fi
+
+
+
+if test x$TARGET = xPA64_HPUX; then
+  PA64_HPUX_TRUE=
+  PA64_HPUX_FALSE='#'
+else
+  PA64_HPUX_TRUE='#'
+  PA64_HPUX_FALSE=
 fi
 
 
@@ -7901,10 +7923,24 @@ echo "$as_me: error: conditional \"SH64\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
-if test -z "${PA_TRUE}" && test -z "${PA_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"PA\" was never defined.
+if test -z "${PA_LINUX_TRUE}" && test -z "${PA_LINUX_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"PA_LINUX\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"PA\" was never defined.
+echo "$as_me: error: conditional \"PA_LINUX\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${PA_HPUX_TRUE}" && test -z "${PA_HPUX_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"PA_HPUX\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"PA_HPUX\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${PA64_HPUX_TRUE}" && test -z "${PA64_HPUX_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"PA64_HPUX\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"PA64_HPUX\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -8567,8 +8603,12 @@ s,@SH_TRUE@,$SH_TRUE,;t t
 s,@SH_FALSE@,$SH_FALSE,;t t
 s,@SH64_TRUE@,$SH64_TRUE,;t t
 s,@SH64_FALSE@,$SH64_FALSE,;t t
-s,@PA_TRUE@,$PA_TRUE,;t t
-s,@PA_FALSE@,$PA_FALSE,;t t
+s,@PA_LINUX_TRUE@,$PA_LINUX_TRUE,;t t
+s,@PA_LINUX_FALSE@,$PA_LINUX_FALSE,;t t
+s,@PA_HPUX_TRUE@,$PA_HPUX_TRUE,;t t
+s,@PA_HPUX_FALSE@,$PA_HPUX_FALSE,;t t
+s,@PA64_HPUX_TRUE@,$PA64_HPUX_TRUE,;t t
+s,@PA64_HPUX_FALSE@,$PA64_HPUX_FALSE,;t t
 s,@ALLOCA@,$ALLOCA,;t t
 s,@HAVE_LONG_DOUBLE@,$HAVE_LONG_DOUBLE,;t t
 s,@TARGET@,$TARGET,;t t

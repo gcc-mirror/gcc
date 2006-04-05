@@ -1,3 +1,53 @@
+2006-04-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.am: Add PA_HPUX port.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* configure.ac: Add PA_HPUX rules.
+	* configure: Regenerate.
+	* src/pa/ffitarget.h: Rename linux target to PA_LINUX.
+	Add PA_HPUX and PA64_HPUX.
+	Rename FFI_LINUX ABI to FFI_PA32 ABI.
+	(FFI_TRAMPOLINE_SIZE): Define for 32-bit HP-UX targets.
+	(FFI_TYPE_SMALL_STRUCT2): Define.
+	(FFI_TYPE_SMALL_STRUCT4): Likewise.
+	(FFI_TYPE_SMALL_STRUCT8): Likewise.
+	(FFI_TYPE_SMALL_STRUCT3): Redefine.
+	(FFI_TYPE_SMALL_STRUCT5): Likewise.
+	(FFI_TYPE_SMALL_STRUCT6): Likewise.
+	(FFI_TYPE_SMALL_STRUCT7): Likewise.
+	* src/pa/ffi.c (ROUND_DOWN): Delete.
+	(fldw, fstw, fldd, fstd): Use '__asm__'.
+	(ffi_struct_type): Add support for FFI_TYPE_SMALL_STRUCT2,
+	FFI_TYPE_SMALL_STRUCT4 and FFI_TYPE_SMALL_STRUCT8.
+	(ffi_prep_args_LINUX): Rename to ffi_prep_args_pa32. Update comment.
+	Simplify incrementing of stack slot variable. Change type of local
+	'n' to unsigned int.
+	(ffi_size_stack_LINUX): Rename to ffi_size_stack_pa32. Handle long
+	double on PA_HPUX.
+	(ffi_prep_cif_machdep): Likewise.
+	(ffi_call): Likewise.
+	(ffi_closure_inner_LINUX): Rename to ffi_closure_inner_pa32. Change
+	return type to ffi_status. Simplify incrementing of stack slot
+	variable. Only copy floating point argument registers when PA_LINUX
+	is true. Reformat debug statement.
+	Add support for FFI_TYPE_SMALL_STRUCT2, FFI_TYPE_SMALL_STRUCT4 and
+	FFI_TYPE_SMALL_STRUCT8.
+	(ffi_closure_LINUX): Rename to ffi_closure_pa32. Add 'extern' to
+	declaration.
+	(ffi_prep_closure): Make linux trampoline conditional on PA_LINUX.
+	Add nops to cache flush.  Add trampoline for PA_HPUX.
+	* src/pa/hpux32.S: New file.
+	* src/pa/linux.S (ffi_call_LINUX): Rename to ffi_call_pa32. Rename
+	ffi_prep_args_LINUX to ffi_prep_args_pa32.
+	Localize labels. Add support for 2, 4 and 8-byte small structs. Handle
+	unaligned destinations in 3, 5, 6 and 7-byte small structs. Order
+	argument type checks so that common argument types appear first.
+	(ffi_closure_LINUX): Rename to ffi_closure_pa32. Rename
+	ffi_closure_inner_LINUX to ffi_closure_inner_pa32.
+
 2006-03-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* src/powerpc/ffitarget.h (enum ffi_abi): Add FFI_LINUX.  Default

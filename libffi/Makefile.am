@@ -26,7 +26,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/sparc/ffi.c \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
-	src/pa/ffi.c src/pa/linux.S src/frv/eabi.S src/frv/ffitarget.h
+	src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
+	src/frv/eabi.S src/frv/ffitarget.h
 
 ## ################################################################
 
@@ -141,8 +142,11 @@ endif
 if SH64
 nodist_libffi_la_SOURCES += src/sh64/sysv.S src/sh64/ffi.c
 endif
-if PA
+if PA_LINUX
 nodist_libffi_la_SOURCES += src/pa/linux.S src/pa/ffi.c
+endif
+if PA_HPUX
+nodist_libffi_la_SOURCES += src/pa/hpux32.S src/pa/ffi.c
 endif
 
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
