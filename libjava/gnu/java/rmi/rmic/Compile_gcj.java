@@ -49,6 +49,7 @@ public class Compile_gcj extends CompilerProcess
   public String[] computeArguments (String filename)
   {
     return computeTypicalArguments(COMPILER_ARGS,
+                                   getClasspath(),
 				   getDestination(),
 				   filename);
   }

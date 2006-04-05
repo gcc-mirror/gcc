@@ -59,11 +59,27 @@ public abstract class CompilerProcess extends Compiler
    public static String[] computeTypicalArguments(String[] compilerArgs,
 	String destination, String filename)
    {
+     return computeTypicalArguments(compilerArgs, null, destination, filename);
+   }
+   /**
+    * This is used to compute the command line for the process.
+    * Most compilers typically arrange their arguments as in
+    * &lt;compiler name and arguments&gt; &lt;optional destination&gt; &lt;filename&gt;.
+    * This method builds an argument array out that. It should be used
+    * to define computeArguments for those compilers that follow the
+    * argument convention described above.
+    */
+   public static String[] computeTypicalArguments(String[] compilerArgs,
+                                                  String classpath,
+                                                  String destination,
+                                                  String filename)
+   {
      /* length of compiler specific arguments */
-     final int len = compilerArgs.length;
+     int len = compilerArgs.length;
 
      /* length of returned array of arguments */
-     final int arglen = len + (destination == null ? 0 : 2) + 1;
+     final int arglen = len + (classpath == null ? 0 : 2) +
+       (destination == null ? 0 : 2) + 1;
 
      /* Allocate String array for computed arguments. */
      String [] args = new String[arglen];
@@ -71,11 +87,18 @@ public abstract class CompilerProcess extends Compiler
      /* Fill in compiler arguments. */
      System.arraycopy(compilerArgs, 0, args, 0, len);
 
+     /* Fill in classpath argument if necessary. */
+     if (classpath != null)
+       {
+         args[len++] = "-classpath";
+         args[len++] = classpath;
+       }
+
      /* Fill in destination argument if necessary. */
      if (destination != null)
       {
-	args[len] = "-d";
-	args[len + 1] = destination;
+	args[len++] = "-d";
+	args[len++] = destination;
       }
 
      /* Fill in filename */
