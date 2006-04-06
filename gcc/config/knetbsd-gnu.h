@@ -1,5 +1,5 @@
 /* Definitions for kNetBSD-based GNU systems with ELF format
-   Copyright (C) 2004
+   Copyright (C) 2004, 2006
    Free Software Foundation, Inc.
    Contributed by Robert Millan.
 
@@ -32,5 +32,8 @@ Boston, MA 02110-1301, USA.  */
     }						\
   while (0)
 
-#undef DYNAMIC_LINKER
-#define DYNAMIC_LINKER "/lib/ld.so.1"
+
+#ifdef GLIBC_DYNAMIC_LINKER
+#undef GLIBC_DYNAMIC_LINKER
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+#endif
