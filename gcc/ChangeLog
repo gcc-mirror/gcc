@@ -1,3 +1,10 @@
+2006-04-06  Jan Hubicka  <jh@suse.cz>
+
+	PR profile/20815
+	PR profile/26399
+	* coverage.c (coverage_checksum_string): Reorganize loop to not read
+	after buffer.
+
 2006-04-06  Mike Stump  <mrs@apple.com>
 
 	* builtins.c (expand_builtin_longjmp):Use #ifdef instead of #if
