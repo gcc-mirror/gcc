@@ -1,3 +1,10 @@
+2006-04-05  Roger Sayle  <roger@eyesopen.com>
+
+	* dependency.c (get_no_elements): Delete function.
+	(get_deps): Delete function.
+	(transform_sections): Delete function.
+	(gfc_check_section_vs_section): Significant rewrite.
+
 2006-04-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/25619
@@ -11,15 +18,15 @@
 2006-04-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26891
-	* trans.h : Prototype for gfc_conv_missing_dummy.
+	* trans.h: Prototype for gfc_conv_missing_dummy.
 	* trans-expr (gfc_conv_missing_dummy): New function
 	(gfc_conv_function_call): Call it and tidy up some of the code.
 	* trans-intrinsic (gfc_conv_intrinsic_function_args): The same.
 
 	PR fortran/26976
 	* array.c (gfc_array_dimen_size): If available, return shape[dimen].
-	* resolve.c (resolve_function): If available, use the argument shape for the
-	function expression.
+	* resolve.c (resolve_function): If available, use the argument
+	shape for the function expression.
 	* iresolve.c (gfc_resolve_transfer): Set shape[0] = size.
 
 2006-04-02  Erik Edelmann  <eedelman@gcc.gnu.org>
@@ -64,7 +71,7 @@
 2006-03-31  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/25358
-	*expr.c (gfc_check_assign): Allow cray pointee to be assumes-size.
+	* expr.c (gfc_check_assign): Allow cray pointee to be assumes-size.
 	
 2006-03-30  Paul Thomas <paulthomas2@wanadoo.fr>
             Bud Davis  <bdavis9659@sbcglobal.net>
@@ -90,7 +97,7 @@
 2006-03-28 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/26779
-	*resolve.c (resolve_fl_procedure): Do not check the access of
+	* resolve.c (resolve_fl_procedure): Do not check the access of
 	derived types for internal procedures.
 
 2006-03-27  Jakub Jelinek  <jakub@redhat.com>
