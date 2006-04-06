@@ -428,7 +428,7 @@ enum reg_class
 #define RETURN_ADDR_RTX(COUNT,FA) m32c_return_addr_rtx (COUNT)
 
 #define INCOMING_RETURN_ADDR_RTX m32c_incoming_return_addr_rtx()
-#define INCOMING_FRAME_SP_OFFSET 3
+#define INCOMING_FRAME_SP_OFFSET (TARGET_A24 ? 4 : 3)
 
 /* Exception Handling Support */
 

@@ -1,3 +1,8 @@
+2006-04-05  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.h (INCOMING_FRAME_SP_OFFSET): Adjust for m16c
+	vs m32c.
+
 2006-04-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_legitimate_address_p): Disallow
