@@ -1,3 +1,12 @@
+2006-04-06  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Add install-html, install-html-am, and
+	install-html-recursive targets. Define mkdir_p and 
+	NORMAL_INSTALL. 
+	* configure.ac: AC_SUBST datarootdir, docdir, htmldir.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Add install-html and html targets.
+
 2006-03-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* pex-win32.c (<errno.h>): Include.

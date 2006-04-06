@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1999, 2002
+#   Copyright (C) 1999, 2002, 2006
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -73,7 +73,7 @@ test-expandargv: $(srcdir)/test-expandargv.c ../libiberty.a
 		$(srcdir)/test-expandargv.c ../libiberty.a
 
 # Standard (either GNU or Cygnus) rules we don't use.
-info install-info clean-info dvi install etags tags installcheck:
+html install-html info install-info clean-info dvi install etags tags installcheck:
 
 # The standard clean rules.
 mostlyclean:
