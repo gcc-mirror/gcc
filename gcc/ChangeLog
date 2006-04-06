@@ -1,3 +1,11 @@
+2006-03-05  Robert Millan  <robertmh@gnu.org>
+
+	* gcc/config/i386/linux.h:  Add a comment to mark macros that are
+	being overriden in config/k*bsd-gnu.h.
+	* gcc/config/kfreebsd-gnu.h:  Redefine GLIBC_DYNAMIC_LINKER instead of
+	DYNAMIC_LINKER.
+	* gcc/config/knetbsd-gnu.h:  Ditto.
+
 2006-04-06  Jan Hubicka  <jh@suse.cz>
 
 	PR profile/20815
