@@ -1,3 +1,8 @@
+2006-04-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/ZipFile.java (checkLocalHeader): Don't check name
+	length.
+
 2006-04-05  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26625:

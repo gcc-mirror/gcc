@@ -1,5 +1,5 @@
 /* ZipFile.java --
-   Copyright (C) 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -457,10 +457,8 @@ public class ZipFile implements ZipConstants
 	if (entry.getMethod() != readLeShort(locBuf, LOCHOW))
 	  throw new ZipException("Compression method mismatch: " + name);
 
-	if (entry.getName().length() != readLeShort(locBuf, LOCNAM))
-	  throw new ZipException("file name length mismatch: " + name);
-
-	int extraLen = entry.getName().length() + readLeShort(locBuf, LOCEXT);
+	int nameLen = readLeShort(locBuf, LOCNAM);
+	int extraLen = nameLen + readLeShort(locBuf, LOCEXT);
 	return entry.offset + LOCHDR + extraLen;
       }
   }
