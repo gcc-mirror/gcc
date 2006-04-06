@@ -1,3 +1,7 @@
+2006-04-06  Roger Sayle  <roger@eyesopen.com>
+
+	* call.c (null_ptr_cst_p): Add explicit TREE_CONSTANT_OVERFLOW check.
+
 2006-04-05  Jason Merrill  <jason@redhat.com>
 
 	* name-lookup.c (push_namespace_with_attribs): Temporarily disable

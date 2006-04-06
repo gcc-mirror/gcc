@@ -1,3 +1,8 @@
+2006-04-06  Roger Sayle  <roger@eyesopen.com>
+
+	* g++.dg/conversion/nullptr1.C: New test case.
+	* g++.dg/conversion/nullptr2.C: Likewise.
+
 2006-04-05  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/dependency_18.f90: New test case.

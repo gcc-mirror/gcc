@@ -427,7 +427,9 @@ null_ptr_cst_p (tree t)
      (_expr.const_) rvalue of integer type that evaluates to zero.  */
   t = integral_constant_value (t);
   if (t == null_node
-      || (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)) && integer_zerop (t)))
+      || (CP_INTEGRAL_TYPE_P (TREE_TYPE (t))
+	  && integer_zerop (t)
+	  && !TREE_CONSTANT_OVERFLOW (t)))
     return true;
   return false;
 }
