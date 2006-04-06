@@ -6371,6 +6371,7 @@ AC_DEFUN([AC_LTDL_SHLIBEXT],
 AC_CACHE_CHECK([which extension is used for loadable modules],
   [libltdl_cv_shlibext],
 [
+## GCJ LOCAL: gcj specific stuff. Please keep it.
 # Here in libltdl for libgcj we don't build modules for darwin.
 # So we say no. Then the extension gets .dylib which is the right
 # thing for shared libraries on darwin. Please keep me next time you
