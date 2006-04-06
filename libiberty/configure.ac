@@ -639,6 +639,11 @@ for l in x $LIBOBJS; do
 done
 LIBOBJS="$L"
 
+dnl Required by html and install-html
+AC_SUBST(datarootdir)
+AC_SUBST(docdir)
+AC_SUBST(htmldir)
+
 # We need multilib support, but only if configuring for the target.
 AC_CONFIG_FILES([Makefile testsuite/Makefile])
 AC_CONFIG_COMMANDS([default],
