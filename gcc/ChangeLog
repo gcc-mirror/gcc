@@ -1,3 +1,11 @@
+2006-04-06  Mike Stump  <mrs@apple.com>
+
+	* builtins.c (expand_builtin_longjmp):Use #ifdef instead of #if
+	for HAVE_nonlocal_goto to be consistent.
+	(expand_builtin_nonlocal_goto): Likewise.
+	(expand_builtin_strcmp): Use #ifdef instead of #if
+	for HAVE_cmpstrnsi to be consistent.
+
 2006-04-05  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.h (INCOMING_FRAME_SP_OFFSET): Adjust for m16c
