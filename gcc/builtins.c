@@ -793,7 +793,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 
       /* Pick up FP, label, and SP from the block and jump.  This code is
 	 from expand_goto in stmt.c; see there for detailed comments.  */
-#if HAVE_nonlocal_goto
+#ifdef HAVE_nonlocal_goto
       if (HAVE_nonlocal_goto)
 	/* We have to pass a value to the nonlocal_goto pattern that will
 	   get copied into the static_chain pointer, but it does not matter
@@ -866,7 +866,7 @@ expand_builtin_nonlocal_goto (tree arglist)
 
   current_function_has_nonlocal_goto = 1;
 
-#if HAVE_nonlocal_goto
+#ifdef HAVE_nonlocal_goto
   /* ??? We no longer need to pass the static chain value, afaik.  */
   if (HAVE_nonlocal_goto)
     emit_insn (gen_nonlocal_goto (const0_rtx, r_label, r_sp, r_fp));
@@ -3676,7 +3676,7 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 			       GEN_INT (MIN (arg1_align, arg2_align)));
 	}
 #endif
-#if HAVE_cmpstrnsi 
+#ifdef HAVE_cmpstrnsi
       /* Try to determine at least one length and call cmpstrnsi.  */
       if (!insn && HAVE_cmpstrnsi) 
 	{
