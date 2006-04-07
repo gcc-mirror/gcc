@@ -1,4 +1,11 @@
-2006-03-05  Robert Millan  <robertmh@gnu.org>
+2006-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26135
+	* tree-ssa-copy.c (stmt_may_generate_copy): Handle memory
+	loads for store copy-prop.
+	(copy_prop_visit_stmt): Likewise.
+
+2006-04-05  Robert Millan  <robertmh@gnu.org>
 
 	* gcc/config/i386/linux.h:  Add a comment to mark macros that are
 	being overriden in config/k*bsd-gnu.h.
