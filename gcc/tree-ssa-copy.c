@@ -376,7 +376,10 @@ stmt_may_generate_copy (tree stmt)
   /* Otherwise, the only statements that generate useful copies are
      assignments whose RHS is just an SSA name that doesn't flow
      through abnormal edges.  */
-  return TREE_CODE (rhs) == SSA_NAME && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs);
+  return (do_store_copy_prop
+	  && TREE_CODE (lhs) == SSA_NAME)
+	 || (TREE_CODE (rhs) == SSA_NAME
+	     && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs));
 }
 
 
@@ -680,6 +683,34 @@ copy_prop_visit_stmt (tree stmt, edge *taken_edge_p, tree *result_p)
       /* If the statement is a copy assignment, evaluate its RHS to
 	 see if the lattice value of its output has changed.  */
       retval = copy_prop_visit_assignment (stmt, result_p);
+    }
+  else if (TREE_CODE (stmt) == MODIFY_EXPR
+	   && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
+	   && do_store_copy_prop
+	   && stmt_makes_single_load (stmt))
+    {
+      /* If the statement is a copy assignment with a memory load
+	 on the RHS, see if we know the value of this load and
+	 update the lattice accordingly.  */
+      prop_value_t *val = get_value_loaded_by (stmt, copy_of);
+      if (val
+	  && val->mem_ref
+	  && is_gimple_reg (val->value)
+	  && operand_equal_p (val->mem_ref, TREE_OPERAND (stmt, 1), 0))
+        {
+	  bool changed;
+	  changed = set_copy_of_val (TREE_OPERAND (stmt, 0),
+				     val->value, val->mem_ref);
+	  if (changed)
+	    {
+	      *result_p = TREE_OPERAND (stmt, 0);
+	      retval = SSA_PROP_INTERESTING;
+	    }
+	  else
+	    retval = SSA_PROP_NOT_INTERESTING;
+	}
+      else
+        retval = SSA_PROP_VARYING;
     }
   else if (TREE_CODE (stmt) == COND_EXPR)
     {

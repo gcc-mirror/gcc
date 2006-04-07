@@ -1,3 +1,8 @@
+2006-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26135
+	* gcc.dg/tree-ssa/ssa-copyprop-1.c: New testcase.
+
 2006-04-06  Jan Hubicka  <jh@suse.cz>
 
 	PR profile/26399
