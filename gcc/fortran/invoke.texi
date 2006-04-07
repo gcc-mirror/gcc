@@ -1,4 +1,4 @@
-@c Copyright (C) 2004, 2005
+@c Copyright (C) 2004, 2005, 2006
 @c Free Software Foundation, Inc.
 @c This is part of the GFORTRAN manual.   
 @c For copying conditions, see the file gfortran.texi.
@@ -128,8 +128,8 @@ by type.  Explanations are in the following sections.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{
 -fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wall  -Waliasing  -Wconversion @gol
--Wimplicit-interface  -Wnonstd-intrinsics  -Wsurprising  -Wunderflow @gol
+-w  -Wall  -Waliasing -Wampersand -Wconversion -Wimplicit-interface @gol
+-Wnonstd-intrinsics -Wsurprising -Wunderflow @gol
 -Wunused-labels -Wline-truncation -W}
 
 @item Debugging Options
@@ -365,11 +365,11 @@ Inhibit all warning messages.
 @item -Wall
 @cindex all warnings
 @cindex warnings, all
-Enables commonly used warning options that which pertain to usage that
-we recommend avoiding and that we believe is easy to avoid.
-This currently includes @option{-Wunused-labels}, @option{-Waliasing},
-@option{-Wsurprising}, @option{-Wnonstd-intrinsic} and
-@option{-Wline-truncation}.
+Enables commonly used warning options pertaining to usage that
+we recommend avoiding and that we believe are easy to avoid. This currently
+includes @option{-Wunused-labels}, @option{-Waliasing}, @option{-Wampersand},
+@option{-Wsurprising}, @option{-Wnonstd-intrinsic},
+and @option{-Wline-truncation}.
 
 
 @cindex -Waliasing option
@@ -393,6 +393,16 @@ The following example will trigger the warning.
 
   call bar(a,a)
 @end smallexample
+
+
+@cindex -Wampersand option
+@cindex options, -Wampersand
+@item -Wampersand
+@cindex ampersand
+Warn about missing ampersand in continued character literals. The warning is
+given with @option{-Wampersand}, @option{-pedantic}, and @option{-std=f95}.
+Note: With no ampersand given in a continued character literal, gfortran
+assumes continuation at the first non-comment, non-whitespace character.
 
 
 @cindex -Wconversion option
@@ -434,6 +444,7 @@ lower value is greater than its upper value.
 @item
 A LOGICAL SELECT construct has three CASE statements.
 @end itemize
+
 
 @cindex -Wunderflow
 @cindex options, -Wunderflow

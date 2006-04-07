@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -531,8 +531,12 @@ restart:
 	c = next_char ();
 
       if (c != '&')
-	gfc_current_locus = old_loc;
+       {
+         if (in_string && gfc_option.warn_ampersand)
+           gfc_warning ("Missing '&' in continued character constant at %C");
 
+         gfc_current_locus.nextc--;
+       }
     }
   else
     {
@@ -788,7 +792,7 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
 	  if (i >= buflen)
 	    {
 	      /* Reallocate line buffer to double size to hold the
-	         overlong line.  */
+		overlong line.  */
 	      buflen = buflen * 2;
 	      *pbuf = xrealloc (*pbuf, buflen + 1);
 	      buffer = (*pbuf)+i;

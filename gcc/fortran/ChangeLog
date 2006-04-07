@@ -1,3 +1,16 @@
+2006-04-07 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/19101
+	* gfortran.h: Add warn_ampersand.
+	* invoke.texi: Add documentation for new option.
+	* lang.opt: Add Wampersand.
+	* options.c (gfc_init_options): Initialize warn_ampersand.
+	(gfc_post_options): Set the warn if pedantic.
+	(set_Wall): Set warn_ampersand.
+	(gfc_handle_option: Add Wampersand for itself, -std=f95, and -std=f2003.
+	* scanner.c (gfc_next_char_literal): Add test for missing '&' in
+	continued character constant and give warning if missing.
+
 2006-04-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26891
@@ -11,7 +24,6 @@
 	* resolve.c (resolve_function): If available, use the argument shape
 	for the function expression.
 	* iresolve.c (gfc_resolve_transfer): Set shape[0] = size.
-
 
 	PR fortran/26779
 	*resolve.c (resolve_fl_procedure): Do not check the access of

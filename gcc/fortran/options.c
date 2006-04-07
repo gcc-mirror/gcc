@@ -52,11 +52,12 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.verbose = 0;
 
   gfc_option.warn_aliasing = 0;
+  gfc_option.warn_ampersand = 0;
   gfc_option.warn_conversion = 0;
   gfc_option.warn_implicit_interface = 0;
   gfc_option.warn_line_truncation = 0;
-  gfc_option.warn_underflow = 1;
   gfc_option.warn_surprising = 0;
+  gfc_option.warn_underflow = 1;
   gfc_option.warn_unused_labels = 0;
 
   gfc_option.flag_default_double = 0;
@@ -269,6 +270,9 @@ gfc_post_options (const char **pfilename)
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
   if (!gfc_option.flag_automatic)
     gfc_option.flag_max_stack_var_size = 0;
+  
+  if (pedantic)
+    gfc_option.warn_ampersand = 1;
 
   return false;
 }
@@ -281,12 +285,13 @@ set_Wall (void)
 {
 
   gfc_option.warn_aliasing = 1;
+  gfc_option.warn_ampersand = 1;
   gfc_option.warn_line_truncation = 1;
-  gfc_option.warn_underflow = 1;
-  gfc_option.warn_surprising = 1;
-  gfc_option.warn_unused_labels = 1;
   gfc_option.warn_nonstd_intrinsics = 1;
-
+  gfc_option.warn_surprising = 1;
+  gfc_option.warn_underflow = 1;
+  gfc_option.warn_unused_labels = 1;
+ 
   set_Wunused (1);
   warn_return_type = 1;
   warn_switch = 1;
@@ -382,6 +387,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.warn_aliasing = value;
       break;
 
+    case OPT_Wampersand:
+      gfc_option.warn_ampersand = value;
+      break;
+
     case OPT_Wconversion:
       gfc_option.warn_conversion = value;
       break;
@@ -394,12 +403,12 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.warn_line_truncation = value;
       break;
 
-    case OPT_Wunderflow:
-      gfc_option.warn_underflow = value;
-      break;
-
     case OPT_Wsurprising:
       gfc_option.warn_surprising = value;
+      break;
+
+    case OPT_Wunderflow:
+      gfc_option.warn_underflow = value;
       break;
 
     case OPT_Wunused_labels:
@@ -542,6 +551,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77;
       gfc_option.warn_std = GFC_STD_F95_OBS;
       gfc_option.max_identifier_length = 31;
+      gfc_option.warn_ampersand = 1;
       break;
 
     case OPT_std_f2003:
