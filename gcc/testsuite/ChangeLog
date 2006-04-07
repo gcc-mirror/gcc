@@ -1,3 +1,9 @@
+2006-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/19101
+	* gfortran.dg/continuation.f90: New test.
+	* gfortran.dg/fmt_read_bz_bn.f90: Fix use of continuation.
+
 2006-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26919
