@@ -1159,7 +1159,10 @@ cgraph_early_inlining (void)
       if (node->analyzed && node->local.inlinable
 	  && (node->needed || node->reachable)
 	  && node->callers)
-	cgraph_decide_inlining_incrementally (node, true);
+	{
+	  if (cgraph_decide_inlining_incrementally (node, true))
+	    ggc_collect ();
+	}
     }
   cgraph_remove_unreachable_nodes (true, dump_file);
 #ifdef ENABLE_CHECKING
