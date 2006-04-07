@@ -1,3 +1,9 @@
+2006-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26890
+	* io/io.h: Revert change to pad size made on 2006-03-30.
+	Add comment explaining dependency with fortran/trans-io.c.
+	
 2006-04-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/write.c (output_float): Update condition to not error when

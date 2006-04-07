@@ -436,7 +436,9 @@ typedef struct st_parameter_dt
 	  char value[32];
 	  gfc_offset size_used;
 	} p;
-      char pad[16 * sizeof (char *) + 34 * sizeof (int) - sizeof (gfc_offset)];
+      /* This pad size must be greater than or equal to the pad_size declared in
+	 trans-io.c (gfc_build_io_library_fndecls)  */
+      char pad[16 * sizeof (char *) + 34 * sizeof (int)];
     } u;
 }
 st_parameter_dt;
