@@ -18642,28 +18642,25 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
       /* FALLTHRU */
 
     case CONST_DOUBLE:
-      if (mode == DImode
-	  && ((outer_code == AND
-	       && (satisfies_constraint_K (x)
-		   || satisfies_constraint_L (x)
-		   || mask_operand (x, DImode)
-		   || mask64_operand (x, DImode)))
-	      || ((outer_code == IOR || outer_code == XOR)
-		  && CONST_DOUBLE_HIGH (x) == 0
-		  && (CONST_DOUBLE_LOW (x)
-		      & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0)))
+      if (mode == DImode && code == CONST_DOUBLE)
 	{
-	  *total = 0;
-	  return true;
-	}
-      else if (mode == DImode
-	       && (outer_code == SET
-		   || outer_code == IOR
-		   || outer_code == XOR)
-	       && CONST_DOUBLE_HIGH (x) == 0)
-	{
-	  *total = COSTS_N_INSNS (1);
-	  return true;
+	  if ((outer_code == IOR || outer_code == XOR)
+	      && CONST_DOUBLE_HIGH (x) == 0
+	      && (CONST_DOUBLE_LOW (x)
+		  & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0)
+	    {
+	      *total = 0;
+	      return true;
+	    }
+	  else if ((outer_code == AND && and64_2_operand (x, DImode))
+		   || ((outer_code == SET
+			|| outer_code == IOR
+			|| outer_code == XOR)
+		       && CONST_DOUBLE_HIGH (x) == 0))
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
 	}
       /* FALLTHRU */
 

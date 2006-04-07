@@ -1,3 +1,8 @@
+2006-04-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs) <CONST_DOUBLE>: Do not
+	treat CONST_DOUBLE as INTVAL.  and64_2_operands require an extra
+	insn.
 
 2006-04-07  Jan Hubicka  <jh@suse.cz>
 
