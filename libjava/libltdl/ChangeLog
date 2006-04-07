@@ -1,3 +1,7 @@
+2006-04-08  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure: Rebuilt.
+
 2006-04-06  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* acinclude.m4 (AC_LTDL_SHLIBEXT): Add GCJ LOCAL marker to indicate
