@@ -1204,15 +1204,15 @@ static struct
   int a24_bytes;
 } pushm_info[] =
 {
-  /* These are in push order.  */
-  { FB_REGNO, 0x01, 2, 4 },
-  { SB_REGNO, 0x02, 2, 4 },
-  { A1_REGNO, 0x04, 2, 4 },
-  { A0_REGNO, 0x08, 2, 4 },
-  { R3_REGNO, 0x10, 2, 2 },
-  { R2_REGNO, 0x20, 2, 2 },
+  /* These are in reverse push (nearest-to-sp) order.  */
+  { R0_REGNO, 0x80, 2, 2 },
   { R1_REGNO, 0x40, 2, 2 },
-  { R0_REGNO, 0x80, 2, 2 }
+  { R2_REGNO, 0x20, 2, 2 },
+  { R3_REGNO, 0x10, 2, 2 },
+  { A0_REGNO, 0x08, 2, 4 },
+  { A1_REGNO, 0x04, 2, 4 },
+  { SB_REGNO, 0x02, 2, 4 },
+  { FB_REGNO, 0x01, 2, 4 }
 };
 
 #define PUSHM_N (sizeof(pushm_info)/sizeof(pushm_info[0]))
@@ -1475,6 +1475,9 @@ m32c_function_arg (CUMULATIVE_ARGS * ca,
   if (type && INTEGRAL_TYPE_P (type) && POINTER_TYPE_P (type))
     return NULL_RTX;
 
+  if (type && AGGREGATE_TYPE_P (type))
+    return NULL_RTX;
+
   switch (ca->parm_num)
     {
     case 1:
@@ -1508,12 +1511,15 @@ m32c_pass_by_reference (CUMULATIVE_ARGS * ca ATTRIBUTE_UNUSED,
 /* Implements INIT_CUMULATIVE_ARGS.  */
 void
 m32c_init_cumulative_args (CUMULATIVE_ARGS * ca,
-			   tree fntype ATTRIBUTE_UNUSED,
+			   tree fntype,
 			   rtx libname ATTRIBUTE_UNUSED,
-			   tree fndecl ATTRIBUTE_UNUSED,
+			   tree fndecl,
 			   int n_named_args ATTRIBUTE_UNUSED)
 {
-  ca->force_mem = 0;
+  if (fntype && aggregate_value_p (TREE_TYPE (fntype), fndecl))
+    ca->force_mem = 1;
+  else
+    ca->force_mem = 0;
   ca->parm_num = 1;
 }
 
@@ -1529,7 +1535,8 @@ m32c_function_arg_advance (CUMULATIVE_ARGS * ca,
 {
   if (ca->force_mem)
     ca->force_mem = 0;
-  ca->parm_num++;
+  else
+    ca->parm_num++;
 }
 
 /* Implements FUNCTION_ARG_REGNO_P.  */

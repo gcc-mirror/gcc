@@ -1,3 +1,13 @@
+2006-04-07  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_function_arg): Structures are always
+	passed on the stack.
+	(m32c_init_cumulative_args): When a function returns a structure,
+	always pass the pointer to that return area on the stack.
+	(m32c_function_arg_advance): Don't increment the parameter number
+	if we're processing the returned structure pointer.
+	(pushm_info): Reverse order of registers.
+
 2006-04-07  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-ssa-loop-niter.c (inverse, number_of_iterations_ne,
