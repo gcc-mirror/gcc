@@ -1,3 +1,17 @@
+2006-04-07  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-ssa-loop-niter.c (inverse, number_of_iterations_ne,
+	assert_no_overflow_lt, assert_loop_rolls_lt, number_of_iterations_lt,
+	number_of_iterations_le, number_of_iterations_cond, find_loop_niter,
+	estimate_numbers_of_iterations_loop): Use build_int_cst instead of 
+	build_int_cst_type.
+	* tree-chrec.c (chrec_fold_multiply_poly_poly,
+	chrec_fold_multiply): Same.
+	* tree-ssa-loop-ivopts.c (strip_offset_1, force_expr_to_var_cost,
+	force_expr_to_var_cost): Same.
+	* tree-mudflap.c (mf_xform_derefs_1): Same.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref): Same.
+
 2006-04-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs) <CONST_DOUBLE>: Do not

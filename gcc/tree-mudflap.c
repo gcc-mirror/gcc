@@ -845,7 +845,7 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
       base = addr;
       limit = fold_build2 (MINUS_EXPR, ptr_type_node,
 			   fold_build2 (PLUS_EXPR, ptr_type_node, base, size),
-			   build_int_cst_type (ptr_type_node, 1));
+			   build_int_cst (ptr_type_node, 1));
       break;
 
     case ARRAY_RANGE_REF:
