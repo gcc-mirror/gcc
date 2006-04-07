@@ -1872,6 +1872,12 @@ gfc_array_dimen_size (gfc_expr * array, int dimen, mpz_t * result)
 	    }
 	}
 
+      if (array->shape && array->shape[dimen])
+	{
+	  mpz_init_set (*result, array->shape[dimen]);
+	  return SUCCESS;
+	}
+
       if (spec_dimen_size (array->symtree->n.sym->as, dimen, result) == FAILURE)
 	return FAILURE;
 
