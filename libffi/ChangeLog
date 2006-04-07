@@ -1,3 +1,7 @@
+2006-04-07  James E Wilson  <wilson@specifix.com>
+
+	* testsuite/libffi.call/float4.c: New testcase.
+
 2006-04-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 	    Andreas Tobler  <a.tobler@schweiz.ch>
 
