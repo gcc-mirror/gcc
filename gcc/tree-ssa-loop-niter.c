@@ -114,7 +114,7 @@ inverse (tree x, tree mask)
     }
   else
     {
-      rslt = build_int_cst_type (type, 1);
+      rslt = build_int_cst (type, 1);
       for (; ctr; ctr--)
 	{
 	  rslt = int_const_binop (MULT_EXPR, rslt, x, 0);
@@ -178,7 +178,7 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
 				- tree_low_cst (bits, 1)));
 
   d = fold_binary_to_constant (LSHIFT_EXPR, niter_type,
-			       build_int_cst_type (niter_type, 1), bits);
+			       build_int_cst (niter_type, 1), bits);
   s = fold_binary_to_constant (RSHIFT_EXPR, niter_type, s, bits);
 
   if (!never_infinite)
@@ -305,7 +305,7 @@ assert_no_overflow_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 	}
       else
 	diff = fold_build2 (MINUS_EXPR, niter_type, step,
-			    build_int_cst_type (niter_type, 1));
+			    build_int_cst (niter_type, 1));
       bound = fold_build2 (MINUS_EXPR, type,
 			   TYPE_MAX_VALUE (type), fold_convert (type, diff));
       assumption = fold_build2 (LE_EXPR, boolean_type_node,
@@ -326,7 +326,7 @@ assert_no_overflow_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 	}
       else
 	diff = fold_build2 (MINUS_EXPR, niter_type, step,
-			    build_int_cst_type (niter_type, 1));
+			    build_int_cst (niter_type, 1));
       bound = fold_build2 (PLUS_EXPR, type,
 			   TYPE_MIN_VALUE (type), fold_convert (type, diff));
       assumption = fold_build2 (GE_EXPR, boolean_type_node,
@@ -357,7 +357,7 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   if (nonzero_p (iv0->step))
     {
       diff = fold_build2 (MINUS_EXPR, type,
-			  iv0->step, build_int_cst_type (type, 1));
+			  iv0->step, build_int_cst (type, 1));
 
       /* We need to know that iv0->base >= MIN + iv0->step - 1.  Since
 	 0 address never belongs to any object, we can assume this for
@@ -378,7 +378,7 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   else
     {
       diff = fold_build2 (PLUS_EXPR, type,
-			  iv1->step, build_int_cst_type (type, 1));
+			  iv1->step, build_int_cst (type, 1));
 
       if (!POINTER_TYPE_P (type))
 	{
@@ -464,7 +464,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
     {
       affine_iv zps;
 
-      zps.base = build_int_cst_type (niter_type, 0);
+      zps.base = build_int_cst (niter_type, 0);
       zps.step = step;
       /* number_of_iterations_lt_to_ne will add assumptions that ensure that
 	 zps does not overflow.  */
@@ -483,7 +483,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   assert_loop_rolls_lt (type, iv0, iv1, niter);
 
   s = fold_build2 (MINUS_EXPR, niter_type,
-		   step, build_int_cst_type (niter_type, 1));
+		   step, build_int_cst (niter_type, 1));
   delta = fold_build2 (PLUS_EXPR, niter_type, delta, s);
   niter->niter = fold_build2 (FLOOR_DIV_EXPR, niter_type, delta, step);
   return true;
@@ -525,10 +525,10 @@ number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
 
   if (nonzero_p (iv0->step))
     iv1->base = fold_build2 (PLUS_EXPR, type,
-			     iv1->base, build_int_cst_type (type, 1));
+			     iv1->base, build_int_cst (type, 1));
   else
     iv0->base = fold_build2 (MINUS_EXPR, type,
-			     iv0->base, build_int_cst_type (type, 1));
+			     iv0->base, build_int_cst (type, 1));
   return number_of_iterations_lt (type, iv0, iv1, niter, never_infinite);
 }
 
@@ -649,7 +649,7 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
   /* If the loop exits immediately, there is nothing to do.  */
   if (zero_p (fold_build2 (code, boolean_type_node, iv0->base, iv1->base)))
     {
-      niter->niter = build_int_cst_type (unsigned_type_for (type), 0);
+      niter->niter = build_int_cst (unsigned_type_for (type), 0);
       return true;
     }
 
@@ -1171,7 +1171,7 @@ find_loop_niter (struct loop *loop, edge *exit)
 	{
 	  /* We exit in the first iteration through this exit.
 	     We won't find anything better.  */
-	  niter = build_int_cst_type (unsigned_type_node, 0);
+	  niter = build_int_cst (unsigned_type_node, 0);
 	  *exit = ex;
 	  break;
 	}
@@ -1649,7 +1649,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
       if (!zero_p (niter_desc.may_be_zero)
 	  && !nonzero_p (niter_desc.may_be_zero))
 	niter = build3 (COND_EXPR, type, niter_desc.may_be_zero,
-			build_int_cst_type (type, 0),
+			build_int_cst (type, 0),
 			niter);
       record_estimate (loop, niter,
 		       niter_desc.additional_info,

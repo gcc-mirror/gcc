@@ -366,7 +366,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
   if (cst_and_fits_in_hwi (ibase))
     {
       idelta += int_cst_value (ibase);
-      ibase = build_int_cst_type (TREE_TYPE (ibase), 0);
+      ibase = build_int_cst (TREE_TYPE (ibase), 0);
     }
 
   if (TREE_CODE (base) == ARRAY_REF)

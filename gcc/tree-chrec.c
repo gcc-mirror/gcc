@@ -218,7 +218,7 @@ chrec_fold_multiply_poly_poly (tree type,
   t2 = chrec_fold_multiply (type, CHREC_RIGHT (poly0), CHREC_RIGHT (poly1));
   t2 = chrec_fold_multiply (type, SCALAR_FLOAT_TYPE_P (type)
 			    ? build_real (type, dconst2)
-			    : build_int_cst_type (type, 2), t2);
+			    : build_int_cst (type, 2), t2);
 
   var = CHREC_VARIABLE (poly0);
   return build_polynomial_chrec (var, t0,
@@ -374,7 +374,7 @@ chrec_fold_multiply (tree type,
 	  if (integer_onep (op1))
 	    return op0;
 	  if (integer_zerop (op1))
-	    return build_int_cst_type (type, 0);
+	    return build_int_cst (type, 0);
 	  
 	  return build_polynomial_chrec 
 	    (CHREC_VARIABLE (op0), 
@@ -387,7 +387,7 @@ chrec_fold_multiply (tree type,
 	return op1;
       
       if (integer_zerop (op0))
-    	return build_int_cst_type (type, 0);
+    	return build_int_cst (type, 0);
       
       switch (TREE_CODE (op1))
 	{
@@ -401,7 +401,7 @@ chrec_fold_multiply (tree type,
 	  if (integer_onep (op1))
 	    return op0;
 	  if (integer_zerop (op1))
-	    return build_int_cst_type (type, 0);
+	    return build_int_cst (type, 0);
 	  return fold_build2 (MULT_EXPR, type, op0, op1);
 	}
     }

@@ -1763,7 +1763,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 	return orig_expr;
 
       *offset = int_cst_value (expr);
-      return build_int_cst_type (orig_type, 0);
+      return build_int_cst (orig_type, 0);
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -3380,8 +3380,8 @@ force_expr_to_var_cost (tree expr)
       tree addr;
       tree type = build_pointer_type (integer_type_node);
 
-      integer_cost = computation_cost (build_int_cst_type (integer_type_node,
-							   2000));
+      integer_cost = computation_cost (build_int_cst (integer_type_node,
+						      2000));
 
       SET_DECL_RTL (var, x);
       TREE_STATIC (var) = 1;
@@ -3391,7 +3391,7 @@ force_expr_to_var_cost (tree expr)
       address_cost
 	= computation_cost (build2 (PLUS_EXPR, type,
 				    addr,
-				    build_int_cst_type (type, 2000))) + 1;
+				    build_int_cst (type, 2000))) + 1;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "force_expr_to_var_cost:\n");
