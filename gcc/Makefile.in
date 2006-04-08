@@ -3034,8 +3034,8 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) $(SYSTEM_H) \
 	  $(DRIVER_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
-unprotoize.o: protoize.c $(srcdir)/../include/getopt.h \
-   $(CONFIG_H) $(SYSTEM_H) Makefile version.h
+unprotoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) \
+    $(SYSTEM_H) coretypes.h $(TM_H) Makefile version.h cppdefault.h intl.h
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c -DUNPROTOIZE $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
