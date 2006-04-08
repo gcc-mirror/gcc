@@ -1,3 +1,9 @@
+2006-04-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gfortran.texi: Fix typos.  Follow spelling conventions.
+	* resolve.c, trans-expr.c, trans-stmt.c: Fix comment typos.
+	Follow spelling conventions.
+
 2006-04-05  Roger Sayle  <roger@eyesopen.com>
 
 	* dependency.c (get_no_elements): Delete function.

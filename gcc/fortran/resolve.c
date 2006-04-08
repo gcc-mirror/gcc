@@ -701,7 +701,7 @@ procedure_kind (gfc_symbol * sym)
 }
 
 /* Check references to assumed size arrays.  The flag need_full_assumed_size
-   is non-zero when matching actual arguments.  */
+   is nonzero when matching actual arguments.  */
 
 static int need_full_assumed_size = 0;
 
@@ -1342,7 +1342,7 @@ resolve_function (gfc_expr * expr)
 	     && expr->value.function.isym->generic_id != GFC_ISYM_PRESENT)
     {
       /* Array instrinsics must also have the last upper bound of an
-	 asumed size array argument.  UBOUND and SIZE have to be
+	 assumed size array argument.  UBOUND and SIZE have to be
 	 excluded from the check if the second argument is anything
 	 than a constant.  */
       int inquiry;
@@ -4843,7 +4843,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 
   /* Ensure that derived type for are not of a private type.  Internal
      module procedures are excluded by 2.2.3.3 - ie. they are not
-     externally accessible and can access all the objects accesible in
+     externally accessible and can access all the objects accessible in
      the host. */
   if (!(sym->ns->parent
 	    && sym->ns->parent->proc_name->attr.flavor == FL_MODULE)

@@ -1712,7 +1712,7 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr, int g77)
      temporary array has lbounds of zero and strides of one in all
      dimensions, so this is very simple.  The offset is only computed
      outside the innermost loop, so the overall transfer could be
-     optimised further.  */
+     optimized further.  */
   info = &rse.ss->data.info;
 
   tmp_index = gfc_index_zero_node;
