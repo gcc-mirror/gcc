@@ -1694,7 +1694,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
 
 	 We assume that Page 0 will be mapped with NOPERM, and that
 	 memory may be allocated from any other page, so only field
-	 offsets < pagesize are guaratneed to trap.  We also assume
+	 offsets < pagesize are guaranteed to trap.  We also assume
 	 the smallest page size we'll encounter is 4k bytes.  */
       if (! flag_syntax_only && check && ! flag_check_references 
 	  && ! flag_indirect_dispatch)
