@@ -4191,7 +4191,7 @@ be because the function prologue moves it to a different place.
 the context of the called function, and @code{0} in the context of
 the caller.
 
-If @var{incoming} is non-zero and the address is to be found on the
+If @var{incoming} is nonzero and the address is to be found on the
 stack, return a @code{mem} which refers to the frame pointer. If
 @var{incoming} is @code{2}, the result is being used to fetch the
 structure value address at the beginning of a function.  If you need 
@@ -6024,7 +6024,7 @@ This hook is a modified version of @samp{TARGET_SCHED_ADJUST_COST}.  Instead
 of passing dependence as a second parameter, it passes a type of that
 dependence.  This is useful to calculate cost of dependence between insns
 not having the corresponding link.  If @samp{TARGET_SCHED_ADJUST_COST_2} is
-definded it is used instead of @samp{TARGET_SCHED_ADJUST_COST}.
+defined it is used instead of @samp{TARGET_SCHED_ADJUST_COST}.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_H_I_D_EXTENDED (void)
@@ -6046,7 +6046,7 @@ the generated speculative pattern.
 
 @deftypefn {Target Hook} int TARGET_SCHED_NEEDS_BLOCK_P (rtx @var{insn})
 This hook is called by the insn scheduler during generation of recovery code
-for @var{insn}.  It should return non-zero, if the corresponding check
+for @var{insn}.  It should return nonzero, if the corresponding check
 instruction should branch to recovery code, or zero otherwise.
 @end deftypefn
 
@@ -6056,7 +6056,7 @@ check instruction.  If @var{mutate_p} is zero, then @var{insn} is a
 speculative instruction for which the check should be generated.  
 @var{label} is either a label of a basic block, where recovery code should 
 be emitted, or a null pointer, when requested check doesn't branch to 
-recovery code (a simple check).  If @var{mutate_p} is non-zero, then 
+recovery code (a simple check).  If @var{mutate_p} is nonzero, then 
 a pattern for a branchy check corresponding to a simple check denoted by 
 @var{insn} should be generated.  In this case @var{label} can't be null.
 @end deftypefn
@@ -6067,7 +6067,7 @@ This hook is used as a workaround for
 called on the first instruction of the ready list.  The hook is used to
 discard speculative instruction that stand first in the ready list from
 being scheduled on the current cycle.  For non-speculative instructions, 
-the hook should always return non-zero.  For example, in the ia64 backend
+the hook should always return nonzero.  For example, in the ia64 backend
 the hook is used to cancel data speculative insns when the ALAT table
 is nearly full.
 @end deftypefn
@@ -6077,7 +6077,7 @@ This hook is used by the insn scheduler to find out what features should be
 enabled/used.  @var{flags} initially may have either the SCHED_RGN or SCHED_EBB
 bit set.  This denotes the scheduler pass for which the data should be 
 provided.  The target backend should modify @var{flags} by modifying
-the bits correponding to the following features: USE_DEPS_LIST, USE_GLAT,
+the bits corresponding to the following features: USE_DEPS_LIST, USE_GLAT,
 DETACH_LIFE_INFO, and DO_SPECULATION.  For the DO_SPECULATION feature 
 an additional structure @var{spec_info} should be filled by the target.  
 The structure describes speculation types that can be used in the scheduler.

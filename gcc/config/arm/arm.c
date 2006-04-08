@@ -8003,7 +8003,7 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
 
   /* If an entry requires 8-byte alignment then assume all constant pools
      require 4 bytes of padding.  Trying to do this later on a per-pool
-     basis is awkward becuse existing pool entries have to be modified.  */
+     basis is awkward because existing pool entries have to be modified.  */
   if (ARM_DOUBLEWORD_ALIGN && fix->fix_size == 8)
     minipool_pad = 4;
 

@@ -217,7 +217,7 @@ static spec_info_t spec_info;
    Used to determine, if we need to fix INSN_TICKs.  */
 static bool added_recovery_block_p;
 
-/* Counters of different types of speculative isntructions.  */
+/* Counters of different types of speculative instructions.  */
 static int nr_begin_data, nr_be_in_data, nr_begin_control, nr_be_in_control;
 
 /* Pointers to GLAT data.  See init_glat for more information.  */
@@ -977,7 +977,7 @@ ready_lastpos (struct ready_list *ready)
 }
 
 /* Add an element INSN to the ready list so that it ends up with the
-   lowest/highest priority dependending on FIRST_P.  */
+   lowest/highest priority depending on FIRST_P.  */
 
 HAIFA_INLINE static void
 ready_add (struct ready_list *ready, rtx insn, bool first_p)
@@ -1598,7 +1598,7 @@ find_insn_reg_weight (basic_block bb)
     find_insn_reg_weight1 (insn);    
 }
 
-/* Calculate INSN_REG_WEIGHT for single insntruction.
+/* Calculate INSN_REG_WEIGHT for single instruction.
    Separated from find_insn_reg_weight because of need
    to initialize new instruction in generate_recovery_code.  */
 static void
@@ -2034,7 +2034,7 @@ static int cached_issue_rate = 0;
    make this function tries different samples of ready insns.  READY
    is current queue `ready'.  Global array READY_TRY reflects what
    insns are already issued in this try.  MAX_POINTS is the sum of points
-   of all instructions in READY.  The function stops immediatelly,
+   of all instructions in READY.  The function stops immediately,
    if it reached the such a solution, that all instruction can be issued.
    INDEX will contain index of the best insn in READY.  The following
    function is used only for first cycle multipass scheduling.  */
@@ -2463,7 +2463,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	      continue;
 	    }
 
-	  /* DECISSION is made.  */	
+	  /* DECISION is made.  */	
   
           if (TODO_SPEC (insn) & SPECULATIVE)
             generate_recovery_code (insn);
@@ -2472,7 +2472,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	      /* This is used to to switch basic blocks by request
 		 from scheduler front-end (actually, sched-ebb.c only).
 		 This is used to process blocks with single fallthru
-		 edge.  If successing block has jump, it [jump] will try
+		 edge.  If succeeding block has jump, it [jump] will try
 		 move at the end of current bb, thus corrupting CFG.  */
 	      || current_sched_info->advance_target_bb (*target_bb, insn))
 	    {
@@ -2869,7 +2869,7 @@ sched_finish (void)
 }
 
 /* Fix INSN_TICKs of the instructions in the current block as well as
-   INSN_TICKs of their dependants.
+   INSN_TICKs of their dependents.
    HEAD and TAIL are the begin and the end of the current scheduled block.  */
 static void
 fix_inter_tick (rtx head, rtx tail)
@@ -3116,7 +3116,7 @@ fix_tick_ready (rtx next)
       tick = INSN_TICK (next);
       /* if tick is not equal to INVALID_TICK, then update
 	 INSN_TICK of NEXT with the most recent resolved dependence
-	 cost.  Overwise, recalculate from scratch.  */
+	 cost.  Otherwise, recalculate from scratch.  */
       full_p = tick == INVALID_TICK;
       do
         {        
@@ -3163,7 +3163,7 @@ change_queue_index (rtx next, int delay)
     /* We have nothing to do.  */
     return;
 
-  /* Remove NEXT from whereever it is now.  */
+  /* Remove NEXT from wherever it is now.  */
   if (i == QUEUE_READY)
     ready_remove_insn (next);
   else if (i >= 0)
@@ -3318,7 +3318,7 @@ process_insn_depend_be_in_spec (rtx link, rtx twin, ds_t fs)
 	{
 	  gcc_assert (!(ds & BE_IN_SPEC));
 
-	  if (/* If this dep can be overcomed with 'begin speculation'.  */
+	  if (/* If this dep can be overcome with 'begin speculation'.  */
 	      ds & BEGIN_SPEC)
 	    /* Then we have a choice: keep the dep 'begin speculative'
 	       or transform it into 'be in speculative'.  */
@@ -3421,7 +3421,7 @@ add_to_speculative_block (rtx insn)
 
       twins = alloc_INSN_LIST (twin, twins);
 
-      /* Add dependences between TWIN and all apropriate
+      /* Add dependences between TWIN and all appropriate
 	 instructions from REC.  */
       do
 	{	  
@@ -3696,7 +3696,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
 
   gcc_assert (ORIG_PAT (insn));
 
-  /* Initialize TWIN (twin is a dublicate of original instruction
+  /* Initialize TWIN (twin is a duplicate of original instruction
      in the recovery block).  */
   if (rec != EXIT_BLOCK_PTR)
     {
@@ -3896,7 +3896,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
     add_back_forw_dep (check, insn, REG_DEP_TRUE, DEP_TRUE | DEP_OUTPUT);
 
   if (!mutate_p)
-    /* Fix priorities.  If MUTATE_P is nonzero, this is not neccessary,
+    /* Fix priorities.  If MUTATE_P is nonzero, this is not necessary,
        because it'll be done later in add_to_speculative_block.  */
     {
       clear_priorities (twin);
@@ -3906,7 +3906,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
 
 /* Removes dependency between instructions in the recovery block REC
    and usual region instructions.  It keeps inner dependences so it
-   won't be neccessary to recompute them.  */
+   won't be necessary to recompute them.  */
 static void
 fix_recovery_deps (basic_block rec)
 {
@@ -4065,7 +4065,7 @@ dump_new_block_header (int i, basic_block bb, rtx head, rtx tail)
 
 /* Unlink basic block notes and labels and saves them, so they
    can be easily restored.  We unlink basic block notes in EBB to
-   provide back-compatability with the previous code, as target backends
+   provide back-compatibility with the previous code, as target backends
    assume, that there'll be only instructions between
    current_sched_info->{head and tail}.  We restore these notes as soon
    as we can.
@@ -4308,8 +4308,8 @@ move_succs (VEC(edge,gc) **succsp, basic_block to)
 
 /* Initialize GLAT (global_live_at_{start, end}) structures.
    GLAT structures are used to substitute global_live_{start, end}
-   regsets during scheduling.  This is neccessary to use such functions as
-   split_block (), as they assume consistancy of register live information.  */
+   regsets during scheduling.  This is necessary to use such functions as
+   split_block (), as they assume consistency of register live information.  */
 static void
 init_glat (void)
 {
@@ -4530,7 +4530,7 @@ debug_spec_status (ds_t s)
 }
 
 /* Helper function for check_cfg.
-   Return non-zero, if edge vector pointed to by EL has edge with TYPE in
+   Return nonzero, if edge vector pointed to by EL has edge with TYPE in
    its flags.  */
 static int
 has_edge_p (VEC(edge,gc) *el, int type)
@@ -4631,7 +4631,7 @@ check_cfg (rtx head, rtx tail)
   gcc_assert (bb == 0);
 }
 
-/* Perform few consistancy checks of flags in different data structures.  */
+/* Perform a few consistency checks of flags in different data structures.  */
 static void
 check_sched_flags (void)
 {
@@ -4650,7 +4650,7 @@ check_sched_flags (void)
 
 /* Check global_live_at_{start, end} regsets.
    If FATAL_P is TRUE, then abort execution at the first failure.
-   Overwise, print diagnostics to STDERR (this mode is for calling
+   Otherwise, print diagnostics to STDERR (this mode is for calling
    from debugger).  */
 void
 check_reg_live (bool fatal_p)

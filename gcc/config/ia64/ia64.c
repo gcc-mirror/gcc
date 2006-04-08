@@ -8306,7 +8306,7 @@ ia64_ld_address_bypass_p (rtx producer, rtx consumer)
   if (GET_CODE (mem) == UNSPEC && XVECLEN (mem, 0) > 0)
     mem = XVECEXP (mem, 0, 0);
   else if (GET_CODE (mem) == IF_THEN_ELSE)
-    /* ??? Is this bypass neccessary for ld.c?  */
+    /* ??? Is this bypass necessary for ld.c?  */
     {
       gcc_assert (XINT (XEXP (XEXP (mem, 0), 0), 1) == UNSPEC_LDCCLR);
       mem = XEXP (mem, 1);

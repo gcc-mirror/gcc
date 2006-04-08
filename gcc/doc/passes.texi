@@ -202,7 +202,7 @@ declarations of static variables whose lifetimes extend to the entire
 program.  The pass is located in @file{tree-mudflap.c} and is described
 by @code{pass_mudflap_1}.
 
-@item OpenMP lowerering
+@item OpenMP lowering
 
 If OpenMP generation (@option{-fopenmp}) is enabled, this pass lowers
 OpenMP constructs into GIMPLE.

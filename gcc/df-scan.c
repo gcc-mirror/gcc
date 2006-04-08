@@ -1603,7 +1603,7 @@ df_bb_refs_record (struct dataflow *dflow, basic_block bb)
 			  DF_REF_ARTIFICIAL | DF_REF_AT_TOP);
 #endif
 
-      /* The following code (down thru the arg_pointer seting APPEARS
+      /* The following code (down thru the arg_pointer setting APPEARS
 	 to be necessary because there is nothing that actually
 	 describes what the exception handling code may actually need
 	 to keep alive.  */

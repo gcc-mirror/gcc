@@ -3710,7 +3710,7 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 	 to the modified comparison. For signed comparisons compare the 
 	 result against 1 in the biased case, and zero in the unbiased
 	 case. For unsigned comparisons always compare against 1 after
-	 biasing the unbased result by adding 1. This gives us a way to
+	 biasing the unbiased result by adding 1. This gives us a way to
 	 represent LTU. */
       *px = result;
       *pmode = word_mode;

@@ -1116,7 +1116,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	    }
 	  /* Case 3a, the anti-range extends into the low
 	     part of the real range.  Thus creating a new
-	     low for the real reange.  */
+	     low for the real range.  */
 	  else if ((compare_values (anti_max, real_min) == 1
 		    || compare_values (anti_max, real_min) == 0)
 		   && compare_values (anti_max, real_max) == -1)
@@ -1129,7 +1129,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	    }
 	  /* Case 3b, the anti-range extends into the high
 	     part of the real range.  Thus creating a new
-	     higher for the real reange.  */
+	     higher for the real range.  */
 	  else if (compare_values (anti_min, real_min) == 1
 		   && (compare_values (anti_min, real_max) == -1
 		       || compare_values (anti_min, real_max) == 0))
@@ -2981,7 +2981,7 @@ find_assert_locations (basic_block bb)
 	     it, create a new assertion location node for OP.  */
 	  if (infer_value_range (stmt, op, &comp_code, &value))
 	    {
-	      /* If we are able to infer a non-zero value range for OP,
+	      /* If we are able to infer a nonzero value range for OP,
 		 then walk backwards through the use-def chain to see if OP
 		 was set via a typecast.
 
