@@ -1,3 +1,7 @@
+2006-04-08  Robert Millan  <rmh@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2006-04-05  Ben Elliston  <bje@au.ibm.com>
 
 	* configure.in: Require makeinfo 4.4 or higher.
