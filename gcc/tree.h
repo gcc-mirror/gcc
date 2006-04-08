@@ -2312,6 +2312,7 @@ struct tree_memory_tag GTY(())
   struct tree_decl_minimal common;
   unsigned int is_global:1;
   unsigned int is_used_alone:1;
+  unsigned int old_used_alone:1;
 };
 
 #define MTAG_GLOBAL(NODE) (TREE_MEMORY_TAG_CHECK (NODE)->mtag.is_global)
@@ -2320,6 +2321,11 @@ struct tree_memory_tag GTY(())
    directly, because the access had all of the SMT's aliases pruned
    from it.  */
 #define SMT_USED_ALONE(NODE) (SYMBOL_MEMORY_TAG_CHECK (NODE)->mtag.is_used_alone)
+
+/* This flag is used to temporarily store the old value of the used alone
+   flag when updating so we know whether to mark the symbol for
+   renaming.  */
+#define SMT_OLD_USED_ALONE(NODE) (SYMBOL_MEMORY_TAG_CHECK (NODE)->mtag.old_used_alone)
 
 struct tree_struct_field_tag GTY(())
 {

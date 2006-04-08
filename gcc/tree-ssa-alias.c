@@ -443,7 +443,10 @@ recalculate_used_alone (void)
   updating_used_alone = true;
   FOR_EACH_REFERENCED_VAR (var, rvi)
     if (TREE_CODE (var) == SYMBOL_MEMORY_TAG)
-      SMT_USED_ALONE (var) = 0;
+      {
+	SMT_OLD_USED_ALONE (var) = SMT_USED_ALONE (var);
+	SMT_USED_ALONE (var) = 0;
+      }
 
   /* Walk all the statements.
      Calls get put into a list of statements to update, since we will
@@ -476,7 +479,11 @@ recalculate_used_alone (void)
 		      if (!SMT_USED_ALONE (svar))
 			{
 			  SMT_USED_ALONE (svar) = true;
-			  mark_sym_for_renaming (svar);
+
+			  /* Only need to mark for renaming if it wasn't
+			     used alone before.  */
+			  if (!SMT_OLD_USED_ALONE (svar))
+			    mark_sym_for_renaming (svar);
 			}
 		    }
 		}

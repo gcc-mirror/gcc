@@ -1,3 +1,10 @@
+2006-04-08  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.h (tree_memory_tag): Add old_used_alone.
+	(SMT_OLD_USED_ALONE): New macro.
+	* tree-ssa-alias.c (recalculate_used_alone): Stop
+	marking things for renaming unnecessarily.
+
 2006-04-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* builtins.c, config/arm/arm.c, config/i386/cygwin.h,
