@@ -74,7 +74,7 @@ __fixunstfdi (long double a1)
     if (exp <= -PRECISION)
       return 0;
 
-    /* NaN: All exponent bits set and a non-zero fraction.  */
+    /* NaN: All exponent bits set and a nonzero fraction.  */
     if ((EXPD(dl1) == 0x7fff) && !FRACD_ZERO_P (dl1))
       return 0x0ULL;
 
@@ -146,7 +146,7 @@ __fixtfdi (long double a1)
     if (exp <= -PRECISION)
       return 0;
 
-    /* NaN: All exponent bits set and a non-zero fraction.  */
+    /* NaN: All exponent bits set and a nonzero fraction.  */
     if ((EXPD(dl1) == 0x7fff) && !FRACD_ZERO_P (dl1))
       return 0x8000000000000000ULL;
 

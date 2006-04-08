@@ -278,7 +278,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	  inner = max_align;
 	  while (handled_component_p (exp))
 	    {
-	      /* Fields in a structure can be packed, honour DECL_ALIGN
+	      /* Fields in a structure can be packed, honor DECL_ALIGN
 		 of the FIELD_DECL.  For all other references the conservative 
 		 alignment is the element type alignment.  */
 	      if (TREE_CODE (exp) == COMPONENT_REF)

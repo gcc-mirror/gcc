@@ -16372,7 +16372,7 @@ ix86_preferred_reload_class (rtx x, enum reg_class class)
   if (x == CONST0_RTX (mode))
     return class;
 
-  /* Force constants into memory if we are loading a (non-zero) constant into
+  /* Force constants into memory if we are loading a (nonzero) constant into
      an MMX or SSE register.  This is because there are no MMX/SSE instructions
      to load from a constant.  */
   if (CONSTANT_P (x)

@@ -1300,7 +1300,7 @@ Ingo Proetel for @code{Image}, @code{Logger} and @code{URLClassLoader}
 updates.
 
 @item
-Olga Rodimina for @code{MenuSelectionManager} implemenation.
+Olga Rodimina for @code{MenuSelectionManager} implementation.
 
 @item
 Jan Roehrich for @code{BasicTreeUI} and @code{JTree} fixes.
@@ -1324,7 +1324,7 @@ Christian Thalinger for 64-bit cleanups, Configuration and VM
 interface fixes and @code{CACAO} integration, @code{fdlibm} updates.
 
 @item
-Gael Thomas for @code{VMClassLoader} boot packages support sugestions.
+Gael Thomas for @code{VMClassLoader} boot packages support suggestions.
 
 @item
 Andreas Tobler for Darwin and Solaris testing and fixing, @code{Qt4}

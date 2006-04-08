@@ -1392,7 +1392,7 @@ mainly because the set of virtual operands for a statement may change at
 what some would consider unexpected times.  In general, any time you
 have modified a statement that has virtual operands, you should verify
 whether the list of virtual operands has changed, and if so, mark the
-newly exposed symbols by callnig @code{mark_new_vars_to_rename}.
+newly exposed symbols by calling @code{mark_new_vars_to_rename}.
 
 There is one additional caveat to preserving virtual SSA form.  When the
 entire set of virtual operands may be eliminated due to better

@@ -412,7 +412,7 @@ set_virtual_use_link (use_operand_p ptr, tree stmt)
     } while (0)
 
 /* Initializes immediate use at USE_PTR to value VAL, and links it to the list
-   of immeditate uses.  STMT is the current statement.  */
+   of immediate uses.  STMT is the current statement.  */
 
 #define INITIALIZE_USE(USE_PTR, VAL, STMT)		\
   do							\
@@ -492,7 +492,7 @@ add_mustdef_op (tree stmt, tree op, mustdef_optype_p *last)
 }
 
 /* Takes elements from build_defs and turns them into def operands of STMT.
-   TODO -- Given that def operands list is not neccessarily sorted, merging
+   TODO -- Given that def operands list is not necessarily sorted, merging
 	   the operands this way does not make much sense.
 	-- Make build_defs VEC of tree *.  */
 
@@ -579,7 +579,7 @@ finalize_ssa_defs (tree stmt)
 }
 
 /* Takes elements from build_uses and turns them into use operands of STMT.
-   TODO -- Given that use operands list is not neccessarily sorted, merging
+   TODO -- Given that use operands list is not necessarily sorted, merging
 	   the operands this way does not make much sense.
 	-- Make build_uses VEC of tree *.  */
 

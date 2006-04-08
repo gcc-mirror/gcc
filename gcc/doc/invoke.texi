@@ -9170,7 +9170,7 @@ Intel PentiumMMX CPU based on Pentium core with MMX instruction set support.
 Intel PentiumPro CPU@.
 @item i686
 Same as @code{generic}, but when used as @code{march} option, PentiumPro
-instruction set will be used, so the code will run on all i686 familly chips.
+instruction set will be used, so the code will run on all i686 family chips.
 @item pentium2
 Intel Pentium2 CPU based on PentiumPro core with MMX instruction set support.
 @item pentium3, pentium3m
@@ -9844,7 +9844,7 @@ The default is 'disable'.
 @itemx -msched-prefer-non-data-spec-insns
 @opindex -mno-sched-prefer-non-data-spec-insns
 @opindex -msched-prefer-non-data-spec-insns
-If enabled, data speculative instructions will be choosen for schedule
+If enabled, data speculative instructions will be chosen for schedule
 only if there are no other choices at the moment.  This will make
 the use of the data speculation much more conservative.
 The default is 'disable'.
@@ -9853,7 +9853,7 @@ The default is 'disable'.
 @itemx -msched-prefer-non-control-spec-insns
 @opindex -mno-sched-prefer-non-control-spec-insns
 @opindex -msched-prefer-non-control-spec-insns
-If enabled, control speculative instructions will be choosen for schedule
+If enabled, control speculative instructions will be chosen for schedule
 only if there are no other choices at the moment.  This will make
 the use of the control speculation much more conservative.
 The default is 'disable'.
@@ -9862,7 +9862,7 @@ The default is 'disable'.
 @itemx -msched-count-spec-in-critical-path
 @opindex -mno-sched-count-spec-in-critical-path
 @opindex -msched-count-spec-in-critical-path
-If enabled, speculative depedencies will be considered during
+If enabled, speculative dependencies will be considered during
 computation of the instructions priorities.  This will make the use of the
 speculation a bit more conservative.
 The default is 'disable'.

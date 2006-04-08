@@ -810,7 +810,7 @@ anything_to_prefetch_p (struct mem_ref_group *groups)
 
 /* Issue prefetches for the reference REF into loop as decided before.
    HEAD is the number of iterations to prefetch ahead.  UNROLL_FACTOR
-   is the factor by thet LOOP was unrolled.  */
+   is the factor by which LOOP was unrolled.  */
 
 static void
 issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)

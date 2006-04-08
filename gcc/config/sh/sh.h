@@ -507,8 +507,8 @@ enum sh_divide_strategy_e {
   SH_DIV_INV_CALL2,
   SH_DIV_INV_FP,
   /* SH1 .. SH4 strategies.  Because of the small number of registers
-     available, the compiler uses knowledge of the actual et of registers
-     being clobbed by the different functions called.  */
+     available, the compiler uses knowledge of the actual set of registers
+     being clobbered by the different functions called.  */
   SH_DIV_CALL_DIV1, /* No FPU, medium size, highest latency.  */
   SH_DIV_CALL_FP,     /* FPU needed, small size, high latency.  */
   SH_DIV_CALL_TABLE,  /* No FPU, large size, medium latency. */

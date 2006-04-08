@@ -357,7 +357,7 @@ vect_recog_widen_mult_pattern (tree last_stmt ATTRIBUTE_UNUSED,
 
    where type 'TYPE' is at least double the size of type 'type', i.e - we're 
    summing elements of type 'type' into an accumulator of type 'TYPE'. This is
-   a sepcial case of a reduction computation.
+   a special case of a reduction computation.
 
    Input:
 

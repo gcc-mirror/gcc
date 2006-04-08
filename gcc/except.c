@@ -858,7 +858,7 @@ current_function_has_exception_handlers (void)
 }
 
 /* A subroutine of duplicate_eh_regions.  Search the region tree under O
-   for the miniumum and maximum region numbers.  Update *MIN and *MAX.  */
+   for the minimum and maximum region numbers.  Update *MIN and *MAX.  */
 
 static void
 duplicate_eh_regions_0 (eh_region o, int *min, int *max)
@@ -912,7 +912,7 @@ duplicate_eh_regions_1 (eh_region old, eh_region outer, int eh_offset)
   return ret;
 }
 
-/* Duplicate the EH regions of IFUN, rootted at COPY_REGION, into current
+/* Duplicate the EH regions of IFUN, rooted at COPY_REGION, into current
    function and root the tree below OUTER_REGION.  Remap labels using MAP
    callback.  The special case of COPY_REGION of 0 means all regions.  */
 

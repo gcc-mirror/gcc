@@ -1,3 +1,17 @@
+2006-04-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* builtins.c, config/arm/arm.c, config/i386/cygwin.h,
+	config/i386/i386.c, config/ia64/ia64.c, config/s390/fixdfdi.h,
+	config/sh/sh.c, config/sh/sh.h, df-scan.c, except.c,
+	haifa-sched.c, optabs.c, rtl.h, sched-deps.c, sched-int.h,
+	sched-rgn.c, tree-inline.h, tree-ssa-dom.c,
+	tree-ssa-loop-prefetch.c, tree-ssa-operands.c,
+	tree-vect-patterns.c, tree-vrp.c: Fix comment typos.  Follow
+	spelling convensions.
+	* config/ia64/ia64.opt, doc/contrib.texi, doc/invoke.texi,
+	doc/passes.texi, doc/tm.texi, doc/tree-ssa.texi: Fix comment
+	typos.  Follow spelling conventions.
+
 2006-04-07  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_function_arg): Structures are always

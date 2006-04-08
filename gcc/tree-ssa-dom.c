@@ -2328,7 +2328,7 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
     }
 }
 
-/* T is either a PHI node (potentally a degenerate PHI node) or
+/* T is either a PHI node (potentially a degenerate PHI node) or
    a statement that is a trivial copy or constant initialization.
 
    Attempt to eliminate T by propagating its RHS into all uses of
@@ -2446,7 +2446,7 @@ eliminate_degenerate_phis (void)
      time behavior with bitmaps rather than sbitmaps.  */
   interesting_names = BITMAP_ALLOC (NULL);
 
-  /* First phase.  Elimiante degenerate PHIs via a domiantor
+  /* First phase.  Eliminate degenerate PHIs via a dominator
      walk of the CFG.
 
      Experiments have indicated that we generally get better
@@ -2457,7 +2457,7 @@ eliminate_degenerate_phis (void)
   calculate_dominance_info (CDI_DOMINATORS);
   eliminate_degenerate_phis_1 (ENTRY_BLOCK_PTR, interesting_names);
 
-  /* Second phase.  Eliminate second order degnerate PHIs as well
+  /* Second phase.  Eliminate second order degenerate PHIs as well
      as trivial copies or constant initializations identified by
      the first phase or this phase.  Basically we keep iterating
      until our set of INTERESTING_NAMEs is empty.   */

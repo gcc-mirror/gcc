@@ -227,7 +227,7 @@ sched_insns_conditions_mutex_p (rtx insn1, rtx insn2)
 
 /* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
    LOG_LINKS of INSN, if it is not already there.  DEP_TYPE indicates the
-   type of dependence that this link represents.  DS, if non-zero,
+   type of dependence that this link represents.  DS, if nonzero,
    indicates speculations, through which this dependence can be overcome.
    MEM1 and MEM2, if non-null, corresponds to memory locations in case of
    data speculation.  The function returns a value indicating if an old entry
@@ -2187,7 +2187,7 @@ check_dep_status (enum reg_note dt, ds_t ds, bool relaxed_p)
 	  gcc_assert ((ds & DEP_TYPES) == DEP_TRUE);
 	}
           
-      /* Check that true and anti depencies can't have other speculative 
+      /* Check that true and anti dependencies can't have other speculative 
 	 statuses.  */
       if (ds & DEP_TRUE)
 	gcc_assert (ds & (BEGIN_DATA | BE_IN_SPEC));

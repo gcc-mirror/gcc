@@ -6818,7 +6818,7 @@ sh_va_start (tree valist, rtx nextarg)
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
 
-/* TYPE is a RECORD_TYPE.  If there is only a single non-zero-sized
+/* TYPE is a RECORD_TYPE.  If there is only a single nonzero-sized
    member, return it.  */
 static tree
 find_sole_member (tree type)

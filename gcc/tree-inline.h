@@ -64,10 +64,10 @@ typedef struct copy_body_data
   int eh_region_offset;
 
   /* We use the same mechanism do all sorts of different things.  Rather
-     than enumerating the different cases, we categorize the behaviour
+     than enumerating the different cases, we categorize the behavior
      in the various situations.  */
 
-  /* Indicate the desired behaviour wrt call graph edges.  We can either
+  /* Indicate the desired behavior wrt call graph edges.  We can either
      duplicate the edge (inlining, cloning), move the edge (versioning,
      parallelization), or move the edges of the clones (saving).  */
   enum copy_body_cge_which {

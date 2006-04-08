@@ -235,6 +235,6 @@ while (0)
 
 /* Every program on cygwin links against cygwin1.dll which contains 
    the pthread routines.  There is no need to explicitly link them
-   and the -pthread flag is not recognised.  */
+   and the -pthread flag is not recognized.  */
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
