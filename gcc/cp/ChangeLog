@@ -1,3 +1,7 @@
+2006-04-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl2.c, pt.c, semantics.c: Fix comment typos.
+
 2006-04-06  Roger Sayle  <roger@eyesopen.com>
 
 	* call.c (null_ptr_cst_p): Add explicit TREE_CONSTANT_OVERFLOW check.
