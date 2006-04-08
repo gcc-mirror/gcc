@@ -2650,7 +2650,7 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
       gfc_conv_expr (&rse, me);
     }
 
-  /* Variable to evalate mask condition.  */
+  /* Variable to evaluate mask condition.  */
   cond = gfc_create_var (mask_type, "cond");
   if (mask && (cmask || pmask))
     mtmp = gfc_create_var (mask_type, "mask");

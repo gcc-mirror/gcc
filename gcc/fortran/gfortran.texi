@@ -548,7 +548,7 @@ Environment variable forcing standard output to be line buffered (unix).
 @chapter Runtime:  Influencing runtime behavior with environment variables
 @cindex Runtime
 
-The behaviour of the @command{gfortran} can be influenced by
+The behavior of the @command{gfortran} can be influenced by
 environment variables.
 
 Malformed environment variables are silently ignored.
@@ -610,7 +610,7 @@ this is also missing, the default is @file{/tmp}.
 This environment variable controls wether all output is unbuffered.
 If the first letter is @samp{y}, @samp{Y} or @samp{1}, all output is
 unbuffered. This will slow down large writes.  If the first letter is
-@samp{n}, @samp{N}  or @samp{0}, output is bufferred.  This is the
+@samp{n}, @samp{N}  or @samp{0}, output is buffered.  This is the
 default.
 
 @node GFORTRAN_SHOW_LOCUS
@@ -626,7 +626,7 @@ for runtime errors. The default is to print the location.
 
 If the first letter is @samp{y}, @samp{Y} or @samp{1},
 a plus sign is printed
-where permitted by the Fortran standard.  If the first lettter
+where permitted by the Fortran standard.  If the first letter
 is @samp{n}, @samp{N} or @samp{0}, a plus sign is not printed
 in most cases. Default is not to print plus signs.
 
