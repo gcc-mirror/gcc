@@ -1,3 +1,13 @@
+2006-04-08  Thomas Koenig  <Thomas.Koenig@online.de>
+	
+	PR fortran/25031
+	Backport from mainline
+	* runtime/memory.c:  Adjust copyright years.
+	(allocate_array):  New function.
+	(allocate64_array):  New function.
+	* libgfortran.h (error_codes):  Add ERROR_ALLOCATION.
+
+
 2006-04-01  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/26735

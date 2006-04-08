@@ -2911,8 +2911,8 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
    the work for an ALLOCATE statement.  */
 /*GCC ARRAYS*/
 
-void
-gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
+bool
+gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
 {
   tree tmp;
   tree pointer;
@@ -2921,6 +2921,20 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
   tree size;
   gfc_expr **lower;
   gfc_expr **upper;
+  gfc_ref *ref;
+  int allocatable_array;
+
+  ref = expr->ref;
+
+  /* Find the last reference in the chain.  */
+  while (ref && ref->next != NULL)
+    {
+      gcc_assert (ref->type != REF_ARRAY || ref->u.ar.type == AR_ELEMENT);
+      ref = ref->next;
+    }
+
+  if (ref == NULL || ref->type != REF_ARRAY)
+    return false;
 
   /* Figure out the size of the array.  */
   switch (ref->u.ar.type)
@@ -2954,10 +2968,22 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
   tmp = gfc_conv_descriptor_data_addr (se->expr);
   pointer = gfc_evaluate_now (tmp, &se->pre);
 
+  allocatable_array = expr->symtree->n.sym->attr.allocatable;
+
   if (TYPE_PRECISION (gfc_array_index_type) == 32)
-    allocate = gfor_fndecl_allocate;
+    {
+      if (allocatable_array)
+	allocate = gfor_fndecl_allocate_array;
+      else
+	allocate = gfor_fndecl_allocate;
+    }
   else if (TYPE_PRECISION (gfc_array_index_type) == 64)
-    allocate = gfor_fndecl_allocate64;
+    {
+      if (allocatable_array)
+	allocate = gfor_fndecl_allocate64_array;
+      else
+	allocate = gfor_fndecl_allocate64;
+    }
   else
     gcc_unreachable ();
 
@@ -2969,6 +2995,8 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
 
   tmp = gfc_conv_descriptor_offset (se->expr);
   gfc_add_modify_expr (&se->pre, tmp, offset);
+
+  return true;
 }
 
 
