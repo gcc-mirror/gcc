@@ -252,7 +252,7 @@ static int is_first_data_member = 0;
 
 /* Only include byte-code decompilation optimizations for ELF targets
    since the generated headers are only known to work with ELF weak
-   symbol semnatics. Specifically, these optimizations are known to
+   symbol semantics. Specifically, these optimizations are known to
    not work on PE-COFF and possibly others.  */
 #ifdef OBJECT_FORMAT_ELF
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH)	\
