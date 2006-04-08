@@ -3984,7 +3984,7 @@ convert_template_argument (tree parm,
    warning messages are issued under control of COMPLAIN.
 
    If REQUIRE_ALL_ARGS is false, argument deduction will be performed
-   for arugments not specified in ARGS.  Otherwise, if
+   for arguments not specified in ARGS.  Otherwise, if
    USE_DEFAULT_ARGS is true, default arguments will be used to fill in
    unspecified arguments.  If REQUIRE_ALL_ARGS is true, but
    USE_DEFAULT_ARGS is false, then all arguments must be specified in

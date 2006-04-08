@@ -3512,7 +3512,7 @@ finish_omp_clauses (tree clauses)
       while (TREE_CODE (inner_type) == ARRAY_TYPE)
 	inner_type = TREE_TYPE (inner_type);
 
-      /* Check for special function availablity by building a call to one.
+      /* Check for special function availability by building a call to one.
 	 Save the results, because later we won't be in the right context
 	 for making these queries.  */
       if (CLASS_TYPE_P (inner_type)
@@ -3658,7 +3658,7 @@ finish_omp_structured_block (tree block)
   return do_poplevel (block);
 }
 
-/* Similarly, except force the retension of the BLOCK.  */
+/* Similarly, except force the retention of the BLOCK.  */
 
 tree
 begin_omp_parallel (void)

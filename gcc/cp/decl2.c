@@ -787,7 +787,7 @@ finish_static_data_member_decl (tree decl,
   cp_finish_decl (decl, init, init_const_expr_p, asmspec_tree, flags);
 }
 
-/* DECLARATOR and DECLSPECS correspond to a class member.  The othe
+/* DECLARATOR and DECLSPECS correspond to a class member.  The other
    parameters are as for cp_finish_decl.  Return the DECL for the
    class member declared.  */ 
 
