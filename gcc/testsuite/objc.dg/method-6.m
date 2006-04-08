@@ -30,3 +30,5 @@ void foo(void) {
 
   [Class port];  /* { dg-error ".Class. is not an Objective\\-C class name or alias" } */
 }
+
+/* { dg-options "-Wstrict-selector-match" } */
