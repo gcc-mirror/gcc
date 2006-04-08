@@ -1,3 +1,7 @@
+2006-04-08  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/pragma-darwin.c: Improve for ppc64.
+
 2006-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26135
