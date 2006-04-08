@@ -1,5 +1,7 @@
 2006-04-08  Mike Stump  <mrs@apple.com>
 
+	* objc.dg/method-6.m: Add -Wstrict-selector-match.
+
 	* gcc.dg/pragma-darwin.c: Improve for ppc64.
 
 2006-04-07  Richard Guenther  <rguenther@suse.de>
