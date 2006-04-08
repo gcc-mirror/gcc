@@ -1923,9 +1923,9 @@ number as al, and ax.
 #define DBX_REGISTER_NUMBER(N) \
   (TARGET_64BIT ? dbx64_register_map[(N)] : dbx_register_map[(N)])
 
-extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
-extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
-extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern int const dbx_register_map[FIRST_PSEUDO_REGISTER+1];
+extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER+1];
+extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER+1];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
