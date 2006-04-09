@@ -1,3 +1,21 @@
+2006-04-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): Refine some wording on
+	bootstrapping and ksh.
+	Move the version numbers of DejaGnu here from the testing section
+	and fix casing of names.
+	Fix markup and clarify wording for autogen requirements.
+	Refer to GCJ instead of just java.
+	Refer to SVN instead of CVS.
+	Describe diffutils as useful instead of necessary.
+	(Downloading the source): Refer to SVN instead of CVS.
+	Adjust a link to our web site accordingly.
+	(Configuration): Fix casing of Bison.
+	(Specific): Avoid reference to CVS.
+	(Building): Refer to SVN instead of CVS.  
+	Fix a sentence on the use of Bison and remove duplicate (and
+	incorrect) version number of Bison requirement.
+
 2006-04-08  Matthias Klose  <doko@debian.org>
 
         * Makefile.in (unprotoize.o): Same dependencies as for protoize.o.
