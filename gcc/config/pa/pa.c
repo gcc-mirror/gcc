@@ -5962,11 +5962,13 @@ pa_scalar_mode_supported_p (enum machine_mode mode)
    parameters.  */
 
 const char *
-output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
+output_cbranch (rtx *operands, int negated, rtx insn)
 {
   static char buf[100];
   int useskip = 0;
-  rtx xoperands[5];
+  int nullify = INSN_ANNULLED_BRANCH_P (insn);
+  int length = get_attr_length (insn);
+  int xdelay;
 
   /* A conditional branch to the following instruction (e.g. the delay slot)
      is asking for a disaster.  This can happen when not optimizing and
@@ -6036,7 +6038,7 @@ output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
 	with an unfilled delay slot.  */
       case 8:
 	/* Handle weird backwards branch with a filled delay slot
-	   with is nullified.  */
+	   which is nullified.  */
 	if (dbr_sequence_length () != 0
 	    && ! forward_branch_p (insn)
 	    && nullify)
@@ -6083,19 +6085,24 @@ output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
 	  }
 	break;
 
-      case 20:
-      case 28:
-	xoperands[0] = operands[0];
-	xoperands[1] = operands[1];
-	xoperands[2] = operands[2];
-	xoperands[3] = operands[3];
-
+      default:
 	/* The reversed conditional branch must branch over one additional
-	   instruction if the delay slot is filled.  If the delay slot
-	   is empty, the instruction after the reversed condition branch
-	   must be nullified.  */
-	nullify = dbr_sequence_length () == 0;
-	xoperands[4] = nullify ? GEN_INT (length) : GEN_INT (length + 4);
+	   instruction if the delay slot is filled and needs to be extracted
+	   by output_lbranch.  If the delay slot is empty or this is a
+	   nullified forward branch, the instruction after the reversed
+	   condition branch must be nullified.  */
+	if (dbr_sequence_length () == 0
+	    || (nullify && forward_branch_p (insn)))
+	  {
+	    nullify = 1;
+	    xdelay = 0;
+	    operands[4] = GEN_INT (length);
+	  }
+	else
+	  {
+	    xdelay = 1;
+	    operands[4] = GEN_INT (length + 4);
+	  }
 
 	/* Create a reversed conditional branch which branches around
 	   the following insns.  */
@@ -6142,27 +6149,38 @@ output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
 	      }
 	  }
 
-	output_asm_insn (buf, xoperands);
-	return output_lbranch (operands[0], insn);
-
-      default:
-	gcc_unreachable ();
+	output_asm_insn (buf, operands);
+	return output_lbranch (operands[0], insn, xdelay);
     }
   return buf;
 }
 
-/* This routine handles long unconditional branches that exceed the
-   maximum range of a simple branch instruction.  */
+/* This routine handles output of long unconditional branches that
+   exceed the maximum range of a simple branch instruction.  Since
+   we don't have a register available for the branch, we save register
+   %r1 in the frame marker, load the branch destination DEST into %r1,
+   execute the branch, and restore %r1 in the delay slot of the branch.
+
+   Since long branches may have an insn in the delay slot and the
+   delay slot is used to restore %r1, we in general need to extract
+   this insn and execute it before the branch.  However, to facilitate
+   use of this function by conditional branches, we also provide an
+   option to not extract the delay insn so that it will be emitted
+   after the long branch.  So, if there is an insn in the delay slot,
+   it is extracted if XDELAY is nonzero.
+
+   The lengths of the various long-branch sequences are 20, 16 and 24
+   bytes for the portable runtime, non-PIC and PIC cases, respectively.  */
 
 const char *
-output_lbranch (rtx dest, rtx insn)
+output_lbranch (rtx dest, rtx insn, int xdelay)
 {
   rtx xoperands[2];
  
   xoperands[0] = dest;
 
   /* First, free up the delay slot.  */
-  if (dbr_sequence_length () != 0)
+  if (xdelay && dbr_sequence_length () != 0)
     {
       /* We can't handle a jump in the delay slot.  */
       gcc_assert (GET_CODE (NEXT_INSN (insn)) != JUMP_INSN);
@@ -6272,11 +6290,13 @@ output_lbranch (rtx dest, rtx insn)
    above.  it returns the appropriate output template to emit the branch.  */
 
 const char *
-output_bb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
-	   int negated, rtx insn, int which)
+output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
 {
   static char buf[100];
   int useskip = 0;
+  int nullify = INSN_ANNULLED_BRANCH_P (insn);
+  int length = get_attr_length (insn);
+  int xdelay;
 
   /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  I do not think this can happen as this pattern
@@ -6343,7 +6363,7 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	with an unfilled delay slot.  */
       case 8:
 	/* Handle weird backwards branch with a filled delay slot
-	   with is nullified.  */
+	   which is nullified.  */
 	if (dbr_sequence_length () != 0
 	    && ! forward_branch_p (insn)
 	    && nullify)
@@ -6385,9 +6405,10 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	  }
 	else
 	  {
-	    strcpy (buf, "{extrs,|extrw,s,}");
 	    if (GET_MODE (operands[0]) == DImode)
 	      strcpy (buf, "extrd,s,*");
+	    else
+	      strcpy (buf, "{extrs,|extrw,s,}");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
@@ -6405,7 +6426,40 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	break;
 
       default:
-	gcc_unreachable ();
+	/* The reversed conditional branch must branch over one additional
+	   instruction if the delay slot is filled and needs to be extracted
+	   by output_lbranch.  If the delay slot is empty or this is a
+	   nullified forward branch, the instruction after the reversed
+	   condition branch must be nullified.  */
+	if (dbr_sequence_length () == 0
+	    || (nullify && forward_branch_p (insn)))
+	  {
+	    nullify = 1;
+	    xdelay = 0;
+	    operands[4] = GEN_INT (length - 8);
+	  }
+	else
+	  {
+	    xdelay = 1;
+	    operands[4] = GEN_INT (length - 4);
+	  }
+
+	if (GET_MODE (operands[0]) == DImode)
+	  strcpy (buf, "extrd,s,*");
+	else
+	  strcpy (buf, "{extrs,|extrw,s,}");
+	if ((which == 0 && negated)
+	    || (which == 1 && !negated))
+	  strcat (buf, ">= %0,%1,1,%%r0\n\t");
+	else
+	  strcat (buf, "< %0,%1,1,%%r0\n\t");
+	if (nullify)
+	  strcat (buf, "b,n .+%4");
+	else
+	  strcat (buf, "b .+%4");
+	output_asm_insn (buf, operands);
+	return output_lbranch (negated ? operands[3] : operands[2],
+			       insn, xdelay);
     }
   return buf;
 }
@@ -6417,11 +6471,13 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
    branch.  */
 
 const char *
-output_bvb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
-	    int negated, rtx insn, int which)
+output_bvb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
 {
   static char buf[100];
   int useskip = 0;
+  int nullify = INSN_ANNULLED_BRANCH_P (insn);
+  int length = get_attr_length (insn);
+  int xdelay;
 
   /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  I do not think this can happen as this pattern
@@ -6488,7 +6544,7 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	with an unfilled delay slot.  */
       case 8:
 	/* Handle weird backwards branch with a filled delay slot
-	   with is nullified.  */
+	   which is nullified.  */
 	if (dbr_sequence_length () != 0
 	    && ! forward_branch_p (insn)
 	    && nullify)
@@ -6550,7 +6606,40 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	break;
 
       default:
-	gcc_unreachable ();
+	/* The reversed conditional branch must branch over one additional
+	   instruction if the delay slot is filled and needs to be extracted
+	   by output_lbranch.  If the delay slot is empty or this is a
+	   nullified forward branch, the instruction after the reversed
+	   condition branch must be nullified.  */
+	if (dbr_sequence_length () == 0
+	    || (nullify && forward_branch_p (insn)))
+	  {
+	    nullify = 1;
+	    xdelay = 0;
+	    operands[4] = GEN_INT (length - 8);
+	  }
+	else
+	  {
+	    xdelay = 1;
+	    operands[4] = GEN_INT (length - 4);
+	  }
+
+	if (GET_MODE (operands[0]) == DImode)
+	  strcpy (buf, "extrd,s,*");
+	else
+	  strcpy (buf, "{extrs,|extrw,s,}");
+	if ((which == 0 && negated)
+	    || (which == 1 && !negated))
+	  strcat (buf, ">= {%0,%1,1,%%r0|%0,%%sar,1,%%r0}\n\t");
+	else
+	  strcat (buf, "< {%0,%1,1,%%r0|%0,%%sar,1,%%r0}\n\t");
+	if (nullify)
+	  strcat (buf, "b,n .+%4");
+	else
+	  strcat (buf, "b .+%4");
+	output_asm_insn (buf, operands);
+	return output_lbranch (negated ? operands[3] : operands[2],
+			       insn, xdelay);
     }
   return buf;
 }
@@ -6562,6 +6651,7 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 const char *
 output_dbra (rtx *operands, rtx insn, int which_alternative)
 {
+  int length = get_attr_length (insn);
 
   /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  Be prepared!  */
@@ -6587,7 +6677,7 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
   if (which_alternative == 0)
     {
       int nullify = INSN_ANNULLED_BRANCH_P (insn);
-      int length = get_attr_length (insn);
+      int xdelay;
 
       /* If this is a long branch with its delay slot unfilled, set `nullify'
 	 as it can nullify the delay slot and save a nop.  */
@@ -6631,7 +6721,30 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
 	    return "addi,%N2 %1,%0,%0\n\tb %3";
 
 	default:
-	  gcc_unreachable ();
+	  /* The reversed conditional branch must branch over one additional
+	     instruction if the delay slot is filled and needs to be extracted
+	     by output_lbranch.  If the delay slot is empty or this is a
+	     nullified forward branch, the instruction after the reversed
+	     condition branch must be nullified.  */
+	  if (dbr_sequence_length () == 0
+	      || (nullify && forward_branch_p (insn)))
+	    {
+	      nullify = 1;
+	      xdelay = 0;
+	      operands[4] = GEN_INT (length);
+	    }
+	  else
+	    {
+	      xdelay = 1;
+	      operands[4] = GEN_INT (length + 4);
+	    }
+
+	  if (nullify)
+	    output_asm_insn ("addib,%N2,n %1,%0,.+%4", operands);
+	  else
+	    output_asm_insn ("addib,%N2 %1,%0,.+%4", operands);
+
+	  return output_lbranch (operands[3], insn, xdelay);
 	}
       
     }
@@ -6644,10 +6757,17 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
       output_asm_insn ("{fstws|fstw} %0,-16(%%r30)\n\tldw -16(%%r30),%4",
 		       operands);
       output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(%%r30)", operands);
-      if (get_attr_length (insn) == 24)
+      if (length == 24)
 	return "{comb|cmpb},%S2 %%r0,%4,%3\n\t{fldws|fldw} -16(%%r30),%0";
-      else
+      else if (length == 28)
 	return "{comclr|cmpclr},%B2 %%r0,%4,%%r0\n\tb %3\n\t{fldws|fldw} -16(%%r30),%0";
+      else
+	{
+	  operands[4] = GEN_INT (length - 24);
+	  output_asm_insn ("addib,%N2 %1,%0,.+%4", operands);
+	  output_asm_insn ("{fldws|fldw} -16(%%r30),%0", operands);
+	  return output_lbranch (operands[3], insn, 0);
+	}
     }
   /* Deal with gross reload from memory case.  */
   else
@@ -6655,14 +6775,20 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
       /* Reload loop counter from memory, the store back to memory
 	 happens in the branch's delay slot.  */
       output_asm_insn ("ldw %0,%4", operands);
-      if (get_attr_length (insn) == 12)
+      if (length == 12)
 	return "addib,%C2 %1,%4,%3\n\tstw %4,%0";
-      else
+      else if (length == 16)
 	return "addi,%N2 %1,%4,%4\n\tb %3\n\tstw %4,%0";
+      else
+	{
+	  operands[5] = GEN_INT (length - 12);
+	  output_asm_insn ("addib,%N2 %1,%0,.+%5\n\tstw %4,%0", operands);
+	  return output_lbranch (operands[3], insn, 0);
+	}
     }
 }
 
-/* Return the output template for emitting a dbra type insn.
+/* Return the output template for emitting a movb type insn.
 
    Note it may perform some output operations on its own before
    returning the final output string.  */
@@ -6670,6 +6796,7 @@ const char *
 output_movb (rtx *operands, rtx insn, int which_alternative,
 	     int reverse_comparison)
 {
+  int length = get_attr_length (insn);
 
   /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  Be prepared!  */
@@ -6696,7 +6823,7 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
   if (which_alternative == 0)
     {
       int nullify = INSN_ANNULLED_BRANCH_P (insn);
-      int length = get_attr_length (insn);
+      int xdelay;
 
       /* If this is a long branch with its delay slot unfilled, set `nullify'
 	 as it can nullify the delay slot and save a nop.  */
@@ -6740,38 +6867,80 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
 	    return "or,%N2 %1,%%r0,%0\n\tb %3";
 
 	default:
-	  gcc_unreachable ();
+	  /* The reversed conditional branch must branch over one additional
+	     instruction if the delay slot is filled and needs to be extracted
+	     by output_lbranch.  If the delay slot is empty or this is a
+	     nullified forward branch, the instruction after the reversed
+	     condition branch must be nullified.  */
+	  if (dbr_sequence_length () == 0
+	      || (nullify && forward_branch_p (insn)))
+	    {
+	      nullify = 1;
+	      xdelay = 0;
+	      operands[4] = GEN_INT (length);
+	    }
+	  else
+	    {
+	      xdelay = 1;
+	      operands[4] = GEN_INT (length + 4);
+	    }
+
+	  if (nullify)
+	    output_asm_insn ("movb,%N2,n %1,%0,.+%4", operands);
+	  else
+	    output_asm_insn ("movb,%N2 %1,%0,.+%4", operands);
+
+	  return output_lbranch (operands[3], insn, xdelay);
 	}
     }
-  /* Deal with gross reload from FP register case.  */
+  /* Deal with gross reload for FP destination register case.  */
   else if (which_alternative == 1)
     {
-      /* Move loop counter from FP register to MEM then into a GR,
-	 increment the GR, store the GR into MEM, and finally reload
-	 the FP register from MEM from within the branch's delay slot.  */
+      /* Move source register to MEM, perform the branch test, then
+	 finally load the FP register from MEM from within the branch's
+	 delay slot.  */
       output_asm_insn ("stw %1,-16(%%r30)", operands);
-      if (get_attr_length (insn) == 12)
+      if (length == 12)
 	return "{comb|cmpb},%S2 %%r0,%1,%3\n\t{fldws|fldw} -16(%%r30),%0";
-      else
+      else if (length == 16)
 	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\t{fldws|fldw} -16(%%r30),%0";
+      else
+	{
+	  operands[4] = GEN_INT (length - 12);
+	  output_asm_insn ("movb,%N2 %1,%0,.+%4", operands);
+	  output_asm_insn ("{fldws|fldw} -16(%%r30),%0", operands);
+	  return output_lbranch (operands[3], insn, 0);
+	}
     }
   /* Deal with gross reload from memory case.  */
   else if (which_alternative == 2)
     {
       /* Reload loop counter from memory, the store back to memory
 	 happens in the branch's delay slot.  */
-      if (get_attr_length (insn) == 8)
+      if (length == 8)
 	return "{comb|cmpb},%S2 %%r0,%1,%3\n\tstw %1,%0";
-      else
+      else if (length == 12)
 	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\tstw %1,%0";
+      else
+	{
+	  operands[4] = GEN_INT (length - 8);
+	  output_asm_insn ("movb,%N2 %1,%0,.+%4\n\tstw %1,%0", operands);
+	  return output_lbranch (operands[3], insn, 0);
+	}
     }
   /* Handle SAR as a destination.  */
   else
     {
-      if (get_attr_length (insn) == 8)
+      if (length == 8)
 	return "{comb|cmpb},%S2 %%r0,%1,%3\n\tmtsar %r1";
-      else
+      else if (length == 12)
 	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\tmtsar %r1";
+      else
+	{
+	  operands[4] = GEN_INT (length - 8);
+	  output_asm_insn ("movb,%N2 %1,%0,.+%4\n\tmtsar %r1", operands);
+	  return output_lbranch (operands[3], insn, 0);
+	}
     }
 }
 
@@ -8241,37 +8410,50 @@ jump_in_call_delay (rtx insn)
 /* Output an unconditional move and branch insn.  */
 
 const char *
-output_parallel_movb (rtx *operands, int length)
+output_parallel_movb (rtx *operands, rtx insn)
 {
+  int length = get_attr_length (insn);
+
   /* These are the cases in which we win.  */
   if (length == 4)
     return "mov%I1b,tr %1,%0,%2";
 
-  /* None of these cases wins, but they don't lose either.  */
-  if (dbr_sequence_length () == 0)
+  /* None of the following cases win, but they don't lose either.  */
+  if (length == 8)
     {
-      /* Nothing in the delay slot, fake it by putting the combined
-	 insn (the copy or add) in the delay slot of a bl.  */
-      if (GET_CODE (operands[1]) == CONST_INT)
-	return "b %2\n\tldi %1,%0";
+      if (dbr_sequence_length () == 0)
+	{
+	  /* Nothing in the delay slot, fake it by putting the combined
+	     insn (the copy or add) in the delay slot of a bl.  */
+	  if (GET_CODE (operands[1]) == CONST_INT)
+	    return "b %2\n\tldi %1,%0";
+	  else
+	    return "b %2\n\tcopy %1,%0";
+	}
       else
-	return "b %2\n\tcopy %1,%0";
+	{
+	  /* Something in the delay slot, but we've got a long branch.  */
+	  if (GET_CODE (operands[1]) == CONST_INT)
+	    return "ldi %1,%0\n\tb %2";
+	  else
+	    return "copy %1,%0\n\tb %2";
+	}
     }
+
+  if (GET_CODE (operands[1]) == CONST_INT)
+    output_asm_insn ("ldi %1,%0", operands);
   else
-    {
-      /* Something in the delay slot, but we've got a long branch.  */
-      if (GET_CODE (operands[1]) == CONST_INT)
-	return "ldi %1,%0\n\tb %2";
-      else
-	return "copy %1,%0\n\tb %2";
-    }
+    output_asm_insn ("copy %1,%0", operands);
+  return output_lbranch (operands[2], insn, 1);
 }
 
 /* Output an unconditional add and branch insn.  */
 
 const char *
-output_parallel_addb (rtx *operands, int length)
+output_parallel_addb (rtx *operands, rtx insn)
 {
+  int length = get_attr_length (insn);
+
   /* To make life easy we want operand0 to be the shared input/output
      operand and operand1 to be the readonly operand.  */
   if (operands[0] == operands[1])
@@ -8281,18 +8463,20 @@ output_parallel_addb (rtx *operands, int length)
   if (length == 4)
     return "add%I1b,tr %1,%0,%3";
 
-  /* None of these cases win, but they don't lose either.  */
-  if (dbr_sequence_length () == 0)
+  /* None of the following cases win, but they don't lose either.  */
+  if (length == 8)
     {
-      /* Nothing in the delay slot, fake it by putting the combined
-	 insn (the copy or add) in the delay slot of a bl.  */
-      return "b %3\n\tadd%I1 %1,%0,%0";
+      if (dbr_sequence_length () == 0)
+	/* Nothing in the delay slot, fake it by putting the combined
+	   insn (the copy or add) in the delay slot of a bl.  */
+	return "b %3\n\tadd%I1 %1,%0,%0";
+      else
+	/* Something in the delay slot, but we've got a long branch.  */
+	return "add%I1 %1,%0,%0\n\tb %3";
     }
-  else
-    {
-      /* Something in the delay slot, but we've got a long branch.  */
-      return "add%I1 %1,%0,%0\n\tb %3";
-    }
+
+  output_asm_insn ("add%I1 %1,%0,%0", operands);
+  return output_lbranch (operands[3], insn, 1);
 }
 
 /* Return nonzero if INSN (a jump insn) immediately follows a call
