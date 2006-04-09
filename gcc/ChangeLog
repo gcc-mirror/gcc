@@ -1,3 +1,9 @@
+2006-04-09  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/27073
+	* gcse.c (try_replace_reg): Just propagate into REG_EQUAL notes,
+	not REG_EQUIVs.
+
 2006-04-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree.h (tree_memory_tag): Add old_used_alone.
