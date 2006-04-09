@@ -1,3 +1,28 @@
+2006-04-09  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+
+	PR target/26743
+	PR target/11254
+	PR target/10274
+	* pa.md (cbranch patterns): Revise arguments used in calls to
+	output_cbranch, output_bb and output_bvd.  Add long branch length
+	attributes.
+	(fbranch patterns): Handle long branches.
+	(jump): Revise length check.  Revise arguments for output_lbranch call.
+	Add long branch length attributes.
+	(decrement_and_branch_until_zero): Add long branch length attributes.
+	(output_movb, output_parallel_addb and output_parallel_movb patterns):
+	Likewise.  Revise arguments for output_parallel_addb and
+	output_parallel_movb calls.
+	* pa-protos.h (output_cbranch, output_lbranch, output_bb, output_bvb,
+	output_parallel_movb and output_parallel_addb): Update prototypes.
+	* pa.c (output_cbranch): Revise arguments.  Correct handling of
+	nullification in long branches.
+	(output_lbranch): Add new argument to control extraction of delay
+	instruction.
+	(output_bb): Handle long branches.
+	(output_bvb, output_dbra, output_movb, output_parallel_movb,
+	output_parallel_addb): Likewise.
+
 2006-04-09  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/27073
