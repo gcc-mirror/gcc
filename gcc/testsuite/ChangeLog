@@ -1,3 +1,8 @@
+2006-04-09  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/27073
+	* gcc.c-torture/execute/pr27073.c: New test.
+
 2006-04-08  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/pragma-darwin.c: Improve for ppc64.

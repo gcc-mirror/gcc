@@ -2642,7 +2642,7 @@ find_used_regs (rtx *xptr, void *data ATTRIBUTE_UNUSED)
 static int
 try_replace_reg (rtx from, rtx to, rtx insn)
 {
-  rtx note = find_reg_equal_equiv_note (insn);
+  rtx note = find_reg_note (insn, REG_EQUAL, NULL);
   rtx src = 0;
   int success = 0;
   rtx set = single_set (insn);
