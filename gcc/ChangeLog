@@ -1,4 +1,20 @@
-2006-04-09  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+2006-04-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/27034
+	PR target/26508
+	* config.gcc (hppa*64*-*-hpux11*): Add 'libgcc_stub.a' to extra_parts.
+	* pa64-hpux.h (LIB_SPEC): Correct typo.  Don't append milli.a.
+	(LINK_GCC_C_SEQUENCE_SPEC): Define.  Append milli.a here.
+	(PA_CXA_FINALIZE_STUB, PA_JV_REGISTERCLASSES_STUB): Delete defines.
+	(PA_INIT_FINI_HACK): Rename to PA_CRTBEGIN_HACK.
+	(PA_CRTBEGIN_HACK): Ensure __do_global_ctors_aux is placed in text
+	section.  Delete PA_CXA_FINALIZE_STUB and PA_JV_REGISTERCLASSES_STUB
+	stubs.  Add ".align 8" directives before all ".dword" directives.
+	(GTHREAD_USE_WEAK): Revise comment.
+	(TARGET_ATTRIBUTE_WEAK): Define.
+	* pa/t-pa64 (LIBGCCSTUB_OBJS): Add new rules for stublib.c, rfi-stub.o,
+	dfi-stub.o, cxaf-stub.o and jvrc-stub.o.
+	* stublib.c: New file.
 
 	PR target/26743
 	PR target/11254
