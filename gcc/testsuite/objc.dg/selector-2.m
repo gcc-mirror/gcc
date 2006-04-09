@@ -14,4 +14,3 @@
 }
 @end
 /* { dg-warning "creating selector for nonexistent method .b1ar." "" { target *-*-* } 0 } */
-
