@@ -1,6 +1,6 @@
 2006-04-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-	* doc/install.texi (*-*-solaris2*): Point to the configuration page.
+	* doc/install.texi (*-*-solaris2*): Point to the configure page.
 
 2006-04-10  Jakub Jelinek  <jakub@redhat.com>
 
