@@ -1,3 +1,8 @@
+2006-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/27057
+	* g++.dg/debug/dwarf2-2.C: New test.
+
 2006-04-09  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/27073
