@@ -1340,18 +1340,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  input_iterator_tag, output_iterator_tag)
     {
       // concept requirements -- taken care of in dispatching function
-      *__result = *__first;
-      while (true)
-	{
-	  typename
-	    iterator_traits<_InputIterator>::value_type __value = *__first;
-
-	  if (++__first == __last)
-	    break;
-	  
-	  if (!(__value == *__first))
-	    *++__result = *__first;
-	}
+      typename iterator_traits<_InputIterator>::value_type __value = *__first;
+      *__result = __value;
+      while (++__first != __last)
+	if (!(__value == *__first))
+	  {
+	    __value = *__first;
+	    *++__result = __value;
+	  }
       return ++__result;
     }
 
@@ -1427,18 +1423,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  typename iterator_traits<_InputIterator>::value_type,
 	  typename iterator_traits<_InputIterator>::value_type>)
 
-      *__result = *__first;
-      while (true)
-	{
-	  typename
-	    iterator_traits<_InputIterator>::value_type __value = *__first;
-
-	  if (++__first == __last)
-	    break;
-	  
-	  if (!__binary_pred(__value, *__first))
-	    *++__result = *__first;
-	}
+      typename iterator_traits<_InputIterator>::value_type __value = *__first;
+      *__result = __value;
+      while (++__first != __last)
+	if (!__binary_pred(__value, *__first))
+	  {
+	    __value = *__first;
+	    *++__result = __value;
+	  }
       return ++__result;
     }
 
@@ -1485,6 +1477,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @if maint
    *  _GLIBCXX_RESOLVE_LIB_DEFECTS
    *  DR 241. Does unique_copy() require CopyConstructible and Assignable?
+   *  
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 538. 241 again: Does unique_copy() require CopyConstructible and 
+   *  Assignable?
    *  @endif
   */
   template<typename _InputIterator, typename _OutputIterator>
