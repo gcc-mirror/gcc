@@ -1,3 +1,13 @@
+2006-04-10  Paolo Carlini  <pcarlini@suse.de>
+
+	DR 538, [Ready]
+	* include/bits/stl_algo.h (__unique_copy(,,, input_iterator_tag,
+	output_iterator_tag), and predicated counterpart): Revert to the
+	algorithm pre-DR 241, i.e., value_type of InputIterator is now
+	required to be Assignable too.
+	* testsuite/25_algorithms/unique_copy/3.cc: Remove.
+	* docs/html/ext/howto.html: Add an entry for DR 538.
+
 2006-03-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/data/sgetn.txt:  Correct copyright holder.
