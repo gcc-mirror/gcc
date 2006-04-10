@@ -1,3 +1,8 @@
+2006-04-09  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (store_constructor): Don't bother clearing target if
+	we're about to assign a vector to it using vec_init_optab.
+
 2006-04-10 Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree-ssa-alias.c (lhs_may_store_to): New function.

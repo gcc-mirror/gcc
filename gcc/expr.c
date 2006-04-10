@@ -5325,7 +5325,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	  }
 	
 	/* Inform later passes that the old value is dead.  */
-	if (!cleared && REG_P (target))
+	if (!cleared && !vector && REG_P (target))
 	  emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
 
         /* Store each element of the constructor into the corresponding
