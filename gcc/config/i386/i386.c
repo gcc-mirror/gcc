@@ -17880,15 +17880,16 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 }
 
 /* A subroutine of ix86_expand_vector_init.  Store into TARGET a vector
-   whose low element is VAR, and other elements are zero.  Return true
+   whose ONE_VAR element is VAR, and other elements are zero.  Return true
    if successful.  */
 
 static bool
-ix86_expand_vector_init_low_nonzero (bool mmx_ok, enum machine_mode mode,
-				     rtx target, rtx var)
+ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
+				     rtx target, rtx var, int one_var)
 {
   enum machine_mode vsimode;
-  rtx x;
+  rtx new_target;
+  rtx x, tmp;
 
   switch (mode)
     {
@@ -17900,6 +17901,8 @@ ix86_expand_vector_init_low_nonzero (bool mmx_ok, enum machine_mode mode,
 
     case V2DFmode:
     case V2DImode:
+      if (one_var != 0)
+	return false;
       var = force_reg (GET_MODE_INNER (mode), var);
       x = gen_rtx_VEC_CONCAT (mode, var, CONST0_RTX (GET_MODE_INNER (mode)));
       emit_insn (gen_rtx_SET (VOIDmode, target, x));
@@ -17907,10 +17910,55 @@ ix86_expand_vector_init_low_nonzero (bool mmx_ok, enum machine_mode mode,
 
     case V4SFmode:
     case V4SImode:
+      if (!REG_P (target) || REGNO (target) < FIRST_PSEUDO_REGISTER)
+	new_target = gen_reg_rtx (mode);
+      else
+	new_target = target;
       var = force_reg (GET_MODE_INNER (mode), var);
       x = gen_rtx_VEC_DUPLICATE (mode, var);
       x = gen_rtx_VEC_MERGE (mode, x, CONST0_RTX (mode), const1_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, target, x));
+      emit_insn (gen_rtx_SET (VOIDmode, new_target, x));
+      if (one_var != 0)
+	{
+	  /* We need to shuffle the value to the correct position, so
+	     create a new pseudo to store the intermediate result.  */
+
+	  /* With SSE2, we can use the integer shuffle insns.  */
+	  if (mode != V4SFmode && TARGET_SSE2)
+	    {
+	      emit_insn (gen_sse2_pshufd_1 (new_target, new_target,
+					    GEN_INT (1),
+					    GEN_INT (one_var == 1 ? 0 : 1),
+					    GEN_INT (one_var == 2 ? 0 : 1),
+					    GEN_INT (one_var == 3 ? 0 : 1)));
+	      if (target != new_target)
+		emit_move_insn (target, new_target);
+	      return true;
+	    }
+
+	  /* Otherwise convert the intermediate result to V4SFmode and
+	     use the SSE1 shuffle instructions.  */
+	  if (mode != V4SFmode)
+	    {
+	      tmp = gen_reg_rtx (V4SFmode);
+	      emit_move_insn (tmp, gen_lowpart (V4SFmode, new_target));
+	    }
+	  else
+	    tmp = new_target;
+
+	  emit_insn (gen_sse_shufps_1 (tmp, tmp, tmp,
+				       GEN_INT (1),
+				       GEN_INT (one_var == 1 ? 0 : 1),
+				       GEN_INT (one_var == 2 ? 0+4 : 1+4),
+				       GEN_INT (one_var == 3 ? 0+4 : 1+4)));
+
+	  if (mode != V4SFmode)
+	    emit_move_insn (target, gen_lowpart (V4SImode, tmp));
+	  else if (tmp != target)
+	    emit_move_insn (target, tmp);
+	}
+      else if (target != new_target)
+	emit_move_insn (target, new_target);
       return true;
 
     case V8HImode:
@@ -17924,11 +17972,15 @@ ix86_expand_vector_init_low_nonzero (bool mmx_ok, enum machine_mode mode,
       vsimode = V2SImode;
       goto widen;
     widen:
+      if (one_var != 0)
+	return false;
+
       /* Zero extend the variable element to SImode and recurse.  */
       var = convert_modes (SImode, GET_MODE_INNER (mode), var, true);
 
       x = gen_reg_rtx (vsimode);
-      if (!ix86_expand_vector_init_low_nonzero (mmx_ok, vsimode, x, var))
+      if (!ix86_expand_vector_init_one_nonzero (mmx_ok, vsimode, x,
+						var, one_var))
 	gcc_unreachable ();
 
       emit_move_insn (target, gen_lowpart (mode, x));
@@ -18185,9 +18237,10 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
      the pool and overwritten via move later.  */
   if (n_var == 1)
     {
-      if (all_const_zero && one_var == 0
-	  && ix86_expand_vector_init_low_nonzero (mmx_ok, mode, target,
-						  XVECEXP (vals, 0, 0)))
+      if (all_const_zero
+	  && ix86_expand_vector_init_one_nonzero (mmx_ok, mode, target,
+						  XVECEXP (vals, 0, one_var),
+						  one_var))
 	return;
 
       if (ix86_expand_vector_init_one_var (mmx_ok, mode, target, vals, one_var))
