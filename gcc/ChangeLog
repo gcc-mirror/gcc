@@ -1,3 +1,12 @@
+2006-04-10  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): Renamed
+	from ix86_expand_vector_init_low_nonzero.  Take an additional
+	one_var argument indicating which element is non-zero.  Support
+	one_var != 0 for V4SFmode and V4SImode by permuting the result.
+	(ix86_expand_vector_init): Call ix86_expand_vector_init_one_nonzero
+	with one_var instead of ix86_expand_vector_init_low_nonzero.
+
 2006-04-10  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (tree-into-ssa.o, tree-outof-ssa.o,

@@ -1,3 +1,8 @@
+2006-04-10  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.target/i386/vecinit-1.c: New test case.
+	* gcc.target/i386/vecinit-2.c: Likewise.
+
 2006-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/27057
