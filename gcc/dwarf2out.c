@@ -6263,7 +6263,8 @@ is_symbol_die (dw_die_ref c)
 {
   return (is_type_die (c)
 	  || (get_AT (c, DW_AT_declaration)
-	      && !get_AT (c, DW_AT_specification)));
+	      && !get_AT (c, DW_AT_specification))
+	  || c->die_tag == DW_TAG_namespace);
 }
 
 static char *
