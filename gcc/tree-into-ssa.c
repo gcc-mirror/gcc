@@ -47,6 +47,7 @@ Boston, MA 02110-1301, USA.  */
 #include "domwalk.h"
 #include "ggc.h"
 #include "params.h"
+#include "vecprim.h"
 
 /* This file builds the SSA form for a function as described in:
    R. Cytron, J. Ferrante, B. Rosen, M. Wegman, and K. Zadeck. Efficiently
@@ -102,12 +103,6 @@ static htab_t def_blocks;
    - A NULL node at the top entry is used to mark the last node
      associated with the current block.  */
 static VEC(tree,heap) *block_defs_stack;
-
-/* Basic block vectors used in this file ought to be allocated in the
-   heap.  We use pointer vector, because ints can be easily passed by
-   value.  */
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 /* Set of existing SSA names being replaced by update_ssa.  */
 static sbitmap old_ssa_names;

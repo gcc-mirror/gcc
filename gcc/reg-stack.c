@@ -173,9 +173,7 @@
 #include "timevar.h"
 #include "tree-pass.h"
 #include "target.h"
-
-DEF_VEC_I(char);
-DEF_VEC_ALLOC_I(char,heap);
+#include "vecprim.h"
 
 #ifdef STACK_REGS
 

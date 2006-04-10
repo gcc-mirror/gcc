@@ -29,6 +29,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "errors.h"
 #include "gensupport.h"
 #include "vec.h"
+#include "vecprim.h"
 
 /* This structure contains all the information needed to describe one
    set of extractions methods.  Each method may be used by more than
@@ -69,11 +70,7 @@ static struct code_ptr *peepholes;
 /* This structure is used by gen_insn and walk_rtx to accumulate the
    data that will be used to produce an extractions structure.  */
 
-DEF_VEC_I(int);
-DEF_VEC_I(char);
 DEF_VEC_P(locstr);
-DEF_VEC_ALLOC_I(int,heap);
-DEF_VEC_ALLOC_I(char,heap);
 DEF_VEC_ALLOC_P(locstr,heap);
 
 struct accum_extract

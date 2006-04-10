@@ -38,6 +38,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-dump.h"
 #include "tree-ssa-live.h"
 #include "toplev.h"
+#include "vecprim.h"
 
 static void live_worklist (tree_live_info_p, int *, int);
 static tree_live_info_p new_tree_live_info (var_map);
@@ -1384,9 +1385,6 @@ add_conflicts_if_valid (tpa_p tpa, conflict_graph graph,
 	}
     }
 }
-
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 /* Return a conflict graph for the information contained in LIVE_INFO.  Only
    conflicts between items in the same TPA list are added.  If optional 

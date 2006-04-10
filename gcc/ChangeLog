@@ -1,3 +1,15 @@
+2006-04-10  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Makefile.in (tree-into-ssa.o, tree-outof-ssa.o,
+	tree-ssa-live.o, tree-ssa-alias.o, function.o, df-problems.o,
+	global.o, cfglayout.o, lambda-code.o, reg-stack.o,
+	build/genextract.o): Depend on vecprim.h.
+	* cfglayout.c, df-problems.c, function.c, genextract.c,
+	global.c, lambda-code.c, reg-stack.c, tree-into-ssa.c,
+	tree-outof-ssa.c, tree-ssa-alias.c, tree-ssa-live.c: Include
+	vecprim.h.
+	* vecprim.h: New.
+
 2006-04-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (struct dw_attr_struct): Remove dw_attr_next.

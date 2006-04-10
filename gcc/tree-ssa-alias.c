@@ -46,6 +46,7 @@ Boston, MA 02110-1301, USA.  */
 #include "ipa-type-escape.h"
 #include "vec.h"
 #include "bitmap.h"
+#include "vecprim.h"
 
 /* Obstack used to hold grouping bitmaps and other temporary bitmaps used by
    aliasing  */
@@ -134,9 +135,6 @@ bitmap addressable_vars;
    are forced to alias this variable.  This reduces compile times by not
    having to keep track of too many V_MAY_DEF expressions at call sites.  */
 tree global_var;
-
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 /* qsort comparison function to sort type/name tags by DECL_UID.  */
 
