@@ -115,7 +115,7 @@ case "${host}" in
 	libgcj_flags="${libgcj_flags} -fomit-frame-pointer"
 	libgcj_cxxflags=
 	libgcj_cflags=
-	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine
+	DIVIDESPEC=-fno-use-divide-subroutine
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	libgcj_interpreter=yes
