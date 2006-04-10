@@ -426,6 +426,26 @@ compute_call_clobbered (struct alias_info *ai)
 }
 
 
+/* Helper for recalculate_used_alone.  Return a conservatively correct
+   answer as to whether STMT may make a store on the LHS to SYM.  */
+
+static bool
+lhs_may_store_to (tree stmt, tree sym ATTRIBUTE_UNUSED)
+{
+  tree lhs = TREE_OPERAND (stmt, 0);
+  
+  lhs = get_base_address (lhs);
+  
+  if (!lhs)
+    return false;
+
+  if (TREE_CODE (lhs) == SSA_NAME)
+    return false;
+  /* We could do better here by looking at the type tag of LHS, but it
+     is unclear whether this is worth it. */
+  return true;
+}
+
 /* Recalculate the used_alone information for SMTs . */
 
 void 
@@ -457,38 +477,45 @@ recalculate_used_alone (void)
     {
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
+	  bool iscall = false;
+	  ssa_op_iter iter;
+
 	  stmt = bsi_stmt (bsi);
+	  
 	  if (TREE_CODE (stmt) == CALL_EXPR
 	      || (TREE_CODE (stmt) == MODIFY_EXPR 
 		  && TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR))
-	    VEC_safe_push (tree, heap, calls, stmt);
-	  else
 	    {
-	      ssa_op_iter iter;
+	      iscall = true;
+	      VEC_safe_push (tree, heap, calls, stmt);	    
+	    }
+	  
+	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, 
+				     SSA_OP_VUSE | SSA_OP_VIRTUAL_DEFS)
+	    {
+	      tree svar = var;
 	      
-	      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, 
-					 SSA_OP_VUSE | SSA_OP_VIRTUAL_DEFS)
+	      if (TREE_CODE (var) == SSA_NAME)
+		svar = SSA_NAME_VAR (var);
+	      
+	      if (TREE_CODE (svar) == SYMBOL_MEMORY_TAG)
 		{
-		  tree svar = var;
-		  
-		  if(TREE_CODE (var) == SSA_NAME)
-		    svar = SSA_NAME_VAR (var);
-		  
-		  if (TREE_CODE (svar) == SYMBOL_MEMORY_TAG)
-		    {
-		      if (!SMT_USED_ALONE (svar))
-			{
-			  SMT_USED_ALONE (svar) = true;
+		  /* We only care about the LHS on calls.  */
+		  if (iscall && !lhs_may_store_to (stmt, svar))
+		    continue;
 
-			  /* Only need to mark for renaming if it wasn't
-			     used alone before.  */
-			  if (!SMT_OLD_USED_ALONE (svar))
-			    mark_sym_for_renaming (svar);
-			}
+		  if (!SMT_USED_ALONE (svar))
+		    {
+		      SMT_USED_ALONE (svar) = true;
+		      
+		      /* Only need to mark for renaming if it wasn't
+			 used alone before.  */
+		      if (!SMT_OLD_USED_ALONE (svar))
+			mark_sym_for_renaming (svar);
 		    }
 		}
-	    }	           
-	}
+	    }
+	}	           
     }
   
   /* Update the operands on all the calls we saw.  */
