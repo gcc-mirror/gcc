@@ -1,3 +1,8 @@
+2006-04-10  Matthias Klose  <doko@debian.org>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Recognize multilib
+	directory names containing underscores.
+
 2006-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/26691
