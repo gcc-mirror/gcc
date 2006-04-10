@@ -41,6 +41,7 @@
 #include "tree-scalar-evolution.h"
 #include "vec.h"
 #include "lambda.h"
+#include "vecprim.h"
 
 /* This loop nest code generation is based on non-singular matrix
    math.
@@ -113,9 +114,6 @@
 
  Fourier-Motzkin elimination is used to compute the bounds of the base space
  of the lattice.  */
-
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 static bool perfect_nestify (struct loops *, 
 			     struct loop *, VEC(tree,heap) *, 

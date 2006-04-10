@@ -63,6 +63,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-gimple.h"
 #include "tree-pass.h"
 #include "predict.h"
+#include "vecprim.h"
 
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
@@ -122,9 +123,6 @@ struct machine_function * (*init_machine_status) (void);
 
 /* The currently compiled function.  */
 struct function *cfun = 0;
-
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 /* These arrays record the INSN_UIDs of the prologue and epilogue insns.  */
 static VEC(int,heap) *prologue;

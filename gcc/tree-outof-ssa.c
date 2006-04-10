@@ -46,15 +46,13 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-ssa-live.h"
 #include "tree-pass.h"
 #include "toplev.h"
+#include "vecprim.h"
 
 /* Flags to pass to remove_ssa_form.  */
 
 #define SSANORM_PERFORM_TER		0x1
 #define SSANORM_COMBINE_TEMPS		0x2
 #define SSANORM_COALESCE_PARTITIONS	0x4
-
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 /* Used to hold all the components required to do SSA PHI elimination.
    The node and pred/succ list is a simple linear list of nodes and
