@@ -1,3 +1,11 @@
+2006-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgfortran/24685
+	* io/write.c (MIN_FIELD_WIDTH, STR, STR1): Define.
+	(output_float): Increase buffer sizes for IEEE quad and IBM extended
+	long double.
+	(write_real): Output REAL(16) as 1PG43.34E4 rather than 1PG40.31E4.
+
 2006-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26890
