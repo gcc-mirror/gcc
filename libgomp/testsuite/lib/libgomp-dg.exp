@@ -107,7 +107,7 @@ proc libgomp_init { args } {
 	if { [is_remote host] == 0 && [which $compiler] != 0 } {
 	  foreach i "[exec $compiler --print-multi-lib]" {
 	    set mldir ""
-	    regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
 	    set mldir [string trimright $mldir "\;@"]
 	    if { "$mldir" == "." } {
 	      continue

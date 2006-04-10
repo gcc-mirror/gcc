@@ -1,3 +1,8 @@
+2006-04-10  Matthias Klose  <doko@debian.org>
+
+	* testsuite/lib/libffi-dg.exp (libffi-init): Recognize multilib
+	directory names containing underscores.
+
 2006-04-07  James E Wilson  <wilson@specifix.com>
 
 	* testsuite/libffi.call/float4.c: New testcase.

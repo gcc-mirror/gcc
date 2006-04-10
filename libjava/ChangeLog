@@ -1,3 +1,8 @@
+2006-04-10  Matthias Klose  <doko@debian.org>
+
+	* testsuite/lib/libjava.exp (libjava_init): Recognize multilib
+	directory names containing underscores.
+
 2006-04-10  Andrew Haley  <aph@redhat.com>
 
 	* include/x86_64-signal.h (HANDLE_DIVIDE_OVERFLOW): New.
