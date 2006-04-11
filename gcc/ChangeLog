@@ -1,3 +1,9 @@
+2006-04-03  Jeff Law  <law@redhat.com>
+
+	PR/27087
+	* tree-ssa-copy.c (may_propagate_copy): Test flow sensitive
+	alias information too.
+
 2006-04-10  Mike Frysinger  <vapier@gentoo.org>
 
 	* gcc/Makefile.in (gcc-cross): Add $(exeext) to target name.
