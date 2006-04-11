@@ -52,7 +52,6 @@ static void expand_cleanup_for_base (tree, tree);
 static tree get_temp_regvar (tree, tree);
 static tree dfs_initialize_vtbl_ptrs (tree, void *);
 static tree build_default_init (tree, tree);
-static tree build_new_1	(tree);
 static tree build_dtor_call (tree, special_function_kind, int);
 static tree build_field_list (tree, tree, int *);
 static tree build_vtbl_address (tree);
@@ -1560,127 +1559,38 @@ build_builtin_delete_call (tree addr)
   return build_call (global_delete_fndecl, build_tree_list (NULL_TREE, addr));
 }
 
-/* Generate a representation for a C++ "new" expression.  PLACEMENT is
-   a TREE_LIST of placement-new arguments (or NULL_TREE if none).  If
-   NELTS is NULL, TYPE is the type of the storage to be allocated.  If
-   NELTS is not NULL, then this is an array-new allocation; TYPE is
-   the type of the elements in the array and NELTS is the number of
-   elements in the array.  INIT, if non-NULL, is the initializer for
-   the new object.  If USE_GLOBAL_NEW is true, then the user
-   explicitly wrote "::new" rather than just "new".  */
-
-tree
-build_new (tree placement, tree type, tree nelts, tree init,
-	   int use_global_new)
-{
-  tree rval;
-
-  if (type == error_mark_node)
-    return error_mark_node;
-
-  if (processing_template_decl)
-    {
-      rval = build_min (NEW_EXPR, build_pointer_type (type),
-			placement, type, nelts, init);
-      NEW_EXPR_USE_GLOBAL (rval) = use_global_new;
-      TREE_SIDE_EFFECTS (rval) = 1;
-      return rval;
-    }
-
-  if (nelts)
-    {
-      if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
-	pedwarn ("size in array new must have integral type");
-      nelts = save_expr (cp_convert (sizetype, nelts));
-      if (nelts == integer_zero_node)
-	warning (0, "zero size array reserves no space");
-    }
-
-  /* ``A reference cannot be created by the new operator.  A reference
-     is not an object (8.2.2, 8.4.3), so a pointer to it could not be
-     returned by new.'' ARM 5.3.3 */
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      error ("new cannot be applied to a reference type");
-      type = TREE_TYPE (type);
-    }
-
-  if (TREE_CODE (type) == FUNCTION_TYPE)
-    {
-      error ("new cannot be applied to a function type");
-      return error_mark_node;
-    }
-
-  rval = build4 (NEW_EXPR, build_pointer_type (type), placement, type,
-		 nelts, init);
-  NEW_EXPR_USE_GLOBAL (rval) = use_global_new;
-  TREE_SIDE_EFFECTS (rval) = 1;
-  rval = build_new_1 (rval);
-  if (rval == error_mark_node)
-    return error_mark_node;
-
-  /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
-  rval = build1 (NOP_EXPR, TREE_TYPE (rval), rval);
-  TREE_NO_WARNING (rval) = 1;
-
-  return rval;
-}
-
-/* Given a Java class, return a decl for the corresponding java.lang.Class.  */
-
-tree
-build_java_class_ref (tree type)
-{
-  tree name = NULL_TREE, class_decl;
-  static tree CL_suffix = NULL_TREE;
-  if (CL_suffix == NULL_TREE)
-    CL_suffix = get_identifier("class$");
-  if (jclass_node == NULL_TREE)
-    {
-      jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jclass"));
-      if (jclass_node == NULL_TREE)
-	fatal_error ("call to Java constructor, while %<jclass%> undefined");
-
-      jclass_node = TREE_TYPE (jclass_node);
-    }
-
-  /* Mangle the class$ field.  */
-  {
-    tree field;
-    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-      if (DECL_NAME (field) == CL_suffix)
-	{
-	  mangle_decl (field);
-	  name = DECL_ASSEMBLER_NAME (field);
-	  break;
-	}
-    if (!field)
-      internal_error ("can't find class$");
-    }
-
-  class_decl = IDENTIFIER_GLOBAL_VALUE (name);
-  if (class_decl == NULL_TREE)
-    {
-      class_decl = build_decl (VAR_DECL, name, TREE_TYPE (jclass_node));
-      TREE_STATIC (class_decl) = 1;
-      DECL_EXTERNAL (class_decl) = 1;
-      TREE_PUBLIC (class_decl) = 1;
-      DECL_ARTIFICIAL (class_decl) = 1;
-      DECL_IGNORED_P (class_decl) = 1;
-      pushdecl_top_level (class_decl);
-      make_decl_rtl (class_decl);
-    }
-  return class_decl;
-}
-
-
-/* Called from cplus_expand_expr when expanding a NEW_EXPR.  The return
-   value is immediately handed to expand_expr.  */
+/* Build and return a NEW_EXPR.  If NELTS is non-NULL, TYPE[NELTS] is
+   the type of the object being allocated; otherwise, it's just TYPE.
+   INIT is the initializer, if any.  USE_GLOBAL_NEW is true if the
+   user explicitly wrote "::operator new".  PLACEMENT, if non-NULL, is
+   the TREE_LIST of arguments to be provided as arguments to a
+   placement new operator.  This routine performs no semantic checks;
+   it just creates and returns a NEW_EXPR.  */
 
 static tree
-build_new_1 (tree exp)
+build_raw_new_expr (tree placement, tree type, tree nelts, tree init,
+		    int use_global_new)
 {
-  tree placement, init;
+  tree new_expr;
+  
+  new_expr = build4 (NEW_EXPR, build_pointer_type (type), placement, type, 
+		     nelts, init); 
+  NEW_EXPR_USE_GLOBAL (new_expr) = use_global_new;
+  TREE_SIDE_EFFECTS (new_expr) = 1;
+
+  return new_expr;
+}
+
+/* Generate code for a new-expression, including calling the "operator
+   new" function, initializing the object, and, if an exception occurs
+   during construction, cleaning up.  The arguments are as for
+   build_raw_new_expr.  */
+
+static tree
+build_new_1 (tree placement, tree type, tree nelts, tree init,
+	     bool globally_qualified_p)
+	     
+{
   tree size, rval;
   /* True iff this is a call to "operator new[]" instead of just
      "operator new".  */
@@ -1700,14 +1610,9 @@ build_new_1 (tree exp)
   /* The type of the new-expression.  (This type is always a pointer
      type.)  */
   tree pointer_type;
-  /* The type pointed to by POINTER_TYPE.  This type may be different
-     from ELT_TYPE for a multi-dimensional array; ELT_TYPE is never an
-     ARRAY_TYPE, but TYPE may be an ARRAY_TYPE.  */
-  tree type;
   /* A pointer type pointing to the FULL_TYPE.  */
   tree full_pointer_type;
   tree outer_nelts = NULL_TREE;
-  tree nelts = NULL_TREE;
   tree alloc_call, alloc_expr;
   /* The address returned by the call to "operator new".  This node is
      a VAR_DECL and is therefore reusable.  */
@@ -1715,8 +1620,6 @@ build_new_1 (tree exp)
   tree alloc_fn;
   tree cookie_expr, init_expr;
   int nothrow, check_new;
-  /* Nonzero if the user wrote `::new' rather than just `new'.  */
-  int globally_qualified_p;
   int use_java_new = 0;
   /* If non-NULL, the number of extra bytes to allocate at the
      beginning of the storage allocated for an array-new expression in
@@ -1735,12 +1638,6 @@ build_new_1 (tree exp)
      is therefore reusable.  */
   tree data_addr;
   tree init_preeval_expr = NULL_TREE;
-
-  placement = TREE_OPERAND (exp, 0);
-  type = TREE_OPERAND (exp, 1);
-  nelts = TREE_OPERAND (exp, 2);
-  init = TREE_OPERAND (exp, 3);
-  globally_qualified_p = NEW_EXPR_USE_GLOBAL (exp);
 
   if (nelts)
     {
@@ -1770,7 +1667,7 @@ build_new_1 (tree exp)
 	}
     }
 
-  if (!complete_type_or_else (type, exp))
+  if (!complete_type_or_else (type, NULL_TREE))
     return error_mark_node;
 
   /* If our base type is an array, then make sure we know how many elements
@@ -1815,30 +1712,31 @@ build_new_1 (tree exp)
 	}
     }
 
+  alloc_fn = NULL_TREE;
+
   /* Allocate the object.  */
   if (! placement && TYPE_FOR_JAVA (elt_type))
     {
-      tree class_addr, alloc_decl;
+      tree class_addr;
       tree class_decl = build_java_class_ref (elt_type);
       static const char alloc_name[] = "_Jv_AllocObject";
 
       use_java_new = 1;
-      alloc_decl = NULL;
       if (!get_global_value_if_present (get_identifier (alloc_name),
-					&alloc_decl))
+					&alloc_fn))
 	{
 	  error ("call to Java constructor with %qs undefined", alloc_name);
 	  return error_mark_node;
 	}
-      else if (really_overloaded_fn (alloc_decl))
+      else if (really_overloaded_fn (alloc_fn))
 	{
-	  error ("%qD should never be overloaded", alloc_decl);
+	  error ("%qD should never be overloaded", alloc_fn);
 	  return error_mark_node;
 	}
-      alloc_decl = OVL_CURRENT (alloc_decl);
+      alloc_fn = OVL_CURRENT (alloc_fn);
       class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
       alloc_call = (build_function_call
-		    (alloc_decl,
+		    (alloc_fn,
 		     build_tree_list (NULL_TREE, class_addr)));
     }
   else
@@ -1879,7 +1777,8 @@ build_new_1 (tree exp)
 	  alloc_call = build_new_method_call (build_dummy_object (elt_type),
 					      fns, args,
 					      /*conversion_path=*/NULL_TREE,
-					      LOOKUP_NORMAL);
+					      LOOKUP_NORMAL,
+					      &alloc_fn);
 	}
       else
 	{
@@ -1891,12 +1790,15 @@ build_new_1 (tree exp)
 	    cookie_size = NULL_TREE;
 
 	  alloc_call = build_operator_new_call (fnname, placement,
-						&size, &cookie_size);
+						&size, &cookie_size,
+						&alloc_fn);
 	}
     }
 
   if (alloc_call == error_mark_node)
     return error_mark_node;
+
+  gcc_assert (alloc_fn != NULL_TREE);
 
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
@@ -1913,8 +1815,6 @@ build_new_1 (tree exp)
   /* Strip any COMPOUND_EXPRs from ALLOC_CALL.  */
   while (TREE_CODE (alloc_call) == COMPOUND_EXPR)
     alloc_call = TREE_OPERAND (alloc_call, 1);
-  alloc_fn = get_callee_fndecl (alloc_call);
-  gcc_assert (alloc_fn != NULL_TREE);
 
   /* Now, check to see if this function is actually a placement
      allocation function.  This can happen even when PLACEMENT is NULL
@@ -2079,7 +1979,9 @@ build_new_1 (tree exp)
 	  cleanup = build_op_delete_call (dcode, alloc_node, size,
 					  globally_qualified_p,
 					  (placement_allocation_fn_p
-					   ? alloc_call : NULL_TREE));
+					   ? alloc_call : NULL_TREE),
+					  (placement_allocation_fn_p
+					   ? alloc_fn : NULL_TREE));
 
 	  if (!cleanup)
 	    /* We're done.  */;
@@ -2162,6 +2064,134 @@ build_new_1 (tree exp)
   rval = rvalue (rval);
 
   return rval;
+}
+
+/* Generate a representation for a C++ "new" expression.  PLACEMENT is
+   a TREE_LIST of placement-new arguments (or NULL_TREE if none).  If
+   NELTS is NULL, TYPE is the type of the storage to be allocated.  If
+   NELTS is not NULL, then this is an array-new allocation; TYPE is
+   the type of the elements in the array and NELTS is the number of
+   elements in the array.  INIT, if non-NULL, is the initializer for
+   the new object, or void_zero_node to indicate an initializer of
+   "()".  If USE_GLOBAL_NEW is true, then the user explicitly wrote
+   "::new" rather than just "new".  */
+
+tree
+build_new (tree placement, tree type, tree nelts, tree init,
+	   int use_global_new)
+{
+  tree rval;
+  tree orig_placement;
+  tree orig_nelts;
+  tree orig_init;
+
+  if (type == error_mark_node)
+    return error_mark_node;
+
+  orig_placement = placement;
+  orig_nelts = nelts;
+  orig_init = init;
+
+  if (processing_template_decl)
+    {
+      if (dependent_type_p (type)
+	  || any_type_dependent_arguments_p (placement)
+	  || (nelts && type_dependent_expression_p (nelts))
+	  || (init != void_zero_node
+	      && any_type_dependent_arguments_p (init)))
+	return build_raw_new_expr (placement, type, nelts, init,
+				   use_global_new);
+      placement = build_non_dependent_args (placement);
+      if (nelts)
+	nelts = build_non_dependent_expr (nelts);
+      if (init != void_zero_node)
+	init = build_non_dependent_args (init);
+    }
+
+  if (nelts)
+    {
+      if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
+	pedwarn ("size in array new must have integral type");
+      nelts = save_expr (cp_convert (sizetype, nelts));
+      if (nelts == integer_zero_node)
+	warning (0, "zero size array reserves no space");
+    }
+
+  /* ``A reference cannot be created by the new operator.  A reference
+     is not an object (8.2.2, 8.4.3), so a pointer to it could not be
+     returned by new.'' ARM 5.3.3 */
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      error ("new cannot be applied to a reference type");
+      type = TREE_TYPE (type);
+    }
+
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      error ("new cannot be applied to a function type");
+      return error_mark_node;
+    }
+
+  rval = build_new_1 (placement, type, nelts, init, use_global_new);
+  if (rval == error_mark_node)
+    return error_mark_node;
+
+  if (processing_template_decl)
+    return build_raw_new_expr (orig_placement, type, orig_nelts, orig_init,
+			       use_global_new);
+
+  /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
+  rval = build1 (NOP_EXPR, TREE_TYPE (rval), rval);
+  TREE_NO_WARNING (rval) = 1;
+
+  return rval;
+}
+
+/* Given a Java class, return a decl for the corresponding java.lang.Class.  */
+
+tree
+build_java_class_ref (tree type)
+{
+  tree name = NULL_TREE, class_decl;
+  static tree CL_suffix = NULL_TREE;
+  if (CL_suffix == NULL_TREE)
+    CL_suffix = get_identifier("class$");
+  if (jclass_node == NULL_TREE)
+    {
+      jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jclass"));
+      if (jclass_node == NULL_TREE)
+	fatal_error ("call to Java constructor, while %<jclass%> undefined");
+
+      jclass_node = TREE_TYPE (jclass_node);
+    }
+
+  /* Mangle the class$ field.  */
+  {
+    tree field;
+    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      if (DECL_NAME (field) == CL_suffix)
+	{
+	  mangle_decl (field);
+	  name = DECL_ASSEMBLER_NAME (field);
+	  break;
+	}
+    if (!field)
+      internal_error ("can't find class$");
+    }
+
+  class_decl = IDENTIFIER_GLOBAL_VALUE (name);
+  if (class_decl == NULL_TREE)
+    {
+      class_decl = build_decl (VAR_DECL, name, TREE_TYPE (jclass_node));
+      TREE_STATIC (class_decl) = 1;
+      DECL_EXTERNAL (class_decl) = 1;
+      TREE_PUBLIC (class_decl) = 1;
+      DECL_ARTIFICIAL (class_decl) = 1;
+      DECL_IGNORED_P (class_decl) = 1;
+      pushdecl_top_level (class_decl);
+      make_decl_rtl (class_decl);
+    }
+  return class_decl;
 }
 
 static tree
@@ -2257,7 +2287,8 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	deallocate_expr = build_op_delete_call (VEC_DELETE_EXPR,
 						base_tbd, virtual_size,
 						use_global_delete & 1,
-						NULL_TREE);
+						/*placement=*/NULL_TREE, 
+						/*alloc_fn=*/NULL_TREE);
     }
 
   body = loop;
@@ -2646,7 +2677,8 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags)
   return build_new_method_call (exp, fn,
 				/*args=*/NULL_TREE,
 				/*conversion_path=*/NULL_TREE,
-				flags);
+				flags,
+				/*fn_p=*/NULL);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
@@ -2742,9 +2774,11 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       if (auto_delete != sfk_deleting_destructor)
 	return void_zero_node;
 
-      return build_op_delete_call
-	(DELETE_EXPR, addr, cxx_sizeof_nowarn (type), use_global_delete,
-	 NULL_TREE);
+      return build_op_delete_call (DELETE_EXPR, addr, 
+				   cxx_sizeof_nowarn (type), 
+				   use_global_delete,
+				   /*placement=*/NULL_TREE,
+				   /*alloc_fn=*/NULL_TREE);
     }
   else
     {
@@ -2780,7 +2814,8 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 					    addr,
 					    cxx_sizeof_nowarn (type),
 					    /*global_p=*/false,
-					    NULL_TREE);
+					    /*placement=*/NULL_TREE,
+					    /*alloc_fn=*/NULL_TREE);
 	  /* Call the complete object destructor.  */
 	  auto_delete = sfk_complete_destructor;
 	}
@@ -2790,7 +2825,9 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	  /* Make sure we have access to the member op delete, even though
 	     we'll actually be calling it from the destructor.  */
 	  build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
-				/*global_p=*/false, NULL_TREE);
+				/*global_p=*/false, 
+				/*placement=*/NULL_TREE,
+				/*alloc_fn=*/NULL_TREE);
 	}
 
       expr = build_dtor_call (build_indirect_ref (addr, NULL),

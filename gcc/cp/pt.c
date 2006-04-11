@@ -8896,7 +8896,8 @@ tsubst_copy_and_build (tree t,
 		      (TREE_OPERAND (function, 0),
 		       TREE_OPERAND (function, 1),
 		       call_args, NULL_TREE,
-		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL));
+		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL,
+		       /*fn_p=*/NULL));
 	  }
 	return finish_call_expr (function, call_args,
 				 /*disallow_virtual=*/qualified_p,

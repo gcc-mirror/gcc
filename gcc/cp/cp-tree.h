@@ -3710,11 +3710,13 @@ extern bool sufficient_parms_p			(tree);
 extern tree type_decays_to			(tree);
 extern tree build_user_type_conversion		(tree, tree, int);
 extern tree build_new_function_call		(tree, tree, bool);
-extern tree build_operator_new_call		(tree, tree, tree *, tree *);
-extern tree build_new_method_call		(tree, tree, tree, tree, int);
+extern tree build_operator_new_call		(tree, tree, tree *, tree *,
+						 tree *);
+extern tree build_new_method_call		(tree, tree, tree, tree, int,
+						 tree *);
 extern tree build_special_member_call		(tree, tree, tree, tree, int);
 extern tree build_new_op			(enum tree_code, int, tree, tree, tree, bool *);
-extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree);
+extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree, tree);
 extern bool can_convert				(tree, tree);
 extern bool can_convert_arg			(tree, tree, tree, int);
 extern bool can_convert_arg_bad			(tree, tree, tree);

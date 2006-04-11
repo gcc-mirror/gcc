@@ -7619,15 +7619,9 @@ grokdeclarator (const cp_declarator *declarator,
 	    type = build_ptrmemfunc_type (build_pointer_type (type));
 	  else if (declarator->kind == cdk_ptrmem)
 	    {
-	      /* We might have parsed a namespace as the class type.  */
-	      if (TREE_CODE (declarator->u.pointer.class_type)
-		  == NAMESPACE_DECL)
-		{
-		  error ("%qD is a namespace",
-			 declarator->u.pointer.class_type);
-		  type = build_pointer_type (type);
-		}
-	      else if (declarator->u.pointer.class_type == error_mark_node)
+	      gcc_assert (TREE_CODE (declarator->u.pointer.class_type)
+			  != NAMESPACE_DECL);
+	      if (declarator->u.pointer.class_type == error_mark_node)
 		/* We will already have complained.  */
 		type = error_mark_node;
 	      else
@@ -10801,9 +10795,11 @@ finish_destructor_body (void)
       an implicit definition), non-placement operator delete shall
       be looked up in the scope of the destructor's class and if
       found shall be accessible and unambiguous.  */
-      exprstmt = build_op_delete_call
-	(DELETE_EXPR, current_class_ptr, virtual_size,
-	 /*global_p=*/false, NULL_TREE);
+      exprstmt = build_op_delete_call(DELETE_EXPR, current_class_ptr, 
+				      virtual_size,
+				      /*global_p=*/false, 
+				      /*placement=*/NULL_TREE, 
+				      /*alloc_fn=*/NULL_TREE);
 
       if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (build2 (BIT_AND_EXPR, integer_type_node,

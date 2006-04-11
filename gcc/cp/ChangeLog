@@ -1,3 +1,38 @@
+2006-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (build_operator_new_call): Adjust prototype.
+	(build_new_method_call): Likewise.
+	(build_op_delete_call): Likewise.
+	* init.c (build_raw_new_expr): New function.
+	(build_new_1): Pass information as parameters, rather than
+	bundling it into a NEW_EXPR.
+	(build_new): Adjust accordingly.
+	(build_vec_delete_1): Adjust for changes to build_op_delete_call.
+	(build_delete): Likewise.
+	* decl.c (finish_destructor_body): Likewise.
+	* call.c (build_operator_new_call): Return the allocation function
+	used.
+	(build_op_delete_call): Take allocation function as parameter.
+	(build_special_member_call): Adjust call to build_new_method_call.
+	(build_new_method_call): Return function called.
+	* pt.c (tsubst_copy_and_build): Adjust call to
+	build_new_method_call.
+	* semantics.c (finish_call_expr): Likewise.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Refer to
+	"incomplete", not "undefined", types. 
+
+	PR c++/26295
+	* decl.c (grokdeclarator): Remove namespace-handling code for
+	pointers-to-members.  
+	* parser.c (cp_parser_ptr_operator): Check for qualified names
+	using namespaces.
+
+	PR c++/26122
+	* parser.c (cp_parser_init_declarator): Adjust logic for deciding
+	whether or not to look for a pure-specifier.
+	(cp_parser_member_declaration): Likewise.
+
 2006-04-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl2.c, pt.c, semantics.c: Fix comment typos.

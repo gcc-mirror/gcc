@@ -1844,7 +1844,8 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
 
       result = build_new_method_call (object, fn, args, NULL_TREE,
 				      (disallow_virtual
-				       ? LOOKUP_NONVIRTUAL : 0));
+				       ? LOOKUP_NONVIRTUAL : 0),
+				      /*fn_p=*/NULL);
     }
   else if (is_overloaded_fn (fn))
     {
