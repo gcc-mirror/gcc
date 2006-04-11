@@ -1,3 +1,9 @@
+2006-04-11  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* darwin_stop_world.c (GC_push_all_stacks, GC_stop_world,
+	GC_start_world): Call vm_deallocate to free act_list. Fix from
+	Bruce Mitchener.
+
 2006-03-24  Andreas Tobler  <a.tobler@schweiz.ch>
 	John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
