@@ -1,3 +1,9 @@
+2006-04-11  Mark Wielaard  <mark@klomp.org>
+
+	PR 27081
+	* java/lang/StackTraceElement.java (toString): Don't add space
+	between type and source indicator.
+
 2006-04-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/zip/ZipFile.java (checkLocalHeader): Don't check name
