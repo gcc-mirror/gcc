@@ -4660,6 +4660,11 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
 	  ret.original_code = ERROR_MARK;
 	  return ret;
 	}
+
+      /* Save casted types in the function's used types hash table.  */
+      if (debug_info_level > DINFO_LEVEL_NONE)
+	used_types_insert (type_name->specs->type, cfun);
+
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	return c_parser_postfix_expression_after_paren_type (parser,
 							     type_name);

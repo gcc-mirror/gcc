@@ -23,6 +23,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define GCC_FUNCTION_H
 
 #include "tree.h"
+#include "hashtab.h"
 
 struct var_refs_queue GTY(())
 {
@@ -312,6 +313,9 @@ struct function GTY(())
   /* Language-specific code can use this to store whatever it likes.  */
   struct language_function * language;
 
+  /* Used types hash table.  */
+  htab_t GTY ((param_is (union tree_node))) used_types_hash;
+
   /* For reorg.  */
 
   /* If some insns can be deferred to the delay slots of the epilogue, the
@@ -565,5 +569,7 @@ extern bool pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 			       tree, bool);
 extern bool reference_callee_copied (CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, bool);
+
+extern void used_types_insert (tree, struct function *);
 
 #endif  /* GCC_FUNCTION_H */

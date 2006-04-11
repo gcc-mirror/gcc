@@ -5587,6 +5587,23 @@ rest_of_handle_check_leaf_regs (void)
   return 0;
 }
 
+/* Insert a type into the used types hash table.  */
+void
+used_types_insert (tree t, struct function *func)
+{
+  if (t != NULL && func != NULL)
+    {
+      void **slot;
+
+      if (func->used_types_hash == NULL)
+	func->used_types_hash = htab_create_ggc (37, htab_hash_pointer,
+					     htab_eq_pointer, NULL);
+      slot = htab_find_slot (func->used_types_hash, t, INSERT);
+      if (*slot == NULL)
+	*slot = t;
+    }
+}
+
 struct tree_opt_pass pass_leaf_regs =
 {
   NULL,                                 /* name */
