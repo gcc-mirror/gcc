@@ -2218,7 +2218,12 @@ output_call_frame_info (int for_eh)
   if (for_eh)
     switch_to_eh_frame_section ();
   else
-    switch_to_section (debug_frame_section);
+    {
+      if (!debug_frame_section)
+	debug_frame_section = get_section (DEBUG_FRAME_SECTION,
+					   SECTION_DEBUG, NULL);
+      switch_to_section (debug_frame_section);
+    }
 
   ASM_GENERATE_INTERNAL_LABEL (section_start_label, FRAME_BEGIN_LABEL, for_eh);
   ASM_OUTPUT_LABEL (asm_out_file, section_start_label);
