@@ -1,3 +1,7 @@
+2006-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (LINK_COMMAND_SPEC): Move link_gomp after %o.
+
 2006-04-03  Jeff Law  <law@redhat.com>
 
 	PR/27087
