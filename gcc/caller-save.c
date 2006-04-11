@@ -25,7 +25,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"
-#include "addresses.h"
 #include "insn-config.h"
 #include "flags.h"
 #include "hard-reg-set.h"
@@ -36,6 +35,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "expr.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "addresses.h"
 
 #ifndef MAX_MOVE_MAX
 #define MAX_MOVE_MAX MOVE_MAX

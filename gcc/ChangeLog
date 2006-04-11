@@ -1,3 +1,7 @@
+2006-04-11  Roger Sayle  <roger@eyesopen.com>
+
+	* caller-save.c: #include "addresses.h" after #include "tm_p.h".
+
 2006-04-11  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/27073
