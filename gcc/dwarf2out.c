@@ -354,7 +354,6 @@ static void dwarf2out_stack_adjust (rtx, bool);
 static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
-static void premark_used_types (void);
 
 /* Support for complex CFA locations.  */
 static void output_cfa_loc (dw_cfi_ref);
