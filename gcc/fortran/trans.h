@@ -67,6 +67,10 @@ typedef struct gfc_se
   /* Ignore absent optional arguments.  Used for some intrinsics.  */
   unsigned ignore_optional:1;
 
+  /* When this is set the data and offset fields of the returned descriptor
+     are NULL.  Used by intrinsic size.  */
+  unsigned data_not_needed:1;
+
   /* Scalarization parameters.  */
   struct gfc_se *parent;
   struct gfc_ss *ss;
