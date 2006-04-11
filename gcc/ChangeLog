@@ -1,3 +1,18 @@
+2006-04-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR/21391
+	* dwarf2out.c (struct die_struct): Add die_perennial_p field.
+	(premark_used_types_helper): New.
+	(premark_used_types): New.
+	(gen_subprogram_die): Call premark_used_types.
+	(prune_unused_types_walk): Do not prune perennial dies.
+	* function.c (used_types_insert): New.
+	* function.h (struct function): Add used_types_hash field.
+	(used_types_insert): Add prototype.
+	* Makefile.in (FUNCTION_H): Depend on HASHTAB_H.
+	* c-parser.c (c_parser_cast_expression): Save casted types in used
+	types hash table.
+
 2006-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR target/26459

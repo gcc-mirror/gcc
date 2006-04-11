@@ -354,6 +354,7 @@ static void dwarf2out_stack_adjust (rtx, bool);
 static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
+static void premark_used_types (void);
 
 /* Support for complex CFA locations.  */
 static void output_cfa_loc (dw_cfi_ref);
@@ -3697,6 +3698,8 @@ typedef struct die_struct GTY(())
   dw_offset die_offset;
   unsigned long die_abbrev;
   int die_mark;
+  /* Die is used and must not be pruned as unused.  */
+  int die_perennial_p;
   unsigned int decl_id;
 }
 die_node;
@@ -11511,6 +11514,32 @@ dwarf2out_abstract_function (tree decl)
   current_function_decl = save_fn;
 }
 
+/* Helper function of premark_used_types() which gets called through
+   htab_traverse_resize().
+
+   Marks the DIE of a given type in *SLOT as perennial, so it never gets
+   marked as unused by prune_unused_types.  */
+static int
+premark_used_types_helper (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  tree type;
+  dw_die_ref die;
+
+  type = *slot;
+  die = lookup_type_die (type);
+  if (die != NULL)
+    die->die_perennial_p = 1;
+  return 1;
+}
+
+/* Mark all members of used_types_hash as perennial.  */
+static void
+premark_used_types (void)
+{
+  if (cfun && cfun->used_types_hash)
+    htab_traverse (cfun->used_types_hash, premark_used_types_helper, NULL);
+}
+
 /* Generate a DIE to represent a declared function (either file-scope or
    block-local).  */
 
@@ -11525,6 +11554,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   dw_die_ref old_die = lookup_decl_die (decl);
   int declaration = (current_function_decl != decl
 		     || class_or_namespace_scope_p (context_die));
+
+  premark_used_types();
 
   /* It is possible to have both DECL_ABSTRACT and DECLARATION be true if we
      started to generate the abstract instance of an inline, decided to output
@@ -13965,6 +13996,9 @@ prune_unused_types_walk (dw_die_ref die)
   case DW_TAG_subrange_type:
   case DW_TAG_ptr_to_member_type:
   case DW_TAG_file_type:
+    if (die->die_perennial_p)
+      break;
+
     /* It's a type node --- don't mark it.  */
     return;
 
