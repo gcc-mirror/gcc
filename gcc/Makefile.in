@@ -1251,7 +1251,7 @@ config.status: $(srcdir)/configure $(srcdir)/config.gcc
 
 all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
-all.cross: native gcc-cross cpp$(exeext) specs \
+all.cross: native gcc-cross$(exeext) cpp$(exeext) specs \
 	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc @GENINSRC@ srcextra
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
@@ -1361,7 +1361,7 @@ $(SPECS): xgcc$(exeext)
 # We do want to create an executable named `xgcc', so we can use it to
 # compile libgcc2.a.
 # Also create gcc-cross, so that install-common will install properly.
-gcc-cross: xgcc$(exeext)
+gcc-cross$(exeext): xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
 dummy-checksum.o : dummy-checksum.c

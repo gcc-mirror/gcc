@@ -1,3 +1,7 @@
+2006-04-10  Mike Frysinger  <vapier@gentoo.org>
+
+	* gcc/Makefile.in (gcc-cross): Add $(exeext) to target name.
+
 2006-04-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/21391
