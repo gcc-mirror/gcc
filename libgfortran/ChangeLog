@@ -1,3 +1,9 @@
+2006-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/io.h (st_parameter_dt): Revert 2005-12-10 change to
+	u.pad, fix comment.
+	(check_st_parameter_dt): New compile time assert.
+
 2006-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgfortran/24685
