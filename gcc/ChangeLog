@@ -1,3 +1,10 @@
+2006-04-11  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/27073
+	* gcse.c (try_replace_reg): Revert last change.  Continue to search
+	for both REG_EQUAL and REG_EQUIV notes, but only perform replacements
+	on the former.
+
 2006-04-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_slotno) <BLKmode>: Handle

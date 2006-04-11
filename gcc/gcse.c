@@ -2642,7 +2642,7 @@ find_used_regs (rtx *xptr, void *data ATTRIBUTE_UNUSED)
 static int
 try_replace_reg (rtx from, rtx to, rtx insn)
 {
-  rtx note = find_reg_note (insn, REG_EQUAL, NULL);
+  rtx note = find_reg_equal_equiv_note (insn);
   rtx src = 0;
   int success = 0;
   rtx set = single_set (insn);
@@ -2660,9 +2660,9 @@ try_replace_reg (rtx from, rtx to, rtx insn)
 	validate_change (insn, &SET_SRC (set), src, 0);
     }
 
-  /* If there is already a NOTE, update the expression in it with our
-     replacement.  */
-  if (note != 0)
+  /* If there is already a REG_EQUAL note, update the expression in it
+     with our replacement.  */
+  if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
     XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), from, to);
 
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
@@ -2689,7 +2689,7 @@ try_replace_reg (rtx from, rtx to, rtx insn)
      We don't allow that. Remove that note. This code ought
      not to happen, because previous code ought to synthesize
      reg-reg move, but be on the safe side.  */
-  if (note && REG_P (XEXP (note, 0)))
+  if (note && REG_NOTE_KIND (note) == REG_EQUAL && REG_P (XEXP (note, 0)))
     remove_note (insn, note);
 
   return success;
