@@ -377,7 +377,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (!decl)
-	p_msg ("invalid use of undefined type %q#T", type);
+	p_msg ("invalid use of incomplete type %q#T", type);
       if (!TYPE_TEMPLATE_INFO (type))
 	p_msg ("forward declaration of %q+#T", type);
       else

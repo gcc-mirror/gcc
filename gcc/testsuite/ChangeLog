@@ -1,3 +1,15 @@
+2006-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/parse/dtor7.C: New test.
+	* g++.dg/parse/new1.C: Add error marker.
+	* g++.dg/template/new3.C: New test.
+
+	PR c++/26122
+	* g++.dg/template/pure1.C: New test.
+
+	PR c++/26295
+	* g++.dg/parse/ptrmem4.C: New test.
+
 2006-04-10  Jeff Law  <law@redhat.com>
 
 	PR/27087

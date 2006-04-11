@@ -2817,16 +2817,21 @@ build_new_function_call (tree fn, tree args, bool koenig_p)
    required by the allocation, and is updated if that is changed here.
    *COOKIE_SIZE is non-NULL if a cookie should be used.  If this
    function determines that no cookie should be used, after all,
-   *COOKIE_SIZE is set to NULL_TREE.  */
+   *COOKIE_SIZE is set to NULL_TREE.  If FN is non-NULL, it will be
+   set, upon return, to the allocation function called.  */
 
 tree
-build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
+build_operator_new_call (tree fnname, tree args, 
+			 tree *size, tree *cookie_size,
+			 tree *fn)
 {
   tree fns;
   struct z_candidate *candidates;
   struct z_candidate *cand;
   bool any_viable_p;
 
+  if (fn)
+    *fn = NULL_TREE;
   args = tree_cons (NULL_TREE, *size, args);
   args = resolve_args (args);
   if (args == error_mark_node)
@@ -2903,6 +2908,10 @@ build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
        else
 	 *cookie_size = NULL_TREE;
      }
+
+   /* Tell our caller which function we decided to call.  */
+   if (fn)
+     *fn = cand->fn;
 
    /* Build the CALL_EXPR.  */
    return build_over_call (cand, LOOKUP_NORMAL);
@@ -3930,11 +3939,14 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
    SIZE is the size of the memory block to be deleted.
    GLOBAL_P is true if the delete-expression should not consider
    class-specific delete operators.
-   PLACEMENT is the corresponding placement new call, or NULL_TREE.  */
+   PLACEMENT is the corresponding placement new call, or NULL_TREE.
+   If PLACEMENT is non-NULL, then ALLOC_FN is the allocation function
+   called to perform the placement new.  */
 
 tree
 build_op_delete_call (enum tree_code code, tree addr, tree size,
-		      bool global_p, tree placement)
+		      bool global_p, tree placement,
+		      tree alloc_fn)
 {
   tree fn = NULL_TREE;
   tree fns, fnname, argtypes, args, type;
@@ -3970,18 +3982,12 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   if (placement)
     {
-      tree alloc_fn;
-      tree call_expr;
-
-      /* Find the allocation function that is being called.  */
-      call_expr = placement;
-      /* Extract the function.  */
-      alloc_fn = get_callee_fndecl (call_expr);
+      /* Get the parmaeter types for the allocation function that is
+	 being called.  */
       gcc_assert (alloc_fn != NULL_TREE);
-      /* Then the second parm type.  */
       argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
       /* Also the second argument.  */
-      args = TREE_CHAIN (TREE_OPERAND (call_expr, 1));
+      args = TREE_CHAIN (TREE_OPERAND (placement, 1));
     }
   else
     {
@@ -5181,7 +5187,7 @@ build_special_member_call (tree instance, tree name, tree args,
 
   return build_new_method_call (instance, fns, args,
 				TYPE_BINFO (BINFO_TYPE (binfo)),
-				flags);
+				flags, /*fn=*/NULL);
 }
 
 /* Return the NAME, as a C string.  The NAME indicates a function that
@@ -5229,11 +5235,13 @@ name_as_c_string (tree name, tree type, bool *free_p)
   return pretty_name;
 }
 
-/* Build a call to "INSTANCE.FN (ARGS)".  */
+/* Build a call to "INSTANCE.FN (ARGS)".  If FN_P is non-NULL, it will
+   be set, upon return, to the function called.  */
 
 tree
 build_new_method_call (tree instance, tree fns, tree args,
-		       tree conversion_path, int flags)
+		       tree conversion_path, int flags,
+		       tree *fn_p)
 {
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
@@ -5254,6 +5262,10 @@ build_new_method_call (tree instance, tree fns, tree args,
   void *p;
 
   gcc_assert (instance != NULL_TREE);
+
+  /* We don't know what function we're going to call, yet.  */
+  if (fn_p)
+    *fn_p = NULL_TREE;
 
   if (error_operand_p (instance)
       || error_operand_p (fns)
@@ -5411,8 +5423,10 @@ build_new_method_call (tree instance, tree fns, tree args,
 	}
       else
 	{
+	  fn = cand->fn;
+
 	  if (!(flags & LOOKUP_NONVIRTUAL)
-	      && DECL_PURE_VIRTUAL_P (cand->fn)
+	      && DECL_PURE_VIRTUAL_P (fn)
 	      && instance == current_class_ref
 	      && (DECL_CONSTRUCTOR_P (current_function_decl)
 		  || DECL_DESTRUCTOR_P (current_function_decl)))
@@ -5421,27 +5435,29 @@ build_new_method_call (tree instance, tree fns, tree args,
 	    warning (0, (DECL_CONSTRUCTOR_P (current_function_decl) ?
 		      "abstract virtual %q#D called from constructor"
 		      : "abstract virtual %q#D called from destructor"),
-		     cand->fn);
+		     fn);
 
-	  if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
+	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
 	      && is_dummy_object (instance_ptr))
 	    {
 	      error ("cannot call member function %qD without object",
-		     cand->fn);
+		     fn);
 	      call = error_mark_node;
 	    }
 	  else
 	    {
-	      if (DECL_VINDEX (cand->fn) && ! (flags & LOOKUP_NONVIRTUAL)
+	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
 		  && resolves_to_fixed_type_p (instance, 0))
 		flags |= LOOKUP_NONVIRTUAL;
-
+	      /* Now we know what function is being called.  */
+	      if (fn_p)
+		*fn_p = fn;
+	      /* Build the actuall CALL_EXPR.  */
 	      call = build_over_call (cand, flags);
-
 	      /* In an expression of the form `a->f()' where `f' turns
 		 out to be a static member function, `a' is
 		 none-the-less evaluated.  */
-	      if (TREE_CODE (TREE_TYPE (cand->fn)) != METHOD_TYPE
+	      if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
 		  && !is_dummy_object (instance_ptr)
 		  && TREE_SIDE_EFFECTS (instance))
 		call = build2 (COMPOUND_EXPR, TREE_TYPE (call),
