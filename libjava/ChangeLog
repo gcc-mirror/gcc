@@ -1,3 +1,10 @@
+2006-04-11  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gnu/gcj/runtime/SystemClassLoader.java (addClass): Get the value
+	of package-private field "loadedClasses" using reflection.
+	* java/lang/VMCompiler.java (compileClass): Remove unreachable catch
+	block.
+
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libjava.exp (libjava_init): Recognize multilib

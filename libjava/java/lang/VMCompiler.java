@@ -198,11 +198,6 @@ final class VMCompiler
 	md.update(data);
 	digest = md.digest();
       }
-    catch (CloneNotSupportedException _)
-      {
-	// Can't happen.
-	return null;
-      }
     catch (NullPointerException _)
       {
 	// If md5Digest==null -- but really this should never happen
