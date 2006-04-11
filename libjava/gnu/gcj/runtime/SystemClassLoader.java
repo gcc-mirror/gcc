@@ -9,8 +9,9 @@ details.  */
 package gnu.gcj.runtime;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.StringTokenizer;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -20,6 +21,8 @@ public final class SystemClassLoader extends URLClassLoader
   {
     super(new URL[0], parent);
   }
+
+  private HashMap loadedClasses;
 
   // This is called to register a native class which was linked into
   // the application but which is registered with the system class
@@ -37,7 +40,23 @@ public final class SystemClassLoader extends URLClassLoader
 	// precompiled manifest.
 	definePackage(packageName, null, null, null, null, null, null, null);
       }
-    loadedClasses.put(className, klass);
+      
+    // Use reflection to access the package-private "loadedClasses" field.
+    if (this.loadedClasses == null)
+      {
+	try
+	{
+	  Class cl = java.lang.ClassLoader.class;
+	  Field lcField = cl.getDeclaredField("loadedClasses");
+	  lcField.setAccessible(true);
+	  this.loadedClasses = (HashMap) lcField.get(this);
+	}
+	catch (Exception x)
+	{
+	  throw new RuntimeException(x);
+	}      
+      }
+    this.loadedClasses.put(className, klass);
   }
 
   // We add the URLs to the system class loader late.  The reason for
