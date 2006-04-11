@@ -1,5 +1,5 @@
 /* Target definitions for E500 with double precision FP.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.
@@ -21,5 +21,5 @@
 
 #undef  SUB3TARGET_OVERRIDE_OPTIONS
 #define SUB3TARGET_OVERRIDE_OPTIONS \
-  if (rs6000_float_gprs_string == NULL) \
+  if (!rs6000_explicit_options.float_gprs) \
     rs6000_float_gprs = 2;

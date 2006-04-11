@@ -1,3 +1,9 @@
+2006-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/26459
+	* config/rs6000/e500-double.h (SUB3TARGET_OVERRIDE_OPTIONS): Test
+	rs6000_explicit_options.float_gprs.
+
 2006-04-10  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): Renamed
