@@ -1,3 +1,8 @@
+2006-04-11  John David Anglin  <dava.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (MAX_12BIT_OFFSET, MAX_17BIT_OFFSET): Define and use new
+	symbolic constants in branch patterns.
+
 2006-04-11  Roger Sayle  <roger@eyesopen.com>
 
 	* caller-save.c: #include "addresses.h" after #include "tm_p.h".
