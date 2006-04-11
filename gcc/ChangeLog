@@ -1,3 +1,13 @@
+2006-04-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (function_arg_slotno) <BLKmode>: Handle
+	aggregate types other than record and union types.
+	(function_arg): Likewise.
+	(function_arg_pass_by_reference): In 64-bit mode, return 0 for
+	small arrays.
+	(function_value): In 64-bit mode, return objects that require it
+	in FP registers.
+
 2006-04-11  Roger Sayle  <roger@eyesopen.com>
 
 	* dwarf2out.c (premark_used_types): Remove problematic prototype.
