@@ -1,3 +1,10 @@
+2006-04-11  NAKATA Maho  <maho@FreeBSD.org> 
+
+	PR libgcj/23829
+	* configure.ac: Link against -lpthread rather than -lc_r on
+	FreeBSD 5 and above.
+	* configure: Regenerate.
+
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libjava.exp (libjava_init): Recognize multilib
