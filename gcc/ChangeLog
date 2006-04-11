@@ -1,3 +1,7 @@
+2006-04-11  Roger Sayle  <roger@eyesopen.com>
+
+	* dwarf2out.c (premark_used_types): Remove problematic prototype.
+
 2006-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (LINK_COMMAND_SPEC): Move link_gomp after %o.
