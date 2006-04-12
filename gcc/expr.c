@@ -1940,11 +1940,11 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
       if (start < finish)
 	{
 	  inner = GET_MODE (tmps[start]);
-	  bytepos = subreg_lowpart_offset (outer, inner);
+	  bytepos = subreg_lowpart_offset (inner, outer);
 	  if (INTVAL (XEXP (XVECEXP (src, 0, start), 1)) == bytepos)
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[start],
-					  inner, bytepos);
+					  inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
@@ -1959,11 +1959,11 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	  && start < finish - 1)
 	{
 	  inner = GET_MODE (tmps[finish - 1]);
-	  bytepos = subreg_lowpart_offset (outer, inner);
+	  bytepos = subreg_lowpart_offset (inner, outer);
 	  if (INTVAL (XEXP (XVECEXP (src, 0, finish - 1), 1)) == bytepos)
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[finish - 1],
-					  inner, bytepos);
+					  inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
