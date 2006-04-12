@@ -346,7 +346,7 @@ struct function GTY(())
   location_t function_end_locus;
 
   /* Array mapping insn uids to blocks.  */
-  struct varray_head_tag *ib_boundaries_block;
+  VEC(tree,gc) *ib_boundaries_block;
 
   /* The variables unexpanded so far.  */
   tree unexpanded_var_list;

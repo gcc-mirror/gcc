@@ -9,6 +9,15 @@
 	first_partition to VEC(int,heap) *.
 	(tpa_first_partition): Use VEC instead of VARRAY.
 
+	* Makefile.in (GTFILES): Move functions.h after tree.h.
+	* function.c (reset_block_changes, record_block_change,
+	check_block_change, free_block_changes): Use VEC instead of
+	VARRAY.
+	* function.h (function): Change the type of
+	ib_boundaries_block to VEC(tree,gc) *.
+	* tree-inline.c (copy_cfg_body): Initialize
+	ib_boundaries_block to NULL instead of (varray_type) 0.
+
 2006-04-12  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (emit_group_store): Correct operand order in call to
