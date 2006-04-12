@@ -24,6 +24,7 @@ Boston, MA 02110-1301, USA.  */
 #define _TREE_SSA_LIVE_H 1
 
 #include "partition.h"
+#include "vecprim.h"
 
 /* Used to create the variable mapping when we go out of SSA form.  */
 typedef struct _var_map
@@ -338,7 +339,7 @@ make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
 typedef struct tree_partition_associator_d
 {
   VEC(tree,heap) *trees;
-  varray_type first_partition;
+  VEC(int,heap) *first_partition;
   int *next_partition;
   int *partition_to_tree_map;
   int num_trees;
@@ -384,7 +385,7 @@ tpa_tree (tpa_p tpa, int i)
 static inline int
 tpa_first_partition (tpa_p tpa, int i)
 {
-  return VARRAY_INT (tpa->first_partition, i);
+  return VEC_index (int, tpa->first_partition, i);
 }
 
 

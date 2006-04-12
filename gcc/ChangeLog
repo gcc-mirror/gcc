@@ -1,3 +1,14 @@
+2006-04-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Makefile.in (TREE_SSA_LIVE_H): Add vecprim.h.
+	* tree-ssa-live.c (tpa_init, tpa_remove_partition, tpa_delete,
+	tpa_compact, root_var_init, type_var_init): Use VEC instead of
+	VARRAY.
+	* tree-ssa-live.h: Include vecprim.h.
+	(tree_partition_associator_d): Change the type of
+	first_partition to VEC(int,heap) *.
+	(tpa_first_partition): Use VEC instead of VARRAY.
+
 2006-04-12  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (emit_group_store): Correct operand order in call to
