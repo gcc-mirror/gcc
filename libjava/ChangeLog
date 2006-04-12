@@ -1,3 +1,10 @@
+2006-04-12  NAKATA Maho  <maho@FreeBSD.org> 
+
+	PR libgcj/23829
+	* configure.ac: Link against -lpthread rather than -lc_r on
+	FreeBSD 5 and above.
+	* configure: Regenerate.
+
 2006-04-11  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/gcj/runtime/SystemClassLoader.java (addClass): Get the value
