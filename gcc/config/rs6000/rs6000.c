@@ -5058,17 +5058,13 @@ rs6000_mixed_function_arg (enum machine_mode mode, tree type, int align_words)
   if (align_words + n_units > GP_ARG_NUM_REG)
     /* Not all of the arg fits in gprs.  Say that it goes in memory too,
        using a magic NULL_RTX component.
-       FIXME: This is not strictly correct.  Only some of the arg
-       belongs in memory, not all of it.  However, there isn't any way
-       to do this currently, apart from building rtx descriptions for
-       the pieces of memory we want stored.  Due to bugs in the generic
-       code we can't use the normal function_arg_partial_nregs scheme
-       with the PARALLEL arg description we emit here.
-       In any case, the code to store the whole arg to memory is often
-       more efficient than code to store pieces, and we know that space
-       is available in the right place for the whole arg.  */
-    /* FIXME: This should be fixed since the conversion to
-       TARGET_ARG_PARTIAL_BYTES.  */
+       This is not strictly correct.  Only some of the arg belongs in
+       memory, not all of it.  However, the normal scheme using
+       function_arg_partial_nregs can result in unusual subregs, eg.
+       (subreg:SI (reg:DF) 4), which are not handled well.  The code to
+       store the whole arg to memory is often more efficient than code
+       to store pieces, and we know that space is available in the right
+       place for the whole arg.  */
     rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
 
   i = 0;
@@ -5310,9 +5306,8 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			 include the portion actually in registers here.  */
 		      enum machine_mode rmode = TARGET_32BIT ? SImode : DImode;
 		      rtx off;
-		      int i=0;
-		      if (align_words + n_words > GP_ARG_NUM_REG
-			  && (TARGET_32BIT && TARGET_POWERPC64))
+		      int i = 0;
+		      if (align_words + n_words > GP_ARG_NUM_REG)
 			/* Not all of the arg fits in gprs.  Say that it
 			   goes in memory too, using a magic NULL_RTX
 			   component.  Also see comment in
@@ -5391,18 +5386,20 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   align_words = rs6000_parm_start (mode, type, cum->words);
 
-  if (USE_FP_FOR_ARG_P (cum, mode, type)
+  if (USE_FP_FOR_ARG_P (cum, mode, type))
+    {
       /* If we are passing this arg in the fixed parameter save area
 	 (gprs or memory) as well as fprs, then this function should
-	 return the number of bytes passed in the parameter save area
-	 rather than bytes passed in fprs.  */
-      && !(type
-	   && (cum->nargs_prototype <= 0
-	       || (DEFAULT_ABI == ABI_AIX
-		   && TARGET_XL_COMPAT
-		   && align_words >= GP_ARG_NUM_REG))))
-    {
-      if (cum->fregno + ((GET_MODE_SIZE (mode) + 7) >> 3) > FP_ARG_MAX_REG + 1)
+	 return the number of partial bytes passed in the parameter
+	 save area rather than partial bytes passed in fprs.  */
+      if (type
+	  && (cum->nargs_prototype <= 0
+	      || (DEFAULT_ABI == ABI_AIX
+		  && TARGET_XL_COMPAT
+		  && align_words >= GP_ARG_NUM_REG)))
+	return 0;
+      else if (cum->fregno + ((GET_MODE_SIZE (mode) + 7) >> 3)
+	       > FP_ARG_MAX_REG + 1)
 	ret = (FP_ARG_MAX_REG + 1 - cum->fregno) * 8;
       else if (cum->nargs_prototype >= 0)
 	return 0;

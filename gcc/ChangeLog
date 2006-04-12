@@ -1,3 +1,11 @@
+2006-04-12  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_mixed_function_arg): Update
+	magic NULL_RTX comment.
+	(function_arg): Store entire fp arg to mem if any part should go
+	on stack.
+	(rs6000_arg_partial_bytes): Adjust for above change.
+
 2006-04-11  Roger Sayle  <roger@eyesopen.com>
 
 	* dwarf2out.c (output_call_frame_info): Create debug_frame_section
