@@ -1,3 +1,8 @@
+2006-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_init_declarator): Initialize local variables
+	aggressively.
+
 2006-04-12  Roger Sayle  <roger@eyesopen.com>
 
 	* parser.c (cp_parser_init_declarator): Initialise
