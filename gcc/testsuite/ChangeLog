@@ -1,3 +1,8 @@
+2006-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26122
+	* g++.dg/template/pure1.C: New test.
+
 2006-04-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	* PR fortran/26257

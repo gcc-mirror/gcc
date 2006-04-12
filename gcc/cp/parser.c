@@ -10804,6 +10804,10 @@ cp_parser_init_declarator (cp_parser* parser,
   tree decl = NULL_TREE;
   tree scope;
   bool is_initialized;
+  /* Only valid if IS_INITIALIZED is true.  In that case, CPP_EQ if
+     initialized with "= ..", CPP_OPEN_PAREN if initialized with
+     "(...)".  */
+  enum cpp_ttype initialization_kind;
   bool is_parenthesized_init;
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
@@ -10918,16 +10922,24 @@ cp_parser_init_declarator (cp_parser* parser,
     }
 
   /* An `=' or an `(' indicates an initializer.  */
-  is_initialized = (token->type == CPP_EQ
-		     || token->type == CPP_OPEN_PAREN);
-  /* If the init-declarator isn't initialized and isn't followed by a
-     `,' or `;', it's not a valid init-declarator.  */
-  if (!is_initialized
-      && token->type != CPP_COMMA
-      && token->type != CPP_SEMICOLON)
+  if (token->type == CPP_EQ
+      || token->type == CPP_OPEN_PAREN)
     {
-      cp_parser_error (parser, "expected initializer");
-      return error_mark_node;
+      is_initialized = true;
+      initialization_kind = token->type;
+    }
+  else
+    {
+      /* If the init-declarator isn't initialized and isn't followed by a
+	 `,' or `;', it's not a valid init-declarator.  */
+      if (token->type != CPP_COMMA
+	  && token->type != CPP_SEMICOLON)
+	{
+	  cp_parser_error (parser, "expected initializer");
+	  return error_mark_node;
+	}
+      is_initialized = false;
+      initialization_kind = CPP_EOF;
     }
 
   /* Because start_decl has side-effects, we should only call it if we
@@ -10998,9 +11010,16 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Parse the initializer.  */
   if (is_initialized)
-    initializer = cp_parser_initializer (parser,
-					 &is_parenthesized_init,
-					 &is_non_constant_init);
+    {
+      if (declarator->kind == cdk_function
+	  && declarator->declarator->kind == cdk_id
+	  && initialization_kind == CPP_EQ)
+	initializer = cp_parser_pure_specifier (parser);
+      else
+	initializer = cp_parser_initializer (parser,
+					     &is_parenthesized_init,
+					     &is_non_constant_init);
+    }
   else
     {
       initializer = NULL_TREE;
@@ -13625,7 +13644,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		     for a pure-specifier; otherwise, we look for a
 		     constant-initializer.  When we call `grokfield', it will
 		     perform more stringent semantics checks.  */
-		  if (declarator->kind == cdk_function)
+		  if (declarator->kind == cdk_function
+		      && declarator->declarator->kind == cdk_id)
 		    initializer = cp_parser_pure_specifier (parser);
 		  else
 		    /* Parse the initializer.  */

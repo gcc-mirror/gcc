@@ -1,3 +1,10 @@
+2006-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26122
+	* parser.c (cp_parser_init_declarator): Adjust logic for deciding
+	whether or not to look for a pure-specifier.
+	(cp_parser_member_declaration): Likewise.
+
 2006-03-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26291
