@@ -1,3 +1,9 @@
+2006-04-12  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (emit_group_store): Correct operand order in call to
+	subreg_lowpart_offset.  Always create paradoxical SUBREGs with
+	a SUBREG_BYTE of zero.
+
 2006-04-12  Richard Guenther  <rguenther@suse.de>
 
 	* profile.c (compute_branch_probabilities): Remove code
