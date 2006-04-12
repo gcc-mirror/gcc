@@ -348,7 +348,7 @@ ffi_closure_pa32:
 	.sleb128 -5
 
 	.byte   0x4     ;# DW_CFA_advance_loc4
-	.word   .LCFI12-.LCFI11
+	.word   .LCFI22-.LCFI21
 	.byte   0xd     ;# DW_CFA_def_cfa_register = r3
 	.uleb128 0x3
 

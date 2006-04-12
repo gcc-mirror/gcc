@@ -1,3 +1,9 @@
+2006-04-13  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/pa/hpux32.S: Correct unwind offset calculation for
+	ffi_closure_pa32.
+	* src/pa/linux.S: Likewise.
+
 2006-04-12  James E Wilson  <wilson@specifix.com>
 
 	PR libgcj/26483
@@ -6,7 +12,7 @@
 	(hfa_type_store): Call ldf_fill.
 	(ffi_call): Adjust calls to above routines.  Add local temps for
 	macro result.
-	
+
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libffi-dg.exp (libffi-init): Recognize multilib

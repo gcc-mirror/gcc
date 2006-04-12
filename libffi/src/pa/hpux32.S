@@ -359,7 +359,7 @@ L$ASFDE2:
 	.sleb128 -5
 
 	.byte   0x4     ;# DW_CFA_advance_loc4
-	.word   L$CFI12-L$CFI11
+	.word   L$CFI22-L$CFI21
 	.byte   0xd     ;# DW_CFA_def_cfa_register = r3
 	.uleb128 0x3
 
