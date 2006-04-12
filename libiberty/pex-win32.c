@@ -83,6 +83,7 @@ static int pex_win32_wait (struct pex_obj *, long, int *,
 			   struct pex_time *, int, const char **, int *);
 static int pex_win32_pipe (struct pex_obj *, int *, int);
 static FILE *pex_win32_fdopenr (struct pex_obj *, int, int);
+static FILE *pex_win32_fdopenw (struct pex_obj *, int, int);
 
 /* The list of functions we pass to the common routines.  */
 
@@ -95,6 +96,7 @@ const struct pex_funcs funcs =
   pex_win32_wait,
   pex_win32_pipe,
   pex_win32_fdopenr,
+  pex_win32_fdopenw,
   NULL /* cleanup */
 };
 
@@ -764,6 +766,18 @@ pex_win32_fdopenr (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd,
 		   int binary)
 {
   return fdopen (fd, binary ? "rb" : "r");
+}
+
+static FILE *
+pex_win32_fdopenw (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd,
+		   int binary)
+{
+  HANDLE h = (HANDLE) _get_osfhandle (fd);
+  if (h == INVALID_HANDLE_VALUE)
+    return NULL;
+  if (! SetHandleInformation (h, HANDLE_FLAG_INHERIT, 0))
+    return NULL;
+  return fdopen (fd, binary ? "wb" : "w");
 }
 
 #ifdef MAIN

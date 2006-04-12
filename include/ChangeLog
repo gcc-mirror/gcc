@@ -1,3 +1,7 @@
+2006-04-11  Jim Blandy  <jimb@codesourcery.com>
+
+	* libiberty.h (pex_input_file, pex_input_pipe): New declarations.
+
 2006-01-18  DJ Delorie  <dj@redhat.com>
 
 	* md5.h: Include ansidecl.h

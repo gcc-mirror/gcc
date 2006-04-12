@@ -1,3 +1,4 @@
+@c -*- mode: texinfo -*-
 @deftypefn Extension {struct pex_obj *} pex_init (int @var{flags}, const char *@var{pname}, const char *@var{tempbase})
 
 Prepare to execute one or more programs, with standard output of each
@@ -126,6 +127,67 @@ Otherwise, standard error is written to the named file.
 
 On an error return, the code sets @code{*@var{err}} to an @code{errno}
 value, or to 0 if there is no relevant @code{errno}.
+
+@end deftypefn
+
+@deftypefn Extension {FILE *} pex_input_file (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{in_name})
+
+Return a stream for a temporary file to pass to the first program in
+the pipeline as input.
+
+The name of the input file is chosen according to the same rules
+@code{pex_run} uses to choose output file names, based on
+@var{in_name}, @var{obj} and the @code{PEX_SUFFIX} bit in @var{flags}.
+
+Don't call @code{fclose} on the returned stream; the first call to
+@code{pex_run} closes it automatically.
+
+If @var{flags} includes @code{PEX_BINARY_OUTPUT}, open the stream in
+binary mode; otherwise, open it in the default mode.  Including
+@code{PEX_BINARY_OUTPUT} in @var{flags} has no effect on Unix.
+@end deftypefn
+
+@deftypefn Extension {FILE *} pex_input_pipe (struct pex_obj *@var{obj}, int @var{binary})
+
+Return a stream @var{fp} for a pipe connected to the standard input of
+the first program in the pipeline; @var{fp} is opened for writing.
+You must have passed @code{PEX_USE_PIPES} to the @code{pex_init} call
+that returned @var{obj}.
+
+You must close @var{fp} using @code{fclose} yourself when you have
+finished writing data to the pipeline.
+
+The file descriptor underlying @var{fp} is marked not to be inherited
+by child processes.
+
+On systems that do not support pipes, this function returns
+@code{NULL}, and sets @code{errno} to @code{EINVAL}.  If you would
+like to write code that is portable to all systems the @code{pex}
+functions support, consider using @code{pex_input_file} instead.
+
+There are two opportunities for deadlock using
+@code{pex_input_pipe}:
+
+@itemize @bullet
+@item
+Most systems' pipes can buffer only a fixed amount of data; a process
+that writes to a full pipe blocks.  Thus, if you write to @file{fp}
+before starting the first process, you run the risk of blocking when
+there is no child process yet to read the data and allow you to
+continue.  @code{pex_input_pipe} makes no promises about the
+size of the pipe's buffer, so if you need to write any data at all
+before starting the first process in the pipeline, consider using
+@code{pex_input_file} instead.
+
+@item
+Using @code{pex_input_pipe} and @code{pex_read_output} together
+may also cause deadlock.  If the output pipe fills up, so that each
+program in the pipeline is waiting for the next to read more data, and
+you fill the input pipe by writing more data to @var{fp}, then there
+is no way to make progress: the only process that could read data from
+the output pipe is you, but you are blocked on the input pipe.
+
+@end itemize
 
 @end deftypefn
 
