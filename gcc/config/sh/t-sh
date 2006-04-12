@@ -76,7 +76,8 @@ gt-sh.h : s-gtype ; @true
 
 IC_EXTRA_PARTS= libic_invalidate_array_4-100.a libic_invalidate_array_4-200.a \
 libic_invalidate_array_4a.a
-EXTRA_MULTILIB_PARTS= $(IC_EXTRA_PARTS)
+OPT_EXTRA_PARTS= libgcc-Os-4-200.a
+EXTRA_MULTILIB_PARTS= $(IC_EXTRA_PARTS) $(OPT_EXTRA_PARTS)
 
 $(T)ic_invalidate_array_4-100.o: $(srcdir)/config/sh/lib1funcs.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)ic_invalidate_array_4-100.o -DL_ic_invalidate_array -DWAYS=1 -DWAY_SIZE=0x2000 -x assembler-with-cpp $(srcdir)/config/sh/lib1funcs.asm
@@ -92,6 +93,13 @@ $(T)ic_invalidate_array_4a.o: $(srcdir)/config/sh/lib1funcs.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)ic_invalidate_array_4a.o -DL_ic_invalidate_array -D__FORCE_SH4A__ -x assembler-with-cpp $(srcdir)/config/sh/lib1funcs.asm
 $(T)libic_invalidate_array_4a.a: $(T)ic_invalidate_array_4a.o $(GCC_PASSES)
 	$(AR_CREATE_FOR_TARGET) $(T)libic_invalidate_array_4a.a $(T)ic_invalidate_array_4a.o
+
+$(T)sdivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $@ -DL_sdivsi3_i4i -x assembler-with-cpp $<
+$(T)udivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $@ -DL_udivsi3_i4i -x assembler-with-cpp $<
+$(T)libgcc-Os-4-200.a: $(T)sdivsi3_i4i-Os-4-200.o $(T)udivsi3_i4i-Os-4-200.o $(GCC_PASSES)
+	$(AR_CREATE_FOR_TARGET) $@ $(T)sdivsi3_i4i-Os-4-200.o $(T)udivsi3_i4i-Os-4-200.o
 
 # Local Variables:
 # mode: Makefile

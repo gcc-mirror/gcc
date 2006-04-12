@@ -38,31 +38,7 @@ Boston, MA 02110-1301, USA.  */
    ELF local label prefixes by J"orn Rennecke
    amylaar@cygnus.com  */
 
-#ifdef __ELF__
-#define LOCAL(X)	.L_##X
-#define FUNC(X)		.type X,@function
-#define HIDDEN_FUNC(X)	FUNC(X); .hidden X
-#define HIDDEN_ALIAS(X,Y) ALIAS (X,Y); .hidden GLOBAL(X)
-#define ENDFUNC0(X)	.Lfe_##X: .size X,.Lfe_##X-X
-#define ENDFUNC(X)	ENDFUNC0(X)
-#else
-#define LOCAL(X)	L_##X
-#define FUNC(X)
-#define HIDDEN_FUNC(X)
-#define HIDDEN_ALIAS(X,Y) ALIAS (X,Y)
-#define ENDFUNC(X)
-#endif
-
-#define	CONCAT(A,B)	A##B
-#define	GLOBAL0(U,X)	CONCAT(U,__##X)
-#define	GLOBAL(X)	GLOBAL0(__USER_LABEL_PREFIX__,X)
-
-#define ALIAS(X,Y)	.global GLOBAL(X); .set GLOBAL(X),GLOBAL(Y)
-
-#ifdef __SH2A__
-#undef FMOVD_WORKS
-#define FMOVD_WORKS
-#endif
+#include "lib1funcs.h"
 
 #if ! __SH5__
 #ifdef L_ashiftrt
@@ -1375,13 +1351,8 @@ GLOBAL(udivsi3_i4):
 #ifdef FMOVD_WORKS
 	fmov.d @r0+,dr4
 #else
-#ifdef __LITTLE_ENDIAN__
-	fmov.s @r0+,fr5
-	fmov.s @r0,fr4
-#else
-	fmov.s @r0+,fr4
-	fmov.s @r0,fr5
-#endif
+	fmov.s @r0+,DR40
+	fmov.s @r0,DR41
 #endif
 	float fpul,dr0
 	xor r1,r5
@@ -1444,13 +1415,8 @@ GLOBAL(udivsi3_i4):
 #ifdef FMOVD_WORKS
 	fmov.d @r0+,dr4
 #else
-#ifdef __LITTLE_ENDIAN__
-	fmov.s @r0+,fr5
-	fmov.s @r0,fr4
-#else
-	fmov.s @r0+,fr4
-	fmov.s @r0,fr5
-#endif
+	fmov.s @r0+,DR40
+	fmov.s @r0,DR41
 #endif
 	float fpul,dr0
 	xor r1,r5

@@ -25,7 +25,14 @@ Boston, MA 02110-1301, USA.  */
 
 #undef TARGET_POSIX_IO
 
+/* While the speed-optimized implementations of udivsi3_i4i / sdivsi3_i4i
+   in libgcc are not available for SH2, the space-optimized ones in
+   libgcc-Os-4-200 are.  Thus, when not optimizing for space, link
+   libgcc-Os-4-200 after libgcc, so that -mdiv=call-table works for -m2.  */
 #define LIBGCC_SPEC "%{!shared: \
   %{m4-100*:-lic_invalidate_array_4-100} \
   %{m4-200*:-lic_invalidate_array_4-200} \
-  %{m4a*:-lic_invalidate_array_4a}} -lgcc"
+  %{m4a*:-lic_invalidate_array_4a}} \
+  %{Os: -lgcc-Os-4-200} \
+  -lgcc \
+  %{!Os: -lgcc-Os-4-200}"
