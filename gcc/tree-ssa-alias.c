@@ -314,6 +314,7 @@ set_initial_properties (struct alias_info *ai)
   unsigned int i;
   referenced_var_iterator rvi;
   tree var;
+  tree ptr;
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
@@ -334,9 +335,8 @@ set_initial_properties (struct alias_info *ai)
 	}
     }
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+  for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
-      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
       var_ann_t v_ann = var_ann (SSA_NAME_VAR (ptr));
       
@@ -859,7 +859,7 @@ init_alias_info (void)
   ai = XCNEW (struct alias_info);
   ai->ssa_names_visited = sbitmap_alloc (num_ssa_names);
   sbitmap_zero (ai->ssa_names_visited);
-  VARRAY_TREE_INIT (ai->processed_ptrs, 50, "processed_ptrs");
+  ai->processed_ptrs = VEC_alloc (tree, heap, 50);
   ai->written_vars = BITMAP_ALLOC (&alias_obstack);
   ai->dereferenced_ptrs_store = BITMAP_ALLOC (&alias_obstack);
   ai->dereferenced_ptrs_load = BITMAP_ALLOC (&alias_obstack);
@@ -943,7 +943,7 @@ delete_alias_info (struct alias_info *ai)
   tree var;
 
   sbitmap_free (ai->ssa_names_visited);
-  ai->processed_ptrs = NULL;
+  VEC_free (tree, heap, ai->processed_ptrs);
 
   for (i = 0; i < ai->num_addressable_vars; i++)
     free (ai->addressable_vars[i]);
@@ -1085,20 +1085,19 @@ static void
 compute_flow_sensitive_aliasing (struct alias_info *ai)
 {
   size_t i;
+  tree ptr;
   
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+  for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
-      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
       if (!find_what_p_points_to (ptr))
 	set_pt_anything (ptr);
     }
 
   create_name_tags ();
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+  for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
       unsigned j;
-      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
       var_ann_t v_ann = var_ann (SSA_NAME_VAR (ptr));
       bitmap_iterator bi;
@@ -1411,6 +1410,7 @@ static void
 group_aliases (struct alias_info *ai)
 {
   size_t i;
+  tree ptr;
 
   /* Sort the POINTERS array in descending order of contributed
      virtual operands.  */
@@ -1478,10 +1478,9 @@ group_aliases (struct alias_info *ai)
      into p_5->field, but that is wrong because there have been
      modifications to 'SMT.20' in between.  To prevent this we have to
      replace 'a' with 'SMT.20' in the name tag of p_5.  */
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+  for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
       size_t j;
-      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
       tree name_tag = SSA_NAME_PTR_INFO (ptr)->name_mem_tag;
       VEC(tree,gc) *aliases;
       tree alias;

@@ -34,7 +34,7 @@ struct alias_info
   sbitmap ssa_names_visited;
 
   /* Array of SSA_NAME pointers processed by the points-to collector.  */
-  varray_type processed_ptrs;
+  VEC(tree,heap) *processed_ptrs;
 
   /* ADDRESSABLE_VARS contains all the global variables and locals that
      have had their address taken.  */
