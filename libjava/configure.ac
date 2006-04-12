@@ -800,11 +800,10 @@ case "$THREADS" in
 	THREADSPEC='%{!pthread: %{!shared: %eUnder this configuration, the user must provide -pthread when linking.}}'
 	;;
      *-*-freebsd*)
-	# FreeBSD 5 implements a model much closer to other modern UNIX
-	# which support threads.  However, it still does not support
-	# -lpthread.
+	# FreeBSD >=5.3 implements a model much closer to other modern UNIX
+	# systems which support threads and -lpthread.
 	THREADLDFLAGS=-pthread
-	THREADSPEC=-lc_r
+	THREADSPEC=-lpthread
 	;;
      alpha*-dec-osf*)
 	THREADCXXFLAGS=-pthread
