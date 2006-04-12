@@ -1,3 +1,12 @@
+2006-04-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-ssa-alias.c (set_initial_properties, init_alias_info,
+	delete_alias_info, compute_flow_sensitive_aliasing,
+	group_aliases): Use VEC instead of VARRAY.
+	* tree-ssa-structalias.c (update_alias_info): Likewise.
+	* tree-ssa-structalias.h (alias_info): Change the type of
+	processed_ptrs to VEC(tree,heap) *.
+
 2006-04-12  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/27060

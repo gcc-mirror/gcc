@@ -3041,7 +3041,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
       if (!TEST_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (op)))
 	{
 	  SET_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (op));
-	  VARRAY_PUSH_TREE (ai->processed_ptrs, op);
+	  VEC_safe_push (tree, heap, ai->processed_ptrs, op);
 	}
 
       /* If STMT is a PHI node, then it will not have pointer
