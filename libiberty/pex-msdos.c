@@ -73,6 +73,7 @@ const struct pex_funcs funcs =
   pex_msdos_wait,
   NULL, /* pipe */
   NULL, /* fdopenr */
+  NULL, /* fdopenw */
   pex_msdos_cleanup
 };
 

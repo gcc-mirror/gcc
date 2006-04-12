@@ -67,6 +67,7 @@ pex_init_common (int flags, const char *pname, const char *tempbase,
   obj->status = NULL;
   obj->time = NULL;
   obj->number_waited = 0;
+  obj->input_file = NULL;
   obj->read_output = NULL;
   obj->remove_count = 0;
   obj->remove = NULL;
@@ -160,6 +161,17 @@ pex_run (struct pex_obj *obj, int flags, const char *executable,
   errdes = -1;
   outname = (char *) orig_outname;
   outname_allocated = 0;
+
+  /* If the user called pex_input_file, close the file now.  */
+  if (obj->input_file)
+    {
+      if (fclose (obj->input_file) == EOF)
+        {
+          errmsg = "closing pipeline input file";
+          goto error_exit;
+        }
+      obj->input_file = NULL;
+    }
 
   /* Set IN.  */
 
@@ -305,6 +317,87 @@ pex_run (struct pex_obj *obj, int flags, const char *executable,
   if (outname_allocated)
     free (outname);
   return errmsg;
+}
+
+/* Return a FILE pointer for a temporary file to fill with input for
+   the pipeline.  */
+FILE *
+pex_input_file (struct pex_obj *obj, int flags, const char *in_name)
+{
+  char *name = (char *) in_name;
+  FILE *f;
+
+  /* This must be called before the first pipeline stage is run, and
+     there must not have been any other input selected.  */
+  if (obj->count != 0
+      || (obj->next_input >= 0 && obj->next_input != STDIN_FILE_NO)
+      || obj->next_input_name)
+    {
+      errno = EINVAL;
+      return NULL;
+    }
+
+  name = temp_file (obj, flags, name);
+  if (! name)
+    return NULL;
+
+  f = fopen (name, (flags & PEX_BINARY_OUTPUT) ? "wb" : "w");
+  if (! f)
+    {
+      free (name);
+      return NULL;
+    }
+
+  obj->input_file = f;
+  obj->next_input_name = name;
+  obj->next_input_name_allocated = (name != in_name);
+
+  return f;
+}
+
+/* Return a stream for a pipe connected to the standard input of the
+   first stage of the pipeline.  */
+FILE *
+pex_input_pipe (struct pex_obj *obj, int binary)
+{
+  int p[2];
+  FILE *f;
+
+  /* You must call pex_input_pipe before the first pex_run or pex_one.  */
+  if (obj->count > 0)
+    goto usage_error;
+
+  /* You must be using pipes.  Implementations that don't support
+     pipes clear this flag before calling pex_init_common.  */
+  if (! (obj->flags & PEX_USE_PIPES))
+    goto usage_error;
+
+  /* If we have somehow already selected other input, that's a
+     mistake.  */
+  if ((obj->next_input >= 0 && obj->next_input != STDIN_FILE_NO)
+      || obj->next_input_name)
+    goto usage_error;
+
+  if (obj->funcs->pipe (obj, p, binary != 0) < 0)
+    return NULL;
+
+  f = obj->funcs->fdopenw (obj, p[WRITE_PORT], binary != 0);
+  if (! f)
+    {
+      int saved_errno = errno;
+      obj->funcs->close (obj, p[READ_PORT]);
+      obj->funcs->close (obj, p[WRITE_PORT]);
+      errno = saved_errno;
+      return NULL;
+    }
+
+  obj->next_input = p[READ_PORT];
+
+  return f;
+
+ usage_error:
+  errno = EINVAL;
+  return NULL;
 }
 
 /* Return a FILE pointer for the output of the last program

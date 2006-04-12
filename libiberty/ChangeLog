@@ -1,3 +1,19 @@
+2006-03-29  Jim Blandy  <jimb@codesourcery.com>
+
+ 	* pex-common.c (pex_input_file, pex_input_pipe): New functions.
+	(pex_init_common): Initialize obj->input_file.
+	(pex_run): Close any file opened by pex_input_file.
+ 	* pexecute.txh (pex_input_file, pex_input_pipe): New docs.
+ 	* pex-common.h (struct pex_obj): New field input_file.
+	(struct pex_funcs): New function ptr fdopenw.
+ 	* pex-unix.c (pex_unix_fdopenw): New function.
+ 	(funcs): List it as our fdopenw function.
+ 	* pex-win32.c (pex_win32_fdopenw): New function.
+ 	(funcs): List it as our fdopenw function.
+ 	* pex-djgpp.c (funcs): Leave fdopenw null.
+ 	* pex-msdos (funcs): Same.
+ 	* functions.texi: Regenerated.
+
 2006-04-10  Jim Blandy  <jimb@codesourcery.com>
 
 	* pex-common.c (temp_file): New function, containing guts of

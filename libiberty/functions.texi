@@ -668,14 +668,14 @@ reading and writing.
 
 @end deftypefn
 
-@c pexecute.txh:169
+@c pexecute.txh:231
 @deftypefn Extension void pex_free (struct pex_obj @var{obj})
 
 Clean up and free all data associated with @var{obj}.
 
 @end deftypefn
 
-@c pexecute.txh:144
+@c pexecute.txh:206
 @deftypefn Extension int pex_get_status (struct pex_obj *@var{obj}, int @var{count}, int *@var{vector})
 
 Returns the exit status of all programs run using @var{obj}.
@@ -685,7 +685,7 @@ to @code{pex_run}.  Returns 0 on error, 1 on success.
 
 @end deftypefn
 
-@c pexecute.txh:153
+@c pexecute.txh:215
 @deftypefn Extension int pex_get_times (struct pex_obj *@var{obj}, int @var{count}, struct pex_time *@var{vector})
 
 Returns the process execution times of all programs run using
@@ -702,7 +702,7 @@ process times, all the fields will be set to @code{0}.
 
 @end deftypefn
 
-@c pexecute.txh:1
+@c pexecute.txh:2
 @deftypefn Extension {struct pex_obj *} pex_init (int @var{flags}, const char *@var{pname}, const char *@var{tempbase})
 
 Prepare to execute one or more programs, with standard output of each
@@ -734,7 +734,70 @@ temporary files; it may be @code{NULL} to use a randomly chosen name.
 
 @end deftypefn
 
-@c pexecute.txh:175
+@c pexecute.txh:133
+@deftypefn Extension {FILE *} pex_input_file (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{in_name})
+
+Return a stream for a temporary file to pass to the first program in
+the pipeline as input.
+
+The name of the input file is chosen according to the same rules
+@code{pex_run} uses to choose output file names, based on
+@var{in_name}, @var{obj} and the @code{PEX_SUFFIX} bit in @var{flags}.
+
+Don't call @code{fclose} on the returned stream; the first call to
+@code{pex_run} closes it automatically.
+
+If @var{flags} includes @code{PEX_BINARY_OUTPUT}, open the stream in
+binary mode; otherwise, open it in the default mode.  Including
+@code{PEX_BINARY_OUTPUT} in @var{flags} has no effect on Unix.
+@end deftypefn
+
+@c pexecute.txh:150
+@deftypefn Extension {FILE *} pex_input_pipe (struct pex_obj *@var{obj}, int @var{binary})
+
+Return a stream @var{fp} for a pipe connected to the standard input of
+the first program in the pipeline; @var{fp} is opened for writing.
+You must have passed @code{PEX_USE_PIPES} to the @code{pex_init} call
+that returned @var{obj}.
+
+You must close @var{fp} using @code{fclose} yourself when you have
+finished writing data to the pipeline.
+
+The file descriptor underlying @var{fp} is marked not to be inherited
+by child processes.
+
+On systems that do not support pipes, this function returns
+@code{NULL}, and sets @code{errno} to @code{EINVAL}.  If you would
+like to write code that is portable to all systems the @code{pex}
+functions support, consider using @code{pex_input_file} instead.
+
+There are two opportunities for deadlock using
+@code{pex_input_pipe}:
+
+@itemize @bullet
+@item
+Most systems' pipes can buffer only a fixed amount of data; a process
+that writes to a full pipe blocks.  Thus, if you write to @file{fp}
+before starting the first process, you run the risk of blocking when
+there is no child process yet to read the data and allow you to
+continue.  @code{pex_input_pipe} makes no promises about the
+size of the pipe's buffer, so if you need to write any data at all
+before starting the first process in the pipeline, consider using
+@code{pex_input_file} instead.
+
+@item
+Using @code{pex_input_pipe} and @code{pex_read_output} together
+may also cause deadlock.  If the output pipe fills up, so that each
+program in the pipeline is waiting for the next to read more data, and
+you fill the input pipe by writing more data to @var{fp}, then there
+is no way to make progress: the only process that could read data from
+the output pipe is you, but you are blocked on the input pipe.
+
+@end itemize
+
+@end deftypefn
+
+@c pexecute.txh:237
 @deftypefn Extension {const char *} pex_one (int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, int *@var{status}, int *@var{err})
 
 An interface to permit the easy execution of a
@@ -747,7 +810,7 @@ be set to the exit status of the program.
 
 @end deftypefn
 
-@c pexecute.txh:132
+@c pexecute.txh:194
 @deftypefn Extension {FILE *} pex_read_output (struct pex_obj *@var{obj}, int @var{binary})
 
 Returns a @code{FILE} pointer which may be used to read the standard
@@ -760,7 +823,7 @@ it will be closed by @code{pex_free}.
 
 @end deftypefn
 
-@c pexecute.txh:32
+@c pexecute.txh:33
 @deftypefn Extension {const char *} pex_run (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
 
 Execute one program in a pipeline.  On success this returns
@@ -861,7 +924,7 @@ value, or to 0 if there is no relevant @code{errno}.
 
 @end deftypefn
 
-@c pexecute.txh:187
+@c pexecute.txh:249
 @deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int flags)
 
 This is the old interface to execute one or more programs.  It is
@@ -889,7 +952,7 @@ name is unset/removed.
 
 @end deftypefn
 
-@c pexecute.txh:195
+@c pexecute.txh:257
 @deftypefn Extension int pwait (int @var{pid}, int *@var{status}, int @var{flags})
 
 Another part of the old execution interface.

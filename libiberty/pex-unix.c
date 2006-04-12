@@ -277,6 +277,7 @@ static int pex_unix_wait (struct pex_obj *, long, int *, struct pex_time *,
 			  int, const char **, int *);
 static int pex_unix_pipe (struct pex_obj *, int *, int);
 static FILE *pex_unix_fdopenr (struct pex_obj *, int, int);
+static FILE *pex_unix_fdopenw (struct pex_obj *, int, int);
 static void pex_unix_cleanup (struct pex_obj *);
 
 /* The list of functions we pass to the common routines.  */
@@ -290,6 +291,7 @@ const struct pex_funcs funcs =
   pex_unix_wait,
   pex_unix_pipe,
   pex_unix_fdopenr,
+  pex_unix_fdopenw,
   pex_unix_cleanup
 };
 
@@ -493,6 +495,15 @@ pex_unix_fdopenr (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd,
 		  int binary ATTRIBUTE_UNUSED)
 {
   return fdopen (fd, "r");
+}
+
+static FILE *
+pex_unix_fdopenw (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd,
+		  int binary ATTRIBUTE_UNUSED)
+{
+  if (fcntl (fd, F_SETFD, FD_CLOEXEC) < 0)
+    return NULL;
+  return fdopen (fd, "w");
 }
 
 static void

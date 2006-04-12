@@ -62,6 +62,7 @@ const struct pex_funcs funcs =
   pex_djgpp_wait,
   NULL, /* pipe */
   NULL, /* fdopenr */
+  NULL, /* fdopenw */
   NULL  /* cleanup */
 };
 
