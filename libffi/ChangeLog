@@ -1,3 +1,12 @@
+2006-04-12  James E Wilson  <wilson@specifix.com>
+
+	PR libgcj/26483
+	* src/ia64/ffi.c (stf_spill, ldf_fill): Rewrite as macros.
+	(hfa_type_load): Call stf_spill.
+	(hfa_type_store): Call ldf_fill.
+	(ffi_call): Adjust calls to above routines.  Add local temps for
+	macro result.
+	
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libffi-dg.exp (libffi-init): Recognize multilib
