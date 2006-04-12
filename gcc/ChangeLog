@@ -1,3 +1,21 @@
+2006-04-12  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/27060
+        * config/sh/lib1funcs.h: New file, broken out of:
+        * config/sh/lib1funcs.asm.
+        * config/sh/lib1funcs.h (DR00, DR01, DR20, DR21, DR40, DR41):
+	New macros.
+	* config/sh/lib1funcs.asm (udivsi3_i4): Use them.
+        * config/sh/lib1funcs-Os-4-200.asm: New file.
+	* config/sh/embed-elf.h (LIBGCC_SPEC): Use -lgcc-Os-4-200.
+	* config/sh/t-sh (OPT_EXTRA_PARTS): New variable.
+	(EXTRA_MULTILIB_PARTS): Include it.
+	($(T)sdivsi3_i4i-Os-4-200.o): New rule.
+	($(T)udivsi3_i4i-Os-4-200.o, $(T)libgcc-Os-4-200.a): Likewise.
+	* config/sh/t-superh (EXTRA_MULTILIB_PARTS): Include OPT_EXTRA_PARTS.
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Recognize -mdiv=call-table for
+	TARGET_SH2.
+
 2006-04-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (TREE_SSA_LIVE_H): Add vecprim.h.
