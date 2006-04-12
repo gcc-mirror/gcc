@@ -11009,6 +11009,9 @@ cp_parser_init_declarator (cp_parser* parser,
     }
 
   /* Parse the initializer.  */
+  initializer = NULL_TREE;
+  is_parenthesized_init = false;
+  is_non_constant_init = true;
   if (is_initialized)
     {
       if (declarator->kind == cdk_function
@@ -11019,12 +11022,6 @@ cp_parser_init_declarator (cp_parser* parser,
 	initializer = cp_parser_initializer (parser,
 					     &is_parenthesized_init,
 					     &is_non_constant_init);
-    }
-  else
-    {
-      initializer = NULL_TREE;
-      is_parenthesized_init = false;
-      is_non_constant_init = true;
     }
 
   /* The old parser allows attributes to appear after a parenthesized
