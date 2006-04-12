@@ -10892,7 +10892,7 @@ cp_parser_init_declarator (cp_parser* parser,
      initialized with "= ..", CPP_OPEN_PAREN if initialized with
      "(...)".  */
   enum cpp_ttype initialization_kind;
-  bool is_parenthesized_init;
+  bool is_parenthesized_init = false;
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
   bool friend_p;
