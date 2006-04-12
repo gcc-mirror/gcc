@@ -1,5 +1,13 @@
 2006-04-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/26295
+	* decl.c (grokdeclarator): Remove namespace-handling code for
+	pointers-to-members.  
+	* parser.c (cp_parser_ptr_operator): Check for qualified names
+	using namespaces.
+
+2006-04-11  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/26122
 	* parser.c (cp_parser_init_declarator): Adjust logic for deciding
 	whether or not to look for a pure-specifier.
