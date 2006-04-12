@@ -69,24 +69,19 @@ endian_adjust (void *addr, size_t len)
 #endif
 }
 
-/* Store VALUE to ADDR in the current cpu implementation's fp spill format.  */
+/* Store VALUE to ADDR in the current cpu implementation's fp spill format.
+   This is a macro instead of a function, so that it works for all 3 floating
+   point types without type conversions.  Type conversion to long double breaks
+   the denorm support.  */
 
-static inline void
-stf_spill(fpreg *addr, __float80 value)
-{
+#define stf_spill(addr, value)	\
   asm ("stf.spill %0 = %1%P0" : "=m" (*addr) : "f"(value));
-}
 
 /* Load a value from ADDR, which is in the current cpu implementation's
-   fp spill format.  */
+   fp spill format.  As above, this must also be a macro.  */
 
-static inline __float80
-ldf_fill(fpreg *addr)
-{
-  __float80 ret;
-  asm ("ldf.fill %0 = %1%P1" : "=f"(ret) : "m"(*addr));
-  return ret;
-}
+#define ldf_fill(result, addr)	\
+  asm ("ldf.fill %0 = %1%P1" : "=f"(result) : "m"(*addr));
 
 /* Return the size of the C type associated with with TYPE.  Which will
    be one of the FFI_IA64_TYPE_HFA_* values.  */
@@ -110,17 +105,20 @@ hfa_type_size (int type)
 /* Load from ADDR a value indicated by TYPE.  Which will be one of
    the FFI_IA64_TYPE_HFA_* values.  */
 
-static __float80
-hfa_type_load (int type, void *addr)
+static void
+hfa_type_load (fpreg *fpaddr, int type, void *addr)
 {
   switch (type)
     {
     case FFI_IA64_TYPE_HFA_FLOAT:
-      return *(float *) addr;
+      stf_spill (fpaddr, *(float *) addr);
+      return;
     case FFI_IA64_TYPE_HFA_DOUBLE:
-      return *(double *) addr;
+      stf_spill (fpaddr, *(double *) addr);
+      return;
     case FFI_IA64_TYPE_HFA_LDOUBLE:
-      return *(__float80 *) addr;
+      stf_spill (fpaddr, *(__float80 *) addr);
+      return;
     default:
       abort ();
     }
@@ -130,19 +128,31 @@ hfa_type_load (int type, void *addr)
    the FFI_IA64_TYPE_HFA_* values.  */
 
 static void
-hfa_type_store (int type, void *addr, __float80 value)
+hfa_type_store (int type, void *addr, fpreg *fpaddr)
 {
   switch (type)
     {
     case FFI_IA64_TYPE_HFA_FLOAT:
-      *(float *) addr = value;
-      break;
+      {
+	float result;
+	ldf_fill (result, fpaddr);
+	*(float *) addr = result;
+	break;
+      }
     case FFI_IA64_TYPE_HFA_DOUBLE:
-      *(double *) addr = value;
-      break;
+      {
+	double result;
+	ldf_fill (result, fpaddr);
+	*(double *) addr = result;
+	break;
+      }
     case FFI_IA64_TYPE_HFA_LDOUBLE:
-      *(__float80 *) addr = value;
-      break;
+      {
+	__float80 result;
+	ldf_fill (result, fpaddr);
+	*(__float80 *) addr = result;
+	break;
+      }
     default:
       abort ();
     }
@@ -351,8 +361,8 @@ ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 		       && offset < size
 		       && gp_offset < 8 * 8)
 		  {
-		    stf_spill (&stack->fp_regs[fpcount],
-			       hfa_type_load (hfa_type, avalue[i] + offset));
+		    hfa_type_load (&stack->fp_regs[fpcount], hfa_type,
+				   avalue[i] + offset);
 		    offset += hfa_size;
 		    gp_offset += hfa_size;
 		    fpcount += 1;
@@ -475,9 +485,11 @@ ffi_closure_unix_inner (ffi_closure *closure, struct ia64_args *stack,
 	case FFI_TYPE_FLOAT:
 	  if (gpcount < 8 && fpcount < 8)
 	    {
-	      void *addr = &stack->fp_regs[fpcount++];
+	      fpreg *addr = &stack->fp_regs[fpcount++];
+	      float result;
 	      avalue[i] = addr;
-	      *(float *)addr = ldf_fill (addr);
+	      ldf_fill (result, addr);
+	      *(float *)addr = result;
 	    }
 	  else
 	    avalue[i] = endian_adjust(&stack->gp_regs[gpcount], 4);
@@ -487,9 +499,11 @@ ffi_closure_unix_inner (ffi_closure *closure, struct ia64_args *stack,
 	case FFI_TYPE_DOUBLE:
 	  if (gpcount < 8 && fpcount < 8)
 	    {
-	      void *addr = &stack->fp_regs[fpcount++];
+	      fpreg *addr = &stack->fp_regs[fpcount++];
+	      double result;
 	      avalue[i] = addr;
-	      *(double *)addr = ldf_fill (addr);
+	      ldf_fill (result, addr);
+	      *(double *)addr = result;
 	    }
 	  else
 	    avalue[i] = &stack->gp_regs[gpcount];
@@ -501,9 +515,11 @@ ffi_closure_unix_inner (ffi_closure *closure, struct ia64_args *stack,
 	    gpcount++;
 	  if (LDBL_MANT_DIG == 64 && gpcount < 8 && fpcount < 8)
 	    {
-	      void *addr = &stack->fp_regs[fpcount++];
+	      fpreg *addr = &stack->fp_regs[fpcount++];
+	      __float80 result;
 	      avalue[i] = addr;
-	      *(__float80 *)addr = ldf_fill (addr);
+	      ldf_fill (result, addr);
+	      *(__float80 *)addr = result;
 	    }
 	  else
 	    avalue[i] = &stack->gp_regs[gpcount];
@@ -533,8 +549,8 @@ ffi_closure_unix_inner (ffi_closure *closure, struct ia64_args *stack,
 		       && offset < size
 		       && gp_offset < 8 * 8)
 		  {
-		    hfa_type_store (hfa_type, addr + offset, 
-				    ldf_fill (&stack->fp_regs[fpcount]));
+		    hfa_type_store (hfa_type, addr + offset,
+				    &stack->fp_regs[fpcount]);
 		    offset += hfa_size;
 		    gp_offset += hfa_size;
 		    fpcount += 1;
