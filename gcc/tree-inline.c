@@ -893,7 +893,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency,
       *new_cfun = *DECL_STRUCT_FUNCTION (callee_fndecl);
       new_cfun->cfg = NULL;
       new_cfun->decl = new_fndecl = copy_node (callee_fndecl);
-      new_cfun->ib_boundaries_block = (varray_type) 0;
+      new_cfun->ib_boundaries_block = NULL;
       DECL_STRUCT_FUNCTION (new_fndecl) = new_cfun;
       push_cfun (new_cfun);
       init_empty_tree_cfg ();
