@@ -1,3 +1,10 @@
+2006-04-12  Richard Guenther  <rguenther@suse.de>
+
+	* profile.c (compute_branch_probabilities): Remove code
+	encapsulated in !ir_type (), which are remanents of the
+	removed RTL profiling code.
+	* rtl-profile.c: Remove.
+
 2006-04-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_mixed_function_arg): Update

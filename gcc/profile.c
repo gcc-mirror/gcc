@@ -490,7 +490,6 @@ compute_branch_probabilities (void)
     {
       edge e;
       edge_iterator ei;
-      rtx note;
 
       if (bb->count < 0)
 	{
@@ -546,36 +545,8 @@ compute_branch_probabilities (void)
 		index = 19;
 	      hist_br_prob[index]++;
 
-	      /* Do this for RTL only.  */
-	      if (!ir_type ())
-		{
-		  note = find_reg_note (BB_END (bb), REG_BR_PROB, 0);
-		  /* There may be already note put by some other pass, such
-		     as builtin_expect expander.  */
-		  if (note)
-		    XEXP (note, 0) = GEN_INT (prob);
-		  else
-		    REG_NOTES (BB_END (bb))
-		      = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
-					   REG_NOTES (BB_END (bb)));
-		}
 	      num_branches++;
 	    }
-	}
-      /* Otherwise try to preserve the existing REG_BR_PROB probabilities
-         tree based profile guessing put into code.  BB can be the
-	 ENTRY_BLOCK, and it can have multiple (fake) successors in
-	 EH cases, but it still has no code; don't crash in this case.  */
-      else if (profile_status == PROFILE_ABSENT
-	       && !ir_type ()
-	       && EDGE_COUNT (bb->succs) > 1
-	       && BB_END (bb)
-	       && (note = find_reg_note (BB_END (bb), REG_BR_PROB, 0)))
-	{
-	  int prob = INTVAL (XEXP (note, 0));
-
-	  BRANCH_EDGE (bb)->probability = prob;
-	  FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
 	}
       /* As a last resort, distribute the probabilities evenly.
 	 Use simple heuristics that if there are normal edges,
@@ -972,8 +943,7 @@ branch_prob (void)
 		    flag_bits |= GCOV_ARC_FALLTHROUGH;
 		  /* On trees we don't have fallthru flags, but we can
 		     recompute them from CFG shape.  */
-		  if (ir_type ()
-		      && e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)
+		  if (e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)
 		      && e->src->next_bb == e->dest)
 		    flag_bits |= GCOV_ARC_FALLTHROUGH;
 
@@ -989,116 +959,57 @@ branch_prob (void)
   /* Line numbers.  */
   if (coverage_begin_output ())
     {
+      gcov_position_t offset;
+
       /* Initialize the output.  */
       output_location (NULL, 0, NULL, NULL);
 
-      if (!ir_type ())
+      FOR_EACH_BB (bb)
 	{
-	  gcov_position_t offset;
+	  block_stmt_iterator bsi;
 
-	  FOR_EACH_BB (bb)
+	  offset = 0;
+
+	  if (bb == ENTRY_BLOCK_PTR->next_bb)
 	    {
-	      rtx insn = BB_HEAD (bb);
-	      int ignore_next_note = 0;
+	      expanded_location curr_location = 
+		expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+	      output_location (curr_location.file, curr_location.line,
+			       &offset, bb);
+	    }
 
-	      offset = 0;
+	  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	    {
+	      tree stmt = bsi_stmt (bsi);
+	      if (EXPR_HAS_LOCATION (stmt))
+		output_location (EXPR_FILENAME (stmt), EXPR_LINENO (stmt),
+				 &offset, bb);
+	    }
 
-	      /* We are looking for line number notes.  Search backward
-		 before basic block to find correct ones.  */
-	      insn = prev_nonnote_insn (insn);
-	      if (!insn)
-		insn = get_insns ();
-	      else
-		insn = NEXT_INSN (insn);
+	  /* Notice GOTO expressions we eliminated while constructing the
+	     CFG.  */
+	  if (single_succ_p (bb) && single_succ_edge (bb)->goto_locus)
+	    {
+	      /* ??? source_locus type is marked deprecated in input.h.  */
+	      source_locus curr_location = single_succ_edge (bb)->goto_locus;
+	      /* ??? The FILE/LINE API is inconsistent for these cases.  */
+#ifdef USE_MAPPED_LOCATION 
+	      output_location (LOCATION_FILE (curr_location),
+			       LOCATION_LINE (curr_location), &offset, bb);
+#else
+	      output_location (curr_location->file, curr_location->line,
+			       &offset, bb);
+#endif
+	    }
 
-	      while (insn != BB_END (bb))
-		{
-		  if (NOTE_P (insn))
-		    {
-		      /* Must ignore the line number notes that
-			 immediately follow the end of an inline function
-			 to avoid counting it twice.  There is a note
-			 before the call, and one after the call.  */
-		      if (NOTE_LINE_NUMBER (insn)
-			  == NOTE_INSN_REPEATED_LINE_NUMBER)
-			ignore_next_note = 1;
-		      else if (NOTE_LINE_NUMBER (insn) <= 0)
-			/*NOP*/;
-		      else if (ignore_next_note)
-			ignore_next_note = 0;
-		      else
-			{
-		          expanded_location s;
-		          NOTE_EXPANDED_LOCATION (s, insn);
-			  output_location (s.file, s.line, &offset, bb);
-			}
-		    }
-		  insn = NEXT_INSN (insn);
-		}
-
-	      if (offset)
-		{
-		  /* A file of NULL indicates the end of run.  */
-		  gcov_write_unsigned (0);
-		  gcov_write_string (NULL);
-		  gcov_write_length (offset);
-		}
+	  if (offset)
+	    {
+	      /* A file of NULL indicates the end of run.  */
+	      gcov_write_unsigned (0);
+	      gcov_write_string (NULL);
+	      gcov_write_length (offset);
 	    }
 	}
-      else
-	{
-	  gcov_position_t offset;
-
-	  FOR_EACH_BB (bb)
-	    {
-	      block_stmt_iterator bsi;
-
-	      offset = 0;
-
-	      if (bb == ENTRY_BLOCK_PTR->next_bb)
-		{
-		  expanded_location curr_location = 
-		    expand_location (DECL_SOURCE_LOCATION
-				     (current_function_decl));
-		  output_location (curr_location.file, curr_location.line,
-				   &offset, bb);
-		}
-
-	      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-		{
-		  tree stmt = bsi_stmt (bsi);
-		  if (EXPR_HAS_LOCATION (stmt))
-		    output_location (EXPR_FILENAME (stmt), 
-				     EXPR_LINENO (stmt),
-				     &offset, bb);
-		}
-
-	      /* Notice GOTO expressions we eliminated while constructing the
-		 CFG.  */
-	      if (single_succ_p (bb) && single_succ_edge (bb)->goto_locus)
-		{
-		  /* ??? source_locus type is marked deprecated in input.h.  */
-		  source_locus curr_location = single_succ_edge (bb)->goto_locus;
-		  /* ??? The FILE/LINE API is inconsistent for these cases.  */
-#ifdef USE_MAPPED_LOCATION 
-		  output_location (LOCATION_FILE (curr_location),
-				   LOCATION_LINE (curr_location),
-				   &offset, bb);
-#else
-		  output_location (curr_location->file, curr_location->line,
-				   &offset, bb);
-#endif
-		}
-
-	      if (offset)
-		{
-		  /* A file of NULL indicates the end of run.  */
-		  gcov_write_unsigned (0);
-		  gcov_write_string (NULL);
-		  gcov_write_length (offset);
-		}
-	    }
-	 }
     }
 
   ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
@@ -1133,25 +1044,10 @@ branch_prob (void)
 	instrument_values (values);
 
       /* Commit changes done by instrumentation.  */
-      if (ir_type ())
-	bsi_commit_edge_inserts ();
-      else
-	{
-          commit_edge_insertions_watch_calls ();
-	  allocate_reg_info (max_reg_num (), FALSE, FALSE);
-	}
+      bsi_commit_edge_inserts ();
     }
 
   free_aux_for_edges ();
-
-  if (!ir_type ())
-    {
-      /* Re-merge split basic blocks and the mess introduced by
-	 insert_insn_on_edge.  */
-      cleanup_cfg (profile_arc_flag ? CLEANUP_EXPENSIVE : 0);
-      if (dump_file)
-	dump_flow_info (dump_file, dump_flags);
-    }
 
   free_edge_list (el);
   if (flag_branch_probabilities)
