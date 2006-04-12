@@ -91,6 +91,56 @@ pex_add_remove (struct pex_obj *obj, const char *name, int allocated)
   obj->remove[obj->remove_count - 1] = add;
 }
 
+/* Generate a temporary file name based on OBJ, FLAGS, and NAME.
+   Return NULL if we were unable to reserve a temporary filename.
+
+   If non-NULL, the result is either allocated with malloc, or the
+   same pointer as NAME.  */
+static char *
+temp_file (struct pex_obj *obj, int flags, char *name)
+{
+  if (name == NULL)
+    {
+      if (obj->tempbase == NULL)
+        {
+          name = make_temp_file (NULL);
+        }
+      else
+        {
+          int len = strlen (obj->tempbase);
+          int out;
+
+          if (len >= 6
+              && strcmp (obj->tempbase + len - 6, "XXXXXX") == 0)
+            name = xstrdup (obj->tempbase);
+          else
+            name = concat (obj->tempbase, "XXXXXX", NULL);
+
+          out = mkstemps (name, 0);
+          if (out < 0)
+            {
+              free (name);
+              return NULL;
+            }
+
+          /* This isn't obj->funcs->close because we got the
+             descriptor from mkstemps, not from a function in
+             obj->funcs.  Calling close here is just like what
+             make_temp_file does.  */
+          close (out);
+        }
+    }
+  else if ((flags & PEX_SUFFIX) != 0)
+    {
+      if (obj->tempbase == NULL)
+        name = make_temp_file (name);
+      else
+        name = concat (obj->tempbase, name, NULL);
+    }
+
+  return name;
+}
+
 /* Run a program.  */
 
 const char *
@@ -161,49 +211,16 @@ pex_run (struct pex_obj *obj, int flags, const char *executable,
     }
   else if ((obj->flags & PEX_USE_PIPES) == 0)
     {
-      if (outname == NULL)
-	{
-	  if (obj->tempbase == NULL)
-	    {
-	      outname = make_temp_file (NULL);
-	      outname_allocated = 1;
-	    }
-	  else
-	    {
-	      int len = strlen (obj->tempbase);
+      outname = temp_file (obj, flags, outname);
+      if (! outname)
+        {
+          *err = 0;
+          errmsg = "could not create temporary file";
+          goto error_exit;
+        }
 
-	      if (len >= 6
-		  && strcmp (obj->tempbase + len - 6, "XXXXXX") == 0)
-		outname = xstrdup (obj->tempbase);
-	      else
-		outname = concat (obj->tempbase, "XXXXXX", NULL);
-
-	      outname_allocated = 1;
-
-	      out = mkstemps (outname, 0);
-	      if (out < 0)
-		{
-		  *err = 0;
-		  errmsg = "could not create temporary output file";
-		  goto error_exit;
-		}
-
-	      /* This isn't obj->funcs->close because we got the
-		 descriptor from mkstemps, not from a function in
-		 obj->funcs.  Calling close here is just like what
-		 make_temp_file does.  */
-	      close (out);
-	      out = -1;
-	    }
-	}
-      else if ((flags & PEX_SUFFIX) != 0)
-	{
-	  if (obj->tempbase == NULL)
-	    outname = make_temp_file (outname);
-	  else
-	    outname = concat (obj->tempbase, outname, NULL);
-	  outname_allocated = 1;
-	}
+      if (outname != orig_outname)
+        outname_allocated = 1;
 
       if ((obj->flags & PEX_SAVE_TEMPS) == 0)
 	{

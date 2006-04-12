@@ -1,3 +1,9 @@
+2006-04-10  Jim Blandy  <jimb@codesourcery.com>
+
+	* pex-common.c (temp_file): New function, containing guts of
+	pex-style temporary file name generation.
+	(pex_run): Use it.
+
 2006-04-06  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Add install-html, install-html-am, and
