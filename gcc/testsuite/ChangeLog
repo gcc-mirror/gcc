@@ -1,3 +1,9 @@
+2006-04-13  Paolo Bonzini  <bonzini@gnu.org>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/27006
+	* gcc.dg/vmx/pr27006.c: New testcase.
+
 2006-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26766
