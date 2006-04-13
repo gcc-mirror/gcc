@@ -1,3 +1,24 @@
+2006-04-13  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (native_encode_expr): New function to encode
+	the target representation of an INTEGER_CST, REAL_CST, COMPLEX_CST
+	or VECTOR_CST into a specified buffer.
+	(native_encode_int): New function.
+	(native_encode_real): New function.
+	(native_encode_complex): New function.
+	(native_encode_vector): New function.
+	(native_interpret_expr): Inverse of native_encode_expr to convert
+	a target representation into an INTEGER_CST, REAL_CST etc...
+	(native_interpret_int): New function.
+	(native_interpret_real): New function.
+	(native_interpret_complex): New function.
+	(native_interpret_vector): New function.
+	(fold_view_convert_expr): New function to constant fold/evaluate
+	a VIEW_CONVERT_EXPR of a suitable constant expression.
+	(fold_unary) <VIEW_CONVERT_EXPR>: Call fold_view_convert_expr.
+	Change call of build1 to fold_build1 when constructing a
+	VIEW_CONVERT_EXPR.
+
 2006-04-13  Paolo Bonzini  <bonzini@gnu.org>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 

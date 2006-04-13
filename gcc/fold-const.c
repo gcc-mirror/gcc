@@ -134,6 +134,9 @@ static bool reorder_operands_p (tree, tree);
 static tree fold_negate_const (tree, tree);
 static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
+static int native_encode_expr (tree, unsigned char *, int);
+static tree native_interpret_expr (tree, unsigned char *, int);
+
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
@@ -6756,6 +6759,398 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   return NULL_TREE;
 }
 
+/* Subroutine of native_encode_expr.  Encode the INTEGER_CST
+   specified by EXPR into the buffer PTR of length LEN bytes.
+   Return the number of bytes placed in the buffer, or zero
+   upon failure.  */
+
+static int
+native_encode_int (tree expr, unsigned char *ptr, int len)
+{
+  tree type = TREE_TYPE (expr);
+  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int byte, offset, word, words;
+  unsigned char value;
+
+  if (total_bytes > len)
+    return 0;
+  words = total_bytes / UNITS_PER_WORD;
+
+  for (byte = 0; byte < total_bytes; byte++)
+    {
+      int bitpos = byte * BITS_PER_UNIT;
+      if (bitpos < HOST_BITS_PER_WIDE_INT)
+	value = (unsigned char) (TREE_INT_CST_LOW (expr) >> bitpos);
+      else
+	value = (unsigned char) (TREE_INT_CST_HIGH (expr)
+				 >> (bitpos - HOST_BITS_PER_WIDE_INT));
+
+      if (total_bytes > UNITS_PER_WORD)
+	{
+	  word = byte / UNITS_PER_WORD;
+	  if (WORDS_BIG_ENDIAN)
+	    word = (words - 1) - word;
+	  offset = word * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
+	  else
+	    offset += byte % UNITS_PER_WORD;
+	}
+      else
+	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
+      ptr[offset] = value;
+    }
+  return total_bytes;
+}
+
+
+/* Subroutine of native_encode_expr.  Encode the REAL_CST
+   specified by EXPR into the buffer PTR of length LEN bytes.
+   Return the number of bytes placed in the buffer, or zero
+   upon failure.  */
+
+static int
+native_encode_real (tree expr, unsigned char *ptr, int len)
+{
+  tree type = TREE_TYPE (expr);
+  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int byte, offset, word, words;
+  unsigned char value;
+
+  /* There are always 32 bits in each long, no matter the size of
+     the hosts long.  We handle floating point representations with
+     up to 192 bits.  */
+  long tmp[6];
+
+  if (total_bytes > len)
+    return 0;
+  words = total_bytes / UNITS_PER_WORD;
+
+  real_to_target (tmp, TREE_REAL_CST_PTR (expr), TYPE_MODE (type));
+
+  for (byte = 0; byte < total_bytes; byte++)
+    {
+      int bitpos = byte * BITS_PER_UNIT;
+      value = (unsigned char) (tmp[bitpos / 32] >> (bitpos & 31));
+
+      if (total_bytes > UNITS_PER_WORD)
+	{
+	  word = byte / UNITS_PER_WORD;
+	  if (FLOAT_WORDS_BIG_ENDIAN)
+	    word = (words - 1) - word;
+	  offset = word * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
+	  else
+	    offset += byte % UNITS_PER_WORD;
+	}
+      else
+	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
+      ptr[offset] = value;
+    }
+  return total_bytes;
+}
+
+/* Subroutine of native_encode_expr.  Encode the COMPLEX_CST
+   specified by EXPR into the buffer PTR of length LEN bytes.
+   Return the number of bytes placed in the buffer, or zero
+   upon failure.  */
+
+static int
+native_encode_complex (tree expr, unsigned char *ptr, int len)
+{
+  int rsize, isize;
+  tree part;
+
+  part = TREE_REALPART (expr);
+  rsize = native_encode_expr (part, ptr, len);
+  if (rsize == 0)
+    return 0;
+  part = TREE_IMAGPART (expr);
+  isize = native_encode_expr (part, ptr+rsize, len-rsize);
+  if (isize != rsize)
+    return 0;
+  return rsize + isize;
+}
+
+
+/* Subroutine of native_encode_expr.  Encode the VECTOR_CST
+   specified by EXPR into the buffer PTR of length LEN bytes.
+   Return the number of bytes placed in the buffer, or zero
+   upon failure.  */
+
+static int
+native_encode_vector (tree expr, unsigned char *ptr, int len)
+{
+  tree type = TREE_TYPE (expr);
+  int i, size, offste, count;
+  tree elem, elements;
+
+  size = 0;
+  offset = 0;
+  elements = TREE_VECTOR_CST_ELTS (expr);
+  count = TYPE_VECTOR_SUBPARTS (TREE_TYPE (expr));
+  for (i = 0; i < count; i++)
+    {
+      if (elements)
+	{
+	  elem = TREE_VALUE (elements);
+	  elements = TREE_CHAIN (elements);
+	}
+      else
+	elem = NULL_TREE;
+
+      if (elem)
+	{
+	  size = native_encode_expr (elem, ptr+offset, len-offset);
+	  if (size == 0)
+	    return 0;
+	}
+      else if (size != 0)
+	{
+	  if (offset + size > len)
+	    return 0;
+	  memset (ptr+offset, 0, size);
+	}
+      else
+	return 0;
+      offset += size;
+    }
+  return offset;
+}
+
+
+/* Subroutine of fold_view_convert_expr.  Encode the INTEGER_CST,
+   REAL_CST, COMPLEX_CST or VECTOR_CST specified by EXPR into the
+   buffer PTR of length LEN bytes.  Return the number of bytes
+   placed in the buffer, or zero upon failure.  */
+
+static int
+native_encode_expr (tree expr, unsigned char *ptr, int len)
+{
+  switch (TREE_CODE (expr))
+    {
+    case INTEGER_CST:
+      return native_encode_int (expr, ptr, len);
+
+    case REAL_CST:
+      return native_encode_real (expr, ptr, len);
+
+    case COMPLEX_CST:
+      return native_encode_complex (expr, ptr, len);
+
+    case VECTOR_CST:
+      return native_encode_vector (expr, ptr, len);
+
+    default:
+      return 0;
+    }
+}
+
+
+/* Subroutine of native_interpret_expr.  Interpret the contents of
+   the buffer PTR of length LEN as an INTEGER_CST of type TYPE.
+   If the buffer cannot be interpreted, return NULL_TREE.  */
+
+static tree
+native_interpret_int (tree type, unsigned char *ptr, int len)
+{
+  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int byte, offset, word, words;
+  unsigned char value;
+  unsigned int HOST_WIDE_INT lo = 0;
+  HOST_WIDE_INT hi = 0;
+
+  if (total_bytes > len)
+    return NULL_TREE;
+  if (total_bytes * BITS_PER_UNIT > 2 * HOST_BITS_PER_WIDE_INT)
+    return NULL_TREE;
+  words = total_bytes / UNITS_PER_WORD;
+
+  for (byte = 0; byte < total_bytes; byte++)
+    {
+      int bitpos = byte * BITS_PER_UNIT;
+      if (total_bytes > UNITS_PER_WORD)
+	{
+	  word = byte / UNITS_PER_WORD;
+	  if (WORDS_BIG_ENDIAN)
+	    word = (words - 1) - word;
+	  offset = word * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
+	  else
+	    offset += byte % UNITS_PER_WORD;
+	}
+      else
+	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
+      value = ptr[offset];
+
+      if (bitpos < HOST_BITS_PER_WIDE_INT)
+	lo |= (unsigned HOST_WIDE_INT) value << bitpos;
+      else
+	hi |= (unsigned HOST_WIDE_INT) value
+	      << (bitpos - HOST_BITS_PER_WIDE_INT);
+    }
+
+  return force_fit_type (build_int_cst_wide (type, lo, hi),
+			 0, false, false);
+}
+
+
+/* Subroutine of native_interpret_expr.  Interpret the contents of
+   the buffer PTR of length LEN as a REAL_CST of type TYPE.
+   If the buffer cannot be interpreted, return NULL_TREE.  */
+
+static tree
+native_interpret_real (tree type, unsigned char *ptr, int len)
+{
+  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int byte, offset, word, words;
+  unsigned char value;
+  /* There are always 32 bits in each long, no matter the size of
+     the hosts long.  We handle floating point representations with
+     up to 192 bits.  */
+  REAL_VALUE_TYPE r;
+  long tmp[6];
+
+  total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  if (total_bytes > len || total_bytes > 24)
+    return NULL_TREE;
+  words = total_bytes / UNITS_PER_WORD;
+
+  memset (tmp, 0, sizeof (tmp));
+  for (byte = 0; byte < total_bytes; byte++)
+    {
+      int bitpos = byte * BITS_PER_UNIT;
+      if (total_bytes > UNITS_PER_WORD)
+	{
+	  word = byte / UNITS_PER_WORD;
+	  if (FLOAT_WORDS_BIG_ENDIAN)
+	    word = (words - 1) - word;
+	  offset = word * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
+	  else
+	    offset += byte % UNITS_PER_WORD;
+	}
+      else
+	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
+      value = ptr[offset];
+
+      tmp[bitpos / 32] |= (unsigned long)value << (bitpos & 31);
+    }
+
+  real_from_target (&r, tmp, mode);
+  return build_real (type, r);
+}
+
+
+/* Subroutine of native_interpret_expr.  Interpret the contents of
+   the buffer PTR of length LEN as a COMPLEX_CST of type TYPE.
+   If the buffer cannot be interpreted, return NULL_TREE.  */
+
+static tree
+native_interpret_complex (tree type, unsigned char *ptr, int len)
+{
+  tree etype, rpart, ipart;
+  int size;
+
+  etype = TREE_TYPE (type);
+  size = GET_MODE_SIZE (TYPE_MODE (etype));
+  if (size * 2 > len)
+    return NULL_TREE;
+  rpart = native_interpret_expr (etype, ptr, size);
+  if (!rpart)
+    return NULL_TREE;
+  ipart = native_interpret_expr (etype, ptr+size, size);
+  if (!ipart)
+    return NULL_TREE;
+  return build_complex (type, rpart, ipart);
+}
+
+
+/* Subroutine of native_interpret_expr.  Interpret the contents of
+   the buffer PTR of length LEN as a VECTOR_CST of type TYPE.
+   If the buffer cannot be interpreted, return NULL_TREE.  */
+
+static tree
+native_interpret_vector (tree type, unsigned char *ptr, int len)
+{
+  tree etype, elem, elements;
+  int i, size, count;
+
+  etype = TREE_TYPE (type);
+  size = GET_MODE_SIZE (TYPE_MODE (etype));
+  count = TYPE_VECTOR_SUBPARTS (type);
+  if (size * count > len)
+    return NULL_TREE;
+
+  elements = NULL_TREE;
+  for (i = count - 1; i >= 0; i--)
+    {
+      elem = native_interpret_expr (etype, ptr+(i*size), size);
+      if (!elem)
+	return NULL_TREE;
+      elements = tree_cons (NULL_TREE, elem, elements);
+    }
+  return build_vector (type, elements);
+}
+
+
+/* Subroutine of fold_view_convert_expr.  Interpet the contents of
+   the buffer PTR of length LEN as a constant of type TYPE.  For
+   INTEGRAL_TYPE_P we return an INTEGER_CST, for SCALAR_FLOAT_TYPE_P
+   we return a REAL_CST, etc...  If the buffer cannot be interpreted,
+   return NULL_TREE.  */
+
+static tree
+native_interpret_expr (tree type, unsigned char *ptr, int len)
+{
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+      return native_interpret_int (type, ptr, len);
+
+    case REAL_TYPE:
+      return native_interpret_real (type, ptr, len);
+
+    case COMPLEX_TYPE:
+      return native_interpret_complex (type, ptr, len);
+
+    case VECTOR_TYPE:
+      return native_interpret_vector (type, ptr, len);
+
+    default:
+      return NULL_TREE;
+    }
+}
+
+
+/* Fold a VIEW_CONVERT_EXPR of a constant expression EXPR to type
+   TYPE at compile-time.  If we're unable to perform the conversion
+   return NULL_TREE.  */
+
+static tree
+fold_view_convert_expr (tree type, tree expr)
+{
+  /* We support up to 512-bit values (for V8DFmode).  */
+  unsigned char buffer[64];
+  int len;
+
+  /* Check that the host and target are sane.  */
+  if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
+    return NULL_TREE;
+
+  len = native_encode_expr (expr, buffer, sizeof (buffer));
+  if (len == 0)
+    return NULL_TREE;
+
+  return native_interpret_expr (type, buffer, len);
+}
+
+
 /* Fold a unary expression of code CODE and type TYPE with operand
    OP0.  Return the folded expression if folding is successful.
    Otherwise, return NULL_TREE.  */
@@ -7095,8 +7490,8 @@ fold_unary (enum tree_code code, tree type, tree op0)
 
     case VIEW_CONVERT_EXPR:
       if (TREE_CODE (op0) == VIEW_CONVERT_EXPR)
-	return build1 (VIEW_CONVERT_EXPR, type, TREE_OPERAND (op0, 0));
-      return NULL_TREE;
+	return fold_build1 (VIEW_CONVERT_EXPR, type, TREE_OPERAND (op0, 0));
+      return fold_view_convert_expr (type, op0);
 
     case NEGATE_EXPR:
       if (negate_expr_p (arg0))
