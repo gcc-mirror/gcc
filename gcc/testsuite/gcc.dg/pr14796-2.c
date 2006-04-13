@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-fdump-tree-gimple" } */
 
 int f (int a) {

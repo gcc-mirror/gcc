@@ -300,6 +300,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget xscale*-*-elf]
 	     || [istarget cris-*-*]
 	     || [istarget h8300-*-*]
+	     || [istarget m32c-*-elf]
 	     || [istarget m68k-*-elf]
 	     || [istarget mips*-*-elf]
 	     || [istarget xtensa-*-elf]
@@ -923,6 +924,42 @@ proc check_effective_target_ilp32 { } {
 	int dummy[sizeof (int) == 4
 		  && sizeof (void *) == 4
 		  && sizeof (long) == 4 ? 1 : -1];
+    }]
+}
+
+# Return 1 if we're generating 32-bit or larger integers using default
+# options, 0 otherwise.
+
+proc check_effective_target_int32plus { } {
+    return [check_no_compiler_messages int32plus object {
+	int dummy[sizeof (int) >= 4 ? 1 : -1];
+    }]
+}
+
+# Return 1 if we're generating 32-bit or larger pointers using default
+# options, 0 otherwise.
+
+proc check_effective_target_ptr32plus { } {
+    return [check_no_compiler_messages ptr32plus object {
+	int dummy[sizeof (void *) >= 4 ? 1 : -1];
+    }]
+}
+
+# Return 1 if we support 32-bit or larger array and structure sizes
+# using default options, 0 otherwise.
+
+proc check_effective_target_size32plus { } {
+    return [check_no_compiler_messages size32plus object {
+	char dummy[65537];
+    }]
+}
+
+# Returns 1 if we're generating 16-bit or smaller integers with the
+# default options, 0 otherwise.
+
+proc check_effective_target_int16 { } {
+    return [check_no_compiler_messages int16 object {
+	int dummy[sizeof (int) < 4 ? 1 : -1];
     }]
 }
 

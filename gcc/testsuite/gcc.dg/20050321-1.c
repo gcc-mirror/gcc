@@ -3,6 +3,8 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -fmodulo-sched" } */
+/* malloc doesn't take a long. */
+/* { dg-xfail-if "" { "m32c-*-*" } { "*" } { "" } } */
 extern void * malloc (long);
 
 struct s {

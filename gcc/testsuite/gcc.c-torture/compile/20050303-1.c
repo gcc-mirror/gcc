@@ -1,3 +1,6 @@
+/* { dg-require-effective-target int32plus } */
+/* { dg-require-effective-target size32plus } */
+
 void crc()
 {
     int  toread;

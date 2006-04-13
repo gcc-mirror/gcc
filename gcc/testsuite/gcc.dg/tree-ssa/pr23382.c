@@ -1,5 +1,7 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-alias-vops" } */
+/* malloc doesn't take a long */
+/* { dg-xfail-if "" { "m32c-*-*" } { "*" } { "" } } */
 struct a
 {
   int length;

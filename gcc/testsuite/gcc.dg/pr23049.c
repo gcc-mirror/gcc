@@ -7,6 +7,7 @@
    the above expression.  */
 
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-O3 -ftree-vectorize" } */
 
 static unsigned short int crc_table[256];
