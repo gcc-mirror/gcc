@@ -666,6 +666,9 @@ SUBDIRS = $(DIRLTDL) gcj include classpath $(am__append_1)
 # $(1): variable containing entries to iterate over
 # $(2): output file
 write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach object,$(1),$(shell echo $(object) >> $(2)))
+
+# This is required by TL_AC_GXX_INCLUDE_DIR.
+libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la $(am__append_2) \
 	$(am__append_3) $(am__append_4)
 toolexecmainlib_DATA = libgcj.spec
