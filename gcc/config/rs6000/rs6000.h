@@ -1598,7 +1598,8 @@ typedef struct rs6000_args
 
 #define EASY_VECTOR_15(n) ((n) >= -16 && (n) <= 15)
 #define EASY_VECTOR_15_ADD_SELF(n) (!EASY_VECTOR_15((n))	\
-				    && EASY_VECTOR_15((n) >> 1))
+				    && EASY_VECTOR_15((n) >> 1) \
+				    && ((n) & 1) == 0)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

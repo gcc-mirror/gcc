@@ -1,3 +1,10 @@
+2006-04-13  Paolo Bonzini  <bonzini@gnu.org>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/27006
+	* config/rs6000/rs6000.h (EASY_VECTOR_15_ADD_SELF): Require n
+	to be even.
+
 2006-04-13  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/26459
