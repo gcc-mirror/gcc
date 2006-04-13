@@ -1,3 +1,9 @@
+2006-04-13  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/26522:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libsubdir): New variable.
+
 2006-04-12  NAKATA Maho  <maho@FreeBSD.org> 
 
 	PR libgcj/23829
