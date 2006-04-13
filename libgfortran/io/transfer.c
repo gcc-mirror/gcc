@@ -1619,7 +1619,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
      it is always safe to truncate the file on the first write */
   if (dtp->u.p.mode == WRITING
       && dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL
-      && dtp->u.p.current_unit->last_record == 0 && !is_preconnected(dtp->u.p.current_unit->s))
+      && dtp->u.p.current_unit->last_record == 0 
+      && !is_preconnected(dtp->u.p.current_unit->s))
 	struncate(dtp->u.p.current_unit->s);
 
   /* Bugware for badly written mixed C-Fortran I/O.  */
@@ -2317,6 +2318,8 @@ st_read_done (st_parameter_dt *dtp)
     free_mem (dtp->u.p.scratch);
   if (dtp->u.p.current_unit != NULL)
     unlock_unit (dtp->u.p.current_unit);
+  if (is_internal_unit (dtp) && dtp->u.p.current_unit != NULL)
+    free_mem (dtp->u.p.current_unit);
   library_end ();
 }
 
@@ -2353,10 +2356,12 @@ st_write_done (st_parameter_dt *dtp)
 
       case NO_ENDFILE:
 	/* Get rid of whatever is after this record.  */
-	flush (dtp->u.p.current_unit->s);
-	if (struncate (dtp->u.p.current_unit->s) == FAILURE)
-	  generate_error (&dtp->common, ERROR_OS, NULL);
-
+        if (!is_internal_unit (dtp))
+	  {
+	    flush (dtp->u.p.current_unit->s);
+	    if (struncate (dtp->u.p.current_unit->s) == FAILURE)
+	      generate_error (&dtp->common, ERROR_OS, NULL);
+	  }
 	dtp->u.p.current_unit->endfile = AT_ENDFILE;
 	break;
       }
@@ -2367,6 +2372,8 @@ st_write_done (st_parameter_dt *dtp)
     free_mem (dtp->u.p.scratch);
   if (dtp->u.p.current_unit != NULL)
     unlock_unit (dtp->u.p.current_unit);
+  if (is_internal_unit (dtp) && dtp->u.p.current_unit != NULL)
+    free_mem (dtp->u.p.current_unit);
   library_end ();
 }
 

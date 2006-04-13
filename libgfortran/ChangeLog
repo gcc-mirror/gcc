@@ -1,3 +1,18 @@
+2006-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26766
+	* io/io.h: Add bit to identify associated unit as internal.
+	* io/unit.c (get_external_unit): Renamed the find_unit_1 function to
+	reflect the external unit functionality vs internal unit.
+	(get_internal_unit): New function to allocate and initialize an internal
+	unit structure.
+	(get_unit): Use get_internal_unit and get_external_unit.
+	(is_internal_unit): Revised to use new bit added in io.h.
+	* io/transfer.c (data_transfer_init): Fix line width.
+	(st_read_done): Free memory allocated for internal unit.
+	(st_write_done): Add test to only flush and truncate when not an
+	internal unit.  Free memory allocated for internal unit.
+
 2006-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* io/io.h (st_parameter_dt): Revert 2005-12-10 change to
