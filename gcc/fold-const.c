@@ -6882,8 +6882,7 @@ native_encode_complex (tree expr, unsigned char *ptr, int len)
 static int
 native_encode_vector (tree expr, unsigned char *ptr, int len)
 {
-  tree type = TREE_TYPE (expr);
-  int i, size, offste, count;
+  int i, size, offset, count;
   tree elem, elements;
 
   size = 0;
@@ -7004,7 +7003,8 @@ native_interpret_int (tree type, unsigned char *ptr, int len)
 static tree
 native_interpret_real (tree type, unsigned char *ptr, int len)
 {
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  enum machine_mode mode = TYPE_MODE (type);
+  int total_bytes = GET_MODE_SIZE (mode);
   int byte, offset, word, words;
   unsigned char value;
   /* There are always 32 bits in each long, no matter the size of
