@@ -75,7 +75,7 @@ Boston, MA 02110-1301, USA.  */
 
 
 #define CACHE_SIZE 3
-static gfc_unit internal_unit, *unit_cache[CACHE_SIZE];
+static gfc_unit *unit_cache[CACHE_SIZE];
 gfc_offset max_offset;
 gfc_unit *unit_root;
 #ifdef __GTHREAD_MUTEX_INIT
@@ -260,12 +260,12 @@ delete_unit (gfc_unit * old)
 }
 
 
-/* find_unit()-- Given an integer, return a pointer to the unit
+/* get_external_unit()-- Given an integer, return a pointer to the unit
  * structure.  Returns NULL if the unit does not exist,
  * otherwise returns a locked unit. */
 
 static gfc_unit *
-find_unit_1 (int n, int do_create)
+get_external_unit (int n, int do_create)
 {
   gfc_unit *p;
   int c, created = 0;
@@ -346,17 +346,83 @@ found:
   return p;
 }
 
+
 gfc_unit *
 find_unit (int n)
 {
-  return find_unit_1 (n, 0);
+  return get_external_unit (n, 0);
 }
+
 
 gfc_unit *
 find_or_create_unit (int n)
 {
-  return find_unit_1 (n, 1);
+  return get_external_unit (n, 1);
 }
+
+
+gfc_unit *
+get_internal_unit (st_parameter_dt *dtp)
+{
+  gfc_unit * iunit;
+
+  /* Allocate memory for a unit structure.  */
+
+  iunit = get_mem (sizeof (gfc_unit));
+  if (iunit == NULL)
+    {
+      generate_error (&dtp->common, ERROR_INTERNAL_UNIT, NULL);
+      return NULL;
+    }
+
+  memset (iunit, '\0', sizeof (gfc_unit));
+
+  iunit->recl = dtp->internal_unit_len;
+
+  /* Set up the looping specification from the array descriptor, if any.  */
+
+  if (is_array_io (dtp))
+    {
+      iunit->rank = GFC_DESCRIPTOR_RANK (dtp->internal_unit_desc);
+      iunit->ls = (array_loop_spec *)
+	get_mem (iunit->rank * sizeof (array_loop_spec));
+      dtp->internal_unit_len *=
+	init_loop_spec (dtp->internal_unit_desc, iunit->ls);
+    }
+
+  /* Set initial values for unit parameters.  */
+
+  iunit->s = open_internal (dtp->internal_unit, dtp->internal_unit_len);
+  iunit->bytes_left = iunit->recl;
+  iunit->last_record=0;
+  iunit->maxrec=0;
+  iunit->current_record=0;
+  iunit->read_bad = 0;
+
+  /* Set flags for the internal unit.  */
+
+  iunit->flags.access = ACCESS_SEQUENTIAL;
+  iunit->flags.action = ACTION_READWRITE;
+  iunit->flags.form = FORM_FORMATTED;
+  iunit->flags.pad = PAD_YES;
+  iunit->flags.status = STATUS_UNSPECIFIED;
+
+  /* Initialize the data transfer parameters.  */
+
+  dtp->u.p.advance_status = ADVANCE_YES;
+  dtp->u.p.blank_status = BLANK_UNSPECIFIED;
+  dtp->u.p.seen_dollar = 0;
+  dtp->u.p.skips = 0;
+  dtp->u.p.pending_spaces = 0;
+  dtp->u.p.max_pos = 0;
+
+  /* This flag tells us the unit is assigned to internal I/O.  */
+  
+  dtp->u.p.unit_is_internal = 1;
+
+  return iunit;
+}
+
 
 /* get_unit()-- Returns the unit structure associated with the integer
  * unit or the internal file. */
@@ -364,40 +430,15 @@ find_or_create_unit (int n)
 gfc_unit *
 get_unit (st_parameter_dt *dtp, int do_create)
 {
+
   if ((dtp->common.flags & IOPARM_DT_HAS_INTERNAL_UNIT) != 0)
-    {
-      __gthread_mutex_lock (&internal_unit.lock);
-      internal_unit.recl = dtp->internal_unit_len;
-      if (is_array_io (dtp))
-	{
-	  internal_unit.rank = GFC_DESCRIPTOR_RANK (dtp->internal_unit_desc);
-	  internal_unit.ls = (array_loop_spec *)
-	    get_mem (internal_unit.rank * sizeof (array_loop_spec));
-	  dtp->internal_unit_len *=
-	    init_loop_spec (dtp->internal_unit_desc, internal_unit.ls);
-	}
-
-      internal_unit.s =
-	open_internal (dtp->internal_unit, dtp->internal_unit_len);
-      internal_unit.bytes_left = internal_unit.recl;
-      internal_unit.last_record=0;
-      internal_unit.maxrec=0;
-      internal_unit.current_record=0;
-
-      /* Set flags for the internal unit */
-
-      internal_unit.flags.access = ACCESS_SEQUENTIAL;
-      internal_unit.flags.action = ACTION_READWRITE;
-      internal_unit.flags.form = FORM_FORMATTED;
-      internal_unit.flags.delim = DELIM_NONE;
-      internal_unit.flags.pad = PAD_YES;
-
-      return &internal_unit;
-    }
+    return get_internal_unit(dtp);
 
   /* Has to be an external unit */
 
-  return find_unit_1 (dtp->common.unit, do_create);
+  dtp->u.p.unit_is_internal = 0;
+
+  return get_external_unit (dtp->common.unit, do_create);
 }
 
 
@@ -406,7 +447,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
 int
 is_internal_unit (st_parameter_dt *dtp)
 {
-  return dtp->u.p.current_unit == &internal_unit;
+  return dtp->u.p.unit_is_internal;
 }
 
 
@@ -430,15 +471,6 @@ init_units (void)
 
 #ifndef __GTHREAD_MUTEX_INIT
   __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
-#endif
-
-#ifdef __GTHREAD_MUTEX_INIT
-  {
-    __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;
-    internal_unit.lock = tmp;
-  }
-#else
-  __GTHREAD_MUTEX_INIT_FUNCTION (&internal_unit.lock);
 #endif
 
   if (options.stdin_unit >= 0)
