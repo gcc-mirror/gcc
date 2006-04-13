@@ -470,6 +470,51 @@ extern void bsi_insert_after (block_stmt_iterator *, tree,
 extern void bsi_replace (const block_stmt_iterator *, tree, bool);
 
 /*---------------------------------------------------------------------------
+			      OpenMP Region Tree
+---------------------------------------------------------------------------*/
+
+/* Parallel region information.  Every parallel and workshare
+   directive is enclosed between two markers, the OMP_* directive
+   and a corresponding OMP_RETURN statement.  */
+
+struct omp_region
+{
+  /* The enclosing region.  */
+  struct omp_region *outer;
+
+  /* First child region.  */
+  struct omp_region *inner;
+
+  /* Next peer region.  */
+  struct omp_region *next;
+
+  /* Block containing the omp directive as its last stmt.  */
+  basic_block entry;
+
+  /* Block containing the OMP_RETURN as its last stmt.  */
+  basic_block exit;
+
+  /* Block containing the OMP_CONTINUE as its last stmt.  */
+  basic_block cont;
+
+  /* If this is a combined parallel+workshare region, this is a list
+     of additional arguments needed by the combined parallel+workshare
+     library call.  */
+  tree ws_args;
+
+  /* The code for the omp directive of this region.  */
+  enum tree_code type;
+
+  /* True if this is a combined parallel+workshare region.  */
+  bool is_combined_parallel;
+};
+
+extern struct omp_region *root_omp_region;
+extern struct omp_region *new_omp_region (basic_block, enum tree_code,
+					  struct omp_region *);
+extern void free_omp_regions (void);
+
+/*---------------------------------------------------------------------------
 			      Function prototypes
 ---------------------------------------------------------------------------*/
 /* In tree-cfg.c  */

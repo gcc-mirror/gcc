@@ -1,3 +1,8 @@
+2006-04-13  Richard Henderson  <rth@redhat.com>
+
+	* trans-openmp.c (gfc_trans_omp_sections): Adjust for changed
+	number of operands to OMP_SECTIONS.
+
 2006-04-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gfortran.texi: Fix typos.  Follow spelling conventions.
