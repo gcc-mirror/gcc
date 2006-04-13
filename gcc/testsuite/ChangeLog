@@ -1,3 +1,9 @@
+2006-04-13  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.target/i386/20050113-1.c: Tweak testcase to reflect that casts
+	of integers to a vector types are now constant expressions in C.
+	* gcc.dg/vect/vect-fold-1.c: New test case.
+
 2006-04-13  Paolo Bonzini  <bonzini@gnu.org>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
