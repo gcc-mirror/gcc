@@ -170,14 +170,15 @@ extern const enum tree_code_class tree_code_type[];
 
 #define OMP_DIRECTIVE_P(NODE)				\
     (TREE_CODE (NODE) == OMP_PARALLEL			\
-     || TREE_CODE (NODE) == OMP_SECTIONS		\
-     || TREE_CODE (NODE) == OMP_SECTION			\
      || TREE_CODE (NODE) == OMP_FOR			\
-     || TREE_CODE (NODE) == OMP_RETURN_EXPR		\
+     || TREE_CODE (NODE) == OMP_SECTIONS		\
      || TREE_CODE (NODE) == OMP_SINGLE			\
+     || TREE_CODE (NODE) == OMP_SECTION			\
      || TREE_CODE (NODE) == OMP_MASTER			\
      || TREE_CODE (NODE) == OMP_ORDERED			\
-     || TREE_CODE (NODE) == OMP_CRITICAL)
+     || TREE_CODE (NODE) == OMP_CRITICAL		\
+     || TREE_CODE (NODE) == OMP_RETURN			\
+     || TREE_CODE (NODE) == OMP_CONTINUE)
 
 /* Number of argument-words in each kind of tree-node.  */
 
@@ -437,6 +438,10 @@ struct tree_common GTY(())
            CALL_EXPR
        DECL_BY_REFERENCE in
            PARM_DECL, RESULT_DECL
+       OMP_RETURN_NOWAIT in
+	   OMP_RETURN
+       OMP_SECTION_LAST in
+	   OMP_SECTION
 
    protected_flag:
 
@@ -1546,7 +1551,6 @@ struct tree_constructor GTY(())
 
 #define OMP_SECTIONS_BODY(NODE)    TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 0)
 #define OMP_SECTIONS_CLAUSES(NODE) TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 1)
-#define OMP_SECTIONS_SECTIONS(NODE) TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 2)
 
 #define OMP_SECTION_BODY(NODE)	   TREE_OPERAND (OMP_SECTION_CHECK (NODE), 0)
 
@@ -1565,6 +1569,18 @@ struct tree_constructor GTY(())
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
 	                                      OMP_CLAUSE_COPYPRIVATE), 0)
+
+/* True on an OMP_SECTION statement that was the last lexical member.
+   This status is meaningful in the implementation of lastprivate.  */
+#define OMP_SECTION_LAST(NODE) \
+  TREE_PRIVATE (OMP_SECTION_CHECK (NODE))
+
+/* True on an OMP_RETURN statement if the return does not require a
+   thread synchronization via some sort of barrier.  The exact barrier
+   that would otherwise be emitted is dependent on the OMP statement
+   with which this return is associated.  */
+#define OMP_RETURN_NOWAIT(NODE) \
+  TREE_PRIVATE (OMP_RETURN_CHECK (NODE))
 
 /* True on a PRIVATE clause if its decl is kept around for debugging
    information only and its DECL_VALUE_EXPR is supposed to point

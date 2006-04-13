@@ -1,3 +1,7 @@
+2006-04-13  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/gomp/block-0.C: Update expected matches.
+
 2006-04-13  DJ Delorie  <dj@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_int32plus): New.

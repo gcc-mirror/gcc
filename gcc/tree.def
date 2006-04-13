@@ -987,11 +987,8 @@ DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
 
 /* OpenMP - #pragma omp sections [clause1 ... clauseN]
    Operand 0: OMP_SECTIONS_BODY: Sections body.
-   Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.
-   Operand 2: OMP_SECTIONS_SECTIONS: Vector of the different sections
-	      in the body.  Only valid after lowering and destroyed
-	      after the CFG has been built.  */
-DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 3)
+   Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 2)
 
 /* OpenMP - #pragma omp single
    Operand 0: OMP_SINGLE_BODY: Single section body.
@@ -1015,6 +1012,13 @@ DEFTREECODE (OMP_ORDERED, "omp_ordered", tcc_statement, 1)
    Operand 1: OMP_CRITICAL_NAME: Identifier for critical section.  */
 DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 2)
 
+/* Return from an OpenMP directive.  */
+DEFTREECODE (OMP_RETURN, "omp_return", tcc_statement, 0)
+
+/* OpenMP - An intermediate tree code to mark the location of the
+   loop or sections iteration in the partially lowered code.  */
+DEFTREECODE (OMP_CONTINUE, "omp_continue", tcc_statement, 0)
+
 /* OpenMP - #pragma omp atomic
    Operand 0: The address at which the atomic operation is to be performed.
 	This address should be stabilized with save_expr.
@@ -1025,9 +1029,6 @@ DEFTREECODE (OMP_ATOMIC, "omp_atomic", tcc_statement, 2)
 
 /* OpenMP clauses.  */
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
-
-/* Return from an OpenMP directive.  */
-DEFTREECODE (OMP_RETURN_EXPR, "omp_return", tcc_statement, 0)
 
 /* Reduction operations. 
    Operations that take a vector of elements and "reduce" it to a scalar

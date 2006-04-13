@@ -159,13 +159,9 @@ lower_stmt_body (tree expr, struct lower_data *data)
 static void
 lower_omp_directive (tree_stmt_iterator *tsi, struct lower_data *data)
 {
-  tree clause, stmt;
+  tree stmt;
   
   stmt = tsi_stmt (*tsi);
-
-  clause = (TREE_CODE (stmt) >= OMP_PARALLEL && TREE_CODE (stmt) <= OMP_SINGLE)
-	   ? OMP_CLAUSES (stmt)
-	   : NULL_TREE;
 
   lower_stmt_body (OMP_BODY (stmt), data);
   tsi_link_before (tsi, stmt, TSI_SAME_STMT);
@@ -216,10 +212,6 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case GOTO_EXPR:
     case LABEL_EXPR:
     case SWITCH_EXPR:
-    case OMP_RETURN_EXPR:
-      break;
-
-    case OMP_PARALLEL:
     case OMP_FOR:
     case OMP_SECTIONS:
     case OMP_SECTION:
@@ -227,6 +219,11 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case OMP_MASTER:
     case OMP_ORDERED:
     case OMP_CRITICAL:
+    case OMP_RETURN:
+    case OMP_CONTINUE:
+      break;
+
+    case OMP_PARALLEL:
       lower_omp_directive (tsi, data);
       return;
 

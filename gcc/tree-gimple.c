@@ -224,7 +224,8 @@ is_gimple_stmt (tree t)
     case OMP_MASTER:
     case OMP_ORDERED:
     case OMP_CRITICAL:
-    case OMP_RETURN_EXPR:
+    case OMP_RETURN:
+    case OMP_CONTINUE:
       /* These are always void.  */
       return true;
 

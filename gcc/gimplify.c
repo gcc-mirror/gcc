@@ -5587,7 +5587,8 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  ret = gimplify_omp_atomic (expr_p, pre_p);
 	  break;
 
-	case OMP_RETURN_EXPR:
+	case OMP_RETURN:
+	case OMP_CONTINUE:
 	  ret = GS_ALL_DONE;
 	  break;
 

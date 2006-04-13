@@ -1,3 +1,60 @@
+2006-04-13  Richard Henderson  <rth@redhat.com>
+
+	PR 26651
+	* gimple-low.c (lower_omp_directive): Remove dead code.
+	(lower_stmt): Do nothing except for openmp, except for OMP_PARALLEL.
+	* gimplify.c (gimplify_expr): Update for OMP_RETURN, OMP_CONTINUE.
+	* omp-low.c (struct omp_region): Move to tree-flow.h.
+	(root_omp_region): Export.
+	(omp_regions, lookup_omp_region): Remove.
+	(determine_parallel_type): Update for struct omp_region changes.
+	(dump_omp_region): Dump regions with block numbers.
+	(new_omp_region): Take type and block instead of stmt; malloc
+	instead of ggc.
+	(free_omp_region_1, free_omp_regions): New.
+	(expand_parallel_call): Take entry_stmt as argument; update for
+	changes to omp_region.
+	(remove_exit_barrier): Rewrite to update OMP_RETURN_NOWAIT.
+	(remove_exit_barriers): New.
+	(expand_omp_parallel): Update for struct omp_region changes.
+	(expand_omp_synch): Likewise.
+	(expand_omp): Likewise.
+	(expand_omp_for_static_nochunk): Likewise; update for OMP_CONTINUE.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_for): Likewise.
+	(expand_omp_for_generic): Likewise; emit the proper GOMP_loop_end call.
+	(expand_omp_sections): Similarly, with GOMP_sections_end.
+	(expand_omp_single): New.
+	(build_omp_regions_1): Update for OMP_CONTINUE.
+	(execute_expand_omp): Call remove_exit_barriers, free_omp_regions.
+	(lower_omp_sections): Expand with OMP_CONTINUE, do not collect
+	OMP_SECTIONS_SECTIONS.
+	(lower_omp_single_simple): Don't emit barrier here.
+	(lower_omp_single_copy): Likewise.
+	(lower_omp_single): Fix bindings, and lower to straightline now.
+	(lower_omp_master, lower_omp_ordered): Likewise.
+	(lower_omp_critical): Likewise.
+	(lower_omp_for): Likewise.  Emit OMP_CONTINUE.
+	* tree-cfg.c (make_edges): Collect an omp_region tree, use it for
+	omp edges, free it afterward.
+	(make_omp_sections_edges): Remove.
+	(is_ctrl_altering_stmt): Don't bother checking flag_openmp.
+	(move_stmt_r): Handle OMP_CONTINUE.
+	* tree-flow.h (struct omp_region): Move from omp-low.c.  Switch 
+	statement pointers to basic blocks.  Add type member.
+	(root_omp_region, new_omp_region, free_omp_regions): Declare.
+	* tree-gimple.c (is_gimple_stmt): Handle OMP_RETURN, OMP_CONTINUE.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree.def (OMP_SECTIONS): Remove OMP_SECTIONS_SECTIONS operand.
+	(OMP_RETURN): Rename from OMP_RETURN_EXPR.
+	(OMP_CONTINUE): New.
+	* tree.h (OMP_DIRECTIVE_P): Add OMP_CONTINUE.
+	(OMP_SECTIONS_SECTIONS): Remove.
+	(OMP_SECTION_LAST): New.
+	(OMP_RETURN_NOWAIT): New.
+
 2006-04-13  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (native_encode_vector, native_interpret_real):

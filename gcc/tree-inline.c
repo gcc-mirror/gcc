@@ -1603,7 +1603,8 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case PHI_NODE:
     case WITH_SIZE_EXPR:
     case OMP_CLAUSE:
-    case OMP_RETURN_EXPR:
+    case OMP_RETURN:
+    case OMP_CONTINUE:
       break;
 
     /* We don't account constants for now.  Assume that the cost is amortized
