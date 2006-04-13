@@ -1,3 +1,9 @@
+2006-04-13  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/26459
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Don't
+	optimize to lo_sum for DFmode if !TARGET_FPRS.
+
 2006-04-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-ssa-alias.c (set_initial_properties, init_alias_info,
