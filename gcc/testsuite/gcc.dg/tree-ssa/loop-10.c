@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-require-effective-target int32plus } */
 
 int bar (void);
 

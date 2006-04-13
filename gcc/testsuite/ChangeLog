@@ -1,3 +1,83 @@
+2006-04-13  DJ Delorie  <dj@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_int32plus): New.
+	(check_effective_target_ptr32plus): New.
+	(check_effective_target_size32plus): New.
+	(check_effective_target_int16): New.
+	(check_profiling_available): Add m32c to the list of unsupported targets.
+
+	* gcc.c-torture/compile/20000804-1.c: Skip m32c also.
+	* gcc.c-torture/compile/20001226-1.c: Skip m32c due to small
+	memory size.
+	* gcc.c-torture/compile/20010327-1.c: Skip m32c due to non-SI
+	pointers.
+	* gcc.c-torture/compile/20020604-1.c: Skip m32c due to small
+	size_t.
+	* gcc.c-torture/compile/20050303-1.c: Require >=32 bit integers
+	and size_t.
+	* gcc.c-torture/compile/980506-1.c: Require >=32 bit size_t.
+	* gcc.c-torture/execute/20020404-1.x: Check for any 16 bit target,
+	not just xstormy16.  Skip m32c due to weird pointer size.
+	* gcc.c-torture/execute/20021024-1.x: Check for any 16 bit target,
+	not just xstormy16.
+	* gcc.c-torture/execute/shiftdi.x: Check for any 16 bit target,
+	not just xstormy16.
+	* gcc.dg/20020312-2.c: Add m32c support.
+	* gcc.dg/20040622-2.c: Require >=32 bit pointers.
+	* gcc.dg/20050321-1.c: XFail m32c due to incorrect malloc prototype
+	in test.
+	* gcc.dg/20050321-2.c: Require >=32 bit integers.
+	* gcc.dg/asm-1.c: Skip if int and short are the same size.
+	* gcc.dg/fold-mod-1.c: Require >=32 bit integers.
+	* gcc.dg/fold-overflow-1.c: Skip m32c due to small const types in asm.
+	* gcc.dg/format/bitfld-1.c: Require >=32 bit integers due to printf formats
+	* gcc.dg/init-string-2.c: Require >=32 bit integers.
+	* gcc.dg/max-1.c: Skip m32c in r8c or m16c mode due to small pointers.
+	* gcc.dg/noncompile/920923-1.c: Skip small-int message for int16 hosts.
+	* gcc.dg/pch/struct-1.c: Require >= 32 bit integers.
+	* gcc.dg/pr14796-2.c: Require >=32 bit integers.
+	* gcc.dg/pr17112-1.c: Require >=32 bit integers.
+	* gcc.dg/pr18241-1.c: XFail m32c due to incorrect memset prototype
+	in test.
+	* gcc.dg/pr18241-2.c: XFail m32c due to incorrect memset prototype
+	in test.
+	* gcc.dg/pr19340.c: Skip m32c due to lack of scheduling.
+	* gcc.dg/pr23049.c: Require >=32 bit integers.
+	* gcc.dg/torture/pr26565.c: Skip m32c as everything is already packed.
+	* gcc.dg/torture/pr26587.c: Require >=32 bit integers.
+	* gcc.dg/torture/pr26630.c: Require >=32 bit integers.
+	* gcc.dg/tree-ssa/loop-10.c: Require >=32 bit integers.
+	* gcc.dg/tree-ssa/loop-2.c: Require >=32 bit size_t.
+	* gcc.dg/tree-ssa/loop-4.c: Require >=32 bit size_t.
+	* gcc.dg/tree-ssa/ltrans-1.c: Require >=32 bit size_t.
+	* gcc.dg/tree-ssa/ltrans-2.c: Require >=32 bit size_t.
+	* gcc.dg/tree-ssa/ltrans-3.c: Require >=32 bit size_t.
+	* gcc.dg/tree-ssa/ltrans-4.c: Require >=32 bit size_t.
+	* gcc.dg/tree-ssa/pr14341.c: Require >=32 bit integers.
+	* gcc.dg/tree-ssa/pr23382.c: XFail m32c due to incorrect malloc
+	prototype in test.
+	* gcc.dg/tree-ssa/pr24627.c: Require >=32 bit integers.
+	* gcc.dg/tree-ssa/pr26180.c: Require >=32 bit integers.
+	* gcc.dg/tree-ssa/vrp14.c: Require >=32 bit integers.
+	* gcc.dg/tree-ssa/vrp21.c: Require >=32 bit integers.
+	* gcc.dg/tree-ssa/vrp22.c: Require >=32 bit integers.
+	
+	* gcc.c-torture/execute/20040629-1.x: New.  Require >16 bit integers.
+	* gcc.c-torture/execute/20040703-1.x: Likewise.
+	* gcc.c-torture/execute/20040705-1.x: Likewise.
+	* gcc.c-torture/execute/20040705-2.x: Likewise.
+	* gcc.c-torture/execute/20040709-1.x: Likewise.
+	* gcc.c-torture/execute/20040709-2.x: Likewise.
+	* gcc.c-torture/execute/20040811-1.x: Likewise.
+	* gcc.c-torture/execute/20050316-1.x: Likewise.
+	* gcc.c-torture/execute/bitfld-4.x: Likewise.
+	* gcc.c-torture/execute/pr19689.x: Likewise.
+	* gcc.c-torture/execute/pr7284-1.x: Likewise.
+	* gcc.c-torture/execute/usmul.x: Likewise.
+	* gcc.c-torture/execute/vrp-5.x: Likewise.
+	* gcc.c-torture/execute/vrp-6.x: Likewise.
+	* gcc.dg/debug/20041023-1.s: Likewise.
+
 2006-04-13  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.target/i386/20050113-1.c: Tweak testcase to reflect that casts

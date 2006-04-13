@@ -5,6 +5,7 @@
    relevant circumstances can be obtained portably; may still fail if
    char, short and int do not all have distinct precisions.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-std=c99 -pedantic-errors -fshort-enums -fshort-wchar" } */
 
 #include <limits.h>

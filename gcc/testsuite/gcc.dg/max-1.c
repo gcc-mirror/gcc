@@ -2,6 +2,8 @@
 /* Test case reduced by Andrew Pinski <pinskia@physics.uc.edu> */
 /* { dg-do run } */
 /* { dg-options "-O1 -fno-tree-lrs" } */
+/* m32c has varying sized pointers */
+/* { dg-skip-if "" { "m32c-*-*" } { "*" } { "-mcpu=m32c" "-mcpu=m32cm" } } */
 
 extern void abort (void);
 

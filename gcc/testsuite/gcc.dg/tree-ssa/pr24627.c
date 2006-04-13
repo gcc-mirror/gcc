@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O" } */
+/* { dg-require-effective-target int32plus } */
 
 extern void abort (void);
 typedef unsigned int u_int32;

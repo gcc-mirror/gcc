@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-fdump-tree-gimple" } */
 
 #define ABS(x) (x > 0 ? x : -x)

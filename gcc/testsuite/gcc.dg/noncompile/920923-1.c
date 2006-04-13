@@ -115,7 +115,7 @@ init_mem()
 			  "mem_hash != (prec_t)0", 370, "b.c"),
 		0)));
      flush_hash(mem_hash, 32);
-     build_ptables(mem_base, 1024*(1<<13)); /* { dg-bogus "integer overflow" "int smaller than 32 bits" } */
+     build_ptables(mem_base, 1024*(1<<13)); /* { dg-bogus "integer overflow" "int smaller than 32 bits" { xfail int16 } } */
 }
 
 struct tm {

@@ -2,6 +2,7 @@
    than 64K.  */
 /* { dg-do assemble { xfail m6811-*-* m6812-*-* } } */
 /* { dg-xfail-if "jump beyond 128K not supported" "xtensa-*-*" "-O0" "" } */
+/* { dg-skip-if "" { m32c-*-* } { "*" } { "" } } */
 
 /* This testcase exposed two branch shortening bugs on powerpc.  */
 

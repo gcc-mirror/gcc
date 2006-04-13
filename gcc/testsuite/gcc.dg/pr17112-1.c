@@ -1,5 +1,6 @@
 /* PR middle-end/17112 */
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-O2" } */
 
 extern void abort(void);
