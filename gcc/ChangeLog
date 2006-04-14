@@ -1,3 +1,14 @@
+2006-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* params.def (PARAM_MAX_SCHED_READY_INSNS): New parameter,
+	defaulting to 100.
+	* params.h (MAX_SCHED_READY_INSNS): New macro.
+	* haifa-sched.c: (queue_to_ready): Re-queue insns for the next cycle
+	past MAX_SCHED_READY_INSNS during the first scheduling pass.
+	(schedule_block): Delay insns past MAX_SCHED_READY_INSNS in
+	the ready list for 1 cycle during the first scheduling pass.
+	* doc/invoke.texi (--param): New parameter max-sched-ready-insns.
+
 2006-04-13  Richard Henderson  <rth@redhat.com>
 
 	PR 26651
