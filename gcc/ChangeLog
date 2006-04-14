@@ -1,3 +1,10 @@
+2006-04-14  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/27095
+	* builtins.c: (expand_builtin_memset): Stabilize args before expansion
+	and emit libcall here in case the builtin fails.
+	(expand_builtin_strcmp): Always emit the libcall here on failure.
+
 2006-04-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* basic-block.h (REG_BASIC_BLOCK): Use VEC instead of VARRAY.
