@@ -103,6 +103,7 @@ static void make_edges (void);
 static void make_cond_expr_edges (basic_block);
 static void make_switch_expr_edges (basic_block);
 static void make_goto_expr_edges (basic_block);
+static void make_omp_sections_edges (basic_block);
 static edge tree_redirect_edge_and_branch (edge, basic_block);
 static edge tree_try_redirect_by_replacing_jump (edge, basic_block);
 static unsigned int split_critical_edges (void);
@@ -446,7 +447,6 @@ static void
 make_edges (void)
 {
   basic_block bb;
-  struct omp_region *cur_region = NULL;
 
   /* Create an edge from entry to the first block with executable
      statements in it.  */
@@ -460,8 +460,7 @@ make_edges (void)
 
       if (last)
 	{
-	  enum tree_code code = TREE_CODE (last);
-	  switch (code)
+	  switch (TREE_CODE (last))
 	    {
 	    case GOTO_EXPR:
 	      make_goto_expr_edges (bb);
@@ -523,53 +522,18 @@ make_edges (void)
 	    case OMP_ORDERED:
 	    case OMP_CRITICAL:
 	    case OMP_SECTION:
-	      cur_region = new_omp_region (bb, code, cur_region);
 	      fallthru = true;
+	      break;
+
+	    case OMP_RETURN_EXPR:
+	      /* In the case of an OMP_SECTION, we may have already made
+		 an edge in make_omp_sections_edges.  */
+	      fallthru = EDGE_COUNT (bb->succs) == 0;
 	      break;
 
 	    case OMP_SECTIONS:
-	      cur_region = new_omp_region (bb, code, cur_region);
+	      make_omp_sections_edges (bb);
 	      fallthru = false;
-	      break;
-
-	    case OMP_RETURN:
-	      /* In the case of an OMP_SECTION, the edge will go somewhere
-		 other than the next block.  This will be created later.  */
-	      cur_region->exit = bb;
-	      fallthru = cur_region->type != OMP_SECTION;
-	      cur_region = cur_region->outer;
-	      break;
-
-	    case OMP_CONTINUE:
-	      cur_region->cont = bb;
-	      switch (cur_region->type)
-		{
-		case OMP_FOR:
-		  /* ??? Technically there should be a some sort of loopback
-		     edge here, but it goes to a block that doesn't exist yet,
-		     and without it, updating the ssa form would be a real
-		     bear.  Fortunately, we don't yet do ssa before expanding
-		     these nodes.  */
-		  break;
-
-		case OMP_SECTIONS:
-		  /* Wire up the edges into and out of the nested sections.  */
-		  /* ??? Similarly wrt loopback.  */
-		  {
-		    struct omp_region *i;
-		    for (i = cur_region->inner; i ; i = i->next)
-		      {
-			gcc_assert (i->type == OMP_SECTION);
-			make_edge (cur_region->entry, i->entry, 0);
-			make_edge (i->exit, bb, EDGE_FALLTHRU);
-		      }
-		  }
-		  break;
-		     
-		default:
-		  gcc_unreachable ();
-		}
-	      fallthru = true;
 	      break;
 
 	    default:
@@ -584,9 +548,6 @@ make_edges (void)
 	make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
     }
 
-  if (root_omp_region)
-    free_omp_regions ();
-
   /* Fold COND_EXPR_COND of each COND_EXPR.  */
   fold_cond_expr_cond ();
 
@@ -594,6 +555,35 @@ make_edges (void)
   cleanup_tree_cfg ();
 }
 
+
+/* Link an OMP_SECTIONS block to all the OMP_SECTION blocks in its body.  */
+
+static void
+make_omp_sections_edges (basic_block bb)
+{
+  basic_block exit_bb;
+  size_t i, n;
+  tree vec, stmt;
+
+  stmt = last_stmt (bb);
+  vec = OMP_SECTIONS_SECTIONS (stmt);
+  n = TREE_VEC_LENGTH (vec);
+  exit_bb = bb_for_stmt (TREE_VEC_ELT (vec, n - 1));
+
+  for (i = 0; i < n - 1; i += 2)
+    {
+      basic_block start_bb = bb_for_stmt (TREE_VEC_ELT (vec, i));
+      basic_block end_bb = bb_for_stmt (TREE_VEC_ELT (vec, i + 1));
+      make_edge (bb, start_bb, 0);
+      make_edge (end_bb, exit_bb, EDGE_FALLTHRU);
+    }
+
+  /* Once the CFG has been built, the vector of sections is no longer
+     useful.  The region can be easily obtained with build_omp_regions.
+     Furthermore, this sharing of tree expressions is not allowed by the
+     statement verifier.  */
+  OMP_SECTIONS_SECTIONS (stmt) = NULL_TREE;
+}
 
 /* Create the edges for a COND_EXPR starting at block BB.
    At this point, both clauses must contain only simple gotos.  */
@@ -2508,7 +2498,7 @@ is_ctrl_altering_stmt (tree t)
     }
 
   /* OpenMP directives alter control flow.  */
-  if (OMP_DIRECTIVE_P (t))
+  if (flag_openmp && OMP_DIRECTIVE_P (t))
     return true;
 
   /* If a statement can throw, it alters control flow.  */
@@ -4559,9 +4549,7 @@ move_stmt_r (tree *tp, int *walk_subtrees, void *data)
   if (p->block && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (t))))
     TREE_BLOCK (t) = p->block;
 
-  if (OMP_DIRECTIVE_P (t)
-      && TREE_CODE (t) != OMP_RETURN
-      && TREE_CODE (t) != OMP_CONTINUE)
+  if (OMP_DIRECTIVE_P (t) && TREE_CODE (t) != OMP_RETURN_EXPR)
     {
       /* Do not remap variables inside OMP directives.  Variables
 	 referenced in clauses and directive header belong to the
@@ -4745,9 +4733,16 @@ find_outermost_region_in_block (struct function *src_cfun,
       int stmt_region;
 
       stmt_region = lookup_stmt_eh_region_fn (src_cfun, stmt);
-      if (stmt_region > 0
-	  && (region < 0 || eh_region_outer_p (src_cfun, stmt_region, region)))
-	region = stmt_region;
+      if (stmt_region > 0)
+	{
+	  if (region < 0)
+	    region = stmt_region;
+	  else if (stmt_region != region)
+	    {
+	      region = eh_region_outermost (src_cfun, stmt_region, region);
+	      gcc_assert (region != -1);
+	    }
+	}
     }
 
   return region;
