@@ -759,7 +759,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    __n = __count;
 	  _ForwardIterator __i = __first;
 	  ++__i;
-	  while (__i != __last && __n != 1 && *__i == __val)
+	  while (__i != __last && __n != 1 && __binary_pred(*__i, __val))
 	    {
 	      ++__i;
 	      --__n;

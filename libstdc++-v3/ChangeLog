@@ -1,3 +1,9 @@
+2006-04-14  Douglas Gregor  <dgregor@cs.indiana.edu>
+
+	PR libstdc++/27162
+	* include/bits/stl_algo.h (__search_n(,,,, _BinaryPredicate,
+	std::forward_iterator_tag)): Use __binary_pred, not ==.
+
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Recognize multilib
