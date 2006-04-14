@@ -1,3 +1,9 @@
+2006-04-14  Alexey Starovoytov  <alexey.starovoytov@sun.com>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (emit_and_preserve): Allocate space for the
+	register save area.
+
 2005-04-13  Uros Bizjak  <uros@kss-loka.si>
 
 	PR middle-end/27134

@@ -8487,16 +8487,24 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
     }
 }
 
-/* Emit the sequence of insns SEQ while preserving the registers.  */
+/* Emit the sequence of insns SEQ while preserving the registers REG and REG2.
+   This is achieved by means of a manual dynamic stack space allocation in
+   the current frame.  We make the assumption that SEQ doesn't contain any
+   function calls, with the possible exception of calls to the PIC helper.  */
 
 static void
 emit_and_preserve (rtx seq, rtx reg, rtx reg2)
 {
-  /* STACK_BOUNDARY guarantees that this is a 2-word slot.  */
-  rtx slot = gen_rtx_MEM (word_mode,
-			  plus_constant (stack_pointer_rtx, SPARC_STACK_BIAS));
+  /* We must preserve the lowest 16 words for the register save area.  */
+  HOST_WIDE_INT offset = 16*UNITS_PER_WORD;
+  /* We really need only 2 words of fresh stack space.  */
+  HOST_WIDE_INT size = SPARC_STACK_ALIGN (offset + 2*UNITS_PER_WORD);
 
-  emit_insn (gen_stack_pointer_dec (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT)));
+  rtx slot
+    = gen_rtx_MEM (word_mode, plus_constant (stack_pointer_rtx,
+					     SPARC_STACK_BIAS + offset));
+
+  emit_insn (gen_stack_pointer_dec (GEN_INT (size)));
   emit_insn (gen_rtx_SET (VOIDmode, slot, reg));
   if (reg2)
     emit_insn (gen_rtx_SET (VOIDmode,
@@ -8508,7 +8516,7 @@ emit_and_preserve (rtx seq, rtx reg, rtx reg2)
 			    reg2,
 			    adjust_address (slot, word_mode, UNITS_PER_WORD)));
   emit_insn (gen_rtx_SET (VOIDmode, reg, slot));
-  emit_insn (gen_stack_pointer_inc (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT)));
+  emit_insn (gen_stack_pointer_inc (GEN_INT (size)));
 }
 
 /* Output the assembler code for a thunk function.  THUNK_DECL is the
