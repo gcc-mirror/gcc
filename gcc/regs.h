@@ -65,15 +65,20 @@ typedef struct reg_info_def
   int basic_block;		/* # of basic blocks (REG n) is used in */
 } reg_info;
 
-extern varray_type reg_n_info;
+typedef reg_info *reg_info_p;
+
+DEF_VEC_P(reg_info_p);
+DEF_VEC_ALLOC_P(reg_info_p,heap);
+
+extern VEC(reg_info_p,heap) *reg_n_info;
 
 /* Indexed by n, gives number of times (REG n) is used or set.  */
 
-#define REG_N_REFS(N) (VARRAY_REG (reg_n_info, N)->refs)
+#define REG_N_REFS(N) (VEC_index (reg_info_p, reg_n_info, N)->refs)
 
 /* Estimate frequency of references to register N.  */
 
-#define REG_FREQ(N) (VARRAY_REG (reg_n_info, N)->freq)
+#define REG_FREQ(N) (VEC_index (reg_info_p, reg_n_info, N)->freq)
 
 /* The weights for each insn varries from 0 to REG_FREQ_BASE.
    This constant does not need to be high, as in infrequently executed
@@ -97,7 +102,7 @@ extern varray_type reg_n_info;
    ??? both regscan and flow allocate space for this.  We should settle
    on just copy.  */
 
-#define REG_N_SETS(N) (VARRAY_REG (reg_n_info, N)->sets)
+#define REG_N_SETS(N) (VEC_index (reg_info_p, reg_n_info, N)->sets)
 
 /* Indexed by N, gives number of insns in which register N dies.
    Note that if register N is live around loops, it can die
@@ -105,7 +110,7 @@ extern varray_type reg_n_info;
    So this is only a reliable indicator of how many regions of life there are
    for registers that are contained in one basic block.  */
 
-#define REG_N_DEATHS(N) (VARRAY_REG (reg_n_info, N)->deaths)
+#define REG_N_DEATHS(N) (VEC_index (reg_info_p, reg_n_info, N)->deaths)
 
 /* Get the number of consecutive words required to hold pseudo-reg N.  */
 
@@ -124,13 +129,14 @@ extern varray_type reg_n_info;
 
 /* Indexed by N, gives number of CALL_INSNS across which (REG n) is live.  */
 
-#define REG_N_CALLS_CROSSED(N) (VARRAY_REG (reg_n_info, N)->calls_crossed)
+#define REG_N_CALLS_CROSSED(N)					\
+  (VEC_index (reg_info_p, reg_n_info, N)->calls_crossed)
 
 /* Indexed by N, gives number of CALL_INSNS that may throw, across which
    (REG n) is live.  */
 
 #define REG_N_THROWING_CALLS_CROSSED(N) \
-  (VARRAY_REG (reg_n_info, N)->throw_calls_crossed)
+  (VEC_index (reg_info_p, reg_n_info, N)->throw_calls_crossed)
 
 /* Total number of instructions at which (REG n) is live.
    The larger this is, the less priority (REG n) gets for
@@ -147,7 +153,8 @@ extern varray_type reg_n_info;
    is not required.  global.c makes an allocno for this but does
    not try to assign a hard register to it.  */
 
-#define REG_LIVE_LENGTH(N) (VARRAY_REG (reg_n_info, N)->live_length)
+#define REG_LIVE_LENGTH(N)				\
+  (VEC_index (reg_info_p, reg_n_info, N)->live_length)
 
 /* Vector of substitutions of register numbers,
    used to map pseudo regs into hardware regs.
@@ -182,7 +189,7 @@ extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
    It is sometimes adjusted for subsequent changes during loop,
    but not adjusted by cse even if cse invalidates it.  */
 
-#define REGNO_FIRST_UID(N) (VARRAY_REG (reg_n_info, N)->first_uid)
+#define REGNO_FIRST_UID(N) (VEC_index (reg_info_p, reg_n_info, N)->first_uid)
 
 /* Vector indexed by regno; gives uid of last insn using that reg.
    This is computed by reg_scan for use by cse and loop.
@@ -190,7 +197,7 @@ extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
    but not adjusted by cse even if cse invalidates it.
    This is harmless since cse won't scan through a loop end.  */
 
-#define REGNO_LAST_UID(N) (VARRAY_REG (reg_n_info, N)->last_uid)
+#define REGNO_LAST_UID(N) (VEC_index (reg_info_p, reg_n_info, N)->last_uid)
 
 /* List made of EXPR_LIST rtx's which gives pairs of pseudo registers
    that have to go in the same hard reg.  */

@@ -1,3 +1,16 @@
+2006-04-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* basic-block.h (REG_BASIC_BLOCK): Use VEC instead of VARRAY.
+	* flow.c (reg_n_info): Change the type to
+	VEC(reg_info_p,heap) *.
+	* regclass.c (allocate_reg_info, free_reg_info): Use VEC
+	instead of VARRAY.
+	* regs.h (reg_info_p): New.
+	(REG_N_REFS, REG_FREQ, REG_N_SETS, REG_N_DEATHS,
+	REG_N_CALLS_CROSSED, REG_N_THROWING_CALLS_CROSSED,
+	REG_LIVE_LENGTH, REGNO_FIRST_UID, REGNO_LAST_UID): Use VEC
+	instead of VARRAY.
+
 2006-04-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* params.def (PARAM_MAX_SCHED_READY_INSNS): New parameter,

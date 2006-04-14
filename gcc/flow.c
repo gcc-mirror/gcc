@@ -182,7 +182,7 @@ int max_regno;
 
 /* Indexed by n, giving various register information */
 
-varray_type reg_n_info;
+VEC(reg_info_p,heap) *reg_n_info;
 
 /* Regset of regs live when calls to `setjmp'-like functions happen.  */
 /* ??? Does this exist only for the setjmp-clobbered warning message?  */

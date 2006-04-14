@@ -460,7 +460,8 @@ extern bitmap_obstack reg_obstack;
 #define REG_BLOCK_UNKNOWN -1
 #define REG_BLOCK_GLOBAL -2
 
-#define REG_BASIC_BLOCK(N) (VARRAY_REG (reg_n_info, N)->basic_block)
+#define REG_BASIC_BLOCK(N)				\
+  (VEC_index (reg_info_p, reg_n_info, N)->basic_block)
 
 /* Stuff for recording basic block info.  */
 
