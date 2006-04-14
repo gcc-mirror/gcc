@@ -2312,7 +2312,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
   gcc_assert (fallback_fndecl != NULL_TREE);
   exp = build_function_call_expr (fallback_fndecl, arglist);
 
-  tmp = expand_builtin_mathfn (exp, NULL_RTX, NULL_RTX);
+  tmp = expand_normal (exp);
 
   /* Truncate the result of floating point optab to integer
      via expand_fix ().  */

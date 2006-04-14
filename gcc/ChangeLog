@@ -1,3 +1,9 @@
+2005-04-13  Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/27134
+	* builtins.c (expand_builtin_int_roundingfn): Use expand_normal()
+	to expand fallback builtin function call.
+
 2006-04-14  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/27095

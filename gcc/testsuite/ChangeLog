@@ -1,3 +1,8 @@
+2006-04-13  Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/27134
+	* gcc.dg/pr27314.c: New test.
+
 2006-04-13  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/gomp/block-0.C: Update expected matches.
