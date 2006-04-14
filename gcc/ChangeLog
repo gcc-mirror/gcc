@@ -1,3 +1,9 @@
+2006-04-14  Alexey Starovoytov  <alexey.starovoytov@sun.com>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (emit_and_preserve): Allocate space for the
+	register save area.
+
 2006-04-13  Paolo Bonzini  <bonzini@gnu.org>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
