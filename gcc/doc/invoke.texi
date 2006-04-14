@@ -6191,6 +6191,12 @@ feedback is available and may be set to higher values than
 @option{reorder-block-duplicate} since information about the hot spots is more
 accurate.
 
+@item max-sched-ready-insns
+The maximum number of instructions ready to be issued the scheduler should
+consider at any given time during the first scheduling pass.  Increasing
+values mean more thorough searches, making the compilation time increase
+with probably little benefit.  The default value is 100.
+
 @item max-sched-region-blocks
 The maximum number of blocks in a region to be considered for
 interblock scheduling.  The default value is 10.
