@@ -1,5 +1,10 @@
 2006-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	* gfortran.dg/fmt_zero_digits.f90: New test for no error when
+	zero decimal digits specified in format.
+
+2006-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/26980
 	* gfortran.dg/read_size_noadvance.f90: New test.
 
