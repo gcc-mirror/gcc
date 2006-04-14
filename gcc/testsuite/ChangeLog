@@ -1,3 +1,9 @@
+2006-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26823
+	* g++.dg/gomp/pr26823-1.C: New test.
+	* g++.dg/gomp/pr26823-2.C: New test.
+
 2006-04-13  Uros Bizjak  <uros@kss-loka.si>
 
 	PR middle-end/27134

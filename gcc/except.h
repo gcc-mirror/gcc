@@ -108,6 +108,7 @@ extern void expand_resx_expr (tree);
 extern void verify_eh_tree (struct function *);
 extern void dump_eh_tree (FILE *, struct function *);
 extern bool eh_region_outer_p (struct function *, int, int);
+extern int eh_region_outermost (struct function *, int, int);
 
 /* tree-eh.c */
 extern void add_stmt_to_eh_region_fn (struct function *, tree, int);

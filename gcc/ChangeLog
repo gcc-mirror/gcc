@@ -1,3 +1,10 @@
+2006-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26823
+	* except.h (eh_region_outermost): New prototype.
+	* except.c (eh_region_outermost): New function.
+	* tree-cfg.c (find_outermost_region_in_block): Use it.
+
 2006-04-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* local-alloc.c (rest_of_handle_local_alloc): Use VEC instead

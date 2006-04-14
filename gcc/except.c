@@ -1078,6 +1078,48 @@ eh_region_outer_p (struct function *ifun, int region_a, int region_b)
 
   return false;
 }
+
+/* Return region number of region that is outer to both if REGION_A and
+   REGION_B in IFUN.  */
+
+int
+eh_region_outermost (struct function *ifun, int region_a, int region_b)
+{
+  struct eh_region *rp_a, *rp_b;
+  sbitmap b_outer;
+
+  gcc_assert (ifun->eh->last_region_number > 0);
+  gcc_assert (ifun->eh->region_tree);
+
+  rp_a = VEC_index (eh_region, ifun->eh->region_array, region_a);
+  rp_b = VEC_index (eh_region, ifun->eh->region_array, region_b);
+  gcc_assert (rp_a != NULL);
+  gcc_assert (rp_b != NULL);
+
+  b_outer = sbitmap_alloc (ifun->eh->last_region_number + 1);
+  sbitmap_zero (b_outer);
+
+  do
+    {
+      SET_BIT (b_outer, rp_b->region_number);
+      rp_b = rp_b->outer;
+    }
+  while (rp_b);
+
+  do
+    {
+      if (TEST_BIT (b_outer, rp_a->region_number))
+	{
+	  sbitmap_free (b_outer);
+	  return rp_a->region_number;
+	}
+      rp_a = rp_a->outer;
+    }
+  while (rp_a);
+
+  sbitmap_free (b_outer);
+  return -1;
+}
 
 static int
 t2r_eq (const void *pentry, const void *pdata)
