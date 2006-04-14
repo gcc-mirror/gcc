@@ -1,3 +1,13 @@
+2006-04-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* local-alloc.c (rest_of_handle_local_alloc): Use VEC instead
+	of VARRAY.
+	* reload1.c (reg_equiv_memory_loc_varray): Rename to
+	reg_equiv_memory_loc_vec.  Change the type to VEC(rtx,gc) *.
+	(init_reload, reload): Use VEC instead of VARRAY.
+	* reload.h: Update the prototype for
+	reg_equiv_memory_loc_varray.
+
 2006-04-14  Alexey Starovoytov  <alexey.starovoytov@sun.com>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 

@@ -112,7 +112,7 @@ rtx *reg_equiv_memory_loc;
 
 /* We allocate reg_equiv_memory_loc inside a varray so that the garbage
    collector can keep track of what is inside.  */
-varray_type reg_equiv_memory_loc_varray;
+VEC(rtx,gc) *reg_equiv_memory_loc_vec;
 
 /* Element N is the address of stack slot to which pseudo reg N is equivalent.
    This is used when the address is not valid as a memory address
@@ -496,7 +496,6 @@ init_reload (void)
 
   INIT_REG_SET (&spilled_pseudos);
   INIT_REG_SET (&pseudos_counted);
-  VARRAY_RTX_INIT (reg_equiv_memory_loc_varray, 0, "reg_equiv_memory_loc");
 }
 
 /* List of insn chains that are currently unused.  */
@@ -1251,7 +1250,7 @@ reload (rtx first, int global)
     free (reg_equiv_invariant);
   reg_equiv_constant = 0;
   reg_equiv_invariant = 0;
-  VARRAY_GROW (reg_equiv_memory_loc_varray, 0);
+  VEC_free (rtx, gc, reg_equiv_memory_loc_vec);
   reg_equiv_memory_loc = 0;
 
   if (offsets_known_at)

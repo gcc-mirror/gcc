@@ -2537,8 +2537,10 @@ rest_of_handle_local_alloc (void)
   allocate_reg_info (max_regno, FALSE, TRUE);
 
   /* And the reg_equiv_memory_loc array.  */
-  VARRAY_GROW (reg_equiv_memory_loc_varray, max_regno);
-  reg_equiv_memory_loc = &VARRAY_RTX (reg_equiv_memory_loc_varray, 0);
+  VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
+  memset (VEC_address (rtx, reg_equiv_memory_loc_vec), 0,
+	  sizeof (rtx) * max_regno);
+  reg_equiv_memory_loc = VEC_address (rtx, reg_equiv_memory_loc_vec);
 
   allocate_initial_values (reg_equiv_memory_loc);
 
