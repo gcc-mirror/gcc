@@ -8,6 +8,8 @@
 	maybe_end_member_template_processing): Use VEC instead of
 	VARRAY.
 
+	* cp/call.c: Fix comment typos.
+
 2006-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_init_declarator): Initialize local variables
