@@ -1,3 +1,8 @@
+2006-04-14  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-io.c (set_string): Use fold_build2 and build_int_cst instead
+	of build2 and convert to construct "x < 0" rather than "x <= -1".
+
 2006-04-13  Richard Henderson  <rth@redhat.com>
 
 	* trans-openmp.c (gfc_trans_omp_sections): Adjust for changed
