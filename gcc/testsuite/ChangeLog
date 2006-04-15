@@ -1,3 +1,8 @@
+2006-04-15  Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25336
+	* gfortran/dg/g77/20030115-1.f: Delete duplicate test.
+
 2006-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26823
