@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for HPPA.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -6436,27 +6436,27 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
 	  {
 	    nullify = 1;
 	    xdelay = 0;
-	    operands[4] = GEN_INT (length - 8);
+	    operands[4] = GEN_INT (length);
 	  }
 	else
 	  {
 	    xdelay = 1;
-	    operands[4] = GEN_INT (length - 4);
+	    operands[4] = GEN_INT (length + 4);
 	  }
 
 	if (GET_MODE (operands[0]) == DImode)
-	  strcpy (buf, "extrd,s,*");
+	  strcpy (buf, "bb,*");
 	else
-	  strcpy (buf, "{extrs,|extrw,s,}");
+	  strcpy (buf, "bb,");
 	if ((which == 0 && negated)
 	    || (which == 1 && !negated))
-	  strcat (buf, ">= %0,%1,1,%%r0\n\t");
+	  strcat (buf, "<");
 	else
-	  strcat (buf, "< %0,%1,1,%%r0\n\t");
+	  strcat (buf, ">=");
 	if (nullify)
-	  strcat (buf, "b,n .+%4");
+	  strcat (buf, ",n %0,%1,.+%4");
 	else
-	  strcat (buf, "b .+%4");
+	  strcat (buf, " %0,%1,.+%4");
 	output_asm_insn (buf, operands);
 	return output_lbranch (negated ? operands[3] : operands[2],
 			       insn, xdelay);
@@ -6616,27 +6616,27 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
 	  {
 	    nullify = 1;
 	    xdelay = 0;
-	    operands[4] = GEN_INT (length - 8);
+	    operands[4] = GEN_INT (length);
 	  }
 	else
 	  {
 	    xdelay = 1;
-	    operands[4] = GEN_INT (length - 4);
+	    operands[4] = GEN_INT (length + 4);
 	  }
 
 	if (GET_MODE (operands[0]) == DImode)
-	  strcpy (buf, "extrd,s,*");
+	  strcpy (buf, "bb,*");
 	else
-	  strcpy (buf, "{extrs,|extrw,s,}");
+	  strcpy (buf, "{bvb,|bb,}");
 	if ((which == 0 && negated)
 	    || (which == 1 && !negated))
-	  strcat (buf, ">= {%0,%1,1,%%r0|%0,%%sar,1,%%r0}\n\t");
+	  strcat (buf, "<");
 	else
-	  strcat (buf, "< {%0,%1,1,%%r0|%0,%%sar,1,%%r0}\n\t");
+	  strcat (buf, ">=");
 	if (nullify)
-	  strcat (buf, "b,n .+%4");
+	  strcat (buf, ",n {%0,.+%4|%0,%%sar,.+%4}");
 	else
-	  strcat (buf, "b .+%4");
+	  strcat (buf, " {%0,.+%4|%0,%%sar,.+%4}");
 	output_asm_insn (buf, operands);
 	return output_lbranch (negated ? operands[3] : operands[2],
 			       insn, xdelay);
@@ -6763,8 +6763,8 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
 	return "{comclr|cmpclr},%B2 %%r0,%4,%%r0\n\tb %3\n\t{fldws|fldw} -16(%%r30),%0";
       else
 	{
-	  operands[4] = GEN_INT (length - 24);
-	  output_asm_insn ("addib,%N2 %1,%0,.+%4", operands);
+	  operands[5] = GEN_INT (length - 16);
+	  output_asm_insn ("{comb|cmpb},%B2 %%r0,%4,.+%5", operands);
 	  output_asm_insn ("{fldws|fldw} -16(%%r30),%0", operands);
 	  return output_lbranch (operands[3], insn, 0);
 	}
@@ -6781,8 +6781,8 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
 	return "addi,%N2 %1,%4,%4\n\tb %3\n\tstw %4,%0";
       else
 	{
-	  operands[5] = GEN_INT (length - 12);
-	  output_asm_insn ("addib,%N2 %1,%0,.+%5\n\tstw %4,%0", operands);
+	  operands[5] = GEN_INT (length - 4);
+	  output_asm_insn ("addib,%N2 %1,%4,.+%5\n\tstw %4,%0", operands);
 	  return output_lbranch (operands[3], insn, 0);
 	}
     }
@@ -6906,8 +6906,8 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
 	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\t{fldws|fldw} -16(%%r30),%0";
       else
 	{
-	  operands[4] = GEN_INT (length - 12);
-	  output_asm_insn ("movb,%N2 %1,%0,.+%4", operands);
+	  operands[4] = GEN_INT (length - 4);
+	  output_asm_insn ("{comb|cmpb},%B2 %%r0,%1,.+%4", operands);
 	  output_asm_insn ("{fldws|fldw} -16(%%r30),%0", operands);
 	  return output_lbranch (operands[3], insn, 0);
 	}
@@ -6923,8 +6923,9 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
 	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\tstw %1,%0";
       else
 	{
-	  operands[4] = GEN_INT (length - 8);
-	  output_asm_insn ("movb,%N2 %1,%0,.+%4\n\tstw %1,%0", operands);
+	  operands[4] = GEN_INT (length);
+	  output_asm_insn ("{comb|cmpb},%B2 %%r0,%1,.+%4\n\tstw %1,%0",
+			   operands);
 	  return output_lbranch (operands[3], insn, 0);
 	}
     }
@@ -6937,8 +6938,9 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
 	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\tmtsar %r1";
       else
 	{
-	  operands[4] = GEN_INT (length - 8);
-	  output_asm_insn ("movb,%N2 %1,%0,.+%4\n\tmtsar %r1", operands);
+	  operands[4] = GEN_INT (length);
+	  output_asm_insn ("{comb|cmpb},%B2 %%r0,%1,.+%4\n\tmtsar %r1",
+			   operands);
 	  return output_lbranch (operands[3], insn, 0);
 	}
     }

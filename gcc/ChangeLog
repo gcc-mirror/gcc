@@ -1,3 +1,14 @@
+2006-04-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (output_bb patterns): Shorten long branch alternatives by 4.
+	(output_bvb patterns): Likewise.
+	* pa.c (output_bb): Use 'bb' insn for long branch case.
+	(output_bvb): Likewise use '{bvb|bb}' for long branch case.
+	(output_dbra): Use '{comb|cmpb}' for long branch case for alternative
+	1.  Correct length operand for alternatives 1 and 2.
+	(output_movb): Use '{comb|cmpb}' for long branch case for alternatives
+	1, 2 and 3.  Correct length operand for alternatives 1, 2 and 3.
+
 2006-04-14  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-cfg.c (make_edges, make_omp_sections_edges, move_stmt_r,
