@@ -1,3 +1,13 @@
+2006-04-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Make-lang.in (cp/pt.o): Depend on vecprim.h.
+	* pt.c: Include vecprim.h.
+	(inline_parm_levels): Change the type to VEC(int,heap) *.
+	(inline_parm_levels_used): Remove.
+	(maybe_begin_member_template_processing,
+	maybe_end_member_template_processing): Use VEC instead of
+	VARRAY.
+
 2006-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_init_declarator): Initialize local variables

@@ -45,6 +45,7 @@ Boston, MA 02110-1301, USA.  */
 #include "rtl.h"
 #include "timevar.h"
 #include "tree-iterator.h"
+#include "vecprim.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -63,8 +64,7 @@ int processing_template_parmlist;
 static int template_header_count;
 
 static GTY(()) tree saved_trees;
-static GTY(()) varray_type inline_parm_levels;
-static size_t inline_parm_levels_used;
+static VEC(int,heap) *inline_parm_levels;
 
 static GTY(()) tree current_tinst_level;
 
@@ -396,12 +396,7 @@ maybe_begin_member_template_processing (tree decl)
 
   /* Remember how many levels of template parameters we pushed so that
      we can pop them later.  */
-  if (!inline_parm_levels)
-    VARRAY_INT_INIT (inline_parm_levels, 4, "inline_parm_levels");
-  if (inline_parm_levels_used == inline_parm_levels->num_elements)
-    VARRAY_GROW (inline_parm_levels, 2 * inline_parm_levels_used);
-  VARRAY_INT (inline_parm_levels, inline_parm_levels_used) = levels;
-  ++inline_parm_levels_used;
+  VEC_safe_push (int, heap, inline_parm_levels, levels);
 }
 
 /* Undo the effects of maybe_begin_member_template_processing.  */
@@ -410,14 +405,13 @@ void
 maybe_end_member_template_processing (void)
 {
   int i;
+  int last;
 
-  if (!inline_parm_levels_used)
+  if (VEC_length (int, inline_parm_levels) == 0)
     return;
 
-  --inline_parm_levels_used;
-  for (i = 0;
-       i < VARRAY_INT (inline_parm_levels, inline_parm_levels_used);
-       ++i)
+  last = VEC_pop (int, inline_parm_levels);
+  for (i = 0; i < last; ++i)
     {
       --processing_template_decl;
       current_template_parms = TREE_CHAIN (current_template_parms);
