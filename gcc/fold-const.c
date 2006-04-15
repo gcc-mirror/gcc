@@ -7097,7 +7097,7 @@ native_interpret_vector (tree type, unsigned char *ptr, int len)
 }
 
 
-/* Subroutine of fold_view_convert_expr.  Interpet the contents of
+/* Subroutine of fold_view_convert_expr.  Interpret the contents of
    the buffer PTR of length LEN as a constant of type TYPE.  For
    INTEGRAL_TYPE_P we return an INTEGER_CST, for SCALAR_FLOAT_TYPE_P
    we return a REAL_CST, etc...  If the buffer cannot be interpreted,

@@ -1,3 +1,9 @@
+2006-04-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfgcleanup.c, config/dfp-bit.c, expr.c, fold-const.c,
+	jump.c, mips-tfile.c, omp-low.c, sched-int.h,
+	tree-ssa-loop-prefetch.c, tree-vrp.c: Fix comment typos.
+
 2006-04-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (output_bb patterns): Shorten long branch alternatives by 4.

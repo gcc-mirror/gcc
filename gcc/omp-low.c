@@ -2233,10 +2233,10 @@ remove_exit_barrier (struct omp_region *region)
   exit_bb = region->exit;
 
   /* The last insn in the block will be the parallel's OMP_RETURN.  The
-     workshare's OMP_RETURN will be in a preceeding block.  The kinds of
+     workshare's OMP_RETURN will be in a preceding block.  The kinds of
      statements that can appear in between are extremely limited -- no
      memory operations at all.  Here, we allow nothing at all, so the
-     only thing we allow to preceed this OMP_RETURN is a label.  */
+     only thing we allow to precede this OMP_RETURN is a label.  */
   si = bsi_last (exit_bb);
   gcc_assert (TREE_CODE (bsi_stmt (si)) == OMP_RETURN);
   bsi_prev (&si);
