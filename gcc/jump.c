@@ -21,7 +21,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
 /* This is the pathetic reminder of old fame of the jump-optimization pass
-   of the compiler.  Now it contains basically set of utility function to
+   of the compiler.  Now it contains basically a set of utility functions to
    operate with jumps.
 
    Each CODE_LABEL has a count of the times it is used

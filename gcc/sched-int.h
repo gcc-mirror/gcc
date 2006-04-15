@@ -437,7 +437,7 @@ enum SPEC_TYPES_OFFSETS {
 
 /* This dependence is to the instruction in the recovery block, that was
    formed to recover after control-speculation failure.
-   Thus, this dependence can be be overcome with generating of the copy of
+   Thus, this dependence can be overcome with generating of the copy of
    this instruction in the recovery block.  */
 #define BE_IN_CONTROL (((ds_t) DEP_WEAK_MASK) << BE_IN_CONTROL_BITS_OFFSET)
 

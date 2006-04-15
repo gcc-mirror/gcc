@@ -7717,7 +7717,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       else if (!MEM_P (op0))
 	{
 	  /* If the operand is not a MEM, force it into memory.  Since we
-	     are going to be be changing the mode of the MEM, don't call
+	     are going to be changing the mode of the MEM, don't call
 	     force_const_mem for constants because we don't allow pool
 	     constants to change mode.  */
 	  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));

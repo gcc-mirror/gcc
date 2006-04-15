@@ -1703,7 +1703,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	  new_max = fold_convert (outer_type, orig_max);
 
 	  /* Verify the new min/max values are gimple values and
-	     that they compare equal to the orignal input's
+	     that they compare equal to the original input's
 	     min/max values.  */
 	  if (is_gimple_val (new_min)
 	      && is_gimple_val (new_max)

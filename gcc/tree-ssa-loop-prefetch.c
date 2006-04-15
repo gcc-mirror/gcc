@@ -204,7 +204,7 @@ struct mem_ref
   struct mem_ref *next;		/* The next reference in the group.  */
 };
 
-/* Dumps information obout reference REF to FILE.  */
+/* Dumps information about reference REF to FILE.  */
 
 static void
 dump_mem_ref (FILE *file, struct mem_ref *ref)

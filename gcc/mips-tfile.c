@@ -4363,7 +4363,7 @@ copy_object (void)
 
 
   /* Read in each of the sections if they exist in the object file.
-     We read things in in the order the mips assembler creates the
+     We read things in the order the mips assembler creates the
      sections, so in theory no extra seeks are done.
 
      For simplicity sake, round each read up to a page boundary,
