@@ -1898,10 +1898,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1926,10 +1926,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1954,10 +1954,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1982,10 +1982,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2010,10 +2010,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2038,10 +2038,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2066,10 +2066,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2094,10 +2094,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 ;; Branch on Variable Bit patterns.
 (define_insn ""
@@ -2123,10 +2123,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2151,10 +2151,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2179,10 +2179,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2207,10 +2207,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2235,10 +2235,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2263,10 +2263,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2291,10 +2291,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2319,10 +2319,10 @@
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
 	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
-	   (const_int 28)
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
-	   (const_int 24)]
-	  (const_int 32)))])
+	   (const_int 20)]
+	  (const_int 28)))])
 
 ;; Floating point branches
 
