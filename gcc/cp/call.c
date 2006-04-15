@@ -3982,7 +3982,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   if (placement)
     {
-      /* Get the parmaeter types for the allocation function that is
+      /* Get the parameter types for the allocation function that is
 	 being called.  */
       gcc_assert (alloc_fn != NULL_TREE);
       argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
@@ -5452,7 +5452,7 @@ build_new_method_call (tree instance, tree fns, tree args,
 	      /* Now we know what function is being called.  */
 	      if (fn_p)
 		*fn_p = fn;
-	      /* Build the actuall CALL_EXPR.  */
+	      /* Build the actual CALL_EXPR.  */
 	      call = build_over_call (cand, flags);
 	      /* In an expression of the form `a->f()' where `f' turns
 		 out to be a static member function, `a' is
