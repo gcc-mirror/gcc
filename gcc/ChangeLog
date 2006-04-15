@@ -1,3 +1,9 @@
+2006-04-14  Roger Sayle  <roger@eyesopen.com>
+
+	* tree-cfg.c (make_edges, make_omp_sections_edges, move_stmt_r,
+	is_ctrl_altering_stmt): Reinstate RTH's changes from r112935 that
+	were accidentally reverted by r112959.
+
 2006-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26823
@@ -60,7 +66,7 @@
 
 2006-04-13  Richard Henderson  <rth@redhat.com>
 
-	PR 26651
+	PR libgomp/26651
 	* gimple-low.c (lower_omp_directive): Remove dead code.
 	(lower_stmt): Do nothing except for openmp, except for OMP_PARALLEL.
 	* gimplify.c (gimplify_expr): Update for OMP_RETURN, OMP_CONTINUE.
