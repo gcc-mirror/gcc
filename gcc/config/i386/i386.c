@@ -17856,11 +17856,66 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       wvmode = V4HImode;
       goto widen;
     case V8HImode:
+      if (TARGET_SSE2)
+	{
+	  rtx tmp1, tmp2;
+	  /* Extend HImode to SImode using a paradoxical SUBREG.  */
+	  tmp1 = gen_reg_rtx (SImode);
+	  emit_move_insn (tmp1, gen_lowpart (SImode, val));
+	  /* Insert the SImode value as low element of V4SImode vector. */
+	  tmp2 = gen_reg_rtx (V4SImode);
+	  tmp1 = gen_rtx_VEC_MERGE (V4SImode,
+				    gen_rtx_VEC_DUPLICATE (V4SImode, tmp1),
+				    CONST0_RTX (V4SImode),
+				    const1_rtx);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp2, tmp1));
+	  /* Cast the V4SImode vector back to a V8HImode vector.  */
+	  tmp1 = gen_reg_rtx (V8HImode);
+	  emit_move_insn (tmp1, gen_lowpart (V8HImode, tmp2));
+	  /* Duplicate the low short through the whole low SImode word.  */
+	  emit_insn (gen_sse2_punpcklwd (tmp1, tmp1, tmp1));
+	  /* Cast the V8HImode vector back to a V4SImode vector.  */
+	  tmp2 = gen_reg_rtx (V4SImode);
+	  emit_move_insn (tmp2, gen_lowpart (V4SImode, tmp1));
+	  /* Replicate the low element of the V4SImode vector.  */
+	  emit_insn (gen_sse2_pshufd (tmp2, tmp2, const0_rtx));
+	  /* Cast the V2SImode back to V8HImode, and store in target.  */
+	  emit_move_insn (target, gen_lowpart (V8HImode, tmp2));
+	  return true;
+	}
       smode = HImode;
       wsmode = SImode;
       wvmode = V4SImode;
       goto widen;
     case V16QImode:
+      if (TARGET_SSE2)
+	{
+	  rtx tmp1, tmp2;
+	  /* Extend QImode to SImode using a paradoxical SUBREG.  */
+	  tmp1 = gen_reg_rtx (SImode);
+	  emit_move_insn (tmp1, gen_lowpart (SImode, val));
+	  /* Insert the SImode value as low element of V4SImode vector. */
+	  tmp2 = gen_reg_rtx (V4SImode);
+	  tmp1 = gen_rtx_VEC_MERGE (V4SImode,
+				    gen_rtx_VEC_DUPLICATE (V4SImode, tmp1),
+				    CONST0_RTX (V4SImode),
+				    const1_rtx);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp2, tmp1));
+	  /* Cast the V4SImode vector back to a V16QImode vector.  */
+	  tmp1 = gen_reg_rtx (V16QImode);
+	  emit_move_insn (tmp1, gen_lowpart (V16QImode, tmp2));
+	  /* Duplicate the low byte through the whole low SImode word.  */
+	  emit_insn (gen_sse2_punpcklbw (tmp1, tmp1, tmp1));
+	  emit_insn (gen_sse2_punpcklbw (tmp1, tmp1, tmp1));
+	  /* Cast the V16QImode vector back to a V4SImode vector.  */
+	  tmp2 = gen_reg_rtx (V4SImode);
+	  emit_move_insn (tmp2, gen_lowpart (V4SImode, tmp1));
+	  /* Replicate the low element of the V4SImode vector.  */
+	  emit_insn (gen_sse2_pshufd (tmp2, tmp2, const0_rtx));
+	  /* Cast the V2SImode back to V16QImode, and store in target.  */
+	  emit_move_insn (target, gen_lowpart (V16QImode, tmp2));
+	  return true;
+	}
       smode = QImode;
       wsmode = HImode;
       wvmode = V8HImode;
