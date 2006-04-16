@@ -1,5 +1,10 @@
 2006-04-15  Roger Sayle  <roger@eyesopen.com>
 
+	* config/i386/i386.c (ix86_va_start): Ensure all integer constant
+	trees are constructed with a suitable tree type.
+
+2006-04-15  Roger Sayle  <roger@eyesopen.com>
+
 	* tree.c (integer_zerop): Ignore TREE_CONSTANT_OVERFLOW.
 	(integer_onep): Likewise.
 	(integer_all_onesp): Likewise.
