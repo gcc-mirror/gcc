@@ -2046,16 +2046,11 @@ finish_class_member_access_expr (tree object, tree name, bool template_p)
 
       if (TREE_CODE (name) == SCOPE_REF)
 	{
-	  /* A qualified name.  The qualifying class or namespace `S' has
-	     already been looked up; it is either a TYPE or a
-	     NAMESPACE_DECL.  The member name is either an IDENTIFIER_NODE
-	     or a BIT_NOT_EXPR.  */
+	  /* A qualified name.  The qualifying class or namespace `S'
+	     has already been looked up; it is either a TYPE or a
+	     NAMESPACE_DECL.  */
 	  scope = TREE_OPERAND (name, 0);
 	  name = TREE_OPERAND (name, 1);
-	  gcc_assert (CLASS_TYPE_P (scope)
-		      || TREE_CODE (scope) == NAMESPACE_DECL);
-	  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE
-		      || TREE_CODE (name) == BIT_NOT_EXPR);
 
 	  /* If SCOPE is a namespace, then the qualified name does not
 	     name a member of OBJECT_TYPE.  */
@@ -2065,6 +2060,10 @@ finish_class_member_access_expr (tree object, tree name, bool template_p)
 		     scope, name, object_type);
 	      return error_mark_node;
 	    }
+
+	  gcc_assert (CLASS_TYPE_P (scope));
+	  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE
+		      || TREE_CODE (name) == BIT_NOT_EXPR);
 
 	  /* Find the base of OBJECT_TYPE corresponding to SCOPE.  */
 	  access_path = lookup_base (object_type, scope, ba_check, NULL);
