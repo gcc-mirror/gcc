@@ -1,3 +1,8 @@
+2006-04-16  Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/27134
+	* gcc.dg/pr27314.c: New test.
+
 2006-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/fmt_zero_digits.f90: New test for no error when
