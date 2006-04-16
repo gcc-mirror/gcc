@@ -1,4 +1,10 @@
 2006-04-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/25474
+	* expr.c (compress_float_constant): Copy the narrow constant into
+	a new pseudo before extending it to its final width.
+
+2006-04-16  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <pinskia@gcc.gnu.org>
 	    Dale Johannesen  <dalej@apple.com>
 
