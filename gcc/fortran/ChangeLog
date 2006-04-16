@@ -1,3 +1,37 @@
+2006-04-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26822
+	* intrinsic.c (add_functions): Mark LOGICAL as elemental.
+
+	PR fortran/26787
+	* expr.c (gfc_check_assign): Extend scope of error to include
+	assignments to a procedure in the main program or, from a
+	module or internal procedure that is not that represented by
+	the lhs symbol. Use VARIABLE rather than l-value in message.
+
+	PR fortran/27096
+	* trans-array.c (gfc_trans_deferred_array): If the backend_decl
+	is not a descriptor, dereference and then test and use the type.
+
+	PR fortran/25597
+	* trans-decl.c (gfc_trans_deferred_vars): Check if an array
+	result, is also automatic character length.  If so, process
+	the character length.
+
+	PR fortran/18803
+	PR fortran/25669
+	PR fortran/26834
+	* trans_intrinsic.c (gfc_walk_intrinsic_bound): Set
+	data.info.dimen for bound intrinsics.
+	* trans_array.c (gfc_conv_ss_startstride): Pick out LBOUND and
+	UBOUND intrinsics and supply their shape information to the ss
+	and the loop.
+
+	PR fortran/27124
+	* trans_expr.c (gfc_trans_function_call):  Add a new block, post,
+	in to which all the argument post blocks are put.  Add this block
+	to se->pre after a byref call or to se->post, otherwise.
+
 2006-04-14  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-io.c (set_string): Use fold_build2 and build_int_cst instead

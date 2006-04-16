@@ -2393,6 +2393,18 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	  loop->dimen = ss->data.info.dimen;
 	  break;
 
+	/* As usual, lbound and ubound are exceptions!.  */
+	case GFC_SS_INTRINSIC:
+	  switch (ss->expr->value.function.isym->generic_id)
+	    {
+	    case GFC_ISYM_LBOUND:
+	    case GFC_ISYM_UBOUND:
+	      loop->dimen = ss->data.info.dimen;
+
+	    default:
+	      break;
+	    }
+
 	default:
 	  break;
 	}
@@ -2417,6 +2429,17 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	  for (n = 0; n < ss->data.info.dimen; n++)
 	    gfc_conv_section_startstride (loop, ss, n);
 	  break;
+
+	case GFC_SS_INTRINSIC:
+	  switch (ss->expr->value.function.isym->generic_id)
+	    {
+	    /* Fall through to supply start and stride.  */
+	    case GFC_ISYM_LBOUND:
+	    case GFC_ISYM_UBOUND:
+	      break;
+	    default:
+	      continue;
+	    }
 
 	case GFC_SS_CONSTRUCTOR:
 	case GFC_SS_FUNCTION:
@@ -4391,7 +4414,14 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
 
   /* Get the descriptor type.  */
   type = TREE_TYPE (sym->backend_decl);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+  if (!GFC_DESCRIPTOR_TYPE_P (type))
+    {
+      /* If the backend_decl is not a descriptor, we must have a pointer
+	 to one.  */
+      descriptor = build_fold_indirect_ref (sym->backend_decl);
+      type = TREE_TYPE (descriptor);
+      gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+    }
 
   /* NULLIFY the data pointer.  */
   gfc_conv_descriptor_data_set (&fnblock, descriptor, null_pointer_node);

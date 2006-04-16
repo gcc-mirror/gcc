@@ -1,3 +1,25 @@
+2006-04-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/26787
+	* gfortran.dg/proc_assign_1.f90: New test.
+	* gfortran.dg/procedure_lvalue.f90: Change message.
+	* gfortran.dg/namelist_4.f90: Add new error.
+
+	PR fortran/25597
+	PR fortran/27096
+	* gfortran.dg/auto_pointer_array_result_1.f90
+
+	PR fortran/27089
+	* gfortran.dg/specification_type_resolution_1.f90
+
+	PR fortran/18803
+	PR fortran/25669
+	PR fortran/26834
+	* gfortran.dg/bounds_temporaries_1.f90: New test.
+
+	PR fortran/27124
+	* gfortran.dg/array_return_value_1.f90: New test.
+
 2006-04-15  Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25336
