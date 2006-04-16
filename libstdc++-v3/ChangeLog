@@ -1,3 +1,12 @@
+2006-04-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/6702 (again)
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Don't check non-C99
+	wchar_t functions...
+	(GLIBCXX_ENABLE_WCHAR_T): ... do that here.
+	* configure.ac: Adjust order of checks.
+	* configure: Regenerate.
+
 2006-04-14  Douglas Gregor  <dgregor@cs.indiana.edu>
 
 	PR libstdc++/27162
