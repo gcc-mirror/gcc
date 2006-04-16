@@ -52,11 +52,6 @@ struct alias_info
   /* Number of const/pure function calls found in the program.  */
   size_t num_pure_const_calls_found;
 
-  /* Array of counters to keep track of how many times each pointer has
-     been dereferenced in the program.  This is used by the alias grouping
-     heuristic in compute_flow_insensitive_aliasing.  */
-  varray_type num_references;
-
   /* Total number of virtual operands that will be needed to represent
      all the aliases of all the pointers found in the program.  */
   long total_alias_vops;
