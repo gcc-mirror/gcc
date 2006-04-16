@@ -1,3 +1,11 @@
+2006-04-16  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@gcc.gnu.org>
+	    Dale Johannesen  <dalej@apple.com>
+
+	PR target/24076
+	* config/i386/i386.c (ix86_expand_vector_init_duplicate): Add
+	special case code to implement V8HImode and V16QImode with SSE2.
+
 2006-04-15  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (ix86_va_start): Ensure all integer constant

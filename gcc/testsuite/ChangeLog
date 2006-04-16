@@ -1,7 +1,15 @@
+2006-04-16  Roger Sayle  <roger@eyesopen.com>
+	    Dale Johannesen  <dalej@apple.com>
+
+	PR target/24076
+	* gcc.target/i386/vecinit-3.c: New testcase.
+	* gcc.target/i386/vecinit-4.c: Likewise.
+	* gcc.target/i386/sse-18.c: Likewise.
+	* gcc.target/i386/sse-19.c: Likewise.
+
 2006-04-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
         * gfortran.dg/allocate_zerosize_1.f90:  New test.
-
 
 2006-04-16  Mark Mitchell  <mark@codesourcery.com>
 
