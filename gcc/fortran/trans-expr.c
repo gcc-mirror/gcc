@@ -1832,6 +1832,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   gfc_charlen cl;
   gfc_expr *e;
   gfc_symbol *fsym;
+  stmtblock_t post;
 
   arglist = NULL_TREE;
   retargs = NULL_TREE;
@@ -1861,6 +1862,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   else
     info = NULL;
 
+  gfc_init_block (&post);
   gfc_init_interface_mapping (&mapping);
   need_interface_mapping = ((sym->ts.type == BT_CHARACTER
 				  && sym->ts.cl->length
@@ -1970,7 +1972,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	gfc_add_interface_mapping (&mapping, fsym, &parmse);
 
       gfc_add_block_to_block (&se->pre, &parmse.pre);
-      gfc_add_block_to_block (&se->post, &parmse.post);
+      gfc_add_block_to_block (&post, &parmse.post);
 
       /* Character strings are passed as two parameters, a length and a
          pointer.  */
@@ -2176,6 +2178,12 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	}
     }
+
+  /* Follow the function call with the argument post block.  */
+  if (byref)
+    gfc_add_block_to_block (&se->pre, &post);
+  else
+    gfc_add_block_to_block (&se->post, &post);
 
   return has_alternate_specifier;
 }
