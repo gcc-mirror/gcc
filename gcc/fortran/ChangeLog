@@ -1,3 +1,12 @@
+2006-04-16  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/26017
+	* trans-array.c(gfc_array_init_size):  Introduce or_expr
+	which is true if the size along any dimension
+	is negative.  Create a temporary variable with base
+	name size.  If or_expr is true, set the temporary to 0,
+	to the normal size otherwise.
+
 2006-04-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/26822
