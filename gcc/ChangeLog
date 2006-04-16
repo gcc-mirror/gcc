@@ -1,3 +1,17 @@
+2006-04-15  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.c (integer_zerop): Ignore TREE_CONSTANT_OVERFLOW.
+	(integer_onep): Likewise.
+	(integer_all_onesp): Likewise.
+	(integer_pow2p): Likewise.
+	(integer_nonzerop): Likewise.
+	(real_zerop): Likewise.
+	(real_onep): Likewise.
+	(real_twop): Likewise.
+	(real_minus_onep): Likewise.
+	(int_size_in_bytes): Likewise.
+	(host_integerp): Likewise.
+
 2006-04-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgcleanup.c, config/dfp-bit.c, expr.c, fold-const.c,
