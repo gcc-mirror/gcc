@@ -3346,7 +3346,11 @@ compress_float_constant (rtx x, rtx y)
 	}
       else
 	continue;
- 
+
+      /* For CSE's benefit, force the compressed constant pool entry
+	 into a new pseudo.  This constant may be used in different modes,
+	 and if not, combine will put things back together for us.  */
+      trunc_y = force_reg (srcmode, trunc_y);
       emit_unop_insn (ic, x, trunc_y, UNKNOWN);
       last_insn = get_last_insn ();
 
