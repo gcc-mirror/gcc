@@ -4,6 +4,8 @@
 	jump.c, mips-tfile.c, omp-low.c, sched-int.h,
 	tree-ssa-loop-prefetch.c, tree-vrp.c: Fix comment typos.
 
+	* tree-ssa-structalias.h (alias_info): Remove num_references.
+
 2006-04-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (output_bb patterns): Shorten long branch alternatives by 4.
