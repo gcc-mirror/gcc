@@ -30,4 +30,4 @@ define(rtype_qual,`_'rtype_kind)dnl
 define(atype_max, atype_name`_HUGE')dnl
 define(atype_min, `-'atype_max)dnl
 define(name, regexp(regexp(file, `[^/]*$', `\&'), `^\([^_]*\)_', `\1'))dnl
-define(rtype_ccode,ifelse(rtype_letter,`c',rtype_code,rtype_kind))dnl
+define(rtype_ccode,ifelse(rtype_letter,`i',rtype_kind,rtype_code))dnl
