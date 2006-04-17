@@ -1,3 +1,20 @@
+2006-04-16  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* target.h (struct gcc_target): Add mode_rep_extended.
+	* rtlanal.c (num_sign_bit_copies_in_rep): New global.
+	(init_num_sign_bit_copies_in_rep): Initialize it using
+	mode_rep_extended.
+	(truncate_to_mode): Use it.
+	(init_rtlanal): Call init_num_sign_bit_copies_in_rep.
+	* targhooks.h (default_mode_rep_extended): Declare it.
+	* targhooks.c (default_mode_rep_extended): Define it.
+	* target-def.h (TARGET_MODE_REP_EXTENDED): New macro.  Default to
+	default_mode_rep_extended.
+	(TARGET_INITIALIZER): Include it.
+	* doc/tm.texi (Misc): Document it.
+	* config/mips/mips.c (TARGET_TRUNCATED_TO_MODE): Override it.
+	(mips_truncated_to_mode): New function.
+
 2006-04-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/25474

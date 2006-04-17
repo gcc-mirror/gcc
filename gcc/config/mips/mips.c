@@ -409,6 +409,7 @@ static rtx mips_expand_builtin_compare (enum mips_builtin_type,
 static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
 static void mips_encode_section_info (tree, rtx, int);
 static void mips_extra_live_on_entry (bitmap);
+static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -1138,6 +1139,9 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 #define TARGET_CALLEE_COPIES mips_callee_copies
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES mips_arg_partial_bytes
+
+#undef TARGET_MODE_REP_EXTENDED
+#define TARGET_MODE_REP_EXTENDED mips_mode_rep_extended
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P mips_vector_mode_supported_p
@@ -10725,5 +10729,15 @@ mips_extra_live_on_entry (bitmap regs)
     bitmap_set_bit (regs, PIC_FUNCTION_ADDR_REGNUM);
 }
 
+/* SImode values are represented as sign-extended to DImode.  */
+
+int
+mips_mode_rep_extended (enum machine_mode mode, enum machine_mode mode_rep)
+{
+  if (TARGET_64BIT && mode == SImode && mode_rep == DImode)
+    return SIGN_EXTEND;
+
+  return UNKNOWN;
+}
 
 #include "gt-mips.h"
