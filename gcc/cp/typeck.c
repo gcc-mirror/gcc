@@ -4496,7 +4496,7 @@ cxx_mark_addressable (tree exp)
 		  ("address of explicit register variable %qD requested", x);
 		return false;
 	      }
-	    else
+	    else if (extra_warnings)
 	      warning
 		(OPT_Wextra, "address requested for %qD, which is declared %<register%>", x);
 	  }

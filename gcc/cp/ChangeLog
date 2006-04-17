@@ -1,3 +1,9 @@
+2006-04-17  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c++/26114, c++/26115
+	* typeck.c (cxx_mark_addressable): Restore check for extra_warnings.
+	* class.c (check_field_decls): Ditto.
+
 2006-04-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* init.c (build_offset_ref): Remove superfluous temporary.
