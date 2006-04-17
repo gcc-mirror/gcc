@@ -1575,7 +1575,8 @@ update_call_expr (struct cgraph_node *new_version)
 
 static struct cgraph_node *
 cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
-				 tree new_decl, varray_type redirect_callers)
+				 tree new_decl,
+				 VEC(cgraph_edge_p,heap) *redirect_callers)
  {
    struct cgraph_node *new_version;
    struct cgraph_edge *e, *new_e;
@@ -1614,14 +1615,12 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
        if (!next_callee)
 	 break;
      }
-   if (redirect_callers)
-     for (i = 0; i < VARRAY_ACTIVE_SIZE (redirect_callers); i++)
-       {
-         e = VARRAY_GENERIC_PTR (redirect_callers, i);
-	 /* Redirect calls to the old version node
-	    to point to it's new version.  */
-         cgraph_redirect_edge_callee (e, new_version);
-       }
+   for (i = 0; VEC_iterate (cgraph_edge_p, redirect_callers, i, e); i++)
+     {
+       /* Redirect calls to the old version node to point to its new
+	  version.  */
+       cgraph_redirect_edge_callee (e, new_version);
+     }
 
    return new_version;
  }
@@ -1641,7 +1640,7 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 
 struct cgraph_node *
 cgraph_function_versioning (struct cgraph_node *old_version_node,
-			    varray_type redirect_callers,
+			    VEC(cgraph_edge_p,heap) *redirect_callers,
 			    varray_type tree_map)
 {
   tree old_decl = old_version_node->decl;

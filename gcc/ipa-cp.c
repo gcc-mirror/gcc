@@ -1005,7 +1005,8 @@ ipcp_insert_stage (void)
   struct cgraph_node *node, *node1 = NULL;
   int i, const_param;
   union parameter_info *cvalue;
-  varray_type redirect_callers, replace_trees;
+  VEC(cgraph_edge_p,heap) *redirect_callers;
+  varray_type replace_trees;
   struct cgraph_edge *cs;
   int node_callers, count;
   tree parm_tree;
@@ -1045,15 +1046,14 @@ ipcp_insert_stage (void)
       node_callers = 0;
       for (cs = node->callers; cs != NULL; cs = cs->next_caller)
 	node_callers++;
-      VARRAY_GENERIC_PTR_INIT (redirect_callers, node_callers,
-			       "redirect_callers");
+      redirect_callers = VEC_alloc (cgraph_edge_p, heap, node_callers);
       for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-	VARRAY_PUSH_GENERIC_PTR (redirect_callers, cs);
+	VEC_quick_push (cgraph_edge_p, redirect_callers, cs);
       /* Redirecting all the callers of the node to the
          new versioned node.  */
       node1 =
 	cgraph_function_versioning (node, redirect_callers, replace_trees);
-      VARRAY_CLEAR (redirect_callers);
+      VEC_free (cgraph_edge_p, heap, redirect_callers);
       VARRAY_CLEAR (replace_trees);
       if (node1 == NULL)
 	continue;
