@@ -248,8 +248,11 @@ static bool *reg_known_equiv_p;
    NOTE_INSN_FUNCTION_BEG note.  */
 static bool copying_arguments;
 
+DEF_VEC_P(alias_set_entry);
+DEF_VEC_ALLOC_P(alias_set_entry,gc);
+
 /* The splay-tree used to store the various alias set entries.  */
-static GTY ((param_is (struct alias_set_entry))) varray_type alias_sets;
+static GTY (()) VEC(alias_set_entry,gc) *alias_sets;
 
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
@@ -257,7 +260,7 @@ static GTY ((param_is (struct alias_set_entry))) varray_type alias_sets;
 static inline alias_set_entry
 get_alias_set_entry (HOST_WIDE_INT alias_set)
 {
-  return (alias_set_entry)VARRAY_GENERIC_PTR (alias_sets, alias_set);
+  return VEC_index (alias_set_entry, alias_sets, alias_set);
 }
 
 /* Returns nonzero if the alias sets for MEM1 and MEM2 are such that
@@ -622,18 +625,15 @@ get_alias_set (tree t)
 
 /* Return a brand-new alias set.  */
 
-static GTY(()) HOST_WIDE_INT last_alias_set;
-
 HOST_WIDE_INT
 new_alias_set (void)
 {
   if (flag_strict_aliasing)
     {
-      if (!alias_sets)
-	VARRAY_GENERIC_PTR_INIT (alias_sets, 10, "alias sets");
-      else
-	VARRAY_GROW (alias_sets, last_alias_set + 2);
-      return ++last_alias_set;
+      if (alias_sets == 0)
+	VEC_safe_push (alias_set_entry, gc, alias_sets, 0);
+      VEC_safe_push (alias_set_entry, gc, alias_sets, 0);
+      return VEC_length (alias_set_entry, alias_sets) - 1;
     }
   else
     return 0;
@@ -675,7 +675,7 @@ record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
       superset_entry->children
 	= splay_tree_new_ggc (splay_tree_compare_ints);
       superset_entry->has_zero_child = 0;
-      VARRAY_GENERIC_PTR (alias_sets, superset) = superset_entry;
+      VEC_replace (alias_set_entry, alias_sets, superset, superset_entry);
     }
 
   if (subset == 0)
