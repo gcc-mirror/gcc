@@ -1,3 +1,9 @@
+2006-04-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/26961
+	* gcc.dg/fold-cond-1.c: New test case.
+	* gcc.dg/pr26961-1.c: Likewise.
+
 2006-04-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27138
