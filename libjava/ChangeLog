@@ -1,3 +1,8 @@
+2006-04-17  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.lang/stringconst2.java: Print a stack trace in case
+	of failure.
+
 2006-04-13  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/26522:
