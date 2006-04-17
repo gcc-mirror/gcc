@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2003  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -36,7 +36,7 @@ public class Output_UTF8 extends UnicodeToBytes
     int avail = buf.length - count;
     for (;;)
       {
-	if (avail == 0 || (inlength == 0 && bytes_todo == 0))
+	if (avail == 0 || (inlength == 0 && bytes_todo == 0 && hi_part == 0))
 	  break;
 	// The algorithm is made more complicated because we want to write
 	// at least one byte in the output buffer, if there is room for
@@ -61,22 +61,40 @@ public class Output_UTF8 extends UnicodeToBytes
 	    continue;
 	  }
 
+	// Handle a high surrogate at the end of the input stream.
+	if (inlength == 0 && hi_part != 0)
+	  {
+	    buf[count++] = (byte) (0xE0 | (hi_part >> 12));
+	    value = hi_part;
+	    hi_part = 0;
+	    avail--;
+	    bytes_todo = 2;
+	    continue;
+	  }
+
 	char ch = inbuffer[inpos++];
 	inlength--;
 
-	if ((hi_part != 0 && (ch <= 0xDBFF || ch > 0xDFFF))
-	    || (hi_part == 0 && ch >= 0xDC00 && ch <= 0xDFFF))
+	if (hi_part != 0 && (ch <= 0xDBFF || ch > 0xDFFF))
 	  {
 	    // If the previous character was a high surrogate, and we
 	    // don't now have a low surrogate, we print the high
-	    // surrogate as an isolated character.  If this character
-	    // is a low surrogate and we didn't previously see a high
-	    // surrogate, we do the same thing.
+	    // surrogate as an isolated character.
 	    --inpos;
 	    ++inlength;
 	    buf[count++] = (byte) (0xE0 | (hi_part >> 12));
 	    value = hi_part;
 	    hi_part = 0;
+	    avail--;
+	    bytes_todo = 2;
+	  }
+	else if (hi_part == 0 && ch >= 0xDC00 && ch <= 0xDFFF)
+	  {
+	    // If this character is a low surrogate and we didn't
+	    // previously see a high surrogate, we do the same thing
+	    // as above.
+	    buf[count++] = (byte) (0xE0 | (ch >> 12));
+	    value = ch;
 	    avail--;
 	    bytes_todo = 2;
 	  }
@@ -122,7 +140,7 @@ public class Output_UTF8 extends UnicodeToBytes
 
   public boolean havePendingBytes()
   {
-    return bytes_todo > 0;
+    return bytes_todo > 0 || hi_part != 0;
   }
 
 }

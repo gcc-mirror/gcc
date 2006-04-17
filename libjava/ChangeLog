@@ -1,3 +1,13 @@
+2006-04-17  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/27171:
+	* testsuite/libjava.lang/pr27171.java: New file.
+	* testsuite/libjava.lang/pr27171.out: New file.
+	* gnu/gcj/convert/Output_UTF8.java (havePendingBytes): Return
+	true if we've seen a high surrogate.
+	(write): Handle high surrogates at the end of the stream.
+	Properly emit isolated low surrogates.
+
 2006-04-17  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libjava.lang/stringconst2.java: Print a stack trace in case
