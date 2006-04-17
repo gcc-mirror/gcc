@@ -1,3 +1,9 @@
+2006-04-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/26961
+	* fold-const.c (fold_ternary): When converting "A ? B : C" into either
+	"A op B" or "A op C", we may need to convert A to the type of B and C.
+
 2006-04-16  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* target.h (struct gcc_target): Add mode_rep_extended.
