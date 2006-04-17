@@ -11,6 +11,12 @@
 	VEC instead of VARRAY.
 	(last_alias_set): Remove.
 
+	* cgraph.h (cgraph_edge_p): New.
+	Update the prototype of cgraph_function_versioning.
+	* cgraphunit.c (cgraph_copy_node_for_versioning,
+	cgraph_function_versioning): Use VEC instead of VARRAY.
+	* ipa-cp.c (ipcp_insert_stage): Likewise.
+
 2006-04-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26961

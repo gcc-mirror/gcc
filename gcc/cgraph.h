@@ -189,6 +189,11 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_call
   int loop_nest;
 };
 
+typedef struct cgraph_edge *cgraph_edge_p;
+
+DEF_VEC_P(cgraph_edge_p);
+DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
+
 /* The cgraph_varpool data structure.
    Each static variable decl has assigned cgraph_varpool_node.  */
 
@@ -307,7 +312,8 @@ void cgraph_build_static_cdtor (char which, tree body, int priority);
 void cgraph_reset_static_var_maps (void);
 void init_cgraph (void);
 struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
-                                                varray_type, varray_type);
+                                                VEC(cgraph_edge_p,heap)*,
+						varray_type);
 void cgraph_analyze_function (struct cgraph_node *);
 struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 
