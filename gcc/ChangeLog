@@ -5,6 +5,12 @@
 	(REG_BASE_VALUE, find_base_value, record_set,
 	init_alias_analysis): Use VEC instead of VARRAY.
 
+	* alias.c (alias_sets): Change the type to
+	VEC(alias_set_entry,gc) *.
+	(get_alias_set_entry, new_alias_set, record_alias_subset): Use
+	VEC instead of VARRAY.
+	(last_alias_set): Remove.
+
 2006-04-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26961
