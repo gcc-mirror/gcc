@@ -1378,8 +1378,7 @@ build_offset_ref (tree type, tree member, bool address_p)
   if (BASELINK_P (member))
     {
       /* Go from the TREE_BASELINK to the member function info.  */
-      tree fnfields = member;
-      tree t = BASELINK_FUNCTIONS (fnfields);
+      tree t = BASELINK_FUNCTIONS (member);
 
       if (TREE_CODE (t) != TEMPLATE_ID_EXPR && !really_overloaded_fn (t))
 	{
@@ -1405,10 +1404,7 @@ build_offset_ref (tree type, tree member, bool address_p)
 	  member = t;
 	}
       else
-	{
-	  TREE_TYPE (fnfields) = unknown_type_node;
-	  member = fnfields;
-	}
+	TREE_TYPE (member) = unknown_type_node;
     }
   else if (address_p && TREE_CODE (member) == FIELD_DECL)
     /* We need additional test besides the one in
