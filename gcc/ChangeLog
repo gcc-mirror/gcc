@@ -1,3 +1,10 @@
+2006-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* alias.c (reg_base_value, old_reg_base_value): Change the
+	type to VEC(rtx,gc) *.
+	(REG_BASE_VALUE, find_base_value, record_set,
+	init_alias_analysis): Use VEC instead of VARRAY.
+
 2006-04-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26961

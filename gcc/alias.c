@@ -206,21 +206,21 @@ static void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT);
    current function performs nonlocal memory memory references for the
    purposes of marking the function as a constant function.  */
 
-static GTY(()) varray_type reg_base_value;
+static GTY(()) VEC(rtx,gc) *reg_base_value;
 static rtx *new_reg_base_value;
 
 /* We preserve the copy of old array around to avoid amount of garbage
    produced.  About 8% of garbage produced were attributed to this
    array.  */
-static GTY((deletable)) varray_type old_reg_base_value;
+static GTY((deletable)) VEC(rtx,gc) *old_reg_base_value;
 
 /* Static hunks of RTL used by the aliasing code; these are initialized
    once per function to avoid unnecessary RTL allocations.  */
 static GTY (()) rtx static_reg_base_value[FIRST_PSEUDO_REGISTER];
 
-#define REG_BASE_VALUE(X) \
-  (reg_base_value && REGNO (X) < VARRAY_SIZE (reg_base_value) \
-   ? VARRAY_RTX (reg_base_value, REGNO (X)) : 0)
+#define REG_BASE_VALUE(X)				\
+  (REGNO (X) < VEC_length (rtx, reg_base_value)		\
+   ? VEC_index (rtx, reg_base_value, REGNO (X)) : 0)
 
 /* Vector indexed by N giving the initial (unchanging) value known for
    pseudo-register N.  This array is initialized in init_alias_analysis,
@@ -815,7 +815,7 @@ find_base_value (rtx src)
 	 The test above is not sufficient because the scheduler may move
 	 a copy out of an arg reg past the NOTE_INSN_FUNCTION_BEGIN.  */
       if ((regno >= FIRST_PSEUDO_REGISTER || fixed_regs[regno])
-	  && regno < VARRAY_SIZE (reg_base_value))
+	  && regno < VEC_length (rtx, reg_base_value))
 	{
 	  /* If we're inside init_alias_analysis, use new_reg_base_value
 	     to reduce the number of relaxation iterations.  */
@@ -823,8 +823,8 @@ find_base_value (rtx src)
 	      && REG_N_SETS (regno) == 1)
 	    return new_reg_base_value[regno];
 
-	  if (VARRAY_RTX (reg_base_value, regno))
-	    return VARRAY_RTX (reg_base_value, regno);
+	  if (VEC_index (rtx, reg_base_value, regno))
+	    return VEC_index (rtx, reg_base_value, regno);
 	}
 
       return 0;
@@ -968,7 +968,7 @@ record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
 
   regno = REGNO (dest);
 
-  gcc_assert (regno < VARRAY_SIZE (reg_base_value));
+  gcc_assert (regno < VEC_length (rtx, reg_base_value));
 
   /* If this spans multiple hard registers, then we must indicate that every
      register has an unusable value.  */
@@ -2424,24 +2424,16 @@ init_alias_analysis (void)
   reg_known_value = ggc_calloc (reg_known_value_size, sizeof (rtx));
   reg_known_equiv_p = xcalloc (reg_known_value_size, sizeof (bool));
 
-  /* Overallocate reg_base_value to allow some growth during loop
-     optimization.  Loop unrolling can create a large number of
-     registers.  */
+  /* If we have memory allocated from the previous run, use it.  */
   if (old_reg_base_value)
-    {
-      reg_base_value = old_reg_base_value;
-      /* If varray gets large zeroing cost may get important.  */
-      if (VARRAY_SIZE (reg_base_value) > 256
-          && VARRAY_SIZE (reg_base_value) > 4 * maxreg)
-	VARRAY_GROW (reg_base_value, maxreg);
-      VARRAY_CLEAR (reg_base_value);
-      if (VARRAY_SIZE (reg_base_value) < maxreg)
-	VARRAY_GROW (reg_base_value, maxreg);
-    }
-  else
-    {
-      VARRAY_RTX_INIT (reg_base_value, maxreg, "reg_base_value");
-    }
+    reg_base_value = old_reg_base_value;
+
+  if (reg_base_value)
+    VEC_truncate (rtx, reg_base_value, 0);
+
+  VEC_safe_grow (rtx, gc, reg_base_value, maxreg);
+  memset (VEC_address (rtx, reg_base_value), 0,
+	  sizeof (rtx) * VEC_length (rtx, reg_base_value));
 
   new_reg_base_value = XNEWVEC (rtx, maxreg);
   reg_seen = XNEWVEC (char, maxreg);
@@ -2576,11 +2568,11 @@ init_alias_analysis (void)
       for (ui = 0; ui < maxreg; ui++)
 	{
 	  if (new_reg_base_value[ui]
-	      && new_reg_base_value[ui] != VARRAY_RTX (reg_base_value, ui)
+	      && new_reg_base_value[ui] != VEC_index (rtx, reg_base_value, ui)
 	      && ! rtx_equal_p (new_reg_base_value[ui],
-				VARRAY_RTX (reg_base_value, ui)))
+				VEC_index (rtx, reg_base_value, ui)))
 	    {
-	      VARRAY_RTX (reg_base_value, ui) = new_reg_base_value[ui];
+	      VEC_replace (rtx, reg_base_value, ui, new_reg_base_value[ui]);
 	      changed = 1;
 	    }
 	}
@@ -2609,15 +2601,15 @@ init_alias_analysis (void)
       pass++;
       for (ui = 0; ui < maxreg; ui++)
 	{
-	  rtx base = VARRAY_RTX (reg_base_value, ui);
+	  rtx base = VEC_index (rtx, reg_base_value, ui);
 	  if (base && REG_P (base))
 	    {
 	      unsigned int base_regno = REGNO (base);
 	      if (base_regno == ui)		/* register set from itself */
-		VARRAY_RTX (reg_base_value, ui) = 0;
+		VEC_replace (rtx, reg_base_value, ui, 0);
 	      else
-		VARRAY_RTX (reg_base_value, ui)
-		  = VARRAY_RTX (reg_base_value, base_regno);
+		VEC_replace (rtx, reg_base_value, ui,
+			     VEC_index (rtx, reg_base_value, base_regno));
 	      changed = 1;
 	    }
 	}
