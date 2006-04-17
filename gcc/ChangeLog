@@ -1,3 +1,9 @@
+2006-04-17  Richard Guenther  <rguenther@suse.de>
+
+	PR target/26826
+	* reload.c (push_reload): Guard calls to get_secondary_mem
+	for memory subregs.
+
 2006-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* alias.c (reg_base_value, old_reg_base_value): Change the

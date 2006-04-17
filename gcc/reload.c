@@ -1286,7 +1286,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 
 #ifdef SECONDARY_MEMORY_NEEDED
       /* If a memory location is needed for the copy, make one.  */
-      if (in != 0 && (REG_P (in) || GET_CODE (in) == SUBREG)
+      if (in != 0
+	  && (REG_P (in)
+	      || (GET_CODE (in) == SUBREG && REG_P (SUBREG_REG (in))))
 	  && reg_or_subregno (in) < FIRST_PSEUDO_REGISTER
 	  && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (reg_or_subregno (in)),
 				      class, inmode))
@@ -1316,7 +1318,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
       n_reloads++;
 
 #ifdef SECONDARY_MEMORY_NEEDED
-      if (out != 0 && (REG_P (out) || GET_CODE (out) == SUBREG)
+      if (out != 0
+          && (REG_P (out)
+	      || (GET_CODE (out) == SUBREG && REG_P (SUBREG_REG (out))))
 	  && reg_or_subregno (out) < FIRST_PSEUDO_REGISTER
 	  && SECONDARY_MEMORY_NEEDED (class,
 				      REGNO_REG_CLASS (reg_or_subregno (out)),
