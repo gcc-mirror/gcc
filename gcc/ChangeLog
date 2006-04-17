@@ -1,3 +1,17 @@
+2006-04-17  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (free_AT): Delete.
+	(remove_AT): Update string ref counts.
+	(remove_child_TAG): Don't call free_die.
+	(free_die): Delete.
+	(break_out_includes): Don't call free_die on DW_TAG_GNU_BINCL
+	or DW_TAG_GNU_EINCL.
+	(prune_unused_types_walk_attribs): Reset string refcounts.
+	(prune_unused_types_update_strings): New.
+	(prune_unused_types_prune): Don't make unnecessary stores.  Don't
+	call free_die.  Do call prune_unused_types_update_strings.
+	(prune_unused_types): Empty debug_str_hash.
+
 2006-04-17  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (expand_assignment): Optimize away no-op moves where the
