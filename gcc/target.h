@@ -520,6 +520,14 @@ struct gcc_target
      the reciprocal.  */
   unsigned int (* min_divisions_for_recip_mul) (enum machine_mode mode);
 
+  /* If the representation of integral MODE is such that values are
+     always sign-extended to a wider mode MODE_REP then return
+     SIGN_EXTEND.  Return UNKNOWN otherwise.  */
+  /* Note that the return type ought to be RTX_CODE, but that's not
+     necessarily defined at this point.  */
+  int (* mode_rep_extended) (enum machine_mode mode,
+			     enum machine_mode mode_rep);
+
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) (enum machine_mode mode);
 

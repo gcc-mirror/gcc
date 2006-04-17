@@ -67,6 +67,22 @@ static int non_rtx_starting_operands[NUM_RTX_CODE];
    and set by `-m...' switches.  Must be defined in rtlanal.c.  */
 
 int target_flags;
+
+/* Truncation narrows the mode from SOURCE mode to DESTINATION mode.
+   If TARGET_MODE_REP_EXTENDED (DESTINATION, DESTINATION_REP) is
+   SIGN_EXTEND then while narrowing we also have to enforce the
+   representation and sign-extend the value to mode DESTINATION_REP.
+
+   If the value is already sign-extended to DESTINATION_REP mode we
+   can just switch to DESTINATION mode on it.  For each pair of
+   integral modes SOURCE and DESTINATION, when truncating from SOURCE
+   to DESTINATION, NUM_SIGN_BIT_COPIES_IN_REP[SOURCE][DESTINATION]
+   contains the number of high-order bits in SOURCE that have to be
+   copies of the sign-bit so that we can do this mode-switch to
+   DESTINATION.  */
+
+static unsigned int
+num_sign_bit_copies_in_rep[MAX_MODE_INT + 1][MAX_MODE_INT + 1];
 
 /* Return 1 if the value of X is unstable
    (would be different at a different point in the program).
@@ -4632,6 +4648,50 @@ get_condition (rtx jump, rtx *earliest, int allow_cc_mode, int valid_at_insn_p)
 				 allow_cc_mode, valid_at_insn_p);
 }
 
+/* Initialize the table NUM_SIGN_BIT_COPIES_IN_REP based on
+   TARGET_MODE_REP_EXTENDED.
+
+   Note that we assume that the property of
+   TARGET_MODE_REP_EXTENDED(B, C) is sticky to the integral modes
+   narrower than mode B.  I.e., if A is a mode narrower than B then in
+   order to be able to operate on it in mode B, mode A needs to
+   satisfy the requirements set by the representation of mode B.  */
+
+static void
+init_num_sign_bit_copies_in_rep (void)
+{
+  enum machine_mode mode, in_mode;
+
+  for (in_mode = GET_CLASS_NARROWEST_MODE (MODE_INT); in_mode != VOIDmode;
+       in_mode = GET_MODE_WIDER_MODE (mode))
+    for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != in_mode;
+	 mode = GET_MODE_WIDER_MODE (mode))
+      {
+	enum machine_mode i;
+
+	/* Currently, it is assumed that TARGET_MODE_REP_EXTENDED
+	   extends to the next widest mode.  */
+	gcc_assert (targetm.mode_rep_extended (mode, in_mode) == UNKNOWN
+		    || GET_MODE_WIDER_MODE (mode) == in_mode);
+
+	/* We are in in_mode.  Count how many bits outside of mode
+	   have to be copies of the sign-bit.  */
+	for (i = mode; i != in_mode; i = GET_MODE_WIDER_MODE (i))
+	  {
+	    enum machine_mode wider = GET_MODE_WIDER_MODE (i);
+
+	    if (targetm.mode_rep_extended (i, wider) == SIGN_EXTEND
+		/* We can only check sign-bit copies starting from the
+		   top-bit.  In order to be able to check the bits we
+		   have already seen we pretend that subsequent bits
+		   have to be sign-bit copies too.  */
+		|| num_sign_bit_copies_in_rep [in_mode][mode])
+	      num_sign_bit_copies_in_rep [in_mode][mode]
+		+= GET_MODE_BITSIZE (wider) - GET_MODE_BITSIZE (i);
+	  }
+      }
+}
+
 /* Suppose that truncation from the machine mode of X to MODE is not a
    no-op.  See if there is anything special about X so that we can
    assume it already contains a truncated value of MODE.  */
@@ -4639,9 +4699,20 @@ get_condition (rtx jump, rtx *earliest, int allow_cc_mode, int valid_at_insn_p)
 bool
 truncated_to_mode (enum machine_mode mode, rtx x)
 {
-  return REG_P (x) && rtl_hooks.reg_truncated_to_mode (mode, x);
-}
+  /* This register has already been used in MODE without explicit
+     truncation.  */
+  if (REG_P (x) && rtl_hooks.reg_truncated_to_mode (mode, x))
+    return true;
 
+  /* See if we already satisfy the requirements of MODE.  If yes we
+     can just switch to MODE.  */
+  if (num_sign_bit_copies_in_rep[GET_MODE (x)][mode]
+      && (num_sign_bit_copies (x, GET_MODE (x))
+	  >= num_sign_bit_copies_in_rep[GET_MODE (x)][mode] + 1))
+    return true;
+
+  return false;
+}
 
 /* Initialize non_rtx_starting_operands, which is used to speed up
    for_each_rtx.  */
@@ -4655,6 +4726,8 @@ init_rtlanal (void)
       const char *first = strpbrk (format, "eEV");
       non_rtx_starting_operands[i] = first ? first - format : -1;
     }
+
+  init_num_sign_bit_copies_in_rep ();
 }
 
 /* Check whether this is a constant pool constant.  */
