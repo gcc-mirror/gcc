@@ -1,3 +1,14 @@
+2006-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27138
+	* io/list_read.c (eat_line): New function.
+	(parse_repeat): Use new function and free_saved.
+	(read_logical): Same.
+	(read_integer): Use new function.
+	(parse_real): Use nml_bad_return and new function.
+	(read_complex): Use new function and free_saved.
+	(read_real): Same.
+
 2006-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/26766

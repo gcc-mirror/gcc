@@ -375,6 +375,21 @@ finish_separator (st_parameter_dt *dtp)
     }
 }
 
+
+/* This function reads characters through to the end of the current line and
+   just ignores them.  */
+
+static void
+eat_line (st_parameter_dt *dtp)
+{
+  char c;
+  if (!is_internal_unit (dtp))
+    do
+      c = next_char (dtp);
+    while (c != '\n');
+}
+
+
 /* This function is needed to catch bad conversions so that namelist can
    attempt to see if dtp->u.p.saved_string contains a new object name rather
    than a bad value.  */
@@ -534,9 +549,11 @@ parse_repeat (st_parameter_dt *dtp)
   return 0;
 
  bad_repeat:
+
+  eat_line (dtp);
+  free_saved (dtp);
   st_sprintf (message, "Bad repeat count in item %d of list input",
 	      dtp->u.p.item_count);
-
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
   return 1;
 }
@@ -550,8 +567,6 @@ parse_repeat (st_parameter_dt *dtp)
 static void
 l_push_char (st_parameter_dt *dtp, char c)
 {
-  char *new;
-
   if (dtp->u.p.line_buffer == NULL)
     {
       dtp->u.p.line_buffer = get_mem (SCRATCH_SIZE);
@@ -677,9 +692,12 @@ read_logical (st_parameter_dt *dtp, int length)
   if (nml_bad_return (dtp, c))
     return;
 
+  eat_line (dtp);
+  free_saved (dtp);
+  if (dtp->u.p.line_buffer != NULL)
+    free_mem (dtp->u.p.line_buffer);
   st_sprintf (message, "Bad logical value while reading item %d",
 	      dtp->u.p.item_count);
-
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
   return;
 
@@ -805,9 +823,9 @@ read_integer (st_parameter_dt *dtp, int length)
 
   if (nml_bad_return (dtp, c))
     return;
-
+  
+  eat_line (dtp);
   free_saved (dtp);
-
   st_sprintf (message, "Bad integer for item %d in list input",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
@@ -1085,6 +1103,11 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   return m;
 
  bad:
+
+  if (nml_bad_return (dtp, c))
+    return 0;
+
+  eat_line (dtp);
   free_saved (dtp);
   st_sprintf (message, "Bad floating point number for item %d",
 	      dtp->u.p.item_count);
@@ -1167,9 +1190,10 @@ eol_2:
   if (nml_bad_return (dtp, c))
     return;
 
+  eat_line (dtp);
+  free_saved (dtp);
   st_sprintf (message, "Bad complex value in item %d of list input",
 	      dtp->u.p.item_count);
-
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
 }
 
@@ -1381,9 +1405,10 @@ read_real (st_parameter_dt *dtp, int length)
   if (nml_bad_return (dtp, c))
     return;
 
+  eat_line (dtp);
+  free_saved (dtp);
   st_sprintf (message, "Bad real number in item %d of list input",
 	      dtp->u.p.item_count);
-
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
 }
 
