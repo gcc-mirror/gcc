@@ -4027,7 +4027,6 @@ static bool is_fortran (void);
 static bool is_ada (void);
 static void remove_AT (dw_die_ref, enum dwarf_attribute);
 static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
-static inline void free_die (dw_die_ref);
 static void add_child_die (dw_die_ref, dw_die_ref);
 static dw_die_ref new_die (enum dwarf_tag, dw_die_ref, tree);
 static dw_die_ref lookup_type_die (tree);
@@ -5382,17 +5381,6 @@ is_ada (void)
   return lang == DW_LANG_Ada95 || lang == DW_LANG_Ada83;
 }
 
-/* Free up the memory used by A.  */
-
-static inline void free_AT (dw_attr_ref);
-static inline void
-free_AT (dw_attr_ref a)
-{
-  if (AT_class (a) == dw_val_class_str)
-    if (a->dw_attr_val.v.val_str->refcount)
-      a->dw_attr_val.v.val_str->refcount--;
-}
-
 /* Remove the specified attribute if present.  */
 
 static void
@@ -5407,7 +5395,10 @@ remove_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
   for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
     if (a->dw_attr == attr_kind)
       {
-	free_AT (a);
+	if (AT_class (a) == dw_val_class_str)
+	  if (a->dw_attr_val.v.val_str->refcount)
+	    a->dw_attr_val.v.val_str->refcount--;
+
 	/* VEC_ordered_remove should help reduce the number of abbrevs
 	   that are needed.  */
 	VEC_ordered_remove (dw_attr_node, die->die_attr, ix);
@@ -5432,7 +5423,6 @@ remove_child_TAG (dw_die_ref die, enum dwarf_tag tag)
 	    die->die_child = next;
 	  else
 	    prev->die_sib = next;
-	  free_die (current);
 	  current = next;
 	}
       else
@@ -5440,33 +5430,6 @@ remove_child_TAG (dw_die_ref die, enum dwarf_tag tag)
 	  prev = current;
 	  current = current->die_sib;
 	}
-    }
-}
-
-/* Free up the memory used by DIE, by removing its children and
-   anything associated with its attributes.  DIEs are garbage
-   collected, so there is no actual freeing to do; the only real work is
-   to decrease string reference counts.  */
-
-static void
-free_die (dw_die_ref die)
-{
-  dw_die_ref child_die = die->die_child;
-
-  die->die_child = NULL;
-
-  while (child_die != NULL)
-    {
-      dw_die_ref tmp_die = child_die;
-      dw_attr_ref a;
-      unsigned ix;
-
-      child_die = child_die->die_sib;
-
-      for (ix = 0; VEC_iterate (dw_attr_node, tmp_die->die_attr, ix, a); ix++)
-	free_AT (a);
-
-      free_die (tmp_die);
     }
 }
 
@@ -6390,15 +6353,9 @@ break_out_includes (dw_die_ref die)
 	  *ptr = c->die_sib;
 
 	  if (c->die_tag == DW_TAG_GNU_BINCL)
-	    {
-	      unit = push_new_compile_unit (unit, c);
-	      free_die (c);
-	    }
+	    unit = push_new_compile_unit (unit, c);
 	  else if (c->die_tag == DW_TAG_GNU_EINCL)
-	    {
-	      unit = pop_compile_unit (unit);
-	      free_die (c);
-	    }
+	    unit = pop_compile_unit (unit);
 	  else
 	    add_child_die (unit, c);
 	}
@@ -13918,6 +13875,10 @@ prune_unused_types_walk_attribs (dw_die_ref die)
 	  a->dw_attr_val.v.val_unsigned =
 	    maybe_emit_file (a->dw_attr_val.v.val_unsigned);
 	}
+      /* Set the string's refcount to 0 so that prune_unused_types_mark
+	 accounts properly for it.  */
+      if (AT_class (a) == dw_val_class_str)
+	a->dw_attr_val.v.val_str->refcount = 0;
     }
 }
 
@@ -14021,32 +13982,62 @@ prune_unused_types_walk (dw_die_ref die)
     prune_unused_types_walk (c);
 }
 
+/* Increment the string counts on strings referred to from DIE's
+   attributes.  */
+
+static void
+prune_unused_types_update_strings (dw_die_ref die)
+{
+  dw_attr_ref a;
+  unsigned ix;
+
+  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+    if (AT_class (a) == dw_val_class_str)
+      {
+	struct indirect_string_node *s = a->dw_attr_val.v.val_str;
+	s->refcount++;
+	/* Avoid unnecessarily putting strings that are used less than
+	   twice in the hash table.  */
+	if (s->refcount == 2
+	    || (s->refcount == 1 
+		&& (debug_str_section->common.flags & SECTION_MERGE) != 0))
+	  {
+	    void ** slot;
+	    slot = htab_find_slot_with_hash (debug_str_hash, s->str,
+					     htab_hash_string (s->str),
+					     INSERT);
+	    gcc_assert (*slot == NULL);
+	    *slot = s;
+	  }
+      }
+}
 
 /* Remove from the tree DIE any dies that aren't marked.  */
 
 static void
 prune_unused_types_prune (dw_die_ref die)
 {
-  dw_die_ref c, p, n;
+  dw_die_ref *p;
 
   gcc_assert (die->die_mark);
 
-  p = NULL;
-  for (c = die->die_child; c; c = n)
+  p = &die->die_child;
+  while (*p)
     {
-      n = c->die_sib;
-      if (c->die_mark)
+      dw_die_ref c = *p;
+      if (c && ! c->die_mark)
 	{
-	  prune_unused_types_prune (c);
-	  p = c;
+	  do {
+	    c = c->die_sib;
+	  } while (c && ! c->die_mark);
+	  *p = c;
 	}
-      else
+      
+      if (c)
 	{
-	  if (p)
-	    p->die_sib = n;
-	  else
-	    die->die_child = n;
-	  free_die (c);
+	  prune_unused_types_update_strings (c);
+	  prune_unused_types_prune (c);
+	  p = &c->die_sib;
 	}
     }
 }
@@ -14077,7 +14068,9 @@ prune_unused_types (void)
   for (i = 0; i < arange_table_in_use; i++)
     prune_unused_types_mark (arange_table[i], 1);
 
-  /* Get rid of nodes that aren't marked.  */
+  /* Get rid of nodes that aren't marked; and update the string counts.  */
+  if (debug_str_hash)
+    htab_empty (debug_str_hash);
   prune_unused_types_prune (comp_unit_die);
   for (node = limbo_die_list; node; node = node->next)
     prune_unused_types_prune (node->die);
