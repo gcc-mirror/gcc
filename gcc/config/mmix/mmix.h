@@ -165,7 +165,6 @@ extern int target_flags;
       if (SIZE || LEVEL > 1)			\
 	{					\
 	  flag_omit_frame_pointer = TRUE;	\
-	  flag_strength_reduce = FALSE;		\
 	}					\
     }						\
   while (0)
