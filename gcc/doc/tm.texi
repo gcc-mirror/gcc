@@ -6559,7 +6559,7 @@ based on a variable or function decl, a section name, and whether or not the
 declaration's initializer may contain runtime relocations.  @var{decl} may be
  null, in which case read-write data should be assumed.
 
-The default version if this function handles choosing code vs data,
+The default version of this function handles choosing code vs data,
 read-only vs read-write data, and @code{flag_pic}.  You should only
 need to override this if your target has special flags that might be
 set via @code{__attribute__}.
