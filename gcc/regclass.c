@@ -811,8 +811,7 @@ struct costs
 /* Structure used to record preferences of given pseudo.  */
 struct reg_pref
 {
-  /* (enum reg_class) prefclass is the preferred class.  May be
-     NO_REGS if no class is better than memory.  */
+  /* (enum reg_class) prefclass is the preferred class.  */
   char prefclass;
 
   /* altclass is a register class that we should use for allocating
@@ -1315,10 +1314,6 @@ regclass (rtx f, int nregs)
 		best = reg_class_subunion[(int) best][class];
 	    }
 
-	  /* If no register class is better than memory, use memory. */
-	  if (p->mem_cost < best_cost)
-	    best = NO_REGS;
-
 	  /* Record the alternate register class; i.e., a class for which
 	     every register in it is better than using memory.  If adding a
 	     class would make a smaller class (i.e., no union of just those
@@ -1529,7 +1524,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     to what we would add if this register were not in the
 		     appropriate class.  */
 
-		  if (reg_pref && reg_pref[REGNO (op)].prefclass != NO_REGS)
+		  if (reg_pref)
 		    alt_cost
 		      += (may_move_in_cost[mode]
 			  [(unsigned char) reg_pref[REGNO (op)].prefclass]
@@ -1755,7 +1750,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     to what we would add if this register were not in the
 		     appropriate class.  */
 
-		  if (reg_pref && reg_pref[REGNO (op)].prefclass != NO_REGS)
+		  if (reg_pref)
 		    alt_cost
 		      += (may_move_in_cost[mode]
 			  [(unsigned char) reg_pref[REGNO (op)].prefclass]
@@ -1841,8 +1836,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  int class;
 	  unsigned int nr;
 
-	  if (regno >= FIRST_PSEUDO_REGISTER && reg_pref != 0
-	      && reg_pref[regno].prefclass != NO_REGS)
+	  if (regno >= FIRST_PSEUDO_REGISTER && reg_pref != 0)
 	    {
 	      enum reg_class pref = reg_pref[regno].prefclass;
 
