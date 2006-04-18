@@ -611,6 +611,12 @@ LIB2FUNCS_EXTRA =
 # Assembler files should have names ending in `.asm'.
 LIB2FUNCS_STATIC_EXTRA =
 
+# List of functions not to build from libgcc2.c.
+LIB2FUNCS_EXCLUDE =
+
+# Target sfp-machine.h file.
+SFP_MACHINE =
+
 # Program to convert libraries.
 LIBCONVERT =
 
@@ -1398,6 +1404,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) specs \
 	objext='$(objext)' \
 	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
 	LIB2FUNCS_ST='$(LIB2FUNCS_ST)' \
+	LIB2FUNCS_EXCLUDE='$(LIB2FUNCS_EXCLUDE)' \
 	LIBGCOV='$(LIBGCOV)' \
 	LIB2ADD='$(LIB2ADD)' \
 	LIB2ADD_ST='$(LIB2ADD_ST)' \
@@ -1449,7 +1456,7 @@ LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	config/dfp-bit.h config/dfp-bit.c \
 	$(LIB2ADD_ST) $(LIB2ADDEH) $(LIB2ADDEHDEP) $(EXTRA_PARTS) \
 	$(srcdir)/config/$(LIB1ASMSRC) \
-	$(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h
+	$(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h $(SFP_MACHINE)
 
 libgcov.a: libgcc.a; @true
 

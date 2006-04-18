@@ -1,8 +1,9 @@
 
 #rs6000/t-linux64
 
-LIB2FUNCS_EXTRA = tramp.S $(srcdir)/config/rs6000/ppc64-fp.c \
+LIB2FUNCS_EXTRA += tramp.S $(srcdir)/config/rs6000/ppc64-fp.c \
 	$(srcdir)/config/rs6000/darwin-ldouble.c
+LIB2FUNCS_EXTRA := $(sort $(LIB2FUNCS_EXTRA))
 
 TARGET_LIBGCC2_CFLAGS += -mno-minimal-toc
 
@@ -14,19 +15,5 @@ MULTILIB_EXCLUSIONS     = m64/!m32/msoft-float
 MULTILIB_OSDIRNAMES	= ../lib64 ../lib nof
 MULTILIB_MATCHES        = $(MULTILIB_MATCHES_FLOAT)
 
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-# fp-bit is only to be used by 32-bit multilibs
-FPBIT = fp-bit32.c
-DPBIT = dp-bit32.c
-
-dp-bit32.c: $(srcdir)/config/fp-bit.c
-	( echo '#ifndef __powerpc64__'; \
-	  cat $(srcdir)/config/fp-bit.c; \
-	  echo '#endif' ) > dp-bit32.c
-
-fp-bit32.c: $(srcdir)/config/fp-bit.c
-	( echo '#ifndef __powerpc64__'; \
-	  echo '#define FLOAT'; \
-	  cat $(srcdir)/config/fp-bit.c; \
-	  echo '#endif' ) > fp-bit32.c
+softfp_wrap_start := '\#ifndef __powerpc64__'
+softfp_wrap_end := '\#endif'

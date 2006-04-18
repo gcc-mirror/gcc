@@ -1,3 +1,24 @@
+2006-04-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/soft-fp: New directory.  From glibc.
+	* config/soft-fp/t-softfp: New.
+	* config/soft-fp/README: New.
+	* mklibgcc.in: Handle LIB2FUNCS_EXCLUDE.
+	* Makefile.in (LIB2FUNCS_EXCLUDE, SFP_MACHINE): New.
+	(libgcc.mk): Pass LIB2FUNCS_EXCLUDE.
+	(LIBGCC_DEPS): Add $(SFP_MACHINE).
+	* config.gcc: Use rs6000/t-fprules-fpbit or
+	rs6000/t-fprules-softfp and soft-fp/t-softfp together with
+	rs6000/t-fprules.
+	* config/rs6000/sfp-machine.h: New.  Based on glibc.
+	* config/rs6000/t-fprules-fpbit, config/rs6000/t-fprules-softfp:
+	New.
+	* config/rs6000/t-fprules: Remove fp-bit rules.
+	* config/rs6000/t-ppccomm (LIB2FUNCS_EXTRA): Use +=.
+	* config/rs6000/t-linux64: Likewise.  Remove duplicates from
+	LIB2FUNCS_EXTRA.  Remove fp-bit rules.
+	(softfp_wrap_start, softfp_wrap_end): New.
+
 2006-04-18  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.h (PTRDIFF_TYPE): Define.
