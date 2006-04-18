@@ -1,3 +1,8 @@
+2006-04-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* builtins.c (expand_builtin_strcmp): Cover label definition of 
+	do_libcall with HAVE_cmpstrnsi.
+
 2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/26821
@@ -24,7 +29,7 @@
 2006-04-18  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/27095
-	* builtins.c: (expand_builtin_memset): Stabilize args before expansion
+	* builtins.c (expand_builtin_memset): Stabilize args before expansion
 	and emit libcall here in case the builtin fails.
 	(expand_builtin_strcmp): Always emit the libcall here on failure.
 
