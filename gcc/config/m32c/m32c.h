@@ -171,6 +171,9 @@ machine_function;
 
 #define DEFAULT_SIGNED_CHAR 1
 
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_A16 ? "int" : "long int")
+
 /* REGISTER USAGE */
 
 /* Register Basics */
