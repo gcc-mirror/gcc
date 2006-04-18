@@ -1,3 +1,7 @@
+2006-04-18  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* gfortran.dg/label_1.f90: Adjust dg-error.
+
 2006-04-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26961
