@@ -233,7 +233,7 @@ sh_symbian_mark_dllexport (tree decl)
 	unit which has included the header in order to ensure argument
 	correctness.  */
       oldname += strlen (DLL_IMPORT_PREFIX);
-      DECL_NON_ADDR_CONST_P (decl) = 0;
+      DECL_DLLIMPORT_P (decl) = 0;
     }
   else if (sh_symbian_dllexport_name_p (oldname))
     return; /* Already done.  */
@@ -309,7 +309,7 @@ sh_symbian_encode_section_info (tree decl, rtx rtl, int first)
   /* It might be that DECL has already been marked as dllimport, but a
      subsequent definition nullified that.  The attribute is gone but
      DECL_RTL still has (DLL_IMPORT_PREFIX) prefixed. We need to remove
-     that. Ditto for the DECL_NON_ADDR_CONST_P flag.  */
+     that. Ditto for the DECL_DLLIMPORT_P flag.  */
   else if (  (TREE_CODE (decl) == FUNCTION_DECL
 	   || TREE_CODE (decl) == VAR_DECL)
 	   && DECL_RTL (decl) != NULL_RTX
@@ -330,7 +330,7 @@ sh_symbian_encode_section_info (tree decl, rtx rtl, int first)
 
       XEXP (DECL_RTL (decl), 0) = newrtl;
 
-      DECL_NON_ADDR_CONST_P (decl) = 0;
+      DECL_DLLIMPORT_P (decl) = 0;
     }
 }
 

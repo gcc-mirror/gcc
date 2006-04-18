@@ -1,3 +1,10 @@
+2006-04-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/sh/t-symbian: Add rule to build sh-c.o
+	* config/sh/symbian.c (sh_symbian_mark_dllexport): Replace use
+	of DECL_NON_ADDR_CONST_P with DECL_DLLIMPORT_P.
+	(sh_symbian_encode_section_info): Likewise.
+
 2006-04-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* builtins.c (expand_builtin_strcmp): Cover label definition of 
