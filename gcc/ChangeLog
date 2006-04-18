@@ -1,5 +1,18 @@
 2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
+        PR target/27117
+
+	Partial revert of revision 112637
+	2006-04-03  Paolo Bonzini  <bonzini@gnu.org>
+		    Dale Johannesen  <dalej@apple.com>
+
+	PR target/19653
+	* regclass.c (struct reg_pref): Update documentation.
+	(regclass): Set prefclass to NO_REGS if memory is the best option.
+	(record_reg_classes): Cope with a prefclass set to NO_REGS.
+
+2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
         PR tree-optimization/26821
         * tree-ssa-math-opts.c (get_constant_one): New.
         (insert_reciprocals): Use it.
