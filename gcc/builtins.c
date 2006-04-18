@@ -3772,7 +3772,9 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 
       /* Expand the library call ourselves using a stabilized argument
 	 list to avoid re-evaluating the function's arguments twice.  */
+#ifdef HAVE_cmpstrnsi
     do_libcall:
+#endif
       arglist = build_tree_list (NULL_TREE, arg2);
       arglist = tree_cons (NULL_TREE, arg1, arglist);
       fndecl = get_callee_fndecl (exp);
