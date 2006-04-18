@@ -1,3 +1,9 @@
+2006-04-19  Alan Modra  <amodra@bigpond.net.au>
+
+	PR rtl-optimization/26026
+	* fold-const.c (fold_binary): Optimize div and mod where the divisor
+	is a known power of two shifted left a variable amount.
+
 2006-04-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (prune_unused_types_update_strings): Don't add strings
