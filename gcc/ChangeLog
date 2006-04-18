@@ -1,5 +1,8 @@
 2006-04-18  Nick Clifton  <nickc@redhat.com>
 
+	* config/mmix/mmix.h (OPTIMIZATION_OPTIONS): Remove reference to
+	flag_strength_reduce.
+
 	* doc/tm.texi (TARGET_SECTION_TYPE_FLAGS): Fix typo.
 
 2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
