@@ -1,3 +1,10 @@
+2006-04-18  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* parse.c (next_free): Use consistent error string between
+	free-form and fixed-form for illegal statement label of zero.
+	(next_fixed): Use consistent warning string between free-form
+	and fixed-form for statement labels for empty statements.
+
 2006-04-18  Steve Ellcey  <sje@cup.hp.com>
 
 	* trans-io.c (gfc_build_io_library_fndecls): Align pad.

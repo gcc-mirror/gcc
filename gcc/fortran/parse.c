@@ -428,9 +428,9 @@ next_free (void)
 
           if (cnt > 5)
 	    gfc_error_now ("Too many digits in statement label at %C");
-	  
+
 	  if (c == 0)
-	    gfc_error_now ("Statement label at %C is zero");
+	    gfc_error_now ("Zero is not a valid statement label at %C");
 
 	  do
 	    c = gfc_next_char ();
@@ -600,7 +600,7 @@ next_fixed (void)
 
 blank_line:
   if (digit_flag)
-    gfc_warning ("Statement label in blank line will be ignored at %C");
+    gfc_warning ("Ignoring statement label in empty statement at %C");
   gfc_advance_line ();
   return ST_NONE;
 }
