@@ -1,3 +1,7 @@
+2006-04-18  Steve Ellcey  <sje@cup.hp.com>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Align pad.
+
 2006-04-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/26017
