@@ -1,3 +1,9 @@
+2006-04-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/faq/index.html ([5.5]): Adjust to mention function
+	objects and reference_wrapper; minor tweaks.
+	* docs/html/faq/index.txt: Regenerate.
+
 2006-04-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/6702 (again)

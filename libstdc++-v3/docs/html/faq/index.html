@@ -994,18 +994,22 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       <p>Briefly, the features of TR1 and the current status are:
       </p>
 
-      <p><strong>Unordered containers - Complete -</strong>
-         The unordered_set, unordered_map, unordered_multiset, and
-	 unordered_multimap containers are hashed versions of the map, set,
-	 multimap, and multiset containers respectively.  These classes are
-	 suitable replacements for the SGI STL hash_map and hash_set
-	 extensions.
+      <p><strong>Reference_wrapper - Complete -</strong>
+         Useful to pass references to functions that take their parameters
+         by value.
       </p>
 
       <p><strong>Reference-counted smart pointers - Complete -</strong>
          The shared_ptr and weak_ptr allow several object to know about a
 	 pointer and whether it is valid.  When the last reference to the
 	 pointer is destroyed the pointer is freed.
+      </p>
+
+      <p><strong>Function objects - Complete -</strong>
+         Function return types (i.e, result_of), the functions template
+	 mem_fn (a generalization of mem_fun and mem_fun_red), function
+	 object binders (e.g, bind, a generalization of bind1st and bind2nd),
+	 and polymorhpic function wrappers (e.g, class template function).
       </p>
 
       <p><strong>Type traits - Complete -</strong>
@@ -1019,20 +1023,23 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 	 semantics.
       </p>
 
+      <p><strong>Unordered containers - Complete -</strong>
+         The unordered_set, unordered_map, unordered_multiset, and
+	 unordered_multimap containers are hashed versions of the map, set,
+	 multimap, and multiset containers respectively.  These classes are
+	 suitable replacements for the SGI STL hash_map and hash_set
+	 extensions.
+      </p>
+
       <p><strong>Tuples - Complete -</strong>
          The tuple class implements small heterogeneous arrays.  This is an
 	 enhanced pair.  In fact, the standard pair is enhanced with a tuple
 	 interface.
       </p>
 
-      <p><strong>A regular expression engine</strong>
-         This library provides for regular expression objects with traversal
-	 of text with return of subexpressions.
-      </p>
-
-      <p><strong>A random number engine</strong>
-         This library contains randow number generators with several different
-	 choices of distribution.
+      <p><strong>C99 compatibility - Under construction - </strong>
+         There are many features designed to minimize the divergence of the C
+	 and the C++ languages.
       </p>
 
       <p><strong>Special functions - Under construction - </strong>
@@ -1043,9 +1050,14 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 	 zeta function all for your computing pleasure.
       </p>
 
-      <p><strong>C99 compatibility - Under construction - </strong>
-         There are many features designed to minimize the divergence of the C
-	 and the C++ languages.
+      <p><strong>A regular expression engine</strong>
+         This library provides for regular expression objects with traversal
+	 of text with return of subexpressions.
+      </p>
+
+      <p><strong>A random number engine</strong>
+         This library contains randow number generators with several different
+	 choices of distribution.
       </p>
 
 <hr />

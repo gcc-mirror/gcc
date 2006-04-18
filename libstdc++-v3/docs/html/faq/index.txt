@@ -818,16 +818,19 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    Briefly, the features of TR1 and the current status are:
 
-   Unordered containers - Complete - The unordered_set, unordered_map,
-   unordered_multiset, and unordered_multimap containers are hashed
-   versions of the map, set, multimap, and multiset containers
-   respectively. These classes are suitable replacements for the SGI STL
-   hash_map and hash_set extensions.
+   Reference_wrapper - Complete - Useful to pass references to functions
+   that take their parameters by value.
 
    Reference-counted smart pointers - Complete - The shared_ptr and
    weak_ptr allow several object to know about a pointer and whether it
    is valid. When the last reference to the pointer is destroyed the
    pointer is freed.
+
+   Function objects - Complete - Function return types (i.e, result_of),
+   the functions template mem_fn (a generalization of mem_fun and
+   mem_fun_red), function object binders (e.g, bind, a generalization of
+   bind1st and bind2nd), and polymorhpic function wrappers (e.g, class
+   template function).
 
    Type traits - Complete - The type_traits class gives templates the
    ability to probe information about the input type and enable
@@ -837,16 +840,18 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    Fixed-size arrays - Complete - The array class implements small
    fixed-sized arrays with container semantics.
 
+   Unordered containers - Complete - The unordered_set, unordered_map,
+   unordered_multiset, and unordered_multimap containers are hashed
+   versions of the map, set, multimap, and multiset containers
+   respectively. These classes are suitable replacements for the SGI STL
+   hash_map and hash_set extensions.
+
    Tuples - Complete - The tuple class implements small heterogeneous
    arrays. This is an enhanced pair. In fact, the standard pair is
    enhanced with a tuple interface.
 
-   A regular expression engine This library provides for regular
-   expression objects with traversal of text with return of
-   subexpressions.
-
-   A random number engine This library contains randow number generators
-   with several different choices of distribution.
+   C99 compatibility - Under construction - There are many features
+   designed to minimize the divergence of the C and the C++ languages.
 
    Special functions - Under construction - Twenty-three mathematical
    functions familiar to physicists and engineers are included:
@@ -855,8 +860,12 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    integrals, exponential integrals and the Riemann zeta function all for
    your computing pleasure.
 
-   C99 compatibility - Under construction - There are many features
-   designed to minimize the divergence of the C and the C++ languages.
+   A regular expression engine This library provides for regular
+   expression objects with traversal of text with return of
+   subexpressions.
+
+   A random number engine This library contains randow number generators
+   with several different choices of distribution.
      _________________________________________________________________
 
 5.6 Is libstdc++-v3 thread-safe?
