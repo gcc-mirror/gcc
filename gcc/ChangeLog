@@ -1,3 +1,11 @@
+2006-04-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* function.c (temp_slots_at_level, max_slot_level): Use VEC
+	instead of VARRAY.
+	* function.h (temp_slot_p): New.
+	(function): Change the type of x_used_temp_slots to
+	VEC(temp_slot_p,gc) *.
+
 2006-04-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/mmix/mmix.h (OPTIMIZATION_OPTIONS): Remove reference to

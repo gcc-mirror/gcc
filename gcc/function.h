@@ -159,6 +159,12 @@ struct expr_status GTY(())
 #define forced_labels (cfun->expr->x_forced_labels)
 #define stack_pointer_delta (cfun->expr->x_stack_pointer_delta)
 
+struct temp_slot;
+typedef struct temp_slot *temp_slot_p;
+
+DEF_VEC_P(temp_slot_p);
+DEF_VEC_ALLOC_P(temp_slot_p,gc);
+
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */
 
@@ -266,7 +272,7 @@ struct function GTY(())
   rtx x_parm_birth_insn;
 
   /* List of all used temporaries allocated, by level.  */
-  struct varray_head_tag * GTY((param_is (struct temp_slot))) x_used_temp_slots;
+  VEC(temp_slot_p,gc) *x_used_temp_slots;
 
   /* List of available temp slots.  */
   struct temp_slot *x_avail_temp_slots;

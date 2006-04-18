@@ -546,14 +546,18 @@ insert_slot_to_list (struct temp_slot *temp, struct temp_slot **list)
 static struct temp_slot **
 temp_slots_at_level (int level)
 {
+  if (level >= (int) VEC_length (temp_slot_p, used_temp_slots))
+    {
+      size_t old_length = VEC_length (temp_slot_p, used_temp_slots);
+      temp_slot_p *p;
 
-  if (!used_temp_slots)
-    VARRAY_GENERIC_PTR_INIT (used_temp_slots, 3, "used_temp_slots");
+      VEC_safe_grow (temp_slot_p, gc, used_temp_slots, level + 1);
+      p = VEC_address (temp_slot_p, used_temp_slots);
+      memset (&p[old_length], 0,
+	      sizeof (temp_slot_p) * (level + 1 - old_length));
+    }
 
-  while (level >= (int) VARRAY_ACTIVE_SIZE (used_temp_slots))
-    VARRAY_PUSH_GENERIC_PTR (used_temp_slots, NULL);
-
-  return (struct temp_slot **) &VARRAY_GENERIC_PTR (used_temp_slots, level);
+  return &(VEC_address (temp_slot_p, used_temp_slots)[level]);
 }
 
 /* Returns the maximal temporary slot level.  */
@@ -564,7 +568,7 @@ max_slot_level (void)
   if (!used_temp_slots)
     return -1;
 
-  return VARRAY_ACTIVE_SIZE (used_temp_slots) - 1;
+  return VEC_length (temp_slot_p, used_temp_slots) - 1;
 }
 
 /* Moves temporary slot TEMP to LEVEL.  */
