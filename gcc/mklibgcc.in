@@ -11,6 +11,7 @@
 # objext
 # LIB1ASMFUNCS
 # LIB2FUNCS_ST
+# LIB2FUNCS_EXCLUDE
 # LIBGCOV
 # LIB2ADD
 # LIB2ADD_ST 
@@ -158,8 +159,9 @@ else
 fi
 
 # Remove any objects from lib2funcs and LIB2_DIVMOD_FUNCS that are
-# defined as optimized assembly code in LIB1ASMFUNCS.
-for name in $LIB1ASMFUNCS; do
+# defined as optimized assembly code in LIB1ASMFUNCS or as C code
+# in LIB2FUNCS_EXCLUDE.
+for name in $LIB1ASMFUNCS $LIB2FUNCS_EXCLUDE; do
   lib2funcs=`echo $lib2funcs | sed -e 's/^'$name' //' \
 				   -e 's/ '$name' / /' \
 				   -e 's/ '$name'$//'`
