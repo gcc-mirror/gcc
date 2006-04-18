@@ -1,3 +1,7 @@
+2006-04-18  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.h (PTRDIFF_TYPE): Define.
+
 2006-04-18  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi (-Wuninitialized): Clarify -O connection.
