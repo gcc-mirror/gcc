@@ -9600,8 +9600,27 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       return NULL_TREE;
 
     case TRUNC_DIV_EXPR:
-    case ROUND_DIV_EXPR:
     case FLOOR_DIV_EXPR:
+      /* Simplify A / (B << N) where A and B are positive and B is
+	 a power of 2, to A >> (N + log2(B)).  */
+      if (TREE_CODE (arg1) == LSHIFT_EXPR
+	  && (TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (arg0)))
+	{
+	  tree sval = TREE_OPERAND (arg1, 0);
+	  if (integer_pow2p (sval) && tree_int_cst_sgn (sval) > 0)
+	    {
+	      tree sh_cnt = TREE_OPERAND (arg1, 1);
+	      unsigned long pow2 = exact_log2 (TREE_INT_CST_LOW (sval));
+
+	      sh_cnt = fold_build2 (PLUS_EXPR, TREE_TYPE (sh_cnt),
+				    sh_cnt, build_int_cst (NULL_TREE, pow2));
+	      return fold_build2 (RSHIFT_EXPR, type,
+				  fold_convert (type, arg0), sh_cnt);
+	    }
+	}
+      /* Fall thru */
+
+    case ROUND_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
       if (integer_onep (arg1))
@@ -9671,31 +9690,24 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	return omit_one_operand (type, integer_zero_node, arg0);
 
       /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
-         i.e. "X % C" into "X & C2", if X and C are positive.  */
+         i.e. "X % C" into "X & (C - 1)", if X and C are positive.  */
       if ((code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR)
-	  && (TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (arg0))
-	  && integer_pow2p (arg1) && tree_int_cst_sgn (arg1) >= 0)
+	  && (TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (arg0)))
 	{
-	  unsigned HOST_WIDE_INT high, low;
-	  tree mask;
-	  int l;
+	  tree c = arg1;
+	  /* Also optimize A % (C << N)  where C is a power of 2,
+	     to A & ((C << N) - 1).  */
+	  if (TREE_CODE (arg1) == LSHIFT_EXPR)
+	    c = TREE_OPERAND (arg1, 0);
 
-	  l = tree_log2 (arg1);
-	  if (l >= HOST_BITS_PER_WIDE_INT)
+	  if (integer_pow2p (c) && tree_int_cst_sgn (c) > 0)
 	    {
-	      high = ((unsigned HOST_WIDE_INT) 1
-		      << (l - HOST_BITS_PER_WIDE_INT)) - 1;
-	      low = -1;
+	      tree mask = fold_build2 (MINUS_EXPR, TREE_TYPE (arg1),
+				       arg1, integer_one_node);
+	      return fold_build2 (BIT_AND_EXPR, type,
+				  fold_convert (type, arg0),
+				  fold_convert (type, mask));
 	    }
-	  else
-	    {
-	      high = 0;
-	      low = ((unsigned HOST_WIDE_INT) 1 << l) - 1;
-	    }
-
-	  mask = build_int_cst_wide (type, low, high);
-	  return fold_build2 (BIT_AND_EXPR, type,
-			      fold_convert (type, arg0), mask);
 	}
 
       /* X % -C is the same as X % C.  */
