@@ -279,6 +279,35 @@ is_division_by (tree use_stmt, tree def)
 	 && TREE_OPERAND (TREE_OPERAND (use_stmt, 1), 1) == def;
 }
 
+/* Return the LHS of a RDIV_EXPR that computes a reciprocal in type TYPE.  */
+static tree
+get_constant_one (tree type)
+{
+  tree scalar, cst;
+  int i;
+
+  gcc_assert (FLOAT_TYPE_P (type));
+  switch (TREE_CODE (type))
+    {
+    case REAL_TYPE:
+      return build_real (type, dconst1);
+
+    case VECTOR_TYPE:
+      scalar = build_real (TREE_TYPE (type), dconst1);
+
+      /* Create 'vect_cst_ = {cst,cst,...,cst}'  */
+      cst = NULL_TREE;
+      for (i = TYPE_VECTOR_SUBPARTS (type); --i >= 0; )
+        cst = tree_cons (NULL_TREE, scalar, cst);
+
+      return build_vector (type, cst);
+
+    default:
+      /* Complex operations have been split already.  */
+      gcc_unreachable ();
+    }
+}
+
 /* Walk the subset of the dominator tree rooted at OCC, setting the
    RECIP_DEF field to a definition of 1.0 / DEF that can be used in
    the given basic block.  The field may be left NULL, of course,
@@ -304,8 +333,8 @@ insert_reciprocals (block_stmt_iterator *def_bsi, struct occurrence *occ,
       type = TREE_TYPE (def);
       recip_def = make_rename_temp (type, "reciptmp");
       new_stmt = build2 (MODIFY_EXPR, void_type_node, recip_def,
-		         fold_build2 (RDIV_EXPR, type,
-				      build_real (type, dconst1), def));
+		         fold_build2 (RDIV_EXPR, type, get_constant_one (type),
+				      def));
   
   
       if (occ->bb_has_division)

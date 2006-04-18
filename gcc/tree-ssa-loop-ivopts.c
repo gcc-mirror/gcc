@@ -5693,14 +5693,15 @@ compute_phi_arg_on_exit (edge exit, tree stmts, tree op)
     {
       for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
         {
-	  bsi_insert_after (&bsi, tsi_stmt (tsi), BSI_NEW_STMT);
-	  protect_loop_closed_ssa_form (exit, bsi_stmt (bsi));
+	  tree stmt = tsi_stmt (tsi);
+	  bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
+	  protect_loop_closed_ssa_form (exit, stmt);
 	}
     }
   else
     {
-      bsi_insert_after (&bsi, stmts, BSI_NEW_STMT);
-      protect_loop_closed_ssa_form (exit, bsi_stmt (bsi));
+      bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
+      protect_loop_closed_ssa_form (exit, stmts);
     }
 
   if (!op)
@@ -5717,7 +5718,7 @@ compute_phi_arg_on_exit (edge exit, tree stmts, tree op)
 	  stmt = build2 (MODIFY_EXPR, TREE_TYPE (op),
 			def, op);
 	  SSA_NAME_DEF_STMT (def) = stmt;
-	  bsi_insert_after (&bsi, stmt, BSI_CONTINUE_LINKING);
+	  bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
 	}
     }
 }

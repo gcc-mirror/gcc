@@ -2527,7 +2527,7 @@ perfect_nestify (struct loops *loops,
 		      if (!exit_phi_for_loop_p (loop->inner, imm_stmt))
 			{
 			  block_stmt_iterator tobsi = bsi_after_labels (bb_for_stmt (imm_stmt));
-			  bsi_move_after (&bsi, &tobsi);
+			  bsi_move_before (&bsi, &tobsi);
 			  update_stmt (stmt);
 			  BREAK_FROM_SAFE_IMM_USE (imm_iter);
 			} 

@@ -1,3 +1,26 @@
+2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/26821
+
+	Backport from mainline:
+
+	2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/26821
+	* tree-ssa-math-opts.c (get_constant_one): New.
+	(insert_reciprocals): Use it.
+
+	2006-02-02  Paolo Bonzini  <bonzini@gnu.org>
+            
+	* tree-flow-inline.h (bsi_after_labels): Rewrite, return
+	what its name says.
+	* lambda-code.c (perfect_nestify): Use bsi_insert_before on
+	bsi_after_labels iterator.
+	* tree-if-conv.c (find_phi_replacement_condition,
+	replace_phi_with_cond_modify_expr): Likewise.
+	* tree-scalar-evolution.c (scev_const_prop): Likewise.
+	* tree-ssa-loop-ivopts.c (compute_phi_arg_on_exit): Likewise.   
+
 2006-04-18  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/27095
@@ -5,7 +28,7 @@
 	and emit libcall here in case the builtin fails.
 	(expand_builtin_strcmp): Always emit the libcall here on failure.
 
-2005-04-16  Uros Bizjak  <uros@kss-loka.si>
+2006-04-16  Uros Bizjak  <uros@kss-loka.si>
 
 	PR middle-end/27134
 	* builtins.c (expand_builtin_int_roundingfn): Use expand_expr()
