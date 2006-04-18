@@ -1,3 +1,9 @@
+2006-04-18  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/27087
+        * tree-ssa-copy.c (may_propagate_copy): Test flow sensitive
+        alias information too.
+
 2006-04-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* builtins.c (expand_builtin_strcmp): Cover label definition of 

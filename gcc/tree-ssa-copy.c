@@ -117,6 +117,21 @@ may_propagate_copy (tree dest, tree orig)
       else if (get_alias_set (TREE_TYPE (type_d)) != 
 	       get_alias_set (TREE_TYPE (type_o)))
 	return false;
+
+      /* Also verify flow-sensitive information is compatible.  */
+      if (SSA_NAME_PTR_INFO (orig) && SSA_NAME_PTR_INFO (dest))
+	{
+	  struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig);
+	  struct ptr_info_def *dest_ptr_info = SSA_NAME_PTR_INFO (dest);
+
+	  if (orig_ptr_info->name_mem_tag
+	      && dest_ptr_info->name_mem_tag
+	      && orig_ptr_info->pt_vars
+	      && dest_ptr_info->pt_vars
+	      && !bitmap_intersect_p (dest_ptr_info->pt_vars,
+				      orig_ptr_info->pt_vars))
+	    return false;
+	}
     }
 
   /* If the destination is a SSA_NAME for a virtual operand, then we have
