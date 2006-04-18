@@ -2682,8 +2682,9 @@ if a variable may be clobbered by a @code{setjmp} call.
 
 These warnings are possible only in optimizing compilation,
 because they require data flow information that is computed only
-when optimizing.  If you don't specify @option{-O}, you simply won't
-get these warnings.
+when optimizing.  If you do not specify @option{-O}, you will not get 
+these warnings. Instead, GCC will issue a warning about @option{-Wuninitialized}
+requiring @option{-O}.
 
 If you want to warn about code which uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
