@@ -1,3 +1,8 @@
+2006-04-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (prune_unused_types_update_strings): Don't add strings
+	to hash table twice when the debug_str section has SECTION_MERGE.
+
 2006-04-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/soft-fp: New directory.  From glibc.
