@@ -1,3 +1,7 @@
+2006-04-18  Devang Patel  <dpatel@apple.com>
+
+	* doc/invoke.texi (-Wuninitialized): Clarify -O connection.
+	
 2006-04-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/t-symbian: Add rule to build sh-c.o
