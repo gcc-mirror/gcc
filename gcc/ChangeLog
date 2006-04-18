@@ -1,3 +1,10 @@
+2006-04-18  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/27095
+	* builtins.c: (expand_builtin_memset): Stabilize args before expansion
+	and emit libcall here in case the builtin fails.
+	(expand_builtin_strcmp): Always emit the libcall here on failure.
+
 2005-04-16  Uros Bizjak  <uros@kss-loka.si>
 
 	PR middle-end/27134
