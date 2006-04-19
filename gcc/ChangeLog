@@ -1,5 +1,6 @@
 2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	PR rtl-optimization/14261
 	* ifcvt.c (noce_emit_move_insn): Call store_bit_field if the resulting
 	move would be an INSV insn.
 	(noce_process_if_block): Don't optimize if the destination is a 
