@@ -5230,6 +5230,9 @@ tsubst_friend_function (tree decl, tree args)
       old_decl = pushdecl_namespace_level (new_friend, /*is_friend=*/true);
       pop_nested_namespace (ns);
 
+      if (old_decl == error_mark_node)
+	return error_mark_node;
+
       if (old_decl != new_friend)
 	{
 	  /* This new friend declaration matched an existing
