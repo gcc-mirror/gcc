@@ -1,3 +1,11 @@
+2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/10385
+	* rtti.c (build_dynamic_cast_1): Check for invalid conversions
+	before calling convert_to_reference.
+	* cvt.c (convert_to_reference): Assert that reftype is a
+	REFERENCE_TYPE.
+
 2006-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26365
@@ -3615,7 +3623,7 @@
 	* pt.c (instantiate_class_template,
 	resolve_typename_type): Likewise.
 
-2005-01-03  Volker Reichelt  <reichelt@igpm.rwth-aaachen.de>
+2005-01-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/14136
 	* parser.c (cp_parser_unqualified_id): Do not issue error message
