@@ -1,5 +1,11 @@
 2006-04-19  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (CLEANFILES): Removed all_java_filelist_files,
+	all_java_deps_files.
+
+2006-04-19  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/java/nio/channels/natFileChannelPosix.cc (write): Properly
 	handle EINTR.
 

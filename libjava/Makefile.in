@@ -838,9 +838,7 @@ classpath/resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactory \
 classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory
 
 propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))
-CLEANFILES = libgcj-$(gcc_version).jar \
-	$(all_java_deps_files) $(all_java_filelist_files)
-
+CLEANFILES = libgcj-$(gcc_version).jar
 DISTCLEANFILES = native.dirs
 SUFFIXES = .class .java .h .properties .list
 gnu_CORBA_source_files = \
