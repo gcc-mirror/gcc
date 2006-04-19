@@ -1,3 +1,11 @@
+2006-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27102
+	* g++.dg/template/crash35.C: Tweak error markers.
+	* g++.dg/template/crash46.C: New test.
+	* g++.old-deja/g++.brendan/friend4.C: Tweak error markers.
+	* g++.old-deja/g++.pt/incomplete1.C: Likewise.
+
 2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR rtl-optimization/14261

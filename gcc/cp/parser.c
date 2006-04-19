@@ -780,7 +780,8 @@ static cp_parameter_declarator *make_parameter_declarator
 static cp_declarator *make_ptrmem_declarator
   (cp_cv_quals, tree, cp_declarator *);
 
-cp_declarator *cp_error_declarator;
+/* An erroneous declarator.  */
+static cp_declarator *cp_error_declarator;
 
 /* The obstack on which declarators and related data structures are
    allocated.  */
@@ -1389,9 +1390,9 @@ static bool cp_parser_translation_unit
 static tree cp_parser_primary_expression
   (cp_parser *, bool, bool, bool, cp_id_kind *);
 static tree cp_parser_id_expression
-  (cp_parser *, bool, bool, bool *, bool);
+  (cp_parser *, bool, bool, bool *, bool, bool);
 static tree cp_parser_unqualified_id
-  (cp_parser *, bool, bool, bool);
+  (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_nested_name_specifier_opt
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_nested_name_specifier
@@ -1536,7 +1537,7 @@ static enum tree_code cp_parser_ptr_operator
 static cp_cv_quals cp_parser_cv_qualifier_seq_opt
   (cp_parser *);
 static tree cp_parser_declarator_id
-  (cp_parser *);
+  (cp_parser *, bool);
 static tree cp_parser_type_id
   (cp_parser *);
 static void cp_parser_type_specifier_seq
@@ -2142,7 +2143,8 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 				/*template_keyword_p=*/false,
 				/*check_dependency_p=*/true,
 				/*template_p=*/NULL,
-				/*declarator_p=*/true);
+				/*declarator_p=*/true,
+				/*optional_p=*/false);
   /* After the id-expression, there should be a plain identifier,
      otherwise this is not a simple variable declaration. Also, if
      the scope is dependent, we cannot do much.  */
@@ -3021,7 +3023,8 @@ cp_parser_primary_expression (cp_parser *parser,
 				     /*template_keyword_p=*/false,
 				     /*check_dependency_p=*/true,
 				     &template_p,
-				     /*declarator_p=*/false);
+				     /*declarator_p=*/false,
+				     /*optional_p=*/false);
 	if (id_expression == error_mark_node)
 	  return error_mark_node;
 	token = cp_lexer_peek_token (parser->lexer);
@@ -3154,7 +3157,8 @@ cp_parser_id_expression (cp_parser *parser,
 			 bool template_keyword_p,
 			 bool check_dependency_p,
 			 bool *template_p,
-			 bool declarator_p)
+			 bool declarator_p,
+			 bool optional_p)
 {
   bool global_scope_p;
   bool nested_name_specifier_p;
@@ -3197,7 +3201,8 @@ cp_parser_id_expression (cp_parser *parser,
       /* Process the final unqualified-id.  */
       unqualified_id = cp_parser_unqualified_id (parser, *template_p,
 						 check_dependency_p,
-						 declarator_p);
+						 declarator_p,
+						 /*optional_p=*/false);
       /* Restore the SAVED_SCOPE for our caller.  */
       parser->scope = saved_scope;
       parser->object_scope = saved_object_scope;
@@ -3255,7 +3260,8 @@ cp_parser_id_expression (cp_parser *parser,
   else
     return cp_parser_unqualified_id (parser, template_keyword_p,
 				     /*check_dependency_p=*/true,
-				     declarator_p);
+				     declarator_p,
+				     optional_p);
 }
 
 /* Parse an unqualified-id.
@@ -3284,7 +3290,8 @@ static tree
 cp_parser_unqualified_id (cp_parser* parser,
 			  bool template_keyword_p,
 			  bool check_dependency_p,
-			  bool declarator_p)
+			  bool declarator_p, 
+			  bool optional_p)
 {
   cp_token *token;
 
@@ -3505,6 +3512,8 @@ cp_parser_unqualified_id (cp_parser* parser,
       /* Fall through.  */
 
     default:
+      if (optional_p)
+	return NULL_TREE;
       cp_parser_error (parser, "expected unqualified-id");
       return error_mark_node;
     }
@@ -4501,7 +4510,8 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	       cp_parser_optional_template_keyword (parser),
 	       /*check_dependency_p=*/true,
 	       &template_p,
-	       /*declarator_p=*/false));
+	       /*declarator_p=*/false,
+	       /*optional_p=*/false));
       /* In general, build a SCOPE_REF if the member name is qualified.
 	 However, if the name was not dependent and has already been
 	 resolved; there is no need to build the SCOPE_REF.  For example;
@@ -8623,7 +8633,8 @@ cp_parser_type_parameter (cp_parser* parser)
 					 /*template_keyword_p=*/false,
 					 /*check_dependency_p=*/true,
 					 /*template_p=*/&is_template,
-					 /*declarator_p=*/false);
+					 /*declarator_p=*/false,
+					 /*optional_p=*/false);
 	    if (TREE_CODE (default_argument) == TYPE_DECL)
 	      /* If the id-expression was a template-id that refers to
 		 a template-class, we already have the declaration here,
@@ -9177,7 +9188,8 @@ cp_parser_template_argument (cp_parser* parser)
 				      /*template_keyword_p=*/false,
 				      /*check_dependency_p=*/true,
 				      &template_p,
-				      /*declarator_p=*/false);
+				      /*declarator_p=*/false,
+				      /*optional_p=*/false);
   /* If the next token isn't a `,' or a `>', then this argument wasn't
      really finished.  */
   if (!cp_parser_next_token_ends_template_argument_p (parser))
@@ -10624,7 +10636,8 @@ cp_parser_using_declaration (cp_parser* parser)
   identifier = cp_parser_unqualified_id (parser,
 					 /*template_keyword_p=*/false,
 					 /*check_dependency_p=*/true,
-					 /*declarator_p=*/true);
+					 /*declarator_p=*/true,
+					 /*optional_p=*/false);
 
   /* The function we call to handle a using-declaration is different
      depending on what scope we are in.  */
@@ -11515,25 +11528,31 @@ cp_parser_direct_declarator (cp_parser* parser,
 	  tree qualifying_scope;
 	  tree unqualified_name;
 	  special_function_kind sfk;
+	  bool abstract_ok;
 
 	  /* Parse a declarator-id */
-	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
+	  abstract_ok = (dcl_kind == CP_PARSER_DECLARATOR_EITHER);
+	  if (abstract_ok)
 	    cp_parser_parse_tentatively (parser);
-	  unqualified_name = cp_parser_declarator_id (parser);
+	  unqualified_name 
+	    = cp_parser_declarator_id (parser, /*optional_p=*/abstract_ok);
 	  qualifying_scope = parser->scope;
-	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
+	  if (abstract_ok)
 	    {
 	      if (!cp_parser_parse_definitely (parser))
 		unqualified_name = error_mark_node;
-	      else if (qualifying_scope
-		       || (TREE_CODE (unqualified_name)
-			   != IDENTIFIER_NODE))
+	      else if (unqualified_name
+		       && (qualifying_scope
+			   || (TREE_CODE (unqualified_name)
+			       != IDENTIFIER_NODE)))
 		{
 		  cp_parser_error (parser, "expected unqualified-id");
 		  unqualified_name = error_mark_node;
 		}
 	    }
 
+	  if (!unqualified_name)
+	    return NULL;
 	  if (unqualified_name == error_mark_node)
 	    {
 	      declarator = cp_error_declarator;
@@ -11853,7 +11872,7 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
    unqualified-id.  */
 
 static tree
-cp_parser_declarator_id (cp_parser* parser)
+cp_parser_declarator_id (cp_parser* parser, bool optional_p)
 {
   tree id;
   /* The expression must be an id-expression.  Assume that qualified
@@ -11874,8 +11893,9 @@ cp_parser_declarator_id (cp_parser* parser)
 				/*template_keyword_p=*/false,
 				/*check_dependency_p=*/false,
 				/*template_p=*/NULL,
-				/*declarator_p=*/true);
-  if (BASELINK_P (id))
+				/*declarator_p=*/true,
+				optional_p);
+  if (id && BASELINK_P (id))
     id = BASELINK_FUNCTIONS (id);
   return id;
 }
@@ -15298,7 +15318,6 @@ cp_parser_function_definition_from_specifiers_and_declarator
   if (!success_p)
     {
       /* Skip the entire function.  */
-      error ("invalid function declaration");
       cp_parser_skip_to_end_of_block_or_statement (parser);
       fn = error_mark_node;
     }
@@ -17786,7 +17805,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
       name = cp_parser_id_expression (parser, /*template_p=*/false,
 				      /*check_dependency_p=*/true,
 				      /*template_p=*/NULL,
-				      /*declarator_p=*/false);
+				      /*declarator_p=*/false,
+				      /*optional_p=*/false);
       if (name == error_mark_node)
 	goto skip_comma;
 

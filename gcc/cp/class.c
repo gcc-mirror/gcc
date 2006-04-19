@@ -5496,25 +5496,33 @@ pop_class_stack (void)
     --current_class_stack[current_class_depth - 1].hidden;
 }
 
-/* Returns 1 if current_class_type is either T or a nested type of T.
-   We start looking from 1 because entry 0 is from global scope, and has
-   no type.  */
+/* Returns 1 if the class type currently being defined is either T or
+   a nested type of T.  */
 
-int
+bool
 currently_open_class (tree t)
 {
   int i;
-  if (current_class_type && same_type_p (t, current_class_type))
-    return 1;
-  for (i = current_class_depth - 1; i > 0; --i)
+
+  /* We start looking from 1 because entry 0 is from global scope,
+     and has no type.  */
+  for (i = current_class_depth; i > 0; --i)
     {
-      if (current_class_stack[i].hidden)
-	break;
-      if (current_class_stack[i].type
-	  && same_type_p (current_class_stack [i].type, t))
-	return 1;
+      tree c;
+      if (i == current_class_depth)
+	c = current_class_type;
+      else
+	{
+	  if (current_class_stack[i].hidden)
+	    break;
+	  c = current_class_stack[i].type;
+	}
+      if (!c)
+	continue;
+      if (same_type_p (c, t))
+	return true;
     }
-  return 0;
+  return false;
 }
 
 /* If either current_class_type or one of its enclosing classes are derived
