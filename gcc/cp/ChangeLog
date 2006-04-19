@@ -1,3 +1,11 @@
+2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/10385
+	* rtti.c (build_dynamic_cast_1): Check for invalid conversions
+	before calling convert_to_reference.
+	* cvt.c (convert_to_reference): Assert that reftype is a
+	REFERENCE_TYPE.
+
 2006-04-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27102
