@@ -1,5 +1,8 @@
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/26739
+	* g++.old-deja/g++.pt/friend36.C: Adjust error markers.
+
 	PR c++/26036
 	* g++.dg/expr/call3.C: New test.
 
