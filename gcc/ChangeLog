@@ -1,3 +1,8 @@
+2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md: Add comments with the instructions emitted
+	by an insn pattern if macros are used.
+
 2006-04-19  Alan Modra  <amodra@bigpond.net.au>
 
 	PR rtl-optimization/26026
