@@ -1,3 +1,10 @@
+2006-04-19  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/26424
+	* include/tr1/hashtable (X<>::primes): Extend for 64-bit machines.
+	(X<>::n_primes): Adjust.
+	(prime_rehash_policy::next_bkt, bkt_for_elements, need_rehash): Adjust.
+
 2006-04-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/faq/index.html ([5.5]): Adjust to mention function
