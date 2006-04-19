@@ -1,3 +1,10 @@
+2006-04-18  DJ Delorie  <dj@redhat.com>
+
+	* configure.in (m32c): Build libstdc++-v3.  Pass flags to
+	reference libgloss so that libssp can be built in a combined
+	tree.
+	* configure: Regenerate.
+
 2006-04-08  Robert Millan  <rmh@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -42,7 +49,7 @@
 	* MAINTAINERS (Write After Approval):  Remove myself.
 	(Language Front End Maintainers):  Add myself as fortran 95 maintainer.
 
-2006-02-21 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-02-21 Rafael Ãvila de EspÃ­ndola <rafael.espindola@gmail.com>
 	* Makefile.tpl  (BUILD_CONFIGDIRS): Remove.
 	(TARGET_CONFIGDIRS): Remove.
 	* configure.in: Remove AC_SUBST(target_configdirs).
@@ -1952,7 +1959,7 @@
 	of libf2c.
 	* configure, Makefile.in: Regenerate.
 
-2004-05-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+2004-05-13  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 

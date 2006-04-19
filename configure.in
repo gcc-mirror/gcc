@@ -445,9 +445,6 @@ case "${target}" in
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
-  m32c-*-*)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
-    ;;
   alpha*-dec-osf*)
     # ld works, but does not support shared libraries.
     # newlib is not 64 bit ready.  I'm not sure about fileutils.
@@ -2128,6 +2125,20 @@ if test "x${use_gnu_ld}" = x &&
   # Arrange for us to find uninstalled linker scripts.
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(HOST_SUBDIR)/ld'
 fi
+
+# Search for other target-specific linker scripts and such.
+case "${target}" in
+  m32c-*-* )
+    if test -d ${srcdir}/libgloss/m32c; then
+      # This is for crt0.o
+      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/libgloss/m32c'
+      # This is for r8c.ld
+      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/libgloss/m32c'
+      # This is for libnosys.a
+      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/libgloss/libnosys'
+    fi
+    ;;
+esac
 
 # Makefile fragments.
 for frag in host_makefile_frag target_makefile_frag alphaieee_frag ospace_frag;
