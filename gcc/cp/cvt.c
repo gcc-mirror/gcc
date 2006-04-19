@@ -460,6 +460,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
   intype = TREE_TYPE (expr);
 
   gcc_assert (TREE_CODE (intype) != REFERENCE_TYPE);
+  gcc_assert (TREE_CODE (reftype) == REFERENCE_TYPE);
 
   intype = TYPE_MAIN_VARIANT (intype);
 
