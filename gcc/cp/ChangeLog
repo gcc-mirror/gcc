@@ -1,5 +1,9 @@
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/26558
+	* parser.c (cp_parser_class_name): Check for invalid typenames.
+	Rearrange code.
+
 	PR c++/26739
 	* pt.c (tsubst_friend_function): Return early if
 	pushdecl_namespace_level fails.

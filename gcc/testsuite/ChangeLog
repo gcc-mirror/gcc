@@ -1,5 +1,8 @@
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/26558
+	* g++.dg/parse/template19.C: New test.
+
 	PR c++/26739
 	* g++.old-deja/g++.pt/friend36.C: Adjust error markers.
 
