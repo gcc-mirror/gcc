@@ -84,6 +84,7 @@ final class ActiveModeDTP
       }
     this.connectionTimeout = connectionTimeout;
     acceptThread = new Thread(this, "ActiveModeDTP");
+    acceptThread.setDaemon(true);
     acceptThread.start();
   }
 

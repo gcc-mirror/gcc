@@ -1,3 +1,10 @@
+2006-04-19  Tom Tromey  <tromey@redhat.com>
+
+	PR classpath/27163:
+	* gnu/java/net/protocol/ftp/ActiveModeDTP.java: Replaced with
+	latest classpath version.
+	* gnu/java/net/protocol/ftp/FTPURLConnection.java: Likewise.
+
 2006-04-11  Mark Wielaard  <mark@klomp.org>
 
 	PR 27081
