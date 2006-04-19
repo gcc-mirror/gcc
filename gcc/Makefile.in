@@ -2446,7 +2446,7 @@ loop-unroll.o: loop-unroll.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
    output.h $(EXPR_H) coretypes.h $(TM_H) $(HASHTAB_H) $(RECOG_H) \
    $(OBSTACK_H)
 dominance.o : dominance.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   hard-reg-set.h $(BASIC_BLOCK_H) et-forest.h $(OBSTACK_H) toplev.h
+   hard-reg-set.h $(BASIC_BLOCK_H) et-forest.h $(OBSTACK_H) toplev.h $(TIMEVAR_H)
 et-forest.o : et-forest.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    et-forest.h alloc-pool.h $(BASIC_BLOCK_H)
 combine.o : combine.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
