@@ -1,3 +1,10 @@
+2006-04-19  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/26854
+	* tree-ssa-dse.c (dse_optimize_stmt): Use has_single_use rather
+	than num_imm_uses.
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Similarly.
+
 2006-04-18  Jeff Law  <law@redhat.com>
 
         PR tree-optimization/27087
