@@ -470,18 +470,18 @@ namespace Internal
       { return x < y; }
   };
 
-  template<int dummy>
+  template<int ulongsize = sizeof(unsigned long)>
     struct X
     {
-      static const int n_primes = 256;
-      static const unsigned long primes[n_primes + 1];
+      static const int n_primes = ulongsize != 8 ? 256 : 256 + 48;
+      static const unsigned long primes[256 + 48 + 1];
     };
 
-  template<int dummy>
-    const int X<dummy>::n_primes;
+  template<int ulongsize>
+    const int X<ulongsize>::n_primes;
 
-  template<int dummy>
-    const unsigned long X<dummy>::primes[n_primes + 1] =
+  template<int ulongsize>
+    const unsigned long X<ulongsize>::primes[256 + 48 + 1] =
     {
       2ul, 3ul, 5ul, 7ul, 11ul, 13ul, 17ul, 19ul, 23ul, 29ul, 31ul,
       37ul, 41ul, 43ul, 47ul, 53ul, 59ul, 61ul, 67ul, 71ul, 73ul, 79ul,
@@ -524,7 +524,38 @@ namespace Internal
       2364114217ul, 2557710269ul, 2767159799ul, 2993761039ul,
       3238918481ul, 3504151727ul, 3791104843ul, 4101556399ul,
       4294967291ul,
-      4294967291ul // sentinel so we don't have to test result of lower_bound
+      // Sentinel, so we don't have to test the result of lower_bound,
+      // or, on 64-bit machines, rest of the table.
+      ulongsize != 8 ? 4294967291ul : (unsigned long)6442450933ull,
+      (unsigned long)8589934583ull,
+      (unsigned long)12884901857ull, (unsigned long)17179869143ull,
+      (unsigned long)25769803693ull, (unsigned long)34359738337ull,
+      (unsigned long)51539607367ull, (unsigned long)68719476731ull,
+      (unsigned long)103079215087ull, (unsigned long)137438953447ull,
+      (unsigned long)206158430123ull, (unsigned long)274877906899ull,
+      (unsigned long)412316860387ull, (unsigned long)549755813881ull,
+      (unsigned long)824633720731ull, (unsigned long)1099511627689ull,
+      (unsigned long)1649267441579ull, (unsigned long)2199023255531ull,
+      (unsigned long)3298534883309ull, (unsigned long)4398046511093ull,
+      (unsigned long)6597069766607ull, (unsigned long)8796093022151ull,
+      (unsigned long)13194139533241ull, (unsigned long)17592186044399ull,
+      (unsigned long)26388279066581ull, (unsigned long)35184372088777ull,
+      (unsigned long)52776558133177ull, (unsigned long)70368744177643ull,
+      (unsigned long)105553116266399ull, (unsigned long)140737488355213ull,
+      (unsigned long)211106232532861ull, (unsigned long)281474976710597ull,
+      (unsigned long)562949953421231ull, (unsigned long)1125899906842597ull,
+      (unsigned long)2251799813685119ull, (unsigned long)4503599627370449ull,
+      (unsigned long)9007199254740881ull, (unsigned long)18014398509481951ull,
+      (unsigned long)36028797018963913ull, (unsigned long)72057594037927931ull,
+      (unsigned long)144115188075855859ull,
+      (unsigned long)288230376151711717ull,
+      (unsigned long)576460752303423433ull,
+      (unsigned long)1152921504606846883ull,
+      (unsigned long)2305843009213693951ull,
+      (unsigned long)4611686018427387847ull,
+      (unsigned long)9223372036854775783ull,
+      (unsigned long)18446744073709551557ull,
+      (unsigned long)18446744073709551557ull
     };
 
   inline
@@ -543,8 +574,8 @@ namespace Internal
   prime_rehash_policy::
   next_bkt(std::size_t n) const
   {
-    const unsigned long* const last = X<0>::primes + X<0>::n_primes;
-    const unsigned long* p = std::lower_bound(X<0>::primes, last, n);
+    const unsigned long* const last = X<>::primes + X<>::n_primes;
+    const unsigned long* p = std::lower_bound(X<>::primes, last, n);
     m_next_resize = static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
     return *p;
   }
@@ -555,9 +586,9 @@ namespace Internal
   prime_rehash_policy::
   bkt_for_elements(std::size_t n) const
   {
-    const unsigned long* const last = X<0>::primes + X<0>::n_primes;
+    const unsigned long* const last = X<>::primes + X<>::n_primes;
     const float min_bkts = n / m_max_load_factor;
-    const unsigned long* p = std::lower_bound(X<0>::primes, last,
+    const unsigned long* p = std::lower_bound(X<>::primes, last,
 					      min_bkts, lt());
     m_next_resize = static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
     return *p;
@@ -582,8 +613,8 @@ namespace Internal
 	if (min_bkts > n_bkt)
 	  {
 	    min_bkts = std::max(min_bkts, m_growth_factor * n_bkt);
-	    const unsigned long* const last = X<0>::primes + X<0>::n_primes;
-	    const unsigned long* p = std::lower_bound(X<0>::primes, last,
+	    const unsigned long* const last = X<>::primes + X<>::n_primes;
+	    const unsigned long* p = std::lower_bound(X<>::primes, last,
 						      min_bkts, lt());
 	    m_next_resize = 
 	      static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
