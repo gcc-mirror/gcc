@@ -1,3 +1,11 @@
+2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR mudflap/26789
+	* testsuite/libmudflap.c++/error1-frag.cxx: New test.
+
+	PR mudflap/26790
+	* testsuite/libmudflap.c++/error2-frag.cxx: New test.
+
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libmudflap.exp (libmudflap-init): Recognize multilib
