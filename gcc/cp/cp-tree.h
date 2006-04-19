@@ -3184,10 +3184,6 @@ typedef enum base_kind {
 			     binfo.  */
 } base_kind;
 
-/* in decl{2}.c */
-/* A node that is a list (length 1) of error_mark_nodes.  */
-extern GTY(()) tree error_mark_list;
-
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
 #define vfunc_ptr_type_node  vtable_entry_type

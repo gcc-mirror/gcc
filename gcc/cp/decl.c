@@ -106,9 +106,6 @@ static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
 static tree next_initializable_field (tree);
 
-/* Erroneous argument lists can use this *IFF* they do not modify it.  */
-tree error_mark_list;
-
 /* The following symbols are subsumed in the cp_global_trees array, and
    listed here individually for documentation purposes.
 
@@ -3117,9 +3114,6 @@ cxx_init_decl_processing (void)
 
   /* Initially, C.  */
   current_lang_name = lang_name_c;
-
-  error_mark_list = build_tree_list (error_mark_node, error_mark_node);
-  TREE_TYPE (error_mark_list) = error_mark_node;
 
   /* Create the `std' namespace.  */
   push_namespace (std_identifier);

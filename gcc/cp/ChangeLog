@@ -1,5 +1,12 @@
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/26036
+	* typeck.c (convert_arguments): Return error_mark_node instead of
+	error_mark_list.
+	* cp-tree.h (error_mark_list): Remove declaration.
+	* decl.c (error_mark_list): Remove definition.
+	(cxx_init_decl_processing): Do not initialize error_mark_list.
+
 	PR c++/10385
 	* rtti.c (build_dynamic_cast_1): Check for invalid conversions
 	before calling convert_to_reference.

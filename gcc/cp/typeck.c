@@ -2787,7 +2787,7 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 	    }
 	  else
 	    error ("too few arguments to function");
-	  return error_mark_list;
+	  return error_mark_node;
 	}
     }
 

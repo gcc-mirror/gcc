@@ -1,5 +1,8 @@
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/26036
+	* g++.dg/expr/call3.C: New test.
+
 	PR c++/10385
 	* g++.dg/conversion/dynamic1.C: New test.
 
