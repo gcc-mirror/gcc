@@ -12830,15 +12830,18 @@ cp_parser_class_name (cp_parser *parser,
        standard does not seem to be definitive, but there is no other
        valid interpretation of the following `::'.  Therefore, those
        names are considered class-names.  */
-    decl = TYPE_NAME (make_typename_type (scope, decl, tag_type, tf_error));
-  else if (decl == error_mark_node
-	   || TREE_CODE (decl) != TYPE_DECL
+    {
+      decl = make_typename_type (scope, decl, tag_type, tf_error);
+      if (decl != error_mark_node)
+	decl = TYPE_NAME (decl);
+    }
+  else if (TREE_CODE (decl) != TYPE_DECL
 	   || TREE_TYPE (decl) == error_mark_node
 	   || !IS_AGGR_TYPE (TREE_TYPE (decl)))
-    {
-      cp_parser_error (parser, "expected class-name");
-      return error_mark_node;
-    }
+    decl = error_mark_node;
+
+  if (decl == error_mark_node)
+    cp_parser_error (parser, "expected class-name");
 
   return decl;
 }
