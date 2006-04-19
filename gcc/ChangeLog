@@ -1691,10 +1691,10 @@
 
 2006-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
-	PR mudflap/26790
+	PR mudflap/26789
 	* tree-mudflap.c (mudflap_finish_file): Skip erroneous objects.
 
-	PR mudflap/26789
+	PR mudflap/26790
 	* tree-mudflap.c (mf_xform_derefs_1): Return early on error_mark_node.
 
 2006-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
