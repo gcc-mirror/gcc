@@ -1,3 +1,10 @@
+2006-04-19  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* dominance.c: Include timevar.h.
+	(calculate_dominance_info): Use TV_DOMINANCE.
+	* timevar.def (TV_DOMINANCE): New timevar.
+	* Makefile.in (dominance.o): Add TIMEVAR_H dependency.
+
 2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR rtl-optimization/14261
