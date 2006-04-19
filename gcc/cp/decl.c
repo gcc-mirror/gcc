@@ -6956,7 +6956,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    break;
 
 	  case cdk_error:
-	    break;
+	    return error_mark_node;
 
 	  default:
 	    gcc_unreachable ();
@@ -6966,11 +6966,15 @@ grokdeclarator (const cp_declarator *declarator,
 	break;
     }
 
-  /* A function definition's declarator must have the form of
-     a function declarator.  */
-
+  /* [dcl.fct.edf]
+     
+     The declarator in a function-definition shall have the form
+     D1 ( parameter-declaration-clause) ...  */
   if (funcdef_flag && innermost_code != cdk_function)
-    return NULL_TREE;
+    {
+      error ("function definition does not declare parameters");
+      return error_mark_node;
+    }
 
   if (((dname && IDENTIFIER_OPNAME_P (dname)) || flags == TYPENAME_FLAG)
       && innermost_code != cdk_function
@@ -7711,6 +7715,20 @@ grokdeclarator (const cp_declarator *declarator,
 	    pedwarn ("extra qualification %<%T::%> on member %qs",
 		     ctype, name);
 	}
+      else if (/* If the qualifying type is already complete, then we
+		  can skip the following checks.  */
+	       !COMPLETE_TYPE_P (ctype)
+	       /* If a function is being defined, then the qualifing
+		  type must be complete.  The qualifing type may be
+		  incomplete for a declaration only if the qualitying
+		  type is one of the classes presently being defined,
+		  or if it is a dependent type.  */
+	       && (funcdef_flag 
+		   || !(dependent_type_p (ctype)
+			|| currently_open_class (ctype)))
+	       /* Check that the qualifing type is complete.  */
+	       && !complete_type_or_else (ctype, NULL_TREE))
+	return error_mark_node;
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
 	  tree sname = declarator->u.id.unqualified_name;
@@ -7736,23 +7754,10 @@ grokdeclarator (const cp_declarator *declarator,
 					       TYPE_ARG_TYPES (type));
 	}
       else if (declspecs->specs[(int)ds_typedef]
-	       || COMPLETE_TYPE_P (complete_type (ctype)))
+	       && current_class_type)
 	{
-	  /* Have to move this code elsewhere in this function.
-	     this code is used for i.e., typedef int A::M; M *pm;
-
-	     It is?  How? jason 10/2/94 */
-
-	  if (current_class_type)
-	    {
-	      error ("cannot declare member %<%T::%s%> within %qT",
-		     ctype, name, current_class_type);
-	      return void_type_node;
-	    }
-	}
-      else
-	{
-	  cxx_incomplete_type_error (NULL_TREE, ctype);
+	  error ("cannot declare member %<%T::%s%> within %qT",
+		 ctype, name, current_class_type);
 	  return error_mark_node;
 	}
     }

@@ -1,3 +1,30 @@
+2006-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27102
+	* class.c (currently_open_class): Tidy.
+	* decl.c (grokdeclarator): If we encounter an erroneous
+	declarator, assume that we have already issued an error message
+	and return.  Return error_mark_node instead of NULL_TREE in more
+	places.  Issue errors about function definitions that do not have
+	a function declarator.  Check for complete types for all function
+	definitions. 
+	* cp-tree.h (cp_error_declarator): Remove.
+	(currently_open_class): Change return type.
+	* parser.c (cp_parser_id_expression): Add optional_p parameter.
+	(cp_parser_parse_diagnose_invalid_type_name): Adjust calls.
+	(cp_parser_id_expression): Likewise.
+	(cp_parser_unqualified_id): If the name is optional, return
+	NULL_TREE.
+	(cp_parser_postfix_dot_deref_expression): Adjust calls.
+	(cp_parser_type_parameter): Likewise.
+	(cp_parser_unqualified_id): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_declarator_id): Add optional_p parameter.
+	(cp_parser_function_definition_from_specifiers_and_declarator):
+	Assume that start_function indicates failure only if it has issued
+	an error.
+	(cp_parser_omp_var_list_no_open): Adjust calls.
+	
 2006-04-17  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c++/26114, c++/26115
