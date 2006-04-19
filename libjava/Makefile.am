@@ -327,8 +327,7 @@ libgcj-$(gcc_version).jar: classpath/lib/compile-classes
 	cd classpath/lib; $(JAR) -cfM \
 	    ../../libgcj-$(gcc_version).jar gnu java javax org
 
-CLEANFILES = libgcj-$(gcc_version).jar \
-	$(all_java_deps_files) $(all_java_filelist_files)
+CLEANFILES = libgcj-$(gcc_version).jar
 DISTCLEANFILES = native.dirs
 
 mostlyclean-local:
