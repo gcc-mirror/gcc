@@ -1,5 +1,12 @@
 2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* ifcvt.c (noce_emit_move_insn): Call store_bit_field if the resulting
+	move would be an INSV insn.
+	(noce_process_if_block): Don't optimize if the destination is a 
+	ZERO_EXTRACT which can't be handled by noce_emit_move_insn.
+
+2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.md: Add comments with the instructions emitted
 	by an insn pattern if macros are used.
 

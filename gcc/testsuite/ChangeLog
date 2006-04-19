@@ -1,3 +1,7 @@
+2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.c-torture/compile/20060419-1.c: Added.
+
 2006-04-18  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* gfortran.dg/label_1.f90: Adjust dg-error.
