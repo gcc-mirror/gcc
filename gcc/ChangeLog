@@ -1,3 +1,9 @@
+2006-04-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR mudflap/26789
+	* tree-mudflap.c (mudflap_finish_file): Skip function when there
+	were errors.  Remove check for erroneous objects.
+
 2006-04-20  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/26854
