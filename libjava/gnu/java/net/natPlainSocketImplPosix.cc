@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -51,6 +51,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/IllegalArgumentException.h>
+#include <java/net/UnknownHostException.h>
 
 union SockAddr
 {
@@ -136,10 +137,13 @@ gnu::java::net::PlainSocketImpl::bind (::java::net::InetAddress *host, jint lpor
 
 void
 gnu::java::net::PlainSocketImpl::connect (::java::net::SocketAddress *addr,
-                                     jint timeout)
+					  jint timeout)
 {
   ::java::net::InetSocketAddress *tmp = (::java::net::InetSocketAddress*) addr;
   ::java::net::InetAddress *host = tmp->getAddress();
+  if (! host)
+    throw new ::java::net::UnknownHostException(tmp->toString());
+
   jint rport = tmp->getPort();
 	
   // Set the SocketImpl's address and port fields before we try to

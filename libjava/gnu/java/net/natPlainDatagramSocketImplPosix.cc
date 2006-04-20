@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2005  Free Software Foundation
+/* Copyright (C) 2003, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -38,6 +38,7 @@ details.  */
 #include <java/lang/Object.h>
 #include <java/lang/Boolean.h>
 #include <java/lang/Integer.h>
+#include <java/net/UnknownHostException.h>
 
 union SockAddr
 {
@@ -291,7 +292,11 @@ gnu::java::net::PlainDatagramSocketImpl::send (::java::net::DatagramPacket *p)
   // FIXME: Deal with Multicast and if the socket is connected.
   jint rport = p->getPort();
   union SockAddr u;
-  jbyteArray haddress = p->getAddress()->addr;
+  ::java::net::InetAddress *host = p->getAddress();
+  if (! host)
+    throw new ::java::net::UnknownHostException(p->toString());
+
+  jbyteArray haddress = host->addr;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;

@@ -1,3 +1,11 @@
+2006-04-20  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/21941:
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (send): Throw
+	UnknownHostException if needed.
+	* gnu/java/net/natPlainSocketImplPosix.cc (connect): Throw
+	UnknownHostException if needed.
+
 2006-04-19  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
