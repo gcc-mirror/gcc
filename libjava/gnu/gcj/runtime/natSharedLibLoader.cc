@@ -10,6 +10,11 @@ details.  */
 
 #include <config.h>
 
+// If we're using the Boehm GC, then we need this include to override dlopen.
+#ifdef HAVE_BOEHM_GC
+#include <gc.h>
+#endif /* HAVE_BOEHM_GC */
+
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <execution.h>
