@@ -1,3 +1,7 @@
+2006-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20060419-1.c: New test.
+
 2006-04-19  Carlos O'Donell  <carlos@codesourcery.com>
 
 	PR c/26774
