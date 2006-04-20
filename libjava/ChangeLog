@@ -1,3 +1,9 @@
+2004-04-20  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/27170
+	* gnu/gcj/runtime/natSharedLibLoader.cc: Include gc.h to override
+	dlopen(). From Anthony Green.
+
 2006-04-20  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/21941:
