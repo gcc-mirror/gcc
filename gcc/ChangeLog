@@ -1,3 +1,8 @@
+2006-04-20  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Consume all
+	fp regs if the last fp arg doesn't fit in regs.
+
 2006-04-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/27182
