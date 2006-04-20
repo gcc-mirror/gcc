@@ -18861,7 +18861,7 @@ asm_preferred_eh_data_format (int code, int global)
 {
   if (flag_pic)
     {
-int type = DW_EH_PE_sdata8;
+      int type = DW_EH_PE_sdata8;
       if (!TARGET_64BIT
 	  || ix86_cmodel == CM_SMALL_PIC
 	  || (ix86_cmodel == CM_MEDIUM_PIC && (global || code)))
