@@ -765,13 +765,12 @@ merge_phi_nodes (void)
 	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	    {
 	      tree result = PHI_RESULT (phi);
-	      int num_uses = num_imm_uses (result);
 	      use_operand_p imm_use;
 	      tree use_stmt;
 
 	      /* If the PHI's result is never used, then we can just
 		 ignore it.  */
-	      if (num_uses == 0)
+	      if (has_zero_uses (result))
 		continue;
 
 	      /* Get the single use of the result of this PHI node.  */

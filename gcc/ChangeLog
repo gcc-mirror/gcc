@@ -1,3 +1,13 @@
+2006-04-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/26854
+	* tree-ssa-dse.c (dse_optimize_stmt): Avoid num_imm_uses when
+	checking for zero or one use.
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Similarly.
+	* tree-cfgcleanup.c (merge_phi_nodes): Similarly.
+	* tree-ssa-reassoc.c (negate_value): Similarly.
+	(reassociate_bb): Similarly.
+
 2006-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pretty-print.c (pp_c_direct_abstract_declarator): Print

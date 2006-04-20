@@ -269,7 +269,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 
 	  /* If this virtual def does not have precisely one use, then
 	     we will not be able to eliminate STMT.  */
-	  if (num_imm_uses (defvar) != 1)
+	  if (! has_single_use (defvar))
 	    {
 	      fail = true;
 	      break;
