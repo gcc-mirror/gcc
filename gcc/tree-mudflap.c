@@ -1226,6 +1226,10 @@ mudflap_finish_file (void)
 {
   tree ctor_statements = NULL_TREE;
 
+  /* No need to continue when there were errors.  */
+  if (errorcount != 0 || sorrycount != 0)
+    return;
+
   /* Insert a call to __mf_init.  */
   {
     tree call2_stmt = build_function_call_expr (mf_init_fndecl, NULL_TREE);

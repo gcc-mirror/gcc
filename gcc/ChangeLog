@@ -1,3 +1,9 @@
+2006-04-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR mudflap/26789
+	* tree-mudflap.c (mudflap_finish_file): Skip function when there were
+	errors.
+
 2006-04-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/27182
