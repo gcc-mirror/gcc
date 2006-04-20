@@ -1,3 +1,9 @@
+2006-04-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/27182
+	* config/sh/sh.md (movsicc_true+3): Tweak condition for the case
+	that the last insn has the REG_INC note.
+
 2006-04-19  Carlos O'Donell  <carlos@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
