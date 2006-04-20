@@ -1,3 +1,9 @@
+2006-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pretty-print.c (pp_c_direct_abstract_declarator): Print
+	TYPE_MAX_VALUE (TYPE_DOMAIN (t)) + 1 for ARRAY_TYPE rather
+	than plain TYPE_MAX_VALUE (TYPE_DOMAIN (t)).
+
 2006-04-20  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Consume all
