@@ -1032,7 +1032,7 @@ negate_value (tree tonegate, block_stmt_iterator *bsi)
   if (TREE_CODE (tonegate) == SSA_NAME
       && TREE_CODE (negatedef) == MODIFY_EXPR
       && TREE_CODE (TREE_OPERAND (negatedef, 0)) == SSA_NAME
-      && num_imm_uses (TREE_OPERAND (negatedef, 0)) == 1
+      && has_single_use (TREE_OPERAND (negatedef, 0))
       && TREE_CODE (TREE_OPERAND (negatedef, 1)) == PLUS_EXPR)
     {
       block_stmt_iterator bsi;
@@ -1331,7 +1331,7 @@ reassociate_bb (basic_block bb)
 
 	      /* There may be no immediate uses left by the time we
 		 get here because we may have eliminated them all.  */
-	      if (TREE_CODE (lhs) == SSA_NAME && num_imm_uses (lhs) == 0)
+	      if (TREE_CODE (lhs) == SSA_NAME && has_zero_uses (lhs))
 		continue;
 
 	      TREE_VISITED (stmt) = 1;

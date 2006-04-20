@@ -2318,7 +2318,7 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	 The maximum number of times we can re-execute the loop is
 	 bounded by the maximum number of times a given SSA_NAME
 	 appears in a single statement.  */
-      if (all && num_imm_uses (lhs) != 0)
+      if (all && !has_zero_uses (lhs))
 	goto repeat;
 
       /* If we were able to propagate away all uses of LHS, then
