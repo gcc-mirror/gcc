@@ -1,3 +1,7 @@
+2006-04-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (asm_preferred_eh_data_format): Reformat.
+
 2006-04-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR mudflap/26789
