@@ -1,3 +1,8 @@
+2006-04-19  Carlos O'Donell  <carlos@codesourcery.com>
+
+	PR c/26774
+	* gcc.dg/struct-parse-1.c: New test case.
+
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26558

@@ -1,3 +1,13 @@
+2006-04-19  Carlos O'Donell  <carlos@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c/26774
+	* stor-layout.c (update_alignment_for_field): Do not align 
+	ERROR_MARK nodes.
+	(place_union_field): Place union field at the start of the union.
+	(place_field): Move ERROR_MARK check later, and use the current
+	allocation position to maintain monotonicity.
+
 2006-04-19  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* dominance.c: Include timevar.h.
