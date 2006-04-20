@@ -1094,6 +1094,8 @@
   "(HARD_REGNO_NREGS (REGNO (operands[0]), GET_MODE (operands[2]))
     <= HARD_REGNO_NREGS (REGNO (operands[0]), GET_MODE (operands[0])))
    && peep2_reg_dead_p (3, operands[0]) && peep2_reg_dead_p (3, operands[2])
+   && ! FIND_REG_INC_NOTE (peep2_next_insn (2), operands[0])
+   && ! FIND_REG_INC_NOTE (peep2_next_insn (2), operands[2])
    && ! reg_overlap_mentioned_p (operands[0], operands[3])
    && ! reg_overlap_mentioned_p (operands[2], operands[0])
    && ! reg_overlap_mentioned_p (operands[0], operands[1])
