@@ -1,5 +1,11 @@
 2006-04-21  Tom Tromey  <tromey@redhat.com>
 
+	PR classpath/27163:
+	* gnu/java/net/protocol/ftp/FTPConnection.java
+	(changeWorkingDirectory): Do nothing if path is empty.
+
+2006-04-21  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/27231:
 	* gnu/java/net/protocol/http/HTTPURLConnection.java (connect): Handle
 	case where no '/' appears in 'location'.
