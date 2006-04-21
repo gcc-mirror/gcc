@@ -1,3 +1,11 @@
+2006-04-21  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/27230
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Use
+	C++ lang type in traceback table for Objective-C++.
+
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Update comment.
+
 2006-04-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (asm_preferred_eh_data_format): Reformat.
