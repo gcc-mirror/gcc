@@ -1,3 +1,8 @@
+2006-04-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/25875
+	* c-typeck.c (digest_init): Robustify.
+
 2006-04-21  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/pa/t-pa64: Add dependencies on $(GCC_PASSES).
