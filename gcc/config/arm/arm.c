@@ -1230,6 +1230,12 @@ arm_override_options (void)
   if (arm_float_abi == ARM_FLOAT_ABI_HARD && TARGET_VFP)
     sorry ("-mfloat-abi=hard and VFP");
 
+  /* FPA and iWMMXt are incompatible because the insn encodings overlap.
+     VFP and iWMMXt can theoretically coexist, but it's unlikely such silicon
+     will ever exist.  GCC makes no attempt to support this combination.  */
+  if (TARGET_IWMMXT && !TARGET_SOFT_FLOAT)
+    sorry ("iWMMXt and hardware floating point");
+
   /* If soft-float is specified then don't use FPU.  */
   if (TARGET_SOFT_FLOAT)
     arm_fpu_arch = FPUTYPE_NONE;

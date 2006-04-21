@@ -1,3 +1,7 @@
+2006-04-21  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/arm-vfp1.c: Skip on iWMMXt cpus.
+
 2006-04-21 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/27122
