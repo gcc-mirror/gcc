@@ -5442,15 +5442,8 @@ pop_init_level (int implicit)
   constructor_stack = p->next;
   free (p);
 
-  if (ret.value == 0)
-    {
-      if (constructor_stack == 0)
-	{
-	  ret.value = error_mark_node;
-	  return ret;
-	}
-      return ret;
-    }
+  if (ret.value == 0 && constructor_stack == 0)
+    ret.value = error_mark_node;
   return ret;
 }
 

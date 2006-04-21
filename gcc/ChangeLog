@@ -1,3 +1,7 @@
+2006-04-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* c-typeck.c (pop_init_level): Simplify.
+
 2006-04-21  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/pa/t-pa64: Add dependencies on $(GCC_PASSES).
