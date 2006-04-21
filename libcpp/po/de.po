@@ -1,17 +1,17 @@
 # German translation of gcc messages.
 # Copyright © 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006.
 # This file is distributed under the same license as the gcc package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.0.0\n"
+"Project-Id-Version: cpplib 4.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-02-28 00:12-0800\n"
-"PO-Revision-Date: 2005-04-25 17:45+0100\n"
+"PO-Revision-Date: 2006-03-08 11:30+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
-"Language-Team: German <de@li.org>\n"
+"Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -47,7 +47,7 @@ msgstr "Zeichen 0x%lx ist kein Unibyte im Ausführungs-Zeichensatz"
 #: charset.c:889
 #, c-format
 msgid "Character %x might not be NFKC"
-msgstr ""
+msgstr "Zeichen %x ist nicht in NFKC"
 
 #: charset.c:949
 msgid "universal character names are only valid in C++ and C99"
@@ -60,7 +60,7 @@ msgstr "die Bedeutung von '\\%c' ist in traditionellem C anders"
 
 #: charset.c:961
 msgid "In _cpp_valid_ucn but not a UCN"
-msgstr ""
+msgstr "In _cpp_valid_ucn, aber kein UCN"
 
 #: charset.c:986
 #, c-format
@@ -125,9 +125,9 @@ msgid "unknown escape sequence '\\%c'"
 msgstr "unbekannte Fluchtsequenz '\\%c'"
 
 #: charset.c:1286
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%s'"
-msgstr "unbekannte Fluchtsequenz '\\%c'"
+msgstr "unbekannte Fluchtsequenz: '\\%s'"
 
 #: charset.c:1293
 msgid "converting escape sequence to execution character set"
@@ -148,7 +148,7 @@ msgstr "Leere Zeichenkonstante"
 #: charset.c:1612
 #, c-format
 msgid "failure to convert %s to %s"
-msgstr "Fehler beim Konvertieren von %s in %s"
+msgstr "Fehler beim Konvertieren von %s nach %s"
 
 #: directives.c:220 directives.c:246
 #, c-format
@@ -162,7 +162,7 @@ msgstr "#%s ist eine Erweiterung des GCC"
 
 #: directives.c:359
 msgid "suggest not using #elif in traditional C"
-msgstr "empfehle, in traditionellem C nicht #elif zu verwenden"
+msgstr "es wird empfohlen, in traditionellem C nicht #elif zu verwenden"
 
 #: directives.c:362
 #, c-format
@@ -172,7 +172,7 @@ msgstr "traditionelles C ignoriert #%s mit eingerücktem #"
 #: directives.c:366
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
-msgstr "empfehle, #%s vor traditionellem C mit # zu verbergen"
+msgstr "es wird empfohlen, #%s vor traditionellem C mit # zu verbergen"
 
 #: directives.c:392
 msgid "embedding a directive within macro arguments is not portable"
@@ -208,7 +208,7 @@ msgstr "Makronamen müssen Bezeichner sein"
 #: directives.c:586
 #, c-format
 msgid "undefining \"%s\""
-msgstr "un-definiere »%s«"
+msgstr "»%s« wird un-definiert"
 
 #: directives.c:641
 msgid "missing terminating > character"
@@ -235,7 +235,7 @@ msgstr "#include_next in erster Quelldatei"
 #: directives.c:813
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
-msgstr "ungültiges Flag »%s« in line-Direktive"
+msgstr "ungültiges Kennzeichen »%s« in line-Direktive"
 
 #: directives.c:865
 #, c-format
@@ -257,9 +257,9 @@ msgid "\"%s\" after # is not a positive integer"
 msgstr "»%s« hinter # ist keine positive Ganzzahl"
 
 #: directives.c:1023
-#, fuzzy, c-format
+#, c-format
 msgid "invalid #%s directive"
-msgstr "ungültige #ident-Direktive"
+msgstr "ungültige #%s-Direktive"
 
 #: directives.c:1112
 #, c-format
@@ -282,7 +282,7 @@ msgstr "#pragma once in Hauptdatei"
 
 #: directives.c:1385
 msgid "invalid #pragma GCC poison directive"
-msgstr "ungültige #pragma GCC Direktive"
+msgstr "ungültige #pragma GCC Poison Direktive"
 
 #: directives.c:1394
 #, c-format
@@ -393,7 +393,7 @@ msgstr "ungültige Ziffer »%c« in Oktal-Konstante"
 
 #: expr.c:218
 msgid "use of C99 hexadecimal floating constant"
-msgstr "Verwendung von C99 hexadezimaler Gleitkommakonstante"
+msgstr "Verwendung von hexadezimaler C99-Gleitkommakonstante"
 
 #: expr.c:227
 msgid "exponent has no digits"
@@ -541,7 +541,7 @@ msgstr "Kommaoperator in Operand von #if"
 
 #: expr.c:1491
 msgid "division by zero in #if"
-msgstr "Division durch null in #if"
+msgstr "Division durch Null in #if"
 
 #: files.c:402
 msgid "NULL directory in find_file"
@@ -645,14 +645,14 @@ msgid "null character(s) ignored"
 msgstr "Null-Zeichen ignoriert"
 
 #: lex.c:448
-#, fuzzy, c-format
+#, c-format
 msgid "`%.*s' is not in NFKC"
-msgstr "»%s« ist kein Template"
+msgstr "»%.*s« ist nicht in NFKC"
 
 #: lex.c:451
-#, fuzzy, c-format
+#, c-format
 msgid "`%.*s' is not in NFC"
-msgstr "»%s« ist kein Template"
+msgstr "»%.*s« ist nicht in NFC"
 
 #: lex.c:539
 #, c-format
@@ -704,7 +704,7 @@ msgid ""
 "                 from %s:%u"
 msgstr ""
 ",\n"
-"                    von %s:%u"
+"                 von %s:%u"
 
 #: macro.c:85
 #, c-format
@@ -722,7 +722,7 @@ msgstr "Datum und Zeit konnten nicht bestimmt werden"
 
 #: macro.c:387
 msgid "invalid string literal, ignoring final '\\'"
-msgstr "ungültiges Zeichenkettenliteral, ignoriere abschließendes '\\'"
+msgstr "ungültiges Zeichenkettenliteral, abschließendes '\\' wird ignoriert"
 
 #: macro.c:470
 #, c-format
