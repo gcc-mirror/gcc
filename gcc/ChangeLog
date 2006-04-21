@@ -1,3 +1,9 @@
+2006-04-21  Paul Brook  <paul@codesourcery.com>
+
+	Backport from mainline.
+	* config/arm/arm.c (arm_override_options): Error on iWMMXt and
+	hardware floating point.
+
 2006-04-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR mudflap/26789

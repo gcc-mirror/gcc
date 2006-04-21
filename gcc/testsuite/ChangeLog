@@ -1,3 +1,8 @@
+2006-04-21  Paul Brook  <paul@codesourcery.com>
+
+	Backport from mainline.
+	* gcc.dg/arm-vfp1.c: Skip on iWMMXt cpus.
+
 2006-04-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27138
