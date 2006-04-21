@@ -658,6 +658,10 @@ update_alignment_for_field (record_layout_info rli, tree field,
   bool user_align;
   bool is_bitfield;
 
+  /* Do not attempt to align an ERROR_MARK node */
+  if (TREE_CODE (type) == ERROR_MARK)
+    return 0;
+
   /* Lay out the field so we know what alignment it needs.  */
   layout_decl (field, known_align);
   desired_align = DECL_ALIGN (field);
@@ -770,6 +774,12 @@ place_union_field (record_layout_info rli, tree field)
   DECL_FIELD_BIT_OFFSET (field) = bitsize_zero_node;
   SET_DECL_OFFSET_ALIGN (field, BIGGEST_ALIGNMENT);
 
+  /* If this is an ERROR_MARK return *after* having set the 
+     field at the start of the union. This helps when parsing
+     invalid fields. */
+  if (TREE_CODE (TREE_TYPE (field)) == ERROR_MARK)
+    return;
+
   /* We assume the union's size will be a multiple of a byte so we don't
      bother with BITPOS.  */
   if (TREE_CODE (rli->t) == UNION_TYPE)
@@ -818,17 +828,6 @@ place_field (record_layout_info rli, tree field)
 
   gcc_assert (TREE_CODE (field) != ERROR_MARK);
 
-  if (TREE_CODE (type) == ERROR_MARK)
-    {
-      if (TREE_CODE (field) == FIELD_DECL)
-	{
-	  DECL_FIELD_OFFSET (field) = size_int (0);
-	  DECL_FIELD_BIT_OFFSET (field) = bitsize_int (0);
-	}
-      
-      return;
-    }
-  
   /* If FIELD is static, then treat it like a separate variable, not
      really like a structure field.  If it is a FUNCTION_DECL, it's a
      method.  In both cases, all we do is lay out the decl, and we do
@@ -850,6 +849,16 @@ place_field (record_layout_info rli, tree field)
   else if (TREE_CODE (rli->t) != RECORD_TYPE)
     {
       place_union_field (rli, field);
+      return;
+    }
+
+  else if (TREE_CODE (type) == ERROR_MARK) 
+    {
+      /* Place this field at the current allocation position, so we
+	 maintain monotonicity.  */
+      DECL_FIELD_OFFSET (field) = rli->offset;
+      DECL_FIELD_BIT_OFFSET (field) = rli->bitpos;
+      SET_DECL_OFFSET_ALIGN (field, rli->offset_align);
       return;
     }
 
