@@ -1,3 +1,17 @@
+2006-04-21 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/27122
+	* resolve.c (resolve_function): Remove general restriction on auto
+	character length function interfaces.
+	(gfc_resolve_uops): Check restrictions on defined operator
+	procedures.
+	(resolve_types): Call the check for defined operators.
+
+	PR fortran/27113
+	* trans-array.c (gfc_trans_array_constructor_subarray): Remove
+	redundant gfc_todo_error.
+	(get_array_ctor_var_strlen): Remove typo in enum.
+
 2006-04-18  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* parse.c (next_free): Use consistent error string between
