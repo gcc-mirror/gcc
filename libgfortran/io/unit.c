@@ -437,6 +437,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
   /* Has to be an external unit */
 
   dtp->u.p.unit_is_internal = 0;
+  dtp->internal_unit_desc = NULL;
 
   return get_external_unit (dtp->common.unit, do_create);
 }
