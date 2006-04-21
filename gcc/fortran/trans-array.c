@@ -1035,9 +1035,6 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
   gfc_copy_loopinfo_to_se (&se, &loop);
   se.ss = ss;
 
-  if (expr->ts.type == BT_CHARACTER)
-    gfc_todo_error ("character arrays in constructors");
-
   gfc_trans_array_ctor_element (&body, desc, *poffset, &se, expr);
   gcc_assert (se.ss == gfc_ss_terminator);
 
@@ -1311,7 +1308,7 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 	  /* Array references don't change the string length.  */
 	  break;
 
-	case COMPONENT_REF:
+	case REF_COMPONENT:
 	  /* Use the length of the component.  */
 	  ts = &ref->u.c.component->ts;
 	  break;
