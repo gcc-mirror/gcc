@@ -4495,6 +4495,7 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
   tree inside_init = init;
 
   if (type == error_mark_node
+      || !init
       || init == error_mark_node
       || TREE_TYPE (init) == error_mark_node)
     return error_mark_node;
