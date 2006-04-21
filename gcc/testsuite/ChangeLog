@@ -1,3 +1,8 @@
+2006-04-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/25875
+	* gcc.dg/init-bad-4.c: New test.
+
 2006-04-21  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/arm-vfp1.c: Skip on iWMMXt cpus.
