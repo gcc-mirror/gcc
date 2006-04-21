@@ -1,3 +1,7 @@
+2006-04-21  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/pa/t-pa64: Add dependencies on $(GCC_PASSES).
+
 2006-04-21  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_override_options): Error on iWMMXt and
