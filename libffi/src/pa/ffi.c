@@ -135,9 +135,7 @@ static inline int ffi_struct_type(ffi_type *t)
    NOTE: We load floating point args in this function... that means we
    assume gcc will not mess with fp regs in here.  */
 
-/*@-exportheader@*/
 void ffi_prep_args_pa32(UINT32 *stack, extended_cif *ecif, unsigned bytes)
-/*@=exportheader@*/
 {
   register unsigned int i;
   register ffi_type **p_arg;
@@ -367,20 +365,11 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   return FFI_OK;
 }
 
-/*@-declundef@*/
-/*@-exportheader@*/
 extern void ffi_call_pa32(void (*)(UINT32 *, extended_cif *, unsigned),
-			   /*@out@*/ extended_cif *,
-			   unsigned, unsigned,
-			   /*@out@*/ unsigned *,
-			   void (*fn)());
-/*@=declundef@*/
-/*@=exportheader@*/
+			  extended_cif *, unsigned, unsigned, unsigned *,
+			  void (*fn)());
 
-void ffi_call(/*@dependent@*/ ffi_cif *cif,
-	      void (*fn)(),
-	      /*@out@*/ void *rvalue,
-	      /*@dependent@*/ void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
@@ -398,9 +387,7 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
       && cif->rtype->type == FFI_TYPE_STRUCT)
 #endif
     {
-      /*@-sysunrecog@*/
       ecif.rvalue = alloca(cif->rtype->size);
-      /*@=sysunrecog@*/
     }
   else
     ecif.rvalue = rvalue;
@@ -409,11 +396,9 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   switch (cif->abi)
     {
     case FFI_PA32:
-      /*@-usedef@*/
       debug(3, "Calling ffi_call_pa32: ecif=%p, bytes=%u, flags=%u, rvalue=%p, fn=%p\n", &ecif, cif->bytes, cif->flags, ecif.rvalue, (void *)fn);
       ffi_call_pa32(ffi_prep_args_pa32, &ecif, cif->bytes,
 		     cif->flags, ecif.rvalue, fn);
-      /*@=usedef@*/
       break;
 
     default:

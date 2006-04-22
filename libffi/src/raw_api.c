@@ -189,10 +189,7 @@ ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
  * these following couple of functions will handle the translation forth
  * and back automatically. */
 
-void ffi_raw_call (/*@dependent@*/ ffi_cif *cif, 
-		   void (*fn)(), 
-		   /*@out@*/ void *rvalue, 
-		   /*@dependent@*/ ffi_raw *raw)
+void ffi_raw_call (ffi_cif *cif, void (*fn)(), void *rvalue, ffi_raw *raw)
 {
   void **avalue = (void**) alloca (cif->nargs * sizeof (void*));
   ffi_raw_to_ptrarray (cif, raw, avalue);
@@ -201,7 +198,7 @@ void ffi_raw_call (/*@dependent@*/ ffi_cif *cif,
 
 #if FFI_CLOSURES		/* base system provides closures */
 
-static void 
+static void
 ffi_translate_args (ffi_cif *cif, void *rvalue,
 		    void **avalue, void *user_data)
 {
@@ -224,7 +221,7 @@ ffi_prep_raw_closure (ffi_raw_closure* cl,
 {
   ffi_status status;
 
-  status = ffi_prep_closure ((ffi_closure*) cl, 
+  status = ffi_prep_closure ((ffi_closure*) cl,
 			     cif,
 			     &ffi_translate_args,
 			     (void*)cl);

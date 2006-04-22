@@ -372,15 +372,6 @@ single-precision anyway.  This causes one test to fail (the `many
 arguments' test).
 
 
-What's With The Crazy Comments?
-===============================
-
-You might notice a number of cryptic comments in the code, delimited
-by /*@ and @*/. These are annotations read by the program LCLint, a
-tool for statically checking C programs. You can read all about it at
-<http://larch-www.lcs.mit.edu:8001/larch/lclint/index.html>.
-
-
 History
 =======
 
