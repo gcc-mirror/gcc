@@ -9144,7 +9144,7 @@ such cases may improve things.
 @end defmac
 
 @deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (enum machine_mode @var{mode}, enum machine_mode @var{rep_mode})
-The representation of an intergral mode can be such that the values
+The representation of an integral mode can be such that the values
 are always extended to a wider integral mode.  Return
 @code{SIGN_EXTEND} if values of @var{mode} are represented in
 sign-extended form to @var{rep_mode}.  Return @code{UNKNOWN}

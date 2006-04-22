@@ -1,3 +1,9 @@
+2006-04-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/soft-fp/op-common.h, double-int.h, tree-ssa-dom.c:
+	Fix comment typos.
+	* doc/tm.texi: Fix a typo.
+
 2006-04-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (struct die_struct): Document that die_sib makes

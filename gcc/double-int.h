@@ -44,7 +44,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    ??? The components of double_int differ in signedness mostly for
    historical reasons (they replace an older structure used to represent
-   numbers with precision wigher than HOST_WIDE_INT).  It might be less
+   numbers with precision higher than HOST_WIDE_INT).  It might be less
    confusing to have them both signed or both unsigned.  */
 
 typedef struct
