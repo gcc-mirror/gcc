@@ -1,3 +1,12 @@
+2006-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/26769
+	* Makefile.am (i_transpose_c): Add generated/transpose_r16.c.
+	(i_reshape_c): Add generated/reshape_r16.c.
+	* Makefile.in: Regenerated.
+	* generated/transpose_r16.c: Generated new file.
+	* generated/redhape_r16.c: Generated new file.
+
 2006-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27138
