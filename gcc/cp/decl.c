@@ -6770,7 +6770,7 @@ grokdeclarator (const cp_declarator *declarator,
   int explicit_int = 0;
   int explicit_char = 0;
   int defaulted_int = 0;
-  tree dependant_name = NULL_TREE;
+  tree dependent_name = NULL_TREE;
 
   tree typedef_decl = NULL_TREE;
   const char *name = NULL;
@@ -7250,9 +7250,9 @@ grokdeclarator (const cp_declarator *declarator,
     }
   friendp = !! declspecs->specs[(int)ds_friend];
 
-  if (dependant_name && !friendp)
+  if (dependent_name && !friendp)
     {
-      error ("%<%T::%D%> is not a valid declarator", ctype, dependant_name);
+      error ("%<%T::%D%> is not a valid declarator", ctype, dependent_name);
       return void_type_node;
     }
 
