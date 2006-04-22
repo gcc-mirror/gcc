@@ -35,7 +35,7 @@
   _FP_FRAC_DECL_##wc(X)
 
 /*
- * Finish truly unpacking a native fp value by classifying the kind
+ * Finish truely unpacking a native fp value by classifying the kind
  * of fp value and normalizing both the exponent and the fraction.
  */
 
