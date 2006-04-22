@@ -1,3 +1,7 @@
+2006-04-21  Eric Christopher  <echristo@apple.com>
+
+	* decl.c: Fix typo in function name.
+
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/26558
@@ -30,7 +34,7 @@
 	and return.  Return error_mark_node instead of NULL_TREE in more
 	places.  Issue errors about function definitions that do not have
 	a function declarator.  Check for complete types for all function
-	definitions. 
+	definitions.
 	* cp-tree.h (cp_error_declarator): Remove.
 	(currently_open_class): Change return type.
 	* parser.c (cp_parser_id_expression): Add optional_p parameter.
@@ -47,7 +51,7 @@
 	Assume that start_function indicates failure only if it has issued
 	an error.
 	(cp_parser_omp_var_list_no_open): Adjust calls.
-	
+
 2006-04-17  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c++/26114, c++/26115
@@ -107,11 +111,11 @@
 	* semantics.c (finish_call_expr): Likewise.
 	* parser.c (cp_parser_postfix_expression): Likewise.
 	* typeck2.c (cxx_incomplete_type_diagnostic): Refer to
-	"incomplete", not "undefined", types. 
+	"incomplete", not "undefined", types.
 
 	PR c++/26295
 	* decl.c (grokdeclarator): Remove namespace-handling code for
-	pointers-to-members.  
+	pointers-to-members.
 	* parser.c (cp_parser_ptr_operator): Check for qualified names
 	using namespaces.
 
@@ -159,7 +163,7 @@
 	PR c++/21581
 	* parser.c (cp_parser_declaration): Support attributes on
 	anonymous namespaces.
-	* name-lookup.c (push_namespace_with_attribs): Anonymous 
+	* name-lookup.c (push_namespace_with_attribs): Anonymous
 	namespaces default to hidden visibility.
 
 2006-03-20  Jason Merrill  <jason@redhat.com>
@@ -169,16 +173,16 @@
 	(start_preparsed_function): Likewise.
 	* cp-tree.h (CP_TYPE_CONTEXT, TYPE_NAMESPACE_SCOPE_P): New macros.
 	(TYPE_CLASS_SCOPE_P, TYPE_FUNCTION_SCOPE_P): New macros.
-	* name-lookup.h (struct cp_binding_level): Add has_visibility 
+	* name-lookup.h (struct cp_binding_level): Add has_visibility
 	bitfield.
 	* name-lookup.c: Include c-pragma.h.
 	(push_namespace_with_attribs): Split out from push_namespace.
 	Push visibility if appropriate.  Set TREE_PUBLIC on namespaces.
 	(leave_scope): Pop visibility if appropriate.
 	* decl2.c (determine_visibility_from_class): Split out from...
-	(determine_visibility): ...here.  Handle function scope and 
+	(determine_visibility): ...here.  Handle function scope and
 	nested classes.
-	(import_export_decl): Move visibility handling to 
+	(import_export_decl): Move visibility handling to
 	determine_visibility_from_class.
 	* parser.c (cp_parser_declaration, cp_parser_namespace_name): Allow
 	attributes on namespace declarations.
@@ -765,7 +769,7 @@
 2006-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24996
-	* except.c (build_throw): Add a CLEANUP_POINT_EXPR inside the 
+	* except.c (build_throw): Add a CLEANUP_POINT_EXPR inside the
 	TRY_CATCH_EXPR or MUST_NOT_THROW_EXPR.
 
 2006-02-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
@@ -912,7 +916,7 @@
 
 	* Make-lang.in (cp-warn): Include CXX_COMPAT_WARN.
 	* repo.c (extract_string, afgets): Use cast when converting from
-	void *. 
+	void *.
 
 2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -946,7 +950,7 @@
 2006-01-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* call.c (joust): Pass option code to warning.  Use inform for
-	explanation. 
+	explanation.
 	* class.c (check_bases): Likewise.
 	(maybe_warn_about_overly_private_class): Likewise.
 	(check_field_decls): Likewise.
@@ -1010,7 +1014,7 @@
 	(pfn_from_ptrmemfunc): Add prototype, make static.
 
 2006-01-24  Dirk Mueller  <dmueller@suse.de>
-	
+
 	* typeck.c (build_binary_op): Use OPT_Wfloat_equal in warning().
 
 2006-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
@@ -1061,7 +1065,7 @@
 
 	PR c++/10891
 	* rtti.c (build_dynamic_cast): Reject dynamic_cast use if
-	-fno-rtti. 
+	-fno-rtti.
 
 2006-01-21  Mark Mitchell  <mark@codesourcery.com>
 
@@ -1073,9 +1077,9 @@
 	PR c++/25856
 	* decl.c (begin_destructor_body): Robustify.
 
-	PR c++/25858 
+	PR c++/25858
 	* parser.c (cp_parser_direct_declarator): Robustify.
-	
+
 2006-01-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* parser.c (cp_lexer_next_token_is_keyword): Simplify.

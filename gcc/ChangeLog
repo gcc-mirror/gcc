@@ -1,3 +1,8 @@
+2006-04-21  Eric Christopher  <echristo@apple.com>
+
+	* df-core.c, tree-outof-ssa.c, config/i386/i386.c: Fix typos
+	in comments and function names.
+
 2006-04-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/25875
@@ -73,7 +78,7 @@
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c/26774
-	* stor-layout.c (update_alignment_for_field): Do not align 
+	* stor-layout.c (update_alignment_for_field): Do not align
 	ERROR_MARK nodes.
 	(place_union_field): Place union field at the start of the union.
 	(place_field): Move ERROR_MARK check later, and use the current
@@ -91,7 +96,7 @@
 	PR rtl-optimization/14261
 	* ifcvt.c (noce_emit_move_insn): Call store_bit_field if the resulting
 	move would be an INSV insn.
-	(noce_process_if_block): Don't optimize if the destination is a 
+	(noce_process_if_block): Don't optimize if the destination is a
 	ZERO_EXTRACT which can't be handled by noce_emit_move_insn.
 
 2006-04-19  Andreas Krebbel  <krebbel1@de.ibm.com>
@@ -138,7 +143,7 @@
 2006-04-18  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi (-Wuninitialized): Clarify -O connection.
-	
+
 2006-04-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/t-symbian: Add rule to build sh-c.o
@@ -148,7 +153,7 @@
 
 2006-04-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* builtins.c (expand_builtin_strcmp): Cover label definition of 
+	* builtins.c (expand_builtin_strcmp): Cover label definition of
 	do_libcall with HAVE_cmpstrnsi.
 
 2006-04-18  Kazu Hirata  <kazu@codesourcery.com>
@@ -412,7 +417,7 @@
 	(make_omp_sections_edges): Remove.
 	(is_ctrl_altering_stmt): Don't bother checking flag_openmp.
 	(move_stmt_r): Handle OMP_CONTINUE.
-	* tree-flow.h (struct omp_region): Move from omp-low.c.  Switch 
+	* tree-flow.h (struct omp_region): Move from omp-low.c.  Switch
 	statement pointers to basic blocks.  Add type member.
 	(root_omp_region, new_omp_region, free_omp_regions): Declare.
 	* tree-gimple.c (is_gimple_stmt): Handle OMP_RETURN, OMP_CONTINUE.
@@ -678,7 +683,7 @@
 	we're about to assign a vector to it using vec_init_optab.
 
 2006-04-10 Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* tree-ssa-alias.c (lhs_may_store_to): New function.
 	(recalculate_used_alone): Handle LHS of calls.
 
@@ -765,7 +770,7 @@
 	* tree-ssa-loop-niter.c (inverse, number_of_iterations_ne,
 	assert_no_overflow_lt, assert_loop_rolls_lt, number_of_iterations_lt,
 	number_of_iterations_le, number_of_iterations_cond, find_loop_niter,
-	estimate_numbers_of_iterations_loop): Use build_int_cst instead of 
+	estimate_numbers_of_iterations_loop): Use build_int_cst instead of
 	build_int_cst_type.
 	* tree-chrec.c (chrec_fold_multiply_poly_poly,
 	chrec_fold_multiply): Same.
@@ -863,7 +868,7 @@
 	(Downloading the source): Refer to SVN instead of CVS.
 	Adjust a link to our web site accordingly.
 	(Configuration): Fix casing of Bison.
-	(Building): Refer to SVN instead of CVS.  
+	(Building): Refer to SVN instead of CVS.
 	Fix a sentence on the use of Bison and remove duplicate (and
 	incorrect) version number of Bison requirement.
 	Remove one redundant list of packages needed for building.
