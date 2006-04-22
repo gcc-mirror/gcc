@@ -2439,7 +2439,7 @@ eliminate_degenerate_phis (void)
 
      A set bit indicates that the statement or PHI node which
      defines the SSA_NAME should be (re)examined to determine if
-     it has become a degenerate PHI or trival const/copy propagation
+     it has become a degenerate PHI or trivial const/copy propagation
      opportunity. 
 
      Experiments have show we generally get better compilation
