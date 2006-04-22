@@ -29,10 +29,10 @@
    ----------------------------------------------------------------------- */
 
 /* This defines a Java- and 64-bit specific variant of the raw API.	*/
-/* It assumes that "raw" argument blocks look like Java stacks on a 	*/
+/* It assumes that "raw" argument blocks look like Java stacks on a	*/
 /* 64-bit machine.  Arguments that can be stored in a single stack	*/
 /* stack slots (longs, doubles) occupy 128 bits, but only the first	*/
-/* 64 bits are actually used.  						*/
+/* 64 bits are actually used.						*/
 
 #include <ffi.h>
 #include <ffi_common.h>
@@ -77,20 +77,20 @@ ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 #if WORDS_BIGENDIAN
 
   for (i = 0; i < cif->nargs; i++, tp++, args++)
-    {	  
+    {
       switch ((*tp)->type)
 	{
 	case FFI_TYPE_UINT8:
 	case FFI_TYPE_SINT8:
 	  *args = (void*) ((char*)(raw++) + 3);
 	  break;
-	  
+
 	case FFI_TYPE_UINT16:
 	case FFI_TYPE_SINT16:
 	  *args = (void*) ((char*)(raw++) + 2);
 	  break;
 
-#if FFI_SIZEOF_ARG == 8	  
+#if FFI_SIZEOF_ARG == 8
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
 	case FFI_TYPE_DOUBLE:
@@ -102,7 +102,7 @@ ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 	case FFI_TYPE_POINTER:
 	  *args = (void*) &(raw++)->ptr;
 	  break;
-	  
+
 	default:
 	  *args = raw;
 	  raw += ALIGN ((*tp)->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
@@ -147,7 +147,7 @@ ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
   ffi_type **tp = cif->arg_types;
 
   for (i = 0; i < cif->nargs; i++, tp++, args++)
-    {	  
+    {
       switch ((*tp)->type)
 	{
 	case FFI_TYPE_UINT8:
@@ -218,7 +218,7 @@ ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 	default:
 #if FFI_SIZEOF_ARG == 8
 	  FFI_ASSERT(0);	/* Should have covered all cases */
-#else	
+#else
 	  memcpy ((void*) raw->data, (void*)*args, (*tp)->size);
 	  raw += ALIGN ((*tp)->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 #endif
@@ -285,10 +285,7 @@ ffi_java_raw_to_rvalue (ffi_cif *cif, void *rvalue)
  * these following couple of functions will handle the translation forth
  * and back automatically. */
 
-void ffi_java_raw_call (/*@dependent@*/ ffi_cif *cif, 
-		   void (*fn)(), 
-		   /*@out@*/ void *rvalue, 
-		   /*@dependent@*/ ffi_raw *raw)
+void ffi_java_raw_call (ffi_cif *cif, void (*fn)(), void *rvalue, ffi_raw *raw)
 {
   void **avalue = (void**) alloca (cif->nargs * sizeof (void*));
   ffi_java_raw_to_ptrarray (cif, raw, avalue);
@@ -298,7 +295,7 @@ void ffi_java_raw_call (/*@dependent@*/ ffi_cif *cif,
 
 #if FFI_CLOSURES		/* base system provides closures */
 
-static void 
+static void
 ffi_java_translate_args (ffi_cif *cif, void *rvalue,
 		    void **avalue, void *user_data)
 {
@@ -322,7 +319,7 @@ ffi_prep_java_raw_closure (ffi_raw_closure* cl,
 {
   ffi_status status;
 
-  status = ffi_prep_closure ((ffi_closure*) cl, 
+  status = ffi_prep_closure ((ffi_closure*) cl,
 			     cif,
 			     &ffi_java_translate_args,
 			     (void*)cl);

@@ -80,10 +80,8 @@ enum { ASM_NEEDS_REGISTERS = 4 };
 
 */
 
-/*@-exportheader@*/
 void
 ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
-/*@=exportheader@*/
 {
   const unsigned bytes = ecif->cif->bytes;
   const unsigned flags = ecif->cif->flags;
@@ -354,10 +352,8 @@ enum { ASM_NEEDS_REGISTERS64 = 4 };
 
 */
 
-/*@-exportheader@*/
 void FFI_HIDDEN
 ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
-/*@=exportheader@*/
 {
   const unsigned long bytes = ecif->cif->bytes;
   const unsigned long flags = ecif->cif->flags;
@@ -789,24 +785,14 @@ ffi_prep_cif_machdep (ffi_cif *cif)
   return FFI_OK;
 }
 
-/*@-declundef@*/
-/*@-exportheader@*/
-extern void ffi_call_SYSV(/*@out@*/ extended_cif *,
-			  unsigned, unsigned,
-			  /*@out@*/ unsigned *,
+extern void ffi_call_SYSV(extended_cif *, unsigned, unsigned, unsigned *,
 			  void (*fn)());
-extern void FFI_HIDDEN ffi_call_LINUX64(/*@out@*/ extended_cif *,
-					unsigned long, unsigned long,
-					/*@out@*/ unsigned long *,
+extern void FFI_HIDDEN ffi_call_LINUX64(extended_cif *, unsigned long,
+					unsigned long, unsigned long *,
 					void (*fn)());
-/*@=declundef@*/
-/*@=exportheader@*/
 
 void
-ffi_call(/*@dependent@*/ ffi_cif *cif,
-	 void (*fn)(),
-	 /*@out@*/ void *rvalue,
-	 /*@dependent@*/ void **avalue)
+ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
@@ -818,9 +804,7 @@ ffi_call(/*@dependent@*/ ffi_cif *cif,
 
   if ((rvalue == NULL) && (cif->rtype->type == FFI_TYPE_STRUCT))
     {
-      /*@-sysunrecog@*/
       ecif.rvalue = alloca(cif->rtype->size);
-      /*@=sysunrecog@*/
     }
   else
     ecif.rvalue = rvalue;
@@ -832,15 +816,11 @@ ffi_call(/*@dependent@*/ ffi_cif *cif,
     case FFI_SYSV:
     case FFI_GCC_SYSV:
     case FFI_LINUX:
-      /*@-usedef@*/
       ffi_call_SYSV (&ecif, -cif->bytes, cif->flags, ecif.rvalue, fn);
-      /*@=usedef@*/
       break;
 #else
     case FFI_LINUX64:
-      /*@-usedef@*/
       ffi_call_LINUX64 (&ecif, -(long) cif->bytes, cif->flags, ecif.rvalue, fn);
-      /*@=usedef@*/
       break;
 #endif
     default:

@@ -16,9 +16,7 @@ typedef struct
 
 static test_structure_1 struct1(test_structure_1 ts)
 {
-  /*@-type@*/
   ts.uc++;
-  /*@=type@*/
   ts.d--;
   ts.ui++;
 

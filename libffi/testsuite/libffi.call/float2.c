@@ -48,9 +48,7 @@ int main (void)
 #endif
 
   /* These are not always the same!! Check for a reasonable delta */
-  /*@-realcompare@*/
   if (ld - ldblit(f) < LDBL_EPSILON)
-    /*@=realcompare@*/
     puts("long double return value tests ok!");
   else
     CHECK(0);

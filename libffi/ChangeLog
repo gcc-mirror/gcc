@@ -1,3 +1,24 @@
+2006-04-22  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* README: Remove notice about 'Crazy Comments'.
+	* src/debug.c: Remove lint directives. Cleanup white spaces.
+	* src/java_raw_api.c: Likewise.
+	* src/prep_cif.c: Likewise.
+	* src/raw_api.c: Likewise.
+	* src/ffitest.c: Delete. No longer needed, all test cases migrated
+	to the testsuite.
+	* src/arm/ffi.c: Remove lint directives.
+	* src/m32r/ffi.c: Likewise.
+	* src/pa/ffi.c: Likewise.
+	* src/powerpc/ffi.c: Likewise.
+	* src/powerpc/ffi_darwin.c: Likewise.
+	* src/sh/ffi.c: Likewise.
+	* src/sh64/ffi.c: Likewise.
+	* src/x86/ffi.c: Likewise.
+	* testsuite/libffi.call/float2.c: Likewise.
+	* testsuite/libffi.call/promotion.c: Likewise.
+	* testsuite/libffi.call/struct1.c: Likewise.
+
 2006-04-13  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/pa/hpux32.S: Correct unwind offset calculation for

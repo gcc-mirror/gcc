@@ -31,9 +31,7 @@
 /* ffi_prep_args is called by the assembly routine once stack
    space has been allocated for the function's arguments.  */
 
-/*@-exportheader@*/
 void ffi_prep_args(char *stack, extended_cif *ecif)
-/*@=exportheader@*/
 {
   unsigned int i;
   int tmp;
@@ -173,20 +171,10 @@ ffi_prep_cif_machdep(ffi_cif *cif)
   return FFI_OK;
 }
 
-/*@-declundef@*/
-/*@-exportheader@*/
-extern void ffi_call_SYSV(void (*)(char *, extended_cif *), 
-			  /*@out@*/ extended_cif *, 
-			  unsigned, unsigned, 
-			  /*@out@*/ unsigned *, 
-			  void (*fn)());
-/*@=declundef@*/
-/*@=exportheader@*/
+extern void ffi_call_SYSV(void (*)(char *, extended_cif *), extended_cif *,
+			  unsigned, unsigned, unsigned *, void (*fn)());
 
-void ffi_call(/*@dependent@*/ ffi_cif *cif, 
-	      void (*fn)(), 
-	      /*@out@*/ void *rvalue, 
-	      /*@dependent@*/ void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
@@ -198,9 +186,7 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   if ((rvalue == NULL) && 
       (cif->rtype->type == FFI_TYPE_STRUCT))
     {
-      /*@-sysunrecog@*/
       ecif.rvalue = alloca (cif->rtype->size);
-      /*@=sysunrecog@*/
     }
   else
     ecif.rvalue = rvalue;    
@@ -208,7 +194,6 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   switch (cif->abi) 
     {
     case FFI_SYSV:
-      /*@-usedef@*/
       ffi_call_SYSV(ffi_prep_args, &ecif, cif->bytes, 
 		    cif->flags, ecif.rvalue, fn);
       if (cif->rtype->type == FFI_TYPE_STRUCT)
@@ -237,7 +222,6 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 		}
 	    }
 	}
-      /*@=usedef@*/
       break;
 
     default:
