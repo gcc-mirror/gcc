@@ -1,3 +1,8 @@
+2006-04-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	Revert:
+	* config/soft-fp/op-common.h: Fix a typo.
+
 2006-04-22  Frank Ch. Eigler  <fche@redhat.com>
 
 	PR libmudflap/26864
