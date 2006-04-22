@@ -1,3 +1,36 @@
+2006-04-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (struct die_struct): Document that die_sib makes
+	a circular linked list.
+	(FOR_EACH_CHILD): New.
+	(reverse_die_lists): Delete.
+	(reverse_all_dies): Delete.
+	(add_dwarf_attr): Correct documentation.
+	(remove_child_with_prev): New.
+	(remove_child_TAG): Update for change to die_struct, use
+	remove_child_with_prev.
+	(add_child_die): Update for change to die_struct.
+	(splice_child_die): Use remove_child_with_prev and add_child_die.
+	(print_die): Use FOR_EACH_CHILD.
+	(die_checksum): Likewise.
+	(assign_symbol_names): Likewise.
+	(output_location_lists): Likewise.
+	(build_abbrev_table): Likewise.
+	(calc_die_sizes): Likewise.
+	(mark_dies): Likewise.
+	(unmark_dies): Likewise.
+	(unmark_all_dies): Likewise.
+	(output_die): Likewise.
+	(prune_unused_types_mark): Likewise.
+	(prune_unused_types_walk): Likewise.
+	(same_die_p): Update for change to die_struct.
+	(break_out_includes): Likewise.
+	(prune_unused_types_prune): Likewise.
+	(add_sibling_attributes): Use FOR_EACH_CHILD, simplify logic.
+	(prune_unmark_dies): Use FOR_EACH_CHILD, don't clear die_mark if
+	it's already clear.
+	(dwarf2out_finish): Don't call reverse_all_dies.
+
 2006-04-21  Eric Christopher  <echristo@apple.com>
 
 	* df-core.c, tree-outof-ssa.c, config/i386/i386.c: Fix typos
