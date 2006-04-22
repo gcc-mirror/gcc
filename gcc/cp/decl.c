@@ -7712,15 +7712,15 @@ grokdeclarator (const cp_declarator *declarator,
       else if (/* If the qualifying type is already complete, then we
 		  can skip the following checks.  */
 	       !COMPLETE_TYPE_P (ctype)
-	       /* If a function is being defined, then the qualifing
-		  type must be complete.  The qualifing type may be
-		  incomplete for a declaration only if the qualitying
+	       /* If a function is being defined, then the qualifying
+		  type must be complete.  The qualifying type may be
+		  incomplete for a declaration only if the qualifying
 		  type is one of the classes presently being defined,
 		  or if it is a dependent type.  */
 	       && (funcdef_flag 
 		   || !(dependent_type_p (ctype)
 			|| currently_open_class (ctype)))
-	       /* Check that the qualifing type is complete.  */
+	       /* Check that the qualifying type is complete.  */
 	       && !complete_type_or_else (ctype, NULL_TREE))
 	return error_mark_node;
       else if (TREE_CODE (type) == FUNCTION_TYPE)
