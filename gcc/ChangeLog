@@ -1,3 +1,9 @@
+2006-04-22  Frank Ch. Eigler  <fche@redhat.com>
+
+	PR libmudflap/26864
+	* common.opt (flag_mudflap_threads): Overload flag_mudflap.
+	* tree-mudflap.c (flag_mudflap_threads): Derive from flag_mudflap.
+
 2006-04-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/soft-fp/op-common.h, double-int.h, tree-ssa-dom.c:
