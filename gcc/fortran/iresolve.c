@@ -1,6 +1,6 @@
 /* Intrinsic function resolution.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -1520,7 +1520,7 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
 	f->value.function.name =
 	  gfc_get_string (PREFIX("reshape_%c%d"),
 			  gfc_type_letter (BT_COMPLEX), source->ts.kind);
-      else if (source->ts.type == BT_REAL && kind == 10)
+      else if (source->ts.type == BT_REAL && (kind == 10 || kind == 16))
 	f->value.function.name =
 	  gfc_get_string (PREFIX("reshape_%c%d"),
 			  gfc_type_letter (BT_REAL), source->ts.kind);
@@ -1994,9 +1994,10 @@ gfc_resolve_transpose (gfc_expr * f, gfc_expr * matrix)
           break;
 
         case BT_REAL:
-	  /* There is no kind=10 integer type.  We need to
+	  /* There is no kind=10 integer type and on 32-bit targets
+	     there is usually no kind=16 integer type.  We need to
 	     call the real version.  */
-	  if (kind == 10)
+	  if (kind == 10 || kind == 16)
 	    {
 	      f->value.function.name =
 		gfc_get_string (PREFIX("transpose_r%d"), kind);
