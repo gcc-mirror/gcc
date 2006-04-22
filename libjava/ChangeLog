@@ -1,4 +1,10 @@
-2004-04-20  Bryce McKinlay  <mckinlay@redhat.com>
+2006-04-22  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac: Weaken the check for MMAP.
+	* configure: Rebuilt.
+	* include/config.h.in: Likewise.
+
+2006-04-20  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/27170
 	* gnu/gcj/runtime/natSharedLibLoader.cc: Include gc.h to override

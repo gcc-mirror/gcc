@@ -1346,7 +1346,31 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]], [[struct tm tim; tim.t
           [AC_MSG_RESULT(no)])])])
 
 AC_FUNC_ALLOCA
-AC_FUNC_MMAP
+
+dnl Check for mmap()
+# AC_FUNC_MMAP goes to far and checks for mmap fixed, we do only need mmap
+# at a mmap selected address. See
+# gnu/java/nio/channels/natFileChannelPosix.cc
+
+AC_MSG_CHECKING([for mmap])
+AC_CACHE_VAL(ac_cv_func_mmap_ok,
+    [AC_TRY_LINK(
+    changequote(<<, >>)dnl
+    <<
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+    >>,
+    changequote([, ])dnl
+    [mmap((void *)0, 0, PROT_READ, 0, 0, 0);],
+    ac_cv_func_mmap_ok=yes,
+    ac_cv_func_mmap_ok=no)] )
+AC_MSG_RESULT($ac_cv_func_mmap_ok)
+if test $ac_cv_func_mmap_ok = yes
+then
+  AC_DEFINE(HAVE_MMAP, 1, [ Define to 1 if you have a working `mmap' system call w/o fixed address ability.])
+fi
 
 AC_CHECK_PROGS(PERL, perl, false)
 
