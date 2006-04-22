@@ -1,3 +1,9 @@
+2006-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/26769
+	* iresolve.c (gfc_resolve_reshape): Use reshape_r16 for real(16).
+	(gfc_resolve_transpose): Use transpose_r16 for real(16).
+
 2006-04-18  Steve Ellcey  <sje@cup.hp.com>
 
 	* trans-io.c (gfc_build_io_library_fndecls): Align pad.
