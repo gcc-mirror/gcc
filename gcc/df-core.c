@@ -84,7 +84,7 @@ convenience functions named DF_*_ADD_PROBLEM.
 
 
 Problems can be dependent on other problems.  For instance, solving
-def-use or use-def chains is dependant on solving reaching
+def-use or use-def chains is dependent on solving reaching
 definitions. As long as these dependencies are listed in the problem
 definition, the order of adding the problems is not material.
 Otherwise, the problems will be solved in the order of calls to
