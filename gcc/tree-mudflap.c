@@ -48,6 +48,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Internal function decls */
 
+
+/* Options.  */
+#define flag_mudflap_threads (flag_mudflap == 2)
+
 /* Helpers.  */
 static tree mf_build_string (const char *string);
 static tree mf_varname_tree (tree);
