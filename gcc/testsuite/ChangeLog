@@ -1,3 +1,7 @@
+2006-04-22  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/compile/20060421-1.c: New testcase.
+
 2006-04-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/25875
