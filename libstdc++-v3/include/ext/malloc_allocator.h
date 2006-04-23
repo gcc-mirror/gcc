@@ -40,6 +40,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+  using std::size_t;
+  using std::ptrdiff_t;
+
   /**
    *  @brief  An allocator that uses malloc.
    *

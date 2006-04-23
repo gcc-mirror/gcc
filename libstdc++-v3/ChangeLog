@@ -1,3 +1,17 @@
+2006-04-23  Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++/27199
+	* ext/pool_allocator.h: Add using declarations for size_t, ptrdiff_t.
+	* ext/bitmap_allocator.h: Likewise; qualify with std::.
+	* ext/new_allocator.h: Likewise.
+	* ext/malloc_allocator.h: Likewise.
+	* ext/array_allocator.h: Likewise.
+	* ext/mt_allocator.h: Likewise.
+	* ext/functional: Likewise for size_t.
+	* ext/debug_allocator.h: Likewise.
+	* bits/char_traits.h: Qualify with std:: size_t.
+	* debug/hash_multimap.h: Likewise.
+
 2006-04-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 42.

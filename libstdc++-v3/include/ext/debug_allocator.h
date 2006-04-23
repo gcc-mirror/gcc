@@ -52,6 +52,8 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+  using std::size_t;
+
   /**
    *  @brief  A meta-allocator with debugging bits, as per [20.4].
    *
