@@ -1,3 +1,7 @@
+2006-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-tailcall.c (pass_tail_recursion): Use gate_tail_calls too.
+
 2006-04-14  Alexey Starovoytov  <alexey.starovoytov@sun.com>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-tailr-details" } */
+/* { dg-options "-O1 -foptimize-sibling-calls -fdump-tree-tailr-details" } */
 int
 t(char *a)
 {
