@@ -1657,18 +1657,33 @@ resolve_call (gfc_code * c)
 	gfc_internal_error ("resolve_subroutine(): bad function type");
       }
 
+  /* Some checks of elemental subroutines.  */
   if (c->ext.actual != NULL
       && c->symtree->n.sym->attr.elemental)
     {
       gfc_actual_arglist * a;
-      /* Being elemental, the last upper bound of an assumed size array
-	 argument must be present.  */
+      gfc_expr * e;
+      e = NULL;
+
       for (a = c->ext.actual; a; a = a->next)
 	{
-	  if (a->expr != NULL
-		&& a->expr->rank > 0
-		&& resolve_assumed_size_actual (a->expr))
+	  if (a->expr == NULL || a->expr->rank == 0)
+	    continue;
+
+	 /* The last upper bound of an assumed size array argument must
+	    be present.  */
+	  if (resolve_assumed_size_actual (a->expr))
 	    return FAILURE;
+
+	  /* Array actual arguments must conform.  */
+	  if (e != NULL)
+	    {
+	      if (gfc_check_conformance ("elemental subroutine", a->expr, e)
+			== FAILURE)
+		return FAILURE;
+	    }
+	  else
+	    e = a->expr;
 	}
     }
 
