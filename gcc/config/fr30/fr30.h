@@ -842,13 +842,15 @@ do										\
         goto LABEL;							\
       if (GET_CODE (X) == PLUS						\
 	  && ((MODE) == SImode || (MODE) == SFmode)			\
-	  && XEXP (X, 0) == stack_pointer_rtx				\
+	  && GET_CODE (XEXP (X, 0)) == REG				\
+          && REGNO (XEXP (X, 0)) == STACK_POINTER_REGNUM		\
 	  && GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	  && IN_RANGE (INTVAL (XEXP (X, 1)), 0, (1 <<  6) - 4))		\
 	goto LABEL;							\
       if (GET_CODE (X) == PLUS						\
 	  && ((MODE) == SImode || (MODE) == SFmode)			\
-	  && XEXP (X, 0) == frame_pointer_rtx				\
+	  && GET_CODE (XEXP (X, 0)) == REG				\
+          && REGNO (XEXP (X, 0)) == FRAME_POINTER_REGNUM		\
 	  && GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	  && IN_RANGE (INTVAL (XEXP (X, 1)), -(1 << 9), (1 <<  9) - 4))	\
         goto LABEL;							\
@@ -862,15 +864,16 @@ do										\
         goto LABEL;							\
       if (GET_CODE (X) == PLUS						\
 	  && ((MODE) == SImode || (MODE) == SFmode)			\
-	  && XEXP (X, 0) == stack_pointer_rtx				\
+	  && GET_CODE (XEXP (X, 0)) == REG				\
+          && REGNO (XEXP (X, 0)) == STACK_POINTER_REGNUM		\
 	  && GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	  && IN_RANGE (INTVAL (XEXP (X, 1)), 0, (1 <<  6) - 4))		\
 	goto LABEL;							\
       if (GET_CODE (X) == PLUS						\
 	  && ((MODE) == SImode || (MODE) == SFmode)			\
-	  && GET_CODE (XEXP (X, 0)) == REG \
-          && (REGNO (XEXP (X, 0)) == FRAME_POINTER_REGNUM \
-           || REGNO (XEXP (X, 0)) == ARG_POINTER_REGNUM) \
+	  && GET_CODE (XEXP (X, 0)) == REG				\
+          && (REGNO (XEXP (X, 0)) == FRAME_POINTER_REGNUM		\
+	      || REGNO (XEXP (X, 0)) == ARG_POINTER_REGNUM)		\
 	  && GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	  && IN_RANGE (INTVAL (XEXP (X, 1)), -(1 << 9), (1 <<  9) - 4))	\
         goto LABEL;							\

@@ -1,3 +1,10 @@
+2006-04-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/16641
+	* config/fr30/fr30.h (GO_IF_LEGITIMATE_ADDRESS): Check REGNO for
+	STACK_POINTER_RTX and FRAME_POINTER_RTX instead of comparing the
+	rtx to stack_pointer_rtx or frame_pointer_rtx directly.
+
 2006-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (range_predecessor): Use operand_equal_p
