@@ -1,3 +1,9 @@
+2006-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (range_predecessor): Use operand_equal_p
+	as the predicate for equality.
+	(range_successor): Likewise.
+
 2006-04-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	Revert:

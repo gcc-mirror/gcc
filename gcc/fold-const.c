@@ -4158,7 +4158,8 @@ range_predecessor (tree val)
 {
   tree type = TREE_TYPE (val);
 
-  if (INTEGRAL_TYPE_P (type) && val == TYPE_MIN_VALUE (type))
+  if (INTEGRAL_TYPE_P (type)
+      && operand_equal_p (val, TYPE_MIN_VALUE (type), 0))
     return 0;
   else
     return range_binop (MINUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
@@ -4171,7 +4172,8 @@ range_successor (tree val)
 {
   tree type = TREE_TYPE (val);
 
-  if (INTEGRAL_TYPE_P (type) && val == TYPE_MAX_VALUE (type))
+  if (INTEGRAL_TYPE_P (type)
+      && operand_equal_p (val, TYPE_MAX_VALUE (type), 0))
     return 0;
   else
     return range_binop (PLUS_EXPR, NULL_TREE, val, 0, integer_one_node, 0);
