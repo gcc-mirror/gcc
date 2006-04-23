@@ -1,6 +1,6 @@
 # Top level makefile fragment for TREELANG For GCC. -*- makefile -*-
 
-#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -299,7 +299,6 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
-	TRANSFORM=$(program_transform_name); export TRANSFORM; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	   export TCL_LIBRARY ; fi ; \
