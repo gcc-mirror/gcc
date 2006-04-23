@@ -1,5 +1,12 @@
 2006-04-23  Roger Sayle  <roger@eyesopen.com>
 
+	* config/fr30/fr30.md (addsi_small_int): Use REGNO_PTR_FRAME_P to
+	identify potentially eliminable registers to additionally catch
+	VIRTUAL_INCOMING_ARGS_REGNUM.
+	(addsi3): Update the conditions on when to use addsi_small_int.
+
+2006-04-23  Roger Sayle  <roger@eyesopen.com>
+
 	PR target/16641
 	* config/fr30/fr30.h (GO_IF_LEGITIMATE_ADDRESS): Check REGNO for
 	STACK_POINTER_RTX and FRAME_POINTER_RTX instead of comparing the
