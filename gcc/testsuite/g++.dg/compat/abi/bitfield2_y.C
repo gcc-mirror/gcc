@@ -1,4 +1,4 @@
-// { dg-options "-ansi -pedantic-errors -fsigned-bitfields" }
+// { dg-options "-w -ansi -pedantic-errors -fsigned-bitfields" }
 
 extern "C" void abort (void);
 

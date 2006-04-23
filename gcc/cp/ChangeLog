@@ -1,3 +1,17 @@
+2006-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26534
+	* cp-tree.h (is_bitfield_expr_with_lowered_type): New function.
+	* typeck.c (is_bitfield_expr_with_lowered_type): New function.
+	(decay_conversion): Convert bitfield expressions to the correct
+	type.
+	(build_modify_expr): Remove spurious conversions.
+	* class.c (layout_class_type): Modify the type of bitfields to
+	indicate a limited range. 
+	* call.c (standard_conversion): Adjust the type of bitfield
+	expressions used in an rvalue context.
+	(build_conditional_expr): Likewise.
+	
 2006-04-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c: Fix comment typos.

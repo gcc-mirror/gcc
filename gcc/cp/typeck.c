@@ -1398,21 +1398,47 @@ invalid_nonstatic_memfn_p (tree expr)
   return false;
 }
 
+/* If EXP is a reference to a bitfield, and the type of EXP does not
+   match the declared type of the bitfield, return the declared type
+   of the bitfield.  Otherwise, return NULL_TREE.  */
+
+tree
+is_bitfield_expr_with_lowered_type (tree exp)
+{
+  tree field;
+
+  if (TREE_CODE (exp) == COND_EXPR)
+    {
+      if (!is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 1)))
+	return NULL_TREE;
+      return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 2));
+    }
+  if (TREE_CODE (exp) != COMPONENT_REF)
+    return NULL_TREE;
+  field = TREE_OPERAND (exp, 1);
+  if (TREE_CODE (field) != FIELD_DECL || !DECL_C_BIT_FIELD (field))
+    return NULL_TREE;
+  if (same_type_ignoring_top_level_qualifiers_p
+      (TREE_TYPE (exp), DECL_BIT_FIELD_TYPE (field)))
+    return NULL_TREE;
+  return DECL_BIT_FIELD_TYPE (field);
+}
+
 /* Perform the conversions in [expr] that apply when an lvalue appears
    in an rvalue context: the lvalue-to-rvalue, array-to-pointer, and
    function-to-pointer conversions.
 
-   In addition manifest constants are replaced by their values.  */
+   In addition, manifest constants are replaced by their values, and
+   bitfield references are converted to their declared types.  */
 
 tree
 decay_conversion (tree exp)
 {
   tree type;
+  tree bitfield_type;
   enum tree_code code;
 
   type = TREE_TYPE (exp);
-  code = TREE_CODE (type);
-
   if (type == error_mark_node)
     return error_mark_node;
 
@@ -1422,11 +1448,15 @@ decay_conversion (tree exp)
       return error_mark_node;
     }
 
+  bitfield_type = is_bitfield_expr_with_lowered_type (exp);
+  if (bitfield_type) 
+    exp = build_nop (bitfield_type, exp);
+
   exp = decl_constant_value (exp);
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
-
+  code = TREE_CODE (type);
   if (code == VOID_TYPE)
     {
       error ("void value not ignored as it ought to be");
@@ -5500,11 +5530,9 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 
 	cond = build_conditional_expr
 	  (TREE_OPERAND (lhs, 0),
-	   build_modify_expr (cp_convert (TREE_TYPE (lhs),
-					  TREE_OPERAND (lhs, 1)),
+	   build_modify_expr (TREE_OPERAND (lhs, 1),
 			      modifycode, rhs),
-	   build_modify_expr (cp_convert (TREE_TYPE (lhs),
-					  TREE_OPERAND (lhs, 2)),
+	   build_modify_expr (TREE_OPERAND (lhs, 2),
 			      modifycode, rhs));
 
 	if (cond == error_mark_node)

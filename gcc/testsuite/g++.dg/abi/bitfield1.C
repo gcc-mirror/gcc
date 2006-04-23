@@ -19,7 +19,7 @@ int main ()
 {
   A a;
 
-  a.bitS = 1;
+  a.bitS = 1; // { dg-warning "overflow" }
   a.bitU = 1;
   a.bit = 1;
 

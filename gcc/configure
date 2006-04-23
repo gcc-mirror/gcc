@@ -15843,6 +15843,10 @@ do
 	        lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
 	    fi
 	    ;;
+        *)
+	    # This language is not enabled; skip it.
+	    continue
+	    ;;
         esac
 
 	if test -f $srcdir/$subdir/lang.opt; then

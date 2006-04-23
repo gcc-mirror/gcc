@@ -1,3 +1,17 @@
+2006-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26534
+	* g++.dg/opt/bitfield1.C: New test.
+	* g++.dg/compat/abi/bitfield1_main.C: Add -w.
+	* g++.dg/compat/abi/bitfield1_x.C: Likewise.
+	* g++.dg/compat/abi/bitfield1_y.C: Likewise.
+	* g++.dg/compat/abi/bitfield2_main.C: Likewise.
+	* g++.dg/compat/abi/bitfield2_x.C: Likewise.
+	* g++.dg/compat/abi/bitfield2_y.C: Likewise.
+	* g++.dg/abi/bitfield1.C: Add dg-warning markers.
+	* g++.dg/abi/bitfield2.C: Likewise.
+	* g++.dg/init/bitfield1.C: Likewise.
+
 2006-04-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25099

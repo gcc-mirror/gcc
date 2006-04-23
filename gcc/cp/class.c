@@ -4727,6 +4727,29 @@ layout_class_type (tree t, tree *virtuals_p)
 		 "classes to be placed at different locations in a "
 		 "future version of GCC", field);
 
+      /* The middle end uses the type of expressions to determine the
+	 possible range of expression values.  In order to optimize
+	 "x.i > 7" to "false" for a 2-bit bitfield "i", the middle end
+	 must be made aware of the width of "i", via its type.  
+
+         Because C++ does not have integer types of arbitrary width,
+	 we must (for the purposes of the front end) convert from the
+	 type assigned here to the declared type of the bitfield
+	 whenever a bitfield expression is used as an rvalue.
+	 Similarly, when assigning a value to a bitfield, the value
+	 must be converted to the type given the bitfield here.  */
+      if (DECL_C_BIT_FIELD (field))
+	{
+	  tree ftype;
+	  unsigned HOST_WIDE_INT width;
+	  ftype = TREE_TYPE (field);
+	  width = tree_low_cst (DECL_SIZE (field), /*unsignedp=*/1);
+	  if (width != TYPE_PRECISION (ftype))
+	    TREE_TYPE (field) 
+	      = c_build_bitfield_integer_type (width, 
+					       TYPE_UNSIGNED (ftype));
+	}
+
       /* If we needed additional padding after this field, add it
 	 now.  */
       if (padding)
