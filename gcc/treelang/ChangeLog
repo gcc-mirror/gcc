@@ -1,3 +1,7 @@
+2006-04-22  Matthias Klose  <doko@debian.org>
+
+	* Make-lang.in(treelang.check): Don't set and pass TRANSFORM.
+
 2006-03-29  Carlos O'Donell  <caros@codesourcery.com>
 
 	* Make-lang.in: Rename docdir to gcc_docdir.
