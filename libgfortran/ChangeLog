@@ -1,3 +1,23 @@
+2006-04-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/20257
+	* io/io.h: Add prototypes for get_internal_unit and free_internal_unit.
+	* io/unit.c (get_internal_unit): Initialize unit number, not zero.
+	(free_internal_unit): New function to consolidate freeing memory.
+	(get_unit): Initialize internal_unit_desc to NULL when unit is
+	external.
+	* io/unix.c (mem_close): Check for not NULL before freeing memory.
+	* io/transfer.c (read_block): Reset bytes_left and skip error if unit
+	is preconnected and default record length is reached.
+	(read_block_direct): Ditto.
+	(write_block): Ditto.
+	(write_buf): Ditto.
+	(data_transfer_init): Only flush if not internal unit.
+	(finalize_transfer): Ditto and delete code to free memory used by
+	internal units.
+	(st_read_done): Use new function - free_internal_unit.
+	(st_write_done): Use new function - free_internal unit.
+
 2006-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/26769

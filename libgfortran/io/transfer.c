@@ -257,11 +257,19 @@ read_block (st_parameter_dt *dtp, int *length)
 
   if (dtp->u.p.current_unit->bytes_left < *length)
     {
-      if (dtp->u.p.current_unit->flags.pad == PAD_NO)
+      /* For preconnected units with default record length, set bytes left
+	 to unit record length and proceed, otherwise error.  */
+      if (dtp->u.p.current_unit->unit_number == options.stdin_unit
+	  && dtp->u.p.current_unit->recl == DEFAULT_RECL)
+        dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
+      else
 	{
-	  generate_error (&dtp->common, ERROR_EOR, NULL);
-	  /* Not enough data left.  */
-	  return NULL;
+	  if (dtp->u.p.current_unit->flags.pad == PAD_NO)
+	    {
+	      /* Not enough data left.  */
+	      generate_error (&dtp->common, ERROR_EOR, NULL);
+	      return NULL;
+	    }
 	}
 
       *length = dtp->u.p.current_unit->bytes_left;
@@ -305,11 +313,19 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
   if (dtp->u.p.current_unit->bytes_left < *nbytes)
     {
-      if (dtp->u.p.current_unit->flags.pad == PAD_NO)
+      /* For preconnected units with default record length, set bytes left
+	 to unit record length and proceed, otherwise error.  */
+      if (dtp->u.p.current_unit->unit_number == options.stdin_unit
+	  && dtp->u.p.current_unit->recl == DEFAULT_RECL)
+        dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
+      else
 	{
-	  /* Not enough data left.  */
-	  generate_error (&dtp->common, ERROR_EOR, NULL);
-	  return;
+	  if (dtp->u.p.current_unit->flags.pad == PAD_NO)
+	    {
+	      /* Not enough data left.  */
+	      generate_error (&dtp->common, ERROR_EOR, NULL);
+	      return;
+	    }
 	}
 
       *nbytes = dtp->u.p.current_unit->bytes_left;
@@ -358,11 +374,20 @@ void *
 write_block (st_parameter_dt *dtp, int length)
 {
   char *dest;
-  
+
   if (dtp->u.p.current_unit->bytes_left < length)
     {
-      generate_error (&dtp->common, ERROR_EOR, NULL);
-      return NULL;
+      /* For preconnected units with default record length, set bytes left
+	 to unit record length and proceed, otherwise error.  */
+      if ((dtp->u.p.current_unit->unit_number == options.stdout_unit
+	  || dtp->u.p.current_unit->unit_number == options.stderr_unit)
+	  && dtp->u.p.current_unit->recl == DEFAULT_RECL)
+        dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
+      else
+	{
+	  generate_error (&dtp->common, ERROR_EOR, NULL);
+	  return NULL;
+	}
     }
 
   dtp->u.p.current_unit->bytes_left -= (gfc_offset) length;
@@ -388,11 +413,20 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 {
   if (dtp->u.p.current_unit->bytes_left < nbytes)
     {
-      if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT)
-	generate_error (&dtp->common, ERROR_DIRECT_EOR, NULL);
+      /* For preconnected units with default record length, set bytes left
+	 to unit record length and proceed, otherwise error.  */
+      if ((dtp->u.p.current_unit->unit_number == options.stdout_unit
+	  || dtp->u.p.current_unit->unit_number == options.stderr_unit)
+	  && dtp->u.p.current_unit->recl == DEFAULT_RECL)
+        dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
       else
-	generate_error (&dtp->common, ERROR_EOR, NULL);
-      return FAILURE;
+	{
+	  if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT)
+	    generate_error (&dtp->common, ERROR_DIRECT_EOR, NULL);
+	  else
+	    generate_error (&dtp->common, ERROR_EOR, NULL);
+	  return FAILURE;
+	}
     }
 
   dtp->u.p.current_unit->bytes_left -= (gfc_offset) nbytes;
@@ -1592,7 +1626,9 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
       /* Check to see if we might be reading what we wrote before  */
 
-      if (dtp->u.p.mode == READING && dtp->u.p.current_unit->mode  == WRITING)
+      if (dtp->u.p.mode == READING
+	  && dtp->u.p.current_unit->mode == WRITING
+	  && !is_internal_unit (dtp))
 	 flush(dtp->u.p.current_unit->s);
 
       /* Check whether the record exists to be read.  Only
@@ -2186,7 +2222,8 @@ finalize_transfer (st_parameter_dt *dtp)
 	{
 	  /* Most systems buffer lines, so force the partial record
 	     to be written out.  */
-	  flush (dtp->u.p.current_unit->s);
+	  if (!is_internal_unit (dtp))
+	    flush (dtp->u.p.current_unit->s);
 	  dtp->u.p.seen_dollar = 0;
 	  return;
 	}
@@ -2195,15 +2232,7 @@ finalize_transfer (st_parameter_dt *dtp)
     }
 
   sfree (dtp->u.p.current_unit->s);
-
-  if (is_internal_unit (dtp))
-    {
-      if (is_array_io (dtp) && dtp->u.p.current_unit->ls != NULL)
-	free_mem (dtp->u.p.current_unit->ls);
-      sclose (dtp->u.p.current_unit->s);
-    }
 }
-
 
 /* Transfer function for IOLENGTH. It doesn't actually do any
    data transfer, it just updates the length counter.  */
@@ -2318,8 +2347,9 @@ st_read_done (st_parameter_dt *dtp)
     free_mem (dtp->u.p.scratch);
   if (dtp->u.p.current_unit != NULL)
     unlock_unit (dtp->u.p.current_unit);
-  if (is_internal_unit (dtp) && dtp->u.p.current_unit != NULL)
-    free_mem (dtp->u.p.current_unit);
+
+  free_internal_unit (dtp);
+  
   library_end ();
 }
 
@@ -2372,8 +2402,9 @@ st_write_done (st_parameter_dt *dtp)
     free_mem (dtp->u.p.scratch);
   if (dtp->u.p.current_unit != NULL)
     unlock_unit (dtp->u.p.current_unit);
-  if (is_internal_unit (dtp) && dtp->u.p.current_unit != NULL)
-    free_mem (dtp->u.p.current_unit);
+  
+  free_internal_unit (dtp);
+
   library_end ();
 }
 
