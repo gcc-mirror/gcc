@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-options "-O1 -foptimize-sibling-calls -fdump-tree-optimized" } */
 
 extern void abort (void);
 extern void exit (int);

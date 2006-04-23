@@ -1,3 +1,12 @@
+2006-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sibcall-7.c: New test.
+	* gcc.dg/tree-ssa/tailrecursion-1.c: Pass -foptimize-sibling-calls.
+	* gcc.dg/tree-ssa/tailrecursion-2.c: Likewise.
+	* gcc.dg/tree-ssa/tailrecursion-3.c: Likewise.
+	* gcc.dg/tree-ssa/tailrecursion-4.c: Likewise.
+	* gcc.dg/tree-ssa/tailrecursion-5.c: Likewise.
+
 2006-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26534
