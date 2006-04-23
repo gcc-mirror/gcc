@@ -1,3 +1,10 @@
+2006-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26534
+	* c-common.h (c_build_bitfield_integer_type): Declare.
+	* c-decl.c (c_build_bitfield_integer_type): Move to ...
+	* c-common.c (c_build_bitfield_integer_type): ... here.
+
 2006-04-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/21283

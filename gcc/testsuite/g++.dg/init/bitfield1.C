@@ -14,11 +14,11 @@ void f ();
 int main ()
 {
   (f(), a.j) = 1;
-  (f(), a).j = 2;
-  (b ? a.j : a2.k) = 3;
+  (f(), a).j = 2; // { dg-warning "overflow" } 
+  (b ? a.j : a2.k) = 3; // { dg-warning "overflow" } 
   (b ? a : a2).j = 0;
   ++(a.j) = 1;
-  (a.j = 2) = 3;
+  (a.j = 2) = 3; // { dg-warning "overflow" } 
 }
 
     

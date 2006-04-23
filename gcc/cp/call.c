@@ -623,7 +623,16 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       conv = build_conv (ck_lvalue, from, conv);
     }
   else if (fromref || (expr && lvalue_p (expr)))
-    conv = build_conv (ck_rvalue, from, conv);
+    {
+      if (expr)
+	{
+	  tree bitfield_type;
+	  bitfield_type = is_bitfield_expr_with_lowered_type (expr);
+	  if (bitfield_type)
+	    from = bitfield_type;
+	}
+      conv = build_conv (ck_rvalue, from, conv);
+    }
 
    /* Allow conversion between `__complex__' data types.  */
   if (tcode == COMPLEX_TYPE && fcode == COMPLEX_TYPE)
@@ -3196,8 +3205,12 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
      array-to-pointer (_conv.array_), and function-to-pointer
      (_conv.func_) standard conversions are performed on the second
      and third operands.  */
-  arg2_type = TREE_TYPE (arg2);
-  arg3_type = TREE_TYPE (arg3);
+  arg2_type = is_bitfield_expr_with_lowered_type (arg2);
+  if (!arg2_type)
+    arg2_type = TREE_TYPE (arg2);
+  arg3_type = is_bitfield_expr_with_lowered_type (arg3);
+  if (!arg3_type)
+    arg3_type = TREE_TYPE (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))
     {
       /* Do the conversions.  We don't these for `void' type arguments

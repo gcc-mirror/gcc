@@ -458,6 +458,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  print_node (file, "offset", DECL_FIELD_OFFSET (node), indent + 4);
 	  print_node (file, "bit offset", DECL_FIELD_BIT_OFFSET (node),
 		      indent + 4);
+	  if (DECL_BIT_FIELD_TYPE (node))
+	    print_node (file, "bit_field_type", DECL_BIT_FIELD_TYPE (node),
+			indent + 4);
 	}
 
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
