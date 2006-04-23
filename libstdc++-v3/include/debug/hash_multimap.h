@@ -181,7 +181,7 @@ namespace __debug
       erase(const key_type& __key)
       {
 	std::pair<iterator, iterator> __victims = this->equal_range(__key);
-	size_t __num_victims = 0;
+	std::size_t __num_victims = 0;
 	while (__victims.first != __victims.second)
 	{
 	  this->erase(__victims.first++);

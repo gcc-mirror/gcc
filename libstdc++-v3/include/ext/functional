@@ -67,6 +67,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+  using std::size_t;
   using std::unary_function;
   using std::binary_function;
   using std::mem_fun1_t;

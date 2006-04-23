@@ -41,6 +41,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+ using std::size_t;
+ using std::ptrdiff_t;
+
   /// @brief  Base class.
  template<typename _Tp>
     class array_allocator_base

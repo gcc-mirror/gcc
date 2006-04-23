@@ -42,6 +42,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+  using std::size_t;
+  using std::ptrdiff_t;
+
   typedef void (*__destroy_handler)(void*);
 
   /// @brief  Base class for pool object.

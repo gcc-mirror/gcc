@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     char_traits<_CharT>::
     compare(const char_type* __s1, const char_type* __s2, std::size_t __n)
     {
-      for (size_t __i = 0; __i < __n; ++__i)
+      for (std::size_t __i = 0; __i < __n; ++__i)
 	if (lt(__s1[__i], __s2[__i]))
 	  return -1;
 	else if (lt(__s2[__i], __s1[__i]))
