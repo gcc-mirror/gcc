@@ -3700,6 +3700,7 @@ gfc_walk_intrinsic_bound (gfc_ss * ss, gfc_expr * expr)
   newss->type = GFC_SS_INTRINSIC;
   newss->expr = expr;
   newss->next = ss;
+  newss->data.info.dimen = 1;
 
   return newss;
 }

@@ -2295,6 +2295,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  fnbody = gfc_trans_dummy_array_bias (proc_sym,
 					       current_fake_result_decl,
 					       fnbody);
+
+	  /* An automatic character length, pointer array result.  */
+	  if (proc_sym->ts.type == BT_CHARACTER
+		&& TREE_CODE (proc_sym->ts.cl->backend_decl) == VAR_DECL)
+	    fnbody = gfc_trans_dummy_character (proc_sym->ts.cl, fnbody);
 	}
       else if (proc_sym->ts.type == BT_CHARACTER)
 	{

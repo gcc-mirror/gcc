@@ -1215,7 +1215,7 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 	  /* Array references don't change the string length.  */
 	  break;
 
-	case COMPONENT_REF:
+	case REF_COMPONENT:
 	  /* Use the length of the component.  */
 	  ts = &ref->u.c.component->ts;
 	  break;
@@ -2297,6 +2297,18 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	  loop->dimen = ss->data.info.dimen;
 	  break;
 
+	/* As usual, lbound and ubound are exceptions!.  */
+	case GFC_SS_INTRINSIC:
+	  switch (ss->expr->value.function.isym->generic_id)
+	    {
+	    case GFC_ISYM_LBOUND:
+	    case GFC_ISYM_UBOUND:
+	      loop->dimen = ss->data.info.dimen;
+
+	    default:
+	      break;
+	    }
+
 	default:
 	  break;
 	}
@@ -2321,6 +2333,17 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	  for (n = 0; n < ss->data.info.dimen; n++)
 	    gfc_conv_section_startstride (loop, ss, n);
 	  break;
+
+	case GFC_SS_INTRINSIC:
+	  switch (ss->expr->value.function.isym->generic_id)
+	    {
+	    /* Fall through to supply start and stride.  */
+	    case GFC_ISYM_LBOUND:
+	    case GFC_ISYM_UBOUND:
+	      break;
+	    default:
+	      continue;
+	    }
 
 	case GFC_SS_CONSTRUCTOR:
 	case GFC_SS_FUNCTION:

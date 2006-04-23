@@ -1,3 +1,47 @@
+2006-04-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/27122
+	* resolve.c (resolve_function): Remove general restriction on auto
+	character length function interfaces.
+	(gfc_resolve_uops): Check restrictions on defined operator
+	procedures.
+	(resolve_types): Call the check for defined operators.
+
+	PR fortran/27113
+	* trans-array.c (get_array_ctor_var_strlen): Remove typo in enum.
+	Part of the fix in 4.2, which does not work in 4.1 because the
+	divergence is now too great.
+
+	PR fortran/26822
+	* intrinsic.c (add_functions): Mark LOGICAL as elemental.
+
+	PR fortran/26787
+	* expr.c (gfc_check_assign): Extend scope of error to include
+	assignments to a procedure in the main program or, from a
+	module or internal procedure that is not that represented by
+	the lhs symbol. Use VARIABLE rather than l-value in message.
+
+	PR fortran/25597
+	* trans-decl.c (gfc_trans_deferred_vars): Check if an array
+	result, is also automatic character length.  If so, process
+	the character length. Note that this fixes the bug in 4.2
+	but not here in 4.1 because the trees have diverged too much.
+	Manifestly correct, so applied anyway.
+
+	PR fortran/18803
+	PR fortran/25669
+	PR fortran/26834
+	* trans_intrinsic.c (gfc_walk_intrinsic_bound): Set
+	data.info.dimen for bound intrinsics.
+	* trans_array.c (gfc_conv_ss_startstride): Pick out LBOUND and
+	UBOUND intrinsics and supply their shape information to the ss
+	and the loop.
+
+	PR fortran/27124
+	* trans_expr.c (gfc_trans_function_call):  Add a new block, post,
+	in to which all the argument post blocks are put.  Add this block
+	to se->pre after a byref call or to se->post, otherwise.
+
 2006-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/26769

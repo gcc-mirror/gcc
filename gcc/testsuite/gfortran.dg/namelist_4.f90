@@ -29,7 +29,8 @@ CONTAINS
 ! This has the additional wrinkle of a reference to the object.
   INTEGER FUNCTION F1()
     NAMELIST /NML3/ F2 ! { dg-error "PROCEDURE attribute conflicts" }
-    f2 = 1     ! Used to ICE here
+! Used to ICE here
+    f2 = 1             ! { dg-error "is not a VALUE" }
     F1=1
   END FUNCTION
   INTEGER FUNCTION F2()

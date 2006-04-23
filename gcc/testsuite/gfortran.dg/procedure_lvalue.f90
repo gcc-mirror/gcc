@@ -14,7 +14,7 @@ end module t
 
 subroutine r
   use t
-  b = 1.       ! { dg-error "l-value since it is a procedure" }
+  b = 1.       ! { dg-error "is not a VALUE" }
   y = a(1.)
 end subroutine r
 

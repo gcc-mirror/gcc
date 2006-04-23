@@ -17,7 +17,7 @@ END MODULE M1
 
 MODULE  INTEGER_SETS
  INTERFACE  OPERATOR  (.IN.)
-  FUNCTION ELEMENT(X,A)
+  FUNCTION ELEMENT(X,A) ! { dg-error "cannot be assumed character length" }
      USE M1
      CHARACTER(LEN=*)      :: ELEMENT
      INTEGER, INTENT(IN)   ::  X
@@ -59,7 +59,6 @@ function not_OK (ch)
   not_OK = ch
 end function not_OK
 
-  use INTEGER_SETS
   use m1
 
   character(4) :: answer
@@ -74,11 +73,8 @@ end function not_OK
     end function ext
   end interface
 
-  answer = i.IN.z   ! { dg-error "cannot be used|Operands of user operator" }
-  answer = ext (2)  ! { dg-error "but cannot be used" }
-
   answer = not_OK ("unOK") ! { dg-error "since it is not a dummy" }
 
 END
 
-! { dg-final { cleanup-modules "M1 INTEGER_SETS" } }
+! { dg-final { cleanup-modules "M1" } }

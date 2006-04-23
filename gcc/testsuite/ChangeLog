@@ -1,3 +1,26 @@
+2006-04-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/27122
+	* gfortran.dg/defined_operators_1.f90: New test.
+	* gfortran.dg/assumed_charlen_function_1.f90: Add new error and
+	remove old ones associated, incorrectly, with Note 5.46.
+
+	PR fortran/26787
+	* gfortran.dg/proc_assign_1.f90: New test.
+	* gfortran.dg/procedure_lvalue.f90: Change message.
+	* gfortran.dg/namelist_4.f90: Add new error.
+
+	PR fortran/27089
+	* gfortran.dg/specification_type_resolution_1.f90
+
+	PR fortran/18803
+	PR fortran/25669
+	PR fortran/26834
+	* gfortran.dg/bounds_temporaries_1.f90: New test.
+
+	PR fortran/27124
+	* gfortran.dg/array_return_value_1.f90: New test.
+
 2006-04-21  Carlos O'Donell  <carlos@codesourcery.com>
 
 	Backport from mainline:

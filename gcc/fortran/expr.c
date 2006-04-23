@@ -1863,13 +1863,49 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
       return FAILURE;
     }
 
-  if (sym->attr.flavor == FL_PROCEDURE && sym->attr.use_assoc)
+/* 12.5.2.2, Note 12.26: The result variable is very similar to any other
+   variable local to a function subprogram.  Its existence begins when
+   execution of the function is initiated and ends when execution of the
+   function is terminated.....
+   Therefore, the left hand side is no longer a varaiable, when it is:*/
+  if (sym->attr.flavor == FL_PROCEDURE
+	&& sym->attr.proc != PROC_ST_FUNCTION
+	&& !sym->attr.external)
     {
-      gfc_error ("'%s' in the assignment at %L cannot be an l-value "
-		 "since it is a procedure", sym->name, &lvalue->where);
-      return FAILURE;
-    }
+      bool bad_proc;
+      bad_proc = false;
 
+      /* (i) Use associated; */
+      if (sym->attr.use_assoc)
+	bad_proc = true;
+
+      /* (ii) The assignement is in the main program; or  */
+      if (gfc_current_ns->proc_name->attr.is_main_program)
+	bad_proc = true;
+
+      /* (iii) A module or internal procedure....  */
+      if ((gfc_current_ns->proc_name->attr.proc == PROC_INTERNAL
+	     || gfc_current_ns->proc_name->attr.proc == PROC_MODULE)
+	  && gfc_current_ns->parent
+	  && (!(gfc_current_ns->parent->proc_name->attr.function
+		  || gfc_current_ns->parent->proc_name->attr.subroutine)
+	      || gfc_current_ns->parent->proc_name->attr.is_main_program))
+	{
+	  /* .... that is not a function.... */ 
+	  if (!gfc_current_ns->proc_name->attr.function)
+	    bad_proc = true;
+
+	  /* .... or is not an entry and has a different name.  */
+	  if (!sym->attr.entry && sym->name != gfc_current_ns->proc_name->name)
+	    bad_proc = true;
+	}
+
+      if (bad_proc)
+	{
+	  gfc_error ("'%s' at %L is not a VALUE", sym->name, &lvalue->where);
+	  return FAILURE;
+	}
+    }
 
   if (rvalue->rank != 0 && lvalue->rank != rvalue->rank)
     {
