@@ -378,6 +378,11 @@ get_internal_unit (st_parameter_dt *dtp)
   memset (iunit, '\0', sizeof (gfc_unit));
 
   iunit->recl = dtp->internal_unit_len;
+  
+  /* For internal units we set the unit number to -1.
+     Otherwise internal units can be mistaken for a pre-connected unit or
+     some other file I/O unit.  */
+  iunit->unit_number = -1;
 
   /* Set up the looping specification from the array descriptor, if any.  */
 
@@ -424,6 +429,23 @@ get_internal_unit (st_parameter_dt *dtp)
 }
 
 
+/* free_internal_unit()-- Free memory allocated for internal units if any.  */
+void
+free_internal_unit (st_parameter_dt *dtp)
+{
+  if (!is_internal_unit (dtp))
+    return;
+
+  if (dtp->u.p.current_unit->ls != NULL)
+      free_mem (dtp->u.p.current_unit->ls);
+  
+  sclose (dtp->u.p.current_unit->s);
+
+  if (dtp->u.p.current_unit != NULL)
+    free_mem (dtp->u.p.current_unit);
+}
+
+
 /* get_unit()-- Returns the unit structure associated with the integer
  * unit or the internal file. */
 
@@ -437,6 +459,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
   /* Has to be an external unit */
 
   dtp->u.p.unit_is_internal = 0;
+  dtp->internal_unit_desc = NULL;
 
   return get_external_unit (dtp->common.unit, do_create);
 }
