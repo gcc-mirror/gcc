@@ -119,6 +119,17 @@
 #    endif
 #  endif
 
+/* An user-supplied routine that is called to dtermine if a DSO must
+   be scanned by the gc.  */
+static int (*GC_has_static_roots)(const char *, void *, size_t);
+/* Register the routine.  */
+void
+GC_register_has_static_roots_callback 
+  (int (*callback)(const char *, void *, size_t))
+{
+  GC_has_static_roots = callback;
+}
+
 #if defined(SUNOS5DL) && !defined(USE_PROC_FOR_LIBRARIES)
 
 #ifdef LINT
@@ -371,7 +382,7 @@ GC_bool GC_register_main_static_data()
 {
   return FALSE;
 }
-  
+
 # define HAVE_REGISTER_MAIN_STATIC_DATA
 
 #endif /* USE_PROC_FOR_LIBRARIES */
@@ -411,6 +422,11 @@ static int GC_register_dynlib_callback(info, size, ptr)
 	{
 	  if( !(p->p_flags & PF_W) ) break;
 	  start = ((char *)(p->p_vaddr)) + info->dlpi_addr;
+
+	  if (GC_has_static_roots 
+	      && !GC_has_static_roots(info->dlpi_name, start, p->p_memsz))
+	    break;
+
 	  GC_add_roots_inner(start, start + p->p_memsz, TRUE);
 	}
       break;

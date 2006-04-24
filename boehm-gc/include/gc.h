@@ -925,6 +925,15 @@ extern void GC_thr_init GC_PROTO((void));/* Needed for Solaris/X86	*/
 
 #endif /* THREADS && !SRC_M3 */
 
+/* Register a callback to control the scanning of dynamic libraries.
+   When the GC scans the static data of a dynamic library, it will
+   first call a user-supplied routine with filename of the library and
+   the address and length of the memory region.  This routine should
+   return nonzero if that region should be scanned.  */
+GC_API void GC_register_has_static_roots_callback 
+  (int (*callback)(const char *, void *, size_t));
+
+
 #if defined(GC_WIN32_THREADS) && !defined(__CYGWIN32__) && !defined(__CYGWIN__)
 # include <windows.h>
 
