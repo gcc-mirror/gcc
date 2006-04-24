@@ -399,15 +399,11 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
    DECL is the FUNCTION_DECL that the friend is.
 
-   FLAGS is just used for `grokclassfn'.
-
-   QUALS say what special qualifies should apply to the object
-   pointed to by `this'.  */
+   FLAGS is just used for `grokclassfn'.  */
 
 tree
 do_friend (tree ctype, tree declarator, tree decl,
 	   tree attrlist, enum overload_flags flags,
-	   cp_cv_quals quals,
 	   bool funcdef_flag)
 {
   /* Every decl that gets here is a friend of something.  */
@@ -456,8 +452,7 @@ do_friend (tree ctype, tree declarator, tree decl,
       if (flags == NO_SPECIAL && declarator == cname)
 	DECL_CONSTRUCTOR_P (decl) = 1;
 
-      /* This will set up DECL_ARGUMENTS for us.  */
-      grokclassfn (ctype, decl, flags, quals);
+      grokclassfn (ctype, decl, flags);
 
       if (friend_depth)
 	{

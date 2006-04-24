@@ -1,5 +1,24 @@
 2006-04-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/26912
+	* cp-tree.h (build_this_parm): Declare.
+	(grok_method_quals): Remove.
+	(build_memfn_type): Declare.
+	(build_artificial_parm): Declare.
+	(do_friend): Remove quals parameter.
+	* decl.c (build_this_parm): New function.
+	(grokfndecl): Use it.  Do not pass quals to grokclassfn.
+	(grokdeclarator): Rename quals to memfn_quals.  Avoid allocating
+	unnecessary TYPE_DECLs.  Correct qualification of member function
+	types.  Tidy.
+	* method.c (implicitly_declare_fn): Use build_this_parm.
+	* friend.c (do_friend): Remove quals parameter.
+	* decl2.c (grok_method_quals): Remove.
+	(build_memfn_type): New function.
+	(build_artificial_parm): Give it external linkage.
+	(grokclassfn): Remove quals parameter.  Do not build "this"
+	PARM_DECL here.
+
 	PR c++/26534
 	* cp-tree.h (is_bitfield_expr_with_lowered_type): New function.
 	* typeck.c (is_bitfield_expr_with_lowered_type): New function.
