@@ -10111,7 +10111,9 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
       if (integer_zerop (op2)
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (arg1)))
-	return fold_build2 (TRUTH_ANDIF_EXPR, type, arg0, arg1);
+	return fold_build2 (TRUTH_ANDIF_EXPR, type,
+			    fold_convert (type, arg0),
+			    arg1);
 
       /* Convert A ? B : 1 into !A || B if A and B are truth values.  */
       if (integer_onep (op2)
@@ -10121,7 +10123,9 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = invert_truthvalue (arg0);
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold_build2 (TRUTH_ORIF_EXPR, type, tem, arg1);
+	    return fold_build2 (TRUTH_ORIF_EXPR, type,
+				fold_convert (type, tem),
+				arg1);
 	}
 
       /* Convert A ? 0 : B into !A && B if A and B are truth values.  */
@@ -10132,14 +10136,18 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = invert_truthvalue (arg0);
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold_build2 (TRUTH_ANDIF_EXPR, type, tem, op2);
+	    return fold_build2 (TRUTH_ANDIF_EXPR, type,
+				fold_convert (type, tem),
+				op2);
 	}
 
       /* Convert A ? 1 : B into A || B if A and B are truth values.  */
       if (integer_onep (arg1)
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (op2)))
-	return fold_build2 (TRUTH_ORIF_EXPR, type, arg0, op2);
+	return fold_build2 (TRUTH_ORIF_EXPR, type,
+			    fold_convert (type, arg0),
+			    op2);
 
       return NULL_TREE;
 
