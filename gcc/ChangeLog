@@ -1,3 +1,19 @@
+2006-04-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (c-convert.o): Add dependency on $(TARGET_H)
+	(tree-vect-patterns.o): Likewise.
+	(jump.o): Likewise.
+	(cselib.o): Likewise.
+	(loop-doloop.o): Likewise.
+	(regclass.o): Likewise.
+	(reload1.o): Likewise.
+	(explow.o): Replace target.h with $(TARGET_H).
+	(ipa-prop.o): Likewise.
+	(ipa-cp.o): Likewise.
+	(ipa-inline.o): Likewise.
+	(reorg.o): Likewise.
+	(reg-stack.o): Likewise.
+
 2006-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-tailcall.c (pass_tail_recursion): Use gate_tail_calls too.
