@@ -1,3 +1,10 @@
+2006-04-24  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* rtl.def (SS_ASHIFT, SS_NEG): New codes.
+	* doc/rtl.texi: Document them.
+	* simplify-rtx.c (simplify_unary_operation,
+	simplify_binary_operation_1): Don't abort when we see them.
+
 2006-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:

@@ -1889,9 +1889,18 @@ or the first operand must be loaded into a register while its mode is
 still known.
 
 @findex neg
+@findex ss_neg
+@cindex negation
+@cindex negation with signed saturation
 @item (neg:@var{m} @var{x})
-Represents the negation (subtraction from zero) of the value represented
-by @var{x}, carried out in mode @var{m}.
+@itemx (ss_neg:@var{m} @var{x})
+These two expressions represent the negation (subtraction from zero) of
+the value represented by @var{x}, carried out in mode @var{m}.  They
+differ in the behaviour on overflow of integer modes.  In the case of
+@code{neg}, the negation of the operand may be a number not representable
+in mode @var{m}, in which case it is truncated to @var{m}.  @code{ss_neg}
+ensures that an out-of-bounds result saturates to the maximum or minimum
+representable value.
 
 @findex mult
 @cindex multiplication
@@ -1998,12 +2007,21 @@ and @var{y}, carried out in machine mode @var{m}, which must be a
 fixed-point mode.
 
 @findex ashift
+@findex ss_ashift
 @cindex left shift
 @cindex shift
 @cindex arithmetic shift
+@cindex arithmetic shift with signed saturation
 @item (ashift:@var{m} @var{x} @var{c})
-Represents the result of arithmetically shifting @var{x} left by @var{c}
-places.  @var{x} have mode @var{m}, a fixed-point machine mode.  @var{c}
+@itemx (ss_ashift:@var{m} @var{x} @var{c})
+These two expressions epresent the result of arithmetically shifting @var{x}
+left by @var{c} places.  They differ in their behavior on overflow of integer
+modes.  An @code{ashift} operation is a plain shift with no special behaviour
+in case of a change in the sign bit; @code{ss_ashift} saturates to the minimum
+or maximum representable value rather than allowing the shift to change the
+sign bit of the value.
+
+@var{x} have mode @var{m}, a fixed-point machine mode.  @var{c}
 be a fixed-point mode or be a constant with mode @code{VOIDmode}; which
 mode is determined by the mode called for in the machine description
 entry for the left-shift instruction.  For example, on the VAX, the mode
