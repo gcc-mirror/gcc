@@ -1,3 +1,11 @@
+2006-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert:
+	2006-04-23  Mark Mitchell  <mark@codesourcery.com>
+	* configure.ac: Completely disregard languages that are not
+	enabled.
+	* configure: Regenerated.
+
 2006-04-24  Andrew Pinski  <pinskia@gcc.gnu.org>
 	Richard Guenther  <rguenther@suse.de>
 
@@ -51,6 +59,12 @@
 	* tree-tailcall.c (pass_tail_recursion): Use gate_tail_calls too.
 
 2006-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* print-tree.c (print_node): Print DECL_BIT_FIELD_TYPE.
+
+	* configure.ac: Completely disregard languages that are not
+	enabled.
+	* configure: Regenerated.
 
 	PR c++/26534
 	* c-common.h (c_build_bitfield_integer_type): Declare.
