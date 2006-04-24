@@ -146,6 +146,10 @@ fhash-synchronization
 Java Var(flag_hash_synchronization)
 Assume the runtime uses a hash table to map an object to its synchronization structure
 
+findirect-classes
+Java Var(flag_indirect_classes) Init(1)
+Generate instances of Class at runtime
+
 findirect-dispatch
 Java Var(flag_indirect_dispatch)
 Use offset tables for virtual method calls

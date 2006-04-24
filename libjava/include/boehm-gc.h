@@ -19,6 +19,7 @@ extern "C"
 {
   void *_Jv_MarkObj (void *, void *, void *, void *);
   void *_Jv_MarkArray (void *, void *, void *, void *);
+  void _Jv_RegisterLibForGc (const void *);
 }
 
 // Enough stuff to inline _Jv_AllocObj.  Ugly.

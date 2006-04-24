@@ -21,6 +21,12 @@ details.  */
 
 #include <java-interp.h>
 
+// Set GC_DEBUG before including gc.h!
+#ifdef LIBGCJ_GC_DEBUG
+# define GC_DEBUG
+#endif
+#include <gc.h>
+
 #include <jvm.h>
 #include <gcj/cni.h>
 #include <string.h>
@@ -264,6 +270,21 @@ _Jv_word
 _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 {
   using namespace java::lang::reflect;
+
+  if (GC_base (klass) && klass->constants.data
+      && ! GC_base (klass->constants.data))
+    {
+      jsize count = klass->constants.size;
+      if (count)
+	{
+	  _Jv_word* constants
+	    = (_Jv_word*) _Jv_AllocRawObj (count * sizeof (_Jv_word));
+	  memcpy ((void*)constants,
+		  (void*)klass->constants.data,
+		  count * sizeof (_Jv_word));
+	  klass->constants.data = constants;
+	}
+    }
 
   _Jv_Constants *pool = &klass->constants;
 
@@ -1893,6 +1914,21 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
   java::lang::Thread *save = klass->thread;
   klass->thread = self;
 
+  // Allocate memory for static fields and constants.
+  if (GC_base (klass) && klass->fields && ! GC_base (klass->fields))
+    {
+      jsize count = klass->field_count;
+      if (count)
+	{
+	  _Jv_Field* fields 
+	    = (_Jv_Field*) _Jv_AllocRawObj (count * sizeof (_Jv_Field));
+	  memcpy ((void*)fields,
+		  (void*)klass->fields,
+		  count * sizeof (_Jv_Field));
+	  klass->fields = fields;
+	}
+    }
+      
   // Print some debugging info if requested.  Interpreted classes are
   // handled in defineclass, so we only need to handle the two
   // pre-compiled cases here.

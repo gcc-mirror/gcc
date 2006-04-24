@@ -1,3 +1,22 @@
+2006-04-21  Andrew Haley  <aph@redhat.com>
+
+	* include/execution.h (struct _Jv_CompiledEngine): Define for
+	compiled classes.
+	* java/lang/natClassLoader.cc (_Jv_RegisterClasses): Call
+	_Jv_RegisterLibForGc.
+	(_Jv_RegisterClasses_Counted): Likewise.
+	(_Jv_NewClassFromInitializer): New.
+	(_Jv_RegisterNewClasses): New.
+	* sources.am: Regenerate.
+	* boehm.cc (_Jv_GC_has_static_roots): new.
+	(_Jv_InitGC): Call GC_register_has_static_roots_callback.
+	(filename_node, find_file, _Jv_print_gc_store, new_node,
+	_Jv_GC_has_static_roots, _Jv_RegisterLibForGc): New.
+	* scripts/makemake.tcl: Add -fno-indirect-classes.
+	* Makefile.in: Regenerate.
+	* link.cc (resolve_pool_entry): Allocate constant pool.
+	Allocate fields.
+	
 2006-04-22  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.ac: Weaken the check for MMAP.

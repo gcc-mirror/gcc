@@ -79,6 +79,9 @@ static GTY(()) tree atms;
 void
 java_mangle_decl (tree decl)
 {
+  if (TREE_CODE (decl) == RECORD_TYPE)
+    mangle_type (decl);
+
   /* A copy of the check from the beginning of lhd_set_decl_assembler_name.
      Only FUNCTION_DECLs and VAR_DECLs for variables with static storage
      duration need a real DECL_ASSEMBLER_NAME.  */
@@ -99,7 +102,7 @@ java_mangle_decl (tree decl)
 	    {
 	      if (DECL_CLASS_FIELD_P (decl))
 		{
-		  mangle_class_field (DECL_CONTEXT (decl));
+		  mangle_class_field (decl);
 		  break;
 		}
 	      else if (DECL_VTABLE_P (decl))
@@ -130,10 +133,14 @@ java_mangle_decl (tree decl)
 /* Beginning of the helper functions */
 
 static void
-mangle_class_field (tree type)
+mangle_class_field (tree decl)
 {
+  tree type = DECL_CONTEXT (decl);
   mangle_record_type (type, /* for_pointer = */ 0);
-  MANGLE_RAW_STRING ("6class$");
+  if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
+    MANGLE_RAW_STRING ("6class$");
+  else
+    MANGLE_RAW_STRING ("7class$$");
   obstack_1grow (mangle_obstack, 'E');
 }
 
@@ -229,7 +236,7 @@ mangle_member_name (tree name)
   append_gpp_mangled_name (IDENTIFIER_POINTER (name),
 			   IDENTIFIER_LENGTH (name));
 
-  /* If NAME happens to be a C++ keyword, add `$'. */
+  /* If NAME happens to be a C++ keyword, add `$'.  */
   if (cxx_keyword_p (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name)))
     obstack_1grow (mangle_obstack, '$');
 }

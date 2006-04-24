@@ -208,6 +208,9 @@ extern int flag_check_references;
    initialization optimization should be performed.  */
 extern int flag_optimize_sci;
 
+/* Generate instances of Class at runtime.  */
+extern int flag_indirect_classes;
+
 /* When nonzero, use offset tables for virtual method calls
    in order to improve binary compatibility. */
 extern int flag_indirect_dispatch;
@@ -269,6 +272,12 @@ typedef struct CPool constant_pool;
 extern GTY(()) tree java_lang_cloneable_identifier_node;
 extern GTY(()) tree java_io_serializable_identifier_node;
 extern GTY(()) tree gcj_abi_version;
+
+/* The decl for the .constants field of an instance of Class.  */
+extern GTY(()) tree constants_field_decl_node;
+
+/* The decl for the .data field of an instance of Class.  */
+extern GTY(()) tree constants_data_field_decl_node;
 
 enum java_tree_index
 {
