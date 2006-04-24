@@ -1092,6 +1092,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case FLOAT_TRUNCATE:
 	case SS_TRUNCATE:
 	case US_TRUNCATE:
+	case SS_NEG:
 	  return 0;
 
 	default:
@@ -2422,6 +2423,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       /* Fall through....  */
 
     case ASHIFT:
+    case SS_ASHIFT:
     case LSHIFTRT:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
@@ -3110,6 +3112,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case US_PLUS:
 	case SS_MINUS:
 	case US_MINUS:
+	case SS_ASHIFT:
 	  /* ??? There are simplifications that can be done.  */
 	  return 0;
 	  
