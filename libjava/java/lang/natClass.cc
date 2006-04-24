@@ -1182,9 +1182,14 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
       if (!klass->isInterface ())
 	return false;
       
-      int i = klass->method_count;
-      while (--i >= 0)
+      int max = klass->method_count;
+      int offset = 0;
+      for (int i = 0; i < max; ++i)
 	{
+	  // Skip <clinit> here, as it will not be in the IDT.
+	  if (klass->methods[i].name->first() == '<')
+	    continue;
+
 	  if (_Jv_equalUtf8Consts (klass->methods[i].name, utf_name)
 	      && _Jv_equalUtf8Consts (klass->methods[i].signature, utf_sig))
 	    {
@@ -1197,9 +1202,11 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
 
 	      found_class = klass;
 	      // Interface method indexes count from 1.
-	      index = i+1;
+	      index = offset + 1;
 	      return true;
 	    }
+
+	  ++offset;
 	}
     }
 
@@ -1211,8 +1218,8 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
 	{
 	  using namespace java::lang::reflect;
 	  bool found = _Jv_getInterfaceMethod (search_class->interfaces[i], 
-					   found_class, index,
-					   utf_name, utf_sig);
+					       found_class, index,
+					       utf_name, utf_sig);
 	  if (found)
 	    return true;
 	}
