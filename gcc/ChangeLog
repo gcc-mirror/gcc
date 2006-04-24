@@ -1,3 +1,9 @@
+2006-04-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26869
+	* tree-complex.c (update_parameter_components): Don't handle
+	unused parameters which have no default def.
+
 2006-04-24  Andrew Pinski  <pinskia@gcc.gnu.org>
 	Richard Guenther  <rguenther@suse.de>
 

@@ -652,6 +652,8 @@ update_parameter_components (void)
 
       type = TREE_TYPE (type);
       ssa_name = default_def (parm);
+      if (!ssa_name)
+	continue;
 
       r = build1 (REALPART_EXPR, type, ssa_name);
       i = build1 (IMAGPART_EXPR, type, ssa_name);
