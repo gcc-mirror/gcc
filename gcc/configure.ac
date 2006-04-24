@@ -3325,10 +3325,6 @@ changequote(,)dnl
 	        lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
 	    fi
 	    ;;
-        *)
-	    # This language is not enabled; skip it.
-	    continue
-	    ;;	
         esac
 changequote([,])dnl
 
