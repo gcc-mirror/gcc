@@ -1,5 +1,11 @@
 2006-04-23  Roger Sayle  <roger@eyesopen.com>
 
+	PR target/21283
+	* config/fr30/fr30.md (define_split): Avoid calling gen_lowpart on
+	a SImode SUBREG of a floating point register after no_new_pseudos.
+
+2006-04-23  Roger Sayle  <roger@eyesopen.com>
+
 	* config/fr30/fr30.md (addsi_small_int): Use REGNO_PTR_FRAME_P to
 	identify potentially eliminable registers to additionally catch
 	VIRTUAL_INCOMING_ARGS_REGNUM.
