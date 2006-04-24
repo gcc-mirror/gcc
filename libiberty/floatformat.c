@@ -394,7 +394,7 @@ floatformat_to_double (const struct floatformat *fmt,
 
       /* Handle denormalized numbers.  FIXME: What should we do for
 	 non-IEEE formats?  */
-      if (exponent == 0 && mant != 0)
+      if (special_exponent && exponent == 0 && mant != 0)
 	dto += ldexp ((double)mant,
 		      (- fmt->exp_bias
 		       - mant_bits
