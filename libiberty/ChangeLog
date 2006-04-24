@@ -1,3 +1,7 @@
+2006-04-24  Julian Brown  <julian@codesourcery.com>
+
+	* floatformat.c (floatformat_to_double): Fix (biased) exponent=0 case.
+
 2006-03-29  Jim Blandy  <jimb@codesourcery.com>
 
  	* pex-common.c (pex_input_file, pex_input_pipe): New functions.
