@@ -1,3 +1,10 @@
+2006-04-24  Andrew Pinski  <pinskia@gcc.gnu.org>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27236
+	* tree-inline.c (copy_body_r): Make sure to copy
+	TREE_THIS_VOLATILE flag.
+
 2006-04-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/26869
