@@ -1,3 +1,8 @@
+2006-03-07  Andrew Haley  <aph@redhat.com>
+
+	* dyn_load.c (GC_has_static_roots): Declare.
+	(GC_register_dynlib_callback): Call GC_has_static_roots.
+
 2006-04-11  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* darwin_stop_world.c (GC_push_all_stacks, GC_stop_world,
