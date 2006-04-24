@@ -2073,6 +2073,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
       if (CALL_EXPR_RETURN_SLOT_OPT (t))
 	{
 	  return_slot_addr = build_fold_addr_expr (modify_dest);
+	  STRIP_USELESS_TYPE_CONVERSION (return_slot_addr);
 	  modify_dest = NULL;
 	}
     }
