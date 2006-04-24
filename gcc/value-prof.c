@@ -342,7 +342,7 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
 	       gcov_type count, gcov_type all)
 {
   tree stmt1, stmt2, stmt3, stmt4;
-  tree tmp1, tmp2, tmp3;
+  tree tmp2, tmp3;
   tree label_decl1 = create_artificial_label ();
   tree label_decl2 = create_artificial_label ();
   tree label_decl3 = create_artificial_label ();
@@ -357,19 +357,17 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
   bb = bb_for_stmt (stmt);
   bsi = bsi_for_stmt (stmt);
 
-  tmp1 = create_tmp_var (optype, "PROF");
   tmp2 = create_tmp_var (optype, "PROF");
   tmp3 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, optype, tmp1, fold_convert (optype, op2));
   stmt2 = build2 (MODIFY_EXPR, optype, tmp2, 
-		    build2 (PLUS_EXPR, optype, op2, integer_minus_one_node));
+		  build2 (PLUS_EXPR, optype, op2, build_int_cst (optype, -1)));
   stmt3 = build2 (MODIFY_EXPR, optype, tmp3,
-		    build2 (BIT_AND_EXPR, optype, tmp2, tmp1));
+		  build2 (BIT_AND_EXPR, optype, tmp2, op2));
   stmt4 = build3 (COND_EXPR, void_type_node,
-	    build2 (NE_EXPR, boolean_type_node, tmp3, integer_zero_node),
-	    build1 (GOTO_EXPR, void_type_node, label_decl2),
-	    build1 (GOTO_EXPR, void_type_node, label_decl1));
-  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+		  build2 (NE_EXPR, boolean_type_node,
+			  tmp3, build_int_cst (optype, 0)),
+		  build1 (GOTO_EXPR, void_type_node, label_decl2),
+	 	  build1 (GOTO_EXPR, void_type_node, label_decl1));
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt4, BSI_SAME_STMT);

@@ -1,3 +1,9 @@
+2006-04-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22525
+	* value-prof.c (tree_mod_pow2): Remove unnecessary temporary
+	variable, adjust types of generated expressions.
+
 2006-04-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (c-convert.o): Add dependency on $(TARGET_H)
