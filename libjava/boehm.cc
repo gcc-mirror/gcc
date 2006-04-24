@@ -32,6 +32,13 @@ details.  */
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
 
+#ifdef HAVE_DLFCN_H
+#undef _GNU_SOURCE
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <link.h>
+#endif
+
 extern "C"
 {
 #include <gc_config.h>
@@ -63,6 +70,8 @@ static int array_kind_x;
 
 // Freelist used for Java arrays.
 static void **array_free_list;
+
+static int _Jv_GC_has_static_roots (const char *filename, void *, size_t);
 
 
 
@@ -468,9 +477,20 @@ void
 _Jv_InitGC (void)
 {
   int proc;
+  static bool gc_initialized;
+
+  if (gc_initialized)
+    return;
+
+  gc_initialized = 1;
 
   // Ignore pointers that do not point to the start of an object.
   GC_all_interior_pointers = 0;
+
+#ifdef HAVE_DLFCN_H
+  // Tell the collector to ask us before scanning DSOs.
+  GC_register_has_static_roots_callback (_Jv_GC_has_static_roots);
+#endif
 
   // Configure the collector to use the bitmap marking descriptors that we
   // stash in the class vtable.
@@ -559,3 +579,98 @@ _Jv_GCCanReclaimSoftReference (jobject)
   // For now, always reclaim soft references.  FIXME.
   return true;
 }
+
+
+
+#ifdef HAVE_DLFCN_H
+
+// We keep a store of the filenames of DSOs that need to be
+// conservatively scanned by the garbage collector.  During collection
+// the gc calls _Jv_GC_has_static_roots() to see if the data segment
+// of a DSO should be scanned.
+typedef struct filename_node
+{
+  char *name;
+  struct filename_node *link;
+} filename_node;
+
+#define FILENAME_STORE_SIZE 17
+static filename_node *filename_store[FILENAME_STORE_SIZE];
+
+// Find a filename in filename_store.
+static filename_node **
+find_file (const char *filename)
+{
+  int index = strlen (filename) % FILENAME_STORE_SIZE;
+  filename_node **node = &filename_store[index];
+  
+  while (*node)
+    {
+      if (strcmp ((*node)->name, filename) == 0)
+	return node;
+      node = &(*node)->link;
+    }
+
+  return node;
+}  
+
+// Print the store of filenames of DSOs that need collection.
+void
+_Jv_print_gc_store (void)
+{
+  for (int i = 0; i < FILENAME_STORE_SIZE; i++)
+    {
+      filename_node *node = filename_store[i];
+      while (node)
+	{
+	  fprintf (stderr, "%s\n", node->name);
+	  node = node->link;
+	}
+    }
+}
+
+// Create a new node in the store of libraries to collect.
+static filename_node *
+new_node (const char *filename)
+{
+  filename_node *node = (filename_node*)_Jv_Malloc (sizeof (filename_node));
+  node->name = (char *)_Jv_Malloc (strlen (filename) + 1);
+  node->link = NULL;
+  strcpy (node->name, filename);
+  
+  return node;
+}
+
+// Nonzero if the gc should scan this lib.
+static int 
+_Jv_GC_has_static_roots (const char *filename, void *, size_t)
+{
+  if (filename == NULL || strlen (filename) == 0)
+    // No filename; better safe than sorry.
+    return 1;
+
+  filename_node **node = find_file (filename);
+  if (*node)
+    return 1;
+
+  return 0;
+}
+
+#endif
+
+// Register the DSO that contains p for collection.
+void
+_Jv_RegisterLibForGc (const void *p __attribute__ ((__unused__)))
+{
+#ifdef HAVE_DLFCN_H
+  Dl_info info;
+  
+  if (dladdr (p, &info) != 0)
+    {
+      filename_node **node = find_file (info.dli_fname);
+      if (! *node)
+	*node = new_node (info.dli_fname);
+    }
+#endif
+}
+

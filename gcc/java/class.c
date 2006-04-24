@@ -953,6 +953,71 @@ build_indirect_class_ref (tree type)
   return convert (promote_type (class_ptr_type), cl);
 }
 
+static tree
+build_static_class_ref (tree type)
+{
+  tree decl_name, decl, ref;
+
+  if (TYPE_SIZE (type) == error_mark_node)
+    return null_pointer_node;
+  decl_name = identifier_subst (DECL_NAME (TYPE_NAME (type)),
+				"", '/', '/', ".class$$");
+  decl = IDENTIFIER_GLOBAL_VALUE (decl_name);
+  if (decl == NULL_TREE)
+    {
+      decl = build_decl (VAR_DECL, decl_name, class_type_node);
+      TREE_STATIC (decl) = 1;
+      if (! flag_indirect_classes)
+	TREE_PUBLIC (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      if (is_compiled_class (type) == 1)
+	DECL_EXTERNAL (decl) = 1;
+      MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+      DECL_CLASS_FIELD_P (decl) = 1;
+      DECL_CONTEXT (decl) = type;
+
+      /* ??? We want to preserve the DECL_CONTEXT we set just above,
+	 that that means not calling pushdecl_top_level.  */
+      IDENTIFIER_GLOBAL_VALUE (decl_name) = decl;
+    }
+
+  ref = build1 (ADDR_EXPR, class_ptr_type, decl);
+  return ref;
+}
+
+static tree
+build_classdollar_field (tree type)
+{
+  tree decl_name = identifier_subst (DECL_NAME (TYPE_NAME (type)),
+				     "", '/', '/', ".class$");
+  tree decl = IDENTIFIER_GLOBAL_VALUE (decl_name);
+
+  if (decl == NULL_TREE)
+    {
+      decl 
+	= build_decl (VAR_DECL, decl_name, 
+		      (build_type_variant 
+		       (build_pointer_type 
+			(build_type_variant (class_type_node, 
+					     /* const */ 1, 0)),
+			/* const */ 1, 0)));
+      TREE_STATIC (decl) = 1;
+      TREE_INVARIANT (decl) = 1;
+      TREE_CONSTANT (decl) = 1;
+      TREE_READONLY (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+      IDENTIFIER_GLOBAL_VALUE (decl_name) = decl;
+      DECL_CLASS_FIELD_P (decl) = 1;
+      DECL_CONTEXT (decl) = type;
+    }
+
+  return decl;
+}
+
 /* Build a reference to the class TYPE.
    Also handles primitive types and array types. */
 
@@ -962,7 +1027,7 @@ build_class_ref (tree type)
   int is_compiled = is_compiled_class (type);
   if (is_compiled)
     {
-      tree ref, decl_name, decl;
+      tree ref, decl;
       if (TREE_CODE (type) == POINTER_TYPE)
 	type = TREE_TYPE (type);
 
@@ -971,34 +1036,15 @@ build_class_ref (tree type)
 	  && TREE_CODE (type) == RECORD_TYPE)
 	return build_indirect_class_ref (type);
 
+      if (type == output_class && flag_indirect_classes)
+	return build_classdollar_field (type);
+      
       if (TREE_CODE (type) == RECORD_TYPE)
-	{
-	  if (TYPE_SIZE (type) == error_mark_node)
-	    return null_pointer_node;
-	  decl_name = identifier_subst (DECL_NAME (TYPE_NAME (type)),
-					"", '/', '/', ".class");
-	  decl = IDENTIFIER_GLOBAL_VALUE (decl_name);
-	  if (decl == NULL_TREE)
-	    {
-	      decl = build_decl (VAR_DECL, decl_name, class_type_node);
-	      TREE_STATIC (decl) = 1;
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_IGNORED_P (decl) = 1;
-	      DECL_ARTIFICIAL (decl) = 1;
-	      if (is_compiled == 1)
-		DECL_EXTERNAL (decl) = 1;
-	      MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
-	      DECL_CLASS_FIELD_P (decl) = 1;
-	      DECL_CONTEXT (decl) = type;
-
-	      /* ??? We want to preserve the DECL_CONTEXT we set just above,
-		 that that means not calling pushdecl_top_level.  */
-	      IDENTIFIER_GLOBAL_VALUE (decl_name) = decl;
-	    }
-	}
+	return build_static_class_ref (type);
       else
 	{
 	  const char *name;
+	  tree decl_name;
 	  char buffer[25];
 	  if (flag_emit_class_files)
 	    {
@@ -1296,16 +1342,22 @@ make_field_value (tree fdecl)
   PUSH_FIELD_VALUE (finit, "accflags", build_int_cst (NULL_TREE, flags));
   PUSH_FIELD_VALUE (finit, "bsize", TYPE_SIZE_UNIT (TREE_TYPE (fdecl)));
 
-  PUSH_FIELD_VALUE
-    (finit, "info",
-     build_constructor_from_list (field_info_union_node,
-	    build_tree_list
-	    ((FIELD_STATIC (fdecl)
-	      ? TREE_CHAIN (TYPE_FIELDS (field_info_union_node))
-	      : TYPE_FIELDS (field_info_union_node)),
-	     (FIELD_STATIC (fdecl)
-	      ? build_address_of (fdecl)
-	      : byte_position (fdecl)))));
+  {
+    tree field_address = integer_zero_node;
+    if (! flag_indirect_classes && FIELD_STATIC (fdecl))
+      field_address = build_address_of (fdecl);
+
+    PUSH_FIELD_VALUE
+      (finit, "info",
+       build_constructor_from_list (field_info_union_node,
+	 build_tree_list
+	   ((FIELD_STATIC (fdecl)
+	     ? TREE_CHAIN (TYPE_FIELDS (field_info_union_node))
+	     : TYPE_FIELDS (field_info_union_node)),
+	    (FIELD_STATIC (fdecl)
+	     ? field_address
+	     : byte_position (fdecl)))));
+  }
 
   FINISH_RECORD_CONSTRUCTOR (finit);
   return finit;
@@ -1599,7 +1651,7 @@ make_class_data (tree type)
   tree dtable_start_offset = build_int_cst (NULL_TREE,
 					    2 * POINTER_SIZE / BITS_PER_UNIT);
 
-  this_class_addr = build_class_ref (type);
+  this_class_addr = build_static_class_ref (type);
   decl = TREE_OPERAND (this_class_addr, 0);
 
   if (supers_all_compiled (type) && ! CLASS_INTERFACE (type_decl)
@@ -1613,7 +1665,8 @@ make_class_data (tree type)
       DECL_ARTIFICIAL (dtable_decl) = 1;
       DECL_IGNORED_P (dtable_decl) = 1;
       TREE_PUBLIC (dtable_decl) = 1;
-      rest_of_decl_compilation (dtable_decl, 1, 0);
+      if (! flag_indirect_classes)
+	rest_of_decl_compilation (dtable_decl, 1, 0);
       if (type == class_type_node)
 	class_dtable_decl = dtable_decl;
     }
@@ -1958,8 +2011,21 @@ make_class_data (tree type)
   if (flag_hash_synchronization && POINTER_SIZE < 64)
     DECL_ALIGN (decl) = 64; 
   
+  if (flag_indirect_classes)
+    {
+      TREE_READONLY (decl) = 1;
+      TREE_CONSTANT (DECL_INITIAL (decl)) = 1;
+    }
+
   rest_of_decl_compilation (decl, 1, 0);
   
+  {
+    tree classdollar_field = build_classdollar_field (type);
+    if (!flag_indirect_classes)
+      DECL_INITIAL (classdollar_field) = build_static_class_ref (type);
+    rest_of_decl_compilation (classdollar_field, 1, 0);
+  }
+
   TYPE_OTABLE_DECL (type) = NULL_TREE;
   TYPE_ATABLE_DECL (type) = NULL_TREE;
   TYPE_CTABLE_DECL (type) = NULL_TREE;
@@ -2465,9 +2531,64 @@ register_class (void)
   if (!registered_class)
     registered_class = VEC_alloc (tree, gc, 8);
 
-  node = TREE_OPERAND (build_class_ref (current_class), 0);
+  if (flag_indirect_classes)
+    node = current_class;
+  else
+    node = TREE_OPERAND (build_class_ref (current_class), 0);
   VEC_safe_push (tree, gc, registered_class, node);
 }
+
+/* Emit a function that calls _Jv_NewClassFromInitializer for every
+   class.  */
+
+static void
+emit_indirect_register_classes (tree *list_p)
+{
+  tree klass, t, register_class_fn;
+  int i;
+
+  tree init = NULL_TREE;
+  int size = VEC_length (tree, registered_class) * 2 + 1;
+  tree class_array_type
+    = build_prim_array_type (ptr_type_node, size);
+  tree cdecl = build_decl (VAR_DECL, get_identifier ("_Jv_CLS"),
+			   class_array_type);
+  tree reg_class_list;
+  for (i = 0; VEC_iterate (tree, registered_class, i, klass); ++i)
+    {
+      init = tree_cons (NULL_TREE, 
+			fold_convert (ptr_type_node, 
+				      build_static_class_ref (klass)), init);
+      init = tree_cons 
+	(NULL_TREE, 
+	 fold_convert (ptr_type_node, 
+		       build_address_of (build_classdollar_field (klass))),
+	 init);
+    }
+  init = tree_cons (NULL_TREE, integer_zero_node, init); 
+  DECL_INITIAL (cdecl) = build_constructor_from_list (class_array_type,
+						      nreverse (init));
+  TREE_CONSTANT (DECL_INITIAL (cdecl)) = 1;
+  TREE_STATIC (cdecl) = 1;
+  DECL_ARTIFICIAL (cdecl) = 1;
+  DECL_IGNORED_P (cdecl) = 1;
+  TREE_READONLY (cdecl) = 1;
+  TREE_CONSTANT (cdecl) = 1;
+  rest_of_decl_compilation (cdecl, 1, 0);
+  reg_class_list = fold_convert (ptr_type_node, build_address_of (cdecl));
+
+  t = build_function_type_list (void_type_node, 
+				build_pointer_type (ptr_type_node), NULL);
+  t = build_decl (FUNCTION_DECL, 
+		  get_identifier ("_Jv_RegisterNewClasses"), t);
+  TREE_PUBLIC (t) = 1;
+  DECL_EXTERNAL (t) = 1;
+  register_class_fn = t;
+  t = tree_cons (NULL, reg_class_list, NULL);
+  t = build_function_call_expr (register_class_fn, t);
+  append_to_statement_list (t, list_p);
+}
+
 
 /* Emit something to register classes at start-up time.
 
@@ -2484,6 +2605,12 @@ emit_register_classes (tree *list_p)
 {
   if (registered_class == NULL)
     return;
+
+  if (flag_indirect_classes)
+    {
+      emit_indirect_register_classes (list_p);
+      return;
+    }
 
   /* TARGET_USE_JCR_SECTION defaults to 1 if SUPPORTS_WEAK and
      TARGET_ASM_NAMED_SECTION, else 0.  Some targets meet those conditions

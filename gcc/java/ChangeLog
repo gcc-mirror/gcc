@@ -1,3 +1,23 @@
+2006-04-21  Andrew Haley  <aph@redhat.com>
+
+	* lang.c (java_init): Handle flag_indirect_classes.
+	* jvgenmain.c: Use "class$$" instead of "class$".
+	* mangle.c (java_mangle_decl): Accept RECORD_TYPEs sw well as
+	DECLs.
+	(mangle_class_field): Special case "class$$" as well as "class$".
+	* constants.c (build_ref_from_constant_pool): If
+	flag_indirect_classes, generate a ref into the heap.
+	* decl.c (constants_field_decl_node,
+	constants_data_field_decl_node): New.
+	* class.c (build_static_class_ref): New.
+	(build_classdollar_field): Factor out from build_class_ref().
+	(make_field_value): Handle static fields in heap.
+	(make_class_data): Make sure we get a static ref to class.
+	Make class initializer const if flag_indirect_classes.
+	(register_class): Build a class_ref for initialization if
+	flag_indirect_classes.
+	(emit_indirect_register_classes): New.
+
 2006-04-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* expr.c, gjavah.c: Fix comment typos.

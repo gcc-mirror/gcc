@@ -368,6 +368,9 @@ java_init (void)
   if (flag_indirect_dispatch)
     always_initialize_class_p = true;
 
+  if (!flag_indirect_dispatch)
+    flag_indirect_classes = false;
+
   /* Force minimum function alignment if g++ uses the least significant
      bit of function pointers to store the virtual bit. This is required
      to keep vtables compatible.  */

@@ -123,6 +123,12 @@ static GTY(()) tree pending_local_decls;
 /* The decl for "_Jv_ResolvePoolEntry".  */
 tree soft_resolvepoolentry_node;
 
+/* The decl for the .constants field of an instance of Class.  */
+tree constants_field_decl_node;
+
+/* The decl for the .data field of an instance of Class.  */
+tree constants_data_field_decl_node;
+
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
 int binding_depth = 0;
 int is_class_level = 0;
@@ -883,6 +889,7 @@ java_init_decl_processing (void)
   PUSH_FIELD (constants_type_node, field, "size", unsigned_int_type_node);
   PUSH_FIELD (constants_type_node, field, "tags", ptr_type_node);
   PUSH_FIELD (constants_type_node, field, "data", ptr_type_node);
+  constants_data_field_decl_node = field;
   FINISH_RECORD (constants_type_node);
   build_decl (TYPE_DECL, get_identifier ("constants"), constants_type_node);
 
@@ -924,6 +931,7 @@ java_init_decl_processing (void)
   PUSH_FIELD (class_type_node, field, "accflags", access_flags_type_node);
   PUSH_FIELD (class_type_node, field, "superclass", class_ptr_type);
   PUSH_FIELD (class_type_node, field, "constants", constants_type_node);
+  constants_field_decl_node = field;
   PUSH_FIELD (class_type_node, field, "methods", method_ptr_type_node);
   PUSH_FIELD (class_type_node, field, "method_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "vtable_method_count", short_type_node);

@@ -45,13 +45,16 @@ details.  */
 #include <gnu/gcj/runtime/BootClassLoader.h>
 #include <gnu/gcj/runtime/SystemClassLoader.h>
 
+#undef _GNU_SOURCE
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <link.h>
+
 // Size of local hash table.
 #define HASH_LEN 1013
 
 // Hash function for Utf8Consts.
 #define HASH_UTF(Utf) ((Utf)->hash16() % HASH_LEN)
-
-static jclass loaded_classes[HASH_LEN];
 
 // This records classes which will be registered with the system class
 // loader when it is initialized.
@@ -61,6 +64,8 @@ static jclass system_class_list;
 // initialized the system class loader; it lets us know that we should
 // no longer pay attention to the system abi flag.
 #define SYSTEM_LOADER_INITIALIZED ((jclass) -1)
+
+static jclass loaded_classes[HASH_LEN];
 
 // This is the root of a linked list of classes
 static jclass stack_head;
@@ -164,6 +169,8 @@ _Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 void
 _Jv_RegisterClasses (const jclass *classes)
 {
+  _Jv_RegisterLibForGc (classes);
+
   for (; *classes; ++classes)
     {
       jclass klass = *classes;
@@ -178,6 +185,9 @@ void
 _Jv_RegisterClasses_Counted (const jclass * classes, size_t count)
 {
   size_t i;
+
+  _Jv_RegisterLibForGc (classes);
+
   for (i = 0; i < count; i++)
     {
       jclass klass = classes[i];
@@ -187,6 +197,41 @@ _Jv_RegisterClasses_Counted (const jclass * classes, size_t count)
     }
 }
 
+// Create a class on the heap from an initializer struct.
+jclass
+_Jv_NewClassFromInitializer (const jclass class_initializer)
+{
+  jclass new_class = (jclass)_Jv_AllocObj (sizeof *new_class,
+					   &java::lang::Class::class$);  
+  memcpy ((void*)new_class, (void*)class_initializer, sizeof *new_class);
+
+  if (_Jv_CheckABIVersion ((unsigned long) new_class->next_or_version))
+    (*_Jv_RegisterClassHook) (new_class);
+  
+  return new_class;
+}
+
+// Called by compiler-generated code at DSO initialization.  CLASSES
+// is an array of pairs: the first item of each pair is a pointer to
+// the initialized data that is a class initializer in a DSO, and the
+// second is a pointer to a class reference.
+// _Jv_NewClassFromInitializer() creates the new class (on the Java
+// heap) and we write the address of the new class into the address
+// pointed to by the second word.
+void
+_Jv_RegisterNewClasses (void **classes)
+{
+  _Jv_InitGC ();
+
+  jclass initializer;
+
+  while ((initializer = (jclass)*classes++))
+    {
+      jclass *class_ptr = (jclass *)*classes++;
+      *class_ptr = _Jv_NewClassFromInitializer (initializer);
+    }      
+}
+  
 void
 _Jv_RegisterClassHookDefault (jclass klass)
 {
@@ -389,6 +434,12 @@ static _Jv_IDispatchTable *array_idt = NULL;
 static jshort array_depth = 0;
 static jclass *array_ancestors = NULL;
 
+static jclass interfaces[] =
+{
+  &java::lang::Cloneable::class$,
+  &java::io::Serializable::class$
+};
+
 // Create a class representing an array of ELEMENT and store a pointer to it
 // in element->arrayclass. LOADER is the ClassLoader which _initiated_ the 
 // instantiation of this array. ARRAY_VTABLE is the vtable to use for the new 
@@ -464,11 +515,6 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
   array_class->element_type = element;
 
   // Register our interfaces.
-  static jclass interfaces[] =
-    {
-      &java::lang::Cloneable::class$,
-      &java::io::Serializable::class$
-    };
   array_class->interfaces = interfaces;
   array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
 

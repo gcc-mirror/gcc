@@ -224,7 +224,7 @@ proc emit_bc_rule {package} {
     set omit "| grep -v $exclusion_map($package)"
   }
   puts  "\t@find classpath/lib/$package -name '*.class'${omit} > $tname"
-  puts "\t\$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o $loname @$tname"
+  puts "\t\$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o $loname @$tname"
   puts "\t@rm -f $tname"
   puts ""
 
