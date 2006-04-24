@@ -1,3 +1,10 @@
+2006-04-24  Andrew Pinski  <pinskia@gcc.gnu.org>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27218
+	* tree-inline.c (expand_call_inline): Strip useless type
+	conversions for the return slot address.
+
 2006-04-24  Richard Guenther  <rguenther@suse.de>
 
 	* cfgloop.h (struct loops): Remove unused field array.  Reorder

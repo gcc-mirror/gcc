@@ -1,3 +1,9 @@
+2006-04-24  Andrew Pinski  <pinskia@gcc.gnu.org>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27218
+	* g++.dg/tree-ssa/pr27218.C: New testcase.
+
 2006-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26912
