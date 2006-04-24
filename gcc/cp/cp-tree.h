@@ -3842,6 +3842,7 @@ extern int cp_complete_array_type		(tree *, tree, bool);
 extern tree build_ptrmemfunc_type		(tree);
 extern tree build_ptrmem_type			(tree, tree);
 /* the grokdeclarator prototype is in decl.h */
+extern tree build_this_parm                     (tree, cp_cv_quals);
 extern int copy_fn_p				(tree);
 extern tree get_scope_of_declarator		(const cp_declarator *);
 extern void grok_special_member_properties	(tree);
@@ -3899,12 +3900,11 @@ extern bool have_extern_spec;
 
 /* in decl2.c */
 extern bool check_java_method			(tree);
-extern cp_cv_quals grok_method_quals		(tree, tree, cp_cv_quals);
+extern tree build_memfn_type                    (tree, tree, cp_cv_quals);
 extern void maybe_retrofit_in_chrg		(tree);
 extern void maybe_make_one_only			(tree);
 extern void grokclassfn				(tree, tree,
-						 enum overload_flags,
-						 cp_cv_quals);
+						 enum overload_flags);
 extern tree grok_array_decl			(tree, tree);
 extern tree delete_sanity			(tree, tree, bool, int);
 extern tree check_classfn			(tree, tree, tree);
@@ -3934,6 +3934,7 @@ extern tree cxx_callgraph_analyze_expr		(tree *, int *, tree);
 extern void mark_needed				(tree);
 extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
+extern tree build_artificial_parm               (tree, tree);
 
 /* in error.c */
 extern void init_error				(void);
@@ -3966,7 +3967,7 @@ extern tree cplus_expand_constant		(tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend				(tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, cp_cv_quals, bool);
+extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, bool);
 
 /* in init.c */
 extern tree expand_member_init			(tree);
