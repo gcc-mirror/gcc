@@ -149,13 +149,10 @@ struct loops
   /* Number of natural loops in the function.  */
   unsigned num;
 
-  /* Array of natural loop descriptors (scanning this array in reverse order
-     will find the inner loops before their enclosing outer loops).  */
-  struct loop *array;
+  /* State of loops.  */
+  int state;
 
-  /* The above array is unused in new loop infrastructure and is kept only for
-     purposes of the old loop optimizer.  Instead we store just pointers to
-     loops here.  
+  /* We store just pointers to loops here.  
      Note that a loop in this array may actually be NULL, if the loop
      has been removed and the entire loops structure has not been
      recomputed since that time.  */
@@ -177,9 +174,6 @@ struct loops
 
   /* Headers shared by multiple loops that should be merged.  */
   sbitmap shared_headers;
-
-  /* State of loops.  */
-  int state;
 };
 
 /* The loop tree currently optimized.  */
@@ -407,10 +401,5 @@ extern void unroll_and_peel_loops (struct loops *, int);
 extern void doloop_optimize_loops (struct loops *);
 extern void move_loop_invariants (struct loops *);
 extern void record_estimate (struct loop *, tree, tree, tree);
-
-/* Old loop optimizer interface.  */
-
-/* Flags passed to loop_optimize.  */
-#define LOOP_PREFETCH 1
 
 #endif /* GCC_CFGLOOP_H */
