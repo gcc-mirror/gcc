@@ -1,3 +1,8 @@
+2006-04-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/19963
+	* class.c (layout_class_type): Skip fields with invalid types.
+
 2006-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26912

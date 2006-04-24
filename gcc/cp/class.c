@@ -4607,6 +4607,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	}
 
       type = TREE_TYPE (field);
+      if (type == error_mark_node)
+	continue;
 
       padding = NULL_TREE;
 
