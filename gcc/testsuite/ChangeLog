@@ -1,3 +1,8 @@
+2006-04-25  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-prof/val-prof-2.c: Check for n + ffff rather  
+	than n + -1.
+
 2006-04-25  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20060425-1.c: New testcase.
