@@ -828,6 +828,48 @@ bss_initializer_p (tree decl)
 	      && initializer_zerop (DECL_INITIAL (decl))));
 }
 
+/* Compute the alignment of variable specified by DECL.
+   DONT_OUTPUT_DATA is from assemble_variable.  */
+
+static void
+align_variable (tree decl, bool dont_output_data)
+{
+  unsigned int align = DECL_ALIGN (decl);
+
+  /* In the case for initialing an array whose length isn't specified,
+     where we have not yet been able to do the layout,
+     figure out the proper alignment now.  */
+  if (dont_output_data && DECL_SIZE (decl) == 0
+      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    align = MAX (align, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
+
+  /* Some object file formats have a maximum alignment which they support.
+     In particular, a.out format supports a maximum alignment of 4.  */
+  if (align > MAX_OFILE_ALIGNMENT)
+    {
+      warning (0, "alignment of %q+D is greater than maximum object "
+               "file alignment.  Using %d", decl,
+	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
+      align = MAX_OFILE_ALIGNMENT;
+    }
+
+  /* On some machines, it is good to increase alignment sometimes.  */
+  if (! DECL_USER_ALIGN (decl))
+    {
+#ifdef DATA_ALIGNMENT
+      align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
+#endif
+#ifdef CONSTANT_ALIGNMENT
+      if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
+	align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
+#endif
+    }
+
+  /* Reset the alignment in case we have made it tighter, so we can benefit
+     from it in get_pointer_alignment.  */
+  DECL_ALIGN (decl) = align;
+}
+
 /* Return the section into which the given VAR_DECL or CONST_DECL
    should be placed.  PREFER_NOSWITCH_P is true if a noswitch
    section should be used wherever possible.  */
@@ -899,6 +941,8 @@ get_block_for_decl (tree decl)
 
   /* Find out which section should contain DECL.  We cannot put it into
      an object block if it requires a standalone definition.  */
+  if (TREE_CODE (decl) == VAR_DECL)
+      align_variable (decl, 0);
   sect = get_variable_section (decl, true);
   if (SECTION_STYLE (sect) == SECTION_NOSWITCH)
     return NULL;
@@ -1683,7 +1727,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 		   int at_end ATTRIBUTE_UNUSED, int dont_output_data)
 {
   const char *name;
-  unsigned int align;
   rtx decl_rtl, symbol;
   section *sect;
 
@@ -1764,41 +1807,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   /* Compute the alignment of this data.  */
 
-  align = DECL_ALIGN (decl);
-
-  /* In the case for initialing an array whose length isn't specified,
-     where we have not yet been able to do the layout,
-     figure out the proper alignment now.  */
-  if (dont_output_data && DECL_SIZE (decl) == 0
-      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-    align = MAX (align, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
-
-  /* Some object file formats have a maximum alignment which they support.
-     In particular, a.out format supports a maximum alignment of 4.  */
-  if (align > MAX_OFILE_ALIGNMENT)
-    {
-      warning (0, "alignment of %q+D is greater than maximum object "
-               "file alignment.  Using %d", decl,
-	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
-      align = MAX_OFILE_ALIGNMENT;
-    }
-
-  /* On some machines, it is good to increase alignment sometimes.  */
-  if (! DECL_USER_ALIGN (decl))
-    {
-#ifdef DATA_ALIGNMENT
-      align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
-#endif
-#ifdef CONSTANT_ALIGNMENT
-      if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
-	align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
-#endif
-    }
-
-  /* Reset the alignment in case we have made it tighter, so we can benefit
-     from it in get_pointer_alignment.  */
-  DECL_ALIGN (decl) = align;
-  set_mem_align (decl_rtl, align);
+  align_variable (decl, dont_output_data);
+  set_mem_align (decl_rtl, DECL_ALIGN (decl));
 
   if (TREE_PUBLIC (decl))
     maybe_assemble_visibility (decl);
@@ -1834,7 +1844,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   else
     {
       switch_to_section (sect);
-      if (align > BITS_PER_UNIT)
+      if (DECL_ALIGN (decl) > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DECL_ALIGN_UNIT (decl)));
       assemble_variable_contents (decl, name, dont_output_data);
     }
