@@ -183,7 +183,7 @@ if test $ac_cv_func_clock_gettime = no; then
 fi
 
 # See if we support thread-local storage.
-LIBGOMP_CHECK_TLS
+GCC_CHECK_TLS
 
 # See what sort of export controls are availible.
 LIBGOMP_CHECK_ATTRIBUTE_VISIBILITY
