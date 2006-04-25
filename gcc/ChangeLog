@@ -1,3 +1,9 @@
+2006-04-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.c (gen_compare): Fix reg/smallconst equal code,
+	the patch for which was accidentally omitted from the previous
+	commit.
+
 2006-04-04  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	PR target/26775
