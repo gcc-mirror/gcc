@@ -1,3 +1,9 @@
+2006-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/26865
+	* tree-ssa-structalias.c (find_func_aliases): Check that anyoffsetrhs
+	type is pointer or array type.
+
 2006-04-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26961

@@ -2950,6 +2950,9 @@ find_func_aliases (tree t, struct alias_info *ai)
 			   of the RHS.  */
 			if (need_anyoffset || (rhs.type == ADDRESSOF
 			    && !(get_varinfo (rhs.var)->is_special_var)
+			    && (POINTER_TYPE_P (TREE_TYPE (anyoffsetrhs))
+				|| TREE_CODE (TREE_TYPE (anyoffsetrhs))
+				   == ARRAY_TYPE)
 			    && AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (anyoffsetrhs)))))
 			  {
 			    rhs.var = anyoffset_id;
