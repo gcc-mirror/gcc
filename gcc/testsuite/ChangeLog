@@ -1,3 +1,10 @@
+2006-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27292
+	* g++.dg/conversion/bitfield1.C: New test.
+	* g++.dg/conversion/bitfield2.C: Likewise.
+	* g++.dg/conversion/bitfield3.C: Likewise.
+
 2006-04-24  Andrew Pinski  <pinskia@gcc.gnu.org>
 	Richard Guenther  <rguenther@suse.de>
 

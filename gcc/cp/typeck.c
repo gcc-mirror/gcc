@@ -1435,7 +1435,6 @@ tree
 decay_conversion (tree exp)
 {
   tree type;
-  tree bitfield_type;
   enum tree_code code;
 
   type = TREE_TYPE (exp);
@@ -1447,10 +1446,6 @@ decay_conversion (tree exp)
       cxx_incomplete_type_error (exp, TREE_TYPE (exp));
       return error_mark_node;
     }
-
-  bitfield_type = is_bitfield_expr_with_lowered_type (exp);
-  if (bitfield_type) 
-    exp = build_nop (bitfield_type, exp);
 
   exp = decl_constant_value (exp);
 
@@ -1533,7 +1528,13 @@ perform_integral_promotions (tree expr)
   tree type;
   tree promoted_type;
 
-  type = TREE_TYPE (expr);
+  /* [conv.prom]
+
+     If the bitfield has an enumerated type, it is treated as any
+     other value of that type for promotion purposes.  */
+  type = is_bitfield_expr_with_lowered_type (expr);
+  if (!type || TREE_CODE (type) != ENUMERAL_TYPE)
+    type = TREE_TYPE (expr);
   gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
   promoted_type = type_promotes_to (type);
   if (type != promoted_type)

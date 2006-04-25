@@ -1,3 +1,11 @@
+2006-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27292
+	* typeck.c (decay_conversion): Don't adjust bitfield types.
+	(perform_integral_promotions): Treat bitfield enums as enums, not
+	as short integer types.
+	* tree.c (rvalue): Convert bitfields to their correct types.
+
 2006-04-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/19963

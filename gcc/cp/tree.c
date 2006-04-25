@@ -371,7 +371,9 @@ rvalue (tree expr)
   tree type;
   if (real_lvalue_p (expr))
     {
-      type = TREE_TYPE (expr);
+      type = is_bitfield_expr_with_lowered_type (expr);
+      if (!type)
+	type = TREE_TYPE (expr);
       /* [basic.lval]
 	 
          Non-class rvalues always have cv-unqualified types.  */
