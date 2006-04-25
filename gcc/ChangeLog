@@ -1,3 +1,8 @@
+2006-04-25  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* expmed.c (store_bit_field): Handle paradoxical subregs on big endian
+	machines.
+
 2006-04-25  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* genmodes.c (make_vector_mode): Allow making VECTOR_MODE_INT of a
