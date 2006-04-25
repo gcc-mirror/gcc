@@ -1170,6 +1170,7 @@ rtl_redirect_edge_and_branch_force (edge e, basic_block target)
 
   /* In case the edge redirection failed, try to force it to be non-fallthru
      and redirect newly created simplejump.  */
+  e->src->flags |= BB_DIRTY;
   return force_nonfallthru_and_redirect (e, target);
 }
 
