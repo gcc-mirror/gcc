@@ -1,15 +1,3 @@
-dnl Check whether the target supports TLS.
-AC_DEFUN([LIBGOMP_CHECK_TLS], [
-  LIBGOMP_ENABLE(tls, yes, [Use thread-local storage])
-  AC_CACHE_CHECK([whether the target supports thread-local storage],
-		 have_tls, [
-    AC_TRY_COMPILE([__thread int foo;],
-		   [], have_tls=$enable_tls, have_tls=no)])
-  if test $have_tls = yes; then
-    AC_DEFINE(HAVE_TLS, 1,
-	      [Define to 1 if the target supports thread-local storage.])
-  fi])
-
 dnl ----------------------------------------------------------------------
 dnl This whole bit snagged from libgfortran.
 
