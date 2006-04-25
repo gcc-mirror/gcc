@@ -32,6 +32,8 @@
 	flag_macv2hi_parts, flag_macv2hi_parts_acconly,
 	flag_macinitv2hi_parts, flag_macinit1v2hi_parts): New patterns.
 
+	* doc/rtl.texi (ss_ashift): Improve wording.
+
 2006-04-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (verify_marks_clear): New.

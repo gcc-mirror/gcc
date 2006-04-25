@@ -2018,8 +2018,8 @@ These two expressions epresent the result of arithmetically shifting @var{x}
 left by @var{c} places.  They differ in their behavior on overflow of integer
 modes.  An @code{ashift} operation is a plain shift with no special behaviour
 in case of a change in the sign bit; @code{ss_ashift} saturates to the minimum
-or maximum representable value rather than allowing the shift to change the
-sign bit of the value.
+or maximum representable value if any of the bits shifted out differs from the
+final sign bit.
 
 @var{x} have mode @var{m}, a fixed-point machine mode.  @var{c}
 be a fixed-point mode or be a constant with mode @code{VOIDmode}; which
