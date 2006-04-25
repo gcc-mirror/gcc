@@ -36,7 +36,6 @@ details.  */
 #undef _GNU_SOURCE
 #define _GNU_SOURCE
 #include <dlfcn.h>
-#include <link.h>
 #endif
 
 extern "C"
@@ -664,8 +663,8 @@ _Jv_RegisterLibForGc (const void *p __attribute__ ((__unused__)))
 {
 #ifdef HAVE_DLFCN_H
   Dl_info info;
-  
-  if (dladdr (p, &info) != 0)
+
+  if (dladdr (const_cast<void *>(p), &info) != 0)
     {
       filename_node **node = find_file (info.dli_fname);
       if (! *node)

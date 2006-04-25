@@ -45,11 +45,6 @@ details.  */
 #include <gnu/gcj/runtime/BootClassLoader.h>
 #include <gnu/gcj/runtime/SystemClassLoader.h>
 
-#undef _GNU_SOURCE
-#define _GNU_SOURCE
-#include <dlfcn.h>
-#include <link.h>
-
 // Size of local hash table.
 #define HASH_LEN 1013
 
