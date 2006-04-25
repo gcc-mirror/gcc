@@ -1,3 +1,8 @@
+2006-04-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2asm.c (dw2_asm_output_data): Don't generate RTL just
+	to print an integer.
+
 2006-04-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* varasm.c (align_variable): New function.
