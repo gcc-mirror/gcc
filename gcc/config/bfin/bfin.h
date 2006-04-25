@@ -509,12 +509,14 @@ enum reg_class
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
-#define CLASS_MAX_NREGS(CLASS, MODE)	\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#define CLASS_MAX_NREGS(CLASS, MODE)					\
+  ((MODE) == V2PDImode && (CLASS) == AREGS ? 2				\
+   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
-((MODE) == PDImode && ((REGNO) == REG_A0 || (REGNO) == REG_A1) \
- ? 1 : CLASS_MAX_NREGS (GENERAL_REGS, MODE))
+  ((MODE) == PDImode && ((REGNO) == REG_A0 || (REGNO) == REG_A1) ? 1	\
+   : (MODE) == V2PDImode && ((REGNO) == REG_A0 || (REGNO) == REG_A1) ? 2 \
+   : CLASS_MAX_NREGS (GENERAL_REGS, MODE))
 
 /* A C expression that is nonzero if hard register TO can be
    considered for use as a rename register for FROM register */

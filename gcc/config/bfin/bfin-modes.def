@@ -22,4 +22,8 @@
 /* PDImode for the 40 bit accumulators.  */
 PARTIAL_INT_MODE (DI);
 
+/* Two of those - covering both accumulators for vector multiplications.  */
+VECTOR_MODE (INT, PDI, 2);
+
 VECTOR_MODE (INT, HI, 2); /* V2HI */
+VECTOR_MODE (INT, SI, 2); /* V2SI - occasionally used.  */

@@ -1,3 +1,37 @@
+2006-04-25  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* genmodes.c (make_vector_mode): Allow making VECTOR_MODE_INT of a
+	MODE_PARTIAL_INT mode.
+	* config/bfin/bfin-modes.def: Add V2PDI and V2SI.
+	* config/bfin/bfin.c (print_operand): Add macflag and mac/msu modifiers
+	for CONST_INTs.
+	(hard_regno_mode_ok): V2PDImode is ok for accumulators.
+	* config/bfin/bfin.h (CLASS_MAX_NREGS, HARD_REGNO_NREGS): Handle
+	V2PDImode.
+	* config/bfin/predicates.md (const01_operand, vec_shift_operand):
+	New predicates.
+	* config/bfin/bfin.md (UNSPEC_MUL_WITH_FLAG, UNSPEC_MAC_WITH_FLAG):
+	New constants.
+	(MACFLAG_NONE, MACFLAG_T, MACFLAG_FU, MACFLAG_TFU, MACFLAG_IS,
+	MACFLAG_IU, MACFLAG_W32, MACFLAG_M, MACFLAG_S2RND, MACFLAG_ISS2,
+	MACFLAG_IH): Likewise.
+	(movstricthi_1): Renamed from "*movstricthi".
+	(load_accumulator, load_accumulator_pair, movsi_insv, insv,
+	ssaddsi3, sssubsi3, ssnegsi2, signbitssi2, smaxhi3, sminhi3,
+	abshi2, neghi2, ssneghi2, signbitshi2, movhi_low2high,
+	movhi_high2high, movhi_low2low, movhi_high2low, movhiv2hi_low,
+	movhiv2hi_high, composev2hi, movv2hi_hi, movv2hi_hi_low,
+	movv2hi_hi_high, ssaddhi3, sssubhi3, ssaddv2hi3, sssubv2hi3,
+	addsubv2hi3, subaddv2hi3, ssaddsubv2hi3, sssubaddv2hi3,
+	sublohiv2hi3, subhilov2hi3, sssublohiv2hi3, sssubhilov2hi3,
+	addlohiv2hi3, addhilov2hi3, ssaddlohiv2hi3, ssaddhilov2hi3,
+	mulhisi_ll, mulhisi_lh, mulhisi_hl, mulhisi_hh, ssnegv2hi2,
+	ssashiftv2hi3, ssashifthi3, lshiftv2hi3, lshifthi3, packv2hi,
+	flag_mulhi, flag_mulhisi_parts, flag_machi, flag_machi_acconly,
+	flag_macinithi, flag_macinit1hi, flag_mulv2hi, flag_mulv2hi_parts,
+	flag_macv2hi_parts, flag_macv2hi_parts_acconly,
+	flag_macinitv2hi_parts, flag_macinit1v2hi_parts): New patterns.
+
 2006-04-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (verify_marks_clear): New.

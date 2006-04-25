@@ -635,7 +635,9 @@ make_vector_mode (enum mode_class bclass,
       error ("%s:%d: no mode \"%s\"", file, line, base);
       return;
     }
-  if (component->cl != bclass)
+  if (component->cl != bclass
+      && (component->cl != MODE_PARTIAL_INT
+	  || bclass != MODE_INT))
     {
       error ("%s:%d: mode \"%s\" is not class %s",
 	     file, line, base, mode_class_names[bclass] + 5);

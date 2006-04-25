@@ -1259,9 +1259,60 @@ print_operand (FILE *file, rtx x, char code)
 	  break;
 
 	case CONST_INT:
+	  if (code == 'M')
+	    {
+	      switch (INTVAL (x))
+		{
+		case MACFLAG_NONE:
+		  break;
+		case MACFLAG_FU:
+		  fputs ("(FU)", file);
+		  break;
+		case MACFLAG_T:
+		  fputs ("(T)", file);
+		  break;
+		case MACFLAG_TFU:
+		  fputs ("(TFU)", file);
+		  break;
+		case MACFLAG_W32:
+		  fputs ("(W32)", file);
+		  break;
+		case MACFLAG_IS:
+		  fputs ("(IS)", file);
+		  break;
+		case MACFLAG_IU:
+		  fputs ("(IU)", file);
+		  break;
+		case MACFLAG_IH:
+		  fputs ("(IH)", file);
+		  break;
+		case MACFLAG_M:
+		  fputs ("(M)", file);
+		  break;
+		case MACFLAG_ISS2:
+		  fputs ("(ISS2)", file);
+		  break;
+		case MACFLAG_S2RND:
+		  fputs ("(S2RND)", file);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	      break;
+	    }
+	  else if (code == 'b')
+	    {
+	      if (INTVAL (x) == 0)
+		fputs ("+=", file);
+	      else if (INTVAL (x) == 1)
+		fputs ("-=", file);
+	      else
+		gcc_unreachable ();
+	      break;
+	    }
 	  /* Moves to half registers with d or h modifiers always use unsigned
 	     constants.  */
-	  if (code == 'd')
+	  else if (code == 'd')
 	    x = GEN_INT ((INTVAL (x) >> 16) & 0xffff);
 	  else if (code == 'h')
 	    x = GEN_INT (INTVAL (x) & 0xffff);
@@ -1672,7 +1723,7 @@ hard_regno_mode_ok (int regno, enum machine_mode mode)
     return D_REGNO_P (regno);
   if (class == CCREGS)
     return mode == BImode;
-  if (mode == PDImode)
+  if (mode == PDImode || mode == V2PDImode)
     return regno == REG_A0 || regno == REG_A1;
   if (mode == SImode
       && TEST_HARD_REG_BIT (reg_class_contents[PROLOGUE_REGS], regno))

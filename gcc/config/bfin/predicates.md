@@ -56,6 +56,14 @@
   (ior (match_operand 0 "register_operand")
        (match_code "const_int")))
 
+(define_predicate "const01_operand"
+  (match_test "op == const0_rtx || op == const1_rtx"))
+
+(define_predicate "vec_shift_operand"
+  (ior (and (match_code "const_int")
+	    (match_test "INTVAL (op) >= -16 && INTVAL (op) < 15"))
+       (match_operand 0 "register_operand")))
+
 ;; Like register_operand, but make sure that hard regs have a valid mode.
 (define_predicate "valid_reg_operand"
   (match_operand 0 "register_operand")
