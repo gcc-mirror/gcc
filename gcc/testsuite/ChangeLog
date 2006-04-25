@@ -1,3 +1,8 @@
+2006-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/26865
+	* gcc.dg/pr26865.c: New test.
+
 2006-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27292
