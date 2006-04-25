@@ -1,3 +1,9 @@
+2006-04-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (verify_marks_clear): New.
+	(prune_unused_types): Call verify_marks_clear initially, not
+	prune_unmark_dies.
+
 2006-04-24  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* rtl.def (SS_ASHIFT, SS_NEG): New codes.
