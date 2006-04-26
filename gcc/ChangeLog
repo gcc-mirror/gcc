@@ -1,3 +1,9 @@
+2006-04-26  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* basic-block.h (safe_insert_insn_on_edge): Removed.
+	* cfgrtl.c (mark_killed_regs, safe_insert_insn_on_edge): Removed.
+
+
 2006-04-26  David Edelsohn  <edelsohn@gnu.org>
 	    Paolo Bonzini  <bonzini@gnu.org>
 

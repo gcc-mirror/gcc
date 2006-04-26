@@ -77,7 +77,6 @@ static edge rtl_redirect_edge_and_branch (edge, basic_block);
 static basic_block rtl_split_block (basic_block, void *);
 static void rtl_dump_bb (basic_block, FILE *, int);
 static int rtl_verify_flow_info_1 (void);
-static void mark_killed_regs (rtx, rtx, void *);
 static void rtl_make_forwarder_block (edge);
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
@@ -1335,108 +1334,6 @@ insert_insn_on_edge (rtx pattern, edge e)
 
   e->insns.r = get_insns ();
   end_sequence ();
-}
-
-/* Called from safe_insert_insn_on_edge through note_stores, marks live
-   registers that are killed by the store.  */
-static void
-mark_killed_regs (rtx reg, rtx set ATTRIBUTE_UNUSED, void *data)
-{
-  regset killed = data;
-  int regno, i;
-
-  if (GET_CODE (reg) == SUBREG)
-    reg = SUBREG_REG (reg);
-  if (!REG_P (reg))
-    return;
-  regno = REGNO (reg);
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    SET_REGNO_REG_SET (killed, regno);
-  else
-    {
-      for (i = 0; i < (int) hard_regno_nregs[regno][GET_MODE (reg)]; i++)
-	SET_REGNO_REG_SET (killed, regno + i);
-    }
-}
-
-/* Similar to insert_insn_on_edge, tries to put INSN to edge E.  Additionally
-   it checks whether this will not clobber the registers that are live on the
-   edge (i.e. it requires liveness information to be up-to-date) and if there
-   are some, then it tries to save and restore them.  Returns true if
-   successful.  */
-bool
-safe_insert_insn_on_edge (rtx insn, edge e)
-{
-  rtx x;
-  regset killed;
-  rtx save_regs = NULL_RTX;
-  unsigned regno;
-  enum machine_mode mode;
-  reg_set_iterator rsi;
-
-  killed = ALLOC_REG_SET (&reg_obstack);
-
-  for (x = insn; x; x = NEXT_INSN (x))
-    if (INSN_P (x))
-      note_stores (PATTERN (x), mark_killed_regs, killed);
-
-  /* Mark all hard registers as killed.  Register allocator/reload cannot
-     cope with the situation when life range of hard register spans operation
-     for that the appropriate register is needed, i.e. it would be unsafe to
-     extend the life ranges of hard registers.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (!fixed_regs[regno]
-	&& !REGNO_PTR_FRAME_P (regno))
-      SET_REGNO_REG_SET (killed, regno);
-
-  bitmap_and_into (killed, e->dest->il.rtl->global_live_at_start);
-
-  EXECUTE_IF_SET_IN_REG_SET (killed, 0, regno, rsi)
-    {
-      mode = regno < FIRST_PSEUDO_REGISTER
-	      ? reg_raw_mode[regno]
-	      : GET_MODE (regno_reg_rtx[regno]);
-      if (mode == VOIDmode)
-	return false;
-
-      /* Avoid copying in CCmode if we can't.  */
-      if (!can_copy_p (mode))
-	return false;
-	
-      save_regs = alloc_EXPR_LIST (0,
-				   alloc_EXPR_LIST (0,
-						    gen_reg_rtx (mode),
-						    gen_raw_REG (mode, regno)),
-				   save_regs);
-    }
-
-  if (save_regs)
-    {
-      rtx from, to;
-
-      start_sequence ();
-      for (x = save_regs; x; x = XEXP (x, 1))
-	{
-	  from = XEXP (XEXP (x, 0), 1);
-	  to = XEXP (XEXP (x, 0), 0);
-	  emit_move_insn (to, from);
-	}
-      emit_insn (insn);
-      for (x = save_regs; x; x = XEXP (x, 1))
-	{
-	  from = XEXP (XEXP (x, 0), 0);
-	  to = XEXP (XEXP (x, 0), 1);
-	  emit_move_insn (to, from);
-	}
-      insn = get_insns ();
-      end_sequence ();
-      free_EXPR_LIST_list (&save_regs);
-    }
-  insert_insn_on_edge (insn, e);
-  
-  FREE_REG_SET (killed);
-
-  return true;
 }
 
 /* Update the CFG for the instructions queued on edge E.  */
