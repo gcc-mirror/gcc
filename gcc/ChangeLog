@@ -1,3 +1,11 @@
+2006-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/25989
+	* tree-flow.h (struct omp_region): Add sched_kind.
+	* omp-low.c (expand_parallel_call): Use region->inner->sched_kind
+	instead of extracting omp for data.
+	(expand_omp_for): Save extracted sched_kind.
+
 2006-04-25  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (store_bit_field): Also check whether the bitsize is
