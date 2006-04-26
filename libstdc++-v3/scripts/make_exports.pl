@@ -87,10 +87,10 @@ my $cxx_regex = (join '|',@cxx_globs);
 # Get all the symbols from the library, match them, and add them to a hash.
 
 my %export_hash = ();
-
+my $nm = $ENV{'NM_FOR_TARGET'} || "nm";
 # Process each symbol.
-print STDERR 'nm -P '.(join ' ',@ARGV).'|';
-open NM,'nm -P '.(join ' ',@ARGV).'|' or die $!;
+print STDERR $nm.' -P '.(join ' ',@ARGV).'|';
+open NM,$nm.' -P '.(join ' ',@ARGV).'|' or die $!;
 # Talk to c++filt through a pair of file descriptors.
 open2(*FILTIN, *FILTOUT, "c++filt --strip-underscores") or die $!;
 NAME: while (<NM>) {
