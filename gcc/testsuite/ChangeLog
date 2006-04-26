@@ -1,3 +1,9 @@
+2006-04-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/26961
+	* gcc.dg/fold-cond-1.c: New test case.
+	* gcc.dg/pr26961-1.c: Likewise.
+
 2006-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sibcall-7.c: New test.

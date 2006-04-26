@@ -9790,7 +9790,9 @@ fold (tree expr)
       if (integer_zerop (TREE_OPERAND (t, 2))
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (arg1)))
-	return fold (build2 (TRUTH_ANDIF_EXPR, type, arg0, arg1));
+	return fold (build2 (TRUTH_ANDIF_EXPR, type,
+			     fold_convert (type, arg0),
+			     arg1));
 
       /* Convert A ? B : 1 into !A || B if A and B are truth values.  */
       if (integer_onep (TREE_OPERAND (t, 2))
@@ -9800,7 +9802,9 @@ fold (tree expr)
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = invert_truthvalue (arg0);
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build2 (TRUTH_ORIF_EXPR, type, tem, arg1));
+	    return fold (build2 (TRUTH_ORIF_EXPR, type,
+				 fold_convert (type, tem),
+				 arg1));
 	}
 
       /* Convert A ? 0 : B into !A && B if A and B are truth values.  */
@@ -9811,7 +9815,8 @@ fold (tree expr)
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = invert_truthvalue (arg0);
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build2 (TRUTH_ANDIF_EXPR, type, tem,
+	    return fold (build2 (TRUTH_ANDIF_EXPR, type,
+				 fold_convert (type, tem),
 				 TREE_OPERAND (t, 2)));
 	}
 
@@ -9819,7 +9824,8 @@ fold (tree expr)
       if (integer_onep (arg1)
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (TREE_OPERAND (t, 2))))
-	return fold (build2 (TRUTH_ORIF_EXPR, type, arg0,
+	return fold (build2 (TRUTH_ORIF_EXPR, type,
+			     fold_convert (type, arg0),
 			     TREE_OPERAND (t, 2)));
 
       return t;
