@@ -8190,8 +8190,7 @@ simplify_and_const_int_1 (enum machine_mode mode, rtx varop,
     return NULL_RTX;
 
   /* Otherwise, return an AND.  */
-  constop = trunc_int_for_mode (constop, mode);
-  return simplify_gen_binary (AND, mode, varop, GEN_INT (constop));
+  return simplify_gen_binary (AND, mode, varop, gen_int_mode (constop, mode));
 }
 
 
@@ -8210,7 +8209,8 @@ simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
     return tem;
 
   if (!x)
-    x = simplify_gen_binary (AND, GET_MODE (varop), varop, GEN_INT (constop));
+    x = simplify_gen_binary (AND, GET_MODE (varop), varop,
+			     gen_int_mode (constop, mode));
   if (GET_MODE (x) != mode)
     x = gen_lowpart (mode, x);
   return x;
