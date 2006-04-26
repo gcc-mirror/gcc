@@ -1,3 +1,10 @@
+2006-04-26  David Edelsohn  <edelsohn@gnu.org>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/27282
+	* combine.c (simplify_and_const_int_1): Use gen_int_mode.
+	(simplify_and_const_int): Same.
+
 2006-04-26  Aldy Hernandez  <aldyh@redhat.com>
 
         * tree-ssa-dse.c (dse_optimize_stmt): Remove unused variable USE.
