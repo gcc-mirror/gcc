@@ -1,5 +1,8 @@
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/26913
+	* tree-cfg.c (find_outermost_region_in_block): Handle RESX_EXPR.
+
 	PR c/25996
 	* c-parser.c (c_parser_omp_for_loop): Don't call c_finish_omp_for if
 	either decl or init is error_mark_node.

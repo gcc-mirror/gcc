@@ -4744,7 +4744,10 @@ find_outermost_region_in_block (struct function *src_cfun,
       tree stmt = bsi_stmt (si);
       int stmt_region;
 
-      stmt_region = lookup_stmt_eh_region_fn (src_cfun, stmt);
+      if (TREE_CODE (stmt) == RESX_EXPR)
+	stmt_region = TREE_INT_CST_LOW (TREE_OPERAND (stmt, 0));
+      else
+	stmt_region = lookup_stmt_eh_region_fn (src_cfun, stmt);
       if (stmt_region > 0)
 	{
 	  if (region < 0)
