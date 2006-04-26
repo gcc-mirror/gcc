@@ -2032,13 +2032,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
       switch (region->inner->type)
 	{
 	case OMP_FOR:
-	  {
-	    tree stmt = last_stmt (region->inner->entry);
-	    struct omp_for_data fd;
-	    extract_omp_for_data (stmt, &fd);
-	    start_ix = BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START
-	      + fd.sched_kind;
-	  }
+	  start_ix = BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START
+		     + region->inner->sched_kind;
 	  break;
 	case OMP_SECTIONS:
 	  start_ix = BUILT_IN_GOMP_PARALLEL_SECTIONS_START;
@@ -2944,6 +2939,7 @@ expand_omp_for (struct omp_region *region)
   push_gimplify_context ();
 
   extract_omp_for_data (last_stmt (region->entry), &fd);
+  region->sched_kind = fd.sched_kind;
 
   if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC && !fd.have_ordered)
     {

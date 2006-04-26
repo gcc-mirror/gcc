@@ -505,6 +505,9 @@ struct omp_region
   /* The code for the omp directive of this region.  */
   enum tree_code type;
 
+  /* Schedule kind, only used for OMP_FOR type regions.  */
+  enum omp_clause_schedule_kind sched_kind;
+
   /* True if this is a combined parallel+workshare region.  */
   bool is_combined_parallel;
 };
