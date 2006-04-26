@@ -1,3 +1,7 @@
+2006-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+        * tree-ssa-dse.c (dse_optimize_stmt): Remove unused variable USE.
+
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/26171
