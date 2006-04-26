@@ -636,7 +636,9 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && bitsize > 0
       && GET_MODE_BITSIZE (op_mode) >= bitsize
       && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
-	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode))))
+	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode)))
+      && insn_data[CODE_FOR_insv].operand[1].predicate (GEN_INT (bitsize),
+							VOIDmode))
     {
       int xbitpos = bitpos;
       rtx value1;
