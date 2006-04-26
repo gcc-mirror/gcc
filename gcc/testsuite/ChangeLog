@@ -1,5 +1,8 @@
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/26913
+	* g++.dg/gomp/pr26913.C: New test.
+
 	PR c/25996
 	* gcc.dg/gomp/pr25996.c: New test.
 	* g++.dg/gomp/pr25996.C: New test.
