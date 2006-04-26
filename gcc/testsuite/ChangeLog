@@ -1,3 +1,8 @@
+2006-04-26  David Edelsohn  <edelsohn@gnu.org>
+
+	PR middle-end/27282
+	* gcc.c-torture/compile/pr27282.c: New test.
+
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/26913
