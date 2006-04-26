@@ -1,3 +1,8 @@
+2006-04-26  Shantonu Sen  <ssen@opendarwin.org>
+
+         PR libstdc++/26513
+         * scripts/make_exports.pl: Use $ENV{NM_FOR_TARGET}, if present.
+
 2006-04-23  Marc Glisse  <marc.glisse@normalesup.org>
 
 	PR libstdc++/27199
