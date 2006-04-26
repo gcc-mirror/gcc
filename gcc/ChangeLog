@@ -1,3 +1,12 @@
+2006-04-25  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (store_bit_field): Also check whether the bitsize is
+	valid for the machine's "insv" instruction before moving the
+	target into a pseudo for use with the insv.
+	* config/i386/predicates.md (const8_operand): New predicate.
+	* config/i386/i386.md (extv, extzv, insv): Use the new
+	const8_operand predicate where appropriate.
+
 2006-04-25  DJ Delorie  <dj@redhat.com>
 
 	* doc/install.texi (Specific): Clarify that this is not a list of
