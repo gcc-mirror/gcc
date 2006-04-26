@@ -7379,7 +7379,7 @@ c_parser_omp_for_loop (c_parser *parser)
 
   /* Only bother calling c_finish_omp_for if we havn't already generated
      an error from the initialization parsing.  */
-  if (decl != NULL)
+  if (decl != NULL && decl != error_mark_node && init != error_mark_node)
     return c_finish_omp_for (loc, decl, init, cond, incr, body, NULL);
   return NULL;
 
