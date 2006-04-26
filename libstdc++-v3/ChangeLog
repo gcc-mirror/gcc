@@ -1,3 +1,10 @@
+2006-04-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/26875
+	* include/ext/array_allocator.h (array_allocator): _M_used, new
+	data member.  
+	* testsuite/ext/array_allocator/26875.cc: New.
+	
 2006-04-26  Shantonu Sen  <ssen@opendarwin.org>
 
          PR libstdc++/26513
