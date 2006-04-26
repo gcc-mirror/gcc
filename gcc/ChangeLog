@@ -1,5 +1,10 @@
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/26171
+	* cgraph.c (cgraph_varpool_finalize_decl): Don't call
+	cgraph_varpool_assemble_pending_decls if -fopenmp, unless
+	cgraph_global_info_ready.
+
 	PR middle-end/26913
 	* tree-cfg.c (find_outermost_region_in_block): Handle RESX_EXPR.
 
