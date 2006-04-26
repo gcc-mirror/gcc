@@ -20,6 +20,9 @@
 
 2006-04-25  Geoffrey Keating  <geoffk@apple.com>
 
+	* dwarf2out.c (size_of_locs): Don't fill dw_loc_addr if there
+	are no branches.
+
 	* dwarf2asm.c (dw2_asm_output_data): Don't generate RTL just
 	to print an integer.
 
