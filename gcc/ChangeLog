@@ -1,5 +1,9 @@
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/25996
+	* c-parser.c (c_parser_omp_for_loop): Don't call c_finish_omp_for if
+	either decl or init is error_mark_node.
+
 	PR middle-end/25989
 	* tree-flow.h (struct omp_region): Add sched_kind.
 	* omp-low.c (expand_parallel_call): Use region->inner->sched_kind

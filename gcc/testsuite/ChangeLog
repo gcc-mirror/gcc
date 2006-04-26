@@ -1,3 +1,9 @@
+2006-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/25996
+	* gcc.dg/gomp/pr25996.c: New test.
+	* g++.dg/gomp/pr25996.C: New test.
+
 2006-04-25  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/26725
