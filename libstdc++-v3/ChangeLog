@@ -1,3 +1,7 @@
+2006-04-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/17_intro/TODO: Update.
+	
 2006-04-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/26875
@@ -73,7 +77,7 @@
 
 2006-03-29  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* testsuite/data/sgetn.txt:  Correct copyright holder.
+	* testsuite/data/sgetn.txt: Correct copyright holder.
 	* testsuite/data/wistream_extractor_other-1.tst: Same.
 	* testsuite/data/wistream_extractor_other-2.tst: Same.
 	* testsuite/data/istream_extractor_other-1.txt: Same.

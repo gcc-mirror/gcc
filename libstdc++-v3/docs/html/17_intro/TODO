@@ -1,18 +1,17 @@
 std::allocator
 
-  - switch to mt_allocator with --enable-threads=posix. 
-
   - persistent allocator
-
-  - global/extern allocator
+ 
+  - shared memory allocator (use or link to boost::shmem::allocator)
 
 std::string 
 
-  - Policy-based design incorporating COW
+  - document __gnu_cxx::__versa_string, add new policies
+    (Policy-based design incorporating COW
     vs. deep copy issues, MT scalability
     See Andrei Alexandrescu, June 2001, C/C++ Users Journal
     "Generic<Programming>: A Policy-Based basic_string Implementation"
-    http://www.cuj.com/documents/s=7994/cujcexp1906alexandr/
+    http://www.cuj.com/documents/s=7994/cujcexp1906alexandr/)
 
   - operator!= and utility/rel_ops operators need to be made safe with
     string and vector iterator classes. basic_string::reverse_iterator may
@@ -75,7 +74,7 @@ testsuite
   - valgrind hooks into make check so can tell memory leakage
     Some commentary on the valgrind users list
 
-  - add hooks for qmtest for visual diffs 
+  - add hooks for qmtest, pychart, other for visual diffs 
 
   - automatic testing of interactive tests
 
@@ -99,7 +98,7 @@ threads
 
   - solution for threads + C++.
 
-- audit for places where __builtin_expect can be used.
+other/random
 
 - relocations, work on getting these down
 
@@ -122,8 +121,8 @@ everybody can live with.
 
 - exception specifications need to be reviewed for all parts of the
 library support and utility areas, particularly <new>. Part of this is
-a standards issue, where the 27_io bugs/standard is really in an odd
-spot.
+a standards issue, where the 27_io standard is really in an odd
+spot. Do the work to make this consistent.
 
 - C-related issues WRT to io and filepos, mbstate_t. Seeking in wide
 streams. May need to define operators for mbstate_t so that
@@ -151,15 +150,6 @@ needs to be drawn throughout the entire STL implementation.
 - All of the Library working group closed issues need to be
 addressed. Some of them proposed resolutions are already in the v-3
 sources, with macro-guards. Also, same with the TR.
-
-- add deprecated features from Annex D
-  - add #ifdef wrappers for all of them, including in each
-    C <xxx.h> header
-  - replace typedef'd non-deprecated types with more type-safe equivalents.
-
-- add feature-test macros for non-standard extensions
-
-- add MT support for locale, string, istream, ostream
 
 - need to think about doing a .texi or DocBook manual, instead of all
 these HTML pages. In addition, it would be nice to have a full manual,
