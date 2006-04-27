@@ -1,3 +1,9 @@
+2006-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/26685
+	* params.def (PARAM_MAX_CSE_INSNS): Correct typo that named
+	this one "max-flow-memory-locations".
+
 2006-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/26865

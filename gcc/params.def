@@ -384,7 +384,7 @@ DEFPARAM(PARAM_MAX_CSE_PATH_LENGTH,
 	 "The maximum length of path considered in cse",
 	 10, 0, 0)
 DEFPARAM(PARAM_MAX_CSE_INSNS,
-	 "max-flow-memory-locations",
+	 "max-cse-insns",
 	 "The maximum instructions CSE process before flushing",
 	 1000, 0, 0)
 
