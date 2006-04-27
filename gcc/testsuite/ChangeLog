@@ -1,3 +1,7 @@
+2006-04-27  Dirk Mueller  <dmueller@suse.de>
+
+	* gcc.target/i386/sse-7.c: build with -msse.
+
 2006-04-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/27274:
