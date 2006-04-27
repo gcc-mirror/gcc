@@ -3242,6 +3242,7 @@ remove_range_assertions (void)
     for (si = bsi_start (bb); !bsi_end_p (si);)
       {
 	tree stmt = bsi_stmt (si);
+	tree use_stmt;
 
 	if (TREE_CODE (stmt) == MODIFY_EXPR
 	    && TREE_CODE (TREE_OPERAND (stmt, 1)) == ASSERT_EXPR)
@@ -3255,11 +3256,12 @@ remove_range_assertions (void)
 
 	    /* Propagate the RHS into every use of the LHS.  */
 	    var = ASSERT_EXPR_VAR (rhs);
-	    FOR_EACH_IMM_USE_SAFE (use_p, iter, TREE_OPERAND (stmt, 0))
-	      {
-		SET_USE (use_p, var);
-		gcc_assert (TREE_CODE (var) == SSA_NAME);
-	      }
+	    FOR_EACH_IMM_USE_STMT (use_stmt, iter, TREE_OPERAND (stmt, 0))
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		{
+		  SET_USE (use_p, var);
+		  gcc_assert (TREE_CODE (var) == SSA_NAME);
+		}
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    bsi_remove (&si, true);

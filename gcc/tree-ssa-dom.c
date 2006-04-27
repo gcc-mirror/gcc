@@ -2118,6 +2118,7 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
     {
       use_operand_p use_p;
       imm_use_iterator iter;
+      tree use_stmt;
       bool all = true;
 
       /* Dump details.  */
@@ -2134,10 +2135,8 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
       /* Walk over every use of LHS and try to replace the use with RHS. 
 	 At this point the only reason why such a propagation would not
 	 be successful would be if the use occurs in an ASM_EXPR.  */
-    repeat:
-      FOR_EACH_IMM_USE_SAFE (use_p, iter, lhs)
+      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
 	{
-	  tree use_stmt = USE_STMT (use_p);
 	
 	  /* It's not always safe to propagate into an ASM_EXPR.  */
 	  if (TREE_CODE (use_stmt) == ASM_EXPR
@@ -2156,7 +2155,8 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	    }
 
 	  /* Propagate the RHS into this use of the LHS.  */
-	  propagate_value (use_p, rhs);
+	  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	    propagate_value (use_p, rhs);
 
 	  /* Special cases to avoid useless calls into the folding
 	     routines, operand scanning, etc.
@@ -2303,23 +2303,8 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	    }
 	}
 
-      /* Due to a bug in the immediate use iterator code, we can
-	 miss visiting uses in some cases when there is more than
-	 one use in a statement.  Missing a use can cause a multitude
-         of problems if we expected to eliminate all uses and remove
-         the defining statement.
-
-	 Until Andrew can fix the iterator, this hack will detect
-	 the cases which cause us problems.  Namely if ALL is set
-	 and we still have some immediate uses, then we must have
-	 skipped one or more in the loop above.  So just re-execute
-	 the loop.
-
-	 The maximum number of times we can re-execute the loop is
-	 bounded by the maximum number of times a given SSA_NAME
-	 appears in a single statement.  */
-      if (all && !has_zero_uses (lhs))
-	goto repeat;
+      /* Ensure there is nothing else to do. */ 
+      gcc_assert (all && has_zero_uses (lhs));
 
       /* If we were able to propagate away all uses of LHS, then
 	 we can remove STMT.  */

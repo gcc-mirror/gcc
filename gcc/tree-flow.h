@@ -225,9 +225,15 @@ struct function_ann_d GTY(())
 
 typedef struct immediate_use_iterator_d
 {
+  /* This is the current use the iterator is processing.  */
   ssa_use_operand_t *imm_use;
+  /* This marks the last use in the list (use node from SSA_NAME)  */
   ssa_use_operand_t *end_p;
+  /* This node is inserted and used to mark the end of the uses for a stmt.  */
   ssa_use_operand_t iter_node;
+  /* This is the next ssa_name to visit.  IMM_USE may get removed before
+     the next one is traversed to, so it must be cached early.  */
+  ssa_use_operand_t *next_imm_name;
 } imm_use_iterator;
 
 
@@ -239,17 +245,42 @@ typedef struct immediate_use_iterator_d
        !end_readonly_imm_use_p (&(ITER));			\
        (DEST) = next_readonly_imm_use (&(ITER)))
   
+/* Use this iterator to visit each stmt which has a use of SSAVAR.  */
 
-#define FOR_EACH_IMM_USE_SAFE(DEST, ITER, SSAVAR)		\
-  for ((DEST) = first_safe_imm_use (&(ITER), (SSAVAR));		\
-       !end_safe_imm_use_p (&(ITER));				\
-       (DEST) = next_safe_imm_use (&(ITER)))
+#define FOR_EACH_IMM_USE_STMT(STMT, ITER, SSAVAR)		\
+  for ((STMT) = first_imm_use_stmt (&(ITER), (SSAVAR));		\
+       !end_imm_use_stmt_p (&(ITER));				\
+       (STMT) = next_imm_use_stmt (&(ITER)))
 
-#define BREAK_FROM_SAFE_IMM_USE(ITER)				\
+/* Use this to terminate the FOR_EACH_IMM_USE_STMT loop early.  Failure to 
+   do so will result in leaving a iterator marker node in the immediate
+   use list, and nothing good will come from that.   */
+#define BREAK_FROM_IMM_USE_STMT(ITER)				\
    {								\
-     end_safe_imm_use_traverse (&(ITER));			\
+     end_imm_use_stmt_traverse (&(ITER));			\
      break;							\
    }
+
+
+/* Use this iterator in combination with FOR_EACH_IMM_USE_STMT to 
+   get access to each occurence of ssavar on the stmt returned by
+   that iterator..  for instance:
+
+     FOR_EACH_IMM_USE_STMT (stmt, iter, var)
+       {
+         FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	   {
+	     SET_USE (use_p) = blah;
+	   }
+	 update_stmt (stmt);
+       }							 */
+
+#define FOR_EACH_IMM_USE_ON_STMT(DEST, ITER)			\
+  for ((DEST) = first_imm_use_on_stmt (&(ITER));		\
+       !end_imm_use_on_stmt_p (&(ITER));			\
+       (DEST) = next_imm_use_on_stmt (&(ITER)))
+
+
 
 struct stmt_ann_d GTY(())
 {

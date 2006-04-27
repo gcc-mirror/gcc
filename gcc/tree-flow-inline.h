@@ -394,83 +394,6 @@ relink_imm_use_stmt (ssa_use_operand_t *linknode, ssa_use_operand_t *old, tree s
   linknode->stmt = stmt;
 }
 
-/* Finished the traverse of an immediate use list IMM by removing it from 
-   the list.  */
-static inline void
-end_safe_imm_use_traverse (imm_use_iterator *imm)
-{
- delink_imm_use (&(imm->iter_node));
-}
-
-/* Return true if IMM is at the end of the list.  */
-static inline bool
-end_safe_imm_use_p (imm_use_iterator *imm)
-{
-  return (imm->imm_use == imm->end_p);
-}
-
-/* Initialize iterator IMM to process the list for VAR.  */
-static inline use_operand_p
-first_safe_imm_use (imm_use_iterator *imm, tree var)
-{
-  /* Set up and link the iterator node into the linked list for VAR.  */
-  imm->iter_node.use = NULL;
-  imm->iter_node.stmt = NULL_TREE;
-  imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
-  /* Check if there are 0 elements.  */
-  if (imm->end_p->next == imm->end_p)
-    {
-      imm->imm_use = imm->end_p;
-      return NULL_USE_OPERAND_P;
-    }
-
-  link_imm_use (&(imm->iter_node), var);
-  imm->imm_use = imm->iter_node.next;
-  return imm->imm_use;
-}
-
-/* Bump IMM to the next use in the list.  */
-static inline use_operand_p
-next_safe_imm_use (imm_use_iterator *imm)
-{
-  ssa_use_operand_t *ptr;
-  use_operand_p old;
-
-  old = imm->imm_use;
-  /* If the next node following the iter_node is still the one referred to by
-     imm_use, then the list hasn't changed, go to the next node.  */
-  if (imm->iter_node.next == imm->imm_use)
-    {
-      ptr = &(imm->iter_node);
-      /* Remove iternode from the list.  */
-      delink_imm_use (ptr);
-      imm->imm_use = imm->imm_use->next;
-      if (! end_safe_imm_use_p (imm))
-	{
-	  /* This isn't the end, link iternode before the next use.  */
-	  ptr->prev = imm->imm_use->prev;
-	  ptr->next = imm->imm_use;
-	  imm->imm_use->prev->next = ptr;
-	  imm->imm_use->prev = ptr;
-	}
-      else
-	return old;
-    }
-  else
-    {
-      /* If the 'next' value after the iterator isn't the same as it was, then
-	 a node has been deleted, so we simply proceed to the node following 
-	 where the iterator is in the list.  */
-      imm->imm_use = imm->iter_node.next;
-      if (end_safe_imm_use_p (imm))
-        {
-	  end_safe_imm_use_traverse (imm);
-	  return old;
-	}
-    }
-
-  return imm->imm_use;
-}
 
 /* Return true is IMM has reached the end of the immediate use list.  */
 static inline bool
@@ -1376,7 +1299,162 @@ op_iter_init_phidef (ssa_op_iter *ptr, tree phi, int flags)
   return PHI_RESULT_PTR (phi);
 }
 
+/* Return true is IMM has reached the end of the immediate use stmt list.  */
 
+static inline bool
+end_imm_use_stmt_p (imm_use_iterator *imm)
+{
+  return (imm->imm_use == imm->end_p);
+}
+
+/* Finished the traverse of an immediate use stmt list IMM by removing the
+   placeholder node from the list.  */
+
+static inline void
+end_imm_use_stmt_traverse (imm_use_iterator *imm)
+{
+  delink_imm_use (&(imm->iter_node));
+}
+
+/* Immediate use traversal of uses within a stmt require that all the
+   uses on a stmt be sequentially listed.  This routine is used to build up
+   this sequential list by adding USE_P to the end of the current list 
+   currently delimited by HEAD and LAST_P.  The new LAST_P value is 
+   returned.  */
+
+static inline use_operand_p
+move_use_after_head (use_operand_p use_p, use_operand_p head, 
+		      use_operand_p last_p)
+{
+  gcc_assert (USE_FROM_PTR (use_p) == USE_FROM_PTR (head));
+  /* Skip head when we find it.  */
+  if (use_p != head)
+    {
+      /* If use_p is already linked in after last_p, continue.  */
+      if (last_p->next == use_p)
+	last_p = use_p;
+      else
+	{
+	  /* Delink from current location, and link in at last_p.  */
+	  delink_imm_use (use_p);
+	  link_imm_use_to_list (use_p, last_p);
+	  last_p = use_p;
+	}
+    }
+  return last_p;
+}
+
+
+/* This routine will relink all uses with the same stmt as HEAD into the list
+   immediately following HEAD for iterator IMM.  */
+
+static inline void
+link_use_stmts_after (use_operand_p head, imm_use_iterator *imm)
+{
+  use_operand_p use_p;
+  use_operand_p last_p = head;
+  tree head_stmt = USE_STMT (head);
+  tree use = USE_FROM_PTR (head);
+  ssa_op_iter op_iter;
+  int flag;
+
+  /* Only look at virtual or real uses, depending on the type of HEAD.  */
+  flag = (is_gimple_reg (use) ? SSA_OP_USE : SSA_OP_VIRTUAL_USES);
+
+  if (TREE_CODE (head_stmt) == PHI_NODE)
+    {
+      FOR_EACH_PHI_ARG (use_p, head_stmt, op_iter, flag)
+	if (USE_FROM_PTR (use_p) == use)
+	  last_p = move_use_after_head (use_p, head, last_p);
+    }
+  else
+    {
+      FOR_EACH_SSA_USE_OPERAND (use_p, head_stmt, op_iter, flag)
+	if (USE_FROM_PTR (use_p) == use)
+	  last_p = move_use_after_head (use_p, head, last_p);
+    }
+  /* LInk iter node in after last_p.  */
+  if (imm->iter_node.prev != NULL)
+    delink_imm_use (&imm->iter_node);
+  link_imm_use_to_list (&(imm->iter_node), last_p);
+}
+
+/* Initialize IMM to traverse over uses of VAR.  Return the first statement.  */
+static inline tree
+first_imm_use_stmt (imm_use_iterator *imm, tree var)
+{
+  gcc_assert (TREE_CODE (var) == SSA_NAME);
+  
+  imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
+  imm->imm_use = imm->end_p->next;
+  imm->next_imm_name = NULL_USE_OPERAND_P;
+
+  /* iter_node is used as a marker within the immediate use list to indicate
+     where the end of the current stmt's uses are.  Iintialize it to NULL
+     stmt and use, which indicateds a marker node.  */
+  imm->iter_node.prev = NULL_USE_OPERAND_P;
+  imm->iter_node.next = NULL_USE_OPERAND_P;
+  imm->iter_node.stmt = NULL_TREE;
+  imm->iter_node.use = NULL_USE_OPERAND_P;
+
+  if (end_imm_use_stmt_p (imm))
+    return NULL_TREE;
+
+  link_use_stmts_after (imm->imm_use, imm);
+
+  return USE_STMT (imm->imm_use);
+}
+
+/* Bump IMM to the next stmt which has a use of var.  */
+
+static inline tree
+next_imm_use_stmt (imm_use_iterator *imm)
+{
+  imm->imm_use = imm->iter_node.next;
+  if (end_imm_use_stmt_p (imm))
+    {
+      if (imm->iter_node.prev != NULL)
+	delink_imm_use (&imm->iter_node);
+      return NULL_TREE;
+    }
+
+  link_use_stmts_after (imm->imm_use, imm);
+  return USE_STMT (imm->imm_use);
+
+}
+
+/* This routine will return the first use on the stmt IMM currently refers
+   to.  */
+
+static inline use_operand_p
+first_imm_use_on_stmt (imm_use_iterator *imm)
+{
+  imm->next_imm_name = imm->imm_use->next;
+  return imm->imm_use;
+}
+
+/*  Return TRUE if the last use on the stmt IMM refers to has been visited.  */
+
+static inline bool
+end_imm_use_on_stmt_p (imm_use_iterator *imm)
+{
+  return (imm->imm_use == &(imm->iter_node));
+}
+
+/* Bump to the next use on the stmt IMM refers to, return NULL if done.  */
+
+static inline use_operand_p
+next_imm_use_on_stmt (imm_use_iterator *imm)
+{
+  imm->imm_use = imm->next_imm_name;
+  if (end_imm_use_on_stmt_p (imm))
+    return NULL_USE_OPERAND_P;
+  else
+    {
+      imm->next_imm_name = imm->imm_use->next;
+      return imm->imm_use;
+    }
+}
 
 /* Return true if VAR cannot be modified by the program.  */
 
