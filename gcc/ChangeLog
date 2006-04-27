@@ -1,3 +1,18 @@
+2006-04-27  Eric Christopher  <echristo@apple.com>
+
+	* target-def.h (TARGET_SET_DEFAULT_TYPE_ATTRIBUTES): Bracket
+	with #ifndef/#endif.
+	* config/darwin-c.c (darwin_ms_struct): New.
+	(darwin_pragma_ms_struct): Ditto.
+	(darwin_set_default_type_attributes): Ditto.
+	* config/darwin-protos.h (darwin_pragma_ms_struct): Declare.
+	* config/darwin.h (DARWIN_REGISTER_TARGET_PRAGMAS):
+	Register ms_struct pragma.
+	* config/i386/darwin.h (REGISTER_TARGET_PRAGMAS): Declare.
+	(TARGET_SET_DEFAULT_TYPE_ATTRIBUTES): Ditto.
+	* config/rs6000/rs6000.c (rs6000_set_default_type_attributes): Call
+	darwin_set_default_type_attributes if TARGET_MACHO.
+
 2006-04-27  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/26854
@@ -19,12 +34,12 @@
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Use new iterator.
 	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Use new iterator.
 	(perfect_nestify): Use new iterator.
-	* tree-vect-transform.c (vect_create_epilog_for_reduction): Use new 
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Use new
 	iterator.
 	* tree-flow.h (struct immediate_use_iterator_d): Add comments.
 	(next_imm_name): New field in struct immediate_use_iterator_d.
 	(FOR_EACH_IMM_USE_SAFE, BREAK_FROM_SAFE_IMM_USE): Remove.
-	(FOR_EACH_IMM_USE_STMT, BREAK_FROM_IMM_USE_STMT, 
+	(FOR_EACH_IMM_USE_STMT, BREAK_FROM_IMM_USE_STMT,
 	FOR_EACH_IMM_USE_ON_STMT): New immediate use iterator macros.
 	* tree-cfg.c (replace_uses_by): Use new iterator.
 	* tree-ssa-threadedge.c (lhs_of_dominating_assert): Use new iterator.
@@ -41,7 +56,7 @@
 	call_nonlocal_sysv, call_value_indirect_nonlocal_sysv,
 	call_value_nonlocal_sysv): Suffix with the "P" macro for 32/64
 	support.
-	
+
 2006-04-27  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (store_fixed_bit_field): If we're not optimizing for

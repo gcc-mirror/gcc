@@ -439,7 +439,7 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_USES_WEAK_UNWIND_INFO 1
 
 /* We need to use a nonlocal label for the start of an EH frame: the
-   Darwin linker requires that a coalesced section start with a label. 
+   Darwin linker requires that a coalesced section start with a label.
    Unfortunately, it also requires that 'debug' sections don't contain
    labels.  */
 #undef FRAME_BEGIN_LABEL
@@ -830,6 +830,7 @@ enum machopic_addr_class {
     c_register_pragma (0, "options", darwin_pragma_options);	\
     c_register_pragma (0, "segment", darwin_pragma_ignore);	\
     c_register_pragma (0, "unused", darwin_pragma_unused);	\
+    c_register_pragma (0, "ms_struct", darwin_pragma_ms_struct); \
   } while (0)
 
 #undef ASM_APP_ON

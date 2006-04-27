@@ -17527,6 +17527,10 @@ rs6000_set_default_type_attributes (tree type)
     TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("longcall"),
 					NULL_TREE,
 					TYPE_ATTRIBUTES (type));
+
+#if TARGET_MACHO
+  darwin_set_default_type_attributes (type);
+#endif
 }
 
 /* Return a reference suitable for calling a function with the
