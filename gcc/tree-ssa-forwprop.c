@@ -805,14 +805,13 @@ forward_propagate_addr_expr (tree stmt, bool *some)
 {
   int stmt_loop_depth = bb_for_stmt (stmt)->loop_depth;
   tree name = TREE_OPERAND (stmt, 0);
-  use_operand_p imm_use;
   imm_use_iterator iter;
+  tree use_stmt;
   bool all = true;
 
-  FOR_EACH_IMM_USE_SAFE (imm_use, iter, name)
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, name)
     {
       bool result;
-      tree use_stmt = USE_STMT (imm_use);
 
       /* If the use is not in a simple assignment statement, then
 	 there is nothing we can do.  */

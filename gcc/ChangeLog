@@ -1,3 +1,36 @@
+2006-04-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/26854
+	* tree-vrp.c (remove_range_assertions): Use new Immuse iterator.
+	* doc/tree-ssa.texi: Update immuse iterator documentation.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Use new iterator.
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Use new iterator.
+	* tree-flow-inline.h (end_safe_imm_use_traverse, end_safe_imm_use_p,
+	first_safe_imm_use, next_safe_imm_use): Remove.
+	(end_imm_use_stmt_p): New.  Check for end of immuse stmt traversal.
+	(end_imm_use_stmt_traverse): New.  Terminate immuse stmt traversal.
+	(move_use_after_head): New.  Helper function to sort immuses in a stmt.
+	(link_use_stmts_after): New.  Link all immuses in a stmt consescutively.
+	(first_imm_use_stmt): New.  Get first stmt in an immuse list.
+	(next_imm_use_stmt): New.  Get next stmt in an immuse list.
+	(first_imm_use_on_stmt): New.  Get first immuse on a stmt.
+	(end_imm_use_on_stmt_p): New.  Check for end of immuses on a stmt.
+	(next_imm_use_on_stmt): New.  Move to next immuse on a stmt.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Use new iterator.
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Use new iterator.
+	(perfect_nestify): Use new iterator.
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Use new 
+	iterator.
+	* tree-flow.h (struct immediate_use_iterator_d): Add comments.
+	(next_imm_name): New field in struct immediate_use_iterator_d.
+	(FOR_EACH_IMM_USE_SAFE, BREAK_FROM_SAFE_IMM_USE): Remove.
+	(FOR_EACH_IMM_USE_STMT, BREAK_FROM_IMM_USE_STMT, 
+	FOR_EACH_IMM_USE_ON_STMT): New immediate use iterator macros.
+	* tree-cfg.c (replace_uses_by): Use new iterator.
+	* tree-ssa-threadedge.c (lhs_of_dominating_assert): Use new iterator.
+	* tree-ssa-operands.c (correct_use_link): Remove.
+	(finalize_ssa_use_ops): No longer call correct_use_link.
+
 2006-04-27  Stuart Hastings  <stuart@apple.com>
 
 	* config/rs6000/t-darwin (DARWIN_EXTRA_CRT_BUILD_CFLAGS): New.

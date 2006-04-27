@@ -446,17 +446,20 @@ execute_cse_reciprocals_1 (block_stmt_iterator *def_bsi, tree def)
   threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
   if (count >= threshold)
     {
+      tree use_stmt;
       for (occ = occ_head; occ; occ = occ->next)
 	{
 	  compute_merit (occ);
 	  insert_reciprocals (def_bsi, occ, def, NULL, threshold);
 	}
 
-      FOR_EACH_IMM_USE_SAFE (use_p, use_iter, def)
+      FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, def)
 	{
-	  tree use_stmt = USE_STMT (use_p);
 	  if (is_division_by (use_stmt, def))
-	    replace_reciprocal (use_p);
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, use_iter)
+		replace_reciprocal (use_p);
+	    }
 	}
     }
 

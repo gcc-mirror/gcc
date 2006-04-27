@@ -791,6 +791,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
   bool extract_scalar_result;
   tree reduction_op;
   tree orig_stmt;
+  tree use_stmt;
   tree operation = TREE_OPERAND (stmt, 1);
   int op_type;
   
@@ -1082,8 +1083,9 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
   gcc_assert (exit_phi);
   /* Replace the uses:  */
   orig_name = PHI_RESULT (exit_phi);
-  FOR_EACH_IMM_USE_SAFE (use_p, imm_iter, orig_name)
-    SET_USE (use_p, new_temp);
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, orig_name)
+    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+      SET_USE (use_p, new_temp);
 } 
 
 

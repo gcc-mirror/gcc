@@ -1259,51 +1259,42 @@ replace_uses_by (tree name, tree val)
   tree stmt;
   edge e;
   unsigned i;
-  VEC(tree,heap) *stmts = VEC_alloc (tree, heap, 20);
 
-  FOR_EACH_IMM_USE_SAFE (use, imm_iter, name)
+
+  FOR_EACH_IMM_USE_STMT (stmt, imm_iter, name)
     {
-      stmt = USE_STMT (use);
-      replace_exp (use, val);
+      FOR_EACH_IMM_USE_ON_STMT (use, imm_iter)
+        {
+	  replace_exp (use, val);
 
-      if (TREE_CODE (stmt) == PHI_NODE)
-	{
-	  e = PHI_ARG_EDGE (stmt, PHI_ARG_INDEX_FROM_USE (use));
-	  if (e->flags & EDGE_ABNORMAL)
+	  if (TREE_CODE (stmt) == PHI_NODE)
 	    {
-	      /* This can only occur for virtual operands, since
-		 for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
-		 would prevent replacement.  */
-	      gcc_assert (!is_gimple_reg (name));
-	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
+	      e = PHI_ARG_EDGE (stmt, PHI_ARG_INDEX_FROM_USE (use));
+	      if (e->flags & EDGE_ABNORMAL)
+		{
+		  /* This can only occur for virtual operands, since
+		     for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+		     would prevent replacement.  */
+		  gcc_assert (!is_gimple_reg (name));
+		  SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
+		}
 	    }
 	}
-      else
-	VEC_safe_push (tree, heap, stmts, stmt);
+      if (TREE_CODE (stmt) != PHI_NODE)
+	{
+	  tree rhs;
+
+	  fold_stmt_inplace (stmt);
+	  rhs = get_rhs (stmt);
+	  if (TREE_CODE (rhs) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (rhs);
+
+	  maybe_clean_or_replace_eh_stmt (stmt, stmt);
+	  mark_new_vars_to_rename (stmt);
+	}
     }
  
-  /* We do not update the statements in the loop above.  Consider
-     x = w * w;
-
-     If we performed the update in the first loop, the statement
-     would be rescanned after first occurrence of w is replaced,
-     the new uses would be placed to the beginning of the list,
-     and we would never process them.  */
-  for (i = 0; VEC_iterate (tree, stmts, i, stmt); i++)
-    {
-      tree rhs;
-
-      fold_stmt_inplace (stmt);
-
-      rhs = get_rhs (stmt);
-      if (TREE_CODE (rhs) == ADDR_EXPR)
-	recompute_tree_invariant_for_addr_expr (rhs);
-
-      maybe_clean_or_replace_eh_stmt (stmt, stmt);
-      mark_new_vars_to_rename (stmt);
-    }
-
-  VEC_free (tree, heap, stmts);
+  gcc_assert (num_imm_uses (name) == 0);
 
   /* Also update the trees stored in loop structures.  */
   if (current_loops)

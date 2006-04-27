@@ -84,18 +84,20 @@ static tree
 lhs_of_dominating_assert (tree op, basic_block bb, tree stmt)
 {
   imm_use_iterator imm_iter;
-  use_operand_p imm_use;
+  tree use_stmt;
+  use_operand_p use_p;
 
-  FOR_EACH_IMM_USE_SAFE (imm_use, imm_iter, op)
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, op)
     {
-      tree use_stmt = USE_STMT (imm_use);
-
+      use_stmt = USE_STMT (use_p);
       if (use_stmt != stmt
           && TREE_CODE (use_stmt) == MODIFY_EXPR
           && TREE_CODE (TREE_OPERAND (use_stmt, 1)) == ASSERT_EXPR
           && TREE_OPERAND (TREE_OPERAND (use_stmt, 1), 0) == op
 	  && dominated_by_p (CDI_DOMINATORS, bb, bb_for_stmt (use_stmt)))
-	op = TREE_OPERAND (use_stmt, 0);
+	{
+	  return TREE_OPERAND (use_stmt, 0);
+	}
     }
   return op;
 }

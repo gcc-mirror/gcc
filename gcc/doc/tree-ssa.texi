@@ -1092,15 +1092,21 @@ FOR_EACH_PHI_OR_STMT_DEF (def_operand_p, phi, iter, flags)
 
 Immediate use information is now always available.  Using the immediate use 
 iterators, you may examine every use of any @code{SSA_NAME}. For instance,
-to change each use of @code{ssa_var} to @code{ssa_var2}:
+to change each use of @code{ssa_var} to @code{ssa_var2} and call fold_stmt on
+each stmt after that is done:
 
 @smallexample
   use_operand_p imm_use_p;
   imm_use_iterator iterator;
-  tree ssa_var
+  tree ssa_var, stmt;
 
-  FOR_EACH_IMM_USE_SAFE (imm_use_p, iterator, ssa_var)
-    SET_USE (imm_use_p, ssa_var_2);
+
+  FOR_EACH_IMM_USE_STMT (stmt, iterator, ssa_var)
+    @{
+      FOR_EACH_IMM_USE_ON_STMT (imm_use_p, iterator)
+        SET_USE (imm_use_p, ssa_var_2);
+      fold_stmt (stmt);
+    @}
 @end smallexample
 
 There are 2 iterators which can be used. @code{FOR_EACH_IMM_USE_FAST} is used 
@@ -1108,21 +1114,26 @@ when the immediate uses are not changed, ie. you are looking at the uses, but
 not setting them.  
 
 If they do get changed, then care must be taken that things are not changed 
-under the iterators, so use the @code{FOR_EACH_IMM_USE_SAFE} iterator.  It 
-attempts to preserve the sanity of the use list by moving an iterator element
-through the use list, preventing insertions and deletions in the list from
-resulting in invalid pointers.  This is a little slower since it adds a
-placeholder element and moves it through the list.  This element must be 
-also be removed if the loop is terminated early.  A macro 
-(@code{BREAK_FROM SAFE_IMM_USE}) is provided for this:
+under the iterators, so use the @code{FOR_EACH_IMM_USE_STMT} and 
+@code{FOR_EACH_IMM_USE_ON_STMT} iterators.  They attempt to preserve the 
+sanity of the use list by moving all the uses for a statement into 
+a controlled position, and then iterating over those uses.  Then the 
+optimization can manipulate the stmt when all the uses have been
+processed.  This is a little slower than the FAST version since it adds a 
+placeholder element and must sort through the list a bit for each statement.  
+This placeholder element must be also be removed if the loop is 
+terminated early.  The macro @code{BREAK_FROM_IMM_USE_SAFE} is provided 
+to do this :
 
 @smallexample
-  FOR_EACH_IMM_USE_SAFE (use_p, iter, var)
+  FOR_EACH_IMM_USE_STMT (stmt, iterator, ssa_var)
     @{
-      if (var == last_var)
+      if (stmt == last_stmt)
         BREAK_FROM_SAFE_IMM_USE (iter);
-      else
-        SET_USE (use_p, var2);
+
+      FOR_EACH_IMM_USE_ON_STMT (imm_use_p, iterator)
+        SET_USE (imm_use_p, ssa_var_2);
+      fold_stmt (stmt);
     @}
 @end smallexample
 

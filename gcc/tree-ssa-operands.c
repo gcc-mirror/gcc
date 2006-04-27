@@ -325,49 +325,9 @@ ssa_operand_alloc (unsigned size)
 }
 
 
-/* Make sure PTR is in the correct immediate use list.  Since uses are simply
-   pointers into the stmt TREE, there is no way of telling if anyone has
-   changed what this pointer points to via TREE_OPERANDS (exp, 0) = <...>.
-   The contents are different, but the pointer is still the same.  This
-   routine will check to make sure PTR is in the correct list, and if it isn't
-   put it in the correct list.  We cannot simply check the previous node 
-   because all nodes in the same stmt might have be changed.  */
-
-static inline void
-correct_use_link (use_operand_p ptr, tree stmt)
-{
-  use_operand_p prev;
-  tree root;
-
-  /*  fold_stmt may have changed the stmt pointers.  */
-  if (ptr->stmt != stmt)
-    ptr->stmt = stmt;
-
-  prev = ptr->prev;
-  if (prev)
-    {
-      /* Find the root element, making sure we skip any safe iterators.  */
-      while (prev->use != NULL || prev->stmt == NULL)
-	prev = prev->prev;
-
-      /* Get the SSA_NAME of the list the node is in.  */
-      root = prev->stmt;
-
-      /* If it's the right list, simply return.  */
-      if (root == *(ptr->use))
-	return;
-    }
-
-  /* It is in the wrong list if we reach here.  */
-  delink_imm_use (ptr);
-  link_imm_use (ptr, *(ptr->use));
-}
-
 
 /* This routine makes sure that PTR is in an immediate use list, and makes
-   sure the stmt pointer is set to the current stmt.  Virtual uses do not need
-   the overhead of correct_use_link since they cannot be directly manipulated
-   like a real use can be.  (They don't exist in the TREE_OPERAND nodes.)  */
+   sure the stmt pointer is set to the current stmt.  */
 
 static inline void
 set_virtual_use_link (use_operand_p ptr, tree stmt)
@@ -579,9 +539,7 @@ finalize_ssa_defs (tree stmt)
 }
 
 /* Takes elements from build_uses and turns them into use operands of STMT.
-   TODO -- Given that use operands list is not necessarily sorted, merging
-	   the operands this way does not make much sense.
-	-- Make build_uses VEC of tree *.  */
+   TODO -- Make build_uses VEC of tree *.  */
 
 static inline void
 finalize_ssa_use_ops (tree stmt)
@@ -589,45 +547,11 @@ finalize_ssa_use_ops (tree stmt)
   unsigned new_i;
   struct use_optype_d new_list;
   use_optype_p old_ops, ptr, last;
-  tree *old_base, *new_base;
 
   new_list.next = NULL;
   last = &new_list;
 
   old_ops = USE_OPS (stmt);
-
-  new_i = 0;
-  while (old_ops && new_i < VEC_length (tree, build_uses))
-    {
-      new_base = (tree *) VEC_index (tree, build_uses, new_i);
-      old_base = USE_OP_PTR (old_ops)->use;
-
-      if (old_base == new_base)
-        {
-	  /* if variables are the same, reuse this node.  */
-	  MOVE_HEAD_AFTER (old_ops, last);
-	  correct_use_link (USE_OP_PTR (last), stmt);
-	  new_i++;
-	}
-      else if (old_base < new_base)
-	{
-	  /* if old is less than new, old goes to the free list.  */
-	  delink_imm_use (USE_OP_PTR (old_ops));
-	  MOVE_HEAD_TO_FREELIST (old_ops, use);
-	}
-      else
-	{
-	  /* This is a new operand.  */
-	  add_use_op (stmt, new_base, &last);
-	  new_i++;
-	}
-    }
-
-  /* If there is anything remaining in the build_uses list, simply emit it.  */
-  for ( ; new_i < VEC_length (tree, build_uses); new_i++)
-    add_use_op (stmt, (tree *) VEC_index (tree, build_uses, new_i), &last);
-
-  last->next = NULL;
 
   /* If there is anything in the old list, free it.  */
   if (old_ops)
@@ -637,6 +561,12 @@ finalize_ssa_use_ops (tree stmt)
       old_ops->next = free_uses;
       free_uses = old_ops;
     }
+
+  /* Now create nodes for all the new nodes.  */
+  for (new_i = 0; new_i < VEC_length (tree, build_uses); new_i++)
+    add_use_op (stmt, (tree *) VEC_index (tree, build_uses, new_i), &last);
+
+  last->next = NULL;
 
   /* Now set the stmt's operands.  */
   USE_OPS (stmt) = new_list.next;
