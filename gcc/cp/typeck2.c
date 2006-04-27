@@ -406,6 +406,10 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
       p_msg ("invalid use of template type parameter");
       break;
 
+    case TYPENAME_TYPE:
+      p_msg ("invalid use of dependent type %qT", type);
+      break;
+
     case UNKNOWN_TYPE:
       if (value && TREE_CODE (value) == COMPONENT_REF)
 	goto bad_member;
