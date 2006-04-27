@@ -1,3 +1,8 @@
+2006-04-28  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac: Add an additional checks for dladdr and dlopen on dld.
+	* configure: Rebuilt.
+
 2006-04-25  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/runtime/natSharedLibLoader.cc: Include gc.h later.
