@@ -217,3 +217,9 @@ __enable_execute_stack (void *addr)                                     \
    /* 7 == PROT_READ | PROT_WRITE | PROT_EXEC */                        \
    (void) mprotect (page, end - page, 7);                               \
 }
+
+#undef REGISTER_TARGET_PRAGMAS
+#define REGISTER_TARGET_PRAGMAS() DARWIN_REGISTER_TARGET_PRAGMAS()
+
+#undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
+#define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES darwin_set_default_type_attributes

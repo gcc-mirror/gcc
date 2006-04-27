@@ -1,3 +1,7 @@
+2006-04-27  Eric Christopher  <echristo@apple.com>
+
+	* gcc.dg/pragma-ms_struct.c: New.
+
 2006-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27102
@@ -34,7 +38,7 @@
 
 2006-04-25  Richard Guenther  <rguenther@suse.de>
 
-	* gcc.dg/tree-prof/val-prof-2.c: Check for n + ffff rather  
+	* gcc.dg/tree-prof/val-prof-2.c: Check for n + ffff rather
 	than n + -1.
 
 2006-04-25  Andreas Krebbel  <krebbel1@de.ibm.com>
@@ -312,7 +316,7 @@
 	* gcc.dg/tree-ssa/vrp14.c: Require >=32 bit integers.
 	* gcc.dg/tree-ssa/vrp21.c: Require >=32 bit integers.
 	* gcc.dg/tree-ssa/vrp22.c: Require >=32 bit integers.
-	
+
 	* gcc.c-torture/execute/20040629-1.x: New.  Require >16 bit integers.
 	* gcc.c-torture/execute/20040703-1.x: Likewise.
 	* gcc.c-torture/execute/20040705-1.x: Likewise.

@@ -46,6 +46,7 @@ extern void machopic_asm_out_destructor (rtx, int);
 
 extern void machopic_define_symbol (rtx);
 extern void darwin_encode_section_info (tree, rtx, int);
+extern void darwin_set_default_type_attributes (tree);
 
 #endif /* TREE_CODE */
 
@@ -65,6 +66,7 @@ extern void darwin_emit_except_table_label (FILE *);
 extern void darwin_pragma_ignore (struct cpp_reader *);
 extern void darwin_pragma_options (struct cpp_reader *);
 extern void darwin_pragma_unused (struct cpp_reader *);
+extern void darwin_pragma_ms_struct (struct cpp_reader *);
 
 extern void darwin_file_start (void);
 extern void darwin_file_end (void);
