@@ -1,3 +1,9 @@
+2006-04-27  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (store_fixed_bit_field): If we're not optimizing for
+	size, force the intermediate into a new pseudo rather instead of
+	performing both a bitwise AND and a bitwise IOR in memory.
+
 2006-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/26685
