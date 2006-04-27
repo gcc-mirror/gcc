@@ -1,3 +1,9 @@
+2006-04-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27102
+	* typeck2.c (cxx_incomplete_type_diagnostic): Handle
+	TYPENAME_TYPE.
+
 2006-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27292
