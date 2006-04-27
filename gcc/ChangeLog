@@ -1,3 +1,13 @@
+2006-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/25148
+	* tree-vrp.c (compare_values): Remove code dealing with
+	comparisons against type min/max value.  Honour overflow
+	and negative constants in code dealing with comparisons
+	of plus and minus expressions.
+	(value_inside_range): Use fold_binary with LE_EXPR and
+	GE_EXPR rather than compare_values.
+
 2006-04-27  Dirk Mueller  <dmueller@suse.de>
 
 	* config/i386/xmmintrin.h (_mm_shuffle_pi16): Declare

@@ -432,37 +432,6 @@ compare_values (tree val1, tree val2)
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (val1))
 	      == POINTER_TYPE_P (TREE_TYPE (val2)));
 
-  /* Do some limited symbolic comparisons.  */
-  if (!POINTER_TYPE_P (TREE_TYPE (val1)))
-    {
-      /* We can determine some comparisons against +INF and -INF even
-	 if the other value is an expression.  */
-      if (val1 == TYPE_MAX_VALUE (TREE_TYPE (val1))
-	  && TREE_CODE (val2) == MINUS_EXPR)
-	{
-	  /* +INF > NAME - CST.  */
-	  return 1;
-	}
-      else if (val1 == TYPE_MIN_VALUE (TREE_TYPE (val1))
-	       && TREE_CODE (val2) == PLUS_EXPR)
-	{
-	  /* -INF < NAME + CST.  */
-	  return -1;
-	}
-      else if (TREE_CODE (val1) == MINUS_EXPR
-	       && val2 == TYPE_MAX_VALUE (TREE_TYPE (val2)))
-	{
-	  /* NAME - CST < +INF.  */
-	  return -1;
-	}
-      else if (TREE_CODE (val1) == PLUS_EXPR
-	       && val2 == TYPE_MIN_VALUE (TREE_TYPE (val2)))
-	{
-	  /* NAME + CST > -INF.  */
-	  return 1;
-	}
-    }
-
   if ((TREE_CODE (val1) == SSA_NAME
        || TREE_CODE (val1) == PLUS_EXPR
        || TREE_CODE (val1) == MINUS_EXPR)
@@ -471,69 +440,95 @@ compare_values (tree val1, tree val2)
 	  || TREE_CODE (val2) == MINUS_EXPR))
     {
       tree n1, c1, n2, c2;
+      enum tree_code code1, code2;
   
       /* If VAL1 and VAL2 are of the form 'NAME [+-] CST' or 'NAME',
 	 return -1 or +1 accordingly.  If VAL1 and VAL2 don't use the
 	 same name, return -2.  */
       if (TREE_CODE (val1) == SSA_NAME)
 	{
+	  code1 = SSA_NAME;
 	  n1 = val1;
 	  c1 = NULL_TREE;
 	}
       else
 	{
+	  code1 = TREE_CODE (val1);
 	  n1 = TREE_OPERAND (val1, 0);
 	  c1 = TREE_OPERAND (val1, 1);
+	  if (tree_int_cst_sgn (c1) == -1)
+	    {
+	      c1 = fold_unary_to_constant (NEGATE_EXPR, TREE_TYPE (c1), c1);
+	      if (!c1)
+		return -2;
+	      code1 = code1 == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR;
+	    }
 	}
 
       if (TREE_CODE (val2) == SSA_NAME)
 	{
+	  code2 = SSA_NAME;
 	  n2 = val2;
 	  c2 = NULL_TREE;
 	}
       else
 	{
+	  code2 = TREE_CODE (val2);
 	  n2 = TREE_OPERAND (val2, 0);
 	  c2 = TREE_OPERAND (val2, 1);
+	  if (tree_int_cst_sgn (c2) == -1)
+	    {
+	      c2 = fold_unary_to_constant (NEGATE_EXPR, TREE_TYPE (c2), c2);
+	      if (!c2)
+		return -2;
+	      code2 = code2 == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR;
+	    }
 	}
 
       /* Both values must use the same name.  */
       if (n1 != n2)
 	return -2;
 
-      if (TREE_CODE (val1) == SSA_NAME)
+      if (code1 == SSA_NAME
+	  && code2 == SSA_NAME)
+	/* NAME == NAME  */
+	return 0;
+
+      /* If overflow is defined we cannot simplify more.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (val1))
+	  || flag_wrapv)
+	return -2;
+
+      if (code1 == SSA_NAME)
 	{
-	  if (TREE_CODE (val2) == SSA_NAME)
-	    /* NAME == NAME  */
-	    return 0;
-	  else if (TREE_CODE (val2) == PLUS_EXPR)
+	  if (code2 == PLUS_EXPR)
 	    /* NAME < NAME + CST  */
 	    return -1;
-	  else if (TREE_CODE (val2) == MINUS_EXPR)
+	  else if (code2 == MINUS_EXPR)
 	    /* NAME > NAME - CST  */
 	    return 1;
 	}
-      else if (TREE_CODE (val1) == PLUS_EXPR)
+      else if (code1 == PLUS_EXPR)
 	{
-	  if (TREE_CODE (val2) == SSA_NAME)
+	  if (code2 == SSA_NAME)
 	    /* NAME + CST > NAME  */
 	    return 1;
-	  else if (TREE_CODE (val2) == PLUS_EXPR)
+	  else if (code2 == PLUS_EXPR)
 	    /* NAME + CST1 > NAME + CST2, if CST1 > CST2  */
 	    return compare_values (c1, c2);
-	  else if (TREE_CODE (val2) == MINUS_EXPR)
+	  else if (code2 == MINUS_EXPR)
 	    /* NAME + CST1 > NAME - CST2  */
 	    return 1;
 	}
-      else if (TREE_CODE (val1) == MINUS_EXPR)
+      else if (code1 == MINUS_EXPR)
 	{
-	  if (TREE_CODE (val2) == SSA_NAME)
+	  if (code2 == SSA_NAME)
 	    /* NAME - CST < NAME  */
 	    return -1;
-	  else if (TREE_CODE (val2) == PLUS_EXPR)
+	  else if (code2 == PLUS_EXPR)
 	    /* NAME - CST1 < NAME + CST2  */
 	    return -1;
-	  else if (TREE_CODE (val2) == MINUS_EXPR)
+	  else if (code2 == MINUS_EXPR)
 	    /* NAME - CST1 > NAME - CST2, if CST1 < CST2.  Notice that
 	       C1 and C2 are swapped in the call to compare_values.  */
 	    return compare_values (c2, c1);
@@ -605,17 +600,17 @@ compare_values (tree val1, tree val2)
 static inline int
 value_inside_range (tree val, value_range_t *vr)
 {
-  int cmp1, cmp2;
+  tree cmp1, cmp2;
 
-  cmp1 = compare_values (val, vr->min);
-  if (cmp1 == -2 || cmp1 == 2)
+  cmp1 = fold_binary_to_constant (GE_EXPR, boolean_type_node, val, vr->min);
+  if (!cmp1)
     return -2;
 
-  cmp2 = compare_values (val, vr->max);
-  if (cmp2 == -2 || cmp2 == 2)
+  cmp2 = fold_binary_to_constant (LE_EXPR, boolean_type_node, val, vr->max);
+  if (!cmp2)
     return -2;
 
-  return (cmp1 == 0 || cmp1 == 1) && (cmp2 == -1 || cmp2 == 0);
+  return cmp1 == boolean_true_node && cmp2 == boolean_true_node;
 }
 
 
