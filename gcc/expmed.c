@@ -924,7 +924,12 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 
   if (! all_one)
     {
-      temp = expand_binop (mode, and_optab, op0,
+      /* Don't try and keep the intermediate in memory, if we need to
+	 perform both a bit-wise AND and a bit-wise IOR (except when
+	 we're optimizing for size).  */
+      if (MEM_P (subtarget) && !all_zero && !optimize_size)
+	subtarget = force_reg (mode, subtarget);
+      temp = expand_binop (mode, and_optab, subtarget,
 			   mask_rtx (mode, bitpos, bitsize, 1),
 			   subtarget, 1, OPTAB_LIB_WIDEN);
       subtarget = temp;
