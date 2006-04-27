@@ -18,7 +18,7 @@ EXTRA_MULTILIB_PARTS=crt3.o
 $(T)crt3$(objext): $(srcdir)/config/darwin-crt3.c $(GCC_PASSES) \
 	$(TCONFIG_H) stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) \
-	  -fno-tree-dominator-opts \
+	  -fno-tree-dominator-opts $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) \
 	  -c $(srcdir)/config/darwin-crt3.c -o $(T)crt3$(objext)
 
 # Use unwind-dw2-fde-darwin
