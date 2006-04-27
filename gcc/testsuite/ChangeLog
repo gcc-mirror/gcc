@@ -1,3 +1,9 @@
+2006-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/27274:
+	* gcc.target/i386/sse-9.c: Include "../../gcc.dg/i386-cpuid.h".
+	(main): Exit if processor doesn't support SSE.
+
 2006-04-26  David Edelsohn  <edelsohn@gnu.org>
 
 	PR middle-end/27282

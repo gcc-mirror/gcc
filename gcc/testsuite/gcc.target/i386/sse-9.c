@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include "../../gcc.dg/i386-cpuid.h"
 
 int
 main()
@@ -12,6 +13,13 @@ main()
   void *ptr;
   int errors = 0;
   const char test [] = "This is a test.";
+  unsigned long cpu_facilities;
+
+  cpu_facilities = i386_cpuid ();
+
+  if ((cpu_facilities & bit_SSE) != bit_SSE )
+    /* If host has no vector support, pass.  */
+    exit (0);
 
   for (alignment = 1; alignment <= (1 << 20); alignment += alignment)
     {
