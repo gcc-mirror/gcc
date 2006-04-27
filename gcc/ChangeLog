@@ -1,5 +1,11 @@
 2006-04-27  Richard Guenther  <rguenther@suse.de>
 
+	PR rtl-optimization/26685
+	* params.def (PARAM_MAX_CSE_INSNS): Correct typo that named
+	this one "max-flow-memory-locations".
+
+2006-04-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/25148
 	* tree-vrp.c (compare_values): Remove code dealing with
 	comparisons against type min/max value.  Honour overflow
