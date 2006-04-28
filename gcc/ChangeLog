@@ -1,3 +1,9 @@
+2006-04-28  Richard Guenther  <rguenther@suse.de>
+
+	PR target/26826
+	* reload.c (push_reload): Guard calls to get_secondary_mem
+	for memory subregs.
+
 2006-04-28  Andrew Pinski  <pinskia@gcc.gnu.org>
 	Richard Guenther  <rguenther@suse.de>
 
