@@ -3376,9 +3376,17 @@ process_command (int argc, const char **argv)
 	putenv (concat ("GCC_EXEC_PREFIX=", gcc_exec_prefix, NULL));
     }
   else
-    gcc_libexec_prefix = make_relative_prefix (gcc_exec_prefix,
-					       standard_exec_prefix,
-					       standard_libexec_prefix);
+    {
+      /* make_relative_prefix requires a program name, but
+	 GCC_EXEC_PREFIX is typically a directory name with a trailing
+	 / (which is ignored by make_relative_prefix), so append a
+	 program name.  */
+      char *tmp_prefix = concat (gcc_exec_prefix, "gcc", NULL);
+      gcc_libexec_prefix = make_relative_prefix (tmp_prefix,
+						 standard_exec_prefix,
+						 standard_libexec_prefix);
+      free (tmp_prefix);
+    }
 #else
 #endif
 

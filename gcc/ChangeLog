@@ -1,3 +1,8 @@
+2006-04-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.c (process_command): Add program name to GCC_EXEC_PREFIX
+	value before passing to make_relative_prefix.
+
 2006-04-28  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/27260
