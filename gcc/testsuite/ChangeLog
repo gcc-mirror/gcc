@@ -1,3 +1,8 @@
+2006-04-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/25309
+	* gcc.dg/large-size-array-2.c: New test case.
+
 2006-04-28  Richard Guenther  <rguenther@suse.de>
 
 	PR target/26826
