@@ -1,3 +1,7 @@
+2006-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Fix assert clause.
+
 2006-04-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/25309
