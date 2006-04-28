@@ -3421,11 +3421,11 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 
       if (TREE_CODE (val) != INTEGER_CST)
 	{
-	  tree cval;
 	  rtx val_rtx;
 
-	  cval = fold_build1 (CONVERT_EXPR, unsigned_char_type_node, val);
-	  val_rtx = expand_normal (cval);
+	  val_rtx = expand_normal (val);
+	  val_rtx = convert_to_mode (TYPE_MODE (unsigned_char_type_node),
+				     val_rtx, 0);
 
 	  /* Assume that we can memset by pieces if we can store the
 	   * the coefficients by pieces (in the required modes).
