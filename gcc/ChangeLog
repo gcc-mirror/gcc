@@ -1,3 +1,8 @@
+2006-04-28  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/27260
+	* builtins.c (expand_builtin_memset): Expand val in original mode.
+
 2006-04-27  Eric Christopher  <echristo@apple.com>
 
 	* target-def.h (TARGET_SET_DEFAULT_TYPE_ATTRIBUTES): Bracket
