@@ -1,3 +1,17 @@
+2006-04-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/25309
+	* c-typeck.c (struct spelling): Make I an unsigned HOST_WIDE_INT.
+	(push_array_bounds): Delete prototype.  Change BOUNDS argument to
+	an unsigned HOST_WIDE_INT.
+	(print_spelling): Use HOST_WIDE_INT_PRINT_UNSIGNED to output the
+	array index.
+	(really_start_incremental_init): No need to call convert because
+	bitsize_zero_node is already of type bitsizetype.
+	(push_init_level): Extract the value of constructor_index as an
+	unsigned HOST_WIDE_INT quantity, using tree_low_cst.
+	(process_init_element): Likewise.
+
 2006-04-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.c (process_command): Add program name to GCC_EXEC_PREFIX
