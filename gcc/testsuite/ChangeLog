@@ -1,3 +1,8 @@
+2006-04-28  Richard Guenther  <rguenther@suse.de>
+
+	PR target/26826
+	* gcc.target/i386/pr26826.c: New testcase.
+
 2006-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27260
