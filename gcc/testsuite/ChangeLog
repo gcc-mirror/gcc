@@ -1,3 +1,8 @@
+2006-04-28  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/27095
+	* gcc.dg/pr27095.c: New.
+
 2006-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27292
