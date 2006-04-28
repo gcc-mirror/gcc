@@ -80,6 +80,9 @@ Boston, MA 02110-1301, USA.  */
 #undef	DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
+/* True if pragma ms_struct is in effect.  */
+extern GTY(()) int darwin_ms_struct;
+
 /* This table intercepts weirdo options whose names would interfere
    with normal driver conventions, and either translates them into
    standardly-named options, or adds a 'Z' so that they can get to
