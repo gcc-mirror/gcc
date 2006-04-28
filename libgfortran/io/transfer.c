@@ -670,7 +670,13 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 
       f = next_format (dtp);
       if (f == NULL)
-	return;	      /* No data descriptors left (already raised).  */
+	{
+	  /* No data descriptors left.  */
+	  if (n > 0)
+	    generate_error (&dtp->common, ERROR_FORMAT,
+		"Insufficient data descriptors in format after reversion");
+	  return;
+	}
 
       /* Now discharge T, TR and X movements to the right.  This is delayed
 	 until a data producing format to suppress trailing spaces.  */

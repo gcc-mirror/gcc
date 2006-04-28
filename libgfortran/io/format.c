@@ -1059,7 +1059,7 @@ next_format0 (fnode * f)
 /* next_format()-- Return the next format node.  If the format list
  * ends up being exhausted, we do reversion.  Reversion is only
  * allowed if the we've seen a data descriptor since the
- * initialization or the last reversion.  We return NULL if the there
+ * initialization or the last reversion.  We return NULL if there
  * are no more data descriptors to return (which is an error
  * condition). */
 
