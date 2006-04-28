@@ -1,3 +1,8 @@
+2006-04-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27292
+	* g++.dg/conversion/bitfield4.C: New test.
+
 2006-04-27  Eric Christopher  <echristo@apple.com>
 
 	* gcc.dg/pragma-ms_struct.c: New.
