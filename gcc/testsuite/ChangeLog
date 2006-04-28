@@ -1,3 +1,20 @@
+2006-04-28  Andrew Pinski  <pinskia@gcc.gnu.org>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27236
+	* gcc.dg/tree-ssa/pr27236.c: New testcase.
+
+2006-04-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26869
+	* gcc.dg/torture/pr26869.c: New testcase.
+
+2006-04-28  Andrew Pinski  <pinskia@gcc.gnu.org>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27218
+	* g++.dg/tree-ssa/pr27218.C: New testcase.
+
 2006-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/26865

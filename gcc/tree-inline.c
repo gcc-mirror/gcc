@@ -640,6 +640,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  if (n)
 	    {
 	      tree new;
+	      tree old;
 	      /* If we happen to get an ADDR_EXPR in n->value, strip
 	         it manually here as we'll eventually get ADDR_EXPRs
 		 which lie about their types pointed to.  In this case
@@ -648,13 +649,17 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	         does other useful transformations, try that first, though.  */
 	      tree type = TREE_TYPE (TREE_TYPE ((tree)n->value));
 	      new = unshare_expr ((tree)n->value);
+	      old = *tp;
 	      *tp = fold_indirect_ref_1 (type, new);
 	      if (! *tp)
 	        {
 		  if (TREE_CODE (new) == ADDR_EXPR)
 		    *tp = TREE_OPERAND (new, 0);
 	          else
-	            *tp = build1 (INDIRECT_REF, type, new);
+		    {
+	              *tp = build1 (INDIRECT_REF, type, new);
+		      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
+		    }
 		}
 	      *walk_subtrees = 0;
 	      return NULL;
@@ -2130,6 +2135,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
       if (CALL_EXPR_RETURN_SLOT_OPT (t))
 	{
 	  return_slot_addr = build_fold_addr_expr (modify_dest);
+	  STRIP_USELESS_TYPE_CONVERSION (return_slot_addr);
 	  modify_dest = NULL;
 	}
     }

@@ -1,3 +1,23 @@
+2006-04-28  Andrew Pinski  <pinskia@gcc.gnu.org>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27236
+	* tree-inline.c (copy_body_r): Make sure to copy
+	TREE_THIS_VOLATILE flag.
+
+2006-04-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26869
+	* tree-complex.c (update_parameter_components): Don't handle
+	unused parameters which have no default def.
+
+2006-04-28  Andrew Pinski  <pinskia@gcc.gnu.org>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27218
+	* tree-inline.c (expand_call_inline): Strip useless type
+	conversions for the return slot address.
+
 2006-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/26685
