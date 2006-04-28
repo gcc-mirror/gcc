@@ -79,6 +79,9 @@ Boston, MA 02110-1301, USA.  */
 /* Section names.  */
 section * darwin_sections[NUM_DARWIN_SECTIONS];
 
+/* True if we're setting __attribute__ ((ms_struct)).  */
+int darwin_ms_struct = false;
+
 /* A get_unnamed_section callback used to switch to an ObjC section.
    DIRECTIVE is as for output_section_asm_op.  */
 
@@ -1448,7 +1451,7 @@ darwin_file_start (void)
 {
   if (write_symbols == DWARF2_DEBUG)
     {
-      static const char * const debugnames[] = 
+      static const char * const debugnames[] =
 	{
 	  DEBUG_FRAME_SECTION,
 	  DEBUG_INFO_SECTION,
@@ -1468,10 +1471,10 @@ darwin_file_start (void)
 	  int namelen;
 
 	  switch_to_section (get_section (debugnames[i], SECTION_DEBUG, NULL));
-	  
+
 	  gcc_assert (strncmp (debugnames[i], "__DWARF,", 8) == 0);
 	  gcc_assert (strchr (debugnames[i] + 8, ','));
-	  
+
 	  namelen = strchr (debugnames[i] + 8, ',') - (debugnames[i] + 8);
 	  fprintf (asm_out_file, "Lsection%.*s:\n", namelen, debugnames[i] + 8);
 	}
@@ -1489,7 +1492,7 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
 {
   char sname[64];
   int namelen;
-  
+
   gcc_assert (base->common.flags & SECTION_NAMED);
   gcc_assert (strncmp (base->named.name, "__DWARF,", 8) == 0);
   gcc_assert (strchr (base->named.name + 8, ','));
@@ -1532,6 +1535,17 @@ darwin_asm_output_anchor (rtx symbol)
   assemble_name (asm_out_file, XSTR (symbol, 0));
   fprintf (asm_out_file, ", . + " HOST_WIDE_INT_PRINT_DEC "\n",
 	   SYMBOL_REF_BLOCK_OFFSET (symbol));
+}
+
+/* Set the darwin specific attributes on TYPE.  */
+void
+darwin_set_default_type_attributes (tree type)
+{
+  if (darwin_ms_struct
+      && TREE_CODE (type) == RECORD_TYPE)
+    TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("ms_struct"),
+                                        NULL_TREE,
+                                        TYPE_ATTRIBUTES (type));
 }
 
 #include "gt-darwin.h"

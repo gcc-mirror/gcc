@@ -41,9 +41,6 @@ Boston, MA 02110-1301, USA.  */
 
 static bool using_frameworks = false;
 
-/* True if we're setting __attribute__ ((ms_struct)).  */
-static bool darwin_ms_struct = false;
-
 /* Maintain a small stack of alignments.  This is similar to pragma
    pack's stack, but simpler.  */
 
@@ -182,17 +179,6 @@ darwin_pragma_ms_struct (cpp_reader *pfile ATTRIBUTE_UNUSED)
 
   if (pragma_lex (&t) != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of '#pragma ms_struct'");
-}
-
-/* Set the darwin specific attributes on TYPE.  */
-void
-darwin_set_default_type_attributes (tree type)
-{
-  if (darwin_ms_struct
-      && TREE_CODE (type) == RECORD_TYPE)
-    TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("ms_struct"),
-                                        NULL_TREE,
-                                        TYPE_ATTRIBUTES (type));
 }
 
 static struct {
