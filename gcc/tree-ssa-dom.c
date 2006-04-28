@@ -2304,7 +2304,7 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 	}
 
       /* Ensure there is nothing else to do. */ 
-      gcc_assert (all && has_zero_uses (lhs));
+      gcc_assert (!all || has_zero_uses (lhs));
 
       /* If we were able to propagate away all uses of LHS, then
 	 we can remove STMT.  */
