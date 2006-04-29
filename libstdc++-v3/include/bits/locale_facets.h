@@ -47,6 +47,7 @@
 #include <iosfwd>
 #include <bits/ios_base.h>  // For ios_base, ios_base::iostate
 #include <streambuf>
+#include <bits/cpp_type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -2124,6 +2125,43 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
         iter_type
         _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&,
 		       _ValueT& __v) const;
+
+      template<typename _CharT2>
+        typename __enable_if<int, __is_char<_CharT2>::__value>::__type
+        _M_find(const _CharT2*, size_t __len, _CharT2 __c) const
+        {
+	  int __ret = -1;
+	  if (__len <= 10)
+	    {
+	      if (__c >= _CharT2('0') && __c < _CharT2(_CharT2('0') + __len))
+		__ret = __c - _CharT2('0');
+	    }
+	  else
+	    {
+	      if (__c >= _CharT2('0') && __c <= _CharT2('9'))
+		__ret = __c - _CharT2('0');
+	      else if (__c >= _CharT2('a') && __c <= _CharT2('f'))
+		__ret = 10 + (__c - _CharT2('a'));
+	      else if (__c >= _CharT2('A') && __c <= _CharT2('F'))
+		__ret = 10 + (__c - _CharT2('A'));
+	    }
+	  return __ret;
+	}
+
+      template<typename _CharT2>
+        typename __enable_if<int, !__is_char<_CharT2>::__value>::__type
+        _M_find(const _CharT2* __zero, size_t __len, _CharT2 __c) const
+        {
+	  int __ret = -1;
+	  const char_type* __q = char_traits<_CharT2>::find(__zero, __len, __c);
+	  if (__q)
+	    {
+	      __ret = __q - __zero;
+	      if (__ret > 15)
+		__ret -= 6;
+	    }
+	  return __ret;
+	}
 
       //@{
       /**
