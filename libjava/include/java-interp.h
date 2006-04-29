@@ -243,7 +243,6 @@ _Jv_GetFirstMethod (_Jv_InterpClass *klass)
 struct _Jv_ResolvedMethod
 {
   jint            stack_item_count;	
-  jint            vtable_index;	
   jclass          klass;
   _Jv_Method*     method;
 

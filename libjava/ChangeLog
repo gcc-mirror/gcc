@@ -1,3 +1,19 @@
+2006-04-28  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* link.cc (_Jv_Linker::resolve_pool_entry): Don't pass vtable_index
+	to resolve_method.
+	* interpret.cc (insn_invokevirtual): Use method->index, not
+	vtable_index. Check accflag FINAL to determine finals. Only do
+	explicit null check if calling a final method. Use
+	throw_null_pointer_exception.
+	(invokevirtual_resolved): Likewise.
+	(null_pointer_exc): Remove static field.
+	(throw_null_pointer_exception): Always define. Throw a new
+	NullPointerException every time.
+	* include/java-interp.h (_Jv_ResolvedMethod): Remove vtable_index
+	field.
+	* include/execution.h (resolve_method): Remove vtable_index argument.	
+
 2006-04-28  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.ac: Add an additional checks for dladdr and dlopen on dld.

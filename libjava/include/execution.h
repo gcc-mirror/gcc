@@ -26,7 +26,7 @@ struct _Jv_ExecutionEngine
   void (*allocate_static_fields) (jclass, int, int);
   void (*create_ncode) (jclass);
   _Jv_ResolvedMethod *(*resolve_method) (_Jv_Method *, jclass,
-					 jboolean, jint);
+					 jboolean);
   void (*post_miranda_hook) (jclass);
 };
 
@@ -50,7 +50,7 @@ struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
   }
 
   static _Jv_ResolvedMethod *do_resolve_method (_Jv_Method *, jclass,
-						jboolean, jint)
+						jboolean)
   {
     return NULL;
   }
@@ -118,7 +118,7 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
   static void do_allocate_static_fields (jclass, int, int);
   static void do_create_ncode (jclass);
   static _Jv_ResolvedMethod *do_resolve_method (_Jv_Method *, jclass,
-						jboolean, jint);
+						jboolean);
 
   static bool do_need_resolve_string_fields ()
   {
