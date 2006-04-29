@@ -1,3 +1,10 @@
+2006-04-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float):
+	Special case main parsing loop for !_M_allocated (i.e., "C" locale).
+	(num_get<>::_M_extract_int): Likewise.
+	* include/bits/locale_facets.h (num_get<>::_M_find): New.
+
 2006-04-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/17_intro/TODO: Update.

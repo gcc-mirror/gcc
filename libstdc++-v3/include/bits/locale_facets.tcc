@@ -340,93 +340,146 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       string __found_grouping;
       if (__lc->_M_use_grouping)
 	__found_grouping.reserve(32);
-      const char_type* __q;
       const char_type* __lit_zero = __lit + __num_base::_S_izero;
-      while (!__testeof)
-        {
-	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
-	  // and decimal_point.
-          if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
-	    {
-	      if (!__found_dec && !__found_sci)
-		{
-		  // NB: Thousands separator at the beginning of a string
-		  // is a no-no, as is two consecutive thousands separators.
-		  if (__sep_pos)
-		    {
-		      __found_grouping += static_cast<char>(__sep_pos);
-		      __sep_pos = 0;
-		    }
-		  else
-		    {
-		      // NB: __convert_to_v will not assign __v and will
-		      // set the failbit.
-		      __xtrc.clear();
-		      break;
-		    }
-		}
-	      else
-		break;
-            }
-	  else if (__c == __lc->_M_decimal_point)
-	    {
-	      if (!__found_dec && !__found_sci)
-		{
-		  // If no grouping chars are seen, no grouping check
-		  // is applied. Therefore __found_grouping is adjusted
-		  // only if decimal_point comes after some thousands_sep.
-		  if (__found_grouping.size())
-		    __found_grouping += static_cast<char>(__sep_pos);
-		  __xtrc += '.';
-		  __found_dec = true;
-		}
-	      else
-		break;
-	    }
-          else if ((__q = __traits_type::find(__lit_zero, 10, __c)))
-	    {
-	      __xtrc += __num_base::_S_atoms_in[__q - __lit];
-	      __found_mantissa = true;
-	      ++__sep_pos;
-	    }
-	  else if ((__c == __lit[__num_base::_S_ie] 
-		    || __c == __lit[__num_base::_S_iE])
-		   && !__found_sci && __found_mantissa)
-	    {
-	      // Scientific notation.
-	      if (__found_grouping.size() && !__found_dec)
-		__found_grouping += static_cast<char>(__sep_pos);
-	      __xtrc += 'e';
-	      __found_sci = true;
 
-	      // Remove optional plus or minus sign, if they exist.
-	      if (++__beg != __end)
-		{
-		  __c = *__beg;
-		  const bool __plus = __c == __lit[__num_base::_S_iplus];
-		  if ((__plus || __c == __lit[__num_base::_S_iminus])
-		      && !(__lc->_M_use_grouping
-			   && __c == __lc->_M_thousands_sep)
-		      && !(__c == __lc->_M_decimal_point))
-		    __xtrc += __plus ? '+' : '-';
-		  else
-		    continue;
-		}
-	      else
-		{
-		  __testeof = true;
+      if (!__lc->_M_allocated)
+	// "C" locale
+	while (!__testeof)
+	  {
+	    const int __digit = _M_find(__lit_zero, 10, __c);
+	    if (__digit != -1)
+	      {
+		__xtrc += '0' + __digit;
+		__found_mantissa = true;
+	      }
+	    else if (__c == __lc->_M_decimal_point
+		     && !__found_dec && !__found_sci)
+	      {
+		__xtrc += '.';
+		__found_dec = true;
+	      }
+	    else if ((__c == __lit[__num_base::_S_ie] 
+		      || __c == __lit[__num_base::_S_iE])
+		     && !__found_sci && __found_mantissa)
+	      {
+		// Scientific notation.
+		__xtrc += 'e';
+		__found_sci = true;
+		
+		// Remove optional plus or minus sign, if they exist.
+		if (++__beg != __end)
+		  {
+		    __c = *__beg;
+		    const bool __plus = __c == __lit[__num_base::_S_iplus];
+		    if (__plus || __c == __lit[__num_base::_S_iminus])
+		      __xtrc += __plus ? '+' : '-';
+		    else
+		      continue;
+		  }
+		else
+		  {
+		    __testeof = true;
+		    break;
+		  }
+	      }
+	    else
+	      break;
+
+	    if (++__beg != __end)
+	      __c = *__beg;
+	    else
+	      __testeof = true;
+	  }
+      else
+	while (!__testeof)
+	  {
+	    // According to 22.2.2.1.2, p8-9, first look for thousands_sep
+	    // and decimal_point.
+	    if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
+	      {
+		if (!__found_dec && !__found_sci)
+		  {
+		    // NB: Thousands separator at the beginning of a string
+		    // is a no-no, as is two consecutive thousands separators.
+		    if (__sep_pos)
+		      {
+			__found_grouping += static_cast<char>(__sep_pos);
+			__sep_pos = 0;
+		      }
+		    else
+		      {
+			// NB: __convert_to_v will not assign __v and will
+			// set the failbit.
+			__xtrc.clear();
+			break;
+		      }
+		  }
+		else
 		  break;
-		}
-	    }
-	  else
-	    // Not a valid input item.
-	    break;
-
-	  if (++__beg != __end)
-	    __c = *__beg;
-	  else
-	    __testeof = true;
-        }
+	      }
+	    else if (__c == __lc->_M_decimal_point)
+	      {
+		if (!__found_dec && !__found_sci)
+		  {
+		    // If no grouping chars are seen, no grouping check
+		    // is applied. Therefore __found_grouping is adjusted
+		    // only if decimal_point comes after some thousands_sep.
+		    if (__found_grouping.size())
+		      __found_grouping += static_cast<char>(__sep_pos);
+		    __xtrc += '.';
+		    __found_dec = true;
+		  }
+		else
+		  break;
+	      }
+	    else
+	      {
+		const char_type* __q =
+		  __traits_type::find(__lit_zero, 10, __c);
+		if (__q)
+		  {
+		    __xtrc += '0' + (__q - __lit_zero);
+		    __found_mantissa = true;
+		    ++__sep_pos;
+		  }
+		else if ((__c == __lit[__num_base::_S_ie] 
+			  || __c == __lit[__num_base::_S_iE])
+			 && !__found_sci && __found_mantissa)
+		  {
+		    // Scientific notation.
+		    if (__found_grouping.size() && !__found_dec)
+		      __found_grouping += static_cast<char>(__sep_pos);
+		    __xtrc += 'e';
+		    __found_sci = true;
+		    
+		    // Remove optional plus or minus sign, if they exist.
+		    if (++__beg != __end)
+		      {
+			__c = *__beg;
+			const bool __plus = __c == __lit[__num_base::_S_iplus];
+			if ((__plus || __c == __lit[__num_base::_S_iminus])
+			    && !(__lc->_M_use_grouping
+				 && __c == __lc->_M_thousands_sep)
+			    && !(__c == __lc->_M_decimal_point))
+		      __xtrc += __plus ? '+' : '-';
+			else
+			  continue;
+		      }
+		    else
+		      {
+			__testeof = true;
+			break;
+		      }
+		  }
+		else
+		  break;
+	      }
+	    
+	    if (++__beg != __end)
+	      __c = *__beg;
+	    else
+	      __testeof = true;
+	  }
 
       // Digit grouping is checked. If grouping and found_grouping don't
       // match, then get very very upset, and set failbit.
@@ -569,54 +622,81 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  -numeric_limits<_ValueT>::min() : numeric_limits<_ValueT>::max();
 	const __unsigned_type __smax = __max / __base;
 	__unsigned_type __result = 0;
-	const char_type* __q;
+	int __digit = 0;
 	const char_type* __lit_zero = __lit + __num_base::_S_izero;
-	while (!__testeof)
-	  {
-	    // According to 22.2.2.1.2, p8-9, first look for thousands_sep
-	    // and decimal_point.
-	    if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
-	      {
-		// NB: Thousands separator at the beginning of a string
-		// is a no-no, as is two consecutive thousands separators.
-		if (__sep_pos)
-		  {
-		    __found_grouping += static_cast<char>(__sep_pos);
-		    __sep_pos = 0;
-		  }
-		else
-		  {
-		    __testfail = true;
-		    break;
-		  }
-	      }
-	    else if (__c == __lc->_M_decimal_point)
-	      break;
-	    else if ((__q = __traits_type::find(__lit_zero, __len, __c)))
-	      {
-		int __digit = __q - __lit_zero;
-		if (__digit > 15)
-		  __digit -= 6;
-		if (__result > __smax)
-		  __testfail = true;
-		else
-		  {
-		    __result *= __base;
-		    __testfail |= __result > __max - __digit;
-		    __result += __digit;
-		    ++__sep_pos;
-		  }
-	      }
-	    else
-	      // Not a valid input item.	      
-	      break;
-	    
-	    if (++__beg != __end)
-	      __c = *__beg;
-	    else
-	      __testeof = true;
-	  }
 
+	if (!__lc->_M_allocated)
+	  // "C" locale
+	  while (!__testeof)
+	    {
+	      __digit = _M_find(__lit_zero, __len, __c);
+	      if (__digit == -1)
+		break;
+	      
+	      if (__result > __smax)
+		__testfail = true;
+	      else
+		{
+		  __result *= __base;
+		  __testfail |= __result > __max - __digit;
+		  __result += __digit;
+		  ++__sep_pos;
+		}
+	      
+	      if (++__beg != __end)
+		__c = *__beg;
+	      else
+		__testeof = true;
+	    }
+	else
+	  while (!__testeof)
+	    {
+	      // According to 22.2.2.1.2, p8-9, first look for thousands_sep
+	      // and decimal_point.
+	      if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
+		{
+		  // NB: Thousands separator at the beginning of a string
+		  // is a no-no, as is two consecutive thousands separators.
+		  if (__sep_pos)
+		    {
+		      __found_grouping += static_cast<char>(__sep_pos);
+		      __sep_pos = 0;
+		    }
+		  else
+		    {
+		      __testfail = true;
+		      break;
+		    }
+		}
+	      else if (__c == __lc->_M_decimal_point)
+		break;
+	      else
+		{
+		  const char_type* __q =
+		    __traits_type::find(__lit_zero, __len, __c);
+		  if (!__q)
+		    break;
+		  
+		  __digit = __q - __lit_zero;
+		  if (__digit > 15)
+		    __digit -= 6;
+		  if (__result > __smax)
+		    __testfail = true;
+		  else
+		    {
+		      __result *= __base;
+		      __testfail |= __result > __max - __digit;
+		      __result += __digit;
+		      ++__sep_pos;
+		    }
+		}
+	      
+	      if (++__beg != __end)
+		__c = *__beg;
+	      else
+		__testeof = true;
+	    }
+	
 	// Digit grouping is checked. If grouping and found_grouping don't
 	// match, then get very very upset, and set failbit.
 	if (__found_grouping.size())
