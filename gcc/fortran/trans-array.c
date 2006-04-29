@@ -702,6 +702,8 @@ gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
 
   src_info = &src_ss->data.info;
   dest_info = &dest_ss->data.info;
+  gcc_assert (dest_info->dimen == 2);
+  gcc_assert (src_info->dimen == 2);
 
   /* Get a descriptor for EXPR.  */
   gfc_init_se (&src_se, NULL);
@@ -722,8 +724,6 @@ gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
 
   /* Copy the dimension information, renumbering dimension 1 to 0 and
      0 to 1.  */
-  gcc_assert (dest_info->dimen == 2);
-  gcc_assert (src_info->dimen == 2);
   for (n = 0; n < 2; n++)
     {
       dest_info->delta[n] = gfc_index_zero_node;

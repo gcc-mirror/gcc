@@ -1,3 +1,9 @@
+2006-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/27351
+	* trans-array.c (gfc_conv_array_transpose): Move gcc_assert
+	before gfc_conv_expr_descriptor.
+
 2006-04-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25099
