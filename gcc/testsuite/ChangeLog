@@ -1,3 +1,8 @@
+2006-04-29  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/26017
+	* gfortran.dg/allocate_zerosize.f90:  New test.
+
 2006-04-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27279
