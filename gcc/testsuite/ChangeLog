@@ -1,5 +1,9 @@
 2006-04-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/11471
+	PR c++/27102
+	* g++.dg/template/crash48.C: New test.
+
 	PR c++/27279
 	* g++.dg/parse/ctor4.C: New test.
 
