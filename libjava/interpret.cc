@@ -51,10 +51,8 @@ static void throw_internal_error (const char *msg)
   __attribute__ ((__noreturn__));
 static void throw_incompatible_class_change_error (jstring msg)
   __attribute__ ((__noreturn__));
-#ifndef HANDLE_SEGV
 static void throw_null_pointer_exception ()
   __attribute__ ((__noreturn__));
-#endif
 
 static void throw_class_format_error (jstring msg)
 	__attribute__ ((__noreturn__));
@@ -1142,31 +1140,27 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	 * the corresponding bit JV_CONSTANT_ResolvedFlag in the tag
 	 * directly.  For now, I don't think it is worth it.  */
 
-	SAVE_PC();
 	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						   index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
-	// We don't use NULLCHECK here because we can't rely on that
-	// working if the method is final.  So instead we do an
-	// explicit test.
-	if (! sp[0].o)
-	  {
-	    //printf("invokevirtual pc = %p/%i\n", pc, meth->get_pc_val(pc));
-	    throw new java::lang::NullPointerException;
-	  }
 
-	if (rmeth->vtable_index == -1)
+	if (rmeth->method->accflags & Modifier::FINAL)
 	  {
-	    // final methods do not appear in the vtable,
-	    // if it does not appear in the superclass.
+	    // We can't rely on NULLCHECK working if the method is final.
+	    SAVE_PC();
+	    if (! sp[0].o)
+	      throw_null_pointer_exception ();
+
+	    // Final methods might not appear in the vtable.
 	    fun = (void (*)()) rmeth->method->ncode;
 	  }
 	else
 	  {
+	    NULLCHECK (sp[0].o);
 	    jobject rcv = sp[0].o;
 	    _Jv_VTable *table = *(_Jv_VTable**) rcv;
-	    fun = (void (*)()) table->get_method (rmeth->vtable_index);
+	    fun = (void (*)()) table->get_method (rmeth->method->index);
 	  }
 
 #ifdef DIRECT_THREADED
@@ -1183,26 +1177,22 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
       {
 	rmeth = (_Jv_ResolvedMethod *) AVAL ();
 	sp -= rmeth->stack_item_count;
-	// We don't use NULLCHECK here because we can't rely on that
-	// working if the method is final.  So instead we do an
-	// explicit test.
-	if (! sp[0].o)
-	  {
-	    SAVE_PC();
-	    throw new java::lang::NullPointerException;
-	  }
 
-	if (rmeth->vtable_index == -1)
+	if (rmeth->method->accflags & Modifier::FINAL)
 	  {
-	    // final methods do not appear in the vtable,
-	    // if it does not appear in the superclass.
+	    // We can't rely on NULLCHECK working if the method is final.
+	    SAVE_PC();
+	    if (! sp[0].o)
+	      throw_null_pointer_exception ();
+
+	    // Final methods might not appear in the vtable.
 	    fun = (void (*)()) rmeth->method->ncode;
 	  }
 	else
 	  {
 	    jobject rcv = sp[0].o;
 	    _Jv_VTable *table = *(_Jv_VTable**) rcv;
-	    fun = (void (*)()) table->get_method (rmeth->vtable_index);
+	    fun = (void (*)()) table->get_method (rmeth->method->index);
 	  }
       }
       goto perform_invoke;
@@ -2882,7 +2872,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	if (! sp[0].o)
 	  {
 	    SAVE_PC();
-	    throw new java::lang::NullPointerException;
+	    throw_null_pointer_exception ();
 	  }
 
 	fun = (void (*)()) rmeth->method->ncode;
@@ -2906,7 +2896,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	if (! sp[0].o)
 	  {
 	    SAVE_PC();
-	    throw new java::lang::NullPointerException;
+	    throw_null_pointer_exception ();
 	  }
 	fun = (void (*)()) rmeth->method->ncode;
       }
@@ -3304,17 +3294,11 @@ throw_incompatible_class_change_error (jstring msg)
   throw new java::lang::IncompatibleClassChangeError (msg);
 }
 
-#ifndef HANDLE_SEGV
-static java::lang::NullPointerException *null_pointer_exc;
 static void 
 throw_null_pointer_exception ()
 {
-  if (null_pointer_exc == NULL)
-    null_pointer_exc = new java::lang::NullPointerException;
-
-  throw null_pointer_exc;
+  throw new java::lang::NullPointerException;
 }
-#endif
 
 /* Look up source code line number for given bytecode (or direct threaded
    interpreter) PC. */
@@ -3920,7 +3904,7 @@ _Jv_InterpreterEngine::do_allocate_static_fields (jclass klass,
 
 _Jv_ResolvedMethod *
 _Jv_InterpreterEngine::do_resolve_method (_Jv_Method *method, jclass klass,
-					  jboolean staticp, jint vtable_index)
+					  jboolean staticp)
 {
   int arg_count = _Jv_count_arguments (method->signature, staticp);
 
@@ -3936,7 +3920,6 @@ _Jv_InterpreterEngine::do_resolve_method (_Jv_Method *method, jclass klass,
 		&result->arg_types[0],
 		NULL);
 
-  result->vtable_index        = vtable_index;
   result->method              = method;
   result->klass               = klass;
 

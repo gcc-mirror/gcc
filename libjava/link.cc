@@ -496,16 +496,11 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	    throw new java::lang::NoSuchMethodError (sb->toString());
 	  }
       
-	int vtable_index = -1;
-	if (pool->tags[index] != JV_CONSTANT_InterfaceMethodref)
-	  vtable_index = (jshort)the_method->index;
-
 	pool->data[index].rmethod
 	  = klass->engine->resolve_method(the_method,
 					  found_class,
 					  ((the_method->accflags
-					    & Modifier::STATIC) != 0),
-					  vtable_index);
+					    & Modifier::STATIC) != 0));
 	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
       }
       break;
