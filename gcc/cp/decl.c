@@ -8829,6 +8829,8 @@ copy_fn_p (tree d)
     return 0;
 
   arg_type = TREE_VALUE (args);
+  if (arg_type == error_mark_node)
+    return 0;
 
   if (TYPE_MAIN_VARIANT (arg_type) == DECL_CONTEXT (d))
     {
