@@ -702,6 +702,12 @@ internal_proto(unit_lock);
 extern int close_unit (gfc_unit *);
 internal_proto(close_unit);
 
+extern gfc_unit *get_internal_unit (st_parameter_dt *);
+internal_proto(get_internal_unit);
+
+extern void free_internal_unit (st_parameter_dt *);
+internal_proto(free_internal_unit);
+
 extern int is_internal_unit (st_parameter_dt *);
 internal_proto(is_internal_unit);
 

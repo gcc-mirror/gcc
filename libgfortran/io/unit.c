@@ -379,6 +379,11 @@ get_internal_unit (st_parameter_dt *dtp)
 
   iunit->recl = dtp->internal_unit_len;
 
+  /* For internal units we set the unit number to -1.
+     Otherwise internal units can be mistaken for a pre-connected unit or
+     some other file I/O unit.  */
+  iunit->unit_number = -1;
+
   /* Set up the looping specification from the array descriptor, if any.  */
 
   if (is_array_io (dtp))
@@ -421,6 +426,23 @@ get_internal_unit (st_parameter_dt *dtp)
   dtp->u.p.unit_is_internal = 1;
 
   return iunit;
+}
+
+
+/* free_internal_unit()-- Free memory allocated for internal units if any.  */
+void
+free_internal_unit (st_parameter_dt *dtp)
+{
+  if (!is_internal_unit (dtp))
+    return;
+
+  if (dtp->u.p.current_unit->ls != NULL)
+      free_mem (dtp->u.p.current_unit->ls);
+
+  sclose (dtp->u.p.current_unit->s);
+
+  if (dtp->u.p.current_unit != NULL)
+    free_mem (dtp->u.p.current_unit);
 }
 
 

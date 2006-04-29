@@ -928,7 +928,8 @@ mem_truncate (unix_stream * s __attribute__ ((unused)))
 static try
 mem_close (unix_stream * s)
 {
-  free_mem (s);
+  if (s != NULL)
+    free_mem (s);
 
   return SUCCESS;
 }
