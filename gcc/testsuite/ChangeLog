@@ -1,3 +1,8 @@
+2006-04-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27278
+	* g++.dg/parse/operator7.C: New test.
+
 2006-04-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/11471
