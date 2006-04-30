@@ -1350,6 +1350,11 @@ rs6000_override_options (const char *default_cpu)
       rs6000_alignment_flags = MASK_ALIGN_NATURAL;
     }
 
+  /* Place FP constants in the constant pool instead of TOC
+     if section anchors enabled.  */
+  if (flag_section_anchors)
+    TARGET_NO_FP_IN_TOC = 1;
+
   /* Handle -mtls-size option.  */
   rs6000_parse_tls_size_option ();
 
@@ -1621,6 +1626,12 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 
   /* Double growth factor to counter reduced min jump length.  */
   set_param_value ("max-grow-copy-bb-insns", 16);
+
+  /* Enable section anchors by default.
+     Skip section anchors for Objective C and Objective C++
+     until front-ends fixed.  */
+  if (lang_hooks.name[4] != 'O')
+    flag_section_anchors = 1;
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -3452,7 +3463,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       && constant_pool_expr_p (x)
       && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
     {
-      (x) = create_TOC_reference (x);
+      x = create_TOC_reference (x);
       *win = 1;
       return x;
     }

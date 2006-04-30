@@ -1,3 +1,10 @@
+2006-04-30  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Enable
+	TARGET_NO_FP_IN_TOC for section anchors.
+	(optimization_options): Enable section anchors for all
+	non-"Objective" languages.
+
 2006-04-28  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin-c.c (darwin_ms_struct): Move this
