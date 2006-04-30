@@ -652,6 +652,7 @@ read_logical (st_parameter_dt *dtp, int length)
   dtp->u.p.item_count = 0;
   dtp->u.p.line_buffer_enabled = 0;
   set_integer ((int *) dtp->u.p.value, v, length);
+  free_line (dtp);
 
   return;
 
@@ -689,25 +690,27 @@ read_logical (st_parameter_dt *dtp, int length)
 
  bad_logical:
 
+  free_line (dtp);
+
   if (nml_bad_return (dtp, c))
     return;
 
   eat_line (dtp);
   free_saved (dtp);
-  if (dtp->u.p.line_buffer != NULL)
-    free_mem (dtp->u.p.line_buffer);
   st_sprintf (message, "Bad logical value while reading item %d",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
   return;
 
  logical_done:
-  
+
   dtp->u.p.item_count = 0;
   dtp->u.p.line_buffer_enabled = 0;
   dtp->u.p.saved_type = BT_LOGICAL;
   dtp->u.p.saved_length = length;
   set_integer ((int *) dtp->u.p.value, v, length);
+  free_saved (dtp);
+  free_line (dtp);
 }
 
 
