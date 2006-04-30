@@ -1,3 +1,11 @@
+2006-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27094
+	* pt.c (tsubst_default_argument): Increment function_depth around
+	call to tsubst_expr.
+	* parser.c (cp_parser_parameter_declaration): Likewise.
+	* decl2.c (mark_used): Tidy.
+
 2006-04-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27278
