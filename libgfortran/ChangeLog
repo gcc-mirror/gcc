@@ -1,5 +1,12 @@
 2006-04-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/27304
+	* io/transfer.c (formatted_transfer_scalar):  Generate error if data
+	descriptors are exhausted.
+	* io/format.c (next_format0): Fix comment.
+
+2006-04-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/27360
 	
 	* io/list_read.c (read_logical):  Free line_buffer and free saved.
