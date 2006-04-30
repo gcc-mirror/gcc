@@ -6150,8 +6150,15 @@ tsubst_default_argument (tree fn, tree type, tree arg)
     }
 
   push_deferring_access_checks(dk_no_deferred);
+  /* The default argument expression may cause implicitly defined
+     member functions to be synthesized, which will result in garbage
+     collection.  We must treat this situation as if we were within
+     the body of function so as to avoid collecting live data on the
+     stack.  */
+  ++function_depth;
   arg = tsubst_expr (arg, DECL_TI_ARGS (fn),
 		     tf_warning_or_error, NULL_TREE);
+  --function_depth;
   pop_deferring_access_checks();
 
   /* Restore the "this" pointer.  */

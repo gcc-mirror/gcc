@@ -12431,10 +12431,17 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  saved_local_variables_forbidden_p
 	    = parser->local_variables_forbidden_p;
 	  parser->local_variables_forbidden_p = true;
+	  /* The default argument expression may cause implicitly
+	     defined member functions to be synthesized, which will
+	     result in garbage collection.  We must treat this
+	     situation as if we were within the body of function so as
+	     to avoid collecting live data on the stack.  */
+	  ++function_depth;
 	  /* Parse the assignment-expression.  */
 	  default_argument
 	    = cp_parser_assignment_expression (parser, /*cast_p=*/false);
 	  /* Restore saved state.  */
+	  --function_depth;
 	  parser->greater_than_is_operator_p
 	    = saved_greater_than_is_operator_p;
 	  parser->local_variables_forbidden_p
