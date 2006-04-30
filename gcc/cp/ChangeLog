@@ -1,3 +1,9 @@
+2006-04-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27278
+	* decl.c (grok_op_properties): Skip operators with invalid args
+	when checking for class-type or enum-type args.
+
 2006-04-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27279
