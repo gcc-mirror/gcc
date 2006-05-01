@@ -1,3 +1,10 @@
+2006-05-01  DJ Delorie  <dj@redhat.com>
+
+	* vec.c: Include bconfig.h when appropriate.
+	* Makefile.in (build/vec.o): Adjust dependencies.
+	* mkconfig.sh: Make sure config.h isn't used for build machine
+	compiles.
+
 2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-into-ssa.c (phis_to_rewrite, blocks_with_phis_to_rewrite): New
