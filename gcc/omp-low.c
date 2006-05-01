@@ -719,12 +719,12 @@ dump_omp_region (FILE *file, struct omp_region *region, int indent)
 
   if (region->cont)
     {
-      fprintf (file, "%*sbb %d: OMP_CONTINUE", indent, "",
+      fprintf (file, "%*sbb %d: OMP_CONTINUE\n", indent, "",
 	       region->cont->index);
     }
     
   if (region->exit)
-    fprintf (file, "%*sbb: %d: OMP_RETURN", indent, "",
+    fprintf (file, "%*sbb: %d: OMP_RETURN\n", indent, "",
 	     region->exit->index);
   else
     fprintf (file, "%*s[no exit marker]\n", indent, "");
