@@ -1,3 +1,9 @@
+2006-05-01  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/27374
+	* config/arm/vfp.md (*arm_movdi_vfp): Correct the output
+	templates for case 3 and 4.
+
 2006-05-01  DJ Delorie  <dj@redhat.com>
 
 	* vec.c: Include bconfig.h when appropriate.
