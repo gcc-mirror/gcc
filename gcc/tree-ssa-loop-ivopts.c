@@ -1376,6 +1376,9 @@ idx_find_step (tree base, tree *idx, void *data)
   if (!iv)
     return false;
 
+  /* XXX  We produce for a base of *D42 with iv->base being &x[0]
+	  *&x[0], which is not folded and does not trigger the
+	  ARRAY_REF path below.  */
   *idx = iv->base;
 
   if (!iv->step)
@@ -1547,6 +1550,17 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
       gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
 
       base = build_fold_addr_expr (base);
+
+      /* Substituting bases of IVs into the base expression might
+	 have caused folding opportunities.  */
+      if (TREE_CODE (base) == ADDR_EXPR)
+	{
+	  tree *ref = &TREE_OPERAND (base, 0);
+	  while (handled_component_p (*ref))
+	    ref = &TREE_OPERAND (*ref, 0);
+	  if (TREE_CODE (*ref) == INDIRECT_REF)
+	    *ref = fold_indirect_ref (*ref);
+	}
     }
 
   civ = alloc_iv (base, step);
