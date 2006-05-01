@@ -1,5 +1,15 @@
 2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* tree-into-ssa.c (phis_to_rewrite, blocks_with_phis_to_rewrite): New
+	variables.
+	(mark_phi_for_rewrite): New function.
+	(insert_phi_nodes_for, mark_use_interesting): Call
+	mark_phi_for_rewrite.
+	(rewrite_update_phi_arguments): Traverse only phis in phis_to_rewrite.
+	(update_ssa): Initialize and free phis_to_rewrite.
+
+2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR rtl-optimization/27291
 	* loop-doloop.c (add_test, doloop_modify): Handle the case condition is
 	folded to a constant.

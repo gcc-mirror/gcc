@@ -121,6 +121,19 @@ static bitmap syms_to_rename;
    released after we finish updating the SSA web.  */
 static bitmap names_to_release;
 
+/* For each block, the phi nodes that need to be rewritten are stored into
+   these vectors.  */
+
+typedef VEC(tree, heap) *tree_vec;
+DEF_VEC_P (tree_vec);
+DEF_VEC_ALLOC_P (tree_vec, heap);
+
+static VEC(tree_vec, heap) *phis_to_rewrite;
+
+/* The bitmap of non-NULL elements of PHIS_TO_REWRITE.  */
+
+static bitmap blocks_with_phis_to_rewrite;
+
 /* Growth factor for NEW_SSA_NAMES and OLD_SSA_NAMES.  These sets need
    to grow as the callers to register_new_name_mapping will typically
    create new names on the fly.  FIXME.  Currently set to 1/3 to avoid
@@ -773,6 +786,34 @@ get_default_def_for (tree sym)
 }
 
 
+/* Marks phi node PHI in basic block BB for rewrite.  */
+
+static void
+mark_phi_for_rewrite (basic_block bb, tree phi)
+{
+  tree_vec phis;
+  unsigned i, idx = bb->index;
+
+  if (REWRITE_THIS_STMT (phi))
+    return;
+  REWRITE_THIS_STMT (phi) = 1;
+
+  if (!blocks_with_phis_to_rewrite)
+    return;
+
+  bitmap_set_bit (blocks_with_phis_to_rewrite, idx);
+  VEC_reserve (tree_vec, heap, phis_to_rewrite, last_basic_block + 1);
+  for (i = VEC_length (tree_vec, phis_to_rewrite); i <= idx; i++)
+    VEC_quick_push (tree_vec, phis_to_rewrite, NULL);
+
+  phis = VEC_index (tree_vec, phis_to_rewrite, idx);
+  if (!phis)
+    phis = VEC_alloc (tree, heap, 10);
+
+  VEC_safe_push (tree, heap, phis, phi);
+  VEC_replace (tree_vec, phis_to_rewrite, idx, phis);
+}
+
 /* Insert PHI nodes for variable VAR using the iterated dominance
    frontier given in PHI_INSERTION_POINTS.  If UPDATE_P is true, this
    function assumes that the caller is incrementally updating the SSA
@@ -841,7 +882,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 
       /* Mark this PHI node as interesting for update_ssa.  */
       REGISTER_DEFS_IN_THIS_STMT (phi) = 1;
-      REWRITE_THIS_STMT (phi) = 1;
+      mark_phi_for_rewrite (bb, phi);
     }
 }
 
@@ -1504,19 +1545,23 @@ rewrite_update_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 {
   edge e;
   edge_iterator ei;
+  unsigned i;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       tree phi;
+      tree_vec phis;
 
-      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
+      if (!bitmap_bit_p (blocks_with_phis_to_rewrite, e->dest->index))
+	continue;
+     
+      phis = VEC_index (tree_vec, phis_to_rewrite, e->dest->index);
+      for (i = 0; VEC_iterate (tree, phis, i, phi); i++)
 	{
 	  tree arg;
 	  use_operand_p arg_p;
 
-	  /* Skip PHI nodes that are not marked for rewrite.  */
-	  if (!REWRITE_THIS_STMT (phi))
-	    continue;
+  	  gcc_assert (REWRITE_THIS_STMT (phi));
 
 	  arg_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
 	  arg = USE_FROM_PTR (arg_p);
@@ -1833,7 +1878,12 @@ static inline void
 mark_use_interesting (tree var, tree stmt, basic_block bb, bitmap blocks,
 		      bool insert_phi_p)
 {
-  REWRITE_THIS_STMT (stmt) = 1;
+  basic_block def_bb = bb_for_stmt (stmt);
+
+  if (TREE_CODE (stmt) == PHI_NODE)
+    mark_phi_for_rewrite (def_bb, stmt);
+  else
+    REWRITE_THIS_STMT (stmt) = 1;
   bitmap_set_bit (blocks, bb->index);
 
   /* If VAR has not been defined in BB, then it is live-on-entry
@@ -2627,6 +2677,10 @@ update_ssa (unsigned update_flags)
 
   timevar_push (TV_TREE_SSA_INCREMENTAL);
 
+  blocks_with_phis_to_rewrite = BITMAP_ALLOC (NULL);
+  if (!phis_to_rewrite)
+    phis_to_rewrite = VEC_alloc (tree_vec, heap, last_basic_block);
+
   /* Ensure that the dominance information is up-to-date.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -2830,6 +2884,14 @@ update_ssa (unsigned update_flags)
 
   /* Free allocated memory.  */
 done:
+  EXECUTE_IF_SET_IN_BITMAP (blocks_with_phis_to_rewrite, 0, i, bi)
+    {
+      tree_vec phis = VEC_index (tree_vec, phis_to_rewrite, i);
+
+      VEC_free (tree, heap, phis);
+      VEC_replace (tree_vec, phis_to_rewrite, i, NULL);
+    }
+  BITMAP_FREE (blocks_with_phis_to_rewrite);
   BITMAP_FREE (blocks);
   delete_update_ssa ();
 
