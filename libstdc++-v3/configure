@@ -6471,7 +6471,6 @@ echo "${ECHO_T}$enable_long_long" >&6
 
 
 
-
    # Check whether --enable-wchar_t or --disable-wchar_t was given.
 if test "${enable_wchar_t+set}" = set; then
   enableval="$enable_wchar_t"
@@ -6698,17 +6697,8 @@ _ACEOF
 
   fi
 
-  if test x"$enable_wchar_t" = x"yes"; then
-
-
-
-    ac_ext=cc
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-
+  # Test it always, for use in GLIBCXX_ENABLE_C99, together with
+  # ac_has_wchar_h.
 
 for ac_header in wctype.h
 do
@@ -6743,7 +6733,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
+	 { ac_try='test -z "$ac_c_werror_flag"
 			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
@@ -6787,8 +6777,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } >/dev/null; then
   if test -s conftest.err; then
-    ac_cpp_err=$ac_cxx_preproc_warn_flag
-    ac_cpp_err=$ac_cpp_err$ac_cxx_werror_flag
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
   else
     ac_cpp_err=
   fi
@@ -6808,7 +6798,7 @@ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
 echo "${ECHO_T}$ac_header_preproc" >&6
 
 # So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
   yes:no: )
     { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
 echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
@@ -6860,6 +6850,18 @@ else
 fi
 
 done
+
+
+  if test x"$enable_wchar_t" = x"yes"; then
+
+
+
+    ac_ext=cc
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
 
     if test x"$ac_has_wchar_h" = xyes &&
        test x"$ac_has_wctype_h" = xyes; then
@@ -6993,6 +6995,7 @@ _ACEOF
 echo $ECHO_N "checking for enabled wchar_t specializations... $ECHO_C" >&6
   echo "$as_me:$LINENO: result: $enable_wchar_t" >&5
 echo "${ECHO_T}$enable_wchar_t" >&6
+
 
 
    # Check whether --enable-c99 or --disable-c99 was given.
