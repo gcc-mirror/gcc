@@ -1,5 +1,11 @@
 2006-04-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/26534
+	* cp-tree.h (adjust_bitfield_initializer): Declare.
+	* typeck.c (build_modify_expr): Use it.
+	* typeck2.c (adjust_bitfield_initializer): Define.
+	(process_init_constructor_record): Use it.
+
 	PR c++/27094
 	* pt.c (tsubst_default_argument): Increment function_depth around
 	call to tsubst_expr.

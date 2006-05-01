@@ -838,6 +838,28 @@ process_init_constructor_array (tree type, tree init)
   return flags;
 }
 
+/* INIT is the initializer for FIELD.  If FIELD is a bitfield, mask
+   INIT so that its range is bounded by that of FIELD.  Returns the
+   (possibly adjusted) initializer.  */
+
+tree
+adjust_bitfield_initializer (tree field, tree init)
+{
+  int width;
+  tree mask;
+
+  if (!DECL_C_BIT_FIELD (field))
+    return init;
+
+  width = tree_low_cst (DECL_SIZE (field), /*pos=*/1);
+  if (width < TYPE_PRECISION (TREE_TYPE (field)))
+    {
+      mask = build_low_bits_mask (TREE_TYPE (field), width);
+      init = cp_build_binary_op (BIT_AND_EXPR, init, mask);
+    }
+  return init;
+}
+
 /* Subroutine of process_init_constructor, which will process an initializer
    INIT for a class of type TYPE. Returns the flags (PICFLAG_*) which describe
    the initializers.  */
@@ -891,6 +913,7 @@ process_init_constructor_record (tree type, tree init)
 
 	  gcc_assert (ce->value);
 	  next = digest_init (TREE_TYPE (field), ce->value);
+	  next = adjust_bitfield_initializer (field, next);
 	  ++idx;
 	}
       else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))

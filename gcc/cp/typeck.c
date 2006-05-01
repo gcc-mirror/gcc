@@ -5630,6 +5630,10 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   if (newrhs == error_mark_node)
     return error_mark_node;
 
+  if (TREE_CODE (lhs) == COMPONENT_REF)
+    newrhs = adjust_bitfield_initializer (TREE_OPERAND (lhs, 1),
+					  newrhs);
+
   if (c_dialect_objc () && flag_objc_gc)
     {
       result = objc_generate_write_barrier (lhs, modifycode, newrhs);
