@@ -1,3 +1,9 @@
+2006-05-01  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac: Simplify the mmap check a bit more.
+	* configure: Rebuilt.
+	* include/config.h.in: Likewise.
+
 2006-05-01  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Haley  <aph@redhat.com>
 
