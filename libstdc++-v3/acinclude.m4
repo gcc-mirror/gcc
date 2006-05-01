@@ -1789,12 +1789,15 @@ AC_DEFUN([GLIBCXX_ENABLE_WCHAR_T], [
     AC_DEFINE(HAVE_MBSTATE_T,1,[Define if mbstate_t exists in wchar.h.])
   fi
 
+  # Test it always, for use in GLIBCXX_ENABLE_C99, together with
+  # ac_has_wchar_h.
+  AC_CHECK_HEADERS(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
+  
   if test x"$enable_wchar_t" = x"yes"; then
 
     AC_LANG_SAVE
     AC_LANG_CPLUSPLUS
     
-    AC_CHECK_HEADERS(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
     if test x"$ac_has_wchar_h" = xyes &&
        test x"$ac_has_wctype_h" = xyes; then
       AC_TRY_COMPILE([#include <wchar.h>

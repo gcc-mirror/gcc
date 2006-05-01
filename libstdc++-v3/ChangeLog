@@ -1,3 +1,9 @@
+2006-05-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_WCHAR_T): Always check the
+	presence of wctype.h, for use in GLIBCXX_ENABLE_C99.
+	* configure: Regenerate.
+
 2006-04-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float):
