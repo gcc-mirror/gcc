@@ -238,7 +238,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
 -Wmissing-noreturn @gol
--Wno-multichar  -Wnonnull  -Woverlength-strings  -Wpacked  -Wpadded @gol
+-Wno-multichar  -Wnonnull  -Wno-overflow @gol
+-Woverlength-strings  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
@@ -3283,6 +3284,10 @@ Do not warn about uses of functions, variables, and types marked as
 deprecated by using the @code{deprecated} attribute.
 (@pxref{Function Attributes}, @pxref{Variable Attributes},
 @pxref{Type Attributes}.)
+
+@item -Wno-overflow
+@opindex Wno-overflow
+Do not warn about compile-time overflow in constant expressions.
 
 @item -Wpacked
 @opindex Wpacked

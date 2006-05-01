@@ -906,7 +906,9 @@ constant_expression_warning (tree value)
   if ((TREE_CODE (value) == INTEGER_CST || TREE_CODE (value) == REAL_CST
        || TREE_CODE (value) == VECTOR_CST
        || TREE_CODE (value) == COMPLEX_CST)
-      && TREE_CONSTANT_OVERFLOW (value) && pedantic)
+      && TREE_CONSTANT_OVERFLOW (value)
+      && warn_overflow
+      && pedantic)
     pedwarn ("overflow in constant expression");
 }
 
@@ -927,7 +929,7 @@ overflow_warning (tree value)
     {
       TREE_OVERFLOW (value) = 0;
       if (skip_evaluation == 0)
-	warning (0, "integer overflow in expression");
+	warning (OPT_Woverflow, "integer overflow in expression");
     }
   else if ((TREE_CODE (value) == REAL_CST
 	    || (TREE_CODE (value) == COMPLEX_CST
@@ -936,13 +938,13 @@ overflow_warning (tree value)
     {
       TREE_OVERFLOW (value) = 0;
       if (skip_evaluation == 0)
-	warning (0, "floating point overflow in expression");
+	warning (OPT_Woverflow, "floating point overflow in expression");
     }
   else if (TREE_CODE (value) == VECTOR_CST && TREE_OVERFLOW (value))
     {
       TREE_OVERFLOW (value) = 0;
       if (skip_evaluation == 0)
-	warning (0, "vector overflow in expression");
+	warning (OPT_Woverflow, "vector overflow in expression");
     }
 }
 
@@ -964,7 +966,8 @@ unsigned_conversion_warning (tree result, tree operand)
     {
       if (!int_fits_type_p (operand, c_common_signed_type (type)))
 	/* This detects cases like converting -129 or 256 to unsigned char.  */
-	warning (0, "large integer implicitly truncated to unsigned type");
+	warning (OPT_Woverflow,
+		 "large integer implicitly truncated to unsigned type");
       else
 	warning (OPT_Wconversion,
 		 "negative integer implicitly converted to unsigned type");
@@ -1093,7 +1096,8 @@ convert_and_check (tree type, tree expr)
 		 || !constant_fits_type_p (expr,
 					   c_common_unsigned_type (type)))
 		&& skip_evaluation == 0)
-	      warning (0, "overflow in implicit constant conversion");
+	      warning (OPT_Woverflow,
+                       "overflow in implicit constant conversion");
 	}
       else
 	unsigned_conversion_warning (t, expr);
