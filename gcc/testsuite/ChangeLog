@@ -1,3 +1,9 @@
+2006-05-01  Roger Sayle  <roger@eyesopen.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/Wconversion-3.c: New test case.
+	* gcc.dg/Wconversion-4.c: Likewise.
+
 2006-05-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26726

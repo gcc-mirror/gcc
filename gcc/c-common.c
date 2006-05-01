@@ -953,7 +953,7 @@ overflow_warning (tree value)
    Invoke this function on every expression that might be implicitly
    converted to an unsigned type.  */
 
-void
+static void
 unsigned_conversion_warning (tree result, tree operand)
 {
   tree type = TREE_TYPE (result);

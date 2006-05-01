@@ -2628,8 +2628,6 @@ parser_build_binary_op (enum tree_code code, struct c_expr arg1,
     warning (OPT_Wstring_literal_comparison,
 	     "comparison with string literal");
 
-  unsigned_conversion_warning (result.value, arg1.value);
-  unsigned_conversion_warning (result.value, arg2.value);
   overflow_warning (result.value);
 
   return result;
@@ -8367,9 +8365,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
   if (!converted)
     {
       if (TREE_TYPE (op0) != result_type)
-	op0 = convert (result_type, op0);
+	op0 = convert_and_check (result_type, op0);
       if (TREE_TYPE (op1) != result_type)
-	op1 = convert (result_type, op1);
+	op1 = convert_and_check (result_type, op1);
 
       /* This can happen if one operand has a vector type, and the other
 	 has a different type.  */
