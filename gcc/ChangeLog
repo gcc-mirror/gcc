@@ -1,3 +1,9 @@
+2006-05-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26565
+	* builtins.c (get_pointer_alignment): Handle component
+	references for field alignment.
+
 2006-04-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26961
