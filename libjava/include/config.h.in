@@ -184,8 +184,7 @@
 /* Define is you have 'mktime' in <time.h> */
 #undef HAVE_MKTIME
 
-/* Define to 1 if you have a working `mmap' system call w/o fixed address
-   ability. */
+/* Define to 1 if you have the `mmap' function. */
 #undef HAVE_MMAP
 
 /* Define to 1 if you have the <netdb.h> header file. */
