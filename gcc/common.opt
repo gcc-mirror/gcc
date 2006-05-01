@@ -109,6 +109,10 @@ Wmissing-noreturn
 Common Var(warn_missing_noreturn)
 Warn about functions which might be candidates for __attribute__((noreturn))
 
+Woverflow
+Common Var(warn_overflow) Init(1)
+Warn about overflow in arithmetic expressions
+
 Wpacked
 Common Var(warn_packed)
 Warn when the packed attribute has no effect on struct layout

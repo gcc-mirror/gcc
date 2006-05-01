@@ -1,3 +1,9 @@
+2006-04-30  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/Woverflow-1.c: New test case.
+	* gcc.dg/Woverflow-2.c: Likewise.
+	* gcc.dg/Woverflow-3.c: Likewise.
+
 2006-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27094

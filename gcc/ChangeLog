@@ -1,3 +1,12 @@
+2006-04-30  Roger Sayle  <roger@eyesopen.com>
+
+	* common.opt (Woverflow): New command line option.
+	* c-common.c (constant_expression_warning): Check warn_overflow.
+	(overflow_waring): Pass OPT_Woverflow to warning.
+	(unsigned_conversion_warning): Likewise.
+	(convert_and_check): Likewise.
+	* doc/invoke.texi: Document new command line option.
+
 2006-04-30  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Enable
