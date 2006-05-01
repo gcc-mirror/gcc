@@ -1,3 +1,11 @@
+2006-05-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26726
+	* tree-ssa-loop-ivopts.c (idx_find_step): Mark source of the
+	problem ...
+	(find_interesting_uses_address): ... we work around here
+	by folding INDIRECT_REFs in the substituted base.
+
 2006-05-01  Diego Novillo  <dnovillo@redhat.com>
 
 	* omp-low.c (dump_omp_region): Add newlines.
