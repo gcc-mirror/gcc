@@ -1,3 +1,18 @@
+2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27144
+	* tree-ssa-loop-niter.c (derive_constant_upper_bound): New function.
+	(record_estimate): Only record constant upper bound.
+	(infer_loop_bounds_from_undefined): Call
+	compute_estimated_nb_iterations just once.
+	(proved_non_wrapping_p): Renamed to ...
+	(n_of_executions_at_most): ... this.  Expect bound to be a constant.
+	(convert_step_widening, scev_probably_wraps_p): Call
+	n_of_executions_at_most instead of proved_non_wrapping_p.
+	(substitute_in_loop_info): Do not replace values in bounds.
+	* cfgloop.h (struct nb_iter_bound): Remove "additional" field.  Update
+	comments.
+
 2006-05-01  Richard Henderson  <rth@redhat.com>
 
 	PR c/27358
