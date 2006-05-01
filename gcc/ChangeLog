@@ -1,5 +1,11 @@
 2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR rtl-optimization/27291
+	* loop-doloop.c (add_test, doloop_modify): Handle the case condition is
+	folded to a constant.
+
+2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR tree-optimization/27283
 	* tree-ssa-loop-ivopts.c (struct nfe_cache_elt): Store just trees,
 	not whole # of iteration descriptions.
