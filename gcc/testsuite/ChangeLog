@@ -1,5 +1,10 @@
 2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR tree-optimization/27283
+	* g++.dg/tree-ssa/pr27283.C: New test.
+
+2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* gcc.dg/tree-ssa/loop-16.c: New test.
 
 2006-05-01  Roger Sayle  <roger@eyesopen.com>
