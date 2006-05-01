@@ -1,3 +1,10 @@
+2006-05-01  Richard Henderson  <rth@redhat.com>
+
+	PR c/27358
+	* c-parser.c (c_parser_skip_to_end_of_block_or_statement): Move after
+	c_parser_skip_to_pragma_eol.  Convert to switch statement.  Handle
+	CPP_PRAGMA.
+
 2006-05-01  Roger Sayle  <roger@eyesopen.com>
 
 	* c-typeck.c (parser_build_binary_op): Don't call the function

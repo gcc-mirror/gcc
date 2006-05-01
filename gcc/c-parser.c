@@ -829,50 +829,6 @@ c_parser_skip_to_end_of_parameter (c_parser *parser)
   parser->error = false;
 }
 
-/* Skip tokens until we have consumed an entire block, or until we
-   have consumed a non-nested ';'.  */
-
-static void
-c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
-{
-  unsigned nesting_depth = 0;
-
-  while (true)
-    {
-      c_token *token;
-
-      /* Peek at the next token.  */
-      token = c_parser_peek_token (parser);
-      /* If we've run out of tokens, stop.  */
-      if (token->type == CPP_EOF)
-	return;
-      if (token->type == CPP_PRAGMA_EOL && parser->in_pragma)
-	return;
-      /* If the next token is a ';', we have reached the end of the
-	 statement.  */
-      if (token->type == CPP_SEMICOLON && !nesting_depth)
-	{
-	  /* Consume the ';'.  */
-	  c_parser_consume_token (parser);
-	  break;
-	}
-      /* If the next token is a non-nested '}', then we have reached
-	 the end of the current block.  */
-      if (token->type == CPP_CLOSE_BRACE
-	  && (nesting_depth == 0 || --nesting_depth == 0))
-	{
-	  c_parser_consume_token (parser);
-	  break;
-	}
-      /* If it the next token is a '{', then we are entering a new
-	 block.  Consume the entire block.  */
-      if (token->type == CPP_OPEN_BRACE)
-	++nesting_depth;
-      c_parser_consume_token (parser);
-    }
-  parser->error = false;
-}
-
 /* Expect to be at the end of the pragma directive and consume an
    end of line marker.  */
 
@@ -896,6 +852,79 @@ c_parser_skip_to_pragma_eol (c_parser *parser)
 	c_parser_consume_token (parser);
       }
 
+  parser->error = false;
+}
+
+/* Skip tokens until we have consumed an entire block, or until we
+   have consumed a non-nested ';'.  */
+
+static void
+c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
+{
+  unsigned nesting_depth = 0;
+  bool save_error = parser->error;
+
+  while (true)
+    {
+      c_token *token;
+
+      /* Peek at the next token.  */
+      token = c_parser_peek_token (parser);
+
+      switch (token->type)
+	{
+	case CPP_EOF:
+	  return;
+
+	case CPP_PRAGMA_EOL:
+	  if (parser->in_pragma)
+	    return;
+	  break;
+
+	case CPP_SEMICOLON:
+	  /* If the next token is a ';', we have reached the
+	     end of the statement.  */
+	  if (!nesting_depth)
+	    {
+	      /* Consume the ';'.  */
+	      c_parser_consume_token (parser);
+	      goto finished;
+	    }
+	  break;
+
+	case CPP_CLOSE_BRACE:
+	  /* If the next token is a non-nested '}', then we have
+	     reached the end of the current block.  */
+	  if (nesting_depth == 0 || --nesting_depth == 0)
+	    {
+	      c_parser_consume_token (parser);
+	      goto finished;
+	    }
+	  break;
+
+	case CPP_OPEN_BRACE:
+	  /* If it the next token is a '{', then we are entering a new
+	     block.  Consume the entire block.  */
+	  ++nesting_depth;
+	  break;
+
+	case CPP_PRAGMA:
+	  /* If we see a pragma, consume the whole thing at once.  We
+	     have some safeguards against consuming pragmas willy-nilly.
+	     Normally, we'd expect to be here with parser->error set,
+	     which disables these safeguards.  But it's possible to get
+	     here for secondary error recovery, after parser->error has
+	     been cleared.  */
+	  c_parser_consume_pragma (parser);
+	  c_parser_skip_to_pragma_eol (parser);
+	  parser->error = save_error;
+	  continue;
+	}
+
+      c_parser_consume_token (parser);
+    }
+
+ finished:
   parser->error = false;
 }
 
