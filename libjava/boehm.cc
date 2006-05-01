@@ -486,7 +486,7 @@ _Jv_InitGC (void)
   // Ignore pointers that do not point to the start of an object.
   GC_all_interior_pointers = 0;
 
-#ifdef HAVE_DLFCN_H
+#if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
   // Tell the collector to ask us before scanning DSOs.
   GC_register_has_static_roots_callback (_Jv_GC_has_static_roots);
 #endif
@@ -581,7 +581,7 @@ _Jv_GCCanReclaimSoftReference (jobject)
 
 
 
-#ifdef HAVE_DLFCN_H
+#if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
 
 // We keep a store of the filenames of DSOs that need to be
 // conservatively scanned by the garbage collector.  During collection
@@ -661,7 +661,7 @@ _Jv_GC_has_static_roots (const char *filename, void *, size_t)
 void
 _Jv_RegisterLibForGc (const void *p __attribute__ ((__unused__)))
 {
-#ifdef HAVE_DLFCN_H
+#if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
   Dl_info info;
 
   if (dladdr (const_cast<void *>(p), &info) != 0)
