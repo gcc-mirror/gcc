@@ -1,3 +1,7 @@
+2006-05-01  Diego Novillo  <dnovillo@redhat.com>
+
+	* omp-low.c (dump_omp_region): Add newlines.
+
 2006-04-30  Roger Sayle  <roger@eyesopen.com>
 
 	* common.opt (Woverflow): New command line option.
