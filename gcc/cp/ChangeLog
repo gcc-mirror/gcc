@@ -1,3 +1,9 @@
+2006-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26912
+	* decl.c (grokdeclarator): Qualify "this" pointer when forming
+	member function types.
+
 2006-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26534

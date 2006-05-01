@@ -7598,9 +7598,11 @@ grokdeclarator (const cp_declarator *declarator,
 	       are always static functions.  */
 	    ;
 	  else
-	    type = build_method_type_directly (ctype,
-					       TREE_TYPE (type),
-					       TYPE_ARG_TYPES (type));
+	    type = (build_method_type_directly 
+		    (cp_build_qualified_type (ctype, 
+					      quals & ~TYPE_QUAL_RESTRICT),
+		     TREE_TYPE (type),
+		     TYPE_ARG_TYPES (type)));
 	}
       else if (declspecs->specs[(int)ds_typedef]
 	       || COMPLETE_TYPE_P (complete_type (ctype)))
