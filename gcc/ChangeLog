@@ -1,5 +1,16 @@
 2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR tree-optimization/27283
+	* tree-ssa-loop-ivopts.c (struct nfe_cache_elt): Store just trees,
+	not whole # of iteration descriptions.
+	(niter_for_exit): Return just # of iterations.  Fail if # of iterations
+	uses abnormal ssa name.
+	(niter_for_single_dom_exit): Ditto.
+	(find_induction_variables, may_eliminate_iv): Expect niter_for_exit to
+	return just the number of iterations.
+
+2006-05-01  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR tree-optimization/27144
 	* tree-ssa-loop-niter.c (derive_constant_upper_bound): New function.
 	(record_estimate): Only record constant upper bound.

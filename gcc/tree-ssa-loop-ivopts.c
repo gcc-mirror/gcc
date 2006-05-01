@@ -643,6 +643,86 @@ stmt_after_increment (struct loop *loop, struct iv_cand *cand, tree stmt)
     }
 }
 
+/* Returns true if EXP is a ssa name that occurs in an abnormal phi node.  */
+
+static bool
+abnormal_ssa_name_p (tree exp)
+{
+  if (!exp)
+    return false;
+
+  if (TREE_CODE (exp) != SSA_NAME)
+    return false;
+
+  return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp) != 0;
+}
+
+/* Returns false if BASE or INDEX contains a ssa name that occurs in an
+   abnormal phi node.  Callback for for_each_index.  */
+
+static bool
+idx_contains_abnormal_ssa_name_p (tree base, tree *index,
+				  void *data ATTRIBUTE_UNUSED)
+{
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
+      if (abnormal_ssa_name_p (TREE_OPERAND (base, 2)))
+	return false;
+      if (abnormal_ssa_name_p (TREE_OPERAND (base, 3)))
+	return false;
+    }
+
+  return !abnormal_ssa_name_p (*index);
+}
+
+/* Returns true if EXPR contains a ssa name that occurs in an
+   abnormal phi node.  */
+
+static bool
+contains_abnormal_ssa_name_p (tree expr)
+{
+  enum tree_code code;
+  enum tree_code_class class;
+
+  if (!expr)
+    return false;
+
+  code = TREE_CODE (expr);
+  class = TREE_CODE_CLASS (code);
+
+  if (code == SSA_NAME)
+    return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (expr) != 0;
+
+  if (code == INTEGER_CST
+      || is_gimple_min_invariant (expr))
+    return false;
+
+  if (code == ADDR_EXPR)
+    return !for_each_index (&TREE_OPERAND (expr, 0),
+			    idx_contains_abnormal_ssa_name_p,
+			    NULL);
+
+  switch (class)
+    {
+    case tcc_binary:
+    case tcc_comparison:
+      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1)))
+	return true;
+
+      /* Fallthru.  */
+    case tcc_unary:
+      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0)))
+	return true;
+
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return false;
+}
+
 /* Element of the table in that we cache the numbers of iterations obtained
    from exits of the loop.  */
 
@@ -651,11 +731,9 @@ struct nfe_cache_elt
   /* The edge for that the number of iterations is cached.  */
   edge exit;
 
-  /* True if the # of iterations was successfully determined.  */
-  bool valid_p;
-
-  /* Description of # of iterations.  */
-  struct tree_niter_desc niter;
+  /* Number of iterations corresponding to this exit, or NULL if it cannot be
+     determined.  */
+  tree niter;
 };
 
 /* Hash function for nfe_cache_elt E.  */
@@ -678,13 +756,14 @@ nfe_eq (const void *e1, const void *e2)
   return elt1->exit == e2;
 }
 
-/*  Returns structure describing number of iterations determined from
+/*  Returns tree describing number of iterations determined from
     EXIT of DATA->current_loop, or NULL if something goes wrong.  */
 
-static struct tree_niter_desc *
+static tree
 niter_for_exit (struct ivopts_data *data, edge exit)
 {
   struct nfe_cache_elt *nfe_desc;
+  struct tree_niter_desc desc;
   PTR *slot;
 
   slot = htab_find_slot_with_hash (data->niters, exit,
@@ -695,25 +774,31 @@ niter_for_exit (struct ivopts_data *data, edge exit)
     {
       nfe_desc = xmalloc (sizeof (struct nfe_cache_elt));
       nfe_desc->exit = exit;
-      nfe_desc->valid_p = number_of_iterations_exit (data->current_loop,
-						     exit, &nfe_desc->niter,
-						     true);
-      *slot = nfe_desc;
+
+      /* Try to determine number of iterations.  We must know it
+	 unconditionally (i.e., without possibility of # of iterations
+	 being zero).  Also, we cannot safely work with ssa names that
+	 appear in phi nodes on abnormal edges, so that we do not create
+	 overlapping life ranges for them (PR 27283).  */
+      if (number_of_iterations_exit (data->current_loop,
+				     exit, &desc, true)
+	  && zero_p (desc.may_be_zero)
+     	  && !contains_abnormal_ssa_name_p (desc.niter))
+	nfe_desc->niter = desc.niter;
+      else
+	nfe_desc->niter = NULL_TREE;
     }
   else
     nfe_desc = *slot;
 
-  if (!nfe_desc->valid_p)
-    return NULL;
-
-  return &nfe_desc->niter;
+  return nfe_desc->niter;
 }
 
-/* Returns structure describing number of iterations determined from
+/* Returns tree describing number of iterations determined from
    single dominating exit of DATA->current_loop, or NULL if something
    goes wrong.  */
 
-static struct tree_niter_desc *
+static tree
 niter_for_single_dom_exit (struct ivopts_data *data)
 {
   edge exit = single_dom_exit (data->current_loop);
@@ -869,86 +954,6 @@ determine_biv_step (tree phi)
   return (zero_p (iv.step) ? NULL_TREE : iv.step);
 }
 
-/* Returns true if EXP is a ssa name that occurs in an abnormal phi node.  */
-
-static bool
-abnormal_ssa_name_p (tree exp)
-{
-  if (!exp)
-    return false;
-
-  if (TREE_CODE (exp) != SSA_NAME)
-    return false;
-
-  return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp) != 0;
-}
-
-/* Returns false if BASE or INDEX contains a ssa name that occurs in an
-   abnormal phi node.  Callback for for_each_index.  */
-
-static bool
-idx_contains_abnormal_ssa_name_p (tree base, tree *index,
-				  void *data ATTRIBUTE_UNUSED)
-{
-  if (TREE_CODE (base) == ARRAY_REF)
-    {
-      if (abnormal_ssa_name_p (TREE_OPERAND (base, 2)))
-	return false;
-      if (abnormal_ssa_name_p (TREE_OPERAND (base, 3)))
-	return false;
-    }
-
-  return !abnormal_ssa_name_p (*index);
-}
-
-/* Returns true if EXPR contains a ssa name that occurs in an
-   abnormal phi node.  */
-
-static bool
-contains_abnormal_ssa_name_p (tree expr)
-{
-  enum tree_code code;
-  enum tree_code_class class;
-
-  if (!expr)
-    return false;
-
-  code = TREE_CODE (expr);
-  class = TREE_CODE_CLASS (code);
-
-  if (code == SSA_NAME)
-    return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (expr) != 0;
-
-  if (code == INTEGER_CST
-      || is_gimple_min_invariant (expr))
-    return false;
-
-  if (code == ADDR_EXPR)
-    return !for_each_index (&TREE_OPERAND (expr, 0),
-			    idx_contains_abnormal_ssa_name_p,
-			    NULL);
-
-  switch (class)
-    {
-    case tcc_binary:
-    case tcc_comparison:
-      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1)))
-	return true;
-
-      /* Fallthru.  */
-    case tcc_unary:
-      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0)))
-	return true;
-
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return false;
-}
-
 /* Finds basic ivs.  */
 
 static bool
@@ -1102,20 +1107,13 @@ find_induction_variables (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      struct tree_niter_desc *niter;
-
-      niter = niter_for_single_dom_exit (data);
+      tree niter = niter_for_single_dom_exit (data);
 
       if (niter)
 	{
 	  fprintf (dump_file, "  number of iterations ");
-	  print_generic_expr (dump_file, niter->niter, TDF_SLIM);
-	  fprintf (dump_file, "\n");
-
-    	  fprintf (dump_file, "  may be zero if ");
-    	  print_generic_expr (dump_file, niter->may_be_zero, TDF_SLIM);
-    	  fprintf (dump_file, "\n");
-    	  fprintf (dump_file, "\n");
+	  print_generic_expr (dump_file, niter, TDF_SLIM);
+	  fprintf (dump_file, "\n\n");
     	};
  
       fprintf (dump_file, "Induction variables:\n\n");
@@ -3954,7 +3952,6 @@ may_eliminate_iv (struct ivopts_data *data,
 {
   basic_block ex_bb;
   edge exit;
-  struct tree_niter_desc *niter;
   tree nit, nit_type;
   tree wider_type, period, per_type;
   struct loop *loop = data->current_loop;
@@ -3977,12 +3974,10 @@ may_eliminate_iv (struct ivopts_data *data,
   if (flow_bb_inside_loop_p (loop, exit->dest))
     return false;
 
-  niter = niter_for_exit (data, exit);
-  if (!niter
-      || !zero_p (niter->may_be_zero))
+  nit = niter_for_exit (data, exit);
+  if (!nit)
     return false;
 
-  nit = niter->niter;
   nit_type = TREE_TYPE (nit);
 
   /* Determine whether we may use the variable to test whether niter iterations
