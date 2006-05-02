@@ -491,7 +491,7 @@ use_pointer_for_field (tree decl, bool shared_p)
 	 without analyzing the expression whether or not its location
 	 is accessible to anyone else.  In the case of nested parallel
 	 regions it certainly may be.  */
-      if (DECL_HAS_VALUE_EXPR_P (decl))
+      if (TREE_CODE (decl) != RESULT_DECL && DECL_HAS_VALUE_EXPR_P (decl))
 	return true;
 
       /* Do not use copy-in/copy-out for variables that have their
@@ -724,7 +724,7 @@ dump_omp_region (FILE *file, struct omp_region *region, int indent)
     }
     
   if (region->exit)
-    fprintf (file, "%*sbb: %d: OMP_RETURN\n", indent, "",
+    fprintf (file, "%*sbb %d: OMP_RETURN\n", indent, "",
 	     region->exit->index);
   else
     fprintf (file, "%*s[no exit marker]\n", indent, "");
@@ -1286,6 +1286,7 @@ scan_omp_1 (tree *tp, int *walk_subtrees, void *data)
     case VAR_DECL:
     case PARM_DECL:
     case LABEL_DECL:
+    case RESULT_DECL:
       if (ctx)
 	*tp = remap_decl (t, &ctx->cb);
       break;
@@ -1518,9 +1519,13 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 	      break;
 	    case OMP_CLAUSE_SHARED:
 	    case OMP_CLAUSE_FIRSTPRIVATE:
-	    case OMP_CLAUSE_LASTPRIVATE:
 	    case OMP_CLAUSE_COPYIN:
 	    case OMP_CLAUSE_REDUCTION:
+	      break;
+	    case OMP_CLAUSE_LASTPRIVATE:
+	      if (pass != 0
+		  && OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (c))
+		continue;
 	      break;
 	    default:
 	      continue;
@@ -1564,7 +1569,8 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 		 code that expects a pointer to something that expects
 		 a direct variable.  Note that this doesn't apply to
 		 C++, since reference types are disallowed in data
-		 sharing clauses there.  */
+		 sharing clauses there, except for NRV optimized
+		 return values.  */
 	      if (pass == 0)
 		continue;
 
@@ -1575,7 +1581,9 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 		  if (DECL_NAME (var))
 		    name = IDENTIFIER_POINTER (DECL_NAME (new_var));
 
-		  x = create_tmp_var (TREE_TYPE (TREE_TYPE (new_var)), name);
+		  x = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (new_var)),
+					  name);
+		  gimple_add_tmp_var (x);
 		  x = build_fold_addr_expr_with_type (x, TREE_TYPE (new_var));
 		}
 	      else

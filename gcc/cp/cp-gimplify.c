@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -869,4 +869,13 @@ cxx_omp_clause_dtor (tree clause, tree decl)
     ret = cxx_omp_clause_apply_fn (TREE_VEC_ELT (info, 1), decl, NULL);
 
   return ret;
+}
+
+/* True if OpenMP should privatize what this DECL points to rather
+   than the DECL itself.  */
+
+bool
+cxx_omp_privatize_by_reference (tree decl)
+{
+  return TREE_CODE (decl) == RESULT_DECL && DECL_BY_REFERENCE (decl);
 }

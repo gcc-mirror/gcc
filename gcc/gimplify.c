@@ -4504,6 +4504,11 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel)
 	      remove = true;
 	      break;
 	    }
+	  /* Handle NRV results passed by reference.  */
+	  if (TREE_CODE (decl) == INDIRECT_REF
+	      && TREE_CODE (TREE_OPERAND (decl, 0)) == RESULT_DECL
+	      && DECL_BY_REFERENCE (TREE_OPERAND (decl, 0)))
+	    OMP_CLAUSE_DECL (c) = decl = TREE_OPERAND (decl, 0);
 	  omp_add_variable (ctx, decl, flags);
 	  if (TREE_CODE (c) == OMP_CLAUSE_REDUCTION
 	      && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
@@ -4531,6 +4536,11 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel)
 	      remove = true;
 	      break;
 	    }
+	  /* Handle NRV results passed by reference.  */
+	  if (TREE_CODE (decl) == INDIRECT_REF
+	      && TREE_CODE (TREE_OPERAND (decl, 0)) == RESULT_DECL
+	      && DECL_BY_REFERENCE (TREE_OPERAND (decl, 0)))
+	    OMP_CLAUSE_DECL (c) = decl = TREE_OPERAND (decl, 0);
 	do_notice:
 	  if (outer_ctx)
 	    omp_notice_variable (outer_ctx, decl, true);
@@ -5556,6 +5566,13 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	case VAR_DECL:
 	case PARM_DECL:
 	  ret = gimplify_var_or_parm_decl (expr_p);
+	  break;
+
+	case RESULT_DECL:
+	  /* When within an OpenMP context, notice uses of variables.  */
+	  if (gimplify_omp_ctxp)
+	    omp_notice_variable (gimplify_omp_ctxp, *expr_p, true);
+	  ret = GS_ALL_DONE;
 	  break;
 
 	case SSA_NAME:
