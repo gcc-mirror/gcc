@@ -1,3 +1,9 @@
+2006-05-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/27387
+	* gcc.target/arm/arm.exp: New.
+	* gcc.target/arm/pr27387.C: Likewise.
+
 2006-05-02 Paul Thomas <pault@gcc.gnu.org>
 
         PR fortran/27269
