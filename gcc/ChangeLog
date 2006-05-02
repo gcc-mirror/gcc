@@ -1,3 +1,9 @@
+2006-05-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/27364
+	* tree-vrp.c (vrp_int_const_binop): Fix detection of overflow from
+	multiply expressions.
+
 2006-05-02  Tom Tromey  <tromey@redhat.com>
 
 	* tree-flow-inline.h (op_iter_init_phiuse): Fixed typo.
