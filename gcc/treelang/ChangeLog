@@ -1,14 +1,15 @@
 2006-04-22  Matthias Klose  <doko@debian.org>
 
-	* Make-lang.in(treelang.check): Don't set and pass TRANSFORM.
+	* Make-lang.in (treelang.check): Don't set and pass TRANSFORM.
 
 2006-03-29  Carlos O'Donell  <caros@codesourcery.com>
 
 	* Make-lang.in: Rename docdir to gcc_docdir.
 
 2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
-	* Make-lang.in (.phony): Remove TREELANG
-	(TREELANG): Remove
+
+	* Make-lang.in (.phony): Remove TREELANG.
+	(TREELANG): Remove.
 
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
@@ -16,7 +17,7 @@
 
 2006-01-16  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 
-	* spec.c (lang_specific_spec_functions): remove
+	* spec.c (lang_specific_spec_functions): Remove.
 
 2005-12-28  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
