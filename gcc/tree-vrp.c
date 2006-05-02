@@ -1101,17 +1101,39 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
   if (TYPE_UNSIGNED (TREE_TYPE (val1)))
     {
       int checkz = compare_values (res, val1);
+      bool overflow = false;
 
       /* Ensure that res = val1 [+*] val2 >= val1
          or that res = val1 - val2 <= val1.  */
-      if (((code == PLUS_EXPR || code == MULT_EXPR)
+      if ((code == PLUS_EXPR
 	   && !(checkz == 1 || checkz == 0))
           || (code == MINUS_EXPR
 	      && !(checkz == 0 || checkz == -1)))
 	{
+	  overflow = true;
+	}
+      /* Checking for multiplication overflow is done by dividing the
+	 output of the multiplication by the first input of the
+	 multiplication.  If the result of that division operation is
+	 not equal to the second input of the multiplication, then the
+	 multiplication overflowed.  */
+      else if (code == MULT_EXPR && !integer_zerop (val1))
+	{
+	  tree tmp = int_const_binop (TRUNC_DIV_EXPR,
+				      TYPE_MAX_VALUE (TREE_TYPE (val1)),
+				      val1, 0);
+	  int check = compare_values (tmp, val2);
+
+	  if (check != 0)
+	    overflow = true;
+	}
+
+      if (overflow)
+	{
 	  res = copy_node (res);
 	  TREE_OVERFLOW (res) = 1;
 	}
+
     }
   else if (TREE_OVERFLOW (res)
 	   && !TREE_OVERFLOW (val1)
