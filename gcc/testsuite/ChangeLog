@@ -1,3 +1,8 @@
+2006-05-02  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/27032
+	* gcc.c-torture/compile/pr23237.c: Move dg-do line.
+
 2006-05-02  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/27364
