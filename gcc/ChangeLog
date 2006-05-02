@@ -1,8 +1,16 @@
+2006-05-02  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (add_minipool_forward_ref): Check if insn
+	and pool overlap.
+	(create_fix_barrier): Check that a suitable barrier location is
+	found.
+	(arm_reorg): Include ftmp->address in allowable range of addresses.
+
 2006-05-02  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR ada/27366
- 	* ada/env.c (__gnat_clearenv): Use unsetenv() to clear environment 
- 	on Cygwin.
+	* ada/env.c (__gnat_clearenv): Use unsetenv() to clear environment 
+	on Cygwin.
 
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
