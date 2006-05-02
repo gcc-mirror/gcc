@@ -1,3 +1,8 @@
+2006-05-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree.c (unsigned_type_for, signed_type_for): Make sure a type
+	of the correct signedness is returned.
+
 2006-05-02  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/27364
