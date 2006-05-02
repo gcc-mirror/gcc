@@ -1,3 +1,18 @@
+2006-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/26943
+	* omp-low.c (maybe_lookup_decl_in_outer_ctx): New function.
+	(build_outer_var_ref): Use maybe_lookup_decl_in_outer_ctx
+	to find if var will be a global variable even in the nested context.
+	(omp_copy_decl): Only check for global variable at the end, it might
+	be overridden in outer contexts.
+	(scan_sharing_clauses): For global variables don't create a field.
+	(lower_rec_input_clauses): Do nothing for global shared variables.
+	Emit a barrier at the end of ILIST if there were any decls in both
+	firstprivate and lastprivate clauses.
+	(lower_send_clauses): Do nothing for global variables except for
+	COPYIN.
+
 2006-05-02  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree.c (unsigned_type_for, signed_type_for): Make sure a type
