@@ -5702,7 +5702,6 @@ instantiate_class_template (tree type)
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
 		--processing_template_decl;
 	      set_current_access_from_decl (r);
-	      grok_special_member_properties (r);
 	      finish_member_declaration (r);
 	    }
 	  else

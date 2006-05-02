@@ -923,8 +923,6 @@ grokfield (const cp_declarator *declarator,
     case  FUNCTION_DECL:
       if (asmspec)
 	set_user_assembler_name (value, asmspec);
-      if (!DECL_FRIEND_P (value))
-	grok_special_member_properties (value);
 
       cp_finish_decl (value, init, /*init_const_expr_p=*/false, 
 		      asmspec_tree, flags);
