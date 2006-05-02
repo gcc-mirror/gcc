@@ -1757,9 +1757,9 @@ stmt_dominates_stmt_p (tree s1, tree s2)
    NITER_BOUND->bound times.  */
 
 static bool
-n_of_executions_at_least (tree stmt,
-			  struct nb_iter_bound *niter_bound, 
-			  tree niter)
+n_of_executions_at_most (tree stmt,
+			 struct nb_iter_bound *niter_bound, 
+			 tree niter)
 {
   tree cond;
   tree bound = niter_bound->bound;
@@ -1863,7 +1863,7 @@ convert_step_widening (struct loop *loop, tree new_type, tree base, tree step,
 
   estimate_numbers_of_iterations_loop (loop);
   for (bound = loop->bounds; bound; bound = bound->next)
-    if (n_of_executions_at_least (at_stmt, bound, valid_niter))
+    if (n_of_executions_at_most (at_stmt, bound, valid_niter))
       return step_in_new_type;
 
   /* Fail when the loop has no bound estimations, or when no bound can
@@ -2067,7 +2067,7 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 
   estimate_numbers_of_iterations_loop (loop);
   for (bound = loop->bounds; bound; bound = bound->next)
-    if (n_of_executions_at_least (at_stmt, bound, valid_niter))
+    if (n_of_executions_at_most (at_stmt, bound, valid_niter))
       return false;
 
   /* At this point we still don't have a proof that the iv does not
