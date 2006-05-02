@@ -7432,13 +7432,13 @@ add_minipool_forward_ref (Mfix *fix)
   HOST_WIDE_INT max_address = fix->address + fix->forwards - minipool_pad;
   Mnode *       mp;
 
-  /* If this fix's address is greater than the address of the first
-     entry, then we can't put the fix in this pool.  We subtract the
-     size of the current fix to ensure that if the table is fully
-     packed we still have enough room to insert this value by shuffling
-     the other fixes forwards.  */
+  /* If the minipool starts before the end of FIX->INSN then this FIX
+     can not be placed into the current pool.  Furthermore, adding the
+     new constant pool entry may cause the pool to start FIX_SIZE bytes
+     earlier.  */
   if (minipool_vector_head &&
-      fix->address >= minipool_vector_head->max_address - fix->fix_size)
+      (fix->address + get_attr_length (fix->insn)
+       >= minipool_vector_head->max_address - fix->fix_size))
     return NULL;
 
   /* Scan the pool to see if a constant with the same value has
@@ -7881,8 +7881,10 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
   HOST_WIDE_INT count = 0;
   rtx barrier;
   rtx from = fix->insn;
-  rtx selected = from;
+  /* The instruction after which we will insert the jump.  */
+  rtx selected = NULL;
   int selected_cost;
+  /* The address at which the jump instruction will be placed.  */
   HOST_WIDE_INT selected_address;
   Mfix * new_fix;
   HOST_WIDE_INT max_count = max_address - fix->address;
@@ -7914,7 +7916,8 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 	     still put the pool after the table.  */
 	  new_cost = arm_barrier_cost (from);
 
-	  if (count < max_count && new_cost <= selected_cost)
+	  if (count < max_count 
+	      && (!selected || new_cost <= selected_cost))
 	    {
 	      selected = tmp;
 	      selected_cost = new_cost;
@@ -7928,7 +7931,8 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 
       new_cost = arm_barrier_cost (from);
 
-      if (count < max_count && new_cost <= selected_cost)
+      if (count < max_count
+	  && (!selected || new_cost <= selected_cost))
 	{
 	  selected = from;
 	  selected_cost = new_cost;
@@ -7937,6 +7941,9 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 
       from = NEXT_INSN (from);
     }
+
+  /* Make sure that we found a place to insert the jump.  */
+  gcc_assert (selected);
 
   /* Create a new JUMP_INSN that branches around a barrier.  */
   from = emit_jump_insn_after (gen_jump (label), selected);
@@ -8288,9 +8295,11 @@ arm_reorg (void)
 	  /* Check that there isn't another fix that is in range that
 	     we couldn't fit into this pool because the pool was
 	     already too large: we need to put the pool before such an
-	     instruction.  */
+	     instruction.  The pool itself may come just after the
+	     fix because create_fix_barrier also allows space for a
+	     jump instruction.  */
 	  if (ftmp->address < max_address)
-	    max_address = ftmp->address;
+	    max_address = ftmp->address + 1;
 
 	  last_barrier = create_fix_barrier (last_added_fix, max_address);
 	}
