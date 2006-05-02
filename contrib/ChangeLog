@@ -1,4 +1,4 @@
-2006-04-17  Daniel Jacobowitz  <dan@codesourcery.com>
+2006-05-02  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* texi2pod.pl: Handle -I.
 
