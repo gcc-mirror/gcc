@@ -1,3 +1,8 @@
+2006-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27337
+	* testsuite/libgomp.c++/pr27337.C: New test.
+
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/26171

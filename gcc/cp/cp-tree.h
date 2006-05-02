@@ -4267,6 +4267,7 @@ extern tree cxx_omp_clause_default_ctor		(tree, tree);
 extern tree cxx_omp_clause_copy_ctor		(tree, tree, tree);
 extern tree cxx_omp_clause_assign_op		(tree, tree, tree);
 extern tree cxx_omp_clause_dtor			(tree, tree);
+extern bool cxx_omp_privatize_by_reference	(tree);
 
 /* in tree.c */
 extern void lang_check_failed			(const char *, int,

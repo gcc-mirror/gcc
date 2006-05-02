@@ -1,3 +1,10 @@
+2006-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27337
+	* cp-gimplify.c (cxx_omp_privatize_by_reference): New function.
+	* cp-tree.h (cxx_omp_privatize_by_reference): New prototype.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE): Define.
+
 2006-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27094

@@ -1,5 +1,19 @@
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/27337
+	* gimplify.c (gimplify_scan_omp_clauses): Handle INDIRECT_REF
+	around RESULT_DECL for result passed by reference.
+	(gimplify_expr): Call omp_notice_variable when RESULT_DECL is seen.
+	* omp-low.c (use_pointer_for_field): Don't look at
+	DECL_HAS_VALUE_EXPR_P for RESULT_DECLs.
+	(scan_omp_1): Call remap_decl on RESULT_DECLs.
+	(lower_rec_input_clauses): Don't allocate VLA memory for the second
+	time or var for passing by reference for
+	OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE clauses.  Allow creation of
+	TREE_ADDRESSABLE variables when passing by reference.
+
+	* omp-low.c (dump_omp_region): Fix output formatting.
+
 	PR middle-end/27328
 	* omp-low.c (remove_exit_barrier): Handle NULL exit_bb.
 	(expand_omp_parallel): Likewise.
