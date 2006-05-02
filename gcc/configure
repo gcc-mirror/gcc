@@ -13171,7 +13171,8 @@ if test "${gcc_cv_nm+set}" = set; then
 else
 
 if test -f $gcc_cv_binutils_srcdir/configure.in \
-     && test -f ../binutils/Makefile; then
+     && test -f ../binutils/Makefile \
+     && test x$build = x$host; then
 	gcc_cv_nm=../binutils/nm-new$build_exeext
 elif test -x nm$build_exeext; then
 	gcc_cv_nm=./nm$build_exeext
@@ -13243,7 +13244,8 @@ if test "${gcc_cv_objdump+set}" = set; then
 else
 
 if test -f $gcc_cv_binutils_srcdir/configure.in \
-     && test -f ../binutils/Makefile; then
+     && test -f ../binutils/Makefile \
+     && test x$build = x$host; then
 	# Single tree build which includes binutils.
 	gcc_cv_objdump=../binutils/objdump$build_exeext
 elif test -x objdump$build_exeext; then

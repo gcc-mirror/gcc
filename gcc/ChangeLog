@@ -1,3 +1,10 @@
+2006-05-01  DJ Delorie  <dj@redhat.com>
+
+	* configure.ac (gcc_cv_nm): Don't use an in-tree nm if
+	build!=host.
+	(gcc_cv_objdump): Likewise.
+	* configure: Regenerated.
+
 2006-05-01  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/27374
