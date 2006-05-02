@@ -288,7 +288,7 @@ void __gnat_clearenv (void) {
     index++;
   }
 #elif defined (__MINGW32__) || defined (__FreeBSD__) || defined (__APPLE__) \
-   || (defined (__vxworks) && defined (__RTP__))
+   || (defined (__vxworks) && defined (__RTP__)) || defined (__CYGWIN__)
   /* On Windows, FreeBSD and MacOS there is no function to clean all the
      environment but there is a "clean" way to unset a variable. So go
      through the environ table and call __gnat_unsetenv on all entries */

@@ -1,3 +1,9 @@
+2006-05-02  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR ada/27366
+ 	* ada/env.c (__gnat_clearenv): Use unsetenv() to clear environment 
+ 	on Cygwin.
+
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27337
