@@ -1,3 +1,8 @@
+2006-05-02  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/lib/libjava.exp (test_libjava): Test bytecode->native
+	-findirect-dispatch compilation.
+
 2006-05-01  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.ac: Simplify the mmap check a bit more.

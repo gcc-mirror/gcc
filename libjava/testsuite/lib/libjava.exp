@@ -908,6 +908,12 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 proc test_libjava { options srcfile compile_args inpfile resultfile exec_args } {
     test_libjava_from_source $options $srcfile $compile_args $inpfile $resultfile $exec_args
     test_libjava_from_javac $options $srcfile $compile_args $inpfile $resultfile $exec_args
+    
+    # Test BC-ABI compilation, currently for bytecode->native only
+    set compile_args_bcabi $compile_args
+    lappend compile_args_bcabi "-findirect-dispatch"
+
+    test_libjava_from_javac $options $srcfile $compile_args_bcabi $inpfile $resultfile $exec_args
  }
 
 #
