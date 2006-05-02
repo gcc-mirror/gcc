@@ -36,6 +36,7 @@ $shift = "";
 $fnno = 1;
 $inf = "";
 $ibase = "";
+@ipath = ();
 
 while ($_ = shift) {
     if (/^-D(.*)$/) {
@@ -51,6 +52,13 @@ while ($_ = shift) {
 	die "flags may only contain letters, digits, hyphens, dashes and underscores\n"
 	    unless $flag =~ /^[a-zA-Z0-9_-]+$/;
 	$defs{$flag} = $value;
+    } elsif (/^-I(.*)$/) {
+	if ($1 ne "") {
+	    $flag = $1;
+	} else {
+	    $flag = shift;
+	}
+        push (@ipath, $flag);
     } elsif (/^-/) {
 	usage();
     } else {
@@ -229,10 +237,12 @@ while(<$inf>) {
 	$inf = gensym();
 	$file = postprocess($1);
 
-	# Try cwd and $ibase.
-	open($inf, "<" . $file) 
-	    or open($inf, "<" . $ibase . "/" . $file)
-		or die "cannot open $file or $ibase/$file: $!\n";
+	# Try cwd and $ibase, then explicit -I paths.
+	$done = 0;
+	foreach $path (".", $ibase, @ipath) {
+	    open($inf, "<" . $path . "/" . $file) and ($done = 1, last);
+	}
+	die "cannot find $file" if !$done;
 	next;
     };
 
