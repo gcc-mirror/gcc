@@ -1057,9 +1057,10 @@ gfc_trans_common (gfc_namespace *ns)
   /* Translate all named common blocks.  */
   gfc_traverse_symtree (ns->common_root, named_common);
 
-  /* Commit the newly created symbols for common blocks.  */
-  gfc_commit_symbols ();
-
   /* Translate local equivalence.  */
   finish_equivalences (ns);
+
+  /* Commit the newly created symbols for common blocks and module
+     equivalences.  */
+  gfc_commit_symbols ();
 }

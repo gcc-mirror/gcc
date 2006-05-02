@@ -182,6 +182,9 @@ static gfc_use_rename *gfc_rename_list;
 static pointer_info *pi_root;
 static int symbol_number;	/* Counter for assigning symbol numbers */
 
+/* Tells mio_expr_ref not to load unused equivalence members.  */
+static bool in_load_equiv;
+
 
 
 /*****************************************************************/
@@ -2135,6 +2138,11 @@ mio_symtree_ref (gfc_symtree ** stp)
     {
       require_atom (ATOM_INTEGER);
       p = get_integer (atom_int);
+
+      /* An unused equivalence member; bail out.  */
+      if (in_load_equiv && p->u.rsym.symtree == NULL)
+	return;
+      
       if (p->type == P_UNKNOWN)
         p->type = P_SYMBOL;
 
@@ -3008,14 +3016,18 @@ load_commons(void)
   mio_rparen();
 }
 
-/* load_equiv()-- Load equivalences. */
+/* load_equiv()-- Load equivalences. The flag in_load_equiv informs
+   mio_expr_ref of this so that unused variables are not loaded and
+   so that the expression can be safely freed.*/
 
 static void
 load_equiv(void)
 {
-  gfc_equiv *head, *tail, *end;
+  gfc_equiv *head, *tail, *end, *eq;
+  bool unused;
 
   mio_lparen();
+  in_load_equiv = true;
 
   end = gfc_current_ns->equiv;
   while(end != NULL && end->next != NULL)
@@ -3039,16 +3051,40 @@ load_equiv(void)
 	mio_expr(&tail->expr);
       }
 
+    /* Unused variables have no symtree.  */
+    unused = false;
+    for (eq = head; eq; eq = eq->eq)
+      {
+	if (!eq->expr->symtree)
+	  {
+	    unused = true;
+	    break;
+	  }
+      }
+
+    if (unused)
+      {
+	for (eq = head; eq; eq = head)
+	  {
+	    head = eq->eq;
+	    gfc_free_expr (eq->expr);
+	    gfc_free (eq);
+	  }
+      }
+
     if (end == NULL)
       gfc_current_ns->equiv = head;
     else
       end->next = head;
 
-    end = head;
+    if (head != NULL)
+      end = head;
+
     mio_rparen();
   }
 
   mio_rparen();
+  in_load_equiv = false;
 }
 
 /* Recursive function to traverse the pointer_info tree and load a
