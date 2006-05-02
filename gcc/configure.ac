@@ -1918,7 +1918,8 @@ fi
 gcc_cv_binutils_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/binutils
 AS_VAR_SET_IF(gcc_cv_nm,, [
 if test -f $gcc_cv_binutils_srcdir/configure.in \
-     && test -f ../binutils/Makefile; then
+     && test -f ../binutils/Makefile \
+     && test x$build = x$host; then
 	gcc_cv_nm=../binutils/nm-new$build_exeext
 elif test -x nm$build_exeext; then
 	gcc_cv_nm=./nm$build_exeext
@@ -1944,7 +1945,8 @@ AC_SUBST(ORIGINAL_NM_FOR_TARGET)
 # Figure out what objdump we will be using.
 AS_VAR_SET_IF(gcc_cv_objdump,, [
 if test -f $gcc_cv_binutils_srcdir/configure.in \
-     && test -f ../binutils/Makefile; then
+     && test -f ../binutils/Makefile \
+     && test x$build = x$host; then
 	# Single tree build which includes binutils.
 	gcc_cv_objdump=../binutils/objdump$build_exeext
 elif test -x objdump$build_exeext; then
