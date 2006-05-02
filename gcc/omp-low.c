@@ -2227,6 +2227,11 @@ remove_exit_barrier (struct omp_region *region)
 
   exit_bb = region->exit;
 
+  /* If the parallel region doesn't return, we don't have REGION->EXIT
+     block at all.  */
+  if (! exit_bb)
+    return;
+
   /* The last insn in the block will be the parallel's OMP_RETURN.  The
      workshare's OMP_RETURN will be in a preceding block.  The kinds of
      statements that can appear in between are extremely limited -- no
@@ -2372,15 +2377,20 @@ expand_omp_parallel (struct omp_region *region)
 	 regions has invalidated it.  */
       free_dominance_info (CDI_DOMINATORS);
       new_bb = move_sese_region_to_fn (child_cfun, entry_bb, exit_bb);
-      single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
+      if (exit_bb)
+	single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
       cgraph_add_new_function (child_fn);
 
       /* Convert OMP_RETURN into a RETURN_EXPR.  */
-      si = bsi_last (exit_bb);
-      gcc_assert (!bsi_end_p (si) && TREE_CODE (bsi_stmt (si)) == OMP_RETURN);
-      t = build1 (RETURN_EXPR, void_type_node, NULL);
-      bsi_insert_after (&si, t, TSI_SAME_STMT);
-      bsi_remove (&si, true);
+      if (exit_bb)
+	{
+	  si = bsi_last (exit_bb);
+	  gcc_assert (!bsi_end_p (si)
+		      && TREE_CODE (bsi_stmt (si)) == OMP_RETURN);
+	  t = build1 (RETURN_EXPR, void_type_node, NULL);
+	  bsi_insert_after (&si, t, TSI_SAME_STMT);
+	  bsi_remove (&si, true);
+	}
     }
 
   /* Emit a library call to launch the children threads.  */

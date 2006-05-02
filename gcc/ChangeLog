@@ -1,5 +1,10 @@
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/27328
+	* omp-low.c (remove_exit_barrier): Handle NULL exit_bb.
+	(expand_omp_parallel): Likewise.
+	* tree-cfg.c (move_sese_region_to_fn): Likewise.
+
 	PR middle-end/27325
 	* omp-low.c (lower_omp_sections): Call maybe_catch_exception
 	on statement list containing also constructors and destructors.
