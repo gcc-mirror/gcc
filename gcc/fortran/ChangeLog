@@ -1,3 +1,15 @@
+2006-05-02 Paul Thomas <pault@gcc.gnu.org>
+
+        PR fortran/27269
+        * module.c: Add static flag in_load_equiv.
+        (mio_expr_ref): Return if no symtree and in_load_equiv.
+        (load_equiv): If any of the equivalence members have no symtree, free
+        the equivalence and the associated expressions.
+
+        PR fortran/27324
+        * trans-common.c (gfc_trans_common): Invert the order of calls to
+        finish equivalences and gfc_commit_symbols.
+
 2006-04-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/25681
