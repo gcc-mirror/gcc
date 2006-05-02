@@ -1142,8 +1142,8 @@ if test x"$have_gmp" = xyes; then
 #include <mpfr.h>], [mpfr_t n; mpfr_init(n);],
     [AC_MSG_RESULT([yes])],  [AC_MSG_RESULT([no]); have_gmp=no])
   LIBS="$saved_LIBS"
-  CFLAGS="$saved_CFLAGS"
 fi
+CFLAGS="$saved_CFLAGS"
 
 # Flags needed for both GMP and/or MPFR
 AC_SUBST(gmplibs)

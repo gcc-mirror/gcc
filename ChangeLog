@@ -1,3 +1,8 @@
+2006-05-01  DJ Delorie  <dj@redhat.com>
+
+	* configure.in: Restore CFLAGS if GM P isn't present.
+	* configure: Regenerate.
+
 2006-05-01  Richard Guenther  <rguenther@suse.de>
 
 	* MAINTAINERS (Various Maintainers): Add myself as libgcc-math

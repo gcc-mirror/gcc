@@ -2354,8 +2354,8 @@ else
 fi
 rm -f conftest*
   LIBS="$saved_LIBS"
-  CFLAGS="$saved_CFLAGS"
 fi
+CFLAGS="$saved_CFLAGS"
 
 # Flags needed for both GMP and/or MPFR
 
