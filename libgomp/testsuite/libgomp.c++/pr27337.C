@@ -48,11 +48,7 @@ foo ()
 #pragma omp parallel for firstprivate (ret) lastprivate (ret) \
 			 schedule (static, 1) num_threads (4)
   for (i = 0; i < 4; i++)
-    {
-      ret.i += omp_get_thread_num ();
-      // FIXME: The following barrier should be unnecessary.
-#pragma omp barrier
-    }
+    ret.i += omp_get_thread_num ();
 
   return ret;
 }

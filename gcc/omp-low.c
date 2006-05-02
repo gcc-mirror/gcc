@@ -112,6 +112,8 @@ struct omp_region *root_omp_region;
 
 static void scan_omp (tree *, omp_context *);
 static void lower_omp (tree *, omp_context *);
+static tree lookup_decl_in_outer_ctx (tree, omp_context *);
+static tree maybe_lookup_decl_in_outer_ctx (tree, omp_context *);
 
 /* Find an OpenMP clause of type KIND within CLAUSES.  */
 
@@ -560,7 +562,7 @@ build_outer_var_ref (tree var, omp_context *ctx)
 {
   tree x;
 
-  if (is_global_var (var))
+  if (is_global_var (maybe_lookup_decl_in_outer_ctx (var, ctx)))
     x = var;
   else if (is_variable_sized (var))
     {
@@ -674,9 +676,6 @@ omp_copy_decl (tree var, copy_body_data *cb)
   omp_context *ctx = (omp_context *) cb;
   tree new_var;
 
-  if (is_global_var (var) || decl_function_context (var) != ctx->cb.src_fn)
-    return var;
-
   if (TREE_CODE (var) == LABEL_DECL)
     {
       new_var = create_artificial_label ();
@@ -694,6 +693,9 @@ omp_copy_decl (tree var, copy_body_data *cb)
       if (new_var)
 	return new_var;
     }
+
+  if (is_global_var (var) || decl_function_context (var) != ctx->cb.src_fn)
+    return var;
 
   return error_mark_node;
 }
@@ -937,6 +939,10 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  decl = OMP_CLAUSE_DECL (c);
 	  gcc_assert (!is_variable_sized (decl));
 	  by_ref = use_pointer_for_field (decl, true);
+	  /* Global variables don't need to be copied,
+	     the receiver side will use them directly.  */
+	  if (is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx)))
+	    break;
 	  if (! TREE_READONLY (decl)
 	      || TREE_ADDRESSABLE (decl)
 	      || by_ref
@@ -963,7 +969,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	do_private:
 	  if (is_variable_sized (decl))
 	    break;
-	  else if (is_parallel_ctx (ctx))
+	  else if (is_parallel_ctx (ctx)
+		   && ! is_global_var (maybe_lookup_decl_in_outer_ctx (decl,
+								       ctx)))
 	    {
 	      by_ref = use_pointer_for_field (decl, false);
 	      install_var_field (decl, by_ref, ctx);
@@ -1029,7 +1037,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 
 	case OMP_CLAUSE_SHARED:
 	  decl = OMP_CLAUSE_DECL (c);
-	  fixup_remapped_decl (decl, ctx, false);
+	  if (! is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx)))
+	    fixup_remapped_decl (decl, ctx, false);
 	  break;
 
 	case OMP_CLAUSE_COPYPRIVATE:
@@ -1415,6 +1424,23 @@ lookup_decl_in_outer_ctx (tree decl, omp_context *ctx)
 }
 
 
+/* Similar to lookup_decl_in_outer_ctx, but return DECL if not found
+   in outer contexts.  */
+
+static tree
+maybe_lookup_decl_in_outer_ctx (tree decl, omp_context *ctx)
+{
+  tree t = NULL;
+  omp_context *up;
+
+  if (ctx->is_nested)
+    for (up = ctx->outer, t = NULL; up && t == NULL; up = up->outer)
+      t = maybe_lookup_decl (decl, up);
+
+  return t ? t : decl;
+}
+
+
 /* Construct the initialization value for reduction CLAUSE.  */
 
 tree
@@ -1493,6 +1519,7 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
   tree_stmt_iterator diter;
   tree c, dtor, copyin_seq, x, args, ptr;
   bool copyin_by_ref = false;
+  bool lastprivate_firstprivate = false;
   int pass;
 
   *dlist = alloc_stmt_list ();
@@ -1518,14 +1545,22 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 		continue;
 	      break;
 	    case OMP_CLAUSE_SHARED:
+	      if (maybe_lookup_decl (OMP_CLAUSE_DECL (c), ctx) == NULL)
+		{
+		  gcc_assert (is_global_var (OMP_CLAUSE_DECL (c)));
+		  continue;
+		}
 	    case OMP_CLAUSE_FIRSTPRIVATE:
 	    case OMP_CLAUSE_COPYIN:
 	    case OMP_CLAUSE_REDUCTION:
 	      break;
 	    case OMP_CLAUSE_LASTPRIVATE:
-	      if (pass != 0
-		  && OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (c))
-		continue;
+	      if (OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (c))
+		{
+		  lastprivate_firstprivate = true;
+		  if (pass != 0)
+		    continue;
+		}
 	      break;
 	    default:
 	      continue;
@@ -1611,6 +1646,9 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 	  switch (OMP_CLAUSE_CODE (c))
 	    {
 	    case OMP_CLAUSE_SHARED:
+	      /* Shared global vars are just accessed directly.  */
+	      if (is_global_var (new_var))
+		break;
 	      /* Set up the DECL_VALUE_EXPR for shared variables now.  This
 		 needs to be delayed until after fixup_child_record_type so
 		 that we get the correct type during the dereference.  */
@@ -1700,8 +1738,10 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 
   /* If any copyin variable is passed by reference, we must ensure the
      master thread doesn't modify it before it is copied over in all
-     threads.  */
-  if (copyin_by_ref)
+     threads.  Similarly for variables in both firstprivate and
+     lastprivate clauses we need to ensure the lastprivate copying
+     happens after firstprivate copying in all threads.  */
+  if (copyin_by_ref || lastprivate_firstprivate)
     build_omp_barrier (ilist);
 }
 
@@ -1919,6 +1959,9 @@ lower_send_clauses (tree clauses, tree *ilist, tree *olist, omp_context *ctx)
       if (ctx->is_nested)
 	var = lookup_decl_in_outer_ctx (val, ctx);
 
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_COPYIN
+	  && is_global_var (var))
+	continue;
       if (is_variable_sized (val))
 	continue;
       by_ref = use_pointer_for_field (val, false);
