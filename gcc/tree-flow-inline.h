@@ -1,5 +1,5 @@
 /* Inline functions for tree-flow.h
-   Copyright (C) 2001, 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1242,7 +1242,7 @@ single_phi_def (tree stmt, int flags)
 }
 
 /* Initialize the iterator PTR for uses matching FLAGS in PHI.  FLAGS should
-   be either SSA_OP_USES or SAS_OP_VIRTUAL_USES.  */
+   be either SSA_OP_USES or SSA_OP_VIRTUAL_USES.  */
 static inline use_operand_p
 op_iter_init_phiuse (ssa_op_iter *ptr, tree phi, int flags)
 {
