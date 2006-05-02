@@ -7541,12 +7541,9 @@ grokdeclarator (const cp_declarator *declarator,
 			pedwarn ("constructors cannot be declared virtual");
 			virtualp = 0;
 		      }
-		    if (decl_context == FIELD)
-		      {
-			TYPE_HAS_CONSTRUCTOR (ctype) = 1;
-			if (sfk != sfk_constructor)
-			  return NULL_TREE;
-		      }
+		    if (decl_context == FIELD
+			&& sfk != sfk_constructor)
+		      return NULL_TREE;
 		  }
 		if (decl_context == FIELD)
 		  staticp = 0;
@@ -8816,8 +8813,9 @@ copy_fn_p (tree d)
 
   gcc_assert (DECL_FUNCTION_MEMBER_P (d));
 
-  if (DECL_TEMPLATE_INFO (d)
-      && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (d)))
+  if (TREE_CODE (d) == TEMPLATE_DECL
+      || (DECL_TEMPLATE_INFO (d)
+	  && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (d))))
     /* Instantiations of template member functions are never copy
        functions.  Note that member functions of templated classes are
        represented as template functions internally, and we must
@@ -8859,11 +8857,17 @@ copy_fn_p (tree d)
 
 void grok_special_member_properties (tree decl)
 {
+  tree class_type;
+
   if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-    ; /* Not special.  */
-  else if (DECL_CONSTRUCTOR_P (decl))
+    return;
+
+  class_type = DECL_CONTEXT (decl);
+  if (DECL_CONSTRUCTOR_P (decl))
     {
       int ctor = copy_fn_p (decl);
+
+      TYPE_HAS_CONSTRUCTOR (class_type) = 1;
 
       if (ctor > 0)
 	{
@@ -8874,12 +8878,12 @@ void grok_special_member_properties (tree decl)
 	     X&, volatile X& or const volatile X&, and either there
 	     are no other parameters or else all other parameters have
 	     default arguments.  */
-	  TYPE_HAS_INIT_REF (DECL_CONTEXT (decl)) = 1;
+	  TYPE_HAS_INIT_REF (class_type) = 1;
 	  if (ctor > 1)
-	    TYPE_HAS_CONST_INIT_REF (DECL_CONTEXT (decl)) = 1;
+	    TYPE_HAS_CONST_INIT_REF (class_type) = 1;
 	}
       else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
-	TYPE_HAS_DEFAULT_CONSTRUCTOR (DECL_CONTEXT (decl)) = 1;
+	TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
     }
   else if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
     {
@@ -8893,9 +8897,9 @@ void grok_special_member_properties (tree decl)
 
       if (assop)
 	{
-	  TYPE_HAS_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
+	  TYPE_HAS_ASSIGN_REF (class_type) = 1;
 	  if (assop != 1)
-	    TYPE_HAS_CONST_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
+	    TYPE_HAS_CONST_ASSIGN_REF (class_type) = 1;
 	}
     }
 }
@@ -11203,7 +11207,6 @@ start_method (cp_decl_specifier_seq *declspecs,
 	  fndecl = copy_node (fndecl);
 	  TREE_CHAIN (fndecl) = NULL_TREE;
 	}
-      grok_special_member_properties (fndecl);
     }
 
   finish_decl (fndecl, NULL_TREE, NULL_TREE);

@@ -924,6 +924,9 @@ add_method (tree type, tree method, tree using_decl)
       CLASSTYPE_METHOD_VEC (type) = method_vec;
     }
 
+  /* Maintain TYPE_HAS_CONSTRUCTOR, etc.  */
+  grok_special_member_properties (method);
+
   /* Constructors and destructors go in special slots.  */
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
     slot = CLASSTYPE_CONSTRUCTOR_SLOT;

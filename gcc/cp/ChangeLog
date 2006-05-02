@@ -1,3 +1,16 @@
+2006-05-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27309
+	* class.c (add_method): Call grok_special_member_properties.
+	* decl.c (grokdeclarator): Don't call it here.
+	(copy_fn_p): A TEMPLATE_DECL is never a copy constructor or
+	assignment operator.  Set TYPE_HAS_CONSTURCTOR if DECL is a
+	constructor.
+	(start_method): Don't call grok_special_member_properties.
+	* method.c (implicitly_declare_fn): Likewise.
+	* pt.c (instantiate_class_template): Likewise.
+	* decl2.c (grokfield): Likewise.
+
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27337
