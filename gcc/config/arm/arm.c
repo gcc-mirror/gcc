@@ -14701,6 +14701,7 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 {
   static int thunk_label = 0;
   char label[256];
+  char labelpc[256];
   int mi_delta = delta;
   const char *const mi_op = mi_delta < 0 ? "sub" : "add";
   int shift = 0;
@@ -14715,6 +14716,23 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       fputs ("\tldr\tr12, ", file);
       assemble_name (file, label);
       fputc ('\n', file);
+      if (flag_pic)
+	{
+	  /* If we are generating PIC, the ldr instruction below loads
+	     "(target - 7) - .LTHUNKPCn" into r12.  The pc reads as
+	     the address of the add + 8, so we have:
+
+	     r12 = (target - 7) - .LTHUNKPCn + (.LTHUNKPCn + 8)
+	         = target + 1.
+
+	     Note that we have "+ 1" because some versions of GNU ld
+	     don't set the low bit of the result for R_ARM_REL32
+	     relocations against thumb function symbols.  */
+	  ASM_GENERATE_INTERNAL_LABEL (labelpc, "LTHUNKPC", labelno);
+	  assemble_name (file, labelpc);
+	  fputs (":\n", file);
+	  fputs ("\tadd\tr12, pc, r12\n", file);
+	}
     }
   while (mi_delta != 0)
     {
@@ -14735,7 +14753,20 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       ASM_OUTPUT_ALIGN (file, 2);
       assemble_name (file, label);
       fputs (":\n", file);
-      assemble_integer (XEXP (DECL_RTL (function), 0), 4, BITS_PER_WORD, 1);
+      if (flag_pic)
+	{
+	  /* Output ".word .LTHUNKn-7-.LTHUNKPCn".  */
+	  rtx tem = XEXP (DECL_RTL (function), 0);
+	  tem = gen_rtx_PLUS (GET_MODE (tem), tem, GEN_INT (-7));
+	  tem = gen_rtx_MINUS (GET_MODE (tem),
+			       tem,
+			       gen_rtx_SYMBOL_REF (Pmode,
+						   ggc_strdup (labelpc)));
+	  assemble_integer (tem, 4, BITS_PER_WORD, 1);
+	}
+      else
+	/* Output ".word .LTHUNKn".  */
+	assemble_integer (XEXP (DECL_RTL (function), 0), 4, BITS_PER_WORD, 1);
     }
   else
     {

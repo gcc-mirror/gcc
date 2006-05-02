@@ -1,3 +1,9 @@
+2006-05-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/27387
+	* arm.c (arm_output_mi_thunk): Use pc-relative addressing when
+	-mthumb -fPIC are used.
+
 2006-05-02  Joshua Kinard  <kumba@gentoo.org>
 
 	PR target/25871
