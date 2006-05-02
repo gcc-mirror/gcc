@@ -4814,7 +4814,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   /* If ENTRY does not strictly dominate EXIT, this cannot be an SESE
      region.  */
   gcc_assert (entry_bb != exit_bb
-              && dominated_by_p (CDI_DOMINATORS, exit_bb, entry_bb));
+              && (!exit_bb
+		  || dominated_by_p (CDI_DOMINATORS, exit_bb, entry_bb)));
 
   bbs = NULL;
   VEC_safe_push (basic_block, heap, bbs, entry_bb);
@@ -4835,15 +4836,25 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       remove_edge (e);
     }
 
-  num_exit_edges = EDGE_COUNT (exit_bb->succs);
-  exit_succ = (basic_block *) xcalloc (num_exit_edges, sizeof (basic_block));
-  exit_flag = (int *) xcalloc (num_exit_edges, sizeof (int));
-  i = 0;
-  for (ei = ei_start (exit_bb->succs); (e = ei_safe_edge (ei)) != NULL;)
+  if (exit_bb)
     {
-      exit_flag[i] = e->flags;
-      exit_succ[i++] = e->dest;
-      remove_edge (e);
+      num_exit_edges = EDGE_COUNT (exit_bb->succs);
+      exit_succ = (basic_block *) xcalloc (num_exit_edges,
+					   sizeof (basic_block));
+      exit_flag = (int *) xcalloc (num_exit_edges, sizeof (int));
+      i = 0;
+      for (ei = ei_start (exit_bb->succs); (e = ei_safe_edge (ei)) != NULL;)
+	{
+	  exit_flag[i] = e->flags;
+	  exit_succ[i++] = e->dest;
+	  remove_edge (e);
+	}
+    }
+  else
+    {
+      num_exit_edges = 0;
+      exit_succ = NULL;
+      exit_flag = NULL;
     }
 
   /* Switch context to the child function to initialize DEST_FN's CFG.  */
@@ -4923,7 +4934,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
      these helpers.  */
   cfun = dest_cfun;
   make_edge (ENTRY_BLOCK_PTR, entry_bb, EDGE_FALLTHRU);
-  make_edge (exit_bb,  EXIT_BLOCK_PTR, 0);
+  if (exit_bb)
+    make_edge (exit_bb,  EXIT_BLOCK_PTR, 0);
   cfun = saved_cfun;
 
   /* Back in the original function, the SESE region has disappeared,
@@ -4935,10 +4947,13 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   for (i = 0; i < num_exit_edges; i++)
     make_edge (bb, exit_succ[i], exit_flag[i]);
 
-  free (exit_flag);
+  if (exit_bb)
+    {
+      free (exit_flag);
+      free (exit_succ);
+    }
   free (entry_flag);
   free (entry_pred);
-  free (exit_succ);
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
   VEC_free (basic_block, heap, bbs);
