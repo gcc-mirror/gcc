@@ -1,5 +1,10 @@
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/27325
+	* omp-low.c (lower_omp_sections): Call maybe_catch_exception
+	on statement list containing also constructors and destructors.
+	(lower_omp_single, lower_omp_for, lower_omp_parallel): Likewise.
+
 	PR middle-end/27310
 	* except.c (duplicate_eh_regions): Fix clearing of
 	cfun->eh->region_array entries.

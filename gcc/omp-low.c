@@ -3415,7 +3415,6 @@ lower_omp_sections (tree *stmt_p, omp_context *ctx)
 
   block = make_node (BLOCK);
   bind = build3 (BIND_EXPR, void_type_node, NULL, body, block);
-  maybe_catch_exception (&BIND_EXPR_BODY (bind));
 
   olist = NULL_TREE;
   lower_reduction_clauses (OMP_SECTIONS_CLAUSES (stmt), &olist, ctx);
@@ -3436,6 +3435,8 @@ lower_omp_sections (tree *stmt_p, omp_context *ctx)
 
   append_to_statement_list (olist, &new_body);
   append_to_statement_list (dlist, &new_body);
+
+  maybe_catch_exception (&new_body);
 
   t = make_node (OMP_RETURN);
   OMP_RETURN_NOWAIT (t) = !!find_omp_clause (OMP_SECTIONS_CLAUSES (stmt),
@@ -3572,7 +3573,6 @@ lower_omp_single (tree *stmt_p, omp_context *ctx)
   lower_rec_input_clauses (OMP_SINGLE_CLAUSES (single_stmt),
 			   &BIND_EXPR_BODY (bind), &dlist, ctx);
   lower_omp (&OMP_SINGLE_BODY (single_stmt), ctx);
-  maybe_catch_exception (&OMP_SINGLE_BODY (single_stmt));
 
   append_to_statement_list (single_stmt, &BIND_EXPR_BODY (bind));
 
@@ -3584,6 +3584,8 @@ lower_omp_single (tree *stmt_p, omp_context *ctx)
   OMP_SINGLE_BODY (single_stmt) = NULL;
 
   append_to_statement_list (dlist, &BIND_EXPR_BODY (bind));
+
+  maybe_catch_exception (&BIND_EXPR_BODY (bind));
 
   t = make_node (OMP_RETURN);
   OMP_RETURN_NOWAIT (t) = !!find_omp_clause (OMP_SINGLE_CLAUSES (single_stmt),
@@ -3852,7 +3854,6 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
 
   append_to_statement_list (stmt, body_p);
 
-  maybe_catch_exception (&OMP_FOR_BODY (stmt));
   append_to_statement_list (OMP_FOR_BODY (stmt), body_p);
 
   t = make_node (OMP_CONTINUE);
@@ -3862,6 +3863,8 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
   lower_omp_for_lastprivate (&fd, &dlist, ctx);
   lower_reduction_clauses (OMP_FOR_CLAUSES (stmt), body_p, ctx);
   append_to_statement_list (dlist, body_p);
+
+  maybe_catch_exception (body_p);
 
   /* Region exit marker goes at the end of the loop body.  */
   t = make_node (OMP_RETURN);
@@ -3900,7 +3903,6 @@ lower_omp_parallel (tree *stmt_p, omp_context *ctx)
   par_ilist = NULL_TREE;
   lower_rec_input_clauses (clauses, &par_ilist, &par_olist, ctx);
   lower_omp (&par_body, ctx);
-  maybe_catch_exception (&par_body);
   lower_reduction_clauses (clauses, &par_olist, ctx);
 
   /* Declare all the variables created by mapping and the variables
@@ -3936,6 +3938,7 @@ lower_omp_parallel (tree *stmt_p, omp_context *ctx)
   append_to_statement_list (par_ilist, &new_body);
   append_to_statement_list (par_body, &new_body);
   append_to_statement_list (par_olist, &new_body);
+  maybe_catch_exception (&new_body);
   t = make_node (OMP_RETURN);
   append_to_statement_list (t, &new_body);
   OMP_PARALLEL_BODY (stmt) = new_body;
