@@ -1,3 +1,11 @@
+2006-05-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/27381
+	* tree-phinodes.c (remove_phi_arg_num): When moving a phi argument, 
+	maintain the same immediate_use links.
+	* tree-ssa-operands.c (dump_immediate_uses_for): Show iteration marker 
+	node rather than segfaulting.
+
 2006-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/27395

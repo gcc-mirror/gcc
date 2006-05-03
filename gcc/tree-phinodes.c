@@ -406,14 +406,20 @@ remove_phi_arg_num (tree phi, int i)
 
   gcc_assert (i < num_elem);
 
-  /* Delink the last item, which is being removed.  */
-  delink_imm_use (&(PHI_ARG_IMM_USE_NODE (phi, num_elem - 1)));
 
-  /* If we are not at the last element, switch the last element
-     with the element we want to delete.  */
+  /* Delink the item which is being removed.  */
+  delink_imm_use (&(PHI_ARG_IMM_USE_NODE (phi, i)));
+
+  /* If it is not the last element, move the last element
+     to the element we want to delete, resetting all the links. */
   if (i != num_elem - 1)
     {
-      SET_PHI_ARG_DEF (phi, i, PHI_ARG_DEF (phi, num_elem - 1));
+      use_operand_p old_p, new_p;
+      old_p = &PHI_ARG_IMM_USE_NODE (phi, num_elem - 1);
+      new_p = &PHI_ARG_IMM_USE_NODE (phi, i);
+      /* Set use on new node, and link into last elements's place.  */
+      *(new_p->use) = *(old_p->use);
+      relink_imm_use (new_p, old_p);
     }
 
   /* Shrink the vector and return.  Note that we do not have to clear
