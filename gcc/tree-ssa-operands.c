@@ -2513,10 +2513,13 @@ dump_immediate_uses_for (FILE *file, tree var)
 
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
-      if (!is_gimple_reg (USE_FROM_PTR (use_p)))
-	print_generic_stmt (file, USE_STMT (use_p), TDF_VOPS);
+      if (use_p->stmt == NULL && use_p->use == NULL)
+        fprintf (file, "***end of stmt iterator marker***\n");
       else
-	print_generic_stmt (file, USE_STMT (use_p), TDF_SLIM);
+	if (!is_gimple_reg (USE_FROM_PTR (use_p)))
+	  print_generic_stmt (file, USE_STMT (use_p), TDF_VOPS);
+	else
+	  print_generic_stmt (file, USE_STMT (use_p), TDF_SLIM);
     }
   fprintf(file, "\n");
 }
