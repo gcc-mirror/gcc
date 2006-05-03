@@ -1,7 +1,22 @@
+2006-05-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_WCHAR_T): Always check the
+	presence of wctype.h, for use in GLIBCXX_ENABLE_C99.
+	* configure: Regenerate.
+
+2006-05-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/6702 (again)
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Don't check non-C99
+	wchar_t functions...
+	(GLIBCXX_ENABLE_WCHAR_T): ... do that here.
+	* configure.ac: Adjust order of checks.
+	* configure: Regenerate.
+
 2006-04-26  Shantonu Sen  <ssen@opendarwin.org>
 
-         PR libstdc++/26513
-         * scripts/make_exports.pl: Use $ENV{NM_FOR_TARGET}, if present.
+	PR libstdc++/26513
+	* scripts/make_exports.pl: Use $ENV{NM_FOR_TARGET}, if present.
 
 2006-04-21  Paolo Carlini  <pcarlini@suse.de>
 

@@ -780,18 +780,6 @@ dnl
 AC_DEFUN([GLIBCXX_ENABLE_C99], [
   GLIBCXX_ENABLE(c99,$1,,[turns on ISO/IEC 9899:1999 support])
 
-  # Test wchar.h for mbstate_t, which is needed for char_traits and fpos
-  # even if C99 support is turned off.
-  AC_CHECK_HEADERS(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
-  AC_MSG_CHECKING([for mbstate_t])
-  AC_TRY_COMPILE([#include <wchar.h>],
-  [mbstate_t teststate;],
-  have_mbstate_t=yes, have_mbstate_t=no)
-  AC_MSG_RESULT($have_mbstate_t)
-  if test x"$have_mbstate_t" = xyes; then
-    AC_DEFINE(HAVE_MBSTATE_T,1,[Define if mbstate_t exists in wchar.h.])
-  fi
-
   if test x"$enable_c99" = x"yes"; then
 
   AC_LANG_SAVE
@@ -916,74 +904,17 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   ])
   AC_MSG_RESULT($ac_c99_stdlib)
 
-  # Check for the existence in <wchar.h> of wcstoull, WEOF, etc.
-  AC_CHECK_HEADERS(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
+  # Check for the existence in <wchar.h> of wcstold, etc.
   ac_c99_wchar=no;
   if test x"$ac_has_wchar_h" = xyes &&
      test x"$ac_has_wctype_h" = xyes; then
+    AC_MSG_CHECKING([for ISO C99 support in <wchar.h>])	
     AC_TRY_COMPILE([#include <wchar.h>
-                    #include <stddef.h>
-                    wint_t i;
-		    long l = WEOF;
-		    long j = WCHAR_MIN;
-		    long k = WCHAR_MAX;
                     namespace test
                     {
-		      using ::btowc;
-		      using ::fgetwc;
-		      using ::fgetws;
-		      using ::fputwc;
-		      using ::fputws;
-		      using ::fwide;
-		      using ::fwprintf; 
-		      using ::fwscanf;
-		      using ::getwc;
-		      using ::getwchar;
-		      using ::mbrlen; 
-		      using ::mbrtowc; 
-		      using ::mbsinit; 
-		      using ::mbsrtowcs; 
-		      using ::putwc;
-		      using ::putwchar;
-		      using ::swprintf; 
-		      using ::swscanf; 
-		      using ::ungetwc;
-		      using ::vfwprintf; 
-		      using ::vswprintf; 
-		      using ::vwprintf; 
-		      using ::wcrtomb; 
-		      using ::wcscat; 
-		      using ::wcschr; 
-		      using ::wcscmp; 
-		      using ::wcscoll; 
-		      using ::wcscpy; 
-		      using ::wcscspn; 
-		      using ::wcsftime; 
-		      using ::wcslen;
-		      using ::wcsncat; 
-		      using ::wcsncmp; 
-		      using ::wcsncpy; 
-		      using ::wcspbrk;
-		      using ::wcsrchr; 
-		      using ::wcsrtombs; 
-		      using ::wcsspn; 
-		      using ::wcsstr;
-		      using ::wcstod; 
-		      using ::wcstok; 
-		      using ::wcstol;
 		      using ::wcstold;
 		      using ::wcstoll;
-		      using ::wcstoul; 
 		      using ::wcstoull;
-		      using ::wcsxfrm; 
-		      using ::wctob; 
-		      using ::wmemchr;
-		      using ::wmemcmp;
-		      using ::wmemcpy;
-		      using ::wmemmove;
-		      using ::wmemset;
-		      using ::wprintf; 
-		      using ::wscanf; 
 		    }
 		   ],[],[ac_c99_wchar=yes], [ac_c99_wchar=no])
 
@@ -1014,7 +945,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
  	    	   [AC_DEFINE(HAVE_ISWBLANK,1,
 			[Defined if iswblank exists.])],[])
 
-    AC_MSG_CHECKING([for ISO C99 support in <wchar.h>])
     AC_MSG_RESULT($ac_c99_wchar)
   fi
 
@@ -1543,14 +1473,107 @@ dnl --disable-wchar_t leaves _GLIBCXX_USE_WCHAR_T undefined
 dnl  +  Usage:  GLIBCXX_ENABLE_WCHAR_T[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.
 dnl
-dnl Necessary support (probed along with C99 support) must also be present.
+dnl Necessary support must also be present.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_WCHAR_T], [
   GLIBCXX_ENABLE(wchar_t,$1,,[enable template specializations for 'wchar_t'])
-  if test x"$ac_c99_wchar" = x"yes" && test x"$enable_wchar_t" = x"yes"; then
+
+  # Test wchar.h for mbstate_t, which is needed for char_traits and fpos.
+  AC_CHECK_HEADERS(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
+  AC_MSG_CHECKING([for mbstate_t])
+  AC_TRY_COMPILE([#include <wchar.h>],
+  [mbstate_t teststate;],
+  have_mbstate_t=yes, have_mbstate_t=no)
+  AC_MSG_RESULT($have_mbstate_t)
+  if test x"$have_mbstate_t" = xyes; then
+    AC_DEFINE(HAVE_MBSTATE_T,1,[Define if mbstate_t exists in wchar.h.])
+  fi
+
+  # Test it always, for use in GLIBCXX_ENABLE_C99, together with
+  # ac_has_wchar_h.
+  AC_CHECK_HEADERS(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
+  
+  if test x"$enable_wchar_t" = x"yes"; then
+
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    
+    if test x"$ac_has_wchar_h" = xyes &&
+       test x"$ac_has_wctype_h" = xyes; then
+      AC_TRY_COMPILE([#include <wchar.h>
+                      #include <stddef.h>
+                      wint_t i;
+		      long l = WEOF;
+		      long j = WCHAR_MIN;
+		      long k = WCHAR_MAX;
+                      namespace test
+                      {
+			using ::btowc;
+			using ::fgetwc;
+			using ::fgetws;
+			using ::fputwc;
+			using ::fputws;
+			using ::fwide;
+			using ::fwprintf; 
+			using ::fwscanf;
+			using ::getwc;
+			using ::getwchar;
+ 			using ::mbrlen; 
+			using ::mbrtowc; 
+			using ::mbsinit; 
+			using ::mbsrtowcs; 
+			using ::putwc;
+			using ::putwchar;
+			using ::swprintf; 
+			using ::swscanf; 
+			using ::ungetwc;
+			using ::vfwprintf; 
+			using ::vswprintf; 
+			using ::vwprintf; 
+			using ::wcrtomb; 
+			using ::wcscat; 
+			using ::wcschr; 
+			using ::wcscmp; 
+			using ::wcscoll; 
+			using ::wcscpy; 
+			using ::wcscspn; 
+			using ::wcsftime; 
+			using ::wcslen;
+			using ::wcsncat; 
+			using ::wcsncmp; 
+			using ::wcsncpy; 
+			using ::wcspbrk;
+			using ::wcsrchr; 
+			using ::wcsrtombs; 
+			using ::wcsspn; 
+			using ::wcsstr;
+			using ::wcstod; 
+			using ::wcstok; 
+			using ::wcstol;
+			using ::wcstoul; 
+			using ::wcsxfrm; 
+			using ::wctob; 
+			using ::wmemchr;
+			using ::wmemcmp;
+			using ::wmemcpy;
+			using ::wmemmove;
+			using ::wmemset;
+			using ::wprintf; 
+			using ::wscanf; 
+		      }
+		     ],[],[], [enable_wchar_t=no])
+    else
+      enable_wchar_t=no
+    fi
+
+    AC_LANG_RESTORE
+  fi
+
+  if test x"$enable_wchar_t" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_WCHAR_T, 1,
               [Define if code specialized for wchar_t should be used.])
   fi
+
   AC_MSG_CHECKING([for enabled wchar_t specializations])
   AC_MSG_RESULT([$enable_wchar_t])
 ])
