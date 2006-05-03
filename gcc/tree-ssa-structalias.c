@@ -4485,7 +4485,7 @@ compute_points_to_sets (struct alias_info *ai)
       dump_constraints (dump_file);
     }
   
-  if (need_to_solve ())
+  if (1 || need_to_solve ())
     {
       if (dump_file)
 	fprintf (dump_file,

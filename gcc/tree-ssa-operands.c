@@ -1118,11 +1118,32 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
      { return (struct foos *)&foo; }
      
      (taken from 20000623-1.c)
+
+     The docs also say/imply that access through union pointers
+     is legal (but *not* if you take the address of the union member,
+     i.e. the inverse), such that you can do
+
+     typedef union {
+       int d;
+     } U;
+
+     int rv;
+     void breakme()
+     {
+       U *rv0;
+       U *pretmp = (U*)&rv;
+       rv0 = pretmp;
+       rv0->d = 42;    
+     }
+     To implement this, we just punt on accesses through union
+     pointers entirely.
   */
   else if (ref 
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
 	   && !MTAG_P (alias)
+	   && (TREE_CODE (base) != INDIRECT_REF
+	       || TREE_CODE (TREE_TYPE (base)) != UNION_TYPE)
 	   && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
 	   && TREE_CODE (TREE_TYPE (alias)) != COMPLEX_TYPE
 	   && !POINTER_TYPE_P (TREE_TYPE (alias)))
