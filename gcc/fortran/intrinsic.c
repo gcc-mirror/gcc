@@ -224,7 +224,8 @@ add_sym (const char *name, int elemental, int actual_ok ATTRIBUTE_UNUSED,
 
   /* First check that the intrinsic belongs to the selected standard.
      If not, don't add it to the symbol list.  */
-  if (!(gfc_option.allow_std & standard))
+  if (!(gfc_option.allow_std & standard)
+      && gfc_option.flag_all_intrinsics == 0)
     return;
 
   switch (sizing)
@@ -782,7 +783,8 @@ make_generic (const char *name, gfc_generic_isym_id generic_id, int standard)
 {
   gfc_intrinsic_sym *g;
 
-  if (!(gfc_option.allow_std & standard))
+  if (!(gfc_option.allow_std & standard)
+      && gfc_option.flag_all_intrinsics == 0)
     return;
 
   if (sizing != SZ_NOTHING)
@@ -824,7 +826,8 @@ make_alias (const char *name, int standard)
 
   /* First check that the intrinsic belongs to the selected standard.
      If not, don't add it to the symbol list.  */
-  if (!(gfc_option.allow_std & standard))
+  if (!(gfc_option.allow_std & standard)
+      && gfc_option.flag_all_intrinsics == 0)
     return;
 
   switch (sizing)

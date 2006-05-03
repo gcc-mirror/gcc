@@ -1614,6 +1614,7 @@ typedef struct
   int warn_underflow;
   int warn_unused_labels;
 
+  int flag_all_intrinsics;
   int flag_default_double;
   int flag_default_integer;
   int flag_default_real;

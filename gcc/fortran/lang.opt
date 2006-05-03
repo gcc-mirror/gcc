@@ -67,7 +67,7 @@ Warn about \"suspicious\" constructs
 
 Wtabs
 Fortran
-Warn about nonconforming uses of the tab character
+Permit nonconforming uses of the tab character
 
 Wunderflow
 Fortran
@@ -76,6 +76,10 @@ Warn about underflow of numerical constant expressions
 Wunused-labels
 Fortran
 Warn when a label is unused
+
+fall-intrinsics
+Fortran RejectNegative
+All intrinsics procedures are available regardless of selected standard
 
 fautomatic
 Fortran

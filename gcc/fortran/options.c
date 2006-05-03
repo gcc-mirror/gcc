@@ -61,6 +61,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.warn_underflow = 1;
   gfc_option.warn_unused_labels = 0;
 
+  gfc_option.flag_all_intrinsics = 0;
   gfc_option.flag_default_double = 0;
   gfc_option.flag_default_integer = 0;
   gfc_option.flag_default_real = 0;
@@ -424,6 +425,18 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_Wunused_labels:
       gfc_option.warn_unused_labels = value;
       break;
+
+    case OPT_fall_intrinsics:
+      gfc_option.flag_all_intrinsics = 1;
+      break;
+
+    case OPT_fautomatic:
+      gfc_option.flag_automatic = value;
+      break;
+
+    case OPT_fbackslash:
+      gfc_option.flag_backslash = value;
+      break;
       
     case OPT_fcray_pointer:
       gfc_option.flag_cray_pointer = value;
@@ -435,14 +448,6 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fdollar_ok:
       gfc_option.flag_dollar_ok = value;
-      break;
-
-    case OPT_fautomatic:
-      gfc_option.flag_automatic = value;
-      break;
-
-    case OPT_fbackslash:
-      gfc_option.flag_backslash = value;
       break;
 
     case OPT_fd_lines_as_code:
