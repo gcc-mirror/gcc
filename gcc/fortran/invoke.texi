@@ -116,7 +116,7 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options Controlling Fortran Dialect}.
 @gccoptlist{
--ffree-form  -fno-fixed-form @gol
+-fall-intrinsics -ffree-form  -fno-fixed-form @gol
 -fdollar-ok  -fimplicit-none  -fmax-identifier-length @gol
 -std=@var{std} -fd-lines-as-code -fd-lines-as-comments @gol
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
@@ -190,6 +190,12 @@ that the compiler accepts:
 Specify the layout used by the source file.  The free form layout
 was introduced in Fortran 90.  Fixed form was traditionally used in
 older Fortran programs.
+
+@cindex -fall-intrinsics
+@item -fall-intrinsics
+Accept all of the intrinsic procedures provided in libgfortran 
+without regard to the setting of @option{-std}.  In particular, 
+this option can be quite useful with @option{-std=f95}.
 
 @cindex option, -fd-lines-as-code
 @cindex -fd-lines-as-code, option
