@@ -4510,11 +4510,11 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel)
 	      && DECL_BY_REFERENCE (TREE_OPERAND (decl, 0)))
 	    OMP_CLAUSE_DECL (c) = decl = TREE_OPERAND (decl, 0);
 	  omp_add_variable (ctx, decl, flags);
-	  if (TREE_CODE (c) == OMP_CLAUSE_REDUCTION
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 	      && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	    {
 	      omp_add_variable (ctx, OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
-				GOVD_LOCAL);
+				GOVD_LOCAL | GOVD_SEEN);
 	      gimplify_omp_ctxp = ctx;
 	      push_gimplify_context ();
 	      gimplify_stmt (&OMP_CLAUSE_REDUCTION_INIT (c));
