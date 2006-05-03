@@ -1,5 +1,9 @@
 2006-05-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27102
+	* decl.c (grokdeclarator): Robustify checks for defining members
+	of incomplete types.
+
 	PR c++/27309
 	* class.c (add_method): Call grok_special_member_properties.
 	* decl.c (grokdeclarator): Don't call it here.
