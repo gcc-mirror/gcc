@@ -1,3 +1,11 @@
+2006-05-02  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/26626
+	* tree-ssa-structalias.c (compute_points_to_sets): For now, solve
+	always.
+	* tree-ssa-operands.c (access_can_touch_variable): Allow
+	typecasting through union pointers.
+
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/26943
