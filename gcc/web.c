@@ -61,25 +61,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 
 
-/* This entry is allocated for each reference in the insn stream.  */
-struct web_entry
-{
-  /* Pointer to the parent in the union/find tree.  */
-  struct web_entry *pred;
-  /* Newly assigned register to the entry.  Set only for roots.  */
-  rtx reg;
-};
-
-static struct web_entry *unionfind_root (struct web_entry *);
-static void unionfind_union (struct web_entry *, struct web_entry *);
-static void union_defs (struct df *, struct df_ref *, struct web_entry *, 
-                        struct web_entry *);
 static rtx entry_register (struct web_entry *, struct df_ref *, char *);
 static void replace_ref (struct df_ref *, rtx);
 
 /* Find the root of unionfind tree (the representative of set).  */
 
-static struct web_entry *
+struct web_entry *
 unionfind_root (struct web_entry *element)
 {
   struct web_entry *element1 = element, *element2;
@@ -95,30 +82,48 @@ unionfind_root (struct web_entry *element)
   return element;
 }
 
-/* Union sets.  */
+/* Union sets.  
+   Return true if FIRST and SECOND points to the same web entry structure and
+   nothing is done.  Otherwise, return false.  */
 
-static void
+bool
 unionfind_union (struct web_entry *first, struct web_entry *second)
 {
   first = unionfind_root (first);
   second = unionfind_root (second);
   if (first == second)
-    return;
+    return true;
   second->pred = first;
+  return false;
 }
 
 /* For each use, all possible defs reaching it must come in the same
-   register, union them.  */
+   register, union them.
+   FUN is the function that does the union.  */
 
-static void
+void
 union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
-            struct web_entry *use_entry)
+ 	    struct web_entry *use_entry,
+ 	    bool (*fun) (struct web_entry *, struct web_entry *))
 {
   rtx insn = DF_REF_INSN (use);
   struct df_link *link = DF_REF_CHAIN (use);
-  struct df_ref *use_link = DF_INSN_USES (df, insn);
-  struct df_ref *def_link = DF_INSN_DEFS (df, insn);
-  rtx set = single_set (insn);
+  struct df_ref *use_link;
+  struct df_ref *def_link;
+  rtx set;
+
+  if (insn)
+    {
+      use_link = DF_INSN_USES (df, insn);
+      def_link = DF_INSN_DEFS (df, insn);
+      set = single_set (insn);
+    }
+  else
+    {
+      use_link = NULL;
+      def_link = NULL;
+      set = NULL;
+    }
 
   /* Some instructions may use match_dup for their operands.  In case the
      operands are dead, we will assign them different pseudos, creating
@@ -129,8 +134,8 @@ union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
     {
       if (use != use_link
 	  && DF_REF_REAL_REG (use) == DF_REF_REAL_REG (use_link))
-	unionfind_union (use_entry + DF_REF_ID (use),
-		         use_entry + DF_REF_ID (use_link));
+ 	(*fun) (use_entry + DF_REF_ID (use),
+ 		use_entry + DF_REF_ID (use_link));
       use_link = use_link->next_ref;
     }
 
@@ -145,15 +150,15 @@ union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
       while (def_link)
 	{
 	  if (DF_REF_REAL_REG (use) == DF_REF_REAL_REG (def_link))
-	    unionfind_union (use_entry + DF_REF_ID (use),
-			     def_entry + DF_REF_ID (def_link));
+ 	    (*fun) (use_entry + DF_REF_ID (use),
+ 		    def_entry + DF_REF_ID (def_link));
 	  def_link = def_link->next_ref;
 	}
     }
   while (link)
     {
-      unionfind_union (use_entry + DF_REF_ID (use),
-		       def_entry + DF_REF_ID (link->ref));
+      (*fun) (use_entry + DF_REF_ID (use),
+	      def_entry + DF_REF_ID (link->ref));
       link = link->next;
     }
 
@@ -161,13 +166,18 @@ union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
      register.  Find it and union.  */
   if (use->flags & DF_REF_READ_WRITE)
     {
-      struct df_ref *link = DF_INSN_DEFS (df, DF_REF_INSN (use));
+      struct df_ref *link;
+
+      if (DF_REF_INSN (use))
+	link = DF_INSN_DEFS (df, DF_REF_INSN (use));
+      else
+	link = NULL;
 
       while (link)
 	{
 	  if (DF_REF_REAL_REG (link) == DF_REF_REAL_REG (use))
-	    unionfind_union (use_entry + DF_REF_ID (use),
-			     def_entry + DF_REF_ID (link));
+ 	    (*fun) (use_entry + DF_REF_ID (use),
+ 		    def_entry + DF_REF_ID (link));
 	  link = link->next_ref;
 	}
     }
@@ -258,7 +268,7 @@ web_main (void)
 
   /* Produce the web.  */
   for (i = 0; i < DF_USES_SIZE (df); i++)
-    union_defs (df, DF_USES_GET (df, i), def_entry, use_entry);
+    union_defs (df, DF_USES_GET (df, i), def_entry, use_entry, unionfind_union);
 
   /* Update the instruction stream, allocating new registers for split pseudos
      in progress.  */

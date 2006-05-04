@@ -1001,6 +1001,8 @@ extern basic_block get_bb_original (basic_block);
 extern void set_bb_copy (basic_block, basic_block);
 extern basic_block get_bb_copy (basic_block);
 
+extern rtx insert_insn_end_bb_new (rtx, basic_block);
+
 #include "cfghooks.h"
 
 /* In struct-equiv.c */
