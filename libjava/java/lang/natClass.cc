@@ -115,9 +115,19 @@ java::lang::Class::getClassLoader (void)
   if (s != NULL)
     {
       jclass caller = _Jv_StackTrace::GetCallingClass (&Class::class$);
-      ClassLoader *caller_loader = NULL;
-      if (caller)
-	caller_loader = caller->getClassLoaderInternal();
+      return getClassLoader (caller);
+   }
+
+  return loader;
+}
+
+java::lang::ClassLoader *
+java::lang::Class::getClassLoader (jclass caller)
+{
+  java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
+  if (s != NULL)
+    {
+      ClassLoader *caller_loader = caller->getClassLoaderInternal();
 
       // If the caller has a non-null class loader, and that loader
       // is not this class' loader or an ancestor thereof, then do a

@@ -2020,6 +2020,86 @@ build_class_init (tree clas, tree expr)
   return init;
 }
 
+
+
+/* Rewrite expensive calls that require stack unwinding at runtime to
+   cheaper alternatives.  The logic here performs thse
+   transformations:
+
+   java.lang.Class.forName("foo") -> java.lang.Class.forName("foo", class$)
+   java.lang.Class.getClassLoader() -> java.lang.Class.getClassLoader(class$)
+
+*/
+
+typedef struct
+{
+  const char *classname;
+  const char *method;
+  const char *signature;
+  const char *new_signature;
+  int flags;
+  tree (*rewrite_arglist) (tree arglist);
+} rewrite_rule;
+
+/* Add this.class to the end of an arglist.  */
+
+static tree 
+rewrite_arglist_getclass (tree arglist)
+{
+  return chainon (arglist, 
+		  tree_cons (NULL_TREE, build_class_ref (output_class), NULL_TREE));
+}
+
+static rewrite_rule rules[] =
+  {{"java.lang.Class", "getClassLoader", "()Ljava/lang/ClassLoader;", 
+    "(Ljava/lang/Class;)Ljava/lang/ClassLoader;", 
+    ACC_FINAL|ACC_PRIVATE, rewrite_arglist_getclass},
+   {"java.lang.Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;",
+    "(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Class;",
+    ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getclass},
+   {NULL, NULL, NULL, NULL, 0, NULL}};
+
+/* Scan the rules list for replacements for *METHOD_P and replace the
+   args accordingly.  */
+
+void
+maybe_rewrite_invocation (tree *method_p, tree *arg_list_p, 
+			  tree *method_signature_p)
+{
+  tree context = DECL_NAME (TYPE_NAME (DECL_CONTEXT (*method_p)));
+  rewrite_rule *p;
+  for (p = rules; p->classname; p++)
+    {
+      if (get_identifier (p->classname) == context)
+	{
+	  tree method = DECL_NAME (*method_p);
+	  if (get_identifier (p->method) == method
+	      && get_identifier (p->signature) == *method_signature_p)
+	    {
+	      tree maybe_method
+		= lookup_java_method (DECL_CONTEXT (*method_p),
+				      method,
+				      get_identifier (p->new_signature));
+	      if (! maybe_method && ! flag_verify_invocations)
+		{
+		  maybe_method
+		    = add_method (DECL_CONTEXT (*method_p), p->flags, 
+				  method, get_identifier (p->new_signature));
+		  DECL_EXTERNAL (maybe_method) = 1;
+		}
+	      *method_p = maybe_method;
+	      gcc_assert (*method_p);
+	      *arg_list_p = p->rewrite_arglist (*arg_list_p);
+	      *method_signature_p = get_identifier (p->new_signature);
+
+	      break;
+	    }
+	}
+    }
+}
+
+
+
 tree
 build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 			tree self_type, tree method_signature ATTRIBUTE_UNUSED,
@@ -2393,6 +2473,8 @@ expand_invoke (int opcode, int method_ref_index, int nargs ATTRIBUTE_UNUSED)
   method_type = TREE_TYPE (method);
   arg_list = pop_arguments (TYPE_ARG_TYPES (method_type));
   flush_quick_stack ();
+
+  maybe_rewrite_invocation (&method, &arg_list, &method_signature);
 
   func = NULL_TREE;
   if (opcode == OPCODE_invokestatic)

@@ -111,6 +111,14 @@ public final class Class implements Serializable
   public static native Class forName (String className)
     throws ClassNotFoundException;
 
+  // A private internal method that is called by compiler-generated code.
+  private static Class forName (String className, Class caller)
+    throws ClassNotFoundException
+  {
+    return forName(className, true, caller.getClassLoader());
+  }
+
+
   /**
    * Use the specified classloader to load and link a class. If the loader
    * is null, this uses the bootstrap class loader (provide the security
@@ -184,6 +192,9 @@ public final class Class implements Serializable
    * @see RuntimePermission
    */
   public native ClassLoader getClassLoader ();
+  
+  // A private internal method that is called by compiler-generated code.
+  private final native ClassLoader getClassLoader (Class caller);
   
   /**
    * If this is an array, get the Class representing the type of array.
