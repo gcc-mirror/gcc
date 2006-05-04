@@ -1,3 +1,12 @@
+2005-05-04  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* gcc.target/bfin: New directory.
+	* gcc.target/bfin/bfin.exp: New file.
+	* gcc.target/bfin/frmul.c: New file.
+	* gcc.target/bfin/arith.c: New file.
+	* gcc.target/bfin/mul-combine.c: New file.
+	* gcc.target/bfin/shift.c: New file.
+
 2006-05-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/14287
