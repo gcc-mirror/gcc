@@ -1446,18 +1446,16 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
       /* The address will have to be loaded from the GOT first.  */
       return false;
 
-    case SYMBOL_TLSGD:
-    case SYMBOL_TLSLDM:
-    case SYMBOL_DTPREL:
-    case SYMBOL_TPREL:
-    case SYMBOL_GOTTPREL:
-    case SYMBOL_TLS:
-      return false;
-
     case SYMBOL_GOTOFF_PAGE:
     case SYMBOL_GOTOFF_GLOBAL:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
+    case SYMBOL_TLS:
+    case SYMBOL_TLSGD:
+    case SYMBOL_TLSLDM:
+    case SYMBOL_DTPREL:
+    case SYMBOL_GOTTPREL:
+    case SYMBOL_TPREL:
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
