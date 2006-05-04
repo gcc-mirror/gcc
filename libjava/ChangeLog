@@ -1,3 +1,15 @@
+2006-05-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (JV_STATE_LOADING): Added comment.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added natSystemClassLoader.cc.
+	* gnu/gcj/runtime/natSystemClassLoader.cc: New file.
+	* gnu/gcj/runtime/SystemClassLoader.java (nativeClasses):
+	New field.
+	(loadedClasses): Removed.
+	(findClass): Declare.
+	(addClass): Add to nativeClasses, not loadedClasses.
+
 2006-05-04  Andrew Haley  <aph@redhat.com>
 
 	PR java/26858

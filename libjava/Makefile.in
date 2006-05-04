@@ -254,6 +254,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/io/natSimpleSHSStream.cc gnu/gcj/io/shs.cc \
 	gnu/gcj/runtime/natFinalizerThread.cc \
 	gnu/gcj/runtime/natSharedLibLoader.cc \
+	gnu/gcj/runtime/natSystemClassLoader.cc \
 	gnu/gcj/runtime/natStringBuffer.cc gnu/gcj/util/natDebug.cc \
 	gnu/java/lang/natMainThread.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
@@ -294,6 +295,7 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
 	gnu/gcj/runtime/natFinalizerThread.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
+	gnu/gcj/runtime/natSystemClassLoader.lo \
 	gnu/gcj/runtime/natStringBuffer.lo gnu/gcj/util/natDebug.lo \
 	gnu/java/lang/natMainThread.lo \
 	gnu/java/net/natPlainDatagramSocketImpl.lo \
@@ -6749,6 +6751,7 @@ gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
+gnu/gcj/runtime/natSystemClassLoader.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/util/natDebug.cc \
 gnu/java/lang/natMainThread.cc \
@@ -7084,6 +7087,9 @@ gnu/gcj/runtime/natFinalizerThread.lo:  \
 gnu/gcj/runtime/natSharedLibLoader.lo:  \
 	gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/runtime/natSystemClassLoader.lo:  \
+	gnu/gcj/runtime/$(am__dirstamp) \
+	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/natStringBuffer.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/util/$(am__dirstamp):
@@ -7415,6 +7421,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/natSharedLibLoader.lo
 	-rm -f gnu/gcj/runtime/natStringBuffer.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natStringBuffer.lo
+	-rm -f gnu/gcj/runtime/natSystemClassLoader.$(OBJEXT)
+	-rm -f gnu/gcj/runtime/natSystemClassLoader.lo
 	-rm -f gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT)
 	-rm -f gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 	-rm -f gnu/gcj/util/natDebug.$(OBJEXT)
@@ -7588,6 +7596,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natFinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSharedLibLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStringBuffer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSystemClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/Main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/natMain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/util/$(DEPDIR)/natDebug.Plo@am__quote@
