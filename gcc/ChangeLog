@@ -1,3 +1,37 @@
+2006-05-04  Leehod Baruch  <leehod@il.ibm.com>
+
+        * see.c: New file.
+        * Makefile.in (OBJS-common): Add see.o.
+        (see.o): Add dependencies.
+        * common.opt (fsee): New flag for the see optimization was added.
+        * opts.c (flag_see): Initialized.
+        * passes.c (init_optimization_passes, pass_see): New pass.
+        * rtl.h (see_main): Declaration as extern.
+        * timevar.def (TV_SEE): New.
+        * tree-pass.h (pass_see): Declaration as extern.
+        * invoke.texi (-fsee): Document.
+        * recog.c (validate_simplify_insn): New function.
+        * recog.h (validate_simplify_insn): Declaration as extern.
+        * df-problems.c (df_chain_dump): Check for NULL.
+
+2006-05-04  Kenneth Zadeck <zadeck@naturalbridge.com>
+            Daniel Berlin  <dberlin@dberlin.org>
+
+        * cfgrtl.c (insert_insn_bb_end_new): New function.
+        * basic-block.h (insert_insn_bb_end_new): Declaration as extern.
+
+2006-05-04  Leehod Baruch  <leehod.baruch@weizmann.ac.il>
+
+        * df.h (struct web_entry): Moved from web.c.
+        (union_defs): Declaration as extern.
+        (unionfind_root): Likewise.
+        (unionfind_union): Likewise.
+        * web.c (struct web_entry): Moved to df.h.
+        (unionfind_root): Remove static declaration.
+        (unionfind_union): Likewise.
+        (union_defs): Likewise and generalize to use callback function.
+        (web_main): Update arguments for union_defs function call.
+
 2006-05-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26447

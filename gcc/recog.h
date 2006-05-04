@@ -87,6 +87,7 @@ extern int strict_memory_address_p (enum machine_mode, rtx);
 extern int validate_replace_rtx (rtx, rtx, rtx);
 extern void validate_replace_rtx_group (rtx, rtx, rtx);
 extern void validate_replace_src_group (rtx, rtx, rtx);
+extern bool validate_simplify_insn (rtx insn);
 extern int num_changes_pending (void);
 #ifdef HAVE_cc0
 extern int next_insn_tests_no_inequality (rtx);

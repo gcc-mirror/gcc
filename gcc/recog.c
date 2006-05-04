@@ -698,6 +698,46 @@ validate_replace_src_group (rtx from, rtx to, rtx insn)
   d.insn = insn;
   note_uses (&PATTERN (insn), validate_replace_src_1, &d);
 }
+
+/* Try simplify INSN.
+   Invoke simplify_rtx () on every SET_SRC and SET_DEST inside the INSN's
+   pattern and return true if something was simplified.  */
+
+bool
+validate_simplify_insn (rtx insn)
+{
+  int i;
+  rtx pat = NULL;
+  rtx newpat = NULL;
+
+  pat = PATTERN (insn);
+
+  if (GET_CODE (pat) == SET)
+    {
+      newpat = simplify_rtx (SET_SRC (pat));
+      if (newpat && !rtx_equal_p (SET_SRC (pat), newpat))
+	validate_change (insn, &SET_SRC (pat), newpat, 1);
+      newpat = simplify_rtx (SET_DEST (pat));
+      if (newpat && !rtx_equal_p (SET_DEST (pat), newpat))
+	validate_change (insn, &SET_DEST (pat), newpat, 1);
+    }
+  else if (GET_CODE (pat) == PARALLEL)
+    for (i = 0; i < XVECLEN (pat, 0); i++)
+      {
+	rtx s = XVECEXP (pat, 0, i);
+
+	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
+	  {
+	    newpat = simplify_rtx (SET_SRC (s));
+	    if (newpat && !rtx_equal_p (SET_SRC (s), newpat))
+	      validate_change (insn, &SET_SRC (s), newpat, 1);
+	    newpat = simplify_rtx (SET_DEST (s));
+	    if (newpat && !rtx_equal_p (SET_DEST (s), newpat))
+	      validate_change (insn, &SET_DEST (s), newpat, 1);
+	  }
+      }
+  return ((num_changes_pending () > 0) && (apply_change_group () > 0));
+}
 
 #ifdef HAVE_cc0
 /* Return 1 if the insn using CC0 set by INSN does not contain

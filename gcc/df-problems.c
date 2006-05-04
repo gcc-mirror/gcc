@@ -2992,7 +2992,9 @@ df_chains_dump (struct dataflow *dflow, FILE *file)
 	    {
 	      fprintf (file, "d%d bb %d luid %d insn %d reg %d ",
 		       j, DF_REF_BBNO (def),
-		       DF_INSN_LUID (df, DF_REF_INSN (def)),
+		       DF_REF_INSN (def) ? 
+		       DF_INSN_LUID (df, DF_REF_INSN (def)):
+		       -1,
 		       DF_REF_INSN (def) ? DF_REF_INSN_UID (def) : -1,
 		       DF_REF_REGNO (def));
 	      if (def->flags & DF_REF_READ_WRITE)

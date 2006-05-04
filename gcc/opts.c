@@ -592,6 +592,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_inline_functions = 1;
       flag_unswitch_loops = 1;
       flag_gcse_after_reload = 1;
+      flag_see = 1; 
     }
 
   if (optimize < 2 || optimize_size)
