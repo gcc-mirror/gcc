@@ -1,5 +1,8 @@
 2006-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/27285
+	* gcc.c-torture/execute/pr27285.c: New test.
+
 	PR middle-end/27388
 	* gcc.dg/gomp/pr27388-1.c: New test.
 	* gcc.dg/gomp/pr27388-2.c: New test.
