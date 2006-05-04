@@ -41,6 +41,7 @@ extern int target_flags;
     {                                           \
       builtin_define ("bfin");                  \
       builtin_define ("BFIN");                  \
+      builtin_define ("__ADSPBLACKFIN__");	\
       if (TARGET_ID_SHARED_LIBRARY)		\
 	builtin_define ("__ID_SHARED_LIB__");	\
     }                                           \
