@@ -4,6 +4,18 @@
 	that this only matches CONST_INTs.  All users changed to VOIDmode
 	operands.
 
+	* config/bfin/bfin.c: Include "optabs.h".
+	(bfin_rtx_costs): Some costs for vector operations, to allow combine
+	to do more work.
+	(enum bfin_builtins): Add a number of fractional and vector builtins.
+	(bfin_init_builtins): Likewise.
+	(struct builtin_description, bdesc_2arg, bdesc_1arg): New.
+	(safe_vector_operand, bfin_expand_binop_builtin,
+	bfin_expand_unop_builtin): New functions.
+	(bfin_expand_builtin): Handle the new builtins.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
+	__ADSPBLACKFIN__.
+
 2006-05-04  Leehod Baruch  <leehod@il.ibm.com>
 
         * see.c: New file.
