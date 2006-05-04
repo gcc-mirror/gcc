@@ -1,3 +1,10 @@
+2006-05-04  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/26765
+	* config/mips/mips.c (mips_symbolic_address_p): Return true
+	for SYMBOL_TLSGD, SYMBOL_TLSLDM, SYMBOL_DTPREL, SYMBOL_TPREL,
+	SYMBOL_GOTTPREL, and SYMBOL_TLS.
+
 2006-05-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/14287

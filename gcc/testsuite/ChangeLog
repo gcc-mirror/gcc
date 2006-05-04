@@ -1,3 +1,8 @@
+2006-05-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/26765
+	* gcc.target/mips/pr26765.c: New.
+
 2005-05-04  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* gcc.target/bfin: New directory.
