@@ -1,3 +1,10 @@
+2006-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27388
+	* gimplify.c (omp_is_private): If var is shared in some outer context,
+	return false instead of true.  Stop searching on parallel context
+	boundary.
+
 2006-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR java/8260

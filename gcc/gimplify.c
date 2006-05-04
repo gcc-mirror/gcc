@@ -4443,17 +4443,22 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
       if (n->value & GOVD_SHARED)
 	{
 	  if (ctx == gimplify_omp_ctxp)
-	    error ("iteration variable %qs should be private",
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
-	  n->value = GOVD_PRIVATE;
+	    {
+	      error ("iteration variable %qs should be private",
+		     IDENTIFIER_POINTER (DECL_NAME (decl)));
+	      n->value = GOVD_PRIVATE;
+	      return true;
+	    }
+	  else
+	    return false;
 	}
       return true;
     }
 
-  if (ctx->outer_context)
-    return omp_is_private (ctx->outer_context, decl);
-  else if (ctx->is_parallel)
+  if (ctx->is_parallel)
     return false;
+  else if (ctx->outer_context)
+    return omp_is_private (ctx->outer_context, decl);
   else
     return !is_global_var (decl);
 }
