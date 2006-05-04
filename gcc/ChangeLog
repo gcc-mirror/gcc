@@ -1,3 +1,21 @@
+2006-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/27285
+
+	Backport from mainline:
+
+	2006-03-28  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/25985
+	* tree-ssa-loop-niter.c (number_of_iterations_le,
+	number_of_iterations_ne): Make comments more precise.
+	(number_of_iterations_cond): Add only_exit argument.  Use the
+	fact that signed variables do not overflow only when only_exit
+	is true.
+	(loop_only_exit_p): New.
+	(number_of_iterations_exit): Pass result of loop_only_exit_p to
+	number_of_iterations_cond.
+
 2006-05-02  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/27364
