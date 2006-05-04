@@ -18506,14 +18506,13 @@ cp_parser_omp_for_loop (cp_parser *parser)
 		pop_scope (pushed_scope);
 	    }
 	}
+      else
+	cp_parser_abort_tentative_parse (parser);
 
       /* If parsing as an initialized declaration failed, try again as
 	 a simple expression.  */
       if (decl == NULL)
-	{
-	  cp_parser_abort_tentative_parse (parser);
-	  init = cp_parser_expression (parser, false);
-	}
+	init = cp_parser_expression (parser, false);
     }
   cp_parser_require (parser, CPP_SEMICOLON, "`;'");
   pre_body = pop_stmt_list (pre_body);
