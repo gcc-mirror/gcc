@@ -1,3 +1,9 @@
+2006-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR java/8260
+	* coverage.c: Use get_gcov_unsigned_t() instead of
+	unsigned_type_node all over.
+
 2006-05-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/27381

@@ -609,7 +609,7 @@ build_fn_info_type (unsigned int counters)
 
   array_type = build_int_cst (NULL_TREE, counters - 1);
   array_type = build_index_type (array_type);
-  array_type = build_array_type (unsigned_type_node, array_type);
+  array_type = build_array_type (get_gcov_unsigned_t (), array_type);
 
   /* counters */
   field = build_decl (FIELD_DECL, NULL_TREE, array_type);
@@ -647,7 +647,7 @@ build_fn_info_value (const struct function_list *function, tree type)
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))
       {
-	tree counters = build_int_cstu (unsigned_type_node,
+	tree counters = build_int_cstu (get_gcov_unsigned_t (),
 					function->n_ctrs[ix]);
 
 	array_value = tree_cons (NULL_TREE, counters, array_value);
@@ -687,7 +687,7 @@ build_ctr_info_type (void)
   /* merge */
   gcov_merge_fn_type =
     build_function_type_list (void_type_node,
-			      gcov_ptr_type, unsigned_type_node,
+			      gcov_ptr_type, get_gcov_unsigned_t (),
 			      NULL_TREE);
   field = build_decl (FIELD_DECL, NULL_TREE,
 		      build_pointer_type (gcov_merge_fn_type));
@@ -721,7 +721,7 @@ build_ctr_info_value (unsigned int counter, tree type)
     {
       tree array_type;
 
-      array_type = build_int_cstu (unsigned_type_node,
+      array_type = build_int_cstu (get_gcov_unsigned_t (),
 				   prg_n_ctrs[counter] - 1);
       array_type = build_index_type (array_type);
       array_type = build_array_type (TREE_TYPE (TREE_TYPE (fields)),
@@ -850,11 +850,11 @@ build_gcov_info (void)
     fn_info_value = null_pointer_node;
 
   /* number of functions */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field,
-		     build_int_cstu (unsigned_type_node, n_fns),
+		     build_int_cstu (get_gcov_unsigned_t (), n_fns),
 		     value);
 
   /* fn_info table */
@@ -864,11 +864,11 @@ build_gcov_info (void)
   value = tree_cons (field, fn_info_value, value);
 
   /* counter_mask */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field,
-		     build_int_cstu (unsigned_type_node, prg_ctr_mask),
+		     build_int_cstu (get_gcov_unsigned_t (), prg_ctr_mask),
 		     value);
 
   /* counters */
