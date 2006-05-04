@@ -1,3 +1,10 @@
+2006-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/27359
+	* parser.c (cp_parser_omp_for_loop): Only call
+	cp_parser_abort_tentative_parse if cp_parser_parse_definitely was not
+	called.
+
 2006-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27102
