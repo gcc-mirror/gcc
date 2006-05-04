@@ -57,7 +57,8 @@
        (match_code "const_int")))
 
 (define_predicate "const01_operand"
-  (match_test "op == const0_rtx || op == const1_rtx"))
+  (and (match_code "const_int")
+       (match_test "op == const0_rtx || op == const1_rtx")))
 
 (define_predicate "vec_shift_operand"
   (ior (and (match_code "const_int")
