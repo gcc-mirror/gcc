@@ -39,7 +39,7 @@ DEFTREECODE (NEW_ANONYMOUS_ARRAY_EXPR, "new_anonymous_array",
 DEFTREECODE (NEW_CLASS_EXPR, "new_class_expr", tcc_expression, 3)
 
 /* Defines `this' as an expression.  */
-DEFTREECODE (THIS_EXPR, "this", tcc_unary, 0)
+DEFTREECODE (THIS_EXPR, "this", tcc_expression, 0)
 
 /* A labeled block. Operand 0 is the label that will be generated to
    mark the end of the block.  Operand 1 is the labeled block body.  */
