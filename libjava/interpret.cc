@@ -25,7 +25,6 @@ details.  */
 #include <java/lang/StringBuffer.h>
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Modifier.h>
-#include <java/lang/VirtualMachineError.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArithmeticException.h>
@@ -222,12 +221,20 @@ static jint get4(unsigned char* loc) {
 
 #define SAVE_PC() frame_desc.pc = pc
 
-#ifdef HANDLE_SEGV
-#define NULLCHECK(X) SAVE_PC()
-#define NULLARRAYCHECK(X) SAVE_PC()
-#else
+// We used to define this conditionally, depending on HANDLE_SEGV.
+// However, that runs into a problem if a chunk in low memory is
+// mapped and we try to look at a field near the end of a large
+// object.  See PR 26858 for details.  It is, most likely, relatively
+// inexpensive to simply do this check always.
 #define NULLCHECK(X) \
   do { SAVE_PC(); if ((X)==NULL) throw_null_pointer_exception (); } while (0)
+
+// Note that we can still conditionally define NULLARRAYCHECK, since
+// we know that all uses of an array will first reference the length
+// field, which is first -- and thus will trigger a SEGV.
+#ifdef HANDLE_SEGV
+#define NULLARRAYCHECK(X) SAVE_PC()
+#else
 #define NULLARRAYCHECK(X) \
   do { SAVE_PC(); if ((X)==NULL) { throw_null_pointer_exception (); } } while (0)
 #endif
@@ -2542,8 +2549,6 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
 	jclass type = field->type;
 	jint field_offset = field->u.boffset;
-	if (field_offset > 0xffff)
-	  throw new java::lang::VirtualMachineError;
 
 	jobject obj   = POPA();
 	NULLCHECK(obj);
@@ -2746,8 +2751,6 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	    (JvNewStringLatin1 ("field is static"));
 
 	jint field_offset = field->u.boffset;
-	if (field_offset > 0xffff)
-	  throw new java::lang::VirtualMachineError;
 
 	void *newinsn = NULL;
 	if (type->isPrimitive ())

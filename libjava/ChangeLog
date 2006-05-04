@@ -1,5 +1,13 @@
 2006-05-04  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/26861:
+	* interpret.cc (run) <insn_getfield>: Removed 0xffff check.
+	<insn_putfield>: Likewise.
+	(NULLCHECK): Define unconditionally.
+	* link.cc (ensure_class_linked): Removed dead code.
+
+2006-05-04  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/Class.h (JV_STATE_LOADING): Added comment.
 	* Makefile.in: Rebuilt.
 	* Makefile.am (nat_source_files): Added natSystemClassLoader.cc.
