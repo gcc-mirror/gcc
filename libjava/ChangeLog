@@ -1,3 +1,8 @@
+2006-05-04  Andrew Haley  <aph@redhat.com>
+
+	PR java/26858
+	* testsuite/libjava.lang/PR26858.xfail: Delete.
+
 2006-05-02  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/lib/libjava.exp (test_libjava): Test bytecode->native
