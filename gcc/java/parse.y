@@ -11066,6 +11066,7 @@ patch_invoke (tree patch, tree method, tree args)
 	case INVOKE_STATIC:
 	  {
 	    tree signature = build_java_signature (TREE_TYPE (method));
+	    maybe_rewrite_invocation (&method, &args, &signature);
 	    func = build_known_method_ref (method, TREE_TYPE (method),
 					   DECL_CONTEXT (method),
 					   signature, args);

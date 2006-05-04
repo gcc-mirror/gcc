@@ -297,6 +297,8 @@ public:
   JArray<jclass> *getClasses (void);
 
   java::lang::ClassLoader *getClassLoader (void);
+private:
+  java::lang::ClassLoader *getClassLoader (jclass caller);
 public:
   // This is an internal method that circumvents the usual security
   // checks when getting the class loader.

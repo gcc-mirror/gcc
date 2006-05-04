@@ -1344,7 +1344,8 @@ make_field_value (tree fdecl)
 
   {
     tree field_address = integer_zero_node;
-    if (! flag_indirect_classes && FIELD_STATIC (fdecl))
+    if ((DECL_INITIAL (fdecl) || ! flag_indirect_classes) 
+	&& FIELD_STATIC (fdecl))
       field_address = build_address_of (fdecl);
 
     PUSH_FIELD_VALUE

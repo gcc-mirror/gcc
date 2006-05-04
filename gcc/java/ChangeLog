@@ -1,3 +1,18 @@
+2006-05-04  Andrew Haley  <aph@redhat.com>
+
+	* class.c (make_field_value): Always build_address_of fdecl if
+	there is an initializer.
+
+2006-05-03  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/27352
+	* expr.c (maybe_rewrite_invocation): New function.
+	(rewrite_arglist_getclass): Likewise.
+	(rules): New.
+	(expand_invoke): Call maybe_rewrite_invocation.
+	* parse.y (patch_invoke): Likewise.
+	* java-tree.h: (maybe_rewrite_invocation): New function.
+
 2006-04-21  Andrew Haley  <aph@redhat.com>
 
 	* lang.c (java_init): Handle flag_indirect_classes.
