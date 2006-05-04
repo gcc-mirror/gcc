@@ -1,3 +1,7 @@
+2006-05-04  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/mips/linux64.h (DWARF_OFFSET_SIZE): Remove.
+
 2006-05-04  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/25962
