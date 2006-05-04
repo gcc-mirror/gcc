@@ -1,3 +1,10 @@
+2006-05-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26447
+	* tree-ssa-pre.c (realify_fake_stores): For necessary loads
+	produce SSA_NAME copies before the store stmt to avoid
+	breaking exception handling.
+
 2006-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27388

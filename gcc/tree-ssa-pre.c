@@ -3290,16 +3290,19 @@ realify_fake_stores (void)
 	  /* Mark the temp variable as referenced */
 	  add_referenced_tmp_var (SSA_NAME_VAR (TREE_OPERAND (stmt, 0)));
 
-	  /* Put the new statement in GC memory, fix up the annotation
-	     and SSA_NAME_DEF_STMT on it, and then put it in place of
-	     the old statement in the IR stream.  */
-	  newstmt = unshare_expr (stmt);
-	  SSA_NAME_DEF_STMT (TREE_OPERAND (newstmt, 0)) = newstmt;
-
-	  newstmt->common.ann = stmt->common.ann;
-
+	  /* Put the new statement in GC memory, fix up the 
+	     SSA_NAME_DEF_STMT on it, and then put it in place of
+	     the old statement before the store in the IR stream
+	     as a plain ssa name copy.  */
 	  bsi = bsi_for_stmt (stmt);
-	  bsi_replace (&bsi, newstmt, true);
+	  bsi_prev (&bsi);
+	  newstmt = build2 (MODIFY_EXPR, void_type_node,
+			    TREE_OPERAND (stmt, 0),
+			    TREE_OPERAND (bsi_stmt (bsi), 1));
+	  SSA_NAME_DEF_STMT (TREE_OPERAND (newstmt, 0)) = newstmt;
+	  bsi_insert_before (&bsi, newstmt, BSI_SAME_STMT);
+	  bsi = bsi_for_stmt (stmt);
+	  bsi_remove (&bsi, true);
 	}
       else
 	release_defs (stmt);
