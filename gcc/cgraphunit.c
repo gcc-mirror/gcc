@@ -731,9 +731,9 @@ verify_cgraph_node (struct cgraph_node *node)
        main_clone = main_clone->next_clone)
     if (main_clone == node)
       break;
-  if (!node)
+  if (!cgraph_node (node->decl))
     {
-      error ("node not found in DECL_ASSEMBLER_NAME hash");
+      error ("node not found in cgraph_hash");
       error_found = true;
     }
   

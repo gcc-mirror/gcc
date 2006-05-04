@@ -1,3 +1,8 @@
+2006-05-04  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/25962
+	* cgraphunit.c (verify_cgraph_node): Fix cgraph_hash testing.
+
 2006-05-04  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/predicates.md (const01_rtx): Tell generator programs
