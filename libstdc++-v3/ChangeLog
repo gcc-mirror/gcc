@@ -1,3 +1,9 @@
+2006-05-04  Douglas Gregor  <dgregor@cs.indiana.edu>
+
+	PR libstdc++/27404
+	* include/ext/rope (_Rope_const_iterator<>::operator*() const,
+	_Rope_iterator<>::operator*() const): Add.
+
 2006-05-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_WCHAR_T): Always check the

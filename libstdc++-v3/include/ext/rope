@@ -1153,7 +1153,15 @@ protected:
 	  _S_setcache(*this);
         return *this->_M_buf_ptr;
       }
-      
+
+      // Without this const version, Rope iterators do not meet the
+      // requirements of an Input Iterator.
+      reference
+      operator*() const
+      {
+	return *const_cast<_Rope_const_iterator&>(*this);
+      }
+
       _Rope_const_iterator&
       operator++()
       {
@@ -1334,6 +1342,13 @@ protected:
 	  return _Rope_char_ref_proxy<_CharT, _Alloc>(_M_root_rope,
 						      this->_M_current_pos,
 						      *this->_M_buf_ptr);
+      }
+
+      // See above comment.
+      reference
+      operator*() const
+      {
+	return *const_cast<_Rope_iterator&>(*this);
       }
 
       _Rope_iterator&
