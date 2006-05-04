@@ -1,3 +1,7 @@
+2006-05-04  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* simplify.c (ascii_table): Fix wrong entry.
+
 2006-05-02  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/26896
