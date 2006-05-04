@@ -1,3 +1,16 @@
+2006-05-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/14287
+	PR tree-optimization/14844
+	PR tree-optimization/19792
+	PR tree-optimization/21608
+	PR tree-optimization/27090
+	* tree-ssa-pre.c (try_combine_conversion): New function.
+	(compute_avail): After constructing the value-handle
+	expression, use try_combine_conversion to combine NOP_EXPRs
+	with previous value-handle expressions and use the result if it
+	is available.
+
 2006-05-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/mips/linux64.h (DWARF_OFFSET_SIZE): Remove.
