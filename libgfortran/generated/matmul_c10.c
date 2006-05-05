@@ -193,8 +193,8 @@ matmul_c10 (gfc_array_c10 * const restrict retarray,
       const GFC_COMPLEX_10 * restrict abase_n;
       GFC_COMPLEX_10 bbase_yn;
 
-      if (rystride == ycount)
-	memset (dest, 0, (sizeof (GFC_COMPLEX_10) * size0((array_t *) retarray)));
+      if (rystride == xcount)
+	memset (dest, 0, (sizeof (GFC_COMPLEX_10) * xcount * ycount));
       else
 	{
 	  for (y = 0; y < ycount; y++)
