@@ -464,6 +464,9 @@ build_dynamic_cast_1 (tree type, tree expr)
   tree old_expr = expr;
   const char *errstr = NULL;
 
+  /* Save casted types in the function's used types hash table.  */
+  used_types_insert (type);
+
   /* T shall be a pointer or reference to a complete class type, or
      `pointer to cv void''.  */
   switch (tc)

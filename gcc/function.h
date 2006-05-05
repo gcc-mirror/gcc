@@ -576,6 +576,6 @@ extern bool pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 extern bool reference_callee_copied (CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, bool);
 
-extern void used_types_insert (tree, struct function *);
+extern void used_types_insert (tree);
 
 #endif  /* GCC_FUNCTION_H */

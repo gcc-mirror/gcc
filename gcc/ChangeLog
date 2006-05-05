@@ -1,3 +1,13 @@
+2006-05-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR/21391
+	* c-parser.c (c_parser_cast_expression): Only insert casts into
+	hash table if pointer.
+	* function.c (used_types_insert_helper): Rename from
+	used_types_insert.
+	(used_types_insert): Call used_types_insert_helper.
+	* function.h (used_types_insert): Accept only one argument.
+
 2006-05-05  David Edelsohn  <edesohn@gnu.org>
 
 	* config/rs6000/rs6000.md: Mark all "X" constraints for clobbered
