@@ -1,3 +1,9 @@
+2006-05-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/25681
+	* simplify.c (simplify_len): Character variables with constant
+	length can be simplified.
+
 2006-05-04  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	Backport r113523 from the trunk
