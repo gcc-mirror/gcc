@@ -1,3 +1,8 @@
+2006-05-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR objc/27240
+	* objc-act.c (objc_is_public): Return early on invalid type.
+
 2006-03-02 Fariborz Jahanian <fjahanian@apple.com>
 
 	* objc-act.c (init_module_descriptor): Remove file name from
