@@ -1,3 +1,7 @@
+2006-05-05  Steve Ellcey  <sje@cup.hp.com>
+
+	* gfortran.dg/large_real_kind_form_io_2.f90: Use nearest.
+
 2006-05-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/26985
