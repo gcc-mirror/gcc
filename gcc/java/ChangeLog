@@ -1,5 +1,13 @@
 2006-05-04  Tom Tromey  <tromey@redhat.com>
 
+	* java-tree.h (uses_jv_markobj_p): Declare.
+	* class.c (uses_jv_markobj_p): Removed.
+	* boehm.c (PROCEDURE_OBJECT_DESCRIPTOR): New define.
+	(get_boehm_type_descriptor): Use it.
+	(uses_jv_markobj_p): Moved from class.c.  Return bool.
+
+2006-05-04  Tom Tromey  <tromey@redhat.com>
+
 	* java-tree.def (THIS_EXPR): Now a tcc_expression.
 
 2006-05-04  Andrew Haley  <aph@redhat.com>

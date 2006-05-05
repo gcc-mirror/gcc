@@ -40,6 +40,14 @@ static void mark_reference_fields (tree, unsigned HOST_WIDE_INT *,
 static void set_bit (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
 		     unsigned int);
 
+/* A procedure-based object descriptor.  We know that our
+   `kind' is 0, and `env' is likewise 0, so we have a simple
+   computation.  From the GC sources:
+   (((((env) << LOG_MAX_MARK_PROCS) | (proc_index)) << DS_TAG_BITS)	\
+   | DS_PROC)
+   Here DS_PROC == 2.  */
+#define PROCEDURE_OBJECT_DESCRIPTOR 2
+
 /* Treat two HOST_WIDE_INT's as a contiguous bitmap, with bit 0 being
    the least significant.  This function sets bit N in the bitmap.  */
 static void
@@ -220,15 +228,25 @@ get_boehm_type_descriptor (tree type)
     }
   else
     {
-      /* Compute a procedure-based object descriptor.  We know that our
-	 `kind' is 0, and `env' is likewise 0, so we have a simple
-	 computation.  From the GC sources:
-	    (((((env) << LOG_MAX_MARK_PROCS) | (proc_index)) << DS_TAG_BITS) \
-	    | DS_PROC)
-	 Here DS_PROC == 2.  */
     procedure_object_descriptor:
-      value = build_int_cst (value_type, 2);
+      value = build_int_cst (value_type, PROCEDURE_OBJECT_DESCRIPTOR);
     }
 
   return value;
+}
+
+/* The fourth (index of 3) element in the vtable is the GC descriptor.
+   A value of 2 indicates that the class uses _Jv_MarkObj. */
+bool
+uses_jv_markobj_p (tree dtable)
+{
+  tree v;
+  /* FIXME: what do we return if !flag_use_boehm_gc ? */
+  gcc_assert (flag_use_boehm_gc);
+  /* FIXME: this is wrong if TARGET_VTABLE_USES_DESCRIPTORS.  However,
+     this function is only used with flag_reduced_reflection.  No
+     point in asserting unless we hit the bad case.  */
+  gcc_assert (!flag_reduced_reflection || TARGET_VTABLE_USES_DESCRIPTORS == 0);
+  v = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (dtable), 3)->value;
+  return (PROCEDURE_OBJECT_DESCRIPTOR == TREE_INT_CST_LOW (v));
 }

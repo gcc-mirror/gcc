@@ -1611,16 +1611,6 @@ supers_all_compiled (tree type)
   return 1;
 }
 
-/* The forth (index of 3) element in the vtable is the GC descriptor.
-   A value of 2 indicates that the class uses _Jv_MarkObj. */
-static int
-uses_jv_markobj_p(tree dtable)
-{
-  tree v;
-  v = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (dtable), 3)->value;
-  return (2 == TREE_INT_CST_LOW (v));
-}
-
 void
 make_class_data (tree type)
 {
@@ -1659,7 +1649,7 @@ make_class_data (tree type)
       && !flag_indirect_dispatch)
     {
       tree dtable = get_dispatch_table (type, this_class_addr);
-      uses_jv_markobj = uses_jv_markobj_p(dtable);
+      uses_jv_markobj = uses_jv_markobj_p (dtable);
       dtable_decl = build_dtable_decl (type);
       DECL_INITIAL (dtable_decl) = dtable;
       TREE_STATIC (dtable_decl) = 1;
