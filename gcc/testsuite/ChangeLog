@@ -1,3 +1,7 @@
+2005-05-05  Laurent GUERBY  <laurent@guerby.net>
+
+	* ada/acats/run_all.sh: Use sync when main not found.
+
 2006-05-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/26765

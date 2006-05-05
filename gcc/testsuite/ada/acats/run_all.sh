@@ -64,6 +64,13 @@ clean_dir () {
   rm -f "$binmain" *.o *.ali > /dev/null 2>&1
 }
 
+find_main () {
+  ls ${i}?.adb > ${i}.lst 2> /dev/null
+  ls ${i}*m.adb >> ${i}.lst 2> /dev/null
+  ls ${i}.adb >> ${i}.lst 2> /dev/null
+  main=`tail -1 ${i}.lst`
+}
+
 EXTERNAL_OBJECTS=""
 # Global variable to communicate external objects to link with.
 
@@ -230,10 +237,12 @@ for chapter in $chapters; do
       fi
 
       target_gnatchop -c -w `ls ${test}*.a ${test}*.ada ${test}*.adt ${test}*.am ${test}*.dep 2> /dev/null` >> $dir/acats.log 2>&1
-      ls ${i}?.adb > ${i}.lst 2> /dev/null
-      ls ${i}*m.adb >> ${i}.lst 2> /dev/null
-      ls ${i}.adb >> ${i}.lst 2> /dev/null
-      main=`tail -1 ${i}.lst`
+      main=""
+      find_main
+      if [ "$main" == "" ]; then
+         sync
+         find_main
+      fi
       binmain=`echo $main | sed -e 's/\(.*\)\..*/\1/g'`
       echo "BUILD $main" >> $dir/acats.log
       EXTERNAL_OBJECTS=""
