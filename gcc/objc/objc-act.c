@@ -7167,6 +7167,9 @@ objc_is_public (tree expr, tree identifier)
     return 1;
 #endif
 
+  if (TREE_TYPE (expr) == error_mark_node)
+    return 1;
+
   basetype = TYPE_MAIN_VARIANT (TREE_TYPE (expr));
 
   if (basetype && TREE_CODE (basetype) == RECORD_TYPE)

@@ -1,3 +1,8 @@
+2006-05-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR objc/27240
+	* objc-act.c (objc_is_public): Return early on invalid type.
+
 2006-02-28  Release Manager
 
 	* GCC 4.1.0 released.
