@@ -280,6 +280,9 @@ gfc_post_options (const char **pfilename)
   if (pedantic)
     gfc_option.warn_ampersand = 1;
 
+  if (gfc_option.flag_all_intrinsics)
+    gfc_option.warn_nonstd_intrinsics = 0;
+
   return false;
 }
 
@@ -598,7 +601,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wnonstd_intrinsics:
-      gfc_option.warn_nonstd_intrinsics = 1;
+      gfc_option.warn_nonstd_intrinsics = value;
       break;
 
     case OPT_fshort_enums:

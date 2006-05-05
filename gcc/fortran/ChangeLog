@@ -1,3 +1,10 @@
+2006-05-05  Steven G. Kargl  <kargls@comcast.net>
+
+	* invoke.texi: Update description of -fall-intrinsics
+	* options.c (gfc_post_options): Disable -Wnonstd-intrinsics if
+	-fall-intrinsics is used.
+	(gfc_handle_option): Permit -Wno-nonstd-intrinsics.
+
 2006-05-04  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* simplify.c (ascii_table): Fix wrong entry.
