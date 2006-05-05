@@ -195,8 +195,8 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       const rtype_name * restrict abase_n;
       rtype_name bbase_yn;
 
-      if (rystride == ycount)
-	memset (dest, 0, (sizeof (rtype_name) * size0((array_t *) retarray)));
+      if (rystride == xcount)
+	memset (dest, 0, (sizeof (rtype_name) * xcount * ycount));
       else
 	{
 	  for (y = 0; y < ycount; y++)

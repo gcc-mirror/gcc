@@ -193,8 +193,8 @@ matmul_r4 (gfc_array_r4 * const restrict retarray,
       const GFC_REAL_4 * restrict abase_n;
       GFC_REAL_4 bbase_yn;
 
-      if (rystride == ycount)
-	memset (dest, 0, (sizeof (GFC_REAL_4) * size0((array_t *) retarray)));
+      if (rystride == xcount)
+	memset (dest, 0, (sizeof (GFC_REAL_4) * xcount * ycount));
       else
 	{
 	  for (y = 0; y < ycount; y++)
