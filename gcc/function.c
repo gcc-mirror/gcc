@@ -5590,21 +5590,32 @@ rest_of_handle_check_leaf_regs (void)
   return 0;
 }
 
-/* Insert a type into the used types hash table.  */
-void
-used_types_insert (tree t, struct function *func)
+/* Insert a TYPE into the used types hash table of CFUN.  */
+static void
+used_types_insert_helper (tree type, struct function *func)
 {
-  if (t != NULL && func != NULL)
+  if (type != NULL && func != NULL)
     {
       void **slot;
 
       if (func->used_types_hash == NULL)
 	func->used_types_hash = htab_create_ggc (37, htab_hash_pointer,
-					     htab_eq_pointer, NULL);
-      slot = htab_find_slot (func->used_types_hash, t, INSERT);
+						 htab_eq_pointer, NULL);
+      slot = htab_find_slot (func->used_types_hash, type, INSERT);
       if (*slot == NULL)
-	*slot = t;
+	*slot = type;
     }
+}
+
+/* Given a type, insert it into the used hash table in cfun.  */
+void
+used_types_insert (tree t)
+{
+  while (POINTER_TYPE_P (t) || TREE_CODE (t) == ARRAY_TYPE)
+    t = TREE_TYPE (t);
+  t = TYPE_MAIN_VARIANT (t);
+  if (debug_info_level > DINFO_LEVEL_NONE)
+    used_types_insert_helper (t, cfun);
 }
 
 struct tree_opt_pass pass_leaf_regs =
