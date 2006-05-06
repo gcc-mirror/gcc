@@ -3457,6 +3457,8 @@ convert_nontype_argument (tree type, tree expr)
      instantiated -- but here we need the resolved form so that we can
      convert the argument.  */
   expr = fold_non_dependent_expr (expr);
+  if (error_operand_p (expr))
+    return error_mark_node;
   expr_type = TREE_TYPE (expr);
 
   /* HACK: Due to double coercion, we can get a
