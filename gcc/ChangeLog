@@ -1,3 +1,8 @@
+2006-04-29 Anatoly Sokolov <aesok@post.ru>
+
+        * config/avr/avr.h (CRT_BINUTILS_SPECS): Fixed crt* file name
+	for atmeg a645 device.
+
 2006-05-06   Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27151
