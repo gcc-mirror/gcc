@@ -1,5 +1,7 @@
 2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* pt.c (process_template_parm): Remove superfluous temporary.
+
 	PR c++/27430
 	* pt.c (process_template_parm): Handle erroneous non-type parameters.
 
