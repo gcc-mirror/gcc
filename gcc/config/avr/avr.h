@@ -782,7 +782,7 @@ extern int avr_case_values_threshold;
 %{mmcu=atmega325:crtm325.o%s} \
 %{mmcu=atmega3250:crtm3250.o%s} \
 %{mmcu=atmega64:crtm64.o%s} \
-%{mmcu=atmega645:crtm6450.o%s} \
+%{mmcu=atmega645:crtm645.o%s} \
 %{mmcu=atmega6450:crtm6450.o%s} \
 %{mmcu=atmega128:crtm128.o%s} \
 %{mmcu=at90can128:crtcan128.o%s} \
