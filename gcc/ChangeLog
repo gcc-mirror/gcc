@@ -1,3 +1,17 @@
+2006-05-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* genpeep.c (main): Make insn-peep.c depend on flags.h.
+	* arm/constraints.md: New file.
+	* arm.h (REG_CLASS_FROM_LETTER_P): Delete.
+	(CONST_OK_FOR_ARM_LETTER, CONST_OK_FOR_THUMB_LETTER)
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_ARM_LETTER)
+	(CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_CONSTRAINT_STR_ARM)
+	(CONSTRAINT_LEN, EXTRA_CONSTRAINT_THUMB, EXTRA_CONSTRAINT_STR)
+	(EXTRA_MEMORY_CONSTRAINT): Likewise.
+	* arm.md: Include constraints.md.
+	(thumb_movsi_insn): Use satisfies_constraint_J.
+	(movhi, movqi): Use satisfies_constraint_I.
+
 2006-04-29 Anatoly Sokolov <aesok@post.ru>
 
         * config/avr/avr.h (CRT_BINUTILS_SPECS): Fixed crt* file name
