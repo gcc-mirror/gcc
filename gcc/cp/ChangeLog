@@ -1,3 +1,9 @@
+2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27422
+	* typeck.c (convert_arguments): Return early on args with
+	invalid types.
+
 2006-05-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/21391
