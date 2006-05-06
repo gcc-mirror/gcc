@@ -1,5 +1,8 @@
 2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27430
+	* pt.c (process_template_parm): Handle erroneous non-type parameters.
+
 	PR c++/27423
 	* typeck.c (convert_for_initialization): Skip erroneous types.
 
