@@ -2347,18 +2347,23 @@ process_template_parm (tree list, tree next, bool is_non_type)
 
       SET_DECL_TEMPLATE_PARM_P (parm);
 
-      /* [temp.param]
+      if (TREE_TYPE (parm) == error_mark_node)
+	TREE_TYPE (parm) = void_type_node;
+      else
+      {
+	/* [temp.param]
 
-	 The top-level cv-qualifiers on the template-parameter are
-	 ignored when determining its type.  */
-      TREE_TYPE (parm) = TYPE_MAIN_VARIANT (TREE_TYPE (parm));
+	   The top-level cv-qualifiers on the template-parameter are
+	   ignored when determining its type.  */
+	TREE_TYPE (parm) = TYPE_MAIN_VARIANT (TREE_TYPE (parm));
+	if (invalid_nontype_parm_type_p (TREE_TYPE (parm), 1))
+	  TREE_TYPE (parm) = void_type_node;
+      }
 
       /* A template parameter is not modifiable.  */
       TREE_CONSTANT (parm) = 1;
       TREE_INVARIANT (parm) = 1;
       TREE_READONLY (parm) = 1;
-      if (invalid_nontype_parm_type_p (TREE_TYPE (parm), 1))
-	TREE_TYPE (parm) = void_type_node;
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       TREE_CONSTANT (decl) = 1;
       TREE_INVARIANT (decl) = 1;
