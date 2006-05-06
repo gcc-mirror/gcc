@@ -1,3 +1,12 @@
+2006-05-06  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Add check for
+	HP-UX and add appropriate extension for shared libraries, sl.
+	(gcj_jni_test_one): Likewise.
+	
+	* testsuite/lib/libjava.exp (libjava_find_lib): Add sl to the shared
+	library extensions.
+
 2006-05-05  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/27294:
@@ -10,7 +19,7 @@
 	* java/lang/Class.java (getClassLoader(Class)): New.
 	forName(String, Class): New.
 	* java/lang/natClass.cc (getClassLoader(Class)): New.
-	
+
 2006-05-02  Andrew Haley  <aph@redhat.com>
 
 	* prims.cc (_Jv_NewMultiArray): Check for phantom class.
@@ -73,7 +82,7 @@
 	NullPointerException every time.
 	* include/java-interp.h (_Jv_ResolvedMethod): Remove vtable_index
 	field.
-	* include/execution.h (resolve_method): Remove vtable_index argument.	
+	* include/execution.h (resolve_method): Remove vtable_index argument.
 
 2006-04-28  Andreas Tobler  <a.tobler@schweiz.ch>
 

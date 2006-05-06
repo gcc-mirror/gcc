@@ -10,13 +10,17 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
   set options_cxx $options
   set options ""
 
-# apple uses a different extension for shared/dynamic libraries
+# Apple uses a different extension for shared/dynamic libraries
 # so we check against powerpc-apple-darwin and set them to
-# dylib, else we assume it's .so
+# dylib.
+# HP-UX uses sl, so we check this too, otherwise we take so.
 
   if { [istarget "*-*-darwin*"] } {
       set so_extension "dylib"
       set so_flag "-dynamiclib"
+  } elseif { [istarget "hppa*-hp-hpux*"] } {
+      set so_extension "sl"
+      set so_flag "-shared"
   } else {
       set so_extension "so"
       set so_flag "-shared"
@@ -76,12 +80,15 @@ proc gcj_jni_test_one {file} {
   global host_triplet
   global INTERPRETER
 
-# apple uses a different extension for shared/dynamic libraries
+# Apple uses a different extension for shared/dynamic libraries
 # so we check against powerpc-apple-darwin and set them to
-# dylib, else we assume it's .so
+# dylib.
+# HP-UX uses sl, so we check this too, otherwise we take so.
 
   if { [istarget "*-*-darwin*"] } {
       set so_extension "dylib"
+  } elseif { [istarget "hppa*-hp-hpux*"] } {
+      set so_extension "sl"
   } else {
       set so_extension "so"
   }

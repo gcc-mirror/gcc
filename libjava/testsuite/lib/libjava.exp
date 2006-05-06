@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006 Free Software Foundation
 
 proc load_gcc_lib { filename } {
     global srcdir
@@ -242,7 +242,7 @@ proc libjava_init { args } {
 proc libjava_find_lib {dir name} {
     global base_dir
     set gp [get_multilibs]
-    foreach extension {so dll dylib a} {
+    foreach extension {so dll dylib sl a} {
 	foreach sub {.libs _libs} {
 	    if {$gp != ""} {
 		if {[file exists $gp/$dir/$sub/lib${name}.${extension}]} then {
