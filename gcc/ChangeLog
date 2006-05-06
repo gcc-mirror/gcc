@@ -179,7 +179,8 @@
 	* arm.c (arm_output_mi_thunk): Use pc-relative addressing when
 	-mthumb -fPIC are used.
 
-2006-05-02  Joshua Kinard  <kumba@gentoo.org>
+2006-05-02  Stanislaw Skowronek  <skylark@linux-mips.org>
+	    Joshua Kinard  <kumba@gentoo.org>
 
 	PR target/25871
 	* gcc/config/mips/mips.h (TRAMPOLINE_TEMPLATE): Avoid 32-bit moves
