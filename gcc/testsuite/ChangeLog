@@ -1,5 +1,8 @@
 2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27423
+	* g++.dg/other/void2.C: New test.
+
 	PR c++/27422
 	* g++.dg/conversion/void1.C: New test.
 
