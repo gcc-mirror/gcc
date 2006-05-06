@@ -2312,19 +2312,17 @@ reduce_template_parm_level (tree index, tree type, int levels)
   return TEMPLATE_PARM_DESCENDANTS (index);
 }
 
-/* Process information from new template parameter NEXT and append it to the
+/* Process information from new template parameter PARM and append it to the
    LIST being built.  This new parameter is a non-type parameter iff
    IS_NON_TYPE is true.  */
 
 tree
-process_template_parm (tree list, tree next, bool is_non_type)
+process_template_parm (tree list, tree parm, bool is_non_type)
 {
-  tree parm;
   tree decl = 0;
   tree defval;
   int idx;
 
-  parm = next;
   gcc_assert (TREE_CODE (parm) == TREE_LIST);
   defval = TREE_PURPOSE (parm);
 
