@@ -1,5 +1,8 @@
 2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27427
+	* pt.c (convert_nontype_argument): Return early on invalid arguments.
+
 	PR c++/27422
 	* typeck.c (convert_arguments): Return early on args with
 	invalid types.
