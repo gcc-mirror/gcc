@@ -1,3 +1,9 @@
+2006-05-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/27457
+	* match.c (match_case_eos): Error out on garbage following
+	CASE(...).
+
 2006-05-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24813
