@@ -2378,7 +2378,8 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 	 ignore this constraint. When we handle pointer subtraction,
 	 we may have to do something cute here.  */
       
-      if (result->offset < get_varinfo (result->var)->fullsize)
+      if (result->offset < get_varinfo (result->var)->fullsize
+	  && bitmaxsize != 0)
 	{
 	  /* It's also not true that the constraint will actually start at the
 	     right offset, it may start in some padding.  We only care about
@@ -2399,6 +2400,12 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 	  /* Still the user could access one past the end of an array
 	     embedded in a struct resulting in accessing *only* padding.  */
 	  gcc_assert (curr || ref_contains_array_ref (orig_t));
+	}
+      else if (bitmaxsize == 0)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Access to zero-sized part of variable,"
+		     "ignoring\n");
 	}
       else
 	if (dump_file && (dump_flags & TDF_DETAILS))
