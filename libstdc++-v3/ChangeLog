@@ -1,3 +1,9 @@
+2006-05-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits (integral_constant<>::value): Define.
+	* testsuite/tr1/4_metaprogramming/helper_classes/static_definition.cc:
+	New.
+
 2006-05-04  Douglas Gregor  <dgregor@cs.indiana.edu>
 
 	PR libstdc++/27404
