@@ -1,5 +1,11 @@
 2006-05-07  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/27409
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Do not try to find zero-sized subvars.
+
+2006-05-07  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/27136
 	* tree-ssa-loop-niter.c (get_val_for): Correct function
 	comment, assert requirements.
