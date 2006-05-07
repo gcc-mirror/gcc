@@ -1,3 +1,9 @@
+2006-05-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27378
+	* parse.c (next_statement): Add check to avoid an ICE when
+	gfc_current_locus.lb is not set.
+
 2006-05-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/27457
