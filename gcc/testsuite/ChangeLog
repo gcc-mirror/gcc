@@ -1,3 +1,7 @@
+2006-05-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* g++.dg/template/incomplete2.C: Fix error marker.
+
 2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27427
