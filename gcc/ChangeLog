@@ -1,3 +1,11 @@
+2006-05-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27136
+	* tree-ssa-loop-niter.c (get_val_for): Correct function
+	comment, assert requirements.
+	(loop_niter_by_eval): Stop processing if the iterated
+	value did not simplify.
+
 2006-05-07  Mircea Namolaru  <namolaru@il.ibm.com>
 
         * opts.c (flag_see): remove its setting at -O3.
