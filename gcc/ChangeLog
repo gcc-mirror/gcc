@@ -1,3 +1,7 @@
+2006-05-07  Mircea Namolaru  <namolaru@il.ibm.com>
+
+        * opts.c (flag_see): remove its setting at -O3.
+	
 2006-05-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* genpeep.c (main): Make insn-peep.c depend on flags.h.
