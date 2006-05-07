@@ -419,6 +419,9 @@ void gfc_get_backend_locus (locus *);
 extern GTY(()) tree gfc_static_ctors;
 void gfc_generate_constructors (void);
 
+/* Get the string length of an array constructor.  */
+bool get_array_ctor_strlen (gfc_constructor *, tree *);
+
 /* Generate a runtime error check.  */
 void gfc_trans_runtime_check (tree, tree, stmtblock_t *);
 

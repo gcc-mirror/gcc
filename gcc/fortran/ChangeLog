@@ -1,3 +1,11 @@
+2006-05-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24813
+	* trans-array.c (get_array_ctor_strlen): Remove static attribute.
+	* trans.h: Add prototype for get_array_ctor_strlen.
+	* trans-intrinsic.c (gfc_conv_intrinsic_len): Switch on EXPR_ARRAY
+	and call get_array_ctor_strlen.
+
 2006-05-05  Steven G. Kargl  <kargls@comcast.net>
 
 	* invoke.texi: Update description of -fall-intrinsics
