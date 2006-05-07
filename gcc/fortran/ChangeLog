@@ -1,4 +1,4 @@
-2006-05-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2006-05-07  Steven Boscher  <steven@gcc.gnu.org>
 
 	PR fortran/27378
 	* parse.c (next_statement): Add check to avoid an ICE when
