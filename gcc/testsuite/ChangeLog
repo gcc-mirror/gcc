@@ -1,3 +1,8 @@
+2006-05-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR target/27421
+	* gcc.dg/array-9.c: New test.
+
 2006-05-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27409
