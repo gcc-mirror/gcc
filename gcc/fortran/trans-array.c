@@ -1328,7 +1328,7 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 /* Figure out the string length of a character array constructor.
    Returns TRUE if all elements are character constants.  */
 
-static bool
+bool
 get_array_ctor_strlen (gfc_constructor * c, tree * len)
 {
   bool is_const;
