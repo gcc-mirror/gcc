@@ -11,4 +11,4 @@ main (int argc, char **argv)
   memset (x, argc, strlen (x));
   return 0;
 }
-/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen" } } */
+/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen" { xfail *-*-darwin* } } } */
