@@ -216,8 +216,12 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
     return true;
 
   /* Externally visible functions must be output.  The exception is
-     COMDAT functions that must be output only when they are needed.  */
-  if ((TREE_PUBLIC (decl) && !flag_whole_program)
+     COMDAT functions that must be output only when they are needed. 
+
+     When not optimizing, also output the static functions. (see
+     PR25962)
+     */
+  if (((TREE_PUBLIC (decl) || !optimize) && !flag_whole_program)
       && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     return true;
 
