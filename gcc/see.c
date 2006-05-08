@@ -567,7 +567,7 @@ struct see_register_properties
 };
 
 /* Occurrence of an expression.
-   There must be at most one available occurance and at most one anticipatable
+   There must be at most one available occurrence and at most one anticipatable
    occurrence per basic block.  */
 struct see_occr
 {
@@ -925,7 +925,7 @@ hash_del_properties (void *p)
    set ((reg:WIDEmode r1) (sign_extend:WIDEmode (reg:NARROWmode r2)))
 
    The value of the key is (REGNO (reg:WIDEmode r1))
-   It is posibble to search this hash in two ways:
+   It is possible to search this hash in two ways:
    1.  By a register rtx. The Value that is been compared to the keys is the
        REGNO of it.
    2.  By an insn with the above pattern. The Value that is been compared to
@@ -1648,7 +1648,7 @@ see_commit_ref_changes (splay_tree_node stn,
    redundant.
 
    INDEX_MAP is a mapping of an index to an expression.
-   Return true if an instruction was insertedon an edge.
+   Return true if an instruction was inserted on an edge.
    Otherwise, return false.  */
 
 static bool
@@ -2424,7 +2424,7 @@ see_replace_src (rtx *x, void *data)
    set (subreg (dest_extension_reg)) (rhs)
 
    We do this in 4 steps:
-   a. Replace every use of dest_reg with a new preudo register.
+   a. Replace every use of dest_reg with a new pseudo register.
    b. Replace every instance of dest_reg with the subreg.
    c. Replace every use of the new pseudo register back to dest_reg.
    d. Try to recognize and simplify.
@@ -2476,7 +2476,7 @@ see_def_extension_not_merged (struct see_ref_s *curr_ref_s, rtx def_se)
   subreg = gen_lowpart_SUBREG (dest_mode, dest_extension_reg);
   new_pseudo_reg = gen_reg_rtx (source_extension_mode);
 
-  /* Step a: Replace every use of dest_real_reg with a new preudo register.  */
+  /* Step a: Replace every use of dest_real_reg with a new pseudo register.  */
   d.from = dest_real_reg;
   d.to = new_pseudo_reg;
   note_uses (&PATTERN (ref_copy), see_replace_src, &d);

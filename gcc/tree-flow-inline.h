@@ -1390,8 +1390,8 @@ first_imm_use_stmt (imm_use_iterator *imm, tree var)
   imm->next_imm_name = NULL_USE_OPERAND_P;
 
   /* iter_node is used as a marker within the immediate use list to indicate
-     where the end of the current stmt's uses are.  Iintialize it to NULL
-     stmt and use, which indicateds a marker node.  */
+     where the end of the current stmt's uses are.  Initialize it to NULL
+     stmt and use, which indicates a marker node.  */
   imm->iter_node.prev = NULL_USE_OPERAND_P;
   imm->iter_node.next = NULL_USE_OPERAND_P;
   imm->iter_node.stmt = NULL_TREE;

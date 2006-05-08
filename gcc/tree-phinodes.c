@@ -417,7 +417,7 @@ remove_phi_arg_num (tree phi, int i)
       use_operand_p old_p, new_p;
       old_p = &PHI_ARG_IMM_USE_NODE (phi, num_elem - 1);
       new_p = &PHI_ARG_IMM_USE_NODE (phi, i);
-      /* Set use on new node, and link into last elements's place.  */
+      /* Set use on new node, and link into last element's place.  */
       *(new_p->use) = *(old_p->use);
       relink_imm_use (new_p, old_p);
     }
