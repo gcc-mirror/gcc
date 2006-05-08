@@ -1,3 +1,8 @@
+2006-05-08  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/27260
+	* builtins.c (expand_builtin_memset): Expand val in original mode.
+
 2006-05-06   Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27151
