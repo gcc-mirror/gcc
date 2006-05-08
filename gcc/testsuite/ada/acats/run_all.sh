@@ -239,7 +239,7 @@ for chapter in $chapters; do
       target_gnatchop -c -w `ls ${test}*.a ${test}*.ada ${test}*.adt ${test}*.am ${test}*.dep 2> /dev/null` >> $dir/acats.log 2>&1
       main=""
       find_main
-      if [ "$main" == "" ]; then
+      if [ -z "$main" ]; then
          sync
          find_main
       fi
