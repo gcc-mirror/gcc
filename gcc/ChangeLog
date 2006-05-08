@@ -1,3 +1,15 @@
+2006-05-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/24879
+	* config/i386/pmmintrin.h (_mm_monitor): Remove macro. Use
+	inline function.
+	(_mm_mwait): Likewise.
+
+	* config/i386/sse.md (sse3_mwait): Replace "mwait\t%0, %1" with
+	"mwait".
+	(sse3_monitor): Make it 32bit only.
+	(sse3_monitor64): New. 64bit monitor.
+
 2006-05-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR target/27421
