@@ -152,18 +152,17 @@ examine_objects (void *pc, struct dwarf_eh_bases *bases, int dont_alloc)
   for (; image != NULL; image = image->next)
     if ((image->examined_p & EXAMINED_IMAGE_MASK) == 0)
       {
-	char *fde;
+	char *fde = NULL;
 	unsigned long sz;
 
-#ifdef __ppc64__
-	fde = getsectdatafromheader_64 ((struct mach_header_64 *) image->mh,
-				     "__DATA", "__eh_frame", &sz);
-#else
+	/* For ppc only check whether or not we have __DATA eh frames.  */
+#ifdef __ppc__
 	fde = getsectdatafromheader (image->mh, "__DATA", "__eh_frame", &sz);
 #endif
+
 	if (fde == NULL)
 	  {
-#ifdef __ppc64__
+#if __LP64__
 	    fde = getsectdatafromheader_64 ((struct mach_header_64 *) image->mh,
 					 "__TEXT", "__eh_frame", &sz);
 #else
