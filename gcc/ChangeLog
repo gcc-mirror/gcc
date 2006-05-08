@@ -2,6 +2,9 @@
 
 	* config/arm/constraints.md (c): Fix a typo.
 
+	* see.c, tree-flow-inline.h, tree-phinodes.c: Fix comment
+	typos.
+
 2006-05-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/24879
