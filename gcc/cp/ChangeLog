@@ -1,3 +1,8 @@
+2006-05-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27447
+	* decl2.c (build_memfn_type): Skip invalid functions and class types.
+
 2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27427

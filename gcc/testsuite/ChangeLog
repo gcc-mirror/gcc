@@ -1,3 +1,8 @@
+2006-05-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27447
+	* g++.dg/other/ptrmem7.C: New test.
+
 2006-05-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR target/27421

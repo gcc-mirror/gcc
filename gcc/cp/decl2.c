@@ -114,6 +114,9 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals)
   tree raises;
   int type_quals;
 
+  if (fntype == error_mark_node || ctype == error_mark_node)
+    return error_mark_node;
+
   type_quals = quals & ~TYPE_QUAL_RESTRICT;
   ctype = cp_build_qualified_type (ctype, type_quals);
   fntype = build_method_type_directly (ctype, TREE_TYPE (fntype),
