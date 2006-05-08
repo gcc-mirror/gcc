@@ -1,3 +1,8 @@
+2006-05-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27158
+	* gcc.target/powerpc/pr27158.c: New test case.
+
 2006-05-08  Laurent GUERBY  <laurent@guerby.net>
 
 	PR testsuite/27476
