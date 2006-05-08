@@ -1,3 +1,7 @@
+2006-05-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* decl.c (grok_op_properties): Add missing return value.
+
 2006-05-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27427
