@@ -1,3 +1,10 @@
+2006-05-08  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/27277
+	* config/i386/i386.c (ix86_rtx_costs) [FLOAT_EXTEND]: For
+	standard 80387 constants, raise the cost to prevent
+	compress_float_constant() to generate load from memory.
+
 2006-05-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/arm/constraints.md (c): Fix a typo.
