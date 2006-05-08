@@ -1,3 +1,9 @@
+2006-05-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27158
+	* reload.c (find_reloads_toplev): Only return the simplified SUBREG
+	of a reg_equiv_constant if the result is a legitimate constant.
+
 2006-05-08  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/27277
