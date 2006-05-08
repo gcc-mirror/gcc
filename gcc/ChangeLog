@@ -1,3 +1,8 @@
+2006-05-08  Eric Christopher  <echristo@apple.com>
+
+	* unwind-dw2-fde-darwin.c (examine_objects): Only check data
+	section for ppc.
+
 2006-05-08  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/25962
@@ -59,7 +64,7 @@
 2006-05-07  Mircea Namolaru  <namolaru@il.ibm.com>
 
         * opts.c (flag_see): remove its setting at -O3.
-	
+
 2006-05-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* genpeep.c (main): Make insn-peep.c depend on flags.h.
@@ -210,9 +215,9 @@
 2006-05-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/27381
-	* tree-phinodes.c (remove_phi_arg_num): When moving a phi argument, 
+	* tree-phinodes.c (remove_phi_arg_num): When moving a phi argument,
 	maintain the same immediate_use links.
-	* tree-ssa-operands.c (dump_immediate_uses_for): Show iteration marker 
+	* tree-ssa-operands.c (dump_immediate_uses_for): Show iteration marker
 	node rather than segfaulting.
 
 2006-05-03  Jakub Jelinek  <jakub@redhat.com>
@@ -284,7 +289,7 @@
 2006-05-02  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR ada/27366
-	* ada/env.c (__gnat_clearenv): Use unsetenv() to clear environment 
+	* ada/env.c (__gnat_clearenv): Use unsetenv() to clear environment
 	on Cygwin.
 
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
