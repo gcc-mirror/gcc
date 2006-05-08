@@ -67,7 +67,7 @@
   Thumb only.  The union of the low registers and the stack register.")
 
 (define_register_constraint "c" "CC_REG"
- "@interal The condition code register.")
+ "@internal The condition code register.")
 
 (define_constraint "I"
  "In ARM state a constant that can be used as an immediate value in a Data
