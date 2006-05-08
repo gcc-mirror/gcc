@@ -35,7 +35,7 @@ contains
     x = fcn (m)                ! { dg-error "upper bound in the last dimension" }
     m(:, 1:2) = fcn (q)
     call sub (m, x)            ! { dg-error "upper bound in the last dimension" }
-    call sub (m(1:2, 1:2), x)
+    call sub (m(1:2, 1:2), x)  ! { dg-error "Incompatible ranks in elemental subroutine" }
     print *, p
 
     call DHSEQR(x)

@@ -2258,6 +2258,13 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
       len = build_int_cst (NULL_TREE, arg->value.character.length);
       break;
 
+    case EXPR_ARRAY:
+      /* Obtain the string length from the function used by
+         trans-array.c(gfc_trans_array_constructor).  */
+      len = NULL_TREE;
+      get_array_ctor_strlen (arg->value.constructor, &len);
+      break;
+
     default:
 	if (arg->expr_type == EXPR_VARIABLE
 	    && (arg->ref == NULL || (arg->ref->next == NULL
