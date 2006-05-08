@@ -1,3 +1,9 @@
+2006-05-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/25962
+	* cgraphunit.c (decide_is_function_needed): When not optimizing even
+	unused static functions are needed.
+
 2006-05-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/27158
