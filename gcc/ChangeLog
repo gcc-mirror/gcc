@@ -1,3 +1,9 @@
+2006-05-09  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/27335
+	* loop-unroll.c (peel_loops_completely): Use loops->parray to walk the
+	loops.
+
 2006-05-08  Chao-ying Fu  <fu@mips.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
