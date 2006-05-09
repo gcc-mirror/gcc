@@ -1,3 +1,8 @@
+2006-05-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* hpux-unwind.h (pa_fallback_frame_state): Handle return parameter
+	relocation and relocation stubs.
+
 2006-05-08  Eric Christopher  <echristo@apple.com>
 
 	* unwind-dw2-fde-darwin.c (examine_objects): Only check data
