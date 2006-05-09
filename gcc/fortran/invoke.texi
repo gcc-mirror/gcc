@@ -195,7 +195,8 @@ older Fortran programs.
 @item -fall-intrinsics
 Accept all of the intrinsic procedures provided in libgfortran 
 without regard to the setting of @option{-std}.  In particular, 
-this option can be quite useful with @option{-std=f95}.
+this option can be quite useful with @option{-std=f95}.  Additionally,
+gfortran will ignore @option{-Wnonstd-intrinsics}.
 
 @cindex option, -fd-lines-as-code
 @cindex -fd-lines-as-code, option
