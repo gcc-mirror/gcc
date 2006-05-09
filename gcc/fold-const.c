@@ -12220,7 +12220,7 @@ fold_read_from_constant_string (tree exp)
 	}
 
       if (string
-	  && TREE_TYPE (exp) == TREE_TYPE (TREE_TYPE (string))
+	  && TYPE_MODE (TREE_TYPE (exp)) == TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))
 	  && TREE_CODE (string) == STRING_CST
 	  && TREE_CODE (index) == INTEGER_CST
 	  && compare_tree_int (index, TREE_STRING_LENGTH (string)) < 0

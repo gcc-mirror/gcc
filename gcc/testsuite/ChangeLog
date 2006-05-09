@@ -1,3 +1,9 @@
+2006-05-09  Dirk Mueller  <dmueller@suse.de>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27498
+	* gcc.dg/tree-ssa/pr27498.c: New testcase.
+
 2006-05-09  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/27335
