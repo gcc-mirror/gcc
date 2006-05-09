@@ -909,6 +909,7 @@ hppa[12]*-*-hpux10*)
 	fi
 	use_collect2=yes
 	use_fixproto=yes
+	gas=yes
 	;;
 hppa*64*-*-hpux11*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
@@ -916,16 +917,9 @@ hppa*64*-*-hpux11*)
 	then
 		target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
 	fi
-	if test x$gas = xyes
-	then
-		tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h \
-			 pa/pa64-regs.h pa/pa-hpux.h pa/pa-hpux1010.h \
-			 pa/pa-hpux11.h"
-	else
-		tm_file="pa/pa64-start.h ${tm_file} dbxelf.h pa/elf.h \
-			 pa/pa64-regs.h pa/pa-hpux.h pa/pa-hpux1010.h \
-			 pa/pa-hpux11.h"
-	fi
+	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h \
+		 pa/pa64-regs.h pa/pa-hpux.h pa/pa-hpux1010.h \
+		 pa/pa-hpux11.h"
 	case ${target} in
 	*-*-hpux11.[1-9]*)
 		tm_file="${tm_file} pa/pa-hpux1111.h pa/pa-64.h pa/pa64-hpux.h"
@@ -952,6 +946,7 @@ hppa*64*-*-hpux11*)
 		thread_file=posix 
 		;;
 	esac
+	gas=yes
 	;;
 hppa[12]*-*-hpux11*)
 	case ${target} in
@@ -981,6 +976,7 @@ hppa[12]*-*-hpux11*)
 		;;
 	esac
 	use_collect2=yes
+	gas=yes
 	;;
 i[34567]86-*-darwin*)
 	# All the configuration is presently done generically.
