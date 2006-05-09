@@ -522,6 +522,17 @@ recalculate_used_alone (void)
       for (i = 0; VEC_iterate (tree, calls, i, stmt); i++)
 	update_stmt (stmt);
     }
+  
+  /* We need to mark SMT's that are no longer used for renaming so the
+     symbols go away, or else verification will be angry with us, even
+     though they are dead.  */
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    if (TREE_CODE (var) == SYMBOL_MEMORY_TAG)
+      {
+	if (SMT_OLD_USED_ALONE (var) && !SMT_USED_ALONE (var))
+	  mark_sym_for_renaming (var);
+      }
+
   VEC_free (tree, heap, calls);
   updating_used_alone = false;
 }

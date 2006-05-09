@@ -1,3 +1,9 @@
+2006-05-08  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/27093
+	* tree-ssa-alias.c (recalculate_used_alone): Mark variables for 
+	renaming when they become not-used_alone.
+
 2006-05-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* hpux-unwind.h (pa_fallback_frame_state): Handle return parameter
@@ -58,6 +64,7 @@
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
 	Do not try to find zero-sized subvars.
 
+>>>>>>> .r113631
 2006-05-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27136
