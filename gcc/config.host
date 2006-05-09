@@ -94,6 +94,17 @@ case ${target} in
     ;;
 esac
 
+case ${host} in
+  i[34567]86-*-* \
+  | x86_64-*-* )
+    # include the support for -march=native only when not cross compiling
+    if test x${host} = x${target} ; then
+      host_extra_gcc_objs="driver-i386.o"
+      host_xmake_file="${host_xmake_file} i386/x-i386"
+    fi
+    ;;
+esac
+
 # Machine-specific settings.
 case ${host} in
   alpha*-dec-*vms*)
@@ -186,7 +197,7 @@ case ${host} in
     ;;
   *-*-linux*)
     out_host_hook_obj=host-linux.o
-    host_xmake_file=x-linux
+    host_xmake_file="${host_xmake_file} x-linux"
     ;;
   ia64-*-hpux*)
     use_long_long_for_widest_fast_int=yes

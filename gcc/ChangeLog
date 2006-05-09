@@ -1,3 +1,19 @@
+2006-05-09  Michael Matz  <matz@suse.de>
+
+	* config.host (<i[34567]86-*-*, x86_64-*-*>): Set
+	host_extra_gcc_objs and host_xmake_file.
+	(<*-*-linux*>): Don't overwrite host_xmake_file.
+	* gcc.c (static_spec_functions): Add EXTRA_SPEC_FUNCTIONS.
+	* config/i386/i386.h (EXTRA_SPEC_FUNCTIONS): Define.
+	(host_detect_local_cpu): Declare.
+	(CC1_CPU_SPEC): Add -march=native and -mtune=native cases.
+	* config/i386/i386.c (override_options): Handle -mtune=native
+	as -mtune=generic.
+	* config/i386/x-i386: New file.
+	* config/i386/driver-i386.c: New file.
+	* doc/invoke.texi (<i386 and x86-64 Options>): Describe
+	cpu-type "native".
+
 2006-05-09  Dirk Mueller  <dmueller@suse.de>
 	Richard Guenther  <rguenther@suse.de>
 

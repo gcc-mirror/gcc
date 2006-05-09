@@ -1565,7 +1565,11 @@ override_options (void)
   if (ix86_tune_string)
     {
       if (!strcmp (ix86_tune_string, "generic")
-	  || !strcmp (ix86_tune_string, "i686"))
+	  || !strcmp (ix86_tune_string, "i686")
+	  /* As special support for cross compilers we read -mtune=native
+	     as -mtune=generic.  With native compilers we won't see the
+	     -mtune=native, as it was changed by the driver.  */
+	  || !strcmp (ix86_tune_string, "native"))
 	{
 	  if (TARGET_64BIT)
 	    ix86_tune_string = "generic64";

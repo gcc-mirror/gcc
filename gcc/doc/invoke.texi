@@ -9176,6 +9176,13 @@ indicates the instruction set the compiler can use, and there is no
 generic instruction set applicable to all processors.  In contrast,
 @option{-mtune} indicates the processor (or, in this case, collection of
 processors) for which the code is optimized.
+@item native
+This selects the CPU to tune for at compilation time by determining
+the processor type of the compiling machine.  Using @option{-mtune=native}
+will produce code optimized for the local machine under the constraints
+of the selected instruction set.  Using @option{-march=native} will
+enable all instruction subsets supported by the local machine (hence
+the result might not run on different machines).
 @item i386
 Original Intel's i386 CPU@.
 @item i486

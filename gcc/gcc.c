@@ -1601,6 +1601,9 @@ static const struct spec_function static_spec_functions[] =
   { "replace-outfile",		replace_outfile_spec_function },
   { "version-compare",		version_compare_spec_function },
   { "include",			include_spec_function },
+#ifdef EXTRA_SPEC_FUNCTIONS
+  EXTRA_SPEC_FUNCTIONS
+#endif
   { 0, 0 }
 };
 
