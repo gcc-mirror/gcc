@@ -116,6 +116,26 @@ pa_fallback_frame_state (struct _Unwind_Context *context,
   if (pc == 0)
     return _URC_END_OF_STACK;
 
+  /* Check for relocation of the return value.  */
+  if (!TARGET_64BIT
+      && *(pc + 0) == 0x2fd01224		/* fstd,ma fr4,8(sp) */
+      && *(pc + 1) == 0x0fd9109d		/* ldw -4(sp),ret1 */
+      && *(pc + 2) == 0x0fd130bc)		/* ldw,mb -8(sp),ret0 */
+    pc += 3;
+  else if (!TARGET_64BIT
+	   && *(pc + 0) == 0x27d01224		/* fstw,ma fr4,8(sp) */
+	   && *(pc + 1) == 0x0fd130bc)		/* ldw,mb -8(sp),ret0 */
+    pc += 2;
+  else if (!TARGET_64BIT
+	   && *(pc + 0) == 0x0fdc12b0		/* stw,ma ret0,8(sp) */
+	   && *(pc + 1) == 0x0fdd1299		/* stw ret1,-4(sp) */
+	   && *(pc + 2) == 0x2fd13024)		/* fldd,mb -8(sp),fr4 */
+    pc += 3;
+  else if (!TARGET_64BIT
+	   && *(pc + 0) == 0x0fdc12b0		/* stw,ma ret0,8(sp) */
+	   && *(pc + 1) == 0x27d13024)		/* fldw,mb -8(sp),fr4 */
+    pc += 2;
+
   /* Check if the return address points to an export stub (PA 1.1 or 2.0).  */
   if ((!TARGET_64BIT
        && *(pc + 0) == 0x4bc23fd1		/* ldw -18(sp),rp */
@@ -134,6 +154,22 @@ pa_fallback_frame_state (struct _Unwind_Context *context,
       fs->retaddr_column = 0;
       fs->regs.reg[0].how = REG_SAVED_OFFSET;
       fs->regs.reg[0].loc.offset = -24;
+
+      return _URC_NO_REASON;
+    }
+  /* Check if the return address points to a relocation stub.  */
+  else if (!TARGET_64BIT
+	   && *(pc + 0) == 0x0fd11082		/* ldw -8(sp),rp */
+	   && (*(pc + 1) == 0xe840c002		/* bv,n r0(rp) */
+	       || *(pc + 1) == 0xe840d002))	/* bve,n (rp) */
+    {
+      fs->cfa_how    = CFA_REG_OFFSET;
+      fs->cfa_reg    = 30;
+      fs->cfa_offset = 0;
+
+      fs->retaddr_column = 0;
+      fs->regs.reg[0].how = REG_SAVED_OFFSET;
+      fs->regs.reg[0].loc.offset = -8;
 
       return _URC_NO_REASON;
     }
