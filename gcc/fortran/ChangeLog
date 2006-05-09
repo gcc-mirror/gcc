@@ -1,3 +1,8 @@
+2006-05-09  Steven G. Kargl  <kargls@comcast.net>
+
+	* invoke.texi: Missed file in previous commit.  Update
+	 description of -fall-intrinsics
+
 2006-05-07  Steven Boscher  <steven@gcc.gnu.org>
 
 	PR fortran/27378
