@@ -1,3 +1,10 @@
+2006-05-09  Steve Ellcey  <sje@cup.hp.com>
+
+	PR bootstrap/26872
+	* config.gcc (hppa[12]*-*-hpux10*): Set gas to yes.
+	(hppa*64*-*-hpux11*): Ditto.
+	(hppa[12]*-*-hpux11*): Ditto.
+
 2006-05-09  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/26545
