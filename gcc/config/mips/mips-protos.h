@@ -168,6 +168,7 @@ extern void mips_restore_gp (void);
 #ifdef RTX_CODE
 extern bool mips_emit_scc (enum rtx_code, rtx);
 extern void gen_conditional_branch (rtx *, enum rtx_code);
+extern void mips_expand_vcondv2sf (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 #endif
 extern void gen_conditional_move (rtx *);
 extern void mips_gen_conditional_trap (rtx *);

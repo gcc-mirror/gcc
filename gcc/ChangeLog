@@ -1,3 +1,14 @@
+2006-05-08  Chao-ying Fu  <fu@mips.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips-ps-3d.md (scc_ps, s<code>_ps): New patterns.
+	(vcondv2sf, sminv2sf3, smaxv2sf3): Likewise.
+	* config/mips/mips.md (UNSPEC_SCC): New constant.
+	* config/mips/mips-protos.h (mips_expand_vcondv2sf): Declare.
+	* config/mips/mips.c (mips_reverse_fp_cond_p): New function.
+	(mips_emit_compare): Use it.
+	(mips_expand_vcondv2sf): New function.
+
 2006-05-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/27093
