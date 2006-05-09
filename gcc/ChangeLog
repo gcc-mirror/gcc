@@ -1,3 +1,10 @@
+2006-05-09  Dirk Mueller  <dmueller@suse.de>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27498
+	* fold-const.c (fold_read_from_constant_string): Relax check
+	for matching types to matching modes.
+
 2006-05-09  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/27335
