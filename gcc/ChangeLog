@@ -64,7 +64,6 @@
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
 	Do not try to find zero-sized subvars.
 
->>>>>>> .r113631
 2006-05-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27136
@@ -565,7 +564,6 @@
 
 	* basic-block.h (safe_insert_insn_on_edge): Removed.
 	* cfgrtl.c (mark_killed_regs, safe_insert_insn_on_edge): Removed.
-
 
 2006-04-26  David Edelsohn  <edelsohn@gnu.org>
 	    Paolo Bonzini  <bonzini@gnu.org>
