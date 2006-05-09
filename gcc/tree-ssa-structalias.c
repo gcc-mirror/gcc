@@ -2125,7 +2125,8 @@ get_constraint_for_component_ref (tree t, bool *need_anyoffset)
 	 ignore this constraint. When we handle pointer subtraction,
 	 we may have to do something cute here.  */
       
-      if (result.offset < get_varinfo (result.var)->fullsize)	
+      if (result.offset < get_varinfo (result.var)->fullsize
+	  && bitsize != 0)
 	{
 	  /* It's also not true that the constraint will actually start at the
 	     right offset, it may start in some padding.  We only care about
@@ -2146,6 +2147,12 @@ get_constraint_for_component_ref (tree t, bool *need_anyoffset)
 	     accessing *only* padding.  */
 	     
 	  gcc_assert (curr);
+	}
+      else if (bitsize == 0)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Access to zero-sized part of variable,"
+		     "ignoring\n");
 	}
       else
 	if (dump_file && (dump_flags & TDF_DETAILS))

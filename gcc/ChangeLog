@@ -1,3 +1,9 @@
+2006-05-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27409
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Do not try to find zero-sized subvars.
+
 2006-05-08  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/27260
