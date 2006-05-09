@@ -3116,6 +3116,27 @@ mips_zero_if_equal (rtx cmp0, rtx cmp1)
 		       cmp0, cmp1, 0, 0, OPTAB_DIRECT);
 }
 
+/* Convert *CODE into a code that can be used in a floating-point
+   scc instruction (c.<cond>.<fmt>).  Return true if the values of
+   the condition code registers will be inverted, with 0 indicating
+   that the condition holds.  */
+
+static bool
+mips_reverse_fp_cond_p (enum rtx_code *code)
+{
+  switch (*code)
+    {
+    case NE:
+    case LTGT:
+    case ORDERED:
+      *code = reverse_condition_maybe_unordered (*code);
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Convert a comparison into something that can be used in a branch or
    conditional move.  cmp_operands[0] and cmp_operands[1] are the values
    being compared and *CODE is the code used to compare them.
@@ -3173,20 +3194,8 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 
 	 Set CMP_CODE to the code of the comparison instruction and
 	 *CODE to the code that the branch or move should use.  */
-      switch (*code)
-	{
-	case NE:
-	case LTGT:
-	case ORDERED:
-	  cmp_code = reverse_condition_maybe_unordered (*code);
-	  *code = EQ;
-	  break;
-
-	default:
-	  cmp_code = *code;
-	  *code = NE;
-	  break;
-	}
+      cmp_code = *code;
+      *code = mips_reverse_fp_cond_p (&cmp_code) ? EQ : NE;
       *op0 = (ISA_HAS_8CC
 	      ? gen_reg_rtx (CCmode)
 	      : gen_rtx_REG (CCmode, FPSW_REGNUM));
@@ -3230,6 +3239,30 @@ gen_conditional_branch (rtx *operands, enum rtx_code code)
   mips_emit_compare (&code, &op0, &op1, TARGET_MIPS16);
   condition = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
   emit_jump_insn (gen_condjump (condition, operands[0]));
+}
+
+/* Implement:
+
+   (set temp (COND:CCV2 CMP_OP0 CMP_OP1))
+   (set DEST (unspec [TRUE_SRC FALSE_SRC temp] UNSPEC_MOVE_TF_PS))  */
+
+void
+mips_expand_vcondv2sf (rtx dest, rtx true_src, rtx false_src,
+		       enum rtx_code cond, rtx cmp_op0, rtx cmp_op1)
+{
+  rtx cmp_result;
+  bool reversed_p;
+
+  reversed_p = mips_reverse_fp_cond_p (&cond);
+  cmp_result = gen_reg_rtx (CCV2mode);
+  emit_insn (gen_scc_ps (cmp_result,
+			 gen_rtx_fmt_ee (cond, VOIDmode, cmp_op0, cmp_op1)));
+  if (reversed_p)
+    emit_insn (gen_mips_cond_move_tf_ps (dest, false_src, true_src,
+					 cmp_result));
+  else
+    emit_insn (gen_mips_cond_move_tf_ps (dest, true_src, false_src,
+					 cmp_result));
 }
 
 /* Emit the common code for conditional moves.  OPERANDS is the array

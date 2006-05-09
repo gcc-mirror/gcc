@@ -381,6 +381,32 @@
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
+;; An expander for generating an scc operation.
+(define_expand "scc_ps"
+  [(set (match_operand:CCV2 0)
+	(unspec:CCV2 [(match_operand 1)] UNSPEC_SCC))])
+
+(define_insn "s<code>_ps"
+  [(set (match_operand:CCV2 0 "register_operand" "=z")
+	(unspec:CCV2
+	   [(fcond (match_operand:V2SF 1 "register_operand" "f")
+		   (match_operand:V2SF 2 "register_operand" "f"))]
+	   UNSPEC_SCC))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "c.<fcond>.ps\t%0,%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
+
+(define_insn "s<code>_ps"
+  [(set (match_operand:CCV2 0 "register_operand" "=z")
+	(unspec:CCV2
+	   [(swapped_fcond (match_operand:V2SF 1 "register_operand" "f")
+			   (match_operand:V2SF 2 "register_operand" "f"))]
+	   UNSPEC_SCC))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "c.<swapped_fcond>.ps\t%0,%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 ;----------------------------------------------------------------------------
 ; Floating Point Branch Instructions.
@@ -528,3 +554,40 @@
   "recip2.<fmt>\t%0,%1,%2"
   [(set_attr "type" "frdiv2")
    (set_attr "mode" "<UNITMODE>")])
+
+(define_expand "vcondv2sf"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(if_then_else:V2SF
+	  (match_operator 3 ""
+	    [(match_operand:V2SF 4 "register_operand")
+	     (match_operand:V2SF 5 "register_operand")])
+	  (match_operand:V2SF 1 "register_operand")
+	  (match_operand:V2SF 2 "register_operand")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+{
+  mips_expand_vcondv2sf (operands[0], operands[1], operands[2],
+			 GET_CODE (operands[3]), operands[4], operands[5]);
+  DONE;
+})
+
+(define_expand "sminv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(smin:V2SF (match_operand:V2SF 1 "register_operand")
+		   (match_operand:V2SF 2 "register_operand")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+{
+  mips_expand_vcondv2sf (operands[0], operands[1], operands[2],
+			 LE, operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "smaxv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(smax:V2SF (match_operand:V2SF 1 "register_operand")
+		   (match_operand:V2SF 2 "register_operand")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+{
+  mips_expand_vcondv2sf (operands[0], operands[1], operands[2],
+			 LE, operands[2], operands[1]);
+  DONE;
+})

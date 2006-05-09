@@ -1,3 +1,7 @@
+2006-05-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/mips-ps-5.c: New file.
+
 2006-05-08  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/25962
