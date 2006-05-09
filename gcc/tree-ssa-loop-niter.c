@@ -947,7 +947,7 @@ get_base_for (struct loop *loop, tree x)
 
 /* Given an expression X, then 
  
-   * if BASE is NULL_TREE, X must be a constant and we return X.
+   * if X is NULL_TREE, we return the constant BASE.
    * otherwise X is a SSA name, whose value in the considered loop is derived
      by a chain of operations with constant from a result of a phi node in
      the header of the loop.  Then we return value of X when the value of the
@@ -959,6 +959,8 @@ get_val_for (tree x, tree base)
   tree stmt, nx, val;
   use_optype uses;
   use_operand_p op;
+
+  gcc_assert (is_gimple_min_invariant (base));
 
   if (!x)
     return base;
@@ -1057,7 +1059,11 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 	}
 
       for (j = 0; j < 2; j++)
-	val[j] = get_val_for (next[j], val[j]);
+	{
+	  val[j] = get_val_for (next[j], val[j]);
+	  if (!is_gimple_min_invariant (val[j]))
+	    return chrec_dont_know;
+	}
     }
 
   return chrec_dont_know;
