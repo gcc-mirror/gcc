@@ -91,3 +91,6 @@
    .set directives.  We handle this by deferring the output of .set
    directives to the end of the compilation unit.  */
 #define TARGET_DEFERRED_OUTPUT_DEFS(DECL,TARGET) true
+
+#undef TARGET_64BIT
+#define TARGET_64BIT 0
