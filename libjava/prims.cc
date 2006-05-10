@@ -74,6 +74,9 @@ details.  */
 // Execution engine for compiled code.
 _Jv_CompiledEngine _Jv_soleCompiledEngine;
 
+// Execution engine for code compiled with -findirect-classes
+_Jv_IndirectCompiledEngine _Jv_soleIndirectCompiledEngine;
+
 // We allocate a single OutOfMemoryError exception which we keep
 // around for use if we run out of memory.
 static java::lang::OutOfMemoryError *no_memory;

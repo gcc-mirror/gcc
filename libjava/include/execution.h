@@ -24,13 +24,15 @@ struct _Jv_ExecutionEngine
   bool (*need_resolve_string_fields) ();
   void (*verify) (jclass);
   void (*allocate_static_fields) (jclass, int, int);
+  void (*allocate_field_initializers) (jclass);
   void (*create_ncode) (jclass);
   _Jv_ResolvedMethod *(*resolve_method) (_Jv_Method *, jclass,
 					 jboolean);
   void (*post_miranda_hook) (jclass);
 };
 
-// This handles all gcj-compiled code, including BC ABI.
+// This handles gcj-compiled code except that compiled with
+// -findirect-classes.
 struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
 {
  public:
@@ -55,25 +57,14 @@ struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
     return NULL;
   }
 
-  static void do_allocate_static_fields (jclass klass,
-					 int pointer_size,
-					 int other_size)
+  static void do_allocate_static_fields (jclass,
+					 int,
+					 int)
   {
-    // Splitting the allocations here lets us scan reference fields
-    // and avoid scanning non-reference fields.
-    char *reference_fields = (char *) _Jv_AllocRawObj (pointer_size);
-    char *non_reference_fields = (char *) _Jv_AllocBytes (other_size);
+  }
 
-    for (int i = 0; i < klass->field_count; i++)
-      {
-	_Jv_Field *field = &klass->fields[i];
-
-	if ((field->flags & java::lang::reflect::Modifier::STATIC) == 0)
-	  continue;
-
-	char *base = field->isRef() ? reference_fields : non_reference_fields;
-	field->u.addr  = base + field->u.boffset;
-      } 
+  static void do_allocate_field_initializers (jclass)
+  {
   }
 
   static void do_create_ncode (jclass)
@@ -92,6 +83,7 @@ struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
     need_resolve_string_fields = do_need_resolve_string_fields;
     verify = do_verify;
     allocate_static_fields = do_allocate_static_fields;
+    allocate_field_initializers = do_allocate_field_initializers;
     create_ncode = do_create_ncode;
     resolve_method = do_resolve_method;
     post_miranda_hook = do_post_miranda_hook;
@@ -108,6 +100,81 @@ struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
     _Jv_Free(mem);
   }
 };
+
+class _Jv_IndirectCompiledClass
+{
+public:
+  void **field_initializers;
+};
+
+// This handles gcj-compiled code compiled with -findirect-classes.
+struct _Jv_IndirectCompiledEngine : public _Jv_CompiledEngine
+{
+  _Jv_IndirectCompiledEngine () : _Jv_CompiledEngine ()
+  {
+    allocate_static_fields = do_allocate_static_fields;
+    allocate_field_initializers = do_allocate_field_initializers;
+  }
+  
+  static void do_allocate_field_initializers (jclass klass)
+  {
+    _Jv_IndirectCompiledClass *aux 
+      =  (_Jv_IndirectCompiledClass*)
+        _Jv_AllocRawObj (sizeof (_Jv_IndirectCompiledClass));
+    klass->aux_info = aux;
+
+    aux->field_initializers = (void **)_Jv_Malloc (klass->field_count 
+						   * sizeof (void*));    
+
+    for (int i = 0; i < klass->field_count; i++)
+      {
+	_Jv_Field *field = &klass->fields[i];
+	if (field->flags & java::lang::reflect::Modifier::STATIC)
+	  {
+	    aux->field_initializers[i] = field->u.addr;
+	    field->u.addr = NULL; 
+	  }
+      }
+  }
+
+  static void do_allocate_static_fields (jclass klass,
+					 int pointer_size,
+					 int other_size)
+  {
+    // Splitting the allocations here lets us scan reference fields
+    // and avoid scanning non-reference fields.
+    char *reference_fields = (char *) _Jv_AllocRawObj (pointer_size);
+    char *non_reference_fields = (char *) _Jv_AllocBytes (other_size);
+
+    _Jv_IndirectCompiledClass *aux 
+      =  (_Jv_IndirectCompiledClass*)klass->aux_info;
+
+    for (int i = 0; i < klass->field_count; i++)
+      {
+	_Jv_Field *field = &klass->fields[i];
+
+	if ((field->flags & java::lang::reflect::Modifier::STATIC) == 0)
+	  continue;
+
+	char *base = field->isRef() ? reference_fields : non_reference_fields;
+	field->u.addr  = base + field->u.boffset;
+
+	if (aux->field_initializers[i])
+	  {
+	    int field_size;
+	    if (! field->isRef ())
+	      field_size = field->type->size ();
+	    else 
+	      field_size = sizeof (jobject);
+
+	    memcpy (field->u.addr, aux->field_initializers[i], field_size);
+	  }
+      } 
+    _Jv_Free (aux->field_initializers);
+  }
+};
+
+
 
 // This handles interpreted code.
 class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
@@ -130,6 +197,10 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
     _Jv_UnregisterClass(klass);
   }
 
+  static void do_allocate_field_initializers (jclass)
+  {
+  }
+
   static void do_post_miranda_hook (jclass);
 
   _Jv_InterpreterEngine ()
@@ -138,6 +209,7 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
     need_resolve_string_fields = do_need_resolve_string_fields;
     verify = do_verify;
     allocate_static_fields = do_allocate_static_fields;
+    allocate_field_initializers = do_allocate_field_initializers;
     create_ncode = do_create_ncode;
     resolve_method = do_resolve_method;
     post_miranda_hook = do_post_miranda_hook;
@@ -158,5 +230,5 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
 
 extern _Jv_InterpreterEngine _Jv_soleInterpreterEngine;
 extern _Jv_CompiledEngine _Jv_soleCompiledEngine;
-
+extern _Jv_IndirectCompiledEngine _Jv_soleIndirectCompiledEngine;
 #endif // __JAVA_EXECUTION_H__

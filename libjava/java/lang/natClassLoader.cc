@@ -200,6 +200,8 @@ _Jv_NewClassFromInitializer (const jclass class_initializer)
 					   &java::lang::Class::class$);  
   memcpy ((void*)new_class, (void*)class_initializer, sizeof *new_class);
 
+  new_class->engine = &_Jv_soleIndirectCompiledEngine;
+
   if (_Jv_CheckABIVersion ((unsigned long) new_class->next_or_version))
     (*_Jv_RegisterClassHook) (new_class);
   
