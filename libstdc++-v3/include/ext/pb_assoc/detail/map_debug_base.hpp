@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -154,7 +154,7 @@ namespace pb_assoc
 	set_throw_prob(0);
 
       if (m_key_set.find(r_key) != m_key_set.end())
-	abort();
+	std::abort();
 
       try
 	{
@@ -178,12 +178,12 @@ namespace pb_assoc
     erase_existing(const_key_reference r_key)
     {
       if (m_key_set.find(r_key) == m_key_set.end())
-	abort();
+	std::abort();
 
       m_key_set.erase(r_key);
 
       if (m_key_set.find(r_key) != m_key_set.end())
-	abort();
+	std::abort();
     }
 
     PB_ASSOC_CLASS_T_DEC
@@ -200,7 +200,7 @@ namespace pb_assoc
     check_key_exists(const_key_reference r_key) const
     {
       if (m_key_set.find(r_key) == m_key_set.end())
-	abort();
+	std::abort();
     }
 
     PB_ASSOC_CLASS_T_DEC
@@ -209,7 +209,7 @@ namespace pb_assoc
     check_key_does_not_exist(const_key_reference r_key) const
     {
       if (m_key_set.find(r_key) != m_key_set.end())
-	abort();
+	std::abort();
     }
 
     PB_ASSOC_CLASS_T_DEC
@@ -220,7 +220,7 @@ namespace pb_assoc
       const size_type key_set_size = m_key_set.size();
 
       if (size != key_set_size)
-	abort();
+	std::abort();
     }
 
     PB_ASSOC_CLASS_T_DEC

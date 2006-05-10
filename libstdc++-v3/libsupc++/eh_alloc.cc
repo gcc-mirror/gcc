@@ -44,7 +44,7 @@
 #if _GLIBCXX_HOSTED
 using std::free;
 using std::malloc;
-using std::memcpy;
+using std::memset;
 #else
 // In a freestanding environment, these functions may not be available
 // -- but for now, we assume that they are.

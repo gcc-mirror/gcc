@@ -1,3 +1,16 @@
+2006-05-10  Marc Glisse  <marc.glisse@normalesup.org>
+
+	* include/ext/pool_allocator.h: Add missing std:: qualifications.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/pb_assoc/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Likewise.
+	* include/ext/pb_assoc/detail/resize_policy/
+	hash_standard_resize_policy_imp.hpp: Likewise.
+	* include/ext/pb_assoc/detail/lu_policy/
+	counter_lu_metadata_imp.hpp: Likewise.
+	* include/ext/pb_assoc/detail/map_debug_base.hpp: Likewise.
+	* libsupc++/eh_alloc.cc: Typo: memcpy -> memset.
+
 2006-05-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (integral_constant<>::value): Define.
