@@ -3068,9 +3068,20 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   gfc_expr **upper;
   gfc_ref *ref;
   int allocatable_array;
+  int must_be_pointer;
 
   ref = expr->ref;
 
+  /* In Fortran 95, components can only contain pointers, so that,
+     in ALLOCATE (foo%bar(2)), bar must be a pointer component.
+     We test this by checking for ref->next.
+     An implementation of TR 15581 would need to change this.  */
+
+  if (ref)
+    must_be_pointer = ref->next != NULL;
+  else
+    must_be_pointer = 0;
+  
   /* Find the last reference in the chain.  */
   while (ref && ref->next != NULL)
     {
@@ -3113,7 +3124,10 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   tmp = gfc_conv_descriptor_data_addr (se->expr);
   pointer = gfc_evaluate_now (tmp, &se->pre);
 
-  allocatable_array = expr->symtree->n.sym->attr.allocatable;
+  if (must_be_pointer)
+    allocatable_array = 0;
+  else
+    allocatable_array = expr->symtree->n.sym->attr.allocatable;
 
   if (TYPE_PRECISION (gfc_array_index_type) == 32)
     {
