@@ -96,6 +96,7 @@ struct _Jv_ArrayVTable;
 class _Jv_Linker;
 class _Jv_ExecutionEngine;
 class _Jv_CompiledEngine;
+class _Jv_IndirectCompiledEngine;
 class _Jv_InterpreterEngine;
 
 #ifdef INTERPRETER
@@ -538,6 +539,7 @@ private:
   friend class ::_Jv_Linker;
   friend class ::_Jv_ExecutionEngine;
   friend class ::_Jv_CompiledEngine;
+  friend class ::_Jv_IndirectCompiledEngine;
   friend class ::_Jv_InterpreterEngine;
 
   friend void ::_Jv_sharedlib_register_hook (jclass klass);

@@ -1527,6 +1527,8 @@ _Jv_Linker::ensure_fields_laid_out (jclass klass)
   else
     instance_size = java::lang::Object::class$.size();
 
+  klass->engine->allocate_field_initializers (klass); 
+
   for (int i = 0; i < klass->field_count; i++)
     {
       int field_size;
@@ -1539,7 +1541,6 @@ _Jv_Linker::ensure_fields_laid_out (jclass klass)
 	  // It is safe to resolve the field here, since it's a
 	  // primitive class, which does not cause loading to happen.
 	  resolve_field (field, klass->loader);
-
 	  field_size = field->type->size ();
 	  field_align = get_alignment_from_class (field->type);
 	}
