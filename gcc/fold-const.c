@@ -2489,6 +2489,22 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
 
+  /* In case both args are comparisons but with different comparison
+     code, try to swap the comparison operands of one arg to produce
+     a match and compare that variant.  */
+  if (TREE_CODE (arg0) != TREE_CODE (arg1)
+      && COMPARISON_CLASS_P (arg0)
+      && COMPARISON_CLASS_P (arg1))
+    {
+      enum tree_code swap_code = swap_tree_comparison (TREE_CODE (arg1));
+
+      if (TREE_CODE (arg0) == swap_code)
+	return operand_equal_p (TREE_OPERAND (arg0, 0),
+			        TREE_OPERAND (arg1, 1), flags)
+	       && operand_equal_p (TREE_OPERAND (arg0, 1),
+				   TREE_OPERAND (arg1, 0), flags);
+    }
+
   if (TREE_CODE (arg0) != TREE_CODE (arg1)
       /* This is needed for conversions and for COMPONENT_REF.
 	 Might as well play it safe and always test this.  */

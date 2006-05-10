@@ -1,3 +1,10 @@
+2006-05-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27302
+	* fold-const.c (operand_equal_p): For two comparisons,
+	try comparison of one comparison code swapped if that yields
+	the same code.
+
 2006-05-10  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-pretty-print.c (pretty_print_string): No need to handle
