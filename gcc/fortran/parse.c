@@ -1292,7 +1292,7 @@ accept_statement (gfc_statement st)
 static void
 reject_statement (void)
 {
-
+  gfc_new_block = NULL;
   gfc_undo_symbols ();
   gfc_clear_warning ();
   undo_new_statement ();
