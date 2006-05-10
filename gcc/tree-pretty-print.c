@@ -2512,9 +2512,7 @@ pretty_print_string (pretty_printer *buffer, const char *str)
 	  pp_string (buffer, "\\'");
 	  break;
 
-	case '\0':
-	  pp_string (buffer, "\\0");
-	  break;
+	  /* No need to handle \0; the loop terminates on \0.  */
 
 	case '\1':
 	  pp_string (buffer, "\\1");
