@@ -140,6 +140,15 @@ proc dg-require-mkfifo { args } {
     }
 }
 
+# If this target does not use __cxa_atexit, skip this test.
+
+proc dg-require-cxa-atexit { args } {
+    if { ![ check_cxa_atexit_available ] } {
+        upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # Check the flags with which the test will be run against options in
 # a test directive that will skip or xfail that test.  The DejaGnu proc
 # check_conditional_xfail will look at the options in compiler_flags, so

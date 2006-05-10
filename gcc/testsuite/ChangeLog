@@ -1,3 +1,8 @@
+2006-05-09  Steve Ellcey  <sje@cup.hp.com>
+
+	* lib/target-supports-dg.exp (dg-require-cxa-atexit): New.
+	* lib/target-supports.dg (check_cxa_atexit_available): New.
+
 2005-05-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27470
