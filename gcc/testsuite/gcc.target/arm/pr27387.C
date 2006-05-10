@@ -1,4 +1,4 @@
-/* PR target/90000
+/* PR target/27387
    We used to generate a non-PIC thunk on thumb even with -fPIC.
    Make sure that won't happen anymore.  */
 
