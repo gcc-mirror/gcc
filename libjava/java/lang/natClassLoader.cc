@@ -156,6 +156,30 @@ _Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
   loader->loadedClasses->remove(klass->name->toString());
 }
 
+
+// Class registration.
+//
+// There are two kinds of functions that register classes.  
+//
+// Type 1:
+//
+// These take the address of a class that is in an object file.
+// Because these classes are not allocated on the heap, It is also
+// necessary to register the address of the object for garbage
+// collection.  This is used with the "old" C++ ABI and with
+// -findirect-dispatch -fno-indirect-classes.
+//
+// Type 2:
+//
+// These take an initializer struct, create the class, and return the
+// address of the newly created class to their caller.  These are used
+// with -findirect-dispatch.
+//
+// _Jv_RegisterClasses() and _Jv_RegisterClasses_Counted() are
+// functions of Type 1, and _Jv_NewClassFromInitializer() and
+// _Jv_RegisterNewClasses() are of Type 2.
+
+
 // This function is called many times during startup, before main() is
 // run.  At that point in time we know for certain we are running 
 // single-threaded, so we don't need to lock when adding classes to the 
