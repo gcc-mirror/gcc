@@ -1,6 +1,6 @@
 // MT-optimized allocator -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       : _M_align(_S_align), _M_max_bytes(_S_max_bytes), _M_min_bin(_S_min_bin),
       _M_chunk_size(_S_chunk_size), _M_max_threads(_S_max_threads), 
       _M_freelist_headroom(_S_freelist_headroom), 
-      _M_force_new(getenv("GLIBCXX_FORCE_NEW") ? true : false)
+      _M_force_new(std::getenv("GLIBCXX_FORCE_NEW") ? true : false)
       { }
 
       explicit
@@ -480,7 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 			     sizeof(_Tp) * size_t(_Tune::_S_chunk_size),
 			     _Tune::_S_max_threads,
 			     _Tune::_S_freelist_headroom,
-			     getenv("GLIBCXX_FORCE_NEW") ? true : false);
+			     std::getenv("GLIBCXX_FORCE_NEW") ? true : false);
 	static pool_type _S_pool(_S_tune);
 	return _S_pool;
       }

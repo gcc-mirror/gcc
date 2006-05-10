@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ counter_lu_metadata<
 PB_ASSOC_CLASS_C_DEC::
 operator()(size_type m_max_count) const
 {
-  return (counter_lu_metadata<Size_Type>(rand() % m_max_count));
+  return (counter_lu_metadata<Size_Type>(std::rand() % m_max_count));
 }
 
 PB_ASSOC_CLASS_T_DEC
