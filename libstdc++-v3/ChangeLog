@@ -1,3 +1,16 @@
+2006-05-10  Paolo Carlini  <pcarlini@suse.de>
+	    Peter Doerfler  <gcc@pdoerfler.com>
+
+	* include/tr1/hashtable (hashtable_iterator<>::hashtable_iterator(),
+	hashtable_const_iterator<>::hashtable_const_iterator(),
+	node_iterator<>::node_iterator(),
+	node_const_iterator<>::node_const_iterator()): Add.
+	(node_iterator<>::node_iterator(hash_node<>*),
+	node_const_iterator<>::node_const_iterator(hash_node<>*)): Tweak,
+	remove default.
+	* testsuite/tr1/6_containers/unordered/hashtable/
+	iterators_default_constructor.c: New.
+
 2006-05-10  Marc Glisse  <marc.glisse@normalesup.org>
 
 	* include/ext/pool_allocator.h: Add missing std:: qualifications.

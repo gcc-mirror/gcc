@@ -171,8 +171,11 @@ namespace Internal
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
+      node_iterator()
+      : node_iterator_base<Value, cache>(0) { }
+
       explicit
-      node_iterator(hash_node<Value, cache>* p = 0)
+      node_iterator(hash_node<Value, cache>* p)
       : node_iterator_base<Value, cache>(p) { }
 
       reference
@@ -209,8 +212,11 @@ namespace Internal
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
+      node_const_iterator()
+      : node_iterator_base<Value, cache>(0) { }
+
       explicit
-      node_const_iterator(hash_node<Value, cache>* p = 0)
+      node_const_iterator(hash_node<Value, cache>* p)
       : node_iterator_base<Value, cache>(p) { }
 
       node_const_iterator(const node_iterator<Value, constant_iterators,
@@ -246,8 +252,7 @@ namespace Internal
     {
       hashtable_iterator_base(hash_node<Value, cache>* node,
 			      hash_node<Value, cache>** bucket)
-      : m_cur_node(node), m_cur_bucket(bucket)
-      { }
+      : m_cur_node(node), m_cur_bucket(bucket) { }
 
       void
       incr()
@@ -303,6 +308,9 @@ namespace Internal
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
+      hashtable_iterator()
+      : hashtable_iterator_base<Value, cache>(0, 0) { }
+
       hashtable_iterator(hash_node<Value, cache>* p,
 			 hash_node<Value, cache>** b)
       : hashtable_iterator_base<Value, cache>(p, b) { }
@@ -310,7 +318,7 @@ namespace Internal
       explicit
       hashtable_iterator(hash_node<Value, cache>** b)
       : hashtable_iterator_base<Value, cache>(*b, b) { }
-  
+
       reference
       operator*() const
       { return this->m_cur_node->m_v; }
@@ -345,6 +353,9 @@ namespace Internal
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
+      hashtable_const_iterator()
+      : hashtable_iterator_base<Value, cache>(0, 0) { }
+
       hashtable_const_iterator(hash_node<Value, cache>* p,
 			       hash_node<Value, cache>** b)
       : hashtable_iterator_base<Value, cache>(p, b) { }
@@ -352,7 +363,7 @@ namespace Internal
       explicit
       hashtable_const_iterator(hash_node<Value, cache>** b)
       : hashtable_iterator_base<Value, cache>(*b, b) { }
-  
+
       hashtable_const_iterator(const hashtable_iterator<Value,
 			       constant_iterators, cache>& x)
       : hashtable_iterator_base<Value, cache>(x.m_cur_node, x.m_cur_bucket) { }
