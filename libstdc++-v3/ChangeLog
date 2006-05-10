@@ -1,3 +1,10 @@
+2006-05-10  Steve Ellcey  <sje@cup.hp.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_cxa_atexit):
+	Move to gcc subdir.
+	* testsuite/lib/dg-options.exp (dg-require-iconv): Remove.
+	(dg-require-cxa-atexit): Move to gcc subdir.
+
 2006-05-10  Paolo Carlini  <pcarlini@suse.de>
 	    Peter Doerfler  <gcc@pdoerfler.com>
 
