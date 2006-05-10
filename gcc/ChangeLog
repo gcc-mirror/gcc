@@ -1,3 +1,9 @@
+2006-05-10  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/24949
+	* config/m68k/m68k.md (ashrdi_const32, ashrdi_const32_mem,
+	ashrdi_const, ashrdi3): Use a scratch register.
+
 2006-05-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27302
