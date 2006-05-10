@@ -22,6 +22,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_TREE_H
 #define GCC_TREE_H
 
+#include "hashtab.h"
 #include "machmode.h"
 #include "input.h"
 #include "statistics.h"
@@ -4266,7 +4267,7 @@ extern bool variably_modified_type_p (tree, tree);
 extern int tree_log2 (tree);
 extern int tree_floor_log2 (tree);
 extern int simple_cst_equal (tree, tree);
-extern unsigned int iterative_hash_expr (tree, unsigned int);
+extern hashval_t iterative_hash_expr (tree, hashval_t);
 extern int compare_tree_int (tree, unsigned HOST_WIDE_INT);
 extern int type_list_equal (tree, tree);
 extern int chain_member (tree, tree);

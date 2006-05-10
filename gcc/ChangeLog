@@ -1,3 +1,9 @@
+2006-05-10  Ben Elliston  <bje@au.ibm.com>
+
+	* tree.h: Include "hashtab.h".
+	(iterative_hash_expr): Use hashval_t in its prototype.
+	* Makefile.in (TREE_H): Add $(HASHTAB_H).
+
 2006-05-09  Steve Ellcey  <sje@cup.hp.com>
 
 	PR bootstrap/26872
