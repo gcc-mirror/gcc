@@ -2170,7 +2170,7 @@ gfc_resolve_index (gfc_expr * index, int check_scalar)
     }
 
   if (index->ts.type == BT_REAL)
-    if (gfc_notify_std (GFC_STD_GNU, "Extension: REAL array index at %L",
+    if (gfc_notify_std (GFC_STD_LEGACY, "Extension: REAL array index at %L",
 			&index->where) == FAILURE)
       return FAILURE;
 
