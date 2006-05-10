@@ -1,5 +1,8 @@
 2006-05-10  Ben Elliston  <bje@au.ibm.com>
 
+	* tree-pretty-print.c (pretty_print_string): No need to handle
+	'\0' as a special character.
+
 	* tree.h: Include "hashtab.h".
 	(iterative_hash_expr): Use hashval_t in its prototype.
 	* Makefile.in (TREE_H): Add $(HASHTAB_H).
