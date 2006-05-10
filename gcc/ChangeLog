@@ -1,3 +1,9 @@
+2006-05-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_struct_value_rtx): Delete.
+	(TARGET_STRUCT_VALUE_RTX): Use the default definition.
+	(arm_init_cumulative_args): Always initialize nregs to zero.
+
 2006-05-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27532
