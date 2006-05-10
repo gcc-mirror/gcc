@@ -2529,8 +2529,8 @@ register_class (void)
   VEC_safe_push (tree, gc, registered_class, node);
 }
 
-/* Emit a function that calls _Jv_NewClassFromInitializer for every
-   class.  */
+/* Emit a function that calls _Jv_RegisterNewClasses with a list of
+   all the classes we have emitted.  */
 
 static void
 emit_indirect_register_classes (tree *list_p)
