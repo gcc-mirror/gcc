@@ -1,5 +1,11 @@
 2006-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/20460
+	* resolve.c (gfc_resolve_index): Make REAL array indices a
+	GFC_STD_LEGACY feature.
+
+2006-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/24549
 	* parse.c (reject_statement): Clear gfc_new_block.
 
