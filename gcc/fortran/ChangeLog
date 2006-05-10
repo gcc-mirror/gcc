@@ -1,3 +1,10 @@
+2005-05-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/27470
+	* trans-array.c(gfc_array_allocate):  If ref->next exists
+	that is if there is a statement like ALLOCATE(foo%bar(2)),
+	F95 rules require that bar should be a pointer.
+
 2006-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20460
