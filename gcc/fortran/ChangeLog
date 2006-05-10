@@ -1,3 +1,8 @@
+2006-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/24549
+	* parse.c (reject_statement): Clear gfc_new_block.
+
 2006-05-09  Steven G. Kargl  <kargls@comcast.net>
 
 	* invoke.texi: Missed file in previous commit.  Update
