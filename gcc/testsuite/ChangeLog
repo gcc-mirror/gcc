@@ -1,3 +1,8 @@
+2006-05-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports-dg.exp (check-flags): New.
+	(dg-skip-if): Move flag checks.
+
 2006-05-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* lib/target-supports-dg.exp (dg-require-cxa-atexit): New.
