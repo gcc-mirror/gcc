@@ -62,7 +62,7 @@ public class NameFinder
    */
   private static Set blacklist = Collections.synchronizedSet(new HashSet());
 
-  private static final boolean use_addr2line
+  private static boolean use_addr2line
           = Boolean.valueOf(System.getProperty
                 ("gnu.gcj.runtime.NameFinder.use_addr2line", "true")
             ).booleanValue();
@@ -166,8 +166,11 @@ public class NameFinder
       procs.put(file, addr2line);
       }
     
-    if (addr2line.proc == null)      
-      return;
+    if (addr2line.proc == null)
+      {
+        use_addr2line = false;
+	return;
+      }
     
     String hexAddr = "0x" + Long.toHexString(addr);
     String name;
