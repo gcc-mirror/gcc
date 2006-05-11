@@ -1,3 +1,8 @@
+2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27547
+	* decl.c (copy_fn_p): Return early on non-member functions.
+
 2006-05-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27447
