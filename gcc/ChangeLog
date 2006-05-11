@@ -1,3 +1,9 @@
+2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR middle-end/27488
+	* fold-const.c (tree_expr_nonnegative_p): Return early on invalid
+	expression.
+
 2006-05-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27529

@@ -1,5 +1,8 @@
 2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR middle-end/27488
+	* gcc.dg/fold-nonneg-1.c: New test.
+
 	PR c++/27547
 	* g++.dg/other/operator1.C: New test.
 
