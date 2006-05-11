@@ -10794,6 +10794,9 @@ multiple_of_p (tree type, tree top, tree bottom)
 int
 tree_expr_nonnegative_p (tree t)
 {
+  if (t == error_mark_node)
+    return 0;
+
   if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return 1;
 
