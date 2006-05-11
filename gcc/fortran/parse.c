@@ -439,6 +439,7 @@ next_free (void)
 	  if (!gfc_is_whitespace (c))
 	    gfc_error_now ("Non-numeric character in statement label at %C");
 
+	  return ST_NONE;
 	}
       else
 	{
