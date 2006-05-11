@@ -1,3 +1,9 @@
+2006-05-11  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gnu/gcj/runtime/NameFinder.java (blacklist): New static field.
+	(lookup): If addr2line fails to find an address, flag the binary as
+	having no debug info and avoid calling addr2line on it again.
+
 2006-05-11  David Daney  <ddaney@avtrex.com>
 
 	* testsuite/libjava.compile/PR20418.java: New.
