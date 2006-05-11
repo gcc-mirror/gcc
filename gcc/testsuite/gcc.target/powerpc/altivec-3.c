@@ -1,5 +1,5 @@
 /* { dg-do run { target powerpc*-*-* } } */
-/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
 
 #include "altivec_check.h"

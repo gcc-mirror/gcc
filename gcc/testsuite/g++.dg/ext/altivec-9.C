@@ -1,6 +1,6 @@
 /* Test for AltiVec function vec_ld, passing a pointer to const vector */
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
 
 #include <altivec.h>

@@ -2,7 +2,7 @@
    typedef name as a vector type specifier.  */
 
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec" } */
 
 typedef unsigned int ui;

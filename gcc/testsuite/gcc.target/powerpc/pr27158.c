@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O2 -maltivec" } */
 #define REGLIST                                                              \
          "77",  "78",  "79",  "80",  "81",  "82",  "83",  "84",  "85",  "86",\
