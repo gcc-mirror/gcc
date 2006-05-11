@@ -1,5 +1,9 @@
 2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR middle-end/27384
+	* fold-const.c (size_binop): Move sanity check for arguments to
+	the beginning of the function.
+
 	PR middle-end/27488
 	* fold-const.c (tree_expr_nonnegative_p): Return early on invalid
 	expression.

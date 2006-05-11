@@ -1732,6 +1732,9 @@ size_binop (enum tree_code code, tree arg0, tree arg1)
 {
   tree type = TREE_TYPE (arg0);
 
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return error_mark_node;
+
   gcc_assert (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type)
 	      && type == TREE_TYPE (arg1));
 
@@ -1750,9 +1753,6 @@ size_binop (enum tree_code code, tree arg0, tree arg1)
       /* Handle general case of two integer constants.  */
       return int_const_binop (code, arg0, arg1, 0);
     }
-
-  if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return error_mark_node;
 
   return fold_build2 (code, type, arg0, arg1);
 }
