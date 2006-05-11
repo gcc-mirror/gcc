@@ -118,7 +118,7 @@ proc scan-not-hidden { args } {
     set output_file "[file rootname [file tail $testcase]].s"
 
     set symbol [lindex $args 0]
-    set hidden_scan [hidden-scan-for symbol]
+    set hidden_scan [hidden-scan-for $symbol]
 
     set args [lreplace $args 0 0 "$hidden_scan"]
 
