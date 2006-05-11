@@ -2257,6 +2257,9 @@ classify_argument (enum machine_mode mode, tree type,
 		{
 		  int num;
 
+		  if (TREE_TYPE (field) == error_mark_node)
+		    continue;
+
 		  /* Bitfields are always classified as integer.  Handle them
 		     early, since later code would consider them to be
 		     misaligned integers.  */
