@@ -20,8 +20,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
 import java.io.File;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -54,6 +57,10 @@ public class NameFinder
   private String sourceFile;
   private int lineNum;
   private HashMap procs = new HashMap();
+  /**
+   * Set of binary files that addr2line should not be called on.
+   */
+  private static Set blacklist = Collections.synchronizedSet(new HashSet());
 
   private static final boolean use_addr2line
           = Boolean.valueOf(System.getProperty
@@ -150,7 +157,7 @@ public class NameFinder
     sourceFile = null;
     lineNum = -1;
     
-    if (! use_addr2line)
+    if (! use_addr2line || blacklist.contains(file))
       return;
     Addr2Line addr2line = (Addr2Line) procs.get(file);
     if (addr2line == null)
@@ -178,6 +185,12 @@ public class NameFinder
 	  sourceFile = result.substring(0, split);
 	  String lineNumStr = result.substring(split + 1, result.length());
 	  lineNum = Integer.parseInt (lineNumStr);
+	}
+      else
+        {
+	  /* This binary has no debug info (assuming addr was valid). 
+	     Avoid repeat addr2line invocations. */
+ 	  blacklist.add(binaryFile);
 	}
       }
     catch (IOException ioe)
