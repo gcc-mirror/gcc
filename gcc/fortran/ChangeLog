@@ -1,3 +1,9 @@
+2006-05-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27553
+	* parse.c (next_free): Return instead of calling decode_statement
+	upon error.
+
 2005-05-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27470
