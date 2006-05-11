@@ -8476,7 +8476,9 @@ copy_fn_p (tree d)
   tree arg_type;
   int result = 1;
 
-  gcc_assert (DECL_FUNCTION_MEMBER_P (d));
+  if (!DECL_FUNCTION_MEMBER_P (d))
+    /* Non-members are invalid.  We complained, but kept the declaration.  */
+    return 0;
 
   if (DECL_TEMPLATE_INFO (d) 
       && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (d)))
