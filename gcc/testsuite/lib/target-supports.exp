@@ -1226,6 +1226,40 @@ proc check_effective_target_arm32 { } {
     return $et_arm32_saved
 }
 
+# Return 1 if this is a PowerPC target with floating-point registers.
+
+proc check_effective_target_powerpc_fprs { } {
+    if { [istarget powerpc*-*-*]
+	 || [istarget rs6000-*-*] } {
+	return [check_no_compiler_messages powerpc_fprs object {
+	    #ifdef __NO_FPRS__
+	    #error no FPRs
+	    #else
+	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target supporting -maltivec.
+
+proc check_effective_target_powerpc_altivec_ok { } {
+    if { [istarget powerpc*-*-*]
+	 || [istarget rs6000-*-*] } {
+	# AltiVec is not supported on Aix.
+	if { [istarget powerpc*-*-aix*] } {
+	    return 0
+	}
+	return [check_no_compiler_messages powerpc_altivec_ok object {
+	    int dummy;
+	} "-maltivec"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if the target supports hardware vector shift operation.
 
 proc check_effective_target_vect_shift { } {

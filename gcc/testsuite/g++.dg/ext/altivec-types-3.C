@@ -1,4 +1,5 @@
 /* { dg-do compile { target powerpc*-*-linux* } } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-maltivec" } */
 

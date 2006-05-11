@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-do compile { target { powerpc*-*-linux* && powerpc_altivec_ok } } } */
 /* { dg-options "-maltivec" } */
 
 /* GNU extension: PowerPC AltiVec Built-in Functions.

@@ -1,4 +1,4 @@
-/* { dg-do run { target { *-*-linux* && ilp32 } } } */
+/* { dg-do run { target { { *-*-linux* && ilp32 } && powerpc_fprs } } } */
 /* { dg-options -O2 } */
 
 extern void exit (int);
