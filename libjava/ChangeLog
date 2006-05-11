@@ -1,5 +1,11 @@
 2006-05-11  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* gnu/gcj/runtime/NameFinder.java (lookup): If exec'ing addr2line
+	fails, don't try again.
+	(use_addr2line): Field no longer final.
+
+2006-05-11  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* gnu/gcj/runtime/NameFinder.java (blacklist): New static field.
 	(lookup): If addr2line fails to find an address, flag the binary as
 	having no debug info and avoid calling addr2line on it again.
