@@ -1,3 +1,15 @@
+2006-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27529
+	* fold-const.c (fold_unary): Handle intermediate conversion
+	to a pointer type like intermediate conversion to an integer
+	type in folding of (T1)(T2)var to var.
+	Match the code to the comment in the final conversion for
+	(T1)(T2)var to (T1)var regarding to type precision.  Rather
+	than disallow T1 being of pointer type, assert that both T1
+	and var are of pointer type or not.  Make sure not to fall
+	over the frontends lazyness wrt array to pointer decay though.
+
 2006-05-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_struct_value_rtx): Delete.
