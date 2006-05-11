@@ -96,7 +96,6 @@ gnu::gcj::runtime::SharedLibHelper::init(void)
     {
       const char *msg = dlerror();
       throw new java::lang::UnknownError(JvNewStringLatin1(msg));
-      fprintf (stderr, "failed loading %s: %s\n", lname, msg);
     }
   handler = (gnu::gcj::RawData*) h;
 #else
