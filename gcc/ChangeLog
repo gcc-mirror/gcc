@@ -1,3 +1,9 @@
+2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR middle-end/27384
+	* fold-const.c (size_binop): Move sanity check for arguments to
+	the beginning of the function.
+
 2006-05-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27136
