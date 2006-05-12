@@ -2053,8 +2053,10 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 	    || s390_single_part (GEN_INT (value), DImode, SImode, 0) == 1;
 	  
 	case 'n':
-	  return value == -1
-	    || s390_single_part (GEN_INT (value), DImode, SImode, -1) == 1;
+	  return 
+	    (value == -1
+	     || s390_single_part (GEN_INT (value), DImode, SImode, -1) == 1)
+	    && value != -((HOST_WIDE_INT)1 << 32);
 	  
 	default:
 	  gcc_unreachable ();
