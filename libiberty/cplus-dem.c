@@ -3693,7 +3693,7 @@ demangle_fund_type (struct work_stuff *work,
 {
   int done = 0;
   int success = 1;
-  char buf[10];
+  char buf[INTBUF_SIZE + 5 /* 'int%u_t' */];
   unsigned int dec = 0;
   type_kind_t tk = tk_integral;
 
