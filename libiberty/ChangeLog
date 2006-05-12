@@ -1,3 +1,8 @@
+2006-05-12  Anton Blanchard  <anton@samba.org>
+
+	* cplus-dem.c (demangle_fund_type): Ensure buf is large enough to
+	hold "int%u_t".
+
 2006-04-24  Julian Brown  <julian@codesourcery.com>
 
 	* floatformat.c (floatformat_to_double): Fix (biased) exponent=0 case.
