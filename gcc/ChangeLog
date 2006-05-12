@@ -1,3 +1,9 @@
+2006-05-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_const_ok_for_constraint_p): Disallow -4G for
+	On contraint.
+	* config/s390/s390.md: Adjust comment describing On constraint.
+
 2006-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (decide_is_function_needed): Don't force always_inline
