@@ -981,7 +981,7 @@ proc check_cxa_atexit_available { } {
 	puts $f "{ return 0; }"
 	close $f
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [${tool}_target_compile $src $exe executable ""]
 	file delete $src
 
 	if [string match "" $lines] {

@@ -1,3 +1,8 @@
+2006-05-12  Steve Ellcey  <sje@cup.hp.com>
+
+	* lib/target-supports.dg (check_cxa_atexit_available): Change
+	v3_target_compile to ${tool}_target_compile.
+
 2006-05-11  Jason Merrill  <jason@redhat.com>
 
 	* lib/scanasm.exp (scan-not-hidden): Fix typo.
