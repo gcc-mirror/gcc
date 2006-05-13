@@ -1,3 +1,8 @@
+2006-05-13  Peter Doerfler  <gcc@pdoerfler.com>
+
+	* include/tr1/hashtable (identity<>::operator(),
+	extract1st<>::operator()): Return by const ref.
+
 2006-05-10  Steve Ellcey  <sje@cup.hp.com>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_cxa_atexit):

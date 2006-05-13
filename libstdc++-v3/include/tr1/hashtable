@@ -404,7 +404,7 @@ namespace Internal
   template<typename T>
     struct identity
     {
-      T
+      const T&
       operator()(const T& t) const
       { return t; }
     };
@@ -412,7 +412,7 @@ namespace Internal
   template<typename Pair>
     struct extract1st
     {
-      typename Pair::first_type
+      const typename Pair::first_type&
       operator()(const Pair& p) const
       { return p.first; }
     };
