@@ -4137,7 +4137,7 @@ classpath/java/text/ChoiceFormat.java \
 classpath/java/text/CollationElementIterator.java \
 classpath/java/text/CollationKey.java \
 java/text/Collator.java \
-java/text/DateFormat.java \
+classpath/java/text/DateFormat.java \
 java/text/DateFormatSymbols.java \
 classpath/java/text/DecimalFormat.java \
 java/text/DecimalFormatSymbols.java \
