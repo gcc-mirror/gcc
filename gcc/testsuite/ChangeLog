@@ -1,3 +1,7 @@
+2006-05-13  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/pr27003.c: New test.
+
 2006-05-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* lib/target-supports.dg (check_cxa_atexit_available): Change
