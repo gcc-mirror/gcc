@@ -1,6 +1,17 @@
 2006-05-13  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Mention natVMChannels.cc, not
+	natChannels.cc.
+	* java/nio/channels/natVMChannels.cc: Renamed from
+	natChannels.cc.
+	* java/nio/channels/Channels.java: Removed.
+	* java/nio/channels/natChannels.cc: Removed.
+	* java/nio/channels/VMChannels.java: New file.
+
+2006-05-13  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
 	* java/text/DateFormat.java: Removed.
 
 2006-05-13  Tom Tromey  <tromey@redhat.com>
