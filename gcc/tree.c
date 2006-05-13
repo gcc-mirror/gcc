@@ -514,7 +514,7 @@ tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
 {
   unsigned HOST_WIDE_INT val = (unsigned HOST_WIDE_INT) low;
-  unsigned HOST_WIDE_INT hi;
+  unsigned HOST_WIDE_INT hi, mask;
   unsigned bits;
   bool signed_p;
   bool negative;
@@ -534,10 +534,12 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
       negative = ((val >> (bits - 1)) & 1) != 0;
 
       /* Mask out the bits outside of the precision of the constant.  */
+      mask = (((unsigned HOST_WIDE_INT) 2) << (bits - 1)) - 1;
+
       if (signed_p && negative)
-	val = val | ((~(unsigned HOST_WIDE_INT) 0) << bits);
+	val |= ~mask;
       else
-	val = val & ~((~(unsigned HOST_WIDE_INT) 0) << bits);
+	val &= mask;
     }
 
   /* Determine the high bits.  */
@@ -552,7 +554,8 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
       else
 	{
 	  bits -= HOST_BITS_PER_WIDE_INT;
-	  hi = hi & ~((~(unsigned HOST_WIDE_INT) 0) << bits);
+	  mask = (((unsigned HOST_WIDE_INT) 2) << (bits - 1)) - 1;
+	  hi &= mask;
 	}
     }
 

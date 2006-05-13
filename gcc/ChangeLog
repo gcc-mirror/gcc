@@ -1,3 +1,8 @@
+2005-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/27003
+	* tree.c (build_int_cst_type): Avoid shift by size of type.
+
 2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR target/27421

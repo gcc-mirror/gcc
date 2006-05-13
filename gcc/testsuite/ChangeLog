@@ -1,3 +1,8 @@
+2005-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/27003
+	* gcc.dg/pr27003.c: New test.
+
 2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR target/27421
