@@ -1,6 +1,6 @@
-// natChannels.cc - Native part of Channels class.
+// natVMChannels.cc - Native part of VMChannels class.
 
-/* Copyright (C) 2004  Free Software Foundation
+/* Copyright (C) 2004, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,25 +11,26 @@ details.  */
 #include <config.h>
 #include <gcj/cni.h>
 
+#include <java/nio/channels/VMChannels.h>
 #include <java/nio/channels/Channels.h>
 #include <java/io/FileInputStream.h>
 #include <java/io/FileOutputStream.h>
 #include <gnu/java/nio/channels/FileChannelImpl.h>
 
-using java::nio::channels::Channels;
+using java::nio::channels::VMChannels;
 using java::io::FileInputStream;
 using java::io::FileOutputStream;
 using gnu::java::nio::channels::FileChannelImpl;
 
 FileInputStream*
-Channels::newInputStream(FileChannelImpl* ch)
+VMChannels::newInputStream(FileChannelImpl* ch)
 {
   // Needs to be native to bypass Java access protection.
   return new FileInputStream (ch);
 }
 
 FileOutputStream*
-Channels::newOutputStream(FileChannelImpl* ch)
+VMChannels::newOutputStream(FileChannelImpl* ch)
 {
   // Needs to be native to bypass Java access protection.
   return new FileOutputStream (ch);

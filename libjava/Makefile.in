@@ -277,7 +277,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/lang/reflect/natConstructor.cc \
 	java/lang/reflect/natField.cc java/lang/reflect/natMethod.cc \
 	java/net/natVMNetworkInterface.cc java/net/natInetAddress.cc \
-	java/nio/channels/natChannels.cc \
+	java/nio/channels/natVMChannels.cc \
 	java/nio/natDirectByteBufferImpl.cc java/text/natCollator.cc \
 	java/util/natResourceBundle.cc java/util/natVMTimeZone.cc \
 	java/util/logging/natLogger.cc java/util/zip/natDeflater.cc \
@@ -318,7 +318,7 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	java/lang/reflect/natConstructor.lo \
 	java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
 	java/net/natVMNetworkInterface.lo java/net/natInetAddress.lo \
-	java/nio/channels/natChannels.lo \
+	java/nio/channels/natVMChannels.lo \
 	java/nio/natDirectByteBufferImpl.lo java/text/natCollator.lo \
 	java/util/natResourceBundle.lo java/util/natVMTimeZone.lo \
 	java/util/logging/natLogger.lo java/util/zip/natDeflater.lo \
@@ -3793,7 +3793,7 @@ classpath/java/nio/channels/AsynchronousCloseException.java \
 classpath/java/nio/channels/ByteChannel.java \
 classpath/java/nio/channels/CancelledKeyException.java \
 classpath/java/nio/channels/Channel.java \
-java/nio/channels/Channels.java \
+classpath/java/nio/channels/Channels.java \
 classpath/java/nio/channels/ClosedByInterruptException.java \
 classpath/java/nio/channels/ClosedChannelException.java \
 classpath/java/nio/channels/ClosedSelectorException.java \
@@ -3822,6 +3822,7 @@ classpath/java/nio/channels/ServerSocketChannel.java \
 classpath/java/nio/channels/SocketChannel.java \
 classpath/java/nio/channels/UnresolvedAddressException.java \
 classpath/java/nio/channels/UnsupportedAddressTypeException.java \
+java/nio/channels/VMChannels.java \
 classpath/java/nio/channels/WritableByteChannel.java
 
 java_nio_channels_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_channels_source_files)))
@@ -6789,7 +6790,7 @@ java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
 java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
-java/nio/channels/natChannels.cc \
+java/nio/channels/natVMChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
@@ -7234,7 +7235,7 @@ java/nio/channels/$(am__dirstamp):
 java/nio/channels/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) java/nio/channels/$(DEPDIR)
 	@: > java/nio/channels/$(DEPDIR)/$(am__dirstamp)
-java/nio/channels/natChannels.lo: java/nio/channels/$(am__dirstamp) \
+java/nio/channels/natVMChannels.lo: java/nio/channels/$(am__dirstamp) \
 	java/nio/channels/$(DEPDIR)/$(am__dirstamp)
 java/nio/$(am__dirstamp):
 	@$(mkdir_p) java/nio
@@ -7541,8 +7542,8 @@ mostlyclean-compile:
 	-rm -f java/net/natInetAddress.lo
 	-rm -f java/net/natVMNetworkInterface.$(OBJEXT)
 	-rm -f java/net/natVMNetworkInterface.lo
-	-rm -f java/nio/channels/natChannels.$(OBJEXT)
-	-rm -f java/nio/channels/natChannels.lo
+	-rm -f java/nio/channels/natVMChannels.$(OBJEXT)
+	-rm -f java/nio/channels/natVMChannels.lo
 	-rm -f java/nio/natDirectByteBufferImpl.$(OBJEXT)
 	-rm -f java/nio/natDirectByteBufferImpl.lo
 	-rm -f java/text/natCollator.$(OBJEXT)
@@ -7658,7 +7659,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natInetAddress.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/natDirectByteBufferImpl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/nio/channels/$(DEPDIR)/natChannels.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/nio/channels/$(DEPDIR)/natVMChannels.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/text/$(DEPDIR)/natCollator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natResourceBundle.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natVMTimeZone.Plo@am__quote@

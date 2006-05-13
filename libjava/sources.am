@@ -4491,7 +4491,7 @@ classpath/java/nio/channels/AsynchronousCloseException.java \
 classpath/java/nio/channels/ByteChannel.java \
 classpath/java/nio/channels/CancelledKeyException.java \
 classpath/java/nio/channels/Channel.java \
-java/nio/channels/Channels.java \
+classpath/java/nio/channels/Channels.java \
 classpath/java/nio/channels/ClosedByInterruptException.java \
 classpath/java/nio/channels/ClosedChannelException.java \
 classpath/java/nio/channels/ClosedSelectorException.java \
@@ -4520,6 +4520,7 @@ classpath/java/nio/channels/ServerSocketChannel.java \
 classpath/java/nio/channels/SocketChannel.java \
 classpath/java/nio/channels/UnresolvedAddressException.java \
 classpath/java/nio/channels/UnsupportedAddressTypeException.java \
+java/nio/channels/VMChannels.java \
 classpath/java/nio/channels/WritableByteChannel.java
 
 java_nio_channels_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_channels_source_files)))
