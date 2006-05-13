@@ -4114,9 +4114,9 @@ classpath/java/io/Externalizable.java \
 java/io/File.java \
 classpath/java/io/FileDescriptor.java \
 classpath/java/io/FileFilter.java \
-java/io/FileInputStream.java \
+classpath/java/io/FileInputStream.java \
 classpath/java/io/FileNotFoundException.java \
-java/io/FileOutputStream.java \
+classpath/java/io/FileOutputStream.java \
 classpath/java/io/FilePermission.java \
 classpath/java/io/FileReader.java \
 classpath/java/io/FileWriter.java \
@@ -4156,7 +4156,7 @@ java/io/PrintStream.java \
 classpath/java/io/PrintWriter.java \
 classpath/java/io/PushbackInputStream.java \
 classpath/java/io/PushbackReader.java \
-java/io/RandomAccessFile.java \
+classpath/java/io/RandomAccessFile.java \
 classpath/java/io/Reader.java \
 classpath/java/io/SequenceInputStream.java \
 classpath/java/io/Serializable.java \
@@ -4221,7 +4221,7 @@ classpath/java/lang/IllegalStateException.java \
 classpath/java/lang/IllegalThreadStateException.java \
 classpath/java/lang/IncompatibleClassChangeError.java \
 classpath/java/lang/IndexOutOfBoundsException.java \
-java/lang/InheritableThreadLocal.java \
+classpath/java/lang/InheritableThreadLocal.java \
 classpath/java/lang/InstantiationError.java \
 classpath/java/lang/InstantiationException.java \
 classpath/java/lang/Integer.java \
@@ -4261,7 +4261,7 @@ java/lang/System.java \
 java/lang/Thread.java \
 classpath/java/lang/ThreadDeath.java \
 classpath/java/lang/ThreadGroup.java \
-java/lang/ThreadLocal.java \
+classpath/java/lang/ThreadLocal.java \
 classpath/java/lang/Throwable.java \
 classpath/java/lang/TypeNotPresentException.java \
 classpath/java/lang/UnknownError.java \
@@ -4741,7 +4741,7 @@ java/rmi/server.list: $(java_rmi_server_source_files)
 
 
 java_security_source_files = \
-java/security/AccessControlContext.java \
+classpath/java/security/AccessControlContext.java \
 classpath/java/security/AccessControlException.java \
 java/security/AccessController.java \
 classpath/java/security/AlgorithmParameterGenerator.java \
@@ -5150,7 +5150,7 @@ classpath/java/util/logging/Filter.java \
 classpath/java/util/logging/Formatter.java \
 classpath/java/util/logging/Handler.java \
 classpath/java/util/logging/Level.java \
-java/util/logging/LogManager.java \
+classpath/java/util/logging/LogManager.java \
 classpath/java/util/logging/LogRecord.java \
 java/util/logging/Logger.java \
 classpath/java/util/logging/LoggingPermission.java \

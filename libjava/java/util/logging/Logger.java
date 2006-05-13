@@ -1,5 +1,5 @@
 /* Logger.java -- a class for logging messages
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1170,4 +1170,18 @@ public class Logger
    * @return caller of the initial looging method
    */
   private native StackTraceElement getCallerStackFrame();
+
+  /**
+   * Reset and close handlers attached to this logger. This function is package
+   * private because it must only be available to the LogManager.
+   */
+  void resetLogger()
+  {
+    for (int i = 0; i < handlers.length; i++)
+      {
+        handlers[i].close();
+        handlerList.remove(handlers[i]);
+      }
+    handlers = getHandlers();
+  }
 }

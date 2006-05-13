@@ -1,5 +1,5 @@
 /* FileChannelImpl.java -- 
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -103,7 +103,16 @@ public final class FileChannelImpl extends FileChannel
   }
 
   /* Open a file.  MODE is a combination of the above mode flags. */
-  public FileChannelImpl (File file, int mode) throws FileNotFoundException
+  /* This is a static factory method, so that VM implementors can decide
+   * substitute subclasses of FileChannelImpl. */
+  public static FileChannelImpl create(File file, int mode)
+    throws FileNotFoundException
+  {
+    return new FileChannelImpl(file, mode);
+  }
+
+  /* Open a file.  MODE is a combination of the above mode flags. */
+  private FileChannelImpl (File file, int mode) throws FileNotFoundException
   {
     final String path = file.getPath();
     fd = open (path, mode);

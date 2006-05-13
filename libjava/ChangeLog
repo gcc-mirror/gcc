@@ -1,3 +1,22 @@
+2006-05-12  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* java/util/logging/LogManager.java: Removed.
+	* java/util/logging/Logger.java (resetLogger): New method, from
+	Classpath.
+	* java/io/RandomAccessFile.java: Removed.
+	* gnu/java/nio/channels/FileChannelImpl.java (create): New
+	method.
+	(FileChannelImpl): Now private.
+	* java/io/FileInputStream.java: Removed.
+	* java/io/FileOutputStream.java: Removed.
+	* java/security/AccessControlContext.java: Removed.
+	* java/lang/ThreadLocal.java: Removed.
+	* java/lang/InheritableThreadLocal.java: Removed.
+	* java/lang/Thread.java (locals): New field.
+	(getThreadLocals): New method.
+	* java/lang/natThread.cc (finish_): Clear 'locals'.
+
 2006-05-11  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/gcj/runtime/NameFinder.java (lookup): If exec'ing addr2line

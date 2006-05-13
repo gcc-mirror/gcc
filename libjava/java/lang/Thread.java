@@ -1,5 +1,5 @@
 /* Thread -- an independent thread of executable code
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -41,6 +41,8 @@ package java.lang;
 
 import gnu.gcj.RawData;
 import gnu.gcj.RawDataManaged;
+import gnu.java.util.WeakIdentityHashMap;
+import java.util.Map;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
@@ -124,6 +126,11 @@ public class Thread implements Runnable
 
   /** The context classloader for this Thread. */
   private ClassLoader contextClassLoader;
+
+  /** Thread local storage. Package accessible for use by
+    * InheritableThreadLocal.
+    */
+  WeakIdentityHashMap locals;
 
   // This describes the top-most interpreter frame for this thread.
   RawData interp_frame;
@@ -914,4 +921,18 @@ public class Thread implements Runnable
   private final native void initialize_native();
 
   private final native static String gen_name();
+
+  /**
+   * Returns the map used by ThreadLocal to store the thread local values.
+   */
+  static Map getThreadLocals()
+  {
+    Thread thread = currentThread();
+    Map locals = thread.locals;
+    if (locals == null)
+      {
+        locals = thread.locals = new WeakIdentityHashMap();
+      }
+    return locals;
+  }
 }
