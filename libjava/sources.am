@@ -1290,7 +1290,7 @@ gnu/java/net/protocol/https.list: $(gnu_java_net_protocol_https_source_files)
 
 
 gnu_java_net_protocol_jar_source_files = \
-gnu/java/net/protocol/jar/Connection.java \
+classpath/gnu/java/net/protocol/jar/Connection.java \
 classpath/gnu/java/net/protocol/jar/Handler.java
 
 gnu_java_net_protocol_jar_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_jar_source_files)))
@@ -4394,7 +4394,7 @@ classpath/java/net/Inet4Address.java \
 classpath/java/net/Inet6Address.java \
 java/net/InetAddress.java \
 classpath/java/net/InetSocketAddress.java \
-java/net/JarURLConnection.java \
+classpath/java/net/JarURLConnection.java \
 classpath/java/net/MalformedURLException.java \
 classpath/java/net/MimeTypeMapper.java \
 classpath/java/net/MulticastSocket.java \
