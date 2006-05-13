@@ -1,3 +1,9 @@
+2006-05-13  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* df-core.c (df_bb_regno_last_use_find): Do not look for dataflow
+	information attached to non-INSNs such as NOTEs.
+	(df_bb_regno_first_def_find, df_bb_regno_last_def_find): Likewise.
+
 2006-05-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_const_ok_for_constraint_p): Disallow -4G for
