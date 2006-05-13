@@ -1,3 +1,8 @@
+2006-05-13  Tom Tromey  <tromey@redhat.com>
+
+	* include/java-interp.h (_Jv_InterpMethod::dump_object): Removed
+	declaration.
+
 2006-05-12  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.

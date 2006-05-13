@@ -190,7 +190,6 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 #endif
 
  public:
-  static void dump_object(jobject o);
 
   /* Get the line table for this method.
    * start  is the lowest index in the method
