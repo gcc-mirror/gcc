@@ -292,7 +292,7 @@ EXAMPLES OF FIXES:
 
     To do this, you *must* have autogen installed on your system.
     The "check" step will proceed to construct a shell script that
-    will exercize all the fixes, using the sample test_text
+    will exercise all the fixes, using the sample test_text
     provided with each fix.  Once done, the changes made will
     be compared against the changes saved in the source directory.
     If you are changing the tests or fixes, the change will likely
