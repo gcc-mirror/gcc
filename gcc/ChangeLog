@@ -1,3 +1,8 @@
+2006-05-14  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR 27501
+	* mkconfig.sh: Use operator = instead of == for test.
+
 2006-05-13  Nick Clifton  <nickc@redhat.com>
 
 	* dwarf2out.c (dbx_reg_number): Check return value from
