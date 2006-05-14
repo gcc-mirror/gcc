@@ -1,5 +1,11 @@
 2006-05-14  Roger Sayle  <roger@eyesopen.com>
 
+	PR rtl-optimization/27538
+	* combine.c (expand_compound_operation): Call gen_lowpart
+	before calling simplify_shift_const.
+
+2006-05-14  Roger Sayle  <roger@eyesopen.com>
+
 	PR rtl-optimization/22563
 	* expmed.c (store_fixed_bit_field): When using AND and IOR to store
 	a fixed width bitfield, always force the intermediates into psuedos.
