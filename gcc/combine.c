@@ -5736,14 +5736,16 @@ expand_compound_operation (rtx x)
 
   modewidth = GET_MODE_BITSIZE (GET_MODE (x));
   if (modewidth + len >= pos)
-    tem = simplify_shift_const (NULL_RTX, unsignedp ? LSHIFTRT : ASHIFTRT,
-				GET_MODE (x),
-				simplify_shift_const (NULL_RTX, ASHIFT,
-						      GET_MODE (x),
-						      XEXP (x, 0),
-						      modewidth - pos - len),
-				modewidth - len);
-
+    {
+      enum machine_mode mode = GET_MODE (x);
+      tem = gen_lowpart (mode, XEXP (x, 0));
+      if (!tem || GET_CODE (tem) == CLOBBER)
+	return x;
+      tem = simplify_shift_const (NULL_RTX, ASHIFT, mode,
+				  tem, modewidth - pos - len);
+      tem = simplify_shift_const (NULL_RTX, unsignedp ? LSHIFTRT : ASHIFTRT,
+				  mode, tem, modewidth - len);
+    }
   else if (unsignedp && len < HOST_BITS_PER_WIDE_INT)
     tem = simplify_and_const_int (NULL_RTX, GET_MODE (x),
 				  simplify_shift_const (NULL_RTX, LSHIFTRT,
