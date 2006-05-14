@@ -1339,6 +1339,15 @@ migrate_btr_def (btr_def def, int min_cost)
       /* Try to move the instruction that sets the target register into
 	 basic block TRY.  */
       int try_freq = basic_block_freq (try);
+      edge_iterator ei;
+      edge e;
+
+      /* If TRY has abnormal edges, skip it.  */
+      FOR_EACH_EDGE (e, ei, try->succs)
+	if (e->flags & EDGE_COMPLEX)
+	  break;
+      if (e)
+	continue;
 
       if (dump_file)
 	fprintf (dump_file, "trying block %d ...", try->index);
