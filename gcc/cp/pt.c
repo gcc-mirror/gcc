@@ -12903,10 +12903,11 @@ build_non_dependent_expr (tree expr)
     return expr;
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
-  inner_expr = (TREE_CODE (expr) == ADDR_EXPR ?
-		TREE_OPERAND (expr, 0) :
-		TREE_CODE (expr) == COMPONENT_REF ?
-		TREE_OPERAND (expr, 1) : expr);
+  inner_expr = expr;
+  if (TREE_CODE (inner_expr) == ADDR_EXPR)
+    inner_expr = TREE_OPERAND (inner_expr, 0);
+  if (TREE_CODE (inner_expr) == COMPONENT_REF)
+    inner_expr = TREE_OPERAND (inner_expr, 1);
   if (is_overloaded_fn (inner_expr)
       || TREE_CODE (inner_expr) == OFFSET_REF)
     return expr;

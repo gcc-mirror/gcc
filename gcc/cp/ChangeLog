@@ -1,3 +1,8 @@
+2006-05-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* pt.c (build_non_dependent_expr): Leave ADDR_EXPR of
+	COMPONENT_REF alone.
+
 2006-05-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27547
