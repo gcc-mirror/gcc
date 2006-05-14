@@ -1,3 +1,7 @@
+2006-05-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/template/dependent-expr5.C: New test.
+
 2006-05-14  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/26729
