@@ -1,3 +1,8 @@
+2006-05-13  Richard Guenther  <rguenther@suse.de>
+
+	* config.host <i[34567]86-*-cygwin*>: Append i386/x-cygwin to
+	host_xmake_file.
+
 2006-05-13  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* df-core.c (df_bb_regno_last_use_find): Do not look for dataflow
