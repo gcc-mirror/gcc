@@ -1,3 +1,9 @@
+2006-05-13  Nick Clifton  <nickc@redhat.com>
+
+	* dwarf2out.c (dbx_reg_number): Check return value from
+	LEAF_REG_REMAP and only use it if it is valid.
+	(multiple_reg_loc_descriptor): Likewise.
+
 2006-05-13  Richard Guenther  <rguenther@suse.de>
 
 	* config.host <i[34567]86-*-cygwin*>: Append i386/x-cygwin to
