@@ -43,7 +43,7 @@ echo "#define ${header_guard}" >> ${output}T
 
 # A special test to ensure that build-time files don't blindly use
 # config.h.
-if test x"$output" == x"config.h"; then
+if test x"$output" = x"config.h"; then
   echo "#ifdef GENERATOR_FILE" >> ${output}T
   echo "#error config.h is for the host, not build, machine." >> ${output}T
   echo "#endif" >> ${output}T
