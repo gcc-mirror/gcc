@@ -793,7 +793,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 {
   enum machine_mode mode;
   unsigned int total_bits = BITS_PER_WORD;
-  rtx subtarget, temp;
+  rtx temp;
   int all_zero = 0;
   int all_one = 0;
 
@@ -919,29 +919,28 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 
   /* Now clear the chosen bits in OP0,
      except that if VALUE is -1 we need not bother.  */
+  /* We keep the intermediates in registers to allow CSE to combine
+     consecutive bitfield assignments.  */
 
-  subtarget = op0;
+  temp = force_reg (mode, op0);
 
   if (! all_one)
     {
-      /* Don't try and keep the intermediate in memory, if we need to
-	 perform both a bit-wise AND and a bit-wise IOR (except when
-	 we're optimizing for size).  */
-      if (MEM_P (subtarget) && !all_zero && !optimize_size)
-	subtarget = force_reg (mode, subtarget);
-      temp = expand_binop (mode, and_optab, subtarget,
+      temp = expand_binop (mode, and_optab, temp,
 			   mask_rtx (mode, bitpos, bitsize, 1),
-			   subtarget, 1, OPTAB_LIB_WIDEN);
-      subtarget = temp;
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      temp = force_reg (mode, temp);
     }
-  else
-    temp = op0;
 
   /* Now logical-or VALUE into OP0, unless it is zero.  */
 
   if (! all_zero)
-    temp = expand_binop (mode, ior_optab, temp, value,
-			 subtarget, 1, OPTAB_LIB_WIDEN);
+    {
+      temp = expand_binop (mode, ior_optab, temp, value,
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      temp = force_reg (mode, temp);
+    }
+
   if (op0 != temp)
     emit_move_insn (op0, temp);
 }
