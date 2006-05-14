@@ -1,3 +1,8 @@
+2006-05-14  Peter Doerfler  <gcc@pdoerfler.com>
+
+	* include/tr1/hashtable (identity<>::operator(),
+	extract1st<>::operator()): Return by const ref.
+
 2006-05-11  Paolo Carlini  <pcarlini@suse.de>
 	    Peter Doerfler  <gcc@pdoerfler.com>
 
