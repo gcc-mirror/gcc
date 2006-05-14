@@ -4935,10 +4935,10 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
       l_const = fold_convert (lntype, l_const);
       l_const = unextend (l_const, ll_bitsize, ll_unsignedp, ll_and_mask);
       l_const = const_binop (LSHIFT_EXPR, l_const, size_int (xll_bitpos), 0);
-      if (! integer_zerop (const_binop (BIT_AND_EXPR, l_const,
-					fold_build1 (BIT_NOT_EXPR,
-						     lntype, ll_mask),
-					0)))
+      if (integer_nonzerop (const_binop (BIT_AND_EXPR, l_const,
+					 fold_build1 (BIT_NOT_EXPR,
+						      lntype, ll_mask),
+					 0)))
 	{
 	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
 
@@ -4950,10 +4950,10 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
       r_const = fold_convert (lntype, r_const);
       r_const = unextend (r_const, rl_bitsize, rl_unsignedp, rl_and_mask);
       r_const = const_binop (LSHIFT_EXPR, r_const, size_int (xrl_bitpos), 0);
-      if (! integer_zerop (const_binop (BIT_AND_EXPR, r_const,
-					fold_build1 (BIT_NOT_EXPR,
-						     lntype, rl_mask),
-					0)))
+      if (integer_nonzerop (const_binop (BIT_AND_EXPR, r_const,
+					 fold_build1 (BIT_NOT_EXPR,
+						      lntype, rl_mask),
+					 0)))
 	{
 	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
 

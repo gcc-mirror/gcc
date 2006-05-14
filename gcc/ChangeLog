@@ -1,3 +1,9 @@
+2006-05-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/26729
+	* fold-const.c (fold_truthop): Check integer_nonzerop instead of
+	!integer_zerop to avoid problems with TREE_OVERFLOW.
+
 2005-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/27335
