@@ -1,3 +1,28 @@
+2006-05-15  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/26830
+	* tree-into-ssa.c (struct ssa_name_info): Add age field.
+	(info_for_ssa_name, current_info_for_ssa_name_age,
+	blocks_to_update): New variables.
+	(get_ssa_name_ann): Use info_for_ssa_name instead of SSA_NAME_AUX.
+	(clear_ssa_name_info, initialize_flags_in_bb,
+	mark_block_for_update): New functions.
+	(mark_def_sites, rewrite_stmt): Assert that blocks_to_update is NULL.
+	(insert_phi_nodes_for, mark_use_interesting, prepare_block_for_update,
+	prepare_def_site_for): Use mark_block_for_update.
+	(mark_def_interesting): Assert that the processed block is marked in
+	blocks_to_update.  Do not take blocks argument.
+	(prepare_use_sites_for, prepare_names_to_update): Do not take blocks
+	argument.
+	(rewrite_update_init_block, rewrite_update_stmt): Only process
+	blocks with statements to rewrite.
+	(delete_update_ssa): Do not clear SSA_NAME_AUX.
+	(update_ssa): Initialize and free blocks_to_update.  Do not
+	clear flags on statements.  Do not use blocks bitmap.
+	* tree.h (SSA_NAME_AUX): Removed.
+	(struct tree_ssa_name): Removed aux field.
+	* print-tree.c (print_node): Do not print SSA_NAME_AUX.
+
 2006-05-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27603
