@@ -243,7 +243,7 @@ _Jv_StackTrace::FillInFrameInfo (_Jv_StackFrame *frame)
 	// Find method in class
 	for (int j = 0; j < klass->method_count; j++)
 	  {
-	    void *wncode UNWRAP_FUNCTION_DESCRIPTOR (klass->methods[j].ncode);
+	    void *wncode = UNWRAP_FUNCTION_DESCRIPTOR (klass->methods[j].ncode);
 	    if (wncode == frame->start_ip)
 	      {
 		meth = &klass->methods[j];
