@@ -1,5 +1,8 @@
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27315
+	* pt.c (do_decl_instantiation): Return early on invalid decl.
+
 	PR c++/27559
 	* pt.c (push_template_decl_real): Return error_mark_node instead
 	of broken decl.
