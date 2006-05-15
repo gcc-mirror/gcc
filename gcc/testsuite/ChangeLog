@@ -1,5 +1,8 @@
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27559
+	* g++.dg/template/new4.C: New test.
+
 	PR c++/27496
 	* g++.dg/template/void2.C: New test.
 

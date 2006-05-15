@@ -1,5 +1,9 @@
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27559
+	* pt.c (push_template_decl_real): Return error_mark_node instead
+	of broken decl.
+
 	PR c++/27496
 	* pt.c (tsubst_friend_class): Return early on invalid friend
 	declarations.
