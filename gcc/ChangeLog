@@ -1,3 +1,9 @@
+2006-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27416
+	* omp-low.c (build_outer_var_ref): If VAR is reference in orphaned
+	construct, return *VAR.
+
 2006-05-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/27406
