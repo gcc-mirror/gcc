@@ -680,8 +680,11 @@ namespace Internal
       operator[](const K& k)
       {
 	Hashtable* h = static_cast<Hashtable*>(this);
-	typename Hashtable::iterator it = 
-	  h->insert(std::make_pair(k, mapped_type())).first;
+	typename Hashtable::hash_code_t code = h->m_hash_code(k);
+	typename Hashtable::iterator it = h->m_find(k, code);
+	if (!it.m_cur_node)
+	  it = h->m_insert_bucket(std::make_pair(k, mapped_type()),
+				  it.m_cur_bucket - h->m_buckets, code);
 	return it->second;
       }
     };
@@ -1032,6 +1035,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 						 cache_hash_code>
                                                           const_iterator;
 
+      template<typename K, typename Pair, typename Hashtable>
+        friend struct Internal::map_base;
+
     private:
       typedef Internal::hash_node<Value, cache_hash_code> node;
       typedef typename Allocator::template rebind<node>::other
@@ -1188,7 +1194,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     public:				// lookup
       iterator
-      find(const key_type&);
+      find(const key_type& k);
 
       const_iterator
       find(const key_type& k) const;
@@ -1202,7 +1208,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& k) const;
 
-    private:			// Insert and erase helper functions
+    private:			// Find, insert and erase helper functions
       // ??? This dispatching is a workaround for the fact that we don't
       // have partial specialization of member templates; it would be
       // better to just specialize insert on unique_keys.  There may be a
@@ -1217,31 +1223,35 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
                                    >::type
         Insert_Conv_Type;
 
+      iterator
+      m_find(const key_type&, typename hashtable::hash_code_t) const;
+
       node*
-      find_node(node* p, const key_type& k,
-		typename hashtable::hash_code_t c) const;
+      m_find_node(node*, const key_type&,
+		  typename hashtable::hash_code_t) const;
+
+      iterator
+      m_insert_bucket(const value_type&, size_type,
+		      typename hashtable::hash_code_t);
 
       std::pair<iterator, bool>
-      insert(const value_type&, std::tr1::true_type);
-  
+      m_insert(const value_type&, std::tr1::true_type);
+
       iterator
-      insert(const value_type&, std::tr1::false_type);
+      m_insert(const value_type&, std::tr1::false_type);
 
       void
-      erase_node(node*, node**);
+      m_erase_node(node*, node**);
 
     public:				// Insert and erase
       Insert_Return_Type
       insert(const value_type& v) 
-      { 
-	return this->insert(v, std::tr1::integral_constant<bool,
-			    unique_keys>());
-      }
+      { return m_insert(v, std::tr1::integral_constant<bool, unique_keys>()); }
 
       iterator
       insert(iterator, const value_type& v)
       { return iterator(Insert_Conv_Type()(this->insert(v))); }
-      
+
       const_iterator
       insert(const_iterator, const value_type& v)
       { return const_iterator(Insert_Conv_Type()(this->insert(v))); }
@@ -1531,12 +1541,24 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool c, bool ci, bool u>
     typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::iterator
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
+    m_find(const key_type& k, typename hashtable::hash_code_t code) const
+    {
+      std::size_t n = this->bucket_index(k, code, this->bucket_count());
+      node* p = m_find_node(m_buckets[n], k, code);
+      return iterator(p, m_buckets + n);
+    }
+
+  template<typename K, typename V, 
+	   typename A, typename Ex, typename Eq,
+	   typename H1, typename H2, typename H, typename RP,
+	   bool c, bool ci, bool u>
+    typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::iterator
+    hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
     find(const key_type& k)
     {
       typename hashtable::hash_code_t code = this->m_hash_code(k);
-      std::size_t n = this->bucket_index(k, code, this->bucket_count());
-      node* p = find_node(m_buckets[n], k, code);
-      return p ? iterator(p, m_buckets + n) : this->end();
+      iterator i = m_find(k, code);
+      return i.m_cur_node ? i : this->end();
     }
   
   template<typename K, typename V, 
@@ -1548,11 +1570,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     find(const key_type& k) const
     {
       typename hashtable::hash_code_t code = this->m_hash_code(k);
-      std::size_t n = this->bucket_index(k, code, this->bucket_count());
-      node* p = find_node(m_buckets[n], k, code);
-      return p ? const_iterator(p, m_buckets + n) : this->end();
+      const_iterator i = const_iterator(m_find(k, code));
+      return i.m_cur_node ? i : this->end();
     }
-  
+
   template<typename K, typename V, 
 	   typename A, typename Ex, typename Eq,
 	   typename H1, typename H2, typename H, typename RP,
@@ -1584,7 +1605,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
       node** head = m_buckets + n;
-      node* p = find_node(*head, k, code);
+      node* p = m_find_node(*head, k, code);
       
       if (p)
 	{
@@ -1617,7 +1638,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typename hashtable::hash_code_t code = this->m_hash_code(k);
       std::size_t n = this->bucket_index(k, code, this->bucket_count());
       node** head = m_buckets + n;
-      node* p = find_node(*head, k, code);
+      node* p = m_find_node(*head, k, code);
 
       if (p)
 	{
@@ -1644,13 +1665,52 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool c, bool ci, bool u>
     typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::node* 
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    find_node(node* p, const key_type& k,
-	      typename hashtable::hash_code_t code) const
+    m_find_node(node* p, const key_type& k,
+		typename hashtable::hash_code_t code) const
     {
       for (; p; p = p->m_next)
 	if (this->compare(k, code, p))
 	  return p;
       return false;
+    }
+
+  // Insert v in bucket n (assumes no element with its key already present).
+  template<typename K, typename V, 
+	   typename A, typename Ex, typename Eq,
+	   typename H1, typename H2, typename H, typename RP,
+	   bool c, bool ci, bool u>
+    typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::iterator
+    hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
+    m_insert_bucket(const value_type& v, size_type n,
+		    typename hashtable::hash_code_t code)
+    {
+      std::pair<bool, std::size_t> do_rehash
+	= m_rehash_policy.need_rehash(m_bucket_count, m_element_count, 1);
+
+      // Allocate the new node before doing the rehash so that we don't
+      // do a rehash if the allocation throws.
+      node* new_node = m_allocate_node(v);
+
+      try
+	{
+	  if (do_rehash.first)
+	    {
+	      const key_type& k = this->m_extract(v);
+	      n = this->bucket_index(k, code, do_rehash.second);
+	      m_rehash(do_rehash.second);
+	    }
+
+	  new_node->m_next = m_buckets[n];
+	  this->store_code(new_node, code);
+	  m_buckets[n] = new_node;
+	  ++m_element_count;
+	  return iterator(new_node, m_buckets + n);
+	}
+      catch(...)
+	{
+	  m_deallocate_node(new_node);
+	  __throw_exception_again;
+	}
     }
 
   // Insert v if no element with its key is already present.
@@ -1661,41 +1721,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     std::pair<typename hashtable<K, V, A, Ex, Eq, H1,
 				 H2, H, RP, c, ci, u>::iterator, bool>
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    insert(const value_type& v, std::tr1::true_type)
+    m_insert(const value_type& v, std::tr1::true_type)
     {
       const key_type& k = this->m_extract(v);
       typename hashtable::hash_code_t code = this->m_hash_code(k);
-      std::size_t n = this->bucket_index(k, code, m_bucket_count);
-      
-      if (node* p = find_node(m_buckets[n], k, code))
+      size_type n = this->bucket_index(k, code, m_bucket_count);
+
+      if (node* p = m_find_node(m_buckets[n], k, code))
 	return std::make_pair(iterator(p, m_buckets + n), false);
-
-      std::pair<bool, std::size_t> do_rehash
-	= m_rehash_policy.need_rehash(m_bucket_count, m_element_count, 1);
-
-      // Allocate the new node before doing the rehash so that we don't
-      // do a rehash if the allocation throws.
-      node* new_node = m_allocate_node(v);
-      
-      try
-	{
-	  if (do_rehash.first)
-	    {
-	      n = this->bucket_index(k, code, do_rehash.second);
-	      m_rehash(do_rehash.second);
-	    }
-
-	  new_node->m_next = m_buckets[n];
-	  this->store_code(new_node, code);
-	  m_buckets[n] = new_node;
-	  ++m_element_count;
-	  return std::make_pair(iterator(new_node, m_buckets + n), true);
-	}
-      catch(...)
-	{
-	  m_deallocate_node(new_node);
-	  __throw_exception_again;
-	}
+      return std::make_pair(m_insert_bucket(v, n, code), true);
     }
   
   // Insert v unconditionally.
@@ -1705,19 +1739,19 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool c, bool ci, bool u>
     typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::iterator
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    insert(const value_type& v, std::tr1::false_type)
+    m_insert(const value_type& v, std::tr1::false_type)
     {
       std::pair<bool, std::size_t> do_rehash
 	= m_rehash_policy.need_rehash(m_bucket_count, m_element_count, 1);
       if (do_rehash.first)
 	m_rehash(do_rehash.second);
-
+ 
       const key_type& k = this->m_extract(v);
       typename hashtable::hash_code_t code = this->m_hash_code(k);
-      std::size_t n = this->bucket_index(k, code, m_bucket_count);
-      
+      size_type n = this->bucket_index(k, code, m_bucket_count);
+
       node* new_node = m_allocate_node(v);
-      node* prev = find_node(m_buckets[n], k, code);
+      node* prev = m_find_node(m_buckets[n], k, code);
       if (prev)
 	{
 	  new_node->m_next = prev->m_next;
@@ -1741,7 +1775,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool c, bool ci, bool u>
     void
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    erase_node(node* p, node** b)
+    m_erase_node(node* p, node** b)
     {
       node* cur = *b;
       if (cur == p)
@@ -1786,25 +1820,25 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool c, bool ci, bool u>
     typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::iterator
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    erase(iterator i)
+    erase(iterator it)
     {
-      iterator result = i;
+      iterator result = it;
       ++result;
-      erase_node(i.m_cur_node, i.m_cur_bucket);
+      m_erase_node(it.m_cur_node, it.m_cur_bucket);
       return result;
     }
-  
+
   template<typename K, typename V, 
 	   typename A, typename Ex, typename Eq,
 	   typename H1, typename H2, typename H, typename RP,
 	   bool c, bool ci, bool u>
     typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::const_iterator
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    erase(const_iterator i)
+    erase(const_iterator it)
     {
-      const_iterator result = i;
+      const_iterator result = it;
       ++result;
-      erase_node(i.m_cur_node, i.m_cur_bucket);
+      m_erase_node(it.m_cur_node, it.m_cur_bucket);
       return result;
     }
 

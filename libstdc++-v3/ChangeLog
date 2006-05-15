@@ -1,3 +1,16 @@
+2006-05-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/hashtable (hashtable<>::m_find, m_insert_bucket): Add.
+	(hashtable<>::find, m_insert(const value_type&, std::tr1::true_type),
+	map_base<>::operator[]): Use the above.
+	* testsuite/performance/23_containers/insert/unordered_map_array.cc:
+	New.	
+
+	* include/tr1/hashtable (hashtable<>::find_node,
+	insert(const value_type&, ...), erase_node): Rename to m_*, adjust
+	callers.
+	* include/tr1/hashtable: Minor cosmetic changes.
+
 2006-05-13  Peter Doerfler  <gcc@pdoerfler.com>
 
 	* include/tr1/hashtable (identity<>::operator(),
