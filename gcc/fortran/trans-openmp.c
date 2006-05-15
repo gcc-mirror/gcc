@@ -262,7 +262,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   gfc_symbol init_val_sym, outer_sym, intrinsic_sym;
   gfc_expr *e1, *e2, *e3, *e4;
   gfc_ref *ref;
-  tree decl, backend_decl;
+  tree decl, backend_decl, stmt;
   locus old_loc = gfc_current_locus;
   const char *iname;
   try t;
@@ -400,10 +400,22 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   gcc_assert (t == SUCCESS);
 
   /* Create the init statement list.  */
-  OMP_CLAUSE_REDUCTION_INIT (c) = gfc_trans_assignment (e1, e2);
+  pushlevel (0);
+  stmt = gfc_trans_assignment (e1, e2);
+  if (TREE_CODE (stmt) != BIND_EXPR)
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
+  else
+    poplevel (0, 0, 0);
+  OMP_CLAUSE_REDUCTION_INIT (c) = stmt;
 
   /* Create the merge statement list.  */
-  OMP_CLAUSE_REDUCTION_MERGE (c) = gfc_trans_assignment (e3, e4);
+  pushlevel (0);
+  stmt = gfc_trans_assignment (e3, e4);
+  if (TREE_CODE (stmt) != BIND_EXPR)
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
+  else
+    poplevel (0, 0, 0);
+  OMP_CLAUSE_REDUCTION_MERGE (c) = stmt;
 
   /* And stick the placeholder VAR_DECL into the clause as well.  */
   OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) = outer_sym.backend_decl;
