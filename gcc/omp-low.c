@@ -1245,6 +1245,84 @@ scan_omp_single (tree *stmt_p, omp_context *outer_ctx)
 }
 
 
+/* Check OpenMP nesting restrictions.  */
+static void
+check_omp_nesting_restrictions (tree t, omp_context *ctx)
+{
+  switch (TREE_CODE (t))
+    {
+    case OMP_FOR:
+    case OMP_SECTIONS:
+    case OMP_SINGLE:
+      for (; ctx != NULL; ctx = ctx->outer)
+	switch (TREE_CODE (ctx->stmt))
+	  {
+	  case OMP_FOR:
+	  case OMP_SECTIONS:
+	  case OMP_SINGLE:
+	  case OMP_ORDERED:
+	  case OMP_MASTER:
+	    warning (0, "work-sharing region may not be closely nested inside "
+			"of work-sharing, critical, ordered or master region");
+	    return;
+	  case OMP_PARALLEL:
+	    return;
+	  default:
+	    break;
+	  }
+      break;
+    case OMP_MASTER:
+      for (; ctx != NULL; ctx = ctx->outer)
+	switch (TREE_CODE (ctx->stmt))
+	  {
+	  case OMP_FOR:
+	  case OMP_SECTIONS:
+	  case OMP_SINGLE:
+	    warning (0, "master region may not be closely nested inside "
+			"of work-sharing region");
+	    return;
+	  case OMP_PARALLEL:
+	    return;
+	  default:
+	    break;
+	  }
+      break;
+    case OMP_ORDERED:
+      for (; ctx != NULL; ctx = ctx->outer)
+	switch (TREE_CODE (ctx->stmt))
+	  {
+	  case OMP_CRITICAL:
+	    warning (0, "ordered region may not be closely nested inside "
+			"of critical region");
+	    return;
+	  case OMP_FOR:
+	    if (find_omp_clause (OMP_CLAUSES (ctx->stmt),
+				 OMP_CLAUSE_ORDERED) == NULL)
+	      warning (0, "ordered region must be closely nested inside "
+			  "a loop region with an ordered clause");
+	    return;
+	  case OMP_PARALLEL:
+	    return;
+	  default:
+	    break;
+	  }
+      break;
+    case OMP_CRITICAL:
+      for (; ctx != NULL; ctx = ctx->outer)
+	if (TREE_CODE (ctx->stmt) == OMP_CRITICAL
+	    && OMP_CRITICAL_NAME (t) == OMP_CRITICAL_NAME (ctx->stmt))
+	  {
+	    warning (0, "critical region may not be nested inside a critical "
+			"region with the same name");
+	    return;
+	  }
+      break;
+    default:
+      break;
+    }
+}
+
+
 /* Callback for walk_stmts used to scan for OpenMP directives at TP.  */
 
 static tree
@@ -1256,6 +1334,10 @@ scan_omp_1 (tree *tp, int *walk_subtrees, void *data)
 
   if (EXPR_HAS_LOCATION (t))
     input_location = EXPR_LOCATION (t);
+
+  /* Check the OpenMP nesting restrictions.  */
+  if (OMP_DIRECTIVE_P (t) && ctx != NULL)
+    check_omp_nesting_restrictions (t, ctx);
 
   *walk_subtrees = 0;
   switch (TREE_CODE (t))

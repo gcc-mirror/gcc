@@ -9,7 +9,8 @@
 !$OMP PARALLEL DEFAULT(SHARED)
 !$OMP DO
           DO I = 1, N
-!$OMP DO              ! incorrect nesting of loop regions
+	     ! incorrect nesting of loop regions
+!$OMP DO     ! { dg-warning "may not be closely nested" }
              DO J = 1, N
                 CALL WORK(I,J)
              END DO

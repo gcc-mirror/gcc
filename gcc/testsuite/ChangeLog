@@ -1,3 +1,11 @@
+2006-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/critical-4.c: New test.
+	* gcc.dg/gomp/appendix-a/a.35.1.c: Add dg-warning.
+	* gcc.dg/gomp/appendix-a/a.35.3.c: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.1.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.3.f90: Likewise.
+
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27582
