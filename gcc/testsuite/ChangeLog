@@ -1,3 +1,8 @@
+2006-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27603
+	* gcc.dg/torture/pr27603.c: New testcase.
+
 2006-05-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25090

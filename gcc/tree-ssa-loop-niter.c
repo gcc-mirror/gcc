@@ -1587,7 +1587,6 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 		    tree scev = instantiate_parameters 
 		      (loop, analyze_scalar_evolution (loop, op0));
 		    tree type = chrec_type (scev);
-		    tree utype;
 
 		    if (chrec_contains_undetermined (scev)
 			|| TYPE_UNSIGNED (type))
@@ -1604,20 +1603,23 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 			|| TYPE_MAX_VALUE (type) == NULL_TREE)
 		      break;
 
-		    utype = unsigned_type_for (type);
-		    if (tree_int_cst_lt (step, integer_zero_node))
-		      diff = fold_build2 (MINUS_EXPR, utype, init,
-					  TYPE_MIN_VALUE (type));
-		    else
-		      diff = fold_build2 (MINUS_EXPR, utype,
-					  TYPE_MAX_VALUE (type), init);
-
-		    if (!integer_zerop (step))
+		    if (integer_nonzerop (step))
 		      {
-			estimation = fold_build2 (CEIL_DIV_EXPR, utype, diff,
+			tree utype;
+
+			if (tree_int_cst_lt (step, integer_zero_node))
+			  diff = fold_build2 (MINUS_EXPR, type, init,
+					      TYPE_MIN_VALUE (type));
+			else
+			  diff = fold_build2 (MINUS_EXPR, type,
+					      TYPE_MAX_VALUE (type), init);
+
+			utype = unsigned_type_for (type);
+			estimation = fold_build2 (CEIL_DIV_EXPR, type, diff,
 						  step);
-			record_estimate (loop, estimation, boolean_true_node,
-					 stmt);
+			record_estimate (loop,
+					 fold_convert (utype, estimation),
+					 boolean_true_node, stmt);
 		      }
 		  }
 
