@@ -1,3 +1,7 @@
+2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Make-lang.in (fortran/options.o): Depend on $(TARGET_H).
+
 2006-05-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/27553

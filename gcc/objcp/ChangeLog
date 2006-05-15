@@ -1,4 +1,10 @@
+2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Make-lang.in (objcp/objcp-decl.o): Add dependency on
+	$(TARGET_H).
+
 2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
 	* Make-lang.in (OBJ-C++): Remove
 	(.PHONY): Remove Obj-c++ and obj-C++. Add obj-c++
 
