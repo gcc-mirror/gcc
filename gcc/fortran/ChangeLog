@@ -1,3 +1,29 @@
+2006-05-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25090
+	* resolve.c: Static resolving_index_expr initialized.
+	(entry_parameter): New function to emit errors for variables
+	that are not entry parameters.
+	(gfc_resolve_expr): Call entry_parameter, when resolving
+	variables, if the namespace has entries and resolving_index_expr
+	is set.
+	(resolve_charlen): Set resolving_index_expr before the call to
+	resolve_index_expr and reset it afterwards.
+	(resolve_fl_variable): The same before and after the call to
+	is_non_constant_shape_array, which ultimately makes a call to
+	gfc_resolve_expr.
+
+	PR fortran/25082
+	* resolve.c (resolve_code): Add error condition that the return
+	expression must be scalar.
+
+	PR fortran/24711
+	* matchexp.c (gfc_get_parentheses): New function.
+	(match_primary): Remove inline code and call above.
+	* gfortran.h: Provide prototype for gfc_get_parentheses.
+	* resolve.c (resolve_array_ref): Call the above, when start is a
+	derived type variable array reference.
+
 2006-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/27446
