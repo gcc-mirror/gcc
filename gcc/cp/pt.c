@@ -11120,7 +11120,7 @@ do_decl_instantiation (tree decl, tree storage)
   tree result = NULL_TREE;
   int extern_p = 0;
 
-  if (!decl)
+  if (!decl || decl == error_mark_node)
     /* An error occurred, for which grokdeclarator has already issued
        an appropriate message.  */
     return;
