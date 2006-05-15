@@ -1,3 +1,9 @@
+2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27315
+	* g++.dg/template/operator6.C: New test.
+	* g++.dg/template/incomplete3.C: New test.
+
 2005-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/27335
