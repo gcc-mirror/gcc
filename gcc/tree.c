@@ -3136,7 +3136,7 @@ build_block (tree vars, tree subblocks, tree supercontext, tree chain)
 
 #if 1 /* ! defined(USE_MAPPED_LOCATION) */
 /* ??? gengtype doesn't handle conditionals */
-static GTY(()) location_t *last_annotated_node;
+static GTY(()) source_locus last_annotated_node;
 #endif
 
 #ifdef USE_MAPPED_LOCATION
