@@ -577,6 +577,10 @@ build_outer_var_ref (tree var, omp_context *ctx)
     }
   else if (ctx->outer)
     x = lookup_decl (var, ctx->outer);
+  else if (is_reference (var))
+    /* This can happen with orphaned constructs.  If var is reference, it is
+       possible it is shared and as such valid.  */
+    x = var;
   else
     gcc_unreachable ();
 
