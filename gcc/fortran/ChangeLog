@@ -1,3 +1,9 @@
+2006-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/27446
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Ensure
+	OMP_CLAUSE_REDUCTION_{INIT,MERGE} are set to BIND_EXPR.
+
 2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Make-lang.in (fortran/options.o): Depend on $(TARGET_H).
