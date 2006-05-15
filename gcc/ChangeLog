@@ -1,3 +1,9 @@
+2006-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27603
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined):
+	Do computations in original type.
+
 2006-05-15  Mircea Namolaru  <namolaru@il.ibm.com>
 
         * see.c: Code style changes such as redundant paranthesis,
