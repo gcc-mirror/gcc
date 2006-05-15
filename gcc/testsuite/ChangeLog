@@ -1,3 +1,8 @@
+2006-05-15  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/20060515-1.c: New testcase.
+	* gcc.c-torture/compile/20060515-1.c: Likewise.
+
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27582

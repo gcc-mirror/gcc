@@ -702,47 +702,76 @@ noce_emit_move_insn (rtx x, rtx y)
       end_sequence();
 
       if (recog_memoized (insn) <= 0)
-	switch (GET_RTX_CLASS (GET_CODE (y)))
-	  {
-	  case RTX_UNARY:
-	    ot = code_to_optab[GET_CODE (y)];
-	    if (ot)
-	      {
-		start_sequence ();
-		target = expand_unop (GET_MODE (y), ot, XEXP (y, 0), x, 0);
-		if (target != NULL_RTX)
-		  {
-		    if (target != x)
-		      emit_move_insn (x, target);
-		    seq = get_insns ();
-		  }
-		end_sequence ();
-	      }
-	    break;
+	{
+	  if (GET_CODE (x) == ZERO_EXTRACT)
+	    {
+	      rtx op = XEXP (x, 0);
+	      unsigned HOST_WIDE_INT size = INTVAL (XEXP (x, 1));
+	      unsigned HOST_WIDE_INT start = INTVAL (XEXP (x, 2));
 
-	  case RTX_BIN_ARITH:
-	  case RTX_COMM_ARITH:
-	    ot = code_to_optab[GET_CODE (y)];
-	    if (ot)
-	      {
-		start_sequence ();
-		target = expand_binop (GET_MODE (y), ot,
-				       XEXP (y, 0), XEXP (y, 1),
-				       x, 0, OPTAB_DIRECT);
-		if (target != NULL_RTX)
-		  {
-		    if (target != x)
-		      emit_move_insn (x, target);
-		    seq = get_insns ();
-		  }
-		end_sequence ();
-	      }
-	    break;
+	      /* store_bit_field expects START to be relative to 
+		 BYTES_BIG_ENDIAN and adjusts this value for machines with 
+		 BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN.  In order to be able to 
+		 invoke store_bit_field again it is necessary to have the START
+		 value from the first call.  */
+	      if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+		{
+		  if (MEM_P (op))
+		    start = BITS_PER_UNIT - start - size;
+		  else
+		    {
+		      gcc_assert (REG_P (op));
+		      start = BITS_PER_WORD - start - size;
+		    }
+		}
 
-	  default:
-	    break;
-	  }
+	      gcc_assert (start < (MEM_P (op) ? BITS_PER_UNIT : BITS_PER_WORD));
+	      store_bit_field (op, size, start, GET_MODE (x), y);
+	      return;
+	    }
 
+	  switch (GET_RTX_CLASS (GET_CODE (y)))
+	    {
+	    case RTX_UNARY:
+	      ot = code_to_optab[GET_CODE (y)];
+	      if (ot)
+		{
+		  start_sequence ();
+		  target = expand_unop (GET_MODE (y), ot, XEXP (y, 0), x, 0);
+		  if (target != NULL_RTX)
+		    {
+		      if (target != x)
+			emit_move_insn (x, target);
+		      seq = get_insns ();
+		    }
+		  end_sequence ();
+		}
+	      break;
+	      
+	    case RTX_BIN_ARITH:
+	    case RTX_COMM_ARITH:
+	      ot = code_to_optab[GET_CODE (y)];
+	      if (ot)
+		{
+		  start_sequence ();
+		  target = expand_binop (GET_MODE (y), ot,
+					 XEXP (y, 0), XEXP (y, 1),
+					 x, 0, OPTAB_DIRECT);
+		  if (target != NULL_RTX)
+		    {
+		      if (target != x)
+			  emit_move_insn (x, target);
+		      seq = get_insns ();
+		    }
+		  end_sequence ();
+		}
+	      break;
+	      
+	    default:
+	      break;
+	    }
+	}
+      
       emit_insn (seq);
       return;
     }
@@ -2207,6 +2236,12 @@ noce_process_if_block (struct ce_if_block * ce_info)
     {
       if (no_new_pseudos || GET_MODE (x) == BLKmode)
 	return FALSE;
+
+      if (GET_MODE (x) == ZERO_EXTRACT 
+	  && (GET_CODE (XEXP (x, 1)) != CONST_INT 
+	      || GET_CODE (XEXP (x, 2)) != CONST_INT))
+	return FALSE;
+	  
       x = gen_reg_rtx (GET_MODE (GET_CODE (x) == STRICT_LOW_PART
 				 ? XEXP (x, 0) : x));
     }

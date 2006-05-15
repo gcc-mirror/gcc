@@ -1,3 +1,15 @@
+2006-05-15  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* expmed.c (store_bit_field): Handle paradoxical subregs on big endian
+	machines.
+
+2006-05-15  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* ifcvt.c (noce_emit_move_insn): Call store_bit_field if the resulting
+	move would be an INSV insn.
+	(noce_process_if_block): Don't optimize if the destination is a 
+	ZERO_EXTRACT which can't be handled by noce_emit_move_insn.
+
 2006-05-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/22563
