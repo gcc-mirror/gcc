@@ -1,5 +1,8 @@
 2006-05-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (check_omp_nesting_restrictions): New function.
+	(scan_omp_1): Call it.
+
 	PR middle-end/27416
 	* omp-low.c (build_outer_var_ref): If VAR is reference in orphaned
 	construct, return *VAR.
