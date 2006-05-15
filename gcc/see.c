@@ -480,9 +480,6 @@ The implementation consists of four data structures:
 #include "timevar.h"
 #include "tree-pass.h"
 
-void
-see_main (void);
-
 /* Used to classify defs and uses according to relevancy.  */
 enum entry_type {
   NOT_RELEVANT,
@@ -659,7 +656,7 @@ static unsigned int uses_num;
 /* Records the number of definitions at the beginning of the optimization.  */
 static unsigned int defs_num;
 
-#define ENTRY_EI(ENTRY) ((struct see_entry_extra_info *)(ENTRY)->extra_info)
+#define ENTRY_EI(ENTRY) ((struct see_entry_extra_info *) (ENTRY)->extra_info)
 
 /* Functions implementation.  */
 
@@ -673,9 +670,7 @@ static unsigned int defs_num;
 static rtx
 see_get_extension_reg (rtx extension, bool return_dest_reg)
 {
-  rtx set = NULL;
-  rtx rhs = NULL;
-  rtx lhs = NULL;
+  rtx set, rhs, lhs;
   rtx reg1 = NULL;
   rtx reg2 = NULL;
 
@@ -692,7 +687,7 @@ see_get_extension_reg (rtx extension, bool return_dest_reg)
   else
     return NULL;
 
-  if ((GET_CODE (rhs) != SIGN_EXTEND) && (GET_CODE (rhs) != ZERO_EXTEND))
+  if (GET_CODE (rhs) != SIGN_EXTEND && GET_CODE (rhs) != ZERO_EXTEND)
     return NULL;
 
   rhs = XEXP (rhs, 0);
@@ -719,9 +714,7 @@ see_get_extension_reg (rtx extension, bool return_dest_reg)
 static enum rtx_code
 see_get_extension_data (rtx extension, enum machine_mode *source_mode)
 {
-  rtx rhs = NULL;
-  rtx lhs = NULL;
-  rtx set = NULL;
+  rtx rhs, lhs, set;
 
   if (!extension || !INSN_P (extension))
     return UNKNOWN;
@@ -737,20 +730,19 @@ see_get_extension_data (rtx extension, enum machine_mode *source_mode)
   if (!REG_P (lhs) && !SUBREG_REG (lhs))
     return UNKNOWN;
 
-  if ((GET_CODE (rhs) != SIGN_EXTEND) && (GET_CODE (rhs) != ZERO_EXTEND))
+  if (GET_CODE (rhs) != SIGN_EXTEND && GET_CODE (rhs) != ZERO_EXTEND)
     return UNKNOWN;
 
   if (!REG_P (XEXP (rhs, 0))
-      && !((GET_CODE (XEXP (rhs, 0)) == SUBREG)
-	   && (REG_P (SUBREG_REG (XEXP (rhs, 0))))))
+      && !(GET_CODE (XEXP (rhs, 0)) == SUBREG
+	   && REG_P (SUBREG_REG (XEXP (rhs, 0)))))
     return UNKNOWN;
 
   *source_mode = GET_MODE (XEXP (rhs, 0));
 
   if (GET_CODE (rhs) == SIGN_EXTEND)
     return SIGN_EXTEND;
-  else
-    return ZERO_EXTEND;
+  return ZERO_EXTEND;
 }
 
 
@@ -766,13 +758,12 @@ static rtx
 see_gen_normalized_extension (rtx reg, enum rtx_code extension_code,
    			      enum machine_mode mode)
 {
-  rtx subreg = NULL;
+  rtx subreg, insn;
   rtx extension = NULL;
-  rtx insn = NULL;
 
   if (!reg
       || !REG_P (reg)
-      || ((extension_code != SIGN_EXTEND) && (extension_code != ZERO_EXTEND)))
+      || (extension_code != SIGN_EXTEND && extension_code != ZERO_EXTEND))
     return NULL;
 
   subreg = gen_lowpart_SUBREG (mode, reg);
@@ -815,8 +806,7 @@ eq_descriptor_pre_extension (const void *p1, const void *p2)
   const struct see_pre_extension_expr *extension2 = p2;
   rtx set1 = single_set (extension1->se_insn);
   rtx set2 = single_set (extension2->se_insn);
-  rtx rhs1 = NULL;
-  rtx rhs2 = NULL;
+  rtx rhs1, rhs2;
 
   gcc_assert (set1 && set2);
   rhs1 = SET_SRC (set1);
@@ -835,7 +825,7 @@ hash_descriptor_pre_extension (const void *p)
 {
   const struct see_pre_extension_expr *extension = p;
   rtx set = single_set (extension->se_insn);
-  rtx rhs = NULL;
+  rtx rhs;
 
   gcc_assert (set);
   rhs = SET_SRC (set);
@@ -892,7 +882,7 @@ eq_descriptor_properties (const void *p1, const void *p2)
   const struct see_register_properties *curr_prop1 = p1;
   const struct see_register_properties *curr_prop2 = p2;
 
-  return (curr_prop1->regno == curr_prop2->regno);
+  return curr_prop1->regno == curr_prop2->regno;
 }
 
 
@@ -940,8 +930,8 @@ eq_descriptor_extension (const void *p1, const void *p2)
   const rtx insn = (rtx) p1;
   const rtx element = (rtx) p2;
   rtx set1 = single_set (insn);
+  rtx dest_reg1;
   rtx set2 = NULL;
-  rtx dest_reg1 = NULL;
   rtx dest_reg2 = NULL;
 
   gcc_assert (set1 && element && (REG_P (element) || INSN_P (element)));
@@ -956,7 +946,7 @@ eq_descriptor_extension (const void *p1, const void *p2)
   else
     dest_reg2 = element;
 
-  return (REGNO (dest_reg1) == REGNO (dest_reg2));
+  return REGNO (dest_reg1) == REGNO (dest_reg2);
 }
 
 
@@ -967,19 +957,16 @@ static hashval_t
 hash_descriptor_extension (const void *p)
 {
   const rtx r = (rtx) p;
-  rtx set = NULL;
-  rtx lhs = NULL;
+  rtx set, lhs;
 
   if (r && REG_P (r))
     return REGNO (r);
-  else
-    {
-      gcc_assert (r && INSN_P (r));
-      set = single_set (r);
-      gcc_assert (set);
-      lhs = SET_DEST (set);
-      return REGNO (lhs);
-    }
+
+  gcc_assert (r && INSN_P (r));
+  set = single_set (r);
+  gcc_assert (set);
+  lhs = SET_DEST (set);
+  return REGNO (lhs);
 }
 
 
@@ -1017,8 +1004,7 @@ see_free_ref_s (splay_tree_value value)
 static struct see_pre_extension_expr *
 see_seek_pre_extension_expr (rtx extension, enum extension_type type)
 {
-  struct see_pre_extension_expr **slot_pre_exp = NULL;
-  struct see_pre_extension_expr temp_pre_exp;
+  struct see_pre_extension_expr **slot_pre_exp, temp_pre_exp;
   rtx dest_extension_reg = see_get_extension_reg (extension, 1);
   enum rtx_code extension_code;
   enum machine_mode source_extension_mode;
@@ -1065,8 +1051,7 @@ see_seek_pre_extension_expr (rtx extension, enum extension_type type)
 static bool
 see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 {
-  struct see_entry_extra_info *first_ei = NULL;
-  struct see_entry_extra_info *second_ei = NULL;
+  struct see_entry_extra_info *first_ei, *second_ei;
 
   first = unionfind_root (first);
   second = unionfind_root (second);
@@ -1074,8 +1059,8 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
   if (unionfind_union (first, second))
     return true;
 
-  first_ei = (struct see_entry_extra_info *)first->extra_info;
-  second_ei = (struct see_entry_extra_info *)second->extra_info;
+  first_ei = (struct see_entry_extra_info *) first->extra_info;
+  second_ei = (struct see_entry_extra_info *) second->extra_info;
 
   gcc_assert (first_ei && second_ei);
 
@@ -1087,25 +1072,26 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
   switch (first_ei->relevancy)
     {
     case NOT_RELEVANT:
-      return false;
+      break;
     case RELEVANT_USE:
       switch (second_ei->relevancy)
 	{
 	case RELEVANT_USE:
-	  return false;
+	  break;
 	case EXTENDED_DEF:
 	  first_ei->relevancy = second_ei->relevancy;
 	  first_ei->source_mode_signed = second_ei->source_mode_signed;
 	  first_ei->source_mode_unsigned = second_ei->source_mode_unsigned;
-	  return false;
+	  break;
 	case SIGN_EXTENDED_DEF:
 	case ZERO_EXTENDED_DEF:
 	  first_ei->relevancy = second_ei->relevancy;
 	  first_ei->source_mode = second_ei->source_mode;
-	  return false;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
+      break;
     case SIGN_EXTENDED_DEF:
       switch (second_ei->relevancy)
 	{
@@ -1114,13 +1100,13 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	  first_ei->source_mode =
 	    (first_ei->source_mode > second_ei->source_mode) ?
 	    first_ei->source_mode : second_ei->source_mode;
-	  return false;
+	  break;
 	case RELEVANT_USE:
-	  return false;
+	  break;
 	case ZERO_EXTENDED_DEF:
 	  /* Don't mix webs with zero extend and sign extend.  */
 	  first_ei->relevancy = NOT_RELEVANT;
-	  return false;
+	  break;
 	case EXTENDED_DEF:
 	  if (second_ei->source_mode_signed == MAX_MACHINE_MODE)
 	    first_ei->relevancy = NOT_RELEVANT;
@@ -1129,10 +1115,11 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	    first_ei->source_mode =
 	      (first_ei->source_mode > second_ei->source_mode_signed) ?
 	      first_ei->source_mode : second_ei->source_mode_signed;
-	  return false;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
+      break;
     /* This case is similar to the previous one, with little changes.  */
     case ZERO_EXTENDED_DEF:
       switch (second_ei->relevancy)
@@ -1140,15 +1127,15 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	case SIGN_EXTENDED_DEF:
 	  /* Don't mix webs with zero extend and sign extend.  */
 	  first_ei->relevancy = NOT_RELEVANT;
-	  return false;
+	  break;
 	case RELEVANT_USE:
-	  return false;
+	  break;
 	case ZERO_EXTENDED_DEF:
 	  /* The mode of the root should be the wider one in this case.  */
 	  first_ei->source_mode =
 	    (first_ei->source_mode > second_ei->source_mode) ?
 	    first_ei->source_mode : second_ei->source_mode;
-	  return false;
+	  break;
 	case EXTENDED_DEF:
 	  if (second_ei->source_mode_unsigned == MAX_MACHINE_MODE)
 	    first_ei->relevancy = NOT_RELEVANT;
@@ -1157,13 +1144,14 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	    first_ei->source_mode =
 	      (first_ei->source_mode > second_ei->source_mode_unsigned) ?
 	      first_ei->source_mode : second_ei->source_mode_unsigned;
-	  return false;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
+      break;
     case EXTENDED_DEF:
-      if ((first_ei->source_mode_signed != MAX_MACHINE_MODE)
-	  && (first_ei->source_mode_unsigned != MAX_MACHINE_MODE))
+      if (first_ei->source_mode_signed != MAX_MACHINE_MODE
+	  && first_ei->source_mode_unsigned != MAX_MACHINE_MODE)
 	{
 	  switch (second_ei->relevancy)
 	    {
@@ -1172,15 +1160,15 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	      first_ei->source_mode =
 		(first_ei->source_mode_signed > second_ei->source_mode) ?
 		first_ei->source_mode_signed : second_ei->source_mode;
-	      return false;
+	      break;
 	    case RELEVANT_USE:
-	      return false;
+	      break;
 	    case ZERO_EXTENDED_DEF:
 	      first_ei->relevancy = ZERO_EXTENDED_DEF;
 	      first_ei->source_mode =
 		(first_ei->source_mode_unsigned > second_ei->source_mode) ?
 		first_ei->source_mode_unsigned : second_ei->source_mode;
-	      return false;
+	      break;
 	    case EXTENDED_DEF:
 	      if (second_ei->source_mode_unsigned != MAX_MACHINE_MODE)
 		first_ei->source_mode_unsigned =
@@ -1193,7 +1181,7 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 		  (first_ei->source_mode_signed >
 		  second_ei->source_mode_signed) ?
 		  first_ei->source_mode_signed : second_ei->source_mode_signed;
- 	      return false;
+	      break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -1205,15 +1193,15 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	    {
 	    case SIGN_EXTENDED_DEF:
 	      first_ei->relevancy = NOT_RELEVANT;
-	      return false;
+	      break;
 	    case RELEVANT_USE:
-	      return false;
+	      break;
 	    case ZERO_EXTENDED_DEF:
 	      first_ei->relevancy = ZERO_EXTENDED_DEF;
 	      first_ei->source_mode =
 		(first_ei->source_mode_unsigned > second_ei->source_mode) ?
 		first_ei->source_mode_unsigned : second_ei->source_mode;
-	      return false;
+	      break;
 	    case EXTENDED_DEF:
 	      if (second_ei->source_mode_unsigned == MAX_MACHINE_MODE)
 		first_ei->relevancy = NOT_RELEVANT;
@@ -1223,7 +1211,7 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 		  second_ei->source_mode_unsigned) ?
 		  first_ei->source_mode_unsigned :
 		  second_ei->source_mode_unsigned;
- 	      return false;
+	      break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -1239,12 +1227,12 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	      first_ei->source_mode =
 		(first_ei->source_mode_signed > second_ei->source_mode) ?
 		first_ei->source_mode_signed : second_ei->source_mode;
-	      return false;
+	      break;
 	    case RELEVANT_USE:
-	      return false;
+	      break;
 	    case ZERO_EXTENDED_DEF:
 	      first_ei->relevancy = NOT_RELEVANT;
-	      return false;
+	      break;
 	    case EXTENDED_DEF:
 	      if (second_ei->source_mode_signed == MAX_MACHINE_MODE)
 		first_ei->relevancy = NOT_RELEVANT;
@@ -1253,15 +1241,18 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 		  (first_ei->source_mode_signed >
 		  second_ei->source_mode_signed) ?
 		  first_ei->source_mode_signed : second_ei->source_mode_signed;
- 	      return false;
+	      break;
 	    default:
 	      gcc_unreachable ();
 	    }
 	}
+      break;
     default:
       /* Unknown patern type.  */
       gcc_unreachable ();
     }
+
+  return false;
 }
 
 
@@ -1362,9 +1353,10 @@ see_initialize_data_structures (void)
 
   /*  Allocate the extension hash.  It will hold the extensions that we want
       to PRE.  */
-  see_pre_extension_hash =
-    htab_create (10, hash_descriptor_pre_extension, eq_descriptor_pre_extension,
-		 hash_del_pre_extension);
+  see_pre_extension_hash = htab_create (10, 
+					hash_descriptor_pre_extension, 
+					eq_descriptor_pre_extension,
+					hash_del_pre_extension);
 }
 
 
@@ -1402,7 +1394,7 @@ static bool
 see_want_to_be_merged_with_extension (rtx ref, rtx extension,
    				      enum extension_type type)
 {
-  rtx pat = NULL;
+  rtx pat;
   rtx dest_extension_reg = see_get_extension_reg (extension, 1);
   rtx source_extension_reg = see_get_extension_reg (extension, 0);
   enum rtx_code code;
@@ -1418,16 +1410,16 @@ see_want_to_be_merged_with_extension (rtx ref, rtx extension,
 	{
 	  rtx sub = XVECEXP (pat, 0, i);
 
-	  if ((GET_CODE (sub) == SET)
-		&& (REG_P (SET_DEST (sub))
-		    || ((GET_CODE (SET_DEST (sub)) == SUBREG)
-			&& (REG_P (SUBREG_REG (SET_DEST (sub))))))
-		&& (REG_P (SET_SRC (sub))
-		    || ((GET_CODE (SET_SRC (sub)) == SUBREG)
-			&& (REG_P (SUBREG_REG (SET_SRC (sub)))))))
+	  if (GET_CODE (sub) == SET
+	      && (REG_P (SET_DEST (sub))
+		  || (GET_CODE (SET_DEST (sub)) == SUBREG
+		      && REG_P (SUBREG_REG (SET_DEST (sub)))))
+	      && (REG_P (SET_SRC (sub))
+		  || (GET_CODE (SET_SRC (sub)) == SUBREG
+		      && REG_P (SUBREG_REG (SET_SRC (sub))))))
 	    {
 	      /* This is a simple move SET.  */
-	      if ((type == DEF_EXTENSION)
+	      if (type == DEF_EXTENSION
 		  && reg_mentioned_p (source_extension_reg, SET_DEST (sub)))
 		return false;
 	    }
@@ -1450,13 +1442,13 @@ see_want_to_be_merged_with_extension (rtx ref, rtx extension,
     }
   else
     {
-      if ((code == SET)
+      if (code == SET
 	  && (REG_P (SET_DEST (pat))
-	      || ((GET_CODE (SET_DEST (pat)) == SUBREG)
-		  && (REG_P (SUBREG_REG (SET_DEST (pat))))))
+	      || (GET_CODE (SET_DEST (pat)) == SUBREG
+		  && REG_P (SUBREG_REG (SET_DEST (pat)))))
 	  && (REG_P (SET_SRC (pat))
-	      || ((GET_CODE (SET_SRC (pat)) == SUBREG)
-		  && (REG_P (SUBREG_REG (SET_SRC (pat)))))))
+	      || (GET_CODE (SET_SRC (pat)) == SUBREG
+		  && REG_P (SUBREG_REG (SET_SRC (pat))))))
 	/* This is a simple move SET.  */
 	return false;
      }
@@ -1846,12 +1838,11 @@ see_analyze_merged_def_local_prop (void **slot, void *b)
   rtx def_se = *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx ref = curr_ref_s->insn;
-  struct see_pre_extension_expr *extension_expr = NULL;
+  struct see_pre_extension_expr *extension_expr;
   int indx;
   int bb_num = BLOCK_NUM (ref);
-  htab_t curr_bb_hash = NULL;
-  struct see_register_properties *curr_prop = NULL;
-  struct see_register_properties **slot_prop = NULL;
+  htab_t curr_bb_hash;
+  struct see_register_properties *curr_prop, **slot_prop;
   struct see_register_properties temp_prop;
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
   struct see_occr *curr_occr = NULL;
@@ -1915,12 +1906,11 @@ see_analyze_unmerged_def_local_prop (void **slot, void *b)
   rtx def_se = *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx ref = curr_ref_s->insn;
-  struct see_pre_extension_expr *extension_expr = NULL;
+  struct see_pre_extension_expr *extension_expr;
   int indx;
   int bb_num = BLOCK_NUM (ref);
-  htab_t curr_bb_hash = NULL;
-  struct see_register_properties *curr_prop = NULL;
-  struct see_register_properties **slot_prop = NULL;
+  htab_t curr_bb_hash;
+  struct see_register_properties *curr_prop, **slot_prop;
   struct see_register_properties temp_prop;
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
 
@@ -1964,13 +1954,12 @@ see_analyze_use_local_prop (void **slot, void *b)
   rtx use_se = *slot;
   rtx ref = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (use_se, 1);
-  struct see_pre_extension_expr *extension_expr = NULL;
-  struct see_register_properties *curr_prop = NULL;
-  struct see_register_properties **slot_prop = NULL;
+  struct see_pre_extension_expr *extension_expr;
+  struct see_register_properties *curr_prop, **slot_prop;
   struct see_register_properties temp_prop;
   struct see_occr *curr_occr = NULL;
   struct see_occr *tmp_occr = NULL;
-  htab_t curr_bb_hash = NULL;
+  htab_t curr_bb_hash;
   int indx;
   int bb_num = BLOCK_NUM (ref);
 
@@ -2163,9 +2152,9 @@ see_set_prop_merged_def (void **slot, void *b)
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx insn = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
-  htab_t curr_bb_hash = NULL;
+  htab_t curr_bb_hash;
   struct see_register_properties *curr_prop = NULL;
-  struct see_register_properties **slot_prop = NULL;
+  struct see_register_properties **slot_prop;
   struct see_register_properties temp_prop;
   int ref_luid = DF_INSN_LUID (df, insn);
 
@@ -2173,9 +2162,10 @@ see_set_prop_merged_def (void **slot, void *b)
   if (!curr_bb_hash)
     {
       /* The hash doesn't exist yet.  Create it.  */
-      curr_bb_hash =
-	htab_create (10, hash_descriptor_properties, eq_descriptor_properties,
-		     hash_del_properties);
+      curr_bb_hash = htab_create (10, 
+				  hash_descriptor_properties, 
+				  eq_descriptor_properties,
+				  hash_del_properties);
       see_bb_hash_ar[BLOCK_NUM (curr_ref_s->insn)] = curr_bb_hash;
     }
 
@@ -2185,7 +2175,7 @@ see_set_prop_merged_def (void **slot, void *b)
     (struct see_register_properties **) htab_find_slot (curr_bb_hash,
 							&temp_prop, INSERT);
 
-  if (slot_prop && (*slot_prop != NULL))
+  if (slot_prop && *slot_prop != NULL)
     {
       /* Property already exists.  */
       curr_prop = *slot_prop;
@@ -2233,9 +2223,9 @@ see_set_prop_unmerged_def (void **slot, void *b)
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx insn = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
-  htab_t curr_bb_hash = NULL;
+  htab_t curr_bb_hash;
   struct see_register_properties *curr_prop = NULL;
-  struct see_register_properties **slot_prop = NULL;
+  struct see_register_properties **slot_prop;
   struct see_register_properties temp_prop;
   int ref_luid = DF_INSN_LUID (df, insn);
 
@@ -2243,9 +2233,10 @@ see_set_prop_unmerged_def (void **slot, void *b)
   if (!curr_bb_hash)
     {
       /* The hash doesn't exist yet.  Create it.  */
-      curr_bb_hash =
-	htab_create (10, hash_descriptor_properties, eq_descriptor_properties,
-		     hash_del_properties);
+      curr_bb_hash = htab_create (10, 
+				  hash_descriptor_properties, 
+				  eq_descriptor_properties,
+				  hash_del_properties);
       see_bb_hash_ar[BLOCK_NUM (curr_ref_s->insn)] = curr_bb_hash;
     }
 
@@ -2255,7 +2246,7 @@ see_set_prop_unmerged_def (void **slot, void *b)
     (struct see_register_properties **) htab_find_slot (curr_bb_hash,
 							&temp_prop, INSERT);
 
-  if (slot_prop && (*slot_prop != NULL))
+  if (slot_prop && *slot_prop != NULL)
     {
       /* Property already exists.  */
       curr_prop = *slot_prop;
@@ -2305,9 +2296,9 @@ see_set_prop_unmerged_use (void **slot, void *b)
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx insn = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (use_se, 1);
-  htab_t curr_bb_hash = NULL;
+  htab_t curr_bb_hash;
   struct see_register_properties *curr_prop = NULL;
-  struct see_register_properties **slot_prop = NULL;
+  struct see_register_properties **slot_prop;
   struct see_register_properties temp_prop;
   bool locally_redundant = false;
   int ref_luid = DF_INSN_LUID (df, insn);
@@ -2316,9 +2307,10 @@ see_set_prop_unmerged_use (void **slot, void *b)
   if (!curr_bb_hash)
     {
       /* The hash doesn't exist yet.  Create it.  */
-      curr_bb_hash =
-	htab_create (10, hash_descriptor_properties, eq_descriptor_properties,
-		     hash_del_properties);
+      curr_bb_hash = htab_create (10, 
+				  hash_descriptor_properties, 
+				  eq_descriptor_properties,
+				  hash_del_properties);
       see_bb_hash_ar[BLOCK_NUM (curr_ref_s->insn)] = curr_bb_hash;
     }
 
@@ -2328,27 +2320,27 @@ see_set_prop_unmerged_use (void **slot, void *b)
     (struct see_register_properties **) htab_find_slot (curr_bb_hash,
 							&temp_prop, INSERT);
 
-  if (slot_prop && (*slot_prop != NULL))
+  if (slot_prop && *slot_prop != NULL)
     {
       /* Property already exists.  */
       curr_prop = *slot_prop;
       gcc_assert (curr_prop->regno == REGNO (dest_extension_reg));
 
 
-      if ((curr_prop->last_def < 0) && (curr_prop->first_se_before_any_def < 0))
+      if (curr_prop->last_def < 0 && curr_prop->first_se_before_any_def < 0)
 	curr_prop->first_se_before_any_def = ref_luid;
-      else if ((curr_prop->last_def < 0)
-	       && (curr_prop->first_se_before_any_def >= 0))
+      else if (curr_prop->last_def < 0
+	       && curr_prop->first_se_before_any_def >= 0)
 	{
 	  /* In this case the extension is localy redundant.  */
 	  htab_clear_slot (curr_ref_s->use_se_hash, (PTR *)slot);
 	  locally_redundant = true;
 	}
-      else if ((curr_prop->last_def >= 0)
-	       && (curr_prop->first_se_after_last_def < 0))
+      else if (curr_prop->last_def >= 0
+	       && curr_prop->first_se_after_last_def < 0)
 	curr_prop->first_se_after_last_def = ref_luid;
-      else if ((curr_prop->last_def >= 0)
-	  && (curr_prop->first_se_after_last_def >= 0))
+      else if (curr_prop->last_def >= 0
+	       && curr_prop->first_se_after_last_def >= 0)
 	{
 	  /* In this case the extension is localy redundant.  */
 	  htab_clear_slot (curr_ref_s->use_se_hash, (PTR *)slot);
@@ -2449,26 +2441,23 @@ see_def_extension_not_merged (struct see_ref_s *curr_ref_s, rtx def_se)
   rtx merged_ref_next = (curr_ref_s->merged_insn) ?
   			NEXT_INSN (curr_ref_s->merged_insn): NULL_RTX;
   rtx ref_copy = copy_rtx (ref);
-  rtx dest_reg = NULL;
-  rtx dest_real_reg = NULL;
   rtx source_extension_reg = see_get_extension_reg (def_se, 0);
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
-  rtx new_pseudo_reg = NULL;
-  rtx subreg = NULL;
   rtx move_insn = NULL;
-  rtx set = NULL;
-  rtx rhs = NULL;
+  rtx set, rhs;
+  rtx dest_reg, dest_real_reg;
+  rtx new_pseudo_reg, subreg;
   enum machine_mode source_extension_mode = GET_MODE (source_extension_reg);
   enum machine_mode dest_mode;
 
   set = single_set (def_se);
   gcc_assert (set);
   rhs = SET_SRC (set);
-  gcc_assert ((GET_CODE (rhs) == SIGN_EXTEND)
-	      || (GET_CODE (rhs) == ZERO_EXTEND));
+  gcc_assert (GET_CODE (rhs) == SIGN_EXTEND
+	      || GET_CODE (rhs) == ZERO_EXTEND);
   dest_reg = XEXP (rhs, 0);
   gcc_assert (REG_P (dest_reg)
-	      || ((GET_CODE (dest_reg) == SUBREG)
+	      || (GET_CODE (dest_reg) == SUBREG
 		  && REG_P (SUBREG_REG (dest_reg))));
   dest_real_reg = REG_P (dest_reg) ? dest_reg : SUBREG_REG (dest_reg);
   dest_mode = GET_MODE (dest_reg);
@@ -2737,12 +2726,10 @@ see_merge_one_def_extension (void **slot, void *b)
   rtx new_set = NULL;
   rtx source_extension_reg = see_get_extension_reg (def_se, 0);
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
-  rtx move_insn = NULL;
-  rtx *rtx_slot = NULL;
-  rtx subreg = NULL;
+  rtx move_insn, *rtx_slot, subreg;
   rtx temp_extension = NULL;
   rtx simplified_temp_extension = NULL;
-  rtx *pat = NULL;
+  rtx *pat;
   enum rtx_code code;
   enum rtx_code extension_code;
   enum machine_mode source_extension_mode;
@@ -2790,15 +2777,15 @@ see_merge_one_def_extension (void **slot, void *b)
 	{
 	  rtx *sub = &XVECEXP (*pat, 0, i);
 
-	  if ((GET_CODE (*sub) == SET)
-	      && (GET_MODE (SET_SRC (*sub)) != VOIDmode)
-	      && (GET_MODE (SET_DEST (*sub)) == source_mode)
+	  if (GET_CODE (*sub) == SET
+	      && GET_MODE (SET_SRC (*sub)) != VOIDmode
+	      && GET_MODE (SET_DEST (*sub)) == source_mode
 	      && ((REG_P (SET_DEST (*sub))
-		  && (REGNO (SET_DEST (*sub)) == REGNO (source_extension_reg)))
-		 || ((GET_CODE (SET_DEST (*sub)) == SUBREG)
-		     && (REG_P (SUBREG_REG (SET_DEST (*sub))))
-		     && (REGNO (SUBREG_REG (SET_DEST (*sub))) ==
-			 REGNO (source_extension_reg)))))
+		   && REGNO (SET_DEST (*sub)) == REGNO (source_extension_reg))
+		  || (GET_CODE (SET_DEST (*sub)) == SUBREG
+		      && REG_P (SUBREG_REG (SET_DEST (*sub)))
+		      && (REGNO (SUBREG_REG (SET_DEST (*sub))) ==
+			  REGNO (source_extension_reg)))))
 	    {
 	      rtx orig_src = SET_SRC (*sub);
 
@@ -2822,13 +2809,13 @@ see_merge_one_def_extension (void **slot, void *b)
 	if (apply_change_group ())
 	  merge_success = true;
     }
-  else if ((code == SET)
-	   && (GET_MODE (SET_SRC (*pat)) != VOIDmode)
-	   && (GET_MODE (SET_DEST (*pat)) == source_mode)
+  else if (code == SET
+	   && GET_MODE (SET_SRC (*pat)) != VOIDmode
+	   && GET_MODE (SET_DEST (*pat)) == source_mode
 	   && ((REG_P (SET_DEST (*pat))
 		&& REGNO (SET_DEST (*pat)) == REGNO (source_extension_reg))
-	       || ((GET_CODE (SET_DEST (*pat)) == SUBREG)
-		   && (REG_P (SUBREG_REG (SET_DEST (*pat))))
+	       || (GET_CODE (SET_DEST (*pat)) == SUBREG
+		   && REG_P (SUBREG_REG (SET_DEST (*pat)))
 		   && (REGNO (SUBREG_REG (SET_DEST (*pat))) ==
 		       REGNO (source_extension_reg)))))
     {
@@ -2896,9 +2883,10 @@ see_merge_one_def_extension (void **slot, void *b)
      the merged_def_se_hash.  */
   htab_clear_slot (curr_ref_s->unmerged_def_se_hash, (PTR *)slot);
   if (!curr_ref_s->merged_def_se_hash)
-    curr_ref_s->merged_def_se_hash =
-      htab_create (10, hash_descriptor_extension, eq_descriptor_extension,
-		   NULL);
+    curr_ref_s->merged_def_se_hash = htab_create (10, 
+						  hash_descriptor_extension, 
+						  eq_descriptor_extension,
+						  NULL);
   rtx_slot = (rtx *) htab_find_slot (curr_ref_s->merged_def_se_hash,
   				     dest_extension_reg, INSERT);
   gcc_assert (*rtx_slot == NULL);
@@ -2932,7 +2920,7 @@ see_handle_extensions_for_one_ref (splay_tree_node stn,
   htab_t use_se_hash = ((struct see_ref_s *) (stn->value))->use_se_hash;
   htab_t unmerged_def_se_hash =
     ((struct see_ref_s *) (stn->value))->unmerged_def_se_hash;
-  htab_t merged_def_se_hash = NULL;
+  htab_t merged_def_se_hash;
   rtx ref = ((struct see_ref_s *) (stn->value))->insn;
 
   if (dump_file)
@@ -3037,7 +3025,7 @@ static bool
 see_store_reference_and_extension (rtx ref_insn, rtx se_insn,
 				   enum extension_type type)
 {
-  rtx *rtx_slot = NULL;
+  rtx *rtx_slot;
   int curr_bb_num;
   splay_tree_node stn = NULL;
   htab_t se_hash = NULL;
@@ -3049,7 +3037,7 @@ see_store_reference_and_extension (rtx ref_insn, rtx se_insn,
     return false;
 
   curr_bb_num = BLOCK_NUM (ref_insn);
-  gcc_assert ((curr_bb_num < last_bb) && (curr_bb_num >= 0));
+  gcc_assert (curr_bb_num < last_bb && curr_bb_num >= 0);
 
   /* Insert the reference to the splay tree of its basic block.  */
   if (!see_bb_splay_ar[curr_bb_num])
@@ -3063,43 +3051,47 @@ see_store_reference_and_extension (rtx ref_insn, rtx se_insn,
       stn = splay_tree_lookup (see_bb_splay_ar[curr_bb_num],
 			       DF_INSN_LUID (df, ref_insn));
       if (stn)
-	{
-	  switch (type)
-	    {
-	    case EXPLICIT_DEF_EXTENSION:
-	      se_hash =
-		((struct see_ref_s *) (stn->value))->unmerged_def_se_hash;
-	      if (!se_hash)
-		{
-	    	  se_hash = htab_create (10, hash_descriptor_extension,
-	      			     	 eq_descriptor_extension, NULL);
-		  ((struct see_ref_s *) (stn->value))->unmerged_def_se_hash =
-		    se_hash;
-		}
-	      break;
-	    case IMPLICIT_DEF_EXTENSION:
-	      se_hash = ((struct see_ref_s *) (stn->value))->merged_def_se_hash;
-	      if (!se_hash)
-		{
-	    	  se_hash = htab_create (10, hash_descriptor_extension,
-	      			     	 eq_descriptor_extension, NULL);
-		  ((struct see_ref_s *) (stn->value))->merged_def_se_hash =
-		    se_hash;
-		}
-	      break;
-	    case USE_EXTENSION:
-	      se_hash = ((struct see_ref_s *) (stn->value))->use_se_hash;
-	      if (!se_hash)
-		{
-	    	  se_hash = htab_create (10, hash_descriptor_extension,
-	      			     	 eq_descriptor_extension, NULL);
-		  ((struct see_ref_s *) (stn->value))->use_se_hash = se_hash;
-		}
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	}
+	switch (type)
+	  {
+	  case EXPLICIT_DEF_EXTENSION:
+	    se_hash =
+	      ((struct see_ref_s *) (stn->value))->unmerged_def_se_hash;
+	    if (!se_hash)
+	      {
+		se_hash = htab_create (10, 
+				       hash_descriptor_extension,
+				       eq_descriptor_extension, 
+				       NULL);
+		((struct see_ref_s *) (stn->value))->unmerged_def_se_hash =
+		  se_hash;
+	      }
+	    break;
+	  case IMPLICIT_DEF_EXTENSION:
+	    se_hash = ((struct see_ref_s *) (stn->value))->merged_def_se_hash;
+	    if (!se_hash)
+	      {
+		se_hash = htab_create (10, 
+				       hash_descriptor_extension,
+				       eq_descriptor_extension, 
+				       NULL);
+		((struct see_ref_s *) (stn->value))->merged_def_se_hash =
+		  se_hash;
+	      }
+	    break;
+	  case USE_EXTENSION:
+	    se_hash = ((struct see_ref_s *) (stn->value))->use_se_hash;
+	    if (!se_hash)
+	      {
+		se_hash = htab_create (10, 
+				       hash_descriptor_extension,
+				       eq_descriptor_extension, 
+				       NULL);
+		((struct see_ref_s *) (stn->value))->use_se_hash = se_hash;
+	      }
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
     }
 
   /* Initialize a new see_ref_s structure and insert it to the splay
@@ -3115,25 +3107,28 @@ see_store_reference_and_extension (rtx ref_insn, rtx se_insn,
       switch (type)
 	{
 	case EXPLICIT_DEF_EXTENSION:
-	  ref_s->unmerged_def_se_hash =
-	    htab_create (10, hash_descriptor_extension, eq_descriptor_extension,
-	  		 NULL);
+	  ref_s->unmerged_def_se_hash = htab_create (10, 
+						     hash_descriptor_extension, 
+						     eq_descriptor_extension,
+						     NULL);
 	  se_hash = ref_s->unmerged_def_se_hash;
 	  ref_s->merged_def_se_hash = NULL;
 	  ref_s->use_se_hash = NULL;
 	  break;
 	case IMPLICIT_DEF_EXTENSION:
-	  ref_s->merged_def_se_hash =
-	    htab_create (10, hash_descriptor_extension, eq_descriptor_extension,
-	  		 NULL);
+	  ref_s->merged_def_se_hash = htab_create (10, 
+						   hash_descriptor_extension, 
+						   eq_descriptor_extension,
+						   NULL);
 	  se_hash = ref_s->merged_def_se_hash;
 	  ref_s->unmerged_def_se_hash = NULL;
 	  ref_s->use_se_hash = NULL;
 	  break;
 	case USE_EXTENSION:
-	  ref_s->use_se_hash =
-	    htab_create (10, hash_descriptor_extension, eq_descriptor_extension,
-	  		 NULL);
+	  ref_s->use_se_hash = htab_create (10, 
+					    hash_descriptor_extension, 
+					    eq_descriptor_extension,
+					    NULL);
 	  se_hash = ref_s->use_se_hash;
 	  ref_s->unmerged_def_se_hash = NULL;
 	  ref_s->merged_def_se_hash = NULL;
@@ -3197,8 +3192,8 @@ see_handle_relevant_defs (void)
 
       root_entry = unionfind_root (&def_entry[i]);
 
-      if ((ENTRY_EI (root_entry)->relevancy != SIGN_EXTENDED_DEF)
-	  && (ENTRY_EI (root_entry)->relevancy != ZERO_EXTENDED_DEF))
+      if (ENTRY_EI (root_entry)->relevancy != SIGN_EXTENDED_DEF
+	  && ENTRY_EI (root_entry)->relevancy != ZERO_EXTENDED_DEF)
 	/* The current web is not relevant.  Continue to the next def.  */
 	continue;
 
@@ -3213,7 +3208,7 @@ see_handle_relevant_defs (void)
 	 source_mode is narrower then its web's source_mode.
 	 This means that we need to generate the implicit extension explicitly
 	 and store it in the current reference's merged_def_se_hash.  */
-      if ((ENTRY_EI (&def_entry[i])->local_relevancy == EXTENDED_DEF)
+      if (ENTRY_EI (&def_entry[i])->local_relevancy == EXTENDED_DEF
 	  || (ENTRY_EI (&def_entry[i])->local_source_mode <
 	      ENTRY_EI (root_entry)->source_mode))
 	{
@@ -3282,8 +3277,8 @@ see_handle_relevant_uses (void)
 
       root_entry = unionfind_root (&use_entry[i]);
 
-      if ((ENTRY_EI (root_entry)->relevancy != SIGN_EXTENDED_DEF)
-	  && (ENTRY_EI (root_entry)->relevancy != ZERO_EXTENDED_DEF))
+      if (ENTRY_EI (root_entry)->relevancy != SIGN_EXTENDED_DEF
+	  && ENTRY_EI (root_entry)->relevancy != ZERO_EXTENDED_DEF)
 	/* The current web is not relevant.  Continue to the next use.  */
 	continue;
 
@@ -3460,8 +3455,8 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 	return NOT_RELEVANT;
 
       /* If we can't use copy_rtx on the reference it can't be a reference.  */
-      if ((GET_CODE (PATTERN (prev_insn)) == PARALLEL)
-	   && (asm_noperands (PATTERN (prev_insn)) >= 0))
+      if (GET_CODE (PATTERN (prev_insn)) == PARALLEL
+	   && asm_noperands (PATTERN (prev_insn)) >= 0)
 	return NOT_RELEVANT;
 
       /* Now, check if this extension is a reference itself.  If so, it is not
@@ -3503,15 +3498,15 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 
       switch (GET_CODE (rhs))
 	{
-	case (SIGN_EXTEND):
+	case SIGN_EXTEND:
 	  *source_mode = GET_MODE (XEXP (rhs, 0));
 	  *source_mode_unsigned = MAX_MACHINE_MODE;
 	  return EXTENDED_DEF;
-	case (ZERO_EXTEND):
+	case ZERO_EXTEND:
 	  *source_mode = MAX_MACHINE_MODE;
 	  *source_mode_unsigned = GET_MODE (XEXP (rhs, 0));
 	  return EXTENDED_DEF;
-	case (CONST_INT):
+	case CONST_INT:
 
 	  val = INTVAL (rhs);
 
@@ -3521,17 +3516,17 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 	       mode = GET_MODE_WIDER_MODE (mode), i++)
 	    {
 	      val2 = trunc_int_for_mode (val, mode);
-  	      if ((val2 == val) && (*source_mode == MAX_MACHINE_MODE))
+  	      if (val2 == val && *source_mode == MAX_MACHINE_MODE)
 		*source_mode = mode;
-	      if ((val == (val & (HOST_WIDE_INT)GET_MODE_MASK (mode)))
-		  && (*source_mode_unsigned == MAX_MACHINE_MODE))
+	      if (val == (val & (HOST_WIDE_INT)GET_MODE_MASK (mode))
+		  && *source_mode_unsigned == MAX_MACHINE_MODE)
 		*source_mode_unsigned = mode;
-	      if ((*source_mode != MAX_MACHINE_MODE)
-		  && (*source_mode_unsigned !=MAX_MACHINE_MODE))
+	      if (*source_mode != MAX_MACHINE_MODE
+		  && *source_mode_unsigned !=MAX_MACHINE_MODE)
 		return EXTENDED_DEF;
 	    }
-	  if ((*source_mode != MAX_MACHINE_MODE)
-	      || (*source_mode_unsigned !=MAX_MACHINE_MODE))
+	  if (*source_mode != MAX_MACHINE_MODE
+	      || *source_mode_unsigned !=MAX_MACHINE_MODE)
 	    return EXTENDED_DEF;
 	  return NOT_RELEVANT;
 	default:
@@ -3609,8 +3604,8 @@ see_update_defs_relevancy (void)
 		  break;
 		case EXTENDED_DEF :
 		  fprintf (dump_file, "EXTENDED_DEF, ");
-		  if ((source_mode != MAX_MACHINE_MODE)
-		      && (source_mode_unsigned != MAX_MACHINE_MODE))
+		  if (source_mode != MAX_MACHINE_MODE
+		      && source_mode_unsigned != MAX_MACHINE_MODE)
 		    {
 		      fprintf (dump_file, "positive const, ");
 		      fprintf (dump_file, "source_mode_signed = %s, ",
@@ -3662,10 +3657,8 @@ see_propagate_extensions_to_uses (void)
      and there is at least one definition that was marked as SIGN_EXTENDED_DEF
      or ZERO_EXTENDED_DEF.  */
   for (i = 0; i < uses_num; i++)
-    {
-      union_defs (df, DF_USES_GET (df, i), def_entry, use_entry,
-		  see_update_leader_extra_info);
-    }
+    union_defs (df, DF_USES_GET (df, i), def_entry, use_entry,
+		see_update_leader_extra_info);
 
   /* Generate use extensions for references and insert these
      references to see_bb_splay_ar data structure.    */
@@ -3681,13 +3674,13 @@ see_propagate_extensions_to_uses (void)
   if (num_relevant_defs < 0)
     return false;
 
-  return ((num_relevant_uses > 0) || (num_relevant_defs > 0));
+ return num_relevant_uses > 0 || num_relevant_defs > 0;
 }
 
 
 /* Main entry point for the sign extension elimination optimization.  */
 
-void
+static void
 see_main (void)
 {
   bool cont = false;
@@ -3742,7 +3735,7 @@ see_main (void)
 static bool
 gate_handle_see (void)
 {
-  return ((optimize > 1) && flag_see);
+  return optimize > 1 && flag_see;
 }
 
 static unsigned int

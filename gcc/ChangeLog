@@ -1,3 +1,11 @@
+2006-05-15  Mircea Namolaru  <namolaru@il.ibm.com>
+
+        * see.c: Code style changes such as redundant paranthesis,
+        redundant intialization of local variables etc.
+        (see_main): Declared now as static.
+        * doc/invoke.texi: Update that -fsee is not enabled by
+        default at -O3.
+
 2006-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (check_omp_nesting_restrictions): New function.
