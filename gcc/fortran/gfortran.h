@@ -1941,6 +1941,9 @@ void gfc_free_equiv (gfc_equiv *);
 void gfc_free_data (gfc_data *);
 void gfc_free_case_list (gfc_case *);
 
+/* matchexp.c -- FIXME too?  */
+gfc_expr *gfc_get_parentheses (gfc_expr *);
+
 /* openmp.c */
 void gfc_free_omp_clauses (gfc_omp_clauses *);
 void gfc_resolve_omp_directive (gfc_code *, gfc_namespace *);

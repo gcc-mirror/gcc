@@ -60,6 +60,9 @@ static int omp_workshare_flag;
    resets the flag each time that it is read.  */
 static int formal_arg_flag = 0;
 
+/* True if we are resolving a specification expression.  */
+static int resolving_index_expr = 0;
+
 int
 gfc_is_formal_arg (void)
 {
@@ -2284,6 +2287,7 @@ static try
 resolve_array_ref (gfc_array_ref * ar)
 {
   int i, check_scalar;
+  gfc_expr *e;
 
   for (i = 0; i < ar->dimen; i++)
     {
@@ -2296,8 +2300,10 @@ resolve_array_ref (gfc_array_ref * ar)
       if (gfc_resolve_index (ar->stride[i], check_scalar) == FAILURE)
 	return FAILURE;
 
+      e = ar->start[i];
+
       if (ar->dimen_type[i] == DIMEN_UNKNOWN)
-	switch (ar->start[i]->rank)
+	switch (e->rank)
 	  {
 	  case 0:
 	    ar->dimen_type[i] = DIMEN_ELEMENT;
@@ -2305,11 +2311,14 @@ resolve_array_ref (gfc_array_ref * ar)
 
 	  case 1:
 	    ar->dimen_type[i] = DIMEN_VECTOR;
+	    if (e->expr_type == EXPR_VARIABLE
+		   && e->symtree->n.sym->ts.type == BT_DERIVED)
+	      ar->start[i] = gfc_get_parentheses (e);
 	    break;
 
 	  default:
 	    gfc_error ("Array index at %L is an array of rank %d",
-		       &ar->c_where[i], ar->start[i]->rank);
+		       &ar->c_where[i], e->rank);
 	    return FAILURE;
 	  }
     }
@@ -2626,6 +2635,43 @@ resolve_variable (gfc_expr * e)
 }
 
 
+/* Emits an error if the expression is a variable that is not a parameter
+   in all entry formal argument lists for the namespace.  */
+
+static void
+entry_parameter (gfc_expr *e)
+{
+  gfc_symbol *sym, *esym;
+  gfc_entry_list *entry;
+  gfc_formal_arglist *f;
+  bool p;
+
+
+  sym = e->symtree->n.sym;
+
+  if (sym->attr.use_assoc
+	|| !sym->attr.dummy
+	|| sym->ns != gfc_current_ns)
+    return;
+
+  entry = sym->ns->entries;
+  for (; entry; entry = entry->next)
+    {
+      esym = entry->sym;
+      p = false;
+      for (f = esym->formal; f && !p; f = f->next)
+	{
+	  if (f->sym && f->sym->name && sym->name == f->sym->name)
+	    p = true;
+	}
+      if (!p)
+	gfc_error ("%s at %L must be a parameter of the entry at %L",
+		   sym->name, &e->where, &esym->declared_at);
+    }
+  return;
+}
+
+
 /* Resolve an expression.  That is, make sure that types of operands agree
    with their operators, intrinsic operators are converted to function calls
    for overloaded types and unresolved function references are resolved.  */
@@ -2650,6 +2696,10 @@ gfc_resolve_expr (gfc_expr * e)
 
     case EXPR_VARIABLE:
       t = resolve_variable (e);
+
+      if (gfc_current_ns->entries && resolving_index_expr)
+	entry_parameter (e);
+
       if (t == SUCCESS)
 	expression_rank (e);
       break;
@@ -4345,9 +4395,10 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	  break;
 
 	case EXEC_RETURN:
-	  if (code->expr != NULL && code->expr->ts.type != BT_INTEGER)
-	    gfc_error ("Alternate RETURN statement at %L requires an INTEGER "
-		       "return specifier", &code->expr->where);
+	  if (code->expr != NULL
+		&& (code->expr->ts.type != BT_INTEGER || code->expr->rank))
+	    gfc_error ("Alternate RETURN statement at %L requires a SCALAR-"
+		       "INTEGER return specifier", &code->expr->where);
 	  break;
 
 	case EXEC_ASSIGN:
@@ -4600,7 +4651,6 @@ resolve_values (gfc_symbol * sym)
 static try
 resolve_index_expr (gfc_expr * e)
 {
-
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
 
@@ -4623,9 +4673,12 @@ resolve_charlen (gfc_charlen *cl)
 
   cl->resolved = 1;
 
+  resolving_index_expr = 1;
+
   if (resolve_index_expr (cl->length) == FAILURE)
     return FAILURE;
 
+  resolving_index_expr = 0;
   return SUCCESS;
 }
 
@@ -4712,19 +4765,28 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   if (resolve_fl_var_and_proc (sym, mp_flag) == FAILURE)
     return FAILURE;
 
-  /* The shape of a main program or module array needs to be constant.  */
-  if (sym->ns->proc_name
-	&& (sym->ns->proc_name->attr.flavor == FL_MODULE
-	     || sym->ns->proc_name->attr.is_main_program)
-	&& !sym->attr.use_assoc
+  /* Set this flag to check that variables are parameters of all entries.
+     This check is effected by the call to gfc_resolve_expr through
+     is_non_contant_shape_array.  */
+  resolving_index_expr = 1;
+
+  if (!sym->attr.use_assoc
 	&& !sym->attr.allocatable
 	&& !sym->attr.pointer
 	&& is_non_constant_shape_array (sym))
     {
-       gfc_error ("The module or main program array '%s' at %L must "
-		     "have constant shape", sym->name, &sym->declared_at);
-	  return FAILURE;
+	/* The shape of a main program or module array needs to be constant.  */
+	if (sym->ns->proc_name
+	      && (sym->ns->proc_name->attr.flavor == FL_MODULE
+		    || sym->ns->proc_name->attr.is_main_program))
+	  {
+	    gfc_error ("The module or main program array '%s' at %L must "
+		       "have constant shape", sym->name, &sym->declared_at);
+	    return FAILURE;
+	  }
     }
+
+  resolving_index_expr = 0;
 
   if (sym->ts.type == BT_CHARACTER)
     {

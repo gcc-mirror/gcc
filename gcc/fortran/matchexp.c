@@ -123,6 +123,26 @@ next_operator (gfc_intrinsic_op t)
 }
 
 
+/* Call the INTRINSIC_PARENTHESES function.  This is both
+   used explicitly, as below, or by resolve.c to generate
+   temporaries.  */
+gfc_expr *
+gfc_get_parentheses (gfc_expr *e)
+{
+  gfc_expr *e2;
+
+  e2 = gfc_get_expr();
+  e2->expr_type = EXPR_OP;
+  e2->ts = e->ts;
+  e2->rank = e->rank;
+  e2->where = e->where;
+  e2->value.op.operator = INTRINSIC_PARENTHESES;
+  e2->value.op.op1 = e;
+  e2->value.op.op2 = NULL;
+  return e2;
+}
+
+
 /* Match a primary expression.  */
 
 static match
@@ -167,18 +187,7 @@ match_primary (gfc_expr ** result)
   if(!gfc_numeric_ts(&e->ts))
     *result = e;
   else
-    {
-      gfc_expr *e2 = gfc_get_expr();
-
-      e2->expr_type = EXPR_OP;
-      e2->ts = e->ts;
-      e2->rank = e->rank;
-      e2->where = where;
-      e2->value.op.operator = INTRINSIC_PARENTHESES;
-      e2->value.op.op1 = e;
-      e2->value.op.op2 = NULL;
-      *result = e2;
-    }
+    *result = gfc_get_parentheses (e);
 
   if (m != MATCH_YES)
     {
