@@ -1479,7 +1479,8 @@ adjust_result_of_qualified_name_lookup (tree decl,
 					tree qualifying_scope,
 					tree context_class)
 {
-  if (context_class && CLASS_TYPE_P (qualifying_scope)
+  if (context_class && context_class != error_mark_node
+      && CLASS_TYPE_P (qualifying_scope)
       && DERIVED_FROM_P (qualifying_scope, context_class)
       && BASELINK_P (decl))
     {
