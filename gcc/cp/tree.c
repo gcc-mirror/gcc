@@ -362,22 +362,35 @@ get_target_expr (tree init)
   return build_target_expr_with_type (init, TREE_TYPE (init));
 }
 
+/* If EXPR is a bitfield reference, convert it to the declared type of
+   the bitfield, and return the resulting expression.  Otherwise,
+   return EXPR itself.  */
+
+tree
+convert_bitfield_to_declared_type (tree expr)
+{
+  tree bitfield_type;
+
+  bitfield_type = is_bitfield_expr_with_lowered_type (expr);
+  if (bitfield_type)
+    expr = cp_convert (TYPE_MAIN_VARIANT (bitfield_type), expr);
+  return expr;
+}
+
 /* EXPR is being used in an rvalue context.  Return a version of EXPR
    that is marked as an rvalue.  */
 
 tree
 rvalue (tree expr)
 {
-  tree type;
+  expr = convert_bitfield_to_declared_type (expr);
   if (real_lvalue_p (expr))
     {
-      type = is_bitfield_expr_with_lowered_type (expr);
-      if (type)
-	return cp_convert (TYPE_MAIN_VARIANT (type), expr);
-      type = TREE_TYPE (expr);
+      tree type;
       /* [basic.lval]
 	 
          Non-class rvalues always have cv-unqualified types.  */
+      type = TREE_TYPE (expr);
       if (!CLASS_TYPE_P (type))
 	type = TYPE_MAIN_VARIANT (type);
       expr = build1 (NON_LVALUE_EXPR, type, expr);

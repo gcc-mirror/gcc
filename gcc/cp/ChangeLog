@@ -1,3 +1,12 @@
+2006-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27505
+	* call.c (convert_like_real): Convert bitfields to their declared
+	types when forming an rvalue.
+	* tree.c (convert_bitfield_to_declared_type): New function.
+	(rvalue): Use it.
+	* cp-tree.h (convert_bitfield_to_declare_type): Declare it.
+
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27582
