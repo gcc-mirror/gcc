@@ -1,3 +1,12 @@
+2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Make-lang.in (cp/decl.o): Add dependency on $(TARGET_H).
+	(cp/decl2.o): Likewise.
+	(cp/typeck.o): Likewise.
+	(cp/cvt.o): Likewise.
+	(cp/parser.o): Likewise.
+	(cp/call.o): Replace target.h with $(TARGET_H).
+
 2006-05-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* pt.c (build_non_dependent_expr): Leave ADDR_EXPR of

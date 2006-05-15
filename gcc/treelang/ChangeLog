@@ -1,3 +1,8 @@
+2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Make-lang.in (treelang/treetree.o): Add dependency on
+	$(TARGET_H).
+
 2006-04-22  Matthias Klose  <doko@debian.org>
 
 	* Make-lang.in (treelang.check): Don't set and pass TRANSFORM.

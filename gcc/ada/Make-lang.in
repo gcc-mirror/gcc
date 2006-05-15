@@ -1052,7 +1052,7 @@ ada/cuintp.o : ada/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    ada/elists.h ada/nlists.h ada/fe.h ada/gigi.h
 
 ada/decl.o : ada/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   flags.h toplev.h convert.h target.h ada/ada.h ada/types.h ada/atree.h \
+   flags.h toplev.h convert.h $(TARGET_H) ada/ada.h ada/types.h ada/atree.h \
    ada/nlists.h ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/snames.h \
    ada/namet.h ada/stringt.h ada/repinfo.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
    gt-ada-decl.h $(EXPR_H)
@@ -1063,7 +1063,7 @@ ada/misc.o : ada/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(LANGHOOKS_DEF_H) libfuncs.h $(OPTABS_H) ada/ada.h ada/types.h \
    ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h \
    ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
-   ada/adadecode.h opts.h options.h target.h real.h
+   ada/adadecode.h opts.h options.h $(TARGET_H) real.h
 
 ada/targtyps.o : ada/targtyps.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h \
@@ -1080,7 +1080,7 @@ ada/utils.o : ada/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) flags.h expr.h convert.h defaults.h ada/ada.h ada/types.h \
    ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h \
    ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h gt-ada-utils.h \
-   gtype-ada.h target.h
+   gtype-ada.h $(TARGET_H)
 
 ada/utils2.o : ada/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) flags.h ada/ada.h ada/types.h ada/atree.h ada/nlists.h \

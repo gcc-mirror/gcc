@@ -1,3 +1,9 @@
+2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Make-lang.in (java/decl.o): Add dependency on $(TARGET_H).
+	(java/expr.o): Replace target.h with $(TARGET_H).
+	(java/parse.o): Likewise.
+
 2006-05-10  Andrew Haley  <aph@redhat.com>
 
 	* class.c (emit_indirect_register_classes): Fix comment.
