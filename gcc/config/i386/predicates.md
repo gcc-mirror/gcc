@@ -530,6 +530,11 @@
   (and (match_code "const_int")
        (match_test "op == const1_rtx")))
 
+;; Match exactly eight.
+(define_predicate "const8_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 8")))
+
 ;; Match 2, 4, or 8.  Used for leal multiplicands.
 (define_predicate "const248_operand"
   (match_code "const_int")
