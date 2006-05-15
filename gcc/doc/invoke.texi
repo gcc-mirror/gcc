@@ -5012,7 +5012,6 @@ sense when scheduling after register allocation, i.e.@: with
 @opindex fsee
 Eliminates redundant extension instructions and move the non redundant
 ones to optimal placement using LCM.
-Enabled at level @option{-O3}.
 
 @item -freschedule-modulo-scheduled-loops
 @opindex fscheduling-in-modulo-scheduled-loops
