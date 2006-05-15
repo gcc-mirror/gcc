@@ -1,3 +1,9 @@
+2006-05-15  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* stacktrace.cc (StackTrace::FillInFrameInfo): Use
+	UNWRAP_FUNCTION_DESCRIPTOR to compare frame->start_ip against the
+	klass->methods[j].ncode.
+
 2006-05-13  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.
@@ -91,7 +97,7 @@
 	* testsuite/libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Add check for
 	HP-UX and add appropriate extension for shared libraries, sl.
 	(gcj_jni_test_one): Likewise.
-	
+
 	* testsuite/lib/libjava.exp (libjava_find_lib): Add sl to the shared
 	library extensions.
 

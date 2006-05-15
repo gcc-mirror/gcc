@@ -1,6 +1,6 @@
 // stacktrace.cc - Functions for unwinding & inspecting the call stack.
 
-/* Copyright (C) 2005  Free Software Foundation
+/* Copyright (C) 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -243,7 +243,8 @@ _Jv_StackTrace::FillInFrameInfo (_Jv_StackFrame *frame)
 	// Find method in class
 	for (int j = 0; j < klass->method_count; j++)
 	  {
-	    if (klass->methods[j].ncode == frame->start_ip)
+	    void *wncode UNWRAP_FUNCTION_DESCRIPTOR (klass->methods[j].ncode);
+	    if (wncode == frame->start_ip)
 	      {
 		meth = &klass->methods[j];
 		break;
