@@ -1,3 +1,9 @@
+2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27496
+	* pt.c (tsubst_friend_class): Return early on invalid friend
+	declarations.
+
 2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Make-lang.in (cp/decl.o): Add dependency on $(TARGET_H).

@@ -5435,6 +5435,8 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	 case, the instantiation of the template class will cause the
 	 injection of this template into the global scope.  */
       tmpl = tsubst (friend_tmpl, args, tf_warning_or_error, NULL_TREE);
+      if (tmpl == error_mark_node)
+	return error_mark_node;
 
       /* The new TMPL is not an instantiation of anything, so we
 	 forget its origins.  We don't reset CLASSTYPE_TI_TEMPLATE for
