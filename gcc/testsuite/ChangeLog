@@ -1,5 +1,8 @@
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27582
+	* g++.dg/template/dependent-args1.C: New test.
+
 	PR c++/27581
 	* g++.dg/lookup/this1.C: New test.
 
