@@ -12660,6 +12660,8 @@ any_dependent_template_arguments_p (tree args)
 
   if (!args)
     return false;
+  if (args == error_mark_node)
+    return true;
 
   for (i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
     {

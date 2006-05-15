@@ -1,5 +1,9 @@
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27582
+	* pt.c (any_dependent_template_arguments_p): Return early on invalid
+	argument list.
+
 	PR c++/27581
 	* search.c (adjust_result_of_qualified_name_lookup): Skip on
 	invalid context_class.
