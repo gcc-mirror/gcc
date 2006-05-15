@@ -1,5 +1,8 @@
 2006-05-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27581
+	* g++.dg/lookup/this1.C: New test.
+
 	PR c++/27315
 	* g++.dg/template/operator6.C: New test.
 	* g++.dg/template/incomplete3.C: New test.
