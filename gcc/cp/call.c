@@ -4328,6 +4328,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   switch (convs->kind)
     {
     case ck_rvalue:
+      expr = convert_bitfield_to_declared_type (expr);
       if (! IS_AGGR_TYPE (totype))
 	return expr;
       /* Else fall through.  */
