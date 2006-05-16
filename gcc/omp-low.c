@@ -2456,7 +2456,8 @@ expand_omp_parallel (struct omp_region *region)
   else
     {
       /* If the parallel region needs data sent from the parent
-	 function, then the very first statement of the parallel body
+	 function, then the very first statement (except possible
+	 tree profile counter updates) of the parallel body
 	 is a copy assignment .OMP_DATA_I = &.OMP_DATA_O.  Since
 	 &.OMP_DATA_O is passed as an argument to the child function,
 	 we need to replace it with the argument as seen by the child
@@ -2470,21 +2471,26 @@ expand_omp_parallel (struct omp_region *region)
       if (OMP_PARALLEL_DATA_ARG (entry_stmt))
 	{
 	  basic_block entry_succ_bb = single_succ (entry_bb);
-	  block_stmt_iterator si = bsi_start (entry_succ_bb);
-	  tree stmt;
+	  block_stmt_iterator si;
 
-	  gcc_assert (!bsi_end_p (si));
+	  for (si = bsi_start (entry_succ_bb); ; bsi_next (&si))
+	    {
+	      tree stmt;
 
-	  stmt = bsi_stmt (si);
-	  gcc_assert (TREE_CODE (stmt) == MODIFY_EXPR
-		      && TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR
-		      && TREE_OPERAND (TREE_OPERAND (stmt, 1), 0)
-			 == OMP_PARALLEL_DATA_ARG (entry_stmt));
-
-	  if (TREE_OPERAND (stmt, 0) == DECL_ARGUMENTS (child_fn))
-	    bsi_remove (&si, true);
-	  else
-	    TREE_OPERAND (stmt, 1) = DECL_ARGUMENTS (child_fn);
+	      gcc_assert (!bsi_end_p (si));
+	      stmt = bsi_stmt (si);
+	      if (TREE_CODE (stmt) == MODIFY_EXPR
+		  && TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR
+		  && TREE_OPERAND (TREE_OPERAND (stmt, 1), 0)
+		     == OMP_PARALLEL_DATA_ARG (entry_stmt))
+		{
+		  if (TREE_OPERAND (stmt, 0) == DECL_ARGUMENTS (child_fn))
+		    bsi_remove (&si, true);
+		  else
+		    TREE_OPERAND (stmt, 1) = DECL_ARGUMENTS (child_fn);
+		  break;
+		}
+	    }
 	}
 
       /* Declare local variables needed in CHILD_CFUN.  */
