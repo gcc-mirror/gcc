@@ -46,6 +46,7 @@ struct cl_option
   const char *help;
   unsigned short back_chain;
   unsigned char opt_len;
+  int neg_index;
   unsigned int flags;
   void *flag_var;
   enum cl_var_type var_type;
@@ -84,6 +85,8 @@ extern const char **in_fnames;
 
 extern unsigned num_in_fnames;
 
+size_t find_opt (const char *input, int lang_mask);
+extern void prune_options (int *argcp, char ***argvp);
 extern void decode_options (unsigned int argc, const char **argv);
 extern int option_enabled (int opt_idx);
 extern bool get_option_state (int, struct cl_option_state *);

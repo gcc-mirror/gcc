@@ -1,3 +1,38 @@
+2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/26885
+	* Makefile.in (GCC_OBJS): New.
+	(OBJS-common): Add opts-common.o.
+	(xgcc$(exeext)): Replace gcc.o with $(GCC_OBJS).
+	(cpp$(exeext)): Likewise.
+	(gcc.o): Also depend on opts.h.
+	(opts-common.o): New.
+
+	* common.opt (gcoff): Add Negative(gdwarf-2).
+	(gdwarf-2): Add Negative(gstabs).
+	(gstabs): Add Negative(gstabs+).
+	(gstabs+): Add Negative(gvms).
+	(gvms): Add Negative(gxcoff).
+	(gxcoff): Add Negative(gxcoff+).
+	(gxcoff+): Add Negative(gcoff).
+	* config/i386/i386.opt (m32): Add Negative(m64).
+	(m64): Add Negative(m32).
+
+	* doc/options.texi: Document the Negative option.
+
+	* gcc.c: Include "opts.h".
+	(main): Call prune_options after expandargv.
+
+	* optc-gen.awk: Generate common declarations for all flag
+	variables in options.c. Output the neg_index field.
+
+	* opts.c (find_opt): Moved to ...
+	* opts-common.c: Here. New file.
+
+	* opts.h (cl_option): Add a neg_index field.
+	(find_opt): New.
+	(prune_options): Likewise.
+
 2006-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27573

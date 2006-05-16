@@ -1,3 +1,9 @@
+2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/26885
+	* Make-lang.in ($(GCJ)$(exeext)): Replace gcc.o with
+	$(GCC_OBJS).
+
 2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Make-lang.in (java/decl.o): Add dependency on $(TARGET_H).
