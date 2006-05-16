@@ -225,6 +225,9 @@ STATIC void *__JCR_LIST__[]
    in one DSO or the main program is not used in another object.  The
    dynamic linker takes care of this.  */
 
+#ifdef TARGET_LIBGCC_SDATA_SECTION
+extern void *__dso_handle __attribute__ ((__section__ (TARGET_LIBGCC_SDATA_SECTION)));
+#endif
 #ifdef HAVE_GAS_HIDDEN
 extern void *__dso_handle __attribute__ ((__visibility__ ("hidden")));
 #endif

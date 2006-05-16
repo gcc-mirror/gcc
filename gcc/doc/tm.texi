@@ -6217,6 +6217,18 @@ registers initialized in the function prologue or to ensure that
 constant pools don't end up too far way in the text section.
 @end defmac
 
+@defmac TARGET_LIBGCC_SDATA_SECTION
+If defined, a string which names the section into which small
+variables defined in crtstuff and libgcc should go.  This is useful
+when the target has options for optimizing access to small data, and
+you want the crtstuff and libgcc routines to be conservative in what
+they expect of your application yet liberal in what your application
+expects.  For example, for targets with a @code{.sdata} section (like
+MIPS), you could compile crtstuff with @code{-G 0} so that it doesn't
+require small data support from your application, but use this macro
+to put small data into @code{.sdata} so that your application can
+access these variables whether it uses small data or not.
+
 @defmac FORCE_CODE_SECTION_ALIGN
 If defined, an ASM statement that aligns a code section to some
 arbitrary boundary.  This is used to force all fragments of the

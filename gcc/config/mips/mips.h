@@ -466,6 +466,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #endif
 #endif /* IN_LIBGCC2 */
 
+#define TARGET_LIBGCC_SDATA_SECTION ".sdata"
+
 #ifndef MULTILIB_ENDIAN_DEFAULT
 #if TARGET_ENDIAN_DEFAULT == 0
 #define MULTILIB_ENDIAN_DEFAULT "EL"
