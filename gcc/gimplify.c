@@ -4750,7 +4750,6 @@ gimplify_omp_for (tree *expr_p, tree *pre_p)
   decl = TREE_OPERAND (t, 0);
   gcc_assert (DECL_P (decl));
   gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (decl)));
-  gcc_assert (!TYPE_UNSIGNED (TREE_TYPE (decl)));
 
   /* Make sure the iteration variable is private.  */
   if (omp_is_private (gimplify_omp_ctxp, decl))

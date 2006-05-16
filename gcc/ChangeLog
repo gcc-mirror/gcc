@@ -1,3 +1,9 @@
+2006-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/27499
+	* gimplify.c (gimplify_omp_for): Remove assertion that iteration var
+	is signed.
+
 2006-05-16  Andreas Schwab  <schwab@suse.de>
 
 	* doc/tm.texi (TARGET_LIBGCC_SDATA_SECTION): Add missing @end

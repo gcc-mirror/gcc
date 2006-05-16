@@ -1,3 +1,9 @@
+2006-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/27499
+	* gcc.dg/gomp/pr27499.c: New test.
+	* g++.dg/gomp/pr27499.C: New test.
+
 2006-05-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27339
