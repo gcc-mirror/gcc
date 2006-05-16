@@ -1,3 +1,7 @@
+2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/options.texi: Move the Negative option.
+
 2006-05-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/22303
