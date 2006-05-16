@@ -67,10 +67,10 @@ jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
 
 # Create the compiler driver for $(GCJ).
-$(GCJ)$(exeext): gcc.o jvspec.o version.o \
+$(GCJ)$(exeext): $(GCC_OBJS) jvspec.o version.o \
 	   prefix.o intl.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o jvspec.o prefix.o intl.o \
-	  version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) jvspec.o \
+	  prefix.o intl.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the $(GCJ) driver which calls the cross-compiler.
 $(GCJ)-cross$(exeext): $(GCJ)$(exeext)

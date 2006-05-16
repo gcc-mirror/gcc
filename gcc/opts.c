@@ -105,7 +105,6 @@ static bool flag_peel_loops_set, flag_branch_probabilities_set;
 const char **in_fnames;
 unsigned num_in_fnames;
 
-static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value,
 				 unsigned int lang_mask);
 static void handle_param (const char *);
@@ -123,90 +122,6 @@ static void print_filtered_help (unsigned int);
 static unsigned int print_switch (const char *text, unsigned int indent);
 static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg);
-
-/* Perform a binary search to find which option the command-line INPUT
-   matches.  Returns its index in the option array, and N_OPTS
-   (cl_options_count) on failure.
-
-   This routine is quite subtle.  A normal binary search is not good
-   enough because some options can be suffixed with an argument, and
-   multiple sub-matches can occur, e.g. input of "-pedantic" matching
-   the initial substring of "-pedantic-errors".
-
-   A more complicated example is -gstabs.  It should match "-g" with
-   an argument of "stabs".  Suppose, however, that the number and list
-   of switches are such that the binary search tests "-gen-decls"
-   before having tested "-g".  This doesn't match, and as "-gen-decls"
-   is less than "-gstabs", it will become the lower bound of the
-   binary search range, and "-g" will never be seen.  To resolve this
-   issue, opts.sh makes "-gen-decls" point, via the back_chain member,
-   to "-g" so that failed searches that end between "-gen-decls" and
-   the lexicographically subsequent switch know to go back and see if
-   "-g" causes a match (which it does in this example).
-
-   This search is done in such a way that the longest match for the
-   front end in question wins.  If there is no match for the current
-   front end, the longest match for a different front end is returned
-   (or N_OPTS if none) and the caller emits an error message.  */
-static size_t
-find_opt (const char *input, int lang_mask)
-{
-  size_t mn, mx, md, opt_len;
-  size_t match_wrong_lang;
-  int comp;
-
-  mn = 0;
-  mx = cl_options_count;
-
-  /* Find mn such this lexicographical inequality holds:
-     cl_options[mn] <= input < cl_options[mn + 1].  */
-  while (mx - mn > 1)
-    {
-      md = (mn + mx) / 2;
-      opt_len = cl_options[md].opt_len;
-      comp = strncmp (input, cl_options[md].opt_text + 1, opt_len);
-
-      if (comp < 0)
-	mx = md;
-      else
-	mn = md;
-    }
-
-  /* This is the switch that is the best match but for a different
-     front end, or cl_options_count if there is no match at all.  */
-  match_wrong_lang = cl_options_count;
-
-  /* Backtrace the chain of possible matches, returning the longest
-     one, if any, that fits best.  With current GCC switches, this
-     loop executes at most twice.  */
-  do
-    {
-      const struct cl_option *opt = &cl_options[mn];
-
-      /* Is the input either an exact match or a prefix that takes a
-	 joined argument?  */
-      if (!strncmp (input, opt->opt_text + 1, opt->opt_len)
-	  && (input[opt->opt_len] == '\0' || (opt->flags & CL_JOINED)))
-	{
-	  /* If language is OK, return it.  */
-	  if (opt->flags & lang_mask)
-	    return mn;
-
-	  /* If we haven't remembered a prior match, remember this
-	     one.  Any prior match is necessarily better.  */
-	  if (match_wrong_lang == cl_options_count)
-	    match_wrong_lang = mn;
-	}
-
-      /* Try the next possibility.  This is cl_options_count if there
-	 are no more.  */
-      mn = opt->back_chain;
-    }
-  while (mn != cl_options_count);
-
-  /* Return the best wrong match, or cl_options_count if none.  */
-  return match_wrong_lang;
-}
 
 /* If ARG is a non-negative integer made up solely of digits, return its
    value, otherwise return -1.  */

@@ -60,7 +60,7 @@ g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) $(CON
 		$(INCLUDES) $(srcdir)/cp/g++spec.c)
 
 # Create the compiler driver for g++.
-GXX_OBJS = gcc.o g++spec.o intl.o prefix.o version.o
+GXX_OBJS = $(GCC_OBJS) g++spec.o intl.o prefix.o version.o
 g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)

@@ -62,20 +62,27 @@ for (i = 1; i <= n_headers; i++)
 print "#include " quote "opts.h" quote
 print "#include " quote "intl.h" quote
 print ""
+print "int target_flags;"
+print ""
 
 for (i = 0; i < n_opts; i++) {
 	name = var_name(flags[i]);
 	if (name == "")
 		continue;
 
-	if (flag_set_p("VarExists", flags[i]))
-		continue;
-
-	init = opt_args("Init", flags[i])
-	if (init != "")
-		init = " = " init;
-	else if (name in var_seen)
-		continue;
+	if (flag_set_p("VarExists", flags[i])) {
+		# Need it for the gcc driver.
+		if (name in var_seen)
+			continue;
+		init = ""
+	}
+	else {
+		init = opt_args("Init", flags[i])
+		if (init != "")
+			init = " = " init;
+		else if (name in var_seen)
+			continue;
+	}
 
 	print "/* Set by -" opts[i] "."
 	print "   " help[i] "  */"
@@ -107,8 +114,21 @@ print "const unsigned int cl_options_count = N_OPTS;\n"
 
 print "const struct cl_option cl_options[] =\n{"
 
-for (i = 0; i < n_opts; i++)
+j = 0
+for (i = 0; i < n_opts; i++) {
 	back_chain[i] = "N_OPTS";
+	indices[opts[i]] = j;
+	# Combine the flags of identical switches.  Switches
+	# appear many times if they are handled by many front
+	# ends, for example.
+	while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
+		flags[i + 1] = flags[i] " " flags[i + 1];
+		i++;
+		back_chain[i] = "N_OPTS";
+		indices[opts[i]] = j;
+	}
+	j++;
+}
 
 for (i = 0; i < n_opts; i++) {
 	# Combine the flags of identical switches.  Switches
@@ -147,8 +167,21 @@ for (i = 0; i < n_opts; i++) {
 	else
 		hlp = quote help[i] quote;
 
-	printf("  { %c-%s%c,\n    %s,\n    %s, %u,\n",
-	       quote, opts[i], quote, hlp, back_chain[i], len)
+	neg = opt_args("Negative", flags[i]);
+	if (neg != "")
+		idx = indices[neg]
+	else {
+		if (flag_set_p("RejectNegative", flags[i]))
+			idx = -1;
+		else {
+			if (opts[i] ~ "^[Wfm]")
+				idx = indices[opts[i]];
+			else
+				idx = -1;
+		}
+	}
+	printf("  { %c-%s%c,\n    %s,\n    %s, %u, %d,\n",
+	       quote, opts[i], quote, hlp, back_chain[i], len, idx)
 	condition = opt_args("Condition", flags[i])
 	cl_flags = switch_flags(flags[i])
 	if (condition != "")

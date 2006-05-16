@@ -1,3 +1,9 @@
+2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/26885
+	* Make-lang.in (gtreelang$(exeext)): Replace gcc.o with
+	$(GCC_OBJS).
+
 2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Make-lang.in (treelang/treetree.o): Add dependency on

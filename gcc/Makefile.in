@@ -947,6 +947,9 @@ C_TARGET_OBJS=@c_target_objs@
 # Target specific, C++ specific object file
 CXX_TARGET_OBJS=@cxx_target_objs@
 
+# Object files for gcc driver.
+GCC_OBJS = gcc.o opts-common.o options.o
+
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
@@ -988,7 +991,7 @@ OBJS-common = \
  haifa-sched.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o insn-modes.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
- mode-switching.o modulo-sched.o optabs.o options.o opts.o	   \
+ mode-switching.o modulo-sched.o optabs.o options.o opts.o opts-common.o \
  params.o postreload.o postreload-gcse.o predict.o			   \
  insn-preds.o insn-automata.o pointer-set.o 			   	   \
  print-rtl.o print-tree.o profile.o value-prof.o var-tracking.o		   \
@@ -1292,18 +1295,18 @@ libbackend.a: $(OBJS@onestep@)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc$(exeext): gcc.o gccspec.o version.o intl.o prefix.o \
+xgcc$(exeext): $(GCC_OBJS) gccspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o gccspec.o intl.o \
-	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) gccspec.o \
+	  intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # cpp is to cpp0 as gcc is to cc1.
 # The only difference from xgcc is that it's linked with cppspec.o
 # instead of gccspec.o.
-cpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
+cpp$(exeext): $(GCC_OBJS) cppspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o cppspec.o intl.o \
-	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) cppspec.o \
+	  intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create links to binutils, especially for in-tree builds, to make -B.
 # use them.  We need hard links so that directories can be shuffled
@@ -1700,7 +1703,7 @@ DRIVER_DEFINES = \
 
 gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) specs.h prefix.h $(GCC_H) $(FLAGS_H) \
-    configargs.h $(OBSTACK_H)
+    configargs.h $(OBSTACK_H) opts.h
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
@@ -2117,6 +2120,8 @@ opts.o : opts.c opts.h options.h toplev.h $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_H) $(TM_H) langhooks.h $(GGC_H) $(RTL_H) \
    output.h $(DIAGNOSTIC_H) $(TM_P_H) $(INSN_ATTR_H) intl.h $(TARGET_H) \
    $(FLAGS_H) $(PARAMS_H) tree-pass.h
+opts-common.o : opts-common.c opts.h $(CONFIG_H) $(SYSTEM_H) \
+   coretypes.h intl.h
 targhooks.o : targhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(EXPR_H) $(TM_H) $(RTL_H) $(TM_P_H) $(FUNCTION_H) output.h toplev.h \
    $(MACHMODE_H) $(TARGET_DEF_H) $(TARGET_H) $(GGC_H) gt-targhooks.h

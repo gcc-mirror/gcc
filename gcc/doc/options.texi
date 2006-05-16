@@ -136,6 +136,13 @@ parser will set the variable to 1 when the positive form of the
 option is used and 0 when the ``no-'' form is used.
 
 @item
+If the option uses the @code{Negative} property, @var{var} is the
+the name of an option, with the leading ``-'' removed, which will be
+turned off when this option is turned on.  This chain action will
+propagate through the @code{Negative} property of the option to be
+turned off.
+
+@item
 If the option takes an argument and has the @code{UInteger} property,
 @var{var} is an integer variable that stores the value of the argument.
 
