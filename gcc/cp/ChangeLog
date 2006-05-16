@@ -1,5 +1,25 @@
 2006-05-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27339
+	* cp-tree.h (perform_access_checks): New function.
+	* semantics.c (perform_access_checks): New function.
+	(perform_deferred_access_checks): Use it.
+	* parser.c (cp_parser_simple_declaration): Adjust call to
+	cp_parser_init_declarator.
+	(cp_parser_type_parameter): Do not defer checks in default
+	arguments.
+	(cp_parser_explicit_specialization): Adjust call to
+	cp_parser_single_declaration.
+	(cp_parser_init_declarator): Perform template-parameter access
+	checks. 
+	(cp_parser_parameter_declaration): Do not defer checks for
+	template parameter default arguments.
+	(cp_parser_template_declaration_after_export): Gather access
+	checks for template parameters, and pass them to
+	cp_parser_single_declaration.
+	(cp_parser_template_parameter_access_checks): New function.
+	(cp_parser_single_declaration): Add checks parameter.
+
 	PR c++/27505
 	* call.c (convert_like_real): Convert bitfields to their declared
 	types when forming an rvalue.

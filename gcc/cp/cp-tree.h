@@ -4153,6 +4153,7 @@ extern void stop_deferring_access_checks	(void);
 extern void pop_deferring_access_checks		(void);
 extern tree get_deferred_access_checks		(void);
 extern void pop_to_parent_deferring_access_checks (void);
+extern void perform_access_checks               (tree);
 extern void perform_deferred_access_checks	(void);
 extern void perform_or_defer_access_check	(tree, tree);
 extern int stmts_are_full_exprs_p		(void);
