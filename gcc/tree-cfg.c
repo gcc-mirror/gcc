@@ -3145,13 +3145,12 @@ split_edge_bb_loc (edge edge_in)
 static basic_block
 tree_split_edge (edge edge_in)
 {
-  basic_block new_bb, after_bb, dest, src;
+  basic_block new_bb, after_bb, dest;
   edge new_edge, e;
 
   /* Abnormal edges cannot be split.  */
   gcc_assert (!(edge_in->flags & EDGE_ABNORMAL));
 
-  src = edge_in->src;
   dest = edge_in->dest;
 
   after_bb = split_edge_bb_loc (edge_in);

@@ -1,3 +1,7 @@
+2006-05-16  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-cfg.c (split_edge_bb_loc): Remove unused variable `src'.
+
 2006-05-15  Per Bothner  <per@bothner.com>
 
 	* tree.c: (last_annotated_node): Use sources_locus typedef.
