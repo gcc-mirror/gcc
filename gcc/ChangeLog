@@ -1,3 +1,14 @@
+2006-05-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c++/26757
+	* tree-dfa.c (struct walk_state): Remove.
+	(add_referenced_var): Change Parameters.
+	(find_referenced_vars): Done use a walk_state.
+	(find_vars_r): Unused parameter and change parms to add_referenced_var.
+	(referenced_var_insert): Assert same UID has not been inserted.
+	(add_referenced_var): Check if var exists via referenced_var table.
+	(get_virtual_var): Call add_referenced_var with new parameter.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/26885

@@ -65,19 +65,11 @@ struct dfa_stats_d
 };
 
 
-/* State information for find_vars_r.  */
-struct walk_state
-{
-  /* Hash table used to avoid adding the same variable more than once.  */
-  htab_t vars_found;
-};
-
-
 /* Local functions.  */
 static void collect_dfa_stats (struct dfa_stats_d *);
 static tree collect_dfa_stats_r (tree *, int *, void *);
 static tree find_vars_r (tree *, int *, void *);
-static void add_referenced_var (tree, struct walk_state *);
+static void add_referenced_var (tree, bool);
 
 
 /* Global declarations.  */
@@ -100,23 +92,16 @@ htab_t referenced_vars;
 static void
 find_referenced_vars (void)
 {
-  htab_t vars_found;
   basic_block bb;
   block_stmt_iterator si;
-  struct walk_state walk_state;
-
-  vars_found = htab_create (50, htab_hash_pointer, htab_eq_pointer, NULL);
-  memset (&walk_state, 0, sizeof (walk_state));
-  walk_state.vars_found = vars_found;
 
   FOR_EACH_BB (bb)
     for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
       {
 	tree *stmt_p = bsi_stmt_ptr (si);
-	walk_tree (stmt_p, find_vars_r, &walk_state, NULL);
+	walk_tree (stmt_p, find_vars_r, NULL, NULL);
       }
 
-  htab_delete (vars_found);
 }
 
 struct tree_opt_pass pass_referenced_vars =
@@ -551,14 +536,12 @@ collect_dfa_stats_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
    the function.  */
 
 static tree
-find_vars_r (tree *tp, int *walk_subtrees, void *data)
+find_vars_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
-  struct walk_state *walk_state = (struct walk_state *) data;
-
   /* If T is a regular variable that the optimizers are interested
      in, add it to the list of variables.  */
   if (SSA_VAR_P (*tp))
-    add_referenced_var (*tp, walk_state);
+    add_referenced_var (*tp, false);
 
   /* Type, _DECL and constant nodes have no interesting children.
      Ignore them.  */
@@ -610,6 +593,9 @@ referenced_var_insert (unsigned int uid, tree to)
   h->uid = uid;
   h->to = to;
   loc = htab_find_slot_with_hash (referenced_vars, h, uid, INSERT);
+  /* This assert can only trigger if a variable with the same UID has been 
+     inserted already.  */
+  gcc_assert ((*(struct int_tree_map **)loc) == NULL);
   *(struct int_tree_map **)  loc = h;
 }
 
@@ -621,25 +607,18 @@ referenced_var_insert (unsigned int uid, tree to)
       duplicate checking is done.  */
 
 static void
-add_referenced_var (tree var, struct walk_state *walk_state)
+add_referenced_var (tree var, bool always)
 {
-  void **slot;
   var_ann_t v_ann;
 
   v_ann = get_var_ann (var);
-
-  if (walk_state)
-    slot = htab_find_slot (walk_state->vars_found, (void *) var, INSERT);
-  else
-    slot = NULL;
-
-  if (slot == NULL || *slot == NULL)
+  gcc_assert (DECL_P (var));
+  
+  if (always || referenced_var_lookup_if_exists (DECL_UID (var)) == NULL_TREE)
     {
       /* This is the first time we find this variable, add it to the
          REFERENCED_VARS array and annotate it with attributes that are
 	 intrinsic to the variable.  */
-      if (slot)
-	*slot = (void *) var;
       
       referenced_var_insert (DECL_UID (var), var);
 
@@ -658,7 +637,7 @@ add_referenced_var (tree var, struct walk_state *walk_state)
 	     variables because it cannot be propagated by the
 	     optimizers.  */
 	  && (TREE_CONSTANT (var) || TREE_READONLY (var)))
-      	walk_tree (&DECL_INITIAL (var), find_vars_r, walk_state, 0);
+      	walk_tree (&DECL_INITIAL (var), find_vars_r, NULL, 0);
     }
 }
 
@@ -695,7 +674,7 @@ get_virtual_var (tree var)
 void
 add_referenced_tmp_var (tree var)
 {
-  add_referenced_var (var, NULL);
+  add_referenced_var (var, true);
 }
 
 
