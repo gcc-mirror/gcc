@@ -1,3 +1,8 @@
+2006-05-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27603
+	* gcc.dg/torture/pr27603.c: New testcase.
+
 2006-05-15  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20060515-1.c: New testcase.

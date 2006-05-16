@@ -1562,15 +1562,20 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 
 		    utype = unsigned_type_for (type);
 		    if (tree_int_cst_lt (step, integer_zero_node))
-		      diff = fold_build2 (MINUS_EXPR, utype, init,
+		      diff = fold_build2 (MINUS_EXPR, type, init,
 					  TYPE_MIN_VALUE (type));
 		    else
-		      diff = fold_build2 (MINUS_EXPR, utype,
+		      diff = fold_build2 (MINUS_EXPR, type,
 					  TYPE_MAX_VALUE (type), init);
 
-		    estimation = fold_build2 (CEIL_DIV_EXPR, utype, diff,
-					      step);
-		    record_estimate (loop, estimation, boolean_true_node, stmt);
+		    if (integer_nonzerop (step))
+		      {
+			estimation = fold_build2 (CEIL_DIV_EXPR, type, diff,
+						  step);
+			record_estimate (loop,
+					 fold_convert (utype, estimation),
+					 boolean_true_node, stmt);
+		      }
 		  }
 
 		break;
