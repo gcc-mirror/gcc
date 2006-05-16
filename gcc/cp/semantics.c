@@ -261,6 +261,21 @@ pop_to_parent_deferring_access_checks (void)
     }
 }
 
+/* Perform the access checks in CHECKS.  The TREE_PURPOSE of each node
+   is the BINFO indicating the qualifying scope used to access the
+   DECL node stored in the TREE_VALUE of the node.  */
+
+void
+perform_access_checks (tree checks)
+{
+  while (checks)
+    {
+      enforce_access (TREE_PURPOSE (checks),
+		      TREE_VALUE (checks));
+      checks = TREE_CHAIN (checks);
+    }
+}
+
 /* Perform the deferred access checks.
 
    After performing the checks, we still have to keep the list
@@ -280,14 +295,7 @@ pop_to_parent_deferring_access_checks (void)
 void
 perform_deferred_access_checks (void)
 {
-  tree deferred_check;
-
-  for (deferred_check = get_deferred_access_checks ();
-       deferred_check;
-       deferred_check = TREE_CHAIN (deferred_check))
-    /* Check access.  */
-    enforce_access (TREE_PURPOSE (deferred_check),
-		    TREE_VALUE (deferred_check));
+  perform_access_checks (get_deferred_access_checks ());
 }
 
 /* Defer checking the accessibility of DECL, when looked up in

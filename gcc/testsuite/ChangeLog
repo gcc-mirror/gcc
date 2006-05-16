@@ -1,3 +1,10 @@
+2006-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27339
+	* g++.dg/parser/access8.C: Adjust error marker.
+	* g++.dg/template/access17.C: New test.
+	* g++.dg/template/access18.C: Likewise.
+
 2006-05-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26600
