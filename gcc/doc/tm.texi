@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -6228,6 +6228,7 @@ MIPS), you could compile crtstuff with @code{-G 0} so that it doesn't
 require small data support from your application, but use this macro
 to put small data into @code{.sdata} so that your application can
 access these variables whether it uses small data or not.
+@end defmac
 
 @defmac FORCE_CODE_SECTION_ALIGN
 If defined, an ASM statement that aligns a code section to some
