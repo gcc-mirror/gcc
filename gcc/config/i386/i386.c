@@ -5934,6 +5934,18 @@ legitimate_constant_p (rtx x)
 	return false;
       break;
 
+    case CONST_DOUBLE:
+      if (GET_MODE (x) == TImode
+	  && x != CONST0_RTX (TImode)
+          && !TARGET_64BIT)
+	return false;
+      break;
+
+    case CONST_VECTOR:
+      if (x == CONST0_RTX (GET_MODE (x)))
+	return true;
+      return false;
+
     default:
       break;
     }
@@ -5949,6 +5961,17 @@ legitimate_constant_p (rtx x)
 static bool
 ix86_cannot_force_const_mem (rtx x)
 {
+  /* We can always put integral constants and vectors in memory.  */
+  switch (GET_CODE (x))
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_VECTOR:
+      return false;
+
+    default:
+      break;
+    }
   return !legitimate_constant_p (x);
 }
 

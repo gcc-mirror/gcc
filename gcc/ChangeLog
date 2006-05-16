@@ -1,3 +1,12 @@
+2006-05-15  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/26600
+	* config/i386/i386.c (legitimate_constant_p) <CONST_DOUBLE>: TImode
+	integer constants other than zero are only legitimate on TARGET_64BIT.
+	<CONST_VECTOR> Only zero vectors are legitimate.
+	(ix86_cannot_force_const_mem): Integral and vector constants can
+	always be put in the constant pool.
+
 2006-05-16  DJ Delorie  <dj@redhat.com>
 
 	* crtstuff.c (__dso_handle): Set section from
