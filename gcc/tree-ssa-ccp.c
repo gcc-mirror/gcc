@@ -1011,7 +1011,8 @@ fold_const_aggregate_ref (tree t)
 	}
 
       if (ctor == NULL_TREE
-	  || TREE_CODE (ctor) != CONSTRUCTOR
+	  || (TREE_CODE (ctor) != CONSTRUCTOR
+	      && TREE_CODE (ctor) != STRING_CST)
 	  || !TREE_STATIC (ctor))
 	return NULL_TREE;
 
@@ -1033,6 +1034,20 @@ fold_const_aggregate_ref (tree t)
 	  break;
 
 	default:
+	  return NULL_TREE;
+	}
+
+      /* Fold read from constant string.  */
+      if (TREE_CODE (ctor) == STRING_CST)
+	{
+	  if ((TYPE_MODE (TREE_TYPE (t))
+	       == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
+	      && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
+	          == MODE_INT)
+	      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
+	      && compare_tree_int (idx, TREE_STRING_LENGTH (ctor)) < 0)
+	    return build_int_cst (TREE_TYPE (t), (TREE_STRING_POINTER (ctor)
+					          [TREE_INT_CST_LOW (idx)]));
 	  return NULL_TREE;
 	}
 
@@ -1104,7 +1119,7 @@ static prop_value_t
 evaluate_stmt (tree stmt)
 {
   prop_value_t val;
-  tree simplified;
+  tree simplified = NULL_TREE;
   ccp_lattice_t likelyvalue = likely_value (stmt);
 
   val.mem_ref = NULL_TREE;
@@ -1115,14 +1130,14 @@ evaluate_stmt (tree stmt)
     simplified = ccp_fold (stmt);
   /* If the statement is likely to have a VARYING result, then do not
      bother folding the statement.  */
-  else if (likelyvalue == VARYING)
+  if (likelyvalue == VARYING)
     simplified = get_rhs (stmt);
   /* If the statement is an ARRAY_REF or COMPONENT_REF into constant
      aggregates, extract the referenced constant.  Otherwise the
      statement is likely to have an UNDEFINED value, and there will be
      nothing to do.  Note that fold_const_aggregate_ref returns
      NULL_TREE if the first case does not match.  */
-  else
+  else if (!simplified)
     simplified = fold_const_aggregate_ref (get_rhs (stmt));
 
   if (simplified && is_gimple_min_invariant (simplified))
