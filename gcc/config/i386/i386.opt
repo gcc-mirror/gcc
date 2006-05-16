@@ -24,7 +24,7 @@ Target RejectNegative Report Mask(128BIT_LONG_DOUBLE)
 sizeof(long double) is 16
 
 m32
-Target RejectNegative Report InverseMask(64BIT)
+Target RejectNegative Negative(m64) Report InverseMask(64BIT)
 Generate 32bit i386 code
 
 m386
@@ -40,7 +40,7 @@ Target RejectNegative Undocumented
 ;; Deprecated
 
 m64
-Target RejectNegative Report Mask(64BIT)
+Target RejectNegative Negative(m32) Report Mask(64BIT)
 Generate 64bit x86-64 code
 
 m80387
