@@ -1,3 +1,9 @@
+2006-05-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+        PR target/27599
+	* config.host (i[34567]86-*-mingw*): Append i386/x-mingw32 to
+	host_xmake_file.
+
 2006-05-16  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-cfg.c (split_edge_bb_loc): Remove unused variable `src'.

@@ -168,7 +168,7 @@ case ${host} in
     ;;
   i[34567]86-*-mingw32*)
     host_xm_file=i386/xm-mingw32.h
-    host_xmake_file=i386/x-mingw32
+    host_xmake_file="${host_xmake_file} i386/x-mingw32"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
     ;;
