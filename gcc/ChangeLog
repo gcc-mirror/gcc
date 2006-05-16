@@ -1,3 +1,11 @@
+2006-05-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22303
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Handle reads
+	from STRING_CSTs.
+	(evaluate_stmt): Fall back to fold_const_aggregate_ref, if
+	ccp_fold did not simplify the statement.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/26885
