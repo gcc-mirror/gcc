@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -2887,9 +2887,11 @@ verify_instructions_0 (void)
 	  invalidate_pc ();
 	  break;
 	case op_return:
-	  /* We only need to check this when the return type is
-	     void, because all instance initializers return void.  */
-	  if (this_is_init)
+	  /* We only need to check this when the return type is void,
+	     because all instance initializers return void.  We also
+	     need to special-case Object constructors, as they can't
+	     call a superclass <init>.  */
+	  if (this_is_init && vfr->current_class != vfy_object_type ())
 	    state_check_this_initialized (vfr->current_state);
 	  check_return_type (make_type (void_type));
 	  invalidate_pc ();
