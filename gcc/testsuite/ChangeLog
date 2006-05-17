@@ -1,3 +1,8 @@
+2006-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/27549
+	* g++.dg/tree-ssa/pr27549.C: New test.
+
 2006-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27575
