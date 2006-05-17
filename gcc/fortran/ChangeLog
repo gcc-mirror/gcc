@@ -1,3 +1,9 @@
+2006-05-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27320
+	* dump-parse-tree.c (gfc_show_code_node): Try harder to find the
+	called procedure name.
+
 2006-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27415
