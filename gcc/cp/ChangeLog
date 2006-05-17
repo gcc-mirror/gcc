@@ -1,5 +1,9 @@
 2006-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/27491
+	* semantics.c (finish_compound_literal): Only set TREE_HAS_CONSTRUCTOR
+	on CONSTRUCTORs.
+
 	PR middle-end/27415
 	* parser.c (cp_parser_omp_parallel): Set OMP_PARALLEL_COMBINED
 	on combined parallel workshare constructs.
