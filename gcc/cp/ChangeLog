@@ -1,3 +1,12 @@
+2006-05-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26068
+	* parser.c (cp_parser_set_storage_class): Check for 
+	invalid uses of storage classes on unbraced linkage
+	specifications.
+	(cp_parser_decl_specifier_seq): Pass keywords, not storage classes,
+	to cp_parser_set_storage_class.
+
 2006-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/27491

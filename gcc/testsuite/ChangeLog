@@ -1,3 +1,9 @@
+2006-05-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26068
+	* g++.dg/opt/pr17697-3.C: Remove invalid extern specifier.
+	* g++.dg/parse/linkage1.C: New test.
+
 2006-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/27548

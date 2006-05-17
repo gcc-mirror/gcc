@@ -2,7 +2,7 @@
 // { dg-do run }
 // { dg-options "-O2" }
 
-extern "C" extern int strcmp (const char *s, const char *t);
+extern "C" int strcmp (const char *s, const char *t);
 
 namespace A
 {
