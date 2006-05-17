@@ -119,7 +119,7 @@ fcompile-resource=
 Java Joined RejectNegative
 
 femit-class-file
-Java Var(flag_emit_class_files) VarExists
+Java Var(flag_emit_class_files)
 Output a class file
 
 femit-class-files

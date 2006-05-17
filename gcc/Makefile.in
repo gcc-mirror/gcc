@@ -948,7 +948,7 @@ C_TARGET_OBJS=@c_target_objs@
 CXX_TARGET_OBJS=@cxx_target_objs@
 
 # Object files for gcc driver.
-GCC_OBJS = gcc.o opts-common.o options.o
+GCC_OBJS = gcc.o opts-common.o gcc-options.o
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
@@ -1753,6 +1753,9 @@ s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opth-gen.awk
 	$(STAMP) $@
 
 options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) opts.h intl.h
+
+gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) opts.h intl.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(OUTPUT_OPTION) -DGCC_DRIVER options.c
 
 dumpvers: dumpvers.c
 
