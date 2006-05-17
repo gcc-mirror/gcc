@@ -5,6 +5,13 @@
 	of two sets into two individual sets if both sets reference
 	cc0.
 
+2006-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/arm/arm.opt (target_fpe_name): Remove VarExists.
+	* config/rs6000/rs6000.opt (TARGET_NO_FP_IN_TOC): Likewise.
+
+	* doc/options.texi (VarExists): Updated.
+
 2006-05-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* unwind-dw2.c: Add declarations for uw_update_context and
