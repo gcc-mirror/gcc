@@ -92,6 +92,10 @@ union unaligned
   signed s8 __attribute__ ((mode (DI)));
 } __attribute__ ((packed));
 
+static void uw_update_context (struct _Unwind_Context *, _Unwind_FrameState *);
+static _Unwind_Reason_Code uw_frame_state_for (struct _Unwind_Context *,
+					       _Unwind_FrameState *);
+
 static inline void *
 read_pointer (const void *p) { const union unaligned *up = p; return up->p; }
 

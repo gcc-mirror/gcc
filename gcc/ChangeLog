@@ -1,3 +1,10 @@
+2006-05-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* unwind-dw2.c: Add declarations for uw_update_context and
+	uw_frame_state_for.
+	* pa/hpux-unwind.h (pa_fallback_frame_state): When an export stub is
+	detected, advance frame state and context once to skip over stub.
+
 2006-05-17  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR middle-end/20256
