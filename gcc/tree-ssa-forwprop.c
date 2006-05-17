@@ -663,10 +663,15 @@ forward_propagate_addr_into_variable_array_index (tree offset, tree lhs,
    Try to forward propagate the ADDR_EXPR into the use USE_STMT.
    Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
    node or for recovery of array indexing from pointer arithmetic.
-   Return true, if the propagation was successful.  */
+   
+   CHANGED is an optional pointer to a boolean variable set to true if
+   either the LHS or RHS was changed in the USE_STMT.  
+
+   Return true if the propagation was successful (the propagation can
+   be not totally successful, yet things may have been changed).  */
 
 static bool
-forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
+forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
 {
   tree name = TREE_OPERAND (stmt, 0);
   tree lhs, rhs, array_ref;
@@ -686,6 +691,8 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
       TREE_OPERAND (lhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
+      if (changed)
+	*changed = true;
     }
 
   /* Trivial case.  The use statement could be a trivial copy.  We
@@ -699,6 +706,8 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
     {
       TREE_OPERAND (use_stmt, 1) = unshare_expr (TREE_OPERAND (stmt, 1));
       tidy_after_forward_propagate_addr (use_stmt);
+      if (changed)
+	*changed = true;
       return true;
     }
 
@@ -719,6 +728,8 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
       TREE_OPERAND (rhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
+      if (changed)
+	*changed = true;
       return true;
     }
 
@@ -751,6 +762,8 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
       if (fold_stmt_inplace (use_stmt))
 	{
 	  tidy_after_forward_propagate_addr (use_stmt);
+	  if (changed)
+	    *changed = true;
 	  return true;
 	}
       else
@@ -771,9 +784,14 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
 	 different type than their operands.  */
       && lang_hooks.types_compatible_p (TREE_TYPE (name), TREE_TYPE (rhs)))
     {
+      bool res;
       tree offset_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 1));
-      return forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
-							       stmt, use_stmt);
+      
+      res = forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
+							      stmt, use_stmt);
+      if (res && changed)
+	*changed = true;
+      return res;
     }
 	      
   /* Same as the previous case, except the operands of the PLUS_EXPR
@@ -784,9 +802,13 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
 	 different type than their operands.  */
       && lang_hooks.types_compatible_p (TREE_TYPE (name), TREE_TYPE (rhs)))
     {
+      bool res;
       tree offset_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
-      return forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
-							       stmt, use_stmt);
+      res = forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
+							      stmt, use_stmt);
+      if (res && changed)
+	*changed = true;
+      return res;
     }
   return false;
 }
@@ -830,9 +852,8 @@ forward_propagate_addr_expr (tree stmt, bool *some)
 	  continue;
 	}
       
-      result = forward_propagate_addr_expr_1 (stmt, use_stmt);
-      if (some)
-	*some |= result;
+      result = forward_propagate_addr_expr_1 (stmt, use_stmt, some);
+      *some |= result;
       all &= result;
     }
 

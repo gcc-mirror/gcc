@@ -1,3 +1,9 @@
+2006-05-16  Daniel Berlin <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/27373
+	* tree-ssa-forwprop.c: (forward_propagate_addr_expr_1): Add argument.
+	 (forward_propagate_addr_expr): Update call.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/options.texi: Move the Negative option.
