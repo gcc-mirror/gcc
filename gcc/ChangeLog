@@ -1,3 +1,8 @@
+2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR middle-end/27620
+	* expr.c (safe_from_p): Handle CONSTRUCTOR again.
+
 2006-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27415
