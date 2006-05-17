@@ -1,3 +1,8 @@
+2006-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27575
+	* gfortran.dg/read_eof_4.f90:  New test.
+
 2006-05-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/22303
