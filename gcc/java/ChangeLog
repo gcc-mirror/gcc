@@ -1,5 +1,9 @@
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* lang.opt (femit-class-file): Remove VarExists.
+
+2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR driver/26885
 	* Make-lang.in ($(GCJ)$(exeext)): Replace gcc.o with
 	$(GCC_OBJS).
