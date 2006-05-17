@@ -62,39 +62,24 @@ for (i = 1; i <= n_headers; i++)
 print "#include " quote "opts.h" quote
 print "#include " quote "intl.h" quote
 print ""
-print "#ifdef GCC_DRIVER"
-print "int target_flags;"
-print "#endif /* GCC_DRIVER */"
-print ""
 
 for (i = 0; i < n_opts; i++) {
 	name = var_name(flags[i]);
 	if (name == "")
 		continue;
 
-	if (flag_set_p("VarExists", flags[i])) {
-		# Need it for the gcc driver.
-		if (name in var_seen)
-			continue;
-		init = ""
-		gcc_driver = 1
-	}
-	else {
-		init = opt_args("Init", flags[i])
-		if (init != "")
-			init = " = " init;
-		else if (name in var_seen)
-			continue;
-		gcc_driver = 0
-	}
+	if (flag_set_p("VarExists", flags[i]))
+		continue;
 
-	if (gcc_driver == 1)
-		print "#ifdef GCC_DRIVER"
+	init = opt_args("Init", flags[i])
+	if (init != "")
+		init = " = " init;
+	else if (name in var_seen)
+		continue;
+
 	print "/* Set by -" opts[i] "."
 	print "   " help[i] "  */"
 	print var_type(flags[i]) name init ";"
-	if (gcc_driver == 1)
-		print "#endif /* GCC_DRIVER */"
 	print ""
 
 	var_seen[name] = 1;
@@ -122,21 +107,8 @@ print "const unsigned int cl_options_count = N_OPTS;\n"
 
 print "const struct cl_option cl_options[] =\n{"
 
-j = 0
-for (i = 0; i < n_opts; i++) {
+for (i = 0; i < n_opts; i++)
 	back_chain[i] = "N_OPTS";
-	indices[opts[i]] = j;
-	# Combine the flags of identical switches.  Switches
-	# appear many times if they are handled by many front
-	# ends, for example.
-	while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
-		flags[i + 1] = flags[i] " " flags[i + 1];
-		i++;
-		back_chain[i] = "N_OPTS";
-		indices[opts[i]] = j;
-	}
-	j++;
-}
 
 for (i = 0; i < n_opts; i++) {
 	# Combine the flags of identical switches.  Switches
@@ -175,21 +147,8 @@ for (i = 0; i < n_opts; i++) {
 	else
 		hlp = quote help[i] quote;
 
-	neg = opt_args("Negative", flags[i]);
-	if (neg != "")
-		idx = indices[neg]
-	else {
-		if (flag_set_p("RejectNegative", flags[i]))
-			idx = -1;
-		else {
-			if (opts[i] ~ "^[Wfm]")
-				idx = indices[opts[i]];
-			else
-				idx = -1;
-		}
-	}
-	printf("  { %c-%s%c,\n    %s,\n    %s, %u, %d,\n",
-	       quote, opts[i], quote, hlp, back_chain[i], len, idx)
+	printf("  { %c-%s%c,\n    %s,\n    %s, %u,\n",
+	       quote, opts[i], quote, hlp, back_chain[i], len)
 	condition = opt_args("Condition", flags[i])
 	cl_flags = switch_flags(flags[i])
 	if (condition != "")

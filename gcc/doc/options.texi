@@ -100,12 +100,6 @@ The option does not have a ``no-'' form.  All options beginning with
 ``f'', ``W'' or ``m'' are assumed to have a ``no-'' form unless this
 property is used.
 
-@item Negative(@var{othername})
-The option will turn off another option @var{othername}, which is the
-the option name with the leading ``-'' removed.  This chain action will
-propagate through the @code{Negative} property of the option to be
-turned off.
-
 @item Joined
 @itemx Separate
 The option takes a mandatory argument.  @code{Joined} indicates
