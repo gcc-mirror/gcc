@@ -452,16 +452,9 @@ check_member_template (tree tmpl)
 	error ("invalid declaration of member template %q#D in local class",
 	       decl);
 
-      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
-	{
-	  /* 14.5.2.3 [temp.mem]
-
-	     A member function template shall not be virtual.  */
-	  error
-	    ("invalid use of %<virtual%> in template declaration of %q#D",
-	     decl);
-	  DECL_VIRTUAL_P (decl) = 0;
-	}
+      /* The parser rejects any use of virtual in a function template.  */
+      gcc_assert (!(TREE_CODE (decl) == FUNCTION_DECL
+		    && DECL_VIRTUAL_P (decl)));
 
       /* The debug-information generating code doesn't know what to do
 	 with member templates.  */

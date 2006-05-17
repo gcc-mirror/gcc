@@ -7664,7 +7664,12 @@ cp_parser_function_specifier_opt (cp_parser* parser,
       break;
 
     case RID_VIRTUAL:
-      if (decl_specs)
+      /* 14.5.2.3 [temp.mem]
+	 
+         A member function template shall not be virtual.  */
+      if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+	error ("templates may not be %<virtual%>");
+      else if (decl_specs)
 	++decl_specs->specs[(int) ds_virtual];
       break;
 
@@ -13864,12 +13869,20 @@ cp_parser_pure_specifier (cp_parser* parser)
   /* Look for the `0' token.  */
   token = cp_lexer_consume_token (parser->lexer);
   /* c_lex_with_flags marks a single digit '0' with PURE_ZERO.  */
-  if (token->type == CPP_NUMBER && (token->flags & PURE_ZERO))
-    return integer_zero_node;
+  if (token->type != CPP_NUMBER || !(token->flags & PURE_ZERO))
+    {
+      cp_parser_error (parser, 
+		       "invalid pure specifier (only `= 0' is allowed)");
+      cp_parser_skip_to_end_of_statement (parser);
+      return error_mark_node;
+    }
+  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+    {
+      error ("templates may not be %<virtual%>");
+      return error_mark_node;
+    }
 
-  cp_parser_error (parser, "invalid pure specifier (only `= 0' is allowed)");
-  cp_parser_skip_to_end_of_statement (parser);
-  return error_mark_node;
+  return integer_zero_node;
 }
 
 /* Parse a constant-initializer.
