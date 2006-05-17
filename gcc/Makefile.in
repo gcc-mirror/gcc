@@ -397,7 +397,10 @@ NATIVE_SYSTEM_HEADER_DIR = /usr/include
 CROSS_SYSTEM_HEADER_DIR = @CROSS_SYSTEM_HEADER_DIR@
 
 # autoconf sets SYSTEM_HEADER_DIR to one of the above.
-SYSTEM_HEADER_DIR = @SYSTEM_HEADER_DIR@
+# Purge it of unneccessary internal relative paths
+# to directories that might not exist yet.
+# The sed idiom for this is to repeat the search-and-replace until it doesn't match, using :a ... ta.
+SYSTEM_HEADER_DIR = `echo @SYSTEM_HEADER_DIR@ | sed -e :a -e "s,[^/]*/\.\.\/,," -e ta`
 
 # Control whether to run fixproto and fixincludes.
 STMP_FIXPROTO = @STMP_FIXPROTO@
@@ -3211,13 +3214,16 @@ s-macro_list : $(GCC_PASSES)
 ../$(build_subdir)/fixincludes/fixincl: ; @ :
 
 # Build fixed copies of system files.
+# Abort if no system headers available, unless building a crosscompiler.
+# FIXME: abort unless building --without-headers would be more accurate and less ugly
 stmp-fixinc: gsyslimits.h macro_list \
   $(build_objdir)/fixincludes/fixincl \
   $(build_objdir)/fixincludes/fixinc.sh
 	@if ! $(inhibit_libc) && test ! -d ${SYSTEM_HEADER_DIR}; then \
 	  echo The directory that should contain system headers does not exist: >&2 ; \
 	  echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
-	  if test "x${SYSTEM_HEADER_DIR}" = "x${gcc_tooldir}/sys-include"; \
+	  tooldir_sysinc=`echo "${gcc_tooldir}/sys-include" | sed -e :a -e "s,[^/]*/\.\.\/,," -e ta`; \
+	  if test "x${SYSTEM_HEADER_DIR}" = "x${tooldir_sysinc}"; \
 	  then sleep 1; else exit 1; fi; \
 	fi
 	rm -rf include; mkdir include
