@@ -2033,7 +2033,8 @@ finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
     }
 
   /* Mark it as a compound-literal.  */
-  TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+  if (TREE_CODE (compound_literal) == CONSTRUCTOR)
+    TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
 
   return compound_literal;
 }
