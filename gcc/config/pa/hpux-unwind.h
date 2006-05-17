@@ -155,7 +155,11 @@ pa_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.reg[0].how = REG_SAVED_OFFSET;
       fs->regs.reg[0].loc.offset = -24;
 
-      return _URC_NO_REASON;
+      /* Update context to describe the stub frame.  */
+      uw_update_context (context, fs);
+
+      /* Set up fs to describe the FDE for the caller of this stub.  */
+      return uw_frame_state_for (context, fs);
     }
   /* Check if the return address points to a relocation stub.  */
   else if (!TARGET_64BIT
@@ -171,7 +175,11 @@ pa_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.reg[0].how = REG_SAVED_OFFSET;
       fs->regs.reg[0].loc.offset = -8;
 
-      return _URC_NO_REASON;
+      /* Update context to describe the stub frame.  */
+      uw_update_context (context, fs);
+
+      /* Set up fs to describe the FDE for the caller of this stub.  */
+      return uw_frame_state_for (context, fs);
     }
 
   /* Check if the return address is an export stub as signal handlers
