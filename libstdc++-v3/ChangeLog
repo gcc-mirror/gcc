@@ -1,3 +1,12 @@
+2006-05-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/hashtable (hashtable<>::m_find): Remove; update callers.
+
+	* include/tr1/hashtable (map_base<>::operator[]): Move out of line.
+
+	* include/tr1/hashtable (hashtable<>::m_insert(const value_type&,
+	std::tr1::false_type)): Avoid memory leak risk for new_node.
+
 2006-05-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/hashtable (hashtable<>::m_find, m_insert_bucket): Add.
