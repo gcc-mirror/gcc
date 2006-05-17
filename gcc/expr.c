@@ -5974,6 +5974,19 @@ safe_from_p (rtx x, tree exp, int top_p)
 		return safe_from_p (x, exp, 0);
 	    }
 	}
+      else if (TREE_CODE (exp) == CONSTRUCTOR)
+	{
+	  constructor_elt *ce;
+	  unsigned HOST_WIDE_INT idx;
+
+	  for (idx = 0;
+	       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (exp), idx, ce);
+	       idx++)
+	    if ((ce->index != NULL_TREE && !safe_from_p (x, ce->index, 0))
+		|| !safe_from_p (x, ce->value, 0))
+	      return 0;
+	  return 1;
+	}
       else if (TREE_CODE (exp) == ERROR_MARK)
 	return 1;	/* An already-visited SAVE_EXPR? */
       else
