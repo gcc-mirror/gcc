@@ -5635,13 +5635,12 @@ variably_modified_type_p (tree type, tree fn)
      When a representation is chosen, this function should be modified
      to test for that case as well.  */
   RETURN_TRUE_IF_VAR (TYPE_SIZE (type));
-  RETURN_TRUE_IF_VAR (TYPE_SIZE_UNIT(type));
+  RETURN_TRUE_IF_VAR (TYPE_SIZE_UNIT (type));
 
   switch (TREE_CODE (type))
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-    case ARRAY_TYPE:
     case VECTOR_TYPE:
       if (variably_modified_type_p (TREE_TYPE (type), fn))
 	return true;
@@ -5689,6 +5688,13 @@ variably_modified_type_p (tree type, tree fn)
 	      RETURN_TRUE_IF_VAR (DECL_QUALIFIER (t));
 	  }
 	break;
+
+    case ARRAY_TYPE:
+      /* Do not call ourselves to avoid infinite recursion.  This is
+	 variably modified if the element type is.  */
+      RETURN_TRUE_IF_VAR (TYPE_SIZE (TREE_TYPE (type)));
+      RETURN_TRUE_IF_VAR (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+      break;
 
     default:
       break;
