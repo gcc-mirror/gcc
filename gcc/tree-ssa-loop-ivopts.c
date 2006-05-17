@@ -678,7 +678,7 @@ idx_contains_abnormal_ssa_name_p (tree base, tree *index,
 /* Returns true if EXPR contains a ssa name that occurs in an
    abnormal phi node.  */
 
-static bool
+bool
 contains_abnormal_ssa_name_p (tree expr)
 {
   enum tree_code code;
