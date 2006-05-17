@@ -1,3 +1,11 @@
+2006-05-17  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27548
+	* tree-scalar-evolution.c (scev_const_prop): Do not prolong life
+	range of ssa names that appear on abnormal edges.
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Export.
+	* tree-flow.h (contains_abnormal_ssa_name_p): Declare.
+
 2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR middle-end/27620

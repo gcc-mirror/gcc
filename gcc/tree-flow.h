@@ -842,6 +842,7 @@ bool can_unroll_loop_p (struct loop *loop, unsigned factor,
 			struct tree_niter_desc *niter);
 void tree_unroll_loop (struct loops *, struct loop *, unsigned,
 		       edge, struct tree_niter_desc *);
+bool contains_abnormal_ssa_name_p (tree);
 
 /* In tree-ssa-threadedge.c */
 extern bool potentially_threadable_block (basic_block);
