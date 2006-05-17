@@ -115,7 +115,7 @@ public final class Class implements Serializable
   private static Class forName (String className, Class caller)
     throws ClassNotFoundException
   {
-    return forName(className, true, caller.getClassLoader());
+    return forName(className, true, caller.getClassLoaderInternal());
   }
 
 
@@ -192,10 +192,19 @@ public final class Class implements Serializable
    * @see RuntimePermission
    */
   public native ClassLoader getClassLoader ();
-  
+
   // A private internal method that is called by compiler-generated code.
   private final native ClassLoader getClassLoader (Class caller);
-  
+
+  /**
+   *  Internal method that circumvents the usual security checks when 
+   *  getting the class loader.
+   */
+  private ClassLoader getClassLoaderInternal ()
+  {
+    return loader;
+  }
+
   /**
    * If this is an array, get the Class representing the type of array.
    * Examples: "[[Ljava.lang.String;" would return "[Ljava.lang.String;", and
@@ -473,7 +482,7 @@ public final class Class implements Serializable
    */
   public Package getPackage()
   {
-    ClassLoader cl = getClassLoader();
+    ClassLoader cl = getClassLoaderInternal();
     if (cl != null)
       return cl.getPackage(getPackagePortion(getName()));
     else
@@ -616,7 +625,7 @@ public final class Class implements Serializable
   public URL getResource(String resourceName)
   {
     String name = resourcePath(resourceName);
-    ClassLoader loader = getClassLoader();
+    ClassLoader loader = getClassLoaderInternal();
     if (loader == null)
       return ClassLoader.getSystemResource(name);
     return loader.getResource(name);
@@ -644,7 +653,7 @@ public final class Class implements Serializable
   public InputStream getResourceAsStream(String resourceName)
   {
     String name = resourcePath(resourceName);
-    ClassLoader loader = getClassLoader();
+    ClassLoader loader = getClassLoaderInternal();
     if (loader == null)
       return ClassLoader.getSystemResourceAsStream(name);
     return loader.getResourceAsStream(name);
@@ -839,7 +848,7 @@ public final class Class implements Serializable
    */
   public boolean desiredAssertionStatus()
   {
-    ClassLoader c = getClassLoader();
+    ClassLoader c = getClassLoaderInternal();
     Object status;
     if (c == null)
       return VMClassLoader.defaultAssertionStatus();
