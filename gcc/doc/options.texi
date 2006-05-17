@@ -169,8 +169,8 @@ The variable specified by the @code{Var} property already exists.
 No definition should be added to @file{options.c} in response to
 this option record.
 
-You should use this property if an earlier option has already declared
-the variable or if the variable is declared outside @file{options.c}.
+You should use this property only if the variable is declared outside
+@file{options.c}.
 
 @item Init(@var{value})
 The variable specified by the @code{Var} property should be statically

@@ -77,7 +77,7 @@ Target RejectNegative Joined Var(target_float_abi_name)
 Specify if floating point hardware should be used
 
 mfp=
-Target RejectNegative Joined Undocumented Var(target_fpe_name) VarExists
+Target RejectNegative Joined Undocumented Var(target_fpe_name)
 
 ;; Now ignored.
 mfpe
