@@ -1,3 +1,20 @@
+2006-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/27549
+	Backported from mainline
+
+	2006-05-01  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/27283
+	* tree-ssa-loop-ivopts.c (struct nfe_cache_elt): Store just trees,
+	not whole # of iteration descriptions.
+	(niter_for_exit): Return just # of iterations.  Fail if # of iterations
+	uses abnormal ssa name.
+	(niter_for_single_dom_exit): Ditto.
+	(find_induction_variables, may_eliminate_iv): Expect niter_for_exit to
+	return just the number of iterations.
+	(add_iv_outer_candidates, may_replace_final_value): Likewise.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (GCC_OBJS): Replace options.o with gcc-options.o.

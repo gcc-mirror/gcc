@@ -1,3 +1,13 @@
+2006-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/27549
+	* g++.dg/tree-ssa/pr27549.C: New test.
+
+	Backported from mainline
+	2006-05-01  Zdenek Dvorak  <dvorakz@suse.cz>
+	PR tree-optimization/27283
+	* g++.dg/tree-ssa/pr27283.C: New test.
+
 2006-05-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26600
