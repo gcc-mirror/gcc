@@ -1,3 +1,8 @@
+2006-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (variably_modified_type_p) <ARRAY_TYPE>: Return true
+	if the element type is variably modified without recursing.
+
 2006-05-17  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR middle-end/27332
