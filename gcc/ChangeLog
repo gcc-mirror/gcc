@@ -1,3 +1,20 @@
+2006-05-17  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR middle-end/20256
+	PR middle-end/26435
+	* tree-loop-linear.c (linear_transform_loops): Don't test perfect_nest_p.
+	Call rewrite_into_loop_closed_ssa only when something changed.
+	* lambda.h (gcc_loopnest_to_lambda_loopnest): Update declaration.
+	* lambda-code.c (can_convert_to_perfect_nest): Declared.
+	(gcc_loopnest_to_lambda_loopnest): Removed need_perfect_nest parameter.
+	Test for perfect_nest_p here.  Fix formating.
+	(replace_uses_equiv_to_x_with_y): Fix formating.
+	(stmt_uses_op): Removed.
+	(can_convert_to_perfect_nest): Removed loopivs parameter.
+	Complete the test by checking the scalar dependences.
+	(perfect_nestify): Remove the test for can_convert_to_perfect_nest.
+	Fix formating.
+
 2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR bootstrap/22541

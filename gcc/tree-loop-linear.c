@@ -241,6 +241,7 @@ try_interchange_loops (lambda_trans_matrix trans,
 void
 linear_transform_loops (struct loops *loops)
 {
+  bool modified = false;
   unsigned int i;
   VEC(tree,heap) *oldivs = NULL;
   VEC(tree,heap) *invariants = NULL;
@@ -255,7 +256,6 @@ linear_transform_loops (struct loops *loops)
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
       bool problem = false;
-      bool need_perfect_nest = false;
       /* If it's not a loop nest, we don't want it.
          We also don't handle sibling loops properly, 
          which are loops of the following form:
@@ -319,13 +319,9 @@ linear_transform_loops (struct loops *loops)
 	  continue;
 	}
 
-      if (!perfect_nest_p (loop_nest))
-	need_perfect_nest = true;
+      before = gcc_loopnest_to_lambda_loopnest (loops, loop_nest, &oldivs,
+						&invariants);
 
-      before = gcc_loopnest_to_lambda_loopnest (loops,
-						loop_nest, &oldivs, 
-						&invariants,
-						need_perfect_nest);
       if (!before)
 	continue;
             
@@ -345,6 +341,7 @@ linear_transform_loops (struct loops *loops)
 
       lambda_loopnest_to_gcc_loopnest (loop_nest, oldivs, invariants,
 				       after, trans);
+      modified = true;
 
       if (dump_file)
 	fprintf (dump_file, "Successfully transformed loop.\n");
@@ -356,5 +353,7 @@ linear_transform_loops (struct loops *loops)
   VEC_free (tree, heap, oldivs);
   VEC_free (tree, heap, invariants);
   scev_reset ();
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_full_phi);
+
+  if (modified)
+    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_full_phi);
 }
