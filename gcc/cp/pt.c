@@ -8456,7 +8456,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				args, complain, in_decl);
       stmt = begin_omp_parallel ();
       tsubst_expr (OMP_PARALLEL_BODY (t), args, complain, in_decl);
-      finish_omp_parallel (tmp, stmt);
+      OMP_PARALLEL_COMBINED (finish_omp_parallel (tmp, stmt))
+	= OMP_PARALLEL_COMBINED (t);
       break;
 
     case OMP_FOR:

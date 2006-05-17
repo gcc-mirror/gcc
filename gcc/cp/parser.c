@@ -18842,7 +18842,10 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok)
     }
 
   cp_parser_end_omp_structured_block (parser, save);
-  return finish_omp_parallel (par_clause, block);
+  stmt = finish_omp_parallel (par_clause, block);
+  if (p_kind != PRAGMA_OMP_PARALLEL)
+    OMP_PARALLEL_COMBINED (stmt) = 1;
+  return stmt;
 }
 
 /* OpenMP 2.5:

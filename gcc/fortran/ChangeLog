@@ -1,3 +1,10 @@
+2006-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27415
+	* trans-openmp.c (gfc_trans_omp_parallel_do,
+	gfc_trans_omp_parallel_sections, gfc_trans_omp_parallel_workshare): Set
+	OMP_PARALLEL_COMBINED flag.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/26885

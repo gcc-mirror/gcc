@@ -1,5 +1,11 @@
 2006-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/27415
+	* gcc.dg/gomp/pr27415.c: New test.
+	* g++.dg/gomp/pr27415.C: New test.
+
+2006-05-17  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/27549
 	* g++.dg/tree-ssa/pr27549.C: New test.
 
