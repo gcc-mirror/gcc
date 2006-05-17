@@ -1,3 +1,9 @@
+2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR bootstrap/22541
+	From Dan Kegel <dank@kegel.com>:
+	* Makefile.in: Strip "dir/../" combinations from SYSTEM_INCLUDE_DIR.
+
 2006-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (variably_modified_type_p) <ARRAY_TYPE>: Return true
