@@ -7,5 +7,5 @@
 
 struct foo {
   template <class>
-  void bar() = 0; // { dg-error "" "" { xfail *-*-* } } invalid initializer - 
+  void bar() = 0; // { dg-error "virtual" }
 };
