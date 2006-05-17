@@ -1,3 +1,10 @@
+2006-05-17  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR rtl-optimization/27477
+	* combine.c (try_combine): Don't split a parallel consisting
+	of two sets into two individual sets if both sets reference
+	cc0.
+
 2006-05-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* unwind-dw2.c: Add declarations for uw_update_context and

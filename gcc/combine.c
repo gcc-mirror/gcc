@@ -2896,7 +2896,14 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 0)),
 				  XVECEXP (newpat, 0, 1))
 	   && ! (contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 0)))
-		 && contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 1)))))
+		 && contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 1))))
+#ifdef HAVE_cc0
+	   /* We cannot split the parallel into two sets if both sets
+	      reference cc0.  */
+	   && ! (reg_referenced_p (cc0_rtx, XVECEXP (newpat, 0, 0))
+		 && reg_referenced_p (cc0_rtx, XVECEXP (newpat, 0, 1)))
+#endif
+	   )
     {
       /* Normally, it doesn't matter which of the two is done first,
 	 but it does if one references cc0.  In that case, it has to
