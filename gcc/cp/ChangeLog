@@ -1,3 +1,9 @@
+2006-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/27491
+	* semantics.c (finish_compound_literal): Only set TREE_HAS_CONSTRUCTOR
+	on CONSTRUCTORs.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/26885
