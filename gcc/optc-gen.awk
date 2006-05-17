@@ -62,7 +62,9 @@ for (i = 1; i <= n_headers; i++)
 print "#include " quote "opts.h" quote
 print "#include " quote "intl.h" quote
 print ""
+print "#ifdef GCC_DRIVER"
 print "int target_flags;"
+print "#endif /* GCC_DRIVER */"
 print ""
 
 for (i = 0; i < n_opts; i++) {
@@ -75,6 +77,7 @@ for (i = 0; i < n_opts; i++) {
 		if (name in var_seen)
 			continue;
 		init = ""
+		gcc_driver = 1
 	}
 	else {
 		init = opt_args("Init", flags[i])
@@ -82,11 +85,16 @@ for (i = 0; i < n_opts; i++) {
 			init = " = " init;
 		else if (name in var_seen)
 			continue;
+		gcc_driver = 0
 	}
 
+	if (gcc_driver == 1)
+		print "#ifdef GCC_DRIVER"
 	print "/* Set by -" opts[i] "."
 	print "   " help[i] "  */"
 	print var_type(flags[i]) name init ";"
+	if (gcc_driver == 1)
+		print "#endif /* GCC_DRIVER */"
 	print ""
 
 	var_seen[name] = 1;

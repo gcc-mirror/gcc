@@ -1,3 +1,7 @@
+2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lang.opt (femit-class-file): Remove VarExists.
+
 2006-05-16  Tom Tromey  <tromey@redhat.com>
 
 	* verify-impl.c (verify_instructions_0) <op_return>: Special case

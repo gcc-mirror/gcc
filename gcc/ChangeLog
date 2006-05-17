@@ -1,3 +1,11 @@
+2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (GCC_OBJS): Replace options.o with gcc-options.o.
+	(gcc-options.o): New rule.
+
+	* optc-gen.awk: Protect variables for gcc-options.o with
+	#ifdef GCC_DRIVER/#endif.
+
 2006-05-16  Daniel Berlin <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/27373
