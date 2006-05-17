@@ -443,6 +443,8 @@ struct tree_common GTY(())
 	   OMP_RETURN
        OMP_SECTION_LAST in
 	   OMP_SECTION
+       OMP_PARALLEL_COMBINED in
+	   OMP_PARALLEL
 
    protected_flag:
 
@@ -1582,6 +1584,11 @@ struct tree_constructor GTY(())
    with which this return is associated.  */
 #define OMP_RETURN_NOWAIT(NODE) \
   TREE_PRIVATE (OMP_RETURN_CHECK (NODE))
+
+/* True on an OMP_PARALLEL statement if it represents an explicit
+   combined parallel work-sharing constructs.  */
+#define OMP_PARALLEL_COMBINED(NODE) \
+  TREE_PRIVATE (OMP_PARALLEL_CHECK (NODE))
 
 /* True on a PRIVATE clause if its decl is kept around for debugging
    information only and its DECL_VALUE_EXPR is supposed to point

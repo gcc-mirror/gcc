@@ -1,3 +1,18 @@
+2006-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27415
+	* tree.h (OMP_PARALLEL_COMBINED): Define.
+	* gimplify.c (struct gimplify_omp_ctx): Add is_combined_parallel field.
+	(new_omp_context): Add is_combined_parallel argument.
+	(gimplify_scan_omp_clauses): Add in_combined_parallel argument, adjust
+	new_omp_context caller.
+	(gimplify_omp_parallel, gimplify_omp_for, gimplify_omp_workshare):
+	Adjust gimplify_scan_omp_clauses callers.
+	(omp_is_private): Issue errors if iteration variable is firstprivate
+	or reduction in the current context.
+	* c-parser.c (c_parser_omp_parallel): Set OMP_PARALLEL_COMBINED
+	on combined parallel workshare constructs.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (GCC_OBJS): Replace options.o with gcc-options.o.

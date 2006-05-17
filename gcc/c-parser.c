@@ -7651,6 +7651,7 @@ c_parser_omp_parallel (c_parser *parser)
       if (stmt)
 	OMP_FOR_CLAUSES (stmt) = ws_clause;
       stmt = c_finish_omp_parallel (par_clause, block);
+      OMP_PARALLEL_COMBINED (stmt) = 1;
       break;
 
     case PRAGMA_OMP_PARALLEL_SECTIONS:
@@ -7660,6 +7661,7 @@ c_parser_omp_parallel (c_parser *parser)
       if (stmt)
 	OMP_SECTIONS_CLAUSES (stmt) = ws_clause;
       stmt = c_finish_omp_parallel (par_clause, block);
+      OMP_PARALLEL_COMBINED (stmt) = 1;
       break;
 
     default:
