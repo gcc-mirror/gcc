@@ -1,3 +1,9 @@
+2006-05-17  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR middle-end/27332
+	* tree-loop-linear.c (try_interchange_loops): Test for 
+	no data dependences.
+
 2006-05-17  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/27548
