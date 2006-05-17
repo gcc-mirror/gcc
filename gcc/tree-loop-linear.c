@@ -178,6 +178,9 @@ try_interchange_loops (lambda_trans_matrix trans,
   unsigned int nb_deps_not_carried_by_i, nb_deps_not_carried_by_j;
   struct data_dependence_relation *ddr;
 
+  if (VEC_length (ddr_p, dependence_relations) == 0)
+    return trans;
+
   /* When there is an unknown relation in the dependence_relations, we
      know that it is no worth looking at this loop nest: give up.  */
   ddr = VEC_index (ddr_p, dependence_relations, 0);
