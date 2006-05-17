@@ -199,8 +199,7 @@ void print_lambda_body_vector (FILE *, lambda_body_vector);
 lambda_loopnest gcc_loopnest_to_lambda_loopnest (struct loops *,
 						 struct loop *,
 						 VEC(tree,heap) **,
-						 VEC(tree,heap) **,
-						 bool);
+						 VEC(tree,heap) **);
 void lambda_loopnest_to_gcc_loopnest (struct loop *,
 				      VEC(tree,heap) *, VEC(tree,heap) *,
 				      lambda_loopnest, lambda_trans_matrix);
