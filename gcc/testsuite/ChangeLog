@@ -2,6 +2,7 @@
 
 	PR fortran/26551
 	* gfortran.dg/recursive_check_1.f: New test.
+	* gfortran.dg/recursive_check_2.f90: New test.
 
 2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
