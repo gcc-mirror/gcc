@@ -1,3 +1,8 @@
+2006-05-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/26551
+	* gfortran.dg/recursive_check_1.f: New test.
+
 2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* g++.dg/opt/temp2.C: New test.

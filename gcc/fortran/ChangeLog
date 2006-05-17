@@ -1,5 +1,18 @@
 2006-05-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/26551
+	* resolve.c (resolve_call, resolve_function): Issue an error
+	if a function or subroutine call is recursive but the function or
+	subroutine wasn't declared as such.
+
+2006-05-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/26551
+	* gfortran.dg/recursive_check_1.f: New test.
+
+
+2006-05-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/27320
 	* dump-parse-tree.c (gfc_show_code_node): Try harder to find the
 	called procedure name.
