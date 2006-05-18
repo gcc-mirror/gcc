@@ -1,3 +1,17 @@
+2006-05-12  Stuart Hastings  <stuart@apple.com>
+
+        * gcc/config/i386/i386.opt (-mstackrealign): New flag.  *
+	gcc/config/i386/i386.c (force_align_arg_pointer): New attribute.
+	(ix86_handle_cconv_attribute): Emit error when
+	force_align_arg_pointer attribute collides with too many regparms.
+	(ix86_function_regparm): Limit regparms when used with
+	force_align_arg_pointer attribute.  (ix86_internal_arg_pointer):
+	Support stack-realigning prologue in non-main functions.  Emit
+	warning for nested functions under -mstackrealign, emit error for
+	nested functions with force_align_arg_pointer attribute.
+	* gcc/doc/extend.texi (force_align_arg_pointer): Document it.
+	* gcc/doc/invoke.texi (-mstackrealign): Document it.
+															
 2006-05-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR rtl-optimization/27477

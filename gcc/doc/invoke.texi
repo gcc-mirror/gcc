@@ -537,6 +537,7 @@ Objective-C and Objective-C++ Dialects}.
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
+-mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num}}
@@ -9463,6 +9464,21 @@ function by using the function attribute @samp{sseregparm}.
 @strong{Warning:} if you use this switch then you must build all
 modules with the same value, including any libraries.  This includes
 the system libraries and startup modules.
+
+@item -mstackrealign
+@opindex mstackrealign
+Realign the stack at entry.  On the Intel x86, the
+@option{-mstackrealign} option will generate an alternate prologue and
+epilogue that realigns the runtime stack.  This supports mixing legacy
+codes that keep a 4-byte aligned stack with modern codes that keep a
+16-byte stack for SSE compatibility.  The alternate prologue and
+epilogue are slower and bigger than the regular ones, and the
+alternate prologue requires an extra scratch register; this lowers the
+number of registers available if used in conjunction with the
+@code{regparm} attribute.  The @option{-mstackrealign} option is
+incompatible with the nested function prologue; this is considered a
+hard error.  See also the attribute @code{force_align_arg_pointer},
+applicable to individual functions.
 
 @item -mpreferred-stack-boundary=@var{num}
 @opindex mpreferred-stack-boundary
