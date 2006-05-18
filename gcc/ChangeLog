@@ -1,3 +1,30 @@
+2006-05-18  Mike Stump  <mrs@apple.com>
+
+	Fix up vla, vm and [*] sematics.
+
+	PR c/18740
+	PR c/7948
+	PR c/25802
+	* c-tree.h (struct c_arg_info): Add had_vla_unspec.
+	(c_vla_unspec_p): Add.
+	(c_vla_type_p): Add.
+	* c-decl.c (struct c_scope): Add had_vla_unspec.
+	(build_array_declarator): Add support for [*].
+	(grokdeclarator): Likewise.
+	(grokparms): Likewise.
+	(get_parm_info): Likewise.
+	* c-objc-common.c (c_vla_unspec_p): Likewise.
+	* c-objc-common.h (LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P): Likewise.
+	* c-parser.c (c_parser_typeof_specifier): Evaluate arguments to
+	typeof when argument is a variably modified type not inside sizeof or alignof.
+	(c_parser_direct_declarator_inner): Propagate errors.
+	(c_parser_sizeof_expression): Add support for [*].
+	* c-typeck.c (c_vla_type_p): Add.
+	(composite_type): Add support for vla compositing.
+	(comptypes_internal): Add support for vla compatibility.
+	(c_expr_sizeof_expr): Evaluate vla arguments.
+	* tree.c (variably_modified_type_p): Update comment for [*].
+
 2006-05-18  Michael Matz  <matz@suse.de>
 
 	PR target/27599

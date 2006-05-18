@@ -1,3 +1,10 @@
+2006-05-18  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/c90-arraydecl-1.c: Update for vla, vm [*] fixups.
+	* gcc.dg/vla-4.c: Add.
+	* gcc.dg/vla-5.c: Add.
+	* gcc.dg/vla-6.c: Add.
+
 2006-05-12  Stuart Hastings  <stuart@apple.com>
 
 	* testsuite/gcc.target/i386/20060512-1.c: New.

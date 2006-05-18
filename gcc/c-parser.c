@@ -2148,6 +2148,7 @@ c_parser_typeof_specifier (c_parser *parser)
     }
   else
     {
+      bool was_vm;
       struct c_expr expr = c_parser_expression (parser);
       skip_evaluation--;
       in_typeof--;
@@ -2155,7 +2156,13 @@ c_parser_typeof_specifier (c_parser *parser)
 	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
 	error ("%<typeof%> applied to a bit-field");
       ret.spec = TREE_TYPE (expr.value);
-      pop_maybe_used (variably_modified_type_p (ret.spec, NULL_TREE));
+      was_vm = variably_modified_type_p (ret.spec, NULL_TREE);
+      /* This should be returned with the type so that when the type
+	 is evaluated, this can be evaluated.  For now, we avoid
+	 evaluation when the context might.  */
+      if (!skip_evaluation && was_vm)
+	c_finish_expr_stmt (expr.value);
+      pop_maybe_used (was_vm);
     }
   c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
   return ret;
@@ -2451,6 +2458,8 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	}
       declarator = build_array_declarator (dimen, quals_attrs, static_seen,
 					   star_seen);
+      if (declarator == NULL)
+	return NULL;
       inner = set_array_declarator_inner (declarator, inner, !id_present);
       return c_parser_direct_declarator_inner (parser, id_present, inner);
     }
@@ -4868,6 +4877,12 @@ c_parser_sizeof_expression (c_parser *parser)
       /* sizeof ( type-name ).  */
       skip_evaluation--;
       in_sizeof--;
+      if (type_name->declarator->kind == cdk_array
+	  && type_name->declarator->u.array.vla_unspec_p)
+	{
+	  /* C99 6.7.5.2p4 */
+	  error ("%<[*]%> not allowed in other than a declaration");
+	}
       return c_expr_sizeof_type (type_name);
     }
   else
