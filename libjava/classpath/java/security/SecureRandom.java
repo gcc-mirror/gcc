@@ -1,5 +1,6 @@
 /* SecureRandom.java --- Secure Random class implementation
-   Copyright (C) 1999, 2001, 2002, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,11 +38,19 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.Engine;
+import gnu.java.security.action.GetSecurityPropertyAction;
 import gnu.java.security.jce.prng.Sha160RandomSpi;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An interface to a cryptographically secure pseudo-random number
@@ -71,6 +80,9 @@ public class SecureRandom extends Random
   int randomBytesUsed = 0;
   SecureRandomSpi secureRandomSpi = null;
   byte[] state = null;
+  private String algorithm;
+
+  private boolean isSeeded = false;
 
   // Constructors.
   // ------------------------------------------------------------------------
@@ -111,6 +123,7 @@ public class SecureRandom extends Random
                         secureRandomSpi = (SecureRandomSpi) Class.
                           forName(classname).newInstance();
                         provider = p[i];
+                        algorithm = key.substring(13); // Minus SecureRandom.
                         return;
                       }
                     catch (ThreadDeath death)
@@ -128,6 +141,7 @@ public class SecureRandom extends Random
 
     // Nothing found. Fall back to SHA1PRNG
     secureRandomSpi = new Sha160RandomSpi();
+    algorithm = "Sha160";
   }
 
   /**
@@ -159,8 +173,18 @@ public class SecureRandom extends Random
    */
   protected SecureRandom(SecureRandomSpi secureRandomSpi, Provider provider)
   {
+    this(secureRandomSpi, provider, "unknown");
+  }
+
+  /**
+   * Private constructor called from the getInstance() method.
+   */
+  private SecureRandom(SecureRandomSpi secureRandomSpi, Provider provider,
+		       String algorithm)
+  {
     this.secureRandomSpi = secureRandomSpi;
     this.provider = provider;
+    this.algorithm = algorithm;
   }
 
   // Class methods.
@@ -243,7 +267,7 @@ public class SecureRandom extends Random
       {
         return new SecureRandom((SecureRandomSpi)
           Engine.getInstance(SECURE_RANDOM, algorithm, provider),
-          provider);
+          provider, algorithm);
       }
     catch (java.lang.reflect.InvocationTargetException ite)
       {
@@ -269,6 +293,18 @@ public class SecureRandom extends Random
   }
 
   /**
+   * Returns the algorithm name used or "unknown" when the algorithm
+   * used couldn't be determined (as when constructed by the protected
+   * 2 argument constructor).
+   *
+   * @since 1.5
+   */
+  public String getAlgorithm()
+  {
+    return algorithm;
+  }
+
+  /**
      Seeds the SecureRandom. The class is re-seeded for each call and 
      each seed builds on the previous seed so as not to weaken security.
 
@@ -277,6 +313,7 @@ public class SecureRandom extends Random
   public void setSeed(byte[] seed)
   {
     secureRandomSpi.engineSetSeed(seed);
+    isSeeded = true;
   }
 
   /**
@@ -304,6 +341,7 @@ public class SecureRandom extends Random
 		       (byte) (0xff & seed)
         };
         secureRandomSpi.engineSetSeed(tmp);
+        isSeeded = true;
       }
   }
 
@@ -315,6 +353,8 @@ public class SecureRandom extends Random
    */
   public void nextBytes(byte[] bytes)
   {
+    if (!isSeeded)
+      setSeed(getSeed(32));
     randomBytesUsed += bytes.length;
     counter++;
     secureRandomSpi.engineNextBytes(bytes);
@@ -360,10 +400,8 @@ public class SecureRandom extends Random
   public static byte[] getSeed(int numBytes)
   {
     byte[] tmp = new byte[numBytes];
-
-    new Random().nextBytes(tmp);
+    generateSeed(tmp);
     return tmp;
-    //return secureRandomSpi.engineGenerateSeed( numBytes );
   }
 
   /**
@@ -378,4 +416,64 @@ public class SecureRandom extends Random
     return secureRandomSpi.engineGenerateSeed(numBytes);
   }
 
+  // Seed methods.
+
+  private static final String SECURERANDOM_SOURCE = "securerandom.source";
+  private static final String JAVA_SECURITY_EGD = "java.security.egd";
+  private static final Logger logger = Logger.getLogger(SecureRandom.class.getName());
+
+  private static int generateSeed(byte[] buffer)
+  {
+    return generateSeed(buffer, 0, buffer.length);
+  }
+
+  private static int generateSeed(byte[] buffer, int offset, int length)
+  {
+    URL sourceUrl = null;
+    String urlStr = null;
+
+    GetSecurityPropertyAction action = new GetSecurityPropertyAction(SECURERANDOM_SOURCE);
+    try
+      {
+        urlStr = (String) AccessController.doPrivileged(action);
+        if (urlStr != null)
+          sourceUrl = new URL(urlStr);
+      }
+    catch (MalformedURLException ignored)
+      {
+        logger.log(Level.WARNING, SECURERANDOM_SOURCE + " property is malformed: {0}", 
+                   urlStr);
+      }
+
+    if (sourceUrl == null)
+      {
+        try
+          {
+            urlStr = SystemProperties.getProperty(JAVA_SECURITY_EGD);
+            if (urlStr != null)
+              sourceUrl = new URL(urlStr);
+          }
+        catch (MalformedURLException mue)
+          {
+            logger.log(Level.WARNING, JAVA_SECURITY_EGD + " property is malformed: {0}",
+                       urlStr);
+          }
+      }
+
+    if (sourceUrl != null)
+      {
+        try
+          {
+            InputStream in = sourceUrl.openStream();
+            return in.read(buffer, offset, length);
+          }
+        catch (IOException ioe)
+          {
+            logger.log(Level.FINE, "error reading random bytes", ioe);
+          }
+      }
+
+    // If we get here, we did not get any seed from a property URL.
+    return VMSecureRandom.generateSeed(buffer, offset, length);
+  }
 }

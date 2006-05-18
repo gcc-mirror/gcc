@@ -2352,185 +2352,556 @@ public class Arrays
     return new Arrays.ArrayList(a);
   }
 
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param a the array to represent
-   * @return a String representing this array
-   * @since 1.5
+  /** 
+   * Returns the hashcode of an array of long numbers.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents longs in their wrapper class, <code>Long</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of long numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
    */
-  public static String toString (long[] a)
+  public static int hashCode(long[] v)
   {
-    if (a == null)
-      return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	int elt = (int) (v[i] ^ (v[i] >>> 32));
+	result = 31 * result + elt;
+      }
     return result;
-  }  
-  
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param a the array to represent
-   * @return a String representing this array
-   * @since 1.5
+  }
+
+  /** 
+   * Returns the hashcode of an array of integer numbers.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents ints in their wrapper class, <code>Integer</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of integer numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
    */
-  public static String toString (int[] a)
+  public static int hashCode(int[] v)
   {
-    if (a == null)
-      return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
     return result;
-  }  
-  
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param a the array to represent
-   * @return a String representing this array
-   * @since 1.5
+  }
+
+  /** 
+   * Returns the hashcode of an array of short numbers.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents shorts in their wrapper class, <code>Short</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of short numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
    */
-  public static String toString (short[] a)
+  public static int hashCode(short[] v)
   {
-    if (a == null)
-      return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
     return result;
-  }  
+  }
+
+  /** 
+   * Returns the hashcode of an array of characters.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents chars in their wrapper class, <code>Character</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of characters for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(char[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of bytes.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents bytes in their wrapper class, <code>Byte</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of bytes for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(byte[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of booleans.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents booleans in their wrapper class,
+   * <code>Boolean</code>.  For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of booleans for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(boolean[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + (v[i] ? 1231 : 1237);
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of floats.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents floats in their wrapper class, <code>Float</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of floats for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(float[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + Float.floatToIntBits(v[i]);
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of doubles.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents doubles in their wrapper class, <code>Double</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of doubles for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(double[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	long l = Double.doubleToLongBits(v[i]);
+	int elt = (int) (l ^ (l >>> 32));
+	result = 31 * result + elt;
+      }
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of integer numbers.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents ints in their wrapper class, <code>Integer</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of integer numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(Object[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	int elt = v[i] == null ? 0 : v[i].hashCode();
+	result = 31 * result + elt;
+      }
+    return result;
+  }
+
+  /** @since 1.5 */
+  public static int deepHashCode(Object[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	int elt;
+	if (v[i] == null)
+	  elt = 0;
+	else if (v[i] instanceof boolean[])
+	  elt = hashCode((boolean[]) v[i]);
+	else if (v[i] instanceof byte[])
+	  elt = hashCode((byte[]) v[i]);
+	else if (v[i] instanceof char[])
+	  elt = hashCode((char[]) v[i]);
+	else if (v[i] instanceof short[])
+	  elt = hashCode((short[]) v[i]);
+	else if (v[i] instanceof int[])
+	  elt = hashCode((int[]) v[i]);
+	else if (v[i] instanceof long[])
+	  elt = hashCode((long[]) v[i]);
+	else if (v[i] instanceof float[])
+	  elt = hashCode((float[]) v[i]);
+	else if (v[i] instanceof double[])
+	  elt = hashCode((double[]) v[i]);
+	else if (v[i] instanceof Object[])
+	  elt = hashCode((Object[]) v[i]);
+	else
+	  elt = v[i].hashCode();
+	result = 31 * result + elt;
+      }
+    return result;
+  }
+
+  /** @since 1.5 */
+  public static boolean deepEquals(Object[] v1, Object[] v2)
+  {
+    if (v1 == null)
+      return v2 == null;
+    if (v2 == null || v1.length != v2.length)
+      return false;
+
+    for (int i = 0; i < v1.length; ++i)
+      {
+	Object e1 = v1[i];
+	Object e2 = v2[i];
+
+	if (e1 == e2)
+	  continue;
+	if (e1 == null || e2 == null)
+	  return false;
+
+	boolean check;
+	if (e1 instanceof boolean[] && e2 instanceof boolean[])
+	  check = equals((boolean[]) e1, (boolean[]) e2);
+	else if (e1 instanceof byte[] && e2 instanceof byte[])
+	  check = equals((byte[]) e1, (byte[]) e2);
+	else if (e1 instanceof char[] && e2 instanceof char[])
+	  check = equals((char[]) e1, (char[]) e2);
+	else if (e1 instanceof short[] && e2 instanceof short[])
+	  check = equals((short[]) e1, (short[]) e2);
+	else if (e1 instanceof int[] && e2 instanceof int[])
+	  check = equals((int[]) e1, (int[]) e2);
+	else if (e1 instanceof long[] && e2 instanceof long[])
+	  check = equals((long[]) e1, (long[]) e2);
+	else if (e1 instanceof float[] && e2 instanceof float[])
+	  check = equals((float[]) e1, (float[]) e2);
+	else if (e1 instanceof double[] && e2 instanceof double[])
+	  check = equals((double[]) e1, (double[]) e2);
+	else if (e1 instanceof Object[] && e2 instanceof Object[])
+	  check = equals((Object[]) e1, (Object[]) e2);
+	else
+	  check = e1.equals(e2);
+	if (! check)
+	  return false;
+      }
+
+    return true;
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (char[] a)
+  public static String toString(boolean[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (byte[] a)
+  public static String toString(byte[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (boolean[] a)
+  public static String toString(char[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (float[] a)
+  public static String toString(short[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
-  
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param a the array to represent
-   * @return a String representing this array
-   * @since 1.5
-   */
-  public static String toString (double[] a)
-  {
-    if (a == null)
-      return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (Object[] a)
+  public static String toString(int[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param v the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString(long[] v)
+  {
+    if (v == null)
+      return "null";
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param v the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString(float[] v)
+  {
+    if (v == null)
+      return "null";
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param v the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString(double[] v)
+  {
+    if (v == null)
+      return "null";
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param v the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString(Object[] v)
+  {
+    if (v == null)
+      return "null";
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  private static void deepToString(Object[] v, StringBuilder b, HashSet seen)
+  {
+    b.append("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	Object elt = v[i];
+	if (elt == null)
+	  b.append("null");
+	else if (elt instanceof boolean[])
+	  b.append(toString((boolean[]) elt));
+	else if (elt instanceof byte[])
+	  b.append(toString((byte[]) elt));
+	else if (elt instanceof char[])
+	  b.append(toString((char[]) elt));
+	else if (elt instanceof short[])
+	  b.append(toString((short[]) elt));
+	else if (elt instanceof int[])
+	  b.append(toString((int[]) elt));
+	else if (elt instanceof long[])
+	  b.append(toString((long[]) elt));
+	else if (elt instanceof float[])
+	  b.append(toString((float[]) elt));
+	else if (elt instanceof double[])
+	  b.append(toString((double[]) elt));
+	else if (elt instanceof Object[])
+	  {
+	    Object[] os = (Object[]) elt;
+	    if (seen.contains(os))
+	      b.append("[...]");
+	    else
+	      {
+		seen.add(os);
+		deepToString(os, b, seen);
+	      }
+	  }
+	else
+	  b.append(elt);
+      }
+    b.append("]");
+  }
+
+  /** @since 1.5 */
+  public static String deepToString(Object[] v)
+  {
+    if (v == null)
+      return "null";
+    HashSet seen = new HashSet();
+    StringBuilder b = new StringBuilder();
+    deepToString(v, b, seen);
+    return b.toString();
+  }
 
   /**
    * Inner class used by {@link #asList(Object[])} to provide a list interface

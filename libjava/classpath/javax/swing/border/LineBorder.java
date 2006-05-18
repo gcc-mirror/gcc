@@ -162,8 +162,10 @@ public class LineBorder extends AbstractBorder
   
   
   /**
-   * Returns a black, one pixel thick, plain LineBorder. The method
-   * may always return the same (singleton) LineBorder instance.
+   * Returns a black, one pixel thick, plain {@link LineBorder}. The method
+   * may always return the same (singleton) {@link LineBorder} instance.
+   * 
+   * @return The border.
    */
   public static Border createBlackLineBorder()
   {
@@ -178,8 +180,10 @@ public class LineBorder extends AbstractBorder
   
   
   /**
-   * Returns a gray, one pixel thick, plain LineBorder. The method
-   * may always return the same (singleton) LineBorder instance.
+   * Returns a gray, one pixel thick, plain {@link LineBorder}. The method
+   * may always return the same (singleton) {@link LineBorder} instance.
+   * 
+   * @return The border.
    */
   public static Border createGrayLineBorder()
   {
@@ -295,6 +299,8 @@ public class LineBorder extends AbstractBorder
   
   /**
    * Returns the color of the line.
+   * 
+   * @return The line color (never <code>null</code>).
    */
   public Color getLineColor()
   {
@@ -304,6 +310,8 @@ public class LineBorder extends AbstractBorder
   
   /**
    * Returns the thickness of the line in pixels.
+   * 
+   * @return The line thickness (in pixels).
    */
   public int getThickness()
   {

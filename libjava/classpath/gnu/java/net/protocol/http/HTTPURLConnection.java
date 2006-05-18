@@ -48,12 +48,8 @@ import java.io.OutputStream;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.net.ssl.HandshakeCompletedEvent;
@@ -271,6 +267,8 @@ public class HTTPURLConnection
 		    secure = false;
 		    start = 7;
 		    int end = location.indexOf('/', start);
+                    if (end == -1)
+                      end = location.length();
 		    host = location.substring(start, end);
 		    int ci = host.lastIndexOf(':');
 		    if (ci != -1)
@@ -292,6 +290,8 @@ public class HTTPURLConnection
 		    secure = true;
 		    start = 8;
 		    int end = location.indexOf('/', start);
+                    if (end == -1)
+                      end = location.length();
 		    host = location.substring(start, end);
 		    int ci = host.lastIndexOf(':');
 		    if (ci != -1)
@@ -410,10 +410,7 @@ public class HTTPURLConnection
   }
 
   public String getRequestProperty(String key)
-  {
-    if (key == null)
-      return null;
-    
+  {    
     return requestHeaders.getValue(key);
   }
 

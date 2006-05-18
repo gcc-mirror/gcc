@@ -55,7 +55,7 @@ import java.io.IOException;
  * This class deal with everything except the command- and reply-specific
  * data, which get handled in {@link
  * gnu.classpath.jdwp.transport.JdwpCommandPacket} and {@link
- * gnu.classpath.jdwp.transprot.JdwpReplyPacket}.
+ * gnu.classpath.jdwp.transport.JdwpReplyPacket}.
  *
  * @author Keith Seitz  <keiths@redhat.com>
  */
@@ -183,7 +183,6 @@ public abstract class JdwpPacket
    * <code>null</code>.
    * 
    * @param   bytes  packet data from the wire
-   * @param   index  index into <code>bytes</code> to start processing
    * @return         number of bytes in <code>bytes</code> processed
    */
   public static JdwpPacket fromBytes (byte[] bytes)

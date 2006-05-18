@@ -39,8 +39,11 @@ exception statement from your version. */
 package javax.swing.text.html;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -82,6 +85,24 @@ public class FormView
   extends ComponentView
   implements ActionListener
 {
+
+  protected class MouseEventListener
+    extends MouseAdapter
+  {
+    /**
+     * Creates a new <code>MouseEventListener</code>.
+     */
+    protected MouseEventListener()
+    {
+      // Nothing to do here.
+    }
+
+    public void mouseReleased(MouseEvent ev)
+    {
+      String data = getImageData(ev.getPoint());
+      imageSubmit(data);
+    }
+  }
 
   /**
    * If the value attribute of an <code>&lt;input type=&quot;submit&quot;&gt>
@@ -226,5 +247,29 @@ public class FormView
   protected void imageSubmit(String imageData)
   {
     // FIXME: Implement this.
+  }
+
+  /**
+   * Determines the image data that should be submitted in response to a
+   * mouse click on a image. This is either 'x=<p.x>&y=<p.y>' if the name
+   * attribute of the element is null or '' or
+   * <name>.x=<p.x>&<name>.y=<p.y>' when the name attribute is not empty.
+   *
+   * @param p the coordinates of the mouseclick
+   */
+  String getImageData(Point p)
+  {
+    String name = (String) getElement().getAttributes()
+                                            .getAttribute(HTML.Attribute.NAME);
+    String data;
+    if (name == null || name.equals(""))
+      {
+        data = "x=" + p.x + "&y=" + p.y;
+      }
+    else
+      {
+        data = name + ".x=" + p.x + "&" + name + ".y=" + p.y; 
+      }
+    return data;
   }
 }

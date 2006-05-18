@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import gnu.classpath.NotImplementedException;
+
 import java.text.AttributedCharacterIterator;
 import java.text.BreakIterator;
 
@@ -69,6 +71,7 @@ public final class LineBreakMeasurer
 
   public void deleteChar (AttributedCharacterIterator newParagraph,
                           int deletePos)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
@@ -80,28 +83,33 @@ public final class LineBreakMeasurer
 
   public void insertChar (AttributedCharacterIterator newParagraph,
                           int insertPos)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public TextLayout nextLayout (float wrappingWidth)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public TextLayout nextLayout (float wrappingWidth, int offsetLimit,
                                 boolean requireNextWord)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public int nextOffset (float wrappingWidth)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public int nextOffset (float wrappingWidth, int offsetLimit,
                          boolean requireNextWord)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }

@@ -39,7 +39,6 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.event.filters;
 
-import gnu.classpath.jdwp.Jdwp;
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;

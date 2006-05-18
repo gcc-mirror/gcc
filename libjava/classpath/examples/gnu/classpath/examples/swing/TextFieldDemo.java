@@ -1,5 +1,5 @@
 /* TextFieldDemo.java -- An example showing various textfields in Swing.
-   Copyright (C) 2005, 2006, Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath examples.
 
@@ -27,7 +27,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -36,18 +38,28 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
+import javax.swing.text.LayeredHighlighter.LayerPainter;
 
 /**
  * A simple textfield demo showing various textfields in different states.
  */
 public class TextFieldDemo 
-  extends JFrame
+  extends JPanel
   implements ActionListener
 {
 
@@ -106,66 +118,96 @@ public class TextFieldDemo
         }
     }
   }
+  
+  static class DemoHighlightPainter
+  extends LayerPainter
+  {
 
-  private JPanel content;
+    static DemoHighlightPainter INSTANCE = new DemoHighlightPainter();
+
+
+    static Color[] colors = { Color.BLUE, Color.CYAN, Color.GRAY, Color.GREEN,
+                         Color.MAGENTA, Color.ORANGE, Color.PINK,
+                         Color.ORANGE, Color.RED, Color.BLUE, Color.YELLOW };
+
+
+    public DemoHighlightPainter()
+    {
+      super();
+    }
+
+    private void paintHighlight(Graphics g, Rectangle rect)
+    {
+      g.fillRect(rect.x, rect.y, rect.width, rect.height);
+    }
+
+    public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent t)
+    {
+      try
+        {
+
+          for (int i = p0; i < p1; i++)
+            {
+              Rectangle r = t.modelToView(i);
+              Point l1 = t.modelToView(i + 1).getLocation();
+
+              g.setColor(colors[(int) (Math.random() * colors.length)]);
+              g.fillOval(r.x, r.y, l1.x - r.x, r.height);
+            }
+        }
+      catch (BadLocationException ble)
+        {
+        }
+    }
+
+    public Shape paintLayer(Graphics g, int p0, int p1, Shape bounds,
+                            JTextComponent c, View view)
+    {
+      paint(g, p0, p1, bounds, c);
+
+      return bounds;
+    }
+    
+  }
 
   /**
    * The left aligned textfields and state buttons.
    */
-  JTextField textfield1;
-  JTextField textfield2;  
-  JTextField textfield3;
-  JCheckBox enabled1;
-  JCheckBox editable1;
-  JPanel textFieldPanel1;
+  Compound compound1;
+  
   /**
    * The right aligned textfields and state buttons.
    */
-  JTextField textfield4;
-  JTextField textfield5;  
-  JTextField textfield6;
-  JCheckBox enabled2;
-  JCheckBox editable2;
+  Compound compound2;
 
   /**
    * The centered textfields and state buttons.
    */
-  JTextField textfield7;
-  JTextField textfield8;  
-  JTextField textfield9;
-  JCheckBox enabled3;
-  JCheckBox editable3;
+  Compound compound3;
 
   /**
    * The custom colored textfields and state buttons.
    */
-  JTextField textfield10;
-  JTextField textfield11;  
-  JTextField textfield12;
-  JTextField textfield13;
-  JTextField textfield14;
-  JCheckBox enabled4;
-  JCheckBox editable4;
+  Compound compound4;
+  Compound compound5;
 
   /**
-   * Some miscallenous textfield demos.
+   * Some miscellaneous textfield demos.
    */
-  JTextField textfield15;
-  JTextField textfield16;
-  JCheckBox enabled5;
-  JCheckBox editable5;
+  Compound compound6;
+  
+  /**
+   * Some textfields with custom borders.
+   */
+  Compound compound7;
 
   /**
    * Creates a new demo instance.
-   * 
-   * @param title  the frame title.
    */
-  public TextFieldDemo(String title) 
+  public TextFieldDemo() 
   {
-    super(title);
-    JPanel content = createContent();
-    // initFrameContent() is only called (from main) when running this app 
-    // standalone
+    super();
+    createContent();
   }
   
   /**
@@ -175,15 +217,14 @@ public class TextFieldDemo
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  public void initFrameContent() 
+  void initFrameContent() 
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
     closeButton.addActionListener(this);
     closePanel.add(closeButton);
-    content.add(closePanel, BorderLayout.SOUTH);
-    getContentPane().add(content);
+    add(closePanel, BorderLayout.SOUTH);
   }
 
   /**
@@ -193,239 +234,185 @@ public class TextFieldDemo
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
    */       
-  JPanel createContent() 
+  private void createContent() 
   {
-    if (content == null)
-      {
-        content = new JPanel(new BorderLayout());
-        JPanel panel = new JPanel(new GridLayout(5, 1));
-        panel.add(createLeftAlignedPanel());
-        panel.add(createRightAlignedPanel());
-        panel.add(createCenteredPanel());
-        panel.add(createCustomColoredPanel());
-        panel.add(createMiscPanel());
-        content.add(panel);
-        //content.setPreferredSize(new Dimension(400, 300));
-      }
-    return content;        
+    setLayout(new BorderLayout());
+    JPanel panel = new JPanel(new GridLayout(7, 1));
+    panel.add(createLeftAlignedPanel());
+    panel.add(createRightAlignedPanel());
+    panel.add(createCenteredPanel());
+    panel.add(createCustomColorPanel1());
+    panel.add(createCustomColorPanel2());
+    panel.add(createCustomBordersPanel());
+    panel.add(createMiscPanel());
+    
+    // Put everything in a scroll pane to make it neccessary
+    // to reach the bottom inner panels if the screen is to small.
+    add(new JScrollPane(panel));
   }
     
   private JPanel createLeftAlignedPanel() 
   {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(BorderFactory.createTitledBorder("Left aligned"));
+    compound1 = createTextFieldCompound("Left aligned", 1);
+
+    compound1.setupTextfields("Hello World!",
+                             JTextField.LEFT,
+                             new Font[] { new Font("Dialog", Font.PLAIN, 8),
+                                          new Font("Dialog", Font.ITALIC, 12),
+                                          new Font("Dialog", Font.BOLD, 14)
+                             });
     
-    textFieldPanel1 = new JPanel();
-    textFieldPanel1.setLayout(new BoxLayout(textFieldPanel1, BoxLayout.X_AXIS));
+    return compound1.panel;
+  }
+  
+  private Compound createTextFieldCompound(String title, int actionCommandNo)
+  {
+    Compound compound = new Compound();
+    compound.panel = new JPanel(new BorderLayout());
+    compound.panel.setBorder(BorderFactory.createTitledBorder(title));
+    
+    compound.textFieldPanel = new JPanel();
+    compound.textFieldPanel.setLayout(new BoxLayout(compound.textFieldPanel, BoxLayout.X_AXIS));
 
-    textfield1 = new JTextField("Hello World!");
-    textfield1.setHorizontalAlignment(JTextField.LEFT);
-    textfield1.setFont(new Font("Dialog", Font.PLAIN, 8));
-    textFieldPanel1.add(textfield1);
-
-    textfield2 = new JTextField("Hello World!");
-    textfield2.setHorizontalAlignment(JTextField.LEFT);
-    textfield2.setFont(new Font("Dialog", Font.ITALIC, 12));
-    textFieldPanel1.add(textfield2);
-
-    textfield3 = new JTextField("Hello World!");
-    textfield3.setHorizontalAlignment(JTextField.LEFT);
-    textfield3.setFont(new Font("Dialog", Font.BOLD, 14));
-    textFieldPanel1.add(textfield3);
-
-    panel.add(textFieldPanel1);
+    compound.panel.add(compound.textFieldPanel);
 
     JPanel statePanel = new JPanel();
     statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.Y_AXIS));
     statePanel.add(Box.createVerticalGlue());
-    enabled1 = new JCheckBox("enabled");
-    enabled1.setSelected(true);
-    enabled1.addActionListener(this);
-    enabled1.setActionCommand("ENABLED1");
-    statePanel.add(enabled1);
-    editable1 = new JCheckBox("editable");
-    editable1.setSelected(true);
-    editable1.addActionListener(this);
-    editable1.setActionCommand("EDITABLE1");
-    statePanel.add(editable1);
+    compound.enabled = new JCheckBox("enabled");
+    compound.enabled.setSelected(true);
+    compound.enabled.addActionListener(this);
+    compound.enabled.setActionCommand("ENABLED" + actionCommandNo);
+    statePanel.add(compound.enabled);
+    compound.editable = new JCheckBox("editable");
+    compound.editable.setSelected(true);
+    compound.editable.addActionListener(this);
+    compound.editable.setActionCommand("EDITABLE" + actionCommandNo);
+    statePanel.add(compound.editable);
     statePanel.add(Box.createVerticalGlue());
-    panel.add(statePanel, BorderLayout.EAST);
+    compound.panel.add(statePanel, BorderLayout.EAST);
 
-    return panel;
+    return compound;
   }
 
   private JPanel createRightAlignedPanel() 
   {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(BorderFactory.createTitledBorder("Right aligned"));
+    compound2 = createTextFieldCompound("Right aligned", 2);
+
+    compound2.setupTextfields("Hello World!",
+                              JTextField.RIGHT,
+                              new Font[] { new Font("Dialog", Font.PLAIN, 8),
+                                           new Font("Dialog", Font.ITALIC, 12),
+                                           new Font("Dialog", Font.BOLD, 14)
+                              });
     
-    JPanel textFieldPanel = new JPanel();
-    textFieldPanel.setLayout(new BoxLayout(textFieldPanel, BoxLayout.X_AXIS));
-
-    textfield4 = new JTextField("Hello World!");
-    textfield4.setHorizontalAlignment(JTextField.RIGHT);
-    textfield4.setFont(new Font("Dialog", Font.PLAIN, 8));
-    textFieldPanel.add(textfield4);
-
-    textfield5 = new JTextField("Hello World!");
-    textfield5.setHorizontalAlignment(JTextField.RIGHT);
-    textfield5.setFont(new Font("Dialog", Font.ITALIC, 12));
-    textFieldPanel.add(textfield5);
-
-    textfield6 = new JTextField("Hello World!");
-    textfield6.setHorizontalAlignment(JTextField.RIGHT);
-    textfield6.setFont(new Font("Dialog", Font.BOLD, 14));
-    textFieldPanel.add(textfield6);
-
-    panel.add(textFieldPanel);
-
-    JPanel statePanel = new JPanel();
-    statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.Y_AXIS));
-    statePanel.add(Box.createVerticalGlue());
-    enabled2 = new JCheckBox("enabled");
-    enabled2.setSelected(true);
-    enabled2.addActionListener(this);
-    enabled2.setActionCommand("ENABLED2");
-    statePanel.add(enabled2);
-    editable2 = new JCheckBox("editable");
-    editable2.setSelected(true);
-    editable2.addActionListener(this);
-    editable2.setActionCommand("EDITABLE2");
-    statePanel.add(editable2);
-    statePanel.add(Box.createVerticalGlue());
-    panel.add(statePanel, BorderLayout.EAST);
-
-    return panel;
+    return compound2.panel;
   }
 
   private JPanel createCenteredPanel() 
   {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(BorderFactory.createTitledBorder("Centered"));
-    
-    JPanel textFieldPanel = new JPanel();
-    textFieldPanel.setLayout(new BoxLayout(textFieldPanel, BoxLayout.X_AXIS));
+    compound3 = createTextFieldCompound("Centered", 3);
 
-    textfield7 = new JTextField("Hello World!");
-    textfield7.setHorizontalAlignment(JTextField.CENTER);
-    textfield7.setFont(new Font("Dialog", Font.PLAIN, 8));
-    textFieldPanel.add(textfield7);
-
-    textfield8 = new JTextField("Hello World!");
-    textfield8.setHorizontalAlignment(JTextField.CENTER);
-    textfield8.setFont(new Font("Dialog", Font.ITALIC, 12));
-    textFieldPanel.add(textfield8);
-
-    textfield9 = new JTextField("Hello World!");
-    textfield9.setHorizontalAlignment(JTextField.CENTER);
-    textfield9.setFont(new Font("Dialog", Font.BOLD, 14));
-    textFieldPanel.add(textfield9);
-
-    panel.add(textFieldPanel);
-
-    JPanel statePanel = new JPanel();
-    statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.Y_AXIS));
-    statePanel.add(Box.createVerticalGlue());
-    enabled3 = new JCheckBox("enabled");
-    enabled3.setSelected(true);
-    enabled3.addActionListener(this);
-    enabled3.setActionCommand("ENABLED3");
-    statePanel.add(enabled3);
-    editable3 = new JCheckBox("editable");
-    editable3.setSelected(true);
-    editable3.addActionListener(this);
-    editable3.setActionCommand("EDITABLE3");
-    statePanel.add(editable3);
-    statePanel.add(Box.createVerticalGlue());
-    panel.add(statePanel, BorderLayout.EAST);
-
-    return panel;
+    compound3.setupTextfields("Hello World!",
+                              JTextField.CENTER,
+                              new Font[] { new Font("Dialog", Font.PLAIN, 8),
+                                           new Font("Dialog", Font.ITALIC, 12),
+                                           new Font("Dialog", Font.BOLD, 14)
+                              });
+        
+    return compound3.panel;
   }
 
-  private JPanel createCustomColoredPanel() 
+  private JPanel createCustomColorPanel1()
   {
-    JPanel panel = new JPanel(new BorderLayout());
+    compound4 = createTextFieldCompound("Custom colors I", 4);
+
+    compound4.textfield1 = new JTextField("custom foreground");
+    compound4.textfield1.setForeground(Color.RED);
+    compound4.textFieldPanel.add(compound4.textfield1);
+
+    compound4.textfield2 = new JTextField("custom background");
+    compound4.textfield2.setBackground(Color.YELLOW);
+    compound4.textFieldPanel.add(compound4.textfield2);
+
+    compound4.textfield3 = new JTextField("custom foreground and background");
+    compound4.textfield3.setForeground(Color.RED);
+    compound4.textfield3.setBackground(Color.YELLOW);
+    compound4.textFieldPanel.add(compound4.textfield3);
     
-    JPanel textFieldPanel = new JPanel();
-    panel.setBorder(BorderFactory.createTitledBorder("Custom colors"));
-    textFieldPanel.setLayout(new BoxLayout(textFieldPanel, BoxLayout.X_AXIS));
+    return compound4.panel;
+    
+  }
+  
+  private JPanel createCustomColorPanel2()
+  {
+    compound5 = createTextFieldCompound("Custom colors II", 5);
 
-    textfield10 = new JTextField("custom foreground");
-    textfield10.setForeground(Color.GREEN);
-    textFieldPanel.add(textfield10);
+    compound5.textfield1 = new JTextField("custom disabled textcolor");
+    compound5.textfield1.setDisabledTextColor(Color.BLUE);
+    compound5.textFieldPanel.add(compound5.textfield1);
 
-    textfield11 = new JTextField("custom background");
-    textfield11.setForeground(Color.YELLOW);
-    textFieldPanel.add(textfield11);
+    compound5.textfield2 = new JTextField("custom selected text color");
+    compound5.textfield2.setSelectedTextColor(Color.RED);
+    compound5.textFieldPanel.add(compound5.textfield2);
 
-    textfield12 = new JTextField("custom disabled textcolor");
-    textfield12.setDisabledTextColor(Color.BLUE);
-    textFieldPanel.add(textfield12);
-
-    textfield13 = new JTextField("custom selected text color");
-    textfield13.setSelectedTextColor(Color.RED);
-    textFieldPanel.add(textfield13);
-
-    textfield14 = new JTextField("custom selection color");
-    textfield14.setSelectionColor(Color.CYAN);
-    textFieldPanel.add(textfield14);
-
-    panel.add(textFieldPanel);
-
-    JPanel statePanel = new JPanel();
-    statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.Y_AXIS));
-    statePanel.add(Box.createVerticalGlue());
-    enabled4 = new JCheckBox("enabled");
-    enabled4.setSelected(true);
-    enabled4.addActionListener(this);
-    enabled4.setActionCommand("ENABLED4");
-    statePanel.add(enabled4);
-    editable4 = new JCheckBox("editable");
-    editable4.setSelected(true);
-    editable4.addActionListener(this);
-    editable4.setActionCommand("EDITABLE4");
-    statePanel.add(editable4);
-    statePanel.add(Box.createVerticalGlue());
-    panel.add(statePanel, BorderLayout.EAST);
-
-    return panel;
+    compound5.textfield3 = new JTextField("custom selection color");
+    compound5.textfield3.setSelectionColor(Color.BLACK);
+    compound5.textFieldPanel.add(compound5.textfield3);
+    
+    return compound5.panel;
+    
   }
 
   private JPanel createMiscPanel() 
   {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(BorderFactory.createTitledBorder("Miscallenous"));
-    
-    JPanel textFieldPanel = new JPanel();
-    textFieldPanel.setLayout(new BoxLayout(textFieldPanel, BoxLayout.X_AXIS));
+    compound6 = createTextFieldCompound("Miscellaneous", 6);
 
-    textfield15 = new JTextField("Custom Caret");
-    textfield15.setCaret(new CornerCaret());
-    textFieldPanel.add(textfield15);
+    compound6.textfield1 = new JTextField("Custom Caret");
+    compound6.textfield1.setCaret(new CornerCaret());
+    compound6.textFieldPanel.add(compound6.textfield1);
 
-    textfield16 = new JTextField("Custom Caret color");
-    textfield16.setCaretColor(Color.MAGENTA);
-    textFieldPanel.add(textfield16);
+    compound6.textfield2 = new JTextField("Custom Caret color");
+    compound6.textfield2.setForeground(Color.LIGHT_GRAY);
+    compound6.textfield2.setBackground(Color.BLACK);
+    compound6.textfield2.setSelectedTextColor(Color.BLACK);
+    compound6.textfield2.setCaretColor(Color.WHITE);
+    compound6.textfield2.setSelectionColor(Color.DARK_GRAY);
+    compound6.textFieldPanel.add(compound6.textfield2);
 
-    panel.add(textFieldPanel);
+    compound6.textfield3 = new JTextField("Custom highlighter");
+    compound6.textfield3.setCaret(new DefaultCaret()
+    {
+      public Highlighter.HighlightPainter getSelectionPainter()
+      {
+        return DemoHighlightPainter.INSTANCE;
+      }
+    });
+    compound6.textFieldPanel.add(compound6.textfield3);
 
-    JPanel statePanel = new JPanel();
-    statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.Y_AXIS));
-    statePanel.add(Box.createVerticalGlue());
-    enabled5 = new JCheckBox("enabled");
-    enabled5.setSelected(true);
-    enabled5.addActionListener(this);
-    enabled5.setActionCommand("ENABLED5");
-    statePanel.add(enabled5);
-    editable5 = new JCheckBox("editable");
-    editable5.setSelected(true);
-    editable5.addActionListener(this);
-    editable5.setActionCommand("EDITABLE5");
-    statePanel.add(editable5);
-    statePanel.add(Box.createVerticalGlue());
-    panel.add(statePanel, BorderLayout.EAST);
+    return compound6.panel;
+  }
+  
+  private JPanel createCustomBordersPanel() 
+  {
+    compound7 = createTextFieldCompound("Custom borders", 7);
 
-    return panel;
+    compound7.textfield1 = new JTextField("red 5 pixel lineborder");
+    compound7.textfield1.setBorder(new LineBorder(Color.RED, 5));
+    compound7.textFieldPanel.add(compound7.textfield1);
+
+    compound7.textfield2 = new JTextField("complex irregular border");
+
+    CompoundBorder innerCompound = new CompoundBorder(new EmptyBorder(5, 40, 15, 10), new LineBorder(Color.BLACK));
+    CompoundBorder outerCompound = new CompoundBorder(new LineBorder(Color.BLACK), innerCompound);
+    compound7.textfield2.setBorder(outerCompound);
+    compound7.textFieldPanel.add(compound7.textfield2);
+
+    compound7.textfield3 = new JTextField("a titled border", 10);
+    compound7.textfield3.setBorder(new TitledBorder(null, "Freak Out Border", TitledBorder.CENTER, TitledBorder.LEFT));
+    compound7.textFieldPanel.add(compound7.textfield3);
+
+    return compound7.panel;
   }
 
   public void actionPerformed(ActionEvent e) 
@@ -436,72 +423,172 @@ public class TextFieldDemo
       }
     else if (e.getActionCommand().equals("ENABLED1"))
       {
-        boolean enabled = enabled1.isSelected();
-        textfield1.setEnabled(enabled);
-        textfield2.setEnabled(enabled);
-        textfield3.setEnabled(enabled);
+        boolean enabled = compound1.enabled.isSelected();
+        compound1.textfield1.setEnabled(enabled);
+        compound1.textfield2.setEnabled(enabled);
+        compound1.textfield3.setEnabled(enabled);
       }
     else if (e.getActionCommand().equals("EDITABLE1"))
       {
-        boolean editable = editable1.isSelected();
-        textfield1.setEditable(editable);
-        textfield2.setEditable(editable);
-        textfield3.setEditable(editable);
+        boolean editable = compound1.editable.isSelected();
+        compound1.textfield1.setEditable(editable);
+        compound1.textfield2.setEditable(editable);
+        compound1.textfield3.setEditable(editable);
       }
     else if (e.getActionCommand().equals("ENABLED2"))
       {
-        boolean enabled = enabled2.isSelected();
-        textfield4.setEnabled(enabled);
-        textfield5.setEnabled(enabled);
-        textfield6.setEnabled(enabled);
+        boolean enabled = compound2.enabled.isSelected();
+        compound2.textfield1.setEnabled(enabled);
+        compound2.textfield2.setEnabled(enabled);
+        compound2.textfield3.setEnabled(enabled);
       }
     else if (e.getActionCommand().equals("EDITABLE2"))
       {
-        boolean editable = editable2.isSelected();
-        textfield4.setEditable(editable);
-        textfield5.setEditable(editable);
-        textfield6.setEditable(editable);
+        boolean editable = compound2.editable.isSelected();
+        compound2.textfield1.setEditable(editable);
+        compound2.textfield2.setEditable(editable);
+        compound2.textfield3.setEditable(editable);
       }
     else if (e.getActionCommand().equals("ENABLED3"))
       {
-        boolean enabled = enabled3.isSelected();
-        textfield7.setEnabled(enabled);
-        textfield8.setEnabled(enabled);
-        textfield9.setEnabled(enabled);
+        boolean enabled = compound3.enabled.isSelected();
+        compound3.textfield1.setEnabled(enabled);
+        compound3.textfield2.setEnabled(enabled);
+        compound3.textfield3.setEnabled(enabled);
       }
     else if (e.getActionCommand().equals("EDITABLE3"))
       {
-        boolean editable = editable3.isSelected();
-        textfield7.setEditable(editable);
-        textfield8.setEditable(editable);
-        textfield9.setEditable(editable);
+        boolean editable = compound3.editable.isSelected();
+        compound3.textfield1.setEditable(editable);
+        compound3.textfield2.setEditable(editable);
+        compound3.textfield3.setEditable(editable);
       }
     else if (e.getActionCommand().equals("ENABLED4"))
       {
-        boolean enabled = enabled4.isSelected();
-        textfield10.setEnabled(enabled);
-        textfield11.setEnabled(enabled);
-        textfield12.setEnabled(enabled);
-        textfield13.setEnabled(enabled);
-        textfield14.setEnabled(enabled);
+        boolean enabled = compound4.enabled.isSelected();
+        compound4.textfield1.setEnabled(enabled);
+        compound4.textfield2.setEnabled(enabled);
+        compound4.textfield3.setEnabled(enabled);
       }
     else if (e.getActionCommand().equals("EDITABLE4"))
       {
-        boolean editable = editable4.isSelected();
-        textfield10.setEditable(editable);
-        textfield11.setEditable(editable);
-        textfield12.setEditable(editable);
-        textfield13.setEditable(editable);
-        textfield14.setEditable(editable);
+        boolean editable = compound4.editable.isSelected();
+        compound4.textfield1.setEditable(editable);
+        compound4.textfield2.setEditable(editable);
+        compound4.textfield3.setEditable(editable);
+      } 
+    else if (e.getActionCommand().equals("ENABLED5"))
+      {
+        boolean enabled = compound5.enabled.isSelected();
+        compound5.textfield1.setEnabled(enabled);
+        compound5.textfield2.setEnabled(enabled);
+        compound5.textfield3.setEnabled(enabled);
+      }
+    else if (e.getActionCommand().equals("EDITABLE5"))
+      {
+        boolean editable = compound5.editable.isSelected();
+        compound5.textfield1.setEditable(editable);
+        compound5.textfield2.setEditable(editable);
+        compound5.textfield3.setEditable(editable);
+      }
+    else if (e.getActionCommand().equals("ENABLED6"))
+      {
+        boolean enabled = compound6.enabled.isSelected();
+        compound6.textfield1.setEnabled(enabled);
+        compound6.textfield2.setEnabled(enabled);
+        compound6.textfield3.setEnabled(enabled);
+      }
+    else if (e.getActionCommand().equals("EDITABLE6"))
+      {
+        boolean editable = compound6.editable.isSelected();
+        compound6.textfield1.setEditable(editable);
+        compound6.textfield2.setEditable(editable);
+        compound6.textfield3.setEditable(editable);
+      }
+    else if (e.getActionCommand().equals("ENABLED7"))
+      {
+        boolean enabled = compound7.enabled.isSelected();
+        compound7.textfield1.setEnabled(enabled);
+        compound7.textfield2.setEnabled(enabled);
+        compound7.textfield3.setEnabled(enabled);
+      }
+    else if (e.getActionCommand().equals("EDITABLE7"))
+      {
+        boolean editable = compound7.editable.isSelected();
+        compound7.textfield1.setEditable(editable);
+        compound7.textfield2.setEditable(editable);
+        compound7.textfield3.setEditable(editable);
       }
   }
 
   public static void main(String[] args) 
   {
-    TextFieldDemo app = new TextFieldDemo("TextField Demo");
-    app.initFrameContent();
-    app.pack();
-    app.setVisible(true);
+    SwingUtilities.invokeLater
+    (new Runnable()
+     {
+       public void run()
+       {
+         TextFieldDemo app = new TextFieldDemo();
+         app.initFrameContent();
+         JFrame frame = new JFrame("TextField demo");
+         frame.getContentPane().add(app);
+         frame.pack();
+         frame.setVisible(true);
+       }
+     });
   }
 
+  /**
+   * Returns a DemoFactory that creates a TextFieldDemo.
+   *
+   * @return a DemoFactory that creates a TextFieldDemo
+   */
+  public static DemoFactory createDemoFactory()
+  {
+    return new DemoFactory()
+    {
+      public JComponent createDemo()
+      {
+        return new TextFieldDemo();
+      }
+    };
+  }
+
+  static class Compound
+  {
+    JTextField textfield1;
+    JTextField textfield2;  
+    JTextField textfield3;
+    JCheckBox enabled;
+    JCheckBox editable;
+    JPanel textFieldPanel;
+    JPanel panel;
+    
+    /** Creates and initializes the textfields with the same text and
+     * alignment but with a different font.
+     * 
+     * @param title The text for the textfields.
+     * @param align The alignment for the textfields.
+     * @param fonts The fonts to be used for the textfields.
+     */
+    void setupTextfields(String title, int align, Font[] fonts)
+    {
+      textfield1 = new JTextField(title);
+      textfield1.setHorizontalAlignment(align);
+      textfield1.setFont(fonts[0]);
+      textFieldPanel.add(textfield1);
+
+      textfield2 = new JTextField(title);
+      textfield2.setHorizontalAlignment(align);
+      textfield2.setFont(fonts[1]);
+      textFieldPanel.add(textfield2);
+      
+      textfield3 = new JTextField(title);
+      textfield3.setHorizontalAlignment(align);
+      textfield3.setFont(fonts[2]);
+      textFieldPanel.add(textfield3);
+    }
+    
+  }
+  
 }

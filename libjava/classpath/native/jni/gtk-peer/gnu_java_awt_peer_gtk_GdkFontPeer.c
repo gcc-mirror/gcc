@@ -217,10 +217,10 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getGlyphVector
     }
 
   (*env)->ReleaseStringUTFChars (env, chars, str);
-  
+
   for (i = g_list_first (items); i != NULL; i = g_list_next (i))
-    g_free (i->data);
-  
+    pango_item_free(i->data);
+
   g_list_free (items);
 
   gdk_threads_leave ();
@@ -239,6 +239,17 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getFontMetrics
   struct peerfont *pfont = NULL;
   jdouble *native_metrics = NULL;
   PangoFontMetrics *pango_metrics = NULL;
+  PangoLayout* layout = NULL;
+  PangoRectangle ink_rect;
+  PangoRectangle logical_rect;
+  PangoLayoutIter* iter = NULL;
+  int pango_ascent = 0;
+  int pango_descent = 0;
+  int pango_ink_ascent = 0;
+  int pango_ink_descent = 0;
+  int baseline = 0;
+  int java_ascent = 0;
+  int java_descent = 0;
 
   gdk_threads_enter();
 
@@ -254,21 +265,52 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getFontMetrics
 
   g_assert (native_metrics != NULL);
 
-  native_metrics[FONT_METRICS_ASCENT] 
-    = PANGO_PIXELS (pango_font_metrics_get_ascent (pango_metrics));
+  pango_ascent = PANGO_PIXELS (pango_font_metrics_get_ascent (pango_metrics));
+  pango_descent = PANGO_PIXELS (pango_font_metrics_get_descent (pango_metrics));
 
-  native_metrics[FONT_METRICS_MAX_ASCENT] 
-    = native_metrics[FONT_METRICS_ASCENT];
+  layout = pango_layout_new (pfont->ctx);
 
-  native_metrics[FONT_METRICS_DESCENT] 
-    = PANGO_PIXELS (pango_font_metrics_get_descent (pango_metrics));
+  /* Pango seems to produce ascent and descent values larger than
+     those that Sun produces for the same-sized font.  It turns out
+     that an average of the "ink ascent" and "logical ascent" closely
+     approximates Sun's ascent values.  Likewise for descent values.
+     This is expensive but we cache GdkFontMetrics so this should only
+     run once per Font instance. */
+  pango_layout_set_text (layout, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL"
+                         "MNOPQRSTUVWXYZ0123456789", -1);
+  pango_layout_set_font_description (layout, pfont->desc);
 
-  if (native_metrics[FONT_METRICS_DESCENT] < 0)
-    native_metrics[FONT_METRICS_DESCENT] 
-      = - native_metrics[FONT_METRICS_DESCENT];
+  pango_layout_get_pixel_extents (layout, &ink_rect, &logical_rect);
 
-  native_metrics[FONT_METRICS_MAX_DESCENT] 
-    = native_metrics[FONT_METRICS_DESCENT];
+  iter = pango_layout_get_iter (layout);
+
+  baseline = PANGO_PIXELS (pango_layout_iter_get_baseline (iter));
+
+  pango_ink_ascent = baseline - ink_rect.y;
+  pango_ink_descent = ink_rect.y + ink_rect.height - baseline;
+
+  java_ascent = (pango_ascent + pango_ink_ascent) >> 1;
+  java_descent = (pango_descent + pango_ink_descent) >> 1;
+
+  java_ascent = MAX(0, java_ascent);
+  java_descent = MAX(0, java_descent);
+
+  pango_ascent = MAX(0, pango_ascent);
+  pango_descent = MAX(0, pango_descent);
+
+  /* Pango monospaced fonts have smaller ascent metrics than Sun's so
+     we return the logical ascent for monospaced fonts. */
+  if (!strcmp (pango_font_description_get_family (pfont->desc),
+               "Courier"))
+    native_metrics[FONT_METRICS_ASCENT] = pango_ascent;
+  else
+    native_metrics[FONT_METRICS_ASCENT] = java_ascent;
+
+  native_metrics[FONT_METRICS_MAX_ASCENT] = pango_ascent;
+
+  native_metrics[FONT_METRICS_DESCENT] = java_descent;
+
+  native_metrics[FONT_METRICS_MAX_DESCENT] = pango_descent;
 
   native_metrics[FONT_METRICS_MAX_ADVANCE] 
     = PANGO_PIXELS (pango_font_metrics_get_approximate_char_width 

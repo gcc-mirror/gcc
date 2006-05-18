@@ -1,5 +1,5 @@
 /* gnu/regexp/CharIndexedString.java
-   Copyright (C) 1998-2001, 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,38 +36,9 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package gnu.regexp;
-import java.io.Serializable;
 
-class CharIndexedString implements CharIndexed, Serializable {
-    private String s;
-    private int anchor;
-    private int len;
-    
+class CharIndexedString extends CharIndexedCharSequence {
     CharIndexedString(String str, int index) {
-	s = str;
-	len = s.length();
-	anchor = index;
-    }
-
-    public char charAt(int index) {
-	int pos = anchor + index;
-	return ((pos < len) && (pos >= 0)) ? s.charAt(pos) : OUT_OF_BOUNDS;
-    }
-    
-    public boolean isValid() {
-	return (anchor < len);
-    }
-    
-    public boolean move(int index) {
-	return ((anchor += index) < len);
-    }
-
-    public CharIndexed lookBehind(int index, int length) {
-	if (length > (anchor + index)) length = anchor + index;
-	return new CharIndexedString(s, anchor + index - length);
-    }
-
-    public int length() {
-	return len - anchor;
+	super(str, index);
     }
 }

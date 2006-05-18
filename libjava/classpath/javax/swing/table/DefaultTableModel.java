@@ -294,12 +294,7 @@ public class DefaultTableModel extends AbstractTableModel
     else 
     {
       int rowsToAdd = rowCount - existingRowCount;
-      for (int i = 0; i < rowsToAdd; i++) 
-        {
-          Vector tmp = new Vector();
-          tmp.setSize(columnIdentifiers.size());
-          dataVector.add(tmp);
-        } 
+      addExtraRows(rowsToAdd, columnIdentifiers.size());
       fireTableRowsInserted(existingRowCount,rowCount-1);
     }
   }
@@ -366,12 +361,7 @@ public class DefaultTableModel extends AbstractTableModel
       if (columnData.length > dataVector.size()) 
       {
         int rowsToAdd = columnData.length - dataVector.size();
-        for (int i = 0; i < rowsToAdd; i++) 
-        {
-          Vector tmp = new Vector();
-          tmp.setSize(columnIdentifiers.size());
-          dataVector.add(tmp);
-        }
+        addExtraRows(rowsToAdd, columnIdentifiers.size());
       }
       else if (columnData.length < dataVector.size())
       {
@@ -502,7 +492,8 @@ public class DefaultTableModel extends AbstractTableModel
     else 
     {
       if (column < getColumnCount())
-      {  
+      {
+        checkSize();
         Object id = columnIdentifiers.get(column);
         if (id != null) 
           result = id.toString();
@@ -587,5 +578,42 @@ public class DefaultTableModel extends AbstractTableModel
     for (int i = 0; i < data.length; i++)
       vector.add(convertToVector(data[i]));
     return vector;
+  }
+
+  /**
+   * This method adds some rows to <code>dataVector</code>.
+   *
+   * @param rowsToAdd number of rows to add
+   * @param nbColumns size of the added rows
+   */
+  private void addExtraRows(int rowsToAdd, int nbColumns)
+  {
+    for (int i = 0; i < rowsToAdd; i++) 
+      {
+        Vector tmp = new Vector();
+        tmp.setSize(columnIdentifiers.size());
+        dataVector.add(tmp);
+      } 
+  }
+
+  /**
+   * Checks the real columns/rows sizes against the ones returned by
+   * <code>getColumnCount()</code> and <code>getRowCount()</code>.
+   * If the supposed one are bigger, then we grow <code>columIdentifiers</code>
+   * and <code>dataVector</code> to their expected size.
+   */
+  private void checkSize()
+  {
+    int columnCount = getColumnCount();
+    int rowCount = getRowCount();
+    
+    if (columnCount > columnIdentifiers.size())
+      columnIdentifiers.setSize(columnCount);
+           
+    if (rowCount > dataVector.size())
+      {
+        int rowsToAdd = rowCount - dataVector.size();
+        addExtraRows(rowsToAdd, columnCount);
+      }
   }
 }

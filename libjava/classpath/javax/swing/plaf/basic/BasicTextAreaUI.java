@@ -1,5 +1,5 @@
 /* BasicTextAreaUI.java -- 
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -108,6 +108,9 @@ public class BasicTextAreaUI extends BasicTextUI
     JTextArea comp = (JTextArea)getComponent();
     if (ev.getPropertyName() == "lineWrap"
         || ev.getPropertyName() == "wrapStyleWord")
-      modelChanged();
+      {
+        // Changes the View (without modifying the document or it's listeners).
+        setView(create(textComponent.getDocument().getDefaultRootElement()));
+      }
   }
 }

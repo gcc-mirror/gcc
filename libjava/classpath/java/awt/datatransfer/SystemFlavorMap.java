@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.datatransfer;
 
+import gnu.classpath.NotImplementedException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -262,11 +264,13 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * version of the native.
    */ 
   public List getFlavorsForNative (String nat)
+    throws NotImplementedException
   {
     throw new Error ("Not implemented");
   }
 
   public List getNativesForFlavor (DataFlavor flav)
+    throws NotImplementedException
   {
     throw new Error ("Not implemented");
   }

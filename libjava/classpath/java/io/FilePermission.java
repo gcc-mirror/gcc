@@ -1,5 +1,6 @@
 /* FilePermission.java --
-   Copyright (C) 1998, 2000, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,9 +44,6 @@ import java.security.Permission;
 public final class FilePermission extends Permission implements Serializable
 {
   private static final long serialVersionUID = 7930732926638008763L;
-
-  private static final String CURRENT_DIRECTORY = 
-    System.getProperty("user.dir");
 
   private static final String ALL_FILES = "<<ALL FILES>>";
 
@@ -213,10 +211,18 @@ public final class FilePermission extends Permission implements Serializable
     FilePermission fp = (FilePermission) p;
     String f2 = fp.getName();
 
-    if (f1.charAt(0) != File.separatorChar)
-      f1 = CURRENT_DIRECTORY + f1;
-    if (f2.charAt(0) != File.separatorChar)
-      f2 = CURRENT_DIRECTORY + f2;
+    if (f2.equals(ALL_FILES))
+      return false;
+
+    try
+      {
+	f1 = new File(f1).getCanonicalPath();
+	f2 = new File(f2).getCanonicalPath();
+      }
+    catch (IOException ioe)
+      {
+	return false;
+      }
 
     String sub1;
 

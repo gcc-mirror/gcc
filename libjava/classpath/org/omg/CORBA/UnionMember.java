@@ -1,5 +1,5 @@
 /* UnionMember.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import org.omg.CORBA.portable.IDLEntity;
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class UnionMember
+public final class UnionMember
   implements IDLEntity, Serializable
 {
   /**
@@ -87,6 +87,7 @@ public class UnionMember
    * Creates a union member.
    *
    * @param a_name member name.
+   * @param a_label member label.
    * @param a_type member type code.
    * @param a_type_def member IDL type definition.
    */

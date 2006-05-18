@@ -1,5 +1,5 @@
 /* SizeSequence.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,20 +38,22 @@ exception statement from your version. */
 package javax.swing;
 
 /**
- * SizeSequence
+ * A sequence of values that represent the dimensions (widths or heights) of 
+ * some collection of items (for example, the widths of the columns in a table).
+ * 
  * @author	Andrew Selkirk
- * @version	1.0
  */
 public class SizeSequence
 {
+  // TODO: Sun's API specification for this class contains an implementation
+  // note regarding the encoding for the element sizes.  We currently use the
+  // simple size encoding but we should look at improving this.
   
-  /**
-    * sizes
-    */
-  private int[] sizes = new int[0];
+  /** Storage for the element sizes. */
+  private int[] sizes;
 
   /**
-   * Constructor SizeSequence
+   * Creates a new empty <code>SizeSequence</code> instance.
    */
   public SizeSequence()
   {
@@ -59,8 +61,10 @@ public class SizeSequence
   }
 
   /**
-   * Constructor SizeSequence
-   * @param numEntries TODO
+   * Creates a new <code>SizeSequence</code> instance with the specified number 
+   * of elements, each having a size of 0.
+   * 
+   * @param numEntries  the number of elements.
    */
   public SizeSequence(int numEntries)
   {
@@ -68,48 +72,66 @@ public class SizeSequence
   }
 
   /**
-   * Constructor SizeSequence
-   * @param numEntries TODO
-   * @param value TODO
+   * Creates a new <code>SizeSequence</code> instance with the specified number
+   * of elements all having the same size (<code>value</code>).
+   * 
+   * @param numEntries  the number of elements.
+   * @param value  the value for each element.
    */
   public SizeSequence(int numEntries, int value)
   {
+    sizes = new int[0];
     insertEntries(0, numEntries, value);
   }
 
   /**
-   * Constructor SizeSequence
-   * @param sizes TODO
+   * Creates a new <code>SizeSequence</code> instance using the specified 
+   * element sizes.
+   * 
+   * @param sizes  the element sizes (<code>null</code> not permitted).
    */
   public SizeSequence(int[] sizes)
   {
-    setSizes(sizes);
+    this.sizes = (int[]) sizes.clone();
   }
 
   /**
-   * setSize
-   * @param index TODO
-   * @param size TODO
+   * Sets the size of the element at the specified index.
+   * 
+   * @param index  the index.
+   * @param size  the size.
    */
   public void setSize(int index, int size)
   {
-    sizes[index] = size;
+    if (index >= 0 && index < sizes.length)
+      sizes[index] = size;
   }
 
   /**
-   * getIndex
-   * @param position TODO
-   * @returns int
+   * Returns the index of the element that contains the specified position.
+   * 
+   * @param position  the position.
+   * 
+   * @return The index of the element that contains the specified position.
    */
   public int getIndex(int position)
   {
-    return 0; // TODO
+    int i = 0;
+    int runningTotal = 0;  
+    while (i < sizes.length && position >= runningTotal + sizes[i]) 
+      {
+        runningTotal += sizes[i];
+        i++;
+      }
+    return i;
   }
 
   /**
-   * getSize
-   * @param index TODO
-   * @returns int
+   * Returns the size of the specified element.
+   * 
+   * @param index  the element index.
+   * 
+   * @return The size of the specified element.
    */
   public int getSize(int index)
   {
@@ -117,122 +139,81 @@ public class SizeSequence
   }
 
   /**
-   * setSizes
-   * @param sizes TODO
+   * Sets the sizes for the elements in the sequence.
+   * 
+   * @param sizes  the element sizes (<code>null</code> not permitted).
    */
   public void setSizes(int[] sizes)
   {
-    int index;
-    // Initialize sizes.
-    this.sizes = new int[sizes.length];
-    for (index = 0; index < sizes.length; index++)
-      this.sizes[index] = sizes[index];
-
+    this.sizes = (int[]) sizes.clone();
   }
 
   /**
-   * getSizes
-   * @returns int[]
+   * Returns an array containing the sizes for all the elements in the sequence.
+   * 
+   * @return The element sizes.
    */
   public int[] getSizes()
   {
-    int[] array;
-    int index;
-
-    // Create new array.
-    array = new int[sizes.length];
-    for (index = 0; index < sizes.length; index++)
-      array[index] = sizes[index];
-
-    // Return newly created array.
-    return array;
-
+    return (int[]) sizes.clone();
   }
 
   /**
-   * getPosition
-   * @param index TODO
-   * @returns int
+   * Returns the position of the specified element.
+   * 
+   * @param index  the element index.
+   * 
+   * @return The position.
    */
   public int getPosition(int index)
   {
     int position;
     int loop;
-
-    // Process sizes.
     position = 0;
     for (loop = 0; loop < index; loop++)
       position += sizes[loop];
-
-    // Return position.
     return position;
 
   }
 
   /**
-   * insertEntries
-   * @param start TODO
-   * @param length TODO
-   * @param value TODO
+   * Inserts new entries into the sequence at the <code>start</code> position.
+   * There are <code>length</code> new entries each having the specified
+   * <code>value</code>.
+   * 
+   * @param start  the start element.
+   * @param length  the number of elements to insert.
+   * @param value  the size for each of the new elements.
    */
   public void insertEntries(int start, int length, int value)
   {
-    int[] array;
-    int index;
-    int arrayIndex;
-    int loop;
-
-    // Create new array.
-    array = new int[sizes.length + length];
-    arrayIndex = 0;
-    for (index = 0; index < sizes.length; index++)
-      {
-        if (index == start)
-          {
-            for (loop = 0; loop < length; loop++)
-              {
-                array[arrayIndex] = value;
-                arrayIndex++;
-              }
-          }
-        else
-          {
-            array[arrayIndex] = sizes[index];
-            arrayIndex++;
-          }
-      }
-
-	}
+    int[] newSizes = new int[sizes.length + length];
+    System.arraycopy(sizes, 0, newSizes, 0, start);
+    for (int i = start; i < start + length; i++)
+      newSizes[i] = value;
+    System.arraycopy(sizes, start, newSizes, start + length, 
+                     sizes.length - start);
+    sizes = newSizes;
+  }
 
   /**
-   * removeEntries
-   * @param start TODO
-   * @param length TODO
+   * Removes the element(s) at index <code>start</code> (the number of elements
+   * removed is <code>length</code>).
+   * 
+   * @param start  the index of the first element to remove.
+   * @param length  the number of elements to remove.
    */
   public void removeEntries(int start, int length)
   {
-    int[] array;
-    int index;
-    int arrayIndex;
-
     // Sanity check.
     if ((start + length) > sizes.length)
       throw new IllegalArgumentException("Specified start/length that "
                                          + "is greater than available sizes");
 
-    // Create new array.
-    array = new int[sizes.length - length];
-    arrayIndex = 0;
-    for (index = 0; index < sizes.length; index++)
-      {
-        if (index == start)
-          index += length - 1;
-        else
-          {
-            array[arrayIndex] = sizes[index];
-            arrayIndex++;
-          }
-      }
+    int[] newSizes = new int[sizes.length - length];
+    System.arraycopy(sizes, 0, newSizes, 0, start);
+    System.arraycopy(sizes, start + length, newSizes, start, 
+                     sizes.length - start - length);
+    sizes = newSizes;
   }
-
 }

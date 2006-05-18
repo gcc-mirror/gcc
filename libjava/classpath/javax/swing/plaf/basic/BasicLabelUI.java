@@ -37,6 +37,8 @@
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -372,6 +374,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    * @param l The {@link JLabel} to install keyboard actions for.
    */
   protected void installKeyboardActions(JLabel l)
+    throws NotImplementedException
   {
     //FIXME: implement.
   }
@@ -382,6 +385,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    * @param l The {@link JLabel} to uninstall keyboard actions for.
    */
   protected void uninstallKeyboardActions(JLabel l)
+    throws NotImplementedException
   {
     //FIXME: implement.
   }

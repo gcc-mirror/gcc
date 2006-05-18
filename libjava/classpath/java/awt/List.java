@@ -446,7 +446,7 @@ preferredSize(int rows)
   if (peer != null)
     return peer.preferredSize (rows);
   else
-    return new Dimension (0, 0);
+    return getSize();
 }
 
 /*************************************************************************/

@@ -29,14 +29,16 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 
-public class SliderDemo extends JFrame implements ActionListener 
+public class SliderDemo
+  extends JPanel
+  implements ActionListener 
 {
-
-  private JPanel content;
 
   JSlider hslider1;
   JSlider hslider2;
@@ -58,12 +60,9 @@ public class SliderDemo extends JFrame implements ActionListener
 
   JCheckBox enabledCheckBox;
   
-  public SliderDemo(String frameTitle) 
+  public SliderDemo() 
   {
-    super(frameTitle);
-    content = createContent();
-    // initFrameContent() is only called (from main) when running this app 
-    // standalone
+    createContent();
   }
   
   /**
@@ -73,15 +72,14 @@ public class SliderDemo extends JFrame implements ActionListener
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  public void initFrameContent()
+  void initFrameContent()
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
     closeButton.addActionListener(this);
     closePanel.add(closeButton);
-    content.add(closePanel, BorderLayout.SOUTH);
-    getContentPane().add(content);
+    add(closePanel, BorderLayout.SOUTH);
   }
        
   /**
@@ -91,26 +89,22 @@ public class SliderDemo extends JFrame implements ActionListener
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
    */       
-  JPanel createContent() 
+  private void createContent() 
   {
-    if (content == null)
-      {
-        content = new JPanel(new BorderLayout());
-        JPanel panel = new JPanel(new GridLayout(1, 2));
-        panel.add(createHorizontalPanel());
-        panel.add(createVerticalPanel());
-        enabledCheckBox = new JCheckBox("Enabled");
-        enabledCheckBox.setSelected(true);
-        enabledCheckBox.setActionCommand("TOGGLE_ENABLED");
-        enabledCheckBox.addActionListener(this);
-        JPanel checkBoxPanel = new JPanel();
-        checkBoxPanel.add(enabledCheckBox);
-        JPanel panel2 = new JPanel(new BorderLayout());
-        panel2.add(panel);
-        panel2.add(checkBoxPanel, BorderLayout.SOUTH);
-        content.add(panel2);
-      }
-    return content;        
+    setLayout(new BorderLayout());
+    JPanel panel = new JPanel(new GridLayout(1, 2));
+    panel.add(createHorizontalPanel());
+    panel.add(createVerticalPanel());
+    enabledCheckBox = new JCheckBox("Enabled");
+    enabledCheckBox.setSelected(true);
+    enabledCheckBox.setActionCommand("TOGGLE_ENABLED");
+    enabledCheckBox.addActionListener(this);
+    JPanel checkBoxPanel = new JPanel();
+    checkBoxPanel.add(enabledCheckBox);
+    JPanel panel2 = new JPanel(new BorderLayout());
+    panel2.add(panel);
+    panel2.add(checkBoxPanel, BorderLayout.SOUTH);
+    add(panel2);
   }
     
   private JPanel createHorizontalPanel() 
@@ -259,10 +253,35 @@ public class SliderDemo extends JFrame implements ActionListener
   }
   public static void main(String[] args) 
   {
-    SliderDemo app = new SliderDemo("Slider Demo");
-    app.initFrameContent();
-    app.pack();
-    app.setVisible(true);
+    SwingUtilities.invokeLater
+    (new Runnable()
+     {
+       public void run()
+       {
+         SliderDemo app = new SliderDemo();
+         app.initFrameContent();
+         JFrame frame = new JFrame("Slider Demo");
+         frame.getContentPane().add(app);
+         frame.pack();
+         frame.setVisible(true);
+       }
+     });
   }
 
+
+  /**
+   * Returns a DemoFactory that creates a SliderDemo.
+   *
+   * @return a DemoFactory that creates a SliderDemo
+   */
+  public static DemoFactory createDemoFactory()
+  {
+    return new DemoFactory()
+    {
+      public JComponent createDemo()
+      {
+        return new SliderDemo();
+      }
+    };
+  }
 }

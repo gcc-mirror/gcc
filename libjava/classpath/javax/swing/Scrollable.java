@@ -50,14 +50,57 @@ public interface Scrollable
 {
   Dimension getPreferredScrollableViewportSize();
 
+  /**
+   * Return the preferred scrolling amount (in pixels) for the given
+   * scrolling direction and orientation when scrolling in small amounts
+   * like table lines.
+   * 
+   * @param visibleRect the currently visible part of the component. 
+   * @param orientation the scrolling orientation
+   * @param direction the scrolling direction (negative - up, positive -down).
+   * The values greater than one means that more mouse wheel or similar 
+   * events were generated, and hence it is better to scroll the longer
+   * distance.
+   * 
+   * @return the preferred scrolling distance, negative if up or left.
+   */
   int getScrollableUnitIncrement(Rectangle visibleRect, int orientation,
                                  int direction);
 
+  /**
+   * Return the preferred scrolling amount (in pixels) for the given
+   * scrolling direction and orientation when scrolling in large amounts
+   * (pages).
+   * 
+   * @param visibleRect the currently visible part of the component. 
+   * @param orientation the scrolling orientation
+   * @param direction the scrolling direction (negative - up, positive -down).
+   * The values greater than one means that more mouse wheel or similar 
+   * events were generated, and hence it is better to scroll the longer
+   * distance.
+   * 
+   * @return the preferred scrolling distance, negative if up or left. 
+   */
   int getScrollableBlockIncrement(Rectangle visibleRect, int orientation,
                                   int direction);
 
+  /**
+   * Return true if the width of the scrollable is always equal to the
+   * view, where it is displayed, width (for instance, the text area with
+   * the word wrap). In such case, the horizontal scrolling should not be
+   * performed.
+   * 
+   * @return true is no horizontal scrolling is assumed, faster otherwise.
+   */
   boolean getScrollableTracksViewportWidth();
 
+  /**
+   * Return true if the height of the scrollable is always equal to the view,
+   * where it is displayed, height.In such case, the vertical scrolling should
+   * not be performed.
+   * 
+   * @return true is no horizontal scrolling is assumed, faster otherwise.
+   */
   boolean getScrollableTracksViewportHeight();
 
 }

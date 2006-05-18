@@ -1,5 +1,5 @@
 /* CallableStatement.java -- A statement for calling stored procedures.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -56,10 +56,10 @@ public interface CallableStatement extends PreparedStatement
    * of the specified SQL type.
    *
    * @param index The index of the parameter to register as output.
-   * @param type The SQL type value from <code>Types</code>.
+   * @param sqlType The SQL type value from <code>Types</code>.
    * @exception SQLException If an error occurs.
    */   
-  void registerOutParameter(int parameterIndex, int sqlType)
+  void registerOutParameter(int index, int sqlType)
     throws SQLException;
 
   /**
@@ -67,11 +67,11 @@ public interface CallableStatement extends PreparedStatement
    * of the specified SQL type and scale.
    *
    * @param index The index of the parameter to register as output.
-   * @param type The SQL type value from <code>Types</code>.
+   * @param sqlType The SQL type value from <code>Types</code>.
    * @param scale The scale of the value that will be returned.
    * @exception SQLException If an error occurs.
    */   
-  void registerOutParameter(int parameterIndex, int sqlType, int scale)
+  void registerOutParameter(int index, int sqlType, int scale)
     throws SQLException;
 
   /**
@@ -92,7 +92,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>String</code>.
    * @exception SQLException If an error occurs.
    */
-  String getString(int parameterIndex) throws SQLException;
+  String getString(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -102,7 +102,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>boolean</code>.
    * @exception SQLException If an error occurs.
    */
-  boolean getBoolean(int parameterIndex) throws SQLException;
+  boolean getBoolean(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -112,7 +112,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>byte</code>.
    * @exception SQLException If an error occurs.
    */
-  byte getByte(int parameterIndex) throws SQLException;
+  byte getByte(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -122,7 +122,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>short</code>.
    * @exception SQLException If an error occurs.
    */
-  short getShort(int parameterIndex) throws SQLException;
+  short getShort(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -132,7 +132,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>int</code>.
    * @exception SQLException If an error occurs.
    */
-  int getInt(int parameterIndex) throws SQLException;
+  int getInt(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -142,7 +142,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>long</code>.
    * @exception SQLException If an error occurs.
    */
-  long getLong(int parameterIndex) throws SQLException;
+  long getLong(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -152,7 +152,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>float</code>.
    * @exception SQLException If an error occurs.
    */
-  float getFloat(int parameterIndex) throws SQLException;
+  float getFloat(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -162,31 +162,31 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>double</code>.
    * @exception SQLException If an error occurs.
    */
-  double getDouble(int parameterIndex) throws SQLException;
+  double getDouble(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
    * <code>BigDecimal</code>.
    *
-   * @param parameterIndex The index of the parameter to return.
+   * @param index The index of the parameter to return.
    * @param scale The number of digits to the right of the decimal to return.
    * @return The parameter value as a <code>BigDecimal</code>.
    * @exception SQLException If an error occurs.
-   * @deprecated Use getBigDecimal(int parameterIndex)
-   *             or getBigDecimal(String parameterName) instead.
+   * @deprecated Use getBigDecimal(int index)
+   *             or getBigDecimal(String name) instead.
    */
-  BigDecimal getBigDecimal(int parameterIndex, int scale)
+  BigDecimal getBigDecimal(int index, int scale)
     throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
    * byte array.
    *
-   * @param parameterIndex The index of the parameter to return.
+   * @param index The index of the parameter to return.
    * @return The parameter value as a byte array
    * @exception SQLException If an error occurs.
    */
-  byte[] getBytes(int parameterIndex) throws SQLException;
+  byte[] getBytes(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -196,7 +196,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    */
-  Date getDate(int parameterIndex) throws SQLException;
+  Date getDate(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -206,7 +206,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    */
-  Time getTime(int parameterIndex) throws SQLException;
+  Time getTime(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -216,29 +216,29 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>java.sql.Timestamp</code>.
    * @exception SQLException If an error occurs.
    */
-  Timestamp getTimestamp(int parameterIndex) throws SQLException;
+  Timestamp getTimestamp(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
    * <code>Object</code>.
    *
-   * @param parameterIndex The index of the parameter to return.
+   * @param index The index of the parameter to return.
    * @return The parameter value as an <code>Object</code>.
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  Object getObject(int parameterIndex) throws SQLException;
+  Object getObject(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
    * <code>BigDecimal</code>.
    *
-   * @param parameterIndex The index of the parameter to return.
+   * @param index The index of the parameter to return.
    * @return The parameter value as a <code>BigDecimal</code>.
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  BigDecimal getBigDecimal(int parameterIndex) throws SQLException;
+  BigDecimal getBigDecimal(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -289,7 +289,7 @@ public interface CallableStatement extends PreparedStatement
    * This method returns the value of the specified parameter as a Java
    * <code>Array</code>.
    *
-   * @param parameterIndex The index of the parameter to return.
+   * @param index The index of the parameter to return.
    * @return The parameter value as a <code>Array</code>.
    * @exception SQLException If an error occurs.
    * @since 1.2
@@ -300,25 +300,25 @@ public interface CallableStatement extends PreparedStatement
    * This method returns the value of the specified parameter as a Java
    * <code>java.sql.Date</code>.
    *
-   * @param parameterIndex The index of the parameter to return.
+   * @param index The index of the parameter to return.
    * @param cal The <code>Calendar</code> to use for timezone and locale.
    * @return The parameter value as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  Date getDate(int parameterIndex, Calendar cal) throws SQLException;
+  Date getDate(int index, Calendar cal) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
    * <code>java.sql.Time</code>.
    *
-   * @param parameterIndex The index of the parameter to return.
+   * @param index The index of the parameter to return.
    * @param cal The <code>Calendar</code> to use for timezone and locale.
    * @return The parameter value as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  Time getTime(int parameterIndex, Calendar cal) throws SQLException;
+  Time getTime(int index, Calendar cal) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -329,7 +329,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  Timestamp getTimestamp(int parameterIndex, Calendar cal)
+  Timestamp getTimestamp(int index, Calendar cal)
     throws SQLException;
 
   /**
@@ -337,25 +337,24 @@ public interface CallableStatement extends PreparedStatement
    * of the specified SQL type.
    *
    * @param index The index of the parameter to register as output.
-   * @param type The SQL type value from <code>Types</code>.
-   * @param name The user defined data type name.
+   * @param sqlType The SQL type value from <code>Types</code>.
+   * @param typeName The user defined data type name.
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  void registerOutParameter(int paramIndex, int sqlType,
-				   String typeName)
+  void registerOutParameter(int index, int sqlType, String typeName)
     throws SQLException;
 
   /**
    * This method registers the specified parameter as an output parameter
    * of the specified SQL type.
    *
-   * @param parameterName The name of the parameter to register as output.
+   * @param name The name of the parameter to register as output.
    * @param sqlType The SQL type value from <code>Types</code>.
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void registerOutParameter(String parameterName, int sqlType)
+  void registerOutParameter(String name, int sqlType)
     throws SQLException;
 
   /**
@@ -363,14 +362,13 @@ public interface CallableStatement extends PreparedStatement
    * of the specified SQL type.  This version of registerOutParameter is used 
    * for NUMERIC or DECIMAL types.
    *
-   * @param parameterName The name of the parameter to register as output.
+   * @param name The name of the parameter to register as output.
    * @param sqlType The SQL type value from <code>Types</code>.
    * @param scale Number of digits to the right of the decimal point.
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void registerOutParameter(String parameterName, int sqlType,
-				   int scale)
+  void registerOutParameter(String name, int sqlType, int scale)
     throws SQLException;
 
 
@@ -380,272 +378,584 @@ public interface CallableStatement extends PreparedStatement
    * for user-named or REF types. If the type of the output parameter does
    * not have such a type, the typeName argument is ignored.
    *
-   * @param parameterName The name of the parameter to register as output.
+   * @param name The name of the parameter to register as output.
    * @param sqlType The SQL type value from <code>Types</code>.
    * @param typeName The SQL structured type name.
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void registerOutParameter(String parameterName, int sqlType,
-				   String typeName) 
+  void registerOutParameter(String name, int sqlType, String typeName) 
     throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.net.URL</code>.
+   *
+   * @param index The index of the parameter to return.
+   * @return The parameter value as a <code>URL</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  URL getURL(int parameterIndex) throws SQLException;
+  URL getURL(int index) throws SQLException;
 
   /**
+   * This method sets the value of the specified parameter to the specified
+   * <code>java.net.URL</code>
+   * 
+   * @param name The name of the parameter to set.
+   * @param value The value the parameter.
    * @since 1.4
    */
-  void setURL(String parameterName, URL val) throws SQLException;
+  void setURL(String name, URL value) throws SQLException;
 
   /**
+   * This method populates the specified parameter with a SQL NULL value
+   * for the specified type.
+   *
+   * @param name The name of the parameter to set.
+   * @param sqlType The SQL type identifier of the parameter from 
+   *                <code>Types</code>
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setNull(String parameterName, int sqlType) throws SQLException;
+  void setNull(String name, int sqlType) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>boolean</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setBoolean(String parameterName, boolean x) throws SQLException;
+  void setBoolean(String name, boolean value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>byte</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setByte(String parameterName, byte x) throws SQLException;
+  void setByte(String name, byte value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>short</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setShort(String parameterName, short x) throws SQLException;
+  void setShort(String name, short value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>int</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setInt(String parameterName, int x) throws SQLException;
+  void setInt(String name, int value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>long</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setLong(String parameterName, long x) throws SQLException;
+  void setLong(String name, long value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>float</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setFloat(String parameterName, float x) throws SQLException;
+  void setFloat(String name, float value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>double</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setDouble(String parameterName, double x) throws SQLException;
+  void setDouble(String name, double value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>BigDecimal</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setBigDecimal(String parameterName, BigDecimal x)
+  void setBigDecimal(String name, BigDecimal value)
     throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>String</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setString(String parameterName, String x) throws SQLException;
+  void setString(String name, String value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>byte</code> array value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setBytes(String parameterName, byte[] x) throws SQLException;
+  void setBytes(String name, byte[] value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>java.sql.Date</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setDate(String parameterName, Date x) throws SQLException;
+  void setDate(String name, Date value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>java.sql.Time</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setTime(String parameterName, Time x) throws SQLException;
+  void setTime(String name, Time value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>java.sql.Timestamp</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setTimestamp(String parameterName, Timestamp x)
+  void setTimestamp(String name, Timestamp value)
     throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * ASCII <code>InputStream</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param stream The stream from which the parameter value is read.
+   * @param count The number of bytes in the stream.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setAsciiStream(String parameterName, InputStream x, int length)
+  void setAsciiStream(String name, InputStream stream, int count)
       throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * binary <code>InputStream</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param stream The stream from which the parameter value is read.
+   * @param count The number of bytes in the stream.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setBinaryStream(String parameterName, InputStream x, int length)
+  void setBinaryStream(String name, InputStream stream, int count)
       throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>Object</code> value.  The specified SQL object type will be used.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @param sqlType The SQL type to use for the parameter, from 
+   *                <code>Types</code>
+   * @param scale The scale of the value, for numeric values only.
+   * @exception SQLException If an error occurs.
+   * @see Types
    * @since 1.4
    */
-  void setObject(String parameterName, Object x, int targetSqlType,
-			int scale)
+  void setObject(String name, Object value, int sqlType, int scale)
     throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>Object</code> value.  The specified SQL object type will be used.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @param sqlType The SQL type to use for the parameter, from 
+   *                <code>Types</code>
+   * @exception SQLException If an error occurs.
+   * @see Types
    * @since 1.4
    */
-  void setObject(String parameterName, Object x, int targetSqlType)
+  void setObject(String name, Object value, int sqlType)
     throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>Object</code> value.  The default object type to SQL type mapping
+   * will be used.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setObject(String parameterName, Object x) throws SQLException;
+  void setObject(String name, Object value) throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * character <code>Reader</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param reader The reader from which the parameter value is read.
+   * @param count The number of characters in the stream.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setCharacterStream(String parameterName, Reader reader,
-				 int length)
+  void setCharacterStream(String name, Reader reader, int count)
     throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>java.sql.Date</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @param cal The <code>Calendar</code> to use for timezone and locale.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setDate(String parameterName, Date x, Calendar cal)
+  void setDate(String name, Date value, Calendar cal)
     throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>java.sql.Time</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @param cal The <code>Calendar</code> to use for timezone and locale.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setTime(String parameterName, Time x, Calendar cal)
+  void setTime(String name, Time value, Calendar cal)
     throws SQLException;
 
   /**
+   * This method sets the specified parameter from the given Java
+   * <code>java.sql.Timestamp</code> value.
+   *
+   * @param name The name of the parameter value to set.
+   * @param value The value of the parameter.
+   * @param cal The <code>Calendar</code> to use for timezone and locale.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setTimestamp(String parameterName, Timestamp x, Calendar cal)
+  void setTimestamp(String name, Timestamp value, Calendar cal)
     throws SQLException;
 
   /**
+   * This method populates the specified parameter with a SQL NULL value
+   * for the specified type.
+   *
+   * @param name The name of the parameter to set.
+   * @param sqlType The SQL type identifier of the parameter from
+   *                <code>Types</code>
+   * @param typeName The name of the data type, for user defined types.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void setNull(String parameterName, int sqlType, String typeName)
+  void setNull(String name, int sqlType, String typeName)
     throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>String</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>String</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  String getString(String parameterName) throws SQLException;
+  String getString(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>boolean</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>boolean</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  boolean getBoolean(String parameterName) throws SQLException;
+  boolean getBoolean(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>byte</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>byte</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  byte getByte(String parameterName) throws SQLException;
+  byte getByte(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>short</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>short</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  short getShort(String parameterName) throws SQLException;
+  short getShort(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>int</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>int</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  int getInt(String parameterName) throws SQLException;
+  int getInt(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>long</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>long</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  long getLong(String parameterName) throws SQLException;
+  long getLong(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>float</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>float</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  float getFloat(String parameterName) throws SQLException;
+  float getFloat(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>double</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>double</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  double getDouble(String parameterName) throws SQLException;
+  double getDouble(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>byte</code> array.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>byte[]</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  byte[] getBytes(String parameterName) throws SQLException;
+  byte[] getBytes(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.sql.Date</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>java.sql.Date</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Date getDate(String parameterName) throws SQLException;
+  Date getDate(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.sql.Time</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>java.sql.Time</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Time getTime(String parameterName) throws SQLException;
+  Time getTime(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.sql.Timestamp</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>java.sql.Timestamp</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Timestamp getTimestamp(String parameterName) throws SQLException;
+  Timestamp getTimestamp(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>Object</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>Object</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Object getObject(String parameterName) throws SQLException;
+  Object getObject(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>BigDecimal</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>BigDecimal</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  BigDecimal getBigDecimal(String parameterName) throws SQLException;
+  BigDecimal getBigDecimal(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>Object</code> using the specified mapping for conversion from
+   * SQL to Java types.
+   *
+   * @param name The name of the parameter to return.
+   * @param map The mapping to use for conversion from SQL to Java types.
+   * @return The parameter value as an <code>Object</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Object getObject(String parameterName, Map map) throws SQLException;
+  Object getObject(String name, Map map) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>Ref</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>Ref</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Ref getRef(String parameterName) throws SQLException;
+  Ref getRef(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>Blob</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>Blob</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Blob getBlob(String parameterName) throws SQLException;
+  Blob getBlob(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>Clob</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>Clob</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Clob getClob(String parameterName) throws SQLException;
+  Clob getClob(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>Array</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>Array</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Array getArray(String parameterName) throws SQLException;
+  Array getArray(String name) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.sql.Date</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @param cal The <code>Calendar</code> to use for timezone and locale.
+   * @return The parameter value as a <code>java.sql.Date</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Date getDate(String parameterName, Calendar cal) throws SQLException;
+  Date getDate(String name, Calendar cal) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.sql.Time</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @param cal The <code>Calendar</code> to use for timezone and locale.
+   * @return The parameter value as a <code>java.sql.Time</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Time getTime(String parameterName, Calendar cal) throws SQLException;
+  Time getTime(String name, Calendar cal) throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.sql.Timestamp</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @param cal The <code>Calendar</code> to use for timezone and locale.
+   * @return The parameter value as a <code>java.sql.Timestamp</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Timestamp getTimestamp(String parameterName, Calendar cal)
+  Timestamp getTimestamp(String name, Calendar cal)
     throws SQLException;
 
   /**
+   * This method returns the value of the specified parameter as a Java
+   * <code>java.net.URL</code>.
+   *
+   * @param name The name of the parameter to return.
+   * @return The parameter value as a <code>java.net.URL</code>.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  URL getURL(String parameterName) throws SQLException;
+  URL getURL(String name) throws SQLException;
 }

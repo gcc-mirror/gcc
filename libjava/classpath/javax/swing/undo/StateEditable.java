@@ -1,5 +1,5 @@
 /* StateEditable.java -- Interface for collaborating with StateEdit.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -90,9 +90,9 @@ public interface StateEditable
    * from the specified hash table.
    *
    * <p><b>Note to implementors of this interface:</b> To increase
-   * efficiency, the <code>StateEdit</code> class {@linkplan
-   * StateEdit#removeRedundantState() removes redundant state
-   * information}. Therefore, implementations of this interface must be
+   * efficiency, the <code>StateEdit</code> class {@link
+   * StateEdit#removeRedundantState()} removes redundant state
+   * information. Therefore, implementations of this interface must be
    * prepared for the case where certain keys were stored into the
    * table by {@link #storeState}, but are not present anymore
    * when the <code>restoreState</code> method gets called.

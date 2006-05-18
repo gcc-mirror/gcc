@@ -47,7 +47,9 @@ package java.beans.beancontext;
  */
 
 public class BeanContextServiceRevokedEvent extends BeanContextEvent {
-	/**
+       private static final long serialVersionUID = -1295543154724961754L;
+
+       /**
 	 * The <code>Class</code> representing the service which is now
 	 * available.
 	 */

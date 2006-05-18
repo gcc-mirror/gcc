@@ -38,8 +38,8 @@ exception statement from your version.  */
 
 package gnu.java.security.key.rsa;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
-import gnu.java.security.key.IKeyPairCodec;
 import gnu.java.security.util.FormatUtil;
 
 import java.math.BigInteger;
@@ -48,8 +48,6 @@ import java.security.interfaces.RSAKey;
 
 /**
  * <p>A base asbtract class for both public and private RSA keys.</p>
- *
- * @version $Revision: 1.3 $
  */
 public abstract class GnuRSAKey implements Key, RSAKey
 {
@@ -68,6 +66,9 @@ public abstract class GnuRSAKey implements Key, RSAKey
    * key material.
    */
   protected final int defaultFormat;
+
+  /** String representation of this key. Cached for speed. */
+  private transient String str;
 
   // Constructor(s)
   // -------------------------------------------------------------------------
@@ -113,7 +114,7 @@ public abstract class GnuRSAKey implements Key, RSAKey
   /** @deprecated see getEncoded(int). */
   public byte[] getEncoded()
   {
-    return getEncoded(IKeyPairCodec.RAW_FORMAT);
+    return getEncoded(defaultFormat);
   }
 
   public String getFormat()
@@ -173,6 +174,20 @@ public abstract class GnuRSAKey implements Key, RSAKey
       }
     final RSAKey that = (RSAKey) obj;
     return n.equals(that.getModulus());
+  }
+
+  public String toString()
+  {
+    if (str == null)
+      {
+        String ls = SystemProperties.getProperty("line.separator");
+        str = new StringBuilder().append(ls)
+            .append("defaultFormat=").append(defaultFormat).append(",").append(ls)
+            .append("n=0x").append(n.toString(16)).append(",").append(ls)
+            .append("e=0x").append(e.toString(16))
+            .toString();
+      }
+    return str;
   }
 
   // abstract methods to be implemented by subclasses ------------------------

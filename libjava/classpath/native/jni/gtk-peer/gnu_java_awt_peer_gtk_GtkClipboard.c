@@ -1,5 +1,5 @@
 /* gtkclipboard.c
-   Copyright (C) 1998, 1999, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,23 +45,21 @@ exception statement from your version. */
 #define IMAGE_TARGET  3
 #define URI_TARGET    4
 
-/* The clipboard and standard (string targets) shared with GtkSelection. */
+/* The clipboard and selection plus corresponding GtkClipboard objects. */
 GtkClipboard *cp_gtk_clipboard;
+GtkClipboard *cp_gtk_selection;
 
+jobject cp_gtk_clipboard_instance;
+jobject cp_gtk_selection_instance;
+
+/* Standard (string targets) shared with GtkSelection. */
 jstring cp_gtk_stringTarget;
 jstring cp_gtk_imageTarget;
 jstring cp_gtk_filesTarget;
 
-/* Simple id to keep track of the selection we are currently managing. */
-static gint current_selection = 0;
-
-/* Whether we "own" the clipboard. And may clear it. */
-static int owner = 0;
-
 static jclass gtk_clipboard_class;
-static jmethodID setSystemContentsID;
 
-static jobject gtk_clipboard_instance = NULL;
+static jmethodID setSystemContentsID;
 static jmethodID provideContentID;
 static jmethodID provideTextID;
 static jmethodID provideImageID;
@@ -70,22 +68,26 @@ static jmethodID provideURIsID;
 /* Called when clipboard owner changes. Used to update available targets. */
 #if GTK_MINOR_VERSION > 4
 static void
-clipboard_owner_change_cb (GtkClipboard *clipboard __attribute__((unused)),
+clipboard_owner_change_cb (GtkClipboard *clipboard,
 			   GdkEvent *event __attribute__((unused)),
 			   gpointer user_data __attribute__((unused)))
 {
-  /* These are only interesting when we are not the owner. Otherwise
-     we will have the set and clear functions doing the updating. */
   JNIEnv *env = cp_gtk_gdk_env ();
-  if (!owner)
-    (*env)->CallStaticVoidMethod (env, gtk_clipboard_class,
-				  setSystemContentsID);
+  if (clipboard == cp_gtk_clipboard)
+    (*env)->CallVoidMethod (env, cp_gtk_clipboard_instance,
+			    setSystemContentsID, JNI_FALSE);
+  else
+    (*env)->CallVoidMethod (env, cp_gtk_selection_instance,
+                            setSystemContentsID, JNI_FALSE);
+
 }
 #endif
 
 JNIEXPORT jboolean JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env,
-							 jclass gtkclipboard,
+							 jclass clz,
+							 jobject gtkclipboard,
+							 jobject gtkselection,
 							 jstring string,
 							 jstring image,
 							 jstring files)
@@ -93,19 +95,47 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env,
   GdkDisplay* display;
   jboolean can_cache;
 
-  gtk_clipboard_class = gtkclipboard;
-  setSystemContentsID = (*env)->GetStaticMethodID (env, gtk_clipboard_class,
-						   "setSystemContents",
-						   "()V");
+  gtk_clipboard_class = clz;
+  setSystemContentsID = (*env)->GetMethodID (env, gtk_clipboard_class,
+					     "setSystemContents",
+					     "(Z)V");
   if (setSystemContentsID == NULL)
     return JNI_FALSE;
 
+  provideContentID = (*env)->GetMethodID (env, gtk_clipboard_class,
+					  "provideContent",
+					  "(Ljava/lang/String;)[B");
+  if (provideContentID == NULL)
+    return JNI_FALSE;
+  
+  provideTextID = (*env)->GetMethodID (env, gtk_clipboard_class,
+				       "provideText",
+				       "()Ljava/lang/String;");
+  if (provideTextID == NULL)
+    return JNI_FALSE;
+  
+  provideImageID = (*env)->GetMethodID (env, gtk_clipboard_class,
+					"provideImage",
+					"()Lgnu/java/awt/peer/gtk/GtkImage;");
+  if (provideImageID == NULL)
+    return JNI_FALSE;
+  
+  provideURIsID = (*env)->GetMethodID (env, gtk_clipboard_class,
+				       "provideURIs",
+				       "()[Ljava/lang/String;");
+  if (provideURIsID == NULL)
+    return JNI_FALSE;
+  
+  cp_gtk_clipboard_instance = (*env)->NewGlobalRef(env, gtkclipboard);
+  cp_gtk_selection_instance = (*env)->NewGlobalRef(env, gtkselection);
+  
   cp_gtk_stringTarget = (*env)->NewGlobalRef(env, string);
   cp_gtk_imageTarget = (*env)->NewGlobalRef(env, image);
   cp_gtk_filesTarget = (*env)->NewGlobalRef(env, files);
 
   gdk_threads_enter ();
   cp_gtk_clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+  cp_gtk_selection = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
 
   display = gtk_clipboard_get_display (cp_gtk_clipboard);
   /* Check for support for clipboard owner changes. */
@@ -114,26 +144,37 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env,
     {
       g_signal_connect (cp_gtk_clipboard, "owner-change",
 			G_CALLBACK (clipboard_owner_change_cb), NULL);
+      g_signal_connect (cp_gtk_selection, "owner-change",
+			G_CALLBACK (clipboard_owner_change_cb), NULL);
       gdk_display_request_selection_notification (display,
 						  GDK_SELECTION_CLIPBOARD);
+      gdk_display_request_selection_notification (display,
+						  GDK_SELECTION_PRIMARY);
       can_cache = JNI_TRUE;
     }
   else
 #endif
     can_cache = JNI_FALSE;
+
   gdk_threads_leave ();
 
   return can_cache;
 }
 
 static void
-clipboard_get_func (GtkClipboard *clipboard __attribute__((unused)),
+clipboard_get_func (GtkClipboard *clipboard,
 		    GtkSelectionData *selection,
 		    guint info,
 		    gpointer user_data __attribute__((unused)))
 {
+  jobject gtk_clipboard_instance;
   JNIEnv *env = cp_gtk_gdk_env ();
   
+  if (clipboard == cp_gtk_clipboard)
+    gtk_clipboard_instance = cp_gtk_clipboard_instance;
+  else
+    gtk_clipboard_instance = cp_gtk_selection_instance;
+
   if (info == OBJECT_TARGET)
     {
       const gchar *target_name;
@@ -258,16 +299,17 @@ clipboard_get_func (GtkClipboard *clipboard __attribute__((unused)),
 }
 
 static void
-clipboard_clear_func (GtkClipboard *clipboard __attribute__((unused)),
-		      gpointer user_data)
+clipboard_clear_func (GtkClipboard *clipboard,
+		      gpointer user_data __attribute__((unused)))
 {
-  if (owner && GPOINTER_TO_INT(user_data) == current_selection)
-    {
-      JNIEnv *env = cp_gtk_gdk_env();
-      owner = 0;
-      (*env)->CallStaticVoidMethod (env, gtk_clipboard_class,
-				    setSystemContentsID);
-    }
+  JNIEnv *env = cp_gtk_gdk_env();
+  if (clipboard == cp_gtk_clipboard)
+    (*env)->CallVoidMethod (env, cp_gtk_clipboard_instance,
+			    setSystemContentsID, JNI_TRUE);
+  else
+    (*env)->CallVoidMethod (env, cp_gtk_selection_instance,
+                            setSystemContentsID, JNI_TRUE);
+
 }
 
 JNIEXPORT void JNICALL
@@ -347,64 +389,34 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_advertiseContent
 
       /* Set the targets plus callback functions and ask for the clipboard
 	 to be stored when the application exists if supported. */
-      current_selection++;
-      if (gtk_clipboard_set_with_data (cp_gtk_clipboard, targets, n,
-				       clipboard_get_func,
-				       clipboard_clear_func,
-				       GINT_TO_POINTER(current_selection)))
+      if ((*env)->IsSameObject(env, instance, cp_gtk_clipboard_instance))
 	{
-	  owner = 1;
-	  if (gtk_clipboard_instance == NULL)
+	  if (gtk_clipboard_set_with_data (cp_gtk_clipboard, targets, n,
+					   clipboard_get_func,
+					   clipboard_clear_func,
+					   NULL))
 	    {
-	      JNIEnv *env = cp_gtk_gdk_env ();
-	      gtk_clipboard_instance =  (*env)->NewGlobalRef(env, instance);
-
-	      provideContentID
-		= (*env)->GetMethodID (env, gtk_clipboard_class,
-				       "provideContent",
-				       "(Ljava/lang/String;)[B");
-	      if (provideContentID == NULL)
-		return;
-
-	      provideTextID
-		= (*env)->GetMethodID (env, gtk_clipboard_class,
-				       "provideText", "()Ljava/lang/String;");
-	      if (provideTextID == NULL)
-		return;
-
-	      provideImageID
-		= (*env)->GetMethodID (env, gtk_clipboard_class,
-				       "provideImage",
-				       "()Lgnu/java/awt/peer/gtk/GtkImage;");
-	      if (provideImageID == NULL)
-		return;
-
-	      provideURIsID
-		= (*env)->GetMethodID (env, gtk_clipboard_class,
-				       "provideURIs",
-				       "()[Ljava/lang/String;");
-	      if (provideURIsID == NULL)
-		return;
-	    }
 #if GTK_MINOR_VERSION > 4
-	  gtk_clipboard_set_can_store (cp_gtk_clipboard, NULL, 0);
+	      gtk_clipboard_set_can_store (cp_gtk_clipboard, NULL, 0);
 #endif
+	    }
 	}
       else
 	{
-	  owner = 0;
-	  (*env)->CallStaticVoidMethod (env, gtk_clipboard_class,
-					setSystemContentsID);
+	  if (gtk_clipboard_set_with_data (cp_gtk_selection, targets, n,
+					   clipboard_get_func,
+					   clipboard_clear_func,
+					   NULL))
+	    {
+#if GTK_MINOR_VERSION > 4
+	      gtk_clipboard_set_can_store (cp_gtk_selection, NULL, 0);
+#endif
+	    }
 	}
 
       for (i = 0; i < n; i++)
 	g_free (targets[i].target);
       g_free (targets);
-    }
-  else if (owner)
-    {
-      gtk_clipboard_clear (cp_gtk_clipboard);
-      owner = 0;
     }
 
   gtk_target_list_unref (target_list);

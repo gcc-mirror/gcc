@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <!-- package.html - describes classes in javax.print.event package.
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,15 @@ exception statement from your version. -->
 <head><title>GNU Classpath - javax.print.event</title></head>
 
 <body>
-<p>Provides events and listeners to be used with the Java Print Service API.</p>
+Provides events and listeners to be used with the Java Print Service API.
+<p>
+The provided listeners are used to register with print services and/or
+print jobs to receive state information or to monitor the progress of
+print jobs. Print jobs don't need to be implemented synchronous and
+therefore should be monitored to know if they succeed or fail. For this
+common task the <a href="PrintJobAdapter.html">PrintJobAdapter</a> class 
+is provided.
+</p>
 <p>
 <b>Since:</b> 1.4
 </p>

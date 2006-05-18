@@ -658,6 +658,5 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   public void updateUI()
   {
     setUI((MenuBarUI) UIManager.getUI(this));
-    invalidate();
   }
 }

@@ -1,5 +1,5 @@
 /* WrappedPlainView.java -- 
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Position.Bias;
 
@@ -64,8 +63,11 @@ public class WrappedPlainView extends BoxView implements TabExpander
   /** The color for disabled components **/
   Color disabledColor;
   
-  /** Stores the font metrics **/
-  protected FontMetrics metrics;
+  /**
+   * Stores the font metrics. This is package private to avoid synthetic
+   * accessor method.
+   */
+  FontMetrics metrics;
   
   /** Whether or not to wrap on word boundaries **/
   boolean wordWrap;
@@ -78,6 +80,9 @@ public class WrappedPlainView extends BoxView implements TabExpander
   
   /** The end of the selected text **/
   int selectionEnd;
+  
+  /** The height of the line (used while painting) **/
+  int lineHeight;
   
   /**
    * The instance returned by {@link #getLineBuffer()}.
@@ -270,8 +275,20 @@ public class WrappedPlainView extends BoxView implements TabExpander
   protected int calculateBreakPosition(int p0, int p1)
   {
     Container c = getContainer();
-    Rectangle alloc = new Rectangle(0, 0, getWidth(), getHeight());
+    
+    int li = getLeftInset();
+    int ti = getTopInset();
+    
+    Rectangle alloc = new Rectangle(li, ti,
+                                    getWidth()-getRightInset()-li,
+                                    getHeight()-getBottomInset()-ti);
+
+    // Mimic a behavior observed in the RI.
+    if (alloc.isEmpty())
+      return 0;
+    
     updateMetrics();
+    
     try
       {
         getDocument().getText(p0, p1 - p0, getLineBuffer());
@@ -279,18 +296,16 @@ public class WrappedPlainView extends BoxView implements TabExpander
     catch (BadLocationException ble)
       {
         // this shouldn't happen
+        throw new InternalError("Invalid offsets p0: " + p0 + " - p1: " + p1);
       }
-    // FIXME: Should we account for the insets of the container?
+
     if (wordWrap)
-      return p0
-             + Utilities.getBreakLocation(lineBuffer, metrics, alloc.x,
-                                          alloc.x + alloc.width, this, 0);
+      return Utilities.getBreakLocation(lineBuffer, metrics, alloc.x,
+                                          alloc.x + alloc.width, this, p0);
     else
-      {
-      return p0
-             + Utilities.getTabbedTextOffset(lineBuffer, metrics, alloc.x,
-                                             alloc.x + alloc.width, this, 0);
-      }
+      return p0 + Utilities.getTabbedTextOffset(lineBuffer, metrics, alloc.x,
+                                             alloc.x + alloc.width, this, 0,
+                                             true);
   }
   
   void updateMetrics()
@@ -336,8 +351,8 @@ public class WrappedPlainView extends BoxView implements TabExpander
   public void insertUpdate (DocumentEvent e, Shape a, ViewFactory f)
   {
     super.insertUpdate(e, a, viewFactory);
-    // FIXME: could improve performance by repainting only the necessary area
-    getContainer().repaint();
+
+    // No repaint needed, as this is done by the WrappedLine instances.
   }
   
   /**
@@ -347,8 +362,8 @@ public class WrappedPlainView extends BoxView implements TabExpander
   public void removeUpdate (DocumentEvent e, Shape a, ViewFactory f)
   {
     super.removeUpdate(e, a, viewFactory);
-    // FIXME: could improve performance by repainting only the necessary area
-    getContainer().repaint();
+    
+    // No repaint needed, as this is done by the WrappedLine instances.
   }
   
   /**
@@ -359,8 +374,8 @@ public class WrappedPlainView extends BoxView implements TabExpander
   public void changedUpdate (DocumentEvent e, Shape a, ViewFactory f)
   {
     super.changedUpdate(e, a, viewFactory);
-    // FIXME: could improve performance by repainting only the necessary area
-    getContainer().repaint();
+    
+    // No repaint needed, as this is done by the WrappedLine instances.
   }
     
   class WrappedLineCreator implements ViewFactory
@@ -383,9 +398,19 @@ public class WrappedPlainView extends BoxView implements TabExpander
   public void paint(Graphics g, Shape a)
   {
     JTextComponent comp = (JTextComponent)getContainer();
+    // Ensure metrics are up-to-date.
+    updateMetrics();
+    
     selectionStart = comp.getSelectionStart();
     selectionEnd = comp.getSelectionEnd();
-    updateMetrics();
+
+    selectedColor = comp.getSelectedTextColor();
+    unselectedColor = comp.getForeground();
+    disabledColor = comp.getDisabledTextColor();
+    selectedColor = comp.getSelectedTextColor();
+    lineHeight = metrics.getHeight();
+    g.setFont(comp.getFont());
+
     super.paint(g, a);
   }
   
@@ -404,7 +429,7 @@ public class WrappedPlainView extends BoxView implements TabExpander
   class WrappedLine extends View
   { 
     /** Used to cache the number of lines for this View **/
-    int numLines;
+    int numLines = 1;
     
     public WrappedLine(Element elem)
     {
@@ -418,48 +443,47 @@ public class WrappedPlainView extends BoxView implements TabExpander
      */
     public void paint(Graphics g, Shape s)
     {
-      // Ensure metrics are up-to-date.
-      updateMetrics();
-      JTextComponent textComponent = (JTextComponent) getContainer();
-
-      g.setFont(textComponent.getFont());
-      selectedColor = textComponent.getSelectedTextColor();
-      unselectedColor = textComponent.getForeground();
-      disabledColor = textComponent.getDisabledTextColor();
-
-      // FIXME: this is a hack, for some reason textComponent.getSelectedColor
-      // was returning black, which is not visible against a black background
-      selectedColor = Color.WHITE;
-      
       Rectangle rect = s.getBounds();
-      int lineHeight = metrics.getHeight();
 
       int end = getEndOffset();
       int currStart = getStartOffset();
-      int currEnd;      
+      int currEnd;
+      int count = 0;
       while (currStart < end)
         {
           currEnd = calculateBreakPosition(currStart, end);
-          drawLine(currStart, currEnd, g, rect.x, rect.y);
+
+          drawLine(currStart, currEnd, g, rect.x, rect.y + metrics.getAscent());
+          
           rect.y += lineHeight;          
           if (currEnd == currStart)
             currStart ++;
           else
-            currStart = currEnd;          
+            currStart = currEnd;
+          
+          count++;
+          
         }
+      
+      if (count != numLines)
+        {
+          numLines = count;
+          preferenceChanged(this, false, true);
+        }
+      
     }
     
     /**
-     * Determines the number of logical lines that the Element
-     * needs to be displayed
-     * @return the number of lines needed to display the Element
+     * Calculates the number of logical lines that the Element
+     * needs to be displayed and updates the variable numLines
+     * accordingly.
      */
-    int determineNumLines()
+    void determineNumLines()
     {      
       numLines = 0;
       int end = getEndOffset();
       if (end == 0)
-        return 0;
+        return;
             
       int breakPoint;
       for (int i = getStartOffset(); i < end;)
@@ -468,12 +492,17 @@ public class WrappedPlainView extends BoxView implements TabExpander
           // careful: check that there's no off-by-one problem here
           // depending on which position calculateBreakPosition returns
           breakPoint = calculateBreakPosition(i, end);
+          
+          if (breakPoint == 0)
+            return;
+          
+          // If breakPoint is equal to the current index no further
+          // line is needed and we can end the loop.
           if (breakPoint == i)
-            i ++;
+            break;
           else
             i = breakPoint;
         }
-      return numLines;
     }
     
     /**
@@ -489,7 +518,11 @@ public class WrappedPlainView extends BoxView implements TabExpander
       if (axis == X_AXIS)
         return getWidth();
       else if (axis == Y_AXIS)
-        return numLines * metrics.getHeight(); 
+        {
+          if (metrics == null)
+            updateMetrics();
+          return numLines * metrics.getHeight();
+        }
       
       throw new IllegalArgumentException("Invalid axis for getPreferredSpan: "
                                          + axis);
@@ -509,9 +542,15 @@ public class WrappedPlainView extends BoxView implements TabExpander
     public Shape modelToView(int pos, Shape a, Bias b)
         throws BadLocationException
     {
+      Rectangle rect = a.getBounds();
+      
+      // Throwing a BadLocationException is an observed behavior of the RI.
+      if (rect.isEmpty())
+        throw new BadLocationException("Unable to calculate view coordinates "
+                                       + "when allocation area is empty.", 5);
+      
       Segment s = getLineBuffer();
       int lineHeight = metrics.getHeight();
-      Rectangle rect = a.getBounds();
       
       // Return a rectangle with width 1 and height equal to the height 
       // of the text
@@ -530,7 +569,7 @@ public class WrappedPlainView extends BoxView implements TabExpander
           // If pos is between currLineStart and currLineEnd then just find
           // the width of the text from currLineStart to pos and add that
           // to rect.x
-          if (pos >= currLineStart && pos < currLineEnd || pos == end - 1)
+          if (pos >= currLineStart && pos < currLineEnd)
             {             
               try
                 {
@@ -574,68 +613,93 @@ public class WrappedPlainView extends BoxView implements TabExpander
       Segment s = getLineBuffer();
       Rectangle rect = a.getBounds();
       int currLineStart = getStartOffset();
+      
+      // Although calling modelToView with the last possible offset will
+      // cause a BadLocationException in CompositeView it is allowed
+      // to return that offset in viewToModel.
       int end = getEndOffset();
+      
       int lineHeight = metrics.getHeight();
       if (y < rect.y)
         return currLineStart;
-      if (y > rect.y + rect.height)
-        return end - 1;
 
-      while (true)
+      if (y > rect.y + rect.height)
+        return end;
+      
+      // Note: rect.x and rect.width do not represent the width of painted
+      // text but the area where text *may* be painted. This means the width
+      // is most of the time identical to the component's width.
+
+      while (currLineStart != end)
         {
           int currLineEnd = calculateBreakPosition(currLineStart, end);
+
           // If we're at the right y-position that means we're on the right
           // logical line and we should look for the character
           if (y >= rect.y && y < rect.y + lineHeight)
             {
-              // Check if the x position is to the left or right of the text
-              if (x < rect.x)
-                return currLineStart;
-              if (x > rect.x + rect.width)
-                return currLineEnd - 1;
-              
               try
                 {
-                  getDocument().getText(currLineStart, end - currLineStart, s);
+                  getDocument().getText(currLineStart, currLineEnd - currLineStart, s);
                 }
               catch (BadLocationException ble)
                 {
                   // Shouldn't happen
                 }
-              int mark = Utilities.getTabbedTextOffset(s, metrics, rect.x,
-                                                       (int) x,
-                                                       WrappedPlainView.this,
-                                                       currLineStart);
-              return currLineStart + mark;
+              
+              int offset = Utilities.getTabbedTextOffset(s, metrics, rect.x,
+                                                   (int) x,
+                                                   WrappedPlainView.this,
+                                                   currLineStart);
+              // If the calculated offset is the end of the line (in the
+              // document (= start of the next line) return the preceding
+              // offset instead. This makes sure that clicking right besides
+              // the last character in a line positions the cursor after the
+              // last character and not in the beginning of the next line.
+              return (offset == currLineEnd) ? offset - 1 : offset;
             }
           // Increment rect.y so we're checking the next logical line
           rect.y += lineHeight;
           
           // Increment currLineStart to the model position of the start
-          // of the next logical line
-          if (currLineEnd == currLineStart)
-            currLineStart = end;
-          else
-            currLineStart = currLineEnd;
+          // of the next logical line.
+          currLineStart = currLineEnd;
+
         }
+      
+      return end;
     }    
     
     /**
-     * This method is called from insertUpdate and removeUpdate.
-     * If the number of lines in the document has changed, just repaint
+     * <p>This method is called from insertUpdate and removeUpdate.</p>
+     * 
+     * <p>If the number of lines in the document has changed, just repaint
      * the whole thing (note, could improve performance by not repainting 
      * anything above the changes).  If the number of lines hasn't changed, 
-     * just repaint the given Rectangle.
+     * just repaint the given Rectangle.</p>
+     * 
+     * <p>Note that the <code>Rectangle</code> argument may be <code>null</code>
+     * when the allocation area is empty.</code> 
+     * 
      * @param a the Rectangle to repaint if the number of lines hasn't changed
      */
     void updateDamage (Rectangle a)
     {
-      int newNumLines = determineNumLines();
-      if (numLines != newNumLines)
+      // If the allocation area is empty we can't do anything useful.
+      // As determining the number of lines is impossible in that state we
+      // reset it to an invalid value which can then be recalculated at a
+      // later point.
+      if (a == null || a.isEmpty())
         {
-          numLines = newNumLines;
-          getContainer().repaint();
+          numLines = 1;
+          return;
         }
+      
+      int oldNumLines = numLines;
+      determineNumLines();
+      
+      if (numLines != oldNumLines)
+        preferenceChanged(this, false, true);
       else
         getContainer().repaint(a.x, a.y, a.width, a.height);
     }
@@ -663,6 +727,15 @@ public class WrappedPlainView extends BoxView implements TabExpander
      */
     public void removeUpdate (DocumentEvent changes, Shape a, ViewFactory f)
     {
+      // Note: This method is not called when characters from the
+      // end of the document are removed. The reason for this
+      // can be found in the implementation of View.forwardUpdate:
+      // The document event will denote offsets which do not exist
+      // any more, getViewIndex() will therefore return -1 and this
+      // makes View.forwardUpdate() skip this method call.
+      // However this seems to cause no trouble and as it reduces the
+      // number of method calls it can stay this way.
+      
       updateDamage((Rectangle)a); 
     }
   }

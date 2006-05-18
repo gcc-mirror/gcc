@@ -1,4 +1,4 @@
-/* GnuKeyring.java -- 
+/* GnuKeyring.java -- KeyStore adapter for a pair of private and public Keyrings
    Copyright (C) 2003, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -38,376 +38,412 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.jce.keyring;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import gnu.java.security.Registry;
+import gnu.javax.crypto.keyring.GnuPrivateKeyring;
+import gnu.javax.crypto.keyring.GnuPublicKeyring;
+import gnu.javax.crypto.keyring.IKeyring;
+import gnu.javax.crypto.keyring.IPrivateKeyring;
+import gnu.javax.crypto.keyring.IPublicKeyring;
+import gnu.javax.crypto.keyring.MalformedKeyringException;
+import gnu.javax.crypto.keyring.PrimitiveEntry;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.Key;
-import java.security.KeyStoreSpi;
 import java.security.KeyStoreException;
+import java.security.KeyStoreSpi;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.crypto.SecretKey;
 
-import gnu.java.security.Registry;
-import gnu.javax.crypto.keyring.IKeyring;
-import gnu.javax.crypto.keyring.IPrivateKeyring;
-import gnu.javax.crypto.keyring.IPublicKeyring;
-import gnu.javax.crypto.keyring.GnuPrivateKeyring;
-import gnu.javax.crypto.keyring.GnuPublicKeyring;
-import gnu.javax.crypto.keyring.MalformedKeyringException;
-import gnu.javax.crypto.keyring.PrimitiveEntry;
-
-public class GnuKeyring extends KeyStoreSpi
+/**
+ * An <i>Adapter</i> over a pair of one private, and one public keyrings to
+ * emulate the keystore operations.
+ */
+public class GnuKeyring
+    extends KeyStoreSpi
 {
+  private static final Logger log = Logger.getLogger(GnuKeyring.class.getName());
+  private static final String NOT_LOADED = "not loaded";
 
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
+  /** TRUE if the keystore is loaded; FALSE otherwise. */
   private boolean loaded;
+  /** our underlying private keyring. */
+  private IPrivateKeyring privateKR;
+  /** our underlying public keyring. */
+  private IPublicKeyring publicKR;
 
-  private IKeyring keyring;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
-
-  public GnuKeyring()
-  {
-  }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
+  // default 0-arguments constructor
 
   public Enumeration engineAliases()
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return new Enumeration()
+    ensureLoaded();
+    Enumeration result;
+    if (privateKR == null)
+      result = Collections.enumeration(Collections.EMPTY_SET);
+      else
         {
-          public boolean hasMoreElements()
-          {
-            return false;
-          }
+          Set aliases = new HashSet();
+          for (Enumeration e = privateKR.aliases(); e.hasMoreElements();)
+            {
+              String alias = (String) e.nextElement();
+              if (alias != null)
+                aliases.add(alias);
+            }
 
-          public Object nextElement()
-          {
-            throw new NoSuchElementException();
-          }
-        };
-      }
-    return keyring.aliases();
+          for (Enumeration e = publicKR.aliases(); e.hasMoreElements();)
+            {
+              String alias = (String) e.nextElement();
+              if (alias != null)
+                aliases.add(alias);
+            }
+
+          result = Collections.enumeration(aliases);
+        }
+
+    return result;
   }
 
   public boolean engineContainsAlias(String alias)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return false;
-      }
-    return keyring.containsAlias(alias);
+    log.entering(this.getClass().getName(), "engineContainsAlias", alias);
+
+    ensureLoaded();
+    boolean inPrivateKR = privateKR.containsAlias(alias);
+    log.finest("inPrivateKR=" + inPrivateKR);
+    boolean inPublicKR = publicKR.containsAlias(alias);
+    log.finest("inPublicKR=" + inPublicKR);
+    boolean result = inPrivateKR || inPublicKR;
+
+    log.exiting(this.getClass().getName(), "engineContainsAlias",
+                Boolean.valueOf(result));
+    return result;
   }
 
   public void engineDeleteEntry(String alias)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring != null)
-      {
-        keyring.remove(alias);
-      }
+    log.entering(this.getClass().getName(), "engineDeleteEntry", alias);
+
+    ensureLoaded();
+    if (privateKR.containsAlias(alias))
+      privateKR.remove(alias);
+    else if (publicKR.containsAlias(alias))
+      publicKR.remove(alias);
+    else
+      log.finer("Unknwon alias: " + alias);
+
+    log.exiting(this.getClass().getName(), "engineDeleteEntry");
   }
 
   public Certificate engineGetCertificate(String alias)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return null;
-      }
-    if (!(keyring instanceof IPublicKeyring))
-      {
-        throw new IllegalStateException("not a public keyring");
-      }
-    return ((IPublicKeyring) keyring).getCertificate(alias);
+    log.entering(this.getClass().getName(), "engineGetCertificate", alias);
+
+    ensureLoaded();
+    Certificate result = publicKR.getCertificate(alias);
+
+    log.exiting(this.getClass().getName(), "engineGetCertificate", result);
+    return result;
   }
 
   public String engineGetCertificateAlias(Certificate cert)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return null;
-      }
-    if (!(keyring instanceof IPublicKeyring))
-      {
-        throw new IllegalStateException("not a public keyring");
-      }
-    Enumeration aliases = keyring.aliases();
-    while (aliases.hasMoreElements())
+    log.entering(this.getClass().getName(), "engineGetCertificateAlias", cert);
+
+    ensureLoaded();
+    String result = null;
+    for (Enumeration aliases = publicKR.aliases(); aliases.hasMoreElements();)
       {
         String alias = (String) aliases.nextElement();
-        Certificate cert2 = ((IPublicKeyring) keyring).getCertificate(alias);
+        Certificate cert2 = publicKR.getCertificate(alias);
         if (cert.equals(cert2))
           {
-            return alias;
+            result = alias;
+            break;
           }
       }
-    return null;
+
+    log.exiting(this.getClass().getName(), "engineGetCertificateAlias", result);
+    return result;
   }
 
   public void engineSetCertificateEntry(String alias, Certificate cert)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        keyring = new GnuPublicKeyring("HMAC-SHA-1", 20);
-      }
-    if (!(keyring instanceof IPublicKeyring))
-      {
-        throw new IllegalStateException("not a public keyring");
-      }
-    ((IPublicKeyring) keyring).putCertificate(alias, cert);
+    log.entering(this.getClass().getName(), "engineSetCertificateEntry",
+                 new Object[] { alias, cert });
+
+    ensureLoaded();
+    publicKR.putCertificate(alias, cert);
+
+    log.exiting(this.getClass().getName(), "engineSetCertificateEntry");
   }
 
   public Certificate[] engineGetCertificateChain(String alias)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return null;
-      }
-    if (!(keyring instanceof IPrivateKeyring))
-      {
-        throw new IllegalStateException("not a private keyring");
-      }
-    return ((IPrivateKeyring) keyring).getCertPath(alias);
+    log.entering(this.getClass().getName(), "engineGetCertificateChain", alias);
+
+    ensureLoaded();
+    Certificate[] result = privateKR.getCertPath(alias);
+
+    log.exiting(this.getClass().getName(), "engineGetCertificateChain", result);
+    return result;
   }
 
   public Date engineGetCreationDate(String alias)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return null;
-      }
-    List entries = keyring.get(alias);
-    if (entries.size() == 0)
-      {
-        return null;
-      }
-    for (Iterator it = entries.iterator(); it.hasNext();)
-      {
-        Object o = it.next();
-        if (o instanceof PrimitiveEntry)
-          {
-            return ((PrimitiveEntry) o).getCreationDate();
-          }
-      }
-    return null;
+    log.entering(this.getClass().getName(), "engineGetCreationDate", alias);
+
+    ensureLoaded();
+    Date result = getCreationDate(alias, privateKR);
+    if (result == null)
+      result = getCreationDate(alias, publicKR);
+
+    log.exiting(this.getClass().getName(), "engineGetCreationDate", result);
+    return result;
   }
 
   public Key engineGetKey(String alias, char[] password)
       throws UnrecoverableKeyException
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return null;
-      }
-    if (!(keyring instanceof IPrivateKeyring))
-      {
-        throw new IllegalStateException("not a private keyring");
-      }
+    log.entering(this.getClass().getName(), "engineGetKey",
+                 String.valueOf(password));
+
+    ensureLoaded();
+    Key result = null;
     if (password == null)
       {
-        if (((IPrivateKeyring) keyring).containsPublicKey(alias))
-          {
-            return ((IPrivateKeyring) keyring).getPublicKey(alias);
-          }
+        if (privateKR.containsPublicKey(alias))
+          result = privateKR.getPublicKey(alias);
       }
-    if (((IPrivateKeyring) keyring).containsPrivateKey(alias))
-      {
-        return ((IPrivateKeyring) keyring).getPrivateKey(alias, password);
-      }
-    return null;
+    else if (privateKR.containsPrivateKey(alias))
+      result = privateKR.getPrivateKey(alias, password); 
+
+    log.exiting(this.getClass().getName(), "engineGetKey", result);
+    return result;
   }
 
   public void engineSetKeyEntry(String alias, Key key, char[] password,
-                                Certificate[] chain) throws KeyStoreException
+                                Certificate[] chain)
+      throws KeyStoreException
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        keyring = new GnuPrivateKeyring("HMAC-SHA-1", 20, "AES", "OFB", 16);
-      }
-    if (!(keyring instanceof IPrivateKeyring))
-      {
-        throw new IllegalStateException("not a private keyring");
-      }
+    log.entering(this.getClass().getName(), "engineSetKeyEntry",
+                 new Object[] { alias, key, password, chain });
+    ensureLoaded();
     if (key instanceof PublicKey)
+      privateKR.putPublicKey(alias, (PublicKey) key);
+    else
       {
-        ((IPrivateKeyring) keyring).putPublicKey(alias, (PublicKey) key);
-        return;
+        if (! (key instanceof PrivateKey) && ! (key instanceof SecretKey))
+          throw new KeyStoreException("cannot store keys of type "
+                                      + key.getClass().getName());
+        privateKR.putCertPath(alias, chain);
+        log.finest("About to put private key in keyring...");
+        privateKR.putPrivateKey(alias, key, password);
       }
-    if (!(key instanceof PrivateKey) && !(key instanceof SecretKey))
-      {
-        throw new KeyStoreException("cannot store keys of type "
-                                    + key.getClass().getName());
-      }
-    try
-      {
-        CertificateFactory fact = CertificateFactory.getInstance("X.509");
-        ((IPrivateKeyring) keyring).putCertPath(alias, chain);
-      }
-    catch (CertificateException ce)
-      {
-        throw new KeyStoreException(ce.toString());
-      }
-    ((IPrivateKeyring) keyring).putPrivateKey(alias, key, password);
+
+    log.exiting(this.getClass().getName(), "engineSetKeyEntry");
   }
 
   public void engineSetKeyEntry(String alias, byte[] key, Certificate[] chain)
       throws KeyStoreException
   {
-    throw new KeyStoreException("method not supported");
+    KeyStoreException x = new KeyStoreException("method not supported");
+    log.throwing(this.getClass().getName(), "engineSetKeyEntry(3)", x);
+    throw x;
   }
 
   public boolean engineIsCertificateEntry(String alias)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return false;
-      }
-    if (!(keyring instanceof IPublicKeyring))
-      {
-        return false;
-      }
-    return ((IPublicKeyring) keyring).containsCertificate(alias);
+    log.entering(this.getClass().getName(), "engineIsCertificateEntry", alias);
+
+    ensureLoaded();
+    boolean result = publicKR.containsCertificate(alias);
+
+    log.exiting(this.getClass().getName(), "engineIsCertificateEntry",
+                Boolean.valueOf(result));
+    return result;
   }
 
   public boolean engineIsKeyEntry(String alias)
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return false;
-      }
-    if (!(keyring instanceof IPrivateKeyring))
-      {
-        return false;
-      }
-    return ((IPrivateKeyring) keyring).containsPublicKey(alias)
-           || ((IPrivateKeyring) keyring).containsPrivateKey(alias);
+    log.entering(this.getClass().getName(), "engineIsKeyEntry", alias);
+
+    ensureLoaded();
+    boolean result = privateKR.containsPublicKey(alias)
+                  || privateKR.containsPrivateKey(alias);
+
+    log.exiting(this.getClass().getName(), "engineIsKeyEntry",
+                Boolean.valueOf(result));
+    return result;
   }
 
   public void engineLoad(InputStream in, char[] password) throws IOException
   {
+    log.entering(this.getClass().getName(), "engineLoad", String.valueOf(password));
     if (in != null)
       {
-        if (!in.markSupported())
-          {
-            in = new BufferedInputStream(in);
-          }
-        in.mark(5);
-        for (int i = 0; i < 4; i++)
-          if (in.read() != Registry.GKR_MAGIC[i])
-            throw new MalformedKeyringException("incorrect magic");
-        int usage = in.read();
-        in.reset();
-        HashMap attr = new HashMap();
-        attr.put(IKeyring.KEYRING_DATA_IN, in);
-        attr.put(IKeyring.KEYRING_PASSWORD, password);
-        switch (usage)
-          {
-          case GnuPublicKeyring.USAGE:
-            keyring = new GnuPublicKeyring();
-            break;
-          case GnuPrivateKeyring.USAGE:
-            keyring = new GnuPrivateKeyring();
-            break;
-          default:
-            throw new MalformedKeyringException("unsupported ring usage: "
-                                                + Integer.toBinaryString(usage));
-          }
-        keyring.load(attr);
+        if (! in.markSupported())
+          in = new BufferedInputStream(in);
+
+        loadPrivateKeyring(in, password);
+        loadPublicKeyring(in, password);
       }
+    else
+      createNewKeyrings();
+
     loaded = true;
+
+    log.exiting(this.getClass().getName(), "engineLoad");
   }
 
   public void engineStore(OutputStream out, char[] password) throws IOException
   {
-    if (!loaded || keyring == null)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
+    log.entering(this.getClass().getName(), "engineStore", String.valueOf(password));
+
+    ensureLoaded();
     HashMap attr = new HashMap();
     attr.put(IKeyring.KEYRING_DATA_OUT, out);
     attr.put(IKeyring.KEYRING_PASSWORD, password);
-    keyring.store(attr);
+
+    privateKR.store(attr);
+    publicKR.store(attr);
+
+    log.exiting(this.getClass().getName(), "engineStore");
   }
 
   public int engineSize()
   {
-    if (!loaded)
-      {
-        throw new IllegalStateException ("not loaded");
-      }
-    if (keyring == null)
-      {
-        return 0;
-      }
-    return keyring.size();
+    ensureLoaded();
+    return privateKR.size() + publicKR.size();
+  }
+
+  /**
+   * Ensure that the underlying keyring pair is loaded. Throw an exception if it
+   * isn't; otherwise returns silently.
+   *
+   * @throws IllegalStateException if the keyring is not loaded.
+   */
+  private void ensureLoaded()
+  {
+    if (! loaded)
+      throw new IllegalStateException(NOT_LOADED);
+  }
+
+  /**
+   * Load the private keyring from the designated input stream.
+   * 
+   * @param in the input stream to process.
+   * @param password the password protecting the keyring.
+   * @throws MalformedKeyringException if the keyring is not a private one.
+   * @throws IOException if an I/O related exception occurs during the process.
+   */
+  private void loadPrivateKeyring(InputStream in, char[] password)
+      throws MalformedKeyringException, IOException
+  {
+    log.entering(this.getClass().getName(), "loadPrivateKeyring");
+
+    in.mark(5);
+    for (int i = 0; i < 4; i++)
+      if (in.read() != Registry.GKR_MAGIC[i])
+        throw new MalformedKeyringException("incorrect magic");
+
+    int usage = in.read();
+    in.reset();
+    if (usage != GnuPrivateKeyring.USAGE)
+      throw new MalformedKeyringException("Was expecting a private keyring but got a wrong USAGE: "
+                                          + Integer.toBinaryString(usage));
+    HashMap attr = new HashMap();
+    attr.put(IKeyring.KEYRING_DATA_IN, in);
+    attr.put(IKeyring.KEYRING_PASSWORD, password);
+    privateKR = new GnuPrivateKeyring();
+    privateKR.load(attr);
+
+    log.exiting(this.getClass().getName(), "loadPrivateKeyring");
+  }
+
+  /**
+   * Load the public keyring from the designated input stream.
+   * 
+   * @param in the input stream to process.
+   * @param password the password protecting the keyring.
+   * @throws MalformedKeyringException if the keyring is not a public one.
+   * @throws IOException if an I/O related exception occurs during the process.
+   */
+  private void loadPublicKeyring(InputStream in, char[] password)
+      throws MalformedKeyringException, IOException
+  {
+    log.entering(this.getClass().getName(), "loadPublicKeyring");
+
+    in.mark(5);
+    for (int i = 0; i < 4; i++)
+      if (in.read() != Registry.GKR_MAGIC[i])
+        throw new MalformedKeyringException("incorrect magic");
+
+    int usage = in.read();
+    in.reset();
+    if (usage != GnuPublicKeyring.USAGE)
+      throw new MalformedKeyringException("Was expecting a public keyring but got a wrong USAGE: "
+                                          + Integer.toBinaryString(usage));
+    HashMap attr = new HashMap();
+    attr.put(IKeyring.KEYRING_DATA_IN, in);
+    attr.put(IKeyring.KEYRING_PASSWORD, password);
+    publicKR = new GnuPublicKeyring();
+    publicKR.load(attr);
+
+    log.exiting(this.getClass().getName(), "loadPublicKeyring");
+  }
+
+  /**
+   * Return the creation date of a named alias in a designated keyring.
+   * 
+   * @param alias the alias to look for.
+   * @param keyring the keyring to search.
+   * @return the creattion date of the entry named <code>alias</code>. Return
+   *         <code>null</code> if <code>alias</code> was not found in
+   *         <code>keyring</code>.
+   */
+  private Date getCreationDate(String alias, IKeyring keyring)
+  {
+    log.entering(this.getClass().getName(), "getCreationDate",
+                 new Object[] { alias, keyring });
+
+    Date result = null;
+    if (keyring != null)
+      for (Iterator it = keyring.get(alias).iterator(); it.hasNext();)
+        {
+          Object o = it.next();
+          if (o instanceof PrimitiveEntry)
+            {
+              result = ((PrimitiveEntry) o).getCreationDate();
+              break;
+            }
+        }
+
+    log.exiting(this.getClass().getName(), "getCreationDate", result);
+    return result;
+  }
+
+  /** Create empty keyrings. */
+  private void createNewKeyrings()
+  {
+    log.entering(this.getClass().getName(), "createNewKeyrings");
+
+    privateKR = new GnuPrivateKeyring("HMAC-SHA-1", 20, "AES", "OFB", 16);
+    publicKR = new GnuPublicKeyring("HMAC-SHA-1", 20);
+
+    log.exiting(this.getClass().getName(), "createNewKeyrings");
   }
 }

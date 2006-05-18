@@ -1,4 +1,4 @@
-nativelib_LTLIBRARIES = libgjsmdssi.la 
+nativeexeclib_LTLIBRARIES = libgjsmdssi.la 
 
 libgjsmdssi_la_SOURCES = gnu_javax_sound_midi_dssi_DSSIMidiDeviceProvider.c \
 			 gnu_javax_sound_midi_dssi_DSSISynthesizer.c \

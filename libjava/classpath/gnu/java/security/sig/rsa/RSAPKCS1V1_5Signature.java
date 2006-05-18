@@ -67,8 +67,6 @@ import java.util.Arrays;
  *    RSA Cryptography Specifications Version 2.1.<br>
  *    Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
- *
- * @version $Revision: 1.2 $
  */
 public class RSAPKCS1V1_5Signature extends BaseSignature
 {

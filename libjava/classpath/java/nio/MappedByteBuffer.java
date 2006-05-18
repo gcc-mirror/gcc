@@ -85,7 +85,7 @@ public abstract class MappedByteBuffer extends ByteBuffer
     forceImpl();
   }
 
-  public void finalize()
+  protected void finalize()
     throws Throwable
   {
     unmapImpl();

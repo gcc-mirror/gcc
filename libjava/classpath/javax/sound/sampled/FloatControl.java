@@ -39,7 +39,7 @@ exception statement from your version. */
 package javax.sound.sampled;
 
 /** @since 1.3 */
-public class FloatControl extends Control
+public abstract class FloatControl extends Control
 {
   /**
    * An instance of this class describes a particular floating point control.

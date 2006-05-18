@@ -39,6 +39,8 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.h"
 
+static GtkWidget *comboboxgroup_get_widget (GtkWidget *widget);
+
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_dispose
   (JNIEnv *env, jobject obj)
@@ -59,7 +61,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_remove
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, checkbox);
-  button = GTK_RADIO_BUTTON (ptr);
+  button = GTK_RADIO_BUTTON (comboboxgroup_get_widget (GTK_WIDGET (ptr)));
 
   /* Update the group to point to some other widget in the group.  We
      have to do this because Gtk doesn't have a separate object to
@@ -74,4 +76,12 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_remove
   NSA_SET_PTR (env, obj, list ? list->data : NULL);
 
   gdk_threads_leave ();
+}
+
+static GtkWidget *
+comboboxgroup_get_widget (GtkWidget *widget)
+{
+  if (GTK_IS_EVENT_BOX (widget))
+  	return gtk_bin_get_child (GTK_BIN(widget));
+  return widget;
 }

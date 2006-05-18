@@ -110,12 +110,14 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   }
 
   /**
-   * Creates a <code>SpinnerNumberModel</code> with the given attributes.
+   * Creates a <code>SpinnerNumberModel</code> with the given attributes.  The
+   * caller should ensure that both <code>minimum</code> and 
+   * <code>maximum</code> are serializable.
    *
-   * @param value the initial value.
+   * @param value the initial value (<code>null</code> not permitted).
    * @param minimum the minimum value (<code>null</code> permitted).
    * @param maximum the maximum value (<code>null</code> permitted).
-   * @param stepSize the step size.
+   * @param stepSize the step size  (<code>null</code> not permitted).
    *
    * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum
    *         does not hold
@@ -171,9 +173,12 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the current value.
+   * Returns the current value, which for this class is always an instance of
+   * {@link Number}.
    *
    * @return The current value.
+   * 
+   * @see #getNumber()
    */
   public Object getValue()
   {
@@ -258,6 +263,8 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    * Returns the minimum value, or <code>null</code> if there is no minimum.
    * 
    * @return The minimum value.
+   * 
+   * @see #setMinimum(Comparable)
    */
   public Comparable getMinimum()
   {
@@ -270,9 +277,12 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    * <code>null</code> value is interpreted as "no minimum value".  No check
    * is made to ensure that the new minimum is less than or equal to the 
    * current value, the caller is responsible for ensuring that this 
-   * relationship holds.
+   * relationship holds.  In addition, the caller should ensure that
+   * <code>newMinimum</code> is {@link Serializable}.
    * 
    * @param newMinimum  the new minimum value (<code>null</code> permitted).
+   * 
+   * @see #getMinimum()
    */
   public void setMinimum(Comparable newMinimum)
   {
@@ -287,6 +297,9 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    * Returns the maximum value, or <code>null</code> if there is no maximum.
    * 
    * @return The maximum value.
+   * 
+   * @see #getMinimum()
+   * @see #setMaximum(Comparable)
    */
   public Comparable getMaximum()
   {
@@ -299,9 +312,12 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    * <code>null</code> value is interpreted as "no maximum value".  No check
    * is made to ensure that the new maximum is greater than or equal to the 
    * current value, the caller is responsible for ensuring that this 
-   * relationship holds.
+   * relationship holds. In addition, the caller should ensure that
+   * <code>newMaximum</code> is {@link Serializable}.
    * 
    * @param newMaximum  the new maximum (<code>null</code> permitted).
+   * 
+   * @see #getMaximum()
    */
   public void setMaximum(Comparable newMaximum)
   {
@@ -315,7 +331,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   /**
    * Returns the step size.
    * 
-   * @return The step size.
+   * @return The step size (never <code>null</code>).
    */
   public Number getStepSize()
   {

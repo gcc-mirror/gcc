@@ -38,22 +38,25 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.Rectangle;
 
 import javax.swing.CellRendererPane;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.SwingUtilities;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 
 /**
  * A button used by the {@link MetalComboBoxUI} class.
  */
-public class MetalComboBoxButton extends JButton {
+public class MetalComboBoxButton
+  extends JButton
+{
 
   /** A reference to the JComboBox that the button belongs to. */
   protected JComboBox comboBox;
@@ -61,7 +64,9 @@ public class MetalComboBoxButton extends JButton {
   /** A reference to the JList. */
   protected JList listBox;
   
-  /** ??? */
+  /**
+   * Used for rendering the selected item.
+   */
   protected CellRendererPane rendererPane;
   
   /** The button icon. */
@@ -91,7 +96,7 @@ public class MetalComboBoxButton extends JButton {
    * @param cb  the combo that the button is used for (<code>null</code> not 
    *            permitted).
    * @param i  the icon displayed on the button.
-   * @parma onlyIcon  a flag that specifies whether the button displays only an
+   * @param onlyIcon  a flag that specifies whether the button displays only an
    *                  icon, or text as well.
    * @param pane  the rendering pane.
    * @param list  the list.
@@ -107,6 +112,9 @@ public class MetalComboBoxButton extends JButton {
     iconOnly = onlyIcon;
     listBox = list;
     rendererPane = pane;
+    setRolloverEnabled(false);
+    setEnabled(comboBox.isEnabled());
+    setFocusable(comboBox.isEnabled());
   }
   
   /**
@@ -191,8 +199,16 @@ public class MetalComboBoxButton extends JButton {
   public void setEnabled(boolean enabled)
   {
     super.setEnabled(enabled);
-    // TODO: figure out what this might need to be used for
-    // perhaps it has something to do with the button's icon and/or border?
+    if (enabled)
+      {
+        setBackground(comboBox.getBackground());
+        setForeground(comboBox.getForeground());
+      }
+    else
+      {
+        setBackground(UIManager.getColor("ComboBox.disabledBackground"));
+        setForeground(UIManager.getColor("ComboBox.disabledForeground"));
+      }
   }
   
   /**
@@ -203,39 +219,75 @@ public class MetalComboBoxButton extends JButton {
   public void paintComponent(Graphics g)
   {
     super.paintComponent(g);
-    if (iconOnly)
+    Insets insets = this.getInsets();
+    int w = getWidth() - (insets.left + insets.right);
+    int h = getHeight() - (insets.top + insets.bottom);
+    if (h > 0 && w > 0)
       {
-        Rectangle bounds = getBounds();
-        int x = (bounds.width - comboIcon.getIconWidth()) / 2;
-        int y = (bounds.height - comboIcon.getIconHeight()) / 2;
-        comboIcon.paintIcon(comboBox, g, x, y);  
-      }
-    else
-      {
-        Object selected = comboBox.getModel().getSelectedItem();
-        if (selected == null)
-          selected = "";
-        Rectangle bounds = comboBox.getBounds();
-        Rectangle innerArea = SwingUtilities.calculateInnerArea(this, null);
-        Insets insets = comboBox.getInsets();
-        Rectangle renderArea = new Rectangle(innerArea.x, innerArea.y, 
-            innerArea.width - comboIcon.getIconWidth() - 4, innerArea.height);
-        Component cellRenderer 
-            = comboBox.getRenderer().getListCellRendererComponent(this.listBox,
-                    selected, comboBox.getSelectedIndex(), false, false);
-        cellRenderer.setBackground(comboBox.getBackground());
-        cellRenderer.setEnabled(comboBox.isEnabled());
-        rendererPane.paintComponent(g, cellRenderer, this, renderArea);
-        if (comboBox.hasFocus())
+        int x1 = insets.left;
+        int y1 = insets.top;
+        int x2 = x1 + (w - 1);
+        int y2 = y1 + (h - 1);
+        int iconWidth = 0;
+        int iconX = x2;
+        if (comboIcon != null)
           {
-            g.setColor(MetalLookAndFeel.getFocusColor());
-            g.drawRect(innerArea.x, innerArea.y - 1, innerArea.width - 1, 
-                    innerArea.height);
+            iconWidth = comboIcon.getIconWidth();
+            int iconHeight = comboIcon.getIconHeight();
+            int iconY;
+            if (iconOnly)
+              {
+                iconX = getWidth() / 2 - iconWidth / 2;
+                iconY = getHeight() / 2 - iconHeight / 2;
+              }
+            else
+              {
+                iconX = x1 + (w - 1) - iconWidth;
+                iconY = y1 + (y2 - y1) / 2 - iconHeight / 2;
+              }
+            comboIcon.paintIcon(this, g, iconX, iconY);
+            if (this.hasFocus())
+              {
+                g.setColor(MetalLookAndFeel.getFocusColor());
+                g.drawRect(x1 - 1, y1 - 1, w + 3, h + 1);
+              }
           }
-        int iconX = bounds.width - insets.right - comboIcon.getIconWidth() - 7;
-        int iconY = insets.top 
-            + (bounds.height - comboIcon.getIconHeight()) / 2; 
-        comboIcon.paintIcon(comboBox, g, iconX, iconY);
+        if (! iconOnly && comboBox != null)
+          {
+            ListCellRenderer renderer = comboBox.getRenderer();
+            boolean pressed = this.getModel().isPressed();
+            Component comp= renderer.getListCellRendererComponent(listBox,
+                                                    comboBox.getSelectedItem(),
+                                                    -1, false, false);
+            comp.setFont(rendererPane.getFont());
+            if (model.isArmed() && model.isPressed())
+              {
+                if (isOpaque())
+                  {
+                    comp.setBackground(UIManager.getColor("Button.select"));
+                    comp.setForeground(comboBox.getForeground());
+                  }
+              }
+            else if (! comboBox.isEnabled())
+              {
+                if (this.isOpaque())
+                  {
+                    Color dbg =
+                      UIManager.getColor("ComboBox.disabledBackground");
+                    comp.setBackground(dbg);
+                    Color dfg =
+                      UIManager.getColor("ComboBox.disabledForeground");
+                    comp.setForeground(dfg);
+                  }
+              }
+            else
+              {
+                comp.setForeground(comboBox.getForeground());
+                comp.setBackground(comboBox.getBackground());
+              }
+            int wr = w - (insets.right + iconWidth);
+            rendererPane.paintComponent(g, comp, this, x1, y1, wr, h);
+          }
       }
   }
 }

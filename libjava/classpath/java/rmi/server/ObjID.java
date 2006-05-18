@@ -1,5 +1,6 @@
-/* ObjID.java --
-   Copyright (c) 1996, 1997, 1998, 1999, 2004  Free Software Foundation, Inc.
+/* ObjID.java -- Unique object id with respect to the given host.
+   Copyright (c) 1996, 1997, 1998, 1999, 2004, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,59 +46,152 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-public final class ObjID implements Serializable
+/**
+ * Represents the object identifier, unique for the host that generated it.
+ * The ObjID contains inside the integer object identifier that, if needed,
+ * may indicated that this is a reference to one of the well known objects
+ * on that host (registry, activator or dgc) and the {@link UID} that 
+ * ensures uniqueness.
+ */
+public final class ObjID
+    implements Serializable
 {
-static final long serialVersionUID = -6386392263968365220L;
 
-private static long next = 0x8000000000000000L;
-private static final Object lock = ObjID.class;
+  /**
+   * Use serial version uid for interoperability.
+   */
+  static final long serialVersionUID = - 6386392263968365220L;
 
-public static final int REGISTRY_ID = 0;
-public static final int ACTIVATOR_ID = 1;
-public static final int DGC_ID = 2;
+  /**
+   * The object counter, which value is assigned when creating the ordinary
+   * objects without the known object id. The counter is incremented each time
+   * the new ObjID is constructed.
+   */
+  private static long next = 0x8000000000000000L;
 
-private long objNum;
-private UID space;
+  /**
+   * The object to put the lock on when incrementing {@link #next}
+   */
+  private static final Object lock = ObjID.class;
 
-public ObjID() {
-	synchronized (lock) {
-		objNum = next++;
-	}
-	space = new UID();
-}
+  /**
+   * Defines the ID of the naming service.
+   */
+  public static final int REGISTRY_ID = 0;
 
-public ObjID(int num) {
-	objNum = (long)num;
-	space = new UID((short)0);
-}
+  /**
+   * Defines the ID of the activator.
+   */
+  public static final int ACTIVATOR_ID = 1;
 
-public void write(ObjectOutput out) throws IOException {
-	DataOutput dout = (DataOutput)out;
-	dout.writeLong(objNum);
-	space.write(dout);
-}
+  /**
+   * Defines the ID of the distributed garbage collector.
+   */
+  public static final int DGC_ID = 2;
 
-public static ObjID read(ObjectInput in) throws IOException {
-	DataInput din = (DataInput)in;
-	ObjID id = new ObjID();
-	id.objNum = din.readLong();
-	id.space = UID.read(din);
-	return (id);
-}
+  /**
+   * The object Id (either well-known value or the value of the incrementing
+   * object counter.
+   */
+  long objNum;
 
-public int hashCode() {
-	return ((int)objNum);
-}
+  /**
+   * The object unique identifier, generated individually for each object.
+   */
+  UID space;
 
-public boolean equals(Object obj) {
-	if (obj instanceof ObjID && this.objNum == ((ObjID)obj).objNum) {
-		return (true);
-	}
-	return (false);
-}
+  /**
+   * Create the new object id, unique for this host.
+   */
+  public ObjID()
+  {
+    synchronized (lock)
+      {
+        objNum = next++;
+      }
+    space = new UID();
+  }
 
-public String toString() {
-	return ("[objNum: " + objNum + ", " + space + "]");
-}
+  /**
+   * Create the new object id defining the well known remotely accessible
+   * object, present in this host. The well - known objects are:
+   * <ul>
+   * <li>{@link #REGISTRY_ID} - RMI naming service.</li>
+   * <li>{@link #ACTIVATOR_ID} - activator</li>
+   * <li>{@link #DGC_ID} - distributed garbage collector (grants lease
+   * durations to keep the object before it is garbage collected.</li>
+   * </ul>
+   * 
+   * @param id the well known object id, one of the above.
+   */
+  public ObjID(int id)
+  {
+    objNum = (long) id;
+    space = new UID((short) 0);
+  }
+
+  /**
+   * Write object id as long, then the object {@link UID}.
+   */
+  public void write(ObjectOutput out) throws IOException
+  {
+    DataOutput dout = (DataOutput) out;
+    dout.writeLong(objNum);
+    space.write(dout);
+  }
+
+  /**
+   * Read object id (as long), then the object {@link UID}.
+   */
+  public static ObjID read(ObjectInput in) throws IOException
+  {
+    DataInput din = (DataInput) in;
+    ObjID id = new ObjID();
+    id.objNum = din.readLong();
+    id.space = UID.read(din);
+    return (id);
+  }
+
+  /**
+   * Get the hashcode.
+   */
+  public int hashCode()
+  {
+    return space == null ? (int) objNum : space.hashCode() ^ (int) objNum;
+  }
+
+  /**
+   * Compare for equality.
+   */
+  public boolean equals(Object obj)
+  {
+    if (obj instanceof ObjID)
+      {
+        ObjID that = (ObjID) obj;
+        return that.objNum == objNum && eq(that.space, space);
+      }
+    else
+      return false;
+  }
+
+  /**
+   * Compare by .equals if both a and b are not null, compare directly if at
+   * least one of them is null.
+   */
+  static final boolean eq(Object a, Object b)
+  {
+    if (a == null || b == null)
+      return a == b;
+    else
+      return a.equals(b);
+  }  
+  
+  /**
+   * Get the string representation.
+   */
+  public String toString()
+  {
+    return (objNum + ":" + space);
+  }
 
 }

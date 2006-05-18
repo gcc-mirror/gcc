@@ -1,5 +1,5 @@
 /* _BindingIteratorStub.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -77,7 +77,7 @@ public class _BindingIteratorStub
   /**
    * Create the stub that used the given delegate.
    */
-  public _BindingIteratorStub(Delegate delegate)
+  _BindingIteratorStub(Delegate delegate)
   {
     super();
     _set_delegate(delegate);

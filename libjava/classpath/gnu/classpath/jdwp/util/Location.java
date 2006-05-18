@@ -1,5 +1,5 @@
 /* Location.java -- class to read/write JDWP locations
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -39,13 +39,12 @@ exception statement from your version. */
 package gnu.classpath.jdwp.util;
 
 import gnu.classpath.jdwp.VMIdManager;
+import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.id.ClassReferenceTypeId;
-import gnu.classpath.jdwp.id.ObjectId;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 /**
@@ -55,62 +54,81 @@ import java.nio.ByteBuffer;
  */
 public class Location
 {
-
-  private ClassReferenceTypeId crti;
-
-  private int index;
-
-  private byte tag;
-
-  private ObjectId mid;
+  private VMMethod method;
+  private long index;
 
   /**
    * Create a location with the given parameters.
    * 
-   * @param tag the type of construct the location is in
-   * @param clazz the class the location is in
-   * @param meth the Method
+   * @param method the method
    * @param index location in the method
-   * @throws JdwpException
    */
-  public Location(byte tag, Class clazz, Method meth, int index)
-      throws JdwpException
+  public Location(VMMethod method, long index)
   {
-    this.tag = tag;
-    this.crti = 
-      (ClassReferenceTypeId) VMIdManager.getDefault().getReferenceTypeId(clazz);
-    this.mid = VMIdManager.getDefault().getObjectId(meth);
+    this.method = method;
     this.index = index;
   }
 
   /**
    * Read a location from the given bytebuffer, consists of a TAG (byte),
-   * followed by a ReferenceTypeId, a MethodId and an index (int).
+   * followed by a ReferenceTypeId, a MethodId and an index (long).
    * 
    * @param bb this holds the location
-   * @throws IOException
-   * @throws JdwpException
+   * @throws IOException    when an error occurs reading from the buffer
+   * @throws JdwpException  for invalid class or method IDs
    */
-  public Location(ByteBuffer bb) throws IOException, JdwpException
+  public Location(ByteBuffer bb)
+    throws IOException, JdwpException
   {
-    this.tag = bb.get();
-    this.crti = 
+    byte tag = bb.get();
+    ClassReferenceTypeId classId = 
       (ClassReferenceTypeId) VMIdManager.getDefault().readReferenceTypeId(bb);
-    this.mid = VMIdManager.getDefault().readObjectId(bb);
-    this.index = bb.getInt();
+    Class klass = classId.getType();
+    method = VMMethod.readId(klass, bb);
+    index = bb.getLong();
   }
 
   /**
    * Write the given location to an output stream.
    * 
    * @param os stream to write to
-   * @throws IOException
+   * @throws IOException when an error occurs writing to the stream
    */
-  public void write(DataOutputStream os) throws IOException
+  public void write(DataOutputStream os)
+    throws IOException
   {
-    os.writeByte(tag);
-    crti.write(os);
-    mid.write(os);
-    os.writeInt(index);
+    VMIdManager idm = VMIdManager.getDefault();
+    ClassReferenceTypeId crti = (ClassReferenceTypeId)
+      idm.getReferenceTypeId(method.getDeclaringClass());
+
+    crti.writeTagged(os);
+    method.writeId(os);
+    os.writeLong(index);
+  }
+
+  /**
+   * Gets the method of this location
+   * 
+   * @return the method
+   */
+  public VMMethod getMethod()
+  {
+    return method;
+  }
+
+  /**
+   * Gets the code index of this location
+   * 
+   * @return the code index
+   */
+  public long getIndex ()
+  {
+    return index;
+  }
+
+  // convenient for debugging
+  public String toString ()
+  {
+    return method.toString () + "." + index;
   }
 }

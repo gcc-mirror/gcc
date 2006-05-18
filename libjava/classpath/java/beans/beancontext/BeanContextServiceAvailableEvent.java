@@ -49,7 +49,9 @@ import java.util.Iterator;
  */
 
 public class BeanContextServiceAvailableEvent extends BeanContextEvent {
-	/**
+       private static final long serialVersionUID = -5333985775656400778L;
+
+       /**
 	 * The <code>Class</code> representing the service which is now
 	 * available.
 	 */

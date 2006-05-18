@@ -1,4 +1,4 @@
-GNU Classpath README - Last updated: August 31, 2005
+GNU Classpath README - Last updated: May 15, 2006
 
 GNU Classpath, Essential Libraries for Java is a project to create a
 free software implementation of the core class libraries for the java
@@ -29,6 +29,7 @@ Smaller environments (runtime only, no compilers, no tools) which work
 with this GNU Classpath releases include
 (tested by and recommended for GNU Classpath hackers):
 
+	* CACAO		(http://www.cacaojvm.org/)
 	* JamVM		(http://jamvm.sourceforge.net/)
 	* Jikes RVM	(http://www.ibm.com/developerworks/oss/jikesrvm/)
 	* Kissme	(http://kissme.sourceforge.net/)

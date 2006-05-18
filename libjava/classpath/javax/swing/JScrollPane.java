@@ -631,8 +631,7 @@ public class JScrollPane extends JComponent
   
   public void updateUI()
   {
-    ScrollPaneUI b = (ScrollPaneUI)UIManager.getUI(this);
-    setUI(b);
+    setUI((ScrollPaneUI) UIManager.getUI(this));
   }  
 
   /**

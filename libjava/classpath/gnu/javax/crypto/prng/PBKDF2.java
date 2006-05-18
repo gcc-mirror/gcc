@@ -62,8 +62,6 @@ import java.util.Map;
  *    <li>B. Kaliski, <a href="http://www.ietf.org/rfc/rfc2898.txt">RFC 2898:
  *    Password-Based Cryptography Specification, Version 2.0</a></li>
  * </ol>
- *
- * @version $Revision: 1.1 $
  */
 public class PBKDF2 extends BasePRNG implements Cloneable
 {
@@ -129,23 +127,34 @@ public class PBKDF2 extends BasePRNG implements Cloneable
         salt = s;
       }
 
+    byte[] macKeyMaterial;
     char[] password = (char[]) attributes.get(IPBE.PASSWORD);
     if (password != null)
       {
+        String encoding = (String) attributes.get(IPBE.PASSWORD_ENCODING);
+        if (encoding == null || encoding.trim().length() == 0)
+          encoding = IPBE.DEFAULT_PASSWORD_ENCODING;
+        else
+          encoding = encoding.trim();
+
         try
           {
-            macAttrib.put(IMac.MAC_KEY_MATERIAL,
-                          new String(password).getBytes("UTF-8"));
+            macKeyMaterial = new String(password).getBytes(encoding);
           }
         catch (UnsupportedEncodingException uee)
           {
-            throw new Error(uee.getMessage());
+            throw new IllegalArgumentException("Unknown or unsupported encoding: "
+                                               + encoding, uee);
           }
       }
+    else
+      macKeyMaterial = (byte[]) attributes.get(IMac.MAC_KEY_MATERIAL);
+
+    if (macKeyMaterial != null)
+      macAttrib.put(IMac.MAC_KEY_MATERIAL, macKeyMaterial);
     else if (!initialised)
-      {
-        throw new IllegalArgumentException("no password specified");
-      } // otherwise re-use previous password.
+      throw new IllegalArgumentException("Neither password nor key-material were specified");
+    // otherwise re-use previous password/key-material
 
     try
       {

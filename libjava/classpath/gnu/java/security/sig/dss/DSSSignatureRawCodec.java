@@ -47,8 +47,6 @@ import java.math.BigInteger;
 /**
  * <p>An object that implements the {@link ISignatureCodec} operations for the
  * <i>Raw</i> format to use with DSS signatures.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class DSSSignatureRawCodec implements ISignatureCodec
 {

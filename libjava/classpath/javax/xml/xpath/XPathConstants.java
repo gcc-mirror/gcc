@@ -1,5 +1,5 @@
 /* XPathConstants.java -- 
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,10 +43,14 @@ import javax.xml.namespace.QName;
  * XPath constants.
  *
  * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
- * @since 1.3
+ * @since 1.5
  */
 public class XPathConstants
 {
+  private XPathConstants()
+  {
+    // to prevent instantiation
+  }
 
   /**
    * The XPath 1.0 number data type.

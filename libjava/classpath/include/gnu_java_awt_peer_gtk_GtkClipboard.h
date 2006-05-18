@@ -11,7 +11,7 @@ extern "C"
 #endif
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_advertiseContent (JNIEnv *env, jobject, jobjectArray, jboolean, jboolean, jboolean);
-JNIEXPORT jboolean JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env, jclass, jstring, jstring, jstring);
+JNIEXPORT jboolean JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env, jclass, jobject, jobject, jstring, jstring, jstring);
 
 #ifdef __cplusplus
 }

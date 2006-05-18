@@ -1341,7 +1341,7 @@ public class Cast5 extends BaseCipher
           {
             result = testKat(KAT_KEY, KAT_CT, KAT_PT);
           }
-        valid = new Boolean(result);
+        valid = Boolean.valueOf(result);
       }
     return valid.booleanValue();
   }

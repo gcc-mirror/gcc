@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import gnu.classpath.NotImplementedException;
+
 import java.text.AttributedCharacterIterator;
 
 /**
@@ -70,27 +72,32 @@ public final class TextMeasurer implements Cloneable
 
   public void deleteChar (AttributedCharacterIterator newParagraph,
                           int deletePos)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public float getAdvanceBetween (int start, int limit)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public TextLayout getLayout (int start, int limit)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public int getLineBreakIndex (int start, float maxAdvance)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public void insertChar (AttributedCharacterIterator newParagraph,
                           int insertPos)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }

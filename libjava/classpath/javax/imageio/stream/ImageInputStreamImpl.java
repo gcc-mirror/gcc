@@ -55,7 +55,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   byte[] buffer = new byte[8];
   
   protected int bitOffset;
-  protected ByteOrder byteOrder;
+  protected ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
   protected long flushedPos;
   protected long streamPos;
 

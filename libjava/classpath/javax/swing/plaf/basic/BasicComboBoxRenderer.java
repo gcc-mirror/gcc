@@ -40,15 +40,13 @@ package javax.swing.plaf.basic;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.io.Serializable;
 
+import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
@@ -64,14 +62,14 @@ public class BasicComboBoxRenderer
   /**
    * A shared border instance for all renderers.
    */
-  protected static Border noFocusBorder = new EmptyBorder(0, 0, 0, 0);
+  protected static Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 
   /**
    * Creates a new <code>BasicComboBoxRenderer</code> object.
    */
   public BasicComboBoxRenderer()
   {
-    setHorizontalAlignment(SwingConstants.LEFT);
+    setOpaque(true);
     setBorder(noFocusBorder);
   }
 
@@ -103,32 +101,7 @@ public class BasicComboBoxRenderer
                                                 int index, boolean isSelected,
                                                 boolean cellHasFocus)
   {
-    String s = value.toString();
-    
-    // String maybe larger than comboBox.
-    FontMetrics fm = getToolkit().getFontMetrics(list.getFont());
-    int strWidth = SwingUtilities.computeStringWidth(fm, s);
-    int cbWidth = getSize().width;
-    if (cbWidth != 0 && strWidth > cbWidth)
-      {
-        char[] str = s.toCharArray();
-        int currWidth = 0;
-        int i = 0;
-        String postStr = "... ";
-        cbWidth -= SwingUtilities.computeStringWidth(fm, postStr);
-        while (i < str.length && currWidth < cbWidth)
-          {
-            ++i;
-            currWidth = SwingUtilities.computeStringWidth(fm, new String(str, 0, i));
-          }
-        setText(new String(str, 0, i)  + postStr);
-      }
-    else   
-      setText(s);
-    
-    setOpaque(true);
-
-    if (isSelected || cellHasFocus)
+    if (isSelected)
       {
         setBackground(list.getSelectionBackground());
         setForeground(list.getSelectionForeground());
@@ -138,9 +111,13 @@ public class BasicComboBoxRenderer
         setBackground(list.getBackground());
         setForeground(list.getForeground());
       }
-
-    setEnabled(list.isEnabled());
     setFont(list.getFont());
+
+    if (value instanceof Icon)
+      setIcon((Icon) value);
+    else
+      setText(value == null ? "" : value.toString());
+
     return this;
   }
 

@@ -74,14 +74,16 @@ public final class Pattern implements Serializable
     this.flags = flags;
 
     int gnuFlags = 0;
+    gnuFlags |= RE.REG_ICASE_USASCII;
     if ((flags & CASE_INSENSITIVE) != 0)
       gnuFlags |= RE.REG_ICASE;
     if ((flags & MULTILINE) != 0)
       gnuFlags |= RE.REG_MULTILINE;
     if ((flags & DOTALL) != 0)
       gnuFlags |= RE.REG_DOT_NEWLINE;
+    if ((flags & UNICODE_CASE) != 0)
+      gnuFlags &= ~RE.REG_ICASE_USASCII;
     // not yet supported:
-    // if ((flags & UNICODE_CASE) != 0) gnuFlags =
     // if ((flags & CANON_EQ) != 0) gnuFlags =
 
     RESyntax syntax = RESyntax.RE_SYNTAX_JAVA_1_4;
@@ -94,7 +96,7 @@ public final class Pattern implements Serializable
 
     if ((flags & COMMENTS) != 0)
       {
-	// Use a syntax with support for comments?
+	gnuFlags |= RE.REG_X_COMMENTS;
       }
 
     try

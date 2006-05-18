@@ -1113,14 +1113,16 @@ public abstract class DomNode
       {
         DomDocument doc = (nodeType == DOCUMENT_NODE) ?
           (DomDocument) node : node.owner;
+        boolean building = doc.building;
+        doc.building = true; // Permit certain structural rules
         for (DomNode ctx = first; ctx != null; ctx = ctx.next)
           {
             DomNode newChild = (DomNode) ctx.cloneNode(deep);
             newChild.setOwner(doc);
             node.appendChild(newChild);
           }
+        doc.building = building;
       }
-    
     if (nodeType == ENTITY_REFERENCE_NODE)
       {
         node.makeReadonly();
@@ -1556,23 +1558,30 @@ public abstract class DomNode
             ancestorLen = ancestors.length;
           }
         
-        // XXX autogrow ancestors ... based on statistics
-        
         // Climb to the top of this subtree and handle capture, letting
         // each node (from the top down) capture until one stops it or
         // until we get to this one.
-        
-        for (index = 0, current = parent;
-             current != null && index < ancestorLen;
-             index++, current = current.parent)
+        current = parent;
+        if (current.depth >= ANCESTORS_INIT)
           {
+            DomNode[] newants = new DomNode[current.depth + 1];
+            System.arraycopy(ancestors, 0, newants, 0, ancestors.length);
+            ancestors = newants;
+            ancestorLen = ancestors.length;
+          }
+        for (index = 0; index < ancestorLen; index++)
+          {
+            if (current == null || current.depth == 0)
+              break;
+            
             if (current.nListeners != 0)
               {
                 haveAncestorRegistrations = true;
               }
             ancestors [index] = current;
+            current = current.parent;
           }
-        if (current != null)
+        if (current.depth > 0)
           {
             throw new RuntimeException("dispatchEvent capture stack size");
           }

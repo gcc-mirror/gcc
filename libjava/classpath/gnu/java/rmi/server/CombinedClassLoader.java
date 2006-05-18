@@ -77,8 +77,8 @@ public class CombinedClassLoader extends ClassLoader
     while (iter.hasNext())
       {
         cl = iter.next();
-        if (!sLoaders.contains(cl))
-          sLoaders.add(iter.next());
+        if (cl!=null && !sLoaders.contains(cl))
+          sLoaders.add(cl);
       }
     
     loaders = new ClassLoader[sLoaders.size()];
@@ -96,7 +96,7 @@ public class CombinedClassLoader extends ClassLoader
       {
         try
           {
-            return findClass(name);
+            return loaders[i].loadClass(name);
           }
         catch (ClassNotFoundException e)
           {
@@ -107,27 +107,13 @@ public class CombinedClassLoader extends ClassLoader
   }
 
   /**
-   * Find the library with the given name
-   */
-  protected String findLibrary(String name)
-  {
-    for (int i = 0; i < loaders.length; i++)
-      {
-        String lib = findLibrary(name);
-        if (lib != null)
-          return lib;
-      }
-    return super.findLibrary(name);
-  }
-
-  /**
    * Find resource with the given name.
    */
   protected URL findResource(String name)
   {
     for (int i = 0; i < loaders.length; i++)
       {
-        URL resource = findResource(name);
+        URL resource = loaders[i].getResource(name);
         if (resource != null)
           return resource;
       }
@@ -141,7 +127,7 @@ public class CombinedClassLoader extends ClassLoader
   {
     for (int i = 0; i < loaders.length; i++)
       {
-        Enumeration resource = findResources(name);
+        Enumeration resource = loaders[i].getResources(name);
         if (resource != null)
           return resource;
       }

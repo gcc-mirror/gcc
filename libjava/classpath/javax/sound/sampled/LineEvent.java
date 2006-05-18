@@ -126,7 +126,7 @@ public class LineEvent extends EventObject
   /**
    * Return the frame position associated with this event.
    */
-  public long getFramePosition()
+  public final long getFramePosition()
   {
     return framePosition;
   }
@@ -134,7 +134,7 @@ public class LineEvent extends EventObject
   /**
    * Return the Line associated with this event.
    */
-  public Line getLine()
+  public final Line getLine()
   {
     return line;
   }
@@ -142,7 +142,7 @@ public class LineEvent extends EventObject
   /**
    * Return the Type associated with this event.
    */
-  public Type getType()
+  public final Type getType()
   {
     return type;
   }

@@ -1,5 +1,5 @@
 /* ServantActivatorPOA.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -58,11 +58,11 @@ import org.omg.CORBA.portable.ResponseHandler;
  * You do not need to derive your servant activator from this stub,
  * it is enough to implement the {@link ServantActivator} interface.
  * But you may choose to do this if you need the functional
- * {@link #_all_interfaces()} method or want to keep default behavior during
- * the incarnation or etherialization.
+ * {@link #_all_interfaces(POA, byte[])} method or want to keep default 
+ * behavior during the incarnation or etherialization.
  * </p>
  */
-public class ServantActivatorPOA
+public abstract class ServantActivatorPOA
   extends Servant
   implements InvokeHandler, ServantActivatorOperations
 {
@@ -95,42 +95,6 @@ public class ServantActivatorPOA
     {
       THIS.etherealize(key, poa, servant, cleanup, remains);
     }
-  }
-
-  /**
-   * It is your responsibility to handle the incarnation event and
-   * supply the servant.
-   * The default method instructs POA that the servant cannot be
-   * provided by activator. The OBJ_ADAPTER exception will be
-   * thrown by POA, unless the servant is provided as one of the
-   * parameters in the activation method, or the default servant is set.
-   *
-   * @see ServantActivatorOperations#incarnate
-   *
-   * @specnote in GNU Classpath, returning null means that the
-   * activator does not supply the servant. The servant can still be supplied
-   * as one of parameters in some POA activation methods or as a default
-   * servant.
-   *
-   * @throws ForwardRequest
-   */
-  public Servant incarnate(byte[] Object_Id, POA poa)
-                    throws ForwardRequest
-  {
-    return null;
-  }
-
-  /**
-   * It is your responsibility to handle the etherialization event.
-   * Override this method if using the class. The default method
-   * does nothing.
-   *
-   * @see ServantActivatorOperations#incarnate
-   */
-  public void etherealize(byte[] Object_Id, POA poa, Servant servant,
-                          boolean cleanup, boolean remains
-                         )
-  {
   }
 
   /**

@@ -1,5 +1,5 @@
 /* ObjectIdHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,10 +53,10 @@ import org.omg.CORBA.portable.OutputStream;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class ObjectIdHelper
+public abstract class ObjectIdHelper
 {
   /**
-   * Insert the Object Id into Any (uses {@link Any.insert_string}).
+   * Insert the Object Id into Any (uses {@link Any#insert_string(String)}).
    *
    * @param a the Any to insert into.
    * @param that the string to insert.
@@ -67,7 +67,7 @@ public class ObjectIdHelper
   }
 
   /**
-   * Extract the Object Id from Any ((uses {@link Any.extract_string}).
+   * Extract the Object Id from Any (uses {@link Any#extract_string()}).
    *
    * @param a the Any to extract from.
    */
@@ -105,7 +105,7 @@ public class ObjectIdHelper
   }
 
   /**
-   * Calls {@link OutputStream#write_string()}.
+   * Calls {@link OutputStream#write_string(String)}.
    *
    * @param output the stream to write into.
    * @param value the string (Object Id) value to write.

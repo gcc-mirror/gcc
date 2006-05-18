@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001, 2002, 2005  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2002, 2005, 2006,  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -57,15 +57,43 @@ public abstract class SampleModel
    */
   protected int dataType;
 
+  /**
+   * Creates a new sample model with the specified attributes.
+   * 
+   * @param dataType  the data type (one of {@link DataBuffer#TYPE_BYTE},
+   *   {@link DataBuffer#TYPE_USHORT}, {@link DataBuffer#TYPE_SHORT},
+   *   {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}, 
+   *   {@link DataBuffer#TYPE_DOUBLE} or {@link DataBuffer#TYPE_UNDEFINED}).
+   * @param w  the width in pixels (must be greater than zero).
+   * @param h  the height in pixels (must be greater than zero).
+   * @param numBands  the number of bands (must be greater than zero).
+   * 
+   * @throws IllegalArgumentException if <code>dataType</code> is not one of 
+   *   the listed values.
+   * @throws IllegalArgumentException if <code>w</code> is less than or equal
+   *   to zero.
+   * @throws IllegalArgumentException if <code>h</code> is less than or equal 
+   *   to zero.
+   * @throws IllegalArgumentException if <code>w * h</code> is greater than
+   *   {@link Integer#MAX_VALUE}.
+   */
   public SampleModel(int dataType, int w, int h, int numBands)
   {
+    if (dataType != DataBuffer.TYPE_UNDEFINED)
+      if (dataType < DataBuffer.TYPE_BYTE || dataType > DataBuffer.TYPE_DOUBLE)
+        throw new IllegalArgumentException("Unrecognised 'dataType' argument.");
+    
     if ((w <= 0) || (h <= 0)) 
       throw new IllegalArgumentException((w <= 0 ? " width<=0" : " width is ok")
-                                         +(h <= 0 ? " height<=0" : " height is ok"));
-	
-    // FIXME: How can an int be greater than Integer.MAX_VALUE?
-    // FIXME: How do we identify an unsupported data type?
+          + (h <= 0 ? " height<=0" : " height is ok"));
+        
+    long area = (long) w * (long) h;
+    if (area > Integer.MAX_VALUE)
+      throw new IllegalArgumentException("w * h exceeds Integer.MAX_VALUE.");
 
+    if (numBands <= 0)
+      throw new IllegalArgumentException("Requires numBands > 0.");
+      
     this.dataType = dataType;
     this.width = w;
     this.height = h;
@@ -102,8 +130,10 @@ public abstract class SampleModel
 
   public int[] getPixel(int x, int y, int[] iArray, DataBuffer data)
   {
-    if (iArray == null) iArray = new int[numBands];
-    for (int b=0; b<numBands; b++) iArray[b] = getSample(x, y, b, data);
+    if (iArray == null) 
+      iArray = new int[numBands];
+    for (int b = 0; b < numBands; b++) 
+      iArray[b] = getSample(x, y, b, data);
     return iArray;
   }
   
@@ -121,94 +151,95 @@ public abstract class SampleModel
    * DataBuffer.TYPE_USHORT, then a short[] object is returned.
    */
   public abstract Object getDataElements(int x, int y, Object obj,
-					 DataBuffer data);
+                                         DataBuffer data);
 
     
   public Object getDataElements(int x, int y, int w, int h, Object obj,
-				DataBuffer data)
+                                DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int numDataElements = getNumDataElements();
-    int dataSize = numDataElements*size;
+    int dataSize = numDataElements * size;
     
     if (obj == null)
       {
-	switch (getTransferType())
-	  {
-	  case DataBuffer.TYPE_BYTE:
-	    obj = new byte[dataSize];
-	    break;
-	  case DataBuffer.TYPE_USHORT:
-	    obj = new short[dataSize];
-	    break;
-	  case DataBuffer.TYPE_INT:
-	    obj = new int[dataSize];
-	    break;
-	  default:
-	    // Seems like the only sensible thing to do.
-	    throw new ClassCastException();
-	  }
+        switch (getTransferType())
+          {
+          case DataBuffer.TYPE_BYTE:
+            obj = new byte[dataSize];
+            break;
+          case DataBuffer.TYPE_USHORT:
+            obj = new short[dataSize];
+            break;
+          case DataBuffer.TYPE_INT:
+            obj = new int[dataSize];
+            break;
+          default:
+            // Seems like the only sensible thing to do.
+            throw new ClassCastException();
+          }
       }
     Object pixelData = null;
     int outOffset = 0;
-    for (int yy = y; yy<(y+h); yy++)
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx = x; xx<(x+w); xx++)
-	  {
-	    pixelData = getDataElements(xx, yy, pixelData, data);
-	    System.arraycopy(pixelData, 0, obj, outOffset,
-			     numDataElements);
-	    outOffset += numDataElements;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            pixelData = getDataElements(xx, yy, pixelData, data);
+            System.arraycopy(pixelData, 0, obj, outOffset,
+                             numDataElements);
+            outOffset += numDataElements;
+          }
       }
     return obj;
   }
 
   public abstract void setDataElements(int x, int y, Object obj,
-				       DataBuffer data);
+                                       DataBuffer data);
 
   public void setDataElements(int x, int y, int w, int h,
-			      Object obj, DataBuffer data)
+                              Object obj, DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int numDataElements = getNumDataElements();
-    int dataSize = numDataElements*size;
+    int dataSize = numDataElements * size;
     
     Object pixelData;
     switch (getTransferType())
       {
       case DataBuffer.TYPE_BYTE:
-	pixelData = new byte[numDataElements];
-	break;
+        pixelData = new byte[numDataElements];
+        break;
       case DataBuffer.TYPE_USHORT:
-	pixelData = new short[numDataElements];
-	break;
+        pixelData = new short[numDataElements];
+        break;
       case DataBuffer.TYPE_INT:
-	pixelData = new int[numDataElements];
-	break;
+        pixelData = new int[numDataElements];
+        break;
       default:
-	// Seems like the only sensible thing to do.
-	throw new ClassCastException();
+        // Seems like the only sensible thing to do.
+        throw new ClassCastException();
       }
     int inOffset = 0;
 
-    for (int yy=y; yy<(y+h); yy++)
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    System.arraycopy(obj, inOffset, pixelData, 0,
-			     numDataElements);
-	    setDataElements(xx, yy, pixelData, data);
-	    inOffset += numDataElements;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            System.arraycopy(obj, inOffset, pixelData, 0,
+                             numDataElements);
+            setDataElements(xx, yy, pixelData, data);
+            inOffset += numDataElements;
+          }
       }
   }
 
   public float[] getPixel(int x, int y, float[] fArray, DataBuffer data)
   {
-    if (fArray == null) fArray = new float[numBands];
+    if (fArray == null) 
+      fArray = new float[numBands];
     
-    for (int b=0; b<numBands; b++)
+    for (int b = 0; b < numBands; b++)
       {
         fArray[b] = getSampleFloat(x, y, b, data);
       }
@@ -216,10 +247,11 @@ public abstract class SampleModel
   }
 
   public double[] getPixel(int x, int y, double[] dArray, DataBuffer data) {
-    if (dArray == null) dArray = new double[numBands];
-    for (int b=0; b<numBands; b++)
+    if (dArray == null) 
+      dArray = new double[numBands];
+    for (int b = 0; b < numBands; b++)
       {
-	dArray[b] = getSampleDouble(x, y, b, data);
+        dArray[b] = getSampleDouble(x, y, b, data);
       }
     return dArray;
   }
@@ -227,20 +259,21 @@ public abstract class SampleModel
   /* FIXME: Should it return a banded or pixel interleaved array of
      samples? (Assume interleaved.) */
   public int[] getPixels(int x, int y, int w, int h, int[] iArray,
-			 DataBuffer data)
+                         DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int outOffset = 0;
     int[] pixel = null;
-    if (iArray == null) iArray = new int[w*h*numBands];
-    for (int yy=y; yy<(y+h); yy++)
+    if (iArray == null) 
+      iArray = new int[w * h * numBands];
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    pixel = getPixel(xx, yy, pixel, data);
-	    System.arraycopy(pixel, 0, iArray, outOffset, numBands);
-	    outOffset += numBands;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            pixel = getPixel(xx, yy, pixel, data);
+            System.arraycopy(pixel, 0, iArray, outOffset, numBands);
+            outOffset += numBands;
+          }
       }
     return iArray;
   }
@@ -248,20 +281,20 @@ public abstract class SampleModel
   /* FIXME: Should it return a banded or pixel interleaved array of
      samples? (Assume interleaved.) */
   public float[] getPixels(int x, int y, int w, int h, float[] fArray,
-			   DataBuffer data)
+                           DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int outOffset = 0;
     float[] pixel = null;
-    if (fArray == null) fArray = new float[w*h*numBands];
-    for (int yy=y; yy<(y+h); yy++)
+    if (fArray == null) fArray = new float[w * h * numBands];
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    pixel = getPixel(xx, yy, pixel, data);
-	    System.arraycopy(pixel, 0, fArray, outOffset, numBands);
-	    outOffset += numBands;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            pixel = getPixel(xx, yy, pixel, data);
+            System.arraycopy(pixel, 0, fArray, outOffset, numBands);
+            outOffset += numBands;
+          }
       }
     return fArray;
   }
@@ -269,20 +302,21 @@ public abstract class SampleModel
   /* FIXME: Should it return a banded or pixel interleaved array of
      samples? (Assume interleaved.) */
   public double[] getPixels(int x, int y, int w, int h, double[] dArray,
-			    DataBuffer data)
+                            DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int outOffset = 0;
     double[] pixel = null;
-    if (dArray == null) dArray = new double[w*h*numBands];
-    for (int yy=y; yy<(y+h); yy++)
+    if (dArray == null) 
+      dArray = new double[w * h * numBands];
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    pixel = getPixel(xx, yy, pixel, data);
-	    System.arraycopy(pixel, 0, dArray, outOffset, numBands);
-	    outOffset += numBands;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            pixel = getPixel(xx, yy, pixel, data);
+            System.arraycopy(pixel, 0, dArray, outOffset, numBands);
+            outOffset += numBands;
+          }
       }
     return dArray;
   }
@@ -300,179 +334,185 @@ public abstract class SampleModel
   }
 
   public int[] getSamples(int x, int y, int w, int h, int b,
-			  int[] iArray, DataBuffer data)
+                          int[] iArray, DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int outOffset = 0;
-    if (iArray == null) iArray = new int[size];
-    for (int yy=y; yy<(y+h); yy++)
+    if (iArray == null) 
+      iArray = new int[size];
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    iArray[outOffset++] = getSample(xx, yy, b, data);
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            iArray[outOffset++] = getSample(xx, yy, b, data);
+          }
       }
     return iArray;
   }
 
   public float[] getSamples(int x, int y, int w, int h, int b,
-			    float[] fArray, DataBuffer data)
+                            float[] fArray, DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int outOffset = 0;
-    if (fArray == null) fArray = new float[size];
-    for (int yy=y; yy<(y+h); yy++)
+    if (fArray == null) 
+      fArray = new float[size];
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    fArray[outOffset++] = getSampleFloat(xx, yy, b, data);
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            fArray[outOffset++] = getSampleFloat(xx, yy, b, data);
+          }
       }
     return fArray;
   }
 
   public double[] getSamples(int x, int y, int w, int h, int b,
-			     double[] dArray, DataBuffer data)
+                             double[] dArray, DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int outOffset = 0;
-    if (dArray == null) dArray = new double[size];
-    for (int yy=y; yy<(y+h); yy++)
+    if (dArray == null) 
+      dArray = new double[size];
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    dArray[outOffset++] = getSampleDouble(xx, yy, b, data);
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            dArray[outOffset++] = getSampleDouble(xx, yy, b, data);
+          }
       }
     return dArray;
   }
   
   public void setPixel(int x, int y, int[] iArray, DataBuffer data)
   {
-    for (int b=0; b<numBands; b++) setSample(x, y, b, iArray[b], data);
+    for (int b = 0; b < numBands; b++) 
+      setSample(x, y, b, iArray[b], data);
   }
 
   public void setPixel(int x, int y, float[] fArray, DataBuffer data)
   {
-    for (int b=0; b<numBands; b++) setSample(x, y, b, fArray[b], data);
+    for (int b = 0; b < numBands; b++) 
+      setSample(x, y, b, fArray[b], data);
   }
 
   public void setPixel(int x, int y, double[] dArray, DataBuffer data)
   {
-    for (int b=0; b<numBands; b++) setSample(x, y, b, dArray[b], data);
+    for (int b = 0; b < numBands; b++) 
+      setSample(x, y, b, dArray[b], data);
   }
 
   public void setPixels(int x, int y, int w, int h, int[] iArray,
-			DataBuffer data)
+                        DataBuffer data)
   {
     int inOffset = 0;
     int[] pixel = new int[numBands];
-    for (int yy=y; yy<(y+h); yy++)
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    System.arraycopy(iArray, inOffset, pixel, 0, numBands);
-	    setPixel(xx, yy, pixel, data);
-	    inOffset += numBands;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            System.arraycopy(iArray, inOffset, pixel, 0, numBands);
+            setPixel(xx, yy, pixel, data);
+            inOffset += numBands;
+          }
       }
   }
 
   public void setPixels(int x, int y, int w, int h, float[] fArray,
-			DataBuffer data)
+                        DataBuffer data)
   {
     int inOffset = 0;
     float[] pixel = new float[numBands];
-    for (int yy=y; yy<(y+h); yy++)
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    System.arraycopy(fArray, inOffset, pixel, 0, numBands);
-	    setPixel(xx, yy, pixel, data);
-	    inOffset += numBands;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            System.arraycopy(fArray, inOffset, pixel, 0, numBands);
+            setPixel(xx, yy, pixel, data);
+            inOffset += numBands;
+          }
       }
   }
 
   public void setPixels(int x, int y, int w, int h, double[] dArray,
-			DataBuffer data)
+                        DataBuffer data)
   {
     int inOffset = 0;
     double[] pixel = new double[numBands];
-    for (int yy=y; yy<(y+h); yy++)
+    for (int yy = y; yy < (y + h); yy++)
       {
-	for (int xx=x; xx<(x+w); xx++)
-	  {
-	    System.arraycopy(dArray, inOffset, pixel, 0, numBands);
-	    setPixel(xx, yy, pixel, data);
-	    inOffset += numBands;
-	  }
+        for (int xx = x; xx < (x + w); xx++)
+          {
+            System.arraycopy(dArray, inOffset, pixel, 0, numBands);
+            setPixel(xx, yy, pixel, data);
+            inOffset += numBands;
+          }
       }
   }
 
   public abstract void setSample(int x, int y, int b, int s,
-				 DataBuffer data);
+                                 DataBuffer data);
 
   public void setSample(int x, int y, int b, float s,
-			DataBuffer data)
+                        DataBuffer data)
   {
     setSample(x, y, b, (int) s, data);
   }
 
   public void setSample(int x, int y, int b, double s,
-			DataBuffer data)
+                        DataBuffer data)
   {
     setSample(x, y, b, (float) s, data);
   }
 
   public void setSamples(int x, int y, int w, int h, int b,
-			 int[] iArray, DataBuffer data)
+                         int[] iArray, DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int inOffset = 0;
-    for (int yy=y; yy<(y+h); yy++)
-      for (int xx=x; xx<(x+w); xx++)
-	setSample(xx, yy, b, iArray[inOffset++], data);
+    for (int yy = y; yy < (y + h); yy++)
+      for (int xx = x; xx < (x + w); xx++)
+        setSample(xx, yy, b, iArray[inOffset++], data);
   }
 
   public void setSamples(int x, int y, int w, int h, int b,
-			 float[] fArray, DataBuffer data)
+                         float[] fArray, DataBuffer data)
   {
-    int size = w*h;
+    int size = w * h;
     int inOffset = 0;
-    for (int yy=y; yy<(y+h); yy++)
-      for (int xx=x; xx<(x+w); xx++)
-	setSample(xx, yy, b, fArray[inOffset++], data);
+    for (int yy = y; yy < (y + h); yy++)
+      for (int xx = x; xx < (x + w); xx++)
+        setSample(xx, yy, b, fArray[inOffset++], data);
 
-    }
+  }
 
-    public void setSamples(int x, int y, int w, int h, int b,
-			   double[] dArray, DataBuffer data) {
-      int size = w*h;
-      int inOffset = 0;
-      for (int yy=y; yy<(y+h); yy++)
-	for (int xx=x; xx<(x+w); xx++)
-	  setSample(xx, yy, b, dArray[inOffset++], data);
-    }
+  public void setSamples(int x, int y, int w, int h, int b,
+                         double[] dArray, DataBuffer data) {
+    int size = w * h;
+    int inOffset = 0;
+    for (int yy = y; yy < (y + h); yy++)
+      for (int xx = x; xx < (x + w); xx++)
+        setSample(xx, yy, b, dArray[inOffset++], data);
+  }
 
-    public abstract SampleModel createCompatibleSampleModel(int w, int h);
+  public abstract SampleModel createCompatibleSampleModel(int w, int h);
 
-    /**
-     * Return a SampleModel with a subset of the bands in this model.
-     * 
-     * Selects bands.length bands from this sample model.  The bands chosen
-     * are specified in the indices of bands[].  This also permits permuting
-     * the bands as well as taking a subset.  Thus, giving an array with
-     * 1, 2, 3, ..., numbands, will give an identical sample model.
-     * 
-     * @param bands Array with band indices to include.
-     * @return A new sample model
-     */
-    public abstract SampleModel createSubsetSampleModel(int[] bands);
+  /**
+   * Return a SampleModel with a subset of the bands in this model.
+   * 
+   * Selects bands.length bands from this sample model.  The bands chosen
+   * are specified in the indices of bands[].  This also permits permuting
+   * the bands as well as taking a subset.  Thus, giving an array with
+   * 1, 2, 3, ..., numbands, will give an identical sample model.
+   * 
+   * @param bands Array with band indices to include.
+   * @return A new sample model
+   */
+  public abstract SampleModel createSubsetSampleModel(int[] bands);
 
-    public abstract DataBuffer createDataBuffer();
+  public abstract DataBuffer createDataBuffer();
 
-    public abstract int[] getSampleSize();
+  public abstract int[] getSampleSize();
 
-    public abstract int getSampleSize(int band);
+  public abstract int getSampleSize(int band);
 }

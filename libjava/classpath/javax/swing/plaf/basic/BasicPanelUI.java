@@ -61,11 +61,10 @@ public class BasicPanelUI extends PanelUI
       }
   }
 
-  public void installDefaults(JPanel p)
+  protected void installDefaults(JPanel p)
   {
     LookAndFeel.installColorsAndFont(p, "Panel.background", "Panel.foreground",
                                      "Panel.font");
-    p.setOpaque(true);
   }
 
   /**

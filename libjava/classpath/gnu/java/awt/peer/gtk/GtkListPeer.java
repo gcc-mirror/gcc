@@ -40,6 +40,7 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.List;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -120,11 +121,12 @@ public class GtkListPeer extends GtkComponentPeer
 
   public Dimension preferredSize (int rows)
   {
-    int dims[] = new int[2];
-
-    int visibleRows = ((List) awtComponent).getRows();
-    getSize (rows, visibleRows, dims);
-    return new Dimension (dims[0], dims[1]);
+    // getSize returns the minimum size of the list.
+    // The width is too narrow for a typical list.
+    List l = (List) awtComponent;
+    Dimension d = getMinimumSize();
+    FontMetrics fm = l.getFontMetrics(l.getFont());
+    return new Dimension(d.width + fm.stringWidth("1234567890"), d.height);
   }
 
   public void removeAll ()

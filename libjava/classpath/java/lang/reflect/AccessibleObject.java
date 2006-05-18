@@ -1,5 +1,5 @@
 /* java.lang.reflect.AccessibleObject
-   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.lang.reflect;
 
+import java.lang.annotation.Annotation;
+
 /**
  * This class is the superclass of various reflection classes, and
  * allows sufficiently trusted code to bypass normal restrictions to
@@ -53,9 +55,10 @@ package java.lang.reflect;
  * @see Method
  * @see ReflectPermission
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.5
  */
 public class AccessibleObject
+    implements AnnotatedElement
 {
   /**
    * True if this object is marked accessible, which means the reflected
@@ -155,5 +158,27 @@ public class AccessibleObject
           && ((Constructor) this).getDeclaringClass() == Class.class))
       throw new SecurityException("Cannot make object accessible: " + this);
     this.flag = flag;
+  }
+
+  /* FIXME[GENERICS]: <T extends Annotation> T getAnnotation(Class <T>) */
+  public Annotation getAnnotation(Class annotationClass)
+  {
+    throw new AssertionError("Subclass must override this method");
+  }
+
+  public Annotation[] getAnnotations()
+  {
+    return getDeclaredAnnotations();
+  }
+
+  public Annotation[] getDeclaredAnnotations()
+  {
+    throw new AssertionError("Subclass must override this method");
+  }
+
+  /* FIXME[GENERICS]: Signature is Class<? extends Annotation> */
+  public boolean isAnnotationPresent(Class annotationClass)
+  {
+    return getAnnotation(annotationClass) != null;
   }
 }

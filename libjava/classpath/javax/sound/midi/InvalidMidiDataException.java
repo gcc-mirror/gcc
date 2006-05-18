@@ -66,25 +66,4 @@ public class InvalidMidiDataException extends Exception
   {
     super(s);
   }
-
-  /**
-   * Create an InvalidMidiDataException object.
-   * 
-   * @param s the exception message string
-   * @param cause the root cause of the exception
-   */
-  public InvalidMidiDataException(String s, Throwable cause)
-  {
-    super(s, cause);
-  }
-
-  /**
-   * Create an InvalidMidiDataException object.
-   * 
-   * @param cause the root cause of the exception
-   */
-  public InvalidMidiDataException(Throwable cause)
-  {
-    super(cause);
-  }
 }

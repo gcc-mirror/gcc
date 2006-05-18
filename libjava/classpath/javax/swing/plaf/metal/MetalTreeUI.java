@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -133,6 +135,7 @@ public class MetalTreeUI extends BasicTreeUI
    * @param lineStyleFlag - String representation
    */     
   protected void decodeLineStyle(Object lineStyleFlag)
+    throws NotImplementedException
   {
     // FIXME: not implemented
   }
@@ -176,6 +179,7 @@ public class MetalTreeUI extends BasicTreeUI
    * @param c - the current component to draw
    */
   protected void paintHorizontalSeparators(Graphics g, JComponent c)
+    throws NotImplementedException
   {
     // FIXME: not implemented
   }

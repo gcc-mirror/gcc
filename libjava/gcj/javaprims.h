@@ -55,10 +55,13 @@ extern "Java"
       class CharArrayReader;
       class CharArrayWriter;
       class CharConversionException;
+      class Closeable;
       class DataInput;
       class DataInputStream;
       class DataOutput;
       class DataOutputStream;
+      class DeleteFileHelper;
+      class DeleteFileHelper$1;
       class EOFException;
       class Externalizable;
       class File;
@@ -75,6 +78,7 @@ extern "Java"
       class FilterOutputStream;
       class FilterReader;
       class FilterWriter;
+      class Flushable;
       class IOException;
       class InputStream;
       class InputStreamReader;
@@ -87,18 +91,24 @@ extern "Java"
       class NotSerializableException;
       class ObjectInput;
       class ObjectInputStream;
+      class ObjectInputStream$1;
+      class ObjectInputStream$2;
       class ObjectInputStream$GetField;
       class ObjectInputStream$ValidatorAndPriority;
       class ObjectInputValidation;
       class ObjectOutput;
       class ObjectOutputStream;
+      class ObjectOutputStream$1;
       class ObjectOutputStream$PutField;
       class ObjectStreamClass;
+      class ObjectStreamClass$1;
+      class ObjectStreamClass$2;
       class ObjectStreamClass$InterfaceComparator;
       class ObjectStreamClass$MemberComparator;
       class ObjectStreamConstants;
       class ObjectStreamException;
       class ObjectStreamField;
+      class ObjectStreamField$1;
       class OptionalDataException;
       class OutputStream;
       class OutputStreamWriter;
@@ -131,6 +141,7 @@ extern "Java"
     namespace lang
     {
       class AbstractMethodError;
+      class Appendable;
       class ArithmeticException;
       class ArrayIndexOutOfBoundsException;
       class ArrayStoreException;
@@ -155,6 +166,8 @@ extern "Java"
       class ConcreteProcess$EOFInputStream;
       class ConcreteProcess$ProcessManager;
       class Double;
+      class Enum;
+      class EnumConstantNotPresentException;
       class Error;
       class Exception;
       class ExceptionInInitializerError;
@@ -173,6 +186,7 @@ extern "Java"
       class Integer;
       class InternalError;
       class InterruptedException;
+      class Iterable;
       class LinkageError;
       class Long;
       class Math;
@@ -189,6 +203,7 @@ extern "Java"
       class OutOfMemoryError;
       class Package;
       class Process;
+      class Readable;
       class Runnable;
       class Runtime;
       class RuntimeException;
@@ -207,11 +222,13 @@ extern "Java"
       class StringIndexOutOfBoundsException;
       class System;
       class Thread;
+      class Thread$UncaughtExceptionHandler;
       class ThreadDeath;
       class ThreadGroup;
       class ThreadLocal;
       class Throwable;
       class Throwable$StaticData;
+      class TypeNotPresentException;
       class UnknownError;
       class UnsatisfiedLinkError;
       class UnsupportedClassVersionError;
@@ -225,6 +242,22 @@ extern "Java"
       class VerifyError;
       class VirtualMachineError;
       class Void;
+      namespace annotation
+      {
+        class Annotation;
+        class AnnotationFormatError;
+        class AnnotationTypeMismatchException;
+      }
+
+      namespace instrument
+      {
+        class ClassDefinition;
+        class ClassFileTransformer;
+        class IllegalClassFormatException;
+        class Instrumentation;
+        class UnmodifiableClassException;
+      }
+
       namespace ref
       {
         class PhantomReference;
@@ -237,21 +270,31 @@ extern "Java"
       namespace reflect
       {
         class AccessibleObject;
+        class AnnotatedElement;
         class Array;
         class Constructor;
         class Field;
+        class GenericArrayType;
+        class GenericDeclaration;
+        class GenericSignatureFormatError;
         class InvocationHandler;
         class InvocationTargetException;
+        class MalformedParameterizedTypeException;
         class Member;
         class Method;
         class Modifier;
+        class ParameterizedType;
         class Proxy;
         class Proxy$ClassFactory;
         class Proxy$ProxyData;
         class Proxy$ProxySignature;
         class Proxy$ProxyType;
         class ReflectPermission;
+        class Type;
+        class TypeVariable;
         class UndeclaredThrowableException;
+        class VMProxy;
+        class WildcardType;
       }
     }
 
@@ -259,9 +302,16 @@ extern "Java"
     {
       class AbstractCollection;
       class AbstractList;
+      class AbstractList$1;
+      class AbstractList$2;
       class AbstractList$RandomAccessSubList;
       class AbstractList$SubList;
+      class AbstractList$SubList$3;
       class AbstractMap;
+      class AbstractMap$1;
+      class AbstractMap$1$2;
+      class AbstractMap$3;
+      class AbstractMap$3$4;
       class AbstractMap$BasicMapEntry;
       class AbstractSequentialList;
       class AbstractSet;
@@ -272,6 +322,7 @@ extern "Java"
       class Calendar;
       class Collection;
       class Collections;
+      class Collections$1;
       class Collections$CopiesList;
       class Collections$EmptyList;
       class Collections$EmptyMap;
@@ -279,23 +330,29 @@ extern "Java"
       class Collections$ReverseComparator;
       class Collections$SingletonList;
       class Collections$SingletonMap;
+      class Collections$SingletonMap$3;
       class Collections$SingletonSet;
+      class Collections$SingletonSet$2;
       class Collections$SynchronizedCollection;
       class Collections$SynchronizedIterator;
       class Collections$SynchronizedList;
       class Collections$SynchronizedListIterator;
       class Collections$SynchronizedMap;
-      class Collections$SynchronizedMapEntry;
+      class Collections$SynchronizedMap$4$SynchronizedMapEntry;
+      class Collections$SynchronizedMap$5;
+      class Collections$SynchronizedMap$5$6;
       class Collections$SynchronizedRandomAccessList;
       class Collections$SynchronizedSet;
       class Collections$SynchronizedSortedMap;
       class Collections$SynchronizedSortedSet;
       class Collections$UnmodifiableCollection;
-      class Collections$UnmodifiableEntrySet;
       class Collections$UnmodifiableIterator;
       class Collections$UnmodifiableList;
       class Collections$UnmodifiableListIterator;
       class Collections$UnmodifiableMap;
+      class Collections$UnmodifiableMap$UnmodifiableEntrySet;
+      class Collections$UnmodifiableMap$UnmodifiableEntrySet$7;
+      class Collections$UnmodifiableMap$UnmodifiableEntrySet$7$8;
       class Collections$UnmodifiableRandomAccessList;
       class Collections$UnmodifiableSet;
       class Collections$UnmodifiableSortedMap;
@@ -312,18 +369,33 @@ extern "Java"
       class EventObject;
       class GregorianCalendar;
       class HashMap;
+      class HashMap$1;
+      class HashMap$2;
+      class HashMap$3;
       class HashMap$HashEntry;
       class HashMap$HashIterator;
       class HashSet;
       class Hashtable;
-      class Hashtable$Enumerator;
+      class Hashtable$1;
+      class Hashtable$2;
+      class Hashtable$3;
+      class Hashtable$EntryEnumerator;
+      class Hashtable$EntryIterator;
       class Hashtable$HashEntry;
-      class Hashtable$HashIterator;
+      class Hashtable$KeyEnumerator;
+      class Hashtable$KeyIterator;
+      class Hashtable$ValueEnumerator;
+      class Hashtable$ValueIterator;
       class IdentityHashMap;
+      class IdentityHashMap$1;
+      class IdentityHashMap$2;
+      class IdentityHashMap$3;
       class IdentityHashMap$IdentityEntry;
       class IdentityHashMap$IdentityIterator;
+      class InvalidPropertiesFormatException;
       class Iterator;
       class LinkedHashMap;
+      class LinkedHashMap$1;
       class LinkedHashMap$LinkedHashEntry;
       class LinkedHashSet;
       class LinkedList;
@@ -335,9 +407,7 @@ extern "Java"
       class Locale;
       class Map;
       class Map$Entry;
-      class Map$Map;
       class MissingResourceException;
-      class MyResources;
       class NoSuchElementException;
       class Observable;
       class Observer;
@@ -356,22 +426,32 @@ extern "Java"
       class Stack;
       class StringTokenizer;
       class TimeZone;
+      class TimeZone$1;
       class Timer;
       class Timer$Scheduler;
       class Timer$TaskQueue;
       class TimerTask;
       class TooManyListenersException;
       class TreeMap;
+      class TreeMap$1;
+      class TreeMap$2;
+      class TreeMap$3;
       class TreeMap$Node;
       class TreeMap$SubMap;
+      class TreeMap$SubMap$4;
+      class TreeMap$SubMap$5;
+      class TreeMap$SubMap$6;
       class TreeMap$TreeIterator;
       class TreeSet;
       class VMTimeZone;
       class Vector;
+      class Vector$1;
       class WeakHashMap;
+      class WeakHashMap$1;
       class WeakHashMap$WeakBucket;
-      class WeakHashMap$WeakEntry;
+      class WeakHashMap$WeakBucket$WeakEntry;
       class WeakHashMap$WeakEntrySet;
+      class WeakHashMap$WeakEntrySet$2;
       namespace jar
       {
         class Attributes;
@@ -391,6 +471,7 @@ extern "Java"
         class ConsoleHandler;
         class ErrorManager;
         class FileHandler;
+        class FileHandler$ostr;
         class Filter;
         class Formatter;
         class Handler;
@@ -398,6 +479,7 @@ extern "Java"
         class LogManager;
         class LogRecord;
         class Logger;
+        class Logger$1;
         class LoggingPermission;
         class MemoryHandler;
         class SimpleFormatter;
@@ -409,6 +491,8 @@ extern "Java"
       namespace prefs
       {
         class AbstractPreferences;
+        class AbstractPreferences$1;
+        class AbstractPreferences$2;
         class BackingStoreException;
         class InvalidPreferencesFormatException;
         class NodeChangeEvent;
@@ -416,11 +500,13 @@ extern "Java"
         class PreferenceChangeEvent;
         class PreferenceChangeListener;
         class Preferences;
+        class Preferences$1;
         class PreferencesFactory;
       }
 
       namespace regex
       {
+        class MatchResult;
         class Matcher;
         class Pattern;
         class PatternSyntaxException;
@@ -444,6 +530,7 @@ extern "Java"
         class ZipEntry;
         class ZipException;
         class ZipFile;
+        class ZipFile$1;
         class ZipFile$PartialInputStream;
         class ZipFile$ZipEntryEnumeration;
         class ZipInputStream;

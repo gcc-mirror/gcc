@@ -1,5 +1,5 @@
 /* OverlayLayout.java -- A layout manager
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -198,7 +198,7 @@ public class OverlayLayout implements LayoutManager2, Serializable
    *
    * @param target not used here
    *
-   * @returns the preferred size of the container that is laid out
+   * @return the preferred size of the container that is laid out
    */
   public Dimension preferredLayoutSize(Container target)
   {
@@ -216,7 +216,7 @@ public class OverlayLayout implements LayoutManager2, Serializable
    *
    * @param target not used here
    *
-   * @returns the minimum size of the container that is laid out
+   * @return the minimum size of the container that is laid out
    */
   public Dimension minimumLayoutSize(Container target)
   {
@@ -234,7 +234,7 @@ public class OverlayLayout implements LayoutManager2, Serializable
    *
    * @param target not used here
    *
-   * @returns the maximum size of the container that is laid out
+   * @return the maximum size of the container that is laid out
    */
   public Dimension maximumLayoutSize(Container target)
   {
@@ -252,7 +252,7 @@ public class OverlayLayout implements LayoutManager2, Serializable
    *
    * @param target not used here
    *
-   * @returns the X alignment of the container that is laid out
+   * @return the X alignment of the container that is laid out
    */
   public float getLayoutAlignmentX(Container target)
   {
@@ -270,7 +270,7 @@ public class OverlayLayout implements LayoutManager2, Serializable
    *
    * @param target not used here
    *
-   * @returns the X alignment of the container that is laid out
+   * @return the X alignment of the container that is laid out
    */
   public float getLayoutAlignmentY(Container target)
   {

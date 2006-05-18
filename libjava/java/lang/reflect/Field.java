@@ -262,4 +262,9 @@ public final class Field extends AccessibleObject implements Member
     sbuf.append(getName());
     return sbuf.toString();
   }
+
+  // FIXME - Write a real implementations
+  public boolean isSynthetic() { return false; }
+  public boolean isEnumConstant() { return false; }
+
 }

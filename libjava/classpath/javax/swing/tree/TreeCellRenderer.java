@@ -1,5 +1,5 @@
 /* TreeCellRenderer.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,27 +43,31 @@ import java.awt.Component;
 import javax.swing.JTree;
 
 /**
- * TreeCellRenderer public interface
+ * A <code>TreeCellRenderer</code> is used by the {@link JTree} component to
+ * paint individual tree elements (nodes).
+ * 
  * @author Andrew Selkirk
  */
 public interface TreeCellRenderer
 {
-
   /**
-   * getTreeCellRendererComponent
-   * @param tree TODO
-   * @param value TODO
-   * @param selected TODO
-   * @param expanded TODO
-   * @param leaf TODO
-   * @param row TODO
-   * @param hasFocus TODO
-   * @returns TODO
+   * Returns a component that has been configured to display one element (or 
+   * node) in a {@link JTree} component.  The arguments to this method are used
+   * to pass in the value and state of the element to be rendered.
+   * 
+   * @param tree  the tree.
+   * @param value  the value to render.
+   * @param selected  is the tree element selected?
+   * @param expanded  is the tree element expanded?
+   * @param leaf  is the tree element a leaf node?
+   * @param row  the row index.
+   * @param hasFocus  does the tree element have the focus?
+   * 
+   * @return A component that is configured for rendering the tree element.
    */
   Component getTreeCellRendererComponent(JTree tree, Object value,
                                          boolean selected, boolean expanded,
                                          boolean leaf, int row,
                                          boolean hasFocus);
-
 
 }

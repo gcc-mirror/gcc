@@ -1,4 +1,4 @@
-nativelib_LTLIBRARIES = libxmlj.la
+nativeexeclib_LTLIBRARIES = libxmlj.la
 
 libxmlj_la_SOURCES = \
 xmlj_dom.c \

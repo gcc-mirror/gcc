@@ -86,6 +86,7 @@ public final class Gnu extends Provider
         put("Alg.Alias.Signature.md5WithRSAEncryption", "MD5withRSA");
         put("Alg.Alias.Signature.OID.1.2.840.113549.1.1.4", "MD5withRSA");
         put("Alg.Alias.Signature.1.2.840.113549.1.1.4", "MD5withRSA");
+        put("Alg.Alias.Signature.RSA", "MD5withRSA");
 
         put("Signature.SHA160withRSA",
             gnu.java.security.jce.sig.SHA160withRSA.class.getName());

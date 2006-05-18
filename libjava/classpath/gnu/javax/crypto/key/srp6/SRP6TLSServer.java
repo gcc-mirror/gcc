@@ -61,8 +61,6 @@ import java.util.Map;
  * SRP for TLS Authentication</a>. The only difference between it and the SASL
  * variant is that the shared secret is the entity <code>S</code> and not
  * <code>H(S)</code>.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class SRP6TLSServer extends SRP6KeyAgreement
 {

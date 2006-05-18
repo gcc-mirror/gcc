@@ -42,8 +42,6 @@ import gnu.java.security.Registry;
 /**
  * <p>The implementation of the HMAC-SHA-384 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class HMacSHA384Spi extends MacAdapter
 {

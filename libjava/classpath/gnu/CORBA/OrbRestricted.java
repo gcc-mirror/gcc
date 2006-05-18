@@ -41,11 +41,13 @@ package gnu.CORBA;
 import gnu.CORBA.CDR.BufferedCdrOutput;
 import gnu.CORBA.typecodes.AliasTypeCode;
 import gnu.CORBA.typecodes.ArrayTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 import gnu.CORBA.typecodes.RecordTypeCode;
 import gnu.CORBA.typecodes.StringTypeCode;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.Context;
 import org.omg.CORBA.ContextList;
 import org.omg.CORBA.Environment;
 import org.omg.CORBA.ExceptionList;
@@ -526,4 +528,57 @@ public class OrbRestricted extends org.omg.CORBA_2_3.ORB
 
     super.destroy();
   }
+  
+  /**
+   * Create a typecode, representing a tree-like structure.
+   * This structure contains a member that is a sequence of the same type,
+   * as the structure itself. You can imagine as if the folder definition
+   * contains a variable-length array of the enclosed (nested) folder
+   * definitions. In this way, it is possible to have a tree like
+   * structure that can be transferred via CORBA CDR stream.
+   *
+   * @deprecated It is easier and clearler to use a combination of
+   * create_recursive_tc and create_sequence_tc instead.
+   *
+   * @param bound the maximal expected number of the nested components
+   * on each node; 0 if not limited.
+   *
+   * @param offset the position of the field in the returned structure
+   * that contains the sequence of the structures of the same field.
+   * The members before this field are intialised using parameterless
+   * StructMember constructor.
+   *
+   * @return a typecode, defining a stucture, where a member at the
+   * <code>offset</code> position defines an array of the identical
+   * structures.
+   *
+   * @see #create_recursive_tc(String)
+   * @see #create_sequence_tc(int, TypeCode)
+   */
+  public TypeCode create_recursive_sequence_tc(int bound, int offset)
+  {
+    RecordTypeCode r = new RecordTypeCode(TCKind.tk_struct);
+    for (int i = 0; i < offset; i++)
+      r.add(new StructMember());
+
+    TypeCode recurs = new PrimitiveTypeCode(TCKind.tk_sequence);
+
+    r.add(new StructMember("", recurs, null));
+    return r;
+  }
+  
+  /**
+   * Get the default context of this ORB. This is an initial root of all
+   * contexts.
+   *
+   * The default method returns a new context with the empty name and
+   * no parent context.
+   *
+   * @return the default context of this ORB.
+   */
+  public Context get_default_context()
+  {
+    return new gnuContext("", null);
+  }
+  
 }

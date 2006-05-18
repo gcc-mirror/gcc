@@ -1,5 +1,5 @@
 /* MetalDesktopIconUI.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,10 +50,6 @@ public class MetalDesktopIconUI
   extends BasicDesktopIconUI
 {
 
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for MetalDesktopIcons */
-  private static MetalDesktopIconUI instance = null;
-
   /**
    * Constructs a new instance of <code>MetalDesktopIconUI</code>.
    */
@@ -63,16 +59,14 @@ public class MetalDesktopIconUI
   }
 
   /**
-   * Returns a shared instance of <code>MetalDesktopIconUI</code>.
+   * Returns a new <code>MetalDesktopIconUI</code> instance.
    *
-   * @param component the component for which we return an UI instance
+   * @param component  the component (ignored).
    *
-   * @return A shared instance of <code>MetalDesktopIconUI</code>.
+   * @return A new <code>MetalDesktopIconUI</code> instance.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalDesktopIconUI();
-    return instance;
+    return new MetalDesktopIconUI();
   }
 }

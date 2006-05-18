@@ -1,4 +1,4 @@
-nativelib_LTLIBRARIES = libjavanio.la
+nativeexeclib_LTLIBRARIES = libjavanio.la
 
 libjavanio_la_SOURCES = gnu_java_nio_VMPipe.c \
 			gnu_java_nio_VMSelector.c \

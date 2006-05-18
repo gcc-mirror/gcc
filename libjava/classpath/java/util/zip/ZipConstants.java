@@ -85,9 +85,6 @@ interface ZipConstants
   long ENDSIG = 'P'|('K'<<8)|(5<<16)|(6<<24);
   int ENDHDR = 22;
 
-  /* The following two fields are missing in SUN JDK */
-  int ENDNRD =  4;
-  int ENDDCD =  6;
   int ENDSUB =  8;
   int ENDTOT = 10;
   int ENDSIZ = 12;

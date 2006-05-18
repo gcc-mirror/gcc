@@ -301,27 +301,27 @@ public class BasicInternalFrameTitlePane extends JComponent
     {
       String propName = evt.getPropertyName();
       if (propName.equals("closable"))
-	{
-	  if (evt.getNewValue().equals(Boolean.TRUE))
-	    closeButton.setVisible(true);
-	  else
-	    closeButton.setVisible(false);
-	}
-      else if (propName.equals("iconifiable"))
-	{
-	  if (evt.getNewValue().equals(Boolean.TRUE))
-	    iconButton.setVisible(true);
-	  else
-	    iconButton.setVisible(false);
-	}
+        {
+          if (evt.getNewValue().equals(Boolean.TRUE))
+            closeButton.setVisible(true);
+          else
+            closeButton.setVisible(false);
+        }
+      else if (propName.equals("iconable"))
+        {
+          if (evt.getNewValue().equals(Boolean.TRUE))
+            iconButton.setVisible(true);
+          else
+            iconButton.setVisible(false);
+        }
       else if (propName.equals("maximizable"))
-	{
-	  if (evt.getNewValue().equals(Boolean.TRUE))
-	    maxButton.setVisible(true);
-	  else
-	    maxButton.setVisible(false);
-	}
-	
+        {
+          if (evt.getNewValue().equals(Boolean.TRUE))
+            maxButton.setVisible(true);
+          else
+            maxButton.setVisible(false);
+        }
+      enableActions();
     }
   }
 
@@ -340,7 +340,7 @@ public class BasicInternalFrameTitlePane extends JComponent
      *
      * @return True if this Component can receive focus.
      */
-    public boolean isFocusTransversable()
+    public boolean isFocusTraversable()
     {
       return true;
     }
@@ -520,22 +520,22 @@ public class BasicInternalFrameTitlePane extends JComponent
   }
 
   /** The action command for the Close action. */
-  protected static final String CLOSE_CMD = "Close";
+  protected static final String CLOSE_CMD;
 
   /** The action command for the Minimize action. */
-  protected static final String ICONIFY_CMD = "Minimize";
+  protected static final String ICONIFY_CMD;
 
   /** The action command for the Maximize action. */
-  protected static final String MAXIMIZE_CMD = "Maximize";
+  protected static final String MAXIMIZE_CMD;
 
   /** The action command for the Move action. */
-  protected static final String MOVE_CMD = "Move";
+  protected static final String MOVE_CMD;
 
   /** The action command for the Restore action. */
-  protected static final String RESTORE_CMD = "Restore";
+  protected static final String RESTORE_CMD;
 
   /** The action command for the Size action. */
-  protected static final String SIZE_CMD = "Size";
+  protected static final String SIZE_CMD;
 
   /** The action associated with closing the JInternalFrame. */
   protected Action closeAction;
@@ -614,6 +614,17 @@ public class BasicInternalFrameTitlePane extends JComponent
    * This is package-private to avoid an accessor method.
    */
   transient JLabel title;
+  
+  static
+    {
+      // not constants in JDK
+      CLOSE_CMD = "Close";
+      ICONIFY_CMD = "Minimize";
+      MAXIMIZE_CMD = "Maximize";
+      MOVE_CMD = "Move";
+      RESTORE_CMD = "Restore";
+      SIZE_CMD = "Size";
+    }
 
   /**
    * Creates a new BasicInternalFrameTitlePane object that is used in the

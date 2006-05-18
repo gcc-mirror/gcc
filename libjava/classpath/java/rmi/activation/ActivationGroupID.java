@@ -1,5 +1,5 @@
 /* ActivationGroupID.java --
-   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,36 +35,88 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.rmi.activation;
 
 import java.io.Serializable;
+import java.rmi.server.UID;
 
-public class ActivationGroupID implements Serializable
+/**
+ * This identifier identifies the activation group inside the scope of its
+ * activation system. It also contains (and can provide) the reference to the
+ * groups activation system.
+ * 
+ * @see ActivationSystem#registerGroup(ActivationGroupDesc)
+ */
+public class ActivationGroupID
+    implements Serializable
 {
-  static final long serialVersionUID = -1648432278909740833L;
+  /**
+   * Use SVUID for interoperability.
+   */
+  static final long serialVersionUID = - 1648432278909740833L;
 
-private ActivationSystem system;
+  /**
+   * The associated activation system.
+   */
+  final ActivationSystem system;
+  
+  /**
+   * The object identifier, making the ID unique.
+   */
+  final UID uid;
 
-public ActivationGroupID(ActivationSystem system) {
-	this.system = system;
-}
+  /**
+   * Create the new activation group id in the scope of the given activation
+   * system
+   * 
+   * @param aSystem the activation system
+   */
+  public ActivationGroupID(ActivationSystem aSystem)
+  {
+    system = aSystem;
+    uid = new UID();
+  }
 
-public ActivationSystem getSystem() {
-	return (system);
-}
+  /**
+   * Get the associated activation system
+   * 
+   * @return the associated activation system
+   */
+  public ActivationSystem getSystem()
+  {
+    return system;
+  }
 
-public int hashCode() {
-	return (system.hashCode());
-}
+  /**
+   * Get the hash code of the associated activation system.
+   */
+  public int hashCode()
+  {
+    return uid.hashCode();
+  }
 
-public boolean equals(Object obj) {
-	if (obj instanceof ActivationGroupID) {
-		ActivationGroupID that = (ActivationGroupID)obj;
-		if (this.system.equals(that.system)) {
-			return (true);
-		}
-	}
-	return (false);
-}
+  /**
+   * Copmare for equality, returns true if the passed object is also the
+   * activation group id and its activation system is the same.
+   */
+  public boolean equals(Object obj)
+  {
+    if (obj instanceof ActivationGroupID)
+      {
+        ActivationGroupID that = (ActivationGroupID) obj;
+        return uid.equals(that.uid);
+      }
+    else
+      return false;
+  }
+  
+  /**
+   * Get the string representation
+   */
+  public String toString()
+  {
+    return uid.toString();
+  }
 
 }

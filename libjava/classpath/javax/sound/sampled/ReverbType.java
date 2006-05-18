@@ -84,7 +84,7 @@ public class ReverbType
   /**
    * Return the decay time.
    */
-  public int getDecayTime()
+  public final int getDecayTime()
   {
     return decayTime;
   }
@@ -92,7 +92,7 @@ public class ReverbType
   /**
    * Return the early reflection delay.
    */
-  public int getEarlyReflectionDelay()
+  public final int getEarlyReflectionDelay()
   {
     return earlyReflectionDelay;
   }
@@ -100,7 +100,7 @@ public class ReverbType
   /**
    * Return the early reflection intensity.
    */
-  public float getEarlyReflectionIntensity()
+  public final float getEarlyReflectionIntensity()
   {
     return earlyReflectionIntensity;
   }
@@ -108,7 +108,7 @@ public class ReverbType
   /**
    * Return the late reflection delay.
    */
-  public int getLateReflectionDelay()
+  public final int getLateReflectionDelay()
   {
     return lateReflectionDelay;
   }
@@ -116,7 +116,7 @@ public class ReverbType
   /**
    * Return the late reflection intensity.
    */
-  public float getLateReflectionIntensity()
+  public final float getLateReflectionIntensity()
   {
     return lateReflectionIntensity;
   }
@@ -133,7 +133,7 @@ public class ReverbType
   /**
    * Return a description of this ReverbType.
    */
-  public String toString()
+  public final String toString()
   {
     return ("name=" + name + "; earlyReflectionDelay=" + earlyReflectionDelay
 	    + "; earlyReflectionIntensity=" + earlyReflectionIntensity

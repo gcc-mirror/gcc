@@ -53,9 +53,7 @@ public class VmDeathEvent
   extends Event
 {
   /**
-   * Constructs a <code>VmDeathEvent</code> object
-   *
-   * @param thread  the initial thread
+   * Constructs a new VmDeathEvent object
    */
   public VmDeathEvent ()
   {

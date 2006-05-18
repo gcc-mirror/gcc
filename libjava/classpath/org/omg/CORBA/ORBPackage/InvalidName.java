@@ -1,5 +1,5 @@
 /* InvalidName.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,7 @@ import org.omg.CORBA.portable.IDLEntity;
  * which there is no initial reference.
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class InvalidName
+public final class InvalidName
   extends UserException
   implements IDLEntity, Serializable
 {

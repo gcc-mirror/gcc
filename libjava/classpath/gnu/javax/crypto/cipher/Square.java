@@ -59,8 +59,6 @@ import java.util.Iterator;
  *    <a href="mailto:lars.knudsen@esat.kuleuven.ac.be">Lars Knudsen</a> and
  *    <a href="mailto:vincent.rijmen@esat.kuleuven.ac.be">Vincent Rijmen</a>.</li>
  * </ol>
- *
- * @version $Revision: 1.1 $
  */
 public final class Square extends BaseCipher
 {
@@ -513,7 +511,7 @@ public final class Square extends BaseCipher
           {
             result = testKat(KAT_KEY, KAT_CT);
           }
-        valid = new Boolean(result);
+        valid = Boolean.valueOf(result);
       }
     return valid.booleanValue();
   }

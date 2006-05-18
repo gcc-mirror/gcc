@@ -46,7 +46,6 @@ import java.util.Hashtable;
  * exact method is not defined by Sun but some sort of fast Box filter should
  * probably be correct.
  * <br>
- * Currently this filter does nothing and needs to be implemented.
  *
  * @author C. Brian Jones (cbj@gnu.org) 
  */

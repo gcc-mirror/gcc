@@ -50,8 +50,6 @@ import java.security.spec.AlgorithmParameterSpec;
 /**
  * The implementation of the UMAC-32 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
- *
- * @version $Revision: 1.1 $
  */
 public final class UMac32Spi extends MacAdapter
 {

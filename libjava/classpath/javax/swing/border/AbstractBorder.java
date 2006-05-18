@@ -1,5 +1,5 @@
 /* AbstractBorder.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -68,7 +68,7 @@ public abstract class AbstractBorder implements Border, Serializable
    * Performs nothing, because the default implementation provided by
    * this class is an invisible, zero-width border. Subclasses will
    * likely want to override this method, but they are not required
-   * for doing so.
+   * to do so.
    *
    * @param c the component whose border is to be painted.
    * @param g the graphics for painting.
@@ -87,9 +87,11 @@ public abstract class AbstractBorder implements Border, Serializable
   }
 
   /**
-   * Measures the width of this border.
+   * Returns the insets required for drawing this border around the specified 
+   * component.
    *
-   * @param c the component whose border is to be measured.
+   * @param c  the component that the border applies to (ignored here, 
+   *     subclasses may use it).
    *
    * @return an Insets object whose <code>left</code>, <code>right</code>,
    *         <code>top</code> and <code>bottom</code> fields indicate the
@@ -104,16 +106,23 @@ public abstract class AbstractBorder implements Border, Serializable
   }
 
   /**
-   * Determines the insets of this border. The implementation provided
-   * by AbstractButton sets the <code>left</code>, <code>right</code>,
-   * <code>top</code> and <code>bottom</code> fields of the passed
-   * <code>insets</code> parameter to zero.
+   * Returns the insets required for drawing this border around the specified 
+   * component.  The default implementation provided here sets the 
+   * <code>left</code>, <code>right</code>, <code>top</code> and 
+   * <code>bottom</code> fields of the passed <code>insets</code> parameter to 
+   * zero.
    *
-   * @param c the component whose border is to be measured
+   * @param c  the component that the border applies to (ignored here, 
+   *     subclasses may use it).
+   * @param insets  an instance that will be overwritten and returned as the 
+   *     result (<code>null</code> not permitted).  
    *
-   * @return the same object that was passed for <code>insets</code>
+   * @return The border insets (the same object that was passed as the 
+   *     <code>insets</code> argument).
    *
    * @see #getBorderInsets(Component)
+   * 
+   * @throws NullPointerException if <code>insets</code> is <code>null</code>.
    */
   public Insets getBorderInsets(Component c, Insets insets) 
   {
@@ -126,7 +135,7 @@ public abstract class AbstractBorder implements Border, Serializable
    * fills every pixel in its area when painting. Partially
    * translucent borders must return <code>false</code>, or ugly
    * artifacts can appear on screen. The default implementation
-   * provided by AbstractBorder always returns <code>false</code>.
+   * provided here always returns <code>false</code>.
    *
    * @return <code>false</code>.
    */
@@ -136,9 +145,9 @@ public abstract class AbstractBorder implements Border, Serializable
   }
 
   /**
-   * Returns a rectangle that covers the specified area minus this
-   * border.  Components that wish to determine an area into which
-   * they can safely draw without intersecting with a border might
+   * Returns a rectangle that covers the specified area minus the insets 
+   * required to draw this border.  Components that wish to determine an area 
+   * into which they can safely draw without intersecting with a border might
    * want to use this helper method.
    *
    * @param c the component in the center of this border.
@@ -146,24 +155,30 @@ public abstract class AbstractBorder implements Border, Serializable
    * @param y the vertical position of the border.
    * @param width the width of the available area for the border.
    * @param height the height of the available area for the border.
+   * 
+   * @return The interior rectangle.
    */
   public Rectangle getInteriorRectangle(Component c, int x, int y, int width,
                                         int height)
   {
-    return getInteriorRectangle (c, this, x, y, width, height);
+    return getInteriorRectangle(c, this, x, y, width, height);
   }
   
   /**
-   * Returns a rectangle that covers the specified area minus a
-   * border.  Components that wish to determine an area into which
-   * they can safely draw without intersecting with a border might
-   * want to use this helper method.
+   * Returns a rectangle that covers the specified area minus the insets 
+   * required to draw the specified border (if the border is <code>null</code>,
+   * zero insets are assumed).  Components that wish to determine an area into 
+   * which they can safely draw without intersecting with a border might want 
+   * to use this helper method.
    *
    * @param c the component in the center of this border.
+   * @param b the border (<code>null</code> permitted).
    * @param x the horizontal position of the border.
    * @param y the vertical position of the border.
    * @param width the width of the available area for the border.
    * @param height the height of the available area for the border.
+   * 
+   * @return The interior rectangle.
    */
   public static Rectangle getInteriorRectangle(Component c, Border b, int x,
                                                int y, int width, int height)
@@ -172,7 +187,7 @@ public abstract class AbstractBorder implements Border, Serializable
 
     if (b != null)
     {
-      borderInsets = b.getBorderInsets (c);
+      borderInsets = b.getBorderInsets(c);
       x += borderInsets.left;
       y += borderInsets.top;
       width -= borderInsets.left + borderInsets.right;

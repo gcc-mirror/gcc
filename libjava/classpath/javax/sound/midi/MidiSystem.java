@@ -64,6 +64,11 @@ import javax.sound.midi.spi.SoundbankReader;
  */
 public class MidiSystem
 {
+  private MidiSystem()
+  {
+    // Not instantiable.
+  }
+
   /**
    * Get an array of all available MIDI devices.
    * 

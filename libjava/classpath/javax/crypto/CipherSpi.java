@@ -1,5 +1,5 @@
 /* CipherSpi.java -- The cipher service provider interface.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,8 @@ exception statement from your version. */
 
 
 package javax.crypto;
+
+import java.nio.ByteBuffer;
 
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
@@ -177,6 +179,31 @@ public abstract class CipherSpi
   engineDoFinal(byte[] input, int inputOffset, int inputLength,
                 byte[] output, int outputOffset)
   throws IllegalBlockSizeException, BadPaddingException, ShortBufferException;
+
+  /**
+   * @since 1.5
+   */
+  protected int engineDoFinal (ByteBuffer input, ByteBuffer output)
+    throws BadPaddingException, IllegalBlockSizeException,
+           ShortBufferException
+  {
+    int total = 0;
+    byte[] inbuf = new byte[256];
+    while (input.hasRemaining ())
+      {
+        int in = Math.min (inbuf.length, input.remaining ());
+        input.get (inbuf, 0, in);
+        byte[] outbuf = new byte[engineGetOutputSize (in)];
+        int out = 0;
+        if (input.hasRemaining ()) // i.e., we have more 'update' calls
+          out = engineUpdate (inbuf, 0, in, outbuf, 0);
+        else
+          out = engineDoFinal (inbuf, 0, in, outbuf, 0);
+        output.put (outbuf, 0, out);
+        total += out;
+      }
+    return total;
+  }
 
   /**
    * Returns the block size of the underlying cipher.
@@ -378,6 +405,26 @@ public abstract class CipherSpi
   engineUpdate(byte[] input, int inputOffset, int inputLength,
                byte[] output, int outputOffset)
   throws ShortBufferException;
+
+  /**
+   * @since 1.5
+   */
+  protected int engineUpdate (ByteBuffer input, ByteBuffer output)
+    throws ShortBufferException
+  {
+    int total = 0;
+    byte[] inbuf = new byte[256];
+    while (input.hasRemaining ())
+      {
+        int in = Math.min (inbuf.length, input.remaining ());
+        input.get (inbuf, 0, in);
+        byte[] outbuf = new byte[engineGetOutputSize (in)];
+        int out = engineUpdate (inbuf, 0, in, outbuf, 0);
+        output.put (outbuf, 0, out);
+        total += out;
+      }
+    return total;
+  }
 
   /**
    * <p>Wrap a key.</p>

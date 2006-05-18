@@ -805,7 +805,8 @@ public class SimpleDateFormat extends DateFormat
 		buffer.setDefaultAttribute(DateFormat.Field.RFC822_TIME_ZONE);
 		int pureMinutes = (calendar.get(Calendar.ZONE_OFFSET) +
 				   calendar.get(Calendar.DST_OFFSET)) / (1000 * 60);
-		String sign = (pureMinutes < 0) ? "-" : "+";	  
+		String sign = (pureMinutes < 0) ? "-" : "+";
+                pureMinutes = Math.abs(pureMinutes);
 		int hours = pureMinutes / 60;
 		int minutes = pureMinutes % 60;
 		buffer.append(sign);

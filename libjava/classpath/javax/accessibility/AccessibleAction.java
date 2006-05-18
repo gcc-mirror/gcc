@@ -55,6 +55,28 @@ package javax.accessibility;
  */
 public interface AccessibleAction
 {
+
+  /**
+   * The name of an action which decrements a value.
+   *
+   * @since 1.5
+   */
+  static final String DECREMENT = "decrement";
+
+  /**
+   * The name of an action which increments a value.
+   *
+   * @since 1.5
+   */
+  static final String INCREMENT = "increment";
+
+  /**
+   * The name of an action which toggles the expansion of a tree node.
+   *
+   * @since 1.5
+   */
+  static final String TOGGLE_EXPAND = "toggle expand";
+
   /**
    * Get the number possible actions for this object, with the zeroth
    * representing the default action.

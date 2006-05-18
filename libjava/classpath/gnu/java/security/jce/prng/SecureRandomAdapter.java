@@ -42,7 +42,7 @@ import gnu.java.security.prng.LimitReachedException;
 import gnu.java.security.prng.MDGenerator;
 
 import java.security.SecureRandomSpi;
-import java.util.HashMap;
+import java.util.Collections;
 
 /**
  * <p>The implementation of a generic {@link java.security.SecureRandom} adapter
@@ -80,6 +80,7 @@ abstract class SecureRandomAdapter extends SecureRandomSpi
     super();
 
     this.mdName = mdName;
+    adaptee.init (Collections.singletonMap (MDGenerator.MD_NAME, mdName));
   }
 
   // Class methods
@@ -118,9 +119,6 @@ abstract class SecureRandomAdapter extends SecureRandomSpi
 
   public void engineSetSeed(byte[] seed)
   {
-    HashMap attributes = new HashMap();
-    attributes.put(MDGenerator.MD_NAME, mdName);
-    attributes.put(MDGenerator.SEEED, seed);
-    adaptee.init(attributes);
+    adaptee.addRandomBytes (seed);
   }
 }

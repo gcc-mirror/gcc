@@ -1,5 +1,5 @@
 /* ChangeListener.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,21 +37,27 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventListener;
 
 /**
- * ChangeListener interface
+ * A <code>ChangeListener</code> can register with an object to receive 
+ * notification of state changes (for objects that support this mechanism).
+ * 
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public interface ChangeListener extends EventListener {
+public interface ChangeListener 
+  extends EventListener 
+{
 
-	/**
-	 * State changed
-	 * @param event Change Event
-	 */
-	void stateChanged(ChangeEvent event);
+  /**
+   * Called by an object to notify the listener that the object's state has
+   * changed.  The incoming <code>event</code> identifies the 
+   * <code>source</code> of the event, allowing the listener to differentiate
+   * when it is listening for changes in multiple sources.
+   * 
+   * @param event  the change event.
+   */
+  void stateChanged(ChangeEvent event);
 
-
-} // ChangeListener
+}

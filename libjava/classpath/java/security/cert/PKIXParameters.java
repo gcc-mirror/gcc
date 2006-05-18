@@ -55,7 +55,7 @@ import java.util.Set;
  * Parameters for verifying certificate paths using the PKIX
  * (Public-Key Infrastructure (X.509)) algorithm.
  *
- * @see CertPathBulider
+ * @see CertPathBuilder
  */
 public class PKIXParameters implements CertPathParameters
 {

@@ -70,6 +70,39 @@ public class HelpPrinter
   }
 
   /**
+   * Prints the contents of the resource specified by the designated path.
+   * 
+   * @param helpResourcePath the path to a help resource, related to the
+   *          HelpPrinter class.
+   */
+  public static void printHelp(String helpResourcePath)
+  {
+    InputStream in = HelpPrinter.class.getResourceAsStream(helpResourcePath);
+    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+    try
+      {
+        String s;
+        while ((s = br.readLine()) != null)
+          System.out.println(s);
+      }
+    catch (IOException x)
+      {
+        System.err.print("Resource loading is broken:");
+        x.printStackTrace(System.err);
+      }
+    finally
+      {
+        try
+          {
+            br.close();
+          }
+        catch (IOException ignored)
+          {
+          }
+      }
+  }
+
+  /**
    * Prints the help message and terminates.
    * 
    * @param helpResourcePath the path to the help resource, related to the
@@ -77,23 +110,7 @@ public class HelpPrinter
    */
   public static void printHelpAndExit(String helpResourcePath)
   {
-    InputStream in = HelpPrinter.class.getResourceAsStream(helpResourcePath);
-    BufferedReader r = new BufferedReader(new InputStreamReader(in));
-
-    try
-      {
-        String s;
-        while ((s = r.readLine()) != null)
-          {
-            System.out.println(s);
-          }
-        r.close();
-      }
-    catch (IOException e)
-      {
-        System.err.print("Resource loading is broken:");
-        e.printStackTrace();
-      }
+    printHelp(helpResourcePath);
     System.exit(0);
   }
 }

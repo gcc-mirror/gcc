@@ -52,6 +52,7 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -204,14 +205,12 @@ public class BasicButtonListener implements MouseListener, MouseMotionListener,
       {
         AbstractButton button = (AbstractButton) e.getSource();
         ButtonModel model = button.getModel();
-        if (button.isRolloverEnabled())
+        if (button.isRolloverEnabled()
+            && ! SwingUtilities.isLeftMouseButton(e))
           model.setRollover(true);
-        
-        if (model.isPressed() 
-            && (e.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0)
+
+        if (model.isPressed())
           model.setArmed(true);
-        else
-          model.setArmed(false);
       }
   }
 

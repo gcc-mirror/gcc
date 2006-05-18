@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * The implementation of the Twofish <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
- *
- * @version $Revision: 1.1 $
  */
 public final class TwofishSpi extends CipherAdapter
 {

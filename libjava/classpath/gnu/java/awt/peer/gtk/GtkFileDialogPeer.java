@@ -41,6 +41,7 @@ package gnu.java.awt.peer.gtk;
 import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Graphics;
+import java.awt.event.PaintEvent;
 import java.awt.peer.FileDialogPeer;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -166,10 +167,10 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
     return filter.accept(dir, filename);
   }
 
-  public Graphics getGraphics ()
+  // Sun does not call FileDialog.update.
+  protected void updateComponent (PaintEvent event)
   {
-    // GtkFileDialog will repaint by itself
-    return null;
+    // Override GtkComponetPeer.updateComponent to do nothing.
   }
 
   // called back by native side: handle_response_cb

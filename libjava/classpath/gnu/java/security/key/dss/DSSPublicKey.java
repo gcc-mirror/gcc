@@ -38,6 +38,7 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
 import gnu.java.security.key.IKeyPairCodec;
 
@@ -48,12 +49,10 @@ import java.security.interfaces.DSAPublicKey;
 /**
  * <p>An object that embodies a DSS (Digital Signature Standard) public key.</p>
  * 
- * @version $Revision: 1.2 $
  * @see #getEncoded
  */
 public class DSSPublicKey extends DSSKey implements PublicKey, DSAPublicKey
 {
-
   // Constants and variables
   // -------------------------------------------------------------------------
 
@@ -62,6 +61,9 @@ public class DSSPublicKey extends DSSKey implements PublicKey, DSAPublicKey
    * part of the DSA key.
    */
   private final BigInteger y;
+
+  /** String representation of this key. Cached for speed. */
+  private transient String str;
 
   // Constructor(s)
   // -------------------------------------------------------------------------
@@ -197,5 +199,19 @@ public class DSSPublicKey extends DSSKey implements PublicKey, DSAPublicKey
       }
     DSAPublicKey that = (DSAPublicKey) obj;
     return super.equals(that) && y.equals(that.getY());
+  }
+
+  public String toString()
+  {
+    if (str == null)
+      {
+        String ls = SystemProperties.getProperty("line.separator");
+        str = new StringBuilder(this.getClass().getName()).append("(")
+        .append(super.toString()).append(",").append(ls)
+        .append("y=0x").append(y.toString(16)).append(ls)
+        .append(")").toString();
+      }
+
+    return str;
   }
 }

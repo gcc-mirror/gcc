@@ -1,5 +1,5 @@
 /* TreePath.java --
-   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,9 +53,15 @@ public class TreePath implements Serializable
   static final long serialVersionUID = 4380036194768077479L;
 
   /**
-   * path
+   * The actual patch. The {@link DefaultTreeSelectionModel#clone()}
+   * assumes that the TreePath is immutable, so it is marked final here.
    */
-  private Object[] path = null;
+  private final Object[] path;
+  
+  /**
+   * The parent path (to be reused).
+   */
+  private transient TreePath parentPath;
 
 
   /**
@@ -153,8 +159,8 @@ public class TreePath implements Serializable
    * 
    * @param object  the object (<code>null</code> permitted).
    * 
-   * @returns <code>true</code> if <code>obj</code> is equal to this tree path,
-   *          and <code>false</code> otherwise.
+   * @return <code>true</code> if <code>obj</code> is equal to this tree path,
+   *         and <code>false</code> otherwise.
    */
   public boolean equals(Object object)
   {
@@ -196,7 +202,7 @@ public class TreePath implements Serializable
   /**
    * Returns an array containing the path elements.
    * 
-   * @returns An array containing the path elements.
+   * @return An array containing the path elements.
    */
   public Object[] getPath()
   {
@@ -216,7 +222,7 @@ public class TreePath implements Serializable
   /**
    * Returns the number of elements in the path.
    * 
-   * @returns The number of elements in the path.
+   * @return The number of elements in the path.
    */
   public int getPathCount()
   {
@@ -248,8 +254,8 @@ public class TreePath implements Serializable
    * 
    * @param path  the path to check (<code>null</code> permitted).
    * 
-   * @returns <code>true</code> if <code>path</code> is a descendant of this
-   *          path, and <code>false</code> otherwise
+   * @return <code>true</code> if <code>path</code> is a descendant of this
+   *         path, and <code>false</code> otherwise
    */
   public boolean isDescendant(TreePath path)
   {
@@ -272,7 +278,7 @@ public class TreePath implements Serializable
    * 
    * @param element  the element.
    * 
-   * @returns A tree path.
+   * @return A tree path.
    */
   public TreePath pathByAddingChild(Object element)
   {
@@ -284,8 +290,8 @@ public class TreePath implements Serializable
    * as this path, except for the last one.  If this path contains only one
    * element, the method returns <code>null</code>.
    * 
-   * @returns The parent path, or <code>null</code> if this path has only one
-   *          element.
+   * @return The parent path, or <code>null</code> if this path has only one
+   *         element.
    */
   public TreePath getParentPath()
   {
@@ -293,7 +299,12 @@ public class TreePath implements Serializable
     // is what the JDK does.
     if (path.length <= 1)
       return null;
-
-    return new TreePath(this.getPath(), path.length - 1);
+    
+    // Reuse the parent path, if possible. The parent path is requested
+    // during the tree repainting, so reusing generates a lot less garbage.
+    if (parentPath == null)
+      parentPath = new TreePath(this.getPath(), path.length - 1);
+    
+    return parentPath;
   }
 }

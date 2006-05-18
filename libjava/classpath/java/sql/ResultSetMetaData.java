@@ -1,5 +1,5 @@
 /* ResultSetMetaData.java -- Returns information about the ResultSet
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,8 +41,8 @@ package java.sql;
 /**
  * This interface provides a mechanism for obtaining information about
  * the columns that are present in a <code>ResultSet</code>.
- * <p>
- * Note that in this class column indexes start at 1, not 0.
+ * 
+ * <p> Note that in this class column indices start at 1, not 0.</p>
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
@@ -75,207 +75,207 @@ public interface ResultSetMetaData
    * This method test whether or not the column is an auto-increment column.
    * Auto-increment columns are read-only.
    *
-   * @param index The index of the column to test.
+   * @param columnIndex The index of the column to test.
    * @return <code>true</code> if the column is auto-increment, <code>false</code>
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isAutoIncrement(int column) throws SQLException;
+  boolean isAutoIncrement(int columnIndex) throws SQLException;
 
   /**
    * This method tests whether or not a column is case sensitive in its values.
    *
-   * @param index The index of the column to test.
+   * @param columnIndex The index of the column to test.
    * @return <code>true</code> if the column value is case sensitive,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isCaseSensitive(int column) throws SQLException;
+  boolean isCaseSensitive(int columnIndex) throws SQLException;
 
   /**
    * This method tests whether not the specified column can be used in 
    * a WHERE clause.
    *
-   * @param index The index of the column to test.
+   * @param columnIndex The index of the column to test.
    * @return <code>true</code> if the column may be used in a WHERE clause,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isSearchable(int column) throws SQLException;
+  boolean isSearchable(int columnIndex) throws SQLException;
 
   /**
    * This method tests whether or not the column stores a monetary value.
    *
-   * @param index The index of the column to test.
+   * @param columnIndex The index of the column to test.
    * @return <code>true</code> if the column contains a monetary value,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isCurrency(int column) throws SQLException;
+  boolean isCurrency(int columnIndex) throws SQLException;
 
   /**
    * This method returns a value indicating whether or not the specified
    * column may contain a NULL value.
    *
-   * @param index The index of the column to test.
+   * @param columnIndex The index of the column to test.
    * @return A constant indicating whether or not the column can contain NULL,
    *         which will be one of <code>columnNoNulls</code>,
    *         <code>columnNullable</code>, or <code>columnNullableUnknown</code>.
    * @exception SQLException If an error occurs.
    */
-  int isNullable(int column) throws SQLException;
+  int isNullable(int columnIndex) throws SQLException;
 
   /**
    * This method tests whether or not the value of the specified column
    * is signed or unsigned.
    *
-   * @param index The index of the column to test.
+   * @param columnIndex The index of the column to test.
    * @return <code>true</code> if the column value is signed, <code>false</code>
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isSigned(int column) throws SQLException;
+  boolean isSigned(int columnIndex) throws SQLException;
 
   /**
    * This method returns the maximum number of characters that can be used
    * to display a value in this column.
    *
-   * @param index The index of the column to check.
+   * @param columnIndex The index of the column to check.
    * @return The maximum number of characters that can be used to display a
    *         value for this column.
    * @exception SQLException If an error occurs.
    */
-  int getColumnDisplaySize(int column) throws SQLException;
+  int getColumnDisplaySize(int columnIndex) throws SQLException;
 
   /**
    * This method returns a string that should be used as a caption for this
    * column for user display purposes.
    *
-   * @param index The index of the column to check.
+   * @param columnIndex The index of the column to check.
    * @return A display string for the column.
    * @exception SQLException If an error occurs.
    */
-  String getColumnLabel(int column) throws SQLException;
+  String getColumnLabel(int columnIndex) throws SQLException;
 
   /**
    * This method returns the name of the specified column.
    *
-   * @param index The index of the column to return the name of.
+   * @param columnIndex The index of the column to return the name of.
    * @return The name of the column.
    * @exception SQLException If an error occurs.
    */
-  String getColumnName(int column) throws SQLException;
+  String getColumnName(int columnIndex) throws SQLException;
 
   /**
    * This method returns the name of the schema that contains the specified
    * column.
    *
-   * @param index The index of the column to check the schema name for.
+   * @param columnIndex The index of the column to check the schema name for.
    * @return The name of the schema that contains the column.
    * @exception SQLException If an error occurs.
    */
-  String getSchemaName(int column) throws SQLException;
+  String getSchemaName(int columnIndex) throws SQLException;
 
   /**
    * This method returns the precision of the specified column, which is the
    * number of decimal digits it contains.
    *
-   * @param index The index of the column to check the precision on.
+   * @param columnIndex The index of the column to check the precision on.
    * @return The precision of the specified column.
    * @exception SQLException If an error occurs.
    */
-  int getPrecision(int column) throws SQLException;
+  int getPrecision(int columnIndex) throws SQLException;
 
   /**
    * This method returns the scale of the specified column, which is the
    * number of digits to the right of the decimal point.
    *
-   * @param index The index column to check the scale of.
+   * @param columnIndex The index column to check the scale of.
    * @return The scale of the column.
    * @exception SQLException If an error occurs.
    */
-  int getScale(int column) throws SQLException;
+  int getScale(int columnIndex) throws SQLException;
 
   /**
    * This method returns the name of the table containing the specified
    * column.
    *
-   * @param index The index of the column to check the table name for.
+   * @param columnIndex The index of the column to check the table name for.
    * @return The name of the table containing the column.
    * @exception SQLException If an error occurs.
    */
-  String getTableName(int column) throws SQLException;
+  String getTableName(int columnIndex) throws SQLException;
 
   /**
    * This method returns the name of the catalog containing the specified
    * column.
    *
-   * @param index The index of the column to check the catalog name for.
+   * @param columnIndex The index of the column to check the catalog name for.
    * @return The name of the catalog containing the column.
    * @exception SQLException If an error occurs.
    */
-  String getCatalogName(int column) throws SQLException;
+  String getCatalogName(int columnIndex) throws SQLException;
 
   /**
    * This method returns the SQL type of the specified column.  This will
    * be one of the constants from <code>Types</code>.
    *
-   * @param index The index of the column to check the SQL type of.
+   * @param columnIndex The index of the column to check the SQL type of.
    * @return The SQL type for this column.
    * @exception SQLException If an error occurs.
    * @see Types
    */
-  int getColumnType(int column) throws SQLException;
+  int getColumnType(int columnIndex) throws SQLException;
 
   /**
    * This method returns the name of the SQL type for this column.
    *
-   * @param index The index of the column to check the SQL type name for.
+   * @param columnIndex The index of the column to check the SQL type name for.
    * @return The name of the SQL type for this column.
    * @exception SQLException If an error occurs.
    */
-  String getColumnTypeName(int column) throws SQLException;
+  String getColumnTypeName(int columnIndex) throws SQLException;
 
   /**
    * This method tests whether or not the specified column is read only.
    *
-   * @param index The index of the column to check.
+   * @param columnIndex The index of the column to check.
    * @return <code>true</code> if the column is read only, <code>false</code>
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isReadOnly(int column) throws SQLException;
+  boolean isReadOnly(int columnIndex) throws SQLException;
 
   /**
    * This method tests whether or not the column may be writable.  This
    * does not guarantee that a write will be successful.
    *
-   * @param index The index of the column to check for writability.
+   * @param columnIndex The index of the column to check for writability.
    * @return <code>true</code> if the column may be writable,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isWritable(int column) throws SQLException;
+  boolean isWritable(int columnIndex) throws SQLException;
 
   /**
    * This method tests whether or not the column is writable.  This
    * does guarantee that a write will be successful.
    *
-   * @param index The index of the column to check for writability.
+   * @param columnIndex The index of the column to check for writability.
    * @return <code>true</code> if the column is writable,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean isDefinitelyWritable(int column) throws SQLException;
+  boolean isDefinitelyWritable(int columnIndex) throws SQLException;
 
   /**
    * This method returns the name of the Java class which will be used to
    * create objects representing the data in this column.
    *
-   * @param index The index of the column to check.
+   * @param columnIndex The index of the column to check.
    * @return The name of the Java class that will be used for values in
    *         this column.
    * @exception SQLException If an error occurs.
    */
-  String getColumnClassName(int column) throws SQLException;
+  String getColumnClassName(int columnIndex) throws SQLException;
 }

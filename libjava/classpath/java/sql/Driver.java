@@ -1,5 +1,5 @@
 /* Driver.java -- A JDBC driver
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -68,7 +68,7 @@ public interface Driver
    *         connection, or <code>null</code> if the URL is not understood.
    * @exception SQLException If an error occurs.
    */
-  Connection connect(String url, Properties info) throws SQLException;
+  Connection connect(String url, Properties properties) throws SQLException;
 
   /**
    * This method tests whether or not the driver believes it can connect to
@@ -76,7 +76,7 @@ public interface Driver
    * understands and accepts the URL. It should not necessarily attempt to 
    * probe the database for a connection.
    *
-   * @param The database URL string.
+   * @param url The database URL string.
    * @return <code>true</code> if the drivers can connect to the database, 
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.

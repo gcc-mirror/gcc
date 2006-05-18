@@ -38,9 +38,12 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
@@ -59,13 +62,13 @@ import java.beans.PropertyChangeListener;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.MenuSelectionManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -165,9 +168,17 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   public BasicComboPopup(JComboBox comboBox)
   {
     this.comboBox = comboBox;
-    installComboBoxListeners();
+    mouseListener = createMouseListener();
+    mouseMotionListener = createMouseMotionListener();
+    keyListener = createKeyListener();
+
+    list = createList();
+    configureList();
+    scroller = createScroller();
+    configureScroller();
     configurePopup();
-    setLightWeightPopupEnabled(comboBox.isLightWeightPopupEnabled());
+    installComboBoxListeners();
+    installKeyboardActions();
   }
 
   /**
@@ -175,42 +186,23 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   public void show()
   {
-    Rectangle cbBounds = comboBox.getBounds();
+    Dimension size = comboBox.getSize();
+    size.height = getPopupHeightForRowCount(comboBox.getMaximumRowCount());
+    Insets i = getInsets();
+    size.width -= i.left + i.right;
+    Rectangle bounds = computePopupBounds(0, comboBox.getBounds().height,
+                                          size.width, size.height);
 
-    // popup should have same width as the comboBox and should be hight anough
-    // to display number of rows equal to 'maximumRowCount' property
-    int popupHeight = getPopupHeightForRowCount(comboBox.getMaximumRowCount());
+    scroller.setMaximumSize(bounds.getSize());
+    scroller.setPreferredSize(bounds.getSize());
+    scroller.setMinimumSize(bounds.getSize());
+    list.invalidate();
 
-    scroller.setPreferredSize(new Dimension(cbBounds.width, popupHeight));
-    pack();
+    syncListSelection();
 
-    // Highlight selected item in the combo box's drop down list
-    if (comboBox.getSelectedIndex() != -1)
-      list.setSelectedIndex(comboBox.getSelectedIndex());
-
-    //scroll scrollbar s.t. selected item is visible
-    JScrollBar scrollbar = scroller.getVerticalScrollBar();
-    int selectedIndex = comboBox.getSelectedIndex();
-    if (selectedIndex > comboBox.getMaximumRowCount())
-      scrollbar.setValue(getPopupHeightForRowCount(selectedIndex));
-
-    // We put the autoclose-registration inside an InvocationEvent, so that
-    // the same event that triggered this show() call won't hide the popup
-    // immediately.
-    SwingUtilities.invokeLater
-    (new Runnable()
-     {
-       public void run()
-       {
-         // Register this popup to be autoclosed when user clicks outside the
-         // popup.
-         BasicLookAndFeel laf = (BasicLookAndFeel) UIManager.getLookAndFeel();
-         laf.registerForAutoClose(BasicComboPopup.this);
-       }});
-
-    // location specified is relative to comboBox
-    super.show(comboBox, 0, cbBounds.height);
-
+    list.ensureIndexIsVisible(list.getSelectedIndex());
+    setLightWeightPopupEnabled(comboBox.isLightWeightPopupEnabled());
+    show(comboBox, bounds.x, bounds.y);
   }
 
   /**
@@ -218,7 +210,19 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   public void hide()
   {
-    super.setVisible(false);
+    MenuSelectionManager menuSelectionManager =
+      MenuSelectionManager.defaultManager();
+    javax.swing.MenuElement[] menuElements =
+      menuSelectionManager.getSelectedPath();
+    for (int i = 0; i < menuElements.length; i++)
+      {
+        if (menuElements[i] == this)
+          {
+            menuSelectionManager.clearSelectedPath();
+            break;
+          }
+      }
+    comboBox.repaint();
   }
 
   /**
@@ -270,7 +274,6 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   public void uninstallingUI()
   {
     uninstallComboBoxModelListeners(comboBox.getModel());
-
     uninstallListeners();
     uninstallKeyboardActions();
   }
@@ -291,6 +294,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    * This method uninstalls keyboard actions installed by the UI.
    */
   protected void uninstallKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: Need to implement
   }
@@ -446,7 +450,6 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   protected JList createList()
   {
     JList l = new JList(comboBox.getModel());
-    l.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
     return l;
   }
 
@@ -456,9 +459,18 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void configureList()
   {
-    list.setModel(comboBox.getModel());
-    list.setVisibleRowCount(comboBox.getMaximumRowCount());
+    list.setFont(comboBox.getFont());
+    list.setForeground(comboBox.getForeground());
+    list.setBackground(comboBox.getBackground());
+    Color sfg = UIManager.getColor("ComboBox.selectionForeground");
+    list.setSelectionForeground(sfg);
+    Color sbg = UIManager.getColor("ComboBox.selectionBackground");
+    list.setSelectionBackground(sbg);
+    list.setBorder(null);
+    list.setCellRenderer(comboBox.getRenderer());
     list.setFocusable(false);
+    syncListSelection();
+    list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
     installListListeners();
   }
 
@@ -489,7 +501,8 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected JScrollPane createScroller()
   {
-    return new JScrollPane();
+    return new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                           JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
   }
 
   /**
@@ -498,8 +511,8 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   protected void configureScroller()
   {
     scroller.setBorder(null);
-    scroller.getViewport().setView(list);
-    scroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    scroller.setFocusable(false);
+    scroller.getVerticalScrollBar().setFocusable(false);
   }
 
   /**
@@ -508,18 +521,11 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void configurePopup()
   {
+    setBorderPainted(true);
     setBorder(BorderFactory.createLineBorder(Color.BLACK));
-    // initialize list that will be used to display combo box's items
-    this.list = createList();
-    ((JLabel) list.getCellRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
-    configureList();
-
-    // initialize scroller. Add list to the scroller.	
-    scroller = createScroller();
-    configureScroller();
-
-    // add scroller with list inside of it to JPopupMenu
-    super.add(scroller);
+    setOpaque(false);
+    add(scroller);
+    setFocusable(false);
   }
 
   /*
@@ -528,20 +534,14 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void installComboBoxListeners()
   {
-    // mouse listener that listens to mouse event in combo box
-    mouseListener = createMouseListener();
-    comboBox.addMouseListener(mouseListener);
-
-    // mouse listener that listens to mouse dragging events in the combo box
-    mouseMotionListener = createMouseMotionListener();
-    comboBox.addMouseMotionListener(mouseMotionListener);
-
     // item listener listenening to selection events in the combo box
     itemListener = createItemListener();
     comboBox.addItemListener(itemListener);
 
     propertyChangeListener = createPropertyChangeListener();
     comboBox.addPropertyChangeListener(propertyChangeListener);
+
+    installComboBoxModelListeners(comboBox.getModel());
   }
 
   /**
@@ -562,6 +562,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    * DOCUMENT ME!
    */
   protected void installKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: Need to implement
   }
@@ -651,7 +652,10 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void delegateFocus(MouseEvent e)
   {
-    // FIXME: Need to implement
+    if (comboBox.isEditable())
+      comboBox.getEditor().getEditorComponent().requestFocus();
+    else
+      comboBox.requestFocus();
   }
 
   /**
@@ -660,7 +664,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void togglePopup()
   {
-    if (BasicComboPopup.this.isVisible())
+    if (isVisible())
       hide();
     else
       show();
@@ -675,7 +679,14 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected MouseEvent convertMouseEvent(MouseEvent e)
   {
-    return null;
+    Point point = SwingUtilities.convertPoint((Component) e.getSource(),
+                                              e.getPoint(), list);
+    MouseEvent newEvent= new MouseEvent((Component) e.getSource(),
+                                        e.getID(), e.getWhen(),
+                                        e.getModifiers(), point.x, point.y,
+                                        e.getModifiers(),
+                                        e.isPopupTrigger());
+    return newEvent;
   }
 
   /**
@@ -707,7 +718,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
 	totalHeight += dim.height;
       }
 
-    return totalHeight;
+    return totalHeight == 0 ? 100 : totalHeight;
   }
 
   /**
@@ -735,11 +746,24 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   protected void updateListBoxSelectionForEvent(MouseEvent anEvent,
                                                 boolean shouldScroll)
   {
-    // TODO: We need to handle the shouldScroll parameter somehow.
-    int index = list.locationToIndex(anEvent.getPoint());
-    // Check for valid index.
-    if (index >= 0)
-      list.setSelectedIndex(index);
+    Point point = anEvent.getPoint();
+    if (list != null)
+      {
+        int index = list.locationToIndex(point);
+        if (index == -1)
+          {
+            if (point.y < 0)
+              index = 0;
+            else
+              index = comboBox.getModel().getSize() - 1;
+          }
+        if (list.getSelectedIndex() != index)
+          {
+            list.setSelectedIndex(index);
+            if (shouldScroll)
+              list.ensureIndexIsVisible(index);
+          }
+      }
   }
 
   /**
@@ -769,8 +793,11 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
      */
     public void mousePressed(MouseEvent e)
     {
-      if (comboBox.isEnabled())
-        togglePopup();
+      if (SwingUtilities.isLeftMouseButton(e) && comboBox.isEnabled())
+        {
+          delegateFocus(e);
+          togglePopup();
+        }
     }
 
     /**
@@ -782,28 +809,27 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
      */
     public void mouseReleased(MouseEvent e)
     {
-      // Get component over which mouse was released
-      Component src = (Component) e.getSource();
-      int x = e.getX();
-      int y = e.getY();
-      Component releasedComponent = SwingUtilities.getDeepestComponentAt(src,
-                                                                         x, y);
-
-      // if mouse was released inside the bounds of combo box then do nothing,
+      Component component = (Component) e.getSource();
+      Dimension size = component.getSize();
+      Rectangle bounds = new Rectangle(0, 0, size.width - 1, size.height - 1);
+      // If mouse was released inside the bounds of combo box then do nothing,
       // Otherwise if mouse was released inside the list of combo box items
       // then change selection and close popup
-      if (! (releasedComponent instanceof JComboBox))
+      if (! bounds.contains(e.getPoint()))
         {
-          // List model contains the item over which mouse is released,
-          // since it is updated every time the mouse is moved over a different
-          // item in the list. Now that the mouse is released we need to
-          // update model of the combo box as well. 	  
-          comboBox.setSelectedIndex(list.getSelectedIndex());
-
-          if (isAutoScrolling)
-            stopAutoScrolling();
+          MouseEvent convEvent = convertMouseEvent(e);
+          Point point = convEvent.getPoint();
+          Rectangle visRect = new Rectangle();
+          list.computeVisibleRect(visRect);
+          if (visRect.contains(point))
+            {
+              updateListBoxSelectionForEvent(convEvent, false);
+              comboBox.setSelectedIndex(list.getSelectedIndex());
+            }
           hide();
         }
+      hasEntered = false;
+      stopAutoScrolling();
     }
   }
 
@@ -827,58 +853,42 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
      */
     public void mouseDragged(MouseEvent e)
     {
-      // convert point of the drag event relative to combo box list component
-      // figure out over which list cell the mouse is currently being dragged
-      // and highlight the cell. The list model is changed but the change has 
-      // no effect on combo box's data model. The list model is changed so 
-      // that the appropriate item would be highlighted in the combo box's 
-      // list.
-      if (BasicComboPopup.this.isVisible())
+      if (isVisible())
         {
-	  int cbHeight = (int) comboBox.getPreferredSize().getHeight();
-	  int popupHeight = BasicComboPopup.this.getSize().height;
-
-	  // if mouse is dragged inside the the combo box's items list.
-	  if (e.getY() > cbHeight && ! (e.getY() - cbHeight >= popupHeight))
-	    {
-	      int index = list.locationToIndex(new Point(e.getX(),
-	                                                 (int) (e.getY()
-	                                                 - cbHeight)));
-
-	      int firstVisibleIndex = list.getFirstVisibleIndex();
-
-	      // list.locationToIndex returns item's index that would
-	      // be located at the specified point if the first item that
-	      // is visible is item 0. However in the JComboBox it is not 
-	      // necessarily the case since list is contained in the 
-	      // JScrollPane so we need to adjust the index returned. 
-	      if (firstVisibleIndex != 0)
-		// FIXME: adjusted index here is off by one. I am adding one
-		// here to compensate for that. This should be
-		// index += firstVisibleIndex. Remove +1 once the bug is fixed.
-		index += firstVisibleIndex + 1;
-
-	      list.setSelectedIndex(index);
-	    }
-	  else
-	    {
-	      // if mouse is being dragged at the bottom of combo box's list 
-	      // of items or at the very top then scroll the list in the 
-	      // desired direction.
-	      boolean movingUP = e.getY() < cbHeight;
-	      boolean movingDown = e.getY() > cbHeight;
-
-	      if (movingUP)
-	        {
-		  scrollDirection = SCROLL_UP;
-		  startAutoScrolling(SCROLL_UP);
-	        }
-	      else if (movingDown)
-	        {
-		  scrollDirection = SCROLL_DOWN;
-		  startAutoScrolling(SCROLL_DOWN);
-	        }
-	    }
+          MouseEvent convEvent = convertMouseEvent(e);
+          Rectangle visRect = new Rectangle();
+          list.computeVisibleRect(visRect);
+          if (convEvent.getPoint().y >= visRect.y
+              && (convEvent.getPoint().y <= visRect.y + visRect.height - 1))
+            {
+              hasEntered = true;
+              if (isAutoScrolling)
+                stopAutoScrolling();
+              Point point = convEvent.getPoint();
+              if (visRect.contains(point))
+                {
+                  valueIsAdjusting = true;
+                  updateListBoxSelectionForEvent(convEvent, false);
+                  valueIsAdjusting = false;
+                }
+            }
+          else if (hasEntered)
+            {
+              int dir = convEvent.getPoint().y < visRect.y ? SCROLL_UP
+                                                           : SCROLL_DOWN;
+              if (isAutoScrolling && scrollDirection != dir)
+                {
+                  stopAutoScrolling();
+                  startAutoScrolling(dir);
+                }
+              else if (!isAutoScrolling)
+                startAutoScrolling(dir);
+            }
+          else if (e.getPoint().y < 0)
+            {
+              hasEntered = true;
+              startAutoScrolling(SCROLL_UP);
+            }
         }
     }
   }
@@ -905,7 +915,13 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
      */
     public void itemStateChanged(ItemEvent e)
     {
-      // TODO: What should be done here?
+      if (e.getStateChange() == ItemEvent.SELECTED && ! valueIsAdjusting)
+        {
+          valueIsAdjusting = true;
+          syncListSelection();
+          valueIsAdjusting = false;
+          list.ensureIndexIsVisible(comboBox.getSelectedIndex());
+        }
     }
   }
 
@@ -924,15 +940,12 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
 
     public void mousePressed(MouseEvent e)
     {
-      // TODO: What should be do here?
+      // Nothing to do here.
     }
 
     public void mouseReleased(MouseEvent anEvent)
     {
-      int index = list.locationToIndex(anEvent.getPoint());
-      // Check for valid index.
-      if (index >= 0)
-        comboBox.setSelectedIndex(index);
+      comboBox.setSelectedIndex(list.getSelectedIndex());
       hide();
     }
   }
@@ -951,7 +964,15 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
 
     public void mouseMoved(MouseEvent anEvent)
     {
-      updateListBoxSelectionForEvent(anEvent, false);
+      Point point = anEvent.getPoint();
+      Rectangle visRect = new Rectangle();
+      list.computeVisibleRect(visRect);
+      if (visRect.contains(point))
+        {
+          valueIsAdjusting = true;
+          updateListBoxSelectionForEvent(anEvent, false);
+          valueIsAdjusting = false;
+        }
     }
   }
 
@@ -971,15 +992,21 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
     {
       if (e.getPropertyName().equals("renderer"))
         {
-	  list.setCellRenderer((ListCellRenderer) e.getNewValue());
-	  revalidate();
-	  repaint();
+	  list.setCellRenderer(comboBox.getRenderer());
+	  if (isVisible())
+	    hide();
         }
-      if (e.getPropertyName().equals("dataModel"))
+      if (e.getPropertyName().equals("model"))
         {
-	  list.setModel((ComboBoxModel) e.getNewValue());
-	  revalidate();
-	  repaint();
+          ComboBoxModel oldModel = (ComboBoxModel) e.getOldValue();
+          uninstallComboBoxModelListeners(oldModel);
+          ComboBoxModel newModel = (ComboBoxModel) e.getNewValue();
+          list.setModel(newModel);
+          installComboBoxModelListeners(newModel);
+          if (comboBox.getItemCount() > 0)
+            comboBox.setSelectedIndex(0);
+          if (isVisible())
+            hide();
         }
     }
   }
@@ -991,7 +1018,6 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   private void uninstallListeners()
   {
-    uninstallListListeners();
     uninstallComboBoxListeners();
     uninstallComboBoxModelListeners(comboBox.getModel());
   }
@@ -1015,17 +1041,20 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   private void uninstallComboBoxListeners()
   {
-    comboBox.removeMouseListener(mouseListener);
-    mouseListener = null;
-
-    comboBox.removeMouseMotionListener(mouseMotionListener);
-    mouseMotionListener = null;
-
     comboBox.removeItemListener(itemListener);
     itemListener = null;
 
     comboBox.removePropertyChangeListener(propertyChangeListener);
     propertyChangeListener = null;
+  }
+
+  void syncListSelection()
+  {
+    int index = comboBox.getSelectedIndex();
+    if (index == -1)
+      list.clearSelection();
+    else
+      list.setSelectedIndex(index);
   }
 
   // --------------------------------------------------------------------

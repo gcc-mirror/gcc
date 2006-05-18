@@ -1,5 +1,5 @@
 /* JRadioButtonMenuItem.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -168,16 +168,27 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * A string that describes this JRadioButtonMenuItem. Normally only used
-   * for debugging.
+   * Returns a string describing the attributes for the 
+   * <code>JRadioButtonMenuItem</code> component, for use in debugging.  The 
+   * return value is guaranteed to be non-<code>null</code>, but the format of 
+   * the string may vary between implementations.
    *
-   * @return A string describing this JRadioButtonMenuItem
+   * @return A string describing the attributes of the 
+   *     <code>JRadioButtonMenuItem</code>.
    */
   protected String paramString()
   {
-    return "JRadioButtonMenuItem";
+    // calling super seems to be sufficient here...
+    return super.paramString();
   }
 
+  /**
+   * Returns the object that provides accessibility features for this
+   * <code>JRadioButtonMenuItem</code> component.
+   *
+   * @return The accessible context (an instance of 
+   *     {@link AccessibleJRadioButtonMenuItem}).
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -186,18 +197,30 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
     return accessibleContext;
   }
 
+  /**
+   * Provides the accessibility features for the 
+   * <code>JRadioButtonMenuItem</code> component.
+   * 
+   * @see JRadioButtonMenuItem#getAccessibleContext()
+   */
   protected class AccessibleJRadioButtonMenuItem extends AccessibleJMenuItem
   {
     private static final long serialVersionUID = 4381471510145292179L;
 
     /**
-     * Creates a new AccessibleJRadioButtonMenuItem object.
+     * Creates a new <code>AccessibleJRadioButtonMenuItem</code> instance.
      */
     protected AccessibleJRadioButtonMenuItem()
     {
       // Nothing to do here.
     }
 
+    /**
+     * Returns the accessible role for the <code>JRadioButtonMenuItem</code> 
+     * component.
+     *
+     * @return {@link AccessibleRole#RADIO_BUTTON}.
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.RADIO_BUTTON;

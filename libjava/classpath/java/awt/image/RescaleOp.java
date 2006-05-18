@@ -93,7 +93,7 @@ public class RescaleOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.BufferedImageOp#getRenderingHints()
    */
-  public RenderingHints getRenderingHints()
+  public final RenderingHints getRenderingHints()
   {
     return hints;
   }

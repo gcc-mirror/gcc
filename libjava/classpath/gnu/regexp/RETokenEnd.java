@@ -1,5 +1,5 @@
 /* gnu/regexp/RETokenEnd.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,24 +53,34 @@ final class RETokenEnd extends REToken {
     return 0;
   }
 
-    boolean match(CharIndexed input, REMatch mymatch) {
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
 	char ch = input.charAt(mymatch.index);
 	if (ch == CharIndexed.OUT_OF_BOUNDS)
 	    return ((mymatch.eflags & RE.REG_NOTEOL)>0) ? 
-		false : next(input, mymatch);
+		null : mymatch;
 	if (newline != null) {
 	    char z;
 	    int i = 0; // position in newline
 	    do {
 		z = newline.charAt(i);
-		if (ch != z) return false;
+		if (ch != z) return null;
 		++i;
 		ch = input.charAt(mymatch.index + i);
 	    } while (i < newline.length());
 	    
-	    return next(input, mymatch);
+	    return mymatch;
 	}
-	return false;
+	return null;
+    }
+
+    boolean returnsFixedLengthMatches() { return true; }
+
+    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+        REMatch m = (REMatch) mymatch.clone();
+	REToken tk = (REToken) this.clone();
+	tk.chain(null);
+	if (tk.match(input, m)) return max;
+	else return 0;
     }
 
   void dump(StringBuffer os) {

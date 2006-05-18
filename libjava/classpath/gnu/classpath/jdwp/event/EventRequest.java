@@ -42,8 +42,6 @@ package gnu.classpath.jdwp.event;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.event.filters.*;
 import gnu.classpath.jdwp.exception.JdwpIllegalArgumentException;
-import gnu.classpath.jdwp.id.*;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;

@@ -98,8 +98,6 @@ import java.util.Map;
  *    <li><a href="http://www.ietf.org/internet-drafts/draft-mcgrew-saag-icm-00.txt">
  *    Integer Counter Mode</a>, David A. McGrew.</li>
  * </ol>
- *
- * @version $Revision: 1.1 $
  */
 public class ICMGenerator extends BasePRNG implements Cloneable
 {

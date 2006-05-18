@@ -171,9 +171,7 @@ public class DefaultCellEditor
     /**
      * Cancel the cell editing session. This method notifies the registered
      * cell editor listeners (including the table) that the editing has been
-     * canceled. 
-     * 
-     * @returns boolean
+     * canceled.
      */
     public void cancelCellEditing()
     {

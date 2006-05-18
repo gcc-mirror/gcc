@@ -45,6 +45,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -142,14 +143,15 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
 
     g.setFont(f);
 
+    ButtonModel m = b.getModel();
     Icon currentIcon = null;
-    if (b.isSelected() && b.isEnabled())
+    if (m.isSelected() && m.isEnabled())
       currentIcon = b.getSelectedIcon();
-    else if (!b.isSelected() && b.isEnabled())
+    else if (! m.isSelected() && m.isEnabled())
       currentIcon = b.getIcon();
-    else if (b.isSelected() && !b.isEnabled())
+    else if (m.isSelected() && ! m.isEnabled())
       currentIcon = b.getDisabledSelectedIcon();
-    else // (!b.isSelected() && !b.isEnabled())
+    else // (!m.isSelected() && ! m.isEnabled())
       currentIcon = b.getDisabledIcon();
 
     SwingUtilities.calculateInnerArea(b, vr);
@@ -166,7 +168,7 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
     if (text != null)
       paintText(g, b, tr, text);
     // TODO: Figure out what is the size parameter?
-    if (b.hasFocus() && b.isFocusPainted() && b.isEnabled())
+    if (b.hasFocus() && b.isFocusPainted() && m.isEnabled())
       paintFocus(g, tr, null);
   }
 

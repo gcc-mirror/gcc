@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.locale.LocaleHelper;
+
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -67,10 +69,6 @@ import java.util.ResourceBundle;
  * @author Tom Tromey (tromey@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date March 18, 1999
- */
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 from http://www.javasoft.com.
- * Status: Mostly complete, but parts stubbed out.  Look for FIXME.
  */
 public abstract class Collator implements Comparator, Cloneable
 {
@@ -244,10 +242,7 @@ public abstract class Collator implements Comparator, Cloneable
    */
   public static synchronized Locale[] getAvailableLocales ()
   {
-    // FIXME
-    Locale[] l = new Locale[1];
-    l[0] = Locale.US;
-    return l;
+    return LocaleHelper.getCollatorLocales();
   }
 
   /**
@@ -292,7 +287,7 @@ public abstract class Collator implements Comparator, Cloneable
    * specified locale.  If no <code>Collator</code> exists for the desired
    * locale, a <code>Collator</code> for the default locale will be returned.
    *
-   * @param loc The desired localed to load a <code>Collator</code> for.
+   * @param loc The desired locale to load a <code>Collator</code> for.
    *
    * @return A <code>Collator</code> for the requested locale
    */

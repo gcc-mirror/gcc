@@ -1,5 +1,5 @@
 /* JScrollBar.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,10 +42,12 @@ import java.awt.Adjustable;
 import java.awt.Dimension;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 import javax.swing.plaf.ScrollBarUI;
@@ -60,7 +62,8 @@ import javax.swing.plaf.ScrollBarUI;
 public class JScrollBar extends JComponent implements Adjustable, Accessible
 {
   /**
-   * DOCUMENT ME!
+   * Provides the accessibility features for the <code>JScrollBar</code>
+   * component.
    */
   protected class AccessibleJScrollBar extends JComponent.AccessibleJComponent
     implements AccessibleValue
@@ -68,7 +71,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
     private static final long serialVersionUID = -7758162392045586663L;
     
     /**
-     * Creates a new AccessibleJSlider object.
+     * Creates a new <code>AccessibleJScrollBar</code> instance.
      */
     protected AccessibleJScrollBar()
     {
@@ -76,75 +79,96 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns a set containing the current state of the {@link JScrollBar} 
+     * component.
      *
-     * @return DOCUMENT ME!
+     * @return The accessible state set.
      */
     public AccessibleStateSet getAccessibleStateSet()
     {
-      return null;
+      AccessibleStateSet result = super.getAccessibleStateSet();
+      if (orientation == JScrollBar.HORIZONTAL)
+        result.add(AccessibleState.HORIZONTAL);
+      else if (orientation == JScrollBar.VERTICAL)
+        result.add(AccessibleState.VERTICAL);
+      return result;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the accessible role for the <code>JScrollBar</code> component.
      *
-     * @return DOCUMENT ME!
+     * @return {@link AccessibleRole#SCROLL_BAR}.
      */
     public AccessibleRole getAccessibleRole()
     {
-      return null;
+      return AccessibleRole.SCROLL_BAR;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an object that provides access to the current, minimum and 
+     * maximum values.
      *
-     * @return DOCUMENT ME!
+     * @return The accessible value.
      */
     public AccessibleValue getAccessibleValue()
     {
-      return null;
+      return this;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the current value of the {@link JScrollBar} component, as an
+     * {@link Integer}.
      *
-     * @return DOCUMENT ME!
+     * @return The current value of the {@link JScrollBar} component.
      */
     public Number getCurrentAccessibleValue()
     {
-      return null;
+      return new Integer(getValue());
     }
 
     /**
-     * setCurrentAccessibleValue
+     * Sets the current value of the {@link JScrollBar} component and sends a
+     * {@link PropertyChangeEvent} (with the property name 
+     * {@link AccessibleContext#ACCESSIBLE_VALUE_PROPERTY}) to all registered
+     * listeners.  If the supplied value is <code>null</code>, this method 
+     * does nothing and returns <code>false</code>.
      *
-     * @param value0 TODO
+     * @param value  the new slider value (<code>null</code> permitted).
      *
-     * @return boolean
+     * @return <code>true</code> if the slider value is updated, and 
+     *     <code>false</code> otherwise.
      */
-    public boolean setCurrentAccessibleValue(Number value0)
+    public boolean setCurrentAccessibleValue(Number value)
     {
-      return false;
+      if (value == null)
+        return false;
+      Number oldValue = getCurrentAccessibleValue();
+      setValue(value.intValue());
+      firePropertyChange(AccessibleContext.ACCESSIBLE_VALUE_PROPERTY, oldValue, 
+                         new Integer(getValue()));
+      return true;
     }
 
     /**
-     * getMinimumAccessibleValue
+     * Returns the minimum value of the {@link JScrollBar} component, as an
+     * {@link Integer}.
      *
-     * @return Number
+     * @return The minimum value of the {@link JScrollBar} component.
      */
     public Number getMinimumAccessibleValue()
     {
-      return null;
+      return new Integer(getMinimum());
     }
 
     /**
-     * getMaximumAccessibleValue
+     * Returns the maximum value of the {@link JScrollBar} component, as an
+     * {@link Integer}.
      *
-     * @return Number
+     * @return The maximum value of the {@link JScrollBar} component.
      */
     public Number getMaximumAccessibleValue()
     {
-      return null;
+      return new Integer(getMaximum() - model.getExtent());
     }
   }
 
@@ -233,8 +257,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
   public void updateUI()
   {
     setUI((ScrollBarUI) UIManager.getUI(this));
-    invalidate();
-    repaint();
   }
 
   /**
@@ -632,9 +654,11 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the object that provides accessibility features for this
+   * <code>JScrollBar</code> component.
    *
-   * @return DOCUMENT ME!
+   * @return The accessible context (an instance of 
+   *     {@link AccessibleJScrollBar}).
    */
   public AccessibleContext getAccessibleContext()
   {

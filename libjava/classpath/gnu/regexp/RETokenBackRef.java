@@ -1,5 +1,5 @@
 /* gnu/regexp/RETokenBackRef.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,30 +50,32 @@ final class RETokenBackRef extends REToken {
 
   // should implement getMinimumLength() -- any ideas?
 
-    boolean match(CharIndexed input, REMatch mymatch) {
-	if (num >= mymatch.start.length) return false;
-	if (num >= mymatch.end.length) return false;
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
+	if (num >= mymatch.start.length) return null;
+	if (num >= mymatch.end.length) return null;
 	int b,e;
 	b = mymatch.start[num];
 	e = mymatch.end[num];
-	if ((b==-1)||(e==-1)) return false; // this shouldn't happen, but...
+	if ((b==-1)||(e==-1)) return null; // this shouldn't happen, but...
+	if (b < 0) b += 1;
+	if (e < 0) e += 1;
 	for (int i=b; i<e; i++) {
 	    char c1 = input.charAt(mymatch.index+i-b);
 	    char c2 = input.charAt(i);
 	    if (c1 != c2) {
 		if (insens) {
-		    if (c1 != Character.toLowerCase(c2) &&
-			c1 != Character.toUpperCase(c2)) {
-			return false;
+		    if (c1 != toLowerCase(c2, unicodeAware) &&
+			c1 != toUpperCase(c2, unicodeAware)) {
+			return null;
 		    }
 		}
 		else {
-		    return false;
+		    return null;
 		}
 	    }
 	}
 	mymatch.index += e-b;
-	return next(input, mymatch);
+	return mymatch;
     }
     
     void dump(StringBuffer os) {

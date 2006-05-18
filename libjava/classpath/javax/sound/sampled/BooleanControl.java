@@ -42,7 +42,7 @@ package javax.sound.sampled;
  * A BooleanControl is a Control which has two states.
  * @since 1.3
  */
-public class BooleanControl extends Control
+public abstract class BooleanControl extends Control
 {
   /**
    * A Type specialized to represent a boolean control.

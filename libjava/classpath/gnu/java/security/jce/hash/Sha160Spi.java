@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * The implementation of the SHA-1 (160-bit) <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.<p>
- *
- * @version $Revision: 1.1 $
  */
 public class Sha160Spi extends MessageDigestAdapter
 {

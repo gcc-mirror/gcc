@@ -42,7 +42,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents one external process. Each instance of this class is in
@@ -92,6 +95,7 @@ final class VMProcess extends Process
   InputStream stdout;			       // process output stream
   InputStream stderr;			       // process error stream
   int exitValue;			       // process exit value
+  boolean redirect;			       // redirect stderr -> stdout
 
   //
   // Dedicated thread that does all the fork()'ing and wait()'ing
@@ -196,7 +200,8 @@ final class VMProcess extends Process
 	{
 	  try
 	    {
-	      process.nativeSpawn(process.cmd, process.env, process.dir);
+	      process.nativeSpawn(process.cmd, process.env, process.dir,
+				  process.redirect);
 	      process.state = RUNNING;
 	      activeMap.put(new Long(process.pid), process);
 	    }
@@ -215,7 +220,8 @@ final class VMProcess extends Process
   }
 
   // Constructor
-  private VMProcess(String[] cmd, String[] env, File dir) throws IOException
+  private VMProcess(String[] cmd, String[] env, File dir, boolean redirect)
+    throws IOException
   {
     
     // Initialize this process
@@ -223,6 +229,7 @@ final class VMProcess extends Process
     this.cmd = cmd;
     this.env = env;
     this.dir = dir;
+    this.redirect = redirect;
   
     // Add process to the new process work list and wakeup processThread
     synchronized (workList)
@@ -275,11 +282,20 @@ final class VMProcess extends Process
 
   // Invoked by native code (from nativeSpawn()) to record process info.
   private void setProcessInfo(OutputStream stdin,
-                 InputStream stdout, InputStream stderr, long pid)
+			      InputStream stdout, InputStream stderr, long pid)
   {
     this.stdin = stdin;
     this.stdout = stdout;
-    this.stderr = stderr;
+    if (stderr == null)
+      this.stderr = new InputStream()
+	{
+	  public int read() throws IOException
+	  {
+	    return -1;
+	  }
+	};
+    else
+      this.stderr = stderr;
     this.pid = pid;
   }
 
@@ -288,7 +304,24 @@ final class VMProcess extends Process
    */
   static Process exec(String[] cmd, String[] env, File dir) throws IOException
   {
-    return new VMProcess(cmd, env, dir);
+    return new VMProcess(cmd, env, dir, false);
+  }
+
+  static Process exec(List cmd, Map env,
+		      File dir, boolean redirect) throws IOException
+  {
+    String[] acmd = (String[]) cmd.toArray(new String[cmd.size()]);
+    String[] aenv = new String[env.size()];
+
+    int i = 0;
+    Iterator iter = env.entrySet().iterator();
+    while (iter.hasNext())
+      {
+	Map.Entry entry = (Map.Entry) iter.next();
+	aenv[i++] = entry.getKey() + "=" + entry.getValue();
+      }
+
+    return new VMProcess(acmd, aenv, dir, redirect);
   }
 
   public OutputStream getOutputStream()
@@ -347,7 +380,8 @@ final class VMProcess extends Process
    *
    * @throws IOException if the O/S process could not be created.
    */
-  native void nativeSpawn(String[] cmd, String[] env, File dir)
+  native void nativeSpawn(String[] cmd, String[] env, File dir,
+			  boolean redirect)
     throws IOException;
 
   /**

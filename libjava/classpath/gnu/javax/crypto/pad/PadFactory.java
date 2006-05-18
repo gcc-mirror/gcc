@@ -84,7 +84,7 @@ public class PadFactory implements Registry
     if (pad.endsWith("padding"))
       pad = pad.substring(0, pad.length() - "padding".length());
     IPad result = null;
-    if (pad.equals(PKCS7_PAD))
+    if (pad.equals(PKCS7_PAD) || pad.equals(PKCS5_PAD))
       {
         result = new PKCS7();
       }
@@ -122,6 +122,7 @@ public class PadFactory implements Registry
   public static final Set getNames()
   {
     HashSet hs = new HashSet();
+    hs.add(PKCS5_PAD);
     hs.add(PKCS7_PAD);
     hs.add(TBC_PAD);
     hs.add(EME_PKCS1_V1_5_PAD);

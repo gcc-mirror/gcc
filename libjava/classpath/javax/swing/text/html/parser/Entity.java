@@ -54,7 +54,7 @@ import java.io.Serializable;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public final class Entity
-  implements DTDConstants, Serializable
+  implements DTDConstants
 {
   /**
    * Package level mapper between type names and they string values.

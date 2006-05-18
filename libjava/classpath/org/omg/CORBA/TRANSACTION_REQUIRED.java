@@ -1,5 +1,5 @@
 /* TRANSACTION_REQUIRED.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.io.Serializable;
  * active transaction is required.
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class TRANSACTION_REQUIRED
+public final class TRANSACTION_REQUIRED
   extends SystemException
   implements Serializable
 {
@@ -57,7 +57,7 @@ public class TRANSACTION_REQUIRED
   /**
    * Creates a TRANSACTION_REQUIRED with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reasom the explaining message.
+   * @param message the explaining message.
    */
   public TRANSACTION_REQUIRED(String message)
   {

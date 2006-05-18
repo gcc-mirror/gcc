@@ -1,5 +1,5 @@
 /* Value.java -- class to read/write JDWP tagged and untagged values
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006, Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -203,12 +203,12 @@ public class Value
   }
 
   /**
-   * Reads the an object of the given Class from the untagged value contained
+   * Reads an object of the given Class from the untagged value contained
    * in the ByteBuffer.
    * 
-   * @param bb contains the Object
+   * @param bb   contains the Object
    * @param type corresponds to the TAG of value to be read 
-   * @return
+   * @return the resultant object
    * @throws JdwpException
    * @throws IOException
    */
@@ -232,7 +232,7 @@ public class Value
         else if (type == short.class)
           return new Short(bb.getShort());
         else if (type == boolean.class)
-          return (bb.get() == 0) ? new Boolean(false) : new Boolean(true);
+          return Boolean.valueOf(bb.get() != 0);
         else if (type == void.class)
           return new byte[0];
         else

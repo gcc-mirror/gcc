@@ -49,8 +49,6 @@ import java.security.PublicKey;
 /**
  * <p>An object that implements the {@link IKeyPairCodec} operations for the
  * <i>Raw</i> format to use with DSS keypairs.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class DSSKeyPairRawCodec implements IKeyPairCodec
 {

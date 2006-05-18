@@ -1,5 +1,5 @@
 /* SyncScopeHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,15 +55,11 @@ import org.omg.CORBA.portable.OutputStream;
  *
  * @see SYNC_WITH_TRANSPORT
  */
-public class SyncScopeHelper
+public abstract class SyncScopeHelper
 {
-  /**
-   * A cached typecode value, computed only once.
-   */
-  private static TypeCode typecode;
 
   /**
-   * Delegates call to {@link Any.extract_short()}.
+   * Delegates call to {@link Any#extract_short()}.
    */
   public static short extract(Any a)
   {
@@ -81,7 +77,7 @@ public class SyncScopeHelper
   }
 
   /**
-   * Delegates call to {@link Any.insert_short(short)}.
+   * Delegates call to {@link Any#insert_short(short)}.
    */
   public static void insert(Any a, short that)
   {
@@ -89,7 +85,7 @@ public class SyncScopeHelper
   }
 
   /**
-   * Delegates call to {@link InputStream.read_short()}.
+   * Delegates call to {@link InputStream#read_short()}.
    */
   public static short read(InputStream istream)
   {
@@ -112,7 +108,7 @@ public class SyncScopeHelper
   }
 
   /**
-   * Delegates call to {@link OutputStream.write_short()}.
+   * Delegates call to {@link OutputStream#write_short(short)}.
    */
   public static void write(OutputStream ostream, short value)
   {

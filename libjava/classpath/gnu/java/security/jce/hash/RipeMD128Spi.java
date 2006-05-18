@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * The implementation of the RIPEMD-128 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.<p>
- *
- * @version $Revision: 1.1 $
  */
 public class RipeMD128Spi extends MessageDigestAdapter
 {

@@ -45,7 +45,7 @@ import java.io.IOException;
 /**
  * A class represents a JDWP reply packet.
  * This class adds an error code to the packet header information
- * in {@link gnu.classpath.transport.JdwpPacket} and adds additional
+ * in {@link gnu.classpath.jdwp.transport.JdwpPacket} and adds additional
  * reply packet-specific processing.
  *
  * @author Keith Seitz  <keiths@redhat.com>

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -96,7 +98,12 @@ public class BasicTableHeaderUI extends TableHeaderUI
   /**
    * The header cell border.
    */
-  protected Border cellBorder;
+  private Border cellBorder;
+
+  /**
+   * Original mouse cursor prior to resizing.
+   */
+  private Cursor originalCursor;
   
   /**
    * If not null, one of the columns is currently being dragged.
@@ -243,6 +250,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
               if (onBoundary)
                 {
 
+		  originalCursor = header.getCursor();
                   if (p < x)
                     header.setCursor(Cursor.getPredefinedCursor
                                      (Cursor.W_RESIZE_CURSOR));
@@ -252,7 +260,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
                 }
               else
                 {
-                  header.setCursor(Cursor.getDefaultCursor());
+                  header.setCursor(originalCursor);
                   header.setResizingColumn(null);
                 }
 
@@ -343,7 +351,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
       showingResizeCursor = false;
       if (timer != null)
         timer.stop();
-      header.setCursor(Cursor.getDefaultCursor());
+      header.setCursor(originalCursor);
     }
 
     /**
@@ -415,6 +423,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
   }
 
   protected void installKeyboardActions()
+    throws NotImplementedException
   {
     // TODO: Implement this properly.
   }
@@ -447,6 +456,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
   }
 
   protected void uninstallKeyboardActions()
+    throws NotImplementedException
   {
     // TODO: Implement this properly.
   }

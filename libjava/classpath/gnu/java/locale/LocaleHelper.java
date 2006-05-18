@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.locale;
 
+import java.text.Collator;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -153,6 +154,58 @@ public class LocaleHelper
 	localizedString = key;
       }
     return localizedString;
+  }
+
+  /**
+   * Return an array of all the locales for which there is a
+   * {@link Collator} instance.  A new array is returned each time. 
+   */
+  public static Locale[] getCollatorLocales()
+  {
+    // For now we don't bother caching.  This is probably
+    // not called very frequently.  And, we would have to
+    // clone the array anyway.
+    if (LocaleData.collatorLocaleNames.length == 0)
+      return new Locale[] { Locale.US };
+    Locale[] result = new Locale[LocaleData.collatorLocaleNames.length];
+    for (int i = 0; i < result.length; ++i)
+      {
+        String language;
+        String region = "";
+        String variant = "";
+        String name = LocaleData.collatorLocaleNames[i];
+
+        language = name.substring(0, 2);
+
+        if (name.length() > 2)
+          region = name.substring(3);
+
+        int index = region.indexOf("_");
+        if (index > 0)
+          {
+            variant = region.substring(index + 1);
+            region = region.substring(0, index - 1);
+          }
+
+        result[i] = new Locale(language, region, variant);
+      }
+    return result;
+  }
+
+  /**
+   * Return the number of locales we know of.
+   */
+  public static int getLocaleCount()
+  {
+    return LocaleData.localeNames.length;
+  }
+
+  /**
+   * Return the Nth locale name.
+   */
+  public static String getLocaleName(int n)
+  {
+    return LocaleData.localeNames[n];
   }
 }
 

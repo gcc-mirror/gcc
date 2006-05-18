@@ -51,7 +51,6 @@ import java.util.Map;
  * of the {@link Transformer} chain of the <code>Assembly</code>.</p>
  *
  * @see Transformer
- * @version $Revision: 1.1 $
  */
 public class Assembly
 {

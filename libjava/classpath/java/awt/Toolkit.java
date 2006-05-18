@@ -1,5 +1,5 @@
 /* Toolkit.java -- AWT Toolkit superclass
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.awt.peer.GLightweightPeer;
 
 import java.awt.datatransfer.Clipboard;
@@ -78,10 +79,15 @@ import java.awt.peer.TextFieldPeer;
 import java.awt.peer.WindowPeer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileInputStream;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * The AWT system uses a set of native peer objects to implement its
@@ -525,16 +531,27 @@ public abstract class Toolkit
   {
     if (toolkit != null)
       return toolkit;
-    String toolkit_name = System.getProperty("awt.toolkit",
-                                             default_toolkit_name);
+    String toolkit_name = SystemProperties.getProperty("awt.toolkit",
+                                                       default_toolkit_name);
     try
       {
-        Class cls = Class.forName(toolkit_name);
+        ClassLoader cl;
+        cl = (ClassLoader) AccessController.doPrivileged
+        (new PrivilegedAction()
+          {
+            public Object run()
+              {
+                return ClassLoader.getSystemClassLoader();
+              }
+          });
+        Class cls = cl.loadClass(toolkit_name);
         Object obj = cls.newInstance();
         if (!(obj instanceof Toolkit))
           throw new AWTError(toolkit_name + " is not a subclass of " +
                              "java.awt.Toolkit");
         toolkit = (Toolkit) obj;
+
+        initAccessibility();
         return toolkit;
       }
     catch (ThreadDeath death)
@@ -696,9 +713,18 @@ public abstract class Toolkit
   public abstract Clipboard getSystemClipboard();
 
   /**
-   * Gets the singleton instance of the system selection as a Clipboard object.
+   * Gets the singleton instance of the system selection as a
+   * Clipboard object. The system selection contains the selected text
+   * of the last component/widget that had focus and a text selection.
+   * The default implementation returns null.
    *
-   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   * @return The Clipboard holding the system (text) selection or null
+   * if the Toolkit or system doesn't support a selection clipboard.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+   * is true.
+   * @exception SecurityException If the current security manager
+   * checkSystemClipboardAccess() doesn't allow access.
    *
    * @since 1.4
    */
@@ -1206,4 +1232,138 @@ public abstract class Toolkit
    * @since 1.3
    */
   public abstract Map mapInputMethodHighlight(InputMethodHighlight highlight);
+
+  /**
+   * Initializes the accessibility framework. In particular, this loads the
+   * properties javax.accessibility.screen_magnifier_present and
+   * javax.accessibility.screen_reader_present and loads
+   * the classes specified in javax.accessibility.assistive_technologies.
+   */
+  private static void initAccessibility()
+  {
+    AccessController.doPrivileged
+    (new PrivilegedAction()
+     {
+       public Object run()
+       {
+         Properties props = new Properties();
+         String sep = File.separator;
+
+         // Try the user configuration.
+         try
+           {
+             File propsFile = new File(System.getProperty("user.home") + sep
+                                       + ".accessibility.properties");
+             FileInputStream in = new FileInputStream(propsFile);
+             props.load(in);
+             in.close();
+           }
+         catch (Exception ex)
+           {
+             // User configuration not present, ignore.
+           }
+
+         // Try the system configuration if there was no user configuration.
+         if (props.size() == 0)
+           {
+             try
+               {
+                 File propsFile =
+                   new File(System.getProperty("gnu.classpath.home.url")
+                            + sep + "accessibility.properties");
+                 FileInputStream in = new FileInputStream(propsFile);
+                 props.load(in);
+                 in.close();
+               }
+             catch (Exception ex)
+               {
+                 // System configuration not present, ignore.
+               }
+           }
+
+       // Fetch the screen_magnifier_present property. Check systen properties
+       // first, then fallback to the configuration file.
+       String magPresent = SystemProperties.getProperty
+                              ("javax.accessibility.screen_magnifier_present");
+       if (magPresent == null)
+         {
+           magPresent = props.getProperty("screen_magnifier_present");
+           if (magPresent != null)
+             {
+               SystemProperties.setProperty
+                 ("javax.accessibility.screen_magnifier_present", magPresent);
+             }
+         }
+
+       // Fetch the screen_reader_present property. Check systen properties
+       // first, then fallback to the configuration file.
+       String readerPresent = SystemProperties.getProperty
+                                ("javax.accessibility.screen_reader_present");
+       if (readerPresent == null)
+         {
+           readerPresent = props.getProperty("screen_reader_present");
+           if (readerPresent != null)
+             {
+               SystemProperties.setProperty
+                 ("javax.accessibility.screen_reader_present", readerPresent);
+             }
+         }
+
+       // Fetch the list of classes to be loaded.
+       String classes = SystemProperties.getProperty
+         ("javax.accessibility.assistive_technologies");
+       if (classes == null)
+         {
+           classes = props.getProperty("assistive_technologies");
+           if (classes != null)
+             {
+               SystemProperties.setProperty
+               ("javax.accessibility.assistive_technologies", classes);
+             }
+         }
+
+       // Try to load the assisitive_technologies classes.
+       if (classes != null)
+         {
+           ClassLoader cl = ClassLoader.getSystemClassLoader();
+           StringTokenizer tokenizer = new StringTokenizer(classes, ",");
+           while (tokenizer.hasMoreTokens())
+             {
+               String className = tokenizer.nextToken();
+               try
+                 {
+                   Class atClass = cl.loadClass(className);
+                   atClass.newInstance();
+                 }
+               catch (ClassNotFoundException ex)
+                 {
+                   AWTError err = new AWTError("Assistive Technology class not"
+                                               + " found: " + className);
+                   err.initCause(ex);
+                   throw err;
+                 }
+               catch (InstantiationException ex)
+                 {
+                   AWTError err =
+                     new AWTError("Assistive Technology class cannot be "
+                                  + "instantiated: " + className);
+                   err.initCause(ex);
+                   throw err;
+                 }
+               catch (IllegalAccessException ex)
+                 {
+                   AWTError err =
+                     new AWTError("Assistive Technology class cannot be "
+                                  + "accessed: " + className);
+                   err.initCause(err);
+                   throw err;
+                 }
+             }
+         }
+       return null;
+       }
+     });
+
+  }
+
 } // class Toolkit

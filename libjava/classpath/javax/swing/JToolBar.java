@@ -50,7 +50,6 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
-import javax.swing.JButton;
 import javax.swing.plaf.ToolBarUI;
 
 /**
@@ -66,17 +65,15 @@ import javax.swing.plaf.ToolBarUI;
 public class JToolBar extends JComponent implements SwingConstants, Accessible
 {
   /**
-   * AccessibleJToolBar
+   * Provides the accessibility features for the <code>JToolBar</code>
+   * component.
    */
-  // FIXME: This inner class is a complete stub and must be implemented
-  // properly.
   protected class AccessibleJToolBar extends AccessibleJComponent
   {
-    /** DOCUMENT ME! */
     private static final long serialVersionUID = -5516888265903814215L;
 
     /**
-     * Constructor AccessibleJToolBar
+     * Creates a new <code>AccessibleJToolBar</code> instance.
      */
     protected AccessibleJToolBar()
     {
@@ -84,19 +81,23 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
     }
 
     /**
-     * getAccessibleStateSet
+     * Returns a set containing the current state of the {@link JToolBar} 
+     * component.  The current implementation simply calls the superclass.
      *
-     * @return AccessibleStateSet
+     * @return The accessible state set.
      */
     public AccessibleStateSet getAccessibleStateSet()
     {
-      return null; // TODO
+      // running tests against the reference implementation, I was unable
+      // to find any state information that is set specifically by the
+      // tool bar...
+      return super.getAccessibleStateSet();
     }
 
     /**
-     * getAccessibleRole
+     * Returns the accessible role for the <code>JToolBar</code> component.
      *
-     * @return AccessibleRole
+     * @return {@link AccessibleRole#TOOL_BAR}.
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -426,8 +427,9 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
     setOrientation(orientation);
     setLayout(new DefaultToolBarLayout());
     revalidate();
+    setOpaque(true);
     updateUI();
-  } // JToolBar()
+  }
 
   /**
    * This method adds a new JButton that performs the given Action to the
@@ -481,9 +483,7 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
   public void updateUI()
   {
     setUI((ToolBarUI) UIManager.getUI(this));
-    revalidate();
-    repaint();
-  } // updateUI()
+  }
 
   /**
    * This method returns the String identifier for the UI class to the used
@@ -767,9 +767,10 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
   } // paramString()
 
   /**
-   * getAccessibleContext
+   * Returns the object that provides accessibility features for this
+   * <code>JToolBar</code> component.
    *
-   * @return AccessibleContext
+   * @return The accessible context (an instance of {@link AccessibleJToolBar}).
    */
   public AccessibleContext getAccessibleContext()
   {

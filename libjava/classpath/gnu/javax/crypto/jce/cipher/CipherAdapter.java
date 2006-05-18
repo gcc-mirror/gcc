@@ -82,8 +82,6 @@ import javax.crypto.spec.IvParameterSpec;
  * and the initialization vector, the subclass should override those methods.
  * Otherwise a subclass need only call the {@link #CipherAdapter(String)}
  * constructor with the name of the cipher.</p>
- *
- * @version $Revision: 1.1 $
  */
 class CipherAdapter extends CipherSpi
 {

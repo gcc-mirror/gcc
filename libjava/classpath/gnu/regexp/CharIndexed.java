@@ -93,4 +93,24 @@ public interface CharIndexed {
      * Returns the effective length of this CharIndexed
      */
     int length();
+
+    /**
+     * Sets the REMatch last found on this input.
+     */
+    void setLastMatch(REMatch match);
+
+    /**
+     * Returns the REMatch last found on this input.
+     */
+    REMatch getLastMatch();
+
+    /**
+     * Returns the anchor.
+     */
+    int getAnchor();
+
+    /**
+     * Sets the anchor.
+     */
+    void setAnchor(int anchor);
 }

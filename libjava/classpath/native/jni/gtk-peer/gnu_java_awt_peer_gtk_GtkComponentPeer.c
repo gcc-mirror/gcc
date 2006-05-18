@@ -1,5 +1,5 @@
 /* gtkcomponentpeer.c -- Native implementation of GtkComponentPeer
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,15 +67,19 @@ exception statement from your version. */
 #define AWT_MOUSE_ENTERED  504
 #define AWT_MOUSE_EXITED   505
 #define AWT_MOUSE_DRAGGED  506
+#define AWT_MOUSE_WHEEL    507
+
+#define AWT_WHEEL_UNIT_SCROLL 0
 
 #define AWT_FOCUS_GAINED 1004
 #define AWT_FOCUS_LOST 1005
 
 static GtkWidget *find_fg_color_widget (GtkWidget *widget);
 static GtkWidget *find_bg_color_widget (GtkWidget *widget);
+static GtkWidget *get_widget (GtkWidget *widget);
 
 static jmethodID postMouseEventID;
-static jmethodID setCursorID;
+static jmethodID postMouseWheelEventID;
 static jmethodID postExposeEventID;
 static jmethodID postFocusEventID;
 
@@ -90,8 +94,10 @@ cp_gtk_component_init_jni (void)
   postMouseEventID = (*cp_gtk_gdk_env())->GetMethodID (cp_gtk_gdk_env(), gtkcomponentpeer,
                                                "postMouseEvent", "(IJIIIIZ)V");
 
-  setCursorID = (*cp_gtk_gdk_env())->GetMethodID (cp_gtk_gdk_env(), gtkcomponentpeer,
-                                           "setCursor", "()V");
+  postMouseWheelEventID = (*cp_gtk_gdk_env())->GetMethodID (cp_gtk_gdk_env(),
+						        gtkcomponentpeer,
+						        "postMouseWheelEvent",
+							"(IJIIIIZIII)V");
 
   postExposeEventID = (*cp_gtk_gdk_env())->GetMethodID (cp_gtk_gdk_env(), gtkcomponentpeer,
                                                  "postExposeEvent", "(IIII)V");
@@ -109,6 +115,9 @@ static gboolean component_button_release_cb (GtkWidget *widget,
 static gboolean component_motion_notify_cb (GtkWidget *widget,
                                             GdkEventMotion *event,
                                             jobject peer);
+static gboolean component_scroll_cb (GtkWidget *widget,
+				     GdkEventScroll *event,
+				     jobject peer);
 static gboolean component_enter_notify_cb (GtkWidget *widget,
                                            GdkEventCrossing *event,
                                            jobject peer);
@@ -179,19 +188,19 @@ state_to_awt_mods_with_button_states (guint state)
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor 
-  (JNIEnv *env, jobject obj, jint type) 
+  (JNIEnv *env, jobject obj, jint type, jobject image, jint x, jint y) 
 {
   gdk_threads_enter ();
 
   Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursorUnlocked
-    (env, obj, type);
+    (env, obj, type, image, x, y);
 
   gdk_threads_leave ();
 }
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursorUnlocked
-  (JNIEnv *env, jobject obj, jint type) 
+  (JNIEnv *env, jobject obj, jint type, jobject image, jint x, jint y) 
 {
   void *ptr;
   GtkWidget *widget;
@@ -245,11 +254,21 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursorUnlocked
       gdk_cursor_type = GDK_LEFT_PTR;
     }
       
-  widget = GTK_WIDGET(ptr);
+  widget = get_widget(GTK_WIDGET(ptr));
 
-  gdk_cursor = gdk_cursor_new (gdk_cursor_type);
+  if (image == NULL)
+    gdk_cursor = gdk_cursor_new (gdk_cursor_type);
+  else
+    gdk_cursor
+      = gdk_cursor_new_from_pixbuf (gdk_drawable_get_display (widget->window),
+				    cp_gtk_image_get_pixbuf (env, image),
+				    x, y);
+
   gdk_window_set_cursor (widget->window, gdk_cursor);
   gdk_cursor_unref (gdk_cursor);
+
+  /* Make sure the cursor is replaced on screen. */
+  gdk_flush();
 }
 
 JNIEXPORT void JNICALL
@@ -265,9 +284,9 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetParent
 
   ptr = NSA_GET_PTR (env, obj);
   parent_ptr = NSA_GET_PTR (env, parent);
-
+  
   widget = GTK_WIDGET (ptr);
-  parent_widget = GTK_WIDGET (parent_ptr);
+  parent_widget = get_widget(GTK_WIDGET (parent_ptr));
 
   if (widget->parent == NULL)
     {
@@ -310,7 +329,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetSensitive
 
   ptr = NSA_GET_PTR (env, obj);
 
-  gtk_widget_set_sensitive (GTK_WIDGET (ptr), sensitive);
+  gtk_widget_set_sensitive (get_widget(GTK_WIDGET (ptr)), sensitive);
 
   gdk_threads_leave ();
 }
@@ -325,7 +344,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetRequestFocus
 
   ptr = NSA_GET_PTR (env, obj);
   
-  gtk_widget_grab_focus (GTK_WIDGET (ptr));
+  gtk_widget_grab_focus (get_widget(GTK_WIDGET (ptr)));
 
   gdk_threads_leave ();
 }
@@ -361,11 +380,11 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetDispatchKeyEvent
     }
 
   if (GTK_IS_BUTTON (ptr))
-    event->key.window = GTK_BUTTON (ptr)->event_window;
-  else if (GTK_IS_SCROLLED_WINDOW (ptr))
-    event->key.window = GTK_WIDGET (GTK_SCROLLED_WINDOW (ptr)->container.child)->window;
+    event->key.window = GTK_BUTTON (get_widget(GTK_WIDGET (ptr)))->event_window;
+  else if (GTK_IS_SCROLLED_WINDOW (get_widget(GTK_WIDGET (ptr))))
+    event->key.window = GTK_WIDGET (GTK_SCROLLED_WINDOW (get_widget(GTK_WIDGET (ptr)))->container.child)->window;
   else
-    event->key.window = GTK_WIDGET (ptr)->window;
+    event->key.window = get_widget(GTK_WIDGET (ptr))->window;
 
   event->key.send_event = 0;
   event->key.time = (guint32) when;
@@ -441,10 +460,10 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetDispatchKeyEvent
      so we don't want to resend it. */
   if (!GTK_IS_WINDOW (ptr))
     {
-      if (GTK_IS_SCROLLED_WINDOW (ptr))
-        gtk_widget_event (GTK_WIDGET (GTK_SCROLLED_WINDOW (ptr)->container.child), event);
+      if (GTK_IS_SCROLLED_WINDOW (get_widget(GTK_WIDGET (ptr))))
+        gtk_widget_event (GTK_WIDGET (GTK_SCROLLED_WINDOW (get_widget(GTK_WIDGET (ptr)))->container.child), event);
       else
-        gtk_widget_event (GTK_WIDGET (ptr), event);
+        gtk_widget_event (get_widget(GTK_WIDGET (ptr)), event);
     }
 
   gdk_threads_leave ();
@@ -465,7 +484,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWindowGetLocationOnScreen
   ptr = NSA_GET_PTR (env, obj);
   point = (*env)->GetIntArrayElements (env, jpoint, 0);
 
-  gdk_window_get_root_origin (GTK_WIDGET (ptr)->window, point, point+1);
+  gdk_window_get_root_origin (get_widget(GTK_WIDGET (ptr))->window, point, point+1);
 
   (*env)->ReleaseIntArrayElements(env, jpoint, point, 0);
 
@@ -488,7 +507,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen
   ptr = NSA_GET_PTR (env, obj);
   point = (*env)->GetIntArrayElements (env, jpoint, 0);
 
-  widget = GTK_WIDGET(ptr);
+  widget = get_widget(GTK_WIDGET (ptr));
   while(gtk_widget_get_parent(widget) != NULL)
     widget = gtk_widget_get_parent(widget);
   gdk_window_get_position (GTK_WIDGET(widget)->window, point, point+1);
@@ -519,7 +538,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetDimensions
   dims = (*env)->GetIntArrayElements (env, jdims, 0);  
   dims[0] = dims[1] = 0;
 
-  gtk_widget_size_request (GTK_WIDGET (ptr), &requisition);
+  gtk_widget_size_request (get_widget(GTK_WIDGET (ptr)), &requisition);
 
   dims[0] = requisition.width;
   dims[1] = requisition.height;
@@ -551,10 +570,10 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetPreferredDimensions
   /* Widgets that extend GtkWindow such as GtkFileChooserDialog may have
      a default size.  These values seem more useful then the natural
      requisition values, particularly for GtkFileChooserDialog. */
-  if (GTK_IS_WINDOW (ptr))
+  if (GTK_IS_WINDOW (get_widget(GTK_WIDGET (ptr))))
     {
       gint width, height;
-      gtk_window_get_default_size (GTK_WINDOW (ptr), &width, &height);
+      gtk_window_get_default_size (GTK_WINDOW (get_widget(GTK_WIDGET (ptr))), &width, &height);
 
       dims[0] = width;
       dims[1] = height;
@@ -562,14 +581,14 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetPreferredDimensions
   else
     {
       /* Save the widget's current size request. */
-      gtk_widget_size_request (GTK_WIDGET (ptr), &current_req);
+      gtk_widget_size_request (get_widget(GTK_WIDGET (ptr)), &current_req);
 
       /* Get the widget's "natural" size request. */
-      gtk_widget_set_size_request (GTK_WIDGET (ptr), -1, -1);
-      gtk_widget_size_request (GTK_WIDGET (ptr), &natural_req);
+      gtk_widget_set_size_request (get_widget(GTK_WIDGET (ptr)), -1, -1);
+      gtk_widget_size_request (get_widget(GTK_WIDGET (ptr)), &natural_req);
 
       /* Reset the widget's size request. */
-      gtk_widget_set_size_request (GTK_WIDGET (ptr),
+      gtk_widget_set_size_request (get_widget(GTK_WIDGET (ptr)),
 			           current_req.width, current_req.height);
 
       dims[0] = natural_req.width;
@@ -656,7 +675,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetForeground
 
   ptr = NSA_GET_PTR (env, obj);
 
-  fg = GTK_WIDGET (ptr)->style->fg[GTK_STATE_NORMAL];
+  fg = get_widget(GTK_WIDGET (ptr))->style->fg[GTK_STATE_NORMAL];
 
   array = (*env)->NewIntArray (env, 3);
 
@@ -766,7 +785,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isEnabled
 
   ptr = NSA_GET_PTR (env, obj);
 
-  ret_val = GTK_WIDGET_IS_SENSITIVE (GTK_WIDGET (ptr));
+  ret_val = GTK_WIDGET_IS_SENSITIVE (get_widget(GTK_WIDGET (ptr)));
 
   gdk_threads_leave ();
 
@@ -790,7 +809,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isRealized
       return FALSE;
     }
 
-  ret_val = GTK_WIDGET_REALIZED (GTK_WIDGET (ptr));
+  ret_val = GTK_WIDGET_REALIZED (get_widget(GTK_WIDGET (ptr)));
 
   gdk_threads_leave ();
 
@@ -841,7 +860,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeEventMask
 
   ptr = NSA_GET_PTR (env, obj);
 
-  gtk_widget_add_events (GTK_WIDGET (ptr),
+  gtk_widget_add_events (get_widget(GTK_WIDGET (ptr)),
                          GDK_POINTER_MOTION_MASK
 			 | GDK_BUTTON_MOTION_MASK
 			 | GDK_BUTTON_PRESS_MASK
@@ -855,6 +874,19 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeEventMask
                          | GDK_FOCUS_CHANGE_MASK);
 
   gdk_threads_leave ();
+}
+
+static GtkWidget *
+get_widget (GtkWidget *widget)
+{
+  GtkWidget *w;
+
+  if (GTK_IS_EVENT_BOX (widget))
+    w = gtk_bin_get_child (GTK_BIN(widget));
+  else
+    w = widget;
+
+  return w;
 }
 
 /* FIXME: these functions should be implemented by overridding the
@@ -918,6 +950,9 @@ cp_gtk_component_connect_mouse_signals (GObject *ptr, jobject *gref)
 
   g_signal_connect (G_OBJECT (ptr), "motion-notify-event",
                     G_CALLBACK (component_motion_notify_cb), *gref);
+
+  g_signal_connect (G_OBJECT (ptr), "scroll-event",
+                    G_CALLBACK (component_scroll_cb), *gref);
 }
 
 void
@@ -930,11 +965,11 @@ cp_gtk_component_connect_signals (GObject *ptr, jobject *gref)
 
 /* These variables are used to keep track of click counts.  The AWT
    allows more than a triple click to occur but GTK doesn't report
-   more-than-triple clicks. */
+   more-than-triple clicks.  Also used for keeping track of scroll events.*/
 static jint click_count = 1;
 static guint32 button_click_time = 0;
 static GdkWindow *button_window = NULL;
-static guint button_number = -1;
+static guint button_number_direction = -1;
 static int hasBeenDragged;
 
 static gboolean
@@ -949,14 +984,14 @@ component_button_press_cb (GtkWidget *widget __attribute__((unused)),
 
   if ((event->time < (button_click_time + MULTI_CLICK_TIME))
       && (event->window == button_window)
-      && (event->button == button_number))
+      && (event->button == button_number_direction))
     click_count++;
   else
     click_count = 1;
       
   button_click_time = event->time;
   button_window = event->window;
-  button_number = event->button;
+  button_number_direction = event->button;
 
   (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
                                 postMouseEventID,
@@ -1051,6 +1086,45 @@ component_motion_notify_cb (GtkWidget *widget __attribute__((unused)),
                                     0,
                                     JNI_FALSE);
     }
+  return FALSE;
+}
+
+static gboolean
+component_scroll_cb (GtkWidget *widget __attribute__((unused)),
+		     GdkEventScroll *event,
+		     jobject peer)
+{
+  int rotation;
+  /** Record click count for specific direction. */
+  if ((event->time < (button_click_time + MULTI_CLICK_TIME))
+      && (event->window == button_window)
+      && (event->direction == button_number_direction))
+    click_count++;
+  else
+    click_count = 1;
+      
+  button_click_time = event->time;
+  button_window = event->window;
+  button_number_direction = event->direction;
+
+  if (event->direction == GDK_SCROLL_UP
+      || event->direction == GDK_SCROLL_LEFT)
+    rotation = -1;
+  else
+    rotation = 1;
+
+  (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
+				       postMouseWheelEventID,
+				       AWT_MOUSE_WHEEL, 
+				       (jlong)event->time,
+				       cp_gtk_state_to_awt_mods (event->state),
+				       (jint)event->x,
+				       (jint)event->y, 
+				       click_count, 
+				       JNI_FALSE,
+				       AWT_WHEEL_UNIT_SCROLL,
+				       1 /* amount */,
+				       rotation);
   return FALSE;
 }
 

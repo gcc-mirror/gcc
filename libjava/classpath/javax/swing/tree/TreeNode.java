@@ -1,5 +1,5 @@
 /* TreeNode.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,59 +41,72 @@ package javax.swing.tree;
 import java.util.Enumeration;
 
 /**
- * TreeNode public interface
+ * A tree node.
+ * 
  * @author Andrew Selkirk
  */
 public interface TreeNode {
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Returns the parent node for this tree node, or <code>null</code> if this
+   * node has no parent.
+   * 
+   * @return The parent node (possibly <code>null</code>).
+   */
+  TreeNode getParent();
 
-	/**
-	 * getParent
-	 * @returns TreeNode
-	 */
-	TreeNode getParent();
+  /**
+   * Returns the index of the specified child node, or -1 if the node is not
+   * in fact a child of this node.
+   * 
+   * @param node  the node (<code>null</code> not permitted).
+   * 
+   * @return The index of the specified child node, or -1.
+   * 
+   * @throws IllegalArgumentException if <code>node</code> is <code>null</code>.
+   */
+  int getIndex(TreeNode node);
 
-	/**
-	 * getIndex
-	 * @param node TODO
-	 * @returns int
-	 */
-	int getIndex(TreeNode node);
+  /**
+   * Returns the child node at the given index.
+   * 
+   * @param index  the index (in the range <code>0</code> to 
+   *     <code>getChildCount() - 1</code>).
+   *     
+   * @return The child node at the given index.
+   */
+  TreeNode getChildAt(int index);
 
-	/**
-	 * getChildAt
-	 * @param index TODO
-	 * @returns TreeNode
-	 */
-	TreeNode getChildAt(int index);
+  /**
+   * Returns the number of children for this node.
+   * 
+   * @return The number of children for this node.
+   */
+  int getChildCount();
 
-	/**
-	 * getChildCount
-	 * @returns int
-	 */
-	int getChildCount();
+  /**
+   * Returns <code>true</code> if this node allows children, and 
+   * <code>false</code> otherwise.
+   * 
+   * @return A boolean.
+   */
+  boolean getAllowsChildren();
 
-	/**
-	 * getAllowsChildren
-	 * @returns boolean
-	 */
-	boolean getAllowsChildren();
+  /**
+   * Returns <code>true</code> if this node is a leaf node, and 
+   * <code>false</code> otherwise.
+   * 
+   * @return A boolean.
+   */
+  boolean isLeaf();
 
-	/**
-	 * isLeaf
-	 * @returns boolean
-	 */
-	boolean isLeaf();
+  /**
+   * Returns an enumeration of the children of this node, or an empty 
+   * enumeration if this node has no children.
+   * 
+   * @return An enumeration of the children of this node.
+   */
+  Enumeration children();
 
-	/**
-	 * children
-	 * @returns Enumeration
-	 */
-	Enumeration children();
-
-
-} // TreeNode
+} 
 

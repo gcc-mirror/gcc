@@ -1,5 +1,5 @@
 /* Boolean.java -- object wrapper for boolean
-   Copyright (C) 1998, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,9 +47,9 @@ import java.io.Serializable;
  * @author Paul Fisher
  * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
- * @status updated to 1.4
+ * @status updated to 1.5
  */
-public final class Boolean implements Serializable
+public final class Boolean implements Serializable, Comparable
 {
   /**
    * Compatible with JDK 1.0.2+.
@@ -223,6 +223,28 @@ public final class Boolean implements Serializable
   }
 
   /**
+   * Compares this Boolean to another.
+   *
+   * @param other the Boolean to compare this Boolean to
+   * @return 0 if both Booleans represent the same value, a positive number 
+   * if this Boolean represents true and the other false, and a negative
+   * number otherwise.
+   * @since 1.5
+   */
+  public int compareTo(Boolean other)
+  {
+    return value == other.value ? 0 : (value ? 1 : -1);
+  }
+
+  /**
+   * Bridge method
+   */
+  public int compareTo(Object other)
+  {
+    return compareTo((Boolean)other);
+  }
+
+  /**
    * If the String argument is "true", ignoring case, return true.
    * Otherwise, return false.
    *
@@ -233,24 +255,5 @@ public final class Boolean implements Serializable
   {
     return "true".equalsIgnoreCase(b) ? true : false;
   }
-  
-  /**
-   * Compares this Boolean to another.
-   * @param b the Boolean to compare this Boolean to
-   * @return 0 if both Booleans represent the same value, a positive number 
-   * if this Boolean represents true and b represents false, or a negative
-   * number otherwise.
-   * @since 1.5
-   */
-  public int compareTo (Boolean b)
-  {
-    if (b == null)
-      throw new NullPointerException("argument passed to compareTo(Boolean) cannot be null");
-    
-    if (this.value == b.value)
-      return 0;
-    if (this.value == true)
-      return 1;
-    return -1;
-  }
+
 }

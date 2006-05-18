@@ -43,7 +43,7 @@ package javax.sound.sampled;
  * values. 
  * @since 1.3
  */
-public class EnumControl extends Control
+public abstract class EnumControl extends Control
 {
   /**
    * This Type describes an EnumControl.

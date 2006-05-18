@@ -1,5 +1,5 @@
 /* java.lang.reflect.Field - reflection of Java fields
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,10 @@ exception statement from your version. */
 
 
 package java.lang.reflect;
+
+import gnu.java.lang.ClassHelper;
+
+import gnu.java.lang.reflect.FieldSignatureParser;
 
 /**
  * The Field class represents a member variable of a class. It also allows
@@ -78,6 +82,11 @@ extends AccessibleObject implements Member
   private String name;
   private int slot;
 
+  private static final int FIELD_MODIFIERS
+    = Modifier.FINAL | Modifier.PRIVATE | Modifier.PROTECTED
+      | Modifier.PUBLIC | Modifier.STATIC | Modifier.TRANSIENT
+      | Modifier.VOLATILE;
+
   /**
    * This class is uninstantiable except natively.
    */
@@ -108,6 +117,12 @@ extends AccessibleObject implements Member
   }
 
   /**
+   * Return the raw modifiers for this field.
+   * @return the field's modifiers
+   */
+  private native int getModifiersInternal();
+
+  /**
    * Gets the modifiers this field uses.  Use the <code>Modifier</code>
    * class to interpret the values.  A field can only have a subset of the
    * following modifiers: public, private, protected, static, final,
@@ -116,7 +131,29 @@ extends AccessibleObject implements Member
    * @return an integer representing the modifiers to this Member
    * @see Modifier
    */
-  public native int getModifiers();
+  public int getModifiers()
+  {
+    return getModifiersInternal() & FIELD_MODIFIERS;
+  }
+
+  /**
+   * Return true if this field is synthetic, false otherwise.
+   * @since 1.5
+   */
+  public boolean isSynthetic()
+  {
+    return (getModifiersInternal() & Modifier.SYNTHETIC) != 0;
+  }
+
+  /**
+   * Return true if this field represents an enum constant,
+   * false otherwise.
+   * @since 1.5
+   */
+  public boolean isEnumConstant()
+  {
+    return (getModifiersInternal() & Modifier.ENUM) != 0;
+  }
 
   /**
    * Gets the type of this field.
@@ -169,14 +206,24 @@ extends AccessibleObject implements Member
   public String toString()
   {
     // 64 is a reasonable buffer initial size for field
-    StringBuffer sb = new StringBuffer(64);
+    StringBuilder sb = new StringBuilder(64);
     Modifier.toString(getModifiers(), sb).append(' ');
-    sb.append(getType().getName()).append(' ');
+    sb.append(ClassHelper.getUserName(getType())).append(' ');
     sb.append(getDeclaringClass().getName()).append('.');
     sb.append(getName());
     return sb.toString();
   }
  
+  public String toGenericString()
+  {
+    StringBuilder sb = new StringBuilder(64);
+    Modifier.toString(getModifiers(), sb).append(' ');
+    sb.append(getGenericType()).append(' ');
+    sb.append(getDeclaringClass().getName()).append('.');
+    sb.append(getName());
+    return sb.toString();
+  }
+
   /**
    * Get the value of this Field.  If it is primitive, it will be wrapped
    * in the appropriate wrapper type (boolean = java.lang.Boolean).<p>
@@ -586,4 +633,30 @@ extends AccessibleObject implements Member
    */
   public native void setDouble(Object o, double value)
     throws IllegalAccessException;
+
+  /**
+   * Return the generic type of the field. If the field type is not a generic
+   * type, the method returns the same as <code>getType()</code>.
+   *
+   * @throws GenericSignatureFormatError if the generic signature does
+   *         not conform to the format specified in the Virtual Machine
+   *         specification, version 3.
+   * @since 1.5
+   */
+  public Type getGenericType()
+  {
+    String signature = getSignature();
+    if (signature == null)
+      return getType();
+    FieldSignatureParser p = new FieldSignatureParser(getDeclaringClass(),
+                                                      signature);
+    return p.getFieldType();
+  }
+
+  /**
+   * Return the String in the Signature attribute for this field. If there
+   * is no Signature attribute, return null.
+   */
+  private native String getSignature();
+
 }

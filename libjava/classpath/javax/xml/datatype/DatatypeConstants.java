@@ -1,5 +1,5 @@
 /* DatatypeConstants.java -- 
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,11 +43,16 @@ import javax.xml.namespace.QName;
  * Basic data type constants.
  *
  * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
- * @since 1.3
+ * @since 1.5
  */
 public final class DatatypeConstants
 {
 
+  private DatatypeConstants()
+  {
+    // to prevent instantiation
+  }
+  
   /**
    * Typesafe enumerated class representing the six fields of the
    * <a href='Duration.html'>Duration</a> class.

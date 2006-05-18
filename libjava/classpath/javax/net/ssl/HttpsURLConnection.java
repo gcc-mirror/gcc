@@ -1,5 +1,5 @@
 /* HttpsURLConnection.java -- an HTTPS connection.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.net.ssl;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.Certificate;
@@ -90,9 +89,10 @@ public abstract class HttpsURLConnection extends HttpURLConnection
    * Creates a new HTTPS URL connection.
    *
    * @param url The URL of the connection being established.
-   * @throws IOException If the connection cannot be established.
+   * @specnote This was marked as throwing IOException in 1.4,
+   * but this was removed in 1.5.
    */
-  protected HttpsURLConnection(URL url) throws IOException
+  protected HttpsURLConnection(URL url)
   {
     super(url);
   }

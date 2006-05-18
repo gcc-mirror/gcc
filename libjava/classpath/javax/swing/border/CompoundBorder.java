@@ -224,6 +224,8 @@ public class CompoundBorder extends AbstractBorder
    * Returns the outside border, which is painted outside both the
    * bordered Component and the inside border. It is valid for the
    * result to be <code>null</code>.
+   * 
+   * @return The outside border (possibly <code>null</code>).
    */
   public Border getOutsideBorder()
   {
@@ -234,6 +236,8 @@ public class CompoundBorder extends AbstractBorder
    * Returns the inside border, which is painted between the bordered
    * Component and the outside border. It is valid for the result to
    * be <code>null</code>.
+   * 
+   * @return The inside border (possibly <code>null</code>).
    */
   public Border getInsideBorder ()
   {

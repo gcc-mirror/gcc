@@ -1,5 +1,5 @@
 /* PolicyListHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,11 +43,11 @@ import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.Streamable;
 
 /**
-* A holder for the object {@link Policy[]}.
+* A holder for the object <code>Policy[]</code>.
 *
 * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
 */
-public class PolicyListHolder
+public final class PolicyListHolder
   implements Streamable
 {
   /**
@@ -56,7 +56,7 @@ public class PolicyListHolder
   public Policy[] value;
 
   /**
-   * Create the unitialised instance, leaving the value field
+   * Create the uninitialised instance, leaving the value field
    * with default <code>null</code> value.
    */
   public PolicyListHolder()
@@ -74,7 +74,7 @@ public class PolicyListHolder
   }
 
   /**
-   * Fill in the {@link value} by data from the CDR stream.
+   * Fill in the {@link #value} by data from the CDR stream.
    * Uses {@link PolicyListHelper}.
    *
    * @param input the org.omg.CORBA.portable stream to read.

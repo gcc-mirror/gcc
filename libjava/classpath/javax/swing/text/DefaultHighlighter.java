@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -45,6 +47,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.ArrayList;
 
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.TextUI;
 
 public class DefaultHighlighter extends LayeredHighlighter
@@ -71,60 +74,102 @@ public class DefaultHighlighter extends LayeredHighlighter
     }
     
     public void paint(Graphics g, int p0, int p1, Shape bounds,
-		      JTextComponent c)
+		      JTextComponent t)
     {
-      Rectangle r0 = null;
-      Rectangle r1 = null;
+      if (p0 == p1)
+        return;
+      
       Rectangle rect = bounds.getBounds();
-      
-      try
-	{
-	  r0 = c.modelToView(p0);
-	  r1 = c.modelToView(p1);
-	}
-      catch (BadLocationException e)
-        {
-	  // This should never occur.
-          return;
-	}
-      
-      if (r0 == null || r1 == null)
-	return;
 
       if (color == null)
-	g.setColor(c.getSelectionColor());
+        g.setColor(t.getSelectionColor());
       else
-	g.setColor(color);
+        g.setColor(color);
 
-      // Check if only one line to highlight.
-      if (r0.y == r1.y)
-	{
-	  r0.width = r1.x - r0.x;
-	  paintHighlight(g, r0);
-	  return;
-	}
+      TextUI ui = t.getUI();
       
-      // First line, from p0 to end-of-line.
-      r0.width = rect.x + rect.width - r0.x;
-      paintHighlight(g, r0);
-      
-      // FIXME: All the full lines in between, if any (assumes that all lines
-      // have the same height -- not a good assumption with JEditorPane/JTextPane).
-      r0.y += r0.height;
-      r0.x = rect.x;
-      r0.width = rect.width;
-      
-      while (r0.y < r1.y)
-	{
-	  paintHighlight(g, r0);
-	  r0.y += r0.height;
-	}
+      try
+      {
+        
+        Rectangle l0 = ui.modelToView(t, p0, null);
+        Rectangle l1 = ui.modelToView(t, p1, null);
+        
+        // Note: The computed locations may lie outside of the allocation
+        // area if the text is scrolled.
+        
+        if (l0.y == l1.y)
+          {
+            SwingUtilities.computeUnion(l0.x, l0.y, l0.width, l0.height, l1);
 
-      // Last line, from beginning-of-line to p1.
-      // The "-1" is neccessary else we would paint one pixel column more
-      // than in the case where the selection is only on one line. 
-      r0.width = r1.x + r1.width - 1;
-      paintHighlight(g, r0);
+            // Paint only inside the allocation area.
+            SwingUtilities.computeIntersection(rect.x, rect.y, rect.width, rect.height, l1);
+        
+            paintHighlight(g, l1);
+          }
+        else
+          {
+            // 1. The line of p0 is painted from the position of p0
+            // to the right border.
+            // 2. All lines between the ones where p0 and p1 lie on
+            // are completely highlighted. The allocation area is used to find
+            // out the bounds.
+            // 3. The final line is painted from the left border to the
+            // position of p1.
+            
+            // Highlight first line until the end.
+            // If rect.x is non-zero the calculation will properly adjust the
+            // area to be painted.
+            l0.x -= rect.x;
+            l0.width = rect.width - l0.x - rect.x;
+            
+            paintHighlight(g, l0);
+            
+            int posBelow = Utilities.getPositionBelow(t, p0, l0.x);
+            int p1RowStart = Utilities.getRowStart(t, p1);
+            if (posBelow != -1
+                && posBelow != p0
+                && Utilities.getRowStart(t, posBelow)
+                   != p1RowStart)
+              {
+                Rectangle grow = ui.modelToView(t, posBelow);
+                grow.x = rect.x;
+                grow.width = rect.width;
+                
+                // Find further lines which have to be highlighted completely.
+                int nextPosBelow = posBelow;
+                while (nextPosBelow != -1
+                       && Utilities.getRowStart(t, nextPosBelow) != p1RowStart)
+                  {
+                    posBelow = nextPosBelow;
+                    nextPosBelow = Utilities.getPositionBelow(t, posBelow, l0.x);
+                    
+                    if (nextPosBelow == posBelow)
+                      break;
+                  }
+                // Now posBelow is an offset on the last line which has to be painted
+                // completely. (newPosBelow is on the same line as p1)
+                 
+                // Retrieve the rectangle of posBelow and use its y and height
+                // value to calculate the final height of the multiple line
+                // spanning rectangle.
+                Rectangle end = ui.modelToView(t, posBelow);
+                grow.height = end.y + end.height - grow.y;
+                
+                paintHighlight(g, grow);
+              }
+            
+            // Paint last line from its beginning to the position of p1.
+            l1.width = l1.x + l1.width - rect.x;
+            l1.x = rect.x;
+            paintHighlight(g, l1);
+          }
+      }
+    catch (BadLocationException ex)
+      {
+        AssertionError err = new AssertionError("Unexpected bad location exception");
+        err.initCause(ex);
+        throw err;
+      }
     }
 
     public Shape paintLayer(Graphics g, int p0, int p1, Shape bounds,
@@ -330,6 +375,7 @@ public class DefaultHighlighter extends LayeredHighlighter
   public void paintLayeredHighlights(Graphics g, int p0, int p1,
                                      Shape viewBounds, JTextComponent editor,
                                      View view)
+  throws NotImplementedException
   {
     // TODO: Implement this properly.
   }

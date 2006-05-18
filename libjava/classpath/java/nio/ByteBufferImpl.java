@@ -115,18 +115,11 @@ final class ByteBufferImpl extends ByteBuffer
     checkIfReadOnly();
     mark = -1;
     int pos = position();
-    if (pos > 0)
-      {
-	int count = remaining();
-	shiftDown(0, pos, count);
-	position(count);
-	limit(capacity());
-      }
-    else
-      {
-	position(limit());
-	limit(capacity());
-      }
+    int n = limit() - pos;
+    if (n > 0)
+      shiftDown(0, pos, n);
+    position(n);
+    limit(capacity());
     return this;
   }
   

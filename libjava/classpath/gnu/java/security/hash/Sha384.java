@@ -254,7 +254,7 @@ public class Sha384 extends BaseHash
         md.update((byte) 0x62); // b
         md.update((byte) 0x63); // c
         String result = Util.toString(md.digest());
-        valid = new Boolean(DIGEST0.equals(result));
+        valid = Boolean.valueOf(DIGEST0.equals(result));
       }
     return valid.booleanValue();
   }

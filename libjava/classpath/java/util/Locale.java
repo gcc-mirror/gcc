@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.util;
 
 import gnu.classpath.SystemProperties;
+import gnu.java.locale.LocaleHelper;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -65,11 +66,12 @@ import java.io.Serializable;
  * be separated by an underscore (U+005F).
  *
  * <p>The default locale is determined by the values of the system properties
- * user.language, user.region, and user.variant, defaulting to "en". Note that
- * the locale does NOT contain the conversion and formatting capabilities (for
- * that, use ResourceBundle and java.text). Rather, it is an immutable tag
- * object for identifying a given locale, which is referenced by these other
- * classes when they must make locale-dependent decisions.
+ * user.language, user.country (or user.region), and user.variant, defaulting
+ * to "en_US". Note that the locale does NOT contain the conversion and
+ * formatting capabilities (for that, use ResourceBundle and java.text).
+ * Rather, it is an immutable tag object for identifying a given locale, which
+ * is referenced by these other classes when they must make locale-dependent
+ * decisions.
  *
  * @see ResourceBundle
  * @see java.text.Format
@@ -209,10 +211,18 @@ public final class Locale implements Serializable, Cloneable
    * null. Note the logic in the main constructor, to detect when
    * bootstrapping has completed.
    */
-  private static Locale defaultLocale =
-    getLocale(SystemProperties.getProperty("user.language", "en"),
-              SystemProperties.getProperty("user.region", ""),
-              SystemProperties.getProperty("user.variant", ""));
+  private static Locale defaultLocale;
+
+  static {
+    String language = SystemProperties.getProperty("user.language", "en");
+    String country  = SystemProperties.getProperty("user.country", "US");
+    String region   = SystemProperties.getProperty("user.region", null);
+    String variant  = SystemProperties.getProperty("user.variant", "");
+
+    defaultLocale = getLocale(language,
+                              (region != null) ? region : country,
+                              variant);
+  }
 
   /**
    * Array storing all the available two-letter ISO639 languages.
@@ -236,38 +246,38 @@ public final class Locale implements Serializable, Cloneable
   }
   
   /**
-   * Retrieves the locale with the specified language and region
+   * Retrieves the locale with the specified language and country
    * from the cache.
    *
    * @param language the language of the locale to retrieve.
-   * @param region the region of the locale to retrieve.
+   * @param country the country of the locale to retrieve.
    * @return the locale.
    */ 
-  private static Locale getLocale(String language, String region)
+  private static Locale getLocale(String language, String country)
   {
-    return getLocale(language, region, "");
+    return getLocale(language, country, "");
   }
   
   /**
-   * Retrieves the locale with the specified language, region
+   * Retrieves the locale with the specified language, country
    * and variant from the cache.
    *
    * @param language the language of the locale to retrieve.
-   * @param region the region of the locale to retrieve.
+   * @param country the country of the locale to retrieve.
    * @param variant the variant of the locale to retrieve.
    * @return the locale.
    */ 
-  private static Locale getLocale(String language, String region, String variant)
+  private static Locale getLocale(String language, String country, String variant)
   {
     if (localeMap == null)
       localeMap = new HashMap(256);
 
-    String name = language + "_" + region + "_" + variant;
+    String name = language + "_" + country + "_" + variant;
     Locale locale = (Locale) localeMap.get(name);
 
     if (locale == null)
       {
-	locale = new Locale(language, region, variant);
+	locale = new Locale(language, country, variant);
 	localeMap.put(name, locale);
       }
 
@@ -384,33 +394,33 @@ public final class Locale implements Serializable, Cloneable
   {
     if (availableLocales == null)
       {
-	String[] localeNames = LocaleData.localeNames;
-        availableLocales = new Locale[localeNames.length];
+        int len = LocaleHelper.getLocaleCount();
+        availableLocales = new Locale[len];
 
-        for (int i = 0; i < localeNames.length; i++)
+        for (int i = 0; i < len; i++)
           {
             String language;
-            String region = "";
+            String country = "";
             String variant = "";
-            String name = localeNames[i];
+            String name = LocaleHelper.getLocaleName(i);
 
             language = name.substring(0, 2);
 
             if (name.length() > 2)
-              region = name.substring(3);
+              country = name.substring(3);
 
-	    int index = region.indexOf("_");
+	    int index = country.indexOf("_");
 	    if (index > 0)
 	      {
-		variant = region.substring(index + 1);
-		region = region.substring(0, index - 1);
+		variant = country.substring(index + 1);
+		country = country.substring(0, index - 1);
 	      }
 
-            availableLocales[i] = getLocale(language, region, variant);
+            availableLocales[i] = getLocale(language, country, variant);
           }
       }
     
-    return availableLocales;
+    return (Locale[]) availableLocales.clone();
   }
 
   /**
@@ -426,7 +436,7 @@ public final class Locale implements Serializable, Cloneable
 	countryCache = getISOStrings("territories");
       }
 
-    return countryCache;
+    return (String[]) countryCache.clone();
   }
 
   /**
@@ -441,7 +451,7 @@ public final class Locale implements Serializable, Cloneable
       {
 	languageCache = getISOStrings("languages");
       }
-    return languageCache;
+    return (String[]) languageCache.clone();
   }
 
   /**

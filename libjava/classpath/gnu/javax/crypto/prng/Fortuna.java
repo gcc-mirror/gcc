@@ -142,6 +142,14 @@ public class Fortuna extends BasePRNG implements Serializable,
     pool = 0;
     pool0Count = 0;
     generator.init(attributes);
+    try
+      {
+        fillBlock ();
+      }
+    catch (LimitReachedException shouldNotHappen)
+      {
+        throw new RuntimeException (shouldNotHappen);
+      }
   }
 
   public void fillBlock() throws LimitReachedException
@@ -324,6 +332,7 @@ public class Fortuna extends BasePRNG implements Serializable,
       byte[] seed = (byte[]) attributes.get(SEED);
       if (seed != null)
         addRandomBytes(seed);
+      fillBlock ();
     }
 
     /**

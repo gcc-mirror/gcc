@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -216,6 +218,7 @@ public abstract class GraphicsConfiguration
    * @since 1.4
    */
   public BufferCapabilities getBufferCapabilities()
+    throws NotImplementedException
   {
     throw new Error("not implemented");
   }
@@ -227,6 +230,7 @@ public abstract class GraphicsConfiguration
    * @since 1.4
    */
   public ImageCapabilities getImageCapabilities()
+    throws NotImplementedException
   {
     throw new Error("not implemented");
   }

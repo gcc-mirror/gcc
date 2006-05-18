@@ -38,6 +38,7 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
 import gnu.java.security.util.FormatUtil;
 
@@ -59,7 +60,6 @@ import java.security.spec.DSAParameterSpec;
  * the relevant <code>getEncoded()</code> methods of each of the private and
  * public keys.</p>
  *
- * @version $Revision: 1.4 $
  * @see DSSPrivateKey#getEncoded
  * @see DSSPublicKey#getEncoded
  */
@@ -94,6 +94,9 @@ public abstract class DSSKey implements Key, DSAKey
    * key material.
    */
   protected final int defaultFormat;
+
+  /** String representation of this key. Cached for speed. */
+  private transient String str;
 
   // Constructor(s)
   // -------------------------------------------------------------------------
@@ -174,6 +177,22 @@ public abstract class DSSKey implements Key, DSAKey
     return p.equals(that.getParams().getP())
            && q.equals(that.getParams().getQ())
            && g.equals(that.getParams().getG());
+  }
+
+  public String toString()
+  {
+    if (str == null)
+      {
+        String ls = SystemProperties.getProperty("line.separator");
+        str = new StringBuilder().append(ls)
+        .append("defaultFormat=").append(defaultFormat).append(",").append(ls)
+        .append("p=0x").append(p.toString(16)).append(",").append(ls)
+        .append("q=0x").append(q.toString(16)).append(",").append(ls)
+        .append("g=0x").append(g.toString(16))
+        .toString();
+      }
+
+    return str;
   }
 
   // abstract methods to be implemented by subclasses ------------------------

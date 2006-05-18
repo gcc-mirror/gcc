@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.AWTEvent;
+import java.beans.PropertyChangeEvent;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -52,14 +53,13 @@ import javax.swing.plaf.ToolTipUI;
  */
 public class JToolTip extends JComponent implements Accessible
 {
-  /** DOCUMENT ME! */
+
   private static final long serialVersionUID = -1138929898906751643L;
 
   /**
-   * DOCUMENT ME!
+   * Provides the accessibility features for the <code>JToolTip</code>
+   * component.
    */
-  // FIXME: This inner class is a complete stub and must be implemented
-  // properly.
   protected class AccessibleJToolTip extends AccessibleJComponent
   {
     private static final long serialVersionUID = -6222548177795408476L;
@@ -73,34 +73,37 @@ public class JToolTip extends JComponent implements Accessible
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns a description for the accessible component.
      *
-     * @return DOCUMENT ME!
+     * @return A description for the accessible component.
      */
     public String getAccessibleDescription()
     {
-      return null;
+      String result = super.getAccessibleDescription();
+      if (result == null)
+        result = text;
+      return result;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the accessible role for the <code>JToolTip</code> component.
      *
-     * @return DOCUMENT ME!
+     * @return {@link AccessibleRole#TOOL_TIP}.
      */
     public AccessibleRole getAccessibleRole()
     {
-      return null;
+      return AccessibleRole.TOOL_TIP;
     }
   }
 
   /** The text to display in the JToolTip. */
   String text;
 
-  /** The JComponent this JToolTip is used for. */
+  /** The component that the tool tip is associated with. */
   JComponent component;
 
   /**
-   * Creates a new JToolTip object.
+   * Creates a new <code>JToolTip</code> instance.
    */
   public JToolTip()
   {
@@ -109,9 +112,11 @@ public class JToolTip extends JComponent implements Accessible
   }
 
   /**
-   * This method returns the text this JToolTip displays.
+   * Returns the text displayed by the tool tip.
    *
-   * @return The text that this JToolTip displays.
+   * @return The text (possibly <code>null</code>).
+   * 
+   * @see #setTipText(String)
    */
   public String getTipText()
   {
@@ -119,19 +124,24 @@ public class JToolTip extends JComponent implements Accessible
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the object that provides accessibility features for this
+   * <code>JToolTip</code> component.
    *
-   * @return DOCUMENT ME!
+   * @return The accessible context (an instance of {@link AccessibleJToolTip}).
    */
   public AccessibleContext getAccessibleContext()
   {
-    return null;
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJToolTip();
+    return accessibleContext;
   }
 
   /**
-   * This method returns the JComponent this JToolTip displays for.
+   * Returns the component that the tool tip is associated with.
    *
-   * @return The JComponent this JToolTip displays for.
+   * @return The component (possibly <code>null</code>).
+   * 
+   * @see #setComponent(JComponent)
    */
   public JComponent getComponent()
   {
@@ -139,9 +149,9 @@ public class JToolTip extends JComponent implements Accessible
   }
 
   /**
-   * This method returns the UI responsible for displaying this JToolTip.
+   * Returns the current UI delegate for this component.
    *
-   * @return The UI responsible for displaying this JToolTip.
+   * @return The UI delegate.
    */
   public ToolTipUI getUI()
   {
@@ -149,9 +159,10 @@ public class JToolTip extends JComponent implements Accessible
   }
 
   /**
-   * This method returns the String identifier for the UI class.
+   * Returns the string suffix used to identify the UI class, in this case
+   * <code>"ToolTipUI"</code>.
    *
-   * @return The String identifier for the UI class.
+   * @return <code>"ToolTipUI"</code>.
    */
   public String getUIClassID()
   {
@@ -159,33 +170,52 @@ public class JToolTip extends JComponent implements Accessible
   }
 
   /**
-   * This method returns a debugging String describing the JToolTip.
+   * Returns a string describing the attributes for the <code>JToolTip</code>
+   * component, for use in debugging.  The return value is guaranteed to be 
+   * non-<code>null</code>, but the format of the string may vary between
+   * implementations.
    *
-   * @return A debugging String describing the JToolTip.
+   * @return A string describing the attributes of the <code>JToolTip</code>.
    */
   protected String paramString()
   {
-    return "JToolTip";
+    StringBuffer sb = new StringBuffer(super.paramString());
+    sb.append(",tiptext=");
+    if (text != null);
+      sb.append(text);
+    return sb.toString();
   }
 
   /**
-   * This method sets the JComponent that the JToolTip displays for.
+   * Sets the component that the tool tip is associated with and sends a 
+   * {@link PropertyChangeEvent} (with the property name 'component') to all 
+   * registered listeners.
    *
-   * @param c The JComponent that the JToolTip displays for.
+   * @param c  the component (<code>null</code> permitted).
+   * 
+   * @see #getComponent()
    */
   public void setComponent(JComponent c)
   {
+    JComponent oldValue = component;
     component = c;
+    firePropertyChange("component", oldValue, c);
   }
 
   /**
-   * This method sets the text that the JToolTip displays.
+   * Sets the text to be displayed by the tool tip and sends a 
+   * {@link PropertyChangeEvent} (with the property name 'tiptext') to all 
+   * registered listeners.
    *
-   * @param tipText The text that the JToolTip displays.
+   * @param tipText the text (<code>null</code> permitted).
+   * 
+   * @see #getTipText()
    */
   public void setTipText(String tipText)
   {
+    String oldValue = text;
     text = tipText;
+    firePropertyChange("tiptext", oldValue, tipText);
   }
 
   /**
@@ -194,7 +224,5 @@ public class JToolTip extends JComponent implements Accessible
   public void updateUI()
   {
     setUI((ToolTipUI) UIManager.getUI(this));
-    revalidate();
-    repaint();
   }
 }

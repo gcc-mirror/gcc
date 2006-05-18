@@ -1992,6 +1992,10 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSurfaceSetFilterUnlocked
 
   gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
   g_assert (gr != NULL);
+  
+  if (gr->pattern == NULL)
+    return;
+  
   if (gr->debug) printf ("cairo_pattern_set_filter %d\n", filter);
   switch ((enum java_awt_rendering_hints_filter) filter)
     {

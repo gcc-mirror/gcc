@@ -1,5 +1,5 @@
 /* JPanel.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -80,54 +80,108 @@ public class JPanel extends JComponent implements Accessible
     }
   }
 
+  /**
+   * Creates a new panel with a new instance of {@link FlowLayout} as the
+   * layout manager and double-buffering enabled.
+   */
   public JPanel()
   {
     this(new FlowLayout(), true);
   }
 
-  public JPanel(boolean double_buffered)
+  /**
+   * Creates a new panel with double-buffering enabled or disabled as
+   * specified.  The default layout manager is an instance of 
+   * {@link FlowLayout}.
+   * 
+   * @param isDoubleBuffered  a flag that controls whether or not 
+   *     double-buffering is enabled.
+   */
+  public JPanel(boolean isDoubleBuffered)
   {
-    this(new FlowLayout(), double_buffered);
+    this(new FlowLayout(), isDoubleBuffered);
   }
 
+  /**
+   * Creates a new panel with the specified layout manager.  Double-buffering
+   * is enabled by default.
+   * 
+   * @param layout  the layout manager (<code>null</code> permitted).
+   */
   public JPanel(LayoutManager layout)
   {
     this(layout, true);
   }
 
+  /**
+   * Creates a new panel with the specified layout manager and 
+   * double-buffering.
+   * 
+   * @param layout  the layout manager (<code>null</code> permitted).
+   * @param isDoubleBuffered  a flag that controls whether or not 
+   *     double-buffering is enabled.
+   */
   public JPanel(LayoutManager layout, boolean isDoubleBuffered)
   {
-    if (layout == null)
-      {
-        // TODO: Is this correct? Or should we throw a NPE?
-        layout = new FlowLayout();
-      }
     setLayout(layout); 
-    setOpaque(true); 
-
+    setOpaque(true);
+    setDoubleBuffered(isDoubleBuffered);
     updateUI();	
   } 
 
+  /**
+   * Returns the suffix (<code>"PanelUI"</code> in this case) used to 
+   * determine the class name for a UI delegate that can provide the look and 
+   * feel for a <code>JPanel</code>.
+   *
+   * @return <code>"PanelUI"</code>.
+   */
   public String getUIClassID()
   {
     return "PanelUI";
   }
 
+  /**
+   * Sets the UI delegate for the <code>JPanel</code> component.
+   * 
+   * @param ui  the UI delegate.
+   * 
+   * @since 1.4
+   * @see #getUI()
+   */
   public void setUI(PanelUI ui)
   {
     super.setUI(ui);
   }
 
+  /**
+   * Returns the UI delegate for the <code>JPanel</code> component.
+   * 
+   * @return The UI delegate.
+   * 
+   * @since 1.4
+   * @see #setUI(PanelUI)
+   */
   public PanelUI getUI()
   {
     return (PanelUI) ui;
   }
 
+  /**
+   * Sets this panel's UI delegate to the default (obtained from the
+   * {@link UIManager}) for the current look and feel.
+   */
   public void updateUI()
   {
     setUI((PanelUI) UIManager.getUI(this));
   }
 
+  /**
+   * Returns the object that provides accessibility features for this
+   * <code>JPanel</code> component.
+   *
+   * @return The accessible context (an instance of {@link AccessibleJPanel}).
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -135,7 +189,14 @@ public class JPanel extends JComponent implements Accessible
     return accessibleContext;
   }
     
-  protected  String paramString()
+  /**
+   * Returns an implementation-dependent string describing the attributes of
+   * this <code>JPanel</code>.
+   *
+   * @return A string describing the attributes of this <code>JPanel</code>
+   *         (never <code>null</code>).
+   */
+  protected String paramString()
   {
 	return super.paramString();
   }

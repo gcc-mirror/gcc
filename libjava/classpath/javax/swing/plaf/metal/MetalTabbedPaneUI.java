@@ -47,6 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 /**
@@ -101,6 +102,17 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       // do nothing, because the selected tab does not have extra padding in 
       // the MetalLookAndFeel
     }
+
+    /**
+     * Overridden because tab runs are only normalized for TOP and BOTTOM
+     * tab placement in the Metal L&F.
+     */
+    protected void normalizeTabRuns(int tabPlacement, int tabCount, int start,
+                                    int max)
+    {
+      if (tabPlacement == TOP || tabPlacement == BOTTOM)
+        super.normalizeTabRuns(tabPlacement, tabCount, start, max);
+    }
   }
 
   /**
@@ -125,7 +137,12 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
 
   /** The graphics to draw the highlight below the tab. */
   private Graphics hg;
-  
+
+  /**
+   * Indicates if the tabs are having their background filled.
+   */
+  private boolean tabsOpaque;
+
   /**
    * Constructs a new instance of MetalTabbedPaneUI.
    */
@@ -153,7 +170,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
    */
   protected LayoutManager createLayoutManager()
   {
-    return super.createLayoutManager();
+    return new TabbedPaneLayout();
   }
   
   /**
@@ -172,16 +189,24 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, 
           int x, int y, int w, int h, boolean isSelected) 
   {
-    if (tabPlacement == TOP)
-      paintTopTabBorder(tabIndex, g, x, y, w, h, 0, 0, isSelected);
-    else if (tabPlacement == LEFT) 
-      paintLeftTabBorder(tabIndex, g, x, y, w, h, 0, 0, isSelected);
-    else if (tabPlacement == BOTTOM)
-      paintBottomTabBorder(tabIndex, g, x, y, w, h, 0, 0, isSelected);
-    else if (tabPlacement == RIGHT)
-      paintRightTabBorder(tabIndex, g, x, y, w, h, 0, 0, isSelected);
-    else 
-      throw new AssertionError("Unrecognised 'tabPlacement' argument.");
+    int bottom = y + h - 1;
+    int right = x + w - 1;
+
+    switch (tabPlacement)
+    {
+    case LEFT: 
+      paintLeftTabBorder(tabIndex, g, x, y, w, h, bottom, right, isSelected);
+      break;
+    case BOTTOM:
+      paintBottomTabBorder(tabIndex, g, x, y, w, h, bottom, right, isSelected);
+      break;
+    case  RIGHT:
+      paintRightTabBorder(tabIndex, g, x, y, w, h, bottom, right, isSelected);
+      break;
+    case TOP:
+    default: 
+      paintTopTabBorder(tabIndex, g, x, y, w, h, bottom, right, isSelected);
+    }
   }
 
   /**
@@ -194,35 +219,90 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
    * @param y  the y-coordinate for the tab's bounding rectangle.
    * @param w  the width for the tab's bounding rectangle.
    * @param h  the height for the tab's bounding rectangle.
-   * @param btm  ???
-   * @param rght  ???
+   * @param btm  the y coordinate of the bottom border
+   * @param rght the x coordinate of the right border
    * @param isSelected  indicates whether the tab is selected.
    */
   protected void paintTopTabBorder(int tabIndex, Graphics g, int x, int y,
       int w, int h, int btm, int rght, boolean isSelected)
   {
-    int currentRun = getRunForTab(tabPane.getTabCount(), tabIndex);
+    int tabCount = tabPane.getTabCount();
+    int currentRun = getRunForTab(tabCount, tabIndex);
+    int right = w - 1;
+    int bottom = h - 1;
+
+    // Paint gap.
     if (shouldFillGap(currentRun, tabIndex, x, y))
       {
         g.translate(x, y);
-        g.setColor(getColorForGap(currentRun, x, y));
+        g.setColor(getColorForGap(currentRun, x, y + 1));
         g.fillRect(1, 0, 5, 3);
         g.fillRect(1, 3, 2, 2);
         g.translate(-x, -y);
       }
-    
-    if (isSelected)
-    {
-      g.setColor(MetalLookAndFeel.getControlHighlight());
-      g.drawLine(x + 1, y + h, x + 1, y + 6);      
-      g.drawLine(x + 1, y + 6, x + 6, y + 1);
-      g.drawLine(x + 6, y + 1, x + w - 1, y + 1);
-    }
-    g.setColor(MetalLookAndFeel.getControlDarkShadow());
-    g.drawLine(x, y + h - 1, x, y + 6);
-    g.drawLine(x, y + 6, x + 6, y);
-    g.drawLine(x + 6, y, x + w, y);
-    g.drawLine(x + w, y, x + w, y + h - 1);
+
+    g.translate(x, y);
+
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+    if (isOcean && isSelected)
+      g.setColor(oceanSelectedBorder);
+    else
+      g.setColor(darkShadow);
+
+    // Slant
+    g.drawLine(1, 5, 6, 0);
+    // Top.
+    g.drawLine(6, 0, right, 0);
+    // Right.
+    int lastIndex = lastTabInRun(tabCount, currentRun);
+    if (tabIndex == lastIndex)
+      g.drawLine(right, 1, right, bottom);
+    // Left.
+    int selectedIndex = tabPane.getSelectedIndex();
+    if (isOcean && tabIndex - 1 == selectedIndex
+        && currentRun == getRunForTab(tabCount, selectedIndex))
+      {
+        g.setColor(oceanSelectedBorder);
+      }
+    if (tabIndex != tabRuns[runCount - 1])
+      {
+        if (isOcean && isSelected)
+          {
+            g.drawLine(0, 6, 0, bottom);
+            g.setColor(darkShadow);
+            g.drawLine(0, 0, 0, 5);
+          }
+        else
+          {
+            g.drawLine(0, 0, 0, bottom);
+          }
+      }
+    else
+      {
+        g.drawLine(0, 6, 0, bottom);
+      }
+
+    // Paint the highlight.
+    g.setColor(isSelected ? selectHighlight : highlight);
+    // Slant.
+    g.drawLine(1, 6, 6, 1);
+    // Top.
+    g.drawLine(6, 1, right, 1);
+    // Left.
+    g.drawLine(1, 6, 1, bottom);
+    int firstIndex = tabRuns[currentRun];
+    if (tabIndex == firstIndex && tabIndex != tabRuns[runCount - 1])
+      {
+        if (tabPane.getSelectedIndex() == tabRuns[currentRun + 1])
+          g.setColor(selectHighlight);
+        else
+          g.setColor(highlight);
+        g.drawLine(1, 0, 1, 4);
+      }
+
+    g.translate(-x, -y);
   }
   
   /**
@@ -242,18 +322,115 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   protected void paintLeftTabBorder(int tabIndex, Graphics g, int x, int y,
       int w, int h, int btm, int rght, boolean isSelected)
   {
-    if (isSelected)
-    {
-      g.setColor(MetalLookAndFeel.getControlHighlight());
-      g.drawLine(x + 1, y + h, x + 1, y + 6);      
-      g.drawLine(x + 1, y + 6, x + 6, y + 1);
-      g.drawLine(x + 6, y + 1, x + w - 1, y + 1);
-    }
-    g.setColor(MetalLookAndFeel.getControlDarkShadow());
-    g.drawLine(x, y + h, x, y + 6);
-    g.drawLine(x, y + 6, x + 6, y);
-    g.drawLine(x + 6, y, x + w - 1, y);
-    g.drawLine(x, y + h, x + w - 1, y + h);
+    g.translate(x, y);
+    int bottom = h - 1;
+    int right = w - 1;
+
+    
+    int tabCount = tabPane.getTabCount();
+    int currentRun = getRunForTab(tabCount, tabIndex);
+    int firstIndex = tabRuns[currentRun];
+
+    // Paint the part of the above tab.
+    if (tabIndex != firstIndex && tabIndex > 0 && tabsOpaque)
+      {
+        Color c;
+        if (tabPane.getSelectedIndex() == tabIndex - 1)
+          c = selectColor;
+        else
+          c = getUnselectedBackground(tabIndex - 1);
+        g.setColor(c);
+        g.fillRect(2, 0, 4, 3);
+        g.drawLine(2, 3, 2, 3);
+      }
+
+    // Paint the highlight.
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    if (isOcean)
+      {
+        g.setColor(isSelected ? selectHighlight : MetalLookAndFeel.getWhite());
+      }
+    else
+      {
+        g.setColor(isSelected ? selectHighlight : highlight);
+      }
+    // Slant.
+    g.drawLine(1, 6, 6, 1);
+    // Left.
+    g.drawLine(1, 6, 1, bottom);
+    // Top.
+    g.drawLine(6, 1, right, 1);
+    if (tabIndex != firstIndex)
+      {
+        if (isOcean)
+          {
+            g.setColor(MetalLookAndFeel.getWhite());
+          }
+        g.drawLine(1, 0, 1, 4);
+      }
+
+    // Paint border.
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+    if (isOcean && isSelected)
+      {
+        g.setColor(oceanSelectedBorder);
+      }
+    else
+      {
+        g.setColor(darkShadow);
+      }
+
+    // Slant.
+    g.drawLine(1, 5, 6, 0);
+    // Top.
+    g.drawLine(6, 0, right, 0);
+    // Bottom.
+    int lastIndex = lastTabInRun(tabCount, currentRun);
+    if (tabIndex == lastIndex)
+      {
+        g.drawLine(0, bottom, right, bottom);
+      }
+    // Left.
+    if (isOcean)
+      {
+        if (tabPane.getSelectedIndex() == tabIndex - 1)
+          {
+            g.drawLine(0, 5, 0, bottom);
+            g.setColor(oceanSelectedBorder);
+            g.drawLine(0, 0, 0, 5);
+          }
+        else if (isSelected)
+          {
+            g.drawLine(0, 5, 0, bottom);
+            if (tabIndex != 0)
+              {
+                g.setColor(darkShadow);
+                g.drawLine(0, 0, 0, 5);
+              }
+          }
+        else if (tabIndex != firstIndex)
+          {
+            g.drawLine(0, 0, 0, bottom);
+          }
+        else
+          {
+            g.drawLine(0, 6, 0, bottom);
+          }
+      }
+    else
+      {
+        if (tabIndex != firstIndex)
+          {
+            g.drawLine(0, 0, 0, bottom);
+          }
+        else
+          {
+            g.drawLine(0, 6, 0, bottom);
+          }
+      }
+
+    g.translate(-x, -y);
   }
   
   /**
@@ -273,17 +450,92 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   protected void paintRightTabBorder(int tabIndex, Graphics g, int x, int y,
       int w, int h, int btm, int rght, boolean isSelected)
   {
-    if (isSelected)
-    {
-      g.setColor(MetalLookAndFeel.getControlHighlight());
-      g.drawLine(x, y + 1, x + w - 7, y + 1);      
-      g.drawLine(x + w - 7, y + 1, x + w - 1, y + 7);
-    }
-    g.setColor(MetalLookAndFeel.getControlDarkShadow());
-    g.drawLine(x, y, x + w - 7, y);
-    g.drawLine(x + w - 7, y, x + w - 1, y + 6);
-    g.drawLine(x + w - 1, y + 6, x + w - 1, y + h - 1);
-    g.drawLine(x + w - 1, y + h, x, y + h);
+    g.translate(x, y);
+    int bottom = h - 1;
+    int right = w - 1;
+
+    int tabCount = tabPane.getTabCount();
+    int currentRun = getRunForTab(tabCount, tabIndex);
+    int firstIndex = tabRuns[currentRun];
+
+    // Paint part of the above tab.
+    if (tabIndex != firstIndex && tabIndex > 0 && tabsOpaque)
+      {
+        Color c;
+        if (tabPane.getSelectedIndex() == tabIndex - 1)
+          c = UIManager.getColor("TabbedPane.tabAreaBackground");
+        else
+          c = getUnselectedBackground(tabIndex - 1);
+        g.fillRect(right - 5, 0, 5, 3);
+        g.fillRect(right - 2, 3, 2, 2);
+      }
+
+    // Paint highlight.
+    g.setColor(isSelected ? selectHighlight : highlight);
+
+    // Slant.
+    g.drawLine(right - 6, 1, right - 1, 6);
+    // Top.
+    g.drawLine(0, 1, right - 6, 1);
+    // Left.
+    if (! isSelected)
+      {
+        g.drawLine(0, 1, 0, bottom);
+      }
+
+    // Paint border.
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+    if (isOcean && isSelected)
+      {
+        g.setColor(oceanSelectedBorder);
+      }
+    else
+      {
+        g.setColor(darkShadow);
+      }
+
+    // Bottom.
+    int lastIndex = lastTabInRun(tabCount, currentRun);
+    if (tabIndex == lastIndex)
+      {
+        g.drawLine(0, bottom, right, bottom);
+      }
+    // Slant.
+    if (isOcean && tabPane.getSelectedIndex() == tabIndex - 1)
+      {
+        g.setColor(oceanSelectedBorder);
+      }
+    g.drawLine(right - 6, 0, right, 6);
+    // Top.
+    g.drawLine(0, 0, right - 6, 0);
+    // Right.
+    if (isOcean && isSelected)
+      {
+        g.drawLine(right, 6, right, bottom);
+        if (tabIndex != firstIndex)
+          {
+            g.setColor(darkShadow);
+            g.drawLine(right, 0, right, 5);
+          }
+      }
+    else if (isOcean && tabPane.getSelectedIndex() == tabIndex - 1)
+      {
+        g.setColor(oceanSelectedBorder);
+        g.drawLine(right, 0, right, 6);
+        g.setColor(darkShadow);
+        g.drawLine(right, 6, right, bottom);
+      }
+    else if (tabIndex != firstIndex)
+      {
+        g.drawLine(right, 0, right, bottom);
+      }
+    else
+      {
+        g.drawLine(right, 6, right, bottom);
+      }
+    g.translate(-x, -y);
   }
   
   /**
@@ -303,27 +555,94 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   protected void paintBottomTabBorder(int tabIndex, Graphics g, int x, int y,
       int w, int h, int btm, int rght, boolean isSelected)
   {
-    int currentRun = getRunForTab(tabPane.getTabCount(), tabIndex);
+    int bottom = h - 1;
+    int right = w - 1;
+
+    int tabCount = tabPane.getTabCount();
+    int currentRun = getRunForTab(tabCount, tabIndex);
+    // Paint gap if necessary.
     if (shouldFillGap(currentRun, tabIndex, x, y))
       {
         g.translate(x, y);
         g.setColor(getColorForGap(currentRun, x, y));
-        g.fillRect(1, h - 5, 3, 5);
-        g.fillRect(4, h - 2, 2, 2);
+        g.fillRect(1, bottom - 4, 3, 5);
+        g.fillRect(4, bottom - 1, 2, 2);
         g.translate(-x, -y);
       }
-    
-    if (isSelected)
-    {
-      g.setColor(MetalLookAndFeel.getControlHighlight());
-      g.drawLine(x + 1, y, x + 1, y + h - 7);      
-      g.drawLine(x + 1, y + h - 7, x + 7, y + h - 1);
-    }
-    g.setColor(MetalLookAndFeel.getControlDarkShadow());
-    g.drawLine(x, y, x, y + h - 7);
-    g.drawLine(x, y + h - 7, x + 6, y + h - 1);
-    g.drawLine(x + 6, y + h - 1, x + w, y + h - 1);
-    g.drawLine(x + w, y + h - 1, x + w, y);
+
+    g.translate(x, y);
+
+    // Paint border.
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+    if (isOcean && isSelected)
+      {
+        g.setColor(oceanSelectedBorder);
+      }
+    else
+      {
+        g.setColor(darkShadow);
+      }
+    // Slant.
+    g.drawLine(1, bottom - 5, 6, bottom);
+    // Bottom.
+    g.drawLine(6, bottom, right, bottom);
+    // Right.
+    int lastIndex = lastTabInRun(tabCount, currentRun);
+    if (tabIndex == lastIndex)
+      {
+        g.drawLine(right, 0, right, bottom);
+      }
+    // Left.
+    if (isOcean && isSelected)
+      {
+        g.drawLine(0, 0, 0, bottom - 5);
+        if ((currentRun == 0 && tabIndex != 0)
+            || (currentRun > 0 && tabIndex != tabRuns[currentRun - 1]))
+          {
+            g.setColor(darkShadow);
+            g.drawLine(0, bottom - 5, 0, bottom);
+          }
+      }
+    else
+      {
+        if (isOcean && tabIndex == tabPane.getSelectedIndex()+ 1)
+          {
+            g.setColor(oceanSelectedBorder);
+          }
+        if (tabIndex != tabRuns[runCount- 1])
+          {
+            g.drawLine(0, 0, 0, bottom);
+          }
+        else
+          {
+            g.drawLine(0, 0, 0, bottom - 6);
+          }
+      }
+
+    // Paint highlight.
+    g.setColor(isSelected ? selectHighlight : highlight);
+    // Slant.
+    g.drawLine(1, bottom - 6, 6, bottom - 1);
+    // Left.
+    g.drawLine(1, 0, 1, bottom - 6);
+
+    int firstIndex = tabRuns[currentRun];
+    if (tabIndex == firstIndex && tabIndex != tabRuns[runCount - 1])
+      {
+        if (tabPane.getSelectedIndex() == tabRuns[currentRun + 1])
+          {
+            g.setColor(selectHighlight);
+          }
+        else
+          {
+            g.setColor(highlight);
+          }
+        g.drawLine(1, bottom - 4, 1, bottom);
+      }
+
+    g.translate(-x, -y);
   }
 
   /**
@@ -343,42 +662,29 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       int tabIndex, int x, int y, int w, int h, boolean isSelected)
   {
     if (isSelected)
-      g.setColor(UIManager.getColor("TabbedPane.selected"));
+      g.setColor(selectColor);
     else
-      {
-        // This is only present in the OceanTheme, so we must check if it
-        // is actually there
-        Color background = UIManager.getColor("TabbedPane.unselectedBackground");
-        if (background == null)
-          background = UIManager.getColor("TabbedPane.background");
-        g.setColor(background);
-      }
-    int[] px, py;
-    if (tabPlacement == TOP) 
-      {
-        px = new int[] {x + 6, x + w - 1, x + w -1, x + 2, x + 2};
-        py = new int[] {y + 2, y + 2, y + h - 1, y + h -1, y + 6};
-      }
-    else if (tabPlacement == LEFT)
-      {
-        px = new int[] {x + 6, x + w - 1, x + w -1, x + 2, x + 2};
-        py = new int[] {y + 2, y + 2, y + h - 1, y + h -1, y + 6};
-      }
-    else if (tabPlacement == BOTTOM)
-      {
-        px = new int[] {x + 2, x + w - 1, x + w -1, x + 8, x + 2};
-        py = new int[] {y, y, y + h - 1, y + h -1, y + h - 7};
-      }
-    else if (tabPlacement == RIGHT)
-      {
-        px = new int[] {x + 2, x + w - 7, x + w - 1, x + w - 1, x + 2};
-        py = new int[] {y + 2, y + 2, y + 7, y + h -1, y + h - 1};
-      }
-    else 
-      throw new AssertionError("Unrecognised 'tabPlacement' argument.");
-    g.fillPolygon(px, py, 5);
-    hg = g;
-    paintHighlightBelowTab();
+      g.setColor(getUnselectedBackground(tabIndex));
+
+    switch (tabPlacement)
+    {
+      case LEFT:
+        g.fillRect(x + 5, y + 1, w - 5, h - 1);
+        g.fillRect(x + 2, y + 4, 3, h - 4);
+        break;
+      case BOTTOM:
+        g.fillRect(x + 2, y, w - 2, h - 3);
+        g.fillRect(x + 5, y + h - 4, w - 5, 3);
+        break;
+      case RIGHT:
+        g.fillRect(x, y + 1, w - 4, h - 1);
+        g.fillRect(x + w - 4, y + 5, 3, h - 5);
+        break;
+      case TOP:
+      default:
+        g.fillRect(x + 4, y + 2, w - 4, h - 2);
+        g.fillRect(x + 2, y + 5, 2, h - 5);
+    }
   }
   
   /**
@@ -408,6 +714,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     selectColor = UIManager.getColor("TabbedPane.selected");
     selectHighlight = UIManager.getColor("TabbedPane.selectHighlight");
     tabAreaBackground = UIManager.getColor("TabbedPane.tabAreaBackground");
+    tabsOpaque = UIManager.getBoolean("TabbedPane.tabsOpaque");
     minTabWidth = 0;
   }
   
@@ -486,5 +793,355 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   {
     // false because tab runs are not rotated in the MetalLookAndFeel
     return false;
+  }
+
+  protected int calculateMaxTabHeight(int tabPlacement)
+  {
+    // FIXME: Why is this overridden?
+    return super.calculateMaxTabHeight(tabPlacement);
+  }
+
+  /**
+   * Returns the amount of overlay among the tabs. In
+   * the Metal L&F the overlay for LEFT and RIGHT placement
+   * is half of the maxTabHeight. For TOP and BOTTOM placement
+   * the tabs do not overlay.
+   *
+   * @param tabPlacement the placement
+   *
+   * @return the amount of overlay among the tabs
+   */
+  protected int getTabRunOverlay(int tabPlacement)
+  {
+    int overlay = 0;
+    if (tabPlacement == LEFT || tabPlacement == RIGHT)
+      {
+        int maxHeight = calculateMaxTabHeight(tabPlacement);
+        overlay = maxTabHeight / 2;
+      }
+    return overlay;
+  }
+
+  /**
+   * Paints the upper edge of the content border.
+   *
+   * @param g the graphics to use for painting
+   * @param tabPlacement the tab placement
+   * @param selectedIndex the index of the selected tab
+   * @param x the upper left coordinate of the content area
+   * @param y the upper left coordinate of the content area
+   * @param w the width of the content area
+   * @param h the height of the content area
+   */
+  protected void paintContentBorderTopEdge(Graphics g, int tabPlacement,
+                                           int selectedIndex, int x, int y,
+                                           int w, int h)
+  {
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    if (isOcean)
+      {
+        g.setColor(oceanSelectedBorder);
+      }
+    else
+      {
+        g.setColor(selectHighlight);
+      }
+
+    Rectangle rect = selectedIndex < 0 ? null :
+                                         getTabBounds(selectedIndex, calcRect);
+
+    // If tabs are not placed on TOP, or if the selected tab is not in the
+    // run directly above the content or the selected tab is not visible,
+    // then we draw an unbroken line.
+    if (tabPlacement != TOP || selectedIndex < 0
+        || rect.y  + rect.height + 1 < y || rect.x < x ||rect.x > x + w)
+      {
+        g.drawLine(x, y, x + w - 2, y);
+        if (isOcean && tabPlacement == TOP)
+          {
+            g.setColor(MetalLookAndFeel.getWhite());
+            g.drawLine(x, y + 1, x + w - 2, y + 1);
+          }
+      }
+    else
+      {
+        boolean isLast = isLastTabInRun(selectedIndex);
+        if (isLast)
+          {
+            g.drawLine(x, y, rect.x + 1, y);
+          }
+        else
+          {
+            g.drawLine(x, y, rect.x, y);
+          }
+
+        int right = x + w - 1;
+        if (rect.x + rect.width < right - 1)
+          {
+            if (isLast)
+              {
+                g.drawLine(rect.x + rect.width - 1, y, right - 1, y);
+              }
+            else
+              {
+                g.drawLine(rect.x + rect.width, y, right - 1, y);
+              }
+          }
+        else
+          {
+            g.setColor(shadow);
+            g.drawLine(x + w - 2, y, x + w - 2, y);
+          }
+
+        // When in OceanTheme, draw another white line.
+        if (isOcean)
+          {
+            g.setColor(MetalLookAndFeel.getWhite());
+            if (isLast)
+              {
+                g.drawLine(x, y + 1, rect.x + 1, y + 1);
+              }
+            else
+              {
+                g.drawLine(x, y + 1, rect.x, y + 1);
+              }
+
+            if (rect.x + rect.width < right - 1)
+              {
+                if (isLast)
+                  {
+                    g.drawLine(rect.x + rect.width - 1, y + 1, right - 1,
+                               y + 1);
+                  }
+                else
+                  {
+                    g.drawLine(rect.x + rect.width, y + 1, right - 1, y + 1);
+                  }
+              }
+            else
+              {
+                g.setColor(shadow);
+                g.drawLine(x + w - 2, y + 1, x + w - 2, y + 1);
+              }
+          }
+      }
+  }
+
+  /**
+   * Paints the lower edge of the content border.
+   *
+   * @param g the graphics to use for painting
+   * @param tabPlacement the tab placement
+   * @param selectedIndex the index of the selected tab
+   * @param x the upper left coordinate of the content area
+   * @param y the upper left coordinate of the content area
+   * @param w the width of the content area
+   * @param h the height of the content area
+   */
+  protected void paintContentBorderBottomEdge(Graphics g, int tabPlacement,
+                                              int selectedIndex, int x, int y,
+                                              int w, int h)
+  {
+    g.setColor(darkShadow);
+    
+    // If tabs are not placed on BOTTOM, or if the selected tab is not in the
+    // run directly below the content or the selected tab is not visible,
+    // then we draw an unbroken line.
+    Rectangle rect = selectedIndex < 0 ? null :
+                                         getTabBounds(selectedIndex, calcRect);
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+    if (tabPlacement != BOTTOM || selectedIndex < 0 || rect.y - 1 > h
+        || rect.x < x || rect.x > x + w)
+      {
+        if (isOcean && tabPlacement == BOTTOM)
+          {
+            g.setColor(oceanSelectedBorder);
+          }
+        g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
+      }
+    else
+      {
+        boolean isLast = isLastTabInRun(selectedIndex);
+        if (isOcean)
+          {
+            g.setColor(oceanSelectedBorder);
+          }
+
+        int bottom = y + h - 1;
+        int right = x + w - 1;
+        if (isLast)
+          {
+            g.drawLine(x, bottom, rect.x, bottom);
+          }
+        else
+          {
+            g.drawLine(x, bottom, rect.x - 1, bottom);
+          }
+
+        if (rect.x + rect.width < x + w - 2)
+          {
+            if (isLast)
+              {
+                g.drawLine(rect.x + rect.width - 1, bottom, right, bottom);
+              }
+            else
+              {
+                g.drawLine(rect.x + rect.width, bottom, right, bottom);
+              }
+          }
+      }
+  }
+
+  /**
+   * Paints the left edge of the content border.
+   *
+   * @param g the graphics to use for painting
+   * @param tabPlacement the tab placement
+   * @param selectedIndex the index of the selected tab
+   * @param x the upper left coordinate of the content area
+   * @param y the upper left coordinate of the content area
+   * @param w the width of the content area
+   * @param h the height of the content area
+   */
+  protected void paintContentBorderLeftEdge(Graphics g, int tabPlacement,
+                                            int selectedIndex, int x, int y,
+                                            int w, int h)
+  {
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+    Rectangle rect = selectedIndex < 0 ? null :
+      getTabBounds(selectedIndex, calcRect);
+
+    if (isOcean)
+      {
+        g.setColor(oceanSelectedBorder);
+      }
+    else
+      {
+        g.setColor(selectHighlight);
+      }
+
+    // If tabs are not placed on LEFT, or if the selected tab is not in the
+    // run directly left to the content or the selected tab is not visible,
+    // then we draw an unbroken line.
+    if (tabPlacement != LEFT || selectedIndex < 0
+        || rect.x + rect.width + 1 < x || rect.y < y || rect.y > y + h)
+      {
+        g.drawLine(x, y + 1, x, y + h - 2);
+        if (isOcean && tabPlacement == LEFT)
+          {
+            g.setColor(MetalLookAndFeel.getWhite());
+            g.drawLine(x, y + 1, x, y + h - 2);
+          }       
+      }
+    else
+      {
+        g.drawLine(x, y, x, rect.y + 1);
+        if (rect.y + rect.height < y + h - 2)
+          {
+            g.drawLine(x, rect.y + rect.height + 1, x, y + h + 2);
+          }
+        if (isOcean)
+          {
+            g.setColor(MetalLookAndFeel.getWhite());
+            g.drawLine(x + 1, y + 1, x + 1, rect.y + 1);
+            if (rect.y + rect.height < y + h - 2)
+              {
+                g.drawLine(x + y, rect.y + rect.height + 1, x + 1, y + h + 2);
+              }
+          }
+      }
+    
+  }
+
+  /**
+   * Paints the right edge of the content border.
+   *
+   * @param g the graphics to use for painting
+   * @param tabPlacement the tab placement
+   * @param selectedIndex the index of the selected tab
+   * @param x the upper left coordinate of the content area
+   * @param y the upper left coordinate of the content area
+   * @param w the width of the content area
+   * @param h the height of the content area
+   */
+  protected void paintContentBorderRightEdge(Graphics g, int tabPlacement,
+                                             int selectedIndex, int x, int y,
+                                             int w, int h)
+  {
+    g.setColor(darkShadow);
+    Rectangle rect = selectedIndex < 0 ? null :
+      getTabBounds(selectedIndex, calcRect);
+    boolean isOcean = MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme;
+    Color oceanSelectedBorder =
+      UIManager.getColor("TabbedPane.borderHightlightColor");
+
+    // If tabs are not placed on RIGHT, or if the selected tab is not in the
+    // run directly right to the content or the selected tab is not visible,
+    // then we draw an unbroken line.
+    if (tabPlacement != RIGHT || selectedIndex < 0 || rect.x - 1 > w
+        || rect.y < y || rect.y > y + h)
+      {
+        if (isOcean && tabPlacement == RIGHT)
+          {
+            g.setColor(oceanSelectedBorder);
+          }
+        g.drawLine(x + w - 1, y, x + w - 1, y + h - 1);
+      }
+    else
+      {
+        if (isOcean)
+          {
+            g.setColor(oceanSelectedBorder);
+          }
+        g.drawLine(x + w - 1, y, x + w - 1, rect.y);
+
+        if (rect.y + rect.height < y + h - 2)
+          {
+            g.drawLine(x + w - 1, rect.y + rect.height, x + w - 1, y + h - 2);
+          }
+      }
+  }
+
+  /**
+   * Determines if the specified tab is the last tab in its tab run.
+   *
+   * @param tabIndex the index of the tab
+   *
+   * @return if the specified tab is the last tab in its tab run
+   */
+  private boolean isLastTabInRun(int tabIndex)
+  {
+    int count = tabPane.getTabCount();
+    int run = getRunForTab(count, tabIndex);
+    int lastIndex = lastTabInRun(count, run);
+    return tabIndex == lastIndex;
+  }
+
+  /**
+   * Returns the background for an unselected tab. This first asks the
+   * JTabbedPane for the background at the specified tab index, if this
+   * is an UIResource (that means, it is inherited from the JTabbedPane)
+   * and the TabbedPane.unselectedBackground UI property is not null,
+   * this returns the value of the TabbedPane.unselectedBackground property,
+   * otherwise the value returned by the JTabbedPane.
+   *
+   * @param tabIndex the index of the tab for which we query the background
+   *
+   * @return the background for an unselected tab
+   */
+  private Color getUnselectedBackground(int tabIndex)
+  {
+    Color bg = tabPane.getBackgroundAt(tabIndex);
+    Color unselectedBackground =
+      UIManager.getColor("TabbedPane.unselectedBackground");
+    if (bg instanceof UIResource && unselectedBackground != null)
+      bg = unselectedBackground;
+    return bg;
   }
 }

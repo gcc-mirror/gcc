@@ -50,8 +50,6 @@ import java.util.Map;
  * <p>When using such a {@link Transformer}, in an {@link Assembly}, there must
  * be at least one element behind this instance in the constructed chain;
  * otherwise, a {@link TransformerException} is thrown at initialisation time.</p>
- *
- * @version $Revision: 1.1 $
  */
 class PaddingTransformer extends Transformer
 {

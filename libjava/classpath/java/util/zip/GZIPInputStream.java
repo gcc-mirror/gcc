@@ -207,7 +207,7 @@ public class GZIPInputStream
     
     /* 2. Check the compression type (must be 8) */
     int CM = in.read();
-    if (CM != 8)
+    if (CM != Deflater.DEFLATED)
       throw new IOException("Error in GZIP header, data not in deflate format");
     headCRC.update(CM);
 

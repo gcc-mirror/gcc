@@ -18,7 +18,7 @@
     catch (Exception e)
       {
         UnexpectedException uex = new UnexpectedException(exception_message);
-        uex.initCause(e);
+        uex.detail = e;
         throw uex;
       }
   }

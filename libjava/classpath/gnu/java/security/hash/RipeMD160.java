@@ -320,7 +320,7 @@ public class RipeMD160 extends BaseHash
   {
     if (valid == null)
       {
-        valid = new Boolean
+        valid = Boolean.valueOf
           (DIGEST0.equals(Util.toString(new RipeMD160().digest())));
       }
     return valid.booleanValue();

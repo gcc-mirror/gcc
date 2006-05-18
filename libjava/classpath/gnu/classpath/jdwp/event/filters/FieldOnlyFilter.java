@@ -64,7 +64,7 @@ public class FieldOnlyFilter
    * @param  refId  class for field
    * @param  fid    field
    * @throws InvalidClassException if class is invalid
-   * @throws InvalidFieldExcpetion if field is invalid
+   * @throws InvalidFieldException if field is invalid
    */
   public FieldOnlyFilter (ReferenceTypeId refId, /*Field*/ReferenceTypeId fid)
     throws InvalidClassException, InvalidFieldException

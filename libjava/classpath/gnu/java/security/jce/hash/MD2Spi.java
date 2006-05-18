@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * <p>The implementation of the MD2 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class MD2Spi extends MessageDigestAdapter
 {

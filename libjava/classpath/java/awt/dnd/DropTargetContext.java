@@ -54,9 +54,7 @@ public class DropTargetContext implements Serializable
 {
   static final long serialVersionUID = -634158968993743371L;
 
-  /** @specnote According to the online documentation, this is
-   * protected, but in reality it is public.  */
-  public class TransferableProxy implements Transferable
+  protected class TransferableProxy implements Transferable
   {
     protected boolean isLocal;
     protected Transferable transferable;

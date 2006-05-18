@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.table;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -80,232 +82,278 @@ public class JTableHeader extends JComponent
     protected class AccessibleJTableHeaderEntry extends AccessibleContext
       implements Accessible, AccessibleComponent
     {
-      public AccessibleJTableHeaderEntry(int c, JTableHeader p, JTable t) 
+      public AccessibleJTableHeaderEntry(int c, JTableHeader p, JTable t)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void addFocusListener(FocusListener l)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void addPropertyChangeListener(PropertyChangeListener l)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public boolean contains(Point p)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleAction getAccessibleAction()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Accessible getAccessibleAt(Point p)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Accessible getAccessibleChild(int i)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public int getAccessibleChildrenCount()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleComponent getAccessibleComponent()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleContext getAccessibleContext()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public String getAccessibleDescription()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public int getAccessibleIndexInParent()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public String getAccessibleName()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleRole getAccessibleRole()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleSelection getAccessibleSelection()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleStateSet getAccessibleStateSet()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleText getAccessibleText()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public AccessibleValue getAccessibleValue()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Color getBackground()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Rectangle getBounds()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Cursor getCursor()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Font getFont()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public FontMetrics getFontMetrics(Font f)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Color getForeground()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Locale getLocale()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Point getLocation()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Point getLocationOnScreen()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public Dimension getSize()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public boolean isEnabled()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public boolean isFocusTraversable()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public boolean isShowing()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public boolean isVisible()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void removeFocusListener(FocusListener l)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void removePropertyChangeListener(PropertyChangeListener l)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void requestFocus()
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setAccessibleDescription(String s)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setAccessibleName(String s)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setBackground(Color c)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setBounds(Rectangle r)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setCursor(Cursor c)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setEnabled(boolean b)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setFont(Font f)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setForeground(Color c)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setLocation(Point p)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setSize(Dimension d)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }
       
       public void setVisible(boolean b)
+        throws NotImplementedException
       {
         throw new Error("not implemented");
       }

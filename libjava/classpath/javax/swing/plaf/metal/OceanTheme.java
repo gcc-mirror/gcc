@@ -38,10 +38,12 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import java.awt.Color;
+import java.awt.Insets;
 import java.util.Arrays;
 
 import javax.swing.UIDefaults;
 import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.BorderUIResource.LineBorderUIResource;
 
 /**
  * A modern theme for the Metal Look &amp; Feel.
@@ -207,41 +209,108 @@ public class OceanTheme extends DefaultMetalTheme
    */
   public void addCustomEntriesToTable(UIDefaults defaults)
   {
+    // Gradients.
     defaults.put("Button.gradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("CheckBox.gradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("CheckBoxMenuItem.gradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("MenuBar.gradient", Arrays.asList(new Object[]
-      {new Double(1.0), new Double(0.0), new ColorUIResource(Color.WHITE),
+      {new Float(1.0), new Float(0.0), new ColorUIResource(Color.WHITE),
       new ColorUIResource(218, 218, 218), new ColorUIResource(218, 218, 218)}));
     defaults.put("RadioButton.gradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("RadioButtonMenuItem.gradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("ScrollBar.gradient", Arrays.asList(new Object[]
-      {new Double(1.0), new Double(0.0), new ColorUIResource(Color.WHITE),
-       new ColorUIResource(218, 218, 218), new ColorUIResource(218, 218, 218)}));
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
+       new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("Slider.gradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.2), new ColorUIResource(200, 221, 242),
+      {new Float(0.3), new Float(0.2), new ColorUIResource(200, 221, 242),
+       new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
+    defaults.put("Slider.focusGradient", Arrays.asList(new Object[]
+      {new Float(0.3), new Float(0.2), new ColorUIResource(200, 221, 242),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("ToggleButton.gradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
     defaults.put("InternalFrame.activeTitleGradient", Arrays.asList(new Object[]
-      {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
+      {new Float(0.3), new Float(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
 
-    
+    // Colors.
+    ColorUIResource c1 = new ColorUIResource(200, 221, 242);
+    ColorUIResource c2 = new ColorUIResource(153, 153, 153);
+    ColorUIResource c3 = new ColorUIResource(204, 204, 204);
+    ColorUIResource c4 = new ColorUIResource(210, 226, 239);
+    ColorUIResource c5 = new ColorUIResource(218, 218, 218);
+    defaults.put("Button.disabledToolBarBorderBackground", c3);
+    defaults.put("Button.toolBarBorderBackground", c2);
+    defaults.put("Label.disabledForeground", c2);
+    defaults.put("MenuBar.borderColor", c3);
+    defaults.put("Slider.altTrackColor", c4);
+    defaults.put("SplitPane.dividerFocusColor", c1);
+    defaults.put("TabbedPane.contentAreaColor", c1);
+    defaults.put("TabbedPane.borderHightlightColor", PRIMARY1);
+    defaults.put("TabbedPane.selected", c1);
+    defaults.put("TabbedPane.tabAreaBackground", c5);
+    defaults.put("TabbedPane.unselectedBackground", SECONDARY3);
+    defaults.put("Table.gridColor", SECONDARY1);
+    defaults.put("ToolBar.borderColor", c3);
+    defaults.put("Tree.selectionBorderColor", PRIMARY1);
+
+    // Borders.
+    defaults.put("Table.focusCellHighlightBorder",
+                 new LineBorderUIResource(getPrimary1()));
+
+    // Insets.
+    defaults.put("TabbedPane.contentBorderInsets", new Insets(4, 2, 3, 3));
+    defaults.put("TabbedPane.tabAreaInsets", new Insets(2, 2, 0, 6));
+
+    // Flags.
+    defaults.put("SplitPane.oneTouchButtonsOpaque", Boolean.FALSE);
+    defaults.put("Menu.opaque", Boolean.FALSE);
+    defaults.put("ToolBar.isRollover", Boolean.TRUE);
+    defaults.put("RadioButton.rollover", Boolean.TRUE);
+    defaults.put("CheckBox.rollover", Boolean.TRUE);
     defaults.put("Button.rollover", Boolean.TRUE);
 
-    defaults.put("TabbedPane.selected", new ColorUIResource(200, 221, 242));
-    defaults.put("TabbedPane.unselectedBackground", SECONDARY3);
+    // Icons.
+    // FIXME: Add OceanTheme icons.
+//    defaults.put("Tree.leafIcon", XXX);
+//    defaults.put("Tree.expandedIcon", XXX);
+//    defaults.put("Tree.openIcon", XXX);
+//    defaults.put("Tree.closedIcon", XXX);
+//    defaults.put("Tree.collapsedIcon", XXX);
+//    defaults.put("FileChooser.newFolderIcon", XXX);
+//    defaults.put("FileChooser.homeFolderIcon", XXX);
+//    defaults.put("FileChooser.upFolderIcon", XXX);
+//    defaults.put("FileView.hardDriveIcon", XXX);
+//    defaults.put("FileView.floppyDriveIcon", XXX);
+//    defaults.put("FileView.fileIcon", XXX);
+//    defaults.put("FileView.computerIcon", XXX);
+//    defaults.put("FileView.directoryIcon", XXX);
+//    defaults.put("OptionPane.questionIcon", XXX);
+//    defaults.put("OptionPane.errorIcon", XXX);
+//    defaults.put("OptionPane.warningIcon", XXX);
+//    defaults.put("OptionPane.informationIcon", XXX);
+//    defaults.put("InternalFrame.icon", XXX);
+//    defaults.put("InternalFrame.closeIcon", XXX);
+//    defaults.put("InternalFrame.iconifyIcon", XXX);
+//    defaults.put("InternalFrame.minimizeIcon", XXX);
+//    defaults.put("InternalFrame.maximizeIcon", XXX);
+//    defaults.put("InternalFrame.paletteCloseIcon", XXX);
+
+    // UI classes.
+    defaults.put("MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI");
+
+    // Others.
+    defaults.put("Button.rolloverIconType", "ocean");
   }
 }

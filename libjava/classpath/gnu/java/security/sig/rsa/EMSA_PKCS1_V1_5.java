@@ -57,8 +57,6 @@ import java.io.ByteArrayOutputStream;
  *    RSA Cryptography Specifications Version 2.1.<br>
  *    Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
- *
- * @version $Revision: 1.2 $
  */
 public class EMSA_PKCS1_V1_5 implements Cloneable
 {

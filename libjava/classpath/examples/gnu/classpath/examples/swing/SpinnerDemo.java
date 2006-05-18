@@ -33,24 +33,22 @@ import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.DefaultMetalTheme;
-import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.SwingUtilities;
 
 /**
  * A simple demo showing various spinners in different states.
  */
 public class SpinnerDemo 
-  extends JFrame 
+  extends JPanel 
   implements ActionListener 
 {
-  private JPanel content;
   private JCheckBox spinnerState1;  
   private JSpinner spinner1;
   private JSpinner spinner2;
@@ -65,15 +63,11 @@ public class SpinnerDemo
   
   /**
    * Creates a new demo instance.
-   * 
-   * @param title  the frame title.
    */
-  public SpinnerDemo(String title) 
+  public SpinnerDemo() 
   {
-    super(title);
-    JPanel content = createContent();
-    // initFrameContent() is only called (from main) when running this app 
-    // standalone
+    super();
+    createContent();
   }
   
   /**
@@ -83,15 +77,14 @@ public class SpinnerDemo
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  public void initFrameContent() 
+  void initFrameContent() 
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
     closeButton.addActionListener(this);
     closePanel.add(closeButton);
-    content.add(closePanel, BorderLayout.SOUTH);
-    getContentPane().add(content);
+    add(closePanel, BorderLayout.SOUTH);
   }
        
   /**
@@ -101,18 +94,14 @@ public class SpinnerDemo
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
    */       
-  JPanel createContent() 
+  private void createContent() 
   {
-    if (content == null)
-      {
-        content = new JPanel(new BorderLayout());
-        JPanel panel = new JPanel(new GridLayout(3, 1));
-        panel.add(createPanel1());
-        panel.add(createPanel2());
-        panel.add(createPanel3());
-        content.add(panel);
-      }
-    return content;        
+    setLayout(new BorderLayout());
+    JPanel panel = new JPanel(new GridLayout(3, 1));
+    panel.add(createPanel1());
+    panel.add(createPanel2());
+    panel.add(createPanel3());
+    add(panel);
   }
     
   private JPanel createPanel1() 
@@ -213,18 +202,34 @@ public class SpinnerDemo
 
   public static void main(String[] args) 
   {
-    try
-    {
-      MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
-      UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
-    }
-    catch (Exception e) {
-        e.printStackTrace();
-    }
-    SpinnerDemo app = new SpinnerDemo("Spinner Demo");
-    app.initFrameContent();
-    app.pack();
-    app.setVisible(true);
+    SwingUtilities.invokeLater
+    (new Runnable()
+     {
+       public void run()
+       {
+         SpinnerDemo app = new SpinnerDemo();
+         app.initFrameContent();
+         JFrame frame = new JFrame("Spinner Demo");
+         frame.getContentPane().add(app);
+         frame.pack();
+         frame.setVisible(true);
+       }
+     });
   }
 
+  /**
+   * Returns a DemoFactory that creates a SpinnerDemo.
+   *
+   * @return a DemoFactory that creates a SpinnerDemo
+   */
+  public static DemoFactory createDemoFactory()
+  {
+    return new DemoFactory()
+    {
+      public JComponent createDemo()
+      {
+        return new SpinnerDemo();
+      }
+    };
+  }
 }

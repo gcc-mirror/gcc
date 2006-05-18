@@ -56,8 +56,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * <p>.</p>
- *
- * @version $Revision: 1.1 $
  */
 public abstract class PBES2 extends CipherAdapter
 {

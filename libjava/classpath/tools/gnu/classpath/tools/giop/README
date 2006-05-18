@@ -9,7 +9,8 @@ The list of the currently available tools:
 * GRMIC -                RMI-IIOP stub and tie generator.
 * NameService  -         GIOP transient naming service (this tool is called 
                          tnameserv in Sun's package).
-* NameService  -         GIOP persistent naming service (this tool is called 
+* NameServicePersistent
+               -         GIOP persistent naming service (this tool is called 
                          orbd in Sun's package).
 * IorParser -            Parses the stringified form of the interoperable 
                          object references (IOR's).

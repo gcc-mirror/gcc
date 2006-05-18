@@ -1,5 +1,5 @@
 /* GdkPixbufDecoder.java -- Image data decoding object
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -82,6 +82,14 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     initStaticState ();
   }
   
+  /**
+   * Lock that should be held for all gdkpixbuf operations. We don't use
+   * the global gdk_threads_enter/leave functions since gdkpixbuf
+   * operations can be done in parallel to drawing and manipulating gtk
+   * widgets.
+   */
+  static Object pixbufLock = new Object();
+
   static native void initStaticState();
   private final int native_state = GtkGenericPeer.getUniqueInteger ();
 
@@ -92,6 +100,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   Vector curr;
 
   // interface to GdkPixbuf
+  // These native functions should be called with the pixbufLock held.
   native void initState ();
   native void pumpBytes (byte[] bytes, int len) throws IOException;
   native void pumpDone () throws IOException;
@@ -171,11 +180,26 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 
     byte bytes[] = new byte[4096];
     int len = 0;
-    initState();
+    synchronized(pixbufLock)
+      {
+	initState();
+      }
     needsClose = true;
+
+    // Note: We don't want the pixbufLock while reading from the InputStream.
     while ((len = is.read (bytes)) != -1)
-      pumpBytes (bytes, len);
-    pumpDone();
+      {
+	synchronized(pixbufLock)
+	  {
+	    pumpBytes (bytes, len);
+	  }
+      }
+
+    synchronized(pixbufLock)
+      {
+	pumpDone();
+      }
+
     needsClose = false;
     
     for (int i = 0; i < curr.size (); i++)
@@ -189,7 +213,10 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 
   public void finalize()
   {
-    finish(needsClose);
+    synchronized(pixbufLock)
+      {
+	finish(needsClose);
+      }
   }
 
 
@@ -495,8 +522,11 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
         }
 
       processImageStarted(1);
-      streamImage(pixels, this.ext, width, height, model.hasAlpha(), 
-                  (DataOutput) this.getOutput());
+      synchronized(pixbufLock)
+	{
+	  streamImage(pixels, this.ext, width, height, model.hasAlpha(), 
+		      (DataOutput) this.getOutput());
+	}
       processImageComplete();
     }    
   }

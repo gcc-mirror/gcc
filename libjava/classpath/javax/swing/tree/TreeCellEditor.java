@@ -1,5 +1,5 @@
 /* TreeCellEditor.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,20 +44,26 @@ import javax.swing.CellEditor;
 import javax.swing.JTree;
 
 /**
- * TreeCellEditor public interface
+ * A <code>TreeCellEditor</code> is used by the {@link JTree} component to
+ * edit individual tree elements (nodes).
+ * 
  * @author Andrew Selkirk
  */
 public interface TreeCellEditor extends CellEditor
 {
   /**
-   * getTreeCellEditorComponent
-   * @param tree TODO
-   * @param value TODO
-   * @param isSelected TODO
-   * @param expanded TODO
-   * @param leaf TODO
-   * @param row TODO
-   * @return TODO
+   * Returns a component that has been configured to edit one element (or 
+   * node) in a {@link JTree} component.  The arguments to this method are used
+   * to pass in the value and state of the element to be edited.
+   * 
+   * @param tree  the tree.
+   * @param value  the value to render.
+   * @param isSelected  is the tree element selected?
+   * @param expanded  is the tree element expanded?
+   * @param leaf  is the tree element a leaf node?
+   * @param row  the row index.
+   * 
+   * @return A component that is configured for editing the tree element.
    */
   Component getTreeCellEditorComponent(JTree tree, Object value,
 				       boolean isSelected, boolean expanded,

@@ -1,5 +1,5 @@
 /* DatatypeFactory.java -- 
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,16 +37,24 @@ exception statement from your version. */
 
 package javax.xml.datatype;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.Properties;
+import gnu.classpath.ServiceFactory;
 
 /**
  * Factory class to create new datatype objects mapping XML to and from Java
  * objects.
  *
- * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
- * @since 1.3
+ * @author Chris Burdess
+ * @since 1.5
  */
 public abstract class DatatypeFactory
 {
@@ -59,7 +67,7 @@ public abstract class DatatypeFactory
   /**
    * JAXP 1.3 default implementation class name.
    */
-  public static final java.lang.String DATATYPEFACTORY_IMPLEMENTATION_CLASS = "gnu.xml.datatype.JAXPDatatypeFactory";
+  public static final String DATATYPEFACTORY_IMPLEMENTATION_CLASS = "gnu.xml.datatype.JAXPDatatypeFactory";
 
   protected DatatypeFactory()
   {
@@ -73,12 +81,35 @@ public abstract class DatatypeFactory
   {
     try
       {
+        // 1. system property
+        String className = System.getProperty(DATATYPEFACTORY_PROPERTY);
+        if (className != null)
+          return (DatatypeFactory) Class.forName(className).newInstance();
+        // 2. jaxp.properties property
+        File javaHome = new File(System.getProperty("java.home"));
+        File javaHomeLib = new File(javaHome, "lib");
+        File jaxpProperties = new File(javaHomeLib, "jaxp.properties");
+        if (jaxpProperties.exists())
+          {
+            FileInputStream in = new FileInputStream(jaxpProperties);
+            Properties p = new Properties();
+            p.load(in);
+            in.close();
+            className = p.getProperty(DATATYPEFACTORY_PROPERTY);
+            if (className != null)
+              return (DatatypeFactory) Class.forName(className).newInstance();
+          }
+        // 3. services
+        Iterator i = ServiceFactory.lookupProviders(DatatypeFactory.class);
+        if (i.hasNext())
+          return (DatatypeFactory) i.next();
+        // 4. fallback
         Class t = Class.forName(DATATYPEFACTORY_IMPLEMENTATION_CLASS);
         return (DatatypeFactory) t.newInstance();
       }
     catch (Exception e)
       {
-        throw new DatatypeConfigurationException (e);
+        throw new DatatypeConfigurationException(e);
       }
   }
 
@@ -172,7 +203,7 @@ public abstract class DatatypeFactory
                                      BigInteger days,
                                      BigInteger hours,
                                      BigInteger minutes,
-                                     BigDecimal seconds)
+                                     BigInteger seconds)
   {
     return newDuration(isPositive,
                        null,
@@ -180,7 +211,7 @@ public abstract class DatatypeFactory
                        days,
                        hours,
                        minutes,
-                       seconds);
+                       new BigDecimal(seconds));
   }
 
   /**

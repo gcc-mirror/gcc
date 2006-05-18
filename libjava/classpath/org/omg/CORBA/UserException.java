@@ -1,5 +1,5 @@
 /* UserException.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import org.omg.CORBA.portable.IDLEntity;
  * The root class for CORBA IDL-defined user exceptions.
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class UserException
+public abstract class UserException
   extends Exception
   implements IDLEntity, Serializable
 {
@@ -59,7 +59,7 @@ public class UserException
   /**
    * Constructs a the exception.
    */
-  public UserException()
+  protected UserException()
   {
   }
 
@@ -67,7 +67,7 @@ public class UserException
    * Constructs the exception, explaining the reason of throwing it.
    * @param reason a string, explaining, why the exception has been thrown.
    */
-  public UserException(String reason)
+  protected UserException(String reason)
   {
     super(reason);
   }

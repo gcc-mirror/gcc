@@ -1,5 +1,6 @@
 /* DriverManager.java -- Manage JDBC drivers
-   Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -292,11 +293,11 @@ public class DriverManager
    * This method set the login timeout used by JDBC drivers.  This is a
    * system-wide parameter that applies to all drivers.
    *
-   * @param login_timeout The new login timeout value.
+   * @param seconds The new login timeout value.
    */
   public static void setLoginTimeout(int seconds)
   {
-    DriverManager.login_timeout = login_timeout;  
+    DriverManager.login_timeout = seconds;  
   }
 
   /**
@@ -312,20 +313,18 @@ public class DriverManager
   /**
    * This method sets the log stream in use by JDBC.
    *
-   * @param log_stream The log stream in use by JDBC.
-   *
+   * @param stream The log stream in use by JDBC.
    * @deprecated Use <code>setLogWriter</code> instead.
    */
-  public static void setLogStream(PrintStream out)
+  public static void setLogStream(PrintStream stream)
   {
-    DriverManager.log_stream = log_stream;
+    DriverManager.log_stream = stream;
   }
 
   /**
    * This method returns the log stream in use by JDBC.
    *
    * @return The log stream in use by JDBC.
-   *
    * @deprecated Use <code>getLogWriter()</code> instead.
    */
   public static PrintStream getLogStream()
@@ -336,7 +335,7 @@ public class DriverManager
   /**
    * This method prints the specified line to the log stream.
    *
-   * @param str The string to write to the log stream.
+   * @param message The string to write to the log stream.
    */
   public static void println(String message)
   {

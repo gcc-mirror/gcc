@@ -37,16 +37,12 @@ exception statement from your version. */
 
 package java.util.jar;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import gnu.java.util.jar.JarUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -156,282 +152,27 @@ public class Manifest implements Cloneable
   }
 
   /**
-   * XXX
+   * Read and merge a <code>Mainfest</code> from the designated input stream.
+   * 
+   * @param in the input stream to read from.
+   * @throws IOException if an I/O related exception occurs during the process.
    */
   public void read(InputStream in) throws IOException
   {
-    BufferedReader br =
-      new BufferedReader(new InputStreamReader(in, "8859_1"));
-    read_main_section(getMainAttributes(), br);
-    read_individual_sections(getEntries(), br);
-  }
-
-  // Private Static methods for reading the Manifest file from BufferedReader
-
-  private static void read_main_section(Attributes attr,
-					BufferedReader br) throws IOException
-  {
-    // According to the spec we should actually call read_version_info() here.
-    read_attributes(attr, br);
-    // Explicitly set Manifest-Version attribute if not set in Main
-    // attributes of Manifest.
-    if (attr.getValue(Attributes.Name.MANIFEST_VERSION) == null)
-	    attr.putValue(Attributes.Name.MANIFEST_VERSION, "0.0");
+    JarUtils.readMFManifest(getMainAttributes(), getEntries(), in);
   }
 
   /**
-   * Pedantic method that requires the next attribute in the Manifest to be
-   * the "Manifest-Version". This follows the Manifest spec closely but
-   * reject some jar Manifest files out in the wild.
-   */
-  private static void read_version_info(Attributes attr,
-					BufferedReader br) throws IOException
-  {
-    String version_header = Attributes.Name.MANIFEST_VERSION.toString();
-    try
-      {
-	String value = expect_header(version_header, br);
-	attr.putValue(Attributes.Name.MANIFEST_VERSION, value);
-      }
-    catch (IOException ioe)
-      {
-	throw new JarException("Manifest should start with a " +
-			       version_header + ": " + ioe.getMessage());
-      }
-  }
-
-  private static String expect_header(String header, BufferedReader br)
-    throws IOException
-  {
-    String s = br.readLine();
-    if (s == null)
-      {
-	throw new JarException("unexpected end of file");
-      }
-    return expect_header(header, br, s);
-  }
-
-  private static String expect_header(String header, BufferedReader br,
-				      String s) throws IOException
-  {
-    try
-      {
-	String name = s.substring(0, header.length() + 1);
-	if (name.equalsIgnoreCase(header + ":"))
-	  {
-	    String value_start = s.substring(header.length() + 2);
-	    return read_header_value(value_start, br);
-	  }
-      }
-    catch (IndexOutOfBoundsException iobe)
-      {
-      }
-    // If we arrive here, something went wrong
-    throw new JarException("unexpected '" + s + "'");
-  }
-
-  private static String read_header_value(String s, BufferedReader br)
-    throws IOException
-  {
-    boolean try_next = true;
-    while (try_next)
-      {
-	// Lets see if there is something on the next line
-	br.mark(1);
-	if (br.read() == ' ')
-	  {
-	    s += br.readLine();
-	  }
-	else
-	  {
-	    br.reset();
-	    try_next = false;
-	  }
-      }
-    return s;
-  }
-
-  private static void read_attributes(Attributes attr,
-				      BufferedReader br) throws IOException
-  {
-    String s = br.readLine();
-    while (s != null && (!s.equals("")))
-      {
-	read_attribute(attr, s, br);
-	s = br.readLine();
-      }
-  }
-
-  private static void read_attribute(Attributes attr, String s,
-				     BufferedReader br) throws IOException
-  {
-    try
-      {
-	int colon = s.indexOf(": ");
-	String name = s.substring(0, colon);
-	String value_start = s.substring(colon + 2);
-	String value = read_header_value(value_start, br);
-	attr.putValue(name, value);
-      }
-    catch (IndexOutOfBoundsException iobe)
-      {
-	throw new JarException("Manifest contains a bad header: " + s);
-      }
-  }
-
-  private static void read_individual_sections(Map entries,
-					       BufferedReader br) throws
-    IOException
-  {
-    String s = br.readLine();
-    while (s != null && (!s.equals("")))
-      {
-	Attributes attr = read_section_name(s, br, entries);
-	read_attributes(attr, br);
-	s = br.readLine();
-      }
-  }
-
-  private static Attributes read_section_name(String s, BufferedReader br,
-					      Map entries) throws JarException
-  {
-    try
-      {
-	String name = expect_header("Name", br, s);
-	Attributes attr = new Attributes();
-	entries.put(name, attr);
-	return attr;
-      }
-    catch (IOException ioe)
-      {
-	throw new JarException
-	  ("Section should start with a Name header: " + ioe.getMessage());
-      }
-  }
-
-  /**
-   * XXX
+   * Writes the contents of this <code>Manifest</code> to the designated
+   * output stream. Line-endings are platform-independent and consist of the
+   * 2-codepoint sequence <code>0x0D</code> and <code>0x0A</code>.
+   * 
+   * @param out the output stream to write this <code>Manifest</code> to.
+   * @throws IOException if an I/O related exception occurs during the process.
    */
   public void write(OutputStream out) throws IOException
   {
-    PrintWriter pw =
-      new PrintWriter(new
-		      BufferedWriter(new OutputStreamWriter(out, "8859_1")));
-    write_main_section(getMainAttributes(), pw);
-    pw.println();
-    write_individual_sections(getEntries(), pw);
-    if (pw.checkError())
-      {
-	throw new JarException("Error while writing manifest");
-      }
-  }
-
-  // Private Static functions for writing the Manifest file to a PrintWriter
-
-  private static void write_main_section(Attributes attr,
-					 PrintWriter pw) throws JarException
-  {
-    write_version_info(attr, pw);
-    write_main_attributes(attr, pw);
-  }
-
-  private static void write_version_info(Attributes attr, PrintWriter pw)
-  {
-    // First check if there is already a version attribute set
-    String version = attr.getValue(Attributes.Name.MANIFEST_VERSION);
-    if (version == null)
-      {
-	version = "1.0";
-      }
-    write_header(Attributes.Name.MANIFEST_VERSION.toString(), version, pw);
-  }
-
-  private static void write_header(String name, String value, PrintWriter pw)
-  {
-    pw.print(name + ": ");
-
-    int last = 68 - name.length();
-    if (last > value.length())
-      {
-	pw.println(value);
-      }
-    else
-      {
-	pw.println(value.substring(0, last));
-      }
-    while (last < value.length())
-      {
-	pw.print(" ");
-	int end = (last + 69);
-	if (end > value.length())
-	  {
-	    pw.println(value.substring(last));
-	  }
-	else
-	  {
-	    pw.println(value.substring(last, end));
-	  }
-	last = end;
-      }
-  }
-
-  private static void write_main_attributes(Attributes attr, PrintWriter pw) 
-    throws JarException
-  {
-    Iterator it = attr.entrySet().iterator();
-    while (it.hasNext())
-      {
-	Map.Entry entry = (Map.Entry) it.next();
-	// Don't print the manifest version again
-	if (!Attributes.Name.MANIFEST_VERSION.equals(entry.getKey()))
-	  {
-	    write_attribute_entry(entry, pw);
-	  }
-      }
-  }
-
-  private static void write_attribute_entry(Map.Entry entry, PrintWriter pw) 
-    throws JarException
-  {
-    String name = entry.getKey().toString();
-    String value = entry.getValue().toString();
-
-    if (name.equalsIgnoreCase("Name"))
-      {
-	throw new JarException("Attributes cannot be called 'Name'");
-      }
-    if (name.startsWith("From"))
-      {
-	throw new
-	  JarException("Header cannot start with the four letters 'From'" +
-		       name);
-      }
-    write_header(name, value, pw);
-  }
-
-  private static void write_individual_sections(Map entries, PrintWriter pw)
-    throws JarException
-  {
-
-    Iterator it = entries.entrySet().iterator();
-    while (it.hasNext())
-      {
-	Map.Entry entry = (Map.Entry) it.next();
-	write_header("Name", entry.getKey().toString(), pw);
-	write_entry_attributes((Attributes) entry.getValue(), pw);
-	pw.println();
-      }
-  }
-
-  private static void write_entry_attributes(Attributes attr, PrintWriter pw) 
-    throws JarException
-  {
-    Iterator it = attr.entrySet().iterator();
-    while (it.hasNext())
-      {
-	Map.Entry entry = (Map.Entry) it.next();
-	write_attribute_entry(entry, pw);
-      }
+    JarUtils.writeMFManifest(getMainAttributes(), getEntries(), out);
   }
 
   /**

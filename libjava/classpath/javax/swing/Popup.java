@@ -285,6 +285,7 @@ public class Popup
       Point layeredPaneLoc = layeredPane.getLocationOnScreen();
       panel.setLocation(x - layeredPaneLoc.x, y - layeredPaneLoc.y);
       layeredPane.add(panel, JLayeredPane.POPUP_LAYER);
+      panel.repaint();
     }
 
     /**

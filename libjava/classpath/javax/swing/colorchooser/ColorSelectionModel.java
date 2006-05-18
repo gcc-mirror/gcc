@@ -1,5 +1,5 @@
 /* ColorSelectionModel.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,42 +40,47 @@ package javax.swing.colorchooser;
 
 import java.awt.Color;
 
+import javax.swing.JColorChooser;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * ColorSelectionModel
+ * A model that is used by the {@link JColorChooser} component to represent the
+ * selected color.
+ * 
  * @author	Andrew Selkirk
- * @version	1.0
  */
-public interface ColorSelectionModel {
+public interface ColorSelectionModel 
+{
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Returns the selected color.
+   * 
+   * @return The selected color.
+   */
+  Color getSelectedColor();
 
-	/**
-	 * getSelectedColor
-	 * @returns Color
-	 */
-	Color getSelectedColor();
+  /**
+   * Sets the selected color.
+   * 
+   * @param color  the selected color.
+   */
+  void setSelectedColor(Color color);
 
-	/**
-	 * setSelectedColor
-	 * @param color TODO
-	 */
-	void setSelectedColor(Color color);
+  /**
+   * Registers a listener to receive {@link ChangeEvent} notifications
+   * from this model.
+   * 
+   * @param listener  the listener.
+   */
+  void addChangeListener(ChangeListener listener);
 
-	/**
-	 * addChangeListener
-	 * @param listener TODO
-	 */
-	void addChangeListener(ChangeListener listener);
+  /**
+   * Deregisters a listener so that it no longer receives {@link ChangeEvent} 
+   * notifications from this action.
+   *
+   * @param listener  the listener.
+   */
+  void removeChangeListener(ChangeListener listener);
 
-	/**
-	 * removeChangeListener
-	 * @param listener TODO
-	 */
-	void removeChangeListener(ChangeListener listener);
-
-
-} // ColorSelectionModel
+}

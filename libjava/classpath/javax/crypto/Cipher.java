@@ -1,5 +1,5 @@
 /* Cipher.java -- Interface to a cryptographic cipher.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,9 @@ exception statement from your version. */
 package javax.crypto;
 
 import gnu.java.security.Engine;
+
+import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
 
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
@@ -496,7 +499,6 @@ public class Cipher
       {
         throw new IllegalStateException("neither encrypting nor decrypting");
       }
-    state = INITIAL_STATE;
     return cipherSpi.engineDoFinal(input, inputOffset, inputLength);
   }
 
@@ -532,7 +534,6 @@ public class Cipher
       {
         throw new IllegalStateException("neither encrypting nor decrypting");
       }
-    state = INITIAL_STATE;
     return cipherSpi.engineDoFinal(new byte[0], 0, 0, output, outputOffset);
   }
 
@@ -576,7 +577,6 @@ public class Cipher
       {
         throw new IllegalStateException("neither encrypting nor decrypting");
       }
-    state = INITIAL_STATE;
     return cipherSpi.engineDoFinal(input, inputOffset, inputLength,
                                    output, outputOffset);
   }
@@ -587,6 +587,43 @@ public class Cipher
            ShortBufferException
   {
     return doFinal(input, inputOffset, inputLength, output, 0);
+  }
+
+  /**
+   * Finishes a multi-part transformation with, or completely
+   * transforms, a byte buffer, and stores the result into the output
+   * buffer.
+   *
+   * @param input  The input buffer.
+   * @param output The output buffer.
+   * @return The number of bytes stored into the output buffer.
+   * @throws IllegalArgumentException If the input and output buffers
+   *  are the same object.
+   * @throws IllegalStateException If this cipher was not initialized
+   *  for encryption or decryption.
+   * @throws ReadOnlyBufferException If the output buffer is not
+   *  writable.
+   * @throws IllegalBlockSizeException If this cipher requires a total
+   *  input that is a multiple of its block size to complete this
+   *  transformation.
+   * @throws ShortBufferException If the output buffer is not large
+   *  enough to hold the transformed bytes.
+   * @throws BadPaddingException If the cipher is a block cipher with
+   *  a padding scheme, and the decrypted bytes do not end with a
+   *  valid padding.
+   * @since 1.5
+   */
+  public final int doFinal (ByteBuffer input, ByteBuffer output)
+    throws ReadOnlyBufferException, ShortBufferException,
+           BadPaddingException, IllegalBlockSizeException
+  {
+    if (input == output)
+      throw new IllegalArgumentException
+        ("input and output buffers cannot be the same");
+    if (state != ENCRYPT_MODE && state != DECRYPT_MODE)
+      throw new IllegalStateException
+        ("not initialized for encrypting or decrypting");
+    return cipherSpi.engineDoFinal (input, output);
   }
 
   /**
@@ -672,11 +709,11 @@ public class Cipher
    */
   public final void init(int opmode, Key key) throws InvalidKeyException
   {
-    state = opmode;
     if (cipherSpi != null)
       {
         cipherSpi.engineInit(opmode, key, new SecureRandom());
       }
+    state = opmode;
   }
 
   /**
@@ -791,11 +828,11 @@ public class Cipher
   public final void init(int opmode, Key key, SecureRandom random)
     throws InvalidKeyException
   {
-    state = opmode;
     if (cipherSpi != null)
       {
         cipherSpi.engineInit(opmode, key, random);
       }
+    state = opmode;
   }
 
   /**
@@ -890,11 +927,11 @@ public class Cipher
                          SecureRandom random)
     throws InvalidKeyException, InvalidAlgorithmParameterException
   {
-    state = opmode;
     if (cipherSpi != null)
       {
         cipherSpi.engineInit(opmode, key, params, random);
       }
+    state = opmode;
   }
 
   /**
@@ -925,11 +962,11 @@ public class Cipher
                          SecureRandom random)
     throws InvalidKeyException, InvalidAlgorithmParameterException
   {
-    state = opmode;
     if (cipherSpi != null)
       {
         cipherSpi.engineInit(opmode, key, params, random);
       }
+    state = opmode;
   }
 
   /**
@@ -1065,6 +1102,35 @@ public class Cipher
       }
     return cipherSpi.engineUpdate(input, inputOffset, inputLength,
                                   output, outputOffset);
+  }
+
+  /**
+   * Continue a multi-part transformation on a byte buffer, storing
+   * the transformed bytes into another buffer.
+   *
+   * @param input  The input buffer.
+   * @param output The output buffer.
+   * @return The number of bytes stored in <i>output</i>.
+   * @throws IllegalArgumentException If the two buffers are the same
+   *  object.
+   * @throws IllegalStateException If this cipher was not initialized
+   *  for encrypting or decrypting.
+   * @throws ReadOnlyBufferException If the output buffer is not
+   *  writable.
+   * @throws ShortBufferException If the output buffer does not have
+   *  enough available space for the transformed bytes.
+   * @since 1.5
+   */
+  public final int update (ByteBuffer input, ByteBuffer output)
+    throws ReadOnlyBufferException, ShortBufferException
+  {
+    if (input == output)
+      throw new IllegalArgumentException
+        ("input and output buffers must be different");
+    if (state != ENCRYPT_MODE && state != DECRYPT_MODE)
+      throw new IllegalStateException
+        ("not initialized for encryption or decryption");
+    return cipherSpi.engineUpdate (input, output);
   }
 
   /**

@@ -1,5 +1,5 @@
 /* UnknownUserExceptionHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import org.omg.CORBA.portable.Streamable;
 
 * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
 */
-public class UnknownUserExceptionHolder implements Streamable
+public final class UnknownUserExceptionHolder implements Streamable
 {
   /**
    * The stored UnknownUserException value.
@@ -74,7 +74,7 @@ public class UnknownUserExceptionHolder implements Streamable
   }
 
   /**
-   * Fill in the {@link value} by data from the CDR stream.
+   * Fill in the {@link #value} by data from the CDR stream.
    *
    * @param input the org.omg.CORBA.portable stream to read.
    */

@@ -38,9 +38,15 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
@@ -53,6 +59,8 @@ import javax.swing.JViewport;
 import javax.swing.LookAndFeel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.ScrollPaneLayout;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
@@ -222,18 +230,149 @@ public class BasicScrollPaneUI extends ScrollPaneUI
    */
   protected class MouseWheelHandler implements MouseWheelListener
   {
+    /**
+     * Use to compute the visible rectangle.
+     */
+    final Rectangle rect = new Rectangle();
 
     /**
-     * Receives notification whenever the mouse wheel is moved.
-     *
-     * @param event the mouse wheel event
+     * Scroll with the mouse whell.
+     * 
+     * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
      */
-    public void mouseWheelMoved(MouseWheelEvent event)
+    public void mouseWheelMoved(MouseWheelEvent e)
     {
-      // TODO: Implement this properly.
-    }
+      if (scrollpane.getViewport().getComponentCount() == 0)
+        return;
 
+      Component target = scrollpane.getViewport().getComponent(0);
+      JScrollBar bar = scrollpane.getVerticalScrollBar();
+      Scrollable scrollable = (target instanceof Scrollable) ? (Scrollable) target
+                                                            : null;
+
+      boolean tracksHeight = scrollable != null
+                             && scrollable.getScrollableTracksViewportHeight();
+      int wheel = e.getWheelRotation() * ROWS_PER_WHEEL_CLICK;
+      int delta;
+
+      // If possible, scroll vertically.
+      if (bar != null && ! tracksHeight)
+        {
+          if (scrollable != null)
+            {
+              bounds(target);
+              delta = scrollable.getScrollableUnitIncrement(
+                rect, SwingConstants.VERTICAL, wheel);
+            }
+          else
+            {
+              // Scroll non scrollables.
+              delta = wheel * SCROLL_NON_SCROLLABLES;
+            }
+          scroll(bar, delta);
+        }
+      // If not, try to scroll horizontally
+      else
+        {
+          bar = scrollpane.getHorizontalScrollBar();
+          boolean tracksWidth = scrollable != null
+                                && scrollable.getScrollableTracksViewportWidth();
+
+          if (bar != null && ! tracksWidth)
+            {
+              if (scrollable != null)
+                {
+                  bounds(target);
+                  delta = scrollable.getScrollableUnitIncrement(
+                     rect, SwingConstants.HORIZONTAL, wheel);
+                }
+              else
+                {
+                  // Scroll non scrollables.
+                  delta = wheel * SCROLL_NON_SCROLLABLES;
+                }
+              scroll(bar, delta);
+            }
+        }
+    }
+    
+    /**
+     * Place the component bounds into rect. The x and y values 
+     * need to be reversed.
+     * 
+     * @param target the target being scrolled
+     */
+    final void bounds(Component target)
+    {
+      // Viewport bounds, translated by the scroll bar positions.
+      target.getParent().getBounds(rect);
+      rect.x = getValue(scrollpane.getHorizontalScrollBar());
+      rect.y = getValue(scrollpane.getVerticalScrollBar());
+    }
+    
+    /**
+     * Get the scroll bar value or null if there is no such scroll bar.
+     */
+    final int getValue(JScrollBar bar)
+    {
+      return bar != null ? bar.getValue() : 0;
+    }
+    
+    /**
+     * Scroll the given distance.
+     * 
+     * @param bar the scrollbar to scroll
+     * @param delta the distance
+     */
+    final void scroll(JScrollBar bar, int delta)
+    {
+      int y = bar.getValue() + delta;
+
+      if (y < bar.getMinimum())
+        y = bar.getMinimum();
+      if (y > bar.getMaximum())
+        y = bar.getMaximum();
+
+      bar.setValue(y);
+    }
   }
+  
+  /**
+   * Adds/removes the mouse wheel listener when the component is added/removed
+   * to/from the scroll pane view port.
+   * 
+   * @author Audrius Meskauskas (audriusa@bioinformatics.org)
+   */
+  class ViewportContainerListener implements ContainerListener
+  {
+    /**
+     * Add the mouse wheel listener, allowing to scroll with the mouse.
+     */
+    public void componentAdded(ContainerEvent e)
+    {
+      e.getChild().addMouseWheelListener(mouseWheelListener);
+    }
+    
+    /**
+     * Remove the mouse wheel listener.
+     */
+    public void componentRemoved(ContainerEvent e)
+    {
+      e.getChild().removeMouseWheelListener(mouseWheelListener);
+    }
+  }
+  
+  /**
+   * The number of pixels by that we should scroll the content that does
+   * not implement Scrollable.
+   */
+  static int SCROLL_NON_SCROLLABLES = 10;
+  
+  /**
+   * The number of rows to scroll per mouse wheel click. From impression,
+   * Sun seems using the value 3.
+   */
+  static int ROWS_PER_WHEEL_CLICK = 3;     
 
   /** The Scrollpane for which the UI is provided by this class. */
   protected JScrollPane scrollpane;
@@ -262,6 +401,12 @@ public class BasicScrollPaneUI extends ScrollPaneUI
    * The mousewheel listener for the scrollpane.
    */
   MouseWheelListener mouseWheelListener;
+  
+  /**
+   * The listener to add and remove the mouse wheel listener to/from
+   * the component container.
+   */
+  ContainerListener containerListener;
 
   public static ComponentUI createUI(final JComponent c) 
   {
@@ -316,11 +461,21 @@ public class BasicScrollPaneUI extends ScrollPaneUI
 
     if (viewportChangeListener == null)
       viewportChangeListener = createViewportChangeListener();
-    sp.getViewport().addChangeListener(viewportChangeListener);
-
+    
     if (mouseWheelListener == null)
       mouseWheelListener = createMouseWheelListener();
-    sp.addMouseWheelListener(mouseWheelListener);
+    
+    if (containerListener == null)
+      containerListener = new ViewportContainerListener();
+    
+    JViewport v = sp.getViewport();
+    v.addChangeListener(viewportChangeListener);
+    v.addContainerListener(containerListener);
+    
+    // Add mouse wheel listeners to the componets that are probably already
+    // in the view port.
+    for (int i = 0; i < v.getComponentCount(); i++)
+      v.getComponent(i).addMouseWheelListener(mouseWheelListener);
   }
 
   /**
@@ -331,6 +486,7 @@ public class BasicScrollPaneUI extends ScrollPaneUI
    * @param sp the scrollpane to install keyboard actions on
    */
   protected void installKeyboardActions(JScrollPane sp)
+    throws NotImplementedException
   {
     // TODO: Is this only a hook method or should we actually do something
     // here? If the latter, than figure out what and implement this.
@@ -408,8 +564,14 @@ public class BasicScrollPaneUI extends ScrollPaneUI
                                .removeChangeListener(hsbChangeListener);
     sp.getVerticalScrollBar().getModel()
                              .removeChangeListener(vsbChangeListener);
-    sp.getViewport().removeChangeListener(viewportChangeListener);
-    sp.removeMouseWheelListener(mouseWheelListener);
+    
+    JViewport v = sp.getViewport();
+    v.removeChangeListener(viewportChangeListener);
+    v.removeContainerListener(containerListener);
+ 
+    for (int i = 0; i < v.getComponentCount(); i++)
+      v.getComponent(i).removeMouseWheelListener(mouseWheelListener);
+
   }
 
   /**
@@ -420,6 +582,7 @@ public class BasicScrollPaneUI extends ScrollPaneUI
    * @param sp the scrollpane to uninstall keyboard actions from
    */
   protected void uninstallKeyboardActions(JScrollPane sp)
+    throws NotImplementedException
   {
     // TODO: Is this only a hook method or should we actually do something
     // here? If the latter, than figure out what and implement this.

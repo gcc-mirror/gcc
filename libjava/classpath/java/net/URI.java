@@ -487,16 +487,14 @@ public final class URI
     for (int i = 0; i < str.length(); i++)
       {
 	char c = str.charAt(i);
-	if (legalCharacters.indexOf(c) == -1)
+	if ((legalCharacters.indexOf(c) == -1)
+	    && (c <= 127))
 	  {
-	    if (c <= 127)
-	      {
-		sb.append('%');
-		sb.append(HEX.charAt(c / 16));
-		sb.append(HEX.charAt(c % 16));
-	      }
+	    sb.append('%');
+	    sb.append(HEX.charAt(c / 16));
+	    sb.append(HEX.charAt(c % 16));
 	  }
-	else
+      	else
 	  sb.append(c);
       }
     return sb.toString();

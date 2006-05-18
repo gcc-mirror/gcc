@@ -1,5 +1,5 @@
 /* PERSIST_STORE.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.io.Serializable;
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class PERSIST_STORE
+public final class PERSIST_STORE
   extends SystemException
   implements Serializable
 {

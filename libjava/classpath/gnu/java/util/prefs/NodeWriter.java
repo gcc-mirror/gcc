@@ -168,7 +168,7 @@ public class NodeWriter {
         } else {
             bw.write("system");
         }
-        bw.write("\"/>");
+        bw.write("\">");
 
         writeRootMap();
         writeNode();

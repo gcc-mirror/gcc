@@ -79,6 +79,7 @@ public class EncapsulationStream
                             boolean use_big_endian)
   {
     super();
+    setBigEndian(use_big_endian);
     buffer = new AligningOutput();
     setOutputStream(buffer);
     parent = _parent;

@@ -82,7 +82,6 @@ import java.util.Set;
  *
  * @see ModeStage
  * @see CascadeStage
- * @version $Revision: 1.1 $
  */
 public abstract class Stage
 {

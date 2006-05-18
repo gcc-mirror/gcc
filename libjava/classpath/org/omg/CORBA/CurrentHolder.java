@@ -1,5 +1,5 @@
 /* CurrentHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import org.omg.CORBA.portable.Streamable;
 *
 * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
 */
-public class CurrentHolder
+public final class CurrentHolder
   implements Streamable
 {
   /**
@@ -56,7 +56,7 @@ public class CurrentHolder
   public Current value;
 
   /**
-   * Create the unitialised instance, leaving the value field
+   * Create the uninitialised instance, leaving the value field
    * with default <code>null</code> value.
    */
   public CurrentHolder()
@@ -74,7 +74,7 @@ public class CurrentHolder
   }
 
   /**
-   * Fill in the {@link value} by data from the CDR stream.
+   * Fill in the {@link #value} by data from the CDR stream.
    *
    * @param input the org.omg.CORBA.portable stream to read.
    */

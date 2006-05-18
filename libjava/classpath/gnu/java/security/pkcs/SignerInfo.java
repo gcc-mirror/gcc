@@ -42,16 +42,25 @@ import gnu.java.security.ber.BER;
 import gnu.java.security.ber.BEREncodingException;
 import gnu.java.security.ber.BERReader;
 import gnu.java.security.ber.BERValue;
+import gnu.java.security.der.DER;
 import gnu.java.security.der.DERValue;
+import gnu.java.security.der.DERWriter;
+import gnu.java.security.util.Util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.logging.Logger;
 
 import javax.security.auth.x500.X500Principal;
 
 public class SignerInfo
 {
+  private static final Logger log = Logger.getLogger(SignerInfo.class.getName());
+
   private final BigInteger version;
   private final BigInteger serialNumber;
   private final X500Principal issuer;
@@ -63,67 +72,80 @@ public class SignerInfo
   private final byte[] encryptedDigest;
   private final byte[] unauthenticatedAttributes;
 
-  private static final boolean DEBUG = false;
-  private static void debug(String msg)
-  {
-    System.err.print("SignerInfo >> ");
-    System.err.println(msg);
-  }
-
   /**
    * Parse a SignerInfo object.
+   * <p>
+   * A SignerInfo is a structure with the following ASN.1 syntax:
+   * <pre>
+   * SignerInfo ::= SEQUENCE {
+   *   version                       Version, -- always 1 for PKCS7 v1.5
+   *   issuerAndSerialNumber         IssuerAndSerialNumber, -- an INTEGER
+   *   digestAlgorithm               DigestAlgorithmIdentifier,
+   *   authenticatedAttributes   [0] IMPLICIT Attributes OPTIONAL,
+   *   digestEncryptionAlgorithm     DigestEncryptionAlgorithmIdentifier,
+   *   encryptedDigest               EncryptedDigest,
+   *   unauthenticatedAttributes [1] IMPLICIT Attributes OPTIONAL }
+   *
+   * IssuerAndSerialNumber ::= SEQUENCE {
+   *   issuer       Name,
+   *   serialNumber CertificateSerialNumber
+   * }
+   * 
+   * DigestAlgorithmIdentifier ::= AlgorithmIdentifier
+   * 
+   * DigestEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
+   *
+   * EncryptedDigest ::= OCTET STRING
+   * </pre>
    */
   public SignerInfo(BERReader ber) throws IOException
   {
     DERValue val = ber.read();
-    if (DEBUG)
-      debug("SignerInfo: " + val);
+    log.finest("SignerInfo: " + val);
     if (!val.isConstructed())
       throw new BEREncodingException("malformed SignerInfo");
 
     val = ber.read();
     if (val.getTag() != BER.INTEGER)
       throw new BEREncodingException("malformed Version");
-    version = (BigInteger) val.getValue();
 
-    if (DEBUG)
-      debug("  Version: " + version);
+    version = (BigInteger) val.getValue();
+    log.finest("  Version: " + version);
 
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed IssuerAndSerialNumber");
 
-    if (DEBUG)
-      debug("  IssuerAndSerialNumber: " + val);
+    log.finest("  IssuerAndSerialNumber: " + val);
 
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed Issuer");
+
     issuer = new X500Principal(val.getEncoded());
     ber.skip(val.getLength());
-    if (DEBUG)
-      debug("    Issuer: " + issuer);
+    log.finest("    Issuer: " + issuer);
 
     val = ber.read();
     if (val.getTag() != BER.INTEGER)
       throw new BEREncodingException("malformed SerialNumber");
+
     serialNumber = (BigInteger) val.getValue();
-    if (DEBUG)
-      debug("    SerialNumber: " + serialNumber);
+    log.finest("    SerialNumber: " + serialNumber);
 
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed DigestAlgorithmIdentifier");
-    if (DEBUG)
-      debug("  DigestAlgorithmIdentifier: " + val);
+
+    log.finest("  DigestAlgorithmIdentifier: " + val);
 
     int count = 0;
     DERValue val2 = ber.read();
     if (val2.getTag() != BER.OBJECT_IDENTIFIER)
       throw new BEREncodingException("malformed AlgorithmIdentifier");
+
     digestAlgorithmId = (OID) val2.getValue();
-    if (DEBUG)
-      debug("    OID: " + digestAlgorithmId);
+    log.finest("    digestAlgorithm OID: " + digestAlgorithmId);
 
     if (BERValue.isIndefinite(val))
       {
@@ -147,9 +169,10 @@ public class SignerInfo
       }
     else
       digestAlgorithmParams = null;
-    if(DEBUG)
-      debug("    params: " + (digestAlgorithmParams == null ? null
-                              : new BigInteger(digestAlgorithmParams).toString(16)));
+
+    log.finest("    digestAlgorithm params: ");
+    log.finest(Util.dumpString(digestAlgorithmParams,
+                               "    digestAlgorithm params: "));
 
     val = ber.read();
     if (val.getTag() == 0)
@@ -158,24 +181,27 @@ public class SignerInfo
         val = ber.read();
         if (val.isConstructed())
           ber.skip(val.getLength());
-        if (DEBUG)
-          debug("  AuthenticatedAttributes: " + val);
+
         val = ber.read();
       }
     else
       authenticatedAttributes = null;
 
+    log.finest("  AuthenticatedAttributes: ");
+    log.finest(Util.dumpString(authenticatedAttributes,
+                               "  AuthenticatedAttributes: "));
+
     if (!val.isConstructed())
       throw new BEREncodingException("malformed DigestEncryptionAlgorithmIdentifier");
-    if (DEBUG)
-      debug("  DigestEncryptionAlgorithmIdentifier: " + val);
+
+    log.finest("  DigestEncryptionAlgorithmIdentifier: " + val);
     count = 0;
     val2 = ber.read();
     if (val2.getTag() != BER.OBJECT_IDENTIFIER)
       throw new BEREncodingException("malformed AlgorithmIdentifier");
+
     digestEncryptionAlgorithmId = (OID) val2.getValue();
-    if (DEBUG)
-      debug("    OID: " + digestEncryptionAlgorithmId);
+    log.finest("    digestEncryptionAlgorithm OID: " + digestEncryptionAlgorithmId);
 
     if (BERValue.isIndefinite(val))
       {
@@ -199,24 +225,72 @@ public class SignerInfo
       }
     else
       digestEncryptionAlgorithmParams = null;
-    if(DEBUG)
-      debug("    params: " + (digestEncryptionAlgorithmParams == null ? null
-                              : new BigInteger(digestEncryptionAlgorithmParams).toString(16)));
+
+    log.finest("    digestEncryptionAlgorithm params: ");
+    log.finest(Util.dumpString(digestEncryptionAlgorithmParams,
+                               "    digestEncryptionAlgorithm params: "));
 
     val = ber.read();
     if (val.getTag() != BER.OCTET_STRING)
       throw new BEREncodingException("malformed EncryptedDigest");
+
     encryptedDigest = (byte[]) val.getValue();
-    if (DEBUG)
-      debug("  EncryptedDigest: " + new BigInteger(1, encryptedDigest).toString(16));
+    log.finest("  EncryptedDigest: ");
+    log.finest(Util.dumpString(encryptedDigest, "  EncryptedDigest: "));
 
     if (ber.peek() == 1)
       unauthenticatedAttributes = ber.read().getEncoded();
     else
       unauthenticatedAttributes = null;
 
+    log.finest("  UnauthenticatedAttributes: ");
+    log.finest(Util.dumpString(unauthenticatedAttributes,
+                               "  UnauthenticatedAttributes: "));
+
     if (ber.peek() == 0)
       ber.read();
+  }
+
+  /**
+   * Constructs a new instance of <code>SignerInfo</code> given a designated
+   * set of fields.
+   * 
+   * @param issuer the X.500 Principal name of the signer referenced by this
+   *          instance.
+   * @param serialNumber the serial number of the certificate being used. Both
+   *          this and the previous arguments are gleaned from the signer's
+   *          certificate.
+   * @param digestAlgorithmOID the OID of the digest algorithm. When
+   *          constructing the DigestAlgorithmIdentifier with this OID, the
+   *          parameters part will be NULL.
+   * @param authenticatedAttributes the encoding of the set of authenticated
+   *          attributes to use.
+   * @param digestEncryptionAlgorithmOID the OID of the digest encryption
+   *          algorithm. When constructing the
+   *          DigestEncryptionAlgorithmIdentifier with this OID, the parameters
+   *          part will be NULL.
+   * @param encryptedDigest the encrypted hash generated with this signer's
+   *          private key.
+   * @param unauthenticatedAttributes the encoding of the set of
+   *          unauthencticated attributes.
+   */
+  public SignerInfo(X500Principal issuer, BigInteger serialNumber,
+                    OID digestAlgorithmOID, byte[] authenticatedAttributes,
+                    OID digestEncryptionAlgorithmOID,
+                    byte[] encryptedDigest, byte[] unauthenticatedAttributes)
+  {
+    super();
+
+    this.version = BigInteger.ONE;
+    this.issuer = issuer;
+    this.serialNumber = serialNumber;
+    this.digestAlgorithmId = digestAlgorithmOID;
+    this.digestAlgorithmParams = null;
+    this.authenticatedAttributes = authenticatedAttributes;
+    this.digestEncryptionAlgorithmId = digestEncryptionAlgorithmOID;
+    this.digestEncryptionAlgorithmParams = null;
+    this.encryptedDigest = encryptedDigest;
+    this.unauthenticatedAttributes = unauthenticatedAttributes;
   }
 
   public BigInteger getVersion()
@@ -275,5 +349,66 @@ public class SignerInfo
     return (unauthenticatedAttributes != null
             ? (byte[]) unauthenticatedAttributes.clone()
             : null);
+  }
+
+  /**
+   * Writes to the designated output stream the DER encoding of the current
+   * contents of this instance.
+   * 
+   * @param out the destination output stream.
+   * @throws IOException if an I/O related exception occurs during the process.
+   */
+  public void encode(OutputStream out) throws IOException
+  {
+    DERValue derVersion = new DERValue(DER.INTEGER, version);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    baos.write(issuer.getEncoded());
+    DERValue derSerialNumber = new DERValue(DER.INTEGER, serialNumber);
+    DERWriter.write(baos, derSerialNumber);
+    baos.flush();
+    byte[] b = baos.toByteArray();
+    DERValue derIssuerAndSerialNumber =
+        new DERValue(DER.CONSTRUCTED | DER.SEQUENCE, b.length, b, null);
+
+    DERValue derDigestAlgorithmOID = new DERValue(DER.OBJECT_IDENTIFIER,
+                                                  digestAlgorithmId);
+    ArrayList digestAlgorithmIdentifier = new ArrayList(1);
+    digestAlgorithmIdentifier.add(derDigestAlgorithmOID);
+    DERValue derDigestAlgorithmIdentifier =
+        new DERValue(DER.CONSTRUCTED | DER.SEQUENCE, digestAlgorithmIdentifier);
+
+    DERValue derAuthenticatedAttributes;
+    if (authenticatedAttributes == null)
+      derAuthenticatedAttributes = new DERValue(DER.NULL, null);
+    else
+      derAuthenticatedAttributes = new DERValue(DER.CONSTRUCTED | DER.SET,
+                                                authenticatedAttributes);
+
+    DERValue derDigestEncryptionAlgorithmOID =
+        new DERValue(DER.OBJECT_IDENTIFIER, digestEncryptionAlgorithmId);
+    ArrayList digestEncryptionAlgorithmIdentifier = new ArrayList(1);
+    digestEncryptionAlgorithmIdentifier.add(derDigestEncryptionAlgorithmOID);
+    DERValue derDigestEncryptionAlgorithmIdentifier =
+        new DERValue(DER.CONSTRUCTED | DER.SEQUENCE, digestEncryptionAlgorithmIdentifier);
+
+    DERValue derEncryptedDigest = new DERValue(DER.OCTET_STRING, encryptedDigest);
+
+    DERValue derUnauthenticatedAttributes;
+    if (unauthenticatedAttributes == null)
+      derUnauthenticatedAttributes = new DERValue(DER.NULL, null);
+    else
+      derUnauthenticatedAttributes = new DERValue(DER.CONSTRUCTED | DER.SET,
+                                                  unauthenticatedAttributes);
+
+    ArrayList signerInfo = new ArrayList(5);
+    signerInfo.add(derVersion);
+    signerInfo.add(derIssuerAndSerialNumber);
+    signerInfo.add(derDigestAlgorithmIdentifier);
+    signerInfo.add(derDigestEncryptionAlgorithmIdentifier);
+    signerInfo.add(derEncryptedDigest);
+    DERValue derSignerInfo = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE,
+                                          signerInfo);
+    DERWriter.write(out, derSignerInfo);
   }
 }

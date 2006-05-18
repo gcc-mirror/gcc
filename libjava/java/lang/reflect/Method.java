@@ -46,7 +46,8 @@ import gnu.gcj.RawData;
  * @since 1.1
  * @status updated to 1.4
  */
-public final class Method extends AccessibleObject implements Member
+public final class Method extends AccessibleObject
+  implements Member, GenericDeclaration
 {
   /**
    * This class is uninstantiable.
@@ -260,6 +261,28 @@ public final class Method extends AccessibleObject implements Member
 	// think, but that is a pain.
 	buf.append (k.getName ());
       }
+  }
+
+  // FIXME - Write a real implementation
+  public boolean isSynthetic() { return false; }
+
+  /**
+   * Returns an array of <code>TypeVariable</code> objects that represents
+   * the type variables declared by this constructor, in declaration order.
+   * An array of size zero is returned if this class has no type
+   * variables.
+   *
+   * @return the type variables associated with this class.
+   * @throws GenericSignatureFormatError if the generic signature does
+   *         not conform to the format specified in the Virtual Machine
+   *         specification, version 3.
+   * @since 1.5
+   */
+  /* FIXME[GENERICS]: Should be TypeVariable<Method>[] */
+  public TypeVariable[] getTypeParameters()
+  {
+    // FIXME - write a real implementation
+    return new TypeVariable[0];
   }
 
   // Declaring class.

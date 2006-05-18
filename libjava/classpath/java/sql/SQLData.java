@@ -1,5 +1,5 @@
 /* SQLData.java -- Custom mapping for a user defined datatype
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ public interface SQLData
    * This method populates the data in the object from the specified stream.
    *
    * @param stream The stream to read the data from.
-   * @param name The data type name of the data on the stream.
+   * @param typeName The data type name of the data on the stream.
    * @exception SQLException If an error occurs.
    */
   void readSQL(SQLInput stream, String typeName) throws SQLException;

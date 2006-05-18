@@ -1,5 +1,5 @@
 /* IMP_LIMIT.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,12 +41,12 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means that the server have reached some implementation limit
+ * Means that the server has reached some implementation limit
  * (too many clients, too many references, too long parameters and so on).
  * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class IMP_LIMIT
+public final class IMP_LIMIT
   extends SystemException
   implements Serializable
 {
@@ -58,7 +58,7 @@ public class IMP_LIMIT
   /**
    * Creates a IMP_LIMIT with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reasom the explaining message.
+   * @param message the explaining message.
    */
   public IMP_LIMIT(String message)
   {

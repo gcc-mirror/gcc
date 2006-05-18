@@ -1,5 +1,5 @@
 /* JarFile.java - Representation of a jar file
-   Copyright (C) 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,7 @@ import gnu.java.io.Base64InputStream;
 import gnu.java.security.OID;
 import gnu.java.security.pkcs.PKCS7SignedData;
 import gnu.java.security.pkcs.SignerInfo;
+import gnu.java.security.provider.Gnu;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -104,6 +105,14 @@ public class JarFile extends ZipFile
 
   /** The suffix for signature files. */
   private static final String SF_SUFFIX = ".SF";
+
+  /**
+   * The security provider to use for signature verification.
+   * We need a known fallback to be able to read any signed jar file
+   * (which might contain the user selected security provider).
+   * This is package-private to avoid accessor methods for inner classes.
+   */
+  static final Gnu provider = new Gnu();
 
   // Signature OIDs.
   private static final OID MD2_OID = new OID("1.2.840.113549.2.2");
@@ -636,19 +645,19 @@ public class JarFile extends ZipFile
           {
             if (!signerInfo.getDigestAlgorithmId().equals(SHA1_OID))
               return;
-            sig = Signature.getInstance("SHA1withDSA");
+            sig = Signature.getInstance("SHA1withDSA", provider);
           }
         else if (alg.equals(RSA_ENCRYPTION_OID))
           {
             OID hash = signerInfo.getDigestAlgorithmId();
             if (hash.equals(MD2_OID))
-              sig = Signature.getInstance("md2WithRsaEncryption");
+              sig = Signature.getInstance("md2WithRsaEncryption", provider);
             else if (hash.equals(MD4_OID))
-              sig = Signature.getInstance("md4WithRsaEncryption");
+              sig = Signature.getInstance("md4WithRsaEncryption", provider);
             else if (hash.equals(MD5_OID))
-              sig = Signature.getInstance("md5WithRsaEncryption");
+              sig = Signature.getInstance("md5WithRsaEncryption", provider);
             else if (hash.equals(SHA1_OID))
-              sig = Signature.getInstance("sha1WithRsaEncryption");
+              sig = Signature.getInstance("sha1WithRsaEncryption", provider);
             else
               return;
           }
@@ -756,7 +765,7 @@ public class JarFile extends ZipFile
         try
           {
             byte[] hash = Base64InputStream.decode((String) e.getValue());
-            MessageDigest md = MessageDigest.getInstance(alg);
+            MessageDigest md = MessageDigest.getInstance(alg, provider);
             md.update(entryBytes);
             byte[] hash2 = md.digest();
             if (DEBUG)
@@ -939,8 +948,9 @@ public class JarFile extends ZipFile
               hashes.add(Base64InputStream.decode((String) e.getValue()));
               try
                 {
-                  md.add(MessageDigest.getInstance
-                         (key.substring(0, key.length() - DIGEST_KEY_SUFFIX.length())));
+                  int length = key.length() - DIGEST_KEY_SUFFIX.length();
+                  String alg = key.substring(0, length);
+                  md.add(MessageDigest.getInstance(alg, provider));
                 }
               catch (NoSuchAlgorithmException nsae)
                 {

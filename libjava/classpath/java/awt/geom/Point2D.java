@@ -1,5 +1,5 @@
 /* Point2D.java -- generic point in 2-D space
-   Copyright (C) 1999, 2000, 2002, 2004  Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2004, 2006,  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -135,7 +135,7 @@ public abstract class Point2D implements Cloneable
    */
   public double distanceSq(double x, double y)
   {
-    return distanceSq(getX(), x, getY(), y);
+    return distanceSq(getX(), getY(), x, y);
   }
 
   /**
@@ -147,7 +147,7 @@ public abstract class Point2D implements Cloneable
    */
   public double distanceSq(Point2D p)
   {
-    return distanceSq(getX(), p.getX(), getY(), p.getY());
+    return distanceSq(getX(), getY(), p.getX(), p.getY());
   }
 
   /**
@@ -159,7 +159,7 @@ public abstract class Point2D implements Cloneable
    */
   public double distance(double x, double y)
   {
-    return distance(getX(), x, getY(), y);
+    return distance(getX(), getY(), x, y);
   }
 
   /**
@@ -171,7 +171,7 @@ public abstract class Point2D implements Cloneable
    */
   public double distance(Point2D p)
   {
-    return distance(getX(), p.getX(), getY(), p.getY());
+    return distance(getX(), getY(), p.getX(), p.getY());
   }
 
   /**

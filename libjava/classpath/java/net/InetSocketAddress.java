@@ -1,5 +1,5 @@
 /* InetSocketAddress.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -107,10 +107,26 @@ public class InetSocketAddress extends SocketAddress
    * @param hostname The hostname for the socket address
    * @param port The port for the socket address
    *
-   * @exception IllegalArgumentException If the port number is illegal
+   * @exception IllegalArgumentException If the port number is illegal or
+   * the hostname argument is null
    */
   public InetSocketAddress(String hostname, int port)
-    throws IllegalArgumentException
+  {
+    this(hostname, port, true);
+  }
+
+  /**
+   * Constructs an InetSocketAddress instance.
+   *
+   * @param hostname The hostname for the socket address
+   * @param port The port for the socket address
+   * @param resolve <code>true</code> if the address has to be resolved,
+   * <code>false</code> otherwise
+   *
+   * @exception IllegalArgumentException If the port number is illegal or
+   * the hostname argument is null
+   */
+  private InetSocketAddress(String hostname, int port, boolean resolve)
   {
     if (hostname == null)
       throw new IllegalArgumentException("Null host name value");
@@ -120,15 +136,36 @@ public class InetSocketAddress extends SocketAddress
 
     this.port = port;
     this.hostname = hostname;
+    this.addr = null;
 
-    try
-      {
-	this.addr = InetAddress.getByName(hostname);
-      }
-    catch (Exception e) // UnknownHostException, SecurityException
-      {
-	this.addr = null;
-      }
+    if (resolve)
+    {
+      try
+        {
+          this.addr = InetAddress.getByName(hostname);
+        }
+      catch (Exception e) // UnknownHostException, SecurityException
+        {
+          // Do nothing here. this.addr is already set to null.
+        }
+    }
+
+  }
+
+  /**
+   * Creates an unresolved <code>InetSocketAddress</code> object.
+   *
+   * @param hostname The hostname for the socket address
+   * @param port The port for the socket address
+   *
+   * @exception IllegalArgumentException If the port number is illegal or
+   * the hostname argument is null
+   *
+   * @since 1.5
+   */
+  public static InetSocketAddress createUnresolved(String hostname, int port)
+  {
+    return new InetSocketAddress(hostname, port, false);
   }
 
   /**

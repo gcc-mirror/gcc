@@ -128,8 +128,9 @@ public class RSAKeyPairX509Codec
     DERValue derN = new DERValue(DER.INTEGER, n);
     DERValue derE = new DERValue(DER.INTEGER, e);
 
-    ArrayList algorithmID = new ArrayList(1);
+    ArrayList algorithmID = new ArrayList(2);
     algorithmID.add(derOID);
+    algorithmID.add(new DERValue(DER.NULL, null));
     DERValue derAlgorithmID = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE,
                                            algorithmID);
 

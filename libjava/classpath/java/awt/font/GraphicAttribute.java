@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
@@ -71,6 +73,7 @@ public abstract class GraphicAttribute
   public abstract float getAscent ();
 
   public Rectangle2D getBounds ()
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
@@ -78,6 +81,7 @@ public abstract class GraphicAttribute
   public abstract float getDescent ();
 
   public GlyphJustificationInfo getJustificationInfo ()
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }

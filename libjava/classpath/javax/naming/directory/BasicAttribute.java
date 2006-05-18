@@ -1,5 +1,5 @@
 /* BasicAttribute.java --
-   Copyright (C) 2000, 2001, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package javax.naming.directory;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
@@ -48,6 +51,7 @@ import javax.naming.OperationNotSupportedException;
 /**
  * @author Tom Tromey (tromey@redhat.com)
  * @date June 20, 2001
+ * @since 1.3
  */
 public class BasicAttribute implements Attribute
 {
@@ -297,11 +301,29 @@ public class BasicAttribute implements Attribute
 
     return one.equals (two);
   }
+  
+  private void readObject(ObjectInputStream s)
+    throws IOException, ClassNotFoundException
+  {
+    s.defaultReadObject();
+    int size = s.readInt();
+    values = new Vector(size);
+    for (int i=0; i < size; i++)
+      values.add(s.readObject());
+  }
 
+  private void writeObject(ObjectOutputStream s) throws IOException
+  {
+    s.defaultWriteObject();
+    s.writeInt(values.size());
+    for (int i=0; i < values.size(); i++)
+      s.writeObject(values.get(i));    
+  }
+  
   // Used when enumerating this attribute.
   private class BasicAttributeEnumeration implements NamingEnumeration
   {
-    int where = -1;
+    int where = 0;
 
     public BasicAttributeEnumeration ()
     {
@@ -328,10 +350,9 @@ public class BasicAttribute implements Attribute
 
     public Object nextElement () throws NoSuchElementException
     {
-      if (where + 1 >= values.size ())
+      if (where == values.size ())
 	throw new NoSuchElementException ("no more elements");
-      ++where;
-      return values.get (where);
+      return values.get (where++);
     }
   }
 }

@@ -108,13 +108,13 @@ public class Region
   /**
    * Specifies the region of a file chooser.
    */
-  public static final Region FILECHOOSER =
+  public static final Region FILE_CHOOSER =
     new Region("FileChooser", "FileChooserUI", false);
 
   /**
    * Specifies the region of a formatted text field.
    */
-  public static final Region FormattedTextField =
+  public static final Region FORMATTED_TEXT_FIELD =
     new Region("FormattedTextField", "FormattedTextFieldUI", false);
 
   /**

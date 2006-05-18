@@ -39,6 +39,8 @@ exception statement from your version. */
 package javax.swing.text.html;
 
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -298,6 +300,7 @@ public class HTMLEditorKit
                                       Element insertElement,
                                       String html, HTML.Tag parentTag,
                                       HTML.Tag addTag)
+        throws NotImplementedException
       {
         /*
         As its name implies, this protected method is used when HTML is inserted at a

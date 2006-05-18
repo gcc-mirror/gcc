@@ -1030,7 +1030,7 @@ public class AsyncBoxView
    *
    * @since 1.4
    */
-  public void setEstimatedMajorSpan(boolean estimated)
+  protected void setEstimatedMajorSpan(boolean estimated)
   {
     estimatedMajorSpan = estimated;
   }
@@ -1045,7 +1045,7 @@ public class AsyncBoxView
    *
    * @since 1.4
    */
-  public boolean getEstimatedMajorSpan()
+  protected boolean getEstimatedMajorSpan()
   {
     return estimatedMajorSpan;
   }
@@ -1367,7 +1367,7 @@ public class AsyncBoxView
 
   /**
    * Updates the layout for this view. This is implemented to trigger
-   * {link ChildLocator#childChanged} for the changed view, if there is
+   * {@link ChildLocator#childChanged} for the changed view, if there is
    * any.
    *
    * @param ec the element change, may be <code>null</code> if there were

@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.lang;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Vector;
 
 /**
@@ -53,7 +54,7 @@ import java.util.Vector;
  * @since 1.0
  * @status updated to 1.4
  */
-public class ThreadGroup
+public class ThreadGroup implements UncaughtExceptionHandler
 {
   /** The Initial, top-level ThreadGroup. */
   static ThreadGroup root = new ThreadGroup();
@@ -545,6 +546,8 @@ public class ThreadGroup
   {
     if (parent != null)
       parent.uncaughtException(thread, t);
+    else if (Thread.getDefaultUncaughtExceptionHandler() != null)
+      Thread.getDefaultUncaughtExceptionHandler().uncaughtException(thread, t);
     else if (! (t instanceof ThreadDeath))
       {
         if (t == null)

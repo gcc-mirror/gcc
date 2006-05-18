@@ -87,6 +87,7 @@ public class DomHTMLDocument
     map.put("dir", DomHTMLDirectoryElement.class);
     map.put("div", DomHTMLDivElement.class);
     map.put("dlist", DomHTMLDListElement.class);
+    map.put("embed", DomHTMLEmbedElement.class);
     map.put("fieldset", DomHTMLFieldSetElement.class);
     map.put("font", DomHTMLFontElement.class);
     map.put("form", DomHTMLFormElement.class);
@@ -311,6 +312,7 @@ public class DomHTMLDocument
   public HTMLCollection getApplets()
   {
     DomHTMLCollection ret = new DomHTMLCollection(this, this);
+    ret.addNodeName("embed");
     ret.addNodeName("object");
     ret.addNodeName("applet");
     ret.evaluate();

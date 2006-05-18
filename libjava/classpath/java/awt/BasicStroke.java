@@ -38,6 +38,15 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.java.awt.java2d.CubicSegment;
+import gnu.java.awt.java2d.LineSegment;
+import gnu.java.awt.java2d.QuadSegment;
+import gnu.java.awt.java2d.Segment;
+
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 
 /**
@@ -108,6 +117,8 @@ public class BasicStroke implements Stroke
   
   /** The dash phase. */
   private final float phase;
+
+  private Segment start, end;
 
   /**
    * Creates a new <code>BasicStroke</code> instance with the given attributes.
@@ -249,8 +260,12 @@ public class BasicStroke implements Stroke
    */
   public Shape createStrokedShape(Shape s)
   {
-    // FIXME: Implement this
-    throw new Error("not implemented");
+    PathIterator pi = s.getPathIterator( new AffineTransform() );
+
+    if( dash == null )
+      return solidStroke( pi );
+
+    return dashedStroke( pi );
   }
 
   /**
@@ -365,5 +380,356 @@ public class BasicStroke implements Stroke
     BasicStroke s = (BasicStroke) o;
     return width == s.width && cap == s.cap && join == s.join
       && limit == s.limit && Arrays.equals(dash, s.dash) && phase == s.phase;
+  }
+
+  private Shape solidStroke(PathIterator pi)
+  {
+    double[] coords = new double[6];
+    double x, y, x0, y0;
+    boolean pathOpen = false;
+    GeneralPath output = new GeneralPath( );
+    Segment[] p;
+    x = x0 = y = y0 = 0;
+
+    while( !pi.isDone() )
+      {
+        switch( pi.currentSegment(coords) )
+          {
+          case PathIterator.SEG_MOVETO:
+            x0 = x = coords[0];
+            y0 = y = coords[1];
+            if( pathOpen )
+              {
+                capEnds();              
+                convertPath(output, start);
+                start = end = null;
+                pathOpen = false;
+              }
+            break;
+
+          case PathIterator.SEG_LINETO:
+            p = (new LineSegment(x, y, coords[0], coords[1])).
+              getDisplacedSegments(width/2.0);
+            if( !pathOpen )
+              {
+                start = p[0];
+                end = p[1];
+                pathOpen = true;
+              }
+            else
+              addSegments(p);
+
+            x = coords[0];
+            y = coords[1];
+            break;
+
+          case PathIterator.SEG_QUADTO:
+            p = (new QuadSegment(x, y, coords[0], coords[1], coords[2], 
+                                 coords[3])).getDisplacedSegments(width/2.0);
+            if( !pathOpen )
+              {
+                start = p[0];
+                end = p[1];
+                pathOpen = true;
+              }
+            else
+              addSegments(p);
+
+            x = coords[0];
+            y = coords[1];
+            break;
+
+          case PathIterator.SEG_CUBICTO:
+            p = new CubicSegment(x, y, coords[0], coords[1],
+                                 coords[2], coords[3],
+                                 coords[4], coords[5]).getDisplacedSegments(width/2.0);
+            if( !pathOpen )
+              {
+                start = p[0];
+                end = p[1];
+                pathOpen = true;
+              }
+            else
+              addSegments(p);
+
+            x = coords[0];
+            y = coords[1];
+            break;
+
+          case PathIterator.SEG_CLOSE:
+            p = (new LineSegment(x, y, x0, y0)).getDisplacedSegments(width/2.0);
+            addSegments(p);
+            convertPath(output, start);
+            convertPath(output, end);
+            start = end = null;
+            pathOpen = false;
+            break;
+          }
+        pi.next();
+      }
+
+    if( pathOpen )
+      {
+        capEnds();
+        convertPath(output, start);
+      }
+    return output;
+  }
+
+  private Shape dashedStroke(PathIterator pi)
+  {
+    GeneralPath out = new GeneralPath();
+    return out;
+  }
+
+  /**
+   * Cap the ends of the path (joining the start and end list of segments)
+   */
+  private void capEnds()
+  {
+    Segment returnPath = end.last;
+
+    end.reverseAll(); // reverse the path.
+    end = null;
+    capEnd(start, returnPath);
+    start.last = returnPath.last;
+    end = null;
+
+    capEnd(start, start);
+  }
+
+  /**
+   * Convert and add the linked list of Segments in s to a GeneralPath p.
+   */
+  private void convertPath(GeneralPath p, Segment s)
+  {
+    Segment v = s;
+    p.moveTo((float)s.P1.getX(), (float)s.P1.getY());
+
+    do
+      {
+        if(v instanceof LineSegment)
+          p.lineTo((float)v.P2.getX(), (float)v.P2.getY());
+        else if(v instanceof QuadSegment)
+          p.quadTo((float)((QuadSegment)v).cp.getX(),
+                   (float)((QuadSegment)v).cp.getY(),
+                   (float)v.P2.getX(), 
+                   (float)v.P2.getY());
+        else if(v instanceof CubicSegment)
+          p.curveTo((float)((CubicSegment)v).cp1.getX(),
+                    (float)((CubicSegment)v).cp1.getY(),
+                    (float)((CubicSegment)v).cp2.getX(),
+                    (float)((CubicSegment)v).cp2.getY(),
+                    (float)v.P2.getX(), 
+                    (float)v.P2.getY());
+        v = v.next;
+      } while(v != s && v != null);
+
+    p.closePath();
+  }
+
+  /**
+   * Add to segments to start and end, joining the outer pair and 
+   */
+  private void addSegments(Segment[] segments)
+  {
+    double[] p0 = start.last.last();
+    double[] p1 = new double[]{start.last.P2.getX(), start.last.P2.getY()};
+    double[] p2 = new double[]{segments[0].P1.getX(), segments[0].P1.getY()};
+    double[] p3 = segments[0].first();
+    Point2D p;
+
+    double det = (p1[0] - p0[0])*(p3[1] - p2[1]) - 
+      (p3[0] - p2[0])*(p1[1] - p0[1]);
+
+    if( det > 0 )
+      {
+        // start and segment[0] form the 'inner' part of a join, 
+        // connect the overlapping segments
+        p = lineIntersection(p0[0],p0[1],p1[0],p1[1],p2[0],p2[1],p3[0],p3[1], false);
+        if( p == null ) 
+          {
+            // Dodgy.
+            start.add(new LineSegment(start.last.P2, segments[0].P1));
+            p = new Point2D.Double((segments[0].P1.getX()+ start.last.P2.getX())/2.0,
+                                   (segments[0].P1.getY()+ start.last.P2.getY())/2.0);
+          }
+        else
+          segments[0].P1 = start.last.P2 = p;
+
+        start.add( segments[0] );
+        joinSegments(end, segments[1], p);
+      }
+    else
+      {
+        // end and segment[1] form the 'inner' part 
+        p0 = end.last.last();
+        p1 = new double[]{end.last.P2.getX(), end.last.P2.getY()};
+        p2 = new double[]{segments[1].P1.getX(), segments[1].P1.getY()};
+        p3 = segments[1].first();
+
+        p = lineIntersection(p0[0],p0[1],p1[0],p1[1],
+                             p2[0],p2[1],p3[0],p3[1], false);
+        if( p == null )
+          {
+            // Dodgy.
+            end.add(new LineSegment(end.last.P2, segments[1].P1));
+            p = new Point2D.Double((segments[1].P1.getX()+ end.last.P2.getX())/2.0,
+                                   (segments[1].P1.getY()+ end.last.P2.getY())/2.0);
+          }
+        else
+          segments[1].P1 = end.last.P2 = p;
+
+        end.add( segments[1] );
+        joinSegments(start, segments[0], p);
+      }
+  }
+
+  /**
+   * Make a cap between a and b segments, 
+   * where a-->b is the direction of iteration.
+   */
+  private void capEnd(Segment a, Segment b)
+  {
+    double[] p0, p1;
+    double dx, dy, l;
+    Point2D c1,c2;
+
+    switch( cap )
+      {
+      case CAP_BUTT:
+        a.add(new LineSegment(a.last.P2, b.P1));
+        break;
+
+      case CAP_SQUARE:
+        p0 = a.last.last();
+        p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
+        dx = p1[0] - p0[0];
+        dy = p1[1] - p0[1];
+        l = Math.sqrt(dx * dx + dy * dy);
+        dx = 0.5*width*dx/l;
+        dy = 0.5*width*dy/l;
+        c1 = new Point2D.Double(p1[0] + dx, p1[1] + dy);
+        c2 = new Point2D.Double(b.P1.getX() + dx, b.P1.getY() + dy);
+        a.add(new LineSegment(a.last.P2, c1));
+        a.add(new LineSegment(c1, c2));
+        a.add(new LineSegment(c2, b.P1));
+        break;
+
+      case CAP_ROUND:
+        p0 = a.last.last();
+        p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
+        dx = p1[0] - p0[0];
+        dy = p1[1] - p0[1];
+        l = Math.sqrt(dx * dx + dy * dy);
+        dx = (2.0/3.0)*width*dx/l;
+        dy = (2.0/3.0)*width*dy/l;
+        c1 = new Point2D.Double(p1[0] + dx, p1[1] + dy);
+        c2 = new Point2D.Double(b.P1.getX() + dx, b.P1.getY() + dy);
+        a.add(new CubicSegment(a.last.P2, c1, c2, b.P1));
+        break;
+      }
+    a.add(b);
+  }
+
+  /**
+   * Returns the intersection of two lines, or null if there isn't one.
+   * @param infinite - true if the lines should be regarded as infinite, false
+   * if the intersection must be within the given segments.
+   * @return a Point2D or null.
+   */
+  private Point2D lineIntersection(double X1, double Y1, 
+                                   double X2, double Y2, 
+                                   double X3, double Y3, 
+                                   double X4, double Y4,
+                                   boolean infinite)
+  {
+    double x1 = X1;
+    double y1 = Y1;
+    double rx = X2 - x1;
+    double ry = Y2 - y1;
+
+    double x2 = X3;
+    double y2 = Y3;
+    double sx = X4 - x2;
+    double sy = Y4 - y2;
+
+    double determinant = sx * ry - sy * rx;
+    double nom = (sx * (y2 - y1) + sy * (x1 - x2));
+
+    // lines can be considered parallel.
+    if (Math.abs(determinant) < 1E-6)
+      return null;
+
+    nom = nom / determinant;
+
+    // check if lines are within the bounds
+    if(!infinite && (nom > 1.0 || nom < 0.0))
+      return null;
+
+    return new Point2D.Double(x1 + nom * rx, y1 + nom * ry);
+  }
+
+  /**
+   * Join a and b segments, where a-->b is the direction of iteration.
+   *
+   * insideP is the inside intersection point of the join, needed for
+   * calculating miter lengths.
+   */
+  private void joinSegments(Segment a, Segment b, Point2D insideP)
+  {
+    double[] p0, p1;
+    double dx, dy, l;
+    Point2D c1,c2;
+
+    switch( join )
+      {
+      case JOIN_MITER:
+        p0 = a.last.last();
+        p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
+        double[] p2 = new double[]{b.P1.getX(), b.P1.getY()};
+        double[] p3 = b.first();
+        Point2D p = lineIntersection(p0[0],p0[1],p1[0],p1[1],p2[0],p2[1],p3[0],p3[1], true);
+        if( p == null || insideP == null )
+          a.add(new LineSegment(a.last.P2, b.P1));
+        else if((p.distance(insideP)/width) < limit)
+          {
+            a.add(new LineSegment(a.last.P2, p));
+            a.add(new LineSegment(p, b.P1));
+          } 
+        else
+          {
+            // outside miter limit, do a bevel join.
+            a.add(new LineSegment(a.last.P2, b.P1));
+          }
+        break;
+
+      case JOIN_ROUND:
+        p0 = a.last.last();
+        p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
+        dx = p1[0] - p0[0];
+        dy = p1[1] - p0[1];
+        l = Math.sqrt(dx * dx + dy * dy);
+        dx = 0.5*width*dx/l;
+        dy = 0.5*width*dy/l;
+        c1 = new Point2D.Double(p1[0] + dx, p1[1] + dy);
+
+        p0 = new double[]{b.P1.getX(), b.P1.getY()};
+        p1 = b.first();
+
+        dx = p0[0] - p1[0]; // backwards direction.
+        dy = p0[1] - p1[1];
+        l = Math.sqrt(dx * dx + dy * dy);
+        dx = 0.5*width*dx/l;
+        dy = 0.5*width*dy/l;
+        c2 = new Point2D.Double(p0[0] + dx, p0[1] + dy);
+        a.add(new CubicSegment(a.last.P2, c1, c2, b.P1));
+        break;
+
+      case JOIN_BEVEL:
+        a.add(new LineSegment(a.last.P2, b.P1));
+        break;
+      }
+    a.add(b);
   }
 } 

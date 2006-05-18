@@ -1,5 +1,5 @@
 /* MultiDoc.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,25 @@ import java.io.IOException;
 
 
 /**
+ * <code>MultiDoc</code> defines the interface for objects providing multiple
+ * documents for use in a print job.
+ * <p>
+ * Implementations of this interface are used to pass multiple documents, to be
+ * printed as one print job, to the <code>MultiDocPrintJob</code> instance.  
+ * </p><p>
+ * There exists no implementation of this interface in the Java Print Service 
+ * API. Implementors may assume the following usage in print jobs and the needed
+ * behaviour for implementations: The print job fetches the single documents via 
+ * iteration by consecutive calls of the {@link #getDoc()} method to obtain the 
+ * current document follwing calls of the {@link #next()} method to get the next 
+ * multidoc object for the next <code>getDoc()</code> method call (if returned
+ * multidoc object is not <code>null</code>). The print service will fetch the 
+ * document object and then retrieve the print data from the document before it 
+ * proceeds with the next call for the next MultiDoc object in the sequence.
+ * </p><p>
+ * Implementations of this interface have to be multiple thread-safe.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface MultiDoc
@@ -49,16 +68,18 @@ public interface MultiDoc
   /**
    * Returns the current document.
    * 
-   * @return the current document
+   * @return The current document.
    * 
    * @throws IOException if an error occurs
    */
   Doc getDoc() throws IOException;
 
   /**
-   * Returns the next <code>MultiDoc</code> object.
+   * Returns the next <code>MultiDoc</code> object that contains the
+   * next document for retrieval.
    * 
-   * @return the next <code>MultiDoc</code> object
+   * @return The next <code>MultiDoc</code> object, or <code>null</code>
+   * if no more documents are available.
    * 
    * @throws IOException if an error occurs
    */

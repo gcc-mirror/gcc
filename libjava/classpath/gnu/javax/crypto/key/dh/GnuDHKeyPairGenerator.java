@@ -187,9 +187,19 @@ public class GnuDHKeyPairGenerator implements IKeyPairGenerator
       }
     else if (params instanceof DHParameterSpec)
       {
+        // FIXME: I'm not sure this is correct. It seems to behave the
+        // same way as Sun's RI, but I don't know if this behavior is
+        // documented anywhere.
         DHParameterSpec jceSpec = (DHParameterSpec) params;
-        l = jceSpec.getP().bitLength();
+        p = jceSpec.getP();
+        g = jceSpec.getG();
+        l = p.bitLength();
         m = jceSpec.getL();
+
+        // If no exponent size was given, generate an exponent as
+        // large as the prime.
+        if (m == 0)
+          m = l;
       }
     else
       {
@@ -242,7 +252,12 @@ public class GnuDHKeyPairGenerator implements IKeyPairGenerator
       }
 
     // generate a private number x of length m such as: 1 < x < q - 1
-    BigInteger q_minus_1 = q.subtract(BigInteger.ONE);
+    BigInteger q_minus_1 = null;
+    if (q != null)
+      q_minus_1 = q.subtract(BigInteger.ONE);
+
+    // We already check if m is modulo 8 in `setup.' This could just
+    // be m >>> 3.
     byte[] mag = new byte[(m + 7) / 8];
     BigInteger x;
     while (true)
@@ -250,7 +265,7 @@ public class GnuDHKeyPairGenerator implements IKeyPairGenerator
         nextRandomBytes(mag);
         x = new BigInteger(1, mag);
         if (x.bitLength() == m && x.compareTo(BigInteger.ONE) > 0
-            && x.compareTo(q_minus_1) < 0)
+            && (q_minus_1 == null || x.compareTo(q_minus_1) < 0))
           {
             break;
           }

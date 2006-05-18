@@ -1,5 +1,5 @@
 /* ObjectReferenceFactory.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,20 +38,38 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
+import org.omg.CORBA.Object;
 import org.omg.CORBA.portable.IDLEntity;
+import org.omg.CORBA.portable.ValueBase;
 
 /**
  * Provides the possibility to create the CORBA object reference.
  * The reference is created from repository id (defining the type of the
  * object) and the object id (defining the identity of the object).
- * The operation for creating reference is defined separately in
- * {@link ObjectReferenceFactoryOperations}.
  *
  * @since 1.5
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface ObjectReferenceFactory
-  extends ObjectReferenceFactoryOperations, IDLEntity
+  extends ValueBase, IDLEntity
 {
+  /**
+   * Create an object with the given repository and object ids. This interface
+   * does not specify where and how the returned object must be connected and
+   * activated. The derived {@link ObjectReferenceTemplate} interface assumes
+   * the object must be connected to the POA that is specific to that
+   * template (name can be obtained).
+   * 
+   * If the object with this objectId already exists in the given context, it 
+   * is found and returned; a new object is <i>not</i> created.
+   * 
+   * @param repositoryId the repository id of the object being created, defines
+   * the type of the object.
+   * 
+   * @param objectId the byte array, defining the identity of the object.
+   * 
+   * @return The created corba object.
+   */
+  Object make_object(String repositoryId, byte[] objectId);
 }

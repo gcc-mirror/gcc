@@ -1,5 +1,5 @@
 /* Component.java -- a component log level.
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -74,7 +74,7 @@ public final class Component extends Level
    * Signifies that everything should be logged. This should be used to
    * enable or disable levels only; logging code should not use it.
    */
-  public static final Component EVERYTHING = new Component ("*", 0, 7);
+  public static final Component EVERYTHING = new Component ("*", 0, 11);
 
   /**
    * Signifies that all SSL related messages should be logged. This should
@@ -115,6 +115,11 @@ public final class Component extends Level
    * java.policy files.
    */
   public static final Component POLICY = new Component ("POLICY", 7);
+  
+  /**
+   * Trace ipp implementation.
+   */
+  public static final Component IPP = new Component ("IPP", 10);
 
   private final int startIndex;
   private final int endIndex;

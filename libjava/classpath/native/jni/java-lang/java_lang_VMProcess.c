@@ -38,6 +38,8 @@ exception statement from your version. */
 #include <config.h>
 
 #include "java_lang_VMProcess.h"
+#include "gnu_java_nio_channels_FileChannelImpl.h"
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -48,23 +50,14 @@ exception statement from your version. */
 #include <fcntl.h>
 #include <stdio.h>
 
+#include <jcl.h>
+
 #include "target_native.h"
 #include "target_native_misc.h"
 
 /* Internal functions */
 static char *copy_string (JNIEnv * env, jobject string);
 static char *copy_elem (JNIEnv * env, jobject stringArray, jint i);
-
-/* Some O/S's don't declare 'environ' */
-#if HAVE_CRT_EXTERNS_H
-/* Darwin does not have a variable named environ
-   but has a function which you can get the environ
-   variable with.  */
-#include <crt_externs.h>
-#define environ (*_NSGetEnviron())
-#else
-extern char **environ;
-#endif /* HAVE_CRT_EXTERNS_H */
 
 /*
  * Internal helper function to copy a String in UTF-8 format.
@@ -135,7 +128,8 @@ copy_elem (JNIEnv * env, jobject stringArray, jint i)
 JNIEXPORT void JNICALL
 Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
 				      jobjectArray cmdArray,
-				      jobjectArray envArray, jobject dirFile)
+				      jobjectArray envArray, jobject dirFile,
+				      jboolean redirect)
 {
   int fds[3][2] = { {-1, -1}, {-1, -1}, {-1, -1} };
   jobject streams[3] = { NULL, NULL, NULL };
@@ -151,6 +145,7 @@ Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
   jmethodID method;
   jclass clazz;
   int i;
+  int pipe_count = redirect ? 2 : 3;
 
   /* Check for null */
   if (cmdArray == NULL)
@@ -218,7 +213,7 @@ Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
     }
 
   /* Create inter-process pipes */
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < pipe_count; i++)
     {
       if (pipe (fds[i]) == -1)
 	{
@@ -232,7 +227,8 @@ Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
   /* Set close-on-exec flag for parent's ends of pipes */
   (void) fcntl (fds[0][1], F_SETFD, 1);
   (void) fcntl (fds[1][0], F_SETFD, 1);
-  (void) fcntl (fds[2][0], F_SETFD, 1);
+  if (pipe_count == 3)
+    (void) fcntl (fds[2][0], F_SETFD, 1);
 
   /* Fork into parent and child processes */
   if ((pid = fork ()) == (pid_t) - 1)
@@ -267,7 +263,16 @@ Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
 	    }
 	  close (fds[1][1]);
 	}
-      if (fds[2][1] != 2)
+      if (pipe_count == 2)
+	{
+	  /* Duplicate stdout to stderr.  */
+	  if (dup2 (1, 2) == -1)
+	    {
+	      fprintf (stderr, "dup2: %s", strerror (errno));
+	      exit (127);
+	    }
+	}
+      else if (fds[2][1] != 2)
 	{
 	  if (dup2 (fds[2][1], 2) == -1)
 	    {
@@ -308,11 +313,13 @@ Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
   method = (*env)->GetMethodID (env, clazz, "<init>", "(II)V");
   if ((*env)->ExceptionOccurred (env))
     goto done;
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < pipe_count; i++)
     {
       /* Mode is WRITE (2) for in and READ (1) for out and err. */
       const int fd = fds[i][i == 0];
-      const int mode = (i == 0) ? 2 : 1;
+      const int mode = ((i == 0)
+			? gnu_java_nio_channels_FileChannelImpl_WRITE
+			: gnu_java_nio_channels_FileChannelImpl_READ);
       jclass sclazz;
       jmethodID smethod;
 
@@ -320,7 +327,7 @@ Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
       if ((*env)->ExceptionOccurred (env))
 	goto done;
 
-      if (mode == 2)
+      if (mode == gnu_java_nio_channels_FileChannelImpl_WRITE)
 	sclazz = (*env)->FindClass (env, "java/io/FileOutputStream");
       else
 	sclazz = (*env)->FindClass (env, "java/io/FileInputStream");
@@ -359,7 +366,7 @@ done:
    */
 
   /* Close child's ends of pipes */
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < pipe_count; i++)
     {
       const int fd = fds[i][i != 0];
 
@@ -373,7 +380,7 @@ done:
    * was created for a file descriptor, we don't close it because it
    * will get closed when the Stream object is finalized.
    */
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < pipe_count; i++)
     {
       const int fd = fds[i][i == 0];
 

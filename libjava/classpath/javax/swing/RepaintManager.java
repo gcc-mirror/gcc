@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.applet.Applet;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -161,9 +162,9 @@ public class RepaintManager
       if (o1 instanceof JComponent && o2 instanceof JComponent)
         {
           JComponent c1 = (JComponent) o1;
-          Rectangle d1 = (Rectangle) dirtyComponents.get(c1);
+          Rectangle d1 = (Rectangle) dirtyComponentsWork.get(c1);
           JComponent c2 = (JComponent) o2;
-          Rectangle d2 = (Rectangle) dirtyComponents.get(c2);
+          Rectangle d2 = (Rectangle) dirtyComponentsWork.get(c2);
           return d2.width * d2.height - d1.width * d1.height;
         }
       throw new ClassCastException("This comparator can only be used with "
@@ -187,6 +188,12 @@ public class RepaintManager
    * @see #markCompletelyDirty
    */
   HashMap dirtyComponents;
+
+  /**
+   * The dirtyComponents which is used in paintDiryRegions to avoid unnecessary
+   * locking.
+   */
+  HashMap dirtyComponentsWork;
 
   /**
    * The comparator used for ordered inserting into the repaintOrder list. 
@@ -263,6 +270,7 @@ public class RepaintManager
   public RepaintManager()
   {
     dirtyComponents = new HashMap();
+    dirtyComponentsWork = new HashMap();
     invalidComponents = new ArrayList();
     repaintWorker = new RepaintWorker();
     doubleBufferMaximumSize = new Dimension(2000,2000);
@@ -414,7 +422,6 @@ public class RepaintManager
   {
     if (w <= 0 || h <= 0 || !component.isShowing())
       return;
-
     component.computeVisibleRect(rectCache);
     SwingUtilities.computeIntersection(x, y, w, h, rectCache);
 
@@ -556,31 +563,36 @@ public class RepaintManager
     if (dirtyComponents.size() == 0)
       return;
 
+    // Swap dirtyRegions with dirtyRegionsWork to avoid locking.
     synchronized (dirtyComponents)
       {
-        // We sort the components by their size here. This way we have a good
-        // chance that painting the bigger components also paints the smaller
-        // components and we don't need to paint them twice.
-        ArrayList repaintOrder = new ArrayList(dirtyComponents.size());
-        repaintOrder.addAll(dirtyComponents.keySet());
-        if (comparator == null)
-          comparator = new ComponentComparator();
-        Collections.sort(repaintOrder, comparator);
-        repaintUnderway = true;
-        for (Iterator i = repaintOrder.iterator(); i.hasNext();)
-          {
-            JComponent comp = (JComponent) i.next();
-            // If a component is marked completely clean in the meantime, then skip
-            // it.
-            Rectangle damaged = (Rectangle) dirtyComponents.get(comp);
-            if (damaged == null || damaged.isEmpty())
-              continue;
-            comp.paintImmediately(damaged);
-            dirtyComponents.remove(comp);
-          }
-        repaintUnderway = false;
-        commitRemainingBuffers();
+        HashMap swap = dirtyComponents;
+        dirtyComponents = dirtyComponentsWork;
+        dirtyComponentsWork = swap;
       }
+
+    ArrayList repaintOrder = new ArrayList(dirtyComponentsWork.size());;
+    // We sort the components by their size here. This way we have a good
+    // chance that painting the bigger components also paints the smaller
+    // components and we don't need to paint them twice.
+    repaintOrder.addAll(dirtyComponentsWork.keySet());
+
+    if (comparator == null)
+      comparator = new ComponentComparator();
+    Collections.sort(repaintOrder, comparator);
+    repaintUnderway = true;
+    for (Iterator i = repaintOrder.iterator(); i.hasNext();)
+      {
+        JComponent comp = (JComponent) i.next();
+        // If a component is marked completely clean in the meantime, then skip
+        // it.
+        Rectangle damaged = (Rectangle) dirtyComponentsWork.remove(comp);
+        if (damaged == null || damaged.isEmpty())
+          continue;
+        comp.paintImmediately(damaged);
+      }
+    repaintUnderway = false;
+    commitRemainingBuffers();
   }
 
   /**
@@ -597,7 +609,7 @@ public class RepaintManager
   public Image getOffscreenBuffer(Component component, int proposedWidth,
                                   int proposedHeight)
   {
-    Component root = SwingUtilities.getRoot(component);
+    Component root = getRoot(component);
     Image buffer = (Image) offscreenBuffers.get(root);
     if (buffer == null 
         || buffer.getWidth(null) < proposedWidth 
@@ -612,7 +624,33 @@ public class RepaintManager
       }
     return buffer;
   }
-
+  
+  /**
+   * Gets the root of the component given. If a parent of the 
+   * component is an instance of Applet, then the applet is 
+   * returned. The applet is considered the root for painting.
+   * Otherwise, the root Window is returned if it exists.
+   * 
+   * @param comp - The component to get the root for.
+   * @return the parent root. An applet if it is a parent,
+   * or the root window. If neither exist, null is returned.
+   */
+  private Component getRoot(Component comp)
+  {
+      Applet app = null;
+      
+      while (comp != null)
+        {
+          if (app == null && comp instanceof Window)
+            return comp;
+          else if (comp instanceof Applet)
+            app = (Applet) comp;
+          comp = comp.getParent();
+        }
+      
+      return app;
+  }
+  
   /**
    * Blits the back buffer of the specified root component to the screen. If
    * the RepaintManager is currently working on a paint request, the commit
@@ -663,8 +701,7 @@ public class RepaintManager
             dy1 = Math.min(bufferHeight, dy1);
             dx2 = Math.min(bufferWidth, dx2);
             dy2 = Math.min(bufferHeight, dy2);
-            g.drawImage(buffer, dx1, dy1, dx2, dy2,
-                                dx1, dy1, dx2, dy2, root);
+            g.drawImage(buffer, 0, 0, root);
             g.dispose();
           }
         // Otherwise queue this request up, until all the RepaintManager work

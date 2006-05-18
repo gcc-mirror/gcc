@@ -42,9 +42,31 @@ import java.rmi.MarshalledObject;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+/**
+ * Activates remote object, providing the live reference to the activable remote
+ * object. Usually there is only one activator per host.
+ *
+ * @see ActivationSystem
+ * @see ActivationMonitor
+ */
 public interface Activator
   extends Remote
 {
+  /**
+   * Activate the object, associated with the given activation identifier. The
+   * activator looks for the {@link ActivationDesc}riptor for the passed
+   * identifier, determines the object activation group and initiates object
+   * recreation either via {@link ActivationInstantiator} or via
+   * {@link Class#newInstance()}.
+   * 
+   * @param id the identifier of the object to activate.
+   * @param force if true, the activator always contacts the group to obtain the
+   *          reference. If false, it may return the cached value.
+   * @return the activated remote object (its stub).
+   * @throws UnknownObjectException if the object with this id is unknown
+   * @throws ActivationException if the activation has failed due other reason
+   * @throws RemoteException if the remote call has failed.
+   */
   MarshalledObject activate (ActivationID id, boolean force)
     throws ActivationException, UnknownObjectException, RemoteException;
 }

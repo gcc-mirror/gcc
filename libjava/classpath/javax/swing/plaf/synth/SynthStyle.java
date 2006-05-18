@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.synth;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
@@ -58,87 +60,144 @@ public abstract class SynthStyle
    * Creates a new <code>SynthStyle</code> object.
    */
   public SynthStyle()
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
   }
 
   public SynthGraphicsUtils getGraphicsUtils(SynthContext ctx)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return null;
   }
 
   public Color getColor(SynthContext ctx, ColorType type)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return null;
   }
 
-  public abstract Color getColorForState(SynthContext ctx, ColorType type);
+  protected abstract Color getColorForState(SynthContext ctx, ColorType type);
 
   public Font getFont(SynthContext ctx)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return null;
   }
 
-  public abstract Font getFontForState(SynthContext ctx);
+  protected abstract Font getFontForState(SynthContext ctx);
 
-  public Insets getInsets(SynthContext ctx)
+  public Insets getInsets(SynthContext ctx, Insets result)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return null;
   }
 
-  public SynthPainter getPainted(SynthContext ctx)
+  public SynthPainter getPainter(SynthContext ctx)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return null;
   }
 
   public boolean isOpaque(SynthContext ctx)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return true;
   }
 
   public Object get(SynthContext ctx, Object key)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return null;
   }
 
   public void installDefaults(SynthContext ctx)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
   }
 
   public void uninstallDefaults(SynthContext ctx)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
   }
 
+  /**
+   * A convenience method to fetch an integer property.
+   * If the property's value is a {@link Number}, then the
+   * integer value is returned.  Otherwise, the default value
+   * is returned.
+   * @param ctx the context
+   * @param key the key to fetch
+   * @param defaultValue the default value
+   * @return the integer value of the property, or the default value
+   */
   public int getInt(SynthContext ctx, Object key, int defaultValue)
   {
-    // FIXME: Implement this correctly.
-    return -1;
+    Object obj = get(ctx, key);
+    if (obj instanceof Number)
+      return ((Number) obj).intValue();
+    return defaultValue;
   }
 
-  public boolean getBoolean(SynthContext ctx, Object key, boolean defaultValue)
+  /**
+   * A convenience method to fetch an integer property.
+   * If the property's value is a {@link Boolean}, then the
+   * value is returned.  Otherwise, the default value
+   * is returned.
+   * @param ctx the context
+   * @param key the key to fetch
+   * @param defaultValue the default value
+   * @return the boolean value of the property, or the default value
+   */
+  public boolean getBoolean(SynthContext ctx, Object key,
+                            boolean defaultValue)
   {
-    // FIXME: Implement this correctly.
-    return false;
+    Object obj = get(ctx, key);
+    if (obj instanceof Boolean)
+      return ((Boolean) obj).booleanValue();
+    return defaultValue;
   }
 
+  /**
+   * A convenience method to fetch an Icon-valued property.
+   * If the property's value is an {@link Icon}, then the
+   * value is returned.  Otherwise, null is returned.
+   * @param ctx the context
+   * @param key the key to fetch
+   * @return the icon, or null
+   */
   public Icon getIcon(SynthContext ctx, Object key)
   {
-    // FIXME: Implement this correctly.
+    Object obj = get(ctx, key);
+    if (key instanceof Icon)
+      return (Icon) obj;
     return null;
   }
 
+  /**
+   * A convenience method to fetch a String property.
+   * If the property's value is a {@link String}, then the
+   * value is returned.  Otherwise, the default value
+   * is returned.
+   * @param ctx the context
+   * @param key the key to fetch
+   * @param defaultValue the default value
+   * @return the String value of the property, or the default value
+   */
   public String getString(SynthContext ctx, Object key, String defaultValue)
   {
-    // FIXME: Implement this correctly.
-    return null;
+    Object obj = get(ctx, key);
+    if (obj instanceof String)
+      return (String) obj;
+    return defaultValue;
   }
 }

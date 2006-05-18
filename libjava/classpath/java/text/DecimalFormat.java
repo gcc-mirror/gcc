@@ -542,9 +542,9 @@ public class DecimalFormat extends NumberFormat
 	// Compute exponent.
 	long exponent = 0;
 	double baseNumber;
-	if (useExponentialNotation)
+	if (useExponentialNotation && number > 0)
 	  {
-	    exponent = (long) Math.floor (Math.log(number) / Math.log(10));
+	    exponent = (long) Math.floor (Math.log10(number));
 	    exponent = exponent - (exponent % exponentRound);
 	    if (minimumIntegerDigits > 0)
 	      exponent -= minimumIntegerDigits - 1;
@@ -654,7 +654,7 @@ public class DecimalFormat extends NumberFormat
 	    index = dest.length();
 	    dest.setDefaultAttribute(NumberFormat.Field.EXPONENT);
 	    String exponentString = Long.toString ((long) exponent);
-	    
+
 	    for (count = 0; count < minExponentDigits-exponentString.length();
 		 count++)
 	      dest.append((char) symbols.getZeroDigit());

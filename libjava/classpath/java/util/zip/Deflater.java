@@ -221,7 +221,6 @@ public class Deflater
    * where the compressor allocates native memory.
    * If you call any method (even reset) afterwards the behaviour is
    * <i>undefined</i>.  
-   * @deprecated Just clear all references to deflater instead.
    */
   public void end()
   {

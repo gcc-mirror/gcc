@@ -1,5 +1,5 @@
 /* TreeSelectionListener.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,20 +37,24 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventListener;
 
+import javax.swing.tree.TreeSelectionModel;
+
 /**
- * TreeSelectionListener public interface
+ * A listener that receives {@link TreeSelectionEvent} notifications from a
+ * source (such as a {@link TreeSelectionModel}).
+ * 
  * @author Andrew Selkirk
  */
-public interface TreeSelectionListener extends EventListener {
+public interface TreeSelectionListener extends EventListener 
+{
 
-	/**
-	 * Value changed
-	 * @param event Tree Selection Event
-	 */
-	void valueChanged(TreeSelectionEvent event);
+  /**
+   * Receives notification of a change to a tree selection model.
+   * 
+   * @param event  information about the event.
+   */
+  void valueChanged(TreeSelectionEvent event);
 
-
-} // TreeSelectionListener
+} 

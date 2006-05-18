@@ -137,9 +137,10 @@ public class DomNodeIterator
           {
             ret = current.getNextSibling();
           }
+        current = (ret == null) ? current : ret;
       }
     while (!accept(ret));
-    current = (ret == null) ? current : ret;
+    
     return ret;
   }
 

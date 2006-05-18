@@ -48,11 +48,6 @@ package javax.sound.midi;
 public class ShortMessage extends MidiMessage
 {
   /**
-   * Status byte for System Exclusive message.
-   */
-  public static final int SYSTEM_EXCLUSIVE = 0xF0;
-  
-  /**
    * Status byte for Time Code message.
    */
   public static final int MIDI_TIME_CODE = 0xF1;
@@ -170,7 +165,7 @@ public class ShortMessage extends MidiMessage
    * 
    * @param data the message data
    */
-  public ShortMessage(byte[] data)
+  protected ShortMessage(byte[] data)
   {
     super(data);
   }
@@ -263,9 +258,6 @@ public class ShortMessage extends MidiMessage
     case 0xF5:  // FIXME: unofficial bus select.  Not in spec??
       return 1;
       
-    case SYSTEM_EXCLUSIVE:
-      return 0; // FIXME: is this correct?
-
     case TUNE_REQUEST: 
     case END_OF_EXCLUSIVE:
     case TIMING_CLOCK:

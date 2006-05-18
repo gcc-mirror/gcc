@@ -292,6 +292,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    */
   public void setAmPmStrings (String[] value)
   {
+    if(value==null)
+      throw new NullPointerException();
     ampms = value;
   }
 
@@ -305,6 +307,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    */
   public void setEras (String[] labels)
   {
+    if(labels==null)
+      throw new NullPointerException();
     eras = labels;
   }
 
@@ -343,6 +347,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     */
   public void setLocalPatternChars (String chars)
   {
+    if(chars==null)
+      throw new NullPointerException();
     localPatternChars = chars;
   }
 
@@ -357,6 +363,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     */
   public void setMonths (String[] labels)
   {
+    if(labels==null)
+      throw new NullPointerException();
     months = labels;
   }
 
@@ -372,6 +380,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    */
   public void setShortMonths (String[] labels)
   {
+    if(labels==null)
+      throw new NullPointerException();
     shortMonths = labels;
   }
 
@@ -387,6 +397,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    */
   public void setShortWeekdays (String[] labels)
   {
+    if(labels==null)
+      throw new NullPointerException();
     shortWeekdays = labels;
   }
 
@@ -401,6 +413,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    */
   public void setWeekdays (String[] labels)
   {
+    if(labels==null)
+      throw new NullPointerException();
     weekdays = labels;
   }
 
@@ -421,6 +435,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    */
   public void setZoneStrings (String[][] zones)
   {
+    if(zones==null)
+      throw new NullPointerException();
     zoneStrings = zones;
   }
 

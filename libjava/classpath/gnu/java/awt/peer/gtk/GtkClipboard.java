@@ -1,5 +1,5 @@
 /* GtkClipboard.java
-   Copyright (C) 1999, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,59 +48,85 @@ import java.util.Iterator;
 
 public class GtkClipboard extends Clipboard
 {
+  /**
+   * The one and only gtk+ clipboard instance for the CLIPBOARD selection.
+   */
+  final static GtkClipboard clipboard = new GtkClipboard("System Clipboard");
+
+  /**
+   * The one and only gtk+ clipboard instance for the PRIMARY selection.
+   */
+  final static GtkClipboard selection = new GtkClipboard("System Selection");
 
   // Given to the native side so it can signal special targets that
   // can be converted to one of the special predefined DataFlavors.
-  static final String stringMimeType;
-  static final String imageMimeType;
-  static final String filesMimeType;
+  static final String stringMimeType
+    = DataFlavor.stringFlavor.getMimeType();
+  static final String imageMimeType
+    = DataFlavor.imageFlavor.getMimeType();
+  static final String filesMimeType
+    = DataFlavor.javaFileListFlavor.getMimeType();
 
   // Indicates whether the results of the clipboard selection can be
   // cached by GtkSelection. True if
   // gdk_display_supports_selection_notification.
-  static final boolean canCache;
-
-  static
-  {
-    stringMimeType = DataFlavor.stringFlavor.getMimeType();
-    imageMimeType = DataFlavor.imageFlavor.getMimeType();
-    filesMimeType = DataFlavor.javaFileListFlavor.getMimeType();
-
-    canCache = initNativeState(stringMimeType, imageMimeType, filesMimeType);
-  }
-
-  /**
-   * The one and only gtk+ clipboard instance.
-   */
-  private static GtkClipboard instance = new GtkClipboard();
+  static final boolean canCache = initNativeState(clipboard, selection,
+						  stringMimeType,
+						  imageMimeType,
+						  filesMimeType);
 
   /**
    * Creates the clipboard and sets the initial contents to the
    * current gtk+ selection.
    */
-  private GtkClipboard()
+  private GtkClipboard(String name)
   {
-    super("System Clipboard");
-    setContents(new GtkSelection(), null);
+    super(name);
+    setContents(new GtkSelection(this), null);
   }
 
   /**
-   * Returns the one and only GtkClipboard instance.
+   * Returns the one and only GtkClipboard instance for the CLIPBOARD
+   * selection.
    */
-
-  static GtkClipboard getInstance()
+  static GtkClipboard getClipboardInstance()
   {
-    return instance;
+    return clipboard;
+  }
+
+  /**
+   * Returns the one and only GtkClipboard instance for the PRIMARY
+   * selection.
+   */
+  static GtkClipboard getSelectionInstance()
+  {
+    return selection;
   }
 
   /**
    * Sets the GtkSelection facade as new contents of the clipboard.
    * Called from gtk+ when another application grabs the clipboard and
    * we loose ownership.
+   *
+   * @param cleared If true this is a clear event (someone takes the
+   * clipboard from us) otherwise it is an owner changed event.
    */
-  private static void setSystemContents()
+  private synchronized void setSystemContents(boolean cleared)
   {
-    GtkClipboardNotifier.announce();
+    // We need to notify clipboard owner listeners when we were the
+    // owner (the selection was explictly set) and someone takes the
+    // clipboard away from us and asks us the clear any held storage,
+    // or if we weren't the owner of the clipboard to begin with, but
+    // the clipboard contents changed. We could refine this and check
+    // whether the actual available formats did in fact change, but we
+    // assume listeners will check for that anyway (and if possible we
+    // ask to cache the available formats so even if multiple
+    // listeners check after a notification the overhead should be
+    // minimal).
+    boolean owner = ! (contents instanceof GtkSelection);
+    boolean needNotification = (cleared && owner) || (! cleared && ! owner);
+    if (needNotification)
+      GtkClipboardNotifier.announce(this);
   }
 
   /**
@@ -146,15 +172,12 @@ public class GtkClipboard extends Clipboard
 	      || flavor.isRepresentationClassReader())
 	    text = true;
 
-	// XXX - We only support automatic image conversion for
-	// GtkImages at the moment. So explicitly check that we have
-	// one.
 	if (! images && flavors[i].equals(DataFlavor.imageFlavor))
 	  {
 	    try
 	      {
 		Object o = contents.getTransferData(DataFlavor.imageFlavor);
-		if (o instanceof GtkImage)
+		if (o instanceof Image)
 		  images = true;
 	      }
 	    catch (UnsupportedFlavorException ufe)
@@ -265,7 +288,11 @@ public class GtkClipboard extends Clipboard
 
     try
       {
-	return (GtkImage) contents.getTransferData(DataFlavor.imageFlavor);
+	Object o = contents.getTransferData(DataFlavor.imageFlavor);
+	if( o instanceof GtkImage )
+	  return (GtkImage) o;
+	else
+	  return new GtkImage(((Image)o).getSource());
       }
     catch (UnsupportedFlavorException ufe)
       {
@@ -384,11 +411,13 @@ public class GtkClipboard extends Clipboard
   }
 
   /**
-   * Initializes the gtk+ clipboard and caches any native side
+   * Initializes the gtk+ clipboards and caches any native side
    * structures needed. Returns whether or not the contents of the
    * Clipboard can be cached (gdk_display_supports_selection_notification).
    */
-  private static native boolean initNativeState(String stringTarget,
+  private static native boolean initNativeState(GtkClipboard clipboard,
+						GtkClipboard selection,
+						String stringTarget,
 						String imageTarget,
 						String filesTarget);
 }

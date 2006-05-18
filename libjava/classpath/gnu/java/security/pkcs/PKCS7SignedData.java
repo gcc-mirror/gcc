@@ -1,5 +1,5 @@
-/* PKCS7SignedData.java -- reader for PKCS#7 signedData objects
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+/* PKCS7SignedData.java -- reader/writer for PKCS#7 signedData objects
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,19 +42,26 @@ import gnu.java.security.ber.BER;
 import gnu.java.security.ber.BEREncodingException;
 import gnu.java.security.ber.BERReader;
 import gnu.java.security.ber.BERValue;
+import gnu.java.security.der.DER;
 import gnu.java.security.der.DERValue;
+import gnu.java.security.der.DERWriter;
+import gnu.java.security.util.Util;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import java.math.BigInteger;
 
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509CRL;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +70,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * The SignedData object in PKCS #7. This is a read-only implementation of
@@ -72,8 +80,8 @@ import java.util.Set;
  */
 public class PKCS7SignedData
 {
+  private static final Logger log = Logger.getLogger(PKCS7SignedData.class.getName());
 
-  public static final OID PKCS7_DATA = new OID("1.2.840.113549.1.7.1");
   public static final OID PKCS7_SIGNED_DATA = new OID("1.2.840.113549.1.7.2");
 
   private BigInteger version;
@@ -83,13 +91,6 @@ public class PKCS7SignedData
   private Certificate[] certificates;
   private CRL[] crls;
   private Set signerInfos;
-
-  private static final boolean DEBUG = false;
-  private static void debug(String msg)
-  {
-    System.err.print("PKCS7SignedData >> ");
-    System.err.println(msg);
-  }
 
   public PKCS7SignedData(InputStream in)
     throws CRLException, CertificateException, IOException
@@ -103,14 +104,12 @@ public class PKCS7SignedData
    *
    * <pre>
    * SignedData ::= SEQUENCE {
-   *   version Version,
-   *   digestAlgorithms DigestAlgorithmIdentifiers,
-   *   contentInfo ContentInfo,
-   *   certificates
-   *     [0] IMPLICIT ExtendedCertificatesAndCertificates OPTIONAL,
-   *   crls
-   *     [1] IMPLICIT CertificateRevocationLists OPTIONAL,
-   *   signerInfos SignerInfos }
+   *   version           Version, -- always 1 for PKCS7 v1.5
+   *   digestAlgorithms  DigestAlgorithmIdentifiers,
+   *   contentInfo       ContentInfo,
+   *   certificates  [0] IMPLICIT ExtendedCertificatesAndCertificates OPTIONAL,
+   *   crls          [1] IMPLICIT CertificateRevocationLists OPTIONAL,
+   *   signerInfos       SignerInfos }
    *
    * Version ::= INTEGER
    *
@@ -119,8 +118,8 @@ public class PKCS7SignedData
    * DigestAlgorithmIdentifier ::= AlgorithmIdentifier
    *
    * ContentInfo ::= SEQUENCE {
-   *   contentType ContentType,
-   *   content [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
+   *   contentType   ContentType,
+   *   content   [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
    *
    * ContentType ::= OBJECT IDENTIFIER
    *
@@ -128,7 +127,7 @@ public class PKCS7SignedData
    *   SET OF ExtendedCertificatesAndCertificate
    *
    * ExtendedCertificatesAndCertificate ::= CHOICE {
-   *   certificate Certificate, -- from X.509
+   *   certificate             Certificate, -- from X.509
    *   extendedCertificate [0] IMPLICIT ExtendedCertificate }
    *
    * CertificateRevocationLists ::= SET OF CertificateRevocationList
@@ -137,15 +136,13 @@ public class PKCS7SignedData
    * SignerInfos ::= SET OF SignerInfo
    *
    * SignerInfo ::= SEQUENCE {
-   *   version Version,
-   *   issuerAndSerialNumber IssuerAndSerialNumber,
-   *   digestAlgorithm DigestAlgorithmIdentifier,
-   *   authenticatedAttributes
-   *     [0] IMPLICIT Attributes OPTIONAL,
-   *   digestEncryptionAlgorithm DigestEncryptionAlgorithmIdentifier,
-   *   encryptedDigest EncryptedDigest,
-   *   unauthenticatedAttributes
-   *     [1] IMPLICIT Attributes OPTIONAL }
+   *   version                       Version, -- always 1 for PKCS7 v1.5
+   *   issuerAndSerialNumber         IssuerAndSerialNumber,
+   *   digestAlgorithm               DigestAlgorithmIdentifier,
+   *   authenticatedAttributes   [0] IMPLICIT Attributes OPTIONAL,
+   *   digestEncryptionAlgorithm     DigestEncryptionAlgorithmIdentifier,
+   *   encryptedDigest               EncryptedDigest,
+   *   unauthenticatedAttributes [1] IMPLICIT Attributes OPTIONAL }
    *
    * EncryptedDigest ::= OCTET STRING
    * </pre>
@@ -177,23 +174,21 @@ public class PKCS7SignedData
     if (!val.isConstructed())
       throw new BEREncodingException("malformed SignedData");
 
-    if (DEBUG)
-      debug("SignedData: " + val);
+    log.finest("SignedData: " + val);
 
     val = ber.read();
     if (val.getTag() != BER.INTEGER)
       throw new BEREncodingException("expecting Version");
     version = (BigInteger) val.getValue();
 
-    if (DEBUG)
-      debug("  Version: " + version);
+    log.finest("  Version: " + version);
 
     digestAlgorithms = new HashSet();
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed DigestAlgorithmIdentifiers");
-    if (DEBUG)
-      debug("  DigestAlgorithmIdentifiers: " + val);
+
+    log.finest("  DigestAlgorithmIdentifiers: " + val);
     int count = 0;
     DERValue val2 = ber.read();
     while (val2 != BER.END_OF_SEQUENCE &&
@@ -201,14 +196,14 @@ public class PKCS7SignedData
       {
         if (!val2.isConstructed())
           throw new BEREncodingException("malformed AlgorithmIdentifier");
-        if (DEBUG)
-          debug("    AlgorithmIdentifier: " + val2);
+
+        log.finest("    AlgorithmIdentifier: " + val2);
         count += val2.getEncodedLength();
         val2 = ber.read();
         if (val2.getTag() != BER.OBJECT_IDENTIFIER)
           throw new BEREncodingException("malformed AlgorithmIdentifier");
-        if (DEBUG)
-          debug("      ID: " + val2.getValue());
+
+        log.finest("      digestAlgorithmIdentifiers OID: " + val2.getValue());
         List algId = new ArrayList(2);
         algId.add(val2.getValue());
         val2 = ber.read();
@@ -219,29 +214,33 @@ public class PKCS7SignedData
               algId.add(null);
             else
               algId.add(val2.getEncoded());
-            if (DEBUG)
-              debug("      params: " + new BigInteger(1, val2.getEncoded()).toString(16));
+
             if (val2.isConstructed())
               ber.skip(val2.getLength());
+
             if (BERValue.isIndefinite(val))
               val2 = ber.read();
           }
         else
           algId.add(null);
+
+        log.finest("      digestAlgorithmIdentifiers params: ");
+        log.finest(Util.dumpString((byte[]) algId.get(1),
+                                   "      digestAlgorithmIdentifiers params: "));
         digestAlgorithms.add(algId);
       }
 
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed ContentInfo");
-    if (DEBUG)
-      debug("  ContentInfo: " + val);
+
+    log.finest("  ContentInfo: " + val);
     val2 = ber.read();
     if (val2.getTag() != BER.OBJECT_IDENTIFIER)
       throw new BEREncodingException("malformed ContentType");
+
     contentType = (OID) val2.getValue();
-    if (DEBUG)
-      debug("    ContentType: " + contentType);
+    log.finest("    ContentType OID: " + contentType);
     if (BERValue.isIndefinite(val)
         || (val.getLength() > 0 && val.getLength() > val2.getEncodedLength()))
       {
@@ -251,18 +250,19 @@ public class PKCS7SignedData
             content = val2.getEncoded();
             if (BERValue.isIndefinite(val))
               val2 = ber.read();
-            if (DEBUG)
-              debug("    Content: " + new BigInteger(1, content).toString(16));
           }
       }
+
+    log.finest("    Content: ");
+    log.finest(Util.dumpString(content, "    Content: "));
 
     val = ber.read();
     if (val.getTag() == 0)
       {
         if (!val.isConstructed())
           throw new BEREncodingException("malformed ExtendedCertificatesAndCertificates");
-        if (DEBUG)
-          debug("  ExtendedCertificatesAndCertificates: " + val);
+
+        log.finest("  ExtendedCertificatesAndCertificates: " + val);
         count = 0;
         val2 = ber.read();
         List certs = new LinkedList();
@@ -271,8 +271,7 @@ public class PKCS7SignedData
           {
             Certificate cert =
               x509.generateCertificate(new ByteArrayInputStream(val2.getEncoded()));
-            if (DEBUG)
-              debug("    Certificate: " + cert);
+            log.finest("    Certificate: " + cert);
             certs.add(cert);
             count += val2.getEncodedLength();
             ber.skip(val2.getLength());
@@ -287,8 +286,8 @@ public class PKCS7SignedData
       {
         if (!val.isConstructed())
           throw new BEREncodingException("malformed CertificateRevocationLists");
-        if (DEBUG)
-          debug("  CertificateRevocationLists: " + val);
+
+        log.finest("  CertificateRevocationLists: " + val);
         count = 0;
         val2 = ber.read();
         List crls = new LinkedList();
@@ -296,8 +295,7 @@ public class PKCS7SignedData
                (val.getLength() > 0 && val.getLength() > count))
           {
             CRL crl = x509.generateCRL(new ByteArrayInputStream(val2.getEncoded()));
-            if (DEBUG)
-              debug ("    CRL: " + crl);
+            log.finest("    CRL: " + crl);
             crls.add(crl);
             count += val2.getEncodedLength();
             ber.skip(val2.getLength());
@@ -312,8 +310,7 @@ public class PKCS7SignedData
     if (!val.isConstructed())
       throw new BEREncodingException("malformed SignerInfos");
 
-    if (DEBUG)
-      debug("  SignerInfos: " + val);
+    log.finest("  SignerInfos: " + val);
 
     // FIXME read this more carefully.
     // Since we are just reading a file (probably) we just read until we
@@ -325,6 +322,39 @@ public class PKCS7SignedData
           break;
         signerInfos.add(new SignerInfo(ber));
       }
+  }
+
+  /**
+   * Constructs a new instance of <code>PKCS7SignedData</code> given a
+   * designated set of fields.
+   * 
+   * @param digestAlgorithms the collection of DigestAlgorithm elements. Each
+   *          DigestAlgorithm is a {@link List} of two elements, the first is an
+   *          OID while the second is dependent on the value of the OID element.
+   * @param data an instance of a PKCS#7 (non-signed) data. In its simplest form
+   *          such an ASN.1 structure would consist of just the OID of a
+   *          non-signed PKCS#7 Data.
+   * @param certificates the array of Certificates used to authenticate the
+   *          enclosed (or referenced, in case the content is null) data.
+   * @param crls the array of certificate-revocation lists of the used
+   *          certificates.
+   * @param signerInfos a set of {@link SignerInfo} elements, one per signer of
+   *          the data referenced by this <code>PKCS7SignedData</code>
+   *          instance.
+   */
+  public PKCS7SignedData(Set digestAlgorithms, PKCS7Data data,
+                         Certificate[] certificates, X509CRL[] crls,
+                         Set signerInfos)
+  {
+    super();
+
+    this.version = BigInteger.ONE;
+    this.digestAlgorithms = digestAlgorithms;
+    this.contentType = PKCS7_SIGNED_DATA;
+    this.content = data == null ? null : data.getEncoded();
+    this.certificates = certificates;
+    this.crls = crls;
+    this.signerInfos = signerInfos;
   }
 
   public BigInteger getVersion()
@@ -360,5 +390,90 @@ public class PKCS7SignedData
     for (Iterator it = signerInfos.iterator(); it.hasNext(); )
       copy.add(it.next());
     return Collections.unmodifiableSet(copy);
+  }
+
+  /**
+   * Writes to the designated output stream the DER encoding of the current
+   * contents of this instance.
+   * 
+   * @param out the destination output stream.
+   * @throws IOException if an I/O related exception occurs during the process.
+   * @throws CRLException if an exception occurs while encoding the certificate
+   * revocation lists associated with this instance.
+   * @throws CertificateEncodingException if an exception occurs while encoding
+   * the certificate chains associated with this instance.
+   */
+  public void encode(OutputStream out) throws IOException, CRLException,
+      CertificateEncodingException
+  {
+    DERValue derVersion = new DERValue(DER.INTEGER, version);
+
+    DERValue derDigestAlgorithms = new DERValue(DER.CONSTRUCTED | DER.SET,
+                                                digestAlgorithms);
+
+    DERValue derContentType = new DERValue(DER.OBJECT_IDENTIFIER,
+                                           PKCS7Data.PKCS7_DATA);
+    ArrayList contentInfo = new ArrayList(2);
+    contentInfo.add(derContentType);
+    if (content == null)
+      contentInfo.add(new DERValue(DER.NULL, null));
+    else
+      contentInfo.add(content);
+
+    DERValue derContentInfo = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE,
+                                           contentInfo);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    for (int i = 0; i < certificates.length; i++)
+      baos.write(certificates[i].getEncoded());
+
+    baos.flush();
+    byte[] b = baos.toByteArray();
+    DERValue derExtendedCertificatesAndCertificates =
+        new DERValue(DER.CONSTRUCTED | DER.CONTEXT | 0, b.length, b, null);
+
+    DERValue derCertificateRevocationLists = null;
+    if (crls != null && crls.length > 0)
+      {
+        baos.reset();
+        for (int i = 0; i < crls.length; i++)
+          baos.write(((X509CRL) crls[i]).getEncoded());
+
+        baos.flush();
+        byte[] b2 = baos.toByteArray();
+        derCertificateRevocationLists =
+            new DERValue(DER.CONSTRUCTED | DER.CONTEXT | 1, b2.length, b2, null);
+      }
+
+    baos.reset();
+    for (Iterator it = signerInfos.iterator(); it.hasNext();)
+      {
+        SignerInfo signerInfo = (SignerInfo) it.next();
+        signerInfo.encode(baos);
+      }
+    baos.flush();
+    byte[] b3 = baos.toByteArray();
+    DERValue derSignerInfos = new DERValue(DER.CONSTRUCTED | DER.SET,
+                                           b3.length, b3, null);
+
+    ArrayList signedData = new ArrayList(6);
+    signedData.add(derVersion);
+    signedData.add(derDigestAlgorithms);
+    signedData.add(derContentInfo);
+    signedData.add(derExtendedCertificatesAndCertificates);
+    if (derCertificateRevocationLists != null)
+      signedData.add(derCertificateRevocationLists);
+
+    signedData.add(derSignerInfos);
+    DERValue derSignedData = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE,
+                                          signedData);
+    // now the outer contents
+    ArrayList outer = new ArrayList(3);
+    outer.add(new DERValue(DER.OBJECT_IDENTIFIER, PKCS7_SIGNED_DATA));
+    outer.add(new DERValue(DER.CONTEXT | 0, null));
+    outer.add(derSignedData);
+    DERValue derOuter = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE, outer);
+
+    DERWriter.write(out, derOuter);
   }
 }

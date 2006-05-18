@@ -1,5 +1,5 @@
 /* Thread -- an independent thread of executable code
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -81,6 +81,7 @@ import java.util.Map;
  * @author Tom Tromey
  * @author John Keiser
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see Runnable
  * @see Runtime#exit(int)
  * @see #run()
@@ -130,14 +131,26 @@ public class Thread implements Runnable
 
   /** The context classloader for this Thread. */
   private ClassLoader contextClassLoader;
+  
+  /** This thread's ID.  */
+  private final long threadId;
 
   /** The next thread number to use. */
   private static int numAnonymousThreadsCreated;
+  
+  /** The next thread ID to use.  */
+  private static long nextThreadId;
+
+  /** The default exception handler.  */
+  private static UncaughtExceptionHandler defaultHandler;
 
   /** Thread local storage. Package accessible for use by
     * InheritableThreadLocal.
     */
   WeakIdentityHashMap locals;
+
+  /** The uncaught exception handler.  */
+  UncaughtExceptionHandler exceptionHandler;
 
   /**
    * Allocates a new <code>Thread</code> object. This constructor has
@@ -342,6 +355,11 @@ public class Thread implements Runnable
     this.name = name.toString();
     this.runnable = target;
     this.stacksize = size;
+    
+    synchronized (Thread.class)
+      {
+        this.threadId = nextThreadId++;
+      }
 
     priority = current.priority;
     daemon = current.daemon;
@@ -371,6 +389,11 @@ public class Thread implements Runnable
     this.priority = priority;
     this.daemon = daemon;
     this.contextClassLoader = ClassLoader.getSystemClassLoader();
+    synchronized (Thread.class)
+      {
+	this.threadId = nextThreadId++;
+      }
+
   }
 
   /**
@@ -434,6 +457,19 @@ public class Thread implements Runnable
   /**
    * Originally intended to destroy this thread, this method was never
    * implemented by Sun, and is hence a no-op.
+   *
+   * @deprecated This method was originally intended to simply destroy
+   *             the thread without performing any form of cleanup operation.
+   *             However, it was never implemented.  It is now deprecated
+   *             for the same reason as <code>suspend()</code>,
+   *             <code>stop()</code> and <code>resume()</code>; namely,
+   *             it is prone to deadlocks.  If a thread is destroyed while
+   *             it still maintains a lock on a resource, then this resource
+   *             will remain locked and any attempts by other threads to
+   *             access the resource will result in a deadlock.  Thus, even
+   *             an implemented version of this method would be still be
+   *             deprecated, due to its unsafe nature.
+   * @throws NoSuchMethodError as this method was never implemented.
    */
   public void destroy()
   {
@@ -999,5 +1035,160 @@ public class Thread implements Runnable
         locals = thread.locals = new WeakIdentityHashMap();
       }
     return locals;
+  }
+
+  /** 
+   * Assigns the given <code>UncaughtExceptionHandler</code> to this
+   * thread.  This will then be called if the thread terminates due
+   * to an uncaught exception, pre-empting that of the
+   * <code>ThreadGroup</code>.
+   *
+   * @param h the handler to use for this thread.
+   * @throws SecurityException if the current thread can't modify this thread.
+   * @since 1.5 
+   */
+  public void setUncaughtExceptionHandler(UncaughtExceptionHandler h)
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkAccess(this);    
+    exceptionHandler = h;
+  }
+
+  /** 
+   * <p>
+   * Returns the handler used when this thread terminates due to an
+   * uncaught exception.  The handler used is determined by the following:
+   * </p>
+   * <ul>
+   * <li>If this thread has its own handler, this is returned.</li>
+   * <li>If not, then the handler of the thread's <code>ThreadGroup</code>
+   * object is returned.</li>
+   * <li>If both are unavailable, then <code>null</code> is returned
+   *     (which can only happen when the thread was terminated since
+   *      then it won't have an associated thread group anymore).</li>
+   * </ul>
+   * 
+   * @return the appropriate <code>UncaughtExceptionHandler</code> or
+   *         <code>null</code> if one can't be obtained.
+   * @since 1.5 
+   */
+  public UncaughtExceptionHandler getUncaughtExceptionHandler()
+  {
+    return exceptionHandler != null ? exceptionHandler : group;
+  }
+
+  /** 
+   * <p>
+   * Sets the default uncaught exception handler used when one isn't
+   * provided by the thread or its associated <code>ThreadGroup</code>.
+   * This exception handler is used when the thread itself does not
+   * have an exception handler, and the thread's <code>ThreadGroup</code>
+   * does not override this default mechanism with its own.  As the group
+   * calls this handler by default, this exception handler should not defer
+   * to that of the group, as it may lead to infinite recursion.
+   * </p>
+   * <p>
+   * Uncaught exception handlers are used when a thread terminates due to
+   * an uncaught exception.  Replacing this handler allows default code to
+   * be put in place for all threads in order to handle this eventuality.
+   * </p>
+   *
+   * @param h the new default uncaught exception handler to use.
+   * @throws SecurityException if a security manager is present and
+   *                           disallows the runtime permission
+   *                           "setDefaultUncaughtExceptionHandler".
+   * @since 1.5 
+   */
+  public static void 
+    setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler h)
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkPermission(new RuntimePermission("setDefaultUncaughtExceptionHandler"));    
+    defaultHandler = h;
+  }
+
+  /** 
+   * Returns the handler used by default when a thread terminates
+   * unexpectedly due to an exception, or <code>null</code> if one doesn't
+   * exist.
+   *
+   * @return the default uncaught exception handler.
+   * @since 1.5 
+   */
+  public static UncaughtExceptionHandler getDefaultUncaughtExceptionHandler()
+  {
+    return defaultHandler;
+  }
+  
+  /** 
+   * Returns the unique identifier for this thread.  This ID is generated
+   * on thread creation, and may be re-used on its death.
+   *
+   * @return a positive long number representing the thread's ID.
+   * @since 1.5 
+   */
+  public long getId()
+  {
+    return threadId;
+  }
+
+  /**
+   * <p>
+   * This interface is used to handle uncaught exceptions
+   * which cause a <code>Thread</code> to terminate.  When
+   * a thread, t, is about to terminate due to an uncaught
+   * exception, the virtual machine looks for a class which
+   * implements this interface, in order to supply it with
+   * the dying thread and its uncaught exception.
+   * </p>
+   * <p>
+   * The virtual machine makes two attempts to find an
+   * appropriate handler for the uncaught exception, in
+   * the following order:
+   * </p>
+   * <ol>
+   * <li>
+   * <code>t.getUncaughtExceptionHandler()</code> --
+   * the dying thread is queried first for a handler
+   * specific to that thread.
+   * </li>
+   * <li>
+   * <code>t.getThreadGroup()</code> --
+   * the thread group of the dying thread is used to
+   * handle the exception.  If the thread group has
+   * no special requirements for handling the exception,
+   * it may simply forward it on to
+   * <code>Thread.getDefaultUncaughtExceptionHandler()</code>,
+   * the default handler, which is used as a last resort.
+   * </li>
+   * </ol>
+   * <p>
+   * The first handler found is the one used to handle
+   * the uncaught exception.
+   * </p>
+   *
+   * @author Tom Tromey <tromey@redhat.com>
+   * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
+   * @since 1.5
+   * @see Thread#getUncaughtExceptionHandler()
+   * @see Thread#setUncaughtExceptionHander(java.lang.Thread.UncaughtExceptionHandler)
+   * @see Thread#getDefaultUncaughtExceptionHandler()
+   * @see
+   * Thread#setDefaultUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
+   */
+  public interface UncaughtExceptionHandler
+  {
+    /**
+     * Invoked by the virtual machine with the dying thread
+     * and the uncaught exception.  Any exceptions thrown
+     * by this method are simply ignored by the virtual
+     * machine.
+     *
+     * @param thr the dying thread.
+     * @param exc the uncaught exception.
+     */
+    void uncaughtException(Thread thr, Throwable exc);
   }
 }

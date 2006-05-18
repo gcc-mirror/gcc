@@ -705,12 +705,9 @@ public class IdentityHashMap extends AbstractMap
     /**
      * Returns true if the Iterator has more elements.
      * @return true if there are more elements
-     * @throws ConcurrentModificationException if the Map was modified
      */
     public boolean hasNext()
     {
-      if (knownMod != modCount)
-        throw new ConcurrentModificationException();
       return count > 0;
     }
 

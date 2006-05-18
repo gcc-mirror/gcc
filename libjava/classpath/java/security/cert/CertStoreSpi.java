@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.util.Collection;
 
 /**
@@ -69,7 +70,7 @@ public abstract class CertStoreSpi
    *         parameters are inappropriate for this class.
    */
   public CertStoreSpi(CertStoreParameters params)
-    throws java.security.InvalidAlgorithmParameterException
+    throws InvalidAlgorithmParameterException
   {
     super();
   }

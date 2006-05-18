@@ -42,7 +42,7 @@ package javax.sound.sampled;
  * A compound control provides control over several other controls.
  * @since 1.3
  */
-public class CompoundControl extends Control
+public abstract class CompoundControl extends Control
 {
   /**
    * This describes a single compound control.

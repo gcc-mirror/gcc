@@ -37,49 +37,55 @@ exception statement from your version. */
 
 package gnu.javax.imageio.bmp;
 
+import java.awt.Dimension;
+import java.awt.image.ColorModel;
+import java.awt.image.RenderedImage;
 import java.io.IOException;
-import javax.imageio.stream.ImageInputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.awt.Dimension;
 
-public class BMPInfoHeader {
-    /** Size of the bitmap info header*/
-    private int biSize; 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
-    /** Pixel width of the bitmap */
-    private int biWidth; 
+public class BMPInfoHeader 
+{
+    /** Size of the bitmap info header */
+  protected int biSize;
 
-    /** Pixel height of the bitmap */
-    private int biHeight;
+  /** Pixel width of the bitmap */
+  protected int biWidth;
 
-    /** Number of bitplanes = 1 */
-    private short biPlanes;
+  /** Pixel height of the bitmap */
+  protected int biHeight;
 
-    /** Number of bpp = 1,4,8,24 */
-    private short biBitCount;
+  /** Number of bitplanes = 1 */
+  protected short biPlanes;
 
-    /** Compression type, RGB8, RLE8, RLE4, BITFIELDS */
-    private int biCompression;
+  /** Number of bpp = 1,4,8,24 */
+  protected short biBitCount;
 
-    /** Byte size of the uncompressed bitmap, can be 0. */
-    private int biSizeImage;
+  /** Compression type, RGB8, RLE8, RLE4, BITFIELDS */
+  protected int biCompression;
 
-    /** X resolution, dots per meter */
-    private int biXPelsPerMeter;
+  /** Byte size of the uncompressed bitmap, can be 0. */
+  protected int biSizeImage;
 
-    /** Y resolution, dots per meter */
-    private int biYPelsPerMeter;
+  /** X resolution, dots per meter */
+  protected int biXPelsPerMeter;
 
-    /** Number of colors used (palette only, can be 0 for all) */
-    private int biClrUsed;
+  /** Y resolution, dots per meter */
+  protected int biYPelsPerMeter;
 
-    /** Number of 'important' colors, 0 for all */
-    private int biClrImportant;
+  /** Number of colors used (palette only, can be 0 for all) */
+  protected int biClrUsed;
 
-    /** BITMAPINFOHEADER is 40 bytes */
-    public static final int SIZE = 40;
+  /** Number of 'important' colors, 0 for all */
+  protected int biClrImportant;
+
+  /** BITMAPINFOHEADER is 40 bytes */
+  public static final int SIZE = 40;
 
     /**
      * Compression types
@@ -91,111 +97,221 @@ public class BMPInfoHeader {
 
     /**
      * Creates the header from an input stream, which is not closed.
+     * 
+     * @param in - the image input stream
      * @throws IOException if an I/O error occured.
      * @throws BMPException if the header was invalid
      */
-    public BMPInfoHeader(ImageInputStream in) throws IOException, BMPException {
-        byte[] data = new byte[SIZE];
-	    
-	if (in.read(data) != SIZE)
-	    throw new IOException("Couldn't read header.");
-	ByteBuffer buf = ByteBuffer.wrap(data);
-	buf.order(ByteOrder.LITTLE_ENDIAN);
+  public BMPInfoHeader(ImageInputStream in) throws IOException, BMPException
+  {
+    byte[] data = new byte[SIZE];
 
-	int n;
-	if((n=buf.getInt()) != SIZE)
-	    throw new BMPException("Invalid BITMAPINFOHEADER size: "+n);
+    if (in.read(data) != SIZE)
+      throw new IOException("Couldn't read header.");
+    ByteBuffer buf = ByteBuffer.wrap(data);
+    buf.order(ByteOrder.LITTLE_ENDIAN);
 
-	biWidth = buf.getInt();
-	biHeight = buf.getInt();
-	biPlanes = buf.getShort();
-	setBitCount(buf.getShort());
-	setCompression(buf.getInt());
-	biSizeImage = buf.getInt();
-	biXPelsPerMeter = buf.getInt();
-	biYPelsPerMeter = buf.getInt();
-	biClrUsed = buf.getInt();
-	biClrImportant = buf.getInt();
-    }
+    int n;
+    if ((n = buf.getInt()) != SIZE)
+      throw new BMPException("Invalid BITMAPINFOHEADER size: " + n);
 
-    public void setBitCount(short bitcount) throws BMPException {
-	switch(bitcount){
-	case 1:
-	case 4:
-	case 8:
-	case 16:
-	case 24:
-	case 32:
-	    biBitCount = bitcount;
-	    break;
+    biWidth = buf.getInt();
+    biHeight = buf.getInt();
+    biPlanes = buf.getShort();
+    setBitCount(buf.getShort());
+    setCompression(buf.getInt());
+    biSizeImage = buf.getInt();
+    biXPelsPerMeter = buf.getInt();
+    biYPelsPerMeter = buf.getInt();
+    biClrUsed = buf.getInt();
+    biClrImportant = buf.getInt();
+  }
+    
+  /**
+   * Creates the info header from an output stream, which is not closed.
+   * 
+   * @param out - the image output stream
+   * @param im - the image
+   * @param param - the image write param.
+   * @throws IOException if an I/O error occured.
+   */
+  public BMPInfoHeader(ImageOutputStream out, IIOImage im, ImageWriteParam param) throws IOException
+  {
+    RenderedImage img = im.getRenderedImage();
+    ColorModel cMod = img.getColorModel();
+    
+    biSize = SIZE;
+    biWidth = img.getWidth();
+    biHeight = img.getHeight();
+    biPlanes = 1;
+    
+    if (param != null && param.canWriteCompressed())
+      {
+        String compType = param.getCompressionType();
+        if (compType.equals("BI_RLE8"))
+          {
+            biCompression = BI_RLE8;
+            biBitCount = 8;
+          }
+        else if (compType.equals("BI_RLE4"))
+          {
+            biCompression = BI_RLE4;
+            biBitCount = 4;
+          }
+        else
+          {
+            biCompression = BI_RGB;
+            biBitCount = (short) cMod.getPixelSize();
+          }
+      }
+    else
+      {
+        biBitCount = (short) cMod.getPixelSize();
+        biCompression = BI_RGB;        
+      }
+    
+    biXPelsPerMeter = 0x0;
+    biYPelsPerMeter = 0x0;
+    biClrUsed = 0;
+    biClrImportant = 0;
+    biSizeImage = ((biWidth * biHeight) * 3)
+                  + ((4 - ((biWidth * 3) % 4)) * biHeight);
+    out.write(intToDWord(biSize));
+    out.write(intToDWord(biWidth));
+    out.write(intToDWord(biHeight));
+    out.write(intToWord(biPlanes));
+    out.write(intToWord(biBitCount));
+    out.write(intToDWord(biCompression));
+    out.write(intToDWord(biSizeImage));
+    out.write(intToDWord(biXPelsPerMeter));
+    out.write(intToDWord(biYPelsPerMeter));
+    out.write(intToDWord(biClrUsed));
+    out.write(intToDWord(biClrImportant));
+  }
+  
+  /**
+   * Converts an int to a word, where the return value is stored in a
+   * 2-byte array.
+   * 
+   * @param val - the value to convert
+   * @return the array 
+   */
+  private byte[] intToWord(int val)
+  {
+    byte b[] = new byte[2];
+    b[0] = (byte) (val & 0x00FF);
+    b[1] = (byte) ((val >> 8) & 0x00FF);
+    return b;
+  }
 
-	default:
-	    throw new BMPException("Invalid number of bits per pixel: "+
-				   bitcount);
-	}
-    }
+  /**
+   * Converts an int to a double word, where the return value is
+   * stored in a 4-byte array.
+   * 
+   * @param val - the value to convert
+   * @return the array  
+   */
+  private byte[] intToDWord(int val)
+  {
+    byte b[] = new byte[4];
+    b[0] = (byte) (val & 0x00FF);
+    b[1] = (byte) ((val >> 8) & 0x000000FF);
+    b[2] = (byte) ((val >> 16) & 0x000000FF);
+    b[3] = (byte) ((val >> 24) & 0x000000FF);
+    return b;
+  }
 
-    public short getBitCount() { return biBitCount; }
+  
+  public void setBitCount(short bitcount) throws BMPException
+  {
+    switch (bitcount)
+      {
+      case 1:
+      case 4:
+      case 8:
+      case 16:
+      case 24:
+      case 32:
+        biBitCount = bitcount;
+        break;
 
-    public void setCompression(int compression) throws BMPException {
-	switch(compression){
-	case BI_RLE8:
-	    if(getBitCount() != 8)
-		throw new BMPException("Invalid number of bits per pixel.");
-	    biCompression = compression;
-	    break;
-	case BI_RLE4:
-	    if(getBitCount() != 4)
-		throw new BMPException("Invalid number of bits per pixel.");
-	    biCompression = compression;
-	    break;
+      default:
+        throw new BMPException("Invalid number of bits per pixel: " + bitcount);
+      }
+  }
 
-	case BI_RGB:
-	case BI_BITFIELDS:
-	    biCompression = compression;
-	    break;
+  public short getBitCount()
+  {
+    return biBitCount;
+  }
 
-	default:
-	    throw new BMPException("Unknown bitmap compression type.");
-	}
-    }
+  public void setCompression(int compression) throws BMPException
+  {
+    switch (compression)
+      {
+      case BI_RLE8:
+        if (getBitCount() != 8)
+          throw new BMPException("Invalid number of bits per pixel.");
+        biCompression = compression;
+        break;
+      case BI_RLE4:
+        if (getBitCount() != 4)
+          throw new BMPException("Invalid number of bits per pixel.");
+        biCompression = compression;
+        break;
 
-    public int getNumberOfPaletteEntries(){
-	if(biClrUsed == 0)
-	    switch(biBitCount){
-	    case 1:
-		return 2;
-	    case 4:
-		return 16;
-	    case 8:
-		return 256;
+      case BI_RGB:
+      case BI_BITFIELDS:
+        biCompression = compression;
+        break;
 
-	    default: // should not happen
-		return 0;
-	    }
+      default:
+        throw new BMPException("Unknown bitmap compression type.");
+      }
+  }
 
-	return biClrUsed;
-    }
+  public int getNumberOfPaletteEntries()
+  {
+    if (biClrUsed == 0)
+      switch (biBitCount)
+        {
+        case 1:
+          return 2;
+        case 4:
+          return 16;
+        case 8:
+          return 256;
 
-    public int getCompression(){
-	return biCompression;
-    }
+        default: // should not happen
+          return 0;
+        }
 
-    public Dimension getSize(){
-	return new Dimension(biWidth, biHeight);
-    }
+    return biClrUsed;
+  }
 
-    public int getWidth(){
-	return biWidth;
-    }
+  public int getCompression()
+  {
+    return biCompression;
+  }
 
-    public int getHeight(){
-	return biHeight;
-    }
+  public Dimension getSize()
+  {
+    return new Dimension(biWidth, biHeight);
+  }
 
-    public void setSize(Dimension d){
-	biWidth = (int)d.getWidth();
-	biHeight = (int)d.getHeight();
-    }
+  public int getWidth()
+  {
+    return biWidth;
+  }
 
+  public int getHeight()
+  {
+    return biHeight;
+  }
+
+  public void setSize(Dimension d)
+  {
+    biWidth = (int) d.getWidth();
+    biHeight = (int) d.getHeight();
+  }
 }

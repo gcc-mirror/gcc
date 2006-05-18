@@ -57,8 +57,6 @@ import javax.crypto.MacSpi;
  * the {@link javax.crypto.Mac} class, which provides the functionality of a
  * message authentication code algorithm, such as the <i>Hashed Message
  * Authentication Code</i> (<b>HMAC</b>) algorithms.</p>
- *
- * @version $Revision: 1.2 $
  */
 class MacAdapter extends MacSpi implements Cloneable
 {

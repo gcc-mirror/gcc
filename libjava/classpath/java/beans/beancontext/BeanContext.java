@@ -198,7 +198,7 @@ public interface BeanContext
 	 * @return the created Bean
 	 *
 	 * @see java.beans.Beans#instantiate(java.lang.ClassLoader,java.lang.String)
-	 * @see java.beans.Beans#instantiate(java.lang.ClassLoader,java.lang.String,java.lang.BeanContext)
+	 * @see java.beans.Beans#instantiate(java.lang.ClassLoader,java.lang.String,java.beans.beancontext.BeanContext)
 	 * @exception IOException if there is an I/O problem during
 	 *            instantiation.
 	 * @exception ClassNotFoundException if a serialized Bean's class

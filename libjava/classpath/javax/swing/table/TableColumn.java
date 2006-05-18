@@ -1,5 +1,5 @@
 /* TableColumn.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.table;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
@@ -49,7 +51,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
  * width, minimum width, preferred width and maximum width.
  * 
  * @author	Andrew Selkirk
- * @version	1.0
  */
 public class TableColumn
   implements Serializable
@@ -57,8 +58,9 @@ public class TableColumn
   static final long serialVersionUID = -6113660025878112608L;
 
   /**
-   * The name for the <code>columnWidth</code> property.  Note that the typo
-   * in the name value is deliberate, to match the specification.
+   * The name for the <code>columnWidth</code> property (this field is
+   * obsolete and no longer used).  Note also that the typo in the value 
+   * string is deliberate, to match the specification.
    */
   public static final String COLUMN_WIDTH_PROPERTY = "columWidth";
 
@@ -88,47 +90,48 @@ public class TableColumn
   protected Object identifier;
 
   /**
-   * The width.
+   * The current width for the column.
    */
   protected int width;
 
   /**
-   * The minimum width.
+   * The minimum width for the column.
    */
   protected int minWidth = 15;
 
   /**
-   * The preferred width.
+   * The preferred width for the column.
    */
   private int preferredWidth;
 
   /**
-   * The maximum width.
+   * The maximum width for the column.
    */
   protected int maxWidth = Integer.MAX_VALUE;
 
   /**
-   * headerRenderer
+   * The renderer for the column header.
    */
   protected TableCellRenderer headerRenderer;
 
   /**
-   * The header value.
+   * The value for the column header.
    */
   protected Object headerValue;
 
   /**
-   * cellRenderer
+   * The renderer for the regular cells in this column.
    */
   protected TableCellRenderer cellRenderer;
 
   /**
-   * cellEditor
+   * An editor for the regular cells in this column.
    */
   protected TableCellEditor cellEditor;
 
   /**
-   * isResizable
+   * A flag that determines whether or not the column is resizable (the default
+   * is <code>true</code>).
    */
   protected boolean isResizable = true;
 
@@ -140,7 +143,7 @@ public class TableColumn
   protected transient int resizedPostingDisableCount;
 
   /**
-   * changeSupport
+   * A storage and notification mechanism for property change listeners.
    */
   private SwingPropertyChangeSupport changeSupport =
     new SwingPropertyChangeSupport(this);
@@ -200,60 +203,31 @@ public class TableColumn
   }
 
   /**
-   * firePropertyChange
-   * 
-   * @param property the name of the property
-   * @param oldValue the old value
-   * @param newValue the new value
-   */
-  private void firePropertyChange(String property, Object oldValue,
-                                  Object newValue)
-  {
-    changeSupport.firePropertyChange(property, oldValue, newValue);
-  }
-
-  /**
-   * firePropertyChange
-   * 
-   * @param property the name of the property
-   * @param oldValue the old value
-   * @param newValue the new value
-   */
-  private void firePropertyChange(String property, int oldValue, int newValue)
-  {
-    firePropertyChange(property, new Integer(oldValue), new Integer(newValue));
-  }
-
-  /**
-   * firePropertyChange
-   * 
-   * @param property the name of the property 
-   * @param oldValue the old value
-   * @param newValue the new value
-   */
-  private void firePropertyChange(String property, boolean oldValue,
-                                  boolean newValue)
-  {
-    firePropertyChange(property, Boolean.valueOf(oldValue),
-		       Boolean.valueOf(newValue));
-  }
-
-  /**
    * Sets the index of the column in the related {@link TableModel} that this
-   * <code>TableColumn</code> maps to.
+   * <code>TableColumn</code> maps to, and sends a {@link PropertyChangeEvent}
+   * (with the property name 'modelIndex') to all registered listeners.
    * 
    * @param modelIndex the column index in the model.
+   * 
+   * @see #getModelIndex()
    */
   public void setModelIndex(int modelIndex)
   {
-    this.modelIndex = modelIndex;
+    if (this.modelIndex != modelIndex)
+      {
+        int oldValue = this.modelIndex;
+        this.modelIndex = modelIndex;
+        changeSupport.firePropertyChange("modelIndex", oldValue, modelIndex);
+      }
   }
 
   /**
    * Returns the index of the column in the related {@link TableModel} that
    * this <code>TableColumn</code> maps to.
    * 
-   * @return the model index
+   * @return the model index.
+   * 
+   * @see #setModelIndex(int)
    */
   public int getModelIndex()
   {
@@ -261,13 +235,21 @@ public class TableColumn
   }
 
   /**
-   * Sets the identifier for the column.
+   * Sets the identifier for the column and sends a {@link PropertyChangeEvent}
+   * (with the property name 'identifier') to all registered listeners.
    * 
-   * @param identifier the identifier
+   * @param identifier the identifier (<code>null</code> permitted).
+   * 
+   * @see #getIdentifier()
    */
   public void setIdentifier(Object identifier)
   {
-    this.identifier = identifier;
+    if (this.identifier != identifier)
+      {       
+        Object oldValue = this.identifier;
+        this.identifier = identifier;
+        changeSupport.firePropertyChange("identifier", oldValue, identifier);
+      }
   }
 
   /**
@@ -285,11 +267,12 @@ public class TableColumn
   }
 
   /**
-   * Sets the header value and sends a {@link PropertyChangeEvent} to all
-   * registered listeners.  The header value property uses the name
-   * {@link #HEADER_VALUE_PROPERTY}.
+   * Sets the header value and sends a {@link PropertyChangeEvent} (with the 
+   * property name {@link #HEADER_VALUE_PROPERTY}) to all registered listeners.
    * 
-   * @param headerValue the value of the header
+   * @param headerValue the value of the header (<code>null</code> permitted).
+   * 
+   * @see #getHeaderValue()
    */
   public void setHeaderValue(Object headerValue)
   {
@@ -298,13 +281,16 @@ public class TableColumn
     
     Object oldValue = this.headerValue;
     this.headerValue = headerValue;
-    firePropertyChange(HEADER_VALUE_PROPERTY, oldValue, headerValue);
+    changeSupport.firePropertyChange(HEADER_VALUE_PROPERTY, oldValue, 
+                                     headerValue);
   }
 
   /**
    * Returns the header value.
    * 
-   * @return the value of the header
+   * @return the value of the header.
+   * 
+   * @see #getHeaderValue()
    */
   public Object getHeaderValue()
   {
@@ -312,9 +298,13 @@ public class TableColumn
   }
 
   /**
-   * setHeaderRenderer
+   * Sets the renderer for the column header and sends a 
+   * {@link PropertyChangeEvent} (with the property name 
+   * {@link #HEADER_RENDERER_PROPERTY}) to all registered listeners.
    * 
-   * @param renderer the renderer to use
+   * @param renderer the header renderer (<code>null</code> permitted).
+   * 
+   * @see #getHeaderRenderer()
    */
   public void setHeaderRenderer(TableCellRenderer renderer)
   {
@@ -323,13 +313,16 @@ public class TableColumn
     
     TableCellRenderer oldRenderer = headerRenderer;
     headerRenderer = renderer;
-    firePropertyChange(HEADER_RENDERER_PROPERTY, 
-		       oldRenderer, headerRenderer);
+    changeSupport.firePropertyChange(HEADER_RENDERER_PROPERTY, oldRenderer, 
+                                     headerRenderer);
   }
 
   /**
-   * getHeaderRenderer
-   * @return TableCellRenderer
+   * Returns the renderer for the column header.
+   * 
+   * @return The renderer for the column header (possibly <code>null</code>).
+   * 
+   * @see #setHeaderRenderer(TableCellRenderer)
    */
   public TableCellRenderer getHeaderRenderer()
   {
@@ -338,9 +331,12 @@ public class TableColumn
 
   /**
    * Sets the renderer for cells in this column and sends a 
-   * {@link PropertyChangeEvent} to all registered listeners.
+   * {@link PropertyChangeEvent} (with the property name 
+   * {@link #CELL_RENDERER_PROPERTY}) to all registered listeners.
    * 
    * @param renderer the cell renderer (<code>null</code> permitted).
+   * 
+   * @see #getCellRenderer()
    */
   public void setCellRenderer(TableCellRenderer renderer)
   {
@@ -349,14 +345,16 @@ public class TableColumn
     
     TableCellRenderer oldRenderer = cellRenderer;
     cellRenderer = renderer;
-    firePropertyChange(CELL_RENDERER_PROPERTY, 
-		       oldRenderer, cellRenderer);
+    changeSupport.firePropertyChange(CELL_RENDERER_PROPERTY, oldRenderer, 
+                                     cellRenderer);
   }
 
   /**
    * Returns the renderer for the table cells in this column.
    * 
-   * @return The cell renderer.
+   * @return The cell renderer (possibly <code>null</code>).
+   * 
+   * @see #setCellRenderer(TableCellRenderer)
    */
   public TableCellRenderer getCellRenderer()
   {
@@ -364,19 +362,30 @@ public class TableColumn
   }
 
   /**
-   * setCellEditor
+   * Sets the cell editor for the column and sends a {@link PropertyChangeEvent}
+   * (with the property name 'cellEditor') to all registered listeners.
    * 
-   * @param cellEditor the cell editor
+   * @param cellEditor the cell editor (<code>null</code> permitted).
+   * 
+   * @see #getCellEditor()
    */
   public void setCellEditor(TableCellEditor cellEditor)
   {
-    this.cellEditor = cellEditor;
+    if (this.cellEditor != cellEditor)
+      {
+        TableCellEditor oldValue = this.cellEditor;
+        this.cellEditor = cellEditor;
+        changeSupport.firePropertyChange("cellEditor", oldValue, cellEditor);
+      }
   }
 
   /**
-   * getCellEditor
+   * Returns the cell editor for the column (the default value is 
+   * <code>null</code>).
    * 
-   * @return the cell editor
+   * @return The cell editor (possibly <code>null</code>).
+   * 
+   * @see #setCellEditor(TableCellEditor)
    */
   public TableCellEditor getCellEditor()
   {
@@ -384,9 +393,14 @@ public class TableColumn
   }
 
   /**
-   * setWidth
+   * Sets the width for the column and sends a {@link PropertyChangeEvent} 
+   * (with the property name 'width') to all registered listeners.  If the new
+   * width falls outside the range getMinWidth() to getMaxWidth() it is 
+   * adjusted to the appropriate boundary value.
    * 
-   * @param newWidth the width
+   * @param newWidth the width.
+   * 
+   * @see #getWidth()
    */
   public void setWidth(int newWidth)
   {
@@ -406,13 +420,15 @@ public class TableColumn
     // however, tests show that the actual fired property name is 'width'
     // and even Sun's API docs say that this constant field is obsolete and
     // not used.
-    firePropertyChange("width", oldWidth, width);
+    changeSupport.firePropertyChange("width", oldWidth, width);
   }
 
   /**
-   * getWidth
+   * Returns the width for the column (the default value is <code>75</code>).
    * 
-   * @return int
+   * @return The width.
+   *
+   * @see #setWidth(int)
    */
   public int getWidth()
   {
@@ -420,9 +436,15 @@ public class TableColumn
   }
 
   /**
-   * setPreferredWidth
+   * Sets the preferred width for the column and sends a 
+   * {@link PropertyChangeEvent} (with the property name 'preferredWidth') to 
+   * all registered listeners.  If necessary, the supplied value will be 
+   * adjusted to fit in the range {@link #getMinWidth()} to 
+   * {@link #getMaxWidth()}.
    * 
-   * @param preferredWidth the preferred width
+   * @param preferredWidth  the preferred width.
+   * 
+   * @see #getPreferredWidth()
    */
   public void setPreferredWidth(int preferredWidth)
   {
@@ -435,13 +457,17 @@ public class TableColumn
     else
       this.preferredWidth = preferredWidth;
 
-    firePropertyChange("preferredWidth", oldPrefWidth, this.preferredWidth);
+    changeSupport.firePropertyChange("preferredWidth", oldPrefWidth, 
+                                     this.preferredWidth);
   }
 
   /**
-   * getPreferredWidth
+   * Returns the preferred width for the column (the default value is 
+   * <code>75</code>).
    * 
-   * @return the preferred width
+   * @return The preferred width.
+   * 
+   * @see #setPreferredWidth(int)
    */
   public int getPreferredWidth()
   {
@@ -449,22 +475,39 @@ public class TableColumn
   }
 
   /**
-   * Sets the minimum width for the column and, if necessary, updates the
-   * <code>width</code> and <code>preferredWidth</code>.
+   * Sets the minimum width for the column and sends a 
+   * {@link PropertyChangeEvent} (with the property name 'minWidth') to all
+   * registered listeners.  If the current <code>width</code> and/or 
+   * <code>preferredWidth</code> are less than the new minimum width, they are
+   * adjusted accordingly.
    * 
-   * @param minWidth the minimum width
+   * @param minWidth  the minimum width (negative values are treated as 0).
+   * 
+   * @see #getMinWidth()
    */
   public void setMinWidth(int minWidth)
   {
-    this.minWidth = minWidth;
-    setWidth(getWidth());
-    setPreferredWidth(getPreferredWidth());
+    if (minWidth < 0)
+      minWidth = 0;
+    if (this.minWidth != minWidth)
+      {
+        if (width < minWidth)
+          setWidth(minWidth);
+        if (preferredWidth < minWidth)
+          setPreferredWidth(minWidth);
+        int oldValue = this.minWidth;
+        this.minWidth = minWidth;
+        changeSupport.firePropertyChange("minWidth", oldValue, minWidth);
+      }
   }
 
   /**
-   * Returns the <code>TableColumn</code>'s minimum width.
+   * Returns the <code>TableColumn</code>'s minimum width (the default value
+   * is <code>15</code>).
    * 
    * @return The minimum width.
+   * 
+   * @see #setMinWidth(int)
    */
   public int getMinWidth()
   {
@@ -472,22 +515,37 @@ public class TableColumn
   }
 
   /**
-   * Sets the maximum width and, if necessary, updates the <code>width</code>
-   * and <code>preferredWidth</code>.
+   * Sets the maximum width for the column and sends a 
+   * {@link PropertyChangeEvent} (with the property name 'maxWidth') to all
+   * registered listeners.  If the current <code>width</code> and/or 
+   * <code>preferredWidth</code> are greater than the new maximum width, they 
+   * are adjusted accordingly.
    * 
-   * @param maxWidth the maximum width
+   * @param maxWidth the maximum width.
+   * 
+   * @see #getMaxWidth()
    */
   public void setMaxWidth(int maxWidth)
   {
-    this.maxWidth = maxWidth;
-    setWidth(getWidth());
-    setPreferredWidth(getPreferredWidth());
+    if (this.maxWidth != maxWidth)
+      {
+        if (width > maxWidth)
+          setWidth(maxWidth);
+        if (preferredWidth > maxWidth)
+          setPreferredWidth(maxWidth);
+        int oldValue = this.maxWidth;
+        this.maxWidth = maxWidth;
+        changeSupport.firePropertyChange("maxWidth", oldValue, maxWidth);
+       }
   }
 
   /**
-   * Returns the maximum width.
+   * Returns the maximum width for the column (the default value is
+   * {@link Integer#MAX_VALUE}).
    * 
-   * @return The maximum width.
+   * @return The maximum width for the column.
+   * 
+   * @see #setMaxWidth(int)
    */
   public int getMaxWidth()
   {
@@ -495,21 +553,32 @@ public class TableColumn
   }
 
   /**
-   * setResizable
+   * Sets the flag that controls whether or not the column is resizable, and
+   * sends a {@link PropertyChangeEvent} (with the property name 'isResizable')
+   * to all registered listeners.
    * 
    * @param isResizable <code>true</code> if this column is resizable,
-   * <code>false</code> otherwise
+   * <code>false</code> otherwise.
+   * 
+   * @see #getResizable()
    */
   public void setResizable(boolean isResizable)
   {
-    this.isResizable = isResizable;
+    if (this.isResizable != isResizable)
+      {
+        this.isResizable = isResizable;
+        changeSupport.firePropertyChange("isResizable", !this.isResizable, 
+            isResizable);
+      }
   }
 
   /**
-   * getResizable
+   * Returns the flag that controls whether or not the column is resizable.
    * 
    * @return <code>true</code> if this column is resizable,
-   * <code>false</code> otherwise
+   * <code>false</code> otherwise.
+   * 
+   * @see #setResizable(boolean)
    */
   public boolean getResizable()
   {
@@ -517,11 +586,23 @@ public class TableColumn
   }
 
   /**
-   * sizeWidthToFit
+   * Sets the minimum, maximum, preferred and current width to match the
+   * minimum, maximum and preferred width of the header renderer component.
+   * If there is no header renderer component, this method does nothing.
    */
   public void sizeWidthToFit()
   {
-    // TODO
+    if (headerRenderer == null)
+      return;
+    Component c = headerRenderer.getTableCellRendererComponent(null, 
+        getHeaderValue(), false, false, 0, 0);
+    Dimension min = c.getMinimumSize();
+    Dimension max = c.getMaximumSize();
+    Dimension pref = c.getPreferredSize();
+    setMinWidth(min.width);
+    setMaxWidth(max.width);
+    setPreferredWidth(pref.width);
+    setWidth(pref.width);
   }
 
   /**
@@ -543,26 +624,55 @@ public class TableColumn
   }
 
   /**
-   * Adds a property change listener.
+   * Adds a listener so that it receives {@link PropertyChangeEvent} 
+   * notifications from this column.  The properties defined by the column are:
+   * <ul>
+   * <li><code>width</code> - see {@link #setWidth(int)};</li>
+   * <li><code>preferredWidth</code> - see {@link #setPreferredWidth(int)};</li>
+   * <li><code>minWidth</code> - see {@link #setMinWidth(int)};</li> 
+   * <li><code>maxWidth</code> - see {@link #setMaxWidth(int)};</li>
+   * <li><code>modelIndex</code> - see {@link #setModelIndex(int)};</li>
+   * <li><code>isResizable</code> - see {@link #setResizable(boolean)};</li>
+   * <li><code>cellRenderer</code> - see 
+   *   {@link #setCellRenderer(TableCellRenderer)};</li>
+   * <li><code>cellEditor</code> - see 
+   *   {@link #setCellEditor(TableCellEditor)};</li>
+   * <li><code>headerRenderer</code> - see 
+   *   {@link #setHeaderRenderer(TableCellRenderer)};</li>
+   * <li><code>headerValue</code> - see {@link #setHeaderValue(Object)};</li>
+   * <li><code>identifier</code> - see {@link #setIdentifier(Object)}.</li>
+   * </ul>
    * 
-   * @param listener the listener to add
+   * @param listener the listener to add (<code>null</code> is ignored).
+   * 
+   * @see #removePropertyChangeListener(PropertyChangeListener)
    */
-  public synchronized void addPropertyChangeListener(PropertyChangeListener listener)
+  public synchronized void addPropertyChangeListener(
+      PropertyChangeListener listener)
   {
     changeSupport.addPropertyChangeListener(listener);
   }
 
   /**
-   * removePropertyChangeListener
-   * @param listener the listener to remove
+   * Removes a listener so that it no longer receives 
+   * {@link PropertyChangeEvent} notifications from this column.  If 
+   * <code>listener</code> is not registered with the column, or is 
+   * <code>null</code>, this method does nothing.
+   * 
+   * @param listener the listener to remove (<code>null</code> is ignored).
    */
-  public synchronized void removePropertyChangeListener(PropertyChangeListener listener)
+  public synchronized void removePropertyChangeListener(
+      PropertyChangeListener listener)
   {
     changeSupport.removePropertyChangeListener(listener);
   }
 
   /**
    * Returns the property change listeners for this <code>TableColumn</code>.
+   * An empty array is returned if there are currently no listeners registered.
+   * 
+   * @return The property change listeners registered with this column.
+   * 
    * @since 1.4
    */
   public PropertyChangeListener[] getPropertyChangeListeners()
@@ -571,8 +681,10 @@ public class TableColumn
   }
 
   /**
-   * createDefaultHeaderRenderer
-   * @return TableCellRenderer
+   * Creates and returns a default renderer for the column header (in this case,
+   * a new instance of {@link DefaultTableCellRenderer}).
+   * 
+   * @return A default renderer for the column header.
    */
   protected TableCellRenderer createDefaultHeaderRenderer()
   {

@@ -41,7 +41,6 @@ package javax.swing.plaf.metal;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.AbstractButton;
-import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicButtonListener;
 
 /**
@@ -70,17 +69,6 @@ class MetalButtonListener extends BasicButtonListener
   public void propertyChange(PropertyChangeEvent e)
   {
     super.propertyChange(e);
-    if (e.getPropertyName().equals(
-            AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY))
-      {
-        AbstractButton b = (AbstractButton) e.getSource();
-        if (b.getBorder() instanceof UIResource)
-          {
-            if (Boolean.TRUE.equals(e.getNewValue()))
-              b.setBorder(MetalBorders.getRolloverBorder());
-            else if (Boolean.FALSE.equals(e.getNewValue()))
-              b.setBorder(MetalBorders.getButtonBorder());
-          }
-      }
+    // TODO: What should be done here?
   }
 }

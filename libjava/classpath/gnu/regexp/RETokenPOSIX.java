@@ -1,5 +1,5 @@
 /* gnu/regexp/RETokenPOSIX.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -85,8 +85,17 @@ final class RETokenPOSIX extends REToken {
 	return 1;
     }
 
-    boolean match(CharIndexed input, REMatch mymatch) {
-    char ch = input.charAt(mymatch.index);
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
+      char ch = input.charAt(mymatch.index);
+      boolean retval = matchOneChar(ch);
+      if (retval) {
+	++mymatch.index;
+	return mymatch;
+      }
+      return null;
+    }
+
+    boolean matchOneChar(char ch) {
     if (ch == CharIndexed.OUT_OF_BOUNDS)
       return false;
     
@@ -134,11 +143,21 @@ final class RETokenPOSIX extends REToken {
     }
 
     if (negated) retval = !retval;
-    if (retval) {
-	++mymatch.index;
-	return next(input, mymatch);
-    }
-    else return false;
+    return retval;
+  }
+
+  boolean returnsFixedLengthMatches() { return true; }
+
+  int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+      int index = mymatch.index;
+      int numRepeats = 0;
+      while (true) {
+	if (numRepeats >= max) break;
+	char ch = input.charAt(index++);
+	if (! matchOneChar(ch)) break;
+	numRepeats++;
+      }
+      return numRepeats;
   }
 
   void dump(StringBuffer os) {

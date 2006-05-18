@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
@@ -102,6 +104,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @param e the change event describing the change
      */
     public void stateChanged(ChangeEvent e)
+      throws NotImplementedException
     {
       // Implement this properly.
     }
@@ -113,6 +116,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @return the accessible role of the <code>JTabbedPane</code>
      */
     public AccessibleRole getAccessibleRole()
+      throws NotImplementedException
     {
       return null;
     }
@@ -125,6 +129,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      *         <code>JTabbedPane</code>
      */
     public int getAccessibleChildrenCount()
+      throws NotImplementedException
     {
       return 0;
     }
@@ -153,6 +158,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @return the current selection state of the <code>JTabbedPane</code>
      */
     public AccessibleSelection getAccessibleSelection()
+      throws NotImplementedException
     {
       return null;
     }
@@ -169,6 +175,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      *         this location
      */
     public Accessible getAccessibleAt(Point p)
+      throws NotImplementedException
     {
       return null;
     }
@@ -183,6 +190,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      *         <code>JTabbedPane</code>
      */
     public int getAccessibleSelectionCount()
+      throws NotImplementedException
     {
       return 0;
     }
@@ -195,6 +203,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @return DOCUMENT ME!
      */
     public Accessible getAccessibleSelection(int i)
+      throws NotImplementedException
     {
       return null;
     }
@@ -207,6 +216,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @return DOCUMENT ME!
      */
     public boolean isAccessibleChildSelected(int i)
+      throws NotImplementedException
     {
       return false;
     }
@@ -217,6 +227,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @param i DOCUMENT ME!
      */
     public void addAccessibleSelection(int i)
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
@@ -227,6 +238,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @param i DOCUMENT ME!
      */
     public void removeAccessibleSelection(int i)
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
@@ -235,6 +247,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * DOCUMENT ME!
      */
     public void clearAccessibleSelection()
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
@@ -243,6 +256,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      * DOCUMENT ME!
      */
     public void selectAllAccessibleSelection()
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
@@ -379,7 +393,12 @@ public class JTabbedPane extends JComponent implements Serializable,
      */
     public Color getBackground()
     {
-      return bg;
+      Color background;
+      if (bg == null)
+        background = JTabbedPane.this.getBackground();
+      else
+        background = bg;
+      return background;
     }
 
     /**
@@ -399,7 +418,12 @@ public class JTabbedPane extends JComponent implements Serializable,
      */
     public Color getForeground()
     {
-      return fg;
+      Color foreground;
+      if (fg == null)
+        foreground = JTabbedPane.this.getForeground();
+      else
+        foreground = fg;
+      return foreground;
     }
 
     /**
@@ -585,12 +609,14 @@ public class JTabbedPane extends JComponent implements Serializable,
     }
 
     public AccessibleStateSet getAccessibleStateSet()
+      throws NotImplementedException
     {
       // FIXME: Implement this properly.
       return null;
     }
 
     public int getAccessibleIndexInParent()
+      throws NotImplementedException
     {
       // FIXME: Implement this properly.
       return 0;
@@ -739,7 +765,6 @@ public class JTabbedPane extends JComponent implements Serializable,
   public void updateUI()
   {
     setUI((TabbedPaneUI) UIManager.getUI(this));
-    invalidate();
   }
 
   /**
@@ -950,7 +975,11 @@ public class JTabbedPane extends JComponent implements Serializable,
    */
   public Component getSelectedComponent()
   {
-    return getComponentAt(getSelectedIndex());
+    int selectedIndex = getSelectedIndex();
+    Component selected = null;
+    if (selectedIndex >= 0)
+      selected = getComponentAt(selectedIndex);
+    return selected;
   }
 
   /**
@@ -1144,8 +1173,45 @@ public class JTabbedPane extends JComponent implements Serializable,
   public void removeTabAt(int index)
   {
     checkIndex(index, 0, tabs.size());
+
+    // We need to adjust the selection if we remove a tab that comes
+    // before the selected tab or if the selected tab is removed.
+    // This decrements the selected index by 1 if any of this is the case.
+    // Note that this covers all cases:
+    // - When the selected tab comes after the removed tab, this simply
+    //   adjusts the selection so that after the removal the selected tab
+    //   is still the same.
+    // - When we remove the currently selected tab, then the tab before the
+    //   selected tab gets selected.
+    // - When the last tab is removed, then we have an index==0, which gets
+    //   decremented to -1, which means no selection, which is 100% perfect.
+    int selectedIndex = getSelectedIndex();
+    if (selectedIndex >= index)
+      setSelectedIndex(selectedIndex - 1);
+
+    Component comp = getComponentAt(index);
+
+    // Remove the tab object.
     tabs.remove(index);
-    getComponentAt(index).show();
+
+    // Remove the component. I think we cannot assume that the tab order
+    // is equal to the component order, so we iterate over the children
+    // here to find the and remove the correct component.
+    if (comp != null)
+      {
+        Component[] children = getComponents();
+        for (int i = children.length - 1; i >= 0; --i)
+          {
+            if (children[i] == comp)
+              {
+                super.remove(i);
+                comp.setVisible(true);
+                break;
+              }
+          }
+      }
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1175,7 +1241,8 @@ public class JTabbedPane extends JComponent implements Serializable,
    */
   public void removeAll()
   {
-    for (int i = tabs.size() - 1; i >= 0; i--)
+    setSelectedIndex(-1);
+    for (int i = getTabCount() - 1; i >= 0; i--)
       removeTabAt(i);
   }
 

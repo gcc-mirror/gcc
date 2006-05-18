@@ -39,11 +39,15 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.datatransfer.*;
+import java.util.*;
 
 class GtkClipboardNotifier extends Thread
 {
-  /** Whether or not to announce a GtkSelection change. */
-  private static boolean announceChange;
+  /** Whether to announce a new GtkSelection has been set for CLIPBOARD. */
+  static private boolean announceClipboardChange;
+
+  /** Whether to announce a new GtkSelection has been set for PRIMARY. */
+  static private boolean announcePrimaryChange;
 
   /**
    * The one and only instance. All operations are synchronized on
@@ -64,24 +68,30 @@ class GtkClipboardNotifier extends Thread
 
   /**
    * Notifies that a new GtkSelection has to be announced.
+   *
+   * @param clipboard either the GtkClipboard.clipboard or the
+   * GtkClipboard.selection.
    */
-  static void announce()
+  static void announce(GtkClipboard clipboard)
   {
     synchronized (notifier)
       {
-	announceChange = true;
+	if (clipboard == GtkClipboard.clipboard)
+	  announceClipboardChange = true;
+	else
+	  announcePrimaryChange = true;
 	notifier.notifyAll();
       }
   }
 
   public void run()
   {
-    final GtkClipboard clipboard = GtkClipboard.getInstance();
+    GtkClipboard clipboard;
     while (true)
       {
 	synchronized (this)
 	  {
-	    while (!announceChange)
+	    while (! announceClipboardChange && ! announcePrimaryChange)
 	      {
 		try
 		  {
@@ -92,14 +102,24 @@ class GtkClipboardNotifier extends Thread
 		    // ignore
 		  }
 	      }
-	    announceChange = false;
+
+	    if (announceClipboardChange)
+	      {
+		clipboard = GtkClipboard.clipboard;
+		announceClipboardChange = false;
+	      }
+	    else
+	      {
+		clipboard = GtkClipboard.selection;
+		announcePrimaryChange = false;
+	      }
 	  }
 
 	// Do the actual announcement without the lock held.  We will
 	// notice a new change after this notification has finished.
 	try
 	  {
-	    clipboard.setContents(new GtkSelection(), null);
+	    clipboard.setContents(new GtkSelection(clipboard), null);
 	  }
 	catch (Throwable t)
 	  {

@@ -1,5 +1,5 @@
 /* NamingContext.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
-import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CosNaming.NamingContextPackage.AlreadyBound;
 import org.omg.CosNaming.NamingContextPackage.CannotProceed;
 import org.omg.CosNaming.NamingContextPackage.InvalidName;
@@ -55,7 +54,6 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface NamingContextOperations
-  extends IDLEntity
 {
   /**
    * Gives the object a name, valid in this context.

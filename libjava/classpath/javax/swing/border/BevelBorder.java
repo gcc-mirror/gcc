@@ -305,6 +305,8 @@ public class BevelBorder extends AbstractBorder
    *
    * @param c the component enclosed by this border.
    *
+   * @return The color.
+   * 
    * @see #getHighlightInnerColor(java.awt.Component)
    * @see java.awt.Color#brighter()
    */
@@ -326,6 +328,8 @@ public class BevelBorder extends AbstractBorder
    *
    * @param c the component enclosed by this border.
    *
+   * @return The color.
+   * 
    * @see java.awt.Component#getBackground()
    * @see java.awt.Color#brighter()
    */
@@ -347,6 +351,8 @@ public class BevelBorder extends AbstractBorder
    *
    * @param c the component enclosed by this border.
    *
+   * @return The color.
+   * 
    * @see java.awt.Component#getBackground()
    * @see java.awt.Color#darker()
    */
@@ -367,6 +373,8 @@ public class BevelBorder extends AbstractBorder
    *
    * @param c the component enclosed by this border.
    *
+   * @return The color.
+   * 
    * @see #getShadowInnerColor(java.awt.Component)
    * @see java.awt.Color#darker()
    */
@@ -384,6 +392,8 @@ public class BevelBorder extends AbstractBorder
    * highlighted edges when painting the border, or <code>null</code>
    * if that color will be derived from the background of the enclosed
    * Component.
+   * 
+   * @return The color (possibly <code>null</code>).
    */
   public Color getHighlightOuterColor()
   {
@@ -396,6 +406,8 @@ public class BevelBorder extends AbstractBorder
    * highlighted edges when painting the border, or <code>null</code>
    * if that color will be derived from the background of the enclosed
    * Component.
+   * 
+   * @return The color (possibly <code>null</code>).
    */
   public Color getHighlightInnerColor()
   {
@@ -408,6 +420,8 @@ public class BevelBorder extends AbstractBorder
    * shadowed edges when painting the border, or <code>null</code> if
    * that color will be derived from the background of the enclosed
    * Component.
+   * 
+   * @return The color (possibly <code>null</code>).
    */
   public Color getShadowInnerColor()
   {
@@ -420,6 +434,8 @@ public class BevelBorder extends AbstractBorder
    * shadowed edges when painting the border, or <code>null</code> if
    * that color will be derived from the background of the enclosed
    * Component.
+   * 
+   * @return The color (possibly <code>null</code>).
    */
   public Color getShadowOuterColor()
   {
@@ -430,6 +446,8 @@ public class BevelBorder extends AbstractBorder
   /**
    * Returns the appearance of this border, which is either {@link
    * #RAISED} or {@link #LOWERED}.
+   * 
+   * @return The bevel type ({@link #RAISED} or {@link #LOWERED}).
    */
   public int getBevelType()
   {

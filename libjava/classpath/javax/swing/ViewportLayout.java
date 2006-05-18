@@ -120,80 +120,83 @@ public class ViewportLayout implements LayoutManager, Serializable
   }
 
   /**
-   * Layout the view and viewport to respect the following rules. These are
-   * not precisely the rules described in sun's javadocs, but they are the
-   * rules which sun's swing implementation follows, if you watch its
-   * behavior:
-   *
-   * <ol> 
-   * 
-   * <li>If the port is smaller than the view, leave the view at its
-   * current size. Also, do not move the port, <em>unless</em> the port
-   * extends into space <em>past</em> the edge of the view. If so, move the
-   * port up or to the left, in view space, by the amount of empty space
-   * (keep the lower and right edges lined up)</li>
+   * Layout the view and viewport to respect the following rules. These are not
+   * precisely the rules described in sun's javadocs, but they are the rules
+   * which sun's swing implementation follows, if you watch its behavior:
+   * <ol>
+   * <li>If the port is smaller than the view, leave the view at its current
+   * size.</li>
+   * <li>If the view is smaller than the port, the view is top aligned.</li>
+   * <li>If the view tracks the port size, the view position is always zero and
+   * the size equal to the viewport size</li>
    * <li>In {@link JViewport#setViewSize(Dimension)}, the view size is never
    * set smaller that its minimum size.</li>
-   *
    * </ol>
-   *
+   * 
    * @see JViewport#getViewSize
    * @see JViewport#setViewSize
    * @see JViewport#getViewPosition
    * @see JViewport#setViewPosition
    */
-  public void layoutContainer(Container parent) 
+  public void layoutContainer(Container parent)
   {
     // The way to interpret this function is basically to ignore the names
     // of methods it calls, and focus on the variable names here. getViewRect
     // doesn't, for example, return the view; it returns the port bounds in
-    // view space. Likwise setViewPosition doesn't reposition the view; it 
+    // view space. Likwise setViewPosition doesn't reposition the view; it
     // positions the port, in view coordinates.
 
-    JViewport port = (JViewport) parent;    
+    JViewport port = (JViewport) parent;
     Component view = port.getView();
-    
+
     if (view == null)
       return;
 
-    // These dimensions and positions are in *view space*.  Do not mix
+    // These dimensions and positions are in *view space*. Do not mix
     // variables in here from port space (eg. parent.getBounds()). This
     // function should be entirely in view space, because the methods on
     // the viewport require inputs in view space.
 
     Rectangle portBounds = port.getViewRect();
-    Dimension viewPref = view.getPreferredSize();
-    Dimension viewMinimum = view.getMinimumSize();
-    
+    Dimension viewPref = new Dimension(view.getPreferredSize());
+
     Point portLowerRight = new Point(portBounds.x + portBounds.width,
                                      portBounds.y + portBounds.height);
-    int overextension;
 
     // vertical implementation of the above rules
-    if ((! (view instanceof Scrollable) && viewPref.height < portBounds.height
-         || (view instanceof Scrollable
-            && ((Scrollable) view).getScrollableTracksViewportHeight())))
-      viewPref.height = portBounds.height;
-   
-    // If the view is larger than the port, and port is partly outside
-    // the view, it is moved fully into the view area.
-    overextension = portLowerRight.y - viewPref.height;
-    if (overextension > 0)
-      portBounds.y -= overextension;
+    if (view instanceof Scrollable)
+      {
+        Scrollable sView = (Scrollable) view;
 
-    // horizontal implementation of the above rules
-    if ((! (view instanceof Scrollable) && viewPref.width < portBounds.width
-         || (view instanceof Scrollable
-         && ((Scrollable) view).getScrollableTracksViewportWidth())))
-      viewPref.width = portBounds.width;
+        // If the view size matches viewport size, the port offset can
+        // only be zero.
+        if (sView.getScrollableTracksViewportWidth())
+          {
+            viewPref.width = portBounds.width;
+            portBounds.x = 0;
+          }
+        if (sView.getScrollableTracksViewportHeight())
+          {
+            viewPref.height = portBounds.height;
+            portBounds.y = 0;
+          }
+      }
 
-    // If the view is larger than the port, and port is partly outside
-    // the view, it is moved fully into the view area.
-    overextension = portLowerRight.x - viewPref.width;
-    if (overextension > 0)
-      portBounds.x -= overextension;
+     if (viewPref.width < portBounds.width)
+       viewPref.width = portBounds.width;
+     if (viewPref.height < portBounds.height)
+       viewPref.height = portBounds.height;
+
+    // If the view is larger than the port, the port is top and right
+    // aligned.
+    if (portLowerRight.x > viewPref.width)
+      portBounds.x = 0;
+
+    if (portLowerRight.y > viewPref.height)
+      portBounds.y = 0;
 
     port.setViewSize(viewPref);
     port.setViewPosition(portBounds.getLocation());
   }
+
 }

@@ -1,5 +1,6 @@
 /* BasicPermission.java -- implements a simple named permission
-   Copyright (C) 1998, 1999, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -97,7 +98,7 @@ public abstract class BasicPermission extends java.security.Permission
     // requirement exists in the specification and Sun's runtime
     // doesn't appear to do it.
 
-    if ("".equals(name))
+    if (name.equals(""))
       throw new IllegalArgumentException("Empty name");
   }
 

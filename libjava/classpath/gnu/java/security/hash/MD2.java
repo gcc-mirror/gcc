@@ -181,7 +181,7 @@ public class MD2 extends BaseHash
   {
     if (valid == null)
       {
-        valid = new Boolean(DIGEST0.equals(Util.toString(new MD2().digest())));
+        valid = Boolean.valueOf(DIGEST0.equals(Util.toString(new MD2().digest())));
       }
     return valid.booleanValue();
   }

@@ -50,8 +50,6 @@ import javax.security.sasl.SaslException;
 /**
  * <p>A Factory class that returns IALG (Integrity Algorithm) instances that
  * operate as described in the draft-burdis-cat-sasl-srp-04 and later.</p>
- *
- * @version $Revision: 1.1 $
  */
 public final class IALG implements Cloneable
 {

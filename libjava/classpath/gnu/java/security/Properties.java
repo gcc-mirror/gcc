@@ -333,9 +333,9 @@ public final class Properties
     handleBooleanProperty(DO_RSA_BLINDING);
 
     // re-sync the 'known' properties
-    reproducible = new Boolean((String) props.get(REPRODUCIBLE_PRNG)).booleanValue();
-    checkForWeakKeys = new Boolean((String) props.get(CHECK_WEAK_KEYS)).booleanValue();
-    doRSABlinding = new Boolean((String) props.get(DO_RSA_BLINDING)).booleanValue();
+    reproducible = Boolean.valueOf((String) props.get(REPRODUCIBLE_PRNG)).booleanValue();
+    checkForWeakKeys = Boolean.valueOf((String) props.get(CHECK_WEAK_KEYS)).booleanValue();
+    doRSABlinding = Boolean.valueOf((String) props.get(DO_RSA_BLINDING)).booleanValue();
 
     // This does not change.
     props.put(VERSION, Registry.VERSION_STRING);

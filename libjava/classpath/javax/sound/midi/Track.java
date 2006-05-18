@@ -54,11 +54,16 @@ public class Track
   /**
    * The list of MidiEvents for this track. 
    */
-  protected Vector events;
+  Vector events;
   
   // A HashSet to speed processing
   private HashSet eventSet;
-  
+
+  // This is only instantiable within this package.
+  Track()
+  {
+  }
+
   /**
    * Add a new event to this track.  Specific events may only be added once.
    * The event will be inserted into the appropriate spot in the event list

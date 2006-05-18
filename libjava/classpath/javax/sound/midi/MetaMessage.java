@@ -76,7 +76,7 @@ public class MetaMessage extends MidiMessage
    * Create a MetaMessage object.
    * @param data a complete system exclusive message
    */
-  public MetaMessage(byte[] data)
+  protected MetaMessage(byte[] data)
   {
     super(data);
     int index = 2;

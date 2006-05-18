@@ -160,9 +160,11 @@ public class KeyGenerator
   {
     try
       {
-        return new KeyGenerator((KeyGeneratorSpi)
+        KeyGenerator instance = new KeyGenerator((KeyGeneratorSpi)
           Engine.getInstance(SERVICE, algorithm, provider),
           provider, algorithm);
+        instance.init(new SecureRandom());
+        return instance;
       }
     catch (InvocationTargetException ite)
       {

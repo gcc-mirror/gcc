@@ -90,6 +90,11 @@ public class RemoteObjectInvocationHandler extends RemoteObject implements
   static final Class[] anObjectC = new Class[] { Object.class };
   
   /**
+   * The empty object array to replace null when no args are passed.
+   */
+  static final Object[] noArgs = new Object[0];
+  
+  /**
    * Construct the remote invocation handler that forwards calls to the given
    * remote object.
    * 
@@ -143,6 +148,9 @@ public class RemoteObjectInvocationHandler extends RemoteObject implements
         throw new IllegalAccessException(name + " does not implement "
                                          + Remote.class.getName());
       }
+    
+    if (parameters == null)
+      parameters = noArgs;
 
     String name = method.getName();
     switch (name.charAt(0))
@@ -172,7 +180,7 @@ public class RemoteObjectInvocationHandler extends RemoteObject implements
         break;
       case 't':
         if (parameters.length == 0 && name.equals("toString"))
-          return proxyInstance.toString();
+          return "Proxy stub:"+ref.remoteToString();
         break;
       default:
         break;

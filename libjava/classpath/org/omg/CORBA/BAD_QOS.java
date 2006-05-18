@@ -1,5 +1,5 @@
 /* BAD_QOS.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.io.Serializable;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class BAD_QOS
+public final class BAD_QOS
   extends SystemException
   implements Serializable
 {
@@ -60,7 +60,7 @@ public class BAD_QOS
   /**
    * Creates BAD_QOS with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reason the explaining message.
+   * @param message the explaining message.
    */
   public BAD_QOS(String message)
   {

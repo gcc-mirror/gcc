@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.synth;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -159,6 +161,7 @@ public class SynthGraphicsUtils
                                   Icon icon, int hAlign, int vAlign,
                                   int hTextPosition,int vTextPosition,
                                   int iconTextGap,int mnemonicIndex)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return new Dimension(0, 0);
@@ -187,6 +190,7 @@ public class SynthGraphicsUtils
                                     Icon icon, int hAlign, int vAlign,
                                     int hTextPosition,int vTextPosition,
                                     int iconTextGap,int mnemonicIndex)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return new Dimension(0, 0);
@@ -215,6 +219,7 @@ public class SynthGraphicsUtils
                                   Icon icon, int hAlign, int vAlign,
                                   int hTextPosition,int vTextPosition,
                                   int iconTextGap,int mnemonicIndex)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
     return new Dimension(0, 0);
@@ -277,6 +282,7 @@ public class SynthGraphicsUtils
                         int hAlign, int vAlign, int hTextPosition,
                         int vTextPosition, int iconTextGap, int mnemonicIndex,
                         int textOffset)
+    throws NotImplementedException
   {
     // FIXME: Implement this correctly.
   }

@@ -1,5 +1,5 @@
 /* BasicTextFieldUI.java
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,7 @@ import java.beans.PropertyChangeEvent;
 
 import javax.swing.JComponent;
 import javax.swing.UIDefaults;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Element;
 import javax.swing.text.FieldView;
@@ -83,6 +84,9 @@ public class BasicTextFieldUI extends BasicTextUI
    * Receives notification whenever one of the text component's bound
    * properties changes. Here we check for the editable and enabled
    * properties and adjust the background color accordingly.
+   * 
+   * <p>The colors are only changed if they are not a
+   * <code>ColorUIResource</code>.</p>
    *
    * @param event the property change event
    */
@@ -91,10 +95,11 @@ public class BasicTextFieldUI extends BasicTextUI
     if (event.getPropertyName().equals("editable"))
       {
         boolean editable = ((Boolean) event.getNewValue()).booleanValue();
-        if (editable)
-          textComponent.setBackground(background);
-        else 
-          textComponent.setBackground(inactiveBackground);
+        
+        // Changing the color only if the current background is an instance of
+        // ColorUIResource is the behavior of the RI.
+        if (textComponent.getBackground() instanceof ColorUIResource)
+          textComponent.setBackground(editable ? background : inactiveBackground);
       }
   }
 }

@@ -1,5 +1,5 @@
 /* _DynUnionStub.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,16 @@ exception statement from your version. */
 
 package org.omg.DynamicAny;
 
+import java.io.Serializable;
+
+import org.omg.CORBA.Any;
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.TCKind;
+import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.portable.Delegate;
+import org.omg.CORBA.portable.ObjectImpl;
 import org.omg.DynamicAny.DynAnyPackage.InvalidValue;
 import org.omg.DynamicAny.DynAnyPackage.TypeMismatch;
-
-import java.io.Serializable;
 
 /**
  * Should provide support for remote invocation of methods on DynUnion. As
@@ -54,7 +57,7 @@ import java.io.Serializable;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class _DynUnionStub
-  extends _DynAnyStub
+  extends ObjectImpl
   implements DynUnion, Serializable
 {
   /**
@@ -74,14 +77,6 @@ public class _DynUnionStub
    */
   public _DynUnionStub()
   {
-  }
-
-  /**
-   * Create the naming context stub with the given delegate.
-   */
-  public _DynUnionStub(Delegate delegate)
-  {
-    _set_delegate(delegate);
   }
 
   /**
@@ -187,4 +182,543 @@ public class _DynUnionStub
   {
     throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
   }
+  
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public TypeCode type()
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public boolean next()
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void destroy()
+  {
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public DynAny copy()
+  {
+    return this;
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void rewind()
+  {
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void assign(DynAny _0)
+              throws TypeMismatch
+  {
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public int component_count()
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public DynAny current_component()
+                           throws TypeMismatch
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public boolean equal(DynAny _0)
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void from_any(Any _0)
+                throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public Any get_any()
+              throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public boolean get_boolean()
+                      throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public char get_char()
+                throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public double get_double()
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public DynAny get_dyn_any()
+                     throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public float get_float()
+                  throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public int get_long()
+               throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public long get_longlong()
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public byte get_octet()
+                 throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public org.omg.CORBA.Object get_reference()
+                                     throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public short get_short()
+                  throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public String get_string()
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public TypeCode get_typecode()
+                        throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public int get_ulong()
+                throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public long get_ulonglong()
+                     throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public short get_ushort()
+                   throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public Serializable get_val()
+                       throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public char get_wchar()
+                 throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public String get_wstring()
+                     throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_any(Any _0)
+                  throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_boolean(boolean _0)
+                      throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_char(char _0)
+                   throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_double(double _0)
+                     throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_dyn_any(DynAny _0)
+                      throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_float(float _0)
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_long(int _0)
+                   throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_longlong(long _0)
+                       throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_octet(byte _0)
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_reference(org.omg.CORBA.Object _0)
+                        throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_short(short _0)
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_string(String _0)
+                     throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_typecode(TypeCode _0)
+                       throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_ulong(int _0)
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_ulonglong(long _0)
+                        throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_ushort(short _0)
+                     throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_val(Serializable _0)
+                  throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_wchar(char _0)
+                    throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public void insert_wstring(String _0)
+                      throws TypeMismatch, InvalidValue
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public boolean seek(int _0)
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
+  /**
+   * The remote call of DynAny methods is not possible.
+   *
+   * @throws MARSHAL, always.
+   */
+  public Any to_any()
+  {
+    throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
+  }
+
 }

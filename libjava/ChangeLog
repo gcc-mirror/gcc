@@ -1,3 +1,35 @@
+2006-05-18  Mark Wielaard  <mark@klomp.org>
+
+	Imported GNU Classpath 0.90
+	* scripts/makemake.tcl: LocaleData.java moved to gnu/java/locale.
+
+	* sources.am: Regenerated.
+	* gcj/javaprims.h: Regenerated.
+	* Makefile.in: Regenerated.
+	* gcj/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
+	* gnu/java/lang/VMInstrumentationImpl.java: New override.
+	* gnu/java/net/local/LocalSocketImpl.java: Likewise.
+	* gnu/classpath/jdwp/VMMethod.java: Likewise.
+	* gnu/classpath/jdwp/VMVirtualMachine.java: Update to latest
+	interface.
+	* java/lang/Thread.java: Add UncaughtExceptionHandler.
+	* java/lang/reflect/Method.java: Implements GenericDeclaration and
+	isSynthetic(),
+	* java/lang/reflect/Field.java: Likewise.
+	* java/lang/reflect/Constructor.java
+	* java/lang/Class.java: Implements Type, GenericDeclaration,
+	getSimpleName() and getEnclosing*() methods.
+	* java/lang/Class.h: Add new public methods.
+	* java/lang/Math.java: Add signum(), ulp() and log10().
+	* java/lang/natMath.cc (log10): New function.
+	* java/security/VMSecureRandom.java: New override.
+	* java/util/logging/Logger.java: Updated to latest classpath
+	version.
+	* java/util/logging/LogManager.java: New override.
+
 2006-05-15  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/27352

@@ -588,7 +588,7 @@ public class GregorianCalendar extends Calendar
 
 		day = offs + 7 * (fields[WEEK_OF_MONTH] - 1);
 		offs = fields[DAY_OF_WEEK] - getFirstDayOfWeek();
-		if (offs <= 0)
+		if (offs < 0)
 		  offs += 7;
 		day += offs;
 	      }

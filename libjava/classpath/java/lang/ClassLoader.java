@@ -469,7 +469,8 @@ public abstract class ClassLoader
     if (domain == null)
       domain = StaticData.defaultProtectionDomain;
     
-    return VMClassLoader.defineClass(this, name, data, offset, len, domain);
+    return VMClassLoader.defineClassWithTransformers(this, name, data, offset,
+						     len, domain);
   }
 
   /**
@@ -628,8 +629,9 @@ public abstract class ClassLoader
    * @return an enumaration of all resources found
    * @throws IOException if I/O errors occur in the process
    * @since 1.2
+   * @specnote this was <code>final</code> prior to 1.5
    */
-  public final Enumeration getResources(String name) throws IOException
+  public Enumeration getResources(String name) throws IOException
   {
     Enumeration parentResources;
     if (parent == null)
@@ -834,7 +836,7 @@ public abstract class ClassLoader
       throw new IllegalArgumentException("Package " + name
                                          + " already defined");
     Package p = new Package(name, specTitle, specVendor, specVersion,
-                            implTitle, implVendor, implVersion, sealed);
+                            implTitle, implVendor, implVersion, sealed, this);
     synchronized (definedPackages)
       {
         definedPackages.put(name, p);

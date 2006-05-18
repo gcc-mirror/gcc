@@ -590,8 +590,7 @@ public class SwingComponentPeer
    */
   public void setBounds(int x, int y, int width, int height)
   {
-    if (swingComponent != null)
-      swingComponent.getJComponent().setBounds(x, y, width, height);
+    reshape(x, y, width, height);
   }
 
   /**

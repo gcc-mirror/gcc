@@ -54,9 +54,8 @@ public class BMPImageReaderSpi extends ImageReaderSpi {
     static final String[] MIMETypes = {
 	"image/bmp",
 	"image/x-windows-bmp"};
-
-    static final String[] writerSpiNames = null; 
-    //{"com.mycompany.imageio.MyFormatImageWriterSpi" };
+    static final String[] writerSpiNames = 
+    { "gnu.javax.imageio.bmp.BMPImageWriterSpi" };
     
     static final boolean supportsStandardStreamMetadataFormat = false;
     static final String nativeStreamMetadataFormatName = null;
@@ -73,7 +72,7 @@ public class BMPImageReaderSpi extends ImageReaderSpi {
 	super(vendorName, version,
 	      names, suffixes, MIMETypes,
 	      readerClassName,
-	      STANDARD_INPUT_TYPE, // Accept ImageImageInputStreams
+	      STANDARD_INPUT_TYPE, // Accept ImageInputStreams
 	      writerSpiNames,
 	      supportsStandardStreamMetadataFormat,
 	      nativeStreamMetadataFormatName,
@@ -115,9 +114,3 @@ public class BMPImageReaderSpi extends ImageReaderSpi {
 	return new BMPImageReader(this);
     }
 }
-
-
-
-
-
-

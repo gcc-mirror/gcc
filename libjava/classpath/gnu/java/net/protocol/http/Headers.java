@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A collection of HTTP header names and associated values.  The
@@ -65,12 +64,18 @@ class Headers
 {
   /**
    * A list of HeaderElements
-   *
    */
   private final ArrayList headers = new ArrayList();
   
-  static final DateFormat dateFormat = new HTTPDateFormat();
+  /**
+   * The HTTP dateformat used to parse date header fields.
+   */
+  private static final DateFormat dateFormat = new HTTPDateFormat();
 
+  /**
+   * Class for a Header element consisting of
+   * a name and value String.
+   */
   static class HeaderElement
   {
     String name;
@@ -83,8 +88,12 @@ class Headers
     }
   }
 
+  /**
+   * Default constructor.
+   */
   public Headers()
   {
+    // nothing to do
   }
 
   /**
@@ -99,8 +108,11 @@ class Headers
   }
   
   /**
-   * Returns the value of the specified header as a string.  If
+   * Returns the value of the specified header as a string. If
    * multiple values are present, the last one is returned.
+   * 
+   * @param header the header name (case insensitive search)
+   * @return The header value or <code>null</code> if not found.
    */
   public String getValue(String header)
   {
@@ -116,8 +128,12 @@ class Headers
   }
 
   /**
-   * Returns the value of the specified header as an integer,
-   * or -1 if the header is not present or not an integer.
+   * Returns the value of the specified header as an integer. If
+   * multiple values are present, the last one is returned.
+   * 
+   * @param header the header name (case insensitive search)
+   * @return The header value or <code>-1</code> if not present or
+   * not an integer value.
    */
   public int getIntValue(String header)
   {
@@ -132,13 +148,18 @@ class Headers
       }
     catch (NumberFormatException e)
       {
+        // fall through
       }
     return -1;
   }
 
   /**
-   * Returns the value of the specified header as a long, or -1 if the
-   * header is not present or cannot be parsed as a long.
+   * Returns the value of the specified header as a long. If
+   * multiple values are present, the last one is returned.
+   * 
+   * @param header the header name (case insensitive search)
+   * @return The header value or <code>-1</code> if not present or
+   * not a long value.
    */
   public long getLongValue(String header)
   {
@@ -153,13 +174,18 @@ class Headers
       }
     catch (NumberFormatException e)
       {
+        // fall through
       }
     return -1;
   }
 
   /**
-   * Returns the value of the specified header as a date,
-   * or <code>null</code> if the header is not present or not a date.
+   * Returns the value of the specified header as a date. If
+   * multiple values are present, the last one is returned.
+   * 
+   * @param header the header name (case insensitive search)
+   * @return The header value or <code>null</code> if not present or
+   * not a date value.
    */
   public Date getDateValue(String header)
   {
@@ -180,23 +206,35 @@ class Headers
 
   /**
    * Add a header to this set of headers.  If there is an existing
-   * header with the same name, it is discarded.
+   * header with the same name it's value is replaced with the new value.
+   * If multiple headers of the same name exist only the last one's value 
+   * is replaced.
    *
    * @param name the header name
    * @param value the header value
    *
-   * @see #addValue
+   * @see #addValue(String, String)
    */
   public void put(String name, String value)
-  {
-    remove(name);
-    headers.add(headers.size(), new HeaderElement(name, value));
+  {    
+    for (int i = headers.size() - 1; i >= 0; i--)
+      {
+        HeaderElement e = (HeaderElement)headers.get(i);
+        if (e.name.equalsIgnoreCase(name))
+          {
+            e.value = value;
+            return;
+          }
+      }
+    
+    // nothing was replaced so add it as new HeaderElement
+    addValue(name, value);
   }
-
+  
   /**
-   * Add all headers from a set of headers to this set.  If any of the
-   * headers to be added have the same name as existing headers, the
-   * existing headers will be discarded.
+   * Add all headers from a set of headers to this set. Any existing header 
+   * with the same (case insensitive) name as one of the new headers will 
+   * be overridden.
    *
    * @param o the headers to be added
    */
@@ -206,10 +244,6 @@ class Headers
       {
         HeaderElement e = (HeaderElement)it.next();
         remove(e.name);
-      }
-    for (Iterator it = o.iterator(); it.hasNext(); )
-      {
-        HeaderElement e = (HeaderElement)it.next();
         addValue(e.name, e.value);
       }
   }
@@ -234,6 +268,7 @@ class Headers
    * Parse the specified InputStream, adding headers to this collection.
    *
    * @param in the InputStream.
+   * @throws IOException if I/O error occured.
    */
   public void parse(InputStream in)
     throws IOException
@@ -303,7 +338,7 @@ class Headers
    * @param name the header name
    * @param value the header value
    *
-   * @see #put
+   * @see #put(String, String)
    */
   public void addValue(String name, String value)
   {
@@ -312,13 +347,14 @@ class Headers
 
   /**
    * Get a new Map containing all the headers.  The keys of the Map
-   * are Strings (the header names).  The values of the Map are
+   * are Strings (the header names). The headers will be included 
+   * case-sensitive in the map so that querying must be done with the
+   * correct case of the needed header name. The values of the Map are
    * unmodifiable Lists containing Strings (the header values).
    *
-   * <p>
-   * 
-   * The returned map is modifiable.  Changing it will not effect this
-   * collection of Headers in any way.
+   * <p> 
+   * The returned map is modifiable. Changing it will not effect this
+   * collection of Headers in any way.</p>
    *
    * @return a Map containing all the headers.
    */
@@ -352,9 +388,9 @@ class Headers
    *
    * @param i the header index.
    *
-   * @return the header name.
+   * @return The header name, or <code>null</code> if index outside of range.
    *
-   * @see #getHeaderValue
+   * @see #getHeaderValue(int)
    */
   public String getHeaderName(int i)
   {
@@ -369,9 +405,9 @@ class Headers
    *
    * @param i the header index.
    *
-   * @return the header value.
+   * @return the header value, or <code>null</code> if index outside of range.
    *
-   * @see #getHeaderName
+   * @see #getHeaderName(int)
    */
   public String getHeaderValue(int i)
   {

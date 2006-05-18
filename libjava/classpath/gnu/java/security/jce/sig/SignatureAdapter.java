@@ -69,8 +69,6 @@ import java.util.logging.Logger;
  *
  * All the implementations which subclass this object, and which are serviced by
  * the GNU Crypto provider implement the {@link java.lang.Cloneable} interface.<p>
- *
- * @version $Revision: 1.2 $
  */
 class SignatureAdapter extends SignatureSpi implements Cloneable
 {

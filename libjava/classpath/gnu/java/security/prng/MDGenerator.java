@@ -122,6 +122,20 @@ public class MDGenerator extends BasePRNG implements Cloneable
     md.update(buffer, 0, buffer.length);
   }
 
+  public void addRandomByte (final byte b)
+  {
+    if (md == null)
+      throw new IllegalStateException ("not initialized");
+    md.update (b);
+  }
+
+  public void addRandomBytes (final byte[] buf, final int off, final int len)
+  {
+    if (md == null)
+      throw new IllegalStateException ("not initialized");
+    md.update (buf, off, len);
+  }
+
   // Cloneable interface implementation ---------------------------------------
 
   public Object clone() throws CloneNotSupportedException

@@ -1,5 +1,5 @@
 /* gnu/regexp/RETokenWordBoundary.java
-   Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -58,7 +58,7 @@ final class RETokenWordBoundary extends REToken {
     }
 
     
-    boolean match(CharIndexed input, REMatch mymatch) {
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
 	// Word boundary means input[index-1] was a word character
 	// and input[index] is not, or input[index] is a word character
 	// and input[index-1] was not
@@ -94,7 +94,14 @@ final class RETokenWordBoundary extends REToken {
 
 	if (negated) doNext = !doNext;
 
-	return (doNext ? next(input, mymatch) : false);
+	return (doNext ? mymatch : null);
+    }
+
+    boolean returnsFixedLengthMatches() { return true; }
+
+    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+        if(matchThis(input, mymatch) != null) return max;
+	else return 0;
     }
     
     void dump(StringBuffer os) {

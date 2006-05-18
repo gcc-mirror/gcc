@@ -1,5 +1,5 @@
 /* CODESET_INCOMPATIBLE.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,16 +43,16 @@ import java.io.Serializable;
 /**
  * Raised when client and server are unable to reach any consensus on which
  * code set should be used to represent the characters. This happens when
- * neither server nor client cannot convert from the native code set of the
+ * neither server nor client can convert from the native code set of the
  * corresponding side, there is no shared codeset from that both sides could
- * convert and additionally the client and server* native sets are too
- * different to communicate anyway without the massive data loss.
+ * convert and additionally the client and server native code sets are too
+ * different to communicate anyway without massive data loss.
  *
  * @since 1.5
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class CODESET_INCOMPATIBLE
+public final class CODESET_INCOMPATIBLE
   extends SystemException
   implements Serializable
 {
@@ -64,7 +64,7 @@ public class CODESET_INCOMPATIBLE
   /**
    * Creates CODESET_INCOMPATIBLE with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reason the explaining message.
+   * @param message the explaining message.
    */
   public CODESET_INCOMPATIBLE(String message)
   {

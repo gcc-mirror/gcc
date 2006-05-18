@@ -1,5 +1,5 @@
-/* AbstractTableModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* UndoableEdit.java --
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,77 +38,120 @@ exception statement from your version. */
 package javax.swing.undo;
 
 /**
- * UndoableEdit public interface
+ * An editing operation that supports undo/redoability.
+ * 
  * @author Andrew Selkirk
  */
-public interface UndoableEdit {
+public interface UndoableEdit 
+{
 
-	/**
-	 * anEdit
-	 * @param anEdit TODO
-	 * @returns TODO
-	 */
-	boolean addEdit(UndoableEdit anEdit);
+  /**
+   * Incorporates another editing action into this one, thus forming a
+   * combined action.
+   *
+   * @param edit the editing action to be incorporated.
+   * 
+   * @return <code>true</code> if the edit was combined successfully, and 
+   *         <code>false</code> if it could not be combined.
+   */
+  boolean addEdit(UndoableEdit edit);
 
-	/**
-	 * canRedo
-	 * @returns TODO
-	 */
-	boolean canRedo();
+  /**
+   * Determines whether it would be possible to redo this editing
+   * action.
+   *
+   * @return <code>true</code> to indicate that this action can be
+   * redone, <code>false</code> otherwise.
+   *
+   * @see #redo()
+   * @see #canUndo()
+   */
+  boolean canRedo();
 
-	/**
-	 * canRedo
-	 * @returns TODO
-	 */
-	boolean canUndo();
+  /**
+   * Determines whether it would be possible to undo this editing
+   * action.
+   *
+   * @return <code>true</code> to indicate that this action can be
+   * undone, <code>false</code> otherwise.
+   *
+   * @see #undo()
+   * @see #canRedo()
+   */
+  boolean canUndo();
 
-	/**
-	 * die
-	 */
-	void die();
+  /**
+   * Informs this edit action that it will no longer be used. Some
+   * actions might use this information to release resources, for
+   * example open files.  Called by {@link UndoManager} before this
+   * action is removed from the edit queue.
+   */
+  void die();
 
-	/**
-	 * getPresentationName
-	 * @returns TODO
-	 */
-	String getPresentationName();
+  /**
+   * Returns a human-readable, localized name that describes this
+   * editing action and can be displayed to the user.
+   *
+   * @return The presentation name.
+   */
+  String getPresentationName();
 
-	/**
-	 * getRedoPresentationName
-	 * @returns TODO
-	 */
-	String getRedoPresentationName();
+  /**
+   * Returns the redo presentation name.
+   * 
+   * @return The redo presentation name.
+   */
+  String getRedoPresentationName();
 
-	/**
-	 * getUndoPresentationName
-	 * @returns TODO
-	 */
-	String getUndoPresentationName();
+  /**
+   * Returns the undo presentation name.
+   * 
+   * @return The undo presentation name.
+   */
+  String getUndoPresentationName();
 
-	/**
-	 * isSignificant
-	 * @returns TODO
-	 */
-	boolean isSignificant();
+  /**
+   * Determines whether this editing action is significant enough for
+   * being seperately undoable by the user. A typical significant
+   * action would be the resizing of an object. However, changing the
+   * selection in a text document would usually not be considered
+   * significant.
+   *
+   * @return <code>true</code> to indicate that the action is
+   * significant enough for being separately undoable, or
+   * <code>false</code> otherwise.
+   */
+  boolean isSignificant();
 
-	/**
-	 * redo
-	 * @throws CannotRedoException TODO
-	 */
-	void redo() throws CannotRedoException;
+  /**
+   * Redoes this editing action.
+   *
+   * @throws CannotRedoException if the edit cannot be undone.
+   *
+   * @see #canRedo()
+   * @see #undo()
+   */
+  void redo() throws CannotRedoException;
 
-	/**
-	 * replaceEdit
-	 * @param anEdit TODO
-	 * @returns TODO
-	 */
-	boolean replaceEdit(UndoableEdit anEdit);
+  /**
+   * Incorporates another editing action into this one, thus forming a
+   * combined action that replaces the argument action.
+   *
+   * @param edit the editing action to be replaced.
+   * 
+   * @return <code>true</code> if the edit is successfully replaced, and 
+   *         <code>false</code> otherwise.
+   */
+  boolean replaceEdit(UndoableEdit edit);
 
-	/**
-	 * undo
-	 * @throws CannotUndoException TODO
-	 */
-	void undo() throws CannotUndoException;
+  /**
+   * Undoes this editing action.
+   *
+   * @throws CannotUndoException if the edit cannot be undone.
+   *
+   * @see #canUndo()
+   * @see #redo()
+   */
+  void undo() throws CannotUndoException;
 
-
-} // UndoableEdit
+}

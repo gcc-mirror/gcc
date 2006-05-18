@@ -1,5 +1,5 @@
-/* AbstractTableModel.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+/* UndoManager.java --
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -265,7 +265,7 @@ public class UndoManager
    * Determines which significant edit would be undone if {@link
    * #undo()} was called.
    *
-   * @returns the significant edit that would be undone, or
+   * @return the significant edit that would be undone, or
    * <code>null</code> if no significant edit would be affected by
    * calling {@link #undo()}.
    */
@@ -288,7 +288,7 @@ public class UndoManager
    * Determines which significant edit would be redone if {@link
    * #redo()} was called.
    *
-   * @returns the significant edit that would be redone, or
+   * @return the significant edit that would be redone, or
    * <code>null</code> if no significant edit would be affected by
    * calling {@link #redo()}.
    */

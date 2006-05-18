@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<!-- package.html - describes classes in javax.print.attribute.standard
+<!-- package.html - describes classes in javax.print.attribute.standard 
                     package.
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,8 +41,18 @@ exception statement from your version. -->
 <head><title>GNU Classpath - javax.print.attribute.standard</title></head>
 
 <body>
-<p>Provides the printing attribute classes of the Java Print 
-Service API.</p>
+Provides the printing attribute classes of the Java Print Service API.
+<p>
+The package contains the available printing attributes. Some attributes are 
+used by the print service implementations to inform about the state of print 
+services and print jobs. Other attributes are needs to be provided by the 
+user/program to specify how a print job or a document in a print job should 
+be printed.
+</p><p>
+<b>Note:</b> Printing attributes can implement more than one attribute role 
+and therefore be used to specify e.g. print request attributes as well as 
+document attributes.
+</p>
 <p>
 <b>Since:</b> 1.4
 </p>

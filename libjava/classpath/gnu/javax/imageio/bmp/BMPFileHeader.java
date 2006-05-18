@@ -37,27 +37,32 @@ exception statement from your version. */
 
 package gnu.javax.imageio.bmp;
 
+import java.awt.image.RenderedImage;
 import java.io.IOException;
-import javax.imageio.stream.ImageInputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import javax.imageio.IIOImage;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 public class BMPFileHeader {
     /** Header signature, always 'BM' */
     private final static short bfType = 0x424d;
 
     /** Bitmap file size, in bytes. */
-    private long bfSize;
+    protected long bfSize;
     
     /** Offset from the beginning of the file to the bitmap data */
-    private long bfOffBits;
+    protected long bfOffBits;
 
     /** BITMAPFILEHEADER is 14 bytes */
     public static final int SIZE = 14;
-
+    private static final int BITMAPINFOHEADER_SIZE = 40;
+    
     /**
      * Creates the header from an input stream, which is not closed.
+     * 
      * @throws IOException if an I/O error occured.
      * @throws BMPException if the header was invalid
      */
@@ -82,17 +87,37 @@ public class BMPFileHeader {
 	
 	bfOffBits = ((long)buf.getInt(10) & (0xFFFFFFFF));
     }
+    
+    /**
+     * Creates the header from an output stream, which is not closed.
+     * 
+     * @param out - the image output stream
+     * @param im - the image
+     * @throws IOException if an I/O error occured.
+     */
+  public BMPFileHeader(ImageOutputStream out, IIOImage im) throws IOException
+  {
+    RenderedImage img = im.getRenderedImage();
+    int w = img.getWidth();
+    int h = img.getHeight();
+    
+    bfOffBits = SIZE + BITMAPINFOHEADER_SIZE;
+    bfSize = ((w * h) * 3) + ((4 - ((w * 3) % 4)) * h) + bfOffBits;
+
+    write(out);
+  }
 
     /**
      * Writes the header to an output stream, which is not closed or flushed.
+     * 
      * @throws IOException if an I/O error occured.
      */
-    public void write(OutputStream out) throws IOException {
+    public void write(ImageOutputStream out) throws IOException {
 	ByteBuffer buf = ByteBuffer.allocate(SIZE);
 	buf.putShort(0, bfType); // ID
 	buf.putInt(2, (int)(bfSize & (0xFFFFFFFF))); // size
 	buf.putInt(6, 0); // 4 reserved bytes set to zero
-	buf.putInt(2, (int)(bfOffBits & (0xFFFFFFFF))); // size
+	buf.putInt(7, (int)(bfOffBits & (0xFFFFFFFF))); // size
 	out.write(buf.array());
     }
     

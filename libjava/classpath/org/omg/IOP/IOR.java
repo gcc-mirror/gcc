@@ -1,5 +1,5 @@
 /* IOR.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,9 +51,10 @@ import java.io.Serializable;
  * for the same object or indicate that the object is equal to null.
  * </p><p>
  * The IOR is a standard structure, transferred when sending an object with
- * {@link org.omg.CORBA.portable.OutputStream#write_Object} and receiving with
- * {@link org.omg.CORBA.portable.InputStream#read_Object}. The stringified
- * object references, managed by {@link org.omg.CORBA.ORB#string_to_object}
+ * {@link org.omg.CORBA.portable.OutputStream#write_Object(org.omg.CORBA.Object)}
+ * and receiving with {@link org.omg.CORBA.portable.InputStream#read_Object()}.
+ * The stringified object references, managed by 
+ * {@link org.omg.CORBA.ORB#string_to_object}
  * and {@link org.omg.CORBA.ORB#object_to_string} are also IORs, where the
  * initially binary data are encoded as strings using hexadecimal notation.
  * </p><p>
@@ -67,7 +68,7 @@ import java.io.Serializable;
  * gnu.CORBA.IOR. The reason is that IORs are required from 1.2, but only
  * in 1.4 the associated classes appear in the public API.
  */
-public class IOR
+public final class IOR
   implements IDLEntity, Serializable
 {
   /**

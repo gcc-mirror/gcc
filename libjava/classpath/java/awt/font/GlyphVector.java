@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -70,12 +72,14 @@ public abstract class GlyphVector implements Cloneable
   public abstract FontRenderContext getFontRenderContext ();
     
   public int getGlyphCharIndex (int glyphIndex)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
     
   public int[] getGlyphCharIndices (int beginGlyphIndex, int numEntries,
                                     int[] codeReturn)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
@@ -95,12 +99,14 @@ public abstract class GlyphVector implements Cloneable
   public abstract Shape getGlyphOutline (int glyphIndex);
 
   public Shape getGlyphOutline (int glyphIndex, float x, float y)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public Rectangle getGlyphPixelBounds (int index, FontRenderContext renderFRC,
                                         float x, float y)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
@@ -116,6 +122,7 @@ public abstract class GlyphVector implements Cloneable
   public abstract Shape getGlyphVisualBounds (int glyphIndex);
 
   public int getLayoutFlags ()
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
@@ -130,6 +137,7 @@ public abstract class GlyphVector implements Cloneable
 
   public Rectangle getPixelBounds (FontRenderContext renderFRC,
                                    float x, float y)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }

@@ -1,5 +1,5 @@
 /* gnu/regexp/CharIndexedStringBuffer.java
-   Copyright (C) 1998-2001, 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,36 +36,10 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package gnu.regexp;
-import java.io.Serializable;
 
-class CharIndexedStringBuffer implements CharIndexed, Serializable {
-    private StringBuffer s;
-    private int anchor;
+class CharIndexedStringBuffer extends CharIndexedCharSequence {
 
     CharIndexedStringBuffer(StringBuffer str, int index) {
-	s = str;
-	anchor = index;
+	super(str, index);
     }
-
-  public char charAt(int index) {
-      int pos = anchor + index;
-    return ((pos < s.length()) && (pos >= 0)) ? s.charAt(pos) : OUT_OF_BOUNDS;
-  }
-
-  public boolean isValid() {
-    return (anchor < s.length());
-  }
-
-  public boolean move(int index) {
-    return ((anchor += index) < s.length());
-  }
-
-  public CharIndexed lookBehind(int index, int length) {
-    if (length > (anchor + index)) length = anchor + index;
-    return new CharIndexedStringBuffer(s, anchor + index - length);
-  }
-
-  public int length() {
-    return s.length() - anchor;
-  }
 }

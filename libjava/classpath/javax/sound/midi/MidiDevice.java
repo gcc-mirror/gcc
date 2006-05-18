@@ -134,7 +134,7 @@ public interface MidiDevice
      * @param description the device description
      * @param version the device version string
      */
-    public Info(String name, String vendor, String description, String version)
+    protected Info(String name, String vendor, String description, String version)
     {
       this.name = name;
       this.vendor = vendor;
@@ -150,7 +150,7 @@ public interface MidiDevice
      * @return true if this is the same object
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equals(Object obj)
+    public final boolean equals(Object obj)
     {
       return super.equals(obj);
     }
@@ -161,7 +161,7 @@ public interface MidiDevice
      * @return the hash code for this object
      * @see java.lang.Object#hashCode()
      */
-    public int hashCode()
+    public final int hashCode()
     {
       return super.hashCode();
     }
@@ -171,7 +171,7 @@ public interface MidiDevice
      * 
      * @return the device name
      */
-    public String getName()
+    public final String getName()
     {
       return name;
     }
@@ -181,7 +181,7 @@ public interface MidiDevice
      * 
      * @return the device vendor
      */
-    public String getVendor()
+    public final String getVendor()
     {
       return vendor;
     }
@@ -191,7 +191,7 @@ public interface MidiDevice
      * 
      * @return the device description
      */
-    public String getDescription()
+    public final String getDescription()
     {
       return description;
     }
@@ -201,7 +201,7 @@ public interface MidiDevice
      * 
      * @return the device version
      */
-    public String getVersion()
+    public final String getVersion()
     {
       return version;
     }
@@ -212,7 +212,7 @@ public interface MidiDevice
      * @return the device name
      * @see java.lang.Object#toString()
      */
-    public String toString()
+    public final String toString()
     {
       return name;
     }

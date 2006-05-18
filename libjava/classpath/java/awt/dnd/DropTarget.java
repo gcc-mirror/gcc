@@ -61,9 +61,7 @@ public class DropTarget
    */
   private static final long serialVersionUID = -6283860791671019047L;
 
-  /** @specnote According to the online documentation, this is
-   * protected, but in reality it is public.  */
-  public static class DropTargetAutoScroller
+  protected static class DropTargetAutoScroller
     implements ActionListener
   {
     private Component component;

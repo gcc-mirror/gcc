@@ -365,7 +365,7 @@ public class BitSet implements Cloneable, Serializable
       throw new IndexOutOfBoundsException();
     BitSet bs = new BitSet(to - from);
     int lo_offset = from >>> 6;
-    if (lo_offset >= bits.length)
+    if (lo_offset >= bits.length || to == from)
       return bs;
 
     int lo_bit = from & LONG_MASK;

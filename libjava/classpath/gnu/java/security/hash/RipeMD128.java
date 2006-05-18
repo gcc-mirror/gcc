@@ -283,7 +283,7 @@ public class RipeMD128 extends BaseHash
   {
     if (valid == null)
       {
-        valid = new Boolean
+        valid = Boolean.valueOf
           (DIGEST0.equals(Util.toString(new RipeMD128().digest())));
       }
     return valid.booleanValue();

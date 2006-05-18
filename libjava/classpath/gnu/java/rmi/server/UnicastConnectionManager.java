@@ -311,6 +311,14 @@ private UnicastConnection getClientConnection() throws IOException {
 }
 
 /**
+ * Get the string representation, describing the connection.
+ */
+public String toString()
+{
+  return serverName+":"+serverPort+" ("+serverobj+")";
+}
+
+/**
  * Discard a connection when we're done with it - maybe it can be
  * recycled.
  */
@@ -442,5 +450,13 @@ public boolean equals(Object obj) {
 	}
 	return (false);
 }
+
+  /**
+   * Get the string representation, describing the connection.
+   */
+  public String toString()
+  {
+    return host+":"+port+" ("+other+")";
+  }
 
 }

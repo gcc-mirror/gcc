@@ -1,7 +1,0 @@
-#
-# Author: Petter Reinholdtsen <pere@td.org.uit.no>
-
-# Load support procs
-load_lib java.exp
-
-test-java-source

@@ -1,5 +1,5 @@
 /* GeneralPath.java -- represents a shape built from subpaths
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation
+   Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -79,8 +79,16 @@ import java.awt.Shape;
  */
 public final class GeneralPath implements Shape, Cloneable
 {
-  public static final int WIND_EVEN_ODD = PathIterator.WIND_EVEN_ODD;
-  public static final int WIND_NON_ZERO = PathIterator.WIND_NON_ZERO;
+  // WORKAROUND for gcj 4.0.x (x < 3)
+  // fully qualify PathIterator constants.
+
+  /** Same constant as {@link PathIterator#WIND_EVEN_ODD}. */
+  public static final int WIND_EVEN_ODD
+    = java.awt.geom.PathIterator.WIND_EVEN_ODD;
+
+  /** Same constant as {@link PathIterator.WIND_NON_ZERO}. */
+  public static final int WIND_NON_ZERO
+    = java.awt.geom.PathIterator.WIND_NON_ZERO;
 
   /** Initial size if not specified. */
   private static final int INIT_SIZE = 10;

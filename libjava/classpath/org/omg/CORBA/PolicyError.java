@@ -1,5 +1,5 @@
 /* PolicyError.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,7 @@ import java.io.Serializable;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class PolicyError
+public final class PolicyError
   extends UserException
   implements IDLEntity, Serializable
 {
@@ -69,7 +69,7 @@ public class PolicyError
   private static final long serialVersionUID = -9196809779974700103L;
 
   /**
-   * Constructs an unitialised instance of the policy error.
+   * Constructs an uninitialised instance of the policy error.
    */
   public PolicyError()
   {

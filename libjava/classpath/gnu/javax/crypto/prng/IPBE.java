@@ -39,31 +39,43 @@ exception statement from your version.  */
 package gnu.javax.crypto.prng;
 
 /**
- * <p>Trivial interface to group Password-based encryption property names.</p>
- *
- * @version $Revision: 1.1 $
+ * Trivial interface to group Password-based encryption property names and
+ * constants.
  */
 public interface IPBE
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
   /**
    * Property name for the iteration count in a PBE algorithm. The property
    * associated with this is expected to be an {@link Integer}.
    */
-  public static final String ITERATION_COUNT = "gnu.crypto.pbe.iteration.count";
+  String ITERATION_COUNT = "gnu.crypto.pbe.iteration.count";
 
   /**
    * Property name for the password in a PBE algorithm. The property associated
    * with this is expected to be a char array.
    */
-  public static final String PASSWORD = "gnu.crypto.pbe.password";
+  String PASSWORD = "gnu.crypto.pbe.password";
+
+  /**
+   * Property name for the password character encoding in a PBE algorithm. The
+   * property associated with this is expected to be a String denoting a valid
+   * character-encoding name. If this property is not set, and a password is
+   * used, then {@link #DEFAULT_PASSWORD_ENCODING} will be used when converting
+   * the password character(s) to bytes.
+   */
+  String PASSWORD_ENCODING = "gnu.crypto.pbe.password.encoding";
 
   /**
    * Property name for the salt in a PBE algorithm. The property associated
    * with this is expected to be a byte array.
    */
-  public static final String SALT = "gnu.crypto.pbe.salt";
+  String SALT = "gnu.crypto.pbe.salt";
+
+  /**
+   * The default character set encoding name to be used if (a) a password is
+   * to be used as the source for a PBE-based Key Derivation Function (KDF) and
+   * (b) no character set encoding name was specified among the attributes used
+   * to initialize the instance.
+   */
+  String DEFAULT_PASSWORD_ENCODING = "UTF-8";
 }

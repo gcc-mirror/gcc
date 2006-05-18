@@ -6,7 +6,7 @@ dnl -----------------------------------------------------------
 dnl define([AC_CACHE_LOAD], )dnl
 dnl define([AC_CACHE_SAVE], )dnl
 
-AC_INIT([GNU Classpath],[0.90],[classpath@gnu.org],[classpath])
+AC_INIT([GNU Classpath],[0.91],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 
 AC_CANONICAL_TARGET
@@ -32,6 +32,9 @@ esac
 
 CLASSPATH_MODULE="${cp_module} -version-info ${LIBVERSION} -no-undefined"
 AC_SUBST(CLASSPATH_MODULE)
+
+CLASSPATH_CONVENIENCE="-no-undefined"
+AC_SUBST(CLASSPATH_CONVENIENCE)
 
 AC_PREREQ(2.59)
 AM_INIT_AUTOMAKE([1.9.0 gnu std-options tar-ustar])
@@ -202,13 +205,13 @@ dnl -----------------------------------------------------------
 AC_ARG_WITH([native-libdir],
 	    [AS_HELP_STRING(--with-native-libdir,sets the installation directore for native libraries [default='${libdir}/${PACKAGE}'])],
 	    [
-	     nativelibdir=${withval}
+	     nativeexeclibdir=${withval}
 	    ],
 	    [
-	     nativelibdir='${libdir}/${PACKAGE}'
+	     nativeexeclibdir='${libdir}/${PACKAGE}'
 	    ])
 
-AC_SUBST(nativelibdir)
+AC_SUBST(nativeexeclibdir)
 
 dnl -----------------------------------------------------------
 dnl Sets the Java library installation dir.
@@ -297,7 +300,7 @@ if test "x${COMPILE_JNI}" = xyes; then
 		  strerror_r \
                   fcntl \
 		  mmap munmap mincore msync madvise getpagesize sysconf \
-		  isnan])
+		  ])
 
   AC_HEADER_TIME
   AC_STRUCT_TM
@@ -588,6 +591,57 @@ AC_ARG_ENABLE([portable-native-sync],
 
 AX_CREATE_STDINT_H([include/config-int.h])
 
+dnl -----------------------------------------------------------------------
+dnl                    Support for using a prebuilt class library
+dnl -----------------------------------------------------------------------
+AC_ARG_WITH([glibj_zip],
+            AS_HELP_STRING([--with-glibj-zip=ABS.PATH],
+                           [use prebuilt glibj.zip class library]))
+
+case "$with_glibj_zip" in
+"")
+        use_glibj_zip=false
+        ;;
+"no" )
+        use_glibj_zip=false
+        ;;
+"yes")
+        AC_MSG_ERROR([Please suply an absolute path to a prebuilt glibj.zip])
+        ;;
+*)
+        use_glibj_zip=true
+        PATH_TO_GLIBJ_ZIP=$with_glibj_zip
+	;;
+esac;
+
+AM_CONDITIONAL(USE_PREBUILT_GLIBJ_ZIP, test x$use_glibj_zip = xtrue)
+AC_SUBST(PATH_TO_GLIBJ_ZIP)
+
+
+dnl -----------------------------------------------------------
+dnl Check if local socket support should be included.
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE([local-sockets],
+              [AS_HELP_STRING(--enable-local-sockets,enables local (AF_LOCAL) socket API [default: no])],
+              [case "${enableval}" in
+                yes)
+                  ENABLE_LOCAL_SOCKETS=yes
+                  ;;
+                *)
+                  ENABLE_LOCAL_SOCKETS=no
+                  ;;
+               esac],
+              [])
+if test "x$ENABLE_LOCAL_SOCKETS" = "xyes"
+then
+  AC_CHECK_HEADER([sys/un.h])
+  AC_CHECK_FUNCS([read write bind listen accept shutdown], [],
+                 AC_MSG_ERROR([networking support not available]))
+  AC_DEFINE(ENABLE_LOCAL_SOCKETS, [1], [Define to enable support for local sockets.])
+fi
+AM_CONDITIONAL(ENABLE_LOCAL_SOCKETS, test "x$ENABLE_LOCAL_SOCKETS" = "xyes")
+
+
 dnl -----------------------------------------------------------
 dnl output files
 dnl -----------------------------------------------------------
@@ -625,6 +679,8 @@ lib/Makefile
 lib/gen-classlist.sh
 lib/copy-vmresources.sh
 tools/Makefile
+tools/jarsigner.sh
+tools/keytool.sh
 examples/Makefile
 examples/Makefile.jawt])
 AC_CONFIG_COMMANDS([gen-classlist],[chmod 755 lib/gen-classlist.sh])

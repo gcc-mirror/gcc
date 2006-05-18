@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.swing;
 
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -49,37 +50,53 @@ import javax.swing.event.ChangeListener;
 public interface SingleSelectionModel
 {
   /**
-   * getSelectedIndex
-   * @returns int
+   * Returns the selected index or <code>-1</code> if there is no selection.
+   * 
+   * @return The selected index.
+   * 
+   * @see #setSelectedIndex(int)
    */
   int getSelectedIndex();
 
   /**
-   * setSelectedIndex
-   * @param index TODO
+   * Sets the selected index and, if this is different to the previous 
+   * selection, sends a {@link ChangeEvent} to all registered listeners.
+   * 
+   * @param index  the index (use <code>-1</code> to represent no selection).
+   * 
+   * @see #getSelectedIndex()
+   * @see #clearSelection
    */
   void setSelectedIndex(int index);
 
   /**
-   * clearSelection
+   * Clears the selection by setting the selected index to <code>-1</code> and
+   * sends a {@link ChangeEvent} to all registered listeners.  If the selected
+   * index is already <code>-1</code>, this method does nothing.  
    */
   void clearSelection();
 
   /**
-   * isSelected
-   * @returns boolean
+   * Returns <code>true</code> if there is a selection, and <code>false</code>
+   * otherwise.  
+   * 
+   * @return A boolean.
    */
   boolean isSelected();
 
   /**
-   * addChangeListener
-   * @param listener TODO
+   * Registers a listener to receive {@link ChangeEvent} notifications from
+   * this model whenever the selected index changes.
+   *
+   * @param listener the listener to add.
    */
   void addChangeListener(ChangeListener listener);
 
   /**
-   * removeChangeListener
-   * @param listener TODO
+   * Deregisters a listener so that it no longer receives {@link ChangeEvent}
+   * notifications from this model.
+   *
+   * @param listener the listener to remove.
    */
   void removeChangeListener(ChangeListener listener);
 

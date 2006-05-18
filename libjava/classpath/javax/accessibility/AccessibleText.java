@@ -92,7 +92,7 @@ public interface AccessibleText
    * Given a point in the coordinate system of this object, return the
    * 0-based index of the character at that point, or -1 if there is none.
    *
-   * @param p the point to look at
+   * @param point the point to look at
    * @return the character index, or -1
    */
   int getIndexAtPoint(Point point);

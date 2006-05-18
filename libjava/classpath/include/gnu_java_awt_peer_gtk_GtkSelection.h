@@ -10,11 +10,11 @@ extern "C"
 {
 #endif
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestText (JNIEnv *env, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestImage (JNIEnv *env, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestURIs (JNIEnv *env, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestBytes (JNIEnv *env, jobject, jstring);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestMimeTypes (JNIEnv *env, jobject);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestText (JNIEnv *env, jobject, jboolean);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestImage (JNIEnv *env, jobject, jboolean);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestURIs (JNIEnv *env, jobject, jboolean);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestBytes (JNIEnv *env, jobject, jboolean, jstring);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkSelection_requestMimeTypes (JNIEnv *env, jobject, jboolean);
 
 #ifdef __cplusplus
 }

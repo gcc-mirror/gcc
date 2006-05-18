@@ -42,7 +42,6 @@ package gnu.classpath.jdwp.processor;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMFrame;
 import gnu.classpath.jdwp.VMVirtualMachine;
-import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;

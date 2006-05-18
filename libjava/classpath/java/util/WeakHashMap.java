@@ -292,12 +292,9 @@ public class WeakHashMap extends AbstractMap implements Map
         /**
          * Checks if there are more entries.
          * @return true, iff there are more elements.
-         * @throws ConcurrentModificationException if the hash map was
-         *         modified.
          */
         public boolean hasNext()
         {
-          checkMod();
           return nextEntry != null;
         }
 

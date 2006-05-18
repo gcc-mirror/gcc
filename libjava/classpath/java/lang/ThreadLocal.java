@@ -152,4 +152,15 @@ public class ThreadLocal
     // ever modify the map.
     map.put(this, value == null ? NULL : value);
   }
+
+  /**
+   * Removes the value associated with the ThreadLocal object for the
+   * currently executing Thread.
+   * @since 1.5
+   */
+  public void remove()
+  {
+    Map map = Thread.getThreadLocals();
+    map.remove(this);
+  }
 }

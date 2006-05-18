@@ -350,7 +350,7 @@ public class InternationalFormatter
    *     There is no such method in the whole API! So we just call
    *     super.getActions here.
    */
-  public Action[] getActions()
+  protected Action[] getActions()
   {
     return super.getActions();
   }

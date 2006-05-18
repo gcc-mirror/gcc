@@ -154,3 +154,35 @@ Java_java_lang_VMSystem_getenv (JNIEnv * env,
   JCL_free_cstring (env, jname, cname);
   return (*env)->NewStringUTF (env, envname);
 }
+
+JNIEXPORT jobject JNICALL
+Java_java_lang_VMSystem_environ (JNIEnv *env,
+				jclass klass __attribute__((__unused__)))
+{
+  char **env_pointer;
+  jobject variables;
+  jclass list_class;
+  jmethodID list_constructor;
+  jmethodID add;
+
+  list_class = (*env)->FindClass(env, "java/util/LinkedList");
+  if (list_class == NULL)
+    return NULL;
+  list_constructor = (*env)->GetMethodID(env, list_class, "<init>", "()V");
+  if (list_constructor == NULL)
+    return NULL;
+  variables = (*env)->NewObject(env, list_class, list_constructor);
+  if (variables == NULL)
+    return NULL;
+  add = (*env)->GetMethodID(env, list_class, "add", "(Ljava/lang/Object;)Z");
+  if (add == NULL)
+    return NULL;
+  env_pointer = environ;
+  while (*env_pointer != NULL)
+    {
+      jstring string = (*env)->NewStringUTF(env, *env_pointer);      
+      (*env)->CallBooleanMethod(env, variables, add, string);
+      ++env_pointer;
+    }
+  return variables;
+}

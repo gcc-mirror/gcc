@@ -199,7 +199,6 @@ public class Inflater
    * with Sun's JDK, where the compressor allocates native memory.
    * If you call any method (even reset) afterwards the behaviour is
    * <i>undefined</i>.  
-   * @deprecated Just clear all references to inflater instead.
    */
   public void end ()
   {

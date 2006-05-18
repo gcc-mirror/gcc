@@ -1,5 +1,5 @@
 /* Connection.java -- Manage a database connection.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,7 +61,7 @@ public interface Connection
   int TRANSACTION_READ_UNCOMMITTED = 1;
 
   /**
-   * This transaction isolation leve indicates that only committed data from
+   * This transaction isolation level indicates that only committed data from
    * other transactions will be read.  If a transaction reads a row, then
    * another transaction commits a change to that row, the first transaction
    * would retrieve the changed row on subsequent reads of the same row.
@@ -101,8 +101,8 @@ public interface Connection
    * SQL string.  This method is designed for use with parameterized
    * statements.  The default result set type and concurrency will be used.
    *
-   * @param The SQL statement to use in creating this 
-   *        <code>PreparedStatement</code>.
+   * @param sql The SQL statement to use in creating this 
+   *            <code>PreparedStatement</code>.
    * @return A new <code>PreparedStatement</code>.
    * @exception SQLException If an error occurs.
    * @see PreparedStatement
@@ -115,8 +115,8 @@ public interface Connection
    * stored procedures.  The default result set type and concurrency
    * will be used.
    *
-   * @param The SQL statement to use in creating this 
-   *        <code>CallableStatement</code>.
+   * @param sql The SQL statement to use in creating this 
+   *            <code>CallableStatement</code>.
    * @return A new <code>CallableStatement</code>.
    * @exception SQLException If an error occurs.
    * @see CallableStatement
@@ -127,7 +127,7 @@ public interface Connection
    * This method converts the specified generic SQL statement into the
    * native grammer of the database this object is connected to.
    *
-   * @param The JDBC generic SQL statement.
+   * @param sql The JDBC generic SQL statement.
    * @return The native SQL statement.
    * @exception SQLException If an error occurs.
    */
@@ -139,10 +139,10 @@ public interface Connection
    * transaction must be explicitly committed or rolled back.
    *
    * @param autoCommit <code>true</code> to enable auto commit mode,
-   *        <code>false</code> to disable it.
+   *                   <code>false</code> to disable it.
    * @exception SQLException If an error occurs.
-   * @see commit
-   * @see rollback
+   * @see #commit()
+   * @see #rollback()
    */
   void setAutoCommit(boolean autoCommit) throws SQLException;
 
@@ -152,12 +152,10 @@ public interface Connection
    * Otherwise a transaction must be explicitly committed or rolled back.
    *
    * @return <code>true</code> if auto commit mode is enabled, 
-   * <code>false</code> otherwise.
-   *
+   *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
-   *
-   * @see commit
-   * @see rollback
+   * @see #commit()
+   * @see #rollback()
    */
   boolean getAutoCommit() throws SQLException;
 
@@ -207,7 +205,7 @@ public interface Connection
    * a transaction is in progress.
    *
    * @param readOnly <code>true</code> if this connection is read only,
-   *        <code>false</code> otherwise.
+   *                 <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
   void setReadOnly(boolean readOnly) throws SQLException;
@@ -235,8 +233,8 @@ public interface Connection
    * This method returns the name of the catalog in use by this connection,
    * if any.
    *
-   * @return The name of the catalog, or <code>null</code> if one does not
-   *         exist or catalogs are not supported by this database.
+   * @return The name of the catalog, or <code>null</code> if none 
+   *         exists or catalogs are not supported by this database.
    * @exception SQLException If an error occurs.
    */
   String getCatalog() throws SQLException;
@@ -283,8 +281,8 @@ public interface Connection
    * <code>ResultSet</code> class.
    *
    * @param resultSetType The type of result set to use for this statement.
-   * @param resultSetConcurrency.  The type of concurrency to be used in
-   *        the result set for this statement.
+   * @param resultSetConcurrency  The type of concurrency to be used in
+   *                              the result set for this statement.
    * @return A new <code>Statement</code> object.
    * @exception SQLException If an error occurs.
    * @see Statement
@@ -300,11 +298,11 @@ public interface Connection
    * Valid values for these parameters are specified in the
    * <code>ResultSet</code> class.
    *
-   * @param The SQL statement to use in creating this 
-   *        <code>PreparedStatement</code>.
+   * @param sql The SQL statement to use in creating this 
+   *            <code>PreparedStatement</code>.
    * @param resultSetType The type of result set to use for this statement.
-   * @param resultSetConcurrency.  The type of concurrency to be used in
-   *        the result set for this statement.
+   * @param resultSetConcurrency  The type of concurrency to be used in
+   *                              the result set for this statement.
    * @return A new <code>PreparedStatement</code>.
    * @exception SQLException If an error occurs.
    * @see PreparedStatement
@@ -320,11 +318,11 @@ public interface Connection
    * will be used.  Valid values for these parameters are specified in the
    * <code>ResultSet</code> class.
    *
-   * @param The SQL statement to use in creating this 
-   *        <code>PreparedStatement</code>.
+   * @param sql The SQL statement to use in creating this 
+   *            <code>PreparedStatement</code>.
    * @param resultSetType The type of result set to use for this statement.
-   * @param resultSetConcurrency.  The type of concurrency to be used in
-   *        the result set for this statement.
+   * @param resultSetConcurrency  The type of concurrency to be used in
+   *                              the result set for this statement.
    * @return A new <code>CallableStatement</code>.
    * @exception SQLException If an error occurs.
    * @see CallableStatement
@@ -353,48 +351,130 @@ public interface Connection
   void setTypeMap(Map map) throws SQLException;
 
   /**
+   * Sets the default holdability of <code>ResultSet</code>S that are created
+   * from <code>Statement</code>S using this <code>Connection</code>.
+   * 
+   * @param holdability The default holdability value to set, this must be one
+   *                    of <code>ResultSet.HOLD_CURSORS_OVER_COMMIT</code> or
+   *                    <code>ResultSet.CLOSE_CURSORS_AT_COMMIT</code>.
+   * @exception SQLException If an error occurs.
+   * @see ResultSet
    * @since 1.4
    */
   void setHoldability(int holdability) throws SQLException;
 
   /**
+   * Gets the default holdability of <code>ResultSet</code>S that are created
+   * from <code>Statement</code>S using this <code>Connection</code>.
+   * 
+   * @return The current default holdability value, this must be one of
+   *          <code>ResultSet.HOLD_CURSORS_OVER_COMMIT</code> or
+   *          <code>ResultSet.CLOSE_CURSORS_AT_COMMIT</code>.
+   * @exception SQLException If an error occurs.
+   * @see ResultSet
    * @since 1.4
    */
   int getHoldability() throws SQLException;
 
   /**
+   * Creates a new unnamed savepoint for this <code>Connection</code>
+   * 
+   * @return The <code>Savepoint</code> object representing the savepoint.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   Savepoint setSavepoint() throws SQLException;
 
   /**
+   * Creates a new savepoint with the specifiend name for this
+   * <code>Connection</code>.
+   * 
+   * @param name The name of the savepoint.
+   * @return The <code>Savepoint</code> object representing the savepoint.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   Savepoint setSavepoint(String name) throws SQLException;
 
   /**
+   * Undoes all changes made after the specified savepoint was set.
+   * 
+   * @param savepoint The safepoint to roll back to.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   void rollback(Savepoint savepoint) throws SQLException;
 
   /**
+   * Removes the specified savepoint from this <code>Connection</code>.
+   * Refering to a savepoint after it was removed is an error and will throw an
+   * SQLException.
+   * 
+   * @param savepoint The savepoint to release.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   void releaseSavepoint(Savepoint savepoint) throws SQLException;
 
   /**
+   * This method creates a new SQL statement with the specified type,
+   * concurrency and holdability, instead of using the defaults.  Valid values
+   * for these parameters are specified in the <code>ResultSet</code> class.
+   * 
+   * @param resultSetType The type of result set to use for this statement.
+   * @param resultSetConcurrency The type of concurrency to be used in
+   *                             the result set for this statement.
+   * @param resultSetHoldability The type of holdability to be usd in the
+   *                             result set for this statement.
+   * @return A new <code>Statement</code>
+   * @exception SQLException If an error occurs.
+   * @see ResultSet
    * @since 1.4
    */
   Statement createStatement(int resultSetType, int
       resultSetConcurrency, int resultSetHoldability) throws SQLException;
 
   /**
+   * This method creates a new <code>PreparedStatement</code> for the specified
+   * SQL string.  This method is designed for use with parameterized
+   * statements.  The specified result set type, concurrency and holdability
+   * will be used. Valid values for these parameters are specified in the
+   * <code>ResultSet</code> class.
+   *
+   * @param sql The SQL statement to use in creating this 
+   *            <code>PreparedStatement</code>.
+   * @param resultSetType The type of result set to use for this statement.
+   * @param resultSetConcurrency The type of concurrency to be used in
+   *                             the result set for this statement.
+   * @param resultSetHoldability The type of holdability to be usd in the
+   *                             result set for this statement.
+   * @return A new <code>PreparedStatement</code>.
+   * @exception SQLException If an error occurs.
+   * @see PreparedStatement
+   * @see ResultSet
    * @since 1.4
    */
   PreparedStatement prepareStatement(String sql, int resultSetType, int
       resultSetConcurrency, int resultSetHoldability) throws SQLException;
 
   /**
+   * This method creates a new <code>CallableStatement</code> for the 
+   * specified SQL string.  Thie method is designed to be used with
+   * stored procedures.  The specified result set type, concurrency and
+   * holdability will be used.  Valid values for these parameters are specified
+   * in the <code>ResultSet</code> class.
+   *
+   * @param sql The SQL statement to use in creating this 
+   *            <code>PreparedStatement</code>.
+   * @param resultSetType The type of result set to use for this statement.
+   * @param resultSetConcurrency The type of concurrency to be used in
+   *                             the result set for this statement.
+   * @param resultSetHoldability The type of holdability to be used in the
+   *                             result set for this statement.
+   * @return A new <code>CallableStatement</code>.
+   * @exception SQLException If an error occurs.
+   * @see CallableStatement
+   * @see ResultSet
    * @since 1.4
    */
   CallableStatement prepareCall(String sql, int resultSetType, int

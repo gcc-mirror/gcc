@@ -53,8 +53,6 @@ import java.util.Set;
  * <p>Such a stage wraps an implementation of a Block Cipher Mode of Operation
  * ({@link IMode}) to allow inclusion of such an instance in a cascade of block
  * ciphers.</p>
- *
- * @version $Revision: 1.1 $
  */
 class ModeStage extends Stage
 {

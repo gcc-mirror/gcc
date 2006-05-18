@@ -50,7 +50,7 @@ public class DecodeRGB24 extends BMPDecoder {
 
     public BufferedImage decode(ImageInputStream in) throws IOException, BMPException {
 	skipToImage(in);
-
+        
 	Dimension d = infoHeader.getSize();
 	int h = (int)d.getHeight();
 	int w = (int)d.getWidth();

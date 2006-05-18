@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <!-- package.html - describes classes in java.rmi.dgc package.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,13 @@ exception statement from your version. -->
 <head><title>GNU Classpath - java.rmi.dgc</title></head>
 
 <body>
-<p></p>
-
+The Distributed Garbage Collector (DGC). The DGC is reponsible for keeping all
+locally created and exported remote objects as long as they are referenced
+by some remote clients. The client must periodically notify the server that
+it still wants to keep the remote object on the server side. The client
+notifies the server by calling methods, defined in the DGC interface. 
+Other classes in this package define the parameters that are used in this
+interface. The DGC object of some host can be found and accessed by its  
+object identifier (ObjID.DGC_ID), without involving the name service.
 </body>
 </html>

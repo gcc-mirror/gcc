@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.classpath.NotImplementedException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -921,6 +923,7 @@ element_loop:
    * @return A <code>CollationElementIterator</code> for the specified <code>String</code>.
    */
   public CollationElementIterator getCollationElementIterator(CharacterIterator source)
+    throws NotImplementedException  // Because decomposeCharacter does not work
   {
     StringBuffer expand = new StringBuffer("");
     

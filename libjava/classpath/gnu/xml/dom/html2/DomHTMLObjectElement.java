@@ -72,6 +72,36 @@ public class DomHTMLObjectElement
     setHTMLAttribute("code", code);
   }
   
+  public String getJavaCode()
+  {
+    return getHTMLAttribute("java_code");
+  }
+
+  public void setJavaCode(String code)
+  {
+    setHTMLAttribute("java_code", code);
+  }
+  
+  public String getObject()
+  {
+    return getHTMLAttribute("object");
+  }
+
+  public void setObject(String obj)
+  {
+    setHTMLAttribute("object", obj);
+  }
+  
+  public String getJavaObject()
+  {
+    return getHTMLAttribute("java_object");
+  }
+
+  public void setJavaObject(String obj)
+  {
+    setHTMLAttribute("java_object", obj);
+  }
+  
   public String getAlign()
   {
     return getHTMLAttribute("align");
@@ -92,6 +122,16 @@ public class DomHTMLObjectElement
     setHTMLAttribute("archive", archive);
   }
   
+  public String getJavaArchive()
+  {
+    return getHTMLAttribute("java_archive");
+  }
+
+  public void setJavaArchive(String archive)
+  {
+    setHTMLAttribute("java_archive", archive);
+  }
+  
   public String getBorder()
   {
     return getHTMLAttribute("border");
@@ -110,6 +150,16 @@ public class DomHTMLObjectElement
   public void setCodeBase(String codeBase)
   {
     setHTMLAttribute("codebase", codeBase);
+  }
+  
+  public String getJavaCodeBase()
+  {
+    return getHTMLAttribute("java_codebase");
+  }
+
+  public void setJavaCodeBase(String codeBase)
+  {
+    setHTMLAttribute("java_codebase", codeBase);
   }
   
   public String getCodeType()
@@ -202,6 +252,16 @@ public class DomHTMLObjectElement
     setHTMLAttribute("type", type);
   }
   
+  public String getJavaType()
+  {
+    return getHTMLAttribute("java_type");
+  }
+
+  public void setJavaType(String type)
+  {
+    setHTMLAttribute("java_type", type);
+  }
+  
   public String getUseMap()
   {
     return getHTMLAttribute("usemap");
@@ -238,5 +298,24 @@ public class DomHTMLObjectElement
     return null;
   }
   
+  public void setMayscript(String may)
+  {
+    setHTMLAttribute("mayscript", may);
+  }
+  
+  public String getMayscript()
+  {
+    return getHTMLAttribute("mayscript");
+  }
+  
+  public void setScriptable(String scr)
+  {
+    setHTMLAttribute("scriptable", scr);
+  }
+  
+  public String getScriptable()
+  {
+    return getHTMLAttribute("scriptable");
+  }
 }
 

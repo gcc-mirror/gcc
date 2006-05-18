@@ -59,6 +59,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicBorders;
@@ -138,24 +139,59 @@ public class MetalBorders
       if (MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme)
         paintOceanButtonBorder(c, g, x, y, w, h);
       else
+        paintDefaultButtonBorder(c, g, x, y, w, h);
+    }
+
+    /**
+     * Paints the button border for the DefaultMetalTheme.
+     *
+     * @param c the component (button)
+     * @param g the graphics object to use
+     * @param x the upper left corner of the component, X coordinate
+     * @param y the upper left corner of the component, Y coordinate
+     * @param w the width of the component
+     * @param h the height of the component
+     */
+    private void paintDefaultButtonBorder(Component c, Graphics g, int x,
+                                          int y, int w, int h)
+    {
+      ButtonModel bmodel = null;
+
+      if (c instanceof AbstractButton)
+        bmodel = ((AbstractButton) c).getModel();
+
+      Color darkShadow = MetalLookAndFeel.getControlDarkShadow();
+      Color shadow = MetalLookAndFeel.getControlShadow();
+      Color light = MetalLookAndFeel.getControlHighlight();
+      Color middle = MetalLookAndFeel.getControl();
+
+      if (c.isEnabled())
         {
-          ButtonModel bmodel = null;
-      
-          if (c instanceof AbstractButton)
-            bmodel = ((AbstractButton) c).getModel();
+          // draw dark border
+          g.setColor(darkShadow);
+          g.drawRect(x, y, w - 2, h - 2);
 
-          Color darkShadow = MetalLookAndFeel.getControlDarkShadow();
-          Color shadow = MetalLookAndFeel.getControlShadow();
-          Color light = MetalLookAndFeel.getControlHighlight();
-          Color middle = MetalLookAndFeel.getControl();
-
-          if (c.isEnabled())
+          // If the button is the default button, we paint a special border,
+          // regardless of the pressed state.
+          if (c instanceof JButton && ((JButton) c).isDefaultButton())
             {
-              // draw dark border
-              g.setColor(darkShadow);
-              g.drawRect(x, y, w - 2, h - 2);
-
-              if (!bmodel.isPressed())
+              g.drawRect(x + 1, y + 1, w - 4, h - 4);
+              // Draw white highlight.
+              g.setColor(light);
+              g.drawLine(x + 2, y + 2, x + w - 4, y + 2);
+              g.drawLine(x + 2, y + 2, x + 2, y + h - 4);
+              g.drawLine(x + 2, y + h - 1, x + w - 1, y + h - 1);
+              g.drawLine(x + w - 1, y + 2, x + w - 1, y + h - 1);
+              // Draw crossing pixels.
+              g.setColor(middle);
+              g.fillRect(x + w - 2, y + 2, 1, 1);
+              g.fillRect(x + 2, y + h - 2, 1, 1);
+            }
+          else
+            {
+              // The normal border. This is used when the button is not
+              // pressed or the button is not armed.
+              if (! (bmodel.isPressed() && bmodel.isArmed()) )
                 {
                   // draw light border
                   g.setColor(light);
@@ -166,6 +202,8 @@ public class MetalBorders
                   g.drawLine(x + 1, y + h - 2, x + 1, y + h - 2);
                   g.drawLine(x + w - 2, y + 1, x + w - 2, y + 1);
                 }
+              // The pressed border. This border is painted only when
+              // the button is both pressed and armed.
               else
                 {
                   // draw light border
@@ -184,12 +222,12 @@ public class MetalBorders
                   g.drawRect(x + w - 2, y + 1, 0, 0);
                 }
             }
-          else 
-            {
-              // draw disabled border
-              g.setColor(MetalLookAndFeel.getInactiveControlTextColor());
-              g.drawRect(x, y, w - 2, h - 2);          
-            }
+        }
+      else 
+        {
+          // draw disabled border
+          g.setColor(MetalLookAndFeel.getInactiveControlTextColor());
+          g.drawRect(x, y, w - 2, h - 2);          
         }
     }
 
@@ -218,11 +256,16 @@ public class MetalBorders
 
       if (c.isEnabled())
         {
-          if (bmodel.isPressed())
+          // Paint the pressed border if the button is pressed, or if
+          // the button is the default button. In the OceanTheme, the default
+          // button has the same border as a pressed button.
+          if (bmodel.isPressed() || ((c instanceof JButton)
+                                     && ((JButton) c).isDefaultButton()))
             {
-              // draw fat border
-              g.drawLine(x + 1, y + 1, x + w - 2, y + 1);
-              g.drawLine(x + 1, y + 1, x + 1, y + h - 2);
+              // Draw fat border.
+              g.setColor(darkShadow);
+              g.drawRect(x, y, w - 1, h - 1);
+              g.drawRect(x + 1, y + 1, w - 3, h - 3);
             }
           else if (bmodel.isRollover())
             {
@@ -1025,14 +1068,10 @@ public class MetalBorders
     public void paintBorder(Component c, Graphics g, int x, int y, int w, 
             int h)
     {
-      boolean mouseIsOver = false;
-      if (c instanceof AbstractButton)
-        {
-          ButtonModel bmodel = ((AbstractButton) c).getModel();
-          mouseIsOver = bmodel.isRollover();
-        }
-      if (mouseIsOver)
-        super.paintBorder(c, g, x, y, w, h);
+      // TODO: What should be done here? Obviously the ButtonBorder already
+      // handles the rollover state in Sun's impl. Maybe this is only there
+      // for backwards compatibility.
+      super.paintBorder(c, g, x, y, w, h);
     }
   }
   
@@ -1520,8 +1559,7 @@ public class MetalBorders
       {
         Border outer = new ButtonBorder();
         Border inner = new RolloverMarginBorder();
-        toolbarButtonBorder = new BorderUIResource.CompoundBorderUIResource
-          (outer, inner);
+        toolbarButtonBorder = new CompoundBorder(outer, inner);
       }
     return toolbarButtonBorder;
   }

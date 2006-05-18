@@ -51,8 +51,6 @@ package gnu.javax.crypto.assembly;
  *    the chain, and the resulting bytes are then processed by the current
  *    {@link Transformer}.</li>
  * </ol>
- *
- * @version $Revision: 1.1 $
  */
 public final class Operation
 {

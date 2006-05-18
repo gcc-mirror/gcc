@@ -1,5 +1,5 @@
 /*  gnu/regexp/RETokenStart.java
-    Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,7 @@ class RETokenStart extends REToken {
         return 0;
     }
     
-    boolean match(CharIndexed input, REMatch mymatch) {
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
 	// charAt(index-n) may be unknown on a Reader/InputStream. FIXME
 	// Match after a newline if in multiline mode
 	
@@ -70,19 +70,26 @@ class RETokenStart extends REToken {
 		    ch = input.charAt(mymatch.index - len + i);
 		} while (i < len);
 	    
-		if (found) return next(input, mymatch);
+		if (found) return mymatch;
 	    }
 	}
 	
 	// Don't match at all if REG_NOTBOL is set.
-	if ((mymatch.eflags & RE.REG_NOTBOL) > 0) return false;
+	if ((mymatch.eflags & RE.REG_NOTBOL) > 0) return null;
 	
 	if ((mymatch.eflags & RE.REG_ANCHORINDEX) > 0)
 	    return (mymatch.anchor == mymatch.offset) ? 
-		next(input, mymatch) : false;
+		mymatch : null;
 	else
 	    return ((mymatch.index == 0) && (mymatch.offset == 0)) ?
-		next(input, mymatch) : false;
+		mymatch : null;
+    }
+
+    boolean returnsFixedLengthmatches() { return true; }
+
+    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+        if (matchThis(input, mymatch) != null) return max;
+	else return 0;
     }
     
     void dump(StringBuffer os) {

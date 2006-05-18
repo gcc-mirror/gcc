@@ -56,7 +56,7 @@ import java.util.Iterator;
  * 2) Filter event notifications from the VM
  * 
  * If an event request arrives from the debugger, the back-end will
- * call {@link #reqestEvent}, which will first check for a valid event.
+ * call {@link #requestEvent}, which will first check for a valid event.
  * If it is valid, <code>EventManager</code> will record the request
  * internally and register the event with the virtual machine, which may
  * choose to handle the request itself (as is likely the case with

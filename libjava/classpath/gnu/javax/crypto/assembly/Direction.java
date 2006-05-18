@@ -49,8 +49,6 @@ package gnu.javax.crypto.assembly;
  *    its inverse value</li>
  *    <li>REVERSED: equivalent to {@link gnu.crypto.mode.IMode#DECRYPTION}.</li>
  * </ol>
- *
- * @version $Revision: 1.1 $
  */
 public final class Direction
 {

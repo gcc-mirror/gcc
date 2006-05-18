@@ -1,5 +1,5 @@
 /* _DynAnyFactoryStub.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,20 +40,19 @@ package org.omg.DynamicAny;
 
 import gnu.CORBA.Minor;
 
+import java.io.Serializable;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.portable.Delegate;
 import org.omg.CORBA.portable.ObjectImpl;
 import org.omg.DynamicAny.DynAnyFactoryPackage.InconsistentTypeCode;
-
-import java.io.Serializable;
 
 /**
  * Should provide support for remote invocation of methods on
  * DynAnyFactory. As DynAny can never be remote at least till 1.5 inclusive,
  * this class is not in use. DynAnyFactory should be obtained from the
- * {@link ORB#resolve_initial_references}.
+ * {@link org.omg.CORBA.ORB#resolve_initial_references}.
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
@@ -76,14 +75,6 @@ public class _DynAnyFactoryStub
    */
   public _DynAnyFactoryStub()
   {
-  }
-
-  /**
-   * Create the naming context stub with the given delegate.
-   */
-  public _DynAnyFactoryStub(Delegate delegate)
-  {
-    _set_delegate(delegate);
   }
 
   /**

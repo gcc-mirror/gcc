@@ -160,7 +160,9 @@ public class Connection extends URLConnection
  	else if (c > 127) {
 	    try {
 		byte [] c_as_bytes = Character.toString(c).getBytes("utf-8");
-		System.arraycopy(c_as_bytes, 0, buf, pos, c_as_bytes.length);
+		final int c_length = c_as_bytes.length;
+		System.arraycopy(c_as_bytes, 0, buf, pos, c_length);
+		pos += c_length;
 	    }
 	    catch (java.io.UnsupportedEncodingException x2) {
 		throw (Error) new InternalError().initCause(x2);

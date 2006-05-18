@@ -158,7 +158,7 @@ extern double erfc __P((double));
 extern double gamma __P((double));
 extern double hypot __P((double, double));
 
-#if !defined(isnan) && !defined(HAVE_ISNAN)
+#if !defined(isnan)
 #define isnan(x) ((x) != (x))
 #endif
 

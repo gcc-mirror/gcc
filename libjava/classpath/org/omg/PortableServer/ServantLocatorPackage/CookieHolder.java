@@ -1,5 +1,5 @@
 /* CookieHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -56,7 +56,7 @@ import org.omg.CORBA.portable.Streamable;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class CookieHolder
+public final class CookieHolder
   implements Streamable
 {
   /**

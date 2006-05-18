@@ -73,7 +73,7 @@ import java.security.SignatureException;
  */
 public abstract class Certificate implements Serializable
 {
-  private static final long serialVersionUID = -6751606818319535583L;
+  private static final long serialVersionUID = -3585440601605666277L;
 	
   private String type;
 

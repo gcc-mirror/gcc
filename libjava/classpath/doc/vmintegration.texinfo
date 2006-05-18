@@ -200,6 +200,8 @@ implementation.
 * java.nio::
 * java.nio.channels::
 * gnu.java.nio::
+* java.lang.reflect::
+* gnu.java.lang::
 * Classpath Callbacks::
 @end menu
 
@@ -226,7 +228,6 @@ become operable.
 * java.lang.VMRuntime::
 * java.lang.VMString::
 * java.lang.VMThread::
-* java.lang.VMInstrumentationImpl::
 * java.lang.VMMath::
 @end menu
 
@@ -274,9 +275,12 @@ VM should filter out non-public classes.
 @item @code{getDeclaredConstructors(Class,boolean)} -- And constructors.
 @item @code{getClassLoader(Class)} -- Returns the @code{ClassLoader} instance
 which is responsible for the specified class.
-@item @code{forName(String)} -- The VM should create a @code{Class} instance
-corresponding to the named class.  As noted in @ref{VM Hooks}, the internal
-content of the instance is the responsibility of the VM.
+@item @code{forName(String, boolean, ClassLoader)} -- The VM should create a
+@code{Class} instance corresponding to the named class.  As noted in
+@ref{VM Hooks}, the internal content of the instance is the
+responsibility of the VM.  The supplied class loader is recorded as that
+which loaded the class, and the boolean specifies whether or not to
+run the class initializer.
 @item @code{isArray(Class)} -- Another property test, corresponding to a
 class file flag.
 @item @code{initialize(Class)} -- The VM should initialize the class fully,
@@ -307,15 +311,44 @@ information stored in the class file.
 an inner or member class, or @code{null} if the instance refers to a top-level
 class.
 @end itemize
+@item 1.5
+@itemize @bullet
+@item @code{isSynthetic(Class)} -- Returns true if the flags for this class
+mark it as synthetic.
+@item @code{isAnnotation(Class)} -- Returns true if the flags for this class
+mark it as an annotation.
+@item @code{isEnum(Class)} -- Returns true if the flags for this class
+mark it as an enumeration.
+@item @code{getSimpleName(Class)} -- Returns the simple name of the class.
+A default implementation is provided, but a more efficient version may instead
+be provided by the VM.
+@item @code{getCanonicalName(Class)} -- Returns the canonical name of the
+class.  A default implementation is provided, but a more efficient
+version may instead be provided by the VM.
+@item @code{getEnclosingClass(Class)} -- Returns the immediately enclosing
+class (null for a top-level class).
+@item @code{getEnclosingConstructor(Class)} -- Returns the constructor
+which immediately encloses the supplied class.
+@item @code{getEnclosingMethod(Class)} -- Returns the method
+which immediately encloses the supplied class.
+@item @code{getClassSignature(Class)} -- Returns the generic signature of
+the class or null if there isn't one.
+@item @code{isAnonymousClass(Class)} -- Returns true if the class is an
+anonymous class.
+@item @code{isLocalClass(Class)} -- Returns true if the class is an
+local class.
+@item @code{isMemberClass(Class)} -- Returns true if the class is an
+member class.
+@end itemize
 @end itemize
 
 @node java.lang.VMObject, java.lang.VMClassLoader, java.lang.VMClass, java.lang
 @subsection @code{java.lang.VMObject}
 
-@code{VMObject} is the bridge between the low level @code{Object} facilities
-such as making a clone, getting the class of the object and the wait/notify
-semantics.  This is accomplished using the following @code{native}
-methods.
+@code{VMObject} is the bridge between the low level @code{Object}
+facilities such as making a clone, getting the class of the object and
+the wait/notify semantics.  This is accomplished using the following
+@code{native} methods.
 
 @itemize @bullet
 @item @code{getClass(Object)} -- Returns the @code{Class} instance for the
@@ -413,13 +446,15 @@ and direct memory manipulation than would have been achieved by using Java.
 @item @code{currentTimeMillis()} -- Gets the system time in milliseconds.
 @item @code{getenv(String)} -- Returns the value of the specified environment
 variable.
+@item @code{getenv()} -- Returns a list of `name=value' pairs which correspond
+to the environment variables.
 @end itemize
 @item Java Methods
 @itemize @bullet
 @item @code{makeStandardInputStream()} -- Helps provide the functionality of
-@code{System.in} by wrapping the appropriate file descriptor in a buffered
-file input stream.  VMs may choose to create the stream from the descriptor
-differently rather than using this method.
+@code{System.in} by wrapping the appropriate file descriptor in a
+buffered file input stream.  VMs may choose to create the stream from
+the descriptor differently rather than using this method.
 @item @code{makeStandardOutputStream()} -- Helps provide the functionality of
 @code{System.out} by wrapping the appropriate file descriptor in a buffered
 file output stream.  VMs may choose to create the stream from the descriptor
@@ -540,11 +575,14 @@ for all three by Classpath, making VM implementation optional.  These use
 the POSIX functions, @code{fork()}, @code{waitpid()} and @code{kill()}.
 
 @itemize @bullet
-@item @code{nativeSpawn(String[],String[],File)} -- The VM should create a
-new process which uses the specified command-line arguments, environment
-variables and working directory.  Unlike the other two methods, this
-method is linked to an instance, and must call @code{setProcessInfo()} with
-the results before returning.
+@item @code{nativeSpawn(String[],String[],File,boolean)} -- The VM should
+create a new process which uses the specified command-line arguments,
+environment variables and working directory.  Unlike the other two
+methods, this method is linked to an instance, and must call
+@code{setProcessInfo()} with the results before returning.  The
+boolean argument maps to the @code{redirectErrorStream} property of
+@code{java.lang.ProcessBuilder}.  When true, the output and error streams
+are merged.
 @item @code{nativeReap()} -- This is called to perform a reap of any
 zombie processes, and should not block, instead returning a boolean as to
 whether reaping actually took place.
@@ -609,7 +647,7 @@ A new mapping is created for each new string being @code{intern}ed.
 A VM may implement this differently by implementing this method,
 which is @code{static} and the only one in @code{VMString}.
 
-@node java.lang.VMThread,java.lang.VMInstrumentationImpl, java.lang.VMString, java.lang
+@node java.lang.VMThread, java.lang.VMMath, java.lang.VMString, java.lang
 @subsection @code{java.lang.VMThread}
 
 @code{VMThread} provides the link between Java's threads and the platform
@@ -685,49 +723,7 @@ having returned true, and is thus deprecated as a result.
 @end itemize
 @end itemize
 
-@node java.lang.VMInstrumentationImpl, java.lang.VMMath, java.lang.VMThread, java.lang
-@subsection @code{java.lang.VMInstrumentationImpl}
-
-The @code{java.lang.VMInstrumentationImpl} and
-@code{java.lang.InstrumentationImpl} classes provide an implementation of the
-@code{java.lang.instrument.Instrument} interface. This interface is for java
-1.5 and is only in the generics branch.
-A @code{InstrumentationImpl} object should be created by the VM when agents
-are given in the command line (see the @code{java.lang.instrument} package
-documentation). The VM has to set the static field
-@code{VMClassLoader.instrumenter} to this object. The VM should implement the
-static native methods of the @code{VMInstrumentationImpl} class.
-
-@itemize @bullet
-@item @code{isRedefineClassesSupported()} -- Returns true if the JVM supports
-class redefinition.
-@item @code{redefineClasses()} -- Gives a set of classes with new bytecodes.
-The VM must redefine the classes by reading the new bytecodes.
-@item @code{getAllLoadedClass()} -- Returns an array of all loaded classes.
-@item @code{getInitiatedClass()} -- Returns an array of all classes loaded
-by a specific class loader.
-@item @code{getObjectSize()} -- Gives the size of an object.
-@end itemize
-
-Instrumentation allows to modify the bytecode of a class before it gets read
-by the VM. In GNU Classpath, the @code{ClassLoader.defineClass} method calls
-the @code{VMClassLoader.defineClassWithTransformers} method which first checks
-if @code{VMClassLoader.instrumenter} is @code{null}. If it's the case, it
-directly calls @code{VMClassLoader.defineClass}. If it's not the case, the
-method calls at first the @code{InstrumentationImpl.callTransformers} method,
-which calls each transformer registered to the @code{InstrumentationImpl}
-object and returns a new bytecode array. Then, it calls the
-@code{VMClassLoader.defineClass} method with this new bytecode array.
-
-The second use of instrumentation is to redefine a class after it has been
-loaded by the VM. This is done in the Java application by calling the
-@code{Instrumentation.redefineClasses} method of the standard interface on
-a @code{Instrumentation} object. The @code{InstrumentationImpl.redefineClasses}
-method calls the @code{VMInstrumentationImpl.redefineClasses} native method
-which must be implemented by the VM. The implementation should call the
-@code{InstrumentationImpl.callTransformers} method.
-
-@node java.lang.VMMath, , java.lang.VMInstrumentationImpl, java.lang
+@node java.lang.VMMath,, java.lang.VMThread, java.lang
 @subsection @code{java.lang.VMMath}
 
 The @code{VMMath} class provides a series of native methods
@@ -786,6 +782,7 @@ includes the context of a class (the stack) and the system properties.
 @menu
 * gnu.classpath.VMStackWalker::
 * gnu.classpath.VMSystemProperties::
+* gnu.classpath.Unsafe::
 @end menu
 
 @node gnu.classpath.VMStackWalker,gnu.classpath.VMSystemProperties,gnu.classpath,gnu.classpath
@@ -809,7 +806,7 @@ accessing @code{getCallingClass()}.
 loader of the class.
 @end itemize
 
-@node gnu.classpath.VMSystemProperties,,gnu.classpath.VMStackWalker,gnu.classpath
+@node gnu.classpath.VMSystemProperties,gnu.classpath.Unsafe,gnu.classpath.VMStackWalker,gnu.classpath
 @subsection @code{gnu.classpath.VMSystemProperties}
 
 @code{VMSystemProperties} allows the VM to hook into the property creation
@@ -832,6 +829,38 @@ additional VM-specific ones may also be added.
 @item @code{postInit(Properties)} -- Same as the last, but called after the
 Classpath properties have been added.  The main purpose of this is to allow
 the VM to alter the properties added by GNU Classpath to suit it.
+@end itemize
+
+@node gnu.classpath.Unsafe,,gnu.classpath.VMSystemProperties,gnu.classpath
+@subsection @code{gnu.classpath.Unsafe}
+
+The @code{Unsafe} class provides access to some low-level unsafe operations
+as required by the addition of the java.util.concurrent classes.  These
+focus on direct memory access to the fields within the VM and providing
+atomic update methods.
+
+@itemize @bullet
+@item @code{objectFieldOffset(Field)} -- Provides the caller with the memory
+offset of a particular field.
+@item @code{compareAndSwap*(Object,long,*,*)} -- One of these methods is
+provided for each of int, long and Object (hence the *s).  The value of
+a field pointed to by the given Object and offset is compared with the
+first value and replaced with the second if they are the same.  The reason
+for this method is to make this change operation atomic.
+@item @code{put/get*(Object,long,*)} -- These are like the last set of
+methods, handling integers, longs and Objects, but the field is always
+changed on a put.  Different methods are provided for different semantics.
+Ordered variants perform a lazy put, in that the change does not
+immediately propogate to other threads, while the others provide
+volatile or 'normal' semantics.
+@item @code{arrayBaseOffset(Class)} and @code{arrayIndexScale(Class)} --
+These two methods allow an array class to be traversed by pointer
+arithmetic, by gaining the address of the first element and then
+scaling appropriately for the later ones.
+@item @code{park(boolean,long)} and @code{unpark(Thread)} -- These methods
+block and unblock threads respectively, with an optional timeout being
+provided for the blocking.  @code{unpark} is unsafe as the thread may have
+been destroyed by native code. 
 @end itemize
 
 @node java.util, java.io, gnu.classpath, Classpath Hooks
@@ -970,14 +999,14 @@ is optional.
 @section java.security
 
 The @code{java.security} package provides support for Java's security
-architecture.  At present, @code{VMAccessController} represents the sole
-VM hook for this.
+architecture.  
 
 @menu
 * java.security.VMAccessController::
+* java.security.VMSecureRandom::
 @end menu
 
-@node java.security.VMAccessController,,java.security,java.security
+@node java.security.VMAccessController,java.security.VMSecureRandom,java.security,java.security
 @subsection @code{java.security.VMAccessController}
 
 The @code{AccessController} is used to perform privileged actions.  Its
@@ -999,6 +1028,23 @@ the top of the context stack.
 arrays of classes and method names.  The actual implementation returns
 an empty array, indicating that there are no permissions.
 @end itemize
+
+@node java.security.VMSecureRandom,,java.security.VMAccessController,java.security
+@subsection @code{java.security.VMSecureRandom}
+
+The @code{VMSecureRandom} class is used to provide access to
+cryptographically secure random numbers.  The default implementation
+of the class runs eight threads that increment counters in a tight
+loop, and XORs each counter to produce one byte of seed data. This is
+not very efficient, and is not guaranteed to be random (the thread
+scheduler is probably deterministic, after all). VM implementors
+should provide a version of this class, which implements the method
+@code{generateSeed(byte[],int,int)}, so that it fills the buffer using
+a random seed from a system facility, such as a system entropy
+gathering device or hardware random number generator.  The parameters
+are the usual set of buffer, offset and length and the method returns
+the number of bytes actually generated, which may be less than that
+requested.
 
 @node java.net, java.nio, java.security, Classpath Hooks
 @section java.net
@@ -1111,7 +1157,7 @@ in a @code{FileInputStream}.
 in a @code{FileOutputStream}.
 @end itemize
 
-@node gnu.java.nio, Classpath Callbacks, java.nio.channels, Classpath Hooks
+@node gnu.java.nio, java.lang.reflect, java.nio.channels, Classpath Hooks
 @section gnu.java.nio
 
 The @code{gnu.java.nio} class provides Classpath implementations of the
@@ -1142,7 +1188,77 @@ operation to be performed.  This is represented by the @code{static}
 @code{native} method, @code{select(int[],int[],int[],long)}, and a default
 implementation of this is provided.
 
-@node Classpath Callbacks, , gnu.java.nio, Classpath Hooks
+@node java.lang.reflect, gnu.java.lang, gnu.java.nio, Classpath Hooks
+@section @code{java.lang.reflect}
+@code{java.lang.reflect} provides the interface to Java's reflection
+facilities.  Via reflection, programmers can obtain type information about
+a particular instance at runtime or dynamically create new instances.
+
+@menu
+* java.lang.reflect.VMArray::
+@end menu
+
+@node java.lang.reflect.VMArray,,,java.lang.reflect
+@subsection @code{java.lang.reflect.VMArray}
+
+The @code{VMArray} class provides a hook, @code{createObjectArray},
+which the VM uses to generate a new non-primitive array of a
+particular class and size.  The default implementation simply passes
+the job down to the standard JNI function, @code{NewObjectArray}.
+
+@node gnu.java.lang, Classpath Callbacks, java.lang.reflect, Classpath Hooks
+@section @code{gnu.java.lang}
+
+@code{gnu.java.lang} provides VM interfaces for the GNU
+implementations of features in java.lang.  Currently, this includes the
+implementation of instrumentation.
+
+@menu
+* gnu.java.lang.VMInstrumentationImpl::
+@end menu
+
+@node gnu.java.lang.VMInstrumentationImpl,,,gnu.java.lang
+@subsection @code{gnu.java.lang.VMInstrumentationImpl}
+
+The @code{gnu.java.lang.VMInstrumentationImpl} and
+@code{gnu.java.lang.InstrumentationImpl} classes provide an implementation of the
+@code{java.lang.instrument.Instrument} interface. 
+A @code{InstrumentationImpl} object should be created by the VM when agents
+are given in the command line (see the @code{java.lang.instrument} package
+documentation). The VM has to set the static field
+@code{VMClassLoader.instrumenter} to this object. The VM should implement the
+static native methods of the @code{VMInstrumentationImpl} class.
+
+@itemize @bullet
+@item @code{isRedefineClassesSupported()} -- Returns true if the JVM supports
+class redefinition.
+@item @code{redefineClasses()} -- Gives a set of classes with new bytecodes.
+The VM must redefine the classes by reading the new bytecodes.
+@item @code{getAllLoadedClass()} -- Returns an array of all loaded classes.
+@item @code{getInitiatedClass()} -- Returns an array of all classes loaded
+by a specific class loader.
+@item @code{getObjectSize()} -- Gives the size of an object.
+@end itemize
+
+Instrumentation allows to modify the bytecode of a class before it gets read
+by the VM. In GNU Classpath, the @code{ClassLoader.defineClass} method calls
+the @code{VMClassLoader.defineClassWithTransformers} method which first checks
+if @code{VMClassLoader.instrumenter} is @code{null}. If it's the case, it
+directly calls @code{VMClassLoader.defineClass}. If it's not the case, the
+method calls at first the @code{InstrumentationImpl.callTransformers} method,
+which calls each transformer registered to the @code{InstrumentationImpl}
+object and returns a new bytecode array. Then, it calls the
+@code{VMClassLoader.defineClass} method with this new bytecode array.
+
+The second use of instrumentation is to redefine a class after it has been
+loaded by the VM. This is done in the Java application by calling the
+@code{Instrumentation.redefineClasses} method of the standard interface on
+a @code{Instrumentation} object. The @code{InstrumentationImpl.redefineClasses}
+method calls the @code{VMInstrumentationImpl.redefineClasses} native method
+which must be implemented by the VM. The implementation should call the
+@code{InstrumentationImpl.callTransformers} method.
+
+@node Classpath Callbacks, , gnu.java.lang, Classpath Hooks
 Some of the classes you implement for the VM will need to call back to
 package-private methods in Classpath:
 

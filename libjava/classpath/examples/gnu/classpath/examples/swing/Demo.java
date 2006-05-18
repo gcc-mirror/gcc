@@ -27,74 +27,34 @@ import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
-import javax.swing.border.*;
 
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.metal.MetalTheme;
 import javax.swing.plaf.metal.OceanTheme;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 
 public class Demo
 {
   JFrame frame;
+
+  /**
+   * The main desktop. This is package private to avoid synthetic accessor
+   * method.
+   */
+  JDesktopPane desktop;
+
+  /**
+   * The themes menu. This is implemented as a field so that the L&F switcher
+   * can disable the menu when a non-Metal L&F is selected.
+   */
+  JMenu themesMenu;
+
   static Color blueGray = new Color(0xdc, 0xda, 0xd5);
 
-  static
-  {
-    try
-      {
-        if (System.getProperty("swing.defaultlaf") == null)
-          {
-            StringBuffer text = new StringBuffer();
-            text.append("You may change the Look and Feel of this\n");
-            text.append("Demo by setting the system property\n");
-            text.append("-Dswing.defaultlaf=<LAFClassName>\n");
-	    text.append("\n");
-            text.append("Possible values for <LAFClassName> are:\n");
-	    text.append("\n");
-            text.append("* javax.swing.plaf.metal.MetalLookAndFeel\n");
-            text.append("  the default GNU Classpath L&F\n");
-	    text.append("\n");
-            text.append("* gnu.classpath.examples.swing.GNULookAndFeel\n");
-            text.append("  the GNU Look and Feel\n");
-            text.append("  (derived from javax.swing.plaf.basic.BasicLookAndFeel)\n");
-	    text.append("\n");
-            text.append("MetalLookAndFeel supports different Themes.\n");
-	    text.append("DefaultMetalTheme (the default) and OceanTheme (in development)\n");
-
-	    final String DEFAULT = "MetalLookAndFeel (default)";
-	    final String OCEAN = "MetalLookAndFeel (Ocean)";
-	    final String GNU = "GNULookAndFeel";
-	    final String[] lafs = new String[] { DEFAULT, OCEAN, GNU };
-
-	    int laf = JOptionPane.showOptionDialog(null, text /* textPane */,
-						   "Look and Feel choice",
-						   JOptionPane.OK_OPTION,
-						   JOptionPane.QUESTION_MESSAGE,
-						   null, lafs, DEFAULT);
-        if (laf == 0)
-          {
-            MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
-            UIManager.setLookAndFeel(new MetalLookAndFeel());
-          }
-	    if (laf == 1)
-	      {
-	        MetalLookAndFeel.setCurrentTheme(new OceanTheme());
-	        UIManager.setLookAndFeel(new MetalLookAndFeel());
-	      }
-	    else if (laf == 2)
-	      UIManager.setLookAndFeel(new GNULookAndFeel());
-          }
-      }
-    catch (UnsupportedLookAndFeelException e)
-      {
-        System.err.println("Cannot install GNULookAndFeel, exiting");
-        System.exit(1);
-      }
-  }
-
-  static Icon stockIcon(String s)
+  private static Icon stockIcon(String s)
   {
     return getIcon("/gnu/classpath/examples/icons/stock-" + s + ".png", s);
   }
@@ -104,14 +64,14 @@ public class Demo
     return getIcon("/gnu/classpath/examples/icons/big-" + s + ".png", s);
   }
 
-  static Icon getIcon(String location, String name)
+  private static Icon getIcon(String location, String name)
   {
     URL url = Demo.class.getResource(location);
     if (url == null) System.err.println("WARNING " + location + " not found.");
     return new ImageIcon(url, name);
   }
 
-  static JMenuBar mkMenuBar()
+  private JMenuBar mkMenuBar()
   {
     JMenuBar bar = new JMenuBar();
     
@@ -160,90 +120,135 @@ public class Demo
     edit.add(preferences);
 
     JMenu examples = new JMenu("Examples");
-    new PopUpAction("Buttons",
-		    (new ButtonDemo("Button Demo")).createContent(),
-		    examples);
+    examples.add(new JMenuItem(new PopupAction("Buttons",
+                                             ButtonDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("Slider",
+                                             SliderDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("ProgressBar",
+                                        ProgressBarDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("Scrollbar",
+                                          ScrollBarDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("Spinner",
+                                            SpinnerDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("TextField",
+                                          TextFieldDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("TextArea",
+                                           TextAreaDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("FileChooser",
+                                        FileChooserDemo.createDemoFactory())));
 
-    new PopUpAction("Slider",
-		    (new SliderDemo("Slider Demo")).createContent(),
-		    examples);
+    examples.add(new JMenuItem(new PopupAction("ComboBox",
+                                           ComboBoxDemo.createDemoFactory())));
 
-    new PopUpAction("ProgressBar",
-                    ProgressBarDemo.createContent(),
-                    examples);
+    examples.add(new JMenuItem(new PopupAction("Table",
+                                              TableDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("List",
+                                               ListDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("TabbedPane",
+                                         TabbedPaneDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("Tree",
+                                               TreeDemo.createDemoFactory())));
+    examples.add(new JMenuItem(new PopupAction("Theme Editor",
+                                       MetalThemeEditor.createDemoFactory())));
 
-    new PopUpAction("List",
-		    mkListPanel(new String[] { "hello",
-					       "this",
-					       "is",
-					       "a",
-					       "list",
-                                               "that",
-                                               "wraps",
-                                               "over"}),
-		    examples);
+    examples.add(new JMenuItem(new PopupAction("DocumentFilter",
+                                     DocumentFilterDemo.createDemoFactory())));
 
-    new PopUpAction("Scrollbar",
-		    (new ScrollBarDemo("ScrollBarDemo")).createContent(),
-		    examples);
-
-    new PopUpAction("Viewport",
-		    mkViewportBox(mkBigButton("View Me!")),
-		    examples);
-
-    new PopUpAction("ScrollPane",
-                    mkScrollPane(mkBigButton("Scroll Me!")),
-                    examples);
-
-    new PopUpAction("TabPane",
-		    mkTabs(new String[] {"happy",
-					 "sad",
-					 "indifferent"}),
-		    examples);
-
-    new PopUpAction("Spinner",
-		    new SpinnerDemo("Spinner Demo").createContent(), examples);
-
-    new PopUpAction("TextField",
-		    (new TextFieldDemo("TextField Demo")).createContent(),
-		    examples);
-
-    new PopUpAction("FileChooser",
-                    (new FileChooserDemo("FileChooser Demo")).createContent(),
-                    examples);
-
-    new PopUpAction("ColorChooser",
-		    mkColorChooser(),
-		    examples);
-
-    new PopUpAction("ComboBox",
-		    (new ComboBoxDemo("ComboBox Demo")).createContent(),
-		    examples);
-
-    new PopUpAction("Editor",
-                    mkEditorPane(),
-                    examples);
+    examples.add(new JMenuItem(new PopupAction("NavigationFilter",
+                                               NavigationFilterDemo.createDemoFactory())));
     
-    new PopUpAction("Tree",
-                    mkTree(),
-                    examples);
-
-    new PopUpAction("Table",
-                    mkTable(),
-                    examples);
-
+    final JMenuItem vmMenu;
+    
     help.add(new JMenuItem("just play with the widgets"));
     help.add(new JMenuItem("and enjoy the sensation of"));
     help.add(new JMenuItem("your neural connections growing"));
+    help.add(new JSeparator());
+    help.add(vmMenu = new JMenuItem("Really, which VM is this running on?"));
+    vmMenu.addActionListener(new ActionListener()
+      {
+        public void actionPerformed(ActionEvent ae)
+          {
+            String message = "This is "
+                             + System.getProperty("java.vm.name")
+                             + " Version "
+                             + System.getProperty("java.vm.version")
+                             + " distributed by "
+                             + System.getProperty("java.vm.vendor")
+                             + ".";
+                         
+            String gnuClasspath = System.getProperty("gnu.classpath.version");
+            if(gnuClasspath != null)
+              message += "\nThe runtime's libraries are "
+                         + "kindly provided by the "
+                         + "members of GNU Classpath and are in version "
+                         + gnuClasspath + ".";
+                         
+                         JOptionPane.showMessageDialog(vmMenu, message);
+            }
+      });
 
+    // Create L&F menu.
+    JMenu lafMenu = new JMenu("Look and Feel");
+    ButtonGroup lafGroup = new ButtonGroup();
+    UIManager.LookAndFeelInfo[] lafs = UIManager.getInstalledLookAndFeels();
+    String currentLaf = UIManager.getLookAndFeel().getClass().getName();
+    for (int i = 0; i < lafs.length; ++i)
+      {
+        UIManager.LookAndFeelInfo laf = lafs[i];
+        ChangeLAFAction action = new ChangeLAFAction(laf);
+        JRadioButtonMenuItem lafItem = new JRadioButtonMenuItem(action);
+        boolean selected = laf.getClassName().equals(currentLaf);
+        lafItem.setSelected(selected);
+        lafMenu.add(lafItem);
+      }
+
+    // Create themes menu.
+    themesMenu = new JMenu("Themes");
+    ButtonGroup themesGroup = new ButtonGroup();
+
+    // In order to make the demo runable on a 1.4 type VM we have to avoid calling
+    // MetalLookAndFeel.getCurrentTheme(). We simply check whether this method exists
+    // and is public.
+    Method m = null;
+    try
+      {
+        m = MetalLookAndFeel.class.getMethod("getCurrentTheme", null);
+      }
+    catch (NoSuchMethodException nsme)
+      {
+        // Ignore it.
+      }
+    
+    if (m != null)
+      {
+        JRadioButtonMenuItem ocean =
+          new JRadioButtonMenuItem(new ChangeThemeAction(new OceanTheme()));
+        ocean.setSelected(MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme);
+        themesMenu.add(ocean);
+        themesGroup.add(ocean);
+    
+        JRadioButtonMenuItem steel =
+          new JRadioButtonMenuItem(new ChangeThemeAction(new DefaultMetalTheme()));
+        ocean.setSelected(MetalLookAndFeel.getCurrentTheme()
+                          instanceof DefaultMetalTheme);
+        themesMenu.add(steel);
+        themesGroup.add(steel);
+      }
+    else
+      {
+        themesMenu.setEnabled(false);
+      }
+    
     bar.add(file);
     bar.add(edit);
     bar.add(examples);
+    bar.add(lafMenu);
+    bar.add(themesMenu);
     bar.add(help);
     return bar;
   }
 
-  static void triggerDialog(final JButton but, final String dir)
+  private static void triggerDialog(final JButton but, final String dir)
   {
     but.addActionListener(new ActionListener()
       {
@@ -277,7 +282,7 @@ public class Demo
     return bar;
   }
 
-  static String valign2str(int a)
+  private static String valign2str(int a)
   {
     switch (a)
       {
@@ -307,9 +312,9 @@ public class Demo
       }
   }
 
-  static JButton mkButton(String title, Icon icon, 
-                          int hAlign, int vAlign,
-                          int hPos, int vPos)
+  private static JButton mkButton(String title, Icon icon, 
+                                  int hAlign, int vAlign,
+                                  int hPos, int vPos)
   {    
     JButton b;
     if (icon == null)
@@ -338,93 +343,7 @@ public class Demo
   }
 
 
-  static JPanel mkButtonWorld()
-  {
-    Icon ii = bigStockIcon("home");
-    int CENTER = SwingConstants.CENTER;
-    int TOP = SwingConstants.TOP;
-    int BOTTOM = SwingConstants.BOTTOM;
-
-    int[] valigns = new int[] {SwingConstants.CENTER,
-                               SwingConstants.TOP,
-                               SwingConstants.BOTTOM};
-
-    int[] haligns = new int[] {SwingConstants.CENTER,
-                               SwingConstants.RIGHT,
-                               SwingConstants.LEFT};
-
-    Border[] borders = new Border[] { 
-      new SoftBevelBorder(BevelBorder.RAISED),
-      new SoftBevelBorder(BevelBorder.LOWERED),
-      new BevelBorder(BevelBorder.RAISED),
-      
-      LineBorder.createBlackLineBorder(),
-      new MatteBorder(2, 2, 2, 2, Color.GREEN),
-      LineBorder.createGrayLineBorder(),
-      
-      new BevelBorder(BevelBorder.LOWERED),
-      new EtchedBorder(EtchedBorder.RAISED),
-      new EtchedBorder(EtchedBorder.LOWERED)      
-    };
-
-    JComponent[] comps = new JComponent[3*3];
-
-    int q = 0;
-
-    JPanel panel = new JPanel();
-    panel.setLayout(new GridLayout(3, 3));
-
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j)
-        {
-          JButton b = mkButton(halign2str(haligns[i])
-                               + valign2str(valigns[j]),
-                               ii,
-                               -1, -1, haligns[i], valigns[j]);
-          b.setBorder(borders[q++]);
-          JPanel tmp = new JPanel();
-          tmp.setBorder(new MatteBorder(5, 5, 5, 5, blueGray));
-          tmp.add(b);
-          panel.add(tmp);
-        }
-    
-    return panel;
-  }
-
-  private static class CheckCellRenderer 
-    extends JCheckBox implements ListCellRenderer
-  {
-    public Component getListCellRendererComponent(JList list,
-                                                  Object value,
-                                                  int index,
-                                                  boolean isSelected,
-                                                  boolean cellHasFocus)
-    {
-      setSelected(isSelected);
-      setText(value.toString());
-      
-      return this;
-    }
-  }
-
-  private static class LabelCellRenderer 
-    extends DefaultListCellRenderer
-  {
-    public Component getListCellRendererComponent(JList list,
-                                                  Object value,
-                                                  int index,
-                                                  boolean isSelected,
-                                                  boolean cellHasFocus)
-    {
-      Component c = super.getListCellRendererComponent(list, value, index, 
-                                                       isSelected,
-						       cellHasFocus);
-      
-      return c;
-    }
-  }
-
-  public static JScrollPane mkScrollPane(JComponent inner)
+  private static JScrollPane mkScrollPane(JComponent inner)
   {
     JScrollPane jsp;
     jsp = new JScrollPane(inner,
@@ -434,275 +353,24 @@ public class Demo
     return jsp;
   }
 
-  private static JPanel mkTreeWorld()
-  {     
-    // non-leafs
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Exotic Subsistence");
-    DefaultMutableTreeNode fruit = new DefaultMutableTreeNode("Interesting Fruit");
-    DefaultMutableTreeNode veg = new DefaultMutableTreeNode("Extraordinary Vegetables");
-    DefaultMutableTreeNode liq = new DefaultMutableTreeNode("Peculiar Liquids");
-    
-    // leafs
-    DefaultMutableTreeNode f1 = new DefaultMutableTreeNode("Abiu");
-    DefaultMutableTreeNode f2 = new DefaultMutableTreeNode("Bamboo Shoots");
-    DefaultMutableTreeNode f3 = new DefaultMutableTreeNode("Breadfruit");
-    DefaultMutableTreeNode f4 = new DefaultMutableTreeNode("Canistel");
-    DefaultMutableTreeNode f5 = new DefaultMutableTreeNode("Duku");
-    DefaultMutableTreeNode f6 = new DefaultMutableTreeNode("Guava");
-    DefaultMutableTreeNode f7 = new DefaultMutableTreeNode("Jakfruit");
-    DefaultMutableTreeNode f8 = new DefaultMutableTreeNode("Quaribea");
-    
-    DefaultMutableTreeNode v1 = new DefaultMutableTreeNode("Amaranth");
-    DefaultMutableTreeNode v2 = new DefaultMutableTreeNode("Kiwano");
-    DefaultMutableTreeNode v3 = new DefaultMutableTreeNode("Leeks");
-    DefaultMutableTreeNode v4 = new DefaultMutableTreeNode("Luffa");
-    DefaultMutableTreeNode v5 = new DefaultMutableTreeNode("Chayote");
-    DefaultMutableTreeNode v6 = new DefaultMutableTreeNode("Jicama");
-    DefaultMutableTreeNode v7 = new DefaultMutableTreeNode("Okra");
-    
-    DefaultMutableTreeNode l1 = new DefaultMutableTreeNode("Alcoholic");
-    DefaultMutableTreeNode l11 = new DefaultMutableTreeNode("Caipirinha");
-    DefaultMutableTreeNode l21 = new DefaultMutableTreeNode("Mojito");
-    DefaultMutableTreeNode l31 = new DefaultMutableTreeNode("Margarita");
-    DefaultMutableTreeNode l41 = new DefaultMutableTreeNode("Martini");
-    DefaultMutableTreeNode l5 = new DefaultMutableTreeNode("Non Alcoholic");
-    DefaultMutableTreeNode l55 = new DefaultMutableTreeNode("Babaji");
-    DefaultMutableTreeNode l65 = new DefaultMutableTreeNode("Chikita");
-    
-    root.add(fruit);
-    root.add(veg);
-    root.add(liq);
-    fruit.add(f1);
-    fruit.add(f2);
-    fruit.add(f3);
-    fruit.add(f4);
-    fruit.add(f5);
-    fruit.add(f6);
-    fruit.add(f7);
-    fruit.add(f8);
-    veg.add(v1);
-    veg.add(v2);
-    veg.add(v3);
-    veg.add(v4);
-    veg.add(v5);
-    veg.add(v6);
-    veg.add(v7);
-    liq.add(l1);
-    l1.add(l11);
-    l1.add(l21);
-    l1.add(l31);
-    l1.add(l41);
-    liq.add(l5);
-    l5.add(l55);
-    l5.add(l65);
-
-    final JTree tree = new JTree(root);
-    tree.setLargeModel(true);
-    tree.setEditable(true);
-    DefaultTreeSelectionModel dtsm = new DefaultTreeSelectionModel();
-    dtsm.setSelectionMode(DefaultTreeSelectionModel.SINGLE_TREE_SELECTION);
-    tree.setSelectionModel(dtsm);
-    
-    // buttons to add and delete
-    JButton add = mkButton("add element");
-    add.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-           for (int i = 0; i < tree.getRowCount(); i++)
-           {
-              if (tree.isRowSelected(i))
-              {
-                 TreePath p = tree.getPathForRow(i);
-                 DefaultMutableTreeNode n = (DefaultMutableTreeNode) p.
-                                                  getLastPathComponent();
-                 n.add(new DefaultMutableTreeNode("New Element"));
-                 tree.repaint();
-                 break;
-              }
-           }
-        }
-      });
-
-
-    JPanel p1 = new JPanel(); 
-    p1.setLayout(new BorderLayout());
-    
-    JPanel p2 = new JPanel(); 
-    p2.add(add);
-
-    p1.add(p2, BorderLayout.NORTH);
-    p1.add(mkScrollPane(tree), BorderLayout.CENTER);
-    
-    return p1;
-  }
-  
-  public static JPanel mkListWorld()
-  {
-
-    String foo[] = new String[] { 
-      "non alcoholic ",
-      "carbonated ",
-      "malted ",
-      "fresh squeezed ",
-      "imported ",
-      "high fructose ",
-      "enriched "
-    };
-    
-    String bar[] = new String[] { 
-      "orange juice",
-      "ginger beer",
-      "yak milk",
-      "corn syrup",
-      "herbal remedy"
-    };
-
-    final DefaultListModel mod = new DefaultListModel();
-    final JList list1 = new JList(mod);
-    final JList list2 = new JList(mod);
-
-    list2.setSelectionModel(list1.getSelectionModel());
-    for (int i = 0; i < bar.length; ++i)
-      for (int j = 0; j < foo.length; ++j)
-        mod.addElement(foo[j] + bar[i]);
-
-    list1.setCellRenderer(new LabelCellRenderer());
-    list2.setCellRenderer(new CheckCellRenderer());
-
-    JButton add = mkButton("add element");
-    add.addActionListener(new ActionListener()
-      {
-        int i = 0;
-        public void actionPerformed(ActionEvent e)
-        {
-          mod.addElement("new element " + i);
-          ++i;
-        }
-      });
-
-    JButton del = mkButton("delete selected");
-    del.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-          for (int i = 0; i < mod.getSize(); ++i)
-            if (list1.isSelectedIndex(i))
-              mod.remove(i);
-        }
-      });
-
-
-    JSplitPane splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    splitter.add(mkScrollPane(list1), JSplitPane.LEFT);
-    splitter.add(mkScrollPane(list2), JSplitPane.RIGHT);
-
-    JPanel p1 = new JPanel(); 
-    p1.setLayout(new BorderLayout());
-
-    JPanel p2 = new JPanel(); 
-    p2.setLayout(new GridLayout(1, 2));
-    p2.add(add);
-    p2.add(del);
-
-    p1.add(p2, BorderLayout.NORTH);
-    p1.add(splitter, BorderLayout.CENTER);
-    return p1;
-  }
-
-
-  static JPanel mkDesktopWorld()
-  {
-    
-    final JDesktopPane desk = new JDesktopPane();
-    desk.setDesktopManager(new DefaultDesktopManager());
-    desk.setPreferredSize(new Dimension(300,300));
-    desk.setMinimumSize(new Dimension(300,300));
-    JButton but = mkButton("add frame");
-    but.addActionListener(new ActionListener()
-      {
-        int i = 10;
-        public void actionPerformed(ActionEvent e)
-        {
-          JInternalFrame f;
-	  f = new JInternalFrame("internal", true, true, true, true);
-          f.getContentPane().setLayout(new BorderLayout());
-          f.getContentPane().add(mkToolBar(), BorderLayout.NORTH);
-          f.getContentPane().add(mkButton(bigStockIcon("fullscreen")),
-				 BorderLayout.CENTER);
-          desk.add(f);
-          f.setBounds(i, i, 250, 200);
-	  f.setVisible(true);
-          i += 30;
-        }
-      });
-    
-    JPanel panel = new JPanel();
-    panel.setLayout(new BorderLayout());
-    panel.add(desk, BorderLayout.CENTER);
-    panel.add(but, BorderLayout.NORTH);
-    but.doClick();
-    but.doClick();
-    JInternalFrame palette = new JInternalFrame("Palette", true, true, true, 
-        true);
-    palette.putClientProperty("JInternalFrame.isPalette", Boolean.TRUE);
-    desk.add(palette, JDesktopPane.PALETTE_LAYER);
-    JLabel label = new JLabel("This is a floating palette!");
-    palette.getContentPane().add(label);
-    palette.pack();
-    palette.setVisible(true);
-    return panel;
-  }
-
-  static JPanel mkTabWorld() 
-  {
-    JPanel panel = new JPanel(new GridLayout(2, 2));
-    panel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-    JTabbedPane tabs1 = new JTabbedPane(SwingConstants.TOP);
-    tabs1.add("Top Item 1", new JButton("Button"));
-    tabs1.add("Top Item 2", new JButton("Button"));
-    JTabbedPane tabs2 = new JTabbedPane(SwingConstants.LEFT);
-    tabs2.add("Left Item 1", new JButton("Button"));
-    tabs2.add("Left Item 2", new JButton("Button"));
-    JTabbedPane tabs3 = new JTabbedPane(SwingConstants.BOTTOM);
-    tabs3.add("Bottom Item 1", new JButton("Button"));
-    tabs3.add("Bottom Item 2", new JButton("Button"));
-    JTabbedPane tabs4 = new JTabbedPane(SwingConstants.RIGHT);
-    tabs4.add("Right Item 1", new JButton("Button"));
-    tabs4.add("Right Item 2", new JButton("Button"));
-    panel.add(tabs1);
-    panel.add(tabs2);
-    panel.add(tabs3);
-    panel.add(tabs4);
-    return panel;        
-  }
-
-  static JTabbedPane mkTabbedPane()
-  {
-    JTabbedPane tabs = new JTabbedPane();
-    
-    tabs.add("Button world!", mkButtonWorld());
-    tabs.add("List world!", mkListWorld());
-    tabs.add("Desktop world!", mkDesktopWorld());
-    tabs.add("Tree world!", mkTreeWorld());
-    tabs.add("Tab world!", mkTabWorld());
-    return tabs;
-  }
-
   public Demo()
   {
     frame = new JFrame("Swing Activity Board");
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setJMenuBar(mkMenuBar());
     JComponent component = (JComponent) frame.getContentPane();
     component.setLayout(new BorderLayout());
     component.add(mkToolBar(), BorderLayout.NORTH);
     JPanel main = new JPanel();
     main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
-    main.add(mkTabbedPane());
+    desktop = createDesktop();
+    
+    // Put the desktop in a scrollpane. The scrollbars may show then
+    // up when the them or LaF is changed.
+    main.add(new JScrollPane(desktop));
     main.add(mkButtonBar());
     component.add(main, BorderLayout.CENTER);
     frame.pack();
-    frame.setSize(800, 600);
     frame.show();
   }
 
@@ -720,38 +388,14 @@ public class Demo
     SwingUtilities.invokeLater(new LaterMain());
   }
 
-  public static JList mkList(Object[] elts)
-  {
-    JList list = new JList(elts);
-    list.setFont(new Font("Luxi", Font.PLAIN, 14));
-    return list;
-  }
-
-  public static JTabbedPane mkTabs(String[] names)
-  {
-    JTabbedPane tabs = new JTabbedPane();
-    for (int i = 0; i < names.length; ++i)
-      {
-        tabs.addTab(names[i], mkButton(names[i]));
-      }
-    return tabs;
-  }
-
-  public static JComboBox mkComboBox(String[] names)
-  {
-    JComboBox box = new JComboBox(names);
-    return box;
-  }
-
-  public static JButton mkBigButton(String title)
+  private static JButton mkBigButton(String title)
   {
     JButton b = new JButton(title);
     b.setMargin(new Insets(5,5,5,5));
-    //b.setFont(new Font("Luxi", Font.PLAIN, 14));
     return b;
   }
 
-  public static JPanel mkPanel(JComponent[] inners)
+  private static JPanel mkPanel(JComponent[] inners)
   {
     JPanel p = new JPanel();
     for (int i = 0; i < inners.length; ++i)
@@ -761,85 +405,7 @@ public class Demo
     return p;
   }
 
-  public static JScrollBar mkScrollBar()
-  {
-    JScrollBar scrollbar = new JScrollBar();
-    return scrollbar;
-  }
-
-  public static JPanel mkViewportBox(final JComponent inner)
-  {
-    final JViewport port = new JViewport();
-    port.setView(inner);
-    JButton left = mkBigButton("left");
-    JButton right = mkBigButton("right");
-    
-    left.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-          Point p = port.getViewPosition();
-          port.setViewPosition(new Point(p.x - 10, p.y));
-        }
-      });
-
-    right.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-          Point p = port.getViewPosition();
-          port.setViewPosition(new Point(p.x + 10, p.y));
-        }
-      });
- 
-    return mkPanel(new JComponent[] {port, left, right});
-  }
-
-  public static JPanel mkListPanel(Object[] elts)
-  {
-    final DefaultListModel mod = new DefaultListModel();
-    final JList list1 = new JList(mod);
-    list1.setLayoutOrientation(JList.VERTICAL_WRAP);
-    list1.setVisibleRowCount(4);
-    final JList list2 = new JList(mod);
-    list2.setLayoutOrientation(JList.VERTICAL_WRAP);
-    list2.setVisibleRowCount(4);
-
-    list2.setSelectionModel(list1.getSelectionModel());
-    for (int i = 0; i < elts.length; ++i)
-      mod.addElement(elts[i]);
-    list1.setCellRenderer(new LabelCellRenderer());
-    list2.setCellRenderer(new CheckCellRenderer());
-
-    JButton add = mkBigButton("add element");
-    add.addActionListener(new ActionListener()
-      {
-        int i = 0;
-        public void actionPerformed(ActionEvent e)
-        {
-          mod.addElement("new element " + i);
-          ++i;
-        }
-      });
-
-    JButton del = mkBigButton("delete selected");
-    del.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-          for (int i = 0; i < mod.getSize(); ++i)
-            if (list1.isSelectedIndex(i))
-              mod.remove(i);
-        }
-      });
-
-    return mkPanel(new JComponent[] {list1, //mkScrollPane(list1), 
-                                     list2, //mkScrollPane(list2), 
-                                     mkPanel(new JComponent[] {add, del})});
-  }
-
-
-  public static JButton mkDisposerButton(final JFrame c)
+  static JButton mkDisposerButton(final JFrame c)
   {
     JButton close = mkBigButton("Close");
     close.addActionListener(new ActionListener()
@@ -857,50 +423,50 @@ public class Demo
     return new JColorChooser();
   }
 
-  private static class PopUpAction
-    implements ActionListener
+  /**
+   * This action brings up a new Window with the specified content.
+   */
+  private class PopupAction
+    extends AbstractAction
   {
-    private JComponent inner;
-    private String name;
+    /**
+     * The component to be shown.
+     */
+    private DemoFactory demoFactory;
 
-    PopUpAction(String n, JComponent i, JMenu m)
+    /**
+     * Creates a new PopupAction with the specified name and showing the
+     * component created by the specified DemoFactory when activated.
+     *
+     * @param n the name of the action
+     * @param factory the demo factory
+     */
+    PopupAction(String n, DemoFactory factory)
     {
-      name = n;
-      inner = i;
-
-      JMenuItem item = new JMenuItem(name);
-      item.addActionListener(this);
-      m.add(item);
+      putValue(NAME, n);
+      demoFactory = factory;
     }
 
-    PopUpAction(String n, JComponent i, JPanel p)
-    {
-      name = n;
-      inner = i;
-
-      JButton b = mkBigButton(name);
-      b.addActionListener(this);
-      p.add(b);
-    }
-
+    /**
+     * Brings up the new window showing the component stored in the
+     * constructor.
+     *
+     * @param e the action event that triggered the action
+     */
     public void actionPerformed(ActionEvent e)
     {
-      JFrame frame = new JFrame(name);
-      frame.getContentPane().setLayout(new BorderLayout());
-      frame.getContentPane().add(inner, BorderLayout.CENTER);
-      frame.getContentPane().add(mkDisposerButton(frame), BorderLayout.SOUTH);
+      JInternalFrame frame = new JInternalFrame((String) getValue(NAME));
+      frame.setClosable(true);
+      frame.setIconifiable(true);
+      frame.setMaximizable(true);
+      frame.setResizable(true);
+      frame.setContentPane(demoFactory.createDemo());
       frame.pack();
-      frame.show();
+      desktop.add(frame);
+      frame.setVisible(true);
     }
   }
 
-  private static JEditorPane mkEditorPane()
-  {
-    JEditorPane editorPane = new JEditorPane();
-    editorPane.setEditable(true);
-    return editorPane;
-  }
-  
   /**
    * Create the tree.
    * 
@@ -947,93 +513,42 @@ public class Demo
       }
   }
   
-  /**
-   * Make a sample table component.
-   */
-  private static JPanel mkTable()
-  {
-    return new TableDemo("Table demo, double click to edit")
-                      .createContent();
-  }
-  
   private JPanel mkButtonBar()
   {    
-    JPanel panel = new JPanel(new FlowLayout());
-    new PopUpAction("Buttons",
-		    (new ButtonDemo("Button Demo")).createContent(),
-		    panel);
-
-    new PopUpAction("Slider",
-		    (new SliderDemo("Slider Demo")).createContent(),
-		    panel);
-
-    new PopUpAction("ProgressBar",
-            ProgressBarDemo.createContent(),
-             panel);
-
-
-    new PopUpAction("List",
-		    mkListPanel(new String[] { "hello",
-					       "this",
-					       "is",
-					       "a",
-					       "list",
-                                               "that",
-                                               "wraps",
-                                               "over"}),
-		    panel);
-
-    new PopUpAction("Scrollbar",
-		    (new ScrollBarDemo("ScrollBar Demo")).createContent(),
-		    panel);
-
-    new PopUpAction("Viewport",
-		    mkViewportBox(mkBigButton("View Me!")),
-		    panel);
-
-    new PopUpAction("ScrollPane",
-		    mkScrollPane(mkBigButton("Scroll Me!")),
-		    panel);
-
-    new PopUpAction("TabPane",
-		    mkTabs(new String[] {"happy",
-					 "sad",
-					 "indifferent"}),
-		    panel);
-
-    new PopUpAction("Spinner", 
-		    new SpinnerDemo("Spinner Demo").createContent(), panel);
-
-    new PopUpAction("TextField",
-		    (new TextFieldDemo("TextField Demo")).createContent(),
-		    panel);
-
-    new PopUpAction("FileChooser",
-                    (new FileChooserDemo("FileChooser Demo")).createContent(),
-                    panel);
-
-    new PopUpAction("ColorChooser",
-		    mkColorChooser(),
-		    panel);
-
-    new PopUpAction("ComboBox",
-		    (new ComboBoxDemo("ComboBox Demo")).createContent(),
-		    panel);
-
-    new PopUpAction("Editor",
-                    mkEditorPane(),
-                    panel);
-    
-    new PopUpAction("Tree",
-                    mkTree(),
-                    panel);
-    
-    new PopUpAction("Table",
-                    mkTable(),
-                    panel);
-    
+    JPanel panel = new JPanel(new GridLayout(3, 1, 5, 5));
+    panel.add(new JButton(new PopupAction("Buttons",
+                                          ButtonDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("Slider",
+                                          SliderDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("ProgressBar",
+                                        ProgressBarDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("ScrollBar",
+                                          ScrollBarDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("Spinner",
+                                          SpinnerDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("TextField",
+                                          TextFieldDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("TextArea",
+                                          TextAreaDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("FileChooser",
+                                        FileChooserDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("ComboBox",
+                                          ComboBoxDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("Table",
+                                          TableDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("List",
+                                          ListDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("TabbedPane",
+                                         TabbedPaneDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("Tree",
+                                          TreeDemo.createDemoFactory())));
+    panel.add(new JButton(new PopupAction("Theme Editor",
+                                       MetalThemeEditor.createDemoFactory())));
     JButton exitDisposer = mkDisposerButton(frame);
     panel.add(exitDisposer);
+    
+    panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 
+                                       panel.getPreferredSize().height));
     exitDisposer.addActionListener(new ActionListener()
       {
 	public void actionPerformed(ActionEvent e)
@@ -1042,5 +557,105 @@ public class Demo
 	}
       });
     return panel;
+  }
+
+  /**
+   * Creates and returns the main desktop.
+   *
+   * @return the main desktop
+   */
+  private JDesktopPane createDesktop()
+  {
+    JDesktopPane d = new DemoDesktop();
+    d.setPreferredSize(new Dimension(900, 500));
+    return d;
+  }
+
+  /**
+   * This Action is used to switch Metal themes.
+   */
+  class ChangeThemeAction extends AbstractAction
+  {
+    /**
+     * The theme to switch to.
+     */
+    MetalTheme theme;
+
+    /**
+     * Creates a new ChangeThemeAction for the specified theme.
+     *
+     * @param t the theme to switch to
+     */
+    ChangeThemeAction(MetalTheme t)
+    {
+      theme = t;
+      putValue(NAME, t.getName());
+    }
+
+    /**
+     * Changes the theme to the one specified in the constructor.
+     *
+     * @param event the action event that triggered this action
+     */
+    public void actionPerformed(ActionEvent event)
+    {
+      MetalLookAndFeel.setCurrentTheme(theme);
+      try
+        {
+          // Only switch theme if we have a metal L&F. It is still necessary
+          // to install a new MetalLookAndFeel instance.
+          if (UIManager.getLookAndFeel() instanceof MetalLookAndFeel)
+            UIManager.setLookAndFeel(new MetalLookAndFeel());
+        }
+      catch (UnsupportedLookAndFeelException ex)
+        {
+          ex.printStackTrace();
+        }
+      SwingUtilities.updateComponentTreeUI(frame);
+    }
+    
+  }
+
+  /**
+   * This Action is used to switch Metal themes.
+   */
+  class ChangeLAFAction extends AbstractAction
+  {
+    /**
+     * The theme to switch to.
+     */
+    private UIManager.LookAndFeelInfo laf;
+
+    /**
+     * Creates a new ChangeLAFAction for the specified L&F.
+     *
+     * @param l the L&F to switch to
+     */
+    ChangeLAFAction(UIManager.LookAndFeelInfo l)
+    {
+      laf = l;
+      putValue(NAME, laf.getName());
+    }
+
+    /**
+     * Changes the theme to the one specified in the constructor.
+     *
+     * @param event the action event that triggered this action
+     */
+    public void actionPerformed(ActionEvent event)
+    {
+      try
+        {
+          UIManager.setLookAndFeel(laf.getClassName());
+        }
+      catch (Exception ex)
+        {
+          ex.printStackTrace();
+        }
+      SwingUtilities.updateComponentTreeUI(frame);
+      themesMenu.setEnabled(laf.getClassName()
+                           .equals("javax.swing.plaf.metal.MetalLookAndFeel"));
+    }
+    
   }
 }

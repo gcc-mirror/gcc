@@ -118,4 +118,10 @@ public class StringFormatBuffer implements FormatBuffer
   {
     return buffer;
   }
+
+  public String toString()
+  {
+    return buffer.toString();
+  }
+
 }

@@ -156,7 +156,8 @@ public class BasicButtonUI extends ButtonUI
     LookAndFeel.installColorsAndFont(b, prefix + "background",
                                      prefix + "foreground", prefix + "font");
     LookAndFeel.installBorder(b, prefix + "border");
-    b.setMargin(UIManager.getInsets(prefix + "margin"));
+    if (b.getMargin() == null || b.getMargin() instanceof UIResource)
+      b.setMargin(UIManager.getInsets(prefix + "margin"));
     b.setIconTextGap(UIManager.getInt(prefix + "textIconGap"));
     b.setInputMap(JComponent.WHEN_FOCUSED, 
                   (InputMap) UIManager.get(prefix + "focusInputMap"));
@@ -171,11 +172,15 @@ public class BasicButtonUI extends ButtonUI
   {
     if (b.getFont() instanceof UIResource)
       b.setFont(null);
-    b.setForeground(null);
-    b.setBackground(null);
-    b.setBorder(null);
+    if (b.getForeground() instanceof UIResource)
+      b.setForeground(null);
+    if (b.getBackground() instanceof UIResource)
+      b.setBackground(null);
+    if (b.getBorder() instanceof UIResource)
+      b.setBorder(null);
     b.setIconTextGap(defaultTextIconGap);
-    b.setMargin(null);
+    if (b.getMargin() instanceof UIResource)
+      b.setMargin(null);
   }
 
   protected BasicButtonListener listener;
@@ -308,7 +313,7 @@ public class BasicButtonUI extends ButtonUI
    * @param c The component to paint the state of
    */
   public void paint(Graphics g, JComponent c)
-  {      
+  {
     AbstractButton b = (AbstractButton) c;
 
     Rectangle tr = new Rectangle();

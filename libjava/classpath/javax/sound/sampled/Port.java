@@ -127,7 +127,7 @@ public interface Port extends Line
       return super.matches(other) && equals(other);
     }
 
-    public String toString()
+    public final String toString()
     {
       return super.toString() + "; name=" + name + "; isSource=" + isSource;
     }

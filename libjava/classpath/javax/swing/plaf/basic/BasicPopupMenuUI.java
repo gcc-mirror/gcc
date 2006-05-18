@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
@@ -137,6 +139,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
    * This method installs the keyboard actions for this {@link JPopupMenu}.
    */
   protected void installKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: Need to implement
   }
@@ -179,6 +182,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
    * Uninstalls any keyboard actions.
    */
   protected void uninstallKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: Need to implement
   }

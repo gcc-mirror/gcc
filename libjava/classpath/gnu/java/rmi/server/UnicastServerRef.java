@@ -58,6 +58,10 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+/**
+ * This class connects the local, remotely available (exported) object to
+ * the local RMI server that accepts the remote calls. 
+ */
 public class UnicastServerRef
     extends UnicastRef
 { 
@@ -80,18 +84,18 @@ public class UnicastServerRef
   /**
    * The skeleton (if any), associated with the exported remote object.
    */
-  private Skeleton skel;
+  protected Skeleton skel;
   
   /**
    * The stub, associated with the exported remote object (may be proxy class).
    */
-  private Remote stub;
+  protected Remote stub;
   
   /**
    * The method table (RMI hash code to method) of the methods of the 
    * exported object.
    */
-  private Hashtable methods = new Hashtable();
+  protected Hashtable methods = new Hashtable();
 
   /**
    * Used by serialization.
@@ -125,8 +129,7 @@ public class UnicastServerRef
       {
         myself = obj;
         // Save it to server manager, to let client calls in the same VM to
-        // issue
-        // local call
+        // issue local call
         manager.serverobj = obj;
 
         String ignoreStubs;
@@ -202,7 +205,7 @@ public class UnicastServerRef
    * 
    * @return the class having stub defined, null if none.
    */
-  private Class findStubSkelClass(Class startCls)
+  protected Class findStubSkelClass(Class startCls)
   {
     Class cls = startCls;
 
@@ -242,7 +245,7 @@ public class UnicastServerRef
    * @return the instantiated instance of the helper class or null if the
    * helper class cannot be found or instantiated.
    */
-  private Object getHelperClass(Class cls, String type)
+  protected Object getHelperClass(Class cls, String type)
   {
     try
       {
@@ -310,7 +313,7 @@ public class UnicastServerRef
    * @param build if true, the class methods are added to the table. If 
    * false, they are removed from the table.
    */
-  private void buildMethodHash(Class cls, boolean build)
+  protected void buildMethodHash(Class cls, boolean build)
   {
     Method[] meths = cls.getMethods();
     for (int i = 0; i < meths.length; i++)
@@ -339,7 +342,11 @@ public class UnicastServerRef
     else
       return null;
   }
-
+  
+  /**
+   * This method is called from the {@link UnicastServer#incomingMessageCall}
+   * to deliver the remote call to this object.
+   */
   public Object incomingMessageCall(UnicastConnection conn, int method,
                                     long hash) throws Exception
   {
@@ -353,7 +360,8 @@ public class UnicastServerRef
         // meth);
         if (meth == null)
           {
-            throw new NoSuchMethodException();
+            throw new NoSuchMethodException(
+              myself.getClass().getName()+" hash "+hash);
           }
 
         ObjectInputStream in = conn.getObjectInputStream();
@@ -413,9 +421,8 @@ public class UnicastServerRef
     else
       {
         if (skel == null)
-          {
-            throw new NoSuchMethodException();
-          }
+          throw new NoSuchMethodException("JDK 1.1 call - Skeleton required");
+        
         UnicastRemoteCall call = new UnicastRemoteCall(conn);
         skel.dispatch(myself, call, method, hash);
         if (! call.isReturnValue())

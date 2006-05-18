@@ -452,8 +452,14 @@ public abstract class ColorModel implements Transparency
    * This method is typically overriden in subclasses to provide a
    * more efficient implementation.
    *
-   * @param array of transferType containing a single pixel.  The
-   * pixel should be encoded in the natural way of the color model.
+   * @param pixel an array of transferType containing a single pixel.  The
+   * pixel should be encoded in the natural way of the color model.  If
+   * this argument is not an array, as expected, a {@link ClassCastException}
+   * will be thrown.
+   * @param components an array that will be filled with the color component
+   * of the pixel.  If this is null, a new array will be allocated
+   * @param offset index into the components array at which the result
+   * will be stored
    * 
    * @return arrays of unnormalized component samples of single
    * pixel.  The scale and multiplication state of the samples are
@@ -521,8 +527,8 @@ public abstract class ColorModel implements Transparency
                                           float[] normComponents,
                                           int normOffset)
   {
-    // subclasses has to implement this method.
-    throw new UnsupportedOperationException();
+    int[] components = getComponents(pixel, null, 0);
+    return getNormalizedComponents(components, 0, normComponents, normOffset);
   }
 
   /**

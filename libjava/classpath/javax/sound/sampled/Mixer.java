@@ -62,7 +62,7 @@ public interface Mixer extends Line
      * @param desc a descriptive string
      * @param vers the mixer's version
      */
-    public Info(String name, String vendor, String desc, String vers)
+    protected Info(String name, String vendor, String desc, String vers)
     {
       this.name = name;
       this.description = desc;
@@ -83,7 +83,7 @@ public interface Mixer extends Line
     /**
      * Return the name of the mixer.
      */
-    public String getName()
+    public final String getName()
     {
       return name;
     }
@@ -91,7 +91,7 @@ public interface Mixer extends Line
     /**
      * Return the mixer's description.
      */
-    public String getDescription()
+    public final String getDescription()
     {
       return description;
     }
@@ -99,7 +99,7 @@ public interface Mixer extends Line
     /**
      * Return the mixer's vendor.
      */
-    public String getVendor()
+    public final String getVendor()
     {
       return vendor;
     }
@@ -107,12 +107,12 @@ public interface Mixer extends Line
     /**
      * Return the mixer's version.
      */
-    public String getVersion()
+    public final String getVersion()
     {
       return version;
     }
 
-    public String toString()
+    public final String toString()
     {
       return ("name=" + name + "; description=" + description
 	      + "; vendor=" + vendor + "; version=" + version);
