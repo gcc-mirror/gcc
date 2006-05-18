@@ -1,5 +1,15 @@
 2006-05-18  Tom Tromey  <tromey@redhat.com>
 
+	* source.am, Makefile.in: Rebuilt.
+	* Makefile.am (property_files): Removed.
+	* scripts/makemake.tcl (properties_map): New global.
+	(properties_files): Likewise.
+	(emit_property_files): New proc.
+	(scan_packages): Scan META-INF.
+	Print property_files variable.  Scan classpath/resource.
+
+2006-05-18  Tom Tromey  <tromey@redhat.com>
+
 	* testsuite/libjava.special/special.exp (gcj_special_pr21115):
 	Renamed.
 	(gcj_write_and_byte_compile): New proc.

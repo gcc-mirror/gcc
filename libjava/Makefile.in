@@ -489,7 +489,6 @@ GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
-GREP = @GREP@
 GTK_AWT_FALSE = @GTK_AWT_FALSE@
 GTK_AWT_TRUE = @GTK_AWT_TRUE@
 GTK_CAIRO_FALSE = @GTK_CAIRO_FALSE@
@@ -591,7 +590,6 @@ USING_WIN32_THREADS_TRUE = @USING_WIN32_THREADS_TRUE@
 VERSION = @VERSION@
 XLIB_AWT_FALSE = @XLIB_AWT_FALSE@
 XLIB_AWT_TRUE = @XLIB_AWT_TRUE@
-XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
@@ -600,8 +598,14 @@ ZINCS = @ZINCS@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
+ac_ct_AR = @ac_ct_AR@
+ac_ct_AS = @ac_ct_AS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
+ac_ct_GCJ = @ac_ct_GCJ@
+ac_ct_LD = @ac_ct_LD@
+ac_ct_RANLIB = @ac_ct_RANLIB@
+ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -621,10 +625,7 @@ build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@
 datadir = @datadir@
-datarootdir = @datarootdir@
 dbexecdir = @dbexecdir@
-docdir = @docdir@
-dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 extra_ldflags_libjava = @extra_ldflags_libjava@
 gxx_include_dir = @gxx_include_dir@
@@ -635,7 +636,6 @@ host_cpu = @host_cpu@
 host_os = @host_os@
 host_subdir = @host_subdir@
 host_vendor = @host_vendor@
-htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
@@ -643,16 +643,13 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 libgcj_basedir = @libgcj_basedir@
 libstdcxx_incdir = @libstdcxx_incdir@
-localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 mkinstalldirs = @mkinstalldirs@
 oldincludedir = @oldincludedir@
-pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
-psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 subdirs = @subdirs@
@@ -843,18 +840,6 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
-property_files = \
-classpath/resource/org/ietf/jgss/MessagesBundle.properties \
-classpath/resource/java/util/iso4217.properties	\
-classpath/resource/gnu/java/awt/peer/gtk/font.properties \
-classpath/resource/gnu/regexp/MessagesBundle_it.properties \
-classpath/resource/gnu/regexp/MessagesBundle_fr.properties \
-classpath/resource/gnu/regexp/MessagesBundle.properties	\
-classpath/resource/META-INF/services/org.xml.sax.driver	\
-classpath/resource/META-INF/services/javax.xml.parsers.SAXParserFactory	\
-classpath/resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactory \
-classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory
-
 propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))
 CLEANFILES = libgcj-$(gcc_version).jar
 DISTCLEANFILES = native.dirs
@@ -6953,6 +6938,26 @@ bc_objects = \
   org-relaxng.lo \
   org-w3c.lo \
   org-xml.lo
+
+property_files = \
+  classpath/resource/gnu/classpath/tools/jarsigner/MessageBundle.properties \
+  classpath/resource/gnu/classpath/tools/keytool/MessageBundle.properties \
+  classpath/resource/gnu/java/awt/peer/gtk/font.properties \
+  classpath/resource/gnu/javax/print/PrinterDialog.properties \
+  classpath/resource/gnu/javax/print/PrinterDialog_de.properties \
+  classpath/resource/gnu/javax/security/auth/callback/MessagesBundle.properties \
+  classpath/resource/gnu/regexp/MessagesBundle.properties \
+  classpath/resource/gnu/regexp/MessagesBundle_fr.properties \
+  classpath/resource/gnu/regexp/MessagesBundle_it.properties \
+  classpath/resource/java/util/iso4217.properties \
+  classpath/resource/javax/imageio/plugins/jpeg/MessagesBundle.properties \
+  classpath/resource/org/ietf/jgss/MessagesBundle.properties \
+  classpath/resource/META-INF/services/javax.sound.midi.spi.MidiDeviceProvider \
+  classpath/resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactory \
+  classpath/resource/META-INF/services/javax.xml.parsers.SAXParserFactory \
+  classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory \
+  classpath/resource/META-INF/services/org.relaxng.datatype.DatatypeLibraryFactory \
+  classpath/resource/META-INF/services/org.xml.sax.driver
 
 omitted_headers = java/lang/ClassLoader.h java/lang/Thread.h \
 	java/lang/String.h java/lang/reflect/Constructor.h \
