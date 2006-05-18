@@ -253,6 +253,17 @@ qualify_type (tree type, tree like)
   return c_build_qualified_type (type,
 				 TYPE_QUALS (type) | TYPE_QUALS (like));
 }
+
+/* Return true iff the given tree T is a variable length array.  */
+
+bool
+c_vla_type_p (tree t)
+{
+  if (TREE_CODE (t) == ARRAY_TYPE
+      && C_TYPE_VARIABLE_SIZE (t))
+    return true;
+  return false;
+}
 
 /* Return the composite type of two compatible types.
 
@@ -330,6 +341,8 @@ composite_type (tree t1, tree t2)
 	d2_variable = (!d2_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
+	d1_variable = d1_variable || (d1_zero && c_vla_type_p (t1));
+	d2_variable = d2_variable || (d2_zero && c_vla_type_p (t2));
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (elt == TREE_TYPE (t1) && TYPE_DOMAIN (t1)
@@ -834,6 +847,8 @@ comptypes_internal (tree type1, tree type2)
 	d2_variable = (!d2_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
+	d1_variable = d1_variable || (d1_zero && c_vla_type_p (t1));
+	d2_variable = d2_variable || (d2_zero && c_vla_type_p (t2));
 
 	if (d1_variable || d2_variable)
 	  break;
@@ -2116,6 +2131,11 @@ c_expr_sizeof_expr (struct c_expr expr)
     {
       ret.value = c_sizeof (TREE_TYPE (expr.value));
       ret.original_code = ERROR_MARK;
+      if (c_vla_type_p (TREE_TYPE (expr.value)))
+	{
+	  /* sizeof is evaluated when given a vla (C99 6.5.3.4p2).  */
+	  ret.value = build2 (COMPOUND_EXPR, TREE_TYPE (ret.value), expr.value, ret.value);
+	}
       pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
     }
   return ret;

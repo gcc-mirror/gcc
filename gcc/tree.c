@@ -5629,11 +5629,7 @@ variably_modified_type_p (tree type, tree fn)
   if (type == error_mark_node)
     return false;
 
-  /* If TYPE itself has variable size, it is variably modified.
-
-     We do not yet have a representation of the C99 '[*]' syntax.
-     When a representation is chosen, this function should be modified
-     to test for that case as well.  */
+  /* If TYPE itself has variable size, it is variably modified.  */
   RETURN_TRUE_IF_VAR (TYPE_SIZE (type));
   RETURN_TRUE_IF_VAR (TYPE_SIZE_UNIT (type));
 
@@ -5673,7 +5669,7 @@ variably_modified_type_p (tree type, tree fn)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      /* We can't see if any of the field are variably-modified by the
+      /* We can't see if any of the fields are variably-modified by the
 	 definition we normally use, since that would produce infinite
 	 recursion via pointers.  */
       /* This is variably modified if some field's type is.  */

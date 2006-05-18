@@ -309,6 +309,8 @@ struct c_arg_info {
   /* A list of non-parameter decls (notably enumeration constants)
      defined with the parameters.  */
   tree others;
+  /* True when these arguments had [*].  */
+  BOOL_BITFIELD had_vla_unspec : 1;
 };
 
 /* A declarator.  */
@@ -506,6 +508,7 @@ extern bool c_missing_noreturn_ok_p (tree);
 extern tree c_objc_common_truthvalue_conversion (tree expr);
 extern bool c_warn_unused_global_decl (tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
+extern bool c_vla_unspec_p (tree x, tree fn);
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
   c_build_qualified_type ((TYPE),				  \
@@ -524,6 +527,7 @@ extern struct c_label_context_vm *label_context_stack_vm;
 extern tree require_complete_type (tree);
 extern int same_translation_unit_p (tree, tree);
 extern int comptypes (tree, tree);
+extern bool c_vla_type_p (tree);
 extern bool c_mark_addressable (tree);
 extern void c_incomplete_type_error (tree, tree);
 extern tree c_type_promotes_to (tree);
