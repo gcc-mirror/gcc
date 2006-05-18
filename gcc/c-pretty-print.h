@@ -30,7 +30,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 typedef enum
   {
      pp_c_flag_abstract = 1 << 1,
-     pp_c_flag_last_bit = 2    
+     pp_c_flag_last_bit = 2
   } pp_c_pretty_print_flags;
 
 
@@ -60,7 +60,7 @@ struct c_pretty_print_info
   int *offset_list;
 
   pp_flags flags;
-   
+
   /* These must be overridden by each of the C and C++ front-end to
      reflect their understanding of syntactic productions when they differ.  */
   c_pretty_print_fn declaration;

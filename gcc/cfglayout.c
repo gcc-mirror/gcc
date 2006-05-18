@@ -117,7 +117,7 @@ skip_insns_after_block (basic_block bb)
 	  if (NEXT_INSN (insn)
 	      && JUMP_P (NEXT_INSN (insn))
 	      && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
-	          || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
+		  || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
 	    {
 	      insn = NEXT_INSN (insn);
 	      last_insn = insn;
@@ -196,7 +196,7 @@ record_effective_endpoints (void)
     continue;
   /* No basic blocks at all?  */
   gcc_assert (insn);
-  
+
   if (PREV_INSN (insn))
     cfg_layout_function_header =
 	    unlink_insn_chain (get_insns (), PREV_INSN (insn));
@@ -264,7 +264,7 @@ insn_locators_initialize (void)
   for (insn = get_insns (); insn; insn = next)
     {
       int active = 0;
-      
+
       next = NEXT_INSN (insn);
 
       if (NOTE_P (insn))
@@ -283,7 +283,7 @@ insn_locators_initialize (void)
 	active = (active_insn_p (insn)
 		  && GET_CODE (PATTERN (insn)) != ADDR_VEC
 		  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC);
-      
+
       check_block_change (insn, &block);
 
       if (active
@@ -331,8 +331,8 @@ insn_locators_initialize (void)
 struct tree_opt_pass pass_insn_locators_initialize =
 {
   "locators",                           /* name */
-  NULL,                                 /* gate */   
-  insn_locators_initialize,             /* execute */       
+  NULL,                                 /* gate */
+  insn_locators_initialize,             /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -549,7 +549,7 @@ reemit_insn_block_notes (void)
 
       this_block = insn_scope (insn);
       /* For sequences compute scope resulting from merging all scopes
-         of instructions nested inside.  */
+	 of instructions nested inside.  */
       if (GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
 	  int i;
@@ -673,7 +673,7 @@ fixup_reorder_chain (void)
 	    {
 	      /* If the old fallthru is still next, nothing to do.  */
 	      if (bb->aux == e_fall->dest
-	          || e_fall->dest == EXIT_BLOCK_PTR)
+		  || e_fall->dest == EXIT_BLOCK_PTR)
 		continue;
 
 	      /* The degenerated case of conditional jump jumping to the next
@@ -767,7 +767,7 @@ fixup_reorder_chain (void)
 	  bb->aux = nb;
 	  /* Don't process this new block.  */
 	  bb = nb;
-	  
+
 	  /* Make sure new bb is tagged for correct section (same as
 	     fall-thru source, since you cannot fall-throu across
 	     section boundaries).  */
@@ -979,7 +979,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	  switch (NOTE_LINE_NUMBER (insn))
 	    {
 	      /* In case prologue is empty and function contain label
-	         in first BB, we may want to copy the block.  */
+		 in first BB, we may want to copy the block.  */
 	    case NOTE_INSN_PROLOGUE_END:
 
 	    case NOTE_INSN_DELETED:
@@ -988,9 +988,9 @@ duplicate_insn_chain (rtx from, rtx to)
 	    case NOTE_INSN_EPILOGUE_BEG:
 	    case NOTE_INSN_FUNCTION_END:
 	      /* Debug code expect these notes to exist just once.
-	         Keep them in the master copy.
-	         ??? It probably makes more sense to duplicate them for each
-	         epilogue copy.  */
+		 Keep them in the master copy.
+		 ??? It probably makes more sense to duplicate them for each
+		 epilogue copy.  */
 	    case NOTE_INSN_FUNCTION_BEG:
 	      /* There is always just single entry to function.  */
 	    case NOTE_INSN_BASIC_BLOCK:
@@ -1005,9 +1005,9 @@ duplicate_insn_chain (rtx from, rtx to)
 	      /* All other notes should have already been eliminated.
 	       */
 	      gcc_assert (NOTE_LINE_NUMBER (insn) >= 0);
-	      
+
 	      /* It is possible that no_line_number is set and the note
-	         won't be emitted.  */
+		 won't be emitted.  */
 	      emit_note_copy (insn);
 	    }
 	  break;
@@ -1209,7 +1209,7 @@ end:
 
    Created copies of N_EDGES edges in array EDGES are stored in array NEW_EDGES,
    also in the same order.
-   
+
    Newly created basic blocks are put after the basic block AFTER in the
    instruction stream, and the order of the blocks in BBS array is preserved.  */
 

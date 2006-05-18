@@ -195,7 +195,7 @@ init_caller_save (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (mode = 0 ; mode < MAX_MACHINE_MODE; mode++)
       if (HARD_REGNO_MODE_OK (i, mode))
-        {
+	{
 	  int ok;
 
 	  /* Update the register number and modes of the register
@@ -212,7 +212,7 @@ init_caller_save (void)
 	  reg_restore_code[i][mode] = recog_memoized (restinsn);
 
 	  /* Now extract both insns and see if we can meet their
-             constraints.  */
+	     constraints.  */
 	  ok = (reg_save_code[i][mode] != -1
 		&& reg_restore_code[i][mode] != -1);
 	  if (ok)
@@ -228,7 +228,7 @@ init_caller_save (void)
 	      reg_save_code[i][mode] = -1;
 	      reg_restore_code[i][mode] = -1;
 	    }
-        }
+	}
       else
 	{
 	  reg_save_code[i][mode] = -1;
@@ -847,7 +847,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 	 registers from the live sets, and observe REG_UNUSED notes.  */
       COPY_REG_SET (&new->live_throughout, &chain->live_throughout);
       /* Registers that are set in CHAIN->INSN live in the new insn.
-         (Unless there is a REG_UNUSED note for them, but we don't
+	 (Unless there is a REG_UNUSED note for them, but we don't
 	  look for them here.) */
       note_stores (PATTERN (chain->insn), add_stored_regs,
 		   &new->live_throughout);

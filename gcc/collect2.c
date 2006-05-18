@@ -161,7 +161,7 @@ struct head
 enum pass {
   PASS_FIRST,				/* without constructors */
   PASS_OBJ,				/* individual objects */
-  PASS_LIB,			        /* looking for shared libraries */
+  PASS_LIB,				/* looking for shared libraries */
   PASS_SECOND				/* with constructors linked in */
 };
 
@@ -177,12 +177,12 @@ static int aixrtl_flag;			/* true if -brtl */
 
 int debug;				/* true if -debug */
 
-static int shared_obj;		        /* true if -shared */
+static int shared_obj;			/* true if -shared */
 
 static const char *c_file;		/* <xxx>.c for constructor/destructor list.  */
 static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
-static const char *export_file;	        /* <xxx>.x for AIX export list.  */
+static const char *export_file;		/* <xxx>.x for AIX export list.  */
 #endif
 const char *ldout;			/* File for ld stdout.  */
 const char *lderrout;			/* File for ld stderr.  */
@@ -192,7 +192,7 @@ static const char *nm_file_name;	/* pathname of nm */
 static const char *ldd_file_name;	/* pathname of ldd (or equivalent) */
 #endif
 static const char *strip_file_name;		/* pathname of strip */
-const char *c_file_name;	        /* pathname of gcc */
+const char *c_file_name;		/* pathname of gcc */
 static char *initname, *fininame;	/* names of init and fini funcs */
 
 static struct head constructors;	/* list of constructors found */
@@ -1062,7 +1062,7 @@ main (int argc, char **argv)
 	       explicitly puts an export list in command line */
 	    case 'b':
 	      if (arg[2] == 'E' || strncmp (&arg[2], "export", 6) == 0)
-                export_flag = 1;
+		export_flag = 1;
 	      else if (arg[2] == '6' && arg[3] == '4')
 		aix64_flag = 1;
 	      else if (arg[2] == 'r' && arg[3] == 't' && arg[4] == 'l')
@@ -1078,7 +1078,7 @@ main (int argc, char **argv)
 		  ld2--;
 		}
 	      if (!strcmp (arg, "-dynamic-linker") && argv[1])
-	        {
+		{
 		  ++argv;
 		  *ld1++ = *ld2++ = *argv;
 		}
@@ -1095,7 +1095,7 @@ main (int argc, char **argv)
 		}
 #ifdef COLLECT_EXPORT_LIST
 	      {
-	        /* Resolving full library name.  */
+		/* Resolving full library name.  */
 		const char *s = resolve_lib_name (arg+2);
 
 		/* Saving a full library name.  */
@@ -1205,8 +1205,8 @@ main (int argc, char **argv)
 	  else
 	    {
 	      /* Saving a full library name.  */
-              add_to_list (&libs, arg);
-            }
+	      add_to_list (&libs, arg);
+	    }
 #endif
 	}
     }
@@ -1670,7 +1670,7 @@ sort_ids (struct head *head_ptr)
 	    || id->sequence > (*id_ptr)->sequence
 	    /* Hack: do lexical compare, too.
 	    || (id->sequence == (*id_ptr)->sequence
-	        && strcmp (id->name, (*id_ptr)->name) > 0) */
+		&& strcmp (id->name, (*id_ptr)->name) > 0) */
 	    )
 	  {
 	    id->next = *id_ptr;
@@ -2246,7 +2246,7 @@ scan_libraries (const char *prog_name)
       *end = '\0';
 
       if (access (name, R_OK) == 0)
-        add_to_list (&libraries, name);
+	add_to_list (&libraries, name);
       else
 	fatal ("unable to open dynamic dependency '%s'", buf);
 
@@ -2296,20 +2296,20 @@ scan_libraries (const char *prog_name)
 #   if defined (C_WEAKEXT)
 #     define GCC_OK_SYMBOL(X) \
        (((X).n_sclass == C_EXT || (X).n_sclass == C_WEAKEXT) && \
-        ((X).n_scnum > N_UNDEF) && \
-        (aix64_flag \
-         || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
-             || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
+	((X).n_scnum > N_UNDEF) && \
+	(aix64_flag \
+	 || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
+	     || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
 #     define GCC_UNDEF_SYMBOL(X) \
        (((X).n_sclass == C_EXT || (X).n_sclass == C_WEAKEXT) && \
-        ((X).n_scnum == N_UNDEF))
+	((X).n_scnum == N_UNDEF))
 #   else
 #     define GCC_OK_SYMBOL(X) \
        (((X).n_sclass == C_EXT) && \
-        ((X).n_scnum > N_UNDEF) && \
-        (aix64_flag \
-         || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
-             || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
+	((X).n_scnum > N_UNDEF) && \
+	(aix64_flag \
+	 || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
+	     || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
 #     define GCC_UNDEF_SYMBOL(X) \
        (((X).n_sclass == C_EXT) && ((X).n_scnum == N_UNDEF))
 #   endif
@@ -2398,9 +2398,9 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
     {
 #endif
       /* Some platforms (e.g. OSF4) declare ldopen as taking a
-         non-const char * filename parameter, even though it will not
-         modify that string.  So we must cast away const-ness here,
-         which will cause -Wcast-qual to burp.  */
+	 non-const char * filename parameter, even though it will not
+	 modify that string.  So we must cast away const-ness here,
+	 which will cause -Wcast-qual to burp.  */
       if ((ldptr = ldopen ((char *)prog_name, ldptr)) != NULL)
 	{
 	  if (! MY_ISCOFF (HEADER (ldptr).f_magic))

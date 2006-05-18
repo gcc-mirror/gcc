@@ -39,7 +39,7 @@ Boston, MA 02110-1301, USA.  */
    names for the error message.  The possible values for *flag_var must
    fit in a 'signed char'.  */
 
-static const struct c_pch_matching 
+static const struct c_pch_matching
 {
   int *flag_var;
   const char *flag_name;
@@ -69,7 +69,7 @@ struct c_pch_validity
   size_t target_data_length;
 };
 
-struct c_pch_header 
+struct c_pch_header
 {
   unsigned long asm_size;
 };
@@ -95,7 +95,7 @@ get_ident (void)
   static char result[IDENT_LENGTH];
   static const char template[IDENT_LENGTH] = "gpch.013";
   static const char c_language_chars[] = "Co+O";
-  
+
   memcpy (result, template, IDENT_LENGTH);
   result[4] = c_language_chars[c_language];
 
@@ -103,7 +103,7 @@ get_ident (void)
 }
 
 /* Prepare to write a PCH file, if one is being written.  This is
-   called at the start of compilation.  
+   called at the start of compilation.
 
    Also, print out the executable checksum if -fverbose-asm is in effect.  */
 
@@ -114,7 +114,7 @@ pch_init (void)
   struct c_pch_validity v;
   void *target_validity;
   static const char partial_pch[IDENT_LENGTH] = "gpcWrite";
-  
+
 #ifdef ASM_COMMENT_START
   if (flag_verbose_asm)
     {
@@ -123,17 +123,17 @@ pch_init (void)
       fputc ('\n', asm_out_file);
     }
 #endif
-  
+
   if (!pch_file)
     return;
-  
+
   f = fopen (pch_file, "w+b");
   if (f == NULL)
     fatal_error ("can%'t create precompiled header %s: %m", pch_file);
   pch_outfile = f;
 
   gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
-  
+
   v.debug_info_type = write_symbols;
   {
     size_t i;
@@ -145,7 +145,7 @@ pch_init (void)
   }
   v.pch_init = &pch_init;
   target_validity = targetm.get_pch_validity (&v.target_data_length);
-  
+
   if (fwrite (partial_pch, IDENT_LENGTH, 1, f) != 1
       || fwrite (executable_checksum, 16, 1, f) != 1
       || fwrite (&v, sizeof (v), 1, f) != 1
@@ -157,12 +157,12 @@ pch_init (void)
   if (asm_file_name == NULL
       || strcmp (asm_file_name, "-") == 0)
     fatal_error ("%qs is not a valid output file", asm_file_name);
-  
+
   asm_file_startpos = ftell (asm_out_file);
-  
+
   /* Let the debugging format deal with the PCHness.  */
   (*debug_hooks->handle_pch) (0);
-  
+
   cpp_save_state (parse_in, f);
 }
 
@@ -183,10 +183,10 @@ c_common_write_pch (void)
 
   asm_file_end = ftell (asm_out_file);
   h.asm_size = asm_file_end - asm_file_startpos;
-  
+
   if (fwrite (&h, sizeof (h), 1, pch_outfile) != 1)
     fatal_error ("can%'t write %s: %m", pch_file);
-  
+
   buf = XNEWVEC (char, 16384);
 
   if (fseek (asm_out_file, asm_file_startpos, SEEK_SET) != 0)
@@ -247,7 +247,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 		 name);
       return 2;
     }
-  
+
   pch_ident = get_ident();
   if (memcmp (ident, pch_ident, IDENT_LENGTH) != 0)
     {
@@ -256,13 +256,13 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 	  if (memcmp (ident, pch_ident, 5) == 0)
 	    /* It's a PCH, for the right language, but has the wrong version.
 	     */
-	    cpp_error (pfile, CPP_DL_WARNING, 
+	    cpp_error (pfile, CPP_DL_WARNING,
 		       "%s: not compatible with this GCC version", name);
 	  else if (memcmp (ident, pch_ident, 4) == 0)
 	    /* It's a PCH for the wrong language.  */
 	    cpp_error (pfile, CPP_DL_WARNING, "%s: not for %s", name,
 		       lang_hooks.name);
-	  else 
+	  else
 	    /* Not any kind of PCH.  */
 	    cpp_error (pfile, CPP_DL_WARNING, "%s: not a PCH file", name);
 	}
@@ -289,7 +289,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
       && write_symbols != NO_DEBUG)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, CPP_DL_WARNING, 
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "%s: created with -g%s, but used with -g%s", name,
 		   debug_type_names[v.debug_info_type],
 		   debug_type_names[write_symbols]);
@@ -303,7 +303,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
       if (*pch_matching[i].flag_var != v.match[i])
 	{
 	  if (cpp_get_options (pfile)->warn_invalid_pch)
-	    cpp_error (pfile, CPP_DL_WARNING, 
+	    cpp_error (pfile, CPP_DL_WARNING,
 		       "%s: settings for %s do not match", name,
 		       pch_matching[i].flag_name);
 	  return 2;
@@ -313,13 +313,13 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   /* If the text segment was not loaded at the same address as it was
      when the PCH file was created, function pointers loaded from the
      PCH will not be valid.  We could in theory remap all the function
-     pointers, but no support for that exists at present.  
+     pointers, but no support for that exists at present.
      Since we have the same executable, it should only be necessary to
      check one function.  */
   if (v.pch_init != &pch_init)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, CPP_DL_WARNING, 
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "%s: had text segment at different address", name);
       return 2;
     }
@@ -328,7 +328,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   {
     void *this_file_data = xmalloc (v.target_data_length);
     const char *msg;
-    
+
     if ((size_t) read (fd, this_file_data, v.target_data_length)
 	!= v.target_data_length)
       fatal_error ("can%'t read %s: %m", name);
@@ -344,7 +344,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
   /* Check the preprocessor macros are the same as when the PCH was
      generated.  */
-  
+
   result = cpp_valid_state (pfile, name, fd);
   if (result == -1)
     return 2;
@@ -366,7 +366,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   FILE *f;
   struct c_pch_header h;
   struct save_macro_data *smd;
-  
+
   f = fdopen (fd, "rb");
   if (f == NULL)
     {
@@ -415,7 +415,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
     return;
 
   fclose (f);
-  
+
   /* Give the front end a chance to take action after a PCH file has
      been loaded.  */
   if (lang_post_pch_load)
@@ -455,16 +455,16 @@ c_common_pch_pragma (cpp_reader *pfile, const char *name)
   fd = open (name, O_RDONLY | O_BINARY, 0666);
   if (fd == -1)
     fatal_error ("%s: couldn%'t open PCH file: %m", name);
-  
+
   if (c_common_valid_pch (pfile, name, fd) != 1)
     {
       if (!cpp_get_options (pfile)->warn_invalid_pch)
 	inform ("use -Winvalid-pch for more information");
       fatal_error ("%s: PCH file was invalid", name);
     }
-  
+
   c_common_read_pch (pfile, name, fd, name);
-  
+
   close (fd);
 }
 

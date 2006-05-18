@@ -20,7 +20,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
 /*  This file contains basic routines manipulating call graph and variable pool
-  
+
 The callgraph:
 
     The call-graph is data structure designed for intra-procedural optimization
@@ -37,7 +37,7 @@ The callgraph:
     not change once the declaration is inserted into the call-graph.
     The call-graph nodes are created lazily using cgraph_node function when
     called for unknown declaration.
-    
+
     When built, there is one edge for each direct call.  It is possible that
     the reference will be later optimized out.  The call-graph is built
     conservatively in order to make conservative data flow analysis possible.
@@ -65,7 +65,7 @@ The callgraph:
       Each inlined call gets a unique corresponding clone node of the callee
       and the data structure is updated while inlining is performed, so
       the clones are eliminated and their callee edges redirected to the
-      caller. 
+      caller.
 
       Each edge has "inline_failed" field.  When the field is set to NULL,
       the call will be inlined.  When it is non-NULL it contains a reason
@@ -477,15 +477,15 @@ cgraph_remove_node (struct cgraph_node *node)
 	struct cgraph_node *n;
 
 	/* Make the next clone be the master clone */
-	for (n = new_node; n; n = n->next_clone) 
+	for (n = new_node; n; n = n->next_clone)
 	  n->master_clone = new_node;
-	
+
 	*slot = new_node;
 	node->next_clone->prev_clone = NULL;
       }
       else
 	{
-          htab_clear_slot (cgraph_hash, slot);
+	  htab_clear_slot (cgraph_hash, slot);
 	  kill_body = true;
 	}
     }
@@ -493,10 +493,10 @@ cgraph_remove_node (struct cgraph_node *node)
     {
       node->prev_clone->next_clone = node->next_clone;
       if (node->next_clone)
-        node->next_clone->prev_clone = node->prev_clone;
+	node->next_clone->prev_clone = node->prev_clone;
     }
 
-  /* While all the clones are removed after being proceeded, the function 
+  /* While all the clones are removed after being proceeded, the function
      itself is kept in the cgraph even after it is compiled.  Check whether
      we are done with this body and reclaim it proactively if this is the case.
      */
@@ -551,7 +551,7 @@ struct cgraph_local_info *
 cgraph_local_info (tree decl)
 {
   struct cgraph_node *node;
-  
+
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   node = cgraph_node (decl);
   return &node->local;
@@ -563,7 +563,7 @@ struct cgraph_global_info *
 cgraph_global_info (tree decl)
 {
   struct cgraph_node *node;
-  
+
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL && cgraph_global_info_ready);
   node = cgraph_node (decl);
   return &node->global;
@@ -575,7 +575,7 @@ struct cgraph_rtl_info *
 cgraph_rtl_info (tree decl)
 {
   struct cgraph_node *node;
-  
+
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   node = cgraph_node (decl);
   if (decl != current_function_decl
@@ -599,7 +599,7 @@ cgraph_varpool_node_name (struct cgraph_varpool_node *node)
 }
 
 /* Names used to print out the availability enum.  */
-static const char * const availability_names[] = 
+static const char * const availability_names[] =
   {"unset", "not_available", "overwrittable", "available", "local"};
 
 /* Dump given cgraph node.  */
@@ -613,7 +613,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	     cgraph_node_name (node->global.inlined_to),
 	     node->global.inlined_to->uid);
   if (cgraph_function_flags_ready)
-    fprintf (f, " availability:%s", 
+    fprintf (f, " availability:%s",
 	     availability_names [cgraph_function_body_availability (node)]);
   if (node->master_clone && node->master_clone->uid != node->uid)
     fprintf (f, "(%i)", node->master_clone->uid);
@@ -753,7 +753,7 @@ cgraph_varpool_node (tree decl)
 
   if (!cgraph_varpool_hash)
     cgraph_varpool_hash = htab_create_ggc (10, hash_varpool_node,
-				           eq_varpool_node, NULL);
+					   eq_varpool_node, NULL);
   key.decl = decl;
   slot = (struct cgraph_varpool_node **)
     htab_find_slot (cgraph_varpool_hash, &key, INSERT);
@@ -879,7 +879,7 @@ void
 cgraph_varpool_finalize_decl (tree decl)
 {
   struct cgraph_varpool_node *node = cgraph_varpool_node (decl);
- 
+
   /* The first declaration of a variable that comes through this function
      decides whether it is global (in C, has external linkage)
      or local (in C, has internal linkage).  So do nothing more
@@ -942,8 +942,8 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
   struct cgraph_edge *new;
 
   new = cgraph_create_edge (n, e->callee, call_stmt,
-                            e->count * count_scale / REG_BR_PROB_BASE,
-		            e->loop_nest + loop_nest);
+			    e->count * count_scale / REG_BR_PROB_BASE,
+			    e->loop_nest + loop_nest);
 
   new->inline_failed = e->inline_failed;
   if (update_original)
@@ -956,7 +956,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 }
 
 /* Create node representing clone of N executed COUNT times.  Decrease
-   the execution counts from original node too. 
+   the execution counts from original node too.
 
    When UPDATE_ORIGINAL is true, the counts are subtracted from the original
    function's profile to reflect the fact that part of execution is handled
@@ -1018,13 +1018,13 @@ struct cgraph_node *
 cgraph_master_clone (struct cgraph_node *n)
 {
   enum availability avail = cgraph_function_body_availability (n);
-   
+
   if (avail == AVAIL_NOT_AVAILABLE || avail == AVAIL_OVERWRITABLE)
     return NULL;
 
-  if (!n->master_clone) 
+  if (!n->master_clone)
     n->master_clone = cgraph_node (n->decl);
-  
+
   return n->master_clone;
 }
 
@@ -1069,7 +1069,7 @@ cgraph_function_body_availability (struct cgraph_node *node)
      document the requirement of both versions of function (extern
      inline and offline) having same side effect characteristics as
      good optimization is what this optimization is about.  */
-  
+
   else if (!(*targetm.binds_local_p) (node->decl)
 	   && !DECL_COMDAT (node->decl) && !DECL_EXTERNAL (node->decl))
     avail = AVAIL_OVERWRITABLE;

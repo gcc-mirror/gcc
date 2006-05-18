@@ -770,8 +770,8 @@ pop_scope (void)
 	  TREE_CHAIN (p) = BLOCK_VARS (block);
 	  BLOCK_VARS (block) = p;
 	  gcc_assert (I_LABEL_BINDING (b->id) == b);
- 	  I_LABEL_BINDING (b->id) = b->shadowed;
- 	  break;
+	  I_LABEL_BINDING (b->id) = b->shadowed;
+	  break;
 
 	case ENUMERAL_TYPE:
 	case UNION_TYPE:
@@ -785,7 +785,7 @@ pop_scope (void)
 	      gcc_assert (I_TAG_BINDING (b->id) == b);
 	      I_TAG_BINDING (b->id) = b->shadowed;
 	    }
-  	  break;
+	  break;
 
 	case FUNCTION_DECL:
 	  /* Propagate TREE_ADDRESSABLE from nested functions to their
@@ -812,7 +812,7 @@ pop_scope (void)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
 	      && scope != file_scope
-	      && scope != external_scope) 
+	      && scope != external_scope)
 	    warning (OPT_Wunused_variable, "unused variable %q+D", p);
 
 	  if (b->inner_comp)
@@ -1484,7 +1484,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
   /* warnings */
   /* All decls must agree on a visibility.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (newdecl), TS_DECL_WITH_VIS) 
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (newdecl), TS_DECL_WITH_VIS)
       && DECL_VISIBILITY_SPECIFIED (newdecl) && DECL_VISIBILITY_SPECIFIED (olddecl)
       && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
@@ -1704,7 +1704,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  are assigned.  */
        if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
 	 DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
-       
+
        /* Copy the assembler name.
 	  Currently, it can only be defined in the prototype.  */
        COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
@@ -1715,7 +1715,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	   DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
 	   DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
 	 }
-       
+
        if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	 {
 	   DECL_STATIC_CONSTRUCTOR(newdecl) |= DECL_STATIC_CONSTRUCTOR(olddecl);
@@ -1729,7 +1729,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	   DECL_IS_PURE (newdecl) |= DECL_IS_PURE (olddecl);
 	   DECL_IS_NOVOPS (newdecl) |= DECL_IS_NOVOPS (olddecl);
 	 }
-       
+
        /* Merge the storage class information.  */
        merge_weak (newdecl, olddecl);
 
@@ -1745,7 +1745,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	     TREE_PUBLIC (DECL_NAME (olddecl)) = 0;
 	 }
      }
-   
+
    if (DECL_EXTERNAL (newdecl))
      {
        TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
@@ -1764,8 +1764,8 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
        TREE_STATIC (olddecl) = TREE_STATIC (newdecl);
        TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
      }
-   
-   if (TREE_CODE (newdecl) == FUNCTION_DECL) 
+
+   if (TREE_CODE (newdecl) == FUNCTION_DECL)
      {
        /* If we're redefining a function previously defined as extern
 	  inline, make sure we emit debug info for the inline before we
@@ -1837,13 +1837,13 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	     DECL_INLINE (newdecl) = 1;
 	 }
      }
-   
+
    /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
      But preserve OLDDECL's DECL_UID and DECL_CONTEXT.  */
   {
     unsigned olddecl_uid = DECL_UID (olddecl);
     tree olddecl_context = DECL_CONTEXT (olddecl);
-    
+
     memcpy ((char *) olddecl + sizeof (struct tree_common),
 	    (char *) newdecl + sizeof (struct tree_common),
 	    sizeof (struct tree_decl_common) - sizeof (struct tree_common));
@@ -1863,7 +1863,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	break;
 
       default:
-	
+
 	memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
 		(char *) newdecl + sizeof (struct tree_decl_common),
 		sizeof (struct tree_decl_non_common) - sizeof (struct tree_decl_common));
@@ -1972,7 +1972,7 @@ warn_if_shadowing (tree new_decl)
    translation and get back the corresponding typedef name.  For
    example, given:
 
-        typedef struct S MY_TYPE;
+	typedef struct S MY_TYPE;
 	MY_TYPE object;
 
    Later parts of the compiler might only know that `object' was of
@@ -2456,7 +2456,7 @@ undeclared_variable (tree id, location_t loc)
 	}
 
       /* If we are parsing old-style parameter decls, current_function_decl
-         will be nonnull but current_function_scope will be null.  */
+	 will be nonnull but current_function_scope will be null.  */
       scope = current_function_scope ? current_function_scope : current_scope;
     }
   bind (id, error_mark_node, scope, /*invisible=*/false, /*nested=*/false);
@@ -2595,7 +2595,7 @@ define_label (location_t location, tree name)
 
   if (!in_system_header && lookup_name (name))
     warning (OPT_Wtraditional, "%Htraditional C lacks a separate namespace "
-             "for labels, identifier %qE conflicts", &location, name);
+	     "for labels, identifier %qE conflicts", &location, name);
 
   nlist_se = XOBNEW (&parser_obstack, struct c_label_list);
   nlist_se->next = label_context_stack_se->labels_def;
@@ -2670,7 +2670,7 @@ pending_xref_error (void)
 {
   if (pending_invalid_xref != 0)
     error ("%H%qE defined as wrong kind of tag",
-           &pending_invalid_xref_location, pending_invalid_xref);
+	   &pending_invalid_xref_location, pending_invalid_xref);
   pending_invalid_xref = 0;
 }
 
@@ -3460,8 +3460,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
   maybe_apply_pragma_weak (decl);
 
   /* If this is a variable definition, determine its ELF visibility.  */
-  if (TREE_CODE (decl) == VAR_DECL 
-      && TREE_STATIC (decl) 
+  if (TREE_CODE (decl) == VAR_DECL
+      && TREE_STATIC (decl)
       && !DECL_EXTERNAL (decl))
     c_determine_visibility (decl);
 
@@ -3475,7 +3475,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       if (c_dialect_objc ())
 	objc_check_decl (decl);
 
-      if (asmspec) 
+      if (asmspec)
 	{
 	  /* If this is not a static variable, issue a warning.
 	     It doesn't make any sense to give an ASMSPEC for an
@@ -3491,7 +3491,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  else
 	    set_user_assembler_name (decl, asmspec);
 	}
-      
+
       if (DECL_FILE_SCOPE_P (decl))
 	{
 	  if (DECL_INITIAL (decl) == NULL_TREE
@@ -3537,7 +3537,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	      add_stmt (build_stmt (DECL_EXPR, decl));
 	    }
 	}
-  
+
 
       if (!DECL_FILE_SCOPE_P (decl))
 	{
@@ -3821,7 +3821,7 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
     {
       struct lang_type *lt = TYPE_LANG_SPECIFIC (*type);
       if (!lt
-          || w < min_precision (lt->enum_min, TYPE_UNSIGNED (*type))
+	  || w < min_precision (lt->enum_min, TYPE_UNSIGNED (*type))
 	  || w < min_precision (lt->enum_max, TYPE_UNSIGNED (*type)))
 	warning (0, "%qs is narrower than values of its type", name);
     }
@@ -4156,25 +4156,25 @@ grokdeclarator (const struct c_declarator *declarator,
 	    declarator = declarator->declarator;
 
 	    /* Check for some types that there cannot be arrays of.  */
-	    
+
 	    if (VOID_TYPE_P (type))
 	      {
 		error ("declaration of %qs as array of voids", name);
 		type = error_mark_node;
 	      }
-	    
+
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
 	      {
 		error ("declaration of %qs as array of functions", name);
 		type = error_mark_node;
 	      }
-	    
+
 	    if (pedantic && !in_system_header && flexible_array_type_p (type))
 	      pedwarn ("invalid use of structure with flexible array member");
-	    
+
 	    if (size == error_mark_node)
 	      type = error_mark_node;
-	    
+
 	    if (type == error_mark_node)
 	      continue;
 
@@ -4187,16 +4187,16 @@ grokdeclarator (const struct c_declarator *declarator,
 		/* Strip NON_LVALUE_EXPRs since we aren't using as an
 		   lvalue.  */
 		STRIP_TYPE_NOPS (size);
-		
+
 		if (!INTEGRAL_TYPE_P (TREE_TYPE (size)))
 		  {
 		    error ("size of array %qs has non-integer type", name);
 		    size = integer_one_node;
 		  }
-		
+
 		if (pedantic && integer_zerop (size))
 		  pedwarn ("ISO C forbids zero-size array %qs", name);
-		
+
 		if (TREE_CODE (size) == INTEGER_CST)
 		  {
 		    constant_expression_warning (size);
@@ -4212,7 +4212,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		       nonconstant even if it is (eg) a const variable
 		       with known value.  */
 		    size_varies = 1;
-		    
+
 		    if (!flag_isoc99 && pedantic)
 		      {
 			if (TREE_CONSTANT (size))
@@ -4227,10 +4227,10 @@ grokdeclarator (const struct c_declarator *declarator,
 
 		if (integer_zerop (size))
 		  {
-		    /* 	A zero-length array cannot be represented with
-		        an unsigned index type, which is what we'll
-		        get with build_index_type.  Create an
-		        open-ended range instead.  */
+		    /* A zero-length array cannot be represented with
+		       an unsigned index type, which is what we'll
+		       get with build_index_type.  Create an
+		       open-ended range instead.  */
 		    itype = build_range_type (sizetype, size, NULL_TREE);
 		  }
 		else
@@ -4250,7 +4250,7 @@ grokdeclarator (const struct c_declarator *declarator,
 					 convert (index_type,
 						  size_one_node));
 
-		    /* If that overflowed, the array is too big.  ??? 
+		    /* If that overflowed, the array is too big.  ???
 		       While a size of INT_MAX+1 technically shouldn't
 		       cause an overflow (because we subtract 1), the
 		       overflow is recorded during the conversion to
@@ -4264,7 +4264,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			type = error_mark_node;
 			continue;
 		      }
-		    
+
 		    itype = build_index_type (itype);
 		  }
 	      }
@@ -4296,7 +4296,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    if (!COMPLETE_TYPE_P (type))
 	      {
 		error ("array type has incomplete element type");
-	        type = error_mark_node;
+		type = error_mark_node;
 	      }
 	    else
 	      type = build_array_type (type, itype);
@@ -4353,7 +4353,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       type for the function to return.  */
 	    if (type == error_mark_node)
 	      continue;
-	    
+
 	    size_varies = 0;
 
 	    /* Warn about some types functions can't return.  */
@@ -4377,7 +4377,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       qualify the return type, not the function type.  */
 	    if (type_quals)
 	      {
-	        /* Type qualifiers on a function return type are
+		/* Type qualifiers on a function return type are
 		   normally permitted by the standard but have no
 		   effect, so give a warning at -Wreturn-type.
 		   Qualifiers on a void return type are banned on
@@ -4388,20 +4388,20 @@ grokdeclarator (const struct c_declarator *declarator,
 		else
 		  warning (OPT_Wreturn_type,
 			   "type qualifiers ignored on function return type");
-		
+
 		type = c_build_qualified_type (type, type_quals);
 	      }
 	    type_quals = TYPE_UNQUALIFIED;
-	    
+
 	    type = build_function_type (type, arg_types);
 	    declarator = declarator->declarator;
-	    
+
 	    /* Set the TYPE_CONTEXTs for each tagged type which is local to
 	       the formal parameter list of this FUNCTION_TYPE to point to
 	       the FUNCTION_TYPE node itself.  */
 	    {
 	      tree link;
-	      
+
 	      for (link = arg_info->tags;
 		   link;
 		   link = TREE_CHAIN (link))
@@ -4422,7 +4422,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    size_varies = 0;
 
 	    type = build_pointer_type (type);
-	    
+
 	    /* Process type qualifiers (such as const or volatile)
 	       that were given inside the `*'.  */
 	    type_quals = declarator->u.pointer_quals;
@@ -4608,7 +4608,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    type = build_pointer_type (type);
 	  }
 	else if (TREE_CODE (type) != ERROR_MARK
-	         && !COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (type))
+		 && !COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (type))
 	  {
 	    error ("field %qs has incomplete type", name);
 	    type = error_mark_node;
@@ -4640,8 +4640,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    else if (storage_class == csc_static)
 	      {
-	        error ("invalid storage class for function %qs", name);
-	        if (funcdef_flag)
+		error ("invalid storage class for function %qs", name);
+		if (funcdef_flag)
 		  storage_class = declspecs->storage_class = csc_none;
 		else
 		  return 0;
@@ -4963,7 +4963,7 @@ get_parm_info (bool ellipsis)
      (by 'const' or 'volatile'), or has a storage class specifier
      ('register'), then the behavior is undefined; issue an error.
      Typedefs for 'void' are OK (see DR#157).  */
-  if (b->prev == 0		            /* one binding */
+  if (b->prev == 0			    /* one binding */
       && TREE_CODE (b->decl) == PARM_DECL   /* which is a parameter */
       && !DECL_NAME (b->decl)               /* anonymous */
       && VOID_TYPE_P (TREE_TYPE (b->decl))) /* of void type */
@@ -5188,17 +5188,17 @@ start_struct (enum tree_code code, tree name)
   if (ref && TREE_CODE (ref) == code)
     {
       if (TYPE_SIZE (ref))
-        {
+	{
 	  if (code == UNION_TYPE)
 	    error ("redefinition of %<union %E%>", name);
-          else
+	  else
 	    error ("redefinition of %<struct %E%>", name);
 	}
       else if (C_TYPE_BEING_DEFINED (ref))
 	{
 	  if (code == UNION_TYPE)
 	    error ("nested redefinition of %<union %E%>", name);
-          else
+	  else
 	    error ("nested redefinition of %<struct %E%>", name);
 	}
     }
@@ -5507,46 +5507,46 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 
     for (x = fieldlist; x; x = TREE_CHAIN (x))
       {
-        if (len > 15 || DECL_NAME (x) == NULL)
-          break;
-        len += 1;
+	if (len > 15 || DECL_NAME (x) == NULL)
+	  break;
+	len += 1;
       }
 
     if (len > 15)
       {
-        tree *field_array;
-        struct lang_type *space;
-        struct sorted_fields_type *space2;
+	tree *field_array;
+	struct lang_type *space;
+	struct sorted_fields_type *space2;
 
-        len += list_length (x);
+	len += list_length (x);
 
-        /* Use the same allocation policy here that make_node uses, to
-          ensure that this lives as long as the rest of the struct decl.
-          All decls in an inline function need to be saved.  */
+	/* Use the same allocation policy here that make_node uses, to
+	  ensure that this lives as long as the rest of the struct decl.
+	  All decls in an inline function need to be saved.  */
 
-        space = GGC_CNEW (struct lang_type);
-        space2 = GGC_NEWVAR (struct sorted_fields_type,
+	space = GGC_CNEW (struct lang_type);
+	space2 = GGC_NEWVAR (struct sorted_fields_type,
 			     sizeof (struct sorted_fields_type) + len * sizeof (tree));
 
-        len = 0;
+	len = 0;
 	space->s = space2;
 	field_array = &space2->elts[0];
-        for (x = fieldlist; x; x = TREE_CHAIN (x))
-          {
-            field_array[len++] = x;
+	for (x = fieldlist; x; x = TREE_CHAIN (x))
+	  {
+	    field_array[len++] = x;
 
-            /* If there is anonymous struct or union, break out of the loop.  */
-            if (DECL_NAME (x) == NULL)
-              break;
-          }
-        /* Found no anonymous struct/union.  Add the TYPE_LANG_SPECIFIC.  */
-        if (x == NULL)
-          {
-            TYPE_LANG_SPECIFIC (t) = space;
-            TYPE_LANG_SPECIFIC (t)->s->len = len;
-            field_array = TYPE_LANG_SPECIFIC (t)->s->elts;
-            qsort (field_array, len, sizeof (tree), field_decl_cmp);
-          }
+	    /* If there is anonymous struct or union, break out of the loop.  */
+	    if (DECL_NAME (x) == NULL)
+	      break;
+	  }
+	/* Found no anonymous struct/union.  Add the TYPE_LANG_SPECIFIC.  */
+	if (x == NULL)
+	  {
+	    TYPE_LANG_SPECIFIC (t) = space;
+	    TYPE_LANG_SPECIFIC (t)->s->len = len;
+	    field_array = TYPE_LANG_SPECIFIC (t)->s->elts;
+	    qsort (field_array, len, sizeof (tree), field_decl_cmp);
+	  }
       }
   }
 
@@ -6100,7 +6100,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
 		      != char_type_node))
 		pedwarn ("second argument of %q+D should be %<char **%>",
-                         decl1);
+			 decl1);
 	      break;
 
 	    case 3:
@@ -6109,7 +6109,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
 		      != char_type_node))
 		pedwarn ("third argument of %q+D should probably be "
-                         "%<char **%>", decl1);
+			 "%<char **%>", decl1);
 	      break;
 	    }
 	}
@@ -6573,12 +6573,12 @@ finish_function (void)
     {
       tree args = DECL_ARGUMENTS (fndecl);
       for (; args; args = TREE_CHAIN (args))
- 	{
- 	  tree type = TREE_TYPE (args);
- 	  if (INTEGRAL_TYPE_P (type)
- 	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
- 	    DECL_ARG_TYPE (args) = integer_type_node;
- 	}
+	{
+	  tree type = TREE_TYPE (args);
+	  if (INTEGRAL_TYPE_P (type)
+	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	    DECL_ARG_TYPE (args) = integer_type_node;
+	}
     }
 
   if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
@@ -6677,9 +6677,9 @@ finish_function (void)
       && !undef_nested_function)
     {
       if (!decl_function_context (fndecl))
-        {
-          c_genericize (fndecl);
-          c_gimple_diagnostics_recursively (fndecl);
+	{
+	  c_genericize (fndecl);
+	  c_gimple_diagnostics_recursively (fndecl);
 
 	  /* ??? Objc emits functions after finalizing the compilation unit.
 	     This should be cleaned up later and this conditional removed.  */
@@ -6690,14 +6690,14 @@ finish_function (void)
 	    }
 
 	  cgraph_finalize_function (fndecl, false);
-        }
+	}
       else
-        {
-          /* Register this function with cgraph just far enough to get it
-            added to our parent's nested function list.  Handy, since the
-            C front end doesn't have such a list.  */
-          (void) cgraph_node (fndecl);
-        }
+	{
+	  /* Register this function with cgraph just far enough to get it
+	    added to our parent's nested function list.  Handy, since the
+	    C front end doesn't have such a list.  */
+	  (void) cgraph_node (fndecl);
+	}
     }
 
   if (!decl_function_context (fndecl))
@@ -6725,11 +6725,11 @@ c_expand_body (tree fndecl)
   if (DECL_STATIC_CONSTRUCTOR (fndecl)
       && targetm.have_ctors_dtors)
     targetm.asm_out.constructor (XEXP (DECL_RTL (fndecl), 0),
-                                 DEFAULT_INIT_PRIORITY);
+				 DEFAULT_INIT_PRIORITY);
   if (DECL_STATIC_DESTRUCTOR (fndecl)
       && targetm.have_ctors_dtors)
     targetm.asm_out.destructor (XEXP (DECL_RTL (fndecl), 0),
-                                DEFAULT_INIT_PRIORITY);
+				DEFAULT_INIT_PRIORITY);
 }
 
 /* Check the declarations given in a for-loop for satisfying the C99
@@ -7815,10 +7815,10 @@ c_write_global_declarations (void)
       int flags;
       FILE * stream = dump_begin (TDI_tu, &flags);
       if (stream && tmp)
-        {
-          dump_node (tmp, flags & ~TDF_SLIM, stream);
-          dump_end (TDI_tu, stream);
-        }
+	{
+	  dump_node (tmp, flags & ~TDF_SLIM, stream);
+	  dump_end (TDI_tu, stream);
+	}
     }
 
   /* Process all file scopes in this compilation, and the external_scope,

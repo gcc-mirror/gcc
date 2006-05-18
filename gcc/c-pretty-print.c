@@ -199,8 +199,8 @@ pp_c_space_for_pointer_operator (c_pretty_printer *pp, tree t)
     {
       tree pointee = strip_pointer_operator (TREE_TYPE (t));
       if (TREE_CODE (pointee) != ARRAY_TYPE
-          && TREE_CODE (pointee) != FUNCTION_TYPE)
-        pp_c_whitespace (pp);
+	  && TREE_CODE (pointee) != FUNCTION_TYPE)
+	pp_c_whitespace (pp);
     }
 }
 
@@ -253,11 +253,11 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
       /* It is easier to handle C++ reference types here.  */
     case REFERENCE_TYPE:
       if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
-        pp_c_pointer (pp, TREE_TYPE (t));
+	pp_c_pointer (pp, TREE_TYPE (t));
       if (TREE_CODE (t) == POINTER_TYPE)
-        pp_c_star (pp);
+	pp_c_star (pp);
       else
-        pp_c_ampersand (pp);
+	pp_c_ampersand (pp);
       pp_c_type_qualifier_list (pp, t);
       break;
 
@@ -406,18 +406,18 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
     case REFERENCE_TYPE:
     case POINTER_TYPE:
       {
-        /* Get the types-specifier of this type.  */
-        tree pointee = strip_pointer_operator (TREE_TYPE (t));
-        pp_c_specifier_qualifier_list (pp, pointee);
-        if (TREE_CODE (pointee) == ARRAY_TYPE
-            || TREE_CODE (pointee) == FUNCTION_TYPE)
-          {
-            pp_c_whitespace (pp);
-            pp_c_left_paren (pp);
-          }
+	/* Get the types-specifier of this type.  */
+	tree pointee = strip_pointer_operator (TREE_TYPE (t));
+	pp_c_specifier_qualifier_list (pp, pointee);
+	if (TREE_CODE (pointee) == ARRAY_TYPE
+	    || TREE_CODE (pointee) == FUNCTION_TYPE)
+	  {
+	    pp_c_whitespace (pp);
+	    pp_c_left_paren (pp);
+	  }
 	else if (!c_dialect_cxx ())
 	  pp_c_whitespace (pp);
-        pp_ptr_operator (pp, t);
+	pp_ptr_operator (pp, t);
       }
       break;
 
@@ -430,9 +430,9 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
     case COMPLEX_TYPE:
       pp_c_specifier_qualifier_list (pp, TREE_TYPE (t));
       if (code == COMPLEX_TYPE)
-        pp_c_identifier (pp, flag_isoc99 ? "_Complex" : "__complex__");
+	pp_c_identifier (pp, flag_isoc99 ? "_Complex" : "__complex__");
       else if (code == VECTOR_TYPE)
-        pp_c_identifier (pp, "__vector__");
+	pp_c_identifier (pp, "__vector__");
       break;
 
     default:
@@ -465,17 +465,17 @@ pp_c_parameter_type_list (c_pretty_printer *pp, tree t)
     {
       bool first = true;
       for ( ; parms && parms != void_list_node; parms = TREE_CHAIN (parms))
-        {
-          if (!first)
-            pp_separate_with (pp, ',');
-          first = false;
-          pp_declaration_specifiers
-            (pp, want_parm_decl ? parms : TREE_VALUE (parms));
-          if (want_parm_decl)
-            pp_declarator (pp, parms);
-          else
-            pp_abstract_declarator (pp, TREE_VALUE (parms));
-        }
+	{
+	  if (!first)
+	    pp_separate_with (pp, ',');
+	  first = false;
+	  pp_declaration_specifiers
+	    (pp, want_parm_decl ? parms : TREE_VALUE (parms));
+	  if (want_parm_decl)
+	    pp_declarator (pp, parms);
+	  else
+	    pp_abstract_declarator (pp, TREE_VALUE (parms));
+	}
     }
   pp_c_right_paren (pp);
 }
@@ -490,8 +490,8 @@ pp_c_abstract_declarator (c_pretty_printer *pp, tree t)
   if (TREE_CODE (t) == POINTER_TYPE)
     {
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
-          || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
-        pp_c_right_paren (pp);
+	  || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
+	pp_c_right_paren (pp);
       t = TREE_TYPE (t);
     }
 
@@ -579,9 +579,9 @@ pp_c_storage_class_specifier (c_pretty_printer *pp, tree t)
   else if (DECL_P (t))
     {
       if (DECL_REGISTER (t))
-        pp_c_identifier (pp, "register");
+	pp_c_identifier (pp, "register");
       else if (TREE_STATIC (t) && TREE_CODE (t) == VAR_DECL)
-        pp_c_identifier (pp, "static");
+	pp_c_identifier (pp, "static");
     }
 }
 
@@ -647,12 +647,12 @@ pp_c_direct_declarator (c_pretty_printer *pp, tree t)
       pp_c_space_for_pointer_operator (pp, TREE_TYPE (TREE_TYPE (t)));
       pp_c_tree_decl_identifier (pp, t);
       if (pp_c_base (pp)->flags & pp_c_flag_abstract)
-        pp_abstract_declarator (pp, TREE_TYPE (t));
+	pp_abstract_declarator (pp, TREE_TYPE (t));
       else
-        {
-          pp_parameter_list (pp, t);
-          pp_abstract_declarator (pp, TREE_TYPE (TREE_TYPE (t)));
-        }
+	{
+	  pp_parameter_list (pp, t);
+	  pp_abstract_declarator (pp, TREE_TYPE (TREE_TYPE (t)));
+	}
       break;
 
     case INTEGER_TYPE:
@@ -726,7 +726,7 @@ pp_c_attributes (c_pretty_printer *pp, tree attributes)
     {
       pp_tree_identifier (pp, TREE_PURPOSE (attributes));
       if (TREE_VALUE (attributes))
-        pp_c_call_argument_list (pp, TREE_VALUE (attributes));
+	pp_c_call_argument_list (pp, TREE_VALUE (attributes));
 
       if (TREE_CHAIN (attributes))
 	pp_separate_with (pp, ',');
@@ -811,16 +811,16 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
   else
     {
       if (tree_int_cst_sgn (i) < 0)
-        {
-          pp_character (pp, '-');
-          i = build_int_cst_wide (NULL_TREE,
+	{
+	  pp_character (pp, '-');
+	  i = build_int_cst_wide (NULL_TREE,
 				  -TREE_INT_CST_LOW (i),
 				  ~TREE_INT_CST_HIGH (i)
 				  + !TREE_INT_CST_LOW (i));
-        }
+	}
       sprintf (pp_buffer (pp)->digit_buffer,
-               HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-               TREE_INT_CST_HIGH (i), TREE_INT_CST_LOW (i));
+	       HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+	       TREE_INT_CST_HIGH (i), TREE_INT_CST_LOW (i));
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
   if (TYPE_UNSIGNED (type))
@@ -828,7 +828,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
   if (type == long_integer_type_node || type == long_unsigned_type_node)
     pp_character (pp, 'l');
   else if (type == long_long_integer_type_node
-           || type == long_long_unsigned_type_node)
+	   || type == long_long_unsigned_type_node)
     pp_string (pp, "ll");
 }
 
@@ -967,16 +967,16 @@ pp_c_constant (c_pretty_printer *pp, tree e)
     {
     case INTEGER_CST:
       {
-        tree type = TREE_TYPE (e);
-        if (type == boolean_type_node)
-          pp_c_bool_constant (pp, e);
-        else if (type == char_type_node)
-          pp_c_character_constant (pp, e);
-        else if (TREE_CODE (type) == ENUMERAL_TYPE
-                 && pp_c_enumeration_constant (pp, e))
-          ;
-        else
-          pp_c_integer_constant (pp, e);
+	tree type = TREE_TYPE (e);
+	if (type == boolean_type_node)
+	  pp_c_bool_constant (pp, e);
+	else if (type == char_type_node)
+	  pp_c_character_constant (pp, e);
+	else if (TREE_CODE (type) == ENUMERAL_TYPE
+		 && pp_c_enumeration_constant (pp, e))
+	  ;
+	else
+	  pp_c_integer_constant (pp, e);
       }
       break;
 
@@ -1097,22 +1097,22 @@ pp_c_init_declarator (c_pretty_printer *pp, tree t)
     {
       tree init = DECL_INITIAL (t);
       /* This C++ bit is handled here because it is easier to do so.
-         In templates, the C++ parser builds a TREE_LIST for a
-         direct-initialization; the TREE_PURPOSE is the variable to
-         initialize and the TREE_VALUE is the initializer.  */
+	 In templates, the C++ parser builds a TREE_LIST for a
+	 direct-initialization; the TREE_PURPOSE is the variable to
+	 initialize and the TREE_VALUE is the initializer.  */
       if (TREE_CODE (init) == TREE_LIST)
-        {
-          pp_c_left_paren (pp);
-          pp_expression (pp, TREE_VALUE (init));
-          pp_right_paren (pp);
-        }
+	{
+	  pp_c_left_paren (pp);
+	  pp_expression (pp, TREE_VALUE (init));
+	  pp_right_paren (pp);
+	}
       else
-        {
-          pp_space (pp);
-          pp_equal (pp);
-          pp_space (pp);
-          pp_c_initializer (pp, init);
-        }
+	{
+	  pp_space (pp);
+	  pp_equal (pp);
+	  pp_space (pp);
+	  pp_c_initializer (pp, init);
+	}
     }
 }
 
@@ -1143,38 +1143,38 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
     case UNION_TYPE:
     case ARRAY_TYPE:
       {
-        tree init = TREE_OPERAND (e, 0);
-        for (; init != NULL_TREE; init = TREE_CHAIN (init))
-          {
-            if (code == RECORD_TYPE || code == UNION_TYPE)
-              {
-                pp_c_dot (pp);
-                pp_c_primary_expression (pp, TREE_PURPOSE (init));
-              }
-            else
-              {
-                pp_c_left_bracket (pp);
-                if (TREE_PURPOSE (init))
-                  pp_c_constant (pp, TREE_PURPOSE (init));
-                pp_c_right_bracket (pp);
-              }
-            pp_c_whitespace (pp);
-            pp_equal (pp);
-            pp_c_whitespace (pp);
-            pp_initializer (pp, TREE_VALUE (init));
-            if (TREE_CHAIN (init))
-              pp_separate_with (pp, ',');
-          }
+	tree init = TREE_OPERAND (e, 0);
+	for (; init != NULL_TREE; init = TREE_CHAIN (init))
+	  {
+	    if (code == RECORD_TYPE || code == UNION_TYPE)
+	      {
+		pp_c_dot (pp);
+		pp_c_primary_expression (pp, TREE_PURPOSE (init));
+	      }
+	    else
+	      {
+		pp_c_left_bracket (pp);
+		if (TREE_PURPOSE (init))
+		  pp_c_constant (pp, TREE_PURPOSE (init));
+		pp_c_right_bracket (pp);
+	      }
+	    pp_c_whitespace (pp);
+	    pp_equal (pp);
+	    pp_c_whitespace (pp);
+	    pp_initializer (pp, TREE_VALUE (init));
+	    if (TREE_CHAIN (init))
+	      pp_separate_with (pp, ',');
+	  }
       }
       return;
 
     case VECTOR_TYPE:
       if (TREE_CODE (e) == VECTOR_CST)
-        pp_c_expression_list (pp, TREE_VECTOR_CST_ELTS (e));
+	pp_c_expression_list (pp, TREE_VECTOR_CST_ELTS (e));
       else if (TREE_CODE (e) == CONSTRUCTOR)
-        pp_c_constructor_elts (pp, CONSTRUCTOR_ELTS (e));
+	pp_c_constructor_elts (pp, CONSTRUCTOR_ELTS (e));
       else
-        break;
+	break;
       return;
 
     case COMPLEX_TYPE:
@@ -1379,10 +1379,10 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
 
     case ADDR_EXPR:
       if (TREE_CODE (TREE_OPERAND (e, 0)) == FUNCTION_DECL)
-        {
-          pp_c_id_expression (pp, TREE_OPERAND (e, 0));
-          break;
-        }
+	{
+	  pp_c_id_expression (pp, TREE_OPERAND (e, 0));
+	  break;
+	}
       /* else fall through.  */
 
     default:

@@ -77,21 +77,21 @@ init_attributes (void)
 	  /* The name must not begin and end with __.  */
 	  const char *name = attribute_tables[i][j].name;
 	  int len = strlen (name);
-	  
+
 	  gcc_assert (!(name[0] == '_' && name[1] == '_'
 			&& name[len - 1] == '_' && name[len - 2] == '_'));
-	  
+
 	  /* The minimum and maximum lengths must be consistent.  */
 	  gcc_assert (attribute_tables[i][j].min_length >= 0);
-	  
+
 	  gcc_assert (attribute_tables[i][j].max_length == -1
 		      || (attribute_tables[i][j].max_length
 			  >= attribute_tables[i][j].min_length));
-	  
+
 	  /* An attribute cannot require both a DECL and a TYPE.  */
 	  gcc_assert (!attribute_tables[i][j].decl_required
 		      || !attribute_tables[i][j].type_required);
-	  
+
 	  /* If an attribute requires a function type, in particular
 	     it requires a type.  */
 	  gcc_assert (!attribute_tables[i][j].function_type_required
@@ -227,8 +227,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 		 pull out the target type now, frob it as appropriate, and
 		 rebuild the pointer type later.
 
-	         This would all be simpler if attributes were part of the
-	         declarator, grumble grumble.  */
+		 This would all be simpler if attributes were part of the
+		 declarator, grumble grumble.  */
 	      fn_ptr_tmp = TREE_TYPE (*anode);
 	      anode = &fn_ptr_tmp;
 	      flags &= ~(int) ATTR_FLAG_TYPE_IN_PLACE;

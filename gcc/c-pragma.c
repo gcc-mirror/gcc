@@ -46,8 +46,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 typedef struct align_stack GTY(())
 {
-  int                  alignment;
-  tree                 id;
+  int		       alignment;
+  tree		       id;
   struct align_stack * prev;
 } align_stack;
 
@@ -58,8 +58,8 @@ static void handle_pragma_pack (cpp_reader *);
 
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
 /* If we have a "global" #pragma pack(<n>) in effect when the first
-   #pragma pack(push,<n>) is encountered, this stores the value of 
-   maximum_field_alignment in effect.  When the final pop_alignment() 
+   #pragma pack(push,<n>) is encountered, this stores the value of
+   maximum_field_alignment in effect.  When the final pop_alignment()
    happens, we restore the value to this, not to a value of 0 for
    maximum_field_alignment.  Value is in bits.  */
 static int default_alignment;
@@ -79,15 +79,15 @@ push_alignment (int alignment, tree id)
   entry = GGC_NEW (align_stack);
 
   entry->alignment  = alignment;
-  entry->id         = id;
-  entry->prev       = alignment_stack;
-       
-  /* The current value of maximum_field_alignment is not necessarily 
-     0 since there may be a #pragma pack(<n>) in effect; remember it 
+  entry->id	    = id;
+  entry->prev	    = alignment_stack;
+
+  /* The current value of maximum_field_alignment is not necessarily
+     0 since there may be a #pragma pack(<n>) in effect; remember it
      so that we can restore it after the final #pragma pop().  */
   if (alignment_stack == NULL)
     default_alignment = maximum_field_alignment;
- 
+
   alignment_stack = entry;
 
   maximum_field_alignment = alignment;
@@ -98,7 +98,7 @@ static void
 pop_alignment (tree id)
 {
   align_stack * entry;
-      
+
   if (alignment_stack == NULL)
     GCC_BAD ("#pragma pack (pop) encountered without matching #pragma pack (push)");
 
@@ -134,7 +134,7 @@ pop_alignment (tree id)
 
 /* #pragma pack ()
    #pragma pack (N)
-   
+
    #pragma pack (push)
    #pragma pack (push, N)
    #pragma pack (push, ID)
@@ -236,7 +236,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
     {
     case set:   SET_GLOBAL_ALIGNMENT (align);  break;
     case push:  push_alignment (align, id);    break;
-    case pop:   pop_alignment (id);            break;
+    case pop:   pop_alignment (id);	       break;
     }
 }
 #endif  /* HANDLE_PRAGMA_PACK */
@@ -263,7 +263,7 @@ apply_pragma_weak (tree decl, tree value)
       && !DECL_WEAK (decl) /* Don't complain about a redundant #pragma.  */
       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
     warning (OPT_Wpragmas, "applying #pragma weak %q+D after first use "
-             "results in unspecified behavior", decl);
+	     "results in unspecified behavior", decl);
 
   declare_weak (decl);
 }
@@ -468,7 +468,7 @@ add_to_renaming_pragma_list (tree oldname, tree newname)
 		 "conflict with previous #pragma redefine_extname");
       return;
     }
-  
+
   pending_redefine_extname
     = tree_cons (oldname, newname, pending_redefine_extname);
 }
@@ -545,7 +545,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 	*p = TREE_CHAIN (t);
 
 	/* If we already have an asmname, #pragma redefine_extname is
- 	   ignored (with a warning if it conflicts).  */
+	   ignored (with a warning if it conflicts).  */
 	if (asmname)
 	  {
 	    if (strcmp (TREE_STRING_POINTER (asmname),
@@ -573,7 +573,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 
       const char *id = IDENTIFIER_POINTER (DECL_NAME (decl));
       size_t ilen = IDENTIFIER_LENGTH (DECL_NAME (decl));
-	
+
       char *newname = (char *) alloca (plen + ilen + 1);
 
       memcpy (newname,        prefix, plen);
@@ -608,7 +608,7 @@ push_visibility (const char *str)
   else if (!strcmp (str, "internal"))
     default_visibility = VISIBILITY_INTERNAL;
   else if (!strcmp (str, "hidden"))
-    default_visibility = VISIBILITY_HIDDEN;  
+    default_visibility = VISIBILITY_HIDDEN;
   else if (!strcmp (str, "protected"))
     default_visibility = VISIBILITY_PROTECTED;
   else
@@ -624,7 +624,7 @@ pop_visibility (void)
   default_visibility = VEC_pop (visibility, visstack);
   visibility_options.inpragma
     = VEC_length (visibility, visstack) != 0;
-}  
+}
 
 /* Sets the default visibility for symbols to something other than that
    specified on the command line.  */
@@ -636,39 +636,39 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
   tree x;
   enum cpp_ttype token;
   enum { bad, push, pop } action = bad;
- 
+
   token = pragma_lex (&x);
   if (token == CPP_NAME)
     {
       const char *op = IDENTIFIER_POINTER (x);
       if (!strcmp (op, "push"))
-        action = push;
+	action = push;
       else if (!strcmp (op, "pop"))
-        action = pop;
+	action = pop;
     }
   if (bad == action)
     GCC_BAD ("#pragma GCC visibility must be followed by push or pop");
   else
     {
       if (pop == action)
-        {
-          if (!VEC_length (visibility, visstack))
+	{
+	  if (!VEC_length (visibility, visstack))
 	    GCC_BAD ("no matching push for %<#pragma GCC visibility pop%>");
-          else
+	  else
 	    pop_visibility ();
-        }
+	}
       else
-        {
-          if (pragma_lex (&x) != CPP_OPEN_PAREN)
-            GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
-          token = pragma_lex (&x);
-          if (token != CPP_NAME)
+	{
+	  if (pragma_lex (&x) != CPP_OPEN_PAREN)
+	    GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
+	  token = pragma_lex (&x);
+	  if (token != CPP_NAME)
 	    GCC_BAD ("malformed #pragma GCC visibility push");
-          else
+	  else
 	    push_visibility (IDENTIFIER_POINTER (x));
-          if (pragma_lex (&x) != CPP_CLOSE_PAREN)
-            GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
-        }
+	  if (pragma_lex (&x) != CPP_CLOSE_PAREN)
+	    GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
+	}
     }
   if (pragma_lex (&x) != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of %<#pragma GCC visibility%>");

@@ -111,13 +111,13 @@ verify_flow_info (void)
       if (bb->count < 0)
 	{
 	  error ("verify_flow_info: Wrong count of block %i %i",
-	         bb->index, (int)bb->count);
+		 bb->index, (int)bb->count);
 	  err = 1;
 	}
       if (bb->frequency < 0)
 	{
 	  error ("verify_flow_info: Wrong frequency of block %i %i",
-	         bb->index, bb->frequency);
+		 bb->index, bb->frequency);
 	  err = 1;
 	}
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -238,7 +238,7 @@ dump_bb (basic_block bb, FILE *outf, int indent)
   edge e;
   edge_iterator ei;
   char *s_indent;
- 
+
   s_indent = alloca ((size_t) indent + 1);
   memset (s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
@@ -767,7 +767,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 /* Return 1 if BB ends with a call, possibly followed by some
    instructions that must stay with the call, 0 otherwise.  */
 
-bool 
+bool
 block_ends_with_call_p (basic_block bb)
 {
   if (!cfg_hooks->block_ends_with_call_p)
@@ -778,7 +778,7 @@ block_ends_with_call_p (basic_block bb)
 
 /* Return 1 if BB ends with a conditional branch, 0 otherwise.  */
 
-bool 
+bool
 block_ends_with_condjump_p (basic_block bb)
 {
   if (!cfg_hooks->block_ends_with_condjump_p)
@@ -800,7 +800,7 @@ int
 flow_call_edges_add (sbitmap blocks)
 {
   if (!cfg_hooks->flow_call_edges_add)
-    internal_error ("%s does not support flow_call_edges_add", 
+    internal_error ("%s does not support flow_call_edges_add",
 		    cfg_hooks->name);
 
   return (cfg_hooks->flow_call_edges_add) (blocks);
@@ -826,8 +826,8 @@ execute_on_shrinking_pred (edge e)
     cfg_hooks->execute_on_shrinking_pred (e);
 }
 
-/* This is used inside loop versioning when we want to insert 
-   stmts/insns on the edges, which have a different behavior 
+/* This is used inside loop versioning when we want to insert
+   stmts/insns on the edges, which have a different behavior
    in tree's and in RTL, so we made a CFG hook.  */
 void
 lv_flush_pending_stmts (edge e)
@@ -851,7 +851,7 @@ cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 					unsigned int *n_to_remove, int flags)
 {
   gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_to_header_edge);
-  return cfg_hooks->cfg_hook_duplicate_loop_to_header_edge (loop, e, loops, 							    
+  return cfg_hooks->cfg_hook_duplicate_loop_to_header_edge (loop, e, loops,
 							    ndupl, wont_exit,
 							    orig, to_remove,
 							    n_to_remove, flags);
@@ -887,4 +887,4 @@ lv_add_condition_to_bb (basic_block first, basic_block second,
 {
   gcc_assert (cfg_hooks->lv_add_condition_to_bb);
   cfg_hooks->lv_add_condition_to_bb (first, second, new, cond);
-}  
+}

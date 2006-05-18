@@ -49,7 +49,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* The aliasing API provided here solves related but different problems:
 
-   Say there exists (in c) 
+   Say there exists (in c)
 
    struct X {
      struct Y y1;
@@ -87,7 +87,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    this may be too conservative for some C++ types.
 
    The pass ipa-type-escape does this analysis for the types whose
-   instances do not escape across the compilation boundary.  
+   instances do not escape across the compilation boundary.
 
    Historically in GCC, these two problems were combined and a single
    data structure was used to represent the solution to these
@@ -109,11 +109,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    `double'.  (However, a store to an `int' cannot alias a `double'
    and vice versa.)  We indicate this via a tree structure that looks
    like:
-           struct S
-            /   \
+	   struct S
+	    /   \
 	   /     \
-         |/_     _\|
-         int    double
+	 |/_     _\|
+	 int    double
 
    (The arrows are directed and point downwards.)
     In this situation we say the alias set for `struct S' is the
@@ -730,7 +730,7 @@ record_component_aliases (tree type)
 	{
 	  int i;
 	  tree binfo, base_binfo;
-	  
+
 	  for (binfo = TYPE_BINFO (type), i = 0;
 	       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	    record_alias_subset (superset,
@@ -1023,7 +1023,7 @@ record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
      If neither case holds, reject the original base value as invalid.
      Note that the following situation is not detected:
 
-         extern int x, y;  int *p = &x; p += (&y-&x);
+	 extern int x, y;  int *p = &x; p += (&y-&x);
 
      ANSI C does not allow computing the difference of addresses
      of distinct top level objects.  */
@@ -1091,7 +1091,7 @@ clear_reg_alias_info (rtx reg)
 
 /* If a value is known for REGNO, return it.  */
 
-rtx 
+rtx
 get_reg_known_value (unsigned int regno)
 {
   if (regno >= FIRST_PSEUDO_REGISTER)
@@ -1620,7 +1620,7 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
 
   if (offset)
     addr = gen_rtx_PLUS (GET_MODE (addr), XEXP (addr, 0),
-		         GEN_INT (offset));
+			 GEN_INT (offset));
   else
     addr = XEXP (addr, 0);
   addr = canon_rtx (addr);
@@ -2001,14 +2001,14 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
   /* Unless both have exprs, we can't tell anything.  */
   if (exprx == 0 || expry == 0)
     return 0;
-  
+
   /* If both are field references, we may be able to determine something.  */
   if (TREE_CODE (exprx) == COMPONENT_REF
       && TREE_CODE (expry) == COMPONENT_REF
       && nonoverlapping_component_refs_p (exprx, expry))
     return 1;
 
-  
+
   /* If the field reference test failed, look at the DECLs involved.  */
   moffsetx = MEM_OFFSET (x);
   if (TREE_CODE (exprx) == COMPONENT_REF)
@@ -2020,7 +2020,7 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
 	 tree fieldcontext = DECL_FIELD_CONTEXT (field);
 	 if (ipa_type_escape_field_does_not_clobber_p (fieldcontext,
 						       TREE_TYPE (field)))
-	   return 1;	 
+	   return 1;
 	}
       {
 	tree t = decl_for_component_ref (exprx);
@@ -2048,7 +2048,7 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
 	 tree fieldcontext = DECL_FIELD_CONTEXT (field);
 	 if (ipa_type_escape_field_does_not_clobber_p (fieldcontext,
 						       TREE_TYPE (field)))
-	   return 1;	 
+	   return 1;
 	}
       {
 	tree t = decl_for_component_ref (expry);
@@ -2506,8 +2506,8 @@ init_alias_analysis (void)
 #endif
 
 	      /* If this insn has a noalias note, process it,  Otherwise,
-	         scan for sets.  A simple set will have no side effects
-	         which could change the base value of any other register.  */
+		 scan for sets.  A simple set will have no side effects
+		 which could change the base value of any other register.  */
 
 	      if (GET_CODE (PATTERN (insn)) == SET
 		  && REG_NOTES (insn) != 0
@@ -2564,7 +2564,7 @@ init_alias_analysis (void)
 
       /* Now propagate values from new_reg_base_value to reg_base_value.  */
       gcc_assert (maxreg == (unsigned int) max_reg_num());
-      
+
       for (ui = 0; ui < maxreg; ui++)
 	{
 	  if (new_reg_base_value[ui]

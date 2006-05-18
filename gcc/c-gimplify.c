@@ -216,7 +216,7 @@ c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	  && !warn_init_self)
 	TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
       return GS_UNHANDLED;
-      
+
     case COMPOUND_LITERAL_EXPR:
       return gimplify_compound_literal_expr (expr_p, pre_p);
 

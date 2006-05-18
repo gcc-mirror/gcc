@@ -82,9 +82,9 @@ enum rid
   RID_PUBLIC,   RID_PRIVATE,  RID_PROTECTED,
   RID_TEMPLATE, RID_NULL,     RID_CATCH,
   RID_DELETE,   RID_FALSE,    RID_NAMESPACE,
-  RID_NEW,      RID_OFFSETOF, RID_OPERATOR, 
-  RID_THIS,     RID_THROW,    RID_TRUE,     
-  RID_TRY,      RID_TYPENAME, RID_TYPEID,   
+  RID_NEW,      RID_OFFSETOF, RID_OPERATOR,
+  RID_THIS,     RID_THROW,    RID_TRUE,
+  RID_TRY,      RID_TYPENAME, RID_TYPEID,
   RID_USING,
 
   /* casts */
@@ -94,7 +94,7 @@ enum rid
   RID_AT_ENCODE,   RID_AT_END,
   RID_AT_CLASS,    RID_AT_ALIAS,     RID_AT_DEFS,
   RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,
-  RID_AT_PROTOCOL, RID_AT_SELECTOR,  
+  RID_AT_PROTOCOL, RID_AT_SELECTOR,
   RID_AT_THROW,	   RID_AT_TRY,       RID_AT_CATCH,
   RID_AT_FINALLY,  RID_AT_SYNCHRONIZED,
   RID_AT_INTERFACE,
@@ -156,7 +156,7 @@ enum c_tree_index
     CTI_PRETTY_FUNCTION_NAME_DECL,
     CTI_C99_FUNCTION_NAME_DECL,
     CTI_SAVED_FUNCTION_NAME_DECLS,
-    
+
     CTI_VOID_ZERO,
 
     CTI_NULL,
@@ -304,8 +304,8 @@ extern tree build_indirect_ref (tree, const char *);
 extern int c_expand_decl (tree);
 
 extern int field_decl_cmp (const void *, const void *);
-extern void resort_sorted_fields (void *, void *, gt_pointer_operator, 
-                                  void *);
+extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
+				  void *);
 extern bool has_c_linkage (tree decl);
 
 /* Switches common to the C front ends.  */
@@ -406,9 +406,9 @@ extern int flag_const_strings;
 
 extern int flag_signed_bitfields;
 
-/* Warn about #pragma directives that are not recognized.  */      
+/* Warn about #pragma directives that are not recognized.  */
 
-extern int warn_unknown_pragmas; /* Tri state variable.  */  
+extern int warn_unknown_pragmas; /* Tri state variable.  */
 
 /* Warn about format/argument anomalies in calls to formatted I/O functions
    (*printf, *scanf, strftime, strfmon, etc.).  */

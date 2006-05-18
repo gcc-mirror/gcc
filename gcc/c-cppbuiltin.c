@@ -231,7 +231,7 @@ builtin_define_float_constants (const char *name_prefix,
     /* This is an IBM extended double format, so 1.0 + any double is
        representable precisely.  */
       sprintf (buf, "0x1p%d", (fmt->emin - fmt->p) * fmt->log2_b);
-    else      
+    else
       sprintf (buf, "0x1p%d", (1 - fmt->p) * fmt->log2_b);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
@@ -351,7 +351,7 @@ define__GNUC__ (void)
     builtin_define_with_value_n ("__GNUG__", q, v - q);
 
   gcc_assert (*v == '.' && ISDIGIT (v[1]));
-  
+
   q = ++v;
   while (ISDIGIT (*v))
     v++;
@@ -403,7 +403,7 @@ c_cpp_builtins (cpp_reader *pfile)
 
   if (c_dialect_cxx ())
     {
-      if (flag_weak && SUPPORTS_ONE_ONLY) 
+      if (flag_weak && SUPPORTS_ONE_ONLY)
 	cpp_define (pfile, "__GXX_WEAK__=1");
       else
 	cpp_define (pfile, "__GXX_WEAK__=0");
@@ -420,7 +420,7 @@ c_cpp_builtins (cpp_reader *pfile)
   if (flag_abi_version == 0)
     /* Use a very large value so that:
 
-         #if __GXX_ABI_VERSION >= <value for version X>
+	 #if __GXX_ABI_VERSION >= <value for version X>
 
        will work whether the user explicitly says "-fabi-version=x" or
        "-fabi-version=0".  Do not use INT_MAX because that will be
@@ -432,7 +432,7 @@ c_cpp_builtins (cpp_reader *pfile)
     builtin_define_with_int_value ("__GXX_ABI_VERSION", 102);
   else
     /* Newer versions have values 1002, 1003, ....  */
-    builtin_define_with_int_value ("__GXX_ABI_VERSION", 
+    builtin_define_with_int_value ("__GXX_ABI_VERSION",
 				   1000 + flag_abi_version);
 
   /* libgcc needs to know this.  */

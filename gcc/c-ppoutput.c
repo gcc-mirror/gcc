@@ -451,7 +451,7 @@ cb_read_pch (cpp_reader *pfile, const char *name,
 	     int fd, const char *orig_name ATTRIBUTE_UNUSED)
 {
   c_common_read_pch (pfile, name, fd, orig_name);
-  
+
   fprintf (print.outf, "#pragma GCC pch_preprocess \"%s\"\n", name);
   print.src_line++;
 }
