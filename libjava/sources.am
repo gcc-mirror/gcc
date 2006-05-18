@@ -8739,3 +8739,23 @@ bc_objects = \
   org-relaxng.lo \
   org-w3c.lo \
   org-xml.lo
+
+property_files = \
+  classpath/resource/gnu/classpath/tools/jarsigner/MessageBundle.properties \
+  classpath/resource/gnu/classpath/tools/keytool/MessageBundle.properties \
+  classpath/resource/gnu/java/awt/peer/gtk/font.properties \
+  classpath/resource/gnu/javax/print/PrinterDialog.properties \
+  classpath/resource/gnu/javax/print/PrinterDialog_de.properties \
+  classpath/resource/gnu/javax/security/auth/callback/MessagesBundle.properties \
+  classpath/resource/gnu/regexp/MessagesBundle.properties \
+  classpath/resource/gnu/regexp/MessagesBundle_fr.properties \
+  classpath/resource/gnu/regexp/MessagesBundle_it.properties \
+  classpath/resource/java/util/iso4217.properties \
+  classpath/resource/javax/imageio/plugins/jpeg/MessagesBundle.properties \
+  classpath/resource/org/ietf/jgss/MessagesBundle.properties \
+  classpath/resource/META-INF/services/javax.sound.midi.spi.MidiDeviceProvider \
+  classpath/resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactory \
+  classpath/resource/META-INF/services/javax.xml.parsers.SAXParserFactory \
+  classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory \
+  classpath/resource/META-INF/services/org.relaxng.datatype.DatatypeLibraryFactory \
+  classpath/resource/META-INF/services/org.xml.sax.driver

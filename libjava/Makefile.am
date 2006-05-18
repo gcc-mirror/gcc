@@ -304,19 +304,7 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 
-## Build property files into the library.
-property_files = \
-classpath/resource/org/ietf/jgss/MessagesBundle.properties \
-classpath/resource/java/util/iso4217.properties	\
-classpath/resource/gnu/java/awt/peer/gtk/font.properties \
-classpath/resource/gnu/regexp/MessagesBundle_it.properties \
-classpath/resource/gnu/regexp/MessagesBundle_fr.properties \
-classpath/resource/gnu/regexp/MessagesBundle.properties	\
-classpath/resource/META-INF/services/org.xml.sax.driver	\
-classpath/resource/META-INF/services/javax.xml.parsers.SAXParserFactory	\
-classpath/resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactory \
-classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory
-
+## Note that property_files is defined in sources.am.
 propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))
 
 $(propertyo_files): %.lo: classpath/resource/%

@@ -88,6 +88,20 @@ makearray name_map
 global dir_map
 makearray dir_map
 
+# An entry in this map means that all .properties files in the
+# corresponding directory should be ignored.
+global properties_map
+makearray properties_map
+
+# logging.properties is installed and is editable.
+set properties_map(java/util/logging) _
+# We haven't merged locale resources yet.
+set properties_map(gnu/java/locale) _
+
+
+# List of all properties files.
+set properties_files {}
+
 # List of all '@' files that we are going to compile.
 set package_files {}
 
@@ -163,11 +177,11 @@ proc classify_source_file {basedir file} {
   error "can't happen"
 }
 
-# Scan a directory and its subdirectories for .java source files.
-# Note that we keep basedir and subdir separate so we can properly
-# update our global data structures.
+# Scan a directory and its subdirectories for .java source files or
+# .properties files.  Note that we keep basedir and subdir separate so
+# we can properly update our global data structures.
 proc scan_directory {basedir subdir} {
-  global dir_map
+  global dir_map properties_map properties_files
 
   set subdirs {}
   set files {}
@@ -176,8 +190,16 @@ proc scan_directory {basedir subdir} {
   foreach file [lsort [glob -nocomplain *]] {
     if {[string match *.java $file]} {
       lappend files $subdir/$file
+    } elseif {[string match *.properties $file]} {
+      if {! [info exists properties_map($subdir)]} {
+	# We assume there aren't any overrides.
+	lappend properties_files $basedir/$subdir/$file
+      }
     } elseif {[file isdirectory $file]} {
       lappend subdirs $subdir/$file
+    } elseif {$subdir == "META-INF/services"} {
+      # All service files are included as properties.
+      lappend properties_files $basedir/$subdir/$file
     }
   }
   cd $here
@@ -195,7 +217,7 @@ proc scan_directory {basedir subdir} {
 # Scan known packages beneath the base directory for .java source
 # files.
 proc scan_packages {basedir} {
-  foreach subdir {gnu java javax org} {
+  foreach subdir {gnu java javax org META-INF} {
     if {[file exists $basedir/$subdir]} {
       scan_directory $basedir $subdir
     }
@@ -340,6 +362,8 @@ scan_packages classpath
 scan_packages classpath/external/sax
 scan_packages classpath/external/w3c_dom
 scan_packages classpath/external/relaxngDatatype
+# Resource files.
+scan_packages classpath/resource
 # Now scan our own files; this will correctly override decisions made
 # when scanning classpath.
 scan_packages .
@@ -376,3 +400,4 @@ foreach package [lsort [array names package_map]] {
 pp_var all_packages_source_files $package_files
 pp_var ordinary_header_files $header_vars "\$(" ")"
 pp_var bc_objects $bc_objects
+pp_var property_files $properties_files
