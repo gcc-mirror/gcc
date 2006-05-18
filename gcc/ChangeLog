@@ -44,7 +44,7 @@
 	nested functions with force_align_arg_pointer attribute.
 	* doc/extend.texi (force_align_arg_pointer): Document it.
 	* doc/invoke.texi (-mstackrealign): Document it.
-															
+
 2006-05-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR rtl-optimization/27477
@@ -97,7 +97,7 @@
 2006-05-17  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR middle-end/27332
-	* tree-loop-linear.c (try_interchange_loops): Test for 
+	* tree-loop-linear.c (try_interchange_loops): Test for
 	no data dependences.
 
 2006-05-17  Zdenek Dvorak <dvorakz@suse.cz>
@@ -137,7 +137,7 @@
 	#ifdef GCC_DRIVER/#endif.
 
 2006-05-16  Daniel Berlin <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/27373
 	* tree-ssa-forwprop.c: (forward_propagate_addr_expr_1): Add argument.
 	 (forward_propagate_addr_expr): Update call.
@@ -445,7 +445,7 @@
 2006-05-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/27093
-	* tree-ssa-alias.c (recalculate_used_alone): Mark variables for 
+	* tree-ssa-alias.c (recalculate_used_alone): Mark variables for
 	renaming when they become not-used_alone.
 
 2006-05-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -518,7 +518,7 @@
 
 2006-05-07  Mircea Namolaru  <namolaru@il.ibm.com>
 
-        * opts.c (flag_see): remove its setting at -O3.
+	* opts.c (flag_see): remove its setting at -O3.
 
 2006-05-07  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -536,7 +536,7 @@
 
 2006-04-29 Anatoly Sokolov <aesok@post.ru>
 
-        * config/avr/avr.h (CRT_BINUTILS_SPECS): Fixed crt* file name
+	* config/avr/avr.h (CRT_BINUTILS_SPECS): Fixed crt* file name
 	for atmeg a645 device.
 
 2006-05-06   Richard Guenther  <rguenther@suse.de>
@@ -615,37 +615,37 @@
 
 2006-05-04  Leehod Baruch  <leehod@il.ibm.com>
 
-        * see.c: New file.
-        * Makefile.in (OBJS-common): Add see.o.
-        (see.o): Add dependencies.
-        * common.opt (fsee): New flag for the see optimization was added.
-        * opts.c (flag_see): Initialized.
-        * passes.c (init_optimization_passes, pass_see): New pass.
-        * rtl.h (see_main): Declaration as extern.
-        * timevar.def (TV_SEE): New.
-        * tree-pass.h (pass_see): Declaration as extern.
-        * invoke.texi (-fsee): Document.
-        * recog.c (validate_simplify_insn): New function.
-        * recog.h (validate_simplify_insn): Declaration as extern.
-        * df-problems.c (df_chain_dump): Check for NULL.
+	* see.c: New file.
+	* Makefile.in (OBJS-common): Add see.o.
+	(see.o): Add dependencies.
+	* common.opt (fsee): New flag for the see optimization was added.
+	* opts.c (flag_see): Initialized.
+	* passes.c (init_optimization_passes, pass_see): New pass.
+	* rtl.h (see_main): Declaration as extern.
+	* timevar.def (TV_SEE): New.
+	* tree-pass.h (pass_see): Declaration as extern.
+	* invoke.texi (-fsee): Document.
+	* recog.c (validate_simplify_insn): New function.
+	* recog.h (validate_simplify_insn): Declaration as extern.
+	* df-problems.c (df_chain_dump): Check for NULL.
 
 2006-05-04  Kenneth Zadeck <zadeck@naturalbridge.com>
-            Daniel Berlin  <dberlin@dberlin.org>
+	    Daniel Berlin  <dberlin@dberlin.org>
 
-        * cfgrtl.c (insert_insn_bb_end_new): New function.
-        * basic-block.h (insert_insn_bb_end_new): Declaration as extern.
+	* cfgrtl.c (insert_insn_bb_end_new): New function.
+	* basic-block.h (insert_insn_bb_end_new): Declaration as extern.
 
 2006-05-04  Leehod Baruch  <leehod.baruch@weizmann.ac.il>
 
-        * df.h (struct web_entry): Moved from web.c.
-        (union_defs): Declaration as extern.
-        (unionfind_root): Likewise.
-        (unionfind_union): Likewise.
-        * web.c (struct web_entry): Moved to df.h.
-        (unionfind_root): Remove static declaration.
-        (unionfind_union): Likewise.
-        (union_defs): Likewise and generalize to use callback function.
-        (web_main): Update arguments for union_defs function call.
+	* df.h (struct web_entry): Moved from web.c.
+	(union_defs): Declaration as extern.
+	(unionfind_root): Likewise.
+	(unionfind_union): Likewise.
+	* web.c (struct web_entry): Moved to df.h.
+	(unionfind_root): Remove static declaration.
+	(unionfind_union): Likewise.
+	(union_defs): Likewise and generalize to use callback function.
+	(web_main): Update arguments for union_defs function call.
 
 2006-05-04  Richard Guenther  <rguenther@suse.de>
 
@@ -1018,7 +1018,7 @@
 
 2006-04-26  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree-ssa-dse.c (dse_optimize_stmt): Remove unused variable USE.
+	* tree-ssa-dse.c (dse_optimize_stmt): Remove unused variable USE.
 
 2006-04-26  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1453,7 +1453,7 @@
 
 2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR target/27117
+	PR target/27117
 
 	Partial revert of revision 112637
 	2006-04-03  Paolo Bonzini  <bonzini@gnu.org>
@@ -1466,9 +1466,9 @@
 
 2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR tree-optimization/26821
-        * tree-ssa-math-opts.c (get_constant_one): New.
-        (insert_reciprocals): Use it.
+	PR tree-optimization/26821
+	* tree-ssa-math-opts.c (get_constant_one): New.
+	(insert_reciprocals): Use it.
 
 2006-04-17  Geoffrey Keating  <geoffk@apple.com>
 
@@ -1613,7 +1613,7 @@
 	reg_equiv_memory_loc_varray.
 
 2006-04-14  Alexey Starovoytov  <alexey.starovoytov@sun.com>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (emit_and_preserve): Allocate space for the
 	register save area.
@@ -1763,12 +1763,12 @@
 2006-04-12  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/27060
-        * config/sh/lib1funcs.h: New file, broken out of:
-        * config/sh/lib1funcs.asm.
-        * config/sh/lib1funcs.h (DR00, DR01, DR20, DR21, DR40, DR41):
+	* config/sh/lib1funcs.h: New file, broken out of:
+	* config/sh/lib1funcs.asm.
+	* config/sh/lib1funcs.h (DR00, DR01, DR20, DR21, DR40, DR41):
 	New macros.
 	* config/sh/lib1funcs.asm (udivsi3_i4): Use them.
-        * config/sh/lib1funcs-Os-4-200.asm: New file.
+	* config/sh/lib1funcs-Os-4-200.asm: New file.
 	* config/sh/embed-elf.h (LIBGCC_SPEC): Use -lgcc-Os-4-200.
 	* config/sh/t-sh (OPT_EXTRA_PARTS): New variable.
 	(EXTRA_MULTILIB_PARTS): Include it.
@@ -2078,11 +2078,11 @@
 
 2006-04-05  Robert Millan  <robertmh@gnu.org>
 
-	* config/i386/linux.h:  Add a comment to mark macros that are
+	* config/i386/linux.h: Add a comment to mark macros that are
 	being overriden in config/k*bsd-gnu.h.
-	* config/kfreebsd-gnu.h:  Redefine GLIBC_DYNAMIC_LINKER instead of
+	* config/kfreebsd-gnu.h: Redefine GLIBC_DYNAMIC_LINKER instead of
 	DYNAMIC_LINKER.
-	* config/knetbsd-gnu.h:  Ditto.
+	* config/knetbsd-gnu.h: Ditto.
 
 2006-04-06  Jan Hubicka  <jh@suse.cz>
 
@@ -2432,7 +2432,7 @@
 2006-03-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/17959
-	* expr.c (emit_group_store):  Optimize group stores into a pseudo
+	* expr.c (emit_group_store): Optimize group stores into a pseudo
 	register by using a paradoxical subreg to initialize the destination
 	if the first or last member of the group specifies a "low part".
 
@@ -2621,7 +2621,7 @@
 	* config/sh/sh.md (udivsi3_i4_int): Clobber MACH_REG and MACL_REG.
 	(divsi3_i4_int): Likewise.
 
-2006-03-28  Roger Sayle   <roger@eyesopen.com>
+2006-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (emit_group_store): Only create a new pseudo reg if the
 	quantity it needs to hold isn't already a suitable pseudo.
@@ -5323,7 +5323,7 @@
 
 2006-02-26  Roger Sayle  <roger@eyesopen.com>
 
-	* fold-const.c (fold_binary) <EQ_EXPR>:  Fold (~X & C) eq/ne 0 as
+	* fold-const.c (fold_binary) <EQ_EXPR>: Fold (~X & C) eq/ne 0 as
 	(X & C) ne/eq 0, where C is a single bit, i.e. a power of two.
 	Fold both "((X & C) ^ C) eq/ne 0" and "((X ^ C) & C) eq/ne 0"
 	as (X & C) ne/eq 0.
@@ -5390,7 +5390,7 @@
 	    James A. Morrison  <phython@gcc.gnu.org>
 
 	PR middle-end/21137
-	* fold-const.c (fold_binary) <EQ_EXPR>:  Fold ((X>>C1)&C2) eq/ne 0,
+	* fold-const.c (fold_binary) <EQ_EXPR>: Fold ((X>>C1)&C2) eq/ne 0,
 	when C2 is a power of two, as either (X&(C2<<C1)) eq/ne 0 if the
 	new constant C2<<C1, or as (X<0) or (X,false) depending upon the
 	signedness of the shift operation.
@@ -5402,7 +5402,7 @@
 
 2006-02-25  Roger Sayle  <roger@eyesopen.com>
 
-	* simplify-rtx.c (simplify_relational_operation_1):  Simplify
+	* simplify-rtx.c (simplify_relational_operation_1): Simplify
 	(X^Y) == 0 as X == Y and (X^Y) != 0 as X != Y.  Simplify (X^Y) == Y
 	as X == 0, and some symmetry related transformations.
 	Simplify (X^C1) == C2 as X == (C1^C2).  Split long comment line.
@@ -5410,7 +5410,7 @@
 2006-02-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/23673
-	* fold-const.c (fold_binary) <EQ_EXPR>:  Fold (X^Y) == 0 as X == Y
+	* fold-const.c (fold_binary) <EQ_EXPR>: Fold (X^Y) == 0 as X == Y
 	and (X^Y) != 0 as X != Y.  Fold (X^Y) == Y as X == 0, and some
 	symmetry related transformations.  Fold (X^C1) == C2 as
 	X == (C1^C2).
@@ -5523,7 +5523,7 @@
 2006-02-23  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/26376
-	* tree-ssa-structalias.c (find_func_aliases):  Use get_id_for_tree,
+	* tree-ssa-structalias.c (find_func_aliases): Use get_id_for_tree,
 	remove assert.
 
 2006-02-23  Jakub Jelinek  <jakub@redhat.com>
@@ -6926,7 +6926,7 @@
 	simplify_cond_and_lookup_avail_expr.
 	* tree-flow.h (potentially_threadable_block): Prototype.
 	(thread_across_edge): Likewise.
-	* Makefile.in (OBJS-common):  Add tree-ssa-threadedge.o
+	* Makefile.in (OBJS-common): Add tree-ssa-threadedge.o
 	(tree-ssa-threadedge.o): Add dependencies.
 	* tree-ssa-threadedge.c: New file.
 	* passes.c (init_optimization_passes): Merge PHIs before
@@ -7926,12 +7926,12 @@
 	* df-problems.c (df_ru_bb_local_compute_process_def):
 	Added code to handle artifical defs in the entry to a function.
 	(df_ru_bb_local_compute): Ditto.
-	(df_rd_bb_local_compute_process_def):  Ditto.
+	(df_rd_bb_local_compute_process_def): Ditto.
 	(df_rd_bb_local_compute): Ditto.
 	(df_lr_bb_local_compute): Ditto.
 	(df_ur_bb_local_compute): Ditto.
-	(df_urec_bb_local_compute):  Ditto.
-	(df_chain_create_bb):  Ditto.
+	(df_urec_bb_local_compute): Ditto.
+	(df_chain_create_bb): Ditto.
 	(df_ur_local_finalize):	Removed entry.
 	(df_urec_init): Ditto.
 	(df_urec_local_finalize): Ditto.
@@ -8492,7 +8492,7 @@
 
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
-	* genautomata.c:  Include vec.h, not varray.h.
+	* genautomata.c: Include vec.h, not varray.h.
 	Delete vla_ptr_t, all of the VLA_PTR_ macros, and all of the
 	VLA_HWINT_ macros.  Change vla_hwint_t to a typedef for
 	VEC(vect_el_t,heap) *.  Convert all uses of VLA_* macros to
@@ -9230,7 +9230,7 @@
 	(get_nmt_for): Ditto.
 	(create_global_var):
 	(is_escape_site): Return an escape_type enumeration.
-	* tree-flow-inline.h (is_call_clobbered):  Global var does not
+	* tree-flow-inline.h (is_call_clobbered): Global var does not
 	imply call clobbered.
 	(mark_call_clobbered): Take a reason for marking this. Remove
 	marking of globalness, and cache invalidation.
@@ -9294,7 +9294,7 @@
 
 2006-01-18  Daniel Berlin  <dberlin@dberlin.org>
 
-	* ipa-reference.c (check_operand):  Allow FUNCTION_DECL.
+	* ipa-reference.c (check_operand): Allow FUNCTION_DECL.
 	(look_for_address_of): Ditto.
 	(ipa_init): Walk the function decls.
 	(static_execute): Don't set readonly on FUNCTION_DECL's.
