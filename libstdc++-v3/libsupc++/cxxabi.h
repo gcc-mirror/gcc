@@ -467,7 +467,7 @@ namespace __cxxabiv1
   {
   public:
     unsigned int 		__flags;  // Details about the class hierarchy.
-    unsigned int 		__base_count;  // Dumber of direct bases.
+    unsigned int 		__base_count;  // Number of direct bases.
 
     // The array of bases uses the trailing array struct hack so this
     // class is not constructable with a normal constructor. It is

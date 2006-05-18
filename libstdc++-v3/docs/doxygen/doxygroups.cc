@@ -165,7 +165,7 @@ namespace abi {
         this memory using @c free.
 
 
-The demagling is performed using the C++ ABI mangling rules, with
+The demangling is performed using the C++ ABI mangling rules, with
 GNU extensions.  For example, this function is used
 in __gnu_cxx::__verbose_terminate_handler.  See
 http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#5 for other
