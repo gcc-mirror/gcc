@@ -38,17 +38,98 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.ButtonModel;
+import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.plaf.ActionMapUIResource;
+import javax.swing.plaf.ComponentInputMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.RootPaneUI;
 
 public class BasicRootPaneUI extends RootPaneUI
   implements PropertyChangeListener
 {
+
+  /**
+   * Performed when the user activates the default button inside the JRootPane,
+   * usually by pressing 'ENTER'.
+   */
+  private class DefaultPressAction
+    extends AbstractAction
+  {
+    /**
+     * The JRootPane for which this action should be installed.
+     */
+    private JRootPane rootPane;
+
+    /**
+     * Creates a new DefaultPressAction for the specified JRootPane.
+     */
+    DefaultPressAction(JRootPane rp)
+    {
+      rootPane = rp;
+    }
+
+    /**
+     * Performes the action.
+     */
+    public void actionPerformed(ActionEvent ev)
+    {
+      JButton b = rootPane.getDefaultButton();
+      if (b != null)
+        {
+          ButtonModel m = b.getModel();
+          m.setArmed(true);
+          m.setPressed(true);
+        }
+    }
+  }
+
+  /**
+   * Performed when the user activates the default button inside the JRootPane,
+   * usually by releasing 'ENTER'.
+   */
+  private class DefaultReleaseAction
+    extends AbstractAction
+  {
+    /**
+     * The JRootPane for which this action should be installed.
+     */
+    private JRootPane rootPane;
+
+    /**
+     * Creates a new DefaultReleaseAction for the specified JRootPane.
+     */
+    DefaultReleaseAction(JRootPane rp)
+    {
+      rootPane = rp;
+    }
+
+    /**
+     * Performes the action.
+     */
+    public void actionPerformed(ActionEvent ev)
+    {
+      JButton b = rootPane.getDefaultButton();
+      if (b != null)
+        {
+          ButtonModel m = b.getModel();
+          m.setPressed(false);
+          m.setArmed(false);
+        }
+    }
+  }
+
   public static ComponentUI createUI(JComponent x) 
   {
     return new BasicRootPaneUI();
@@ -107,14 +188,43 @@ public class BasicRootPaneUI extends RootPaneUI
    */
   protected void installKeyboardActions(JRootPane rp)
   {
-    // We currently do not install any keyboard actions here.
-    // This method is here anyway for compatibility and to provide
-    // the necessary hooks to subclasses.
+    // Install the keyboard actions.
+    ActionMapUIResource am = new ActionMapUIResource();
+    am.put("press", new DefaultPressAction(rp));
+    am.put("release", new DefaultReleaseAction(rp));
+    SwingUtilities.replaceUIActionMap(rp, am);
+
+    // Install the input map from the UIManager. It seems like the actual
+    // bindings are installed in the JRootPane only when the defaultButton
+    // property receives a value. So we also only install an empty
+    // input map here, and fill it in propertyChange.
+    ComponentInputMapUIResource im = new ComponentInputMapUIResource(rp);
+    SwingUtilities.replaceUIInputMap(rp, JComponent.WHEN_IN_FOCUSED_WINDOW,
+                                     im);
   }
 
   public void propertyChange(PropertyChangeEvent event)
   {
-    // TODO: Implement this properly.
+    JRootPane source = (JRootPane) event.getSource();
+    String propertyName = event.getPropertyName();
+    if (propertyName.equals("defaultButton"))
+      {
+        Object newValue = event.getNewValue();
+        InputMap im =
+          SwingUtilities.getUIInputMap(source,
+                                       JComponent.WHEN_IN_FOCUSED_WINDOW);
+        if (newValue != null)
+          {
+            Object[] keybindings =
+              (Object[]) UIManager.get
+              ("RootPane.defaultButtonWindowKeyBindings");
+            LookAndFeel.loadKeyBindings(im, keybindings);
+          }
+        else
+          {
+            im.clear();
+          }
+      }
   }
 
   /**
@@ -176,6 +286,8 @@ public class BasicRootPaneUI extends RootPaneUI
    */
   protected void uninstallKeyboardActions(JRootPane rp)
   {
-    // We do nothing here.
+    SwingUtilities.replaceUIActionMap(rp, null);
+    SwingUtilities.replaceUIInputMap(rp, JComponent.WHEN_IN_FOCUSED_WINDOW,
+                                     null);
   }
 }

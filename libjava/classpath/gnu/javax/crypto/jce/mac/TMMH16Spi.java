@@ -50,8 +50,6 @@ import java.security.spec.AlgorithmParameterSpec;
 /**
  * The implementation of the TMMH16 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
- *
- * @version $Revision: 1.1 $
  */
 public final class TMMH16Spi extends MacAdapter
 {

@@ -39,11 +39,16 @@ exception statement from your version. */
 package java.util;
 
 import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-// FIXME: serialization methods should throw NotSerializableException
 /** @since 1.5 */
 public class InvalidPropertiesFormatException extends IOException
 {
+  // This class won't serialize, but we have a UID to placate the compiler.
+  private static final long serialVersionUID = 7763056076009360219L;
+
   public InvalidPropertiesFormatException(String message)
   {
     super(message);
@@ -53,5 +58,15 @@ public class InvalidPropertiesFormatException extends IOException
   {
     super();
     initCause(cause);
+  }
+
+  private void writeObject(ObjectOutputStream out) throws IOException
+  {
+    throw new NotSerializableException("objects of this type are not serializable");
+  }
+
+  private void readObject(ObjectInputStream in) throws IOException
+  {
+    throw new NotSerializableException("objects of this type are not serializable");
   }
 }

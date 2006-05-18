@@ -103,7 +103,7 @@ public class ImageWriteParam extends IIOParam
   protected float compressionQuality;
   
   /**
-   * Contains the name of the available compression types.
+   * Contains the name of the current compression type.
    */
   protected String compressionType;
   

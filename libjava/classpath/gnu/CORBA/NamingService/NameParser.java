@@ -1,5 +1,5 @@
 /* NameParser.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -425,7 +425,8 @@ public class NameParser
         else
           {
             Delegate delegate = ((ObjectImpl) object)._get_delegate();
-            ns = new _NamingContextStub(delegate);
+            ns = new _NamingContextStub();
+            ((_NamingContextStub) ns)._set_delegate(delegate);
           }
       }
     catch (Exception ex)

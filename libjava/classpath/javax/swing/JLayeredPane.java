@@ -599,6 +599,7 @@ public class JLayeredPane extends JComponent implements Accessible
     int newIdx = insertIndexForLayer(layer, index);
     setLayer(comp, layer);
     super.addImpl(comp, layerConstraint, newIdx);
+    repaint(comp.getX(), comp.getY(), comp.getWidth(), comp.getHeight());
   }
 
   /**

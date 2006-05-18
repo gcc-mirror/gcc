@@ -68,9 +68,9 @@ JCL_ThrowException (JNIEnv * env, const char *className, const char *errMsg)
 	  if (errExcClass == NULL)
 	    {
 	      fprintf (stderr, "JCL: Utterly failed to throw exeption ");
-	      fprintf (stderr, className);
+	      fprintf (stderr, "%s", className);
 	      fprintf (stderr, " with message ");
-	      fprintf (stderr, errMsg);
+	      fprintf (stderr, "%s", errMsg);
 	      return;
 	    }
 	}

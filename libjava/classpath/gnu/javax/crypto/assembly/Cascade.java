@@ -72,8 +72,6 @@ import java.util.Set;
  *    CRC Press, Inc. ISBN 0-8493-8523-7, 1997<br>
  *    Menezes, A., van Oorschot, P. and S. Vanstone.</li>
  * </ol>
- *
- * @version $Revision: 1.1 $
  */
 public class Cascade
 {

@@ -46,8 +46,6 @@ import java.io.ByteArrayOutputStream;
 /**
  * <p>An object that implements the {@link gnu.crypto.sig.ISignatureCodec}
  * operations for the <i>Raw</i> format to use with RSA-PSS signatures.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class RSAPSSSignatureRawCodec implements ISignatureCodec
 {

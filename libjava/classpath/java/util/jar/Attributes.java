@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.util.jar;
 
+import gnu.java.util.jar.JarUtils;
+
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
@@ -65,7 +67,8 @@ import java.util.Set;
  * @see java.util.jar.Attributes.Name
  * @author Mark Wielaard (mark@klomp.org)
  */
-public class Attributes implements Cloneable, Map
+public class Attributes
+  implements Cloneable, java.util.Map // Fully qualified for jikes 1.22
 {
 
   // Fields
@@ -121,14 +124,13 @@ public class Attributes implements Cloneable, Map
      * General main attribute -
      * the version of this Manifest file.
      */
-    public static final Name MANIFEST_VERSION = new Name("Manifest-Version");
+    public static final Name MANIFEST_VERSION = new Name(JarUtils.MANIFEST_VERSION);
     
     /**
      * General main attribute -
      * the version of the jar file signature.
      */
-    public static final Name SIGNATURE_VERSION
-      = new Name("Signature-Version");
+    public static final Name SIGNATURE_VERSION = new Name(JarUtils.SIGNATURE_VERSION);
     
     /**
      * General main attribute -
@@ -433,7 +435,7 @@ public class Attributes implements Cloneable, Map
    * @returns the old value of the attribute name or null if it didn't exist
    * yet
    */
-  public String putValue(Name name, String value)
+  private String putValue(Name name, String value)
   {
     return (String) put(name, value);
   }

@@ -70,8 +70,6 @@ import java.security.interfaces.RSAPublicKey;
  *    Primitive specification and supporting documentation.<br>
  *    Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
- *
- * @version $Revision: 1.2 $
  */
 public class RSAPSSSignature extends BaseSignature
 {

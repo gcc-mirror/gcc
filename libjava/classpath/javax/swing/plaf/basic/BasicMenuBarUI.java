@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Dimension;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
@@ -68,7 +70,7 @@ public class BasicMenuBarUI extends MenuBarUI
   protected ContainerListener containerListener;
   
   /*Property change listeners that listener to PropertyChangeEvent from menu bar*/
-  protected PropertyChangeListener propertyChangeListener;
+  private PropertyChangeListener propertyChangeListener;
 
   /* menu bar for which this UI delegate is for*/
   protected JMenuBar menuBar;
@@ -176,6 +178,7 @@ public class BasicMenuBarUI extends MenuBarUI
    * This method installs the keyboard actions for the JMenuBar.
    */
   protected void installKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: implement
   }
@@ -223,6 +226,7 @@ public class BasicMenuBarUI extends MenuBarUI
    * This method reverses the work done in installKeyboardActions.
    */
   protected void uninstallKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: implement. 
   }
@@ -252,7 +256,7 @@ public class BasicMenuBarUI extends MenuBarUI
     menuBar = null;
   }
 
-  protected class ChangeHandler implements ChangeListener
+  private class ChangeHandler implements ChangeListener
   {
     public void stateChanged(ChangeEvent event)
     {
@@ -264,7 +268,7 @@ public class BasicMenuBarUI extends MenuBarUI
    * This class handles ContainerEvents fired by JMenuBar. It revalidates
    * and repaints menu bar whenever menu is added or removed from it.
    */
-  protected class ContainerHandler implements ContainerListener
+  private class ContainerHandler implements ContainerListener
   {
     /**
      * This method is called whenever menu is added to the menu bar
@@ -292,7 +296,7 @@ public class BasicMenuBarUI extends MenuBarUI
   /**
    * This class handles PropertyChangeEvents fired from the JMenuBar
    */
-  protected class PropertyChangeHandler implements PropertyChangeListener
+  private class PropertyChangeHandler implements PropertyChangeListener
   {
     /**
      * This method is called whenever one of the properties of the MenuBar

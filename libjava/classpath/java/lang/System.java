@@ -364,7 +364,7 @@ public final class System
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPropertyAccess(key);
-    else if (key.length() == 0)
+    if (key.length() == 0)
       throw new IllegalArgumentException("key can't be empty");
     return SystemProperties.getProperty(key);
   }
@@ -385,6 +385,10 @@ public final class System
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPropertyAccess(key);
+    // This handles both the null pointer exception and the illegal
+    // argument exception.
+    if (key.length() == 0)
+      throw new IllegalArgumentException("key can't be empty");
     return SystemProperties.getProperty(key, def);
   }
 
@@ -405,7 +409,34 @@ public final class System
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new PropertyPermission(key, "write"));
+    // This handles both the null pointer exception and the illegal
+    // argument exception.
+    if (key.length() == 0)
+      throw new IllegalArgumentException("key can't be empty");
     return SystemProperties.setProperty(key, value);
+  }
+
+  /**
+   * Remove a single system property by name. A security check may be
+   * performed, <code>checkPropertyAccess(key, "write")</code>.
+   *
+   * @param key the name of the system property to remove
+   * @return the previous value, or null
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if key is null
+   * @throws IllegalArgumentException if key is ""
+   * @since 1.5
+   */
+  public static String clearProperty(String key)
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkPermission(new PropertyPermission(key, "write"));
+    // This handles both the null pointer exception and the illegal
+    // argument exception.
+    if (key.length() == 0)
+      throw new IllegalArgumentException("key can't be empty");
+    return SystemProperties.remove(key);
   }
 
   /**

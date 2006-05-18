@@ -1,5 +1,5 @@
 /* X500DistinguishedName.java -- X.500 distinguished name.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,7 +61,6 @@ import java.util.Set;
 
 public class X500DistinguishedName implements Principal
 {
-
   // Constants and fields.
   // -------------------------------------------------------------------------
 
@@ -221,6 +220,10 @@ public class X500DistinguishedName implements Principal
       putComponent(DC, value);
     else if (name.equals("uid"))
       putComponent(UID, value);
+    else if (name.equals("o"))
+      putComponent(O, value);
+    else if (name.equals("ou"))
+      putComponent(OU, value);
     else
       putComponent(new OID(name), value);
   }
@@ -328,16 +331,18 @@ public class X500DistinguishedName implements Principal
   {
     if (fixed && encoded != null)
       return (byte[]) encoded.clone();
+
     ArrayList name = new ArrayList(components.size());
     for (Iterator it = components.iterator(); it.hasNext(); )
       {
         Map m = (Map) it.next();
         if (m.isEmpty())
           continue;
+
         Set rdn = new HashSet();
         for (Iterator it2 = m.entrySet().iterator(); it2.hasNext(); )
           {
-            Map.Entry e = (Map.Entry) it.next();
+            Map.Entry e = (Map.Entry) it2.next();
             ArrayList atav = new ArrayList(2);
             atav.add(new DERValue(DER.OBJECT_IDENTIFIER, e.getKey()));
             atav.add(new DERValue(DER.UTF8_STRING, e.getValue()));
@@ -486,6 +491,9 @@ public class X500DistinguishedName implements Principal
                 throw new EOFException();
               default:
                 buf.append((char) ch);
+                ch = in.read();
+                if (ch == -1)
+                  return buf.toString();
               }
           }
       }

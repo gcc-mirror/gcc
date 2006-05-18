@@ -1,5 +1,5 @@
 /* ComboBoxUI.java --
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,9 +41,7 @@ import javax.swing.JComboBox;
 
 /**
  * An abstract base class for delegates that implement the pluggable
- * look and feel for a <code>JButton</code>.
- *
- * @see javax.swing.JComboBox
+ * look and feel for a {@link JComboBox}.
  *
  * @author Andrew Selkirk
  * @author Sascha Brawer (brawer@dandelis.ch)
@@ -57,8 +55,7 @@ public abstract class ComboBoxUI extends ComponentUI
   {
     // Nothing to do here.
   }
-  
-  
+    
   /**
    * Sets the visibility of the popup button.
    *
@@ -69,7 +66,6 @@ public abstract class ComboBoxUI extends ComponentUI
    *        to hide it.
    */
   public abstract void setPopupVisible(JComboBox c, boolean visible);
-
 
   /**
    * Determines whether the popup button is currently visible.
@@ -82,15 +78,15 @@ public abstract class ComboBoxUI extends ComponentUI
    */
   public abstract boolean isPopupVisible(JComboBox c);
   
-  
   /**
    * Determines whether the combo box can receive input focus.
    *
    * @param c <code>JComboBox</code> whose focus traversability
    *        is to be retrieved.
    *
-   * @returns <code>true</code> if <code>c</code> can receive
+   * @return <code>true</code> if <code>c</code> can receive
    *          input focus, <code>false</code> otherwise.
    */
   public abstract boolean isFocusTraversable(JComboBox c);
+  
 }

@@ -1,5 +1,5 @@
 /* gtkpeer.h -- Some global variables and #defines
-   Copyright (C) 1998, 1999, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -167,8 +167,12 @@ JNIEnv *cp_gtk_gdk_env(void);
 extern double cp_gtk_dpi_conversion_factor;
 extern GtkWindowGroup *cp_gtk_global_window_group;
 
-/* Shared global clipboard for GtkClipboard and GtkSelection. */
+/* Shared global clipboard and selection for GtkClipboard and GtkSelection. */
 extern GtkClipboard *cp_gtk_clipboard;
+extern GtkClipboard *cp_gtk_selection;
+
+extern jobject cp_gtk_clipboard_instance;
+extern jobject cp_gtk_selection_instance;
 
 /* Standard target (strings) for GtkClipboard and GtkSelection. */
 extern jstring cp_gtk_stringTarget;

@@ -78,7 +78,12 @@ public class ColorType
   /**
    * The maximum number of color types.
    */
-  public static final int MAX_COUNT = 5;
+  public static final int MAX_COUNT;
+  static
+  {
+    // This is not a constant in the JDK.
+    MAX_COUNT = 5;
+  }
 
   /**
    * A counter used to assign an ID to the created color types.

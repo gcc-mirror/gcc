@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import java.security.InvalidAlgorithmParameterException;
+
 /**
  * The <i>service provider interface</i> (<b>SPI</b>) for the {@link
  * CertPathValidator} class. Providers implementing certificate path
@@ -75,5 +77,5 @@ public abstract class CertPathValidatorSpi
   public abstract CertPathValidatorResult
   engineValidate(CertPath certPath, CertPathParameters params)
   throws CertPathValidatorException,
-         java.security.InvalidAlgorithmParameterException;
+         InvalidAlgorithmParameterException;
 }

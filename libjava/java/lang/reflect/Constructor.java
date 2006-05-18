@@ -44,7 +44,8 @@ package java.lang.reflect;
  * @since 1.1
  * @status updated to 1.4
  */
-public final class Constructor extends AccessibleObject implements Member
+public final class Constructor extends AccessibleObject
+  implements Member, GenericDeclaration
 {
   /**
    * This class is uninstantiable except from native code.
@@ -202,6 +203,28 @@ public final class Constructor extends AccessibleObject implements Member
   public native Object newInstance (Object[] args)
     throws InstantiationException, IllegalAccessException,
     IllegalArgumentException, InvocationTargetException;
+
+  // FIXME - Write a real implementation
+  public boolean isSynthetic() { return false; }
+
+  /**
+   * Returns an array of <code>TypeVariable</code> objects that represents
+   * the type variables declared by this constructor, in declaration order.
+   * An array of size zero is returned if this class has no type
+   * variables.
+   *
+   * @return the type variables associated with this class.
+   * @throws GenericSignatureFormatError if the generic signature does
+   *         not conform to the format specified in the Virtual Machine
+   *         specification, version 3.
+   * @since 1.5
+   */
+  /* FIXME[GENERICS]: Should be TypeVariable<Method>[] */
+  public TypeVariable[] getTypeParameters()
+  {
+    // FIXME - write a real implementation
+    return new TypeVariable[0];
+  }
 
   // Update cached values from method descriptor in class.
   private native void getType ();

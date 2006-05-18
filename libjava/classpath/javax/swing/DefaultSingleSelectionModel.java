@@ -1,5 +1,5 @@
 /* DefaultSingleSelectionModel.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,7 +59,7 @@ public class DefaultSingleSelectionModel
   /**
    * changeEvent
    */
-  protected transient ChangeEvent changeEvent = new ChangeEvent(this);
+  protected transient ChangeEvent changeEvent;
 
   /**
    * listenerList
@@ -67,12 +67,13 @@ public class DefaultSingleSelectionModel
   protected EventListenerList listenerList = new EventListenerList();
 
   /**
-   * index
+   * The selected index (or -1 for no selection).
    */
   private int index = -1;
 
   /**
-   * Constructor DefaultSingleSelectionModel
+   * Creates a new <code>DefaultSingleSelectionModel</code> with no current
+   * selection.
    */
   public DefaultSingleSelectionModel()
   {
@@ -80,8 +81,11 @@ public class DefaultSingleSelectionModel
   }
 
   /**
-   * getSelectedIndex
-   * @return int
+   * Returns the selected index or <code>-1</code> if there is no selection.
+   * 
+   * @return The selected index.
+   * 
+   * @see #setSelectedIndex(int)
    */
   public int getSelectedIndex()
   {
@@ -89,27 +93,38 @@ public class DefaultSingleSelectionModel
   }
 
   /**
-   * setSelectedIndex
-   * @param index TODO
+   * Sets the selected index and, if this is different to the previous 
+   * selection, sends a {@link ChangeEvent} to all registered listeners.
+   * 
+   * @param index  the index (use <code>-1</code> to represent no selection).
+   * 
+   * @see #getSelectedIndex()
+   * @see #clearSelection
    */
   public void setSelectedIndex(int index)
   {
-    this.index = index;
-    fireStateChanged();
+    if (this.index != index)
+      {
+        this.index = index;
+        fireStateChanged();
+      }
   }
 
   /**
-   * clearSelection
+   * Clears the selection by setting the selected index to <code>-1</code> and
+   * sends a {@link ChangeEvent} to all registered listeners.  If the selected
+   * index is already <code>-1</code>, this method does nothing.  
    */
   public void clearSelection()
   {
-    index = -1;
-    fireStateChanged();
+    setSelectedIndex(-1);
   }
 
   /**
-   * isSelected
-   * @return boolean
+   * Returns <code>true</code> if there is a selection, and <code>false</code>
+   * otherwise.  
+   * 
+   * @return A boolean.
    */
   public boolean isSelected()
   {
@@ -117,9 +132,10 @@ public class DefaultSingleSelectionModel
   }
 
   /**
-   * addChangeListener
+   * Registers a listener to receive {@link ChangeEvent} notifications from
+   * this model whenever the selected index changes.
    *
-   * @param listener the listener to add
+   * @param listener the listener to add.
    */
   public void addChangeListener(ChangeListener listener)
   {
@@ -127,9 +143,10 @@ public class DefaultSingleSelectionModel
   }
 
   /**
-   * removeChangeListener
+   * Deregisters a listener so that it no longer receives {@link ChangeEvent}
+   * notifications from this model.
    *
-   * @param listener the listener to remove
+   * @param listener the listener to remove.
    */
   public void removeChangeListener(ChangeListener listener)
   {
@@ -141,8 +158,9 @@ public class DefaultSingleSelectionModel
    */
   protected void fireStateChanged()
   {
+    if (changeEvent == null)
+      changeEvent = new ChangeEvent(this);
     ChangeListener[] listeners = getChangeListeners();
-
     for (int i = 0; i < listeners.length; i++)
       listeners[i].stateChanged(changeEvent);
   }

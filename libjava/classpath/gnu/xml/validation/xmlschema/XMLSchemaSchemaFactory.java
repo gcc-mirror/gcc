@@ -52,6 +52,7 @@ import org.relaxng.datatype.DatatypeException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -65,6 +66,7 @@ public class XMLSchemaSchemaFactory
 {
 
   LSResourceResolver resourceResolver;
+  ErrorHandler errorHandler;
 
   public LSResourceResolver getResourceResolver()
   {
@@ -75,6 +77,17 @@ public class XMLSchemaSchemaFactory
   {
     this.resourceResolver = resourceResolver;
   }
+  
+  public ErrorHandler getErrorHandler()
+  {
+    return this.errorHandler;
+  }
+
+  public void setErrorHandler(ErrorHandler errorHandler)
+  {
+    this.errorHandler = errorHandler;    
+  }
+
 
   public boolean isSchemaLanguageSupported(String schemaLanguage)
   {

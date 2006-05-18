@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.InputEvent;
@@ -126,6 +128,7 @@ public abstract class DragGestureRecognizer implements Serializable
   }
 
   public void resetRecognizer()
+    throws NotImplementedException
   {
     throw new Error("not implemented");
   }
@@ -152,6 +155,7 @@ public abstract class DragGestureRecognizer implements Serializable
   }
 
   protected void fireDragGestureRecognized(int dragAction, Point p)
+    throws NotImplementedException
   {
     throw new Error("not implemented");
   }

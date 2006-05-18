@@ -63,8 +63,6 @@ import java.security.spec.AlgorithmParameterSpec;
  * supplies (and document) default values to be used. For example, the GNU
  * Crypto provider uses a default <i>modulus</i> size (keysize) of 1024 bits for
  * the DSS (Digital Signature Standard) a.k.a <i>DSA</i>.<p>
- *
- * @version $Revision: 1.3 $
  */
 public abstract class KeyPairGeneratorAdapter extends KeyPairGenerator
 {

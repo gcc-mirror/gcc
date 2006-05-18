@@ -51,34 +51,6 @@ public class GtkDialogPeer extends GtkWindowPeer
   {
     super (dialog);
   }
-  
-  public Graphics getGraphics ()
-  {
-    Graphics g;
-    if (GtkToolkit.useGraphics2D ())
-      g = new GdkGraphics2D (this);
-    else
-      g = new GdkGraphics (this);
-    g.translate (-insets.left, -insets.top);
-    return g;
-  }  
-  
-  protected void postMouseEvent(int id, long when, int mods, int x, int y, 
-				int clickCount, boolean popupTrigger)
-  {
-    super.postMouseEvent (id, when, mods, 
-			  x + insets.left, y + insets.top, 
-			  clickCount, popupTrigger);
-  }
-
-  protected void postExposeEvent (int x, int y, int width, int height)
-  {
-    if (!isInRepaint)
-      q().postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
-                                   new Rectangle (x + insets.left, 
-                                                  y + insets.top, 
-                                                  width, height)));
-  }
 
   void create ()
   {

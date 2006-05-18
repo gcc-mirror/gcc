@@ -1,5 +1,5 @@
 /* ImageIcon.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ package javax.swing;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.IllegalComponentStateException;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
@@ -60,7 +61,8 @@ public class ImageIcon
   implements Icon, Serializable, Accessible
 {
   /**
-   * Accessibility support for ImageIcon.
+   * Provides the accessibility features for the <code>ImageIcon</code>
+   * class.
    */
   protected class AccessibleImageIcon
     extends AccessibleContext
@@ -69,7 +71,7 @@ public class ImageIcon
     private static final long serialVersionUID = 2113430526551336564L;
 
     /**
-     * Creates a new instance of AccessibleImageIcon.
+     * Creates a new instance of <code>AccessibleImageIcon</code>.
      */
     protected AccessibleImageIcon()
     {
@@ -77,10 +79,9 @@ public class ImageIcon
     }
 
     /**
-     * Returns the AccessibleRole of ImageIcon, which is
-     * {@link AccessibleRole#ICON}.
+     * Returns the accessible role for the <code>ImageIcon</code>.
      *
-     * @return {@link AccessibleRole#ICON}
+     * @return {@link AccessibleRole#ICON}.
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -88,45 +89,47 @@ public class ImageIcon
     }
 
     /**
-     * Returns the accessible state of this ImageIcon.
+     * Returns the accessible state for the <code>ImageIcon</code>.  To
+     * match the reference implementation, this method always returns 
+     * <code>null</code>.
      *
-     * @return the accessible state of this ImageIcon
+     * @return <code>null</code>.
      */
     public AccessibleStateSet getAccessibleStateSet()
     {
-      // TODO: which state information from ImageIcon is returned here??
-      return new AccessibleStateSet();
-    }
-
-    /**
-     * Returns the accessible parent of this object, which is <code>null</code>
-     * in this case, because ImageIcons have no parent.
-     *
-     * @return <code>null</code>, because ImageIcons have no parent
-     */
-    public Accessible getAccessibleParent()
-    {
-      // TODO: ImageIcons have no parent, have they ??
+      // refer to Sun's bug report 4269253
       return null;
     }
 
     /**
-     * Returns the index of this object in its accessible parent, which is
-     * -1 here, because ImageIcons have no accessible parent.
+     * Returns the accessible parent of this object.  To match the reference
+     * implementation, this method always returns <code>null</code>.
      *
-     * @return -1 because ImageIcons have no parent
+     * @return <code>null</code>.
+     */
+    public Accessible getAccessibleParent()
+    {
+      // refer to Sun's bug report 4269253
+      return null;
+    }
+
+    /**
+     * Returns the index of this object in its accessible parent.  To match
+     * the reference implementation, this method always returns <code>-1</code>.
+     *
+     * @return <code>-1</code>.
      */
     public int getAccessibleIndexInParent()
     {
-      // TODO: do ImageIcons have parents??
+      // refer to Sun's bug report 4269253
       return -1;
     }
 
     /**
      * Returns the number of accessible children of this component,
-     * which is 0, because ImageIcons have no children.
+     * which is 0, because an {@link ImageIcon} has no children.
      *
-     * @return 0 because ImageIcons have no children
+     * @return <code>0</code>.
      */
     public int getAccessibleChildrenCount()
     {
@@ -135,11 +138,12 @@ public class ImageIcon
 
     /**
      * Returns the accessible child at index <code>i</code>, which is
-     * <code>null</code> in this case because ImageIcons have no children.
+     * <code>null</code> in this case because an {@link ImageIcon} has no 
+     * children.
      *
      * @param i the index of the child to be fetched
      *
-     * @return <code>null</code> because ImageIcons have no children
+     * @return <code>null</code>.
      */
     public Accessible getAccessibleChild(int i)
     {
@@ -147,21 +151,25 @@ public class ImageIcon
     }
 
     /**
-     * Returns the locale of this object. This returns the default locale
-     * that is set for the current VM.
+     * Returns the locale of this object.  To match the reference 
+     * implementation, this method always returns <code>null</code>.
      *
-     * @return the locale of this object
+     * @return <code>null</code>.
      */
-    public Locale getLocale()
+    public Locale getLocale() 
+      throws IllegalComponentStateException
     {
-      return Locale.getDefault();
+      // refer to Sun's bug report 4269253
+      return null;
     }
 
     /**
-     * Returns the accessible Icon description. This returns the
-     * actual 'description' property of the ImageIcon.
+     * Returns the accessible icon description.  This returns the
+     * <code>description</code> property of the underlying {@link ImageIcon}.
      *
-     * @return the accessible Icon description
+     * @return The description (possibly <code>null</code>).
+     * 
+     * @see #setAccessibleIconDescription(String)
      */
     public String getAccessibleIconDescription()
     {
@@ -169,10 +177,12 @@ public class ImageIcon
     }
 
     /**
-     * Sets the accessible Icon description. This sets the
-     * actual 'description' property of the ImageIcon.
+     * Sets the accessible icon description.  This sets the 
+     * <code>description</code> property of the underlying {@link ImageIcon}.
      *
-     * @param newDescr the description to be set
+     * @param newDescr the description (<code>null</code> permitted).
+     * 
+     * @see #getAccessibleIconDescription()
      */
     public void setAccessibleIconDescription(String newDescr)
     {
@@ -180,10 +190,10 @@ public class ImageIcon
     }
 
     /**
-     * Returns the icon height. This returns the iconHeight property of
-     * the underlying Icon.
+     * Returns the icon height. This returns the <code>iconHeight</code> 
+     * property of the underlying {@link ImageIcon}.
      *
-     * @return the icon height
+     * @return The icon height.
      */
     public int getAccessibleIconHeight()
     {
@@ -191,10 +201,10 @@ public class ImageIcon
     }
     
     /**
-     * Returns the icon width. This returns the iconWidth property of
-     * the underlying Icon.
+     * Returns the icon width. This returns the <code>iconWidth</code> property 
+     * of the underlying {@link ImageIcon}.
      *
-     * @return the icon width
+     * @return The icon width.
      */
     public int getAccessibleIconWidth()
     {
@@ -278,12 +288,12 @@ public class ImageIcon
   }
 
   /**
-   * Creates an ImageIcon from the given URL without any description
-   * set.
+   * Creates an ImageIcon from the given URL and sets the description
+   * to the URL String representation.
    */
   public ImageIcon(URL url)
   {
-    this(url, null);
+    this(url, url.toString());
   }
 
   /**
@@ -427,6 +437,7 @@ public class ImageIcon
     finally
       {
         loadStatus = tracker.statusID(id - 1, false);
+        tracker.removeImage(image, id - 1);
       }
   }
 
@@ -445,9 +456,11 @@ public class ImageIcon
   }
 
   /**
-   * Returns the AccessibleContext for this ImageIcon.
+   * Returns the object that provides accessibility features for this
+   * <code>ImageIcon</code> instance.
    *
-   * @return the AccessibleContext for this ImageIcon
+   * @return The accessible context (an instance of 
+   *     {@link AccessibleImageIcon}).
    */
   public AccessibleContext getAccessibleContext()
   {

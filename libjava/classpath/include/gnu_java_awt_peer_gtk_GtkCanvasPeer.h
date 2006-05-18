@@ -11,6 +11,7 @@ extern "C"
 #endif
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create (JNIEnv *env, jobject);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_realize (JNIEnv *env, jobject);
 
 #ifdef __cplusplus
 }

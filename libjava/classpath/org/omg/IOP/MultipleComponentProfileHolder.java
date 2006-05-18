@@ -1,5 +1,5 @@
 /* MultipleComponentProfileHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,11 +45,11 @@ import org.omg.CORBA.portable.OutputStream;
  
 /**
  * A holder for the sequence of {@link TaggedComponent}
- * ({@link MultipleComponentProfile}).
+ * ({@link org.omg.IOP.MultipleComponentProfileHelper}).
  *
 * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class MultipleComponentProfileHolder
+public final class MultipleComponentProfileHolder
   implements Streamable
 {
   /**
@@ -76,7 +76,7 @@ public class MultipleComponentProfileHolder
   }
 
   /**
-   * Read the {@link value} array from the CDR stream.
+   * Read the {@link #value} array from the CDR stream.
    *
    * @param input the org.omg.CORBA.portable stream to read. 
    */

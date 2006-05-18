@@ -43,6 +43,7 @@ import gnu.java.util.EmptyEnumeration;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -75,6 +76,11 @@ public class ZipFile implements ZipConstants
    */
   public static final int OPEN_DELETE = 0x4;
 
+  /**
+   * This field isn't defined in the JDK's ZipConstants, but should be.
+   */
+  static final int ENDNRD =  4;
+
   // Name of this zip file.
   private final String name;
 
@@ -86,6 +92,37 @@ public class ZipFile implements ZipConstants
 
   private boolean closed = false;
 
+
+  /**
+   * Helper function to open RandomAccessFile and throw the proper
+   * ZipException in case opening the file fails.
+   *
+   * @param name the file name, or null if file is provided
+   *
+   * @param file the file, or null if name is provided
+   *
+   * @return the newly open RandomAccessFile, never null
+   */
+  private RandomAccessFile openFile(String name, 
+                                    File file) 
+    throws ZipException, IOException
+  {                                       
+    try 
+      {
+        return 
+          (name != null)
+          ? new RandomAccessFile(name, "r")
+          : new RandomAccessFile(file, "r");
+      }
+    catch (FileNotFoundException f)
+      { 
+        ZipException ze = new ZipException(f.getMessage());
+        ze.initCause(f);
+        throw ze;
+      }
+  }
+
+
   /**
    * Opens a Zip file with the given name for reading.
    * @exception IOException if a i/o error occured.
@@ -94,7 +131,7 @@ public class ZipFile implements ZipConstants
    */
   public ZipFile(String name) throws ZipException, IOException
   {
-    this.raf = new RandomAccessFile(name, "r");
+    this.raf = openFile(name,null);
     this.name = name;
     checkZipFile();
   }
@@ -107,7 +144,7 @@ public class ZipFile implements ZipConstants
    */
   public ZipFile(File file) throws ZipException, IOException
   {
-    this.raf = new RandomAccessFile(file, "r");
+    this.raf = openFile(null,file);
     this.name = file.getPath();
     checkZipFile();
   }
@@ -134,7 +171,7 @@ public class ZipFile implements ZipConstants
       throw new IllegalArgumentException("invalid mode");
     if ((mode & OPEN_DELETE) != 0)
       file.deleteOnExit();
-    this.raf = new RandomAccessFile(file, "r");
+    this.raf = openFile(null,file);
     this.name = file.getPath();
     checkZipFile();
   }
@@ -408,7 +445,19 @@ public class ZipFile implements ZipConstants
       case ZipOutputStream.STORED:
 	return inp;
       case ZipOutputStream.DEFLATED:
-	return new InflaterInputStream(inp, new Inflater(true));
+        final Inflater inf = new Inflater(true);
+        final int sz = (int) entry.getSize();
+        return new InflaterInputStream(inp, inf)
+        {
+          public int available() throws IOException
+          {
+            if (sz == -1)
+              return super.available();
+            if (super.available() != 0)
+              return sz - inf.getTotalOut();
+            return 0;
+          }
+        };
       default:
 	throw new ZipException("Unknown compression method " + method);
       }
@@ -514,6 +563,7 @@ public class ZipFile implements ZipConstants
           pos = 0;
           fillBuffer();
         }
+      
       return buffer[pos++] & 0xFF;
     }
 
@@ -544,7 +594,7 @@ public class ZipFile implements ZipConstants
           len -= remain;
           totalBytesRead += remain;
         }
-
+      
       return totalBytesRead;
     }
 

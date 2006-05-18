@@ -1,7 +1,7 @@
 /* VMVirtualMachine.java -- A reference implementation of a JDWP virtual
    machine
 
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -42,15 +42,9 @@ exception statement from your version. */
 package gnu.classpath.jdwp;
 
 import gnu.classpath.jdwp.event.EventRequest;
-import gnu.classpath.jdwp.exception.InvalidClassException;
-import gnu.classpath.jdwp.exception.InvalidObjectException;
-import gnu.classpath.jdwp.id.ObjectId;
-import gnu.classpath.jdwp.id.ReferenceTypeId;
-import gnu.classpath.jdwp.util.LineTable;
+import gnu.classpath.jdwp.exception.InvalidMethodException;
+import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.util.MethodResult;
-import gnu.classpath.jdwp.util.VariableTable;
-
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -74,10 +68,11 @@ public class VMVirtualMachine
    * Suspend all threads
    */
   public static void suspendAllThreads ()
+    throws JdwpException
   {
     // Our JDWP thread group -- don't suspend any of those threads
     Thread current = Thread.currentThread ();
-    ThreadGroup jdwpGroup = current.getThreadGroup ();
+    ThreadGroup jdwpGroup = Jdwp.getDefault().getJdwpThreadGroup();
 
     // Find the root ThreadGroup
     ThreadGroup group = jdwpGroup;
@@ -109,7 +104,8 @@ public class VMVirtualMachine
       }
 
     // Now suspend the current thread
-    suspendThread (current);
+    if (current.getThreadGroup() != jdwpGroup)
+      suspendThread (current);
   }
 
   /**
@@ -126,6 +122,7 @@ public class VMVirtualMachine
    * to run.
    */
   public static void resumeAllThreads ()
+    throws JdwpException
   {
     // Our JDWP thread group -- don't resume
     Thread current = Thread.currentThread ();
@@ -188,6 +185,29 @@ public class VMVirtualMachine
    */
   public static int getClassStatus (Class clazz) { return -1; }
 
+  /**
+   * Returns all of the methods defined in the given class. This
+   * includes all methods, constructors, and class initializers.
+   *
+   * @param  klass  the class whose methods are desired
+   * @return an array of virtual machine methods
+   */
+  public static VMMethod[] getAllClassMethods (Class klass)
+  { return null; }
+
+  /**
+   * A factory method for getting valid virtual machine methods
+   * which may be passed to/from the debugger.
+   *
+   * @param klass the class in which the method is defined
+   * @param id    the ID of the desired method
+   * @return the desired internal representation of the method
+   * @throws InvalidMethodException if the method is not defined
+   *           in the class
+   * @throws JdwpException for any other error
+   */
+  public static VMMethod getClassMethod(Class klass, long id)
+  { return null; }
 
   /**
    * Returns the thread's call stack
@@ -260,33 +280,6 @@ public class VMVirtualMachine
 					    Class clazz, Method method,
 					    Object[] values,
 					    boolean nonVirtual)
-  { return null; }
-
-  /**
-   * "Returns variable information for the method. The variable table
-   * includes arguments and locals declared within the method. For instance
-   * methods, the "this" reference is included in the table. Also, synthetic
-   * variables may be present."
-   *
-   * @param  clazz   the class in which the method is defined
-   * @param  method  the method for which variable information is desired
-   * @return a result object containing the information
-   */
-  public static VariableTable getVarTable (Class clazz, Method method)
-  { return null; }
-
-  /**
-   * "Returns line number information for the method, if present. The line
-   * table maps source line numbers to the initial code index of the line.
-   * The line table is ordered by code index (from lowest to highest). The
-   * line number information is constant unless a new class definition is
-   * installed using RedefineClasses."
-   *
-   * @param  clazz   the class in which the method is defined
-   * @param  method  the method whose line table is desired
-   * @return a result object containing the line table
-   */
-  public static LineTable getLineTable (Class clazz, Method method)
   { return null; }
 
   /**

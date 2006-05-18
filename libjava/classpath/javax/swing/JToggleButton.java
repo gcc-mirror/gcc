@@ -179,7 +179,7 @@ public class JToggleButton extends AbstractButton implements Accessible
       /**
        * Checks if the button is selected.
        * 
-       * @returns true if the button is selected
+       * @return <code>true</code> if the button is selected.
        */
       public boolean isSelected()
       {

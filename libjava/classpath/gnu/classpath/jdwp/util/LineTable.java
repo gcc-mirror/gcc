@@ -1,5 +1,5 @@
 /* LineTable.java -- A class representing a Line Table for a method
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -54,25 +54,24 @@ public class LineTable
   private final long end;
   private final int[] lineNum;
   private final long[] lineCI;
-  private final int lines;
 
   /**
    * Construct a line table with the given parameters.
    * 
    * @param start lowest code index for method, -1 if native
    * @param end highest code index for method, -1 if native
-   * @param lines number of entries in line table
-   * @param lineCI code indexes for entries in line tables (of length lines)
-   * @param lineNum line numbers for in line tables (of length lines)
+   * @param lineNum line numbers for in line tables
+   * @param lineCI code indicies for entries in line tables
    */
-  public LineTable(long start, long end, int lines, long lineCI[],
-                   int lineNum[])
+  public LineTable(long start, long end, int[] lineNum, long[] lineCI)
   {
+    if (lineNum.length != lineCI.length)
+      throw new AssertionError("code index and line numbers tables "
+                               + "not same length");
     this.start = start;
     this.end = end;
-    this.lines = lines;
-    this.lineCI = lineCI;
     this.lineNum = lineNum;
+    this.lineCI = lineCI;
   }
   
   /**
@@ -86,8 +85,8 @@ public class LineTable
   {
     os.writeLong(start);
     os.writeLong(end);
-    os.writeInt(lines);
-    for (int i = 0; i < lines; i++)
+    os.writeInt(lineNum.length);
+    for (int i = 0; i < lineNum.length; i++)
       {
         os.writeLong(lineCI[i]);
         os.writeInt(lineNum[i]);

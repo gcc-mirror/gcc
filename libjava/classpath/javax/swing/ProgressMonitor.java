@@ -1,5 +1,5 @@
 /* ProgressMonitor.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -100,10 +100,16 @@ public class ProgressMonitor
   boolean canceled;
 
   /**
-   * Constructor ProgressMonitor
-   * @param component The parent component of the progress dialog or <code>null</code>.
-   * @param message A constant message object which works in the way it does in <code>JOptionPane</code>.
-   * @param note A string message which can be changed while the operation goes on.
+   * Creates a new <code>ProgressMonitor</code> instance.  This is used to 
+   * monitor a task and pops up a dialog if the task is taking a long time to 
+   * run.
+   * 
+   * @param component The parent component of the progress dialog or 
+   *                  <code>null</code>.
+   * @param message A constant message object which works in the way it does 
+   *                in {@link JOptionPane}.
+   * @param note A string message which can be changed while the operation goes
+   *             on.
    * @param minimum The minimum value for the operation (start value).
    * @param maximum The maximum value for the operation (end value).
    */
@@ -178,9 +184,10 @@ public class ProgressMonitor
 
   }
 
-  /** Returns the minimum or start value of the operation.
+  /** 
+   * Returns the minimum or start value of the operation.
    *
-   * @returns Minimum or start value of the operation.
+   * @return Minimum or start value of the operation.
    */
   public int getMinimum()
   {
@@ -207,7 +214,7 @@ public class ProgressMonitor
   /**
    * Return the maximum or end value of your operation.
    *
-   * @returns Maximum or end value.
+   * @return Maximum or end value.
    */
   public int getMaximum()
   {
@@ -228,7 +235,7 @@ public class ProgressMonitor
   /**
    * Returns whether the user canceled the operation.
    *
-   * @returns Whether the operation was canceled.
+   * @return Whether the operation was canceled.
    */
   public boolean isCanceled()
   {
@@ -243,7 +250,7 @@ public class ProgressMonitor
    * until the ProgressMonitor should decide whether
    * a progress dialog is to be shown or not.
    *
-   * @returns The duration in milliseconds.
+   * @return The duration in milliseconds.
    */
   public int getMillisToDecideToPopup()
   {
@@ -266,8 +273,12 @@ public class ProgressMonitor
   }
 
   /**
-   * getMillisToPopup
-   * @returns int
+   * Returns the number of milliseconds to wait before displaying the progress
+   * dialog.  The default value is 2000.
+   * 
+   * @return The number of milliseconds.
+   * 
+   * @see #setMillisToPopup(int)
    */
   public int getMillisToPopup()
   {
@@ -275,8 +286,12 @@ public class ProgressMonitor
   }
 
   /**
-   * setMillisToPopup
-   * @param time TODO
+   * Sets the number of milliseconds to wait before displaying the progress
+   * dialog.
+   * 
+   * @param time  the number of milliseconds.
+   * 
+   * @see #getMillisToPopup()
    */
   public void setMillisToPopup(int time)
   {
@@ -286,7 +301,7 @@ public class ProgressMonitor
   /**
    * Returns a message which is shown in the progress dialog.
    *
-   * @returns The changeable message visible in the progress dialog.
+   * @return The changeable message visible in the progress dialog.
    */
   public String getNote()
   {
@@ -313,7 +328,8 @@ public class ProgressMonitor
       }
   }
 
-  /** Internal method that creates the progress dialog.
+  /** 
+   * Internal method that creates the progress dialog.
    */
   void createDialog()
   {
@@ -382,7 +398,11 @@ public class ProgressMonitor
          if (( now - timestamp ) > millisToDecideToPopup )
          {
            first = false;
-           long expected = ( now - timestamp ) * ( max - min ) / ( progress - min );
+
+
+           long expected = ( progress - min == 0 ) ? 
+	     ( now - timestamp ) * ( max - min ) : 
+	     ( now - timestamp ) * ( max - min ) / ( progress - min );
 
            if ( expected > millisToPopup )
            {

@@ -105,24 +105,43 @@ final class RETokenNamedProperty extends REToken {
 	return 1;
     }
 
-    boolean match(CharIndexed input, REMatch mymatch) {
-    char ch = input.charAt(mymatch.index);
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
+      char ch = input.charAt(mymatch.index);
+      boolean retval = matchOneChar(ch);
+      if (retval) {
+	++mymatch.index;
+	return mymatch;
+      }
+      return null;
+  }
+
+  private boolean matchOneChar(char ch) {
     if (ch == CharIndexed.OUT_OF_BOUNDS)
       return false;
     
     boolean retval = handler.includes(ch);
     if (insens) {
         retval = retval ||
-                 handler.includes(Character.toUpperCase(ch)) ||
-                 handler.includes(Character.toLowerCase(ch));
+                 handler.includes(toUpperCase(ch, unicodeAware)) ||
+                 handler.includes(toLowerCase(ch, unicodeAware));
     }
 
     if (negate) retval = !retval;
-    if (retval) {
-	++mymatch.index;
-	return next(input, mymatch);
+    return retval;
+  }
+
+  boolean returnsFixedLengthMatches() { return true; }
+
+  int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+    int index = mymatch.index;
+    int numRepeats = 0;
+    while (true) {
+	if (numRepeats >= max) break;
+	char ch = input.charAt(index++);
+	if (! matchOneChar(ch)) break;
+	numRepeats++;
     }
-    else return false;
+    return numRepeats;
   }
 
   void dump(StringBuffer os) {
@@ -246,9 +265,6 @@ final class RETokenNamedProperty extends REToken {
 
   private static class POSIXHandler extends Handler {
       private RETokenPOSIX retoken;
-      private REMatch mymatch = new REMatch(0,0,0);
-      private char[] chars = new char[1];
-      private CharIndexedCharArray ca = new CharIndexedCharArray(chars, 0);
       public POSIXHandler(String name) {
             int posixId = RETokenPOSIX.intValue(name.toLowerCase());
             if (posixId != -1)
@@ -257,9 +273,7 @@ final class RETokenNamedProperty extends REToken {
               throw new RuntimeException("Unknown posix ID: " + name);
       }
       public boolean includes(char c) {
-          chars[0] = c;
-          mymatch.index = 0;
-          return retoken.match(ca, mymatch);
+          return retoken.matchOneChar(c);
       }
   }
 

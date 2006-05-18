@@ -1,5 +1,5 @@
 /* MultiDocPrintService.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,13 @@ package javax.print;
 
 
 /**
+ * <code>MultiDocPrintService</code> represents print services that are 
+ * capable of printing multiple documents as one print job. It provides an 
+ * additional method for the creation of a print job for multiple documents.
+ * 
+ * @see javax.print.MultiDoc
+ * @see javax.print.MultiDocPrintJob
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface MultiDocPrintService extends PrintService
@@ -47,7 +54,7 @@ public interface MultiDocPrintService extends PrintService
   /**
    * Create a job that can print a <code>MultiDoc</code> object.
    * 
-   * @return the new print job
+   * @return The created print job.
    */
   MultiDocPrintJob createMultiDocPrintJob();
 }

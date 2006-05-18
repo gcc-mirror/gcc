@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.imageio.stream;
 
+import gnu.classpath.NotImplementedException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -61,7 +63,7 @@ public class MemoryCacheImageOutputStream extends ImageOutputStreamImpl
   }
 
   public void flushBefore(long position)
-    throws IOException
+    throws IOException, NotImplementedException
   {
     // FIXME: Implement me.
     throw new Error("not implemented");
@@ -83,14 +85,14 @@ public class MemoryCacheImageOutputStream extends ImageOutputStreamImpl
   }
 
   public int read()
-    throws IOException
+    throws IOException, NotImplementedException
   {
     // FIXME: Implement me.
     throw new Error("not implemented");
   }
 
   public int read (byte[] data, int offset, int len)
-    throws IOException
+    throws IOException, NotImplementedException
   {
     // FIXME: Implement me.
     throw new Error("not implemented");

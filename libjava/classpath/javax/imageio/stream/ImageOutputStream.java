@@ -54,7 +54,7 @@ public interface ImageOutputStream
   extends ImageInputStream, DataOutput
 {
   /**
-   * @param postion
+   * @param position
    *
    * @throws IOException if an errror occurs
    */

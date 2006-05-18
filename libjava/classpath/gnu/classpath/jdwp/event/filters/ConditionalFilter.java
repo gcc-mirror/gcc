@@ -61,7 +61,7 @@ public class ConditionalFilter
    * <p><b>NOTE:</b> This filter is marked "for the future",
    * i.e, there is no way to actually use this yet.
    *
-   * @param  cond  the conditional expression
+   * @param  conditional  the conditional expression
    * @throws NotImplementedException if used
    */
   public ConditionalFilter (Object conditional)

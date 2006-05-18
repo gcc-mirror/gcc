@@ -1,5 +1,5 @@
 /* Time.java -- Wrapper around java.util.Date
-   Copyright (C) 1999, 2000, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -143,7 +143,7 @@ public class Timestamp extends java.util.Date
    * specified time value representing the number of milliseconds since 
    * Jan 1, 1970 at 12:00 midnight GMT.
    *
-   * @param time The time value to intialize this <code>Time</code> to.
+   * @param date The time value to intialize this <code>Time</code> to.
    */
   public Timestamp(long date)
   {
@@ -279,12 +279,13 @@ public class Timestamp extends java.util.Date
   }
 
   /**
-   * Compare two Timestamp
-   * @param when the other Timestamp.
-   * @return 0, if the date represented
-   * by obj is exactly the same as the time represented by this
-   * object, a negative if this Timestamp is before the other Timestamp, and
-   * a positive value otherwise.  
+   * Compares this <code>Timestamp</code> to another one.
+   * 
+   * @param ts The other Timestamp.
+   * @return <code>0</code>, if both <code>Timestamp</code>'s represent exactly
+   *         the same date, a negative value if this <code>Timestamp</code> is
+   *         before the specified <code>Timestamp</code> and a positive value
+   *         otherwise.
    * @since 1.2
    */
   public int compareTo(Timestamp ts)
@@ -297,15 +298,18 @@ public class Timestamp extends java.util.Date
   }
 
   /**
-   * Compares this Timestamp to another.  This behaves like
+   * Compares this <code>Timestamp</code> to another one. This behaves like
    * <code>compareTo(Timestamp)</code>, but it may throw a
-   * <code>ClassCastException</code>
-   * @param obj the other Timestamp.
-   * @return 0, if the Timestamp represented
-   * by obj is exactly the same as the time represented by this
-   * object, a negative if this Timestamp is before the other Timestamp, and
-   * a positive value otherwise.  
+   * <code>ClassCastException</code>, if the specified object is not of type
+   * <code>Timestamp</code>.
+   * 
+   * @param obj The object to compare with.
+   * @return <code>0</code>, if both <code>Timestamp</code>'s represent exactly
+   *         the same date, a negative value if this <code>Timestamp</code> is
+   *         before the specified <code>Timestamp</code> and a positive value
+   *         otherwise.
    * @exception ClassCastException if obj is not of type Timestamp.
+   * @see #compareTo(Timestamp)
    * @since 1.2
    */
   public int compareTo(Object obj)

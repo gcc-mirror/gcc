@@ -1,5 +1,5 @@
 /* gnu/regexp/RETokenChar.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,8 +44,9 @@ final class RETokenChar extends REToken {
 
   RETokenChar(int subIndex, char c, boolean ins) {
     super(subIndex);
+    insens = ins;
     ch = new char [1];
-    ch[0] = (insens = ins) ? Character.toLowerCase(c) : c;
+    ch[0] = c;
   }
 
   int getMinimumLength() {
@@ -56,18 +57,50 @@ final class RETokenChar extends REToken {
     return ch.length;
   }
   
-    boolean match(CharIndexed input, REMatch mymatch) {
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
+	int z = ch.length;
+	if (matchOneString(input, mymatch.index)) {
+	    mymatch.index += z;
+	    return mymatch;
+	}
+	return null;
+    }
+
+    boolean matchOneString(CharIndexed input, int index) {
 	int z = ch.length;
 	char c;
 	for (int i=0; i<z; i++) {
-	    c = input.charAt(mymatch.index+i);
-	    if (( (insens) ? Character.toLowerCase(c) : c ) != ch[i]) {
+	    c = input.charAt(index+i);
+	    if (! charEquals(c, ch[i])) {
 		return false;
 	    }
 	}
-	mymatch.index += z;
+	return true;
+    }
 
-	return next(input, mymatch);
+    private boolean charEquals(char c1, char c2) {
+	if (c1 == c2) return true;
+	if (! insens) return false;
+	if (toLowerCase(c1, unicodeAware) == c2) return true;
+	if (toUpperCase(c1, unicodeAware) == c2) return true;
+	return false;
+    }
+
+    boolean returnsFixedLengthMatches() { return true; }
+
+    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+        int index = mymatch.index;
+	int numRepeats = 0;
+	int z = ch.length;
+	while (true) {
+	    if (numRepeats >= max) break;
+	    if (matchOneString(input, index)) {
+	        index += z;
+	        numRepeats++;
+	    }
+	    else break;
+	}
+	return numRepeats;
     }
 
   // Overrides REToken.chain() to optimize for strings

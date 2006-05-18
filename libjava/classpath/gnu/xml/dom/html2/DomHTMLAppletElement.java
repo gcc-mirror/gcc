@@ -65,6 +65,26 @@ public class DomHTMLAppletElement
     setHTMLAttribute("align", align);
   }
   
+  public String getCls()
+  {
+    return getHTMLAttribute("class");
+  }
+
+  public void setCls(String cls)
+  {
+    setHTMLAttribute("class", cls);
+  }
+  
+  public String getSrc()
+  {
+    return getHTMLAttribute("src");
+  }
+
+  public void setSrc(String src)
+  {
+    setHTMLAttribute("src", src);
+  }
+  
   public String getAlt()
   {
     return getHTMLAttribute("alt");
@@ -164,6 +184,5 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("width", width);
   }
-  
 }
 

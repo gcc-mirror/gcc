@@ -1,6 +1,6 @@
 /* ObjectStreamConstants.java -- Interface containing constant values
    used in reading and writing serialized objects
-   Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,11 +45,29 @@ package java.io;
  * <code>ObjectInputStream</code>, and <code>ObjectStreamClass</code>.
  * The values for these constants are specified by the Java library
  * specification.
+ * 
+ * @since 1.1
  */
 public interface ObjectStreamConstants
 {
   // FIXME: Javadoc comment these values.
+  
+  /** 
+   * The serialization stream protocol version 1. This version was
+   * the default serialization protocol before JDK 1.2.
+   * 
+   * @see ObjectOutputStream#useProtocolVersion(int)
+   * @since 1.2
+   */
   int PROTOCOL_VERSION_1 = 1;
+  
+  /** 
+   * The serialization stream protocol version 2. This version is
+   * used as the default serialization protocol since JDK 1.2.
+   * 
+   * @see ObjectOutputStream#useProtocolVersion(int)
+   * @since 1.2
+   */
   int PROTOCOL_VERSION_2 = 2;
 
   short STREAM_MAGIC = (short)0xaced;

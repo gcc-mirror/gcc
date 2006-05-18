@@ -127,13 +127,13 @@ public interface AttributedCharacterIterator extends CharacterIterator
      */
     protected Object readResolve() throws InvalidObjectException
     {
-      if (this.equals (READING))
+      if (getName().equals(READING.getName()))
         return READING;
 
-      if (this.equals (LANGUAGE))
+      if (getName().equals(LANGUAGE.getName()))
         return LANGUAGE;
 
-      if (this.equals (INPUT_METHOD_SEGMENT))
+      if (getName().equals(INPUT_METHOD_SEGMENT.getName()))
         return INPUT_METHOD_SEGMENT;
 
       throw new InvalidObjectException ("Can't resolve Attribute: " 

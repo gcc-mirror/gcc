@@ -653,7 +653,11 @@ have @code{serialVersionUID} declared.
 @item
 Don't declare unchecked exceptions in the @code{throws} clause of a
 method.  However, if throwing an unchecked exception is part of the
-method's API, you should mention it in the Javadoc.
+method's API, you should mention it in the Javadoc.  There is one
+important exception to this rule, which is that a stub method should
+be marked as throwing @code{gnu.classpath.NotImplementedException}.
+This will let our API comparison tools note that the method is not
+fully implemented.
 
 @item
 When overriding @code{Object.equals}, remember that @code{instanceof}

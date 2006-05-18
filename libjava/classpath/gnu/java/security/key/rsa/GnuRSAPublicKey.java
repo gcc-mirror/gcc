@@ -38,6 +38,7 @@ exception statement from your version.  */
 
 package gnu.java.security.key.rsa;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
 import gnu.java.security.key.IKeyPairCodec;
 
@@ -55,15 +56,15 @@ import java.security.interfaces.RSAPublicKey;
  *    Primitive specification and supporting documentation.<br>
  *    Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
- *
- * @version $Revision: 1.2 $
  */
 public class GnuRSAPublicKey extends GnuRSAKey implements PublicKey,
     RSAPublicKey
 {
-
   // Constants and variables
   // -------------------------------------------------------------------------
+
+  /** String representation of this key. Cached for speed. */
+  private transient String str;
 
   // Constructor(s)
   // -------------------------------------------------------------------------
@@ -181,5 +182,17 @@ public class GnuRSAPublicKey extends GnuRSAKey implements PublicKey,
     final RSAPublicKey that = (RSAPublicKey) obj;
     return super.equals(that)
            && getPublicExponent().equals(that.getPublicExponent());
+  }
+
+  public String toString()
+  {
+    if (str == null)
+      {
+        String ls = SystemProperties.getProperty("line.separator");
+        str = new StringBuilder(this.getClass().getName()).append("(")
+            .append(super.toString()).append(",").append(ls)
+            .append(")").toString();
+      }
+    return str;
   }
 }

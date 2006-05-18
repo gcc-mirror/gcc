@@ -51,6 +51,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.DocumentFilter;
 import javax.swing.tree.TreeNode;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CompoundEdit;
@@ -148,6 +149,11 @@ public abstract class AbstractDocument implements Document, Serializable
    */
   Object documentCV = new Object();
 
+  /** An instance of a DocumentFilter.FilterBypass which allows calling
+   * the insert, remove and replace method without checking for an installed
+   * document filter.
+   */
+  DocumentFilter.FilterBypass bypass;
   
   /**
    * Creates a new <code>AbstractDocument</code> with the specified
@@ -179,6 +185,19 @@ public abstract class AbstractDocument implements Document, Serializable
   {
     content = doc;
     context = ctx;
+  }
+  
+  /** Returns the DocumentFilter.FilterBypass instance for this
+   * document and create it if it does not exist yet.
+   *  
+   * @return This document's DocumentFilter.FilterBypass instance.
+   */
+  private DocumentFilter.FilterBypass getBypass()
+  {
+    if (bypass == null)
+      bypass = new Bypass();
+    
+    return bypass;
   }
 
   /**
@@ -329,7 +348,7 @@ public abstract class AbstractDocument implements Document, Serializable
    *
    * @return the {@link AttributeContext} used in this <code>Document</code>
    */
-  protected AttributeContext getAttributeContext()
+  protected final AttributeContext getAttributeContext()
   {
     return context;
   }
@@ -366,7 +385,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * @return the thread that currently modifies this <code>Document</code>
    *         if there is one, otherwise <code>null</code>
    */
-  protected Thread getCurrentWriter()
+  protected final Thread getCurrentWriter()
   {
     return currentWriter;
   }
@@ -392,7 +411,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * @return a {@link Position} which will always mark the end of the
    *         <code>Document</code>
    */
-  public Position getEndPosition()
+  public final Position getEndPosition()
   {
     // FIXME: Properly implement this by calling Content.createPosition().
     return new Position() 
@@ -437,7 +456,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * @return the property for <code>key</code> or <code>null</code> if there
    *         is no such property stored
    */
-  public Object getProperty(Object key)
+  public final Object getProperty(Object key)
   {
     // FIXME: make me thread-safe
     Object value = null;
@@ -470,7 +489,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * @return a {@link Position} which will always mark the beginning of the
    *         <code>Document</code>
    */
-  public Position getStartPosition()
+  public final Position getStartPosition()
   {
     // FIXME: Properly implement this using Content.createPosition().
     return new Position() 
@@ -521,6 +540,13 @@ public abstract class AbstractDocument implements Document, Serializable
   /**
    * Inserts a String into this <code>Document</code> at the specified
    * position and assigning the specified attributes to it.
+   * 
+   * <p>If a {@link DocumentFilter} is installed in this document, the
+   * corresponding method of the filter object is called.</p>
+   * 
+   * <p>The method has no effect when <code>text</code> is <code>null</code>
+   * or has a length of zero.</p>
+   * 
    *
    * @param offset the location at which the string should be inserted
    * @param text the content to be inserted
@@ -530,6 +556,19 @@ public abstract class AbstractDocument implements Document, Serializable
    *         location in this <code>Document</code>
    */
   public void insertString(int offset, String text, AttributeSet attributes)
+    throws BadLocationException
+  {
+    // Bail out if we have a bogus insertion (Behavior observed in RI).
+    if (text == null || text.length() == 0)
+      return;
+    
+    if (documentFilter == null)
+      insertStringImpl(offset, text, attributes);
+    else
+      documentFilter.insertString(getBypass(), offset, text, attributes);
+  }
+
+  void insertStringImpl(int offset, String text, AttributeSet attributes)
     throws BadLocationException
   {
     // Just return when no text to insert was given.
@@ -589,7 +628,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * @param key the key of the property to be stored
    * @param value the value of the property to be stored
    */
-  public void putProperty(Object key, Object value)
+  public final void putProperty(Object key, Object value)
   {
     // FIXME: make me thread-safe
     if (properties == null)
@@ -602,7 +641,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * Blocks until a read lock can be obtained.  Must block if there is
    * currently a writer modifying the <code>Document</code>.
    */
-  public void readLock()
+  public final void readLock()
   {
     if (currentWriter != null && currentWriter.equals(Thread.currentThread()))
       return;
@@ -627,7 +666,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * Releases the read lock. If this was the only reader on this
    * <code>Document</code>, writing may begin now.
    */
-  public void readUnlock()
+  public final void readUnlock()
   {
     // Note we could have a problem here if readUnlock was called without a
     // prior call to readLock but the specs simply warn users to ensure that
@@ -673,7 +712,16 @@ public abstract class AbstractDocument implements Document, Serializable
 
   /**
    * Removes a piece of content from this <code>Document</code>.
-   *
+   * 
+   * <p>If a {@link DocumentFilter} is installed in this document, the
+   * corresponding method of the filter object is called. The
+   * <code>DocumentFilter</code> is called even if <code>length</code>
+   * is zero. This is different from {@link #replace}.</p>
+   * 
+   * <p>Note: When <code>length</code> is zero or below the call is not
+   * forwarded to the underlying {@link AbstractDocument.Content} instance
+   * of this document and no exception is thrown.</p>
+   * 
    * @param offset the start offset of the fragment to be removed
    * @param length the length of the fragment to be removed
    *
@@ -683,6 +731,18 @@ public abstract class AbstractDocument implements Document, Serializable
    */
   public void remove(int offset, int length) throws BadLocationException
   {
+    if (documentFilter == null)
+      removeImpl(offset, length);
+    else
+      documentFilter.remove(getBypass(), offset, length);
+  }
+  
+  void removeImpl(int offset, int length) throws BadLocationException
+  {
+    // Prevent some unneccessary method invocation (observed in the RI). 
+    if (length <= 0)
+      return;
+    
     DefaultDocumentEvent event =
       new DefaultDocumentEvent(offset, length,
 			       DocumentEvent.EventType.REMOVE);
@@ -707,6 +767,13 @@ public abstract class AbstractDocument implements Document, Serializable
   /**
    * Replaces a piece of content in this <code>Document</code> with
    * another piece of content.
+   * 
+   * <p>If a {@link DocumentFilter} is installed in this document, the
+   * corresponding method of the filter object is called.</p>
+   * 
+   * <p>The method has no effect if <code>length</code> is zero (and
+   * only zero) and, at the same time, <code>text</code> is
+   * <code>null</code> or has zero length.</p>
    *
    * @param offset the start offset of the fragment to be removed
    * @param length the length of the fragment to be removed
@@ -720,11 +787,36 @@ public abstract class AbstractDocument implements Document, Serializable
    * @since 1.4
    */
   public void replace(int offset, int length, String text,
+                      AttributeSet attributes)
+    throws BadLocationException
+  {
+    // Bail out if we have a bogus replacement (Behavior observed in RI).
+    if (length == 0 
+        && (text == null || text.length() == 0))
+      return;
+    
+    if (documentFilter == null)
+      {
+        // It is important to call the methods which again do the checks
+        // of the arguments and the DocumentFilter because subclasses may
+        // have overridden these methods and provide crucial behavior
+        // which would be skipped if we call the non-checking variants.
+        // An example for this is PlainDocument where insertString can
+        // provide a filtering of newlines.
+        remove(offset, length);
+        insertString(offset, text, attributes);
+      }
+    else
+      documentFilter.replace(getBypass(), offset, length, text, attributes);
+    
+  }
+  
+  void replaceImpl(int offset, int length, String text,
 		      AttributeSet attributes)
     throws BadLocationException
   {
-    remove(offset, length);
-    insertString(offset, text, attributes);
+    removeImpl(offset, length);
+    insertStringImpl(offset, text, attributes);
   }
 
   /**
@@ -854,7 +946,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * Blocks until a write lock can be obtained.  Must wait if there are 
    * readers currently reading or another thread is currently writing.
    */
-  protected void writeLock()
+  protected final void writeLock()
   {
     if (currentWriter != null && currentWriter.equals(Thread.currentThread()))
       return;
@@ -881,7 +973,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * Releases the write lock. This allows waiting readers or writers to
    * obtain the lock.
    */
-  protected void writeUnlock()
+  protected final void writeUnlock()
   {
     synchronized (documentCV)
     {
@@ -2239,4 +2331,37 @@ public abstract class AbstractDocument implements Document, Serializable
 	      + getStartOffset() + "," + getEndOffset() + "\n");
     }
   }
+  
+  /** A class whose methods delegate to the insert, remove and replace methods
+   * of this document which do not check for an installed DocumentFilter.
+   */
+  class Bypass extends DocumentFilter.FilterBypass
+  {
+
+    public Document getDocument()
+    {
+      return AbstractDocument.this;
+    }
+
+    public void insertString(int offset, String string, AttributeSet attr)
+    throws BadLocationException
+    {
+      AbstractDocument.this.insertStringImpl(offset, string, attr);
+    }
+
+    public void remove(int offset, int length)
+    throws BadLocationException
+    {
+      AbstractDocument.this.removeImpl(offset, length);
+    }
+
+    public void replace(int offset, int length, String string,
+                        AttributeSet attrs)
+    throws BadLocationException
+    {
+      AbstractDocument.this.replaceImpl(offset, length, string, attrs);
+    }
+    
+  }
+  
 }

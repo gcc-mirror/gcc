@@ -1,5 +1,5 @@
 /* gnu/regexp/RETokenAny.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,15 +59,37 @@ final class RETokenAny extends REToken {
     return 1;
   }
 
-    boolean match(CharIndexed input, REMatch mymatch) {
-    char ch = input.charAt(mymatch.index);
-    if ((ch == CharIndexed.OUT_OF_BOUNDS)
-	|| (!newline && (ch == '\n'))
-	|| (matchNull && (ch == 0))) {
-	return false;
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
+      char ch = input.charAt(mymatch.index);
+      boolean retval = matchOneChar(ch);
+      if (retval) {
+        ++mymatch.index;
+        return mymatch;
+      }
+      return null;
     }
-    ++mymatch.index;
-    return next(input, mymatch);
+
+    boolean matchOneChar(char ch) {
+      if ((ch == CharIndexed.OUT_OF_BOUNDS)
+	  || (!newline && (ch == '\n'))
+	  || (matchNull && (ch == 0))) {
+	  return false;
+      }
+      return true;
+  }
+
+  boolean returnsFixedLengthMatches() { return true; }
+
+  int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+    int index = mymatch.index;
+    int numRepeats = 0;
+    while (true) {
+	if (numRepeats >= max) break;
+        char ch = input.charAt(index++);
+	if (! matchOneChar(ch)) break;
+        numRepeats++;
+    }
+    return numRepeats;
   }
 
   void dump(StringBuffer os) {

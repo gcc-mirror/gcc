@@ -1,5 +1,5 @@
 /* SQLWarning.java -- Database access warnings.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -56,9 +56,9 @@ public class SQLWarning extends SQLException
    * @param SQLState A string containing the SQL state of the error.
    * @param vendorCode The vendor error code associated with this error.
    */
-  public SQLWarning(String reason, String SQLState, int vendorCode)
+  public SQLWarning(String message, String SQLState, int vendorCode)
   {
-    super(reason, SQLState, vendorCode);
+    super(message, SQLState, vendorCode);
   }
 
   /**

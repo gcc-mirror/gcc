@@ -419,7 +419,7 @@ public class UMac32 extends BaseMac
         mac.update(data, 0, 128);
         byte[] result = mac.digest();
         //         System.out.println("UMAC test vector: "+Util.toString(result));
-        valid = new Boolean(TV1.equals(Util.toString(result)));
+        valid = Boolean.valueOf(TV1.equals(Util.toString(result)));
       }
     return valid.booleanValue();
   }

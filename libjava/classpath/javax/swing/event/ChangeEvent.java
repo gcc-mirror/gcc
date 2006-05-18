@@ -1,5 +1,5 @@
 /* ChangeEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,23 +37,30 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventObject;
 
 /**
- * ChangeEvent
+ * An event used to signal a state change for an object.
+ * 
+ * @see ChangeListener
+ * @see CellEditorListener
+ * @see TableColumnModelListener
+ * 
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class ChangeEvent extends EventObject {
+public class ChangeEvent 
+  extends EventObject 
+{
 
-	/**
-	 * ChangeEvent constructor
-	 * @param source Source object
-	 */
-	public ChangeEvent(Object source) {
-		super(source);
-	} // ChangeEvent()
+  /**
+   * Creates a new <code>ChangeEvent</code> instance for the specified source.
+   * 
+   * @param source  the source for the event (<code>null</code> not permitted).
+   */
+  public ChangeEvent(Object source) 
+  {
+    super(source);
+  }
 
-
-} // ChangeEvent
+}

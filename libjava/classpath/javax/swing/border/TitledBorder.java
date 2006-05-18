@@ -912,8 +912,10 @@ public class TitledBorder extends AbstractBorder
    * Calculates the minimum size needed for displaying the border
    * and its title.
    *
-   * @param c the Component for which this TitledBorder consitutes
+   * @param c the Component for which this TitledBorder constitutes
    *        a border.
+   *        
+   * @return The minimum size.
    */
   public Dimension getMinimumSize(Component c)
   {
@@ -980,6 +982,10 @@ public class TitledBorder extends AbstractBorder
   /**
    * Performs various measurements for the current state of this TitledBorder
    * and the given Component.
+   * 
+   * @param c  the component (<code>null</code> not permitted).
+   * 
+   * @return Various measurements.
    */
   private Measurements getMeasurements(Component c)
   {
@@ -1172,6 +1178,8 @@ public class TitledBorder extends AbstractBorder
     /**
      * Calculates the minimum size needed for displaying the border
      * and its title. Used by {@link TitledBorder#getMinimumSize(Component)}.
+     * 
+     * @return The minimum size.
      */
     public Dimension getMinimumSize()
     {

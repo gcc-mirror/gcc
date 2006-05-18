@@ -1018,19 +1018,7 @@ public class JTable
      * The CheckBox that is used for rendering.
      */
     private final JCheckBox checkBox = new JCheckBox();
-    
-    /**
-     * The check box must have the text field background and be centered.
-     */
-    private BooleanCellRenderer()
-    {
-      // Render the checkbox identically as the text field.
-      JTextField f = new JTextField();
-      checkBox.setForeground(f.getForeground());
-      checkBox.setBackground(f.getBackground());
-      checkBox.setHorizontalAlignment(SwingConstants.CENTER);      
-    }
-    
+   
     /**
      * Get the check box.
      */
@@ -1041,14 +1029,13 @@ public class JTable
 
     /**
      * Returns the component that is used for rendering the value.
-     *
+     * 
      * @param table the JTable
      * @param value the value of the object
      * @param isSelected is the cell selected?
      * @param hasFocus has the cell the focus?
      * @param row the row to render
      * @param column the cell to render
-     * 
      * @return this component (the default table cell renderer)
      */
     public Component getTableCellRendererComponent(JTable table, Object value,
@@ -1056,6 +1043,32 @@ public class JTable
                                                    boolean hasFocus, int row,
                                                    int column)
     {
+      if (isSelected)
+        {
+          checkBox.setBackground(table.getSelectionBackground());
+          checkBox.setForeground(table.getSelectionForeground());
+        }
+      else
+        {
+          checkBox.setBackground(table.getBackground());
+          checkBox.setForeground(table.getForeground());
+        }
+
+      if (hasFocus)
+        {
+          checkBox.setBorder(
+            UIManager.getBorder("Table.focusCellHighlightBorder"));
+          if (table.isCellEditable(row, column))
+            {
+              checkBox.setBackground(
+                UIManager.getColor("Table.focusCellBackground"));
+              checkBox.setForeground(
+                UIManager.getColor("Table.focusCellForeground"));
+            }
+        }
+      else
+        checkBox.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+
       // Null is rendered as false.
       if (value == null)
         checkBox.setSelected(false);
@@ -1233,8 +1246,12 @@ public class JTable
         {
           Icon iconValue = (Icon) value;
           setIcon(iconValue);
-          setText("");
         }
+      else
+        {
+          setIcon(null);
+        }
+      setText("");
       return this;
     }
   }
@@ -1253,22 +1270,18 @@ public class JTable
        */
       TableTextField()
       {
-        setBorder(null);
+        setBorder(BorderFactory.createLineBorder(getGridColor(), 2));
       }
     
       /**
-       * Scroll the table, making the given rectangle of this component
-       * visible. Mind the component position with relate to the table. 
        * With not this method overridden, the scroll pane scrolls to the
        * top left cornec (untranslated position of the caret) after the first
-       * keystroke.
+       * keystroke. 
        */
       public void scrollRectToVisible(Rectangle r)
       {
-        // In private class we known that the rectangle data will not be
-        // reused and we need not to clone it.
-        r.translate(getX(), getY());
-        super.scrollRectToVisible(r);
+        // Do nothing here. If the editing session starts outside the visible
+        // bounds, the editCellAt will scroll.
       }
     }    
   
@@ -1316,7 +1329,6 @@ public class JTable
    * in the table) to provide or absorb excess space requirements.
    */
   public static final int AUTO_RESIZE_LAST_COLUMN = 3;
-
 
   /**
    * A table mapping {@link java.lang.Class} objects to 
@@ -1567,6 +1579,15 @@ public class JTable
   private Rectangle rectCache = new Rectangle();
 
   /**
+   * Indicates if the rowHeight property has been set by a client program or by
+   * the UI.
+   *
+   * @see #setUIProperty(String, Object)
+   * @see LookAndFeel#installProperty(JComponent, String, Object)
+   */
+  private boolean clientRowHeightSet = false;
+
+  /**
    * Creates a new <code>JTable</code> instance.
    */
   public JTable ()
@@ -1643,13 +1664,22 @@ public class JTable
   public JTable (TableModel dm, TableColumnModel cm, ListSelectionModel sm)
   {
     boolean autoCreate = false;
+    TableColumnModel columnModel;
     if (cm != null)
-        setColumnModel(cm);
+        columnModel = cm;
     else 
       {
-        setColumnModel(createDefaultColumnModel());
+        columnModel = createDefaultColumnModel();
         autoCreate = true;
-      }        
+      }
+    
+    // Initialise the intercelar spacing before setting the column model to
+    // avoid firing unnecessary events.
+    // The initial incellar spacing is new Dimenstion(1,1). 
+    rowMargin = 1;
+    columnModel.setColumnMargin(1);
+    setColumnModel(columnModel);
+    
     setSelectionModel(sm == null ? createDefaultSelectionModel() : sm);
     setModel(dm == null ? createDefaultDataModel() : dm);
     setAutoCreateColumnsFromModel(autoCreate);
@@ -1709,7 +1739,6 @@ public class JTable
     this.showVerticalLines = true;
     this.editingColumn = -1;
     this.editingRow = -1;
-    setIntercellSpacing(new Dimension(1,1));
   }
   
   /**
@@ -1856,13 +1885,38 @@ public class JTable
   }
   
   /**
-   * Invoked when the the column selection changes.
+   * Invoked when the the column selection changes, repaints the changed
+   * columns. It is not recommended to override this method, register the
+   * listener instead.
    */
   public void columnSelectionChanged (ListSelectionEvent event)
   {
-    repaint();
+    // Does not make sense for the table with the single column.
+    if (getColumnCount() < 2)
+      return;
+    
+    int x0 = 0;
+    
+    // We must limit the indices to the bounds of the JTable's model, because
+    // we might get values of -1 or greater then columnCount in the case
+    // when columns get removed.
+    int idx0 = Math.max(0, Math.min(getColumnCount() - 1,
+                                    event.getFirstIndex()));
+    int idxn = Math.max(0, Math.min(getColumnCount() - 1,
+                                    event.getLastIndex()));
+    int i;
+
+    for (i = 0; i < idx0; i++)
+      x0 += columnModel.getColumn(i).getWidth();
+    
+    int xn = x0;
+    
+    for (i = idx0; i <= idxn; i++)
+      xn += columnModel.getColumn(i).getWidth();
+    
+    repaint(x0, 0, xn-x0, getHeight());
   }
-  
+ 
   /**
    * Invoked when the editing is cancelled.
    */
@@ -1910,9 +1964,33 @@ public class JTable
     // affect the size parameters of the JTable. Otherwise we only need
     // to perform a repaint to update the view.
     if (event == null || event.getType() == TableModelEvent.INSERT)
-      revalidate();
+      {
+        // Sync selection model with data model.
+        if (event != null)
+          {
+            int first = event.getFirstRow();
+            if (first < 0)
+              first = 0;
+            int last = event.getLastRow();
+            if (last < 0)
+              last = getRowCount() - 1;
+            selectionModel.insertIndexInterval(first, last - first + 1, true);
+          }
+        revalidate();
+      }
     if (event == null || event.getType() == TableModelEvent.DELETE)
       {
+        // Sync selection model with data model.
+        if (event != null)
+          {
+            int first = event.getFirstRow();
+            if (first < 0)
+              first = 0;
+            int last = event.getLastRow();
+            if (last < 0)
+              last = getRowCount() - 1;
+            selectionModel.removeIndexInterval(first, last);
+          }
         if (dataModel.getRowCount() == 0)
           clearSelection();
         revalidate();
@@ -1921,11 +1999,19 @@ public class JTable
   }
 
   /**
-   * Invoked when another table row is selected.
+   * Invoked when another table row is selected. It is not recommended
+   * to override thid method, register the listener instead.
    */
   public void valueChanged (ListSelectionEvent event)
   {
-    repaint();
+    // Does not make sense for the table with the single row.
+    if (getRowCount() < 2)
+      return;
+    
+    int y_gap = rowMargin;
+    int y0 = (getRowHeight() + y_gap) * (event.getFirstIndex());
+    int yn = (getRowHeight() + y_gap) * (event.getLastIndex()+1);
+    repaint(0, y0, getWidth(), yn-y0);
   }
 
  /**
@@ -1938,21 +2024,18 @@ public class JTable
    */
   public int columnAtPoint(Point point)
   {
-    if (point != null)
-      {
-        int ncols = getColumnCount();
-        Dimension gap = getIntercellSpacing();
-        TableColumnModel cols = getColumnModel();
-        int x = point.x;
+    int ncols = getColumnCount();
+    Dimension gap = getIntercellSpacing();
+    TableColumnModel cols = getColumnModel();
+    int x = point.x;
 
-        for (int i = 0; i < ncols; ++i)
-          {
-            int width = cols.getColumn(i).getWidth()
-                        + (gap == null ? 0 : gap.width);
-            if (0 <= x && x < width)
-              return i;
-            x -= width;
-          }
+    for (int i = 0; i < ncols; ++i)
+      {
+        int width = cols.getColumn(i).getWidth()
+                    + (gap == null ? 0 : gap.width);
+        if (0 <= x && x < width)
+          return i;
+        x -= width;
       }
     return -1;
   }
@@ -1961,8 +2044,7 @@ public class JTable
    * Returns index of the row that contains specified point or -1 if this table
    * doesn't contain this point.
    * 
-   * @param point
-   *          point to identify the row
+   * @param point point to identify the row
    * @return index of the row that contains specified point or -1 if this table
    *         doesn't contain this point.
    */
@@ -2004,9 +2086,6 @@ public class JTable
                                int column,
                                boolean includeSpacing)
   {
-    // moveToCellBeingEdited expects the cached value and clones it.
-    // If the caching would be removed later, uplate moveToCellBeingEdited
-    // as well.
     int height = getRowHeight(row);
     int width = columnModel.getColumn(column).getWidth();
     int x_gap = columnModel.getColumnMargin();
@@ -2020,12 +2099,14 @@ public class JTable
 
     for (int i = 0; i < column; ++i)
       x += columnModel.getColumn(i).getWidth();
+    
+    Rectangle rect = new Rectangle();
 
     if (includeSpacing)
-      rectCache.setBounds(x, y, width, height +y_gap);
+      rect.setBounds(x, y, width, height +y_gap);
     else
-      rectCache.setBounds(x, y, width - x_gap, height);
-    return rectCache;
+      rect.setBounds(x, y, width - x_gap, height);
+    return rect;
   }
 
   public void clearSelection()
@@ -2088,25 +2169,38 @@ public class JTable
     else
       return true;
   }
-
-  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction)
+  
+  /**
+   * Return the preferred scrolling amount (in pixels) for the given scrolling
+   * direction and orientation. This method handles a partially exposed row by
+   * returning the distance required to completely expose the item. When
+   * scrolling the top item is completely exposed.
+   * 
+   * @param visibleRect the currently visible part of the component.
+   * @param orientation the scrolling orientation
+   * @param direction the scrolling direction (negative - up, positive -down).
+   *          The values greater than one means that more mouse wheel or similar
+   *          events were generated, and hence it is better to scroll the longer
+   *          distance.
+   * @author Audrius Meskauskas (audriusa@bioinformatics.org)
+   */
+  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation,
+                                        int direction)
   {
-    // FIXME: I don't exactly know what sun does here. in both cases they
-    // pick values which do *not* simply expose the next cell in a given
-    // scroll direction.
+    int h = (rowHeight + rowMargin);
+    int delta = h * direction;
 
+    // Round so that the top would start from the row boundary
     if (orientation == SwingConstants.VERTICAL)
-      return direction * rowHeight;
-    else
       {
-        int sum = 0;
-        for (int i = 0; i < getColumnCount(); ++i)
-          sum += columnModel.getColumn(0).getWidth();
-        int inc = getColumnCount() == 0 ? 10 : sum / getColumnCount();
-        return direction * inc;
+        // Completely expose the top row
+        int near = ((visibleRect.y + delta + h / 2) / h) * h;
+        int diff = visibleRect.y + delta - near;
+        delta -= diff;
       }
+    return delta;
+    // TODO when scrollng horizontally, scroll into the column boundary.
   }
-
 
   /**
    * Get the cell editor, suitable for editing the given cell. The default
@@ -2372,7 +2466,7 @@ public class JTable
 
   /**
    * Get the value of the <code>columnCount</code> property by
-   * delegation to the @{link #columnModel} field.
+   * delegation to the {@link #columnModel} field.
    *
    * @return The current value of the columnCount property
    */
@@ -2383,7 +2477,7 @@ public class JTable
 
   /**
    * Get the value of the <code>rowCount</code> property by
-   * delegation to the @{link #dataModel} field.
+   * delegation to the {@link #dataModel} field.
    *
    * @return The current value of the rowCount property
    */
@@ -2404,7 +2498,7 @@ public class JTable
 
   /**
    * Get the value of the <code>selectedColumn</code> property by
-   * delegation to the @{link #columnModel} field.
+   * delegation to the {@link #columnModel} field.
    *
    * @return The current value of the selectedColumn property
    */
@@ -2473,7 +2567,7 @@ public class JTable
 
   /**
    * Get the value of the <code>selectedColumnCount</code> property by
-   * delegation to the @{link #columnModel} field.
+   * delegation to the {@link #columnModel} field.
    *
    * @return The current value of the selectedColumnCount property
    */  
@@ -2484,7 +2578,7 @@ public class JTable
 
   /**
    * Get the value of the <code>selectedColumns</code> property by
-   * delegation to the @{link #columnModel} field.
+   * delegation to the {@link #columnModel} field.
    *
    * @return The current value of the selectedColumns property
    */
@@ -2505,7 +2599,7 @@ public class JTable
 
   /**
    * Get the value of the <code>selectedRowCount</code> property by
-   * delegation to the @{link #selectionModel} field.
+   * delegation to the {@link #selectionModel} field.
    *
    * @return The current value of the selectedRowCount property
    */
@@ -2516,7 +2610,7 @@ public class JTable
 
   /**
    * Get the value of the <code>selectedRows</code> property by
-   * delegation to the @{link #selectionModel} field.
+   * delegation to the {@link #selectionModel} field.
    *
    * @return The current value of the selectedRows property
    */
@@ -2694,7 +2788,9 @@ public class JTable
   {
     if (r < 1)
       throw new IllegalArgumentException();
-    
+
+    clientRowHeightSet = true;
+
     rowHeight = r;
     revalidate();
     repaint();
@@ -3260,8 +3356,6 @@ public class JTable
   public void updateUI()
   {
     setUI((TableUI) UIManager.getUI(this));
-    revalidate();
-    repaint();
   }
   
   /**
@@ -3501,8 +3595,7 @@ public class JTable
   }
   
   /**
-   * Set value for the cell at the given position. If the cell is not 
-   * editable, this method returns without action. The modified cell is
+   * Set value for the cell at the given position. The modified cell is
    * repainted.
    * 
    * @param value the value to set
@@ -3511,8 +3604,6 @@ public class JTable
    */
   public void setValueAt(Object value, int row, int column)
   {
-    if (!isCellEditable(row, column))
-      return;
     dataModel.setValueAt(value, row, convertColumnIndexToModel(column));
     
     repaint(getCellRect(row, column, true));
@@ -3660,18 +3751,14 @@ public class JTable
   private void moveToCellBeingEdited(Component component)
   {
      Rectangle r = getCellRect(editingRow, editingColumn, true);
-     // Place the text field so that it would not touch the table
-     // border.
-     
-     // TODO Figure out while 5 and which constant should here be.
-     int xOffset = 5;
-     r.x+=xOffset;
-     r.y++;
-     r.width -=xOffset;
-     r.height --;
-     
-     // Clone rectangle as getCellRect returns the cached value.
-     component.setBounds(new Rectangle(r));
+     // Adjust bounding box of the editing component, so that it lies
+     // 'above' the grid on all edges, not only right and bottom.
+     // The table grid is painted only at the right and bottom edge of a cell.
+     r.x -= 1;
+     r.y -= 1;
+     r.width += 1;
+     r.height += 1;
+     component.setBounds(r);
   }
 
   /**
@@ -3748,5 +3835,35 @@ public class JTable
   {
     // TODO: Implement functionality of this property (in UI impl).
     return surrendersFocusOnKeystroke;
+  }
+
+  /**
+   * Helper method for
+   * {@link LookAndFeel#installProperty(JComponent, String, Object)}.
+   * 
+   * @param propertyName the name of the property
+   * @param value the value of the property
+   *
+   * @throws IllegalArgumentException if the specified property cannot be set
+   *         by this method
+   * @throws ClassCastException if the property value does not match the
+   *         property type
+   * @throws NullPointerException if <code>c</code> or
+   *         <code>propertyValue</code> is <code>null</code>
+   */
+  void setUIProperty(String propertyName, Object value)
+  {
+    if (propertyName.equals("rowHeight"))
+      {
+        if (! clientRowHeightSet)
+          {
+            setRowHeight(((Integer) value).intValue());
+            clientRowHeightSet = false;
+          }
+      }
+    else
+      {
+        super.setUIProperty(propertyName, value);
+      }
   }
 }

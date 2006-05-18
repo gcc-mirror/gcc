@@ -1,5 +1,5 @@
 /* Demo.java -- Shows examples of AWT components
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath examples.
 
@@ -153,7 +153,8 @@ class Demo
       addSubWindow ("TextField", new TextFieldWindow ());
       addSubWindow ("RandomTests", new TestWindow (this));
       addSubWindow ("RoundRect", new RoundRectWindow ());
-      
+      addSubWindow ("Animation", new AnimationWindow ());
+
       Panel sp = new Panel();
       PrettyPanel p = new PrettyPanel();
       p.setLayout (new GridLayout (windows.size(), 1));
@@ -864,4 +865,35 @@ class Demo
     }
   }
 
+  static class AnimationWindow extends SubFrame
+  {
+    AnimationApplet a;
+    public void init ()
+    {
+      initted = true;
+      setTitle("Animation");
+      Button cb = new Button ("Close");
+      cb.addActionListener(new ActionListener () {
+          public void actionPerformed (ActionEvent e) 
+          {
+            if (a != null)
+              {
+                a.destroy();
+                dispose();
+              }
+          }
+        });
+      a = new AnimationApplet();
+      add(a, "Center");
+      add(cb, "South");
+      pack();
+    }
+
+    public void show()
+    {
+      super.show();
+      a.init();
+      a.run();
+    }
+  }
 }

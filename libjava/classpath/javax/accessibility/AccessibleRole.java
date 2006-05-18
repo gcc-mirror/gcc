@@ -467,6 +467,56 @@ public class AccessibleRole extends AccessibleBundle
     = new AccessibleRole("groupbox");
 
   /**
+   * A formula for creating a value.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleRole EDITBAR
+    = new AccessibleRole("editbar");
+
+  /**
+   * A text-based footer.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleRole FOOTER
+    = new AccessibleRole("footer");
+
+  /**
+   * A text-based header.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleRole HEADER
+    = new AccessibleRole("header");
+
+
+  /**
+   * A text-based paragraph.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleRole PARAGRAPH
+    = new AccessibleRole("paragraph");
+
+  /**
+   * Represents the current level of progress on a particular task.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleRole PROGRESS_MONITOR
+    = new AccessibleRole("progress monitor");
+
+  /**
+   * A ruler is a method of measuring the distance between two
+   * points.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleRole RULER
+    = new AccessibleRole("ruler");
+
+  /**
    * Create a new constant with a locale independent key. Follow the example,
    * keep the constructor private and make public constants instead.
    *

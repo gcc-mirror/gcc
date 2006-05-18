@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -58,6 +60,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
   }
 
   public void draw (Graphics2D graphics, float x, float y)
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
@@ -78,11 +81,13 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
   }
 
   public float getAdvance ()
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
 
   public float getAscent ()
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }
@@ -93,6 +98,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
   }
 
   public float getDescent ()
+    throws NotImplementedException
   {
     throw new Error ("not implemented");
   }

@@ -46,7 +46,7 @@ import java.util.Set;
  *
  * <p>Concrete subclasses can be passed to the {@link
  * PKIXParameters#setCertPathCheckers(java.util.List)} and {@link
- * PKIXParameters#addCertPathChecker(java.security.cert.PKIXCertPathChecker}
+ * PKIXParameters#addCertPathChecker(java.security.cert.PKIXCertPathChecker)}
  * methods, which are then used to set up PKIX certificate chain
  * builders or validators. These classes then call the {@link
  * #check(java.security.cert.Certificate,java.util.Collection)} method

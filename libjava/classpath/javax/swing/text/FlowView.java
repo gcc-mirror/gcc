@@ -433,7 +433,7 @@ public abstract class FlowView extends BoxView
   /**
    * Loads the children of this view. The <code>FlowView</code> does not
    * directly load its children. Instead it creates a logical view
-   * (@{link #layoutPool}) which is filled by the logical child views.
+   * ({@link #layoutPool}) which is filled by the logical child views.
    * The real children are created at layout time and each represent one
    * row.
    *

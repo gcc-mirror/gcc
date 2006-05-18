@@ -69,7 +69,7 @@ public class SysexMessage extends MidiMessage
    * Create a SysexMessage object.
    * @param data a complete system exclusive message
    */
-  public SysexMessage(byte[] data)
+  protected SysexMessage(byte[] data)
   {
     super(data);   
   }

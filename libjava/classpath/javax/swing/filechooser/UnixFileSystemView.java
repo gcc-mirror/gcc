@@ -37,8 +37,11 @@ exception statement from your version. */
 
 package javax.swing.filechooser;
 
+import gnu.classpath.NotImplementedException;
+
 import java.io.File;
 import java.io.IOException;
+
 import javax.swing.Icon;
 
 
@@ -110,6 +113,7 @@ class UnixFileSystemView extends FileSystemView
    * @return <code>null</code>.
    */
   public String getSystemDisplayName(File f)
+    throws NotImplementedException
   {
     // FIXME: Implement;
     return null;
@@ -124,6 +128,7 @@ class UnixFileSystemView extends FileSystemView
    * @return <code>null</code>.
    */
   public Icon getSystemIcon(File f)
+    throws NotImplementedException
   {
     // FIXME: Implement;
     return null;
@@ -138,6 +143,7 @@ class UnixFileSystemView extends FileSystemView
    * @return <code>null</code>.
    */
   public String getSystemTypeDescription(File f)
+    throws NotImplementedException
   {
     // FIXME: Implement.
     return null;

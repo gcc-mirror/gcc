@@ -11,4 +11,4 @@ EXTRA_DIST = README.jaxp
 %.ps : %.dvi
 	dvips -o $@ $<
 
-docs: hacking.ps vmintegration.ps
+docs: hacking.ps vmintegration.ps tools.ps

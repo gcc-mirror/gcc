@@ -49,8 +49,6 @@ import java.util.Set;
 
 /**
  * <p>A Factory to instantiate asymmetric keypair generators.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class KeyPairGeneratorFactory
 {
@@ -87,7 +85,7 @@ public class KeyPairGeneratorFactory
     name = name.trim();
     IKeyPairGenerator result = null;
     if (name.equalsIgnoreCase(Registry.DSA_KPG)
-        || name.equals(Registry.DSS_KPG))
+        || name.equalsIgnoreCase(Registry.DSS_KPG))
       {
         result = new DSSKeyPairGenerator();
       }
@@ -118,6 +116,7 @@ public class KeyPairGeneratorFactory
   {
     HashSet hs = new HashSet();
     hs.add(Registry.DSS_KPG);
+    hs.add(Registry.DSA_KPG);
     hs.add(Registry.RSA_KPG);
     hs.add(Registry.DH_KPG);
     hs.add(Registry.SRP_KPG);
@@ -135,11 +134,9 @@ public class KeyPairGeneratorFactory
       }
     catch (Exception x)
       {
-        IllegalArgumentException iae =
-          new IllegalArgumentException ("strong crypto key pair generator not available: "
-                                        + clazz);
-        iae.initCause (x);
-        throw iae;
+        throw new IllegalArgumentException(
+            "strong crypto key pair generator not available: " + clazz,
+            x);
       }
   }
 

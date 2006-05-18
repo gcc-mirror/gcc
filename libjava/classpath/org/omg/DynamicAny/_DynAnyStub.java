@@ -1,5 +1,5 @@
 /* _DynAnyStub.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,15 +38,14 @@ exception statement from your version. */
 
 package org.omg.DynamicAny;
 
+import java.io.Serializable;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.portable.Delegate;
 import org.omg.CORBA.portable.ObjectImpl;
 import org.omg.DynamicAny.DynAnyPackage.InvalidValue;
 import org.omg.DynamicAny.DynAnyPackage.TypeMismatch;
-
-import java.io.Serializable;
 
 /**
  * Should provide support for remote invocation of methods on DynAny. As
@@ -74,14 +73,6 @@ public class _DynAnyStub
    */
   public _DynAnyStub()
   {
-  }
-
-  /**
-   * Create the naming context stub with the given delegate.
-   */
-  public _DynAnyStub(Delegate delegate)
-  {
-    _set_delegate(delegate);
   }
 
   /**

@@ -45,8 +45,6 @@ import gnu.java.security.Registry;
  * cryptographic signatures. Codecs are useful for (a) externalising signature
  * output data for storage and on-the-wire transmission, as well as (b) re-
  * creating their internal Java representation from external sources.</p>
- *
- * @version $Revision: 1.1 $
  */
 public interface ISignatureCodec
 {

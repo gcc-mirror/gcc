@@ -111,7 +111,7 @@ private transient ActionListener action_listeners;
     private static final long serialVersionUID = -217847831945965825L;
 
     /** Constructor */
-    public AccessibleAWTMenuItem()
+    protected AccessibleAWTMenuItem()
     {
       super();
     }

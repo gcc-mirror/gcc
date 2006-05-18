@@ -31,22 +31,22 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.metal.MetalIconFactory;
 
 /**
  * A simple button demo showing various buttons in different states.
  */
 public class ButtonDemo 
-  extends JFrame 
+  extends JPanel 
   implements ActionListener 
 {
- 
-  private JPanel content;
 
   private JCheckBox buttonState;  
   private JButton button1;
@@ -72,13 +72,10 @@ public class ButtonDemo
 
   /**
    * Creates a new demo instance.
-   * 
-   * @param title  the frame title.
    */
-  public ButtonDemo(String title) 
+  public ButtonDemo() 
   {
-    super(title);
-    JPanel content = createContent();
+    createContent();
     // initFrameContent() is only called (from main) when running this app 
     // standalone
   }
@@ -90,15 +87,14 @@ public class ButtonDemo
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  public void initFrameContent() 
+  void initFrameContent()
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
     closeButton.addActionListener(this);
     closePanel.add(closeButton);
-    content.add(closePanel, BorderLayout.SOUTH);
-    getContentPane().add(content);
+    add(closePanel, BorderLayout.SOUTH);
   }
 
   /**
@@ -108,19 +104,15 @@ public class ButtonDemo
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
    */       
-  JPanel createContent() 
+  private void createContent()
   {
-    if (content == null)
-      {
-        content = new JPanel(new BorderLayout());
-        JPanel panel = new JPanel(new GridLayout(4, 1));
-        panel.add(createButtonPanel());
-        panel.add(createTogglePanel());
-        panel.add(createCheckBoxPanel());
-        panel.add(createRadioPanel());
-        content.add(panel);
-      }
-    return content;        
+    setLayout(new BorderLayout());
+    JPanel panel = new JPanel(new GridLayout(4, 1));
+    panel.add(createButtonPanel());
+    panel.add(createTogglePanel());
+    panel.add(createCheckBoxPanel());
+    panel.add(createRadioPanel());
+    add(panel);
   }
     
   private JPanel createButtonPanel() 
@@ -294,10 +286,34 @@ public class ButtonDemo
 
   public static void main(String[] args) 
   {
-    ButtonDemo app = new ButtonDemo("Button Demo");
-    app.initFrameContent();
-    app.pack();
-    app.setVisible(true);
+    SwingUtilities.invokeLater
+    (new Runnable()
+     {
+       public void run()
+       {
+         ButtonDemo app = new ButtonDemo();
+         app.initFrameContent();
+         JFrame frame = new JFrame("ButtonDemo");
+         frame.getContentPane().add(app);
+         frame.pack();
+         frame.setVisible(true);
+       }
+     });
   }
 
+  /**
+   * Returns a DemoFactory that creates a ButtonDemo.
+   *
+   * @return a DemoFactory that creates a ButtonDemo
+   */
+  public static DemoFactory createDemoFactory()
+  {
+    return new DemoFactory()
+    {
+      public JComponent createDemo()
+      {
+        return new ButtonDemo();
+      }
+    };
+  }
 }

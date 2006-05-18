@@ -614,16 +614,27 @@ public class Frame extends Window implements MenuContainer
     return next_frame_number++;
   }
   
+  /**
+   * Accessibility support for <code>Frame</code>.
+   */
   protected class AccessibleAWTFrame extends AccessibleAWTWindow
   {
     private static final long serialVersionUID = -6172960752956030250L;
 
+    /**
+     * Gets the role of this object.
+     * @return AccessibleRole.FRAME
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.FRAME;
     }
     
-    public AccessibleStateSet getAccessibleState()
+    /**
+     * Gets the state set of this object.
+     * @return The current state of this frame.
+     */
+    public AccessibleStateSet getAccessibleStateSet()
     {
       AccessibleStateSet states = super.getAccessibleStateSet();
       if (isResizable())

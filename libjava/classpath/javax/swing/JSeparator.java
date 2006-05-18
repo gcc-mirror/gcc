@@ -37,11 +37,12 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.beans.PropertyChangeEvent;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.plaf.SeparatorUI;
-
 
 /**
  * The JSeparator. It is mostly used to divide/space out
@@ -51,14 +52,15 @@ public class JSeparator extends JComponent implements SwingConstants,
                                                       Accessible
 {
   /**
-   * AccessibleJSeparator
+   * Provides the accessibility features for the <code>JSeparator</code>
+   * component.
    */
   protected class AccessibleJSeparator extends AccessibleJComponent
   {
     private static final long serialVersionUID = 916332890553201095L;
   
     /**
-     * Constructor AccessibleJSeparator
+     * Creates a new <code>AccessibleJSeparator</code> instance.
      */
     protected AccessibleJSeparator()
     {
@@ -66,9 +68,9 @@ public class JSeparator extends JComponent implements SwingConstants,
     }
 
     /**
-     * getAccessibleRole
+     * Returns the accessible role for the <code>JSeparator</code> component.
      *
-     * @return AccessibleRole
+     * @return {@link AccessibleRole#SEPARATOR}.
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -82,7 +84,7 @@ public class JSeparator extends JComponent implements SwingConstants,
   private transient int orientation = HORIZONTAL;
 
   /**
-   * Creates a new horizontal JSeparator object.
+   * Creates a new horizontal <code>JSeparator</code> object.
    */
   public JSeparator()
   {
@@ -90,9 +92,13 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * Creates a new JSeparator object with the given orientation.
+   * Creates a new <code>JSeparator</code> object with the given orientation.
    *
-   * @param orientation The orientation of the JSeparator.
+   * @param orientation  the orientation (either {@link #HORIZONTAL} or 
+   *     {@link #VERTICAL}).
+   *     
+   * @throws IllegalArgumentException if <code>orientation</code> is not
+   *     one of the specified values.
    */
   public JSeparator(int orientation)
   {
@@ -104,10 +110,9 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * This method returns the UI delegate being
-   * used with the JSeparator.
+   * Returns the UI delegate being used with the <code>JSeparator</code>.
    *
-   * @return SeparatorUI The JSeparator's UI delegate.
+   * @return The JSeparator's UI delegate.
    */
   public SeparatorUI getUI()
   {
@@ -115,10 +120,9 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * This method sets the UI delegate to use
-   * with the JSeparator.
+   * Sets the separator's UI delegate.
    *
-   * @param ui The UI delegate to use.
+   * @param ui  the UI delegate.
    */
   public void setUI(SeparatorUI ui)
   {
@@ -126,8 +130,8 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * This method resets the UI delegate to the 
-   * default for the current look and feel.
+   * Sets this separator's UI delegate to the default (obtained from the
+   * {@link UIManager}) for the current look and feel.
    */
   public void updateUI()
   {
@@ -135,11 +139,11 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * This method returns the identifier string
-   * that is used to determine the UI delegate
-   * from the current look and feel.
+   * Returns the suffix (<code>"SeparatorUI"</code> in this case) used to 
+   * determine the class name for a UI delegate that can provide the look and 
+   * feel for a <code>JSeparator</code>.
    *
-   * @return String The identifier string for the UI.
+   * @return <code>"SeparatorUI"</code>.
    */
   public String getUIClassID()
   {
@@ -147,9 +151,11 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * This method returns the JSeparator's orientation.
+   * Returns the orientation of the <code>JSeparator</code>.
    *
-   * @return int The JSeparator's orientation.
+   * @return The orientation (one of {@link #HORIZONTAL} and {@link #VERTICAL}).
+   * 
+   * @see #setOrientation(int)
    */
   public int getOrientation()
   {
@@ -157,33 +163,50 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * This method changes the JSeparator's orientation.
+   * Sets the orientation for the <code>JSeparator</code> and sends a 
+   * {@link PropertyChangeEvent} (with the property name 
+   * <code>orientation</code>) to all registered listeners.
    *
-   * @param orientation The JSeparator's orientation.
+   * @param orientation  the orientation (either {@link #HORIZONTAL} or 
+   *     {@link #VERTICAL}).
+   *     
+   * @throws IllegalArgumentException if <code>orientation</code> is not
+   *     one of the specified values.
+   *     
+   * @see #getOrientation()
    */
   public void setOrientation(int orientation)
   {
     if (orientation != HORIZONTAL && orientation != VERTICAL)
       throw new IllegalArgumentException(orientation
                                          + " is not a valid orientation.");
+    int old = this.orientation;
     this.orientation = orientation;
+    firePropertyChange("orientation", old, orientation);
   }
 
   /**
-   * This method returns a string desribing the JSeparator.
-   * Normally only used in debugging.
+   * Returns an implementation-dependent string describing the attributes of
+   * this <code>JSeparator</code>.
    *
-   * @return String A string describing the JSeparator.
+   * @return A string describing the attributes of this <code>JSeparator</code>
+   *         (never <code>null</code>).
    */
   protected String paramString()
   {
-    return "JSeparator";
+    String superParamStr = super.paramString();
+    if (orientation == HORIZONTAL)
+      return superParamStr + ",orientation=HORIZONTAL";
+    else
+      return superParamStr + ",orientation=VERTICAL";
   }
 
   /**
-   * getAccessibleContext
+   * Returns the object that provides accessibility features for this
+   * <code>JSeparator</code> component.
    *
-   * @return AccessibleContext
+   * @return The accessible context (an instance of 
+   *     {@link AccessibleJSeparator}).
    */
   public AccessibleContext getAccessibleContext()
   {

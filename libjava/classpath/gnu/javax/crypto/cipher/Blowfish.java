@@ -688,7 +688,7 @@ public class Blowfish extends BaseCipher
           {
             result = testKat(TV_KEY, TV_CT);
           }
-        valid = new Boolean(result);
+        valid = Boolean.valueOf(result);
       }
     return valid.booleanValue();
   }

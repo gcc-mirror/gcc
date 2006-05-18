@@ -948,4 +948,105 @@ public final class Math
     return VMMath.tanh(a);
   }
 
+  /**
+   * Return the ulp for the given double argument.  The ulp is the
+   * difference between the argument and the next larger double.  Note
+   * that the sign of the double argument is ignored, that is,
+   * ulp(x) == ulp(-x).  If the argument is a NaN, then NaN is returned.
+   * If the argument is an infinity, then +Inf is returned.  If the
+   * argument is zero (either positive or negative), then
+   * {@link Double#MIN_VALUE} is returned.
+   * @param d the double whose ulp should be returned
+   * @return the difference between the argument and the next larger double
+   * @since 1.5
+   */
+  public static double ulp(double d)
+  {
+    if (Double.isNaN(d))
+      return d;
+    if (Double.isInfinite(d))
+      return Double.POSITIVE_INFINITY;
+    // This handles both +0.0 and -0.0.
+    if (d == 0.0)
+      return Double.MIN_VALUE;
+    long bits = Double.doubleToLongBits(d);
+    final int mantissaBits = 52;
+    final int exponentBits = 11;
+    final long mantMask = (1L << mantissaBits) - 1;
+    long mantissa = bits & mantMask;
+    final long expMask = (1L << exponentBits) - 1;
+    long exponent = (bits >>> mantissaBits) & expMask;
+
+    // Denormal number, so the answer is easy.
+    if (exponent == 0)
+      {
+        long result = (exponent << mantissaBits) | 1L;
+        return Double.longBitsToDouble(result);
+      }
+
+    // Conceptually we want to have '1' as the mantissa.  Then we would
+    // shift the mantissa over to make a normal number.  If this underflows
+    // the exponent, we will make a denormal result.
+    long newExponent = exponent - mantissaBits;
+    long newMantissa;
+    if (newExponent > 0)
+      newMantissa = 0;
+    else
+      {
+        newMantissa = 1L << -(newExponent - 1);
+        newExponent = 0;
+      }
+    return Double.longBitsToDouble((newExponent << mantissaBits) | newMantissa);
+  }
+
+  /**
+   * Return the ulp for the given float argument.  The ulp is the
+   * difference between the argument and the next larger float.  Note
+   * that the sign of the float argument is ignored, that is,
+   * ulp(x) == ulp(-x).  If the argument is a NaN, then NaN is returned.
+   * If the argument is an infinity, then +Inf is returned.  If the
+   * argument is zero (either positive or negative), then
+   * {@link Float#MIN_VALUE} is returned.
+   * @param f the float whose ulp should be returned
+   * @return the difference between the argument and the next larger float
+   * @since 1.5
+   */
+  public static float ulp(float f)
+  {
+    if (Float.isNaN(f))
+      return f;
+    if (Float.isInfinite(f))
+      return Float.POSITIVE_INFINITY;
+    // This handles both +0.0 and -0.0.
+    if (f == 0.0)
+      return Float.MIN_VALUE;
+    int bits = Float.floatToIntBits(f);
+    final int mantissaBits = 23;
+    final int exponentBits = 8;
+    final int mantMask = (1 << mantissaBits) - 1;
+    int mantissa = bits & mantMask;
+    final int expMask = (1 << exponentBits) - 1;
+    int exponent = (bits >>> mantissaBits) & expMask;
+
+    // Denormal number, so the answer is easy.
+    if (exponent == 0)
+      {
+        int result = (exponent << mantissaBits) | 1;
+        return Float.intBitsToFloat(result);
+      }
+
+    // Conceptually we want to have '1' as the mantissa.  Then we would
+    // shift the mantissa over to make a normal number.  If this underflows
+    // the exponent, we will make a denormal result.
+    int newExponent = exponent - mantissaBits;
+    int newMantissa;
+    if (newExponent > 0)
+      newMantissa = 0;
+    else
+      {
+        newMantissa = 1 << -(newExponent - 1);
+        newExponent = 0;
+      }
+    return Float.intBitsToFloat((newExponent << mantissaBits) | newMantissa);
+  }
 }

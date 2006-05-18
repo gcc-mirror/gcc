@@ -157,7 +157,8 @@ public class ConsoleCallbackHandler extends AbstractCallbackHandler
   {
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     if (c.getPrompt() != null)
-      out.println(c.getPrompt());
+      out.print(c.getPrompt());
+
     String[] choices = null;
     int[] values = null;
     switch (c.getOptionType())
@@ -175,6 +176,7 @@ public class ConsoleCallbackHandler extends AbstractCallbackHandler
           ConfirmationCallback.OK, ConfirmationCallback.CANCEL
         };
         break;
+
       case ConfirmationCallback.YES_NO_CANCEL_OPTION:
         out.print(messages.getString("callback.yesNoCancel"));
         choices = new String[] {
@@ -191,19 +193,26 @@ public class ConsoleCallbackHandler extends AbstractCallbackHandler
           ConfirmationCallback.NO, ConfirmationCallback.CANCEL
         };
         break;
+
       case ConfirmationCallback.YES_NO_OPTION:
         out.print(messages.getString("callback.yesNo"));
-        choices = new String[] {
-          messages.getString("callback.yes"),
-          messages.getString("callback.no"),
-          messages.getString("callback.shortYes"),
-          messages.getString("callback.shortNo")
-        };
-        values = new int[] {
-          ConfirmationCallback.YES, ConfirmationCallback.NO,
-          ConfirmationCallback.YES, ConfirmationCallback.NO
-        };
+        choices = new String[] { messages.getString("callback.yes"),
+                                 messages.getString("callback.no"),
+                                 messages.getString("callback.shortYes"),
+                                 messages.getString("callback.shortNo") };
+        values = new int[] { ConfirmationCallback.YES,
+                             ConfirmationCallback.NO,
+                             ConfirmationCallback.YES,
+                             ConfirmationCallback.NO };
+        int defaultOption = c.getDefaultOption();
+        if (defaultOption > -1 && defaultOption < choices.length)
+          {
+            out.print("[");
+            out.print(choices[defaultOption]);
+            out.print("] ");
+          }
         break;
+
       case ConfirmationCallback.UNSPECIFIED_OPTION:
         choices = c.getOptions();
         values = new int[choices.length];
@@ -220,6 +229,7 @@ public class ConsoleCallbackHandler extends AbstractCallbackHandler
         out.print(choices[c.getDefaultOption()]);
         out.print("] ");
         break;
+
       default:
         throw new IllegalArgumentException();
       }
@@ -242,7 +252,7 @@ public class ConsoleCallbackHandler extends AbstractCallbackHandler
   protected void handleLanguage(LanguageCallback c) throws IOException
   {
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    out.println(messages.getString("callback.language"));
+    out.print(messages.getString("callback.language"));
     String reply = null;
     reply = in.readLine();
     if (reply == null)

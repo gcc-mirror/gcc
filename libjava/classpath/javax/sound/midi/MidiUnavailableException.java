@@ -66,25 +66,4 @@ public class MidiUnavailableException extends Exception
   {
     super(s);
   }
-
-  /**
-   * Create an MidiUnavailableException object.
-   * 
-   * @param s the exception message string
-   * @param cause the root cause of the exception
-   */
-  public MidiUnavailableException(String s, Throwable cause)
-  {
-    super(s, cause);
-  }
-
-  /**
-   * Create an MidiUnavailableException object.
-   * 
-   * @param cause the root cause of the exception
-   */
-  public MidiUnavailableException(Throwable cause)
-  {
-    super(cause);
-  }
 }

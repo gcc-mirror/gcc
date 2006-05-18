@@ -402,7 +402,11 @@ public class MouseEvent extends InputEvent
     // FIXME: need a mauve test for this method
     if (modifiersEx != 0)
       s.append(",extModifiers=").append(getModifiersExText(modifiersEx));
-    return s.append(",clickCount=").append(clickCount).toString();
+    
+    s.append(",clickCount=").append(clickCount);
+    s.append(",consumed=").append(consumed);
+    
+    return s.toString();
   }
 
   /**

@@ -1,5 +1,5 @@
 /* BoxView.java -- An composite view
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -591,9 +591,12 @@ public class BoxView
     for (int i = 0; i < count; ++i)
       {
         copy.setBounds(r);
-        childAllocation(i, r);
+        // The next call modifies copy.
+        childAllocation(i, copy);
         if (copy.contains(x, y))
           {
+            // Modify r on success.
+            r.setBounds(copy);
             result = getView(i);
             break;
           }
@@ -919,7 +922,7 @@ public class BoxView
     return super.viewToModel(x, y, a, bias);
   }
 
-  protected boolean flipEastAndWestEnds(int position, Position.Bias bias)
+  protected boolean flipEastAndWestAtEnds(int position, Position.Bias bias)
   {
     // FIXME: What to do here?
     return super.flipEastAndWestAtEnds(position, bias);

@@ -59,13 +59,13 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   private Calendar date;
   
   /** 
-   * The start or earliest permitted date (<code>null</code> for no 
-   * minimum). 
+   * A constraint on the start or earliest permitted date (<code>null</code> 
+   * for no minimum). 
    */
   private Comparable start;
 
   /** 
-   * The end or latest permitted date (<code>null</code> for no 
+   * A constraint on the end or latest permitted date (<code>null</code> for no 
    * maximum). 
    */
   private Comparable end;
@@ -77,7 +77,6 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * For compatability with Sun's JDK
-   * FIXME: Which fields should be serialized?
    */
   private static final long serialVersionUID = -4802518107105940612L;
 
@@ -92,23 +91,30 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Constructs a SpinnerDateModel which spins a given calendar field,
-   * using a given date and start and end date limits.
-   * @param value - the initial Date value
-   * @param start - start limit, as a Date object, or <code>null</code>
-   * for no lower limit.
-   * @param end - end limit, or <code>null</code> for no upper limit.
-   * @param calendarField - the <code>Calendar</code> field to spin,
-   * (Calendar.ZONE_OFFSET and Calendar.DST_OFFSET are invalid)
+   * Constructs a <code>SpinnerDateModel</code> with the specified value, lower
+   * and upper bounds, and which spins the specified calendar field. 
+   * <p>
+   * The <code>start</code> and <code>end</code> limits must have a
+   * <code>compareTo</code> method that supports instances of {@link Date}, but
+   * do not themselves need to be instances of {@link Date} (although typically
+   * they are).
+   * 
+   * @param value  the initial value/date (<code>null</code> not permitted).
+   * @param start  a constraint that specifies the earliest permitted date 
+   *     value, or <code>null</code> for no lower limit.
+   * @param end  a constraint that specifies the latest permitted date value,
+   *     or <code>null</code> for no upper limit.
+   * @param calendarField  the <code>Calendar</code> field to spin,
+   *     (Calendar.ZONE_OFFSET and Calendar.DST_OFFSET are invalid)
    */
   public SpinnerDateModel(Date value, Comparable start, Comparable end,
                           int calendarField)
   {
     if (value == null) 
       throw new IllegalArgumentException("Null 'value' argument.");
-    if (start != null && value.compareTo(start) < 0)
+    if (start != null && start.compareTo(value) > 0)
       throw new IllegalArgumentException("Require value on or after start.");
-    if (end != null && value.compareTo(end) > 0)
+    if (end != null && end.compareTo(value) < 0)
       throw new IllegalArgumentException("Require value on or before end.");
     date = Calendar.getInstance();
     date.setTime(value);
@@ -129,9 +135,11 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the current date.
+   * Returns the current date/time.
    * 
-   * @return The current date.
+   * @return The current date/time (never <code>null</code>).
+   * 
+   * @see #getValue()
    */
   public Date getDate()
   {
@@ -139,9 +147,12 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the start date, or <code>null</code> if there is no minimum date.
+   * Returns the lower limit on the date/time value, or <code>null</code> if 
+   * there is no minimum date/time.
    * 
-   * @return The start date.
+   * @return The lower limit.
+   * 
+   * @see #setStart(Comparable)
    */
   public Comparable getStart()
   {
@@ -149,9 +160,12 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the end date, or <code>null</code> if there is no maximum date.
+   * Returns the upper limit on the date/time value, or <code>null</code> if 
+   * there is no maximum date/time.
    * 
-   * @return The end date.
+   * @return The upper limit.
+   * 
+   * @see #setEnd(Comparable)
    */
   public Comparable getEnd()
   {
@@ -160,9 +174,9 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Returns the current date in the sequence (this method returns the same as 
-   * {@link #getDate()}.
+   * {@link #getDate()}).
    * 
-   * @return The current date.
+   * @return The current date (never <code>null</code>).
    */
   public Object getValue()
   {
@@ -171,10 +185,13 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Returns the next date in the sequence, or <code>null</code> if the
-   * next date is after the end date.  The current date is not changed.
+   * next date is past the upper limit (if one is specified).  The current date 
+   * is not changed.
    * 
    * @return The next date, or <code>null</code> if the current value is
    *         the latest date represented by the model.
+   *         
+   * @see #getEnd()
    */
   public Object getNextValue()
   {
@@ -190,11 +207,13 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Returns the previous date in the sequence, or <code>null</code> if the
-   * previous date is prior to the start date.  The current date is not 
-   * changed.
+   * previous date is prior to the lower limit (if one is specified).  The 
+   * current date is not changed.
    * 
    * @return The previous date, or <code>null</code> if the current value is
    *         the earliest date represented by the model.
+   *         
+   * @see #getStart()
    */
   public Object getPreviousValue()
   {
@@ -233,14 +252,16 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Sets the start date and, if the new date is different to the old date,
-   * sends a {@link ChangeEvent} to all registered listeners.  A 
-   * <code>null</code> date is interpreted as "no start date".  No check
-   * is made to ensure that the new start date is on or before the current 
-   * date - the caller is responsible for ensuring that this relationship 
-   * holds.
+   * Sets the lower limit for the date/time value and, if the new limit is 
+   * different to the old limit, sends a {@link ChangeEvent} to all registered 
+   * listeners.  A <code>null</code> value is interpreted as "no lower limit".  
+   * No check is made to ensure that the current date/time is on or after the 
+   * new lower limit - the caller is responsible for ensuring that this 
+   * relationship holds.  In addition, the caller should ensure that
+   * <code>start</code> is {@link Serializable}.
    * 
-   * @param start  the new start date (<code>null</code> permitted).
+   * @param start  the new lower limit for the date/time value 
+   *     (<code>null</code> permitted).
    */
   public void setStart(Comparable start)
   {
@@ -252,13 +273,16 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Sets the end date and, if the new date is different to the old date,
-   * sends a {@link ChangeEvent} to all registered listeners.  A 
-   * <code>null</code> date is interpreted as "no end date".  No check
-   * is made to ensure that the new end date is on or after the current date - 
-   * the caller is responsible for ensuring that this relationship holds.
+   * Sets the upper limit for the date/time value and, if the new limit is 
+   * different to the old limit, sends a {@link ChangeEvent} to all registered 
+   * listeners.  A <code>null</code> value is interpreted as "no upper limit".  
+   * No check is made to ensure that the current date/time is on or before the 
+   * new upper limit - the caller is responsible for ensuring that this 
+   * relationship holds.  In addition, the caller should ensure that
+   * <code>end</code> is {@link Serializable}.
    * 
-   * @param end  the new end date (<code>null</code> permitted).
+   * @param end  the new upper limit for the date/time value (<code>null</code>
+   *     permitted).
    */
   public void setEnd(Comparable end)
   {

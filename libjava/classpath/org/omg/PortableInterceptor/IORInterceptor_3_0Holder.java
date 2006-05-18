@@ -1,5 +1,5 @@
 /* IORInterceptor_3_0Holder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,7 @@ import org.omg.CORBA.portable.Streamable;
  * 
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class IORInterceptor_3_0Holder
+public final class IORInterceptor_3_0Holder
   implements Streamable
 {
   /**
@@ -77,7 +77,7 @@ public class IORInterceptor_3_0Holder
   }
 
   /**
-   * Fill in the {@link value} by data from the CDR stream.
+   * Fill in the {@link #value} by data from the CDR stream.
    * 
    * @param input the org.omg.CORBA.portable stream to read.
    */

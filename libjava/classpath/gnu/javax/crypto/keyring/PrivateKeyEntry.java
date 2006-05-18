@@ -57,8 +57,6 @@ import java.util.Date;
 
 /**
  * <p>An immutable class representing a private or secret key entry.</p>
- *
- * @version $Revision: 1.1 $
  */
 public final class PrivateKeyEntry extends PrimitiveEntry
 {

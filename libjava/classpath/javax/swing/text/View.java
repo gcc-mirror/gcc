@@ -1,5 +1,5 @@
 /* View.java -- 
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -733,23 +733,38 @@ public abstract class View implements SwingConstants
     throws BadLocationException
   {
     int ret = pos;
+    Rectangle r;
+    View parent;
+
     switch (d)
     {
-      case WEST:
-        ret = pos - 1;
-        break;
       case EAST:
-        ret = pos + 1;
+        // TODO: take component orientation into account?
+        // Note: If pos is below zero the implementation will return
+        // pos + 1 regardless of whether that value is a correct offset
+        // in the document model. However this is what the RI does.
+        ret = Math.min(pos + 1, getEndOffset());
+        break;
+      case WEST:
+        // TODO: take component orientation into account?
+        ret = Math.max(pos - 1, getStartOffset());
         break;
       case NORTH:
-        // TODO: Implement this
+        // Try to find a suitable offset by examining the area above.
+        parent = getParent();
+        r =  parent.modelToView(pos, a, b).getBounds();
+        ret = parent.viewToModel(r.x, r.y - 1, a, biasRet);
         break;
       case SOUTH:
-        // TODO: Implement this
+        // Try to find a suitable offset by examining the area below. 
+        parent = getParent();
+        r =  parent.modelToView(pos, a, b).getBounds();
+        ret = parent.viewToModel(r.x + r.width, r.y + r.height, a, biasRet);
         break;
       default:
         throw new IllegalArgumentException("Illegal value for d");
     }
+    
     return ret;
   }
 }

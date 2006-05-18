@@ -1,5 +1,5 @@
 /* DefaultComboBoxModel.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -107,22 +107,24 @@ public class DefaultComboBoxModel extends AbstractListModel
   public DefaultComboBoxModel(Vector vector)
   {
     this.list = vector;
-    if (vector.size() > 0)
+    if (getSize() > 0)
       selectedItem = vector.get(0);
   }
 
   /**
    * Adds an element to the model's item list and sends a {@link ListDataEvent}
    * to all registered listeners.  If the new element is the first item added
-   * to the list, it is set as the selected item.
+   * to the list, and the selected item is <code>null</code>, the new element 
+   * is set as the selected item.
    *
    * @param object item to add to the model's item list.
    */
   public void addElement(Object object)
   {
-    list.add(object);
-    fireIntervalAdded(this, list.size() - 1, list.size() - 1);
-    if (list.size() == 1)
+    list.addElement(object);
+    int index = list.size() - 1;
+    fireIntervalAdded(this, index, index);
+    if (list.size() == 1 && selectedItem == null)
       setSelectedItem(object);
   }
 
@@ -141,14 +143,14 @@ public class DefaultComboBoxModel extends AbstractListModel
   public void removeElementAt(int index)
   {
     int selected = getIndexOf(selectedItem);
-    list.remove(index);
     if (selected == index) // choose a new selected item
       {
         if (selected > 0)
           selectedItem = getElementAt(selected - 1);
         else 
-          selectedItem = getElementAt(selected);
+          selectedItem = getElementAt(selected + 1);
       }
+    list.removeElementAt(index);
     fireIntervalRemoved(this, index, index);
   }
 

@@ -1,5 +1,5 @@
 /* JComboBox.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.ItemSelectable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,8 +57,8 @@ import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComboBoxUI;
 
 /**
@@ -252,7 +254,6 @@ public class JComboBox extends JComponent implements ItemSelectable,
   public void updateUI()
   {
     setUI((ComboBoxUI) UIManager.getUI(this));
-    invalidate();
   }
 
   /**
@@ -927,7 +928,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
    */
   public void actionPerformed(ActionEvent e)
   {
-    setSelectedItem(((ComboBoxEditor) e.getSource()).getItem());
+    setSelectedItem(getEditor().getItem());
     setPopupVisible(false);
   }
 
@@ -944,8 +945,19 @@ public class JComboBox extends JComponent implements ItemSelectable,
    */
   public boolean selectWithKeyChar(char keyChar)
   {
-    // FIXME: Need to implement
-    return false;
+    if (keySelectionManager == null)
+      {
+        keySelectionManager = createDefaultKeySelectionManager();
+      }
+
+    int index = keySelectionManager.selectionForKey(keyChar, getModel());
+    boolean retVal = false;
+    if (index >= 0)
+      {
+        setSelectedIndex(index);
+        retVal = true;
+      }
+    return retVal;
   }
 
   /**
@@ -1090,15 +1102,33 @@ public class JComboBox extends JComponent implements ItemSelectable,
   }
 
   /**
-   * A string that describes this JComboBox. Normally only used for debugging.
+   * Returns an implementation-dependent string describing the attributes of
+   * this <code>JComboBox</code>.
    *
-   * @return A string describing this JComboBox
+   * @return A string describing the attributes of this <code>JComboBox</code>
+   *         (never <code>null</code>).
    */
   protected String paramString()
   {
-    return "JComboBox";
+    String superParamStr = super.paramString();
+    StringBuffer sb = new StringBuffer();
+    sb.append(",isEditable=").append(isEditable());
+    sb.append(",lightWeightPopupEnabled=").append(isLightWeightPopupEnabled());
+    sb.append(",maximumRowCount=").append(getMaximumRowCount());
+    
+    sb.append(",selectedItemReminder=");
+    if (selectedItemReminder != null)
+      sb.append(selectedItemReminder);
+    return superParamStr + sb.toString();
   }
 
+  /**
+   * Returns the object that provides accessibility features for this
+   * <code>JComboBox</code> component.
+   *
+   * @return The accessible context (an instance of 
+   *         {@link AccessibleJComboBox}).
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -1207,82 +1237,105 @@ public class JComboBox extends JComponent implements ItemSelectable,
   {
     private static final long serialVersionUID = 8217828307256675666L;
 
-    protected AccessibleJComboBox()
+    /**
+     * @specnote This constructor was protected in 1.4, but made public
+     * in 1.5.
+     */
+    public AccessibleJComboBox()
     {
       // Nothing to do here.
     }
 
     public int getAccessibleChildrenCount()
+      throws NotImplementedException
     {
       return 0;
     }
 
     public Accessible getAccessibleChild(int value0)
+      throws NotImplementedException
     {
       return null;
     }
 
     public AccessibleSelection getAccessibleSelection()
+      throws NotImplementedException
     {
       return null;
     }
 
     public Accessible getAccessibleSelection(int value0)
+      throws NotImplementedException
     {
       return null;
     }
 
     public boolean isAccessibleChildSelected(int value0)
+      throws NotImplementedException
     {
       return false;
     }
 
+    /**
+     * Returns the accessible role for the <code>JComboBox</code> component.
+     *
+     * @return {@link AccessibleRole#COMBO_BOX}.
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.COMBO_BOX;
     }
 
     public AccessibleAction getAccessibleAction()
+      throws NotImplementedException
     {
       return null;
     }
 
     public String getAccessibleActionDescription(int value0)
+      throws NotImplementedException
     {
       return null;
     }
 
     public int getAccessibleActionCount()
+      throws NotImplementedException
     {
       return 0;
     }
 
     public boolean doAccessibleAction(int value0)
+      throws NotImplementedException
     {
       return false;
     }
 
     public int getAccessibleSelectionCount()
+      throws NotImplementedException
     {
       return 0;
     }
 
     public void addAccessibleSelection(int value0)
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
 
     public void removeAccessibleSelection(int value0)
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
 
     public void clearAccessibleSelection()
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
 
     public void selectAllAccessibleSelection()
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }

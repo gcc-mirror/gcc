@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
@@ -86,6 +88,7 @@ public class DragSourceContext
                             DragGestureEvent trigger, Cursor cursor,
                             Image image, Point offset, Transferable trans,
                             DragSourceListener dsl)
+    throws NotImplementedException
   {
     if (peer == null
         || trigger == null)
@@ -130,6 +133,7 @@ public class DragSourceContext
   }
 
   public void setCursor (Cursor cursor)
+    throws NotImplementedException
   {
     this.cursor = cursor;
     // FIXME: Check if we need to do more here
@@ -162,30 +166,37 @@ public class DragSourceContext
   }
 
   public void transferablesFlavorsChanged()
+    throws NotImplementedException
   {
   }
 
   public void dragEnter(DragSourceDragEvent e)
+    throws NotImplementedException
   {
   }
 
   public void dragOver(DragSourceDragEvent e)
+    throws NotImplementedException
   {
   }
 
   public void dragExit(DragSourceEvent e)
+    throws NotImplementedException
   {
   }
 
   public void dropActionChanged(DragSourceDragEvent e)
+    throws NotImplementedException
   {
   }
 
   public void dragDropEnd(DragSourceDropEvent e)
+    throws NotImplementedException
   {
   }
 
   public void dragMouseMoved(DragSourceDragEvent e)
+    throws NotImplementedException
   {
   }
 
@@ -195,6 +206,7 @@ public class DragSourceContext
   }
 
   protected void updateCurrentCursor(int dropOp, int targetAct, int status)
+    throws NotImplementedException
   {
   }
 } // class DragSourceContext

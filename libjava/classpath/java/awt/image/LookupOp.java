@@ -81,7 +81,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.BufferedImageOp#filter(java.awt.image.BufferedImage, java.awt.image.BufferedImage)
    */
-  public BufferedImage filter(BufferedImage src, BufferedImage dst)
+  public final BufferedImage filter(BufferedImage src, BufferedImage dst)
   {
     if (src.getColorModel() instanceof IndexColorModel)
       throw new IllegalArgumentException("LookupOp.filter: IndexColorModel "
@@ -149,7 +149,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.BufferedImageOp#getBounds2D(java.awt.image.BufferedImage)
    */
-  public Rectangle2D getBounds2D(BufferedImage src)
+  public final Rectangle2D getBounds2D(BufferedImage src)
   {
     return src.getRaster().getBounds();
   }
@@ -173,7 +173,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
    * @param dst The destination point.
    * @see java.awt.image.RasterOp#getPoint2D(java.awt.geom.Point2D, java.awt.geom.Point2D)
    */
-  public Point2D getPoint2D(Point2D src, Point2D dst)
+  public final Point2D getPoint2D(Point2D src, Point2D dst)
   {
     if (dst == null)
       return (Point2D) src.clone();
@@ -183,7 +183,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
   }
 
   /** Return the LookupTable for this op. */
-  public LookupTable getTable()
+  public final LookupTable getTable()
   {
     return lut;
   }
@@ -191,7 +191,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.RasterOp#getRenderingHints()
    */
-  public RenderingHints getRenderingHints()
+  public final RenderingHints getRenderingHints()
   {
     return hints;
   }
@@ -209,7 +209,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
    * component but not the same as src and dest.
    * @see java.awt.image.RasterOp#filter(java.awt.image.Raster, java.awt.image.WritableRaster)
    */
-  public WritableRaster filter(Raster src, WritableRaster dest)
+  public final WritableRaster filter(Raster src, WritableRaster dest)
   {
     if (dest == null) 
       // Allocate a raster if needed
@@ -236,7 +236,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.RasterOp#getBounds2D(java.awt.image.Raster)
    */
-  public Rectangle2D getBounds2D(Raster src)
+  public final Rectangle2D getBounds2D(Raster src)
   {
     return src.getBounds();
   }

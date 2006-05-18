@@ -292,7 +292,7 @@ public class HTML
     /**
      *  The media attribute
      */
-    public static final Attribute MEDIA = new Attribute("media");
+    static final Attribute MEDIA = new Attribute("media");
 
     /**
      *  The method attribute
@@ -758,7 +758,7 @@ public class HTML
     /**
      * The &lt;nobr&gt; tag
      */
-    public static final Tag NOBR = new Tag("nobr");
+    static final Tag NOBR = new Tag("nobr");
 
     /**
      * The &lt;noframes&gt; tag , breaks flow, block tag.

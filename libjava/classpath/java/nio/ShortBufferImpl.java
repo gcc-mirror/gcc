@@ -82,15 +82,14 @@ final class ShortBufferImpl extends ShortBuffer
   {
     checkIfReadOnly();
     mark = -1;
-    int copied = 0;
-    
-    while (remaining () > 0)
+    int p = position();
+    int n = limit() - p;
+    if (n > 0)
       {
-	put (copied, get ());
-	copied++;
+        System.arraycopy(backing_buffer, array_offset + p,
+                         backing_buffer, array_offset, n);
       }
-
-    position (copied);
+    position(n);
     limit(capacity());
     return this;
   }

@@ -1,0 +1,781 @@
+\input texinfo @c -*-texinfo-*-
+
+@c %**start of header
+@setfilename tools.info
+@settitle GNU Classpath Tools Guide
+@c %**end of header
+
+@setchapternewpage off
+
+@ifinfo
+This file documents the Tools included in a standard distribution of the GNU
+Classpath project deliverables.
+
+Copyright (C) 2006 Free Software Foundation, Inc.
+
+@ifnotplaintext
+@dircategory GNU Libraries
+@direntry
+* Classpath Tools: (tools).       GNU Classpath Tools Guide
+@end direntry
+@end ifnotplaintext
+@end ifinfo
+
+@titlepage
+@title GNU Classpath Tools Guide
+@author Raif S. Naffah
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 2006 Free Software Foundation, Inc.
+@sp 2
+Permission is granted to make and distribute verbatim copies of this document provided the copyright notice and this permission notice are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this document under the conditions for verbatim copying, provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual into another language, under the above conditions for modified versions, except that this permission notice may be stated in a translation approved by the Free Software Foundation.
+
+@end titlepage
+
+@ifinfo
+@node Top, Security Tools, (dir), (dir)
+@top GNU Classpath Tools Guide
+
+This document contains important information you need to know in order to use
+the tools included in the GNU Classpath project deliverables.
+
+The Tools aim at providing a free replacement, similar in their behavior, to
+their counter-parts found in the Reference Implementation (RI) of the Java
+Software Development Kit (SDK).
+
+@end ifinfo
+
+@menu
+* Security Tools::             Work securely with Java applications
+* I18N Issues::                How to add support for non-English languages
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Security Tools
+
+* jarsigner Tool::             Sign and verify .JAR files
+* keytool Tool::               Manage private keys and public certificates
+
+I18N Issues
+
+* Language Resources::         Where resources are located
+* Message Formats::            How messages are internationalized
+
+@end detailmenu
+@end menu
+
+@comment ----------------------------------------------------------------------
+
+@node Security Tools, I18N Issues, Top, Top
+@comment node-name, next, previous, up
+@chapter Security Tools
+
+Two Security Tools are available with GNU Classpath: @b{jarsugner} and @b{keytool}.
+
+@menu
+* jarsigner Tool::             Sign and verify .JAR files
+* keytool Tool::               Manage private keys and public certificates
+@end menu
+
+If while using these tools you think you found a bug, then please report it at @uref{http://www.gnu.org/software/classpath/bugs.html,classpath-bugs}.
+
+@comment ----------------------------------------------------------------------
+
+@node jarsigner Tool, keytool Tool, Security Tools, Security Tools
+@comment node-name, next, previous, up
+@section The @code{jarsigner} Tool
+
+@table @b
+
+@item SYNOPSIS
+@code{jarsigner [OPTION]... FILE ALIAS}@*
+@code{jarsigner -verify [OPTION]... FILE}
+
+@item DESCRIPTION
+When the first form is used, the tool signs the designated JAR file.
+
+The second form, on the other hand, is used to verify a previously signed JAR file.
+
+@code{FILE} is the .JAR file to process; i.e. to sign if the first syntax form is used, or to verify if the second syntax form is used instead.
+
+@code{ALIAS} must be a known @i{Alias} of a @i{Key Entry} in the designated key store. The private key material associated with this @i{Alias} is then used for signing the designated .JAR file.
+
+@item SIGNING OPTIONS
+@table @b
+@item -keystore URL
+Use this option to specify the location of the key store to use. The default value is a file URL referencing the file named @file{.keystore} located in the path returned by the call to @code{java.lang.System#getProperty(String)} using @code{user.home} as argument.
+
+If a URL was specified, but was found to be malformed --e.g. missing protocol element-- the tool will attempt to use the URL value as a file-name (with absolute or relative path-name) of a key store --as if the protocol was @code{file:}.
+
+@item -storetype STORE_TYPE
+Use this option to specify the type of the key store to use. The default value, if this option is omitted, is that of the property @code{keystore.type} in the security properties file, which is obtained by invoking the static method call @code{getDefaultType()} in @code{java.security.KeyStore}.
+
+@item -storepass PASSWORD
+Use this option to specify the password which will be used to unlock the key store. If this option is missing, the User will be prompted to provide a password.
+
+@item -keypass PASSWORD
+Use this option to specify the password which the tool will use to unlock the @i{Key Entry} associated with the designated @i{Alias}.
+
+If this option is omitted, the tool will first attempt to unlock the @i{Key Entry} using the same password protecting the key store. If this fails, you will then be prompted to provide a password.
+
+@item -sigfile NAME
+Use this option to designate a literal that will be used to construct file names for both the @code{.SF} and @code{.DSA} signature files. These files  will be generated, by the tool, and placed in the @file{META-INF} directory of the signed JAR.  Permissible characters for @code{NAME} must be in the range "a-zA-Z0-9_-".  All characters will be converted to upper-case ones.
+
+If this option is missing, the first eight characters of the @code{ALIAS} argument will be used. When this is the case, any character in @code{ALIAS} that is outside the permissible range of characters will be replaced by an underscore.
+
+@item -signedjar FILE_NAME
+Use this option to specify the file name of the signed JAR. If this option is omitted, then the signed JAR will be named the same as @code{FILE}; i.e. the input JAR file will be replaced with the signed copy.
+
+@end table
+
+@item VERIFICATION OPTIONS
+@table @b
+@item -verify
+Use this option to indicate that the tool is to be used for verification purposes.
+
+@item -certs
+This option is used in conjunction with the @code{-verbose} option. When present, along with the @code{-verbose} option, the tool will print more detailed information about the certificates of the signer(s) being processed.
+
+@end table
+
+@item COMMON OPTIONS
+@table @b
+@item -verbose
+Use this option to force the tool to generate more verbose messages, during its processing.
+
+@item -internalsf
+When present, the tool will include --which otherwise it does not-- the @code{.SF} file in the @code{.DSA} generated file.
+
+@item -sectionsonly
+When present, the tool will include in the @code{.SF} generated file --which otherwise it does not-- a header containing a hash of the whole manifest file.  When that header is included, the tool can quickly check, during verification, if the hash (in the header) matches or not the manifest file.
+
+@item -provider PROVIDER_CLASS_NAME
+A fully qualified class name of a @i{Security Provider} to add to the current list of @i{Security Providers} already installed in the JVM in-use. If a provider class is specified with this option, and was successfully added to the runtime --i.e. it was not already installed-- then the tool will attempt to remove this @i{Security Provider} before exiting.
+
+@item -help
+Prints a help text similar to this one.
+
+@end table
+@end table
+
+@comment ----------------------------------------------------------------------
+
+@node keytool Tool, , jarsigner Tool, Security Tools
+@comment node-name, next, previous, up
+@section The @code{keytool} Tool
+
+@table @b
+@item SYNOPSIS
+@code{keytool [COMMAND]...}
+
+@item DESCRIPTION
+A Java-based tool for managing both @i{Key Entries} as well as @i{Trusted Certificates}.
+
+Multiple @code{COMMAND}s may be specified at once, each complete with its own options. @b{keytool} will parse all the arguments, before processing, and executing, each @code{COMMAND}. If an exception occurs while executing one @code{COMMAND} @b{keytool} will abort.
+
+A @code{COMMAND} can be one of the followings:
+
+@table @b
+@item -genkey [OPTION]@dots{}
+Generate a new @i{Key Entry}, eventually creating a new key store.
+
+@item -import [OPTION]@dots{}
+Add, to a key store, @i{Key Entries} (private keys and certificate chains authenticating the public keys) and @i{Trusted Certificates} (3rd party certificates which can be used as @i{Trust Anchors} when building chains-of-trust).
+
+@item -selfcert [OPTION]@dots{}
+Generate a new self-signed @i{Trusted Certificate}.
+
+@item -identitydb [OPTION]@dots{}
+@b{NOT IMPLEMENTED YET}.@*
+Import a JDK 1.1 style Identity Database.
+
+@item -certreq [OPTION]@dots{}
+Issue a @i{Certificate Signing Request} (CSR) which can be then sent to a @i{Certification Authority} (CA) to issue a certificate signed (by the CA) and authenticating the @i{Subject} of the request.
+
+@item -export [OPTION]@dots{}
+Export a certificate from a key store.
+
+@item -list [OPTION]@dots{}
+Print one or all certificates in a key store to @code{STDOUT}.
+
+@item -printcert [OPTION]@dots{}
+Print a human-readable form of a certificate, in a designated file, to @code{STDOUT}.
+
+@item -keyclone [OPTION]@dots{}
+Clone a @i{Key Entry} in a key store.
+
+@item -storepasswd [OPTION]@dots{}
+Change the password protecting a key store.
+
+@item -keypasswd [OPTION]@dots{}
+Change the password protecting a @i{Key Entry} in a key store.
+
+@item -delete [OPTION]@dots{}
+Delete a @i{Key Entry} or a @i{Trusted Certificate} from a key store.
+
+@item -help
+Prints a help text similar to this one.
+
+@end table
+
+@item OPTIONS COMMON TO MORE THAN ONE COMMAND
+The following @code{OPTION}s are used in more than one @code{COMMAND}. They are described here to reduce redundancy.
+
+@table @b
+@anchor{alias}
+@item -alias ALIAS
+Every entry, be it a @i{Key Entry} or a @i{Trusted Certificate}, in a key store is uniquely identified by a user-defined @i{Alias} string. Use this option to specify the @i{Alias} to use when referring to an entry in the key store. Unless specified otherwise, a default value of @code{mykey} shall be used when this option is omitted from the command line.
+
+@anchor{keyalg}
+@item -keyalg ALGORITHM
+Use this option to specify the canonical name of the key-pair generation algorithm. The default value for this option is @code{DSS} (a synonym for the Digital Signature Algorithm also known as DSA).
+
+@anchor{keysize}
+@item -keysize SIZE
+Use this option to specify the number of bits of the shared modulus (for both the public and private keys) to use when generating new keys. A default value of @code{1024} will be used if this option is omitted from the command line.
+
+@anchor{validity}
+@item -validity DAY_COUNT
+Use this option to specify the number of days a newly generated certificate will be valid for. The default value is @code{90} (days) if this option is omitted from the command line.
+
+@anchor{storetype}
+@item -storetype STORE_TYPE
+Use this option to specify the type of the key store to use. The default value, if this option is omitted, is that of the property @code{keystore.type} in the security properties file, which is obtained by invoking the static method call @code{getDefaultType()} in @code{java.security.KeyStore}.
+
+@anchor{storepass}
+@item -storepass PASSWORD
+Use this option to specify the password protecting the key store. If this option is omitted from the command line, you will be prompted to provide a password.
+
+@anchor{keystore}
+@item -keystore URL
+Use this option to specify the location of the key store to use. The default value is a file URL referencing the file named @file{.keystore} located in the path returned by the call to @code{java.lang.System#getProperty(String)} using @code{user.home} as argument.
+
+If a URL was specified, but was found to be malformed --e.g. missing protocol element-- the tool will attempt to use the URL value as a file-name (with absolute or relative path-name) of a key store --as if the protocol was @code{file:}.
+
+@anchor{provider}
+@item -provider PROVIDER_CLASS_NAME
+A fully qualified class name of a @i{Security Provider} to add to the current list of @i{Security Providers} already installed in the JVM in-use. If a provider class is specified with this option, and was successfully added to the runtime --i.e. it was not already installed-- then the tool will attempt to removed this @i{Security Provider} before exiting.
+
+@anchor{file}
+@item -file FILE_NAME
+Use this option to designate a file to use with a command. When specified with this option, the value is expected to be the fully qualified path of a file accessible by the File System. Depending on the command, the file may be used as input or as output. When this option is omitted from the command line, @code{STDIN} will be used instead, as the source of input, and @code{STDOUT} will be used instead as the output destination.
+
+@anchor{verbose}
+@item -v
+Unless specified otherwise, use this option to enable more verbose output.
+
+@end table
+
+@anchor{dn}
+@item X.500 DISTINGUISHED NAME
+A @i{Distinguished Name} (or DN) MUST be supplied with some of the @code{COMMAND}s using a @code{-dname} option. The syntax of a valid value for this option MUST follow RFC-2253 specifications. Namely the following components (with their accepted meaning) will be recognized. Note that the component name is case-insensitive:
+
+@ftable @var
+@item CN
+The Common Name; e.g. @kbd{host.domain.com}
+@item OU
+The Organizational Unit; e.g. @kbd{IT Department}
+@item O
+The Organization Name; e.g. @kbd{The Sample Company}
+@item L
+The Locality Name; e.g. @kbd{Sydney}
+@item ST
+The State Name; e.g. @kbd{New South Wales}
+@item C
+The 2-letter Country identifier; e.g. @kbd{AU}
+@end ftable
+
+When specified with a @code{-dname} option, each pair of component/value will be separated from the other with a comma. Each component and value pair MUST be separated by an equal sign. For example, the following is a valid DN value:@*
+
+@format
+CN=host.domain.com, O=The Sample Company, L=Sydney, ST=NSW, C=AU
+@end format
+@*
+If the @i{Distinguished Name} is required, and no valid default value can be used, the tool will prompt you to enter the information through the console.
+
+@item -genkey COMMAND
+Generate a new key-pair (both private and public keys), and save these credentials in the key store as a @i{Key Entry}, associated with the designated (if was specified in the @code{-alias} option) or default (if the @code{-alias} option is omitted) @i{Alias}.
+
+The private key material will be protected with a user-defined password (see @code{-keypass} option). The public key on the other hand will be part of a self-signed X.509 certificate, which will form a 1-element chain and will be saved in the key store.
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -keyalg ALGORITHM
+For more details @pxref{keyalg,, ALGORITHM}.
+
+@item -keysize KEY_SIZE
+For more details @pxref{keysize,, KEY_SIZE}.
+
+@item -sigalg ALGORITHM
+The canonical name of the digital signature algorithm to use for signing certificates. If this option is omitted, a default value will be chosen based on the type of the key-pair; i.e. the algorithm that ends up being used by the -keyalg option. If the key-pair generation algorithm is @code{DSA}, the value for the signature algorithm will be @code{SHA1withDSA}. If on the other hand the key-pair generation algorithm is @code{RSA}, then the tool will use @code{MD5withRSA} as the signature algorithm.
+
+@item -dname NAME
+This a mandatory value for the command. If no value is specified --i.e. the @code{-dname} option is omitted-- the tool will prompt you to enter a @i{Distinguished Name} to use as both the @i{Owner} and @i{Issuer} of the generated self-signed certificate.
+
+For more details @pxref{dn,, X.500 DISTINGUISHED NAME}.
+
+@item -keypass PASSWORD
+Use this option to specify the password which the tool will use to protect the newly created @i{Key Entry}.
+
+If this option is omitted, you will be prompted to provide a password.
+
+@item -validity DAY_COUNT
+For more details @pxref{validity,, DAY_COUNT}.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -import COMMAND
+Read an X.509 certificate, or a PKCS#7 @i{Certificate Reply} from a designated input source and incorporate the certificates into the key store.
+
+If the @i{Alias} does not already exist in the key store, the tool treats the certificate read from the input source as a new @i{Trusted Certificate}. It then attempts to discover a chain-of-trust, starting from that certificate and ending at another @i{Trusted Certificate}, already stored in the key store. If the @code{-trustcacerts} option is present, an additional key store, of type @code{JKS} named @file{cacerts}, and assumed to be present in @file{$@{JAVA_HOME@}/lib/security} will also be consulted if found --@code{$@{JAVA_HOME@}} refers to the location of an installed @i{Java Runtime Environment} (JRE). If no chain-of-trust can be established, and unless the @code{-noprompt} option has been specified, the certificate is printed to @code{STDOUT} and the user is prompted for a confirmation.
+
+If @i{Alias} exists in the key store, the tool will treat the certificate(s) read from the input source as a @i{Certificate Reply}, which can be a chain of certificates, that eventually would replace the chain of certificates associated with the @i{Key Entry} of that @i{Alias}. The substitution of the certificates only occurs if a chain-of-trust can be established between the bottom certificate of the chain read from the input file and the @i{Trusted Certificates} already present in the key store. Again, if the @code{-trustcacerts} option is specified, additional @i{Trusted Certificates} in the same @file{cacerts} key store will be considered. If no chain-of-trust can be established, the operation will abort.
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -file FILE_NAME
+For more details @pxref{file,, FILE_NAME}.
+
+@item -keypass PASSWORD
+Use this option to specify the password which the tool will use to protect the @i{Key Entry} associated with the designated @i{Alias}, when replacing this @i{Alias}' chain of certificates with that found in the certificate reply.
+
+If this option is omitted, and the chain-of-trust for the certificate reply has been established, the tool will first attempt to unlock the @i{Key Entry} using the same password protecting the key store. If this fails, you will then be prompted to provide a password.
+
+@item -noprompt
+Use this option to prevent the tool from prompting the user.
+
+@item -trustcacerts
+Use this option to indicate to the tool that a key store, of type @code{JKS}, named @file{cacerts}, and usually located in @file{lib/security} in an installed @i{Java Runtime Environment} should be considered when trying to establish chain-of-trusts.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -selfcert COMMAND
+Generate a self-signed X.509 version 1 certificate. The newly generated certificate will form a chain of one element which will replace the previous chain associated with the designated @i{Alias} (if @code{-alias} option was specified), or the default @i{Alias} (if @code{-alias} option was omitted).
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -sigalg ALGORITHM
+The canonical name of the digital signature algorithm to use for signing the certificate. If this option is omitted, a default value will be chosen based on the type of the private key associated with the designated @i{Alias}. If the private key is a @code{DSA} one, the value for the signature algorithm will be @code{SHA1withDSA}. If on the other hand the private key is an @code{RSA} one, then the tool will use @code{MD5withRSA} as the signature algorithm.
+
+@item -dname NAME
+Use this option to specify the @i{Distinguished Name} of the newly generated self-signed certificate. If this option is omitted, the existing @i{Distinguished Name} of the base certificate in the chain associated with the designated @i{Alias} will be used instead.
+
+For more details @pxref{dn,, X.500 DISTINGUISHED NAME}.
+
+@item -validity DAY_COUNT
+For more details @pxref{validity,, DAY_COUNT}.
+
+@item -keypass PASSWORD
+Use this option to specify the password which the tool will use to unlock the @i{Key Entry} associated with the designated @i{Alias}.
+
+If this option is omitted, the tool will first attempt to unlock the @i{Key Entry} using the same password protecting the key store. If this fails, you will then be prompted to provide a password.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -identitydb COMMAND
+@b{NOT IMPLEMENTED YET}.
+
+Import a JDK 1.1 style Identity Database.
+
+@table @b
+@item -file FILE_NAME
+For more details @pxref{file,, FILE_NAME}.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -certreq COMMAND
+Generate a PKCS#10 @i{Certificate Signing Request} (CSR) and writes it to a designated output destination. The contents of the destination should look something like the following:
+
+@example
+-----BEGIN NEW CERTIFICATE REQUEST-----
+MI...QAwXzEUMBIGA1UEAwwLcnNuQGdudS5vcmcxGzAZBgNVBAoMElUg
+Q2...A0GA1UEBwwGU3lkbmV5MQwwCgYDVQQIDANOU1cxCzAJBgNVBACC
+...
+FC...IVwNVOfQLRX+O5kAhQ/a4RTZme2L8PnpvgRwrf7Eg8D6w==
+-----END NEW CERTIFICATE REQUEST-----
+@end example
+
+@b{IMPORTANT}: Some documentation (e.g. RSA examples) claims that the @code{Attributes} field, in the CSR is @code{OPTIONAL} while RFC-2986 implies the opposite. This implementation considers this field, by default, as @code{OPTIONAL}, unless the option @code{-attributes} is specified on the command line.
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -sigalg ALGORITHM
+The canonical name of the digital signature algorithm to use for signing the certificate. If this option is omitted, a default value will be chosen based on the type of the private key associated with the designated @i{Alias}. If the private key is a @code{DSA} one, the value for the signature algorithm will be @code{SHA1withDSA}. If on the other hand the private key is an @code{RSA} one, then the tool will use @code{MD5withRSA} as the signature algorithm.
+
+@item -file FILE_NAME
+For more details @pxref{file,, FILE_NAME}.
+
+@item -keypass PASSWORD
+Use this option to specify the password which the tool will use to unlock the @i{Key Entry} associated with the designated @i{Alias}.
+
+If this option is omitted, the tool will first attempt to unlock the @i{Key Entry} using the same password protecting the key store. If this fails, you will then be prompted to provide a password.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@item -attributes
+Use this option to force the tool to encode a @code{NULL} DER value in the CSR as the value of the @code{Attributes} field.
+
+@end table
+
+@item -export COMMAND
+Export a certificate stored in the key store to a designated output destination, either in binary format (if the @code{-v} option is specified), or in RFC-1421 compliant encoding (if the @code{-rfc} option is specified
+instead).
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -file FILE_NAME
+For more details @pxref{file,, FILE_NAME}.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -rfc
+Use RFC-1421 specifications when encoding the output.
+
+@item -v
+Output the certificate in binary DER encoding. This is the default output format of the command if neither @code{-rfc} nor @code{-v} options were detected on the command line. If both this option and the @code{-rfc} option are detected on the command line, the tool will opt for the RFC-1421 style encoding.
+
+@end table
+
+@item -list COMMAND
+Print one or all of the key store entries to @code{STDOUT}. Usually this command will only print a @i{fingerprint} of the certificate, unless either the @code{-rfc} or the @code{-v} option is specified.
+
+@table @b
+@item -alias ALIAS
+If this option is omitted, the tool will print ALL the entries found in the key store.
+
+For more details @pxref{alias,, ALIAS}.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -rfc
+Use RFC-1421 specifications when encoding the output.
+
+@item -v
+Output the certificate in human-readable format. If both this option and the @code{-rfc} option are detected on the command line, the tool will opt for the human-readable form and will not abort the command.
+
+@end table
+
+@item -printcert COMMAND
+Read a certificate from a designated input source and print it to @code{STDOUT} in a human-readable form.
+
+@table @b
+@item -file FILE_NAME
+For more details @pxref{file,, FILE_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -keyclone COMMAND
+Clone an existing @i{Key Entry} and store it under a new (different) @i{Alias} protecting, its private key material with possibly a new password.
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -dest ALIAS
+Use this option to specify the new @i{Alias} which will be used to identify the cloned copy of the @i{Key Entry}.
+
+@item -keypass PASSWORD
+Use this option to specify the password which the tool will use to unlock the @i{Key Entry} associated with the designated @i{Alias}.
+
+If this option is omitted, the tool will first attempt to unlock the @i{Key Entry} using the same password protecting the key store. If this fails, you will then be prompted to provide a password.
+
+@item -new PASSWORD
+Use this option to specify the password protecting the private key material of the newly cloned copy of the @i{Key Entry}.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -storepasswd COMMAND
+Change the password protecting a key store.
+
+@table @b
+@item -new PASSWORD
+The new, and different, password which will be used to protect the designated key store.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -keypasswd COMMAND
+Change the password protecting the private key material of a designated @i{Key Entry}.
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -keypass PASSWORD
+Use this option to specify the password which the tool will use to unlock the @i{Key Entry} associated with the designated @i{Alias}.
+
+If this option is omitted, the tool will first attempt to unlock the @i{Key Entry} using the same password protecting the key store. If this fails, you will then be prompted to provide a password.
+
+@item -new PASSWORD
+The new, and different, password which will be used to protect the private key material of the designated @i{Key Entry}.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+
+@item -delete COMMAND
+Delete a designated key store entry.
+
+@table @b
+@item -alias ALIAS
+For more details @pxref{alias,, ALIAS}.
+
+@item -storetype STORE_TYPE
+For more details @pxref{storetype,, STORE_TYPE}.
+
+@item -keystore URL
+For more details @pxref{keystore,, URL}.
+
+@item -storepass PASSWORD
+For more details @pxref{storepass,, PASSWORD}.
+
+@item -provider PROVIDER_CLASS_NAME
+For more details @pxref{provider,, PROVIDER_CLASS_NAME}.
+
+@item -v
+For more details @pxref{verbose}.
+
+@end table
+@end table
+
+@comment ----------------------------------------------------------------------
+
+@node I18N Issues, , Security Tools, Top
+@comment node-name, next, previous, up
+@chapter I18N Issues
+
+Some tools --@pxref{Security Tools}-- allow using other than the English language when prompting the User for input, and outputing messages. This chapter describes the elements used to offer this support and how they can be adapted for use with specific languages.
+
+@menu
+* Language Resources::         Where resources are located
+* Message Formats::            How messages are internationalized
+@end menu
+
+@comment ----------------------------------------------------------------------
+
+@node Language Resources, Message Formats, I18N Issues, I18N Issues
+@comment node-name, next, previous, up
+@section Language-Specific Resources
+
+The Tools use Java @code{ResourceBundle}s to store messages, and message templates they use at runtime to generate the message text itself, depending on the locale in use at the time.
+
+The @i{Resource Bundles} these tools use are essentially Java @i{Properties} files consisting of a set of @i{Name/Value} pairs. The @i{Name} is the @i{Propery Name} and the @i{Value} is a substitution string that is used when the code references the associated @i{Name}. For example the following is a line in a @i{Resource Bundle} used by the @code{keytool} Tool:
+
+@example
+Command.23=A correct key password MUST be provided
+@end example
+
+When the tool needs to signal a mandatory but missing key password, it would reference the property named @code{Command.23} and the message "@kbd{A correct key password MUST be provided}" will be used instead. This indirect referencing of "resources" permits replacing, as late as possible, the English strings with strings in other languages, provided of course @i{Resource Bundles} in those languages are provided.
+
+For the GNU Classpath Tools described in this Guide, the @i{Resource Bundles} are files named @file{MessageBundle[_ll[_CC[_VV]]].properties} where:
+
+@ftable @var
+@item ll
+Is the 2-letter code for the Language,
+@item CC
+Is the 2-letter code for the Region, and
+@item VV
+Is the 2-letter code for the Variant of the language.
+@end ftable
+
+The complete list of language codes can be found at @uref{http://ftp.ics.uci.edu/pub/ietf/http/related/iso639.txt, Code for the representation of names of languages}. A similar list for the region codes can be found at @uref{http://userpage.chemie.fu-berlin.de/diverse/doc/ISO_3166.html, ISO 3166 Codes (Countries)}.
+
+The location of the @i{Resource Bundles} for the GNU Classpath Tools is specific to each tool. The next table shows where these files are found in a standard GNU Classpath distribution:
+
+@ftable @code
+@item jarsigner
+@file{gnu/classpath/tools/jarsigner}
+@item keytool
+@file{gnu/classpath/tools/keytool}
+@end ftable
+
+The collection of @i{Resource Bundles} in a location act as an inverted tree with a parent-child relationship. For example suppose in the @file{gnu/classpath/tools/keytool} there are 3 message bundles named:
+
+@enumerate
+@item @code{MessageBundle.properties}
+@item @code{MessageBundle_fr.properties}
+@item @code{MessageBundle_fr_FR.properties}
+@end enumerate
+
+In the above example, bundle #1 will act as the parent of bundle #2, which in turn will act as the parent for bundle #3. This ordering is used by the Java runtime to choose which file to load based on the set Locale. For example if the Locale is @code{fr_CH}, @code{MessageBundle_fr.properties} will be used because (a) @code{MessageBundle_fr_CH.properties} does not exist, but (b) @code{MessageBundle_fr.properties} is the parent for the required bundle, and it exists. As another example, suppose the Locale was set to @code{en_AU}; then the tool will end up using @code{MessageBundle.properties} because (a) @code{MessageBundle_en_AU.properties} does not exist, (b) @code{MessageBundle_en.properties} which is the parent for the required bundle does not exist, but (c) @code{MessageBundle.properties} exists and is the root of the hierarchy.
+
+You can see from the examples above that @file{MessageBundle.properties} is the safety net that the Java runtime falls back to when failing to find a specific bunlde and its parent(s). This file is always provided with the Tool. In time, more localized versions will be included to cater for other languages.
+
+In the meantime, if you are willing to contribute localized versions of these resources, grab the @file{MessageBundle.properties} for a specific tool; translate it; save it with the appropriate language and region suffix and mail it to @code{classpath@@gnu.org}.
+
+@comment ----------------------------------------------------------------------
+
+@node Message Formats, , Language Resources, I18N Issues
+@comment node-name, next, previous, up
+@section Message Formats
+
+If you open any of the @file{MessageBundle.properties} described in the previous section, you may see properties that look like so:
+
+@example
+Command.67=Issuer: @{0@}
+Command.68=Serial number: @{0,number@}
+Command.69=Valid from: @{0,date,full@} - @{0,time,full@}
+Command.70=\ \ \ \ \ until: @{0,date,full@} - @{0,time,full@}
+@end example
+
+These are @i{Message Formats} used by the tools to customize a text string that will then be used either as a prompt for User input or as output.
+
+If you are translating a @file{MessageBundle.properties} be careful not to alter text between curly braces.
+
+@comment ----------------------------------------------------------------------
+
+@bye

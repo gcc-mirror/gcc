@@ -347,7 +347,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param dstPt destination point
      * @return the location of the transformed source point.
      */
-    public Point2D getPoint2D (Point2D srcPt, Point2D dstPt)
+    public final Point2D getPoint2D (Point2D srcPt, Point2D dstPt)
     {
       return transform.transform (srcPt, dstPt);
     }

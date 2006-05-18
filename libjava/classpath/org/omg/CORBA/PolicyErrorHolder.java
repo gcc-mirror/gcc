@@ -1,5 +1,5 @@
 /* PolicyErrorHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import org.omg.CORBA.portable.Streamable;
 
 * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
 */
-public class PolicyErrorHolder implements Streamable
+public final class PolicyErrorHolder implements Streamable
 {
   /**
    * The stored PolicyError value.
@@ -56,7 +56,7 @@ public class PolicyErrorHolder implements Streamable
   public PolicyError value;
 
   /**
-   * Create the unitialised instance, leaving the value field
+   * Create the uninitialised instance, leaving the value field
    * with default <code>null</code> value.
    */
   public PolicyErrorHolder()
@@ -74,7 +74,7 @@ public class PolicyErrorHolder implements Streamable
   }
 
   /**
-   * Fill in the {@link value} by data from the CDR stream.
+   * Fill in the {@link #value} by data from the CDR stream.
    *
    * @param input the org.omg.CORBA.portable stream to read.
    */

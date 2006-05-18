@@ -45,12 +45,14 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.plaf.basic.BasicToggleButtonUI;
 
@@ -157,13 +159,15 @@ public class MetalToggleButtonUI
   /**
    * Paints the text for the button.
    * 
+   * As of JDK 1.4 this method is obsolete.
+   * Use {@link BasicButtonUI#paintText(java.awt.Graphics, 
+   * javax.swing.AbstractButton, java.awt.Rectangle, java.lang.String)}.
+   *
    * @param g  the graphics device.
    * @param c  the component.
    * @param textRect  the bounds for the text.
    * @param text  the text.
    * 
-   * @deprecated 1.4 Use {@link BasicButtonUI#paintText(java.awt.Graphics, 
-   * javax.swing.AbstractButton, java.awt.Rectangle, java.lang.String)}.
    */
   protected void paintText(Graphics g, JComponent c, Rectangle textRect,
                            String text)
@@ -207,7 +211,12 @@ public class MetalToggleButtonUI
    */
   public void update(Graphics g, JComponent c)
   {
-    if (c.isOpaque() && UIManager.get(getPropertyPrefix() + "gradient") != null)
+    AbstractButton b = (AbstractButton) c;
+    ButtonModel m = b.getModel();
+    if (b.getBackground() instanceof UIResource
+        && b.isContentAreaFilled()
+        && b.isEnabled() && ! m.isArmed() && ! m.isPressed()
+        && UIManager.get(getPropertyPrefix() + "gradient") != null)
       {
         MetalUtils.paintGradient(g, 0, 0, c.getWidth(), c.getHeight(),
                                  SwingConstants.VERTICAL,

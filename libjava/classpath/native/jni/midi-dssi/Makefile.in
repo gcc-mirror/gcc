@@ -60,9 +60,9 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(nativelibdir)"
-nativelibLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(nativelib_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(nativeexeclibdir)"
+nativeexeclibLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(nativeexeclib_LTLIBRARIES)
 libgjsmdssi_la_DEPENDENCIES =  \
 	$(top_builddir)/native/jni/classpath/jcl.lo
 am_libgjsmdssi_la_OBJECTS =  \
@@ -100,6 +100,7 @@ CAIRO_LIBS = @CAIRO_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CLASSPATH_CONVENIENCE = @CLASSPATH_CONVENIENCE@
 CLASSPATH_INCLUDES = @CLASSPATH_INCLUDES@
 CLASSPATH_MODULE = @CLASSPATH_MODULE@
 COLLECTIONS_PREFIX = @COLLECTIONS_PREFIX@
@@ -139,6 +140,8 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 ECJ = @ECJ@
 EGREP = @EGREP@
+ENABLE_LOCAL_SOCKETS_FALSE = @ENABLE_LOCAL_SOCKETS_FALSE@
+ENABLE_LOCAL_SOCKETS_TRUE = @ENABLE_LOCAL_SOCKETS_TRUE@
 ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
@@ -159,6 +162,7 @@ FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
 GJDOC = @GJDOC@
+GREP = @GREP@
 GTK_CAIRO_ENABLED = @GTK_CAIRO_ENABLED@
 GTK_CAIRO_FALSE = @GTK_CAIRO_FALSE@
 GTK_CAIRO_TRUE = @GTK_CAIRO_TRUE@
@@ -206,6 +210,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 QT_CFLAGS = @QT_CFLAGS@
@@ -224,8 +229,11 @@ USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
 USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USER_SPECIFIED_JAVAH_FALSE = @USER_SPECIFIED_JAVAH_FALSE@
 USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
+USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
+USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
 WARNING_CFLAGS = @WARNING_CFLAGS@
+XMKMF = @XMKMF@
 XML_CFLAGS = @XML_CFLAGS@
 XML_LIBS = @XML_LIBS@
 XSLT_CFLAGS = @XSLT_CFLAGS@
@@ -237,8 +245,6 @@ X_PRE_LIBS = @X_PRE_LIBS@
 ZIP = @ZIP@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
-ac_ct_RANLIB = @ac_ct_RANLIB@
-ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -255,7 +261,10 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
+datarootdir = @datarootdir@
 default_toolkit = @default_toolkit@
+docdir = @docdir@
+dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 glibjdir = @glibjdir@
 host = @host@
@@ -263,18 +272,22 @@ host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
+htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
-nativelibdir = @nativelibdir@
+nativeexeclibdir = @nativeexeclibdir@
 oldincludedir = @oldincludedir@
+pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
+psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
@@ -284,7 +297,7 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 vm_classes = @vm_classes@
-nativelib_LTLIBRARIES = libgjsmdssi.la 
+nativeexeclib_LTLIBRARIES = libgjsmdssi.la 
 libgjsmdssi_la_SOURCES = gnu_javax_sound_midi_dssi_DSSIMidiDeviceProvider.c \
 			 gnu_javax_sound_midi_dssi_DSSISynthesizer.c \
 			 dssi_data.h
@@ -326,35 +339,35 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-nativelibLTLIBRARIES: $(nativelib_LTLIBRARIES)
+install-nativeexeclibLTLIBRARIES: $(nativeexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
-	test -z "$(nativelibdir)" || $(mkdir_p) "$(DESTDIR)$(nativelibdir)"
-	@list='$(nativelib_LTLIBRARIES)'; for p in $$list; do \
+	test -z "$(nativeexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(nativeexeclibdir)"
+	@list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=$(am__strip_dir) \
-	    echo " $(LIBTOOL) --mode=install $(nativelibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(nativelibdir)/$$f'"; \
-	    $(LIBTOOL) --mode=install $(nativelibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(nativelibdir)/$$f"; \
+	    echo " $(LIBTOOL) --mode=install $(nativeexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(nativeexeclibdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(nativeexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(nativeexeclibdir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-nativelibLTLIBRARIES:
+uninstall-nativeexeclibLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@set -x; list='$(nativelib_LTLIBRARIES)'; for p in $$list; do \
+	@set -x; list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  p=$(am__strip_dir) \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(nativelibdir)/$$p'"; \
-	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(nativelibdir)/$$p"; \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(nativeexeclibdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(nativeexeclibdir)/$$p"; \
 	done
 
-clean-nativelibLTLIBRARIES:
-	-test -z "$(nativelib_LTLIBRARIES)" || rm -f $(nativelib_LTLIBRARIES)
-	@list='$(nativelib_LTLIBRARIES)'; for p in $$list; do \
+clean-nativeexeclibLTLIBRARIES:
+	-test -z "$(nativeexeclib_LTLIBRARIES)" || rm -f $(nativeexeclib_LTLIBRARIES)
+	@list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
 libgjsmdssi.la: $(libgjsmdssi_la_OBJECTS) $(libgjsmdssi_la_DEPENDENCIES) 
-	$(LINK) -rpath $(nativelibdir) $(libgjsmdssi_la_LDFLAGS) $(libgjsmdssi_la_OBJECTS) $(libgjsmdssi_la_LIBADD) $(LIBS)
+	$(LINK) -rpath $(nativeexeclibdir) $(libgjsmdssi_la_LDFLAGS) $(libgjsmdssi_la_OBJECTS) $(libgjsmdssi_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -475,7 +488,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(nativelibdir)"; do \
+	for dir in "$(DESTDIR)$(nativeexeclibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-am
@@ -504,7 +517,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-nativelibLTLIBRARIES \
+clean-am: clean-generic clean-libtool clean-nativeexeclibLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -523,9 +536,9 @@ info: info-am
 
 info-am:
 
-install-data-am: install-nativelibLTLIBRARIES
+install-data-am:
 
-install-exec-am:
+install-exec-am: install-nativeexeclibLTLIBRARIES
 
 install-info: install-info-am
 
@@ -551,20 +564,20 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-nativelibLTLIBRARIES
+uninstall-am: uninstall-info-am uninstall-nativeexeclibLTLIBRARIES
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-nativelibLTLIBRARIES ctags distclean \
+	clean-libtool clean-nativeexeclibLTLIBRARIES ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-exec \
 	install-exec-am install-info install-info-am install-man \
-	install-nativelibLTLIBRARIES install-strip installcheck \
+	install-nativeexeclibLTLIBRARIES install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-info-am \
-	uninstall-nativelibLTLIBRARIES
+	uninstall-nativeexeclibLTLIBRARIES
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,5 +1,5 @@
 /* ProgressMonitorInputStream.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,8 @@ import java.io.InterruptedIOException;
 import java.io.IOException;
 
 /**
- * ProgressMonitorInputStream
+ * An input stream with a {@link ProgressMonitor}.
+ * 
  * @author	Andrew Selkirk
  * @author  Robert Schuster (robertschuster@fsfe.org)
  * @status updated to 1.2
@@ -56,7 +57,7 @@ public class ProgressMonitorInputStream extends FilterInputStream
 {
 
   /**
-   * monitor
+   * The monitor watching the progress of the input stream.
    */
   private ProgressMonitor monitor;
 
@@ -66,10 +67,11 @@ public class ProgressMonitorInputStream extends FilterInputStream
   private int read;
 
   /**
-   * Constructor ProgressMonitorInputStream
-   * @param component TODO
-   * @param message TODO
-   * @param stream TODO
+   * Creates a new <code>ProgressMonitorInputStream</code>.
+   * 
+   * @param component  the parent component for the progress monitor dialog.
+   * @param message  the task description.
+   * @param stream  the underlying input stream.
    */
   public ProgressMonitorInputStream(Component component, Object message,
                                     InputStream stream)
@@ -87,12 +89,12 @@ public class ProgressMonitorInputStream extends FilterInputStream
         // Behave like the JDK here.
       }
 
-    monitor = new ProgressMonitor(
-      component, message, null, 0, max );
+    monitor = new ProgressMonitor(component, message, null, 0, max);
   }
 
   /**
-   * reset
+   * Resets the input stream to the point where {@link #mark(int)} was called.
+   * 
    * @exception IOException TODO
    */
   public void reset() throws IOException
@@ -106,9 +108,13 @@ public class ProgressMonitorInputStream extends FilterInputStream
   }
 
   /**
-   * read
-   * @exception IOException TODO
-   * @returns int
+   * Reads an unsigned byte from the input stream and returns it as an 
+   * <code>int</code> in the range of 0-255.  Returns -1 if the end of the 
+   * stream has been reached.  The progress monitor is updated.
+   * 
+   * @return int
+   * 
+   * @exception IOException if there is a problem reading the stream.
    */
   public int read() throws IOException
   {
@@ -122,10 +128,16 @@ public class ProgressMonitorInputStream extends FilterInputStream
   }
 
   /**
-   * read
-   * @param data TODO
-   * @exception IOException TODO
-   * @returns int
+   * Reads bytes from the input stream and stores them in the supplied array,
+   * and updates the progress monitor (or closes it if the end of the stream 
+   * is reached).
+   * 
+   * @param data  the data array for returning bytes read from the stream.
+   * 
+   * @return The number of bytes read, or -1 if there are no more bytes in the
+   *         stream.
+   *         
+   * @throws IOException if there is a problem reading bytes from the stream.
    */
   public int read(byte[] data) throws IOException
   {
@@ -147,12 +159,18 @@ public class ProgressMonitorInputStream extends FilterInputStream
   }
 
   /**
-   * read
-   * @param data TODO
-   * @param offset TODO
-   * @param length TODO
-   * @exception IOException TODO
-   * @returns int
+   * Reads up to <code>length</code> bytes from the input stream and stores 
+   * them in the supplied array at the given index, and updates the progress 
+   * monitor (or closes it if the end of the stream is reached).
+   *
+   * @param data  the data array for returning bytes read from the stream.
+   * @param offset  the offset into the array where the bytes should be written. 
+   * @param length  the maximum number of bytes to read from the stream.
+   * 
+   * @return The number of bytes read, or -1 if there are no more bytes in the
+   *         stream.
+   *         
+   * @throws IOException if there is a problem reading bytes from the stream.
    */
   public int read(byte[] data, int offset, int length) throws IOException
   {
@@ -174,10 +192,14 @@ public class ProgressMonitorInputStream extends FilterInputStream
   }
 
   /**
-   * skip
-   * @param length TODO
-   * @exception IOException TODO
-   * @returns long
+   * Skips the specified number of bytes and updates the 
+   * {@link ProgressMonitor}.
+   * 
+   * @param length the number of bytes to skip.
+   *
+   * @return The actual number of bytes skipped.
+   * 
+   * @throws IOException if there is a problem skipping bytes in the stream.
    */
   public long skip(long length) throws IOException
   {
@@ -196,8 +218,9 @@ public class ProgressMonitorInputStream extends FilterInputStream
   }
 
   /**
-   * close
-   * @exception IOException TODO
+   * Closes the input stream and the associated {@link ProgressMonitor}.
+   * 
+   * @throws IOException if there is a problem closing the input stream.
    */
   public void close() throws IOException
   {
@@ -206,8 +229,9 @@ public class ProgressMonitorInputStream extends FilterInputStream
   }
 
   /**
-   * getProgressMonitor
-   * @returns ProgressMonitor
+   * Returns the {@link ProgressMonitor} used by this input stream.
+   * 
+   * @return The progress monitor.
    */
   public ProgressMonitor getProgressMonitor()
   {

@@ -57,14 +57,16 @@ final class RETokenIndependent extends REToken
     return re.getMaximumLength();
   }
 
-  boolean match(CharIndexed input, REMatch mymatch)
+  REMatch matchThis(CharIndexed input, REMatch mymatch)
   {
-    if (re.match(input, mymatch)) {
+    boolean b = re.match(input, mymatch);
+    if (b) {
       // Once we have found a match, we do not see other possible matches.
-      mymatch.next = null;
-      return next(input, mymatch);
+      if (mymatch.backtrackStack != null) mymatch.backtrackStack.clear();
+      return mymatch;
+
     }
-    return false;
+    return null;
   }
 
     void dump(StringBuffer os) {

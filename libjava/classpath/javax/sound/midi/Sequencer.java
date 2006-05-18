@@ -385,7 +385,7 @@ public interface Sequencer extends MidiDevice
     /**
      * SyncMode objects use the Object hashCode.
      */
-    public int hashCode()
+    public final int hashCode()
     {
       return super.hashCode();
     }

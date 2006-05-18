@@ -68,6 +68,11 @@ public class AudioSystem
    */
   public static final int NOT_SPECIFIED = -1;
 
+  // This class is not instantiable.
+  private AudioSystem()
+  {
+  }
+
   /**
    * Return the file format of a given File.
    * @param f the file to check

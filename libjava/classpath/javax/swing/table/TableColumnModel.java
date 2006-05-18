@@ -1,5 +1,5 @@
 /* TableColumnModel.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,8 @@ import java.util.Enumeration;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 
 /**
@@ -50,7 +52,6 @@ import javax.swing.event.TableColumnModelListener;
  * 
  * @author Andrew Selkirk
  */
-// FIXME: The API documentation in this class is incomplete.
 public interface TableColumnModel
 {
   /**
@@ -80,21 +81,26 @@ public interface TableColumnModel
   void moveColumn(int columnIndex, int newIndex);
 
   /**
-   * setColumnMargin
-   * @param margin Margin of column
+   * Sets the column margin and sends a {@link ChangeEvent} to all registered
+   * {@link TableColumnModelListener}s registered with the model.
+   * 
+   * @param margin  the column margin.
+   * 
+   * @see #getColumnMargin()
    */
   void setColumnMargin(int margin);
 
   /**
    * Returns the number of columns in the model.
    * 
-   * @return The column count
+   * @return The column count.
    */
   int getColumnCount();
 
   /**
-   * getColumns
-   * @return Enumeration of columns
+   * Returns an enumeration of the columns in the model.
+   * 
+   * @return An enumeration of the columns in the model.
    */
   Enumeration getColumns();
 
@@ -123,30 +129,53 @@ public interface TableColumnModel
    * Returns the column margin.
    * 
    * @return The column margin.
+   * 
+   * @see #setColumnMargin(int)
    */
   int getColumnMargin();
 
   /**
-   * getColumnIndexAtX
-   * @return Column index as position x
+   * Returns the index of the column that contains the specified x-coordinate,
+   * assuming that:
+   * <ul>
+   * <li>column zero begins at position zero;</li>
+   * <li>all columns appear in order;</li>
+   * <li>individual column widths are taken into account, but the column margin
+   *     is ignored.</li>
+   * </ul>
+   * If no column contains the specified position, this method returns 
+   * <code>-1</code>.
+   * 
+   * @param xPosition  the x-position.
+   * 
+   * @return The column index, or <code>-1</code>.
    */
   int getColumnIndexAtX(int xPosition);
 
   /**
-   * getTotalColumnWidth
-   * @return Total column width
+   * Returns total width of all the columns in the model, ignoring the
+   * column margin (see {@link #getColumnMargin()}).
+   *
+   * @return The total width of all the columns.
    */
   int getTotalColumnWidth();
 
   /**
-   * setColumnSelectionAllowed
-   * @param value Set column selection
+   * Sets the flag that indicates whether or not column selection is allowed.
+   *
+   * @param allowed  the new flag value.
+   * 
+   * @see #getColumnSelectionAllowed()
    */
-  void setColumnSelectionAllowed(boolean value);
+  void setColumnSelectionAllowed(boolean allowed);
 
   /**
-   * getColumnSelectionAllowed
-   * @return true if column selection allowed, false otherwise
+   * Returns <code>true</code> if column selection is allowed, and 
+   * <code>false</code> if column selection is not allowed.
+   *
+   * @return A boolean.
+   * 
+   * @see #setColumnSelectionAllowed(boolean)
    */
   boolean getColumnSelectionAllowed();
 
@@ -157,31 +186,47 @@ public interface TableColumnModel
   int[] getSelectedColumns();
 
   /**
-   * getSelectedColumnCount
-   * @return Count of selected columns
+   * Returns the number of selected columns in the model.
+   * 
+   * @return The selected column count.
+   * 
+   * @see #getSelectionModel()
    */
   int getSelectedColumnCount();
 
   /**
-   * setSelectionModel
-   * @param model ListSelectionModel
+   * Sets the selection model that will be used to keep track of the selected 
+   * columns.
+   *
+   * @param model  the selection model (<code>null</code> not permitted).
+   * 
+   * @throws IllegalArgumentException if <code>model</code> is 
+   *     <code>null</code>.
    */
   void setSelectionModel(ListSelectionModel model);
 
   /**
-   * getSelectionModel
+   * Returns the selection model used to track table column selections.
+   * 
+   * @return The selection model.
+   * 
+   * @see #setSelectionModel(ListSelectionModel)
    */
   ListSelectionModel getSelectionModel();
 
   /**
-   * addColumnModelListener
-   * @param listener TableColumnModelListener
+   * Registers a listener with the model, so that it will receive
+   * {@link TableColumnModelEvent} notifications.
+   *
+   * @param listener the listener (<code>null</code> ignored).
    */
   void addColumnModelListener(TableColumnModelListener listener);
 
   /**
-   * removeColumnModelListener
-   * @param listener TableColumnModelListener
+   * Deregisters a listener, so that it will no longer receive 
+   * {@link TableColumnModelEvent} notifications.
+   * 
+   * @param listener  the listener.
    */
   void removeColumnModelListener(TableColumnModelListener listener);
 }

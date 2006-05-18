@@ -42,8 +42,11 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
@@ -79,7 +82,7 @@ import java.util.HashSet;
  * @since 1.0
  * @see ClassLoader
  */
-public final class Class implements Serializable
+public final class Class implements Type, GenericDeclaration, Serializable
 {
   /**
    * Class is non-instantiable from Java code; only the VM can create
@@ -927,5 +930,93 @@ public final class Class implements Serializable
 	if (pkg != null)
 	  sm.checkPackageAccess(pkg.getName());
       }
+  }
+
+  /**
+   * Returns the simple name for this class, as used in the source
+   * code.  For normal classes, this is the content returned by
+   * <code>getName()</code> which follows the last ".".  Anonymous
+   * classes have no name, and so the result of calling this method is
+   * "".  The simple name of an array consists of the simple name of
+   * its component type, followed by "[]".  Thus, an array with the
+   * component type of an anonymous class has a simple name of simply
+   * "[]".
+   *
+   * @return the simple name for this class.
+   * @since 1.5
+   */
+  public String getSimpleName()
+  {
+    // FIXME write real implementation
+    return "";
+  }
+
+  /**
+   * Returns the class which immediately encloses this class.  If this class
+   * is a top-level class, this method returns <code>null</code>.
+   *
+   * @return the immediate enclosing class, or <code>null</code> if this is
+   *         a top-level class.
+   * @since 1.5
+   */
+   /* FIXME[GENERICS]: Should return Class<?> */
+  public Class getEnclosingClass()
+  {
+    // FIXME write real implementation
+    return null;
+  }
+
+  /**
+   * Returns the constructor which immediately encloses this class.  If
+   * this class is a top-level class, or a local or anonymous class
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @return the immediate enclosing constructor if this class is
+   *         declared within a constructor.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+   /* FIXME[GENERICS]: Should return Constructor<?> */
+  public Constructor getEnclosingConstructor()
+  {
+    // FIXME write real implementation
+    return null;
+  }
+
+  /**
+   * Returns the method which immediately encloses this class.  If
+   * this class is a top-level class, or a local or anonymous class
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @return the immediate enclosing method if this class is
+   *         declared within a method.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+  public Method getEnclosingMethod()
+  {
+    // FIXME write real implementation
+    return null;
+  }
+
+  /**
+   * Returns an array of <code>TypeVariable</code> objects that represents
+   * the type variables declared by this class, in declaration order.
+   * An array of size zero is returned if this class has no type
+   * variables.
+   *
+   * @return the type variables associated with this class.
+   * @throws GenericSignatureFormatError if the generic signature does
+   *         not conform to the format specified in the Virtual Machine
+   *         specification, version 3.
+   * @since 1.5
+   */
+   /* FIXME[GENERICS]: Should return TypeVariable<Class<T>> */
+  public TypeVariable[] getTypeParameters()
+  {
+    // FIXME - provide real implementation.
+    return new TypeVariable[0];
   }
 }

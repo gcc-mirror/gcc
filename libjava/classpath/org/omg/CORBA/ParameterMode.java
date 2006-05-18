@@ -1,5 +1,5 @@
 /* ParameterMode.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -78,17 +78,17 @@ public class ParameterMode
   /**
    * This value means that the parameter is an IN parameter.
    */
-  public static ParameterMode PARAM_IN = new ParameterMode(_PARAM_IN);
+  public static final ParameterMode PARAM_IN = new ParameterMode(_PARAM_IN);
 
   /**
    * This value means that the parameter is an OUT parameter.
    */
-  public static ParameterMode PARAM_OUT = new ParameterMode(_PARAM_OUT);
+  public static final ParameterMode PARAM_OUT = new ParameterMode(_PARAM_OUT);
 
   /**
    * This value means that the parameter is an INOUT parameter.
    */
-  public static ParameterMode PARAM_INOUT = new ParameterMode(_PARAM_INOUT);
+  public static final ParameterMode PARAM_INOUT = new ParameterMode(_PARAM_INOUT);
 
   /**
    * The value of this parameter mode instance.

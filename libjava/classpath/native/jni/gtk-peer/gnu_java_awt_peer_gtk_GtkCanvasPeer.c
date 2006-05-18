@@ -56,3 +56,17 @@ Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create
 
   gdk_threads_leave ();
 }
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_realize (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  gdk_threads_enter ();
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gtk_widget_realize (GTK_WIDGET (ptr));
+
+  gdk_threads_leave ();
+}

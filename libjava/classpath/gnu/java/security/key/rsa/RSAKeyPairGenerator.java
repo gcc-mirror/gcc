@@ -50,6 +50,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * <p>A key-pair generator for asymetric keys to use in conjunction with the RSA
@@ -68,9 +69,10 @@ import java.util.Map;
  */
 public class RSAKeyPairGenerator implements IKeyPairGenerator
 {
-
   // Constants and variables
   // -------------------------------------------------------------------------
+
+  private static final Logger log = Logger.getLogger(RSAKeyPairGenerator.class.getName());
 
   /** The BigInteger constant 1. */
   private static final BigInteger ONE = BigInteger.ONE;
@@ -150,6 +152,8 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
    */
   public void setup(Map attributes)
   {
+    log.entering(this.getClass().getName(), "setup", attributes);
+
     // do we have a SecureRandom, or should we use our own?
     rnd = (SecureRandom) attributes.get(SOURCE_OF_RANDOMNESS);
 
@@ -177,6 +181,8 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
     Integer formatID = (Integer) attributes.get(PREFERRED_ENCODING_FORMAT);
     preferredFormat = formatID == null ? DEFAULT_ENCODING_FORMAT
                                        : formatID.intValue();
+
+    log.exiting(this.getClass().getName(), "setup");
   }
 
   /**
@@ -187,6 +193,8 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
    */
   public KeyPair generate()
   {
+    log.entering(this.getClass().getName(), "generate");
+
     BigInteger p, q, n, d;
 
     // 1. Generate a prime p in the interval [2**(M-1), 2**M - 1], where
@@ -234,7 +242,9 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
     PublicKey pubK = new GnuRSAPublicKey(preferredFormat, n, e);
     PrivateKey secK = new GnuRSAPrivateKey(preferredFormat, p, q, e, d);
 
-    return new KeyPair(pubK, secK);
+    KeyPair result = new KeyPair(pubK, secK);
+    log.exiting(this.getClass().getName(), "generate", result);
+    return result;
   }
 
   // helper methods ----------------------------------------------------------

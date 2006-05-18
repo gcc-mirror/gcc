@@ -97,4 +97,13 @@ public interface Member
    * @see Modifier
    */
   int getModifiers();
+
+  /**
+   * Return true if this member is synthetic, meaning that it was
+   * created by the compiler and does not appear in the user's
+   * source code.
+   * @return true if the member is synthetic
+   * @since 1.5
+   */
+  boolean isSynthetic();
 }

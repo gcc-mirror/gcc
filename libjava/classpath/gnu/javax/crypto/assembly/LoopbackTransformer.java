@@ -43,8 +43,6 @@ import java.util.Map;
 /**
  * A trivial {@link Transformer} to allow closing a chain in an {@link Assembly}.
  * This class is not visible outside this package.
- *
- * @version $Revision: 1.1 $
  */
 final class LoopbackTransformer extends Transformer
 {

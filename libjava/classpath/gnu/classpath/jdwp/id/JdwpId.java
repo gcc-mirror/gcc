@@ -63,7 +63,7 @@ public abstract class JdwpId
   /**
    * Tag of ID's type (see {@link gnu.classpath.jdwp.JdwpConstants.Tag})
    * for object-like IDs or the type tag (see {@link
-   * gnu.classpath.JdwpConstants.TypeTag}) for reference type IDs.
+   * gnu.classpath.jdwp.JdwpConstants.TypeTag}) for reference type IDs.
    */
   private byte _tag;
 

@@ -301,10 +301,9 @@ public class JColorChooser extends JComponent implements Accessible
       throw new AWTError("No suitable parent found for Component.");
     JDialog dialog;
     if (parent instanceof Frame)
-      dialog = new ModalDialog((Frame) parent, title);
+      dialog = new JDialog((Frame) parent, title, true);
     else
-      dialog = new ModalDialog((Dialog) parent, title);
-    dialog.setModal(modal);
+      dialog = new JDialog((Dialog) parent, title, true);
 
     dialog.getContentPane().setLayout(new BorderLayout());
 
@@ -362,8 +361,7 @@ public class JColorChooser extends JComponent implements Accessible
   public void updateUI()
   {
     setUI((ColorChooserUI) UIManager.getUI(this));
-    revalidate();
-  } // updateUI()
+  }
 
   /**
    * This method returns a String identifier for the UI Class to be used with
@@ -643,64 +641,4 @@ public class JColorChooser extends JComponent implements Accessible
     }
   }
 
-  /**
-   * This is a custom JDialog that will notify when it is hidden and the modal
-   * property is set.
-   */
-  static class ModalDialog extends JDialog
-  {
-    /** The modal property. */
-    private boolean modal;
-
-    /**
-     * Creates a new ModalDialog object with the given parent and title.
-     *
-     * @param parent The parent of the JDialog.
-     * @param title The title of the JDialog.
-     */
-    public ModalDialog(Frame parent, String title)
-    {
-      super(parent, title);
-    }
-
-    /**
-     * Creates a new ModalDialog object with the given parent and title.
-     *
-     * @param parent The parent of the JDialog.
-     * @param title The title of the JDialog.
-     */
-    public ModalDialog(Dialog parent, String title)
-    {
-      super(parent, title);
-    }
-
-    /**
-     * This method sets the modal property.
-     *
-     * @param modal The modal property.
-     */
-    public void setModal(boolean modal)
-    {
-      this.modal = modal;
-    }
-
-    /**
-     * This method shows the ModalDialog.
-     */
-    public void show()
-    {
-      super.show();
-      if (modal)
-	makeModal(this);
-    }
-
-    /**
-     * This method hides the ModalDialog.
-     */
-    public synchronized void hide()
-    {
-      super.hide();
-      notifyAll();
-    }
-  }
 }

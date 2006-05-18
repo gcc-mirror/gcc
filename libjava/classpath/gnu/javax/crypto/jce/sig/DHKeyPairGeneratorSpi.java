@@ -44,6 +44,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 
 import javax.crypto.spec.DHGenParameterSpec;
+import javax.crypto.spec.DHParameterSpec;
 
 import gnu.java.security.Registry;
 import gnu.java.security.jce.sig.KeyPairGeneratorAdapter;
@@ -75,7 +76,8 @@ public class DHKeyPairGeneratorSpi
     HashMap attributes = new HashMap();
     if (params != null)
       {
-        if (! (params instanceof DHGenParameterSpec))
+        if (! (params instanceof DHGenParameterSpec) &&
+            ! (params instanceof DHParameterSpec))
           throw new InvalidAlgorithmParameterException("params");
 
         attributes.put(GnuDHKeyPairGenerator.DH_PARAMETERS, params);

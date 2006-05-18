@@ -1424,6 +1424,8 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBoundsUnlocked
   (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
 {
   void *ptr;
+  gint current_width;
+  gint current_height;
 
   ptr = NSA_GET_PTR (env, obj);
 
@@ -1447,12 +1449,19 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBoundsUnlocked
   if (GTK_WIDGET (ptr)->window != NULL)
     gdk_window_move (GTK_WIDGET (ptr)->window, x, y);
 
-  /* Need to change the widget's request size. */
-  gtk_widget_set_size_request (GTK_WIDGET(ptr), width, height);
-  /* Also need to call gtk_window_resize.  If the resize is requested
-     by the program and the window's "resizable" property is true then
-     the size request will not be honoured. */
-  gtk_window_resize (GTK_WINDOW (ptr), width, height);
+  /* Only request resizing if the actual width or height change, otherwise
+   * we get unnecessary flickers because resizing causes GTK to clear the
+   * window content, even if the actual size doesn't change. */
+  gtk_window_get_size(GTK_WINDOW(ptr), &current_width, &current_height);
+  if (current_width != width || current_height != height)
+    {
+      /* Need to change the widget's request size. */
+      gtk_widget_set_size_request (GTK_WIDGET(ptr), width, height);
+      /* Also need to call gtk_window_resize.  If the resize is requested
+	 by the program and the window's "resizable" property is true then
+	 the size request will not be honoured. */
+      gtk_window_resize (GTK_WINDOW (ptr), width, height);
+    }
 }
 
 static void

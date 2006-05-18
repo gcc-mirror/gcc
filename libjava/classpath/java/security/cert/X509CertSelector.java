@@ -367,7 +367,7 @@ public class X509CertSelector implements CertSelector, Cloneable
    * Sets the authority key identifier criterion, or <code>null</code> to clear
    * this criterion. Note that the byte array is cloned to prevent modification.
    *
-   * @param subjectKeyId The subject key identifier.
+   * @param authKeyId The authority key identifier.
    */
   public void setAuthorityKeyIdentifier(byte[] authKeyId)
   {

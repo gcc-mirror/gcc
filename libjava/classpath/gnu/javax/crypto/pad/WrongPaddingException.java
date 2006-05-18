@@ -41,8 +41,6 @@ package gnu.javax.crypto.pad;
 /**
  * <p>A checked exception that indicates that a padding algorithm did not find the
  * expected padding bytes when unpadding some data.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class WrongPaddingException extends Exception
 {

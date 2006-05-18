@@ -407,20 +407,7 @@ public class IorDelegate extends SimpleDelegate
    */
   public void release(org.omg.CORBA.Object target)
   {
-    String key = ior.Internet.host + ":" + ior.Internet.port;
-
-    Socket socket = SocketRepository.get_socket(key);
-    try
-      {
-        if (socket != null)
-          {
-            socket.close();
-          }
-      }
-    catch (IOException ex)
-      {
-        // do nothing, then.
-      }
+    // Do nothing here.
   }
 
   /**

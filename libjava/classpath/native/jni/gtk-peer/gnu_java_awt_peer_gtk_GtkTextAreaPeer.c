@@ -43,12 +43,16 @@ exception statement from your version. */
 #define AWT_TEXTAREA_SCROLLBARS_VERTICAL_ONLY 1
 #define AWT_TEXTAREA_SCROLLBARS_HORIZONTAL_ONLY 2
 
+static GtkWidget *textarea_get_widget (GtkWidget *widget);
+
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
   (JNIEnv *env, jobject obj,
    jint textview_width, jint textview_height,  jint scroll)
 {
-  GtkWidget *text, *sw;
+  GtkWidget *text;
+  GtkWidget *sw;
+  GtkWidget *eventbox;
 
   gdk_threads_enter ();
 
@@ -61,9 +65,12 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
 
   gtk_widget_show (text);
 
+  eventbox = gtk_event_box_new ();
   sw = gtk_scrolled_window_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (sw), text);
-
+  gtk_container_add (GTK_CONTAINER (eventbox), sw);
+  gtk_widget_show (sw);
+  
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
      /* horizontal scrollbar */
      (scroll == AWT_TEXTAREA_SCROLLBARS_BOTH
@@ -79,7 +86,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
 				|| scroll == AWT_TEXTAREA_SCROLLBARS_HORIZONTAL_ONLY)
 			       ? GTK_WRAP_NONE : GTK_WRAP_WORD);
 
-  NSA_SET_PTR (env, obj, sw);
+  NSA_SET_PTR (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -99,7 +106,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_connectSignals
   gref = NSA_GET_GLOBAL_REF (env, obj);
 
   /* Unwrap the text view from the scrolled window */
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
 
@@ -127,7 +134,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_insert
   ptr = NSA_GET_PTR (env, obj);
   str = (*env)->GetStringUTFChars (env, contents, NULL);
   
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
   gtk_text_buffer_get_iter_at_offset (buf, &iter, position);
@@ -155,8 +162,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_replaceRange
   ptr = NSA_GET_PTR (env, obj);
   str = (*env)->GetStringUTFChars (env, contents, NULL);
   
-  text = gtk_bin_get_child (GTK_BIN (ptr));
-
+  text = textarea_get_widget (GTK_WIDGET (ptr));
+  
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
 
   gtk_text_buffer_get_iter_at_offset (buf, &startIter, mystart);
@@ -183,8 +190,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkWidgetModifyFont
   gdk_threads_enter();
 
   ptr = NSA_GET_PTR (env, obj);
-
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
@@ -218,7 +225,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkWidgetRequestFocus
 
   ptr = NSA_GET_PTR (env, obj);
   
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   gtk_widget_grab_focus (text);
 
@@ -230,6 +237,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getHScrollbarHeight
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
+  GtkWidget *bin;
   GtkScrolledWindow *sw;
   GtkRequisition requisition;
   jint height = 0;
@@ -239,7 +247,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getHScrollbarHeight
 
   ptr = NSA_GET_PTR (env, obj);
 
-  sw = GTK_SCROLLED_WINDOW (ptr);
+  bin = gtk_bin_get_child (GTK_BIN (ptr));
+  sw = GTK_SCROLLED_WINDOW (bin);
 
   if (sw)
     {
@@ -258,6 +267,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getVScrollbarWidth
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
+  GtkWidget *bin;
   GtkScrolledWindow *sw;
   GtkRequisition requisition;
   jint width = 0;
@@ -266,8 +276,9 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getVScrollbarWidth
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
-  sw = GTK_SCROLLED_WINDOW (ptr);
+  
+  bin = gtk_bin_get_child (GTK_BIN (ptr));
+  sw = GTK_SCROLLED_WINDOW (bin);
 
   if (sw)
     {
@@ -295,8 +306,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getCaretPosition
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
   mark = gtk_text_buffer_get_insert (buf);
@@ -323,8 +334,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_setCaretPosition
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
 
@@ -366,7 +377,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getSelectionStart
 
   ptr = NSA_GET_PTR (env, obj);
 
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
 
@@ -403,7 +414,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getSelectionEnd
 
   ptr = NSA_GET_PTR (env, obj);
 
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
 
@@ -436,7 +447,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_select
 
   ptr = NSA_GET_PTR (env, obj);
 
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
   gtk_text_buffer_get_iter_at_offset (buf, &iter, start);
@@ -460,7 +471,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_setEditable
 
   ptr = NSA_GET_PTR (env, obj);
 
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   gtk_text_view_set_editable (GTK_TEXT_VIEW (text), state);
 
@@ -481,8 +492,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_getText
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-  
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
   gtk_text_buffer_get_start_iter (buf, &start);
@@ -505,13 +516,13 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_setText
   const char *str;
   GtkWidget *text = NULL;
   GtkTextBuffer *buf;
-
+  
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
   str = (*env)->GetStringUTFChars (env, contents, NULL);
 
-  text = gtk_bin_get_child (GTK_BIN (ptr));
+  text = textarea_get_widget (GTK_WIDGET (ptr));
 
   buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
   gtk_text_buffer_set_text (buf, str, strlen (str));
@@ -519,4 +530,18 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_setText
   (*env)->ReleaseStringUTFChars (env, contents, str);
 
   gdk_threads_leave ();
+}
+
+static GtkWidget *
+textarea_get_widget (GtkWidget *widget)
+{
+   GtkWidget *wid;
+   g_assert (GTK_IS_EVENT_BOX (widget));
+
+   wid = gtk_bin_get_child (GTK_BIN (widget));
+   g_assert (GTK_IS_SCROLLED_WINDOW (wid));
+
+   wid = gtk_bin_get_child (GTK_BIN (wid));
+
+   return wid;
 }

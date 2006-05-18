@@ -1,6 +1,6 @@
 /* ReferenceTypeCommandSet.java -- class to implement the ReferenceType
    Command Set
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -40,11 +40,13 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidFieldException;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
+import gnu.classpath.jdwp.id.ClassReferenceTypeId;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.JdwpString;
@@ -54,7 +56,6 @@ import gnu.classpath.jdwp.util.Value;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 /**
@@ -181,17 +182,18 @@ public class ReferenceTypeCommandSet
   private void executeMethods(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
+    ClassReferenceTypeId refId
+      = (ClassReferenceTypeId) idMan.readReferenceTypeId(bb);
     Class clazz = refId.getType();
 
-    Method[] methods = clazz.getMethods();
-    os.writeInt(methods.length);
+    VMMethod[] methods = VMVirtualMachine.getAllClassMethods(clazz);
+    os.writeInt (methods.length);
     for (int i = 0; i < methods.length; i++)
       {
-        Method method = methods[i];
-        idMan.getObjectId(method).write(os);
+        VMMethod method = methods[i];
+        method.writeId(os);
         JdwpString.writeString(os, method.getName());
-        JdwpString.writeString(os, Signature.computeMethodSignature(method));
+        JdwpString.writeString(os, method.getSignature());
         os.writeInt(method.getModifiers());
       }
   }

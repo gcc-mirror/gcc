@@ -38,6 +38,7 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
 import gnu.java.security.key.IKeyPairCodec;
 
@@ -48,20 +49,23 @@ import java.security.interfaces.DSAPrivateKey;
 /**
  * <p>An object that embodies a DSS (Digital Signature Standard) private key.</p>
  *
- * @version $Revision: 1.2 $
  * @see #getEncoded
  */
 public class DSSPrivateKey extends DSSKey implements PrivateKey, DSAPrivateKey
 {
-
   // Constants and variables
   // -------------------------------------------------------------------------
+
+  private static final boolean DEBUG = false;
 
   /**
    * <p>A randomly or pseudorandomly generated integer with <code>0 &lt; x &lt;
    * q</code>.</p>
    */
   private final BigInteger x;
+
+  /** String representation of this key. Cached for speed. */
+  private transient String str;
 
   // Constructor(s)
   // -------------------------------------------------------------------------
@@ -197,5 +201,19 @@ public class DSSPrivateKey extends DSSKey implements PrivateKey, DSAPrivateKey
       }
     DSAPrivateKey that = (DSAPrivateKey) obj;
     return super.equals(that) && x.equals(that.getX());
+  }
+
+  public String toString()
+  {
+    if (str == null)
+      {
+        String ls = SystemProperties.getProperty("line.separator");
+        str = new StringBuilder(this.getClass().getName()).append("(")
+        .append(super.toString()).append(",").append(ls)
+        .append("x=0x").append(DEBUG ? x.toString(16) : "**...*").append(ls)
+        .append(")").toString();
+      }
+
+    return str;
   }
 }

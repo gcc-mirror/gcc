@@ -1,5 +1,5 @@
 /* gtkselection.c -- Native C functions for GtkSelection class using gtk+.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -149,9 +149,10 @@ clipboard_targets_received (GtkClipboard *clipboard
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkSelection_requestMimeTypes
-(JNIEnv *env, jobject selection)
+(JNIEnv *env, jobject selection, jboolean clipboard)
 {
   jobject selection_obj;
+  GtkClipboard *gtk_clipboard;
   selection_obj = (*env)->NewGlobalRef(env, selection);
   if (selection_obj == NULL)
     return;
@@ -167,13 +168,18 @@ Java_gnu_java_awt_peer_gtk_GtkSelection_requestMimeTypes
 	return;
     }
 
+  if (clipboard)
+    gtk_clipboard = cp_gtk_clipboard;
+  else
+    gtk_clipboard = cp_gtk_selection;
+
   /* We would have liked to call gtk_clipboard_request_targets ()
      since that is more general. But the result of that, an array of
      GdkAtoms, cannot be used with the
      gtk_selection_data_targets_include_<x> functions (despite what
      the name suggests). */
   gdk_threads_enter ();
-  gtk_clipboard_request_contents (cp_gtk_clipboard,
+  gtk_clipboard_request_contents (gtk_clipboard,
 				  gdk_atom_intern ("TARGETS", FALSE),
 				  clipboard_targets_received,
 				  (gpointer) selection_obj);
@@ -210,9 +216,10 @@ clipboard_text_received (GtkClipboard *clipboard
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkSelection_requestText
-(JNIEnv *env, jobject selection)
+(JNIEnv *env, jobject selection, jboolean clipboard)
 {
   jobject selection_obj;
+  GtkClipboard *gtk_clipboard;
   selection_obj = (*env)->NewGlobalRef(env, selection);
   if (selection_obj == NULL)
     return;
@@ -228,8 +235,13 @@ Java_gnu_java_awt_peer_gtk_GtkSelection_requestText
         return;
     }
 
+  if (clipboard)
+    gtk_clipboard = cp_gtk_clipboard;
+  else
+    gtk_clipboard = cp_gtk_selection;
+
   gdk_threads_enter ();
-  gtk_clipboard_request_text (cp_gtk_clipboard,
+  gtk_clipboard_request_text (gtk_clipboard,
 			      clipboard_text_received,
 			      (gpointer) selection_obj);
   gdk_threads_leave ();
@@ -260,9 +272,12 @@ clipboard_image_received (GtkClipboard *clipboard
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkSelection_requestImage (JNIEnv *env, jobject obj)
+Java_gnu_java_awt_peer_gtk_GtkSelection_requestImage (JNIEnv *env,
+						      jobject obj,
+						      jboolean clipboard)
 {
   jobject selection_obj;
+  GtkClipboard *gtk_clipboard;
   selection_obj = (*env)->NewGlobalRef(env, obj);
   if (selection_obj == NULL)
     return;
@@ -278,14 +293,19 @@ Java_gnu_java_awt_peer_gtk_GtkSelection_requestImage (JNIEnv *env, jobject obj)
         return;
     }
 
+  if (clipboard)
+    gtk_clipboard = cp_gtk_clipboard;
+  else
+    gtk_clipboard = cp_gtk_selection;
+
 #if GTK_MINOR_VERSION > 4
   gdk_threads_enter ();
-  gtk_clipboard_request_image (cp_gtk_clipboard,
+  gtk_clipboard_request_image (gtk_clipboard,
 			       clipboard_image_received,
 			       (gpointer) selection_obj);
   gdk_threads_leave ();
 #else
-  clipboard_image_received (cp_gtk_clipboard, NULL, (gpointer) selection_obj);
+  clipboard_image_received (gtk_clipboard, NULL, (gpointer) selection_obj);
 #endif
 }
 
@@ -342,12 +362,15 @@ clipboard_uris_received (GtkClipboard *clipboard
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkSelection_requestURIs (JNIEnv *env, jobject obj)
+Java_gnu_java_awt_peer_gtk_GtkSelection_requestURIs (JNIEnv *env,
+						     jobject obj,
+						     jboolean clipboard)
 {
 #if GTK_MINOR_VERSION > 4
   GdkAtom uri_atom;
 #endif
   jobject selection_obj;
+  GtkClipboard *gtk_clipboard;
   selection_obj = (*env)->NewGlobalRef(env, obj);
   if (selection_obj == NULL)
     return;
@@ -363,17 +386,22 @@ Java_gnu_java_awt_peer_gtk_GtkSelection_requestURIs (JNIEnv *env, jobject obj)
         return;
     }
 
+  if (clipboard)
+    gtk_clipboard = cp_gtk_clipboard;
+  else
+    gtk_clipboard = cp_gtk_selection;
+
 #if GTK_MINOR_VERSION > 4
   /* There is no real request_uris so we have to make one ourselves. */
   gdk_threads_enter ();
   uri_atom = gdk_atom_intern ("text/uri-list", FALSE);
-  gtk_clipboard_request_contents (cp_gtk_clipboard,
+  gtk_clipboard_request_contents (gtk_clipboard,
 				  uri_atom,
 				  clipboard_uris_received,
 				  (gpointer) selection_obj);
   gdk_threads_leave ();
 #else
-  clipboard_uris_received (cp_gtk_clipboard, NULL, (gpointer) selection_obj);
+  clipboard_uris_received (gtk_clipboard, NULL, (gpointer) selection_obj);
 #endif
 }
 
@@ -406,12 +434,14 @@ clipboard_bytes_received (GtkClipboard *clipboard
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkSelection_requestBytes (JNIEnv *env,
 						      jobject obj,
+						      jboolean clipboard,
 						      jstring target_string)
 {
   int len;
   const gchar *target_text;
   GdkAtom target_atom;
   jobject selection_obj;
+  GtkClipboard *gtk_clipboard;
   selection_obj = (*env)->NewGlobalRef(env, obj);
   if (selection_obj == NULL)
     return;
@@ -434,9 +464,14 @@ Java_gnu_java_awt_peer_gtk_GtkSelection_requestBytes (JNIEnv *env,
   if (target_text == NULL)
     return;
 
+  if (clipboard)
+    gtk_clipboard = cp_gtk_clipboard;
+  else
+    gtk_clipboard = cp_gtk_selection;
+
   gdk_threads_enter ();
   target_atom = gdk_atom_intern (target_text, FALSE);
-  gtk_clipboard_request_contents (cp_gtk_clipboard,
+  gtk_clipboard_request_contents (gtk_clipboard,
                                   target_atom,
                                   clipboard_bytes_received,
                                   (gpointer) selection_obj);

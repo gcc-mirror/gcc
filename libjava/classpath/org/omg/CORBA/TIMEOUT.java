@@ -1,5 +1,5 @@
 /* TIMEOUT.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import java.io.Serializable;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class TIMEOUT
+public final class TIMEOUT
   extends SystemException
   implements Serializable
 {
@@ -59,7 +59,7 @@ public class TIMEOUT
   /**
    * Creates TIMEOUT with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reason the explaining message.
+   * @param message the explaining message.
    */
   public TIMEOUT(String message)
   {

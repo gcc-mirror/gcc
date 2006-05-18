@@ -47,7 +47,7 @@ import java.util.Locale;
 /**
  * Wrapper class for the primitive char data type.  In addition, this class
  * allows one to retrieve property information and perform transformations
- * on the 57,707 defined characters in the Unicode Standard, Version 3.0.0.
+ * on the defined characters in the Unicode Standard, Version 4.0.0.
  * java.lang.Character is designed to be very dynamic, and as such, it
  * retrieves information on the Unicode character set from a separate
  * database, gnu.java.lang.CharData, which can be easily upgraded.
@@ -55,7 +55,7 @@ import java.util.Locale;
  * <p>For predicates, boundaries are used to describe
  * the set of characters for which the method will return true.
  * This syntax uses fairly normal regular expression notation.
- * See 5.13 of the Unicode Standard, Version 3.0, for the
+ * See 5.13 of the Unicode Standard, Version 4.0, for the
  * boundary specification.
  *
  * <p>See <a href="http://www.unicode.org">http://www.unicode.org</a>

@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * The implementation of the HMAC-SHA-160 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
- *
- * @version $Revision: 1.1 $
  */
 public final class HMacSHA160Spi extends MacAdapter
 {

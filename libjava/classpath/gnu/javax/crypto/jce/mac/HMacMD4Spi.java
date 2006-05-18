@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * The implementation of the HMAC-MD4 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
- *
- * @version $Revision: 1.1 $
  */
 public final class HMacMD4Spi extends MacAdapter
 {

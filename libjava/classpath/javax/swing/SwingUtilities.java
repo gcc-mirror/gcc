@@ -1,5 +1,5 @@
 /* SwingUtilities.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -91,23 +91,23 @@ public class SwingUtilities
    * of the <em>component's</em> coordinate system, where (0,0) is the
    * upper left corner of the component's bounds.
    *
-   * @param c The component to measure the bounds of
-   * @param r A Rectangle to store the return value in, or
-   * <code>null</code>
+   * @param c  the component to measure the bounds of (if <code>null</code>, 
+   *     this method returns <code>null</code>).
+   * @param r  a carrier to store the return value in (if <code>null</code>, a
+   *     new <code>Rectangle</code> instance is created).
    *
-   * @return The calculated area inside the component and its border
-   * insets
+   * @return The calculated area inside the component and its border insets.
    */
   public static Rectangle calculateInnerArea(JComponent c, Rectangle r)
   {
-    Rectangle b = getLocalBounds(c);
-    if (r == null)
-      r = new Rectangle();
+    if (c == null)
+      return null;
+    r = c.getBounds(r);
     Insets i = c.getInsets();
-    r.x = b.x + i.left;
-    r.width = b.width - i.left - i.right;
-    r.y = b.y + i.top;
-    r.height = b.height - i.top - i.bottom;
+    r.x = i.left;
+    r.width = r.width - i.left - i.right;
+    r.y = i.top;
+    r.height = r.height - i.top - i.bottom;
     return r;
   }
 
@@ -386,20 +386,17 @@ public class SwingUtilities
           app = (Applet) comp;
         comp = comp.getParent();
       }
-
+    
     if (win != null)
       return win;
-    else
-      return app;
+    return app;
   }
 
   /**
-   * Return true if a descends from b, in other words if b is an
-   * ancestor of a.
-   *
+   * Return true if a descends from b, in other words if b is an ancestor of a.
+   * 
    * @param a The child to search the ancestry of
    * @param b The potential ancestor to search for
-   *
    * @return true if a is a descendent of b, false otherwise
    */
   public static boolean isDescendingFrom(Component a, Component b)
@@ -600,20 +597,46 @@ public class SwingUtilities
    */
   public static void updateComponentTreeUI(Component comp)
   {
-    if (comp == null)
-      return;
-    
-    if (comp instanceof Container)
-      {
-        Component[] children = ((Container)comp).getComponents();
-        for (int i = 0; i < children.length; ++i)
-          updateComponentTreeUI(children[i]);
-      }
-
+    updateComponentTreeUIImpl(comp);
     if (comp instanceof JComponent)
-      ((JComponent)comp).updateUI();
+      {
+        JComponent jc = (JComponent) comp;
+        jc.revalidate();
+      }
+    else
+      {
+        comp.invalidate();
+        comp.validate();
+      }
+    comp.repaint();
   }
 
+  /**
+   * Performs the actual work for {@link #updateComponentTreeUI(Component)}.
+   * This calls updateUI() on c if it is a JComponent, and then walks down
+   * the component tree and calls this method on each child component.
+   *
+   * @param c the component to update the UI
+   */
+  private static void updateComponentTreeUIImpl(Component c)
+  {
+    if (c instanceof JComponent)
+      {
+        JComponent jc = (JComponent) c;
+        jc.updateUI();
+      }
+
+    Component[] components = null;
+    if (c instanceof JMenu)
+      components = ((JMenu) c).getMenuComponents();
+    else if (c instanceof Container)
+      components = ((Container) c).getComponents();
+    if (components != null)
+      {
+        for (int i = 0; i < components.length; ++i)
+          updateComponentTreeUIImpl(components[i]);
+      }
+  }
 
   /**
    * <p>Layout a "compound label" consisting of a text string and an icon
@@ -1128,7 +1151,9 @@ public class SwingUtilities
             child = parent;
             parent = child.getParent();
           }
-        child.setParent(uiActionMap);
+        // Sanity check to avoid loops.
+        if (child != uiActionMap)
+          child.setParent(uiActionMap);
       }
   }
 
@@ -1170,7 +1195,9 @@ public class SwingUtilities
             child = parent;
             parent = parent.getParent();
           }
-        child.setParent(uiInputMap);
+        // Sanity check to avoid loops.
+        if (child != uiInputMap)
+          child.setParent(uiInputMap);
       }
   }
 

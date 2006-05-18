@@ -55,9 +55,6 @@ import java.awt.Image;
  * that the available flavors might have changed. When requested it
  * (lazily) caches the targets, and (text, image, or files/uris)
  * clipboard contents.
- *
- * XXX - should only cache when
- * gdk_display_supports_selection_notification is true.
  */
 public class GtkSelection implements Transferable
 {
@@ -65,6 +62,11 @@ public class GtkSelection implements Transferable
    * Static lock used for requests of mimetypes and contents retrieval.
    */
   static private Object requestLock = new Object();
+
+  /**
+   * Whether we belong to the Clipboard (true) or to the Primary selection.
+   */
+  private final boolean clipboard;
 
   /**
    * Whether a request for mimetypes, text, images, uris or byte[] is
@@ -143,10 +145,13 @@ public class GtkSelection implements Transferable
   private byte[] bytes;
 
   /**
-   * Should only be created by the GtkClipboard class.
+   * Should only be created by the GtkClipboard class. The clipboard
+   * should be either GtkClipboard.clipboard or
+   * GtkClipboard.selection.
    */
-  GtkSelection()
+  GtkSelection(GtkClipboard clipboard)
   {
+    this.clipboard = (clipboard == GtkClipboard.clipboard);
   }
 
   /**
@@ -181,7 +186,7 @@ public class GtkSelection implements Transferable
 	    if (! mimeTypesDelivered)
 	      {
 		requestInProgress = true;
-		requestMimeTypes();
+		requestMimeTypes(clipboard);
 		while (! mimeTypesDelivered)
 		  {
 		    try
@@ -312,7 +317,7 @@ public class GtkSelection implements Transferable
 	    if (! textDelivered)
 	      {
 		requestInProgress = true;
-		requestText();
+		requestText(clipboard);
 		while (! textDelivered)
 		  {
 		    try
@@ -385,7 +390,7 @@ public class GtkSelection implements Transferable
 	    if (! imageDelivered)
 	      {
 		requestInProgress = true;
-		requestImage();
+		requestImage(clipboard);
 		while (! imageDelivered)
 		  {
 		    try
@@ -464,7 +469,7 @@ public class GtkSelection implements Transferable
 	    if (! urisDelivered)
 	      {
 		requestInProgress = true;
-		requestURIs();
+		requestURIs(clipboard);
 		while (! urisDelivered)
 		  {
 		    try
@@ -547,7 +552,7 @@ public class GtkSelection implements Transferable
 
 	// Request bytes and wait till they are available.
 	requestInProgress = true;
-	requestBytes(target);
+	requestBytes(clipboard, target);
 	while (! bytesDelivered)
 	  {
 	    try
@@ -653,12 +658,14 @@ public class GtkSelection implements Transferable
    * content is available the contentLock will be notified through
    * textAvailable, imageAvailable, urisAvailable or bytesAvailable and the
    * appropriate field is set.
+   * The clipboard argument is true if we want the Clipboard, and false
+   * if we want the (primary) selection.
    */
-  private native void requestText();
-  private native void requestImage();
-  private native void requestURIs();
-  private native void requestBytes(String target);
+  private native void requestText(boolean clipboard);
+  private native void requestImage(boolean clipboard);
+  private native void requestURIs(boolean clipboard);
+  private native void requestBytes(boolean clipboard, String target);
 
   /* Similar to the above but for requesting the supported targets. */
-  private native void requestMimeTypes();
+  private native void requestMimeTypes(boolean clipboard);
 }

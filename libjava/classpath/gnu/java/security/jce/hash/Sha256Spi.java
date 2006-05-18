@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * <p>The implementation of the SHA-2-1 (256-bit) <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.</p>
- *
- * @version $Revision: 1.1 $
  */
 public class Sha256Spi extends MessageDigestAdapter
 {

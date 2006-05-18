@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
+import gnu.classpath.NotImplementedException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -667,6 +669,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("FormAction.start not implemented");
@@ -677,6 +680,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("FormAction.end not implemented");
@@ -690,6 +694,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("HiddenAction.start not implemented");
@@ -700,6 +705,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("HiddenAction.end not implemented");
@@ -713,6 +719,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("IsindexAction.start not implemented");
@@ -723,6 +730,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("IsindexAction.end not implemented");
@@ -759,6 +767,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("PreAction.start not implemented");
@@ -769,6 +778,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("PreAction.end not implemented");
@@ -782,6 +792,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("SpecialAction.start not implemented");
@@ -792,6 +803,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("SpecialAction.end not implemented");
@@ -805,6 +817,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("AreaAction.start not implemented");
@@ -815,6 +828,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("AreaAction.end not implemented");
@@ -828,6 +842,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("BaseAction.start not implemented");
@@ -838,6 +853,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("BaseAction.end not implemented");
@@ -851,6 +867,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("HeadAction.start not implemented: "+t);
@@ -862,6 +879,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("HeadAction.end not implemented: "+t);
@@ -876,6 +894,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("LinkAction.start not implemented");
@@ -886,6 +905,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("LinkAction.end not implemented");
@@ -899,6 +919,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("MapAction.start not implemented");
@@ -909,6 +930,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("MapAction.end not implemented");
@@ -922,6 +944,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("MetaAction.start not implemented");
@@ -932,6 +955,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("MetaAction.end not implemented");
@@ -945,6 +969,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("StyleAction.start not implemented");
@@ -955,6 +980,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("StyleAction.end not implemented");
@@ -968,6 +994,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * of tags associated with this Action.
        */
       public void start(HTML.Tag t, MutableAttributeSet a)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("TitleAction.start not implemented");
@@ -978,6 +1005,7 @@ public class HTMLDocument extends DefaultStyledDocument
        * with this Action.
        */
       public void end(HTML.Tag t)
+        throws NotImplementedException
       {
         // FIXME: Implement.
         print ("TitleAction.end not implemented");
@@ -1253,6 +1281,7 @@ public class HTMLDocument extends DefaultStyledDocument
      * @since 1.3
      */
     public void handleEndOfLineString(String eol)
+      throws NotImplementedException
     {
       // FIXME: Implement.
       print ("HTMLReader.handleEndOfLineString not implemented yet");
@@ -1265,6 +1294,7 @@ public class HTMLDocument extends DefaultStyledDocument
      * @param data the text to add to the textarea
      */
     protected void textAreaContent(char[] data)
+      throws NotImplementedException
     {
       // FIXME: Implement.
       print ("HTMLReader.textAreaContent not implemented yet");
@@ -1276,6 +1306,7 @@ public class HTMLDocument extends DefaultStyledDocument
      * @param data the text
      */
     protected void preContent(char[] data)
+      throws NotImplementedException
     {
       // FIXME: Implement
       print ("HTMLReader.preContent not implemented yet");
@@ -1447,6 +1478,7 @@ public class HTMLDocument extends DefaultStyledDocument
      * @param a the attribute set specifying the special content
      */
     protected void addSpecialElement(HTML.Tag t, MutableAttributeSet a)
+      throws NotImplementedException
     {
       // FIXME: Implement
       print ("HTMLReader.addSpecialElement not implemented yet");
@@ -1550,7 +1582,7 @@ public class HTMLDocument extends DefaultStyledDocument
    * @throws IllegalStateException - if an HTMLEditorKit.Parser has not been set
    */
   public void setInnerHTML(Element elem, String htmlText) 
-    throws BadLocationException, IOException
+    throws BadLocationException, IOException, NotImplementedException
   {
     if (elem.isLeaf())
       throw new IllegalArgumentException("Element is a leaf");
@@ -1574,7 +1606,7 @@ public class HTMLDocument extends DefaultStyledDocument
    * @throws IllegalStateException - if parser is not set
    */
   public void setOuterHTML(Element elem, String htmlText) 
-    throws BadLocationException, IOException
+    throws BadLocationException, IOException, NotImplementedException
     {
       if (parser == null)
         throw new IllegalStateException("Parser has not been set");
@@ -1593,7 +1625,7 @@ public class HTMLDocument extends DefaultStyledDocument
    * @throws IllegalStateException - if parser has not been set
    */
   public void insertBeforeStart(Element elem, String htmlText)
-      throws BadLocationException, IOException
+      throws BadLocationException, IOException, NotImplementedException
   {
     if (parser == null)
       throw new IllegalStateException("Parser has not been set");
@@ -1613,7 +1645,7 @@ public class HTMLDocument extends DefaultStyledDocument
    * @throws IllegalStateException - if parser is not set
    */
   public void insertBeforeEnd(Element elem, String htmlText)
-      throws BadLocationException, IOException
+      throws BadLocationException, IOException, NotImplementedException
   {
     if (parser == null)
       throw new IllegalStateException("Parser has not been set");
@@ -1632,7 +1664,7 @@ public class HTMLDocument extends DefaultStyledDocument
    * @throws IllegalStateException - if parser is not set
    */
   public void insertAfterEnd(Element elem, String htmlText)
-      throws BadLocationException, IOException
+      throws BadLocationException, IOException, NotImplementedException
   {
     if (parser == null)
       throw new IllegalStateException("Parser has not been set");
@@ -1651,7 +1683,7 @@ public class HTMLDocument extends DefaultStyledDocument
    * @throws IllegalStateException - if parser is not set
    */
   public void insertAfterStart(Element elem, String htmlText)
-      throws BadLocationException, IOException
+      throws BadLocationException, IOException, NotImplementedException
   {
     if (parser == null)
       throw new IllegalStateException("Parser has not been set");
@@ -1676,6 +1708,7 @@ public class HTMLDocument extends DefaultStyledDocument
    */
   public void setParagraphAttributes(int offset, int length, AttributeSet s,
                                      boolean replace)
+    throws NotImplementedException
   {
     //  FIXME: Not implemented.
     System.out.println("setParagraphAttributes not implemented");
@@ -1688,6 +1721,7 @@ public class HTMLDocument extends DefaultStyledDocument
    *  @param e - the Document event
    */
   protected void fireChangedUpdate(DocumentEvent e)
+    throws NotImplementedException
   {
     //  FIXME: Not implemented.
     System.out.println("fireChangedUpdate not implemented");

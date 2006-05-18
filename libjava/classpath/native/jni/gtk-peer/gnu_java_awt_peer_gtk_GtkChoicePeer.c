@@ -40,6 +40,7 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkChoicePeer.h"
 
 static jmethodID postChoiceItemEventID;
+static GtkWidget *choice_get_widget (GtkWidget *widget);
 
 void
 cp_gtk_choice_init_jni (void)
@@ -61,16 +62,20 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_create
   (JNIEnv *env, jobject obj)
 {
   GtkWidget *combobox;
+  GtkWidget *eventbox;
   jobject *gref;
 
   gdk_threads_enter ();
   
   NSA_SET_GLOBAL_REF (env, obj);
   gref = NSA_GET_GLOBAL_REF (env, obj);
-
+  
+  eventbox = gtk_event_box_new ();
   combobox = gtk_combo_box_new_text ();
+  gtk_container_add (GTK_CONTAINER (eventbox), combobox);
+  gtk_widget_show (combobox);  
 
-  NSA_SET_PTR (env, obj, combobox);
+  NSA_SET_PTR (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -81,18 +86,21 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_connectSignals
 {
   void *ptr = NULL;
   jobject *gref = NULL;
+  GtkWidget *bin;
 
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
   gref = NSA_GET_GLOBAL_REF (env, obj);
 
+  bin = choice_get_widget (GTK_WIDGET (ptr));
+
   /* Choice signals */
-  g_signal_connect (G_OBJECT (ptr), "changed",
+  g_signal_connect (G_OBJECT (bin), "changed",
                     G_CALLBACK (selection_changed_cb), *gref);
 
   /* Component signals */
-  cp_gtk_component_connect_signals (G_OBJECT (ptr), gref);
+  cp_gtk_component_connect_signals (G_OBJECT (bin), gref);
 
   gdk_threads_leave ();
 }
@@ -103,11 +111,13 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append
 {
   gpointer ptr;
   jsize count, i;
+  GtkWidget *bin;
 
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
+  bin = choice_get_widget (GTK_WIDGET (ptr));
+  
   count = (*env)->GetArrayLength (env, items);
 
   for (i = 0; i < count; i++) 
@@ -118,7 +128,7 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append
       item = (*env)->GetObjectArrayElement (env, items, i);
       label = (*env)->GetStringUTFChars (env, item, NULL);
 
-      gtk_combo_box_append_text (GTK_COMBO_BOX (ptr), label);
+      gtk_combo_box_append_text (GTK_COMBO_BOX (bin), label);
 
       (*env)->ReleaseStringUTFChars (env, item, label);
       (*env)->DeleteLocalRef(env, item);
@@ -133,14 +143,16 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeAdd
 {
   void *ptr;
   const char *label;
+  GtkWidget *bin;
 
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-  
+  bin = choice_get_widget (GTK_WIDGET (ptr));
+    
   label = (*env)->GetStringUTFChars (env, item, 0);      
 
-  gtk_combo_box_insert_text (GTK_COMBO_BOX (ptr), index, label);
+  gtk_combo_box_insert_text (GTK_COMBO_BOX (bin), index, label);
 
   (*env)->ReleaseStringUTFChars (env, item, label);
 
@@ -152,12 +164,14 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemove
   (JNIEnv *env, jobject obj, jint index)
 {
   void *ptr;
-
+  GtkWidget *bin;
+  
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
-  gtk_combo_box_remove_text (GTK_COMBO_BOX (ptr), index);
+  bin = choice_get_widget (GTK_WIDGET (ptr));
+  
+  gtk_combo_box_remove_text (GTK_COMBO_BOX (bin), index);
 
   gdk_threads_leave ();
 }
@@ -168,20 +182,22 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemoveAll
 {
   void *ptr;
   GtkTreeModel *model;
+  GtkWidget *bin;
   gint count, i;
 
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
-  model = gtk_combo_box_get_model (GTK_COMBO_BOX (ptr));
+  bin = choice_get_widget (GTK_WIDGET (ptr));
+  
+  model = gtk_combo_box_get_model (GTK_COMBO_BOX (bin));
   count = gtk_tree_model_iter_n_children (model, NULL);
 
   /* First, unselect everything, to avoid problems when removing items. */
-  gtk_combo_box_set_active (GTK_COMBO_BOX (ptr), -1);
+  gtk_combo_box_set_active (GTK_COMBO_BOX (bin), -1);
 
   for (i = count - 1; i >= 0; i--) {
-    gtk_combo_box_remove_text (GTK_COMBO_BOX (ptr), i);
+    gtk_combo_box_remove_text (GTK_COMBO_BOX (bin), i);
   }
 
   gdk_threads_leave ();
@@ -204,10 +220,12 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_selectNativeUnlocked
   (JNIEnv *env, jobject obj, jint index)
 {
   void *ptr;
-
+  GtkWidget *bin;
+  
   ptr = NSA_GET_PTR (env, obj);
-
-  gtk_combo_box_set_active (GTK_COMBO_BOX (ptr), index);
+  bin = choice_get_widget (GTK_WIDGET (ptr));
+  
+  gtk_combo_box_set_active (GTK_COMBO_BOX (bin), index);
 }
 
 JNIEXPORT jint JNICALL 
@@ -216,12 +234,14 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeGetSelected
 {
   void *ptr;
   int index;
+  GtkWidget *bin;
 
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
-  index = gtk_combo_box_get_active (GTK_COMBO_BOX (ptr));
+  bin = choice_get_widget (GTK_WIDGET (ptr));
+  
+  index = gtk_combo_box_get_active (GTK_COMBO_BOX (bin));
 
   gdk_threads_leave ();
 
@@ -251,4 +271,15 @@ selection_changed_cb (GtkComboBox *combobox, jobject peer)
                                     label,
                                     (jint) AWT_ITEM_SELECTED);
     }
+}
+
+static GtkWidget *
+choice_get_widget (GtkWidget *widget)
+{
+  GtkWidget *wid;
+
+  g_assert (GTK_IS_EVENT_BOX (widget));
+  wid = gtk_bin_get_child (GTK_BIN(widget));
+
+  return wid;
 }

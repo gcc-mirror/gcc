@@ -43,7 +43,6 @@ import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.EventManager;
 import gnu.classpath.jdwp.event.EventRequest;
 import gnu.classpath.jdwp.exception.JdwpException;
-import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.processor.PacketProcessor;
 import gnu.classpath.jdwp.transport.ITransport;
 import gnu.classpath.jdwp.transport.JdwpConnection;
@@ -81,9 +80,6 @@ public class Jdwp
   // (-Xrunjdwp:..suspend=<boolean>)
   private static final String _PROPERTY_SUSPEND = "suspend";
 
-  // User's main application thread
-  private Thread _mainThread;
-
   // Connection to debugger
   private JdwpConnection _connection;
 
@@ -113,6 +109,16 @@ public class Jdwp
   }
 
   /**
+   * Get the thread group used by JDWP threads
+   * 
+   * @return the thread group
+   */
+  public ThreadGroup getJdwpThreadGroup()
+  {
+    return _group;
+  }
+  
+  /**
    * Should the virtual machine suspend on startup?
    */
   public static boolean suspendOnStartup ()
@@ -132,11 +138,9 @@ public class Jdwp
    * Configures the back-end
    *
    * @param configArgs  a string of configury options
-   * @param mainThread  the main application thread
    */
-  public void configure (String configArgs, Thread mainThread)
+  public void configure (String configArgs)
   {
-    _mainThread = mainThread;
     _processConfigury (configArgs);
   }
 
@@ -272,17 +276,6 @@ public class Jdwp
     try
       {
 	_doInitialization ();
-
-	_mainThread.start ();
-
-	_mainThread.join ();
-      }
-    catch (InterruptedException ie)
-      {
-	/* Shutting down. If we're in server mode, we should
-	   prepare for a new connection. Otherwise, we should
-	   simply exit. */
-	// FIXME
       }
     catch (Throwable t)
       {

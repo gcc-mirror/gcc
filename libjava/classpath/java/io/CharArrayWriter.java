@@ -242,6 +242,84 @@ public class CharArrayWriter extends Writer
       }
   }
 
+  /** 
+   * Appends the Unicode character, <code>c</code>, to the output stream
+   * underlying this writer.  This is equivalent to <code>write(c)</code>.
+   *
+   * @param c the character to append.
+   * @return a reference to this object.
+   * @since 1.5 
+   */
+  public CharArrayWriter append(char c)
+  {
+    write(c);
+    return this;
+  }
+
+  /** 
+   * Appends the specified sequence of Unicode characters to the
+   * output stream underlying this writer.  This is equivalent to
+   * appending the results of calling <code>toString()</code> on the
+   * character sequence.  As a result, the entire sequence may not be
+   * appended, as it depends on the implementation of
+   * <code>toString()</code> provided by the
+   * <code>CharSequence</code>.  For example, if the character
+   * sequence is wrapped around an input buffer, the results will
+   * depend on the current position and length of that buffer.
+   *
+   * @param cs the character sequence to append.  If cs is null,
+   *        then the string "null" (the string representation of null)
+   *        is appended.
+   * @return a reference to this object.
+   * @since 1.5 
+   */
+  public CharArrayWriter append(CharSequence cs)
+  {
+    try
+      {
+	write(cs == null ? "null" : cs.toString());
+      }
+    catch (IOException _)
+      {
+	// Can't happen.
+      }
+    return this;
+  }
+
+  /** 
+   * Appends the specified subsequence of Unicode characters to the
+   * output stream underlying this writer, starting and ending at the
+   * specified positions within the sequence.  The behaviour of this
+   * method matches the behaviour of writing the result of
+   * <code>append(cs.subSequence(start,end))</code> when the sequence
+   * is not null.
+   *
+   * @param cs the character sequence to append.  If cs is null,
+   *        then the string "null" (the string representation of null)
+   *        is appended.
+   * @param start the index of the first Unicode character to use from
+   *        the sequence.
+   * @param end the index of the last Unicode character to use from the
+   *        sequence.
+   * @return a reference to this object.
+   * @throws IndexOutOfBoundsException if either of the indices are negative,
+   *         the start index occurs after the end index, or the end index is
+   *         beyond the end of the sequence.
+   * @since 1.5
+   */
+  public CharArrayWriter append(CharSequence cs, int start, int end)
+  {
+    try
+      {
+	write(cs == null ? "null" : cs.subSequence(start, end).toString());
+      }
+    catch (IOException _)
+      {
+	// Can't happen.
+      }
+    return this;
+  }
+
   /**
    * This private method makes the buffer bigger when we run out of room
    * by allocating a larger buffer and copying the valid chars from the

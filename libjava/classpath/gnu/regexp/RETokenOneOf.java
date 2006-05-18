@@ -42,6 +42,9 @@ import java.util.Stack;
 final class RETokenOneOf extends REToken {
   private Vector options;
   private boolean negative;
+  // True if this RETokenOneOf is supposed to match only one character,
+  // which is typically the case of a character class expression.
+  private boolean matchesOneChar;
 
   private Vector addition;
   // This Vector addition is used to store nested character classes.
@@ -76,12 +79,14 @@ final class RETokenOneOf extends REToken {
     this.negative = negative;
     for (int i = 0; i < optionsStr.length(); i++)
       options.addElement(new RETokenChar(subIndex,optionsStr.charAt(i),insens));
+    matchesOneChar = true;
   }
 
   RETokenOneOf(int subIndex, Vector options, boolean negative) {
     super(subIndex);
     this.options = options;
     this.negative = negative;
+    matchesOneChar = negative;
   }
 
   RETokenOneOf(int subIndex, Vector options, Vector addition, boolean negative) {
@@ -89,12 +94,11 @@ final class RETokenOneOf extends REToken {
     this.options = options;
     this.addition = addition;
     this.negative = negative;
+    matchesOneChar = (negative || addition != null);
   }
 
   int getMinimumLength() {
-    // (negative || addition != null) occurs when this token originates from
-    // character class expression.
-    if (negative || addition != null) return 1;
+    if (matchesOneChar) return 1;
     int min = Integer.MAX_VALUE;
     int x;
     for (int i=0; i < options.size(); i++) {
@@ -105,9 +109,7 @@ final class RETokenOneOf extends REToken {
   }
 
   int getMaximumLength() {
-    // (negative || addition != null) occurs when this token originates from
-    // character class expression.
-    if (negative || addition != null) return 1;
+    if (matchesOneChar) return 1;
     int max = 0;
     int x;
     for (int i=0; i < options.size(); i++) {
@@ -118,6 +120,11 @@ final class RETokenOneOf extends REToken {
   }
 
     boolean match(CharIndexed input, REMatch mymatch) {
+      if (matchesOneChar) return matchOneChar(input, mymatch);
+      else return matchOneRE(input, mymatch);
+    }
+
+    boolean matchOneChar(CharIndexed input, REMatch mymatch) {
       REMatch tryMatch;
       boolean tryOnly;
       if (addition == null) {
@@ -187,40 +194,80 @@ final class RETokenOneOf extends REToken {
     }
 
     private boolean matchP(CharIndexed input, REMatch mymatch, boolean tryOnly) {
-      boolean stopMatchingIfSatisfied =
-	  (mymatch.matchFlags & REMatch.MF_FIND_ALL) == 0;
-      REMatch.REMatchList newMatch = new REMatch.REMatchList();
       REToken tk;
       for (int i=0; i < options.size(); i++) {
-	// In order that the backtracking can work,
-	// each option must be chained to the next token.
-	// But the chain method has some side effect, so
-	// we use clones.
-	tk = (REToken)((REToken) options.elementAt(i)).clone();
-	if (! tryOnly) {
-	  tk.chain(this.next);
-	  tk.setUncle(this.uncle);
-	  tk.subIndex = this.subIndex;
-        }
+	tk = (REToken) options.elementAt(i);
 	REMatch tryMatch = (REMatch) mymatch.clone();
 	if (tk.match(input, tryMatch)) { // match was successful
 	  if (tryOnly) return true;
-	  newMatch.addTail(tryMatch);
-	  if (stopMatchingIfSatisfied) break;
-	} // is a match
-      } // try next option
-      if (tryOnly) return false;
-
-      if (newMatch.head != null) {
-	  // set contents of mymatch equal to newMatch
-
-	  // try each one that matched
-	  mymatch.assignFrom(newMatch.head);
-	  return true;
-      } else {
-	  return false;
+	  if (next(input, tryMatch)) {
+	      mymatch.assignFrom(tryMatch);
+	      return true;
+	  }
+	}
       }
+      return false;
     }
+
+  private boolean matchOneRE(CharIndexed input, REMatch mymatch) {
+      REMatch newMatch = findMatch(input, mymatch);
+      if (newMatch != null) {
+	  mymatch.assignFrom(newMatch);
+	  return true;
+      }
+      return false;	
+  }
+
+  REMatch findMatch(CharIndexed input, REMatch mymatch) {
+      if (matchesOneChar) return super.findMatch(input, mymatch);
+      return findMatch(input, mymatch, 0);
+  }
+
+  REMatch backtrack(CharIndexed input, REMatch mymatch, Object param) {
+      return findMatch(input, mymatch, ((Integer)param).intValue());
+  }
+
+  private REMatch findMatch(CharIndexed input, REMatch mymatch, int optionIndex) {
+      for (int i = optionIndex; i < options.size(); i++) {
+          REToken tk = (REToken) options.elementAt(i);
+	  tk = (REToken) tk.clone();
+	  tk.chain(getNext());
+          REMatch tryMatch = (REMatch) mymatch.clone();
+          if (tryMatch.backtrackStack == null) {
+            tryMatch.backtrackStack = new BacktrackStack();
+	  }
+	  boolean stackPushed = false;
+	  if (i + 1 < options.size()) {
+            tryMatch.backtrackStack.push(new BacktrackStack.Backtrack(
+              this, input, mymatch, new Integer(i + 1)));
+	    stackPushed = true;
+          }
+	  boolean b = tk.match(input, tryMatch);
+	  if (b) {
+	     return tryMatch;
+	  }
+	  if (stackPushed) tryMatch.backtrackStack.pop();
+      }
+      return null; 
+  }
+
+  boolean returnsFixedLengthMatches() { return matchesOneChar; }
+
+  int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+      if (!matchesOneChar)
+          return super.findFixedLengthMatches(input, mymatch, max);
+      int numRepeats = 0;
+      REMatch m = (REMatch) mymatch.clone();
+      REToken tk = (REToken) this.clone();
+      tk.chain(null);
+      while (true) {
+	  if (numRepeats >= max) break;
+          m = tk.findMatch(input, m);
+          if (m == null) break;
+          numRepeats++;
+      }
+      return numRepeats;
+  }
 
   void dump(StringBuffer os) {
     os.append(negative ? "[^" : "(?:");

@@ -77,17 +77,6 @@ public class DefaultTreeCellEditor
   implements ActionListener, TreeCellEditor, TreeSelectionListener
 {
   /**
-   * The gap between the icon and editing component during editing. 
-   */
-  static int ICON_TEXT_GAP = 3;
-  
-  /**
-   * The left margin of the editing container (the gap between the tree and
-   * the editing component of the editing icon.
-   */
-  static int TREE_ICON_GAP = ICON_TEXT_GAP;
-  
-  /**
    * The number of the fast mouse clicks, required to start the editing 
    * session.
    */
@@ -141,7 +130,7 @@ public class DefaultTreeCellEditor
         {
           // From the previous version, the left margin is taken as half
           // of the icon width.
-          editingIcon.paintIcon(this, g, TREE_ICON_GAP, 0);
+          editingIcon.paintIcon(this, g, 0, 0);
         }
       super.paint(g);
     }
@@ -157,7 +146,7 @@ public class DefaultTreeCellEditor
 
       // Move the component to the left, leaving room for the editing icon:
       if (editingIcon != null)
-        eOffset = TREE_ICON_GAP + editingIcon.getIconWidth() + ICON_TEXT_GAP;
+        eOffset = editingIcon.getIconWidth();
       else
         eOffset = 0;
 
@@ -166,7 +155,7 @@ public class DefaultTreeCellEditor
       c.setLocation(eOffset, 0);
 
       // Span the editing component near over all window width.
-      c.setSize(bounds.width - eOffset - TREE_ICON_GAP, bounds.height);
+      c.setSize(bounds.width - eOffset, bounds.height);
       /*
        * @specnote the Sun sets some more narrow editing component width (it is
        * not documented how does it is calculated). However as our text field is
@@ -542,7 +531,8 @@ public class DefaultTreeCellEditor
    * If the realEditor returns true to this message, prepareForEditing  
    * is messaged and true is returned.
    * 
-   * @param event - the event the editor should use to consider whether to begin editing or not
+   * @param event - the event the editor should use to consider whether to 
+   * begin editing or not
    * @return true if editing can be started
    */
   public boolean isCellEditable(EventObject event)

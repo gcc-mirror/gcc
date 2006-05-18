@@ -485,7 +485,7 @@ public abstract class FocusManager
 
   /**
    * getCurrentManager
-   * @returns FocusManager
+   * @return FocusManager
    */
   public static FocusManager getCurrentManager()
   {

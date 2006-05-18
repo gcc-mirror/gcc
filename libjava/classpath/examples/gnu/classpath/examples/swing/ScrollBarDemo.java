@@ -28,31 +28,27 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
+import javax.swing.SwingUtilities;
 
 /**
  * A simple scroll bar demo showing various scroll bars in different states.
  */
 public class ScrollBarDemo 
-  extends JFrame 
+  extends JPanel
   implements ActionListener 
 {
 
-  private JPanel content;
-
   /**
    * Creates a new demo instance.
-   * 
-   * @param title  the frame title.
    */
-  public ScrollBarDemo(String title) 
+  public ScrollBarDemo() 
   {
-    super(title);
-    JPanel content = createContent();
-    // initFrameContent() is only called (from main) when running this app 
-    // standalone
+    super();
+    createContent();
   }
   
   /**
@@ -62,15 +58,14 @@ public class ScrollBarDemo
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  public void initFrameContent()
+  void initFrameContent()
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
     closeButton.addActionListener(this);
     closePanel.add(closeButton);
-    content.add(closePanel, BorderLayout.SOUTH);
-    getContentPane().add(content);
+    add(closePanel, BorderLayout.SOUTH);
   }
        
   /**
@@ -80,15 +75,11 @@ public class ScrollBarDemo
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
    */       
-  JPanel createContent() 
+  private void createContent() 
   {
-    if (content == null)
-      {
-        content = new JPanel(new BorderLayout());
-        JPanel panel = createScrollBarPanel();
-        content.add(panel);
-      }
-    return content;        
+    setLayout(new BorderLayout());
+    JPanel panel = createScrollBarPanel();
+    add(panel);
   }
     
   private JPanel createScrollBarPanel() 
@@ -151,10 +142,33 @@ public class ScrollBarDemo
 
   public static void main(String[] args) 
   {
-    ScrollBarDemo app = new ScrollBarDemo("ScrollBar Demo");
-    app.initFrameContent();
-    app.pack();
-    app.setVisible(true);
-  }
+    SwingUtilities.invokeLater
+    (new Runnable()
+     {
+       public void run()
+       {
+         ScrollBarDemo app = new ScrollBarDemo();
+         app.initFrameContent();
+         JFrame frame = new JFrame("ScrollBar Demo");
+         frame.getContentPane().add(app);
+         frame.pack();
+         frame.setVisible(true);
+       }});
+    }
 
+  /**
+   * Returns a DemoFactory that creates a ScrollBarDemo.
+   *
+   * @return a DemoFactory that creates a ScrollBarDemo
+   */
+  public static DemoFactory createDemoFactory()
+  {
+    return new DemoFactory()
+    {
+      public JComponent createDemo()
+      {
+        return new ScrollBarDemo();
+      }
+    };
+  }
 }

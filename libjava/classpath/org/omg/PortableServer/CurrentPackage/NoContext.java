@@ -1,5 +1,5 @@
 /* NoContext.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ import java.io.Serializable;
 *
 * @author Audrius Meskauskas, Lithiania (AudriusA@Bioinformatics.org)
 */
-public class NoContext
+public final class NoContext
   extends UserException
   implements IDLEntity, Serializable
 {

@@ -24,9 +24,7 @@ AC_DEFUN([CLASSPATH_FIND_JAVAC],
   AM_CONDITIONAL(FOUND_GCJX, test "x${user_specified_javac}" = xgcjx)
 
   if test "x${GCJ}" = x && test "x${JIKES}" = x && test "x${user_specified_javac}" != xkjc && test "x${user_specified_javac}" != xgcjx && test "x${user_specified_javac}" != xecj; then
-      # FIXME: use autoconf error function
-      echo "configure: cannot find javac, try --with-gcj, --with-jikes, --with-kjc, --with-ecj, or --with-gcjx" 1>&2
-      exit 1    
+      AC_MSG_ERROR([cannot find javac, try --with-gcj, --with-jikes, --with-kjc, --with-ecj, or --with-gcjx])
   fi
 ])
 

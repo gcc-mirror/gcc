@@ -61,7 +61,7 @@ public class AccessibleRelation extends AccessibleBundle
    * @see #LABELED_BY
    * @see #MEMBER_OF
    */
-  public static final String LABEL_FOR = "labelFor";
+  public static final String LABEL_FOR;
 
   /**
    * Indicates the object is labeled by other objects.
@@ -72,7 +72,7 @@ public class AccessibleRelation extends AccessibleBundle
    * @see #LABEL_FOR
    * @see #MEMBER_OF
    */
-  public static final String LABELED_BY = "labeledBy";
+  public static final String LABELED_BY;
 
   /**
    * Indicates an object is a member of a group of target objects.
@@ -83,7 +83,7 @@ public class AccessibleRelation extends AccessibleBundle
    * @see #LABEL_FOR
    * @see #LABELED_BY
    */
-  public static final String MEMBER_OF = "memberOf";
+  public static final String MEMBER_OF;
 
   /**
    * Indicates an object is a controller for other objects.
@@ -94,7 +94,7 @@ public class AccessibleRelation extends AccessibleBundle
    * @see #LABELED_BY
    * @see #MEMBER_OF
    */
-  public static final String CONTROLLER_FOR = "controllerFor";
+  public static final String CONTROLLER_FOR;
 
   /**
    * Indicates an object is controlled by other objects.
@@ -105,7 +105,7 @@ public class AccessibleRelation extends AccessibleBundle
    * @see #LABELED_BY
    * @see #MEMBER_OF
    */
-  public static final String CONTROLLED_BY = "controlledBy";
+  public static final String CONTROLLED_BY;
 
   /** Indicates that the label target group has changed. */
   public static final String LABEL_FOR_PROPERTY = "labelForProperty";
@@ -122,8 +122,104 @@ public class AccessibleRelation extends AccessibleBundle
   /** Indicates that the controlling objects have changed. */
   public static final String CONTROLLED_BY_PROPERTY = "controlledByProperty";
 
+  /**
+   * Indicates that an object is a child of another object.
+   * @since 1.5
+   */
+  public static final String CHILD_NODE_OF = "childNodeOf";
+
+  /**
+   * Indicates that the ancestry relationship has changed.
+   * @since 1.5
+   */
+  public static final String CHILD_NODE_OF_PROPERTY = "childNodeOfProperty";
+
+  /**
+   * Indicates that an object is embedded by another object.
+   * @since 1.5
+   */
+  public static final String EMBEDDED_BY = "embeddedBy";
+
+  /**
+   * Indicates that the {@link #EMBEDDED_BY} property changed.
+   * @since 1.5
+   */
+  public static final String EMBEDDED_BY_PROPERTY = "embeddedByProperty";
+
+  /**
+   * Indicates that an object embeds another object.
+   * @since 1.5
+   */
+  public static final String EMBEDS = "embeds";
+
+  /**
+   * Indicates that the {@link #EMBEDS} property changed.
+   * @since 1.5
+   */
+  public static final String EMBEDS_PROPERTY = "embedsProperty";
+
+  /**
+   * Indicates that one object directly follows another object,
+   * as in a paragraph flow.
+   * @since 1.5
+   */
+  public static final String FLOWS_FROM = "flowsFrom";
+
+  /**
+   * Indicates that the {@link #FLOWS_FROM} property changed.
+   * @since 1.5
+   */
+  public static final String FLOWS_FROM_PROPERTY = "flowsFromProperty";
+
+  /**
+   * Indicates that one object comes directly before another object,
+   * as in a paragraph flow.
+   * @since 1.5
+   */
+  public static final String FLOWS_TO = "flowsTo";
+
+  /**
+   * Indicates that the {@link #FLOWS_TO} property changed.
+   * @since 1.5
+   */
+  public static final String FLOWS_TO_PROPERTY = "flowsToProperty";
+
+  /**
+   * Indicates that one object is a parent window of another object.
+   * @since 1.5
+   */
+  public static final String PARENT_WINDOW_OF = "parentWindowOf";
+
+  /**
+   * Indicates that the {@link #PARENT_WINDOW_OF} property changed.
+   * @since 1.5
+   */
+  public static final String PARENT_WINDOW_OF_PROPERTY = "parentWindowOfProperty";
+
+  /**
+   * Indicates that one object is a subwindow of another object.
+   * @since 1.5
+   */
+  public static final String SUBWINDOW_OF = "subwindowOf";
+
+  /**
+   * Indicates that the {@link #SUBWINDOW_OF} property changed.
+   * @since 1.5
+   */
+  public static final String SUBWINDOW_OF_PROPERTY = "subwindowOfProperty";
+
   /** An empty set of targets. */
   private static final Object[] EMPTY_TARGETS = { };
+  
+  static
+    {
+      // not constants in JDK
+      LABEL_FOR = "labelFor";
+      LABELED_BY = "labeledBy";
+      MEMBER_OF = "memberOf";
+      CONTROLLER_FOR = "controllerFor";
+      CONTROLLED_BY = "controlledBy";
+    }
 
   /**
    * The related objects.

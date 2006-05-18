@@ -1,5 +1,5 @@
-/* VMID.java
-   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* VMID.java -- The object ID, unique between all virtual machines.
+   Copyright (c) 1996, 1997, 1998, 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,37 +41,72 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+import java.util.Arrays;
 
+/**
+ * An identifier that is unique accross the all virtual machines. This class is
+ * used by distributed garbage collector to identify the virtual machine of
+ * the client, but may also be used in various other cases, when such identifier
+ * is required. This class separately stores and transfers the host IP 
+ * address, but will try to do its best also for the case if it failed to
+ * determine it. The alternative algorithms are used in {@link UID} that is 
+ * part of this class. The VMID's, created on the same host, but in the two
+ * separately (parallely) running virtual machines are different.
+ */
 public final class VMID	implements Serializable
 {
+  /**
+   * Use SVUID for interoperability.
+   */
   static final long serialVersionUID = -538642295484486218L;
   
-  static final boolean areWeUnique;
+  /**
+   * If true, the IP of this host can ve reliably determined.
+   */
+  static boolean areWeUnique;
   
+  /**
+   * The IP address of the local host.
+   */
   static byte[] localAddr;
 
+  /**
+   * The IP address of the local host.
+   */
   private byte[] addr;
   
+  /**
+   * The cached hash code.
+   */
+  transient int hash;
+  
+  /**
+   * The UID of this VMID.
+   */
   private UID uid;
 
   static
-  {
-    byte[] addr;
-    boolean awu = true;
-    try {
-      addr = InetAddress.getLocalHost().getAddress();
-      if (addr[0] == 127 && addr[1] == 0 && addr[2] == 0 && addr[3] == 1) {
-        awu = false;
-      }
-    }
-    catch (UnknownHostException _) {
-      addr = new byte[]{ 127, 0, 0, 1 };
-      awu = false;
-    }
-    localAddr = addr;
-    areWeUnique = awu;
-  }
+    {
+      // This "local host" value usually indicates that the local 
+      // IP address cannot be reliably determined.
+      byte[] localHost = new byte[] { 127, 0, 0, 1 };
 
+      try
+        {
+          localAddr = InetAddress.getLocalHost().getAddress();
+          areWeUnique = !Arrays.equals(localHost, localAddr);
+        }
+      catch (UnknownHostException uhex)
+        {
+          localAddr = localHost;
+          areWeUnique = false;
+        }
+    }
+  
+  /**
+   * Create the new VMID. All VMID's are unique accross tha all virtual
+   * machines. 
+   */
   public VMID()
   {
     addr = localAddr;
@@ -79,42 +114,58 @@ public final class VMID	implements Serializable
   }
 
   /**
-   * @deprecated
+   * Return true if it is possible to get the accurate address of this host.
+   * If false is returned, the created VMID's are less reliable, but the
+   * starting time and possibly the memory allocation are also taken into
+   * consideration in the incorporated UID. Hence the VMID's, created on the 
+   * different virtual machines, still should be different.
+   * 
+   * @deprecated VMID's are more or less always reliable.
+   * 
+   * @return false if the local host ip address is 127.0.0.1 or unknown,
+   * true otherwise.
    */
   public static boolean isUnique ()
   {
     return areWeUnique;
   }
-
+  
+  /**
+   * Get the hash code of this VMID.
+   */
   public int hashCode ()
   {
-    return super.hashCode();
+    if (hash==0)
+      {
+        for (int i = 0; i < localAddr.length; i++)
+            hash += addr[i];
+        hash = hash ^ uid.hashCode();
+      }
+    return hash;
   }
-
-  public boolean equals (Object obj)
+  
+  /**
+   * Returns true if the passed parameter is also VMID and it is equal to this
+   * VMID. The VMID should only be equal to itself (also if the passed value is
+   * another instance, cloned by serialization).
+   */
+  public boolean equals(Object obj)
   {
-    if (!(obj instanceof VMID))
+    if (obj instanceof VMID)
       {
-        return false;
-      }
-    
-    VMID other = (VMID) obj;
-    if (addr.length != other.addr.length)
-      {
-        return false;
-      }
-    
-    for (int i = addr.length - 1; i >= 0; i--)
-      {
-        if (addr[i] != other.addr[i])
-          {
-            return false;
-          }
-      }
-    
-    return uid.equals(other.uid);
-  }
+        VMID other = (VMID) obj;
 
+        // The UID's are compared faster than arrays.
+        return uid.equals(other.uid) && Arrays.equals(addr, other.addr);
+      }
+    else
+      return false;
+
+  }
+  
+  /**
+   * Get the string representation of this VMID.
+   */
   public String toString ()
   {
     StringBuffer buf = new StringBuffer ("[VMID: ");

@@ -19,6 +19,9 @@ Usage: grmic <options> <class names>
   -help         Print this help text
   -v            Print version
   -verbose      Verbose output
+  -force        Try to generate code even if the input classes seem not
+                consistent with RMI specification. 
+  
   
  and <class names> can include one or more non abstract classes that implement
  Remote and are accessible via current class path.

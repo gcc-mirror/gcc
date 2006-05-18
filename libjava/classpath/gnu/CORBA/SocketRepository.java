@@ -116,9 +116,6 @@ public class SocketRepository
    */
   public static Socket get_socket(Object key)
   {
-    if (true)
-      return null;
-
     synchronized (sockets)
       {
         Socket s = (Socket) sockets.get(key);

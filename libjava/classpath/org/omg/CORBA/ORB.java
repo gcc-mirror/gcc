@@ -673,17 +673,7 @@ public abstract class ORB
    * @see #create_recursive_tc(String)
    * @see #create_sequence_tc(int, TypeCode)
    */
-  public TypeCode create_recursive_sequence_tc(int bound, int offset)
-  {
-    RecordTypeCode r = new RecordTypeCode(TCKind.tk_struct);
-    for (int i = 0; i < offset; i++)
-      r.add(new StructMember());
-
-    TypeCode recurs = new PrimitiveTypeCode(TCKind.tk_sequence);
-
-    r.add(new StructMember("", recurs, null));
-    return r;
-  }
+  public abstract TypeCode create_recursive_sequence_tc(int bound, int offset);
 
   /**
    * Create a typecode which serves as a placeholder for typcode, containing
@@ -789,10 +779,7 @@ public abstract class ORB
    * @throws NO_IMPLEMENT for the Singleton ORB, returned by
    * the parameterless {@link #init()}.
    */
-  public Context get_default_context()
-  {
-    return new gnuContext("", null);
-  }
+  public abstract Context get_default_context();
 
   /**
    * Return thg typecode, representing the given primitive object type.

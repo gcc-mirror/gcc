@@ -3534,7 +3534,7 @@ public class XMLParser
   public static boolean isXML11Char(int c)
   {
     return ((c >= 0x0001 && c <= 0xD7FF) ||
-            (c >= 0xE000 && c < 0xFFFD) || // NB exclude 0xfffd
+            (c >= 0xE000 && c < 0xFFFE) ||
             (c >= 0x10000 && c <= 0x10FFFF));
   }
 
@@ -4014,7 +4014,7 @@ public class XMLParser
   public static boolean isChar(int c)
   {
     return (c >= 0x20 && c < 0xd800) ||
-      (c >= 0xe00 && c < 0xfffd) || // NB exclude 0xfffd
+      (c >= 0xe00 && c < 0xfffe) ||
       (c >= 0x10000 && c < 0x110000) ||
       c == 0xa || c == 0x9 || c == 0xd;
   }
@@ -4965,6 +4965,7 @@ public class XMLParser
     Reader reader;
     UnicodeReader unicodeReader;
     boolean initialized;
+    boolean encodingDetected;
     String inputEncoding;
     boolean xml11;
 
@@ -5174,6 +5175,7 @@ public class XMLParser
           in.read();
           in.read();
           setInputEncoding("UTF-32BE");
+          encodingDetected = true;
         }
       else if (equals(SIGNATURE_UCS_4_4321, signature))
         {
@@ -5182,6 +5184,7 @@ public class XMLParser
           in.read();
           in.read();
           setInputEncoding("UTF-32LE");
+          encodingDetected = true;
         }
       else if (equals(SIGNATURE_UCS_4_2143, signature) ||
                equals(SIGNATURE_UCS_4_3412, signature))
@@ -5193,12 +5196,14 @@ public class XMLParser
           in.read();
           in.read();
           setInputEncoding("UTF-16BE");
+          encodingDetected = true;
         }
       else if (equals(SIGNATURE_UCS_2_21, signature))
         {
           in.read();
           in.read();
           setInputEncoding("UTF-16LE");
+          encodingDetected = true;
         }
       else if (equals(SIGNATURE_UCS_2_12_NOBOM, signature))
         {
@@ -5221,6 +5226,7 @@ public class XMLParser
           in.read();
           in.read();
           setInputEncoding("UTF-8");
+          encodingDetected = true;
         }
     }
 
@@ -5242,7 +5248,7 @@ public class XMLParser
       if ("UTF-16".equalsIgnoreCase(encoding) &&
           inputEncoding.startsWith("UTF-16"))
         return;
-      if (reader != null)
+      if (encodingDetected)
         throw new UnsupportedEncodingException("document is not in its " +
                                                "declared encoding " +
                                                inputEncoding +

@@ -934,7 +934,7 @@ public class Parser
     optional(WS);
 
     attributeReading: 
-    while (getTokenAhead().kind == NUMTOKEN)
+      while (getTokenAhead().kind == NUMTOKEN)
       {
         name = getNextToken();
         optional(WS);
@@ -949,46 +949,90 @@ public class Parser
 
             switch (next.kind)
               {
-                case QUOT :
+              case QUOT:
 
-                  // read "quoted" attribute.
-                  buffer.setLength(0);
-                  readTillTokenE(QUOT);
-                  attrValue = buffer.toString();
-                  break;
+                // read "quoted" attribute.
+                buffer.setLength(0);
+                readTillTokenE(QUOT);
+                attrValue = buffer.toString();
+                break;
 
-                case AP :
+              case AP:
 
-                  // read 'quoted' attribute.
-                  buffer.setLength(0);
-                  readTillTokenE(AP);
-                  attrValue = buffer.toString();
-                  break;
+                // read 'quoted' attribute.
+                buffer.setLength(0);
+                readTillTokenE(AP);
+                attrValue = buffer.toString();
+                break;
 
-                // read unquoted attribute.
-                case NUMTOKEN :
-                  value = next;
-                  optional(WS);
+              // read unquoted attribute.
+              case NUMTOKEN:
+                value = next;
+                optional(WS);
 
-                  // Check maybe the opening quote is missing.
-                  next = getTokenAhead();
-                  if (bQUOTING.get(next.kind))
-                    {
-                      hTag = next;
-                      error("The value without opening quote is closed with '" +
-                            next.getImage() + "'"
-                           );
-                    }
+                // Check maybe the opening quote is missing.
+                next = getTokenAhead();
+                if (bQUOTING.get(next.kind))
+                  {
+                    hTag = next;
+                    error("The value without opening quote is closed with '"
+                          + next.getImage() + "'");
+                    attrValue = value.getImage();
+                  }
+                else if (next.kind == SLASH)
+                // The slash in this context is treated as the ordinary
+                // character, not as a token. The slash may be part of
+                // the unquoted URL.
+                  {
+                    StringBuffer image = new StringBuffer(value.getImage());
+                    while (next.kind == NUMTOKEN || next.kind == SLASH)
+                      {
+                        image.append(getNextToken().getImage());
+                        next = getTokenAhead();
+                      }
+                    attrValue = image.toString();
+                  }
+                else
                   attrValue = value.getImage();
-                  break;
+                break;
 
-                default :
-                  break attributeReading;
+              case SLASH:
+                value = next;
+                optional(WS);
+                
+                // Check maybe the opening quote is missing.
+                next = getTokenAhead();
+                if (bQUOTING.get(next.kind))
+                  {
+                    hTag = next;
+                    error("The value without opening quote is closed with '"
+                          + next.getImage() + "'");
+                    attrValue = value.getImage();
+                  }
+                else if (next.kind == NUMTOKEN || next.kind == SLASH)
+                // The slash in this context is treated as the ordinary
+                // character, not as a token. The slash may be part of
+                // the unquoted URL.
+                  {
+                    StringBuffer image = new StringBuffer(value.getImage());
+                    while (next.kind == NUMTOKEN || next.kind == SLASH)
+                      {
+                        image.append(getNextToken().getImage());
+                        next = getTokenAhead();
+                      }
+                    attrValue = image.toString();
+                  }
+                else
+                  attrValue = value.getImage();
+                break;
+              default:
+                break attributeReading;
               }
             attributes.addAttribute(name.getImage(), attrValue);
             optional(WS);
           }
-        else // The '=' is missing: attribute without value.
+        else
+          // The '=' is missing: attribute without value.
           {
             noValueAttribute(element, name.getImage());
           }
@@ -996,9 +1040,8 @@ public class Parser
   }
 
   /**
-   * Return string, corresponding the given named entity.
-   * The name is passed with the preceeding &, but without
-   * the ending semicolon.
+   * Return string, corresponding the given named entity. The name is passed
+   * with the preceeding &, but without the ending semicolon.
    */
   protected String resolveNamedEntity(final String a_tag)
   {

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.synth;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -119,6 +121,7 @@ public class SynthLookAndFeel
    * @param c the componenent for which to update the style
    */
   public static void updateStyles(Component c)
+    throws NotImplementedException
   {
     // FIXME: Implement this properly.
   }
@@ -131,6 +134,7 @@ public class SynthLookAndFeel
    * @return the region for a given Swing component
    */
   public static Region getRegion(JComponent c)
+    throws NotImplementedException
   {
     // FIXME: This can be implemented as soon as we have the component UI
     // classes in place, since this region will be matched via the UI classes.
@@ -147,6 +151,7 @@ public class SynthLookAndFeel
    *         component
    */
   public static ComponentUI createUI(JComponent c)
+    throws NotImplementedException
   {
     // FIXME: This can be implemented as soon as we have the component UI
     // classes in place.
@@ -157,6 +162,7 @@ public class SynthLookAndFeel
    * Initializes this look and feel.
    */
   public void initialize()
+    throws NotImplementedException
   {
     super.initialize();
     // TODO: Implement at least the following here:
@@ -168,6 +174,7 @@ public class SynthLookAndFeel
    * Uninitializes the look and feel.
    */
   public void uninitialize()
+    throws NotImplementedException
   {
     super.uninitialize();
     // TODO: What to do here?
@@ -179,6 +186,7 @@ public class SynthLookAndFeel
    * @return the UI defaults of this look and feel
    */
   public UIDefaults getDefaults()
+    throws NotImplementedException
   {
     // FIXME: This is certainly wrong. The defaults should be fetched/merged
     // from the file from which the l&f is loaded.
@@ -191,6 +199,7 @@ public class SynthLookAndFeel
    * @return FIXME
    */
   public boolean shouldUpdateStyleOnAncestorChanged()
+    throws NotImplementedException
   {
     return false;
   }
@@ -210,14 +219,14 @@ public class SynthLookAndFeel
   // FIXME: The signature in the JDK has a Class<?> here. Should be fixed as
   // soon as we switch to the generics branch.
   public void load(InputStream in, Class resourceBase)
-    throws ParseException, IllegalArgumentException
+    throws ParseException, IllegalArgumentException, NotImplementedException
   {
     // FIXME: Implement this correctly.
   }
 
   /**
    * Returns a textual description of the Synth look and feel. This returns
-   * &quot;Synt look and feel&quot;.
+   * &quot;Synth look and feel&quot;.
    *
    * @return a textual description of the Synth look and feel
    */
@@ -238,7 +247,7 @@ public class SynthLookAndFeel
 
   /**
    * Returns the name of the Synth look and feel. This returns
-   * &quot;Synt look and feel&quot;.
+   * &quot;Synth look and feel&quot;.
    *
    * @return the name of the Synth look and feel
    */

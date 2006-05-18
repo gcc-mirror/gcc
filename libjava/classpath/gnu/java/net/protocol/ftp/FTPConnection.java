@@ -429,6 +429,9 @@ public class FTPConnection
   public boolean changeWorkingDirectory(String path)
     throws IOException
   {
+    // Do nothing if the path is empty.
+    if (path.length() == 0)
+      return true;
     String cmd = CWD + ' ' + path;
     send(cmd);
     FTPResponse response = getResponse();

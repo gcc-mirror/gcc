@@ -249,6 +249,35 @@ public abstract class AccessibleContext
     = "AccessibleHypertextOffset";
 
   /**
+   * Constant used when a component's bounds have changed.  The old and
+   * new bounds are given in the event.
+   * @since 1.5
+   */
+  public static final String ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+    = "accessibleComponentBoundsChanged";
+
+  /**
+   * Constant used when the state of child objects changes.  The old
+   * value in the event is always null, and the new value is the component
+   * whose children have changed.
+   * @since 1.5
+   */
+  public static final String ACCESSIBLE_INVALIDATE_CHILDREN
+    = "accessibleInvalidateChildren";
+
+  /**
+   * Constant used when the attributes of some text have changed.
+   * On insertion, the old value is null and the new value is an
+   * {@link AccessibleAttributeSequence} describing the insertion.
+   * On deletion, the old value is an {@link AccessibleAttributeSequence}
+   * and the new value is null.  For replacement, both the old
+   * and new values are {@link AccessibleAttributeSequence} objects.
+   * @since 1.5
+   */
+  public static final String ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+    = "accessibleTextAttributesChanged";
+
+  /**
    * The accessible parent of this object.
    *
    * @see #getAccessibleParent()
@@ -540,14 +569,15 @@ public abstract class AccessibleContext
 
   /**
    * Get any supported accessible relation set. The default implementation
-   * returns null.
+   * returns an empty AccessibleRelationSet.
    *
-   * @return the supported relation set, or null
+   * @return the supported relation set, or <code>null</code>
+   *
    * @see AccessibleRelationSet
    */
   public AccessibleRelationSet getAccessibleRelationSet()
   {
-    return null;
+    return new AccessibleRelationSet();
   }
 
   /**

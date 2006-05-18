@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -711,35 +713,37 @@ public class StyleContext
   // have left incomplete; I'm not sure I understand the intent properly.
 
   public static Object getStaticAttribute(Object key)
+    throws NotImplementedException
   {
     throw new InternalError("not implemented");
   }
   
   public static Object getStaticAttributeKey(Object key)
+    throws NotImplementedException
   {
     throw new InternalError("not implemented");
   }
 
   public static void readAttributeSet(ObjectInputStream in, MutableAttributeSet a)
-    throws ClassNotFoundException, IOException
+    throws ClassNotFoundException, IOException, NotImplementedException
   {
     throw new InternalError("not implemented");
   }
   
   public static void writeAttributeSet(ObjectOutputStream out, AttributeSet a)
-    throws IOException
+    throws IOException, NotImplementedException
   {
     throw new InternalError("not implemented");
   }
 
   public void readAttributes(ObjectInputStream in, MutableAttributeSet a)
-    throws ClassNotFoundException, IOException 
+    throws ClassNotFoundException, IOException, NotImplementedException 
   {
     throw new InternalError("not implemented");
   }
 
   public void writeAttributes(ObjectOutputStream out, AttributeSet a)
-    throws IOException
+    throws IOException, NotImplementedException
   {
     throw new InternalError("not implemented");
   }

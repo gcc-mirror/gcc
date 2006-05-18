@@ -514,7 +514,7 @@ public final class Khazad extends BaseCipher
           {
             result = testKat(KAT_KEY, KAT_CT);
           }
-        valid = new Boolean(result);
+        valid = Boolean.valueOf(result);
       }
     return valid.booleanValue();
   }

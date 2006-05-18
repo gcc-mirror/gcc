@@ -1,5 +1,5 @@
 /* JSlider.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,6 +50,7 @@ import java.util.Hashtable;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 import javax.swing.event.ChangeEvent;
@@ -57,13 +58,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.SliderUI;
 
 /**
- * The JSlider is a Swing component that allows selection of a value within a
+ * A visual component that allows selection of a value within a
  * range by adjusting a thumb in a track. The values for the minimum,
  * maximum, extent and value are stored in a {@link
  * DefaultBoundedRangeModel}.
- * 
  * <p>
- * JSliders have the following properties:
+ * A <code>JSlider</code> component has the following properties:
  * </p>
  * 
  * <table>
@@ -72,38 +72,38 @@ import javax.swing.plaf.SliderUI;
  * <tr><td> inverted         </td><td> slider    </td><td> yes    </td></tr>
  * <tr><td> labelTable       </td><td> slider    </td><td> yes    </td></tr>
  * <tr><td> majorTickSpacing </td><td> slider    </td><td> yes    </td></tr> 
- * <tr><td> maximum          </td><td> model     </td><td> no     </td></tr>
- * <tr><td> minimum          </td><td> model     </td><td> no     </td></tr>
+ * <tr><td> maximum          </td><td> model     </td><td> yes     </td></tr>
+ * <tr><td> minimum          </td><td> model     </td><td> yes     </td></tr>
  * <tr><td> minorTickSpacing </td><td> slider    </td><td> yes    </td></tr>
  * <tr><td> model            </td><td> slider    </td><td> yes    </td></tr> 
  * <tr><td> orientation      </td><td> slider    </td><td> yes    </td></tr>
  * <tr><td> paintLabels      </td><td> slider    </td><td> yes    </td></tr>
  * <tr><td> paintTicks       </td><td> slider    </td><td> yes    </td></tr>
- * <tr><td> snapToTicks      </td><td> slider    </td><td> no     </td></tr>
+ * <tr><td> snapToTicks      </td><td> slider    </td><td> yes     </td></tr>
  * <tr><td> value            </td><td> model     </td><td> no     </td></tr>
  * <tr><td> valueIsAdjusting </td><td> model     </td><td> no     </td></tr>
  * </table>
  * 
  * <p>
- * The various behavioral aspects of these properties follows:
+ * The various behavioural aspects of these properties follows:
  * </p>
  * 
  * <ul>
  * <li>
- * When non-bound properties stored in the slider change, the slider fires
- * ChangeEvents to its ChangeListeners.
+ * When a non-bound property stored in the slider changes, the slider fires
+ * a {@link ChangeEvent} to its change listeners.
  * </li>
  * <li>
- * When bound properties stored in the slider change, the slider fires
- * PropertyChangeEvents to its PropertyChangeListeners
+ * When a bound property stored in the slider changes, the slider fires a
+ * {@link PropertyChangeEvent} to its property change listeners.
  * </li>
  * <li>
- * If any of the model's properties change, it fires a ChangeEvent to its
- * ChangeListeners, which include the slider.
+ * If any of the model's properties change, it fires a {@link ChangeEvent} to 
+ * its listeners, which include the slider.
  * </li>
  * <li>
- * If the slider receives a ChangeEvent from its model, it will propagate the
- * ChangeEvent to its ChangeListeners, with the ChangeEvent's "source"
+ * If the slider receives a {@link ChangeEvent} from its model, it will 
+ * propagate the event to its own change listeners, with the event's "source"
  * property set to refer to the slider, rather than the model.
  * </li>
  * </ul>
@@ -112,21 +112,19 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
                                                    ImageObserver,
                                                    MenuContainer, Serializable
 {
-  /** DOCUMENT ME! */
   private static final long serialVersionUID = -1441275936141218479L;
 
   /**
-   * DOCUMENT ME!
+   * Provides the accessibility features for the <code>JSlider</code>
+   * component.
    */
-  // FIXME: This inner class is a complete stub and needs to be implemented
-  // properly.
   protected class AccessibleJSlider extends JComponent.AccessibleJComponent
     implements AccessibleValue
   {
     private static final long serialVersionUID = -6301740148041106789L;
   
     /**
-     * Creates a new AccessibleJSlider object.
+     * Creates a new <code>AccessibleJSlider</code> instance.
      */
     protected AccessibleJSlider()
     {
@@ -134,75 +132,97 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns a set containing the current state of the {@link JSlider} 
+     * component.
      *
-     * @return DOCUMENT ME!
+     * @return The accessible state set.
      */
     public AccessibleStateSet getAccessibleStateSet()
     {
-      return null;
+      AccessibleStateSet result = super.getAccessibleStateSet();
+      if (orientation == JSlider.HORIZONTAL)
+        result.add(AccessibleState.HORIZONTAL);
+      else if (orientation == JSlider.VERTICAL)
+        result.add(AccessibleState.VERTICAL);
+      return result;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the accessible role for the <code>JSlider</code> component.
      *
-     * @return DOCUMENT ME!
+     * @return {@link AccessibleRole#SLIDER}.
      */
     public AccessibleRole getAccessibleRole()
     {
-      return null;
+      return AccessibleRole.SLIDER;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an object that provides access to the current, minimum and 
+     * maximum values for the {@link JSlider}.  Since this class implements 
+     * {@link AccessibleValue}, it returns itself.
      *
-     * @return DOCUMENT ME!
+     * @return The accessible value.
      */
     public AccessibleValue getAccessibleValue()
     {
-      return null;
+      return this;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the current value of the {@link JSlider} component, as an
+     * {@link Integer}.
      *
-     * @return DOCUMENT ME!
+     * @return The current value of the {@link JSlider} component.
      */
     public Number getCurrentAccessibleValue()
     {
-      return null;
+      return new Integer(getValue());
     }
 
     /**
-     * setCurrentAccessibleValue
+     * Sets the current value of the {@link JSlider} component and sends a
+     * {@link PropertyChangeEvent} (with the property name 
+     * {@link AccessibleContext#ACCESSIBLE_VALUE_PROPERTY}) to all registered
+     * listeners.  If the supplied value is <code>null</code>, this method 
+     * does nothing and returns <code>false</code>.
      *
-     * @param value0 TODO
+     * @param value  the new slider value (<code>null</code> permitted).
      *
-     * @return boolean
+     * @return <code>true</code> if the slider value is updated, and 
+     *     <code>false</code> otherwise.
      */
-    public boolean setCurrentAccessibleValue(Number value0)
+    public boolean setCurrentAccessibleValue(Number value)
     {
-      return false;
+      if (value == null)
+        return false;
+      Number oldValue = getCurrentAccessibleValue();
+      setValue(value.intValue());
+      firePropertyChange(AccessibleContext.ACCESSIBLE_VALUE_PROPERTY, oldValue, 
+                         new Integer(getValue()));
+      return true;
     }
 
     /**
-     * getMinimumAccessibleValue
+     * Returns the minimum value of the {@link JSlider} component, as an
+     * {@link Integer}.
      *
-     * @return Number
+     * @return The minimum value of the {@link JSlider} component.
      */
     public Number getMinimumAccessibleValue()
     {
-      return null;
+      return new Integer(getMinimum());
     }
 
     /**
-     * getMaximumAccessibleValue
+     * Returns the maximum value of the {@link JSlider} component, as an
+     * {@link Integer}.
      *
-     * @return Number
+     * @return The maximum value of the {@link JSlider} component.
      */
     public Number getMaximumAccessibleValue()
     {
-      return null;
+      return new Integer(getMaximum());
     }
   }
 
@@ -221,33 +241,36 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
    */
   private transient Dictionary labelTable;
 
-  /** The model used to describe the slider. */
+  /** The model used to store the slider's range and current value. */
   protected BoundedRangeModel sliderModel;
 
-  /** The space between major ticks. */
+  /** The space/distance between major ticks. */
   protected int majorTickSpacing;
 
-  /** The space between minor ticks. */
+  /** The space/distance between minor ticks. */
   protected int minorTickSpacing;
 
   /** Whether the slider snaps its values to ticks. */
   protected boolean snapToTicks = false;
 
-  /** The orientation of the slider. */
+  /** The orientation (horizontal or vertical) of the slider. */
   protected int orientation = HORIZONTAL;
 
   /** Whether the slider is inverted. */
   private transient boolean isInverted;
 
-  /** The ChangeListener that listens to the model. */
+  /** 
+   * The listener that monitors the slider's model and forwards events to the
+   * slider's listeners (see <code>createChangeListener()</code>). 
+   */
   protected ChangeListener changeListener;
 
-  /** The ChangeEvent that is passed to all listeners of this slider. */
+  /** The change event that is passed to all listeners of this slider. */
   protected transient ChangeEvent changeEvent;
 
   /**
-   * Creates a new horizontal JSlider object with a minimum of 0, a maximum of
-   * 100, and a value of 50.
+   * Creates a new horizontal <code>JSlider</code> instance with a minimum of 
+   * 0, a maximum of 100, and a value of 50.
    */
   public JSlider()
   {
@@ -255,8 +278,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * Creates a new JSlider object with the given orientation and a minimum of
-   * 0, a maximum of 100, and a value of 50.
+   * Creates a new <code>JSlider</code> instance with the given orientation 
+   * and a minimum of 0, a maximum of 100, and a value of 50.
    *
    * @param orientation The orientation of the slider ({@link #HORIZONTAL} or
    *                    {@link #VERTICAL}).
@@ -270,12 +293,15 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * Creates a new horizontal JSlider object with the given maximum and
-   * minimum and a value that is  halfway between the minimum and the
+   * Creates a new horizontal <code>JSlider</code> instance with the given 
+   * maximum and minimum and a value that is halfway between the minimum and the
    * maximum.
    *
-   * @param minimum The minimum value of the JSlider.
-   * @param maximum The maximum value of the JSlider.
+   * @param minimum The minimum value.
+   * @param maximum The maximum value.
+   * 
+   * @throws IllegalArgumentException if <code>minimum</code> is greater than
+   *     <code>maximum</code>.
    */
   public JSlider(int minimum, int maximum)
   {
@@ -283,12 +309,17 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * Creates a new horizontal JSlider object with the given minimum, maximum,
-   * and value.
+   * Creates a new horizontal <code>JSlider</code> instance with the given 
+   * minimum, maximum, and value.
    *
-   * @param minimum The minimum value of the JSlider.
-   * @param maximum The maximum value of the JSlider.
-   * @param value The initial value of the JSlider.
+   * @param minimum The minimum value.
+   * @param maximum The maximum value.
+   * @param value The initial value.
+   * 
+   * @throws IllegalArgumentException if <code>value</code> is not in the 
+   *     specified range.
+   * @throws IllegalArgumentException if <code>minimum</code> is greater than
+   *     <code>maximum</code>.
    */
   public JSlider(int minimum, int maximum, int value)
   {
@@ -296,8 +327,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * Creates a new JSlider object with the given orientation, minimum,
-   * maximum, and value.
+   * Creates a new <code>JSlider</code> instance with the given orientation, 
+   * minimum, maximum, and value.
    *
    * @param orientation The orientation of the slider ({@link #HORIZONTAL} or
    *                    {@link #VERTICAL}).
@@ -306,13 +337,18 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
    * @param value The initial value of the JSlider.
    * 
    * @throws IllegalArgumentException if <code>orientation</code> is not one of
-   *         the specified values.
+   *     the specified values.
+   * @throws IllegalArgumentException if <code>value</code> is not in the 
+   *     specified range.
+   * @throws IllegalArgumentException if <code>minimum</code> is greater than
+   *     <code>maximum</code>.
    */
   public JSlider(int orientation, int minimum, int maximum, int value)
   {
     sliderModel = new DefaultBoundedRangeModel(value, 0, minimum, maximum);
     if (orientation != HORIZONTAL && orientation != VERTICAL)
-      throw new IllegalArgumentException(orientation + " is not a legal orientation");
+      throw new IllegalArgumentException(orientation 
+                                         + " is not a legal orientation");
     this.orientation = orientation;
     changeListener = createChangeListener();
     sliderModel.addChangeListener(changeListener);
@@ -320,7 +356,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * Creates a new horizontal JSlider object with the given model.
+   * Creates a new horizontal <code>JSlider</code> instance with the given 
+   * model.
    *
    * @param model The model (<code>null</code> not permitted).
    * 
@@ -335,9 +372,11 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns the current value of the slider.
+   * Returns the slider's value (from the slider's model).
    *
-   * @return The value of the slider stored in the model.
+   * @return The value of the slider.
+   * 
+   * @see #setValue(int)
    */
   public int getValue()
   {
@@ -345,9 +384,15 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets the value of the slider.
+   * Sets the slider's value and sends a {@link ChangeEvent} to all 
+   * registered listeners.  Note that the model will fire a change event to all
+   * of its registered listeners first (with the model as the event source) and
+   * then the slider will fire another change event to all of its registered
+   * listeners (this time with the slider as the event source).
    *
-   * @param value The slider's new value.
+   * @param value  the new value.
+   * 
+   * @see #getValue()
    */
   public void setValue(int value)
   {
@@ -355,7 +400,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns the slider's UI delegate.
+   * Returns the slider's UI delegate.
    *
    * @return The slider's UI delegate.
    */
@@ -365,9 +410,9 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets the slider's UI delegate.
+   * Sets the slider's UI delegate.
    *
-   * @param ui A SliderUI object to use with this slider.
+   * @param ui  the UI delegate.
    */
   public void setUI(SliderUI ui)
   {
@@ -375,21 +420,20 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets this slider's UI to the UIManager's default for the
-   * current look and feel.
+   * Sets this slider's UI delegate to the default (obtained from the
+   * {@link UIManager}) for the current look and feel.
    */
   public void updateUI()
   {
     setUI((SliderUI) UIManager.getUI(this));
-    invalidate();
-    repaint();
   }
 
   /**
-   * This method returns a name to identify which look and feel class will be
-   * the UI delegate for the slider.
+   * Returns the suffix (<code>"SliderUI"</code> in this case) used to 
+   * determine the class name for a UI delegate that can provide the look and 
+   * feel for a <code>JSlider</code>.
    *
-   * @return The Look and Feel classID. "SliderUI"
+   * @return <code>"SliderUI"</code>.
    */
   public String getUIClassID()
   {
@@ -397,29 +441,36 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * Creates a ChangeListener for this Slider.
+   * Creates a {@link ChangeListener} that is added to the slider's model and
+   * forwards change events generated by the model to the listeners that are
+   * registered with the <code>JSlider</code> (by calling the 
+   * {@link #fireStateChanged} method).
    *
-   * @return A new ChangeListener.
+   * @return A new listener.
    */
   protected ChangeListener createChangeListener()
   {
     return new ChangeListener()
       {
-	public void stateChanged(ChangeEvent ce)
-	{
-	  // No need to trigger a repaint since the UI listens to the model
-	  // as well. All we need to do is pass on the stateChanged event 
-	  // to our listeners.
-	  fireStateChanged();
-	}
+        public void stateChanged(ChangeEvent ce)
+        {
+          // No need to trigger a repaint since the UI listens to the model
+          // as well. All we need to do is pass on the stateChanged event 
+          // to our listeners.
+          fireStateChanged();
+        }
       };
   }
 
   /**
-   * This method registers a listener to this slider. The listener will be
-   * informed of new ChangeEvents.
+   * Registers a listener with the slider so that it will receive 
+   * {@link ChangeEvent} notifications.  Note that change events generated
+   * by the slider's model will be forwarded automatically to the slider's
+   * listeners.
    *
-   * @param listener The listener to register.
+   * @param listener  the listener to register.
+   * 
+   * @see #removeChangeListener(ChangeListener)
    */
   public void addChangeListener(ChangeListener listener)
   {
@@ -427,9 +478,12 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method removes a listener from this slider.
+   * Removes a listener from this slider so that it will no longer receive
+   * {@link ChangeEvent} notifications from the slider.
    *
    * @param listener The listener to remove.
+   * 
+   * @see #addChangeListener(ChangeListener)
    */
   public void removeChangeListener(ChangeListener listener)
   {
@@ -437,9 +491,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method is called whenever the model fires a ChangeEvent. It should
-   * propagate the ChangeEvent to its listeners with a new ChangeEvent that
-   * identifies the slider as the source.
+   * Sends a {@link ChangeEvent} to all registered listeners, with this slider 
+   * as the source.
    */
   protected void fireStateChanged()
   {
@@ -448,16 +501,19 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
       changeEvent = new ChangeEvent(this);
     for (int i = changeListeners.length - 2; i >= 0; i -= 2)
       {
-	if (changeListeners[i] == ChangeListener.class)
-	  ((ChangeListener) changeListeners[i + 1]).stateChanged(changeEvent);
+        if (changeListeners[i] == ChangeListener.class)
+          ((ChangeListener) changeListeners[i + 1]).stateChanged(changeEvent);
       }
   }
 
   /**
-   * This method returns an array of all ChangeListeners listening to this
-   * slider.
+   * Returns an array containing all the {@link ChangeListener} instances 
+   * registered with this slider.  If no listeners are registered, this method
+   * returns an empty array.
    *
-   * @return An array of ChangeListeners listening to this slider.
+   * @return An array array containing all the {@link ChangeListener} instances 
+   *     registered with this slider (possibly empty, but never 
+   *     <code>null</code>).
    */
   public ChangeListener[] getChangeListeners()
   {
@@ -465,9 +521,12 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns the model of the slider.
+   * Returns the slider's model, which stores the minimum, maximum and current 
+   * values.
    *
    * @return The slider's model.
+   * 
+   * @see #setModel(BoundedRangeModel)
    */
   public BoundedRangeModel getModel()
   {
@@ -475,11 +534,16 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "model" property. It also needs  to unregister
-   * any listeners to the old model and register any listeners to the new
-   * model.
+   * Sets the slider's model and sends a {@link PropertyChangeEvent} (with the
+   * property name "model") to all registered listeners.   The change listener
+   * that the slider registered with the original model is removed and added
+   * to the new model (this ensures that {@link ChangeEvent} notifications 
+   * generated by the model are automatically forwarded to listeners that are
+   * registered with the slider).
    *
    * @param model The model to use with the slider.
+   * 
+   * @see #getModel()
    */
   public void setModel(BoundedRangeModel model)
   {
@@ -488,18 +552,20 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
     // and bork the next time it tries to access the model.
     if (model != sliderModel)
       {
-	BoundedRangeModel oldModel = sliderModel;
-	sliderModel = model;
-	oldModel.removeChangeListener(changeListener);
-	sliderModel.addChangeListener(changeListener);
-	firePropertyChange("model", oldModel, sliderModel);
+        BoundedRangeModel oldModel = sliderModel;
+        sliderModel = model;
+        oldModel.removeChangeListener(changeListener);
+        sliderModel.addChangeListener(changeListener);
+        firePropertyChange("model", oldModel, sliderModel);
       }
   }
 
   /**
-   * This method returns the minimum value of the slider.
+   * Returns the minimum value of the slider (from the slider's model).
    *
    * @return The minimum value of the slider.
+   * 
+   * @see #setMinimum(int)
    */
   public int getMinimum()
   {
@@ -507,9 +573,20 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets the minimum value of the slider.
-   *
+   * Sets the minimum value of the slider and fires a 
+   * {@link PropertyChangeEvent} (with the property name "minimum") to all
+   * registered listeners.  Note that:
+   * <p>
+   * <ul>
+   * <li>the minimum value is stored in the slider's model (see 
+   *     {@link #getModel()});</li>
+   * <li>in addition to the property change event, the slider also fires a 
+   *     {@link ChangeEvent}.</li>
+   * </ul>
+   * 
    * @param minimum The minimum value of the slider.
+   * 
+   * @see #getMinimum()
    */
   public void setMinimum(int minimum)
   {
@@ -520,9 +597,11 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns the maximum value of the slider.
+   * Returns the slider's maximum value (obtained from the slider's model).
    *
    * @return The maximum value of the slider.
+   * 
+   * @see #setMaximum(int)
    */
   public int getMaximum()
   {
@@ -530,9 +609,20 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets the maximum value of the slider.
+   * Sets the maximum value of the slider and fires a 
+   * {@link PropertyChangeEvent} (with the property name "maximum") to all
+   * registered listeners.  Note that:
+   * <p>
+   * <ul>
+   * <li>the maximum value is stored in the slider's model (see 
+   *     {@link #getModel()});</li>
+   * <li>in addition to the property change event, the slider also fires a 
+   *     {@link ChangeEvent}.</li>
+   * </ul>
    *
    * @param maximum The maximum value of the slider.
+   * 
+   * @see #getMaximum()
    */
   public void setMaximum(int maximum)
   {
@@ -543,10 +633,11 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns this slider's isAdjusting value which is true if the
-   * thumb is being dragged.
+   * Returns the <code>valueIsAdjusting</code> flag from the slider's model.
    *
-   * @return The slider's isAdjusting value.
+   * @return The <code>valueIsAdjusting</code> flag from the slider's model.
+   * 
+   * @see #setValueIsAdjusting(boolean)
    */
   public boolean getValueIsAdjusting()
   {
@@ -554,9 +645,12 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets the isAdjusting value for the slider.
+   * Sets the <code>valueIsAdjusting</code> flag in the slider's model, and 
+   * sends a {@link ChangeEvent} to all registered listeners.
    *
-   * @param adjusting The slider's isAdjusting value.
+   * @param adjusting  the new flag value.
+   * 
+   * @see #getValueIsAdjusting()
    */
   public void setValueIsAdjusting(boolean adjusting)
   {
@@ -564,9 +658,11 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns the extent value for this slider.
+   * Returns the slider's extent value, obtained from the slider's model.
    *
-   * @return The extent value for this slider.
+   * @return The extent value.
+   * 
+   * @see #setExtent(int)
    */
   public int getExtent()
   {
@@ -574,9 +670,15 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets the extent value for this slider.
+   * Sets the slider's extent value and sends a {@link ChangeEvent} to all 
+   * registered listeners.  Note that the model will fire a change event to all
+   * of its registered listeners first (with the model as the event source) and
+   * then the slider will fire another change event to all of its registered
+   * listeners (this time with the slider as the event source).
    *
    * @param extent The extent value for this slider.
+   * 
+   * @see #getExtent()
    */
   public void setExtent(int extent)
   {
@@ -584,9 +686,12 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns the slider orientation.
+   * Returns the orientation of the slider, either {@link JSlider#HORIZONTAL}
+   * or {@link JSlider#VERTICAL}.
    *
    * @return The orientation of the slider.
+   * 
+   * @see #setOrientation(int)
    */
   public int getOrientation()
   {
@@ -594,28 +699,37 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "orientation" property of this slider. If the
-   * orientation is not VERTICAL or HORIZONTAL, this method does nothing.
+   * Sets the orientation for the slider and sends a 
+   * {@link PropertyChangeEvent} (with the property name "orientation") to all
+   * registered listeners.
    *
-   * @param orientation The orientation of this slider.
+   * @param orientation  the orientation (one of {@link JSlider#HORIZONTAL} or
+   *     {@link JSlider#VERTICAL}).
+   *     
+   * @throws IllegalArgumentException if <code>orientation</code> is not one of
+   *     the permitted values.
+   *     
+   * @see #getOrientation()
    */
   public void setOrientation(int orientation)
   {
     if (orientation != VERTICAL && orientation != HORIZONTAL)
-      throw new IllegalArgumentException("orientation must be one of: VERTICAL, HORIZONTAL");
+      throw new IllegalArgumentException(
+          "orientation must be one of: VERTICAL, HORIZONTAL");
     if (orientation != this.orientation)
       {
-	int oldOrientation = this.orientation;
-	this.orientation = orientation;
-	firePropertyChange("orientation", oldOrientation,
-	                   this.orientation);
+        int oldOrientation = this.orientation;
+        this.orientation = orientation;
+        firePropertyChange("orientation", oldOrientation, this.orientation);
       }
   }
 
   /**
-   * This method returns the label table for this slider.
+   * Returns the label table for the slider.
    *
-   * @return The label table for this slider.
+   * @return The label table for the slider (possibly <code>null</code>).
+   * 
+   * @see #setLabelTable(Dictionary)
    */
   public Dictionary getLabelTable()
   {
@@ -623,23 +737,27 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "labelTable" property of this slider.
+   * Sets the table of labels for the slider and sends a 
+   * {@link PropertyChangeEvent} (with the property name "labelTable") to all 
+   * registered listeners.
    *
-   * @param table The label table for this slider.
+   * @param table  the table of labels (<code>null</code> permitted).
+   * 
+   * @see #getLabelTable()
    */
   public void setLabelTable(Dictionary table)
   {
     if (table != labelTable)
       {
-	Dictionary oldTable = labelTable;
-	labelTable = table;
-	firePropertyChange("labelTable", oldTable, labelTable);
+        Dictionary oldTable = labelTable;
+        labelTable = table;
+        firePropertyChange("labelTable", oldTable, labelTable);
       }
   }
 
   /**
-   * This method is called to reset UI delegates for the labels in the
-   * labelTable to a default for the current look and feel.
+   * Resets the UI delegates for the labels in the <code>labelTable</code> to 
+   * the default for the current look and feel.
    */
   protected void updateLabelUIs()
   {
@@ -647,20 +765,20 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
       return;
     for (Enumeration list = labelTable.elements(); list.hasMoreElements();)
       {
-	JLabel label = (JLabel) list.nextElement();
-	label.updateUI();
+        JLabel label = (JLabel) list.nextElement();
+        label.updateUI();
       }
   }
 
   /**
-   * Creates a hashtable of (Integer, JLabel) pairs that can be used as a
-   * label table for this slider. The labels will start from the sliders
-   * minimum and increase by the increment. Each  label will have a text
-   * string indicating their integer value.
+   * Creates a hashtable of <code>(Integer, JLabel)</code> pairs that can be 
+   * used as a label table for this slider. The labels will start from the 
+   * slider's minimum and increase by the increment. Each label will have a text
+   * string indicating its integer value.
    *
    * @param increment The increment between labels (must be > 0).
    *
-   * @return A hashtable with the labels and their keys.
+   * @return A hashtable containing the labels.
    *
    * @throws IllegalArgumentException if <code>increment</code> is not greater
    *         than zero.
@@ -671,10 +789,10 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * Creates a hashtable of (Integer, JLabel) pairs that can be used as a
-   * label table for this slider. The labels will start from the given start
-   * value and increase by the increment. Each  label will have a text string
-   * indicating its integer value.
+   * Creates a hashtable of <code>(Integer, JLabel)</code> pairs that can be 
+   * used as a label table for this slider. The labels will start from the 
+   * given start value and increase by the increment. Each  label will have a 
+   * text string indicating its integer value.
    *
    * @param increment The increment between labels (must be > 0).
    * @param start The value to start from.
@@ -699,29 +817,29 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
 
     for (int i = start; i <= max; i += increment)
       {
-	label = new JLabel(String.valueOf(i));
-	label.setVerticalAlignment(CENTER);
-	label.setHorizontalAlignment(CENTER);
-	
-	// Make sure these labels have the width and height
-	// they want.
-	dim = label.getPreferredSize();
-	label.setBounds(label.getX(), label.getY(),
-	                (int) dim.getWidth(),
-			(int) dim.getHeight()); 
-	table.put(new Integer(i), label);
+        label = new JLabel(String.valueOf(i));
+        label.setVerticalAlignment(CENTER);
+        label.setHorizontalAlignment(CENTER);
+        
+        // Make sure these labels have the width and height
+        // they want.
+        dim = label.getPreferredSize();
+        label.setBounds(label.getX(), label.getY(),
+                        (int) dim.getWidth(),
+                        (int) dim.getHeight()); 
+        table.put(new Integer(i), label);
       }
     return table;
   }
 
   /**
-   * This method returns whether the slider is inverted. Horizontal sliders
-   * that are not inverted will have the minimums on the left. If they are
-   * inverted, the minimums will be  on the right. Vertical sliders that are
-   * not inverted will have the minimums at the bottom. If they are inverted,
-   * the minimums will be at the top.
+   * Returns the flag that controls whether or not the value scale for the
+   * slider is inverted (the default value is <code>false</code>).
    *
-   * @return Whether this slider is inverted.
+   * @return The flag that controls whether or not the value scale for the
+   *     slider is inverted.
+   *     
+   * @see #setInverted(boolean)
    */
   public boolean getInverted()
   {
@@ -729,30 +847,36 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "inverted" property for this slider.Horizontal
-   * sliders  that are not inverted will have the minimums on the left. If
-   * they are inverted, the minimums will be  on the right. Vertical sliders
-   * that are not inverted will have the minimums at the bottom. If they are
-   * inverted, the minimums will be at the top. However, if the slider's
-   * componentOrientation is set to RIGHT_TO_LEFT, then everything gets
-   * reversed again.
+   * Sets the flag that controls whether or not the value scale for the
+   * slider is inverted and, if the new flag value is different to the old flag
+   * value, sends a {@link PropertyChangeEvent} to all registered listeners.
+   * Typically, a horizontal slider will display a scale that increases from 
+   * left to right, but this is reversed if the 'inverted' flag is set to 
+   * <code>true</code>.  Similarly, a vertical slider will display a scale that
+   * increases from bottom to top, and this is reversed if the 'inverted' flag
+   * is set to <code>true</code>.
    *
-   * @param inverted Whether the slider should be inverted.
+   * @param inverted  the new flag value.
+   * 
+   * @see #getInverted()
    */
   public void setInverted(boolean inverted)
   {
     if (isInverted != inverted)
       {
-	boolean oldInverted = isInverted;
-	isInverted = inverted;
-	firePropertyChange("inverted", oldInverted, isInverted);
+        boolean oldInverted = isInverted;
+        isInverted = inverted;
+        firePropertyChange("inverted", oldInverted, isInverted);
       }
   }
 
   /**
-   * This method returns the amount of units between each major tick mark.
+   * Returns the distance between major tick marks along the slider's value 
+   * scale.
    *
    * @return The amount of units between each major tick mark.
+   * 
+   * @see #setMajorTickSpacing(int)
    */
   public int getMajorTickSpacing()
   {
@@ -760,26 +884,32 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "majorTickSpacing" property for this slider. The
-   * major tick spacing is the amount of units between each major tick mark.
+   * Sets the distance between major tick marks along the slider's value scale, 
+   * and sends a {@link PropertyChangeEvent} (with the property name 
+   * "majorTickSpacing") to all registered listeners.
    *
-   * @param spacing The amount of units between each major tick mark.
+   * @param spacing  the distance between major tick marks.
+   * 
+   * @see #getMajorTickSpacing()
    */
   public void setMajorTickSpacing(int spacing)
   {
     if (majorTickSpacing != spacing)
       {
-	int oldSpacing = majorTickSpacing;
-	majorTickSpacing = spacing;
-	firePropertyChange("majorTickSpacing", oldSpacing,
-	                   majorTickSpacing);
+        int oldSpacing = majorTickSpacing;
+        majorTickSpacing = spacing;
+        firePropertyChange("majorTickSpacing", oldSpacing, majorTickSpacing);
       }
   }
 
   /**
-   * This method returns the amount of units between each minor tick mark.
+   * Returns the distance between minor tick marks along the slider's value 
+   * scale.
    *
-   * @return The amount of units between each minor tick mark.
+   * @return The distance between minor tick marks along the slider's value 
+   *     scale.
+   *     
+   * @see #setMinorTickSpacing(int)
    */
   public int getMinorTickSpacing()
   {
@@ -787,28 +917,32 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "minorTickSpacing" property for this slider. The
-   * minor tick spacing is the amount of units between each minor tick mark.
+   * Sets the distance between minor tick marks along the slider's value scale, 
+   * and sends a {@link PropertyChangeEvent} (with the property name 
+   * "minorTickSpacing") to all registered listeners.
    *
-   * @param spacing The amount of units between each minor tick mark.
+   * @param spacing  the distance between minor tick marks.
+   * 
+   * @see #getMinorTickSpacing()
    */
   public void setMinorTickSpacing(int spacing)
   {
     if (minorTickSpacing != spacing)
       {
-	int oldSpacing = minorTickSpacing;
-	minorTickSpacing = spacing;
-	firePropertyChange("minorTickSpacing", oldSpacing,
-	                   minorTickSpacing);
+        int oldSpacing = minorTickSpacing;
+        minorTickSpacing = spacing;
+        firePropertyChange("minorTickSpacing", oldSpacing, minorTickSpacing);
       }
   }
 
   /**
-   * This method returns whether this slider is snapping to ticks.  Sliders
-   * that snap to ticks will automatically move the thumb to the nearest tick
-   * mark.
+   * Returns the flag that controls whether the slider thumb will snap to ticks.
+   * Sliders that snap to ticks will automatically move the thumb to the 
+   * nearest tick mark.
    *
-   * @return Whether this slider snaps to ticks.
+   * @return <code>true</code> if the slider thumb automatically.
+   * 
+   * @see #setSnapToTicks(boolean)
    */
   public boolean getSnapToTicks()
   {
@@ -816,28 +950,32 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method sets whether this slider will snap to ticks. Sliders that
-   * snap to ticks will automatically move the thumb to the nearest tick
-   * mark.
+   * Sets the flag that controls whether the slider thumb will snap to ticks 
+   * and sends a {@link PropertyChangeEvent} (with the property name 
+   * 'snapToTicks') to all registered listeners. Sliders that snap to ticks 
+   * will automatically move the thumb to the nearest tick mark.
    *
-   * @param snap Whether this slider snaps to ticks.
+   * @param snap  the new flag value.
+   * 
+   * @see #getSnapToTicks()
    */
   public void setSnapToTicks(boolean snap)
   {
     if (snap != snapToTicks)
       {
-	snapToTicks = snap;
-	firePropertyChange("snapToTicks", !snap, snap);
+        snapToTicks = snap;
+        firePropertyChange("snapToTicks", !snap, snap);
       }
   }
 
   /**
-   * This method returns whether the slider will paint its tick marks. In
-   * addition to setting this property to true, one of minor tick spacing  or
-   * major tick spacing must be set to a value greater than 0 in order for
-   * ticks to be painted.
+   * Returns the flag that controls whether or not tick marks are painted along
+   * the slider's value scale.
    *
-   * @return Whether ticks will be painted.
+   * @return <code>true</code> if tick marks should be painted, and 
+   *     <code>false</code> if tick marks should not be painted.
+   *     
+   * @see #setPaintTicks(boolean)
    */
   public boolean getPaintTicks()
   {
@@ -845,27 +983,33 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "paintTicks" property for this slider. In
-   * addition to setting this property to true, one of minor tick spacing  or
-   * major tick spacing must be set to a value greater than 0 in order for
-   * ticks to be painted.
+   * Sets the flag that controls whether or not tick marks are painted along
+   * the slider's value scale, and sends a {@link PropertyChangeEvent} (with 
+   * the property name "paintTicks") to all registered listeners. In
+   * addition to setting this property to <code>true</code>, one or both of the
+   * minor tick spacing and major tick spacing attributes must be set to a 
+   * value greater than 0 in order for ticks to be painted.
    *
    * @param paint Whether ticks will be painted.
+   * 
+   * @see #getPaintTicks()
    */
   public void setPaintTicks(boolean paint)
   {
     if (paint != paintTicks)
       {
-	boolean oldPaintTicks = paintTicks;
-	paintTicks = paint;
-	firePropertyChange("paintTicks", oldPaintTicks, paintTicks);
+        boolean oldPaintTicks = paintTicks;
+        paintTicks = paint;
+        firePropertyChange("paintTicks", oldPaintTicks, paintTicks);
       }
   }
 
   /**
-   * This method returns whether the track will be painted.
+   * Returns the flag that controls whether or not the track is painted.
    *
    * @return Whether the track will be painted.
+   * 
+   * @see #setPaintTrack(boolean)
    */
   public boolean getPaintTrack()
   {
@@ -878,6 +1022,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
    * registered listeners.
    *
    * @param paint Whether the track will be painted.
+   * 
+   * @see #getPaintTrack()
    */
   public void setPaintTrack(boolean paint)
   {
@@ -889,9 +1035,12 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method returns whether labels will be painted.
+   * Returns the flag that controls whether or not labels are painted for the
+   * tick marks along the slider.
    *
    * @return Whether labels will be painted.
+   * 
+   * @see #setPaintLabels(boolean)
    */
   public boolean getPaintLabels()
   {
@@ -899,36 +1048,62 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /**
-   * This method changes the "paintLabels" property.
+   * Sets the flag that controls whether or not labels are painted for the
+   * tick marks along the slider and sends a {@link PropertyChangeEvent} (with 
+   * the property name "paintLabels") to all registered listeners.
    *
    * @param paint Whether labels will be painted.
+   * 
+   * @see #getPaintLabels()
    */
   public void setPaintLabels(boolean paint)
   {
     if (paint != paintLabels)
       {
-	paintLabels = paint;
-        if (paint && majorTickSpacing > 0)
+        paintLabels = paint;
+        if (paint && majorTickSpacing > 0 && labelTable == null)
           labelTable = createStandardLabels(majorTickSpacing);
-	firePropertyChange("paintLabels", !paint, paint);
+        firePropertyChange("paintLabels", !paint, paint);
       }
   }
 
   /**
-   * This method is used primarily for debugging purposes and returns a string
-   * that can be used to represent this slider.
+   * Returns an implementation-dependent string describing the attributes of
+   * this <code>JSlider</code>.
    *
-   * @return A string representing this slider.
+   * @return A string describing the attributes of this <code>JSlider</code>
+   *         (never <code>null</code>).
    */
   protected String paramString()
   {
-    return "JSlider";
+    String superParamStr = super.paramString();
+    StringBuffer sb = new StringBuffer();
+    sb.append(",isInverted=").append(getInverted());
+    sb.append(",majorTickSpacing=").append(getMajorTickSpacing());
+    sb.append(",minorTickSpacing=").append(getMinorTickSpacing());
+    sb.append(",orientation=");
+    if (orientation == HORIZONTAL)
+      sb.append("HORIZONTAL");
+    else
+      sb.append("VERTICAL");
+    sb.append(",paintLabels=").append(getPaintLabels());
+    sb.append(",paintTicks=").append(getPaintTicks());
+    sb.append(",paintTrack=").append(getPaintTrack());
+    sb.append(",snapToTicks=").append(getSnapToTicks());
+    
+    // the following is output by the reference implementation.  We don't
+    // strictly need to replicate this. Perhaps it has some meaning, but
+    // I couldn't determine it yet...
+    sb.append(",snapToValue=true");
+
+    return superParamStr + sb.toString();
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the object that provides accessibility features for this
+   * <code>JSlider</code> component.
    *
-   * @return DOCUMENT ME!
+   * @return The accessible context (an instance of {@link AccessibleJSlider}).
    */
   public AccessibleContext getAccessibleContext()
   {

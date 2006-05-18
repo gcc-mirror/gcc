@@ -45,6 +45,8 @@ import java.util.EventObject;
  * Fired by a ClipBoard for registered FlavorListeners.
  *
  * @author Mark J. Wielaard (mark@klomp.org)
+ * 
+ * @since 1.5
  */
 public class FlavorEvent extends EventObject
 {

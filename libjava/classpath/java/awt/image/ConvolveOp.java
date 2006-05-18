@@ -110,7 +110,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
    * @see java.awt.image.BufferedImageOp#filter(java.awt.image.BufferedImage,
    * java.awt.image.BufferedImage)
    */
-  public BufferedImage filter(BufferedImage src, BufferedImage dst)
+  public final BufferedImage filter(BufferedImage src, BufferedImage dst)
   {
     if (src == dst)
       throw new IllegalArgumentException();
@@ -163,7 +163,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.RasterOp#getRenderingHints()
    */
-  public RenderingHints getRenderingHints()
+  public final RenderingHints getRenderingHints()
   {
     return hints;
   }
@@ -181,7 +181,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
    *
    * @return The convolution kernel.
    */
-  public Kernel getKernel()
+  public final Kernel getKernel()
   {
     return (Kernel) kernel.clone();
   }
@@ -190,7 +190,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
    * @see java.awt.image.RasterOp#filter(java.awt.image.Raster,
    * java.awt.image.WritableRaster)
    */
-  public WritableRaster filter(Raster src, WritableRaster dest) {
+  public final WritableRaster filter(Raster src, WritableRaster dest) {
     if (src == dest)
       throw new IllegalArgumentException();
     if (src.getWidth() < kernel.getWidth() ||
@@ -309,7 +309,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.BufferedImageOp#getBounds2D(java.awt.image.BufferedImage)
    */
-  public Rectangle2D getBounds2D(BufferedImage src)
+  public final Rectangle2D getBounds2D(BufferedImage src)
   {
     return src.getRaster().getBounds();
   }
@@ -317,7 +317,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.RasterOp#getBounds2D(java.awt.image.Raster)
    */
-  public Rectangle2D getBounds2D(Raster src)
+  public final Rectangle2D getBounds2D(Raster src)
   {
     return src.getBounds();
   }
@@ -330,7 +330,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
    * @see java.awt.image.RasterOp#getPoint2D(java.awt.geom.Point2D,
    * java.awt.geom.Point2D)
    */
-  public Point2D getPoint2D(Point2D src, Point2D dst)
+  public final Point2D getPoint2D(Point2D src, Point2D dst)
   {
     if (dst == null) return (Point2D)src.clone();
     dst.setLocation(src);

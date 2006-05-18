@@ -44,8 +44,6 @@ import javax.security.sasl.SaslException;
  * Used by mechanisms that offer a security services layer, this checked
  * exception is thrown to indicate that a violation has occured during the
  * processing of a <i>confidentiality</i> protection filter.
- *
- * @version $Revision: 1.1 $
  */
 public class ConfidentialityException extends SaslException
 {

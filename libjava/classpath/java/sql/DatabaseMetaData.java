@@ -1,5 +1,5 @@
 /* DatabaseMetaData.java -- Information about the database itself.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -256,10 +256,19 @@ public interface DatabaseMetaData
    */
   short tableIndexOther = 3;
 
+  /**
+   * A NULL value is not allowed for this attribute.
+   */
   short attributeNoNulls = 0;
 
+  /**
+   * A NULL value is allowed for this attribute.
+   */
   short attributeNullable = 1;
 
+  /**
+   * It is unknown whether or not NULL values are allowed for this attribute.
+   */
   short attributeNullableUnknown = 2;
 
   int sqlStateXOpen = 1;
@@ -1395,12 +1404,12 @@ public interface DatabaseMetaData
    *        or "" to return procedures from all catalogs.
    * @param schemaPattern A schema pattern for the schemas to return stored
    *        procedures from, or "" to return procedures from all schemas.
-   * @param namePattern The pattern of procedures names to return.
+   * @param procedurePattern The pattern of procedure names to return.
    * @returns A <code>ResultSet</code> with all the requested procedures.
    * @exception SQLException If an error occurs.
    */
   ResultSet getProcedures(String catalog, String schemaPattern, String
-      procedureNamePattern) throws SQLException;
+      procedurePattern) throws SQLException;
 
   /**
    * This method returns a list of the parameter and result columns for
@@ -1436,13 +1445,13 @@ public interface DatabaseMetaData
    *        or "" to return procedures from all catalogs.
    * @param schemaPattern A schema pattern for the schemas to return stored
    *        procedures from, or "" to return procedures from all schemas.
-   * @param namePattern The pattern of procedures names to return.
+   * @param procedurePattern The pattern of procedures names to return.
    * @param columnPattern The pattern of column names to return.
    * @returns A <code>ResultSet</code> with all the requested procedures.
    * @exception SQLException If an error occurs.
    */
   ResultSet getProcedureColumns(String catalog, String schemaPattern,
-      String procedureNamePattern, String columnNamePattern) throws
+      String procedurePattern, String columnPattern) throws
       SQLException;
 
   /**
@@ -1462,13 +1471,13 @@ public interface DatabaseMetaData
    *        or "" to return tables from all catalogs.
    * @param schemaPattern A schema pattern for the schemas to return tables
    *        from, or "" to return tables from all schemas.
-   * @param namePattern The pattern of table names to return.
+   * @param tablePattern The pattern of table names to return.
    * @param types The list of table types to include; null returns all types.
    * @returns A <code>ResultSet</code> with all the requested tables.
    * @exception SQLException If an error occurs.
    */
   ResultSet getTables(String catalog, String schemaPattern, String
-      tableNamePattern, String[] types) throws SQLException;
+      tablePattern, String[] types) throws SQLException;
 
   /**
    * This method returns the list of database schemas as a 
@@ -1536,13 +1545,13 @@ public interface DatabaseMetaData
    * or "" to return tables from all catalogs.
    * @param schemaPattern A schema pattern for the schemas to return 
    * tables from, or "" to return tables from all schemas.
-   * @param namePattern The pattern of tables names to return.
+   * @param tablePattern The pattern of table names to return.
    * @param columnPattern The pattern of column names to return.
    * @returns A <code>ResultSet</code> with all the requested tables.
    * @exception SQLException If an error occurs.
    */
   ResultSet getColumns(String catalog, String schemaPattern, String
-      tableNamePattern, String columnNamePattern) throws SQLException;
+      tablePattern, String columnPattern) throws SQLException;
 
   /**
    * This method returns the access rights that have been granted to the
@@ -1568,13 +1577,13 @@ public interface DatabaseMetaData
    *        to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
-   * @param table The table name to return information for.
+   * @param tableName The table name to return information for.
    * @param columnPattern A pattern of column names to return information for.
    * @return A <code>ResultSet</code> with all the requested privileges.
    * @exception SQLException If an error occurs.
    */
   ResultSet getColumnPrivileges(String catalog, String schema, String
-      table, String columnNamePattern) throws SQLException;
+      tableName, String columnPattern) throws SQLException;
 
   /**
    * This method returns the access rights that have been granted to the
@@ -1597,7 +1606,7 @@ public interface DatabaseMetaData
    * @param catalog The catalog to retrieve information from, or the empty string
    *        to return entities not associated with a catalog, or <code>null</code>
    *        to return information from all catalogs.
-   * @param schema The schema to retrieve information from, or the empty string
+   * @param schemaPattern The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
    * @param tablePattern The table name pattern of tables to return 
    *        information for.
@@ -1605,7 +1614,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    */
   ResultSet getTablePrivileges(String catalog, String schemaPattern,
-      String tableNamePattern) throws SQLException;
+      String tablePattern) throws SQLException;
 
   /**
    * This method returns the best set of columns for uniquely identifying
@@ -1634,8 +1643,7 @@ public interface DatabaseMetaData
    * to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    * to return entities not associated with a schema.
-   * @param table The table name to return information for.
-   * @param columnPattern A pattern of column names to return information for.
+   * @param tableName The table name to return information for.
    * @param scope One of the best row id scope constants from this class.
    * @param nullable <code>true</code> to include columns that are nullable,
    * <code>false</code> otherwise.
@@ -1643,7 +1651,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    */
   ResultSet getBestRowIdentifier(String catalog, String schema,
-    String table, int scope, boolean nullable) throws SQLException;
+    String tableName, int scope, boolean nullable) throws SQLException;
 
   /**
    * This method returns the set of columns that are automatically updated
@@ -1670,13 +1678,12 @@ public interface DatabaseMetaData
    *        to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
-   * @param table The table name to return information for.
-   * @param columnPattern A pattern of column names to return information for.
+   * @param tableName The table name to return information for
    * @return A <code>ResultSet</code> with the version columns.
    * @exception SQLException If an error occurs.
    */
   ResultSet getVersionColumns(String catalog, String schema,
-    String table) throws SQLException;
+    String tableName) throws SQLException;
 
   /**
    * This method returns a list of a table's primary key columns.  These
@@ -1696,12 +1703,11 @@ public interface DatabaseMetaData
    *        to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
-   * @param table The table name to return information for.
-   * @param columnPattern A pattern of column names to return information for.
+   * @param tableName The table name to return information for.
    * @return A <code>ResultSet</code> with the primary key columns.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getPrimaryKeys(String catalog, String schema, String table)
+  ResultSet getPrimaryKeys(String catalog, String schema, String tableName)
       throws SQLException;
 
   /**
@@ -1740,14 +1746,12 @@ public interface DatabaseMetaData
    *        to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
-   * @param table The table name to return information for.
-   *
+   * @param tableName The table name to return information for.
    * @return A <code>ResultSet</code> with the foreign key columns.
-   *
    * @exception SQLException If an error occurs.
    */
   ResultSet getImportedKeys(String catalog, String schema,
-    String table) throws SQLException;
+    String tableName) throws SQLException;
 
   /**
    * This method returns a list of the table's which use this table's
@@ -1786,12 +1790,12 @@ public interface DatabaseMetaData
    *        to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
-   * @param table The table name to return information for.
+   * @param tableName The table name to return information for.
    * @return A <code>ResultSet</code> with the requested information
    * @exception SQLException If an error occurs.
    */
   ResultSet getExportedKeys(String catalog, String schema,
-    String table) throws SQLException;
+    String tableName) throws SQLException;
 
   /**
    * This method returns a description of how one table imports another
@@ -1825,26 +1829,30 @@ public interface DatabaseMetaData
    * <code>importedKeyNotDeferrable</code>).</li>
    * </ol>
    *
-   * @param primCatalog The catalog to retrieve information from, or the empty string
-   *        to return entities not associated with a catalog, or <code>null</code>
-   *        to return information from all catalogs, on the exporting side.
-   * @param primSchema The schema to retrieve information from, or the empty string
-   *        to return entities not associated with a schema, on the exporting side.
-   * @param primTable The table name to return information for, on the exporting
-   *        side.
-   * @param forCatalog The catalog to retrieve information from, or the empty string
-   *        to return entities not associated with a catalog, or <code>null</code>
-   *        to return information from all catalogs, on the importing side.
-   * @param forSchema The schema to retrieve information from, or the empty string
-   *        to return entities not associated with a schema on the importing side.
-   * @param forTable The table name to return information for on the importing
-   *        side.
+   * @param primaryCatalog The catalog to retrieve information from, or the
+   *        empty string to return entities not associated with a catalog, or
+   *        <code>null</code> to return information from all catalogs, on the
+   *         exporting side.
+   * @param primarySchema The schema to retrieve information from, or the empty
+   *        string to return entities not associated with a schema, on the
+   *        exporting side.
+   * @param primaryTableName The table name to return information for, on the
+   *        exporting side.
+   * @param foreignCatalog The catalog to retrieve information from, or the
+   *        empty string to return entities not associated with a catalog,
+   *        or <code>null</code> to return information from all catalogs, on
+   *        the importing side.
+   * @param foreignSchema The schema to retrieve information from, or the
+   *        empty string to return entities not associated with a schema on
+   *        the importing side.
+   * @param foreignTableName The table name to return information for on the
+   *        importing side.
    * @return A <code>ResultSet</code> with the requested information
    * @exception SQLException If an error occurs.
    */
   ResultSet getCrossReference(String primaryCatalog, String
-    primarySchema, String primaryTable, String foreignCatalog, String
-    foreignSchema, String foreignTable) throws SQLException;
+    primarySchema, String primaryTableName, String foreignCatalog, String
+    foreignSchema, String foreignTableName) throws SQLException;
 
   /**
    * This method returns a list of the SQL types supported by this
@@ -1921,15 +1929,15 @@ public interface DatabaseMetaData
    *        <code>null</code> to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
-   * @param table The table name to return information for.
+   * @param tableName The table name to return information for.
    * @param unique <code>true</code> to return only unique indexes, 
    *        <code>false</code> otherwise.
-   * @param approx <code>true</code> if data values can be approximations,
+   * @param approximate <code>true</code> if data values can be approximations,
    *        <code>false</code> otherwise.
    * @return A <code>ResultSet</code> with the requested index information
    * @exception SQLException If an error occurs.
    */
-  ResultSet getIndexInfo(String catalog, String schema, String table,
+  ResultSet getIndexInfo(String catalog, String schema, String tableName,
     boolean unique, boolean approximate) throws SQLException;
 
   /**
@@ -1954,8 +1962,8 @@ public interface DatabaseMetaData
    *
    * @param type The desired result type, which is one of the constants
    *        defined in <code>ResultSet</code>.
-   * @param concur The desired concurrency type, which is one of the constants
-   *        defined in <code>ResultSet</code>.
+   * @param concurrency The desired concurrency type, which is one of the
+   *                    constants defined in <code>ResultSet</code>.
    * @return <code>true</code> if the result set type is supported,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
@@ -2108,8 +2116,8 @@ public interface DatabaseMetaData
    * @param catalog The catalog to retrieve information from, or the empty string
    *        to return entities not associated with a catalog, or <code>null</code>
    *        to return information from all catalogs.
-   * @param schema The schema to retrieve information from, or the empty string
-   *        to return entities not associated with a schema.
+   * @param schemaPattern The schema to retrieve information from, or the
+   *        empty string to return entities not associated with a schema.
    * @param typePattern The type name pattern to match.
    * @param types The type identifier patterns (from <code>Types</code>) to
    *        match.
@@ -2117,7 +2125,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    */
   ResultSet getUDTs(String catalog, String schemaPattern, String
-      typeNamePattern, int[] types) throws SQLException;
+      typePattern, int[] types) throws SQLException;
 
   /**
    * This method returns the <code>Connection</code> object that was used
@@ -2129,16 +2137,33 @@ public interface DatabaseMetaData
   Connection getConnection() throws SQLException;
 
   /**
+   * This method tests whether the databse supports savepoints.
+   * 
+   * @return <code>true</code> if the database supports savepoints,
+   *         <code>false</code> if it does not.
+   * @exception SQLException If an error occurs.
+   * @see Savepoint
    * @since 1.4
    */
   boolean supportsSavepoints() throws SQLException;
 
   /**
+   * This method tests whether the database supports named parameters.
+   * 
+   * @return <code>true</code> if the database supports named parameters,
+   *         <code>false</code> if it does not.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   boolean supportsNamedParameters() throws SQLException;
 
   /**
+   * This method tests whether the database supports returning multiple
+   * <code>ResultSet</code>S from a <code>CallableStatement</code> at once.
+   * 
+   * @return <code>true</code> if the database supports returnig multiple
+   *         results at once, <code>false</code> if it does not.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   boolean supportsMultipleOpenResults() throws SQLException;
@@ -2152,47 +2177,78 @@ public interface DatabaseMetaData
    * @since 1.4
    */
   ResultSet getSuperTypes(String catalog, String schemaPattern,
-    String typeNamePattern) throws SQLException;
+    String typePattern) throws SQLException;
 
   /**
    * @since 1.4
    */
   ResultSet getSuperTables(String catalog, String schemaPattern,
-    String tableNamePattern) throws SQLException;
+    String tablePattern) throws SQLException;
 
   /**
    * @since 1.4
    */
   ResultSet getAttributes(String catalog, String schemaPattern, String
-    typeNamePattern, String attributeNamePattern) throws SQLException;
+    typePattern, String attributePattern) throws SQLException;
 
   /**
+   * This method tests if the database supports the specified holdability type.
+   * Valid values for this parameter are specified in the
+   * <code>ResultSet</code> class.
+   * 
+   * @param holdability The holdability type to test.
+   * @return <code>true</code> if the database supports the holdability type,
+   *         <code>false</code> if it does not.
+   * @exception SQLException If an error occurs.
+   * @see ResultSet
    * @since 1.4
    */
   boolean supportsResultSetHoldability(int holdability)
     throws SQLException;
 
   /**
+   * This method returns the default holdability type of <code>ResultSet</code>S
+   * retrieved from this database. The possible values are specified in the
+   * <code>ResultSet</code> class.
+   * 
+   * @return The default holdability type.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   int getResultSetHoldability() throws SQLException;
 
   /**
+   * This method returns the major version number of the database.
+   * 
+   * @return The major version number of the database.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   int getDatabaseMajorVersion() throws SQLException;
 
   /**
+   * This method returns the minor version number of the database.
+   * 
+   * @return The minor version number of the database.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   int getDatabaseMinorVersion() throws SQLException;
 
   /**
+   * This method returns the major version number of the JDBC driver.
+   * 
+   * @return The major version number of the JDBC driver.
+   * @exception  SQLException If an error occurs.
    * @since 1.4
    */
   int getJDBCMajorVersion() throws SQLException;
 
   /**
+   * This method returns the minor version number of the JDBC driver.
+   * 
+   * @return The minor version number of the database.
+   * @exception SQLException If an error occurs.
    * @since 1.4
    */
   int getJDBCMinorVersion() throws SQLException;

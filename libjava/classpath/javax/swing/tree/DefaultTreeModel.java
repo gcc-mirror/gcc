@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.tree;
 
+import gnu.classpath.NotImplementedException;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -46,7 +48,6 @@ import java.util.EventListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  * DefaultTreeModel
@@ -74,26 +75,29 @@ public class DefaultTreeModel
   protected boolean asksAllowsChildren;
 
   /**
-   * Constructor DefaultTreeModel
+   * Constructor DefaultTreeModel where any node can have children.
    * 
    * @param root the tree root.
    */
   public DefaultTreeModel(TreeNode root)
   {
-    if (root == null)
-      root = new DefaultMutableTreeNode();
-    setRoot(root);
+    this (root, false);
   }
 
   /**
-   * Constructor DefaultTreeModel
+   * Create the DefaultTreeModel that may check if the nodes can have
+   * children or not.
    * 
-   * @param root the tree root.
-   * @param asksAllowsChildren TODO
+   * @param aRoot the tree root.
+   * @param asksAllowsChildren if true, each node is asked if it can have 
+   * children. If false, the model does not care about this, supposing, that
+   * any node can have children.
    */
-  public DefaultTreeModel(TreeNode root, boolean asksAllowsChildren)
+  public DefaultTreeModel(TreeNode aRoot, boolean asksAllowsChildren)
   {
-    setRoot(root);
+    if (aRoot == null)
+      aRoot = new DefaultMutableTreeNode();
+    this.root = aRoot;
     this.asksAllowsChildren = asksAllowsChildren;
   }
 
@@ -222,25 +226,60 @@ public class DefaultTreeModel
   }
 
   /**
-   * Invoke this method if you've modified the TreeNodes upon 
-   * which this model depends. The model will notify all of its 
-   * listeners that the model has changed.
+   * <p>
+   * Invoke this method if you've modified the TreeNodes upon which this model
+   * depends. The model will notify all of its listeners that the model has
+   * changed. It will fire the events, necessary to update the layout caches and
+   * repaint the tree. The tree will <i>not</i> be properly refreshed if you
+   * call the JTree.repaint instead.
+   * </p>
+   * <p>
+   * This method will refresh the information about whole tree from the root. If
+   * only part of the tree should be refreshed, it is more effective to call
+   * {@link #reload(TreeNode)}.
+   * </p>
    */
   public void reload()
   {
-    // TODO
+    // Need to duplicate the code because the root can formally be
+    // no an instance of the TreeNode.
+    int n = getChildCount(root);
+    int[] childIdx = new int[n];
+    Object[] children = new Object[n];
+
+    for (int i = 0; i < n; i++)
+      {
+        childIdx[i] = i;
+        children[i] = getChild(root, i);
+      }
+
+    fireTreeStructureChanged(this, new Object[] { root }, childIdx, children);
   }
 
   /**
-   * Invoke this method if you've modified the TreeNodes upon 
-   * which this model depends. The model will notify all of its 
-   * listeners that the model has changed.
+   * Invoke this method if you've modified the TreeNodes upon which this model
+   * depends. The model will notify all of its listeners that the model has
+   * changed. It will fire the events, necessary to update the layout caches and
+   * repaint the tree. The tree will <i>not</i> be properly refreshed if you
+   * call the JTree.repaint instead.
    * 
-   * @param node - TODO
+   * @param node - the tree node, from which the tree nodes have changed
+   *          (inclusive). If you do not know this node, call {@link #reload()}
+   *          instead.
    */
   public void reload(TreeNode node)
   {
-    // TODO
+    int n = getChildCount(node);
+    int[] childIdx = new int[n];
+    Object[] children = new Object[n];
+
+    for (int i = 0; i < n; i++)
+      {
+        childIdx[i] = i;
+        children[i] = getChild(node, i);
+      }
+
+    fireTreeStructureChanged(this, getPathToRoot(node), childIdx, children);
   }
 
   /**
@@ -390,7 +429,17 @@ public class DefaultTreeModel
    */
   public void nodeStructureChanged(TreeNode node)
   {
-    // TODO
+    int n = getChildCount(root);
+    int[] childIdx = new int[n];
+    Object[] children = new Object[n];
+
+    for (int i = 0; i < n; i++)
+      {
+        childIdx[i] = i;
+        children[i] = getChild(root, i);
+      }
+
+    fireTreeStructureChanged(this, new Object[] { root }, childIdx, children);
   }
 
   /**

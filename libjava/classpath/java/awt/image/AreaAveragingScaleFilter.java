@@ -1,5 +1,5 @@
 /* AreaAveragingScaleFilter.java -- Java class for filtering images
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,86 +45,225 @@ package java.awt.image;
  * points should give the desired results although Sun does not 
  * specify what the exact algorithm should be.
  * <br>
- * FIXME: Currently this filter does nothing and needs to be implemented.
  *
  * @author C. Brian Jones (cbj@gnu.org) 
  */
 public class AreaAveragingScaleFilter extends ReplicateScaleFilter
 {
-    /**
-     * Construct an instance of <code>AreaAveragingScaleFilter</code> which
-     * should be used in conjunction with a <code>FilteredImageSource</code>
-     * object.
-     * 
-     * @param width the width of the destination image
-     * @param height the height of the destination image
-     */
-    public AreaAveragingScaleFilter(int width, int height) {
-	super(width, height);
-    }
+  /**
+   * Construct an instance of <code>AreaAveragingScaleFilter</code> which
+   * should be used in conjunction with a <code>FilteredImageSource</code>
+   * object.
+   * 
+   * @param width the width of the destination image
+   * @param height the height of the destination image
+   */
+  public AreaAveragingScaleFilter(int width, int height) {
+    super(width, height);
+  }
 
-    /**
-     * The <code>ImageProducer</code> should call this method with a
-     * bit mask of hints from any of <code>RANDOMPIXELORDER</code>,
-     * <code>TOPDOWNLEFTRIGHT</code>, <code>COMPLETESCANLINES</code>,
-     * <code>SINGLEPASS</code>, <code>SINGLEFRAME</code> from the 
-     * <code>ImageConsumer</code> interface.
-     * <br>
-     * FIXME - more than likely Sun's implementation desires 
-     * <code>TOPDOWNLEFTRIGHT</code> order and this method is overloaded here
-     * in order to assure that mask is part of the hints added to
-     * the consumer.
-     * 
-     * @param flags a bit mask of hints
-     * @see ImageConsumer
-     */
-    public void setHints(int flags)
-    {
-      if (consumer != null)
-	consumer.setHints(flags);
-    }
+  /**
+   * The <code>ImageProducer</code> should call this method with a
+   * bit mask of hints from any of <code>RANDOMPIXELORDER</code>,
+   * <code>TOPDOWNLEFTRIGHT</code>, <code>COMPLETESCANLINES</code>,
+   * <code>SINGLEPASS</code>, <code>SINGLEFRAME</code> from the 
+   * <code>ImageConsumer</code> interface.
+   * <br>
+   * FIXME - more than likely Sun's implementation desires 
+   * <code>TOPDOWNLEFTRIGHT</code> order and this method is overloaded here
+   * in order to assure that mask is part of the hints added to
+   * the consumer.
+   * 
+   * @param flags a bit mask of hints
+   * @see ImageConsumer
+   */
+  public void setHints(int flags)
+  {
+    if (consumer != null)
+      consumer.setHints(flags);
+  }
 
-    /**
-     * This function delivers a rectangle of pixels where any
-     * pixel(m,n) is stored in the array as a <code>byte</code> at
-     * index (n * scansize + m + offset).  
-     *
-     * @param x the x coordinate of the rectangle
-     * @param y the y coordinate of the rectangle
-     * @param w the width of the rectangle
-     * @param h the height of the rectangle
-     * @param model the <code>ColorModel</code> used to translate the pixels
-     * @param pixels the array of pixel values
-     * @param offset the index of the first pixels in the <code>pixels</code> array
-     * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
-     */
-    public void setPixels(int x, int y, int w, int h, 
-	   ColorModel model, byte[] pixels, int offset, int scansize)
-    {
-      if (consumer != null)
-	consumer.setPixels(x, y, w, h, model, pixels, offset, scansize);
-    }
+  /**
+   * This function delivers a rectangle of pixels where any
+   * pixel(m,n) is stored in the array as a <code>byte</code> at
+   * index (n * scansize + m + offset).  
+   *
+   * @param x the x coordinate of the rectangle
+   * @param y the y coordinate of the rectangle
+   * @param w the width of the rectangle
+   * @param h the height of the rectangle
+   * @param model the <code>ColorModel</code> used to translate the pixels
+   * @param pixels the array of pixel values
+   * @param offset the index of the first pixels in the <code>pixels</code> array
+   * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
+   */
+  public void setPixels(int x, int y, int w, int h, 
+			ColorModel model, byte[] pixels, int offset, int scansize)
+  {
+    double rx = ((double) srcWidth) / destWidth;
+    double ry = ((double) srcHeight) / destHeight;
 
-    /**
-     * This function delivers a rectangle of pixels where any
-     * pixel(m,n) is stored in the array as an <code>int</code> at
-     * index (n * scansize + m + offset).  
-     *
-     * @param x the x coordinate of the rectangle
-     * @param y the y coordinate of the rectangle
-     * @param w the width of the rectangle
-     * @param h the height of the rectangle
-     * @param model the <code>ColorModel</code> used to translate the pixels
-     * @param pixels the array of pixel values
-     * @param offset the index of the first pixels in the <code>pixels</code> array
-     * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
-     */
-    public void setPixels(int x, int y, int w, int h, 
-           ColorModel model, int[] pixels, int offset, int scansize)
-    {
-      if (consumer != null)
-	consumer.setPixels(x, y, w, h, model, pixels, offset, scansize);
-    }
+    int destScansize = (int) Math.round(scansize / rx);
 
+    byte[] destPixels = averagePixels(x, y, w, h,
+				      model, pixels, offset, scansize,
+				      rx, ry, destScansize);
+
+    if (consumer != null)
+      consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
+			 (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
+			 model, destPixels, 0, destScansize);
+  }
+
+  /**
+   * This function delivers a rectangle of pixels where any
+   * pixel(m,n) is stored in the array as an <code>int</code> at
+   * index (n * scansize + m + offset).  
+   *
+   * @param x the x coordinate of the rectangle
+   * @param y the y coordinate of the rectangle
+   * @param w the width of the rectangle
+   * @param h the height of the rectangle
+   * @param model the <code>ColorModel</code> used to translate the pixels
+   * @param pixels the array of pixel values
+   * @param offset the index of the first pixels in the <code>pixels</code> array
+   * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
+   */
+  public void setPixels(int x, int y, int w, int h, 
+			ColorModel model, int[] pixels, int offset, int scansize)
+  {
+    double rx = ((double) srcWidth) / destWidth;
+    double ry = ((double) srcHeight) / destHeight;
+
+    int destScansize = (int) Math.round(scansize / rx);
+
+    int[] destPixels = averagePixels(x, y, w, h,
+				     model, pixels, offset, scansize,
+				     rx, ry, destScansize);
+
+    if (consumer != null)
+      consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
+			 (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
+			 model, destPixels, 0, destScansize);
+  }
+
+  /**
+   * This is a really terrible implementation, 
+   * since it uses the nearest-neighbor method. This filter is rarely used though.
+   *
+   * @param srcx, srcy - Source rectangle upper-left corner
+   * @param srcw, srch - Source rectangle width and height
+   * @param model - Pixel color model
+   * @param srcPixels - Source pixel data.
+   * @param srcOffset - Starting offset into the source pixel data array.
+   * @param srcScansize - Source array scanline size.
+   * @param rx,ry - Scaling factor.
+   * @param dstScansize - Destination array scanline size.
+   */
+  private byte[] averagePixels(int srcx, int srcy, int srcw, int srch,
+			       ColorModel model, byte[] srcPixels,
+			       int srcOffset, int srcScansize,
+			       double rx, double ry, int destScansize)
+  {
+    int destW = (int) Math.ceil(srcw/rx);
+    int destH = (int) Math.ceil(srch/ry);
+    byte[] destPixels = new byte[ destW * destH ];
+    int sx, sy;
+
+    int w = (int)Math.ceil(rx);
+    int h = (int)Math.ceil(ry);
+
+    for(int x = 0; x < destW; x++)
+      for(int y = 0; y < destH; y++)
+	{
+	  sx = (int) (x * rx);
+	  sy = (int) (y * ry);
+
+	  int r,g,b,a;
+	  r = g = b = a = 0;
+
+	  for(int i = 0; i < w; i++)
+	    {
+	      for(int j = 0; j < h; j++)
+		{
+		  int idx = srcx + sx + i + (srcy + sy + j)*srcScansize;
+		  r += model.getRed(srcPixels[ idx ]);
+		  g += model.getGreen(srcPixels[ idx ]);
+		  b += model.getBlue(srcPixels[ idx ]);
+		  a += model.getAlpha(srcPixels[ idx ]);
+		}
+	    }
+	    
+	  r = r / (w * h);
+	  g = g / (w * h);
+	  b = b / (w * h);
+	  a = a / (w * h);
+
+	  // Does this really work?
+	  destPixels[x + destScansize*y] = (byte)model.getDataElement
+	    (new int[]{r, g, b, a}, 0);
+	}
+
+    return destPixels;
+  }
+
+  /**
+   * This is a really terrible implementation, 
+   * since it uses the nearest-neighbor method. This filter is rarely used though.
+   *
+   * @param srcx, srcy - Source rectangle upper-left corner
+   * @param srcw, srch - Source rectangle width and height
+   * @param model - Pixel color model
+   * @param srcPixels - Source pixel data.
+   * @param srcOffset - Starting offset into the source pixel data array.
+   * @param srcScansize - Source array scanline size.
+   * @param rx,ry - Scaling factor.
+   * @param dstScansize - Destination array scanline size.
+   */
+  private int[] averagePixels(int srcx, int srcy, int srcw, int srch,
+			      ColorModel model, int[] srcPixels,
+			      int srcOffset, int srcScansize,
+			      double rx, double ry, int destScansize)
+  {
+    int destW = (int) Math.ceil(srcw/rx);
+    int destH = (int) Math.ceil(srch/ry);
+    int[] destPixels = new int[ destW * destH ];
+    int sx, sy;
+    
+    int w = (int)Math.ceil(rx);
+    int h = (int)Math.ceil(ry);
+    
+    for(int x = 0; x < destW; x++)
+      for(int y = 0; y < destH; y++)
+	{
+	  sx = (int) (x * rx);
+	  sy = (int) (y * ry);
+	  
+	  int r,g,b,a;
+	  r = g = b = a = 0;
+	  
+	  for(int i = 0; i < w; i++)
+	    {
+	      for(int j = 0; j < h; j++)
+		{
+		  int idx = srcx + sx + i + (srcy + sy + j)*srcScansize;
+		  r += model.getRed(srcPixels[ idx ]);
+		  g += model.getGreen(srcPixels[ idx ]);
+		  b += model.getBlue(srcPixels[ idx ]);
+		  a += model.getAlpha(srcPixels[ idx ]);
+		}
+	    }
+	  
+	  r = r / (w * h);
+	  g = g / (w * h);
+	  b = b / (w * h);
+	  a = a / (w * h);
+
+	  destPixels[x + destScansize*y] = model.getDataElement
+	    (new int[]{r, g, b, a}, 0);
+	}
+    
+    return destPixels;
+  }
 }
 

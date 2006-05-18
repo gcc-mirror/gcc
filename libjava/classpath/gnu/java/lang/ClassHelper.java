@@ -81,6 +81,34 @@ public class ClassHelper
     return name.substring(lastInd + 1);
   }
 
+  /**
+   * Return the name of the class as written by the user.
+   * This is used by the various reflection toString methods.
+   * It differs from {@link Class#getName()} in that it prints
+   * arrays with trailing "[]"s.  Note that it does not treat
+   * member classes specially, so a dollar sign may still appear
+   * in the result.  This is intentional.
+   * @param klass the class
+   * @return a pretty form of the class' name
+   */
+  public static String getUserName(Class klass)
+  {
+    int arrayCount = 0;
+    while (klass.isArray())
+      {
+        ++arrayCount;
+        klass = klass.getComponentType();
+      }
+    String name = klass.getName();
+    if (arrayCount == 0)
+      return name;
+    StringBuilder b = new StringBuilder(name.length() + 2 * arrayCount);
+    b.append(name);
+    for (int i = 0; i < arrayCount; ++i)
+      b.append("[]");
+    return b.toString();
+  }
+
   /** Cache of methods found in getAllMethods(). */
   private static Map allMethods = new HashMap();
 

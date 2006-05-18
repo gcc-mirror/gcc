@@ -84,7 +84,7 @@ public class RSAKeyFactory
         PublicKey result;
         try
           {
-            result = new RSAKeyPairX509Codec().decodePublicKey(encoded);
+            return new RSAKeyPairX509Codec().decodePublicKey(encoded);
           }
         catch (RuntimeException x)
           {
@@ -131,7 +131,7 @@ public class RSAKeyFactory
         PrivateKey result;
         try
           {
-            result = new RSAKeyPairPKCS8Codec().decodePrivateKey(encoded);
+            return new RSAKeyPairPKCS8Codec().decodePrivateKey(encoded);
           }
         catch (RuntimeException x)
           {

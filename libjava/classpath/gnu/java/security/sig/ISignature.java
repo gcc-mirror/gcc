@@ -56,8 +56,6 @@ import java.util.Map;
  *    Cryptography</a>, Alfred J. Menezes, Paul C. van Oorschot and Scott A.
  *    Vanstone. Section 11.2.2 Digital signature schemes with appendix.</li>
  * </ol>
- *
- * @version $Revision: 1.1 $
  */
 public interface ISignature extends Cloneable
 {

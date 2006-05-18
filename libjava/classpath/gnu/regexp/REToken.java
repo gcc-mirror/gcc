@@ -1,5 +1,5 @@
 /* gnu/regexp/REToken.java
-   Copyright (C) 1998-2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,6 +43,7 @@ abstract class REToken implements Serializable, Cloneable {
   protected REToken next = null;
   protected REToken uncle = null;
   protected int subIndex;
+  protected boolean unicodeAware = true;
 
   public Object clone() {
     try {
@@ -70,30 +71,119 @@ abstract class REToken implements Serializable, Cloneable {
   }
 
     /** Returns true if the match succeeded, false if it failed. */
-    abstract boolean match(CharIndexed input, REMatch mymatch);
+    boolean match(CharIndexed input, REMatch mymatch) {
+	REMatch m = matchThis(input, mymatch);
+	if (m == null) return false;
+	if (next(input, m)) {
+	    mymatch.assignFrom(m);
+	    return true;
+	}
+	return false;
+    }
+
+    /** Returns true if the match succeeded, false if it failed.
+      * The matching is done against this REToken only. Chained
+      * tokens are not checked.
+      * This method is used to define the default match method.
+      * Simple subclasses of REToken, for example, such that
+      * matches only one character, should implement this method.
+      * Then the default match method will work.  But complicated
+      * subclasses of REToken, which needs a special match method,
+      * do not have to implement this method.
+      */
+    REMatch matchThis(CharIndexed input, REMatch mymatch) {
+	throw new UnsupportedOperationException(
+	    "This REToken does not have a matchThis method");
+    }
   
     /** Returns true if the rest of the tokens match, false if they fail. */
     protected boolean next(CharIndexed input, REMatch mymatch) {
-	if (next == null) {
-	    if (uncle == null) {
-		return true;
-	    } else {
-		return uncle.match(input, mymatch);
-	    }
-	} else {
-	    return next.match(input, mymatch);
-	}
+	REToken nextToken = getNext();
+	if (nextToken == null) return true;
+	return nextToken.match(input, mymatch);
     }
-  
+
+    /** Returns the next REToken chained to this REToken. */
+    REToken getNext() {
+	return (next != null ? next : uncle);
+    }
+
+    /** Finds a match at the position specified by the given REMatch.
+      * If necessary, adds a BacktrackStack.Backtrack object to backtrackStack
+      * of the REmatch found this time so that another possible match
+      * may be found when backtrack is called.
+      * By default, nothing is added to the backtrackStack.
+      * @param CharIndexed input Input character sequence.
+      * @param mymatch Position at which a match should be found
+      * @return REMatch object if a match was found, null otherwise.
+      */
+    REMatch findMatch(CharIndexed input, REMatch mymatch) {
+        boolean b = match(input, mymatch);
+	if (b) return mymatch;
+	return null;
+    }
+
+    boolean returnsFixedLengthMatches() {
+	return false;
+    }
+
+    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+	throw new UnsupportedOperationException(
+	    "This token does not support findFixedLengthMatches");
+    }
+
+    /**
+      * Backtrack to another possibility.
+      * Ordinary REToken cannot do anything if this method is called.
+      */
+    REMatch backtrack(CharIndexed input, REMatch mymatch, Object param) {
+	throw new IllegalStateException("This token cannot be backtracked to");
+    }
+
   boolean chain(REToken token) {
       next = token;
       return true; // Token was accepted
   }
 
-    abstract void dump(StringBuffer os);
+  abstract void dump(StringBuffer os);
 
   void dumpAll(StringBuffer os) {
     dump(os);
     if (next != null) next.dumpAll(os);
   }
+
+  public String toString() {
+    StringBuffer os = new StringBuffer();
+    dump(os);
+    return os.toString();
+  }
+
+  /**
+    * Converts the character argument to lowercase.
+    * @param ch the character to be converted.
+    * @param unicodeAware If true, use java.lang.Character#toLowerCase;
+    * otherwise, only US-ASCII charactes can be converted.
+    * @return the lowercase equivalent of the character, if any;
+    * otherwise, the character itself.
+    */
+  public static char toLowerCase(char ch, boolean unicodeAware) {
+    if (unicodeAware) return Character.toLowerCase(ch);
+    if (ch >= 'A' && ch <= 'Z') return (char)(ch + 'a' - 'A');
+    return ch;
+  }
+
+  /**
+    * Converts the character argument to uppercase.
+    * @param ch the character to be converted.
+    * @param unicodeAware If true, use java.lang.Character#toUpperCase;
+    * otherwise, only US-ASCII charactes can be converted.
+    * @return the uppercase equivalent of the character, if any;
+    * otherwise, the character itself.
+    */
+  public static char toUpperCase(char ch, boolean unicodeAware) {
+    if (unicodeAware) return Character.toUpperCase(ch);
+    if (ch >= 'a' && ch <= 'z') return (char)(ch + 'A' - 'a');
+    return ch;
+  }
+
 }

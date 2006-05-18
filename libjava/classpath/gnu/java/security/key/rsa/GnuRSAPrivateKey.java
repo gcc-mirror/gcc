@@ -38,6 +38,7 @@ exception statement from your version.  */
 
 package gnu.java.security.key.rsa;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
 import gnu.java.security.key.IKeyPairCodec;
 
@@ -56,15 +57,14 @@ import java.security.interfaces.RSAPrivateKey;
  *    Primitive specification and supporting documentation.<br>
  *    Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
- *
- * @version $Revision: 1.3 $
  */
 public class GnuRSAPrivateKey extends GnuRSAKey implements PrivateKey,
     RSAPrivateCrtKey
 {
-
   // Constants and variables
   // -------------------------------------------------------------------------
+
+  private static final boolean DEBUG = false;
 
   /** The first prime divisor of the modulus. */
   private final BigInteger p;
@@ -85,6 +85,9 @@ public class GnuRSAPrivateKey extends GnuRSAKey implements PrivateKey,
 
   /** The CRT (Chinese Remainder Theorem) coefficient. */
   private final BigInteger qInv;
+
+  /** String representation of this key. Cached for speed. */
+  private transient String str;
 
   // Constructor(s)
   // -------------------------------------------------------------------------
@@ -295,5 +298,23 @@ public class GnuRSAPrivateKey extends GnuRSAKey implements PrivateKey,
                && qInv.equals(that.getCrtCoefficient());
       }
     return false;
+  }
+
+  public String toString()
+  {
+    if (str == null)
+      {
+        String ls = SystemProperties.getProperty("line.separator");
+        str = new StringBuilder(this.getClass().getName()).append("(")
+            .append(super.toString()).append(",").append(ls)
+            .append("d=0x").append(DEBUG ? d.toString(16) : "**...*").append(ls)
+            .append("p=0x").append(DEBUG ? p.toString(16) : "**...*").append(ls)
+            .append("q=0x").append(DEBUG ? q.toString(16) : "**...*").append(ls)
+            .append("dP=0x").append(DEBUG ? dP.toString(16) : "**...*").append(ls)
+            .append("dQ=0x").append(DEBUG ? dQ.toString(16) : "**...*").append(ls)
+            .append("qInv=0x").append(DEBUG ? qInv.toString(16) : "**...*").append(ls)
+            .append(")").toString();
+      }
+    return str;
   }
 }

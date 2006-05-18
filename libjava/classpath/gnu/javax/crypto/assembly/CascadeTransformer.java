@@ -44,8 +44,6 @@ import java.util.Map;
 /**
  * An Adapter to use any {@link Cascade} as a {@link Transformer} in an
  * {@link Assembly}.
- *
- * @version $Revision: 1.1 $
  */
 class CascadeTransformer extends Transformer
 {

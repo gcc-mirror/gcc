@@ -292,7 +292,6 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   public void updateUI()
   {
     setUI((PopupMenuUI) UIManager.getUI(this));
-    invalidate();
   }
 
   /**
@@ -542,11 +541,25 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     this.visible = visible;
     if (old != isVisible())
       {
-        firePropertyChange("visible", old, isVisible());
         if (visible)
           {
+            if (invoker != null && !(invoker instanceof JMenu))
+              {
+                MenuElement[] menuEls;
+                if (getSubElements().length > 0)
+                  {
+                    menuEls = new MenuElement[2];
+                    menuEls[0] = this;
+                    menuEls[1] = getSubElements()[0];
+                }
+                else
+                  {
+                    menuEls = new MenuElement[1];
+                    menuEls[0] = this;
+                  }
+                MenuSelectionManager.defaultManager().setSelectedPath(menuEls);
+              }
             firePopupMenuWillBecomeVisible();
-
             PopupFactory pf = PopupFactory.getSharedInstance();
             pack();
             popup = pf.getPopup(invoker, this, popupLocationX, popupLocationY);
@@ -554,9 +567,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
           }
         else
           {
+            getSelectionModel().clearSelection();
             firePopupMenuWillBecomeInvisible();
             popup.hide();
           }
+        firePropertyChange("visible", old, isVisible());
       }
   }
 

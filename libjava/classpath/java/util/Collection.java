@@ -81,9 +81,9 @@ package java.util;
  * @see Arrays
  * @see AbstractCollection
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.5 (minus generics)
  */
-public interface Collection
+public interface Collection extends Iterable
 {
   /**
    * Add an element to this collection.

@@ -41,7 +41,6 @@ package gnu.classpath.jdwp.event.filters;
 
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidStringException;
-import gnu.classpath.jdwp.exception.InvalidClassException;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 
 /**

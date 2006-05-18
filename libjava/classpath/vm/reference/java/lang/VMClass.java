@@ -1,5 +1,5 @@
 /* VMClass.java -- VM Specific Class methods
-   Copyright (C) 2003, 2004 Free Software Foundation
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,11 +37,14 @@ exception statement from your version. */
 
 package java.lang;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 
 /*
  * This class is a reference version, mainly for compiling a class library
@@ -51,9 +54,11 @@ import java.lang.reflect.Modifier;
 
 /**
  *
- * @author Etienne Gagnon <etienne.gagnon@uqam.ca>
- * @author Archie Cobbs <archie@dellroad.org>
- * @author C. Brian Jones <cbj@gnu.org>
+ * @author Etienne Gagnon (etienne.gagnon@uqam.ca)
+ * @author Archie Cobbs (archie@dellroad.org)
+ * @author C. Brian Jones (cbj@gnu.org)
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
 final class VMClass 
 {
@@ -277,5 +282,173 @@ final class VMClass
    * Throw a checked exception without declaring it.
    */
   static native void throwException(Throwable t);
+
+  /**
+   * Returns the simple name for the specified class, as used in the source
+   * code.  For normal classes, this is the content returned by
+   * <code>getName()</code> which follows the last ".".  Anonymous
+   * classes have no name, and so the result of calling this method is
+   * "".  The simple name of an array consists of the simple name of
+   * its component type, followed by "[]".  Thus, an array with the 
+   * component type of an anonymous class has a simple name of simply
+   * "[]".
+   *
+   * @param klass the class whose simple name should be returned. 
+   * @return the simple name for this class.
+   */
+  static String getSimpleName(Class klass)
+  {
+    if (isArray(klass))
+      {
+	return getComponentType(klass).getSimpleName() + "[]";
+      }
+    String fullName = getName(klass);
+    return fullName.substring(fullName.lastIndexOf(".") + 1);
+  }
+
+  /**
+   * Returns all annotations directly defined by the specified class.  If
+   * there are no annotations associated with this class, then a zero-length
+   * array will be returned.  The returned array may be modified by the client
+   * code, but this will have no effect on the annotation content of this
+   * class, and hence no effect on the return value of this method for
+   * future callers.
+   *
+   * @param klass the class whose annotations should be returned.
+   * @return the annotations directly defined by the specified class.
+   * @since 1.5
+   */
+  static native Annotation[] getDeclaredAnnotations(Class klass);
+
+  /**
+   * <p>
+   * Returns the canonical name of the specified class, as defined by section
+   * 6.7 of the Java language specification.  Each package, top-level class,
+   * top-level interface and primitive type has a canonical name.  A member
+   * class has a canonical name, if its parent class has one.  Likewise,
+   * an array type has a canonical name, if its component type does.
+   * Local or anonymous classes do not have canonical names.
+   * </p>
+   * <p>
+   * The canonical name for top-level classes, top-level interfaces and
+   * primitive types is always the same as the fully-qualified name.
+   * For array types, the canonical name is the canonical name of its
+   * component type with `[]' appended.  
+   * </p>
+   * <p>
+   * The canonical name of a member class always refers to the place where
+   * the class was defined, and is composed of the canonical name of the
+   * defining class and the simple name of the member class, joined by `.'.
+   *  For example, if a <code>Person</code> class has an inner class,
+   * <code>M</code>, then both its fully-qualified name and canonical name
+   * is <code>Person.M</code>.  A subclass, <code>Staff</code>, of
+   * <code>Person</code> refers to the same inner class by the fully-qualified
+   * name of <code>Staff.M</code>, but its canonical name is still
+   * <code>Person.M</code>.
+   * </p>
+   * <p>
+   * Where no canonical name is present, <code>null</code> is returned.
+   * </p>
+   *
+   * @param klass the class whose canonical name should be retrieved.
+   * @return the canonical name of the class, or <code>null</code> if the
+   *         class doesn't have a canonical name.
+   * @since 1.5
+   */
+  static String getCanonicalName(Class klass)
+  {
+    if (isArray(klass))
+      {
+	String componentName = getComponentType(klass).getCanonicalName();
+	if (componentName != null)
+	  return componentName + "[]";
+      }
+    if (isMemberClass(klass))
+      {
+	String memberName = getDeclaringClass(klass).getCanonicalName();
+	if (memberName != null)
+	  return memberName + "." + getSimpleName(klass);
+      }
+    if (isLocalClass(klass) || isAnonymousClass(klass))
+      return null;
+    return getName(klass);
+  }
+
+  /**
+   * Returns the class which immediately encloses the specified class.  If
+   * the class is a top-level class, this method returns <code>null</code>.
+   *
+   * @param klass the class whose enclosing class should be returned.
+   * @return the immediate enclosing class, or <code>null</code> if this is
+   *         a top-level class.
+   * @since 1.5
+   */
+  static native Class getEnclosingClass(Class klass);
+
+  /**
+   * Returns the constructor which immediately encloses the specified class.
+   * If the class is a top-level class, or a local or anonymous class 
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @param klass the class whose enclosing constructor should be returned.
+   * @return the immediate enclosing constructor if the specified class is
+   *         declared within a constructor.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+  static native Constructor getEnclosingConstructor(Class klass);
+
+  /**
+   * Returns the method which immediately encloses the specified class.  If
+   * the class is a top-level class, or a local or anonymous class 
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @param klass the class whose enclosing method should be returned.
+   * @return the immediate enclosing method if the specified class is
+   *         declared within a method.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+  static native Method getEnclosingMethod(Class klass);
+
+  /**
+   * Returns the class signature as specified in Class File Format
+   * chapter in the VM specification, or null if the class is not
+   * generic.
+   *
+   * @param klass the klass to test.
+   * @return a ClassSignature string.
+   * @since 1.5
+   */
+  static native String getClassSignature(Class klass);
+
+  /**
+   * Returns true if the specified class represents an anonymous class.
+   *
+   * @param klass the klass to test.
+   * @return true if the specified class represents an anonymous class.
+   * @since 1.5
+   */
+  static native boolean isAnonymousClass(Class klass);
+
+  /**
+   * Returns true if the specified class represents an local class.
+   *
+   * @param klass the klass to test.
+   * @return true if the specified class represents an local class.
+   * @since 1.5
+   */
+  static native boolean isLocalClass(Class klass);
+
+  /**
+   * Returns true if the specified class represents an member class.
+   *
+   * @param klass the klass to test. 
+   * @return true if the specified class represents an member class.
+   * @since 1.5
+   */
+  static native boolean isMemberClass(Class klass);
 
 } // class VMClass

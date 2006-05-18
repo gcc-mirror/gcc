@@ -90,7 +90,7 @@ Systems    : all
   #include <stdarg.h>
   #define TARGET_NATIVE_MISC_FORMAT_STRING0(buffer,bufferSize,format) \
     do { \
-      snprintf(buffer,bufferSize,format); \
+      snprintf(buffer,bufferSize, "%s", format); \
     } while (0)
 #endif
 #ifndef TARGET_NATIVE_MISC_FORMAT_STRING1

@@ -159,6 +159,9 @@ public interface Registry
 
   // Padding scheme names and synonyms........................................
 
+  /** PKCS#5 padding scheme. */
+  String PKCS5_PAD = "pkcs5";
+
   /** PKCS#7 padding scheme. */
   String PKCS7_PAD = "pkcs7";
 

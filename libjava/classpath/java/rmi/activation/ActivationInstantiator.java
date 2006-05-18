@@ -42,9 +42,32 @@ import java.rmi.MarshalledObject;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+/**
+ * The implementation of this interface creates (instantiates) the new remote
+ * objects in response to the activation request. The instantiator is returned
+ * by the {@link ActivationGroup} that calls 
+ * {@link ActivationSystem#activeGroup(ActivationGroupID, ActivationInstantiator, long)}.
+ */
 public interface ActivationInstantiator
   extends Remote
 {
+  /**
+   * Creates and instantiate a new remote object. This method performs the
+   * following tasks:
+   * <ul>
+   * <li>Finds and loads (if not already loaded) the class of the object being
+   * instantiated</li>
+   * <li>Creates an instance of the object using its special two parameter
+   * activation constructor, the first parameter being the {@link ActivationID}
+   * and the second the {@link MarshalledObject}.</li>
+   * 
+   * @param id the id of the object being instantiated
+   * @param desc the activation descriptor being instantiated
+   * @return the MarshalledObject, containing the stub to the newly created
+   *         object.
+   * @throws ActivationException if the activation fails
+   * @throws RemoteException if the remote call fails
+   */
   MarshalledObject newInstance (ActivationID id, ActivationDesc desc)
     throws ActivationException, RemoteException;
 }

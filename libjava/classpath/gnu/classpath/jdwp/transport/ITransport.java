@@ -42,7 +42,6 @@ package gnu.classpath.jdwp.transport;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.IllegalArgumentException;
 import java.util.HashMap;
 
 /**

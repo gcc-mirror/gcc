@@ -299,6 +299,8 @@ public class MatteBorder extends EmptyBorder
    * Returns the color that is used for filling the border, or
    * <code>null</code> if the border is filled with repetitions of a
    * tile icon.
+   * 
+   * @return The color (possibly <code>null</code>).
    */
   public Color getMatteColor()
   {
@@ -310,6 +312,8 @@ public class MatteBorder extends EmptyBorder
    * Returns the icon is used for tiling the border, or
    * <code>null</code> if the border is filled with a color instead of
    * an icon.
+   * 
+   * @return The icon (possibly <code>null</code>).
    */
   public Icon getTileIcon()
   {

@@ -42,8 +42,8 @@ import gnu.java.security.Registry;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
 import java.security.PublicKey;
@@ -51,17 +51,18 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <p>.</p>
  */
 public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
 {
-
   // Constants and variables
   // -------------------------------------------------------------------------
 
+  private static final Logger log = Logger.getLogger(GnuPrivateKeyring.class.getName());
   public static final int USAGE = Registry.GKR_PRIVATE_KEYS
                                   | Registry.GKR_PUBLIC_CREDENTIALS;
 
@@ -104,225 +105,277 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
 
   public boolean containsPrivateKey(String alias)
   {
-    if (!containsAlias(alias))
-      {
-        return false;
-      }
-    List l = get(alias);
-    for (Iterator it = l.iterator(); it.hasNext();)
-      {
+    log.entering(this.getClass().getName(), "containsPrivateKey", alias);
+
+    boolean result = false;
+    if (containsAlias(alias))
+      for (Iterator it = get(alias).iterator(); it.hasNext();)
         if (it.next() instanceof PasswordAuthenticatedEntry)
           {
-            return true;
+            result = true;
+            break;
           }
-      }
-    return false;
+
+    log.exiting(this.getClass().getName(), "containsPrivateKey",
+                Boolean.valueOf(result));
+    return result;
   }
 
   public Key getPrivateKey(String alias, char[] password)
       throws UnrecoverableKeyException
   {
-    if (!containsAlias(alias))
+    log.entering(this.getClass().getName(), "getPrivateKey",
+                 new Object[] { alias, String.valueOf(password) });
+
+    Key result = null;
+    if (containsAlias(alias))
       {
-        return null;
-      }
-    List l = get(alias);
-    PasswordAuthenticatedEntry e1 = null;
-    PasswordEncryptedEntry e2 = null;
-    for (Iterator it = l.iterator(); it.hasNext();)
-      {
-        Entry e = (Entry) it.next();
-        if (e instanceof PasswordAuthenticatedEntry)
+        PasswordAuthenticatedEntry e1 = null;
+        PasswordEncryptedEntry e2 = null;
+        for (Iterator it = get(alias).iterator(); it.hasNext();)
           {
-            e1 = (PasswordAuthenticatedEntry) e;
-            break;
+            Entry e = (Entry) it.next();
+            if (e instanceof PasswordAuthenticatedEntry)
+              {
+                e1 = (PasswordAuthenticatedEntry) e;
+                break;
+              }
+          }
+
+        if (e1 != null)
+          {
+            try
+              {
+                e1.verify(password);
+              }
+            catch (Exception e)
+              {
+                throw new UnrecoverableKeyException("authentication failed");
+              }
+
+            for (Iterator it = e1.getEntries().iterator(); it.hasNext();)
+              {
+                Entry e = (Entry) it.next();
+                if (e instanceof PasswordEncryptedEntry)
+                  {
+                    e2 = (PasswordEncryptedEntry) e;
+                    break;
+                  }
+              }
+
+            if (e2 != null)
+              {
+                try
+                  {
+                    e2.decrypt(password);
+                  }
+                catch (Exception e)
+                  {
+                    throw new UnrecoverableKeyException("decryption failed");
+                  }
+
+                for (Iterator it = e2.get(alias).iterator(); it.hasNext();)
+                  {
+                    Entry e = (Entry) it.next();
+                    if (e instanceof PrivateKeyEntry)
+                      {
+                        result = ((PrivateKeyEntry) e).getKey();
+                        break;
+                      }
+                  }
+              }
           }
       }
-    if (e1 == null)
-      {
-        return null;
-      }
-    try
-      {
-        e1.verify(password);
-      }
-    catch (Exception e)
-      {
-        throw new UnrecoverableKeyException("authentication failed");
-      }
-    for (Iterator it = e1.getEntries().iterator(); it.hasNext();)
-      {
-        Entry e = (Entry) it.next();
-        if (e instanceof PasswordEncryptedEntry)
-          {
-            e2 = (PasswordEncryptedEntry) e;
-            break;
-          }
-      }
-    if (e2 == null)
-      {
-        return null;
-      }
-    try
-      {
-        e2.decrypt(password);
-      }
-    catch (Exception e)
-      {
-        throw new UnrecoverableKeyException("decryption failed");
-      }
-    for (Iterator it = e2.get(alias).iterator(); it.hasNext();)
-      {
-        Entry e = (Entry) it.next();
-        if (e instanceof PrivateKeyEntry)
-          {
-            return ((PrivateKeyEntry) e).getKey();
-          }
-      }
-    return null;
+
+    log.exiting(this.getClass().getName(), "getPrivateKey", result);
+    return result;
   }
 
   public void putPrivateKey(String alias, Key key, char[] password)
   {
-    if (containsPrivateKey(alias))
+    log.entering(this.getClass().getName(), "putPrivateKey",
+                 new Object[] { alias, key, String.valueOf(password) });
+
+    if (! containsPrivateKey(alias))
       {
-        return;
+        alias = fixAlias(alias);
+        Properties p = new Properties();
+        p.put("alias", alias);
+        PrivateKeyEntry pke = new PrivateKeyEntry(key, new Date(), p);
+        PasswordEncryptedEntry enc;
+        enc = new PasswordEncryptedEntry(cipher, mode, keylen, new Properties());
+        enc.add(pke);
+
+        PasswordAuthenticatedEntry auth;
+        auth = new PasswordAuthenticatedEntry(mac, maclen, new Properties());
+        auth.add(enc);
+
+        log.finest("About to encrypt the key...");
+        try
+          {
+            enc.encode(null, password);
+          }
+        catch (IOException x)
+          {
+            log.log(Level.FINER, "Exception while encrypting the key. "
+                    + "Rethrow as IllegalArgumentException", x);
+            throw new IllegalArgumentException(x.toString());
+          }
+
+        log.finest("About to authenticate the encrypted key...");
+        try
+          {
+            auth.encode(null, password);
+          }
+        catch (IOException x)
+          {
+            log.log(Level.FINER, "Exception while authenticating the encrypted "
+                    + "key. Rethrow as IllegalArgumentException", x);
+            throw new IllegalArgumentException(x.toString());
+          }
+
+        keyring.add(auth);
       }
-    alias = fixAlias(alias);
-    Properties p = new Properties();
-    p.put("alias", alias);
-    PrivateKeyEntry pke = new PrivateKeyEntry(key, new Date(), p);
-    PasswordEncryptedEntry enc = new PasswordEncryptedEntry(cipher, mode,
-                                                            keylen,
-                                                            new Properties());
-    PasswordAuthenticatedEntry auth = new PasswordAuthenticatedEntry(
-                                                                     mac,
-                                                                     maclen,
-                                                                     new Properties());
-    enc.add(pke);
-    auth.add(enc);
-    try
-      {
-        enc.encode(null, password);
-        auth.encode(null, password);
-      }
-    catch (IOException ioe)
-      {
-        throw new IllegalArgumentException(ioe.toString());
-      }
-    keyring.add(auth);
+    else
+      log.finer("Keyring already contains alias: " + alias);
+
+    log.exiting(this.getClass().getName(), "putPrivateKey");
   }
 
   public boolean containsPublicKey(String alias)
   {
-    if (!containsAlias(alias))
-      {
-        return false;
-      }
-    List l = get(alias);
-    for (Iterator it = l.iterator(); it.hasNext();)
-      {
+    log.entering(this.getClass().getName(), "containsPublicKey", alias);
+
+    boolean result = false;
+    if (containsAlias(alias))
+      for (Iterator it = get(alias).iterator(); it.hasNext();)
         if (it.next() instanceof PublicKeyEntry)
           {
-            return true;
+            result = true;
+            break;
           }
-      }
-    return false;
+
+    log.exiting(this.getClass().getName(), "containsPublicKey",
+                Boolean.valueOf(result));
+    return result;
   }
 
   public PublicKey getPublicKey(String alias)
   {
-    if (!containsAlias(alias))
-      {
-        return null;
-      }
-    List l = get(alias);
-    for (Iterator it = l.iterator(); it.hasNext();)
-      {
-        Entry e = (Entry) it.next();
-        if (e instanceof PublicKeyEntry)
-          {
-            return ((PublicKeyEntry) e).getKey();
-          }
-      }
-    return null;
+    log.entering(this.getClass().getName(), "getPublicKey", alias);
+
+    PublicKey result = null;
+    if (containsAlias(alias))
+      for (Iterator it = get(alias).iterator(); it.hasNext();)
+        {
+          Entry e = (Entry) it.next();
+          if (e instanceof PublicKeyEntry)
+            {
+              result = ((PublicKeyEntry) e).getKey();
+              break;
+            }
+        }
+
+    log.exiting(this.getClass().getName(), "getPublicKey", result);
+    return result;
   }
 
   public void putPublicKey(String alias, PublicKey key)
   {
-    if (containsPublicKey(alias))
+    log.entering(this.getClass().getName(), "putPublicKey",
+                 new Object[] { alias, key });
+
+    if (! containsPublicKey(alias))
       {
-        return;
+        Properties p = new Properties();
+        p.put("alias", fixAlias(alias));
+        add(new PublicKeyEntry(key, new Date(), p));
       }
-    Properties p = new Properties();
-    p.put("alias", fixAlias(alias));
-    add(new PublicKeyEntry(key, new Date(), p));
+    else
+      log.finer("Keyring already contains alias: " + alias);
+
+    log.exiting(this.getClass().getName(), "putPublicKey");
   }
 
   public boolean containsCertPath(String alias)
   {
-    if (!containsAlias(alias))
-      {
-        return false;
-      }
-    List l = get(alias);
-    for (Iterator it = l.iterator(); it.hasNext();)
-      {
+    log.entering(this.getClass().getName(), "containsCertPath", alias);
+
+    boolean result = false;
+    if (containsAlias(alias))
+      for (Iterator it = get(alias).iterator(); it.hasNext();)
         if (it.next() instanceof CertPathEntry)
           {
-            return true;
+            result = true;
+            break;
           }
-      }
-    return false;
+
+    log.exiting(this.getClass().getName(), "containsCertPath",
+                Boolean.valueOf(result));
+    return result;
   }
 
   public Certificate[] getCertPath(String alias)
   {
-    if (!containsAlias(alias))
-      {
-        return null;
-      }
-    List l = get(alias);
-    for (Iterator it = l.iterator(); it.hasNext();)
-      {
-        Entry e = (Entry) it.next();
-        if (e instanceof CertPathEntry)
-          {
-            return ((CertPathEntry) e).getCertPath();
-          }
-      }
-    return null;
+    log.entering(this.getClass().getName(), "getCertPath", alias);
+
+    Certificate[] result = null;
+    if (containsAlias(alias))
+      for (Iterator it = get(alias).iterator(); it.hasNext();)
+        {
+          Entry e = (Entry) it.next();
+          if (e instanceof CertPathEntry)
+            {
+              result = ((CertPathEntry) e).getCertPath();
+              break;
+            }
+        }
+
+    log.exiting(this.getClass().getName(), "getCertPath", result);
+    return result;
   }
 
   public void putCertPath(String alias, Certificate[] path)
   {
-    if (containsCertPath(alias))
+    log.entering(this.getClass().getName(), "putCertPath",
+                 new Object[] { alias, path });
+
+    if (! containsCertPath(alias))
       {
-        return;
+        Properties p = new Properties();
+        p.put("alias", fixAlias(alias));
+        add(new CertPathEntry(path, new Date(), p));
       }
-    Properties p = new Properties();
-    p.put("alias", fixAlias(alias));
-    add(new CertPathEntry(path, new Date(), p));
+    else
+      log.finer("Keyring already contains alias: " + alias);
+
+    log.exiting(this.getClass().getName(), "putCertPath");
   }
 
   protected void load(InputStream in, char[] password) throws IOException
   {
+    log.entering(this.getClass().getName(), "load",
+                 new Object[] { in, String.valueOf(password) });
+
     if (in.read() != USAGE)
-      {
-        throw new MalformedKeyringException("incompatible keyring usage");
-      }
+      throw new MalformedKeyringException("incompatible keyring usage");
+
     if (in.read() != PasswordAuthenticatedEntry.TYPE)
-      {
-        throw new MalformedKeyringException(
-                                            "expecting password-authenticated entry tag");
-      }
-    keyring = PasswordAuthenticatedEntry.decode(new DataInputStream(in),
-                                                password);
+      throw new MalformedKeyringException("expecting password-authenticated entry tag");
+
+    keyring = PasswordAuthenticatedEntry.decode(new DataInputStream(in), password);
+
+    log.exiting(this.getClass().getName(), "load");
   }
 
   protected void store(OutputStream out, char[] password) throws IOException
   {
+    log.entering(this.getClass().getName(), "store",
+                 new Object[] { out, String.valueOf(password) });
+
     out.write(USAGE);
     keyring.encode(new DataOutputStream(out), password);
+
+    log.exiting(this.getClass().getName(), "store");
   }
 }

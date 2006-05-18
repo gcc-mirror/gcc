@@ -110,14 +110,12 @@ class LightweightDispatcher
    */
   public boolean dispatchEvent(AWTEvent event)
   {
-    boolean dispatched = false;
     if (event instanceof MouseEvent && event.getSource() instanceof Window)
       {
         MouseEvent mouseEvent = (MouseEvent) event;
-        handleMouseEvent(mouseEvent);
-        dispatched = true;
+        return handleMouseEvent(mouseEvent);
       }
-    return dispatched;
+    return false;
   }
 
   /**
@@ -125,12 +123,14 @@ class LightweightDispatcher
    * (Window instances) and dispatches them to the correct lightweight child.
    *
    * @param ev the mouse event
+   * @return whether or not we found a lightweight that handled the event.
    */
-  private void handleMouseEvent(MouseEvent ev)
+  private boolean handleMouseEvent(MouseEvent ev)
   {
     Window window = (Window) ev.getSource();
     Component target = window.findComponentAt(ev.getX(), ev.getY());
-    if (target != null && target.isLightweight())
+    target = findTarget(target);
+    if (target == null || target.isLightweight())
       {
         // Dispatch additional MOUSE_EXITED and MOUSE_ENTERED if event target
         // is different from the last event target.
@@ -146,13 +146,16 @@ class LightweightDispatcher
                                  ev.getClickCount(), ev.isPopupTrigger());
                 lastTarget.dispatchEvent(mouseExited);
               }
-            Point p = AWTUtilities.convertPoint(window, ev.getX(), ev.getY(),
-                                                target);
-            MouseEvent mouseEntered =
-              new MouseEvent(target, MouseEvent.MOUSE_ENTERED, ev.getWhen(),
-                             ev.getModifiers(), p.x, p.y, ev.getClickCount(),
-                             ev.isPopupTrigger());
-            target.dispatchEvent(mouseEntered);
+            if (target != null)
+              {
+                Point p = AWTUtilities.convertPoint(window, ev.getX(), ev.getY(),
+                                                    target);
+                MouseEvent mouseEntered =
+                  new MouseEvent(target, MouseEvent.MOUSE_ENTERED, ev.getWhen(),
+                                 ev.getModifiers(), p.x, p.y, ev.getClickCount(),
+                                 ev.isPopupTrigger());
+                target.dispatchEvent(mouseEntered);
+              }
           }
         
         switch (ev.getID())
@@ -183,18 +186,43 @@ class LightweightDispatcher
 
         lastTarget = target;
 
-        Point targetCoordinates =
-          AWTUtilities.convertPoint(window, ev.getX(), ev.getY(), target);
-        int dx = targetCoordinates.x - ev.getX();
-        int dy = targetCoordinates.y - ev.getY();
-        ev.translatePoint(dx, dy);
-        ev.setSource(target);
-        target.dispatchEvent(ev);
+        if (target != null)
+          {
+            Point targetCoordinates =
+              AWTUtilities.convertPoint(window, ev.getX(), ev.getY(), target);
+            int dx = targetCoordinates.x - ev.getX();
+            int dy = targetCoordinates.y - ev.getY();
+            ev.translatePoint(dx, dy);
+            ev.setSource(target);
+            target.dispatchEvent(ev);
+            // We reset the event, so that the normal event dispatching is not
+            // influenced by this modified event.
+            ev.setSource(window);
+            ev.translatePoint(-dx, -dy);
+          }
 
-        // We reset the event, so that the normal event dispatching is not
-        // influenced by this modified event.
-        ev.setSource(window);
-        ev.translatePoint(-dx, -dy);
+	return true;
       }
+    else
+      return false;
+  }
+
+  /**
+   * Finds the actual target for a mouseevent, starting at <code>c</code>.
+   * This searches upwards the component hierarchy until it finds a component
+   * that has a mouselistener attached.
+   *
+   * @param c the component to start searching from
+   *
+   * @return the actual receiver of the mouse event
+   */
+  private Component findTarget(Component c)
+  {
+    Component target = c;
+    while (target != null && target.getMouseListeners().length == 0)
+      {
+        target = target.getParent();
+      }
+    return target;
   }
 }

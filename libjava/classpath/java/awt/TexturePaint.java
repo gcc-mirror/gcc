@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -65,10 +67,12 @@ public class TexturePaint implements Paint
                                     Rectangle2D userBounds,
                                     AffineTransform xform,
                                     RenderingHints hints)
+    throws NotImplementedException
   {
     throw new Error("not implemented");
   }
   public int getTransparency()
+    throws NotImplementedException
   {
     throw new Error("not implemented");
   }

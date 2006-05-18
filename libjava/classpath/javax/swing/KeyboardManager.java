@@ -195,7 +195,7 @@ class KeyboardManager
     if (map == null)
       return;    
     JComponent comp = map.getComponent();
-    KeyStroke[] keys = map.keys();
+    KeyStroke[] keys = map.allKeys();
     if (keys == null)
       return;
     // Find the top-level container associated with this ComponentInputMap

@@ -60,7 +60,7 @@ public abstract class Spring
 {
 
   /** Indicates a not-set value. **/
-  public static final int UNSET = -2147483648;
+  public static final int UNSET = Integer.MIN_VALUE;
 
   /**
    * Creates a new Spring object. This constructor is used by the static
@@ -155,6 +155,33 @@ public abstract class Spring
    * @param value the value to be set.
    */
   public abstract void setValue(int value);
+
+  private int getShrinkRange() 
+  {
+    return (getPreferredValue() - getMinimumValue());
+  }
+
+  private int getExpandRange() 
+  {
+    return (getMaximumValue() - getPreferredValue());
+  }
+
+  double getStrain()
+  {
+    int v = getValue();
+    int p = getPreferredValue();
+    int r = (v < p) ? getShrinkRange() : getExpandRange();
+    if (r == 0)
+      r = 1;
+    return (double)(v - p) / r;
+  }
+
+  void setStrain(double strain) 
+  {
+    int r = (strain < 0) ? getShrinkRange() : getExpandRange();
+    int v = (getPreferredValue() + (int)(strain * r));
+    setValue(v);
+  }
 
   /**
    * Creates and returns a Spring, which is always the sum of s1 and s2.
@@ -323,6 +350,11 @@ public abstract class Spring
     /** The actual value of the spring. */
     private int value;
 
+    public String toString()
+    {
+      return "SimpleSpring of " + value;
+    }
+
     /**
      * Creates a new SimpleSpring object.
      *
@@ -335,7 +367,7 @@ public abstract class Spring
       min = newMin;
       pref = newPref;
       max = newMax;
-      value = Spring.UNSET;
+      value = newPref;
     }
 
     /**
@@ -375,12 +407,8 @@ public abstract class Spring
      */
     public int getValue()
     {
-
       if (value == Spring.UNSET)
-        {
-          value = pref;
-        }
-	    
+          return pref;
       return value;
     }
 	
@@ -391,21 +419,8 @@ public abstract class Spring
      */
     public void setValue(int val)
     {
-
-      if (val > max)
-        {
-          value = max;
-	}
-      else if (val < min)
-        {
-          value = min;
-	}
-      else
-        {
-          value = val;
-        }
+      value = val;
     }
-
   }
 
 
@@ -423,6 +438,11 @@ public abstract class Spring
 
     /** The current value for this Spring. */
     private int value;
+
+    public String toString()
+    {
+      return "AddSpring of " + s1 + " and " + s2;
+    }
 
     /**
      * Creates a new AddSpring object.
@@ -497,20 +517,24 @@ public abstract class Spring
      */
     public void setValue(int val)
     {
+      if (val == Spring.UNSET)
+      {
+        if (value != Spring.UNSET)
+        {
+          s1.setValue(Spring.UNSET);
+          s2.setValue(Spring.UNSET);
+        }
+        value = Spring.UNSET;
+        return;
+      }
 
-      if (val > getMaximumValue())
-        {
-          value = getMaximumValue();
-        }
-      else if (val < getMinimumValue())
-        {
-          value = getMinimumValue();
-        }
-      else
-        {
-          value = val;
-        }
+      value = val;
 
+      //Spead the value over the two components
+      double fStrain = getStrain();
+      s1.setStrain(fStrain);
+      int remainder = val - s1.getValue();
+      s2.setValue(remainder);
     }
 	
   }
@@ -527,8 +551,10 @@ public abstract class Spring
     /** The Spring from which to calculate the negation. */
     private final Spring s;
 
-    /** The current value of this Spring. */
-    private int value;
+    public String toString()
+    {
+      return "MinusSpring of " + s;
+    }
 
     /**
      * Creates a new MinusSpring object.
@@ -538,7 +564,6 @@ public abstract class Spring
     {
       super();
       this.s = s;
-      value = Spring.UNSET;
     }
 
     /** Returns the maximum value of this Spring.
@@ -577,11 +602,7 @@ public abstract class Spring
      */
     public int getValue()
     {
-      if (value == Spring.UNSET)
-        {
-	  value = -s.getValue();
-	}
-      return value;
+      return -s.getValue();
     }
 
     /**
@@ -591,22 +612,11 @@ public abstract class Spring
      */
     public void setValue(int val)
     {
-    
-      if (val > getMaximumValue())
-        {
-          value = getMaximumValue();
-	}
-      else if (val < getMinimumValue())
-	{
-          value = getMinimumValue();
-        }
+      if (val == Spring.UNSET)
+        s.setValue(Spring.UNSET);
       else
-	{
-	  value = val;
-        }
-
+        s.setValue(-val);
     }
-
   }
 
 
@@ -621,6 +631,11 @@ public abstract class Spring
     /** The two other Springs from which to calculate the maximum. */
     private final Spring s1;
     private final Spring s2;
+
+    public String toString()
+    {
+      return "MaxSpring of " + s1 + " and " + s2;
+    }
 
     /** The current value of this Spring. */
     private int value;
@@ -684,7 +699,7 @@ public abstract class Spring
     public int getValue()
     {
       if (value == Spring.UNSET)
-        {
+      {
           int val1 = s1.getValue();
           int val2 = s2.getValue();
           value = Math.max(val1, val2);
@@ -699,19 +714,32 @@ public abstract class Spring
      */
     public void setValue(int val)
     {
+      if (val == Spring.UNSET)
+      {
+        if (value != Spring.UNSET)
+        {
+          s1.setValue(Spring.UNSET);
+          s2.setValue(Spring.UNSET);
+        }
+        value = Spring.UNSET;
+        return;
+      }
 
-      if (val > getMaximumValue())
-        {
-          value = getMaximumValue();
-	}
-      else if (val < getMinimumValue())
-        {
-          value = getMinimumValue();
-        }
-      else
-        {
-          value = val;
-        }
+      value = val;
+
+      int p1 = s1.getPreferredValue();
+      int p2 = s2.getPreferredValue();
+
+      if (p1 < p2)
+      {
+        s1.setValue(Math.min(val, p1));
+        s2.setValue(val);
+      }
+      else 
+      {
+        s1.setValue(val);
+        s2.setValue(Math.min(val, p2));
+      }
     }
   }
 }

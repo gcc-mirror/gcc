@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.rmi.dgc;
 
+import gnu.java.rmi.server.UnicastServer;
 import gnu.java.rmi.server.UnicastServerRef;
 
 import java.rmi.RemoteException;
@@ -46,7 +47,8 @@ import java.rmi.dgc.Lease;
 import java.rmi.dgc.VMID;
 import java.rmi.server.ObjID;
 import java.rmi.server.RMISocketFactory;
-import java.util.Hashtable;
+import java.util.Collection;
+import java.util.TimerTask;
 
 /**
  * The DGC implementation is used for the server side during the distributed
@@ -68,14 +70,67 @@ public class DGCImpl
    */
   
   /**
+   * Use the serial version UID for interoperability.
+   */
+  private static final long serialVersionUID = 1;
+  
+  /**
+   * Protects the array of object Id's for the scheduled period of time
+   * (lease). After the time expires, the protector is automatically discarded,
+   * making the references unprotected and hence applicable for the garbage
+   * collection.
+   */
+  class RefProtector extends TimerTask
+  {
+    /**
+     * The corresponding server references to protect. Each Id may contain
+     * multiple references that are stored to collection.
+     */
+    Collection[] references;
+    
+    /**
+     * Create the new instance of the reference protector that protects the
+     * given array of ids and exists for the given period of time.
+     *  
+     * @param ids the ids to protect.
+     */
+    RefProtector(ObjID[] ids, long timeToLive)
+    {
+      references = new Collection[ids.length];
+      for (int i = 0; i < ids.length; i++)
+        {
+          references[i] = UnicastServer.getExported(ids[i]);
+        }
+      
+      // Schedule the existence.
+      LeaseRenewingTask.timer.schedule(this, timeToLive);
+    }
+    
+    /**
+     * Break all links, ensuring easy collection of the references by the gc.
+     */
+    public void run()
+    {
+      for (int i = 0; i < references.length; i++)
+        {
+          references[i].clear();
+          references[i] = null;
+        }
+    }
+  }
+ 
+  /**
    * This defauld lease value is used if the lease value, passed to the
    * {@link #dirty} is equal to zero.
    */
   static final long LEASE_VALUE = 600000L;
-
-  // leaseCache caches a LeaseRecord associated with a vmid
-  Hashtable leaseCache = new Hashtable();
-
+  
+  /**
+   * Create the new DGC implementation.
+   * 
+   * @throws RemoteException if the super constructor throws or the
+   * socket factory fails.
+   */
   public DGCImpl() throws RemoteException
   {
     super(new ObjID(ObjID.DGC_ID), 0, RMISocketFactory.getSocketFactory());
@@ -92,26 +147,20 @@ public class DGCImpl
    */
   public Lease dirty(ObjID[] ids, long sequenceNum, Lease lease)
       throws RemoteException
-  {
-    VMID vmid = lease.getVMID();
-    if (vmid == null)
-      vmid = new VMID();
-
+  { 
+    // We do not fill in VMID because in this implementation it is not used.
     long leaseValue = lease.getValue();
+    
+    // Grant the maximal default lease time if the passed value is zero.
     if (leaseValue <= 0)
       leaseValue = LEASE_VALUE;
-
-    lease = new Lease(vmid, leaseValue);
-    LeaseRecord lr = (LeaseRecord) leaseCache.get(vmid);
-    if (lr != null)
-      lr.reset(leaseValue);
-    else
-      {
-        lr = new LeaseRecord(vmid, leaseValue, ids);
-        leaseCache.put(vmid, lr);
-      }
     
-    return (lease);
+    // Create (and shedule of the given existence) the new reference
+    // protector.
+    new RefProtector(ids, leaseValue);    
+
+    lease = new Lease(lease.getVMID(), leaseValue);
+    return lease;
   }
 
   /**
@@ -129,66 +178,5 @@ public class DGCImpl
     // Not implemented
     // TODO implement
   }
-
-  /**
-   * LeaseRecord associates a vmid to expireTime.
-   */
-  static class LeaseRecord
-  {
-    /**
-     * The lease id.
-     */
-    final VMID vmid;
-
-    /**
-     * The lease expiration time.
-     */ 
-    long expireTime;
-    
-    /**
-     * The array of ObjeID's that must be protected from being garbage
-     * collected.
-     */
-    final ObjID [] objects;
-
-    /**
-     * Create the new lease record.
-     * 
-     * @param vmid lease id.
-     * @param leaseValue lease value
-     */
-    LeaseRecord(VMID vmid, long leaseValue, ObjID [] an_objects)
-    {
-      this.vmid = vmid;
-      reset(leaseValue);
-      objects = an_objects;
-    }
-
-    /**
-     * Prolong the expiration time till current time + passed value
-     * 
-     * @param leaseValue the value after that (since the current moment)
-     * the lease should expire in the future.
-     */
-    void reset(long leaseValue)
-    {
-      long l = System.currentTimeMillis();
-      expireTime = l + leaseValue;
-    }
-    
-    /**
-     * Check if the lease has been expired.
-     * 
-     * @return true if the lease has been expired, false if it is still valid.
-     */
-    boolean isExpired()
-    {
-      long l = System.currentTimeMillis();
-      if (l > expireTime)
-        return true;
-      return false;
-    }
-
-  } // End of LeaseRecord
 
 } // End of DGCImpl

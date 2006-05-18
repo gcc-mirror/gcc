@@ -38,12 +38,12 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager;
-import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -88,14 +88,7 @@ public class MetalComboBoxUI extends BasicComboBoxUI
      */
     public void layoutContainer(Container parent)
     {
-      JComboBox cb = (JComboBox) parent;
-      if (!cb.isEditable())
-        {
-          Rectangle bounds = parent.getBounds();
-          arrowButton.setBounds(0, 0, bounds.width, bounds.height);
-        }
-      else 
-        superLayout(parent);
+      layoutComboBox(parent, this);
     }
     
     /**
@@ -134,9 +127,31 @@ public class MetalComboBoxUI extends BasicComboBoxUI
      */
     public void propertyChange(PropertyChangeEvent e)
     {
-      if (e.getPropertyName().equals("editable"))
-        editablePropertyChanged(e);
       super.propertyChange(e);
+      String name = e.getPropertyName();
+      if (name.equals("editable"))
+        editablePropertyChanged(e);
+      else if (name.equals("enabled"))
+        {
+          if (arrowButton instanceof MetalComboBoxButton)
+            {
+              arrowButton.setFocusable(!comboBox.isEditable()
+                                       && comboBox.isEnabled());
+              comboBox.repaint();
+            }
+        }
+      else if (name.equals("background"))
+        {
+          Color c = (Color) e.getNewValue();
+          arrowButton.setBackground(c);
+          listBox.setBackground(c);
+        }
+      else if (name.equals("foreground"))
+        {
+          Color c = (Color) e.getNewValue();
+          arrowButton.setForeground(c);
+          listBox.setForeground(c);
+        }
     }
   }
 
@@ -247,22 +262,8 @@ public class MetalComboBoxUI extends BasicComboBoxUI
       {
         MetalComboBoxButton b = (MetalComboBoxButton) arrowButton;
         b.setIconOnly(comboBox.isEditable());
-      }
-    if (comboBox.isEditable())
-      {
-        arrowButton.setText(null);
-        if (editor != null)
-          editor.setVisible(true);
-      }
-    else
-      {
-        String text = "";
-        Object selected = comboBox.getSelectedItem();
-        if (selected != null)
-          text = selected.toString();
-        arrowButton.setText(text);
-        if (editor != null)
-          editor.setVisible(true);
+        b.setFocusable(!comboBox.isEditable() && comboBox.isEnabled());
+        comboBox.repaint();
       }
   }
   
@@ -295,22 +296,39 @@ public class MetalComboBoxUI extends BasicComboBoxUI
    */
   public Dimension getMinimumSize(JComponent c)
   {
-    Dimension d = getDisplaySize();
-    MetalComboBoxButton b = (MetalComboBoxButton) arrowButton;
-    Insets insets = b.getInsets();
-    int insetsH = insets.top + insets.bottom;
-    int insetsW = insets.left + insets.right;
-    if (!comboBox.isEditable())
+    if (!isMinimumSizeDirty)
+      return new Dimension(cachedMinimumSize);
+
+    Dimension d;
+    if (!comboBox.isEditable() && arrowButton != null
+        && arrowButton instanceof MetalComboBoxButton)
       {
+        MetalComboBoxButton b = (MetalComboBoxButton) arrowButton;
+        d = getDisplaySize();
+        Insets insets = b.getInsets();
+        Insets arrowInsets = b.getInsets();
+        Insets comboInsets = comboBox.getInsets();
         Icon icon = b.getComboIcon();
-        int iconWidth = icon.getIconWidth() + 6;
-        return new Dimension(d.width + insetsW + iconWidth, d.height + insetsH);
+        d.width += comboInsets.left + comboInsets.right;
+        d.width += arrowInsets.left + arrowInsets.right;
+        d.width += arrowInsets.right + icon.getIconWidth();
+        d.height += comboInsets.top + comboInsets.bottom;
+        d.height += arrowInsets.top + arrowInsets.bottom;
+      }
+    else if (comboBox.isEditable() && arrowButton != null && editor != null)
+      {
+        d = super.getMinimumSize(c);
+        Insets arrowMargin = arrowButton.getMargin();
+        d.height += arrowMargin.top + arrowMargin.bottom;
+        d.width += arrowMargin.left + arrowMargin.right;
       }
     else
-      // FIXME: the following dimensions pass most of the Mauve tests, but
-      // I don't yet understand the logic behind this...it is probably wrong
-      return new Dimension(d.width + insetsW + (d.height + insetsH) - 4, 
-          d.height + insetsH + 1);
+      {
+        d = super.getMinimumSize(c);
+      }
+    cachedMinimumSize.setSize(d.width, d.height);
+    isMinimumSizeDirty = false;
+    return new Dimension(cachedMinimumSize);
   }
   
   /**
@@ -318,27 +336,21 @@ public class MetalComboBoxUI extends BasicComboBoxUI
    */
   public void configureEditor()
   {
-    ComboBoxEditor cbe = comboBox.getEditor();
-    if (cbe != null)
-      {
-        cbe.getEditorComponent().setFont(comboBox.getFont());
-        cbe.setItem(comboBox.getSelectedItem());
-        cbe.addActionListener(comboBox);
-      }
+    super.configureEditor();
+    if (popupKeyListener != null)
+      editor.removeKeyListener(popupKeyListener);
+    if (focusListener != null)
+      editor.addFocusListener(focusListener);
   }
-  
+
   /**
    * Unconfigures the editor for this combo box.
    */
   public void unconfigureEditor()
   {
-    ComboBoxEditor cbe = comboBox.getEditor();
-    if (cbe != null)
-      {
-        cbe.getEditorComponent().setFont(null);
-        cbe.setItem(null);
-        cbe.removeActionListener(comboBox);
-      }
+    super.unconfigureEditor();
+    if (focusListener != null)
+      editor.removeFocusListener(focusListener);
   }
   
   /** 
@@ -347,6 +359,16 @@ public class MetalComboBoxUI extends BasicComboBoxUI
   public void layoutComboBox(Container parent,
                              MetalComboBoxUI.MetalComboBoxLayoutManager manager)
   {
-    manager.layoutContainer(parent);
+    if (comboBox.isEditable())
+      manager.superLayout(parent);
+    else if (arrowButton != null)
+      {
+        Insets comboInsets = comboBox.getInsets();
+        int width = comboBox.getWidth();
+        int height = comboBox.getHeight();
+        arrowButton.setBounds(comboInsets.left, comboInsets.top,
+                              width - (comboInsets.left + comboInsets.right),
+                              height - (comboInsets.top + comboInsets.bottom));
+      }
   }
 }

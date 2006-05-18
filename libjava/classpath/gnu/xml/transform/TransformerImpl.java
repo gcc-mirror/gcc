@@ -320,12 +320,24 @@ class TransformerImpl
       }
     if (indent)
       {
+        if (created)
+          {
+            DomDocument domDoc = (DomDocument) parent;
+            domDoc.setBuilding(true);
+            domDoc.setCheckWellformedness(false);
+          }
         parent.normalize();
         strip(stylesheet, parent);
         Document resultDoc = (parent instanceof Document) ?
           (Document) parent :
           parent.getOwnerDocument();
         reindent(resultDoc, parent, 0);
+        if (created)
+          {
+            DomDocument domDoc = (DomDocument) parent;
+            domDoc.setBuilding(false);
+            domDoc.setCheckWellformedness(true);
+          }
       }
     // Render result to the target device
     if (outputTarget instanceof DOMResult)

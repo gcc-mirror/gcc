@@ -395,6 +395,12 @@ public:
   jstring toString (void);
   jboolean desiredAssertionStatus (void);
 
+  JArray<java::lang::reflect::TypeVariable *> *getTypeParameters (void);
+
+  java::lang::Class *getEnclosingClass (void);
+  java::lang::reflect::Constructor *getEnclosingConstructor (void);
+  java::lang::reflect::Method *getEnclosingMethod (void);
+
   // FIXME: this probably shouldn't be public.
   jint size (void)
   {

@@ -1,5 +1,5 @@
 /* FieldView.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,20 +39,86 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.awt.Component;
-import java.awt.ComponentOrientation;
+import java.awt.Container;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.BoundedRangeModel;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 
 public class FieldView extends PlainView
 {
+  BoundedRangeModel horizontalVisibility;
+  
+  /** Caches the preferred span of the X axis. It is invalidated by
+   * setting it to -1f. This is done when text in the document
+   * is inserted, removed or changed. The value is corrected as
+   * soon as calculateHorizontalSpan() is called. 
+   */
+  float cachedSpan = -1f;
+
   public FieldView(Element elem)
   {
     super(elem);
+    
+  }
+  
+  /** Checks whether the given container is a JTextField. If so
+   * it retrieves the textfield's horizontalVisibility instance.
+   * 
+   * <p>This method should be only called when the view's container
+   * is valid. Naturally that would be the setParent() method however
+   * that method is not overridden in the RI and that is why we chose
+   * paint() instead.</p>
+   */ 
+  private void checkContainer()
+  {
+    Container c = getContainer();
+    
+    if (c instanceof JTextField)
+      {
+        horizontalVisibility = ((JTextField) c).getHorizontalVisibility();
+        
+        // Provokes a repaint when the BoundedRangeModel's values change
+        // (which is what the RI does).
+        horizontalVisibility.addChangeListener(new ChangeListener(){
+          public void stateChanged(ChangeEvent event) {
+            getContainer().repaint();
+          };
+        });
+
+        // It turned out that the span calculated at this point is wrong
+        // and needs to be recalculated (e.g. a different font setting is
+        // not taken into account).
+        calculateHorizontalSpan();
+        
+        // Initializes the BoundedRangeModel properly.
+        updateVisibility();
+      }
+    
+  }
+  
+  private void updateVisibility()
+  {
+    JTextField tf = (JTextField) getContainer();
+    Insets insets = tf.getInsets();
+
+    int width = tf.getWidth() - insets.left - insets.right;
+        
+    horizontalVisibility.setMaximum(Math.max((int) ((cachedSpan != -1f)
+                                                 ? cachedSpan
+                                                 : calculateHorizontalSpan()),
+                                             width));
+        
+    horizontalVisibility.setExtent(width - 1);
   }
 
   protected FontMetrics getFontMetrics()
@@ -72,41 +138,47 @@ public class FieldView extends PlainView
    */
   protected Shape adjustAllocation(Shape shape)
   {
+    // Return null when the original allocation is null (like the RI).
+    if (shape == null)
+      return null;
+    
     Rectangle rectIn = shape.getBounds();
     // vertical adjustment
     int height = (int) getPreferredSpan(Y_AXIS);
     int y = rectIn.y + (rectIn.height - height) / 2;
     // horizontal adjustment
     JTextField textField = (JTextField) getContainer();
-    int halign = textField.getHorizontalAlignment();
-    int width = (int) getPreferredSpan(X_AXIS);
+    int width = (int) ((cachedSpan != -1f) ? cachedSpan : calculateHorizontalSpan());
     int x;
-    ComponentOrientation orientation = textField.getComponentOrientation();
-    switch (halign)
-      {
-      case JTextField.CENTER:
-        x = rectIn.x + (rectIn.width - width) / 2;
-        break;
-      case JTextField.RIGHT:
-        x = rectIn.x + (rectIn.width - width);
-        break;
-      case JTextField.TRAILING:
-        if (orientation.isLeftToRight())
-          x = rectIn.x + (rectIn.width - width);
-        else
+    if (horizontalVisibility != null && horizontalVisibility.getExtent() < width)
+        x = rectIn.x - horizontalVisibility.getValue();
+    else
+      switch (textField.getHorizontalAlignment())
+        {
+        case JTextField.CENTER:
+          x = rectIn.x + (rectIn.width - width) / 2;
+          break;
+        case JTextField.RIGHT:
+          x = rectIn.x + (rectIn.width - width - 1);
+          break;
+        case JTextField.TRAILING:
+          if (textField.getComponentOrientation().isLeftToRight())
+            x = rectIn.x + (rectIn.width - width - 1);
+          else
+            x = rectIn.x;
+          break;
+        case JTextField.LEADING:
+          if (textField.getComponentOrientation().isLeftToRight())
+            x = rectIn.x;
+          else
+            x = rectIn.x + (rectIn.width - width - 1);
+          break;
+        case JTextField.LEFT:
+        default:
           x = rectIn.x;
-        break;
-      case JTextField.LEADING:
-        if (orientation.isLeftToRight())
-          x = rectIn.x;
-        else
-          x = rectIn.x + (rectIn.width - width);
-        break;
-      case JTextField.LEFT:
-      default:
-        x = rectIn.x;
-        break;
-      }
+          break;
+        }
+    
     return new Rectangle(x, y, width, height);
   }
 
@@ -115,18 +187,31 @@ public class FieldView extends PlainView
     if (axis != X_AXIS && axis != Y_AXIS)
       throw new IllegalArgumentException();
 
-    FontMetrics fm = getFontMetrics();
 
     if (axis == Y_AXIS)
       return super.getPreferredSpan(axis);
 
-    String text;
+    if (cachedSpan != -1f)
+      return cachedSpan;
+    
+    return calculateHorizontalSpan();
+  }
+  
+  /** Calculates and sets the horizontal span and stores the value
+   * in cachedSpan.
+   */ 
+  private float calculateHorizontalSpan()
+  {
+    Segment s = getLineBuffer();
     Element elem = getElement();
 
     try
       {
-        text = elem.getDocument().getText(elem.getStartOffset(),
-                                          elem.getEndOffset());
+        elem.getDocument().getText(elem.getStartOffset(),
+                                          elem.getEndOffset() - 1,
+                                          s);
+        
+        return cachedSpan = Utilities.getTabbedTextWidth(s, getFontMetrics(), 0, this, s.offset);
       }
     catch (BadLocationException e)
       {
@@ -135,8 +220,6 @@ public class FieldView extends PlainView
 	ae.initCause(e);
 	throw ae;
       }
-
-    return fm.stringWidth(text);
   }
 
   public int getResizeWeight(int axis)
@@ -153,19 +236,39 @@ public class FieldView extends PlainView
   
   public void paint(Graphics g, Shape s)
   {
+    if (horizontalVisibility == null)
+      checkContainer();
+
     Shape newAlloc = adjustAllocation(s);
+    
+    // Set a clip to prevent drawing outside of the allocation area.
+    // TODO: Is there a better way to achieve this?
+    Shape clip = g.getClip();
+    g.setClip(s);
     super.paint(g, newAlloc);
+    g.setClip(clip);
   }
 
   public void insertUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
+    cachedSpan = -1f;
+    
+    if (horizontalVisibility != null)
+      updateVisibility();
+    
     Shape newAlloc = adjustAllocation(shape);
+    
     super.insertUpdate(ev, newAlloc, vf);
     getContainer().repaint();
   }
 
   public void removeUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
+    cachedSpan = -1f;
+    
+    if (horizontalVisibility != null)
+      updateVisibility();
+
     Shape newAlloc = adjustAllocation(shape);
     super.removeUpdate(ev, newAlloc, vf);
     getContainer().repaint();
@@ -173,14 +276,19 @@ public class FieldView extends PlainView
 
   public void changedUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
+    cachedSpan = -1f;
+    
+    if (horizontalVisibility != null)
+      updateVisibility();
+
     Shape newAlloc = adjustAllocation(shape);
-    super.removeUpdate(ev, newAlloc, vf);
+    super.changedUpdate(ev, newAlloc, vf);
     getContainer().repaint();
   }
 
   public int viewToModel(float fx, float fy, Shape a, Position.Bias[] bias)
   {
-    return super.viewToModel(fx, fy, a, bias);
+    return super.viewToModel(fx, fy, adjustAllocation(a), bias);
   }
   
 }

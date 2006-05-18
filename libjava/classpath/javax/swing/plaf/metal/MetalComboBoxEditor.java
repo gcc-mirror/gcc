@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
-import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 
 import javax.swing.JTextField;
+import javax.swing.border.AbstractBorder;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.plaf.metal.MetalBorders.Flush3DBorder;
 
 /**
  * An editor used by the {@link MetalComboBoxUI} class.
@@ -56,7 +56,7 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
   /**
    * A border used for the {@link JTextField} component.
    */
-  static class MetalComboBoxEditorBorder extends Flush3DBorder
+  static class MetalComboBoxEditorBorder extends AbstractBorder
   {
     /**
      * Creates a new border instance.
@@ -78,20 +78,34 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
      */
     public void paintBorder(Component c, Graphics g, int x, int y, int w, 
         int h)
-    {   
-      Color savedColor = g.getColor();
-      if (c.isEnabled())
-        g.setColor(MetalLookAndFeel.getControlDarkShadow());  
+    {
+      g.translate(x, y);
+      if (MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme)
+        {
+          g.setColor(MetalLookAndFeel.getControlDarkShadow());
+          g.drawLine(0, 0, w - 1, 0);
+          g.drawLine(0, 0, 0, h - 1);
+          g.drawLine(0, h - 1, w - 1, h - 1);
+          g.setColor(MetalLookAndFeel.getControlShadow());
+          g.drawLine(1, 1, w - 2, 1);
+          g.drawLine(1, 1, 1, h - 2);
+          g.drawLine(1, h - 2, w - 1, h - 2);
+          g.drawLine(w - 1, 1, w - 1, h - 2);
+        }
       else
-        g.setColor(MetalLookAndFeel.getControlShadow());
-      g.drawLine(x, y, x + w - 1, y);
-      g.drawLine(x, y, x, y + h - 2);
-      g.drawLine(x + 2, y + h - 2, x + w - 1, y + h - 2);
-      g.setColor(MetalLookAndFeel.getControl());
-      g.drawLine(x + 1, y + h - 2, x + 1, y + h - 2);
-      g.setColor(MetalLookAndFeel.getWhite());
-      g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
-      g.setColor(savedColor);
+        {
+          g.setColor(MetalLookAndFeel.getControlDarkShadow());
+          g.drawLine(0, 0, w - 1, 0);
+          g.drawLine(0, 0, 0, h - 2);
+          g.drawLine(0, h - 2, w - 1, h - 2);
+          g.setColor(MetalLookAndFeel.getControlHighlight());
+          g.drawLine(1, 1, w - 1, 1);
+          g.drawLine(1, 1, 1, h - 1);
+          g.drawLine(1, h - 1, w - 1, h - 1);
+          g.setColor(MetalLookAndFeel.getControl());
+          g.drawLine(1, h - 2, 1, h - 2);
+        }
+      g.translate(-x, -y);
     }
 
     /**
@@ -127,16 +141,49 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
       // Nothing to do here.
     }
   }
-  
+
+  /**
+   * A special textfield implementation for the MetalComboBoxEditor.
+   */
+  private class EditorTextField extends JTextField
+  {
+    EditorTextField(String s, int columns)
+    {
+      super(s, columns);
+    }
+
+    /**
+     * Tests seem to show that the textfield in MetalComboBoxEditors have
+     * a height + 4.
+     */
+    public Dimension getPreferredSize()
+    {
+      Dimension size = super.getPreferredSize();
+      size.height += 4;
+      return size;
+    }
+
+    /**
+     * Tests seem to show that the textfield in MetalComboBoxEditors have
+     * a height + 4.
+     */
+    public Dimension getMinimumSize()
+    {
+      Dimension size = super.getMinimumSize();
+      size.height += 4;
+      return size;
+    }
+  }
+
   /** The editor's border insets. */
-  protected static Insets editorBorderInsets = new Insets(4, 2, 4, 0);
+  protected static Insets editorBorderInsets = new Insets(2, 2, 2, 0);
   
   /**
    * Creates a new editor.
    */
   public MetalComboBoxEditor()
   {
-    super();
+    editor = new EditorTextField("", 9);
     editor.setBorder(new MetalComboBoxEditorBorder());
   }
   

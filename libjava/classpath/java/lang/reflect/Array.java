@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.lang.reflect;
 
-import gnu.classpath.Configuration;
-
 /**
  * Array holds static helper functions that allow you to create and
  * manipulate arrays by reflection. Operations know how to perform widening
@@ -78,13 +76,6 @@ import gnu.classpath.Configuration;
  */
 public final class Array
 {
-  static
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary("javalangreflect");
-      }
-  }
 
   /**
    * This class is uninstantiable.
@@ -107,7 +98,7 @@ public final class Array
   public static Object newInstance(Class componentType, int length)
   {
     if (! componentType.isPrimitive())
-      return createObjectArray(componentType, length);
+      return VMArray.createObjectArray(componentType, length);
     if (componentType == boolean.class)
       return new boolean[length];
     if (componentType == byte.class)
@@ -653,7 +644,7 @@ public final class Array
     Object toAdd = createMultiArray(type, dimensions, index - 1);
     Class thisType = toAdd.getClass();
     Object[] retval
-      = (Object[]) createObjectArray(thisType, dimensions[index]);
+      = (Object[]) VMArray.createObjectArray(thisType, dimensions[index]);
     if (dimensions[index] > 0)
       retval[0] = toAdd;
     int i = dimensions[index];
@@ -662,14 +653,4 @@ public final class Array
     return retval;
   }
 
-  /**
-   * Dynamically create an array of objects.
-   *
-   * @param type guaranteed to be a valid object type
-   * @param dim the length of the array
-   * @return the new array
-   * @throws NegativeArraySizeException if dim is negative
-   * @throws OutOfMemoryError if memory allocation fails
-   */
-  private static native Object createObjectArray(Class type, int dim);
 }

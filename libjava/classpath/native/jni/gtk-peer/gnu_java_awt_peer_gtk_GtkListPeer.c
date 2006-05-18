@@ -39,6 +39,7 @@
 #include "gnu_java_awt_peer_gtk_GtkListPeer.h"
 
 static jmethodID postListItemEventID;
+static GtkWidget *list_get_widget (GtkWidget *widget);
 
 void
 cp_gtk_list_init_jni (void)
@@ -72,6 +73,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
 {
   GtkWidget *sw;
   GtkWidget *list;
+  GtkWidget *eventbox;
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
   GtkListStore *list_store;
@@ -102,11 +104,13 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
 				     COLUMN_STRING,
 				     NULL);
 
+  eventbox = gtk_event_box_new ();
   sw = gtk_scrolled_window_new (NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
 				  GTK_POLICY_AUTOMATIC,
 				  GTK_POLICY_AUTOMATIC);
-
+  gtk_container_add (GTK_CONTAINER (eventbox), sw);
+  
   gtk_tree_view_append_column (GTK_TREE_VIEW (list), column);
 
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (list), FALSE);
@@ -123,7 +127,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
   gtk_widget_show (list);
   gtk_widget_show (sw);
 
-  NSA_SET_PTR (env, obj, sw);
+  NSA_SET_PTR (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -142,7 +146,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_connectSignals
   ptr = NSA_GET_PTR (env, obj);
   gref = NSA_GET_GLOBAL_REF (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
   gtk_tree_selection_set_select_function (selection, item_highlighted_cb,
@@ -166,7 +170,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_gtkWidgetModifyFont
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
 
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
@@ -200,7 +204,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_gtkWidgetRequestFocus
 
   ptr = NSA_GET_PTR (env, obj);
   
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   gtk_widget_grab_focus (list);
 
   gdk_threads_leave ();
@@ -223,7 +227,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_append
 
   count = (*env)->GetArrayLength (env, items);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   list_store = gtk_tree_view_get_model (GTK_TREE_VIEW (list));
 
   for (i = 0; i < count; i++)
@@ -260,7 +264,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_add
   ptr = NSA_GET_PTR (env, obj);
   str = (*env)->GetStringUTFChars (env, text, NULL);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   list_store = gtk_tree_view_get_model (GTK_TREE_VIEW (list));
 
   if (index == -1)
@@ -292,7 +296,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_delItems
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   list_store = gtk_tree_view_get_model (GTK_TREE_VIEW (list));
 
   /* Special case: remove all rows. */
@@ -325,7 +329,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_select
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   path = gtk_tree_path_new_from_indices (index, -1);
   gtk_tree_view_set_cursor (GTK_TREE_VIEW (list), path, NULL, FALSE);
 
@@ -345,7 +349,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_deselect
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
   path = gtk_tree_path_new_from_indices (index, -1);
   gtk_tree_selection_unselect_path (selection, path);
@@ -361,6 +365,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_getSize
   jint *dims;
   GtkRequisition current_req;
   GtkRequisition natural_req;
+  GtkWidget* bin;
 
   gdk_threads_enter ();
 
@@ -368,16 +373,17 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_getSize
   dims[0] = dims[1] = 0;
 
   ptr = NSA_GET_PTR (env, obj);
-
+  bin = list_get_widget (GTK_WIDGET (ptr));
+  
   /* Save the widget's current size request. */
-  gtk_widget_size_request (GTK_WIDGET (ptr), &current_req);
+  gtk_widget_size_request (bin, &current_req);
       
   /* Get the widget's "natural" size request. */
   gtk_widget_set_size_request (GTK_WIDGET (ptr), -1, -1);
-  gtk_widget_size_request (GTK_WIDGET (ptr), &natural_req);
+  gtk_widget_size_request (bin, &natural_req);
 
   /* Reset the widget's size request. */
-  gtk_widget_set_size_request (GTK_WIDGET (ptr),
+  gtk_widget_set_size_request (bin,
                                current_req.width, current_req.height);
 
   dims[0] = natural_req.width;
@@ -417,7 +423,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_getSelectedIndexes
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
   count = gtk_tree_selection_count_selected_rows (selection);
   if (count > 0)
@@ -463,7 +469,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_makeVisible
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   path = gtk_tree_path_new_from_indices (index, -1);
   gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW (list), path,
                                 NULL, FALSE, 0.0, 0.0);
@@ -483,7 +489,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_setMultipleMode
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_bin_get_child (GTK_BIN (ptr));
+  list = list_get_widget (GTK_WIDGET (ptr));
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
   gtk_tree_selection_set_mode (selection,
                                mode ? GTK_SELECTION_MULTIPLE
@@ -526,3 +532,18 @@ item_highlighted_cb (GtkTreeSelection *selection __attribute__((unused)),
 
   return TRUE;
 }
+
+static GtkWidget *
+list_get_widget (GtkWidget *widget)
+{
+   GtkWidget *wid;
+   g_assert (GTK_IS_EVENT_BOX (widget));
+
+   wid = gtk_bin_get_child (GTK_BIN (widget));
+   g_assert (GTK_IS_SCROLLED_WINDOW (wid));
+
+   wid = gtk_bin_get_child (GTK_BIN (wid));
+
+   return wid;
+}
+

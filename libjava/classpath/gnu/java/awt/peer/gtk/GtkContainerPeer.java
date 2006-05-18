@@ -99,11 +99,6 @@ public class GtkContainerPeer extends GtkComponentPeer
       }
   }
 
-  public Graphics getGraphics ()
-  {
-    return super.getGraphics();
-  }
-
   public void beginLayout () { }
   public void endLayout () { }
   public boolean isPaintPending () { return false; }

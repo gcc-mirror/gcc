@@ -1,5 +1,5 @@
 /* OBJECT_NOT_EXIST.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,10 +41,10 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means an attempt to perform some operation of the deleted object.
+ * Means an attempt to perform some operation on a deleted object.
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class OBJECT_NOT_EXIST
+public final class OBJECT_NOT_EXIST
   extends SystemException
   implements Serializable
 {
@@ -56,7 +56,7 @@ public class OBJECT_NOT_EXIST
   /**
    * Creates a OBJECT_NOT_EXIST with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reasom the explaining message.
+   * @param message the explaining message.
    */
   public OBJECT_NOT_EXIST(String message)
   {

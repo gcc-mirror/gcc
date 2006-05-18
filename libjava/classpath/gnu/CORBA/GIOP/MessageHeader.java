@@ -51,6 +51,7 @@ import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.portable.IDLEntity;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -273,20 +274,36 @@ public class MessageHeader
    * Read the header from the stream.
    * 
    * @param istream a stream to read from.
-   * 
    * @throws MARSHAL if this is not a GIOP 1.0 header.
    */
-  public void read(java.io.InputStream istream)
-    throws MARSHAL
+  public void read(java.io.InputStream istream) 
+    throws MARSHAL, EOFException
   {
     try
       {
         byte[] xMagic = new byte[MAGIC.length];
-        istream.read(xMagic);
-        if (!Arrays.equals(xMagic, MAGIC))
+        int r = istream.read(xMagic);
+        int minor;
+        if (! Arrays.equals(xMagic, MAGIC))
           {
-            MARSHAL m = new MARSHAL("Not a GIOP message");
-            m.minor = Minor.Giop;
+            StringBuffer b = new StringBuffer();
+            if (r == - 1)
+              {
+                b.append("Immediate EOF");
+                minor = Minor.EOF;
+              }
+            else
+              {
+                minor = Minor.Giop;
+                b.append(r + " bytes: ");
+                for (int i = 0; i < xMagic.length; i++)
+                  {
+                    b.append(Integer.toHexString(xMagic[i] & 0xFF));
+                    b.append(' ');
+                  }
+              }
+            MARSHAL m = new MARSHAL("Not a GIOP message: " + b);
+            m.minor = minor;
             throw m;
           }
 
@@ -354,7 +371,7 @@ public class MessageHeader
       }
     catch (IOException ex)
       {
-        MARSHAL t = new MARSHAL();
+        MARSHAL t = new MARSHAL(ex.getMessage());
         t.minor = Minor.Header;
         t.initCause(ex);
         throw t;

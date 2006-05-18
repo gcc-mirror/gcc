@@ -48,6 +48,8 @@ package java.lang;
  */
 public class EnumConstantNotPresentException extends RuntimeException
 {
+  private static final long serialVersionUID = -6046998521960521108L;
+
   /**
    * The enum's type.  Note that the name is fixed by the
    * serialization spec.

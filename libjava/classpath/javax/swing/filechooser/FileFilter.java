@@ -1,5 +1,5 @@
 /* FileFilter.java --
-   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,7 +67,7 @@ public abstract class FileFilter
    * 
    * @param file  the file.
    * 
-   * @returns A boolean.
+   * @return A boolean.
    */
   public abstract boolean accept(File file);
 
@@ -78,7 +78,7 @@ public abstract class FileFilter
    * is used to select the appropriate filter (in cases where more than one
    * filter is available).
    * 
-   * @returns A description of the filter.
+   * @return A description of the filter.
    */
   public abstract String getDescription();
 

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -1204,6 +1206,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
    * This method installs keyboard actions for the JOptionpane.
    */
   protected void installKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: implement.
   }
@@ -1336,6 +1339,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
    * This method uninstalls keyboard actions for the JOptionPane.
    */
   protected void uninstallKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: implement.
   }

@@ -395,7 +395,7 @@ public final class X500Principal implements Principal, Serializable
               buf.append((char) ch);
           }
         sep = in.read();
-        if (sep != '+' || sep != ',')
+        if (sep != '+' && sep != ',')
           throw new IOException("illegal character: " + (char) ch);
         return buf.toString();
       }

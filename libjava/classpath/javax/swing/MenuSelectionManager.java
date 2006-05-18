@@ -216,28 +216,90 @@ public class MenuSelectionManager
   public boolean isComponentPartOfCurrentMenu(Component c)
   {
     MenuElement[] subElements;
-      for (int i = 0; i < selectedPath.size(); i++)
+    boolean ret = false;
+    for (int i = 0; i < selectedPath.size(); i++)
       {
-         subElements = ((MenuElement) selectedPath.get(i)).getSubElements();
-         for (int j = 0; j < subElements.length; j++)
-         {
-            MenuElement me = subElements[j]; 
-            if (me != null && (me.getComponent()).equals(c))
-               return true;
-         }
+        // Check first element.
+        MenuElement first = (MenuElement) selectedPath.get(i);
+        if (SwingUtilities.isDescendingFrom(c, first.getComponent()))
+          {
+            ret = true;
+            break;
+          }
+        else
+          {
+            // Check sub elements.
+            subElements = first.getSubElements();
+            for (int j = 0; j < subElements.length; j++)
+              {
+                MenuElement me = subElements[j]; 
+                if (me != null
+                    && (SwingUtilities.isDescendingFrom(c, me.getComponent())))
+                  {
+                    ret = true;
+                    break;
+                  }
+              }
+          }
       }
 
-      return false;
+      return ret;
   }
 
   /**
-   * DOCUMENT ME!
+   * Processes key events on behalf of the MenuElements. MenuElement
+   * instances should always forward their key events to this method and
+   * get their {@link MenuElement#processKeyEvent(KeyEvent, MenuElement[],
+   * MenuSelectionManager)} eventually called back.
    *
-   * @param e DOCUMENT ME!
+   * @param e the key event
    */
   public void processKeyEvent(KeyEvent e)
   {
-    throw new UnsupportedOperationException("not implemented");
+    MenuElement[] selection = (MenuElement[])
+                    selectedPath.toArray(new MenuElement[selectedPath.size()]);
+    MenuElement[] path;
+    for (int index = selection.length - 1; index >= 0; index--)
+      {
+        MenuElement el = selection[index];
+        // This method's main purpose is to forward key events to the
+        // relevant menu items, so that they can act in response to their
+        // mnemonics beeing typed. So we also need to forward the key event
+        // to all the subelements of the currently selected menu elements
+        // in the path.
+        MenuElement[] subEls = el.getSubElements();
+        path = null;
+        for (int subIndex = 0; subIndex < subEls.length; subIndex++)
+          {
+            MenuElement sub = subEls[subIndex];
+            // Skip elements that are not showing or not enabled.
+            if (sub == null || ! sub.getComponent().isShowing()
+                || ! sub.getComponent().isEnabled())
+              {
+                continue;
+              }
+
+            if (path == null)
+              {
+                path = new MenuElement[index + 2];
+                System.arraycopy(selection, 0, path, 0, index + 1);
+              }
+            path[index + 1] = sub;
+            sub.processKeyEvent(e, path, this);
+            if (e.isConsumed())
+              break;
+          }
+        if (e.isConsumed())
+          break;
+      }
+
+    // Dispatch to first element in selection if it hasn't been consumed.
+    if (! e.isConsumed())
+      {
+        path = new MenuElement[1];
+        path[0] = selection[0];
+        path[0].processKeyEvent(e, path, this);
+      }
   }
 
   /**
@@ -303,53 +365,35 @@ public class MenuSelectionManager
 	return;
       }
 
-    int i;
-    int minSize = path.length; // size of the smaller path. 
+    int minSize = path.length; // size of the smaller path.
+    int currentSize = selectedPath.size();
+    int firstDiff = 0;
 
-    if (path.length > selectedPath.size())
+    // Search first item that is different in the current and new path.
+    for (int i = 0; i < minSize; i++)
       {
-	minSize = selectedPath.size();
-
-	// if new selected path contains more elements then current
-	// selection then first add all elements at 
-	// the indexes > selectedPath.size 
-	for (i = selectedPath.size(); i < path.length; i++)
-	  {
-	    selectedPath.add(path[i]);
-	    path[i].menuSelectionChanged(true);
-	  }
+        if (i < currentSize && (MenuElement) selectedPath.get(i) == path[i])
+          firstDiff++;
+        else
+          break;
       }
 
-    else if (path.length < selectedPath.size())
+    // Remove items from selection and send notification.
+    for (int i = currentSize - 1; i >= firstDiff; i--)
       {
-	// if new selected path contains less elements then current 
-	// selection then first remove all elements from the selection
-	// at the indexes > path.length
-	for (i = selectedPath.size() - 1; i >= path.length; i--)
-	  {
-	    ((MenuElement) selectedPath.get(i)).menuSelectionChanged(false);
-	    selectedPath.remove(i);
-	  }
-
-	minSize = path.length;
+        MenuElement el = (MenuElement) selectedPath.get(i);
+        selectedPath.remove(i);
+        el.menuSelectionChanged(false);
       }
 
-    // Now compare elements in new and current selection path at the 
-    // same location and adjust selection until 
-    // same menu elements will be encountered at the
-    // same index in both current and new selection path.
-    MenuElement oldSelectedItem;
-
-    for (i = minSize - 1; i >= 0; i--)
+    // Add new items to selection and send notification.
+    for (int i = firstDiff; i < minSize; i++)
       {
-	oldSelectedItem = (MenuElement) selectedPath.get(i);
-
-	if (path[i].equals(oldSelectedItem))
-	  break;
-
-	oldSelectedItem.menuSelectionChanged(false);
-	path[i].menuSelectionChanged(true);
-	selectedPath.setElementAt(path[i], i);
+        if (path[i] != null)
+          {
+            selectedPath.add(path[i]);
+            path[i].menuSelectionChanged(true);
+          }
       }
 
     fireStateChanged();

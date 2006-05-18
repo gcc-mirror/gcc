@@ -50,8 +50,6 @@ import gnu.javax.crypto.mac.IMac;
  * is done via the {@link IMac#digest()} method, and header updating
  * (if supported by the mode) is done via the {@link
  * IMac#update(byte[],int,int)} method.
- *
- * @version $Revision: 1.1 $
  */
 public interface IAuthenticatedMode extends IMode, IMac
 {

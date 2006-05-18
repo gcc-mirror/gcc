@@ -111,6 +111,13 @@ public class SystemProperties
       defaultProperties.put("java.io.tmpdir",
                             defaultProperties.get("java.tmpdir"));
 
+    // FIXME: we need a better way to handle this.
+    // For instance, having a single VM class for each OS might help.
+    if (defaultProperties.get("gnu.classpath.mime.types.file") == null
+        && "Linux".equals(defaultProperties.get("os.name")))
+      defaultProperties.put("gnu.classpath.mime.types.file",
+                            "/etc/mime.types");
+
     VMSystemProperties.postInit(defaultProperties);
 
     // Note that we use clone here and not new.  Some programs assume
@@ -148,5 +155,18 @@ public class SystemProperties
       }
 
     SystemProperties.properties = properties;
+  }
+
+  /**
+   * Removes the supplied system property and its current value.
+   * If the specified property does not exist, nothing happens.
+   * 
+   * @throws NullPointerException if the property name is null.
+   * @return the value of the removed property, or null if no
+   *         such property exists.
+   */
+  public static String remove(String name)
+  {
+    return (String) properties.remove(name);
   }
 }

@@ -1,5 +1,5 @@
 /* FREE_MEM.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,11 +41,11 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means errors, related to freing the allocated memory.
+ * Means errors, related to freeing the allocated memory.
  * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class FREE_MEM
+public final class FREE_MEM
   extends SystemException
   implements Serializable
 {
@@ -57,7 +57,7 @@ public class FREE_MEM
   /**
    * Creates a FREE_MEM with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reasom the explaining message.
+   * @param message the explaining message.
    */
   public FREE_MEM(String message)
   {

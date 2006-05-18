@@ -1,5 +1,5 @@
 /* JMenu.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,8 @@ exception statement from your version. */
 
 
 package javax.swing;
+
+import gnu.classpath.NotImplementedException;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -293,8 +295,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
    */
   public void updateUI()
   {
-    super.setUI((MenuItemUI) UIManager.getUI(this));
-    invalidate();
+    setUI((MenuItemUI) UIManager.getUI(this));
   }
 
   /**
@@ -765,7 +766,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
    */
   protected void processKeyEvent(KeyEvent event)
   {
-    // TODO: Implement this properly.
+    MenuSelectionManager.defaultManager().processKeyEvent(event);
   }
 
   /**
@@ -822,26 +823,31 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
     }
 
     public int getAccessibleChildrenCount()
+      throws NotImplementedException
     {
       return 0;
     }
 
     public Accessible getAccessibleChild(int value0)
+      throws NotImplementedException
     {
       return null;
     }
 
     public AccessibleSelection getAccessibleSelection()
+      throws NotImplementedException
     {
       return null;
     }
 
     public Accessible getAccessibleSelection(int value0)
+      throws NotImplementedException
     {
       return null;
     }
 
     public boolean isAccessibleChildSelected(int value0)
+      throws NotImplementedException
     {
       return false;
     }
@@ -852,26 +858,31 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
     }
 
     public int getAccessibleSelectionCount()
+      throws NotImplementedException
     {
       return 0;
     }
 
     public void addAccessibleSelection(int value0)
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
 
     public void removeAccessibleSelection(int value0)
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
 
     public void clearAccessibleSelection()
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }
 
     public void selectAllAccessibleSelection()
+      throws NotImplementedException
     {
       // TODO: Implement this properly.
     }

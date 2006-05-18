@@ -1,5 +1,5 @@
 /* INTERNAL.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,11 +41,11 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means the internal failure in ORB.
+ * Means an internal failure in the ORB.
  * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class INTERNAL
+public final class INTERNAL
   extends SystemException
   implements Serializable
 {
@@ -57,7 +57,7 @@ public class INTERNAL
   /**
    * Creates a INTERNAL with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reasom the explaining message.
+   * @param message the explaining message.
    */
   public INTERNAL(String message)
   {

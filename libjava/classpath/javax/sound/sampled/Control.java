@@ -43,7 +43,7 @@ package javax.sound.sampled;
  * for instance its volume.
  * @since 1.3
  */
-public class Control
+public abstract class Control
 {
   /**
    * This describes a single control.
@@ -75,7 +75,7 @@ public class Control
     /**
      * Return the name of this Type.
      */
-    public String toString()
+    public final String toString()
     {
       return name;
     }

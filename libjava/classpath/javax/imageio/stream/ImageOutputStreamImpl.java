@@ -38,7 +38,10 @@ exception statement from your version. */
 
 package javax.imageio.stream;
 
+import gnu.classpath.NotImplementedException;
+
 import java.io.IOException;
+import java.io.UTFDataFormatException;
 import java.nio.ByteOrder;
 
 /**
@@ -52,8 +55,8 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
     // Do nothing here.
   }
 
-  protected void flushBits()
-    throws IOException
+  protected final void flushBits()
+    throws IOException, NotImplementedException
   {
     // FIXME: Implement me.
     throw new Error("not implemented");
@@ -72,14 +75,14 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
     throws IOException;
 
   public void writeBit(int bit)
-    throws IOException
+    throws IOException, NotImplementedException
   {
     // FIXME: Implement me.
     throw new Error("not implemented");
   }
 
   public void writeBits(long bits, int numBits)
-    throws IOException
+    throws IOException, NotImplementedException
   {
     // FIXME: Implement me.
     throw new Error("not implemented");
@@ -100,13 +103,17 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
   public void writeBytes(String data)
     throws IOException
   {
-    write(data.getBytes());
+    // This is bogus, but it is how the method is specified.
+    // Sun ought to deprecate this method.
+    int len = data.length();
+    for (int i = 0; i < len; ++i)
+      writeByte(data.charAt(i));
   }
 
   public void writeChar(int value)
     throws IOException
   {
-    writeShort((short) value);
+    writeShort(value);
   }
 
   public void writeChars(char[] data, int offset, int len)
@@ -119,14 +126,15 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
   public void writeChars(String data)
     throws IOException
   {
-    // FIXME: Implement me.
-    throw new Error("not implemented");
+    int len = data.length();
+    for (int i = 0; i < len; ++i)
+      writeChar(data.charAt(i));
   }
 
   public void writeDouble(double value)
     throws IOException
   {
-    writeLong((long) value);
+    writeLong(Double.doubleToLongBits(value));
   }
 
   public void writeDoubles(double[] data, int offset, int len)
@@ -139,7 +147,7 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
   public void writeFloat(float value)
     throws IOException
   {
-    writeInt((int) value);
+    writeInt(Float.floatToIntBits(value));
   }
   
   public void writeFloats(float[] data, int offset, int len)
@@ -237,9 +245,52 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
       writeShort(data[offset + i]);
   }
   
-  public void writeUTF(String data)
+  public void writeUTF(String value)
     throws IOException
   {
-    throw new Error("not implemented");
+    // NOTE: this code comes directly from DataOutputStream.
+    int len = value.length();
+    int sum = 0;
+
+    for (int i = 0; i < len && sum <= 65535; ++i)
+      {
+        char c = value.charAt(i);
+        if (c >= '\u0001' && c <= '\u007f')
+          sum += 1;
+        else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
+          sum += 2;
+        else
+          sum += 3;
+      }
+
+    if (sum > 65535)
+      throw new UTFDataFormatException ();
+
+    int pos = 0;
+    byte[] buf = new byte[sum];
+
+    for (int i = 0; i < len; ++i)
+      {
+        char c = value.charAt(i);
+        if (c >= '\u0001' && c <= '\u007f')
+          buf[pos++] = (byte) c;
+        else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
+          {
+            buf[pos++] = (byte) (0xc0 | (0x1f & (c >> 6)));
+            buf[pos++] = (byte) (0x80 | (0x3f & c));
+          }
+        else
+          {
+            // JSL says the first byte should be or'd with 0xc0, but
+            // that is a typo.  Unicode says 0xe0, and that is what is
+            // consistent with DataInputStream.
+            buf[pos++] = (byte) (0xe0 | (0x0f & (c >> 12)));
+            buf[pos++] = (byte) (0x80 | (0x3f & (c >> 6)));
+            buf[pos++] = (byte) (0x80 | (0x3f & c));
+          }
+      }
+    
+    writeShort (sum);
+    write(buf, 0, sum);
   }
 }

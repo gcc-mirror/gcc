@@ -41,7 +41,6 @@ package javax.swing.plaf.basic;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
@@ -365,9 +364,9 @@ public class BasicSpinnerUI extends SpinnerUI
   private class DefaultLayoutManager implements LayoutManager
   {
     /**
-     * DOCUMENT ME!
+     * Layout the spinners inner parts.
      *
-     * @param parent DOCUMENT ME!
+     * @param parent The parent container
      */
     public void layoutContainer(Container parent)
     {
@@ -385,12 +384,12 @@ public class BasicSpinnerUI extends SpinnerUI
           Dimension e = prefSize(editor);
           Dimension n = prefSize(next);
           Dimension p = prefSize(previous);
-          Dimension s = spinner.getPreferredSize();
+	  Dimension s = parent.getSize();
 
           int x = l2r ? i.left : i.right;
           int y = i.top;
           int w = Math.max(p.width, n.width);
-          int h = e.height / 2;
+          int h = (s.height - i.bottom) / 2;
           int e_width = s.width - w - i.left - i.right;
 
           if (l2r)

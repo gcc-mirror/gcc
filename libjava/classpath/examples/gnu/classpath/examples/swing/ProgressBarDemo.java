@@ -38,13 +38,13 @@ exception statement from your version. */
 
 package gnu.classpath.examples.swing;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -54,38 +54,37 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 public class ProgressBarDemo
-  extends JFrame
+  extends JPanel
   implements ActionListener
 {
 
   /**
    * Creates a new ProgressBarDemo window with the specified title.
-   *
-   * @param title the title of the program window
    */
-  ProgressBarDemo(String title)
+  ProgressBarDemo()
   {
-    super(title);
-    JPanel content = createContent();
+    super();
+    createContent();
+  }
+
+  void initFrameContent()
+  {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
     closeButton.addActionListener(this);
     closePanel.add(closeButton);
-    getContentPane().add(content);
-    getContentPane().add(closePanel, BorderLayout.SOUTH);
+    add(closePanel);
   }
 
-  static JPanel createContent()
+  private void createContent()
   {
-    JPanel content = new JPanel();
-    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     JPanel horizontalProgressBar = createHorizontalProgressBar();
-    content.add(horizontalProgressBar);
-    content.add(Box.createVerticalStrut(10));
+    add(horizontalProgressBar);
+    add(Box.createVerticalStrut(10));
     JPanel verticalProgressBar = createVerticalProgressBar();
-    content.add(verticalProgressBar);
-    return content;
+    add(verticalProgressBar);
   }
 
   private static JPanel createHorizontalProgressBar()
@@ -194,8 +193,10 @@ public class ProgressBarDemo
 
   public void actionPerformed(ActionEvent event)
   {
-    // TODO Auto-generated method stub
-    
+    if (event.getActionCommand().equals("CLOSE"))
+      {
+        System.exit(0);
+      }
   }
 
   /**
@@ -210,10 +211,29 @@ public class ProgressBarDemo
         {
           public void run()
           {
-            ProgressBarDemo app = new ProgressBarDemo("ProgressBar Demo");
-            app.pack();
-            app.setVisible(true);
+            ProgressBarDemo app = new ProgressBarDemo();
+            app.initFrameContent();
+            JFrame frame = new JFrame("ProgressBar Demo");
+            frame.getContentPane().add(app);
+            frame.pack();
+            frame.setVisible(true);
           }
         });
+  }
+
+  /**
+   * Returns a DemoFactory that creates a ProgressBarDemo.
+   *
+   * @return a DemoFactory that creates a ProgressBarDemo
+   */
+  public static DemoFactory createDemoFactory()
+  {
+    return new DemoFactory()
+    {
+      public JComponent createDemo()
+      {
+        return new ProgressBarDemo();
+      }
+    };
   }
 }

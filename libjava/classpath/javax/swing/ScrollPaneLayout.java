@@ -328,7 +328,13 @@ public class ScrollPaneLayout
     // parent is no JScrollPane, so do we.
     JScrollPane sc = (JScrollPane) parent;
     JViewport viewport = sc.getViewport();
-    Dimension viewSize = viewport.getViewSize();
+    Component view = viewport.getView();
+    
+    // If there is no view in the viewport, there is no work to be done.
+    if (view == null)
+      return;
+    
+    Dimension viewSize = viewport.getView().getPreferredSize();
 
     int x1 = 0, x2 = 0, x3 = 0, x4 = 0;
     int y1 = 0, y2 = 0, y3 = 0, y4 = 0;
@@ -350,27 +356,49 @@ public class ScrollPaneLayout
 
     int vsbPolicy = sc.getVerticalScrollBarPolicy();
     int hsbPolicy = sc.getHorizontalScrollBarPolicy();
+    
+    int vsWidth = 0;
+    int hsHeight = 0;
 
     boolean showVsb = 
       (vsb != null)
       && ((vsbPolicy == VERTICAL_SCROLLBAR_ALWAYS)
           || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED 
               && viewSize.height > (y4 - y2)));
+    
+    if (showVsb)
+      vsWidth = vsb.getPreferredSize().width;
+    
+    // The horizontal scroll bar may become necessary if the vertical scroll
+    // bar appears, reducing the space, left for the component.
+    
     boolean showHsb = 
       (hsb != null)
       && ((hsbPolicy == HORIZONTAL_SCROLLBAR_ALWAYS)
           || (hsbPolicy == HORIZONTAL_SCROLLBAR_AS_NEEDED 
-              && viewSize.width > (x4 - x2)));
-
+              && viewSize.width > (x4 - x2 - vsWidth)));
+    
+    if (showHsb)
+      hsHeight = hsb.getPreferredSize().height;
+    
+    // If the horizontal scroll bar appears, and the vertical scroll bar
+    // was not necessary assuming that there is no horizontal scroll bar,
+    // the vertical scroll bar may become necessary because the horizontal
+    // scroll bar reduces the vertical space for the component.
     if (!showVsb)
-      x3 = x4;
-    else
-      x3 = x4 - vsb.getPreferredSize().width;
+      {
+        showVsb = 
+          (vsb != null)
+          && ((vsbPolicy == VERTICAL_SCROLLBAR_ALWAYS)
+              || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED 
+                  && viewSize.height > (y4 - y2)));
+    
+        if (showVsb)
+          vsWidth = vsb.getPreferredSize().width;
+      }
 
-    if (!showHsb)
-      y3 = y4;
-    else
-      y3 = y4 - hsb.getPreferredSize().height;
+    x3 = x4 - vsWidth;
+    y3 = y4 - hsHeight;
 
     // now set the layout
     if (viewport != null)

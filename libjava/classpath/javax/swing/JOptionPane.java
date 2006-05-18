@@ -75,13 +75,14 @@ public class JOptionPane extends JComponent implements Accessible
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the accessible role of this object, which is always
+     * {@link AccessibleRole#OPTION_PANE}.
      *
-     * @return DOCUMENT ME!
+     * @return the accessible role of this object
      */
     public AccessibleRole getAccessibleRole()
     {
-      return null;
+      return AccessibleRole.OPTION_PANE;
     }
   }
 
@@ -1475,7 +1476,6 @@ public class JOptionPane extends JComponent implements Accessible
   public void updateUI()
   {
     setUI((OptionPaneUI) UIManager.getUI(this));
-    invalidate();
   }
 
   /**

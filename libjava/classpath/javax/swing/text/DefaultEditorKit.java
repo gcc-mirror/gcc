@@ -63,6 +63,663 @@ import javax.swing.Action;
  */
 public class DefaultEditorKit extends EditorKit
 {
+  static class SelectionPreviousWordAction
+      extends TextAction
+  {
+    SelectionPreviousWordAction()
+    {
+      super(selectionPreviousWordAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      try
+        {
+          JTextComponent t = getTextComponent(event);
+      
+          if (t != null)
+            {
+              int offs = Utilities.getPreviousWord(t, t.getCaretPosition());
+      
+              Caret c = t.getCaret();
+              c.moveDot(offs);
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+        }
+      catch(BadLocationException ble)
+        {
+          // Can't happen.
+        }
+    }
+  }
+
+  static class SelectionNextWordAction
+      extends TextAction
+  {
+    SelectionNextWordAction()
+    {
+      super(selectionNextWordAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      try
+        {
+          JTextComponent t = getTextComponent(event);
+      
+          if (t != null)
+            {
+              int offs = Utilities.getNextWord(t, t.getCaretPosition());
+      
+              Caret c = t.getCaret();
+              c.moveDot(offs);
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+        }
+      catch(BadLocationException ble)
+        {
+          // Can't happen.
+        }
+    }
+  }
+
+  static class PreviousWordAction
+      extends TextAction
+  {
+    PreviousWordAction()
+    {
+      super(previousWordAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      try
+        {
+          JTextComponent t = getTextComponent(event);
+      
+          if (t != null)
+            {
+              int offs = Utilities.getPreviousWord(t, t.getCaretPosition());
+      
+              Caret c = t.getCaret();
+              c.setDot(offs);
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+        }
+      catch(BadLocationException ble)
+        {
+          // Can't happen.
+        }
+    }
+  }
+
+  static class NextWordAction
+      extends TextAction
+  {
+    NextWordAction()
+    {
+      super(nextWordAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      try
+        {
+          JTextComponent t = getTextComponent(event);
+      
+          if (t != null)
+            {
+              int offs = Utilities.getNextWord(t, t.getCaretPosition());
+      
+              Caret c = t.getCaret();
+              c.setDot(offs);
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+        }
+      catch(BadLocationException ble)
+        {
+          // Can't happen.
+        }
+    }
+  }
+
+  static class SelectAllAction
+      extends TextAction
+  {
+    SelectAllAction()
+    {
+      super(selectAllAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      int offs = t.getDocument().getLength();
+      Caret c = t.getCaret();
+      c.setDot(0);
+      c.moveDot(offs);
+      
+      try
+      {   
+        c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+      }
+    catch(BadLocationException ble)
+      {
+        // Can't happen.
+      }
+    }
+  }
+
+  static class SelectionBeginAction
+      extends TextAction
+  {
+    SelectionBeginAction()
+    {
+      super(selectionBeginAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      Caret c = t.getCaret();
+      c.moveDot(0);
+      try
+        {   
+          c.setMagicCaretPosition(t.modelToView(0).getLocation());
+        }
+      catch(BadLocationException ble)
+        {
+          // Can't happen.
+        }
+    }
+  }
+
+  static class SelectionEndAction
+      extends TextAction
+  {
+    SelectionEndAction()
+    {
+      super(selectionEndAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      int offs = t.getDocument().getLength();
+      Caret c = t.getCaret();
+      c.moveDot(offs);
+      try
+        {   
+          c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+        }
+      catch(BadLocationException ble)
+        {
+          // Can't happen.
+        }
+    }
+  }
+
+  static class SelectionEndLineAction
+      extends TextAction
+  {
+    SelectionEndLineAction()
+    {
+      super(selectionEndLineAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+     try
+     {
+       Point p = t.modelToView(t.getCaret().getDot()).getLocation();
+       int cur = t.getCaretPosition();
+       int y = p.y;
+       int length = t.getDocument().getLength();
+       while (y == p.y && cur < length)
+         y = t.modelToView(++cur).getLocation().y;
+       if (cur != length)
+         cur--;
+    
+       Caret c = t.getCaret();
+       c.moveDot(cur);
+       c.setMagicCaretPosition(t.modelToView(cur).getLocation());
+     }
+     catch (BadLocationException ble)
+     {
+       // Nothing to do here
+     }
+    }
+  }
+
+  static class SelectionBeginLineAction
+      extends TextAction
+  {
+    SelectionBeginLineAction()
+    {
+      super(selectionBeginLineAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      
+      try
+      {
+        // TODO: There is a more efficent solution, but
+        // viewToModel doesn't work properly.
+        Point p = t.modelToView(t.getCaret().getDot()).getLocation();
+        
+        int cur = t.getCaretPosition();
+        int y = p.y;
+        
+        while (y == p.y && cur > 0)
+          y = t.modelToView(--cur).getLocation().y;
+        if (cur != 0)
+          cur++;
+        
+        Caret c = t.getCaret();
+        c.moveDot(cur);
+        c.setMagicCaretPosition(t.modelToView(cur).getLocation());
+      }
+      catch (BadLocationException ble)
+      {
+        // Do nothing here.
+      }
+    }
+  }
+
+  static class SelectionDownAction
+      extends TextAction
+  {
+    SelectionDownAction()
+    {
+      super(selectionDownAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+        {
+          if (t != null)
+            {
+              Caret c = t.getCaret();
+              // The magic caret position may be null when the caret
+              // has not moved yet.
+              Point mcp = c.getMagicCaretPosition();
+              int x = (mcp != null) ? mcp.x : 0;
+              int pos = Utilities.getPositionBelow(t, t.getCaretPosition(), x);
+              
+              if (pos > -1)
+                t.moveCaretPosition(pos);
+            }
+        }
+      catch(BadLocationException ble) 
+        {
+          // FIXME: Swallowing allowed?
+        }
+    }
+  }
+
+  static class SelectionUpAction
+      extends TextAction
+  {
+    SelectionUpAction()
+    {
+      super(selectionUpAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+        {
+          if (t != null)
+            {
+              Caret c = t.getCaret();
+              // The magic caret position may be null when the caret
+              // has not moved yet.
+              Point mcp = c.getMagicCaretPosition();
+              int x = (mcp != null) ? mcp.x : 0;
+              int pos = Utilities.getPositionAbove(t, t.getCaretPosition(), x);
+              
+              if (pos > -1)
+                t.moveCaretPosition(pos);
+            }
+        }
+      catch(BadLocationException ble) 
+        {
+          // FIXME: Swallowing allowed?
+        }
+    }
+  }
+
+  static class SelectionForwardAction
+      extends TextAction
+  {
+    SelectionForwardAction()
+    {
+      super(selectionForwardAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      if (t != null)
+        {
+          int offs = t.getCaretPosition() + 1;
+          
+          if(offs <= t.getDocument().getLength())
+            {
+              Caret c = t.getCaret();
+              c.moveDot(offs);
+              try
+                {
+                  c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+                }
+              catch(BadLocationException ble)
+              {
+                // Can't happen.
+              }
+            }
+        }
+    }
+  }
+
+  static class SelectionBackwardAction
+      extends TextAction
+  {
+    SelectionBackwardAction()
+    {
+      super(selectionBackwardAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      if (t != null)
+        {
+      int offs = t.getCaretPosition() - 1;
+      
+      if(offs >= 0)
+        {
+          Caret c = t.getCaret();
+          c.moveDot(offs);
+          try
+            {
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+          catch(BadLocationException ble)
+          {
+            // Can't happen.
+          }
+        }
+        }
+    }
+  }
+
+  static class DownAction
+      extends TextAction
+  {
+    DownAction()
+    {
+      super(downAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+        {
+          if (t != null)
+            {
+              Caret c = t.getCaret();
+              // The magic caret position may be null when the caret
+              // has not moved yet.
+              Point mcp = c.getMagicCaretPosition();
+              int x = (mcp != null) ? mcp.x : 0;
+              int pos = Utilities.getPositionBelow(t, t.getCaretPosition(), x);
+              
+              if (pos > -1)
+                t.setCaretPosition(pos);
+            }
+        }
+      catch(BadLocationException ble) 
+        {
+          // FIXME: Swallowing allowed?
+        }
+    }
+  }
+
+  static class UpAction
+      extends TextAction
+  {
+    UpAction()
+    {
+      super(upAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+        {
+          if (t != null)
+            {
+              Caret c = t.getCaret();
+              // The magic caret position may be null when the caret
+              // has not moved yet.
+              Point mcp = c.getMagicCaretPosition();
+              int x = (mcp != null) ? mcp.x : 0;
+              int pos = Utilities.getPositionAbove(t, t.getCaretPosition(), x);
+              
+              if (pos > -1)
+                t.setCaretPosition(pos);
+            }
+        }
+      catch(BadLocationException ble) 
+        {
+          // FIXME: Swallowing allowed?
+        }
+    }
+  }
+
+  static class ForwardAction
+      extends TextAction
+  {
+    ForwardAction()
+    {
+      super(forwardAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      if (t != null)
+        {
+          int offs = t.getCaretPosition() + 1;
+          if (offs <= t.getDocument().getLength())
+            {
+              Caret c = t.getCaret();
+              c.setDot(offs);
+              
+              try
+                {
+                  c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+                }
+              catch (BadLocationException ble)
+                {
+                  // Should not happen.
+                }
+            }
+        }
+      
+    }
+  }
+
+  static class BackwardAction
+      extends TextAction
+  {
+    BackwardAction()
+    {
+      super(backwardAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      if (t != null)
+        {
+          int offs = t.getCaretPosition() - 1;
+          if (offs >= 0)
+            {
+              Caret c = t.getCaret();
+              c.setDot(offs);
+              
+              try
+                {
+                  c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+                }
+              catch (BadLocationException ble)
+                {
+                  // Should not happen.
+                }
+            }
+        }
+    }
+  }
+
+  static class DeletePrevCharAction
+      extends TextAction
+  {
+    DeletePrevCharAction()
+    {
+      super(deletePrevCharAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      if (t != null)
+        {
+          try
+            {
+              int pos = t.getSelectionStart();
+              int len = t.getSelectionEnd() - pos;
+              
+              if (len > 0)
+                  t.getDocument().remove(pos, len);
+              else if (pos > 0)
+                {
+                  pos--;
+                  t.getDocument().remove(pos, 1);
+                  Caret c = t.getCaret();
+                  c.setDot(pos);
+                  c.setMagicCaretPosition(t.modelToView(pos).getLocation());
+                }
+            }
+          catch (BadLocationException e)
+            {
+              // FIXME: we're not authorized to throw this.. swallow it?
+            }
+        }
+    }
+  }
+
+  static class DeleteNextCharAction
+      extends TextAction
+  {
+    DeleteNextCharAction()
+    {
+      super(deleteNextCharAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      if (t != null)
+        {
+          try
+            {
+              int pos = t.getSelectionStart();
+              int len = t.getSelectionEnd() - pos;
+              
+              if (len > 0)
+                  t.getDocument().remove(pos, len);
+              else if (pos < t.getDocument().getLength())
+                  t.getDocument().remove(pos, 1);
+    
+              Caret c = t.getCaret();
+              c.setDot(pos);
+              c.setMagicCaretPosition(t.modelToView(pos).getLocation());
+            }
+          catch (BadLocationException e)
+            {
+              // FIXME: we're not authorized to throw this.. swallow it?
+            }
+        }
+    }
+  }
+
+  static class EndLineAction
+      extends TextAction
+  {
+    EndLineAction()
+    {
+      super(endLineAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+     {
+       int offs = Utilities.getRowEnd(t, t.getCaretPosition());
+       
+       if (offs > -1)
+         {
+           Caret c = t.getCaret();
+           c.setDot(offs);
+           c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+         }
+     }
+     catch (BadLocationException ble)
+     {
+       // Nothing to do here
+     }
+    }
+  }
+
+  static class BeginLineAction
+      extends TextAction
+  {
+    BeginLineAction()
+    {
+      super(beginLineAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+      {
+        int offs = Utilities.getRowStart(t, t.getCaretPosition());
+        
+        if (offs > -1)
+          {
+            Caret c = t.getCaret();
+            c.setDot(offs);
+            c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+          }
+      }
+      catch (BadLocationException ble)
+      {
+        // Do nothing here.
+      }
+    }
+  }
+
   /**
    * Creates a beep on the PC speaker.
    *
@@ -692,6 +1349,7 @@ public class DefaultEditorKit extends EditorKit
   // to handle this.
   private static Action[] defaultActions = 
   new Action[] {
+    // These classes are public because they are so in the RI.            
     new BeepAction(),
     new CopyAction(),
     new CutAction(),
@@ -700,404 +1358,38 @@ public class DefaultEditorKit extends EditorKit
     new InsertContentAction(),
     new InsertTabAction(),
     new PasteAction(),
-    new TextAction(beginLineAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        try
-        {
-          int offs = Utilities.getRowStart(t, t.getCaretPosition());
-          
-          if (offs > -1)
-            {
-              Caret c = t.getCaret();
-              c.setDot(offs);
-              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-            }
-        }
-        catch (BadLocationException ble)
-        {
-          // Do nothing here.
-        }
-      }
-    },
-    new TextAction(endLineAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        try
-       {
-         int offs = Utilities.getRowEnd(t, t.getCaretPosition());
-         
-         if (offs > -1)
-           {
-             Caret c = t.getCaret();
-             c.setDot(offs);
-             c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-           }
-       }
-       catch (BadLocationException ble)
-       {
-         // Nothing to do here
-       }
-      }
-    },
-    new TextAction(deleteNextCharAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        if (t != null)
-          {
-            try
-              {
-                int pos = t.getSelectionStart();
-                int len = t.getSelectionEnd() - pos;
-                
-                if (len > 0)
-                    t.getDocument().remove(pos, len);
-                else if (pos < t.getDocument().getLength())
-                    t.getDocument().remove(pos, 1);
+    
+    // These are (package-)private inner classes.
+    new DeleteNextCharAction(),
+    new DeletePrevCharAction(),
 
-                Caret c = t.getCaret();
-                c.setDot(pos);
-                c.setMagicCaretPosition(t.modelToView(pos).getLocation());
-              }
-            catch (BadLocationException e)
-              {
-                // FIXME: we're not authorized to throw this.. swallow it?
-              }
-          }
-      }
-    },
-    new TextAction(deletePrevCharAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        if (t != null)
-          {
-            try
-              {
-                int pos = t.getSelectionStart();
-                int len = t.getSelectionEnd() - pos;
-                
-                if (len > 0)
-                    t.getDocument().remove(pos, len);
-                else if (pos > 0)
-                  {
-                    pos--;
-                    t.getDocument().remove(pos, 1);
-                    Caret c = t.getCaret();
-                    c.setDot(pos);
-                    c.setMagicCaretPosition(t.modelToView(pos).getLocation());
-                  }
-              }
-            catch (BadLocationException e)
-              {
-                // FIXME: we're not authorized to throw this.. swallow it?
-              }
-          }
-      }
-    },
-    new TextAction(backwardAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        if (t != null)
-          {
-            int offs = t.getCaretPosition() - 1;
-            if (offs >= 0)
-              {
-                Caret c = t.getCaret();
-                c.setDot(offs);
-                
-                try
-                  {
-                    c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-                  }
-                catch (BadLocationException ble)
-                  {
-                    // Should not happen.
-                  }
-              }
-          }
-      }
-    },
-    new TextAction(forwardAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        if (t != null)
-          {
-            int offs = t.getCaretPosition() + 1;
-            if (offs <= t.getDocument().getLength())
-              {
-                Caret c = t.getCaret();
-                c.setDot(offs);
-                
-                try
-                  {
-                    c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-                  }
-                catch (BadLocationException ble)
-                  {
-                    // Should not happen.
-                  }
-              }
-          }
-        
-      }
-    },
-    new TextAction(upAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        try
-          {
-            if (t != null)
-              {
-                Caret c = t.getCaret();
-                // The magic caret position may be null when the caret
-                // has not moved yet.
-                Point mcp = c.getMagicCaretPosition();
-                int x = (mcp != null) ? mcp.x : 0;
-                int pos = Utilities.getPositionAbove(t, t.getCaretPosition(), x);
-                
-                if (pos > -1)
-                  t.setCaretPosition(pos);
-              }
-          }
-        catch(BadLocationException ble) 
-          {
-            // FIXME: Swallowing allowed?
-          }
-      }
-    },
-    new TextAction(downAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        try
-          {
-            if (t != null)
-              {
-                Caret c = t.getCaret();
-                // The magic caret position may be null when the caret
-                // has not moved yet.
-                Point mcp = c.getMagicCaretPosition();
-                int x = (mcp != null) ? mcp.x : 0;
-                int pos = Utilities.getPositionBelow(t, t.getCaretPosition(), x);
-                
-                if (pos > -1)
-                  t.setCaretPosition(pos);
-              }
-          }
-        catch(BadLocationException ble) 
-          {
-            // FIXME: Swallowing allowed?
-          }
-      }
-    },
-    new TextAction(selectionBackwardAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-	JTextComponent t = getTextComponent(event);
-	if (t != null)
-	  {
-        int offs = t.getCaretPosition() - 1;
-        
-        if(offs >= 0)
-          {
-            Caret c = t.getCaret();
-            c.moveDot(offs);
-            try
-              {
-                c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-              }
-            catch(BadLocationException ble)
-            {
-              // Can't happen.
-            }
-          }
-	  }
-      }
-    },
-    new TextAction(selectionForwardAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        if (t != null)
-          {
-            int offs = t.getCaretPosition() + 1;
-            
-            if(offs <= t.getDocument().getLength())
-              {
-                Caret c = t.getCaret();
-                c.moveDot(offs);
-                try
-                  {
-                    c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-                  }
-                catch(BadLocationException ble)
-                {
-                  // Can't happen.
-                }
-              }
-          }
-      }
-    },
-    new TextAction(selectionUpAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        try
-          {
-            if (t != null)
-              {
-                Caret c = t.getCaret();
-                // The magic caret position may be null when the caret
-                // has not moved yet.
-                Point mcp = c.getMagicCaretPosition();
-                int x = (mcp != null) ? mcp.x : 0;
-                int pos = Utilities.getPositionAbove(t, t.getCaretPosition(), x);
-                
-                if (pos > -1)
-                  t.moveCaretPosition(pos);
-              }
-          }
-        catch(BadLocationException ble) 
-          {
-            // FIXME: Swallowing allowed?
-          }
-      }
-    },
-    new TextAction(selectionDownAction) 
-    { 
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        try
-          {
-            if (t != null)
-              {
-                Caret c = t.getCaret();
-                // The magic caret position may be null when the caret
-                // has not moved yet.
-                Point mcp = c.getMagicCaretPosition();
-                int x = (mcp != null) ? mcp.x : 0;
-                int pos = Utilities.getPositionBelow(t, t.getCaretPosition(), x);
-                
-                if (pos > -1)
-                  t.moveCaretPosition(pos);
-              }
-          }
-        catch(BadLocationException ble) 
-          {
-            // FIXME: Swallowing allowed?
-          }
-      }
-    },
-    new TextAction(selectionBeginLineAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        
-        try
-        {
-          // TODO: There is a more efficent solution, but
-          // viewToModel doesn't work properly.
-          Point p = t.modelToView(t.getCaret().getDot()).getLocation();
-          
-          int cur = t.getCaretPosition();
-          int y = p.y;
-          
-          while (y == p.y && cur > 0)
-            y = t.modelToView(--cur).getLocation().y;
-          if (cur != 0)
-            cur++;
-          
-          Caret c = t.getCaret();
-          c.moveDot(cur);
-          c.setMagicCaretPosition(t.modelToView(cur).getLocation());
-        }
-        catch (BadLocationException ble)
-        {
-          // Do nothing here.
-        }
-      }
-    },
-    new TextAction(selectionEndLineAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-       try
-       {
-         Point p = t.modelToView(t.getCaret().getDot()).getLocation();
-         int cur = t.getCaretPosition();
-         int y = p.y;
-         int length = t.getDocument().getLength();
-         while (y == p.y && cur < length)
-           y = t.modelToView(++cur).getLocation().y;
-         if (cur != length)
-           cur--;
+    new BeginLineAction(),
+    new SelectionBeginLineAction(),
+    
+    new EndLineAction(),
+    new SelectionEndLineAction(),
+    
+    new BackwardAction(),
+    new SelectionBackwardAction(),
 
-         Caret c = t.getCaret();
-         c.moveDot(cur);
-         c.setMagicCaretPosition(t.modelToView(cur).getLocation());
-       }
-       catch (BadLocationException ble)
-       {
-         // Nothing to do here
-       }
-      }
-    },
-    new TextAction(selectionEndAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        int offs = t.getDocument().getLength();
-        Caret c = t.getCaret();
-        c.moveDot(offs);
-        try
-          {   
-            c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-          }
-        catch(BadLocationException ble)
-          {
-            // Can't happen.
-          }
-      }
-    },
-    new TextAction(selectionBeginAction)
-    {
-      public void actionPerformed(ActionEvent event)
-      {
-        JTextComponent t = getTextComponent(event);
-        Caret c = t.getCaret();
-        c.moveDot(0);
-        try
-          {   
-            c.setMagicCaretPosition(t.modelToView(0).getLocation());
-          }
-        catch(BadLocationException ble)
-          {
-            // Can't happen.
-          }
-      }
-    }
+    new ForwardAction(),
+    new SelectionForwardAction(),
+    
+    new UpAction(),
+    new SelectionUpAction(),
+
+    new DownAction(),
+    new SelectionDownAction(),
+    
+    new NextWordAction(),
+    new SelectionNextWordAction(),
+
+    new PreviousWordAction(),
+    new SelectionPreviousWordAction(),
+
+    new SelectionBeginAction(),
+    new SelectionEndAction(),
+    new SelectAllAction(),
   };
 
   /**

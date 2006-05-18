@@ -1,5 +1,5 @@
 /* BAD_INV_ORDER.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.io.Serializable;
  * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class BAD_INV_ORDER
+public final class BAD_INV_ORDER
   extends SystemException
   implements Serializable
 {
@@ -57,7 +57,7 @@ public class BAD_INV_ORDER
   /**
    * Creates a BAD_INV_ORDER with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reasom the explaining message.
+   * @param message the explaining message.
    */
   public BAD_INV_ORDER(String message)
   {

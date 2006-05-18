@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.lang;
 
+import java.util.List;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
@@ -50,6 +52,7 @@ import java.io.PrintStream;
  * VM must implement.
  *
  * @author John Keiser
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
 final class VMSystem
 {
@@ -135,40 +138,76 @@ final class VMSystem
    public static native long currentTimeMillis();
 
   /**
+   * <p>
+   * Returns the current value of a nanosecond-precise system timer.
+   * The value of the timer is an offset relative to some arbitrary fixed
+   * time, which may be in the future (making the value negative).  This
+   * method is useful for timing events where nanosecond precision is
+   * required.  This is achieved by calling this method before and after the
+   * event, and taking the difference betweent the two times:
+   * </p>
+   * <p>
+   * <code>long startTime = System.nanoTime();</code><br />
+   * <code>... <emph>event code</emph> ...</code><br />
+   * <code>long endTime = System.nanoTime();</code><br />
+   * <code>long duration = endTime - startTime;</code><br />
+   * </p>
+   * <p>
+   * Note that the value is only nanosecond-precise, and not accurate; there
+   * is no guarantee that the difference between two values is really a
+   * nanosecond.  Also, the value is prone to overflow if the offset
+   * exceeds 2^63.
+   * </p>
+   *
+   * @return the time of a system timer in nanoseconds.
+   * @since 1.5 
+   */
+   public static long nanoTime()
+   {
+     return currentTimeMillis() * 1000;
+   }
+
+  /**
+   * Returns a list of 'name=value' pairs representing the current environment
+   * variables.
+   *
+   * @return a list of 'name=value' pairs.
+   */
+  static native List environ();
+
+  /**
    * Helper method which creates the standard input stream.
    * VM implementors may choose to construct these streams differently.
    * This method can also return null if the stream is created somewhere 
    * else in the VM startup sequence.
    */
-
-    static InputStream makeStandardInputStream()
-    {
-	return new BufferedInputStream(new FileInputStream(FileDescriptor.in));
-    }
-
+  static InputStream makeStandardInputStream()
+  {
+    return new BufferedInputStream(new FileInputStream(FileDescriptor.in));
+  }
+  
   /**
    * Helper method which creates the standard output stream.
    * VM implementors may choose to construct these streams differently.
    * This method can also return null if the stream is created somewhere 
    * else in the VM startup sequence.
    */
+  static PrintStream makeStandardOutputStream()
+  {
+    return new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)), true);
+  }
 
-    static PrintStream makeStandardOutputStream()
-    {
-	return new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)), true);
-    }
   /**
    * Helper method which creates the standard error stream.
    * VM implementors may choose to construct these streams differently.
    * This method can also return null if the stream is created somewhere 
    * else in the VM startup sequence.
    */
-
-    static PrintStream makeStandardErrorStream()
-    {
-	return new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.err)), true);
-    }
-
+  static PrintStream makeStandardErrorStream()
+  {
+    return new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.err)), true);
+  }
+  
   /**
    * Gets the value of an environment variable.
    * Always returning null is a valid (but not very useful) implementation.

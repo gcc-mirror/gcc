@@ -1,5 +1,5 @@
 /* MetalSliderUI.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -210,7 +210,7 @@ public class MetalSliderUI extends BasicSliderUI
       {
         int trackX = trackRect.x;
         int trackY = trackRect.y + (trackRect.height - getTrackWidth()) / 2;
-        int trackW = trackRect.width - 1;
+        int trackW = trackRect.width;
         int trackH = getTrackWidth();
         
         // draw border
@@ -224,29 +224,47 @@ public class MetalSliderUI extends BasicSliderUI
           }
 
         // fill track (if required)
-        if (filledSlider) 
-        {
-          int xPos = xPositionForValue(slider.getValue());
-          int x = (slider.getInverted() ? xPos : trackRect.x);
-          int w = (slider.getInverted() ? trackX + trackW - xPos 
-                  : xPos - trackRect.x);
-          g.setColor(MetalLookAndFeel.getControlShadow());
-          g.fillRect(x + 1, trackY + 1, w - 3, getTrackWidth() - 3);
-          if (slider.isEnabled())
-            {
-              g.setColor(MetalLookAndFeel.getControl());
-              g.drawLine(x + 1, trackY + 1, x + w - 3, trackY + 1);
-              g.drawLine(x + 1, trackY + 1, x + 1, 
-                      trackY + getTrackWidth() - 3);
-            }
-        }
+        if (MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme)
+          {
+            if (slider.isEnabled())
+              {
+                int xPos = xPositionForValue(slider.getValue());
+                int x = (slider.getInverted() ? xPos : trackRect.x);
+                int w = (slider.getInverted() ? trackX + trackW - xPos 
+                                              : xPos - trackRect.x);
+                g.setColor(MetalLookAndFeel.getWhite());
+                g.drawLine(x + 1, trackY + 1, x + w - 3, trackY + 1);
+                g.setColor(UIManager.getColor("Slider.altTrackColor"));
+                g.drawLine(x + 1, trackY + 2, x + w - 3, trackY + 2);
+                g.setColor(MetalLookAndFeel.getControlShadow());
+                g.drawLine(x + 1, trackY + 3, x + w - 3, trackY + 3);
+                g.setColor(MetalLookAndFeel.getPrimaryControlShadow());
+                g.drawLine(x + 1, trackY + 4, x + w - 3, trackY + 4);
+              }
+          }
+        else if (filledSlider) 
+          {
+            int xPos = xPositionForValue(slider.getValue());
+            int x = (slider.getInverted() ? xPos : trackRect.x);
+            int w = (slider.getInverted() ? trackX + trackW - xPos 
+                                          : xPos - trackRect.x);
+            g.setColor(MetalLookAndFeel.getControlShadow());
+            g.fillRect(x + 1, trackY + 1, w - 3, getTrackWidth() - 3);
+            if (slider.isEnabled())
+              {
+                g.setColor(MetalLookAndFeel.getControl());
+                g.drawLine(x + 1, trackY + 1, x + w - 3, trackY + 1);
+                g.drawLine(x + 1, trackY + 1, x + 1, 
+                           trackY + getTrackWidth() - 3);
+              }
+          }
       }
     else
       {
         int trackX = trackRect.x  + (trackRect.width - getTrackWidth()) / 2;
         int trackY = trackRect.y;
         int trackW = getTrackWidth();
-        int trackH = trackRect.height - 1;
+        int trackH = trackRect.height;
         if (slider.isEnabled())
           BasicGraphicsUtils.drawEtchedRect(g, trackX, trackY, trackW, trackH, 
               darkShadowColor, shadowColor, darkShadowColor, highlightColor);
@@ -255,8 +273,28 @@ public class MetalSliderUI extends BasicSliderUI
             g.setColor(MetalLookAndFeel.getControlShadow());
             g.drawRect(trackX, trackY, trackW - 2, trackH - 2);
           }
-        
-        if (filledSlider) 
+
+        // Fill track if necessary.
+        if (MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme)
+          {
+            if (slider.isEnabled())
+              {
+                int yPos = yPositionForValue(slider.getValue());
+                int y = (slider.getInverted() ? trackY : yPos);
+                int h = (slider.getInverted() ? yPos - trackY 
+                        : trackY + trackH - yPos);
+                
+                g.setColor(MetalLookAndFeel.getWhite());
+                g.drawLine(trackX + 1, y + 1, trackX + 1, y + h - 3);
+                g.setColor(UIManager.getColor("Slider.altTrackColor"));
+                g.drawLine(trackX + 2, y + 1, trackX + 2, y + h - 3);
+                g.setColor(MetalLookAndFeel.getControlShadow());
+                g.drawLine(trackX + 3, y + 1, trackX + 3, y + h - 3);
+                g.setColor(MetalLookAndFeel.getPrimaryControlShadow());
+                g.drawLine(trackX + 4, y + 1, trackX + 4, y + h - 3);
+              }
+          }
+        else if (filledSlider) 
           {
           int yPos = yPositionForValue(slider.getValue());
           int y = (slider.getInverted() ? trackY : yPos);

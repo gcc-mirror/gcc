@@ -1229,7 +1229,10 @@ public class GdkGraphics2D extends Graphics2D
     drawPixels(pixels, r.getWidth(), r.getHeight(), r.getWidth(), i2u);
 
     updateBufferedImage();
-
+    
+    // Cairo seems loosing the current color.
+    setColor(fg);
+    
     return true;
   }
 

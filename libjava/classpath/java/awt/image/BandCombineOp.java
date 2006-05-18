@@ -118,7 +118,7 @@ public class BandCombineOp implements RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.RasterOp#getBounds2D(java.awt.image.Raster)
    */
-  public Rectangle2D getBounds2D(Raster src)
+  public final Rectangle2D getBounds2D(Raster src)
   {
     return src.getBounds();
   }
@@ -144,7 +144,7 @@ public class BandCombineOp implements RasterOp
    * @see java.awt.image.RasterOp#getPoint2D(java.awt.geom.Point2D,
    *java.awt.geom.Point2D) 
    */
-  public Point2D getPoint2D(Point2D src, Point2D dst)
+  public final Point2D getPoint2D(Point2D src, Point2D dst)
   {
     if (dst == null) return (Point2D)src.clone();
     dst.setLocation(src);
@@ -154,13 +154,13 @@ public class BandCombineOp implements RasterOp
   /* (non-Javadoc)
    * @see java.awt.image.RasterOp#getRenderingHints()
    */
-  public RenderingHints getRenderingHints()
+  public final RenderingHints getRenderingHints()
   {
     return hints;
   }
   
   /** Return the matrix for this Op. */
-  public float[][] getMatrix()
+  public final float[][] getMatrix()
   {
     return matrix;
   }

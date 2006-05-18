@@ -17,23 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA.
-
-Linking this library statically or dynamically with other modules is
-making a combined work based on this library.  Thus, the terms and
-conditions of the GNU General Public License cover the whole
-combination.
-
-As a special exception, the copyright holders of this library give you
-permission to link this library with independent modules to produce an
-executable, regardless of the license terms of these independent
-modules, and to copy and distribute the resulting executable under
-terms of your choice, provided that you also meet, for each linked
-independent module, the terms and conditions of the license of that
-module.  An independent module is a module which is not derived from
-or based on this library.  If you modify this library, you may extend
-this exception to your version of the library, but you are not
-obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version. */
+*/
 
 package gnu.classpath.tools.giop.grmic;
 
@@ -115,6 +99,11 @@ public class GiopRmicCompiler
    * Verbose output
    */
   protected boolean verbose = false;
+  
+  /**
+   * Force mode - do not check the exceptions
+   */
+  protected boolean force = false;
 
   /**
    * Clear data, preparing for the next compilation.
@@ -204,7 +193,7 @@ public class GiopRmicCompiler
                     remEx = true;
                     break;
                   }
-                if (! remEx)
+                if (! remEx && !force)
                   throw new CompilationError(m[i].getName() + ", defined in "
                                              + c.getName()
                                              + ", does not throw "
@@ -482,6 +471,14 @@ public class GiopRmicCompiler
   public void setWarnings(boolean warn)
   {
     warnings = warn;
+  }
+  
+  /**
+   * Set the error ignore mode.
+   */
+  public void setForce(boolean isforce)
+  {
+    force = isforce;
   }
 
   /**

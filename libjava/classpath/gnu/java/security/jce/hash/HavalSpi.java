@@ -43,8 +43,6 @@ import gnu.java.security.Registry;
 /**
  * The implementation of the <code>HAVAL</code> <i>Service Provider Interface</i>
  * (<b>SPI</b>) Adapter.<p>
- *
- * @version Revision: $
  */
 public class HavalSpi extends MessageDigestAdapter
 {

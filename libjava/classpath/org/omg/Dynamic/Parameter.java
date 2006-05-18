@@ -1,5 +1,5 @@
 /* Parameter.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,11 +48,11 @@ import java.io.Serializable;
  * When representing the information about a request,
  * defines a one of the arguments for the operation being invoked.
  *
- * @see org.omg.PortableInterceptor.RequestInfoOperation#arguments()
+ * @see org.omg.PortableInterceptor.RequestInfoOperations#arguments()
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class Parameter
+public final class Parameter
   implements IDLEntity, Serializable
 {
   /**
@@ -73,7 +73,7 @@ public class Parameter
   public ParameterMode mode;
 
   /**
-   * Create the unitialised instance.
+   * Create the uninitialised instance.
    */
   public Parameter()
   {

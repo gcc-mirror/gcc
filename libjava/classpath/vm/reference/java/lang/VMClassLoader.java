@@ -1,6 +1,6 @@
 /* VMClassLoader.java -- Reference implementation of native interface
    required by ClassLoader
-   Copyright (C) 1998, 2001, 2002, 2004, 2005 Free Software Foundation
+   Copyright (C) 1998, 2001, 2002, 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -39,17 +39,23 @@ exception statement from your version. */
 
 package java.lang;
 
-import gnu.classpath.SystemProperties;
 import gnu.classpath.Configuration;
+import gnu.classpath.SystemProperties;
+import gnu.java.lang.InstrumentationImpl;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.instrument.Instrumentation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.ZipFile;
@@ -98,6 +104,7 @@ final class VMClassLoader
                   "GNU Classpath",
                   "GNU",
                   Configuration.CLASSPATH_VERSION,
+                  null,
                   null);
 
             definedPackages.put(packages[i], p);
@@ -235,12 +242,46 @@ final class VMClassLoader
 
   /**
    * Returns a String[] of native package names. The default
-   * implementation returns an empty array, or you may decide
-   * this needs native help.
+   * implementation tries to load a list of package from
+   * the META-INF/INDEX.LIST file in the boot jar file.
+   * If not found or if any exception is raised, it returns
+   * an empty array. You may decide this needs native help.
    */
   private static String[] getBootPackages()
   {
-    return new String[0];
+    URL indexList = getResource("META-INF/INDEX.LIST");
+    if (indexList != null)
+      {
+        try
+          {
+            Set packageSet = new HashSet();
+            String line;
+            int lineToSkip = 3;
+            BufferedReader reader = new BufferedReader(
+                                                       new InputStreamReader(
+                                                                             indexList.openStream()));
+            while ((line = reader.readLine()) != null)
+              {
+                if (lineToSkip == 0)
+                  {
+                    if (line.length() == 0)
+                      lineToSkip = 1;
+                    else
+                      packageSet.add(line.replace('/', '.'));
+                  }
+                else
+                  lineToSkip--;
+              }
+            reader.close();
+            return (String[]) packageSet.toArray(new String[packageSet.size()]);
+          }
+        catch (IOException e)
+          {
+            return new String[0];
+          }
+      }
+    else
+      return new String[0];
   }
 
 
@@ -345,4 +386,45 @@ final class VMClassLoader
    * for this class.
    */
   static native Class findLoadedClass(ClassLoader cl, String name);
+
+  /**
+   * The Instrumentation object created by the vm when agents are defined.
+   */
+  static final Instrumentation instrumenter = null;
+
+  /**
+   * Call the transformers of the possible Instrumentation object. This
+   * implementation assumes the instrumenter is a
+   * <code>InstrumentationImpl</code> object. VM implementors would
+   * have to redefine this method if they provide their own implementation
+   * of the <code>Instrumentation</code> interface.
+   *
+   * @param loader the initiating loader
+   * @param name the name of the class
+   * @param data the data representing the classfile, in classfile format
+   * @param offset the offset into the data where the classfile starts
+   * @param len the length of the classfile data in the array
+   * @param pd the protection domain
+   * @return the new data representing the classfile
+   */
+  static final Class defineClassWithTransformers(ClassLoader loader,
+      String name, byte[] data, int offset, int len, ProtectionDomain pd)
+  {
+    
+    if (instrumenter != null)
+      {
+        byte[] modifiedData = new byte[len];
+        System.arraycopy(data, offset, modifiedData, 0, len);
+        modifiedData =
+          ((InstrumentationImpl)instrumenter).callTransformers(loader, name,
+            null, pd, modifiedData);
+        
+        return defineClass(loader, name, modifiedData, 0, modifiedData.length,
+            pd);
+      }
+    else
+      {
+        return defineClass(loader, name, data, offset, len, pd);
+      }
+  }
 }

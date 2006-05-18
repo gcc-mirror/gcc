@@ -38,14 +38,20 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -55,7 +61,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -63,7 +68,6 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.ActionMapUIResource;
-import javax.swing.plaf.InputMapUIResource;
 import javax.swing.plaf.TextUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.AbstractDocument;
@@ -436,6 +440,9 @@ public abstract class BasicTextUI extends TextUI
      */
     public void changedUpdate(DocumentEvent ev)
     {
+      // Updates are forwarded to the View even if 'getVisibleEditorRect'
+      // method returns null. This means the View classes have to be
+      // aware of that possibility.
       rootView.changedUpdate(ev, getVisibleEditorRect(),
                              rootView.getViewFactory());
     }
@@ -447,6 +454,9 @@ public abstract class BasicTextUI extends TextUI
      */
     public void insertUpdate(DocumentEvent ev)
     {
+      // Updates are forwarded to the View even if 'getVisibleEditorRect'
+      // method returns null. This means the View classes have to be
+      // aware of that possibility.
       rootView.insertUpdate(ev, getVisibleEditorRect(),
                             rootView.getViewFactory());
     }
@@ -458,6 +468,9 @@ public abstract class BasicTextUI extends TextUI
      */
     public void removeUpdate(DocumentEvent ev)
     {
+      // Updates are forwarded to the View even if 'getVisibleEditorRect'
+      // method returns null. This means the View classes have to be
+      // aware of that possibility.
       rootView.removeUpdate(ev, getVisibleEditorRect(),
                             rootView.getViewFactory());
     }
@@ -546,7 +559,6 @@ public abstract class BasicTextUI extends TextUI
   public void installUI(final JComponent c)
   {
     super.installUI(c);
-    c.setOpaque(true);
 
     textComponent = (JTextComponent) c;
     Document doc = textComponent.getDocument();
@@ -608,6 +620,44 @@ public abstract class BasicTextUI extends TextUI
       public void focusLost(FocusEvent e)
       {
         textComponent.repaint();
+        
+        // Integrates Swing text components with the system clipboard:
+        // The idea is that if one wants to copy text around X11-style
+        // (select text and middle-click in the target component) the focus
+        // will move to the new component which gives the old focus owner the
+        // possibility to paste its selection into the clipboard.
+        if (!e.isTemporary()
+            && textComponent.getSelectionStart()
+               != textComponent.getSelectionEnd())
+          {
+            SecurityManager sm = System.getSecurityManager();
+            try
+              {
+                if (sm != null)
+                  sm.checkSystemClipboardAccess();
+                
+                Clipboard cb = Toolkit.getDefaultToolkit().getSystemSelection();
+                if (cb != null)
+                  {
+                    StringSelection selection = new StringSelection(textComponent.getSelectedText());
+                    cb.setContents(selection, selection);
+                  }
+              }
+            catch (SecurityException se)
+              {
+                // Not allowed to access the clipboard: Ignore and
+                // do not access it.
+              }
+            catch (HeadlessException he)
+              {
+                // There is no AWT: Ignore and do not access the
+                // clipboard.
+              }
+            catch (IllegalStateException ise)
+            {
+                // Clipboard is currently unavaible.
+            }
+          }
       }
     };
 
@@ -655,33 +705,23 @@ public abstract class BasicTextUI extends TextUI
    */
   protected Keymap createKeymap()
   {
-    // FIXME: It seems to me that this method implementation is wrong. It seems
-    // to fetch the focusInputMap and transform it to the KeyBinding/Keymap
-    // implemenation. I would think that it should be done the other way,
-    // fetching the keybindings (from prefix + ".bindings") and transform
-    // it to the newer InputMap/ActionMap implementation.
-    JTextComponent.KeyBinding[] bindings = null;
-    String prefix = getPropertyPrefix();
-    InputMapUIResource m = (InputMapUIResource) UIManager.get(prefix + ".focusInputMap");
-    if (m != null)
+    String keymapName = getKeymapName();
+    Keymap keymap = JTextComponent.getKeymap(keymapName);
+    if (keymap == null)
       {
-        KeyStroke[] keys = m.keys();
-        int len = keys.length;
-        bindings = new JTextComponent.KeyBinding[len];
-        for (int i = 0; i < len; i++)
+        Keymap parentMap =
+          JTextComponent.getKeymap(JTextComponent.DEFAULT_KEYMAP);
+        keymap = JTextComponent.addKeymap(keymapName, parentMap);
+        Object val = UIManager.get(getPropertyPrefix() + ".keyBindings");
+        if (val != null && val instanceof JTextComponent.KeyBinding[])
           {
-            KeyStroke curr = keys[i];
-            bindings[i] = new JTextComponent.KeyBinding(curr,
-                                                        (String) m.get(curr));
+            JTextComponent.KeyBinding[] bindings =
+              (JTextComponent.KeyBinding[]) val;
+            JTextComponent.loadKeymap(keymap, bindings,
+                                      getComponent().getActions());
           }
       }
-    if (bindings == null)
-      bindings = new JTextComponent.KeyBinding[0];
-
-    Keymap km = JTextComponent.addKeymap(getKeymapName(), 
-                                         JTextComponent.getKeymap(JTextComponent.DEFAULT_KEYMAP));    
-    JTextComponent.loadKeymap(km, bindings, textComponent.getActions());
-    return km;    
+    return keymap;
   }
 
   /**
@@ -689,11 +729,8 @@ public abstract class BasicTextUI extends TextUI
    */
   protected void installKeyboardActions()
   {
-    // load key bindings for the older interface
-    Keymap km = JTextComponent.getKeymap(getKeymapName());
-    if (km == null)
-      km = createKeymap();
-    textComponent.setKeymap(km);
+    // This is only there for backwards compatibility.
+    textComponent.setKeymap(createKeymap());
 
     // load any bindings for the newer InputMap / ActionMap interface
     SwingUtilities.replaceUIInputMap(textComponent, JComponent.WHEN_FOCUSED,
@@ -794,6 +831,7 @@ public abstract class BasicTextUI extends TextUI
    * this UI.
    */
   protected void uninstallKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: Uninstall keyboard actions here.
   }
@@ -986,6 +1024,10 @@ public abstract class BasicTextUI extends TextUI
   public void damageRange(JTextComponent t, int p0, int p1,
                           Position.Bias firstBias, Position.Bias secondBias)
   {
+    // Do nothing if the component cannot be properly displayed.
+    if (t.getWidth() == 0 || t.getHeight() == 0)
+      return;
+    
     try
       {
         // Limit p0 and p1 to sane values to prevent unfriendly
@@ -1000,7 +1042,10 @@ public abstract class BasicTextUI extends TextUI
         Rectangle l1 = modelToView(t, p0, firstBias);
         Rectangle l2 = modelToView(t, p1, secondBias);
         if (l1.y == l2.y)
-          t.repaint(l1.union(l2));
+          {
+            SwingUtilities.computeUnion(l2.x, l2.y, l2.width, l2.height, l1);
+            t.repaint(l1);
+          }
         else
           {
             // The two rectangles lie on different lines and we need a
@@ -1023,7 +1068,11 @@ public abstract class BasicTextUI extends TextUI
             // we should stop searching for one.
             
             int posBelow = Utilities.getPositionBelow(t, p0, l1.x);
-            if (posBelow < p1 && posBelow != -1 && posBelow != p0)
+            int p1RowStart = Utilities.getRowStart(t, p1);
+            
+            if (posBelow != -1
+                && posBelow != p0
+                && Utilities.getRowStart(t, posBelow) != p1RowStart)
               {
                 // Take the rectangle of the offset we just found and grow it
                 // to the maximum width. Retain y because this is our start
@@ -1034,10 +1083,15 @@ public abstract class BasicTextUI extends TextUI
                 
                 // Find further lines which have to be damaged completely.
                 int nextPosBelow = posBelow;
-                while (nextPosBelow < p1 && nextPosBelow != -1 && posBelow != nextPosBelow)
+                while (nextPosBelow != -1
+                       && posBelow != nextPosBelow
+                       && Utilities.getRowStart(t, nextPosBelow) != p1RowStart)
                   {
                     posBelow = nextPosBelow;
                     nextPosBelow = Utilities.getPositionBelow(t, posBelow, l1.x);
+                    
+                    if (posBelow == nextPosBelow)
+                      break;
                   }
                 // Now posBelow is an offset on the last line which has to be damaged
                 // completely. (newPosBelow is on the same line as p1)
@@ -1099,7 +1153,12 @@ public abstract class BasicTextUI extends TextUI
                                        Position.Bias[] biasRet)
     throws BadLocationException
   {
-    return 0; // TODO: Implement me.
+    // A comment in the spec of NavigationFilter.getNextVisualPositionFrom()
+    // suggests that this method should be implemented by forwarding the call
+    // the root view.
+    return rootView.getNextVisualPositionFrom(pos, b,
+                                              getVisibleEditorRect(),
+                                              direction, biasRet);
   }
 
   /**
@@ -1155,7 +1214,10 @@ public abstract class BasicTextUI extends TextUI
   public Rectangle modelToView(JTextComponent t, int pos, Position.Bias bias)
     throws BadLocationException
   {
-    return rootView.modelToView(pos, getVisibleEditorRect(), bias).getBounds();
+    Rectangle r = getVisibleEditorRect();
+    
+    return (r != null) ? rootView.modelToView(pos, r, bias).getBounds()
+                       : null;
   }
 
   /**
@@ -1232,8 +1294,9 @@ public abstract class BasicTextUI extends TextUI
     int width = textComponent.getWidth();
     int height = textComponent.getHeight();
 
+    // Return null if the component has no valid size.
     if (width <= 0 || height <= 0)
-      return new Rectangle(0, 0, 0, 0);
+      return null;
 	
     Insets insets = textComponent.getInsets();
     return new Rectangle(insets.left, insets.top,

@@ -1,5 +1,5 @@
 /* MethodCommandSet.java -- class to implement the Method Command Set
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -39,18 +39,16 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
-import gnu.classpath.jdwp.VMVirtualMachine;
+import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
-import gnu.classpath.jdwp.id.ObjectId;
-import gnu.classpath.jdwp.id.ReferenceTypeId;
+import gnu.classpath.jdwp.id.ClassReferenceTypeId;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 /**
@@ -101,26 +99,24 @@ public class MethodCommandSet
   private void executeLineTable(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
-    ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
+    ClassReferenceTypeId refId
+      = (ClassReferenceTypeId) idMan.readReferenceTypeId(bb);
     Class clazz = refId.getType();
 
-    ObjectId oid = idMan.readObjectId(bb);
-    Method method = (Method) oid.getObject();
-
-    LineTable lt = VMVirtualMachine.getLineTable(clazz, method);
+    VMMethod method = VMMethod.readId(clazz, bb);
+    LineTable lt = method.getLineTable();
     lt.write(os);
   }
 
   private void executeVariableTable(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
-    ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
+   ClassReferenceTypeId refId
+     = (ClassReferenceTypeId) idMan.readReferenceTypeId(bb);
     Class clazz = refId.getType();
 
-    ObjectId oid = idMan.readObjectId(bb);
-    Method method = (Method) oid.getObject();
-
-    VariableTable vt = VMVirtualMachine.getVarTable(clazz, method);
+    VMMethod method = VMMethod.readId(clazz, bb);
+    VariableTable vt = method.getVariableTable();
     vt.write(os);
   }
 

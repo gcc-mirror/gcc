@@ -1,5 +1,5 @@
 /* gdkpixbufdecoder.c
-   Copyright (C) 1999, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This file is part of GNU Classpath.
    
@@ -191,8 +191,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initState
   GdkPixbufLoader *loader = NULL;
   jobject *decoder = NULL;
 
-  gdk_threads_enter ();
-
   decoder = (jobject *) g_malloc (sizeof (jobject));
   g_assert (decoder != NULL);
   *decoder = (*env)->NewGlobalRef (env, obj);
@@ -204,8 +202,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initState
   g_signal_connect (loader, "closed", G_CALLBACK (closed_cb), decoder);
 
   NSA_SET_PB_PTR (env, obj, loader);
-
-  gdk_threads_leave ();
 }
 
 static void
@@ -317,8 +313,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_finish
 {
   GdkPixbufLoader *loader = NULL;
 
-  gdk_threads_enter ();
-
   loader = (GdkPixbufLoader *)NSA_DEL_PB_PTR (env, obj);
   if (loader == NULL)
     return;
@@ -326,8 +320,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_finish
   if (needs_close)
     gdk_pixbuf_loader_close (loader, NULL);
   g_object_unref (loader);
-
-  gdk_threads_leave (); 
 }
 
 JNIEXPORT void JNICALL
@@ -336,8 +328,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpDone
 {
   GError *err = NULL;
   GdkPixbufLoader *loader = NULL;
-
-  gdk_threads_enter ();
 
   loader = (GdkPixbufLoader *)NSA_GET_PB_PTR (env, obj);
   g_assert (loader != NULL);
@@ -349,8 +339,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpDone
       JCL_ThrowException (env, "java/io/IOException", err->message);
       g_error_free (err);
     }
-
-  gdk_threads_leave ();
 }
 
 struct stream_save_request
@@ -370,6 +358,9 @@ save_to_stream(const gchar *buf,
   jbyteArray jbuf;
   jbyte *cbuf;
 
+  /* FIXME. Don't call user code directly on this thread.
+     Store bytes and signal a "pump" thread to deliver to user code.
+     Then we don't have to drop/acquire any locks. */
   gdk_threads_leave ();
 
   jbuf = (*(ssr->env))->NewByteArray ((ssr->env), count);
@@ -399,8 +390,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_streamImage
   const char *enctype;
   int i;
   struct stream_save_request ssr;
-
-  gdk_threads_enter ();
 
   ssr.stream = &stream;
   ssr.env = env;
@@ -465,8 +454,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_streamImage
 
   (*env)->ReleaseStringUTFChars (env, jenctype, enctype);  
   (*env)->ReleaseIntArrayElements (env, jarr, ints, 0);
-
-  gdk_threads_leave ();
 }
 
 
@@ -477,8 +464,6 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpBytes
   GdkPixbufLoader *loader = NULL;
   jbyte *bytes = NULL;
   GError *err = NULL;
-
-  gdk_threads_enter ();
 
   g_assert (len >= 1);
   g_assert (jarr != NULL);
@@ -497,6 +482,4 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpBytes
       JCL_ThrowException (env, "java/io/IOException", err->message);
       g_error_free (err);
     }
-
-  gdk_threads_leave ();
 }

@@ -364,7 +364,7 @@ public class CSPRNG extends BasePRNG
   {
     CSPRNG instance = new CSPRNG();
     HashMap attrib = new HashMap();
-    attrib.put(BLOCKING, new Boolean(getProperty(BLOCK)));
+    attrib.put(BLOCKING, Boolean.valueOf(getProperty(BLOCK)));
     String s = null;
 
     // Get each file source "gnu.crypto.csprng.file.N".

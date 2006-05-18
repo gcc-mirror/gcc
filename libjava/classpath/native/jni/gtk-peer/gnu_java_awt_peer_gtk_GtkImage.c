@@ -1,5 +1,5 @@
 /* gtkimage.c
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,23 +65,17 @@ Java_gnu_java_awt_peer_gtk_GtkImage_loadPixbuf
   int width, height;
   GdkPixbuf *pixbuf;
 
-  gdk_threads_enter ();
-
   /* Don't use the JCL convert function because it throws an exception
      on failure */
   filename = (*env)->GetStringUTFChars (env, name, 0);
 
   if (filename == NULL)
-    {
-      gdk_threads_leave ();
-      return JNI_FALSE;
-    }
+    return JNI_FALSE;
 
   pixbuf = gdk_pixbuf_new_from_file (filename, NULL);
   if (pixbuf == NULL)
     {
       (*env)->ReleaseStringUTFChars (env, name, filename);
-      gdk_threads_leave ();
       return JNI_FALSE;
     }
 
@@ -91,8 +85,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_loadPixbuf
   createRawData (env, obj, pixbuf);
   setWidthHeight(env, obj, width, height);
   (*env)->ReleaseStringUTFChars (env, name, filename);
-
-  gdk_threads_leave ();
 
   return JNI_TRUE;
 }
@@ -111,8 +103,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_loadImageFromData
   int width;
   int height;
 
-  gdk_threads_enter ();
-
   src = (*env)->GetByteArrayElements (env, data, NULL);
   len = (*env)->GetArrayLength (env, data);
 
@@ -128,9 +118,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_loadImageFromData
   if (pixbuf == NULL)
     {
       createRawData (env, obj, NULL);
-
-      gdk_threads_leave ();
-
       return JNI_FALSE;
     }
 
@@ -139,8 +126,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_loadImageFromData
 
   createRawData (env, obj, pixbuf);
   setWidthHeight(env, obj, width, height);
-
-  gdk_threads_leave ();
 
   return JNI_TRUE;
 }
@@ -151,10 +136,8 @@ Java_gnu_java_awt_peer_gtk_GtkImage_createFromPixbuf
 {
   int width, heigth;
   GdkPixbuf *pixbuf = (GdkPixbuf *) getData (env, obj);
-  gdk_threads_enter ();
   width =  gdk_pixbuf_get_width (pixbuf);
   heigth = gdk_pixbuf_get_height (pixbuf);
-  gdk_threads_leave ();
   setWidthHeight(env, obj, width, heigth);
 }
 
@@ -170,8 +153,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_getPixels(JNIEnv *env, jobject obj)
   jintArray result_array;
   jint *result_array_iter, *dst;
   int i,j;
-
-  gdk_threads_enter ();
 
   pixbuf = cp_gtk_image_get_pixbuf (env, obj);
   width =  gdk_pixbuf_get_width (pixbuf);
@@ -214,8 +195,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_getPixels(JNIEnv *env, jobject obj)
 
   (*env)->ReleaseIntArrayElements (env, result_array, result_array_iter, 0);
     
-  gdk_threads_leave ();
-
   return result_array;
 }
 
@@ -233,8 +212,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_setPixels(JNIEnv *env, jobject obj,
   jint *src_array_iter, *src;
   int i;
 
-  gdk_threads_enter ();
-
   width =  gdk_pixbuf_get_width (pixbuf);
   height = gdk_pixbuf_get_height (pixbuf);
   rowstride = gdk_pixbuf_get_rowstride (pixbuf);
@@ -251,8 +228,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_setPixels(JNIEnv *env, jobject obj,
     }
 
   (*env)->ReleaseIntArrayElements (env, pixels, src_array_iter, 0);
-
-  gdk_threads_leave ();
 }
 
 /**
@@ -264,8 +239,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_createPixmap(JNIEnv *env, jobject obj)
   int width, height;
   jclass cls;
   jfieldID field;
-
-  gdk_threads_enter ();
 
   cls = (*env)->GetObjectClass (env, obj);
   field = (*env)->GetFieldID (env, cls, "width", "I");
@@ -285,8 +258,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_createPixmap(JNIEnv *env, jobject obj)
   else
     createRawData (env, obj, gdk_pixmap_new (NULL, width, height,
 					     gdk_rgb_get_visual ()->depth));
-
-  gdk_threads_leave ();
 }
 
 /**
@@ -295,13 +266,10 @@ Java_gnu_java_awt_peer_gtk_GtkImage_createPixmap(JNIEnv *env, jobject obj)
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkImage_freePixmap(JNIEnv *env, jobject obj)
 {
-  gdk_threads_enter ();
   if (offScreen (env, obj) == JNI_FALSE)
     gdk_pixbuf_unref ((GdkPixbuf *)getData (env, obj));
   else
     g_object_unref ((GdkPixmap *)getData (env, obj));
-
-  gdk_threads_leave ();
 }
 
 /**
@@ -320,8 +288,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_createScaledPixmap(JNIEnv *env,
   jfieldID field;
 
   GdkPixbuf *pixbuf;
-
-  gdk_threads_enter ();
 
   cls = (*env)->GetObjectClass (env, destination);
   field = (*env)->GetFieldID (env, cls, "width", "I");
@@ -342,8 +308,6 @@ Java_gnu_java_awt_peer_gtk_GtkImage_createScaledPixmap(JNIEnv *env,
       gdk_pixbuf_unref (pixbuf);
 
   createRawData (env, destination, (void *)dst);
-
-  gdk_threads_leave ();
 }
 
 /**

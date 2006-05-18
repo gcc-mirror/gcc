@@ -130,6 +130,8 @@ gives a complete list.
   --with-gjdoc            generate documentation using gjdoc default=no
   --with-jay              Regenerate the parsers with jay must be given the
                           path to the jay executable
+  --with-glibj-zip=ABS.PATH
+                          use prebuilt glibj.zip class library
 
 For more flags run configure --help.
 

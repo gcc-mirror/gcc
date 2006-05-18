@@ -1,5 +1,5 @@
 /* Duration.java -- 
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import javax.xml.namespace.QName;
  * An immutable time space as specified in XML Schema 1.0.
  *
  * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
- * @since 1.3
+ * @since 1.5
  */
 public abstract class Duration
 {
@@ -240,11 +240,7 @@ public abstract class Duration
   /**
    * Returns the result of multiplying this duration by the given factor.
    */
-  public Duration multiply(BigDecimal factor)
-  {
-    // TODO
-    throw new UnsupportedOperationException();
-  }
+  public abstract Duration multiply(BigDecimal factor);
 
   /**
    * Returns the unary negative of this duration.

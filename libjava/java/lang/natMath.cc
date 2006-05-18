@@ -102,6 +102,11 @@ jdouble java::lang::Math::ceil(jdouble x)
   return (jdouble)::ceil((double)x);
 }  
 
+jdouble java::lang::Math::log10(jdouble x)
+{
+  return (jdouble)::log10((double)x);
+}  
+
 static inline int
 floatToIntBits (jfloat value)
 {

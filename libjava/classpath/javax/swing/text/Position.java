@@ -40,7 +40,7 @@ package javax.swing.text;
 
 public interface Position
 {
-  static class Bias
+  static final class Bias
   {
     public static final Bias Backward = new Bias("backward");
     public static final Bias Forward = new Bias("forward");

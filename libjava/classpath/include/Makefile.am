@@ -118,8 +118,9 @@ $(SOUND_H_FILES) \
 $(XMLJ_H_FILES) \
 $(GTKPEER_H_FILES) \
 $(QTPEER_H_FILES) \
-$(top_srcdir)/include/gnu_java_net_PlainDatagramSocketImpl.h \
-$(top_srcdir)/include/gnu_java_net_PlainSocketImpl.h \
+$(top_srcdir)/include/gnu_java_net_VMPlainDatagramSocketImpl.h \
+$(top_srcdir)/include/gnu_java_net_VMPlainSocketImpl.h \
+$(top_srcdir)/include/gnu_java_net_local_LocalSocketImpl.h \
 $(top_srcdir)/include/gnu_java_nio_VMPipe.h \
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h \
 $(top_srcdir)/include/gnu_java_nio_channels_FileChannelImpl.h \
@@ -133,7 +134,7 @@ $(top_srcdir)/include/java_lang_VMFloat.h \
 $(top_srcdir)/include/java_lang_VMMath.h \
 $(top_srcdir)/include/java_lang_VMProcess.h \
 $(top_srcdir)/include/java_lang_VMSystem.h \
-$(top_srcdir)/include/java_lang_reflect_Array.h \
+$(top_srcdir)/include/java_lang_reflect_VMArray.h \
 $(top_srcdir)/include/java_net_VMInetAddress.h \
 $(top_srcdir)/include/java_net_VMNetworkInterface.h \
 $(top_srcdir)/include/java_nio_VMDirectByteBuffer.h \
@@ -165,10 +166,12 @@ $(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/$(CLASSDIR)
 $(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/$(CLASSDIR)/gnu/javax/sound/midi/dssi/%.class
 	$(JAVAH) -o $@ gnu.javax.sound.midi.dssi.$*
 
-$(top_srcdir)/include/gnu_java_net_PlainDatagramSocketImpl.h: $(top_srcdir)/gnu/java/net/PlainDatagramSocketImpl.java
-	$(JAVAH) -o $@ gnu.java.net.PlainDatagramSocketImpl
-$(top_srcdir)/include/gnu_java_net_PlainSocketImpl.h: $(top_srcdir)/gnu/java/net/PlainSocketImpl.java
-	$(JAVAH) -o $@ gnu.java.net.PlainSocketImpl
+$(top_srcdir)/include/gnu_java_net_VMPlainDatagramSocketImpl.h: $(top_srcdir)/vm/reference/gnu/java/net/VMPlainDatagramSocketImpl.java
+	$(JAVAH) -o $@ gnu.java.net.VMPlainDatagramSocketImpl
+$(top_srcdir)/include/gnu_java_net_VMPlainSocketImpl.h: $(top_srcdir)/vm/reference/gnu/java/net/VMPlainSocketImpl.java
+	$(JAVAH) -o $@ gnu.java.net.VMPlainSocketImpl
+$(top_srcdir)/include/gnu_java_net_local_LocalSocketImpl.h: $(top_srcdir)/gnu/java/net/local/LocalSocketImpl.java
+	$(JAVAH) -o $@ gnu.java.net.local.LocalSocketImpl
 $(top_srcdir)/include/gnu_java_nio_VMPipe.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMPipe.java
 	$(JAVAH) -o $@ gnu.java.nio.VMPipe
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMSelector.java
@@ -189,8 +192,8 @@ $(top_srcdir)/include/java_lang_VMProcess.h: $(top_srcdir)/vm/reference/java/lan
 	$(JAVAH) -o $@ java.lang.VMProcess
 $(top_srcdir)/include/java_lang_VMSystem.h: $(top_srcdir)/vm/reference/java/lang/VMSystem.java
 	$(JAVAH) -o $@ java.lang.VMSystem
-$(top_srcdir)/include/java_lang_reflect_Array.h: $(top_srcdir)/java/lang/reflect/Array.java
-	$(JAVAH) -o $@ java.lang.reflect.Array
+$(top_srcdir)/include/java_lang_reflect_VMArray.h: $(top_srcdir)/vm/reference/java/lang/reflect/VMArray.java
+	$(JAVAH) -o $@ java.lang.reflect.VMArray
 $(top_srcdir)/include/java_net_VMInetAddress.h: $(top_srcdir)/vm/reference/java/net/VMInetAddress.java
 	$(JAVAH) -o $@ java.net.VMInetAddress
 $(top_srcdir)/include/java_net_VMNetworkInterface.h: $(top_srcdir)/vm/reference/java/net/VMNetworkInterface.java

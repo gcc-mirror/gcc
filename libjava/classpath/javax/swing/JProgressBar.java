@@ -39,10 +39,12 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Graphics;
+import java.beans.PropertyChangeEvent;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 import javax.swing.border.Border;
@@ -79,17 +81,16 @@ public class JProgressBar extends JComponent implements SwingConstants,
                                                         Accessible
 {
   /**
-   * AccessibleJProgressBar
+   * Provides the accessibility features for the <code>JProgressBar</code>
+   * component.
    */
-  // FIXME: This inner class is a complete stub and needs to be implemented
-  // properly.
   protected class AccessibleJProgressBar extends AccessibleJComponent
     implements AccessibleValue
   {
     private static final long serialVersionUID = -2938130009392721813L;
   
     /**
-     * Constructor AccessibleJProgressBar
+     * Creates a new <code>AccessibleJProgressBar</code> instance.
      */
     protected AccessibleJProgressBar()
     {
@@ -97,19 +98,25 @@ public class JProgressBar extends JComponent implements SwingConstants,
     } 
 
     /**
-     * getAccessibleStateSet
+     * Returns a set containing the current state of the {@link JProgressBar} 
+     * component.
      *
-     * @return AccessibleStateSet
+     * @return The accessible state set.
      */
     public AccessibleStateSet getAccessibleStateSet()
     {
-      return null; 
+      AccessibleStateSet result = super.getAccessibleStateSet();
+      if (orientation == JProgressBar.HORIZONTAL)
+        result.add(AccessibleState.HORIZONTAL);
+      else if (orientation == JProgressBar.VERTICAL)
+        result.add(AccessibleState.VERTICAL);
+      return result;
     } 
 
     /**
-     * getAccessibleRole
+     * Returns the accessible role for the <code>JProgressBar</code> component.
      *
-     * @return AccessibleRole
+     * @return {@link AccessibleRole#PROGRESS_BAR}.
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -117,56 +124,71 @@ public class JProgressBar extends JComponent implements SwingConstants,
     } 
 
     /**
-     * getAccessibleValue
+     * Returns an object that provides access to the current, minimum and 
+     * maximum values.
      *
-     * @return AccessibleValue
+     * @return The accessible value.
      */
     public AccessibleValue getAccessibleValue()
     {
-      return null;
+      return this;
     } 
 
     /**
-     * getCurrentAccessibleValue
+     * Returns the current value of the {@link JProgressBar} component, as an
+     * {@link Integer}.
      *
-     * @return Number
+     * @return The current value of the {@link JProgressBar} component.
      */
     public Number getCurrentAccessibleValue()
     {
-      return null;
-    } 
+      return new Integer(getValue());
+    }
 
     /**
-     * setCurrentAccessibleValue
+     * Sets the current value of the {@link JProgressBar} component and sends a
+     * {@link PropertyChangeEvent} (with the property name 
+     * {@link AccessibleContext#ACCESSIBLE_VALUE_PROPERTY}) to all registered
+     * listeners.  If the supplied value is <code>null</code>, this method 
+     * does nothing and returns <code>false</code>.
      *
-     * @param value0 TODO
+     * @param value  the new progress bar value (<code>null</code> permitted).
      *
-     * @return boolean
+     * @return <code>true</code> if the slider value is updated, and 
+     *     <code>false</code> otherwise.
      */
-    public boolean setCurrentAccessibleValue(Number value0)
+    public boolean setCurrentAccessibleValue(Number value)
     {
-      return false; 
-    } 
+      if (value == null)
+        return false;
+      Number oldValue = getCurrentAccessibleValue();
+      setValue(value.intValue());
+      firePropertyChange(AccessibleContext.ACCESSIBLE_VALUE_PROPERTY, oldValue, 
+                         new Integer(getValue()));
+      return true;
+    }
 
     /**
-     * getMinimumAccessibleValue
+     * Returns the minimum value of the {@link JProgressBar} component, as an
+     * {@link Integer}.
      *
-     * @return Number
+     * @return The minimum value of the {@link JProgressBar} component.
      */
     public Number getMinimumAccessibleValue()
     {
-      return null; 
-    } 
+      return new Integer(getMinimum());
+    }
 
     /**
-     * getMaximumAccessibleValue
+     * Returns the maximum value of the {@link JProgressBar} component, as an
+     * {@link Integer}.
      *
-     * @return Number
+     * @return The maximum value of the {@link JProgressBar} component.
      */
     public Number getMaximumAccessibleValue()
     {
-      return null; 
-    } 
+      return new Integer(getMaximum());
+    }
   } 
 
   private static final long serialVersionUID = 1980046021813598781L;
@@ -465,7 +487,6 @@ public class JProgressBar extends JComponent implements SwingConstants,
   public void updateUI()
   {
     setUI((ProgressBarUI) UIManager.getUI(this));
-    invalidate();
   }
 
   /**
@@ -613,15 +634,28 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * This method returns a string that can be used to 
-   * describe this JProgressBar. This method is usually
-   * only used for debugging purposes.
+   * Returns an implementation-dependent string describing the attributes of
+   * this <code>JProgressBar</code>.
    *
-   * @return A string that describes this JProgressBar.
+   * @return A string describing the attributes of this 
+   *     <code>JProgressBar</code> (never <code>null</code>).
    */
   protected String paramString()
   {
-    return "JProgressBar";
+    String superParamStr = super.paramString();
+    StringBuffer sb = new StringBuffer();
+    sb.append(",orientation=");
+    if (orientation == HORIZONTAL)
+      sb.append("HORIZONTAL");
+    else
+      sb.append("VERTICAL");
+    sb.append(",paintBorder=").append(isBorderPainted());
+    sb.append(",paintString=").append(isStringPainted());
+    sb.append(",progressString=");
+    if (progressString != null)
+      sb.append(progressString);
+    sb.append(",indeterminateString=").append(isIndeterminate());
+    return superParamStr + sb.toString();
   }
 
   /**
@@ -655,9 +689,11 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the object that provides accessibility features for this
+   * <code>JProgressBar</code> component.
    *
-   * @return DOCUMENT ME!
+   * @return The accessible context (an instance of 
+   *     {@link AccessibleJProgressBar}).
    */
   public AccessibleContext getAccessibleContext()
   {

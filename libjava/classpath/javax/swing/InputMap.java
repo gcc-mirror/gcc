@@ -190,8 +190,11 @@ public class InputMap
     Set set = new HashSet();
 
     if (parent != null)
-      set.addAll(Arrays.asList(parent.allKeys()));
-
+      {
+        Object[] parentKeys = parent.allKeys();
+        if (parentKeys != null)
+          set.addAll(Arrays.asList(parentKeys));
+      }
     set.addAll(inputMap.keySet());
     if (set.size() == 0)
       return null;    

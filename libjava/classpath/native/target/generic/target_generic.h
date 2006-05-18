@@ -148,7 +148,7 @@ Systems    : all
   #include <errno.h>
   #define TARGET_NATIVE_LAST_ERROR_STRING_FORMAT(buffer,bufferSize,format) \
     do { \
-      sprintf(buffer,format); \
+      sprintf(buffer, "%s", format); \
       strcat(" (error: "); \
       strcat(strerror(errno)); \
       strcat(")"); \

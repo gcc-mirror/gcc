@@ -1,5 +1,5 @@
 /* GtkFramePeer.java -- Implements FramePeer with GTK
-   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -122,25 +122,11 @@ public class GtkFramePeer extends GtkWindowPeer
 
   public void setBounds (int x, int y, int width, int height)
   {
-    // prevent window_configure_cb -> awtComponent.setSize ->
-    // peer.setBounds -> nativeSetBounds self-deadlock on GDK lock.
-    if (Thread.currentThread() == GtkToolkit.mainThread)
-      {
-        int menuBarWidth = width - insets.left - insets.right;
-        if (menuBar != null && menuBarWidth > 0)
-          setMenuBarWidthUnlocked (menuBar, menuBarWidth);
-
-        return;
-      }
-
     int menuBarWidth = width - insets.left - insets.right;
     if (menuBar != null && menuBarWidth > 0)
       setMenuBarWidth (menuBar, menuBarWidth);
 
-    nativeSetBounds (x, y,
-		     width - insets.left - insets.right,
-		     height - insets.top - insets.bottom
-		     + menuBarHeight);
+    super.setBounds(x, y, width, height + menuBarHeight);
   }  
   
   public void setResizable (boolean resizable)
@@ -196,56 +182,21 @@ public class GtkFramePeer extends GtkWindowPeer
 	}
   }
 
-  public Graphics getGraphics ()
-  {
-    Graphics g;
-    if (GtkToolkit.useGraphics2D ())
-      g = new GdkGraphics2D (this);
-    else
-      g = new GdkGraphics (this);
-    g.translate (-insets.left, -insets.top);
-    return g;
-  }
-  
   protected void postConfigureEvent (int x, int y, int width, int height)
   {
-    int frame_width = width + insets.left + insets.right;
+    if (menuBar != null && width > 0)
+      setMenuBarWidthUnlocked (menuBar, width);
+
     // Since insets.top already includes the MenuBar's height, we need
     // to subtract the MenuBar's height from the top inset.
-    int frame_height = height + insets.top + insets.bottom - menuBarHeight;
+    int frame_height = height - menuBarHeight;
 
-    if (frame_width != awtComponent.getWidth()
-        || frame_height != awtComponent.getHeight())
-      awtComponent.setSize(frame_width, frame_height);
-
-    int frame_x = x - insets.left;
     // Likewise, since insets.top includes the MenuBar height, we need
     // to add back the MenuBar height to the frame's y position.  If
     // no MenuBar exists in this frame, the MenuBar height will be 0.
-    int frame_y = y - insets.top + menuBarHeight;
+    int frame_y = y + menuBarHeight;
 
-    if (frame_x != awtComponent.getX()
-        || frame_y != awtComponent.getY())
-      {
-        // awtComponent.setLocation(frame_x, frame_y);
-      }
-  }
-
-  protected void postMouseEvent(int id, long when, int mods, int x, int y, 
-				int clickCount, boolean popupTrigger)
-  {
-    super.postMouseEvent (id, when, mods, 
-			  x + insets.left, y + insets.top, 
-			  clickCount, popupTrigger);
-  }
-
-  protected void postExposeEvent (int x, int y, int width, int height)
-  {
-    if (!isInRepaint)
-      q().postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
-                                   new Rectangle (x + insets.left, 
-                                                  y + insets.top, 
-                                                  width, height)));
+    super.postConfigureEvent(x, frame_y, width, frame_height);
   }
 
   public int getState ()

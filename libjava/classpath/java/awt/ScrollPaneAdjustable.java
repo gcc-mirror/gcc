@@ -178,7 +178,16 @@ public class ScrollPaneAdjustable
 
   public String paramString ()
   {
-    throw new Error ("not implemented");
+    return ("scrollpane=" + sp + ", orientation=" + orientation
+            + ", value=" + value + ", minimum=" + minimum
+            + ", maximum=" + maximum + ", visibleAmount=" + visibleAmount
+            + ", unitIncrement=" + unitIncrement
+            + ", blockIncrement=" + blockIncrement);
+  }
+
+  public String toString()
+  {
+    return getClass().getName() + "[" + paramString() + "]";
   }
 
   /**

@@ -44,9 +44,9 @@ import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
 
 /**
- * An event filter which restricts reported step events to those which
+ * "An event filter which restricts reported step events to those which
  * satisfy depth and size constraints. This modifier can only be used with
- * step event kinds.
+ * step event kinds."
  *
  * @author Keith Seitz  (keiths@redhat.com)
  */
@@ -58,9 +58,11 @@ public class StepFilter
   private int _depth;
 
   /**
-   * Constructs a new <code>StepFilter</code> with the given count.
+   * Constructs a new StepFilter
    *
-   * @param  count  the number of times the event will be ignored
+   * @param tid    ID of the thread in which to step
+   * @param size   size of each step
+   * @param depth  relative call stack limit
    * @throws InvalidThreadException if thread is invalid
    */
   public StepFilter (ThreadId tid, int size, int depth)
@@ -88,7 +90,7 @@ public class StepFilter
    * Returns the size of each step (insn, line)
    *
    * @return the step size
-   * @see JdwpConstants.StepSize
+   * @see gnu.classpath.jdwp.JdwpConstants.StepSize
    */
   public int getSize ()
   {
@@ -99,7 +101,7 @@ public class StepFilter
    * Returns the relative call stack limit (into, over, out)
    *
    * @return how to step
-   * @see JdwpConstants.StepDepth
+   * @see gnu.classpath.jdwp.JdwpConstants.StepDepth
    */
   public int getDepth ()
   {

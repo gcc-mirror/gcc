@@ -1,4 +1,4 @@
-nativelib_LTLIBRARIES = libjavautil.la
+nativeexeclib_LTLIBRARIES = libjavautil.la
 
 libjavautil_la_SOURCES = java_util_VMTimeZone.c
 

@@ -48,8 +48,6 @@ import java.security.PublicKey;
  * cryptographic asymmetric keypairs. Codecs are useful for (a) externalising
  * public and private keys for storage and on-the-wire transmission, as well as
  * (b) re-creating their internal Java representation from external sources.</p>
- *
- * @version $Revision: 1.2 $
  */
 public interface IKeyPairCodec
 {

@@ -1,5 +1,5 @@
 /* _NamingContextStub.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,6 @@ exception statement from your version. */
 package org.omg.CosNaming;
 
 import org.omg.CORBA.MARSHAL;
-import org.omg.CORBA.ORB;
 import org.omg.CORBA.ObjectHelper;
 import org.omg.CORBA.portable.ApplicationException;
 import org.omg.CORBA.portable.Delegate;
@@ -85,7 +84,7 @@ public class _NamingContextStub
   /**
    * Create the naming context stub with the given delegate.
    */
-  public _NamingContextStub(Delegate delegate)
+  _NamingContextStub(Delegate delegate)
   {
     super();
     _set_delegate(delegate);
@@ -415,7 +414,7 @@ public class _NamingContextStub
    * @throws NotFound if the id matches.
    * @throws MARSHAL if the id does not match any of the previous 4 exceptions.
    */
-  protected void throw4(InputStream in, String id)
+  void throw4(InputStream in, String id)
                  throws MARSHAL, InvalidName, CannotProceed, NotFound
   {
     if (id.equals(NotFoundHelper.id()))
@@ -443,7 +442,7 @@ public class _NamingContextStub
    * @throws NotFound if the id matches.
    * @throws MARSHAL if the id does not match any of the previous 4 exceptions.
    */
-  protected void throw5(InputStream in, String id)
+  void throw5(InputStream in, String id)
                  throws MARSHAL, AlreadyBound, InvalidName, CannotProceed,
                         NotFound
   {

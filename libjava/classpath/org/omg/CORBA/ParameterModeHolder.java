@@ -1,5 +1,5 @@
 /* ParameterModeHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package org.omg.CORBA;
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class ParameterModeHolder
+public final class ParameterModeHolder
   implements org.omg.CORBA.portable.Streamable
 {
   /**
@@ -52,7 +52,7 @@ public class ParameterModeHolder
   public ParameterMode value;
 
   /**
-   * Create the unitialised instance.
+   * Create the uninitialised instance.
    */
   public ParameterModeHolder()
   {
@@ -68,7 +68,7 @@ public class ParameterModeHolder
   }
 
   /**
-   * Fill in the {@link value} by data from the CDR stream.
+   * Fill in the {@link #value} by data from the CDR stream.
    */
   public void _read(org.omg.CORBA.portable.InputStream in)
   {

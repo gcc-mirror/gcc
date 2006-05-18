@@ -1,5 +1,5 @@
 /* VMThread -- VM interface for Thread of executable code
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -123,7 +123,9 @@ final class VMThread
 	    {
 		try
 		{
-		    thread.group.uncaughtException(thread, t);
+		  Thread.UncaughtExceptionHandler handler;
+		  handler = thread.getUncaughtExceptionHandler();
+		  handler.uncaughtException(thread, t);
 		}
 		catch(Throwable ignore)
 		{

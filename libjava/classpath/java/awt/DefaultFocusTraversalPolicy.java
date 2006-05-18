@@ -61,6 +61,8 @@ package java.awt;
 public class DefaultFocusTraversalPolicy
   extends ContainerOrderFocusTraversalPolicy
 {
+  private static final long serialVersionUID = 8876966522510157497L;
+
   /**
    * Construct a default focus traversal policy.
    */

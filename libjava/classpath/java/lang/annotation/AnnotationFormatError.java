@@ -49,6 +49,7 @@ package java.lang.annotation;
  */
 public class AnnotationFormatError extends Error
 {
+  private static final long serialVersionUID = -4256701562333669892L;
 
   /**
    * Constructs a new <code>AnnotationFormatError</code>

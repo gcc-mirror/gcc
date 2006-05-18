@@ -1,5 +1,5 @@
 /* DefaultMutableTreeNode.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ import java.util.Vector;
 
 
 /**
- * DefaultMutableTreeNode
+ * A default implementation of the {@link MutableTreeNode} interface.
  *
  * @author Andrew Selkirk
  * @author Robert Schuster (robertschuster@fsfe.org)
@@ -64,18 +64,19 @@ public class DefaultMutableTreeNode
   private static final long serialVersionUID = -4298474751201349152L;
 
   /**
-   * EMPTY_ENUMERATION
+   * An empty enumeration, returned by {@link #children()} if a node has no
+   * children.
    */
   public static final Enumeration EMPTY_ENUMERATION =
     EmptyEnumeration.getInstance();
 
   /**
-   * parent
+   * The parent of this node (possibly <code>null</code>).
    */
   protected MutableTreeNode parent;
 
   /**
-   * children
+   * The child nodes for this node (may be empty).
    */
   protected Vector children = new Vector();
 
@@ -91,7 +92,7 @@ public class DefaultMutableTreeNode
 
   /**
    * Creates a <code>DefaultMutableTreeNode</code> object.
-   * This node allows to add child nodes.
+   * This is equivalent to <code>DefaultMutableTreeNode(null, true)</code>.
    */
   public DefaultMutableTreeNode()
   {
@@ -100,9 +101,10 @@ public class DefaultMutableTreeNode
 
   /**
    * Creates a <code>DefaultMutableTreeNode</code> object with the given
-   * user object attached to it. This node allows to add child nodes.
+   * user object attached to it. This is equivalent to 
+   * <code>DefaultMutableTreeNode(userObject, true)</code>.
    *
-   * @param userObject the user object
+   * @param userObject the user object (<code>null</code> permitted).
    */
   public DefaultMutableTreeNode(Object userObject)
   {
@@ -113,7 +115,7 @@ public class DefaultMutableTreeNode
    * Creates a <code>DefaultMutableTreeNode</code> object with the given
    * user object attached to it.
    *
-   * @param userObject the user object
+   * @param userObject the user object (<code>null</code> permitted).
    * @param allowsChildren <code>true</code> if the code allows to add child
    * nodes, <code>false</code> otherwise
    */
@@ -124,28 +126,22 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * clone
+   * Returns a clone of the node.  The clone contains a shallow copy of the 
+   * user object, and does not copy the parent node or the child nodes.
    *
-   * @return Object
+   * @return A clone of the node.
    */
   public Object clone()
   {
-    try
-      {
-        return super.clone();
-        // TODO: Do we need to do more here ?
-      }
-    catch (CloneNotSupportedException e)
-      {
-        // This never happens.
-        return null;
-      }
+    return new DefaultMutableTreeNode(this.userObject, this.allowsChildren);
   }
 
   /**
-   * Returns a string representation of this node
+   * Returns a string representation of the node.  This implementation returns
+   * <code>getUserObject().toString()</code>, or <code>null</code> if there
+   * is no user object.
    *
-   * @return a human-readable String representing this node
+   * @return A string representation of the node (possibly <code>null</code>).
    */
   public String toString()
   {
@@ -156,20 +152,30 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * Adds a new child node to this node.
+   * Adds a new child node to this node and sets this node as the parent of
+   * the child node.  The child node must not be an ancestor of this node.
+   * If the tree uses the {@link DefaultTreeModel}, you must subsequently
+   * call {@link DefaultTreeModel#reload(TreeNode)}.
    *
-   * @param child the child node
+   * @param child the child node (<code>null</code> not permitted).
    *
-   * @throws IllegalArgumentException if <code>child</code> is null
-   * @throws IllegalStateException if the node does not allow children
+   * @throws IllegalStateException if {@link #getAllowsChildren()} returns 
+   *     <code>false</code>.
+   * @throws IllegalArgumentException if {@link #isNodeAncestor} returns
+   *     <code>true</code>. 
+   * @throws IllegalArgumentException if <code>child</code> is 
+   *     <code>null</code>.
    */
   public void add(MutableTreeNode child)
   {
+    if (! allowsChildren)
+      throw new IllegalStateException();
+    
     if (child == null)
       throw new IllegalArgumentException();
 
-    if (! allowsChildren)
-      throw new IllegalStateException();
+    if (isNodeAncestor(child))
+      throw new IllegalArgumentException("Cannot add ancestor node.");
     
     children.add(child);
     child.setParent(this);
@@ -178,7 +184,7 @@ public class DefaultMutableTreeNode
   /**
    * Returns the parent node of this node.
    *
-   * @return the parent node
+   * @return The parent node (possibly <code>null</code>).
    */
   public TreeNode getParent()
   {
@@ -186,23 +192,39 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * Removes the child with the given index from this node
+   * Removes the child with the given index from this node.
    *
-   * @param index the index
+   * @param index the index (in the range <code>0</code> to 
+   *     <code>getChildCount() - 1</code>).
+   *     
+   * @throws ArrayIndexOutOfBoundsException if <code>index</code> is outside 
+   *         the valid range.
    */
   public void remove(int index)
   {
-    children.remove(index);
+    MutableTreeNode child = (MutableTreeNode) children.remove(index);
+    child.setParent(null);
   }
 
   /**
-   * Removes the given child from this node.
+   * Removes the given child from this node and sets its parent to 
+   * <code>null</code>.
    *
-   * @param node the child node
+   * @param node the child node (<code>null</code> not permitted).
+   * 
+   * @throws IllegalArgumentException if <code>node</code> is not a child of 
+   *     this node.
+   * @throws IllegalArgumentException if <code>node</code> is null.
    */
   public void remove(MutableTreeNode node)
   {
+    if (node == null)
+      throw new IllegalArgumentException("Null 'node' argument.");
+    if (node.getParent() != this)
+      throw new IllegalArgumentException(
+          "The given 'node' is not a child of this node.");
     children.remove(node);
+    node.setParent(null);
   }
 
   /**
@@ -235,11 +257,23 @@ public class DefaultMutableTreeNode
   /**
    * Inserts given child node at the given index.
    *
-   * @param node the child node
+   * @param node the child node (<code>null</code> not permitted).
    * @param index the index.
+   * 
+   * @throws IllegalArgumentException if <code>node</code> is 
+   *     </code>null</code>.
    */
   public void insert(MutableTreeNode node, int index)
   {
+    if (! allowsChildren)
+      throw new IllegalStateException();
+
+    if (node == null)
+      throw new IllegalArgumentException("Null 'node' argument.");
+    
+    if (isNodeAncestor(node))
+      throw new IllegalArgumentException("Cannot insert ancestor node.");
+
     children.insertElementAt(node, index);
   }
 
@@ -300,24 +334,33 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * Returns the child index for a given node.
-   *
-   * @param node this node
-   *
-   * @return the index
+   * Returns the index of the specified child node, or -1 if the node is not
+   * in fact a child of this node.
+   * 
+   * @param node  the node (<code>null</code> not permitted).
+   * 
+   * @return The index of the specified child node, or -1.
+   * 
+   * @throws IllegalArgumentException if <code>node</code> is <code>null</code>.
    */
   public int getIndex(TreeNode node)
   {
+    if (node == null)
+      throw new IllegalArgumentException("Null 'node' argument.");
     return children.indexOf(node);
   }
 
   /**
-   * setAllowsChildren
+   * Sets the flag that controls whether or not this node allows the addition / 
+   * insertion of child nodes.  If the flag is set to <code>false</code>, any
+   * existing children are removed.
    *
-   * @param allowsChildren TODO
+   * @param allowsChildren  the flag.
    */
   public void setAllowsChildren(boolean allowsChildren)
   {
+    if (!allowsChildren)
+      removeAllChildren();
     this.allowsChildren = allowsChildren;
   }
 
@@ -366,15 +409,24 @@ public class DefaultMutableTreeNode
    */
   public void removeAllChildren()
   {
-    children.removeAllElements();
+    for (int i = getChildCount() - 1; i >= 0; i--)
+      remove(i);
   }
 
   /**
-   * isNodeAncestor
+   * Returns <code>true</code> if <code>node</code> is an ancestor of this
+   * tree node, and <code>false</code> otherwise.  An ancestor node is any of:
+   * <ul>
+   * <li>this tree node;</li>
+   * <li>the parent node (if there is one);</li>
+   * <li>any ancestor of the parent node;</li>
+   * </ul>
+   * If <code>node</code> is <code>null</code>, this method returns 
+   * <code>false</code>.
+   * 
+   * @param node  the node (<code>null</code> permitted).
    *
-   * @param node TODO
-   *
-   * @return boolean
+   * @return A boolean.
    */
   public boolean isNodeAncestor(TreeNode node)
   {
@@ -383,19 +435,26 @@ public class DefaultMutableTreeNode
 
     TreeNode current = this;
 
-    while (current != null
-           && current != node)
+    while (current != null && current != node)
       current = current.getParent();
 
     return current == node;
   }
 
   /**
-   * isNodeDescendant
+   * Returns <code>true</code> if <code>node</code> is a descendant of this
+   * tree node, and <code>false</code> otherwise.  A descendant node is any of:
+   * <ul>
+   * <li>this tree node;</li>
+   * <li>the child nodes belonging to this tree node, if there are any;</li>
+   * <li>any descendants of the child nodes;</li>
+   * </ul>
+   * If <code>node</code> is <code>null</code>, this method returns 
+   * <code>false</code>.
+   * 
+   * @param node  the node (<code>null</code> permitted).
    *
-   * @param node TODO
-   *
-   * @return boolean
+   * @return A boolean.
    */
   public boolean isNodeDescendant(DefaultMutableTreeNode node)
   {
@@ -722,11 +781,13 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * isNodeChild
+   * Returns <code>true</code> if <code>node</code> is a child of this tree 
+   * node, and <code>false</code> otherwise.  If <code>node</code> is 
+   * <code>null</code>, this method returns <code>false</code>.
    *
-   * @param node TODO
+   * @param node  the node (<code>null</code> permitted).
    *
-   * @return boolean
+   * @return A boolean.
    */
   public boolean isNodeChild(TreeNode node)
   {
@@ -737,9 +798,11 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getFirstChild
+   * Returns the first child node belonging to this tree node.
    *
-   * @return TreeNode
+   * @return The first child node.
+   * 
+   * @throws NoSuchElementException if this tree node has no children.
    */
   public TreeNode getFirstChild()
   {
@@ -747,9 +810,11 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getLastChild
+   * Returns the last child node belonging to this tree node.
    *
-   * @return TreeNode
+   * @return The last child node.
+   * 
+   * @throws NoSuchElementException if this tree node has no children.
    */
   public TreeNode getLastChild()
   {
@@ -757,16 +822,20 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getChildAfter
+   * Returns the next child after the specified <code>node</code>, or 
+   * <code>null</code> if there is no child after the specified 
+   * <code>node</code>.
    *
-   * @param node TODO
+   * @param node  a child of this node (<code>null</code> not permitted).
    *
-   * @return TreeNode
+   * @return The next child, or <code>null</code>.
+   * 
+   * @throws IllegalArgumentException if <code>node</code> is not a child of 
+   *     this node, or is <code>null</code>.
    */
   public TreeNode getChildAfter(TreeNode node)
   {
-    if (node == null
-        || node.getParent() != this)
+    if (node == null || node.getParent() != this)
       throw new IllegalArgumentException();
 
     int index = getIndex(node) + 1;
@@ -778,16 +847,20 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getChildBefore
+   * Returns the previous child before the specified <code>node</code>, or 
+   * <code>null</code> if there is no child before the specified 
+   * <code>node</code>.
    *
-   * @param node TODO
+   * @param node  a child of this node (<code>null</code> not permitted).
    *
-   * @return TreeNode
+   * @return The previous child, or <code>null</code>.
+   * 
+   * @throws IllegalArgumentException if <code>node</code> is not a child of 
+   *     this node, or is <code>null</code>.
    */
   public TreeNode getChildBefore(TreeNode node)
   {
-    if (node == null
-        || node.getParent() != this)
+    if (node == null || node.getParent() != this)
       throw new IllegalArgumentException();
 
     int index = getIndex(node) - 1;
@@ -799,25 +872,31 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * isNodeSibling
+   * Returns <code>true</code> if this tree node and <code>node</code> share
+   * the same parent.  If <code>node</code> is this tree node, the method
+   * returns <code>true</code> and if <code>node</code> is <code>null</code>
+   * this method returns <code>false</code>.
    *
-   * @param node TODO
+   * @param node  the node (<code>null</code> permitted).
    *
-   * @return boolean
+   * @return A boolean.
    */
   public boolean isNodeSibling(TreeNode node)
   {
     if (node == null)
       return false;
-
+    if (node == this)
+      return true;
     return (node.getParent() == getParent()
             && getParent() != null);
   }
 
   /**
-   * getSiblingCount
+   * Returns the number of siblings for this tree node.  If the tree node has
+   * a parent, this method returns the child count for the parent, otherwise
+   * it returns <code>1</code>.
    *
-   * @return int
+   * @return The sibling count.
    */
   public int getSiblingCount()
   {
@@ -828,9 +907,11 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getNextSibling
+   * Returns the next sibling for this tree node.  If this node has no parent,
+   * or this node is the last child of its parent, this method returns 
+   * <code>null</code>.  
    *
-   * @return DefaultMutableTreeNode
+   * @return The next sibling, or <code>null</code>.
    */
   public DefaultMutableTreeNode getNextSibling()
   {
@@ -846,9 +927,11 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getPreviousSibling
+   * Returns the previous sibling for this tree node.  If this node has no 
+   * parent, or this node is the first child of its parent, this method returns 
+   * <code>null</code>.  
    *
-   * @return DefaultMutableTreeNode
+   * @return The previous sibling, or <code>null</code>.
    */
   public DefaultMutableTreeNode getPreviousSibling()
   {
@@ -864,9 +947,10 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * isLeaf
+   * Returns <code>true</code> if this tree node is a lead node (that is, it 
+   * has no children), and <code>false</otherwise>.
    *
-   * @return boolean
+   * @return A boolean.
    */
   public boolean isLeaf()
   {
@@ -874,9 +958,11 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getFirstLeaf
+   * Returns the first leaf node that is a descendant of this node.  Recall 
+   * that a node is its own descendant, so if this node has no children then 
+   * it is returned as the first leaf.
    *
-   * @return DefaultMutableTreeNode
+   * @return The first leaf node.
    */
   public DefaultMutableTreeNode getFirstLeaf()
   {
@@ -889,9 +975,11 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getLastLeaf
+   * Returns the last leaf node that is a descendant of this node.  Recall 
+   * that a node is its own descendant, so if this node has no children then 
+   * it is returned as the last leaf.
    *
-   * @return DefaultMutableTreeNode
+   * @return The first leaf node.
    */
   public DefaultMutableTreeNode getLastLeaf()
   {
@@ -908,33 +996,37 @@ public class DefaultMutableTreeNode
   }
 
   /**
-   * getNextLeaf
+   * Returns the next leaf node after this tree node. 
    *
-   * @return DefaultMutableTreeNode
+   * @return The next leaf node, or <code>null</code>.
    */
   public DefaultMutableTreeNode getNextLeaf()
   {
-    if (parent == null)
-      return null;
-
-    // TODO: Fix implementation.
+    // if there is a next sibling, return its first leaf
+    DefaultMutableTreeNode sibling = getNextSibling();
+    if (sibling != null)
+      return sibling.getFirstLeaf();
+    // otherwise move up one level and try again...
+    if (parent != null)
+      return ((DefaultMutableTreeNode) parent).getNextLeaf();
     return null;
-    //return parent.getChildAfter(this);
   }
 
   /**
-   * getPreviousLeaf
+   * Returns the previous leaf node before this tree node.
    *
-   * @return DefaultMutableTreeNode
+   * @return The previous leaf node, or <code>null</code>.
    */
   public DefaultMutableTreeNode getPreviousLeaf()
   {
-    if (parent == null)
-      return null;
-
-    // TODO: Fix implementation.
+    // if there is a previous sibling, return its last leaf
+    DefaultMutableTreeNode sibling = getPreviousSibling();
+    if (sibling != null)
+      return sibling.getLastLeaf();
+    // otherwise move up one level and try again...
+    if (parent != null)
+      return ((DefaultMutableTreeNode) parent).getPreviousLeaf();
     return null;
-    //return parent.getChildBefore(this);
   }
 
   /**

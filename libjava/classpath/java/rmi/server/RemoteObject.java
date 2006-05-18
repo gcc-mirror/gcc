@@ -39,6 +39,7 @@ package java.rmi.server;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.rmi.NoSuchObjectException;
@@ -101,6 +102,9 @@ public boolean equals(Object obj) {
 	return (this == obj);
 }
 
+/**
+ * Get the string representation of this remote object.
+ */
   public String toString() 
   {
     if (ref == null)
@@ -108,55 +112,91 @@ public boolean equals(Object obj) {
     return (ref.toString ());
   }
   
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException 
+  /**
+   * Read the remote object from the input stream. Expects the class name
+   * without package first. Then the method creates and assigns the {@link #ref}
+   * an instance of this class and calls its .readExternal method. The standard
+   * packageless class names are UnicastRef, UnicastRef2, UnicastServerRef,
+   * UnicastServerRef2, ActivatableRef or ActivatableServerRef.
+   * 
+   * @param in the stream to read from
+   * @throws IOException if the IO exception occurs
+   * @throws ClassNotFoundException if the class with the given name is not
+   *           present in the package gnu.java.rmi.server (for the case of the
+   *           GNU Classpath.
+   */
+  private void readObject(ObjectInputStream in) throws IOException,
+      ClassNotFoundException
   {
     String cname = in.readUTF();
-    if (!cname.equals("")) 
+    if (! cname.equals(""))
       {
-	if (cname.equals ("UnicastRef2"))
-	  { 
-	    // hack for interoperating with JDK
-	    cname = "UnicastRef";
-	    in.read (); //some unknown UnicastRef2 field
-	  }
+        if (cname.equals("UnicastRef2"))
+          {
+            // hack for interoperating with JDK
+            cname = "UnicastRef";
+            in.read(); // some unknown UnicastRef2 field
+          }
 
-  // It would be nice to use RemoteRef.packagePrefix here, but for binary
-  // compatibility with the JDK that has to contain "sun.rmi.server"...
-	cname = "gnu.java.rmi.server." + cname;
-	try 
-	  {
-	    Class cls = Class.forName(cname);
-	    ref = (RemoteRef)cls.newInstance();
-	  }
-	catch (InstantiationException e1) 
-	  {
-	    throw new UnmarshalException("failed to create ref", e1);
-	  }
-	catch (IllegalAccessException e2) 
-	  {
-	    throw new UnmarshalException("failed to create ref", e2);
-	  }
-	ref.readExternal(in);
+        // It would be nice to use RemoteRef.packagePrefix here, but for binary
+        // compatibility with the JDK that has to contain "sun.rmi.server"...
+        cname = "gnu.java.rmi.server." + cname;
+        try
+          {
+            Class cls = Class.forName(cname);
+            ref = (RemoteRef) cls.newInstance();
+          }
+        catch (InstantiationException e1)
+          {
+            throw new UnmarshalException("failed to create ref", e1);
+          }
+        catch (IllegalAccessException e2)
+          {
+            throw new UnmarshalException("failed to create ref", e2);
+          }
+        ref.readExternal(in);
       }
-    else 
+    else
       {
-	ref = (RemoteRef)in.readObject();
+        ref = (RemoteRef) in.readObject();
       }
   }
 
-private void writeObject(ObjectOutputStream out) throws IOException, ClassNotFoundException {
-	if (ref == null) {
-		throw new UnmarshalException("no ref to serialize");
-	}
-	String cname = ref.getRefClass(out);
-	if (cname != null && cname.length() > 0) {
-		out.writeUTF(cname);
-		ref.writeExternal(out);
-	}
-	else {
-		out.writeUTF("");
-		out.writeObject(ref);
-	}
-}
+  /**
+   * Write the remote object to the output stream. This method first calls
+   * {@link RemoteRef#getRefClass(ObjectOutput)} on the {@link #ref} to get the
+   * class name without package, writes this name and then calls the
+   * ref.writeObject to write the data. The standard packageless class names are
+   * UnicastRef, UnicastRef2, UnicastServerRef, UnicastServerRef2,
+   * ActivatableRef or ActivatableServerRef. The empty string with the
+   * subsequently following serialized ref instance be written if the
+   * ref.getRefClass returns null.
+   * 
+   * @param out the stream to write to
+   * @throws IOException if one occurs during writing
+   * @throws ClassNotFoundException never in this implementation (specified as
+   *           part of the API standard)
+   * @throws UnmarshalException if the remote reference of this remote object is
+   *           null.
+   */
+  private void writeObject(ObjectOutputStream out) throws IOException,
+      ClassNotFoundException
+  {
+    if (ref == null)
+      {
+        throw new UnmarshalException("no ref to serialize");
+      }
+    String cname = ref.getRefClass(out);
+    if (cname != null && cname.length() > 0)
+      {
+        out.writeUTF(cname);
+        ref.writeExternal(out);
+      }
+    else
+      {
+        out.writeUTF("");
+        out.writeObject(ref);
+      }
+  }
 
 }

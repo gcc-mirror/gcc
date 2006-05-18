@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -88,7 +90,7 @@ public class BasicTableUI extends TableUI
 
   protected FocusListener focusListener;  
   protected KeyListener keyListener;   
-  protected MouseInputListener	mouseInputListener;   
+  protected MouseInputListener  mouseInputListener;   
   protected CellRendererPane rendererPane;   
   protected JTable table;
 
@@ -115,6 +117,8 @@ public class BasicTableUI extends TableUI
 
     /**
      * Receives notification that a key has been pressed and released.
+     * Activates the editing session for the focused cell by pressing the
+     * character keys.
      *
      * @param event the key event
      */
@@ -122,6 +126,16 @@ public class BasicTableUI extends TableUI
     {
       // Key events should be handled through the InputMap/ActionMap mechanism
       // since JDK1.3. This class is only there for backwards compatibility.
+      
+      // Editor activation is a specific kind of response to ''any''
+      // character key. Hence it is handled here.
+      if (!table.isEditing() && table.isEnabled())
+        {
+          int r = table.getSelectedRow();
+          int c = table.getSelectedColumn();
+          if (table.isCellEditable(r, c))
+            table.editCellAt(r, c);
+        }
     }
 
     /**
@@ -509,11 +523,9 @@ public class BasicTableUI extends TableUI
       if (command.equals("selectPreviousRowExtendSelection"))
         {
           rowModel.setLeadSelectionIndex(Math.max(rowLead - 1, 0));
-          colModel.setLeadSelectionIndex(colLead);
         }
       else if (command.equals("selectLastColumn"))
         {
-          rowModel.setSelectionInterval(rowLead, rowLead);
           colModel.setSelectionInterval(colMax, colMax);
         }
       else if (command.equals("startEditing"))
@@ -524,53 +536,43 @@ public class BasicTableUI extends TableUI
       else if (command.equals("selectFirstRowExtendSelection"))
         {              
           rowModel.setLeadSelectionIndex(0);
-          colModel.setLeadSelectionIndex(colLead);
         }
       else if (command.equals("selectFirstColumn"))
         {
-          rowModel.setSelectionInterval(rowLead, rowLead);
           colModel.setSelectionInterval(0, 0);
         }
       else if (command.equals("selectFirstColumnExtendSelection"))
         {
           colModel.setLeadSelectionIndex(0);
-          rowModel.setLeadSelectionIndex(rowLead);
         }      
       else if (command.equals("selectLastRow"))
         {
           rowModel.setSelectionInterval(rowMax,rowMax);
-          colModel.setSelectionInterval(colLead, colLead);
         }
       else if (command.equals("selectNextRowExtendSelection"))
         {
           rowModel.setLeadSelectionIndex(Math.min(rowLead + 1, rowMax));
-          colModel.setLeadSelectionIndex(colLead);
         }
       else if (command.equals("selectFirstRow"))
         {
           rowModel.setSelectionInterval(0,0);
-          colModel.setSelectionInterval(colLead, colLead);
         }
       else if (command.equals("selectNextColumnExtendSelection"))
         {
           colModel.setLeadSelectionIndex(Math.min(colLead + 1, colMax));
-          rowModel.setLeadSelectionIndex(rowLead);
         }
       else if (command.equals("selectLastColumnExtendSelection"))
         {
           colModel.setLeadSelectionIndex(colMax);
-          rowModel.setLeadSelectionIndex(rowLead);
         }
       else if (command.equals("selectPreviousColumnExtendSelection"))
         {
           colModel.setLeadSelectionIndex(Math.max(colLead - 1, 0));
-          rowModel.setLeadSelectionIndex(rowLead);
         }
       else if (command.equals("selectNextRow"))
         {
           rowModel.setSelectionInterval(Math.min(rowLead + 1, rowMax),
                                         Math.min(rowLead + 1, rowMax));
-          colModel.setSelectionInterval(colLead,colLead);
         }
       else if (command.equals("scrollUpExtendSelection"))
         {
@@ -589,7 +591,6 @@ public class BasicTableUI extends TableUI
         {
           rowModel.setSelectionInterval(Math.max(rowLead - 1, 0),
                                         Math.max(rowLead - 1, 0));
-          colModel.setSelectionInterval(colLead,colLead);
         }
       else if (command.equals("scrollRightChangeSelection"))
         {
@@ -606,7 +607,6 @@ public class BasicTableUI extends TableUI
         }
       else if (command.equals("selectPreviousColumn"))
         {
-          rowModel.setSelectionInterval(rowLead,rowLead);
           colModel.setSelectionInterval(Math.max(colLead - 1, 0),
                                         Math.max(colLead - 1, 0));
         }
@@ -715,7 +715,6 @@ public class BasicTableUI extends TableUI
         }
       else if (command.equals("selectNextColumn"))
         {
-          rowModel.setSelectionInterval(rowLead,rowLead);
           colModel.setSelectionInterval(Math.min(colLead + 1, colMax),
                                         Math.min(colLead + 1, colMax));
         }
@@ -903,7 +902,6 @@ public class BasicTableUI extends TableUI
       table.scrollRectToVisible
         (table.getCellRect(rowModel.getLeadSelectionIndex(), 
                            colModel.getLeadSelectionIndex(), false));
-      table.repaint();
     }
     
     /**
@@ -1172,6 +1170,7 @@ public class BasicTableUI extends TableUI
   }
 
   protected void uninstallKeyboardActions() 
+    throws NotImplementedException
   {
     // TODO: Implement this properly.
   }
@@ -1247,16 +1246,18 @@ public class BasicTableUI extends TableUI
     if (rn == -1)
       rn = table.getRowCount() - 1;
 
+    int columnMargin = table.getColumnModel().getColumnMargin();
+    int rowMargin = table.getRowMargin();
+
     TableColumnModel cmodel = table.getColumnModel();
     int [] widths = new int[cn+1];
     for (int i = c0; i <=cn ; i++)
       {
-        widths[i] = cmodel.getColumn(i).getWidth();
+        widths[i] = cmodel.getColumn(i).getWidth() - columnMargin;
       }
     
     Rectangle bounds = table.getCellRect(r0, c0, false);
-    bounds.height = table.getRowHeight()+table.getRowMargin();
-    
+
     // The left boundary of the area being repainted.
     int left = bounds.x;
     
@@ -1266,9 +1267,6 @@ public class BasicTableUI extends TableUI
     // The bottom boundary of the area being repainted.
     int bottom;
     
-    // The cell height.
-    int height = bounds.height;
-    
     // paint the cell contents
     Color grid = table.getGridColor();    
     for (int r = r0; r <= rn; ++r)
@@ -1277,25 +1275,28 @@ public class BasicTableUI extends TableUI
           {
             bounds.width = widths[c];
             paintCell(gfx, r, c, bounds, table.getCellRenderer(r, c));
-            bounds.x += widths[c];
+            bounds.x += widths[c] + columnMargin;
           }
-        bounds.y += height;
         bounds.x = left;
+        bounds.y += table.getRowHeight(r) + rowMargin;
+        // Update row height for tables with custom heights.
+        bounds.height = table.getRowHeight(r + 1);
       }
     
-    bottom = bounds.y;
+    bottom = bounds.y - rowMargin;
 
     // paint vertical grid lines
     if (grid != null && table.getShowVerticalLines())
       {    
         Color save = gfx.getColor();
         gfx.setColor(grid);
-        int x = left;
-        
+        int x = left - columnMargin;
         for (int c = c0; c <= cn; ++c)
           {
+            // The vertical grid is draw right from the cells, so we 
+            // add before drawing.
+            x += widths[c] + columnMargin;
             gfx.drawLine(x, top, x, bottom);
-            x += widths[c];
           }
         gfx.setColor(save);
       }
@@ -1305,11 +1306,13 @@ public class BasicTableUI extends TableUI
       {    
         Color save = gfx.getColor();
         gfx.setColor(grid);
-        int y = top;
+        int y = top - rowMargin;
         for (int r = r0; r <= rn; ++r)
           {
+            // The horizontal grid is draw below the cells, so we 
+            // add before drawing.
+            y += table.getRowHeight(r) + rowMargin;
             gfx.drawLine(left, y, p2.x, y);
-            y += height;
           }
         gfx.setColor(save);
       }

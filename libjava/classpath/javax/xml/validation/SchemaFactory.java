@@ -1,5 +1,5 @@
 /* SchemaFactory.java -- 
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,13 +52,10 @@ import org.xml.sax.SAXNotSupportedException;
  * Factory for obtaining schemata.
  *
  * @author Chris Burdess (dog@gnu.org)
- * @since 1.3
+ * @since 1.5
  */
 public abstract class SchemaFactory
 {
-
-  ErrorHandler errorHandler;
-
   protected SchemaFactory()
   {
   }
@@ -109,15 +106,9 @@ public abstract class SchemaFactory
     throw new SAXNotRecognizedException(name);
   }
   
-  public ErrorHandler getErrorHandler()
-  {
-    return errorHandler;
-  }
+  public abstract ErrorHandler getErrorHandler();
   
-  public void setErrorHandler(ErrorHandler errorHandler)
-  {
-    this.errorHandler = errorHandler;
-  }
+  public abstract void setErrorHandler(ErrorHandler errorHandler);
 
   public abstract LSResourceResolver getResourceResolver();
 

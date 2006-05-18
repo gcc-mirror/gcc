@@ -38,6 +38,9 @@ exception statement from your version. */
 package java.rmi.server;
 
 /**
+ * This class was used with jdk 1.1 stubs and skeletons. It is no longer
+ * needed since jdk 1.2 and higher.
+ *  
  * @deprecated
  */
 public class Operation
@@ -45,6 +48,7 @@ public class Operation
   private String operation;
 
   /**
+   * Create operation with the given name.
    * @deprecated
    */
   public Operation (String op)
@@ -53,6 +57,8 @@ public class Operation
   }
 
   /**
+   * Get the name of the operation.
+   * 
    * @deprecated
    */
   public String getOperation ()
@@ -61,6 +67,8 @@ public class Operation
   }
 
   /**
+   * Return the name of the operation.
+   * 
    * @deprecated
    */
   public String toString ()

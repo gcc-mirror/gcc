@@ -774,7 +774,7 @@ public class SimpleTimeZone extends TimeZone
    * @param year  The year.
    */
   private int getDaysInMonth(int month, int year)
-  {
+  {    
     if (month == Calendar.FEBRUARY)
       {
 	if ((year & 3) != 0)

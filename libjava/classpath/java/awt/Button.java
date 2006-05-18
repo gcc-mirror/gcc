@@ -98,7 +98,7 @@ private transient ActionListener action_listeners;
   protected class AccessibleAWTButton extends AccessibleAWTComponent
     implements AccessibleAction, AccessibleValue
   {
-    public static final long serialVersionUID = -5932203980244017102L;
+    private static final long serialVersionUID = -5932203980244017102L;
 
     protected AccessibleAWTButton()
     {

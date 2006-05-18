@@ -1,5 +1,5 @@
 /* FileView.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -118,7 +118,7 @@ public abstract class FileView
    * 
    * @param directory  the directory.
    * 
-   * @returns Always <code>null</code>.
+   * @return Always <code>null</code>.
    */
   public Boolean isTraversable(File directory) 
   {

@@ -110,14 +110,10 @@ public class GdkFontMetrics extends FontMetrics
     return stringWidth (new String (data, off, len));
   }
 
-  /* 
-     Sun's Motif implementation always returns 0 or 1 here (???), but
-     going by the X11 man pages, it seems as though we should return
-     font.ascent + font.descent.
-  */
   public int getLeading ()
   {
-    return 1;
+    // Sun always returns 0.
+    return 0;
   }
 
   public int getAscent ()

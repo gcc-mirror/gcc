@@ -1,5 +1,5 @@
 /* JMenuItem.java --
-   Copyright (C) 2002, 2004, 2005,2006  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,8 @@ exception statement from your version. */
 
 
 package javax.swing;
+
+import gnu.classpath.NotImplementedException;
 
 import java.awt.Component;
 import java.awt.event.InputEvent;
@@ -204,9 +206,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
    */
   public void updateUI()
   {
-    MenuItemUI mi = ((MenuItemUI) UIManager.getUI(this));
-    setUI(mi);
-    invalidate();
+    setUI((MenuItemUI) UIManager.getUI(this));
   }
 
   /**
@@ -398,7 +398,15 @@ public class JMenuItem extends AbstractButton implements Accessible,
   public void processKeyEvent(KeyEvent event, MenuElement[] path,
                               MenuSelectionManager manager)
   {
-    // Need to implement.
+    MenuKeyEvent e = new MenuKeyEvent(event.getComponent(), event.getID(),
+                                      event.getWhen(), event.getModifiers(),
+                                      event.getKeyCode(), event.getKeyChar(),
+                                      path, manager);
+    processMenuKeyEvent(e);
+
+    // Consume original key event, if the menu key event has been consumed.
+    if (e.isConsumed())
+      event.consume();
   }
 
   /**
@@ -436,7 +444,20 @@ public class JMenuItem extends AbstractButton implements Accessible,
    */
   public void processMenuKeyEvent(MenuKeyEvent event)
   {
-    // Need to implement.
+    switch (event.getID())
+    {
+      case KeyEvent.KEY_PRESSED:
+        fireMenuKeyPressed(event);
+        break;
+      case KeyEvent.KEY_RELEASED:
+        fireMenuKeyReleased(event);
+        break;
+      case KeyEvent.KEY_TYPED:
+        fireMenuKeyTyped(event);
+        break;
+      default:
+        break;
+    }
   }
 
   /**
@@ -652,16 +673,26 @@ public class JMenuItem extends AbstractButton implements Accessible,
   }
 
   /**
-   * A string that describes this JMenuItem. Normally only used
-   * for debugging.
+   * Returns a string describing the attributes for the <code>JToolTip</code>
+   * component, for use in debugging.  The return value is guaranteed to be 
+   * non-<code>null</code>, but the format of the string may vary between
+   * implementations.
    *
-   * @return A string describing this JMenuItem
+   * @return A string describing the attributes of the <code>JMenuItem</code>.
    */
   protected String paramString()
   {
+    // calling super seems to be sufficient here...
     return super.paramString();
   }
 
+  /**
+   * Returns the object that provides accessibility features for this
+   * <code>JMenuItem</code> component.
+   *
+   * @return The accessible context (an instance of 
+   *     {@link AccessibleJMenuItem}).
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -670,13 +701,19 @@ public class JMenuItem extends AbstractButton implements Accessible,
     return accessibleContext;
   }
 
+  /**
+   * Provides the accessibility features for the <code>JMenuItem</code> 
+   * component.
+   * 
+   * @see JMenuItem#getAccessibleContext()
+   */
   protected class AccessibleJMenuItem extends AccessibleAbstractButton
     implements ChangeListener
   {
     private static final long serialVersionUID = 6748924232082076534L;
 
     /**
-     * Creates a new AccessibleJMenuItem object.
+     * Creates a new <code>AccessibleJMenuItem</code> instance.
      */
     AccessibleJMenuItem()
     {
@@ -684,10 +721,16 @@ public class JMenuItem extends AbstractButton implements Accessible,
     }
 
     public void stateChanged(ChangeEvent event)
+      throws NotImplementedException
     {
       // TODO: What should be done here, if anything?
     }
 
+    /**
+     * Returns the accessible role for the <code>JMenuItem</code> component.
+     *
+     * @return {@link AccessibleRole#MENU_ITEM}.
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.MENU_ITEM;

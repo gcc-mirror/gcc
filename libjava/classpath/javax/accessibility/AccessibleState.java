@@ -177,6 +177,28 @@ public class AccessibleState extends AccessibleBundle
     = new AccessibleState("iconified");
 
   /**
+   * Indicates that the state of this particular object is
+   * indeterminate.  This commonly occurs when an object is incapable
+   * of representing the state by a single value.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleState INDETERMINATE
+    = new AccessibleState("indeterminate");
+
+  /**
+   * Indicates that this particular object manages a number of
+   * subcomponents.  This is a common property of structures such as
+   * trees and tables, which have a number of sub-elements such as
+   * rows and columns.  The subcomponents should be left to the
+   * object, and not managed by the application.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleState MANAGES_DESCENDANTS
+    = new AccessibleState("manages descendants");
+
+  /**
    * Indicates that something must be done in the current object before
    * interaction is allowed on other windows, usually for dialogs.
    *
@@ -248,6 +270,15 @@ public class AccessibleState extends AccessibleBundle
    */
   public static final AccessibleState SHOWING
     = new AccessibleState("showing");
+
+  /**
+   * Indicates that this particular object is truncated when displayed
+   * visually.
+   *
+   * @since 1.5
+   */
+  public static final AccessibleState TRUNCATED
+    = new AccessibleState("truncated");
 
   /**
    * Indicates that this object intends to be visible. However, if its

@@ -1,4 +1,4 @@
-nativelib_LTLIBRARIES = libgjsmalsa.la 
+nativeexeclib_LTLIBRARIES = libgjsmalsa.la 
 
 libgjsmalsa_la_SOURCES = gnu_javax_sound_midi_alsa_AlsaMidiSequencerDevice.c \
 gnu_javax_sound_midi_alsa_AlsaPortDevice.c \

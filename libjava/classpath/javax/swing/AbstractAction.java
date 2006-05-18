@@ -40,9 +40,6 @@ package javax.swing;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -107,32 +104,6 @@ public abstract class AbstractAction
   {
     putValue(NAME, name);
     putValue(SMALL_ICON, icon);
-  }
-
-  /**
-   * readObject
-   *
-   * @param stream the stream to read from
-   *
-   * @exception ClassNotFoundException TODO
-   * @exception IOException if an error occurs
-   */
-  private void readObject(ObjectInputStream stream)
-    throws ClassNotFoundException, IOException
-  {
-    // TODO
-  }
-
-  /**
-   * writeObject
-   *
-   * @param stream the stream to write to
-   *
-   * @exception IOException if an error occurs
-   */
-  private void writeObject(ObjectOutputStream stream) throws IOException
-  {
-    // TODO
   }
 
   /**

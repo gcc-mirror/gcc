@@ -407,7 +407,7 @@ public class DefaultTreeCellRenderer
     this.hasFocus = hasFocus;
     setHorizontalAlignment(LEFT);
     setOpaque(false);
-    setVerticalAlignment(TOP);
+    setVerticalAlignment(CENTER);
     setEnabled(true);
     super.setFont(UIManager.getFont("Tree.font"));
 
@@ -445,8 +445,7 @@ public class DefaultTreeCellRenderer
   /**
    * Paints the value. The background is filled based on selected.
    * 
-   * @param g
-   *          the graphics device.
+   * @param g the graphics device.
    */
   public void paint(Graphics g)
   {
@@ -468,17 +467,27 @@ public class DefaultTreeCellRenderer
                                        getHorizontalTextPosition(), vr, ir, tr,
                                        getIconTextGap());
 
+    // Reusing one rectangle.
+    Rectangle bounds = getBounds(ir);
+    
+    bounds.x = tr.x - insets.left;
+    bounds.width = tr.width + insets.left+insets.right;
+    
     g.setColor(super.getBackground());
-    g.fillRect(tr.x, tr.y, tr.width, tr.height - insets.top - insets.bottom);
+    g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
-    // paint border
-    Color b = getBorderSelectionColor();
-    if (b != null)
-      {
-        g.setColor(b);
-        g.drawRect(tr.x, tr.y, tr.width, tr.height - insets.top - insets.bottom);
-      }
     super.paint(g);
+    
+    // Paint the border of the focused element only (lead selection)
+    if (hasFocus)
+      {
+        Color b = getBorderSelectionColor();
+        if (b != null)
+          {
+            g.setColor(b);
+            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height - 1);
+          }
+      }
   }
 
   /**

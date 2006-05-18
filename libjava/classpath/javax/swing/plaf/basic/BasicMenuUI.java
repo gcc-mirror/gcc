@@ -38,10 +38,11 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
@@ -219,6 +220,7 @@ public class BasicMenuUI extends BasicMenuItemUI
    *
    */
   protected void installKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: Need to implement
   }
@@ -263,6 +265,7 @@ public class BasicMenuUI extends BasicMenuItemUI
    * Basic look and feel's defaults.
    */
   protected void uninstallKeyboardActions()
+    throws NotImplementedException
   {
     // FIXME: Need to implement
   }
@@ -391,7 +394,7 @@ public class BasicMenuUI extends BasicMenuItemUI
   /**
    * This class handles MenuEvents fired by the JMenu
    */
-  protected class MenuHandler implements MenuListener
+  private class MenuHandler implements MenuListener
   {
     /**
      * This method is called when menu is cancelled. The menu is cancelled
@@ -440,24 +443,7 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   /**
-   * This class handles PropertyChangeEvents fired from the JMenu
-   */
-  protected class PropertyChangeHandler implements PropertyChangeListener
-  {
-    /**
-      * This method is called whenever one of the properties of the menu item
-      * changes.
-      *
-      * @param e The PropertyChangeEvent.
-      */
-    public void propertyChange(PropertyChangeEvent e)
-    {
-      // TODO: Implement this properly.
-    }
-  }
-
-  /**
-   * @deprecated
+   * Obsolete as of JDK1.4.
    */
   public class ChangeHandler implements ChangeListener
   {
@@ -501,7 +487,7 @@ public class BasicMenuUI extends BasicMenuItemUI
   /**
    * This class handles mouse dragged events occuring in the menu.
    */
-  protected class MenuDragMouseHandler implements MenuDragMouseListener
+  private class MenuDragMouseHandler implements MenuDragMouseListener
   {
     /**
      * This method is invoked when mouse is dragged over the menu item.
@@ -553,7 +539,7 @@ public class BasicMenuUI extends BasicMenuItemUI
    * This class handles key events occuring when menu item is visible on the
    * screen.
    */
-  protected class MenuKeyHandler implements MenuKeyListener
+  private class MenuKeyHandler implements MenuKeyListener
   {
     /**
      * This method is invoked when key has been pressed

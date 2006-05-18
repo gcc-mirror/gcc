@@ -63,7 +63,7 @@ package java.lang.reflect;
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @see GenericTypeDeclaration
+ * @see GenericDeclaration
  * @see TypeVariable
  * @since 1.5
  */

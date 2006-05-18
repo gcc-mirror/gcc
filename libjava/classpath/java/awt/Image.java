@@ -166,6 +166,8 @@ public abstract class Image
    * loading will be produced according to the hints of the algorithm
    * requested. If either the width or height is non-positive, it is adjusted
    * to preserve the original aspect ratio.
+   * If an illegal value of <code>flags</code> is passed,
+   * the default algorithm is used.
    *
    * @param width the width of the scaled image
    * @param height the height of the scaled image
@@ -183,18 +185,15 @@ public abstract class Image
     ImageFilter filter;
     switch (flags)
     {
+      case SCALE_AREA_AVERAGING:
+      case SCALE_SMOOTH:
+	filter = new AreaAveragingScaleFilter(width, height);
+	break;
       case SCALE_DEFAULT:
       case SCALE_FAST:
       case SCALE_REPLICATE:
-	filter = new ReplicateScaleFilter(width, height);
-	break;
-      case SCALE_AREA_AVERAGING:
-	filter = new AreaAveragingScaleFilter(width, height);
-	break;
-      case SCALE_SMOOTH:
-        throw new Error("SCALE_SMOOTH: not implemented");
       default:
-        throw new Error("Unknown flag or not implemented: " + flags);
+	filter = new ReplicateScaleFilter(width, height);
     }
 
     ImageProducer producer = new FilteredImageSource(getSource(), filter);

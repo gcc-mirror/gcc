@@ -48,11 +48,9 @@ import gnu.classpath.jdwp.id.*;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 /**
  * This class manages objects and referencetypes that are reported
@@ -111,7 +109,7 @@ public class VMIdManager
     /**
      * Returns a new id for the given object
      *
-     * @param object  the object for which an id is desired
+     * @param obj  SoftReference of the object for which an id is desired
      * @returns a suitable object id
      */
     public static ObjectId newObjectId (SoftReference obj)
@@ -171,7 +169,7 @@ public class VMIdManager
     /**
      * Returns a new reference type id for the given class
      *
-     * @param clazz  the <code>Class</code> for which an id is desired
+     * @param ref  SoftReference to the desired type
      * @returns a suitable reference type id or null when the
      * reference is cleared.
      */

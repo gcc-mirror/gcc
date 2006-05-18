@@ -1841,4 +1841,84 @@ public final strictfp class StrictMath
     double t = (float) a;
     return t + a * (1 + t * z + t * v);
   }
+
+  /**
+   * <p>
+   * Returns the sign of the argument as follows:
+   * </p>
+   * <ul>
+   * <li>If <code>a</code> is greater than zero, the result is 1.0.</li>
+   * <li>If <code>a</code> is less than zero, the result is -1.0.</li>
+   * <li>If <code>a</code> is <code>NaN</code>, the result is <code>NaN</code>.
+   * <li>If <code>a</code> is positive or negative zero, the result is the
+   * same.</li>
+   * </ul>
+   * 
+   * @param a the numeric argument.
+   * @return the sign of the argument.
+   * @since 1.5.
+   */
+  public static double signum(double a)
+  {
+    // There's no difference.
+    return Math.signum(a);
+  }
+
+  /**
+   * <p>
+   * Returns the sign of the argument as follows:
+   * </p>
+   * <ul>
+   * <li>If <code>a</code> is greater than zero, the result is 1.0f.</li>
+   * <li>If <code>a</code> is less than zero, the result is -1.0f.</li>
+   * <li>If <code>a</code> is <code>NaN</code>, the result is <code>NaN</code>.
+   * <li>If <code>a</code> is positive or negative zero, the result is the
+   * same.</li>
+   * </ul>
+   * 
+   * @param a the numeric argument.
+   * @return the sign of the argument.
+   * @since 1.5.
+   */
+  public static float signum(float a)
+  {
+    // There's no difference.
+    return Math.signum(a);
+  }
+
+  /**
+   * Return the ulp for the given double argument.  The ulp is the
+   * difference between the argument and the next larger double.  Note
+   * that the sign of the double argument is ignored, that is,
+   * ulp(x) == ulp(-x).  If the argument is a NaN, then NaN is returned.
+   * If the argument is an infinity, then +Inf is returned.  If the
+   * argument is zero (either positive or negative), then
+   * {@link Double#MIN_VALUE} is returned.
+   * @param d the double whose ulp should be returned
+   * @return the difference between the argument and the next larger double
+   * @since 1.5
+   */
+  public static double ulp(double d)
+  {
+    // There's no difference.
+    return Math.ulp(d);
+  }
+
+  /**
+   * Return the ulp for the given float argument.  The ulp is the
+   * difference between the argument and the next larger float.  Note
+   * that the sign of the float argument is ignored, that is,
+   * ulp(x) == ulp(-x).  If the argument is a NaN, then NaN is returned.
+   * If the argument is an infinity, then +Inf is returned.  If the
+   * argument is zero (either positive or negative), then
+   * {@link Float#MIN_VALUE} is returned.
+   * @param f the float whose ulp should be returned
+   * @return the difference between the argument and the next larger float
+   * @since 1.5
+   */
+  public static float ulp(float f)
+  {
+    // There's no difference.
+    return Math.ulp(f);
+  }
 }

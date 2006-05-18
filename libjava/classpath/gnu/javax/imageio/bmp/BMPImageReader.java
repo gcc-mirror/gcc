@@ -145,8 +145,6 @@ public class BMPImageReader extends ImageReader {
 	readHeaders();
 	return decoder.decode((ImageInputStream)input);
     }
-    
-
 }
 
 

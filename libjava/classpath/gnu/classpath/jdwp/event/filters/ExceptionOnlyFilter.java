@@ -59,11 +59,11 @@ public class ExceptionOnlyFilter
   private boolean _uncaught;
 
   /**
-   * Constructs a new <code>ExceptionOnlyFilter</code>
+   * Constructs a new ExceptionOnlyFilter
    *
-   * @param  refid
-   * @param  caught
-   * @param  uncaught
+   * @param  refId     ID of the exception to report
+   * @param  caught    Report caught exceptions
+   * @param  uncaught  Report uncaught exceptions
    * @throws InvalidClassException if refid is invalid
    */
   public ExceptionOnlyFilter (ReferenceTypeId refId, boolean caught,
