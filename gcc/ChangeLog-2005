@@ -1417,7 +1417,7 @@
 
 2005-12-14  Richard Sandiford  <richard@codesourcery.com>
 
-	* gcc/config/arm/arm.md: Provide a big-endian version of the
+	* config/arm/arm.md: Provide a big-endian version of the
 	(zero_extend:SI (subreg:QI ...)) splitter.
 
 2005-12-14  J"orn Rennecke <joern.rennecke@st.com>
@@ -2038,7 +2038,7 @@
 
 2005-12-07  Richard Sandiford  <richard@codesourcery.com>
 
-	* gcc/reload.c (push_secondary_reload): Fix typo:
+	* reload.c (push_secondary_reload): Fix typo:
 	s/insn_constraint/scratch_constraint/.
 
 2005-12-07  Richard Sandiford  <richard@codesourcery.com>
@@ -4153,7 +4153,7 @@
 	(_Unwind_Stop_Fn): New typedef.
 	(_Unwind_ForcedUnwind): Declare.
 	(_Unwind_Resume_or_Rethrow): Declare.
-	* gcc/config/arm/libunwind.S (UNWIND_WRAPER): Add nargs
+	* config/arm/libunwind.S (UNWIND_WRAPER): Add nargs
 	argument.  Adjust.
 	(_Unwind_Resume_or_Rethrow, _Unwind_ForcedUnwind): New.
 	* config/arm/unwind-arm.c (UCB_FORCED_STOP_FN)
@@ -5021,8 +5021,8 @@
 2005-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/18452
-	* gcc/c.opt: Add a -lang-fortran option.
-	* gcc/c-opts.c: Add a lang_fortran flag.
+	* c.opt: Add a -lang-fortran option.
+	* c-opts.c: Add a lang_fortran flag.
 	(c_common_init_options): Handling the -lang-fortran option.
 	(c_common_handle_option): Add a case for Fortran options in
 	preprocessing. Remove cases for -ffixed-form and
@@ -13571,10 +13571,10 @@ Older entries for 2005 can be found in ChangeLog-2005.
 
 2005-06-29  Stuart Hastings  <stuart@apple.com>
 
-	* gcc/config/i386/mmintrin.h: Mark vector intrinsics always_inline.
-	* gcc/config/i386/emmintrin.h: Likewise.
-	* gcc/config/i386/pmmintrin.h: Likewise.
-	* gcc/config/i386/xmmintrin.h: Likewise.
+	* config/i386/mmintrin.h: Mark vector intrinsics always_inline.
+	* config/i386/emmintrin.h: Likewise.
+	* config/i386/pmmintrin.h: Likewise.
+	* config/i386/xmmintrin.h: Likewise.
 					
 2005-06-29  Steve Ellcey  <sje@cup.hp.com>
 
@@ -13686,7 +13686,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* hooks.c (hook_constcharptr_tree_tree_null,
 	hook_constcharptr_int_tree_null,
 	hook_constcharptr_int_tree_tree_null): Likewise.
-	* gcc/doc/tm.texi (TARGET_INVALID_CONVERSION,
+	* doc/tm.texi (TARGET_INVALID_CONVERSION,
 	TARGET_INVALID_UNARY_OP, TARGET_INVALID_BINARY_OP): Document.
 	* c-convert.c (convert): Use invalid_conversion hook.
 	* c-typeck.c (build_unary_op): Use invalid_unary_op hook.
@@ -26399,7 +26399,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 
 2005-04-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
-	* gcc/config/vax/vax.md: Spellcheck, fix whitespace.
+	* config/vax/vax.md: Spellcheck, fix whitespace.
 
 2005-04-01  Ian Lance Taylor  <ian@airs.com>
 
@@ -26989,8 +26989,8 @@ Older entries for 2005 can be found in ChangeLog-2005.
 
 2005-03-31  Paolo Bonzini  <bonzini@gnu.org>
 
-	* gcc/configure.ac (TL_AC_GNU_MAKE_GCC_LIB_PATH): Remove.
-	* gcc/configure: Regenerate.
+	* configure.ac (TL_AC_GNU_MAKE_GCC_LIB_PATH): Remove.
+	* configure: Regenerate.
 
 2005-03-30  Alan Modra  <amodra@bigpond.net.au>
 
@@ -32186,7 +32186,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 
 2005-02-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* gcc/haifa-sched.c (schedule_block): Make queued sched group
+	* haifa-sched.c (schedule_block): Make queued sched group
 	insns return to ready list in the next turn.
 
 2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>

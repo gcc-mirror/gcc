@@ -4937,7 +4937,7 @@
 
 2004-11-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* gcc/cse.c (struct change_cc_mode_args): New structure.
+	* cse.c (struct change_cc_mode_args): New structure.
 	(cse_change_cc_mode_insn): New function.
 	(cse_change_cc_mode): Use validate_change to perfom changes.
 	(cse_change_cc_mode_insns, cse_condition_code_reg):
@@ -7681,10 +7681,10 @@
 	(initelt): Only permit array_designator without '=', not ".foo".
 
 2004-10-25  Kenneth Zadeck <zadeck@naturalbridge.com>
-	* gcc/Makefile.in: removed ggc for cgraphunit.
-	* gcc/cgraph.c.dump_cgraph_node: removed static var analysis.
-	* gcc/cgraph.h: removed static var analysis data structures and calls.
-	* gcc/cgraphunit.c:
+	* Makefile.in: removed ggc for cgraphunit.
+	* cgraph.c.dump_cgraph_node: removed static var analysis.
+	* cgraph.h: removed static var analysis data structures and calls.
+	* cgraphunit.c:
 	cgraph_mark_local_and_external_functions:changed name to
 		cgraph_mark_local_functions
 	(print_order,convert_UIDs_in_bitmap,new_static_vars_info,
@@ -7696,10 +7696,10 @@
 	clear_static_vars_maps,cgraph_propagate_bits,cgraph_characterize_statics):
 	removed.
 	(cgraph_optimize,init_cgraph): removed calls to static vars analysis
-	* gcc/tree-dfa.c find_referenced_vars: removed call to static vars
+	* tree-dfa.c find_referenced_vars: removed call to static vars
 	analysis
-	* gcc/tree-flow.h static_vars_info: removed
-	* gcc/tree-ssa-operands.c (add_call_clobber_ops,add_call_read_ops):
+	* tree-flow.h static_vars_info: removed
+	* tree-ssa-operands.c (add_call_clobber_ops,add_call_read_ops):
 	removed calls to static vars analysis.
 	get_call_expr_operands: removed callee variable.
 
@@ -13030,8 +13030,9 @@
 	add_call_clobber_ops and add_call_read_ops.
 	(add_call_clobber_ops, add_call_read_ops): Added code to reduce
 	the number of vdefs and vuses inserted based on analysis of global
-	variables across calls.  * tree-dfa.c (find_referenced_vars):
-	Needed to reset static var maps before each function is compiled.
+	variables across calls.
+	* tree-dfa.c (find_referenced_vars): Needed to reset static
+	var maps before each function is compiled.
 	* cgraphunit.c:
 	(static_vars_to_consider_by_tree,static_vars_to_consider_by_uid,
 	static_vars_info,functions_to_static_vars_info,module_statics_escape,
@@ -13052,12 +13053,13 @@
 	(cgraph_expand_all_functions): Remove call to
 	cgraph_mark_local_and_external_functions.
 	(cgraph_optimize): Added driver to analyze static variables whose
-	scope is within the compilation unit.  * cgraph.h (struct
-	cgraph_local_info, GTY): Added statics_read, statics_written,
-	local, calls_read_all, calls_write_all, for_functions_valid.
-	(struct cgraph_node): Added next_cycle.  * cgraph.c
-	(dump_cgraph_node): Added print routines for new fields.  *
-	makefile.in: macroized cgraph.h, added cgraphunit.c to the ggc
+	scope is within the compilation unit.
+	* cgraph.h (struct cgraph_local_info, GTY): Added
+	statics_read, statics_written, local, calls_read_all,
+	calls_write_all, for_functions_valid.  (struct cgraph_node):
+	Added next_cycle.
+	* cgraph.c (dump_cgraph_node): Added print routines for new fields.
+	* makefile.in: macroized cgraph.h, added cgraphunit.c to the ggc
 	list.
 
 2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
@@ -13446,7 +13448,7 @@
 	Do call strip_name_encoding before looking up entry in ID hash table.
 	* config/t-darwin (darwin.o): Add target.h to dependencies.
 
-	* gcc/config/rs6000/rs6000.c (print_operand): Use fputs instead
+	* config/rs6000/rs6000.c (print_operand): Use fputs instead
 	of fprintf for register names.
 
 	* output.h (unlikely_section_label): Delete declaration.
@@ -15545,11 +15547,11 @@
 
 2004-09-02  Daniel Berlin  <dberlin@dberlin.org>
 
-	* gcc/common.opt: Rename ivcanon to tree-loop-ivcanon, tree-lim to
+	* common.opt: Rename ivcanon to tree-loop-ivcanon, tree-lim to
 	tree-loop-im.
-	* gcc/tree-ssa-loop.c: Ditto
-	* gcc/tree-ssa-loop-ivcanon.c: Ditto
-	* gcc/doc/invoke.texi: Ditto.
+	* tree-ssa-loop.c: Ditto
+	* tree-ssa-loop-ivcanon.c: Ditto
+	* doc/invoke.texi: Ditto.
 
 2004-09-02  Ziemowit Laski  <zlaski@apple.com>
 
@@ -20621,7 +20623,7 @@
 
 2004-08-03  Paul Brook  <paul@codesourcery.com>
 
-	* gcc/doc/install.texi: Document MPFR requirement.
+	* doc/install.texi: Document MPFR requirement.
 
 2004-08-03  Maciej W. Rozycki  <macro@linux-mips.org>
 
@@ -34461,7 +34463,7 @@
 
 2004-05-06  Stuart Hastings  <stuart@apple.com>
 
-	* gcc/doc/invoke.texi: Restore -fgcse-after-reload doc from 1.421,
+	* doc/invoke.texi: Restore -fgcse-after-reload doc from 1.421,
 	mistakenly clobbered by 1.423.
 
 2004-05-06  Richard Sandiford  <rsandifo@redhat.com>
@@ -34570,7 +34572,7 @@
 	(arm_hard_regno_mode_ok): Only allow even reg pairs for ldrd.
 	* config/arm/arm.h (TARGET_LDRD): Define.
 	(EXTRA_CONSTRAINT_STR_ARM): Add 'Uy'.
-	* config/gcc/arm/arm.md (arm_movdi): Allow all valid memory operands.
+	* config/arm/arm.md (arm_movdi): Allow all valid memory operands.
 	New splitter for invalid doubleword loads.
 	* config/arm/iwmmxt.md (iwmmxt_arm_movdi): Use Uy constraint.
 	* config/arm/vfp.md (arm_movdi_vfp): Allow all valid memory operands.
@@ -34648,7 +34650,7 @@
 
 2004-05-04  Bernard Giroud  <bgiroud2@free.fr>
 
-	* gcc/gcc/vmsdbgout.c (vms_func_node, vms_func_ref): New.
+	* vmsdbgout.c (vms_func_node, vms_func_ref): New.
 	(func_table): Change type from char ** to vms_func_ref.
 	(write_rtnbeg):  Update to reflect func_table change.  Use
 	fde->funcdef_number instead of rtnnum in output.
@@ -35474,13 +35476,13 @@
 	PR bootstrap/14992
 	* gcc.c (init_gcc_specs): Test USE_LD_AS_NEEDED, not HAVE_LD_AS_NEEDED.
 	* config/linux.h (USE_LD_AS_NEEDED): Define.
-	* gcc/config/alpha/linux.h (USE_LD_AS_NEEDED): Define.
-	* gcc/config/arm/linux-elf.h (USE_LD_AS_NEEDED): Define.
-	* gcc/config/rs6000/linux.h (USE_LD_AS_NEEDED): Define.
-	* gcc/config/rs6000/linux64.h (USE_LD_AS_NEEDED): Define.
-	* gcc/config/sh/linux.h (USE_LD_AS_NEEDED): Define.
-	* gcc/config/sparc/linux.h (USE_LD_AS_NEEDED): Define.
-	* gcc/config/sparc/linux64.h (USE_LD_AS_NEEDED): Define.
+	* config/alpha/linux.h (USE_LD_AS_NEEDED): Define.
+	* config/arm/linux-elf.h (USE_LD_AS_NEEDED): Define.
+	* config/rs6000/linux.h (USE_LD_AS_NEEDED): Define.
+	* config/rs6000/linux64.h (USE_LD_AS_NEEDED): Define.
+	* config/sh/linux.h (USE_LD_AS_NEEDED): Define.
+	* config/sparc/linux.h (USE_LD_AS_NEEDED): Define.
+	* config/sparc/linux64.h (USE_LD_AS_NEEDED): Define.
 
 2004-04-22  Per Bothner  <per@bothner.com>
 
@@ -35495,8 +35497,8 @@
 2004-04-22  Jan Hubicka  <jh@suse.cz>
 	    Mostafa Hagog <mustafa@il.ibm.com>
 
-      * cfgloopmanip.c (scale_bbs_frequencies): Use RDIV macro
-      * cfgloopanal.c (expected_loop_iterations): Change the return value
+	* cfgloopmanip.c (scale_bbs_frequencies): Use RDIV macro
+	* cfgloopanal.c (expected_loop_iterations): Change the return value
 
 2004-04-22  Jakub Jelinek  <jakub@redhat.com>
 
@@ -36689,8 +36691,8 @@
 
 2004-04-02  Gabor Loki <loki@inf.u-szeged.hu>
 
-       * opts.c (decode_options): Do function inlining with very small
-       max-inline-insns-* parameters when optimizing for size.
+	* opts.c (decode_options): Do function inlining with very small
+	max-inline-insns-* parameters when optimizing for size.
 
 2004-04-02  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -39321,11 +39323,11 @@
 
 2004-03-04  Stuart Hastings  <stuart@apple.com>
 
-	* gcc/doc/invoke.texi: Document -mlongcall for Darwin/PPC.
+	* doc/invoke.texi: Document -mlongcall for Darwin/PPC.
 
 2004-03-04  Stuart Hastings  <stuart@apple.com>
 
-	* gcc/config/i386/darwin.h: Darwin/x86 doesn't support CPUs before
+	* config/i386/darwin.h: Darwin/x86 doesn't support CPUs before
 	686, tell Darwin assembler to allow prefetch insns, non-empty def
 	of SUBTARGET_OPTION_TRANSLATE_TABLE.
 
@@ -39499,7 +39501,7 @@
 
 2004-03-03  Stuart Hastings  <stuart@apple.com>
 
-	* gcc/config.gcc: Arrange for Darwin/x86 to build libgcc_eh.a.
+	* config.gcc: Arrange for Darwin/x86 to build libgcc_eh.a.
 
 2004-03-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -39935,7 +39937,7 @@
 
 2004-03-02  Loren James Rittle  <ljrittle@acm.org>
 
-	* gcc/doc/install.texi (*-*-freebsd*): Update target information.
+	* doc/install.texi (*-*-freebsd*): Update target information.
 
 2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -40537,7 +40539,7 @@
 	functions used to throttle the insn movement in first
 	scheduling pass for SH.
 
-	* gcc/doc/tm.texi: Document TARGET_SCHED_INIT_GLOBAL and
+	* doc/tm.texi: Document TARGET_SCHED_INIT_GLOBAL and
 	TARGET_SCHED_FINISH_GLOBAL.
 
 2004-02-24  Alexandre Oliva  <aoliva@redhat.com>
@@ -40618,7 +40620,7 @@
 	2003-11-30  Alexandre Oliva  <aoliva@redhat.com>
 	* config/frv/frv.c (int_2word_operand): Reject LABELs, SYMBOL_REFs
 	and CONSTs in FDPIC mode.
-	* gcc/config.gcc (with_cpu): Default to fr400 on frv-*-*linux*.
+	* config.gcc (with_cpu): Default to fr400 on frv-*-*linux*.
 	2003-11-29  Richard Sandiford  <rsandifo@redhat.com>
 	* config/frv/frv.c (move_source_operand): Don't accept symbolic
 	constants.
@@ -42321,7 +42323,7 @@
 
 2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* gcc/config/rs6000/rs6000.c (rs6000_override_options)
+	* config/rs6000/rs6000.c (rs6000_override_options)
 	Set AltiVec ABI and vrsave as default for ppc64 linux.
 	(init_cumulative_args): Post error, if try to return
 	value in AltiVec register without enable AltiVec.
@@ -45103,7 +45105,7 @@
 
 2004-01-26  Fariborz Jahanian  <fjahanian@apple.com>
 
-	* gcc/config/rs6000/rs6000.md (save_stack_nonlocal):
+	* config/rs6000/rs6000.md (save_stack_nonlocal):
 	Use adjust_address_nv directly with appropriate mode.
 	(restore_stack_nonlocal): Ditto.
 
@@ -46054,7 +46056,7 @@
 
 2004-01-20  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* gcc/config/rs6000/rs6000.c (function_arg) Handle
+	* config/rs6000/rs6000.c (function_arg) Handle
 	vector register special in function without prototype.
 	(function_arg_advance): Vector parameters get always
 	GPRs allocated for the linux64 target.
@@ -46502,8 +46504,8 @@
 
 	* fixincl/inclhack.def (bad_lval): Sort file list.
 	Add many missing files up to Tru64 UNIX V5.1B.
-	* gcc/fixinc/tests/base/libgen.h: Renamed to ...
-	* gcc/fixinc/tests/base/dirent.h: ... this to match new file list
+	* fixinc/tests/base/libgen.h: Renamed to ...
+	* fixinc/tests/base/dirent.h: ... this to match new file list
 	order.
 
 	* fixinc/fixincl.x: Regenerate.
@@ -46875,7 +46877,7 @@
 
 2004-01-14  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* gcc/config/rs6000/rs6000.c (rs6000_stack_info)
+	* config/rs6000/rs6000.c (rs6000_stack_info)
 	Calculate always vrsave_mask if TARGET_ALTIVEC.
 	(rs6000_emit_prologue): Emit code for vrsave
 	only if TARGET_ALTIVEC_VRSAVE.
@@ -47151,21 +47153,21 @@
 2004-01-12  Hartmut Penner  <hpenner@de.ibm.com>
 
 	PR target/13534
-	* gcc/config/rs6000/rs6000.c (word_offset_memref_operand): New
+	* config/rs6000/rs6000.c (word_offset_memref_operand): New
 	predicate to handle 'ld' conform addresses.
-	* gcc/config/rs6000/rs6000.h (EXTRA_CONSTRAINT): New 'Y'
+	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): New 'Y'
 	contraint.
 	(EXTRA_MEMORY_CONSTRAINT): Tell reload which constraint
 	are memory contraints.
-	* gcc/config/rs6000/rs6000-protos.h (word_offset_memref_operand):
+	* config/rs6000/rs6000-protos.h (word_offset_memref_operand):
 	New prototype.
-	* gcc/config/rs6000/rs6000.md (*movdf_hardfloat64):
+	* config/rs6000/rs6000.md (*movdf_hardfloat64):
 	Change 'o' to 'Y' constraint.
 	(*movdf_softfloat64): Ditto.
 
 2004-01-12  Bernardo Innocenti  <bernie@develer.com>
 
-	* gcc/config/m68k/m68k.md: Switch from the "*..." syntax to the
+	* config/m68k/m68k.md: Switch from the "*..." syntax to the
 	brace-enclosed syntax in all C output statements.
 
 2004-01-12  David Edelsohn  <edelsohn@gnu.org>
@@ -47485,7 +47487,7 @@
 
 2004-01-08  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* gcc/config/rs6000/rs6000.c (easy_vector_constant): Accept
+	* config/rs6000/rs6000.c (easy_vector_constant): Accept
 	all vector constant loadable by vsplt*.
 	(output_vec_const_move): Likewise.
 
