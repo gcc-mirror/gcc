@@ -348,6 +348,16 @@ gfc_show_expr (gfc_expr * p)
       break;
 
     case EXPR_CONSTANT:
+      if (p->from_H || p->ts.type == BT_HOLLERITH)
+	{
+	  gfc_status ("%dH", p->value.character.length);
+	  c = p->value.character.string;
+	  for (i = 0; i < p->value.character.length; i++, c++)
+	    {
+	      gfc_status_char (*c);
+	    }
+	  break;
+	}
       switch (p->ts.type)
 	{
 	case BT_INTEGER:

@@ -192,6 +192,9 @@ create_character_intializer (gfc_expr * init, gfc_typespec * ts,
   if (len < end - start && ref == NULL)
     memset (&dest[start + len], ' ', end - (start + len));
 
+  if (rvalue->ts.type == BT_HOLLERITH)
+    init->from_H = 1;
+
   return init;
 }
 
