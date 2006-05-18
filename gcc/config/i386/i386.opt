@@ -205,6 +205,10 @@ msselibm
 Target Mask(SSELIBM)
 Use SSE2 ABI libgcc-math routines if using SSE math
 
+mstackrealign
+Target Report Var(ix86_force_align_arg_pointer)
+Realign stack in prologue
+
 msvr3-shlib
 Target Report Mask(SVR3_SHLIB)
 Uninitialized locals in .bss

@@ -1049,6 +1049,10 @@ int x86_prefetch_sse;
 /* ix86_regparm_string as a number */
 static int ix86_regparm;
 
+/* -mstackrealign option */
+extern int ix86_force_align_arg_pointer;
+static const char ix86_force_align_arg_pointer_string[] = "force_align_arg_pointer";
+
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
 
@@ -2225,6 +2229,9 @@ const struct attribute_spec ix86_attribute_table[] =
   /* Sseregparm attribute says we are using x86_64 calling conventions
      for FP arguments.  */
   { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute },
+  /* force_align_arg_pointer says this function realigns the stack at entry.  */
+  { (const char *)&ix86_force_align_arg_pointer_string, 0, 0,
+    false, true,  true, ix86_handle_cconv_attribute },
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
   { "dllimport", 0, 0, false, false, false, handle_dll_attribute },
   { "dllexport", 0, 0, false, false, false, handle_dll_attribute },
@@ -2367,6 +2374,15 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 	  *no_add_attrs = true;
 	}
 
+      if (!TARGET_64BIT
+	  && lookup_attribute (ix86_force_align_arg_pointer_string,
+			       TYPE_ATTRIBUTES (*node))
+	  && compare_tree_int (cst, REGPARM_MAX-1))
+	{
+	  error ("%s functions limited to %d register parameters",
+		 ix86_force_align_arg_pointer_string, REGPARM_MAX-1);
+	}
+
       return NULL_TREE;
     }
 
@@ -2505,6 +2521,18 @@ ix86_function_regparm (tree type, tree decl)
 	      if (local_regparm == 3
 		  && decl_function_context (decl)
 		  && !DECL_NO_STATIC_CHAIN (decl))
+		local_regparm = 2;
+	      /* If the function realigns its stackpointer, the
+		 prologue will clobber %ecx.  If we've already
+		 generated code for the callee, the callee
+		 DECL_STRUCT_FUNCTION is gone, so we fall back to
+		 scanning the attributes for the self-realigning
+		 property.  */
+	      if ((DECL_STRUCT_FUNCTION (decl)
+		   && DECL_STRUCT_FUNCTION (decl)->machine->force_align_arg_pointer)
+		  || (!DECL_STRUCT_FUNCTION (decl)
+		      && lookup_attribute (ix86_force_align_arg_pointer_string,
+					   TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
 		local_regparm = 2;
 	      /* Each global register variable increases register preassure,
 		 so the more global reg vars there are, the smaller regparm
@@ -5181,11 +5209,28 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset, int style)
 static rtx
 ix86_internal_arg_pointer (void)
 {
-  if (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
-      && DECL_NAME (current_function_decl)
-      && MAIN_NAME_P (DECL_NAME (current_function_decl))
-      && DECL_FILE_SCOPE_P (current_function_decl))
+  bool has_force_align_arg_pointer =
+    (0 != lookup_attribute (ix86_force_align_arg_pointer_string,
+			    TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))));
+  if ((FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+       && DECL_NAME (current_function_decl)
+       && MAIN_NAME_P (DECL_NAME (current_function_decl))
+       && DECL_FILE_SCOPE_P (current_function_decl))
+      || ix86_force_align_arg_pointer
+      || has_force_align_arg_pointer)
     {
+      /* Nested functions can't realign the stack due to a register
+	 conflict.  */
+      if (DECL_CONTEXT (current_function_decl)
+	  && TREE_CODE (DECL_CONTEXT (current_function_decl)) == FUNCTION_DECL)
+	{
+	  if (ix86_force_align_arg_pointer)
+	    warning (0, "-mstackrealign ignored for nested functions");
+	  if (has_force_align_arg_pointer)
+	    error ("%s not supported for nested functions",
+		   ix86_force_align_arg_pointer_string);
+	  return virtual_incoming_args_rtx;
+	}
       cfun->machine->force_align_arg_pointer = gen_rtx_REG (Pmode, 2);
       return copy_to_reg (cfun->machine->force_align_arg_pointer);
     }

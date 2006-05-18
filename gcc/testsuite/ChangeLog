@@ -1,3 +1,10 @@
+2006-05-12  Stuart Hastings  <stuart@apple.com>
+
+	* testsuite/gcc.target/i386/20060512-1.c: New.
+	* testsuite/gcc.target/i386/20060512-2.c: New.
+	* testsuite/gcc.target/i386/20060512-3.c: New.
+	* testsuite/gcc.target/i386/20060512-4.c: New.
+															
 2006-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26122

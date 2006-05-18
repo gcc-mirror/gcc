@@ -2207,6 +2207,20 @@ SSE registers instead of on the stack.  Functions that take a
 variable number of arguments will continue to pass all of their
 floating point arguments on the stack.
 
+@item force_align_arg_pointer
+@cindex @code{force_align_arg_pointer} attribute
+On the Intel x86, the @code{force_align_arg_pointer} attribute may be
+applied to individual function definitions, generating an alternate
+prologue and epilogue that realigns the runtime stack.  This supports
+mixing legacy codes that run with a 4-byte aligned stack with modern
+codes that keep a 16-byte stack for SSE compatibility.  The alternate
+prologue and epilogue are slower and bigger than the regular ones, and
+the alternate prologue requires a scratch register; this lowers the
+number of registers available if used in conjunction with the
+@code{regparm} attribute.  The @code{force_align_arg_pointer}
+attribute is incompatible with nested functions; this is considered a
+hard error.
+
 @item returns_twice
 @cindex @code{returns_twice} attribute
 The @code{returns_twice} attribute tells the compiler that a function may
