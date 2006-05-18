@@ -1,6 +1,6 @@
 # Special test cases.  These require tricky build procedures.
 
-proc gcj_special_run {} {
+proc gcj_special_pr21115 {} {
   global srcdir subdir env
 
   # ---- PR 21115 -------------------------------------------------------
@@ -13,7 +13,7 @@ proc gcj_special_run {} {
   }
   pass "bytecompile pr21115I.java"
 
-    if {! [gcj_link pr21115 pr21115 [list ${srcdir}/${subdir}/pr21115.java]]} {
+  if {! [gcj_link pr21115 pr21115 [list ${srcdir}/${subdir}/pr21115.java]]} {
     fail "compiling/linking pr21115.java"
     # FIXME
     return 0
@@ -27,4 +27,72 @@ proc gcj_special_run {} {
   return 1
 }
 
-gcj_special_run
+# Write a .java file and bytecompile it.  Return 0 on failure.
+proc gcj_write_and_byte_compile {name contents} {
+  set fd [open $name w]
+  puts $fd $contents
+  close $fd
+
+  if {! [bytecompile_file $name [pwd]]} {
+    fail "bytecompile $name"
+    # FIXME - should use `untested' on all remaining tests.
+    # But that is hard.
+    return 0
+  }
+  pass "bytecompile $name"
+  return 1
+}
+
+# Check that BC-compiled code lazily throws IllegalAccessError.
+proc gcj_special_lazy_illegal_access {} {
+  global srcdir subdir env
+
+  # Write and compile the initial files.
+  if {! [gcj_write_and_byte_compile LazyA.java {
+    public class LazyA {
+      public static void m() { }
+    }
+  }]} {
+    return 0
+  }
+  if {! [gcj_write_and_byte_compile LazyB.java {
+    public class LazyB {
+      public static void m() { }
+      public static void main(String[] args) { }
+    }
+  }]} {
+    return 0
+  }
+
+  # Create the expected output file.
+  set fd [open Lazy.out w]
+  close $fd
+
+  # Now recompile LazyA with different access for m().
+  if {! [gcj_write_and_byte_compile LazyA.java {
+    public class LazyA {
+      private static void m() { }
+    }
+  }]} {
+    return 0
+  }
+
+  # Link and run... this should still work, since we don't actually
+  # try to call LazyA.m().
+  if {! [gcj_link Lazy LazyB {LazyA.class LazyB.class} \
+	   additional_flags=-findirect-dispatch]} {
+    fail "compiling/linking pr21115.java"
+    # FIXME
+    return 0
+  }
+
+  if {! [gcj_invoke Lazy Lazy.out ""]} {
+    # FIXME
+    return 0
+  }
+
+  return 1
+}
+
+gcj_special_pr21115
+gcj_special_lazy_illegal_access
