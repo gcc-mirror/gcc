@@ -1,6 +1,12 @@
+2006-05-18  Michael Matz  <matz@suse.de>
+
+	PR target/27599
+	* config.host: Make assignments to host_xmake_file cumulative.
+	* config.host (*-darwin*): Test $host, not $target.
+
 2006-05-12  Stuart Hastings  <stuart@apple.com>
 
-        * gcc/config/i386/i386.opt (-mstackrealign): New flag.  *
+	* gcc/config/i386/i386.opt (-mstackrealign): New flag.  *
 	gcc/config/i386/i386.c (force_align_arg_pointer): New attribute.
 	(ix86_handle_cconv_attribute): Emit error when
 	force_align_arg_pointer attribute collides with too many regparms.
@@ -190,7 +196,7 @@
 
 2006-05-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
-        PR target/27599
+	PR target/27599
 	* config.host (i[34567]86-*-mingw*): Append i386/x-mingw32 to
 	host_xmake_file.
 
