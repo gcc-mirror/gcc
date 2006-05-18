@@ -103,7 +103,7 @@ alloc_pool_descriptor (const char *name)
 
   slot = (struct alloc_pool_descriptor **)
     htab_find_slot_with_hash (alloc_pool_hash, name,
-		    	      htab_hash_pointer (name),
+			      htab_hash_pointer (name),
 			      1);
   if (*slot)
     return *slot;
@@ -248,12 +248,12 @@ pool_alloc (alloc_pool pool)
 	/* Mark the element to be free.  */
 	((allocation_object *) block)->id = 0;
 #endif
-        header = (alloc_pool_list) USER_PTR_FROM_ALLOCATION_OBJECT_PTR (block);
-        header->next = pool->free_list;
-        pool->free_list = header;
+	header = (alloc_pool_list) USER_PTR_FROM_ALLOCATION_OBJECT_PTR (block);
+	header->next = pool->free_list;
+	pool->free_list = header;
       }
       /* Also update the number of elements we have free/allocated, and
-         increment the allocated block count.  */
+	 increment the allocated block count.  */
       pool->elts_allocated += pool->elts_per_block;
       pool->elts_free += pool->elts_per_block;
       pool->blocks_allocated += 1;

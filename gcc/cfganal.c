@@ -981,23 +981,23 @@ dfs_enumerate_from (basic_block bb, int reverse,
       edge_iterator ei;
       lbb = st[--sp];
       if (reverse)
-        {
+	{
 	  FOR_EACH_EDGE (e, ei, lbb->preds)
 	    if (!VISITED_P (e->src) && predicate (e->src, data))
 	      {
-	        gcc_assert (tv != rslt_max);
-	        rslt[tv++] = st[sp++] = e->src;
-	        MARK_VISITED (e->src);
+		gcc_assert (tv != rslt_max);
+		rslt[tv++] = st[sp++] = e->src;
+		MARK_VISITED (e->src);
 	      }
-        }
+	}
       else
-        {
+	{
 	  FOR_EACH_EDGE (e, ei, lbb->succs)
 	    if (!VISITED_P (e->dest) && predicate (e->dest, data))
 	      {
-	        gcc_assert (tv != rslt_max);
-	        rslt[tv++] = st[sp++] = e->dest;
-	        MARK_VISITED (e->dest);
+		gcc_assert (tv != rslt_max);
+		rslt[tv++] = st[sp++] = e->dest;
+		MARK_VISITED (e->dest);
 	      }
 	}
     }
@@ -1012,24 +1012,24 @@ dfs_enumerate_from (basic_block bb, int reverse,
 
 
 /* Compute dominance frontiers, ala Harvey, Ferrante, et al.
-   
+
    This algorithm can be found in Timothy Harvey's PhD thesis, at
    http://www.cs.rice.edu/~harv/dissertation.pdf in the section on iterative
    dominance algorithms.
 
    First, we identify each join point, j (any node with more than one
-   incoming edge is a join point). 
+   incoming edge is a join point).
 
    We then examine each predecessor, p, of j and walk up the dominator tree
-   starting at p. 
-   
+   starting at p.
+
    We stop the walk when we reach j's immediate dominator - j is in the
    dominance frontier of each of  the nodes in the walk, except for j's
    immediate dominator. Intuitively, all of the rest of j's dominators are
    shared by j's predecessors as well.
    Since they dominate j, they will not have j in their dominance frontiers.
 
-   The number of nodes touched by this algorithm is equal to the size 
+   The number of nodes touched by this algorithm is equal to the size
    of the dominance frontiers, no more, no less.
 */
 
@@ -1050,11 +1050,11 @@ compute_dominance_frontiers_1 (bitmap *frontiers)
 	      basic_block domsb;
 	      if (runner == ENTRY_BLOCK_PTR)
 		continue;
-	      
+
 	      domsb = get_immediate_dominator (CDI_DOMINATORS, b);
 	      while (runner != domsb)
 		{
-		  bitmap_set_bit (frontiers[runner->index], 
+		  bitmap_set_bit (frontiers[runner->index],
 				  b->index);
 		  runner = get_immediate_dominator (CDI_DOMINATORS,
 						    runner);
@@ -1062,8 +1062,8 @@ compute_dominance_frontiers_1 (bitmap *frontiers)
 	    }
 	}
     }
-}	      
-  
+}
+
 
 void
 compute_dominance_frontiers (bitmap *frontiers)

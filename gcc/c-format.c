@@ -670,20 +670,20 @@ static const format_char_info time_char_table[] =
 {
   /* C89 conversion specifiers.  */
   { "ABZab",		0, STD_C89, NOLENGTHS, "^#",     "",   NULL },
-  { "cx", 		0, STD_C89, NOLENGTHS, "E",      "3",  NULL },
+  { "cx",		0, STD_C89, NOLENGTHS, "E",      "3",  NULL },
   { "HIMSUWdmw",	0, STD_C89, NOLENGTHS, "-_0Ow",  "",   NULL },
   { "j",		0, STD_C89, NOLENGTHS, "-_0Ow",  "o",  NULL },
   { "p",		0, STD_C89, NOLENGTHS, "#",      "",   NULL },
   { "X",		0, STD_C89, NOLENGTHS, "E",      "",   NULL },
-  { "y", 		0, STD_C89, NOLENGTHS, "EO-_0w", "4",  NULL },
+  { "y",		0, STD_C89, NOLENGTHS, "EO-_0w", "4",  NULL },
   { "Y",		0, STD_C89, NOLENGTHS, "-_0EOw", "o",  NULL },
   { "%",		0, STD_C89, NOLENGTHS, "",       "",   NULL },
   /* C99 conversion specifiers.  */
   { "C",		0, STD_C99, NOLENGTHS, "-_0EOw", "o",  NULL },
-  { "D", 		0, STD_C99, NOLENGTHS, "",       "2",  NULL },
+  { "D",		0, STD_C99, NOLENGTHS, "",       "2",  NULL },
   { "eVu",		0, STD_C99, NOLENGTHS, "-_0Ow",  "",   NULL },
   { "FRTnrt",		0, STD_C99, NOLENGTHS, "",       "",   NULL },
-  { "g", 		0, STD_C99, NOLENGTHS, "O-_0w",  "2o", NULL },
+  { "g",		0, STD_C99, NOLENGTHS, "O-_0w",  "2o", NULL },
   { "G",		0, STD_C99, NOLENGTHS, "-_0Ow",  "o",  NULL },
   { "h",		0, STD_C99, NOLENGTHS, "^#",     "",   NULL },
   { "z",		0, STD_C99, NOLENGTHS, "O",      "o",  NULL },
@@ -702,49 +702,49 @@ static const format_char_info monetary_char_table[] =
 /* This must be in the same order as enum format_type.  */
 static const format_kind_info format_types_orig[] =
 {
-  { "printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL, 
+  { "printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL,
     printf_flag_specs, printf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_EMPTY_PREC_OK,
     'w', 0, 'p', 0, 'L',
     &integer_type_node, &integer_type_node
   },
-  { "asm_fprintf",   asm_fprintf_length_specs,  asm_fprintf_char_table, " +#0-", NULL, 
+  { "asm_fprintf",   asm_fprintf_length_specs,  asm_fprintf_char_table, " +#0-", NULL,
     asm_fprintf_flag_specs, asm_fprintf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_EMPTY_PREC_OK,
     'w', 0, 'p', 0, 'L',
     NULL, NULL
   },
-  { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q+", NULL, 
+  { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q+", NULL,
     gcc_diag_flag_specs, gcc_diag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
   },
-  { "gcc_tdiag",   gcc_tdiag_length_specs,  gcc_tdiag_char_table, "q+", NULL, 
+  { "gcc_tdiag",   gcc_tdiag_length_specs,  gcc_tdiag_char_table, "q+", NULL,
     gcc_tdiag_flag_specs, gcc_tdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
   },
-  { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "q+", NULL, 
+  { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "q+", NULL,
     gcc_cdiag_flag_specs, gcc_cdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
   },
-  { "gcc_cxxdiag",   gcc_cxxdiag_length_specs,  gcc_cxxdiag_char_table, "q+#", NULL, 
+  { "gcc_cxxdiag",   gcc_cxxdiag_length_specs,  gcc_cxxdiag_char_table, "q+#", NULL,
     gcc_cxxdiag_flag_specs, gcc_cxxdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
   },
-  { "gcc_gfc", NULL, gcc_gfc_char_table, "", NULL, 
+  { "gcc_gfc", NULL, gcc_gfc_char_table, "", NULL,
     NULL, gcc_gfc_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 0, 0, 0,
     NULL, NULL
   },
-  { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL, 
+  { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL,
     scanf_flag_specs, scanf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD|FMT_FLAG_DOLLAR_GAP_POINTER_OK,
     'w', 0, 0, '*', 'L',
@@ -755,7 +755,7 @@ static const format_kind_info format_types_orig[] =
     FMT_FLAG_FANCY_PERCENT_OK, 'w', 0, 0, 0, 0,
     NULL, NULL
   },
-  { "strfmon",  strfmon_length_specs, monetary_char_table, "=^+(!-", NULL, 
+  { "strfmon",  strfmon_length_specs, monetary_char_table, "=^+(!-", NULL,
     strfmon_flag_specs, strfmon_flag_pairs,
     FMT_FLAG_ARG_CONVERT, 'w', '#', 'p', 0, 'L',
     NULL, NULL
@@ -1366,7 +1366,7 @@ check_format_arg (void *ctx, tree format_tree,
     {
       /* Variable length arrays can't be initialized.  */
       gcc_assert (TREE_CODE (array_size) == INTEGER_CST);
-      
+
       if (host_integerp (array_size, 0))
 	{
 	  HOST_WIDE_INT array_size_value = TREE_INT_CST_LOW (array_size);
@@ -1820,7 +1820,7 @@ check_format_info_main (format_check_results *res,
 	  ++fci;
       if (fci->format_chars == 0)
 	{
-          if (ISGRAPH (format_char))
+	  if (ISGRAPH (format_char))
 	    warning (OPT_Wformat, "unknown conversion type character %qc in format",
 		     format_char);
 	  else
@@ -2337,7 +2337,7 @@ find_char_info_specifier_index (const format_char_info *fci, int c)
   for (i = 0; fci->format_chars; i++, fci++)
     if (strchr (fci->format_chars, c))
       return i;
-  
+
   /* We shouldn't be looking for a non-existent specifier.  */
   gcc_unreachable ();
 }
@@ -2353,7 +2353,7 @@ find_length_info_modifier_index (const format_length_info *fli, int c)
   for (i = 0; fli->name; i++, fli++)
     if (strchr (fli->name, c))
       return i;
-  
+
   /* We shouldn't be looking for a non-existent modifier.  */
   gcc_unreachable ();
 }
@@ -2370,7 +2370,7 @@ init_dynamic_asm_fprintf_info (void)
     {
       format_length_info *new_asm_fprintf_length_specs;
       unsigned int i;
-	  
+
       /* Find the underlying type for HOST_WIDE_INT.  For the %w
 	 length modifier to work, one must have issued: "typedef
 	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
@@ -2424,7 +2424,7 @@ static void
 init_dynamic_gfc_info (void)
 {
   static tree locus;
-  
+
   if (!locus)
     {
       static format_char_info *gfc_fci;
@@ -2458,7 +2458,7 @@ init_dynamic_gfc_info (void)
 			      sizeof (gcc_gfc_char_table),
 			      sizeof (gcc_gfc_char_table));
       if (locus)
-        {
+	{
 	  const unsigned i = find_char_info_specifier_index (gfc_fci, 'L');
 	  gfc_fci[i].types[0].type = &locus;
 	  gfc_fci[i].pointer_count = 1;
@@ -2522,7 +2522,7 @@ init_dynamic_diag_info (void)
 		t = TREE_TYPE (TREE_TYPE (t));
 	    }
 	}
-    
+
       /* Find the underlying type for HOST_WIDE_INT.  For the %w
 	 length modifier to work, one must have issued: "typedef
 	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
@@ -2551,7 +2551,7 @@ init_dynamic_diag_info (void)
 		}
 	    }
 	}
-      
+
       /* Assign the new data for use.  */
 
       /* All the GCC diag formats use the same length specs.  */
@@ -2563,9 +2563,9 @@ init_dynamic_diag_info (void)
 	  diag_ls = (format_length_info *)
 		    xmemdup (gcc_diag_length_specs,
 			     sizeof (gcc_diag_length_specs),
-			     sizeof (gcc_diag_length_specs)); 
+			     sizeof (gcc_diag_length_specs));
       if (hwi)
-        {
+	{
 	  /* HOST_WIDE_INT must be one of 'long' or 'long long'.  */
 	  i = find_length_info_modifier_index (diag_ls, 'w');
 	  if (hwi == long_integer_type_node)
@@ -2584,13 +2584,13 @@ init_dynamic_diag_info (void)
 			      sizeof (gcc_diag_char_table),
 			      sizeof (gcc_diag_char_table));
       if (loc)
-        {
+	{
 	  i = find_char_info_specifier_index (diag_fci, 'H');
 	  diag_fci[i].types[0].type = &loc;
 	  diag_fci[i].pointer_count = 1;
 	}
       if (t)
-        {
+	{
 	  i = find_char_info_specifier_index (diag_fci, 'J');
 	  diag_fci[i].types[0].type = &t;
 	  diag_fci[i].pointer_count = 1;
@@ -2604,13 +2604,13 @@ init_dynamic_diag_info (void)
 			       sizeof (gcc_tdiag_char_table),
 			       sizeof (gcc_tdiag_char_table));
       if (loc)
-        {
+	{
 	  i = find_char_info_specifier_index (tdiag_fci, 'H');
 	  tdiag_fci[i].types[0].type = &loc;
 	  tdiag_fci[i].pointer_count = 1;
 	}
       if (t)
-        {
+	{
 	  /* All specifiers taking a tree share the same struct.  */
 	  i = find_char_info_specifier_index (tdiag_fci, 'D');
 	  tdiag_fci[i].types[0].type = &t;
@@ -2628,13 +2628,13 @@ init_dynamic_diag_info (void)
 			       sizeof (gcc_cdiag_char_table),
 			       sizeof (gcc_cdiag_char_table));
       if (loc)
-        {
+	{
 	  i = find_char_info_specifier_index (cdiag_fci, 'H');
 	  cdiag_fci[i].types[0].type = &loc;
 	  cdiag_fci[i].pointer_count = 1;
 	}
       if (t)
-        {
+	{
 	  /* All specifiers taking a tree share the same struct.  */
 	  i = find_char_info_specifier_index (cdiag_fci, 'D');
 	  cdiag_fci[i].types[0].type = &t;
@@ -2652,13 +2652,13 @@ init_dynamic_diag_info (void)
 				 sizeof (gcc_cxxdiag_char_table),
 				 sizeof (gcc_cxxdiag_char_table));
       if (loc)
-        {
+	{
 	  i = find_char_info_specifier_index (cxxdiag_fci, 'H');
 	  cxxdiag_fci[i].types[0].type = &loc;
 	  cxxdiag_fci[i].pointer_count = 1;
 	}
       if (t)
-        {
+	{
 	  /* All specifiers taking a tree share the same struct.  */
 	  i = find_char_info_specifier_index (cxxdiag_fci, 'D');
 	  cxxdiag_fci[i].types[0].type = &t;
@@ -2750,14 +2750,14 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       || info.format_type == gcc_cxxdiag_format_type)
     {
       /* Our first time through, we have to make sure that our
-         format_type data is allocated dynamically and is modifiable.  */
+	 format_type data is allocated dynamically and is modifiable.  */
       if (!dynamic_format_types)
 	format_types = dynamic_format_types = (format_kind_info *)
 	  xmemdup (format_types_orig, sizeof (format_types_orig),
 		   sizeof (format_types_orig));
 
       /* If this is format __asm_fprintf__, we have to initialize
-         GCC's notion of HOST_WIDE_INT for checking %wd.  */
+	 GCC's notion of HOST_WIDE_INT for checking %wd.  */
       if (info.format_type == asm_fprintf_format_type)
 	init_dynamic_asm_fprintf_info ();
       /* If this is format __gcc_gfc__, we have to initialize GCC's
@@ -2765,7 +2765,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       else if (info.format_type == gcc_gfc_format_type)
 	init_dynamic_gfc_info ();
       /* If this is one of the diagnostic attributes, then we have to
-         initialize 'location_t' and 'tree' at runtime.  */
+	 initialize 'location_t' and 'tree' at runtime.  */
       else if (info.format_type == gcc_diag_format_type
 	       || info.format_type == gcc_tdiag_format_type
 	       || info.format_type == gcc_cdiag_format_type

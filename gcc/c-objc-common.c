@@ -198,7 +198,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'T':
       gcc_assert (TYPE_P (t));
       name = TYPE_NAME (t);
-      
+
       if (name && TREE_CODE (name) == TYPE_DECL)
 	{
 	  if (DECL_NAME (name))

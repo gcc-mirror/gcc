@@ -741,7 +741,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_freplace_objc_classes:
       flag_replace_objc_classes = value;
       break;
-      
+
     case OPT_frepo:
       flag_use_repository = value;
       if (value)
@@ -789,7 +789,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fuse_cxa_get_exception_ptr:
       flag_use_cxa_get_exception_ptr = value;
       break;
-      
+
     case OPT_fvisibility_inlines_hidden:
       visibility_options.inlines_hidden = value;
       break;
@@ -1173,7 +1173,7 @@ c_common_parse_file (int set_yydebug)
       this_input_filename
 	= cpp_read_main_file (parse_in, in_fnames[i]);
       /* If an input file is missing, abandon further compilation.
-         cpplib has issued a diagnostic.  */
+	 cpplib has issued a diagnostic.  */
       if (!this_input_filename)
 	break;
     }

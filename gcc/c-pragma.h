@@ -99,7 +99,7 @@ extern enum cpp_ttype pragma_lex (tree *);
    having enum cpp_ttype declared.  */
 extern enum cpp_ttype c_lex_with_flags (tree *, location_t *, unsigned char *);
 
-/* If 1, then lex strings into the execution character set.  
+/* If 1, then lex strings into the execution character set.
    If 0, lex strings into the host character set.
    If -1, lex both, and chain them together, such that the former
    is the TREE_CHAIN of the latter.  */

@@ -55,7 +55,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "expr.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
-  
+
 /* Set to true when we are running first pass of try_optimize_cfg loop.  */
 static bool first_pass;
 static bool try_crossjump_to_edge (int, edge, edge);
@@ -134,12 +134,12 @@ try_simplify_condjump (basic_block cbranch_block)
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
-     and cold sections. 
+     and cold sections.
 
      Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really 
-     must be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     be optimizable (or blocks that appear to be mergeable), but which really
+     must be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (jump_block) != BB_PARTITION (jump_dest_block)
@@ -192,7 +192,7 @@ mark_effect (rtx exp, regset nonequal)
   switch (GET_CODE (exp))
     {
       /* In case we do clobber the register, mark it as equal, as we know the
-         value is dead so it don't have to match.  */
+	 value is dead so it don't have to match.  */
     case CLOBBER:
       if (REG_P (XEXP (exp, 0)))
 	{
@@ -413,12 +413,12 @@ try_forward_edges (int mode, basic_block b)
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
-     and cold sections. 
-  
+     and cold sections.
+
      Basic block partitioning may result in some jumps that appear to
      be optimizable (or blocks that appear to be mergeable), but which really m
-     ust be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     ust be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
@@ -434,9 +434,9 @@ try_forward_edges (int mode, basic_block b)
 
       /* Skip complex edges because we don't know how to update them.
 
-         Still handle fallthru edges, as we can succeed to forward fallthru
-         edge to the same place as the branch edge of conditional branch
-         and turn conditional branch to an unconditional branch.  */
+	 Still handle fallthru edges, as we can succeed to forward fallthru
+	 edge to the same place as the branch edge of conditional branch
+	 and turn conditional branch to an unconditional branch.  */
       if (e->flags & EDGE_COMPLEX)
 	{
 	  ei_next (&ei);
@@ -450,8 +450,8 @@ try_forward_edges (int mode, basic_block b)
 	 up jumps that cross between hot/cold sections.
 
 	 Basic block partitioning may result in some jumps that appear
-	 to be optimizable (or blocks that appear to be mergeable), but which 
-	 really must be left untouched (they are required to make it safely 
+	 to be optimizable (or blocks that appear to be mergeable), but which
+	 really must be left untouched (they are required to make it safely
 	 across partition boundaries).  See the comments at the top of
 	 bb-reorder.c:partition_hot_cold_basic_blocks for complete
 	 details.  */
@@ -467,7 +467,7 @@ try_forward_edges (int mode, basic_block b)
 	  may_thread |= target->flags & BB_DIRTY;
 
 	  if (FORWARDER_BLOCK_P (target)
-  	      && !(single_succ_edge (target)->flags & EDGE_CROSSING)
+	      && !(single_succ_edge (target)->flags & EDGE_CROSSING)
 	      && single_succ (target) != EXIT_BLOCK_PTR)
 	    {
 	      /* Bypass trivial infinite loops.  */
@@ -627,11 +627,11 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
      and cold sections.
-  
+
      Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really 
-     must be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     be optimizable (or blocks that appear to be mergeable), but which really
+     must be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (a) != BB_PARTITION (b))
@@ -682,12 +682,12 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
-     and cold sections. 
-  
+     and cold sections.
+
      Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really 
-     must be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     be optimizable (or blocks that appear to be mergeable), but which really
+     must be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (a) != BB_PARTITION (b))
@@ -717,7 +717,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
      necessary.  */
   only_notes = squeeze_notes (&BB_HEAD (b), &BB_END (b));
   gcc_assert (!only_notes);
-  
+
 
   /* Scramble the insn chain.  */
   reorder_insns_nobb (BB_HEAD (b), BB_END (b), BB_END (a));
@@ -752,18 +752,18 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
-     and cold sections. 
-  
+     and cold sections.
+
      Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really 
-     must be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     be optimizable (or blocks that appear to be mergeable), but which really
+     must be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (b) != BB_PARTITION (c))
     return NULL;
-      
-    
+
+
 
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)
@@ -789,7 +789,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
       edge_iterator ei;
 
       /* Avoid overactive code motion, as the forwarder blocks should be
-         eliminated by edge redirection instead.  One exception might have
+	 eliminated by edge redirection instead.  One exception might have
 	 been if B is a forwarder block and C has no fallthru edge, but
 	 that should be cleaned up by bb-reorder instead.  */
       if (FORWARDER_BLOCK_P (b) || FORWARDER_BLOCK_P (c))
@@ -821,7 +821,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
       if (! c_has_outgoing_fallthru)
 	{
 	  merge_blocks_move_successor_nojumps (b, c);
-          return next == ENTRY_BLOCK_PTR ? next->next_bb : next;
+	  return next == ENTRY_BLOCK_PTR ? next->next_bb : next;
 	}
 
       /* If B does not have an incoming fallthru, then it can be moved
@@ -878,7 +878,7 @@ merge_memattrs (rtx x, rtx y)
 	MEM_ATTRS (y) = 0;
       else if (! MEM_ATTRS (y))
 	MEM_ATTRS (x) = 0;
-      else 
+      else
 	{
 	  rtx mem_size;
 
@@ -887,7 +887,7 @@ merge_memattrs (rtx x, rtx y)
 	      set_mem_alias_set (x, 0);
 	      set_mem_alias_set (y, 0);
 	    }
-	  
+
 	  if (! mem_expr_equal_p (MEM_EXPR (x), MEM_EXPR (y)))
 	    {
 	      set_mem_expr (x, 0);
@@ -900,7 +900,7 @@ merge_memattrs (rtx x, rtx y)
 	      set_mem_offset (x, 0);
 	      set_mem_offset (y, 0);
 	    }
-	 
+
 	  if (!MEM_SIZE (x))
 	    mem_size = NULL_RTX;
 	  else if (!MEM_SIZE (y))
@@ -915,7 +915,7 @@ merge_memattrs (rtx x, rtx y)
 	  set_mem_align (y, MEM_ALIGN (x));
 	}
     }
-  
+
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
@@ -968,7 +968,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 
   if (CALL_P (i1)
       && (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
-		        CALL_INSN_FUNCTION_USAGE (i2))
+			CALL_INSN_FUNCTION_USAGE (i2))
 	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2)))
     return false;
 
@@ -980,8 +980,8 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
   if ((mode & CLEANUP_POST_REGSTACK) && stack_regs_mentioned (i1))
     {
       /* If register stack conversion has already been done, then
-         death notes must also be compared before it is certain that
-         the two instruction streams match.  */
+	 death notes must also be compared before it is certain that
+	 the two instruction streams match.  */
 
       rtx note;
       HARD_REG_SET i1_regset, i2_regset;
@@ -1334,7 +1334,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
       f2 = FALLTHRU_EDGE (bb2);
 
       /* Get around possible forwarders on fallthru edges.  Other cases
-         should be optimized out already.  */
+	 should be optimized out already.  */
       if (FORWARDER_BLOCK_P (f1->dest))
 	f1 = single_succ_edge (f1->dest);
 
@@ -1513,7 +1513,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   FOR_EACH_EDGE (e1, ei, bb1->succs)
     {
       e2 = EDGE_SUCC (bb2, ei.index);
-      
+
       if (e1->flags & EDGE_EH)
 	nehedges1++;
 
@@ -1609,12 +1609,12 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   newpos1 = newpos2 = NULL_RTX;
 
   /* If we have partitioned hot/cold basic blocks, it is a bad idea
-     to try this optimization. 
+     to try this optimization.
 
      Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really 
-     must be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     be optimizable (or blocks that appear to be mergeable), but which really
+     must be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (flag_reorder_blocks_and_partition && no_new_pseudos)
@@ -1758,8 +1758,8 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
       s->count += s2->count;
 
       /* Take care to update possible forwarder blocks.  We verified
-         that there is no more than one in the chain, so we can't run
-         into infinite loop.  */
+	 that there is no more than one in the chain, so we can't run
+	 into infinite loop.  */
       if (FORWARDER_BLOCK_P (s->dest))
 	{
 	  single_succ_edge (s->dest)->count += s2->count;
@@ -1839,16 +1839,16 @@ try_crossjump_bb (int mode, basic_block bb)
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
-     and cold sections. 
-  
+     and cold sections.
+
      Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really 
-     must be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     be optimizable (or blocks that appear to be mergeable), but which really
+     must be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (BB_PARTITION (EDGE_PRED (bb, 0)->src) != 
-                                        BB_PARTITION (EDGE_PRED (bb, 1)->src)
+  if (BB_PARTITION (EDGE_PRED (bb, 0)->src) !=
+					BB_PARTITION (EDGE_PRED (bb, 1)->src)
       || (EDGE_PRED (bb, 0)->flags & EDGE_CROSSING))
     return false;
 
@@ -1864,7 +1864,7 @@ try_crossjump_bb (int mode, basic_block bb)
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       if (e->flags & EDGE_FALLTHRU)
-        fallthru = e;
+	fallthru = e;
     }
 
   changed = false;
@@ -2075,7 +2075,7 @@ try_optimize_cfg (int mode)
 		     does not fit merge_blocks interface and is kept here in
 		     hope that it will become useless once more of compiler
 		     is transformed to use cfg_layout mode.  */
-		     
+
 		  if ((mode & CLEANUP_CFGLAYOUT)
 		      && can_merge_blocks_p (b, c))
 		    {
@@ -2247,7 +2247,7 @@ cleanup_cfg (int mode)
 						 PROP_DEATH_NOTES
 						 | PROP_SCAN_DEAD_CODE
 						 | PROP_KILL_DEAD_CODE
-			  			 | ((mode & CLEANUP_LOG_LINKS)
+						 | ((mode & CLEANUP_LOG_LINKS)
 						    ? PROP_LOG_LINKS : 0)))
 	    break;
 	}
@@ -2281,8 +2281,8 @@ rest_of_handle_jump (void)
 struct tree_opt_pass pass_jump =
 {
   "sibling",                            /* name */
-  NULL,                                 /* gate */   
-  rest_of_handle_jump,			/* execute */       
+  NULL,                                 /* gate */
+  rest_of_handle_jump,			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -2310,7 +2310,7 @@ rest_of_handle_jump2 (void)
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
-               | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
   purge_line_number_notes ();
 
@@ -2330,8 +2330,8 @@ rest_of_handle_jump2 (void)
 struct tree_opt_pass pass_jump2 =
 {
   "jump",                               /* name */
-  NULL,                                 /* gate */   
-  rest_of_handle_jump2,			/* execute */       
+  NULL,                                 /* gate */
+  rest_of_handle_jump2,			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */

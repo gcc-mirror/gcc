@@ -270,7 +270,7 @@ extern bool remove_path (struct loops *, edge);
 
    If first_special is true, the value in the first iteration is
      delta + mult * base
-     
+
    If extend = UNKNOWN, first_special must be false, delta 0, mult 1 and value is
      subreg_{mode} (base + i * step)
 

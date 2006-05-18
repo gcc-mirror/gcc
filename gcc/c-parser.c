@@ -2229,7 +2229,7 @@ c_parser_typeof_specifier (c_parser *parser)
 			 parameter-type-list[opt] )
 
    direct-abstract-declarator:
-     direct-abstract-declarator[opt] ( parameter-forward-declarations 
+     direct-abstract-declarator[opt] ( parameter-forward-declarations
 				       parameter-type-list[opt] )
 
    parameter-forward-declarations:

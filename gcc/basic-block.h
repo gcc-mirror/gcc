@@ -516,7 +516,7 @@ extern void brief_dump_cfg (FILE *);
 extern void clear_edges (void);
 extern rtx first_insn_after_basic_block_note (basic_block);
 extern void scale_bbs_frequencies_int (basic_block *, int, int, int);
-extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type, 
+extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
 					     gcov_type);
 
 /* Structure to group all of the information to process IF-THEN and
@@ -765,7 +765,7 @@ ei_cond (edge_iterator ei, edge *p)
    an element might be removed during the traversal, otherwise
    elements will be missed.  Instead, use a for-loop like that shown
    in the following pseudo-code:
-   
+
    FOR (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
      {
 	IF (e != taken_edge)
@@ -970,7 +970,7 @@ extern void calculate_dominance_info (enum cdi_direction);
 extern void free_dominance_info (enum cdi_direction);
 extern basic_block nearest_common_dominator (enum cdi_direction,
 					     basic_block, basic_block);
-extern basic_block nearest_common_dominator_for_set (enum cdi_direction, 
+extern basic_block nearest_common_dominator_for_set (enum cdi_direction,
 						     bitmap);
 extern void set_immediate_dominator (enum cdi_direction, basic_block,
 				     basic_block);

@@ -8,12 +8,12 @@
 ; the terms of the GNU General Public License as published by the Free
 ; Software Foundation; either version 2, or (at your option) any later
 ; version.
-; 
+;
 ; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
 ; WARRANTY; without even the implied warranty of MERCHANTABILITY or
 ; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 ; for more details.
-; 
+;
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING.  If not, write to the Free
 ; Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
@@ -786,7 +786,7 @@ Common Report Var(flag_sched_stalled_insns)
 Allow premature scheduling of queued insns
 
 fsched-stalled-insns=
-Common RejectNegative Joined UInteger 
+Common RejectNegative Joined UInteger
 -fsched-stalled-insns=<number>	Set number of queued insns that can be prematurely scheduled
 
 ; sched_stalled_insns_dep controls how many recently scheduled cycles will
@@ -830,7 +830,7 @@ Common Report Var(flag_split_ivs_in_unroller) Init(1)
 Split lifetimes of induction variables when loops are unrolled
 
 fvariable-expansion-in-unroller
-Common Report Var(flag_variable_expansion_in_unroller) 
+Common Report Var(flag_variable_expansion_in_unroller)
 Apply variable expansion when loops are unrolled
 
 ; Emit code to probe the stack, to help detect stack overflow; also

@@ -102,7 +102,7 @@ init_c_lex (void)
   /* Set the debug callbacks if we can use them.  */
   if (debug_info_level == DINFO_LEVEL_VERBOSE
       && (write_symbols == DWARF2_DEBUG
-          || write_symbols == VMS_AND_DWARF2_DEBUG))
+	  || write_symbols == VMS_AND_DWARF2_DEBUG))
     {
       cb->define = cb_define;
       cb->undef = cb_undef;
@@ -223,12 +223,12 @@ fe_file_change (const struct line_map *new_map)
       if (!MAIN_FILE_P (new_map))
 	{
 #ifdef USE_MAPPED_LOCATION
-          int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
+	  int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
 
 	  input_location = included_at;
 	  push_srcloc (new_map->start_location);
 #else
-          int included_at = LAST_SOURCE_LINE (new_map - 1);
+	  int included_at = LAST_SOURCE_LINE (new_map - 1);
 
 	  input_line = included_at;
 	  push_srcloc (new_map->to_file, 1);
@@ -339,7 +339,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
  retry:
   tok = cpp_get_token (parse_in);
   type = tok->type;
-  
+
  retry_after_at:
 #ifdef USE_MAPPED_LOCATION
   *loc = tok->src_loc;
@@ -350,7 +350,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
     {
     case CPP_PADDING:
       goto retry;
-      
+
     case CPP_NAME:
       *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node));
       break;
@@ -389,7 +389,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
       if (c_dialect_objc ())
 	{
 	  location_t atloc = input_location;
-	  
+
 	retry_at:
 	  tok = cpp_get_token (parse_in);
 	  type = tok->type;
@@ -397,7 +397,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 	    {
 	    case CPP_PADDING:
 	      goto retry_at;
-	      
+
 	    case CPP_STRING:
 	    case CPP_WSTRING:
 	      type = lex_string (tok, value, true);
@@ -425,12 +425,12 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
     case CPP_PASTE:
       {
 	unsigned char name[4];
-	
+
 	*cpp_spell_token (parse_in, tok, name, true) = 0;
-	
+
 	error ("stray %qs in program", name);
       }
-      
+
       goto retry;
 
     case CPP_OTHER:
@@ -484,9 +484,9 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
       no_more_pch = true;
       c_common_no_more_pch ();
     }
-  
+
   timevar_pop (TV_CPP);
-  
+
   return type;
 }
 
@@ -539,7 +539,7 @@ narrowest_signed_type (unsigned HOST_WIDE_INT low,
   for (; itk < itk_none; itk += 2 /* skip signed types */)
     {
       tree upper = TYPE_MAX_VALUE (integer_types[itk]);
-      
+
       if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) > high
 	  || ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) == high
 	      && TREE_INT_CST_LOW (upper) >= low))
@@ -740,21 +740,21 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 	  goto retry;
 	}
       /* FALLTHROUGH */
-      
+
     default:
       break;
-      
+
     case CPP_WSTRING:
       wide = true;
       /* FALLTHROUGH */
-      
+
     case CPP_STRING:
       if (!concats)
 	{
 	  gcc_obstack_init (&str_ob);
 	  obstack_grow (&str_ob, &str, sizeof (cpp_string));
 	}
-	
+
       concats++;
       obstack_grow (&str_ob, &tok->val.str, sizeof (cpp_string));
       goto retry;
@@ -784,7 +784,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 	  /* Assume that, if we managed to translate the string above,
 	     then the untranslated parsing will always succeed.  */
 	  gcc_assert (xlated);
-	  
+
 	  if (TREE_STRING_LENGTH (value) != (int) istr.len
 	      || 0 != strncmp (TREE_STRING_POINTER (value), (char *) istr.text,
 			       istr.len))
