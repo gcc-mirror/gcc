@@ -86,11 +86,11 @@ case ${host} in
 esac
 
 # Common parts for widely ported systems.
-case ${target} in
+case ${host} in
   *-darwin*)
     # Generic darwin host support.
     out_host_hook_obj=host-darwin.o
-    host_xmake_file=x-darwin
+    host_xmake_file="${host_xmake_file} x-darwin"
     ;;
 esac
 
@@ -109,7 +109,7 @@ esac
 case ${host} in
   alpha*-dec-*vms*)
     host_xm_file=alpha/xm-vms.h
-    host_xmake_file=alpha/x-vms
+    host_xmake_file="${host_xmake_file} alpha/x-vms"
     host_exeext=.exe
     host_can_use_collect2=no
     # This removes the cpu type and manufacturer components and
@@ -119,36 +119,36 @@ case ${host} in
     local_prefix=/gnu
     ;;
   hppa1.1-*-pro*)
-    host_xmake_file="pa/x-ada"
+    host_xmake_file="${host_xmake_file} pa/x-ada"
     ;;
   hppa1.1-*-osf*)
-    host_xmake_file="pa/x-ada"
+    host_xmake_file="${host_xmake_file} pa/x-ada"
     ;;
   hppa1.1-*-rtems*)
-    host_xmake_file="pa/x-ada"
+    host_xmake_file="${host_xmake_file} pa/x-ada"
     ;;
   hppa1.1-*-bsd*)
-    host_xmake_file="pa/x-ada"
+    host_xmake_file="${host_xmake_file} pa/x-ada"
     ;;
   hppa1.0-*-hpux10* | hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
     out_host_hook_obj=host-hpux.o
-    host_xmake_file="pa/x-ada-hpux10 x-hpux"
+    host_xmake_file="${host_xmake_file} pa/x-ada-hpux10 x-hpux"
     ;;
   hppa1.0-*-hpux11* | hppa1.1-*-hpux11* | hppa2*-*-hpux11* | \
   hppa*64*-*-hpux11*)
     out_host_hook_obj=host-hpux.o
-    host_xmake_file="pa/x-ada x-hpux"
+    host_xmake_file="${host_xmake_file} pa/x-ada x-hpux"
     ;;
   hppa*-*-linux*)
     out_host_hook_obj=host-hpux.o
-    host_xmake_file=x-hpux
+    host_xmake_file="${host_xmake_file} x-hpux"
     ;;
   i370-*-opened* | i370-*-mvs* ) # IBM 360/370/390 Architecture
     host_xm_defines='FATAL_EXIT_CODE=12'
     ;;
   i[34567]86-*-solaris2*)
     out_host_hook_obj=host-solaris.o
-    host_xmake_file=x-solaris
+    host_xmake_file="${host_xmake_file} x-solaris"
     ;;
   i[34567]86-pc-msdosdjgpp*)
     host_xm_file=i386/xm-djgpp.h
@@ -178,7 +178,7 @@ case ${host} in
     exit 1
     ;;
   i[34567]86-*-interix3*)
-    host_xmake_file="x-interix"
+    host_xmake_file="${host_xmake_file} x-interix"
     ;;
   i[34567]86-*-darwin*)
     out_host_hook_obj="${out_host_hook_obj} host-i386-darwin.o"
@@ -193,7 +193,7 @@ case ${host} in
     ;;
   *-*-solaris2*)
     out_host_hook_obj=host-solaris.o
-    host_xmake_file=x-solaris
+    host_xmake_file="${host_xmake_file} x-solaris"
     ;;
   *-*-linux*)
     out_host_hook_obj=host-linux.o
@@ -202,6 +202,6 @@ case ${host} in
   ia64-*-hpux*)
     use_long_long_for_widest_fast_int=yes
     out_host_hook_obj=host-hpux.o
-    host_xmake_file=x-hpux
+    host_xmake_file="${host_xmake_file} x-hpux"
     ;;
 esac
