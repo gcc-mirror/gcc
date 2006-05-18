@@ -1,3 +1,10 @@
+2006-05-18  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.special/special.exp (gcj_special_pr21115):
+	Renamed.
+	(gcj_write_and_byte_compile): New proc.
+	(gcj_special_lazy_illegal_access): Likewise.
+
 2006-05-18  Mark Wielaard  <mark@klomp.org>
 
 	Imported GNU Classpath 0.90
