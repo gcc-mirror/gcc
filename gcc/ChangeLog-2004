@@ -44,7 +44,7 @@
 
 2004-12-30  Richard Henderson  <rth@redhat.com>
 
-	* config/ia64/ia64.c (hfa_element_mode): Return false for 
+	* config/ia64/ia64.c (hfa_element_mode): Return false for
 	zero-sized top-level aggregates.
 
 2004-12-30  Jan Hubicka  <jh@suse.cz>
@@ -59,7 +59,7 @@
 
 2004-12-30  Richard Henderson  <rth@redhat.com>
 
-	* config/ia64/ia64.c (ia64_function_value): Use PARALLEL for 
+	* config/ia64/ia64.c (ia64_function_value): Use PARALLEL for
 	aggregates with XF/XCmode.
 
 2004-12-29  Richard Henderson  <rth@redhat.com>
@@ -86,7 +86,7 @@
 
 	* config/arc/arc.h, config/c4x/c4x.h, config/i386/i386.h,
 	config/i860/i860.h, config/m68hc11/m68hc11.h, config/m68k/m68k.h,
-	config/pdp11/pdp11.h, config/s390/s390.h, config/stormy16/stormy16.h, 
+	config/pdp11/pdp11.h, config/s390/s390.h, config/stormy16/stormy16.h,
 	config/xtensa/xtensa.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
 
 	* config/alpha/alpha.c (alpha_arg_partial_bytes): New.
@@ -109,7 +109,7 @@
 	* config/fr30/fr30-protos.h: Update.
 
 	* config/frv/frv.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
-	* config/frv/frv.c (frv_arg_partial_bytes): Rename from 
+	* config/frv/frv.c (frv_arg_partial_bytes): Rename from
 	frv_function_arg_partial_nregs.  Adjust to return bytes.
 	(TARGET_ARG_PARTIAL_BYTES): New.
 	* config/frv/frv-protos.h: Update.
@@ -145,7 +145,7 @@
 	* config/mips/mips-protos.h: Update.
 
 	* config/mn10300/mn10300.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
-	* config/mn10300/mn10300.c (mn10300_arg_partial_bytes): Rename from	
+	* config/mn10300/mn10300.c (mn10300_arg_partial_bytes): Rename from
 	function_arg_partial_nregs.  Adjust to return bytes.
 	(TARGET_ARG_PARTIAL_BYTES): New.
 	* config/mn10300/mn10300-protos.h: Update.
@@ -155,13 +155,13 @@
 	(TARGET_ARG_PARTIAL_BYTES): New.
 
 	* config/pa/pa.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
-	* config/pa/pa.c (pa_arg_partial_bytes): Rename from 
+	* config/pa/pa.c (pa_arg_partial_bytes): Rename from
 	function_arg_partial_nregs.  Handle 32-bit.  Adjust to return bytes.
 	(TARGET_ARG_PARTIAL_BYTES): New.
 	* config/pa/pa-protos.h: Update.
 
 	* config/rs6000/rs6000.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
-	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Rename from 
+	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Rename from
 	function_arg_partial_nregs.  Adjust to return bytes.
 	(TARGET_ARG_PARTIAL_BYTES): New.
 	* config/rs6000/rs6000-protos.h: Update.
@@ -204,28 +204,28 @@
 	PR tree-optimization/18179
 	* tree-vectorizer.c (vect_get_base_and_offset): Call get_inner_reference
 	and vect_analyze_offset_expr.
-	(vect_create_addr_base_for_vector_ref): Build address_base by combining 
+	(vect_create_addr_base_for_vector_ref): Build address_base by combining
 	base and initial_offset fields of vect_stmt_info.
 	(vect_update_inits_of_dr): Update offset of data-ref instead of its
 	access-fn. Remove argument.
 	(vect_update_inits_of_drs): Call vect_update_inits_of_dr with new
 	arguments.
-	(vect_compute_data_ref_alignment): Check misalignment info in 
+	(vect_compute_data_ref_alignment): Check misalignment info in
 	vect_stmt_info. Remove argument.
 	(vect_compute_data_refs_alignment): Call vect_compute_data_ref_alignment
 	with correct argument.
 	(vect_analyze_data_ref_access): Check access info in vect_stmt_info.
 	(vect_analyze_pointer_ref_access): Update step and initial_offset fields
 	of vect_stmt_info.
-	(vect_get_memtag_and_dr): Call vect_get_base_and_offset and set the 
+	(vect_get_memtag_and_dr): Call vect_get_base_and_offset and set the
 	fields of stmt_vec_info.
-	(vect_analyze_data_refs): Find vectype and pass it to 
+	(vect_analyze_data_refs): Find vectype and pass it to
 	vect_get_memtag_and_dr.
 	(vect_get_first_index): Remove.
 	(vect_compute_array_base_alignment): Remove.
 	(vect_compute_array_ref_alignment): Remove
 	(vect_create_data_ref_ptr): Use TYPE_SIZE_UNIT instead GET_MODE_SIZE.
-	(vect_gen_niters_for_prolog_loop): Use TREE_CONSTANT instead 
+	(vect_gen_niters_for_prolog_loop): Use TREE_CONSTANT instead
 	host_integerp.
 	(vectorizable_load): Use size arithmetics.
 
@@ -250,7 +250,7 @@
 2004-12-29  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/18179
-	* tree-vectorizer.c (vect_get_symbl_and_dr): Reorganize. Add memtag 
+	* tree-vectorizer.c (vect_get_symbl_and_dr): Reorganize. Add memtag
 	retrieval.
 	(vect_analyze_data_refs): Remove memtag retrieval.
 
@@ -449,7 +449,7 @@
 
 2004-12-23  Dale Johannesen  <dalej@apple.com>
 
-	* tree.c (iterative_hash_expr):  Canonicalize builtins.
+	* tree.c (iterative_hash_expr): Canonicalize builtins.
 
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -722,7 +722,7 @@
 
 2004-12-21  David O'Brien  <obrien@FreeBSD.org>
 
-	* config/freebsd-spec.h:  Use KSE pthread lib for -pthread.
+	* config/freebsd-spec.h: Use KSE pthread lib for -pthread.
 
 2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
 
@@ -734,7 +734,7 @@
 
 	PR c/18596
 	* c-parse.in (initdcl): Don't process a declaration if start_decl fails.
-	(notype_initdcl):  Don't process a declaration if start_decl fails.
+	(notype_initdcl): Don't process a declaration if start_decl fails.
 	* c-decl.c (start_decl): Fail if grokdeclarator fails.
 	(grokdeclarator): Fail if a function definition has an invalid storage
 	class.
@@ -848,7 +848,7 @@
 
 2004-12-19  Dale Johannesen  <dalej@apple.com>
 
-	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p):  Don't
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Don't
 	reference operand 1 of ADDR_EXPRs.
 
 2004-12-19  Mark Mitchell  <mark@codesourcery.com>
@@ -1071,7 +1071,7 @@
 
 2004-12-17  Dale Johannesen  <dalej@apple.com>
 
-	* c-decl.c (diagnose_mismatched_decls):  Accept mismatched
+	* c-decl.c (diagnose_mismatched_decls): Accept mismatched
 	function types: void with previous implicit int.
 
 2004-12-17  Andreas Krebbel  <krebbel1@de.ibm.com>
@@ -2132,7 +2132,7 @@
 	parameter, this function should never be called if its false.
 	(append_to_statement_list): Only call append_to_statement_list_1
 	if t is non-NULL tree with side-effects.
-	(append_to_statement_list_force):  Likewise, if t is not NULL.
+	(append_to_statement_list_force): Likewise, if t is not NULL.
 
 2004-12-06  J"orn Rennecke <joern.rennecke@st.com>
 
@@ -3918,7 +3918,7 @@
 2004-11-22  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.h (TARGET_USE_FANCY_MATH_387): New macro.
-	* config/i386/i386.c (override_options):  Set MASK_NO_FANCY_MATH_387
+	* config/i386/i386.c (override_options): Set MASK_NO_FANCY_MATH_387
 	automatically for targets without TARGET_80387.
 	* config/i386/i386.md (sqrtsf2, sqrtsf2_1, sqrtsf2_i387, sqrtdf2,
 	sqrtdf2_1, sqrtdf2_i387, *sqrtextendsfdf2, sqrtxf2,
@@ -3943,7 +3943,7 @@
 
 2004-11-22  Dale Johannesen  <dalej@apple.com>
 
-	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION):  Conditionalize
+	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION): Conditionalize
 	properly and comment.
 
 2004-11-22  James A. Morrison  <phython@gcc.gnu.org
@@ -4322,7 +4322,7 @@
 
 2004-11-21  Dale Johannesen  <dalej@apple.com>
 
-	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION):  Define.
+	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION): Define.
 
 2004-11-21  Jeff Law  <law@redhat.com>
 
@@ -4953,11 +4953,11 @@
 
 2004-11-15  Dale Johannesen  <dalej@apple.com>
 
-	* tree-flow.h (add_referenced_temp_var):  Remove name from prototype.
+	* tree-flow.h (add_referenced_temp_var): Remove name from prototype.
 
 2004-11-15  Dale Johannesen  <dalej@apple.com>
 
-	* profile.c (compute_branch_probabilities):  Prevent
+	* profile.c (compute_branch_probabilities): Prevent
 	crash with EH in RTL-based profiling.
 
 2004-11-16  Kazu Hirata  <kazu@cs.umass.edu>
@@ -5020,7 +5020,7 @@
 
 2004-11-15  Steve Ellcey  <sje@cup.hp.com>
 
-	* config/ia64/ia64.md (*movtf_internal):  Use destination_operand
+	* config/ia64/ia64.md (*movtf_internal): Use destination_operand
 	instead of nonimmediate_operand.
 
 2004-11-15  Mark Mitchell <mark@codesourcery.com>
@@ -6720,7 +6720,7 @@
 	for a basic block.
 	(perform_edge_inserts): New.  Determine what to do with all stmts that
 	have been inserted on edges.
-	(remove_ssa_form):  Analyze and commit edges from here.
+	(remove_ssa_form): Analyze and commit edges from here.
 
 2004-11-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -7803,7 +7803,7 @@
 2004-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/17967
-	* tree-cfg.c (remove_usless_stmts_cond):  Don't Fold statement.
+	* tree-cfg.c (remove_usless_stmts_cond): Don't Fold statement.
 
 2004-10-23  Daniel Berlin  <dberlin@dberlin.org>
 
@@ -8518,7 +8518,7 @@
 
 2004-10-16  Dale Johannesen  <dalej@apple.com>
 
-	* c-common.c (c_common_get_alias_set):  Use GGC for type_hash_table.
+	* c-common.c (c_common_get_alias_set): Use GGC for type_hash_table.
 
 2004-10-16  Zdenek Dvorak  <dvorakz@suse.cz>
 
@@ -8607,8 +8607,8 @@
 	2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
 	PR middle-end/17967
 	Revert:
-		* tree-cfg.c (remove_usless_stmts_cond):  Fold statement.
-		(remove_useless_stmts_1):  Fold trees we know how to fold.
+		* tree-cfg.c (remove_usless_stmts_cond): Fold statement.
+		(remove_useless_stmts_1): Fold trees we know how to fold.
 
 2004-10-14  David Edelsohn  <edelsohn@gnu.org>
 
@@ -8689,8 +8689,8 @@
 
 	PR middle-end/17967
 	Revert:
-		* tree-cfg.c (remove_usless_stmts_cond):  Fold statement.
-		(remove_useless_stmts_1):  Fold trees we know how to fold.
+		* tree-cfg.c (remove_usless_stmts_cond): Fold statement.
+		(remove_useless_stmts_1): Fold trees we know how to fold.
 
 2004-10-14  Joseph S. Myers  <joseph@codesourcery.com>
 
@@ -8881,7 +8881,7 @@
 
 2004-10-13  Dale Johannesen  <dalej@apple.com>
 
-	* doc/extend.texi (Extended Asm):  Rewrite asm volatile description.
+	* doc/extend.texi (Extended Asm): Rewrite asm volatile description.
 
 2004-10-13  Frank Ch. Eigler  <fche@redhat.com>
 
@@ -9630,7 +9630,7 @@
 	of the ADDR_EXPR changed, check the field changed.
 	Use recompute_tree_invarant_for_addr_expr instead of unsetting
 	TREE_INVARIANT.
-	(convert_local_reference):  Set changed to when we
+	(convert_local_reference): Set changed to when we
 	change a decl to unnested decl.
 	<case ADDR_EXPR>: Instead of checking if the immediate part
 	of the ADDR_EXPR changed, check the field changed.
@@ -10095,7 +10095,7 @@
 	* c-decl.c (c_expand_body): Update call tree_rest_of_compilation.
 	* cgraphunit.c (cgraph_build_static_cdtor): Likewise.
 	* toplev.h (tree_rest_of_compilation): Update prototype.
-	* tree-optimize.c (tree_rest_of_compilation):  Kill nested_p argument.
+	* tree-optimize.c (tree_rest_of_compilation): Kill nested_p argument.
 
 2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -10257,7 +10257,7 @@
 	PR debug/13974
 	* cfgrtl.c (try_redirect_by_replacing_jump,
 	force_nonfallthru_and_redirect, commit_one_edge_insertion,
-	cfg_layout_merge_blocks):  Do not attach any line number information
+	cfg_layout_merge_blocks): Do not attach any line number information
 	to newly inserted instructions.
 	* emit-rtl.c (emit_insn*_before, emit_insn*_after): Rename to
 	emit_insn_*_noloc.
@@ -10487,7 +10487,7 @@
 
 2004-09-28 Jeff Law  <law@redhat.com>
 
-	* tree-ssa-threadupdate.c (create_block_for_threading):  Request
+	* tree-ssa-threadupdate.c (create_block_for_threading): Request
 	that no outgoing edges be left in the duplicate block.  Do no
 	update information on outgoing edges or PHI nodes in target
 	blocks here.
@@ -11239,8 +11239,8 @@
 
 2004-09-25  Dale Johannesen  <dalej@apple.com>
 
-	* tree-gimple.c:  Move GIMPLE definition...
-	* doc/tree-ssa.texi:  here.
+	* tree-gimple.c: Move GIMPLE definition...
+	* doc/tree-ssa.texi: here.
 
 2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -11479,7 +11479,7 @@
 
 	* tree-ssa-ccp.c (get_default_value): Use SSA_NAME_VALUE rather
 	than SSA_NAME_EQUIV and SET_SSA_NAME_EQUIV.
-	(substitute_and_fold):  Likewise.
+	(substitute_and_fold): Likewise.
 	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Remove everything
 	except invariants from SSA_NAME_VALUE.
 	(thread_across_edge): Use SSA_NAME_VALUE rather than SSA_NAME_EQUIV
@@ -11492,7 +11492,7 @@
 	* tree-ssa-pre.c (fini_pre): Remove everything except invariants
 	from SSA_NAME_VALUE.
 	* tree.h (SSA_NAME_EQUIV, SET_SSA_NAME_EQUIV): Kill.
-	(struct tree_ssa_name):  Kill EQUIV field.  Remove GGC skip
+	(struct tree_ssa_name): Kill EQUIV field.  Remove GGC skip
 	annotation from the VALUE_HANDLE field.
 
 2004-09-21 Fariborz Jahanian <fjahanian@apple.com>
@@ -11991,7 +11991,7 @@
 	nestedness datastructure.
 	* cse.c (cse_insn): Do not cprop nonlocal LABEL_REFs.
 	* reload1.c (set_label_offsets): Fix call of set_label_offsets.
-	* tree-nested.c (finlize_nesting_tree_1):  Use un-nesting code.
+	* tree-nested.c (finlize_nesting_tree_1): Use un-nesting code.
 
 2004-09-20  Richard Henderson  <rth@redhat.com>
 
@@ -12009,7 +12009,7 @@
 	(tree_bb_level_predictions): Likewise.
 	(tree_estimate_probability): Add noreturn exit edges; call
 	bb_level_predictions; fix logic of return heuristics.
-	(predict_paths_leading_to):  Rescuesce from old CVS version of
+	(predict_paths_leading_to): Rescuesce from old CVS version of
 	process_note_prediction function.
 	* predict.def (PRED_TREE_EARLY_RETURN): New predictor.
 
@@ -12131,7 +12131,7 @@
 
 2004-09-18  Jan Hubicka  <jh@suse.cz>
 
-	* tree-cfg.c (thread_jumps):  Fix updating of the profile.
+	* tree-cfg.c (thread_jumps): Fix updating of the profile.
 
 	* tree-optimize.c (tree_rest_of_compilation): Kill forgotten
 	verify_cgraph call.
@@ -12180,7 +12180,7 @@
 
 2004-09-18  Jan Hubicka  <jh@suse.cz>
 
-	* tree-into-ssa.c (rewrite_ssa_into_ssa):  Expect ssa_name to return
+	* tree-into-ssa.c (rewrite_ssa_into_ssa): Expect ssa_name to return
 	NULL.
 	* tree-ssa-alias.c (init_alias_info): Likewise.
 	* tree-ssa.c (verify_flow_sensitive_alias_info): Likewise.
@@ -12501,7 +12501,7 @@
 
 2004-09-16  Daniel Berlin  <dberlin@dberlin.org>
 
-	* cfgloop.h (duplicate_loop):  Add prototype.
+	* cfgloop.h (duplicate_loop): Add prototype.
 	* cfgloopmanip.c (duplicate_loop): Make non-static.
 	* lambda-code.c (perfect_nestify): Factor out test whether
 	we can handle this loop into separate function.
@@ -12762,7 +12762,7 @@
 2004-09-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR tree-optimization/17468
-	* tree-ssa.c (verify_use, verify_phi_args, verify_ssa):  Verify that
+	* tree-ssa.c (verify_use, verify_phi_args, verify_ssa): Verify that
 	definition inside a block precede uses.
 	* tree-tailcall.c (adjust_return_value): Emit statements in the
 	correct order.
@@ -14746,7 +14746,7 @@
 
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
-	* cse.c (fold_rtx):  Avoid building of
+	* cse.c (fold_rtx): Avoid building of
 	(CONST (MINUS (CONST_INT) (SYMBOL_REF)))
 
 	* tree-ssa-pre.c (grand_bitmap_obstack): New.
@@ -14771,7 +14771,7 @@
 
 2004-09-07  Caroline Tice  <ctice@apple.com>
 
-	* cfgrtl.c (rtl_verify_flow_info_1):  Add new edge flag,
+	* cfgrtl.c (rtl_verify_flow_info_1): Add new edge flag,
 	EDGE_CROSSING, to flags test case.
 
 2004-09-07  Jan Hubicka  <jh@suse.cz>
@@ -15155,12 +15155,12 @@
 
 2004-09-04  Jan Hubicka  <jh@suse.cz>
 
-	* passes.c (rest_of_clean_state):  Fix merge conflict made during
+	* passes.c (rest_of_clean_state): Fix merge conflict made during
 	commiting the patch.
 
 2004-09-04  Jan Hubicka  <jh@suse.cz>
 
-	* passes.c (rest_of_clean_state):  Decompose the instruction stream.
+	* passes.c (rest_of_clean_state): Decompose the instruction stream.
 
 2004-09-04  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -15729,7 +15729,7 @@
 	pointer to a mult_cost.  Update all cost comparisons to use the
 	new mult_cost infrastructure.  For alg_add_factor and
 	alg_sub_factor operations, latency is lower than the rtx_cost.
-	(choose_mult_variant):  Update calls to synth_mult.  Perform
+	(choose_mult_variant): Update calls to synth_mult.  Perform
 	cost comparisons using the new mult_cost infrastructure.
 	(expand_mult_highpart): Use alg.cost.cost instead of alg.cost
 	to optain the total rtx_cost of a synth_mult "algorithm".
@@ -16168,11 +16168,11 @@
 	* bb-reorder.c (FREE, find_traces_1_round, copy_bb,
 	mark_bb_for_unlikely_executed_section,
 	add_labels_and_missing_jumps, fix_crossing_conditional_branches,
-	fix_crossing_unconditional_branches):  Likewise.
+	fix_crossing_unconditional_branches): Likewise.
 	* bitmap.c (bitmap_first_set_bit, bitmap_last_set_bit,
-	bitmap_operation):  Likewise.
+	bitmap_operation): Likewise.
 	* bt-load.c (insn_sets_btr_p, augment_live_range,
-	move_btr_def):  Likewise.
+	move_btr_def): Likewise.
 	* builtins.c (c_readstr, expand_builtin_longjmp, apply_args_size,
 	apply_result_size, expand_builtin_apply, expand_builtin_mathfn,
 	expand_builtin_mathfn_2, expand_builtin_mathfn_3,
@@ -16820,9 +16820,9 @@
 
 2004-08-25  Caroline Tice  <ctice@apple.com>
 
-	* bb-reorder.c (partition_hot_cold_basic_blocks):  Add more details
+	* bb-reorder.c (partition_hot_cold_basic_blocks): Add more details
 	to comments at start of function.
-	* cfgbuild.c (make_edges):  Add more details to hot/cold partitioning
+	* cfgbuild.c (make_edges): Add more details to hot/cold partitioning
 	comment.
 	* cfgcleanup.c (try_simplify_condjump, try_forward_edges,
 	merge_blocks_move_predecessor_nojumps,
@@ -16830,11 +16830,11 @@
 	try_crossjump_to_edge, try_crossjump_bb): Likewise.
 	* cfglayout.c (fixup_reorder_chain): Likewise.
 	* cfgrtl.c (rtl_can_merge_blocks, try_redirect_by_replacing_jump,
-	cfg_layout_can_merge_blocks_p):  Likewise.
+	cfg_layout_can_merge_blocks_p): Likewise.
 	* ifcvt.c (find_if_case_1, find_if_case_2): Likewise.
 	* passes.c (rest_of_compilation): Update comments for calling
 	optimization that partitions hot/cold basic blocks.
-	* doc/invoke.texi:  Update documentation of
+	* doc/invoke.texi: Update documentation of
 	freorder-blocks-and-partition flag.
 
 2004-08-25  Richard Sandiford  <rsandifo@redhat.com>
@@ -17124,7 +17124,7 @@
 	scev_initialize): Use single_exit information.
 	* tree-ssa-loop-niter.c (number_of_iterations_cond): Record
 	missing assumptions.
-	(loop_niter_by_eval):  Return number of iterations as unsigned
+	(loop_niter_by_eval): Return number of iterations as unsigned
 	int.
 	* tree-ssa-loop.c (tree_ssa_loop_init): Mark single exit loops.
 	(tree_ssa_loop_ivcanon, gate_tree_ssa_loop_ivcanon, pass_iv_canon,
@@ -18044,7 +18044,7 @@
 
 2004-08-19  Caroline Tice  <ctice@apple.com>
 
-	* config/i386/cygming.h (switch_to_section):  Fix typo (change
+	* config/i386/cygming.h (switch_to_section): Fix typo (change
 	in_unlikely_text_section to in_unlikely_executed_text).
 
 2004-08-19  Daniel Berlin  <dberlin@dberlin.org>
@@ -18183,7 +18183,7 @@
 
 	* Makefile.in (cfganal.o): Depend on TIMEVAR_H.
 	* tree-flow.h (compute_dominance_frontiers): Move prototype...
-	* basic-block.h:  ...here.
+	* basic-block.h: ...here.
 	* tree-cfg.c (compute_dominance_frontiers_1,
 	compute_dominance_frontiers): Move from here...
 	* cfganal.c: ...to here.  Include timevar.h.
@@ -18514,13 +18514,13 @@
 	unlikely_text_section_name if necessary; modify to use
 	unlikely_text_section_name and unlikely_section_label; also to use
 	named_section properly.
-	(in_unlikely_text_section):  Modify to work correctly with
+	(in_unlikely_text_section): Modify to work correctly with
 	named_section and to use unlikely_text_section_name.
-	(named_section):  Add code to work properly with cold section.
+	(named_section): Add code to work properly with cold section.
 	(function_section): Clean up if-statement.
 	* config/darwin.c (darwin_asm_named_section): Return to original
 	code, removing use of SECTION_FORMAT_STRING.
-	* config/arm/pe.h (switch_to_section):  Add case for
+	* config/arm/pe.h (switch_to_section): Add case for
 	in_unlikely_executed_text to switch statement.
 	* config/i386/cygming.h (switch_to_section): Likewise.
 	* config/i386/darwin.h (NORMAL_TEXT_SECTION_NAME): Remove.
@@ -19457,7 +19457,7 @@
 
 2004-08-12  David Daney  <ddaney@avtrex.com>
 
-	* java/gcj.texi:  Add subsection on signal usage.
+	* java/gcj.texi: Add subsection on signal usage.
 
 2004-08-12  David Edelsohn  <edelsohn@gnu.org>
 
@@ -19891,7 +19891,7 @@
 
 	* varasm.c (unlikely_section_label): New global variable.
 	(unlikely_text_section_name): New global variable.
-	(text_section):  Remove alignment statement.
+	(text_section): Remove alignment statement.
 	(unlikely_text_section): Remove alignment statement; use
 	unlikely_section_label rather than hard-coded string.
 	(assemble_start_function): Initialize unlikely_section_label and
@@ -20657,7 +20657,7 @@
 
 2004-08-03  Dale Johannesen  <dalej@apple.com>
 
-	* config/rs6000/rs6000.c (machopic_output_stub):  Align Darwin stubs.
+	* config/rs6000/rs6000.c (machopic_output_stub): Align Darwin stubs.
 	* c-common.c: Include opts.h.
 	(c_common_get_alias_set): Fix check for a single input file.
 	* toplev.c: Remove current_file_decl.
@@ -22883,12 +22883,12 @@
 
 	* loop-init.c (loop_optimizer_init, loop_optimizer_finalize): Do not
 	destroy dominance information.
-	* passes.c (rest_of_handle_loop2):  Free dominance information.
+	* passes.c (rest_of_handle_loop2): Free dominance information.
 	* tree-cfg.c (cleanup_tree_cfg): Remove unreachable blocks before
 	jump threading.
 	(thread_jumps): Update dominance information and remove unreachable
 	blocks.
-	* tree-ssa-phiopt.c (replace_phi_with_stmt):  Update dominance
+	* tree-ssa-phiopt.c (replace_phi_with_stmt): Update dominance
 	information and remove the unreachable block.
 
 2004-07-17  Graham Stott  <graham.stott@btinternet.com>
@@ -23305,10 +23305,10 @@
 
 2004-07-14  Per Bothner	 <per@bothner.com>
 
-	* input.h:  If USE_MAPPED_LOCATION, define separate expanded_location
+	* input.h: If USE_MAPPED_LOCATION, define separate expanded_location
 	structure with extra column field.
-	* tree.c (expand_location):  Also fill in column field.
-	* gengtype-lex.l:  Ignore expanded_location typedef, sinze gengtype
+	* tree.c (expand_location): Also fill in column field.
+	* gengtype-lex.l: Ignore expanded_location typedef, sinze gengtype
 	gets confused by the two conditionally-compiled definitions.
 
 2004-07-14  Eric Christopher  <echristo@redhat.com>
@@ -23346,10 +23346,10 @@
 
 2004-07-14  Per Bothner  <per@bothner.com>
 
-	* c-typeck.c (emit_side_effect_warnings):  Use EXPR_HAS_LOCATION
+	* c-typeck.c (emit_side_effect_warnings): Use EXPR_HAS_LOCATION
 	instead of EXPR_LOCUS in a boolean context, which is always true
 	if --enable-mapped-location.
-	* stmt.c (warn_if_unused_value):  Likewise.  Also use EXPR_LOCATION.
+	* stmt.c (warn_if_unused_value): Likewise.  Also use EXPR_LOCATION.
 
 2004-07-14  Richard Henderson  <rth@redhat.com>
 
@@ -23645,7 +23645,7 @@
 
 2004-07-13  Per Bothner  <per@bothner.com>
 
-	* collect2.c (main):  Handle --no-demangle and --demangle flags.
+	* collect2.c (main): Handle --no-demangle and --demangle flags.
 
 2004-07-13  Sebastian Pop  <pop@cri.ensmp.fr>
 
@@ -23943,7 +23943,7 @@
 
 	* fold-const.c (fold) <PLUS_EXPR>: Canonicalize X + -C as X - C for
 	floating point additions, to keep real immediate constant positive.
-	<MINUS_EXPR>:  For floating point subtractions, only transform X - -C
+	<MINUS_EXPR>: For floating point subtractions, only transform X - -C
 	into X + C, and leave positive real constants as X - C.
 
 2004-07-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -23970,7 +23970,7 @@
 	is ignored.
 	(fold_convert): Call fold_ignored_result when casting a value
 	to VOID_TYPE.
-	(omit_one_operand):  Call fold_ignored_result on the "omitted"
+	(omit_one_operand): Call fold_ignored_result on the "omitted"
 	operand when building a COMPOUND_EXPR.
 	(pedantic_omit_one_operand): Likewise.
 	* tree.h (fold_ignored_result): Prototype here.
@@ -24086,13 +24086,13 @@
 
 2004-07-11  Phil Edwards  <phil@codesourcery.com>
 
-	* configure.ac:  Alphabetize --enable-checking list, add
+	* configure.ac: Alphabetize --enable-checking list, add
 	missing valgrind entry.
-	* configure:  Regenerate.
+	* configure: Regenerate.
 
 2004-07-11  Phil Edwards  <phil@codesourcery.com>
 
-	* doc/install.texi (Testing):  Fix syntax in "make check" example.
+	* doc/install.texi (Testing): Fix syntax in "make check" example.
 
 2004-07-10  James E Wilson  <wilson@specifixinc.com>
 
@@ -24834,7 +24834,7 @@
 	(simplify_builtin_strcy, simplify_builtin_strncpy): Delete.
 	(simplify_builtin_fputs): Rename to fold_builtin_fputs.  Change
 	types of "ignore" and "unlocked" parameters to bool.
-	(fold_builtin_1):  Add additional ignore argument.  Call renamed
+	(fold_builtin_1): Add additional ignore argument.  Call renamed
 	fold_builtin_fputs to simplify GCC "fputs" and "fputs_unlocked"
 	builtins.  Update arguments to fold_builtin_strncpy and
 	fold_builtin_strcpy.  Add function prototype.
@@ -24851,7 +24851,7 @@
 	(fold_builtin): Update function prototype with new "bool ignore".
 
 	* tree-ssa-ccp.c (ccp_fold): Update call to fold_builtin.
-	(ccp_fold_builtin):  Update call to fold_builtin.  Call
+	(ccp_fold_builtin): Update call to fold_builtin.  Call
 	fold_builtin_fputs, fold_builtin_strcpy and fold_builtin_strncpy
 	instead of simplify_builtin_fputs, simplify_builtin_strcpy and
 	simplify_builtin_strncpy respectively.
@@ -25534,7 +25534,7 @@
 
 2004-07-07  Per Bothner  <per@bothner.com>
 
-	* flow.c (attempt_auto_inc):  Remove now-redundant PUT_CODE.
+	* flow.c (attempt_auto_inc): Remove now-redundant PUT_CODE.
 
 2004-07-07  Mike Stump  <mrs@apple.com>
 
@@ -26671,7 +26671,7 @@
 
 2004-07-01  Per Bothner  <per@bothner.com>
 
-	* final.c (final):  Fix typo reported by Aaron W. LaFramboise.
+	* final.c (final): Fix typo reported by Aaron W. LaFramboise.
 
 2004-07-01  Jakub Jelinek  <jakub@redhat.com>
 
@@ -27099,94 +27099,94 @@
 2004-06-30  Per Bothner  <per@bothner.com>
 
 	Conditionally compile support for --enable-mapped_location.
-	* input.h:  #include line-map.h for source_location typedef.
+	* input.h: #include line-map.h for source_location typedef.
 	(BUILTINS_LOCATION, UNKNOWN_LOCATION, expand_location,
-	LOCATION_FILE, LOCATION_LINE):  New macros and functions.
-	(expanded_location, source_locus):  New typedefs.
-	(push_srcloc):  Change parameter list if USE_MAPPED_LOCATION.
-	* rtl.def (NOTE, ASM_OPERANDS):  Modify specifcation, if
+	LOCATION_FILE, LOCATION_LINE): New macros and functions.
+	(expanded_location, source_locus): New typedefs.
+	(push_srcloc): Change parameter list if USE_MAPPED_LOCATION.
+	* rtl.def (NOTE, ASM_OPERANDS): Modify specifcation, if
 	USE_MAPPED_LOCATION.
-	* rtl.h (NOTE_DELETED_LABEL_NAME):  New macro.
+	* rtl.h (NOTE_DELETED_LABEL_NAME): New macro.
 	(NOTE_SOURCE_LOCATION, NOTE_EXPNDED_LOCATION, SET_INSN_DELETED):
 	New conditional macros.
-	(ASM_OPERANDS_SOURCE_FILE, ASM_OPERANDS_SOURCE_LINE):  Replace
+	(ASM_OPERANDS_SOURCE_FILE, ASM_OPERANDS_SOURCE_LINE): Replace
 	by ASM_OPERANDS_SOURCE_LOCATION if USE_MAPPED_LOCATION.
 	* tree.h (EXPR_LOCATION, SET_EXPR_LOCATION, EXPR_HAS_LOCATION,
 	EXPR_LOCUS, SET_EXPR_LOCUS, EXPR_FILENAME, EXPR_LINENO,
-	DECL_IS_BUILTIN):  New macros, most depending on USE_MAPPED__LOCATION.
-	(tree_exp):  Change type of locus to use new source_locus typedef.
-	* tree.c (build1_stat):  Use SET_EXPR_LOCATION.
-	(annotate_with_locus, annotate_with_file_line):  Conditionalize.
-	(expand_location):  New function.
-	* toplev.c (unknown_location):  New static, when USE_MAPPED_LOCATION.
-	(push_srcloc, pop_loc):  Adjust parameter handling.
-	(process_options):  Don't set input_filename by itself.
-	(lang_dependent_init):  Save, set input_location to <built-in>.
-	(warn_deprecated_use):  Use expand_location.
+	DECL_IS_BUILTIN): New macros, most depending on USE_MAPPED__LOCATION.
+	(tree_exp): Change type of locus to use new source_locus typedef.
+	* tree.c (build1_stat): Use SET_EXPR_LOCATION.
+	(annotate_with_locus, annotate_with_file_line): Conditionalize.
+	(expand_location): New function.
+	* toplev.c (unknown_location): New static, when USE_MAPPED_LOCATION.
+	(push_srcloc, pop_loc): Adjust parameter handling.
+	(process_options): Don't set input_filename by itself.
+	(lang_dependent_init): Save, set input_location to <built-in>.
+	(warn_deprecated_use): Use expand_location.
 
-	* basic-block.h (struct edge_def):  Use new source_locus typedef.
-	* c-common.c (fname_decl):  Update save/clear/store of input_location.
-	(c_do_switch_warnings):  Update for USE_MAPPED_LOCATION case.
-	* c-decl.c:  Likewise.
-	* c-dump.c (dump_stmt):  Likewise.
-	* c-gimplify.c (c-gimplify.c):  Generalize using SET_EXPR_LOCATION.
-	* c-lex.c (cb_line_change):  If USE_MAPPED_LOCATION use token's	src_loc
+	* basic-block.h (struct edge_def): Use new source_locus typedef.
+	* c-common.c (fname_decl): Update save/clear/store of input_location.
+	(c_do_switch_warnings): Update for USE_MAPPED_LOCATION case.
+	* c-decl.c: Likewise.
+	* c-dump.c (dump_stmt): Likewise.
+	* c-gimplify.c (c-gimplify.c): Generalize using SET_EXPR_LOCATION.
+	* c-lex.c (cb_line_change): If USE_MAPPED_LOCATION use token's	src_loc
 	to set input_location direction, rather than using linemap_lookup.
-	(fe_file_change, cb_def_pragma):  Again use source_location directly.
-	* c-opts.c (saved_lineno):  Remove static variable.
-	(c_common_post_options, c_common_init):  Don't bothner to save,
+	(fe_file_change, cb_def_pragma): Again use source_location directly.
+	* c-opts.c (saved_lineno): Remove static variable.
+	(c_common_post_options, c_common_init): Don't bothner to save,
 	clear and restore input_Location - now handled by lang_dependent_init.
-	* function.c (init_function_start):  Use new DECL_IS_BUILTIN macro.
-	* xcoffout.c (xcoff_assign_fundamental_type_number):  Likewise.
-	* tree-mudflap.c (mf_file_function_line_tree):  Take a location_t
+	* function.c (init_function_start): Use new DECL_IS_BUILTIN macro.
+	* xcoffout.c (xcoff_assign_fundamental_type_number): Likewise.
+	* tree-mudflap.c (mf_file_function_line_tree): Take a location_t
 	rather than a pointer to one.  Use expand_location.
-	(mf_varname_tree):  Use expand_location.
-	* tree-dump.c:  Use expand_location on DECL_SOURCE_LOCATION.
-	* coverage.c:  Likewise.
-	* print-tree.c:  Likewise.
-	* c-aux-info.c (gen_aux_info_record):  Likewise.
-	* c-parse.in:  Use SET_EXPR_LOCATION macro.
-	* gimple-low.c:  Likewise.
-	* tree-mudflap.c:  Likewise.
-	* gimplify.c:  Likewise.  Also use EXPR_LOCATION and EXPR_HAS_LOCATION.
-	* c-ppoutput.c:  Use new source_location typedef instead of fileline.
-	* c-semantics.c:  Use new macros.
-	* c-typeck.c:  Likewise.
-	* cfgexpand.c:  Handle USE_MAPPED_LOCATION case for function_end_locus.
-	* cfglayout.c (insn_locators_initialize):  Const cleanup.  New macros.
-	* cfgrtl.c (delete_insn):  Use new NOTE_DELETED_LABEL_NAME macro.
-	* print-rtl.c (print_rtx):  Likewise.
-	* emit-rtl.c:  Don't clear NOTE_SOURCE_FILE if USE_MAPPED_LOCATION.
-	* combine.c:  Use new SET_INSN_DELETED macro.
-	* flow.c:  Likewise.
-	* haifa-sched.c:  Likewise.
-	* ifcvt.c:  Likewise.
-	* recog.c:  Likewise.
-	* reload1.c:  Likewise.
-	* diagnostic.c:  Use expand_location macro.
-	* pretty-print.c (pp_base_format_text):  Likewise.
-	* profile.c:  Likewise.
- 	* dwarf2out.c:  Likewise.  Also use expand_location, DECL_IS_BUILTIN.
- 	* dwarf2out.c (dwarf2out_decl:  Use BUILTINS_LOCATION.
-	* emit-rtl.c (emit_line_note):  Simplify if USE_MAPPED_LOCATION.
-	(force_next_line_note, insn_emit):  Handle USE_MAPPED_LOCATION case.
-	* final.c (final):  Likewise.
-	* haifa-sched.c:  Likewise.
-	* integrate.c:  Likewise.
-	* jump.c:  Likewise.
-	* rtl-error.c:  Likewise.
-	* stmt.c (check_seenlabel):  Likewise.
-	* tree-pretty-print.c:  Likewise.
-	* gengtype-lex.l:  Temporary kludge to avoid duplicate typedef.
-	* gengtype.c:  Update for now typdefs in input.h.  More kludges.
-	* modulo-sched.c (sms_schedule):  Use NOTE_EXPANDED_LOCATION macro.
-	* ra-debug.c (ra_print_rtl):  Likewise.
-	* sched-rgn.c:  Likewise.
-	* sched-vis.c:  Likewise.
-	* rtl.h (gen_rtx_ASM_OPERANDS):  Redefine if USE_MAPPED_LOCATION.
-	* stmt.c (expand_asm_operands):  Adjust calls to gen_rtx_ASM_OPERANDS.
-	* tree-cfg.c:  Use new macros and typedefs.
-	* tree-flow-inline.h:  Likewise.
+	(mf_varname_tree): Use expand_location.
+	* tree-dump.c: Use expand_location on DECL_SOURCE_LOCATION.
+	* coverage.c: Likewise.
+	* print-tree.c: Likewise.
+	* c-aux-info.c (gen_aux_info_record): Likewise.
+	* c-parse.in: Use SET_EXPR_LOCATION macro.
+	* gimple-low.c: Likewise.
+	* tree-mudflap.c: Likewise.
+	* gimplify.c: Likewise.  Also use EXPR_LOCATION and EXPR_HAS_LOCATION.
+	* c-ppoutput.c: Use new source_location typedef instead of fileline.
+	* c-semantics.c: Use new macros.
+	* c-typeck.c: Likewise.
+	* cfgexpand.c: Handle USE_MAPPED_LOCATION case for function_end_locus.
+	* cfglayout.c (insn_locators_initialize): Const cleanup.  New macros.
+	* cfgrtl.c (delete_insn): Use new NOTE_DELETED_LABEL_NAME macro.
+	* print-rtl.c (print_rtx): Likewise.
+	* emit-rtl.c: Don't clear NOTE_SOURCE_FILE if USE_MAPPED_LOCATION.
+	* combine.c: Use new SET_INSN_DELETED macro.
+	* flow.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* ifcvt.c: Likewise.
+	* recog.c: Likewise.
+	* reload1.c: Likewise.
+	* diagnostic.c: Use expand_location macro.
+	* pretty-print.c (pp_base_format_text): Likewise.
+	* profile.c: Likewise.
+	* dwarf2out.c: Likewise.  Also use expand_location, DECL_IS_BUILTIN.
+	* dwarf2out.c (dwarf2out_decl: Use BUILTINS_LOCATION.
+	* emit-rtl.c (emit_line_note): Simplify if USE_MAPPED_LOCATION.
+	(force_next_line_note, insn_emit): Handle USE_MAPPED_LOCATION case.
+	* final.c (final): Likewise.
+	* haifa-sched.c: Likewise.
+	* integrate.c: Likewise.
+	* jump.c: Likewise.
+	* rtl-error.c: Likewise.
+	* stmt.c (check_seenlabel): Likewise.
+	* tree-pretty-print.c: Likewise.
+	* gengtype-lex.l: Temporary kludge to avoid duplicate typedef.
+	* gengtype.c: Update for now typdefs in input.h.  More kludges.
+	* modulo-sched.c (sms_schedule): Use NOTE_EXPANDED_LOCATION macro.
+	* ra-debug.c (ra_print_rtl): Likewise.
+	* sched-rgn.c: Likewise.
+	* sched-vis.c: Likewise.
+	* rtl.h (gen_rtx_ASM_OPERANDS): Redefine if USE_MAPPED_LOCATION.
+	* stmt.c (expand_asm_operands): Adjust calls to gen_rtx_ASM_OPERANDS.
+	* tree-cfg.c: Use new macros and typedefs.
+	* tree-flow-inline.h: Likewise.
 
 2004-06-30  Richard Sandiford  <rsandifo@redhat.com>
 	    Eric Christopher  <echristo@redhat.com>
@@ -27341,7 +27341,7 @@
 
 2004-06-29  Per Bothner  <per@bothner.com>
 
-	* config/i386/winnt.c (i386_pe_encode_section_info):  Smash rtlname's
+	* config/i386/winnt.c (i386_pe_encode_section_info): Smash rtlname's
 	XSTR in place, so we don't lose SYMBOL_REF_DECL info.
 
 2004-06-29  Zack Weinberg  <zack@codesourcery.com>
@@ -28588,9 +28588,9 @@
 	PR target/15551
 	* config/i386/i386.md: Change UNSPEC_STACK_PROBE to UNSPECV_STACK_PROBE.
 	(allocate_stack_worker): Make unspec_volatile.
-	(allocate_stack_worker_rex64):  Likewise.
-	(allocate_stack_worker_postreload):  Likewise.
-	(allocate_stack_worker_rex64_postreload):  Likewise.
+	(allocate_stack_worker_rex64): Likewise.
+	(allocate_stack_worker_postreload): Likewise.
+	(allocate_stack_worker_rex64_postreload): Likewise.
 
 2004-06-21  Daniel Berlin  <dberlin@dberlin.org>
 
@@ -29217,74 +29217,74 @@
 
 2004-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-cfg.c (tree_make_forwarder_block):  Use SET_PHI_RESULT.
-	* tree-flow-inline.h (get_use_op_ptr):  Return a use_operand_p.
-	(get_use_from_ptr, get_def_from_ptr):  New.  Return operand pointers.
-	(get_def_op_ptr):  Return a def_operand_p instead of a 'tree *'.
-	(get_v_may_def_result_ptr):  Return a def_operand_p.
-	(get_v_may_def_op_ptr, get_vuse_op_ptr):   Return a use_operand_p.
-	(get_v_must_def_op_ptr):  Return a def_operand_p.
-	(get_phi_result_ptr):  New.  Return a pointer to the result of a PHI.
-	(get_phi_arg_def_ptr):  New.  Return a pointer to an argument of a PHI.
-	(phi_element_for_edge):  Remove.
-	* tree-flow.h (propagate_value, replace_exp):  Change prototype.
-	(propagate_tree_value):  Add new prototype.
-	(phi_element_for_edge):  Remove prototype.
-	* tree-into-ssa.c (mark_def_sites):  Use new operand types.
-	(prepare_operand_for_rename):  Split into two functions.
-	(prepare_use_operand_for_rename):  Prepare use operands.
-	(prepare_def_operand_for_rename):  Prepare def operands.
-	(rewrite_stmt):  Use new operand types.
-	(rewrite_operand):  Use new operand types, change parameter type.
-	* tree-outof-ssa.c (replace_variable):  Split into two functions.
-	(replace_use_variable):  Rewrite uses.
-	(replace_def_variable):  Rewrite defs.
-	(rewrite_trees, rewrite_vars_out_of_ssa):  Use new operand types.
-	* tree-phinodes.c (make_phi_node, resize_phi_node):  Use new types.
-	(add_phi_arg, remove_phi_arg_num):  Use new operand types.
-	* tree-ssa-ccp.c (substitute_and_fold):  Use new operand types.
-	(ccp_fold, replace_uses_in):  Use new operand types.
-	* tree-ssa-copy.c (replace_ssa_names):  Rename to replace_ssa_names_ann
+	* tree-cfg.c (tree_make_forwarder_block): Use SET_PHI_RESULT.
+	* tree-flow-inline.h (get_use_op_ptr): Return a use_operand_p.
+	(get_use_from_ptr, get_def_from_ptr): New.  Return operand pointers.
+	(get_def_op_ptr): Return a def_operand_p instead of a 'tree *'.
+	(get_v_may_def_result_ptr): Return a def_operand_p.
+	(get_v_may_def_op_ptr, get_vuse_op_ptr): Return a use_operand_p.
+	(get_v_must_def_op_ptr): Return a def_operand_p.
+	(get_phi_result_ptr): New.  Return a pointer to the result of a PHI.
+	(get_phi_arg_def_ptr): New.  Return a pointer to an argument of a PHI.
+	(phi_element_for_edge): Remove.
+	* tree-flow.h (propagate_value, replace_exp): Change prototype.
+	(propagate_tree_value): Add new prototype.
+	(phi_element_for_edge): Remove prototype.
+	* tree-into-ssa.c (mark_def_sites): Use new operand types.
+	(prepare_operand_for_rename): Split into two functions.
+	(prepare_use_operand_for_rename): Prepare use operands.
+	(prepare_def_operand_for_rename): Prepare def operands.
+	(rewrite_stmt): Use new operand types.
+	(rewrite_operand): Use new operand types, change parameter type.
+	* tree-outof-ssa.c (replace_variable): Split into two functions.
+	(replace_use_variable): Rewrite uses.
+	(replace_def_variable): Rewrite defs.
+	(rewrite_trees, rewrite_vars_out_of_ssa): Use new operand types.
+	* tree-phinodes.c (make_phi_node, resize_phi_node): Use new types.
+	(add_phi_arg, remove_phi_arg_num): Use new operand types.
+	* tree-ssa-ccp.c (substitute_and_fold): Use new operand types.
+	(ccp_fold, replace_uses_in): Use new operand types.
+	* tree-ssa-copy.c (replace_ssa_names): Rename to replace_ssa_names_ann
 	and no longer set the value, change parameter type.
-	(replace_exp_1):  Use new operand types.
-	(propagate_value):  Change parameter type, use new operand types.
-	(propagate_tree_value):  Propagate_value without SSA operands.
-	(replace_exp, cprop_operand, cprop_into_stmt):  Use new operand types.
-	(cprop_into_successor_phis):  Use new operand types.
-	* tree-ssa-dom.c (thread_across_edge):  Use new operand types.
-	(eliminate_redundant_computations):  Use new operand types.
-	* tree-ssa-dse.c (fix_phi_uses):  Use new operand_types.
-	(fix_stmt_v_may_defs):  Use new operand_types.
-	* tree-ssa-live.c (create_ssa_var_map):  Use new operand_types.
-	(build_tree_conflict_graph):  Use new operand_types.
-	* tree-ssa-loop.c (duplicate_blocks):  Use PHI_ARG_DEF_FROM_EDGE.
-	* tree-ssa-operands.c (struct freelist_d):  Remove.
-	(check_optype_freelist, add_optype_freelist):  Remove.
+	(replace_exp_1): Use new operand types.
+	(propagate_value): Change parameter type, use new operand types.
+	(propagate_tree_value): Propagate_value without SSA operands.
+	(replace_exp, cprop_operand, cprop_into_stmt): Use new operand types.
+	(cprop_into_successor_phis): Use new operand types.
+	* tree-ssa-dom.c (thread_across_edge): Use new operand types.
+	(eliminate_redundant_computations): Use new operand types.
+	* tree-ssa-dse.c (fix_phi_uses): Use new operand_types.
+	(fix_stmt_v_may_defs): Use new operand_types.
+	* tree-ssa-live.c (create_ssa_var_map): Use new operand_types.
+	(build_tree_conflict_graph): Use new operand_types.
+	* tree-ssa-loop.c (duplicate_blocks): Use PHI_ARG_DEF_FROM_EDGE.
+	* tree-ssa-operands.c (struct freelist_d): Remove.
+	(check_optype_freelist, add_optype_freelist): Remove.
 	(allocate_def_optype, allocate_use_optype, allocate_v_may_def_optype,
-	allocate_vuse_optype, allocate_v_must_def_optype):  Call ggc_alloc.
+	allocate_vuse_optype, allocate_v_must_def_optype): Call ggc_alloc.
 	(free_uses, free_defs, free_vuses, free_v_may_defs, free_v_must_defs):
 	Call ggc_free instead of add_optype_freelist.
-	(init_ssa_operands, fini_ssa_operands):  Remove free list code.
-	(finalize_ssa_defs, finalize_ssa_uses):  Set new use/def operands.
-	* tree-ssa-operands.h (struct def_optype_d):  Change underlying type.
-	(struct use_optype_d):  Change underlying type.
-	(def_operand_p, use_operand_p):  New types for pointers to operands.
+	(init_ssa_operands, fini_ssa_operands): Remove free list code.
+	(finalize_ssa_defs, finalize_ssa_uses): Set new use/def operands.
+	* tree-ssa-operands.h (struct def_optype_d): Change underlying type.
+	(struct use_optype_d): Change underlying type.
+	(def_operand_p, use_operand_p): New types for pointers to operands.
 	(USE_OP, DEF_OP, V_MAY_DEF_RESULT, V_MAY_DEF_OP, VUSE_OP,
-	V_MUST_DEF_OP):  Use new pointer type instead of dereferencing directly.
-	(USE_FROM_PTR, DEF_FROM_PTR):  New macros to "dereference" operand
+	V_MUST_DEF_OP): Use new pointer type instead of dereferencing directly.
+	(USE_FROM_PTR, DEF_FROM_PTR): New macros to "dereference" operand
 	pointer types.
-	(SET_USE, SET_DEF):  New macros to set operands from their pointer.
+	(SET_USE, SET_DEF): New macros to set operands from their pointer.
 	(SET_USE_OP, SET_DEF_OP, SET_V_MAY_DEF_RESULT, SET_V_MAY_DEF_OP,
 	SET_VUSE_OP, SET_V_MUST_DEF_OP): New SET routines for operands.
-	(PHI_RESULT_PTR, PHI_RESULT, SET_PHI_RESULT):  Macros to manage the
+	(PHI_RESULT_PTR, PHI_RESULT, SET_PHI_RESULT): Macros to manage the
 	PHI result as an operand.
 	(PHI_ARG_DEF_PTR, PHI_ARG_DEF, SET_PHI_ARG_DEF, PHI_ARG_DEF_FROM_EDGE,
-	PHI_ARG_DEF_PTR_FROM_EDGE):  Macros to manage the PHI arguments.
-	* tree-ssa-pre.c (eliminate):  Call propagate_tree_value.
-	* tree-tailcall.c (independent_of_stmt_p, propagate_through_phis):  Use
+	PHI_ARG_DEF_PTR_FROM_EDGE): Macros to manage the PHI arguments.
+	* tree-ssa-pre.c (eliminate): Call propagate_tree_value.
+	* tree-tailcall.c (independent_of_stmt_p, propagate_through_phis): Use
 	PHI_ARG_DEF_FROM_EDGE.
-	* tree.h (PHI_RESULT):  Renamed to PHI_RESULT_TREE.
-	(PHI_ARG_DEF):  Renamed to PHI_ARG_DEF_TREE.
+	* tree.h (PHI_RESULT): Renamed to PHI_RESULT_TREE.
+	(PHI_ARG_DEF): Renamed to PHI_ARG_DEF_TREE.
 
 2004-06-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
@@ -29326,7 +29326,7 @@
 
 2004-06-17  Daniel Berlin  <dberlin@dberlin.org>
 
-	* tree-ssa-pre.c:  Update comments.
+	* tree-ssa-pre.c: Update comments.
 	(val_expr_pair_eq): Factor code from here.
 	(expr_pred_trans_eq): and here.
 	(expressions_equal_p): To here.
@@ -29414,7 +29414,7 @@
 
 2004-06-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.c (struct machine_function):  New member
+	* config/s390/s390.c (struct machine_function): New member
 	last_restore_gpr.
 	(s390_frame_info): Add BASE_USED and RETURN_ADDR_USED parameters.
 	Do not modify machine->save_return_addr_p or regs_ever_live.
@@ -29475,7 +29475,7 @@
 	(udivmodhi4, divmodhi4): Use mvz to zero extend arg for
 	divide.
 	(iorsi3, xorsi3, andsi3): Use bitfield instructions if possible.
-	* config/m68k/m68k.c(valid_mov3q_const):  New function.
+	* config/m68k/m68k.c(valid_mov3q_const): New function.
 	(const_method): SWAP is valid for ColdFire.
 	(MULL_COST, MULW_COST): Fix costs for ColdFire V3/V4.
 	* config/m68k/m68k-protos.h (valid_mov3q_const): Prototype here.
@@ -30895,7 +30895,7 @@
 
 2004-06-08  Per Bothner  <per@bothner.com>
 
-	* configure.ac:  New --enable-mapped-location sets USE_MAPPED_LOCATION.
+	* configure.ac: New --enable-mapped-location sets USE_MAPPED_LOCATION.
 
 2004-06-08  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -31295,7 +31295,7 @@
 	(resource.o, regrename.o, insn-conditions.o, insn-emit.o,
 	insn-recog.o): Replace resource.h with RESOURCE_H.
 	(ddg.o, modulo-sched.o, haifa-sched.o, sched-deps.o, sched-rgn.o,
-	sched-ebb.o, sched-vis.o, out_object_file):  Replace sched-int.h
+	sched-ebb.o, sched-vis.o, out_object_file): Replace sched-int.h
 	with SCHED_INT_H.
 	(web.o, lcm.o, df.o, ra.o, ra-build.o, ra-colorize.o, ra-debug.o,
 	ra-rewrite.o): Replace df.h with DF_H.
@@ -31308,11 +31308,11 @@
 	* ddg.h: Include sbitmap.h, basic-block.h, df.h.
 	* df.h: Add include guard.  Include bitmap.h, sbitmap.h,
 	basic-block.h.
-	* genconditions.c:  Remove reload.h.
+	* genconditions.c: Remove reload.h.
 	* ra.h: Add include guard.  Include bitmap.h, sbitmap.h,
 	hard-reg-set.h, insn-modes.h.
 	* resource.h: Add include guard.  Include hard-reg-set.h.
-	* sched-int.h:  Add include guard.  Include insn-attr.h,
+	* sched-int.h: Add include guard.  Include insn-attr.h,
 	basic-block.h, rtl.h.
 	* target.h: Add include guard.  Include insn-modes.h.
 	* tree-ssa-live.h: Include partition.h.
@@ -31364,7 +31364,7 @@
 
 2004-06-02  Jan Hubicka  <jh@suse.cz>
 
-	* tree-cfg.c (tree_find_edge_insert_loc):  Allow inserting before
+	* tree-cfg.c (tree_find_edge_insert_loc): Allow inserting before
 	return_stmt.
 
 2004-06-02  Jason Merrill  <jason@redhat.com>
@@ -31447,7 +31447,7 @@
 2004-06-01  Peter Barada  <peter@the-baradas.com>
 	    Peter Jakubek  <peter@laseranimation.com>
 
-	* config/m68k/m68k.c(m68k_output_mi_thunk):  For ColdFire, use %d0 as
+	* config/m68k/m68k.c(m68k_output_mi_thunk): For ColdFire, use %d0 as
 	a scratch to perform an add to memory.
 
 2004-06-01  Bernardo Innocenti  <bernie@develer.com>
@@ -31854,7 +31854,7 @@
 
 2004-05-27  Jan Hubicka  <jh@suse.cz>
 
-	* cfgbuild.c (control_flow_insn_p):  Notice noreturn call
+	* cfgbuild.c (control_flow_insn_p): Notice noreturn call
 
 2004-05-27  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -31921,12 +31921,12 @@
 
 2004-05-26  Jan Hubicka  <jh@suse.cz>
 
-	* cfgcleanup.c (try_forward_edges):  Do not check loop structure when
+	* cfgcleanup.c (try_forward_edges): Do not check loop structure when
 	not loop optimizing.
 
 2004-05-26  Jan Hubicka  <jh@suse.cz>
 
-	* except.c (can_throw_internal):  Notice RESX instructions.
+	* except.c (can_throw_internal): Notice RESX instructions.
 
 2004-05-26  Eric Botcazou  <ebotcazou@act-europe.fr>
 
@@ -31976,7 +31976,7 @@
 
 2004-05-25  Jan Hubicka  <jh@suse.cz>
 
-	* builtins.def (__builtin_expect):  Mark the function as const&nothrow.
+	* builtins.def (__builtin_expect): Mark the function as const&nothrow.
 
 2004-05-25  Ayal Zaks  <zaks@il.ibm.com>
 	Mostafa Hagog  <mustafa@il.ibm.com>
@@ -32453,7 +32453,7 @@
 2004-05-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR c++/15463
-	* loop-iv.c (iv_number_of_iterations):  Use trunc_int_for_mode on
+	* loop-iv.c (iv_number_of_iterations): Use trunc_int_for_mode on
 	result of inverse.
 
 	PR rtl-optimization/15274
@@ -32697,7 +32697,7 @@
 
 2004-05-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* pa.md:  Fix typo from last change.  Remove DFmode move to and from
+	* pa.md: Fix typo from last change.  Remove DFmode move to and from
 	SAR register.
 
 2004-05-16  Richard Earnshaw  <rearnsha@arm.com>
@@ -32902,7 +32902,7 @@
 	* target-def.h (TARGET_ALIGN_ANON_BITFIELD): Define.
 	(TARGET_INITIALIZER): Use it.
 	* target.h (struct gcc_target): Add align_anon_bitfield.
-	* config/arm/arm.c (arm_align_anon_bitfield):  New function.
+	* config/arm/arm.c (arm_align_anon_bitfield): New function.
 	(TARGET_ALIGN_ANON_BITFIELD): Define.
 	* doc/tm.texi: Document TARGET_ALIGN_ANON_BITFIELD.
 
@@ -33521,7 +33521,7 @@
 	(emit_move_insn_1): Don't generate inline warnings.
 	(expand_vars, expand_var): Split from ...
 	(expand_expr_1): ... here.
-	(expand_expr_real, expand_expr_real_1):  Use new macros
+	(expand_expr_real, expand_expr_real_1): Use new macros
 	EXPR_LOCATION and EXPR_HAS_LOCATION.
 	* expr.h (simplify_builtin_fputs,
 	simplify_builtin_strcpy, simplify_builtin_strncpy,
@@ -33723,7 +33723,7 @@
 	Do rtl-based profiling only when
 	!flag_tree_based_profiling.  Register rtl-based profiling
 	hooks.
-	* predict.c:  Include tree-flow.h, ggc.h, tree-dump.h
+	* predict.c: Include tree-flow.h, ggc.h, tree-dump.h
 	(predicted_by_p): Rename to ...
 	(rtl_predicted_by_p): .. this one; make global
 	(tree_predicted_by_p): New.
@@ -34652,7 +34652,7 @@
 
 	* vmsdbgout.c (vms_func_node, vms_func_ref): New.
 	(func_table): Change type from char ** to vms_func_ref.
-	(write_rtnbeg):  Update to reflect func_table change.  Use
+	(write_rtnbeg): Update to reflect func_table change.  Use
 	fde->funcdef_number instead of rtnnum in output.
 	(write_rtnend, vmxdbgout_begin_function, vmsdbgout_init): Likewise.
 
@@ -35441,35 +35441,35 @@
 
 2004-04-22  Per Bothner  <per@bothner.com>
 
-	* line-map.h (struct line_maps):  New field highest_line.
-	(linemap_position_for_column):  Make non-inline function.
-	(LINEMAP_POSITION_FOR_COLUMN):  New macro.
-	* line-map.c (linemap_init):  Clear highest_line field.
-	(linemap_add):  Set highest_line field.
-	(linemap_line_start):  Minor optimization - use highest_line field.
+	* line-map.h (struct line_maps): New field highest_line.
+	(linemap_position_for_column): Make non-inline function.
+	(LINEMAP_POSITION_FOR_COLUMN): New macro.
+	* line-map.c (linemap_init): Clear highest_line field.
+	(linemap_add): Set highest_line field.
+	(linemap_line_start): Minor optimization - use highest_line field.
 	Reduce maximum column hint to 10000.  Update highest_line field.
-	(linemap_position_for_column):  Moved from line-map.h.  Optimize a bit.
-	* cpphash.h (struct cpp_reader):  Remove line field - instead use
+	(linemap_position_for_column): Moved from line-map.h.  Optimize a bit.
+	* cpphash.h (struct cpp_reader): Remove line field - instead use
 	line_table->highest_line.
-	(saved_line):  Remove unused field.
-	(CPP_INCREMENT_FILE):  Don't do linemap_lookup - just use newest map.
+	(saved_line): Remove unused field.
+	(CPP_INCREMENT_FILE): Don't do linemap_lookup - just use newest map.
 	Use  line_table's highest_line field instead of cpp_reader's line.
-	* cpplib.c (start_directive):  Likewise use highest_line field.
-	(do_line, do_linemarker):  Likewise just use newest map.
-	(_cpp_do_file_change):  Don't need to set cpp_reader's line field.
-	* cpperror.c (cpp_error):  Likewise use highest_line field.
-	* cppfiles.c (open_file_failed:  Likewise.
-	(cpp_make_system_header):  Likewise use newest map and highest_line.
-	* cppinit.c (cpp_create_reader):  Don't initialize removed field.
+	* cpplib.c (start_directive): Likewise use highest_line field.
+	(do_line, do_linemarker): Likewise just use newest map.
+	(_cpp_do_file_change): Don't need to set cpp_reader's line field.
+	* cpperror.c (cpp_error): Likewise use highest_line field.
+	* cppfiles.c (open_file_failed: Likewise.
+	(cpp_make_system_header): Likewise use newest map and highest_line.
+	* cppinit.c (cpp_create_reader): Don't initialize removed field.
 	* cpplex.c (_cpp_process_line_notes, _cpp_skip_block_comment,
 	skip_line_comment, skip_whitespace, _cpp_get_fresh_line,
-	_cpp_lex_direct):  Likewise use highest_line.
-	(_cpp_lex_direct):  Use new LINEMAP_POSITION_FOR_COLUMN macro.
-	* cppmacro.c (_cpp_builtin_macro_text):  Likewise use highest_line,
+	_cpp_lex_direct): Likewise use highest_line.
+	(_cpp_lex_direct): Use new LINEMAP_POSITION_FOR_COLUMN macro.
+	* cppmacro.c (_cpp_builtin_macro_text): Likewise use highest_line,
 	and use newest map.
-	* cpppch.c (cpp_read_state):  Don't save+restore cpp_reader's line.
-	* cpptrad.c (_cpp_overlay_buffer):  Don't save cpp_reader's line.
-	(copy_comment, _cpp_scan_out_logical_line):  Likewise use highest_line.
+	* cpppch.c (cpp_read_state): Don't save+restore cpp_reader's line.
+	* cpptrad.c (_cpp_overlay_buffer): Don't save cpp_reader's line.
+	(copy_comment, _cpp_scan_out_logical_line): Likewise use highest_line.
 
 2004-04-23  Alan Modra  <amodra@bigpond.net.au>
 
@@ -35486,7 +35486,7 @@
 
 2004-04-22  Per Bothner  <per@bothner.com>
 
-	* cppinit.c (cpp_read_main_file):  Return NULL rather than false.
+	* cppinit.c (cpp_read_main_file): Return NULL rather than false.
 	Fixes PR preprocessor/15067.
 
 2004-04-23  Andreas Schwab  <schwab@suse.de>
@@ -36119,7 +36119,7 @@
 
 2004-04-11  Roger Sayle  <roger@eyesopen.com>
 
-	* fold-const.c (fold_binary_op_with_conditional_arg):  Tweak
+	* fold-const.c (fold_binary_op_with_conditional_arg): Tweak
 	calling convention to allow a NULL_TREE to be returned.  Factor
 	sanity checks from callers, return NULL_TREE when appropriate.
 	(fold): Handle COMPOUND_EXPR operands of binary expressions
@@ -36129,7 +36129,7 @@
 
 2004-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* config/mips/iris5.h (current_section_flags):  Add
+	* config/mips/iris5.h (current_section_flags): Add
 	in_unlikely_executed_text and default case.
 
 2004-04-11  Andreas Tobler  <a.tobler@schweiz.ch>
@@ -36195,13 +36195,13 @@
 
 2004-04-09  Caroline Tice  <ctice@apple.com>
 
-	* basic-block.h (struct edge_def):  Add new field, crossing_edge.
-	(struct basic_block_def):  Add new field, partition.
-	(UNPARTITIONED, HOT_PARTITION, COLD_PARTITION):  New constant macro
+	* basic-block.h (struct edge_def): Add new field, crossing_edge.
+	(struct basic_block_def): Add new field, partition.
+	(UNPARTITIONED, HOT_PARTITION, COLD_PARTITION): New constant macro
 	definitions.
 	(partition_hot_cold_basic_blocks): Add extern function
 	declaration.
-	* bb-reorder.c (function.h, obstack.h, expr.h, regs.h):  Add four new
+	* bb-reorder.c (function.h, obstack.h, expr.h, regs.h): Add four new
 	include	statements.
 	(N_ROUNDS): Increase the maximum number of rounds by 1.
 	(branch_threshold): Add array value for new round.
@@ -36218,17 +36218,17 @@
 	(fix_crossing_unconditional_branches): New function.
 	(fix_edges_for_rarely_executed_code): New function.
 	(partition_hot_cold_basic_blocks): New function.
-	(find_traces):  Add an extra round for partitioning hot/cold
+	(find_traces): Add an extra round for partitioning hot/cold
 	basic blocks.
 	(find_traces_1_round): Add a parameter.  Modify to push all cold blocks,
 	and only cold blocks, into the last (extra) round of collecting traces.
 	(better_edge_p): Add a parameter.  Modify to favor non-crossing edges
 	over crossing edges.
-	(bb_to_key):  Add code to correctly identify cold blocks when
+	(bb_to_key): Add code to correctly identify cold blocks when
 	doing partitioning.
 	(connect_traces): Modify to connect all the non-cold traces first, then
 	go back and connect up all the cold traces.
-	(reorder_basic_blocks):  Add call to add_unlikely_executed_notes.
+	(reorder_basic_blocks): Add call to add_unlikely_executed_notes.
 	* cfg.c (entry_exit_blocks): Add initialization for partition field in
 	entry and exit blocks.
 	* cfgbuild.c (make_edges): Update current_function_has_computed_jump
@@ -36248,33 +36248,33 @@
 	* cfghooks.c (tidy_fallthru_edges): Modify to not remove indirect
 	jumps that cross section boundaries.
 	* cfglayout.c (flags.h): Add new include statement.
-	(update_unlikely_executed_notes):  New function.
-	(fixup_reorder_chain):  Add code so when a new jumping basic block is
+	(update_unlikely_executed_notes): New function.
+	(fixup_reorder_chain): Add code so when a new jumping basic block is
 	added, it's UNLIKELY_EXECUTED_CODE and REG_CROSSING_JUMP notes are
 	updated appropriately.
-	(duplicate_insn_chain):  Add code to duplicate the new NOTE insn
+	(duplicate_insn_chain): Add code to duplicate the new NOTE insn
 	introduced by this optimization.
-	* cfglayout.h (scan_ahead_for_unlikely_executed_note):  Add new
+	* cfglayout.h (scan_ahead_for_unlikely_executed_note): Add new
 	extern function declaration.
-	* cfgrtl.c (can_delete_note_p):  Add NOTE_INSN_UNLIKELY_EXECUTED_CODE to
+	* cfgrtl.c (can_delete_note_p): Add NOTE_INSN_UNLIKELY_EXECUTED_CODE to
 	list of notes that can be deleted.
-	(create_basic_block_structure):  Add initialization for partition field.
-	(rtl_can_merge_blocks):  Modify to test blocks for jumps that cross
+	(create_basic_block_structure): Add initialization for partition field.
+	(rtl_can_merge_blocks): Modify to test blocks for jumps that cross
 	section boundaries.
-	(try_redirect_by_replacing_jump):  Modify to not attempt on jumps that
+	(try_redirect_by_replacing_jump): Modify to not attempt on jumps that
 	cross section boundaries.
 	(commit_one_edge_insertion): Add code so newly created basic block
 	ends up in correct (hot or cold) section.  Modify to disallow
 	insertions before NOTE_INSN_UNLIKELY_EXECUTED_CODE notes.
-	(rtl_verify_flow_info_1):  Add code to verify that no fall_thru edge
+	(rtl_verify_flow_info_1): Add code to verify that no fall_thru edge
 	crosses section boundaries.
 	(cfg_layout_can_merge_blocks_p): Modify to test blocks for jumps that
 	cross section boundaries.
 	(force_nonfallthru_and_redirect): Modify to make sure new basic block
 	ends up in correct section, with correct notes attached.
-	* common.opt (freorder-blocks-and-partition):  Add new flag for this
+	* common.opt (freorder-blocks-and-partition): Add new flag for this
 	optimization.
-	* dbxout.c (dbx_function_end):  Add code to make sure scope labels at
+	* dbxout.c (dbx_function_end): Add code to make sure scope labels at
 	the end of functions are written into the correct (hot or cold)
 	section.
 	(dbx_source_file): Add code so writing debug file information
@@ -36287,14 +36287,14 @@
 	conditional branches can span all of memory.
 	(HAS_LONG_UNCOND_BRANCH): New constant macro, indicationg whether or not
 	unconditional branches can span all of memory.
-	* final.c (scan_ahead_for_unlikely_executed_note):  New function.
-	(final_scan_insn):  Add code to check for NOTE instruction indicating
+	* final.c (scan_ahead_for_unlikely_executed_note): New function.
+	(final_scan_insn): Add code to check for NOTE instruction indicating
 	whether basic block belongs in hot or cold section, and to make sure
 	the current basic block is being written to the appropriate section.
 	Also added code to ensure that jump table basic blocks end up in the
 	correct section.
-	* flags.h (flag_reorder_blocks_and_partition):  New flag.
-	* ifcvt.c (find_if_case_1):  Modify to not attempt if conversion if
+	* flags.h (flag_reorder_blocks_and_partition): New flag.
+	* ifcvt.c (find_if_case_1): Modify to not attempt if conversion if
 	one of the branches has a jump that crosses between sections.
 	(find_if_case_2): Likewise.
 	(ifcvt): Modify to not attempt to mark loop exit edges after
@@ -36306,52 +36306,52 @@
 	flag_reorder_blocks_and_partition.
 	* output.h (unlikely_text_section): New extern function declaration.
 	(in_unlikely_text_section): New extern function declaration.
-	* passes.c (rest_of_handle_stack_regs):  Add
+	* passes.c (rest_of_handle_stack_regs): Add
 	flag_reorder_blocks_and_partition as an 'or' condition for calling
 	reorder_basic_blocks.
-	(rest_of_handle_reorder_blocks):  Add flag_reorder_blocks_and_partition
+	(rest_of_handle_reorder_blocks): Add flag_reorder_blocks_and_partition
 	as an 'or' condition for calling reorder_basic_blocks.
-	(rest_of_compilation):  Add call to partition_hot_cold_basic_blocks.
+	(rest_of_compilation): Add call to partition_hot_cold_basic_blocks.
 	* print-rtl.c (print_rtx): Add code for handling new note,
 	NOTE_INSN_UNLIKELY_EXECUTED_CODE
 	* rtl.c  (NOTE_INSN_UNLIKELY_EXECUTED_CODE): New note insn (see below).
 	(REG_CROSSING_JUMP): New kind of reg_note, to mark jumps that
 	cross between section boundaries.
-	* rtl.h (NOTE_INSN_UNLIKELY_EXECUTED_CODE):  New note instruction,
+	* rtl.h (NOTE_INSN_UNLIKELY_EXECUTED_CODE): New note instruction,
 	indicating the basic block containing it belongs in the cold section.
 	(REG_CROSSING_JUMP): New type of reg_note, to mark jumps that cross
 	between hot and cold sections.
-	* toplev.c (flag_reorder_blocks_and_partition):  Add code to
+	* toplev.c (flag_reorder_blocks_and_partition): Add code to
 	initialize this flag, and to tie it to the command-line option
 	freorder-blocks-and-partition.
-	* varasm.c (cfglayout.h):  Add new include statement.
-	(unlikely_section_label_printed):  New global variable, used for
+	* varasm.c (cfglayout.h): Add new include statement.
+	(unlikely_section_label_printed): New global variable, used for
 	determining when to output section name labels for cold sections.
-	(in_section):  Add in_unlikely_executed_text to enum data structure.
-	(text_section):  Modify code to use SECTION_FORMAT_STRING and
+	(in_section): Add in_unlikely_executed_text to enum data structure.
+	(text_section): Modify code to use SECTION_FORMAT_STRING and
 	NORMAL_TEXT_SECTION_NAME macros.
-	(unlikely_text_section):  New function.
-	(in_unlikely_text_section):  New function.
-	(function_section):  Add code to make sure beginning of function is
+	(unlikely_text_section): New function.
+	(in_unlikely_text_section): New function.
+	(function_section): Add code to make sure beginning of function is
 	written into correct section (hot or cold).
-	(assemble_start_function):  Add code to make sure stuff is written to
+	(assemble_start_function): Add code to make sure stuff is written to
 	the correct section.
-	(assemble_zeros):  Add in_unlikely_text_section as an 'or' condition
+	(assemble_zeros): Add in_unlikely_text_section as an 'or' condition
 	to an if statement that was checking 'in_text_section'.
-	(assemble_variable):  Add 'in_unlikely_text_section' as an 'or'
+	(assemble_variable): Add 'in_unlikely_text_section' as an 'or'
 	condition to an if statement that was checking 'in_text_section'.
-	(default_section_type_flags_1):  Add check: if in cold section
+	(default_section_type_flags_1): Add check: if in cold section
 	flags = SECTION_CODE.
-	* config/darwin.c (darwin_asm_named_section):  Modify to use
+	* config/darwin.c (darwin_asm_named_section): Modify to use
 	SECTION_FORMAT_STRING if we are partitioning hot/cold blocks.
 	* config/i386/i386.h (HAS_LONG_COND_BRANCH): Defined this macro
 	specifically for the i386.
-	(HAS_LONG_UNCOND_BRANCH):  Defined this macro specifically for the i386.
+	(HAS_LONG_UNCOND_BRANCH): Defined this macro specifically for the i386.
 	* config/rs6000/darwin.h (UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Change
 	text string to something more informative.
 	(NORMAL_TEXT_SECTION_NAME): Add new definition.
-	(SECTION_FORMAT_STRING):  Add new definition.
-	* config/rs6000/rs6000.c (rs6000_assemble_integer):  Add
+	(SECTION_FORMAT_STRING): Add new definition.
+	* config/rs6000/rs6000.c (rs6000_assemble_integer): Add
 	'!in_unlikely_text_section' as an 'and' condition to an if statement
 	that was already checking '!in_text_section'.
 	* config/rs6000/sysv4.h (HOT_TEXT_SECTION_NAME,NORMAL_TEXT_SECTION_NAME,
@@ -36359,7 +36359,7 @@
 	sure these are properly defined for linux on ppc.
 	* doc/invoke.texi  (freorder-blocks-and-partition): Add documentation
 	for this new flag.
-	* doc/rtl.texi (REG_CROSSING_JUMP):  Add documentation for new
+	* doc/rtl.texi (REG_CROSSING_JUMP): Add documentation for new
 	reg_note.
 	* doc/tm.texi (NORMAL_TEXT_SECTION_NAME, SECTION_FORMAT_STRING,
 	HAS_LONG_COND_BRANCH, HAS_LONG_UNCOND_BRANCH): Add documentation for
@@ -36564,18 +36564,18 @@
 	* gcc.c (combine_flag): New global variable, for new driver option.
 	(struct compiler): Add two new fields, to be used when
 	combining multiple input files in a single pass (IMA).
-	(default_compilers):  Add values for the new fields to all
+	(default_compilers): Add values for the new fields to all
 	compiler entries. Modify the "@c" compiler entry for doing IMA
 	properly with "-save-temps" and the "combine" flag.
-	(option_map):  Add new driver option, "--combine", to tell driver
+	(option_map): Add new driver option, "--combine", to tell driver
 	to pass multiple input files to compiler at one time.
 	(have_o_argbuf_index): New global variable.
 	(store_arg): Modify to assign value to have_o_argbuf_index.
-	(struct infile):  Add three new fields, to help with IMA.
+	(struct infile): Add three new fields, to help with IMA.
 	(display_help): Add help for new "combine" option.
 	(process_command): Remove local variable have_o; add code to check
 	for new "combine" option; remove assignment to combine_inputs.
-	(do_spec_1):  Modify to deal with IMA better.
+	(do_spec_1): Modify to deal with IMA better.
 	(main): Make variable 'lang_n_infiles' local to entire function
 	rather than to a single block.  Use flag combine_flag to
 	determine whether to do IMA or not; Modify loop initializing
@@ -36793,7 +36793,7 @@
 	(cgraph_decide_inlining_of_small_functions): ... here; simplify.
 	(cgraph_decide_inlining, cgraph_decide_inlining_incrementally):
 	Likewise.
-	(cgraph_expand_all_functions):  Remove inline clones from the ordered
+	(cgraph_expand_all_functions): Remove inline clones from the ordered
 	list.
 	(cgraph_preserve_function_body_p): New predicate.
 	(cgraph_optimize): Verify cgraph.
@@ -38593,7 +38593,7 @@
 	* config/mips/mips.md: Use move_operand in splitters for 64-bit moves.
 	(movdi, movsi, movhi, movqi, movsf, movdf): Remove predicates.
 	(*movdi_32bit_mips16, *movsi_mips16, *movhi_mips16, *movqi_mips16)
-	(*movsf_mips16, *movdf_mips16):  Name unnamed patterns.  Use
+	(*movsf_mips16, *movdf_mips16): Name unnamed patterns.  Use
 	move_operand as source predicate in all cases.
 	(*movdi_32bit): Renamed from movdi_internal.  Remove 'F' constraint.
 	Test reg_or_0_operand.  Use move_operand as source predicate.
@@ -39011,7 +39011,7 @@
 
 2004-03-07  Jan Hubicka  <jh@suse.cz>
 
-	* except.c (emit_to_new_bb_before):  Break fallthru edges.
+	* except.c (emit_to_new_bb_before): Break fallthru edges.
 
 2004-03-07  Stephane Carrez  <stcarrez@nerim.fr>
 
@@ -39288,7 +39288,7 @@
 
 2004-03-04  Phil Edwards  <phil@codesourcery.com>
 
-	* genmultilib:  Change '=' to '-' when translating option names
+	* genmultilib: Change '=' to '-' when translating option names
 	to directory names.
 
 2004-03-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
@@ -39300,8 +39300,8 @@
 
 	* reload.c (find_reloads): Reorganize if seqeunce to switch.
 
-	* cfgrtl.c (rtl_redirect_edge_and_branch):  Set the source BB as dirty.
-	(cfglayout_redirect_edge_and_branch):  Set the source BB as dirty.
+	* cfgrtl.c (rtl_redirect_edge_and_branch): Set the source BB as dirty.
+	(cfglayout_redirect_edge_and_branch): Set the source BB as dirty.
 
 2004-03-04  Steve Ellcey  <sje@cup.hp.com>
 
@@ -39559,7 +39559,7 @@
 
 2004-03-03  Jan Hubicka  <jh@suse.cz>
 
-	* cselib.c (hash_table):  Remove GTY marker.
+	* cselib.c (hash_table): Remove GTY marker.
 	(reg_values): Turn into array.
 	(used_regs): Likewise.
 	(n_used_regs): New static variable.
@@ -39590,7 +39590,7 @@
 	ggc_alloc_cleared_stat, ggc_realloc_stat, ggc_alloc_typed_stat): Rename
 	from ...; accept locations
 	(ggc_alloc_types, ggc_alloc, ggc_alloc_zone, ggc_alloc_cleared,
-	ggc_realloc, ggc_alloc_typed):  ... this one.
+	ggc_realloc, ggc_alloc_typed): ... this one.
 	from ...; accept locations
 	* ggc-page.c (ggc_alloc_typed_stat, ggc_alloc_zone_stat,
 	ggc_alloc_stat): Rename from ... ; pass locations
@@ -39598,7 +39598,7 @@
 	... this one.
 	(ggc_alloc_stat): Record overehead.
 	* ggc.h (ggc_alloc_types, ggc_alloc, ggc_alloc_zone, ggc_alloc_cleared,
-	ggc_realloc, ggc_alloc_typed):  Turn to macros
+	ggc_realloc, ggc_alloc_typed): Turn to macros
 	(ggc_alloc_types_stat, ggc_alloc_stat, ggc_alloc_zone_stat,
 	ggc_alloc_cleared_stat, ggc_realloc_stat, ggc_alloc_typed_stat): Declare.
 	(dump_ggc_loc_satistics, ggc_record_overehead): Declare.
@@ -40033,8 +40033,8 @@
 
 2004-03-01  Paolo Bonzini  <bonzini@gnu.org>
 
-	* combine.c (try_combine):  Do not refer to is_replaced.
-	(gen_lowpart_for_combine):  Perverse subregs now have a
+	* combine.c (try_combine): Do not refer to is_replaced.
+	(gen_lowpart_for_combine): Perverse subregs now have a
 	more politically correct name.
 	* cse.c (cse_insn): Likewise.
 	* jump.c: Fix bogus reference to delete_insn.
@@ -40206,9 +40206,9 @@
 
 2004-02-27  Dale Johannesen  <dalej@apple.com>
 
-	* config/darwin.c (machopic_output_possible_stub_label):  Remove.
-	config/darwin-protos.h:  Ditto.
-	config/darwin.h:  Remove call to it.
+	* config/darwin.c (machopic_output_possible_stub_label): Remove.
+	config/darwin-protos.h: Ditto.
+	config/darwin.h: Remove call to it.
 	* combine.c (distribute_notes): Do not place a REG_DEAD note
 	when value is both set and used.
 
@@ -40423,7 +40423,7 @@
 2004-02-25  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (make_eh_edge, break_superblocks): Declare.
-	* cfgbuild.c (make_eh_edge):  Make global.
+	* cfgbuild.c (make_eh_edge): Make global.
 	* cfglayout.c (break_superblocks): Likewise; fix memory leak.
 	* except.c (build_post_landing_pads, connect_post_landing_pads,
 	dw2_build_landing_pads, sjlj_emit_function_enter,
@@ -41032,8 +41032,8 @@
 2004-02-23  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000.md (movsf_hardfloat): Add POWER form of nop.
-	(movdf_hardfloat64):  Ditto.
-	(movdf_softfloat64):  Ditto.
+	(movdf_hardfloat64): Ditto.
+	(movdf_softfloat64): Ditto.
 
 2004-02-23  Fariborz Jahanian <fjahanian@apple.com>
 	* config/rs6000/rs6000.c (function_arg): call to
@@ -41043,7 +41043,7 @@
 2004-02-23  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000.md (movsf_hardfloat): Accept CTR-to-CTR copy.
-	(movdf_hardfloat64):  Ditto.
+	(movdf_hardfloat64): Ditto.
 
 2004-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -41230,11 +41230,11 @@
 
 2004-02-20  Per Bothner  <per@bothner.com>
 
-	* input.h:  Don't #include line-map.h.  It may cause link problems
+	* input.h: Don't #include line-map.h.  It may cause link problems
 	with undefined linemap_line_start when line-map.h is included but
 	line-map.o is not linked, as currently happens with gengtype on
 	compilers that don't support inline.
-	* toplev.c:  So we do have to explicitly #include line-map.h here.
+	* toplev.c: So we do have to explicitly #include line-map.h here.
 
 2004-02-20  Richard Henderson  <rth@redhat.com>
 
@@ -41548,29 +41548,29 @@
 
 2004-02-18  Per Bothner  <per@bothner.com>
 
-	* cpphash.h (struct cpp_buffer):  Restore return_at_eof field.  This
+	* cpphash.h (struct cpp_buffer): Restore return_at_eof field.  This
 	partly reverts my 2003-10-01 change, because we're back to logically
 	including <command line> inside the main line.
-	* cpplex.c (_cpp_get_fresh_line):  Check return_at_eof field.
-	* cppmacro.c (cpp_scan_nooutput):  Set return_at_eof of current buffer.
+	* cpplex.c (_cpp_get_fresh_line): Check return_at_eof field.
+	* cppmacro.c (cpp_scan_nooutput): Set return_at_eof of current buffer.
 	Fixes PR preprocessor/14103.
 
-	* cppfiles.c (_cpp_stack_include):  When appropriate decrement
+	* cppfiles.c (_cpp_stack_include): When appropriate decrement
 	line_table's highest_location, fixing LAST_SOURCE_LINE_LOCATION.
-	(cpp_push_include):  Don't need to increment pfile's line field.
-	* line-map.h (LAST_SOURCE_LINE_LOCATION):  Only decrement by 1.
+	(cpp_push_include): Don't need to increment pfile's line field.
+	* line-map.h (LAST_SOURCE_LINE_LOCATION): Only decrement by 1.
 
-	* c-ppoutput.c (print struct):  New first_time field.
-	(init_pp_output):  Set print.first_time.
-	(pp_file_change):  Use print.first_time, rather than MAIN_FILE_P,
+	* c-ppoutput.c (print struct): New first_time field.
+	(init_pp_output): Set print.first_time.
+	(pp_file_change): Use print.first_time, rather than MAIN_FILE_P,
 	which is set also for (say) <command line>.  Clear print.first_time.
 
-	* cppfiles.c (struct _cpp_file):  Comment and type for pch field
+	* cppfiles.c (struct _cpp_file): Comment and type for pch field
 	does not match the code, so fix both.
-	(should_stack_file):  Inline include_pch_p function.
-	(include_pch_p):  Remove pointless function.
+	(should_stack_file): Inline include_pch_p function.
+	(include_pch_p): Remove pointless function.
 
-	* cpphash.h (struct cpp_buffer):  Remove unused search_cached field.
+	* cpphash.h (struct cpp_buffer): Remove unused search_cached field.
 
 2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -41955,9 +41955,9 @@
 
 2004-02-14  Per Bothner  <per@bothner.com>
 
-	* fix-header.c (line_table):  Move local variable in main to global.
-	* scan.h (line_table):  Use it.
-	* scan-decls.c (scan_decls):  Need to call linemap_lookup on token's
+	* fix-header.c (line_table): Move local variable in main to global.
+	* scan.h (line_table): Use it.
+	* scan-decls.c (scan_decls): Need to call linemap_lookup on token's
 	line (recently renamed to src_loc) before calling recognized_function.
 
 2004-02-14  Matt Kraai  <kraai@alumni.cmu.edu>
@@ -42220,77 +42220,77 @@
 	Represent column numbers using line-map's source_location.
 	The "next available source_location" is now managed internally by
 	line-maps.c rather than by clients.
-	* line-map.h (struct line_map):  New field column_bits.
-	<from_line>:  Rename field to start_location.
-	(struct line_maps):  New fields highest_location and max_column_hint.
-	(linemap_check_files_exited):  New declaration.
-	(linemap_line_start):  New declaration.
-	(linemap_add):  Remove from_line parameter; use highest_location field.
-	(SOURCE_LINE, LAST_SOURCE_LINE):  Modify to use column_bits.
-	(SOURCE_COLUMN, LAST_SOURCE_LINE_LOCATION):  New macros.
-	(CURRENT_LINE_MAP):  Remove macro.
-	(linemap_position_for_column):  New inline function.
-	* line-map.c (linemap_init):  Clear new fields.
-	(linemap_check_files_exited):  New function, extracted from ...
-	(linemap_free):  Use linemap_check_files_exited.
-	(linemap_add):  Remove from_line parameter.  Various updates.
-	(linemap_line_start):  New function.
-	(linemap_lookeup):  Update for new field names.
-	* cpphash.h (struct cpp_reader) <map>:  Field removed.  Because
+	* line-map.h (struct line_map): New field column_bits.
+	<from_line>: Rename field to start_location.
+	(struct line_maps): New fields highest_location and max_column_hint.
+	(linemap_check_files_exited): New declaration.
+	(linemap_line_start): New declaration.
+	(linemap_add): Remove from_line parameter; use highest_location field.
+	(SOURCE_LINE, LAST_SOURCE_LINE): Modify to use column_bits.
+	(SOURCE_COLUMN, LAST_SOURCE_LINE_LOCATION): New macros.
+	(CURRENT_LINE_MAP): Remove macro.
+	(linemap_position_for_column): New inline function.
+	* line-map.c (linemap_init): Clear new fields.
+	(linemap_check_files_exited): New function, extracted from ...
+	(linemap_free): Use linemap_check_files_exited.
+	(linemap_add): Remove from_line parameter.  Various updates.
+	(linemap_line_start): New function.
+	(linemap_lookeup): Update for new field names.
+	* cpphash.h (struct cpp_reader) <map>: Field removed.  Because
 	linemap_position_for_column may unpredictably change the current map,
 	it is cleaner and simpler for us to not cache it in cpp_reader.
-	(struct cpp_buffer):  New sysp field.
+	(struct cpp_buffer): New sysp field.
 	Changed warned_cplusplus_comments and from_stage3 to bitfields.
-	* cppinit.c (cpp_read_min_file):  pfile->map no longer exists.
-	* cpplib.c (do_line, do_linemarker, _cpp_do_file_change):  Get
+	* cppinit.c (cpp_read_min_file): pfile->map no longer exists.
+	* cpplib.c (do_line, do_linemarker, _cpp_do_file_change): Get
 	current map using linemap_lookup.
-	(do_linemarker):  Also set buffer's sysp field.
-	(destringize_and_run):  No longer need to decrement current line.
-	* cppfiles.c (_cpp_stack_file):  Set sysp from and in buffer.
-	(search_path_head, open_file_failed):  Use buffer's sysp.
-	(cpp_make_system_header):  Get current map using linemap_lookup.
+	(do_linemarker): Also set buffer's sysp field.
+	(destringize_and_run): No longer need to decrement current line.
+	* cppfiles.c (_cpp_stack_file): Set sysp from and in buffer.
+	(search_path_head, open_file_failed): Use buffer's sysp.
+	(cpp_make_system_header): Get current map using linemap_lookup.
 	Also set buffer's sysp flag.
-	* cppmacro.c (_cpp_builtin_macro_text):  Likewise use linemap_lookup.
-	* cpphash.h (CPP_INCREMENT_LINE):  New macro.
-	(struct cpp_buffer):  Moved fields saved_cur, saved_rlimit to ...
-	(struct cpp_reader):  ... and adding saved_line_base field.
+	* cppmacro.c (_cpp_builtin_macro_text): Likewise use linemap_lookup.
+	* cpphash.h (CPP_INCREMENT_LINE): New macro.
+	(struct cpp_buffer): Moved fields saved_cur, saved_rlimit to ...
+	(struct cpp_reader): ... and adding saved_line_base field.
 	* cpptrad.c (_cpp_overlay_buffer, _cpp_remove_overlay):
 	Update accordingly.  Don't adjust line.
-	(_cpp_scan_out_logical_line):  Use CPP_INCREMENT_LINE.
-	* cpphash.c (CPP_IN_SYSTEM_HEADER):  Replaced macro by ...
-	(cpp_in_system_header):  ... new inline function, using buffer's sysp.
-	* cpperror.c (_cpp_begin_message):  Update to use cpp_in_system_header.
-	* cpplex.c (_cpp_lex_direct):  Likewise.
-	* cppmacro.c (_cpp_builtin_macro_text):  Likewise.
-	* cppmacro.c (_cpp_create_definition):  Use buffer's sysp field.
-	* cpplib.h (struct cpp_token):  Rename line field to src_loc.
+	(_cpp_scan_out_logical_line): Use CPP_INCREMENT_LINE.
+	* cpphash.c (CPP_IN_SYSTEM_HEADER): Replaced macro by ...
+	(cpp_in_system_header): ... new inline function, using buffer's sysp.
+	* cpperror.c (_cpp_begin_message): Update to use cpp_in_system_header.
+	* cpplex.c (_cpp_lex_direct): Likewise.
+	* cppmacro.c (_cpp_builtin_macro_text): Likewise.
+	* cppmacro.c (_cpp_create_definition): Use buffer's sysp field.
+	* cpplib.h (struct cpp_token): Rename line field to src_loc.
 	Remove col field as it is now subsumed by src_loc.
-	* cpperror.c:  Update various field, parameter, and macro names.
-	(print_location):  If col==0, try SOURCE_COLUMN of line.
-	(cpp_error):  Use cur_token's src_loc field, rather than line+col.
-	* cpplib.c (do_diagnostic):  Token's src_loc fields replaces line+col.
+	* cpperror.c: Update various field, parameter, and macro names.
+	(print_location): If col==0, try SOURCE_COLUMN of line.
+	(cpp_error): Use cur_token's src_loc field, rather than line+col.
+	* cpplib.c (do_diagnostic): Token's src_loc fields replaces line+col.
 	* cpplex.c (_cpp_process_line_notes, _cpp_lex_direct,
-	_cpp_skip_block_comment):  Use CPP_INCREMENT_LINE.
-	(_cpp_temp_token):  Replace cpp_token's line+col fields by src_loc.
-	(_cpp_get_fresh_line):  Don't need to adjust line for missing newline.
-	(_cpp_lex_direct):  Use linemap_position_for_column.
-	* c-ppoutput.c (maybe_print_line, print_line):  Don't take map
+	_cpp_skip_block_comment): Use CPP_INCREMENT_LINE.
+	(_cpp_temp_token): Replace cpp_token's line+col fields by src_loc.
+	(_cpp_get_fresh_line): Don't need to adjust line for missing newline.
+	(_cpp_lex_direct): Use linemap_position_for_column.
+	* c-ppoutput.c (maybe_print_line, print_line): Don't take map
 	parameter.  Instead get it from the line_table global.  Adjust callers.
-	(print):  Remove map field.  Replace line field to src_line.
-	(init_pp_output, account_for_newlines, maybe_print_line):  Adjust.
-	(cb_line_change):  Use SOURCE_COLUMN.  Minor optimizations.
-	(pp_file_change):  Use MAIN_FILE_P since we cannot checked print.map.
+	(print): Remove map field.  Replace line field to src_line.
+	(init_pp_output, account_for_newlines, maybe_print_line): Adjust.
+	(cb_line_change): Use SOURCE_COLUMN.  Minor optimizations.
+	(pp_file_change): Use MAIN_FILE_P since we cannot checked print.map.
 	Use LAST_SOURCE_LINE_LOCATION to "catch up" after #include.
-	* cpptrad.c (copy_comment):  Rename variable.
-	* c-lex.c (map):  Remove static variable, for same reason we removed
+	* cpptrad.c (copy_comment): Rename variable.
+	* c-lex.c (map): Remove static variable, for same reason we removed
 	cpp_reader's map field.
-	(cb_line_change, cb_def_pragma, cb_define, cb_undef):  Hence we need
+	(cb_line_change, cb_def_pragma, cb_define, cb_undef): Hence we need
 	to call linemap_lookup.
-	(cb_line_change):  Token's line field replaced by src_loc.
-	(fe_file_change):  Use MAINFILE_P and LAST_SOURCE_LINE macros.
+	(cb_line_change): Token's line field replaced by src_loc.
+	(fe_file_change): Use MAINFILE_P and LAST_SOURCE_LINE macros.
 	Don't save new_map.
 
-	* cpphash.h, cpperror.c, cpplib.h:  Some renames of fileline to
+	* cpphash.h, cpperror.c, cpplib.h: Some renames of fileline to
 	source_location.
 
 2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
@@ -42383,7 +42383,7 @@
 
 2004-02-10  Per Bothner  <per@bothner.com>
 
-	* c-opts.c (c_common_post_options):   Don't emit working directory
+	* c-opts.c (c_common_post_options): Don't emit working directory
 	in cpp output if -P was specified.
 
 2004-02-10  Paolo Bonzini  <bonzini@gnu.org>
@@ -42857,7 +42857,7 @@
 
 	* flow.c (update_life_info): Allocate reg_deaths when called from
 	scheudler.
-	(attempt_auto_inc):  Update life ranges accordingly.
+	(attempt_auto_inc): Update life ranges accordingly.
 
 2004-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -43014,7 +43014,7 @@
 
 2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* doc/install.texi:  Update automake and autoconf version
+	* doc/install.texi: Update automake and autoconf version
 	requirements.  Note where to find gcj automake version.
 
 2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
@@ -43027,13 +43027,13 @@
 2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR/13485
-	Makefile.in (srcextra):  Add a level of indirection to ...
+	Makefile.in (srcextra): Add a level of indirection to ...
 	(gcc.srcextra): ... here.
 	(po-generated): Delete.
 	(po/$(PACKAGE).pot: Use srcextra instead of po-generated.  Depend on
 	options.c.
 	(start.encap): Remove superfluous lang.srcextra dependency.
-	objc/Make-lang.in (po-generated):  Delete.
+	objc/Make-lang.in (po-generated): Delete.
 
 2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -43128,35 +43128,35 @@
 2004-02-04  Per Bothner  <per@bothner.com>
 
 	Partially revert/redo 2003-10-01 change; fix -fworking-directory.
-	* c-ppoutput.c (pp_dir_change):  New function.
-	* c-common.h (pp_dir_change):  New declaration.
-	* cpplib.h (struct cpp_options):  Remove working_directory field.
-	* cppinit.c (cpp_find_main_file, cpp_push_main_file):  Merge back to
-	(cpp_read_main_file):  as before 10-01.  Call _cpp_stack_file.
+	* c-ppoutput.c (pp_dir_change): New function.
+	* c-common.h (pp_dir_change): New declaration.
+	* cpplib.h (struct cpp_options): Remove working_directory field.
+	* cppinit.c (cpp_find_main_file, cpp_push_main_file): Merge back to
+	(cpp_read_main_file): as before 10-01.  Call _cpp_stack_file.
 	Don't handle -fworking_directory here, but in c_common_post_options.
 	(read_original_directory): Don't back up when done.
 	Don't clear no-longer used working_directory flag.
-	* cpplib.h:  Update declarations to match.
-	* c-lex.c (cb_dir_change):  Move to c-opts.c.
-	(init_c_lex):  Don't set dir_change callback here, since we want
+	* cpplib.h: Update declarations to match.
+	* c-lex.c (cb_dir_change): Move to c-opts.c.
+	(init_c_lex): Don't set dir_change callback here, since we want
 	to set it even if flag_preprocess_only.
-	* c-opts.c (cb_dir_change):  Function moved from c-lex.c.
-	(c_common_post_options):  Set dir_change callback.
+	* c-opts.c (cb_dir_change): Function moved from c-lex.c.
+	(c_common_post_options): Set dir_change callback.
 	Call pp_dir_change if approporiate.
-	(finish_options):  Don't call cpp_find_main_file here.	Hence remove
+	(finish_options): Don't call cpp_find_main_file here.	Hence remove
 	unneeded parameter and result. Do LC_RENAME for <built-in>.
-	(c_common_post_options):  Call cpp_read_main_file here instead.
-	(c_common_init):  Update accordingly.
-	(push_command_line_include):  Don't cpp_push_main_file.
+	(c_common_post_options): Call cpp_read_main_file here instead.
+	(c_common_init): Update accordingly.
+	(push_command_line_include): Don't cpp_push_main_file.
 	Do LC_RENAME rather than LC_LEASE to get back to main file.
 	Compared to pre-10-01 version, inline cpp_rename_to_main_file.
-	(c_common_parse_file):  Call cpp_read_main_file for subsequent main
+	(c_common_parse_file): Call cpp_read_main_file for subsequent main
 	files, but call finish_options for all files.
-	* c-opts.c (sanitize_cpp_opts):  Don't set cpp_opts->working_directory.
-	* fix-header.c (read_scan_file):  Call cpp_read_main_file instead of
+	* c-opts.c (sanitize_cpp_opts): Don't set cpp_opts->working_directory.
+	* fix-header.c (read_scan_file): Call cpp_read_main_file instead of
 	cpp_find_main_file + cpp_push_main_file.
-	* c-lex.c (fe_file_change):  Don't set main_input_filename here.
-	* opts.c (handle_options):  Only set main_input_filename first time.
+	* c-lex.c (fe_file_change): Don't set main_input_filename here.
+	* opts.c (handle_options): Only set main_input_filename first time.
 
 2004-02-05  Ian Lance Taylor  <ian@wasabisystems.com>
 
@@ -43333,7 +43333,7 @@
 
 2004-02-04  Jan Hubicka  <jh@suse.cz>
 
-	* alias.c (find_base_term, get_addr):  Do not dereference NULL
+	* alias.c (find_base_term, get_addr): Do not dereference NULL
 	pointer when all VALUE's locations has been invalidated.
 	(rtx_equal_for_memref_p): Simplify checking of VALUEs.
 
@@ -43358,7 +43358,7 @@
 2004-02-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/9348
-	* expr.c (expand_expr_real) <MULT_EXPR>:  When performing widening
+	* expr.c (expand_expr_real) <MULT_EXPR>: When performing widening
 	multiplies with a multiplication of the wrong signedness, its the
 	signedness of the multiplication that we've performed that needs to
 	be passed to expand_mult_highpart_adjust.  Avoid emitting a nop-move
@@ -43690,10 +43690,10 @@
 	2003-11-22  Phil Edwards  <phil@codesourcery.com>
 
 	PR target/12476
-	* config/arm/arm.c (arm_output_mi_thunk):  In Thumb mode, use
+	* config/arm/arm.c (arm_output_mi_thunk): In Thumb mode, use
 	'bx' instead of 'b' to avoid branch range restrictions.  Output
 	the thunk immediately before the thunked-to function.
-	* config/arm/arm.h (ARM_DECLARE_FUNCTION_NAME):  Do not emit
+	* config/arm/arm.h (ARM_DECLARE_FUNCTION_NAME): Do not emit
 	.thumb_func if a thunk is being generated.  Emit .code 16 along
 	with .thumb_func if a thunk is not being generated.
 
@@ -43713,12 +43713,12 @@
 
 	2003-11-05  Phil Edwards  <phil@codesourcery.com>
 
-	* config/arm/arm.md (insn):  Add new V6 instruction names.
-	(generic_sched):  New attr.
-	* config/arm/arm-generic.md:  Use generic_sched here.
-	* config/arm/arm1026ejs.md:  Do not model fetch/issue/decode
+	* config/arm/arm.md (insn): Add new V6 instruction names.
+	(generic_sched): New attr.
+	* config/arm/arm-generic.md: Use generic_sched here.
+	* config/arm/arm1026ejs.md: Do not model fetch/issue/decode
 	stages of pipeline.  Adjust latency counts accordingly.
-	* config/arm/arm1136jfs.md:  New file.
+	* config/arm/arm1136jfs.md: New file.
 
 	2003-10-28  Mark Mitchell  <mark@codesourcery.com>
 
@@ -44041,7 +44041,7 @@
 	delete_output_reload): Likewise.
 	* resource.c (update_live_status, mark_referenced_resources,
 	mark_set_resources, mark_target_live_regs): Likewise.
-	* rtlanal.c:  Include regs.h
+	* rtlanal.c: Include regs.h
 	(refers_to_regno_p, reg_overlap_mentioned_p, dead_or_set_p,
 	dead_or_set_regno_p, find_regno_note, find_reg_fusage,
 	subreg_regno_offset, subreg_offset_representable_p,
@@ -44425,7 +44425,7 @@
 	(print_statistics, dump_alloc_pool_statistics): New function.
 	* alloc-pool.h (alloc_pool_def): Turn name to be constant.
 	(dump_alloc_pool_statistics): Declare.
-	* toplev.c (finalize):  Dump statistics.
+	* toplev.c (finalize): Dump statistics.
 
 	* reload.c (secondary_memlocs_elim_used): New static variable.
 	(get_secondary_mem): Update it.
@@ -45062,7 +45062,7 @@
 
 2004-01-26  Jan Hubicka  <jh@suse.cz>
 
-	* cselib.c (discard_useless_values):  Clear out value pointer pointing
+	* cselib.c (discard_useless_values): Clear out value pointer pointing
 	to datastructure to be recycled.
 
 2004-01-25  Jan Hubicka  <jh@suse.cz>
@@ -45206,7 +45206,7 @@
 
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
-	* config/c4x/c4x.c (c4x_legitimate_address_p):  Invalidate direct
+	* config/c4x/c4x.c (c4x_legitimate_address_p): Invalidate direct
 	memory references if TARGET_EXPOSE_LDP nonzero.
 
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
@@ -45256,7 +45256,7 @@
 
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
-	* config/c4x/c4x.h (LEGITIMIZE_RELOAD_ADDRESS):  Handle symref.
+	* config/c4x/c4x.h (LEGITIMIZE_RELOAD_ADDRESS): Handle symref.
 
 2004-01-25  Chris Demetriou  <cgd@broadcom.com>
 
@@ -45478,7 +45478,7 @@
 2004-01-24  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (change_address, adjust_address_1, offset_address,
-	widen_memory_access):  Return early when there is nothing to change.
+	widen_memory_access): Return early when there is nothing to change.
 
 2004-01-24  Jakub Jelinek  <jakub@redhat.com>
 
@@ -45524,7 +45524,7 @@
 
 2004-01-24  Jan Hubicka  <jh@suse.cz>
 
-	* cselib.c (remove_useless_values):  Do not access discarded values.
+	* cselib.c (remove_useless_values): Do not access discarded values.
 
 2004-01-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
@@ -45561,7 +45561,7 @@
 
 2004-01-23  Jan Hubicka  <jh@suse.cz>
 
-	* emit-rtl.c (change_address_1):  Do not re-generate the RTX if nothing
+	* emit-rtl.c (change_address_1): Do not re-generate the RTX if nothing
 	change.
 
 	* alloc-pool.c (align_four): Kill.
@@ -45648,7 +45648,7 @@
 
 2004-01-23  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (ix86_emit_restore_regs_using_mov):  Deal with large offsets.
+	* i386.c (ix86_emit_restore_regs_using_mov): Deal with large offsets.
 
 2004-01-23  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -45662,7 +45662,7 @@
 	* basic-block.h (PROP_POSTRELOAD): New macro.
 	(CLEANUP_LOG_LINKS): New.
 	* cfgcleanup.c (cleanup_cfg): Only PROP_LOG_LINKS when asked to.
-	* toplev.c (rest_of_handle_life):  Preserve LOG_LINKS trought cleanup_cfg.
+	* toplev.c (rest_of_handle_life): Preserve LOG_LINKS trought cleanup_cfg.
 
 	* cselib.c (value_pool): New.
 	(new_cselib_val): Use pool.
@@ -45682,7 +45682,7 @@
 2004-01-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR optimization/13724
-	* cse.c (fold_rtx) <SUBREG>:  Fold a SUBREG to zero if it
+	* cse.c (fold_rtx) <SUBREG>: Fold a SUBREG to zero if it
 	represents the zero bits produced by a ZERO_EXTEND operation.
 
 2004-01-22  Roger Sayle  <roger@eyesopen.com>
@@ -45706,9 +45706,9 @@
 2004-01-22  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (first_pass): New static variable.
-	(try_forward_edges):  Add work limiting check for threading.
-	(try_crossjump_bb):  Add work limiting check for crossjumping.
-	(try_optimize_cfg):  Maintain first pass variable.
+	(try_forward_edges): Add work limiting check for threading.
+	(try_crossjump_bb): Add work limiting check for crossjumping.
+	(try_optimize_cfg): Maintain first pass variable.
 
 2004-01-22  Bob Wilson  <bob.wilson@acm.org>
 
@@ -46005,7 +46005,7 @@
 
 2004-01-20  Jan Hubicka  <jh@suse.cz>
 
-	* varray.c:  Include hashtab.h
+	* varray.c: Include hashtab.h
 	(varray_descriptor): New structure.
 	(hash_descriptor, eq_descriptor, varray_descriptor,
 	print_statistics): New static functions
@@ -46074,35 +46074,35 @@
 2004-01-19  Per Bothner  <per@bothner.com>
 
 	Move cpp_reader's line_maps field to a shared global.
-	* cpphash.h (cpp_reader):  Rename line_maps field to line_table
+	* cpphash.h (cpp_reader): Rename line_maps field to line_table
 	and change the type to a pointer rather than a struct.
-	* cppinit.c (cpp_push_main_field):  Adjust accordingly.
+	* cppinit.c (cpp_push_main_field): Adjust accordingly.
 	* cpplib.c (do_include_common, _cpp_do_file_change, cpp_get_callbacks):
 	Likewise.
-	* cppfiles.c (validate_pch):  Likewise.
+	* cppfiles.c (validate_pch): Likewise.
 	* cppmacro.c (_cpp_warn_if_unused_macro, _cpp_builtin_macro_text):
 	Likewise.
-	* cpperror.c (print_location):  Likewise.
-	* cpplib.h (cpp_create_reader):  New line_maps pointer parameter.
-	* cppinit.c (cpp_create_reader):  Handle new parameter.
-	(cpp_destroy):  Don't free line_maps - that's no longer our job.
-	* input.h (line_table):  New variable.
-	* toplev.c (line_table):  Declare variable.
-	(general_init):  Initialize line_table.
-	* c-opts.c (c_common_init_options):  Pass line_table to
+	* cpperror.c (print_location): Likewise.
+	* cpplib.h (cpp_create_reader): New line_maps pointer parameter.
+	* cppinit.c (cpp_create_reader): Handle new parameter.
+	(cpp_destroy): Don't free line_maps - that's no longer our job.
+	* input.h (line_table): New variable.
+	* toplev.c (line_table): Declare variable.
+	(general_init): Initialize line_table.
+	* c-opts.c (c_common_init_options): Pass line_table to
 	cpp_create_reader.
-	* fix-header.c (read_scan_file):  New local variable line_table.
+	* fix-header.c (read_scan_file): New local variable line_table.
 	Initialize, and pass it to cpp_create_reader.
-	* Makefile.in (LIBS, LIBDEPS):  Add libcpp.a.
-	(C_AND_OBJC_OBJS, fix-header):  Remove redundant libcpp.a.
+	* Makefile.in (LIBS, LIBDEPS): Add libcpp.a.
+	(C_AND_OBJC_OBJS, fix-header): Remove redundant libcpp.a.
 
 2004-01-19  Per Bothner  <per@bothner.com>
 
 	Implement a cache for linemap_lookup.
-	* line-map.h (struct_line_maps):  Add cache field.
-	* line-map.c (linemap_init):  Zero cache field.
-	(linemap_add):  Set cache field to offset of newly allocated map.
-	(linemap_lookup):  Use and set cache field.
+	* line-map.h (struct_line_maps): Add cache field.
+	* line-map.c (linemap_init): Zero cache field.
+	(linemap_add): Set cache field to offset of newly allocated map.
+	(linemap_lookup): Use and set cache field.
 
 2004-01-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -46868,7 +46868,7 @@
 
 2004-01-14  Jan Hubicka  <jh@suse.cz>
 
-	* alias.c (get_alias_set):  Initialize alias set to 0 when subset is
+	* alias.c (get_alias_set): Initialize alias set to 0 when subset is
 	impossible.
 
 2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
@@ -47026,9 +47026,9 @@
 
 2004-01-13  Jan Hubicka  <jh@suse.cz>
 
-	* c-decl.c (diagnose_mismatched_decls):  Fix warning calls.
+	* c-decl.c (diagnose_mismatched_decls): Fix warning calls.
 
-	* cgraphunit.c (cgraph_optimize_function):  Always do
+	* cgraphunit.c (cgraph_optimize_function): Always do
 	optimize_inline_calls when there is always_inline callee.
 	(cgraph_decide_inlining): Fix formating.
 	* tree-inline.c (inlinable_function_p): Do sorry for alwaysinline
@@ -47106,7 +47106,7 @@
 	PR opt/12863
 	* cfgcleanup.c (label_is_jump_target_p): Move to...
 	* rtlanal.c (label_is_jump_target_p): ... here.
-	* cfgrtl.c (cfg_layout_redirect_edge_and_branch):  Fix redirecting of fallthru
+	* cfgrtl.c (cfg_layout_redirect_edge_and_branch): Fix redirecting of fallthru
 	edges unified with branch edges.
 
 2004-01-12  Richard Earnshaw  <rearnsha@arm.com>
@@ -47127,7 +47127,7 @@
 
 2004-01-12  Jan Hubicka  <jh@suse.cz>
 
-	* alias.c:  Invlude varray.h
+	* alias.c: Invlude varray.h
 	(alias_sets): Turn into varray.
 	(get_alias_set_entry): Use VARRAY; mark inline.
 	(mems_in_disjoint_alias_sets_p): Mark inline.
@@ -47140,7 +47140,7 @@
 
 	Partial fix for PR opt/10776 II
 	* cselib.c: Include params.h
-	(cselib_invalidate_mem):  Limit amount of nonconflicting memory
+	(cselib_invalidate_mem): Limit amount of nonconflicting memory
 	locations.
 	* params.def (PARAM_MAX_CSELIB_MEMORY_LOCATIONS): New.
 	* Makefile.in (cselib.o): Depend on params.h
@@ -47268,7 +47268,7 @@
 2004-01-10  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/11635
-	* expr.c (expand_expr_real):  More curefully expand union casts.
+	* expr.c (expand_expr_real): More curefully expand union casts.
 
 2004-01-10  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -47434,7 +47434,7 @@
 
 2004-01-08  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphunit.c (cgraph_decide_inlining):  Fix typo.
+	* cgraphunit.c (cgraph_decide_inlining): Fix typo.
 
 2004-01-08  Geoffrey Keating  <geoffk@apple.com>
 
@@ -47570,7 +47570,7 @@
 
 2004-01-06  Jan Hubicka  <jh@suse.cz>
 
-	* invoke.texi:  Remove typo in last change.
+	* invoke.texi: Remove typo in last change.
 
 	PR target/10301
 	* config.gcc: Accept opteron and athlon-64 as variants
@@ -47621,8 +47621,8 @@
 
 2004-01-06  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (init_cumulative_args):  Add handling of MMX_REGPARM.
-	(function_arg_advance):  Do not pass aggregates in SSE; deal handling
+	* i386.c (init_cumulative_args): Add handling of MMX_REGPARM.
+	(function_arg_advance): Do not pass aggregates in SSE; deal handling
 	of MMX_REGPARM.
 	(function_arg): Add new warnings about ABI changes;  fix SSE_REGPARM;
 	add MMX_REGPARM.
@@ -47774,7 +47774,7 @@
 	(cgraph_decide_inlining_of_small_function, cgraph_decide_inlining): Set
 	reasons.
 	(cgraph_inline_p): Add new argument reason.
-	* tree-inline.c (expand_call_inline):  Update warning.
+	* tree-inline.c (expand_call_inline): Update warning.
 
 2004-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
@@ -47828,13 +47828,13 @@
 
 2004-01-02  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphunit.c (cgraph_optimize_function):  Call optimize_inline_calls
+	* cgraphunit.c (cgraph_optimize_function): Call optimize_inline_calls
 	when there is nothing to inline but warnings are requested.
-	(cgraph_decide_inlining):  Fix memory leak.
+	(cgraph_decide_inlining): Fix memory leak.
 
 2004-01-02  Jan Hubicka  <jh@suse.cz>
 
-	* expr.c (store_constructor):  Fix pasto in previous patch.
+	* expr.c (store_constructor): Fix pasto in previous patch.
 
 2004-01-02  Kazu Hirata  <kazu@cs.umass.edu>
 
