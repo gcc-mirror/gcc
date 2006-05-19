@@ -45,7 +45,7 @@ Here is an example of using the dataflow routines.
 
       df = df_init (init_flags);
       
-      df_add_problem (df, problem);
+      df_add_problem (df, problem, flags);
 
       df_set_blocks (df, blocks);
 
@@ -63,21 +63,20 @@ DF_INIT simply creates a poor man's object (df) that needs to be
 passed to all the dataflow routines.  df_finish destroys this object
 and frees up any allocated memory.
 
-There are two flags that can be passed to df_init:
-
-DF_NO_SCAN means that no scanning of the rtl code is performed.  This
-is used if the problem instance is to do it's own scanning.
+There are three flags that can be passed to df_init, each of these
+flags controls the scanning of the rtl:
 
 DF_HARD_REGS means that the scanning is to build information about
 both pseudo registers and hardware registers.  Without this
 information, the problems will be solved only on pseudo registers.
-
+DF_EQUIV_NOTES marks the uses present in EQUIV/EQUAL notes.
+DF_SUBREGS return subregs rather than the inner reg.
 
 
 DF_ADD_PROBLEM adds a problem, defined by an instance to struct
 df_problem, to the set of problems solved in this instance of df.  All
 calls to add a problem for a given instance of df must occur before
-the first call to DF_RESCAN_BLOCKS or DF_ANALYZE.
+the first call to DF_RESCAN_BLOCKS, DF_SET_BLOCKS or DF_ANALYZE.
 
 For all of the problems defined in df-problems.c, there are
 convenience functions named DF_*_ADD_PROBLEM.
@@ -297,7 +296,7 @@ are write-only operations.
 static struct df *ddf = NULL;
 struct df *shared_df = NULL;
 
-static void * df_get_bb_info (struct dataflow *, unsigned int);
+static void *df_get_bb_info (struct dataflow *, unsigned int);
 static void df_set_bb_info (struct dataflow *, unsigned int, void *);
 /*----------------------------------------------------------------------------
   Functions to create, destroy and manipulate an instance of df.
@@ -311,14 +310,13 @@ struct df *
 df_init (int flags)
 {
   struct df *df = XCNEW (struct df);
-  df->flags = flags;
 
   /* This is executed once per compilation to initialize platform
      specific data structures. */
   df_hard_reg_init ();
   
   /* All df instance must define the scanning problem.  */
-  df_scan_add_problem (df);
+  df_scan_add_problem (df, flags);
   ddf = df;
   return df;
 }
@@ -326,13 +324,13 @@ df_init (int flags)
 /* Add PROBLEM to the DF instance.  */
 
 struct dataflow *
-df_add_problem (struct df *df, struct df_problem *problem)
+df_add_problem (struct df *df, struct df_problem *problem, int flags)
 {
   struct dataflow *dflow;
 
   /* First try to add the dependent problem. */
-  if (problem->dependent_problem)
-    df_add_problem (df, problem->dependent_problem);
+  if (problem->dependent_problem_fun)
+    (problem->dependent_problem_fun) (df, 0);
 
   /* Check to see if this problem has already been defined.  If it
      has, just return that instance, if not, add it to the end of the
@@ -343,6 +341,7 @@ df_add_problem (struct df *df, struct df_problem *problem)
 
   /* Make a new one and add it to the end.  */
   dflow = XCNEW (struct dataflow);
+  dflow->flags = flags;
   dflow->df = df;
   dflow->problem = problem;
   df->problems_in_order[df->num_problems_defined++] = dflow;
@@ -351,6 +350,36 @@ df_add_problem (struct df *df, struct df_problem *problem)
   return dflow;
 }
 
+
+/* Set the MASK flags in the DFLOW problem.  The old flags are
+   returned.  If a flag is not allowed to be changed this will fail if
+   checking is enabled.  */
+int 
+df_set_flags (struct dataflow *dflow, int mask)
+{
+  int old_flags = dflow->flags;
+
+  gcc_assert (!(mask & (~dflow->problem->changeable_flags)));
+
+  dflow->flags |= mask;
+
+  return old_flags;
+}
+
+/* Clear the MASK flags in the DFLOW problem.  The old flags are
+   returned.  If a flag is not allowed to be changed this will fail if
+   checking is enabled.  */
+int 
+df_clear_flags (struct dataflow *dflow, int mask)
+{
+  int old_flags = dflow->flags;
+
+  gcc_assert (!(mask & (~dflow->problem->changeable_flags)));
+
+  dflow->flags &= !mask;
+
+  return old_flags;
+}
 
 /* Set the blocks that are to be considered for analysis.  If this is
    not called or is called with null, the entire function in
@@ -431,6 +460,26 @@ df_set_blocks (struct df *df, bitmap blocks)
 	  BITMAP_FREE (df->blocks_to_analyze);
 	  df->blocks_to_analyze = NULL;
 	}
+    }
+}
+
+
+/* Free all of the per basic block dataflow from all of the problems.
+   This is typically called before a basic block is deleted and the
+   problem will be reanalyzed.  */
+
+void
+df_delete_basic_block (struct df *df, int bb_index)
+{
+  basic_block bb = BASIC_BLOCK (bb_index);
+  int i;
+  
+  for (i = 0; i < df->num_problems_defined; i++)
+    {
+      struct dataflow *dflow = df->problems_in_order[i];
+      if (dflow->problem->free_bb_fun)
+	dflow->problem->free_bb_fun 
+	  (dflow, bb, df_get_bb_info (dflow, bb_index)); 
     }
 }
 
@@ -594,6 +643,8 @@ df_iterative_dataflow (struct dataflow *dataflow,
   sbitmap_zero (pending);
   sbitmap_zero (considered);
 
+  gcc_assert (dataflow->problem->dir);
+
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_consider, 0, idx, bi)
     {
       SET_BIT (considered, idx);
@@ -696,7 +747,7 @@ df_prune_to_subcfg (int list[], unsigned len, bitmap blocks)
    small fixup     fringe                sub               sub
 */
 
-static void
+void
 df_analyze_problem (struct dataflow *dflow, 
 		    bitmap blocks_to_consider, 
 		    bitmap blocks_to_init,
@@ -705,7 +756,7 @@ df_analyze_problem (struct dataflow *dflow,
 {
   /* (Re)Allocate the datastructures necessary to solve the problem.  */ 
   if (dflow->problem->alloc_fun)
-    dflow->problem->alloc_fun (dflow, blocks_to_scan);
+    dflow->problem->alloc_fun (dflow, blocks_to_scan, blocks_to_init);
 
   /* Set up the problem and compute the local information.  This
      function is passed both the blocks_to_consider and the
@@ -1066,7 +1117,7 @@ df_dump (struct df *df, FILE *file)
 {
   int i;
 
-  if (! df || ! file)
+  if (!df || !file)
     return;
 
   fprintf (file, "\n\n%s\n", current_function_name ());
@@ -1082,8 +1133,7 @@ df_dump (struct df *df, FILE *file)
 
 
 void
-df_refs_chain_dump (struct df *df, struct df_ref *ref, 
-		   bool follow_chain, FILE *file)
+df_refs_chain_dump (struct df_ref *ref, bool follow_chain, FILE *file)
 {
   fprintf (file, "{ ");
   while (ref)
@@ -1093,7 +1143,7 @@ df_refs_chain_dump (struct df *df, struct df_ref *ref,
 	       DF_REF_ID (ref),
 	       DF_REF_REGNO (ref));
       if (follow_chain)
-	df_chain_dump (df, DF_REF_CHAIN (ref), file);
+	df_chain_dump (DF_REF_CHAIN (ref), file);
       ref = ref->next_ref;
     }
   fprintf (file, "}");
@@ -1118,13 +1168,32 @@ df_regs_chain_dump (struct df *df ATTRIBUTE_UNUSED, struct df_ref *ref,  FILE *f
 }
 
 
-void
-df_insn_debug (struct df *df, rtx insn, bool follow_chain, FILE *file)
+static void
+df_mws_dump (struct df_mw_hardreg *mws, FILE *file)
 {
-  unsigned int uid;
-  int bbi;
+  while (mws)
+    {
+      struct df_link *regs = mws->regs;
+      fprintf (file, "%c%d(", 
+	       (mws->type == DF_REF_REG_DEF) ? 'd' : 'u',
+	       DF_REF_REGNO (regs->ref));
+      while (regs)
+	{
+	  fprintf (file, "%d ", DF_REF_REGNO (regs->ref));
+	  regs = regs->next;
+	}
 
-  uid = INSN_UID (insn);
+      fprintf (file, ") "); 
+      mws = mws->next;
+    }
+}
+
+
+static void 
+df_insn_uid_debug (struct df *df, unsigned int uid, 
+		   bool follow_chain, FILE *file)
+{
+  int bbi;
 
   if (DF_INSN_UID_DEFS (df, uid))
     bbi = DF_REF_BBNO (DF_INSN_UID_DEFS (df, uid));
@@ -1133,13 +1202,34 @@ df_insn_debug (struct df *df, rtx insn, bool follow_chain, FILE *file)
   else
     bbi = -1;
 
-  fprintf (file, "insn %d bb %d luid %d defs ",
-	   uid, bbi, DF_INSN_LUID (df, insn));
+  fprintf (file, "insn %d bb %d luid %d",
+	   uid, bbi, DF_INSN_UID_LUID (df, uid));
 
-  df_refs_chain_dump (df, DF_INSN_UID_DEFS (df, uid), follow_chain, file);
-  fprintf (file, " defs ");
-  df_refs_chain_dump (df, DF_INSN_UID_USES (df, uid), follow_chain, file);
+  if (DF_INSN_UID_DEFS (df, uid))
+    {
+      fprintf (file, " defs ");
+      df_refs_chain_dump (DF_INSN_UID_DEFS (df, uid), follow_chain, file);
+    }
+
+  if (DF_INSN_UID_USES (df, uid))
+    {
+      fprintf (file, " uses ");
+      df_refs_chain_dump (DF_INSN_UID_USES (df, uid), follow_chain, file);
+    }
+
+  if (DF_INSN_UID_MWS (df, uid))
+    {
+      fprintf (file, " mws ");
+      df_mws_dump (DF_INSN_UID_MWS (df, uid), file);
+    }
   fprintf (file, "\n");
+}
+
+
+void
+df_insn_debug (struct df *df, rtx insn, bool follow_chain, FILE *file)
+{
+  df_insn_uid_debug (df, INSN_UID (insn), follow_chain, file);
 }
 
 void
@@ -1177,17 +1267,17 @@ df_regno_debug (struct df *df, unsigned int regno, FILE *file)
 
 
 void
-df_ref_debug (struct df *df, struct df_ref *ref, FILE *file)
+df_ref_debug (struct df_ref *ref, FILE *file)
 {
   fprintf (file, "%c%d ",
 	   DF_REF_REG_DEF_P (ref) ? 'd' : 'u',
 	   DF_REF_ID (ref));
-  fprintf (file, "reg %d bb %d luid %d insn %d chain ",
+  fprintf (file, "reg %d bb %d insn %d flag %x chain ",
 	   DF_REF_REGNO (ref),
 	   DF_REF_BBNO (ref),
-	   DF_REF_INSN (ref) ? DF_INSN_LUID (df, DF_REF_INSN (ref)) : -1,
-	   DF_REF_INSN (ref) ? INSN_UID (DF_REF_INSN (ref)) : -1);
-  df_chain_dump (df, DF_REF_CHAIN (ref), file);
+	   DF_REF_INSN (ref) ? INSN_UID (DF_REF_INSN (ref)) : -1,
+	   DF_REF_FLAGS (ref));
+  df_chain_dump (DF_REF_CHAIN (ref), file);
   fprintf (file, "\n");
 }
 
@@ -1218,27 +1308,27 @@ debug_df_regno (unsigned int regno)
 void
 debug_df_ref (struct df_ref *ref)
 {
-  df_ref_debug (ddf, ref, stderr);
+  df_ref_debug (ref, stderr);
 }
 
 
 void
 debug_df_defno (unsigned int defno)
 {
-  df_ref_debug (ddf, DF_DEFS_GET (ddf, defno), stderr);
+  df_ref_debug (DF_DEFS_GET (ddf, defno), stderr);
 }
 
 
 void
 debug_df_useno (unsigned int defno)
 {
-  df_ref_debug (ddf, DF_USES_GET (ddf, defno), stderr);
+  df_ref_debug (DF_USES_GET (ddf, defno), stderr);
 }
 
 
 void
 debug_df_chain (struct df_link *link)
 {
-  df_chain_dump (ddf, link, stderr);
+  df_chain_dump (link, stderr);
   fputc ('\n', stderr);
 }

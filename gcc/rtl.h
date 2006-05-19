@@ -1978,6 +1978,12 @@ extern int epilogue_completed;
 
 extern int reload_in_progress;
 
+#ifdef STACK_REGS
+/* Nonzero after end of regstack pass.
+   Set to 1 or 0 by reg-stack.c.  */
+extern int regstack_completed;
+#endif
+
 /* If this is nonzero, we do not bother generating VOLATILE
    around volatile memory references, and we are willing to
    output indirect addresses.  If cse is to follow, we reject
