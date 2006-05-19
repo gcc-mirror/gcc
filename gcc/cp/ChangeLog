@@ -1,3 +1,7 @@
+2006-05-19  Mike Stump  <mrs@apple.com>
+
+	* typeck.c (default_conversion): Remove static.
+
 2006-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26433

@@ -760,6 +760,11 @@ extern tree build_unary_op (enum tree_code, tree, int);
 extern tree build_binary_op (enum tree_code, tree, tree, int);
 extern tree perform_integral_promotions (tree);
 
+/* These functions must be defined by each front-end which implements
+   a variant of the C language.  They are used by port files.  */
+
+extern tree default_conversion (tree);
+
 /* Given two integer or real types, return the type for their sum.
    Given two compatible ANSI C types, returns the merged type.  */
 
