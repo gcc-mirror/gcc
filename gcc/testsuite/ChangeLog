@@ -11,7 +11,7 @@
 	* testsuite/gcc.target/i386/20060512-2.c: New.
 	* testsuite/gcc.target/i386/20060512-3.c: New.
 	* testsuite/gcc.target/i386/20060512-4.c: New.
-															
+
 2006-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26122
@@ -51,7 +51,7 @@
 2006-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27575
-	* gfortran.dg/read_eof_4.f90:  New test.
+	* gfortran.dg/read_eof_4.f90: New test.
 
 2006-05-16  Richard Guenther  <rguenther@suse.de>
 
@@ -227,7 +227,7 @@
 2005-05-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27470
-	* gfortran.dg/multiple_allocation_2.f90:  New test case.
+	* gfortran.dg/multiple_allocation_2.f90: New test case.
 
 2006-05-10  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -322,7 +322,7 @@
 	PR c++/27427
 	* g++.dg/template/incomplete2.C: New test.
 
-2006-05-06   Richard Guenther  <rguenther@suse.de>
+2006-05-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27151
 	* gcc.dg/vect/pr27151.c: New testcase.
@@ -356,7 +356,7 @@
 
 	PR libfortran/26985
 	* gfortran.dg/matmul_2.f90: New test.
-	
+
 2005-05-05  Laurent GUERBY  <laurent@guerby.net>
 
 	* ada/acats/run_all.sh: Use sync when main not found.
@@ -404,7 +404,7 @@
 2006-05-02  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/20248
-	* gfortran.dg/iargc.f90:  New test.
+	* gfortran.dg/iargc.f90: New test.
 
 2006-05-02  Mark Mitchell  <mark@codesourcery.com>
 
@@ -434,9 +434,9 @@
 
 2006-05-02 Paul Thomas <pault@gcc.gnu.org>
 
-        PR fortran/27269
-        PR fortran/27324
-        * gfortran.dg/module_equivalence_2.f90: New test.
+	PR fortran/27269
+	PR fortran/27324
+	* gfortran.dg/module_equivalence_2.f90: New test.
 
 2006-05-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -744,7 +744,7 @@
 
 2006-04-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
-        * gfortran.dg/allocate_zerosize_1.f90:  New test.
+	* gfortran.dg/allocate_zerosize_1.f90: New test.
 
 2006-04-16  Mark Mitchell  <mark@codesourcery.com>
 
@@ -1036,7 +1036,7 @@
 2006-03-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/25031
-	* gfortran.dg/multiple_allocation_1.f90:  Check that the
+	* gfortran.dg/multiple_allocation_1.f90: Check that the
 	size has changed after a re-allocation with stat.
 
 2006-03-30  Richard Guenther  <rguenther@suse.de>
@@ -1103,12 +1103,12 @@
 2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/26735
-	* gfortran.dg/convert_implied_open.f90:  New test case.
+	* gfortran.dg/convert_implied_open.f90: New test case.
 
 2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/26769
-	* gfortran.dg/transpose_reshape_r10.f90:  New test case.
+	* gfortran.dg/transpose_reshape_r10.f90: New test case.
 
 2006-03-25  Uros Bizjak  <uros@kss-loka.si>
 
@@ -1156,9 +1156,9 @@
 2006-03-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/19303
-	* gfortran.dg/record_marker_1.f90:  New test case.
-	* gfortran.dg/record_marker_2.f:  New test case.
-	* gfortran.dg/record_marker_3.f90:  New test case.
+	* gfortran.dg/record_marker_1.f90: New test case.
+	* gfortran.dg/record_marker_2.f: New test case.
+	* gfortran.dg/record_marker_3.f90: New test case.
 
 2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -1298,7 +1298,7 @@
 2006-03-20  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/20935
-	* gfortran.dg/scalar_mask_2.f90:  New test case.
+	* gfortran.dg/scalar_mask_2.f90: New test case.
 
 2006-03-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -1442,7 +1442,7 @@
 
 2006-03-09  Eric Christopher  <echristo@apple.com>
 
-        * gcc.c-torture/compile/20060309-1.c: New.
+	* gcc.c-torture/compile/20060309-1.c: New.
 
 2006-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -1500,7 +1500,7 @@
 2006-03-03  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/25031
-	* multiple_allocation_1.f90:  New test.
+	* multiple_allocation_1.f90: New test.
 
 2006-03-03  Roger Sayle  <roger@eyesopen.com>
 
@@ -1569,7 +1569,7 @@
 
 2006-02-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* scalar_mask_1.f90:  Add tests for maxloc with scalar mask.
+	* scalar_mask_1.f90: Add tests for maxloc with scalar mask.
 
 2006-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -1633,7 +1633,7 @@
 2006-02-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/23092
-	* scalar_mask_1.f90:  New test.
+	* scalar_mask_1.f90: New test.
 
 2006-02-24  Geoffrey Keating  <geoffk@apple.com>
 
@@ -1726,8 +1726,8 @@
 
 2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
-        PR tree-opt/25680
-        * testsuite/gcc.dg/tree-ssa/complex-3.c: New test.
+	PR tree-opt/25680
+	* testsuite/gcc.dg/tree-ssa/complex-3.c: New test.
 
 2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -1815,7 +1815,7 @@
 2005-02-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24557
-        * gfortran.dg/assumed_charlen_needed_1.f90: New test.
+	* gfortran.dg/assumed_charlen_needed_1.f90: New test.
 
 2006-02-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
@@ -1846,8 +1846,8 @@
 
 2006-02-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
-        PR fortran/25045
-        * optional_dim.f90:  New test.
+	PR fortran/25045
+	* optional_dim.f90: New test.
 
 2006-02-14  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
@@ -2129,7 +2129,7 @@
 2005-02-06  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23815
-	* unf_io_convert_4.f90:  New test.
+	* unf_io_convert_4.f90: New test.
 
 2006-02-06  Daniel Berlin  <dberlin@dberlin.org>
 
@@ -2226,7 +2226,7 @@
 2006-02-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/25075
-	intrinsic_argument_conformance_1.f90:  New test.
+	intrinsic_argument_conformance_1.f90: New test.
 
 2006-02-03  Steven G. Kargl  <kargls@comcast.net>
 
@@ -2237,15 +2237,15 @@
 
 2006-02-03  Jeff Law  <law@redhat.com>
 
-        * lib/gcc-dg.exp (cleanup-rtl-dump): Fix dump file regexp to
-        handle more than 100 dump files.
-        (cleanup-tree-dump, cleanup-ipa-dump): Likewise.
-        * lib/scantree.exp (scan-tree-dump): Likewise.
-        (scan-tree-dump-times, scan-tree-dump-not): Likewise.
-        (scan-tree-dump-dem, scan-tree-dump-dem-not): Likewise.
-        * lib/scanipa.exp (scan-ipa-dump): Likewise.
-        (scan-ipa-dump-times, scan-ipa-dump-not): Likewise.
-        (scan-ipa-dump-dem, scan-ipa-dump-dem-not): Likewise.
+	* lib/gcc-dg.exp (cleanup-rtl-dump): Fix dump file regexp to
+	handle more than 100 dump files.
+	(cleanup-tree-dump, cleanup-ipa-dump): Likewise.
+	* lib/scantree.exp (scan-tree-dump): Likewise.
+	(scan-tree-dump-times, scan-tree-dump-not): Likewise.
+	(scan-tree-dump-dem, scan-tree-dump-dem-not): Likewise.
+	* lib/scanipa.exp (scan-ipa-dump): Likewise.
+	(scan-ipa-dump-times, scan-ipa-dump-not): Likewise.
+	(scan-ipa-dump-dem, scan-ipa-dump-dem-not): Likewise.
 
 2006-02-03  Diego Novillo  <dnovillo@redhat.com>
 
@@ -2262,7 +2262,7 @@
 2006-02-02  Steven G. Kargl  <kargls@comcast>
 
 	PR fortran/24958
-        gfortran.dg/nullify_2.f90: New test.
+	gfortran.dg/nullify_2.f90: New test.
 
 2006-02-02  Diego Novillo  <dnovillo@redhat.com>
 
@@ -2282,7 +2282,7 @@
 2006-01-31  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/26039
-	maxval_maxloc_conformance_1.f90:  New test.
+	maxval_maxloc_conformance_1.f90: New test.
 
 2006-01-31  Richard Guenther  <rguenther@suse.de>
 
@@ -10391,7 +10391,7 @@
 
 	* gfortran.fortran-torture/execute/entry_8.f90: New test.
 
-2005-04-29  Paul Brook   <paul@codesourcery.com>
+2005-04-29  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/entry_3.f90: New test.
 
@@ -28161,7 +28161,7 @@
 
 	* gcc.dg/i386-cmov5.c: New test.
 
-2003-01-28  D.Venkatasubramanian   <dvenkat@noida.hcltech.com>
+2003-01-28  D.Venkatasubramanian  <dvenkat@noida.hcltech.com>
 
 	* gcc.c-torture/execute/20010925-1.c: Changed the
 	memcpy declaration.
@@ -30440,7 +30440,7 @@
 
 	* gcc.dg/ia64-visibility-2.c: New test.
 
-2002-08-01  Benjamin Kosnik   <bkoz@redhat.com>
+2002-08-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* g++.old-deja/g++.abi/ptrflags.C (expect): Change
 	__qualifier_flags to __flags.
@@ -40142,7 +40142,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 1998-10-01  Robert Lipe  <robertl@dgii.com>
 
 	* lib/objc.exp (objc_target_compile): Add -L during compiles for
-	multilibbed hosts.   Idea grafted from g77.exp.
+	multilibbed hosts.  Idea grafted from g77.exp.
 
 1998-09-30  Dave Love  <d.love@dl.ac.uk>
 
@@ -40387,7 +40387,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 1998-07-10  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
 
-	*  g++.other/singleton.C: New test.   Warning is under dispute.
+	*  g++.other/singleton.C: New test.  Warning is under dispute.
 	Runtime crash is not.
 
 1998-07-09  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
@@ -40396,7 +40396,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	ns14.C, ns15.C, template3.C, undef1.C, using4.C, using5.C,
 	using6.C, using7.C}: New namespace tests.
 
-1998-07-09  Alexandre Oliva   <oliva@dcc.unicamp.br>
+1998-07-09  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/partspec1.C: Test matching of partial
 	specialization with typedef'ed names used as array indexes.
@@ -40670,7 +40670,7 @@ rlsruhe.de>
 	g77.f-torture/compile/980310-8.f: New tests from egcs-bugs archives.
 	* g77.f-torture/execute/980310-5.f: New test from egcs-bugs archives.
 
-1998-03-10  Alexandre Oliva   <oliva@dcc.unicamp.br>
+1998-03-10  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/friend1.C: New test.
 
@@ -42512,7 +42512,7 @@ rlsruhe.de>
 
 1993-08-25  Bill Cox  (bill@rtl.cygnus.com)
 
-    In chill.execute:
+	In chill.execute:
 	* iexpr.ch: Standardize uppercase.
 	* tuples.dat: Standardize uppercase.
 	* vary.ch: standardize.  Correct varying string assignments.
@@ -42520,7 +42520,7 @@ rlsruhe.de>
 
 1993-08-24  Bill Cox  (bill@rtl.cygnus.com)
 
-    In chill.execute:
+	In chill.execute:
 	* chprintf.ch: Standardize use of uppercase.
 	* tuples.ch: Standardize and turn arr2 into a DCL,
 	  rather than a SYN.
@@ -42534,7 +42534,7 @@ rlsruhe.de>
 
 1993-08-23  Bill Cox  (bill@rtl.cygnus.com)
 
-    In chill.execute:
+	In chill.execute:
 	* .cvsignore: Add result/output files.
 	* Makefile: Fix up variables at start.  Use MFLAGS
 	  everywhere.  Correct bool_loc, built_ins entries.
@@ -42585,7 +42585,7 @@ rlsruhe.de>
 
 1993-06-19  Bill Cox  (bill@rtl.cygnus.com)
 
-    This should complete moving the CHILL test files.
+	This should complete moving the CHILL test files.
 	* chill.noncompile(.cvsignore printf.grt
 	    in-printf.grt chprintf.grt chprintf.ch):
 	    Added test-support files.
