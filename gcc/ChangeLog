@@ -1,3 +1,13 @@
+2006-05-19  Nicolas Setton  <setton@adacore.com>
+
+	* langhooks.h (struct lang_hooks): Add dwarf_name language hook.
+	* langhooks.c (lhd_dwarf_name): New function.
+	* langhooks-def.h (lhd_dwarf_name): Declare.
+	(LANG_HOOKS_DWARF_NAME): New macro, defaults to lhd_dwarf_name.
+	* dwarf2out.c (dwarf2_name): Use the dwarf_name	language hook.
+	* ada/misc.c (gnat_dwarf_name): New function.
+	(LANG_HOOKS_DWARF_NAME): Define to gnat_dwarf_name.
+	
 2006-05-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* libgcc2.c (MIN_UNITS_PER_WORD): Move default definition from

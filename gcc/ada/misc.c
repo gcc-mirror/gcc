@@ -94,6 +94,7 @@ static HOST_WIDE_INT gnat_get_alias_set	(tree);
 static void gnat_print_decl		(FILE *, tree, int);
 static void gnat_print_type		(FILE *, tree, int);
 static const char *gnat_printable_name	(tree, int);
+static const char *gnat_dwarf_name	(tree, int);
 static tree gnat_eh_runtime_type	(tree);
 static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
@@ -144,6 +145,8 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_TYPE_MAX_SIZE	gnat_type_max_size
 #undef  LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
+#undef  LANG_HOOKS_DWARF_NAME
+#define LANG_HOOKS_DWARF_NAME		gnat_dwarf_name
 #undef  LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gnat_expand_body
 #undef  LANG_HOOKS_GIMPLIFY_EXPR
@@ -594,6 +597,14 @@ gnat_printable_name (tree decl, int verbosity)
     }
 
   return (const char *) ada_name;
+}
+
+static const char *
+gnat_dwarf_name (tree t, int verbosity ATTRIBUTE_UNUSED)
+{
+  gcc_assert (DECL_P (t));
+
+  return (const char *) IDENTIFIER_POINTER (DECL_NAME (t));
 }
 
 /* Expands GNAT-specific GCC tree nodes.  The only ones we support

@@ -1,5 +1,5 @@
 /* The lang_hooks data structure.
-   Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -381,6 +381,11 @@ struct lang_hooks
      information that might be interesting, such as function parameter
      types in C++.  */
   const char *(*decl_printable_name) (tree decl, int verbosity);
+
+  /* Computes the dwarf-2/3 name for a tree.  VERBOSITY determines what
+     information will be printed: 0: DECL_NAME, demangled as
+     necessary.  1: and scope information.  */
+  const char *(*dwarf_name) (tree, int verbosity);
 
   /* This compares two types for equivalence ("compatible" in C-based languages).
      This routine should only return 1 if it is sure.  It should not be used

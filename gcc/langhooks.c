@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -262,6 +262,16 @@ lhd_decl_printable_name (tree decl, int ARG_UNUSED (verbosity))
 {
   gcc_assert (decl && DECL_NAME (decl));
   return IDENTIFIER_POINTER (DECL_NAME (decl));
+}
+
+/* This is the default dwarf_name function.  */
+
+const char *
+lhd_dwarf_name (tree t, int verbosity)
+{
+  gcc_assert (DECL_P (t));
+
+  return lang_hooks.decl_printable_name (t, verbosity);
 }
 
 /* This compares two types for equivalence ("compatible" in C-based languages).

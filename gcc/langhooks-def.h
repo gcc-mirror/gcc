@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -53,6 +53,7 @@ extern int lhd_safe_from_p (rtx, tree);
 extern tree lhd_staticp (tree);
 extern void lhd_print_tree_nothing (FILE *, tree, int);
 extern const char *lhd_decl_printable_name (tree, int);
+extern const char *lhd_dwarf_name (tree, int);
 extern int lhd_types_compatible_p (tree, tree);
 extern rtx lhd_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 extern int lhd_expand_decl (tree);
@@ -124,6 +125,7 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_PRINT_IDENTIFIER	lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION lhd_print_error_function
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	lhd_decl_printable_name
+#define LANG_HOOKS_DWARF_NAME		lhd_dwarf_name
 #define LANG_HOOKS_GET_CALLEE_FNDECL	lhd_return_null_tree
 #define LANG_HOOKS_EXPR_SIZE		lhd_expr_size
 #define LANG_HOOKS_TREE_SIZE		lhd_tree_size
@@ -309,6 +311,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_PRINT_TYPE, \
   LANG_HOOKS_PRINT_IDENTIFIER, \
   LANG_HOOKS_DECL_PRINTABLE_NAME, \
+  LANG_HOOKS_DWARF_NAME, \
   LANG_HOOKS_TYPES_COMPATIBLE_P, \
   LANG_HOOKS_GET_CALLEE_FNDECL, \
   LANG_HOOKS_PRINT_ERROR_FUNCTION, \
