@@ -35,6 +35,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-inline.h"
 #include "debug.h"
 #include "target.h"
+#include "convert.h"
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
@@ -373,7 +374,8 @@ convert_bitfield_to_declared_type (tree expr)
 
   bitfield_type = is_bitfield_expr_with_lowered_type (expr);
   if (bitfield_type)
-    expr = cp_convert (TYPE_MAIN_VARIANT (bitfield_type), expr);
+    expr = convert_to_integer (TYPE_MAIN_VARIANT (bitfield_type),
+			       expr);
   return expr;
 }
 
@@ -383,18 +385,23 @@ convert_bitfield_to_declared_type (tree expr)
 tree
 rvalue (tree expr)
 {
-  expr = convert_bitfield_to_declared_type (expr);
-  if (real_lvalue_p (expr))
-    {
-      tree type;
-      /* [basic.lval]
-	 
-         Non-class rvalues always have cv-unqualified types.  */
-      type = TREE_TYPE (expr);
-      if (!CLASS_TYPE_P (type))
-	type = TYPE_MAIN_VARIANT (type);
-      expr = build1 (NON_LVALUE_EXPR, type, expr);
-    }
+  tree type;
+
+  if (error_operand_p (expr))
+    return expr;
+
+  /* [basic.lval]
+
+     Non-class rvalues always have cv-unqualified types.  */
+  type = TREE_TYPE (expr);
+  if (!CLASS_TYPE_P (type) && cp_type_quals (type))
+    type = TYPE_MAIN_VARIANT (type);
+
+  if (!processing_template_decl && real_lvalue_p (expr))
+    expr = build1 (NON_LVALUE_EXPR, type, expr);
+  else if (type != TREE_TYPE (expr))
+    expr = build_nop (type, expr);
+
   return expr;
 }
 
