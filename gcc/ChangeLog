@@ -1,3 +1,8 @@
+2006-05-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/t-hpux-shlib (SHLIB_LINK): Remove `-lc'.
+	* pa/pa-hpux11.h (LIB_SPEC): Update comment.
+
 2006-05-18  Mike Stump  <mrs@apple.com>
 
 	Fix up vla, vm and [*] sematics.
