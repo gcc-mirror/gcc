@@ -1,3 +1,28 @@
+2006-05-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27471
+	PR c++/27506
+	* typeck.c (decay_conversion): Convert bitfields to their declared
+	types here.  Improve documentation.  Avoid use of cp_convert.
+	(default_conversion): Make it static.  Perform integral promotions
+	before lvalue-to-rvalue, function-to-pointer, and array-to-pointer
+	conversions.
+	* init.c (build_init): Remove.
+	(expand_default_init): Do not call rvalue.
+	* call.c (null_ptr_cst_p): Robustify.
+	(build_conditional_expr): Tidy.
+	* except.c (build_throw): Do not perform lvalue-to-rvalue
+	conversion on operand before initializing temporary.
+	* tree.c (convert.h): Include it.
+	(convert_bitfield_to_declared_type): Use convert_to_integer, not
+	cp_convert.
+	(rvalue): Don't convert bitfields to their declared type here.
+	* cp-tree.h (build_init): Remove.
+	(default_conversion): Likewise.
+	* typeck2.c (build_m_component_ref): Do not perform
+	lvalue-to-rvalue, function-to-pointer, or array-to-pointer
+	conversions here.  Correct error message.
+
 2006-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26122

@@ -1,3 +1,10 @@
+2006-05-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27471
+	PR c++/27506
+	* g++.dg/conversion/bitfield5.C: New test.
+	* g++.dg/conversion/bitfield6.C: New test.
+
 2006-05-18  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/c90-arraydecl-1.c: Update for vla, vm [*] fixups.

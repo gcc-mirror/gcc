@@ -1142,26 +1142,6 @@ build_aggr_init (tree exp, tree init, int flags)
   return stmt_expr;
 }
 
-/* Like build_aggr_init, but not just for aggregates.  */
-
-tree
-build_init (tree decl, tree init, int flags)
-{
-  tree expr;
-
-  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-    expr = build_aggr_init (decl, init, flags);
-  else if (CLASS_TYPE_P (TREE_TYPE (decl)))
-    expr = build_special_member_call (decl, complete_ctor_identifier,
-				      build_tree_list (NULL_TREE, init),
-				      TREE_TYPE (decl),
-				      LOOKUP_NORMAL|flags);
-  else
-    expr = build2 (INIT_EXPR, TREE_TYPE (decl), decl, init);
-
-  return expr;
-}
-
 static void
 expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags)
 {
@@ -2057,7 +2037,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   rval = build_nop (pointer_type, rval);
 
   /* A new-expression is never an lvalue.  */
-  rval = rvalue (rval);
+  gcc_assert (!lvalue_p (rval));
 
   return rval;
 }
