@@ -43,6 +43,7 @@
 	PR c/18740
 	PR c/7948
 	PR c/25802
+	PR c/27673
 	* c-tree.h (struct c_arg_info): Add had_vla_unspec.
 	(c_vla_unspec_p): Add.
 	(c_vla_type_p): Add.
@@ -57,6 +58,8 @@
 	typeof when argument is a variably modified type not inside sizeof or alignof.
 	(c_parser_direct_declarator_inner): Propagate errors.
 	(c_parser_sizeof_expression): Add support for [*].
+	(c_parser_parms_declarator): Initialize had_vla_unspec.
+	(c_parser_parms_list_declarator): Likewise.
 	* c-typeck.c (c_vla_type_p): Add.
 	(composite_type): Add support for vla compositing.
 	(comptypes_internal): Add support for vla compatibility.
