@@ -1,3 +1,14 @@
+2006-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26433
+	* cp-tree.h (begin_function_try_block): Change prototype.
+	(finish_function_handler_sequence): Likewise.
+	* parser.c (cp_parser_function_try_block): Adjust calls.
+	* pt.c (tsubst_expr): Adjust calls.
+	* semantics.c (begin_function_try_block): Create an artificial
+	outer scope.
+	(finish_function_handler_sequence): Close it.
+
 2006-05-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27471

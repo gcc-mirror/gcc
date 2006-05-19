@@ -8405,8 +8405,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	}
       else
 	{
+	  tree compound_stmt = NULL_TREE;
+
 	  if (FN_TRY_BLOCK_P (t))
-	    stmt = begin_function_try_block ();
+	    stmt = begin_function_try_block (&compound_stmt);
 	  else
 	    stmt = begin_try_block ();
 
@@ -8419,7 +8421,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	  tsubst_expr (TRY_HANDLERS (t), args, complain, in_decl);
 	  if (FN_TRY_BLOCK_P (t))
-	    finish_function_handler_sequence (stmt);
+	    finish_function_handler_sequence (stmt, compound_stmt);
 	  else
 	    finish_handler_sequence (stmt);
 	}
