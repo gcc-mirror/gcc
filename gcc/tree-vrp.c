@@ -409,6 +409,22 @@ vrp_expr_computes_nonzero (tree expr)
   return false;
 }
 
+/* Returns true if EXPR is a valid value (as expected by compare_values) --
+   a gimple invariant, or SSA_NAME +- CST.  */
+
+static bool
+valid_value_p (tree expr)
+{
+  if (TREE_CODE (expr) == SSA_NAME)
+    return true;
+
+  if (TREE_CODE (expr) == PLUS_EXPR
+      || TREE_CODE (expr) == MINUS_EXPR)
+    return (TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
+	    && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST);
+  
+  return is_gimple_min_invariant (expr);
+}
 
 /* Compare two values VAL1 and VAL2.  Return
    
@@ -1974,9 +1990,12 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
   step = evolution_part_in_loop_num (chrec, loop->num);
 
   /* If STEP is symbolic, we can't know whether INIT will be the
-     minimum or maximum value in the range.  */
+     minimum or maximum value in the range.  Also, unless INIT is
+     a simple expression, compare_values and possibly other functions
+     in tree-vrp won't be able to handle it.  */
   if (step == NULL_TREE
-      || !is_gimple_min_invariant (step))
+      || !is_gimple_min_invariant (step)
+      || !valid_value_p (init))
     return;
 
   /* Do not adjust ranges when chrec may wrap.  */
