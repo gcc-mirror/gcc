@@ -1,3 +1,9 @@
+2006-05-19  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-vrp.c (valid_value_p): New function.
+	(adjust_range_with_scev): Fail if the value of bound is not
+	simple.
+
 2006-05-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/linux-unwind.h: Include <asm/unistd.h>
