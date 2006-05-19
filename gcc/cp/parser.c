@@ -14225,6 +14225,7 @@ cp_parser_try_block (cp_parser* parser)
 static bool
 cp_parser_function_try_block (cp_parser* parser)
 {
+  tree compound_stmt;
   tree try_block;
   bool ctor_initializer_p;
 
@@ -14232,7 +14233,7 @@ cp_parser_function_try_block (cp_parser* parser)
   if (!cp_parser_require_keyword (parser, RID_TRY, "`try'"))
     return false;
   /* Let the rest of the front-end know where we are.  */
-  try_block = begin_function_try_block ();
+  try_block = begin_function_try_block (&compound_stmt);
   /* Parse the function-body.  */
   ctor_initializer_p
     = cp_parser_ctor_initializer_opt_and_function_body (parser);
@@ -14241,7 +14242,7 @@ cp_parser_function_try_block (cp_parser* parser)
   /* Parse the handlers.  */
   cp_parser_handler_seq (parser);
   /* We're done with the handlers.  */
-  finish_function_handler_sequence (try_block);
+  finish_function_handler_sequence (try_block, compound_stmt);
 
   return ctor_initializer_p;
 }
