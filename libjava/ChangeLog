@@ -1,3 +1,8 @@
+2006-05-19  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* ChangeLog: Correct incorrect GNU Classpath version in the
+	entry for the latest import.
+
 2006-05-18  Tom Tromey  <tromey@redhat.com>
 
 	* source.am, Makefile.in: Rebuilt.
@@ -17,7 +22,7 @@
 
 2006-05-18  Mark Wielaard  <mark@klomp.org>
 
-	Imported GNU Classpath 0.90
+	Imported GNU Classpath 0.91
 	* scripts/makemake.tcl: LocaleData.java moved to gnu/java/locale.
 
 	* sources.am: Regenerated.
