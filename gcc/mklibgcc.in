@@ -26,6 +26,7 @@
 # FPBIT
 # FPBIT_FUNCS
 # LIB2_DIVMOD_FUNCS
+# LIB2_SIDITI_CONV_FUNCS
 # DFP_ENABLE
 # DFP_CFLAGS
 # DPBIT
@@ -64,16 +65,48 @@ echo 'dirs = libgcc'
 echo
 
 # Library members defined in libgcc2.c.
+
+# The floating-point conversion routines that involve a single-word integer.
+# XX stands for the integer mode.
+swfloatfuncs=
+for mode in sf df xf; do
+  swfloatfuncs="$swfloatfuncs _fixuns${mode}XX"
+done
+
+# Likewise double-word routines.
+dwfloatfuncs=
+for mode in sf df xf tf; do
+  dwfloatfuncs="$dwfloatfuncs _fix${mode}XX _fixuns${mode}XX"
+  dwfloatfuncs="$dwfloatfuncs _floatXX${mode} _floatunXX${mode}"
+done
+
+# Entries of the form <objfile>:<func>:<wordsize> indicate that libgcc2.c
+# should be compiled with L<func> defined and with LIBGCC2_UNITS_PER_WORD
+# set to <wordsize>.  <objfile> is the name of the associated object file
+
 lib2funcs='_muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3
-	_cmpdi2 _ucmpdi2 _floatdidf _floatdisf _fixunsdfsi _fixunssfsi
-	_fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi _fixxfdi _fixunsxfdi
-	_floatdixf _fixunsxfsi _fixtfdi _fixunstfdi _floatditf _clear_cache
+	_cmpdi2 _ucmpdi2 _floatdidf _clear_cache
 	_enable_execute_stack _trampoline __main _absvsi2 _absvdi2 _addvsi3
 	_addvdi3 _subvsi3 _subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 _ctors
 	_ffssi2 _ffsdi2 _clz _clzsi2 _clzdi2 _ctzsi2 _ctzdi2 _popcount_tab
 	_popcountsi2 _popcountdi2 _paritysi2 _paritydi2 _powisf2 _powidf2
 	_powixf2 _powitf2 _mulsc3 _muldc3 _mulxc3 _multc3 _divsc3 _divdc3
-	_divxc3 _divtc3 _floatundidf _floatundisf _floatundixf _floatunditf'
+	_divxc3 _divtc3'
+
+if [ "$LIB2_SIDITI_CONV_FUNCS" ]; then
+  for func in $swfloatfuncs; do
+    sifunc=`echo $func | sed -e 's/XX/si/'`
+    lib2funcs="$lib2funcs $sifunc:$sifunc:4"
+  done
+  for func in $dwfloatfuncs; do
+    difunc=`echo $func | sed -e 's/XX/di/'`
+    tifunc=`echo $func | sed -e 's/XX/ti/'`
+    lib2funcs="$lib2funcs $difunc:$difunc:4 $tifunc:$difunc:8"
+  done
+else
+  lib2funcs="$lib2funcs `echo $swfloatfuncs | sed -e 's/XX/si/g'`"
+  lib2funcs="$lib2funcs `echo $dwfloatfuncs | sed -e 's/XX/di/g'`"
+fi
 
 # Disable SHLIB_LINK if shared libgcc not enabled.
 if [ "@enable_shared@" = "no" ]; then
@@ -162,8 +195,8 @@ fi
 # defined as optimized assembly code in LIB1ASMFUNCS or as C code
 # in LIB2FUNCS_EXCLUDE.
 for name in $LIB1ASMFUNCS $LIB2FUNCS_EXCLUDE; do
-  lib2funcs=`echo $lib2funcs | sed -e 's/^'$name' //' \
-				   -e 's/ '$name' / /' \
+  lib2funcs=`echo $lib2funcs | sed -e 's/^'$name'[ :]//' \
+				   -e 's/ '$name'[ :]/ /' \
 				   -e 's/ '$name'$//'`
   LIB2_DIVMOD_FUNCS=`echo $LIB2_DIVMOD_FUNCS | sed -e 's/^'$name' //' \
 				                   -e 's/ '$name' / /' \
@@ -265,16 +298,25 @@ for ml in $MULTILIBS; do
   #
 
   for name in $lib2funcs; do
+    case $name in
+      *:*:*)
+	defines=`echo $name | sed -e 's/.*:\(.*\):\(.*\)/-DL\1 -DLIBGCC2_UNITS_PER_WORD=\2/'`
+	name=`echo $name | sed -e 's/\(.*\):.*:.*/\1/'`
+	;;
+      *)
+	defines="-DL$name"
+	;;
+    esac
     if [ "$libgcc_s_so" ]; then
       out="libgcc/${dir}/${name}${objext}"
       outS="libgcc/${dir}/${name}_s${objext}"
 
       echo $outS: $libgcc2_c_dep
-      echo "	$gcc_s_compile" $flags -DL$name -c '$(srcdir)/libgcc2.c' \
+      echo "	$gcc_s_compile" $flags $defines -c '$(srcdir)/libgcc2.c' \
 	-o $outS
 
       echo $out: $libgcc2_c_dep
-      echo "	$gcc_compile" $flags -DL$name '$(vis_hide)' \
+      echo "	$gcc_compile" $flags $defines '$(vis_hide)' \
         -c '$(srcdir)/libgcc2.c' -o $out
 
       echo $libgcc_a: $out
@@ -285,7 +327,7 @@ for ml in $MULTILIBS; do
     else
       out="libgcc/${dir}/${name}${objext}"
       echo ${out}: stmp-dirs '$(srcdir)/config/$(LIB1ASMSRC)'
-      echo "	$gcc_compile" $flags -DL$name -c '$(srcdir)/libgcc2.c' -o $out
+      echo "	$gcc_compile" $flags $defines -c '$(srcdir)/libgcc2.c' -o $out
       echo $libgcc_a: $out
     fi
   done

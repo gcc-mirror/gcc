@@ -40,6 +40,23 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define ATTRIBUTE_HIDDEN
 #endif
 
+#ifndef MIN_UNITS_PER_WORD
+#define MIN_UNITS_PER_WORD UNITS_PER_WORD
+#endif
+
+#ifndef LIBGCC2_UNITS_PER_WORD
+# if MIN_UNITS_PER_WORD > 4
+#  define LIBGCC2_UNITS_PER_WORD 8
+# elif (MIN_UNITS_PER_WORD > 2 \
+        || (MIN_UNITS_PER_WORD > 1 && LONG_LONG_TYPE_SIZE > 32))
+#  define LIBGCC2_UNITS_PER_WORD 4
+# else
+#  define LIBGCC2_UNITS_PER_WORD MIN_UNITS_PER_WORD
+# endif
+#endif
+
+#if LIBGCC2_UNITS_PER_WORD <= MIN_UNITS_PER_WORD
+
 #include "libgcc2.h"
 
 #ifdef DECLARE_LIBRARY_RENAMES
@@ -2162,3 +2179,4 @@ func_ptr __DTOR_LIST__[2];
 #endif
 #endif /* no INIT_SECTION_ASM_OP and not CTOR_LISTS_DEFINED_EXTERNALLY */
 #endif /* L_ctors */
+#endif /* LIBGCC2_UNITS_PER_WORD <= MIN_UNITS_PER_WORD */
