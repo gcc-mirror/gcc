@@ -194,10 +194,10 @@ void ffi_prep_args_pa32(UINT32 *stack, extended_cif *ecif, unsigned bytes)
 	  switch (slot - FIRST_ARG_SLOT)
 	    {
 	    /* First 4 args go in fr4L - fr7L.  */
-	    case 0: fldw(*p_argv, fr4); break;
-	    case 1: fldw(*p_argv, fr5); break;
-	    case 2: fldw(*p_argv, fr6); break;
-	    case 3: fldw(*p_argv, fr7); break;
+	    case 0: fldw(stack - slot, fr4); break;
+	    case 1: fldw(stack - slot, fr5); break;
+	    case 2: fldw(stack - slot, fr6); break;
+	    case 3: fldw(stack - slot, fr7); break;
 	    }
 	  break;
 
@@ -209,8 +209,8 @@ void ffi_prep_args_pa32(UINT32 *stack, extended_cif *ecif, unsigned bytes)
 	  switch (slot - FIRST_ARG_SLOT)
 	    {
 	      /* First 2 args go in fr5, fr7.  */
-	      case 1: fldd(*p_argv, fr5); break;
-	      case 3: fldd(*p_argv, fr7); break;
+	      case 1: fldd(stack - slot, fr5); break;
+	      case 3: fldd(stack - slot, fr7); break;
 	    }
 	  break;
 

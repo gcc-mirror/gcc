@@ -1,3 +1,8 @@
+2006-05-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/ffi.c (ffi_prep_args_pa32): Load floating point arguments from
+	stack slot.
+
 2006-04-22  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* README: Remove notice about 'Crazy Comments'.
