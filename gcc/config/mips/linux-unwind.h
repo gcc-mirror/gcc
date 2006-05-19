@@ -31,6 +31,7 @@ Boston, MA 02110-1301, USA.  */
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
 #include <signal.h>
+#include <asm/unistd.h>
 
 /* The third parameter to the signal handler points to something with
  * this structure defined in asm/ucontext.h, but the name clashes with
@@ -59,20 +60,23 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
   /*    or */
   /* 24021017 li v0, 0x1017 (sigreturn) */
   /* 0000000c syscall  */
-  if (*(pc + 1) != 0x0000000c)
+  if (pc[1] != 0x0000000c)
     return _URC_END_OF_STACK;
-  if (*(pc + 0) == 0x24021017)
+#if _MIPS_SIM == _ABIO32
+  if (pc[0] == (0x24020000 | __NR_sigreturn))
     {
       struct sigframe {
-	u_int32_t  trampoline[2];
+	u_int32_t trampoline[2];
 	struct sigcontext sigctx;
       } *rt_ = context->ra;
       sc = &rt_->sigctx;
     }
-  else if (*(pc + 0) == 0x24021061)
+  else
+#endif
+  if (pc[0] == (0x24020000 | __NR_rt_sigreturn))
     {
       struct rt_sigframe {
-	u_int32_t  trampoline[2];
+	u_int32_t trampoline[2];
 	struct siginfo info;
 	_sig_ucontext_t uc;
       } *rt_ = context->ra;
