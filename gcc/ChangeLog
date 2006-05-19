@@ -1,3 +1,10 @@
+2006-05-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/linux-unwind.h: Include <asm/unistd.h>
+	(mips_fallback_frame_state): Use syscall numbers to determine
+	the appropriate li instruction for the current ABI.  Only use
+	__NR_sigreturn for o32.
+
 2006-05-19  Nicolas Setton  <setton@adacore.com>
 
 	* langhooks.h (struct lang_hooks): Add dwarf_name language hook.
