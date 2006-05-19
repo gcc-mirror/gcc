@@ -1540,7 +1540,7 @@ decay_conversion (tree exp)
    applied to both operands to a binary operator before determining
    what additional conversions should apply.  */
 
-static tree
+tree
 default_conversion (tree exp)
 {
   /* Perform the integral promotions first so that bitfield
