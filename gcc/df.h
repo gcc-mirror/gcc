@@ -34,6 +34,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 struct dataflow;
 struct df;
 struct df_problem;
+struct df_link;
 
 /* Data flow problems.  All problems must have a unique here.  */ 
 /* Scanning is not really a dataflow problem, but it is useful to have
@@ -49,10 +50,6 @@ struct df_problem;
 #define DF_RI    7      /* Register Info. */
 #define DF_LAST_PROBLEM_PLUS1 (DF_RI + 1)
 
-/* Flags that control the building of chains.  */
-#define DF_DU_CHAIN   1    /* Build DU chains.  */  
-#define DF_UD_CHAIN   2    /* Build UD chains.  */
-
 
 /* Dataflow direction.  */
 enum df_flow_dir
@@ -62,10 +59,72 @@ enum df_flow_dir
     DF_BACKWARD
   };
 
+
+/* The first of these is a set of a register.  The remaining three are
+   all uses of a register (the mem_load and mem_store relate to how
+   the register as an addressing operand).  */
+enum df_ref_type {DF_REF_REG_DEF, DF_REF_REG_USE, DF_REF_REG_MEM_LOAD,
+		  DF_REF_REG_MEM_STORE};
+
+#define DF_REF_TYPE_NAMES {"def", "use", "mem load", "mem store"}
+
+enum df_ref_flags
+  {
+    /* Read-modify-write refs generate both a use and a def and
+       these are marked with this flag to show that they are not
+       independent.  */
+    DF_REF_READ_WRITE = 1,
+
+    /* This flag is set, if we stripped the subreg from the reference.
+       In this case we must make conservative guesses, at what the
+       outer mode was.  */
+    DF_REF_STRIPPED = 2,
+    
+    /* If this flag is set, this is not a real definition/use, but an
+       artificial one created to model always live registers, eh uses, etc.  */
+    DF_REF_ARTIFICIAL = 4,
+
+
+    /* If this flag is set for an artificial use or def, that ref
+       logically happens at the top of the block.  If it is not set
+       for an artificial use or def, that ref logically happens at the
+       bottom of the block.  This is never set for regular refs.  */
+    DF_REF_AT_TOP = 8,
+
+    /* This flag is set if the use is inside a REG_EQUAL note.  */
+    DF_REF_IN_NOTE = 16,
+
+    /* This flag is set if this ref, generally a def, may clobber the
+       referenced register.  This is generally only set for hard
+       registers that cross a call site.  With better information
+       about calls, some of these could be changed in the future to
+       DF_REF_MUST_CLOBBER.  */
+    DF_REF_MAY_CLOBBER = 32,
+
+    /* This flag is set if this ref, generally a def, is a real
+       clobber. This is not currently set for registers live across a
+       call because that clobbering may or may not happen.  
+
+       Most of the uses of this are with sets that have a
+       GET_CODE(..)==CLOBBER.  Note that this is set even if the
+       clobber is to a subreg.  So in order to tell if the clobber
+       wipes out the entire register, it is necessary to also check
+       the DF_REF_PARTIAL flag.  */
+    DF_REF_MUST_CLOBBER = 64,
+
+    /* This bit is true if this ref is part of a multiword hardreg.  */
+    DF_REF_MW_HARDREG = 128,
+
+    /* This flag is set if this ref is a partial use or def of the
+       associated register.  */
+    DF_REF_PARTIAL = 256
+  };
+
+
 /* Function prototypes added to df_problem instance.  */
 
 /* Allocate the problem specific data.  */
-typedef void (*df_alloc_function) (struct dataflow *, bitmap);
+typedef void (*df_alloc_function) (struct dataflow *, bitmap, bitmap);
 
 /* This function is called if the problem has global data that needs
    to be cleared when ever the set of blocks changes.  The bitmap
@@ -107,6 +166,10 @@ typedef void (*df_free_function) (struct dataflow *);
 /* Function to dump results to FILE.  */
 typedef void (*df_dump_problem_function) (struct dataflow *, FILE *);
 
+/* Function to add problem a dataflow problem that must be solved
+   before this problem can be solved.  */
+typedef struct dataflow * (*df_dependent_problem_function) (struct df *, int);
+
 /* The static description of a dataflow problem to solve.  See above
    typedefs for doc for the function fields.  */
 
@@ -127,10 +190,10 @@ struct df_problem {
   df_finalizer_function finalize_fun;
   df_free_function free_fun;
   df_dump_problem_function dump_fun;
+  df_dependent_problem_function dependent_problem_fun;
 
-  /* A dataflow problem that must be solved before this problem can be
-     solved.  */
-  struct df_problem *dependent_problem;
+  /* Flags can be changed after analysis starts.  */
+  int changeable_flags;
 };
 
 
@@ -151,6 +214,20 @@ struct dataflow
   /* The pool to allocate the block_info from. */
   alloc_pool block_pool;                
 
+  /* Problem specific control infomation.  */
+
+  /* Scanning flags.  */
+#define DF_HARD_REGS	     1	/* Mark hard registers.  */
+#define DF_EQUIV_NOTES	     2	/* Mark uses present in EQUIV/EQUAL notes.  */
+#define DF_SUBREGS	     4	/* Return subregs rather than the inner reg.  */
+  /* Flags that control the building of chains.  */
+#define DF_DU_CHAIN          1    /* Build DU chains.  */  
+#define DF_UD_CHAIN          2    /* Build UD chains.  */
+  /* Flag to control the building of register info.  */
+#define DF_RI_LIFE           1    /* Build register info.  */
+
+  int flags;
+
   /* Other problem specific data that is not on a per basic block
      basis.  The structure is generally defined privately for the
      problem.  The exception being the scanning problem where it is
@@ -158,16 +235,34 @@ struct dataflow
   void *problem_data;                  
 };
 
+
+/* The set of multiword hardregs used as operands to this
+   instruction. These are factored into individual uses and defs but
+   the aggregate is still needed to service the REG_DEAD and
+   REG_UNUSED notes.  */
+struct df_mw_hardreg
+{
+  rtx mw_reg;                   /* The multiword hardreg.  */ 
+  enum df_ref_type type;        /* Used to see if the ref is read or write.  */
+  enum df_ref_flags flags;	/* Various flags.  */
+  struct df_link *regs;         /* The individual regs that make up
+				   this hardreg.  */
+  struct df_mw_hardreg *next;   /* The next mw_hardreg in this insn.  */
+};
+ 
+
 /* One of these structures is allocated for every insn.  */
 struct df_insn_info
 {
   struct df_ref *defs;	        /* Head of insn-def chain.  */
   struct df_ref *uses;	        /* Head of insn-use chain.  */
+  struct df_mw_hardreg *mw_hardregs;   
   /* ???? The following luid field should be considered private so that
      we can change it on the fly to accommodate new insns?  */
   int luid;			/* Logical UID.  */
   bool contains_asm;            /* Contains an asm instruction.  */
 };
+
 
 /* Two of these structures are allocated for every pseudo reg, one for
    the uses and one for the defs.  */
@@ -177,48 +272,6 @@ struct df_reg_info
   unsigned int begin;           /* First def_index for this pseudo.  */
   unsigned int n_refs;          /* Number of refs or defs for this pseudo.  */
 };
-
-
-enum df_ref_type {DF_REF_REG_DEF, DF_REF_REG_USE, DF_REF_REG_MEM_LOAD,
-		  DF_REF_REG_MEM_STORE};
-
-#define DF_REF_TYPE_NAMES {"def", "use", "mem load", "mem store"}
-
-enum df_ref_flags
-  {
-    /* Read-modify-write refs generate both a use and a def and
-       these are marked with this flag to show that they are not
-       independent.  */
-    DF_REF_READ_WRITE = 1,
-
-    /* This flag is set, if we stripped the subreg from the reference.
-       In this case we must make conservative guesses, at what the
-       outer mode was.  */
-    DF_REF_STRIPPED = 2,
-    
-    /* If this flag is set, this is not a real definition/use, but an
-       artificial one created to model always live registers, eh uses, etc.  */
-    DF_REF_ARTIFICIAL = 4,
-
-
-    /* If this flag is set for an artificial use or def, that ref
-       logically happens at the top of the block.  If it is not set
-       for an artificial use or def, that ref logically happens at the
-       bottom of the block.  This is never set for regular refs.  */
-    DF_REF_AT_TOP = 8,
-
-    /* This flag is set if the use is inside a REG_EQUAL note.  */
-    DF_REF_IN_NOTE = 16,
-
-    /* This flag is set if this ref is really a clobber, and not a def.  */
-    DF_REF_CLOBBER = 32,
-
-    /* True if ref is dead (i.e. the next ref is a def or clobber or
-       the end of the function.)  This is only valid the RI problem
-       has been set in this df instance.  */
-    DF_REF_DIES_AFTER_THIS_USE = 64
-  };
-
 
 /* Define a register reference structure.  One of these is allocated
    for every register reference (use or def).  Note some register
@@ -250,9 +303,9 @@ struct df_ref
   void *data;			/* The data assigned to it by user.  */
 };
 
-/* There are two kinds of links: */
-
-/* This is used for def-use or use-def chains.  */
+/* These links are used for two purposes:
+   1) def-use or use-def chains. 
+   2) Multiword hard registers that underly a single hardware register.  */
 struct df_link
 {
   struct df_ref *ref;
@@ -287,12 +340,6 @@ struct df_ref_info
 
 struct df
 {
-
-#define DF_HARD_REGS	     1	/* Mark hard registers.  */
-#define DF_EQUIV_NOTES	     2	/* Mark uses present in EQUIV/EQUAL notes.  */
-#define DF_SUBREGS	     4	/* Return subregs rather than the inner reg.  */
-
-  int flags;			/* Indicates what's recorded.  */
 
   /* The set of problems to be solved is stored in two arrays.  In
      PROBLEMS_IN_ORDER, the problems are stored in the order that they
@@ -379,7 +426,7 @@ struct df
 /* Macros to determine the reference type.  */
 
 #define DF_REF_REG_DEF_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_DEF)
-#define DF_REF_REG_USE_P(REF) ((REF) && ! DF_REF_REG_DEF_P (REF))
+#define DF_REF_REG_USE_P(REF) ((REF) && !DF_REF_REG_DEF_P (REF))
 #define DF_REF_REG_MEM_STORE_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_MEM_STORE)
 #define DF_REF_REG_MEM_LOAD_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_MEM_LOAD)
 #define DF_REF_REG_MEM_P(REF) (DF_REF_REG_MEM_STORE_P (REF) \
@@ -398,8 +445,10 @@ struct df
 #define DF_REG_SIZE(DF) ((DF)->def_info.regs_inited)
 #define DF_REG_DEF_GET(DF, REG) ((DF)->def_info.regs[(REG)])
 #define DF_REG_DEF_SET(DF, REG, VAL) ((DF)->def_info.regs[(REG)]=(VAL))
+#define DF_REG_DEF_COUNT(DF, REG) ((DF)->def_info.regs[(REG)]->n_refs)
 #define DF_REG_USE_GET(DF, REG) ((DF)->use_info.regs[(REG)])
 #define DF_REG_USE_SET(DF, REG, VAL) ((DF)->use_info.regs[(REG)]=(VAL))
+#define DF_REG_USE_COUNT(DF, REG) ((DF)->use_info.regs[(REG)]->n_refs)
 
 /* Macros to access the elements within the reg_info structure table.  */
 
@@ -422,26 +471,12 @@ struct df
 #define DF_INSN_UID_LUID(DF, INSN) (DF_INSN_UID_GET(DF,INSN)->luid)
 #define DF_INSN_UID_DEFS(DF, INSN) (DF_INSN_UID_GET(DF,INSN)->defs)
 #define DF_INSN_UID_USES(DF, INSN) (DF_INSN_UID_GET(DF,INSN)->uses)
+#define DF_INSN_UID_MWS(DF, INSN) (DF_INSN_UID_GET(DF,INSN)->mw_hardregs)
 
 /* This is a bitmap copy of regs_invalidated_by_call so that we can
    easily add it into bitmaps, etc. */ 
 
 extern bitmap df_invalidated_by_call;
-
-/* Initialize ur_in and ur_out as if all hard registers were partially
-available.  */
-
-/* The way that registers are processed, especially hard registers,
-   changes as the compilation proceeds. These states are passed to
-   df_set_state to control this processing.  */
-
-#define DF_SCAN_INITIAL    1    /* Processing from beginning of rtl to
-				   global-alloc.  */
-#define DF_SCAN_GLOBAL     2    /* Processing before global
-				   allocation.  */
-#define DF_SCAN_POST_ALLOC 4    /* Processing after register
-				   allocation.  */
-extern int df_state;            /* Indicates where we are in the compilation.  */
 
 
 /* One of these structures is allocated for every basic block.  */
@@ -513,9 +548,13 @@ struct df_urec_bb_info
 /* Functions defined in df-core.c.  */
 
 extern struct df *df_init (int);
-extern struct dataflow *df_add_problem (struct df *, struct df_problem *);
+extern struct dataflow *df_add_problem (struct df *, struct df_problem *, int);
+extern int df_set_flags (struct dataflow *, int);
+extern int df_clear_flags (struct dataflow *, int);
 extern void df_set_blocks (struct df*, bitmap);
+extern void df_delete_basic_block (struct df *, int);
 extern void df_finish1 (struct df *);
+extern void df_analyze_problem (struct dataflow *, bitmap, bitmap, bitmap, int *, int, bool);
 extern void df_analyze (struct df *);
 extern void df_compact_blocks (struct df *);
 extern void df_bb_replace (struct df *, int, basic_block);
@@ -529,13 +568,12 @@ extern struct df_ref *df_find_use (struct df *, rtx, rtx);
 extern bool df_reg_used (struct df *, rtx, rtx);
 extern void df_iterative_dataflow (struct dataflow *, bitmap, bitmap, int *, int, bool);
 extern void df_dump (struct df *, FILE *);
-extern void df_chain_dump (struct df *, struct df_link *, FILE *);
-extern void df_refs_chain_dump (struct df *, struct df_ref *, bool, FILE *);
+extern void df_refs_chain_dump (struct df_ref *, bool, FILE *);
 extern void df_regs_chain_dump (struct df *, struct df_ref *,  FILE *);
 extern void df_insn_debug (struct df *, rtx, bool, FILE *);
 extern void df_insn_debug_regno (struct df *, rtx, FILE *);
 extern void df_regno_debug (struct df *, unsigned int, FILE *);
-extern void df_ref_debug (struct df *, struct df_ref *, FILE *);
+extern void df_ref_debug (struct df_ref *, FILE *);
 extern void debug_df_insn (rtx);
 extern void debug_df_regno (unsigned int);
 extern void debug_df_reg (rtx);
@@ -549,34 +587,32 @@ extern struct df *shared_df;
 
 /* Functions defined in df-problems.c. */
 
-extern struct dataflow *df_get_dependent_problem (struct dataflow *);
 extern struct df_link *df_chain_create (struct dataflow *, struct df_ref *, struct df_ref *);
 extern void df_chain_unlink (struct dataflow *, struct df_ref *, struct df_link *);
 extern void df_chain_copy (struct dataflow *, struct df_ref *, struct df_link *);
 extern bitmap df_get_live_in (struct df *, basic_block);
 extern bitmap df_get_live_out (struct df *, basic_block);
 extern void df_grow_bb_info (struct dataflow *);
-extern void df_chain_dump (struct df *, struct df_link *, FILE *);
+extern void df_chain_dump (struct df_link *, FILE *);
 extern void df_print_bb_index (basic_block bb, FILE *file);
-extern struct dataflow *df_ru_add_problem (struct df *);
+extern struct dataflow *df_ru_add_problem (struct df *, int);
 extern struct df_ru_bb_info *df_ru_get_bb_info (struct dataflow *, unsigned int);
-extern struct dataflow *df_rd_add_problem (struct df *);
+extern struct dataflow *df_rd_add_problem (struct df *, int);
 extern struct df_rd_bb_info *df_rd_get_bb_info (struct dataflow *, unsigned int);
-extern struct dataflow *df_lr_add_problem (struct df *);
+extern struct dataflow *df_lr_add_problem (struct df *, int);
 extern struct df_lr_bb_info *df_lr_get_bb_info (struct dataflow *, unsigned int);
-extern struct dataflow *df_ur_add_problem (struct df *);
+extern struct dataflow *df_ur_add_problem (struct df *, int);
 extern struct df_ur_bb_info *df_ur_get_bb_info (struct dataflow *, unsigned int);
-extern struct dataflow *df_urec_add_problem (struct df *);
+extern struct dataflow *df_urec_add_problem (struct df *, int);
 extern struct df_urec_bb_info *df_urec_get_bb_info (struct dataflow *, unsigned int);
-extern struct dataflow *df_chain_add_problem (struct df *, int flags);
-extern struct dataflow *df_ri_add_problem (struct df *);
-extern int df_reg_lifetime (struct df *, rtx reg);
+extern struct dataflow *df_chain_add_problem (struct df *, int);
+extern struct dataflow *df_ri_add_problem (struct df *, int);
 
 
 /* Functions defined in df-scan.c.  */
 
 extern struct df_scan_bb_info *df_scan_get_bb_info (struct dataflow *, unsigned int);
-extern struct dataflow *df_scan_add_problem (struct df *);
+extern struct dataflow *df_scan_add_problem (struct df *, int);
 extern void df_rescan_blocks (struct df *, bitmap);
 extern struct df_ref *df_ref_create (struct df *, rtx, rtx *, rtx,basic_block,enum df_ref_type, enum df_ref_flags);
 extern struct df_ref *df_get_artificial_defs (struct df *, unsigned int);
@@ -588,7 +624,6 @@ extern void df_insn_refs_delete (struct dataflow *, rtx);
 extern void df_bb_refs_delete (struct dataflow *, int);
 extern void df_refs_delete (struct dataflow *, bitmap);
 extern void df_reorganize_refs (struct df_ref_info *);
-extern void df_set_state (int);
 extern void df_hard_reg_init (void);
 extern bool df_read_modify_subreg_p (rtx);
 

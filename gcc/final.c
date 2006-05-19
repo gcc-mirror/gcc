@@ -4026,6 +4026,9 @@ rest_of_clean_state (void)
   epilogue_completed = 0;
   flow2_completed = 0;
   no_new_pseudos = 0;
+#ifdef STACK_REGS
+  regstack_completed = 0;
+#endif
 
   /* Clear out the insn_length contents now that they are no
      longer valid.  */
