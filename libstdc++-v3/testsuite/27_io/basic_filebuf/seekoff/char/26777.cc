@@ -21,6 +21,9 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// No asserts, avoid leaking the semaphores if a VERIFY fails.
+#undef _GLIBCXX_ASSERT
+
 #include <testsuite_hooks.h>
 #include <fstream>
 #include <sstream>
@@ -31,7 +34,7 @@
 #include <sys/stat.h>
 
 // libstdc++/26777
-void test01()
+bool test01()
 {
   using namespace std;
   using namespace __gnu_test;
@@ -77,10 +80,11 @@ void test01()
   fbin.close();
 
   VERIFY( oss.str() == "Whatever" );
+
+  return test;
 }
 
 int main()
 {
-  test01();
-  return 0;
+  return !test01();
 }

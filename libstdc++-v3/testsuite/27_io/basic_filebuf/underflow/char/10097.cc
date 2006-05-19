@@ -30,6 +30,10 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+// No asserts, avoid leaking the semaphores if a VERIFY fails.
+#undef _GLIBCXX_ASSERT
+
 #include <testsuite_hooks.h>
 
 class UnderBuf : public std::filebuf
@@ -46,7 +50,7 @@ public:
 
 // libstdc++/10097
 // filebuf::underflow drops characters.
-void test16()
+bool test16()
 {
   using namespace std;
   using namespace __gnu_test;
@@ -84,7 +88,7 @@ void test16()
 
   UnderBuf fb;
   fb.open(name, ios_base::in);
-  
+
   fb.sgetc();
   streamsize n = fb.pub_showmanyc();
 
@@ -101,10 +105,11 @@ void test16()
   fb.close();
   s1.signal();
   s2.wait();
+
+  return test;
 }
 
 int main() 
 {
-  test16();
-  return 0;
+  return !test16();
 }

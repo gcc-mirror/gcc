@@ -3,7 +3,7 @@
 
 // 2003-04-26 Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,10 +30,14 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+// No asserts, avoid leaking the semaphore if a VERIFY fails.
+#undef _GLIBCXX_ASSERT
+
 #include <testsuite_hooks.h>
 
 // Check that cout.flush() is called when last ios_base::Init is destroyed.
-void test07()
+bool test07()
 {
   using namespace std;
   using namespace __gnu_test;
@@ -54,8 +58,8 @@ void test07()
     {
       filebuf fbout;
       fbout.open(name, ios_base::in|ios_base::out);
-      s1.wait ();
-      VERIFY ( fbout.is_open() );
+      VERIFY( fbout.is_open() );
+      s1.wait();
       cout.rdbuf(&fbout);
       fbout.sputc('a');
       // NB: fbout is *not* destroyed here!
@@ -64,17 +68,18 @@ void test07()
   
   filebuf fbin;
   fbin.open(name, ios_base::in);
-  s1.signal ();
+  s1.signal();
   filebuf::int_type c = fbin.sbumpc();
   VERIFY( c != filebuf::traits_type::eof() );
   VERIFY( c == filebuf::traits_type::to_int_type('a') );
 
   fbin.close();
+
+  return test;
 }
 
 int
 main()
 {
-  test07();
-  return 0;
+  return !test07();
 }
