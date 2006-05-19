@@ -1,3 +1,36 @@
+2006-05-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* libgcc2.c (MIN_UNITS_PER_WORD): Move default definition from
+	libgcc2.h.
+	(LIBGCC2_UNITS_PER_WORD): Provide default definition, using old
+	MIN_UNITS_PER_WORD logic from libgcc2.h.  Do nothing if
+	LIBGCC2_UNITS_PER_WORD > MIN_UNITS_PER_WORD.
+	* libgcc2.h (MIN_UNITS_PER_WORD): Remove definition from here.
+	Use LIBGCC2_UNITS_PER_WORD rather than MIN_UNITS_PER_WORD to
+	determine the size of Wtype, etc.
+	* mklibgcc.in (LIB2_SIDITI_CONV_FUNCS): New argument.
+	(swfloatfuncs): New variable.
+	(dwfloatfuncs): Likewise.
+	(lib2funcs): Remove floating-point conversion functions from
+	initial assignment.  Use LIB2_SIDITI_CONV_FUNCS to determine
+	the set of conversion routines needed.  Allow entries to specify
+	an object name, filename and word size.  Update users accordingly.
+	* Makefile.in (libgcc.mk): Pass LIB2_SIDITI_CONV_FUNCS.
+	* config/mips/t-mips (LIB2_SIDITI_CONV_FUNCS): Define.
+
+	Revert:
+
+	2006-02-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/22209
+	* config/fixtfdi.c: New libgcc source file.
+	* config/fixunstfdi.c: New source file.
+	* config/floatditf.c: New source file.
+	* config/floatunditf.c: New souce file.
+	* config/mips/t-iris6 (LIB2FUNCS_EXTRA): Include the new source
+	files above instead of config/mips/_tilib.c.
+	* config/mips/t-linux64 (LIB2FUNCS_EXTRA): Likewise.
+
 2006-05-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/t-hpux-shlib (SHLIB_LINK): Remove `-lc'.
