@@ -4,7 +4,7 @@
 
 // 2004-04-16  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,14 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+// No asserts, avoid leaking the semaphore if a VERIFY fails.
+#undef _GLIBCXX_ASSERT
+
 #include <testsuite_hooks.h>
 
 // libstdc++/14975
-void test01()
+bool test01()
 {
   using namespace std;
   using namespace __gnu_test;
@@ -57,7 +61,7 @@ void test01()
 	filebuf fbin;
 	fbin.open(name, ios_base::in);
       }
-      s1.signal ();
+      s1.signal();
       exit(0);
     }
   
@@ -67,7 +71,7 @@ void test01()
   VERIFY( ret != NULL );
   VERIFY( fb.is_open() );
 
-  s1.wait ();
+  s1.wait();
 
   try
     {
@@ -80,10 +84,11 @@ void test01()
   catch (std::exception&)
     {
     }
+
+  return test;
 }
 
 int main()
 {
-  test01();
-  return 0;
+  return !test01();
 }

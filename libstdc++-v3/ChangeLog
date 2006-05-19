@@ -1,3 +1,17 @@
+2006-05-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/objects/wchar_t/9661-1.cc: Avoid leaking the
+	semaphores if a VERIFY fails.
+	* testsuite/27_io/objects/wchar_t/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/26777.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/4879.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc: Likewise.
+
 2006-05-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/hashtable (hashtable<>::m_find): Remove; update callers.
