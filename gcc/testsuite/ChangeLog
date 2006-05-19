@@ -1,3 +1,7 @@
+2006-05-19  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/other/unused1.C: Also match "stringz".
+
 2006-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26433
