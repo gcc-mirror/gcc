@@ -1,5 +1,13 @@
 2006-05-20  Richard Sandiford  <richard@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_mpaired_single):
+	New function.
+	* gcc.dg/vect/vect.exp: Use it to check for compatible mipsisa64-elf
+	multilibs.
+	* g++.dg/vect/vect.exp: Likewise.
+
+2006-05-20  Richard Sandiford  <richard@codesourcery.com>
+
 	PR testsuite/25891
 	* g++.dg/gomp/gomp.exp: Skip if ![check_effective_target_fopenmp].
 
