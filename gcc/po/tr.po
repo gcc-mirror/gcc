@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-02-28 00:11-0800\n"
-"PO-Revision-Date: 2006-03-09 21:57+0200\n"
+"PO-Revision-Date: 2006-04-08 20:28+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@buguner.name.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -518,7 +518,7 @@ msgid "%d frame table(s) found\n"
 msgstr "%d cerceve tablosu bulundu\n"
 
 #: collect2.c:1487
-#, fuzzy, c-format
+#, c-format
 msgid "can't get program status"
 msgstr "program durumu alinamiyor"
 
@@ -557,7 +557,7 @@ msgid "cannot find 'nm'"
 msgstr "'nm' bulunamiyor"
 
 #: collect2.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "can't open nm output"
 msgstr "nm ciktisi acilamiyor"
 
@@ -572,7 +572,7 @@ msgid "fini function found in object %s"
 msgstr "fini islevi %s nesnesinde bulundu"
 
 #: collect2.c:2221
-#, fuzzy, c-format
+#, c-format
 msgid "can't open ldd output"
 msgstr "ldd ciktisi acilamiyor"
 
@@ -808,12 +808,10 @@ msgstr ""
 "Haydi!? (e / h) "
 
 #: gcc.c:2848
-#, fuzzy
 msgid "failed to get exit status"
 msgstr "cikis durumu almada basarisizlik"
 
 #: gcc.c:2854
-#, fuzzy
 msgid "failed to get process times"
 msgstr "surec zamanlarini almada basarisizlik"
 
@@ -1025,7 +1023,7 @@ msgstr ""
 "parametreler dogrudan %s tarafindan calistirilan alt programlara gonderilir.\n"
 "Secenekler ve gonderilecegi alt program -W<harf> seceneklerinden saptanir.\n"
 "\n"
-"Ceviri hatalarini <gnu-tr@belgeler.org> adresine bildiriniz.\n"
+"Ceviri hatalarini <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
 "\n"
 
 #: gcc.c:3215
@@ -1238,9 +1236,9 @@ msgid "no input files"
 msgstr "girdi dosyasi yok"
 
 #: gcc.c:6466
-#, fuzzy, c-format
+#, c-format
 msgid "cannot specify -o with -c or -S with multiple files"
-msgstr "-c veya -S ile birlikte -o ile cok sayida dosya belirtilemez"
+msgstr "cok sayida dosya -o seçeneğinin -c veya -S ile birlikte kullanımı ile belirtilemez"
 
 #: gcc.c:6500
 #, c-format
@@ -1268,17 +1266,17 @@ msgid "multilib exclusion '%s' is invalid"
 msgstr "multilib dislamasi olarak '%s' gecersiz"
 
 #: gcc.c:7653 gcc.c:7658
-#, fuzzy, c-format
+#, c-format
 msgid "invalid version number `%s'"
-msgstr "surum numarasi `%s' gecersiz"
+msgstr "gecersiz surum numarasi `%s'"
 
 #: gcc.c:7701
-#, fuzzy, c-format
+#, c-format
 msgid "too few arguments to %%:version-compare"
 msgstr "%%:version-compare icin cok az arguman belirtildi"
 
 #: gcc.c:7707
-#, fuzzy, c-format
+#, c-format
 msgid "too many arguments to %%:version-compare"
 msgstr "%%:version-compare icin cok fazla arguman belirtildi"
 
@@ -1616,7 +1614,6 @@ msgid "--param max-inline-insns-single limit reached"
 msgstr "--param max-inline-insns-single siniri asildi"
 
 #: ipa-inline.c:314
-#, fuzzy
 msgid "--param max-inline-insns-auto limit reached"
 msgstr "--param max-inline-insns-auto siniri asildi"
 
@@ -2088,13 +2085,13 @@ msgid "unrecoverable error"
 msgstr "kurtarilamayan hata"
 
 #: toplev.c:1115
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s%s%s version %s (%s)\n"
 "%s\tcompiled by GNU C version %s.\n"
 msgstr ""
 "%s%s%s surum %s (%s)\n"
-"%s\tGNU C surum %s tarafindan derlendi.\n"
+"%s\tGNU C surum %s ile derlendi.\n"
 
 #: toplev.c:1117
 #, c-format
@@ -2115,7 +2112,7 @@ msgid "options enabled: "
 msgstr "etkin secenekler: "
 
 #: toplev.c:1331
-#, fuzzy, c-format
+#, c-format
 msgid "created and used with differing settings of '%s'"
 msgstr "`%s''in farkli ayarlari ile olusturulup kullanilmis"
 
@@ -2177,14 +2174,12 @@ msgid "The maximum number of fields in a structure variable without direct struc
 msgstr "Yapiya dogrudan erisim olmaksizin bir yapi degiskenindeki GCC'nin ayri ayri izlemeye calisacagi azami alan sayisi"
 
 #: params.def:57
-#, fuzzy
 msgid "The maximum structure size (in bytes) for which GCC will use by-element copies"
 msgstr "GCC'nin elemana gore kopyalarini kullanacagi azami yapi boyutu (bayt cinsinden)"
 
 #: params.def:66
-#, fuzzy
 msgid "The maximum number of structure fields for which GCC will use by-element copies"
-msgstr "GCC'nin elemana gore kopyalarini kullanacagi azami yapi alan sayisi"
+msgstr "GCC'nin elemana gore kopyalarini kullanacagi azami yapi alani sayisi"
 
 #: params.def:78
 msgid "The threshold ratio between instantiated fields and the total structure size"
@@ -2223,7 +2218,6 @@ msgid "Inline recursively only when the probability of call being executed excee
 msgstr "Ardisik satiricine alma sadece cagrinin icrasinda parametre asimi olasiligi varken yapilir"
 
 #: params.def:139
-#, fuzzy
 msgid "If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling"
 msgstr "-fvariable-expansion-in-unroller secenegi kullanildiginda, tek bir degiskenin dongunun gerisarilmasi sirasinda genisletilecegi azami yineleme sayisi"
 
@@ -2255,7 +2249,6 @@ msgid "Maximal growth due to inlining of large function (in percent)"
 msgstr "Buyuk islevlerin satiricine alinmasi nedeniyle olusan en yuksek buyume (yuzde olarak)"
 
 #: params.def:184
-#, fuzzy
 msgid "The size of translation unit to be considered large"
 msgstr "Cok buyuk olacagi varsayilan donusum birimi boyutu"
 
@@ -2264,7 +2257,6 @@ msgid "how much can given compilation unit grow because of the inlining (in perc
 msgstr "satiricine almadan dolayi belirtilen hesaplama biriminin buyume orani"
 
 #: params.def:192
-#, fuzzy
 msgid "expense of call operation relative to ordinary arithmetic operations"
 msgstr "cagri isleminin siradan aritmetik islemlere gore maliyeti"
 
@@ -2281,12 +2273,10 @@ msgstr ""
 "                                       yapilacak en cok gecis sayisi"
 
 #: params.def:214
-#, fuzzy
 msgid "The threshold ratio for performing partial redundancy elimination after reload"
 msgstr "Yeniden yukleme sonrasi fazlaliklarin kismi elemesi icin esik orani/hizi."
 
 #: params.def:221
-#, fuzzy
 msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload"
 msgstr "Yeniden yukleme sonrasi fazlalik elemesi yapilirken izin verilen kritik kenar calistirma sayisinin esik orani/hizi."
 
@@ -2367,11 +2357,8 @@ msgstr ""
 "                                      maksimum icra sikliginin kesrini secer"
 
 #: params.def:330
-#, fuzzy
 msgid "The maximum number of loop iterations we predict statically"
 msgstr ""
-"Otomatik olarak özümlendiğinde en çok\n"
-"                                      asm komutu sayısı"
 
 #: params.def:334
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
@@ -2439,9 +2426,8 @@ msgid "The maximum length of path considered in cse"
 msgstr "csi icinde olacagi varsayilan yolun azami uzunlugu"
 
 #: params.def:388
-#, fuzzy
 msgid "The maximum instructions CSE process before flushing"
-msgstr "RTL özümleyici için en fazla komut sayısı"
+msgstr ""
 
 #: params.def:395
 msgid "The minimum cost of an expensive expression in the loop invariant motion"
@@ -2476,9 +2462,8 @@ msgid "The maximum memory locations recorded by cselib"
 msgstr "cselib tarafindan kaydedilmis azami bellek konumu"
 
 #: params.def:446
-#, fuzzy
 msgid "The maximum memory locations recorded by flow"
-msgstr "Akis tarafindan kaydedilmis azami bellek konumu"
+msgstr "Akis tarafindan kaydedilmis azami bellek konumu sayisi"
 
 #: params.def:459
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap"
@@ -2522,11 +2507,8 @@ msgid "The upper bound for sharing integer constants"
 msgstr "Paylasimli tamsayi sabitler icin ust sinir"
 
 #: params.def:524
-#, fuzzy
 msgid "Minimum number of virtual mappings to consider switching to full virtual renames"
 msgstr ""
-"Bir gecikme yuvasını dolduracağı\n"
-"                                      varsayılan en fazla komut sayısı"
 
 #: params.def:529
 msgid "Ratio between virtual mappings and virtual symbols to do full virtual renames"
@@ -2659,12 +2641,12 @@ msgstr "cikis kodu icin gecersiz veri ogesi"
 #: config/arm/arm.c:10906 config/arm/arm.c:10924
 #, c-format
 msgid "predicated Thumb instruction"
-msgstr ""
+msgstr "dayanakli Thumb komutu"
 
 #: config/arm/arm.c:10912
 #, c-format
 msgid "predicated instruction in conditional sequence"
-msgstr ""
+msgstr "kosullu dizilimde dayanakli komut"
 
 #: config/arm/arm.c:11020 config/arm/arm.c:11030 config/arm/arm.c:11040
 #: config/arm/arm.c:11066 config/arm/arm.c:11084 config/arm/arm.c:11119
@@ -2811,9 +2793,8 @@ msgid "c4x_operand_subword: address not offsettable"
 msgstr "c4x_operand_subword: adres konumlanabilir degil"
 
 #: config/c4x/c4x.c:4101
-#, fuzzy
 msgid "c4x_rptb_rpts_p: Repeat block top label moved"
-msgstr "c4x_rptb_rpts_p: Tekar blogu tepe etiketi tasindi"
+msgstr "c4x_rptb_rpts_p: Tekrar bloku tepe etiketi tasindi"
 
 #. Use `%s' to print the string in case there are any escape
 #. characters in the message.
@@ -2840,12 +2821,10 @@ msgid "invalid operand for 'b' modifier"
 msgstr "'b' degistirici icin terim gecersiz"
 
 #: config/cris/cris.c:691
-#, fuzzy
 msgid "invalid operand for 'o' modifier"
 msgstr "'o' degistiricisi icin terim gecersiz"
 
 #: config/cris/cris.c:710
-#, fuzzy
 msgid "invalid operand for 'O' modifier"
 msgstr "'O' degistiricisi icin terim gecersiz"
 
@@ -2913,7 +2892,7 @@ msgstr "adreste beklenmeyen yan etkiler"
 #. right?
 #: config/cris/cris.c:3254
 msgid "Unidentifiable call op"
-msgstr ""
+msgstr "Tanimlanabilemeyen cagri islemi"
 
 #: config/cris/cris.c:3305
 #, c-format
@@ -2967,18 +2946,15 @@ msgid "fr30_print_operand: unhandled MEM"
 msgstr "fr30_print_operand: bilinmeyen bellek"
 
 #: config/frv/frv.c:2541
-#, fuzzy
 msgid "bad insn to frv_print_operand_address:"
 msgstr "frv_print_operand_address icin hatali komut:"
 
 #: config/frv/frv.c:2552
-#, fuzzy
 msgid "bad register to frv_print_operand_memory_reference_reg:"
 msgstr "frv_print_operand_memory_reference_reg icin hatali yazmac:"
 
 #: config/frv/frv.c:2591 config/frv/frv.c:2601 config/frv/frv.c:2610
 #: config/frv/frv.c:2631 config/frv/frv.c:2636
-#, fuzzy
 msgid "bad insn to frv_print_operand_memory_reference:"
 msgstr "frv_print_operand_memory_reference icin hatali komut:"
 
@@ -2988,57 +2964,46 @@ msgid "bad condition code"
 msgstr "hatali kosul kodu"
 
 #: config/frv/frv.c:2797
-#, fuzzy
 msgid "bad insn in frv_print_operand, bad const_double"
 msgstr "frv_print_operand icinde hatali komut, const_double hatali"
 
 #: config/frv/frv.c:2858
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'e' modifier:"
 msgstr "frv_print_operand, 'e' degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:2866
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'F' modifier:"
 msgstr "frv_print_operand, 'F' degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:2882
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'f' modifier:"
 msgstr "frv_print_operand, 'f' degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:2896
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'g' modifier:"
 msgstr "frv_print_operand, 'g' degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:2944
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'L' modifier:"
 msgstr "frv_print_operand, 'L' degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:2957
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'M/N' modifier:"
 msgstr "frv_print_operand, 'M/N' degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:2978
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'O' modifier:"
 msgstr "frv_print_operand, 'O' degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:2996
-#, fuzzy
 msgid "bad insn to frv_print_operand, P modifier:"
 msgstr "frv_print_operand, P degistiricisi icin hatali komut:"
 
 #: config/frv/frv.c:3016
-#, fuzzy
 msgid "bad insn in frv_print_operand, z case"
 msgstr "frv_print_operand, z case icinde hatali komut"
 
 #: config/frv/frv.c:3047
-#, fuzzy
 msgid "bad insn in frv_print_operand, 0 case"
 msgstr "frv_print_operand, 0 case icinde hatali komut"
 
@@ -3047,17 +3012,14 @@ msgid "frv_print_operand: unknown code"
 msgstr "frv_print_operand: bilinmeyen kod"
 
 #: config/frv/frv.c:4421
-#, fuzzy
 msgid "bad output_move_single operand"
 msgstr "output_move_single terimi hatali"
 
 #: config/frv/frv.c:4548
-#, fuzzy
 msgid "bad output_move_double operand"
 msgstr "output_move_double terimi hatali"
 
 #: config/frv/frv.c:4690
-#, fuzzy
 msgid "bad output_condmove_single operand"
 msgstr "output_condmove_single terimi hatali"
 
@@ -3122,17 +3084,14 @@ msgid "ia64_print_operand: unknown code"
 msgstr "ia64_print_operand: bilinmeyen kod"
 
 #: config/ia64/ia64.c:9013
-#, fuzzy
 msgid "invalid conversion from %<__fpreg%>"
 msgstr "%<__fpreg%> turunden donusum gecersiz"
 
 #: config/ia64/ia64.c:9016
-#, fuzzy
 msgid "invalid conversion to %<__fpreg%>"
 msgstr "%<__fpreg%> turune donusum gecersiz"
 
 #: config/ia64/ia64.c:9029 config/ia64/ia64.c:9040
-#, fuzzy
 msgid "invalid operation on %<__fpreg%>"
 msgstr "%<__fpreg%> uzerinde gecersiz islem"
 
@@ -3264,7 +3223,7 @@ msgid "invalid %%Y value"
 msgstr "%%Y degeri gecersiz"
 
 #: config/mips/mips.c:5488 config/mips/mips.c:5496
-#, fuzzy, c-format
+#, c-format
 msgid "PRINT_OPERAND, invalid insn for %%q"
 msgstr "PRINT_OPERAND, %%q icin gecersiz komut"
 
@@ -3315,15 +3274,13 @@ msgstr "MMIX Dahili: Bu bir sabit degil:"
 
 #: config/mt/mt.c:298
 msgid "mt_final_prescan_insn, invalid insn #1"
-msgstr ""
+msgstr "mt_final_prescan_insn, gecersiz komut #1"
 
 #: config/mt/mt.c:369
-#, fuzzy
 msgid "PRINT_OPERAND_ADDRESS, 2 regs"
 msgstr "PRINT_OPERAND_ADDRESS, 2 yazmac"
 
 #: config/mt/mt.c:393
-#, fuzzy
 msgid "PRINT_OPERAND_ADDRESS, invalid insn #1"
 msgstr "PRINT_OPERAND_ADDRESS, gecersiz komut #1"
 
@@ -3403,12 +3360,11 @@ msgid "invalid %%v value"
 msgstr "%%v degeri gecersiz"
 
 #: config/rs6000/rs6000.c:19104
-#, fuzzy
 msgid "AltiVec argument passed to unprototyped function"
 msgstr "AltiVec argumanı prototipsiz isleve aktarildi"
 
 #: config/s390/s390.c:4488
-#, fuzzy, c-format
+#, c-format
 msgid "cannot decompose address"
 msgstr "adres cozumlenemez"
 
@@ -3417,27 +3373,24 @@ msgid "UNKNOWN in print_operand !?"
 msgstr "print_operand da BILINMEYEN !?"
 
 #: config/sh/sh.c:746
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%R"
 msgstr "%%R icin terim gecersiz"
 
 #: config/sh/sh.c:773
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%S"
 msgstr "%%S icin terim gecersiz"
 
 #: config/sh/sh.c:7679
-#, fuzzy
 msgid "created and used with different architectures / ABIs"
 msgstr "farkli ABI/mimarilerle olusturulup kullanilmis"
 
 #: config/sh/sh.c:7681
-#, fuzzy
 msgid "created and used with different ABIs"
 msgstr "farkli ABI'lerle olusturulup kullanilmis"
 
 #: config/sh/sh.c:7683
-#, fuzzy
 msgid "created and used with different endianness"
 msgstr "farkli bayt siralamasi ile olusturulup kullanilmis"
 
@@ -3578,12 +3531,10 @@ msgid "candidate 2:"
 msgstr "2. aday:"
 
 #: cp/decl2.c:695
-#, fuzzy
 msgid "candidates are: %+#D"
 msgstr "adaylar: %+#D"
 
 #: cp/decl2.c:697
-#, fuzzy
 msgid "candidate is: %+#D"
 msgstr "aday: %+#D"
 
@@ -3597,65 +3548,62 @@ msgid "Arithmetic OK at %L"
 msgstr "%L'de aritmetik olumlama"
 
 #: fortran/arith.c:144
-#, fuzzy
 msgid "Arithmetic overflow at %L"
 msgstr "%L'de aritmetik ustten tasma"
 
 #: fortran/arith.c:147
 msgid "Arithmetic underflow at %L"
-msgstr ""
+msgstr "%L'de aritmetik alttan taşma"
 
 #: fortran/arith.c:150
 msgid "Arithmetic NaN at %L"
-msgstr ""
+msgstr "%L'de aritmetik NaN"
 
 #: fortran/arith.c:153
-#, fuzzy
 msgid "Division by zero at %L"
 msgstr "%L'de sifirla bolme"
 
 #: fortran/arith.c:156
 msgid "Array operands are incommensurate at %L"
-msgstr ""
+msgstr "Dizi terimleri %L'de kiyas kabul etmez"
 
 #: fortran/arith.c:160
 msgid "Integer outside symmetric range implied by Standard Fortran at %L"
 msgstr ""
 
 #: fortran/arith.c:1384
-#, fuzzy
 msgid "Elemental binary operation"
-msgstr "ogesel ikilik islem"
+msgstr "Ogesel ikilik islem"
 
 #: fortran/arith.c:1920
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic OK converting %s to %s at %L"
-msgstr "`%s' ile `%s' arasindaki donusumde %L için aritmetik olumlama"
+msgstr "%s ile %s arasindaki donusumde %L için aritmetik olumlama"
 
 #: fortran/arith.c:1924
 #, no-c-format
 msgid "Arithmetic overflow converting %s to %s at %L"
-msgstr "`%s' ile `%s' arasindaki donusumde %L için aritmetik ustten tasma"
+msgstr "%s ile %s arasindaki donusumde %L için aritmetik ustten tasma"
 
 #: fortran/arith.c:1928
 #, no-c-format
 msgid "Arithmetic underflow converting %s to %s at %L"
-msgstr "`%s' ile `%s' arasindaki donusumde %L için aritmetik alttan tasma"
+msgstr "%s ile %s arasindaki donusumde %L için aritmetik alttan tasma"
 
 #: fortran/arith.c:1932
 #, no-c-format
 msgid "Arithmetic NaN converting %s to %s at %L"
-msgstr ""
+msgstr "%s ile %s arasindaki donusumde %L için aritmetik NaN"
 
 #: fortran/arith.c:1936
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Division by zero converting %s to %s at %L"
-msgstr "`%s' ile `%s' arasindaki donusumde %L için sifirla bolme"
+msgstr "%s ile %s arasindaki donusumde %L için sifirla bolme"
 
 #: fortran/arith.c:1940
 #, no-c-format
 msgid "Array operands are incommensurate converting %s to %s at %L"
-msgstr "`%s' ile `%s' arasindaki donusumde %L için dizi terimleri kiyas kabul etmez"
+msgstr "%s ile %s arasindaki donusumde %L için dizi terimleri kiyas kabul etmez"
 
 #: fortran/arith.c:1944
 #, no-c-format
@@ -3664,7 +3612,7 @@ msgstr ""
 
 #: fortran/arith.c:2277 fortran/arith.c:2312 fortran/arith.c:2349
 #: fortran/arith.c:2399
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The Hollerith constant at %L is too long to convert to %s"
 msgstr "%L'deki Hollerith sabiti %s'e donusum icin cok uzun"
 
@@ -3674,57 +3622,57 @@ msgid "Enumerator exceeds the C integer type at %C"
 msgstr "Sayisal sabitler %C'de C tamsayi turunu asiyor"
 
 #: fortran/array.c:97
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected array subscript at %C"
 msgstr "%C'de dizi indisi umuluyordu"
 
 #: fortran/array.c:124
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected array subscript stride at %C"
-msgstr "%C'de uzun adimli dizi indisi umuluyordu"
+msgstr "%C'de dizi indis adimi umuluyordu"
 
 #: fortran/array.c:167
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid form of array reference at %C"
 msgstr "%C'de dizi basvurusunun yapilisi gecersiz"
 
 #: fortran/array.c:172
 #, no-c-format
 msgid "Array reference at %C cannot have more than %d dimensions"
-msgstr ""
+msgstr "%C'deki dizi basvurusu %d boyuttan fazlasini iceremez"
 
 #: fortran/array.c:224
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L in this context must be constant"
-msgstr "Bu baglamda '%s' degiskeni (%L'de) bir sabit olmali"
+msgstr "Bu baglamda '%s' degiskeni %L'de bir sabit olmali"
 
 #: fortran/array.c:300
 #, no-c-format
 msgid "Expected expression in array specification at %C"
-msgstr ""
+msgstr "%C'deki dizi belirtiminde ifade umuluyor"
 
 #: fortran/array.c:379
 #, no-c-format
 msgid "Bad array specification for an explicitly shaped array at %C"
-msgstr ""
+msgstr "%C'de alenen biçimlenmis dizi icin dizi belirtimi gecersiz"
 
 #: fortran/array.c:390
 #, no-c-format
 msgid "Bad array specification for assumed shape array at %C"
-msgstr ""
+msgstr "%C'deki tahmini biçimli dizi icin dizi belirtimi hatali"
 
 #: fortran/array.c:403
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Bad specification for deferred shape array at %C"
-msgstr "%0 da dolaylı Do yineleyicisi `%A' için özellik yok"
+msgstr "%C'deki ertelenmis bicimli dizi icin belirtim hatali"
 
 #: fortran/array.c:407
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Bad specification for assumed size array at %C"
-msgstr "%0 da dolaylı Do yineleyicisi `%A' için özellik yok"
+msgstr "%C'deki tahmini boyutlu dizi icin belirtim hatali"
 
 #: fortran/array.c:416
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected another dimension in array declaration at %C"
 msgstr "%C'deki dizi bildiriminde farkli bir boyut umuluyordu"
 
@@ -3734,47 +3682,47 @@ msgid "Array specification at %C has more than %d dimensions"
 msgstr "%C'deki dizi belirtimi %d boyuttan fazlasina sahip"
 
 #: fortran/array.c:627
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "duplicated initializer"
 msgstr "yinelenmis ilklendirici"
 
 #: fortran/array.c:720
 #, no-c-format
 msgid "DO-iterator '%s' at %L is inside iterator of the same name"
-msgstr ""
+msgstr "DO yineleyicisi '%s' %L'de ayni isimli yineleyicinin icinde"
 
 #: fortran/array.c:822 fortran/array.c:931
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in array constructor at %C"
 msgstr "%C'deki dizi kurucuda sozdizimi hatasi"
 
 #: fortran/array.c:877
 #, no-c-format
 msgid "New in Fortran 2003: [...] style array constructors at %C"
-msgstr ""
+msgstr "Fortran 2003'te yeni: %C'de [...] tarzı dizi kurucular"
 
 #: fortran/array.c:891
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Empty array constructor at %C is not allowed"
 msgstr "%C'de bos dizi kurucuya izin verilmiyor"
 
 #: fortran/array.c:976
 #, no-c-format
 msgid "Element in %s array constructor at %L is %s"
-msgstr ""
+msgstr "%s dizi kurucudaki oge (%L'deki) %s"
 
 #: fortran/array.c:1305
 #, no-c-format
 msgid "Iterator step at %L cannot be zero"
-msgstr ""
+msgstr "%L'deki yineleyici adimi sifir olamaz"
 
 #: fortran/check.c:44
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be %s"
 msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) %s olmali"
 
 #: fortran/check.c:60
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be a numeric type"
 msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) sayisal bir tur olmali"
 
@@ -3794,9 +3742,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be a constant"
 msgstr "`%s' argumani yerlesik `%s' icin  %L'de bir sabit olmali"
 
 #: fortran/check.c:126
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid kind for %s at %L"
-msgstr "%s icin %L'deki kullanim gecersiz"
+msgstr "%s icin %L'deki cesit gecersiz"
 
 #: fortran/check.c:146
 #, no-c-format
@@ -3872,7 +3820,7 @@ msgstr "`%s' ve '%s' argumanlari yerlesik `%s' icin  (%L'de) ayni turde olmali"
 #: fortran/check.c:1139 fortran/check.c:1364
 #, no-c-format
 msgid "Extension: Different type kinds at %L"
-msgstr ""
+msgstr "Ek: %L'de farkli tur cesitleri"
 
 #: fortran/check.c:488 fortran/check.c:1661
 #, no-c-format
@@ -3882,7 +3830,7 @@ msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) bir POINTER olmali"
 #: fortran/check.c:500
 #, no-c-format
 msgid "NULL pointer at %L is not permitted as actual argument of '%s' intrinsic function"
-msgstr ""
+msgstr "%L'deki NULL gösterici '%s' yerlesik islevinin asil argumani olamaz"
 
 #: fortran/check.c:515
 #, no-c-format
@@ -3892,7 +3840,7 @@ msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) bir POINTER veya bir TARGET ol
 #: fortran/check.c:531
 #, no-c-format
 msgid "Array section with a vector subscript at %L shall not be the target of a pointer"
-msgstr ""
+msgstr "%L'deki vektor indisli dizi parcasi bir gostericinin hedefi olmamali"
 
 #: fortran/check.c:641 fortran/check.c:743
 #, no-c-format
@@ -3905,9 +3853,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be numeric or LOGICAL"
 msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) sayisal ya da LOGICAL olmali"
 
 #: fortran/check.c:1046
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument of %s at %L must be of length one"
-msgstr "`%s' argumani (%L'de) bir uzunlugunda olmali"
+msgstr "`%s' argumani (%L'de) tek uzunluklu olmali"
 
 #: fortran/check.c:1098
 #, no-c-format
@@ -3915,12 +3863,12 @@ msgid "'%s' argument of '%s' intrinsic at %L must be the same kind as '%s'"
 msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) %s ile ayni cesit olmali"
 
 #: fortran/check.c:1213
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be a non-derived type"
 msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) türetilmemis bir turde olmali"
 
 #: fortran/check.c:1336
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic '%s' at %L must have at least two arguments"
 msgstr "yerlesik `%s' icin  (%L'de) en az iki arguman olmali"
 
@@ -3985,9 +3933,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be less than rank %d"
 msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) %d. siradan once olmali"
 
 #: fortran/check.c:2512 fortran/check.c:2532
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Too many arguments to %s at %L"
-msgstr "%s icin argumanlar (%L'de) cok fazla"
+msgstr "%s icin argumanlar %L'de cok fazla"
 
 #: fortran/check.c:2660 fortran/check.c:3022 fortran/check.c:3046
 #, no-c-format
@@ -4000,24 +3948,24 @@ msgid "'%s' argument of '%s' intrinsic at %L must be INTEGER or LOGICAL"
 msgstr "`%s' argumani yerlesik `%s' icin  (%L'de) INTEGER veya LOGICAL olmali"
 
 #: fortran/data.c:63
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "non-constant array in DATA statement %L."
 msgstr "DATA deyimi %L icinde sabit-olmayan dizi"
 
 #: fortran/data.c:327
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: re-initialization of '%s' at %L"
-msgstr "Genisletme:`%s' icin (%L'de) yeniden ilklendirme"
+msgstr "Ek:`%s' icin (%L'de) yeniden ilklendirme"
 
 #: fortran/decl.c:208
 #, no-c-format
 msgid "Host associated variable '%s' may not be in the DATA statement at %C."
-msgstr ""
+msgstr "Konak iliskili degisken '%s' %C'de DATA deyiminin icinde olmamali."
 
 #: fortran/decl.c:215
 #, no-c-format
 msgid "Extension: initialization of common block variable '%s' in DATA statement at %C"
-msgstr ""
+msgstr "Ek: bildik blok degiskeni '%s'in %C'de DATA deyiminde ilklendirilmesi"
 
 #: fortran/decl.c:301
 #, no-c-format
@@ -4027,35 +3975,35 @@ msgstr "Sembol '%s' %C'deki DATA deyiminde bir PARAMETER olmali"
 #: fortran/decl.c:408
 #, no-c-format
 msgid "Initialization at %C is not allowed in a PURE procedure"
-msgstr ""
+msgstr "%C'de ilklendirmeye bir PURE islevinde izin verilmez"
 
 #: fortran/decl.c:455
 #, no-c-format
 msgid "DATA statement at %C is not allowed in a PURE procedure"
-msgstr ""
+msgstr "%C'de DATA deyimine bir PURE islevinde izin verilmez"
 
 #: fortran/decl.c:483
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Bad INTENT specification at %C"
 msgstr "%C'deki INTENT belirtimi hatali"
 
 #: fortran/decl.c:548
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in character length specification at %C"
 msgstr "%C'deki karakter uzunluk belirtiminde sozdizimi hatasi"
 
 #: fortran/decl.c:623
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Procedure '%s' at %C is already defined at %L"
-msgstr "`%D' zaten `%T' içinde tanımlı"
+msgstr "islev `%s' (%C'deki) zaten %L'de tanımlı"
 
 #: fortran/decl.c:633
 #, no-c-format
 msgid "Procedure '%s' at %C has an explicit interface and must not have attributes declared at %L"
-msgstr ""
+msgstr "islev '%s' (%C'deki) bir dolaysiz arayuze sahip ve %L'de bildirilmis ozniteliklere sahip olmamali"
 
 #: fortran/decl.c:805
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initializer not allowed for PARAMETER '%s' at %C"
 msgstr "PARAMETER `%s' icin %C'de ilklendirme yapilamaz"
 
@@ -4065,54 +4013,54 @@ msgid "Initializer not allowed for COMMON variable '%s' at %C"
 msgstr "COMMON degiskeni `%s' icin %C'de ilklendirme yapilamaz"
 
 #: fortran/decl.c:824
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PARAMETER at %L is missing an initializer"
 msgstr "%L'deki PARAMETER bir ilklendiricide yok"
 
 #: fortran/decl.c:835
 #, no-c-format
 msgid "Variable '%s' at %C with an initializer already appears in a DATA statement"
-msgstr ""
+msgstr "Degisken '%s' %C'de bir ilklendirici ile zaten bir DATA deyiminde gorunuyor"
 
 #: fortran/decl.c:913
 #, no-c-format
 msgid "Component at %C must have the POINTER attribute"
-msgstr ""
+msgstr "%C'deki bilesen POINTER ozniteliginde olmali"
 
 #: fortran/decl.c:922
 #, no-c-format
 msgid "Array component of structure at %C must have explicit or deferred shape"
-msgstr ""
+msgstr "Yapinin dizi bileseni %C'de dolaysiz ya da ertelenmis durumda olmali"
 
 #: fortran/decl.c:951
 #, no-c-format
 msgid "Pointer array component of structure at %C must have a deferred shape"
-msgstr ""
+msgstr "Yapinin gosterici dizisi bileseni %C'de ertelenmis durumda olmali"
 
 #: fortran/decl.c:961
 #, no-c-format
 msgid "Array component of structure at %C must have an explicit shape"
-msgstr ""
+msgstr "Yapinin dizi bileseni %C'de dolaysiz durumda olmali"
 
 #: fortran/decl.c:987
 #, no-c-format
 msgid "NULL() initialization at %C is ambiguous"
-msgstr ""
+msgstr "NULL() ilklendirme %C'de belirsiz"
 
 #: fortran/decl.c:1054
 #, no-c-format
 msgid "Enumerator cannot be array at %C"
-msgstr ""
+msgstr "Sayisal sabit %C'de dizi olamaz"
 
 #: fortran/decl.c:1115 fortran/decl.c:3374
 #, no-c-format
 msgid "Duplicate array spec for Cray pointee at %C."
-msgstr ""
+msgstr "Cray gostericileri için dizi belirtimi %C'de yinelenmis"
 
 #: fortran/decl.c:1167
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function name '%s' not allowed at %C"
-msgstr "%C'de islev ismi olarak '%s' kullanılamaz"
+msgstr "islev ismi olarak '%s' kullanılamaz (%C'de)"
 
 #: fortran/decl.c:1183
 #, no-c-format
@@ -4120,14 +4068,14 @@ msgid "Extension: Old-style initialization at %C"
 msgstr "Genisletme: %C'de eski tarz ilklendirme"
 
 #: fortran/decl.c:1199
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initialization at %C isn't for a pointer variable"
 msgstr "%C'deki ilklendirme bir gosterici degiskeni icin degil"
 
 #: fortran/decl.c:1207
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Pointer initialization requires a NULL() at %C"
-msgstr "(%qs için near ilklendirme)"
+msgstr "Gosterici ilklendirmesi %C'de bir NULL() gerektirir"
 
 #: fortran/decl.c:1214
 #, no-c-format
@@ -4140,7 +4088,7 @@ msgid "Pointer initialization at %C requires '=>', not '='"
 msgstr "%C'deki gosterici ilklendirmesi bir '=>' gerektirir, '=' degil"
 
 #: fortran/decl.c:1236
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected an initialization expression at %C"
 msgstr "%C'de bir ilklendirme ifadesi umuluyordu"
 
@@ -4155,32 +4103,32 @@ msgid "ENUMERATOR %L not initialized with integer expression"
 msgstr "bir tamsayi ifadesi ile ilklendirilmemis ENUMERATOR %L"
 
 #: fortran/decl.c:1324 fortran/decl.c:1333
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Old-style type declaration %s*%d not supported at %C"
-msgstr "%J %qD zayıf bildirimi desteklenmiyor"
+msgstr "Eski tarz tur bildirimi %s*%d %C'de desteklenmiyor"
 
 #: fortran/decl.c:1338
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Nonstandard type declaration %s*%d at %C"
-msgstr "%0 daki tür bildirim özniteliği geçersiz"
+msgstr "Standartdısı tur bildirimi %s*%d %C'de"
 
 #: fortran/decl.c:1372
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected initialization expression at %C"
 msgstr "%C'de ilklendirme ifadesi umuluyordu"
 
 #: fortran/decl.c:1378
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected scalar initialization expression at %C"
 msgstr "%C'deki ilklendirme ifadesinin değişmez olması umuluyordu"
 
 #: fortran/decl.c:1396
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Kind %d not supported for type %s at %C"
-msgstr "%d. cesit %s tarafindan %C'de desteklenmiyor"
+msgstr "%d. cesit %s turu icin %C'de desteklenmiyor"
 
 #: fortran/decl.c:1405
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing right paren at %C"
 msgstr "%C'de sag parantez eksik"
 
@@ -4190,7 +4138,7 @@ msgid "Kind %d is not a CHARACTER kind at %C"
 msgstr "%d. cesit bir CHARACTER cesidi degil (%C'de)"
 
 #: fortran/decl.c:1531
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in CHARACTER declaration at %C"
 msgstr "%C'deki CHARACTER bildiriminde sozdizimi hatasi"
 
@@ -4205,12 +4153,12 @@ msgid "BYTE type used at %C is not available on the target machine"
 msgstr "%C'de hedef makinede desteklenmeyen BYTE turu kullanilmis"
 
 #: fortran/decl.c:1647
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "DOUBLE COMPLEX at %C does not conform to the Fortran 95 standard"
-msgstr "ISO Fortran 95 standardına uyumlu olunur"
+msgstr "%C'de DOUBLE COMPLEX Fortran 95 standardına uyumlu degildir"
 
 #: fortran/decl.c:1670
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type name '%s' at %C is ambiguous"
 msgstr "Tur ismi '%s' %C'de belirsiz"
 
@@ -4225,7 +4173,7 @@ msgid "Letters must be in alphabetic order in IMPLICIT statement at %C"
 msgstr "%C'deki IMPLICIT deyiminde harfler alfabetik sirada olmali"
 
 #: fortran/decl.c:1836
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Empty IMPLICIT statement at %C"
 msgstr "%C'deki IMPLICIT deyimi bos"
 
@@ -4235,22 +4183,22 @@ msgid "Enumerator cannot have attributes %C"
 msgstr "Sayisal sabit, %C ozniteliklerine sahip olamaz"
 
 #: fortran/decl.c:2013
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing dimension specification at %C"
 msgstr "%C'de boyut belirtimi eksik"
 
 #: fortran/decl.c:2095
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate %s attribute at %L"
 msgstr "%s ozniteligi %L'de yinelenmis"
 
 #: fortran/decl.c:2112
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Attribute at %L is not allowed in a TYPE definition"
 msgstr "%L'deki oznitelik bir TYPE taniminda kullanılamaz"
 
 #: fortran/decl.c:2126
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s attribute at %L is not allowed outside of a MODULE"
 msgstr "%s ozniteligi ('%L'de) bir MODULE disinda kullanılamaz"
 
@@ -4259,52 +4207,52 @@ msgstr "%s ozniteligi ('%L'de) bir MODULE disinda kullanılamaz"
 #: fortran/decl.c:2264
 #, no-c-format
 msgid "Derived type at %C has not been previously defined and so cannot appear in a derived type definition."
-msgstr ""
+msgstr "%C'deki turetilmis tur evvelce tanımlanmis olmamaliydi, bu durumda bir turetilmis tur tanimi icinde gorunemez"
 
 #: fortran/decl.c:2294
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in data declaration at %C"
 msgstr "%C'deki veri bildiriminde sozdizimi hatasi"
 
 #: fortran/decl.c:2440
 #, no-c-format
 msgid "Name '%s' at %C is the name of the procedure"
-msgstr ""
+msgstr "İsim '%s' %C'de islev ismidir"
 
 #: fortran/decl.c:2452
 #, no-c-format
 msgid "Unexpected junk in formal argument list at %C"
-msgstr ""
+msgstr "%C'deki bicimsel argüman listesinde umulmadik dokuntu"
 
 #: fortran/decl.c:2470
 #, no-c-format
 msgid "Duplicate symbol '%s' in formal argument list at %C"
-msgstr ""
+msgstr "Sembol '%s' %C'deki bicimsel arguman listesinde yinelenmis"
 
 #: fortran/decl.c:2513
 #, no-c-format
 msgid "Unexpected junk following RESULT variable at %C"
-msgstr ""
+msgstr "%C'de RESULT degiskeninden sonra umulmadik dokuntu"
 
 #: fortran/decl.c:2520
 #, no-c-format
 msgid "RESULT variable at %C must be different than function name"
-msgstr ""
+msgstr "%C'deki RESULT degiskeninin ismi islev isminden farkli olmali"
 
 #: fortran/decl.c:2575
 #, no-c-format
 msgid "Expected formal argument list in function definition at %C"
-msgstr ""
+msgstr "%C'deki islev taniminda bicimsel arguman listesi umuluyordu"
 
 #: fortran/decl.c:2586
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unexpected junk after function declaration at %C"
 msgstr "%C'deki işlev bildiriminden sonra umulmayan dokuntu"
 
 #: fortran/decl.c:2607
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function '%s' at %C already has a type of %s"
-msgstr "'%s' işleci (%C'de) zaten %s türünde"
+msgstr "'%s' işlevi (%C'de) zaten %s türünde"
 
 #: fortran/decl.c:2678
 #, no-c-format
@@ -4337,9 +4285,9 @@ msgid "ENTRY statement at %C cannot appear within an IF-THEN block"
 msgstr "%C'deki ENTRY deyimi bir IF-THEN blogu icindeymis gibi gorunmuyor"
 
 #: fortran/decl.c:2702
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ENTRY statement at %C cannot appear within a DO block"
-msgstr "%C'deki ENTRY deyimi bir DO blogu icindeymis gibi gorunmuyor"
+msgstr "%C'deki ENTRY deyimi bir DO bloku icinde gorunemez"
 
 #: fortran/decl.c:2706
 #, no-c-format
@@ -4357,14 +4305,14 @@ msgid "ENTRY statement at %C cannot appear within a WHERE block"
 msgstr "%C'deki ENTRY deyimi bir WHERE blogu icindeymis gibi gorunmuyor"
 
 #: fortran/decl.c:2718
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ENTRY statement at %C cannot appear within a contained subprogram"
-msgstr "%C'deki ENTRY deyimi bir icerilmis altyordamin icindeymis gibi gorunmuyor"
+msgstr "%C'deki ENTRY deyimi bir icerilmis altyordamin icinde gorunemez"
 
 #: fortran/decl.c:2731
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ENTRY statement at %C cannot appear in a contained procedure"
-msgstr "%C'deki ENTRY deyimi bir icerilmis yordamdaymis gibi gorunmuyor"
+msgstr "%C'deki ENTRY deyimi bir icerilmis islevde gorunemez"
 
 #: fortran/decl.c:2812
 #, no-c-format
@@ -4372,50 +4320,50 @@ msgid "RESULT attribute required in ENTRY statement at %C"
 msgstr "%C'deki ENTRY deyimi bir RESULT ozniteligi gerektirir"
 
 #: fortran/decl.c:3053
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unexpected END statement at %C"
 msgstr "%C'de beklenmeyen END deyimi"
 
 #. We would have required END [something]
 #: fortran/decl.c:3062
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s statement expected at %L"
 msgstr "%s deyimi %L'de umuluyordu"
 
 #: fortran/decl.c:3073
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expecting %s statement at %C"
 msgstr "%s deyimi umuluyordu (%C'de)"
 
 #: fortran/decl.c:3087
 #, no-c-format
 msgid "Expected block name of '%s' in %s statement at %C"
-msgstr ""
+msgstr "'%s' (%s deyimindeki) icin %C'de blok ismi umuluyordu"
 
 #: fortran/decl.c:3103
 #, no-c-format
 msgid "Expected terminating name at %C"
-msgstr ""
+msgstr "%C'de sonlandiran isim umuluyordu"
 
 #: fortran/decl.c:3112
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected label '%s' for %s statement at %C"
-msgstr "%0 daki deyim %A için hatalı biçimlendirilmiş"
+msgstr ""
 
 #: fortran/decl.c:3167
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing array specification at %L in DIMENSION statement"
 msgstr "DIMENSION deyiminde %L'de dizi belirtimi eksik"
 
 #: fortran/decl.c:3176
 #, no-c-format
 msgid "Array specification must be deferred at %L"
-msgstr ""
+msgstr "Dizi belirtimi %L'de ertelenmis olmali"
 
 #: fortran/decl.c:3253
 #, no-c-format
 msgid "Unexpected character in variable list at %C"
-msgstr ""
+msgstr "%C'deki degisken listesinde umulmadik karakter"
 
 #: fortran/decl.c:3290
 #, no-c-format
@@ -4423,19 +4371,19 @@ msgid "Expected '(' at %C"
 msgstr "%C'de '(' umuluyordu"
 
 #: fortran/decl.c:3304 fortran/decl.c:3345
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected variable name at %C"
 msgstr "%C'de degisken ismi umuluyordu"
 
 #: fortran/decl.c:3320
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cray pointer at %C must be an integer."
-msgstr "%C'deki Cray gostericisi bir tamsayi olmali "
+msgstr "%C'deki Cray gostericisi bir tamsayi olmali."
 
 #: fortran/decl.c:3324
 #, no-c-format
 msgid "Cray pointer at %C has %d bytes of precision; memory addresses require %d bytes."
-msgstr ""
+msgstr "%C'deki Cray gostericisi %d baytlık hassasiyete sahip ancak bellek adresi %d bayt gerektiriyor"
 
 #: fortran/decl.c:3331
 #, no-c-format
@@ -4448,79 +4396,79 @@ msgid "Expected \")\" at %C"
 msgstr "%C'de \")\" umuluyordu"
 
 #: fortran/decl.c:3406
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected \",\" or end of statement at %C"
 msgstr "%C'de \",\" veya deyim sonu umuluyordu"
 
 #: fortran/decl.c:3471
 #, no-c-format
 msgid "Cray pointer declaration at %C requires -fcray-pointer flag."
-msgstr ""
+msgstr "%C'deki Cray gostericisi bildirimi -fcray-pointer seçeneğini gerektiriyor"
 
 #: fortran/decl.c:3569
 #, no-c-format
 msgid "Access specification of the %s operator at %C has already been specified"
-msgstr ""
+msgstr "%s islecinin erisim belirtimi %C'de zaten belirtilmisti"
 
 #: fortran/decl.c:3587
 #, no-c-format
 msgid "Access specification of the .%s. operator at %C has already been specified"
-msgstr ""
+msgstr ".%s. islecinin erisim belirtimi %C'de zaten belirtilmisti"
 
 #: fortran/decl.c:3674
 #, no-c-format
 msgid "Expected variable name at %C in PARAMETER statement"
-msgstr ""
+msgstr "%C'de PARAMETER deyiminde degisken ismi umuluyordu"
 
 #: fortran/decl.c:3681
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected = sign in PARAMETER statement at %C"
 msgstr "%C'deki PARAMETER deyiminde = isareti umuluyordu"
 
 #: fortran/decl.c:3687
 #, no-c-format
 msgid "Expected expression at %C in PARAMETER statement"
-msgstr ""
+msgstr "%C'deki PARAMETER deyiminde ifade umuluyordu"
 
 #: fortran/decl.c:3745
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unexpected characters in PARAMETER statement at %C"
 msgstr "%C'deki PARAMETER deyiminde umulmayan karakterler"
 
 #: fortran/decl.c:3770
 #, no-c-format
 msgid "Blanket SAVE statement at %C follows previous SAVE statement"
-msgstr ""
+msgstr "%C'deki kapsamlı SAVE deyiminden once bir SAVE deyimi var"
 
 #: fortran/decl.c:3783
 #, no-c-format
 msgid "SAVE statement at %C follows blanket SAVE statement"
-msgstr ""
+msgstr "%C'deki SAVE deyiminden once bir kapsamlı SAVE deyimi var"
 
 #: fortran/decl.c:3829
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in SAVE statement at %C"
 msgstr "%C'deki SAVE deyiminde sozdizimi hatasi"
 
 #: fortran/decl.c:3850
 #, no-c-format
 msgid "MODULE PROCEDURE at %C must be in a generic module interface"
-msgstr ""
+msgstr "%C'deki MODULE PROCEDURE bir soysal modul arayuzu olmali"
 
 #: fortran/decl.c:3910
 #, no-c-format
 msgid "Derived type at %C can only be PRIVATE within a MODULE"
-msgstr ""
+msgstr "%C'deki turetilmis tur sadece bir MODULE icinde PRIVATE olabilir"
 
 #: fortran/decl.c:3923
 #, no-c-format
 msgid "Derived type at %C can only be PUBLIC within a MODULE"
-msgstr ""
+msgstr "%C'deki turetilmis tur sadece bir MODULE icinde PUBLIC olabilir"
 
 #: fortran/decl.c:3934
 #, no-c-format
 msgid "Expected :: in TYPE definition at %C"
-msgstr ""
+msgstr "%C'deki TYPE taniminda :: umuluyordu"
 
 #: fortran/decl.c:3951
 #, no-c-format
@@ -4530,30 +4478,30 @@ msgstr "Tur ismi '%s' (%C'de) bir yerlesik turle ayni olamaz"
 #: fortran/decl.c:3961
 #, no-c-format
 msgid "Derived type name '%s' at %C already has a basic type of %s"
-msgstr ""
+msgstr "Turetilmis tur ismi '%s' %C'de zaten temel  %s turunde"
 
 #: fortran/decl.c:3978
 #, no-c-format
 msgid "Derived type definition of '%s' at %C has already been defined"
-msgstr ""
+msgstr "'%s' icin turetilmis tur tanimi %C'de zaten tanimli"
 
 #: fortran/decl.c:4012
 #, no-c-format
 msgid "Cray Pointee at %C cannot be assumed shape array"
-msgstr ""
+msgstr "%C'deki Cray göstericileri tahmini biçimli dizi olamaz"
 
 #: fortran/decl.c:4033
 #, no-c-format
 msgid "New in Fortran 2003: ENUM AND ENUMERATOR at %C"
-msgstr ""
+msgstr "Fortran 2003'te yeni: %C'de ENUM AND ENUMERATOR"
 
 #: fortran/decl.c:4057
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ENUM definition statement expected before %C"
 msgstr "%C oncesinde ENUM tanim deyimi umuluyordu"
 
 #: fortran/decl.c:4090
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in ENUMERATOR definition at %C"
 msgstr "%C'deki ENUMERATOR tanımında sozdizimi hatasi"
 
@@ -4563,14 +4511,14 @@ msgid "%-5d "
 msgstr ""
 
 #: fortran/dump-parse-tree.c:55
-#, fuzzy, c-format
+#, c-format
 msgid "      "
-msgstr "        %qD"
+msgstr "      "
 
 #: fortran/dump-parse-tree.c:79 fortran/dump-parse-tree.c:597
-#, fuzzy, c-format
+#, c-format
 msgid "(%s "
-msgstr "%s "
+msgstr "(%s "
 
 #: fortran/dump-parse-tree.c:92 fortran/dump-parse-tree.c:844
 #: fortran/dump-parse-tree.c:881 fortran/dump-parse-tree.c:891
@@ -4592,9 +4540,9 @@ msgid "("
 msgstr ""
 
 #: fortran/dump-parse-tree.c:112
-#, fuzzy, c-format
+#, c-format
 msgid "%s = "
-msgstr "%s "
+msgstr "%s = "
 
 #: fortran/dump-parse-tree.c:116
 #, c-format
@@ -4608,9 +4556,9 @@ msgid " "
 msgstr ""
 
 #: fortran/dump-parse-tree.c:137 fortran/dump-parse-tree.c:312
-#, fuzzy, c-format
+#, c-format
 msgid "()"
-msgstr "©"
+msgstr "()"
 
 #: fortran/dump-parse-tree.c:141
 #, c-format
@@ -4618,9 +4566,9 @@ msgid "(%d"
 msgstr ""
 
 #: fortran/dump-parse-tree.c:155
-#, fuzzy, c-format
+#, c-format
 msgid " %s "
-msgstr " %s"
+msgstr " %s "
 
 #: fortran/dump-parse-tree.c:182
 #, c-format
@@ -4639,14 +4587,14 @@ msgid "UNKNOWN"
 msgstr "BiLiNMEYEN"
 
 #: fortran/dump-parse-tree.c:252
-#, fuzzy, c-format
+#, c-format
 msgid " %% %s"
-msgstr "%J %s %qs"
+msgstr " %% %s"
 
 #: fortran/dump-parse-tree.c:324 fortran/dump-parse-tree.c:381
-#, fuzzy, c-format
+#, c-format
 msgid "''"
-msgstr "'"
+msgstr "''"
 
 #: fortran/dump-parse-tree.c:326
 #, c-format
@@ -4654,9 +4602,9 @@ msgid "%c"
 msgstr ""
 
 #: fortran/dump-parse-tree.c:333
-#, fuzzy, c-format
+#, c-format
 msgid "%s("
-msgstr "%s"
+msgstr "%s("
 
 #: fortran/dump-parse-tree.c:339
 #, c-format
@@ -4685,9 +4633,9 @@ msgid ".true."
 msgstr ""
 
 #: fortran/dump-parse-tree.c:364
-#, fuzzy, c-format
+#, c-format
 msgid ".false."
-msgstr "fclose"
+msgstr ".yanlis."
 
 #: fortran/dump-parse-tree.c:391
 #, c-format
@@ -4700,7 +4648,7 @@ msgid "???"
 msgstr ""
 
 #: fortran/dump-parse-tree.c:415 fortran/dump-parse-tree.c:701
-#, fuzzy, c-format
+#, c-format
 msgid "%s:"
 msgstr "%s:"
 
@@ -4800,24 +4748,24 @@ msgid "NOT "
 msgstr ""
 
 #: fortran/dump-parse-tree.c:482
-#, fuzzy, c-format
+#, c-format
 msgid "parens"
-msgstr "open %s"
+msgstr "parentezler"
 
 #: fortran/dump-parse-tree.c:504
-#, fuzzy, c-format
+#, c-format
 msgid "%s["
-msgstr "%s"
+msgstr "%s["
 
 #: fortran/dump-parse-tree.c:510
-#, fuzzy, c-format
+#, c-format
 msgid "%s[["
-msgstr "%s"
+msgstr "%s[["
 
 #: fortran/dump-parse-tree.c:531
-#, fuzzy, c-format
+#, c-format
 msgid "(%s %s %s %s"
-msgstr "%s %s %p %d\n"
+msgstr "(%s %s %s %s"
 
 #: fortran/dump-parse-tree.c:537
 #, c-format
@@ -4925,7 +4873,7 @@ msgid " PURE"
 msgstr ""
 
 #: fortran/dump-parse-tree.c:582
-#, fuzzy, c-format
+#, c-format
 msgid " RECURSIVE"
 msgstr " IC_ICE"
 
@@ -4945,7 +4893,7 @@ msgid "Array spec:"
 msgstr "Dizi belirtimi:"
 
 #: fortran/dump-parse-tree.c:649
-#, fuzzy, c-format
+#, c-format
 msgid "Generic interfaces:"
 msgstr "Soysal arayuzler:"
 
@@ -4957,7 +4905,7 @@ msgid " %s"
 msgstr " %s"
 
 #: fortran/dump-parse-tree.c:657
-#, fuzzy, c-format
+#, c-format
 msgid "result: %s"
 msgstr "sonuc: %s"
 
@@ -4969,7 +4917,7 @@ msgstr "elemanlar: "
 #: fortran/dump-parse-tree.c:670
 #, c-format
 msgid "Formal arglist:"
-msgstr ""
+msgstr "Bicimsel arg listesi:"
 
 #: fortran/dump-parse-tree.c:677
 #, c-format
@@ -4977,9 +4925,9 @@ msgid " [Alt Return]"
 msgstr ""
 
 #: fortran/dump-parse-tree.c:684
-#, fuzzy, c-format
+#, c-format
 msgid "Formal namespace"
-msgstr "%qD bir isim alanı"
+msgstr "Bicimsel isim alanı"
 
 #: fortran/dump-parse-tree.c:742
 #, c-format
@@ -4997,7 +4945,7 @@ msgid "symtree: %s  Ambig %d"
 msgstr ""
 
 #: fortran/dump-parse-tree.c:766
-#, fuzzy, c-format
+#, c-format
 msgid " from namespace %s"
 msgstr " %s isimalanindan"
 
@@ -5027,7 +4975,7 @@ msgid "LABEL ASSIGN "
 msgstr "YAFTA ATAMA "
 
 #: fortran/dump-parse-tree.c:831
-#, fuzzy, c-format
+#, c-format
 msgid " %d"
 msgstr " %d"
 
@@ -5072,9 +5020,9 @@ msgid "IF "
 msgstr ""
 
 #: fortran/dump-parse-tree.c:898
-#, fuzzy, c-format
+#, c-format
 msgid " %d, %d, %d"
-msgstr "%d, %d, %d"
+msgstr " %d, %d, %d"
 
 #: fortran/dump-parse-tree.c:915
 #, c-format
@@ -5250,7 +5198,7 @@ msgstr " ADIM="
 #: fortran/dump-parse-tree.c:1156 fortran/dump-parse-tree.c:1362
 #, c-format
 msgid " CONVERT="
-msgstr ""
+msgstr " CEViR="
 
 #: fortran/dump-parse-tree.c:1160 fortran/dump-parse-tree.c:1189
 #: fortran/dump-parse-tree.c:1226 fortran/dump-parse-tree.c:1367
@@ -5380,9 +5328,9 @@ msgid " FMT=%d"
 msgstr " FMT=%d"
 
 #: fortran/dump-parse-tree.c:1400
-#, fuzzy, c-format
+#, c-format
 msgid " NML=%s"
-msgstr " %s"
+msgstr " NML=%s"
 
 #: fortran/dump-parse-tree.c:1414
 #, c-format
@@ -5445,12 +5393,12 @@ msgid "procedure name = %s"
 msgstr "yordam ismi = %s"
 
 #: fortran/dump-parse-tree.c:1532
-#, fuzzy, c-format
+#, c-format
 msgid "Operator interfaces for %s:"
 msgstr "%s icin islec arayuzleri:"
 
 #: fortran/dump-parse-tree.c:1541
-#, fuzzy, c-format
+#, c-format
 msgid "User operators:\n"
 msgstr "Kullanici islecleri:\n"
 
@@ -5460,56 +5408,51 @@ msgid "CONTAINS\n"
 msgstr "ICEREREK\n"
 
 #: fortran/error.c:137
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "In file %s:%d\n"
-msgstr ""
-"Sirayla bir altindaki dosyada icerilerek:\n"
-"\t\t%s:%d\n"
+msgstr "%s dosyasinda:%d\n"
 
 #: fortran/error.c:152
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "    Included at %s:%d\n"
 msgstr ""
 "Sirayla bir altindaki dosyada icerilerek:\n"
 "\t\t%s:%d\n"
 
 #: fortran/error.c:204
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "<During initialization>\n"
 msgstr "<ilklendirme sirasinda>\n"
 
 #: fortran/error.c:479 fortran/error.c:519 fortran/error.c:545
-#, fuzzy
 msgid "Warning:"
 msgstr "UYARI:"
 
 #: fortran/error.c:521 fortran/error.c:595 fortran/error.c:619
-#, fuzzy
 msgid "Error:"
 msgstr "Hata:"
 
 #: fortran/error.c:640
-#, fuzzy
 msgid "Fatal Error:"
-msgstr "Olumcul hata:"
+msgstr "Olumcul Hata:"
 
 #: fortran/error.c:659
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Internal Error at (1):"
-msgstr "Dahili hata (1):"
+msgstr "Dahili Hata (1):"
 
 #: fortran/expr.c:258
-#, fuzzy, c-format
+#, c-format
 msgid "Constant expression required at %C"
 msgstr "%C'de sabit ifadesi gerekir"
 
 #: fortran/expr.c:261
-#, fuzzy, c-format
+#, c-format
 msgid "Integer expression required at %C"
 msgstr "%C'de tamsayi ifade gerekir"
 
 #: fortran/expr.c:266
-#, fuzzy, c-format
+#, c-format
 msgid "Integer value too large in expression at %C"
 msgstr "%C'deki ifade icindeki tamsayi deger cok buyuk"
 
@@ -5549,7 +5492,7 @@ msgid "Only intrinsic operators can be used in expression at %L"
 msgstr "%L'deki ifadede sadece yerlesik islecler kullanilabilir"
 
 #: fortran/expr.c:1359
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Numeric operands are required in expression at %L"
 msgstr "%L'deki ifade icinde sayisal terimler gerekir"
 
@@ -5569,12 +5512,12 @@ msgid "Parameter '%s' at %L has not been declared or is a variable, which does n
 msgstr ""
 
 #: fortran/expr.c:1583
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initialization expression didn't reduce %C"
-msgstr "new ifadesinin `=' ile ilklendirilmesi"
+msgstr ""
 
 #: fortran/expr.c:1627
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Specification function '%s' at %L cannot be a statement function"
 msgstr "Belirtim islevi '%s' (%L'de) bir deyim islevi olamaz"
 
@@ -5604,22 +5547,22 @@ msgid "Dummy argument '%s' at %L cannot be INTENT(OUT)"
 msgstr ""
 
 #: fortran/expr.c:1732
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' cannot appear in the expression at %L"
-msgstr "Degisken '%s' (%L'de) ifade icindeymis gibi gorunmuyor"
+msgstr "Degisken '%s' (%L'de) ifade icinde gorunemez"
 
 #: fortran/expr.c:1780
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expression at %L must be of INTEGER type"
 msgstr "%L'deki ifade INTEGER turunde olmali"
 
 #: fortran/expr.c:1786
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expression at %L must be scalar"
 msgstr "%L'deki ifade degismez olmali"
 
 #: fortran/expr.c:1814
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Incompatible ranks in %s at %L"
 msgstr "%s (%L'de) icindeki sira uyumsuz"
 
@@ -5639,12 +5582,12 @@ msgid "'%s' in the assignment at %L cannot be an l-value since it is a procedure
 msgstr ""
 
 #: fortran/expr.c:1876
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Incompatible ranks %d and %d in assignment at %L"
 msgstr "atamada %d ve %d sıraları uyumsuz (%L'de)"
 
 #: fortran/expr.c:1883
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable type is UNKNOWN in assignment at %L"
 msgstr "%L'deki atamada degisken UNKNOWN turunde"
 
@@ -5659,17 +5602,16 @@ msgid "Vector assignment to assumed-size Cray Pointee at %L is illegal."
 msgstr ""
 
 #: fortran/expr.c:1909
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "POINTER valued function appears on right-hand side of assignment at %L"
 msgstr "POINTER degerli islev %L'deki atamanin sag tarafindaymis gibi gorunuyor"
 
 #: fortran/expr.c:1914
-#, fuzzy
 msgid "Array assignment"
 msgstr "Dizi atamasi"
 
 #: fortran/expr.c:1931
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Incompatible types in assignment at %L, %s to %s"
 msgstr "%L'deki atamada uyumsuz turler, %s den %s'e kadar"
 
@@ -5694,7 +5636,7 @@ msgid "Bad pointer object in PURE procedure at %L"
 msgstr ""
 
 #: fortran/expr.c:1992
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Different types in pointer assignment at %L"
 msgstr "%L'deki gosterici atamasinda farkli turler"
 
@@ -5739,7 +5681,7 @@ msgid "overflowed output arg list for '%s'"
 msgstr "`%s' icin cikti arguman listesi tasti"
 
 #: fortran/gfortranspec.c:352
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n"
 "You may redistribute copies of GNU Fortran\n"
@@ -5764,17 +5706,17 @@ msgid "no input files; unwilling to write output files"
 msgstr "girdi dosyasi yok; cikti dosyalari istemeyerek yaziliyor"
 
 #: fortran/gfortranspec.c:530
-#, fuzzy, c-format
+#, c-format
 msgid "Driving:"
 msgstr "Surulum:"
 
 #: fortran/interface.c:175
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in generic specification at %C"
 msgstr "%C'deki soysal belirtimde sozdizimi hatasi"
 
 #: fortran/interface.c:204
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error: Trailing garbage in INTERFACE statement at %C"
 msgstr "Sozdizimi hatasi: %C'deki INTERFACE deyiminin sonunda bozunma"
 
@@ -5784,7 +5726,7 @@ msgid "Syntax error: Trailing garbage in END INTERFACE statement at %C"
 msgstr ""
 
 #: fortran/interface.c:273
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected a nameless interface at %C"
 msgstr "%C'de isimsiz bir arayuz umuluyordu"
 
@@ -5859,7 +5801,7 @@ msgid "Ambiguous interfaces '%s' and '%s' in %s at %L"
 msgstr ""
 
 #: fortran/interface.c:1197
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Keyword argument '%s' at %L is not in the procedure"
 msgstr "Anahtar kelime argumani '%s' (%L'de) yordam icinde degil"
 
@@ -5884,7 +5826,7 @@ msgid "Unexpected alternate return spec in subroutine call at %L"
 msgstr ""
 
 #: fortran/interface.c:1250
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type/rank mismatch in argument '%s' at %L"
 msgstr "Arguman '%s' icin tür/sira uyumsuzlugu (%L'de)"
 
@@ -5894,7 +5836,7 @@ msgid "Actual argument for '%s' cannot be an assumed-size array at %L"
 msgstr ""
 
 #: fortran/interface.c:1274
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Actual argument for '%s' must be a pointer at %L"
 msgstr "`%s' icin asil arguman bir gosterici olmali (%L'de)"
 
@@ -5904,7 +5846,7 @@ msgid "Actual argument at %L must be definable to match dummy INTENT = OUT/INOUT
 msgstr ""
 
 #: fortran/interface.c:1305
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing actual argument for argument '%s' at %L"
 msgstr "Arguman '%s' icin asil arguman eksik (%L'de)"
 
@@ -5929,7 +5871,7 @@ msgid "Procedure argument at %L is local to a PURE procedure and has the POINTER
 msgstr ""
 
 #: fortran/interface.c:1576
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Procedure '%s' called with an implicit interface at %L"
 msgstr "Yordam '%s' bir ortuk arayuz ile cagrilmis (%L'de)"
 
@@ -5944,7 +5886,7 @@ msgid "Entity '%s' at %C is already present in the interface"
 msgstr ""
 
 #: fortran/intrinsic.c:2720
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Too many arguments in call to '%s' at %L"
 msgstr "`%s' cagrisindaki argumanlar cok fazla (%L'de)"
 
@@ -5959,9 +5901,9 @@ msgid "Argument '%s' is appears twice in call to '%s' at %L"
 msgstr ""
 
 #: fortran/intrinsic.c:2755
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing actual argument '%s' in call to '%s' at %L"
-msgstr "`%s' cagrisindaki asil arguman eksik (%L'de)"
+msgstr "`%s' (%s cagrisinin) asil argumani eksik (%L'de)"
 
 #: fortran/intrinsic.c:2814
 #, no-c-format
@@ -5989,47 +5931,41 @@ msgid "Subroutine call to intrinsic '%s' at %L is not PURE"
 msgstr "'%s' yerlesigine altyordam cagrisi %L'de PURE degil"
 
 #: fortran/intrinsic.c:3402
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Conversion from %s to %s at %L"
-msgstr "Genisletme: %s den %s e donusum (%L'de)"
+msgstr "Ek: %s den %s e donusum (%L'de)"
 
 #: fortran/intrinsic.c:3405
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Conversion from %s to %s at %L"
 msgstr "%s den %s e donusum (%L'de)"
 
 #: fortran/intrinsic.c:3453
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Can't convert %s to %s at %L"
 msgstr "%s den %s e donusum yapılamaz (%L'de)"
 
 #: fortran/io.c:415
-#, fuzzy
 msgid "Positive width required"
 msgstr "Pozitif genislik gerekli"
 
 #: fortran/io.c:416
-#, fuzzy
 msgid "Period required"
-msgstr "  ama %d gerekiyordu"
+msgstr "Aralik gerekli"
 
 #: fortran/io.c:417
-#, fuzzy
 msgid "Nonnegative width required"
 msgstr "Negatif olmayan genislik gerekli"
 
 #: fortran/io.c:418
-#, fuzzy
 msgid "Unexpected element"
 msgstr "Umulmadik eleman"
 
 #: fortran/io.c:419
-#, fuzzy
 msgid "Unexpected end of format string"
 msgstr "Umulmadik bicim dizgesi sonu"
 
 #: fortran/io.c:436
-#, fuzzy
 msgid "Missing leading left parenthesis"
 msgstr "Bastaki sol parantez eksik"
 
@@ -6054,7 +5990,6 @@ msgid "Extension: $ descriptor at %C"
 msgstr ""
 
 #: fortran/io.c:512
-#, fuzzy
 msgid "$ must be the last specifier"
 msgstr "$ son belirtec olmali"
 
@@ -6063,7 +5998,6 @@ msgid "Repeat count cannot follow P descriptor"
 msgstr ""
 
 #: fortran/io.c:620
-#, fuzzy
 msgid "Positive exponent width required"
 msgstr "Pozitif ustel genislik gerekli"
 
@@ -6073,7 +6007,7 @@ msgid "Extension: Missing comma at %C"
 msgstr ""
 
 #: fortran/io.c:788 fortran/io.c:791
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s in format string at %C"
 msgstr "Bicim dizgesi icinde %s (%C'de)"
 
@@ -6083,12 +6017,12 @@ msgid "Format statement in module main block at %C."
 msgstr ""
 
 #: fortran/io.c:838
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing format label at %C"
-msgstr "%L'de bicim yaftasi eksik"
+msgstr "%L'de bicim etiketi eksik"
 
 #: fortran/io.c:896 fortran/io.c:920
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate %s specification at %C"
 msgstr "%s belirtimi %C'de yinelenmis"
 
@@ -6103,14 +6037,14 @@ msgid "Variable tag cannot be assigned in PURE procedure at %C"
 msgstr ""
 
 #: fortran/io.c:971
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate %s label specification at %C"
-msgstr "%s yafta belirtimi %C'de yinelenmis"
+msgstr "%s etiket belirtimi %C'de yinelenmis"
 
 #: fortran/io.c:993
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s tag at %L must be of type %s"
-msgstr "%s etiketi (%L'de) %s turunde olmali"
+msgstr "%s yaftasi (%L'de) %s turunde olmali"
 
 #: fortran/io.c:1004
 #, no-c-format
@@ -6138,14 +6072,14 @@ msgid "Extension: Character array in FORMAT tag at %L"
 msgstr ""
 
 #: fortran/io.c:1052
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Non-character in FORMAT tag at %L"
-msgstr "Genisletme: %L'deki FORMAT etiketinde kuraldisi karakter"
+msgstr "Ek: %L'deki FORMAT yaftasinda kuraldisi karakter"
 
 #: fortran/io.c:1063
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s tag at %L must be scalar"
-msgstr "%s'etiketi (%L'de) bir degismez olmali"
+msgstr "%s' yaftasi (%L'de) bir degismez olmali"
 
 #: fortran/io.c:1069
 #, no-c-format
@@ -6188,12 +6122,12 @@ msgid "Fortran 2003: FLUSH statement at %C"
 msgstr ""
 
 #: fortran/io.c:1615
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate UNIT specification at %C"
 msgstr "%C'de UNIT belirtimi yinelenmis"
 
 #: fortran/io.c:1671
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate format specification at %C"
 msgstr "%C'de bicim belirtimi yinelenmis"
 
@@ -6203,7 +6137,7 @@ msgid "Symbol '%s' in namelist '%s' is INTENT(IN) at %C"
 msgstr ""
 
 #: fortran/io.c:1724
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate NML specification at %C"
 msgstr "%C'de NML belirtimi yinelenmis"
 
@@ -6233,37 +6167,37 @@ msgid "External IO UNIT cannot be an array at %L"
 msgstr ""
 
 #: fortran/io.c:1858
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ERR tag label %d at %L not defined"
-msgstr "etiket %qD tanımlanmadan kullanılmış"
+msgstr "%d. ERR etiket yaftasi (%L'de) tanimsiz"
 
 #: fortran/io.c:1870
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "END tag label %d at %L not defined"
-msgstr "etiket %qD tanımlanmadan kullanılmış"
+msgstr "%d. END etiket yaftasi (%L'de) tanimsiz"
 
 #: fortran/io.c:1882
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "EOR tag label %d at %L not defined"
-msgstr "etiket %qD tanımlanmadan kullanılmış"
+msgstr "%d. EOR etiket yaftasi (%L'de) tanimsiz"
 
 #: fortran/io.c:1892
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "FORMAT label %d at %L not defined"
-msgstr "%d. bicim etiketi (%L'de) tanimsiz"
+msgstr "%d. FORMAT yaftasi (%L'de) tanimsiz"
 
 #: fortran/io.c:2013
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in I/O iterator at %C"
 msgstr "%C'deki G/C yineleyicide sozdizimi hatasi"
 
 #: fortran/io.c:2044
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected variable in READ statement at %C"
 msgstr "%C'deki READ deyiminde degisken umuluyordu"
 
 #: fortran/io.c:2050
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected expression in %s statement at %C"
 msgstr "%s deyiminde ifade umuluyordu (%C'de)"
 
@@ -6284,7 +6218,7 @@ msgstr ""
 
 #. A general purpose syntax error.
 #: fortran/io.c:2147 fortran/io.c:2515 fortran/gfortran.h:1666
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in %s statement at %C"
 msgstr "%s deyiminde sozdizimi hatasi (%C'de)"
 
@@ -6299,12 +6233,12 @@ msgid "Extension: Comma before output item list at %C is an extension"
 msgstr ""
 
 #: fortran/io.c:2485
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected comma in I/O list at %C"
 msgstr "%C'deki G/C listesinde virgul umuluyordu"
 
 #: fortran/io.c:2547
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PRINT statement at %C not allowed within PURE procedure"
 msgstr "%C'deki PRINT deyimi PURE yordaminda olamaz"
 
@@ -6314,7 +6248,7 @@ msgid "INQUIRE statement not allowed in PURE procedure at %C"
 msgstr ""
 
 #: fortran/io.c:2713
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "IOLENGTH tag invalid in INQUIRE statement at %C"
 msgstr "%C'deki IOLENGTH etiketi INQUIRE deyimi icinde gecersiz"
 
@@ -6329,14 +6263,14 @@ msgid "INQUIRE statement at %L requires either FILE or UNIT specifier"
 msgstr ""
 
 #: fortran/match.c:179
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Integer too large at %C"
 msgstr "%C'deki tamsayi cok buyuk"
 
 #: fortran/match.c:239 fortran/parse.c:329
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Too many digits in statement label at %C"
-msgstr "%0 da indisler çok fazla"
+msgstr ""
 
 #: fortran/match.c:245 fortran/parse.c:332
 #, no-c-format
@@ -6344,12 +6278,12 @@ msgid "Statement label at %C is zero"
 msgstr ""
 
 #: fortran/match.c:278
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Label name '%s' at %C is ambiguous"
 msgstr "Yafta ismi '%s' (%C'de) belirsiz"
 
 #: fortran/match.c:284
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate construct label '%s' at %C"
 msgstr "Olusum yaftasi '%s' (%C'de) yinelenmis"
 
@@ -7629,7 +7563,7 @@ msgstr "bir %<asm%> icindeki terim sarti celiskili"
 #: fortran/resolve.c:2022
 #, no-c-format
 msgid "Illegal stride of zero at %L"
-msgstr ""
+msgstr "%L'de sifir adim uzunlugu kuraldışı"
 
 #: fortran/resolve.c:2043
 #, fuzzy, no-c-format
@@ -7764,32 +7698,32 @@ msgstr ""
 #: fortran/resolve.c:2769
 #, no-c-format
 msgid "FORALL stride expression at %L must be a scalar %s"
-msgstr ""
+msgstr "%L'deki FORALL adim ifadesi sabit bir %s olmali"
 
 #: fortran/resolve.c:2774
 #, no-c-format
 msgid "FORALL stride expression at %L cannot be zero"
-msgstr ""
+msgstr "%L'deki FORALL adim ifadesi sifir olamaz"
 
 #: fortran/resolve.c:2872
 #, no-c-format
 msgid "Expression in DEALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
-msgstr ""
+msgstr "%L'deki DEALLOCATE deyimli ifade ya bir POINTER ya da ALLOCATABLE olmali"
 
 #: fortran/resolve.c:2972
 #, no-c-format
 msgid "Expression in ALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
-msgstr ""
+msgstr "%L'deki ALLOCATE deyimli ifade ya bir POINTER ya da ALLOCATABLE olmali"
 
 #: fortran/resolve.c:2997
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array specification required in ALLOCATE statement at %L"
-msgstr "%0 daki FORMAT deyimi icindeki I belirteci gecersiz"
+msgstr "%L'deki ALLOCATE deyimde dizi belirtimi gerekli "
 
 #: fortran/resolve.c:3026
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Bad array specification in ALLOCATE statement at %L"
-msgstr "%0 daki FORMAT deyimi icindeki I belirteci gecersiz"
+msgstr "%L'deki ALLOCATE deyimde dizi belirtimi hatali"
 
 #. The cases overlap, or they are the same
 #. element in the list.  Either way, we must
@@ -7798,352 +7732,352 @@ msgstr "%0 daki FORMAT deyimi icindeki I belirteci gecersiz"
 #: fortran/resolve.c:3182
 #, no-c-format
 msgid "CASE label at %L overlaps with CASE label at %L"
-msgstr ""
+msgstr "%L'deki CASE etiketi %L'deki CASE etiketinin uzerine tasiyor"
 
 #: fortran/resolve.c:3233
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expression in CASE statement at %L must be of type %s"
-msgstr "ifade deyimi bos tur iceriyor"
+msgstr "%L'deki CASE deyimli ifade %s turunde olmali"
 
 #: fortran/resolve.c:3244
 #, no-c-format
 msgid "Expression in CASE statement at %L must be kind %d"
-msgstr ""
+msgstr "%L'deki CASE deyimli ifade %d. cesit olmali"
 
 #: fortran/resolve.c:3256
 #, no-c-format
 msgid "Expression in CASE statement at %L must be scalar"
-msgstr ""
+msgstr "%L'deki CASE deyimli ifade bir sabit olmali"
 
 #: fortran/resolve.c:3302
 #, no-c-format
 msgid "Selection expression in computed GOTO statement at %L must be a scalar integer expression"
-msgstr ""
+msgstr "%L'deki hesaplanmis GOTO deyimindeki secim ifadesi bir sabit tamsayi ifadesi olmali"
 
 #: fortran/resolve.c:3320
 #, no-c-format
 msgid "Argument of SELECT statement at %L cannot be %s"
-msgstr ""
+msgstr "%L'deki SELECT deyiminin argumani %s olamaz"
 
 #: fortran/resolve.c:3329
 #, no-c-format
 msgid "Argument of SELECT statement at %L must be a scalar expression"
-msgstr ""
+msgstr "%L'deki SELECT deyiminin argumani bir sabit ifadesi olmali"
 
 #: fortran/resolve.c:3393
 #, no-c-format
 msgid "The DEFAULT CASE at %L cannot be followed by a second DEFAULT CASE at %L"
-msgstr ""
+msgstr "%L'deki DEFAULT CASE deyiminden sonra %L'de ikinci bir DEFAULT CASE olamaz"
 
 #: fortran/resolve.c:3420
 #, no-c-format
 msgid "Logical range in CASE statement at %L is not allowed"
-msgstr ""
+msgstr "%L'deki CASE deyiminde mantiksal araliga izin verilmez"
 
 #: fortran/resolve.c:3431
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Range specification at %L can never be matched"
-msgstr "%0 daki kapsam ozellikleri gecersiz"
+msgstr "%L'deki aralik belirtimi asla eslesmeyebilir"
 
 #: fortran/resolve.c:3534
 #, no-c-format
 msgid "Logical SELECT CASE block at %L has more that two cases"
-msgstr ""
+msgstr "%L'deki mantiksal SELECT CASE blokunun ikiden fazla case'i var"
 
 #: fortran/resolve.c:3572
 #, no-c-format
 msgid "Data transfer element at %L cannot have POINTER components"
-msgstr ""
+msgstr "%L'deki veri aktarim elemaninin POINTER bilesenleri olamaz"
 
 #: fortran/resolve.c:3579
 #, no-c-format
 msgid "Data transfer element at %L cannot have PRIVATE components"
-msgstr ""
+msgstr "%L'deki veri aktarim elemaninin PRIVATE bilesenleri olamaz"
 
 #: fortran/resolve.c:3588
 #, no-c-format
 msgid "Data transfer element at %L cannot be a full reference to an assumed-size array"
-msgstr ""
+msgstr "%L'deki veri aktarim elemani tahmini boyutlu bir diziye bir tam basvuru olamaz"
 
 #: fortran/resolve.c:3622
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Statement at %L is not a valid branch target statement for the branch statement at %L"
-msgstr "%0 daki deyim %1 deki deyim tarafindan olusturulan baglamda gecersiz"
+msgstr "%L'deki deyim %L'deki dallanma deyimi icin gecerli bir dallanma hedef deyimi degildir"
 
 #: fortran/resolve.c:3631
 #, no-c-format
 msgid "Branch at %L causes an infinite loop"
-msgstr ""
+msgstr "%L'deki dallanma bir sonsuz döngüye sebep oluyor"
 
 #: fortran/resolve.c:3664
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Label at %L is not in the same block as the GOTO statement at %L"
-msgstr "%0 daki deyim %1 deki deyim tarafindan olusturulan baglamda gecersiz"
+msgstr "%L'deki etiket %L'deki GOTO deyimiyle ayni blokta degil"
 
 #: fortran/resolve.c:3680
 #, no-c-format
 msgid "Obsolete: GOTO at %L jumps to END of construct at %L"
-msgstr ""
+msgstr "Atıl: %L'deki GOTO %L'deki olusumun END'ine atliyor"
 
 #: fortran/resolve.c:3754
 #, no-c-format
 msgid "WHERE mask at %L has inconsistent shape"
-msgstr ""
+msgstr "%L'deki WHERE maskesi aykiri durumda"
 
 #: fortran/resolve.c:3770
 #, no-c-format
 msgid "WHERE assignment target at %L has inconsistent shape"
-msgstr ""
+msgstr "%L'deki WHERE atama hedefi aykiri durumda"
 
 #: fortran/resolve.c:3780 fortran/resolve.c:3979
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unsupported statement inside WHERE at %L"
-msgstr "%0 da desteklenmeyen VXT deyimi"
+msgstr "%L'deki WHERE icinde desteklenmeyen deyim"
 
 #: fortran/resolve.c:3856
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "expresion reference type error at %L"
-msgstr "geciciye referans donuyor"
+msgstr "%L'de ifade basvuru turu hatasi"
 
 #: fortran/resolve.c:3888
 #, no-c-format
 msgid "Unsupported statement while finding forall index in expression"
-msgstr ""
+msgstr "ifadede forall indisi bulunurken desteklenmeyen deyim"
 
 #: fortran/resolve.c:3935
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assignment to a FORALL index variable at %L"
-msgstr "salt-okunur degisken %qs icin atama"
+msgstr "%L'de bir FORALL indis degiskenine atama"
 
 #: fortran/resolve.c:3943
 #, no-c-format
 msgid "The FORALL with index '%s' cause more than one assignment to this object at %L"
-msgstr ""
+msgstr "'%s' indisli FORALL %L'de bu nesneye birden fazla atamaya sebep oluyor"
 
 #: fortran/resolve.c:4070
 #, no-c-format
 msgid "An outer FORALL construct already has an index with this name %L"
-msgstr ""
+msgstr "Bir dış FORALL olusumu zaten bu isimde bir indise sahip (%L'de)"
 
 #: fortran/resolve.c:4082 fortran/resolve.c:4085 fortran/resolve.c:4088
 #, no-c-format
 msgid "A FORALL index must not appear in a limit or stride expression in the same FORALL at %L"
-msgstr ""
+msgstr "Bir FORALL indisi %L'deki FORALL'daki ile ayni bir sinir veya adim ifadesinde bulunmamalidir"
 
 #: fortran/resolve.c:4131
 #, no-c-format
 msgid "ELSE IF clause at %L requires a scalar LOGICAL expression"
-msgstr ""
+msgstr "%L'deki ELSE IF deyimi bir sabit LOGICAL ifadesi gerektirir"
 
 #: fortran/resolve.c:4141
 #, no-c-format
 msgid "WHERE/ELSEWHERE clause at %L requires a LOGICAL array"
-msgstr ""
+msgstr "%L'deki WHERE/ELSEWHERE deyimi bir sabit LOGICAL dizisi gerektirir"
 
 #: fortran/resolve.c:4222
 #, no-c-format
 msgid "ASSIGNED GOTO statement at %L requires an INTEGER variable"
-msgstr ""
+msgstr "%L'deki ASSIGNED GOTO deyimi bir INTEGER degisken gerektirir"
 
 #: fortran/resolve.c:4225
 #, no-c-format
 msgid "Variable '%s' has not been assigned a target label at %L"
-msgstr ""
+msgstr "'%s' degiskenine %L'de bir hedef etiketi atanmis olmamaliydi"
 
 #: fortran/resolve.c:4235
 #, no-c-format
 msgid "Alternate RETURN statement at %L requires an INTEGER return specifier"
-msgstr ""
+msgstr "Diger RETURN deyimi %L'de bir INTEGER donus belirteci gerektirir"
 
 #: fortran/resolve.c:4247
 #, no-c-format
 msgid "Subroutine '%s' called instead of assignment at %L must be PURE"
-msgstr ""
+msgstr "'%s' altyordami %L'deki atamanin yerine cagrildiginda PURE olmali"
 
 #: fortran/resolve.c:4260
 #, no-c-format
 msgid "Cannot assign to variable '%s' in PURE procedure at %L"
-msgstr ""
+msgstr "'%s' degiskenine %L'deki PURE yordaminda atama yapilamaz"
 
 #: fortran/resolve.c:4269
 #, no-c-format
 msgid "Right side of assignment at %L is a derived type containing a POINTER in a PURE procedure"
-msgstr ""
+msgstr "%L'deki atamanin sag tarafi bir PURE islevde bir POINTER iceren bir turetilmis turdur"
 
 #: fortran/resolve.c:4289
 #, no-c-format
 msgid "ASSIGN statement at %L requires a scalar default INTEGER variable"
-msgstr ""
+msgstr "%L'deki ASSIGN deyimi bir sabit ontanimli INTEGER degisken gerektirir"
 
 #: fortran/resolve.c:4304
 #, no-c-format
 msgid "Arithmetic IF statement at %L requires a numeric expression"
-msgstr ""
+msgstr "%L'deki aritmetik IF deyimi bir sayisal ifade gerektirir"
 
 #: fortran/resolve.c:4316
 #, no-c-format
 msgid "IF clause at %L requires a scalar LOGICAL expression"
-msgstr ""
+msgstr "%L'deki IF deyimi bir sabit LOGICAL ifadesi gerektirir"
 
 #: fortran/resolve.c:4342
 #, no-c-format
 msgid "Exit condition of DO WHILE loop at %L must be a scalar LOGICAL expression"
-msgstr ""
+msgstr "%L'deki DO WHILE dongusunun cikis kosulu bir sabit LOGICAL ifadesi olmalidir"
 
 #: fortran/resolve.c:4349
 #, no-c-format
 msgid "STAT tag in ALLOCATE statement at %L must be of type INTEGER"
-msgstr ""
+msgstr "%L'de ALLOCATE deyimindeki STAT yaftasi INTEGER turde olmali"
 
 #: fortran/resolve.c:4361
 #, no-c-format
 msgid "STAT tag in DEALLOCATE statement at %L must be of type INTEGER"
-msgstr ""
+msgstr "%L'de DEALLOCATE deyimindeki STAT yaftasi INTEGER turde olmali"
 
 #: fortran/resolve.c:4427
 #, no-c-format
 msgid "FORALL mask clause at %L requires a LOGICAL expression"
-msgstr ""
+msgstr "%L'deki FORALL maske deyimi bir LOGICAL ifadesi gerektirir"
 
 #: fortran/resolve.c:4503
 #, no-c-format
 msgid "Allocatable array '%s' at %L must have a deferred shape"
-msgstr ""
+msgstr "Ayrilabilir '%s' dizisi %L'de ertelenmis bir durumda olmali"
 
 #: fortran/resolve.c:4506
 #, no-c-format
 msgid "Scalar object '%s' at %L may not be ALLOCATABLE"
-msgstr ""
+msgstr "'%s' sabit nesnesi %L'de ALLOCATABLE olmayabilir"
 
 #: fortran/resolve.c:4513
 #, no-c-format
 msgid "Array pointer '%s' at %L must have a deferred shape"
-msgstr ""
+msgstr "'%s' dizi gostericisi %L'de ertelenmis bir durumda olmali"
 
 #: fortran/resolve.c:4524
 #, no-c-format
 msgid "Array '%s' at %L cannot have a deferred shape"
-msgstr ""
+msgstr "'%s' dizisi %L'de ertelenmis bir durumda olamaz"
 
 #: fortran/resolve.c:4579
 #, no-c-format
 msgid "The module or main program array '%s' at %L must have constant shape"
-msgstr ""
+msgstr "Modul veya ana program dizisi '%s' %L'de sabit biçimde olmali"
 
 #: fortran/resolve.c:4592
 #, no-c-format
 msgid "Entity with assumed character length at %L must be a dummy argument or a PARAMETER"
-msgstr ""
+msgstr "%L'deki tahmini karakter uzunluklu öge ya sahte bir argüman ya da bir PARAMETER olmali"
 
 #: fortran/resolve.c:4605
 #, no-c-format
 msgid "'%s' at %L must have constant character length in this context"
-msgstr ""
+msgstr "'%s' %L'de bu baglam icin sabit karakter uzunluklu olmali"
 
 #: fortran/resolve.c:4636
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Allocatable '%s' at %L cannot have an initializer"
-msgstr "%J son alan '%D' ilklendirilmis olmayabilir"
+msgstr "Ayrilabilir '%s'  %L'de bir ilklendiriciye sahip olamaz"
 
 #: fortran/resolve.c:4639
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "External '%s' at %L cannot have an initializer"
-msgstr "%J son alan '%D' ilklendirilmis olmayabilir"
+msgstr "Harici '%s'  %L'de bir ilklendiriciye sahip olamaz"
 
 #: fortran/resolve.c:4642
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy '%s' at %L cannot have an initializer"
-msgstr "%J son alan '%D' ilklendirilmis olmayabilir"
+msgstr "Sahte'%s'  %L'de bir ilklendiriciye sahip olamaz"
 
 #: fortran/resolve.c:4645
 #, no-c-format
 msgid "Intrinsic '%s' at %L cannot have an initializer"
-msgstr "Yerlesik '%s' (%L'de) icin bir ilklendirici olamaz"
+msgstr "Yerlesik '%s' %L'de bir ilklendiriciye sahip olamaz"
 
 #: fortran/resolve.c:4648
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function result '%s' at %L cannot have an initializer"
-msgstr "%J son alan '%D' ilklendirilmis olmayabilir"
+msgstr "islev sonucu '%s'  %L'de bir ilklendiriciye sahip olamaz"
 
 #: fortran/resolve.c:4651
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Automatic array '%s' at %L cannot have an initializer"
-msgstr "%J son alan '%D' ilklendirilmis olmayabilir"
+msgstr "Otomatik dizi '%s'  %L'de bir ilklendiriciye sahip olamaz"
 
 #: fortran/resolve.c:4671
 #, no-c-format
 msgid "Object '%s' at %L must have the SAVE attribute %s"
-msgstr ""
+msgstr "Nesne '%s' %L'de SAVE ozniteligi %s'e sahip olmali"
 
 #: fortran/resolve.c:4704
 #, no-c-format
 msgid "Character-valued statement function '%s' at %L must have constant length"
-msgstr ""
+msgstr "Karakter degerli deyim islevi '%s'  %L'de sabit uzunlukta olmali"
 
 #: fortran/resolve.c:4723
 #, no-c-format
 msgid "'%s' is of a PRIVATE type and cannot be a dummy argument of '%s', which is PUBLIC at %L"
-msgstr ""
+msgstr "'%s' bir PRIVATE turdur ve '%s' (%L'de PUBLIC tanimli) icin bir sahte arguman olamaz"
 
 #: fortran/resolve.c:4738
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "External object '%s' at %L may not have an initializer"
-msgstr "%J son alan '%D' ilklendirilmis olmayabilir"
+msgstr "Harici nesne '%s'  %L'de bir ilklendiriciye sahip olamaz"
 
 #: fortran/resolve.c:4757
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be array-valued"
-msgstr ""
+msgstr "CHARACTER(*) islevi '%s'  %L'de dizi degerli olamaz"
 
 #: fortran/resolve.c:4761
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be pointer-valued"
-msgstr ""
+msgstr "CHARACTER(*) islevi '%s'  %L'de gosterici degerli olamaz"
 
 #: fortran/resolve.c:4765
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be pure"
-msgstr ""
+msgstr "CHARACTER(*) islevi '%s'  %L'de katiksiz olamaz"
 
 #: fortran/resolve.c:4769
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be recursive"
-msgstr ""
+msgstr "CHARACTER(*) islevi '%s'  %L'de ozyinelemeli olamaz"
 
 #: fortran/resolve.c:4778
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L is obsolescent in fortran 95"
-msgstr ""
+msgstr "CHARACTER(*) islevi '%s' (%L'deki) fortran 95'de önerilmiyor"
 
 #: fortran/resolve.c:4803
 #, no-c-format
 msgid "Character length of component '%s' needs to be a constant specification expression at %L."
-msgstr ""
+msgstr "Bileşen karakter uzunlugu '%s'in %L'de bir sabit belirtim ifadesi olmasi gerekir"
 
 #: fortran/resolve.c:4818
 #, no-c-format
 msgid "The component '%s' is a PRIVATE type and cannot be a component of '%s', which is PUBLIC at %L"
-msgstr ""
+msgstr "Bilesen '%s' bir PRIVATE turdur ve '%s' (%L'de PUBLIC tanimli) bileseni olamaz"
 
 #: fortran/resolve.c:4836
 #, no-c-format
 msgid "Component '%s' of '%s' at %L must have constant array bounds."
-msgstr ""
+msgstr "'%s' ('%s'in bileseni) %L'de sabit dizi sinirlarina sahip olmali"
 
 #: fortran/resolve.c:4860
 #, no-c-format
 msgid "Parameter array '%s' at %L cannot be automatic or assumed shape"
-msgstr ""
+msgstr "Parametre dizisi '%s' %L'de otomatik veya tahmini bicimli olamaz"
 
 #: fortran/resolve.c:4872
 #, no-c-format
 msgid "Implicitly typed PARAMETER '%s' at %L doesn't match a later IMPLICIT type"
-msgstr ""
+msgstr "Ortuk olarak  PARAMETER turlu '%s' %L'de sonraki bir IMPLICIT turle eslesmiyor"
 
 #: fortran/resolve.c:4883
 #, no-c-format
 msgid "Incompatible derived type in PARAMETER at %L"
-msgstr ""
+msgstr "%L'deki PARAMETER icindeki turetilmis tur uyumsuz"
 
 #: fortran/resolve.c:4985
 #, no-c-format
