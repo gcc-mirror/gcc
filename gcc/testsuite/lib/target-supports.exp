@@ -454,6 +454,14 @@ proc check_effective_target_fpic { } {
     return 0
 }
 
+# Return true if the target supports -mpaired-single (as used on MIPS).
+
+proc check_effective_target_mpaired_single { } {
+    return [check_no_compiler_messages freorder object {
+	void foo (void) { }
+    } "-mpaired-single"]
+}
+
 # Return true if iconv is supported on the target. In particular IBM1047.
 
 proc check_iconv_available { test_what } {

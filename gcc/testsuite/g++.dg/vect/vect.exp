@@ -61,7 +61,8 @@ if [istarget "powerpc*-*-*"] {
 } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
     lappend DEFAULT_VECTCFLAGS "-msse2"
     set dg-do-what-default run
-} elseif [istarget "mipsisa64*-*-*"] {
+} elseif { [istarget "mipsisa64*-*-*"]
+	   && [check_effective_target_mpaired_single] } {
     lappend DEFAULT_VECTCFLAGS "-mpaired-single"
     set dg-do-what-default run
 } elseif [istarget "sparc*-*-*"] {
