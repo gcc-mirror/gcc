@@ -1410,7 +1410,11 @@ cgraph_optimize (void)
       fprintf (cgraph_dump_file, "Marked ");
       dump_cgraph (cgraph_dump_file);
     }
-  ipa_passes ();
+    
+  /* Don't run the IPA passes if there was any error or sorry messages.  */
+  if (errorcount == 0 && sorrycount == 0)
+    ipa_passes ();
+
   /* This pass remove bodies of extern inline functions we never inlined.
      Do this later so other IPA passes see what is really going on.  */
   cgraph_remove_unreachable_nodes (false, dump_file);

@@ -1,3 +1,9 @@
+2006-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/25776
+	* cgraphunit.c (cgraph_optimize): Don't run ipa passes if error
+	or sorry count is non zero.
+
 2006-05-20  Andreas Schwab  <schwab@suse.de>
 
 	* config/pa/pa-linux.h (STRING_ASM_OP): Prepend and append a tab.
