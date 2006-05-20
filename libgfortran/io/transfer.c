@@ -276,7 +276,7 @@ read_block (st_parameter_dt *dtp, int *length)
 	{
 	  dtp->u.p.current_unit->endfile = AT_ENDFILE;
 	  generate_error (&dtp->common, ERROR_END, NULL);
-	  return;
+	  return NULL;
 	}
 
       *length = dtp->u.p.current_unit->bytes_left;

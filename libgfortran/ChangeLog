@@ -1,3 +1,8 @@
+2006-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/22423
+	* io/transfer.c (read_block): Return NULL instead of nothing.
+	
 2006-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27575
