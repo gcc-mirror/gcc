@@ -1,3 +1,7 @@
+2006-05-20  Andreas Schwab  <whitebox_@gmx.de>
+
+	* config/pa/pa-linux.h (STRING_ASM_OP): Prepend and append a tab.
+
 2006-05-19  Mike Stump  <mrs@apple.com>
 
 	* c-tree.h (default_conversion): Remove.
