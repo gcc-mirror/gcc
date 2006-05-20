@@ -1,3 +1,8 @@
+2006-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/25776
+	* g++.dg/other/error11.C: New test. 
+
 2006-05-20  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/pr26765.c: Add -w to options.
