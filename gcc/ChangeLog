@@ -1,4 +1,4 @@
-2006-05-20  Andreas Schwab  <whitebox_@gmx.de>
+2006-05-20  Andreas Schwab  <schwab@suse.de>
 
 	* config/pa/pa-linux.h (STRING_ASM_OP): Prepend and append a tab.
 
