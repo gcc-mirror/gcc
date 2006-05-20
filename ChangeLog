@@ -1,3 +1,9 @@
+2006-05-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.in:  Enable libgcj for hppa*-hp-hpux11*.
+	* configure: Rebuilt.
+
 2006-05-12  Sandra Loosemore <sandra@codesourcery.com>
 	
 	* MAINTAINERS (Write After Approval): Add myself.
