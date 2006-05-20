@@ -127,7 +127,7 @@ case "${host}" in
 	enable_hash_synchronization_default=yes
 	IEEESPEC=-mieee
 	;;
-  hppa-*)
+  hppa*-*)
 	sysdeps_dir=pa
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
@@ -273,6 +273,11 @@ EOF
 	enable_hash_synchronization_default=no
 	slow_pthread_self=
 	;;
+  hppa*-hp-hpux11.*)
+	slow_pthread_self=no
+	can_unwind_signal=yes
+	DIVIDESPEC=-fuse-divide-subroutine
+	;;
 esac
 
 case "${host}" in
@@ -286,6 +291,14 @@ esac
 case "${host}" in
   ia64-*)
 	descriptor_h=sysdep/descriptor-y.h
+	;;
+
+  hppa*64*-*-hpux*)
+	descriptor_h=sysdep/pa/descriptor-pa64-hpux.h
+	;;
+
+  hppa*-*-hpux*)
+	descriptor_h=sysdep/pa/descriptor-pa32-hpux.h
 	;;
 
   hppa*-*)

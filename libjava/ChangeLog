@@ -1,3 +1,16 @@
+2006-05-20  Andreas Tobler  <a.tobler@schweiz.ch>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* configure.ac: Add the POSIX thread libs to the HP-UX PA
+	configuration. Add signal specification for HP-UX PA.
+	* configure: Rebuilt.
+	* configure.host: Add defaults for the HP-UX PA architecture.
+	Add descriptor files for HP-UX PA 32-bit and 64-bit.
+	* include/hppa-signal.h: New file.
+	* include/posix.h: Add shared library suffix for HP-UX.
+	* sysdep/pa/descriptor-pa32-hpux.h: New file.
+	* sysdep/pa/descriptor-pa64-hpux.h: Likewise.
+
 2006-05-19  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* ChangeLog: Correct incorrect GNU Classpath version in the
