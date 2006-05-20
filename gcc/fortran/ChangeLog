@@ -1,7 +1,7 @@
 2006-05-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/27662
-	* trans-array.c (gfc_conv_expr_descriptor): Don't zere the
+	* trans-array.c (gfc_conv_expr_descriptor): Don't zero the
 	first stride to indicate a temporary.
 	* trans-expr.c (gfc_conv_function_call): Likewise.
 
