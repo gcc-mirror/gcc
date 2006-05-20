@@ -2038,11 +2038,6 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop, info, tmp,
 				       false, !sym->attr.pointer, callee_alloc);
 
-	  /* Zero the first stride to indicate a temporary.  */
-	  tmp = gfc_conv_descriptor_stride (info->descriptor, gfc_rank_cst[0]);
-	  gfc_add_modify_expr (&se->pre, tmp,
-			       convert (TREE_TYPE (tmp), integer_zero_node));
-
 	  /* Pass the temporary as the first argument.  */
 	  tmp = info->descriptor;
 	  tmp = build_fold_addr_expr (tmp);
