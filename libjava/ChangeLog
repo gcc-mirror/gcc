@@ -1,3 +1,10 @@
+2006-05-21  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* java/lang/natClass.cc (_Jv_FindMethodInCache): Mark klass, name and
+	signature as MAYBE_UNUSED for HAVE_TLS == 0.
+	(_Jv_AddMethodToCache): Mark klass and method as MAYBE_UNUSED for
+	HAVE_TLS == 0.
+
 2006-05-20  Andreas Tobler  <a.tobler@schweiz.ch>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
