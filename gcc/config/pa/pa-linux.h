@@ -66,7 +66,7 @@ Boston, MA 02110-1301, USA.  */
    file which includes this one.  */
 
 #undef STRING_ASM_OP
-#define STRING_ASM_OP   ".stringz"
+#define STRING_ASM_OP   "\t.stringz\t"
 
 #define TEXT_SECTION_ASM_OP "\t.text"
 #define DATA_SECTION_ASM_OP "\t.data"
