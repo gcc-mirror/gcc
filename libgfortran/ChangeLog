@@ -1,3 +1,11 @@
+2006-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24459
+	* io/list_read.c (nml_parse_qualifier): Leave loop spec end value
+	at default value unless -std=f95 or if an array section
+	is specified in namelist input.  Warn if -pedantic.
+	* io/io.h (st_parameter_dt): Add expanded_read flag.
+
 2006-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/22423

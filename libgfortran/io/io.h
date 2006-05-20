@@ -432,7 +432,9 @@ typedef struct st_parameter_dt
 	  struct format_data *fmt;
 	  jmp_buf *eof_jump;
 	  namelist_info *ionml;
-
+	  /* A flag used to identify when a non-standard expanded namelist read
+	     has occurred.  */
+	  int expanded_read;
 	  /* Storage area for values except for strings.  Must be large
 	     enough to hold a complex value (two reals) of the largest
 	     kind.  */
