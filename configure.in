@@ -584,6 +584,9 @@ case "${target}" in
   hppa*64*-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
+  hppa*-hp-hpux11*)
+    noconfigdirs="$noconfigdirs ld shellutils"
+    ;;
   hppa*-*-*)
     # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
     # build on HP-UX 10.20.
