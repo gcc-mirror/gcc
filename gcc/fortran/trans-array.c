@@ -4108,10 +4108,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       /* Finish the copying loops.  */
       gfc_trans_scalarizing_loops (&loop, &block);
 
-      /* Set the first stride component to zero to indicate a temporary.  */
       desc = loop.temp_ss->data.info.descriptor;
-      tmp = gfc_conv_descriptor_stride (desc, gfc_rank_cst[0]);
-      gfc_add_modify_expr (&loop.pre, tmp, gfc_index_zero_node);
 
       gcc_assert (is_gimple_lvalue (desc));
     }
