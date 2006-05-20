@@ -9215,7 +9215,7 @@ case "$THREADS" in
 	THREADLDFLAGS=-pthread
 	THREADSPEC=-lpthread
 	;;
-     alpha*-dec-osf*)
+     alpha*-dec-osf* | hppa*-hp-hpux*)
 	THREADCXXFLAGS=-pthread
 	# boehm-gc needs some functions from librt, so link that too.
 	THREADLIBS='-lpthread -lrt'
@@ -16469,6 +16469,9 @@ case "${host}" in
 #    ;;
  hppa*-*-linux*)
     SIGNAL_HANDLER=include/pa-signal.h
+    ;;
+ hppa*-hp-hpux*)
+    SIGNAL_HANDLER=include/hppa-signal.h
     ;;
  ia64-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
