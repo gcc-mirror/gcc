@@ -457,7 +457,7 @@ proc check_effective_target_fpic { } {
 # Return true if the target supports -mpaired-single (as used on MIPS).
 
 proc check_effective_target_mpaired_single { } {
-    return [check_no_compiler_messages freorder object {
+    return [check_no_compiler_messages mpaired_single object {
 	void foo (void) { }
     } "-mpaired-single"]
 }
