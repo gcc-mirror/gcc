@@ -1,3 +1,8 @@
+2006-05-20  Richard Sandiford  <richard@codesourcery.com>
+
+	PR testsuite/25891
+	* g++.dg/gomp/gomp.exp: Skip if ![check_effective_target_fopenmp].
+
 2006-05-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/27662
