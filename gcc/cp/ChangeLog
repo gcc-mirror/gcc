@@ -1,3 +1,9 @@
+2006-05-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27398
+	* decl.c (grokdeclarator): Return error_mark_node instead of NULL_TREE
+	or void_type_node.
+
 2006-05-19  Mike Stump  <mrs@apple.com>
 
 	* typeck.c (default_conversion): Remove static.
