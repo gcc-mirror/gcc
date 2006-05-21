@@ -2088,9 +2088,22 @@ build_new (tree placement, tree type, tree nelts, tree init,
     {
       if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
 	pedwarn ("size in array new must have integral type");
-      nelts = save_expr (cp_convert (sizetype, nelts));
-      if (nelts == integer_zero_node)
-	warning (0, "zero size array reserves no space");
+      nelts = cp_save_expr (cp_convert (sizetype, nelts));
+      /* It is valid to allocate a zero-element array:
+
+	   [expr.new]
+
+	   When the value of the expression in a direct-new-declarator
+	   is zero, the allocation function is called to allocate an
+	   array with no elements.  The pointer returned by the
+	   new-expression is non-null.  [Note: If the library allocation
+	   function is called, the pointer returned is distinct from the
+	   pointer to any other object.]  
+
+	 However, that is not generally useful, so we issue a
+	 warning.  */
+      if (integer_zerop (nelts))
+	warning (0, "allocating zero-element array");
     }
 
   /* ``A reference cannot be created by the new operator.  A reference

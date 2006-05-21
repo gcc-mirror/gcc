@@ -4336,6 +4336,7 @@ extern int cp_auto_var_in_fn_p			(tree,tree);
 extern tree fold_if_not_in_template		(tree);
 extern tree rvalue                              (tree);
 extern tree convert_bitfield_to_declared_type   (tree);
+extern tree cp_save_expr                        (tree);
    
 /* in typeck.c */
 extern int string_conv_p			(tree, tree, int);

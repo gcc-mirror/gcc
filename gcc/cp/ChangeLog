@@ -1,3 +1,11 @@
+2006-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27210
+	* cp-tree.h (cp_save_expr): New function.
+	* init.c (build_new): Correct logic for zero-element array
+	warning.  Use cp_save_expr.
+	* tree.c (cp_save_expr): New function.
+
 2006-05-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27398
