@@ -724,7 +724,7 @@ verify_cgraph_node (struct cgraph_node *node)
     }
   if (!node->callers && node->global.inlined_to)
     {
-      error ("inlined_to pointer is set but no predecesors found");
+      error ("inlined_to pointer is set but no predecessors found");
       error_found = true;
     }
   if (node->global.inlined_to == node)
