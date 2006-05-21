@@ -7285,7 +7285,7 @@ grokdeclarator (const cp_declarator *declarator,
   if (dependent_name && !friendp)
     {
       error ("%<%T::%D%> is not a valid declarator", ctype, dependent_name);
-      return void_type_node;
+      return error_mark_node;
     }
 
   /* Issue errors about use of storage classes for parameters.  */
@@ -7529,7 +7529,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    && !member_function_or_else (ctype,
 						 current_class_type,
 						 flags))
-		  return void_type_node;
+		  return error_mark_node;
 
 		if (flags != DTOR_FLAG)
 		  {
@@ -7543,7 +7543,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      }
 		    if (decl_context == FIELD
 			&& sfk != sfk_constructor)
-		      return NULL_TREE;
+		      return error_mark_node;
 		  }
 		if (decl_context == FIELD)
 		  staticp = 0;
@@ -8148,7 +8148,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    error ("can't make %qD into a method -- not in a class",
 			   unqualified_id);
-		    return void_type_node;
+		    return error_mark_node;
 		  }
 
 		/* ``A union may [ ... ] not [ have ] virtual functions.''
@@ -8157,7 +8157,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    error ("function %qD declared virtual inside a union",
 			   unqualified_id);
-		    return void_type_node;
+		    return error_mark_node;
 		  }
 
 		if (NEW_DELETE_OPNAME_P (unqualified_id))
@@ -8259,7 +8259,7 @@ grokdeclarator (const cp_declarator *declarator,
 			       funcdef_flag, template_count, in_namespace,
 			       attrlist);
 	    if (decl == NULL_TREE)
-	      return NULL_TREE;
+	      return error_mark_node;
 	  }
 	else if (!staticp && !dependent_type_p (type)
 		 && !COMPLETE_TYPE_P (complete_type (type))
@@ -8316,7 +8316,7 @@ grokdeclarator (const cp_declarator *declarator,
 		return decl;
 	      }
 	    else
-	      return void_type_node;
+	      return error_mark_node;
 	  }
 
 	/* Structure field.  It may not be a function, except for C++.  */
@@ -8355,7 +8355,7 @@ grokdeclarator (const cp_declarator *declarator,
 		     void_type_node, as if this was a friend
 		     declaration, to cause callers to completely
 		     ignore this declaration.  */
-		  return void_type_node;
+		  return error_mark_node;
 	      }
 
 	    if (staticp)
@@ -8403,7 +8403,7 @@ grokdeclarator (const cp_declarator *declarator,
 	int publicp = 0;
 
 	if (!unqualified_id)
-	  return NULL_TREE;
+	  return error_mark_node;
 
 	if (TREE_CODE (unqualified_id) == TEMPLATE_ID_EXPR)
 	  original_name = dname;
@@ -8458,7 +8458,7 @@ grokdeclarator (const cp_declarator *declarator,
 			   publicp, inlinep, sfk, funcdef_flag,
 			   template_count, in_namespace, attrlist);
 	if (decl == NULL_TREE)
-	  return NULL_TREE;
+	  return error_mark_node;
 
 	if (staticp == 1)
 	  {

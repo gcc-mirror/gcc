@@ -1,3 +1,8 @@
+2006-05-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27398
+	* g++.dg/template/crash50.C: New test.
+
 2006-05-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25746
