@@ -11072,8 +11072,10 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
           && integer_zerop (TREE_OPERAND (arg0, 1))
           && integer_zerop (op2)
           && (tem = sign_bit_p (TREE_OPERAND (arg0, 0), arg1)))
-        return fold_convert (type, fold_build2 (BIT_AND_EXPR,
-						TREE_TYPE (tem), tem, arg1));
+        return fold_convert (type,
+			     fold_build2 (BIT_AND_EXPR,
+					  TREE_TYPE (tem), tem,
+					  fold_convert (TREE_TYPE (tem), arg1)));
 
       /* (A >> N) & 1 ? (1 << N) : 0 is simply A & (1 << N).  A & 1 was
 	 already handled above.  */

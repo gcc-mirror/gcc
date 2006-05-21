@@ -5,6 +5,10 @@
 	simplifications of (eq/ne (xor x y) y) and
 	(eq/ne (xor x y) x).
 
+	PR tree-optimization/26622.
+	* fold-const.c (fold_ternary) <COND_EXPR>: Call fold_convert
+	on arg1.
+
 2006-05-21  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* tree-cfg.c: Prune whitespace.
