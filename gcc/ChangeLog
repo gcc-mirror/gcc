@@ -2,7 +2,10 @@
 
 	* config/darwin-c.c (BAD): Conditionalize on OPT_Wpragmas.
 	(BAD2): Add.
-	
+	(darwin_pragma_options): Use BAD instead.
+	(darwin_pragma_unused): Likewise.
+	(darwin_pragma_ms_struct): Likewise.
+
 2006-05-21  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (floatsitf2): Remove constraints.
