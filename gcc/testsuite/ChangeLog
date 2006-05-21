@@ -1,3 +1,8 @@
+2006-05-21  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.target/i386/20060512-1.c: Add -msse2 command line option.
+	* gcc.target/i386/20060512-3.c: Likewise.
+
 2006-05-21  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR rtl-optimization/27671
