@@ -1,3 +1,9 @@
+2006-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24459
+	* gfortran.dg/namelist_24.f90: New test.
+	* gfortran.dg/namelist_12.f: Fix typo in comment.
+
 2006-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/25776
