@@ -34,6 +34,116 @@
 
 	* config/pa/pa-linux.h (STRING_ASM_OP): Prepend and append a tab.
 
+2006-05-19  Daniel Berlin  <dberlin@dberlin.org>
+            Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/26855
+
+	* df-scan.c (mw_reg_pool, mw_link_pool): New allocation pools for
+	multiword refs.
+	(df_scan_alloc): Added code to properly handle multiword hard
+	registers and add all_blocks parameter.
+	(df_scan_free_internal, df_insn_refs_delete, df_ref_record): Added
+	code to properly handle multiword hard registers.
+	(df_rescan_blocks): Added code to remove deleted blocks from
+	bitmap.
+	(df_ref_create_structure, df_ref_record): Added code to properly
+	handle subregs.
+	(df_ref_record_1): Changed DF_REF_CLOBBER into DF_REF_MUST_CLOBBER
+	and set DF_REF_PARTIAL.
+	(df_defs_record): Changed DF_REF_CLOBBER into DF_REF_MUST_CLOBBER.
+	(df_uses_record): Added DF_REF_PARTIAL for subreg. 
+	(df_scan_add_problem): Added flags parameter.
+	(df_ref_create_structure): Changed switching structure.
+	(df_bb_refs_record): Fixed case where duplicate artificial refs
+	were created.  Changed location of flags.
+	(df_record_entry_block_defs): Added code to make stack pointer
+	live in entry block.  Refined cases where frame pointer is needed.
+	Changed location of flags.
+	(df_record_exit_block_uses, df_insn_refs_record): Changed location of flags.
+	(df_set_state): Removed function.
+	(df_grow_reg_info, df_reg_chain_unlink, df_ref_remove,
+	df_insn_create_insn_record, df_insn_refs_delete, 
+	df_ref_create_structure): Formatting changes.  
+	* df-core.c (df_mvs_dump, df_set_flags, df_clear_flags,
+	df_delete_basic_block): New function.
+	(df_init): Changed location of flags.
+	(df_add_problem): Added flags parameter and the way flags are
+	processed.
+	(df_insn_uid_debug, df_ref_debug, debug_df_defno, debug_df_ref,
+	debug_df_chain): Improved debugging output.
+	(df_insn_debug, df_insn_uid_debug): Added multiword reg support.
+	(df_refs_chain_dump): Removed df parameter.
+	(df_iterative_dataflow): Added consistency check.
+	(df_prune_to_subcfg): Made public.
+	(df_analyze_problem): Added blocks_to_init parameter and made
+	public.
+	(df_ref_record, df_bb_refs_record, df_mark_reg, 
+	 df_record_exit_block_uses): Whitespace changes.
+	(df_dump): Whitespace changes.
+	* df.h: Some reordering to remove forward references.
+	(df_ref_flags.DF_REF_MW_HARDREG, DF_REF_PARTIAL,
+	DF_REF_MUST_CLOBBER, DF_REF_MAY_CLOBBER): New fields.
+	(df_ref_flags.DF_REF_CLOBBER): Deleted field.
+	(dataflow.flags): New field.
+	(df.flag): Deleted field.
+	(df_alloc_function): Added additional bitmap parameter.
+	(df_dependent_problem_function): New type.
+	(df_problem.changeable_flags): New field.
+	(df_ref_flags.DF_REF_DIES_AFTER_THIS_USE, DF_SCAN_INITIAL,
+	DF_SCAN_GLOBAL, DF_SCAN_POST_ALLOC, df_state): Removed.
+	(df_mw_hardreg): New struct.
+	(DF_INSN_UID_MWS): New macro.
+	(df_refs_chain_dump, df_ref_debug, df_chain_dump): Removed df
+	parameter.
+	(df_add_problem, df_ru_add_problem, df_rd_add_problem,
+	df_lr_add_problem, df_ur_add_problem, df_urec_add_problem,
+	df_ri_add_problem, df_scan_add_problem): Added flags parameter.
+	(df_set_state): Removed function.
+	(df_set_flags, df_clear_flags, df_delete_basic_block) New functions.
+	* df-problems.c (df_chain_dump): Removed df parameter.
+	(df_ru_alloc, df_rd_alloc, df_lr_alloc, df_ur_alloc,
+	df_urec_alloc, df_chain_alloc, df_ri_alloc): Added all blocks
+	parameter.
+	(df_ru_alloc, df_rd_alloc): Now resets all blocks.
+	(df_rd_bb_local_compute_process_def, df_ur_bb_local_compute,
+	df_chain_create_bb, df_create_unused_note, df_ri_bb_compute):
+	Split DF_REF_CLOBBER into DF_REF_MAY_CLOBBER and
+	DF_REF_MUST_CLOBBER cases.
+	(df_ru_bb_local_compute_process_def,
+	df_rd_bb_local_compute_process_def, df_lr_bb_local_compute,
+	df_lr_bb_local_compute, df_ur_bb_local_compute,
+	df_chain_create_bb): Made subreg aware.
+	(df_ru_bb_local_compute, df_rd_bb_local_compute,
+	df_lr_bb_local_compute, df_lr_bb_local_compute,
+	df_chain_create_bb): Cleanup to use proper macros.
+	(df_ur_local_finalize, df_urec_local_finalize): Removed unnecessary
+	code to fixup bitvectors.
+	(df_ri_alloc): Cleared lifetime.
+	(df_ignore_stack_reg, df_kill_notes, df_set_notes_for_mw,
+	df_create_unused_note): New function.
+	(df_ri_bb_compute, df_ri_compute): Added code to create/update
+	REG_DEAD and REG_UNUSED notes as well as register information.
+	(df_ru_dump, df_rd_dump, df_lr_dump, df_ur_dump, df_urec_dump,
+	df_chains_dump): Fixed crash if problem was never run.
+	(df_ru_add_problem, df_rd_add_problem, df_lr_add_problem,
+	df_ur_add_problem, df_urec_add_problem, df_chain_add_problem,
+	df_ri_add_problem): Processes flags in uniform manner.
+	(df_ru_alloc, df_ru_local_compute, df_ru_confluence_n, df_ru_free,
+	df_ru_dump, df_rd_local_compute, df_rd_confluence_n, df_rd_free,
+	df_rd_dump, df_urec_free_bb_info): Formatting changes.
+	(df_ru_free_bb_info, df_ru_bb_local_compute, df_ru_dump,
+	df_rd_free_bb_info, df_rd_bb_local_compute_process_def,
+	df_rd_bb_local_compute, df_rd_dump, df_lr_free_bb_info,
+	df_lr_bb_local_compute, df_lr_local_compute, df_ur_free_bb_info,
+	df_ur_dump, df_urec_free_bb_info, df_urec_dump,
+	df_chain_create_bb, df_ri_bb_compute): Whitespace changes.
+	* modulo-sched.c (sms_schedule): Added flag parameter to calls.
+	* see.c (see_initialize_data): Ditto.
+	* final.c (rest_of_clean_state) Added regstack_completed.
+	* rtl.h (regstack_completed): Ditto.
+	* reg-stack.c (regstack_completed): Ditto.
+
 2006-05-19  Mike Stump  <mrs@apple.com>
 
 	* c-tree.h (default_conversion): Remove.
