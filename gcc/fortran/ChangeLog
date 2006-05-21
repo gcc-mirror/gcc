@@ -1,5 +1,12 @@
 2006-05-21  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/27613
+	* primary.c (gfc_match_rvalue): Test if symbol represents a
+	direct recursive function reference.  Error if array valued,
+	go to function0 otherwise.
+
+2006-05-21  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/25746
 	* interface.c (gfc_extend_assign): Use new EXEC_ASSIGN_CALL.
 	* gfortran.h : Put EXEC_ASSIGN_CALL in enum.
