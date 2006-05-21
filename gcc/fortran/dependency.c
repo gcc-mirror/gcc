@@ -513,6 +513,10 @@ gfc_check_fncall_dependency (gfc_expr * other, sym_intent intent,
       if (!expr)
 	continue;
 
+      /* Skip other itself.  */
+      if (expr == other)
+	continue;
+
       /* Skip intent(in) arguments if OTHER itself is intent(in).  */
       if (formal
 	  && intent == INTENT_IN

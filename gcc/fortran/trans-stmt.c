@@ -199,10 +199,121 @@ gfc_trans_entry (gfc_code * code)
 }
 
 
+/* Check for dependencies between INTENT(IN) and INTENT(OUT) arguments of
+   elemental subroutines.  Make temporaries for output arguments if any such
+   dependencies are found.  Output arguments are chosen because internal_unpack
+   can be used, as is, to copy the result back to the variable.  */
+static void
+gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
+				 gfc_symbol * sym, gfc_actual_arglist * arg)
+{
+  gfc_actual_arglist *arg0;
+  gfc_expr *e;
+  gfc_formal_arglist *formal;
+  gfc_loopinfo tmp_loop;
+  gfc_se parmse;
+  gfc_ss *ss;
+  gfc_ss_info *info;
+  gfc_symbol *fsym;
+  int n;
+  stmtblock_t block;
+  tree data;
+  tree offset;
+  tree size;
+  tree tmp;
+
+  if (loopse->ss == NULL)
+    return;
+
+  ss = loopse->ss;
+  arg0 = arg;
+  formal = sym->formal;
+
+  /* Loop over all the arguments testing for dependencies.  */
+  for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
+    {
+      e = arg->expr;
+      if (e == NULL)
+	continue;
+
+      /* Obtain the info structure for the current argument.  */ 
+      info = NULL;
+      for (ss = loopse->ss; ss && ss != gfc_ss_terminator; ss = ss->next)
+	{
+	  if (ss->expr != e)
+	    continue;
+	  info = &ss->data.info;
+	  break;
+	}
+
+      /* If there is a dependency, create a temporary and use it
+	 instead of the variable. */
+      fsym = formal ? formal->sym : NULL;
+      if (e->expr_type == EXPR_VARIABLE
+	    && e->rank && fsym
+	    && fsym->attr.intent == INTENT_OUT
+	    && gfc_check_fncall_dependency (e, INTENT_OUT, sym, arg0))
+	{
+	  /* Make a local loopinfo for the temporary creation, so that
+	     none of the other ss->info's have to be renormalized.  */
+	  gfc_init_loopinfo (&tmp_loop);
+	  for (n = 0; n < info->dimen; n++)
+	    {
+	      tmp_loop.to[n] = loopse->loop->to[n];
+	      tmp_loop.from[n] = loopse->loop->from[n];
+	      tmp_loop.order[n] = loopse->loop->order[n];
+	    }
+
+	  /* Generate the temporary.  Merge the block so that the
+	     declarations are put at the right binding level.  */
+	  size = gfc_create_var (gfc_array_index_type, NULL);
+	  data = gfc_create_var (pvoid_type_node, NULL);
+	  gfc_start_block (&block);
+	  tmp = gfc_typenode_for_spec (&e->ts);
+	  tmp = gfc_trans_create_temp_array (&se->pre, &se->post,
+					      &tmp_loop, info, tmp,
+					      false, true, false);
+	  gfc_add_modify_expr (&se->pre, size, tmp);
+	  tmp = fold_convert (pvoid_type_node, info->data);
+	  gfc_add_modify_expr (&se->pre, data, tmp);
+	  gfc_merge_block_scope (&block);
+
+	  /* Obtain the argument descriptor for unpacking.  */
+	  gfc_init_se (&parmse, NULL);
+	  parmse.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&parmse, e, gfc_walk_expr (e));
+	  gfc_add_block_to_block (&se->pre, &parmse.pre);
+
+	  /* Calculate the offset for the temporary.  */
+	  offset = gfc_index_zero_node;
+	  for (n = 0; n < info->dimen; n++)
+	    {
+	      tmp = gfc_conv_descriptor_stride (info->descriptor,
+						gfc_rank_cst[n]);
+	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
+				 loopse->loop->from[n], tmp);
+	      offset = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+					  offset, tmp);
+	    }
+	  info->offset = gfc_create_var (gfc_array_index_type, NULL);	  
+	  gfc_add_modify_expr (&se->pre, info->offset, offset);
+
+	  /* Copy the result back using unpack.  */
+	  tmp = gfc_chainon_list (NULL_TREE, parmse.expr);
+	  tmp = gfc_chainon_list (tmp, data);
+	  tmp = build_function_call_expr (gfor_fndecl_in_unpack, tmp);
+	  gfc_add_expr_to_block (&se->post, tmp);
+
+	  gfc_add_block_to_block (&se->post, &parmse.post);
+	}
+    }
+}
+
+
 /* Translate the CALL statement.  Builds a call to an F95 subroutine.  */
 
 tree
-gfc_trans_call (gfc_code * code)
+gfc_trans_call (gfc_code * code, bool dependency_check)
 {
   gfc_se se;
   gfc_ss * ss;
@@ -269,11 +380,25 @@ gfc_trans_call (gfc_code * code)
       gfc_conv_loop_setup (&loop);
       gfc_mark_ss_chain_used (ss, 1);
 
+      /* Convert the arguments, checking for dependencies.  */
+      gfc_copy_loopinfo_to_se (&loopse, &loop);
+      loopse.ss = ss;
+
+      /* For operator assignment, we need to do dependency checking.  
+	 We also check the intent of the parameters.  */
+      if (dependency_check)
+	{
+	  gfc_symbol *sym;
+	  sym = code->resolved_sym;
+	  gcc_assert (sym->formal->sym->attr.intent = INTENT_OUT);
+	  gcc_assert (sym->formal->next->sym->attr.intent = INTENT_IN);
+	  gfc_conv_elemental_dependencies (&se, &loopse, sym,
+					   code->ext.actual);
+	}
+
       /* Generate the loop body.  */
       gfc_start_scalarized_body (&loop, &body);
       gfc_init_block (&block);
-      gfc_copy_loopinfo_to_se (&loopse, &loop);
-      loopse.ss = ss;
 
       /* Add the subroutine call to the block.  */
       gfc_conv_function_call (&loopse, code->resolved_sym, code->ext.actual);
@@ -287,6 +412,7 @@ gfc_trans_call (gfc_code * code)
       gfc_trans_scalarizing_loops (&loop, &body);
       gfc_add_block_to_block (&se.pre, &loop.pre);
       gfc_add_block_to_block (&se.pre, &loop.post);
+      gfc_add_block_to_block (&se.pre, &se.post);
       gfc_cleanup_loop (&loop);
     }
 
@@ -2539,8 +2665,8 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 
 	/* Explicit subroutine calls are prevented by the frontend but interface
 	   assignments can legitimately produce them.  */
-	case EXEC_CALL:
-	  assign = gfc_trans_call (c);
+	case EXEC_ASSIGN_CALL:
+	  assign = gfc_trans_call (c, true);
           tmp = gfc_trans_nested_forall_loop (nested_forall_info, assign, 1, 1);
           gfc_add_expr_to_block (&block, tmp);
           break;

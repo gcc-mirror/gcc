@@ -1,3 +1,37 @@
+2006-05-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25746
+	* interface.c (gfc_extend_assign): Use new EXEC_ASSIGN_CALL.
+	* gfortran.h : Put EXEC_ASSIGN_CALL in enum.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): New function.
+	(gfc_trans_call): Call it.  Add new boolian argument to flag
+	need for dependency checking. Assert intent OUT and IN for arg1
+	and arg2.
+	(gfc_trans_forall_1): Use new code EXEC_ASSIGN_CALL.
+	trans-stmt.h : Modify prototype of gfc_trans_call.
+	trans.c (gfc_trans_code): Add call for EXEC_ASSIGN_CALL.
+	st.c (gfc_free_statement): Free actual for EXEC_ASSIGN_CALL.
+	* dependency.c (gfc_check_fncall_dependency): Don't check other
+	against itself.
+
+	PR fortran/25090
+	* resolve.c : Remove resolving_index_expr.
+	(entry_parameter): Remove.
+	(gfc_resolve_expr, resolve_charlen, resolve_fl_variable): Lift
+	calls to entry_parameter and references to resolving_index_expr.
+
+	PR fortran/27584
+	* check.c (gfc_check_associated): Replace NULL assert with an
+	error message, since it is possible to generate bad code that
+	has us fall through to here..
+
+	PR fortran/19015
+	* iresolve.c (maxloc, minloc): If DIM is not present, pass the
+	rank of ARRAY as the shape of the result.  Otherwise, pass the
+	shape of ARRAY, less the dimension DIM.
+	(maxval, minval): The same, when DIM is present, otherwise no
+	change.
+
 2006-05-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/27662
@@ -64,7 +98,7 @@
 	* resolve.c (resolve_code): Add error condition that the return
 	expression must be scalar.
 
-	PR fortran/24711
+	PR fortran/27411
 	* matchexp.c (gfc_get_parentheses): New function.
 	(match_primary): Remove inline code and call above.
 	* gfortran.h: Provide prototype for gfc_get_parentheses.
@@ -244,7 +278,7 @@
 	result, is also automatic character length.  If so, process
 	the character length.
 
-	PR fortran/18803
+	PR fortran/18003
 	PR fortran/25669
 	PR fortran/26834
 	* trans_intrinsic.c (gfc_walk_intrinsic_bound): Set
