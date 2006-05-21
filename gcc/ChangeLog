@@ -1,3 +1,10 @@
+2006-05-21  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR rtl-optimization/27671
+	* simplify-rtx.c (simplify_relational_operation_1): Fix
+	simplifications of (eq/ne (xor x y) y) and
+	(eq/ne (xor x y) x).
+
 2006-05-21  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* tree-cfg.c: Prune whitespace.
