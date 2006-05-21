@@ -1081,16 +1081,32 @@ gfc_resolve_maxloc (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		    gfc_expr * mask)
 {
   const char *name;
+  int i, j, idim;
 
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
 
   if (dim == NULL)
-    f->rank = 1;
+    {
+      f->rank = 1;
+      f->shape = gfc_get_shape (1);
+      mpz_init_set_si (f->shape[0], array->rank);
+    }
   else
     {
       f->rank = array->rank - 1;
       gfc_resolve_dim_arg (dim);
+      if (array->shape && dim->expr_type == EXPR_CONSTANT)
+	{
+	  idim = (int) mpz_get_si (dim->value.integer);
+	  f->shape = gfc_get_shape (f->rank);
+	  for (i = 0, j = 0; i < f->rank; i++, j++)
+	    {
+	      if (i == (idim - 1))
+	        j++;
+	      mpz_init_set (f->shape[i], array->shape[j]);
+	    }
+	}
     }
 
   if (mask)
@@ -1125,6 +1141,7 @@ gfc_resolve_maxval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		    gfc_expr * mask)
 {
   const char *name;
+  int i, j, idim;
 
   f->ts = array->ts;
 
@@ -1132,6 +1149,18 @@ gfc_resolve_maxval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
     {
       f->rank = array->rank - 1;
       gfc_resolve_dim_arg (dim);
+
+      if (f->rank && array->shape && dim->expr_type == EXPR_CONSTANT)
+	{
+	  idim = (int) mpz_get_si (dim->value.integer);
+	  f->shape = gfc_get_shape (f->rank);
+	  for (i = 0, j = 0; i < f->rank; i++, j++)
+	    {
+	      if (i == (idim - 1))
+	        j++;
+	      mpz_init_set (f->shape[i], array->shape[j]);
+	    }
+	}
     }
 
   if (mask)
@@ -1188,16 +1217,32 @@ gfc_resolve_minloc (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		    gfc_expr * mask)
 {
   const char *name;
+  int i, j, idim;
 
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
 
   if (dim == NULL)
-    f->rank = 1;
+    {
+      f->rank = 1;
+      f->shape = gfc_get_shape (1);
+      mpz_init_set_si (f->shape[0], array->rank);
+    }
   else
     {
       f->rank = array->rank - 1;
       gfc_resolve_dim_arg (dim);
+      if (array->shape && dim->expr_type == EXPR_CONSTANT)
+	{
+	  idim = (int) mpz_get_si (dim->value.integer);
+	  f->shape = gfc_get_shape (f->rank);
+	  for (i = 0, j = 0; i < f->rank; i++, j++)
+	    {
+	      if (i == (idim - 1))
+	        j++;
+	      mpz_init_set (f->shape[i], array->shape[j]);
+	    }
+	}
     }
 
   if (mask)
@@ -1232,6 +1277,7 @@ gfc_resolve_minval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		    gfc_expr * mask)
 {
   const char *name;
+  int i, j, idim;
 
   f->ts = array->ts;
 
@@ -1239,6 +1285,18 @@ gfc_resolve_minval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
     {
       f->rank = array->rank - 1;
       gfc_resolve_dim_arg (dim);
+
+      if (f->rank && array->shape && dim->expr_type == EXPR_CONSTANT)
+	{
+	  idim = (int) mpz_get_si (dim->value.integer);
+	  f->shape = gfc_get_shape (f->rank);
+	  for (i = 0, j = 0; i < f->rank; i++, j++)
+	    {
+	      if (i == (idim - 1))
+	        j++;
+	      mpz_init_set (f->shape[i], array->shape[j]);
+	    }
+	}
     }
 
   if (mask)

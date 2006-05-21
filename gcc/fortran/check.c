@@ -532,7 +532,12 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
   else if (target->expr_type == EXPR_FUNCTION)
     attr = target->symtree->n.sym->attr;
   else
-    gcc_assert (0); /* Target must be a variable or a function.  */
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a pointer "
+		 "or target VARIABLE or FUNCTION", gfc_current_intrinsic_arg[1],
+		 gfc_current_intrinsic, &target->where);
+      return FAILURE;
+    }
 
   if (!attr.pointer && !attr.target)
     {

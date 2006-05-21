@@ -494,7 +494,11 @@ gfc_trans_code (gfc_code * code)
 	  break;
 
 	case EXEC_CALL:
-	  res = gfc_trans_call (code);
+	  res = gfc_trans_call (code, false);
+	  break;
+
+	case EXEC_ASSIGN_CALL:
+	  res = gfc_trans_call (code, true);
 	  break;
 
 	case EXEC_RETURN:

@@ -1,3 +1,17 @@
+2006-05-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25746
+	* gfortran.dg/elemental_subroutine_3.f90: New test.
+
+	PR fortran/25090
+	* gfortran.dg/entry_dummy_ref_1.f90: Remove.
+
+	PR fortran/27584
+	* gfortran.dg/associated_target_1.f90: New test.
+
+	PR fortran/19015
+	* gfortran.dg/maxloc_shape_1.f90: New test.
+
 2006-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/24459
@@ -147,7 +161,7 @@
 	PR fortran/25082
 	* gfortran.dg/scalar_return_1.f90: New test.
 
-	PR fortran/24711
+	PR fortran/27411
 	* gfortran.dg/derived_comp_array_ref_1.f90: New test.
 
 2006-05-15  Jakub Jelinek  <jakub@redhat.com>
@@ -814,7 +828,7 @@
 	PR fortran/27089
 	* gfortran.dg/specification_type_resolution_1.f90
 
-	PR fortran/18803
+	PR fortran/18003
 	PR fortran/25669
 	PR fortran/26834
 	* gfortran.dg/bounds_temporaries_1.f90: New test.
