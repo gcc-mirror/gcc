@@ -2083,6 +2083,20 @@ cp_auto_var_in_fn_p (tree var, tree fn)
 	  && nonstatic_local_decl_p (var));
 }
 
+/* Like save_expr, but for C++.  */
+
+tree
+cp_save_expr (tree expr)
+{
+  /* There is no reason to create a SAVE_EXPR within a template; if
+     needed, we can create the SAVE_EXPR when instantiating the
+     template.  Furthermore, the middle-end cannot handle C++-specific
+     tree codes.  */
+  if (processing_template_decl)
+    return expr;
+  return save_expr (expr);
+}
+
 /* Initialize tree.c.  */
 
 void

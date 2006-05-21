@@ -1,3 +1,9 @@
+2006-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27210
+	* g++.dg/warn/new1.C: New test.
+	* g++.dg/template/new5.C: Likewise.
+
 2006-05-21  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.target/i386/20060512-1.c: Add -msse2 command line option.
