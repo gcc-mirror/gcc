@@ -1,3 +1,7 @@
+2006-05-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (floatsitf2): Remove constraints.
+
 2006-05-21  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR rtl-optimization/27671
