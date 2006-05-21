@@ -1,5 +1,5 @@
 /* { dg-do run { target i?86-*-* } } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-std=gnu99 -msse2" } */
 #include <emmintrin.h>
 __m128i __attribute__ ((__noinline__))
 vector_using_function ()
