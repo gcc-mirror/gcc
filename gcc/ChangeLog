@@ -1,5 +1,11 @@
 2006-05-21  Bernhard Fischer  <aldot@gcc.gnu.org>
 
+	* tree-cfg.c: Prune whitespace.
+	(debug_tree_cfg): Point to correct header containing the
+	TDF_* defines.
+
+2006-05-21  Bernhard Fischer  <aldot@gcc.gnu.org>
+
 	PR middle-end/25776
 	* cgraphunit.c (verify_cgraph_node): Typo in error message.
 
