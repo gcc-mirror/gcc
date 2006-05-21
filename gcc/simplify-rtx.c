@@ -3604,18 +3604,21 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
     return simplify_gen_relational (code, mode, cmp_mode,
 				    XEXP (op0, 0), XEXP (op0, 1));
 
-  /* (eq/ne (xor x y) x) simplifies to (eq/ne x 0).  */
+  /* (eq/ne (xor x y) x) simplifies to (eq/ne y 0).  */
   if ((code == EQ || code == NE)
       && op0code == XOR
       && rtx_equal_p (XEXP (op0, 0), op1)
-      && !side_effects_p (XEXP (op0, 1)))
-    return simplify_gen_relational (code, mode, cmp_mode, op1, const0_rtx);
-  /* Likewise (eq/ne (xor x y) y) simplifies to (eq/ne y 0).  */
+      && !side_effects_p (XEXP (op0, 0)))
+    return simplify_gen_relational (code, mode, cmp_mode,
+				    XEXP (op0, 1), const0_rtx);
+
+  /* Likewise (eq/ne (xor x y) y) simplifies to (eq/ne x 0).  */
   if ((code == EQ || code == NE)
       && op0code == XOR
       && rtx_equal_p (XEXP (op0, 1), op1)
-      && !side_effects_p (XEXP (op0, 0)))
-    return simplify_gen_relational (code, mode, cmp_mode, op1, const0_rtx);
+      && !side_effects_p (XEXP (op0, 1)))
+    return simplify_gen_relational (code, mode, cmp_mode,
+				    XEXP (op0, 0), const0_rtx);
 
   /* (eq/ne (xor x C1) C2) simplifies to (eq/ne x (C1^C2)).  */
   if ((code == EQ || code == NE)

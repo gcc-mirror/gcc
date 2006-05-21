@@ -1,3 +1,9 @@
+2006-05-21  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR rtl-optimization/27671
+	* gcc.c-torture/execute/pr27671-1.c: New.
+	* gcc.dg/pr27671-2.c: Likewise.
+
 2006-05-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/27613
