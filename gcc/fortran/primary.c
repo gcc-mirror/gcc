@@ -1933,6 +1933,21 @@ gfc_match_rvalue (gfc_expr ** result)
 
   if (sym->attr.function && sym->result == sym)
     {
+      /* See if this is a directly recursive function call.  */
+      gfc_gobble_whitespace ();
+      if (sym->attr.recursive
+	    && gfc_peek_char () == '('
+	    && gfc_current_ns->proc_name == sym)
+	{
+	  if (!sym->attr.dimension)
+	    goto function0;
+
+	  gfc_error ("'%s' is array valued and directly recursive "
+		     "at %C , so the keyword RESULT must be specified "
+		     "in the FUNCTION statement", sym->name);
+	  return MATCH_ERROR;
+	}
+	
       if (gfc_current_ns->proc_name == sym
 	  || (gfc_current_ns->parent != NULL
 	      && gfc_current_ns->parent->proc_name == sym))
