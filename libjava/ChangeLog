@@ -1,3 +1,7 @@
+2006-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* HACKING: Update GNU Classpath import instructions.
+	
 2006-05-21  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* java/lang/natClass.cc (_Jv_FindMethodInCache): Mark klass, name and
