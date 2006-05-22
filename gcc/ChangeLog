@@ -2,6 +2,14 @@
 
 	Revert
 	2006-01-31  Richard Guenther  <rguenther@suse.de>
+	Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/install.texi (--disable-libgcc-math): Document.
+
+2006-05-22  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2006-01-31  Richard Guenther  <rguenther@suse.de>
 
 	* doc/invoke.texi (-msselibm): Document.
 	* target.h (expand_library_builtin): New target hook.

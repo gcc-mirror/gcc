@@ -1114,10 +1114,6 @@ do a @samp{make -C gcc gnatlib_and_tools}.
 Specify that the run-time libraries for stack smashing protection
 should not be built.
 
-@item --disable-libgcc-math
-Specify that the run-time libraries for arch and gcc specific math
-functions should not be built.
-
 @item --disable-libgomp
 Specify that the run-time libraries used by GOMP should not be built.
 
