@@ -1,6 +1,0 @@
-This directory contains parts of the GLIBC package, which are not part of GCC
-but shipped with GCC as a convenience.  This includes the files in the flt-32
-and dbl-64 directories which are imported from the GLIBC sysdeps/ieee754
-versions.  Changes to these parts of libgcc-math should be done upstream in
-GLIBC and then re-imported to libgcc-math.
-

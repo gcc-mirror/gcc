@@ -351,7 +351,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that prorgams built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgcc-math)$(TARGET_LIB_PATH_libgomp)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/.libs:
@@ -364,10 +364,6 @@ TARGET_LIB_PATH_libmudflap = $$r/$(TARGET_SUBDIR)/libmudflap/.libs:
 @if target-libssp
 TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
 @endif target-libssp
-
-@if target-libgcc-math
-TARGET_LIB_PATH_libgcc-math = $$r/$(TARGET_SUBDIR)/libgcc-math/.libs:
-@endif target-libgcc-math
 
 @if target-libgomp
 TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
@@ -620,7 +616,6 @@ configure-target:  \
     maybe-configure-target-libstdc++-v3 \
     maybe-configure-target-libmudflap \
     maybe-configure-target-libssp \
-    maybe-configure-target-libgcc-math \
     maybe-configure-target-newlib \
     maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
@@ -765,7 +760,6 @@ all-host: maybe-all-gnattools
 all-target: maybe-all-target-libstdc++-v3
 all-target: maybe-all-target-libmudflap
 all-target: maybe-all-target-libssp
-all-target: maybe-all-target-libgcc-math
 all-target: maybe-all-target-newlib
 all-target: maybe-all-target-libgfortran
 all-target: maybe-all-target-libobjc
@@ -874,7 +868,6 @@ info-host: maybe-info-gnattools
 info-target: maybe-info-target-libstdc++-v3
 info-target: maybe-info-target-libmudflap
 info-target: maybe-info-target-libssp
-info-target: maybe-info-target-libgcc-math
 info-target: maybe-info-target-newlib
 info-target: maybe-info-target-libgfortran
 info-target: maybe-info-target-libobjc
@@ -978,7 +971,6 @@ dvi-host: maybe-dvi-gnattools
 dvi-target: maybe-dvi-target-libstdc++-v3
 dvi-target: maybe-dvi-target-libmudflap
 dvi-target: maybe-dvi-target-libssp
-dvi-target: maybe-dvi-target-libgcc-math
 dvi-target: maybe-dvi-target-newlib
 dvi-target: maybe-dvi-target-libgfortran
 dvi-target: maybe-dvi-target-libobjc
@@ -1082,7 +1074,6 @@ html-host: maybe-html-gnattools
 html-target: maybe-html-target-libstdc++-v3
 html-target: maybe-html-target-libmudflap
 html-target: maybe-html-target-libssp
-html-target: maybe-html-target-libgcc-math
 html-target: maybe-html-target-newlib
 html-target: maybe-html-target-libgfortran
 html-target: maybe-html-target-libobjc
@@ -1186,7 +1177,6 @@ TAGS-host: maybe-TAGS-gnattools
 TAGS-target: maybe-TAGS-target-libstdc++-v3
 TAGS-target: maybe-TAGS-target-libmudflap
 TAGS-target: maybe-TAGS-target-libssp
-TAGS-target: maybe-TAGS-target-libgcc-math
 TAGS-target: maybe-TAGS-target-newlib
 TAGS-target: maybe-TAGS-target-libgfortran
 TAGS-target: maybe-TAGS-target-libobjc
@@ -1290,7 +1280,6 @@ install-info-host: maybe-install-info-gnattools
 install-info-target: maybe-install-info-target-libstdc++-v3
 install-info-target: maybe-install-info-target-libmudflap
 install-info-target: maybe-install-info-target-libssp
-install-info-target: maybe-install-info-target-libgcc-math
 install-info-target: maybe-install-info-target-newlib
 install-info-target: maybe-install-info-target-libgfortran
 install-info-target: maybe-install-info-target-libobjc
@@ -1394,7 +1383,6 @@ installcheck-host: maybe-installcheck-gnattools
 installcheck-target: maybe-installcheck-target-libstdc++-v3
 installcheck-target: maybe-installcheck-target-libmudflap
 installcheck-target: maybe-installcheck-target-libssp
-installcheck-target: maybe-installcheck-target-libgcc-math
 installcheck-target: maybe-installcheck-target-newlib
 installcheck-target: maybe-installcheck-target-libgfortran
 installcheck-target: maybe-installcheck-target-libobjc
@@ -1498,7 +1486,6 @@ mostlyclean-host: maybe-mostlyclean-gnattools
 mostlyclean-target: maybe-mostlyclean-target-libstdc++-v3
 mostlyclean-target: maybe-mostlyclean-target-libmudflap
 mostlyclean-target: maybe-mostlyclean-target-libssp
-mostlyclean-target: maybe-mostlyclean-target-libgcc-math
 mostlyclean-target: maybe-mostlyclean-target-newlib
 mostlyclean-target: maybe-mostlyclean-target-libgfortran
 mostlyclean-target: maybe-mostlyclean-target-libobjc
@@ -1602,7 +1589,6 @@ clean-host: maybe-clean-gnattools
 clean-target: maybe-clean-target-libstdc++-v3
 clean-target: maybe-clean-target-libmudflap
 clean-target: maybe-clean-target-libssp
-clean-target: maybe-clean-target-libgcc-math
 clean-target: maybe-clean-target-newlib
 clean-target: maybe-clean-target-libgfortran
 clean-target: maybe-clean-target-libobjc
@@ -1706,7 +1692,6 @@ distclean-host: maybe-distclean-gnattools
 distclean-target: maybe-distclean-target-libstdc++-v3
 distclean-target: maybe-distclean-target-libmudflap
 distclean-target: maybe-distclean-target-libssp
-distclean-target: maybe-distclean-target-libgcc-math
 distclean-target: maybe-distclean-target-newlib
 distclean-target: maybe-distclean-target-libgfortran
 distclean-target: maybe-distclean-target-libobjc
@@ -1810,7 +1795,6 @@ maintainer-clean-host: maybe-maintainer-clean-gnattools
 maintainer-clean-target: maybe-maintainer-clean-target-libstdc++-v3
 maintainer-clean-target: maybe-maintainer-clean-target-libmudflap
 maintainer-clean-target: maybe-maintainer-clean-target-libssp
-maintainer-clean-target: maybe-maintainer-clean-target-libgcc-math
 maintainer-clean-target: maybe-maintainer-clean-target-newlib
 maintainer-clean-target: maybe-maintainer-clean-target-libgfortran
 maintainer-clean-target: maybe-maintainer-clean-target-libobjc
@@ -1967,7 +1951,6 @@ check-target:  \
     maybe-check-target-libstdc++-v3 \
     maybe-check-target-libmudflap \
     maybe-check-target-libssp \
-    maybe-check-target-libgcc-math \
     maybe-check-target-newlib \
     maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
@@ -2168,7 +2151,6 @@ install-target:  \
     maybe-install-target-libstdc++-v3 \
     maybe-install-target-libmudflap \
     maybe-install-target-libssp \
-    maybe-install-target-libgcc-math \
     maybe-install-target-newlib \
     maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
@@ -30199,360 +30181,6 @@ maintainer-clean-target-libssp:
 
 
 
-.PHONY: configure-target-libgcc-math maybe-configure-target-libgcc-math
-maybe-configure-target-libgcc-math:
-@if target-libgcc-math
-maybe-configure-target-libgcc-math: configure-target-libgcc-math
-configure-target-libgcc-math: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for libgcc-math..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc-math ; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgcc-math/multilib.tmp 2> /dev/null ; \
-	if test -r $(TARGET_SUBDIR)/libgcc-math/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libgcc-math/multilib.tmp $(TARGET_SUBDIR)/libgcc-math/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libgcc-math/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libgcc-math/Makefile; \
-	    mv $(TARGET_SUBDIR)/libgcc-math/multilib.tmp $(TARGET_SUBDIR)/libgcc-math/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libgcc-math/multilib.tmp $(TARGET_SUBDIR)/libgcc-math/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libgcc-math/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc-math ; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo Configuring in $(TARGET_SUBDIR)/libgcc-math; \
-	cd "$(TARGET_SUBDIR)/libgcc-math" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc-math/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc-math"; \
-	libsrcdir="$$s/libgcc-math"; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
-	  || exit 1
-@endif target-libgcc-math
-
-
-
-
-
-.PHONY: all-target-libgcc-math maybe-all-target-libgcc-math
-maybe-all-target-libgcc-math:
-@if target-libgcc-math
-TARGET-target-libgcc-math=all
-maybe-all-target-libgcc-math: all-target-libgcc-math
-all-target-libgcc-math: configure-target-libgcc-math
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libgcc-math))
-@endif target-libgcc-math
-
-
-
-
-
-.PHONY: check-target-libgcc-math maybe-check-target-libgcc-math
-maybe-check-target-libgcc-math:
-@if target-libgcc-math
-maybe-check-target-libgcc-math: check-target-libgcc-math
-
-check-target-libgcc-math:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-libgcc-math
-
-.PHONY: install-target-libgcc-math maybe-install-target-libgcc-math
-maybe-install-target-libgcc-math:
-@if target-libgcc-math
-maybe-install-target-libgcc-math: install-target-libgcc-math
-
-install-target-libgcc-math: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-libgcc-math
-
-# Other targets (info, dvi, etc.)
-
-.PHONY: maybe-info-target-libgcc-math info-target-libgcc-math
-maybe-info-target-libgcc-math:
-@if target-libgcc-math
-maybe-info-target-libgcc-math: info-target-libgcc-math
-
-info-target-libgcc-math: \
-    configure-target-libgcc-math 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           info) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-dvi-target-libgcc-math dvi-target-libgcc-math
-maybe-dvi-target-libgcc-math:
-@if target-libgcc-math
-maybe-dvi-target-libgcc-math: dvi-target-libgcc-math
-
-dvi-target-libgcc-math: \
-    configure-target-libgcc-math 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-html-target-libgcc-math html-target-libgcc-math
-maybe-html-target-libgcc-math:
-@if target-libgcc-math
-maybe-html-target-libgcc-math: html-target-libgcc-math
-
-html-target-libgcc-math: \
-    configure-target-libgcc-math 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           html) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-TAGS-target-libgcc-math TAGS-target-libgcc-math
-maybe-TAGS-target-libgcc-math:
-@if target-libgcc-math
-maybe-TAGS-target-libgcc-math: TAGS-target-libgcc-math
-
-TAGS-target-libgcc-math: \
-    configure-target-libgcc-math 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-install-info-target-libgcc-math install-info-target-libgcc-math
-maybe-install-info-target-libgcc-math:
-@if target-libgcc-math
-maybe-install-info-target-libgcc-math: install-info-target-libgcc-math
-
-install-info-target-libgcc-math: \
-    configure-target-libgcc-math \
-    info-target-libgcc-math 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-installcheck-target-libgcc-math installcheck-target-libgcc-math
-maybe-installcheck-target-libgcc-math:
-@if target-libgcc-math
-maybe-installcheck-target-libgcc-math: installcheck-target-libgcc-math
-
-installcheck-target-libgcc-math: \
-    configure-target-libgcc-math 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-mostlyclean-target-libgcc-math mostlyclean-target-libgcc-math
-maybe-mostlyclean-target-libgcc-math:
-@if target-libgcc-math
-maybe-mostlyclean-target-libgcc-math: mostlyclean-target-libgcc-math
-
-mostlyclean-target-libgcc-math: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-clean-target-libgcc-math clean-target-libgcc-math
-maybe-clean-target-libgcc-math:
-@if target-libgcc-math
-maybe-clean-target-libgcc-math: clean-target-libgcc-math
-
-clean-target-libgcc-math: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           clean) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-distclean-target-libgcc-math distclean-target-libgcc-math
-maybe-distclean-target-libgcc-math:
-@if target-libgcc-math
-maybe-distclean-target-libgcc-math: distclean-target-libgcc-math
-
-distclean-target-libgcc-math: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-.PHONY: maybe-maintainer-clean-target-libgcc-math maintainer-clean-target-libgcc-math
-maybe-maintainer-clean-target-libgcc-math:
-@if target-libgcc-math
-maybe-maintainer-clean-target-libgcc-math: maintainer-clean-target-libgcc-math
-
-maintainer-clean-target-libgcc-math: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgcc-math/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgcc-math" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libgcc-math && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-libgcc-math
-
-
-
-
-
 .PHONY: configure-target-newlib maybe-configure-target-newlib
 maybe-configure-target-newlib:
 @if target-newlib
@@ -37979,7 +37607,6 @@ restrap:
 configure-target-libstdc++-v3: stage_last
 configure-target-libmudflap: stage_last
 configure-target-libssp: stage_last
-configure-target-libgcc-math: stage_last
 configure-target-newlib: stage_last
 configure-target-libgfortran: stage_last
 configure-target-libobjc: stage_last
@@ -38003,7 +37630,6 @@ configure-target-libgomp: stage_last
 configure-target-libstdc++-v3: maybe-all-gcc
 configure-target-libmudflap: maybe-all-gcc
 configure-target-libssp: maybe-all-gcc
-configure-target-libgcc-math: maybe-all-gcc
 configure-target-newlib: maybe-all-gcc
 configure-target-libgfortran: maybe-all-gcc
 configure-target-libobjc: maybe-all-gcc
