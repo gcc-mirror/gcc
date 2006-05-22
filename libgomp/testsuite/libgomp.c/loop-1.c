@@ -1,6 +1,8 @@
 /* Test that all loop iterations are touched.  This doesn't verify 
    scheduling order, merely coverage.  */
 
+/* { dg-require-effective-target sync_int_long } */
+
 #include <omp.h>
 #include <string.h>
 #include <assert.h>

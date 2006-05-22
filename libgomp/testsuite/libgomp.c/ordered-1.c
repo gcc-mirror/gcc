@@ -3,6 +3,8 @@
 /* Note that we never call GOMP_ordered_start in here.  AFAICS, this is
    valid; the only requirement is "not more than once per iteration".  */
 
+/* { dg-require-effective-target sync_int_long } */
+
 #include <omp.h>
 #include <string.h>
 #include <assert.h>

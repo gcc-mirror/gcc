@@ -1,5 +1,7 @@
 /* Trivial test of critical sections.  */
 
+/* { dg-require-effective-target sync_int_long } */
+
 #include <omp.h>
 #include <sys/time.h>
 #include <unistd.h>

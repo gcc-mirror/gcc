@@ -1,3 +1,14 @@
+2006-05-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libgomp/27612
+	* testsuite/libgomp.c/sections-1.c: Require sync_int_long.
+	* testsuite/libgomp.c/critical-1.c: Likewise.
+	* testsuite/libgomp.c/loop-1.c: Likewise.
+	* testsuite/libgomp.c/loop-2.c: Likewise.
+	* testsuite/libgomp.c/single-1.c: Likewise.
+	* testsuite/libgomp.c/ordered-1.c: Likewise.
+	* testsuite/libgomp.c/ordered-2.c: Likewise.
+
 2006-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27416

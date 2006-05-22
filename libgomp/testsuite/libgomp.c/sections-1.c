@@ -1,5 +1,7 @@
 /* Test that all sections are touched.  */
 
+/* { dg-require-effective-target sync_int_long } */
+
 #include <omp.h>
 #include <string.h>
 #include <assert.h>

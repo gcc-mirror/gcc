@@ -2,6 +2,8 @@
    even thread distributions here; there are multiple valid solutions
    for uneven thread distributions.  */
 
+/* { dg-require-effective-target sync_int_long } */
+
 #include <omp.h>
 #include <string.h>
 #include <assert.h>
