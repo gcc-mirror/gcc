@@ -1,3 +1,8 @@
+2006-05-22  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/27707
+	* g++.dg/tree-ssa/ivopts-1.C: XFAIL for hppa*-*-*.
+
 2006-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27210
