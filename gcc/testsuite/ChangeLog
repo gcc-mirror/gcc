@@ -1,5 +1,8 @@
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c/27420
+	* gcc.dg/func-args-2.c: New test.
+
 	PR c/26818
 	* gcc.dg/struct-incompl-1.c: New test.
 

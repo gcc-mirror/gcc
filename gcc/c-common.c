@@ -3547,6 +3547,9 @@ self_promoting_args_p (tree parms)
     {
       tree type = TREE_VALUE (t);
 
+      if (type == error_mark_node)
+	continue;
+
       if (TREE_CHAIN (t) == 0 && type != void_type_node)
 	return 0;
 
