@@ -1,3 +1,9 @@
+2006-05-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration): Remove reference to CrossGCC
+	FAQ which was hijacked.
+	(Building): Ditto.
+
 2006-05-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in: Undo the last 2 changes.

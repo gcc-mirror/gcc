@@ -1272,8 +1272,6 @@ will be run on these files to make them compatible with GCC@.
 Tells GCC not use any target headers from a libc when building a cross
 compiler.  When crossing to GNU/Linux, you need the headers so GCC
 can build the exception handling for libgcc.
-See @uref{http://www.objsw.com/CrossGCC/,,CrossGCC} for more information
-on this option.
 
 @item --with-libs
 @itemx --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
@@ -1582,10 +1580,6 @@ always appear ``different''.  If you encounter this problem, you will
 need to disable comparison in the @file{Makefile}.)
 
 @section Building a cross compiler
-
-We recommend reading the
-@uref{http://www.objsw.com/CrossGCC/,,crossgcc FAQ}
-for information about building cross compilers.
 
 When building a cross compiler, it is not generally possible to do a
 3-stage bootstrap of the compiler.  This makes for an interesting problem
