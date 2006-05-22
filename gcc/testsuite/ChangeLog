@@ -1,5 +1,7 @@
 2006-05-22  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/vmx/pr27006.c: Remove dg-do directive; use default.
+
 	* gcc.c-torture/execute/20040709-2.c: Remove temporary hack for ppc64.
 
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
