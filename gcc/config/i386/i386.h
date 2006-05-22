@@ -513,8 +513,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define EXTRA_SPECS							\
   { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
-
-#define LINK_GCC_MATH_SPEC "%{msselibm:-lgcc-math}"
 
 /* target machine storage layout */
 

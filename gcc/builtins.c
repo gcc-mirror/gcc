@@ -5598,14 +5598,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
-  else
-    {
-      /* Try expanding the builtin via the generic target hook.  */
-      rtx tmp = targetm.expand_library_builtin (exp, target, subtarget,
-						mode, ignore);
-      if (tmp != NULL_RTX)
-	return tmp;
-    }
 
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */
@@ -8951,18 +8943,6 @@ validate_arglist (tree arglist, ...)
 
 rtx
 default_expand_builtin (tree exp ATTRIBUTE_UNUSED,
-			rtx target ATTRIBUTE_UNUSED,
-			rtx subtarget ATTRIBUTE_UNUSED,
-			enum machine_mode mode ATTRIBUTE_UNUSED,
-			int ignore ATTRIBUTE_UNUSED)
-{
-  return NULL_RTX;
-}
-
-/* Default target-specific library builtin expander that does nothing.  */
-
-rtx
-default_expand_library_builtin (tree exp ATTRIBUTE_UNUSED,
 			rtx target ATTRIBUTE_UNUSED,
 			rtx subtarget ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,

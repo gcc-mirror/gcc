@@ -682,10 +682,6 @@ proper position among the other output files.  */
 #endif
 #endif
 
-#ifndef LINK_GCC_MATH_SPEC
-#define LINK_GCC_MATH_SPEC ""
-#endif
-
 #ifndef LINK_PIE_SPEC
 #ifdef HAVE_LD_PIE
 #define LINK_PIE_SPEC "%{pie:-pie} "
@@ -708,7 +704,7 @@ proper position among the other output files.  */
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
     %{fopenmp:%:include(libgomp.spec)%(link_gomp)} %(mflib)\
     %{fprofile-arcs|fprofile-generate|coverage:-lgcov}\
-    %{!nostdlib:%{!nodefaultlibs:%(link_gcc_math) %(link_ssp) %(link_gcc_c_sequence)}}\
+    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
 #endif
 
@@ -739,7 +735,6 @@ static const char *cc1_spec = CC1_SPEC;
 static const char *cc1plus_spec = CC1PLUS_SPEC;
 static const char *link_gcc_c_sequence_spec = LINK_GCC_C_SEQUENCE_SPEC;
 static const char *link_ssp_spec = LINK_SSP_SPEC;
-static const char *link_gcc_math_spec = LINK_GCC_MATH_SPEC;
 static const char *asm_spec = ASM_SPEC;
 static const char *asm_final_spec = ASM_FINAL_SPEC;
 static const char *link_spec = LINK_SPEC;
@@ -1547,7 +1542,6 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("cc1plus",			&cc1plus_spec),
   INIT_STATIC_SPEC ("link_gcc_c_sequence",	&link_gcc_c_sequence_spec),
   INIT_STATIC_SPEC ("link_ssp",			&link_ssp_spec),
-  INIT_STATIC_SPEC ("link_gcc_math",		&link_gcc_math_spec),
   INIT_STATIC_SPEC ("endfile",			&endfile_spec),
   INIT_STATIC_SPEC ("link",			&link_spec),
   INIT_STATIC_SPEC ("lib",			&lib_spec),

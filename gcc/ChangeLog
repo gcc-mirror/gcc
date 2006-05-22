@@ -1,3 +1,31 @@
+2006-05-22  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2006-01-31  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi (-msselibm): Document.
+	* target.h (expand_library_builtin): New target hook.
+	* builtins.c (expand_builtin): Use expand_library_builtin.
+	(default_expand_library_builtin): New function.
+	* gcc.c (LINK_GCC_MATH_SPEC): Define.
+	(LINK_COMMAND_SPEC): Handle %(link_gcc_math).
+	(link_gcc_math_spec): Declare.
+	(static_specs): Add link_gcc_math_spec.
+	* expr.h (default_expand_library_builtin): Declare.
+	* target-def.h (TARGET_EXPAND_LIBRARY_BUILTIN): Define.
+	(TARGET_INITIALIZER): Add TARGET_EXPAND_LIBRARY_BUILTIN.
+	* config/i386/i386.h: Provide LINK_GCC_MATH_SPEC.
+	* config/i386/i386.opt (msselibm): New target option.
+	* config/i386/i386.c (ix86_builtin_function_variants): New array.
+	(ix86_init_sse_abi_builtins): New function.
+	(ix86_expand_library_builtin): Likewise.
+	(TARGET_EXPAND_LIBRARY_BUILTIN): Define.
+	(override_options): Handle error conditions wrt -msselibm.
+	(ix86_builtins): Add function codes for SSE2 ABI builtins.
+	(ix86_init_builtins): Call ix86_init_sse_abi_builtins.
+	* doc/extend.texi (__builtin_sse2_*): Document new target specific
+	builtins.
+
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/27420

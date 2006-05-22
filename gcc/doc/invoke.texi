@@ -533,7 +533,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
--mmmx  -msse  -msse2 -msse3 -m3dnow -msselibm @gol
+-mmmx  -msse  -msse2 -msse3 -m3dnow @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
@@ -9537,12 +9537,6 @@ perform runtime CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
-
-@item -msselibm
-@opindex msselibm
-Use special versions of certain libm routines that come with an SSE
-ABI and an SSE implementation.  Useful together with @option{-mfpmath=sse}
-to avoid moving values between SSE registers and the x87 FP stack.
 
 @item -mpush-args
 @itemx -mno-push-args
