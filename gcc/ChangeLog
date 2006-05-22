@@ -3,6 +3,8 @@
 	* doc/rtl.texi: Fix a typo.
 	* see.c: Fix comment typos.
 
+	* tree-ssa-structalias.h (alias_info): Remove num_references.
+
 2006-05-21  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c (BAD): Conditionalize on OPT_Wpragmas.
