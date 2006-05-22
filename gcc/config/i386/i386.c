@@ -10175,6 +10175,12 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 {
   rtx tmp;
 
+  /* If we have emitted a compare insn, go straight to simple.
+     ix86_expand_compare won't emit anything if ix86_compare_emitted
+     is non NULL.  */
+  if (ix86_compare_emitted)
+    goto simple;
+
   switch (GET_MODE (ix86_compare_op0))
     {
     case QImode:

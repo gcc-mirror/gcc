@@ -1,3 +1,9 @@
+2006-05-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/27266
+	* config/i386/i386.c (ix86_expand_branch): Jump to simple if
+	ix86_compare_emitted is non-NULL.
+
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27451
