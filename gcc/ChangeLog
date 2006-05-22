@@ -1,3 +1,12 @@
+2006-05-22  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/25514
+	* combine.c (replaced_rhs_insn): New variable.
+	(combine_instructions): Set replaced_rhs_insn when trying to replace
+	a SET_SRC with a REG_EQUAL note.
+	(distribute_notes): Use replaced_rhs_insn when determining the live
+	range of a REG_DEAD register.
+
 2006-18-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
             Anatoly Sokolov <aesok@post.ru>
 
