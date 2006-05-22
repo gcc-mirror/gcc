@@ -1067,9 +1067,6 @@ int ix86_section_threshold = 65536;
 /* Prefix built by ASM_GENERATE_INTERNAL_LABEL.  */
 char internal_label_prefix[16];
 int internal_label_prefix_len;
-
-/* Table for BUILT_IN_NORMAL to BUILT_IN_MD mapping.  */
-static GTY(()) tree ix86_builtin_function_variants[(int) END_BUILTINS];
 
 static bool ix86_handle_option (size_t, const char *, int);
 static void output_pic_addr_const (FILE *, rtx, int);
@@ -1104,7 +1101,6 @@ static int ix86_issue_rate (void);
 static int ix86_adjust_cost (rtx, rtx, rtx, int);
 static int ia32_multipass_dfa_lookahead (void);
 static void ix86_init_mmx_sse_builtins (void);
-static void ix86_init_sse_abi_builtins (void);
 static rtx x86_this_parameter (tree);
 static void x86_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT, tree);
@@ -1162,7 +1158,6 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
 static void ix86_init_builtins (void);
 static rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static rtx ix86_expand_library_builtin (tree, rtx, rtx, enum machine_mode, int);
 static const char *ix86_mangle_fundamental_type (tree);
 static tree ix86_stack_protect_fail (void);
 static rtx ix86_internal_arg_pointer (void);
@@ -1227,8 +1222,6 @@ static section *x86_64_elf_select_section (tree decl, int reloc,
 #define TARGET_INIT_BUILTINS ix86_init_builtins
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN ix86_expand_builtin
-#undef TARGET_EXPAND_LIBRARY_BUILTIN
-#define TARGET_EXPAND_LIBRARY_BUILTIN ix86_expand_library_builtin
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
@@ -1919,16 +1912,6 @@ override_options (void)
   if (TARGET_SSEREGPARM
       && ! TARGET_SSE)
     error ("-msseregparm used without SSE enabled");
-
-  /* Accept -msselibm only if at least SSE support is enabled.  */
-  if (TARGET_SSELIBM
-      && ! TARGET_SSE2)
-    error ("-msselibm used without SSE2 enabled");
-
-  /* Ignore -msselibm on 64bit targets.  */
-  if (TARGET_SSELIBM
-      && TARGET_64BIT)
-    error ("-msselibm used on a 64bit target");
 
   ix86_fpmath = TARGET_FPMATH_DEFAULT;
 
@@ -14378,28 +14361,6 @@ enum ix86_builtins
   IX86_BUILTIN_VEC_SET_V8HI,
   IX86_BUILTIN_VEC_SET_V4HI,
 
-  /* SSE2 ABI functions.  */
-  IX86_BUILTIN_SSE2_ACOS,
-  IX86_BUILTIN_SSE2_ACOSF,
-  IX86_BUILTIN_SSE2_ASIN,
-  IX86_BUILTIN_SSE2_ASINF,
-  IX86_BUILTIN_SSE2_ATAN,
-  IX86_BUILTIN_SSE2_ATANF,
-  IX86_BUILTIN_SSE2_ATAN2,
-  IX86_BUILTIN_SSE2_ATAN2F,
-  IX86_BUILTIN_SSE2_COS,
-  IX86_BUILTIN_SSE2_COSF,
-  IX86_BUILTIN_SSE2_EXP,
-  IX86_BUILTIN_SSE2_EXPF,
-  IX86_BUILTIN_SSE2_LOG10,
-  IX86_BUILTIN_SSE2_LOG10F,
-  IX86_BUILTIN_SSE2_LOG,
-  IX86_BUILTIN_SSE2_LOGF,
-  IX86_BUILTIN_SSE2_SIN,
-  IX86_BUILTIN_SSE2_SINF,
-  IX86_BUILTIN_SSE2_TAN,
-  IX86_BUILTIN_SSE2_TANF,
-
   IX86_BUILTIN_MAX
 };
 
@@ -14781,8 +14742,6 @@ ix86_init_builtins (void)
 {
   if (TARGET_MMX)
     ix86_init_mmx_sse_builtins ();
-  if (TARGET_SSE2)
-    ix86_init_sse_abi_builtins ();
 }
 
 /* Set up all the MMX/SSE builtins.  This is not called if TARGET_MMX
@@ -15421,52 +15380,6 @@ ix86_init_mmx_sse_builtins (void)
 				    integer_type_node, NULL_TREE);
   def_builtin (MASK_SSE | MASK_3DNOW_A, "__builtin_ia32_vec_set_v4hi",
 	       ftype, IX86_BUILTIN_VEC_SET_V4HI);
-}
-#undef def_builtin
-
-/* Set up all the SSE ABI builtins that we may use to override
-   the normal builtins.  */
-static void
-ix86_init_sse_abi_builtins (void)
-{
-  tree flt, flt2;
-
-  /* Bail out in case the template definitions are not available.  */
-  if (! built_in_decls [BUILT_IN_SIN]
-      || ! built_in_decls [BUILT_IN_SINF]
-      || ! built_in_decls [BUILT_IN_ATAN2]
-      || ! built_in_decls [BUILT_IN_ATAN2F])
-    return;
-
-  /* Build the function types as variants of the existing ones.  */
-  flt = build_variant_type_copy (TREE_TYPE (built_in_decls [BUILT_IN_SINF]));
-  TYPE_ATTRIBUTES (flt)
-    = tree_cons (get_identifier ("sseregparm"),
-                 NULL_TREE, TYPE_ATTRIBUTES (flt));
-  flt2 = build_variant_type_copy (TREE_TYPE (built_in_decls [BUILT_IN_ATAN2F]));
-  TYPE_ATTRIBUTES (flt2)
-    = tree_cons (get_identifier ("sseregparm"),
-                 NULL_TREE, TYPE_ATTRIBUTES (flt2));
-
-#define def_builtin(capname, name, type) \
-  ix86_builtin_function_variants [BUILT_IN_ ## capname]			\
-    = lang_hooks.builtin_function ("__builtin_sse2_" # name, type,	\
-				   IX86_BUILTIN_SSE2_ ## capname,	\
-				   BUILT_IN_NORMAL,			\
-				   "__libm_sse2_" # name, NULL_TREE)
- 
-  def_builtin (ACOSF, acosf, flt);
-  def_builtin (ASINF, asinf, flt);
-  def_builtin (ATANF, atanf, flt);
-  def_builtin (ATAN2F, atan2f, flt2);
-  def_builtin (COSF, cosf, flt);
-  def_builtin (EXPF, expf, flt);
-  def_builtin (LOG10F, log10f, flt);
-  def_builtin (LOGF, logf, flt);
-  def_builtin (SINF, sinf, flt);
-  def_builtin (TANF, tanf, flt);
-
-#undef def_builtin
 }
 
 /* Errors in the source file can cause expand_expr to return const0_rtx
@@ -16300,39 +16213,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return ix86_expand_sse_comi (d, arglist, target);
 
   gcc_unreachable ();
-}
-
-/* Expand an expression EXP that calls a built-in library function,
-   with result going to TARGET if that's convenient
-   (and in mode MODE if that's convenient).
-   SUBTARGET may be used as the target for computing one of EXP's operands.
-   IGNORE is nonzero if the value is to be ignored.  */
-
-static rtx
-ix86_expand_library_builtin (tree exp, rtx target,
-			     rtx subtarget ATTRIBUTE_UNUSED,
-			     enum machine_mode mode ATTRIBUTE_UNUSED,
-			     int ignore)
-{
-  enum built_in_function fncode;
-  tree fndecl, newfn, call;
-
-  /* Try expanding builtin math functions to the SSE2 ABI variants.  */
-  if (!TARGET_SSELIBM)
-      return NULL_RTX;
-
-  fncode = builtin_mathfn_code (exp);
-  if (!ix86_builtin_function_variants [(int)fncode])
-    return NULL_RTX;
-
-  fndecl = get_callee_fndecl (exp);
-  if (DECL_RTL_SET_P (fndecl))
-    return NULL_RTX;
-
-  /* Build the redirected call and expand it.  */
-  newfn = ix86_builtin_function_variants [(int)fncode];
-  call = build_function_call_expr (newfn, TREE_OPERAND (exp, 1));
-  return expand_call (call, target, ignore);
 }
 
 /* Store OPERAND to the memory after reload is completed.  This means
