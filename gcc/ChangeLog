@@ -1,3 +1,7 @@
+2006-05-22  Richard Sandiford  <richard@codesourcery.com>
+
+	* mklibgcc.in (lib2funcs): Remove _floatdidf from initial assignment.
+
 2006-05-22  Richard Guenther  <rguenther@suse.de>
 
 	Revert
