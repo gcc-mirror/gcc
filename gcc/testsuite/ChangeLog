@@ -1,3 +1,8 @@
+2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27716
+	* g++.dg/other/assign1.C: New test.
+
 2006-05-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/27266
