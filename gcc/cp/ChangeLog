@@ -1,5 +1,8 @@
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27716
+	* typeck.c (build_modify_expr): Test arguments for error_operand_p.
+
 	* decl.c (grokdeclarator): Return error_mark_node instead of NULL_TREE.
 
 2006-05-21  Mark Mitchell  <mark@codesourcery.com>
