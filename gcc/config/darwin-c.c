@@ -114,7 +114,7 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
     BAD ("malformed '#pragma options', ignoring");
 
   if (pragma_lex (&x) != CPP_EOF)
-    BAD ("junk at end of '#pragma options'");
+    warning (OPT_Wpragmas, "junk at end of '#pragma options'");
 
   arg = IDENTIFIER_POINTER (t);
   if (!strcmp (arg, "mac68k"))
