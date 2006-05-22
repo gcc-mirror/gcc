@@ -85,7 +85,7 @@ done
 # set to <wordsize>.  <objfile> is the name of the associated object file
 
 lib2funcs='_muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3
-	_cmpdi2 _ucmpdi2 _floatdidf _clear_cache
+	_cmpdi2 _ucmpdi2 _clear_cache
 	_enable_execute_stack _trampoline __main _absvsi2 _absvdi2 _addvsi3
 	_addvdi3 _subvsi3 _subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 _ctors
 	_ffssi2 _ffsdi2 _clz _clzsi2 _clzdi2 _ctzsi2 _ctzdi2 _popcount_tab
