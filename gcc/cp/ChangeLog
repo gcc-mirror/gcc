@@ -1,3 +1,7 @@
+2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* decl.c (grokdeclarator): Return error_mark_node instead of NULL_TREE.
+
 2006-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27210
