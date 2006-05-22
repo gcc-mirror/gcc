@@ -1,3 +1,8 @@
+2006-05-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/27266
+	* gcc.target/i386/pr27266.c: New.
+
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27451
