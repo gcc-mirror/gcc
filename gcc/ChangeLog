@@ -1,3 +1,9 @@
+2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27451
+	* stmt.c (expand_asm_operands): Skip asm statement with erroneous
+	clobbers.
+
 2006-05-22  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/25514
