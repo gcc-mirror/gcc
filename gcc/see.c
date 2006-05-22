@@ -533,7 +533,7 @@ struct see_ref_s
   /* The insn of the ref.  */
   rtx insn;
   /* The merged insn that was formed from the reference's insn and extensions.
-     If all merges faile it remains NULL.  */
+     If all merges failed, it remains NULL.  */
   rtx merged_insn;
   /* The def extensions of the reference that were not merged with
      it.  */
@@ -751,7 +751,7 @@ see_get_extension_data (rtx extension, enum machine_mode *source_mode)
    (the register r on both sides of the set is the same register).
    And recognize it.
    If the recognition failed, this is very bad, return NULL (This will abort
-   the entier optimization).
+   the entire optimization).
    Otherwise, return the generated instruction.  */
 
 static rtx
@@ -2134,7 +2134,7 @@ see_execute_LCM (void)
 /* In this function we set the register properties for the register that is
    defined and extended in the reference.
    The properties are defined in see_register_properties structure which is
-   allocated per basic bloack and per register.
+   allocated per basic block and per register.
    Later the extension is inserted into the see_pre_extension_hash for the next
    phase of the optimization.
 
@@ -2205,7 +2205,7 @@ see_set_prop_merged_def (void **slot, void *b)
 /* In this function we set the register properties for the register that is
    defined but not extended in the reference.
    The properties are defined in see_register_properties structure which is
-   allocated per basic bloack and per register.
+   allocated per basic block and per register.
    Later the extension is inserted into the see_pre_extension_hash for the next
    phase of the optimization.
 
@@ -2276,7 +2276,7 @@ see_set_prop_unmerged_def (void **slot, void *b)
 /* In this function we set the register properties for the register that is used
    in the reference.
    The properties are defined in see_register_properties structure which is
-   allocated per basic bloack and per register.
+   allocated per basic block and per register.
    When a redundant use extension is found it is removed from the hash of the
    reference.
    If the extension is non redundant it is inserted into the
@@ -2331,7 +2331,7 @@ see_set_prop_unmerged_use (void **slot, void *b)
       else if (curr_prop->last_def < 0
 	       && curr_prop->first_se_before_any_def >= 0)
 	{
-	  /* In this case the extension is localy redundant.  */
+	  /* In this case the extension is locally redundant.  */
 	  htab_clear_slot (curr_ref_s->use_se_hash, (PTR *)slot);
 	  locally_redundant = true;
 	}
@@ -2341,7 +2341,7 @@ see_set_prop_unmerged_use (void **slot, void *b)
       else if (curr_prop->last_def >= 0
 	       && curr_prop->first_se_after_last_def >= 0)
 	{
-	  /* In this case the extension is localy redundant.  */
+	  /* In this case the extension is locally redundant.  */
 	  htab_clear_slot (curr_ref_s->use_se_hash, (PTR *)slot);
 	  locally_redundant = true;
 	}
@@ -2694,7 +2694,7 @@ see_merge_one_use_extension (void **slot, void *b)
    ref:	   set (dest_reg) (rhs)
    def_se: set (dest_extension_reg) (sign/zero_extend (source_extension_reg))
 
-   where dest_reg and source_extension_reg can both be subregs (togather)
+   where dest_reg and source_extension_reg can both be subregs (together)
    and (REGNO (dest_reg) == REGNO (source_extension_reg))
 
    The merge is done by generating, simplifying and recognizing the pattern:
