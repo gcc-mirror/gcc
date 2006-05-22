@@ -1,3 +1,16 @@
+2006-18-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+            Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_types): Add support for attiny261,
+	attiny461, attiny861, attiny25, attiny45, attiny85, attiny24,
+	attiny44, attiny84, at90pwm2, at90pwm3, atmega165p, atmega169p, 
+	atmega164p, atmega324p, atmega644p, atmega644, atmega329, 
+	atmega3290, atmega649, atmega6490, atmega406, atmega640, 
+	atmega1280, atmega1281, at90can32, at90can64, at90usb646, 
+	at90usb647, at90usb1286 and at90usb1287 devices.  
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+
 2006-05-22  Richard Sandiford  <richard@codesourcery.com>
 
 	* mklibgcc.in (lib2funcs): Remove _floatdidf from initial assignment.
