@@ -2014,7 +2014,7 @@ fixed-point mode.
 @cindex arithmetic shift with signed saturation
 @item (ashift:@var{m} @var{x} @var{c})
 @itemx (ss_ashift:@var{m} @var{x} @var{c})
-These two expressions epresent the result of arithmetically shifting @var{x}
+These two expressions represent the result of arithmetically shifting @var{x}
 left by @var{c} places.  They differ in their behavior on overflow of integer
 modes.  An @code{ashift} operation is a plain shift with no special behaviour
 in case of a change in the sign bit; @code{ss_ashift} saturates to the minimum

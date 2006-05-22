@@ -1,3 +1,8 @@
+2006-05-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/rtl.texi: Fix a typo.
+	* see.c: Fix comment typos.
+
 2006-05-21  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c (BAD): Conditionalize on OPT_Wpragmas.
