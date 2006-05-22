@@ -14,11 +14,36 @@ tree.
 
 To import a new release:
 
-- Check out a classpath snapshot
+- Check out a classpath snapshot or take a release tar.gz file.
   I use 'cvs export' for this.  Make a tag to ensure future hackers
   know exactly what revision was checked out; tags are of the form
   'libgcj-import-DATE'.
+- Get a svn checkout of
+  svn+ssh://gcc.gnu.org/svn/gcc/branches/CLASSPATH/libjava/classpath
+  this contains "pure" GNU Classpath inside the GCC tree.
+- Clean it up and get the files from a new version:
+  - find classpath -type f | grep -v /\.svn | grep -v /\.cvs
+  - tar zxf classpath-x.tar.gz
+  - cp -r classpath-x/* classpath
+- Add/Remove files:
+  - svn status classpath | grep ^\! | cut -c8- | xargs svn remove
+  - svn status classpath | grep ^\? | cut -c8- | xargs svn add
+- If there are any empty directories now they can be removed.
+- Update vendor branch
+  - svn commit classpath
+- Note the new revision number (Xrev)
+- Get a fresh svn trunk checkout and cd gcc/libjava
+- Merge the changes between classpath versions into the trunk.
+  svn merge -rXrev-1:Xrev \
+  svn+ssh://gcc.gnu.org/svn/gcc/branches/CLASSPATH/libjava/classpath \
+  classpath
+- Resolve any conflicts pointed out by svn status classpath | grep ^C
+  - Makefile.in files will be regenerated in the next step.
+  - Other files should have a "GCJ LOCAL" comment, and/or are mentioned
+    in the classpath/ChangeLog.gcj file.
+   (Don't forget to svn resolved files.)
 - Use auto* to create configure, Makefile.in, etc
+  Make sure you have Automake 1.9.3 installed. Exactly that version!
   You have to make sure to use the gcc libtool.m4 and gcc lt* scripts
   cd .../classpath
   cp ../../lt* .
@@ -28,16 +53,13 @@ To import a new release:
   autoheader
   automake
   rm -rf autom4te.cache
-- Test everything first.  The simplest way to do this is by overlaying
-  the checked out classpath on your gcc tree and then doing a build.
-- Use 'cvs import' to import.  The vendor tag is 'CLASSPATH'.  For the
-  release tag, if this is a released classpath version, use something
-  like 'classpath-import-VERSION'; otherwise something like
-  'classpath-import-DATE'.
-  Be sure to use -ko and -I\!
-- Remove any files that were deleted in Classpath
-- Run 'scripts/makemake.tcl > sources.am' in the source tree
-- Run automake for libgcj
+  cd ..
+  scripts/makemake.tcl > sources.am
+  automake
+- Build, fix, till everything works.
+  Possibly update the gcj/javaprims.h file with scripts/classes.pl
+  (See below, it can only be done after the first source->bytecode
+   pass has finished.)
 
 Over time we plan to remove as many of the remaining divergences as
 possible.
