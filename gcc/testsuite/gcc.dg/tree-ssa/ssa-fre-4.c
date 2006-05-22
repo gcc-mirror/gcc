@@ -10,6 +10,6 @@ bool bar(bool f)
         return wrap(f);
 }
 
-/* { dg-final { scan-tree-dump "Replaced \\\(_Bool\\\) D.*with f_" "fre" } } */
-/* { dg-final { scan-tree-dump "Replaced \\\(int\\\) f_.*with D" "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced \\\(_Bool\\\) .*with " "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced \\\(int\\\) .*with " "fre" } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

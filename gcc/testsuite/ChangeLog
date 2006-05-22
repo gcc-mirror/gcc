@@ -1,5 +1,11 @@
 2006-05-22  Richard Guenther  <rguenther@suse.de>
 
+	PR testsuite/27708
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Relax pattern for matching
+	the transformations we test for.
+
+2006-05-22  Richard Guenther  <rguenther@suse.de>
+
 	PR testsuite/27707
 	* g++.dg/tree-ssa/ivopts-1.C: XFAIL for hppa*-*-*.
 
