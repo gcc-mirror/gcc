@@ -1,3 +1,8 @@
+2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/26818
+	* gcc.dg/struct-incompl-1.c: New test.
+
 2006-05-22  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/27708
