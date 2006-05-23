@@ -491,55 +491,85 @@ struct df_scan_bb_info
 };
 
 
-/* Reaching uses.  */
+/* Reaching uses.  All bitmaps are indexed by the id field of the ref
+   except sparse_kill (see below).  */
 struct df_ru_bb_info 
 {
+  /* Local sets to describe the basic blocks.  */
+  /* The kill set is the set of uses that are killed in this block.
+     However, if the number of uses for this register is greater than
+     DF_SPARSE_THRESHOLD, the sparse_kill is used instead. In
+     sparse_kill, each register gets a slot and a 1 in this bitvector
+     means that all of the uses of that register are killed.  This is
+     a very useful efficiency hack in that it keeps from having push
+     around big groups of 1s.  This is implemened by the
+     bitmap_clear_range call.  */
+
   bitmap kill;
   bitmap sparse_kill;
-  bitmap gen;
-  bitmap in;
-  bitmap out;
+  bitmap gen;   /* The set of uses generated in this block.  */
+
+  /* The results of the dataflow problem.  */
+  bitmap in;    /* At the top of the block.  */
+  bitmap out;   /* At the bottom of the block.  */
 };
 
 
-/* Reaching definitions.  */
+/* Reaching definitions.  All bitmaps are indexed by the id field of
+   the ref except sparse_kill (see above).  */
 struct df_rd_bb_info 
 {
-  bitmap kill;
+  /* Local sets to describe the basic blocks.  See the note in the RU
+     datastructures for kill and sparse_kill.  */
+  bitmap kill;  
   bitmap sparse_kill;
-  bitmap gen;
-  bitmap in;
-  bitmap out;
+  bitmap gen;   /* The set of defs generated in this block.  */
+
+  /* The results of the dataflow problem.  */
+  bitmap in;    /* At the top of the block.  */
+  bitmap out;   /* At the bottom of the block.  */
 };
 
 
-/* Live registers.  */
+/* Live registers.  All bitmaps are referenced by the register number.  */
 struct df_lr_bb_info 
 {
-  bitmap def;
-  bitmap use;
-  bitmap in;
-  bitmap out;
+  /* Local sets to describe the basic blocks.  */
+  bitmap def;   /* The set of registers set in this block.  */
+  bitmap use;   /* The set of registers used in this block.  */
+
+  /* The results of the dataflow problem.  */
+  bitmap in;    /* At the top of the block.  */
+  bitmap out;   /* At the bottom of the block.  */
 };
 
 
-/* Uninitialized registers.  */
+/* Uninitialized registers.  All bitmaps are referenced by the register number.  */
 struct df_ur_bb_info 
 {
-  bitmap kill;
-  bitmap gen;
-  bitmap in;
-  bitmap out;
+  /* Local sets to describe the basic blocks.  */
+  bitmap kill;  /* The set of registers unset in this block.  Calls,
+		   for instance, unset registers.  */
+  bitmap gen;   /* The set of registers set in this block.  */
+
+  /* The results of the dataflow problem.  */
+  bitmap in;    /* At the top of the block.  */
+  bitmap out;   /* At the bottom of the block.  */
 };
 
-/* Uninitialized registers.  */
+/* Uninitialized registers.  All bitmaps are referenced by the register number.  */
 struct df_urec_bb_info 
 {
-  bitmap earlyclobber;
+  /* Local sets to describe the basic blocks.  */
+  bitmap earlyclobber;  /* The set of registers that are referenced
+			   with an an early clobber mode.  */
+  /* Kill and gen are defined as in the UR problem.  */
   bitmap kill;
   bitmap gen;
-  bitmap in;
-  bitmap out;
+
+  /* The results of the dataflow problem.  */
+  bitmap in;    /* At the top of the block.  */
+  bitmap out;   /* At the bottom of the block.  */
 };
 
 
