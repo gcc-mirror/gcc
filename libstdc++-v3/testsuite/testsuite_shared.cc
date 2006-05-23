@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,7 @@ try_allocation()
 {
   typedef char value_t;
 
-  typedef __gnu_cxx::__common_pool_policy<__gnu_cxx::__pool, true> policy_t;
-  typedef __gnu_cxx::__mt_alloc<value_t, policy_t> allocator_t;
+  typedef __gnu_cxx::__mt_alloc<value_t> allocator_t;
 
   typedef std::char_traits<value_t> traits_t; 
   typedef std::basic_string<value_t, traits_t, allocator_t> string_t;
