@@ -1,3 +1,9 @@
+2006-05-23  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/27696
+	* config/i386/i386.c (ix86_expand_builtin): Use
+	gen_sse3_monitor64 for TARGET_64BIT.
+
 2006-05-22  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/26375
