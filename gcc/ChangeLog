@@ -1,3 +1,18 @@
+2006-05-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	* simplify-rtx.c (simplify_subreg): Adjust REG_OFFSET for
+	big-endian paradoxical subregs.
+	* var-tracking.c (struct micro_operation_def): Document that,
+	for modify micro operations, insn is the subsequent instruction.
+	(var_reg_delete_and_set, var_mem_delete_and_set): Split into...
+	(var_reg_set, var_mem_set): ... new functions.
+	(add_stores): Record subsequent insn.
+	(compute_bb_dataflow): Use new functions for MO_USE.
+	(emit_notes_in_bb): Use new functions for MO_USE.  Emit use
+	notes after the insn, and modify notes before the insn known
+	to be the subsequent one.
+	(vt_initialize): Invert sorting of MO_CLOBBERs and MO_SETs.
+
 2006-05-23  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/27696

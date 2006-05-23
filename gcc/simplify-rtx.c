@@ -4552,7 +4552,22 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       if (HARD_REGNO_MODE_OK (final_regno, outermode)
 	  || ! HARD_REGNO_MODE_OK (regno, innermode))
 	{
-	  rtx x = gen_rtx_REG_offset (op, outermode, final_regno, byte);
+	  rtx x;
+	  int final_offset = byte;
+
+	  /* Adjust offset for paradoxical subregs.  */
+	  if (byte == 0
+	      && GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
+	    {
+	      int difference = (GET_MODE_SIZE (innermode)
+				- GET_MODE_SIZE (outermode));
+	      if (WORDS_BIG_ENDIAN)
+		final_offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+	      if (BYTES_BIG_ENDIAN)
+		final_offset += difference % UNITS_PER_WORD;
+	    }
+
+	  x = gen_rtx_REG_offset (op, outermode, final_regno, final_offset);
 
 	  /* Propagate original regno.  We don't have any way to specify
 	     the offset inside original regno, so do so only for lowpart.
