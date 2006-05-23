@@ -1,3 +1,9 @@
+2006-05-23  Richard Sandiford  <richard@codesourcery.com>
+
+	* libgcc2.c (LIBGCC2_MAX_UNITS_PER_WORD): New macro.
+	(LIBGCC2_UNITS_PER_WORD): Use LIBGCC2_MAX_UNITS_PER_WORD rather than
+	MIN_UNITS_PER_WORD to set the default.  Also use it in the guard.
+
 2006-05-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* expr.c (undefined_operand_subword_p): New.
