@@ -1,3 +1,13 @@
+2006-05-23  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+        * df-core.c: Added to header comments.
+	* df.h (df_ru_bb_info, df_rd_bb_info, df_lr_bb_info,
+	df_ur_bb_info, df_urec_bb_info): Added comments.
+	* df-problems (df_ref_bitmap, ru, rd, lr, ur, 
+	urec, ri problems): Fixed header comments.
+	(df_ru_transfer_function): Fixed in-out set dyslexia when copying 
+	code from df_rd_transfer_function.
+	
 2006-05-23  Richard Sandiford  <richard@codesourcery.com>
 
 	* libgcc2.c (LIBGCC2_MAX_UNITS_PER_WORD): New macro.

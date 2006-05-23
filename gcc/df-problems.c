@@ -239,7 +239,9 @@ df_print_bb_index (basic_block bb, FILE *file)
 }
 
 
-/* Return the set of reference ids in CHAIN, caching the result in *BMAP.  */
+/* Return a bitmap for REGNO from the cache MAPS.  The bitmap is to
+   contain COUNT bits starting at START.  These bitmaps are not to be
+   changed since there is a cache of them.  */
 
 static inline bitmap
 df_ref_bitmap (bitmap *maps, unsigned int regno, int start, int count)
@@ -282,12 +284,41 @@ df_unset_seen (void)
    REACHING USES
 
    Find the locations in the function where each use site for a pseudo
-   can reach backwards.
+   can reach backwards.  In and out bitvectors are built for each basic
+   block.  The id field in the ref is used to index into these sets.
+   See df.h for details.
 
 ----------------------------------------------------------------------------*/
 
+/* This problem plays a large number of games for the sake of
+   efficiency.  
+   
+   1) The order of the bits in the bitvectors.  After the scanning
+   phase, all of the uses are sorted.  All of the uses for the reg 0
+   are first, followed by all uses for reg 1 and so on.
+   
+   2) There are two kill sets, one if the number of uses is less or
+   equal to DF_SPARSE_THRESHOLD and another if it is greater.
+
+   <= : There is a bitmap for each register, uses_sites[N], that is
+   built on demand.  This bitvector contains a 1 for each use or reg
+   N.
+
+   > : One level of indirection is used to keep from generating long
+   strings of 1 bits in the kill sets.  Bitvectors that are indexed
+   by the regnum are used to represent that there is a killing def
+   for the register.  The confluence and transfer functions use
+   these along with the bitmap_clear_range call to remove ranges of
+   bits without actually generating a knockout vector.
+
+   The kill and sparse_kill and the dense_invalidated_by_call and
+   sparse_invalidated_by call both play this game.  */
+
+/* Private data used to compute the solution for this problem.  These
+   data structures are not accessable outside of this module.  */
 struct df_ru_problem_data
 {
+
   bitmap *use_sites;            /* Bitmap of uses for each pseudo.  */
   unsigned int use_sites_size;  /* Size of use_sites.  */
   /* The set of defs to regs invalidated by call.  */
@@ -656,7 +687,7 @@ df_ru_transfer_function (struct dataflow *dflow, int bb_index)
       struct df *df = dflow->df;
       bool changed = false;
       bitmap tmp = BITMAP_ALLOC (NULL);
-      bitmap_copy (tmp, in);
+      bitmap_copy (tmp, out);
       EXECUTE_IF_SET_IN_BITMAP (sparse_kill, 0, regno, bi)
 	{
 	  bitmap_clear_range (tmp, 
@@ -668,7 +699,7 @@ df_ru_transfer_function (struct dataflow *dflow, int bb_index)
       changed = !bitmap_equal_p (tmp, in);
       if (changed)
 	{
-	  BITMAP_FREE (out);
+	  BITMAP_FREE (in);
 	  bb_info->in = tmp;
 	}
       else 
@@ -810,16 +841,29 @@ df_ru_add_problem (struct df *df, int flags)
    REACHING DEFINITIONS
 
    Find the locations in the function where each definition site for a
-   pseudo reaches.
-----------------------------------------------------------------------------*/
+   pseudo reaches.  In and out bitvectors are built for each basic
+   block.  The id field in the ref is used to index into these sets.
+   See df.h for details.
+   ----------------------------------------------------------------------------*/
 
+/* See the comment at the top of the Reaching Uses problem for how the
+   uses are represented in the kill sets. The same games are played
+   here for the defs.  */
+
+/* Private data used to compute the solution for this problem.  These
+   data structures are not accessable outside of this module.  */
 struct df_rd_problem_data
 {
+  /* If the number of defs for regnum N is less than
+     DF_SPARSE_THRESHOLD, uses_sites[N] contains a mask of the all of
+     the defs of reg N indexed by the id in the ref structure.  If
+     there are more than DF_SPARSE_THRESHOLD defs for regnum N a
+     different mechanism is used to mask the def.  */
   bitmap *def_sites;            /* Bitmap of defs for each pseudo.  */
   unsigned int def_sites_size;  /* Size of def_sites.  */
   /* The set of defs to regs invalidated by call.  */
   bitmap sparse_invalidated_by_call;  
-  /* The set of defs to regs invalidate by call for ru.  */  
+  /* The set of defs to regs invalidate by call for rd.  */  
   bitmap dense_invalidated_by_call;   
 };
 
@@ -1321,9 +1365,11 @@ df_rd_add_problem (struct df *df, int flags)
 /*----------------------------------------------------------------------------
    LIVE REGISTERS
 
-   Find the locations in the function where any use of a pseudo can reach
-   in the backwards direction.
-----------------------------------------------------------------------------*/
+   Find the locations in the function where any use of a pseudo can
+   reach in the backwards direction.  In and out bitvectors are built
+   for each basic block.  The regnum is used to index into these sets.
+   See df.h for details.
+   ----------------------------------------------------------------------------*/
 
 /* Get basic block info.  */
 
@@ -1734,7 +1780,9 @@ df_lr_add_problem (struct df *df, int flags)
    UNINITIALIZED REGISTERS
 
    Find the set of uses for registers that are reachable from the entry
-   block without passing thru a definition.
+   block without passing thru a definition.  In and out bitvectors are built
+   for each basic block.  The regnum is used to index into these sets.
+   See df.h for details.
 ----------------------------------------------------------------------------*/
 
 /* Get basic block info.  */
@@ -2088,12 +2136,18 @@ df_ur_add_problem (struct df *df, int flags)
    UNINITIALIZED REGISTERS WITH EARLYCLOBBER
 
    Find the set of uses for registers that are reachable from the entry
-   block without passing thru a definition.
+   block without passing thru a definition.  In and out bitvectors are built
+   for each basic block.  The regnum is used to index into these sets.
+   See df.h for details.
 
    This is a variant of the UR problem above that has a lot of special
-   features just for the register allocation phase.
-----------------------------------------------------------------------------*/
+   features just for the register allocation phase.  This problem
+   should go a away if someone would fix the interference graph.
 
+   ----------------------------------------------------------------------------*/
+
+/* Private data used to compute the solution for this problem.  These
+   data structures are not accessable outside of this module.  */
 struct df_urec_problem_data
 {
   bool earlyclobbers_found;     /* True if any instruction contains an
@@ -3089,8 +3143,13 @@ df_chain_add_problem (struct df *df, int flags)
 /*----------------------------------------------------------------------------
    REGISTER INFORMATION
 
-   Currently this consists of only lifetime information and reg_dead
-   and reg_unused.  
+   This pass properly computes REG_DEAD and REG_UNUSED notes.
+
+   If the DF_RI_LIFE flag is set the following vectors containing
+   information about register usage are properly set: REG_N_REFS,
+   REG_N_DEATHS, REG_N_SETS, REG_LIVE_LENGTH, REG_N_CALLS_CROSSED,
+   REG_N_THROWING_CALLS_CROSSED and REG_BASIC_BLOCK.
+
    ----------------------------------------------------------------------------*/
 
 #ifdef REG_DEAD_DEBUGGING

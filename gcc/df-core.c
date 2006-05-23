@@ -113,7 +113,10 @@ df_set_blocks, these blocks are added to the set of blocks.
 
 DF_ANALYZE causes all of the defined problems to be (re)solved.  It
 does not cause blocks to be (re)scanned at the rtl level unless no
-prior call is made to df_rescan_blocks.
+prior call is made to df_rescan_blocks.  When DF_ANALYZE is completes,
+the IN and OUT sets for each basic block contain the computer
+information.  The DF_*_BB_INFO macros can be used to access these
+bitvectors.
 
 
 DF_DUMP can then be called to dump the information produce to some
