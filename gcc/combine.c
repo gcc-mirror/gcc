@@ -128,6 +128,11 @@ static int total_attempts, total_merges, total_extras, total_successes;
    so modified, or null if none.  */
 
 static rtx replaced_rhs_insn;
+
+/* When REPLACED_RHS_INSN is nonnull, this is a copy of the new right
+   hand side.  */
+
+static rtx replaced_rhs_value;
 
 /* Vector mapping INSN_UIDs to cuids.
    The cuids are like uids but increase monotonically always.
@@ -928,6 +933,7 @@ combine_instructions (rtx f, unsigned int nregs)
 		      rtx orig = SET_SRC (set);
 		      SET_SRC (set) = note;
 		      replaced_rhs_insn = temp;
+		      replaced_rhs_value = copy_rtx (note);
 		      next = try_combine (insn, temp, NULL_RTX,
 					  &new_direct_jump_p);
 		      replaced_rhs_insn = NULL;
@@ -12122,7 +12128,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	     In both cases, we must search to see if we can find a previous
 	     use of A and put the death note there.  */
 
-	  if (from_insn && from_insn == replaced_rhs_insn)
+	  if (from_insn
+	      && from_insn == replaced_rhs_insn
+	      && !reg_overlap_mentioned_p (XEXP (note, 0), replaced_rhs_value))
 	    tem = from_insn;
 	  else
 	    {
