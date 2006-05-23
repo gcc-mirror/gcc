@@ -6228,7 +6228,7 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
   if (referenced_vars)
     {
       for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
-	add_referenced_tmp_var (t);
+	add_referenced_var (t);
     }
 
   pop_gimplify_context (NULL);

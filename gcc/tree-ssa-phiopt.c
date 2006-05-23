@@ -410,7 +410,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 	return false;
 
       tmp = create_tmp_var (TREE_TYPE (cond), NULL);
-      add_referenced_tmp_var (tmp);
+      add_referenced_var (tmp);
       new_var = make_ssa_name (tmp, NULL);
       old_result = cond;
       cond = new_var;
@@ -512,7 +512,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 
 	  op0 = TREE_OPERAND (cond, 0);
 	  tmp = create_tmp_var (TREE_TYPE (op0), NULL);
-	  add_referenced_tmp_var (tmp);
+	  add_referenced_var (tmp);
 	  cond_tmp = make_ssa_name (tmp, NULL);
 	  new = build2 (MODIFY_EXPR, TREE_TYPE (cond_tmp), cond_tmp, op0);
 	  SSA_NAME_DEF_STMT (cond_tmp) = new;
@@ -959,7 +959,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   if (negate)
     {
       tree tmp = create_tmp_var (TREE_TYPE (result), NULL);
-      add_referenced_tmp_var (tmp);
+      add_referenced_var (tmp);
       lhs = make_ssa_name (tmp, NULL);
     }
   else

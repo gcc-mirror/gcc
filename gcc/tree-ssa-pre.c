@@ -2422,7 +2422,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
     }
 
   temp = pretemp;
-  add_referenced_tmp_var (temp);
+  add_referenced_var (temp);
 
   if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
     DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
@@ -2565,7 +2565,7 @@ insert_into_preds_of_block (basic_block block, value_set_node_t node,
     }
 
   temp = prephitemp;
-  add_referenced_tmp_var (temp);
+  add_referenced_var (temp);
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
     DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
@@ -3040,7 +3040,7 @@ insert_extra_phis (basic_block block, basic_block dom)
 		  fprintf (dump_file, " to merge available but not dominating values ");
 		}
 
-	      add_referenced_tmp_var (temp);
+	      add_referenced_var (temp);
 	      temp = create_phi_node (temp, block);
 	      NECESSARY (temp) = 0; 
 	      VEC_safe_push (tree, heap, inserted_exprs, temp);
@@ -3288,7 +3288,7 @@ realify_fake_stores (void)
 	  tree newstmt;
 
 	  /* Mark the temp variable as referenced */
-	  add_referenced_tmp_var (SSA_NAME_VAR (TREE_OPERAND (stmt, 0)));
+	  add_referenced_var (SSA_NAME_VAR (TREE_OPERAND (stmt, 0)));
 
 	  /* Put the new statement in GC memory, fix up the 
 	     SSA_NAME_DEF_STMT on it, and then put it in place of

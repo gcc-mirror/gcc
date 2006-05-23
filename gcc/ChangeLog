@@ -1,3 +1,49 @@
+2006-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c++/26757
+	* tree-ssa-loop-im.c (determine_invariantness_stmt): Use 
+	add_referenced_var instead of add_referenced_tmp_var.
+	* tree-complex.c (create_one_component_var): Use add_referenced_var.
+	* tree-ssa-loop-manip.c (create_iv, tree_unroll_loop): Use
+	add_referenced_var.
+	* tree-tailcall.c (adjust_accumulator_values, adjust_return_value,
+	tree_optimize_tail_calls_1): Use add_referenced_var.
+	* tree-ssa-loop-ivopts.c (create_new_iv): Use add_referenced_var.
+	* tree-ssa-alias.c (create_memory_tag, create_global_var, create_sft):
+	Use add_referenced_var.
+	* tree-if-conv.c (ifc_temp_var): Use add_referenced_var.
+	* gimplify.c (force_gimple_operand): Use add_referenced_var.
+	* tree-ssa-phiopt.c (conditional_replacement, abs_replacement):
+	Use add_referenced_var.
+	* tree-dfa.c (struct walk_state): Remove.
+	(find_referenced_vars): Remove walk state and vars_found hash table.
+	(make_rename_temp): Use add_referenced_var.
+	(find_vars_r): Pass less parameters to add_referenced_var.
+	(referenced_var_p): New.  Is var in referenced_var hash table.
+	(referenced_var_insert): Assert var isn't already in hash table.
+	(add_referenced_var): Don't need walk_state parameter.  Add var if it
+	isn't already in the hash table.
+	(add_referenced_tmp_var): Remove.
+	(find_new_referenced_vars_1): Use add_referenced_var.
+	* tree-ssa-pre.c (create_expression_by_pieces, 
+	insert_into_preds_of_block, insert_extra_phis, realify_fake_stores):
+	Use add_referenced_var.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Use add_referenced_var.
+	* lambda-code.c (lbv_to_gcc_expression, lle_to_gcc_expression,
+	lambda_loopnest_to_gcc_loopnest, perfect_nestify): Use 
+	add_referenced_var.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref,
+	vect_create_data_ref_ptr, vect_create_destination_var,
+	vect_init_vector, vect_build_loop_niters, 
+	vect_generate_tmps_on_preheader, vect_update_ivs_after_vectorizer,
+	vect_gen_niters_for_prolog_loop, vect_create_cond_for_align_checks):
+	Use add_referenced_var.
+	* tree-outof-ssa.c (create_temp): Use add_referenced_var.
+	* tree-flow.h (add_referenced_tmp_var): Remove prototype
+	(add_referenced_var): Add prototype.
+	* tree-ssa-structalias.c (get_constraint_for, 
+	intra_create_variable_infos): Use add_referenced_var.
+
 2006-05-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* simplify-rtx.c (simplify_subreg): Adjust REG_OFFSET for

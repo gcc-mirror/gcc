@@ -2141,7 +2141,7 @@ create_memory_tag (tree type, bool is_type_tag)
   ann->symbol_mem_tag = NULL_TREE;
 
   /* Add the tag to the symbol table.  */
-  add_referenced_tmp_var (tag);
+  add_referenced_var (tag);
 
   return tag;
 }
@@ -2253,7 +2253,7 @@ create_global_var (void)
 
   create_var_ann (global_var);
   mark_call_clobbered (global_var, ESCAPE_UNKNOWN);
-  add_referenced_tmp_var (global_var);
+  add_referenced_var (global_var);
   mark_sym_for_renaming (global_var);
 }
 
@@ -2900,7 +2900,7 @@ create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
   /* Add the new variable to REFERENCED_VARS.  */
   ann = get_var_ann (subvar);
   ann->symbol_mem_tag = NULL;  	
-  add_referenced_tmp_var (subvar);
+  add_referenced_var (subvar);
   SFT_PARENT_VAR (subvar) = var;
   SFT_OFFSET (subvar) = offset;
   SFT_SIZE (subvar) = size;

@@ -516,7 +516,7 @@ vect_pattern_recog_1 (
   code = TREE_CODE (pattern_expr);
   pattern_type = TREE_TYPE (pattern_expr);
   var = create_tmp_var (pattern_type, "patt");
-  add_referenced_tmp_var (var);
+  add_referenced_var (var);
   var_name = make_ssa_name (var, NULL_TREE);
   pattern_expr = build2 (MODIFY_EXPR, void_type_node, var_name, pattern_expr);
   SSA_NAME_DEF_STMT (var_name) = pattern_expr;

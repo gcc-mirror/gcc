@@ -5123,7 +5123,7 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
     }
  
   gimple_add_tmp_var (cand->var_before);
-  add_referenced_tmp_var (cand->var_before);
+  add_referenced_var (cand->var_before);
 
   base = unshare_expr (cand->iv->base);
 

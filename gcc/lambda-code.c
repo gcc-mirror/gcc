@@ -1539,7 +1539,7 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
   /* Create a statement list and a linear expression temporary.  */
   stmts = alloc_stmt_list ();
   resvar = create_tmp_var (type, "lbvtmp");
-  add_referenced_tmp_var (resvar);
+  add_referenced_var (resvar);
 
   /* Start at 0.  */
   stmt = build2 (MODIFY_EXPR, void_type_node, resvar, integer_zero_node);
@@ -1626,7 +1626,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
   /* Create a statement list and a linear expression temporary.  */
   stmts = alloc_stmt_list ();
   resvar = create_tmp_var (type, "lletmp");
-  add_referenced_tmp_var (resvar);
+  add_referenced_var (resvar);
 
   /* Build up the linear expressions, and put the variable representing the
      result in the results array.  */
@@ -1846,7 +1846,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       /* First, build the new induction variable temporary  */
 
       ivvar = create_tmp_var (type, "lnivtmp");
-      add_referenced_tmp_var (ivvar);
+      add_referenced_var (ivvar);
 
       VEC_safe_push (tree, heap, new_ivs, ivvar);
 
@@ -2457,7 +2457,7 @@ perfect_nestify (struct loops *loops,
   /* Create the new iv.  */
   oldivvar = VEC_index (tree, loopivs, 0);
   ivvar = create_tmp_var (TREE_TYPE (oldivvar), "perfectiv");
-  add_referenced_tmp_var (ivvar);
+  add_referenced_var (ivvar);
   standard_iv_increment_position (newloop, &bsi, &insert_after);
   create_iv (VEC_index (tree, lbounds, 0),
 	     build_int_cst (TREE_TYPE (oldivvar), VEC_index (int, steps, 0)),
@@ -2468,7 +2468,7 @@ perfect_nestify (struct loops *loops,
 
   exit_condition = get_loop_exit_condition (newloop);
   uboundvar = create_tmp_var (integer_type_node, "uboundvar");
-  add_referenced_tmp_var (uboundvar);
+  add_referenced_var (uboundvar);
   stmt = build2 (MODIFY_EXPR, void_type_node, uboundvar, 
 		 VEC_index (tree, ubounds, 0));
   uboundvar = make_ssa_name (uboundvar, stmt);
