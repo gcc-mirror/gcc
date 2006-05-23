@@ -1,3 +1,17 @@
+2006-05-22  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/26375
+	PR rtl-optimization/26855
+	* df-problems (df_ru_bb_local_compute_process_def): Removed update
+	to gen set.
+	(df_ru_bb_local_compute): Reversed statements and removed bogus
+	comment explaining why they should be in wrong order.
+	(df_ru_dump, df_rd_dump): Enhanced debug info.     
+	* modulo-sched.c (sms_schedule, tree_opt_pass pass_sms): Enhanced
+	debug info.       
+	* ddg.c (add_deps_for_def): Converted use of reaching defs to
+        reaching uses and fixed space problem.
+
 2006-05-23  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (decide_is_function_needed): Also nested functions

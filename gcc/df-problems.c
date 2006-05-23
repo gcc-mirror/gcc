@@ -440,15 +440,15 @@ df_ru_bb_local_compute_process_def (struct dataflow *dflow,
 	  unsigned int n_uses = DF_REG_USE_GET (df, regno)->n_refs;
 	  if (!bitmap_bit_p (seen_in_block, regno))
 	    {
-	      /* The first def for regno, causes the kill info to be
-		 generated and the gen information to cleared.  */
+	      /* The first def for regno in the insn, causes the kill
+		 info to be generated.  Do not modify the gen set
+		 because the only values in it are the uses from here
+		 to the top of the block and this def does not effect
+		 them.  */
 	      if (!bitmap_bit_p (seen_in_insn, regno))
 		{
 		  if (n_uses > DF_SPARSE_THRESHOLD)
-		    {
-		      bitmap_set_bit (bb_info->sparse_kill, regno);
-		      bitmap_clear_range (bb_info->gen, begin, n_uses);
-		    }
+		    bitmap_set_bit (bb_info->sparse_kill, regno);
 		  else
 		    {
 		      struct df_ru_problem_data * problem_data
@@ -457,7 +457,6 @@ df_ru_bb_local_compute_process_def (struct dataflow *dflow,
 			= df_ref_bitmap (problem_data->use_sites, regno, 
 				       begin, n_uses);
 		      bitmap_ior_into (bb_info->kill, uses);
-		      bitmap_and_compl_into (bb_info->gen, uses);
 		    }
 		}
 	      bitmap_set_bit (seen_in_insn, regno);
@@ -520,15 +519,11 @@ df_ru_bb_local_compute (struct dataflow *dflow, unsigned int bb_index)
       if (!INSN_P (insn))
 	continue;
 
-      df_ru_bb_local_compute_process_def (dflow, bb_info, 
-					  DF_INSN_UID_DEFS (df, uid), 0);
-
-      /* The use processing must happen after the defs processing even
-	 though the uses logically happen first since the defs clear
-	 the gen set. Otherwise, a use for regno occuring in the same
-	 instruction as a def for regno would be cleared.  */ 
       df_ru_bb_local_compute_process_use (bb_info, 
 					  DF_INSN_UID_USES (df, uid), 0);
+
+      df_ru_bb_local_compute_process_def (dflow, bb_info, 
+					  DF_INSN_UID_DEFS (df, uid), 0);
 
       bitmap_ior_into (seen_in_block, seen_in_insn);
       bitmap_clear (seen_in_insn);
@@ -765,13 +760,13 @@ df_ru_dump (struct dataflow *dflow, FILE *file)
       if (!bb_info->in)
 	continue;
       
-      fprintf (file, "  in  \t");
+      fprintf (file, "  in  \t(%d)\n", (int) bitmap_count_bits (bb_info->in));
       dump_bitmap (file, bb_info->in);
-      fprintf (file, "  gen \t");
+      fprintf (file, "  gen \t(%d)\n", (int) bitmap_count_bits (bb_info->gen));
       dump_bitmap (file, bb_info->gen);
-      fprintf (file, "  kill\t");
+      fprintf (file, "  kill\t(%d)\n", (int) bitmap_count_bits (bb_info->kill));
       dump_bitmap (file, bb_info->kill);
-      fprintf (file, "  out \t");
+      fprintf (file, "  out \t(%d)\n", (int) bitmap_count_bits (bb_info->out));
       dump_bitmap (file, bb_info->out);
     }
 }
@@ -1276,13 +1271,13 @@ df_rd_dump (struct dataflow *dflow, FILE *file)
       if (!bb_info->in)
 	continue;
       
-      fprintf (file, "  in\t(%d)\n", (int) bitmap_count_bits (bb_info->in));
+      fprintf (file, "  in  \t(%d)\n", (int) bitmap_count_bits (bb_info->in));
       dump_bitmap (file, bb_info->in);
       fprintf (file, "  gen \t(%d)\n", (int) bitmap_count_bits (bb_info->gen));
       dump_bitmap (file, bb_info->gen);
       fprintf (file, "  kill\t(%d)\n", (int) bitmap_count_bits (bb_info->kill));
       dump_bitmap (file, bb_info->kill);
-      fprintf (file, "  out\t(%d)\n", (int) bitmap_count_bits (bb_info->out));
+      fprintf (file, "  out \t(%d)\n", (int) bitmap_count_bits (bb_info->out));
       dump_bitmap (file, bb_info->out);
     }
 }
