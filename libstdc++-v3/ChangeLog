@@ -1,3 +1,7 @@
+2006-05-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/testsuite_shared.cc: Fix --enable-threads=single build.
+
 2006-05-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/objects/wchar_t/9661-1.cc: Avoid leaking the
