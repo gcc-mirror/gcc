@@ -1,3 +1,9 @@
+2006-05-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c (undefined_operand_subword_p): New.
+	(emit_move_multi_word): Do not generate move from undefined bits
+	of a paradoxical subreg.
+
 2006-05-23  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/27736
