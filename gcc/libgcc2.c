@@ -44,18 +44,23 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define MIN_UNITS_PER_WORD UNITS_PER_WORD
 #endif
 
-#ifndef LIBGCC2_UNITS_PER_WORD
-# if MIN_UNITS_PER_WORD > 4
-#  define LIBGCC2_UNITS_PER_WORD 8
-# elif (MIN_UNITS_PER_WORD > 2 \
-        || (MIN_UNITS_PER_WORD > 1 && LONG_LONG_TYPE_SIZE > 32))
-#  define LIBGCC2_UNITS_PER_WORD 4
-# else
-#  define LIBGCC2_UNITS_PER_WORD MIN_UNITS_PER_WORD
-# endif
+/* Work out the largest "word" size that we can deal with on this target.  */
+#if MIN_UNITS_PER_WORD > 4
+# define LIBGCC2_MAX_UNITS_PER_WORD 8
+#elif (MIN_UNITS_PER_WORD > 2 \
+       || (MIN_UNITS_PER_WORD > 1 && LONG_LONG_TYPE_SIZE > 32))
+# define LIBGCC2_MAX_UNITS_PER_WORD 4
+#else
+# define LIBGCC2_MAX_UNITS_PER_WORD MIN_UNITS_PER_WORD
 #endif
 
-#if LIBGCC2_UNITS_PER_WORD <= MIN_UNITS_PER_WORD
+/* Work out what word size we are using for this compilation.
+   The value can be set on the command line.  */
+#ifndef LIBGCC2_UNITS_PER_WORD
+#define LIBGCC2_UNITS_PER_WORD LIBGCC2_MAX_UNITS_PER_WORD
+#endif
+
+#if LIBGCC2_UNITS_PER_WORD <= LIBGCC2_MAX_UNITS_PER_WORD
 
 #include "libgcc2.h"
 
