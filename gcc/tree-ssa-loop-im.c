@@ -624,7 +624,7 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 
 	  /* stmt must be MODIFY_EXPR.  */
 	  var = create_tmp_var (TREE_TYPE (rhs), "reciptmp");
-	  add_referenced_tmp_var (var);
+	  add_referenced_var (var);
 
 	  stmt1 = build2 (MODIFY_EXPR, void_type_node, var,
 			  build2 (RDIV_EXPR, TREE_TYPE (rhs),

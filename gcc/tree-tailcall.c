@@ -562,7 +562,7 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
 			     build2 (MULT_EXPR, ret_type, m_acc, a));
 
 	      tmp = create_tmp_var (ret_type, "acc_tmp");
-	      add_referenced_tmp_var (tmp);
+	      add_referenced_var (tmp);
 
 	      var = make_ssa_name (tmp, stmt);
 	      TREE_OPERAND (stmt, 0) = var;
@@ -641,7 +641,7 @@ adjust_return_value (basic_block bb, tree m, tree a)
 		     build2 (MULT_EXPR, ret_type, m_acc, ret_var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
-      add_referenced_tmp_var (tmp);
+      add_referenced_var (tmp);
 
       var = make_ssa_name (tmp, stmt);
       TREE_OPERAND (stmt, 0) = var;
@@ -656,7 +656,7 @@ adjust_return_value (basic_block bb, tree m, tree a)
 		     build2 (PLUS_EXPR, ret_type, a_acc, var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
-      add_referenced_tmp_var (tmp);
+      add_referenced_var (tmp);
 
       var = make_ssa_name (tmp, stmt);
       TREE_OPERAND (stmt, 0) = var;
@@ -928,7 +928,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
 
 	  tmp = create_tmp_var (ret_type, "add_acc");
-	  add_referenced_tmp_var (tmp);
+	  add_referenced_var (tmp);
 
 	  phi = create_phi_node (tmp, first);
 	  add_phi_arg (phi,
@@ -944,7 +944,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
 
 	  tmp = create_tmp_var (ret_type, "mult_acc");
-	  add_referenced_tmp_var (tmp);
+	  add_referenced_var (tmp);
 
 	  phi = create_phi_node (tmp, first);
 	  add_phi_arg (phi,

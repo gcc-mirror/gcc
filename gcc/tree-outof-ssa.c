@@ -168,9 +168,9 @@ create_temp (tree t)
     }
   DECL_ARTIFICIAL (tmp) = DECL_ARTIFICIAL (t);
   DECL_IGNORED_P (tmp) = DECL_IGNORED_P (t);
-  add_referenced_tmp_var (tmp);
+  add_referenced_var (tmp);
 
-  /* add_referenced_tmp_var will create the annotation and set up some
+  /* add_referenced_var will create the annotation and set up some
      of the flags in the annotation.  However, some flags we need to
      inherit from our original variable.  */
   var_ann (tmp)->symbol_mem_tag = var_ann (t)->symbol_mem_tag;

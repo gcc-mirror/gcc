@@ -989,7 +989,7 @@ ifc_temp_var (tree type, tree exp)
 
   /* Create new temporary variable.  */
   var = create_tmp_var (type, name);
-  add_referenced_tmp_var (var);
+  add_referenced_var (var);
 
   /* Build new statement to assign EXP to new variable.  */
   stmt = build2 (MODIFY_EXPR, type, var, exp);

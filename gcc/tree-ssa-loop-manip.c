@@ -60,7 +60,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   if (!var)
     {
       var = create_tmp_var (TREE_TYPE (base), "ivtmp");
-      add_referenced_tmp_var (var);
+      add_referenced_var (var);
     }
 
   vb = make_ssa_name (var, NULL_TREE);
@@ -916,7 +916,7 @@ tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
       else
 	{
 	  var = create_tmp_var (TREE_TYPE (init), "unrinittmp");
-	  add_referenced_tmp_var (var);
+	  add_referenced_var (var);
 	}
 
       new_init = make_ssa_name (var, NULL_TREE);
