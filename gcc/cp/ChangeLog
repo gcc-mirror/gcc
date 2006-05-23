@@ -1,3 +1,9 @@
+2006-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20173
+	* pt.c (determine_specialization): Disallow partial
+	specializations of templates.
+
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27716
