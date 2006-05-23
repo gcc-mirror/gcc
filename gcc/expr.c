@@ -3096,6 +3096,38 @@ emit_move_ccmode (enum machine_mode mode, rtx x, rtx y)
   return ret;
 }
 
+/* Return true if word I of OP lies entirely in the
+   undefined bits of a paradoxical subreg.  */
+
+static bool
+undefined_operand_subword_p (rtx op, int i)
+{
+  enum machine_mode innermode, innermostmode;
+  int offset;
+  if (GET_CODE (op) != SUBREG)
+    return false;
+  innermode = GET_MODE (op);
+  innermostmode = GET_MODE (SUBREG_REG (op));
+  offset = i * UNITS_PER_WORD + SUBREG_BYTE (op);
+  /* The SUBREG_BYTE represents offset, as if the value were stored in
+     memory, except for a paradoxical subreg where we define
+     SUBREG_BYTE to be 0; undo this exception as in
+     simplify_subreg.  */
+  if (SUBREG_BYTE (op) == 0
+      && GET_MODE_SIZE (innermostmode) < GET_MODE_SIZE (innermode))
+    {
+      int difference = (GET_MODE_SIZE (innermostmode) - GET_MODE_SIZE (innermode));
+      if (WORDS_BIG_ENDIAN)
+	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+      if (BYTES_BIG_ENDIAN)
+	offset += difference % UNITS_PER_WORD;
+    }
+  if (offset >= GET_MODE_SIZE (innermostmode)
+      || offset <= -GET_MODE_SIZE (word_mode))
+    return true;
+  return false;
+}
+
 /* A subroutine of emit_move_insn_1.  Generate a move from Y into X.
    MODE is any multi-word or full-word mode that lacks a move_insn
    pattern.  Note that you will get better code if you define such
@@ -3133,7 +3165,14 @@ emit_move_multi_word (enum machine_mode mode, rtx x, rtx y)
        i++)
     {
       rtx xpart = operand_subword (x, i, 1, mode);
-      rtx ypart = operand_subword (y, i, 1, mode);
+      rtx ypart;
+
+      /* Do not generate code for a move if it would come entirely
+	 from the undefined bits of a paradoxical subreg.  */
+      if (undefined_operand_subword_p (y, i))
+	continue;
+
+      ypart = operand_subword (y, i, 1, mode);
 
       /* If we can't get a part of Y, put Y into memory if it is a
 	 constant.  Otherwise, force it into a register.  Then we must
