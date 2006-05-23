@@ -225,7 +225,7 @@ static void
 add_deps_for_def (ddg_ptr g, struct df *df, struct df_ref *rd)
 {
   int regno = DF_REF_REGNO (rd);
-  struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (df, g->bb);
+  struct df_ru_bb_info *bb_info = DF_RU_BB_INFO (df, g->bb);
   struct df_link *r_use;
   int use_before_def = false;
   rtx def_insn = DF_REF_INSN (rd);
@@ -338,7 +338,7 @@ build_inter_loop_deps (ddg_ptr g, struct df *df)
 
       /* We are interested in uses of this BB.  */
       if (BLOCK_FOR_INSN (use->insn) == g->bb)
-      	add_deps_for_use (g, df,use);
+      	add_deps_for_use (g, df, use);
     }
 }
 
