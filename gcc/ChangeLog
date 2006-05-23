@@ -1,3 +1,11 @@
+2006-05-23  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/27736
+	* combine.c (replaced_rhs_value): New variable.
+	(combine_instructions): Set it.
+	(distribute_notes): When distributing a note in replaced_rhs_insn,
+	check whether the value was used in replaced_rhs_value.
+
 2006-05-23  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR c++/26757
