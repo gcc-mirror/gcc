@@ -16151,12 +16151,15 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
       if (!REG_P (op0))
-	op0 = copy_to_mode_reg (SImode, op0);
+	op0 = copy_to_mode_reg (Pmode, op0);
       if (!REG_P (op1))
 	op1 = copy_to_mode_reg (SImode, op1);
       if (!REG_P (op2))
 	op2 = copy_to_mode_reg (SImode, op2);
-      emit_insn (gen_sse3_monitor (op0, op1, op2));
+      if (!TARGET_64BIT)
+	emit_insn (gen_sse3_monitor (op0, op1, op2));
+      else
+	emit_insn (gen_sse3_monitor64 (op0, op1, op2));
       return 0;
 
     case IX86_BUILTIN_MWAIT:
