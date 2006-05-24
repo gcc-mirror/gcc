@@ -1,3 +1,7 @@
+2006-05-24  Mike Stump  <mrs@apple.com>
+
+	* objc-act.c (build_next_objc_exception_stuff): Use JBLEN instead of _JBLEN.
+
 2006-05-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR objc/27240
@@ -18,8 +22,8 @@
 2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/25360
-        * objc/objc-act.c (encode_type): Encode Complex types as 'j' followed
-        by the inner type.
+	* objc/objc-act.c (encode_type): Encode Complex types as 'j' followed
+	by the inner type.
 
 2005-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
