@@ -1,5 +1,9 @@
 2006-05-24  Tom Tromey  <tromey@redhat.com>
 
+	* java-tree.h: Fixed flag documentation.
+
+2006-05-24  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/27729:
 	* jcf.h (ACC_INVISIBLE): Changed value.
 
