@@ -158,3 +158,8 @@ libffi_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 AM_CCASFLAGS = $(AM_CPPFLAGS)
+
+# No install-html support
+.PHONY: install-html
+install-html:
+
