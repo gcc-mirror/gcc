@@ -1,5 +1,5 @@
 /* java.lang.Math -- common mathematical functions, native allowed
-   Copyright (C) 1998, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -650,6 +650,87 @@ public final class Math
 
   /**
    * <p>
+   * Take a cube root. If the argument is <code>NaN</code>, an infinity or
+   * zero, then the original value is returned.  The returned result is
+   * within 1 ulp of the exact result.  For a finite value, <code>x</code>,
+   * the cube root of <code>-x</code> is equal to the negation of the cube root
+   * of <code>x</code>. 
+   * </p>
+   * <p>
+   * For a square root, use <code>sqrt</code>.  For other roots, use
+   * <code>pow(a, 1 / rootNumber)</code>.
+   * </p>
+   *
+   * @param a the numeric argument
+   * @return the cube root of the argument
+   * @see #sqrt(double)
+   * @see #pow(double, double)
+   * @since 1.5
+   */
+  public static native double cbrt(double a);
+
+  /**
+   * <p>
+   * Returns the hyperbolic cosine of the given value.  For a value,
+   * <code>x</code>, the hyperbolic cosine is <code>(e<sup>x</sup> + 
+   * e<sup>-x</sup>)/2</code>
+   * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
+   * result is within 2.5 ulps of the exact result.
+   * </p>
+   * <p>
+   * If the supplied value is <code>NaN</code>, then the original value is
+   * returned.  For either infinity, positive infinity is returned.
+   * The hyperbolic cosine of zero is 1.0.
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return the hyperbolic cosine of <code>a</code>.
+   * @since 1.5
+   */
+  public static native double cosh(double a);
+
+  /**
+   * <p>
+   * Returns <code>e<sup>a</sup> - 1.  For values close to 0, the
+   * result of <code>expm1(a) + 1</code> tend to be much closer to the
+   * exact result than simply <code>exp(x)</code>.  The result is within
+   * 1 ulp of the exact result, and results are semi-monotonic.  For finite
+   * inputs, the returned value is greater than or equal to -1.0.  Once
+   * a result enters within half a ulp of this limit, the limit is returned.
+   * </p>   
+   * <p>
+   * For <code>NaN</code>, positive infinity and zero, the original value
+   * is returned.  Negative infinity returns a result of -1.0 (the limit).
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return <code>e<sup>a</sup> - 1</code>
+   * @since 1.5
+   */
+  public static native double expm1(double a);
+
+  /**
+   * <p>
+   * Returns the hypotenuse, <code>a<sup>2</sup> + b<sup>2</sup></code>,
+   * without intermediate overflow or underflow.  The returned result is
+   * within 1 ulp of the exact result.  If one parameter is held constant,
+   * then the result in the other parameter is semi-monotonic.
+   * </p>
+   * <p>
+   * If either of the arguments is an infinity, then the returned result
+   * is positive infinity.  Otherwise, if either argument is <code>NaN</code>,
+   * then <code>NaN</code> is returned.
+   * </p>
+   * 
+   * @param a the first parameter.
+   * @param b the second parameter.
+   * @return the hypotenuse matching the supplied parameters.
+   * @since 1.5
+   */
+  public static native double hypot(double a, double b);
+
+  /**
+   * <p>
    * Returns the base 10 logarithm of the supplied value.  The returned
    * result is within 1 ulp of the exact result, and the results are
    * semi-monotonic.
@@ -667,6 +748,28 @@ public final class Math
    * @since 1.5
    */
   public static native double log10(double a);
+
+  /**
+   * <p>
+   * Returns the natural logarithm resulting from the sum of the argument,
+   * <code>a</code> and 1.  For values close to 0, the
+   * result of <code>log1p(a)</code> tend to be much closer to the
+   * exact result than simply <code>log(1.0+a)</code>.  The returned
+   * result is within 1 ulp of the exact result, and the results are
+   * semi-monotonic.
+   * </p>
+   * <p>
+   * Arguments of either <code>NaN</code> or less than -1 return
+   * <code>NaN</code>.  An argument of positive infinity or zero
+   * returns the original argument.  Negative infinity is returned from an
+   * argument of -1.
+   * </p>
+   *
+   * @param a the numeric argument.
+   * @return the natural logarithm of <code>a</code> + 1.
+   * @since 1.5
+   */
+  public static native double log1p(double a);
 
   /**
    * <p>
@@ -721,6 +824,50 @@ public final class Math
       return -1.0f;
     return a;
   }
+
+  /**
+   * <p>
+   * Returns the hyperbolic sine of the given value.  For a value,
+   * <code>x</code>, the hyperbolic sine is <code>(e<sup>x</sup> - 
+   * e<sup>-x</sup>)/2</code>
+   * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
+   * result is within 2.5 ulps of the exact result.
+   * </p>
+   * <p>
+   * If the supplied value is <code>NaN</code>, an infinity or a zero, then the
+   * original value is returned.
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return the hyperbolic sine of <code>a</code>.
+   * @since 1.5
+   */
+  public static native double sinh(double a);
+
+  /**
+   * <p>
+   * Returns the hyperbolic tangent of the given value.  For a value,
+   * <code>x</code>, the hyperbolic tangent is <code>(e<sup>x</sup> - 
+   * e<sup>-x</sup>)/(e<sup>x</sup> + e<sup>-x</sup>)</code>
+   * (i.e. <code>sinh(a)/cosh(a)</code>)
+   * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
+   * result is within 2.5 ulps of the exact result.  The absolute value
+   * of the exact result is always less than 1.  Computed results are thus
+   * less than or equal to 1 for finite arguments, with results within
+   * half a ulp of either positive or negative 1 returning the appropriate
+   * limit value (i.e. as if the argument was an infinity).
+   * </p>
+   * <p>
+   * If the supplied value is <code>NaN</code> or zero, then the original
+   * value is returned.  Positive infinity returns +1.0 and negative infinity
+   * returns -1.0.
+   * </p>
+   * 
+   * @param a the numeric argument
+   * @return the hyperbolic tangent of <code>a</code>.
+   * @since 1.5
+   */
+  public static native double tanh(double a);
 
   /**
    * Return the ulp for the given double argument.  The ulp is the

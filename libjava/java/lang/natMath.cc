@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -106,6 +106,41 @@ jdouble java::lang::Math::log10(jdouble x)
 {
   return (jdouble)::log10((double)x);
 }  
+
+jdouble java::lang::Math::cbrt(jdouble x)
+{
+  return (jdouble)::cbrt((double)x);
+}
+
+jdouble java::lang::Math::cosh(jdouble x)
+{
+  return (jdouble)::cosh((double)x);
+}
+
+jdouble java::lang::Math::expm1(jdouble x)
+{
+  return (jdouble)::expm1((double)x);
+}
+
+jdouble java::lang::Math::hypot(jdouble x, jdouble y)
+{
+  return (jdouble)::hypot((double)x, (double)y);
+}
+
+jdouble java::lang::Math::log1p(jdouble x)
+{
+  return (jdouble)::log1p((double)x);
+}
+
+jdouble java::lang::Math::sinh(jdouble x)
+{
+  return (jdouble)::sinh((double)x);
+}
+
+jdouble java::lang::Math::tanh(jdouble x)
+{
+  return (jdouble)::tanh((double)x);
+}
 
 static inline int
 floatToIntBits (jfloat value)
