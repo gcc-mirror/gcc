@@ -1,3 +1,9 @@
+2006-05-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.am: Add install-html target. Add install-html to .PHONY
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	
 2006-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/24459
