@@ -127,6 +127,8 @@ install:
 
 install-info:
 
+install-html:
+
 # Cleaning rules.
 mostlyclean:
 
