@@ -1,3 +1,16 @@
+2006-05-25  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.dg/compat/scalar-by-value-x.h: New.
+	* gcc.dg/compat/scalar-by-value-y.h: New.
+	* gcc.dg/compat/scalar-by-value-5.c: New.
+	* gcc.dg/compat/scalar-by-value-5_main.c: New.
+	* gcc.dg/compat/scalar-by-value-5_x.c: New.
+	* gcc.dg/compat/scalar-by-value-5_y.c: New.
+	* gcc.dg/compat/scalar-by-value-6.c: New.
+	* gcc.dg/compat/scalar-by-value-6_main.c: New.
+	* gcc.dg/compat/scalar-by-value-6_x.c: New.
+	* gcc.dg/compat/scalar-by-value-6_y.c: New.
+
 2006-05-24  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/27639
@@ -120,7 +133,7 @@
 2006-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/25776
-	* g++.dg/other/error11.C: New test. 
+	* g++.dg/other/error11.C: New test.
 
 2006-05-20  Richard Sandiford  <richard@codesourcery.com>
 
@@ -2266,8 +2279,8 @@
 	PR c++/26140
 	Revert
 	2006-01-30  Richard Guenther  <rguenther@suse.de>
- 	PR c++/23372
- 	* gcc.dg/pr23372-1.C: New testcase.
+	PR c++/23372
+	* gcc.dg/pr23372-1.C: New testcase.
 
 	* g++.dg/tree-ssa/pr26140.C: New testcase.
 
