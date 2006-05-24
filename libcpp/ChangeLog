@@ -1,3 +1,7 @@
+2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Add install-html target. Add install-html to .PHONY
+
 2006-02-17  Grigory Zagorodnev <grigory_zagorodnev@linux.intel.com>
 
 	* macro.c (_cpp_builtin_macro_text): Handle BT_TIMESTAMP.

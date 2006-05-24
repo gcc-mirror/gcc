@@ -184,12 +184,13 @@ html:
 info:
 install-info:
 install-man:
+install-html:
 
 update-po: $(CATALOGS:.gmo=.pox)
 
 .PHONY: installdirs install install-strip mostlyclean clean distclean \
   maintainer-clean check installcheck dvi html info install-info \
-  install-man update-po
+  install-man update-po install-html
 
 # Dependency rule.
 COMPILE.base = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c
