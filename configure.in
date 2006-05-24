@@ -1068,6 +1068,26 @@ fi
 ACX_PROG_GNAT
 ACX_PROG_CMP_IGNORE_INITIAL
 
+# Check for html and install-html
+AC_ARG_WITH(datarootdir,
+[  --with-datarootdir   Use datarootdir as the data root directory.],
+[datarootdir="\${prefix}/${withval}"],
+[datarootdir="\${prefix}/share"])
+
+AC_ARG_WITH(docdir,
+[  --with-docdir        Install documentation in this directory.],
+[docdir="\${prefix}/${withval}"],
+[docdir="\${datarootdir}/doc"])
+
+AC_ARG_WITH(htmldir,
+[  --with-htmldir       Install html in this directory.],
+[htmldir="\${prefix}/${withval}"],
+[htmldir="\${docdir}"])
+
+AC_SUBST(datarootdir)
+AC_SUBST(docdir)
+AC_SUBST(htmldir)
+
 # Check for GMP and MPFR
 gmplibs=
 gmpinc=

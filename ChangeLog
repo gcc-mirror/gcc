@@ -1,3 +1,13 @@
+2006-05-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.def: Add install-html target. Add datarootdir
+	docdir and htmldir to flags_to_pass.
+	* Makefile.tpl: Add install-html target.
+	* Makefile.in: Regenerate.
+	* configure.in: Add --with-datarootdir, --with-docdir, and
+	--with-htmldir options. AC_SUBST datarootdir, docdir and htmldir.
+	* configure: Regenerate.
+
 2006-05-24  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* configure.in: Enable gprof for cross builds.
