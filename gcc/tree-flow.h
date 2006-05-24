@@ -810,9 +810,13 @@ tree find_loop_niter (struct loop *, edge *);
 tree loop_niter_by_eval (struct loop *, edge);
 tree find_loop_niter_by_eval (struct loop *, edge *);
 void estimate_numbers_of_iterations (struct loops *);
-bool scev_probably_wraps_p (tree, tree, tree, tree, struct loop *, bool *,
-			    bool *);
-tree convert_step (struct loop *, tree, tree, tree, tree);
+bool scev_probably_wraps_p (tree, tree, tree, struct loop *, bool);
+bool convert_affine_scev (struct loop *, tree, tree *, tree *, tree, bool);
+
+bool nowrap_type_p (tree);
+enum ev_direction {EV_DIR_GROWS, EV_DIR_DECREASES, EV_DIR_UNKNOWN};
+enum ev_direction scev_direction (tree);
+
 void free_numbers_of_iterations_estimates (struct loops *);
 void free_numbers_of_iterations_estimates_loop (struct loop *);
 void rewrite_into_loop_closed_ssa (bitmap, unsigned);

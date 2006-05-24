@@ -1096,6 +1096,103 @@ nb_vars_in_chrec (tree chrec)
     }
 }
 
+static tree chrec_convert_1 (tree, tree, tree, bool);
+
+/* Converts BASE and STEP of affine scev to TYPE.  LOOP is the loop whose iv
+   the scev corresponds to.  AT_STMT is the statement at that the scev is
+   evaluated.  USE_OVERFLOW_SEMANTICS is true if this function should assume that
+   the rules for overflow of the given language apply (e.g., that signed
+   arithmetics in C does not overflow) -- i.e., to use them to avoid unnecessary
+   tests, but also to enforce that the result follows them.  Returns true if the
+   conversion succeeded, false otherwise.  */
+
+bool
+convert_affine_scev (struct loop *loop, tree type,
+		     tree *base, tree *step, tree at_stmt,
+		     bool use_overflow_semantics)
+{
+  tree ct = TREE_TYPE (*step);
+  bool enforce_overflow_semantics;
+  bool must_check_src_overflow, must_check_rslt_overflow;
+  tree new_base, new_step;
+
+  /* In general,
+     (TYPE) (BASE + STEP * i) = (TYPE) BASE + (TYPE -- sign extend) STEP * i,
+     but we must check some assumptions.
+     
+     1) If [BASE, +, STEP] wraps, the equation is not valid when precision
+        of CT is smaller than the precision of TYPE.  For example, when we
+	cast unsigned char [254, +, 1] to unsigned, the values on left side
+	are 254, 255, 0, 1, ..., but those on the right side are
+	254, 255, 256, 257, ...
+     2) In case that we must also preserve the fact that signed ivs do not
+        overflow, we must additionally check that the new iv does not wrap.
+	For example, unsigned char [125, +, 1] casted to signed char could
+	become a wrapping variable with values 125, 126, 127, -128, -127, ...,
+	which would confuse optimizers that assume that this does not
+	happen.  */
+  must_check_src_overflow = TYPE_PRECISION (ct) < TYPE_PRECISION (type);
+
+  enforce_overflow_semantics = (use_overflow_semantics
+				&& nowrap_type_p (type));
+  if (enforce_overflow_semantics)
+    {
+      /* We can avoid checking whether the result overflows in the following
+	 cases:
+
+	 -- must_check_src_overflow is true, and the range of TYPE is superset
+	    of the range of CT -- i.e., in all cases except if CT signed and
+	    TYPE unsigned.
+         -- both CT and TYPE have the same precision and signedness.  */
+      if (must_check_src_overflow)
+	{
+	  if (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (ct))
+	    must_check_rslt_overflow = true;
+	  else
+	    must_check_rslt_overflow = false;
+	}
+      else if (TYPE_UNSIGNED (ct) == TYPE_UNSIGNED (type)
+	       && TYPE_PRECISION (ct) == TYPE_PRECISION (type))
+	must_check_rslt_overflow = false;
+      else
+	must_check_rslt_overflow = true;
+    }
+  else
+    must_check_rslt_overflow = false;
+
+  if (must_check_src_overflow
+      && scev_probably_wraps_p (*base, *step, at_stmt, loop,
+				use_overflow_semantics))
+    return false;
+
+  new_base = chrec_convert_1 (type, *base, at_stmt,
+			      use_overflow_semantics);
+  /* The step must be sign extended, regardless of the signedness
+     of CT and TYPE.  This only needs to be handled specially when
+     CT is unsigned -- to avoid e.g. unsigned char [100, +, 255]
+     (with values 100, 99, 98, ...) from becoming signed or unsigned
+     [100, +, 255] with values 100, 355, ...; the sign-extension is 
+     performed by default when CT is signed.  */
+  new_step = *step;
+  if (TYPE_PRECISION (type) > TYPE_PRECISION (ct) && TYPE_UNSIGNED (ct))
+    new_step = chrec_convert_1 (signed_type_for (ct), new_step, at_stmt,
+				use_overflow_semantics);
+  new_step = chrec_convert_1 (type, new_step, at_stmt, use_overflow_semantics);
+
+  if (automatically_generated_chrec_p (new_base)
+      || automatically_generated_chrec_p (new_step))
+    return false;
+
+  if (must_check_rslt_overflow
+      /* Note that in this case we cannot use the fact that signed variables
+	 do not overflow, as this is what we are verifying for the new iv.  */
+      && scev_probably_wraps_p (new_base, new_step, at_stmt, loop, false))
+    return false;
+
+  *base = new_base;
+  *step = new_step;
+  return true;
+}
 
 
 /* Convert CHREC to TYPE.  When the analyzer knows the context in
@@ -1125,7 +1222,28 @@ nb_vars_in_chrec (tree chrec)
 tree 
 chrec_convert (tree type, tree chrec, tree at_stmt)
 {
+  return chrec_convert_1 (type, chrec, at_stmt, true);
+}
+
+/* Convert CHREC to TYPE.  When the analyzer knows the context in
+   which the CHREC is built, it sets AT_STMT to the statement that
+   contains the definition of the analyzed variable, otherwise the
+   conversion is less accurate: the information is used for
+   determining a more accurate estimation of the number of iterations.
+   By default AT_STMT could be safely set to NULL_TREE.
+ 
+   USE_OVERFLOW_SEMANTICS is true if this function should assume that
+   the rules for overflow of the given language apply (e.g., that signed
+   arithmetics in C does not overflow) -- i.e., to use them to avoid unnecessary
+   tests, but also to enforce that the result follows them.  */
+
+static tree 
+chrec_convert_1 (tree type, tree chrec, tree at_stmt,
+		 bool use_overflow_semantics)
+{
   tree ct, res;
+  tree base, step;
+  struct loop *loop;
 
   if (automatically_generated_chrec_p (chrec))
     return chrec;
@@ -1134,56 +1252,19 @@ chrec_convert (tree type, tree chrec, tree at_stmt)
   if (ct == type)
     return chrec;
 
-  if (evolution_function_is_affine_p (chrec))
-    {
-      tree base, step;
-      bool dummy;
-      struct loop *loop = current_loops->parray[CHREC_VARIABLE (chrec)];
+  if (!evolution_function_is_affine_p (chrec))
+    goto keep_cast;
 
-      base = instantiate_parameters (loop, CHREC_LEFT (chrec));
-      step = instantiate_parameters (loop, CHREC_RIGHT (chrec));
+  loop = current_loops->parray[CHREC_VARIABLE (chrec)];
+  base = CHREC_LEFT (chrec);
+  step = CHREC_RIGHT (chrec);
 
-      /* Avoid conversion of (signed char) {(uchar)1, +, (uchar)1}_x
-	 when it is not possible to prove that the scev does not wrap.
-	 See PR22236, where a sequence 1, 2, ..., 255 has to be
-	 converted to signed char, but this would wrap: 
-	 1, 2, ..., 127, -128, ...  The result should not be
-	 {(schar)1, +, (schar)1}_x, but instead, we should keep the
-	 conversion: (schar) {(uchar)1, +, (uchar)1}_x.  */
-      if (scev_probably_wraps_p (type, base, step, at_stmt, loop,
-				 &dummy, &dummy))
-	goto failed_to_convert;
+  if (convert_affine_scev (loop, type, &base, &step, at_stmt,
+			   use_overflow_semantics))
+    return build_polynomial_chrec (loop->num, base, step);
 
-      step = convert_step (loop, type, base, step, at_stmt);
-      if (!step)
- 	{
-	failed_to_convert:;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "(failed conversion:");
-	      fprintf (dump_file, "\n  type: ");
-	      print_generic_expr (dump_file, type, 0);
-	      fprintf (dump_file, "\n  base: ");
-	      print_generic_expr (dump_file, base, 0);
-	      fprintf (dump_file, "\n  step: ");
-	      print_generic_expr (dump_file, step, 0);
-	      fprintf (dump_file, "\n  estimated_nb_iterations: ");
-	      print_generic_expr (dump_file, loop->estimated_nb_iterations, 0);
-	      fprintf (dump_file, "\n)\n");
-	    }
-
-	  return fold_convert (type, chrec);
-	}
-
-      return build_polynomial_chrec (CHREC_VARIABLE (chrec),
- 				     chrec_convert (type, CHREC_LEFT (chrec),
- 						    at_stmt),
- 				     step);
-    }
-
-  if (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
-    return chrec_dont_know;
-
+  /* If we cannot propagate the cast inside the chrec, just keep the cast.  */
+keep_cast:
   res = fold_convert (type, chrec);
 
   /* Don't propagate overflows.  */
@@ -1284,3 +1365,24 @@ eq_evolutions_p (tree chrec0,
     }  
 }
 
+/* Returns EV_GROWS if CHREC grows (assuming that it does not overflow),
+   EV_DECREASES if it decreases, and EV_UNKNOWN if we cannot determine
+   which of these cases happens.  */
+
+enum ev_direction
+scev_direction (tree chrec)
+{
+  tree step;
+
+  if (!evolution_function_is_affine_p (chrec))
+    return EV_DIR_UNKNOWN;
+
+  step = CHREC_RIGHT (chrec);
+  if (TREE_CODE (step) != INTEGER_CST)
+    return EV_DIR_UNKNOWN;
+
+  if (tree_int_cst_sign_bit (step))
+    return EV_DIR_DECREASES;
+  else
+    return EV_DIR_GROWS;
+}

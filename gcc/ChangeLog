@@ -1,6 +1,27 @@
+2006-05-24  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27639
+	PR tree-optimization/26719
+	* tree-vrp.c (adjust_range_with_scev): Use scev_direction and adjust
+	call to scev_probably_wraps_p.
+	* tree-ssa-loop-niter.c (compare_trees, convert_step_widening,
+	used_in_pointer_arithmetic_p, convert_step): Removed.
+	(nowrap_type_p): New function.
+	(scev_probably_wraps_p): Rewritten.
+	* tree-scalar-evolution.c (instantiate_parameters_1): Do not call
+	chrec_convert if chrec_convert_aggressive might have been used.
+	* tree-chrec.c (convert_affine_scev, chrec_convert_1,
+	scev_direction): New functions.
+	(chrec_convert): Changed to a wrapper over chrec_convert_1.
+	* tree-ssa-loop-ivopts.c (idx_find_step): Use convert_affine_scev
+	instead of convert_step.
+	* tree-flow.h (scev_probably_wraps_p): Declaration changed.
+	(convert_step): Declaration removed.
+	(convert_affine_scev, nowrap_type_p, scev_direction): Declare.
+
 2006-05-23  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-        * df-core.c: Added to header comments.
+	* df-core.c: Added to header comments.
 	* df.h (df_ru_bb_info, df_rd_bb_info, df_lr_bb_info,
 	df_ur_bb_info, df_urec_bb_info): Added comments.
 	* df-problems (df_ref_bitmap, ru, rd, lr, ur, 
@@ -107,7 +128,7 @@
 	* modulo-sched.c (sms_schedule, tree_opt_pass pass_sms): Enhanced
 	debug info.       
 	* ddg.c (add_deps_for_def): Converted use of reaching defs to
-        reaching uses and fixed space problem.
+	reaching uses and fixed space problem.
 
 2006-05-23  Jan Hubicka  <jh@suse.cz>
 
