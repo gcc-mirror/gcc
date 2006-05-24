@@ -1265,7 +1265,7 @@ gnu_java_net_source_files = \
 classpath/gnu/java/net/BASE64.java \
 classpath/gnu/java/net/CRLFInputStream.java \
 classpath/gnu/java/net/CRLFOutputStream.java \
-gnu/java/net/DefaultContentHandlerFactory.java \
+classpath/gnu/java/net/DefaultContentHandlerFactory.java \
 classpath/gnu/java/net/EmptyX509TrustManager.java \
 classpath/gnu/java/net/GetLocalHostAction.java \
 classpath/gnu/java/net/HeaderFieldHelper.java \
@@ -4892,7 +4892,7 @@ classpath/java/net/URI.java \
 classpath/java/net/URISyntaxException.java \
 java/net/URL.java \
 java/net/URLClassLoader.java \
-java/net/URLConnection.java \
+classpath/java/net/URLConnection.java \
 classpath/java/net/URLDecoder.java \
 classpath/java/net/URLEncoder.java \
 classpath/java/net/URLStreamHandler.java \
