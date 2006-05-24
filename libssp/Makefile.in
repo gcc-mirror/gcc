@@ -753,6 +753,10 @@ uninstall-am: uninstall-info-am uninstall-nobase_libsubincludeHEADERS \
 	uninstall-nobase_libsubincludeHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
+
+.PHONY: install-html
+
+install-html:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
