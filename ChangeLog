@@ -1,3 +1,8 @@
+2006-05-24  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* configure.in: Enable gprof for cross builds.
+	* configure: Regenerate.
+
 2006-05-22  Richard Guenther  <rguenther@suse.de>
 
 	Revert
