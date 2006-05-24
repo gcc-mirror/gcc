@@ -1,3 +1,7 @@
+2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Add install-html target.
+
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (FLAGS_TO_PASS): Add GCC_FOR_TARGET.
