@@ -1,6 +1,6 @@
 // natField.cc - Implementation of java.lang.reflect.Field native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -30,9 +30,9 @@ details.  */
 #include <java/lang/Character.h>
 
 jint
-java::lang::reflect::Field::getModifiers ()
+java::lang::reflect::Field::getModifiersInternal ()
 {
-  return _Jv_FromReflectedField (this)->getModifiers ();
+  return _Jv_FromReflectedField (this)->flags;
 }
 
 jstring
@@ -72,7 +72,7 @@ getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj,
 
   // Setting a final field is usually not allowed.
   if (checkFinal
-      && field->getModifiers() & java::lang::reflect::Modifier::FINAL)
+      && (field->getModifiers() & java::lang::reflect::Modifier::FINAL))
     throw new java::lang::IllegalAccessException(JvNewStringUTF 
       ("Field is final"));
   

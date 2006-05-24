@@ -1,6 +1,6 @@
 // natConstructor.cc - Native code for Constructor class.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -24,10 +24,9 @@ details.  */
 #include <gcj/method.h>
 
 jint
-java::lang::reflect::Constructor::getModifiers ()
+java::lang::reflect::Constructor::getModifiersInternal ()
 {
-  // Ignore all unknown flags.
-  return _Jv_FromReflectedConstructor (this)->accflags & Modifier::ALL_FLAGS;
+  return _Jv_FromReflectedConstructor (this)->accflags;
 }
 
 void

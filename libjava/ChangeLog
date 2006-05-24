@@ -1,5 +1,46 @@
 2006-05-24  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/27729:
+	* java/lang/reflect/natField.cc (getAddr): Added parens.
+	* java/lang/reflect/natConstructor.cc (getModifiersInternal):
+	Renamed.  Don't mask flags.
+	* java/lang/reflect/Constructor.java (CONSTRUCTOR_MODIFIERS): New
+	constant.
+	(getModifiersInternal): Renamed.
+	(getModifiers): Rewrote.
+	(isSynthetic, isVarArgs): New methods.
+	(hashCode): Rewrote.
+	(addTypeParameters, toGenericString): New methods.
+	(getTypeParameters): Rewrote.
+	(getSignature): New method.
+	(getGenericParameterTypes, getGenericExceptionTypes): Likewise.
+	* java/lang/reflect/natMethod.cc (getModifiersInternal):
+	Renamed.  Don't mask flags.
+	* java/lang/reflect/natField.cc (getModifiersInternal): Renamed.
+	Don't mask flags.
+	* java/lang/reflect/Modifier.java (BRIDGE, VARARGS, SYNTHETIC,
+	ENUM): New constants.
+	(INVISIBLE): Changed value.
+	* java/lang/reflect/Method.java: Mostly merged with Classpath.
+	(getModifiersInternal): Renamed.
+	(getModifiers): Rewrote.
+	(isBridge, isSynthetic, isVarArgs): New methods.
+	(toGenericString): Likewise.
+	(getTypeParameters): Likewise.
+	(getSignature): Likewise.
+	(getGenericExceptionTypes, getGenericParameterTypes,
+	getGenericReturnType): Likewise.
+	(METHOD_MODIFIERS): New constant.
+	* java/lang/reflect/Field.java: Mostly merged with Classpath.
+	Added javadoc everywhere.
+	(getModifiersInternal): Renamed.
+	(getModifiers, isSynthetic, isEnumConstant): Rewrote.
+	(toGenericString): New method.
+	(getGenericType, getSignature): Likewise.
+	(FIELD_MODIFIERS): New constant.
+
+2006-05-24  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/27731:
 	* java/lang/natMath.cc (cbrt, cosh, expm1, hypot, log1p, sinh,
 	tanh): New methods.

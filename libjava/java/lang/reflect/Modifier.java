@@ -1,5 +1,5 @@
 /* java.lang.reflect.Modifier
-   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -158,10 +158,30 @@ public class Modifier
   static final int ALL_FLAGS = 0xfff;
 
   /**
+   * Flag indicating a bridge method.
+   */
+  static final int BRIDGE = 0x40;
+
+  /**
+   * Flag indicating a varargs method.
+   */
+  static final int VARARGS = 0x80;
+
+  /**
+   * Flag indicating a synthetic member.
+   */
+  static final int SYNTHETIC = 0x1000;
+
+  /**
+   * Flag indicating an enum constant or an enum class.
+   */
+  static final int ENUM = 0x4000;
+
+  /**
    * GCJ-LOCAL: This access flag is set on methods we declare
    * internally but which must not be visible to reflection.
    */
-  static final int INVISIBLE = 0x1000;
+  static final int INVISIBLE = 0x8000;
 
   /**
    * GCJ-LOCAL: This access flag is set on interpreted classes.
@@ -300,6 +320,18 @@ public class Modifier
   public static String toString(int mod)
   {
     return toString(mod, new StringBuffer()).toString();
+  }
+
+  /**
+   * Package helper method that can take a StringBuilder.
+   * @param mod the modifier
+   * @param r the StringBuilder to which the String representation is appended
+   * @return r, with information appended
+   */
+  static StringBuilder toString(int mod, StringBuilder r)
+  {
+    r.append(toString(mod, new StringBuffer()));
+    return r;
   }
 
   /**
