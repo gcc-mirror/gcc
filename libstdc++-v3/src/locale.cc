@@ -433,7 +433,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_index = 1 + f->_M_id();
 	else
 #endif
-	  _M_index = 1 + __gnu_cxx::__exchange_and_add(&_S_refcount, 1);
+	  _M_index = 1 + __gnu_cxx::__exchange_and_add_dispatch(&_S_refcount,
+								1);
       }
     return _M_index - 1;
   }

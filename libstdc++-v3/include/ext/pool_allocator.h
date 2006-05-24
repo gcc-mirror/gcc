@@ -206,9 +206,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  if (_S_force_new == 0)
 	    {
 	      if (std::getenv("GLIBCXX_FORCE_NEW"))
-		__atomic_add(&_S_force_new, 1);
+		__atomic_add_dispatch(&_S_force_new, 1);
 	      else
-		__atomic_add(&_S_force_new, -1);
+		__atomic_add_dispatch(&_S_force_new, -1);
 	    }
 
 	  const size_t __bytes = __n * sizeof(_Tp);	      

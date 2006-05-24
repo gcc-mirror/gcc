@@ -1,3 +1,22 @@
+2006-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24704
+	* include/bits/atomicity.h (__exchange_and_add_single,
+	__atomic_add_single): New, single thread versions of the atomic
+	functions.
+	(__exchange_and_add_dispatch, __atomic_add_dispatch): New,
+	depending on __GTHREADS and __gthread_active_p() dispatch either
+	to the above or to the existing atomic functions.
+	* include/ext/pool_allocator.h: Update callers.
+	* include/ext/rc_string_base.h: Likewise.
+	* include/bits/locale_classes.h: Likewise.
+	* include/bits/basic_string.h: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* include/tr1/boost_shared_ptr.h: Likewise.
+	* src/ios.cc: Likewise.
+	* src/locale.cc: Likewise.
+	* src/ios_init.cc: Likewise.
+
 2006-05-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/testsuite_shared.cc: Fix --enable-threads=single build.

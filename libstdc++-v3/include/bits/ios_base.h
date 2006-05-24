@@ -476,12 +476,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _M_next(__cb), _M_fn(__fn), _M_index(__index), _M_refcount(0) { }
 
       void
-      _M_add_reference() { __gnu_cxx::__atomic_add(&_M_refcount, 1); }
+      _M_add_reference() { __gnu_cxx::__atomic_add_dispatch(&_M_refcount, 1); }
 
       // 0 => OK to delete.
       int
       _M_remove_reference() 
-      { return __gnu_cxx::__exchange_and_add(&_M_refcount, -1); }
+      { return __gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1); }
     };
 
      _Callback_list*	_M_callbacks;
