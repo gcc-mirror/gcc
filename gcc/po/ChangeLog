@@ -1,3 +1,7 @@
+2006-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.pot: Regenerated.
+
 2006-05-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* sv.po, tr.po: Update.
