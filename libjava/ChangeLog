@@ -1,3 +1,12 @@
+2006-05-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.am: Add install-html target. Add install-html to .PHONY
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2006-05-24  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libjava.lang/stacktrace.java: New file.

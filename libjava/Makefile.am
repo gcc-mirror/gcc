@@ -982,6 +982,10 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES=
 
+# No install-html support yet.
+.PHONY: install-html
+install-html:
+
 # Multilib support variables.
 MULTISRCTOP =
 MULTIBUILDTOP =
