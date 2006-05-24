@@ -1,3 +1,8 @@
+2006-05-24  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.lang/stacktrace.java: New file.
+	* testsuite/libjava.lang/stacktrace.out: Likewise.
+
 2006-05-24  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.
@@ -59,7 +64,7 @@
 2006-05-22  Mark Wielaard  <mark@klomp.org>
 
 	* HACKING: Update GNU Classpath import instructions.
-	
+
 2006-05-21  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* java/lang/natClass.cc (_Jv_FindMethodInCache): Mark klass, name and
