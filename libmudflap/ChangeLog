@@ -1,3 +1,8 @@
+2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.am: Add install-html target. Add install-html to .PHONY
+	* Makefile.in: Regenerate.
+
 2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR mudflap/26789
