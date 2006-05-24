@@ -48,3 +48,8 @@ fortran.lo: libgomp_f.h
 fortran.o: libgomp_f.h
 env.lo: libgomp_f.h
 env.o: libgomp_f.h
+
+# No install-html target
+.PHONY: install-html
+install-html:
+
