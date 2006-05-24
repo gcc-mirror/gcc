@@ -1272,12 +1272,7 @@ classpath/gnu/java/net/HeaderFieldHelper.java \
 classpath/gnu/java/net/LineInputStream.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
-classpath/gnu/java/net/URLParseError.java \
-gnu/java/net/protocol/core/Connection.java \
-gnu/java/net/protocol/core/CoreInputStream.java \
-gnu/java/net/protocol/core/Handler.java \
-gnu/java/net/protocol/gcjlib/Connection.java \
-gnu/java/net/protocol/gcjlib/Handler.java
+classpath/gnu/java/net/URLParseError.java
 
 gnu_java_net_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_source_files)))
 
@@ -1309,6 +1304,24 @@ gnu/java/net/local.list: $(gnu_java_net_local_source_files)
 	done > gnu/java/net/local.list
 
 -include gnu/java/net/local.deps
+
+
+gnu_java_net_protocol_core_source_files = \
+gnu/java/net/protocol/core/Connection.java \
+gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/java/net/protocol/core/Handler.java
+
+gnu_java_net_protocol_core_header_files = $(patsubst %.java,%.h,$(gnu_java_net_protocol_core_source_files))
+
+gnu/java/net/protocol/core.list: $(gnu_java_net_protocol_core_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_net_protocol_core_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/net/protocol/core.list
+
+-include gnu/java/net/protocol/core.deps
 
 
 gnu_java_net_protocol_file_source_files = \
@@ -1357,6 +1370,23 @@ gnu/java/net/protocol/ftp.list: $(gnu_java_net_protocol_ftp_source_files)
 	done > gnu/java/net/protocol/ftp.list
 
 -include gnu/java/net/protocol/ftp.deps
+
+
+gnu_java_net_protocol_gcjlib_source_files = \
+gnu/java/net/protocol/gcjlib/Connection.java \
+gnu/java/net/protocol/gcjlib/Handler.java
+
+gnu_java_net_protocol_gcjlib_header_files = $(patsubst %.java,%.h,$(gnu_java_net_protocol_gcjlib_source_files))
+
+gnu/java/net/protocol/gcjlib.list: $(gnu_java_net_protocol_gcjlib_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_net_protocol_gcjlib_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/net/protocol/gcjlib.list
+
+-include gnu/java/net/protocol/gcjlib.deps
 
 
 gnu_java_net_protocol_http_source_files = \
@@ -1556,15 +1586,7 @@ gnu/java/nio/charset.list: $(gnu_java_nio_charset_source_files)
 
 gnu_java_rmi_source_files = \
 classpath/gnu/java/rmi/RMIMarshalledObjectInputStream.java \
-classpath/gnu/java/rmi/RMIMarshalledObjectOutputStream.java \
-gnu/java/rmi/rmic/Compile_gcj.java \
-gnu/java/rmi/rmic/Compile_jikes.java \
-gnu/java/rmi/rmic/Compile_kjc.java \
-gnu/java/rmi/rmic/Compiler.java \
-gnu/java/rmi/rmic/CompilerProcess.java \
-gnu/java/rmi/rmic/RMIC.java \
-gnu/java/rmi/rmic/RMICException.java \
-gnu/java/rmi/rmic/TabbedWriter.java
+classpath/gnu/java/rmi/RMIMarshalledObjectOutputStream.java
 
 gnu_java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_source_files)))
 
@@ -1633,6 +1655,29 @@ gnu/java/rmi/registry.list: $(gnu_java_rmi_registry_source_files)
 	done > gnu/java/rmi/registry.list
 
 -include gnu/java/rmi/registry.deps
+
+
+gnu_java_rmi_rmic_source_files = \
+gnu/java/rmi/rmic/Compile_gcj.java \
+gnu/java/rmi/rmic/Compile_jikes.java \
+gnu/java/rmi/rmic/Compile_kjc.java \
+gnu/java/rmi/rmic/Compiler.java \
+gnu/java/rmi/rmic/CompilerProcess.java \
+gnu/java/rmi/rmic/RMIC.java \
+gnu/java/rmi/rmic/RMICException.java \
+gnu/java/rmi/rmic/TabbedWriter.java
+
+gnu_java_rmi_rmic_header_files = $(patsubst %.java,%.h,$(gnu_java_rmi_rmic_source_files))
+
+gnu/java/rmi/rmic.list: $(gnu_java_rmi_rmic_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_rmi_rmic_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/rmi/rmic.list
+
+-include gnu/java/rmi/rmic.deps
 
 
 gnu_java_rmi_server_source_files = \
@@ -8330,8 +8375,10 @@ all_packages_source_files = \
   gnu/java/math.list \
   gnu/java/net.list \
   gnu/java/net/local.list \
+  gnu/java/net/protocol/core.list \
   gnu/java/net/protocol/file.list \
   gnu/java/net/protocol/ftp.list \
+  gnu/java/net/protocol/gcjlib.list \
   gnu/java/net/protocol/http.list \
   gnu/java/net/protocol/https.list \
   gnu/java/net/protocol/jar.list \
@@ -8342,6 +8389,7 @@ all_packages_source_files = \
   gnu/java/rmi/activation.list \
   gnu/java/rmi/dgc.list \
   gnu/java/rmi/registry.list \
+  gnu/java/rmi/rmic.list \
   gnu/java/rmi/server.list \
   gnu/java/security.list \
   gnu/java/security/action.list \
@@ -8544,8 +8592,10 @@ ordinary_header_files = \
   $(gnu_java_math_header_files) \
   $(gnu_java_net_header_files) \
   $(gnu_java_net_local_header_files) \
+  $(gnu_java_net_protocol_core_header_files) \
   $(gnu_java_net_protocol_file_header_files) \
   $(gnu_java_net_protocol_ftp_header_files) \
+  $(gnu_java_net_protocol_gcjlib_header_files) \
   $(gnu_java_net_protocol_http_header_files) \
   $(gnu_java_net_protocol_https_header_files) \
   $(gnu_java_net_protocol_jar_header_files) \
@@ -8556,6 +8606,7 @@ ordinary_header_files = \
   $(gnu_java_rmi_activation_header_files) \
   $(gnu_java_rmi_dgc_header_files) \
   $(gnu_java_rmi_registry_header_files) \
+  $(gnu_java_rmi_rmic_header_files) \
   $(gnu_java_rmi_server_header_files) \
   $(gnu_java_security_header_files) \
   $(gnu_java_security_action_header_files) \

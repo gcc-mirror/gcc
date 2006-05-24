@@ -7,9 +7,15 @@ proc makearray {name} {
   unset ary(_)
 }
 
+global is_verbose
+set is_verbose 0
+
 # Verbose printer.
 proc verbose {text} {
-# puts stderr $text
+  global is_verbose
+  if {$is_verbose} {
+    puts stderr $text
+  }
 }
 
 # This maps a name to its style:
@@ -160,9 +166,9 @@ proc classify_source_file {basedir file} {
   set pkg $file
   while {1} {
     if {[info exists package_map($pkg)]} {
-      # If the entry for '.' is 'package', then set up a new entry for
-      # the file's package.
-      if {$pkg == "." && $package_map($pkg) == "package"} {
+      # If the entry is 'package', then set up a new entry for the
+      # file's package.
+      if {$package_map($pkg) == "package"} {
 	set pkg [file dirname $file]
 	set package_map($pkg) package
       }
@@ -351,6 +357,11 @@ proc pp_var {name valueList {pre ""} {post ""}} {
     puts -nonewline "  ${pre}${val}${post}"
   }
   puts ""
+}
+
+global argv
+if {[llength $argv] > 0 && [lindex $argv 0] == "-verbose"} {
+  set is_verbose 1
 }
 
 # Read the proper .omit files.

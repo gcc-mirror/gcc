@@ -162,35 +162,36 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/java/awt/java2d.lo gnu/java/awt/peer.lo gnu/java/io.lo \
 	gnu/java/lang.lo gnu/java/lang/reflect.lo gnu/java/locale.lo \
 	gnu/java/math.lo gnu/java/net.lo gnu/java/net/local.lo \
-	gnu/java/net/protocol/file.lo gnu/java/net/protocol/ftp.lo \
+	gnu/java/net/protocol/core.lo gnu/java/net/protocol/file.lo \
+	gnu/java/net/protocol/ftp.lo gnu/java/net/protocol/gcjlib.lo \
 	gnu/java/net/protocol/http.lo gnu/java/net/protocol/https.lo \
 	gnu/java/net/protocol/jar.lo gnu/java/nio.lo \
 	gnu/java/nio/channels.lo gnu/java/nio/charset.lo \
 	gnu/java/rmi.lo gnu/java/rmi/activation.lo gnu/java/rmi/dgc.lo \
-	gnu/java/rmi/registry.lo gnu/java/rmi/server.lo \
-	gnu/java/security.lo gnu/java/security/action.lo \
-	gnu/java/security/ber.lo gnu/java/security/der.lo \
-	gnu/java/security/hash.lo gnu/java/security/jce/hash.lo \
-	gnu/java/security/jce/prng.lo gnu/java/security/jce/sig.lo \
-	gnu/java/security/key.lo gnu/java/security/key/dss.lo \
-	gnu/java/security/key/rsa.lo gnu/java/security/pkcs.lo \
-	gnu/java/security/prng.lo gnu/java/security/provider.lo \
-	gnu/java/security/sig.lo gnu/java/security/sig/dss.lo \
-	gnu/java/security/sig/rsa.lo gnu/java/security/util.lo \
-	gnu/java/security/x509.lo gnu/java/security/x509/ext.lo \
-	gnu/java/text.lo gnu/java/util.lo gnu/java/util/jar.lo \
-	gnu/java/util/prefs.lo gnu/javax/crypto.lo \
-	gnu/javax/crypto/assembly.lo gnu/javax/crypto/cipher.lo \
-	gnu/javax/crypto/jce.lo gnu/javax/crypto/jce/cipher.lo \
-	gnu/javax/crypto/jce/key.lo gnu/javax/crypto/jce/keyring.lo \
-	gnu/javax/crypto/jce/mac.lo gnu/javax/crypto/jce/params.lo \
-	gnu/javax/crypto/jce/prng.lo gnu/javax/crypto/jce/sig.lo \
-	gnu/javax/crypto/jce/spec.lo gnu/javax/crypto/key.lo \
-	gnu/javax/crypto/key/dh.lo gnu/javax/crypto/key/srp6.lo \
-	gnu/javax/crypto/keyring.lo gnu/javax/crypto/mac.lo \
-	gnu/javax/crypto/mode.lo gnu/javax/crypto/pad.lo \
-	gnu/javax/crypto/prng.lo gnu/javax/crypto/sasl.lo \
-	gnu/javax/crypto/sasl/anonymous.lo \
+	gnu/java/rmi/registry.lo gnu/java/rmi/rmic.lo \
+	gnu/java/rmi/server.lo gnu/java/security.lo \
+	gnu/java/security/action.lo gnu/java/security/ber.lo \
+	gnu/java/security/der.lo gnu/java/security/hash.lo \
+	gnu/java/security/jce/hash.lo gnu/java/security/jce/prng.lo \
+	gnu/java/security/jce/sig.lo gnu/java/security/key.lo \
+	gnu/java/security/key/dss.lo gnu/java/security/key/rsa.lo \
+	gnu/java/security/pkcs.lo gnu/java/security/prng.lo \
+	gnu/java/security/provider.lo gnu/java/security/sig.lo \
+	gnu/java/security/sig/dss.lo gnu/java/security/sig/rsa.lo \
+	gnu/java/security/util.lo gnu/java/security/x509.lo \
+	gnu/java/security/x509/ext.lo gnu/java/text.lo \
+	gnu/java/util.lo gnu/java/util/jar.lo gnu/java/util/prefs.lo \
+	gnu/javax/crypto.lo gnu/javax/crypto/assembly.lo \
+	gnu/javax/crypto/cipher.lo gnu/javax/crypto/jce.lo \
+	gnu/javax/crypto/jce/cipher.lo gnu/javax/crypto/jce/key.lo \
+	gnu/javax/crypto/jce/keyring.lo gnu/javax/crypto/jce/mac.lo \
+	gnu/javax/crypto/jce/params.lo gnu/javax/crypto/jce/prng.lo \
+	gnu/javax/crypto/jce/sig.lo gnu/javax/crypto/jce/spec.lo \
+	gnu/javax/crypto/key.lo gnu/javax/crypto/key/dh.lo \
+	gnu/javax/crypto/key/srp6.lo gnu/javax/crypto/keyring.lo \
+	gnu/javax/crypto/mac.lo gnu/javax/crypto/mode.lo \
+	gnu/javax/crypto/pad.lo gnu/javax/crypto/prng.lo \
+	gnu/javax/crypto/sasl.lo gnu/javax/crypto/sasl/anonymous.lo \
 	gnu/javax/crypto/sasl/crammd5.lo \
 	gnu/javax/crypto/sasl/plain.lo gnu/javax/crypto/sasl/srp.lo \
 	gnu/javax/imageio/bmp.lo gnu/javax/net/ssl.lo \
@@ -1706,12 +1707,7 @@ classpath/gnu/java/net/HeaderFieldHelper.java \
 classpath/gnu/java/net/LineInputStream.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
-classpath/gnu/java/net/URLParseError.java \
-gnu/java/net/protocol/core/Connection.java \
-gnu/java/net/protocol/core/CoreInputStream.java \
-gnu/java/net/protocol/core/Handler.java \
-gnu/java/net/protocol/gcjlib/Connection.java \
-gnu/java/net/protocol/gcjlib/Handler.java
+classpath/gnu/java/net/URLParseError.java
 
 gnu_java_net_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_source_files)))
 gnu_java_net_local_source_files = \
@@ -1721,6 +1717,12 @@ classpath/gnu/java/net/local/LocalSocketAddress.java \
 gnu/java/net/local/LocalSocketImpl.java
 
 gnu_java_net_local_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_local_source_files)))
+gnu_java_net_protocol_core_source_files = \
+gnu/java/net/protocol/core/Connection.java \
+gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/java/net/protocol/core/Handler.java
+
+gnu_java_net_protocol_core_header_files = $(patsubst %.java,%.h,$(gnu_java_net_protocol_core_source_files))
 gnu_java_net_protocol_file_source_files = \
 classpath/gnu/java/net/protocol/file/Connection.java \
 classpath/gnu/java/net/protocol/file/Handler.java
@@ -1745,6 +1747,11 @@ classpath/gnu/java/net/protocol/ftp/StreamInputStream.java \
 classpath/gnu/java/net/protocol/ftp/StreamOutputStream.java
 
 gnu_java_net_protocol_ftp_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_ftp_source_files)))
+gnu_java_net_protocol_gcjlib_source_files = \
+gnu/java/net/protocol/gcjlib/Connection.java \
+gnu/java/net/protocol/gcjlib/Handler.java
+
+gnu_java_net_protocol_gcjlib_header_files = $(patsubst %.java,%.h,$(gnu_java_net_protocol_gcjlib_source_files))
 gnu_java_net_protocol_http_source_files = \
 classpath/gnu/java/net/protocol/http/Authenticator.java \
 classpath/gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.java \
@@ -1870,15 +1877,7 @@ classpath/gnu/java/nio/charset/Windows1258.java
 gnu_java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_nio_charset_source_files)))
 gnu_java_rmi_source_files = \
 classpath/gnu/java/rmi/RMIMarshalledObjectInputStream.java \
-classpath/gnu/java/rmi/RMIMarshalledObjectOutputStream.java \
-gnu/java/rmi/rmic/Compile_gcj.java \
-gnu/java/rmi/rmic/Compile_jikes.java \
-gnu/java/rmi/rmic/Compile_kjc.java \
-gnu/java/rmi/rmic/Compiler.java \
-gnu/java/rmi/rmic/CompilerProcess.java \
-gnu/java/rmi/rmic/RMIC.java \
-gnu/java/rmi/rmic/RMICException.java \
-gnu/java/rmi/rmic/TabbedWriter.java
+classpath/gnu/java/rmi/RMIMarshalledObjectOutputStream.java
 
 gnu_java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_source_files)))
 gnu_java_rmi_activation_source_files = \
@@ -1901,6 +1900,17 @@ classpath/gnu/java/rmi/registry/RegistryImpl_Skel.java \
 classpath/gnu/java/rmi/registry/RegistryImpl_Stub.java
 
 gnu_java_rmi_registry_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_registry_source_files)))
+gnu_java_rmi_rmic_source_files = \
+gnu/java/rmi/rmic/Compile_gcj.java \
+gnu/java/rmi/rmic/Compile_jikes.java \
+gnu/java/rmi/rmic/Compile_kjc.java \
+gnu/java/rmi/rmic/Compiler.java \
+gnu/java/rmi/rmic/CompilerProcess.java \
+gnu/java/rmi/rmic/RMIC.java \
+gnu/java/rmi/rmic/RMICException.java \
+gnu/java/rmi/rmic/TabbedWriter.java
+
+gnu_java_rmi_rmic_header_files = $(patsubst %.java,%.h,$(gnu_java_rmi_rmic_source_files))
 gnu_java_rmi_server_source_files = \
 classpath/gnu/java/rmi/server/ActivatableRef.java \
 classpath/gnu/java/rmi/server/ActivatableServerRef.java \
@@ -6529,8 +6539,10 @@ all_packages_source_files = \
   gnu/java/math.list \
   gnu/java/net.list \
   gnu/java/net/local.list \
+  gnu/java/net/protocol/core.list \
   gnu/java/net/protocol/file.list \
   gnu/java/net/protocol/ftp.list \
+  gnu/java/net/protocol/gcjlib.list \
   gnu/java/net/protocol/http.list \
   gnu/java/net/protocol/https.list \
   gnu/java/net/protocol/jar.list \
@@ -6541,6 +6553,7 @@ all_packages_source_files = \
   gnu/java/rmi/activation.list \
   gnu/java/rmi/dgc.list \
   gnu/java/rmi/registry.list \
+  gnu/java/rmi/rmic.list \
   gnu/java/rmi/server.list \
   gnu/java/security.list \
   gnu/java/security/action.list \
@@ -6743,8 +6756,10 @@ ordinary_header_files = \
   $(gnu_java_math_header_files) \
   $(gnu_java_net_header_files) \
   $(gnu_java_net_local_header_files) \
+  $(gnu_java_net_protocol_core_header_files) \
   $(gnu_java_net_protocol_file_header_files) \
   $(gnu_java_net_protocol_ftp_header_files) \
+  $(gnu_java_net_protocol_gcjlib_header_files) \
   $(gnu_java_net_protocol_http_header_files) \
   $(gnu_java_net_protocol_https_header_files) \
   $(gnu_java_net_protocol_jar_header_files) \
@@ -6755,6 +6770,7 @@ ordinary_header_files = \
   $(gnu_java_rmi_activation_header_files) \
   $(gnu_java_rmi_dgc_header_files) \
   $(gnu_java_rmi_registry_header_files) \
+  $(gnu_java_rmi_rmic_header_files) \
   $(gnu_java_rmi_server_header_files) \
   $(gnu_java_security_header_files) \
   $(gnu_java_security_action_header_files) \
@@ -9116,6 +9132,16 @@ gnu/java/net/local.list: $(gnu_java_net_local_source_files)
 
 -include gnu/java/net/local.deps
 
+gnu/java/net/protocol/core.list: $(gnu_java_net_protocol_core_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_net_protocol_core_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/net/protocol/core.list
+
+-include gnu/java/net/protocol/core.deps
+
 gnu/java/net/protocol/file.list: $(gnu_java_net_protocol_file_source_files)
 	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_file_source_files); do \
@@ -9135,6 +9161,16 @@ gnu/java/net/protocol/ftp.list: $(gnu_java_net_protocol_ftp_source_files)
 	done > gnu/java/net/protocol/ftp.list
 
 -include gnu/java/net/protocol/ftp.deps
+
+gnu/java/net/protocol/gcjlib.list: $(gnu_java_net_protocol_gcjlib_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_net_protocol_gcjlib_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/net/protocol/gcjlib.list
+
+-include gnu/java/net/protocol/gcjlib.deps
 
 gnu/java/net/protocol/http.list: $(gnu_java_net_protocol_http_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -9235,6 +9271,16 @@ gnu/java/rmi/registry.list: $(gnu_java_rmi_registry_source_files)
 	done > gnu/java/rmi/registry.list
 
 -include gnu/java/rmi/registry.deps
+
+gnu/java/rmi/rmic.list: $(gnu_java_rmi_rmic_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_rmi_rmic_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/rmi/rmic.list
+
+-include gnu/java/rmi/rmic.deps
 
 gnu/java/rmi/server.list: $(gnu_java_rmi_server_source_files)
 	@$(mkinstalldirs) $(dir $@)
