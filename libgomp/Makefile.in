@@ -887,6 +887,10 @@ fortran.lo: libgomp_f.h
 fortran.o: libgomp_f.h
 env.lo: libgomp_f.h
 env.o: libgomp_f.h
+
+# No install-html target
+.PHONY: install-html
+install-html:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
