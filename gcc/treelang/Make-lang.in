@@ -173,9 +173,9 @@ doc/treelang.info: $(TEXI_TREELANG_FILES)
 doc/treelang.dvi: $(TEXI_TREELANG_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
-treelang.html: $(htmldir)/treelang/index.html
+treelang.html: $(gcc_htmldir)/treelang/index.html
 
-$(htmldir)/treelang/index.html: $(TEXI_TREELANG_FILES)
+$(gcc_htmldir)/treelang/index.html: $(TEXI_TREELANG_FILES)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
 	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/treelang -o $(@D) $<
