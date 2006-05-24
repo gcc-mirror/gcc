@@ -1,3 +1,7 @@
+2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Add install-html target. Add install-html to .PHONY
+
 2006-02-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR libobjc/26309
