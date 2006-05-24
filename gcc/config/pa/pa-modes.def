@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2006 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -21,8 +21,13 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+/* PA-RISC has the same reversed quiet bit as MIPS.
+   ??? Why is this called the MIPS format.  */
+RESET_FLOAT_FORMAT (SF, mips_single_format);
+RESET_FLOAT_FORMAT (DF, mips_double_format);
+
 /* TFmode: IEEE quad floating point (software).  */
-FLOAT_MODE (TF, 16, ieee_quad_format);
+FLOAT_MODE (TF, 16, mips_quad_format);
 
 /* HPPA floating comparisons produce distinct condition codes.  */
 CC_MODE (CCFP);

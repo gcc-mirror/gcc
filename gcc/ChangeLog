@@ -1,3 +1,10 @@
+2006-06-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/27627
+	* pa/pa-modes.def: Use mips_single_format, mips_double_format and
+	mips_quad_format formats instead of ieee_single_format,
+	ieee_double_format and ieee_quad_format formats, respectively.
+
 2006-05-24  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/27639
