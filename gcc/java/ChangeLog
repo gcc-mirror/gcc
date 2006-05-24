@@ -1,5 +1,6 @@
 2006-05-24  Andrew Haley  <aph@redhat.com>
 
+	PR java/27754
 	* decl.c (java_add_stmt): Use a STATEMENT_LIST rather than a
 	COMPOUND_EXPR.
 
