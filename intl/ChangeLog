@@ -1,3 +1,8 @@
+2005-05-23  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Add info dvi ps pdf html install-html to .PHONY
+	Add install-html target.
+
 2005-05-13  Nick Clifton  <nickc@redhat.com>
 
 	* Update the address and phone number of the FSF organization in
