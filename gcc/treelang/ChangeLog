@@ -1,3 +1,7 @@
+2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Make-lang.in: Rename htmldir to gcc_htmldir.
+
 2006-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/26885
