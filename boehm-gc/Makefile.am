@@ -110,3 +110,8 @@ AM_MAKEFLAGS = \
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES=
+
+# No install-html support yet
+.PHONY: install-html
+install-html:
+

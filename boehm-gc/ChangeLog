@@ -1,3 +1,10 @@
+2006-05-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.am: Add install-html target. 
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* include/Makefile.in: Regenerate.
+
 2006-03-07  Andrew Haley  <aph@redhat.com>
 
 	* dyn_load.c (GC_has_static_roots): Declare.
