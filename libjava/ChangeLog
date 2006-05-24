@@ -1,3 +1,11 @@
+2006-05-24  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/27731:
+	* java/lang/natMath.cc (cbrt, cosh, expm1, hypot, log1p, sinh,
+	tanh): New methods.
+	* java/lang/Math.java (cbrt, cosh, expm1, hypot, log1p, sinh,
+	tanh): Declare.
+
 2006-05-22  Mark Wielaard  <mark@klomp.org>
 
 	* HACKING: Update GNU Classpath import instructions.
