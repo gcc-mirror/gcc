@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,17 +36,66 @@
 #define _GLIBCXX_ATOMICITY_H	1
 
 #include <bits/c++config.h>
+#include <bits/gthr.h>
 #include <bits/atomic_word.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  _Atomic_word 
+  _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val);
 
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val);
+
+  static inline _Atomic_word
+  __exchange_and_add_single(volatile _Atomic_word* __mem, int __val)
+  {
+    _Atomic_word __result = *__mem;
+    *__mem += __val;
+    return __result;
+  }
+
+  static inline void
+  __atomic_add_single(volatile _Atomic_word* __mem, int __val)
+  { *__mem += __val; }
+
+  static inline _Atomic_word
+  __attribute__ ((__unused__))
+  __exchange_and_add_dispatch(volatile _Atomic_word* __mem, int __val)
+  {
+#ifdef __GTHREADS
+
+    if (__gthread_active_p())
+      return __exchange_and_add(__mem, __val);
+    else
+      return __exchange_and_add_single(__mem, __val);
+
+#else
+
+    return __exchange_and_add_single(__mem, __val);
+
+#endif
+  }
+
+  static inline void
+  __attribute__ ((__unused__))
+  __atomic_add_dispatch(volatile _Atomic_word* __mem, int __val)
+  {
+#ifdef __GTHREADS
+
+    if (__gthread_active_p())
+      __atomic_add(__mem, __val);
+    else
+      __atomic_add_single(__mem, __val);
+
+#else
+
+    __atomic_add_single(__mem, __val);
+
+#endif
+  }
 
 _GLIBCXX_END_NAMESPACE
 

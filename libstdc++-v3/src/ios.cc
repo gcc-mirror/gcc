@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     // Implementation note: Initialize top to zero to ensure that
     // initialization occurs before main() is started.
     static _Atomic_word _S_top = 0; 
-    return __gnu_cxx::__exchange_and_add(&_S_top, 1) + 4;
+    return __gnu_cxx::__exchange_and_add_dispatch(&_S_top, 1) + 4;
   }
 
   void 

@@ -400,12 +400,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   private:
     inline void
     _M_add_reference() const throw()
-    { __gnu_cxx::__atomic_add(&_M_refcount, 1); }
+    { __gnu_cxx::__atomic_add_dispatch(&_M_refcount, 1); }
 
     inline void
     _M_remove_reference() const throw()
     {
-      if (__gnu_cxx::__exchange_and_add(&_M_refcount, -1) == 1)
+      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
 	  try
 	    { delete this; }
@@ -505,12 +505,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     inline void
     _M_add_reference() throw()
-    { __gnu_cxx::__atomic_add(&_M_refcount, 1); }
+    { __gnu_cxx::__atomic_add_dispatch(&_M_refcount, 1); }
 
     inline void
     _M_remove_reference() throw()
     {
-      if (__gnu_cxx::__exchange_and_add(&_M_refcount, -1) == 1)
+      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
 	  try
 	    { delete this; }

@@ -1,6 +1,6 @@
 // Reference-counted versatile string base -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -134,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	_CharT*
 	_M_refcopy() throw()
 	{
-	  __atomic_add(&_M_info._M_refcount, 1);
+	  __atomic_add_dispatch(&_M_info._M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
 	
@@ -202,7 +202,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       void
       _M_dispose()
       {
-	if (__exchange_and_add(&_M_rep()->_M_info._M_refcount, -1) <= 0)
+	if (__exchange_and_add_dispatch(&_M_rep()->_M_info._M_refcount,
+					-1) <= 0)
 	  _M_rep()->_M_destroy(_M_get_allocator());
       }  // XXX MT
 
