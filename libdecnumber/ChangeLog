@@ -1,3 +1,7 @@
+2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Add install-html target. Add install-html to .PHONY
+
 2006-02-06  Ben Elliston  <bje@au.ibm.com>
 
 	* decLibrary.c (__dec_byte_swap): Use uint32_t for argument and
