@@ -3954,7 +3954,7 @@ objc_build_synchronized (location_t start_locus, tree mutex, tree body)
 
    struct _objc_exception_data
    {
-     int buf[_JBLEN];
+     int buf[JBLEN];
      void *pointers[4];
    }; */
 
@@ -3963,10 +3963,10 @@ objc_build_synchronized (location_t start_locus, tree mutex, tree body)
 
 #ifdef TARGET_POWERPC
 /* snarfed from /usr/include/ppc/setjmp.h */
-#define _JBLEN (26 + 36 + 129 + 1)
+#define JBLEN (26 + 36 + 129 + 1)
 #else
 /* snarfed from /usr/include/i386/{setjmp,signal}.h */
-#define _JBLEN 18
+#define JBLEN 18
 #endif
 
 static void
@@ -3977,9 +3977,9 @@ build_next_objc_exception_stuff (void)
   objc_exception_data_template
     = start_struct (RECORD_TYPE, get_identifier (UTAG_EXCDATA));
 
-  /* int buf[_JBLEN]; */
+  /* int buf[JBLEN]; */
 
-  index = build_index_type (build_int_cst (NULL_TREE, _JBLEN - 1));
+  index = build_index_type (build_int_cst (NULL_TREE, JBLEN - 1));
   field_decl = create_field_decl (build_array_type (integer_type_node, index),
 				  "buf");
   field_decl_chain = field_decl;
