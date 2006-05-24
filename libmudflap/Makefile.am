@@ -105,5 +105,9 @@ AM_MAKEFLAGS = \
 
 MAKEOVERRIDES=
 
+.PHONY: install-html
+
+install-html:
+
 ## ################################################################
 
