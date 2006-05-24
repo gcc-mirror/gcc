@@ -48,6 +48,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-inline.h"
 #include "target.h"
 #include "version.h"
+#include "tree-iterator.h"
 
 #if defined (DEBUG_JAVA_BINDING_LEVELS)
 extern void indent (void);
@@ -2236,18 +2237,36 @@ add_stmt_to_compound (tree existing, tree type, tree stmt)
     return stmt;
 }
 
-/* Add a statement to the compound_expr currently being
-   constructed.  */
+/* Add a statement to the statement_list currently being constructed.
+   If the statement_list is null, we don't create a singleton list.
+   This is necessary because poplevel() assumes that adding a
+   statement to a null statement_list returns the statement.  */
 
 tree
-java_add_stmt (tree stmt)
+java_add_stmt (tree new_stmt)
 {
+  tree stmts = current_binding_level->stmts;
+  tree_stmt_iterator i;
+
   if (input_filename)
-    SET_EXPR_LOCATION (stmt, input_location);
+    SET_EXPR_LOCATION (new_stmt, input_location);
   
-  return current_binding_level->stmts 
-    = add_stmt_to_compound (current_binding_level->stmts, 
-			    TREE_TYPE (stmt), stmt);
+  if (stmts == NULL)
+    return current_binding_level->stmts = new_stmt;
+
+  /* Force STMTS to be a statement_list.  */
+  if (TREE_CODE (stmts) != STATEMENT_LIST)
+    {
+      tree t = make_node (STATEMENT_LIST);
+      i = tsi_last (t);
+      tsi_link_after (&i, stmts, TSI_CONTINUE_LINKING);
+      stmts = t;
+    }  
+      
+  i = tsi_last (stmts);
+  tsi_link_after (&i, new_stmt, TSI_CONTINUE_LINKING);
+
+  return current_binding_level->stmts = stmts;
 }
 
 /* Add a variable to the current scope.  */
