@@ -1,3 +1,11 @@
+2006-05-24  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27639
+	PR tree-optimization/26719
+	* gcc.dg/pr27639.c: New test.
+	* gcc.dg/pr26719.c: New test.
+	* gcc.dg/tree-ssa/scev-cast.c: New test.
+
 2006-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20173
