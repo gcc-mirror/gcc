@@ -1,3 +1,10 @@
+2006-05-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (bfd, opcodes): Fix lib_path.
+	* Makefile.tpl (POSTSTAGE1_FLAGS_TO_PASS): Replace ADAC with ADAFLAGS.
+	(restrap): Move under "@if gcc-bootstrap".  Fix typo.
+	* Makefile.in: Regenerate.
+
 2006-05-24  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Regenerate.
@@ -109,7 +116,8 @@
 	* MAINTAINERS (Write After Approval):  Remove myself.
 	(Language Front End Maintainers):  Add myself as fortran 95 maintainer.
 
-2006-02-21 Rafael Ãvila de EspÃ­ndola <rafael.espindola@gmail.com>
+2006-02-21  Rafael Avila de Espindola <rafael.espindola@gmail.com>
+
 	* Makefile.tpl  (BUILD_CONFIGDIRS): Remove.
 	(TARGET_CONFIGDIRS): Remove.
 	* configure.in: Remove AC_SUBST(target_configdirs).

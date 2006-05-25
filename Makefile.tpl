@@ -1259,7 +1259,7 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LIBCFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
-	ADAC="\$$(CC)"
+	"`echo 'ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 # For stage 1:
 # * We force-disable intermodule optimizations, even if
@@ -1428,14 +1428,14 @@ do-distclean: distclean-stage1
 # not work as a dependency, just as the minimum necessary to avoid errors.
 stage_last:
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage1-bubble
-@endif gcc-bootstrap
 
 .PHONY: restrap
 restrap:
 	@: $(MAKE); $(stage)
 	rm -rf stage1-$(TARGET_SUBDIR) [+ FOR bootstrap-stage +][+ IF prev
-	  +]stage[+id+] [+ ENDIF prev +][+ ENDFOR bootstrap-stage +]
+	  +]stage[+id+]-* [+ ENDIF prev +][+ ENDFOR bootstrap-stage +]
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
+@endif gcc-bootstrap
 
 # --------------------------------------
 # Dependencies between different modules
