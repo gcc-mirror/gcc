@@ -37,6 +37,12 @@ details.  */
 
 #include <fcntl.h>
 
+/* The header file <sys/rw_lock.h> needs to be included before javaprims.h
+   on HP-UX 11 to avoid a compilation error.  */
+#ifdef HAVE_SYS_RW_LOCK_H
+#include <sys/rw_lock.h>
+#endif
+
 #include <gcj/cni.h>
 #include <java/util/Properties.h>
 
