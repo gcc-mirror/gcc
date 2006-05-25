@@ -1,3 +1,11 @@
+2006-05-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+        * configure.ac: Add sys/rw_lock.h to AC_CHECK_HEADERS.
+        * configure: Rebuilt.
+        * include/config.h.in: Likewise.
+	* include/posix.h: If HAVE_SYS_RW_LOCK_H is defined, include
+	<sys/rw_lock.h>.
+
 2006-05-24  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/27024:

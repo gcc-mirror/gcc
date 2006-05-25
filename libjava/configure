@@ -6254,7 +6254,7 @@ exec 5>>./config.log
 
 
 
-for ac_prog in gcj
+for ac_prog in gcj gcj-3.2 gcj-3.1 gcj-3.0 gcj-2.95
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -15136,11 +15136,12 @@ esac
 
 
 
+
 for ac_header in unistd.h bstring.h sys/time.h sys/types.h fcntl.h \
 		  sys/ioctl.h sys/filio.h sys/stat.h sys/select.h \
 		  sys/socket.h netinet/in.h arpa/inet.h netdb.h net/if.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
-		  dirent.h
+		  dirent.h sys/rw_lock.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
