@@ -720,9 +720,6 @@ finish_static_data_member_decl (tree decl,
   /* We cannot call pushdecl here, because that would fill in the
      TREE_CHAIN of our decl.  Instead, we modify cp_finish_decl to do
      the right thing, namely, to put this decl out straight away.  */
-  /* current_class_type can be NULL_TREE in case of error.  */
-  if (!asmspec_tree && current_class_type)
-    DECL_INITIAL (decl) = error_mark_node;
 
   if (! processing_template_decl)
     note_vague_linkage_var (decl);
@@ -920,7 +917,9 @@ grokfield (const cp_declarator *declarator,
       if (asmspec)
 	set_user_assembler_name (value, asmspec);
 
-      cp_finish_decl (value, init, /*init_const_expr_p=*/false, 
+      cp_finish_decl (value, 
+		      /*init=*/NULL_TREE, 
+		      /*init_const_expr_p=*/false, 
 		      asmspec_tree, flags);
 
       /* Pass friends back this way.  */

@@ -1,3 +1,9 @@
+2006-05-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20103
+	* gimplify.c (gimplify_decl_expr): Do not call gimple_add_tmp_var
+	for anonymous variables explicitly declared by front ends. 
+
 2006-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-structalias.h (PTR_IS_REF_ALL): New macro.
