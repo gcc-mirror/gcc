@@ -386,12 +386,12 @@ HOST_LIB_PATH_gcc = $$r/$(HOST_SUBDIR)/gcc:$$r/$(HOST_SUBDIR)/prev-gcc:
 
 @if bfd
 HOST_LIB_PATH_bfd = \
-  $$r/$(HOST_SUBDIR)/bfd/.:$$r/$(HOST_SUBDIR)/prev-bfd/.:
+  $$r/$(HOST_SUBDIR)/bfd/.libs:$$r/$(HOST_SUBDIR)/prev-bfd/.libs:
 @endif bfd
 
 @if opcodes
 HOST_LIB_PATH_opcodes = \
-  $$r/$(HOST_SUBDIR)/opcodes/.:$$r/$(HOST_SUBDIR)/prev-opcodes/.:
+  $$r/$(HOST_SUBDIR)/opcodes/.libs:$$r/$(HOST_SUBDIR)/prev-opcodes/.libs:
 @endif opcodes
 
 
@@ -38768,7 +38768,7 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LIBCFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
-	ADAC="\$$(CC)"
+	"`echo 'ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 # For stage 1:
 # * We force-disable intermodule optimizations, even if
@@ -40066,13 +40066,13 @@ do-distclean: distclean-stage1
 # not work as a dependency, just as the minimum necessary to avoid errors.
 stage_last:
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage1-bubble
-@endif gcc-bootstrap
 
 .PHONY: restrap
 restrap:
 	@: $(MAKE); $(stage)
-	rm -rf stage1-$(TARGET_SUBDIR) stage2 stage3 stage4 stageprofile stagefeedback 
+	rm -rf stage1-$(TARGET_SUBDIR) stage2-* stage3-* stage4-* stageprofile-* stagefeedback-* 
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
+@endif gcc-bootstrap
 
 # --------------------------------------
 # Dependencies between different modules
