@@ -1,4 +1,9 @@
-2006-06-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2006-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vrp.c (extract_range_from_assert): Set the range to VARYING
+	for LT and GT if the computed range is effectively empty.
+
+2006-05-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/27627
 	* pa/pa-modes.def: Use mips_single_format, mips_double_format and

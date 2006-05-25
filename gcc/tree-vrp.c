@@ -939,14 +939,22 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  max = limit_vr->max;
 	}
 
-      /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
-      if (cond_code == LT_EXPR)
+      /* If the maximum value forces us to be out of bounds, simply punt.
+	 It would be pointless to try and do anything more since this
+	 all should be optimized away above us.  */
+      if (cond_code == LT_EXPR && compare_values (max, min) == 0)
+	set_value_range_to_varying (vr_p);
+      else
 	{
-	  tree one = build_int_cst (type, 1);
-	  max = fold_build2 (MINUS_EXPR, type, max, one);
-	}
+	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
+	  if (cond_code == LT_EXPR)
+	    {
+	      tree one = build_int_cst (type, 1);
+	      max = fold_build2 (MINUS_EXPR, type, max, one);
+	    }
 
-      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
+	  set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
+	}
     }
   else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
     {
@@ -962,14 +970,22 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  min = limit_vr->min;
 	}
 
-      /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
-      if (cond_code == GT_EXPR)
+      /* If the minimum value forces us to be out of bounds, simply punt.
+	 It would be pointless to try and do anything more since this
+	 all should be optimized away above us.  */
+      if (cond_code == GT_EXPR && compare_values (min, max) == 0)
+	set_value_range_to_varying (vr_p);
+      else
 	{
-	  tree one = build_int_cst (type, 1);
-	  min = fold_build2 (PLUS_EXPR, type, min, one);
-	}
+	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
+	  if (cond_code == GT_EXPR)
+	    {
+	      tree one = build_int_cst (type, 1);
+	      min = fold_build2 (PLUS_EXPR, type, min, one);
+	    }
 
-      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
+	  set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
+	}
     }
   else
     gcc_unreachable ();
