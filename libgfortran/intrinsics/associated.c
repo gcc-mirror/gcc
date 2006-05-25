@@ -52,6 +52,8 @@ associated (const gfc_array_void *pointer, const gfc_array_void *target)
       if ((pointer->dim[n].ubound - pointer->dim[n].lbound)
           != (target->dim[n].ubound - target->dim[n].lbound))
         return 0;
+      if (pointer->dim[n].ubound < pointer->dim[n].lbound)
+	return 0;
     }
 
   return 1;
