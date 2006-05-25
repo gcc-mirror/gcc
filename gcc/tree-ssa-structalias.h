@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef TREE_SSA_STRUCTALIAS_H
 #define TREE_SSA_STRUCTALIAS_H
 
+/* True if the data pointed to by PTR can alias anything.  */
+#define PTR_IS_REF_ALL(PTR) TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (PTR))
+
 struct constraint;
 typedef struct constraint *constraint_t;
 
@@ -64,6 +67,9 @@ struct alias_info
 
   /* Pointers that have been used in an indirect load operation.  */
   bitmap dereferenced_ptrs_load;
+
+  /* Memory tag for all the PTR_IS_REF_ALL pointers.  */
+  tree ref_all_symbol_mem_tag;
 };
 
 /* Keep track of how many times each pointer has been dereferenced in

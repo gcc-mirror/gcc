@@ -98,6 +98,7 @@ static struct alias_stats_d alias_stats;
 
 /* Local functions.  */
 static void compute_flow_insensitive_aliasing (struct alias_info *);
+static void finalize_ref_all_pointers (struct alias_info *);
 static void dump_alias_stats (FILE *);
 static bool may_alias_p (tree, HOST_WIDE_INT, tree, HOST_WIDE_INT, bool);
 static tree create_memory_tag (tree type, bool is_type_tag);
@@ -692,6 +693,12 @@ compute_may_aliases (void)
      aliasing precision.  */
   maybe_create_global_var (ai);
 
+  /* If the program contains ref-all pointers, finalize may-alias information
+     for them.  This pass needs to be run after call-clobbering information
+     has been computed.  */
+  if (ai->ref_all_symbol_mem_tag)
+    finalize_ref_all_pointers (ai);
+
   /* Debugging dumps.  */
   if (dump_file)
     {
@@ -1156,6 +1163,10 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
       tree tag = var_ann (p_map->var)->symbol_mem_tag;
       var_ann_t tag_ann = var_ann (tag);
 
+      /* Call-clobbering information is not finalized yet at this point.  */
+      if (PTR_IS_REF_ALL (p_map->var))
+	continue;
+
       p_map->total_alias_vops = 0;
       p_map->may_aliases = BITMAP_ALLOC (&alias_obstack);
 
@@ -1246,11 +1257,17 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
       tree tag1 = var_ann (p_map1->var)->symbol_mem_tag;
       bitmap may_aliases1 = p_map1->may_aliases;
 
+      if (PTR_IS_REF_ALL (p_map1->var))
+	continue;
+
       for (j = i + 1; j < ai->num_pointers; j++)
 	{
 	  struct alias_map_d *p_map2 = ai->pointers[j];
 	  tree tag2 = var_ann (p_map2->var)->symbol_mem_tag;
 	  bitmap may_aliases2 = p_map2->may_aliases;
+
+	  if (PTR_IS_REF_ALL (p_map2->var))
+	    continue;
 
 	  /* If the pointers may not point to each other, do nothing.  */
 	  if (!may_alias_p (p_map1->var, p_map1->set, tag2, p_map2->set, true))
@@ -1286,6 +1303,47 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
     fprintf (dump_file, "\n%s: Total number of aliased vops: %ld\n",
 	     get_name (current_function_decl),
 	     ai->total_alias_vops);
+}
+
+
+/* Finalize may-alias information for ref-all pointers.  Traverse all
+   the addressable variables found in setup_pointers_and_addressables.
+
+   If flow-sensitive alias analysis has attached a name memory tag to
+   a ref-all pointer, we will use it for the dereferences because that
+   will have more precise aliasing information.  But if there is no
+   name tag, we will use a special symbol tag that aliases all the
+   call-clobbered addressable variables.  */
+
+static void
+finalize_ref_all_pointers (struct alias_info *ai)
+{
+  size_t i;
+
+  if (global_var)
+    add_may_alias (ai->ref_all_symbol_mem_tag, global_var);
+  else
+    {
+      /* First add the real call-clobbered variables.  */
+      for (i = 0; i < ai->num_addressable_vars; i++)
+	{
+	  tree var = ai->addressable_vars[i]->var;
+	  if (is_call_clobbered (var))
+	    add_may_alias (ai->ref_all_symbol_mem_tag, var);
+        }
+
+      /* Then add the call-clobbered pointer memory tags.  See
+	 compute_flow_insensitive_aliasing for the rationale.  */
+      for (i = 0; i < ai->num_pointers; i++)
+	{
+	  tree ptr = ai->pointers[i]->var, tag;
+	  if (PTR_IS_REF_ALL (ptr))
+	    continue;
+	  tag = var_ann (ptr)->symbol_mem_tag;
+	  if (is_call_clobbered (tag))
+	    add_may_alias (ai->ref_all_symbol_mem_tag, tag);
+	}
+    }
 }
 
 
@@ -2060,15 +2118,24 @@ is_escape_site (tree stmt, struct alias_info *ai)
       if (lhs == NULL_TREE)
 	return ESCAPE_UNKNOWN;
 
-      /* If the RHS is a conversion between a pointer and an integer, the
-	 pointer escapes since we can't track the integer.  */
-      if ((TREE_CODE (TREE_OPERAND (stmt, 1)) == NOP_EXPR
-	   || TREE_CODE (TREE_OPERAND (stmt, 1)) == CONVERT_EXPR
-	   || TREE_CODE (TREE_OPERAND (stmt, 1)) == VIEW_CONVERT_EXPR)
-	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND
-					(TREE_OPERAND (stmt, 1), 0)))
-	  && !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 1))))
-	return ESCAPE_BAD_CAST;
+      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == NOP_EXPR
+	  || TREE_CODE (TREE_OPERAND (stmt, 1)) == CONVERT_EXPR
+	  || TREE_CODE (TREE_OPERAND (stmt, 1)) == VIEW_CONVERT_EXPR)
+	{
+	  tree from = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (stmt, 1), 0));
+	  tree to = TREE_TYPE (TREE_OPERAND (stmt, 1));
+
+	  /* If the RHS is a conversion between a pointer and an integer, the
+	     pointer escapes since we can't track the integer.  */
+	  if (POINTER_TYPE_P (from) && !POINTER_TYPE_P (to))
+	    return ESCAPE_BAD_CAST;
+
+	  /* Same if the RHS is a conversion between a regular pointer and a
+	     ref-all pointer since we can't track the SMT of the former.  */
+	  if (POINTER_TYPE_P (from) && !TYPE_REF_CAN_ALIAS_ALL (from)
+	      && POINTER_TYPE_P (to) && TYPE_REF_CAN_ALIAS_ALL (to))
+	    return ESCAPE_BAD_CAST;
+	}
 
       /* If the LHS is an SSA name, it can't possibly represent a non-local
 	 memory store.  */
@@ -2179,6 +2246,14 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   tree tag;
   tree tag_type = TREE_TYPE (TREE_TYPE (ptr));
   HOST_WIDE_INT tag_set = get_alias_set (tag_type);
+
+  /* We use a unique memory tag for all the ref-all pointers.  */
+  if (PTR_IS_REF_ALL (ptr))
+    {
+      if (!ai->ref_all_symbol_mem_tag)
+	ai->ref_all_symbol_mem_tag = create_memory_tag (void_type_node, true);
+      return ai->ref_all_symbol_mem_tag;
+    }
 
   /* To avoid creating unnecessary memory tags, only create one memory tag
      per alias set class.  Note that it may be tempting to group
