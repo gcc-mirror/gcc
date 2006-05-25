@@ -1,3 +1,9 @@
+2006-05-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27743
+	* fold-const.c (fold_binary): Do not look at the stripped
+	op0 for (a OP c1) OP c2 to a OP (c1+c2) shift optimization.
+
 2006-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vrp.c (extract_range_from_assert): Set the range to VARYING
