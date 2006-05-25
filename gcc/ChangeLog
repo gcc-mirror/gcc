@@ -1,3 +1,15 @@
+2006-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-structalias.h (PTR_IS_REF_ALL): New macro.
+	(struct alias_info): Add new field ref_all_symbol_mem_tag.
+	* tree-ssa-alias.c (compute_may_aliases): If the program contains
+	ref-all pointers, run a finalization pass for them.
+	(compute_flow_insensitive_aliasing): Skip ref-all pointers.
+	(finalize_ref_all_pointers): New function.
+	(is_escape_site): Return ESCAPE_BAD_CAST for conversion from a
+	regular pointer type to a ref-all pointer type.
+	(get_tmt_for): Return the special memory tag for ref-all pointers.
+
 2006-05-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27743
