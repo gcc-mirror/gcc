@@ -1,3 +1,7 @@
+2006-05-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gfortran.dg/large_real_kind_form_io_2.f90: UnXFAIL on SPARC/Solaris.
+
 2006-05-25  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/compat/scalar-by-value-x.h: New.
