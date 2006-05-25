@@ -1,4 +1,4 @@
-! { dg-do run { xfail sparc*-sun-solaris2.* } }
+! { dg-do run }
 ! { dg-require-effective-target fortran_large_real }
 ! PR libfortran/24685
 program large_real_kind_form_io_2
