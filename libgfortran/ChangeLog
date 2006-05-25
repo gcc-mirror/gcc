@@ -1,6 +1,6 @@
 2006-05-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
-	* intrinsics/associated (associated): Zero-sized arrays should
+	* intrinsics/associated.c (associated): Zero-sized arrays should
 	not be reported as ASSOCIATED.
 
 2006-05-24  Carlos O'Donell  <carlos@codesourcery.com>
