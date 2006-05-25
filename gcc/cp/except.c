@@ -392,11 +392,9 @@ initialize_handler_parm (tree decl, tree exp)
       init = build1 (MUST_NOT_THROW_EXPR, TREE_TYPE (init), init);
     }
 
-  /* Let `cp_finish_decl' know that this initializer is ok.  */
-  DECL_INITIAL (decl) = error_mark_node;
   decl = pushdecl (decl);
 
-  start_decl_1 (decl);
+  start_decl_1 (decl, true);
   cp_finish_decl (decl, init, /*init_const_expr_p=*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING|DIRECT_BIND);
 }
@@ -464,7 +462,6 @@ expand_start_catch_block (tree decl)
       DECL_REGISTER (exp) = 1;
       cp_finish_decl (exp, init, /*init_const_expr=*/false, 
 		      NULL_TREE, LOOKUP_ONLYCONVERTING);
-      finish_expr_stmt (build_modify_expr (exp, INIT_EXPR, init));
       initialize_handler_parm (decl, exp);
     }
 

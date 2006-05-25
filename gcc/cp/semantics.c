@@ -1089,7 +1089,6 @@ finish_handler_parms (tree decl, tree handler)
     }
   else
     type = expand_start_catch_block (decl);
-
   HANDLER_TYPE (handler) = type;
   if (!processing_template_decl && type)
     mark_used (eh_type_info (type));
@@ -2019,33 +2018,43 @@ finish_unary_op_expr (enum tree_code code, tree expr)
 tree
 finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
 {
+  tree var;
   tree compound_literal;
 
   /* Build a CONSTRUCTOR for the INITIALIZER_LIST.  */
   compound_literal = build_constructor (NULL_TREE, initializer_list);
   if (processing_template_decl)
-    TREE_TYPE (compound_literal) = type;
-  else
     {
-      /* Check the initialization.  */
-      compound_literal = reshape_init (type, compound_literal);
-      compound_literal = digest_init (type, compound_literal);
-      /* If the TYPE was an array type with an unknown bound, then we can
-	 figure out the dimension now.  For example, something like:
-
-	   `(int []) { 2, 3 }'
-
-	 implies that the array has two elements.  */
-      if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
-	cp_complete_array_type (&TREE_TYPE (compound_literal),
-				compound_literal, 1);
+      TREE_TYPE (compound_literal) = type;
+      /* Mark the expression as a compound literal.  */
+      TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+      return compound_literal;
     }
 
-  /* Mark it as a compound-literal.  */
-  if (TREE_CODE (compound_literal) == CONSTRUCTOR)
-    TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
-
-  return compound_literal;
+  /* Create a temporary variable to represent the compound literal.  */
+  var = create_temporary_var (type);
+  if (!current_function_decl)
+    {
+      /* If this compound-literal appears outside of a function, then
+	 the corresponding variable has static storage duration, just
+	 like the variable in whose initializer it appears.  */  
+      TREE_STATIC (var) = 1;
+      /* The variable has internal linkage, since there is no need to
+	 reference it from another translation unit.  */
+      TREE_PUBLIC (var) = 0;
+      /* It must have a name, so that the name mangler can mangle it.  */
+      DECL_NAME (var) = make_anon_name ();
+    }
+  /* We must call pushdecl, since the gimplifier complains if the
+     variable hase been declared via a BIND_EXPR.  */
+  pushdecl (var);
+  /* Initialize the variable as we would any other variable with a
+     brace-enclosed initializer.  */
+  cp_finish_decl (var, compound_literal, 
+		  /*init_const_expr_p=*/false,
+		  /*asmspec_tree=*/NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+  return var;
 }
 
 /* Return the declaration for the function-name variable indicated by

@@ -1,3 +1,25 @@
+2006-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20103
+	* decl.c (cp_make_fname_decl): Don't set DECL_INITIAL to
+	error_mark_node to indicate an initialization is OK.
+	(start_decl): Likewise.  Adjust call to start_decl_1.
+	(start_decl_1): Add initialized parameter.  Simplify.
+	* except.c (initialize_handler_parm): Adjust call to
+	setart_decl_1.
+	(expand_start_catch_block): Let cp_finish_decl initialize catch
+	parameters.
+	* cp-tree.h (start_decl_1): Adjust prototype.
+	* pt.c (tsubst_expr): Don't set DECL_INITIAL to error_mark_node.
+	(instantiate_decl): Let cp_finish_decl handle initialization.
+	* semantics.c (finish_compound_literal): Create a temporary
+	variable for the literal.
+	* typeck.c (build_unary_op): Remove COMPOUND_LITERAL_P special
+	cases.
+	* decl2.c (finish_static_data_member_decl): Don't set
+	DECL_INITIAL.
+	(grokfield): Do not try to initialize functions.
+
 2006-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20173

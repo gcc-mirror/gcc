@@ -8266,8 +8266,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    decl = tsubst (decl, args, complain, in_decl);
 	    if (decl != error_mark_node)
 	      {
-		if (init)
-		  DECL_INITIAL (decl) = error_mark_node;
 		/* By marking the declaration as instantiated, we avoid
 		   trying to instantiate it.  Since instantiate_decl can't
 		   handle local variables, and since we've already done
@@ -11850,7 +11848,6 @@ instantiate_decl (tree d, int defer_ok,
 	  init = tsubst_expr (DECL_INITIAL (code_pattern), 
 			      args,
 			      tf_warning_or_error, NULL_TREE);
-	  DECL_INITIAL (d) = init;
 	  cp_finish_decl (d, init, /*init_const_expr_p=*/false,
 			  /*asmspec_tree=*/NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
@@ -11917,10 +11914,19 @@ instantiate_decl (tree d, int defer_ok,
 
   if (TREE_CODE (d) == VAR_DECL)
     {
+      tree init;
+
       /* Clear out DECL_RTL; whatever was there before may not be right
 	 since we've reset the type of the declaration.  */
       SET_DECL_RTL (d, NULL_RTX);
       DECL_IN_AGGR_P (d) = 0;
+
+      /* The initializer is placed in DECL_INITIAL by
+	 regenerate_decl_from_template.  Pull it out so that
+	 finish_decl can process it.  */
+      init = DECL_INITIAL (d);
+      DECL_INITIAL (d) = NULL_TREE;
+      DECL_INITIALIZED_P (d) = 0;
 
       /* Clear DECL_EXTERNAL so that cp_finish_decl will process the
 	 initializer.  That function will defer actual emission until
@@ -11929,7 +11935,7 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Enter the scope of D so that access-checking works correctly.  */
       push_nested_class (DECL_CONTEXT (d));
-      finish_decl (d, DECL_INITIAL (d), NULL_TREE);
+      finish_decl (d, init, NULL_TREE);
       pop_nested_class ();
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
