@@ -1,3 +1,8 @@
+2006-05-26  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.am: Add install-html target. Add install-html to .PHONY
+	* Makefile.in: Regenerate.
+
 2006-05-24  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24704

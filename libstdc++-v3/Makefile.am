@@ -110,3 +110,9 @@ AM_MAKEFLAGS = \
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
+
+# Installation of distribution html documentation not yet supported
+# TODO: Write custom install-html rule.
+.PHONY: install-html
+install-html:
+

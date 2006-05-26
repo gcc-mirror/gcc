@@ -786,6 +786,11 @@ check-%:
 # All the machinations with string instantiations messes up the
 # automake-generated TAGS rule. Make a simple one here.
 TAGS: tags-recursive $(LISP)
+
+# Installation of distribution html documentation not yet supported
+# TODO: Write custom install-html rule.
+.PHONY: install-html
+install-html:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
