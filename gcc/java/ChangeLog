@@ -1,3 +1,10 @@
+2006-05-26  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (java_push_constant_from_pool): Handle 'ldc class'.
+	* verify-glue.c (vfy_class_type): New function.
+	* verify-impl.c (check_constant): Allow 'ldc class'.
+	* verify.h (vfy_class_type): Declare.
+
 2006-05-25  Andrew Haley  <aph@redhat.com>
 
 	PR java/27756

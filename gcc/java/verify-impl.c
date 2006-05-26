@@ -1975,6 +1975,10 @@ check_constant (int index)
     init_type_from_tag (&t, int_type);
   else if (vfy_tag (pool, index) == JV_CONSTANT_Float)
     init_type_from_tag (&t, float_type);
+  else if (vfy_tag (pool, index) == JV_CONSTANT_Class
+	   || vfy_tag (pool, index) == JV_CONSTANT_ResolvedClass)
+    /* FIXME: should only allow this for 1.5 bytecode.  */
+    init_type_from_class (&t, vfy_class_type ());
   else
     verify_fail_pc ("String, int, or float constant expected", vfr->start_PC);
   return t;
