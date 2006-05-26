@@ -2424,6 +2424,12 @@ match_io (io_kind k)
       dt->io_unit = default_unit (k);
       goto get_io_list;
     }
+  else
+    {
+      /* Error for constructs like print (1,*).   */
+      if (k == M_PRINT)
+	goto  syntax;
+    }
 
   /* Match a control list */
   if (match_dt_element (k, dt) == MATCH_YES)
