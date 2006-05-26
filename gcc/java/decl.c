@@ -1785,8 +1785,10 @@ maybe_pushlevels (int pc)
 	 truncating variable lifetimes. */
       if (end_pc > current_binding_level->end_pc)
 	{
+	  tree t;
 	  end_pc = current_binding_level->end_pc;
-	  DECL_LOCAL_END_PC (decl) = end_pc;
+	  for (t = decl; t != NULL_TREE; t = TREE_CHAIN (t))
+	    DECL_LOCAL_END_PC (t) = end_pc;
 	}
 
       maybe_start_try (pc, end_pc);
