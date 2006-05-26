@@ -3854,11 +3854,19 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		 && goal_alternative_offmemok[i]
 		 && MEM_P (recog_data.operand[i]))
 	  {
+	    /* If the address to be reloaded is a VOIDmode constant,
+	       use Pmode as mode of the reload register, as would have
+	       been done by find_reloads_address.  */
+	    enum machine_mode address_mode;
+	    address_mode = GET_MODE (XEXP (recog_data.operand[i], 0));
+	    if (address_mode == VOIDmode)
+	      address_mode = Pmode;
+
 	    operand_reloadnum[i]
 	      = push_reload (XEXP (recog_data.operand[i], 0), NULL_RTX,
 			     &XEXP (recog_data.operand[i], 0), (rtx*) 0,
 			     base_reg_class (VOIDmode, MEM, SCRATCH),
-			     GET_MODE (XEXP (recog_data.operand[i], 0)),
+			     address_mode,
 			     VOIDmode, 0, 0, i, RELOAD_FOR_INPUT);
 	    rld[operand_reloadnum[i]].inc
 	      = GET_MODE_SIZE (GET_MODE (recog_data.operand[i]));

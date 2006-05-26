@@ -1,3 +1,10 @@
+2006-05-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR rtl-optimization/27661
+	* reload.c (find_reloads): When reloading a VOIDmode constant
+	as address due to an EXTRA_MEMORY_CONSTRAINT or 'o' constraint,
+	use Pmode as mode of the reload register.
+
 2006-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (Optimize Options): Document that -funit-at-a-time
