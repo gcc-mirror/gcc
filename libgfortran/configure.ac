@@ -153,7 +153,6 @@ esac
 AC_SUBST(extra_ldflags_libgfortran)
 
 AC_SYS_LARGEFILE
-AC_FUNC_MMAP
 AC_TYPE_OFF_T
 
 # check header files
