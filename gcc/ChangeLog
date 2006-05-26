@@ -1,3 +1,8 @@
+2006-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (Optimize Options): Document that -funit-at-a-time
+	is enabled at -O and above.
+
 2006-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/27758

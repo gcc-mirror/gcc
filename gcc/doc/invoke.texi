@@ -4319,7 +4319,7 @@ the performance and/or code size at the expense of compilation time
 and possibly the ability to debug the program.
 
 The compiler performs optimization based on the knowledge it has of
-the program.  Optimization levels @option{-O2} and above, in
+the program.  Optimization levels @option{-O} and above, in
 particular, enable @emph{unit-at-a-time} mode, which allows the
 compiler to consider information gained from later functions in
 the file when compiling a function.  Compiling multiple files at
@@ -4360,6 +4360,7 @@ compilation time.
 -ftree-copyrename @gol
 -ftree-fre @gol
 -ftree-ch @gol
+-funit-at-a-time @gol
 -fmerge-constants}
 
 @option{-O} also turns on @option{-fomit-frame-pointer} on machines
@@ -4395,7 +4396,6 @@ also turns on the following optimization flags:
 -fstrict-aliasing @gol
 -fdelete-null-pointer-checks @gol
 -freorder-blocks  -freorder-functions @gol
--funit-at-a-time @gol
 -falign-functions  -falign-jumps @gol
 -falign-loops  -falign-labels @gol
 -ftree-vrp @gol
@@ -5343,7 +5343,7 @@ attribute @code{used} will prevent this behavior.
 As a temporary workaround, @option{-fno-unit-at-a-time} can be used,
 but this scheme may not be supported by future releases of GCC@.
 
-Enabled at levels @option{-O2}, @option{-O3}.
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fweb
 @opindex fweb
