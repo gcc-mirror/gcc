@@ -8,7 +8,7 @@
   inquire (unit=-16, exist=l)
   if (l) call abort
   open (unit=16, file='inquire_9.tst')
-  print (unit=16, fmt='(a)'), 'Test'
+  write (unit=16, fmt='(a)') 'Test'
   l = .false.
   inquire (unit=16, exist=l)
   if (.not.l) call abort

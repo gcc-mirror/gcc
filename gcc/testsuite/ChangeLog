@@ -1,3 +1,10 @@
+2006-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/23151
+	* gfortran.dg/inquire_9.f90:  Fix illegal print syntax.
+	* gfortran.dg/print_parentheses_1.f:  New test.
+	* gfortran.dg/print_parentheses_2.f90:  New test.
+
 2006-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/27758

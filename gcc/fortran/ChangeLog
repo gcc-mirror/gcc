@@ -1,3 +1,8 @@
+2006-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/23151
+	* io.c (match_io):  print (1,*) is an error.
+
 2006-05-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/27709
