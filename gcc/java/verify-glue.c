@@ -1,5 +1,5 @@
 /* Glue to interface gcj with bytecode verifier.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -326,6 +326,12 @@ vfy_object_type (void)
   vfy_jclass k;
   k = object_type_node;
   return k;
+}
+
+vfy_jclass
+vfy_class_type (void)
+{
+  return class_type_node;
 }
 
 vfy_jclass

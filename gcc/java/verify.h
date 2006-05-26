@@ -1,5 +1,5 @@
 /* Declarations to interface gcj with bytecode verifier.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -112,6 +112,7 @@ vfy_jclass vfy_get_component_type (vfy_jclass klass);
 bool vfy_is_abstract (vfy_jclass klass);
 vfy_jclass vfy_find_class (vfy_jclass klass, vfy_string name);
 vfy_jclass vfy_object_type (void);
+vfy_jclass vfy_class_type (void);
 vfy_jclass vfy_string_type (void);
 vfy_jclass vfy_throwable_type (void);
 vfy_jclass vfy_unsuitable_type (void);

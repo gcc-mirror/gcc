@@ -3117,6 +3117,12 @@ java_push_constant_from_pool (JCF *jcf, int index)
       c = build_ref_from_constant_pool (index);
       c = convert (promote_type (string_type_node), c);
     }
+  else if (JPOOL_TAG (jcf, index) == CONSTANT_Class
+	   || JPOOL_TAG (jcf, index) == CONSTANT_ResolvedClass)
+    {
+      tree record = get_class_constant (jcf, index);
+      c = build_class_ref (record);
+    }
   else
     c = get_constant (jcf, index);
   push_value (c);
