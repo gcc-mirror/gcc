@@ -1,3 +1,9 @@
+2006-05-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR target/27571
+	* config/alpha/alpha.c (alpha_does_function_need_gp): Skip jump
+	table data.
+
 2006-05-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20103

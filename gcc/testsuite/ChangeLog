@@ -1,3 +1,7 @@
+2006-05-24  Falk Hueffner  <falk@debian.org>
+
+	* gcc.c-torture/compile/pr27571.c: New test.
+
 2006-05-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/27709
