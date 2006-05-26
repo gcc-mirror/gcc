@@ -1,3 +1,8 @@
+2006-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/27758
+	* gcc.dg/pr27758.c: New test.
+
 2006-05-24  Falk Hueffner  <falk@debian.org>
 
 	* gcc.c-torture/compile/pr27571.c: New test.
