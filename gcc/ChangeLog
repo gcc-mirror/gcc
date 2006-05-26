@@ -1,3 +1,9 @@
+2006-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27743
+	* fold-const.c (fold_binary): Do not look at the stripped
+	op0 for (a OP c1) OP c2 to a OP (c1+c2) shift optimization.
+
 2006-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* DEV-PHASE: Set to prerelease.
