@@ -1,4 +1,9 @@
-2006-05-24  Steven Bosscher  <steven@gcc.gnu.org>
+2006-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (Optimize Options): Document that -funit-at-a-time
+	is enabled at -O and above.
+
+2006-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR target/27571
 	* config/alpha/alpha.c (alpha_does_function_need_gp): Skip jump
