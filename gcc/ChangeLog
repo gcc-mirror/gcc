@@ -1,3 +1,13 @@
+2006-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/27758
+	Backported from mainline
+	2006-01-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/25758
+	* config/i386/i386.c (output_pic_addr_const) <case SYMBOL_REF>:
+	Use output_addr_const instead of assemble_name.
+
 2006-05-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27743
