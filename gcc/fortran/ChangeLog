@@ -1,3 +1,10 @@
+2006-05-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27524
+	* trans-array.c (gfc_trans_dummy_array_bias): Don't use stride as
+	a temporary variable when -fbounds-check is enabled, since its
+	value will be needed later.
+
 2006-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/23151
