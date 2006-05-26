@@ -1690,155 +1690,155 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       C_DECL_THREADPRIVATE_P (newdecl) = 1;
     }
 
-   if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS))
-     {
-       /* Merge the unused-warning information.  */
-       if (DECL_IN_SYSTEM_HEADER (olddecl))
-	 DECL_IN_SYSTEM_HEADER (newdecl) = 1;
-       else if (DECL_IN_SYSTEM_HEADER (newdecl))
-	 DECL_IN_SYSTEM_HEADER (olddecl) = 1;
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS))
+    {
+      /* Merge the unused-warning information.  */
+      if (DECL_IN_SYSTEM_HEADER (olddecl))
+	DECL_IN_SYSTEM_HEADER (newdecl) = 1;
+      else if (DECL_IN_SYSTEM_HEADER (newdecl))
+	DECL_IN_SYSTEM_HEADER (olddecl) = 1;
 
-       /* Merge the section attribute.
-	  We want to issue an error if the sections conflict but that must be
-	  done later in decl_attributes since we are called before attributes
-	  are assigned.  */
-       if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
-	 DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
+      /* Merge the section attribute.
+	 We want to issue an error if the sections conflict but that
+	 must be done later in decl_attributes since we are called
+	 before attributes are assigned.  */
+      if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
+	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
 
-       /* Copy the assembler name.
-	  Currently, it can only be defined in the prototype.  */
-       COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
+      /* Copy the assembler name.
+	 Currently, it can only be defined in the prototype.  */
+      COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
-       /* Use visibility of whichever declaration had it specified */
-       if (DECL_VISIBILITY_SPECIFIED (olddecl))
-	 {
-	   DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
-	   DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
-	 }
+      /* Use visibility of whichever declaration had it specified */
+      if (DECL_VISIBILITY_SPECIFIED (olddecl))
+	{
+	  DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
+	  DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
+	}
 
-       if (TREE_CODE (newdecl) == FUNCTION_DECL)
-	 {
-	   DECL_STATIC_CONSTRUCTOR(newdecl) |= DECL_STATIC_CONSTRUCTOR(olddecl);
-	   DECL_STATIC_DESTRUCTOR (newdecl) |= DECL_STATIC_DESTRUCTOR (olddecl);
-	   DECL_NO_LIMIT_STACK (newdecl) |= DECL_NO_LIMIT_STACK (olddecl);
-	   DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl)
-	     |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
-	   TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
-	   TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
-	   DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
-	   DECL_IS_PURE (newdecl) |= DECL_IS_PURE (olddecl);
-	   DECL_IS_NOVOPS (newdecl) |= DECL_IS_NOVOPS (olddecl);
-	 }
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	{
+	  DECL_STATIC_CONSTRUCTOR(newdecl) |= DECL_STATIC_CONSTRUCTOR(olddecl);
+	  DECL_STATIC_DESTRUCTOR (newdecl) |= DECL_STATIC_DESTRUCTOR (olddecl);
+	  DECL_NO_LIMIT_STACK (newdecl) |= DECL_NO_LIMIT_STACK (olddecl);
+	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl)
+	    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
+	  TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
+	  TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
+	  DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
+	  DECL_IS_PURE (newdecl) |= DECL_IS_PURE (olddecl);
+	  DECL_IS_NOVOPS (newdecl) |= DECL_IS_NOVOPS (olddecl);
+	}
 
-       /* Merge the storage class information.  */
-       merge_weak (newdecl, olddecl);
+      /* Merge the storage class information.  */
+      merge_weak (newdecl, olddecl);
 
-       /* For functions, static overrides non-static.  */
-       if (TREE_CODE (newdecl) == FUNCTION_DECL)
-	 {
-	   TREE_PUBLIC (newdecl) &= TREE_PUBLIC (olddecl);
-	   /* This is since we don't automatically
-	      copy the attributes of NEWDECL into OLDDECL.  */
-	   TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
-	   /* If this clears `static', clear it in the identifier too.  */
-	   if (!TREE_PUBLIC (olddecl))
-	     TREE_PUBLIC (DECL_NAME (olddecl)) = 0;
-	 }
-     }
+      /* For functions, static overrides non-static.  */
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	{
+	  TREE_PUBLIC (newdecl) &= TREE_PUBLIC (olddecl);
+	  /* This is since we don't automatically
+	     copy the attributes of NEWDECL into OLDDECL.  */
+	  TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
+	  /* If this clears `static', clear it in the identifier too.  */
+	  if (!TREE_PUBLIC (olddecl))
+	    TREE_PUBLIC (DECL_NAME (olddecl)) = 0;
+	}
+    }
 
-   if (DECL_EXTERNAL (newdecl))
-     {
-       TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
-       DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
+  if (DECL_EXTERNAL (newdecl))
+    {
+      TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
+      DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
 
-       /* An extern decl does not override previous storage class.  */
-       TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
-       if (!DECL_EXTERNAL (newdecl))
-	 {
-	   DECL_CONTEXT (newdecl) = DECL_CONTEXT (olddecl);
-	   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
-	 }
-     }
-   else
-     {
-       TREE_STATIC (olddecl) = TREE_STATIC (newdecl);
-       TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
-     }
+      /* An extern decl does not override previous storage class.  */
+      TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
+      if (!DECL_EXTERNAL (newdecl))
+	{
+	  DECL_CONTEXT (newdecl) = DECL_CONTEXT (olddecl);
+	  DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
+	}
+    }
+  else
+    {
+      TREE_STATIC (olddecl) = TREE_STATIC (newdecl);
+      TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
+    }
 
-   if (TREE_CODE (newdecl) == FUNCTION_DECL)
-     {
-       /* If we're redefining a function previously defined as extern
-	  inline, make sure we emit debug info for the inline before we
-	  throw it away, in case it was inlined into a function that hasn't
-	  been written out yet.  */
-       if (new_is_definition && DECL_INITIAL (olddecl))
-	 {
-	   if (TREE_USED (olddecl)
-	       /* In unit-at-a-time mode we never inline re-defined extern
-		  inline functions.  */
-	       && !flag_unit_at_a_time
-	       && cgraph_function_possibly_inlined_p (olddecl))
-	     (*debug_hooks->outlining_inline_function) (olddecl);
+  if (TREE_CODE (newdecl) == FUNCTION_DECL)
+    {
+      /* If we're redefining a function previously defined as extern
+	 inline, make sure we emit debug info for the inline before we
+	 throw it away, in case it was inlined into a function that
+	 hasn't been written out yet.  */
+      if (new_is_definition && DECL_INITIAL (olddecl))
+	{
+	  if (TREE_USED (olddecl)
+	      /* In unit-at-a-time mode we never inline re-defined extern
+		 inline functions.  */
+	      && !flag_unit_at_a_time
+	      && cgraph_function_possibly_inlined_p (olddecl))
+	    (*debug_hooks->outlining_inline_function) (olddecl);
 
-	   /* The new defn must not be inline.  */
-	   DECL_INLINE (newdecl) = 0;
-	   DECL_UNINLINABLE (newdecl) = 1;
-	 }
-       else
-	 {
-	   /* If either decl says `inline', this fn is inline,
-	      unless its definition was passed already.  */
-	   if (DECL_DECLARED_INLINE_P (newdecl)
-	       || DECL_DECLARED_INLINE_P (olddecl))
-	     DECL_DECLARED_INLINE_P (newdecl) = 1;
+	  /* The new defn must not be inline.  */
+	  DECL_INLINE (newdecl) = 0;
+	  DECL_UNINLINABLE (newdecl) = 1;
+	}
+      else
+	{
+	  /* If either decl says `inline', this fn is inline, unless
+	     its definition was passed already.  */
+	  if (DECL_DECLARED_INLINE_P (newdecl)
+	      || DECL_DECLARED_INLINE_P (olddecl))
+	    DECL_DECLARED_INLINE_P (newdecl) = 1;
 
-	   DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
-	     = (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
-	 }
+	  DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
+	    = (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
+	}
 
-       if (DECL_BUILT_IN (olddecl))
-	 {
-	   /* If redeclaring a builtin function, it stays built in.
-	      But it gets tagged as having been declared.  */
-	   DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
-	   DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
-	   C_DECL_DECLARED_BUILTIN (newdecl) = 1;
-	   if (new_is_prototype)
-	     C_DECL_BUILTIN_PROTOTYPE (newdecl) = 0;
-	   else
-	     C_DECL_BUILTIN_PROTOTYPE (newdecl)
-	       = C_DECL_BUILTIN_PROTOTYPE (olddecl);
-	 }
+      if (DECL_BUILT_IN (olddecl))
+	{
+	  /* If redeclaring a builtin function, it stays built in.
+	     But it gets tagged as having been declared.  */
+	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
+	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
+	  C_DECL_DECLARED_BUILTIN (newdecl) = 1;
+	  if (new_is_prototype)
+	    C_DECL_BUILTIN_PROTOTYPE (newdecl) = 0;
+	  else
+	    C_DECL_BUILTIN_PROTOTYPE (newdecl)
+	      = C_DECL_BUILTIN_PROTOTYPE (olddecl);
+	}
 
-       /* Also preserve various other info from the definition.  */
-       if (!new_is_definition)
-	 {
-	   DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
-	   DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
-	   DECL_STRUCT_FUNCTION (newdecl) = DECL_STRUCT_FUNCTION (olddecl);
-	   DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
-	   DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
+      /* Also preserve various other info from the definition.  */
+      if (!new_is_definition)
+	{
+	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
+	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+	  DECL_STRUCT_FUNCTION (newdecl) = DECL_STRUCT_FUNCTION (olddecl);
+	  DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
+	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 
-	   /* Set DECL_INLINE on the declaration if we've got a body
-	      from which to instantiate.  */
-	   if (DECL_INLINE (olddecl) && !DECL_UNINLINABLE (newdecl))
-	     {
-	       DECL_INLINE (newdecl) = 1;
-	       DECL_ABSTRACT_ORIGIN (newdecl)
-		 = DECL_ABSTRACT_ORIGIN (olddecl);
-	     }
-	 }
-       else
-	 {
-	   /* If a previous declaration said inline, mark the
-	      definition as inlinable.  */
-	   if (DECL_DECLARED_INLINE_P (newdecl)
-	       && !DECL_UNINLINABLE (newdecl))
-	     DECL_INLINE (newdecl) = 1;
-	 }
-     }
+	  /* Set DECL_INLINE on the declaration if we've got a body
+	     from which to instantiate.  */
+	  if (DECL_INLINE (olddecl) && !DECL_UNINLINABLE (newdecl))
+	    {
+	      DECL_INLINE (newdecl) = 1;
+	      DECL_ABSTRACT_ORIGIN (newdecl)
+		= DECL_ABSTRACT_ORIGIN (olddecl);
+	    }
+	}
+      else
+	{
+	  /* If a previous declaration said inline, mark the
+	     definition as inlinable.  */
+	  if (DECL_DECLARED_INLINE_P (newdecl)
+	      && !DECL_UNINLINABLE (newdecl))
+	    DECL_INLINE (newdecl) = 1;
+	}
+    }
 
-   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
+  /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
      But preserve OLDDECL's DECL_UID and DECL_CONTEXT.  */
   {
     unsigned olddecl_uid = DECL_UID (olddecl);
