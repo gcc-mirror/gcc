@@ -720,7 +720,7 @@ extern gfc_unit *find_unit (int);
 internal_proto(find_unit);
 
 extern gfc_unit *find_or_create_unit (int);
-internal_proto(find_unit);
+internal_proto(find_or_create_unit);
 
 extern gfc_unit *get_unit (st_parameter_dt *, int);
 internal_proto(get_unit);
