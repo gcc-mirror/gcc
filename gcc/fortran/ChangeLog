@@ -1,3 +1,9 @@
+2006-05-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_associated): If pointer in first
+	arguments has zero array length of zero string length, return
+	false.
+
 2006-05-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/27524

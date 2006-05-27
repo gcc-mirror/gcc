@@ -2813,6 +2813,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   tree tmp2;
   tree tmp;
   tree args, fndecl;
+  tree nonzero_charlen;
+  tree nonzero_arraylen;
   gfc_ss *ss1, *ss2;
 
   gfc_init_se (&arg1se, NULL);
@@ -2820,6 +2822,23 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   arg1 = expr->value.function.actual;
   arg2 = arg1->next;
   ss1 = gfc_walk_expr (arg1->expr);
+
+  nonzero_charlen = NULL_TREE;
+  if (arg1->expr->ts.type == BT_CHARACTER)
+    nonzero_charlen = build2 (NE_EXPR, boolean_type_node,
+			      arg1->expr->ts.cl->backend_decl,
+			      integer_zero_node);
+
+  nonzero_arraylen = NULL_TREE;
+  if (ss1 != gfc_ss_terminator)
+    {
+      arg1se.descriptor_only = 1;
+      gfc_conv_expr_lhs (&arg1se, arg1->expr);
+      tmp = gfc_conv_descriptor_stride (arg1se.expr,
+			gfc_rank_cst[arg1->expr->rank - 1]);
+      nonzero_arraylen = build2 (NE_EXPR, boolean_type_node,
+				 tmp, integer_zero_node);
+    }
 
   if (!arg2->expr)
     {
@@ -2874,6 +2893,13 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           se->expr = build_function_call_expr (fndecl, args);
         }
      }
+
+  if (nonzero_charlen != NULL_TREE)
+    se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
+		       se->expr, nonzero_charlen);
+  if (nonzero_arraylen != NULL_TREE)
+    se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
+		       se->expr, nonzero_arraylen);
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), se->expr);
 }
 
