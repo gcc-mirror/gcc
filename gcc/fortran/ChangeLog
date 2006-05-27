@@ -1,3 +1,24 @@
+2006-05-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	    Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/27552
+	* dump-parse-tree.c (gfc_show_expr): Deal with Hollerith constants.
+	* data.c (create_character_intializer): Set from_H flag if character is
+	initialized by Hollerith constant.
+
+2006-05-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27320
+	* dump-parse-tree.c (gfc_show_code_node): Try harder to find the
+	called procedure name.
+
+2006-05-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/26551
+	* resolve.c (resolve_call, resolve_function): Issue an error
+	if a function or subroutine call is recursive but the function or
+	subroutine wasn't declared as such.
+
 2006-05-24  Release Manager
 
 	* GCC 4.1.1 released.
