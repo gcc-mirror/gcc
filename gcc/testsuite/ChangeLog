@@ -1,3 +1,8 @@
+2006-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27773
+	* gcc.dg/torture/pr27773.c: New testcase.
+
 2006-05-27  Dirk Mueller  <dmueller@suse.de>
 
 	* gcc.dg/pr24561.c: Rename to..

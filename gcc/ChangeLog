@@ -1,3 +1,9 @@
+2006-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27773
+	* fold-const.c (fold_plusminus_mult_expr): Use fold_convert
+	to produce a constant of value 1 of generic type.
+
 2006-05-27  Dirk Mueller  <dmueller@suse.de>
 
 	* cgraphunit.c (decide_is_function_needed): Fix wrong
