@@ -6702,10 +6702,7 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   else
     {
       arg00 = arg0;
-      if (!FLOAT_TYPE_P (type))
-	arg01 = build_int_cst (type, 1);
-      else
-	arg01 = build_real (type, dconst1);
+      arg01 = fold_convert (type, integer_one_node);
     }
   if (TREE_CODE (arg1) == MULT_EXPR)
     {
@@ -6715,10 +6712,7 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   else
     {
       arg10 = arg1;
-      if (!FLOAT_TYPE_P (type))
-	arg11 = build_int_cst (type, 1);
-      else
-	arg11 = build_real (type, dconst1);
+      arg11 = fold_convert (type, integer_one_node);
     }
   same = NULL_TREE;
 
