@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=f95" }
+! { dg-options "-fall-intrinsics -std=f95" }
 program testbyte
   integer(1) :: ii = 7
   call foo(ii)

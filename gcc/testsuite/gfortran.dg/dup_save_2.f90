@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=f95" }
+! { dg-options "-fall-intrinsics -std=f95" }
 program save_2
   implicit none
   integer i
