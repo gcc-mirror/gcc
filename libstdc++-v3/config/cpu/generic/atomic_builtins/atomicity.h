@@ -1,6 +1,7 @@
-// Low-level functions for atomic operations: S/390 version  -*- C++ -*-
+// Low-level functions for atomic operations: version for CPUs providing
+// atomic builtins -*- C++ -*-
 
-// Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +36,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   { return __sync_fetch_and_add(__mem, __val); }
-  
+
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val)
