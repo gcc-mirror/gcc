@@ -1,3 +1,8 @@
+2006-05-27  Dirk Mueller  <dmueller@suse.de>
+
+	* cgraphunit.c (decide_is_function_needed): Fix wrong
+	PR reference.
+
 2006-05-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR rtl-optimization/27661
@@ -974,7 +979,7 @@
 
 2006-05-08  Jan Hubicka  <jh@suse.cz>
 
-	PR middle-end/25962
+	PR middle-end/24561
 	* cgraphunit.c (decide_is_function_needed): When not optimizing even
 	unused static functions are needed.
 
