@@ -219,7 +219,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
      COMDAT functions that must be output only when they are needed.
 
      When not optimizing, also output the static functions. (see
-     PR25962), but don't do so for always_inline functions, functions
+     PR24561), but don't do so for always_inline functions, functions
      declared inline and nested functions.  These was optimized out
      in the original implementation and it is unclear whether we want
      to change the behaviour here.  */
