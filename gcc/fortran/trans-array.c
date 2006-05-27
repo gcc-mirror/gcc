@@ -1948,7 +1948,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
       gfc_conv_expr_type (&indexse, ar->start[n], gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &indexse.pre);
 
-      if (flag_bounds_check)
+      if (flag_bounds_check && ar->as->type != AS_ASSUMED_SIZE)
 	{
 	  /* Check array bounds.  */
 	  tree cond;
