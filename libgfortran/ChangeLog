@@ -1,5 +1,9 @@
 2006-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* io/io.h (find_or_create_unit): Correct export declaration.
+	
+2006-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* intrinsics/abort.c (abort_): Remove.
 
 2006-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
