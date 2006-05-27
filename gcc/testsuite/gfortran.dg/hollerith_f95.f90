@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=f95" }
+! { dg-options "-fall-intrinsics -std=f95" }
 ! PR15966, PR18781 & PR16531
 implicit none
 complex(kind=8) x(2) 
