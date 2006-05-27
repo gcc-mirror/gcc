@@ -1,3 +1,9 @@
+2006-05-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/19777
+	* trans-array.c (gfc_conv_array_ref): Don't perform out-of-bounds
+	checking for assumed-size arrrays.
+
 2006-05-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-intrinsic.c (gfc_conv_associated): If pointer in first
