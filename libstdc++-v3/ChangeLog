@@ -1,3 +1,13 @@
+2006-05-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* configure.host: If the CPU provides atomic builtins select
+	generic/atomic_builtins/atomicity.h.
+	* config/cpu/generic/atomic_builtins/atomicity.h: Add.
+	* config/cpu/powerpc/atomicity.h: Remove.
+	* config/cpu/ia64/atomicity.h: Likewise.
+	* config/cpu/alpha/atomicity.h: Likewise.
+	* config/cpu/s390/atomicity.h: Likewise.
+
 2006-05-26  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.am: Add install-html target. Add install-html to .PHONY
