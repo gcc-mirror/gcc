@@ -2023,7 +2023,7 @@ build_class_init (tree clas, tree expr)
 
 
 /* Rewrite expensive calls that require stack unwinding at runtime to
-   cheaper alternatives.  The logic here performs thse
+   cheaper alternatives.  The logic here performs these
    transformations:
 
    java.lang.Class.forName("foo") -> java.lang.Class.forName("foo", class$)

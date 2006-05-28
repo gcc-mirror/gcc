@@ -2606,7 +2606,7 @@ emit_register_classes (tree *list_p)
   /* TARGET_USE_JCR_SECTION defaults to 1 if SUPPORTS_WEAK and
      TARGET_ASM_NAMED_SECTION, else 0.  Some targets meet those conditions
      but lack suitable crtbegin/end objects or linker support.  These
-     targets can overide the default in tm.h to use the fallback mechanism.  */
+     targets can override the default in tm.h to use the fallback mechanism.  */
   if (TARGET_USE_JCR_SECTION)
     {
       tree klass, t;

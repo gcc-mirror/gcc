@@ -474,7 +474,7 @@ build_exception_object_ref (tree type)
   return obj;
 }
 
-/* If there are any handlers for this range, isssue end of range,
+/* If there are any handlers for this range, issue end of range,
    and then all handler blocks */
 void
 expand_end_java_handler (struct eh_range *range)
