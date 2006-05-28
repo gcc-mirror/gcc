@@ -1,3 +1,9 @@
+2006-05-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* intrinsics/string_intrinsics.c (compare_string):
+	Use memcmp instead of strncmp to avoid tripping over
+	CHAR(0) in a string.
+
 2006-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/io.h (find_or_create_unit): Correct export declaration.
