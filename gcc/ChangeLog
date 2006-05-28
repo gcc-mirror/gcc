@@ -1,3 +1,9 @@
+2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/26622.
+	* fold-const.c (fold_ternary) <COND_EXPR>: Call fold_convert
+	on arg1.
+
 2006-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (Optimize Options): Document that -funit-at-a-time
