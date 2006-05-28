@@ -217,7 +217,7 @@ struct named_label_entry GTY(())
 
   /* The following bits are set after the label is defined, and are
      updated as scopes are popped.  They indicate that a backward jump
-     to the label will illegally enter a scope of the given flavour.  */
+     to the label will illegally enter a scope of the given flavor.  */
   bool in_try_scope;
   bool in_catch_scope;
   bool in_omp_scope;

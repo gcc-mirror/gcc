@@ -13107,7 +13107,7 @@ cp_parser_class_head (cp_parser* parser,
 	 define a class that has already been declared with this
 	 syntax.
 
-	 The proposed resolution for Core Issue 180 says that whever
+	 The proposed resolution for Core Issue 180 says that wherever
 	 you see `class T::X' you should treat `X' as a type-name.
 
 	 It is OK to define an inaccessible class; for example:
