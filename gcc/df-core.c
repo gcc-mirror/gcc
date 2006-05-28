@@ -164,7 +164,7 @@ incremental algorithms.
 As for the bit vector problems, there is no interface to give a set of
 blocks over with to resolve the iteration.  In general, restarting a
 dataflow iteration is difficult and expensive.  Again, the best way to
-keep the dataflow infomation up to data (if this is really what is
+keep the dataflow information up to data (if this is really what is
 needed) it to formulate a problem specific solution.
 
 There are fine grained calls for creating and deleting references from

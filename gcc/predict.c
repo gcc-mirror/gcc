@@ -1258,7 +1258,7 @@ tree_estimate_probability (void)
 	{
 	  /* Predict early returns to be probable, as we've already taken
 	     care for error returns and other cases are often used for
-	     fast paths trought function.  */
+	     fast paths through function.  */
 	  if (e->dest == EXIT_BLOCK_PTR
 	      && TREE_CODE (last_stmt (bb)) == RETURN_EXPR
 	      && !single_pred_p (bb))

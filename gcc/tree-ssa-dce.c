@@ -720,7 +720,7 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
      nothing to the program, then we not only remove it, but we also change
      the flow graph so that the current block will simply fall-thru to its
      immediate post-dominator.  The blocks we are circumventing will be
-     removed by cleaup_tree_cfg if this change in the flow graph makes them
+     removed by cleanup_tree_cfg if this change in the flow graph makes them
      unreachable.  */
   if (is_ctrl_stmt (t))
     {

@@ -604,7 +604,7 @@ struct processor_costs generic64_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   /* On all chips taken into consideration lea is 2 cycles and more.  With
      this cost however our current implementation of synth_mult results in
-     use of unnecesary temporary registers causing regression on several
+     use of unnecessary temporary registers causing regression on several
      SPECfp benchmarks.  */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
   COSTS_N_INSNS (1),			/* variable shift costs */
@@ -10513,7 +10513,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
   enum machine_mode mode =
     GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
 
-  /* Do not handle DImode compares that go trought special path.  Also we can't
+  /* Do not handle DImode compares that go through special path.  Also we can't
      deal with FP compares yet.  This is possible to add.  */
   if (mode == (TARGET_64BIT ? TImode : DImode))
     return false;

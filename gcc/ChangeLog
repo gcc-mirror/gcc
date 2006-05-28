@@ -1,3 +1,17 @@
+2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfgcleanup.c, cfgexpand.c, cgraphunit.c, config/arm/arm.c,
+	config/fr30/fr30.md, config/i386/i386-interix.h,
+	config/i386/i386.c, config/i386/i386.md, config/sh/superh.h,
+	config/sh/superh64.h, config/v850/v850.c, df-core.c,
+	df-problems.c, df.h, except.c, final.c, haifa-sched.c,
+	lambda-code.c, libgcc2.h, omp-low.c, optabs.c, predict.c,
+	reload.c, tree-flow.h, tree-outof-ssa.c, tree-ssa-dce.c,
+	tree-ssa-pre.c, tree-vect-transform.c: Fix comment typos.
+	Follow spelling conventions.
+	* doc/invoke.texi, doc/rtl.texi, doc/tm.texi: Fix typos.
+	Follow spelling conventions.
+
 2006-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27773

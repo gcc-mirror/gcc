@@ -264,7 +264,7 @@ typedef struct bb_value_sets
   bitmap rvuse_gen;
   bitmap rvuse_kill;
 
-  /* For actually occuring loads, as long as they occur before all the
+  /* For actually occurring loads, as long as they occur before all the
      other stores in the block, we know they are antic at the top of
      the block, regardless of RVUSE_KILL.  */
   value_set_t antic_safe_loads;

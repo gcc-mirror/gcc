@@ -222,7 +222,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
      PR24561), but don't do so for always_inline functions, functions
      declared inline and nested functions.  These was optimized out
      in the original implementation and it is unclear whether we want
-     to change the behaviour here.  */
+     to change the behavior here.  */
   if (((TREE_PUBLIC (decl)
 	|| (!optimize && !node->local.disregard_inline_limits
 	    && !DECL_DECLARED_INLINE_P (decl)

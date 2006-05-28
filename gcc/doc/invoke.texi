@@ -1611,7 +1611,7 @@ when used within the DSO@.  Enabling this option can have a dramatic effect
 on load and link times of a DSO as it massively reduces the size of the
 dynamic export table when the library makes heavy use of templates.
 
-The behaviour of this switch is not quite the same as marking the
+The behavior of this switch is not quite the same as marking the
 methods as hidden directly.  Normally if there is a class with default
 visibility which has a hidden method, the effect of this is that the
 method must be defined in only one shared object.  This switch does
@@ -3271,7 +3271,7 @@ in some fonts or display methodologies, especially once formatting has
 been applied.  For instance @code{\u207F}, ``SUPERSCRIPT LATIN SMALL
 LETTER N'', will display just like a regular @code{n} which has been
 placed in a superscript.  ISO 10646 defines the @dfn{NFKC}
-normalisation scheme to convert all these into a standard form as
+normalization scheme to convert all these into a standard form as
 well, and GCC will warn if your code is not in NFKC if you use
 @option{-Wnormalized=nfkc}.  This warning is comparable to warning
 about every identifier that contains the letter O because it might be

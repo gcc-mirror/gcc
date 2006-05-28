@@ -3090,7 +3090,7 @@ DWARF 2.
 @defmac FRAME_POINTER_CFA_OFFSET (@var{fundecl})
 If defined, a C expression whose value is an integer giving the offset
 in bytes from the frame pointer to the canonical frame address (cfa).
-The final value should conincide with that calculated by
+The final value should coincide with that calculated by
 @code{INCOMING_FRAME_SP_OFFSET}.
 
 Normally the CFA is calculated as an offset from the argument pointer,

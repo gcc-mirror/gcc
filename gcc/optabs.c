@@ -4741,7 +4741,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
      This is not needed.  Consider, for instance conversion from SFmode
      into DImode.
 
-     The hot path trought the code is dealing with inputs smaller than 2^63
+     The hot path through the code is dealing with inputs smaller than 2^63
      and doing just the conversion, so there is no bits to lose.
 
      In the other path we know the value is positive in the range 2^63..2^64-1

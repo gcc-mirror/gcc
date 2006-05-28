@@ -1896,7 +1896,7 @@ still known.
 @itemx (ss_neg:@var{m} @var{x})
 These two expressions represent the negation (subtraction from zero) of
 the value represented by @var{x}, carried out in mode @var{m}.  They
-differ in the behaviour on overflow of integer modes.  In the case of
+differ in the behavior on overflow of integer modes.  In the case of
 @code{neg}, the negation of the operand may be a number not representable
 in mode @var{m}, in which case it is truncated to @var{m}.  @code{ss_neg}
 ensures that an out-of-bounds result saturates to the maximum or minimum
@@ -2016,7 +2016,7 @@ fixed-point mode.
 @itemx (ss_ashift:@var{m} @var{x} @var{c})
 These two expressions represent the result of arithmetically shifting @var{x}
 left by @var{c} places.  They differ in their behavior on overflow of integer
-modes.  An @code{ashift} operation is a plain shift with no special behaviour
+modes.  An @code{ashift} operation is a plain shift with no special behavior
 in case of a change in the sign bit; @code{ss_ashift} saturates to the minimum
 or maximum representable value if any of the bits shifted out differs from the
 final sign bit.

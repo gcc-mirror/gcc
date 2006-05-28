@@ -2802,7 +2802,7 @@ arm_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 /* Encode the current state of the #pragma [no_]long_calls.  */
 typedef enum
 {
-  OFF,		/* No #pramgma [no_]long_calls is in effect.  */
+  OFF,		/* No #pragma [no_]long_calls is in effect.  */
   LONG,		/* #pragma long_calls is in effect.  */
   SHORT		/* #pragma no_long_calls is in effect.  */
 } arm_pragma_enum;

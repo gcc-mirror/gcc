@@ -478,7 +478,7 @@ use_pointer_for_field (tree decl, bool shared_p)
   if (AGGREGATE_TYPE_P (TREE_TYPE (decl)))
     return true;
 
-  /* We can only use copy-in/copy-out semantics for shared varibles
+  /* We can only use copy-in/copy-out semantics for shared variables
      when we know the value is not accessible from an outer scope.  */
   if (shared_p)
     {

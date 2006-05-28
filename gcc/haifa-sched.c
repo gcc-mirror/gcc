@@ -2765,14 +2765,14 @@ sched_init (void)
 	spec_info->weakness_cutoff =
 	  (PARAM_VALUE (PARAM_SCHED_SPEC_PROB_CUTOFF) * MAX_DEP_WEAK) / 100;
       else
-	/* So we won't read anything accidently.  */
+	/* So we won't read anything accidentally.  */
 	spec_info = 0;
 #ifdef ENABLE_CHECKING
       check_sched_flags ();
 #endif
     }
   else
-    /* So we won't read anything accidently.  */
+    /* So we won't read anything accidentally.  */
     spec_info = 0;
 
   /* Initialize issue_rate.  */

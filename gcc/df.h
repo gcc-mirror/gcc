@@ -214,7 +214,7 @@ struct dataflow
   /* The pool to allocate the block_info from. */
   alloc_pool block_pool;                
 
-  /* Problem specific control infomation.  */
+  /* Problem specific control information.  */
 
   /* Scanning flags.  */
 #define DF_HARD_REGS	     1	/* Mark hard registers.  */
@@ -502,7 +502,7 @@ struct df_ru_bb_info
      sparse_kill, each register gets a slot and a 1 in this bitvector
      means that all of the uses of that register are killed.  This is
      a very useful efficiency hack in that it keeps from having push
-     around big groups of 1s.  This is implemened by the
+     around big groups of 1s.  This is implemented by the
      bitmap_clear_range call.  */
 
   bitmap kill;
