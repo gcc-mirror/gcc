@@ -1,3 +1,8 @@
+2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, decl2.c, parser.c: Fix comment typos.  Follow
+	spelling conventions.
+
 2006-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20103

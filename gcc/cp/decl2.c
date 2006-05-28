@@ -2106,7 +2106,7 @@ start_objects (int method_type, int initp)
 
   /* We cannot allow these functions to be elided, even if they do not
      have external linkage.  And, there's no point in deferring
-     compilation of thes functions; they're all going to have to be
+     compilation of these functions; they're all going to have to be
      out anyhow.  */
   DECL_INLINE (current_function_decl) = 0;
   DECL_UNINLINABLE (current_function_decl) = 1;
