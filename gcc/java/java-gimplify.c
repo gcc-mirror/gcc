@@ -276,7 +276,7 @@ java_gimplify_block (tree java_block)
   block = make_node (BLOCK);
   BLOCK_VARS (block) = decls;
 
-  /* The TREE_USED flag on a block determines whether the debug ouput
+  /* The TREE_USED flag on a block determines whether the debug output
      routines generate info for the variables in that block.  */
   TREE_USED (block) = 1;
 
