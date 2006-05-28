@@ -3540,9 +3540,9 @@ next_sjlj_build_enter_and_setjmp (void)
   return build3 (COND_EXPR, void_type_node, cond, NULL, NULL);
 }
 
-/* Build
-	DECL = objc_exception_extract(&_stack);
-*/
+/* Build:
+
+   DECL = objc_exception_extract(&_stack);  */
    
 static tree
 next_sjlj_build_exc_extract (tree decl)
@@ -5195,6 +5195,7 @@ generate_ivars_list (tree type, const char *name, int size, tree list)
 }
 
 /* Count only the fields occurring in T.  */
+
 static int
 ivar_list_length (tree t)
 {
@@ -6889,6 +6890,7 @@ lookup_method_static (tree interface, tree ident, int flags)
 
 /* Add the method to the hash list if it doesn't contain an identical
    method already. */
+
 static void
 add_method_to_hash_list (hash *hash_list, tree method)
 {
