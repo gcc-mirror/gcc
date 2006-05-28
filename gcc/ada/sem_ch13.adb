@@ -582,7 +582,7 @@ package body Sem_Ch13 is
                   Mark_Aliased_Address_As_Volatile (Expr);
 
                   --  Second case is where we have a constant whose
-                  --  definition is of the form of an adress as in:
+                  --  definition is of the form of an address as in:
 
                   --     A : constant Address := K'Address;
                   --     ...

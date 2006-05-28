@@ -126,7 +126,7 @@ __gnat_initialize (void *eh)
      step documented for C++.  The de-registration is handled symmetrically,
      a-la C++ destructor fashion and typically triggered by the dynamic
      unloader.  Note that since the tables shall be registered against a
-     common datastructure, libgcc should be one of the modules (vs beeing
+     common datastructure, libgcc should be one of the modules (vs being
      partially linked against all the others at build time) and shall be
      loaded first.
 

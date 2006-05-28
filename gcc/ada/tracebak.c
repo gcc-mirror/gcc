@@ -35,7 +35,7 @@
    It has been tested on the following configurations:
    PowerPC/AiX
    PowerPC/VxWorks
-   Sparc/Solaris
+   SPARC/Solaris
    i386/GNU/Linux
    i386/Solaris
    i386/NT
@@ -187,7 +187,7 @@ extern void (*Unlock_Task) (void);
 
    o FETCH_UP_FRAME, to force an invocation of __builtin_frame_address with a
      positive argument right after a possibly forced call even if FRAME_LEVEL
-     is 0. See the Sparc Solaris case for an example where this is useful.
+     is 0. See the SPARC Solaris case for an example where this is useful.
 
   */
 

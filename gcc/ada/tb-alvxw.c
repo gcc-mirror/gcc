@@ -630,7 +630,7 @@ find_proc_desc (CORE_ADDR pc,
 {
   CORE_ADDR startaddr;
 
-  /* If heuristic_fence_post is non-zero, determine the procedure
+  /* If heuristic_fence_post is nonzero, determine the procedure
      start address by examining the instructions.
      This allows us to find the start address of static functions which
      have no symbolic information, as startaddr would have been set to

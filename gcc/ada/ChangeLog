@@ -1,3 +1,12 @@
+2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, env.c, gigi.h, init.c, initialize.c, raise-gcc.c,
+	sem_ch13.adb, sysdep.c, targtyps.c, tb-alvxw.c, tracebak.c,
+	trans.c, utils.c: Fix comment typos.  Follow spelling
+	conventions.
+	* gnat_rm.texi, gnat_ugn.texi, : Fix typos.  Follow spelling
+	conventions.
+
 2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Make-lang.in (ada/decl.o): Replace target.h with $(TARGET_H).

@@ -63,7 +63,7 @@ extern void init_dummy_type (void);
    DEFINITION is nonzero if this call is intended for a definition.  This is
    used for separate compilation where it necessary to know whether an
    external declaration or a definition should be created if the GCC equivalent
-   was not created previously.  The value of 1 is normally used for a non-zero
+   was not created previously.  The value of 1 is normally used for a nonzero
    DEFINITION, but a value of 2 is used in special circumstances, defined in
    the code.  */
 extern tree gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr,
@@ -406,7 +406,7 @@ extern GTY(()) tree static_dtors;
 /* Routines expected by the gcc back-end. They must have exactly the same
    prototype and names as below.  */
 
-/* Returns non-zero if we are currently in the global binding level       */
+/* Returns nonzero if we are currently in the global binding level.  */
 extern int global_bindings_p (void);
 
 /* Enter and exit a new binding level. */

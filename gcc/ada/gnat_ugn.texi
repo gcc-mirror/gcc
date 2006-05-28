@@ -3014,7 +3014,7 @@ interface to @code{printfi}.
 @item
 It may work on some platforms to directly interface to
 a @code{varargs} function by providing a specific Ada profile
-for a a particular call. However, this does not work on
+for a particular call. However, this does not work on
 all platforms, since there is no guarantee that the
 calling sequence for a two argument normal C function
 is the same as for calling a @code{varargs} C function with
@@ -3050,7 +3050,7 @@ in section B.5 of the Ada 95 Reference Manual.
 
 @item Intrinsic
 This applies to an intrinsic operation, as defined in the Ada 95
-Reference Manual. If a a pragma Import (Intrinsic) applies to a subprogram,
+Reference Manual. If a pragma Import (Intrinsic) applies to a subprogram,
 this means that the body of the subprogram is provided by the compiler itself,
 usually by means of an efficient code sequence, and that the user does not
 supply an explicit body for it. In an application program, the pragma can
@@ -7318,7 +7318,7 @@ Set the time slice value to @var{n} milliseconds. If the system supports
 the specification of a specific time slice value, then the indicated value
 is used. If the system does not support specific time slice values, but
 does support some general notion of round-robin scheduling, then any
-non-zero value will activate round-robin scheduling.
+nonzero value will activate round-robin scheduling.
 
 A value of zero is treated specially. It turns off time
 slicing, and in addition, indicates to the tasking run time that the
@@ -9104,7 +9104,7 @@ in @ref{Inlining of Subprograms}.
 @noindent
 Although it is possible to do a reasonable amount of debugging at
 @ifclear vms
-non-zero optimization levels,
+nonzero optimization levels,
 the higher the level the more likely that
 @end ifclear
 @ifset vms
@@ -20052,7 +20052,7 @@ This command allows to switch to the task referred by @var{taskno}. In
 particular, This allows to browse the backtrace of the specified
 task. It is advised to switch back to the original task before
 continuing execution otherwise the scheduling of the program may be
-perturbated.
+perturbed.
 @end table
 
 @noindent

@@ -186,7 +186,7 @@ present_gnu_tree (Entity_Id gnat_entity)
 }
 
 
-/* Return non-zero if we are currently in the global binding level.  */
+/* Return nonzero if we are currently in the global binding level.  */
 
 int
 global_bindings_p (void)
@@ -2874,7 +2874,7 @@ convert (tree type, tree expr)
     case VIEW_CONVERT_EXPR:
       {
 	/* GCC 4.x is very sensitive to type consistency overall, and view
-	   conversions thus are very frequent.  Eventhough just "convert"ing
+	   conversions thus are very frequent.  Even though just "convert"ing
 	   the inner operand to the output type is fine in most cases, it
 	   might expose unexpected input/output type mismatches in special
 	   circumstances so we avoid such recursive calls when we can.  */
@@ -2882,7 +2882,7 @@ convert (tree type, tree expr)
 	tree op0 = TREE_OPERAND (expr, 0);
 
 	/* If we are converting back to the original type, we can just
-	   lift the input conversion.  This is a common occurence with
+	   lift the input conversion.  This is a common occurrence with
 	   switches back-and-forth amongst type variants.  */
 	if (type == TREE_TYPE (op0))
 	  return op0;
