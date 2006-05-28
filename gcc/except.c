@@ -3572,7 +3572,7 @@ switch_to_exception_section (void)
 
 
 /* Output a reference from an exception table to the type_info object TYPE.
-   TT_FORMAT and TT_FORMAT_SIZE descibe the DWARF encoding method used for
+   TT_FORMAT and TT_FORMAT_SIZE describe the DWARF encoding method used for
    the value.  */
 
 static void

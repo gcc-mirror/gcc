@@ -5375,7 +5375,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 						       GET_MODE (orig_op1))));
 	  }
 	/* Plus in the index register may be created only as a result of
-	   register remateralization for expression like &localvar*4.  Reload it.
+	   register rematerialization for expression like &localvar*4.  Reload it.
 	   It may be possible to combine the displacement on the outer level,
 	   but it is probably not worthwhile to do so.  */
 	if (context == 1)

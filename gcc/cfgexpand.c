@@ -764,7 +764,7 @@ expand_used_vars_for_block (tree block, bool toplevel)
     expand_used_vars_for_block (t, false);
 
   /* Since we do not track exact variable lifetimes (which is not even
-     possible for varibles whose address escapes), we mirror the block
+     possible for variables whose address escapes), we mirror the block
      tree in the interference graph.  Here we cause all variables at this
      level, and all sublevels, to conflict.  Do make certain that a
      variable conflicts with itself.  */

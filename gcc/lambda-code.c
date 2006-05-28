@@ -623,7 +623,7 @@ compute_nest_using_fourier_motzkin (int size,
    4. Multiply the composed transformation matrix times the matrix form of the
    loop.
    5. Transform the newly created matrix (from step 4) back into a loop nest
-   using fourier motzkin elimination to figure out the bounds.  */
+   using Fourier-Motzkin elimination to figure out the bounds.  */
 
 static lambda_loopnest
 lambda_compute_auxillary_space (lambda_loopnest nest,
@@ -742,7 +742,7 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
   lambda_matrix_add_mc (B, 1, B1, -1, B1, size, invariants);
 
   /* Now compute the auxiliary space bounds by first inverting U, multiplying
-     it by A1, then performing fourier motzkin.  */
+     it by A1, then performing Fourier-Motzkin.  */
 
   invertedtrans = lambda_matrix_new (depth, depth);
 

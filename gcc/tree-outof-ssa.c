@@ -2214,7 +2214,7 @@ analyze_edges_for_bb (basic_block bb)
 	leader_match = leader;
 
 	/* The tree_* cfg manipulation routines use the PENDING_EDGE field
-	   for various PHI manipulations, so it gets cleared whhen calls are 
+	   for various PHI manipulations, so it gets cleared when calls are 
 	   made to make_forwarder_block(). So make sure the edge is clear, 
 	   and use the saved stmt list.  */
 	PENDING_STMT (leader) = NULL;

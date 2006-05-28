@@ -263,7 +263,7 @@ typedef struct immediate_use_iterator_d
 
 
 /* Use this iterator in combination with FOR_EACH_IMM_USE_STMT to 
-   get access to each occurence of ssavar on the stmt returned by
+   get access to each occurrence of ssavar on the stmt returned by
    that iterator..  for instance:
 
      FOR_EACH_IMM_USE_STMT (stmt, iter, var)

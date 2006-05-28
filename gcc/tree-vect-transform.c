@@ -3036,7 +3036,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
       bsi_insert_before (&cond_exp_bsi, cond_expr_stmt_list, BSI_SAME_STMT);
     }
 
-  /* CHECKME: we wouldn't need this if we calles update_ssa once
+  /* CHECKME: we wouldn't need this if we called update_ssa once
      for all loops.  */
   bitmap_zero (vect_vnames_to_rename);
 

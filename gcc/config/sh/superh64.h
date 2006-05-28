@@ -25,7 +25,7 @@ Boston, MA 02110-1301, USA.  */
 /* This header file is used when the vendor name is set to 'superh'.
    It configures the compiler for SH5 only and switches the default
    endianess to little.
-   This file is intended to overide sh.h, superh.h and sh64.h (which
+   This file is intended to override sh.h, superh.h and sh64.h (which
    should have been included in that order) */
 
 

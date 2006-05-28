@@ -28,7 +28,7 @@ Boston, MA 02110-1301, USA.  */
    defaults and provide options --defsym _start and --defsym _stack
    which are required by the SuperH configuration of GNU ld.
 
-   This file is intended to overide sh.h */
+   This file is intended to override sh.h.  */
 
 
 #ifndef _SUPERH_H

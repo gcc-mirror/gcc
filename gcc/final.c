@@ -380,7 +380,7 @@ init_insn_lengths (void)
 }
 
 /* Obtain the current length of an insn.  If branch shortening has been done,
-   get its actual length.  Otherwise, use FALLBACK_FN to calcualte the
+   get its actual length.  Otherwise, use FALLBACK_FN to calculate the
    length.  */
 static inline int
 get_attr_length_1 (rtx insn ATTRIBUTE_UNUSED,

@@ -429,7 +429,7 @@ extern const UQItype __popcount_tab[256];
 /* Defined for L_clz.  Exported here because some targets may want to use
    it for their own versions of the __clz builtins.  It contains the bit
    position of the first set bit for the numbers 0 - 255.  This avoids the
-   need for a seperate table for the __ctz builtins.  */
+   need for a separate table for the __ctz builtins.  */
 extern const UQItype __clz_tab[256];
 
 #include "longlong.h"
