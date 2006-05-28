@@ -49,6 +49,10 @@ typedef unsigned long gcc_uint64_t;
 #define TMP_MAX 16384
 #endif
 
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
+
 /*
 
 @deftypefn Replacement int mkstemps (char *@var{pattern}, int @var{suffix_len})
@@ -119,7 +123,7 @@ mkstemps (char *pattern, int suffix_len)
       v /= 62;
       XXXXXX[5] = letters[v % 62];
 
-      fd = open (pattern, O_RDWR|O_CREAT|O_EXCL, 0600);
+      fd = open (pattern, O_BINARY|O_RDWR|O_CREAT|O_EXCL, 0600);
       if (fd >= 0)
 	/* The file does not exist.  */
 	return fd;
