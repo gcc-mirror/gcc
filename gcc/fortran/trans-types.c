@@ -1721,7 +1721,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	     this code was bad, except that it would give incorrect results.
 
 	     Contained procedures could pass by value as these are never
-	     used without an explicit interface, and connot be passed as
+	     used without an explicit interface, and cannot be passed as
 	     actual parameters for a dummy procedure.  */
 	  if (arg->ts.type == BT_CHARACTER)
             nstr++;

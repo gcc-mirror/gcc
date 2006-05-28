@@ -329,7 +329,7 @@ build_fix_expr (stmtblock_t * pblock, tree arg, tree type,
 /* Round a real value using the specified rounding mode.
    We use a temporary integer of that same kind size as the result.
    Values larger than those that can be represented by this kind are
-   unchanged, as thay will not be accurate enough to represent the
+   unchanged, as they will not be accurate enough to represent the
    rounding.
     huge = HUGE (KIND (a))
     aint (a) = ((a > huge) || (a < -huge)) ? a : (real)(int)a

@@ -4946,7 +4946,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
     }
 
-  /* An external symbol may not have an intializer because it is taken to be
+  /* An external symbol may not have an initializer because it is taken to be
      a procedure.  */
   if (sym->attr.external && sym->value)
     {

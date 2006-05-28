@@ -1052,7 +1052,7 @@ gfc_check_ichar_iachar (gfc_expr * c)
       if (!ref)
 	{
           /* Check that the argument is length one.  Non-constant lengths
-	     can't be checked here, so assume thay are ok.  */
+	     can't be checked here, so assume they are ok.  */
 	  if (c->ts.cl && c->ts.cl->length)
 	    {
 	      /* If we already have a length for this expression then use it.  */

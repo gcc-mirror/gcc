@@ -84,7 +84,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    a diagonal matrix in the matrix formulation.
  
    Each segment is described by a chain of segment_info structures.  Each
-   segment_info structure describes the extents of a single varible within
+   segment_info structure describes the extents of a single variable within
    the segment.  This list is maintained in the order the elements are
    positioned withing the segment.  If two elements have the same starting
    offset the smaller will come first.  If they also have the same size their
