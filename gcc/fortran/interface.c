@@ -1798,7 +1798,7 @@ gfc_extend_assign (gfc_code * c, gfc_namespace * ns)
     }
 
   /* Replace the assignment with the call.  */
-  c->op = EXEC_CALL;
+  c->op = EXEC_ASSIGN_CALL;
   c->symtree = find_sym_in_symtree (sym);
   c->expr = NULL;
   c->expr2 = NULL;

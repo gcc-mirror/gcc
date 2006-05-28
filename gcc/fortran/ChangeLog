@@ -1,3 +1,62 @@
+2006-05-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25082
+	* resolve.c (resolve_code): Add error condition that the return
+	expression must be scalar.
+
+	PR fortran/27411
+	* matchexp.c (gfc_get_parentheses): New function.
+	(match_primary): Remove inline code and call above.
+	* gfortran.h: Provide prototype for gfc_get_parentheses.
+	* resolve.c (resolve_array_ref): Call the above, when start is a
+	derived type variable array reference.
+
+	PR fortran/27613
+	* primary.c (gfc_match_rvalue): Test if symbol represents a
+	direct recursive function reference.  Error if array valued,
+	go to function0 otherwise.
+
+	PR fortran/25746
+	* interface.c (gfc_extend_assign): Use new EXEC_ASSIGN_CALL.
+	* gfortran.h : Put EXEC_ASSIGN_CALL in enum.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): New function.
+	(gfc_trans_call): Call it.  Add new boolian argument to flag
+	need for dependency checking. Assert intent OUT and IN for arg1
+	and arg2.
+	(gfc_trans_forall_1): Use new code EXEC_ASSIGN_CALL.
+	trans-stmt.h : Modify prototype of gfc_trans_call.
+	trans.c (gfc_trans_code): Add call for EXEC_ASSIGN_CALL.
+	st.c (gfc_free_statement): Free actual for EXEC_ASSIGN_CALL.
+	* dependency.c (gfc_check_fncall_dependency): Don't check other
+	against itself.
+
+	PR fortran/27584
+	* check.c (gfc_check_associated): Replace NULL assert with an
+	error message, since it is possible to generate bad code that
+	has us fall through to here..
+
+	PR fortran/19015
+	* iresolve.c (maxloc, minloc): If DIM is not present, pass the
+	rank of ARRAY as the shape of the result.  Otherwise, pass the
+	shape of ARRAY, less the dimension DIM.
+	(maxval, minval): The same, when DIM is present, otherwise no
+	change.
+
+	PR fortran/27709
+	* resolve.c (find_array_spec): Add gfc_symbol, derived, and
+	use to track repeated component references.
+
+	PR fortran/27155
+	PR fortran/27449
+	* trans-intrinsic.c (gfc_conv_intrinsic_array_transfer): Use
+	se->string_length throughout and use memcpy to populate the
+	expression returned to the scalarizer.
+	(gfc_size_in_bytes): New function.
+
+	* trans-intrinsic.c (gfc_conv_associated): If pointer in first
+	arguments has zero array length of zero string length, return
+	false.
+
 2006-05-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Feng Wang  <fengwang@nudt.edu.cn>
 
@@ -129,7 +188,7 @@
 	but not here in 4.1 because the trees have diverged too much.
 	Manifestly correct, so applied anyway.
 
-	PR fortran/18803
+	PR fortran/18003
 	PR fortran/25669
 	PR fortran/26834
 	* trans_intrinsic.c (gfc_walk_intrinsic_bound): Set
