@@ -62,7 +62,7 @@ typedef char bool;
    (SJLJ or DWARF). We need a consistently named interface to import from
    a-except, so wrappers are defined here.
 
-   Besides, eventhough the compiler is never setup to use the GCC propagation
+   Besides, even though the compiler is never setup to use the GCC propagation
    circuitry, it still relies on exceptions internally and part of the sources
    to handle to exceptions are shared with the run-time library.  We need
    dummy definitions for the wrappers to satisfy the linker in this case.

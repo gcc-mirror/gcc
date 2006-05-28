@@ -227,7 +227,7 @@ void __gnat_unsetenv (char *name) {
      have been allocated using malloc. To avoid this memory leak another
      method can be used. It consists in forcing the reallocation of all the
      strings in the environ table using malloc on the first call on the
-     functions related to environment variable management. The disavantage
+     functions related to environment variable management. The disadvantage
      is that if a program makes a direct call to getenv the return string
      may be deallocated at some point. */
   /* Note that on AIX, unsetenv is not supported on 5.1 but it is on 5.3.

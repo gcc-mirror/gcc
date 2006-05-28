@@ -1801,7 +1801,7 @@ __gnat_init_float (void)
 #endif
 
   /* Similarly for sparc64. Achieved by masking bits in the Trap Enable Mask
-     field of the Floating-point Status Register (see the Sparc Architecture
+     field of the Floating-point Status Register (see the SPARC Architecture
      Manual Version 9, p 48).  */
 #if defined (sparc64)
 

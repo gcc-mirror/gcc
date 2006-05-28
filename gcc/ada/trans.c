@@ -1510,7 +1510,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      we must turn a condition into the corresponding exception even if there
      is no applicable Ada handler, and need at least one condition handler per
      possible call chain involving GNAT code.  OTOH, establishing the handler
-     has a cost so we want to mimize the number of subprograms into which this
+     has a cost so we want to minimize the number of subprograms into which this
      happens.  The foreign or exported condition is expected to satisfy all
      the constraints.  */
   if (TARGET_ABI_OPEN_VMS
@@ -4829,7 +4829,7 @@ gnat_gimplify_stmt (tree *stmt_p)
 /* The reason for this routine's existence is two-fold.
    First, with some debugging formats, notably MDEBUG on SGI
    IRIX, the linker will remove duplicate debugging information if two
-   clients have identical debugguing information.  With the normal scheme
+   clients have identical debugging information.  With the normal scheme
    of elaboration, this does not usually occur, since entities in with'ed
    packages are elaborated on demand, and if clients have different usage
    patterns, the normal case, then the order and selection of entities

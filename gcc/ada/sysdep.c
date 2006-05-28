@@ -187,7 +187,7 @@ __gnat_ttyname (int filedes)
     return NULL;
 }
 
-/* This function is needed to fix a bug under Win95/98. Under these plateforms
+/* This function is needed to fix a bug under Win95/98. Under these platforms
    doing :
                 ch1 = getch();
 		ch2 = fgetc (stdin);

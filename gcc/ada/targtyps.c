@@ -89,7 +89,7 @@ get_target_char_size (void)
 Pos
 get_target_wchar_t_size (void)
 {
-  /* We never want wide chacters less than "short" in Ada.  */
+  /* We never want wide characters less than "short" in Ada.  */
   return MAX (SHORT_TYPE_SIZE, WCHAR_TYPE_SIZE);
 }
 

@@ -134,7 +134,7 @@ gnat_to_gnu_type (Entity_Id gnat_entity)
    DEFINITION is nonzero if this call is intended for a definition.  This is
    used for separate compilation where it necessary to know whether an
    external declaration or a definition should be created if the GCC equivalent
-   was not created previously.  The value of 1 is normally used for a non-zero
+   was not created previously.  The value of 1 is normally used for a nonzero
    DEFINITION, but a value of 2 is used in special circumstances, defined in
    the code.  */
 
@@ -4719,7 +4719,7 @@ elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity,
   if (present_gnu_tree (gnat_expr))
     return get_gnu_tree (gnat_expr);
 
-  /* If we don't need a value and this is static or a discriment, we
+  /* If we don't need a value and this is static or a discriminant, we
      don't need to do anything.  */
   else if (!need_value
 	   && (Is_OK_Static_Expression (gnat_expr)
@@ -5254,7 +5254,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      this a bitfield and avoid making things wider.
 
      Doing this is first useful if the record is packed because we can then
-     place the field at a non-byte-aligned position and so achieve tigther
+     place the field at a non-byte-aligned position and so achieve tighter
      packing.
 
      This is in addition *required* if the field shares a byte with another
