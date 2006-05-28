@@ -1150,7 +1150,7 @@ gfc_trans_integer_select (gfc_code * code)
 		    internal representation of CASE(N).
 
 		 In the first and second case, we need to set a value for
-		 high.  In the thirth case, we don't because the GCC middle
+		 high.  In the third case, we don't because the GCC middle
 		 end represents a single case value by just letting high be
 		 a NULL_TREE.  We can't do that because we need to be able
 		 to represent unbounded cases.  */

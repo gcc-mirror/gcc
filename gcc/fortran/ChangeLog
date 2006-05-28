@@ -1,3 +1,8 @@
+2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* check.c, expr.c, resolve.c, trans-common.c,
+	trans-intrinsic.c, trans-stmt.c, trans-types.c: Fix comment typos.
+
 2006-05-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/19777
