@@ -50,6 +50,34 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __atomic_add(volatile _Atomic_word* __mem, int __val);
 
   static inline _Atomic_word
+  __exchange_and_add_multi(volatile _Atomic_word* __mem, int __val)
+  {
+#ifdef _GLIBCXX_ATOMIC_BUILTINS
+
+    return __sync_fetch_and_add(__mem, __val);
+
+#else
+
+    return __exchange_and_add(__mem, __val);
+
+#endif
+  }
+
+  static inline void
+  __atomic_add_multi(volatile _Atomic_word* __mem, int __val)
+  { 
+#ifdef _GLIBCXX_ATOMIC_BUILTINS
+
+    __sync_fetch_and_add(__mem, __val);
+
+#else
+
+    __atomic_add(__mem, __val);
+
+#endif
+  }
+
+  static inline _Atomic_word
   __exchange_and_add_single(volatile _Atomic_word* __mem, int __val)
   {
     _Atomic_word __result = *__mem;
@@ -68,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GTHREADS
 
     if (__gthread_active_p())
-      return __exchange_and_add(__mem, __val);
+      return __exchange_and_add_multi(__mem, __val);
     else
       return __exchange_and_add_single(__mem, __val);
 
@@ -86,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GTHREADS
 
     if (__gthread_active_p())
-      __atomic_add(__mem, __val);
+      __atomic_add_multi(__mem, __val);
     else
       __atomic_add_single(__mem, __val);
 

@@ -109856,6 +109856,15 @@ ABI_TWEAKS_SRCDIR=config/${abi_tweaks_dir}
 
 
 
+# Atomic builtins can be inlined in bits/atomicity.h.
+if test $atomicity_dir = cpu/generic/atomic_builtins ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_ATOMIC_BUILTINS 1
+_ACEOF
+
+fi
+
 # Determine cross-compile flags and AM_CONDITIONALs.
 #AC_SUBST(GLIBCXX_IS_NATIVE)
 #AM_CONDITIONAL(CANADIAN, test $CANADIAN = yes)

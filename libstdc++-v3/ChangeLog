@@ -1,3 +1,15 @@
+2006-05-29  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24692
+	* include/bits/atomicity.h (__exchange_and_add_multi,
+	__atomic_add_multi): New, depending on _GLIBCXX_ATOMIC_BUILTINS,
+	inline the atomic builtins.
+	(__exchange_and_add_dispatch, __atomic_add_dispatch): Adjust.
+	* configure.ac: Define _GLIBCXX_ATOMIC_BUILTINS when the atomic
+	builtins are available.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
 2006-05-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* configure.host: If the CPU provides atomic builtins select

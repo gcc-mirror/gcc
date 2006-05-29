@@ -318,6 +318,12 @@ AC_SUBST(CPU_DEFINES_SRCDIR)
 AC_SUBST(ABI_TWEAKS_SRCDIR)
 AC_SUBST(OS_INC_SRCDIR)
 
+# Atomic builtins can be inlined in bits/atomicity.h.
+if test $atomicity_dir = cpu/generic/atomic_builtins ; then
+  AC_DEFINE([_GLIBCXX_ATOMIC_BUILTINS], 1,
+            [Define if atomic builtins are provided for this platform.])
+fi
+
 # Determine cross-compile flags and AM_CONDITIONALs.
 #AC_SUBST(GLIBCXX_IS_NATIVE)
 #AM_CONDITIONAL(CANADIAN, test $CANADIAN = yes)
