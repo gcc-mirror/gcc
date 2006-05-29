@@ -47,3 +47,7 @@ ID of shared library to build
 mlong-calls
 Target Report Mask(LONG_CALLS)
 Avoid generating pc-relative calls; use indirection
+
+mfdpic
+Target Report Mask(FDPIC)
+Enable Function Descriptor PIC mode

@@ -1,3 +1,50 @@
+2005-05-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.opt (mfdpic): New option.
+	* config/bfin/t-bfin-elf (EXTRA_PARTS): Add crtbeginS.o and crtendS.o.
+	(EXTRA_MULTILIB_PARTS): Likewise.
+	(CRTSTUFF_T_CFLAGS, TARGET_LIBGCC2_CFLAGS): Use -fpic.
+	(MULTILIB_OPTIONS, MULTILIB_EXCEPTIONS): Build one extra -mfdpic
+	multilib.
+	* config/bfin/elf.h (STARTFILE_SPEC): Don't link in crt0.o if -shared.
+	(CRT_CALL_STATIC_FUNCTION): New.
+	* config/bfin/uclinux.h (STARTFILE_SPEC): Don't link in crt0.o if
+	-shared.
+	(CRT_CALL_STATIC_FUNCTION): New.
+	* config/bfin/bfin.c (legitimize_pic_address): Now static.  Handle
+	FD-PIC moves.
+	(n_pregs_to_save): PIC register doesn't need to be saved with FD-PIC.
+	(print_operand): Handle UNSPEC_MOVE_FDPIC and UNSPEC_FUNCDESC_GOT17M4.
+	(initialize_trampoline): Changed to handle FD-PIC code generation.
+	(expand_move): If TARGET_FDPIC, use emit_pic_move as needed.
+	(bfin_expand_call): Generate FD-PIC calls if TARGET_FDPIC.
+	(override_options): Disallow -mid-shared-library -mfdpic combination.
+	Can't do unaligned ops if FD-PIC.
+	Turn off flag_pic if trying to generate non-id-shared-library
+	non-fdpic code, since it's not supported.
+	(bfin_assemble_integer): New function.
+	(TARGET_ASM_INTEGER): Define.
+	* config/bfin/crti.s (__init, __fini): Save P3 on the stack if
+	__BFIN_FDPIC__.
+	* config/bfin/crtn.s: Restore them.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __BFIN_FDPIC__
+	if TARGET_FDPIC.
+	(DRIVER_SELF_SPECS, SUBTARGET_DRIVER_SELF_SPECS,
+	LINK_GCC_C_SEQUENCE_SPEC, ASM_SPEC, LINK_SPEC): New macros.
+	(FDPIC_FPTR_REGNO, FDPIC_REGNO, OUR_FDPIC_REG): New macros.
+	(TRAMPOLINE_SIZE, TRAMPOLINE_TEMPLATE): Adjust for FD-PIC.
+	(CONDITIONAL_REGISTER_USAGE): If TARGET_FDPIC, FDPIC_REGNO is
+	call-used.
+	(enum reg_class, REG_CLASS_CONTENTS, REG_CLASS_NAMES): Add
+	FDPIC_REGS and FDPIC_FPTR_REGS.
+	(REG_CLASS_FROM_LETTER): Use 'Z' and 'Y' for them.
+	* config/bfin/bfin.md (UNSPEC_MOVE_FDPIC, UNSPEC_FUNCDESC_GOT17M4,
+	UNSPEC_VOLATILE_LOAD_FUNCDESC): New constants.
+	(load_funcdescsi): New pattern.
+	(call_symbol_fdpic, sibcall_symbol_fdpic, call_value_symbol_fdpic,
+	sibcall_value_symbol_fdpic, call_insn_fdpic, sibcall_insn_fdpic,
+	call_value_insn_fdpic, sibcall_value_insn_fdpic): New patterns.
+
 2006-05-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcse.c, rtlanal.c: Remove obsolete comments associated with

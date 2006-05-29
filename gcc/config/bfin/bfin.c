@@ -129,7 +129,7 @@ static e_funkind funkind (tree funtype)
    necessary.  PICREG is the register holding the pointer to the PIC offset
    table.  */
 
-rtx
+static rtx
 legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
 {
   rtx addr = orig;
@@ -141,26 +141,30 @@ legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
 	reg = new = orig;
       else
 	{
+	  int unspec;
+	  rtx tmp;
+
+	  if (TARGET_ID_SHARED_LIBRARY)
+	    unspec = UNSPEC_MOVE_PIC;
+	  else if (GET_CODE (addr) == SYMBOL_REF
+		   && SYMBOL_REF_FUNCTION_P (addr))
+	    {
+	      unspec = UNSPEC_FUNCDESC_GOT17M4;
+	    }
+	  else
+	    {
+	      unspec = UNSPEC_MOVE_FDPIC;
+	    }
+
 	  if (reg == 0)
 	    {
 	      gcc_assert (!no_new_pseudos);
 	      reg = gen_reg_rtx (Pmode);
 	    }
 
-	  if (flag_pic == 2)
-	    {
-	      emit_insn (gen_movsi_high_pic (reg, addr));
-	      emit_insn (gen_movsi_low_pic (reg, reg, addr));
-	      emit_insn (gen_addsi3 (reg, reg, picreg));
-	      new = gen_const_mem (Pmode, reg);
-	    }
-	  else
-	    {
-	      rtx tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
-					UNSPEC_MOVE_PIC);
-	      new = gen_const_mem (Pmode,
-				   gen_rtx_PLUS (Pmode, picreg, tmp));
-	    }
+	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), unspec);
+	  new = gen_const_mem (Pmode, gen_rtx_PLUS (Pmode, picreg, tmp));
+
 	  emit_move_insn (reg, new);
 	}
       if (picreg == pic_offset_table_rtx)
@@ -254,7 +258,8 @@ n_pregs_to_save (bool is_inthandler)
 
   for (i = REG_P0; i <= REG_P5; i++)
     if ((regs_ever_live[i] && (is_inthandler || ! call_used_regs[i]))
-	|| (i == PIC_OFFSET_TABLE_REGNUM
+	|| (!TARGET_FDPIC
+	    && i == PIC_OFFSET_TABLE_REGNUM
 	    && (current_function_uses_pic_offset_table
 		|| (TARGET_ID_SHARED_LIBRARY && ! current_function_is_leaf))))
       return REG_P5 - i + 1;
@@ -1343,6 +1348,16 @@ print_operand (FILE *file, rtx x, char code)
 	      fprintf (file, "@GOT");
 	      break;
 
+	    case UNSPEC_MOVE_FDPIC:
+	      output_addr_const (file, XVECEXP (x, 0, 0));
+	      fprintf (file, "@GOT17M4");
+	      break;
+
+	    case UNSPEC_FUNCDESC_GOT17M4:
+	      output_addr_const (file, XVECEXP (x, 0, 0));
+	      fprintf (file, "@FUNCDESC_GOT17M4");
+	      break;
+
 	    case UNSPEC_LIBRARY_OFFSET:
 	      fprintf (file, "_current_shared_library_p5_offset_");
 	      break;
@@ -1576,17 +1591,26 @@ initialize_trampoline (tramp, fnaddr, cxt)
   rtx t1 = copy_to_reg (fnaddr);
   rtx t2 = copy_to_reg (cxt);
   rtx addr;
+  int i = 0;
 
-  addr = memory_address (Pmode, plus_constant (tramp, 2));
+  if (TARGET_FDPIC)
+    {
+      rtx a = memory_address (Pmode, plus_constant (tramp, 8));
+      addr = memory_address (Pmode, tramp);
+      emit_move_insn (gen_rtx_MEM (SImode, addr), a);
+      i = 8;
+    }
+
+  addr = memory_address (Pmode, plus_constant (tramp, i + 2));
   emit_move_insn (gen_rtx_MEM (HImode, addr), gen_lowpart (HImode, t1));
   emit_insn (gen_ashrsi3 (t1, t1, GEN_INT (16)));
-  addr = memory_address (Pmode, plus_constant (tramp, 6));
+  addr = memory_address (Pmode, plus_constant (tramp, i + 6));
   emit_move_insn (gen_rtx_MEM (HImode, addr), gen_lowpart (HImode, t1));
 
-  addr = memory_address (Pmode, plus_constant (tramp, 10));
+  addr = memory_address (Pmode, plus_constant (tramp, i + 10));
   emit_move_insn (gen_rtx_MEM (HImode, addr), gen_lowpart (HImode, t2));
   emit_insn (gen_ashrsi3 (t2, t2, GEN_INT (16)));
-  addr = memory_address (Pmode, plus_constant (tramp, 14));
+  addr = memory_address (Pmode, plus_constant (tramp, i + 14));
   emit_move_insn (gen_rtx_MEM (HImode, addr), gen_lowpart (HImode, t2));
 }
 
@@ -1597,11 +1621,13 @@ emit_pic_move (rtx *operands, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx temp = reload_in_progress ? operands[0] : gen_reg_rtx (Pmode);
 
+  gcc_assert (!TARGET_FDPIC || !(reload_in_progress || reload_completed));
   if (GET_CODE (operands[0]) == MEM && SYMBOLIC_CONST (operands[1]))
     operands[1] = force_reg (SImode, operands[1]);
   else
     operands[1] = legitimize_pic_address (operands[1], temp,
-					  pic_offset_table_rtx);
+					  TARGET_FDPIC ? OUR_FDPIC_REG
+					  : pic_offset_table_rtx);
 }
 
 /* Expand a move operation in mode MODE.  The operands are in OPERANDS.  */
@@ -1609,9 +1635,10 @@ emit_pic_move (rtx *operands, enum machine_mode mode ATTRIBUTE_UNUSED)
 void
 expand_move (rtx *operands, enum machine_mode mode)
 {
-  if (flag_pic && SYMBOLIC_CONST (operands[1]))
+  rtx op = operands[1];
+  if ((TARGET_ID_SHARED_LIBRARY || TARGET_FDPIC)
+      && SYMBOLIC_CONST (op))
     emit_pic_move (operands, mode);
-
   /* Don't generate memory->memory or constant->memory moves, go through a
      register */
   else if ((reload_in_progress | reload_completed) == 0
@@ -1674,23 +1701,46 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
 {
   rtx use = NULL, call;
   rtx callee = XEXP (fnaddr, 0);
-  rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (sibcall ? 3 : 2));
+  int nelts = 2 + !!sibcall;
+  rtx pat;
+  rtx picreg = get_hard_reg_initial_val (SImode, FDPIC_REGNO);
+  int n;
 
   /* In an untyped call, we can get NULL for operand 2.  */
   if (cookie == NULL_RTX)
     cookie = const0_rtx;
 
   /* Static functions and indirect calls don't need the pic register.  */
-  if (flag_pic
+  if (!TARGET_FDPIC && flag_pic
       && GET_CODE (callee) == SYMBOL_REF
       && !SYMBOL_REF_LOCAL_P (callee))
     use_reg (&use, pic_offset_table_rtx);
 
-  if ((!register_no_elim_operand (callee, Pmode)
-       && GET_CODE (callee) != SYMBOL_REF)
-      || (GET_CODE (callee) == SYMBOL_REF
-	  && (flag_pic
-	      || bfin_longcall_p (callee, INTVAL (cookie)))))
+  if (TARGET_FDPIC)
+    {
+      if (GET_CODE (callee) != SYMBOL_REF
+	  || bfin_longcall_p (callee, INTVAL (cookie)))
+	{
+	  rtx addr = callee;
+	  if (! address_operand (addr, Pmode))
+	    addr = force_reg (Pmode, addr);
+
+	  fnaddr = gen_reg_rtx (SImode);
+	  emit_insn (gen_load_funcdescsi (fnaddr, addr));
+	  fnaddr = gen_rtx_MEM (Pmode, fnaddr);
+
+	  picreg = gen_reg_rtx (SImode);
+	  emit_insn (gen_load_funcdescsi (picreg,
+					  plus_constant (addr, 4)));
+	}
+
+      nelts++;
+    }
+  else if ((!register_no_elim_operand (callee, Pmode)
+	    && GET_CODE (callee) != SYMBOL_REF)
+	   || (GET_CODE (callee) == SYMBOL_REF
+	       && (flag_pic
+		   || bfin_longcall_p (callee, INTVAL (cookie)))))
     {
       callee = copy_to_mode_reg (Pmode, callee);
       fnaddr = gen_rtx_MEM (Pmode, callee);
@@ -1700,10 +1750,14 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
   if (retval)
     call = gen_rtx_SET (VOIDmode, retval, call);
 
-  XVECEXP (pat, 0, 0) = call;
-  XVECEXP (pat, 0, 1) = gen_rtx_USE (VOIDmode, cookie);
+  pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nelts));
+  n = 0;
+  XVECEXP (pat, 0, n++) = call;
+  if (TARGET_FDPIC)
+    XVECEXP (pat, 0, n++) = gen_rtx_USE (VOIDmode, picreg);
+  XVECEXP (pat, 0, n++) = gen_rtx_USE (VOIDmode, cookie);
   if (sibcall)
-    XVECEXP (pat, 0, 2) = gen_rtx_RETURN (VOIDmode);
+    XVECEXP (pat, 0, n++) = gen_rtx_RETURN (VOIDmode);
   call = emit_call_insn (pat);
   if (use)
     CALL_INSN_FUNCTION_USAGE (call) = use;
@@ -1896,9 +1950,22 @@ override_options (void)
   if (bfin_lib_id_given && ! TARGET_ID_SHARED_LIBRARY)
     error ("-mshared-library-id= specified without -mid-shared-library");
 
-  if (TARGET_ID_SHARED_LIBRARY)
-    /* ??? Provide a way to use a bigger GOT.  */
+  if (TARGET_ID_SHARED_LIBRARY && flag_pic == 0)
     flag_pic = 1;
+
+  if (TARGET_ID_SHARED_LIBRARY && TARGET_FDPIC)
+      error ("ID shared libraries and FD-PIC mode can't be used together.");
+
+  /* There is no single unaligned SI op for PIC code.  Sometimes we
+     need to use ".4byte" and sometimes we need to use ".picptr".
+     See bfin_assemble_integer for details.  */
+  if (TARGET_FDPIC)
+    targetm.asm_out.unaligned_op.si = 0;
+
+  /* Silently turn off flag_pic if not doing FDPIC or ID shared libraries,
+     since we don't support it and it'll just break.  */
+  if (flag_pic && !TARGET_FDPIC && !TARGET_ID_SHARED_LIBRARY)
+    flag_pic = 0;
 
   flag_schedule_insns = 0;
 }
@@ -2895,6 +2962,34 @@ const struct attribute_spec bfin_attribute_table[] =
   { NULL, 0, 0, false, false, false, NULL }
 };
 
+/* Implementation of TARGET_ASM_INTEGER.  When using FD-PIC, we need to
+   tell the assembler to generate pointers to function descriptors in
+   some cases.  */
+
+static bool
+bfin_assemble_integer (rtx value, unsigned int size, int aligned_p)
+{
+  if (TARGET_FDPIC && size == UNITS_PER_WORD)
+    {
+      if (GET_CODE (value) == SYMBOL_REF
+	  && SYMBOL_REF_FUNCTION_P (value))
+	{
+	  fputs ("\t.picptr\tfuncdesc(", asm_out_file);
+	  output_addr_const (asm_out_file, value);
+	  fputs (")\n", asm_out_file);
+	  return true;
+	}
+      if (!aligned_p)
+	{
+	  /* We've set the unaligned SI op to NULL, so we always have to
+	     handle the unaligned case here.  */
+	  assemble_integer_with_op ("\t.4byte\t", value);
+	  return true;
+	}
+    }
+  return default_assemble_integer (value, size, aligned_p);
+}
+
 /* Output the assembler code for a thunk function.  THUNK_DECL is the
    declaration for the thunk function itself, FUNCTION is the decl for
    the target function.  DELTA is an immediate constant offset to be
@@ -3499,6 +3594,9 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_ASM_INTERNAL_LABEL
 #define TARGET_ASM_INTERNAL_LABEL bfin_internal_label
+
+#undef  TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER bfin_assemble_integer
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG bfin_reorg

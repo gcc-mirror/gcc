@@ -40,6 +40,8 @@ Boston, MA 02110-1301, USA.  */
 __init:
 #if defined __ID_SHARED_LIB__
 	[--SP] = P5;
+#elif defined __BFIN_FDPIC__
+	[--SP] = P3; 
 #endif
 	LINK 12;
 #if defined __ID_SHARED_LIB__
@@ -51,6 +53,8 @@ __init:
 __fini:
 #if defined __ID_SHARED_LIB__
 	[--SP] = P5; 
+#elif defined __BFIN_FDPIC__
+	[--SP] = P3; 
 #endif
 	LINK 12; 
 #if defined __ID_SHARED_LIB__
