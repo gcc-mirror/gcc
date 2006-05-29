@@ -152,7 +152,7 @@ by type.  Explanations are in the following sections.
 @gccoptlist{
 -fno-automatic -ff2c -fno-underscoring  -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
--fpackderived  -frepack-arrays  -fshort-enums}
+-fpack-derived  -frepack-arrays  -fshort-enums}
 @end table
 
 @menu
@@ -823,8 +823,8 @@ Future versions of @command{gfortran} may improve this behavior.
 
 The default value for @var{n} is 32768.
 
-@cindex -fpackderived
-@item -fpackderived
+@cindex -fpack-derived
+@item -fpack-derived
 @cindex Structure packing
 This option tells gfortran to pack derived type members as closely as
 possible.  Code compiled with this option is likely to be incompatible
