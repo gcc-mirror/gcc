@@ -1,3 +1,11 @@
+2006-05-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* java/lang/natThread.cc (countStackFrames): Do not throw
+	UnsupportedOperationException.
+	(resume): Likewise.
+	(stop): Likewise.
+	(suspend): Likewise.
+
 2006-05-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
         * configure.ac: Add sys/rw_lock.h to AC_CHECK_HEADERS.
