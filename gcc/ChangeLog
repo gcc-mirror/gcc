@@ -5,6 +5,9 @@
 
 	* config/bfin/bfin.h (PARM_BOUNDRY, STACK_BOUNDRY): Remove.
 
+	* tree-flow.h: Remove the prototype for add_type_alias.
+	* tree-ssa-alias.c (add_type_alias): Remove.
+
 2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgcleanup.c, cfgexpand.c, cgraphunit.c, config/arm/arm.c,
