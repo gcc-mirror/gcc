@@ -3,6 +3,8 @@
 	* gcse.c, rtlanal.c: Remove obsolete comments associated with
 	loop.c.
 
+	* config/bfin/bfin.h (PARM_BOUNDRY, STACK_BOUNDRY): Remove.
+
 2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgcleanup.c, cfgexpand.c, cgraphunit.c, config/arm/arm.c,
