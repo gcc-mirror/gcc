@@ -2767,7 +2767,7 @@
 	* doc/invoke.texi (C++ Dialect Options): Rewrite
 	-fvisibility-inlines-hidden documentation to describe something
 	entirely different, although in practise compatible.
-	(Code Gen Options): Warn about system headers in -fvisibiltity=
+	(Code Gen Options): Warn about system headers in -fvisibility=
 	documentation.
 
 	* doc/extend.texi (Other Builtins): Document that
