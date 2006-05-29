@@ -413,7 +413,6 @@ static try
 check_format (void)
 {
   const char *posint_required	  = _("Positive width required");
-  const char *period_required	  = _("Period required");
   const char *nonneg_required	  = _("Nonnegative width required");
   const char *unexpected_element  = _("Unexpected element");
   const char *unexpected_end	  = _("Unexpected end of format string");
@@ -610,8 +609,13 @@ data_desc:
       u = format_lex ();
       if (u != FMT_PERIOD)
 	{
-	  error = period_required;
-	  goto syntax;
+	  /* Warn if -std=legacy, otherwise error.  */
+	  if (gfc_option.warn_std != 0)
+	    gfc_error_now ("Period required in format specifier at %C");
+	  else
+	    gfc_warning ("Period required in format specifier at %C");
+	  saved_token = u;
+	  break;
 	}
 
       u = format_lex ();
@@ -653,8 +657,13 @@ data_desc:
       t = format_lex ();
       if (t != FMT_PERIOD)
 	{
-	  error = period_required;
-	  goto syntax;
+	  /* Warn if -std=legacy, otherwise error.  */
+          if (gfc_option.warn_std != 0)
+	    gfc_error_now ("Period required in format specifier at %C");
+	  else
+	    gfc_warning ("Period required in format specifier at %C");
+	  saved_token = t;
+	  break;
 	}
 
       t = format_lex ();
