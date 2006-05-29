@@ -1,3 +1,9 @@
+2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27634
+	* io/format.c (parse_format_list): Allow missing period in format only
+	if -std=legacy.
+
 2006-05-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* intrinsics/string_intrinsics.c (compare_string):
