@@ -1,3 +1,13 @@
+2006-05-29  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 26242
+	* doc/passes.texi: Add documentation for pass_vrp, pass_ipa_pta,
+	pass_fre, pass_store_ccp, pass_copy_prop,
+	pass_store_copy_prop, pass_merge_phi, pass_nrv,
+	pass_return_slot, pass_object_size, pass_lim,
+	pass_linear_transform, pass_empty_loop, pass_complete_unroll,
+	pass_loop_prefetch and pass_stdarg.
+
 2005-05-29  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.opt (mfdpic): New option.
