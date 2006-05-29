@@ -1,3 +1,8 @@
+2006-05-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/24964
+	* gcc.target/i386/387-10.c: New test case.
+
 2006-05-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* intrinsics/string_intrinsics.c (compare_string):

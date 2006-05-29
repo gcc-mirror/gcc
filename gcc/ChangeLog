@@ -1,3 +1,11 @@
+2006-05-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/24964
+	* simplify-rtx.c (simplify_binary_operation_1): Add function comment.
+	<MULT>: Minor clean-up.  Don't convert x*-1.0 into -x if we honor
+	signaling NaNs.  Optimize -x*-x as x*x for all float modes, and
+	abs(x)*abs(x) as x*x for scalar floating point modes.
+
 2006-05-29  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR middle-end/27745
