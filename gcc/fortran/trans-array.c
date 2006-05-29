@@ -1783,7 +1783,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n)
   cond = fold_build2 (GT_EXPR, boolean_type_node, index, tmp);
   fault = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, fault, cond);
 
-  gfc_trans_runtime_check (fault, gfc_strconst_fault, &se->pre);
+  gfc_trans_runtime_check (fault, gfc_msg_fault, &se->pre);
 
   return index;
 }
@@ -1948,7 +1948,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
       gfc_conv_expr_type (&indexse, ar->start[n], gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &indexse.pre);
 
-      if (flag_bounds_check && ar->as->type != AS_ASSUMED_SIZE)
+      if (flag_bounds_check &&
+	  (ar->as->type != AS_ASSUMED_SIZE  || n < ar->dimen - 1))
 	{
 	  /* Check array bounds.  */
 	  tree cond;
@@ -1978,7 +1979,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
     }
 
   if (flag_bounds_check)
-    gfc_trans_runtime_check (fault, gfc_strconst_fault, &se->pre);
+    gfc_trans_runtime_check (fault, gfc_msg_fault, &se->pre);
 
   tmp = gfc_conv_array_offset (se->expr);
   if (!integer_zerop (tmp))
@@ -2519,7 +2520,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		size[n] = gfc_evaluate_now (tmp, &block);
 	    }
 	}
-      gfc_trans_runtime_check (fault, gfc_strconst_bounds, &block);
+      gfc_trans_runtime_check (fault, gfc_msg_bounds, &block);
 
       tmp = gfc_finish_block (&block);
       gfc_add_expr_to_block (&loop->pre, tmp);
@@ -3714,7 +3715,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
               stride2 = build2 (MINUS_EXPR, gfc_array_index_type,
 			       dubound, dlbound);
               tmp = fold_build2 (NE_EXPR, gfc_array_index_type, tmp, stride2);
-	      gfc_trans_runtime_check (tmp, gfc_strconst_bounds, &block);
+	      gfc_trans_runtime_check (tmp, gfc_msg_bounds, &block);
 	    }
 	}
       else

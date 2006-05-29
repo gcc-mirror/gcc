@@ -1,5 +1,11 @@
 2006-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/19777
+	* trans-array.c (gfc_conv_array_ref): Perform out-of-bounds
+	checking for assumed-size arrrays for all but the last dimension.
+
+2006-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	* invoke.texi: Change -fpackderived into -fpack-derived.
 
 2006-05-29  Kazu Hirata  <kazu@codesourcery.com>
