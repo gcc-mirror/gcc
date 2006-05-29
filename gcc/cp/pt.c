@@ -3620,7 +3620,7 @@ convert_nontype_argument (tree type, tree expr)
       if (!real_lvalue_p (expr))
 	{
 	  error ("%qE is not a valid template argument for type %qT "
-		 "because it is not a lvalue", expr, type);
+		 "because it is not an lvalue", expr, type);
 	  return NULL_TREE;
 	}
 
