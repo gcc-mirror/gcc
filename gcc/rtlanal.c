@@ -3286,7 +3286,7 @@ rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED)
       total = COSTS_N_INSNS (7);
       break;
     case USE:
-      /* Used in loop.c and combine.c as a marker.  */
+      /* Used in combine.c as a marker.  */
       total = 0;
       break;
     default:

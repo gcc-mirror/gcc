@@ -1,3 +1,8 @@
+2006-05-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcse.c, rtlanal.c: Remove obsolete comments associated with
+	loop.c.
+
 2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgcleanup.c, cfgexpand.c, cgraphunit.c, config/arm/arm.c,

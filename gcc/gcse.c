@@ -4576,9 +4576,6 @@ one_pre_gcse_pass (int pass)
    LABEL_NUSES count is incremented.  We have to add REG_LABEL notes,
    because the following loop optimization pass requires them.  */
 
-/* ??? This is very similar to the loop.c add_label_notes function.  We
-   could probably share code here.  */
-
 /* ??? If there was a jump optimization pass after gcse and before loop,
    then we would not need to do this here, because jump would add the
    necessary REG_LABEL notes.  */
