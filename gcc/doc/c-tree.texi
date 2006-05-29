@@ -1908,6 +1908,18 @@ This macro returns the attributes on the type @var{type}.
 @tindex TARGET_EXPR
 @tindex AGGR_INIT_EXPR
 @tindex VA_ARG_EXPR
+@tindex OMP_PARALLEL
+@tindex OMP_FOR
+@tindex OMP_SECTIONS
+@tindex OMP_SINGLE
+@tindex OMP_SECTION
+@tindex OMP_MASTER
+@tindex OMP_ORDERED
+@tindex OMP_CRITICAL
+@tindex OMP_RETURN
+@tindex OMP_CONTINUE
+@tindex OMP_ATOMIC
+@tindex OMP_CLAUSE
 
 The internal representation for expressions is for the most part quite
 straightforward.  However, there are a few facts that one must bear in
@@ -1944,6 +1956,9 @@ TREE_OPERAND (expr, 0)
 @end smallexample
 @noindent
 As this example indicates, the operands are zero-indexed.
+
+All the expressions starting with @code{OMP_} represent directives and
+clauses used by the OpenMP API @w{@uref{http://www.openmp.org/}}.
 
 The table below begins with constants, moves on to unary expressions,
 then proceeds to binary expressions, and concludes with various other
@@ -2548,5 +2563,168 @@ This node is used to implement support for the C/C++ variable argument-list
 mechanism.  It represents expressions like @code{va_arg (ap, type)}.
 Its @code{TREE_TYPE} yields the tree representation for @code{type} and
 its sole argument yields the representation for @code{ap}.
+
+@item OMP_PARALLEL
+
+Represents @code{#pragma omp parallel [clause1 ... clauseN]}. It
+has four operands:
+
+Operand @code{OMP_PARALLEL_BODY} is valid while in GENERIC and
+High GIMPLE forms.  It contains the body of code to be executed
+by all the threads.  During GIMPLE lowering, this operand becomes
+@code{NULL} and the body is emitted linearly after
+@code{OMP_PARALLEL}.
+
+Operand @code{OMP_PARALLEL_CLAUSES} is the list of clauses
+associated with the directive.
+
+Operand @code{OMP_PARALLEL_FN} is created by
+@code{pass_lower_omp}, it contains the @code{FUNCTION_DECL}
+for the function that will contain the body of the parallel
+region.
+
+Operand @code{OMP_PARALLEL_DATA_ARG} is also created by
+@code{pass_lower_omp}. If there are shared variables to be
+communicated to the children threads, this operand will contain
+the @code{VAR_DECL} that contains all the shared values and
+variables.
+
+@item OMP_FOR
+
+Represents @code{#pragma omp for [clause1 ... clauseN]}.  It
+has 5 operands:
+
+Operand @code{OMP_FOR_BODY} contains the loop body.
+
+Operand @code{OMP_FOR_CLAUSES} is the list of clauses
+associated with the directive.
+
+Operand @code{OMP_FOR_INIT} is the loop initialization code of
+the form @code{VAR = N1}.
+
+Operand @code{OMP_FOR_COND} is the loop conditional expression
+of the form @code{VAR @{<,>,<=,>=@} N2}.
+
+Operand @code{OMP_FOR_INCR} is the loop index increment of the
+form @code{VAR @{+=,-=@} INCR}.
+
+Operand @code{OMP_FOR_PRE_BODY} contains side-effect code from
+operands @code{OMP_FOR_INIT}, @code{OMP_FOR_COND} and
+@code{OMP_FOR_INC}.  These side-effects are part of the
+@code{OMP_FOR} block but must be evaluated before the start of
+loop body.
+
+The loop index variable @code{VAR} must be a signed integer variable,
+which is implicitly private to each thread.  Bounds
+@code{N1} and @code{N2} and the increment expression
+@code{INCR} are required to be loop invariant integer
+expressions that are evaluated without any synchronization. The
+evaluation order, frequency of evaluation and side-effects are
+unspecified by the standard.
+
+@item OMP_SECTIONS
+
+Represents @code{#pragma omp sections [clause1 ... clauseN]}.
+
+Operand @code{OMP_SECTIONS_BODY} contains the sections body,
+which in turn contains a set of @code{OMP_SECTION} nodes for
+each of the concurrent sections delimited by @code{#pragma omp
+section}.
+
+Operand @code{OMP_SECTIONS_CLAUSES} is the list of clauses
+associated with the directive.
+
+@item OMP_SECTION
+
+Section delimiter for @code{OMP_SECTIONS}.
+
+@item OMP_SINGLE
+
+Represents @code{#pragma omp single}.
+
+Operand @code{OMP_SINGLE_BODY} contains the body of code to be
+executed by a single thread.
+
+Operand @code{OMP_SINGLE_CLAUSES} is the list of clauses
+associated with the directive.
+
+@item OMP_MASTER
+
+Represents @code{#pragma omp master}.
+
+Operand @code{OMP_MASTER_BODY} contains the body of code to be
+executed by the master thread.
+
+@item OMP_ORDERED
+
+Represents @code{#pragma omp ordered}.
+
+Operand @code{OMP_ORDERED_BODY} contains the body of code to be
+executed in the sequential order dictated by the loop index
+variable.
+
+@item OMP_CRITICAL
+
+Represents @code{#pragma omp critical [name]}.
+
+Operand @code{OMP_CRITICAL_BODY} is the critical section.
+
+Operand @code{OMP_CRITICAL_NAME} is an optional identifier to
+label the critical section.
+
+@item OMP_RETURN
+
+This does not represent any OpenMP directive, it is an artificial
+marker to indicate the end of the body of an OpenMP. It is used
+by the flow graph (@code{tree-cfg.c}) and OpenMP region
+building code (@code{omp-low.c}).
+
+@item OMP_CONTINUE
+
+Similarly, this instruction does not represent an OpenMP
+directive, it is used by @code{OMP_FOR} and
+@code{OMP_SECTIONS} to mark the place where the code needs to
+loop to the next iteration (in the case of @code{OMP_FOR}) or
+the next section (in the case of @code{OMP_SECTIONS}).
+
+In some cases, @code{OMP_CONTINUE} is placed right before
+@code{OMP_RETURN}.  But if there are cleanups that need to
+occur right after the looping body, it will be emitted between
+@code{OMP_CONTINUE} and @code{OMP_RETURN}.
+
+@item OMP_ATOMIC
+
+Represents @code{#pragma omp atomic}.
+
+Operand 0 is the address at which the atomic operation is to be
+performed.
+
+Operand 1 is the expression to evaluate.  The gimplifier tries
+three alternative code generation strategies.  Whenever possible,
+an atomic update built-in is used.  If that fails, a
+compare-and-swap loop is attempted.  If that also fails, a
+regular critical section around the expression is used.
+
+@item OMP_CLAUSE
+
+Represents clauses associated with one of the @code{OMP_} directives.
+Clauses are represented by separate sub-codes defined in
+@file{tree.h}.  Clauses codes can be one of:
+@code{OMP_CLAUSE_PRIVATE}, @code{OMP_CLAUSE_SHARED},
+@code{OMP_CLAUSE_FIRSTPRIVATE},
+@code{OMP_CLAUSE_LASTPRIVATE}, @code{OMP_CLAUSE_COPYIN},
+@code{OMP_CLAUSE_COPYPRIVATE}, @code{OMP_CLAUSE_IF},
+@code{OMP_CLAUSE_NUM_THREADS}, @code{OMP_CLAUSE_SCHEDULE},
+@code{OMP_CLAUSE_NOWAIT}, @code{OMP_CLAUSE_ORDERED},
+@code{OMP_CLAUSE_DEFAULT}, and @code{OMP_CLAUSE_REDUCTION}.  Each code
+represents the corresponding OpenMP clause.
+
+Clauses associated with the same directive are chained together
+via @code{OMP_CLAUSE_CHAIN}. Those clauses that accept a list
+of variables are restricted to exactly one, accessed with
+@code{OMP_CLAUSE_VAR}.  Therefore, multiple variables under the
+same clause @code{C} need to be represented as multiple @code{C} clauses
+chained together.  This facilitates adding new clauses during
+compilation.
 
 @end table
