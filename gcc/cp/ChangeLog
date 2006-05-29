@@ -1,5 +1,8 @@
 2006-05-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27447
+	* decl2.c (grok_method_quals): Skip invalid functions and class types.
+
 	PR c++/27716
 	* typeck.c (build_modify_expr): Test arguments for error_operand_p.
 

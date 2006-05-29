@@ -1,5 +1,8 @@
 2006-05-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27447
+	* g++.dg/other/ptrmem7.C: New test.
+
 	PR c++/27716
 	* g++.dg/other/assign1.C: New test.
 
