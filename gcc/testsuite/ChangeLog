@@ -1,3 +1,8 @@
+2006-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24459
+	* gfortran.dg/namelist_24.f90: New test.
+
 2005-05-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27470
