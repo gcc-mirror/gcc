@@ -1,3 +1,7 @@
+2006-05-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* varasm.c (globalize_decl): Fix indentation.
+
 2006-05-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 26242
