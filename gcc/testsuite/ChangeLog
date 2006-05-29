@@ -1,3 +1,9 @@
+2006-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/19777
+	* gfortran.dg/bounds_check_2.f: Add new check for multidimensional
+	arrays.
+
 2006-05-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27713
