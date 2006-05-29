@@ -1,5 +1,10 @@
 2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/27757
+	* io/unix.c (fd_seek): Set active to zero.
+
+2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/27634
 	* io/format.c (parse_format_list): Allow missing period in format only
 	if -std=legacy.
