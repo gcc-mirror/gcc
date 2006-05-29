@@ -607,7 +607,7 @@ this is also missing, the default is @file{/tmp}.
 @node GFORTRAN_UNBUFFERED_ALL
 @section @env{GFORTRAN_UNBUFFERED_ALL}---Don't buffer output
 
-This environment variable controls wether all output is unbuffered.
+This environment variable controls whether all output is unbuffered.
 If the first letter is @samp{y}, @samp{Y} or @samp{1}, all output is
 unbuffered. This will slow down large writes.  If the first letter is
 @samp{n}, @samp{N}  or @samp{0}, output is buffered.  This is the
@@ -743,6 +743,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 * Extensions to namelist::
 * X format descriptor::
 * Commas in FORMAT specifications::
+* Missing period in FORMAT specifications::
 * I/O item lists::
 * Hexadecimal constants::
 * Real array indices::
@@ -857,6 +858,15 @@ PROGRAM test_print
 END PROGRAM test_print
 @end smallexample
 
+Expanded namelist reads are permitted.  This causes an error if -std=f95
+is used.  In the following example, the first element of the array will be
+given the value 0.00 and succeeding elements will be 1.00 and 2.00.
+@smallexample
+&MYNML
+  X(1,1) = 0.00 , 1.00 , 2.00
+/
+@end smallexample
+
 @node X format descriptor
 @section X format descriptor
 @cindex X format descriptor
@@ -881,6 +891,21 @@ descriptors in FORMAT statements.
 @smallexample
        PRINT 10, 2, 3
 10     FORMAT ('FOO='I1' BAR='I2)
+@end smallexample
+
+
+@node Missing period in FORMAT specifications
+@section Missing period in FORMAT specifications
+@cindex Missing period in FORMAT specifications
+
+To support legacy codes, @command{gfortran} allows missing periods in format
+specifications if and only if -std=legacy is given on the command line.  This
+is considered non-conforming code and is discouraged.
+
+@smallexample
+       REAL :: value
+       READ(*,10) value
+10     FORMAT ('F4')
 @end smallexample
 
 @node I/O item lists

@@ -1,3 +1,11 @@
+2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/27634
+	* io.c (check_format): Add error for missing period in format
+	specifier unless -std=legacy.
+	* gfortran.texi: Add description of expanded namelist read and
+	missing period in format extensions.
+
 2006-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/19777
