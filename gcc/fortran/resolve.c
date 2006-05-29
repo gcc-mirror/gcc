@@ -3992,7 +3992,7 @@ gfc_find_forall_index (gfc_expr *expr, gfc_symbol *symbol)
               break;
 
             default:
-              gfc_error("expresion reference type error at %L", &expr->where);
+              gfc_error("expression reference type error at %L", &expr->where);
             }
           tmp = tmp->next;
         }

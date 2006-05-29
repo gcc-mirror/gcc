@@ -533,7 +533,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fmax_identifier_length_:
       if (value > GFC_MAX_SYMBOL_LEN)
-	gfc_fatal_error ("Maximum supported idenitifier length is %d",
+	gfc_fatal_error ("Maximum supported identifier length is %d",
 			 GFC_MAX_SYMBOL_LEN);
       gfc_option.max_identifier_length = value;
       break;

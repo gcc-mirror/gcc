@@ -265,7 +265,7 @@ match_hollerith_constant (gfc_expr ** result)
 	}
       if (e->ts.kind != gfc_default_integer_kind)
 	{
-	  gfc_error ("Invalid Hollerith constant: Interger kind at %L "
+	  gfc_error ("Invalid Hollerith constant: Integer kind at %L "
 		"should be default", &old_loc);
 	  goto cleanup;
 	}

@@ -848,7 +848,7 @@ align_segment (unsigned HOST_WIDE_INT * palign)
 	    {
 	      /* Aligning this field would misalign a previous field.  */
 	      gfc_error ("The equivalence set for variable '%s' "
-			 "declared at %L violates alignment requirents",
+			 "declared at %L violates alignment requirements",
 			 s->sym->name, &s->sym->declared_at);
 	    }
 	  offset += this_offset;
