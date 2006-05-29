@@ -150,10 +150,6 @@ extern const char *bfin_library_id_string;
 */
 #define FRAME_POINTER_REQUIRED (bfin_frame_pointer_required ())
 
-#define PARM_BOUNDRY            32
-
-#define STACK_BOUNDRY           32
-
 /*#define DATA_ALIGNMENT(TYPE, BASIC-ALIGN) for arrays.. */
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
