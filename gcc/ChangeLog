@@ -1,3 +1,8 @@
+2006-05-29  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 26237
+	* c-tree.texi: Document OpenMP directives and clauses.
+
 2006-05-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* varasm.c (globalize_decl): Fix indentation.
