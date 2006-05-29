@@ -1,3 +1,9 @@
+2006-05-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27713
+	* pt.c (push_template_decl_real): Return error_mark_node instead
+	of broken decl.
+
 2006-05-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27716
