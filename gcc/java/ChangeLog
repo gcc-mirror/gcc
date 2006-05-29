@@ -1,3 +1,10 @@
+2006-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* javaop.h (int16, int32, int64): Define to exactly 16 (resp. 32, 64)
+	bit wide type.
+	(jword): Define to uint64 on 64-bit arches.
+	* jcf-dump.c (print_constant): Cast JPOOL_UINT to long.
+
 2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* class.c, except.c, expr.c, java-gimplify.c: Fix comment
