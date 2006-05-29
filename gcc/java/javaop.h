@@ -30,18 +30,40 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 typedef	unsigned char	uint8;
 #ifndef int16
+#if __SHRT_MAX__ == 32767
 #define int16 short
+#elif __INT_MAX__ == 32767
+#define int16 int
+#elif __LONG_MAX__ == 32767
+#define int16 long
+#else
+#define int16 short
+#endif
 #endif
 typedef unsigned int16	uint16;
 
 #ifndef int32
+#if __INT_MAX__ == 2147483647
+#define int32 int
+#elif __LONG_MAX__ == 2147483647
 #define int32 long
+#elif __SHRT_MAX__ == 2147483647
+#define int32 short
+#else
+#define int32 int
+#endif
 #endif
 typedef unsigned int32	uint32;
 
 /* A signed 64-bit (or more) integral type, suitable for Java's 'long'.  */
 #ifndef int64
+#if __LONG_MAX__ == 9223372036854775807LL
+#define int64 long
+#elif __LONG_LONG_MAX__ == 9223372036854775807LL
 #define int64 long long
+#else
+#define int64 long long
+#endif
 #endif
 /* An unsigned 64-bit (or more) integral type, same length as int64. */
 #ifndef uint64
@@ -82,7 +104,14 @@ typedef struct _jdouble {
 
 
 #ifndef jword
+#if defined (__LP64__) || defined (__alpha__) || defined (__MMIX__) \
+    || (defined (_ARCH_PPC) && defined (__64BIT__)) \
+    || defined (__powerpc64__) || defined (__s390x__) || defined (__x86_64__) \
+    || defined (__sparcv9) || (defined (__sparc__) && defined (__arch64__))
+#define jword uint64
+#else
 #define jword uint32
+#endif
 #endif
 
 #ifndef IMMEDIATE_u1

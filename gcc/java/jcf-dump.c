@@ -574,7 +574,7 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	  }
 
 	if (verbosity > 1)
-	  fprintf (out, ", bits = 0x%08lx", JPOOL_UINT (jcf, index));
+	  fprintf (out, ", bits = 0x%08lx", (long) JPOOL_UINT (jcf, index));
 	
 	break;
       }
