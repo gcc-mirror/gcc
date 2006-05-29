@@ -694,7 +694,11 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   CLEAR_HARD_REG_SET (clobbered_regs);
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
-      const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
+      const char *regname;
+
+      if (TREE_VALUE (tail) == error_mark_node)
+	return;
+      regname = TREE_STRING_POINTER (TREE_VALUE (tail));
 
       i = decode_reg_name (regname);
       if (i >= 0 || i == -4)

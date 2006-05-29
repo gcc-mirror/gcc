@@ -1,5 +1,9 @@
 2006-05-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27451
+	* stmt.c (expand_asm_operands): Skip asm statement with erroneous
+	clobbers.
+
 	PR c/26818
 	* c-decl.c (finish_struct): Skip erroneous fields.
 
