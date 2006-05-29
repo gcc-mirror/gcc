@@ -1,3 +1,8 @@
+2006-05-29  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27713
+	* g++.dg/template/new6.C: New test.
+
 2006-05-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/24964
