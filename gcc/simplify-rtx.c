@@ -1472,6 +1472,11 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
   return simplify_binary_operation_1 (code, mode, op0, op1, trueop0, trueop1);
 }
 
+/* Subroutine of simplify_binary_operation.  Simplify a binary operation
+   CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
+   OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
+   actual constants.  */
+
 static rtx
 simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 			     rtx op0, rtx op1, rtx trueop0, rtx trueop1)
@@ -1907,12 +1912,12 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	return simplify_gen_binary (ASHIFT, mode, op0, GEN_INT (val));
 
       /* Likewise for multipliers wider than a word.  */
-      else if (GET_CODE (trueop1) == CONST_DOUBLE
-	       && (GET_MODE (trueop1) == VOIDmode
-		   || GET_MODE_CLASS (GET_MODE (trueop1)) == MODE_INT)
-	       && GET_MODE (op0) == mode
-	       && CONST_DOUBLE_LOW (trueop1) == 0
-	       && (val = exact_log2 (CONST_DOUBLE_HIGH (trueop1))) >= 0)
+      if (GET_CODE (trueop1) == CONST_DOUBLE
+	  && (GET_MODE (trueop1) == VOIDmode
+	      || GET_MODE_CLASS (GET_MODE (trueop1)) == MODE_INT)
+	  && GET_MODE (op0) == mode
+	  && CONST_DOUBLE_LOW (trueop1) == 0
+	  && (val = exact_log2 (CONST_DOUBLE_HIGH (trueop1))) >= 0)
 	return simplify_gen_binary (ASHIFT, mode, op0,
 				    GEN_INT (val + HOST_BITS_PER_WIDE_INT));
 
@@ -1927,9 +1932,26 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  if (REAL_VALUES_EQUAL (d, dconst2))
 	    return simplify_gen_binary (PLUS, mode, op0, copy_rtx (op0));
 
-	  if (REAL_VALUES_EQUAL (d, dconstm1))
+	  if (!HONOR_SNANS (mode)
+	      && REAL_VALUES_EQUAL (d, dconstm1))
 	    return simplify_gen_unary (NEG, mode, op0, mode);
 	}
+
+      /* Optimize -x * -x as x * x.  */
+      if (FLOAT_MODE_P (mode)
+	  && GET_CODE (op0) == NEG
+	  && GET_CODE (op1) == NEG
+	  && rtx_equal_p (XEXP (op0, 0), XEXP (op1, 0))
+	  && !side_effects_p (XEXP (op0, 0)))
+	return simplify_gen_binary (MULT, mode, XEXP (op0, 0), XEXP (op1, 0));
+
+      /* Likewise, optimize abs(x) * abs(x) as x * x.  */
+      if (SCALAR_FLOAT_MODE_P (mode)
+	  && GET_CODE (op0) == ABS
+	  && GET_CODE (op1) == ABS
+	  && rtx_equal_p (XEXP (op0, 0), XEXP (op1, 0))
+	  && !side_effects_p (XEXP (op0, 0)))
+	return simplify_gen_binary (MULT, mode, XEXP (op0, 0), XEXP (op1, 0));
 
       /* Reassociate multiplication, but for floating point MULTs
 	 only when the user specifies unsafe math optimizations.  */
