@@ -1,3 +1,8 @@
+2006-05-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* options.c, primary.c, resolve.c, trans-common.c: Fix typos
+	in error messages.
+
 2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* check.c, expr.c, resolve.c, trans-common.c,
