@@ -4743,16 +4743,16 @@ globalize_decl (tree decl)
 	    p = &TREE_CHAIN (t);
 	}
 
-	/* Remove weakrefs to the same target from the pending weakref
-	   list, for the same reason.  */
-	for (p = &weakref_targets; (t = *p) ; )
-	  {
-	    if (DECL_ASSEMBLER_NAME (decl)
-		== ultimate_transparent_alias_target (&TREE_VALUE (t)))
-	      *p = TREE_CHAIN (t);
-	    else
-	      p = &TREE_CHAIN (t);
-	  }
+      /* Remove weakrefs to the same target from the pending weakref
+	 list, for the same reason.  */
+      for (p = &weakref_targets; (t = *p) ; )
+	{
+	  if (DECL_ASSEMBLER_NAME (decl)
+	      == ultimate_transparent_alias_target (&TREE_VALUE (t)))
+	    *p = TREE_CHAIN (t);
+	  else
+	    p = &TREE_CHAIN (t);
+	}
 
       return;
     }
