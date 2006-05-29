@@ -655,6 +655,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if atomic builtins are provided for this platform. */
+#undef _GLIBCXX_ATOMIC_BUILTINS
+
 /* Define to use concept checking code from the boost libraries. */
 #undef _GLIBCXX_CONCEPT_CHECKS
 
