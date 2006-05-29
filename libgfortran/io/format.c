@@ -725,8 +725,16 @@ parse_format_list (st_parameter_dt *dtp)
       t = format_lex (fmt);
       if (t != FMT_PERIOD)
 	{
-	  fmt->error = period_required;
-	  goto finished;
+	  /* We treat a missing decimal descriptor as 0.  Note: This is only
+	     allowed if -std=legacy, otherwise an error occurs.  */
+	  if (compile_options.warn_std != 0)
+	    {
+	      fmt->error = period_required;
+	      goto finished;
+	    }
+	  fmt->saved_token = t;
+	  tail->u.real.d = 0;
+	  break;
 	}
 
       t = format_lex (fmt);
