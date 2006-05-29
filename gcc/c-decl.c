@@ -5345,6 +5345,9 @@ finish_struct (tree t, tree fieldlist, tree attributes)
   saw_named_field = 0;
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     {
+      if (TREE_TYPE (x) == error_mark_node)
+	continue;
+
       DECL_CONTEXT (x) = t;
 
       if (TYPE_PACKED (t) && TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT)
