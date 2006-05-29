@@ -1,3 +1,9 @@
+2006-05-29  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR middle-end/27745
+	* lambda-code.c (perfect_nestify): Don't copy statements
+	in the inner loop: move them to the inner loop header.
+
 2006-05-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 26237
