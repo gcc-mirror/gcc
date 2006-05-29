@@ -2506,50 +2506,22 @@ perfect_nestify (struct loops *loops,
 
 	  if (dominated_by_p (CDI_DOMINATORS, loop->inner->header, bbs[i]))
 	    {
-	      for (bsi = bsi_last (bbs[i]); !bsi_end_p (bsi);)
+	      block_stmt_iterator header_bsi 
+		= bsi_after_labels (loop->inner->header);
+
+	      for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi);)
 		{ 
-		  use_operand_p use_p;
-		  imm_use_iterator imm_iter;
-		  tree imm_stmt;
 		  tree stmt = bsi_stmt (bsi);
 
 		  if (stmt == exit_condition
 		      || not_interesting_stmt (stmt)
 		      || stmt_is_bumper_for_loop (loop, stmt))
 		    {
-		      if (!bsi_end_p (bsi))
-			bsi_prev (&bsi);
+		      bsi_next (&bsi);
 		      continue;
 		    }
-		  
-		  /* Make copies of this statement to put it back next
-		     to its uses.  */
-		  FOR_EACH_IMM_USE_STMT (imm_stmt, imm_iter, 
-					 TREE_OPERAND (stmt, 0))
-		    {
-		      if (!exit_phi_for_loop_p (loop->inner, imm_stmt))
-			{
-			  block_stmt_iterator tobsi;
-			  tree newname;
-			  tree newstmt;
-			 
-			  newstmt  = unshare_expr (stmt);
-			  tobsi = bsi_after_labels (bb_for_stmt (imm_stmt));
-			  newname = TREE_OPERAND (newstmt, 0);
-			  newname = SSA_NAME_VAR (newname);
-			  newname = make_ssa_name (newname, newstmt);
-			  TREE_OPERAND (newstmt, 0) = newname;
 
-			  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-			    SET_USE (use_p, newname);
-
-			  bsi_insert_before (&tobsi, newstmt, BSI_SAME_STMT);
-			  update_stmt (newstmt);
-			  update_stmt (imm_stmt);
-			} 
-		    }
-		  if (!bsi_end_p (bsi))
-		    bsi_prev (&bsi);			  
+		  bsi_move_before (&bsi, &header_bsi);
 		}
 	    }
 	  else
