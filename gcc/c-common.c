@@ -1083,7 +1083,8 @@ convert_and_check (tree type, tree expr)
 
 	  /* Do not diagnose overflow in a constant expression merely
 	     because a conversion overflowed.  */
-	  TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (expr);
+	  TREE_CONSTANT_OVERFLOW (t) = CONSTANT_CLASS_P (expr)
+                                       && TREE_CONSTANT_OVERFLOW (expr);
 
 	  /* No warning for converting 0x80000000 to int.  */
 	  if (!(TYPE_UNSIGNED (type) < TYPE_UNSIGNED (TREE_TYPE (expr))
