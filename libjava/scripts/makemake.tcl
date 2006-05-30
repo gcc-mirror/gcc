@@ -258,8 +258,7 @@ proc emit_bc_rule {package} {
 
   # We skip these because they are built into their own libraries and
   # are handled specially in Makefile.am.
-  if {$loname != "gnu-java-awt-peer-gtk.lo"
-      && $loname != "gnu-java-awt-peer-qt.lo"} {
+  if {$loname != "gnu-java-awt-peer-qt.lo"} {
     lappend bc_objects $loname
   }
 }

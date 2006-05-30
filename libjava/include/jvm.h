@@ -660,4 +660,7 @@ _Jv_IsPhantomClass (jclass c)
   return c->state == JV_STATE_PHANTOM;
 }
 
+// A helper function defined in prims.cc.
+char* _Jv_PrependVersionedLibdir (char* libpath);
+
 #endif /* __JAVA_JVM_H__ */

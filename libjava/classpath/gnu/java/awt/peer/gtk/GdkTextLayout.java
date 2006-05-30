@@ -70,10 +70,8 @@ public class GdkTextLayout
   // native side, plumbing, etc.
   static 
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary("gtkpeer");
-      }
+    System.loadLibrary("gtkpeer");
+
     initStaticState ();
   }
   private native void setText(String str);

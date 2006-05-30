@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static void
 help ()
@@ -71,6 +72,47 @@ add_option (JvVMInitArgs& vm_args, char const* option, void const* extra)
 int
 main (int argc, char const** argv)
 {
+  // libjawt.so must be installed in GCJ's versioned directory and not
+  // the main library directory so that it doesn't override other
+  // libjawt.so implementations.  Programs that use the AWT Native
+  // Interface contain a JNI library that links to libjawt.so.  We do
+  // not want to require that users explicitly add GCJ's versioned
+  // directory to LD_LIBRARY_PATH when running such programs.
+
+  // Simply adding GCJ's versioned directory to the module load path
+  // does not solve this problem since libltdl searches its module
+  // load path only for object that it will dlopen; dependencies of
+  // these dynamically loaded objects are searched for in
+  // LD_LIBRARY_PATH.
+
+  // In addition, setting LD_LIBRARY_PATH from within the current
+  // process does not alter the dependency search path, since it is
+  // computed on startup.  This behaviour makes sense since
+  // LD_LIBRARY_PATH is designed to allow users to override the path
+  // set by a program.  This re-spawning trick makes it impossible to
+  // override, using LD_LIBRARY_PATH, the versioned directories
+  // searched by gij.
+
+  // Check if LD_LIBRARY_PATH is already prefixed with
+  // GCJ_VERSIONED_LIBDIR.  If not, export LD_LIBRARY_PATH prefixed
+  // with GCJ_VERSIONED_LIBDIR and re-spawn gij.
+  char *libpath = getenv (LTDL_SHLIBPATH_VAR);
+  char *newpath = _Jv_PrependVersionedLibdir (libpath);
+
+  if (! libpath || strcmp (libpath, newpath))
+    {
+      setenv (LTDL_SHLIBPATH_VAR, newpath, 1);
+      JvFree (newpath);
+
+      int error_code = execvp (argv[0], (char* const*) argv);
+
+      fprintf (stderr, "error re-spawning gij with new "
+               LTDL_SHLIBPATH_VAR " value: %s\n", strerror (error_code));
+
+      return error_code;
+    }
+  JvFree (newpath);
+
   JvVMInitArgs vm_args;
   bool jar_mode = false;
 

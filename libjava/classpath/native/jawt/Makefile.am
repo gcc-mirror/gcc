@@ -1,12 +1,15 @@
-## GCJ LOCAL: don't install this library
-noinst_LTLIBRARIES = libjawtgnu.la
+## GCJ LOCAL: install this library in GCJ's versioned library
+## directory
+gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
+gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
+gcjversionedlib_LTLIBRARIES = libjawt.la
 
-libjawtgnu_la_SOURCES = jawt.c
-libjawtgnu_la_LIBADD = $(top_builddir)/native/jni/gtk-peer/libgtkpeer.la
-# FIXME: libtool doesn't allow overriding SONAME, but we need to set
-# it to libjawt.so for binary compatibility.
-#
-# libjawtgnu_la_LDFLAGS = -Wl,-soname -Wl,libjawt.so
+libjawt_la_SOURCES = jawt.c
+libjawt_la_LIBADD = $(top_builddir)/native/jni/gtk-peer/libgtkpeer.la
+
+## GCJ LOCAL: encode the library path and  use GCJ's library version
+libjawt_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
+	-version-info `grep -v '^\#' $(top_srcdir)/../libtool-version`
 
 AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @CAIRO_LIBS@ @PANGOFT2_LIBS@ @X_LIBS@ -lXtst
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
