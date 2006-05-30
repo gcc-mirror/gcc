@@ -2464,7 +2464,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       if (GET_CODE (op0) == CLZ
 	  && GET_CODE (trueop1) == CONST_INT
 	  && STORE_FLAG_VALUE == 1
-	  && INTVAL (trueop1) < width)
+	  && INTVAL (trueop1) < (HOST_WIDE_INT)width)
 	{
 	  enum machine_mode imode = GET_MODE (XEXP (op0, 0));
 	  unsigned HOST_WIDE_INT zero_val = 0;
