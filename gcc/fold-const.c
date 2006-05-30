@@ -8105,6 +8105,44 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
   return NULL_TREE;
 }
 
+
+/* Subroutine of fold_binary.  Optimize complex multiplications of the
+   form z * conj(z), as pow(realpart(z),2) + pow(imagpart(z),2).  The
+   argument EXPR represents the expression "z" of type TYPE.  */
+
+static tree
+fold_mult_zconjz (tree type, tree expr)
+{
+  tree itype = TREE_TYPE (type);
+  tree rpart, ipart, tem;
+
+  if (TREE_CODE (expr) == COMPLEX_EXPR)
+    {
+      rpart = TREE_OPERAND (expr, 0);
+      ipart = TREE_OPERAND (expr, 1);
+    }
+  else if (TREE_CODE (expr) == COMPLEX_CST)
+    {
+      rpart = TREE_REALPART (expr);
+      ipart = TREE_IMAGPART (expr);
+    }
+  else
+    {
+      expr = save_expr (expr);
+      rpart = fold_build1 (REALPART_EXPR, itype, expr);
+      ipart = fold_build1 (IMAGPART_EXPR, itype, expr);
+    }
+
+  rpart = save_expr (rpart);
+  ipart = save_expr (ipart);
+  tem = fold_build2 (PLUS_EXPR, itype,
+		     fold_build2 (MULT_EXPR, itype, rpart, rpart),
+		     fold_build2 (MULT_EXPR, itype, ipart, ipart));
+  return fold_build2 (COMPLEX_EXPR, type, tem,
+		      fold_convert (itype, integer_zero_node));
+}
+
+
 /* Fold a binary expression of code CODE and type TYPE with operands
    OP0 and OP1.  Return the folded expression if folding is
    successful.  Otherwise, return NULL_TREE.  */
@@ -8768,6 +8806,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					     code, NULL_TREE)))
 	    return fold_convert (type, tem);
 
+	  /* Optimize z * conj(z) for integer complex numbers.  */
+	  if (TREE_CODE (arg0) == CONJ_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	    return fold_mult_zconjz (type, arg1);
+	  if (TREE_CODE (arg1) == CONJ_EXPR
+	      && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	    return fold_mult_zconjz (type, arg0);
 	}
       else
 	{
@@ -8812,6 +8857,18 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  return fold_build2 (MULT_EXPR, type, tem, tem);
 		}
 	    }
+
+	  /* Optimize z * conj(z) for floating point complex numbers.
+	     Guarded by flag_unsafe_math_optimizations as non-finite
+	     imaginary components don't produce scalar results.  */
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg0) == CONJ_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	    return fold_mult_zconjz (type, arg1);
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg1) == CONJ_EXPR
+	      && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	    return fold_mult_zconjz (type, arg0);
 
 	  if (flag_unsafe_math_optimizations)
 	    {

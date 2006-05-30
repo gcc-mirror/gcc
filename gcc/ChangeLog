@@ -1,3 +1,11 @@
+2006-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/23452
+	* fold-const.c (fold_mult_zconjz): New subroutine of fold_binary,
+	to optimize z * conj(z) as realpart(z)^2 + imagpart(z)^2.
+	(fold_binary) <MULT_EXPR>: Call fold_mult_zconjz for integral
+	complex values and with -ffast-math for FP complex values.
+
 2006-05-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* c-common.h: Remove the prototype for yyparse.
