@@ -2332,7 +2332,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
   chrec_a = chrec_convert (integer_type_node, chrec_a, NULL_TREE);
   chrec_b = chrec_convert (integer_type_node, chrec_b, NULL_TREE);
   difference = chrec_fold_minus 
-    (integer_type_node, CHREC_LEFT (chrec_b), chrec_a);
+    (integer_type_node, initial_condition (chrec_b), chrec_a);
   
   if (!chrec_is_positive (initial_condition (difference), &value0))
     {
