@@ -1,3 +1,9 @@
+2006-05-30  Naveen.H.S  <naveenh@kpitcummins.com>
+	    DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_expand_insv): Check that the value
+	we're inserting is a singlt-bit constant.
+
 2006-05-30  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1) <LSHIFTRT>: Cast

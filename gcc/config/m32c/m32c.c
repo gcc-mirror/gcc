@@ -3435,6 +3435,14 @@ m32c_expand_insv (rtx *operands)
   if (INTVAL (operands[1]) != 1)
     return 1;
 
+  /* Our insv opcode (bset, bclr) can only insert a one-bit constant.  */
+  if (GET_CODE (operands[3]) != CONST_INT)
+    return 1;
+  if (INTVAL (operands[3]) != 0
+      && INTVAL (operands[3]) != 1
+      && INTVAL (operands[3]) != -1)
+    return 1;
+
   mask = 1 << INTVAL (operands[2]);
 
   op0 = operands[0];
