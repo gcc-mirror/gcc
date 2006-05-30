@@ -2116,9 +2116,6 @@ extern void print_simple_rtl (FILE *, rtx);
 extern int print_rtl_single (FILE *, rtx);
 extern void print_inline_rtx (FILE *, rtx, int);
 
-/* In loop.c */
-extern void init_loop (void);
-
 /* In bt-load.c */
 extern void branch_target_load_optimize (bool);
 

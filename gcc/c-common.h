@@ -290,7 +290,6 @@ extern void (*lang_post_pch_load) (void);
 
 extern void push_file_scope (void);
 extern void pop_file_scope (void);
-extern int yyparse (void);
 extern stmt_tree current_stmt_tree (void);
 extern tree push_stmt_list (void);
 extern tree pop_stmt_list (tree);
