@@ -10,12 +10,13 @@
 	already defined.  Prepend GCJ_VERSIONED_LIBDIR to module search
 	path where necessary.
 	* configure.ac (GTK_AWT): Remove automake conditional.
+	Do not add gnu/java/awt/peer/gtk to standard.omit.
 	* include/jvm.h (_Jv_PrependVersionedLibdir): New function
 	declaration.
 	* gij.cc (main): Prepend LD_LIBRARY_PATH with GCJ_VERSIONED_LIBDIR
 	and re-exec self.
-	* Makefile.am (AM_CXXFLAGS): Define GCJ_VERSIONED_LIBDIR,
-	GIJ_EXECUTABLE and PATH_SEPARATOR macros.
+	* Makefile.am (AM_CXXFLAGS): Define GCJ_VERSIONED_LIBDIR and
+	PATH_SEPARATOR macros.
 	Remove lib-gnu-java-awt-peer-gtk.la and libgcjawt.la build logic.
 	* prims.cc (_Jv_PrependVersionedLibdir): New function.
 
