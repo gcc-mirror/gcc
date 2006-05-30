@@ -1,3 +1,10 @@
+2006-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_binary_operation): Unfactor the shift
+	and rotate cases.
+	<LSHIFTRT>: Optimize (lshiftrt (clz X) C) as (eq X 0) where C is
+	log2(GET_MODE_BITSIZE(X)) on targets with the appropriate semantics.
+
 2006-05-30  Dirk Mueller  <dmueller@suse.de>
 
 	PR c/27273

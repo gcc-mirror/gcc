@@ -2436,21 +2436,45 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case ROTATERT:
     case ROTATE:
     case ASHIFTRT:
+      if (trueop1 == CONST0_RTX (mode))
+	return op0;
+      if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
+	return op0;
       /* Rotating ~0 always results in ~0.  */
       if (GET_CODE (trueop0) == CONST_INT && width <= HOST_BITS_PER_WIDE_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (trueop0) == GET_MODE_MASK (mode)
 	  && ! side_effects_p (op1))
 	return op0;
-
-      /* Fall through....  */
+      break;
 
     case ASHIFT:
     case SS_ASHIFT:
+      if (trueop1 == CONST0_RTX (mode))
+	return op0;
+      if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
+	return op0;
+      break;
+
     case LSHIFTRT:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
       if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
 	return op0;
+      /* Optimize (lshiftrt (clz X) C) as (eq X 0).  */
+      if (GET_CODE (op0) == CLZ
+	  && GET_CODE (trueop1) == CONST_INT
+	  && STORE_FLAG_VALUE == 1
+	  && INTVAL (trueop1) < width)
+	{
+	  enum machine_mode imode = GET_MODE (XEXP (op0, 0));
+	  unsigned HOST_WIDE_INT zero_val = 0;
+
+	  if (CLZ_DEFINED_VALUE_AT_ZERO (imode, zero_val)
+	      && zero_val == GET_MODE_BITSIZE (imode)
+	      && INTVAL (trueop1) == exact_log2 (zero_val))
+	    return simplify_gen_relational (EQ, mode, imode,
+					    XEXP (op0, 0), const0_rtx);
+	}
       break;
 
     case SMIN:

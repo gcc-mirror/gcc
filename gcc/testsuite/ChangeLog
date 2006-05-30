@@ -1,3 +1,8 @@
+2006-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.target/ppc-eq0-1.c: New test case.
+	* gcc.target/ppc-negeq0-1.c: New test case.
+
 2006-05-30  Dirk Mueller  <dmueller@suse.de>
 
 	PR c/27273
