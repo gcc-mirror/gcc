@@ -1,3 +1,9 @@
+2006-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27803
+	* class.c (check_bitfield_decl): Ensure that all bitfields have
+	integral type.
+
 2006-05-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* pt.c (convert_nontype_argument): Fix a typo in an error

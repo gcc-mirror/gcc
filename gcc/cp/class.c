@@ -2625,21 +2625,25 @@ static void
 check_bitfield_decl (tree field)
 {
   tree type = TREE_TYPE (field);
-  tree w = NULL_TREE;
+  tree w;
+
+  /* Extract the declared width of the bitfield, which has been
+     temporarily stashed in DECL_INITIAL.  */
+  w = DECL_INITIAL (field);
+  gcc_assert (w != NULL_TREE); 
+  /* Remove the bit-field width indicator so that the rest of the
+     compiler does not treat that value as an initializer.  */
+  DECL_INITIAL (field) = NULL_TREE;
 
   /* Detect invalid bit-field type.  */
-  if (DECL_INITIAL (field)
-      && ! INTEGRAL_TYPE_P (TREE_TYPE (field)))
+  if (!INTEGRAL_TYPE_P (type))
     {
       error ("bit-field %q+#D with non-integral type", field);
+      TREE_TYPE (field) = error_mark_node;
       w = error_mark_node;
     }
-
-  /* Detect and ignore out of range field width.  */
-  if (DECL_INITIAL (field))
+  else
     {
-      w = DECL_INITIAL (field);
-
       /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
       STRIP_NOPS (w);
 
@@ -2675,10 +2679,6 @@ check_bitfield_decl (tree field)
 					      TYPE_UNSIGNED (type)))))
 	warning (0, "%q+D is too small to hold all values of %q#T", field, type);
     }
-
-  /* Remove the bit-field width indicator so that the rest of the
-     compiler does not treat that value as an initializer.  */
-  DECL_INITIAL (field) = NULL_TREE;
 
   if (w != error_mark_node)
     {
