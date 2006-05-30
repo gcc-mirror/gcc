@@ -1,5 +1,10 @@
 2006-05-30  Roger Sayle  <roger@eyesopen.com>
 
+	* simplify-rtx.c (simplify_binary_operation_1) <LSHIFTRT>: Cast
+	width to HOST_WIDE_INT to avoid comparison warnings on some targets.
+
+2006-05-30  Roger Sayle  <roger@eyesopen.com>
+
 	PR tree-optimization/23452
 	* fold-const.c (fold_mult_zconjz): New subroutine of fold_binary,
 	to optimize z * conj(z) as realpart(z)^2 + imagpart(z)^2.
