@@ -56,10 +56,8 @@ public class GdkGraphics extends Graphics
 {
   static 
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary("gtkpeer");
-      }
+    System.loadLibrary("gtkpeer");
+
     initStaticState ();
   }
   

@@ -121,6 +121,26 @@ getpwuid_adaptor(T_passwd * (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
 }
 #endif
 
+// Prepend GCJ_VERSIONED_LIBDIR to a module search path stored in a
+// Java string, if the path is not already prefixed by
+// GCJ_VERSIONED_LIBDIR.  Return a newly JvMalloc'd char buffer.  The
+// result should be freed using JvFree.  See
+// _Jv_PrependVersionedLibdir in prims.cc.
+static char*
+PrependVersionedLibdir (::java::lang::String* libpath)
+{
+  char* retval = 0;
+
+  // Extract a C char array from libpath.
+  char* val = (char*) _Jv_Malloc (JvGetStringUTFLength (libpath) + 1);
+  jsize total = JvGetStringUTFRegion (libpath, 0, libpath->length(), val);
+  val[total] = '\0';
+  retval = _Jv_PrependVersionedLibdir (val);
+  JvFree (val);
+
+  return retval;
+}
+
 void
 gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties *newprops)
 {
@@ -288,8 +308,11 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
       SET ("user.region", "US");
     }  
 
-  // The java extensions directory.
-  SET ("java.ext.dirs", JAVA_EXT_DIRS);
+  // Set the java extension directories property if it has not yet been
+  // specified.
+  ::java::lang::String *extdirs = newprops->getProperty(JvNewStringLatin1("java.ext.dirs"));
+  if (! extdirs)
+    SET ("java.ext.dirs", JAVA_EXT_DIRS);
 
   // The endorsed directories that libgcj knows about by default.
   // This is a way to get other jars into the boot class loader
@@ -343,9 +366,9 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
   ::java::lang::String *path = newprops->getProperty(JvNewStringLatin1("java.library.path"));
   if (path)
     {
-      char *val = (char *) _Jv_Malloc (JvGetStringUTFLength (path) + 1);
-      jsize total = JvGetStringUTFRegion (path, 0, path->length(), val);
-      val[total] = '\0';
+      // Prepend GCJ_VERSIONED_LIBDIR to the module load path so that
+      // libgcj will find its own JNI libraries, like libgtkpeer.so.
+      char* val = PrependVersionedLibdir (path);
       _Jv_SetDLLSearchPath (val);
       _Jv_Free (val);
     }
@@ -354,11 +377,10 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
       // Set a value for user code to see.
 #ifdef USE_LTDL
       char *libpath = getenv (LTDL_SHLIBPATH_VAR);
-      if (libpath)
-        newprops->put(JvNewStringLatin1 ("java.library.path"),
-                      JvNewStringLatin1 (libpath));
-      else
-        SET ("java.library.path", "");
+      char* val = _Jv_PrependVersionedLibdir (libpath);
+      SET ("java.library.path", val);
+      _Jv_SetDLLSearchPath (val);
+      _Jv_Free (val);
 #else
       SET ("java.library.path", "");
 #endif

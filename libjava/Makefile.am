@@ -40,10 +40,6 @@ if XLIB_AWT
 toolexeclib_LTLIBRARIES += lib-gnu-awt-xlib.la
 endif
 
-if GTK_AWT
-toolexeclib_LTLIBRARIES += lib-gnu-java-awt-peer-gtk.la libgcjawt.la
-endif
-
 if QT_AWT
 toolexeclib_LTLIBRARIES += lib-gnu-java-awt-peer-qt.la
 endif
@@ -128,6 +124,8 @@ AM_CXXFLAGS = \
         -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
 	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
+	-DGCJ_VERSIONED_LIBDIR="\"$(libdir)/gcj-$(gcc_version)\"" \
+	-DPATH_SEPARATOR="\"$(CLASSPATH_SEPARATOR)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
 	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\""
@@ -246,33 +244,6 @@ $(db_name): gcj-dbtool$(EXEEXT)
 ## empty file.  This is simpler than trying to discover when mmap is
 ## not available.
 	./gcj-dbtool -n $(db_name) || touch $(db_name)
-
-## For the peer library, DEPENDENCIES need to come before OBJECTS so
-## that JNI headers are built before JNI C files.
-$(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES)
-
-lib_gnu_java_awt_peer_gtk_la_SOURCES =
-lib_gnu_java_awt_peer_gtk_la_LIBADD = \
-	gnu-java-awt-peer-gtk.lo \
-	classpath/native/jni/gtk-peer/libgtkpeer.la \
-	$(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = gnu-java-awt-peer-gtk.lo \
-	classpath/native/jni/gtk-peer/libgtkpeer.la \
-	libgcj-$(gcc_version).jar libgcj.la libgcj.spec
-## The mysterious backslash in the grep pattern is consumed by make.
-lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
-lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
-
-libgcjawt_la_SOURCES = classpath/native/jawt/jawt.c
-libgcjawt_la_CFLAGS = -I$(srcdir)/classpath/native/jni/classpath \
-	$(PEDANTIC_CFLAGS) $(X_CFLAGS)
-## See jv_convert_LDADD.
-libgcjawt_la_LIBADD = -L$(here)/.libs lib-gnu-java-awt-peer-gtk.la
-libgcjawt_la_LDFLAGS = \
-	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
-	$(LIBGCJ_LD_SYMBOLIC)
-libgcjawt_la_LINK = $(LIBLINK)
 
 lib_gnu_java_awt_peer_qt_la_SOURCES =
 lib_gnu_java_awt_peer_qt_la_LIBADD = \

@@ -1,3 +1,24 @@
+2006-05-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* scripts/makemake.tcl (emit_bc_rule): Do not skip
+	gnu-java-awt-peer-gtk.lo.
+	Include gnu/java/awt/peer/gtk Java objects in libgcj.so.  Use C++
+	ABI for gnu/java/awt/peer/gtk package.
+	* gnu/classpath/natSystemProperties.cc (PrependVersionedLibdir):
+	New function.
+	(insertSystemProperties): Only set java.ext.dirs if it is not
+	already defined.  Prepend GCJ_VERSIONED_LIBDIR to module search
+	path where necessary.
+	* configure.ac (GTK_AWT): Remove automake conditional.
+	* include/jvm.h (_Jv_PrependVersionedLibdir): New function
+	declaration.
+	* gij.cc (main): Prepend LD_LIBRARY_PATH with GCJ_VERSIONED_LIBDIR
+	and re-exec self.
+	* Makefile.am (AM_CXXFLAGS): Define GCJ_VERSIONED_LIBDIR,
+	GIJ_EXECUTABLE and PATH_SEPARATOR macros.
+	Remove lib-gnu-java-awt-peer-gtk.la and libgcjawt.la build logic.
+	* prims.cc (_Jv_PrependVersionedLibdir): New function.
+
 2006-05-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/lang/natThread.cc (countStackFrames): Do not throw

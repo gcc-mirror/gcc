@@ -107,8 +107,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   static
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      System.loadLibrary("gtkpeer");
+    System.loadLibrary("gtkpeer");
 
     int portableNativeSync;     
     String portNatSyncProp = 
