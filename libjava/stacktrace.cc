@@ -55,23 +55,21 @@ _Jv_StackTrace::UpdateNCodeMap ()
   
   jclass klass;
   while ((klass = _Jv_PopClass ()))
-    {
-      //printf ("got %s\n", klass->name->data);
-#ifdef INTERPRETER
-      JvAssert (! _Jv_IsInterpretedClass (klass));
-#endif
-      for (int i=0; i < klass->method_count; i++)
-        {
-	  _Jv_Method *method = &klass->methods[i];
-	  void *ncode = method->ncode;
-	  // Add non-abstract methods to ncodeMap.
-	  if (ncode)
-	    {
-	      ncode = UNWRAP_FUNCTION_DESCRIPTOR (ncode);
-	      ncodeMap->put ((java::lang::Object *)ncode, klass);
-	    }
-	}
-    }
+    if (!_Jv_IsInterpretedClass (klass))
+      {
+	//printf ("got %s\n", klass->name->data);
+	for (int i = 0; i < klass->method_count; i++)
+	  {
+	    _Jv_Method *method = &klass->methods[i];
+	    void *ncode = method->ncode;
+	    // Add non-abstract methods to ncodeMap.
+	    if (ncode)
+	      {
+		ncode = UNWRAP_FUNCTION_DESCRIPTOR (ncode);
+		ncodeMap->put ((java::lang::Object *) ncode, klass);
+	      }
+	  }
+      }
 }
 
 // Given a native frame, return the class which this code belongs 
