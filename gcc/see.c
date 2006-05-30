@@ -674,6 +674,10 @@ see_get_extension_reg (rtx extension, bool return_dest_reg)
   rtx reg1 = NULL;
   rtx reg2 = NULL;
 
+  /* Parallel pattern for extension not supported for the moment.  */
+  if (GET_CODE (PATTERN (extension)) == PARALLEL)
+    return NULL;
+
   set = single_set (extension);
   if (!set)
     return NULL;
@@ -718,6 +722,10 @@ see_get_extension_data (rtx extension, enum machine_mode *source_mode)
 
   if (!extension || !INSN_P (extension))
     return UNKNOWN;
+
+  /* Parallel pattern for extension not supported for the moment.  */
+  if (GET_CODE (PATTERN (extension)) == PARALLEL)
+    return NOT_RELEVANT;
 
   set = single_set (extension);
   if (!set)
@@ -3462,8 +3470,8 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 	 relevant.  Handling this extension as relevant would make things much
 	 more complicated.  */
       next_insn = NEXT_INSN (insn);
-      if (prev_insn
-	  && INSN_P (prev_insn)
+      if (next_insn
+	  && INSN_P (next_insn)
 	  && (see_get_extension_data (next_insn, &next_source_mode) !=
 	      NOT_RELEVANT))
 	{
