@@ -1,3 +1,11 @@
+2006-05-30  Asher Langton  <langton2@llnl.gov>
+
+	* symbol.c (check_conflict): Allow external, function, and
+	subroutine attributes with Cray pointees.
+	* trans-expr.c (gfc_conv_function_val): Translate Cray pointees
+	that point to procedures.
+	* gfortran.texi: Document new feature.
+
 2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/27634

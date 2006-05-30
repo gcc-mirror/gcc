@@ -1191,6 +1191,9 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 	sym->backend_decl = gfc_get_extern_function_decl (sym);
 
       tmp = sym->backend_decl;
+      if (sym->attr.cray_pointee)
+	tmp = convert (build_pointer_type (TREE_TYPE (tmp)),
+		       gfc_get_symbol_decl (sym->cp_pointer));
       if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
 	{
 	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
