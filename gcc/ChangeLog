@@ -1,3 +1,9 @@
+2006-05-30  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27779
+	* tree-data-ref.c (analyze_siv_subscript_cst_affine): Use
+	initial_condition instead of CHREC_LEFT.
+
 2006-05-30  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* config/m32r/m32r.h (DBX_OUTPUT_SOURCE_LINE): Fix type of begin_label.
@@ -5,11 +11,11 @@
 	Make prototypes ISO C90.
 
 2006-05-30  Mircea Namolaru  <namolaru@il.ibm.com>
-            Leehod Baruch    <leehod.baruch@weizmann.ac.il>
+	    Leehod Baruch    <leehod.baruch@weizmann.ac.il>
 
-        * see.c (see_analyze_one_def): Correct check.
-        (see_get_extension_data): Check if extension is parallel.
-        (see_get_extension_reg): Likewise.
+	* see.c (see_analyze_one_def): Correct check.
+	(see_get_extension_data): Check if extension is parallel.
+	(see_get_extension_reg): Likewise.
 
 2006-05-30  Uros Bizjak  <uros@kss-loka.si>
 
