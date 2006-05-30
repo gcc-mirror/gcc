@@ -1,3 +1,9 @@
+2006-05-30  Dirk Mueller  <dmueller@suse.de>
+
+	PR c/27273
+	* c-common.c (convert_and_check): Only track TREE_CONSTANT_OVERFLOW
+	for CONSTANT_CLASS_P expresisons.
+
 2006-05-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/27718
