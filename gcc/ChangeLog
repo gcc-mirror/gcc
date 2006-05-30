@@ -1,3 +1,9 @@
+2006-05-30  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/27790
+	* config/i386/i386.c (ix86_expand_int_vcond): Force cop0
+	into register for (code == GTU).
+
 2006-05-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/24964
