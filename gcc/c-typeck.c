@@ -2153,7 +2153,8 @@ c_expr_sizeof_type (struct c_type_name *t)
   type = groktypename (t);
   ret.value = c_sizeof (type);
   ret.original_code = ERROR_MARK;
-  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
+  pop_maybe_used (type != error_mark_node
+		  ? C_TYPE_VARIABLE_SIZE (type) : false);
   return ret;
 }
 
