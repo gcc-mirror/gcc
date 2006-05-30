@@ -1,3 +1,9 @@
+2006-05-30  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* config/m32r/m32r.h (DBX_OUTPUT_SOURCE_LINE): Fix type of begin_label.
+	* config/m32r/initfini.c (__do_global_dtors, __do_global_ctors):
+	Make prototypes ISO C90.
+
 2006-05-30  Mircea Namolaru  <namolaru@il.ibm.com>
             Leehod Baruch    <leehod.baruch@weizmann.ac.il>
 
