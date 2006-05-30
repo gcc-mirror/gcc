@@ -1107,12 +1107,27 @@ pointers will ``incorrectly'' optimize code with illegal aliasing.)
 
 There are a number of restrictions on the attributes that can be
 applied to Cray pointers and pointees.  Pointees may not have the
-attributes ALLOCATABLE, INTENT, OPTIONAL, DUMMY, TARGET, EXTERNAL,
+attributes ALLOCATABLE, INTENT, OPTIONAL, DUMMY, TARGET,
 INTRINSIC, or POINTER.  Pointers may not have the attributes
 DIMENSION, POINTER, TARGET, ALLOCATABLE, EXTERNAL, or INTRINSIC.
 Pointees may not occur in more than one pointer statement.  A pointee
 cannot be a pointer.  Pointees cannot occur in equivalence, common, or
 data statements.
+
+A Cray pointer may point to a function or a subroutine.  For example,
+the following excerpt is valid:
+@smallexample
+  implicit none
+  external sub
+  pointer (subptr,subpte)
+  external subpte
+  subptr = loc(sub)
+  call subpte()
+  [...]
+  subroutine sub
+  [...]
+  end subroutine sub
+@end smallexample
 
 A pointer may be modified during the course of a program, and this
 will change the location to which the pointee refers.  However, when

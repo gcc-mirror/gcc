@@ -385,11 +385,8 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (cray_pointee, optional);
   conf (cray_pointee, dummy);
   conf (cray_pointee, target);
-  conf (cray_pointee, external);
   conf (cray_pointee, intrinsic);
   conf (cray_pointee, pointer);
-  conf (cray_pointee, function);
-  conf (cray_pointee, subroutine);
   conf (cray_pointee, entry);
   conf (cray_pointee, in_common);
   conf (cray_pointee, in_equivalence);

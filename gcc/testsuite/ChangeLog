@@ -1,3 +1,7 @@
+2006-05-30  Asher Langton  <langton2@llnl.gov>
+
+	* gfortran.dg/cray_pointers_7.f90: New test.
+
 2006-05-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/23452
