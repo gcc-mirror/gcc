@@ -1,3 +1,8 @@
+2006-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/23452
+	* gcc.dg/fold-mulconj-1.c: New test case.
+
 2006-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27803
