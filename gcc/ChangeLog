@@ -1,3 +1,8 @@
+2006-05-30  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* cse.c (validate_canon_reg, cse_insn): Don't change insns without
+	calling recog.
+
 2006-05-30  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Unfactor the shift
