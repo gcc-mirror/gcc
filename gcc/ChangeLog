@@ -1,3 +1,8 @@
+2006-05-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/27718
+	* c-typeck.c (c_expr_sizeof_type): Handle invalid types.
+
 2006-05-30  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/27779
