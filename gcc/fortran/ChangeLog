@@ -1,3 +1,12 @@
+2006-05-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/27662
+	Backport from mainline
+	2006-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+	* trans-array.c (gfc_conv_expr_descriptor): Don't zero the
+	first stride to indicate a temporary.
+	* trans-expr.c (gfc_conv_function_call): Likewise.
+
 2005-05-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27470
