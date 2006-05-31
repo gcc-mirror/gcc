@@ -1,3 +1,10 @@
+2006-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_cabs): Delete prototype.  Require an
+	additional FNDECL argument.  Optimize cabs(-z) and cabs(~z) as
+	cabs(z).
+	(fold_builtin_decl) <BUILT_IN_CABS>: Update fold_builtin_cabs call.
+
 2006-05-31  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin-protos.h (bfin_hardware_loop): Declare.
