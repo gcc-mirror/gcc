@@ -1024,6 +1024,25 @@ legitimize_address (rtx x ATTRIBUTE_UNUSED, rtx oldx ATTRIBUTE_UNUSED,
   return NULL_RTX;
 }
 
+static rtx
+bfin_delegitimize_address (rtx orig_x)
+{
+  rtx x = orig_x, y;
+
+  if (GET_CODE (x) != MEM)
+    return orig_x;
+
+  x = XEXP (x, 0);
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == UNSPEC
+      && XINT (XEXP (x, 1), 1) == UNSPEC_MOVE_PIC
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (XEXP (x, 0)) == PIC_OFFSET_TABLE_REGNUM)
+    return XVECEXP (XEXP (x, 1), 0, 0);
+
+  return orig_x;
+}
+
 /* This predicate is used to compute the length of a load/store insn.
    OP is a MEM rtx, we return nonzero if its addressing mode requires a
    32 bit instruction.  */
@@ -3015,5 +3034,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS bfin_delegitimize_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
