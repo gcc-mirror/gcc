@@ -670,16 +670,26 @@ added are to facilitate this functionality.
 @xref{About CNI}, for more info on how to use this in your programs.
 
 @item
-When you compile your classes into a shared library they can be automatically
-loaded by the @code{libgcj} system classloader.  When trying to load a class
-@code{gnu.pkg.SomeClass} the system classloader will first try to load the
-shared library @file{lib-gnu-pkg-SomeClass.so}, if that fails to load the
-class then it will try to load @file{lib-gnu-pkg.so} and finally when the
-class is still not loaded it will try to load @file{lib-gnu.so}.  Note that
+When you compile your classes into a shared library using
+@code{-findirect-dispatch} then add them to the system-wide
+classmap.db file using @code{gcj-dbtool}, they will be automatically
+loaded by the @code{libgcj} system classloader.  This is the new,
+preferred classname-to-library resolution mechanism.  @xref{Invoking
+gcj-dbtool}, for more information on using the classmap database.
+
+@item
+The old classname-to-library lookup mechanism is still supported
+through the @code{gnu.gcj.runtime.VMClassLoader.library_control}
+property, but it is deprecated and will likely be removed in some
+future release.  When trying to load a class @code{gnu.pkg.SomeClass}
+the system classloader will first try to load the shared library
+@file{lib-gnu-pkg-SomeClass.so}, if that fails to load the class then
+it will try to load @file{lib-gnu-pkg.so} and finally when the class
+is still not loaded it will try to load @file{lib-gnu.so}.  Note that
 all @samp{.}s will be transformed into @samp{-}s and that searching
-for inner classes starts with their outermost outer class.  If the class
-cannot be found this way the system classloader tries to use
-the @code{libgcj} bytecode interpreter to load the class from the standard
+for inner classes starts with their outermost outer class.  If the
+class cannot be found this way the system classloader tries to use the
+@code{libgcj} bytecode interpreter to load the class from the standard
 classpath.  This process can be controlled to some degree via the
 @code{gnu.gcj.runtime.VMClassLoader.library_control} property;
 @xref{libgcj Runtime Properties}.
@@ -2787,8 +2797,8 @@ frequently.
 This controls how shared libraries are automatically loaded by the
 built-in class loader.  If this property is set to @samp{full}, a full
 search is done for each requested class.  If this property is set to
-@samp{cache} (the default), then any failed lookups are cached and not
-tried again.  If this property is set to @samp{never}, then lookups
+@samp{cache}, then any failed lookups are cached and not tried again.
+If this property is set to @samp{never} (the default), then lookups
 are never done.  For more information, @xref{Extensions}.
 
 @item gnu.gcj.runtime.endorsed.dirs
