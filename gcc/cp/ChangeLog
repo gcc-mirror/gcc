@@ -1,5 +1,9 @@
 2006-05-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27808
+	* parser.c (cp_parser_decl_specifier_seq): Issue errors about
+	"friend" specifiers that do not appear in class scopes.
+
 	PR c++/27803
 	* class.c (check_bitfield_decl): Ensure that all bitfields have
 	integral type.

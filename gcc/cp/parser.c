@@ -7425,9 +7425,17 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  /* decl-specifier:
 	       friend  */
 	case RID_FRIEND:
-	  ++decl_specs->specs[(int) ds_friend];
-	  /* Consume the token.  */
-	  cp_lexer_consume_token (parser->lexer);
+	  if (!at_class_scope_p ())
+	    {
+	      error ("%<friend%> used outside of class");
+	      cp_lexer_purge_token (parser->lexer);
+	    }
+	  else
+	    {
+	      ++decl_specs->specs[(int) ds_friend];
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
 	  break;
 
 	  /* function-specifier:
