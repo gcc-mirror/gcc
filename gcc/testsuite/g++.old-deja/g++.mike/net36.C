@@ -11,7 +11,7 @@ typedef void (A::*handler) (X*);
 
 class B {
 public:
-  void setHandler(handler); // { dg-error "candidate" }
+  void setHandler(handler);
 };
 
 void f(B* b) {

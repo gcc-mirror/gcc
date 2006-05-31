@@ -1,3 +1,18 @@
+2006-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27801
+	* call.c (perform_implicit_conversion): Do not actually perform
+	conversions in templates.
+
+	PR c++/26496
+	* call.c (resolve_args): Check for invalid uses of bound
+	non-static member functions.
+	* init.c (build_offset_ref): Return error_mark_node for errors.
+
+	PR c++/27385
+	* decl.c (reshape_init): Robustify.
+	(reshape_init_array_1): Likewise.
+
 2006-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27808
