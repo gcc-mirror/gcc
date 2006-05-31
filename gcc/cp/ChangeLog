@@ -1,5 +1,14 @@
 2006-05-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/26068
+	* parser.c (cp_parser_set_storage_class): Check for 
+	invalid uses of storage classes on unbraced linkage
+	specifications.
+	(cp_parser_decl_specifier_seq): Pass keywords, not storage classes,
+	to cp_parser_set_storage_class.
+
+2006-05-30  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/20173
 	* pt.c (determine_specialization): Disallow partial
 	specializations of templates.
