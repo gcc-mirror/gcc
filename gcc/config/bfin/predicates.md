@@ -76,11 +76,43 @@
   return 1;
 })
 
+;; Return nonzero if OP is a LC register.
+(define_predicate "lc_register_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == REG_LC0 || REGNO (op) == REG_LC1")))
+
+;; Return nonzero if OP is a LT register.
+(define_predicate "lt_register_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == REG_LT0 || REGNO (op) == REG_LT1")))
+
+;; Return nonzero if OP is a LB register.
+(define_predicate "lb_register_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == REG_LB0 || REGNO (op) == REG_LB1")))
+
 ;; Return nonzero if OP is a register or a 7 bit signed constant.
 (define_predicate "reg_or_7bit_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_int")
 	    (match_test "CONST_7BIT_IMM_P (INTVAL (op))"))))
+
+;; Return nonzero if OP is a register other than DREG and PREG.
+(define_predicate "nondp_register_operand"
+  (match_operand 0 "register_operand")
+{
+  unsigned int regno;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  regno = REGNO (op);
+  return (regno >= FIRST_PSEUDO_REGISTER || !DP_REGNO_P (regno));
+})
+
+;; Return nonzero if OP is a register other than DREG and PREG, or MEM.
+(define_predicate "nondp_reg_or_memory_operand"
+  (ior (match_operand 0 "nondp_register_operand")
+       (match_operand 0 "memory_operand")))
 
 ;; Used for secondary reloads, this function returns 1 if OP is of the
 ;; form (plus (fp) (const_int)).

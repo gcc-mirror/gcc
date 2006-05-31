@@ -83,6 +83,7 @@ extern void output_push_multiple (rtx, rtx *);
 extern void output_pop_multiple (rtx, rtx *);
 extern int bfin_hard_regno_rename_ok (unsigned int, unsigned int);
 extern rtx bfin_return_addr_rtx (int);
+extern void bfin_hardware_loop (void);
 #undef  Mmode 
 
 #endif

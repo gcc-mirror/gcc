@@ -1,5 +1,60 @@
 2006-05-31  Jie Zhang  <jie.zhang@analog.com>
 
+	* config/bfin/bfin-protos.h (bfin_hardware_loop): Declare.
+	* config/bfin/bfin.c (basic-block.h): Include.
+	(struct machine_function): New.
+	(bfin_init_machine_status): New.
+	(override_options): Initialize init_machine_status.
+	(bfin_hardware_loop): New.
+	(MAX_LOOP_DEPTH, MAX_LOOP_LENGTH): Define.
+	(DEF_VEC_P (loop_info)): New.
+	(DEF_VEC_ALLOC_P (loop_info,heap)): New.
+	(struct loop_info): New.
+	(loop_info): New typedef.
+	(struct loop_work): New.
+	(loop_work): New typedef.
+	(DEF_VEC_O (loop_work)): New.
+	(DEF_VEC_ALLOC_O (loop_work,heap)): New.
+	(bfin_dump_loops): New.
+	(bfin_bb_in_loop): New.
+	(bfin_scan_loop): New.
+	(bfin_optimize_loop): New.
+	(bfin_reorg_loops): New.
+	(bfin_reorg): Use bfin_reorg_loops.
+	* config/bfin/bfin.h (FIRST_PSEUDO_REGISTER): Adjust for adding
+	loop registers.
+	(I_REGNO_P): Simplify.
+	(DP_REGNO_P, DPREG_P): New macros.
+	(REGISTER_NAMES, FIXED_REGISTERS, CALL_USED_REGISTERS,
+	REG_ALLOC_ORDER): Add LT0, LT1, LC0, LC1, LB0, LB1.
+	(enum reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS):
+	Add LT_REGS, LC_REGS, LB_REGS.
+	(REG_CLASS_FROM_LETTER): Add 't' for LT_REGS, 'k' for LC_REGS,
+	'l' for LB_REGS.
+	(REGNO_REG_CLASS): Deal with loop registers.
+	* config/bfin/bfin.md: Add comment for 't', 'k', 'l' constraint
+	letters.
+	(REG_LT0, REG_LT1, REG_LC0, REG_LC1, REG_LB0, REG_LB1):
+	New constants for loop registers.
+	(UNSPEC_LSETUP_END): New.
+	(seq_insns): New define_attr. Set it for appropriate insns.
+	(movsi_insn): Add alternatives for move from/to
+	loop count registers.
+	(doloop_end): New define_expand.
+	(loop_end): New define_insn.
+	(define_split for bad doloop_end): New.
+	(lsetup_with_autoinit): New define_insn.
+	(lsetup_without_autoinit): New define_insn.
+	(rep_movsi, rep_movhi): Clobber LT1, LC1, LB1.
+	* config/bfin/predicates.md (lc_register_operand): New.
+	(lt_register_operand): New.
+	(lb_register_operand): New.
+	(nondp_register_operand): New.
+	(nondp_reg_or_memory_operand): New.
+	* doc/md.texi: Document Blackfin new 't', 'k', 'l' constraint letters.
+
+2006-05-31  Jie Zhang  <jie.zhang@analog.com>
+
 	* config/bfin/bfin.c (bfin_delegitimize_address): New.
 	(TARGET_DELEGITIMIZE_ADDRESS): Define.
 

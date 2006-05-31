@@ -268,15 +268,17 @@ extern const char *bfin_library_id_string;
    5  return address registers RETS/I/X/N/E
    1  arithmetic status register (ASTAT).  */
 
-#define FIRST_PSEUDO_REGISTER 44
+#define FIRST_PSEUDO_REGISTER 50
 
-#define PREG_P(X) (REG_P (X) && P_REGNO_P (REGNO (X)))
-#define IREG_P(X) (REG_P (X) && I_REGNO_P (REGNO (X)))
-#define ADDRESS_REGNO_P(X) ((X) >= REG_P0 && (X) <= REG_M3)
 #define D_REGNO_P(X) ((X) <= REG_R7)
 #define P_REGNO_P(X) ((X) >= REG_P0 && (X) <= REG_P7)
-#define I_REGNO_P(X) \
-  ((X) == REG_I0 || (X) == REG_I1 || (X) == REG_I2 || (X) == REG_I3)
+#define I_REGNO_P(X) ((X) >= REG_I0 && (X) <= REG_I3)
+#define DP_REGNO_P(X) (D_REGNO_P (X) || P_REGNO_P (X))
+#define ADDRESS_REGNO_P(X) ((X) >= REG_P0 && (X) <= REG_M3)
+#define DREG_P(X) (REG_P (X) && D_REGNO_P (REGNO (X)))
+#define PREG_P(X) (REG_P (X) && P_REGNO_P (REGNO (X)))
+#define IREG_P(X) (REG_P (X) && I_REGNO_P (REGNO (X)))
+#define DPREG_P(X) (REG_P (X) && DP_REGNO_P (REGNO (X)))
 
 #define REGISTER_NAMES { \
   "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", \
@@ -286,7 +288,8 @@ extern const char *bfin_library_id_string;
   "A0", "A1", \
   "CC", \
   "RETS", "RETI", "RETX", "RETN", "RETE", "ASTAT", "SEQSTAT", "USP", \
-  "ARGP" \
+  "ARGP", \
+  "LT0", "LT1", "LC0", "LC1", "LB0", "LB1" \
 }
 
 #define SHORT_REGISTER_NAMES { \
@@ -316,8 +319,10 @@ extern const char *bfin_library_id_string;
 { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 1, 0,    \
 /*i0 i1 i2 i3 b0 b1 b2 b3   l0 l1 l2 l3 m0 m1 m2 m3 */ \
   0, 0, 0, 0, 0, 0, 0, 0,   1, 1, 1, 1, 0, 0, 0, 0,    \
-/*a0 a1 cc rets/i/x/n/e     astat seqstat usp argp */ \
-  0, 0, 0, 1, 1, 1, 1, 1,   1, 1, 1, 1	 \
+/*a0 a1 cc rets/i/x/n/e     astat seqstat usp argp lt0/1 lc0/1 */ \
+  0, 0, 0, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,    \
+/*lb0/1 */ \
+  1, 1  \
 }
 
 /* 1 for registers not available across function calls.
@@ -332,8 +337,10 @@ extern const char *bfin_library_id_string;
 { 1, 1, 1, 1, 0, 0, 0, 0,   1, 1, 1, 0, 0, 0, 1, 0, \
 /*i0 i1 i2 i3 b0 b1 b2 b3   l0 l1 l2 l3 m0 m1 m2 m3 */ \
   1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   \
-/*a0 a1 cc rets/i/x/n/e     astat seqstat usp argp */ \
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1	 \
+/*a0 a1 cc rets/i/x/n/e     astat seqstat usp argp lt0/1 lc0/1 */ \
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1, \
+/*lb0/1 */ \
+  1, 1  \
 }
 
 /* Order in which to allocate registers.  Each register must be
@@ -350,7 +357,8 @@ extern const char *bfin_library_id_string;
   REG_L0, REG_L1, REG_L2, REG_L3, REG_M0, REG_M1, REG_M2, REG_M3, \
   REG_RETS, REG_RETI, REG_RETX, REG_RETN, REG_RETE,		  \
   REG_ASTAT, REG_SEQSTAT, REG_USP, 				  \
-  REG_CC, REG_ARGP						  \
+  REG_CC, REG_ARGP,						  \
+  REG_LT0, REG_LT1, REG_LC0, REG_LC1, REG_LB0, REG_LB1		  \
 }
 
 /* Macro to conditionally modify fixed_regs/call_used_regs.  */
@@ -410,6 +418,9 @@ enum reg_class
   IPREGS,
   DPREGS,
   MOST_REGS,
+  LT_REGS,
+  LC_REGS,
+  LB_REGS,
   PROLOGUE_REGS,
   NON_A_CC_REGS,
   ALL_REGS, LIM_REG_CLASSES
@@ -443,6 +454,9 @@ enum reg_class
    "IPREGS",		\
    "DPREGS",		\
    "MOST_REGS",		\
+   "LT_REGS",		\
+   "LC_REGS",		\
+   "LB_REGS",		\
    "PROLOGUE_REGS",	\
    "NON_A_CC_REGS",	\
    "ALL_REGS" }
@@ -484,9 +498,12 @@ enum reg_class
     { 0x000fff00,    0x800 },		/* IPREGS */	\
     { 0x0000ffff,    0x800 },		/* DPREGS */   \
     { 0xffffffff,    0x800 },		/* MOST_REGS */\
-    { 0x00000000,    0x7f8 },		/* PROLOGUE_REGS */\
-    { 0xffffffff,    0xff8 },		/* NON_A_CC_REGS */\
-    { 0xffffffff,    0xfff }}		/* ALL_REGS */
+    { 0x00000000,    0x3000 },		/* LT_REGS */\
+    { 0x00000000,    0xc000 },		/* LC_REGS */\
+    { 0x00000000,    0x30000 },		/* LB_REGS */\
+    { 0x00000000,    0x3f7f8 },		/* PROLOGUE_REGS */\
+    { 0xffffffff,    0x3fff8 },		/* NON_A_CC_REGS */\
+    { 0xffffffff,    0x3ffff }}		/* ALL_REGS */
 
 #define IREG_POSSIBLE_P(OUTER)				     \
   ((OUTER) == POST_INC || (OUTER) == PRE_INC		     \
@@ -535,6 +552,9 @@ enum reg_class
    (LETTER) == 'f' ? MREGS : 		\
    (LETTER) == 'c' ? CIRCREGS :         \
    (LETTER) == 'C' ? CCREGS : 		\
+   (LETTER) == 't' ? LT_REGS : 		\
+   (LETTER) == 'k' ? LC_REGS : 		\
+   (LETTER) == 'l' ? LB_REGS : 		\
    (LETTER) == 'x' ? MOST_REGS :	\
    (LETTER) == 'y' ? PROLOGUE_REGS :	\
    (LETTER) == 'w' ? NON_A_CC_REGS :	\
@@ -554,6 +574,9 @@ enum reg_class
  : (REGNO) >= REG_B0 && (REGNO) <= REG_B3 ? BREGS	\
  : (REGNO) >= REG_M0 && (REGNO) <= REG_M3 ? MREGS	\
  : (REGNO) == REG_A0 || (REGNO) == REG_A1 ? AREGS	\
+ : (REGNO) == REG_LT0 || (REGNO) == REG_LT1 ? LT_REGS	\
+ : (REGNO) == REG_LC0 || (REGNO) == REG_LC1 ? LC_REGS	\
+ : (REGNO) == REG_LB0 || (REGNO) == REG_LB1 ? LB_REGS	\
  : (REGNO) == REG_CC ? CCREGS				\
  : (REGNO) >= REG_RETS ? PROLOGUE_REGS			\
  : NO_REGS)
