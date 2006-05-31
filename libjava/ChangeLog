@@ -1,3 +1,8 @@
+2006-05-31  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* java/lang/VMClassLoader.java (initialize): Set default library
+	control to LIB_NEVER.
+
 2006-05-31  Alan Modra  <amodra@bigpond.net.au>
 
 	* stacktrace.cc (_Jv_StackTrace::UpdateNCodeMap): Don't add
