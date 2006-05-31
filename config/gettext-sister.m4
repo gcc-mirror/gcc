@@ -46,8 +46,8 @@ else
     # by the backticks, then collapsed again by the double quotes,
     # leaving us with one backslash in the sed expression (right
     # before the dot that mustn't act as a wildcard).
-    cat=`echo $cat | sed -e "s!$srcdir/!!" -e "s!\\\\.po!.gmo!"`
-    lang=`echo $cat | sed -e 's!po/!!' -e "s!\\\\.gmo!!"`
+    cat=`echo $cat | sed -e "s!$srcdir/po/!!" -e "s!\\\\.po!.gmo!"`
+    lang=`echo $cat | sed -e "s!\\\\.gmo!!"`
     # The user is allowed to set LINGUAS to a list of languages to
     # install catalogs for.  If it's empty that means "all of them."
     if test "x$LINGUAS" = x; then
@@ -63,4 +63,17 @@ else
   done
   LINGUAS="$XLINGUAS"
   AC_MSG_RESULT($LINGUAS)
+
+  dnl Set up some additional variables which our po/Make-in files
+  dnl may need.
+
+  dnl For backward compatibility. Some Makefiles may be using these.
+  DATADIRNAME=share
+  AC_SUBST(DATADIRNAME)
+  INSTOBJEXT=.mo
+  AC_SUBST(INSTOBJEXT)
+  GENCAT=gencat
+  AC_SUBST(GENCAT)
+  CATOBJEXT=.gmo
+  AC_SUBST(CATOBJEXT)
 fi])

@@ -1,3 +1,9 @@
+2006-05-31  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gettext-sister.m4 (ZW_GNU_GETTEXT_SISTER_DIR): Provide some
+	defines otherwise gotten from AM_GNU_GETTEXT.  Remove the
+	po/ prefix from CATALOGS.
+
 2006-02-14  Paolo Bonzini  <bonzini@gnu.org>
             Andreas Schwab  <schwab@suse.de>
 
