@@ -1,3 +1,7 @@
+2006-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-54.c: New test case.
+
 2006-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26433

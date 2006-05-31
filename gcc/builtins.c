@@ -146,7 +146,6 @@ static tree fold_trunc_transparent_mathfn (tree, tree);
 static bool readonly_data_expr (tree);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
-static tree fold_builtin_cabs (tree, tree);
 static tree fold_builtin_sqrt (tree, tree);
 static tree fold_builtin_cbrt (tree, tree);
 static tree fold_builtin_pow (tree, tree, tree);
@@ -6772,11 +6771,12 @@ fold_fixed_mathfn (tree fndecl, tree arglist)
 }
 
 /* Fold function call to builtin cabs, cabsf or cabsl.  ARGLIST
-   is the argument list and TYPE is the return type.  Return
-   NULL_TREE if no if no simplification can be made.  */
+   is the argument list, TYPE is the return type and FNDECL is the
+   original function DECL.  Return NULL_TREE if no if no simplification
+   can be made.  */
 
 static tree
-fold_builtin_cabs (tree arglist, tree type)
+fold_builtin_cabs (tree arglist, tree type, tree fndecl)
 {
   tree arg;
 
@@ -6816,6 +6816,14 @@ fold_builtin_cabs (tree arglist, tree type)
   if (TREE_CODE (arg) == COMPLEX_EXPR
       && real_zerop (TREE_OPERAND (arg, 1)))
     return fold_build1 (ABS_EXPR, type, TREE_OPERAND (arg, 0));
+
+  /* Optimize cabs(-z) and cabs(conj(z)) as cabs(z).  */
+  if (TREE_CODE (arg) == NEGATE_EXPR
+      || TREE_CODE (arg) == CONJ_EXPR)
+    {
+      tree arglist = build_tree_list (NULL_TREE, TREE_OPERAND (arg, 0));
+      return build_function_call_expr (fndecl, arglist);
+    }
 
   /* Don't do this when optimizing for size.  */
   if (flag_unsafe_math_optimizations
@@ -8648,7 +8656,7 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
       break;
 
     CASE_FLT_FN (BUILT_IN_CABS):
-      return fold_builtin_cabs (arglist, type);
+      return fold_builtin_cabs (arglist, type, fndecl);
 
     CASE_FLT_FN (BUILT_IN_SQRT):
       return fold_builtin_sqrt (arglist, type);
