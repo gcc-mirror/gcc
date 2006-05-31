@@ -1,3 +1,7 @@
+2006-05-31  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* texi2pod.pl: Correct handling of absolute @include.
+
 2006-05-02  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* texi2pod.pl: Handle -I.

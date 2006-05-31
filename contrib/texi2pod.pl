@@ -239,8 +239,10 @@ while(<$inf>) {
 
 	# Try cwd and $ibase, then explicit -I paths.
 	$done = 0;
-	foreach $path (".", $ibase, @ipath) {
-	    open($inf, "<" . $path . "/" . $file) and ($done = 1, last);
+	foreach $path ("", $ibase, @ipath) {
+	    $mypath = $file;
+	    $mypath = $path . "/" . $mypath if ($path ne "");
+	    open($inf, "<" . $mypath) and ($done = 1, last);
 	}
 	die "cannot find $file" if !$done;
 	next;
