@@ -2693,6 +2693,8 @@ resolve_args (tree args)
 	  error ("invalid use of void expression");
 	  return error_mark_node;
 	}
+      else if (invalid_nonstatic_memfn_p (arg))
+	return error_mark_node;
     }
   return args;
 }
@@ -6352,6 +6354,14 @@ perform_implicit_conversion (tree type, tree expr)
     {
       error ("could not convert %qE to %qT", expr, type);
       expr = error_mark_node;
+    }
+  else if (processing_template_decl)
+    {
+      /* In a template, we are only concerned about determining the
+	 type of non-dependent expressions, so we do not have to
+	 perform the actual conversion.  */
+      if (TREE_TYPE (expr) != type)
+	expr = build_nop (type, expr);
     }
   else
     expr = convert_like (conv, expr);
