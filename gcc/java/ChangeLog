@@ -1,3 +1,12 @@
+2006-05-31  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gcj.texi (Extensions): Document the new gcj-dbtool-based
+	classname-to-library resolution mechanism.
+	Declare the old gnu.gcj.runtime.VMClassLoader.library_control
+	mechanism deprecated.
+	(libgcj Runtime Properties): Document
+	gnu.gcj.runtime.VMClassLoader.library_control's new default.
+
 2006-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* javaop.h (int16, int32, int64): Define to exactly 16 (resp. 32, 64)
