@@ -309,7 +309,7 @@ final class VMClassLoader
     else if ("full".equals(p))
       lib_control = LIB_FULL;
     else
-      lib_control = LIB_CACHE;
+      lib_control = LIB_NEVER;
 
     tried_libraries = new HashSet();
   }
