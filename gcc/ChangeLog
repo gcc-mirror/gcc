@@ -1,5 +1,6 @@
 2006-05-31  Richard Earnshaw  <richard.earnshaw@arm.com>
 
+	PR target/27829
 	* arm.c (arm_print_operand case 'S'): Validate that the operand is
 	a shift operand before calling shift_op.  Avoid redundant call of
 	shift_op.
