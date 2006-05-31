@@ -1,4 +1,5 @@
 // PR c++/26433
+// { dg-do link }
 
 int get_int()
 {
