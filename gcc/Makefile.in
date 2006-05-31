@@ -4633,7 +4633,7 @@ risky-stage4: stage4
 XGETTEXT = @XGETTEXT@
 GMSGFMT = @GMSGFMT@
 MSGMERGE = msgmerge
-CATALOGS = @CATALOGS@
+CATALOGS = $(patsubst %,po/%,@CATALOGS@)
 
 .PHONY: build- install- build-po install-po update-po
 
