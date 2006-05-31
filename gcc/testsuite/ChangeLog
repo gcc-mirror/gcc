@@ -1,3 +1,15 @@
+2006-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27801
+	* g++.dg/template/cond6.C: New test.
+
+	PR c++/26496
+	* g++.dg/template/crash51.C: New test.
+	* g++.old-deja/g++.mike/net36.C: Tweak error markers.
+
+	PR c++/27385
+	* g++.dg/init/array20.C: New test.
+
 2006-05-31  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-54.c: New test case.

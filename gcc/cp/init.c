@@ -1426,7 +1426,7 @@ build_offset_ref (tree type, tree member, bool address_p)
 	    }
 	  error ("invalid use of non-static member function %qD",
 		 TREE_OPERAND (member, 1));
-	  return member;
+	  return error_mark_node;
 	}
       else if (TREE_CODE (member) == FIELD_DECL)
 	{
