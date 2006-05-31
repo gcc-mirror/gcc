@@ -51,6 +51,14 @@
 #include "bfin-protos.h"
 #include "tm-preds.h"
 #include "gt-bfin.h"
+#include "basic-block.h"
+
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+struct machine_function GTY(())
+{
+  int has_hardware_loops;
+};
 
 /* Test and compare insns in bfin.md store the information needed to
    generate branch and scc insns here.  */
@@ -1957,6 +1965,16 @@ bfin_handle_option (size_t code, const char *arg, int value)
     }
 }
 
+static struct machine_function *
+bfin_init_machine_status (void)
+{
+  struct machine_function *f;
+
+  f = ggc_alloc_cleared (sizeof (struct machine_function));
+
+  return f;
+}
+
 /* Implement the macro OVERRIDE_OPTIONS.  */
 
 void
@@ -1987,6 +2005,8 @@ override_options (void)
     flag_pic = 0;
 
   flag_schedule_insns = 0;
+
+  init_machine_status = bfin_init_machine_status;
 }
 
 /* Return the destination address of BRANCH.
@@ -2704,6 +2724,771 @@ bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
   return cost;
 }
+
+
+/* Increment the counter for the number of loop instructions in the
+   current function.  */
+
+void
+bfin_hardware_loop (void)
+{
+  cfun->machine->has_hardware_loops++;
+}
+
+/* Maxium loop nesting depth.  */
+#define MAX_LOOP_DEPTH 2
+
+/* Maxium size of a loop.  */
+#define MAX_LOOP_LENGTH 4096
+
+/* We need to keep a vector of loops */
+typedef struct loop_info *loop_info;
+DEF_VEC_P (loop_info);
+DEF_VEC_ALLOC_P (loop_info,heap);
+
+/* Information about a loop we have found (or are in the process of
+   finding).  */
+struct loop_info GTY (())
+{
+  /* loop number, for dumps */
+  int loop_no;
+
+  /* Predecessor block of the loop.   This is the one that falls into
+     the loop and contains the initialization instruction.  */
+  basic_block predecessor;
+
+  /* First block in the loop.  This is the one branched to by the loop_end
+     insn.  */
+  basic_block head;
+
+  /* Last block in the loop (the one with the loop_end insn).  */
+  basic_block tail;
+
+  /* The successor block of the loop.  This is the one the loop_end insn
+     falls into.  */
+  basic_block successor;
+
+  /* The last instruction in the tail.  */
+  rtx last_insn;
+
+  /* The loop_end insn.  */
+  rtx loop_end;
+
+  /* The iteration register.  */
+  rtx iter_reg;
+
+  /* The new initialization insn.  */
+  rtx init;
+
+  /* The new initialization instruction.  */
+  rtx loop_init;
+
+  /* The new label placed at the beginning of the loop. */
+  rtx start_label;
+
+  /* The new label placed at the end of the loop. */
+  rtx end_label;
+
+  /* The length of the loop.  */
+  int length;
+
+  /* The nesting depth of the loop.  Set to -1 for a bad loop.  */
+  int depth;
+
+  /* True if we have visited this loop.  */
+  int visited;
+
+  /* True if this loop body clobbers any of LC0, LT0, or LB0.  */
+  int clobber_loop0;
+
+  /* True if this loop body clobbers any of LC1, LT1, or LB1.  */
+  int clobber_loop1;
+
+  /* Next loop in the graph. */
+  struct loop_info *next;
+
+  /* Immediate outer loop of this loop.  */
+  struct loop_info *outer;
+
+  /* Vector of blocks only within the loop, (excluding those within
+     inner loops).  */
+  VEC (basic_block,heap) *blocks;
+
+  /* Vector of inner loops within this loop  */
+  VEC (loop_info,heap) *loops;
+};
+
+/* Information used during loop detection.  */
+typedef struct loop_work GTY(())
+{
+  /* Basic block to be scanned.  */
+  basic_block block;
+
+  /* Loop it will be within.  */
+  loop_info loop;
+} loop_work;
+
+/* Work list.  */
+DEF_VEC_O (loop_work);
+DEF_VEC_ALLOC_O (loop_work,heap);
+
+static void
+bfin_dump_loops (loop_info loops)
+{
+  loop_info loop;
+
+  for (loop = loops; loop; loop = loop->next)
+    {
+      loop_info i;
+      basic_block b;
+      unsigned ix;
+
+      fprintf (dump_file, ";; loop %d: ", loop->loop_no);
+      fprintf (dump_file, "{head:%d, depth:%d}", loop->head->index, loop->depth);
+
+      fprintf (dump_file, " blocks: [ ");
+      for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, b); ix++)
+	fprintf (dump_file, "%d ", b->index);
+      fprintf (dump_file, "] ");
+
+      fprintf (dump_file, " inner loops: [ ");
+      for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, i); ix++)
+	fprintf (dump_file, "%d ", i->loop_no);
+      fprintf (dump_file, "]\n");
+    }
+  fprintf (dump_file, "\n");
+}
+
+/* Scan the blocks of LOOP (and its inferiors) looking for basic block
+   BB. Return true, if we find it.  */
+
+static bool
+bfin_bb_in_loop (loop_info loop, basic_block bb)
+{
+  unsigned ix;
+  loop_info inner;
+  basic_block b;
+
+  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, b); ix++)
+    if (b == bb)
+      return true;
+
+  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
+    if (bfin_bb_in_loop (inner, bb))
+      return true;
+
+  return false;
+}
+
+/* Scan the blocks of LOOP (and its inferiors) looking for uses of
+   REG.  Return true, if we find any.  Don't count the loop's loop_end
+   insn if it matches LOOP_END.  */
+
+static bool
+bfin_scan_loop (loop_info loop, rtx reg, rtx loop_end)
+{
+  unsigned ix;
+  loop_info inner;
+  basic_block bb;
+
+  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, bb); ix++)
+    {
+      rtx insn;
+
+      for (insn = BB_HEAD (bb);
+	   insn != NEXT_INSN (BB_END (bb));
+	   insn = NEXT_INSN (insn))
+	{
+	  if (!INSN_P (insn))
+	    continue;
+	  if (insn == loop_end)
+	    continue;
+	  if (reg_mentioned_p (reg, PATTERN (insn)))
+	    return true;
+	}
+    }
+  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
+    if (bfin_scan_loop (inner, reg, NULL_RTX))
+      return true;
+
+  return false;
+}
+
+/* Optimize LOOP.  */
+
+static void
+bfin_optimize_loop (loop_info loop)
+{
+  basic_block bb;
+  loop_info inner, outer;
+  rtx insn, init_insn, last_insn, nop_insn;
+  rtx loop_init, start_label, end_label;
+  rtx reg_lc0, reg_lc1, reg_lt0, reg_lt1, reg_lb0, reg_lb1;
+  rtx iter_reg;
+  rtx lc_reg, lt_reg, lb_reg;
+  rtx seq;
+  int length;
+  unsigned ix;
+  int inner_depth = 0;
+  int inner_num;
+  int bb_num;
+
+  if (loop->visited)
+    return;
+
+  loop->visited = 1;
+
+  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
+    {
+      if (inner->loop_no == loop->loop_no)
+	loop->depth = -1;
+      else
+	bfin_optimize_loop (inner);
+
+      if (inner->depth < 0 || inner->depth > MAX_LOOP_DEPTH)
+	{
+	  inner->outer = NULL;
+	  VEC_ordered_remove (loop_info, loop->loops, ix);
+	}
+
+      if (inner_depth < inner->depth)
+	inner_depth = inner->depth;
+
+      loop->clobber_loop0 |= inner->clobber_loop0;
+      loop->clobber_loop1 |= inner->clobber_loop1;
+    }
+
+  if (loop->depth < 0)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d bad when found\n", loop->loop_no);
+      goto bad_loop;
+    }
+
+  loop->depth = inner_depth + 1;
+  if (loop->depth > MAX_LOOP_DEPTH)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d too deep\n", loop->loop_no);
+      goto bad_loop;
+    }
+
+  /* Make sure we only have one entry point.  */
+  if (EDGE_COUNT (loop->head->preds) == 2)
+    {
+      loop->predecessor = EDGE_PRED (loop->head, 0)->src;
+      if (loop->predecessor == loop->tail)
+	/* We wanted the other predecessor.  */
+	loop->predecessor = EDGE_PRED (loop->head, 1)->src;
+
+      /* We can only place a loop insn on a fall through edge of a
+	 single exit block.  */
+      if (EDGE_COUNT (loop->predecessor->succs) != 1
+	  || !(EDGE_SUCC (loop->predecessor, 0)->flags & EDGE_FALLTHRU)
+	  /* If loop->predecessor is in loop, loop->head is not really
+	     the head of the loop.  */
+	  || bfin_bb_in_loop (loop, loop->predecessor))
+	loop->predecessor = NULL;
+    }
+
+  if (loop->predecessor == NULL)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has bad predecessor\n", loop->loop_no);
+      goto bad_loop;
+    }
+
+  /* Get the loop iteration register.  */
+  iter_reg = loop->iter_reg;
+
+  if (!DPREG_P (iter_reg))
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d iteration count NOT in PREG or DREG\n",
+		 loop->loop_no);
+      goto bad_loop;
+    }
+
+  /* Check if start_label appears before loop_end and calculate the
+     offset between them.  We calculate the length of instructions
+     conservatively.  */
+  length = 0;
+  for (insn = loop->start_label;
+       insn && insn != loop->loop_end;
+       insn = NEXT_INSN (insn))
+    {
+      if (JUMP_P (insn) && any_condjump_p (insn) && !optimize_size)
+	{
+	  if (TARGET_CSYNC_ANOMALY)
+	    length += 8;
+	  else if (TARGET_SPECLD_ANOMALY)
+	    length += 6;
+	}
+      else if (LABEL_P (insn))
+	{
+	  if (TARGET_CSYNC_ANOMALY)
+	    length += 4;
+	}
+
+      if (INSN_P (insn))
+	length += get_attr_length (insn);
+    }
+
+  if (!insn)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
+		 loop->loop_no);
+      goto bad_loop;
+    }
+
+  loop->length = length;
+  if (loop->length > MAX_LOOP_LENGTH)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d too long\n", loop->loop_no);
+      goto bad_loop;
+    }
+
+  /* Scan all the blocks to make sure they don't use iter_reg.  */
+  if (bfin_scan_loop (loop, iter_reg, loop->loop_end))
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d uses iterator\n", loop->loop_no);
+      goto bad_loop;
+    }
+
+  /* Scan all the insns to see if the loop body clobber
+     any hardware loop registers. */
+
+  reg_lc0 = gen_rtx_REG (SImode, REG_LC0);
+  reg_lc1 = gen_rtx_REG (SImode, REG_LC1);
+  reg_lt0 = gen_rtx_REG (SImode, REG_LT0);
+  reg_lt1 = gen_rtx_REG (SImode, REG_LT1);
+  reg_lb0 = gen_rtx_REG (SImode, REG_LB0);
+  reg_lb1 = gen_rtx_REG (SImode, REG_LB1);
+
+  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, bb); ix++)
+    {
+      rtx insn;
+
+      for (insn = BB_HEAD (bb);
+	   insn != NEXT_INSN (BB_END (bb));
+	   insn = NEXT_INSN (insn))
+	{
+	  if (!INSN_P (insn))
+	    continue;
+
+	  if (reg_set_p (reg_lc0, insn)
+	      || reg_set_p (reg_lt0, insn)
+	      || reg_set_p (reg_lb0, insn))
+	    loop->clobber_loop0 = 1;
+	  
+	  if (reg_set_p (reg_lc1, insn)
+	      || reg_set_p (reg_lt1, insn)
+	      || reg_set_p (reg_lb1, insn))
+	    loop->clobber_loop1 |= 1;
+	}
+    }
+
+  if ((loop->clobber_loop0 && loop->clobber_loop1)
+      || (loop->depth == MAX_LOOP_DEPTH && loop->clobber_loop0))
+    {
+      loop->depth = MAX_LOOP_DEPTH + 1;
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d no loop reg available\n",
+		 loop->loop_no);
+      goto bad_loop;
+    }
+
+  /* There should be an instruction before the loop_end instruction
+     in the same basic block. And the instruction must not be
+     - JUMP
+     - CONDITIONAL BRANCH
+     - CALL
+     - CSYNC
+     - SSYNC
+     - Returns (RTS, RTN, etc.)  */
+
+  bb = loop->tail;
+  last_insn = PREV_INSN (loop->loop_end);
+
+  while (1)
+    {
+      for (; last_insn != PREV_INSN (BB_HEAD (bb));
+	   last_insn = PREV_INSN (last_insn))
+	if (INSN_P (last_insn))
+	  break;
+
+      if (last_insn != PREV_INSN (BB_HEAD (bb)))
+	break;
+
+      if (single_pred_p (bb)
+	  && single_pred (bb) != ENTRY_BLOCK_PTR)
+	{
+	  bb = single_pred (bb);
+	  last_insn = BB_END (bb);
+	  continue;
+	}
+      else
+	{
+	  last_insn = NULL_RTX;
+	  break;
+	}
+    }
+
+  if (!last_insn)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has no last instruction\n",
+		 loop->loop_no);
+      goto bad_loop;
+    }
+
+  if (JUMP_P (last_insn))
+    {
+      loop_info inner = bb->aux;
+      if (inner
+	  && inner->outer == loop
+	  && inner->loop_end == last_insn
+	  && inner->depth == 1)
+	/* This jump_insn is the exact loop_end of an inner loop
+	   and to be optimized away. So use the inner's last_insn.  */
+	last_insn = inner->last_insn;
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d has bad last instruction\n",
+		     loop->loop_no);
+	  goto bad_loop;
+	}
+    }
+  else if (CALL_P (last_insn)
+	   || get_attr_type (last_insn) == TYPE_SYNC
+	   || recog_memoized (last_insn) == CODE_FOR_return_internal)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has bad last instruction\n",
+		 loop->loop_no);
+      goto bad_loop;
+    }
+
+  if (GET_CODE (PATTERN (last_insn)) == ASM_INPUT
+      || asm_noperands (PATTERN (last_insn)) >= 0
+      || get_attr_seq_insns (last_insn) == SEQ_INSNS_MULTI)
+    {
+      nop_insn = emit_insn_after (gen_nop (), last_insn);
+      last_insn = nop_insn;
+    }
+
+  loop->last_insn = last_insn;
+
+  /* The loop is good for replacement.  */
+  start_label = loop->start_label;
+  end_label = gen_label_rtx ();
+  iter_reg = loop->iter_reg;
+
+  if (loop->depth == 1 && !loop->clobber_loop1)
+    {
+      lc_reg = reg_lc1;
+      lt_reg = reg_lt1;
+      lb_reg = reg_lb1;
+      loop->clobber_loop1 = 1;
+    }
+  else
+    {
+      lc_reg = reg_lc0;
+      lt_reg = reg_lt0;
+      lb_reg = reg_lb0;
+      loop->clobber_loop0 = 1;
+    }
+
+  /* If iter_reg is a DREG, we need generate an instruction to load
+     the loop count into LC register. */
+  if (D_REGNO_P (REGNO (iter_reg)))
+    {
+      init_insn = gen_movsi (lc_reg, iter_reg);
+      loop_init = gen_lsetup_without_autoinit (lt_reg, start_label,
+					       lb_reg, end_label,
+					       lc_reg);
+    }
+  else if (P_REGNO_P (REGNO (iter_reg)))
+    {
+      init_insn = NULL_RTX;
+      loop_init = gen_lsetup_with_autoinit (lt_reg, start_label,
+					    lb_reg, end_label,
+					    lc_reg, iter_reg);
+    }
+  else
+    gcc_unreachable ();
+
+  loop->init = init_insn;
+  loop->end_label = end_label;
+  loop->loop_init = loop_init;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, ";; replacing loop %d initializer with\n",
+	       loop->loop_no);
+      print_rtl_single (dump_file, loop->loop_init);
+      fprintf (dump_file, ";; replacing loop %d terminator with\n",
+	       loop->loop_no);
+      print_rtl_single (dump_file, loop->loop_end);
+    }
+
+  start_sequence ();
+
+  if (loop->init != NULL_RTX)
+    emit_insn (loop->init);
+  emit_insn(loop->loop_init);
+  emit_label (loop->start_label);
+
+  seq = get_insns ();
+  end_sequence ();
+
+  emit_insn_after (seq, BB_END (loop->predecessor));
+  delete_insn (loop->loop_end);
+
+  /* Insert the loop end label before the last instruction of the loop.  */
+  emit_label_before (loop->end_label, loop->last_insn);
+
+  return;
+
+bad_loop:
+
+  if (dump_file)
+    fprintf (dump_file, ";; loop %d is bad\n", loop->loop_no);
+
+  /* Mark this loop bad.  */
+  if (loop->depth <= MAX_LOOP_DEPTH)
+    loop->depth = -1;
+
+  outer = loop->outer;
+
+  /* Move all inner loops to loop's outer loop.  */
+  inner_num = VEC_length (loop_info, loop->loops);
+  if (inner_num)
+    {
+      loop_info l;
+
+      if (outer)
+	VEC_reserve (loop_info, heap, outer->loops, inner_num);
+
+      for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, l); ix++)
+	{
+	  l->outer = outer;
+	  if (outer)
+	    VEC_quick_push (loop_info, outer->loops, l);
+	}
+
+      VEC_free (loop_info, heap, loop->loops);
+    }
+
+  /* Move all blocks to loop's outer loop.  */
+  bb_num = VEC_length (basic_block, loop->blocks);
+  if (bb_num)
+    {
+      basic_block b;
+
+      if (outer)
+	VEC_reserve (basic_block, heap, outer->blocks, bb_num);
+
+      for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, b); ix++)
+	{
+	  b->aux = outer;
+	  if (outer)
+	    VEC_quick_push (basic_block, outer->blocks, b);
+	}
+
+      VEC_free (basic_block, heap, loop->blocks);
+    }
+
+  if (DPREG_P (loop->iter_reg))
+    {
+      /* If loop->iter_reg is a DREG or PREG, we can split it here
+	 without scratch register.  */
+      rtx insn;
+
+      emit_insn_before (gen_addsi3 (loop->iter_reg,
+				    loop->iter_reg,
+				    constm1_rtx),
+			loop->loop_end);
+
+      emit_insn_before (gen_cmpsi (loop->iter_reg, const0_rtx),
+			loop->loop_end);
+
+      insn = emit_jump_insn_before (gen_bne (loop->start_label),
+				    loop->loop_end);
+
+      JUMP_LABEL (insn) = loop->start_label;
+      LABEL_NUSES (loop->start_label)++;
+      delete_insn (loop->loop_end);
+    }
+}
+
+static void
+bfin_reorg_loops (FILE *dump_file)
+{
+  basic_block bb;
+  loop_info loops = NULL;
+  loop_info loop;
+  int nloops = 0;
+  unsigned dwork = 0;
+  VEC (loop_work,heap) *works = VEC_alloc (loop_work,heap,20);
+  loop_work *work;
+  edge e;
+  edge_iterator ei;
+
+  /* Find all the possible loop tails.  This means searching for every
+     loop_end instruction.  For each one found, create a loop_info
+     structure and add the head block to the work list. */
+  FOR_EACH_BB (bb)
+    {
+      rtx tail = BB_END (bb);
+
+      while (GET_CODE (tail) == NOTE)
+	tail = PREV_INSN (tail);
+
+      bb->aux = NULL;
+      if (recog_memoized (tail) == CODE_FOR_loop_end)
+	{
+	  /* A possible loop end */
+
+	  loop = XNEW (struct loop_info);
+	  loop->next = loops;
+	  loops = loop;
+	  loop->tail = bb;
+	  loop->head = BRANCH_EDGE (bb)->dest;
+	  loop->successor = FALLTHRU_EDGE (bb)->dest;
+	  loop->predecessor = NULL;
+	  loop->loop_end = tail;
+	  loop->last_insn = NULL_RTX;
+	  loop->iter_reg = SET_DEST (XVECEXP (PATTERN (tail), 0, 1));
+	  loop->depth = loop->length = 0;
+	  loop->visited = 0;
+	  loop->clobber_loop0 = loop->clobber_loop1 = 0;
+	  loop->blocks = VEC_alloc (basic_block, heap, 20);
+	  VEC_quick_push (basic_block, loop->blocks, bb);
+	  loop->outer = NULL;
+	  loop->loops = NULL;
+	  loop->loop_no = nloops++;
+
+	  loop->init = loop->loop_init = NULL_RTX;
+	  loop->start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (tail), 0, 0)), 1), 0);
+	  loop->end_label = NULL_RTX;
+
+	  work = VEC_safe_push (loop_work, heap, works, NULL);
+	  work->block = loop->head;
+	  work->loop = loop;
+
+	  bb->aux = loop;
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, ";; potential loop %d ending at\n",
+		       loop->loop_no);
+	      print_rtl_single (dump_file, tail);
+	    }
+	}
+    }
+
+  /*  Now find all the closed loops.
+      until work list empty,
+       if block's auxptr is set
+         if != loop slot
+           if block's loop's start != block
+	     mark loop as bad
+	   else
+             append block's loop's fallthrough block to worklist
+	     increment this loop's depth
+       else if block is exit block
+         mark loop as bad
+       else
+	  set auxptr
+	  for each target of block
+	    add to worklist */
+  while (VEC_iterate (loop_work, works, dwork++, work))
+    {
+      loop = work->loop;
+      bb = work->block;
+      if (bb == EXIT_BLOCK_PTR)
+	/* We've reached the exit block.  The loop must be bad. */
+	loop->depth = -1;
+      else if (!bb->aux)
+	{
+	  /* We've not seen this block before.  Add it to the loop's
+	     list and then add each successor to the work list.  */
+	  bb->aux = loop;
+	  VEC_safe_push (basic_block, heap, loop->blocks, bb);
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    {
+	      if (!VEC_space (loop_work, works, 1))
+		{
+		  if (dwork)
+		    {
+		      VEC_block_remove (loop_work, works, 0, dwork);
+		      dwork = 0;
+		    }
+		  else
+		    VEC_reserve (loop_work, heap, works, 1);
+		}
+	      work = VEC_quick_push (loop_work, works, NULL);
+	      work->block = EDGE_SUCC (bb, ei.index)->dest;
+	      work->loop = loop;
+	    }
+	}
+      else if (bb->aux != loop)
+	{
+	  /* We've seen this block in a different loop.  If it's not
+	     the other loop's head, then this loop must be bad.
+	     Otherwise, the other loop might be a nested loop, so
+	     continue from that loop's successor.  */
+	  loop_info other = bb->aux;
+
+	  if (other->head != bb)
+	    loop->depth = -1;
+	  else
+	    {
+	      other->outer = loop;
+	      VEC_safe_push (loop_info, heap, loop->loops, other);
+	      work = VEC_safe_push (loop_work, heap, works, NULL);
+	      work->loop = loop;
+	      work->block = other->successor;
+	    }
+	}
+    }
+  VEC_free (loop_work, heap, works);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, ";; All loops found:\n\n");
+      bfin_dump_loops (loops);
+    }
+  
+  /* Now apply the optimizations.  */
+  for (loop = loops; loop; loop = loop->next)
+    bfin_optimize_loop (loop);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, ";; After hardware loops optimization:\n\n");
+      bfin_dump_loops (loops);
+    }
+
+  /* Free up the loop structures */
+  while (loops)
+    {
+      loop = loops;
+      loops = loop->next;
+      VEC_free (loop_info, heap, loop->loops);
+      VEC_free (basic_block, heap, loop->blocks);
+      XDELETE (loop);
+    }
+
+  if (dump_file)
+    print_rtl (dump_file, get_insns ());
+}
+
 
 /* We use the machine specific reorg pass for emitting CSYNC instructions
    after conditional branches as needed.
@@ -2731,7 +3516,11 @@ bfin_reorg (void)
   rtx insn, last_condjump = NULL_RTX;
   int cycles_since_jump = INT_MAX;
 
-  if (! TARGET_SPECLD_ANOMALY || ! TARGET_CSYNC_ANOMALY)
+  /* Doloop optimization */
+  if (cfun->machine->has_hardware_loops)
+    bfin_reorg_loops (dump_file);
+
+  if (! TARGET_SPECLD_ANOMALY && ! TARGET_CSYNC_ANOMALY)
     return;
 
   /* First pass: find predicted-false branches; if something after them
