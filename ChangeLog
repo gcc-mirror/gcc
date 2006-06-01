@@ -1,3 +1,7 @@
+2006-05-31  Asher Langton  <langton2@llnl.gov>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+	
 2006-05-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (bfd, opcodes): Fix lib_path.
