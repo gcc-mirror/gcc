@@ -5892,10 +5892,10 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       t = build1 (LABEL_EXPR, void_type_node, lab_false);
       append_to_statement_list (t, pre_p);
 
-      if (n_reg > 2)
+      if ((n_reg == 2 && reg != gpr) || n_reg > 2)
 	{
 	  /* Ensure that we don't find any more args in regs.
-	     Alignment has taken care of the n_reg == 2 case.  */
+	     Alignment has taken care of the n_reg == 2 gpr case.  */
 	  t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, size_int (8));
 	  gimplify_and_add (t, pre_p);
 	}
