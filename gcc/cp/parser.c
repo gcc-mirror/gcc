@@ -19006,12 +19006,14 @@ cp_parser_initial_pragma (cp_token *first_token)
   while (first_token->type != CPP_PRAGMA_EOL && first_token->type != CPP_EOF)
     cp_lexer_get_preprocessor_token (NULL, first_token);
 
-  /* Read one more token to return to our caller.  */
-  cp_lexer_get_preprocessor_token (NULL, first_token);
-
   /* Now actually load the PCH file.  */
   if (name)
     c_common_pch_pragma (parse_in, TREE_STRING_POINTER (name));
+
+  /* Read one more token to return to our caller.  We have to do this
+     after reading the PCH file in, since its pointers have to be
+     live.  */
+  cp_lexer_get_preprocessor_token (NULL, first_token);
 }
 
 /* Normal parsing of a pragma token.  Here we can (and must) use the
