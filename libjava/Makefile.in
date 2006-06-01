@@ -46,15 +46,16 @@ target_triplet = @target@
 @NATIVE_TRUE@bin_PROGRAMS = jv-convert$(EXEEXT) gij$(EXEEXT) \
 @NATIVE_TRUE@	grmic$(EXEEXT) grmiregistry$(EXEEXT) \
 @NATIVE_TRUE@	gcj-dbtool$(EXEEXT)
-@USING_GCC_TRUE@am__append_4 = $(WARNINGS)
-@USING_BOEHMGC_TRUE@am__append_5 = boehm.cc
-@USING_NOGC_TRUE@am__append_6 = nogc.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_7 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_8 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_9 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_10 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_11 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_12 = no-threads.cc
+@BASH_JAR_TRUE@am__append_4 = scripts/jar
+@USING_GCC_TRUE@am__append_5 = $(WARNINGS)
+@USING_BOEHMGC_TRUE@am__append_6 = boehm.cc
+@USING_NOGC_TRUE@am__append_7 = nogc.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_8 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_9 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_10 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_11 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_12 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_13 = no-threads.cc
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -62,11 +63,11 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/libgcj-test.spec.in \
 	$(srcdir)/libgcj.pc.in $(srcdir)/libgcj.spec.in \
-	$(srcdir)/sources.am $(top_srcdir)/configure COPYING ChangeLog \
-	NEWS THANKS
+	$(srcdir)/sources.am $(top_srcdir)/configure \
+	$(top_srcdir)/scripts/jar.in COPYING ChangeLog NEWS THANKS
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
-@XLIB_AWT_TRUE@am__append_13 = $(xlib_nat_headers)
+@XLIB_AWT_TRUE@am__append_14 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -90,7 +91,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 CONFIG_HEADER = $(top_builddir)/include/config.h \
 	$(top_builddir)/gcj/libgcj-config.h
 CONFIG_CLEAN_FILES = libgcj.pc libgcj.spec libgcj-test.spec \
-	java/io/natFile.cc java/lang/ConcreteProcess.java \
+	scripts/jar java/io/natFile.cc java/lang/ConcreteProcess.java \
 	java/lang/natConcreteProcess.cc java/net/natInetAddress.cc \
 	java/net/natVMNetworkInterface.cc \
 	gnu/java/net/natPlainSocketImpl.cc \
@@ -440,6 +441,8 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BACKTRACESPEC = @BACKTRACESPEC@
+BASH_JAR_FALSE = @BASH_JAR_FALSE@
+BASH_JAR_TRUE = @BASH_JAR_TRUE@
 CAIRO_CFLAGS = @CAIRO_CFLAGS@
 CAIRO_LIBS = @CAIRO_LIBS@
 CC = @CC@
@@ -477,6 +480,7 @@ GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+GREP = @GREP@
 GTK_CAIRO_FALSE = @GTK_CAIRO_FALSE@
 GTK_CAIRO_TRUE = @GTK_CAIRO_TRUE@
 GTK_CFLAGS = @GTK_CFLAGS@
@@ -555,6 +559,7 @@ THREADLDFLAGS = @THREADLDFLAGS@
 THREADLIBS = @THREADLIBS@
 THREADSPEC = @THREADSPEC@
 TOOLKIT = @TOOLKIT@
+UNZIP = @UNZIP@
 USING_BOEHMGC_FALSE = @USING_BOEHMGC_FALSE@
 USING_BOEHMGC_TRUE = @USING_BOEHMGC_TRUE@
 USING_DARWIN_CRT_FALSE = @USING_DARWIN_CRT_FALSE@
@@ -576,22 +581,18 @@ USING_WIN32_THREADS_TRUE = @USING_WIN32_THREADS_TRUE@
 VERSION = @VERSION@
 XLIB_AWT_FALSE = @XLIB_AWT_FALSE@
 XLIB_AWT_TRUE = @XLIB_AWT_TRUE@
+XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 ZINCS = @ZINCS@
+ZIP = @ZIP@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
-ac_ct_AR = @ac_ct_AR@
-ac_ct_AS = @ac_ct_AS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
-ac_ct_GCJ = @ac_ct_GCJ@
-ac_ct_LD = @ac_ct_LD@
-ac_ct_RANLIB = @ac_ct_RANLIB@
-ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -611,7 +612,10 @@ build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@
 datadir = @datadir@
+datarootdir = @datarootdir@
 dbexecdir = @dbexecdir@
+docdir = @docdir@
+dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 extra_ldflags_libjava = @extra_ldflags_libjava@
 gxx_include_dir = @gxx_include_dir@
@@ -622,6 +626,7 @@ host_cpu = @host_cpu@
 host_os = @host_os@
 host_subdir = @host_subdir@
 host_vendor = @host_vendor@
+htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
@@ -629,13 +634,16 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 libgcj_basedir = @libgcj_basedir@
 libstdcxx_incdir = @libstdcxx_incdir@
+localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 mkinstalldirs = @mkinstalldirs@
 oldincludedir = @oldincludedir@
+pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
+psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 subdirs = @subdirs@
@@ -686,7 +694,7 @@ propdir = $(libdir)
 db_name = classmap.db
 db_pathtail = gcj-$(gcc_version)/$(db_name)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
-bin_SCRIPTS = addr2name.awk
+bin_SCRIPTS = addr2name.awk $(am__append_4)
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
           $(LDFLAGS) -o $@
@@ -724,7 +732,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_4)
+AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_5)
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 JCFLAGS = -g
 JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
@@ -748,10 +756,10 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
 	defineclass.cc interpret.cc verify.cc java/lang/Class.java \
-	java/lang/Object.java $(nat_source_files) $(am__append_5) \
-	$(am__append_6) $(am__append_7) $(am__append_8) \
-	$(am__append_9) $(am__append_10) $(am__append_11) \
-	$(am__append_12)
+	java/lang/Object.java $(nat_source_files) $(am__append_6) \
+	$(am__append_7) $(am__append_8) $(am__append_9) \
+	$(am__append_10) $(am__append_11) $(am__append_12) \
+	$(am__append_13)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -7097,7 +7105,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_13)
+headers_to_make = $(nat_headers) $(am__append_14)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -7193,6 +7201,8 @@ libgcj.pc: $(top_builddir)/config.status $(srcdir)/libgcj.pc.in
 libgcj.spec: $(top_builddir)/config.status $(srcdir)/libgcj.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 libgcj-test.spec: $(top_builddir)/config.status $(srcdir)/libgcj-test.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+scripts/jar: $(top_builddir)/config.status $(top_srcdir)/scripts/jar.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -8374,7 +8384,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config
+	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/scripts
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

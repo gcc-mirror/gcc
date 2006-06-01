@@ -1,3 +1,11 @@
+2006-06-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (ZIP, UNZIP): New programs.
+	(JAR): Fall back to bash script.  Generate it.
+	(BASH_JAR): New conditional.
+	* Makefile.am (bin_SCRIPTS): New.
+	* jar.in: New file.
+
 2006-06-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/java/lang/MainThread (run): Revert exception chaining change.

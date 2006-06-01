@@ -85,7 +85,9 @@ bin_SCRIPTS = addr2name.awk
 ## Compilers and compilation flags.
 ##
 
-GCJH = @GCJH@
+if BASH_JAR
+bin_SCRIPTS += scripts/jar
+endif
 
 ## The compiler with whatever flags we want for both -c and -C
 ## compiles.
