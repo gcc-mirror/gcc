@@ -1,3 +1,9 @@
+2006-06-01  Per Bothner  <bothner@bothner.com>
+
+	Suppress extra '#1 <built-in> or '#1 <command line>' on -dD output.
+	* c-opts.c (finish_options): Use internal line 0 for <command-line>.
+	* c-ppoutput.c (cb_define): Don't increment line 0.
+
 2006-06-01  Pete Steinmetz  <steinmtz@us.ibm.com>
 
 	* doc/invoke.texi: Add cpu_type power6.
