@@ -1,3 +1,7 @@
+2006-05-30  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (SET_ASM_OP): Define.
+
 2006-06-01  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/bfin/bfin.c: Fix comment typos.

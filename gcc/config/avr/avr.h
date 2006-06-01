@@ -591,6 +591,8 @@ do {									 \
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".global\t"
 
+#define SET_ASM_OP	"\t.set\t"
+
 #define ASM_WEAKEN_LABEL(FILE, NAME)	\
   do					\
     {					\
