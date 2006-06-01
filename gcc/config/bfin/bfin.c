@@ -2735,10 +2735,10 @@ bfin_hardware_loop (void)
   cfun->machine->has_hardware_loops++;
 }
 
-/* Maxium loop nesting depth.  */
+/* Maximum loop nesting depth.  */
 #define MAX_LOOP_DEPTH 2
 
-/* Maxium size of a loop.  */
+/* Maximum size of a loop.  */
 #define MAX_LOOP_LENGTH 4096
 
 /* We need to keep a vector of loops */

@@ -1,3 +1,7 @@
+2006-06-01  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/bfin/bfin.c: Fix comment typos.
+
 2006-06-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR 25453
