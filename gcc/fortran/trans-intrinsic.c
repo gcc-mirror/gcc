@@ -2823,23 +2823,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   arg2 = arg1->next;
   ss1 = gfc_walk_expr (arg1->expr);
 
-  nonzero_charlen = NULL_TREE;
-  if (arg1->expr->ts.type == BT_CHARACTER)
-    nonzero_charlen = build2 (NE_EXPR, boolean_type_node,
-			      arg1->expr->ts.cl->backend_decl,
-			      integer_zero_node);
-
-  nonzero_arraylen = NULL_TREE;
-  if (ss1 != gfc_ss_terminator)
-    {
-      arg1se.descriptor_only = 1;
-      gfc_conv_expr_lhs (&arg1se, arg1->expr);
-      tmp = gfc_conv_descriptor_stride (arg1se.expr,
-			gfc_rank_cst[arg1->expr->rank - 1]);
-      nonzero_arraylen = build2 (NE_EXPR, boolean_type_node,
-				 tmp, integer_zero_node);
-    }
-
   if (!arg2->expr)
     {
       /* No optional target.  */
@@ -2865,6 +2848,13 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
     {
       /* An optional target.  */
       ss2 = gfc_walk_expr (arg2->expr);
+
+      nonzero_charlen = NULL_TREE;
+      if (arg1->expr->ts.type == BT_CHARACTER)
+	nonzero_charlen = build2 (NE_EXPR, boolean_type_node,
+				  arg1->expr->ts.cl->backend_decl,
+				  integer_zero_node);
+
       if (ss1 == gfc_ss_terminator)
         {
           /* A pointer to a scalar.  */
@@ -2878,12 +2868,23 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
         }
       else
         {
+
+	  /* An array pointer of zero length is not associated if target is
+	     present.  */
+	  arg1se.descriptor_only = 1;
+	  gfc_conv_expr_lhs (&arg1se, arg1->expr);
+	  tmp = gfc_conv_descriptor_stride (arg1se.expr,
+					    gfc_rank_cst[arg1->expr->rank - 1]);
+	  nonzero_arraylen = build2 (NE_EXPR, boolean_type_node,
+				 tmp, integer_zero_node);
+
           /* A pointer to an array, call library function _gfor_associated.  */
           gcc_assert (ss2 != gfc_ss_terminator);
           args = NULL_TREE;
           arg1se.want_pointer = 1;
           gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
           args = gfc_chainon_list (args, arg1se.expr);
+
           arg2se.want_pointer = 1;
           gfc_conv_expr_descriptor (&arg2se, arg2->expr, ss2);
           gfc_add_block_to_block (&se->pre, &arg2se.pre);
@@ -2891,15 +2892,18 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           args = gfc_chainon_list (args, arg2se.expr);
           fndecl = gfor_fndecl_associated;
           se->expr = build_function_call_expr (fndecl, args);
-        }
-     }
+	  se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
+			     se->expr, nonzero_arraylen);
 
-  if (nonzero_charlen != NULL_TREE)
-    se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
-		       se->expr, nonzero_charlen);
-  if (nonzero_arraylen != NULL_TREE)
-    se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
-		       se->expr, nonzero_arraylen);
+        }
+
+      /* If target is present zero character length pointers cannot
+	 be associated.  */
+      if (nonzero_charlen != NULL_TREE)
+	se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
+			   se->expr, nonzero_charlen);
+    }
+
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), se->expr);
 }
 
