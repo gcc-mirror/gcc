@@ -1052,6 +1052,20 @@ catalog, configuring with @option{--enable-maintainer-mode} will enable
 this.  Note that you need a recent version of the @code{gettext} tools
 to do so.
 
+@item --disable-bootstrap
+For a native build, the default configuration is to perform
+a 3-stage bootstrap of the compiler when @samp{make} is invoked,
+testing that GCC can compile itself correctly.  If you want to disable
+this process, you can configure with @option{--disable-bootstrap}.
+
+@item --enable-bootstrap
+In special cases, you may want to perform a 3-stage build
+even if the target and host triplets are different.
+This could happen when the host can run code compiled for
+the target (e.g.@: host is i686-linux, target is i486-linux).
+Starting from GCC 4.2, to do this you have to configure explicitly
+with @option{--enable-bootstrap}.
+
 @item --enable-generated-files-in-srcdir
 Neither the .c and .h files that are generated from Bison and flex nor the
 info manuals and man pages that are built from the .texi files are present
@@ -1571,10 +1585,15 @@ documentation pre-built for the unmodified documentation in the release.
 
 @section Building a native compiler
 
-For a native build, the command @samp{make} will trigger a 3-stage
-bootstrap of the compiler.  This will build the entire GCC system
-and ensure that it compiles itself correctly, by doing the
-following steps:
+For a native build, the default configuration is to perform
+a 3-stage bootstrap of the compiler when @samp{make} is invoked.
+This will build the entire GCC system and ensure that it compiles
+itself correctly.  It can be disabled with the @option{--disable-bootstrap}
+parameter to @samp{configure}, but bootstrapping is suggested because
+the compiler will be tested more completely and could also have
+better performance.
+
+The bootstrapping process will complete the following steps:
 
 @itemize @bullet
 @item

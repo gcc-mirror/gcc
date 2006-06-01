@@ -1,5 +1,11 @@
 2006-06-01  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR 25453
+	* doc/install.texi: Document --enable-bootstrap and
+	--disable-bootstrap.
+
+2006-06-01  Paolo Bonzini  <bonzini@gnu.org>
+
 	* doc/install.texi: Document that InfoZIP can replace jar.
 
 2006-05-31  Roger Sayle  <roger@eyesopen.com>
