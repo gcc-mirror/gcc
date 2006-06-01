@@ -1,3 +1,12 @@
+2006-06-01  Pete Steinmetz  <steinmtz@us.ibm.com>
+
+	* doc/invoke.texi: Add cpu_type power6.
+	* config.gcc: Add cpu_type power6.
+	* config/rs6000/rs6000.c (rs6000_override_options): Alias power6
+	to power5+ with Altivec.
+	* config/rs6000/aix52.h (ASM_CPU_SPEC): Add power6.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add power6.
+
 2006-05-30  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (SET_ASM_OP): Define.
