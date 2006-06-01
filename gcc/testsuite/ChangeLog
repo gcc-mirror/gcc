@@ -1,3 +1,8 @@
+2006-06-01  Steve Ellcey  <sje@cup.hp.com>
+	
+	* lib/target-supports.exp (is-effective-target): Add cxa_atexit.
+	(is-effective-target-keyword): Ditto.
+
 2006-06-01  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27715

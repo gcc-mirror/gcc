@@ -1749,6 +1749,7 @@ proc is-effective-target { arg } {
 	  "vmx_hw"         { set selected [check_vmx_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
+	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
 	  default          { error "unknown effective target keyword `$arg'" }
 	}
     }
@@ -1767,6 +1768,7 @@ proc is-effective-target-keyword { arg } {
 	  "vmx_hw"         { return 1 }
 	  "named_sections" { return 1 }
 	  "gc_sections"    { return 1 }
+	  "cxa_atexit"     { return 1 }
 	  default          { return 0 }
 	}
     }
