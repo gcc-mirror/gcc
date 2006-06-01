@@ -9288,22 +9288,17 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
   if (use_sse)
     mask = ix86_build_signbit_mask (elt_mode, vector_mode, code == ABS);
   else
-    {
-      /* When not using SSE, we don't use the mask, but prefer to keep the
-	 same general form of the insn pattern to reduce duplication when
-	 it comes time to split.  */
-      mask = const0_rtx;
-    }
+    mask = NULL_RTX;
 
   dst = operands[0];
   src = operands[1];
 
   /* If the destination is memory, and we don't have matching source
-     operands, do things in registers.  */
+     operands or we're using the x87, do things in registers.  */
   matching_memory = false;
   if (MEM_P (dst))
     {
-      if (rtx_equal_p (dst, src))
+      if (use_sse && rtx_equal_p (dst, src))
 	matching_memory = true;
       else
 	dst = gen_reg_rtx (mode);
@@ -9321,9 +9316,15 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
     {
       set = gen_rtx_fmt_e (code, mode, src);
       set = gen_rtx_SET (VOIDmode, dst, set);
-      use = gen_rtx_USE (VOIDmode, mask);
-      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, set, use, clob)));
+      if (mask)
+        {
+          use = gen_rtx_USE (VOIDmode, mask);
+          clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+          emit_insn (gen_rtx_PARALLEL (VOIDmode,
+				       gen_rtvec (3, set, use, clob)));
+        }
+      else
+	emit_insn (set);
     }
 
   if (dst != operands[0])
