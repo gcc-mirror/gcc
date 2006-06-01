@@ -1,3 +1,13 @@
+2006-06-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* stacktrace.cc (_Jv_StackTrace::UpdateNCodeMap): Don't add
+	interpreted classes.
+
+	2006-05-15  Andreas Tobler  <a.tobler@schweiz.ch>
+	* stacktrace.cc (StackTrace::FillInFrameInfo): Use
+	UNWRAP_FUNCTION_DESCRIPTOR to compare frame->start_ip against the
+	klass->methods[j].ncode.
+
 2006-05-24  Release Manager
 
 	* GCC 4.1.1 released.

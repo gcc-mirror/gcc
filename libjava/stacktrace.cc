@@ -1,6 +1,6 @@
 // stacktrace.cc - Functions for unwinding & inspecting the call stack.
 
-/* Copyright (C) 2005  Free Software Foundation
+/* Copyright (C) 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -55,23 +55,21 @@ _Jv_StackTrace::UpdateNCodeMap ()
   
   jclass klass;
   while ((klass = _Jv_PopClass ()))
-    {
-      //printf ("got %s\n", klass->name->data);
-#ifdef INTERPRETER
-      JvAssert (! _Jv_IsInterpretedClass (klass));
-#endif
-      for (int i=0; i < klass->method_count; i++)
-        {
-	  _Jv_Method *method = &klass->methods[i];
-	  void *ncode = method->ncode;
-	  // Add non-abstract methods to ncodeMap.
-	  if (ncode)
-	    {
-	      ncode = UNWRAP_FUNCTION_DESCRIPTOR (ncode);
-	      ncodeMap->put ((java::lang::Object *)ncode, klass);
-	    }
-	}
-    }
+    if (!_Jv_IsInterpretedClass (klass))
+      {
+	//printf ("got %s\n", klass->name->data);
+	for (int i = 0; i < klass->method_count; i++)
+	  {
+	    _Jv_Method *method = &klass->methods[i];
+	    void *ncode = method->ncode;
+	    // Add non-abstract methods to ncodeMap.
+	    if (ncode)
+	      {
+		ncode = UNWRAP_FUNCTION_DESCRIPTOR (ncode);
+		ncodeMap->put ((java::lang::Object *) ncode, klass);
+	      }
+	  }
+      }
 }
 
 // Given a native frame, return the class which this code belongs 
@@ -243,7 +241,8 @@ _Jv_StackTrace::FillInFrameInfo (_Jv_StackFrame *frame)
 	// Find method in class
 	for (int j = 0; j < klass->method_count; j++)
 	  {
-	    if (klass->methods[j].ncode == frame->start_ip)
+	    void *wncode = UNWRAP_FUNCTION_DESCRIPTOR (klass->methods[j].ncode);
+	    if (wncode == frame->start_ip)
 	      {
 		meth = &klass->methods[j];
 		break;
