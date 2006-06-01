@@ -448,6 +448,23 @@ extern const char *pex_run (struct pex_obj *obj, int flags,
 			    const char *outname, const char *errname,
 			    int *err);
 
+/* As for pex_run (), but takes an extra parameter to enable the
+   environment for the child process to be specified.
+
+   ENV		The environment for the child process, specified as
+		an array of character pointers.  Each element of the
+		array should point to a string of the form VAR=VALUE,
+                with the exception of the last element which must be
+                a null pointer.
+*/
+
+extern const char *pex_run_in_environment (struct pex_obj *obj, int flags,
+			                   const char *executable,
+                                           char * const *argv,
+                                           char * const *env,
+              	          		   const char *outname,
+					   const char *errname, int *err);
+
 /* Return a `FILE' pointer FP for the standard input of the first
    program in the pipeline; FP is opened for writing.  You must have
    passed `PEX_USE_PIPES' to the `pex_init' call that returned OBJ.

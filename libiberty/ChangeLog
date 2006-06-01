@@ -1,3 +1,21 @@
+2006-06-01  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* pex-common.c: New function pex_run_in_environment.
+	* pex-common.h: Add environment parameter to exec_child.
+	* pex-msdos.c: Add environment parameter to pex_msdos_exec_child.
+	* pex-djgpp.c: Add environment parameter to pex_djgpp_exec_child.
+	(pex_djgpp_exec_child): Pass environment to child process.
+	* pex-unix.c: Add environment parameter to pex_unix_exec_child.
+	(pex_unix_exec_child): Pass environment to child process.
+	* pex-win32.c: Add environment parameter to pex_win32_exec_child.
+	New function env_compare for comparing VAR=VALUE pairs.
+	(win32_spawn): Assemble environment block and pass to CreateProcess.
+	(spawn_script): Pass environment through to win32_spawn.
+	(pex_win32_exec_child): Pass environment through to spawn_script and
+	win32_spawn.
+	* functions.texi: Regenerate.
+	* pexecute.txh: Document pex_run_in_environment.
+
 2006-05-28  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* mkstemps.c: Open temporary files in binary mode.

@@ -130,6 +130,19 @@ value, or to 0 if there is no relevant @code{errno}.
 
 @end deftypefn
 
+@deftypefn Extension {const char *} pex_run_in_environment (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, char * const *@var{env}, int @var{env_size}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
+
+Execute one program in a pipeline, permitting the environment for the
+program to be specified.  Behaviour and parameters not listed below are
+as for @code{pex_run}.
+
+@var{env} is the environment for the child process, specified as an array of
+character pointers.  Each element of the array should point to a string of the
+form @code{VAR=VALUE}, with the exception of the last element that must be
+@code{NULL}.
+
+@end deftypefn
+
 @deftypefn Extension {FILE *} pex_input_file (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{in_name})
 
 Return a stream for a temporary file to pass to the first program in
