@@ -1524,7 +1524,7 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
       if (klass)
 	main_thread = new MainThread (klass, arg_vec);
       else
-	main_thread = new MainThread (JvNewStringLatin1 (name),
+	main_thread = new MainThread (JvNewStringUTF (name),
 				      arg_vec, is_jar);
     }
   catch (java::lang::Throwable *t)
