@@ -1,3 +1,9 @@
+2006-06-01  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/27715
+	* arith.c:  Cast the characters from the strings to unsigned
+	char to avoid values less than 0 for extended ASCII.
+
 2006-06-01  Per Bothner  <bothner@bothner.com>
 
 	* data.c (gfc_assign_data_value): Handle USE_MAPPED_LOCATION.
