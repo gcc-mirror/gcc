@@ -100,6 +100,7 @@ final class MainThread extends Thread
 	catch (ClassNotFoundException x)
 	  {
 	    NoClassDefFoundError ncdfe = new NoClassDefFoundError(klass_name);
+	    ncdfe.initCause(x);
 	    throw ncdfe;
 	  }
       }
