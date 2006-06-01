@@ -852,11 +852,18 @@ gfc_gobble_whitespace (void)
       /* Issue a warning for nonconforming tabs.  We keep track of the line
 	 number because the Fortran matchers will often back up and the same
 	 line will be scanned multiple times.  */
-      if (!gfc_option.warn_tabs && c == '\t'
-	  && gfc_current_locus.lb->linenum != linenum)
+      if (!gfc_option.warn_tabs && c == '\t')
 	{
-	  linenum = gfc_current_locus.lb->linenum;
-	  gfc_warning_now ("Nonconforming tab character at %C");
+#ifdef USE_MAPPED_LOCATION
+	  int cur_linenum = LOCATION_LINE (gfc_current_locus.lb->location);
+#else
+	  int cur_linenum = gfc_current_locus.lb->linenum;
+#endif
+	  if (cur_linenum != linenum)
+	    {
+	      linenum = cur_linenum;
+	      gfc_warning_now ("Nonconforming tab character at %C");
+	    }
 	}
     }
   while (gfc_is_whitespace (c));

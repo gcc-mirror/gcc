@@ -325,8 +325,14 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	  /* Order in which the expressions arrive here depends on whether they
 	     are from data statements or F95 style declarations. Therefore,
 	     check which is the most recent.  */
+#ifdef USE_MAPPED_LOCATION
+	  expr = (LOCATION_LINE (init->where.lb->location)
+		  > LOCATION_LINE (rvalue->where.lb->location))
+	    ? init : rvalue;
+#else
 	  expr = (init->where.lb->linenum > rvalue->where.lb->linenum) ?
 		    init : rvalue;
+#endif
 	  gfc_notify_std (GFC_STD_GNU, "Extension: re-initialization "
 			  "of '%s' at %L",  symbol->name, &expr->where);
 	  return;
