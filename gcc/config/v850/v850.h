@@ -987,12 +987,14 @@ typedef enum
 
 /* This is how to output an element of a case-vector that is relative.  */
 
+/* Disable the shift, which is for the currently disabled "switch"
+   opcode.  Se casesi in v850.md.  */
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
   fprintf (FILE, "\t%s %s.L%d-.L%d%s\n",				\
 	   (TARGET_BIG_SWITCH ? ".long" : ".short"),			\
-	   (! TARGET_BIG_SWITCH && TARGET_V850E ? "(" : ""),		\
+	   (0 && ! TARGET_BIG_SWITCH && TARGET_V850E ? "(" : ""),		\
 	   VALUE, REL,							\
-	   (! TARGET_BIG_SWITCH && TARGET_V850E ? ")>>1" : ""))
+	   (0 && ! TARGET_BIG_SWITCH && TARGET_V850E ? ")>>1" : ""))
 
 #define ASM_OUTPUT_ALIGN(FILE, LOG)	\
   if ((LOG) != 0)			\
