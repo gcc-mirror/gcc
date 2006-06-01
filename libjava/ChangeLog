@@ -1,3 +1,11 @@
+2006-05-31  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* prims.cc (_Jv_RunMain): Use JvNewStringUTF for command-line class
+	name, not Latin1.
+	* gnu/java/lang/MainThread.java (run): Allow file separator char to
+	be used in place of '.' as class-name separator. Don't chain
+	ClassNotFoundException.
+
 2006-05-31  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/lang/VMClassLoader.java (initialize): Set default library

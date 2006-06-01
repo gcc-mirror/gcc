@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package gnu.java.lang;
 
+import java.io.File;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 
@@ -91,13 +92,14 @@ final class MainThread extends Thread
       {
         try
 	  {
-	    klass = Class.forName(klass_name, true,
-				  ClassLoader.getSystemClassLoader());
+            ClassLoader cl = ClassLoader.getSystemClassLoader();
+	    // Permit main class name to be specified in file-system format.
+	    klass_name = klass_name.replace(File.separatorChar, '.');
+            klass = cl.loadClass(klass_name);
 	  }
 	catch (ClassNotFoundException x)
 	  {
 	    NoClassDefFoundError ncdfe = new NoClassDefFoundError(klass_name);
-	    ncdfe.initCause(x);
 	    throw ncdfe;
 	  }
       }
