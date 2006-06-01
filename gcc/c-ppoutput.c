@@ -324,7 +324,8 @@ cb_define (cpp_reader *pfile, source_location line, cpp_hashnode *node)
     fputs ((const char *) NODE_NAME (node), print.outf);
 
   putc ('\n', print.outf);
-  print.src_line++;
+  if (linemap_lookup (&line_table, line)->to_line != 0)
+    print.src_line++;
 }
 
 static void

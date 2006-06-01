@@ -1373,7 +1373,10 @@ finish_options (void)
 	 their acceptance on the -std= setting.  */
       cpp_opts->warn_dollars = (cpp_opts->pedantic && !cpp_opts->c99);
 
-      cpp_change_file (parse_in, LC_RENAME, _("<command line>"));
+      cb_file_change (parse_in,
+		      linemap_add (&line_table, LC_RENAME, 0,
+				   _("<command-line>"), 0));
+
       for (i = 0; i < deferred_count; i++)
 	{
 	  struct deferred_opt *opt = &deferred_opts[i];
