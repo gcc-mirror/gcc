@@ -104,6 +104,7 @@ struct pex_funcs
      error and set *ERRMSG and *ERR.  */
   long (*exec_child) (struct pex_obj *, int /* flags */,
                       const char */* executable */, char * const * /* argv */,
+                      char * const * /* env */,
                       int /* in */, int /* out */, int /* errdes */,
 		      const char **/* errmsg */, int */* err */);
   /* Close a descriptor.  Return 0 on success, -1 on error.  */

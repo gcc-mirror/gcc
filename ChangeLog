@@ -1,3 +1,7 @@
+2006-06-01  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* include/libiberty.h: Declare pex_run_in_environment.
+
 2006-05-31  Asher Langton  <langton2@llnl.gov>
 
 	* MAINTAINERS (Write After Approval): Add myself.

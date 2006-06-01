@@ -270,8 +270,8 @@ static void pex_child_error (struct pex_obj *, const char *, const char *, int)
 static int pex_unix_open_read (struct pex_obj *, const char *, int);
 static int pex_unix_open_write (struct pex_obj *, const char *, int);
 static long pex_unix_exec_child (struct pex_obj *, int, const char *,
-				 char * const *, int, int, int,
-				 const char **, int *);
+				 char * const *, char * const *,
+                                 int, int, int, const char **, int *);
 static int pex_unix_close (struct pex_obj *, int);
 static int pex_unix_wait (struct pex_obj *, long, int *, struct pex_time *,
 			  int, const char **, int *);
@@ -352,12 +352,16 @@ pex_child_error (struct pex_obj *obj, const char *executable,
 
 /* Execute a child.  */
 
+extern char **environ;
+
 static long
 pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
-		     char * const * argv, int in, int out, int errdes,
+		     char * const * argv, char * const * env,
+                     int in, int out, int errdes,
 		     const char **errmsg, int *err)
 {
   pid_t pid;
+
   /* We declare these to be volatile to avoid warnings from gcc about
      them being clobbered by vfork.  */
   volatile int sleep_interval;
@@ -409,6 +413,10 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	  if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
 	    pex_child_error (obj, executable, "dup2", errno);
 	}
+
+      if (env)
+        environ = env;
+
       if ((flags & PEX_SEARCH) != 0)
 	{
 	  execvp (executable, argv);
