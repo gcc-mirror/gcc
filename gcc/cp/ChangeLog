@@ -1,3 +1,9 @@
+2006-06-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/26660
+	* parser.c (cp_parser_initial_pragma): Read one more token for
+	caller after reading PCH file in.
+
 2006-05-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27801
