@@ -1,3 +1,8 @@
+2006-06-01  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/27715
+	* gfortran.dg/extended_char_comparison_1.f:  New test.
+
 2006-06-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25098

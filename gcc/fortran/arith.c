@@ -1133,8 +1133,10 @@ gfc_compare_string (gfc_expr * a, gfc_expr * b, const int *xcoll_table)
 
   for (i = 0; i < len; i++)
     {
-      ac = (i < alen) ? a->value.character.string[i] : ' ';
-      bc = (i < blen) ? b->value.character.string[i] : ' ';
+      /* We cast to unsigned char because default char, if it is signed,
+         would lead to ac<0 for string[i] > 127.  */
+      ac = (unsigned char) ((i < alen) ? a->value.character.string[i] : ' ');
+      bc = (unsigned char) ((i < blen) ? b->value.character.string[i] : ' ');
 
       if (xcoll_table != NULL)
 	{
