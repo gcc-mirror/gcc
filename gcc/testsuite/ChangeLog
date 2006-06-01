@@ -1,3 +1,14 @@
+2006-06-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25098
+	* gfortran.dg/dummy_procedure_1.f90: New test.
+
+	PR fortran/25147
+	* gfortran.dg/dummy_procedure_2.f90: New test.
+
+	* gfortran.dg/associated_2.f90: Correct to make consistent with
+	standard.
+
 2006-05-31  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.target/i386/387-11.c: New test case.
