@@ -1,5 +1,16 @@
 2006-05-31  Roger Sayle  <roger@eyesopen.com>
 
+	* config/i386/i386.c (ix86_expand_fp_absneg_operator): When SSE
+	isn't available, directly generate the simpler x87 patterns without
+	the (use (const_int 0)).
+	* config/i386/i386.md (*negsf2_1): Enable pre-reload if the SSE
+	implementation isn't available.
+	(*negdf2_1): Likewise.
+	(*negxf2_1): XF mode negation is always done using the x87.
+	(*abssf2_1, *absdf2_1, *absxf2_1): Likewise^3 for fabs.
+
+2006-05-31  Roger Sayle  <roger@eyesopen.com>
+
 	* builtins.c (fold_builtin_cabs): Delete prototype.  Require an
 	additional FNDECL argument.  Optimize cabs(-z) and cabs(~z) as
 	cabs(z).

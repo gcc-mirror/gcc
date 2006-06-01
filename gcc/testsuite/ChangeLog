@@ -1,3 +1,7 @@
+2006-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.target/i386/387-11.c: New test case.
+
 2006-05-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27801
