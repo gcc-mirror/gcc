@@ -116,9 +116,18 @@ AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(LD, ld)
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
-AC_CHECK_PROGS(JAR, [jar fastjar], false)
-if test "$JAR" = false; then
-  AC_MSG_ERROR(jar program not found)
+AC_PROG_AWK
+AC_CHECK_PROGS([JAR], [jar fastjar], no)
+AC_PATH_PROG([ZIP], [zip], no)
+AC_PATH_PROG([UNZIP], [unzip], unzip)
+AM_CONDITIONAL(BASH_JAR, test "$JAR" = no)
+if test "$ZIP" = no; then
+  if test "$JAR" = no; then
+    AC_MSG_ERROR([cannot find neither zip nor jar, cannot continue])
+  fi
+else
+  # InfoZIP available, use the 'guaranteed' Bourne-shell JAR to build libjava
+  JAR=`pwd`/scripts/jar
 fi
 
 AC_PROG_INSTALL
@@ -1457,6 +1466,8 @@ gcj/Makefile
 include/Makefile
 testsuite/Makefile
 ])
+
+AC_CONFIG_FILES([scripts/jar], [chmod +x scripts/jar])
 
 AC_CONFIG_COMMANDS([default],
 [# Only add multilib support code if we just rebuilt top-level Makefile.

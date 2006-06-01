@@ -1,3 +1,7 @@
+2006-06-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/install.texi: Document that InfoZIP can replace jar.
+
 2006-05-31  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (ix86_expand_fp_absneg_operator): When SSE
