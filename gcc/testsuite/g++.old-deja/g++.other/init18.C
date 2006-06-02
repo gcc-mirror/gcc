@@ -1,6 +1,14 @@
-// { dg-do run }
+// Some targets (e.g. those with "set_board_info needs_status_wrapper 1"
+// in their dejagnu baseboard description) require that the status is
+// final when exit is entered (or main returns), and not "overruled" by a
+// destructor calling _exit.  It's not really worth it to handle that.
+//
+// Any platform that doesn't have proper __cxa_atexit support will also fail.
+//
+// { dg-do run { xfail { { mmix-knuth-mmixware xtensa-*-elf* arm*-*-elf arm*-*-eabi m68k-*-elf } || { ! cxa_atexit } } } }
 
 #include <stdlib.h>
+extern "C" void _exit (int);
 
 static int cnt = 0;
 
@@ -8,7 +16,7 @@ class Foo2
 {
 	public:
 		Foo2() {};
-		~Foo2() { if (++cnt == 2) _Exit (0); };
+		~Foo2() { if (++cnt == 2) _exit (0); };
 };
 
 static Foo2& GetFoo2()

@@ -1,3 +1,10 @@
+2006-06-02  Steve Ellcey  <sje@cup.hp.com>
+
+	* g++.old-deja/g++.other/init5.C: XFAIL if cxa-atexit is false.
+	* g++.old-deja/g++.other/init19.C: Ditto.
+	* g++.old-deja/g++.other/init18.C: Ditto, plus change _Exit to _exit
+	and add other platforms as expected failures.
+
 2006-06-01  Steve Ellcey  <sje@cup.hp.com>
 	
 	* lib/target-supports.exp (is-effective-target): Add cxa_atexit.
