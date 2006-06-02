@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { xfail { ! cxa_atexit } } }
 #include <stdlib.h>
 
 #define assert(x) do { if (! (x)) abort(); } while (0)
