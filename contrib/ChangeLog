@@ -1,3 +1,8 @@
+2006-06-02  Richard Earnshaw  <rearnsha@arm.com>
+	    Mike Stump  <mrs@apple.com>
+
+	* compare_tests: Handle multilibs better.
+
 2006-05-31  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* texi2pod.pl: Correct handling of absolute @include.
