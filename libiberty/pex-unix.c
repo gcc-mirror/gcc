@@ -415,7 +415,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	}
 
       if (env)
-        environ = env;
+        environ = (char**) env;
 
       if ((flags & PEX_SEARCH) != 0)
 	{

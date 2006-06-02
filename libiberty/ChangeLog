@@ -1,3 +1,8 @@
+2006-06-02  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* pex-unix.c (pex_unix_exec_child): Insert cast when assigning
+	to environ.
+
 2006-06-01  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* pex-common.c: New function pex_run_in_environment.
