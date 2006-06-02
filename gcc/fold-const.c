@@ -7548,21 +7548,22 @@ fold_unary (enum tree_code code, tree type, tree op0)
     case CONJ_EXPR:
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
 	return fold_convert (type, arg0);
-      else if (TREE_CODE (arg0) == COMPLEX_EXPR)
-	return build2 (COMPLEX_EXPR, type,
-		       TREE_OPERAND (arg0, 0),
-		       negate_expr (TREE_OPERAND (arg0, 1)));
-      else if (TREE_CODE (arg0) == COMPLEX_CST)
-	return build_complex (type, TREE_REALPART (arg0),
-			      negate_expr (TREE_IMAGPART (arg0)));
-      else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return fold_build2 (TREE_CODE (arg0), type,
-			    fold_build1 (CONJ_EXPR, type,
-					 TREE_OPERAND (arg0, 0)),
-			    fold_build1 (CONJ_EXPR, type,
-					 TREE_OPERAND (arg0, 1)));
-      else if (TREE_CODE (arg0) == CONJ_EXPR)
-	return TREE_OPERAND (arg0, 0);
+      if (TREE_CODE (arg0) == COMPLEX_EXPR)
+	{
+	  tree itype = TREE_TYPE (type);
+	  tree rpart = fold_convert (itype, TREE_OPERAND (arg0, 0));
+	  tree ipart = fold_convert (itype, TREE_OPERAND (arg0, 1));
+	  return fold_build2 (COMPLEX_EXPR, type, rpart, negate_expr (ipart));
+	}
+      if (TREE_CODE (arg0) == COMPLEX_CST)
+	{
+	  tree itype = TREE_TYPE (type);
+	  tree rpart = fold_convert (itype, TREE_REALPART (arg0));
+	  tree ipart = fold_convert (itype, TREE_IMAGPART (arg0));
+	  return build_complex (type, rpart, negate_expr (ipart));
+	}
+      if (TREE_CODE (arg0) == CONJ_EXPR)
+	return fold_convert (type, TREE_OPERAND (arg0, 0));
       return NULL_TREE;
 
     case BIT_NOT_EXPR:
@@ -7614,34 +7615,54 @@ fold_unary (enum tree_code code, tree type, tree op0)
 
     case REALPART_EXPR:
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
-	return NULL_TREE;
-      else if (TREE_CODE (arg0) == COMPLEX_EXPR)
+	return fold_convert (type, arg0);
+      if (TREE_CODE (arg0) == COMPLEX_EXPR)
 	return omit_one_operand (type, TREE_OPERAND (arg0, 0),
 				 TREE_OPERAND (arg0, 1));
-      else if (TREE_CODE (arg0) == COMPLEX_CST)
-	return TREE_REALPART (arg0);
-      else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return fold_build2 (TREE_CODE (arg0), type,
-			    fold_build1 (REALPART_EXPR, type,
-					 TREE_OPERAND (arg0, 0)),
-			    fold_build1 (REALPART_EXPR, type,
-					 TREE_OPERAND (arg0, 1)));
+      if (TREE_CODE (arg0) == COMPLEX_CST)
+	return fold_convert (type, TREE_REALPART (arg0));
+      if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	{
+	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
+	  tem = fold_build2 (TREE_CODE (arg0), itype,
+			     fold_build1 (REALPART_EXPR, itype,
+					  TREE_OPERAND (arg0, 0)),
+			     fold_build1 (REALPART_EXPR, itype,
+					  TREE_OPERAND (arg0, 1)));
+	  return fold_convert (type, tem);
+	}
+      if (TREE_CODE (arg0) == CONJ_EXPR)
+	{
+	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
+	  tem = fold_build1 (REALPART_EXPR, itype, TREE_OPERAND (arg0, 0));
+	  return fold_convert (type, tem);
+	}
       return NULL_TREE;
 
     case IMAGPART_EXPR:
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
 	return fold_convert (type, integer_zero_node);
-      else if (TREE_CODE (arg0) == COMPLEX_EXPR)
+      if (TREE_CODE (arg0) == COMPLEX_EXPR)
 	return omit_one_operand (type, TREE_OPERAND (arg0, 1),
 				 TREE_OPERAND (arg0, 0));
-      else if (TREE_CODE (arg0) == COMPLEX_CST)
-	return TREE_IMAGPART (arg0);
-      else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return fold_build2 (TREE_CODE (arg0), type,
-			    fold_build1 (IMAGPART_EXPR, type,
-					 TREE_OPERAND (arg0, 0)),
-			    fold_build1 (IMAGPART_EXPR, type,
-					 TREE_OPERAND (arg0, 1)));
+      if (TREE_CODE (arg0) == COMPLEX_CST)
+	return fold_convert (type, TREE_IMAGPART (arg0));
+      if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	{
+	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
+	  tem = fold_build2 (TREE_CODE (arg0), itype,
+			     fold_build1 (IMAGPART_EXPR, itype,
+					  TREE_OPERAND (arg0, 0)),
+			     fold_build1 (IMAGPART_EXPR, itype,
+					  TREE_OPERAND (arg0, 1)));
+	  return fold_convert (type, tem);
+	}
+      if (TREE_CODE (arg0) == CONJ_EXPR)
+	{
+	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
+	  tem = fold_build1 (IMAGPART_EXPR, itype, TREE_OPERAND (arg0, 0));
+	  return fold_convert (type, negate_expr (tem));
+	}
       return NULL_TREE;
 
     default:

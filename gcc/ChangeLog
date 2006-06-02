@@ -1,3 +1,10 @@
+2006-06-02  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_unary) <CONJ_EXPR>: Ensure folded expressions
+	are type correct.  Clean-up.
+	<REALPART_EXPR>: Likewise.  Optimize creal(~z) as creal(z).
+	<IMAGPART_EXPR>: Likewise.  Optimize cimag(~z) as -cimag(z).
+
 2006-06-01  DJ Delorie  <dj@redhat.com>
 
 	* config/v850/v850.h (ASM_OUTPUT_ADDR_DIFF_ELT): Disabled the
