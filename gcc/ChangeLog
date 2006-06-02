@@ -1,3 +1,8 @@
+2006-06-03  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR other/27850
+	* Makefile.in (stmp-fixinc): Fix typo.
+
 2006-06-02  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_unary) <CONJ_EXPR>: Ensure folded expressions

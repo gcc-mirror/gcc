@@ -3224,7 +3224,7 @@ stmp-fixinc: gsyslimits.h macro_list \
 	  echo The directory that should contain system headers does not exist: >&2 ; \
 	  echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
 	  tooldir_sysinc=`echo "${gcc_tooldir}/sys-include" | sed -e :a -e "s,[^/]*/\.\.\/,," -e ta`; \
-	  if test "x${SYSTEM_HEADER_DIR}" = "x${tooldir_sysinc}"; \
+	  if test "x${SYSTEM_HEADER_DIR}" = "x$${tooldir_sysinc}"; \
 	  then sleep 1; else exit 1; fi; \
 	fi
 	rm -rf include; mkdir include
