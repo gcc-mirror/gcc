@@ -2275,10 +2275,7 @@ gfc_build_builtin_function_decls (void)
 
   gfor_fndecl_runtime_error =
     gfc_build_library_function_decl (get_identifier (PREFIX("runtime_error")),
-				     void_type_node,
-				     3,
-				     pchar_type_node, pchar_type_node,
-				     gfc_int4_type_node);
+				     void_type_node, 1, pchar_type_node);
   /* The runtime_error function does not return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_runtime_error) = 1;
 

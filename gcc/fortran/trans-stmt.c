@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "toplev.h"
 #include "real.h"
 #include "gfortran.h"
+#include "flags.h"
 #include "trans.h"
 #include "trans-stmt.h"
 #include "trans-types.h"
@@ -139,13 +140,11 @@ gfc_trans_label_assign (gfc_code * code)
 tree
 gfc_trans_goto (gfc_code * code)
 {
+  locus loc = code->loc;
   tree assigned_goto;
   tree target;
   tree tmp;
-  tree assign_error;
-  tree range_error;
   gfc_se se;
-
 
   if (code->label != NULL)
     return build1_v (GOTO_EXPR, gfc_get_label_decl (code->label));
@@ -154,12 +153,11 @@ gfc_trans_goto (gfc_code * code)
   gfc_init_se (&se, NULL);
   gfc_start_block (&se.pre);
   gfc_conv_label_variable (&se, code->expr);
-  assign_error =
-    gfc_build_cstring_const ("Assigned label is not a target label");
   tmp = GFC_DECL_STRING_LEN (se.expr);
   tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp,
 		     build_int_cst (TREE_TYPE (tmp), -1));
-  gfc_trans_runtime_check (tmp, assign_error, &se.pre);
+  gfc_trans_runtime_check (tmp, "Assigned label is not a target label",
+			   &se.pre, &loc);
 
   assigned_goto = GFC_DECL_ASSIGN_ADDR (se.expr);
 
@@ -172,8 +170,6 @@ gfc_trans_goto (gfc_code * code)
     }
 
   /* Check the label list.  */
-  range_error = gfc_build_cstring_const ("Assigned label is not in the list");
-
   do
     {
       target = gfc_get_label_decl (code->label);
@@ -186,7 +182,9 @@ gfc_trans_goto (gfc_code * code)
       code = code->block;
     }
   while (code != NULL);
-  gfc_trans_runtime_check (boolean_true_node, range_error, &se.pre);
+  gfc_trans_runtime_check (boolean_true_node,
+			   "Assigned label is not in the list", &se.pre, &loc);
+
   return gfc_finish_block (&se.pre); 
 }
 

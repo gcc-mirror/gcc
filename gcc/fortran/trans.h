@@ -423,7 +423,7 @@ void gfc_generate_constructors (void);
 bool get_array_ctor_strlen (gfc_constructor *, tree *);
 
 /* Generate a runtime error check.  */
-void gfc_trans_runtime_check (tree, tree, stmtblock_t *);
+void gfc_trans_runtime_check (tree, const char *, stmtblock_t *, locus *);
 
 /* Generate code for an assignment, includes scalarization.  */
 tree gfc_trans_assignment (gfc_expr *, gfc_expr *);
@@ -673,5 +673,12 @@ void gfc_finish_interface_mapping (gfc_interface_mapping *,
 				   stmtblock_t *, stmtblock_t *);
 void gfc_apply_interface_mapping (gfc_interface_mapping *,
 				  gfc_se *, gfc_expr *);
+
+
+/* Standard error messages used in all the trans-*.c files.  */
+extern char gfc_msg_bounds[];
+extern char gfc_msg_fault[];
+extern char gfc_msg_wrong_return[];
+
 
 #endif /* GFC_TRANS_H */

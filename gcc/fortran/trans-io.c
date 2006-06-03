@@ -518,7 +518,6 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 {
   gfc_se se;
   tree tmp;
-  tree msg;
   tree io;
   tree len;
   gfc_st_parameter_field *p = &st_parameter_field[type];
@@ -536,13 +535,18 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
   /* Integer variable assigned a format label.  */
   if (e->ts.type == BT_INTEGER && e->symtree->n.sym->attr.assign == 1)
     {
+      char * msg;
+
       gfc_conv_label_variable (&se, e);
-      msg =
-        gfc_build_cstring_const ("Assigned label is not a format label");
       tmp = GFC_DECL_STRING_LEN (se.expr);
       tmp = fold_build2 (LT_EXPR, boolean_type_node,
 			 tmp, build_int_cst (TREE_TYPE (tmp), 0));
-      gfc_trans_runtime_check (tmp, msg, &se.pre);
+
+      asprintf(&msg, "Label assigned to variable '%s' is not a format label",
+	       e->symtree->name);
+      gfc_trans_runtime_check (tmp, msg, &se.pre, &e->where);
+      gfc_free (msg);
+
       gfc_add_modify_expr (&se.pre, io,
 		 fold_convert (TREE_TYPE (io), GFC_DECL_ASSIGN_ADDR (se.expr)));
       gfc_add_modify_expr (&se.pre, len, GFC_DECL_STRING_LEN (se.expr));

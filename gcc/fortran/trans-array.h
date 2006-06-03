@@ -86,7 +86,7 @@ void gfc_conv_resolve_dependencies (gfc_loopinfo *, gfc_ss *, gfc_ss *);
 tree gfc_build_null_descriptor (tree);
 
 /* Get a single array element.  */
-void gfc_conv_array_ref (gfc_se *, gfc_array_ref *);
+void gfc_conv_array_ref (gfc_se *, gfc_array_ref *, gfc_symbol *, locus *);
 /* Translate a reference to a temporary array.  */
 void gfc_conv_tmp_array_ref (gfc_se * se);
 /* Translate a reference to an array temporary.  */
