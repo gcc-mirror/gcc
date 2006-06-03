@@ -263,6 +263,7 @@ mkdir_p ()
     shift
     IFS=$oIFS
 
+    errstatus=0
     for d
     do
       test "x$d" = x && continue
