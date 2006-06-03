@@ -148,6 +148,12 @@
 #endif
 
 
+/* mcontext_t fields start with __ */
+#ifndef USED_FOR_TARGET
+#undef HAS_MCONTEXT_T_UNDERSCORES
+#endif
+
+
 /* Define to 1 if you have the `alphasort' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ALPHASORT
@@ -565,6 +571,13 @@
    0. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_SETRLIMIT
+#endif
+
+
+/* Define to 1 if we found a declaration for 'sigaltstack', otherwise define
+   to 0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_SIGALTSTACK
 #endif
 
 

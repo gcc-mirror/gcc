@@ -14,12 +14,43 @@
    Page 50: "If a leaf procedure's red zone usage would exceed 224 bytes, then
    it must set up a stack frame just like routines that call other routines."
 */
-#ifdef POWERPC
-# if CPP_WORDSZ == 32
-#   define PPC_RED_ZONE_SIZE 224
-# elif CPP_WORDSZ == 64
-#   define PPC_RED_ZONE_SIZE 320
+#if defined(__ppc__)
+# define PPC_RED_ZONE_SIZE 224
+#elif defined(__ppc64__)
+# define PPC_RED_ZONE_SIZE 320
+#endif
+
+/* Try to work out the right way to access thread state structure members.
+   The structure has changed its definition in different Darwin versions.  */
+#if defined(__ppc__)
+# define THREAD_STATE ppc_thread_state_t
+# if defined (HAS_PPC_THREAD_STATE_R0)
+#  define THREAD_FLD(x) x
+# elif defined (HAS_PPC_THREAD_STATE___R0)
+#  define THREAD_FLD(x) __ ## x
+# else
+#  error can not work out how to access fields of ppc_thread_state_t
 # endif
+#elif defined(__ppc64__)
+# define THREAD_STATE ppc_thread_state64_t
+# if defined (HAS_PPC_THREAD_STATE64_R0)
+#  define THREAD_FLD(x) x
+# elif defined (HAS_PPC_THREAD_STATE64___R0)
+#  define THREAD_FLD(x) __ ## x
+# else
+#  error can not work out how to access fields of ppc_thread_state64_t
+# endif
+#elif defined(__i386__)
+# define THREAD_STATE i386_thread_state_t
+# if defined (HAS_I386_THREAD_STATE_EAX)
+#  define THREAD_FLD(x) x
+# elif defined (HAS_I386_THREAD_STATE___EAX)
+#  define THREAD_FLD(x) __ ## x
+# else
+#  error can not work out how to access fields of i386_thread_state_t
+# endif
+#else
+# error unknown architecture
 #endif
 
 typedef struct StackFrame {
@@ -75,7 +106,7 @@ void GC_push_all_stacks() {
   GC_thread p;
   pthread_t me;
   ptr_t lo, hi;
-  ppc_thread_state_t state;
+  THREAD_STATE state;
   mach_msg_type_number_t thread_state_count = MACHINE_THREAD_STATE_COUNT;
   
   me = pthread_self();
@@ -95,39 +126,39 @@ void GC_push_all_stacks() {
 			     &thread_state_count);
 	if(r != KERN_SUCCESS) ABORT("thread_get_state failed");
 	
-	lo = (void*)(state.r1 - PPC_RED_ZONE_SIZE);
+	lo = (void*)(state . THREAD_FLD (r1) - PPC_RED_ZONE_SIZE);
         
-	GC_push_one(state.r0); 
-	GC_push_one(state.r2); 
-	GC_push_one(state.r3); 
-	GC_push_one(state.r4); 
-	GC_push_one(state.r5); 
-	GC_push_one(state.r6); 
-	GC_push_one(state.r7); 
-	GC_push_one(state.r8); 
-	GC_push_one(state.r9); 
-	GC_push_one(state.r10); 
-	GC_push_one(state.r11); 
-	GC_push_one(state.r12); 
-	GC_push_one(state.r13); 
-	GC_push_one(state.r14); 
-	GC_push_one(state.r15); 
-	GC_push_one(state.r16); 
-	GC_push_one(state.r17); 
-	GC_push_one(state.r18); 
-	GC_push_one(state.r19); 
-	GC_push_one(state.r20); 
-	GC_push_one(state.r21); 
-	GC_push_one(state.r22); 
-	GC_push_one(state.r23); 
-	GC_push_one(state.r24); 
-	GC_push_one(state.r25); 
-	GC_push_one(state.r26); 
-	GC_push_one(state.r27); 
-	GC_push_one(state.r28); 
-	GC_push_one(state.r29); 
-	GC_push_one(state.r30); 
-	GC_push_one(state.r31);
+	GC_push_one(state . THREAD_FLD (r0)); 
+	GC_push_one(state . THREAD_FLD (r2)); 
+	GC_push_one(state . THREAD_FLD (r3)); 
+	GC_push_one(state . THREAD_FLD (r4)); 
+	GC_push_one(state . THREAD_FLD (r5)); 
+	GC_push_one(state . THREAD_FLD (r6)); 
+	GC_push_one(state . THREAD_FLD (r7)); 
+	GC_push_one(state . THREAD_FLD (r8)); 
+	GC_push_one(state . THREAD_FLD (r9)); 
+	GC_push_one(state . THREAD_FLD (r10)); 
+	GC_push_one(state . THREAD_FLD (r11)); 
+	GC_push_one(state . THREAD_FLD (r12)); 
+	GC_push_one(state . THREAD_FLD (r13)); 
+	GC_push_one(state . THREAD_FLD (r14)); 
+	GC_push_one(state . THREAD_FLD (r15)); 
+	GC_push_one(state . THREAD_FLD (r16)); 
+	GC_push_one(state . THREAD_FLD (r17)); 
+	GC_push_one(state . THREAD_FLD (r18)); 
+	GC_push_one(state . THREAD_FLD (r19)); 
+	GC_push_one(state . THREAD_FLD (r20)); 
+	GC_push_one(state . THREAD_FLD (r21)); 
+	GC_push_one(state . THREAD_FLD (r22)); 
+	GC_push_one(state . THREAD_FLD (r23)); 
+	GC_push_one(state . THREAD_FLD (r24)); 
+	GC_push_one(state . THREAD_FLD (r25)); 
+	GC_push_one(state . THREAD_FLD (r26)); 
+	GC_push_one(state . THREAD_FLD (r27)); 
+	GC_push_one(state . THREAD_FLD (r28)); 
+	GC_push_one(state . THREAD_FLD (r29)); 
+	GC_push_one(state . THREAD_FLD (r30)); 
+	GC_push_one(state . THREAD_FLD (r31));
       } /* p != me */
       if(p->flags & MAIN_THREAD)
 	hi = GC_stackbottom;
@@ -166,78 +197,74 @@ void GC_push_all_stacks() {
 	lo = GC_approx_sp();
 	hi = (ptr_t)FindTopOfStack(0);
       } else {
-#     if defined(POWERPC)
-#      if CPP_WORDSZ == 32
-	ppc_thread_state_t info;
-#      else
-	ppc_thread_state64_t info;
-#      endif
+#     if defined(__ppc__) || defined(__ppc64__)
+	THREAD_STATE info;
 	mach_msg_type_number_t outCount = THREAD_STATE_MAX;
 	r = thread_get_state(thread, MACHINE_THREAD_STATE,
 			     (natural_t *)&info, &outCount);
 	if(r != KERN_SUCCESS) ABORT("task_get_state failed");
 
-	lo = (void*)(info.r1 - PPC_RED_ZONE_SIZE);
-	hi = (ptr_t)FindTopOfStack(info.r1);
+	lo = (void*)(info . THREAD_FLD (r1) - PPC_RED_ZONE_SIZE);
+	hi = (ptr_t)FindTopOfStack(info . THREAD_FLD (r1));
 
-	GC_push_one(info.r0); 
-	GC_push_one(info.r2); 
-	GC_push_one(info.r3); 
-	GC_push_one(info.r4); 
-	GC_push_one(info.r5); 
-	GC_push_one(info.r6); 
-	GC_push_one(info.r7); 
-	GC_push_one(info.r8); 
-	GC_push_one(info.r9); 
-	GC_push_one(info.r10); 
-	GC_push_one(info.r11); 
-	GC_push_one(info.r12); 
-	GC_push_one(info.r13); 
-	GC_push_one(info.r14); 
-	GC_push_one(info.r15); 
-	GC_push_one(info.r16); 
-	GC_push_one(info.r17); 
-	GC_push_one(info.r18); 
-	GC_push_one(info.r19); 
-	GC_push_one(info.r20); 
-	GC_push_one(info.r21); 
-	GC_push_one(info.r22); 
-	GC_push_one(info.r23); 
-	GC_push_one(info.r24); 
-	GC_push_one(info.r25); 
-	GC_push_one(info.r26); 
-	GC_push_one(info.r27); 
-	GC_push_one(info.r28); 
-	GC_push_one(info.r29); 
-	GC_push_one(info.r30); 
-	GC_push_one(info.r31);
+	GC_push_one(info . THREAD_FLD (r0)); 
+	GC_push_one(info . THREAD_FLD (r2)); 
+	GC_push_one(info . THREAD_FLD (r3)); 
+	GC_push_one(info . THREAD_FLD (r4)); 
+	GC_push_one(info . THREAD_FLD (r5)); 
+	GC_push_one(info . THREAD_FLD (r6)); 
+	GC_push_one(info . THREAD_FLD (r7)); 
+	GC_push_one(info . THREAD_FLD (r8)); 
+	GC_push_one(info . THREAD_FLD (r9)); 
+	GC_push_one(info . THREAD_FLD (r10)); 
+	GC_push_one(info . THREAD_FLD (r11)); 
+	GC_push_one(info . THREAD_FLD (r12)); 
+	GC_push_one(info . THREAD_FLD (r13)); 
+	GC_push_one(info . THREAD_FLD (r14)); 
+	GC_push_one(info . THREAD_FLD (r15)); 
+	GC_push_one(info . THREAD_FLD (r16)); 
+	GC_push_one(info . THREAD_FLD (r17)); 
+	GC_push_one(info . THREAD_FLD (r18)); 
+	GC_push_one(info . THREAD_FLD (r19)); 
+	GC_push_one(info . THREAD_FLD (r20)); 
+	GC_push_one(info . THREAD_FLD (r21)); 
+	GC_push_one(info . THREAD_FLD (r22)); 
+	GC_push_one(info . THREAD_FLD (r23)); 
+	GC_push_one(info . THREAD_FLD (r24)); 
+	GC_push_one(info . THREAD_FLD (r25)); 
+	GC_push_one(info . THREAD_FLD (r26)); 
+	GC_push_one(info . THREAD_FLD (r27)); 
+	GC_push_one(info . THREAD_FLD (r28)); 
+	GC_push_one(info . THREAD_FLD (r29)); 
+	GC_push_one(info . THREAD_FLD (r30)); 
+	GC_push_one(info . THREAD_FLD (r31));
 #      else
 	/* FIXME: Remove after testing:	*/
 	WARN("This is completely untested and likely will not work\n", 0);
-	i386_thread_state_t info;
+	THREAD_STATE info;
 	mach_msg_type_number_t outCount = THREAD_STATE_MAX;
 	r = thread_get_state(thread, MACHINE_THREAD_STATE,
 			     (natural_t *)&info, &outCount);
 	if(r != KERN_SUCCESS) ABORT("task_get_state failed");
 
-	lo = (void*)info.esp;
-	hi = (ptr_t)FindTopOfStack(info.esp);
+	lo = (void*)info . THREAD_FLD (esp);
+	hi = (ptr_t)FindTopOfStack(info . THREAD_FLD (esp));
 
-	GC_push_one(info.eax); 
-	GC_push_one(info.ebx); 
-	GC_push_one(info.ecx); 
-	GC_push_one(info.edx); 
-	GC_push_one(info.edi); 
-	GC_push_one(info.esi); 
-	/* GC_push_one(info.ebp);  */
-	/* GC_push_one(info.esp);  */
-	GC_push_one(info.ss); 
-	GC_push_one(info.eip); 
-	GC_push_one(info.cs); 
-	GC_push_one(info.ds); 
-	GC_push_one(info.es); 
-	GC_push_one(info.fs); 
-	GC_push_one(info.gs); 
+	GC_push_one(info . THREAD_FLD (eax)); 
+	GC_push_one(info . THREAD_FLD (ebx)); 
+	GC_push_one(info . THREAD_FLD (ecx)); 
+	GC_push_one(info . THREAD_FLD (edx)); 
+	GC_push_one(info . THREAD_FLD (edi)); 
+	GC_push_one(info . THREAD_FLD (esi)); 
+	/* GC_push_one(info . THREAD_FLD (ebp));  */
+	/* GC_push_one(info . THREAD_FLD (esp));  */
+	GC_push_one(info . THREAD_FLD (ss)); 
+	GC_push_one(info . THREAD_FLD (eip)); 
+	GC_push_one(info . THREAD_FLD (cs)); 
+	GC_push_one(info . THREAD_FLD (ds)); 
+	GC_push_one(info . THREAD_FLD (es)); 
+	GC_push_one(info . THREAD_FLD (fs)); 
+	GC_push_one(info . THREAD_FLD (gs)); 
 #      endif /* !POWERPC */
       }
 #     if DEBUG_THREADS
