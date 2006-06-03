@@ -1855,7 +1855,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
       gfc_conv_expr_type (&indexse, ar->start[n], gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &indexse.pre);
 
-      if (flag_bounds_check)
+      if (flag_bounds_check &&
+	  (ar->as->type != AS_ASSUMED_SIZE || n < ar->dimen - 1))
 	{
 	  /* Check array bounds.  */
 	  tree cond;
@@ -3467,7 +3468,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   tree dumdesc;
   tree tmp;
   tree stmt;
-  tree stride;
+  tree stride, stride2;
   tree stmt_packed;
   tree stmt_unpacked;
   tree partial;
@@ -3614,9 +3615,9 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 				 ubound, lbound);
-              stride = build2 (MINUS_EXPR, gfc_array_index_type,
+              stride2 = build2 (MINUS_EXPR, gfc_array_index_type,
 			       dubound, dlbound);
-              tmp = fold_build2 (NE_EXPR, gfc_array_index_type, tmp, stride);
+              tmp = fold_build2 (NE_EXPR, gfc_array_index_type, tmp, stride2);
 	      gfc_trans_runtime_check (tmp, gfc_strconst_bounds, &block);
 	    }
 	}
