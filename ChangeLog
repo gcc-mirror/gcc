@@ -1,3 +1,7 @@
+2006-06-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Update my e-mail address.
+
 2006-06-01  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* include/libiberty.h: Declare pex_run_in_environment.
@@ -5,7 +9,7 @@
 2006-05-31  Asher Langton  <langton2@llnl.gov>
 
 	* MAINTAINERS (Write After Approval): Add myself.
-	
+
 2006-05-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (bfd, opcodes): Fix lib_path.
