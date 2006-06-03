@@ -302,6 +302,9 @@ info:
 # Build DVI (none here).
 dvi:
 
+# Build HTML (none here).
+html:
+
 # Build TAGS (none here).
 TAGS:
 
@@ -309,6 +312,8 @@ TAGS:
 install:
 
 install-info:
+
+install-html:
 
 # Cleaning rules.
 mostlyclean:
