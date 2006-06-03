@@ -1,3 +1,12 @@
+2006-06-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport from mainline:
+	2006-05-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+	* gfortran.dg/large_real_kind_form_io_2.f90: UnXFAIL on SPARC/Solaris.
+
+	2006-05-05  Steve Ellcey  <sje@cup.hp.com>
+	* gfortran.dg/large_real_kind_form_io_2.f90: Use nearest.
+
 2006-06-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/19777
