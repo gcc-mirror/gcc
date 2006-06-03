@@ -1,3 +1,14 @@
+2006-06-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/host-darwin.c (sigaltstack): Protect prototype with
+	HAVE_DECL_SIGALTSTACK.
+	(MC_FLD): New.
+	(segv_handler): Use MC_FLD.
+	* configure.ac: Check for a sigaltstack declaration.
+	Compute HAS_MCONTEXT_T_UNDERSCORES on Darwin.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2006-06-03  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR other/27850

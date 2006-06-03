@@ -57,6 +57,24 @@
 /* support for win32 threads */
 #undef GC_WIN32_THREADS
 
+/* i386_thread_state_t has field eax */
+#undef HAS_I386_THREAD_STATE_EAX
+
+/* i386_thread_state_t has field __eax */
+#undef HAS_I386_THREAD_STATE___EAX
+
+/* ppc_thread_state64_t has field r0 */
+#undef HAS_PPC_THREAD_STATE64_R0
+
+/* ppc_thread_state64_t has field __r0 */
+#undef HAS_PPC_THREAD_STATE64___R0
+
+/* ppc_thread_state_t has field r0 */
+#undef HAS_PPC_THREAD_STATE_R0
+
+/* ppc_thread_state_t has field __r0 */
+#undef HAS_PPC_THREAD_STATE___R0
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -154,5 +172,5 @@
 /* POSIX version of C Source */
 #undef _POSIX_C_SOURCE
 
-/* Use reentrant code */
+/* Required define if using POSIX threads */
 #undef _REENTRANT

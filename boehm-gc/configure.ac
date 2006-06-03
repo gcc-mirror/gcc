@@ -232,6 +232,39 @@ case "$host" in
 esac
 AM_CONDITIONAL(POWERPC_DARWIN,test x$powerpc_darwin = xtrue)
 
+# Darwin needs a few extra special tests to deal with variation in the
+# system headers.
+case "$host" in
+  powerpc*-*-darwin*)
+    AC_CHECK_MEMBER(ppc_thread_state_t.r0,
+      AC_DEFINE(HAS_PPC_THREAD_STATE_R0,,[ppc_thread_state_t has field r0]),,
+      [#include <mach/thread_status.h>])
+    AC_CHECK_MEMBER(ppc_thread_state_t.__r0,
+      AC_DEFINE(HAS_PPC_THREAD_STATE___R0,,dnl
+        [ppc_thread_state_t has field __r0]),,
+      [#include <mach/thread_status.h>])
+    AC_CHECK_MEMBER(ppc_thread_state64_t.r0,
+      AC_DEFINE(HAS_PPC_THREAD_STATE64_R0,,dnl
+        [ppc_thread_state64_t has field r0]),,
+      [#include <mach/thread_status.h>])
+    AC_CHECK_MEMBER(ppc_thread_state64_t.__r0,
+      AC_DEFINE(HAS_PPC_THREAD_STATE64___R0,,dnl
+        [ppc_thread_state64_t has field __r0]),,
+      [#include <mach/thread_status.h>])
+    ;;
+  i?86*-*-darwin*)
+    AC_CHECK_MEMBER(i386_thread_state_t.eax,
+      AC_DEFINE(HAS_I386_THREAD_STATE_EAX,,dnl
+        [i386_thread_state_t has field eax]),,
+      [#include <mach/thread_status.h>])
+    AC_CHECK_MEMBER(i386_thread_state_t.__eax,
+      AC_DEFINE(HAS_I386_THREAD_STATE___EAX,,dnl
+        [i386_thread_state_t has field __eax]),,
+      [#include <mach/thread_status.h>])
+    ;;
+  *) ;;
+esac
+
 # We never want libdl on darwin. It is a fake libdl that just ends up making
 # dyld calls anyway
 case "$host" in
