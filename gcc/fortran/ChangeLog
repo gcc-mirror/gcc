@@ -1,3 +1,33 @@
+2006-06-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* trans.c (gfc_msg_bounds, gfc_msg_fault, gfc_msg_wrong_return):
+	Add strings for common runtime error messages.
+	(gfc_trans_runtime_check): Add a locus argument, use a string
+	and not a string tree for the message.
+	* trans.h (gfc_trans_runtime_check): Change prototype accordingly.
+	(gfc_msg_bounds, gfc_msg_fault, gfc_msg_wrong_return): Add proto.
+	* trans-const.c (gfc_strconst_bounds, gfc_strconst_fault,
+	gfc_strconst_wrong_return, gfc_strconst_current_filename): Remove.
+	(gfc_init_constants): Likewise.
+	* trans-const.h: Likewise.
+	* trans-decl.c (gfc_build_builtin_function_decls): Call to
+	_gfortran_runtime_error has only one argument, the message string.
+	* trans-array.h (gfc_conv_array_ref): Add a symbol argument and a
+	locus.
+	* trans-array.c (gfc_trans_array_bound_check): Build precise
+	error messages.
+	(gfc_conv_array_ref): Use the new symbol argument and the locus
+	to build more precise error messages.
+	(gfc_conv_ss_startstride): More precise error messages.
+	* trans-expr.c (gfc_conv_variable): Give symbol reference and
+	locus to gfc_conv_array_ref.
+	(gfc_conv_function_call): Use the new prototype for
+	gfc_trans_runtime_check.
+	* trans-stmt.c (gfc_trans_goto): Build more precise error message.
+	* trans-io.c (set_string): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Use new prototype
+	for gfc_trans_runtime_check.
+
 2006-06-01  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27715

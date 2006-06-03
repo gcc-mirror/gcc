@@ -33,12 +33,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-const.h"
 #include "trans-types.h"
 
-/* String constants.  */
-tree gfc_strconst_bounds;
-tree gfc_strconst_fault;
-tree gfc_strconst_wrong_return;
-tree gfc_strconst_current_filename;
-
 tree gfc_rank_cst[GFC_MAX_DIMENSIONS + 1];
 
 /* Build a constant with given type from an int_cst.  */
@@ -154,17 +148,6 @@ gfc_init_constants (void)
 
   for (n = 0; n <= GFC_MAX_DIMENSIONS; n++)
     gfc_rank_cst[n] = build_int_cst (gfc_array_index_type, n);
-
-  gfc_strconst_bounds = gfc_build_cstring_const ("Array bound mismatch");
-
-  gfc_strconst_fault =
-    gfc_build_cstring_const ("Array reference out of bounds");
-
-  gfc_strconst_wrong_return =
-    gfc_build_cstring_const ("Incorrect function return value");
-
-  gfc_strconst_current_filename =
-    gfc_build_cstring_const (gfc_source_file);
 }
 
 /* Converts a GMP integer into a backend tree node.  */
