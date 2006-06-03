@@ -3,6 +3,7 @@
    patterns were missing earlyclobber.  */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-skip-if "" { ilp32 } { "-fpic" "-fPIC" } { "" } } */
+/* { dg-skip-if "PIC default" { *-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-march=pentium3 -msse -ffast-math -O2" } */
 

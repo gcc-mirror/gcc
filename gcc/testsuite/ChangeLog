@@ -1,3 +1,11 @@
+2006-06-02  Eric Christopher  <echristo@apple.com>
+
+	* gcc.c-torture/compile/20000804-1.c: Skip if i?86-darwin.
+	* gcc.target/i386/20020523-1.c: Skip if darwin.
+	* gcc.target/i386/asm-3.c: Ditto.
+	* gcc.target/i386/20011119-1.c: Ditto.
+	* gcc.target/i386/clobbers.c: Remove pic part of test.
+
 2006-06-02  Steve Ellcey  <sje@cup.hp.com>
 
 	* g++.old-deja/g++.other/init5.C: XFAIL if cxa-atexit is false.
@@ -6,7 +14,7 @@
 	and add other platforms as expected failures.
 
 2006-06-01  Steve Ellcey  <sje@cup.hp.com>
-	
+
 	* lib/target-supports.exp (is-effective-target): Add cxa_atexit.
 	(is-effective-target-keyword): Ditto.
 
@@ -66,7 +74,7 @@
 2006-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27803
-	* g++.dg/parse/bitfield1.C: New test. 
+	* g++.dg/parse/bitfield1.C: New test.
 
 2006-05-30  Roger Sayle  <roger@eyesopen.com>
 
@@ -186,7 +194,7 @@
 	PR c++/20103
 	* g++.dg/ext/complit6.C: New test.
 	* g++.dg/ext/complit3.C: Adjust error markers.
-	* g++.dg/init/const3.C: New test. 	
+	* g++.dg/init/const3.C: New test.
 
 2006-05-25  Richard Guenther  <rguenther@suse.de>
 
