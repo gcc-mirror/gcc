@@ -1,3 +1,12 @@
+2006-06-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/26223
+	* config/i386/i386.c (construct_container): Split static issued_error
+	flag into issued_sse_arg_error, issued_sse_ret_error and
+	issued_x87_ret_error.  Issue a daignostic if the x86-64 ABI
+	requires the use of x87 registers and the user explicitly
+	specified the -mno-80387 command line option.
+
 2006-06-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/host-darwin.c (sigaltstack): Protect prototype with

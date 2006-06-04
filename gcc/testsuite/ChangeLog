@@ -1,3 +1,8 @@
+2006-06-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/26223
+	* gcc.target/i386/amd64-abi-2.c: New test case.
+
 2006-06-02  Eric Christopher  <echristo@apple.com>
 
 	* gcc.c-torture/compile/20000804-1.c: Skip if i?86-darwin.
