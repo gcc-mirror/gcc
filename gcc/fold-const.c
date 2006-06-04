@@ -7764,6 +7764,41 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	return fold_build2 (code, type, variable, lhs);
     }
 
+  /* If this is a comparison of two exprs that look like an ARRAY_REF of the
+     same object, then we can fold this to a comparison of the two offsets in
+     signed size type.  This is possible because pointer arithmetic is
+     restricted to retain within an object and overflow on pointer differences
+     is undefined as of 6.5.6/8 and /9 with respect to the signed ptrdiff_t.  */
+  if (POINTER_TYPE_P (TREE_TYPE (arg0))
+      && !flag_wrapv && !flag_trapv)
+    {
+      tree base0, offset0, base1, offset1;
+
+      if (extract_array_ref (arg0, &base0, &offset0)
+	  && extract_array_ref (arg1, &base1, &offset1)
+	  && operand_equal_p (base0, base1, 0))
+        {
+	  tree signed_size_type_node;
+	  signed_size_type_node = signed_type_for (size_type_node);
+
+	  /* By converting to signed size type we cover middle-end pointer
+	     arithmetic which operates on unsigned pointer types of size
+	     type size and ARRAY_REF offsets which are properly sign or
+	     zero extended from their type in case it is narrower than
+	     size type.  */
+	  if (offset0 == NULL_TREE)
+	    offset0 = build_int_cst (signed_size_type_node, 0);
+	  else
+	    offset0 = fold_convert (signed_size_type_node, offset0);
+	  if (offset1 == NULL_TREE)
+	    offset1 = build_int_cst (signed_size_type_node, 0);
+	  else
+	    offset1 = fold_convert (signed_size_type_node, offset1);
+
+	  return fold_build2 (code, type, offset0, offset1);
+	}
+    }
+
   if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
     {
       tree targ0 = strip_float_extensions (arg0);
@@ -10538,34 +10573,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  return fold_build2 (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
 			      tem, build_int_cst (TREE_TYPE (tem), 0));
 	}
-
-      /* If this is a comparison of two exprs that look like an
-	 ARRAY_REF of the same object, then we can fold this to a
-	 comparison of the two offsets.  This is only safe for
-	 EQ_EXPR and NE_EXPR because of overflow issues.  */
-      {
-	tree base0, offset0, base1, offset1;
-
-	if (extract_array_ref (arg0, &base0, &offset0)
-	    && extract_array_ref (arg1, &base1, &offset1)
-	    && operand_equal_p (base0, base1, 0))
-          {
-	    /* Handle no offsets on both sides specially.  */
-	    if (offset0 == NULL_TREE && offset1 == NULL_TREE)
-	      return fold_build2 (code, type, integer_zero_node,
-				  integer_zero_node);
-
-	    if (!offset0 || !offset1
-		|| TREE_TYPE (offset0) == TREE_TYPE (offset1))
-	      {
-	        if (offset0 == NULL_TREE)
-		  offset0 = build_int_cst (TREE_TYPE (offset1), 0);
-		if (offset1 == NULL_TREE)
-	          offset1 = build_int_cst (TREE_TYPE (offset0), 0);
-		return fold_build2 (code, type, offset0, offset1);
-	      }
-	  }
-      }
 
       if (integer_zerop (arg1)
 	  && tree_expr_nonzero_p (arg0))
