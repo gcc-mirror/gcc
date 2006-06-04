@@ -1,3 +1,10 @@
+2006-06-04  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/27867
+	* include/bits/valarray_before.h (struct _BinClos<_Oper, _ValArray,
+	_ValArray, _Tp, _Tp>): Fix value_type typedef.
+	* testsuite/26_numerics/valarray/27867.cc: New.
+
 2006-05-29  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24692
