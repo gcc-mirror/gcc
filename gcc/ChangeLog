@@ -1,3 +1,8 @@
+2006-06-04  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27601
+	* c-common.c (fold_offsetof_1): Handle static members.
+
 2006-06-04 Eric Christopher <echristo@apple.com>
 
 	* stor-layout.c (start_record_layout): Initialize remaining_in_alignment.
