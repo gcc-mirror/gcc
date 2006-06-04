@@ -1,5 +1,11 @@
 2006-06-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c++/27592
+	* rtti.c (build_dynamic_cast_1): Call c_common_truthvalue_conversion
+	on operand of the COND_EXPR for the null pointer check.
+
+2006-06-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR c++/26740
 	* typeck.c (build_unary_op): Mark the function as being used.
 
