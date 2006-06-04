@@ -5959,6 +5959,10 @@ fold_offsetof_1 (tree expr)
     case ERROR_MARK:
       return expr;
 
+    case VAR_DECL:
+      error ("cannot apply %<offsetof%> to static data member %qD", expr);
+      return error_mark_node;
+
     case INDIRECT_REF:
       return size_zero_node;
 
