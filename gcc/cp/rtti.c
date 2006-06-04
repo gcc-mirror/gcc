@@ -677,9 +677,11 @@ build_dynamic_cast_1 (tree type, tree expr)
 	  if (tc == REFERENCE_TYPE)
 	    {
 	      tree bad = throw_bad_cast ();
+	      tree neq;
 
 	      result = save_expr (result);
-	      return build3 (COND_EXPR, type, result, result, bad);
+	      neq = c_common_truthvalue_conversion (result);
+	      return build3 (COND_EXPR, type, neq, result, bad);
 	    }
 
 	  /* Now back to the type we want from a void*.  */
