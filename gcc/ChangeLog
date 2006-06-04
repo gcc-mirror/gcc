@@ -1,3 +1,12 @@
+2006-06-04  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* tree.h: Declare folding_initializer.
+	* builtins.c (fold_builtin_constant_p): Give definite answer
+	if folding inside an initializer.
+	* fold-const.c: Define folding_initializer.
+	(START_FOLD_INIT): Save and then set folding_initializer.
+	(END_FOLD_INIT): Restore folding_initializer.
+
 2006-06-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27039

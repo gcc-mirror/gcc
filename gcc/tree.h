@@ -4142,6 +4142,10 @@ extern void using_eh_for_cleanups (void);
 
 /* In fold-const.c */
 
+/* Non-zero if we are folding constants inside an initializer; zero
+   otherwise.  */
+extern int folding_initializer;
+
 /* Fold constants as much as possible in an expression.
    Returns the simplified expression.
    Acts only on the top level of the expression;
