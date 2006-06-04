@@ -4245,6 +4245,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	     and the created OFFSET_REF.  */
 	  tree base = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg, 0)));
 	  tree fn = get_first_fn (TREE_OPERAND (arg, 1));
+	  mark_used (fn);
 
 	  if (! flag_ms_extensions)
 	    {

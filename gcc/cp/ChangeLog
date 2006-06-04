@@ -1,3 +1,8 @@
+2006-06-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/26740
+	* typeck.c (build_unary_op): Mark the function as being used.
+
 2006-06-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/26660
