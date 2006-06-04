@@ -1,3 +1,8 @@
+2006-06-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27039
+	* gcc.dg/tree-ssa/loop-17.c: New testcase.
+
 2006-06-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26223

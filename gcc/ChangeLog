@@ -1,3 +1,11 @@
+2006-06-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27039
+	* fold-const.c (fold_comparison): Handle pointer comparison
+	again for all comparison codes.  Compare offsets in signed
+	size type.
+	(fold_binary): Move code from here.
+
 2006-06-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/26223
