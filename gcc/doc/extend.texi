@@ -33,7 +33,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Long Long::		Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
-* Decimal Float::	Decimal Floating Point. 
+* Decimal Float::	Decimal Floating Point.
 * Hex Floats::          Hexadecimal floating-point constants.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
@@ -3189,7 +3189,7 @@ attribute can also be applied to global C++ objects that are initialized
 by a constructor.  In this case, the static initialization and destruction
 code for the object is emitted in each translation defining the object,
 but the calls to the constructor and destructor are protected by a
-link-once guard variable. 
+link-once guard variable.
 
 The @code{selectany} attribute is only available on Microsoft Windows
 targets.  You can use @code{__declspec (selectany)} as a synonym for
@@ -3246,6 +3246,117 @@ either format.
 
 Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
 compilers to match the native Microsoft compiler.
+
+The Microsoft structure layout algorithm is fairly simple with the exception
+of the bitfield packing:
+
+The padding and alignment of members of structures and whether a bit field
+can straddle a storage-unit boundary
+
+@enumerate
+@item Structure members are stored sequentially in the order in which they are
+declared: the first member has the lowest memory address and the last member
+the highest.
+
+@item Every data object has an alignment-requirement. The alignment-requirement
+for all data except structures, unions, and arrays is either the size of the
+object or the current packing size (specified with either the aligned attribute
+or the pack pragma), whichever is less. For structures,  unions, and arrays,
+the alignment-requirement is the largest alignment-requirement of its members.
+Every object is allocated an offset so that:
+
+offset %  alignment-requirement == 0
+
+@item Adjacent bit fields are packed into the same 1-, 2-, or 4-byte allocation
+unit if the integral types are the same size and if the next bit field fits
+into the current allocation unit without crossing the boundary imposed by the
+common alignment requirements of the bit fields.
+@end enumerate
+
+Handling of zero-length bitfields:
+
+MSVC interprets zero-length bitfields in the following ways:
+
+@enumerate
+@item If a zero-length bitfield is inserted between two bitfields that would
+normally be coalesced, the bitfields will not be coalesced.
+
+For example:
+
+@smallexample
+struct
+ @{
+   unsigned long bf_1 : 12;
+   unsigned long : 0;
+   unsigned long bf_2 : 12;
+ @} t1;
+@end smallexample
+
+The size of @code{t1} would be 8 bytes with the zero-length bitfield.  If the
+zero-length bitfield were removed, @code{t1}'s size would be 4 bytes.
+
+@item If a zero-length bitfield is inserted after a bitfield, @code{foo}, and the
+alignment of the zero-length bitfield is greater than the member that follows it,
+@code{bar}, @code{bar} will be aligned as the type of the zero-length bitfield.
+
+For example:
+
+@smallexample
+struct
+ @{
+   char foo : 4;
+   short : 0;
+   char bar;
+ @} t2;
+
+struct
+ @{
+   char foo : 4;
+   short : 0;
+   double bar;
+ @} t3;
+@end smallexample
+
+For @code{t2}, @code{bar} will be placed at offset 2, rather than offset 1.
+Accordingly, the size of @code{t2} will be 4.  For @code{t3}, the zero-length
+bitfield will not affect the alignment of @code{bar} or, as a result, the size
+of the structure.
+
+Taking this into account, it is important to note the following:
+
+@enumerate
+@item If a zero-length bitfield follows a normal bitfield, the type of the
+zero-length bitfield may affect the alignment of the structure as whole. For
+example, @code{t2} has a size of 4 bytes, since the zero-length bitfield follows a
+normal bitfield, and is of type short.
+
+@item Even if a zero-length bitfield is not followed by a normal bitfield, it may
+still affect the alignment of the structure:
+
+@smallexample
+struct
+ @{
+   char foo : 6;
+   long : 0;
+ @} t4;
+@end smallexample
+
+Here, @code{t4} will take up 4 bytes.
+@end enumerate
+
+@item Zero-length bitfields following non-bitfield members are ignored:
+
+@smallexample
+struct
+ @{
+   char foo;
+   long : 0;
+   char bar;
+ @} t5;
+@end smallexample
+
+Here, @code{t5} will take up 2 bytes.
+@end enumerate
 @end table
 
 @subsection Xstormy16 Variable Attributes
@@ -4820,7 +4931,7 @@ These builtins perform an atomic compare and swap.  That is, if the current
 value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
 @code{*@var{ptr}}.
 
-The ``bool'' version returns true if the comparison is successful and 
+The ``bool'' version returns true if the comparison is successful and
 @var{newval} was written.  The ``val'' version returns the contents
 of @code{*@var{ptr}} before the operation.
 
@@ -4844,7 +4955,7 @@ is implementation defined.
 This builtin is not a full barrier, but rather an @dfn{acquire barrier}.
 This means that references after the builtin cannot move to (or be
 speculated to) before the builtin, but previous memory stores may not
-be globally visible yet, and previous memory loads may not yet be 
+be globally visible yet, and previous memory loads may not yet be
 satisfied.
 
 @item void __sync_lock_release (@var{type} *ptr, ...)
@@ -9573,7 +9684,7 @@ aliases.
 @cindex pragma, weak
 This pragma declares @var{symbol} to be weak, as if the declaration
 had the attribute of the same name.  The pragma may appear before
-or after the declaration of @var{symbol}, but must appear before 
+or after the declaration of @var{symbol}, but must appear before
 either its first use or its definition.  It is not an error for
 @var{symbol} to never be defined at all.
 

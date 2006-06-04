@@ -1,3 +1,15 @@
+2006-06-04 Eric Christopher <echristo@apple.com>
+
+	* stor-layout.c (start_record_layout): Initialize remaining_in_alignment.
+	(debug_rli): Output value for remaining_in_alignment.
+	(update_alignment_for_field): Unconditionalize
+	ms_bitfield_layout_p code. Handle non-bitfield fields. Remove
+	extra alignment code.
+	(place_field): Don't realign if ms_bitfield_layout_p. Unconditionalize
+	ms_bitfield_layout_p code. Rewrite handling of structure fields.
+	* tree.h (record_layout_info_s): Remove prev_packed.
+	* doc/extend.texi (ms_struct): Add documentation of format.
+
 2006-06-04  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* tree.h: Declare folding_initializer.
@@ -384,7 +396,7 @@
 
 	PR c++/20103
 	* gimplify.c (gimplify_decl_expr): Do not call gimple_add_tmp_var
-	for anonymous variables explicitly declared by front ends. 
+	for anonymous variables explicitly declared by front ends.
 
 2006-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -442,11 +454,11 @@
 	* df-core.c: Added to header comments.
 	* df.h (df_ru_bb_info, df_rd_bb_info, df_lr_bb_info,
 	df_ur_bb_info, df_urec_bb_info): Added comments.
-	* df-problems (df_ref_bitmap, ru, rd, lr, ur, 
+	* df-problems (df_ref_bitmap, ru, rd, lr, ur,
 	urec, ri problems): Fixed header comments.
-	(df_ru_transfer_function): Fixed in-out set dyslexia when copying 
+	(df_ru_transfer_function): Fixed in-out set dyslexia when copying
 	code from df_rd_transfer_function.
-	
+
 2006-05-23  Richard Sandiford  <richard@codesourcery.com>
 
 	* libgcc2.c (LIBGCC2_MAX_UNITS_PER_WORD): New macro.
@@ -470,7 +482,7 @@
 2006-05-23  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR c++/26757
-	* tree-ssa-loop-im.c (determine_invariantness_stmt): Use 
+	* tree-ssa-loop-im.c (determine_invariantness_stmt): Use
 	add_referenced_var instead of add_referenced_tmp_var.
 	* tree-complex.c (create_one_component_var): Use add_referenced_var.
 	* tree-ssa-loop-manip.c (create_iv, tree_unroll_loop): Use
@@ -494,23 +506,23 @@
 	isn't already in the hash table.
 	(add_referenced_tmp_var): Remove.
 	(find_new_referenced_vars_1): Use add_referenced_var.
-	* tree-ssa-pre.c (create_expression_by_pieces, 
+	* tree-ssa-pre.c (create_expression_by_pieces,
 	insert_into_preds_of_block, insert_extra_phis, realify_fake_stores):
 	Use add_referenced_var.
 	* tree-vect-patterns.c (vect_pattern_recog_1): Use add_referenced_var.
 	* lambda-code.c (lbv_to_gcc_expression, lle_to_gcc_expression,
-	lambda_loopnest_to_gcc_loopnest, perfect_nestify): Use 
+	lambda_loopnest_to_gcc_loopnest, perfect_nestify): Use
 	add_referenced_var.
 	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref,
 	vect_create_data_ref_ptr, vect_create_destination_var,
-	vect_init_vector, vect_build_loop_niters, 
+	vect_init_vector, vect_build_loop_niters,
 	vect_generate_tmps_on_preheader, vect_update_ivs_after_vectorizer,
 	vect_gen_niters_for_prolog_loop, vect_create_cond_for_align_checks):
 	Use add_referenced_var.
 	* tree-outof-ssa.c (create_temp): Use add_referenced_var.
 	* tree-flow.h (add_referenced_tmp_var): Remove prototype
 	(add_referenced_var): Add prototype.
-	* tree-ssa-structalias.c (get_constraint_for, 
+	* tree-ssa-structalias.c (get_constraint_for,
 	intra_create_variable_infos): Use add_referenced_var.
 
 2006-05-23  Alexandre Oliva  <aoliva@redhat.com>
@@ -542,9 +554,9 @@
 	to gen set.
 	(df_ru_bb_local_compute): Reversed statements and removed bogus
 	comment explaining why they should be in wrong order.
-	(df_ru_dump, df_rd_dump): Enhanced debug info.     
+	(df_ru_dump, df_rd_dump): Enhanced debug info.
 	* modulo-sched.c (sms_schedule, tree_opt_pass pass_sms): Enhanced
-	debug info.       
+	debug info.
 	* ddg.c (add_deps_for_def): Converted use of reaching defs to
 	reaching uses and fixed space problem.
 
@@ -585,11 +597,11 @@
 
 	* config/avr/avr.c (avr_mcu_types): Add support for attiny261,
 	attiny461, attiny861, attiny25, attiny45, attiny85, attiny24,
-	attiny44, attiny84, at90pwm2, at90pwm3, atmega165p, atmega169p, 
-	atmega164p, atmega324p, atmega644p, atmega644, atmega329, 
-	atmega3290, atmega649, atmega6490, atmega406, atmega640, 
-	atmega1280, atmega1281, at90can32, at90can64, at90usb646, 
-	at90usb647, at90usb1286 and at90usb1287 devices.  
+	attiny44, attiny84, at90pwm2, at90pwm3, atmega165p, atmega169p,
+	atmega164p, atmega324p, atmega644p, atmega644, atmega329,
+	atmega3290, atmega649, atmega6490, atmega406, atmega640,
+	atmega1280, atmega1281, at90can32, at90can64, at90usb646,
+	at90usb647, at90usb1286 and at90usb1287 devices.
 	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
 	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
 
@@ -715,7 +727,7 @@
 	(df_ref_record_1): Changed DF_REF_CLOBBER into DF_REF_MUST_CLOBBER
 	and set DF_REF_PARTIAL.
 	(df_defs_record): Changed DF_REF_CLOBBER into DF_REF_MUST_CLOBBER.
-	(df_uses_record): Added DF_REF_PARTIAL for subreg. 
+	(df_uses_record): Added DF_REF_PARTIAL for subreg.
 	(df_scan_add_problem): Added flags parameter.
 	(df_ref_create_structure): Changed switching structure.
 	(df_bb_refs_record): Fixed case where duplicate artificial refs
@@ -726,8 +738,8 @@
 	(df_record_exit_block_uses, df_insn_refs_record): Changed location of flags.
 	(df_set_state): Removed function.
 	(df_grow_reg_info, df_reg_chain_unlink, df_ref_remove,
-	df_insn_create_insn_record, df_insn_refs_delete, 
-	df_ref_create_structure): Formatting changes.  
+	df_insn_create_insn_record, df_insn_refs_delete,
+	df_ref_create_structure): Formatting changes.
 	* df-core.c (df_mvs_dump, df_set_flags, df_clear_flags,
 	df_delete_basic_block): New function.
 	(df_init): Changed location of flags.
@@ -741,7 +753,7 @@
 	(df_prune_to_subcfg): Made public.
 	(df_analyze_problem): Added blocks_to_init parameter and made
 	public.
-	(df_ref_record, df_bb_refs_record, df_mark_reg, 
+	(df_ref_record, df_bb_refs_record, df_mark_reg,
 	 df_record_exit_block_uses): Whitespace changes.
 	(df_dump): Whitespace changes.
 	* df.h: Some reordering to remove forward references.
@@ -834,7 +846,7 @@
 	* dwarf2out.c (dwarf2_name): Use the dwarf_name	language hook.
 	* ada/misc.c (gnat_dwarf_name): New function.
 	(LANG_HOOKS_DWARF_NAME): Define to gnat_dwarf_name.
-	
+
 2006-05-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* libgcc2.c (MIN_UNITS_PER_WORD): Move default definition from
