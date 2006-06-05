@@ -101,7 +101,12 @@ main (int argc, char const** argv)
 
   if (! libpath || strcmp (libpath, newpath))
     {
-      setenv (LTDL_SHLIBPATH_VAR, newpath, 1);
+      char *buffer = (char *) JvMalloc (strlen (LTDL_SHLIBPATH_VAR)
+					+ strlen (newpath) + 2);
+      strcpy (buffer, LTDL_SHLIBPATH_VAR);
+      strcat (buffer, "=");
+      strcat (buffer, newpath);
+      putenv (buffer);
       JvFree (newpath);
 
       int error_code = execvp (argv[0], (char* const*) argv);
