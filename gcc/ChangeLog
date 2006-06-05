@@ -1,3 +1,7 @@
+2006-06-05  Kazu Hirata  <kazu@codesourcery.com>
+
+	* stor-layout.c (debug_rli): Fix a typo in a debug message.
+
 2006-06-05  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/27051
