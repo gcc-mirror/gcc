@@ -231,7 +231,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
       /* Break out of the loop if we find a substring.  */
       if (ref->type == REF_SUBSTRING)
 	{
-	  /* A substring should always br the last subobject reference.  */
+	  /* A substring should always be the last subobject reference.  */
 	  gcc_assert (ref->next == NULL);
 	  break;
 	}
@@ -340,7 +340,6 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 #endif
 	  gfc_notify_std (GFC_STD_GNU, "Extension: re-initialization "
 			  "of '%s' at %L",  symbol->name, &expr->where);
-	  return;
 	}
 
       expr = gfc_copy_expr (rvalue);
