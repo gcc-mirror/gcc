@@ -720,14 +720,12 @@ TAGS: do-TAGS
 [+ DEFINE configure +]
 .PHONY: configure-[+prefix+][+module+] maybe-configure-[+prefix+][+module+]
 maybe-configure-[+prefix+][+module+]:
+@if gcc-bootstrap
+configure-[+prefix+][+module+]: stage_current
+@endif gcc-bootstrap
 @if [+prefix+][+module+]
 maybe-configure-[+prefix+][+module+]: configure-[+prefix+][+module+]
-configure-[+prefix+][+module+]: [+ IF bootstrap +]
-@endif [+prefix+][+module+]
-@if [+prefix+][+module+]-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif [+prefix+][+module+]-bootstrap
-@if [+prefix+][+module+][+ ELSE bootstrap +]
+configure-[+prefix+][+module+]: [+ IF bootstrap +][+ ELSE +]
 	@: $(MAKE); $(unstage)[+ ENDIF bootstrap +]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -811,16 +809,14 @@ configure-stage[+id+]-[+prefix+][+module+]:
 [+ DEFINE all +]
 .PHONY: all-[+prefix+][+module+] maybe-all-[+prefix+][+module+]
 maybe-all-[+prefix+][+module+]:
+@if gcc-bootstrap
+all-[+prefix+][+module+]: stage_current
+@endif gcc-bootstrap
 @if [+prefix+][+module+]
 TARGET-[+prefix+][+module+]=[+
   IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
 maybe-all-[+prefix+][+module+]: all-[+prefix+][+module+]
-all-[+prefix+][+module+]: configure-[+prefix+][+module+][+ IF bootstrap +]
-@endif [+prefix+][+module+]
-@if [+prefix+][+module+]-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif [+prefix+][+module+]-bootstrap
-@if [+prefix+][+module+][+ ELSE bootstrap +]
+all-[+prefix+][+module+]: configure-[+prefix+][+module+][+ IF bootstrap +][+ ELSE +]
 	@: $(MAKE); $(unstage)[+ ENDIF bootstrap +]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -1428,6 +1424,11 @@ do-distclean: distclean-stage1
 # not work as a dependency, just as the minimum necessary to avoid errors.
 stage_last:
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage1-bubble
+
+# Same as unstage, but not phony and defaulting to stage1-start.  We place
+# it in the dependency so that for example `make -j3 all-gcc' works.
+stage_current:
+	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
 
 .PHONY: restrap
 restrap:

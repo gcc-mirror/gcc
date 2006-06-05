@@ -1,3 +1,12 @@
+2006-06-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR 27674
+	* Makefile.tpl (configure-[+prefix+][+module+],
+	all-[+prefix+][+module+]): Depend on stage_current if bootstrapping.
+	Remove rule to unstage bootstrapped modules.
+	(stage_current): New.
+	* Makefile.in: Regenerate.
+
 2006-06-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Update my e-mail address.
