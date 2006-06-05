@@ -2346,6 +2346,9 @@ TAGS: do-TAGS
 
 .PHONY: configure-build-libiberty maybe-configure-build-libiberty
 maybe-configure-build-libiberty:
+@if gcc-bootstrap
+configure-build-libiberty: stage_current
+@endif gcc-bootstrap
 @if build-libiberty
 maybe-configure-build-libiberty: configure-build-libiberty
 configure-build-libiberty: 
@@ -2376,6 +2379,9 @@ configure-build-libiberty:
 
 .PHONY: all-build-libiberty maybe-all-build-libiberty
 maybe-all-build-libiberty:
+@if gcc-bootstrap
+all-build-libiberty: stage_current
+@endif gcc-bootstrap
 @if build-libiberty
 TARGET-build-libiberty=all
 maybe-all-build-libiberty: all-build-libiberty
@@ -2394,6 +2400,9 @@ all-build-libiberty: configure-build-libiberty
 
 .PHONY: configure-build-bison maybe-configure-build-bison
 maybe-configure-build-bison:
+@if gcc-bootstrap
+configure-build-bison: stage_current
+@endif gcc-bootstrap
 @if build-bison
 maybe-configure-build-bison: configure-build-bison
 configure-build-bison: 
@@ -2424,6 +2433,9 @@ configure-build-bison:
 
 .PHONY: all-build-bison maybe-all-build-bison
 maybe-all-build-bison:
+@if gcc-bootstrap
+all-build-bison: stage_current
+@endif gcc-bootstrap
 @if build-bison
 TARGET-build-bison=all
 maybe-all-build-bison: all-build-bison
@@ -2442,6 +2454,9 @@ all-build-bison: configure-build-bison
 
 .PHONY: configure-build-byacc maybe-configure-build-byacc
 maybe-configure-build-byacc:
+@if gcc-bootstrap
+configure-build-byacc: stage_current
+@endif gcc-bootstrap
 @if build-byacc
 maybe-configure-build-byacc: configure-build-byacc
 configure-build-byacc: 
@@ -2472,6 +2487,9 @@ configure-build-byacc:
 
 .PHONY: all-build-byacc maybe-all-build-byacc
 maybe-all-build-byacc:
+@if gcc-bootstrap
+all-build-byacc: stage_current
+@endif gcc-bootstrap
 @if build-byacc
 TARGET-build-byacc=all
 maybe-all-build-byacc: all-build-byacc
@@ -2490,6 +2508,9 @@ all-build-byacc: configure-build-byacc
 
 .PHONY: configure-build-flex maybe-configure-build-flex
 maybe-configure-build-flex:
+@if gcc-bootstrap
+configure-build-flex: stage_current
+@endif gcc-bootstrap
 @if build-flex
 maybe-configure-build-flex: configure-build-flex
 configure-build-flex: 
@@ -2520,6 +2541,9 @@ configure-build-flex:
 
 .PHONY: all-build-flex maybe-all-build-flex
 maybe-all-build-flex:
+@if gcc-bootstrap
+all-build-flex: stage_current
+@endif gcc-bootstrap
 @if build-flex
 TARGET-build-flex=all
 maybe-all-build-flex: all-build-flex
@@ -2538,6 +2562,9 @@ all-build-flex: configure-build-flex
 
 .PHONY: configure-build-m4 maybe-configure-build-m4
 maybe-configure-build-m4:
+@if gcc-bootstrap
+configure-build-m4: stage_current
+@endif gcc-bootstrap
 @if build-m4
 maybe-configure-build-m4: configure-build-m4
 configure-build-m4: 
@@ -2568,6 +2595,9 @@ configure-build-m4:
 
 .PHONY: all-build-m4 maybe-all-build-m4
 maybe-all-build-m4:
+@if gcc-bootstrap
+all-build-m4: stage_current
+@endif gcc-bootstrap
 @if build-m4
 TARGET-build-m4=all
 maybe-all-build-m4: all-build-m4
@@ -2586,6 +2616,9 @@ all-build-m4: configure-build-m4
 
 .PHONY: configure-build-texinfo maybe-configure-build-texinfo
 maybe-configure-build-texinfo:
+@if gcc-bootstrap
+configure-build-texinfo: stage_current
+@endif gcc-bootstrap
 @if build-texinfo
 maybe-configure-build-texinfo: configure-build-texinfo
 configure-build-texinfo: 
@@ -2616,6 +2649,9 @@ configure-build-texinfo:
 
 .PHONY: all-build-texinfo maybe-all-build-texinfo
 maybe-all-build-texinfo:
+@if gcc-bootstrap
+all-build-texinfo: stage_current
+@endif gcc-bootstrap
 @if build-texinfo
 TARGET-build-texinfo=all
 maybe-all-build-texinfo: all-build-texinfo
@@ -2634,6 +2670,9 @@ all-build-texinfo: configure-build-texinfo
 
 .PHONY: configure-build-fixincludes maybe-configure-build-fixincludes
 maybe-configure-build-fixincludes:
+@if gcc-bootstrap
+configure-build-fixincludes: stage_current
+@endif gcc-bootstrap
 @if build-fixincludes
 maybe-configure-build-fixincludes: configure-build-fixincludes
 configure-build-fixincludes: 
@@ -2664,6 +2703,9 @@ configure-build-fixincludes:
 
 .PHONY: all-build-fixincludes maybe-all-build-fixincludes
 maybe-all-build-fixincludes:
+@if gcc-bootstrap
+all-build-fixincludes: stage_current
+@endif gcc-bootstrap
 @if build-fixincludes
 TARGET-build-fixincludes=all
 maybe-all-build-fixincludes: all-build-fixincludes
@@ -2687,6 +2729,9 @@ all-build-fixincludes: configure-build-fixincludes
 
 .PHONY: configure-ash maybe-configure-ash
 maybe-configure-ash:
+@if gcc-bootstrap
+configure-ash: stage_current
+@endif gcc-bootstrap
 @if ash
 maybe-configure-ash: configure-ash
 configure-ash: 
@@ -2716,6 +2761,9 @@ configure-ash:
 
 .PHONY: all-ash maybe-all-ash
 maybe-all-ash:
+@if gcc-bootstrap
+all-ash: stage_current
+@endif gcc-bootstrap
 @if ash
 TARGET-ash=all
 maybe-all-ash: all-ash
@@ -3051,6 +3099,9 @@ maintainer-clean-ash:
 
 .PHONY: configure-autoconf maybe-configure-autoconf
 maybe-configure-autoconf:
+@if gcc-bootstrap
+configure-autoconf: stage_current
+@endif gcc-bootstrap
 @if autoconf
 maybe-configure-autoconf: configure-autoconf
 configure-autoconf: 
@@ -3080,6 +3131,9 @@ configure-autoconf:
 
 .PHONY: all-autoconf maybe-all-autoconf
 maybe-all-autoconf:
+@if gcc-bootstrap
+all-autoconf: stage_current
+@endif gcc-bootstrap
 @if autoconf
 TARGET-autoconf=all
 maybe-all-autoconf: all-autoconf
@@ -3415,6 +3469,9 @@ maintainer-clean-autoconf:
 
 .PHONY: configure-automake maybe-configure-automake
 maybe-configure-automake:
+@if gcc-bootstrap
+configure-automake: stage_current
+@endif gcc-bootstrap
 @if automake
 maybe-configure-automake: configure-automake
 configure-automake: 
@@ -3444,6 +3501,9 @@ configure-automake:
 
 .PHONY: all-automake maybe-all-automake
 maybe-all-automake:
+@if gcc-bootstrap
+all-automake: stage_current
+@endif gcc-bootstrap
 @if automake
 TARGET-automake=all
 maybe-all-automake: all-automake
@@ -3779,6 +3839,9 @@ maintainer-clean-automake:
 
 .PHONY: configure-bash maybe-configure-bash
 maybe-configure-bash:
+@if gcc-bootstrap
+configure-bash: stage_current
+@endif gcc-bootstrap
 @if bash
 maybe-configure-bash: configure-bash
 configure-bash: 
@@ -3808,6 +3871,9 @@ configure-bash:
 
 .PHONY: all-bash maybe-all-bash
 maybe-all-bash:
+@if gcc-bootstrap
+all-bash: stage_current
+@endif gcc-bootstrap
 @if bash
 TARGET-bash=all
 maybe-all-bash: all-bash
@@ -4143,14 +4209,12 @@ maintainer-clean-bash:
 
 .PHONY: configure-bfd maybe-configure-bfd
 maybe-configure-bfd:
+@if gcc-bootstrap
+configure-bfd: stage_current
+@endif gcc-bootstrap
 @if bfd
 maybe-configure-bfd: configure-bfd
 configure-bfd: 
-@endif bfd
-@if bfd-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif bfd-bootstrap
-@if bfd
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
@@ -4339,15 +4403,13 @@ configure-stagefeedback-bfd:
 
 .PHONY: all-bfd maybe-all-bfd
 maybe-all-bfd:
+@if gcc-bootstrap
+all-bfd: stage_current
+@endif gcc-bootstrap
 @if bfd
 TARGET-bfd=all
 maybe-all-bfd: all-bfd
 all-bfd: configure-bfd
-@endif bfd
-@if bfd-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif bfd-bootstrap
-@if bfd
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -4853,14 +4915,12 @@ maintainer-clean-bfd:
 
 .PHONY: configure-opcodes maybe-configure-opcodes
 maybe-configure-opcodes:
+@if gcc-bootstrap
+configure-opcodes: stage_current
+@endif gcc-bootstrap
 @if opcodes
 maybe-configure-opcodes: configure-opcodes
 configure-opcodes: 
-@endif opcodes
-@if opcodes-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif opcodes-bootstrap
-@if opcodes
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
@@ -5049,15 +5109,13 @@ configure-stagefeedback-opcodes:
 
 .PHONY: all-opcodes maybe-all-opcodes
 maybe-all-opcodes:
+@if gcc-bootstrap
+all-opcodes: stage_current
+@endif gcc-bootstrap
 @if opcodes
 TARGET-opcodes=all
 maybe-all-opcodes: all-opcodes
 all-opcodes: configure-opcodes
-@endif opcodes
-@if opcodes-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif opcodes-bootstrap
-@if opcodes
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -5563,14 +5621,12 @@ maintainer-clean-opcodes:
 
 .PHONY: configure-binutils maybe-configure-binutils
 maybe-configure-binutils:
+@if gcc-bootstrap
+configure-binutils: stage_current
+@endif gcc-bootstrap
 @if binutils
 maybe-configure-binutils: configure-binutils
 configure-binutils: 
-@endif binutils
-@if binutils-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif binutils-bootstrap
-@if binutils
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
@@ -5759,15 +5815,13 @@ configure-stagefeedback-binutils:
 
 .PHONY: all-binutils maybe-all-binutils
 maybe-all-binutils:
+@if gcc-bootstrap
+all-binutils: stage_current
+@endif gcc-bootstrap
 @if binutils
 TARGET-binutils=all
 maybe-all-binutils: all-binutils
 all-binutils: configure-binutils
-@endif binutils
-@if binutils-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif binutils-bootstrap
-@if binutils
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -6273,6 +6327,9 @@ maintainer-clean-binutils:
 
 .PHONY: configure-bison maybe-configure-bison
 maybe-configure-bison:
+@if gcc-bootstrap
+configure-bison: stage_current
+@endif gcc-bootstrap
 @if bison
 maybe-configure-bison: configure-bison
 configure-bison: 
@@ -6302,6 +6359,9 @@ configure-bison:
 
 .PHONY: all-bison maybe-all-bison
 maybe-all-bison:
+@if gcc-bootstrap
+all-bison: stage_current
+@endif gcc-bootstrap
 @if bison
 TARGET-bison=all
 maybe-all-bison: all-bison
@@ -6640,6 +6700,9 @@ maintainer-clean-bison:
 
 .PHONY: configure-byacc maybe-configure-byacc
 maybe-configure-byacc:
+@if gcc-bootstrap
+configure-byacc: stage_current
+@endif gcc-bootstrap
 @if byacc
 maybe-configure-byacc: configure-byacc
 configure-byacc: 
@@ -6669,6 +6732,9 @@ configure-byacc:
 
 .PHONY: all-byacc maybe-all-byacc
 maybe-all-byacc:
+@if gcc-bootstrap
+all-byacc: stage_current
+@endif gcc-bootstrap
 @if byacc
 TARGET-byacc=all
 maybe-all-byacc: all-byacc
@@ -7007,6 +7073,9 @@ maintainer-clean-byacc:
 
 .PHONY: configure-bzip2 maybe-configure-bzip2
 maybe-configure-bzip2:
+@if gcc-bootstrap
+configure-bzip2: stage_current
+@endif gcc-bootstrap
 @if bzip2
 maybe-configure-bzip2: configure-bzip2
 configure-bzip2: 
@@ -7036,6 +7105,9 @@ configure-bzip2:
 
 .PHONY: all-bzip2 maybe-all-bzip2
 maybe-all-bzip2:
+@if gcc-bootstrap
+all-bzip2: stage_current
+@endif gcc-bootstrap
 @if bzip2
 TARGET-bzip2=all
 maybe-all-bzip2: all-bzip2
@@ -7371,6 +7443,9 @@ maintainer-clean-bzip2:
 
 .PHONY: configure-dejagnu maybe-configure-dejagnu
 maybe-configure-dejagnu:
+@if gcc-bootstrap
+configure-dejagnu: stage_current
+@endif gcc-bootstrap
 @if dejagnu
 maybe-configure-dejagnu: configure-dejagnu
 configure-dejagnu: 
@@ -7400,6 +7475,9 @@ configure-dejagnu:
 
 .PHONY: all-dejagnu maybe-all-dejagnu
 maybe-all-dejagnu:
+@if gcc-bootstrap
+all-dejagnu: stage_current
+@endif gcc-bootstrap
 @if dejagnu
 TARGET-dejagnu=all
 maybe-all-dejagnu: all-dejagnu
@@ -7735,6 +7813,9 @@ maintainer-clean-dejagnu:
 
 .PHONY: configure-diff maybe-configure-diff
 maybe-configure-diff:
+@if gcc-bootstrap
+configure-diff: stage_current
+@endif gcc-bootstrap
 @if diff
 maybe-configure-diff: configure-diff
 configure-diff: 
@@ -7764,6 +7845,9 @@ configure-diff:
 
 .PHONY: all-diff maybe-all-diff
 maybe-all-diff:
+@if gcc-bootstrap
+all-diff: stage_current
+@endif gcc-bootstrap
 @if diff
 TARGET-diff=all
 maybe-all-diff: all-diff
@@ -8099,6 +8183,9 @@ maintainer-clean-diff:
 
 .PHONY: configure-dosutils maybe-configure-dosutils
 maybe-configure-dosutils:
+@if gcc-bootstrap
+configure-dosutils: stage_current
+@endif gcc-bootstrap
 @if dosutils
 maybe-configure-dosutils: configure-dosutils
 configure-dosutils: 
@@ -8128,6 +8215,9 @@ configure-dosutils:
 
 .PHONY: all-dosutils maybe-all-dosutils
 maybe-all-dosutils:
+@if gcc-bootstrap
+all-dosutils: stage_current
+@endif gcc-bootstrap
 @if dosutils
 TARGET-dosutils=all
 maybe-all-dosutils: all-dosutils
@@ -8457,6 +8547,9 @@ maintainer-clean-dosutils:
 
 .PHONY: configure-etc maybe-configure-etc
 maybe-configure-etc:
+@if gcc-bootstrap
+configure-etc: stage_current
+@endif gcc-bootstrap
 @if etc
 maybe-configure-etc: configure-etc
 configure-etc: 
@@ -8486,6 +8579,9 @@ configure-etc:
 
 .PHONY: all-etc maybe-all-etc
 maybe-all-etc:
+@if gcc-bootstrap
+all-etc: stage_current
+@endif gcc-bootstrap
 @if etc
 TARGET-etc=all
 maybe-all-etc: all-etc
@@ -8821,6 +8917,9 @@ maintainer-clean-etc:
 
 .PHONY: configure-fastjar maybe-configure-fastjar
 maybe-configure-fastjar:
+@if gcc-bootstrap
+configure-fastjar: stage_current
+@endif gcc-bootstrap
 @if fastjar
 maybe-configure-fastjar: configure-fastjar
 configure-fastjar: 
@@ -8850,6 +8949,9 @@ configure-fastjar:
 
 .PHONY: all-fastjar maybe-all-fastjar
 maybe-all-fastjar:
+@if gcc-bootstrap
+all-fastjar: stage_current
+@endif gcc-bootstrap
 @if fastjar
 TARGET-fastjar=all
 maybe-all-fastjar: all-fastjar
@@ -9188,6 +9290,9 @@ maintainer-clean-fastjar:
 
 .PHONY: configure-fileutils maybe-configure-fileutils
 maybe-configure-fileutils:
+@if gcc-bootstrap
+configure-fileutils: stage_current
+@endif gcc-bootstrap
 @if fileutils
 maybe-configure-fileutils: configure-fileutils
 configure-fileutils: 
@@ -9217,6 +9322,9 @@ configure-fileutils:
 
 .PHONY: all-fileutils maybe-all-fileutils
 maybe-all-fileutils:
+@if gcc-bootstrap
+all-fileutils: stage_current
+@endif gcc-bootstrap
 @if fileutils
 TARGET-fileutils=all
 maybe-all-fileutils: all-fileutils
@@ -9552,6 +9660,9 @@ maintainer-clean-fileutils:
 
 .PHONY: configure-findutils maybe-configure-findutils
 maybe-configure-findutils:
+@if gcc-bootstrap
+configure-findutils: stage_current
+@endif gcc-bootstrap
 @if findutils
 maybe-configure-findutils: configure-findutils
 configure-findutils: 
@@ -9581,6 +9692,9 @@ configure-findutils:
 
 .PHONY: all-findutils maybe-all-findutils
 maybe-all-findutils:
+@if gcc-bootstrap
+all-findutils: stage_current
+@endif gcc-bootstrap
 @if findutils
 TARGET-findutils=all
 maybe-all-findutils: all-findutils
@@ -9916,6 +10030,9 @@ maintainer-clean-findutils:
 
 .PHONY: configure-find maybe-configure-find
 maybe-configure-find:
+@if gcc-bootstrap
+configure-find: stage_current
+@endif gcc-bootstrap
 @if find
 maybe-configure-find: configure-find
 configure-find: 
@@ -9945,6 +10062,9 @@ configure-find:
 
 .PHONY: all-find maybe-all-find
 maybe-all-find:
+@if gcc-bootstrap
+all-find: stage_current
+@endif gcc-bootstrap
 @if find
 TARGET-find=all
 maybe-all-find: all-find
@@ -10280,6 +10400,9 @@ maintainer-clean-find:
 
 .PHONY: configure-fixincludes maybe-configure-fixincludes
 maybe-configure-fixincludes:
+@if gcc-bootstrap
+configure-fixincludes: stage_current
+@endif gcc-bootstrap
 @if fixincludes
 maybe-configure-fixincludes: configure-fixincludes
 configure-fixincludes: 
@@ -10309,6 +10432,9 @@ configure-fixincludes:
 
 .PHONY: all-fixincludes maybe-all-fixincludes
 maybe-all-fixincludes:
+@if gcc-bootstrap
+all-fixincludes: stage_current
+@endif gcc-bootstrap
 @if fixincludes
 TARGET-fixincludes=all
 maybe-all-fixincludes: all-fixincludes
@@ -10563,6 +10689,9 @@ maintainer-clean-fixincludes:
 
 .PHONY: configure-flex maybe-configure-flex
 maybe-configure-flex:
+@if gcc-bootstrap
+configure-flex: stage_current
+@endif gcc-bootstrap
 @if flex
 maybe-configure-flex: configure-flex
 configure-flex: 
@@ -10592,6 +10721,9 @@ configure-flex:
 
 .PHONY: all-flex maybe-all-flex
 maybe-all-flex:
+@if gcc-bootstrap
+all-flex: stage_current
+@endif gcc-bootstrap
 @if flex
 TARGET-flex=all
 maybe-all-flex: all-flex
@@ -10930,14 +11062,12 @@ maintainer-clean-flex:
 
 .PHONY: configure-gas maybe-configure-gas
 maybe-configure-gas:
+@if gcc-bootstrap
+configure-gas: stage_current
+@endif gcc-bootstrap
 @if gas
 maybe-configure-gas: configure-gas
 configure-gas: 
-@endif gas
-@if gas-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif gas-bootstrap
-@if gas
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
@@ -11126,15 +11256,13 @@ configure-stagefeedback-gas:
 
 .PHONY: all-gas maybe-all-gas
 maybe-all-gas:
+@if gcc-bootstrap
+all-gas: stage_current
+@endif gcc-bootstrap
 @if gas
 TARGET-gas=all
 maybe-all-gas: all-gas
 all-gas: configure-gas
-@endif gas
-@if gas-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif gas-bootstrap
-@if gas
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -11640,14 +11768,12 @@ maintainer-clean-gas:
 
 .PHONY: configure-gcc maybe-configure-gcc
 maybe-configure-gcc:
+@if gcc-bootstrap
+configure-gcc: stage_current
+@endif gcc-bootstrap
 @if gcc
 maybe-configure-gcc: configure-gcc
 configure-gcc: 
-@endif gcc
-@if gcc-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif gcc-bootstrap
-@if gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
@@ -11836,15 +11962,13 @@ configure-stagefeedback-gcc:
 
 .PHONY: all-gcc maybe-all-gcc
 maybe-all-gcc:
+@if gcc-bootstrap
+all-gcc: stage_current
+@endif gcc-bootstrap
 @if gcc
 TARGET-gcc=`if [ -f stage_last ]; then echo quickstrap ; else echo all; fi`
 maybe-all-gcc: all-gcc
 all-gcc: configure-gcc
-@endif gcc
-@if gcc-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif gcc-bootstrap
-@if gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -12350,6 +12474,9 @@ maintainer-clean-gcc:
 
 .PHONY: configure-gawk maybe-configure-gawk
 maybe-configure-gawk:
+@if gcc-bootstrap
+configure-gawk: stage_current
+@endif gcc-bootstrap
 @if gawk
 maybe-configure-gawk: configure-gawk
 configure-gawk: 
@@ -12379,6 +12506,9 @@ configure-gawk:
 
 .PHONY: all-gawk maybe-all-gawk
 maybe-all-gawk:
+@if gcc-bootstrap
+all-gawk: stage_current
+@endif gcc-bootstrap
 @if gawk
 TARGET-gawk=all
 maybe-all-gawk: all-gawk
@@ -12714,6 +12844,9 @@ maintainer-clean-gawk:
 
 .PHONY: configure-gettext maybe-configure-gettext
 maybe-configure-gettext:
+@if gcc-bootstrap
+configure-gettext: stage_current
+@endif gcc-bootstrap
 @if gettext
 maybe-configure-gettext: configure-gettext
 configure-gettext: 
@@ -12743,6 +12876,9 @@ configure-gettext:
 
 .PHONY: all-gettext maybe-all-gettext
 maybe-all-gettext:
+@if gcc-bootstrap
+all-gettext: stage_current
+@endif gcc-bootstrap
 @if gettext
 TARGET-gettext=all
 maybe-all-gettext: all-gettext
@@ -13078,6 +13214,9 @@ maintainer-clean-gettext:
 
 .PHONY: configure-gnuserv maybe-configure-gnuserv
 maybe-configure-gnuserv:
+@if gcc-bootstrap
+configure-gnuserv: stage_current
+@endif gcc-bootstrap
 @if gnuserv
 maybe-configure-gnuserv: configure-gnuserv
 configure-gnuserv: 
@@ -13107,6 +13246,9 @@ configure-gnuserv:
 
 .PHONY: all-gnuserv maybe-all-gnuserv
 maybe-all-gnuserv:
+@if gcc-bootstrap
+all-gnuserv: stage_current
+@endif gcc-bootstrap
 @if gnuserv
 TARGET-gnuserv=all
 maybe-all-gnuserv: all-gnuserv
@@ -13442,6 +13584,9 @@ maintainer-clean-gnuserv:
 
 .PHONY: configure-gprof maybe-configure-gprof
 maybe-configure-gprof:
+@if gcc-bootstrap
+configure-gprof: stage_current
+@endif gcc-bootstrap
 @if gprof
 maybe-configure-gprof: configure-gprof
 configure-gprof: 
@@ -13471,6 +13616,9 @@ configure-gprof:
 
 .PHONY: all-gprof maybe-all-gprof
 maybe-all-gprof:
+@if gcc-bootstrap
+all-gprof: stage_current
+@endif gcc-bootstrap
 @if gprof
 TARGET-gprof=all
 maybe-all-gprof: all-gprof
@@ -13806,6 +13954,9 @@ maintainer-clean-gprof:
 
 .PHONY: configure-gzip maybe-configure-gzip
 maybe-configure-gzip:
+@if gcc-bootstrap
+configure-gzip: stage_current
+@endif gcc-bootstrap
 @if gzip
 maybe-configure-gzip: configure-gzip
 configure-gzip: 
@@ -13835,6 +13986,9 @@ configure-gzip:
 
 .PHONY: all-gzip maybe-all-gzip
 maybe-all-gzip:
+@if gcc-bootstrap
+all-gzip: stage_current
+@endif gcc-bootstrap
 @if gzip
 TARGET-gzip=all
 maybe-all-gzip: all-gzip
@@ -14170,6 +14324,9 @@ maintainer-clean-gzip:
 
 .PHONY: configure-hello maybe-configure-hello
 maybe-configure-hello:
+@if gcc-bootstrap
+configure-hello: stage_current
+@endif gcc-bootstrap
 @if hello
 maybe-configure-hello: configure-hello
 configure-hello: 
@@ -14199,6 +14356,9 @@ configure-hello:
 
 .PHONY: all-hello maybe-all-hello
 maybe-all-hello:
+@if gcc-bootstrap
+all-hello: stage_current
+@endif gcc-bootstrap
 @if hello
 TARGET-hello=all
 maybe-all-hello: all-hello
@@ -14534,6 +14694,9 @@ maintainer-clean-hello:
 
 .PHONY: configure-indent maybe-configure-indent
 maybe-configure-indent:
+@if gcc-bootstrap
+configure-indent: stage_current
+@endif gcc-bootstrap
 @if indent
 maybe-configure-indent: configure-indent
 configure-indent: 
@@ -14563,6 +14726,9 @@ configure-indent:
 
 .PHONY: all-indent maybe-all-indent
 maybe-all-indent:
+@if gcc-bootstrap
+all-indent: stage_current
+@endif gcc-bootstrap
 @if indent
 TARGET-indent=all
 maybe-all-indent: all-indent
@@ -14898,14 +15064,12 @@ maintainer-clean-indent:
 
 .PHONY: configure-intl maybe-configure-intl
 maybe-configure-intl:
+@if gcc-bootstrap
+configure-intl: stage_current
+@endif gcc-bootstrap
 @if intl
 maybe-configure-intl: configure-intl
 configure-intl: 
-@endif intl
-@if intl-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif intl-bootstrap
-@if intl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
@@ -15094,15 +15258,13 @@ configure-stagefeedback-intl:
 
 .PHONY: all-intl maybe-all-intl
 maybe-all-intl:
+@if gcc-bootstrap
+all-intl: stage_current
+@endif gcc-bootstrap
 @if intl
 TARGET-intl=all
 maybe-all-intl: all-intl
 all-intl: configure-intl
-@endif intl
-@if intl-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif intl-bootstrap
-@if intl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -15608,6 +15770,9 @@ maintainer-clean-intl:
 
 .PHONY: configure-tcl maybe-configure-tcl
 maybe-configure-tcl:
+@if gcc-bootstrap
+configure-tcl: stage_current
+@endif gcc-bootstrap
 @if tcl
 maybe-configure-tcl: configure-tcl
 configure-tcl: 
@@ -15637,6 +15802,9 @@ configure-tcl:
 
 .PHONY: all-tcl maybe-all-tcl
 maybe-all-tcl:
+@if gcc-bootstrap
+all-tcl: stage_current
+@endif gcc-bootstrap
 @if tcl
 TARGET-tcl=all
 maybe-all-tcl: all-tcl
@@ -15957,6 +16125,9 @@ maintainer-clean-tcl:
 
 .PHONY: configure-itcl maybe-configure-itcl
 maybe-configure-itcl:
+@if gcc-bootstrap
+configure-itcl: stage_current
+@endif gcc-bootstrap
 @if itcl
 maybe-configure-itcl: configure-itcl
 configure-itcl: 
@@ -15986,6 +16157,9 @@ configure-itcl:
 
 .PHONY: all-itcl maybe-all-itcl
 maybe-all-itcl:
+@if gcc-bootstrap
+all-itcl: stage_current
+@endif gcc-bootstrap
 @if itcl
 TARGET-itcl=all
 maybe-all-itcl: all-itcl
@@ -16321,14 +16495,12 @@ maintainer-clean-itcl:
 
 .PHONY: configure-ld maybe-configure-ld
 maybe-configure-ld:
+@if gcc-bootstrap
+configure-ld: stage_current
+@endif gcc-bootstrap
 @if ld
 maybe-configure-ld: configure-ld
 configure-ld: 
-@endif ld
-@if ld-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif ld-bootstrap
-@if ld
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
@@ -16517,15 +16689,13 @@ configure-stagefeedback-ld:
 
 .PHONY: all-ld maybe-all-ld
 maybe-all-ld:
+@if gcc-bootstrap
+all-ld: stage_current
+@endif gcc-bootstrap
 @if ld
 TARGET-ld=all
 maybe-all-ld: all-ld
 all-ld: configure-ld
-@endif ld
-@if ld-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif ld-bootstrap
-@if ld
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -17031,14 +17201,12 @@ maintainer-clean-ld:
 
 .PHONY: configure-libcpp maybe-configure-libcpp
 maybe-configure-libcpp:
+@if gcc-bootstrap
+configure-libcpp: stage_current
+@endif gcc-bootstrap
 @if libcpp
 maybe-configure-libcpp: configure-libcpp
 configure-libcpp: 
-@endif libcpp
-@if libcpp-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif libcpp-bootstrap
-@if libcpp
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
@@ -17227,15 +17395,13 @@ configure-stagefeedback-libcpp:
 
 .PHONY: all-libcpp maybe-all-libcpp
 maybe-all-libcpp:
+@if gcc-bootstrap
+all-libcpp: stage_current
+@endif gcc-bootstrap
 @if libcpp
 TARGET-libcpp=all
 maybe-all-libcpp: all-libcpp
 all-libcpp: configure-libcpp
-@endif libcpp
-@if libcpp-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif libcpp-bootstrap
-@if libcpp
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -17741,14 +17907,12 @@ maintainer-clean-libcpp:
 
 .PHONY: configure-libdecnumber maybe-configure-libdecnumber
 maybe-configure-libdecnumber:
+@if gcc-bootstrap
+configure-libdecnumber: stage_current
+@endif gcc-bootstrap
 @if libdecnumber
 maybe-configure-libdecnumber: configure-libdecnumber
 configure-libdecnumber: 
-@endif libdecnumber
-@if libdecnumber-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif libdecnumber-bootstrap
-@if libdecnumber
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
@@ -17937,15 +18101,13 @@ configure-stagefeedback-libdecnumber:
 
 .PHONY: all-libdecnumber maybe-all-libdecnumber
 maybe-all-libdecnumber:
+@if gcc-bootstrap
+all-libdecnumber: stage_current
+@endif gcc-bootstrap
 @if libdecnumber
 TARGET-libdecnumber=all
 maybe-all-libdecnumber: all-libdecnumber
 all-libdecnumber: configure-libdecnumber
-@endif libdecnumber
-@if libdecnumber-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif libdecnumber-bootstrap
-@if libdecnumber
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -18451,6 +18613,9 @@ maintainer-clean-libdecnumber:
 
 .PHONY: configure-libgui maybe-configure-libgui
 maybe-configure-libgui:
+@if gcc-bootstrap
+configure-libgui: stage_current
+@endif gcc-bootstrap
 @if libgui
 maybe-configure-libgui: configure-libgui
 configure-libgui: 
@@ -18480,6 +18645,9 @@ configure-libgui:
 
 .PHONY: all-libgui maybe-all-libgui
 maybe-all-libgui:
+@if gcc-bootstrap
+all-libgui: stage_current
+@endif gcc-bootstrap
 @if libgui
 TARGET-libgui=all
 maybe-all-libgui: all-libgui
@@ -18815,14 +18983,12 @@ maintainer-clean-libgui:
 
 .PHONY: configure-libiberty maybe-configure-libiberty
 maybe-configure-libiberty:
+@if gcc-bootstrap
+configure-libiberty: stage_current
+@endif gcc-bootstrap
 @if libiberty
 maybe-configure-libiberty: configure-libiberty
 configure-libiberty: 
-@endif libiberty
-@if libiberty-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif libiberty-bootstrap
-@if libiberty
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
@@ -19011,15 +19177,13 @@ configure-stagefeedback-libiberty:
 
 .PHONY: all-libiberty maybe-all-libiberty
 maybe-all-libiberty:
+@if gcc-bootstrap
+all-libiberty: stage_current
+@endif gcc-bootstrap
 @if libiberty
 TARGET-libiberty=all
 maybe-all-libiberty: all-libiberty
 all-libiberty: configure-libiberty
-@endif libiberty
-@if libiberty-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif libiberty-bootstrap
-@if libiberty
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -19525,6 +19689,9 @@ maintainer-clean-libiberty:
 
 .PHONY: configure-libtool maybe-configure-libtool
 maybe-configure-libtool:
+@if gcc-bootstrap
+configure-libtool: stage_current
+@endif gcc-bootstrap
 @if libtool
 maybe-configure-libtool: configure-libtool
 configure-libtool: 
@@ -19554,6 +19721,9 @@ configure-libtool:
 
 .PHONY: all-libtool maybe-all-libtool
 maybe-all-libtool:
+@if gcc-bootstrap
+all-libtool: stage_current
+@endif gcc-bootstrap
 @if libtool
 TARGET-libtool=all
 maybe-all-libtool: all-libtool
@@ -19889,6 +20059,9 @@ maintainer-clean-libtool:
 
 .PHONY: configure-m4 maybe-configure-m4
 maybe-configure-m4:
+@if gcc-bootstrap
+configure-m4: stage_current
+@endif gcc-bootstrap
 @if m4
 maybe-configure-m4: configure-m4
 configure-m4: 
@@ -19918,6 +20091,9 @@ configure-m4:
 
 .PHONY: all-m4 maybe-all-m4
 maybe-all-m4:
+@if gcc-bootstrap
+all-m4: stage_current
+@endif gcc-bootstrap
 @if m4
 TARGET-m4=all
 maybe-all-m4: all-m4
@@ -20253,6 +20429,9 @@ maintainer-clean-m4:
 
 .PHONY: configure-make maybe-configure-make
 maybe-configure-make:
+@if gcc-bootstrap
+configure-make: stage_current
+@endif gcc-bootstrap
 @if make
 maybe-configure-make: configure-make
 configure-make: 
@@ -20282,6 +20461,9 @@ configure-make:
 
 .PHONY: all-make maybe-all-make
 maybe-all-make:
+@if gcc-bootstrap
+all-make: stage_current
+@endif gcc-bootstrap
 @if make
 TARGET-make=all
 maybe-all-make: all-make
@@ -20617,6 +20799,9 @@ maintainer-clean-make:
 
 .PHONY: configure-mmalloc maybe-configure-mmalloc
 maybe-configure-mmalloc:
+@if gcc-bootstrap
+configure-mmalloc: stage_current
+@endif gcc-bootstrap
 @if mmalloc
 maybe-configure-mmalloc: configure-mmalloc
 configure-mmalloc: 
@@ -20646,6 +20831,9 @@ configure-mmalloc:
 
 .PHONY: all-mmalloc maybe-all-mmalloc
 maybe-all-mmalloc:
+@if gcc-bootstrap
+all-mmalloc: stage_current
+@endif gcc-bootstrap
 @if mmalloc
 TARGET-mmalloc=all
 maybe-all-mmalloc: all-mmalloc
@@ -20975,6 +21163,9 @@ maintainer-clean-mmalloc:
 
 .PHONY: configure-patch maybe-configure-patch
 maybe-configure-patch:
+@if gcc-bootstrap
+configure-patch: stage_current
+@endif gcc-bootstrap
 @if patch
 maybe-configure-patch: configure-patch
 configure-patch: 
@@ -21004,6 +21195,9 @@ configure-patch:
 
 .PHONY: all-patch maybe-all-patch
 maybe-all-patch:
+@if gcc-bootstrap
+all-patch: stage_current
+@endif gcc-bootstrap
 @if patch
 TARGET-patch=all
 maybe-all-patch: all-patch
@@ -21339,6 +21533,9 @@ maintainer-clean-patch:
 
 .PHONY: configure-perl maybe-configure-perl
 maybe-configure-perl:
+@if gcc-bootstrap
+configure-perl: stage_current
+@endif gcc-bootstrap
 @if perl
 maybe-configure-perl: configure-perl
 configure-perl: 
@@ -21368,6 +21565,9 @@ configure-perl:
 
 .PHONY: all-perl maybe-all-perl
 maybe-all-perl:
+@if gcc-bootstrap
+all-perl: stage_current
+@endif gcc-bootstrap
 @if perl
 TARGET-perl=all
 maybe-all-perl: all-perl
@@ -21703,6 +21903,9 @@ maintainer-clean-perl:
 
 .PHONY: configure-prms maybe-configure-prms
 maybe-configure-prms:
+@if gcc-bootstrap
+configure-prms: stage_current
+@endif gcc-bootstrap
 @if prms
 maybe-configure-prms: configure-prms
 configure-prms: 
@@ -21732,6 +21935,9 @@ configure-prms:
 
 .PHONY: all-prms maybe-all-prms
 maybe-all-prms:
+@if gcc-bootstrap
+all-prms: stage_current
+@endif gcc-bootstrap
 @if prms
 TARGET-prms=all
 maybe-all-prms: all-prms
@@ -22067,6 +22273,9 @@ maintainer-clean-prms:
 
 .PHONY: configure-rcs maybe-configure-rcs
 maybe-configure-rcs:
+@if gcc-bootstrap
+configure-rcs: stage_current
+@endif gcc-bootstrap
 @if rcs
 maybe-configure-rcs: configure-rcs
 configure-rcs: 
@@ -22096,6 +22305,9 @@ configure-rcs:
 
 .PHONY: all-rcs maybe-all-rcs
 maybe-all-rcs:
+@if gcc-bootstrap
+all-rcs: stage_current
+@endif gcc-bootstrap
 @if rcs
 TARGET-rcs=all
 maybe-all-rcs: all-rcs
@@ -22431,6 +22643,9 @@ maintainer-clean-rcs:
 
 .PHONY: configure-readline maybe-configure-readline
 maybe-configure-readline:
+@if gcc-bootstrap
+configure-readline: stage_current
+@endif gcc-bootstrap
 @if readline
 maybe-configure-readline: configure-readline
 configure-readline: 
@@ -22460,6 +22675,9 @@ configure-readline:
 
 .PHONY: all-readline maybe-all-readline
 maybe-all-readline:
+@if gcc-bootstrap
+all-readline: stage_current
+@endif gcc-bootstrap
 @if readline
 TARGET-readline=all
 maybe-all-readline: all-readline
@@ -22795,6 +23013,9 @@ maintainer-clean-readline:
 
 .PHONY: configure-release maybe-configure-release
 maybe-configure-release:
+@if gcc-bootstrap
+configure-release: stage_current
+@endif gcc-bootstrap
 @if release
 maybe-configure-release: configure-release
 configure-release: 
@@ -22824,6 +23045,9 @@ configure-release:
 
 .PHONY: all-release maybe-all-release
 maybe-all-release:
+@if gcc-bootstrap
+all-release: stage_current
+@endif gcc-bootstrap
 @if release
 TARGET-release=all
 maybe-all-release: all-release
@@ -23147,6 +23371,9 @@ maintainer-clean-release:
 
 .PHONY: configure-recode maybe-configure-recode
 maybe-configure-recode:
+@if gcc-bootstrap
+configure-recode: stage_current
+@endif gcc-bootstrap
 @if recode
 maybe-configure-recode: configure-recode
 configure-recode: 
@@ -23176,6 +23403,9 @@ configure-recode:
 
 .PHONY: all-recode maybe-all-recode
 maybe-all-recode:
+@if gcc-bootstrap
+all-recode: stage_current
+@endif gcc-bootstrap
 @if recode
 TARGET-recode=all
 maybe-all-recode: all-recode
@@ -23511,6 +23741,9 @@ maintainer-clean-recode:
 
 .PHONY: configure-sed maybe-configure-sed
 maybe-configure-sed:
+@if gcc-bootstrap
+configure-sed: stage_current
+@endif gcc-bootstrap
 @if sed
 maybe-configure-sed: configure-sed
 configure-sed: 
@@ -23540,6 +23773,9 @@ configure-sed:
 
 .PHONY: all-sed maybe-all-sed
 maybe-all-sed:
+@if gcc-bootstrap
+all-sed: stage_current
+@endif gcc-bootstrap
 @if sed
 TARGET-sed=all
 maybe-all-sed: all-sed
@@ -23875,6 +24111,9 @@ maintainer-clean-sed:
 
 .PHONY: configure-send-pr maybe-configure-send-pr
 maybe-configure-send-pr:
+@if gcc-bootstrap
+configure-send-pr: stage_current
+@endif gcc-bootstrap
 @if send-pr
 maybe-configure-send-pr: configure-send-pr
 configure-send-pr: 
@@ -23904,6 +24143,9 @@ configure-send-pr:
 
 .PHONY: all-send-pr maybe-all-send-pr
 maybe-all-send-pr:
+@if gcc-bootstrap
+all-send-pr: stage_current
+@endif gcc-bootstrap
 @if send-pr
 TARGET-send-pr=all
 maybe-all-send-pr: all-send-pr
@@ -24239,6 +24481,9 @@ maintainer-clean-send-pr:
 
 .PHONY: configure-shellutils maybe-configure-shellutils
 maybe-configure-shellutils:
+@if gcc-bootstrap
+configure-shellutils: stage_current
+@endif gcc-bootstrap
 @if shellutils
 maybe-configure-shellutils: configure-shellutils
 configure-shellutils: 
@@ -24268,6 +24513,9 @@ configure-shellutils:
 
 .PHONY: all-shellutils maybe-all-shellutils
 maybe-all-shellutils:
+@if gcc-bootstrap
+all-shellutils: stage_current
+@endif gcc-bootstrap
 @if shellutils
 TARGET-shellutils=all
 maybe-all-shellutils: all-shellutils
@@ -24603,6 +24851,9 @@ maintainer-clean-shellutils:
 
 .PHONY: configure-sid maybe-configure-sid
 maybe-configure-sid:
+@if gcc-bootstrap
+configure-sid: stage_current
+@endif gcc-bootstrap
 @if sid
 maybe-configure-sid: configure-sid
 configure-sid: 
@@ -24632,6 +24883,9 @@ configure-sid:
 
 .PHONY: all-sid maybe-all-sid
 maybe-all-sid:
+@if gcc-bootstrap
+all-sid: stage_current
+@endif gcc-bootstrap
 @if sid
 TARGET-sid=all
 maybe-all-sid: all-sid
@@ -24967,6 +25221,9 @@ maintainer-clean-sid:
 
 .PHONY: configure-sim maybe-configure-sim
 maybe-configure-sim:
+@if gcc-bootstrap
+configure-sim: stage_current
+@endif gcc-bootstrap
 @if sim
 maybe-configure-sim: configure-sim
 configure-sim: 
@@ -24996,6 +25253,9 @@ configure-sim:
 
 .PHONY: all-sim maybe-all-sim
 maybe-all-sim:
+@if gcc-bootstrap
+all-sim: stage_current
+@endif gcc-bootstrap
 @if sim
 TARGET-sim=all
 maybe-all-sim: all-sim
@@ -25331,6 +25591,9 @@ maintainer-clean-sim:
 
 .PHONY: configure-tar maybe-configure-tar
 maybe-configure-tar:
+@if gcc-bootstrap
+configure-tar: stage_current
+@endif gcc-bootstrap
 @if tar
 maybe-configure-tar: configure-tar
 configure-tar: 
@@ -25360,6 +25623,9 @@ configure-tar:
 
 .PHONY: all-tar maybe-all-tar
 maybe-all-tar:
+@if gcc-bootstrap
+all-tar: stage_current
+@endif gcc-bootstrap
 @if tar
 TARGET-tar=all
 maybe-all-tar: all-tar
@@ -25695,6 +25961,9 @@ maintainer-clean-tar:
 
 .PHONY: configure-texinfo maybe-configure-texinfo
 maybe-configure-texinfo:
+@if gcc-bootstrap
+configure-texinfo: stage_current
+@endif gcc-bootstrap
 @if texinfo
 maybe-configure-texinfo: configure-texinfo
 configure-texinfo: 
@@ -25724,6 +25993,9 @@ configure-texinfo:
 
 .PHONY: all-texinfo maybe-all-texinfo
 maybe-all-texinfo:
+@if gcc-bootstrap
+all-texinfo: stage_current
+@endif gcc-bootstrap
 @if texinfo
 TARGET-texinfo=all
 maybe-all-texinfo: all-texinfo
@@ -26053,6 +26325,9 @@ maintainer-clean-texinfo:
 
 .PHONY: configure-textutils maybe-configure-textutils
 maybe-configure-textutils:
+@if gcc-bootstrap
+configure-textutils: stage_current
+@endif gcc-bootstrap
 @if textutils
 maybe-configure-textutils: configure-textutils
 configure-textutils: 
@@ -26082,6 +26357,9 @@ configure-textutils:
 
 .PHONY: all-textutils maybe-all-textutils
 maybe-all-textutils:
+@if gcc-bootstrap
+all-textutils: stage_current
+@endif gcc-bootstrap
 @if textutils
 TARGET-textutils=all
 maybe-all-textutils: all-textutils
@@ -26417,6 +26695,9 @@ maintainer-clean-textutils:
 
 .PHONY: configure-time maybe-configure-time
 maybe-configure-time:
+@if gcc-bootstrap
+configure-time: stage_current
+@endif gcc-bootstrap
 @if time
 maybe-configure-time: configure-time
 configure-time: 
@@ -26446,6 +26727,9 @@ configure-time:
 
 .PHONY: all-time maybe-all-time
 maybe-all-time:
+@if gcc-bootstrap
+all-time: stage_current
+@endif gcc-bootstrap
 @if time
 TARGET-time=all
 maybe-all-time: all-time
@@ -26781,6 +27065,9 @@ maintainer-clean-time:
 
 .PHONY: configure-uudecode maybe-configure-uudecode
 maybe-configure-uudecode:
+@if gcc-bootstrap
+configure-uudecode: stage_current
+@endif gcc-bootstrap
 @if uudecode
 maybe-configure-uudecode: configure-uudecode
 configure-uudecode: 
@@ -26810,6 +27097,9 @@ configure-uudecode:
 
 .PHONY: all-uudecode maybe-all-uudecode
 maybe-all-uudecode:
+@if gcc-bootstrap
+all-uudecode: stage_current
+@endif gcc-bootstrap
 @if uudecode
 TARGET-uudecode=all
 maybe-all-uudecode: all-uudecode
@@ -27145,6 +27435,9 @@ maintainer-clean-uudecode:
 
 .PHONY: configure-wdiff maybe-configure-wdiff
 maybe-configure-wdiff:
+@if gcc-bootstrap
+configure-wdiff: stage_current
+@endif gcc-bootstrap
 @if wdiff
 maybe-configure-wdiff: configure-wdiff
 configure-wdiff: 
@@ -27174,6 +27467,9 @@ configure-wdiff:
 
 .PHONY: all-wdiff maybe-all-wdiff
 maybe-all-wdiff:
+@if gcc-bootstrap
+all-wdiff: stage_current
+@endif gcc-bootstrap
 @if wdiff
 TARGET-wdiff=all
 maybe-all-wdiff: all-wdiff
@@ -27509,6 +27805,9 @@ maintainer-clean-wdiff:
 
 .PHONY: configure-zip maybe-configure-zip
 maybe-configure-zip:
+@if gcc-bootstrap
+configure-zip: stage_current
+@endif gcc-bootstrap
 @if zip
 maybe-configure-zip: configure-zip
 configure-zip: 
@@ -27538,6 +27837,9 @@ configure-zip:
 
 .PHONY: all-zip maybe-all-zip
 maybe-all-zip:
+@if gcc-bootstrap
+all-zip: stage_current
+@endif gcc-bootstrap
 @if zip
 TARGET-zip=all
 maybe-all-zip: all-zip
@@ -27876,14 +28178,12 @@ maintainer-clean-zip:
 
 .PHONY: configure-zlib maybe-configure-zlib
 maybe-configure-zlib:
+@if gcc-bootstrap
+configure-zlib: stage_current
+@endif gcc-bootstrap
 @if zlib
 maybe-configure-zlib: configure-zlib
 configure-zlib: 
-@endif zlib
-@if zlib-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif zlib-bootstrap
-@if zlib
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
@@ -28072,15 +28372,13 @@ configure-stagefeedback-zlib:
 
 .PHONY: all-zlib maybe-all-zlib
 maybe-all-zlib:
+@if gcc-bootstrap
+all-zlib: stage_current
+@endif gcc-bootstrap
 @if zlib
 TARGET-zlib=all
 maybe-all-zlib: all-zlib
 all-zlib: configure-zlib
-@endif zlib
-@if zlib-bootstrap
-	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
-@endif zlib-bootstrap
-@if zlib
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -28574,6 +28872,9 @@ maintainer-clean-zlib:
 
 .PHONY: configure-gdb maybe-configure-gdb
 maybe-configure-gdb:
+@if gcc-bootstrap
+configure-gdb: stage_current
+@endif gcc-bootstrap
 @if gdb
 maybe-configure-gdb: configure-gdb
 configure-gdb: 
@@ -28603,6 +28904,9 @@ configure-gdb:
 
 .PHONY: all-gdb maybe-all-gdb
 maybe-all-gdb:
+@if gcc-bootstrap
+all-gdb: stage_current
+@endif gcc-bootstrap
 @if gdb
 TARGET-gdb=all
 maybe-all-gdb: all-gdb
@@ -28938,6 +29242,9 @@ maintainer-clean-gdb:
 
 .PHONY: configure-expect maybe-configure-expect
 maybe-configure-expect:
+@if gcc-bootstrap
+configure-expect: stage_current
+@endif gcc-bootstrap
 @if expect
 maybe-configure-expect: configure-expect
 configure-expect: 
@@ -28967,6 +29274,9 @@ configure-expect:
 
 .PHONY: all-expect maybe-all-expect
 maybe-all-expect:
+@if gcc-bootstrap
+all-expect: stage_current
+@endif gcc-bootstrap
 @if expect
 TARGET-expect=all
 maybe-all-expect: all-expect
@@ -29302,6 +29612,9 @@ maintainer-clean-expect:
 
 .PHONY: configure-guile maybe-configure-guile
 maybe-configure-guile:
+@if gcc-bootstrap
+configure-guile: stage_current
+@endif gcc-bootstrap
 @if guile
 maybe-configure-guile: configure-guile
 configure-guile: 
@@ -29331,6 +29644,9 @@ configure-guile:
 
 .PHONY: all-guile maybe-all-guile
 maybe-all-guile:
+@if gcc-bootstrap
+all-guile: stage_current
+@endif gcc-bootstrap
 @if guile
 TARGET-guile=all
 maybe-all-guile: all-guile
@@ -29666,6 +29982,9 @@ maintainer-clean-guile:
 
 .PHONY: configure-tk maybe-configure-tk
 maybe-configure-tk:
+@if gcc-bootstrap
+configure-tk: stage_current
+@endif gcc-bootstrap
 @if tk
 maybe-configure-tk: configure-tk
 configure-tk: 
@@ -29695,6 +30014,9 @@ configure-tk:
 
 .PHONY: all-tk maybe-all-tk
 maybe-all-tk:
+@if gcc-bootstrap
+all-tk: stage_current
+@endif gcc-bootstrap
 @if tk
 TARGET-tk=all
 maybe-all-tk: all-tk
@@ -30030,6 +30352,9 @@ maintainer-clean-tk:
 
 .PHONY: configure-libtermcap maybe-configure-libtermcap
 maybe-configure-libtermcap:
+@if gcc-bootstrap
+configure-libtermcap: stage_current
+@endif gcc-bootstrap
 @if libtermcap
 maybe-configure-libtermcap: configure-libtermcap
 configure-libtermcap: 
@@ -30059,6 +30384,9 @@ configure-libtermcap:
 
 .PHONY: all-libtermcap maybe-all-libtermcap
 maybe-all-libtermcap:
+@if gcc-bootstrap
+all-libtermcap: stage_current
+@endif gcc-bootstrap
 @if libtermcap
 TARGET-libtermcap=all
 maybe-all-libtermcap: all-libtermcap
@@ -30328,6 +30656,9 @@ maintainer-clean-libtermcap:
 
 .PHONY: configure-utils maybe-configure-utils
 maybe-configure-utils:
+@if gcc-bootstrap
+configure-utils: stage_current
+@endif gcc-bootstrap
 @if utils
 maybe-configure-utils: configure-utils
 configure-utils: 
@@ -30357,6 +30688,9 @@ configure-utils:
 
 .PHONY: all-utils maybe-all-utils
 maybe-all-utils:
+@if gcc-bootstrap
+all-utils: stage_current
+@endif gcc-bootstrap
 @if utils
 TARGET-utils=all
 maybe-all-utils: all-utils
@@ -30686,6 +31020,9 @@ maintainer-clean-utils:
 
 .PHONY: configure-gnattools maybe-configure-gnattools
 maybe-configure-gnattools:
+@if gcc-bootstrap
+configure-gnattools: stage_current
+@endif gcc-bootstrap
 @if gnattools
 maybe-configure-gnattools: configure-gnattools
 configure-gnattools: 
@@ -30715,6 +31052,9 @@ configure-gnattools:
 
 .PHONY: all-gnattools maybe-all-gnattools
 maybe-all-gnattools:
+@if gcc-bootstrap
+all-gnattools: stage_current
+@endif gcc-bootstrap
 @if gnattools
 TARGET-gnattools=all
 maybe-all-gnattools: all-gnattools
@@ -31057,6 +31397,9 @@ maintainer-clean-gnattools:
 
 .PHONY: configure-target-libstdc++-v3 maybe-configure-target-libstdc++-v3
 maybe-configure-target-libstdc++-v3:
+@if gcc-bootstrap
+configure-target-libstdc++-v3: stage_current
+@endif gcc-bootstrap
 @if target-libstdc++-v3
 maybe-configure-target-libstdc++-v3: configure-target-libstdc++-v3
 configure-target-libstdc++-v3: 
@@ -31100,6 +31443,9 @@ configure-target-libstdc++-v3:
 
 .PHONY: all-target-libstdc++-v3 maybe-all-target-libstdc++-v3
 maybe-all-target-libstdc++-v3:
+@if gcc-bootstrap
+all-target-libstdc++-v3: stage_current
+@endif gcc-bootstrap
 @if target-libstdc++-v3
 TARGET-target-libstdc++-v3=all
 maybe-all-target-libstdc++-v3: all-target-libstdc++-v3
@@ -31438,6 +31784,9 @@ maintainer-clean-target-libstdc++-v3:
 
 .PHONY: configure-target-libmudflap maybe-configure-target-libmudflap
 maybe-configure-target-libmudflap:
+@if gcc-bootstrap
+configure-target-libmudflap: stage_current
+@endif gcc-bootstrap
 @if target-libmudflap
 maybe-configure-target-libmudflap: configure-target-libmudflap
 configure-target-libmudflap: 
@@ -31481,6 +31830,9 @@ configure-target-libmudflap:
 
 .PHONY: all-target-libmudflap maybe-all-target-libmudflap
 maybe-all-target-libmudflap:
+@if gcc-bootstrap
+all-target-libmudflap: stage_current
+@endif gcc-bootstrap
 @if target-libmudflap
 TARGET-target-libmudflap=all
 maybe-all-target-libmudflap: all-target-libmudflap
@@ -31819,6 +32171,9 @@ maintainer-clean-target-libmudflap:
 
 .PHONY: configure-target-libssp maybe-configure-target-libssp
 maybe-configure-target-libssp:
+@if gcc-bootstrap
+configure-target-libssp: stage_current
+@endif gcc-bootstrap
 @if target-libssp
 maybe-configure-target-libssp: configure-target-libssp
 configure-target-libssp: 
@@ -31862,6 +32217,9 @@ configure-target-libssp:
 
 .PHONY: all-target-libssp maybe-all-target-libssp
 maybe-all-target-libssp:
+@if gcc-bootstrap
+all-target-libssp: stage_current
+@endif gcc-bootstrap
 @if target-libssp
 TARGET-target-libssp=all
 maybe-all-target-libssp: all-target-libssp
@@ -32200,6 +32558,9 @@ maintainer-clean-target-libssp:
 
 .PHONY: configure-target-newlib maybe-configure-target-newlib
 maybe-configure-target-newlib:
+@if gcc-bootstrap
+configure-target-newlib: stage_current
+@endif gcc-bootstrap
 @if target-newlib
 maybe-configure-target-newlib: configure-target-newlib
 configure-target-newlib: 
@@ -32243,6 +32604,9 @@ configure-target-newlib:
 
 .PHONY: all-target-newlib maybe-all-target-newlib
 maybe-all-target-newlib:
+@if gcc-bootstrap
+all-target-newlib: stage_current
+@endif gcc-bootstrap
 @if target-newlib
 TARGET-target-newlib=all
 maybe-all-target-newlib: all-target-newlib
@@ -32581,6 +32945,9 @@ maintainer-clean-target-newlib:
 
 .PHONY: configure-target-libgfortran maybe-configure-target-libgfortran
 maybe-configure-target-libgfortran:
+@if gcc-bootstrap
+configure-target-libgfortran: stage_current
+@endif gcc-bootstrap
 @if target-libgfortran
 maybe-configure-target-libgfortran: configure-target-libgfortran
 configure-target-libgfortran: 
@@ -32624,6 +32991,9 @@ configure-target-libgfortran:
 
 .PHONY: all-target-libgfortran maybe-all-target-libgfortran
 maybe-all-target-libgfortran:
+@if gcc-bootstrap
+all-target-libgfortran: stage_current
+@endif gcc-bootstrap
 @if target-libgfortran
 TARGET-target-libgfortran=all
 maybe-all-target-libgfortran: all-target-libgfortran
@@ -32962,6 +33332,9 @@ maintainer-clean-target-libgfortran:
 
 .PHONY: configure-target-libobjc maybe-configure-target-libobjc
 maybe-configure-target-libobjc:
+@if gcc-bootstrap
+configure-target-libobjc: stage_current
+@endif gcc-bootstrap
 @if target-libobjc
 maybe-configure-target-libobjc: configure-target-libobjc
 configure-target-libobjc: 
@@ -33005,6 +33378,9 @@ configure-target-libobjc:
 
 .PHONY: all-target-libobjc maybe-all-target-libobjc
 maybe-all-target-libobjc:
+@if gcc-bootstrap
+all-target-libobjc: stage_current
+@endif gcc-bootstrap
 @if target-libobjc
 TARGET-target-libobjc=all
 maybe-all-target-libobjc: all-target-libobjc
@@ -33343,6 +33719,9 @@ maintainer-clean-target-libobjc:
 
 .PHONY: configure-target-libtermcap maybe-configure-target-libtermcap
 maybe-configure-target-libtermcap:
+@if gcc-bootstrap
+configure-target-libtermcap: stage_current
+@endif gcc-bootstrap
 @if target-libtermcap
 maybe-configure-target-libtermcap: configure-target-libtermcap
 configure-target-libtermcap: 
@@ -33386,6 +33765,9 @@ configure-target-libtermcap:
 
 .PHONY: all-target-libtermcap maybe-all-target-libtermcap
 maybe-all-target-libtermcap:
+@if gcc-bootstrap
+all-target-libtermcap: stage_current
+@endif gcc-bootstrap
 @if target-libtermcap
 TARGET-target-libtermcap=all
 maybe-all-target-libtermcap: all-target-libtermcap
@@ -33659,6 +34041,9 @@ maintainer-clean-target-libtermcap:
 
 .PHONY: configure-target-winsup maybe-configure-target-winsup
 maybe-configure-target-winsup:
+@if gcc-bootstrap
+configure-target-winsup: stage_current
+@endif gcc-bootstrap
 @if target-winsup
 maybe-configure-target-winsup: configure-target-winsup
 configure-target-winsup: 
@@ -33702,6 +34087,9 @@ configure-target-winsup:
 
 .PHONY: all-target-winsup maybe-all-target-winsup
 maybe-all-target-winsup:
+@if gcc-bootstrap
+all-target-winsup: stage_current
+@endif gcc-bootstrap
 @if target-winsup
 TARGET-target-winsup=all
 maybe-all-target-winsup: all-target-winsup
@@ -34040,6 +34428,9 @@ maintainer-clean-target-winsup:
 
 .PHONY: configure-target-libgloss maybe-configure-target-libgloss
 maybe-configure-target-libgloss:
+@if gcc-bootstrap
+configure-target-libgloss: stage_current
+@endif gcc-bootstrap
 @if target-libgloss
 maybe-configure-target-libgloss: configure-target-libgloss
 configure-target-libgloss: 
@@ -34083,6 +34474,9 @@ configure-target-libgloss:
 
 .PHONY: all-target-libgloss maybe-all-target-libgloss
 maybe-all-target-libgloss:
+@if gcc-bootstrap
+all-target-libgloss: stage_current
+@endif gcc-bootstrap
 @if target-libgloss
 TARGET-target-libgloss=all
 maybe-all-target-libgloss: all-target-libgloss
@@ -34416,6 +34810,9 @@ maintainer-clean-target-libgloss:
 
 .PHONY: configure-target-libiberty maybe-configure-target-libiberty
 maybe-configure-target-libiberty:
+@if gcc-bootstrap
+configure-target-libiberty: stage_current
+@endif gcc-bootstrap
 @if target-libiberty
 maybe-configure-target-libiberty: configure-target-libiberty
 configure-target-libiberty: 
@@ -34459,6 +34856,9 @@ configure-target-libiberty:
 
 .PHONY: all-target-libiberty maybe-all-target-libiberty
 maybe-all-target-libiberty:
+@if gcc-bootstrap
+all-target-libiberty: stage_current
+@endif gcc-bootstrap
 @if target-libiberty
 TARGET-target-libiberty=all
 maybe-all-target-libiberty: all-target-libiberty
@@ -34797,6 +35197,9 @@ maintainer-clean-target-libiberty:
 
 .PHONY: configure-target-gperf maybe-configure-target-gperf
 maybe-configure-target-gperf:
+@if gcc-bootstrap
+configure-target-gperf: stage_current
+@endif gcc-bootstrap
 @if target-gperf
 maybe-configure-target-gperf: configure-target-gperf
 configure-target-gperf: 
@@ -34840,6 +35243,9 @@ configure-target-gperf:
 
 .PHONY: all-target-gperf maybe-all-target-gperf
 maybe-all-target-gperf:
+@if gcc-bootstrap
+all-target-gperf: stage_current
+@endif gcc-bootstrap
 @if target-gperf
 TARGET-target-gperf=all
 maybe-all-target-gperf: all-target-gperf
@@ -35178,6 +35584,9 @@ maintainer-clean-target-gperf:
 
 .PHONY: configure-target-examples maybe-configure-target-examples
 maybe-configure-target-examples:
+@if gcc-bootstrap
+configure-target-examples: stage_current
+@endif gcc-bootstrap
 @if target-examples
 maybe-configure-target-examples: configure-target-examples
 configure-target-examples: 
@@ -35221,6 +35630,9 @@ configure-target-examples:
 
 .PHONY: all-target-examples maybe-all-target-examples
 maybe-all-target-examples:
+@if gcc-bootstrap
+all-target-examples: stage_current
+@endif gcc-bootstrap
 @if target-examples
 TARGET-target-examples=all
 maybe-all-target-examples: all-target-examples
@@ -35549,6 +35961,9 @@ maintainer-clean-target-examples:
 
 .PHONY: configure-target-libffi maybe-configure-target-libffi
 maybe-configure-target-libffi:
+@if gcc-bootstrap
+configure-target-libffi: stage_current
+@endif gcc-bootstrap
 @if target-libffi
 maybe-configure-target-libffi: configure-target-libffi
 configure-target-libffi: 
@@ -35592,6 +36007,9 @@ configure-target-libffi:
 
 .PHONY: all-target-libffi maybe-all-target-libffi
 maybe-all-target-libffi:
+@if gcc-bootstrap
+all-target-libffi: stage_current
+@endif gcc-bootstrap
 @if target-libffi
 TARGET-target-libffi=all
 maybe-all-target-libffi: all-target-libffi
@@ -35930,6 +36348,9 @@ maintainer-clean-target-libffi:
 
 .PHONY: configure-target-libjava maybe-configure-target-libjava
 maybe-configure-target-libjava:
+@if gcc-bootstrap
+configure-target-libjava: stage_current
+@endif gcc-bootstrap
 @if target-libjava
 maybe-configure-target-libjava: configure-target-libjava
 configure-target-libjava: 
@@ -35973,6 +36394,9 @@ configure-target-libjava:
 
 .PHONY: all-target-libjava maybe-all-target-libjava
 maybe-all-target-libjava:
+@if gcc-bootstrap
+all-target-libjava: stage_current
+@endif gcc-bootstrap
 @if target-libjava
 TARGET-target-libjava=all
 maybe-all-target-libjava: all-target-libjava
@@ -36311,6 +36735,9 @@ maintainer-clean-target-libjava:
 
 .PHONY: configure-target-zlib maybe-configure-target-zlib
 maybe-configure-target-zlib:
+@if gcc-bootstrap
+configure-target-zlib: stage_current
+@endif gcc-bootstrap
 @if target-zlib
 maybe-configure-target-zlib: configure-target-zlib
 configure-target-zlib: 
@@ -36354,6 +36781,9 @@ configure-target-zlib:
 
 .PHONY: all-target-zlib maybe-all-target-zlib
 maybe-all-target-zlib:
+@if gcc-bootstrap
+all-target-zlib: stage_current
+@endif gcc-bootstrap
 @if target-zlib
 TARGET-target-zlib=all
 maybe-all-target-zlib: all-target-zlib
@@ -36692,6 +37122,9 @@ maintainer-clean-target-zlib:
 
 .PHONY: configure-target-boehm-gc maybe-configure-target-boehm-gc
 maybe-configure-target-boehm-gc:
+@if gcc-bootstrap
+configure-target-boehm-gc: stage_current
+@endif gcc-bootstrap
 @if target-boehm-gc
 maybe-configure-target-boehm-gc: configure-target-boehm-gc
 configure-target-boehm-gc: 
@@ -36735,6 +37168,9 @@ configure-target-boehm-gc:
 
 .PHONY: all-target-boehm-gc maybe-all-target-boehm-gc
 maybe-all-target-boehm-gc:
+@if gcc-bootstrap
+all-target-boehm-gc: stage_current
+@endif gcc-bootstrap
 @if target-boehm-gc
 TARGET-target-boehm-gc=all
 maybe-all-target-boehm-gc: all-target-boehm-gc
@@ -37073,6 +37509,9 @@ maintainer-clean-target-boehm-gc:
 
 .PHONY: configure-target-qthreads maybe-configure-target-qthreads
 maybe-configure-target-qthreads:
+@if gcc-bootstrap
+configure-target-qthreads: stage_current
+@endif gcc-bootstrap
 @if target-qthreads
 maybe-configure-target-qthreads: configure-target-qthreads
 configure-target-qthreads: 
@@ -37116,6 +37555,9 @@ configure-target-qthreads:
 
 .PHONY: all-target-qthreads maybe-all-target-qthreads
 maybe-all-target-qthreads:
+@if gcc-bootstrap
+all-target-qthreads: stage_current
+@endif gcc-bootstrap
 @if target-qthreads
 TARGET-target-qthreads=all
 maybe-all-target-qthreads: all-target-qthreads
@@ -37454,6 +37896,9 @@ maintainer-clean-target-qthreads:
 
 .PHONY: configure-target-rda maybe-configure-target-rda
 maybe-configure-target-rda:
+@if gcc-bootstrap
+configure-target-rda: stage_current
+@endif gcc-bootstrap
 @if target-rda
 maybe-configure-target-rda: configure-target-rda
 configure-target-rda: 
@@ -37497,6 +37942,9 @@ configure-target-rda:
 
 .PHONY: all-target-rda maybe-all-target-rda
 maybe-all-target-rda:
+@if gcc-bootstrap
+all-target-rda: stage_current
+@endif gcc-bootstrap
 @if target-rda
 TARGET-target-rda=all
 maybe-all-target-rda: all-target-rda
@@ -37835,6 +38283,9 @@ maintainer-clean-target-rda:
 
 .PHONY: configure-target-libada maybe-configure-target-libada
 maybe-configure-target-libada:
+@if gcc-bootstrap
+configure-target-libada: stage_current
+@endif gcc-bootstrap
 @if target-libada
 maybe-configure-target-libada: configure-target-libada
 configure-target-libada: 
@@ -37878,6 +38329,9 @@ configure-target-libada:
 
 .PHONY: all-target-libada maybe-all-target-libada
 maybe-all-target-libada:
+@if gcc-bootstrap
+all-target-libada: stage_current
+@endif gcc-bootstrap
 @if target-libada
 TARGET-target-libada=all
 maybe-all-target-libada: all-target-libada
@@ -38216,6 +38670,9 @@ maintainer-clean-target-libada:
 
 .PHONY: configure-target-libgomp maybe-configure-target-libgomp
 maybe-configure-target-libgomp:
+@if gcc-bootstrap
+configure-target-libgomp: stage_current
+@endif gcc-bootstrap
 @if target-libgomp
 maybe-configure-target-libgomp: configure-target-libgomp
 configure-target-libgomp: 
@@ -38259,6 +38716,9 @@ configure-target-libgomp:
 
 .PHONY: all-target-libgomp maybe-all-target-libgomp
 maybe-all-target-libgomp:
+@if gcc-bootstrap
+all-target-libgomp: stage_current
+@endif gcc-bootstrap
 @if target-libgomp
 TARGET-target-libgomp=all
 maybe-all-target-libgomp: all-target-libgomp
@@ -40066,6 +40526,11 @@ do-distclean: distclean-stage1
 # not work as a dependency, just as the minimum necessary to avoid errors.
 stage_last:
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage1-bubble
+
+# Same as unstage, but not phony and defaulting to stage1-start.  We place
+# it in the dependency so that for example `make -j3 all-gcc' works.
+stage_current:
+	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
 
 .PHONY: restrap
 restrap:
