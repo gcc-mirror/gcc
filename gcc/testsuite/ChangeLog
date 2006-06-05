@@ -1,5 +1,12 @@
 2006-06-05  Steve Ellcey  <sje@cup.hp.com>
 
+	Backport from mainline:
+	2006-04-23  David Edelsohn  <edelsohn@gnu.org>
+	* g++.dg/opt/pr15551.C: Include cstdio.
+	(main): Use remove instead of unlink.
+
+2006-06-05  Steve Ellcey  <sje@cup.hp.com>
+
 	PR testsuite/27705
 	* gcc.dg/sibcall-7.c: Do not run on ia64-*-* platforms.
 
