@@ -1,3 +1,9 @@
+2006-06-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27804
+	* init.c (constant_value_1): Return decl instead of error_mark_node
+	for invalid initializers.
+
 2006-06-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/27592

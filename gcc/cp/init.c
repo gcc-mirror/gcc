@@ -1483,7 +1483,7 @@ constant_value_1 (tree decl, bool integral_p)
 	  init = DECL_INITIAL (decl);
 	}
       if (init == error_mark_node)
-	return error_mark_node;
+	return decl;
       if (!init
 	  || !TREE_TYPE (init)
 	  || (integral_p
