@@ -2022,6 +2022,12 @@ finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
 {
   tree compound_literal;
 
+  if (!TYPE_OBJ_P (type))
+    {
+      error ("compound literal of non-object type %qT", type);
+      return error_mark_node;
+    }
+
   /* Build a CONSTRUCTOR for the INITIALIZER_LIST.  */
   compound_literal = build_constructor (NULL_TREE, initializer_list);
   if (processing_template_decl)
