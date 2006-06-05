@@ -1,3 +1,7 @@
+2006-06-05  James Lemke  <jwlemke@wasabisystems.com>
+
+	* dg-cmp-results.sh: New script for comparing DejaGNU logs.
+
 2006-06-02  Richard Earnshaw  <rearnsha@arm.com>
 	    Mike Stump  <mrs@apple.com>
 
