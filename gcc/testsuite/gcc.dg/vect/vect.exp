@@ -115,6 +115,12 @@ lappend DEFAULT_VECTCFLAGS "-fdump-tree-dceloop-details"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dump-tree-dceloop-*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# -fno-tree-dce tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-tree-dce"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-dce-*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
 # With -Os
 lappend DEFAULT_VECTCFLAGS "-Os"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \
