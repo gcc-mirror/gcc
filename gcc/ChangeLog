@@ -1,3 +1,11 @@
+2006-06-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/25161
+	PR c/27020
+	* c-decl.c (grokdeclarator): Disallow variably modified types at
+	file scope.  Avoid marking shared array type of constant size as
+	VLA.
+
 2006-06-04  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27601
