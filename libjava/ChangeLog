@@ -1,3 +1,8 @@
+2006-06-05  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/27892:
+	* gij.cc (main): Use putenv.
+
 2006-06-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	* scripts/jar.in: Ensure return with argument has non-empty argument.
