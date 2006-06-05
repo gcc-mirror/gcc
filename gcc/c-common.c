@@ -2501,7 +2501,9 @@ c_common_truthvalue_conversion (tree expr)
       {
  	tree inner = TREE_OPERAND (expr, 0);
 	if (DECL_P (inner)
-	    && (TREE_CODE (inner) == PARM_DECL || !DECL_WEAK (inner)))
+	    && (TREE_CODE (inner) == PARM_DECL
+		|| TREE_CODE (inner) == LABEL_DECL
+		|| !DECL_WEAK (inner)))
 	  {
 	    /* Common Ada/Pascal programmer's mistake.  We always warn
 	       about this since it is so bad.  */
