@@ -1,3 +1,10 @@
+2006-06-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/27895
+	* resolve.c (compute_last_value_for_triplet): New function.
+	(check_dimension): Correctly handle zero-sized array sections.
+	Add checking on last element of array sections.
+
 2006-06-05  Steven G. Kargl  <kargls@comcast.net>
 
 	* data.c (gfc_assign_data_value):  Fix comment typo.  Remove

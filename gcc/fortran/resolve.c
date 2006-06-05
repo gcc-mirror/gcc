@@ -2100,12 +2100,86 @@ compare_bound_int (gfc_expr * a, int b)
 }
 
 
+/* Compare an integer expression with a mpz_t.  */
+
+static comparison
+compare_bound_mpz_t (gfc_expr * a, mpz_t b)
+{
+  int i;
+
+  if (a == NULL || a->expr_type != EXPR_CONSTANT)
+    return CMP_UNKNOWN;
+
+  if (a->ts.type != BT_INTEGER)
+    gfc_internal_error ("compare_bound_int(): Bad expression");
+
+  i = mpz_cmp (a->value.integer, b);
+
+  if (i < 0)
+    return CMP_LT;
+  if (i > 0)
+    return CMP_GT;
+  return CMP_EQ;
+}
+
+
+/* Compute the last value of a sequence given by a triplet.  
+   Return 0 if it wasn't able to compute the last value, or if the
+   sequence if empty, and 1 otherwise.  */
+
+static int
+compute_last_value_for_triplet (gfc_expr * start, gfc_expr * end,
+				gfc_expr * stride, mpz_t last)
+{
+  mpz_t rem;
+
+  if (start == NULL || start->expr_type != EXPR_CONSTANT
+      || end == NULL || end->expr_type != EXPR_CONSTANT
+      || (stride != NULL && stride->expr_type != EXPR_CONSTANT))
+    return 0;
+
+  if (start->ts.type != BT_INTEGER || end->ts.type != BT_INTEGER
+      || (stride != NULL && stride->ts.type != BT_INTEGER))
+    return 0;
+
+  if (stride == NULL || compare_bound_int(stride, 1) == CMP_EQ)
+    {
+      if (compare_bound (start, end) == CMP_GT)
+	return 0;
+      mpz_set (last, end->value.integer);
+      return 1;
+    }
+  
+  if (compare_bound_int (stride, 0) == CMP_GT)
+    {
+      /* Stride is positive */
+      if (mpz_cmp (start->value.integer, end->value.integer) > 0)
+	return 0;
+    }
+  else
+    {
+      /* Stride is negative */
+      if (mpz_cmp (start->value.integer, end->value.integer) < 0)
+	return 0;
+    }
+
+  mpz_init (rem);
+  mpz_sub (rem, end->value.integer, start->value.integer);
+  mpz_tdiv_r (rem, rem, stride->value.integer);
+  mpz_sub (last, end->value.integer, rem);
+  mpz_clear (rem);
+
+  return 1;
+}
+
+
 /* Compare a single dimension of an array reference to the array
    specification.  */
 
 static try
 check_dimension (int i, gfc_array_ref * ar, gfc_array_spec * as)
 {
+  mpz_t last_value;
 
 /* Given start, end and stride values, calculate the minimum and
    maximum referenced indexes.  */
@@ -2130,13 +2204,41 @@ check_dimension (int i, gfc_array_ref * ar, gfc_array_spec * as)
 	  return FAILURE;
 	}
 
-      if (compare_bound (ar->start[i], as->lower[i]) == CMP_LT)
-	goto bound;
-      if (compare_bound (ar->start[i], as->upper[i]) == CMP_GT)
+#define AR_START (ar->start[i] ? ar->start[i] : as->lower[i])
+#define AR_END (ar->end[i] ? ar->end[i] : as->upper[i])
+
+      if (compare_bound (AR_START, AR_END) == CMP_EQ
+	  && (compare_bound (AR_START, as->lower[i]) == CMP_LT
+	      || compare_bound (AR_START, as->upper[i]) == CMP_GT))
 	goto bound;
 
-      /* TODO: Possibly, we could warn about end[i] being out-of-bound although
-         it is legal (see 6.2.2.3.1).  */
+      if (((compare_bound_int (ar->stride[i], 0) == CMP_GT
+	    || ar->stride[i] == NULL)
+	   && compare_bound (AR_START, AR_END) != CMP_GT)
+	  || (compare_bound_int (ar->stride[i], 0) == CMP_LT
+	      && compare_bound (AR_START, AR_END) != CMP_LT))
+	{
+	  if (compare_bound (AR_START, as->lower[i]) == CMP_LT)
+	    goto bound;
+	  if (compare_bound (AR_START, as->upper[i]) == CMP_GT)
+	    goto bound;
+	}
+
+      mpz_init (last_value);
+      if (compute_last_value_for_triplet (AR_START, AR_END, ar->stride[i],
+					  last_value))
+	{
+	  if (compare_bound_mpz_t (as->lower[i], last_value) == CMP_GT
+	      || compare_bound_mpz_t (as->upper[i], last_value) == CMP_LT)
+	    {
+	      mpz_clear (last_value);
+	      goto bound;
+	    }
+	}
+      mpz_clear (last_value);
+
+#undef AR_START
+#undef AR_END
 
       break;
 
