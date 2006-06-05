@@ -45,6 +45,7 @@
 #include <tr1/limits.h>
 #include <tr1/math.h>
 #include <tr1/memory>
+#include <tr1/random>
 #include <tr1/stdarg.h>
 #include <tr1/stdbool.h>
 #include <tr1/stdint.h>

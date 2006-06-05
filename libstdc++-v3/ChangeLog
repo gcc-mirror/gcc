@@ -1,3 +1,88 @@
+2006-06-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random.tcc (Max::value()): Cast 1 to Tp(1) and
+	adjust shift count to w; rename as Max_w.
+	(struct Mod_w): New.
+	(mersenne_twister<>::seed(Gen&, false_type): Use the latter.
+	(mersenne_twister<>::operator()()): Fix ~0ul to ~_UInt().
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	cons/default.cc: Fix ~0ul to 2^32-1.
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	cons/gen1.cc: Likewise.
+
+2006-06-05  Stephen M. Webb  <stephen.webb@bregmasoft.com>
+
+	* include/tr1/random: New.
+	* include/tr1/random.tcc: Likewise.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/5_numerical_facilies/random/ranlux3.cc: New.
+	* testsuite/tr1/5_numerical_facilies/random/ranlux4.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/mt19937.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/variate_generator/
+	requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	cons/seed1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	cons/seed2.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/subtract_with_carry/
+	operators/serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/uniform_real/
+	requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/discard_block/
+	requirements/requirements.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	cons/seed1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	cons/seed2.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	requirements/non_uint_neg.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/linear_congruential/
+	operators/serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/xor_combine/
+	requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/minstd_rand.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/minstd_rand0.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/uniform_int/
+	cons/range.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/uniform_int/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/uniform_int/
+	cons/range_neg.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/uniform_int/
+	requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	cons/seed1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	cons/seed2.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	requirements/typedefs.cc: Likewise.
+	* include/Makefile.in: Regenerate.
+	* testsuite/tr1/headers.cc: Update.
+
 2006-06-04  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/27867
