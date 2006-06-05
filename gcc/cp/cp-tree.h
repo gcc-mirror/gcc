@@ -2515,30 +2515,43 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Returns true if NODE is a pointer.  */
 #define TYPE_PTR_P(NODE)			\
   (TREE_CODE (NODE) == POINTER_TYPE)
+
+/* Returns true if NODE is an object type:
+
+     [basic.types]
+
+     An object type is a (possibly cv-qualified) type that is not a
+     function type, not a reference type, and not a void type.  
+
+   Keep these checks in ascending order, for speed.  */
+#define TYPE_OBJ_P(NODE)			\
+  (TREE_CODE (NODE) != REFERENCE_TYPE		\
+   && TREE_CODE (NODE) != VOID_TYPE		\
+   && TREE_CODE (NODE) != FUNCTION_TYPE		\
+   && TREE_CODE (NODE) != METHOD_TYPE)
+
 /* Returns true if NODE is a pointer to an object.  Keep these checks
    in ascending tree code order.  */
 #define TYPE_PTROB_P(NODE)					\
-  (TYPE_PTR_P (NODE)						\
-   && !(TREE_CODE (TREE_TYPE (NODE)) == VOID_TYPE		\
-	|| TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE	\
-	|| TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE))
+  (TYPE_PTR_P (NODE) && TYPE_OBJ_P (TREE_TYPE (NODE)))
+
 /* Returns true if NODE is a reference to an object.  Keep these checks
    in ascending tree code order.  */
 #define TYPE_REF_OBJ_P(NODE)					\
-  (TREE_CODE (NODE) == REFERENCE_TYPE				\
-   && !(TREE_CODE (TREE_TYPE (NODE)) == VOID_TYPE		\
-	|| TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE	\
-	|| TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE))
+  (TREE_CODE (NODE) == REFERENCE_TYPE && TYPE_OBJ_P (TREE_TYPE (NODE)))
+
 /* Returns true if NODE is a pointer to an object, or a pointer to
    void.  Keep these checks in ascending tree code order.  */
 #define TYPE_PTROBV_P(NODE)					\
   (TYPE_PTR_P (NODE)						\
    && !(TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE		\
 	|| TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE))
+
 /* Returns true if NODE is a pointer to function.  */
 #define TYPE_PTRFN_P(NODE)				\
   (TREE_CODE (NODE) == POINTER_TYPE			\
    && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
+
 /* Returns true if NODE is a reference to function.  */
 #define TYPE_REFFN_P(NODE)				\
   (TREE_CODE (NODE) == REFERENCE_TYPE			\
