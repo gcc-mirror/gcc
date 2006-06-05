@@ -9307,7 +9307,8 @@ ia64_select_rtx_section (enum machine_mode mode, rtx x,
 			 unsigned HOST_WIDE_INT align)
 {
   if (GET_MODE_SIZE (mode) > 0
-      && GET_MODE_SIZE (mode) <= ia64_section_threshold)
+      && GET_MODE_SIZE (mode) <= ia64_section_threshold
+      && !TARGET_NO_SDATA)
     return sdata_section;
   else
     return default_elf_select_rtx_section (mode, x, align);
