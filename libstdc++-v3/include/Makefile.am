@@ -512,6 +512,8 @@ tr1_headers = \
 	${tr1_srcdir}/math.h \
 	${tr1_srcdir}/memory \
 	${tr1_srcdir}/mu_iterate.h \
+	${tr1_srcdir}/random \
+	${tr1_srcdir}/random.tcc \
 	${tr1_srcdir}/ref_fwd.h \
 	${tr1_srcdir}/ref_wrap_iterate.h \
 	${tr1_srcdir}/repeat.h \
