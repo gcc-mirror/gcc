@@ -1,3 +1,11 @@
+2006-06-05  Dorit Nuzman  <dorit@il.ibm.com>
+            Victor Kaplansky  <victork@il.ibm.com>
+	    
+        PR tree-optimizations/26360
+        * gcc.dg/vect/vect.exp: Compile tests prefixed with "no-tree-dce"
+        with -fno-tree-dce.
+        * gcc.dg/vect/no-tree-dce-pr26360.c: New test.
+
 2006-06-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/14067
