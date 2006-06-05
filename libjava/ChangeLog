@@ -1,3 +1,8 @@
+2006-06-05  Andreas Schwab  <schwab@suse.de>
+
+	PR libgcj/27860
+	* link.cc: Check for closure support in libffi with FFI_CLOSURES.
+
 2006-06-05  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/27892:
