@@ -33,7 +33,7 @@ test01()
   for (int i = 0; i < 9999; ++i)
     a();
   
-  VERIFY( a() == 3346425566ul );
+  VERIFY( a() == 4123659995ul );
 }
 
 int main()

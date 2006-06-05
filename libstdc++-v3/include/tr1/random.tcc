@@ -113,6 +113,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	{ return x; }
       };
 
+    template<typename _Tp, _Tp w>
+      inline _Tp
+      mod_w(_Tp x)
+      { return Mod_w<_Tp, w, w == std::numeric_limits<_Tp>::digits>::calc(x); }
+
     // Selector to return the maximum value possible that will fit in 
     // @p w bits of @p _Tp.
     template<typename _Tp, _Tp w, bool>
@@ -229,27 +234,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::
     seed(unsigned long value)
     {
-      if (value == 0)
-	value = 4357;
-      
-#if 0
-      // @todo handle case numeric_limits<_UInt>::digits > 32
-      if (std::numeric_limits<_UInt>::digits > 32)
-	{
-	  std::tr1::linear_congruential<unsigned long, 69069, 0, 2**32> lcg(value);
-	  seed(lcg);
-	}
-      else
-	{
-	  std::tr1::linear_congruential<unsigned long, 69069, 0, 0> lcg(value);
-	  seed(lcg);
-	}
-#else
-      std::tr1::linear_congruential<unsigned long, 69069, 0, 0> lcg(value);
-      seed(lcg);
-#endif
-    }
+      _M_x[0] = _Private::mod_w<_UInt, w>(value);
 
+      for (int i = 1; i < n; ++i)
+	{
+	  _UInt x = _M_x[i - 1];
+	  x ^= x >> (w - 2);
+	  x *= 1812433253ul;
+	  x += i;
+	  _M_x[i] = _Private::mod_w<_UInt, w>(x);	  
+	}
+      _M_p = n;
+    }
 
   template<class _UInt, int w, int n, int m, int r,
 	   _UInt a, int u, int s,
@@ -259,13 +255,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::
       seed(Gen& gen, false_type)
       {
-	using _Private::Mod_w;
-	using std::numeric_limits;
-
-	for (int i = 0; i < state_size; ++i)
-	  _M_x[i] = Mod_w<_UInt, w,
-	                  w == numeric_limits<_UInt>::digits>::calc(gen());
-	_M_p = state_size + 1;
+	for (int i = 0; i < n; ++i)
+	  _M_x[i] = _Private::mod_w<_UInt, w>(gen());
+	_M_p = n;
       }
 
   template<class _UInt, int w, int n, int m, int r,
@@ -281,7 +273,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return Max_w<_UInt, w, w == numeric_limits<_UInt>::digits>::value();
     }
 
-
   template<class _UInt, int w, int n, int m, int r,
 	   _UInt a, int u, int s,
 	   _UInt b, int t, _UInt c, int l>
@@ -290,8 +281,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::
     operator()()
     {
-      // reload the vector - cost is O(n) amortized over n calls.
-      if (_M_p >= state_size)
+      // Reload the vector - cost is O(n) amortized over n calls.
+      if (_M_p >= n)
 	{
 	  const _UInt upper_mask = (~_UInt()) << r;
 	  const _UInt lower_mask = ~upper_mask;
@@ -311,14 +302,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  _M_p = 0;
 	}
 
-      // Calculate x(i)
-      result_type y = _M_x[_M_p++];
-      y ^= (y >> u);
-      y ^= (y << s) & b;
-      y ^= (y << t) & c;
-      y ^= (y >> l);
-      
-      return y;
+      // Calculate o(x(i)).
+      result_type z = _M_x[_M_p++];
+      z ^= (z >> u);
+      z ^= (z << s) & b;
+      z ^= (z << t) & c;
+      z ^= (z >> l);
+
+      return z;
     }
 
 
@@ -329,15 +320,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     {
       std::tr1::linear_congruential<unsigned long, 40014, 0, 2147483563>
 	lcg(__value);
-      
+
       for (int i = 0; i < long_lag; ++i)
 	_M_x[i] = _Private::mod<_IntType, 1, 0, modulus>(lcg());
-	
+
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
       _M_p = 0;
     }
 
-  
   //
   // This implementation differs from the tr1 spec because the tr1 spec refused
   // to make any sense to me:  the exponent of the factor in the spec goes from
@@ -367,18 +357,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
       _M_p = 0;
     }
-  
 
   template<typename _IntType, _IntType __m, int __s, int __r>
     typename subtract_with_carry<_IntType, __m, __s, __r>::result_type
     subtract_with_carry<_IntType, __m, __s, __r>::
     operator()()
     {
-      // derive short lag index from current index
+      // Derive short lag index from current index.
       int ps = _M_p - short_lag;
-      if (ps < 0) ps += long_lag;
-      
-      // calculate new x(i) without overflow or division
+      if (ps < 0)
+	ps += long_lag;
+
+      // Calculate new x(i) without overflow or division.
       _IntType xi;
       if (_M_x[ps] >= _M_x[_M_p] + _M_carry)
 	{
@@ -391,15 +381,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  _M_carry = 1;
 	}
       _M_x[_M_p++] = xi;
-      
-      // adjust current index to loop around in ring buffer
+
+      // Adjust current index to loop around in ring buffer.
       if (_M_p >= long_lag)
 	_M_p = 0;
-      
+
       return xi;
     }
 
-  
+
   template<class _E, int __p, int __r>
     typename discard_block<_E, __p, __r>::result_type
     discard_block<_E, __p, __r>::
