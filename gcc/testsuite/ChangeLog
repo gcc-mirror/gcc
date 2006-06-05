@@ -1,3 +1,7 @@
+2006-06-05  Mike Stump  <mrs@apple.com>
+
+	* objc.dg/objc-fast-4.m: Skip for ppc64.
+
 2006-06-05  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/27705
