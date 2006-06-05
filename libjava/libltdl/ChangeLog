@@ -1,3 +1,9 @@
+2006-06-05  Tom Tromey  <tromey@redhat.com>
+
+	PR gcc/27818:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (install-data-local): Define conditionally.
+
 2006-04-08  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure: Rebuilt.
