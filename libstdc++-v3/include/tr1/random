@@ -493,7 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       void
       seed()
-      { seed(0UL); }
+      { seed(5489UL); }
 
       void
       seed(unsigned long value);
@@ -1560,7 +1560,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       template<class _UniformRandomNumberGenerator>
         result_type
         operator()(_UniformRandomNumberGenerator& __urng)
-        { return std::log(__urng) / _M_lambda; }
+        { return -std::log(__urng()) / _M_lambda; }
 
       /**
        * Inserts a %exponential_distribution random number distribution

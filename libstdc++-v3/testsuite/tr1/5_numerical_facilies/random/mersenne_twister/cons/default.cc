@@ -38,7 +38,7 @@ test01()
   
   VERIFY( x.min() == 0 );
   VERIFY( x.max() == 4294967295ul );
-  VERIFY( x() == 4290933890ul );
+  VERIFY( x() == 3499211612ul );
 }
 
 int main()

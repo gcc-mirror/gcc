@@ -1,5 +1,19 @@
 2006-06-05  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random (mersenne_twister<>::seed()): Fix per
+	tr1/5.1.4.2, p8.
+	* include/tr1/random.tcc (mod_w): Add.
+	(mersenne_twister<>::seed(unsigned long)): Fix per tr1/5.1.4.2, p9.
+	(mersenne_twister<>::seed(Gen&, false_type)): Adjust to use mod_w.
+	* testsuite/tr1/5_numerical_facilies/random/mt19937.cc: Fix
+	expected result per tr1/5.1.5, p2.
+	* testsuite/tr1/5_numerical_facilies/random/mersenne_twister/
+	cons/default.cc: Adjust.
+
+	* include/tr1/random (exponential_distribution<>::operator()()): Fix.
+
+2006-06-05  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/random.tcc (Max::value()): Cast 1 to Tp(1) and
 	adjust shift count to w; rename as Max_w.
 	(struct Mod_w): New.
