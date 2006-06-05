@@ -1,3 +1,8 @@
+2006-06-05  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/27051
+	* config/ia64/ia64.c (ia64_select_rtx_section): Check TARGET_NO_SDATA.
+
 2006-06-05  Dorit Nuzman  <dorit@il.ibm.com>
 	    Victor Kaplansky  <victork@il.ibm.com>
 
