@@ -577,6 +577,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+@INSTALL_LTDL_FALSE@install-data-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
@@ -654,11 +655,11 @@ $(libltdl_la_OBJECTS) $(libltdlc_la_OBJECTS): libtool
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
 
-install-data-local:
-	-rm -rf $(DESTDIR)$(ltdldatadir)
-	$(mkinstalldirs) $(DESTDIR)$(ltdldatadir)
-	( cd $(srcdir) && $(AMTAR) chf - $(ltdldatafiles); ) \
-	  | ( umask 0 && cd $(DESTDIR)$(ltdldatadir) && $(AMTAR) xf -; )
+@INSTALL_LTDL_TRUE@install-data-local:
+@INSTALL_LTDL_TRUE@	-rm -rf $(DESTDIR)$(ltdldatadir)
+@INSTALL_LTDL_TRUE@	$(mkinstalldirs) $(DESTDIR)$(ltdldatadir)
+@INSTALL_LTDL_TRUE@	( cd $(srcdir) && $(AMTAR) chf - $(ltdldatafiles); ) \
+@INSTALL_LTDL_TRUE@	  | ( umask 0 && cd $(DESTDIR)$(ltdldatadir) && $(AMTAR) xf -; )
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

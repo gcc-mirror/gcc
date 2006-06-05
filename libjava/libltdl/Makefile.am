@@ -42,6 +42,8 @@ ltdldatafiles = COPYING.LIB README acinclude.m4 aclocal.m4 \
 		install-sh missing ltmain.sh \
 		ltdl.c ltdl.h
 
+## GCJ LOCAL: fix install buglet.  See PR 27818
+if INSTALL_LTDL
 ## To avoid spurious reconfiguration when the user installs these files
 ## with libtoolize, we have to preserve their timestamps carefully:
 install-data-local:
@@ -49,3 +51,4 @@ install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(ltdldatadir)
 	( cd $(srcdir) && $(AMTAR) chf - $(ltdldatafiles); ) \
 	  | ( umask 0 && cd $(DESTDIR)$(ltdldatadir) && $(AMTAR) xf -; )
+endif
