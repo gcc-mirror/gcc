@@ -2282,6 +2282,15 @@ loop:
       break;
 
     case ST_IMPLIED_ENDDO:
+     /* If the do-stmt of this DO construct has a do-construct-name,
+	the corresponding end-do must be an end-do-stmt (with a matching
+	name, but in that case we must have seen ST_ENDDO first).
+	We only complain about this in pedantic mode.  */
+     if (gfc_current_block () != NULL)
+	gfc_error_now
+	  ("named block DO at %L requires matching ENDDO name",
+	   &gfc_current_block()->declared_at);
+
       break;
 
     default:
