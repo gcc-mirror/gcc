@@ -228,7 +228,8 @@ commonparms (tree p1, tree p2)
 static tree
 original_type (tree t)
 {
-  while (TYPE_NAME (t) != NULL_TREE)
+  while (t != error_mark_node
+	 && TYPE_NAME (t) != NULL_TREE)
     {
       tree x = TYPE_NAME (t);
       if (TREE_CODE (x) != TYPE_DECL)
