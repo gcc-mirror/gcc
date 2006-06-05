@@ -1,3 +1,8 @@
+2006-06-05  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/27705
+	* gcc.dg/sibcall-7.c: Do not run on ia64-*-* platforms.
+
 2006-06-05  Dorit Nuzman  <dorit@il.ibm.com>
             Victor Kaplansky  <victork@il.ibm.com>
 	    

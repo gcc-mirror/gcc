@@ -4,7 +4,10 @@
    Copyright (C) 2006 Free Software Foundation Inc.
    Original test by Hans-Peter Nilsson  <hp@bitrange.com>  */
 
-/* { dg-do run } */
+/* On IA64 the call frame is allocated on the register stack, not the
+   normal stack.  */
+
+/* { dg-do run { target { ! "ia64-*-*" } } } */
 /* { dg-options "-O2 -fno-optimize-sibling-calls" } */
 
 
