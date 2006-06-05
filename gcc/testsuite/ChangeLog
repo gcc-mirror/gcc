@@ -1,3 +1,8 @@
+2006-06-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/27895
+	* gfortran.dg/bounds_check_3.f90: New test.
+
 2006-06-05  Mike Stump  <mrs@apple.com>
 
 	* objc.dg/objc-fast-4.m: Skip for ppc64.
@@ -10,10 +15,10 @@
 2006-06-05  Dorit Nuzman  <dorit@il.ibm.com>
             Victor Kaplansky  <victork@il.ibm.com>
 	    
-        PR tree-optimizations/26360
-        * gcc.dg/vect/vect.exp: Compile tests prefixed with "no-tree-dce"
-        with -fno-tree-dce.
-        * gcc.dg/vect/no-tree-dce-pr26360.c: New test.
+	PR tree-optimizations/26360
+	* gcc.dg/vect/vect.exp: Compile tests prefixed with "no-tree-dce"
+	with -fno-tree-dce.
+	* gcc.dg/vect/no-tree-dce-pr26360.c: New test.
 
 2006-06-05  Paul Thomas  <pault@gcc.gnu.org>
 
