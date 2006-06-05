@@ -615,7 +615,7 @@ debug_rli (record_layout_info rli)
 
   /* The ms_struct code is the only that uses this.  */
   if (targetm.ms_bitfield_layout_p (rli->t))
-    fprintf (stderr, "remaning in alignment = %u\n", rli->remaining_in_alignment);
+    fprintf (stderr, "remaining in alignment = %u\n", rli->remaining_in_alignment);
 
   if (rli->packed_maybe_necessary)
     fprintf (stderr, "packed may be necessary\n");
