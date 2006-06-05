@@ -10,4 +10,4 @@ void foo(void) {
   Object *o;
   [o++ free];
 }
-/* { dg-final { scan-assembler-not "objc_msgSend" } } */
+/* { dg-final { scan-assembler-not "L_objc_msgSend\\\$non_lazy_ptr" } } */
