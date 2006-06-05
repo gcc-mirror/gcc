@@ -23,6 +23,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "parse.h"
 
@@ -1178,9 +1179,18 @@ gfc_add_type (gfc_symbol * sym, gfc_typespec * ts, locus * where)
 
   if (sym->ts.type != BT_UNKNOWN)
     {
-      gfc_error ("Symbol '%s' at %L already has basic type of %s", sym->name,
-		 where, gfc_basic_typename (sym->ts.type));
-      return FAILURE;
+      const char *msg = "Symbol '%s' at %L already has basic type of %s";
+      if (!(sym->ts.type == ts->type
+	     && (sym->attr.flavor == FL_PROCEDURE || sym->attr.result))
+	   || gfc_notification_std (GFC_STD_GNU) == ERROR
+	   || pedantic)
+	{
+	  gfc_error (msg, sym->name, where, gfc_basic_typename (sym->ts.type));
+	  return FAILURE;
+	}
+      else if (gfc_notify_std (GFC_STD_GNU, msg, sym->name, where,
+			       gfc_basic_typename (sym->ts.type)) == FAILURE)
+	  return FAILURE;
     }
 
   flavor = sym->attr.flavor;

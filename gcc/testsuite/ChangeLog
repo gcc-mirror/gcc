@@ -1,3 +1,18 @@
+2006-06-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/14067
+	* gfortran.dg/data_char_1.f90: Add messages for truncated
+	strings.
+
+	PR fortran/16943
+	* gfortran.dg/func_decl_2.f90: New test.
+
+	PR fortran/20838
+	* gfortran.dg/do_2.f90: New test.
+
+	PR fortran/27655
+	* gfortran.dg/associated_3.f90: New test.
+
 2006-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27819

@@ -1,3 +1,22 @@
+2006-06-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/14067
+	* data.c (create_character_intializer): Add warning message
+	for truncated string.
+
+	PR fortran/16943
+	* symbol.c : Include flags.h.
+	(gfc_add_type): If a procedure and types are the same do not
+	throw an error unless standard is less than gnu or pedantic.
+
+	PR fortran/20838
+	* parse.c (parse_do_block): Error if named block do construct
+	does not have a named enddo.
+
+	PR fortran/27655
+	* check.c (gfc_check_associated): Pick up EXPR_NULL for pointer
+	as well as target and put error return at end of function.
+
 2006-06-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* trans.c (gfc_msg_bounds, gfc_msg_fault, gfc_msg_wrong_return):
