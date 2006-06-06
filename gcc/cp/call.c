@@ -2835,7 +2835,7 @@ build_new_function_call (tree fn, tree args, bool koenig_p)
    set, upon return, to the allocation function called.  */
 
 tree
-build_operator_new_call (tree fnname, tree args, 
+build_operator_new_call (tree fnname, tree args,
 			 tree *size, tree *cookie_size,
 			 tree *fn)
 {
@@ -3302,7 +3302,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	  || (conv3 && conv3->kind == ck_ambig))
 	{
 	  error ("operands to ?: have different types %qT and %qT",
-             arg2_type, arg3_type);
+		 arg2_type, arg3_type);
 	  result = error_mark_node;
 	}
       else if (conv2 && (!conv2->bad_p || !conv3))
@@ -3512,8 +3512,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 
   if (!result_type)
     {
-	  error ("operands to ?: have different types %qT and %qT",
-             arg2_type, arg3_type);
+      error ("operands to ?: have different types %qT and %qT",
+	     arg2_type, arg3_type);
       return error_mark_node;
     }
 
@@ -6068,7 +6068,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 	      if (warn)
 		{
 		  warning (OPT_Wsign_promo, "passing %qT chooses %qT over %qT",
-                           type, type1, type2);
+			   type, type1, type2);
 		  warning (OPT_Wsign_promo, "  in call to %qD", w->fn);
 		}
 	      else

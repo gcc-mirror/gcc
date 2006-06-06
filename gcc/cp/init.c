@@ -1320,7 +1320,7 @@ build_offset_ref (tree type, tree member, bool address_p)
     return member;
 
   if (dependent_type_p (type) || type_dependent_expression_p (member))
-    return build_qualified_name (NULL_TREE, type, member, 
+    return build_qualified_name (NULL_TREE, type, member,
 				 /*template_p=*/false);
 
   gcc_assert (TYPE_P (type));
@@ -1339,7 +1339,7 @@ build_offset_ref (tree type, tree member, bool address_p)
     }
 
   /* Entities other than non-static members need no further
-     processing.  */ 
+     processing.  */
   if (TREE_CODE (member) == TYPE_DECL)
     return member;
   if (TREE_CODE (member) == VAR_DECL || TREE_CODE (member) == CONST_DECL)
@@ -1451,7 +1451,7 @@ static tree
 constant_value_1 (tree decl, bool integral_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
-	 || (integral_p 
+	 || (integral_p
 	     ? DECL_INTEGRAL_CONSTANT_VAR_P (decl)
 	     : (TREE_CODE (decl) == VAR_DECL
 		&& CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))))
@@ -1466,7 +1466,7 @@ constant_value_1 (tree decl, bool integral_p)
 	 instantiation time.  */
       if (DECL_CLASS_SCOPE_P (decl)
 	  && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl))
-	  && uses_template_parms (CLASSTYPE_TI_ARGS 
+	  && uses_template_parms (CLASSTYPE_TI_ARGS
 				  (DECL_CONTEXT (decl))))
 	{
 	  ++processing_template_decl;
@@ -1520,7 +1520,7 @@ integral_constant_value (tree decl)
 tree
 decl_constant_value (tree decl)
 {
-  return constant_value_1 (decl, 
+  return constant_value_1 (decl,
 			   /*integral_p=*/processing_template_decl);
 }
 
@@ -1548,9 +1548,9 @@ build_raw_new_expr (tree placement, tree type, tree nelts, tree init,
 		    int use_global_new)
 {
   tree new_expr;
-  
-  new_expr = build4 (NEW_EXPR, build_pointer_type (type), placement, type, 
-		     nelts, init); 
+
+  new_expr = build4 (NEW_EXPR, build_pointer_type (type), placement, type,
+		     nelts, init);
   NEW_EXPR_USE_GLOBAL (new_expr) = use_global_new;
   TREE_SIDE_EFFECTS (new_expr) = 1;
 
@@ -1565,7 +1565,6 @@ build_raw_new_expr (tree placement, tree type, tree nelts, tree init,
 static tree
 build_new_1 (tree placement, tree type, tree nelts, tree init,
 	     bool globally_qualified_p)
-	     
 {
   tree size, rval;
   /* True iff this is a call to "operator new[]" instead of just
@@ -1894,8 +1893,8 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	    = build_vec_init (init_expr,
 			      cp_build_binary_op (MINUS_EXPR, outer_nelts,
 						  integer_one_node),
-			      init, 
-      			      explicit_default_init_p,
+			      init,
+			      explicit_default_init_p,
 			      /*from_array=*/0);
 
 	  /* An array initialization is stable because the initialization
@@ -1920,14 +1919,14 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	    {
 	      /* We are processing something like `new int (10)', which
 		 means allocate an int, and initialize it with 10.  */
-	      
+
 	      if (TREE_CODE (init) == TREE_LIST)
-		init = build_x_compound_expr_from_list (init, 
+		init = build_x_compound_expr_from_list (init,
 							"new initializer");
 	      else
 		gcc_assert (TREE_CODE (init) != CONSTRUCTOR
 			    || TREE_TYPE (init) != NULL_TREE);
-	      
+
 	      init_expr = build_modify_expr (init_expr, INIT_EXPR, init);
 	      stable = stabilize_init (init_expr, &init_preeval_expr);
 	    }
@@ -2098,7 +2097,7 @@ build_new (tree placement, tree type, tree nelts, tree init,
 	   array with no elements.  The pointer returned by the
 	   new-expression is non-null.  [Note: If the library allocation
 	   function is called, the pointer returned is distinct from the
-	   pointer to any other object.]  
+	   pointer to any other object.]
 
 	 However, that is not generally useful, so we issue a
 	 warning.  */
@@ -2276,7 +2275,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	deallocate_expr = build_op_delete_call (VEC_DELETE_EXPR,
 						base_tbd, virtual_size,
 						use_global_delete & 1,
-						/*placement=*/NULL_TREE, 
+						/*placement=*/NULL_TREE,
 						/*alloc_fn=*/NULL_TREE);
     }
 
@@ -2370,7 +2369,7 @@ get_temp_regvar (tree type, tree init)
    but use assignment instead of initialization.  */
 
 tree
-build_vec_init (tree base, tree maxindex, tree init, 
+build_vec_init (tree base, tree maxindex, tree init,
 		bool explicit_default_init_p,
 		int from_array)
 {
@@ -2579,12 +2578,12 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    sorry
 	      ("cannot initialize multi-dimensional array with initializer");
 	  elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
-				     0, 0, 
+				     0, 0,
 				     /*explicit_default_init_p=*/false,
 				     0);
 	}
       else if (!TYPE_NEEDS_CONSTRUCTING (type))
-	elt_init = (build_modify_expr 
+	elt_init = (build_modify_expr
 		    (to, INIT_EXPR,
 		     build_zero_init (type, size_one_node,
 				      /*static_storage_p=*/false)));
@@ -2763,8 +2762,8 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       if (auto_delete != sfk_deleting_destructor)
 	return void_zero_node;
 
-      return build_op_delete_call (DELETE_EXPR, addr, 
-				   cxx_sizeof_nowarn (type), 
+      return build_op_delete_call (DELETE_EXPR, addr,
+				   cxx_sizeof_nowarn (type),
 				   use_global_delete,
 				   /*placement=*/NULL_TREE,
 				   /*alloc_fn=*/NULL_TREE);
@@ -2814,7 +2813,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	  /* Make sure we have access to the member op delete, even though
 	     we'll actually be calling it from the destructor.  */
 	  build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
-				/*global_p=*/false, 
+				/*global_p=*/false,
 				/*placement=*/NULL_TREE,
 				/*alloc_fn=*/NULL_TREE);
 	}

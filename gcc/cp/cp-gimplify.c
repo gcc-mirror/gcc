@@ -320,7 +320,7 @@ gimplify_switch_stmt (tree *stmt_p)
 /* Hook into the middle of gimplifying an OMP_FOR node.  This is required
    in order to properly gimplify CONTINUE statements.  Here we merely
    manage the continue stack; the rest of the job is performed by the
-   regular gimplifier.  */ 
+   regular gimplifier.  */
 
 static enum gimplify_status
 cp_gimplify_omp_for (tree *expr_p)
@@ -613,7 +613,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   if (is_invisiref_parm (stmt)
       /* Don't dereference parms in a thunk, pass the references through. */
       && !(DECL_THUNK_P (current_function_decl)
-           && TREE_CODE (stmt) == PARM_DECL))
+	   && TREE_CODE (stmt) == PARM_DECL))
     {
       *stmt_p = convert_from_reference (stmt);
       *walk_subtrees = 0;

@@ -825,7 +825,7 @@ debug_binfo (tree elem)
    the type of the result expression, if known, or NULL_TREE if the
    resulting expression is type-dependent.  If TEMPLATE_P is true,
    NAME is known to be a template because the user explicitly used the
-   "template" keyword after the "::".   
+   "template" keyword after the "::".
 
    All SCOPE_REFs should be built by use of this function.  */
 
@@ -2170,8 +2170,8 @@ decl_linkage (tree decl)
   /* Things that are TREE_PUBLIC have external linkage.  */
   if (TREE_PUBLIC (decl))
     return lk_external;
-  
-  /* Linkage of a CONST_DECL depends on the linkage of the enumeration 
+
+  /* Linkage of a CONST_DECL depends on the linkage of the enumeration
      type.  */
   if (TREE_CODE (decl) == CONST_DECL)
     return decl_linkage (TYPE_NAME (TREE_TYPE (decl)));

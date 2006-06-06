@@ -177,7 +177,7 @@
 	(cp_parser_pure_specifier): Likewise.
 
 	PR c++/26068
-	* parser.c (cp_parser_set_storage_class): Check for 
+	* parser.c (cp_parser_set_storage_class): Check for
 	invalid uses of storage classes on unbraced linkage
 	specifications.
 	(cp_parser_decl_specifier_seq): Pass keywords, not storage classes,
@@ -212,7 +212,7 @@
 	(cp_parser_explicit_specialization): Adjust call to
 	cp_parser_single_declaration.
 	(cp_parser_init_declarator): Perform template-parameter access
-	checks. 
+	checks.
 	(cp_parser_parameter_declaration): Do not defer checks for
 	template parameter default arguments.
 	(cp_parser_template_declaration_after_export): Gather access
@@ -398,11 +398,11 @@
 	type.
 	(build_modify_expr): Remove spurious conversions.
 	* class.c (layout_class_type): Modify the type of bitfields to
-	indicate a limited range. 
+	indicate a limited range.
 	* call.c (standard_conversion): Adjust the type of bitfield
 	expressions used in an rvalue context.
 	(build_conditional_expr): Likewise.
-	
+
 2006-04-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c: Fix comment typos.

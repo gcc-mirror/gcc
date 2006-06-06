@@ -1396,9 +1396,9 @@ dump_expr (tree t, int flags)
 	if (TREE_CODE (fn) == ADDR_EXPR)
 	  fn = TREE_OPERAND (fn, 0);
 
-        /* Nobody is interested in seeing the guts of vcalls.  */
-        if (TREE_CODE (fn) == OBJ_TYPE_REF)
-          fn = resolve_virtual_fun_from_obj_type_ref (fn);
+	/* Nobody is interested in seeing the guts of vcalls.  */
+	if (TREE_CODE (fn) == OBJ_TYPE_REF)
+	  fn = resolve_virtual_fun_from_obj_type_ref (fn);
 
 	if (TREE_TYPE (fn) != NULL_TREE && NEXT_CODE (fn) == METHOD_TYPE)
 	  {
