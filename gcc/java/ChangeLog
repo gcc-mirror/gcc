@@ -1,3 +1,9 @@
+2006-06-06  David Daney  <ddaney@avtrex.com>
+
+	* gcj.texi (libgcj Runtime Properties): Document
+	gnu.gcj.runtime.NameFinder.show_raw and
+	gnu.gcj.runtime.NameFinder.remove_unknown.
+
 2006-06-06  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-dump.c (print_access_flags): Handle varargs, bridge,

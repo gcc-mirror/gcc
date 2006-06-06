@@ -1,3 +1,11 @@
+2006-06-06  David Daney  <ddaney@avtrex.com>
+
+	* gnu/gcj/runtime/NameFinder.java (show_raw): New field.
+	(showRaw): New method.
+	* stacktrace.cc : Include gnu/gcj/runtime/StringBuffer.h.
+	(getLineNumberForFrame): Show IP offset in trace if line number
+	not available and show_raw true.
+
 2006-06-06  Gary Benson  <gbenson@redhat.com>
 
 	* java/io/natFilePosix.cc (getCanonicalPath): Rewritten.

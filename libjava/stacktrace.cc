@@ -27,6 +27,7 @@ details.  */
 #include <java/util/IdentityHashMap.h>
 #include <gnu/java/lang/MainThread.h>
 #include <gnu/gcj/runtime/NameFinder.h>
+#include <gnu/gcj/runtime/StringBuffer.h>
 
 #include <sysdep/backtrace.h>
 #include <sysdep/descriptor.h>
@@ -221,6 +222,17 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
       finder->lookup (binaryName, (jlong) offset);
       *sourceFileName = finder->getSourceFile();
       *lineNum = finder->getLineNum();
+      if (*lineNum == -1 && NameFinder::showRaw())
+        {
+          gnu::gcj::runtime::StringBuffer *t =
+            new gnu::gcj::runtime::StringBuffer(binaryName);
+          t->append ((jchar)' ');
+          t->append ((jchar)'[');
+          // + 1 to compensate for the - 1 adjustment above;
+          t->append (Long::toHexString (offset + 1));
+          t->append ((jchar)']');
+          *sourceFileName = t->toString();
+        }
     }
 #endif
 }
