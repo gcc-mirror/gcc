@@ -110,3 +110,5 @@ extern enum direction ia64_hpux_function_arg_padding (enum machine_mode, tree);
 extern void ia64_hpux_handle_builtin_pragma (struct cpp_reader *);
 extern void ia64_output_function_profiler (FILE *, int);
 extern void ia64_profile_hook (int);
+
+extern void ia64_optimization_options (int, int);

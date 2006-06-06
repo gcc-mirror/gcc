@@ -1,3 +1,14 @@
+2006-06-06  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* params.def (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS): Change default
+	value to 0.
+	* doc/invoke.texi (max-sched-extend-regions-iters): Document.
+	* config/ia64/ia64.c (params.h): New header.
+	(ia64_optimization_options): New function to adjust parameters.
+	* config/ia64/ia64-protos.h (ia64_optimization_options): New prototype.
+	* config/ia64/ia64.h (OPTIMIZATION_OPTIONS): New macro.
+	* config/ia64/t-ia64 (ia64.o): Add dependence from params.h .
+
 2006-06-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* stor-layout.c (debug_rli): Fix a typo in a debug message.

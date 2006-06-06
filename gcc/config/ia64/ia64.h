@@ -2043,4 +2043,8 @@ struct machine_function GTY(())
 /* Switch on code for querying unit reservations.  */
 #define CPU_UNITS_QUERY 1
 
+/* Define this to change the optimizations performed by default.  */
+#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) \
+  ia64_optimization_options ((LEVEL), (SIZE))
+
 /* End of ia64.h */
