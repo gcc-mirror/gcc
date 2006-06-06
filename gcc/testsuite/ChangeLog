@@ -1,3 +1,8 @@
+2006-06-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/27842
+	* gcc.dg/vmx/pr27842.c: New test.
+
 2006-06-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/27895

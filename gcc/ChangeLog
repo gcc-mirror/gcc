@@ -1,3 +1,11 @@
+2006-06-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/27842
+	* config/rs6000/altivec.md (UNSPEC_VSLW): Remove.
+	("altivec_vspltisw_v4sf", "altivec_vslw_v4sf"): Remove.
+	("mulv4sf3", "absv4sf3", "negv4sf3"): Adapt users to use
+	V4SImode temporaries and operations instead.
+
 2006-06-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/mips/t-linux64 (tp-bit.c): Append to tp-bit.c, not
