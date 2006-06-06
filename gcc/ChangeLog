@@ -1,3 +1,8 @@
+2006-06-06  Peter Lemieszewski  <lemie@us.ibm.com>
+
+	* config/s390/t-tpf (LIB2ADDEH): Include unwind-dw2-fde-glibc.c
+	in lieu of unwind-dw2-fde.c.
+
 2006-06-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* config/i386/mingw32.h (GOMP_SELF_SPECS): Define.
