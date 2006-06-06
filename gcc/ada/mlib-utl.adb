@@ -38,7 +38,7 @@ package body MLib.Utl is
 
    Initialized : Boolean := False;
 
-   Gcc_Name : constant String := "gcc";
+   Gcc_Name : constant String := Osint.Program_Name ("gcc").all;
    Gcc_Exec : OS_Lib.String_Access;
 
    Ar_Name    : OS_Lib.String_Access;
@@ -257,7 +257,7 @@ package body MLib.Utl is
 
          --  ar
 
-         Ar_Name := new String'(Archive_Builder);
+         Ar_Name := Osint.Program_Name (Archive_Builder);
          Ar_Exec := OS_Lib.Locate_Exec_On_Path (Ar_Name.all);
 
          if Ar_Exec = null then
@@ -272,7 +272,7 @@ package body MLib.Utl is
 
          --  ranlib
 
-         Ranlib_Name := new String'(Archive_Indexer);
+         Ranlib_Name := Osint.Program_Name (Archive_Indexer);
 
          if Ranlib_Name'Length > 0 then
             Ranlib_Exec := OS_Lib.Locate_Exec_On_Path (Ranlib_Name.all);
