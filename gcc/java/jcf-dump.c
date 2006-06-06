@@ -395,8 +395,10 @@ print_access_flags (FILE *stream, uint16 flags, char context)
   if (flags & ACC_ABSTRACT) fprintf (stream, " abstract");
   if (flags & ACC_STATIC) fprintf (stream, " static");
   if (flags & ACC_FINAL) fprintf (stream, " final");
-  if (flags & ACC_TRANSIENT) fprintf (stream, " transient");
-  if (flags & ACC_VOLATILE) fprintf (stream, " volatile");
+  if (flags & ACC_TRANSIENT)
+    fprintf (stream, context == 'm' ? " varargs" : " transient");
+  if (flags & ACC_VOLATILE)
+    fprintf (stream, context == 'm' ? " bridge" : " volatile");
   if (flags & ACC_NATIVE) fprintf (stream, " native");
   if (flags & ACC_SYNCHRONIZED)
     {
@@ -405,8 +407,11 @@ print_access_flags (FILE *stream, uint16 flags, char context)
       else
 	fprintf (stream, " synchronized");
     }
-  if (flags & ACC_INTERFACE) fprintf (stream, " interface");
+  if (flags & ACC_INTERFACE)
+    fprintf (stream, (flags & ACC_ANNOTATION) ? " @interface" : " interface");
+  if (flags & ACC_ENUM) fprintf (stream, " enum");
   if (flags & ACC_STRICT) fprintf (stream, " strictfp");
+  if (flags & ACC_SYNTHETIC) fprintf (stream, " synthetic");
 }
 
 

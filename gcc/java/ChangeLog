@@ -1,3 +1,13 @@
+2006-06-06  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-dump.c (print_access_flags): Handle varargs, bridge,
+	synthetic, enum, annotation.
+	* jcf.h (ACC_BRIDGE): New macro.
+	(ACC_VARARGS): Likewise.
+	(ACC_SYNTHETIC): Likewise.
+	(ACC_ENUM): Likewise.
+	(ACC_ANNOTATION): Likewise.
+
 2006-06-06  Mike Stump  <mrs@apple.com>
 
 	* Make-lang.in: Rename to htmldir to build_htmldir to avoid
