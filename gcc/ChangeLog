@@ -1,3 +1,8 @@
+2006-06-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/mips/t-linux64 (tp-bit.c): Append to tp-bit.c, not
+	dp-bit.c.
+
 2006-06-06  Mike Stump  <mrs@apple.com>
 
 	* Makefile.in: Rename to htmldir to build_htmldir to avoid
