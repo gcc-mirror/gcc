@@ -1,3 +1,8 @@
+2006-06-06  Laurent GUERBY  <laurent@guerby.net>
+
+        PR ada/27769
+        mlib-utl.adb: Use Program_Name.
+	
 2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c, env.c, gigi.h, init.c, initialize.c, raise-gcc.c,
