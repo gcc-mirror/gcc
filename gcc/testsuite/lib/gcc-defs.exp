@@ -34,6 +34,11 @@ proc ${tool}_check_compile {testcase option objname gcc_output} {
 	return 0
     }
 
+    if [string match "*internal compiler error*" $gcc_output] then {
+	${tool}_fail $testcase "$option (internal compiler error)"
+	return 0
+    }
+
     # We shouldn't get these because of -w, but just in case.
     if [string match "*cc:*warning:*" $gcc_output] then {
 	warning "$testcase: (with warnings) $option"
