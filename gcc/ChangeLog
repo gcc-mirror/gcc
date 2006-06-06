@@ -1,3 +1,8 @@
+2006-06-06  Mike Stump  <mrs@apple.com>
+
+	* Makefile.in: Rename to htmldir to build_htmldir to avoid
+	installing during build.
+
 2006-06-06  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* params.def (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS): Change default

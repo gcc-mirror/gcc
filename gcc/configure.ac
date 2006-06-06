@@ -3498,7 +3498,7 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
                           installed in a compiler-specific directory])
 
 AC_ARG_WITH(slibdir,
-[  --with-slibdir=DIR      shared libraries in DIR [LIBDIR]],
+[  --with-slibdir=DIR      shared libraries in DIR [[LIBDIR]]],
 slibdir="$with_slibdir",
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   slibdir='$(libsubdir)'
@@ -3511,6 +3511,24 @@ AC_SUBST(slibdir)
 
 objdir=`${PWDCMD-pwd}`
 AC_SUBST(objdir)
+
+AC_ARG_WITH(datarootdir,
+[  --with-datarootdir=DIR  Use DIR as the data root [[PREFIX/share]]],
+datarootdir="\${prefix}/$with_datarootdir",
+datarootdir='$(prefix)/share')
+AC_SUBST(datarootdir)
+
+AC_ARG_WITH(docdir,
+[  --with-docdir=DIR       Install documentation in DIR [[DATAROOTDIR]]],
+docdir="\${prefix}/$with_docdir",
+docdir='$(datarootdir)')
+AC_SUBST(docdir)
+
+AC_ARG_WITH(htmldir,
+[  --with-htmldir=DIR      html documentation in in DIR [[DOCDIR]]],
+htmldir="\${prefix}/$with_htmldir",
+htmldir='$(docdir)')
+AC_SUBST(htmldir)
 
 # Substitute configuration variables
 AC_SUBST(subdirs)

@@ -509,8 +509,12 @@ man7dir = $(mandir)/man7
 # Dir for temp files.
 tmpdir = /tmp
 
+datarootdir = @datarootdir@
+docdir = @docdir@
+# Directory in which to bujild HTML
+build_htmldir = $(objdir)/HTML/gcc-$(version)
 # Directory in which to put HTML
-htmldir = $(objdir)/HTML/gcc-$(version)
+htmldir = @htmldir@
 
 # Whether we were configured with NLS.
 USE_NLS = @USE_NLS@
@@ -3409,10 +3413,10 @@ doc/gcc.dvi: $(TEXI_GCC_FILES)
 doc/gccint.dvi: $(TEXI_GCCINT_FILES)
 doc/cppinternals.dvi: $(TEXI_CPPINT_FILES)
 
-$(htmldir)/cpp/index.html: $(TEXI_CPP_FILES)
-$(htmldir)/gcc/index.html: $(TEXI_GCC_FILES)
-$(htmldir)/gccint/index.html: $(TEXI_GCCINT_FILES)
-$(htmldir)/cppinternals/index.html: $(TEXI_CPPINT_FILES)
+$(build_htmldir)/cpp/index.html: $(TEXI_CPP_FILES)
+$(build_htmldir)/gcc/index.html: $(TEXI_GCC_FILES)
+$(build_htmldir)/gccint/index.html: $(TEXI_GCCINT_FILES)
+$(build_htmldir)/cppinternals/index.html: $(TEXI_CPPINT_FILES)
 
 dvi:: doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
       doc/cppinternals.dvi lang.dvi
@@ -3424,17 +3428,20 @@ doc/%.dvi: %.texi
 doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
 	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
-html:: $(htmldir)/cpp/index.html $(htmldir)/gcc/index.html \
-       $(htmldir)/gccinstall/index.html $(htmldir)/gccint/index.html \
-       $(htmldir)/cppinternals/index.html lang.html
+html:: $(build_htmldir)/cpp/index.html $(build_htmldir)/gcc/index.html \
+       $(build_htmldir)/gccinstall/index.html $(build_htmldir)/gccint/index.html \
+       $(build_htmldir)/cppinternals/index.html lang.html
 
-$(htmldir)/%/index.html: %.texi
+install-html:: installdirs
+	cp -rp $(build_htmldir) $(DESTDIR)/$(htmldir)
+
+$(build_htmldir)/%/index.html: %.texi
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
 	$(TEXI2HTML) -I $(abs_docdir) -I $(abs_docdir)/include -o $(@D) $<
 
 # Duplicate entry to handle renaming of gccinstall
-$(htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
+$(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	$(mkinstalldirs) $(@D)
 	echo rm -f $(@D)/*
 	$(TEXI2HTML) -I $(abs_docdir) -I $(abs_docdir)/include -o $(@D) $<

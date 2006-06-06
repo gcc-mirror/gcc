@@ -177,7 +177,7 @@ java.srcinfo: doc/gcj.info
 	-cp -p $^ $(srcdir)/doc
 
 java.dvi: doc/gcj.dvi
-java.html: $(htmldir)/java/index.html
+java.html: $(build_htmldir)/java/index.html
 JAVA_MANFILES = doc/gcj.1 doc/gcjh.1 doc/jv-scan.1 doc/jcf-dump.1 doc/gij.1 \
                 doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1 \
 		doc/gcj-dbtool.1 doc/gjnih.1
@@ -394,7 +394,7 @@ doc/gcj.info: $(TEXI_JAVA_FILES)
 doc/gcj.dvi: $(TEXI_JAVA_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
-$(htmldir)/java/index.html: $(TEXI_JAVA_FILES)
+$(build_htmldir)/java/index.html: $(TEXI_JAVA_FILES)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
 	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/java -o $(@D) $<
