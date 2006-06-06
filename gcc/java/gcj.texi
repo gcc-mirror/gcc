@@ -2793,6 +2793,21 @@ the java.util.logging infrastructure. However, performance may improve
 significantly for applications that print stack traces or make logging calls
 frequently.
 
+@item gnu.gcj.runtime.NameFinder.show_raw
+Whether the address of a stack frame should be printed when the line
+number is unavailable. Setting this to @code{true} will cause the name
+of the object and the offset within that object to be printed when no
+line number is available.  This allows for off-line decoding of
+stack traces if necessary debug information is available.  The default
+is @code{false}, no raw addresses are printed.
+
+@item gnu.gcj.runtime.NameFinder.remove_unknown
+Whether stack frames for non-java code should be included in a stack
+trace.  The default value is @code{true}, stack frames for non-java
+code are suppressed.  Setting this to @code{false} will cause any
+non-java stack frames to be printed in addition to frames for the java
+code.
+
 @item gnu.gcj.runtime.VMClassLoader.library_control
 This controls how shared libraries are automatically loaded by the
 built-in class loader.  If this property is set to @samp{full}, a full

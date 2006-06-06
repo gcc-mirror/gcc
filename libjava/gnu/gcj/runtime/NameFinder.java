@@ -67,13 +67,29 @@ public class NameFinder
                 ("gnu.gcj.runtime.NameFinder.use_addr2line", "true")
             ).booleanValue();
 
+  private static boolean show_raw
+          = Boolean.valueOf(System.getProperty
+                ("gnu.gcj.runtime.NameFinder.show_raw", "false")
+            ).booleanValue();
+
+  /**
+   * Return true if raw addresses should be printed in stacktraces
+   * when no line number information is available.
+   */
+  static final boolean showRaw()
+  {
+    return show_raw;
+  }
+
   private static final boolean remove_unknown
 	  = Boolean.valueOf(System.getProperty
 		("gnu.gcj.runtime.NameFinder.remove_unknown", "true")
 	    ).booleanValue();
 
-  // Return true if non-Java frames should be removed from stack
-  // traces.
+  /**
+   * Return true if non-Java frames should be removed from stack
+   * traces.
+   */
   static final boolean removeUnknown()
   {
     return remove_unknown;
