@@ -2293,7 +2293,7 @@ gfc_match_common (void)
       if (gsym->type != GSYM_UNKNOWN && gsym->type != GSYM_COMMON)
 	{
 	  gfc_error ("Symbol '%s' at %C is already an external symbol that is not COMMON",
-		     sym->name);
+		     name);
 	  goto cleanup;
 	}
 

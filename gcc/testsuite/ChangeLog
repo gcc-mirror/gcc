@@ -29,7 +29,7 @@
 	PR fortran/16943
 	* gfortran.dg/func_decl_2.f90: New test.
 
-	PR fortran/20838
+	PR fortran/20839
 	* gfortran.dg/do_2.f90: New test.
 
 	PR fortran/27655

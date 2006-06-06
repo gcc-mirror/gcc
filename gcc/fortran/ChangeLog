@@ -1,3 +1,9 @@
+2006-06-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/27897
+	* match.c (gfc_match_common):  Fix code typo.  Remove
+	sym->name, since sym is NULL, and replace with name.
+
 2006-06-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/27895
@@ -21,7 +27,7 @@
 	(gfc_add_type): If a procedure and types are the same do not
 	throw an error unless standard is less than gnu or pedantic.
 
-	PR fortran/20838
+	PR fortran/20839
 	* parse.c (parse_do_block): Error if named block do construct
 	does not have a named enddo.
 
