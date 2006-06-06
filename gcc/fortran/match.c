@@ -2268,8 +2268,8 @@ gfc_match_common (void)
       gsym = gfc_get_gsymbol (name);
       if (gsym->type != GSYM_UNKNOWN && gsym->type != GSYM_COMMON)
 	{
-	  gfc_error ("Symbol '%s' at %C is already an external symbol that is not COMMON",
-		     sym->name);
+	  gfc_error ("Symbol '%s' at %C is already an external symbol "
+		     " that is not COMMON", name);
 	  goto cleanup;
 	}
 
