@@ -185,7 +185,6 @@ static tree build_protocol_initializer (tree, tree, tree, tree, tree);
 static tree get_class_ivars (tree, bool);
 static tree generate_protocol_list (tree);
 static void build_protocol_reference (tree);
-static tree objc_build_volatilized_type (tree);
 
 #ifdef OBJCPLUS
 static void objc_generate_cxx_cdtors (void);

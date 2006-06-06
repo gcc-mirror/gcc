@@ -1,3 +1,7 @@
+2006-06-06  Mike Stump  <mrs@apple.com>
+
+	* objc-act.c: Remove prototype for objc_build_volatilized_type.
+
 2006-05-24  Mike Stump  <mrs@apple.com>
 
 	* objc-act.c (build_next_objc_exception_stuff): Use JBLEN instead of _JBLEN.
