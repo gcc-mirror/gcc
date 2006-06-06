@@ -1,3 +1,12 @@
+2006-06-06  Gary Benson  <gbenson@redhat.com>
+
+	* java/io/natFilePosix.cc (getCanonicalPath): Rewritten.
+	* configure.ac: Remove realpath check and add checks for
+	lstat and readlink.
+	* configure: Rebuilt.
+	* include/config.h.in: Likewise.
+	* java/io/File.java: Javadoc fix.
+
 2006-06-05  Andreas Schwab  <schwab@suse.de>
 
 	PR libgcj/27860

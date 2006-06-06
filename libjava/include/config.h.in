@@ -169,6 +169,9 @@
 /* Define to 1 if you have the `localtime_r' function. */
 #undef HAVE_LOCALTIME_R
 
+/* Define to 1 if you have the `lstat' function. */
+#undef HAVE_LSTAT
+
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
 
@@ -226,8 +229,8 @@
 /* Define to 1 if you have the `readdir_r' function. */
 #undef HAVE_READDIR_R
 
-/* Define to 1 if you have the `realpath' function. */
-#undef HAVE_REALPATH
+/* Define to 1 if you have the `readlink' function. */
+#undef HAVE_READLINK
 
 /* Define to 1 if you have the `rename' function. */
 #undef HAVE_RENAME

@@ -897,7 +897,7 @@ if test "x${with_newlib}" = "xyes"; then
 else
    AC_CHECK_FUNCS([strerror ioctl select fstat open fsync sleep opendir \
                    gmtime_r localtime_r readdir_r getpwuid_r getcwd \
-		   access stat mkdir rename rmdir unlink realpath utime chmod \
+		   access stat lstat mkdir rename rmdir unlink utime chmod readlink \
 		   nl_langinfo setlocale \
 		   inet_pton uname inet_ntoa \
 		   fork execvp pipe sigaction ftruncate mmap])
