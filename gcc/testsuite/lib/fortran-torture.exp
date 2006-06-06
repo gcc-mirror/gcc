@@ -87,6 +87,12 @@ proc fortran-torture-compile { src option } {
 	return
     }
 
+    if [string match "*internal compiler error*" $comp_output] then {
+	gfortran_fail $testcase "$option (internal compiler error)"
+	catch { remote_file build delete $output }
+	return
+    }
+
     # We shouldn't get these because of -w, but just in case.
     if [string match "*95*:*warning:*" $comp_output] then {
 	warning "$testcase: (with warnings) $option"
@@ -201,6 +207,12 @@ proc fortran-torture-execute { src } {
 	
 	if [string match "$fatal_signal 11" $comp_output] then {
 	    gfortran_fail $testcase "Got Signal 11, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+
+	if [string match "*internal compiler error*" $comp_output] then {
+	    gfortran_fail $testcase "$option (internal compiler error)"
 	    catch { remote_file build delete $executable }
 	    continue
 	}

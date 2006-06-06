@@ -1,3 +1,10 @@
+2006-06-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (gcc-dg-test-1): Detect and report ICE.
+	* lib/gcc-defs.exp (tool_check_compile): Ditto.
+	* lib/fortran-torture.exp (fortran-torture-compile,
+	fortran-torture-execute): Ditto.
+
 2006-06-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/27842
