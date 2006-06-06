@@ -101,94 +101,167 @@ java::io::File::attr (jint query)
 #endif
 }
 
+// These two methods are used to maintain dynamically allocated
+// buffers for getCanonicalPath without the overhead of calling
+// realloc every time a buffer is modified.  Buffers are sized
+// at the smallest multiple of CHUNKSIZ that is greater than or
+// equal to the desired length.  The default CHUNKSIZ is 256,
+// longer than most paths, so in most cases a getCanonicalPath
+// will require only one malloc per buffer.
+
+#define CHUNKLOG 8
+#define CHUNKSIZ (1 << CHUNKLOG)
+
+static int
+nextChunkSize (int size)
+{
+  return ((size >> CHUNKLOG) + ((size & (CHUNKSIZ - 1)) ? 1 : 0)) << CHUNKLOG;
+}
+
+static char *
+maybeGrowBuf (char *buf, int *size, int required)
+{
+  if (required > *size)
+    {
+      *size = nextChunkSize (required);
+      buf = (char *) _Jv_Realloc (buf, *size);
+    }
+  return buf;
+}
+
+// Return a canonical representation of the pathname of this file.  On
+// the GNU system this involves the removal of redundant separators,
+// references to "." and "..", and symbolic links.
+//
+// The conversion proceeds on a component-by-component basis: symbolic
+// links and references to ".."  are resolved as and when they occur.
+// This means that if "/foo/bar" is a symbolic link to "/baz" then the
+// canonical form of "/foo/bar/.." is "/" and not "/foo".
+//
+// In order to mimic the behaviour of proprietary JVMs, non-existant
+// path components are allowed (a departure from the normal GNU system
+// convention).  This means that if "/foo/bar" is a symbolic link to
+// "/baz", the canonical form of "/non-existant-directory/../foo/bar"
+// is "/baz".
+
 jstring
 java::io::File::getCanonicalPath (void)
 {
-  // We use `+2' here because we might need to use `.' for our special
-  // case.
-  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 2);
-  char buf2[MAXPATHLEN];
-  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
+  jstring path = getAbsolutePath ();
 
-  // Special case: treat "" the same as ".".
-  if (total == 0)
-    buf[total++] = '.';
+  int len = JvGetStringUTFLength (path);
+  int srcl = nextChunkSize (len + 1);
+  char *src = (char *) _Jv_Malloc (srcl);
+  JvGetStringUTFRegion (path, 0, path->length(), src);
+  src[len] = '\0';
+  int srci = 1;
 
-  buf[total] = '\0';
+  int dstl = nextChunkSize (2);  
+  char *dst = (char *) _Jv_Malloc (dstl);
+  dst[0] = '/';
+  int dsti = 1;
 
-#ifdef HAVE_REALPATH
-  if (realpath (buf, buf2) == NULL)
+  bool fschecks = true;
+
+  while (src[srci] != '\0')
     {
-      // If realpath failed, we have to come up with a canonical path
-      // anyway.  We do this with purely textual manipulation.
-      // FIXME: this isn't perfect.  You can construct a case where
-      // we get a different answer from the JDK:
-      // mkdir -p /tmp/a/b/c
-      // ln -s /tmp/a/b /tmp/a/z
-      // ... getCanonicalPath("/tmp/a/z/c/nosuchfile")
-      // We will give /tmp/a/z/c/nosuchfile, while the JDK will
-      // give /tmp/a/b/c/nosuchfile.
-      int out_idx;
-      if (buf[0] != '/')
+      // Skip slashes.
+      while (src[srci] == '/')
+	srci++;
+      int tmpi = srci;
+      // Find next slash.
+      while (src[srci] != '/' && src[srci] != '\0')
+	srci++;
+      if (srci == tmpi)
+	// We hit the end.
+	break;
+      len = srci - tmpi;
+
+      // Handle "." and "..".
+      if (len == 1 && src[tmpi] == '.')
+	continue;
+      if (len == 2 && src[tmpi] == '.' && src[tmpi + 1] == '.')
 	{
-	  // Not absolute, so start with current directory.
-	  if (getcwd (buf2, sizeof (buf2)) == NULL)
-	    throw new IOException ();
-	  out_idx = strlen (buf2);
+	  while (dsti > 1 && dst[dsti - 1] != '/')
+	    dsti--;
+	  if (dsti != 1)
+	    dsti--;
+	  // Reenable filesystem checking if disabled, as we might
+	  // have reversed over whatever caused the problem before.
+	  // At least one proprietary JVM has inconsistencies because
+	  // it does not do this.
+	  fschecks = true;
+	  continue;
+	}
+
+      // Handle real path components.
+      dst = maybeGrowBuf (dst, &dstl, dsti + (dsti > 1 ? 1 : 0) + len + 1);
+      int dsti_save = dsti;
+      if (dsti > 1)
+	dst[dsti++] = '/';
+      strncpy (&dst[dsti], &src[tmpi], len);
+      dsti += len;
+      if (fschecks == false)
+	continue;
+
+#if defined (HAVE_LSTAT) && defined (HAVE_READLINK)
+      struct stat sb;
+      dst[dsti] = '\0';
+      if (::lstat (dst, &sb) == 0)
+	{
+	  if (S_ISLNK (sb.st_mode))
+	    {
+	      int tmpl = CHUNKSIZ;
+	      char *tmp = (char *) _Jv_Malloc (tmpl);
+
+	      while (1)
+		{
+		  tmpi = ::readlink (dst, tmp, tmpl);
+		  if (tmpi < 1)
+		    {
+		      _Jv_Free (src);
+		      _Jv_Free (dst);
+		      _Jv_Free (tmp);
+		      throw new IOException (
+			JvNewStringLatin1 ("readlink failed"));
+		    }
+		  if (tmpi < tmpl)
+		    break;
+		  tmpl += CHUNKSIZ;
+		  tmp = (char *) _Jv_Realloc (tmp, tmpl);
+		}
+
+	      // Prepend the link's path to src.
+	      tmp = maybeGrowBuf (tmp, &tmpl, tmpi + strlen (&src[srci]) + 1);
+	      strcpy(&tmp[tmpi], &src[srci]);
+	      _Jv_Free (src);
+	      src = tmp;
+	      srcl = tmpl;
+	      srci = 0;
+
+	      // Either replace or append dst depending on whether the
+	      // link is relative or absolute.
+	      dsti = src[0] == '/' ? 1 : dsti_save;
+	    }
 	}
       else
 	{
-	  buf2[0] = '/';
-	  out_idx = 1;
-	} 
-      int in_idx = 0;
-      while (buf[in_idx] != '\0')
-	{
-	  // Skip '/'s.
-	  while (buf[in_idx] == '/')
-	    ++in_idx;
-	  int elt_start = in_idx;
-	  // Find next '/' or end of path.
-	  while (buf[in_idx] != '\0' && buf[in_idx] != '/')
-	    ++in_idx;
-	  if (in_idx == elt_start)
-	    {
-	      // An empty component means we've reached the end.
-	      break;
-	    }
-	  int len = in_idx - elt_start;
-	  if (len == 1 && buf[in_idx] == '.')
-	    continue;
-	  if (len == 2 && buf[in_idx] == '.' && buf[in_idx + 1] == '.')
-	    {
-	      // Found ".." component, lop off last part from existing
-	      // buffer.
-	      --out_idx;
-	      while (out_idx > 0 && buf2[out_idx] != '/')
-		--out_idx;
-	      // Can't go up past "/".
-	      if (out_idx == 0)
-		++out_idx;
-	    }
-	  else
-	    {
-	      // Append a real path component to the output.
-	      if (out_idx > 1)
-		buf2[out_idx++] = '/';
-	      strncpy (&buf2[out_idx], &buf[elt_start], len);
-	      out_idx += len;
-	    }
+	  // Something doesn't exist, or we don't have permission to
+	  // read it, or a previous path component is a directory, or
+	  // a symlink is looped.  Whatever, we can't check the
+	  // filesystem any more.
+	  fschecks = false;
 	}
-
-      buf2[out_idx] = '\0';
+#endif // HAVE_LSTAT && HAVE_READLINK
     }
+  dst[dsti] = '\0';
 
   // FIXME: what encoding to assume for file names?  This affects many
   // calls.
-  return JvNewStringUTF (buf2);
-#else
-  return JvNewStringUTF (buf);
-#endif
+  path = JvNewStringUTF (dst);
+  _Jv_Free (src);
+  _Jv_Free (dst);
+  return path;
 }
 
 jboolean
