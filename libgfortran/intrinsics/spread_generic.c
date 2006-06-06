@@ -1,5 +1,5 @@
 /* Generic implementation of the SPREAD intrinsic
-   Copyright 2002, 2005 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -109,9 +109,6 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
       if (GFC_DESCRIPTOR_RANK(ret) != rrank)
 	runtime_error ("rank mismatch in spread()");
 
-      if (ret->dim[0].stride == 0)
-	ret->dim[0].stride = 1;
-
       for (n = 0; n < rrank; n++)
 	{
 	  if (n == *along - 1)
@@ -204,9 +201,6 @@ spread_internal_scalar (gfc_array_char *ret, const char *source,
     }
   else
     {
-      if (ret->dim[0].stride == 0)
-	ret->dim[0].stride = 1;
-
       if (ncopies - 1 > (ret->dim[0].ubound - ret->dim[0].lbound)
 			   / ret->dim[0].stride)
 	runtime_error ("dim too large in spread()");

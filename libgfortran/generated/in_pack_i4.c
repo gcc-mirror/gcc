@@ -1,5 +1,5 @@
 /* Helper function for repacking arrays.
-   Copyright 2003 Free Software Foundation, Inc.
+   Copyright 2003, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -53,11 +53,8 @@ internal_pack_4 (gfc_array_i4 * source)
   int n;
   int packed;
 
-  if (source->dim[0].stride == 0)
-    {
-      source->dim[0].stride = 1;
-      return source->data;
-    }
+  /* TODO: Investigate how we can figure out if this is a temporary
+     since the stride=0 thing has been removed from the frontend.  */
 
   dim = GFC_DESCRIPTOR_RANK (source);
   ssize = 1;

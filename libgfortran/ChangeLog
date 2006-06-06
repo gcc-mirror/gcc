@@ -1,3 +1,24 @@
+2006-06-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* m4/in_pack.m4: Add TODO comment about detecting temporaries,
+	remove test for stride 0, update copyright year.
+	* m4/transpose.m4: Remove test for stride 0, update copyright
+	year.
+	* m4/iforeach.m4: Likewise.
+	* m4/shape.m4: Likewise.
+	* m4/in_unpack.m4: Likewise.
+	* m4/reshape.m4: Likewise.
+	* m4/ifunction.m4: Likewise.
+	* m4/matmul.m4: Likewise.
+	* m4/matmull.m4: Likewise.
+	* intrinsics/etime.c: Likewise.
+	* intrinsics/transpose_generic.c: Likewise.
+	* intrinsics/spread_generic.c: Likewise.
+	* intrinsics/stat.c: Likewise.
+	* intrinsics/reshape_generic.c: Likewise.
+	* intrinsics/random.c: Likewise.
+	* generated/*: Regenerated from above changed m4 files.
+	
 2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27757

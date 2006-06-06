@@ -1,5 +1,5 @@
 /* Implementation of the STAT and FSTAT intrinsics.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -80,9 +80,6 @@ stat_i4_sub (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
   /* If the array is too small, abort.  */
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
     runtime_error ("Array size of SARRAY is too small.");
-
-  if (sarray->dim[0].stride == 0)
-    sarray->dim[0].stride = 1;
 
   /* Trim trailing spaces from name.  */
   while (name_len > 0 && name[name_len - 1] == ' ')
@@ -173,9 +170,6 @@ stat_i8_sub (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
   /* If the array is too small, abort.  */
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
     runtime_error ("Array size of SARRAY is too small.");
-
-  if (sarray->dim[0].stride == 0)
-    sarray->dim[0].stride = 1;
 
   /* Trim trailing spaces from name.  */
   while (name_len > 0 && name[name_len - 1] == ' ')
@@ -297,9 +291,6 @@ fstat_i4_sub (GFC_INTEGER_4 *unit, gfc_array_i4 *sarray, GFC_INTEGER_4 *status)
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
     runtime_error ("Array size of SARRAY is too small.");
 
-  if (sarray->dim[0].stride == 0)
-    sarray->dim[0].stride = 1;
-
   /* Convert Fortran unit number to C file descriptor.  */
   val = unit_to_fd (*unit);
   if (val >= 0)
@@ -380,9 +371,6 @@ fstat_i8_sub (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray, GFC_INTEGER_8 *status)
   /* If the array is too small, abort.  */
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
     runtime_error ("Array size of SARRAY is too small.");
-
-  if (sarray->dim[0].stride == 0)
-    sarray->dim[0].stride = 1;
 
   /* Convert Fortran unit number to C file descriptor.  */
   val = unit_to_fd ((int) *unit);
