@@ -1,3 +1,9 @@
+2006-06-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27177
+	* call.c (standard_conversion): Require that the derived type be
+	complete when performing a derived-to-base conversion.
+
 2006-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27819
