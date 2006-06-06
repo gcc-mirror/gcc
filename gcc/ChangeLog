@@ -1,3 +1,7 @@
+2006-06-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* config/i386/mingw32.h (GOMP_SELF_SPECS): Define.
+
 2006-06-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/27842

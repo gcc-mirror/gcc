@@ -91,6 +91,10 @@ case "${target}" in
 	XLDFLAGS="${XLDFLAGS} -lrt"
 	;;
 
+  *-*-mingw32*)
+	config_path="mingw32 posix"
+	;;
+
   *)
 	;;
 
