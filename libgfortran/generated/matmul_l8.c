@@ -1,5 +1,5 @@
 /* Implementation of the MATMUL intrinsic
-   Copyright 2002, 2005 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -111,13 +111,6 @@ matmul_l8 (gfc_array_l8 * const restrict retarray,
       bbase = GFOR_POINTER_L8_TO_L4 (bbase);
     }
   dest = retarray->data;
-
-  if (retarray->dim[0].stride == 0)
-    retarray->dim[0].stride = 1;
-  if (a->dim[0].stride == 0)
-    a->dim[0].stride = 1;
-  if (b->dim[0].stride == 0)
-    b->dim[0].stride = 1;
 
 
   if (GFC_DESCRIPTOR_RANK (retarray) == 1)

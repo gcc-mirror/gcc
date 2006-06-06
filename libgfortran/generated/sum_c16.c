@@ -62,11 +62,6 @@ sum_c16 (gfc_array_c16 * const restrict retarray,
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
-
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   delta = array->dim[dim].stride;
 
@@ -103,9 +98,6 @@ sum_c16 (gfc_array_c16 * const restrict retarray,
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -202,14 +194,6 @@ msum_c16 (gfc_array_c16 * const restrict retarray,
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
-
-  if (mask->dim[0].stride == 0)
-    mask->dim[0].stride = 1;
-
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   if (len <= 0)
     return;
@@ -251,9 +235,6 @@ msum_c16 (gfc_array_c16 * const restrict retarray,
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -379,9 +360,6 @@ ssum_c16 (gfc_array_c16 * const restrict retarray,
 
       if (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound != rank)
         runtime_error ("dimension of return array incorrect");
-
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
     }
 
     dstride = retarray->dim[0].stride;

@@ -1,5 +1,5 @@
 /* Helper function for repacking arrays.
-   Copyright 2003 Free Software Foundation, Inc.
+   Copyright 2003, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -51,9 +51,6 @@ internal_unpack_16 (gfc_array_i16 * d, const GFC_INTEGER_16 * src)
   dest = d->data;
   if (src == dest || !src)
     return;
-
-  if (d->dim[0].stride == 0)
-    d->dim[0].stride = 1;
 
   dim = GFC_DESCRIPTOR_RANK (d);
   dsize = 1;

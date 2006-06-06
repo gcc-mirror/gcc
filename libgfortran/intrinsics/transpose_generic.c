@@ -1,5 +1,5 @@
 /* Implementation of the TRANSPOSE intrinsic
-   Copyright 2003 Free Software Foundation, Inc.
+   Copyright 2003, 2006 Free Software Foundation, Inc.
    Contributed by Tobias Schlüter
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -71,15 +71,11 @@ transpose_internal (gfc_array_char *ret, gfc_array_char *source,
     }
 
   sxstride = source->dim[0].stride * size;
-  if (sxstride == 0)
-    sxstride = size;
   systride = source->dim[1].stride * size;
   xcount = source->dim[0].ubound + 1 - source->dim[0].lbound;
   ycount = source->dim[1].ubound + 1 - source->dim[1].lbound;
 
   rxstride = ret->dim[0].stride * size;
-  if (rxstride == 0)
-    rxstride = size;
   rystride = ret->dim[1].stride * size;
 
   rptr = ret->data;

@@ -1,5 +1,5 @@
 /* Implementation of the SHAPE intrinsic
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -47,8 +47,6 @@ shape_4 (gfc_array_i4 * const restrict ret,
   index_type stride;
 
   stride = ret->dim[0].stride;
-  if (stride == 0)
-    stride = 1;
 
   for (n = 0; n < GFC_DESCRIPTOR_RANK (array); n++)
     {
