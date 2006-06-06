@@ -450,7 +450,9 @@ dependencies = { module=all-target-libjava; on=all-target-zlib; };
 dependencies = { module=all-target-libjava; on=all-target-boehm-gc; };
 dependencies = { module=all-target-libjava; on=all-target-qthreads; };
 dependencies = { module=all-target-libjava; on=all-target-libffi; };
+dependencies = { module=configure-target-libobjc; on=configure-target-boehm-gc; };
 dependencies = { module=all-target-libobjc; on=all-target-libiberty; };
+dependencies = { module=all-target-libobjc; on=all-target-boehm-gc; };
 dependencies = { module=all-target-libstdc++-v3; on=all-target-libiberty; };
 
 // Target modules in the 'src' repository.

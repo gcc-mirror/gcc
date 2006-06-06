@@ -1,3 +1,18 @@
+2006-06-06  David Ayers  <d.ayers@inode.at>
+
+	PR libobjc/13946
+	* Makefile.def: Add dependencies for libobjc which boehm-gc.
+	* Makefile.in: Regenerate.
+	* configure.in: Add --enable-objc-gc at toplevel and have it
+	enable boehm-gc for Objective-C.
+	Remove target-boehm-gc from libgcj.
+	Add target-boehm-gc to target_libraries.
+	Add target-boehm-gc to noconfigdirs where ${libgcj}
+	is specified.
+	Assert that boehm-gc is supported when requested for Objective-C.
+	Only build boehm-gc if needed either for Java or Objective-C.
+	* configure: Regenerate.
+	
 2006-06-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR 27674
