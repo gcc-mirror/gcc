@@ -1,3 +1,14 @@
+2006-06-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random: Trivial uglification fixes.
+	* include/tr1/random.tcc: Likewise.
+
+	* include/tr1/random (subtract_with_carry<>::
+	subtract_with_carry(_IntType)): Fix parameter type to unsigned long.
+	(subtract_with_carry<>::seed(_IntType)): Likewise.
+	* include/tr1/random.tcc (subtract_with_carry<>::seed(_IntType)):
+	Adjust.
+
 2006-06-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (mersenne_twister<>::seed()): Fix per
