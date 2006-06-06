@@ -502,7 +502,7 @@ DEFPARAM(PARAM_MIN_SPEC_PROB,
 DEFPARAM(PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS,
          "max-sched-extend-regions-iters",
          "The maximum number of iterations through CFG to extend regions",
-         2, 0, 0)
+         0, 0, 0)
 
 DEFPARAM(PARAM_MAX_SCHED_INSN_CONFLICT_DELAY,
          "max-sched-insn-conflict-delay",

@@ -54,6 +54,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-gimple.h"
 #include "intl.h"
 #include "debug.h"
+#include "params.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -9747,6 +9748,15 @@ ia64_invalid_binary_op (int op ATTRIBUTE_UNUSED, tree type1, tree type2)
   if (TYPE_MODE (type1) == RFmode || TYPE_MODE (type2) == RFmode)
     return N_("invalid operation on %<__fpreg%>");
   return NULL;
+}
+
+/* Implement overriding of the optimization options.  */
+void
+ia64_optimization_options (int level ATTRIBUTE_UNUSED,
+                           int size ATTRIBUTE_UNUSED)
+{
+  /* Let the scheduler form additional regions.  */
+  set_param_value ("max-sched-extend-regions-iters", 2);
 }
 
 #include "gt-ia64.h"

@@ -6225,7 +6225,7 @@ for interblock speculative scheduling.  The default value is 40.
 The maximum number of iterations through CFG to extend regions.
 0 - disable region extension,
 N - do at most N iterations.
-The default value is 2.
+The default value is 0.
 
 @item max-sched-insn-conflict-delay
 The maximum conflict delay for an insn to be considered for speculative motion.
