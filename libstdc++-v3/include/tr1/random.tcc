@@ -46,93 +46,94 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     //
     // Preconditions:  a > 0, m > 0.
     //
-    template<typename _Tp, _Tp a, _Tp c, _Tp m, bool _m_is_zero>
-      struct Mod
+    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m, bool>
+      struct _Mod
       {
 	static _Tp
-	calc(_Tp x)
+	__calc(_Tp __x)
 	{
-	  if (a == 1)
-	    x %= m;
+	  if (__a == 1)
+	    __x %= __m;
 	  else
 	    {
-	      static const _Tp q = m / a;
-	      static const _Tp r = m % a;
+	      static const _Tp __q = __m / __a;
+	      static const _Tp __r = __m % __a;
 	      
-	      _Tp t1 = a * (x % q);
-	      _Tp t2 = r * (x / q);
-	      if (t1 >= t2)
-		x = t1 - t2;
+	      _Tp __t1 = __a * (__x % __q);
+	      _Tp __t2 = __r * (__x / __q);
+	      if (__t1 >= __t2)
+		__x = __t1 - __t2;
 	      else
-		x = m - t2 + t1;
+		__x = __m - __t2 + __t1;
 	    }
 
-	  if (c != 0)
+	  if (__c != 0)
 	    {
-	      const _Tp d = m - x;
-	      if (d > c)
-		x += c;
+	      const _Tp __d = __m - __x;
+	      if (__d > __c)
+		__x += __c;
 	      else
-		x = c - d;
+		__x = __c - __d;
 	    }
-	  return x;
+	  return __x;
 	}
       };
 
-    // Special case for m==0 -- use unsigned integer overflow as modulo
+    // Special case for m == 0 -- use unsigned integer overflow as modulo
     // operator.
-    template<typename _Tp, _Tp a, _Tp c, _Tp m>
-      struct Mod<_Tp, a, c, m, true>
+    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m>
+      struct _Mod<_Tp, __a, __c, __m, true>
       {
 	static _Tp
-	calc(_Tp x)
-	{ return a * x + c; }
+	__calc(_Tp __x)
+	{ return __a * __x + __c; }
       };
 
     // Dispatch based on modulus value to prevent divide-by-zero compile-time
     // errors when m == 0.
-    template<typename _Tp, _Tp a, _Tp c, _Tp m>
+    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m>
       inline _Tp
-      mod(_Tp x)
-      { return Mod<_Tp, a, c, m, m == 0>::calc(x); }
+      __mod(_Tp __x)
+      { return _Mod<_Tp, __a, __c, __m, __m == 0>::__calc(__x); }
 
-    // Like the above, for a==1, c==0, in terms of w.
-    template<typename _Tp, _Tp w, bool>
-      struct Mod_w
+    // Like the above, for a == 1, c == 0, in terms of w.
+    template<typename _Tp, _Tp __w, bool>
+      struct _Mod_w
       {
 	static _Tp
-	calc(_Tp x)
-	{ return x % (_Tp(1) << w); }
+	__calc(_Tp __x)
+	{ return __x % (_Tp(1) << __w); }
       };
 
-    template<typename _Tp, _Tp w>
-      struct Mod_w<_Tp, w, true>
+    template<typename _Tp, _Tp __w>
+      struct _Mod_w<_Tp, __w, true>
       {
 	static _Tp
-	calc(_Tp x)
-	{ return x; }
+	__calc(_Tp __x)
+	{ return __x; }
       };
 
-    template<typename _Tp, _Tp w>
+    template<typename _Tp, _Tp __w>
       inline _Tp
-      mod_w(_Tp x)
-      { return Mod_w<_Tp, w, w == std::numeric_limits<_Tp>::digits>::calc(x); }
+      __mod_w(_Tp __x)
+      { return _Mod_w<_Tp, __w,
+	              __w == std::numeric_limits<_Tp>::digits>::__calc(__x); }
 
     // Selector to return the maximum value possible that will fit in 
-    // @p w bits of @p _Tp.
-    template<typename _Tp, _Tp w, bool>
-      struct Max_w
+    // @p __w bits of @p _Tp.
+    template<typename _Tp, _Tp __w, bool>
+      struct _Max_w
       {
 	static _Tp
-	value()
-	{ return (_Tp(1) << w) - 1; }
+	__value()
+	{ return (_Tp(1) << __w) - 1; }
       };
 
-    template<typename _Tp, _Tp w>
-      struct Max_w<_Tp, w, true>
+    template<typename _Tp, _Tp __w>
+      struct _Max_w<_Tp, __w, true>
       {
 	static _Tp
-	value()
+	__value()
 	{ return std::numeric_limits<_Tp>::max(); }
       };
 
@@ -140,53 +141,53 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 
   /**
-   * Constructs the LCR engine with integral seed @p x0.
+   * Constructs the LCR engine with integral seed @p __x0.
    */
-  template<class UIntType, UIntType a, UIntType c, UIntType m>
-    linear_congruential<UIntType, a, c, m>::
-    linear_congruential(unsigned long x0)
-    { this->seed(x0); }
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    linear_congruential<_UIntType, __a, __c, __m>::
+    linear_congruential(unsigned long __x0)
+    { this->seed(__x0); }
 
   /**
-   * Constructs the LCR engine with seed generated from @p g.
+   * Constructs the LCR engine with seed generated from @p __g.
    */
-  template<class UIntType, UIntType a, UIntType c, UIntType m>
-    template<class Gen>
-      linear_congruential<UIntType, a, c, m>::
-      linear_congruential(Gen& g)
-      { this->seed(g); }
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    template<class _Gen>
+      linear_congruential<_UIntType, __a, __c, __m>::
+      linear_congruential(_Gen& __g)
+      { this->seed(__g); }
 
   /**
-   * Seeds the LCR with integral value @p x0, adjusted so that the 
+   * Seeds the LCR with integral value @p __x0, adjusted so that the 
    * ring identity is never a member of the convergence set.
    */
-  template<class UIntType, UIntType a, UIntType c, UIntType m>
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     void
-    linear_congruential<UIntType, a, c, m>::
-    seed(unsigned long x0)
+    linear_congruential<_UIntType, __a, __c, __m>::
+    seed(unsigned long __x0)
     {
-      if ((_Private::mod<UIntType, 1, 0, m>(c) == 0)
-	  && (_Private::mod<UIntType, 1, 0, m>(x0) == 0))
-	m_x = _Private::mod<UIntType, 1, 0, m>(1);
+      if ((_Private::__mod<_UIntType, 1, 0, __m>(__c) == 0)
+	  && (_Private::__mod<_UIntType, 1, 0, __m>(__x0) == 0))
+	_M_x = _Private::__mod<_UIntType, 1, 0, __m>(1);
       else
-	m_x = _Private::mod<UIntType, 1, 0, m>(x0);
+	_M_x = _Private::__mod<_UIntType, 1, 0, __m>(__x0);
     }
 
   /**
-   * Seeds the LCR engine with a value generated by @p g.
+   * Seeds the LCR engine with a value generated by @p __g.
    */
-  template<class UIntType, UIntType a, UIntType c, UIntType m>
-    template<class Gen>
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    template<class _Gen>
       void
-      linear_congruential<UIntType, a, c, m>::
-      seed(Gen& g, false_type)
+      linear_congruential<_UIntType, __a, __c, __m>::
+      seed(_Gen& __g, false_type)
       {
-	UIntType x0 = g();
-	if ((_Private::mod<UIntType, 1, 0, m>(c) == 0)
-	    && (_Private::mod<UIntType, 1, 0, m>(x0) == 0))
-	  m_x = _Private::mod<UIntType, 1, 0, m>(1);
+	_UIntType __x0 = __g();
+	if ((_Private::__mod<_UIntType, 1, 0, __m>(__c) == 0)
+	    && (_Private::__mod<_UIntType, 1, 0, __m>(__x0) == 0))
+	  _M_x = _Private::__mod<_UIntType, 1, 0, __m>(1);
 	else
-	  m_x = _Private::mod<UIntType, 1, 0, m>(x0);
+	  _M_x = _Private::__mod<_UIntType, 1, 0, __m>(__x0);
       }
 
   /**
@@ -194,135 +195,146 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * returned by operator(). The return value of this function does not
    * change during the lifetime of the object..
    *
-   * The minumum depends on the @p c parameter: if it is zero, the
+   * The minumum depends on the @p __c parameter: if it is zero, the
    * minimum generated must be > 0, otherwise 0 is allowed.
    */
-  template<class UIntType, UIntType a, UIntType c, UIntType m>
-    typename linear_congruential<UIntType, a, c, m>::result_type
-    linear_congruential<UIntType, a, c, m>::
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    typename linear_congruential<_UIntType, __a, __c, __m>::result_type
+    linear_congruential<_UIntType, __a, __c, __m>::
     min() const
-    { return (_Private::mod<UIntType, 1, 0, m>(c) == 0) ? 1 : 0; }
+    { return (_Private::__mod<_UIntType, 1, 0, __m>(__c) == 0) ? 1 : 0; }
 
   /**
    * Gets the maximum possible value of the generated range.
    *
-   * For a linear congruential generator, the maximum is always @p m - 1.
+   * For a linear congruential generator, the maximum is always @p __m - 1.
    */
-  template<class UIntType, UIntType a, UIntType c, UIntType m>
-    typename linear_congruential<UIntType, a, c, m>::result_type
-    linear_congruential<UIntType, a, c, m>::
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    typename linear_congruential<_UIntType, __a, __c, __m>::result_type
+    linear_congruential<_UIntType, __a, __c, __m>::
     max() const
-    { return (m == 0) ? std::numeric_limits<UIntType>::max() : (m - 1); }
+    { return (__m == 0) ? std::numeric_limits<_UIntType>::max() : (__m - 1); }
 
   /**
    * Gets the next generated value in sequence.
    */
-  template<class UIntType, UIntType a, UIntType c, UIntType m>
-    typename linear_congruential<UIntType, a, c, m>::result_type
-    linear_congruential<UIntType, a, c, m>::
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    typename linear_congruential<_UIntType, __a, __c, __m>::result_type
+    linear_congruential<_UIntType, __a, __c, __m>::
     operator()()
     {
-      m_x = _Private::mod<UIntType, a, c, m>(m_x);
-      return m_x;
+      _M_x = _Private::__mod<_UIntType, __a, __c, __m>(_M_x);
+      return _M_x;
     }
 
 
-  template<class _UInt, int w, int n, int m, int r,
-	   _UInt a, int u, int s,
-	   _UInt b, int t, _UInt c, int l>
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
     void
-    mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::
-    seed(unsigned long value)
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::
+    seed(unsigned long __value)
     {
-      _M_x[0] = _Private::mod_w<_UInt, w>(value);
+      _M_x[0] = _Private::__mod_w<_UIntType, __w>(__value);
 
-      for (int i = 1; i < n; ++i)
+      for (int __i = 1; __i < state_size; ++__i)
 	{
-	  _UInt x = _M_x[i - 1];
-	  x ^= x >> (w - 2);
-	  x *= 1812433253ul;
-	  x += i;
-	  _M_x[i] = _Private::mod_w<_UInt, w>(x);	  
+	  _UIntType __x = _M_x[__i - 1];
+	  __x ^= __x >> (__w - 2);
+	  __x *= 1812433253ul;
+	  __x += __i;
+	  _M_x[__i] = _Private::__mod_w<_UIntType, __w>(__x);	  
 	}
-      _M_p = n;
+      _M_p = state_size;
     }
 
-  template<class _UInt, int w, int n, int m, int r,
-	   _UInt a, int u, int s,
-	   _UInt b, int t, _UInt c, int l>
-    template<class Gen>
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    template<class _Gen>
       void
-      mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::
-      seed(Gen& gen, false_type)
+      mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		       __b, __t, __c, __l>::
+      seed(_Gen& __gen, false_type)
       {
-	for (int i = 0; i < n; ++i)
-	  _M_x[i] = _Private::mod_w<_UInt, w>(gen());
-	_M_p = n;
+	for (int __i = 0; __i < state_size; ++__i)
+	  _M_x[__i] = _Private::__mod_w<_UIntType, __w>(__gen());
+	_M_p = state_size;
       }
 
-  template<class _UInt, int w, int n, int m, int r,
-	   _UInt a, int u, int s,
-	   _UInt b, int t, _UInt c, int l>
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
     typename
-    mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::result_type
-    mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::result_type
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::
     max() const
     {
-      using _Private::Max_w;
+      using _Private::_Max_w;
       using std::numeric_limits;
-      return Max_w<_UInt, w, w == numeric_limits<_UInt>::digits>::value();
+      return _Max_w<_UIntType, __w,
+	            __w == numeric_limits<_UIntType>::digits>::__value();
     }
 
-  template<class _UInt, int w, int n, int m, int r,
-	   _UInt a, int u, int s,
-	   _UInt b, int t, _UInt c, int l>
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
     typename
-    mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::result_type
-    mersenne_twister<_UInt, w, n, m, r, a, u, s, b, t, c, l>::
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::result_type
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::
     operator()()
     {
       // Reload the vector - cost is O(n) amortized over n calls.
-      if (_M_p >= n)
+      if (_M_p >= state_size)
 	{
-	  const _UInt upper_mask = (~_UInt()) << r;
-	  const _UInt lower_mask = ~upper_mask;
+	  const _UIntType __upper_mask = (~_UIntType()) << __r;
+	  const _UIntType __lower_mask = ~__upper_mask;
 
-	  for (int k = 0; k < (n - m); ++k)
+	  for (int __k = 0; __k < (__n - __m); ++__k)
 	    {
-	      _UInt y = (_M_x[k] & upper_mask) | (_M_x[k + 1] & lower_mask);
-	      _M_x[k] = _M_x[k + m] ^ (y >> 1) ^ ((y & 0x01) ? a : 0);
+	      _UIntType __y = ((_M_x[__k] & __upper_mask)
+			       |(_M_x[__k + 1] & __lower_mask));
+	      _M_x[__k] = (_M_x[__k + __m] ^ (__y >> 1)
+			   ^ ((__y & 0x01) ? __a : 0));
 	    }
 
-	  for (int k = (n - m); k < (n - 1); ++k)
+	  for (int __k = (__n - __m); __k < (__n - 1); ++__k)
 	    {
-	      _UInt y = (_M_x[k] & upper_mask) | (_M_x[k + 1] & lower_mask);
-	      _M_x[k] = _M_x[k + (m - n)] ^ (y >> 1) ^ ((y & 0x01) ? a : 0);
+	      _UIntType __y = ((_M_x[__k] & __upper_mask)
+			       | (_M_x[__k + 1] & __lower_mask));
+	      _M_x[__k] = (_M_x[__k + (__m - __n)] ^ (__y >> 1)
+			   ^ ((__y & 0x01) ? __a : 0));
 	    }
 
 	  _M_p = 0;
 	}
 
       // Calculate o(x(i)).
-      result_type z = _M_x[_M_p++];
-      z ^= (z >> u);
-      z ^= (z << s) & b;
-      z ^= (z << t) & c;
-      z ^= (z >> l);
+      result_type __z = _M_x[_M_p++];
+      __z ^= (__z >> __u);
+      __z ^= (__z << __s) & __b;
+      __z ^= (__z << __t) & __c;
+      __z ^= (__z >> __l);
 
-      return z;
+      return __z;
     }
 
 
-  template<typename _IntType, _IntType m, int s, int r>
+  template<typename _IntType, _IntType __m, int __s, int __r>
     void
-    subtract_with_carry<_IntType, m, s, r>::
-    seed(_IntType __value)
+    subtract_with_carry<_IntType, __m, __s, __r>::
+    seed(unsigned long __value)
     {
       std::tr1::linear_congruential<unsigned long, 40014, 0, 2147483563>
-	lcg(__value);
+	__lcg(__value);
 
-      for (int i = 0; i < long_lag; ++i)
-	_M_x[i] = _Private::mod<_IntType, 1, 0, modulus>(lcg());
+      for (int __i = 0; __i < long_lag; ++__i)
+	_M_x[__i] = _Private::__mod<_IntType, 1, 0, modulus>(__lcg());
 
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
       _M_p = 0;
@@ -337,22 +349,22 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   // center.
   //
   template<typename _IntType, _IntType __m, int __s, int __r>
-    template<class Gen>
+    template<class _Gen>
     void
     subtract_with_carry<_IntType, __m, __s, __r>::
-    seed(Gen& gen, false_type)
+    seed(_Gen& __gen, false_type)
     {
-      const int n = (std::numeric_limits<_IntType>::digits + 31) / 32;
-      for (int i = 0; i < long_lag; ++i)
+      const int __n = (std::numeric_limits<_IntType>::digits + 31) / 32;
+      for (int __i = 0; __i < long_lag; ++__i)
 	{
-	  _M_x[i] = 0;
-	  unsigned long factor = 1;
-	  for (int j = 0; j < n; ++j)
+	  _M_x[__i] = 0;
+	  unsigned long __factor = 1;
+	  for (int __j = 0; __j < __n; ++__j)
 	    {
-	      _M_x[i] += gen() * factor;
-	      factor *= 0x80000000;
+	      _M_x[__i] += __gen() * __factor;
+	      __factor *= 0x80000000;
 	    }
-	  _M_x[i] = _Private::mod<_IntType, 1, 0, modulus>(_M_x[i]);
+	  _M_x[__i] = _Private::__mod<_IntType, 1, 0, modulus>(_M_x[__i]);
 	}
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
       _M_p = 0;
@@ -364,35 +376,36 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator()()
     {
       // Derive short lag index from current index.
-      int ps = _M_p - short_lag;
-      if (ps < 0)
-	ps += long_lag;
+      int __ps = _M_p - short_lag;
+      if (__ps < 0)
+	__ps += long_lag;
 
       // Calculate new x(i) without overflow or division.
-      _IntType xi;
-      if (_M_x[ps] >= _M_x[_M_p] + _M_carry)
+      _IntType __xi;
+      if (_M_x[__ps] >= _M_x[_M_p] + _M_carry)
 	{
-	  xi = _M_x[ps] - _M_x[_M_p] - _M_carry;
+	  __xi = _M_x[__ps] - _M_x[_M_p] - _M_carry;
 	  _M_carry = 0;
 	}
       else
 	{
-	  xi = modulus - _M_x[_M_p] - _M_carry + _M_x[ps];
+	  __xi = modulus - _M_x[_M_p] - _M_carry + _M_x[__ps];
 	  _M_carry = 1;
 	}
-      _M_x[_M_p++] = xi;
+      _M_x[_M_p++] = __xi;
 
       // Adjust current index to loop around in ring buffer.
       if (_M_p >= long_lag)
 	_M_p = 0;
 
-      return xi;
+      return __xi;
     }
 
 
-  template<class _E, int __p, int __r>
-    typename discard_block<_E, __p, __r>::result_type
-    discard_block<_E, __p, __r>::
+  template<class _UniformRandomNumberGenerator, int __p, int __r>
+    typename discard_block<_UniformRandomNumberGenerator,
+			   __p, __r>::result_type
+    discard_block<_UniformRandomNumberGenerator, __p, __r>::
     operator()()
     {
       if (_M_n >= used_block)
