@@ -294,7 +294,9 @@ dependencies = { module=all-fixincludes; on=all-libiberty; };
 dependencies = { module=all-gnattools; on=all-target-libada; };
 
 // Host modules specific to gdb.
+dependencies = { module=configure-gdb; on=configure-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
+dependencies = { module=all-gdb; on=all-intl; };
 dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-bfd; };
@@ -311,9 +313,11 @@ dependencies = { module=all-libgui; on=all-itcl; };
 
 // Host modules specific to binutils.
 dependencies = { module=configure-bfd; on=configure-libiberty; hard=true; };
+dependencies = { module=configure-bfd; on=configure-intl; };
 dependencies = { module=all-bfd; on=all-libiberty; };
 dependencies = { module=all-bfd; on=all-intl; };
 
+dependencies = { module=configure-binutils; on=configure-intl; };
 dependencies = { module=all-binutils; on=all-libiberty; };
 dependencies = { module=all-binutils; on=all-opcodes; };
 dependencies = { module=all-binutils; on=all-bfd; };
@@ -330,14 +334,17 @@ dependencies = { module=install-binutils; on=install-opcodes; };
 // libopcodes depends on libbfd
 dependencies = { module=install-opcodes; on=install-bfd; };
 
+dependencies = { module=configure-gas; on=configure-intl; };
 dependencies = { module=all-gas; on=all-libiberty; };
 dependencies = { module=all-gas; on=all-opcodes; };
 dependencies = { module=all-gas; on=all-bfd; };
 dependencies = { module=all-gas; on=all-intl; };
+dependencies = { module=configure-gprof; on=configure-intl; };
 dependencies = { module=all-gprof; on=all-libiberty; };
 dependencies = { module=all-gprof; on=all-bfd; };
 dependencies = { module=all-gprof; on=all-opcodes; };
 dependencies = { module=all-gprof; on=all-intl; };
+dependencies = { module=configure-ld; on=configure-intl; };
 dependencies = { module=all-ld; on=all-libiberty; };
 dependencies = { module=all-ld; on=all-bfd; };
 dependencies = { module=all-ld; on=all-opcodes; };
@@ -377,6 +384,8 @@ dependencies = { module=all-sid; on=all-tk; };
 dependencies = { module=install-sid; on=install-tcl; };
 dependencies = { module=install-sid; on=install-tk; };
 
+dependencies = { module=configure-sim; on=configure-intl; };
+dependencies = { module=all-sim; on=all-intl; };
 dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };

@@ -40823,7 +40823,9 @@ all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
 all-gnattools: maybe-all-target-libada
+configure-gdb: maybe-configure-intl
 configure-gdb: maybe-configure-sim
+all-gdb: maybe-all-intl
 all-gdb: maybe-all-libiberty
 all-gdb: maybe-all-opcodes
 all-gdb: maybe-all-bfd
@@ -40844,6 +40846,14 @@ configure-stage3-bfd: configure-stage3-libiberty
 configure-stage4-bfd: configure-stage4-libiberty
 configure-stageprofile-bfd: configure-stageprofile-libiberty
 configure-stagefeedback-bfd: configure-stagefeedback-libiberty
+configure-bfd: maybe-configure-intl
+
+configure-stage1-bfd: maybe-configure-stage1-intl
+configure-stage2-bfd: maybe-configure-stage2-intl
+configure-stage3-bfd: maybe-configure-stage3-intl
+configure-stage4-bfd: maybe-configure-stage4-intl
+configure-stageprofile-bfd: maybe-configure-stageprofile-intl
+configure-stagefeedback-bfd: maybe-configure-stagefeedback-intl
 all-bfd: maybe-all-libiberty
 
 all-stage1-bfd: maybe-all-stage1-libiberty
@@ -40860,6 +40870,14 @@ all-stage3-bfd: maybe-all-stage3-intl
 all-stage4-bfd: maybe-all-stage4-intl
 all-stageprofile-bfd: maybe-all-stageprofile-intl
 all-stagefeedback-bfd: maybe-all-stagefeedback-intl
+configure-binutils: maybe-configure-intl
+
+configure-stage1-binutils: maybe-configure-stage1-intl
+configure-stage2-binutils: maybe-configure-stage2-intl
+configure-stage3-binutils: maybe-configure-stage3-intl
+configure-stage4-binutils: maybe-configure-stage4-intl
+configure-stageprofile-binutils: maybe-configure-stageprofile-intl
+configure-stagefeedback-binutils: maybe-configure-stagefeedback-intl
 all-binutils: maybe-all-libiberty
 
 all-stage1-binutils: maybe-all-stage1-libiberty
@@ -40921,6 +40939,14 @@ all-stageprofile-binutils: maybe-all-stageprofile-intl
 all-stagefeedback-binutils: maybe-all-stagefeedback-intl
 install-binutils: maybe-install-opcodes
 install-opcodes: maybe-install-bfd
+configure-gas: maybe-configure-intl
+
+configure-stage1-gas: maybe-configure-stage1-intl
+configure-stage2-gas: maybe-configure-stage2-intl
+configure-stage3-gas: maybe-configure-stage3-intl
+configure-stage4-gas: maybe-configure-stage4-intl
+configure-stageprofile-gas: maybe-configure-stageprofile-intl
+configure-stagefeedback-gas: maybe-configure-stagefeedback-intl
 all-gas: maybe-all-libiberty
 
 all-stage1-gas: maybe-all-stage1-libiberty
@@ -40953,10 +40979,19 @@ all-stage3-gas: maybe-all-stage3-intl
 all-stage4-gas: maybe-all-stage4-intl
 all-stageprofile-gas: maybe-all-stageprofile-intl
 all-stagefeedback-gas: maybe-all-stagefeedback-intl
+configure-gprof: maybe-configure-intl
 all-gprof: maybe-all-libiberty
 all-gprof: maybe-all-bfd
 all-gprof: maybe-all-opcodes
 all-gprof: maybe-all-intl
+configure-ld: maybe-configure-intl
+
+configure-stage1-ld: maybe-configure-stage1-intl
+configure-stage2-ld: maybe-configure-stage2-intl
+configure-stage3-ld: maybe-configure-stage3-intl
+configure-stage4-ld: maybe-configure-stage4-intl
+configure-stageprofile-ld: maybe-configure-stageprofile-intl
+configure-stagefeedback-ld: maybe-configure-stagefeedback-intl
 all-ld: maybe-all-libiberty
 
 all-stage1-ld: maybe-all-stage1-libiberty
@@ -41053,6 +41088,8 @@ all-sid: maybe-all-tcl
 all-sid: maybe-all-tk
 install-sid: maybe-install-tcl
 install-sid: maybe-install-tk
+configure-sim: maybe-configure-intl
+all-sim: maybe-all-intl
 all-sim: maybe-all-libiberty
 all-sim: maybe-all-bfd
 all-sim: maybe-all-opcodes

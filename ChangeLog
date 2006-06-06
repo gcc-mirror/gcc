@@ -1,3 +1,17 @@
+2006-06-06  Carlos O'Donell <carlos@codesourcery.com>
+
+	Sync from src:
+	
+	* configure.in: Sync. 
+	* configure: Regenerated.
+	
+	2006-05-31  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.def: Added dependencies from sim and gdb on intl, and
+	added configure dependencies to everything with an all dependency
+	on intl.
+	* Makefile.in: Regenerated.
+
 2006-06-06  David Ayers  <d.ayers@inode.at>
 
 	PR libobjc/13946
