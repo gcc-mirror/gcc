@@ -44,9 +44,7 @@
      mangle_vtbl_for_type:		virtual table data
      mangle_vtt_for_type:		VTT data
      mangle_ctor_vtbl_for_type:		`C-in-B' constructor virtual table data
-     mangle_thunk:			thunk function or entry
-
-*/
+     mangle_thunk:			thunk function or entry  */
 
 #include "config.h"
 #include "system.h"
@@ -2741,8 +2739,7 @@ mangle_call_offset (const tree fixed_offset, const tree virtual_offset)
 
    <special-name> ::= T <call-offset> <base encoding>
 		  ::= Tc <this_adjust call-offset> <result_adjust call-offset>
-					<base encoding>
-*/
+					<base encoding>  */
 
 tree
 mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,

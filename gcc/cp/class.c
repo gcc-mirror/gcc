@@ -1066,7 +1066,7 @@ add_method (tree type, tree method, tree using_decl)
 	}
     }
 
-  /* A class should never have more than one destructor.  */ 
+  /* A class should never have more than one destructor.  */
   if (current_fns && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
     return false;
 
@@ -1232,7 +1232,7 @@ check_bases (tree t,
 	 dtor is handled in finish_struct_1.  */
       if (!TYPE_POLYMORPHIC_P (basetype))
 	warning (OPT_Weffc__,
-                 "base class %q#T has a non-virtual destructor", basetype);
+		 "base class %q#T has a non-virtual destructor", basetype);
 
       /* If the base class doesn't have copy constructors or
 	 assignment operators that take const references, then the
@@ -1547,7 +1547,7 @@ maybe_warn_about_overly_private_class (tree t)
       if (!has_nonprivate_method)
 	{
 	  warning (OPT_Wctor_dtor_privacy,
-                   "all member functions in class %qT are private", t);
+		   "all member functions in class %qT are private", t);
 	  return;
 	}
     }
@@ -1559,7 +1559,7 @@ maybe_warn_about_overly_private_class (tree t)
   if (fn && TREE_PRIVATE (fn))
     {
       warning (OPT_Wctor_dtor_privacy,
-               "%q#T only defines a private destructor and has no friends",
+	       "%q#T only defines a private destructor and has no friends",
 	       t);
       return;
     }
@@ -1603,7 +1603,7 @@ maybe_warn_about_overly_private_class (tree t)
       if (nonprivate_ctor == 0)
 	{
 	  warning (OPT_Wctor_dtor_privacy,
-                   "%q#T only defines private constructors and has no friends",
+		   "%q#T only defines private constructors and has no friends",
 		   t);
 	  return;
 	}
@@ -2630,7 +2630,7 @@ check_bitfield_decl (tree field)
   /* Extract the declared width of the bitfield, which has been
      temporarily stashed in DECL_INITIAL.  */
   w = DECL_INITIAL (field);
-  gcc_assert (w != NULL_TREE); 
+  gcc_assert (w != NULL_TREE);
   /* Remove the bit-field width indicator so that the rest of the
      compiler does not treat that value as an initializer.  */
   DECL_INITIAL (field) = NULL_TREE;
@@ -3040,13 +3040,13 @@ check_field_decls (tree t, tree *access_decls,
       if (! TYPE_HAS_INIT_REF (t))
 	{
 	  warning (OPT_Weffc__,
-                   "  but does not override %<%T(const %T&)%>", t, t);
+		   "  but does not override %<%T(const %T&)%>", t, t);
 	  if (!TYPE_HAS_ASSIGN_REF (t))
 	    warning (OPT_Weffc__, "  or %<operator=(const %T&)%>", t);
 	}
       else if (! TYPE_HAS_ASSIGN_REF (t))
 	warning (OPT_Weffc__,
-                 "  but does not override %<operator=(const %T&)%>", t);
+		 "  but does not override %<operator=(const %T&)%>", t);
     }
 
 
@@ -3136,7 +3136,7 @@ walk_subobject_offsets (tree type,
 
   if (type == error_mark_node)
     return 0;
-  
+
   if (!TYPE_P (type))
     {
       if (abi_version_at_least (2))
@@ -3336,7 +3336,7 @@ record_subobject_offsets (tree type,
      other empty classes might later be placed) or at the end of the
      class (where other objects might then be placed, so other empty
      subobjects might later overlap).  */
-  if (is_data_member 
+  if (is_data_member
       || !is_empty_class (BINFO_TYPE (type)))
     max_offset = sizeof_biggest_empty_class;
   else
@@ -3503,7 +3503,7 @@ layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
 	  (binfo, size_diffop (size_zero_node, BINFO_OFFSET (binfo)));
       else
 	warning (OPT_Wabi,
-                 "offset of empty base %qT may not be ABI-compliant and may"
+		 "offset of empty base %qT may not be ABI-compliant and may"
 		 "change in a future version of GCC",
 		 BINFO_TYPE (binfo));
     }
@@ -3616,7 +3616,7 @@ build_base_field (record_layout_info rli, tree binfo,
 		CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 	      else
 		warning (OPT_Wabi,
-                         "class %qT will be considered nearly empty in a "
+			 "class %qT will be considered nearly empty in a "
 			 "future version of GCC", t);
 	    }
 	}
@@ -4361,7 +4361,7 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
 			       bitsize_unit_node),
 		   BINFO_OFFSET (vbase))))
 	    warning (OPT_Wabi,
-                     "offset of virtual base %qT is not ABI-compliant and "
+		     "offset of virtual base %qT is not ABI-compliant and "
 		     "may change in a future version of GCC",
 		     basetype);
 
@@ -4691,7 +4691,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	    /* Versions of G++ before G++ 3.4 did not reset the
 	       DECL_MODE.  */
 	    warning (OPT_Wabi,
-                     "the offset of %qD may not be ABI-compliant and may "
+		     "the offset of %qD may not be ABI-compliant and may "
 		     "change in a future version of GCC", field);
 	}
       else
@@ -4735,9 +4735,9 @@ layout_class_type (tree t, tree *virtuals_p)
       /* The middle end uses the type of expressions to determine the
 	 possible range of expression values.  In order to optimize
 	 "x.i > 7" to "false" for a 2-bit bitfield "i", the middle end
-	 must be made aware of the width of "i", via its type.  
+	 must be made aware of the width of "i", via its type.
 
-         Because C++ does not have integer types of arbitrary width,
+	 Because C++ does not have integer types of arbitrary width,
 	 we must (for the purposes of the front end) convert from the
 	 type assigned here to the declared type of the bitfield
 	 whenever a bitfield expression is used as an rvalue.
@@ -4750,8 +4750,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	  ftype = TREE_TYPE (field);
 	  width = tree_low_cst (DECL_SIZE (field), /*unsignedp=*/1);
 	  if (width != TYPE_PRECISION (ftype))
-	    TREE_TYPE (field) 
-	      = c_build_bitfield_integer_type (width, 
+	    TREE_TYPE (field)
+	      = c_build_bitfield_integer_type (width,
 					       TYPE_UNSIGNED (ftype));
 	}
 
@@ -4811,7 +4811,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	  TYPE_SIZE_UNIT (base_t) = size_zero_node;
 	  if (warn_abi && !integer_zerop (rli_size_unit_so_far (rli)))
 	    warning (OPT_Wabi,
-                     "layout of classes derived from empty class %qT "
+		     "layout of classes derived from empty class %qT "
 		     "may change in a future version of GCC",
 		     t);
 	}
@@ -4907,7 +4907,7 @@ layout_class_type (tree t, tree *virtuals_p)
   splay_tree_delete (empty_base_offsets);
 
   if (CLASSTYPE_EMPTY_P (t)
-      && tree_int_cst_lt (sizeof_biggest_empty_class, 
+      && tree_int_cst_lt (sizeof_biggest_empty_class,
 			  TYPE_SIZE_UNIT (t)))
     sizeof_biggest_empty_class = TYPE_SIZE_UNIT (t);
 }
@@ -5440,7 +5440,7 @@ pushclass (tree type)
       current_class_stack_size *= 2;
       current_class_stack
 	= XRESIZEVEC (struct class_stack_node, current_class_stack,
-                      current_class_stack_size);
+		      current_class_stack_size);
     }
 
   /* Insert a new entry on the class stack.  */
@@ -5855,7 +5855,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	      build_ptrmemfunc_type (build_pointer_type (instantiation_type));
 	  else if (!is_reference)
 	    instantiation_type = build_pointer_type (instantiation_type);
-	  if (can_convert_arg (target_type, instantiation_type, instantiation, 
+	  if (can_convert_arg (target_type, instantiation_type, instantiation,
 			       LOOKUP_NORMAL))
 	    matches = tree_cons (instantiation, fn, matches);
 	}
@@ -5866,8 +5866,8 @@ resolve_address_of_overloaded_function (tree target_type,
 	  tree match = most_specialized_instantiation (matches);
 
 	  if (match != error_mark_node)
-	    matches = tree_cons (TREE_PURPOSE (match), 
-				 NULL_TREE, 
+	    matches = tree_cons (TREE_PURPOSE (match),
+				 NULL_TREE,
 				 NULL_TREE);
 	}
     }
@@ -6231,7 +6231,7 @@ get_vfield_name (tree type)
 
   type = BINFO_TYPE (binfo);
   buf = (char *) alloca (sizeof (VFIELD_NAME_FORMAT)
-                         + TYPE_NAME_LENGTH (type) + 2);
+			 + TYPE_NAME_LENGTH (type) + 2);
   sprintf (buf, VFIELD_NAME_FORMAT,
 	   IDENTIFIER_POINTER (constructor_name (type)));
   return get_identifier (buf);

@@ -1100,11 +1100,11 @@ check_for_out_of_scope_variable (tree decl)
   if (!(TREE_CODE (decl) == VAR_DECL && DECL_DEAD_FOR_LOCAL (decl)))
     return decl;
 
-  shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (decl) 
+  shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (decl)
     ? DECL_SHADOWED_FOR_VAR (decl) : NULL_TREE ;
   while (shadowed != NULL_TREE && TREE_CODE (shadowed) == VAR_DECL
 	 && DECL_DEAD_FOR_LOCAL (shadowed))
-    shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed) 
+    shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed)
       ? DECL_SHADOWED_FOR_VAR (shadowed) : NULL_TREE;
   if (!shadowed)
     shadowed = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (decl));
@@ -2774,14 +2774,14 @@ do_class_using_decl (tree scope, tree name)
     }
 
   scope_dependent_p = dependent_type_p (scope);
-  name_dependent_p = (scope_dependent_p 
+  name_dependent_p = (scope_dependent_p
 		      || (IDENTIFIER_TYPENAME_P (name)
 			  && dependent_type_p (TREE_TYPE (name))));
 
   bases_dependent_p = false;
   if (processing_template_decl)
     for (binfo = TYPE_BINFO (current_class_type), i = 0;
-	 BINFO_BASE_ITERATE (binfo, i, base_binfo); 
+	 BINFO_BASE_ITERATE (binfo, i, base_binfo);
 	 i++)
       if (dependent_type_p (TREE_TYPE (base_binfo)))
 	{
@@ -2794,8 +2794,8 @@ do_class_using_decl (tree scope, tree name)
   /* From [namespace.udecl]:
 
        A using-declaration used as a member-declaration shall refer to a
-       member of a base class of the class being defined.  
-     
+       member of a base class of the class being defined.
+
      In general, we cannot check this constraint in a template because
      we do not know the entire set of base classes of the current
      class type.  However, if all of the base classes are
@@ -2817,7 +2817,7 @@ do_class_using_decl (tree scope, tree name)
 	  decl = lookup_member (binfo, name, 0, false);
 	  if (!decl)
 	    {
-	      error ("no members matching %<%T::%D%> in %q#T", scope, name, 
+	      error ("no members matching %<%T::%D%> in %q#T", scope, name,
 		     scope);
 	      return NULL_TREE;
 	    }
@@ -4796,7 +4796,7 @@ pushtag (tree name, tree type, tag_scope scope)
     b = b->level_chain;
 
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
-  
+
   /* Do C++ gratuitous typedefing.  */
   if (IDENTIFIER_TYPE_VALUE (name) != type)
     {
@@ -4807,7 +4807,7 @@ pushtag (tree name, tree type, tag_scope scope)
       if (! context)
 	{
 	  tree cs = current_scope ();
-	  
+
 	  if (scope == ts_current)
 	    context = cs;
 	  else if (cs != NULL_TREE && TYPE_P (cs))
@@ -4844,7 +4844,7 @@ pushtag (tree name, tree type, tag_scope scope)
 	(type, scope == ts_within_enclosing_non_class, b);
       if (decl == error_mark_node)
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
-	  
+
       if (! in_class)
 	set_identifier_type_value_with_scope (name, tdef, b);
 
@@ -4879,11 +4879,11 @@ pushtag (tree name, tree type, tag_scope scope)
     {
       maybe_add_class_template_decl_list (current_class_type,
 					  type, /*friend_p=*/0);
-      
+
       if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
 	CLASSTYPE_NESTED_UTDS (current_class_type)
 	  = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-      
+
       binding_table_insert
 	(CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
     }

@@ -300,12 +300,12 @@ pp_cxx_constant (cxx_pretty_printer *pp, tree t)
     {
     case STRING_CST:
       {
-        const bool in_parens = PAREN_STRING_LITERAL_P (t);
-        if (in_parens)
-          pp_cxx_left_paren (pp);
-        pp_c_constant (pp_c_base (pp), t);
-        if (in_parens)
-          pp_cxx_right_paren (pp);
+	const bool in_parens = PAREN_STRING_LITERAL_P (t);
+	if (in_parens)
+	  pp_cxx_left_paren (pp);
+	pp_c_constant (pp_c_base (pp), t);
+	if (in_parens)
+	  pp_cxx_right_paren (pp);
       }
       break;
 
@@ -1757,7 +1757,7 @@ pp_cxx_namespace_alias_definition (cxx_pretty_printer *pp, tree t)
   pp_equal (pp);
   pp_cxx_whitespace (pp);
   if (DECL_CONTEXT (DECL_NAMESPACE_ALIAS (t)))
-    pp_cxx_nested_name_specifier (pp, 
+    pp_cxx_nested_name_specifier (pp,
 				  DECL_CONTEXT (DECL_NAMESPACE_ALIAS (t)));
   pp_cxx_qualified_id (pp, DECL_NAMESPACE_ALIAS (t));
   pp_cxx_semicolon (pp);
@@ -1803,8 +1803,7 @@ pp_cxx_template_parameter_list (cxx_pretty_printer *pp, tree t)
      typename identifier(opt)
      typename identifier(opt) = type-id
      template < template-parameter-list > class identifier(opt)
-     template < template-parameter-list > class identifier(opt) = template-name
-*/
+     template < template-parameter-list > class identifier(opt) = template-name  */
 
 static void
 pp_cxx_template_parameter (cxx_pretty_printer *pp, tree t)

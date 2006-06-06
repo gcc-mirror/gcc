@@ -1212,17 +1212,17 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	  if (!lvalue_or_else (operand, lv_asm))
 	    operand = error_mark_node;
 
-          if (operand != error_mark_node
+	  if (operand != error_mark_node
 	      && (TREE_READONLY (operand)
 		  || CP_TYPE_CONST_P (TREE_TYPE (operand))
-	          /* Functions are not modifiable, even though they are
-	             lvalues.  */
-	          || TREE_CODE (TREE_TYPE (operand)) == FUNCTION_TYPE
-	          || TREE_CODE (TREE_TYPE (operand)) == METHOD_TYPE
-	          /* If it's an aggregate and any field is const, then it is
-	             effectively const.  */
-	          || (CLASS_TYPE_P (TREE_TYPE (operand))
-	              && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
+		  /* Functions are not modifiable, even though they are
+		     lvalues.  */
+		  || TREE_CODE (TREE_TYPE (operand)) == FUNCTION_TYPE
+		  || TREE_CODE (TREE_TYPE (operand)) == METHOD_TYPE
+		  /* If it's an aggregate and any field is const, then it is
+		     effectively const.  */
+		  || (CLASS_TYPE_P (TREE_TYPE (operand))
+		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
 	    readonly_error (operand, "assignment (via 'asm' output)", 0);
 
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
@@ -1517,10 +1517,10 @@ check_accessibility_of_qualified_id (tree decl,
    is true iff this qualified name appears as a template argument.  */
 
 tree
-finish_qualified_id_expr (tree qualifying_class, 
-			  tree expr, 
+finish_qualified_id_expr (tree qualifying_class,
+			  tree expr,
 			  bool done,
-			  bool address_p, 
+			  bool address_p,
 			  bool template_p,
 			  bool template_arg_p)
 {
@@ -1603,7 +1603,7 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
     return error_mark_node;
 
   /* If the last statement does not have "void" type, then the value
-     of the last statement is the value of the entire expression.  */ 
+     of the last statement is the value of the entire expression.  */
   if (expr)
     {
       tree type;
@@ -1633,9 +1633,9 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 	 statement-expression.  */
       if (!processing_template_decl && !VOID_TYPE_P (type))
 	{
-	  tree target_expr; 
-	  if (CLASS_TYPE_P (type) 
-	      && !TYPE_HAS_TRIVIAL_INIT_REF (type)) 
+	  tree target_expr;
+	  if (CLASS_TYPE_P (type)
+	      && !TYPE_HAS_TRIVIAL_INIT_REF (type))
 	    {
 	      target_expr = build_target_expr_with_type (expr, type);
 	      expr = TARGET_EXPR_INITIAL (target_expr);
@@ -1648,7 +1648,7 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 		 problem described above.  */
 	      target_expr = force_target_expr (type, expr);
 	      expr = TARGET_EXPR_INITIAL (target_expr);
-	      expr = build2 (INIT_EXPR, 
+	      expr = build2 (INIT_EXPR,
 			     type,
 			     TARGET_EXPR_SLOT (target_expr),
 			     expr);
@@ -2043,7 +2043,7 @@ finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
     {
       /* If this compound-literal appears outside of a function, then
 	 the corresponding variable has static storage duration, just
-	 like the variable in whose initializer it appears.  */  
+	 like the variable in whose initializer it appears.  */
       TREE_STATIC (var) = 1;
       /* The variable has internal linkage, since there is no need to
 	 reference it from another translation unit.  */
@@ -2056,7 +2056,7 @@ finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
   pushdecl (var);
   /* Initialize the variable as we would any other variable with a
      brace-enclosed initializer.  */
-  cp_finish_decl (var, compound_literal, 
+  cp_finish_decl (var, compound_literal,
 		  /*init_const_expr_p=*/false,
 		  /*asmspec_tree=*/NULL_TREE,
 		  LOOKUP_ONLYCONVERTING);
@@ -3603,7 +3603,7 @@ finish_omp_clauses (tree clauses)
 					     inner_type, LOOKUP_NORMAL);
 
 	      /* We'll have called convert_from_reference on the call, which
-		 may well have added an indirect_ref.  It's unneeded here, 
+		 may well have added an indirect_ref.  It's unneeded here,
 		 and in the way, so kill it.  */
 	      if (TREE_CODE (t) == INDIRECT_REF)
 		t = TREE_OPERAND (t, 0);
@@ -3811,9 +3811,9 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
 void
 finish_omp_atomic (enum tree_code code, tree lhs, tree rhs)
 {
-  /* If either of the operands are dependent, we can't do semantic 
+  /* If either of the operands are dependent, we can't do semantic
      processing yet.  Stuff the values away for now.  We cheat a bit
-     and use the same tree code for this, even though the operands 
+     and use the same tree code for this, even though the operands
      are of totally different form, thus we need to remember which
      statements are which, thus the lang_flag bit.  */
   /* ??? We ought to be using type_dependent_expression_p, but the

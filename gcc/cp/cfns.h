@@ -57,13 +57,13 @@ hash (register const char *str, register unsigned int len)
       400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400, 400,   0,   0,
-        1, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+	1, 400, 400, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400,  28,  90,   0,
        95,   0,  51,  93, 114,  26, 109, 124,   5,   1,
-        6,  13,  37, 128,   3,   0,   0,  49,  38,   0,
+	6,  13,  37, 128,   3,   0,   0,  49,  38,   0,
       104,  45,   0, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
       400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
@@ -84,23 +84,23 @@ hash (register const char *str, register unsigned int len)
   switch (hval)
     {
       default:
-        hval += asso_values[(unsigned char)str[5]+1];
+	hval += asso_values[(unsigned char)str[5]+1];
       /*FALLTHROUGH*/
       case 5:
-        hval += asso_values[(unsigned char)str[4]];
+	hval += asso_values[(unsigned char)str[4]];
       /*FALLTHROUGH*/
       case 4:
-        hval += asso_values[(unsigned char)str[3]];
+	hval += asso_values[(unsigned char)str[3]];
       /*FALLTHROUGH*/
       case 3:
-        hval += asso_values[(unsigned char)str[2]];
+	hval += asso_values[(unsigned char)str[2]];
       /*FALLTHROUGH*/
       case 2:
-        hval += asso_values[(unsigned char)str[1]];
+	hval += asso_values[(unsigned char)str[1]];
       /*FALLTHROUGH*/
       case 1:
-        hval += asso_values[(unsigned char)str[0]];
-        break;
+	hval += asso_values[(unsigned char)str[0]];
+	break;
     }
   return hval + asso_values[(unsigned char)str[len - 1]];
 }
@@ -329,17 +329,17 @@ libc_name_p (register const char *str, register unsigned int len)
       register int key = hash (str, len);
 
       if (key <= MAX_HASH_VALUE && key >= 0)
-        {
-          register int index = lookup[key];
+	{
+	  register int index = lookup[key];
 
-          if (index >= 0)
-            {
-              register const char *s = wordlist[index];
+	  if (index >= 0)
+	    {
+	      register const char *s = wordlist[index];
 
-              if (*str == *s && !strcmp (str + 1, s + 1))
-                return s;
-            }
-        }
+	      if (*str == *s && !strcmp (str + 1, s + 1))
+		return s;
+	    }
+	}
     }
   return 0;
 }

@@ -875,8 +875,8 @@ accessible_p (tree type, tree decl, bool consider_local_p)
      instantiation.  However, PROCESSING_TEMPLATE_DECL is set in the
      parameter list for a template (because we may see dependent types
      in default arguments for template parameters), and access
-     checking should be performed in the outermost parameter list.  */ 
-  if (processing_template_decl 
+     checking should be performed in the outermost parameter list.  */
+  if (processing_template_decl
       && (!processing_template_parmlist || processing_template_decl > 1))
     return 1;
 
