@@ -1371,16 +1371,20 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		if (!note)
 		  {
 		    rtx t = *dest;
+		    if (COMPLEX_MODE_P (GET_MODE (t)))
+		      {
+			rtx u = FP_MODE_REG (REGNO (t) + 1, SFmode);
+			if (get_hard_regnum (regstack, u) == -1)
+			  {
+			    rtx pat2 = gen_rtx_CLOBBER (VOIDmode, u);
+			    rtx insn2 = emit_insn_before (pat2, insn);
+			    control_flow_insn_deleted
+			      |= move_nan_for_stack_reg (insn2, regstack, u);
+			  }
+		      }
 		    if (get_hard_regnum (regstack, t) == -1)
 		      control_flow_insn_deleted
 			|= move_nan_for_stack_reg (insn, regstack, t);
-		    if (COMPLEX_MODE_P (GET_MODE (t)))
-		      {
-			t = FP_MODE_REG (REGNO (t) + 1, DFmode);
-			if (get_hard_regnum (regstack, t) == -1)
-			  control_flow_insn_deleted
-			    |= move_nan_for_stack_reg (insn, regstack, t);
-		      }
 		  }
 	      }
 	  }
