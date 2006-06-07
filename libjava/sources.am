@@ -8779,6 +8779,7 @@ ordinary_header_files = \
 bc_objects = \
   gnu-CORBA.lo \
   gnu-java-awt-peer-gtk.lo \
+  gnu-java-awt-peer-qt.lo \
   gnu-java-awt-peer-swing.lo \
   gnu-java-beans.lo \
   gnu-javax-rmi.lo \
