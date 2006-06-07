@@ -1,3 +1,13 @@
+2006-06-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR middle-end/27793
+	* tree-dfa.c (referenced_vars_dup_list): New.  List of duplicate 
+	referenced_variables with matching DECL_UID's.
+	(find_referenced_vars): Make sure duplicate list is empty to start.
+	(add_referenced_var): Add var to duplicate list if required.
+	* tree-ssa.c (delete_tree_ssa): Clear var_ann's on duplicates.
+	* tree-flow.h (referenced_vars_dup_list): External declaration.
+
 2006-06-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/27842
