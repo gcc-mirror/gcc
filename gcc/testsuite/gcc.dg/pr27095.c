@@ -11,4 +11,9 @@ main (int argc, char **argv)
   memset (x, argc, strlen (x));
   return 0;
 }
-/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen" { xfail *-*-darwin* } } } */
+/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen" { target { ! { *-*-darwin* hppa*-*-hpux* ia64-*-hpux* } } } } } */
+/* hppa*-*-hpux* has an IMPORT statement for strlen (plus the branch). */
+/* *-*-darwin* has something similar. */
+/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen\(.*\n\)+.*strlen" { target hppa*-*-hpux* *-*-darwin* } } } */
+/* ia64-*-hpux* has a global statement, a type statement, and the branch. */
+/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen\(.*\n\)+.*strlen\(.*\n\)+.*strlen" { target ia64-*-hpux* } } } */
