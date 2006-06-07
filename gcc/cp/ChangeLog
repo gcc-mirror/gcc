@@ -1,3 +1,12 @@
+2006-06-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27601
+	* cp-tree.h (finish_offsetof): Add prototype.
+	* semantics.c (finish_offsetof): New function.
+	* parser.c (cp_parser_builtin_offsetof): Call it instead of
+	fold_offsetof.
+	* pt.c (tsubst_copy_and_build): Likewise.
+
 2006-06-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27177
