@@ -136,8 +136,7 @@ public class QtToolkit extends ClasspathToolkit
   {
     eventQueue = new EventQueue();
     repaintThread = new QtRepaintThread();
-    if (Configuration.INIT_LOAD_LIBRARY)
-      System.loadLibrary("qtpeer");
+    System.loadLibrary("qtpeer");
 
     String theme = null;
     try 

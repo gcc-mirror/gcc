@@ -1,8 +1,11 @@
 # Qt AWT backend for Classpath
 #
 
-## GCJ LOCAL: don't install this library
-noinst_LTLIBRARIES = libqtpeer.la
+## GCJ LOCAL: install this library in GCJ's versioned library
+## directory
+gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
+gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
+gcjversionedlib_LTLIBRARIES = libqtpeer.la
 
 AM_LDFLAGS = @CLASSPATH_MODULE@ @QT_LIBS@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
@@ -73,6 +76,10 @@ libqtpeer_la_SOURCES = \
         qtwindowpeer.cpp \
         slotcallbacks.cpp \
         slotcallbacks.h 
+
+## GCJ LOCAL: encode the library path and  use GCJ's library version
+libqtpeer_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
+	-version-info `grep -v '^\#' $(top_srcdir)/../libtool-version`
 
 BUILT_SOURCES = $(libqtpeer_la_MOC)
 

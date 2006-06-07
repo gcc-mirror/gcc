@@ -1,3 +1,18 @@
+2006-06-07  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* scripts/makemake.tcl (emit_bc_rule): Do not skip
+	gnu-java-awt-peer-qt.lo.
+	* configure.ac (QT_AWT): Remove conditional.
+	Do not add gnu/java/awt/peer/qt to standard.omit.
+	* classpath/native/jni/qt-peer/Makefile.am: Install libqtpeer.so
+	in GCJ's versioned library directory.
+	* classpath/gnu/java/awt/peer/qt/QtToolkit.java (initToolkit):
+	Load libqtpeer.so unconditionally.
+	* gij.cc (main): Do not re-exec gij.
+	* Makefile.am: Remove lib-gnu-java-awt-peer-qt.lo build logic.
+	(gij_LDFLAGS): Point -rpath at GCJ's versioned library directory
+	when linking gij.
+
 2006-06-06  David Daney  <ddaney@avtrex.com>
 
 	* gnu/gcj/runtime/NameFinder.java (show_raw): New field.

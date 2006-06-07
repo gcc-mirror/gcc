@@ -55,7 +55,15 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+am__installdirs = "$(DESTDIR)$(gcjversionedlibdir)"
+gcjversionedlibLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(gcjversionedlib_LTLIBRARIES)
 libqtpeer_la_LIBADD =
 am_libqtpeer_la_OBJECTS = componentevent.lo keybindings.lo \
 	mainqtthread.lo mainthreadinterface.lo nativewrapper.lo \
@@ -303,7 +311,9 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 vm_classes = @vm_classes@
-noinst_LTLIBRARIES = libqtpeer.la
+gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
+gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
+gcjversionedlib_LTLIBRARIES = libqtpeer.la
 AM_LDFLAGS = @CLASSPATH_MODULE@ @QT_LIBS@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 AM_CXXFLAGS = @QT_CFLAGS@
@@ -369,6 +379,9 @@ libqtpeer_la_SOURCES = \
         slotcallbacks.cpp \
         slotcallbacks.h 
 
+libqtpeer_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
+	-version-info `grep -v '^\#' $(top_srcdir)/../libtool-version`
+
 BUILT_SOURCES = $(libqtpeer_la_MOC)
 CLEANFILES = so_locations $(BUILT_SOURCES)
 all: $(BUILT_SOURCES)
@@ -405,17 +418,35 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+install-gcjversionedlibLTLIBRARIES: $(gcjversionedlib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(gcjversionedlibdir)" || $(mkdir_p) "$(DESTDIR)$(gcjversionedlibdir)"
+	@list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(LIBTOOL) --mode=install $(gcjversionedlibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(gcjversionedlibdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(gcjversionedlibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(gcjversionedlibdir)/$$f"; \
+	  else :; fi; \
+	done
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
+uninstall-gcjversionedlibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@set -x; list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(gcjversionedlibdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(gcjversionedlibdir)/$$p"; \
+	done
+
+clean-gcjversionedlibLTLIBRARIES:
+	-test -z "$(gcjversionedlib_LTLIBRARIES)" || rm -f $(gcjversionedlib_LTLIBRARIES)
+	@list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
 libqtpeer.la: $(libqtpeer_la_OBJECTS) $(libqtpeer_la_DEPENDENCIES) 
-	$(CXXLINK)  $(libqtpeer_la_LDFLAGS) $(libqtpeer_la_OBJECTS) $(libqtpeer_la_LIBADD) $(LIBS)
+	$(CXXLINK) -rpath $(gcjversionedlibdir) $(libqtpeer_la_LDFLAGS) $(libqtpeer_la_OBJECTS) $(libqtpeer_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -576,6 +607,9 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
+	for dir in "$(DESTDIR)$(gcjversionedlibdir)"; do \
+	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
+	done
 install: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
@@ -605,7 +639,7 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+clean-am: clean-gcjversionedlibLTLIBRARIES clean-generic clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -624,7 +658,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-gcjversionedlibLTLIBRARIES
 
 install-exec-am:
 
@@ -652,19 +686,21 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-gcjversionedlibLTLIBRARIES uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-info-am
+.PHONY: CTAGS GTAGS all all-am check check-am clean \
+	clean-gcjversionedlibLTLIBRARIES clean-generic clean-libtool \
+	ctags distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am \
+	install-gcjversionedlibLTLIBRARIES install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am \
+	uninstall-gcjversionedlibLTLIBRARIES uninstall-info-am
 
 
 slotcallbacks.moc.h: slotcallbacks.cpp
