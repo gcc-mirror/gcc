@@ -2881,6 +2881,23 @@ finish_typeof (tree expr)
   return type;
 }
 
+/* Perform C++-specific checks for __builtin_offsetof before calling
+   fold_offsetof.  */
+
+tree
+finish_offsetof (tree expr)
+{
+  if (TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
+      || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
+      || TREE_CODE (TREE_TYPE (expr)) == UNKNOWN_TYPE)
+    {
+      error ("cannot apply %<offsetof%> to member function %qD",
+	     TREE_OPERAND (expr, 1));
+      return error_mark_node;
+    }
+  return fold_offsetof (expr);
+}
+
 /* Called from expand_body via walk_tree.  Replace all AGGR_INIT_EXPRs
    with equivalent CALL_EXPRs.  */
 
