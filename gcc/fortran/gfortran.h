@@ -838,6 +838,8 @@ typedef struct gfc_symbol
      order.  */
   int dummy_order;
 
+  int entry_id;
+
   gfc_namelist *namelist, *namelist_tail;
 
   /* Change management fields.  Symbols that might be modified by the
