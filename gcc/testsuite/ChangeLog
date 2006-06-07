@@ -1,3 +1,7 @@
+2006-06-07  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/pr27095.c: Improve scanning.
+
 2006-06-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/23091
