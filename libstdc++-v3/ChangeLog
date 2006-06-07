@@ -1,3 +1,19 @@
+2006-06-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (mersenne_twister<>::operator==,
+	operator!=, operator<<, operator>>): Implement.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	operators/equal.cc: New.	
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	operators/serialize.cc: Likewise.
+
+	* include/tr1/random (subtract_with_carry<>::operator==): Fix,
+	compare the whole state; use std::equal.
+
+	* include/tr1/random: Minor formatting and style changes.
+
 2006-06-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/tr1/5_numerical_facilies: Move to...
