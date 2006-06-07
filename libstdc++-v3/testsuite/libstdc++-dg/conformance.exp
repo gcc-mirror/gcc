@@ -53,11 +53,14 @@ if {[info exists tests_file] && [file exists $tests_file]} {
 } else {
     # Find directories that might have tests.
     set subdirs [glob "$srcdir/\[0-9\]\[0-9\]*"]
-    foreach d [glob "$srcdir/\[a-z\]*"] {
-	if {[file isdirectory $d]} { 
-	    lappend subdirs $d
-	}
-    }
+    lappend subdirs "$srcdir/backward"
+    lappend subdirs "$srcdir/demangle"
+    lappend subdirs "$srcdir/ext"
+    lappend subdirs "$srcdir/performance"
+    lappend subdirs "$srcdir/tr1"
+    lappend subdirs "$srcdir/thread"
+    verbose "subdirs are $subdirs"
+
     # Find all the tests.
     foreach s $subdirs {
 	set subdir_tests [find $s *.cc]
@@ -75,6 +78,7 @@ if {[info exists tests_file] && [file exists $tests_file]} {
 		continue
 	    }
 	    # Filter out:
+	    # 0. utilities, other parts of the testing infrastructure.
 	    # 1. interactive tests.
 	    # 2. performance tests.
 	    # 3. wchar_t tests, if not supported.

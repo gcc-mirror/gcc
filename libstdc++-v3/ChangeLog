@@ -1,3 +1,33 @@
+2006-06-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util: New directory.
+	* testsuite/testsuite_hooks.cc: Move to util sub-directory.
+	* testsuite/testsuite_abi_check.cc: Same.
+	* testsuite/testsuite_abi.cc: Same.
+	* testsuite/testsuite_tr1.h: Same.
+	* testsuite/testsuite_io.h: Same.
+	* testsuite/testsuite_iterators.h: Same.
+	* testsuite/testsuite_allocator.cc: Same.
+	* testsuite/testsuite_allocator.h: Same.
+	* testsuite/testsuite_hooks.h: Same.
+	* testsuite/testsuite_character.cc: Same.
+	* testsuite/testsuite_abi.h: Same.
+	* testsuite/testsuite_character.h: Same.
+	* testsuite/testsuite_visualization.h: Same.
+	* testsuite/testsuite_performance.h: Same.
+	* testsuite/testsuite_shared.cc: Same.
+	* testsuite/testsuite_common_types.h: Same.
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Adjust paths.
+	* testsuite/libstdc++-abi/abi.exp: Same.
+	* testsuite/libstdc++-dg/conformance.exp: Remove any files in the
+	utilities subdirectory from the list of test cases.
+	
+	* scripts/testsuite_flags.in (build-includes): Adjust path for
+	testsuite includes.
+	* scripts/create_testsuite_files (dlist): Don't let utility files
+	creep into the testsuite_files list.
+	
 2006-06-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (mersenne_twister<>::operator==,

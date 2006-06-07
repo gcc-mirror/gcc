@@ -35,7 +35,7 @@ case ${query} in
       ;;
     --build-includes)
       INCLUDES="-nostdinc++ @GLIBCXX_INCLUDES@ 
-                -I${SRC_DIR}/include/backward -I${SRC_DIR}/testsuite"
+                -I${SRC_DIR}/include/backward -I${SRC_DIR}/testsuite/util"
       echo ${INCLUDES}
       ;;
     --install-cxx)

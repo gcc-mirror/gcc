@@ -32,7 +32,7 @@ remote_exec "build" "$srcdir/../scripts/extract_symvers" \
     [list "../src/.libs/libstdc++.so" "current_symbols.txt"]
 
 # Build the abi_check program.
-if { [v3_target_compile "$srcdir/testsuite_abi_check.cc" "abi_check" \
+if { [v3_target_compile "$srcdir/util/testsuite_abi_check.cc" "abi_check" \
       "executable" [list "additional_flags=-w"]] != "" } {
     error "could not compile testsuite_abi_check.cc"
 }
