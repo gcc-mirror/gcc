@@ -4252,6 +4252,7 @@ extern tree finish_id_expression		(tree, tree, tree,
 						 bool, bool, bool, bool,
 						 const char **);
 extern tree finish_typeof			(tree);
+extern tree finish_offsetof			(tree);
 extern void finish_decl_cleanup			(tree, tree);
 extern void finish_eh_cleanup			(tree);
 extern void expand_body				(tree);
