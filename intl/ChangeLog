@@ -1,3 +1,8 @@
+2006-06-07  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in (install-info, install-dvi, install-ps, install-pdf):
+	New dummy targets.
+
 2005-05-23  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Add info dvi ps pdf html install-html to .PHONY

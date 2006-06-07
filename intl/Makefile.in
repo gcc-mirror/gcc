@@ -148,10 +148,11 @@ installdirs:
 installcheck:
 uninstall:
 
-.PHONY: info dvi ps pdf html install-html
+.PHONY: info dvi ps pdf html
+.PHONY: install-info install-dvi install-ps install-pdf install-html
 
 info dvi ps pdf html:
-install-html:
+install-info install-dvi install-ps install-pdf install-html:
 
 $(OBJECTS): config.h libintl.h
 bindtextdom.o dcgettext.o dcigettext.o dcngettext.o dgettext.o \
