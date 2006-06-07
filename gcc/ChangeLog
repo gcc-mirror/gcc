@@ -1,3 +1,8 @@
+2006-06-07  Fred Fish  <fnf@specifix.com>
+
+	* config/mips/t-elf (MULTILIB_MATCHES): Combine two entries
+	into single entry.
+
 2006-06-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/27390
