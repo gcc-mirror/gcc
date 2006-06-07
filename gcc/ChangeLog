@@ -1,3 +1,10 @@
+2006-06-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/27390
+	* reg-stack.c (subst_stack_regs_pat): Reorder resetting of
+	the imaginary and real parts of a clobbered register.
+	Emit insn to set the imaginary part.
+
 2006-06-06  Peter Lemieszewski  <lemie@us.ibm.com>
 
 	* config/s390/t-tpf (LIB2ADDEH): Include unwind-dw2-fde-glibc.c
