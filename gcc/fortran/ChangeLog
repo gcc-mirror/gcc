@@ -1,3 +1,30 @@
+2006-06-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/23091
+	* resolve.c (resolve_fl_variable): Error if an automatic
+	object has the SAVE attribute.
+
+	PR fortran/24168
+	* expr.c (simplify_intrinsic_op): Transfer the rank and
+	the locus to the simplified expression.
+
+	PR fortran/25090
+	PR fortran/25058
+	* gfortran.h : Add int entry_id to gfc_symbol.
+	* resolve.c : Add static variables current_entry_id and
+	specification_expr.
+	(resolve_variable): During code resolution, check if a
+	reference to a dummy variable in an executable expression
+	is preceded by its appearance as a parameter in an entry.
+	Likewise check its specification expressions.
+	(resolve_code): Update current_entry_id on EXEC_ENTRY.
+	(resolve_charlen, resolve_fl_variable): Set and reset
+	specifiaction_expr.
+	(is_non_constant_shape_array): Do not return on detection
+	of a variable but continue to resolve all the expressions.
+	(resolve_codes): set current_entry_id to an out of range
+	value.
+
 2006-06-06  Mike Stump  <mrs@apple.com>
 
 	* Make-lang.in: Rename to htmldir to build_htmldir to avoid

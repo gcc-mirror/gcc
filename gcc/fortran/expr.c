@@ -869,6 +869,8 @@ simplify_intrinsic_op (gfc_expr * p, int type)
       return FAILURE;
     }
 
+  result->rank = p->rank;
+  result->where = p->where;
   gfc_replace_expr (p, result);
 
   return SUCCESS;
