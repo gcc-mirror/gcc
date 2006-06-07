@@ -5,15 +5,14 @@
 	po/ prefix from CATALOGS.
 
 2006-02-14  Paolo Bonzini  <bonzini@gnu.org>
-            Andreas Schwab  <schwab@suse.de>
+	    Andreas Schwab  <schwab@suse.de>
 
-        * acx.m4 (NCN_STRICT_CHECK_TARGET_TOOLS): Use correct program name.
-        (ACX_CHECK_INSTALLED_TARGET_TOOL): Likewise, and always set $1.
+	* acx.m4 (NCN_STRICT_CHECK_TARGET_TOOLS): Use correct program name.
+	(ACX_CHECK_INSTALLED_TARGET_TOOL): Likewise, and always set $1.
 
 2006-01-26  Paolo Bonzini  <bonzini@gnu.org>
 
-	* config/acx.m4 (NCN_STRICT_CHECK_TARGET_TOOLS): Test
-	$with_build_time_tools.
+	* acx.m4 (NCN_STRICT_CHECK_TARGET_TOOLS): Test $with_build_time_tools.
 	(ACX_PATH_SEP): New.
 	(ACX_TOOL_DIRS): Move here from the gcc directory.
 	(ACX_CHECK_INSTALLED_TARGET_TOOL): New.
@@ -22,8 +21,8 @@
 
 2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR target/25259
-        * stdint.m4: New.
+	PR target/25259
+	* stdint.m4: New.
 
 2005-12-20  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -37,7 +36,7 @@
 
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
-        * acx.m4 (GCC_TARGET_TOOL): New.
+	* acx.m4 (GCC_TARGET_TOOL): New.
 
 2005-09-23  Tom Tromey  <tromey@redhat.com>
 
@@ -46,7 +45,7 @@
 
 2005-08-12  Paolo Bonzini  <bonzini@gnu.org>
 
-	* acx.m4 (NCN_CHECK_TARGET_TOOL, NCN_STRICT_CHECK_TOOL,
+	* config/acx.m4 (NCN_CHECK_TARGET_TOOL, NCN_STRICT_CHECK_TOOL,
 	NCN_STRICT_CHECK_TARGET_TOOL): Remove.
 	(NCN_STRICT_CHECK_TOOLS, NCN_STRICT_CHECK_TARGET_TOOLS): New,
 	based on the deleted macros.
