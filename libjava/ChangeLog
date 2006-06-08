@@ -1,3 +1,7 @@
+2006-06-09  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* scripts/jar.in: Replace hardcoded /bin/sh with @SHELL@.
+
 2006-06-07  Andrew Haley  <aph@redhat.com>
 
 	* include/jvm.h (_Jv_Linker::maybe_adjust_signature): New.
