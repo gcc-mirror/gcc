@@ -239,6 +239,8 @@ namespace gcj
 class _Jv_Linker
 {
 private:
+  typedef unsigned int uaddr __attribute__ ((mode (pointer)));
+
   static _Jv_Field *find_field_helper(jclass, _Jv_Utf8Const *, _Jv_Utf8Const *,
 				      jclass, jclass *);
   static _Jv_Field *find_field(jclass, jclass, jclass *, _Jv_Utf8Const *,
@@ -264,8 +266,31 @@ private:
   static jshort append_partial_itable(jclass, jclass, void **, jshort);
   static _Jv_Method *search_method_in_class (jclass, jclass,
 					     _Jv_Utf8Const *,
-					     _Jv_Utf8Const *);
+					     _Jv_Utf8Const *,
+					     bool check_perms = true);
+  static _Jv_Method *search_method_in_superclasses (jclass cls, jclass klass, 
+						    _Jv_Utf8Const *method_name,
+ 						    _Jv_Utf8Const *method_signature,
+						    jclass *found_class,
+						    bool check_perms = true);
   static void *create_error_method(_Jv_Utf8Const *);
+
+  /* The least significant bit of the signature pointer in a symbol
+     table is set to 1 by the compiler if the reference is "special",
+     i.e. if it is an access to a private field or method.  Extract
+     that bit, clearing it in the address and setting the LSB of
+     SPECIAL accordingly.  */
+  static void maybe_adjust_signature (_Jv_Utf8Const *&s, uaddr &special)
+  {
+    union {
+      _Jv_Utf8Const *signature;
+      uaddr signature_bits;
+    };
+    signature = s;
+    special = signature_bits & 1;
+    signature_bits -= special;
+    s = signature;
+  }  
 
 public:
 

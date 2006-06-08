@@ -1,3 +1,18 @@
+2006-06-07  Andrew Haley  <aph@redhat.com>
+
+	* include/jvm.h (_Jv_Linker::maybe_adjust_signature): New.
+	(_Jv_Linker::uaddr): New.
+	* link.cc (resolve_pool_entry): Call search_method_in_superclasses
+	instead of an open-coded loop around search_method_in_class.
+	(search_method_in_class): Add a new arg, check_perms.
+	(search_method_in_superclasses): New.
+	(link_symbol_table): Call maybe_adjust_signature() to extract the
+	least significnt bit of the signature pointer.  Do this three
+	times, for instace method calls, static methods, and interfaces.
+	Call search_method_in_superclasses() instead of
+	_Jv_LookupDeclaredMethod.
+	(typedef uaddr): Delete.
+	
 2006-06-07  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* scripts/makemake.tcl (emit_bc_rule): Do not skip
