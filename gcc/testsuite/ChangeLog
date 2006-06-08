@@ -1,3 +1,9 @@
+2006-06-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27116
+	* gcc.dg/torture/pr27116.c: New testcase.
+	* gcc.dg/pr15785-1.c: Remove test for invalid transformation.
+
 2006-06-07  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/26449

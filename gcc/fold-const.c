@@ -945,7 +945,9 @@ negate_expr_p (tree t)
       /* Check that -CST will not overflow type.  */
       return may_negate_without_overflow_p (t);
     case BIT_NOT_EXPR:
-       return INTEGRAL_TYPE_P (type);
+       return INTEGRAL_TYPE_P (type)
+       	      && (TYPE_UNSIGNED (type)
+	      	  || (flag_wrapv && !flag_trapv));
 
     case REAL_CST:
     case NEGATE_EXPR:
@@ -1047,7 +1049,9 @@ negate_expr (tree t)
     {
     /* Convert - (~A) to A + 1.  */
     case BIT_NOT_EXPR:
-      if (INTEGRAL_TYPE_P (type))
+      if (INTEGRAL_TYPE_P (type)
+      	  && (TYPE_UNSIGNED (type)
+	      || (flag_wrapv && !flag_trapv)))
         return fold_build2 (PLUS_EXPR, type, TREE_OPERAND (t, 0),
                             build_int_cst (type, 1));
       break;
