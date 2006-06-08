@@ -1,3 +1,9 @@
+2006-06-08  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR target/27863
+	* haifa-sched.c (unlink_other_notes, unlink_line_notes): Update basic
+	block boundaries.
+
 2006-06-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27116
