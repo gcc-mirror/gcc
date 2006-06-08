@@ -950,36 +950,61 @@ record_conditions (struct edge_info *edge_info, tree cond, tree inverted)
     {
     case LT_EXPR:
     case GT_EXPR:
-      edge_info->max_cond_equivalences = 12;
-      edge_info->cond_equivalences = XNEWVEC (tree, 12);
+      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
+	{
+	  edge_info->max_cond_equivalences = 12;
+	  edge_info->cond_equivalences = XNEWVEC (tree, 12);
+	  build_and_record_new_cond (ORDERED_EXPR, op0, op1,
+				     &edge_info->cond_equivalences[8]);
+	  build_and_record_new_cond (LTGT_EXPR, op0, op1,
+				     &edge_info->cond_equivalences[10]);
+	}
+      else
+	{
+	  edge_info->max_cond_equivalences = 8;
+	  edge_info->cond_equivalences = XNEWVEC (tree, 8);
+	}
+
       build_and_record_new_cond ((TREE_CODE (cond) == LT_EXPR
 				  ? LE_EXPR : GE_EXPR),
 				 op0, op1, &edge_info->cond_equivalences[4]);
-      build_and_record_new_cond (ORDERED_EXPR, op0, op1,
-				 &edge_info->cond_equivalences[6]);
       build_and_record_new_cond (NE_EXPR, op0, op1,
-				 &edge_info->cond_equivalences[8]);
-      build_and_record_new_cond (LTGT_EXPR, op0, op1,
-				 &edge_info->cond_equivalences[10]);
+				 &edge_info->cond_equivalences[6]);
       break;
 
     case GE_EXPR:
     case LE_EXPR:
-      edge_info->max_cond_equivalences = 6;
-      edge_info->cond_equivalences = XNEWVEC (tree, 6);
-      build_and_record_new_cond (ORDERED_EXPR, op0, op1,
-				 &edge_info->cond_equivalences[4]);
+      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
+	{
+	  edge_info->max_cond_equivalences = 6;
+	  edge_info->cond_equivalences = XNEWVEC (tree, 6);
+	  build_and_record_new_cond (ORDERED_EXPR, op0, op1,
+				     &edge_info->cond_equivalences[4]);
+	}
+      else
+	{
+	  edge_info->max_cond_equivalences = 4;
+	  edge_info->cond_equivalences = XNEWVEC (tree, 4);
+	}
       break;
 
     case EQ_EXPR:
-      edge_info->max_cond_equivalences = 10;
-      edge_info->cond_equivalences = XNEWVEC (tree, 10);
-      build_and_record_new_cond (ORDERED_EXPR, op0, op1,
-				 &edge_info->cond_equivalences[4]);
+      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
+	{
+	  edge_info->max_cond_equivalences = 10;
+	  edge_info->cond_equivalences = XNEWVEC (tree, 10);
+	  build_and_record_new_cond (ORDERED_EXPR, op0, op1,
+				     &edge_info->cond_equivalences[8]);
+	}
+      else
+	{
+	  edge_info->max_cond_equivalences = 8;
+	  edge_info->cond_equivalences = XNEWVEC (tree, 8);
+	}
       build_and_record_new_cond (LE_EXPR, op0, op1,
-				 &edge_info->cond_equivalences[6]);
+				 &edge_info->cond_equivalences[4]);
       build_and_record_new_cond (GE_EXPR, op0, op1,
-				 &edge_info->cond_equivalences[8]);
+				 &edge_info->cond_equivalences[6]);
       break;
 
     case UNORDERED_EXPR:
