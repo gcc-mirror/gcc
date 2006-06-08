@@ -3045,6 +3045,10 @@ classify_argument (enum machine_mode mode, tree type,
 	      if (TREE_CODE (field) == FIELD_DECL)
 		{
 		  int num;
+
+		  if (TREE_TYPE (field) == error_mark_node)
+		    continue;
+
 		  num = classify_argument (TYPE_MODE (TREE_TYPE (field)),
 					   TREE_TYPE (field), subclasses,
 					   bit_offset);
