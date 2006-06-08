@@ -1,3 +1,10 @@
+2006-06-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27116
+	* fold-const.c (negate_expr_p): We can negate BIT_NOT_EXPR
+	only, if overflow is defined and not trapping.
+	(negate_expr): Likewise.
+
 2006-06-07  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/27872

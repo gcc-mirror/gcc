@@ -11,11 +11,6 @@ void b (int x) {
 		link_error ();
 }
 
-void c (int x) {
-	if (!(- (~x) - x))
-		link_error ();
-}
-
 void d (int x) {
 	if (!(~ (-x) - x))
 		link_error ();
@@ -34,7 +29,6 @@ void f (int x) {
 int main (int argc, char *argv[]) {
 	a(argc);
 	b(argc);
-	c(argc);
 	d(argc);
 	e(argc);
 	f(argc);
