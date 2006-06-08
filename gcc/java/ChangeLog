@@ -1,3 +1,25 @@
+2006-06-08  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (build_field_ref): Pass NULL_TREE as SPECIAL arg to
+	get_symbol_table_index().
+	(maybe_rewrite_invocation): Set SPECIAL if we need to access a
+	private method.
+	(build_known_method_ref): New arg: special.  Pass it to
+	get_symbol_table_index.
+	(get_symbol_table_index): Put SPECIAL in the TREE_PURPOSE field of
+	the method list.
+	(build_invokevirtual): New arg: special.  Pass it to
+	get_symbol_table_index.
+	(expand_invoke): New variable: special.
+	Pass it to maybe_rewrite_invocation().
+	Pass it to build_known_method_ref().
+	* class.c (build_symbol_entry): Add new arg: special.  Use it to
+	build the symbol table conbstructor.
+	(emit_symbol_table): Extract SPECIAL from the method list and pass
+	it to build_symbol_entry().
+	* parse.y (patch_invoke): Call maybe_rewrite_invocation() and set
+	special accordingly.
+
 2006-06-06  David Daney  <ddaney@avtrex.com>
 
 	* gcj.texi (libgcj Runtime Properties): Document
