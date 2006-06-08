@@ -2395,7 +2395,7 @@ struct algorithm
 /* The entry for our multiplication cache/hash table.  */
 struct alg_hash_entry {
   /* The number we are multiplying by.  */
-  unsigned int t;
+  unsigned HOST_WIDE_INT t;
 
   /* The mode in which we are multiplying something by T.  */
   enum machine_mode mode;
@@ -2410,7 +2410,11 @@ struct alg_hash_entry {
 };
 
 /* The number of cache/hash entries.  */
+#if HOST_BITS_PER_WIDE_INT == 64
+#define NUM_ALG_HASH_ENTRIES 1031
+#else
 #define NUM_ALG_HASH_ENTRIES 307
+#endif
 
 /* Each entry of ALG_HASH caches alg_code for some integer.  This is
    actually a hash table.  If we have a collision, that the older
