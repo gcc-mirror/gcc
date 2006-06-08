@@ -275,6 +275,8 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
 		     build_int_cst (gfc_charlen_type_node, 1),
 		     start.expr);
   tmp = fold_build2 (PLUS_EXPR, gfc_charlen_type_node, end.expr, tmp);
+  tmp = fold_build2 (MAX_EXPR, gfc_charlen_type_node, tmp,
+		     build_int_cst (gfc_charlen_type_node, 0));
   se->string_length = tmp;
 }
 
@@ -2196,6 +2198,7 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
   tree tmp;
   tree dsc;
   tree ssc;
+  tree cond;
 
   /* Deal with single character specially.  */
   dsc = gfc_to_single_character (dlen, dest);
@@ -2206,12 +2209,16 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
       return;
     }
 
+  cond = fold_build2 (GT_EXPR, boolean_type_node, dlen,
+		      build_int_cst (gfc_charlen_type_node, 0));
+
   tmp = NULL_TREE;
   tmp = gfc_chainon_list (tmp, dlen);
   tmp = gfc_chainon_list (tmp, dest);
   tmp = gfc_chainon_list (tmp, slen);
   tmp = gfc_chainon_list (tmp, src);
   tmp = build_function_call_expr (gfor_fndecl_copy_string, tmp);
+  tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (block, tmp);
 }
 
