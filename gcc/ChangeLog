@@ -1,3 +1,8 @@
+2006-06-07  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/26449
+	* loop-invariant.c (move_invariant_reg): Fail if force_operand fails.
+
 2006-06-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR middle-end/27793
