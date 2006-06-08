@@ -1,3 +1,9 @@
+2006-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR target/27421
+	* config/i386/i386.c (classify_argument): Skip fields with invalid
+	types in unions.
+
 2006-06-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cse.c (flush_hash_table): Use VOIDmode to invalidate a REG.
