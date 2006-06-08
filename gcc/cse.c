@@ -1724,7 +1724,7 @@ flush_hash_table (void)
 	/* Note that invalidate can remove elements
 	   after P in the current hash chain.  */
 	if (REG_P (p->exp))
-	  invalidate (p->exp, p->mode);
+	  invalidate (p->exp, VOIDmode);
 	else
 	  remove_from_table (p, i);
       }
@@ -5723,7 +5723,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	  rtx addr = XEXP (dest, 0);
 	  if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC
 	      && XEXP (addr, 0) == stack_pointer_rtx)
-	    invalidate (stack_pointer_rtx, Pmode);
+	    invalidate (stack_pointer_rtx, VOIDmode);
 #endif
 	  dest = fold_rtx (dest, insn);
 	}
