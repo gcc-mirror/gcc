@@ -1,3 +1,8 @@
+2006-06-08  Steven G. Kargl  <kargls@comcat.net>
+
+	* intrinsic.c (add_subroutine):  Make make_noreturn() conditional on
+	the appropriate symbol name.
+	
 2006-06-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/23091

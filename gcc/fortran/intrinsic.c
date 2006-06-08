@@ -2232,7 +2232,8 @@ add_subroutines (void)
 
   add_sym_0s ("abort", 1, GFC_STD_GNU, NULL);
 
-  make_noreturn();
+  if ((gfc_option.allow_std & GFC_STD_GNU) || gfc_option.flag_all_intrinsics)
+    make_noreturn();
 
   add_sym_1s ("cpu_time", 0, 1, BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
@@ -2338,7 +2339,8 @@ add_subroutines (void)
              gfc_check_exit, NULL, gfc_resolve_exit,
 	      c, BT_INTEGER, di, OPTIONAL);
 
-  make_noreturn();
+  if ((gfc_option.allow_std & GFC_STD_GNU) || gfc_option.flag_all_intrinsics)
+    make_noreturn();
 
   add_sym_3s ("fgetc", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fgetputc_sub, NULL, gfc_resolve_fgetc_sub,
