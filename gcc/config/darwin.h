@@ -812,8 +812,6 @@ enum machopic_addr_class {
 	goto DONE;									\
       }
 
-#define TARGET_ASM_OUTPUT_ANCHOR darwin_asm_output_anchor
-
 /* Experimentally, putting jump tables in text is faster on SPEC.
    Also this is needed for correctness for coalesced functions.  */
 
@@ -852,6 +850,7 @@ void add_framework_path (char *);
 #define TARGET_POSIX_IO
 
 /* All new versions of Darwin have C99 functions.  */
+
 #define TARGET_C99_FUNCTIONS 1
 
 #define WINT_TYPE "int"
@@ -859,7 +858,20 @@ void add_framework_path (char *);
 /* Every program on darwin links against libSystem which contains the pthread
    routines, so there's no need to explicitly call out when doing threaded
    work.  */
+
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
+
+/* Darwin can't support anchors until we can cope with the adjustments
+   to size that ASM_DECLARE_OBJECT_NAME and ASM_DECLARE_CONSTANT_NAME
+   when outputting members of an anchor block and the linker can be
+   taught to keep them together or we find some other suitable
+   code-gen technique.  */
+
+#if 0
+#define TARGET_ASM_OUTPUT_ANCHOR darwin_asm_output_anchor
+#else
+#define TARGET_ASM_OUTPUT_ANCHOR NULL
+#endif
 
 #endif /* CONFIG_DARWIN_H */
