@@ -1,4 +1,4 @@
-#! /bin/sh
+#! @SHELL@
 # Copyright (C) 2006  Free Software Foundation
 # Written by Paolo Bonzini.
 #
