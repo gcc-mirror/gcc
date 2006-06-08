@@ -1,3 +1,8 @@
+2006-06-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27958
+	* gcc/testsuite/gfortran.dg/substr_2.f: New test.
+
 2006-06-08  Asher Langton  <langton2@llnl.gov>
 	
 	PR fortran/27786
