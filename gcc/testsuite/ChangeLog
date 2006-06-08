@@ -1,3 +1,8 @@
+2006-06-08  Asher Langton  <langton2@llnl.gov>
+	
+	PR fortran/27786
+	* cray_pointers_2.f90: Add -fbounds-check compile flag.
+	
 2006-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR target/27421
