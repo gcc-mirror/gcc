@@ -11043,8 +11043,14 @@ patch_invoke (tree patch, tree method, tree args)
       switch (invocation_mode (method, CALL_USING_SUPER (patch)))
 	{
 	case INVOKE_VIRTUAL:
-	  dtable = invoke_build_dtable (0, args);
-	  func = build_invokevirtual (dtable, method);
+	  {
+	    tree signature = build_java_signature (TREE_TYPE (method));
+	    tree special;
+	    maybe_rewrite_invocation (&method, &args, &signature, &special);
+
+	    dtable = invoke_build_dtable (0, args);
+	    func = build_invokevirtual (dtable, method, special);
+	  }
 	  break;
 
 	case INVOKE_NONVIRTUAL:
@@ -11066,10 +11072,11 @@ patch_invoke (tree patch, tree method, tree args)
 	case INVOKE_STATIC:
 	  {
 	    tree signature = build_java_signature (TREE_TYPE (method));
-	    maybe_rewrite_invocation (&method, &args, &signature);
+	    tree special;
+	    maybe_rewrite_invocation (&method, &args, &signature, &special);
 	    func = build_known_method_ref (method, TREE_TYPE (method),
 					   DECL_CONTEXT (method),
-					   signature, args);
+					   signature, args, special);
 	  }
 	  break;
 

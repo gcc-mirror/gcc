@@ -1241,11 +1241,11 @@ extern tree check_for_builtin (tree, tree);
 extern void initialize_builtins (void);
 
 extern tree lookup_name (tree);
-extern void maybe_rewrite_invocation (tree *, tree *, tree *);
-extern tree build_known_method_ref (tree, tree, tree, tree, tree);
+extern void maybe_rewrite_invocation (tree *, tree *, tree *, tree *);
+extern tree build_known_method_ref (tree, tree, tree, tree, tree, tree);
 extern tree build_class_init (tree, tree);
 extern int attach_init_test_initialization_flags (void **, void *);
-extern tree build_invokevirtual (tree, tree);
+extern tree build_invokevirtual (tree, tree, tree);
 extern tree build_invokeinterface (tree, tree);
 extern tree build_jni_stub (tree);
 extern tree invoke_build_dtable (int, tree);
@@ -1393,7 +1393,7 @@ extern void register_exception_range(struct eh_range *, int, int);
 extern void finish_method (tree);
 extern void java_expand_body (tree);
 
-extern int get_symbol_table_index (tree, tree *);
+extern int get_symbol_table_index (tree, tree, tree *);
 
 extern tree make_catch_class_record (tree, tree);
 extern tree emit_catch_table (tree);
