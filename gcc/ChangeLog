@@ -1,3 +1,10 @@
+2006-06-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/27733
+	* expmed.c (struct alg_hash_entry): Fix type of field T
+	to match synth_mult argument.
+	(NUM_ALG_HASH_ENTRIES): Make it bigger for 64-bit HOST_WIDE_INT.
+
 2006-06-08  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR target/27863
