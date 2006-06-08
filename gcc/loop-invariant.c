@@ -1178,6 +1178,11 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	{
 	  start_sequence ();
 	  op = force_operand (SET_SRC (set), reg);
+	  if (!op)
+	    {
+	      end_sequence ();
+	      goto fail;
+	    }
 	  if (op != reg)
 	    emit_move_insn (reg, op);
 	  seq = get_insns ();

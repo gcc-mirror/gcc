@@ -1,3 +1,8 @@
+2006-06-07  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/26449
+	* gcc.dg/pr26449.c: New test.
+
 2006-06-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27601
