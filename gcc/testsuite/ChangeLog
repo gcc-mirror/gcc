@@ -1,5 +1,7 @@
 2006-06-08  Mike Stump  <mrs@apple.com>
 
+	* gcc.dg/pr27095.c: Account for stubs.
+
 	PR target/26427
 	* gcc.dg/pr26427.c: Test to ensure that -fsection-anchors doesn't
 	produce bad code on darwin.
