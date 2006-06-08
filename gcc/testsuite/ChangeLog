@@ -1,3 +1,9 @@
+2006-06-08  Mike Stump  <mrs@apple.com>
+
+	PR target/26427
+	* gcc.dg/pr26427.c: Test to ensure that -fsection-anchors doesn't
+	produce bad code on darwin.
+
 2006-06-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/27958

@@ -1524,6 +1524,8 @@ darwin_binds_local_p (tree decl)
   return default_binds_local_p_1 (decl, 0);
 }
 
+#if 0
+/* See TARGET_ASM_OUTPUT_ANCHOR for why we can't do this yet.  */
 /* The Darwin's implementation of TARGET_ASM_OUTPUT_ANCHOR.  Define the
    anchor relative to ".", the current section position.  We cannot use
    the default one because ASM_OUTPUT_DEF is wrong for Darwin.  */
@@ -1536,6 +1538,7 @@ darwin_asm_output_anchor (rtx symbol)
   fprintf (asm_out_file, ", . + " HOST_WIDE_INT_PRINT_DEC "\n",
 	   SYMBOL_REF_BLOCK_OFFSET (symbol));
 }
+#endif
 
 /* Set the darwin specific attributes on TYPE.  */
 void
