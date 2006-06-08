@@ -1964,7 +1964,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
       gfc_add_block_to_block (&se->pre, &indexse.pre);
 
       if (flag_bounds_check &&
-	  (ar->as->type != AS_ASSUMED_SIZE  || n < ar->dimen - 1))
+	  ((ar->as->type != AS_ASSUMED_SIZE && !ar->as->cp_was_assumed)
+	   || n < ar->dimen - 1))
 	{
 	  /* Check array bounds.  */
 	  tree cond;

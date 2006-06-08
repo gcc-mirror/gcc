@@ -1,3 +1,9 @@
+2006-06-08  Asher Langton  <langton2@llnl.gov>
+	
+	PR fortran/27786
+	* trans-array.c (gfc_conv_array_ref): Eliminate bounds checking
+	for assumed-size Cray pointees.
+
 2006-06-08  Steven G. Kargl  <kargls@comcat.net>
 
 	* intrinsic.c (add_subroutine):  Make make_noreturn() conditional on
