@@ -1,3 +1,17 @@
+2006-06-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR middle-end/27793
+	* tree-dfa.c (referenced_vars_dup_list): New.  List of duplicate 
+	referenced_variables with matching DECL_UID's.
+	(find_referenced_vars): Make sure duplicate list is empty to start.
+	(referenced_var_p): Remove.
+	(referenced_var_check_and_insert): Renamed from referenced_var_insert.  
+	Check if var is in the list, and add if needed.  Update the duplicate
+	list if a different var is in the list with the same DECL_UID.
+	(add_referenced_var): Call routine to check and insert.
+	* tree-ssa.c (delete_tree_ssa): Clear var_ann's on duplicates.
+	* tree-flow.h (referenced_vars_dup_list): External declaration.
+
 2006-06-07  Fred Fish  <fnf@specifix.com>
 
 	* config/mips/t-elf (MULTILIB_MATCHES): Combine two entries
