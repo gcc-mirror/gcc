@@ -1,5 +1,11 @@
 2006-06-07  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR tree-optimization/27872
+	* tree-ssa-loop-manip.c (tree_unroll_loop): Set EDGE_IRREDUCIBLE_LOOP
+	flag on the new exit edge of the unrolled loop.
+
+2006-06-07  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR rtl-optimization/26449
 	* loop-invariant.c (move_invariant_reg): Fail if force_operand fails.
 
