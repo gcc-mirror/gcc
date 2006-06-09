@@ -451,6 +451,7 @@ tree builtin_function (const char *, tree, int, enum built_in_class,
 /* In trans-openmp.c */
 bool gfc_omp_privatize_by_reference (tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
+tree gfc_omp_clause_default_ctor (tree, tree);
 bool gfc_omp_disregard_value_expr (tree, bool);
 bool gfc_omp_private_debug_clause (tree, bool);
 struct gimplify_omp_ctx;

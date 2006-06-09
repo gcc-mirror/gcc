@@ -120,6 +120,7 @@ static HOST_WIDE_INT gfc_get_alias_set (tree);
 #undef LANG_HOOKS_GET_ALIAS_SET
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
+#undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
 #undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
 #undef LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES
@@ -144,6 +145,7 @@ static HOST_WIDE_INT gfc_get_alias_set (tree);
 #define LANG_HOOKS_GET_ALIAS_SET	   gfc_get_alias_set
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
+#define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR	gfc_omp_clause_default_ctor
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE	gfc_omp_private_debug_clause
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \

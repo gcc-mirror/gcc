@@ -1,3 +1,10 @@
+2006-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/27916
+	* trans-openmp.c (gfc_omp_clause_default_ctor): New function.
+	* trans.h (gfc_omp_clause_default_ctor): New prototype.
+	* f95-lang.c (LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR): Define.
+
 2006-06-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/27958
