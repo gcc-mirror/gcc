@@ -1,7 +1,7 @@
 // natSystemProperties.cc - Implementation of native side of
 // SystemProperties class.
 
-/* Copyright (C) 2005  Free Software Foundation
+/* Copyright (C) 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -250,6 +250,7 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
     {
       SET ("user.name", pwd_entry->pw_name);
       SET ("user.home", pwd_entry->pw_dir);
+      SET ("gnu.gcj.user.realname", pwd_entry->pw_gecos);
     }
 #endif /* HAVE_PWD_H */
 #endif /* NO_GETUID */
