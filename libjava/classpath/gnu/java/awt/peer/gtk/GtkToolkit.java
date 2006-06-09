@@ -536,23 +536,13 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   protected EventQueue getSystemEventQueueImpl() 
   {
-    // GCJ LOCAL: workaround a GCJ problem accessing
-    // GtkToolkit.class
-    try
-      {
-    synchronized (Class.forName ("gnu.java.awt.peer.gtk.GtkToolkit"))
+    synchronized (GtkToolkit.class)
       {
         if (q == null)
           {
             q = new EventQueue();
           }
       }    
-      }
-    catch (Exception e)
-      {
-        e.printStackTrace();
-      }
-    
     return q;
   }
 

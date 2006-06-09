@@ -247,23 +247,12 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   public static ImageFormatSpec registerFormat(String name, boolean writable) 
   {
     ImageFormatSpec ifs = new ImageFormatSpec(name, writable);
-
-    // GCJ LOCAL: workaround a GCJ problem accessing
-    // GdkPixbufDecoder.class
-    try
-      {
-    synchronized(Class.forName ("gnu.java.awt.peer.gtk.GdkPixbufDecoder"))
+    synchronized(GdkPixbufDecoder.class)
       {
         if (imageFormatSpecs == null)
           imageFormatSpecs = new ArrayList();
         imageFormatSpecs.add(ifs);
       }
-      }
-    catch (Exception e)
-      {
-        e.printStackTrace();
-      }
-    
     return ifs;
   }
 
