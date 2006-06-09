@@ -1795,14 +1795,21 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
   if (code == NEGATE_EXPR
       && !TYPE_UNSIGNED (TREE_TYPE (expr)))
     {
-      /* NEGATE_EXPR flips the range around.  */
-      min = (vr0.max == TYPE_MAX_VALUE (TREE_TYPE (expr)) && !flag_wrapv)
-	     ? TYPE_MIN_VALUE (TREE_TYPE (expr))
-	     : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
+      /* NEGATE_EXPR flips the range around.  We need to treat
+	 TYPE_MIN_VALUE specially dependent on wrapping, range type
+	 and if it was used as minimum or maximum value:  
+	  -~[MIN, MIN] == ~[MIN, MIN]
+	  -[MIN, 0] == [0, MAX]  for -fno-wrapv
+	  -[MIN, 0] == [0, MIN]  for -fwrapv (will be set to varying later)  */
+      min = vr0.max == TYPE_MIN_VALUE (TREE_TYPE (expr))
+	    ? TYPE_MIN_VALUE (TREE_TYPE (expr))
+	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
 
-      max = (vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)) && !flag_wrapv)
-	     ? TYPE_MAX_VALUE (TREE_TYPE (expr))
-	     : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
+      max = vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr))
+	    ? (vr0.type == VR_ANTI_RANGE || flag_wrapv
+	       ? TYPE_MIN_VALUE (TREE_TYPE (expr))
+	       : TYPE_MAX_VALUE (TREE_TYPE (expr)))
+	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
 
     }
   else if (code == NEGATE_EXPR
