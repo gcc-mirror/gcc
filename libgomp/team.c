@@ -39,7 +39,7 @@ static unsigned gomp_threads_size;
 static unsigned gomp_threads_used;
 
 /* This attribute contains PTHREAD_CREATE_DETACHED.  */
-static pthread_attr_t gomp_thread_attr;
+pthread_attr_t gomp_thread_attr;
 
 /* This barrier holds and releases threads waiting in gomp_threads.  */
 static gomp_barrier_t gomp_threads_dock;
@@ -338,7 +338,4 @@ initialize_team (void)
   thr = &initial_thread_tls_data;
 #endif
   gomp_sem_init (&thr->release, 0);
-
-  pthread_attr_init (&gomp_thread_attr);
-  pthread_attr_setdetachstate (&gomp_thread_attr, PTHREAD_CREATE_DETACHED);
 }
