@@ -1,5 +1,5 @@
 /* MetalRadioButtonUI.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -95,9 +95,10 @@ public class MetalRadioButtonUI
   public void installDefaults(AbstractButton b)
   {
     super.installDefaults(b);
-    disabledTextColor = UIManager.getColor("RadioButton.disabledText");
-    focusColor = UIManager.getColor("RadioButton.focus");
-    selectColor = UIManager.getColor("RadioButton.select");
+    String prefix = getPropertyPrefix();
+    disabledTextColor = UIManager.getColor(prefix + "disabledText");
+    focusColor = UIManager.getColor(prefix + "focus");
+    selectColor = UIManager.getColor(prefix + "select");
   }
   
   /**

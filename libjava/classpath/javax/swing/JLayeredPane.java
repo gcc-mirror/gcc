@@ -147,19 +147,19 @@ public class JLayeredPane extends JComponent implements Accessible
   
   public static final String LAYER_PROPERTY = "layeredContainerLayer";
 
-  public static final Integer FRAME_CONTENT_LAYER = new Integer (-30000);
+  public static final Integer FRAME_CONTENT_LAYER = new Integer(-30000);
 
-  public static final Integer DEFAULT_LAYER = new Integer (0);
-  public static final Integer PALETTE_LAYER = new Integer (100);
-  public static final Integer MODAL_LAYER   = new Integer (200);
-  public static final Integer POPUP_LAYER   = new Integer (300);
-  public static final Integer DRAG_LAYER    = new Integer (400);
+  public static final Integer DEFAULT_LAYER = new Integer(0);
+  public static final Integer PALETTE_LAYER = new Integer(100);
+  public static final Integer MODAL_LAYER   = new Integer(200);
+  public static final Integer POPUP_LAYER   = new Integer(300);
+  public static final Integer DRAG_LAYER    = new Integer(400);
 
   private Hashtable componentToLayer;   // Component -> Layer Number (Integer)
 
   public JLayeredPane()
   {
-    componentToLayer = new Hashtable ();
+    componentToLayer = new Hashtable();
     setLayout(null);
   }
 

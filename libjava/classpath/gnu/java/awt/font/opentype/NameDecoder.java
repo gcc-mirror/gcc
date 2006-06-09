@@ -48,7 +48,7 @@ import java.util.Locale;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-class NameDecoder
+public class NameDecoder
 {
   public static final int NAME_COPYRIGHT = 0;
 
@@ -122,26 +122,37 @@ class NameDecoder
 
     nameTable.position(0);
     /* We understand only format 0 of the name table. */
-    if (nameTable.getChar() != 0)
+    if (nameTable.getShort() != 0)
       return null;
 
     macLanguage = getMacLanguageCode(locale);
     msLanguage = getMicrosoftLanguageCode(locale);
-    numRecords = nameTable.getChar();
-    offset = nameTable.getChar();
+    numRecords = nameTable.getShort();
+    offset = nameTable.getShort();
 
     for (int i = 0; i < numRecords; i++)
     {
-      namePlatform = nameTable.getChar();
-      nameEncoding = nameTable.getChar();
-      nameLanguage = nameTable.getChar();
-      nameID = nameTable.getChar();
-      nameLen = nameTable.getChar();
-      nameStart = offset + nameTable.getChar();
+      namePlatform = nameTable.getShort();
+      nameEncoding = nameTable.getShort();
+      nameLanguage = nameTable.getShort();
+      nameID = nameTable.getShort();
+      nameLen = nameTable.getShort();
+      nameStart = offset + nameTable.getShort();
 
       
       if (nameID != name)
         continue;
+
+      // Handle PS seperately as it can be only ASCII, although
+      // possibly encoded as UTF-16BE
+      if ( name == NAME_POSTSCRIPT )
+	{
+	  if( nameTable.get(nameStart) == 0 ) // Peek at top byte
+	    result = decodeName("UTF-16BE", nameTable, nameStart, nameLen);
+	  else
+	    result = decodeName("ASCII", nameTable, nameStart, nameLen);
+	  return result;
+	}
 
       match = false;
       switch (namePlatform)
@@ -393,13 +404,18 @@ class NameDecoder
   private static String decodeName(int platform, int encoding, int language,
                                    ByteBuffer buffer, int offset, int len)
   {
-    byte[] byteBuf;
-    String charsetName;
-    int oldPosition;
-
-    charsetName = getCharsetName(platform, language, encoding);
+    String charsetName = getCharsetName(platform, language, encoding);
     if (charsetName == null)
       return null;
+
+    return decodeName(charsetName, buffer, offset, len);
+  }
+
+  private static String decodeName(String charsetName,
+                                   ByteBuffer buffer, int offset, int len)
+  {
+    byte[] byteBuf;
+    int oldPosition;
 
     byteBuf = new byte[len];
     oldPosition = buffer.position();

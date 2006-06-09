@@ -117,7 +117,7 @@ class ColorPaintContext implements PaintContext
    {
      cachedRaster = new ColorRaster(colorModel, 0, 0, width, height, color);
    }
-   return cachedRaster.createChild(0 ,0 ,width ,height ,x ,y , null);
+   return cachedRaster.createChild(0 ,0 ,width ,height ,0 ,0 , null);
   }
   
   /**
@@ -138,13 +138,13 @@ class ColorPaintContext implements PaintContext
      * @param rgbPixel The RGB value of the color for this raster.
      */
     ColorRaster(ColorModel cm,int x, int y, int width, int height, int rgbPixel)
-    {         
+    {
       super(cm.createCompatibleSampleModel(width,height),new Point(x,y));
       Object pixel = cm.getDataElements(rgbPixel,null);
-      getSampleModel().setDataElements(0, 0,
-                                       width, height,
-                                       multiplyData(pixel,null,width*height),
-                                       dataBuffer);
+      int[] pixelComps = cm.getComponents(pixel, null, 0);
+      int[] d = (int[]) multiplyData(pixelComps,null,width*height);
+      getSampleModel().setPixels(0, 0, width, height, d,
+                                 dataBuffer);
     }
     
     

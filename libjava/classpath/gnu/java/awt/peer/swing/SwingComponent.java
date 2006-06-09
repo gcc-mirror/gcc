@@ -62,7 +62,7 @@ public interface SwingComponent
 
   /**
    * Handles a mouse event. This is usually forwarded to
-   * {@link Component#processMouseMotionEvent(MouseEvent)} of the swing
+   * {@link java.awt.Component#processMouseMotionEvent(MouseEvent)} of the swing
    * component.
    *
    * @param ev the mouse event
@@ -71,7 +71,7 @@ public interface SwingComponent
 
   /**
    * Handles a mouse motion event. This is usually forwarded to
-   * {@link Component#processMouseEvent(MouseEvent)} of the swing
+   * {@link java.awt.Component#processMouseEvent(MouseEvent)} of the swing
    * component.
    *
    * @param ev the mouse motion event
@@ -80,7 +80,7 @@ public interface SwingComponent
 
   /**
    * Handles a key event. This is usually forwarded to
-   * {@link Component#processKeyEvent(KeyEvent)} of the swing
+   * {@link java.awt.Component#processKeyEvent(KeyEvent)} of the swing
    * component.
    *
    * @param ev the key event

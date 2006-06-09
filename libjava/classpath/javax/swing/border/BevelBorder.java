@@ -479,7 +479,7 @@ public class BevelBorder extends AbstractBorder
       ((highlightOuter == null) || (highlightOuter.getAlpha() == 255))
       && ((highlightInner == null) || (highlightInner.getAlpha() == 255))
       && ((shadowInner == null) || (shadowInner.getAlpha() == 255))
-      && ((shadowOuter == null) ||(shadowOuter.getAlpha() == 255));
+      && ((shadowOuter == null) || (shadowOuter.getAlpha() == 255));
   }
 
 

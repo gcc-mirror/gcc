@@ -38,6 +38,12 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.getopt.Option;
+import gnu.classpath.tools.getopt.OptionException;
+import gnu.classpath.tools.getopt.OptionGroup;
+import gnu.classpath.tools.getopt.Parser;
+
 import java.util.logging.Logger;
 
 /**
@@ -55,7 +61,7 @@ import java.util.logging.Logger;
  *      option is omitted, the tool will process STDIN.
  *      <p></dd>
  *      
- *      <dt>-storetype STORE_TYP}</dt>
+ *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
  *      <code>keystore.type</code> in the security properties file, which is
@@ -97,11 +103,11 @@ import java.util.logging.Logger;
 class IdentityDBCmd extends Command
 {
   private static final Logger log = Logger.getLogger(IdentityDBCmd.class.getName());
-  private String _idbFileName;
-  private String _ksType;
-  private String _ksURL;
-  private String _ksPassword;
-  private String _providerClassName;
+  protected String _idbFileName;
+  protected String _ksType;
+  protected String _ksURL;
+  protected String _ksPassword;
+  protected String _providerClassName;
 
   // default 0-arguments constructor
 
@@ -139,47 +145,85 @@ class IdentityDBCmd extends Command
 
   // life-cycle methods -------------------------------------------------------
 
-  int processArgs(String[] args, int i)
-  {
-    int limit = args.length;
-    String opt;
-    while (++i < limit)
-      {
-        opt = args[i];
-        log.finest("args[" + i + "]=" + opt);
-        if (opt == null || opt.length() == 0)
-          continue;
-
-        if ("-file".equals(opt)) // -file FILE_NAME
-          _idbFileName = args[++i];
-        else if ("-storetype".equals(opt)) // -storetype STORE_TYPE
-          _ksType = args[++i];
-        else if ("-keystore".equals(opt)) // -keystore URL
-          _ksURL = args[++i];
-        else if ("-storepass".equals(opt)) // -storepass PASSWORD
-          _ksPassword = args[++i];
-        else if ("-provider".equals(opt)) // -provider PROVIDER_CLASS_NAME
-          _providerClassName = args[++i];
-        else if ("-v".equals(opt))
-          verbose = true;
-        else
-          break;
-      }
-
-    return i;
-  }
-
   void setup() throws Exception
   {
     setInputStreamParam(_idbFileName);
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
 
-    log.finer("-identitydb handler will use the following options:");
-    log.finer("  -file=" + _idbFileName);
-    log.finer("  -storetype=" + storeType);
-    log.finer("  -keystore=" + storeURL);
-    log.finer("  -storepass=" + new String(storePasswordChars));
-    log.finer("  -provider=" + provider);
-    log.finer("  -v=" + verbose);
+    log.finer("-identitydb handler will use the following options:"); //$NON-NLS-1$
+    log.finer("  -file=" + _idbFileName); //$NON-NLS-1$
+    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
+    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
+    log.finer("  -provider=" + provider); //$NON-NLS-1$
+    log.finer("  -v=" + verbose); //$NON-NLS-1$
+  }
+
+  // own methods --------------------------------------------------------------
+
+  Parser getParser()
+  {
+    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
+
+    Parser result = new ClasspathToolParser(Main.IDENTITYDB_CMD, true);
+    result.setHeader(Messages.getString("IdentityDBCmd.7")); //$NON-NLS-1$
+    result.setFooter(Messages.getString("IdentityDBCmd.8")); //$NON-NLS-1$
+    OptionGroup options = new OptionGroup(Messages.getString("IdentityDBCmd.9")); //$NON-NLS-1$
+    options.add(new Option(Main.FILE_OPT,
+                           Messages.getString("IdentityDBCmd.10"), //$NON-NLS-1$
+                           Messages.getString("IdentityDBCmd.11")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _idbFileName = argument;
+      }
+    });
+    options.add(new Option(Main.STORETYPE_OPT,
+                           Messages.getString("IdentityDBCmd.12"), //$NON-NLS-1$
+                           Messages.getString("IdentityDBCmd.13")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksType = argument;
+      }
+    });
+    options.add(new Option(Main.KEYSTORE_OPT,
+                           Messages.getString("IdentityDBCmd.14"), //$NON-NLS-1$
+                           Messages.getString("IdentityDBCmd.15")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksURL = argument;
+      }
+    });
+    options.add(new Option(Main.STOREPASS_OPT,
+                           Messages.getString("IdentityDBCmd.16"), //$NON-NLS-1$
+                           Messages.getString("IdentityDBCmd.17")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksPassword = argument;
+      }
+    });
+    options.add(new Option(Main.PROVIDER_OPT,
+                           Messages.getString("IdentityDBCmd.18"), //$NON-NLS-1$
+                           Messages.getString("IdentityDBCmd.19")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _providerClassName = argument;
+      }
+    });
+    options.add(new Option(Main.VERBOSE_OPT,
+                           Messages.getString("IdentityDBCmd.20")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        verbose = true;
+      }
+    });
+    result.add(options);
+
+    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    return result;
   }
 }

@@ -1142,9 +1142,9 @@ public class JTree extends JComponent implements Scrollable, Accessible
 
     public boolean isLeaf()
     {
-      return (childValue == null || !(childValue instanceof Hashtable
-          || childValue instanceof Vector || childValue.getClass()
-          .isArray()));
+      return childValue == null || !(childValue instanceof Hashtable
+          || childValue instanceof Vector 
+          || childValue.getClass().isArray());
     }
 
     public static void createChildren(DefaultMutableTreeNode parent,
@@ -1478,7 +1478,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
    */
   public JTree()
   {
-    this(createTreeModel(null));
+    this(getDefaultTreeModel());
   }
 
   /**
@@ -1509,13 +1509,18 @@ public class JTree extends JComponent implements Scrollable, Accessible
   public JTree(TreeModel model)
   {
     setRootVisible(true);
-    // The setModel also calls the updateUI
-    setModel(model);
     setSelectionModel(new EmptySelectionModel());
     selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     
     // The root node appears expanded by default.
-    nodeStates.put(new TreePath(model.getRoot()), EXPANDED);
+    nodeStates = new Hashtable();
+
+    // Install the UI before installing the model. This way we avoid double
+    // initialization of lots of UI and model stuff inside the UI and related
+    // classes. The necessary UI updates are performed via property change
+    // events to the UI.
+    updateUI();
+    setModel(model);
   }
 
   /**
@@ -1897,6 +1902,10 @@ public class JTree extends JComponent implements Scrollable, Accessible
     if (treeModel == model)
       return;
 
+    // Remove listeners from old model.
+    if (treeModel != null && treeModelListener != null)
+      treeModel.removeTreeModelListener(treeModelListener);
+
     // add treeModelListener to the new model
     if (treeModelListener == null)
       treeModelListener = createTreeModelListener();
@@ -1905,9 +1914,22 @@ public class JTree extends JComponent implements Scrollable, Accessible
 
     TreeModel oldValue = treeModel;
     treeModel = model;
+    clearToggledPaths();
+
+    if (treeModel != null)
+      {
+        if (treeModelListener == null)
+          treeModelListener = createTreeModelListener();
+        if (treeModelListener != null)
+          treeModel.addTreeModelListener(treeModelListener);
+        Object root = treeModel.getRoot();
+        if (root != null && !treeModel.isLeaf(root))
+          {
+            nodeStates.put(new TreePath(root), Boolean.TRUE);
+          }
+      }
 
     firePropertyChange(TREE_MODEL_PROPERTY, oldValue, model);
-    updateUI();
   }
 
   /**
@@ -2316,7 +2338,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
             selectionModel.addSelectionPath(path);
           }
         
-        if (oldValue!=null)
+        if (oldValue != null)
           repaint(getPathBounds(oldValue));
         
         firePropertyChange(LEAD_SELECTION_PATH_PROPERTY, oldValue, path);

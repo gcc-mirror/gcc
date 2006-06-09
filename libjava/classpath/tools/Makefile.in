@@ -14,6 +14,8 @@
 
 @SET_MAKE@
 
+
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -37,9 +39,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@CREATE_WRAPPERS_TRUE@bin_PROGRAMS = appletviewer$(EXEEXT) \
+@CREATE_WRAPPERS_TRUE@	jarsigner$(EXEEXT) keytool$(EXEEXT)
 subdir = tools
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/jarsigner.sh.in $(srcdir)/keytool.sh.in
+	$(srcdir)/appletviewer.in $(srcdir)/jarsigner.in \
+	$(srcdir)/keytool.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
@@ -52,18 +57,53 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES = jarsigner.sh keytool.sh
-SOURCES =
-DIST_SOURCES =
+CONFIG_CLEAN_FILES = appletviewer jarsigner keytool
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
+	"$(DESTDIR)$(TOOLSdir)"
+binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
+PROGRAMS = $(bin_PROGRAMS)
+am__appletviewer_SOURCES_DIST = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@am_appletviewer_OBJECTS =  \
+@CREATE_WRAPPERS_TRUE@	appletviewer-toolwrapper.$(OBJEXT)
+appletviewer_OBJECTS = $(am_appletviewer_OBJECTS)
+appletviewer_LDADD = $(LDADD)
+am__jarsigner_SOURCES_DIST = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@am_jarsigner_OBJECTS =  \
+@CREATE_WRAPPERS_TRUE@	jarsigner-toolwrapper.$(OBJEXT)
+jarsigner_OBJECTS = $(am_jarsigner_OBJECTS)
+jarsigner_LDADD = $(LDADD)
+am__keytool_SOURCES_DIST = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@am_keytool_OBJECTS =  \
+@CREATE_WRAPPERS_TRUE@	keytool-toolwrapper.$(OBJEXT)
+keytool_OBJECTS = $(am_keytool_OBJECTS)
+keytool_LDADD = $(LDADD)
+binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
+SCRIPTS = $(bin_SCRIPTS)
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
+depcomp = $(SHELL) $(top_srcdir)/depcomp
+am__depfiles_maybe = depfiles
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(appletviewer_SOURCES) $(jarsigner_SOURCES) \
+	$(keytool_SOURCES)
+DIST_SOURCES = $(am__appletviewer_SOURCES_DIST) \
+	$(am__jarsigner_SOURCES_DIST) $(am__keytool_SOURCES_DIST)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(TOOLSdir)"
 TOOLSDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(TOOLS_DATA)
+ETAGS = etags
+CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -75,8 +115,6 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BUILD_CLASS_FILES_FALSE = @BUILD_CLASS_FILES_FALSE@
 BUILD_CLASS_FILES_TRUE = @BUILD_CLASS_FILES_TRUE@
-CAIRO_CFLAGS = @CAIRO_CFLAGS@
-CAIRO_LIBS = @CAIRO_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -103,8 +141,12 @@ CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
 CREATE_JNI_HEADERS_TRUE = @CREATE_JNI_HEADERS_TRUE@
 CREATE_JNI_LIBRARIES_FALSE = @CREATE_JNI_LIBRARIES_FALSE@
 CREATE_JNI_LIBRARIES_TRUE = @CREATE_JNI_LIBRARIES_TRUE@
+CREATE_PLUGIN_FALSE = @CREATE_PLUGIN_FALSE@
+CREATE_PLUGIN_TRUE = @CREATE_PLUGIN_TRUE@
 CREATE_QT_PEER_LIBRARIES_FALSE = @CREATE_QT_PEER_LIBRARIES_FALSE@
 CREATE_QT_PEER_LIBRARIES_TRUE = @CREATE_QT_PEER_LIBRARIES_TRUE@
+CREATE_WRAPPERS_FALSE = @CREATE_WRAPPERS_FALSE@
+CREATE_WRAPPERS_TRUE = @CREATE_WRAPPERS_TRUE@
 CREATE_XMLJ_LIBRARY_FALSE = @CREATE_XMLJ_LIBRARY_FALSE@
 CREATE_XMLJ_LIBRARY_TRUE = @CREATE_XMLJ_LIBRARY_TRUE@
 CXX = @CXX@
@@ -127,6 +169,8 @@ EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
 FASTJAR = @FASTJAR@
 FIND = @FIND@
+FOUND_CACAO_FALSE = @FOUND_CACAO_FALSE@
+FOUND_CACAO_TRUE = @FOUND_CACAO_TRUE@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
 FOUND_GCJX_FALSE = @FOUND_GCJX_FALSE@
@@ -142,9 +186,8 @@ FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
 GJDOC = @GJDOC@
-GTK_CAIRO_ENABLED = @GTK_CAIRO_ENABLED@
-GTK_CAIRO_FALSE = @GTK_CAIRO_FALSE@
-GTK_CAIRO_TRUE = @GTK_CAIRO_TRUE@
+GLIB_CFLAGS = @GLIB_CFLAGS@
+GLIB_LIBS = @GLIB_LIBS@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 INIT_LOAD_LIBRARY = @INIT_LOAD_LIBRARY@
@@ -166,6 +209,7 @@ KJC = @KJC@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
 LIBICONV = @LIBICONV@
+LIBMAGIC = @LIBMAGIC@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -179,6 +223,8 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MKDIR = @MKDIR@
 MOC = @MOC@
+MOZILLA_CFLAGS = @MOZILLA_CFLAGS@
+MOZILLA_LIBS = @MOZILLA_LIBS@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -192,6 +238,7 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
+PLUGIN_DIR = @PLUGIN_DIR@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
@@ -211,11 +258,13 @@ USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
+VM_BINARY = @VM_BINARY@
 WARNING_CFLAGS = @WARNING_CFLAGS@
 XML_CFLAGS = @XML_CFLAGS@
 XML_LIBS = @XML_LIBS@
 XSLT_CFLAGS = @XSLT_CFLAGS@
 XSLT_LIBS = @XSLT_LIBS@
+XTEST_LIBS = @XTEST_LIBS@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
@@ -277,6 +326,33 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 
 # Setup the compiler to use the GNU Classpath library we just build
 @FOUND_GCJ_TRUE@JCOMPILER = $(GCJ) -encoding UTF-8 --bootclasspath $(GLIBJ_CLASSPATH) --classpath . -C
+@CREATE_WRAPPERS_FALSE@bin_SCRIPTS = appletviewer jarsigner keytool
+@CREATE_WRAPPERS_TRUE@bin_SCRIPTS = 
+@CREATE_WRAPPERS_TRUE@@FOUND_CACAO_FALSE@@FOUND_GCJ_FALSE@LIBJVM = 
+@CREATE_WRAPPERS_TRUE@@FOUND_CACAO_TRUE@@FOUND_GCJ_FALSE@LIBJVM = -ljvm
+@CREATE_WRAPPERS_TRUE@@FOUND_GCJ_TRUE@LIBJVM = -lgcj
+@CREATE_WRAPPERS_TRUE@appletviewer_SOURCES = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@appletviewer_CFLAGS = -Wall \
+@CREATE_WRAPPERS_TRUE@	-DDATA_DIR="\"$(datadir)\"" \
+@CREATE_WRAPPERS_TRUE@	-DPACKAGE="\"$(PACKAGE)\"" \
+@CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"appletviewer\""
+
+@CREATE_WRAPPERS_TRUE@appletviewer_LDFLAGS = -L$(libdir) $(LIBJVM)
+@CREATE_WRAPPERS_TRUE@jarsigner_SOURCES = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@jarsigner_CFLAGS = -Wall \
+@CREATE_WRAPPERS_TRUE@	-DDATA_DIR="\"$(datadir)\"" \
+@CREATE_WRAPPERS_TRUE@	-DPACKAGE="\"$(PACKAGE)\"" \
+@CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"jarsigner\""
+
+@CREATE_WRAPPERS_TRUE@jarsigner_LDFLAGS = -L$(libdir) $(LIBJVM)
+@CREATE_WRAPPERS_TRUE@keytool_SOURCES = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@keytool_CFLAGS = -Wall \
+@CREATE_WRAPPERS_TRUE@	-DDATA_DIR="\"$(datadir)\"" \
+@CREATE_WRAPPERS_TRUE@	-DPACKAGE="\"$(PACKAGE)\"" \
+@CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"keytool\""
+
+@CREATE_WRAPPERS_TRUE@keytool_LDFLAGS = -L$(libdir) $(LIBJVM)
+EXTRA_DIST = toolwrapper.c appletviewer.in jarsigner.in keytool.in
 
 # All our example java source files
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*.java $(srcdir)/gnu/classpath/tools/*/*.java $(srcdir)/gnu/classpath/tools/*/*/*.java
@@ -288,7 +364,7 @@ TOOLS_ZIP = tools.zip
 BUILT_SOURCES = $(TOOLS_ZIP)
 
 # The templates that must be included into the generated zip file.
-GRMIC_TEMPLATES = $(srcdir)/gnu/classpath/tools/giop/grmic/templates/*.jav 
+GRMIC_TEMPLATES = $(srcdir)/gnu/classpath/tools/giop/grmic/templates/*.jav
 RMIC_TEMPLATES = $(srcdir)/gnu/classpath/tools/rmi/rmic/templates/*.jav
 TOOLS_TEMPLATES = $(GRMIC_TEMPLATES) $(RMIC_TEMPLATES)
 
@@ -312,6 +388,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
+.SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -341,10 +418,157 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-jarsigner.sh: $(top_builddir)/config.status $(srcdir)/jarsigner.sh.in
+appletviewer: $(top_builddir)/config.status $(srcdir)/appletviewer.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-keytool.sh: $(top_builddir)/config.status $(srcdir)/keytool.sh.in
+jarsigner: $(top_builddir)/config.status $(srcdir)/jarsigner.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+keytool: $(top_builddir)/config.status $(srcdir)/keytool.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  if test -f $$p \
+	     || test -f $$p1 \
+	  ; then \
+	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) --mode=install $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
+	   $(INSTALL_PROGRAM_ENV) $(LIBTOOL) --mode=install $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
+	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	done
+
+clean-binPROGRAMS:
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  echo " rm -f $$p $$f"; \
+	  rm -f $$p $$f ; \
+	done
+
+installcheck-binPROGRAMS: $(bin_PROGRAMS)
+	bad=0; pid=$$$$; list="$(bin_PROGRAMS)"; for p in $$list; do \
+	  case ' $(AM_INSTALLCHECK_STD_OPTIONS_EXEMPT) ' in \
+	   *" $$p "* | *" $(srcdir)/$$p "*) continue;; \
+	  esac; \
+	  f=`echo "$$p" | \
+	     sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
+	  for opt in --help --version; do \
+	    if "$(DESTDIR)$(bindir)/$$f" $$opt >c$${pid}_.out \
+	         2>c$${pid}_.err </dev/null \
+		 && test -n "`cat c$${pid}_.out`" \
+		 && test -z "`cat c$${pid}_.err`"; then :; \
+	    else echo "$$f does not support $$opt" 1>&2; bad=1; fi; \
+	  done; \
+	done; rm -f c$${pid}_.???; exit $$bad
+appletviewer$(EXEEXT): $(appletviewer_OBJECTS) $(appletviewer_DEPENDENCIES) 
+	@rm -f appletviewer$(EXEEXT)
+	$(LINK) $(appletviewer_LDFLAGS) $(appletviewer_OBJECTS) $(appletviewer_LDADD) $(LIBS)
+jarsigner$(EXEEXT): $(jarsigner_OBJECTS) $(jarsigner_DEPENDENCIES) 
+	@rm -f jarsigner$(EXEEXT)
+	$(LINK) $(jarsigner_LDFLAGS) $(jarsigner_OBJECTS) $(jarsigner_LDADD) $(LIBS)
+keytool$(EXEEXT): $(keytool_OBJECTS) $(keytool_DEPENDENCIES) 
+	@rm -f keytool$(EXEEXT)
+	$(LINK) $(keytool_LDFLAGS) $(keytool_OBJECTS) $(keytool_LDADD) $(LIBS)
+install-binSCRIPTS: $(bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
+	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f $$d$$p; then \
+	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
+	    echo " $(binSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(bindir)/$$f'"; \
+	    $(binSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(bindir)/$$f"; \
+	  else :; fi; \
+	done
+
+uninstall-binSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
+	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	done
+
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT)
+
+distclean-compile:
+	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appletviewer-toolwrapper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jarsigner-toolwrapper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keytool-toolwrapper.Po@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+.c.lo:
+@am__fastdepCC_TRUE@	if $(LTCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Plo"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+appletviewer-toolwrapper.o: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(appletviewer_CFLAGS) $(CFLAGS) -MT appletviewer-toolwrapper.o -MD -MP -MF "$(DEPDIR)/appletviewer-toolwrapper.Tpo" -c -o appletviewer-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/appletviewer-toolwrapper.Tpo" "$(DEPDIR)/appletviewer-toolwrapper.Po"; else rm -f "$(DEPDIR)/appletviewer-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='appletviewer-toolwrapper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(appletviewer_CFLAGS) $(CFLAGS) -c -o appletviewer-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c
+
+appletviewer-toolwrapper.obj: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(appletviewer_CFLAGS) $(CFLAGS) -MT appletviewer-toolwrapper.obj -MD -MP -MF "$(DEPDIR)/appletviewer-toolwrapper.Tpo" -c -o appletviewer-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/appletviewer-toolwrapper.Tpo" "$(DEPDIR)/appletviewer-toolwrapper.Po"; else rm -f "$(DEPDIR)/appletviewer-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='appletviewer-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(appletviewer_CFLAGS) $(CFLAGS) -c -o appletviewer-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
+
+jarsigner-toolwrapper.o: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jarsigner_CFLAGS) $(CFLAGS) -MT jarsigner-toolwrapper.o -MD -MP -MF "$(DEPDIR)/jarsigner-toolwrapper.Tpo" -c -o jarsigner-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/jarsigner-toolwrapper.Tpo" "$(DEPDIR)/jarsigner-toolwrapper.Po"; else rm -f "$(DEPDIR)/jarsigner-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='jarsigner-toolwrapper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jarsigner_CFLAGS) $(CFLAGS) -c -o jarsigner-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c
+
+jarsigner-toolwrapper.obj: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jarsigner_CFLAGS) $(CFLAGS) -MT jarsigner-toolwrapper.obj -MD -MP -MF "$(DEPDIR)/jarsigner-toolwrapper.Tpo" -c -o jarsigner-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/jarsigner-toolwrapper.Tpo" "$(DEPDIR)/jarsigner-toolwrapper.Po"; else rm -f "$(DEPDIR)/jarsigner-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='jarsigner-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jarsigner_CFLAGS) $(CFLAGS) -c -o jarsigner-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
+
+keytool-toolwrapper.o: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(keytool_CFLAGS) $(CFLAGS) -MT keytool-toolwrapper.o -MD -MP -MF "$(DEPDIR)/keytool-toolwrapper.Tpo" -c -o keytool-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/keytool-toolwrapper.Tpo" "$(DEPDIR)/keytool-toolwrapper.Po"; else rm -f "$(DEPDIR)/keytool-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='keytool-toolwrapper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(keytool_CFLAGS) $(CFLAGS) -c -o keytool-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c
+
+keytool-toolwrapper.obj: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(keytool_CFLAGS) $(CFLAGS) -MT keytool-toolwrapper.obj -MD -MP -MF "$(DEPDIR)/keytool-toolwrapper.Tpo" -c -o keytool-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/keytool-toolwrapper.Tpo" "$(DEPDIR)/keytool-toolwrapper.Po"; else rm -f "$(DEPDIR)/keytool-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='keytool-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(keytool_CFLAGS) $(CFLAGS) -c -o keytool-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -372,12 +596,54 @@ uninstall-TOOLSDATA:
 	  echo " rm -f '$(DESTDIR)$(TOOLSdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(TOOLSdir)/$$f"; \
 	done
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -fID $$unique
 tags: TAGS
-TAGS:
 
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	if test -z "$(ETAGS_ARGS)$$tags$$unique"; then :; else \
+	  test -n "$$unique" || unique=$$empty_fix; \
+	  $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	    $$tags $$unique; \
+	fi
 ctags: CTAGS
-CTAGS:
+CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(CTAGS_ARGS)$$tags$$unique" \
+	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
+	     $$tags $$unique
 
+GTAGS:
+	here=`$(am__cd) $(top_builddir) && pwd` \
+	  && cd $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) $$here
+
+distclean-tags:
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
@@ -412,9 +678,9 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(DATA)
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(TOOLSdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(TOOLSdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -445,11 +711,14 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-local mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
+	mostlyclean-am
 
 distclean: distclean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-libtool
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-libtool distclean-tags
 
 dvi: dvi-am
 
@@ -463,21 +732,23 @@ info-am:
 
 install-data-am: install-TOOLSDATA
 
-install-exec-am:
+install-exec-am: install-binPROGRAMS install-binSCRIPTS
 
 install-info: install-info-am
 
 install-man:
 
-installcheck-am:
+installcheck-am: installcheck-binPROGRAMS installcheck-binSCRIPTS
 
 maintainer-clean: maintainer-clean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-generic mostlyclean-libtool
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool
 
 pdf: pdf-am
 
@@ -487,18 +758,23 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-TOOLSDATA uninstall-info-am
+uninstall-am: uninstall-TOOLSDATA uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-info-am
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	clean-local dist-hook distclean distclean-generic \
-	distclean-libtool distdir dvi dvi-am html html-am info info-am \
-	install install-TOOLSDATA install-am install-data \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
+	clean-generic clean-libtool clean-local ctags dist-hook \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-TOOLSDATA install-am \
+	install-binPROGRAMS install-binSCRIPTS install-data \
 	install-data-am install-exec install-exec-am install-info \
 	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am uninstall \
-	uninstall-TOOLSDATA uninstall-am uninstall-info-am
+	installcheck-am installcheck-binPROGRAMS \
+	installcheck-binSCRIPTS installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-TOOLSDATA uninstall-am \
+	uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-info-am
 
 @FOUND_ECJ_FALSE@@FOUND_GCJX_FALSE@@FOUND_GCJ_FALSE@@FOUND_JIKES_FALSE@error dunno how to setup the JCOMPILER and compile
 
@@ -523,11 +799,14 @@ dist-hook:
 $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 	mkdir -p classes/gnu/classpath/tools/giop/grmic/templates
 	mkdir -p classes/gnu/classpath/tools/rmi/rmic/templates
+	mkdir -p classes/gnu/classpath/tools/appletviewer
+	mkdir -p classes/gnu/classpath/tools/jarsigner
+	mkdir -p classes/gnu/classpath/tools/keytool
 	cp $(RMIC_TEMPLATES) classes/gnu/classpath/tools/rmi/rmic/templates
-	cp $(GRMIC_TEMPLATES) classes/gnu/classpath/tools/giop/grmic/templates	
+	cp $(GRMIC_TEMPLATES) classes/gnu/classpath/tools/giop/grmic/templates
 	cp $(RMI_HELPS) classes/gnu/classpath/tools/rmi/
 	cp $(GIOP_HELPS) classes/gnu/classpath/tools/giop/
-	$(JCOMPILER) -d classes $(TOOLS_JAVA_FILES) 
+	$(JCOMPILER) -d classes $(TOOLS_JAVA_FILES)
 	(cd classes; \
 	if test "$(ZIP)" != ""; then $(ZIP) -r ../$(TOOLS_ZIP) .; fi; \
 	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf ../$(TOOLS_ZIP) .; fi; \
@@ -537,6 +816,10 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 # Zip file be gone! (and make sure the classes are gone too)
 clean-local:
 	rm -rf $(TOOLS_ZIP) classes
+
+# FIXME: remove this when GNU Classpath includes a bootstrap VM.
+installcheck-binSCRIPTS:
+	:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

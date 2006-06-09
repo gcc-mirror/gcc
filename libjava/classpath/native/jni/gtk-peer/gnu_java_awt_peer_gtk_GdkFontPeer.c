@@ -35,6 +35,13 @@
    obligated to do so.  If you do not wish to do so, delete this
    exception statement from your version. */
 
+#include <pango/pango.h>
+#include <pango/pangoft2.h>
+#include <pango/pangofc-font.h>
+#include <freetype/ftglyph.h>
+#include <freetype/ftoutln.h>
+#include <freetype/fttypes.h>
+#include <freetype/tttables.h>
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkFontPeer.h"
 
@@ -52,25 +59,11 @@ enum java_awt_font_baseline {
   java_awt_font_HANGING_BASELINE = 2
 };
 
-static jmethodID glyphVector_ctor;
-static jclass glyphVector_class;
-static PangoAttrList *attrs = NULL;
-
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkFontPeer_initStaticState 
   (JNIEnv *env, jclass clazz)
 {
   NSA_FONT_INIT (env, clazz);
-
-  glyphVector_class = (*env)->FindClass 
-    (env, "gnu/java/awt/peer/gtk/GdkGlyphVector");
-
-  glyphVector_class = (*env)->NewGlobalRef
-    (env, glyphVector_class);
-
-  glyphVector_ctor = (*env)->GetMethodID 
-    (env, glyphVector_class, "<init>", 
-     "([D[ILjava/awt/Font;Ljava/awt/font/FontRenderContext;)V");
 }
 
 JNIEXPORT void JNICALL
@@ -114,123 +107,25 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_dispose
 }
 
 
-JNIEXPORT jobject JNICALL
-Java_gnu_java_awt_peer_gtk_GdkFontPeer_getGlyphVector
-  (JNIEnv *env, jobject self, 
-   jstring chars,
-   jobject font, 
-   jobject fontRenderContext)
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkFontPeer_releasePeerGraphicsResource
+   (JNIEnv *env, jobject java_font)
 {
   struct peerfont *pfont = NULL;
-  GList *items = NULL;
-  GList *i = NULL;
-  gchar *str = NULL;
-  int len = 0;
-  int j = 0;
-  double *native_extents = NULL;
-  int *native_codes = NULL;
-  jintArray java_codes = NULL;
-  jdoubleArray java_extents = NULL;
 
-  gdk_threads_enter ();
+  gdk_threads_enter();
 
-  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, self);
+  pfont = (struct peerfont *) NSA_GET_FONT_PTR (env, java_font);
   g_assert (pfont != NULL);
-
-  len = (*cp_gtk_gdk_env())->GetStringUTFLength (env, chars);  
-  str = (gchar *)(*env)->GetStringUTFChars (env, chars, NULL);
-  g_assert (str != NULL);
-
-  if (attrs == NULL)
-    attrs = pango_attr_list_new ();
-
-  if (len > 0 && str[len-1] == '\0')
-    len--;
-  
-  items = pango_itemize (pfont->ctx, str, 0, len, attrs, NULL);
-
-  i = g_list_first (items);
-
-  if (i == NULL)       
+  if (pfont->graphics_resource != NULL)
     {
-      java_extents = (*env)->NewDoubleArray (env, 0);
-      java_codes = (*env)->NewIntArray (env, 0);
-    }
-  else
-    { 
-      PangoGlyphString *glyphs;
-      PangoItem *item = (PangoItem *)i->data;
-
-      pango_context_set_font_description (pfont->ctx, pfont->desc);
-      pango_context_set_language (pfont->ctx, gtk_get_default_language());
-      pango_context_load_font (pfont->ctx, pfont->desc);
-
-      glyphs = pango_glyph_string_new ();
-      g_assert (glyphs != NULL);
-
-      pango_shape (str + item->offset, item->length, 
-		   &(item->analysis), glyphs);
-
-      if (glyphs->num_glyphs > 0)
-	{
-	  int x = 0;
-	  double scale = ((double) PANGO_SCALE);
-
-	  java_extents = (*env)->NewDoubleArray (env, glyphs->num_glyphs * NUM_GLYPH_METRICS);
-	  java_codes = (*env)->NewIntArray (env, glyphs->num_glyphs);
-
-	  native_extents = (*env)->GetDoubleArrayElements (env, java_extents, NULL);
-	  native_codes = (*env)->GetIntArrayElements (env, java_codes, NULL);
-
-	  for (j = 0; j < glyphs->num_glyphs; ++j)
-	    {
-	      PangoRectangle ink;
-	      PangoRectangle logical;
-	      PangoGlyphGeometry *geom = &glyphs->glyphs[j].geometry;
-
-	      pango_font_get_glyph_extents (pfont->font, 
-					    glyphs->glyphs[j].glyph,
-					    &ink, &logical);
-
-	      native_codes[j] = glyphs->glyphs[j].glyph;
-
-	      native_extents[ GLYPH_LOG_X(j)      ] = (logical.x)      / scale;
-	      native_extents[ GLYPH_LOG_Y(j)      ] = (- logical.y)    / scale;
-	      native_extents[ GLYPH_LOG_WIDTH(j)  ] = (logical.width)  / scale;
-	      native_extents[ GLYPH_LOG_HEIGHT(j) ] = (logical.height) / scale;
-
-	      native_extents[ GLYPH_INK_X(j)      ] = (ink.x)       / scale;
-	      native_extents[ GLYPH_INK_Y(j)      ] = (- ink.y)     / scale;
-	      native_extents[ GLYPH_INK_WIDTH(j)  ] = (ink.width)   / scale;
-	      native_extents[ GLYPH_INK_HEIGHT(j) ] = (ink.height)  / scale;
-
-	      native_extents[ GLYPH_POS_X(j)      ] = (x + geom->x_offset)  / scale;
-	      native_extents[ GLYPH_POS_Y(j)      ] = (  - geom->y_offset)  / scale;
-
-	      x += geom->width;
-	    }
-	  (*env)->ReleaseDoubleArrayElements (env, java_extents, native_extents, 0);
-	  (*env)->ReleaseIntArrayElements (env, java_codes, native_codes, 0);
-	}
-
-      pango_glyph_string_free (glyphs);
+      cairo_font_face_destroy ((cairo_font_face_t *) pfont->graphics_resource);
+      pfont->graphics_resource = NULL;
     }
 
-  (*env)->ReleaseStringUTFChars (env, chars, str);
-
-  for (i = g_list_first (items); i != NULL; i = g_list_next (i))
-    pango_item_free(i->data);
-
-  g_list_free (items);
-
-  gdk_threads_leave ();
-
-  return (*env)->NewObject (env, 
-			    glyphVector_class, 
-			    glyphVector_ctor, 
-			    java_extents, java_codes,
-			    font, fontRenderContext);
+  gdk_threads_leave();
 }
+
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkFontPeer_getFontMetrics
@@ -389,7 +284,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTextMetrics
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont
-  (JNIEnv *env, jobject self, jstring family_name_str, jint style_int, jint size, jboolean useGraphics2D)
+  (JNIEnv *env, jobject self, jstring family_name_str, jint style_int, jint size)
 {
   struct peerfont *pfont = NULL;
   char const *family_name = NULL;
@@ -426,22 +321,11 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont
   if (style & java_awt_font_ITALIC)
     pango_font_description_set_style (pfont->desc, PANGO_STYLE_ITALIC);
 
-  if (useGraphics2D)
+  pango_font_description_set_size (pfont->desc, size * PANGO_SCALE);
+  if (pfont->ctx == NULL)
     {
-      pango_font_description_set_size (pfont->desc, size * PANGO_SCALE);
-      if (pfont->ctx == NULL)
-	{
-	  ft2_map = PANGO_FT2_FONT_MAP(pango_ft2_font_map_for_display ());
-	  pfont->ctx = pango_ft2_font_map_create_context (ft2_map);
-	}
-    }
-  else
-    {
-      /* GDK uses a slightly different DPI setting. */
-      pango_font_description_set_size (pfont->desc,
-				   size * cp_gtk_dpi_conversion_factor);
-      if (pfont->ctx == NULL)
-	pfont->ctx = gdk_pango_context_get();
+      ft2_map = PANGO_FT2_FONT_MAP(pango_ft2_font_map_for_display ());
+      pfont->ctx = pango_ft2_font_map_create_context (ft2_map);
     }
 
   g_assert (pfont->ctx != NULL);
@@ -465,3 +349,64 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont
 }
 
 
+JNIEXPORT jbyteArray JNICALL 
+Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTrueTypeTable 
+  (JNIEnv *env, jobject self, jbyte n, jbyte a, jbyte m, jbyte e)
+{
+  struct peerfont *pfont = NULL;
+  FT_Face face;
+  FT_ULong length = 0;
+  FT_ULong tag;
+  int error;
+  FT_Byte *buffer;
+  jbyteArray result_array;
+  jbyte *rbuf;
+
+  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, self);
+  if(pfont == NULL)
+    return NULL;
+
+  gdk_threads_enter ();
+  face = pango_fc_font_lock_face ((PangoFcFont *)pfont->font);
+  tag = FT_MAKE_TAG( n, a, m, e );
+
+  /* Get the length of the table requested */
+  error = FT_Load_Sfnt_Table( face, tag, 0, NULL, &length );
+  if ( error ) 
+    {
+      pango_fc_font_unlock_face ((PangoFcFont *)pfont->font);
+      gdk_threads_leave ();
+      return NULL;
+    }
+
+  buffer = (FT_Byte *)g_malloc0( length );
+  if ( buffer == NULL ) 
+    {
+      pango_fc_font_unlock_face ((PangoFcFont *)pfont->font);
+      gdk_threads_leave ();
+      return NULL;
+    }
+  /* get the table data */
+  error = FT_Load_Sfnt_Table( face, tag, 0, buffer, &length );
+  if ( error ) 
+    {
+      pango_fc_font_unlock_face ((PangoFcFont *)pfont->font);
+      g_free(buffer);
+      gdk_threads_leave ();
+      return NULL;
+    }
+
+  /* copy to a jbytearray */
+  result_array = (*env)->NewByteArray (env, length);
+
+  rbuf = (*env)->GetByteArrayElements (env, result_array, NULL);
+  memcpy(rbuf, buffer, length);
+  (*env)->ReleaseByteArrayElements (env, result_array, rbuf, 0);
+
+  g_free(buffer);
+  pango_fc_font_unlock_face ((PangoFcFont *)pfont->font);
+  gdk_threads_leave ();
+
+  /* done */
+  return result_array;
+}

@@ -163,7 +163,7 @@ public class FixedHeightLayoutCache
     {
       // This method may be called in the context when the tree rectangle is
       // not known. To work around this, it is assumed near infinitely large.
-      if (bounds==null)
+      if (bounds == null)
         bounds = getNodeDimensions(node, row, depth, isExpanded, 
                                    new Rectangle());
       return bounds;      
@@ -266,7 +266,7 @@ public class FixedHeightLayoutCache
     if (expanded.contains(node))
       {
         int sc = treeModel.getChildCount(node);
-        int deeper = depth+1;
+        int deeper = depth + 1;
         for (int i = 0; i < sc; i++)
           {
             Object child = treeModel.getChild(node, i);
@@ -283,7 +283,7 @@ public class FixedHeightLayoutCache
   public void invalidatePathBounds(TreePath path)
   {
     NodeRecord r = (NodeRecord) nodes.get(path.getLastPathComponent());
-    if (r!=null)
+    if (r != null)
       r.bounds = null;
   } 
 

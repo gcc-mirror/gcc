@@ -108,7 +108,7 @@ public class JSplitPane extends JComponent implements Accessible
 
     /**
      * Returns an object that provides access to the current, minimum and 
-     * maximum values for the {@link JSlider}.  Since this class implements 
+     * maximum values for the {@link JSplitPane}.  Since this class implements 
      * {@link AccessibleValue}, it returns itself.
      *
      * @return The accessible value.
@@ -136,9 +136,9 @@ public class JSplitPane extends JComponent implements Accessible
      * listeners.  If the supplied value is <code>null</code>, this method 
      * does nothing and returns <code>false</code>.
      *
-     * @param value  the new slider value (<code>null</code> permitted).
+     * @param value  the new divider location (<code>null</code> permitted).
      *
-     * @return <code>true</code> if the slider value is updated, and 
+     * @return <code>true</code> if the divider location value is updated, and 
      *     <code>false</code> otherwise.
      */
     public boolean setCurrentAccessibleValue(Number value)
@@ -699,7 +699,8 @@ public class JSplitPane extends JComponent implements Accessible
    * @param proportionalLocation A double that describes the location of the
    *        divider.
    *
-   * @throws IllegalArgumentException DOCUMENT ME!
+   * @throws IllegalArgumentException if <code>proportionalLocation</code> is
+   *     not in the range from 0.0 to 1.0 inclusive.
    */
   public void setDividerLocation(double proportionalLocation)
   {

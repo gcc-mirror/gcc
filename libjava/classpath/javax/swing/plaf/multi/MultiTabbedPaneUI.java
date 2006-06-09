@@ -364,7 +364,8 @@ public class MultiTabbedPaneUI extends TabbedPaneUI
    * @return The tab index returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public int tabForCoordinate(JTabbedPane pane, int x, int y) {
+  public int tabForCoordinate(JTabbedPane pane, int x, int y) 
+  {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -394,7 +395,8 @@ public class MultiTabbedPaneUI extends TabbedPaneUI
    * @return The bounds returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public Rectangle getTabBounds(JTabbedPane pane, int index) {
+  public Rectangle getTabBounds(JTabbedPane pane, int index) 
+  {
     Rectangle result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -423,7 +425,8 @@ public class MultiTabbedPaneUI extends TabbedPaneUI
    * @return The count returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public int getTabRunCount(JTabbedPane pane) {
+  public int getTabRunCount(JTabbedPane pane) 
+  {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value

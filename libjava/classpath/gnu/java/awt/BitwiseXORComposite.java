@@ -59,7 +59,7 @@ import java.awt.image.WritableRaster;
  * />
  *
  * <p>The above screen shot shows the result of applying six different
- * BitwiseXORComposites. They were constructed with the colors colors
+ * BitwiseXORComposites. They were constructed with the colors
  * white, blue, black, orange, green, and brown, respectively. Each
  * composite was used to paint a fully white rectangle on top of the
  * blue bar in the background.

@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -48,6 +46,7 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.EventListener;
 
 import javax.accessibility.Accessible;
@@ -811,7 +810,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
     return accessibleContext;
   }
 
-  // FIXME: This inner class is a complete stub and needs to be implemented.
+  /**
+   * Implements support for assisitive technologies for <code>JMenu</code>.
+   */
   protected class AccessibleJMenu extends AccessibleJMenuItem
     implements AccessibleSelection
   {
@@ -822,69 +823,245 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
       // Nothing to do here.
     }
 
+    /**
+     * Returns the number of accessible children of this object.
+     *
+     * @return the number of accessible children of this object
+     */
     public int getAccessibleChildrenCount()
-      throws NotImplementedException
     {
-      return 0;
+      Component[] children = getMenuComponents();
+      int count = 0;
+      for (int i = 0; i < children.length; i++)
+        {
+          if (children[i] instanceof Accessible)
+            count++;
+        }
+      return count;
     }
 
-    public Accessible getAccessibleChild(int value0)
-      throws NotImplementedException
+    /**
+     * Returns the accessible child with the specified <code>index</code>.
+     *
+     * @param index the index of the child to fetch
+     *
+     * @return the accessible child with the specified <code>index</code>
+     */
+    public Accessible getAccessibleChild(int index)
     {
-      return null;
+      Component[] children = getMenuComponents();
+      int count = 0;
+      Accessible found = null;
+      for (int i = 0; i < children.length; i++)
+        {
+          if (children[i] instanceof Accessible)
+            {
+              if (count == index)
+                {
+                  found = (Accessible) children[i];
+                  break;
+                }
+              count++;
+            }
+        }
+      return found;
     }
 
+    /**
+     * Returns the accessible selection of this object. AccessibleJMenus handle
+     * their selection themselves, so we always return <code>this</code> here.
+     *
+     * @return the accessible selection of this object
+     */
     public AccessibleSelection getAccessibleSelection()
-      throws NotImplementedException
     {
-      return null;
+      return this;
     }
 
-    public Accessible getAccessibleSelection(int value0)
-      throws NotImplementedException
+    /**
+     * Returns the selected accessible child with the specified
+     * <code>index</code>.
+     *
+     * @param index the index of the accessible selected child to return
+     *
+     * @return the selected accessible child with the specified
+     *         <code>index</code>
+     */
+    public Accessible getAccessibleSelection(int index)
     {
-      return null;
+      Accessible selected = null;
+      // Only one item can be selected, which must therefore have index == 0.
+      if (index == 0)
+        {
+          MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+          MenuElement[] me = msm.getSelectedPath();
+          if (me != null)
+            {
+              for (int i = 0; i < me.length; i++)
+                {
+                  if (me[i] == JMenu.this)
+                    {
+                      // This JMenu is selected, find and return the next
+                      // JMenuItem in the path.
+                      do
+                        {
+                          if (me[i] instanceof Accessible)
+                            {
+                              selected = (Accessible) me[i];
+                              break;
+                            }
+                          i++;
+                        } while (i < me.length);
+                    }
+                  if (selected != null)
+                    break;
+                }
+            }
+        }
+      return selected;
     }
 
-    public boolean isAccessibleChildSelected(int value0)
-      throws NotImplementedException
+    /**
+     * Returns <code>true</code> if the accessible child with the specified
+     * index is selected, <code>false</code> otherwise.
+     *
+     * @param index the index of the accessible child to check
+     *
+     * @return <code>true</code> if the accessible child with the specified
+     *         index is selected, <code>false</code> otherwise
+     */
+    public boolean isAccessibleChildSelected(int index)
     {
-      return false;
+      boolean selected = false;
+      MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+      MenuElement[] me = msm.getSelectedPath();
+      if (me != null)
+        {
+          Accessible toBeFound = getAccessibleChild(index);
+          for (int i = 0; i < me.length; i++)
+            {
+              if (me[i] == toBeFound)
+                {
+                  selected = true;
+                  break;
+                }
+            }
+        }
+      return selected;
     }
 
+    /**
+     * Returns the accessible role of this object, which is
+     * {@link AccessibleRole#MENU} for the AccessibleJMenu.
+     *
+     * @return the accessible role of this object
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.MENU;
     }
 
+    /**
+     * Returns the number of selected accessible children. This will be
+     * <code>0</code> if no item is selected, or <code>1</code> if an item
+     * is selected. AccessibleJMenu can have maximum 1 selected item.
+     *
+     * @return the number of selected accessible children
+     */
     public int getAccessibleSelectionCount()
-      throws NotImplementedException
     {
-      return 0;
+      int count = 0;
+      MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+      MenuElement[] me = msm.getSelectedPath();
+      if (me != null)
+        {
+          for (int i = 0; i < me.length; i++)
+            {
+              if (me[i] == JMenu.this)
+                {
+                  if (i + 1 < me.length)
+                    {
+                      count = 1;
+                      break;
+                    }
+                }
+            }
+        }
+      return count;
     }
 
-    public void addAccessibleSelection(int value0)
-      throws NotImplementedException
+    /**
+     * Selects the accessible child with the specified index.
+     *
+     * @param index the index of the accessible child to select
+     */
+    public void addAccessibleSelection(int index)
     {
-      // TODO: Implement this properly.
+      Accessible child = getAccessibleChild(index);
+      if (child != null && child instanceof JMenuItem)
+        {
+          JMenuItem mi = (JMenuItem) child;
+          MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+          msm.setSelectedPath(createPath(JMenu.this));
+        }
     }
 
-    public void removeAccessibleSelection(int value0)
-      throws NotImplementedException
+    /**
+     * Removes the item with the specified index from the selection.
+     *
+     * @param index the index of the selected item to remove from the selection
+     */
+    public void removeAccessibleSelection(int index)
     {
-      // TODO: Implement this properly.
+      Accessible child = getAccessibleChild(index);
+      if (child != null)
+        {
+          MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+          MenuElement[] oldSelection = msm.getSelectedPath();
+          for (int i = 0; i < oldSelection.length; i++)
+            {
+              if (oldSelection[i] == child)
+                {
+                  // Found the specified child in the selection. Remove it
+                  // from the selection.
+                  MenuElement[] newSel = new MenuElement[i - 1];
+                  System.arraycopy(oldSelection, 0, newSel, 0, i - 1);
+                  msm.setSelectedPath(newSel);
+                  break;
+                }
+            }
+        }
     }
 
+    /**
+     * Removes all possibly selected accessible children of this object from
+     * the selection.
+     */
     public void clearAccessibleSelection()
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+      MenuElement[] oldSelection = msm.getSelectedPath();
+      for (int i = 0; i < oldSelection.length; i++)
+        {
+          if (oldSelection[i] == JMenu.this)
+            {
+              // Found this menu in the selection. Remove all children from
+              // the selection.
+              MenuElement[] newSel = new MenuElement[i];
+              System.arraycopy(oldSelection, 0, newSel, 0, i);
+              msm.setSelectedPath(newSel);
+              break;
+            }
+        }
     }
 
+    /**
+     * AccessibleJMenu don't support multiple selection, so this method
+     * does nothing.
+     */
     public void selectAllAccessibleSelection()
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      // Nothing to do here.
     }
   }
 
@@ -939,4 +1116,44 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
     }
   }
 
+  /**
+   * Creates an array to be feeded as argument to
+   * {@link MenuSelectionManager#setSelectedPath(MenuElement[])} for the
+   * specified element. This has the effect of selecting the specified element
+   * and all its parents.
+   *
+   * @param leaf the leaf element for which to create the selected path
+   *
+   * @return the selected path array
+   */
+  MenuElement[] createPath(JMenu leaf)
+  {
+    ArrayList path = new ArrayList();
+    MenuElement[] array = null;
+    Component current = leaf.getPopupMenu();
+    while (true)
+      {
+        if (current instanceof JPopupMenu)
+          {
+            JPopupMenu popupMenu = (JPopupMenu) current;
+            path.add(0, popupMenu);
+            current = popupMenu.getInvoker();
+          }
+        else if (current instanceof JMenu)
+          {
+            JMenu menu = (JMenu) current;
+            path.add(0, menu);
+            current = menu.getParent();
+          }
+        else if (current instanceof JMenuBar)
+          {
+            JMenuBar menuBar = (JMenuBar) current;
+            path.add(0, menuBar);
+            array = new MenuElement[path.size()];
+            array = (MenuElement[]) path.toArray(array);
+            break;
+          }
+      }
+    return array;
+  }
 }

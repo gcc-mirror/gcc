@@ -84,7 +84,48 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Implements general and shared behaviour for Graphics2D implementation.
+ * This is a 100% Java implementation of the Java2D rendering pipeline. It is
+ * meant as a base class for Graphics2D implementations.
+ *
+ * <h2>Backend interface</h2>
+ * <p>
+ * The backend must at the very least provide a Raster which the the rendering
+ * pipeline can paint into. This must be implemented in
+ * {@link #getDestinationRaster()}. For some backends that might be enough, like
+ * when the target surface can be directly access via the raster (like in
+ * BufferedImages). Other targets need some way to synchronize the raster with
+ * the surface, which can be achieved by implementing the
+ * {@link #updateRaster(Raster, int, int, int, int)} method, which always gets
+ * called after a chunk of data got painted into the raster.
+ * </p>
+ * <p>The backend is free to provide implementations for the various raw*
+ * methods for optimized AWT 1.1 style painting of some primitives. This should
+ * accelerate painting of Swing greatly. When doing so, the backend must also
+ * keep track of the clip and translation, probably by overriding
+ * some clip and translate methods. Don't forget to message super in such a
+ * case.</p>
+ *
+ * <h2>Acceleration options</h2>
+ * <p>
+ * The fact that it is
+ * pure Java makes it a little slow. However, there are several ways of
+ * accelerating the rendering pipeline:
+ * <ol>
+ * <li><em>Optimization hooks for AWT 1.1 - like graphics operations.</em>
+ *   The most important methods from the {@link java.awt.Graphics} class
+ *   have a corresponding <code>raw*</code> method, which get called when
+ *   several optimization conditions are fullfilled. These conditions are
+ *   described below. Subclasses can override these methods and delegate
+ *   it directly to a native backend.</li>
+ * <li><em>Native PaintContexts and CompositeContext.</em> The implementations
+ *   for the 3 PaintContexts and AlphaCompositeContext can be accelerated
+ *   using native code. These have proved to two of the most performance
+ *   critical points in the rendering pipeline and cannot really be done quickly
+ *   in plain Java because they involve lots of shuffling around with large
+ *   arrays. In fact, you really would want to let the graphics card to the
+ *   work, they are made for this.</li>
+ * </ol>
+ * </p>
  *
  * @author Roman Kennke (kennke@aicas.com)
  */
@@ -146,11 +187,6 @@ public abstract class AbstractGraphics2D
   private Raster paintRaster;
 
   /**
-   * A cached pixel array.
-   */
-  private int[] pixel;
-
-  /**
    * The raster of the destination surface. This is where the painting is
    * performed.
    */
@@ -168,7 +204,7 @@ public abstract class AbstractGraphics2D
   private transient ArrayList[] edgeTable;
 
   /**
-   * Indicates if cerain graphics primitives can be rendered in an optimized
+   * Indicates if certain graphics primitives can be rendered in an optimized
    * fashion. This will be the case if the following conditions are met:
    * - The transform may only be a translation, no rotation, shearing or
    *   scaling.
@@ -198,8 +234,6 @@ public abstract class AbstractGraphics2D
     hints.put(RenderingHints.KEY_ANTIALIASING,
               RenderingHints.VALUE_ANTIALIAS_DEFAULT);
     renderingHints = new RenderingHints(hints);
-
-    pixel = new int[4];
   }
 
   /**
@@ -212,40 +246,211 @@ public abstract class AbstractGraphics2D
   {
     // Stroke the shape.
     Shape strokedShape = stroke.createStrokedShape(shape);
-
-    // Clip the stroked shape.
-//    Shape clipped = clipShape(strokedShape);
-//    if (clipped != null)
-//      {
-//        // Fill the shape.
-//        fillShape(clipped, false);
-//      }
-    // FIXME: Clipping doesn't seem to work.
+    // Fill the stroked shape.
     fillShape(strokedShape, false);
   }
 
-  public boolean drawImage(Image image, AffineTransform xform, ImageObserver obs)
+
+  /**
+   * Draws the specified image and apply the transform for image space ->
+   * user space conversion.
+   *
+   * This method is implemented to special case RenderableImages and
+   * RenderedImages and delegate to
+   * {@link #drawRenderableImage(RenderableImage, AffineTransform)} and
+   * {@link #drawRenderedImage(RenderedImage, AffineTransform)} accordingly.
+   * Other image types are not yet handled.
+   *
+   * @param image the image to be rendered
+   * @param xform the transform from image space to user space
+   * @param obs the image observer to be notified
+   */
+  public boolean drawImage(Image image, AffineTransform xform,
+                           ImageObserver obs)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    boolean ret = false;
+    Rectangle areaOfInterest = new Rectangle(0, 0, image.getWidth(obs),
+                                             image.getHeight(obs));
+    return drawImageImpl(image, xform, obs, areaOfInterest);
   }
 
+  /**
+   * Draws the specified image and apply the transform for image space ->
+   * user space conversion. This method only draw the part of the image
+   * specified by <code>areaOfInterest</code>.
+   *
+   * This method is implemented to special case RenderableImages and
+   * RenderedImages and delegate to
+   * {@link #drawRenderableImage(RenderableImage, AffineTransform)} and
+   * {@link #drawRenderedImage(RenderedImage, AffineTransform)} accordingly.
+   * Other image types are not yet handled.
+   *
+   * @param image the image to be rendered
+   * @param xform the transform from image space to user space
+   * @param obs the image observer to be notified
+   * @param areaOfInterest the area in image space that is rendered
+   */
+  private boolean drawImageImpl(Image image, AffineTransform xform,
+                             ImageObserver obs, Rectangle areaOfInterest)
+  {
+    boolean ret;
+    if (image == null)
+      {
+        ret = true;
+      }
+    else if (image instanceof RenderedImage)
+      {
+        // FIXME: Handle the ImageObserver.
+        drawRenderedImageImpl((RenderedImage) image, xform, areaOfInterest);
+        ret = true;
+      }
+    else if (image instanceof RenderableImage)
+      {
+        // FIXME: Handle the ImageObserver.
+        drawRenderableImageImpl((RenderableImage) image, xform, areaOfInterest);
+        ret = true;
+      }
+    else
+      {
+        // FIXME: Implement rendering of other Image types.
+        ret = false;
+      }
+    return ret;
+  }
+
+  /**
+   * Renders a BufferedImage and applies the specified BufferedImageOp before
+   * to filter the BufferedImage somehow. The resulting BufferedImage is then
+   * passed on to {@link #drawRenderedImage(RenderedImage, AffineTransform)}
+   * to perform the final rendering.
+   *
+   * @param image the source buffered image
+   * @param op the filter to apply to the buffered image before rendering
+   * @param x the x coordinate to render the image to 
+   * @param y the y coordinate to render the image to 
+   */
   public void drawImage(BufferedImage image, BufferedImageOp op, int x, int y)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    BufferedImage filtered =
+      op.createCompatibleDestImage(image, image.getColorModel());
+    AffineTransform t = new AffineTransform();
+    t.translate(x, y);
+    drawRenderedImage(filtered, t);
   }
 
+  /**
+   * Renders the specified image to the destination raster. The specified
+   * transform is used to convert the image into user space. The transform
+   * of this AbstractGraphics2D object is used to transform from user space
+   * to device space.
+   * 
+   * The rendering is performed using the scanline algorithm that performs the
+   * rendering of other shapes and a custom Paint implementation, that supplies
+   * the pixel values of the rendered image.
+   *
+   * @param image the image to render to the destination raster
+   * @param xform the transform from image space to user space
+   */
   public void drawRenderedImage(RenderedImage image, AffineTransform xform)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    Rectangle areaOfInterest = new Rectangle(image.getMinX(),
+                                             image.getHeight(),
+                                             image.getWidth(),
+                                             image.getHeight());
+    drawRenderedImageImpl(image, xform, areaOfInterest);
   }
 
+  /**
+   * Renders the specified image to the destination raster. The specified
+   * transform is used to convert the image into user space. The transform
+   * of this AbstractGraphics2D object is used to transform from user space
+   * to device space. Only the area specified by <code>areaOfInterest</code>
+   * is finally rendered to the target.
+   * 
+   * The rendering is performed using the scanline algorithm that performs the
+   * rendering of other shapes and a custom Paint implementation, that supplies
+   * the pixel values of the rendered image.
+   *
+   * @param image the image to render to the destination raster
+   * @param xform the transform from image space to user space
+   */
+  private void drawRenderedImageImpl(RenderedImage image,
+                                     AffineTransform xform,
+                                     Rectangle areaOfInterest)
+  {
+    // First we compute the transformation. This is made up of 3 parts:
+    // 1. The areaOfInterest -> image space transform.
+    // 2. The image space -> user space transform.
+    // 3. The user space -> device space transform.
+    AffineTransform t = new AffineTransform();
+    t.translate(- areaOfInterest.x - image.getMinX(),
+                - areaOfInterest.y - image.getMinY());
+    t.concatenate(xform);
+    t.concatenate(transform);
+    AffineTransform it = null;
+    try
+      {
+        it = t.createInverse();
+      }
+    catch (NoninvertibleTransformException ex)
+      {
+        // Ignore -- we return if the transform is not invertible.
+      }
+    if (it != null)
+      {
+        // Transform the area of interest into user space.
+        GeneralPath aoi = new GeneralPath(areaOfInterest);
+        aoi.transform(xform);
+        // Render the shape using the standard renderer, but with a temporary
+        // ImagePaint.
+        ImagePaint p = new ImagePaint(image, it);
+        Paint savedPaint = paint;
+        try
+          {
+            paint = p;
+            fillShape(aoi, false);
+          }
+        finally
+          {
+            paint = savedPaint;
+          }
+      }
+  }
+
+  /**
+   * Renders a renderable image. This produces a RenderedImage, which is
+   * then passed to {@link #drawRenderedImage(RenderedImage, AffineTransform)}
+   * to perform the final rendering.
+   *
+   * @param image the renderable image to be rendered
+   * @param xform the transform from image space to user space
+   */
   public void drawRenderableImage(RenderableImage image, AffineTransform xform)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    Rectangle areaOfInterest = new Rectangle((int) image.getMinX(),
+                                             (int) image.getHeight(),
+                                             (int) image.getWidth(),
+                                             (int) image.getHeight());
+    drawRenderableImageImpl(image, xform, areaOfInterest);
+                                                       
+  }
+
+  /**
+   * Renders a renderable image. This produces a RenderedImage, which is
+   * then passed to {@link #drawRenderedImage(RenderedImage, AffineTransform)}
+   * to perform the final rendering. Only the area of the image specified
+   * by <code>areaOfInterest</code> is rendered.
+   *
+   * @param image the renderable image to be rendered
+   * @param xform the transform from image space to user space
+   */
+  private void drawRenderableImageImpl(RenderableImage image,
+                                       AffineTransform xform,
+                                       Rectangle areaOfInterest)
+  {
+    // TODO: Maybe make more clever usage of a RenderContext here.
+    RenderedImage rendered = image.createDefaultRendering();
+    drawRenderedImageImpl(rendered, xform, areaOfInterest);
   }
 
   /**
@@ -257,9 +462,14 @@ public abstract class AbstractGraphics2D
    */
   public void drawString(String text, int x, int y)
   {
-    FontRenderContext ctx = getFontRenderContext();
-    GlyphVector gv = font.createGlyphVector(ctx, text.toCharArray());
-    drawGlyphVector(gv, x, y);
+    if (isOptimized)
+      rawDrawString(text, x, y);
+    else
+      {
+        FontRenderContext ctx = getFontRenderContext();
+        GlyphVector gv = font.createGlyphVector(ctx, text.toCharArray());
+        drawGlyphVector(gv, x, y);
+      }
   }
 
   /**
@@ -313,9 +523,6 @@ public abstract class AbstractGraphics2D
    */
   public void fill(Shape shape)
   {
-//    Shape clipped = clipShape(shape);
-//    if (clipped != null)
-//      fillShape(clipped, false);
     fillShape(shape, false);
   }
 
@@ -355,7 +562,6 @@ public abstract class AbstractGraphics2D
         else
           {
             updateOptimization();
-            rawSetForeground((Color) paint);
           }
       }
   }
@@ -537,7 +743,7 @@ public abstract class AbstractGraphics2D
     if (clip != null)
       {
         AffineTransform clipTransform = new AffineTransform();
-        clipTransform.scale(-scaleX, -scaleY);
+        clipTransform.scale(1 / scaleX, 1 / scaleY);
         updateClip(clipTransform);
       }
     updateOptimization();
@@ -712,8 +918,7 @@ public abstract class AbstractGraphics2D
 
   public FontRenderContext getFontRenderContext()
   {
-    //return new FontRenderContext(transform, false, false);
-    return new FontRenderContext(new AffineTransform(), false, false);
+    return new FontRenderContext(transform, false, true);
   }
 
   /**
@@ -726,22 +931,15 @@ public abstract class AbstractGraphics2D
   public void drawGlyphVector(GlyphVector gv, float x, float y)
   {
     int numGlyphs = gv.getNumGlyphs();
-    AffineTransform t = new AffineTransform();
-    t.translate(x, y);
-
-//    // TODO: We could use fill(gv.getOutline()), but that seems to be
-      // slightly more inefficient. 
+    translate(x, y);
+    // TODO: We could use fill(gv.getOutline()), but that seems to be
+    // slightly more inefficient.
     for (int i = 0; i < numGlyphs; i++)
     {
-      //fill(gv.getGlyphVisualBounds(i));
-      GeneralPath p = new GeneralPath(gv.getGlyphOutline(i));
-      p.transform(t);
-      //Shape clipped = clipShape(p);
-      //if (clipped != null)
-      //  fillShape(clipped, true);
-      // FIXME: Clipping doesn't seem to work correctly.
-      fillShape(p, true);
+      Shape o = gv.getGlyphOutline(i);
+      fillShape(o, true);
     }
+    translate(-x, -y);
   }
 
   /**
@@ -918,8 +1116,10 @@ public abstract class AbstractGraphics2D
 
   public void copyArea(int x, int y, int width, int height, int dx, int dy)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    if (isOptimized)
+      rawCopyArea(x, y, width, height, dx, dy);
+    else
+      copyAreaImpl(x, y, width, height, dx, dy);
   }
 
   /**
@@ -978,11 +1178,15 @@ public abstract class AbstractGraphics2D
    */
   public void clearRect(int x, int y, int width, int height)
   {
-    Paint savedForeground = getPaint();
-    setPaint(getBackground());
-    //System.err.println("clearRect transform type: " + transform.getType());
-    fillRect(x, y, width, height);
-    setPaint(savedForeground);
+    if (isOptimized)
+      rawClearRect(x, y, width, height);
+    else
+      {
+        Paint savedForeground = getPaint();
+        setPaint(getBackground());
+        fillRect(x, y, width, height);
+        setPaint(savedForeground);
+      }
   }
 
   /**
@@ -1087,47 +1291,153 @@ public abstract class AbstractGraphics2D
     fill(new Polygon(xPoints, yPoints, npoints));
   }
 
+  /**
+   * Draws the specified image at the specified location. This forwards
+   * to {@link #drawImage(Image, AffineTransform, ImageObserver)}.
+   *
+   * @param image the image to render
+   * @param x the x location to render to
+   * @param y the y location to render to
+   * @param observer the image observer to receive notification
+   */
   public boolean drawImage(Image image, int x, int y, ImageObserver observer)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    boolean ret;
+    if (isOptimized)
+      ret = rawDrawImage(image, x, y, observer);
+    else
+      {
+        AffineTransform t = new AffineTransform();
+        t.translate(x, y);
+        ret = drawImage(image, t, observer);
+      }
+    return ret;
   }
 
+  /**
+   * Draws the specified image at the specified location. The image
+   * is scaled to the specified width and height. This forwards
+   * to {@link #drawImage(Image, AffineTransform, ImageObserver)}.
+   *
+   * @param image the image to render
+   * @param x the x location to render to
+   * @param y the y location to render to
+   * @param width the target width of the image
+   * @param height the target height of the image
+   * @param observer the image observer to receive notification
+   */
   public boolean drawImage(Image image, int x, int y, int width, int height,
                            ImageObserver observer)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    AffineTransform t = new AffineTransform();
+    t.translate(x, y);
+    double scaleX = (double) image.getWidth(observer) / (double) width;
+    double scaleY = (double) image.getHeight(observer) / (double) height;
+    t.scale(scaleX, scaleY);
+    return drawImage(image, t, observer);
   }
 
+  /**
+   * Draws the specified image at the specified location. This forwards
+   * to {@link #drawImage(Image, AffineTransform, ImageObserver)}.
+   *
+   * @param image the image to render
+   * @param x the x location to render to
+   * @param y the y location to render to
+   * @param bgcolor the background color to use for transparent pixels
+   * @param observer the image observer to receive notification
+   */
   public boolean drawImage(Image image, int x, int y, Color bgcolor,
                            ImageObserver observer)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    AffineTransform t = new AffineTransform();
+    t.translate(x, y);
+    // TODO: Somehow implement the background option.
+    return drawImage(image, t, observer);
   }
 
+  /**
+   * Draws the specified image at the specified location. The image
+   * is scaled to the specified width and height. This forwards
+   * to {@link #drawImage(Image, AffineTransform, ImageObserver)}.
+   *
+   * @param image the image to render
+   * @param x the x location to render to
+   * @param y the y location to render to
+   * @param width the target width of the image
+   * @param height the target height of the image
+   * @param bgcolor the background color to use for transparent pixels
+   * @param observer the image observer to receive notification
+   */
   public boolean drawImage(Image image, int x, int y, int width, int height,
                            Color bgcolor, ImageObserver observer)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    AffineTransform t = new AffineTransform();
+    t.translate(x, y);
+    double scaleX = (double) image.getWidth(observer) / (double) width;
+    double scaleY = (double) image.getHeight(observer) / (double) height;
+    t.scale(scaleX, scaleY);
+    // TODO: Somehow implement the background option.
+    return drawImage(image, t, observer);
   }
 
+  /**
+   * Draws an image fragment to a rectangular area of the target.
+   *
+   * @param image the image to render
+   * @param dx1 the first corner of the destination rectangle
+   * @param dy1 the first corner of the destination rectangle
+   * @param dx2 the second corner of the destination rectangle
+   * @param dy2 the second corner of the destination rectangle
+   * @param sx1 the first corner of the source rectangle
+   * @param sy1 the first corner of the source rectangle
+   * @param sx2 the second corner of the source rectangle
+   * @param sy2 the second corner of the source rectangle
+   * @param observer the image observer to be notified
+   */
   public boolean drawImage(Image image, int dx1, int dy1, int dx2, int dy2,
                            int sx1, int sy1, int sx2, int sy2,
                            ImageObserver observer)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    int sx = Math.min(sx1, sx1);
+    int sy = Math.min(sy1, sy2);
+    int sw = Math.abs(sx1 - sx2);
+    int sh = Math.abs(sy1 - sy2);
+    int dx = Math.min(dx1, dx1);
+    int dy = Math.min(dy1, dy2);
+    int dw = Math.abs(dx1 - dx2);
+    int dh = Math.abs(dy1 - dy2);
+    
+    AffineTransform t = new AffineTransform();
+    t.translate(sx - dx, sy - dy);
+    double scaleX = (double) sw / (double) dw;
+    double scaleY = (double) sh / (double) dh;
+    t.scale(scaleX, scaleY);
+    Rectangle areaOfInterest = new Rectangle(sx, sy, sw, sh);
+    return drawImageImpl(image, t, observer, areaOfInterest);
   }
 
+  /**
+   * Draws an image fragment to a rectangular area of the target.
+   *
+   * @param image the image to render
+   * @param dx1 the first corner of the destination rectangle
+   * @param dy1 the first corner of the destination rectangle
+   * @param dx2 the second corner of the destination rectangle
+   * @param dy2 the second corner of the destination rectangle
+   * @param sx1 the first corner of the source rectangle
+   * @param sy1 the first corner of the source rectangle
+   * @param sx2 the second corner of the source rectangle
+   * @param sy2 the second corner of the source rectangle
+   * @param bgcolor the background color to use for transparent pixels
+   * @param observer the image observer to be notified
+   */
   public boolean drawImage(Image image, int dx1, int dy1, int dx2, int dy2,
                            int sx1, int sy1, int sx2, int sy2, Color bgcolor,
                            ImageObserver observer)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    // FIXME: Do something with bgcolor.
+    return drawImage(image, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, observer);
   }
 
   /**
@@ -1154,8 +1464,8 @@ public abstract class AbstractGraphics2D
         Object v = renderingHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
         // We default to antialiasing on for text as long as we have no
         // good hinting implemented.
-        antialias = (v == RenderingHints.VALUE_TEXT_ANTIALIAS_ON
-                     || v == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+        antialias = (v == RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                     //|| v == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
       }
     else
       {
@@ -1163,115 +1473,25 @@ public abstract class AbstractGraphics2D
         antialias = (v == RenderingHints.VALUE_ANTIALIAS_ON);
       }
 
+    double offs = 0.5;
+    if (antialias)
+      offs = offs / AA_SAMPLING;
+
     Rectangle2D userBounds = s.getBounds2D();
-
-    // Flatten the path. TODO: Determine the best flattening factor
-    // wrt to speed and quality.
-    PathIterator path = s.getPathIterator(getTransform(), 1.0);
-
-    // Build up polygons and let the native backend render this using
-    // rawFillShape() which would provide a default implementation for
-    // drawPixel using a PolyScan algorithm.
-    double[] seg = new double[6];
-
-    // TODO: Use ArrayList<PolyEdge> here when availble.
-    ArrayList segs = new ArrayList();
-    double segX = 0.; // The start point of the current edge.
-    double segY = 0.; 
-    double polyX = 0.; // The start point of the current polygon.
-    double polyY = 0.;
-
-    double minX = Integer.MAX_VALUE;
-    double maxX = Integer.MIN_VALUE;
-    double minY = Integer.MAX_VALUE;
-    double maxY = Integer.MIN_VALUE;
-
-    //System.err.println("fill polygon");
-    while (! path.isDone())
-      {
-        int segType = path.currentSegment(seg);
-        minX = Math.min(minX, seg[0]);
-        maxX = Math.max(maxX, seg[0]);
-        minY = Math.min(minY, seg[1]);
-        maxY = Math.max(maxY, seg[1]);
-
-        //System.err.println("segment: " + segType + ", " + seg[0] + ", " + seg[1]);
-        if (segType == PathIterator.SEG_MOVETO)
-          {
-            segX = seg[0];
-            segY = seg[1];
-            polyX = seg[0];
-            polyY = seg[1];
-          }
-        else if (segType == PathIterator.SEG_CLOSE)
-          {
-            // Close the polyline.
-            PolyEdge edge = new PolyEdge(segX, segY, polyX, polyY);
-            segs.add(edge);
-          }
-        else if (segType == PathIterator.SEG_LINETO)
-          {
-            PolyEdge edge = new PolyEdge(segX, segY, seg[0], seg[1]);
-            segs.add(edge);
-            segX = seg[0];
-            segY = seg[1];
-          }
-        path.next();
-      }
+    Rectangle2D deviceBounds = new Rectangle2D.Double();
+    ArrayList segs = getSegments(s, transform, deviceBounds, false, offs);
+    Rectangle2D clipBounds = new Rectangle2D.Double();
+    ArrayList clipSegs = getSegments(clip, transform, clipBounds, true, offs);
+    segs.addAll(clipSegs);
+    Rectangle2D inclClipBounds = new Rectangle2D.Double();
+    Rectangle2D.union(clipBounds, deviceBounds, inclClipBounds);
     if (segs.size() > 0)
       {
         if (antialias)
-          fillShapeAntialias(segs, minX, minY, maxX, maxY, userBounds);
+          fillShapeAntialias(segs, deviceBounds, userBounds, inclClipBounds);
         else
-          rawFillShape(segs, minX, minY, maxX, maxY, userBounds);
+          fillShapeImpl(segs, deviceBounds, userBounds, inclClipBounds);
       }
-  }
-
-  /**
-   * Draws one pixel in the target coordinate space. This method draws the
-   * specified pixel by getting the painting pixel for that coordinate
-   * from the paintContext and compositing the pixel with the compositeContext.
-   * The resulting pixel is then set by calling {@link #rawSetPixel}.
-   *
-   * @param x the x coordinate
-   * @param y the y coordinate
-   */
-  protected void drawPixel(int x, int y)
-  {
-    // FIXME: Implement efficient compositing.
-    if (! (paint instanceof Color))
-      {
-        int[] paintPixel = paintRaster.getPixel(x, y, pixel);
-        Color c = new Color(paintPixel[0], paintPixel[1], paintPixel[2]);
-        rawSetForeground(c);
-      }
-    rawSetPixel(x, y);
-  }
-
-  /**
-   * Draws a pixel in the target coordinate space using the specified color.
-   * 
-   * @param x the x coordinate
-   * @param y the y coordinate
-   */
-  protected void rawSetPixel(int x, int y)
-  {
-    // FIXME: Provide default implementation or remove method.
-  }
-
-  /**
-   * Sets the foreground color for drawing.
-   *
-   * @param c the color to set
-   */
-  protected void rawSetForeground(Color c)
-  {
-    // Probably remove method.
-  }
-
-  protected void rawSetForeground(int r, int g, int b)
-  {
-    rawSetForeground(new Color(r, g, b));
   }
 
   /**
@@ -1292,21 +1512,9 @@ public abstract class AbstractGraphics2D
   }
 
   /**
-   * Returns the bounds of the drawing area in user space.
-   *
-   * @return the bounds of the drawing area in user space
-   */
-  protected Rectangle2D getUserBounds()
-  {
-    PathIterator pathIter = getDeviceBounds().getPathIterator(getTransform());
-    GeneralPath path = new GeneralPath();
-    path.append(pathIter, true);
-    return path.getBounds();
-
-  }
-  /**
    * Draws a line in optimization mode. The implementation should respect the
-   * clip but can assume that it is a rectangle.
+   * clip and translation. It can assume that the clip is a rectangle and that
+   * the transform is only a translating transform.
    *
    * @param x0 the starting point, X coordinate
    * @param y0 the starting point, Y coordinate
@@ -1315,63 +1523,41 @@ public abstract class AbstractGraphics2D
    */
   protected void rawDrawLine(int x0, int y0, int x1, int y1)
   {
-    // This is an implementation of Bresenham's line drawing algorithm.
-    int dy = y1 - y0;
-    int dx = x1 - x0;
-    int stepx, stepy;
+    draw(new Line2D.Float(x0, y0, x1, y1));
+  }
 
-    if (dy < 0)
-      {
-        dy = -dy;
-        stepy = -1;
-      }
-    else
-      {
-        stepy = 1;
-      }
-    if (dx < 0)
-      {
-        dx = -dx;
-        stepx = -1;
-        }
-    else
-      {
-        stepx = 1;
-      }
-    dy <<= 1;
-    dx <<= 1;
+  /**
+   * Draws a string in optimization mode. The implementation should respect the
+   * clip and translation. It can assume that the clip is a rectangle and that
+   * the transform is only a translating transform.
+   *
+   * @param text the string to be drawn
+   * @param x the start of the baseline, X coordinate
+   * @param y the start of the baseline, Y coordinate
+   */
+  protected void rawDrawString(String text, int x, int y)
+  {
+    FontRenderContext ctx = getFontRenderContext();
+    GlyphVector gv = font.createGlyphVector(ctx, text.toCharArray());
+    drawGlyphVector(gv, x, y);
+  }
 
-    drawPixel(x0, y0);
-    if (dx > dy)
-      {
-        int fraction = dy - (dx >> 1); // same as 2*dy - dx
-        while (x0 != x1)
-          {
-            if (fraction >= 0)
-              {
-                y0 += stepy;
-                fraction -= dx;
-              }
-            x0 += stepx;
-            fraction += dy;
-            drawPixel(x0, y0);
-          }
-      }
-    else
-      {
-        int fraction = dx - (dy >> 1);
-        while (y0 != y1)
-          {
-            if (fraction >= 0)
-              {
-                x0 += stepx;
-                fraction -= dy;
-              }
-            y0 += stepy;
-            fraction += dx;
-            drawPixel(x0, y0);
-          }
-      }
+  /**
+   * Clears a rectangle in optimization mode. The implementation should respect the
+   * clip and translation. It can assume that the clip is a rectangle and that
+   * the transform is only a translating transform.
+   *
+   * @param x the upper left corner, X coordinate
+   * @param y the upper left corner, Y coordinate
+   * @param w the width
+   * @param h the height
+   */
+  protected void rawClearRect(int x, int y, int w, int h)
+  {
+    Paint savedForeground = getPaint();
+    setPaint(getBackground());
+    rawFillRect(x, y, w, h);
+    setPaint(savedForeground);
   }
 
   /**
@@ -1385,15 +1571,52 @@ public abstract class AbstractGraphics2D
    */
   protected void rawFillRect(int x, int y, int w, int h)
   {
-    int x2 = x + w;
-    int y2 = y + h;
-    for (int xc = x; xc < x2; xc++)
-      {
-        for (int yc = y; yc < y2; yc++)
-          {
-            drawPixel(xc, yc);
-          }
-      }
+    fill(new Rectangle(x, y, w, h));
+  }
+
+  /**
+   * Draws an image in optimization mode. The implementation should respect
+   * the clip but can assume that it is a rectangle.
+   *
+   * @param image the image to be painted
+   * @param x the location, X coordinate
+   * @param y the location, Y coordinate
+   * @param obs the image observer to be notified
+   *
+   * @return <code>true</code> when the image is painted completely,
+   *         <code>false</code> if it is still rendered
+   */
+  protected boolean rawDrawImage(Image image, int x, int y, ImageObserver obs)
+  {
+    AffineTransform t = new AffineTransform();
+    t.translate(x, y);
+    return drawImage(image, t, obs);
+  }
+
+  /**
+   * Copies a rectangular region to another location.
+   *
+   * @param x the upper left corner, X coordinate
+   * @param y the upper left corner, Y coordinate
+   * @param w the width
+   * @param h the height
+   * @param dx
+   * @param dy
+   */
+  protected void rawCopyArea(int x, int y, int w, int h, int dx, int dy)
+  {
+    copyAreaImpl(x, y, w, h, dx, dy);
+  }
+
+  // Private implementation methods.
+
+  /**
+   * Copies a rectangular area of the target raster to a different location.
+   */
+  private void copyAreaImpl(int x, int y, int w, int h, int dx, int dy)
+  {
+    // FIXME: Implement this properly.
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   /**
@@ -1403,8 +1626,9 @@ public abstract class AbstractGraphics2D
    *
    * The polygon is already clipped when this method is called.
    */
-  protected void rawFillShape(ArrayList segs, double minX, double minY,
-                              double maxX, double maxY, Rectangle2D userBounds)
+  private void fillShapeImpl(ArrayList segs, Rectangle2D deviceBounds2D,
+                             Rectangle2D userBounds,
+                             Rectangle2D inclClipBounds)
   {
     // This is an implementation of a polygon scanline conversion algorithm
     // described here:
@@ -1413,19 +1637,25 @@ public abstract class AbstractGraphics2D
     // Create table of all edges.
     // The edge buckets, sorted and indexed by their Y values.
 
+    double minX = deviceBounds2D.getMinX();
+    double minY = deviceBounds2D.getMinY();
+    double maxX = deviceBounds2D.getMaxX();
+    double maxY = deviceBounds2D.getMaxY();
+    double icMinY = inclClipBounds.getMinY();
+    double icMaxY = inclClipBounds.getMaxY();
     Rectangle deviceBounds = new Rectangle((int) minX, (int) minY,
                                            (int) Math.ceil(maxX) - (int) minX,
                                            (int) Math.ceil(maxY) - (int) minY);
     PaintContext pCtx = paint.createContext(getColorModel(), deviceBounds,
                                             userBounds, transform, renderingHints);
 
-    ArrayList[] edgeTable = new ArrayList[(int) Math.ceil(maxY)
-                                          - (int) Math.ceil(minY) + 1];
+    ArrayList[] edgeTable = new ArrayList[(int) Math.ceil(icMaxY)
+                                          - (int) Math.ceil(icMinY) + 1];
 
     for (Iterator i = segs.iterator(); i.hasNext();)
       {
         PolyEdge edge = (PolyEdge) i.next();
-        int yindex = (int) ((int) Math.ceil(edge.y0) - (int) Math.ceil(minY));
+        int yindex = (int) ((int) Math.ceil(edge.y0) - (int) Math.ceil(icMinY));
         if (edgeTable[yindex] == null) // Create bucket when needed.
           edgeTable[yindex] = new ArrayList();
         edgeTable[yindex].add(edge); // Add edge to the bucket of its line.
@@ -1445,7 +1675,7 @@ public abstract class AbstractGraphics2D
     PolyEdgeComparator comparator = new PolyEdgeComparator();
 
     // Scan all relevant lines.
-    int minYInt = (int) Math.ceil(minY);
+    int minYInt = (int) Math.ceil(icMinY);
     for (int y = minYInt; y <= maxY; y++)
       {
         ArrayList bucket = edgeTable[y - minYInt];
@@ -1496,35 +1726,30 @@ public abstract class AbstractGraphics2D
         // Now draw all pixels inside the polygon.
         // This is the last edge that intersected the scanline.
         PolyEdge previous = null; // Gets initialized below.
-        boolean active = false;
+        boolean insideShape = false;
+        boolean insideClip = false;
         //System.err.println("scanline: " + y);
         for (Iterator i = activeEdges.iterator(); i.hasNext();)
           {
             PolyEdge edge = (PolyEdge) i.next();
-            // Only fill scanline, if the current edge actually intersects
-            // the scanline. There may be edges that lie completely
-            // within the current scanline.
-            //System.err.println("previous: " + previous);
-            //System.err.println("edge: " + edge);
-            if (active)
+            if (edge.y1 <= y)
+              continue;
+
+            // Draw scanline when we are inside the shape AND inside the
+            // clip.
+            if (insideClip && insideShape)
               {
-                if (edge.y1 > y)
-                  {
-                    int x0 = (int) previous.xIntersection;
-                    int x1 = (int) edge.xIntersection;
-                    fillScanline(pCtx, x0, x1, y);
-                    previous = edge;
-                    active = false;
-                  }
+                int x0 = (int) previous.xIntersection;
+                int x1 = (int) edge.xIntersection;
+                if (x0 < x1)
+                  fillScanline(pCtx, x0, x1, y);
               }
+            // Update state.
+            previous = edge;
+            if (edge.isClip)
+              insideClip = ! insideClip;
             else
-              {
-                if (edge.y1 > y)
-                  {
-                    previous = edge;
-                    active = true;
-                  }
-              }
+              insideShape = ! insideShape;
           }
       }
     pCtx.dispose();
@@ -1544,7 +1769,8 @@ public abstract class AbstractGraphics2D
     CompositeContext cCtx = composite.createContext(paintColorModel,
                                                     getColorModel(),
                                                     renderingHints);
-    cCtx.compose(paintRaster, destinationRaster, destinationRaster);
+    WritableRaster targetChild = destinationRaster.createWritableTranslatedChild(-x0,- y);
+    cCtx.compose(paintRaster, targetChild, targetChild);
     updateRaster(destinationRaster, x0, y, x1 - x0, 1);
     cCtx.dispose();
   }
@@ -1553,14 +1779,10 @@ public abstract class AbstractGraphics2D
    * Fills arbitrary shapes in an anti-aliased fashion.
    *
    * @param segs the line segments which define the shape which is to be filled
-   * @param minX the bounding box, left X
-   * @param minY the bounding box, upper Y
-   * @param maxX the bounding box, right X
-   * @param maxY the bounding box, lower Y
    */
-  private void fillShapeAntialias(ArrayList segs, double minX, double minY,
-                                  double maxX, double maxY,
-                                  Rectangle2D userBounds)
+  private void fillShapeAntialias(ArrayList segs, Rectangle2D deviceBounds2D,
+                                  Rectangle2D userBounds,
+                                  Rectangle2D inclClipBounds)
   {
     // This is an implementation of a polygon scanline conversion algorithm
     // described here:
@@ -1568,23 +1790,32 @@ public abstract class AbstractGraphics2D
     // The antialiasing is implemented using a sampling technique, we do
     // not scan whole lines but fractions of the line.
 
+    double minX = deviceBounds2D.getMinX();
+    double minY = deviceBounds2D.getMinY();
+    double maxX = deviceBounds2D.getMaxX();
+    double maxY = deviceBounds2D.getMaxY();
+    double icMinY = inclClipBounds.getMinY();
+    double icMaxY = inclClipBounds.getMaxY();
+    double icMinX = inclClipBounds.getMinX();
+    double icMaxX = inclClipBounds.getMaxX();
     Rectangle deviceBounds = new Rectangle((int) minX, (int) minY,
                                            (int) Math.ceil(maxX) - (int) minX,
                                            (int) Math.ceil(maxY) - (int) minY);
-    PaintContext pCtx = paint.createContext(getColorModel(), deviceBounds,
+    PaintContext pCtx = paint.createContext(ColorModel.getRGBdefault(),
+                                            deviceBounds,
                                             userBounds, transform,
                                             renderingHints);
 
     // This array will contain the oversampled transparency values for
     // each pixel in the scanline.
-    int numScanlines = (int) Math.ceil(maxY) - (int) minY;
-    int numScanlinePixels = (int) Math.ceil(maxX) - (int) minX + 1;
+    int numScanlines = (int) Math.ceil(icMaxY) - (int) icMinY;
+    int numScanlinePixels = (int) Math.ceil(icMaxX) - (int) icMinX + 1;
     if (alpha == null || alpha.length < (numScanlinePixels + 1))
       alpha = new int[numScanlinePixels + 1];
     
-    int firstLine = (int) minY;
+    int firstLine = (int) icMinY;
     //System.err.println("minY: " + minY);
-    int firstSubline = (int) (Math.ceil((minY - Math.floor(minY)) * AA_SAMPLING));
+    int firstSubline = (int) (Math.ceil((icMinY - Math.floor(icMinY)) * AA_SAMPLING));
     double firstLineDouble = firstLine + firstSubline / (double) AA_SAMPLING;
     //System.err.println("firstSubline: " + firstSubline);
 
@@ -1629,8 +1860,11 @@ public abstract class AbstractGraphics2D
     // Scan all lines.
     int yindex = 0;
     //System.err.println("firstLine: " + firstLine + ", maxY: " + maxY + ", firstSubline: " + firstSubline);
-    for (int y = firstLine; y <= maxY; y++)
+    for (int y = firstLine; y <= icMaxY; y++)
       {
+        int leftX = (int) icMaxX;
+        int rightX = (int) icMinX;
+        boolean emptyScanline = true;
         for (int subY = firstSubline; subY < AA_SAMPLING; subY++)
           {
             //System.err.println("scanline: " + y + ", subScanline: " + subY);
@@ -1687,17 +1921,16 @@ public abstract class AbstractGraphics2D
             // Now draw all pixels inside the polygon.
             // This is the last edge that intersected the scanline.
             PolyEdge previous = null; // Gets initialized below.
-            boolean active = false;
+            boolean insideClip = false;
+            boolean insideShape = false;
             //System.err.println("scanline: " + y + ", subscanline: " + subY);
             for (Iterator i = activeEdges.iterator(); i.hasNext();)
               {
                 PolyEdge edge = (PolyEdge) i.next();
-                // Only fill scanline, if the current edge actually intersects
-                // the scanline. There may be edges that lie completely
-                // within the current scanline.
-                //System.err.println("previous: " + previous);
-                //System.err.println("edge: " + edge);
-                if (active)
+                if (edge.y1 <= (y + (subY / (double) AA_SAMPLING)))
+                  continue;
+
+                if (insideClip && insideShape)
                   {
                     // TODO: Use integer arithmetics here.
                     if (edge.y1 > (y + (subY / (double) AA_SAMPLING)))
@@ -1708,32 +1941,30 @@ public abstract class AbstractGraphics2D
                         int x1 = (int) Math.min(Math.max(edge.xIntersection, minX), maxX);
                         //System.err.println("minX: " + minX + ", x0: " + x0 + ", x1: " + x1 + ", maxX: " + maxX);
                         // TODO: Pull out cast.
-                        alpha[x0 - (int) minX]++;
-                        alpha[x1 - (int) minX + 1]--;
-                        previous = edge;
-                        active = false;
+                        int left = x0 - (int) minX;
+                        int right = x1 - (int) minX + 1; 
+                        alpha[left]++;
+                        alpha[right]--;
+                        leftX = Math.min(x0, leftX);
+                        rightX = Math.max(x1+2, rightX);
+                        emptyScanline = false;
                       }
                   }
+                previous = edge;
+                if (edge.isClip)
+                  insideClip = ! insideClip;
                 else
-                  {
-                    // TODO: Use integer arithmetics here.
-                    if (edge.y1 > (y + (subY / (double) AA_SAMPLING)))
-                      {
-                        //System.err.println(edge);
-                        previous = edge;
-                        active = true;
-                      }
-                  }
+                  insideShape = ! insideShape;
               }
             yindex++;
           }
         firstSubline = 0;
         // Render full scanline.
         //System.err.println("scanline: " + y);
-        fillScanlineAA(alpha, (int) minX, (int) y, numScanlinePixels, pCtx);
+        if (! emptyScanline)
+          fillScanlineAA(alpha, leftX, (int) y, rightX - leftX, pCtx,
+                         (int) minX);
       }
-    if (paint instanceof Color && composite == AlphaComposite.SrcOver)
-      rawSetForeground((Color) paint);
 
     pCtx.dispose();
   }
@@ -1747,40 +1978,54 @@ public abstract class AbstractGraphics2D
    * @param x0 the beginning of the scanline
    * @param y the y coordinate of the line
    */
-  private void fillScanlineAA(int[] alpha, int x0, int y, int numScanlinePixels,
-                              PaintContext pCtx)
+  private void fillScanlineAA(int[] alpha, int x0, int yy, int numPixels,
+                              PaintContext pCtx, int offs)
   {
-    // FIXME: This doesn't work. Fixit.
     CompositeContext cCtx = composite.createContext(pCtx.getColorModel(),
                                                     getColorModel(),
                                                     renderingHints);
-    Raster paintRaster = pCtx.getRaster(x0, y, numScanlinePixels, 1);
-    System.err.println("paintColorModel: " + pCtx.getColorModel());
+    Raster paintRaster = pCtx.getRaster(x0, yy, numPixels, 1);
+    //System.err.println("paintColorModel: " + pCtx.getColorModel());
     WritableRaster aaRaster = paintRaster.createCompatibleWritableRaster();
     int numBands = paintRaster.getNumBands();
-    int[] pixels = new int[numScanlinePixels + paintRaster.getNumBands()];
-    pixels = paintRaster.getPixels(x0, y, numScanlinePixels, 1, pixels);
     ColorModel cm = pCtx.getColorModel();
-    
     double lastAlpha = 0.;
     int lastAlphaInt = 0;
-    int[] components = new int[4];
-    
-    for (int i = 0; i < pixels.length; i++)
+
+    Object pixel = null;
+    int[] comps = null;
+    int x1 = x0 + numPixels;
+    for (int x = x0; x < x1; x++)
       {
+        int i = x - offs;
         if (alpha[i] != 0)
           {
             lastAlphaInt += alpha[i];
-            lastAlpha = lastAlphaInt / AA_SAMPLING;
+            lastAlpha = (double) lastAlphaInt / (double) AA_SAMPLING;
+            alpha[i] = 0;
           }
-        components = cm.getComponents(pixel[i], components, 0);
-        components[0] = (int) (components[0] * lastAlpha);
-        pixel[i] = cm.getDataElement(components, 0);
+        pixel = paintRaster.getDataElements(x - x0, 0, pixel);
+        comps = cm.getComponents(pixel, comps, 0);
+        if (cm.hasAlpha() && ! cm.isAlphaPremultiplied())
+          comps[comps.length - 1] *= lastAlpha;
+        else
+          {
+            int max;
+            if (cm.hasAlpha())
+              max = comps.length - 2;
+            else
+              max = comps.length - 1;
+            for (int j = 0; j < max; j++) 
+              comps[j] *= lastAlpha;
+          }
+        pixel = cm.getDataElements(comps, 0, pixel);
+        aaRaster.setDataElements(x - x0, 0, pixel);
       }
 
-    aaRaster.setPixels(0, 0, numScanlinePixels, 1, pixels);
-    cCtx.compose(aaRaster, destinationRaster, destinationRaster);
-    updateRaster(destinationRaster, x0, y, numScanlinePixels, 1);
+    WritableRaster targetChild =
+      destinationRaster.createWritableTranslatedChild(-x0, -yy);
+    cCtx.compose(aaRaster, targetChild, targetChild);
+    updateRaster(destinationRaster, x0, yy, numPixels, 1);
 
     cCtx.dispose();
   }
@@ -1798,8 +2043,8 @@ public abstract class AbstractGraphics2D
 
     // FIXME: Should not be necessary. A clip of null should mean
     // 'clip against device bounds.
-    clip = getDeviceBounds();
     destinationRaster = getDestinationRaster();
+    clip = getDeviceBounds();
   }
 
   /**
@@ -1912,40 +2157,77 @@ public abstract class AbstractGraphics2D
   }
 
   /**
-   * Clips the specified shape using the current clip. If the resulting shape
-   * is empty, this will return <code>null</code>.
+   * Converts the specified shape into a list of segments.
    *
-   * @param s the shape to clip
+   * @param s the shape to convert
+   * @param t the transformation to apply before converting
+   * @param deviceBounds an output parameter; holds the bounding rectangle of
+   *        s in device space after return
+   * @param isClip true when the shape is a clip, false for normal shapes;
+   *        this influences the settings in the created PolyEdge instances.
    *
-   * @return the clipped shape or <code>null</code> if the result is empty
+   * @return a list of PolyEdge that form the shape in device space
    */
-  private Shape clipShape(Shape s)
+  private ArrayList getSegments(Shape s, AffineTransform t,
+                                Rectangle2D deviceBounds, boolean isClip,
+                                double offs)
   {
-    Shape clipped = null;
+    // Flatten the path. TODO: Determine the best flattening factor
+    // wrt to speed and quality.
+    PathIterator path = s.getPathIterator(getTransform(), 1.0);
 
-    // Clip the shape if necessary.
-    if (clip != null)
+    // Build up polygons and let the native backend render this using
+    // rawFillShape() which would provide a default implementation for
+    // drawPixel using a PolyScan algorithm.
+    double[] seg = new double[6];
+
+    // TODO: Use ArrayList<PolyEdge> here when availble.
+    ArrayList segs = new ArrayList();
+    double segX = 0.; // The start point of the current edge.
+    double segY = 0.; 
+    double polyX = 0.; // The start point of the current polygon.
+    double polyY = 0.;
+
+    double minX = Integer.MAX_VALUE;
+    double maxX = Integer.MIN_VALUE;
+    double minY = Integer.MAX_VALUE;
+    double maxY = Integer.MIN_VALUE;
+
+    //System.err.println("fill polygon");
+    while (! path.isDone())
       {
-        Area a;
-        if (! (s instanceof Area))
-          a = new Area(s);
-        else
-          a = (Area) s;
+        int segType = path.currentSegment(seg);
+        minX = Math.min(minX, seg[0]);
+        maxX = Math.max(maxX, seg[0]);
+        minY = Math.min(minY, seg[1]);
+        maxY = Math.max(maxY, seg[1]);
 
-        Area clipArea;
-        if (! (clip instanceof Area))
-          clipArea = new Area(clip);
-        else
-          clipArea = (Area) clip;
-
-        a.intersect(clipArea);
-        if (! a.isEmpty())
-          clipped = a;
+        //System.err.println("segment: " + segType + ", " + seg[0] + ", " + seg[1]);
+        if (segType == PathIterator.SEG_MOVETO)
+          {
+            segX = seg[0];
+            segY = seg[1];
+            polyX = seg[0];
+            polyY = seg[1];
+          }
+        else if (segType == PathIterator.SEG_CLOSE)
+          {
+            // Close the polyline.
+            PolyEdge edge = new PolyEdge(segX, segY - offs,
+                                         polyX, polyY - offs, isClip);
+            segs.add(edge);
+          }
+        else if (segType == PathIterator.SEG_LINETO)
+          {
+            PolyEdge edge = new PolyEdge(segX, segY - offs,
+                                         seg[0], seg[1] - offs, isClip);
+            segs.add(edge);
+            segX = seg[0];
+            segY = seg[1];
+          }
+        path.next();
       }
-    else
-      {
-        clipped = s;
-      }
-    return clipped;
+    deviceBounds.setRect(minX, minY, maxX - minX, maxY - minY);
+    return segs;
   }
 }

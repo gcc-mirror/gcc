@@ -56,8 +56,14 @@ public class BasicIconFactory implements Serializable
   private static class DummyIcon 
     implements Icon
   {    
-    public int getIconHeight() { return 10; }
-    public int getIconWidth() { return 10; }
+    public int getIconHeight() 
+    { 
+      return 10; 
+    }
+    public int getIconWidth() 
+    { 
+      return 10; 
+    }
     public void paintIcon(Component c, Graphics g, int x, int y)
     {
       Color save = g.getColor();

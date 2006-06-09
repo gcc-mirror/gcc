@@ -106,7 +106,7 @@ public class JSpinner extends JComponent
       add(ftf);
       ftf.setValue(spinner.getValue());
       ftf.addPropertyChangeListener(this);
-      if(getComponentOrientation().isLeftToRight())
+      if (getComponentOrientation().isLeftToRight())
 	ftf.setHorizontalAlignment(JTextField.RIGHT);
       else
 	ftf.setHorizontalAlignment(JTextField.LEFT);

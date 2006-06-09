@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -51,6 +49,7 @@ import java.util.EventListener;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuDragMouseEvent;
@@ -673,7 +672,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
   }
 
   /**
-   * Returns a string describing the attributes for the <code>JToolTip</code>
+   * Returns a string describing the attributes for the <code>JMenuItem</code>
    * component, for use in debugging.  The return value is guaranteed to be 
    * non-<code>null</code>, but the format of the string may vary between
    * implementations.
@@ -696,7 +695,11 @@ public class JMenuItem extends AbstractButton implements Accessible,
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJMenuItem();
+      {
+        AccessibleJMenuItem ctx = new AccessibleJMenuItem(); 
+        addChangeListener(ctx);
+        accessibleContext = ctx;
+      }
 
     return accessibleContext;
   }
@@ -712,6 +715,11 @@ public class JMenuItem extends AbstractButton implements Accessible,
   {
     private static final long serialVersionUID = 6748924232082076534L;
 
+    private boolean armed;
+    private boolean focusOwner;
+    private boolean pressed;
+    private boolean selected;
+
     /**
      * Creates a new <code>AccessibleJMenuItem</code> instance.
      */
@@ -720,10 +728,99 @@ public class JMenuItem extends AbstractButton implements Accessible,
       //super(component);
     }
 
+    /**
+     * Receives notification when the menu item's state changes and fires
+     * appropriate property change events to registered listeners.
+     *
+     * @param event the change event
+     */
     public void stateChanged(ChangeEvent event)
-      throws NotImplementedException
     {
-      // TODO: What should be done here, if anything?
+      // This is fired in all cases.
+      firePropertyChange(AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY,
+                         Boolean.FALSE, Boolean.TRUE);
+
+      ButtonModel model = getModel();
+
+      // Handle the armed property.
+      if (model.isArmed())
+        {
+          if (! armed)
+            {
+              armed = true;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 AccessibleState.ARMED, null);
+            }
+        }
+      else
+        {
+          if (armed)
+            {
+              armed = false;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 null, AccessibleState.ARMED);
+            }
+        }
+
+      // Handle the pressed property.
+      if (model.isPressed())
+        {
+          if (! pressed)
+            {
+              pressed = true;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 AccessibleState.PRESSED, null);
+            }
+        }
+      else
+        {
+          if (pressed)
+            {
+              pressed = false;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 null, AccessibleState.PRESSED);
+            }
+        }
+
+      // Handle the selected property.
+      if (model.isSelected())
+        {
+          if (! selected)
+            {
+              selected = true;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 AccessibleState.SELECTED, null);
+            }
+        }
+      else
+        {
+          if (selected)
+            {
+              selected = false;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 null, AccessibleState.SELECTED);
+            }
+        }
+
+      // Handle the focusOwner property.
+      if (isFocusOwner())
+        {
+          if (! focusOwner)
+            {
+              focusOwner = true;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 AccessibleState.FOCUSED, null);
+            }
+        }
+      else
+        {
+          if (focusOwner)
+            {
+              focusOwner = false;
+              firePropertyChange(AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                                 null, AccessibleState.FOCUSED);
+            }
+        }
     }
 
     /**

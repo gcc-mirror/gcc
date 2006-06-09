@@ -4,21 +4,18 @@ gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
 gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
 gcjversionedlib_LTLIBRARIES = libgtkpeer.la
 
-# Gtk/Cairo JNI sources.
-if GTK_CAIRO
-  gtk_cairo_c_source_files = \
-    gnu_java_awt_peer_gtk_GdkGraphics2D.c
-else
-  gtk_cairo_c_source_files =
-endif
-
-libgtkpeer_la_SOURCES = $(gtk_cairo_c_source_files) \
+# GTK JNI sources.
+libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
+			gnu_java_awt_peer_gtk_CairoGraphics2D.c \
+			gnu_java_awt_peer_gtk_ComponentGraphics.c \
+			gnu_java_awt_peer_gtk_ComponentGraphicsCopy.c \
+			gnu_java_awt_peer_gtk_FreetypeGlyphVector.c \
 			gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
 			gnu_java_awt_peer_gtk_GdkFontPeer.c \
-			gnu_java_awt_peer_gtk_GdkGraphics.c \
 			gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.c \
 			gnu_java_awt_peer_gtk_GdkPixbufDecoder.c \
 			gnu_java_awt_peer_gtk_GdkRobotPeer.c \
+			gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.c \
 			gnu_java_awt_peer_gtk_GdkTextLayout.c \
 			gnu_java_awt_peer_gtk_GtkButtonPeer.c \
 			gnu_java_awt_peer_gtk_GtkCanvasPeer.c \
@@ -48,10 +45,12 @@ libgtkpeer_la_SOURCES = $(gtk_cairo_c_source_files) \
 			gnu_java_awt_peer_gtk_GtkTextFieldPeer.c \
 			gnu_java_awt_peer_gtk_GtkToolkit.c \
 			gnu_java_awt_peer_gtk_GtkWindowPeer.c \
+			gnu_java_awt_peer_gtk_GtkVolatileImage.c \
+			cairographics2d.h \
 			gthread-jni.c \
+			gdkdisplay.h \
 			gdkfont.h \
 			gthread-jni.h \
-			gtkcairopeer.h \
 			gtk_jawt.c \
 			gtkpeer.h
 
@@ -62,12 +61,12 @@ libgtkpeer_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
 libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
 		       $(top_builddir)/native/jni/classpath/jcl.lo
 
-AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @CAIRO_LIBS@ @FREETYPE2_LIBS@ \
-             @PANGOFT2_LIBS@ @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@ -lX11 -lXtst
+AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @FREETYPE2_LIBS@ \
+             @PANGOFT2_LIBS@ @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@ @XTEST_LIBS@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 
 # Just the WARNING_CFLAGS. We cannot use the strict flags since the gtk
 # headers contain broken prototypes (by design, see gtkitemfactory.h).
 AM_CFLAGS = @WARNING_CFLAGS@ @ERROR_CFLAGS@ \
-            @GTK_CFLAGS@ @CAIRO_CFLAGS@ @FREETYPE2_CFLAGS@ @PANGOFT2_CFLAGS@ \
+            @GTK_CFLAGS@ @FREETYPE2_CFLAGS@ @PANGOFT2_CFLAGS@ \
             @X_CFLAGS@

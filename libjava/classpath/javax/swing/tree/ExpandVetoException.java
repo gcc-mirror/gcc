@@ -1,5 +1,5 @@
 /* ExpandVetoException.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,47 +37,40 @@ exception statement from your version. */
 
 package javax.swing.tree;
 
-// Imports
 import javax.swing.event.TreeExpansionEvent;
 
 /**
  * ExpandVetoException
  * @author Andrew Selkirk
  */
-public class ExpandVetoException extends Exception {
+public class ExpandVetoException extends Exception 
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-	
-	/**
-	 * event
-	 */
-	protected TreeExpansionEvent	event	= null;
+  /**
+   * event
+   */
+  protected TreeExpansionEvent event;
 
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Constructor ExpandVetoException
+   * @param event Tree Expansion Event
+   */
+  public ExpandVetoException(TreeExpansionEvent event) 
+  {
+    super();
+    this.event = event;
+  } 
 
-	/**
-	 * Constructor ExpandVetoException
-	 * @param event Tree Expansion Event
-	 */
-	public ExpandVetoException(TreeExpansionEvent event) {
-		super();
-		this.event = event;
-	} // ExpandVetoException()
+  /**
+   * Constructor ExpandVetoException
+   * @param event Tree Expansion Event
+   * @param message Message
+   */
+  public ExpandVetoException(TreeExpansionEvent event, String message) 
+  {
+    super(message);
+    this.event = event;
+  } 
 
-	/**
-	 * Constructor ExpandVetoException
-	 * @param event Tree Expansion Event
-	 * @param message Message
-	 */
-	public ExpandVetoException(TreeExpansionEvent event, String message) {
-		super(message);
-		this.event = event;
-	} // ExpandVetoException()
-
-
-} // ExpandVetoException
+} 

@@ -877,7 +877,7 @@ public class JViewport extends JComponent implements Accessible
           {
             // If the image has not been scrolled at all, only the changed
             // clip must be updated in the buffer.
-            if (dx==0 && dy==0)
+            if (dx == 0 && dy == 0)
               g2.setClip(g.getClip());
             
             paintSimple(g2);

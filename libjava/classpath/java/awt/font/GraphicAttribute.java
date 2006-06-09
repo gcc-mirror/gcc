@@ -38,51 +38,100 @@ exception statement from your version. */
 
 package java.awt.font;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
 /**
+ * This class represents a graphic embedded in text.
+ * 
  * @author Michael Koch
+ * @author Lillian Angel (langel at redhat dot com)
  */
 public abstract class GraphicAttribute
 {
-  public static final int BOTTOM_ALIGNMENT = -2;
+  public static final int BOTTOM_ALIGNMENT = - 2;
   public static final int CENTER_BASELINE = 1;
   public static final int HANGING_BASELINE = 2;
   public static final int ROMAN_BASELINE = 0;
-  public static final int TOP_ALIGNMENT = -1;
+  public static final int TOP_ALIGNMENT = - 1;
 
   private int alignment;
-  
-  protected GraphicAttribute (int alignment)
+
+  /**
+   * Constructor.
+   * 
+   * @param alignment - the alignment to use for the graphic
+   */
+  protected GraphicAttribute(int alignment)
   {
+    if (alignment < BOTTOM_ALIGNMENT || alignment > HANGING_BASELINE)
+      throw new IllegalArgumentException("Invalid alignment");
     this.alignment = alignment;
   }
 
-  public abstract void draw (Graphics2D graphics, float x, float y);
+  /**
+   * Draws the graphic.
+   * 
+   * @param graphics - the graphics configuration to use
+   * @param x - the x location
+   * @param y - the y location
+   */
+  public abstract void draw(Graphics2D graphics, float x, float y);
 
-  public abstract float getAdvance ();
+  /**
+   * Gets the distance from the origin of its graphic to the right side of the
+   * bounds of its graphic.
+   * 
+   * @return the advance
+   */
+  public abstract float getAdvance();
 
-  public final int getAlignment ()
+  /**
+   * Gets the positive distance from the origin of its graphic to the top of
+   * bounds.
+   * 
+   * @return the ascent
+   */
+  public abstract float getAscent();
+
+  /**
+   * Gets the distance from the origin of its graphic to the bottom of the bounds.
+   * 
+   * @return the descent
+   */
+  public abstract float getDescent();
+
+  /**
+   * Gets the alignment.
+   * 
+   * @return the alignment
+   */
+  public final int getAlignment()
   {
     return alignment;
   }
 
-  public abstract float getAscent ();
-
-  public Rectangle2D getBounds ()
-    throws NotImplementedException
+  /**
+   * Returns a Rectangle2D that encloses the rendered area.
+   * Default bounds is the rectangle (0, -ascent, advance, ascent+descent).
+   * 
+   * @return the bounds of the rendered area
+   */
+  public Rectangle2D getBounds()
   {
-    throw new Error ("not implemented");
+    float asc = getAscent();
+    return new Rectangle2D.Float(0, - asc, getAdvance(), asc + getDescent());
   }
 
-  public abstract float getDescent ();
-
-  public GlyphJustificationInfo getJustificationInfo ()
-    throws NotImplementedException
+  /**
+   * Returns the justification information for this object.
+   * 
+   * @return the justification information
+   */
+  public GlyphJustificationInfo getJustificationInfo()
   {
-    throw new Error ("not implemented");
+    float adv = getAdvance();
+    return new GlyphJustificationInfo(adv, false, 2, adv / 3, adv / 3, false,
+                                      1, 0, 0);
   }
 }

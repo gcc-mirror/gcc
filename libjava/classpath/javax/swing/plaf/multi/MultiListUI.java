@@ -364,7 +364,8 @@ public class MultiListUI extends ListUI
    * @return The index returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public int locationToIndex(JList list, Point location) {
+  public int locationToIndex(JList list, Point location) 
+  {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -394,7 +395,8 @@ public class MultiListUI extends ListUI
    * @return The location returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public Point indexToLocation(JList list, int index) {
+  public Point indexToLocation(JList list, int index) 
+  {
     Point result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -425,7 +427,8 @@ public class MultiListUI extends ListUI
    * @return The bounds returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public Rectangle getCellBounds(JList list, int index1, int index2) {
+  public Rectangle getCellBounds(JList list, int index1, int index2) 
+  {
     Rectangle result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value

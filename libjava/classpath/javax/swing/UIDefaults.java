@@ -96,15 +96,15 @@ public class UIDefaults extends Hashtable
     }
     public Object createValue(UIDefaults table)
     {
-      InputMapUIResource im = new InputMapUIResource ();
-      for (int i = 0; 2*i+1 < bind.length; ++i)
+      InputMapUIResource im = new InputMapUIResource();
+      for (int i = 0; 2 * i + 1 < bind.length; ++i)
         {
-          Object curr = bind[2*i];
+          Object curr = bind[2 * i];
           if (curr instanceof KeyStroke)
-            im.put((KeyStroke) curr, bind[2*i+1]);
+            im.put((KeyStroke) curr, bind[2 * i + 1]);
           else
             im.put(KeyStroke.getKeyStroke((String) curr),
-                  bind[2*i+1]);
+                  bind[2 * i + 1]);
         }
       return im;
     }
@@ -128,9 +128,9 @@ public class UIDefaults extends Hashtable
     public ProxyLazyValue(String s)
     {
       final String className = s;
-      inner = new LazyValue ()
+      inner = new LazyValue()
         { 
-          public Object createValue (UIDefaults table) 
+          public Object createValue(UIDefaults table) 
           {
             try
               {
@@ -151,16 +151,16 @@ public class UIDefaults extends Hashtable
     {
       final String className = c;
       final String methodName = m;
-      inner = new LazyValue ()
+      inner = new LazyValue()
         { 
-          public Object createValue (UIDefaults table) 
+          public Object createValue(UIDefaults table) 
           {
             try 
               {                
                 return Class
-                  .forName (className)
-                  .getMethod (methodName, new Class[] {})
-                  .invoke (null, new Object[] {});
+                  .forName(className)
+                  .getMethod(methodName, new Class[] {})
+                  .invoke(null, new Object[] {});
               }
             catch (Exception e)
               {
@@ -674,7 +674,7 @@ public class UIDefaults extends Hashtable
    */
   public Class getUIClass(String id, ClassLoader loader)
   {
-    String className = (String) get (id);
+    String className = (String) get(id);
     if (className == null)
       return null;
     try 

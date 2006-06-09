@@ -242,14 +242,7 @@ clipboard_get_func (GtkClipboard *clipboard,
       
       pixbuf = cp_gtk_image_get_pixbuf (env, gtkimage);
       if (pixbuf != NULL)
-	{
-	  gtk_selection_data_set_pixbuf (selection, pixbuf);
-
-	  /* if the GtkImage is offscreen, this is a temporary pixbuf
-	     which should be thrown out. */
-	  if(cp_gtk_image_is_offscreen (env, gtkimage) == JNI_TRUE)
-	    gdk_pixbuf_unref (pixbuf);
-	}
+	gtk_selection_data_set_pixbuf (selection, pixbuf);
     }
   else if (info == URI_TARGET)
     {

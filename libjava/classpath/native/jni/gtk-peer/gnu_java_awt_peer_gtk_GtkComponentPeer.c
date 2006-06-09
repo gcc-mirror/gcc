@@ -204,6 +204,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursorUnlocked
 {
   void *ptr;
   GtkWidget *widget;
+  GdkWindow *win;
   GdkCursorType gdk_cursor_type;
   GdkCursor *gdk_cursor;
 
@@ -255,16 +256,20 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursorUnlocked
     }
       
   widget = get_widget(GTK_WIDGET(ptr));
-
+  
+  win = widget->window;
+  if ((widget->window) == NULL)
+    win = GTK_WIDGET(ptr)->window;
+    
   if (image == NULL)
     gdk_cursor = gdk_cursor_new (gdk_cursor_type);
   else
     gdk_cursor
-      = gdk_cursor_new_from_pixbuf (gdk_drawable_get_display (widget->window),
+      = gdk_cursor_new_from_pixbuf (gdk_drawable_get_display (win),
 				    cp_gtk_image_get_pixbuf (env, image),
 				    x, y);
 
-  gdk_window_set_cursor (widget->window, gdk_cursor);
+  gdk_window_set_cursor (win, gdk_cursor);
   gdk_cursor_unref (gdk_cursor);
 
   /* Make sure the cursor is replaced on screen. */
@@ -749,6 +754,20 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetForeground
 }
 
 JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_realize (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  gdk_threads_enter ();
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gtk_widget_realize (GTK_WIDGET (ptr));
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setVisibleNative
   (JNIEnv *env, jobject obj, jboolean visible)
 {
@@ -786,30 +805,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isEnabled
   ptr = NSA_GET_PTR (env, obj);
 
   ret_val = GTK_WIDGET_IS_SENSITIVE (get_widget(GTK_WIDGET (ptr)));
-
-  gdk_threads_leave ();
-
-  return ret_val;
-}
-
-JNIEXPORT jboolean JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isRealized
-  (JNIEnv *env, jobject obj)
-{
-  void *ptr;
-  jboolean ret_val;
-
-  gdk_threads_enter ();
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  if (ptr == NULL)
-    {
-      gdk_threads_leave ();
-      return FALSE;
-    }
-
-  ret_val = GTK_WIDGET_REALIZED (get_widget(GTK_WIDGET (ptr)));
 
   gdk_threads_leave ();
 

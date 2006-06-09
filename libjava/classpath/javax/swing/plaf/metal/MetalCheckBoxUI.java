@@ -52,7 +52,7 @@ public class MetalCheckBoxUI
 
   // FIXME: maybe replace by a Map of instances when this becomes stateful
   /** The shared UI instance for JCheckBoxes. */
-  private static MetalCheckBoxUI instance = null;
+  private static MetalCheckBoxUI instance;
 
   /**
    * Constructs a new instance of MetalCheckBoxUI.

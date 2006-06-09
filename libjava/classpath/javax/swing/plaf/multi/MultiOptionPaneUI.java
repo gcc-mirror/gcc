@@ -356,7 +356,8 @@ public class MultiOptionPaneUI extends OptionPaneUI
    * 
    * @param pane  the option pane.
    */
-  public void selectInitialValue(JOptionPane pane) {
+  public void selectInitialValue(JOptionPane pane) 
+  {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
     {
@@ -375,7 +376,8 @@ public class MultiOptionPaneUI extends OptionPaneUI
    * 
    * @return The result for the UI delegate from the primary look and feel. 
    */
-  public boolean containsCustomComponents(JOptionPane pane) {
+  public boolean containsCustomComponents(JOptionPane pane) 
+  {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value

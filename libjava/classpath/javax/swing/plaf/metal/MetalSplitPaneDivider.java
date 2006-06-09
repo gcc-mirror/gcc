@@ -1,5 +1,5 @@
 /* MetalSplitPaneDivider.java
-Copyright (C) 2005 Free Software Foundation, Inc.
+Copyright (C) 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,21 +42,20 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 
 import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 
 /**
- * The divider that is used by the MetalSplitPaneUI.
+ * The divider that is used by the {@link MetalSplitPaneUI}.
  *
  * @author Roman Kennke (roman@kennke.org)
- *
  */
 class MetalSplitPaneDivider extends BasicSplitPaneDivider
 {
@@ -73,7 +72,7 @@ class MetalSplitPaneDivider extends BasicSplitPaneDivider
   int orientation;
   
   /**
-   * Creates a new instance of MetalSplitPaneDivider.
+   * Creates a new instance of <code>MetalSplitPaneDivider</code>.
    *
    * @param ui the <code>MetalSplitPaneUI</code> that uses this divider
    */
@@ -96,6 +95,12 @@ class MetalSplitPaneDivider extends BasicSplitPaneDivider
   {
     Dimension s = getSize();
 
+    if (splitPane.hasFocus())
+      {
+        g.setColor(UIManager.getColor("SplitPane.dividerFocusColor"));
+        g.fillRect(0, 0, s.width, s.height);
+      }
+    
     // Paint border if one exists.
     Border border = getBorder();
     if (border != null)
@@ -159,8 +164,8 @@ class MetalSplitPaneDivider extends BasicSplitPaneDivider
               if ((c1 instanceof BasicArrowButton)
                   && (c2 instanceof BasicArrowButton))
                 {
-                  lb = ((BasicArrowButton) c1);
-                  rb = ((BasicArrowButton) c2);
+                  lb = (BasicArrowButton) c1;
+                  rb = (BasicArrowButton) c2;
                 }
             }
           if (rb != null && lb != null)

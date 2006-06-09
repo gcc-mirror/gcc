@@ -1013,7 +1013,7 @@ public class Font implements Serializable
    */
   public int getNumGlyphs()
   {
-    return peer.getMissingGlyphCode(this);
+    return peer.getNumGlyphs(this);
   }
 
   /**

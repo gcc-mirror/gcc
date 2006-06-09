@@ -9,18 +9,20 @@ Please report bugs at http://www.gnu.org/software/classpath/bugs.html
 Usage: grmic <options> <class names>
 
  where <options> includes:
-  -poa          Generate the Servant based ties (default)
-  -impl         Generate the obsoleted ObjectImpl based ties
-                 (for backward compatibility)
-  -nowarn       Show no warnings
-  -nowrite      Do not write any files (check for errors only)
-  -d <folder>   Place generated files into the given folder
+  -poa              Generate the Servant based ties (default)
+  -impl             Generate the obsoleted ObjectImpl based ties
+                      (for backward compatibility)
+  -nowarn            Show no warnings
+  -nowrite           Do not write any files (check for errors only)
+  -d <folder>        Place generated files into the given folder
+  -classpath <path>  Specifies the path, where to find the classes being 
+                     compiled  
   
-  -help         Print this help text
-  -v            Print version
-  -verbose      Verbose output
-  -force        Try to generate code even if the input classes seem not
-                consistent with RMI specification. 
+  -help              Print this help text
+  -v                 Print version
+  -verbose           Verbose output
+  -force             Try to generate code even if the input classes seem not
+                     consistent with RMI specification. 
   
   
  and <class names> can include one or more non abstract classes that implement

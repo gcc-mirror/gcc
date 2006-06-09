@@ -1,5 +1,5 @@
 /* AbstractTableModel.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -83,7 +83,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
     StringBuffer buffer = new StringBuffer();
     while (columnIndex >= 0)
       {
-        buffer.insert (0, (char) ('A' + columnIndex % 26));
+        buffer.insert(0, (char) ('A' + columnIndex % 26));
         columnIndex = columnIndex / 26 - 1;
       }
     return buffer.toString();
@@ -221,7 +221,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
    * @param firstRow  the index of the first row.
    * @param lastRow  the index of the last row.
    */
-  public void fireTableRowsInserted (int firstRow, int lastRow)
+  public void fireTableRowsInserted(int firstRow, int lastRow)
   {
     fireTableChanged(new TableModelEvent(this, firstRow, lastRow,
                                          TableModelEvent.ALL_COLUMNS,
@@ -235,7 +235,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
    * @param firstRow  the index of the first row.
    * @param lastRow  the index of the last row.
    */
-  public void fireTableRowsUpdated (int firstRow, int lastRow)
+  public void fireTableRowsUpdated(int firstRow, int lastRow)
   {
     fireTableChanged(new TableModelEvent(this, firstRow, lastRow,
                                          TableModelEvent.ALL_COLUMNS,
@@ -263,7 +263,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
    * @param row  the row index.
    * @param column  the column index.
    */
-  public void fireTableCellUpdated (int row, int column)
+  public void fireTableCellUpdated(int row, int column)
   {
     fireTableChanged(new TableModelEvent(this, row, row, column));
   }
@@ -282,7 +282,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
     for (index = 0; index < list.length; index += 2)
       {
         listener = (TableModelListener) list [index + 1];
-        listener.tableChanged (event);
+        listener.tableChanged(event);
       }
   }
 

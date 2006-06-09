@@ -80,7 +80,7 @@ public class BufferedImage extends Image
                           TYPE_BYTE_INDEXED   = 13;
   
   static final int[] bits3 = { 8, 8, 8 };
-  static final int[] bits4 = { 8, 8, 8 };
+  static final int[] bits4 = { 8, 8, 8, 8 };
   static final int[] bits1byte = { 8 };
   static final int[] bits1ushort = { 16 };
   

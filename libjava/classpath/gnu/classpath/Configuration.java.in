@@ -95,10 +95,4 @@ public interface Configuration
    */
   boolean JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = 
 	  @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@;
-
-  /**
-   * Set to true if Cairo was found and enabled during configure,
-   * false otherwise.
-   */
-  boolean GTK_CAIRO_ENABLED = @GTK_CAIRO_ENABLED@;
 }

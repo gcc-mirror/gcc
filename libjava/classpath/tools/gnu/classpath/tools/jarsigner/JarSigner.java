@@ -141,7 +141,7 @@ public class JarSigner
                       main.isInternalSF());
     log.finer("Created .DSA file"); //$NON-NLS-1$
     if (main.isVerbose())
-      System.out.println(Messages.getString("JarSigner.11") + dsaFileName); //$NON-NLS-1$
+      System.out.println(Messages.getString("JarSigner.8") + dsaFileName); //$NON-NLS-1$
 
     // cleanup
     outSignedJarFile.close();

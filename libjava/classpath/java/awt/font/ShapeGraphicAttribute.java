@@ -38,74 +38,148 @@ exception statement from your version. */
 
 package java.awt.font;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * This is an implementation of GraphicAttribute that draws shapes in a TextLayout.
+ * 
+ * @author Lillian Angel (langel at redhat dot com)
+ */
 public final class ShapeGraphicAttribute extends GraphicAttribute
 {
+  /** True if the shape should be filled. */
   public static final boolean FILL = false;
+  
+  /** True if the shape should be stroked with a 1-pixel wide stroke. */
   public static final boolean STROKE = true;
 
   private Shape shape;
   private boolean stroke;
+  private Rectangle2D bounds;
   
-  public ShapeGraphicAttribute (Shape shape, int alignment, boolean stroke)
+  /**
+   * Constructor.
+   * 
+   * @param shape - the Shape to render. The Shape is rendered with its origin.
+   * @param alignment - the alignment
+   * @param stroke - true if the Shape should be stroked; false if the Shape
+   *          should be filled.
+   */
+  public ShapeGraphicAttribute(Shape shape, int alignment, boolean stroke)
   {
-    super (alignment);
+    super(alignment);
     this.shape = shape;
     this.stroke = stroke;
+    this.bounds = shape.getBounds2D();
   }
 
-  public void draw (Graphics2D graphics, float x, float y)
-    throws NotImplementedException
+  /**
+   * Draws the graphic at the given location.
+   * 
+   * @param graphics - the graphics to use.
+   * @param x - the x location to draw at.
+   * @param y - the y location to draw at.
+   */
+  public void draw(Graphics2D graphics, float x, float y)
   {
-    throw new Error ("not implemented");
+    graphics.translate(x, y);
+    if (stroke == STROKE)
+      graphics.draw(shape);
+    else
+      graphics.fill(shape);
+    graphics.translate(- x, - y);
   }
 
-  public boolean equals (Object obj)
+  /**
+   * Compares this ShapeGraphicAttribute to obj.
+   * 
+   * @param obj - the object to compare.
+   */
+  public boolean equals(Object obj)
   {
     if (! (obj instanceof ShapeGraphicAttribute))
       return false;
 
-    return equals ((ShapeGraphicAttribute) obj);
+    return equals((ShapeGraphicAttribute) obj);
   }
 
-  public boolean equals (ShapeGraphicAttribute rhs)
+  /**
+   * Compares this ShapeGraphicAttribute to rhs.
+   * 
+   * @param rhs - the ShapeGraphicAttribute to compare.
+   */
+  public boolean equals(ShapeGraphicAttribute rhs)
   {
-    return (shape.equals (rhs.shape)
-            && getAlignment () == rhs.getAlignment ()
-            && stroke == rhs.stroke);
+    return (this == rhs || (this.shape.equals(rhs.shape)
+                            && getAlignment() == rhs.getAlignment()
+                            && stroke == rhs.stroke
+                            && getAdvance() == rhs.getAdvance()
+                            && getAscent() == rhs.getAscent()
+                            && getBounds().equals(rhs.getBounds())
+                            && getDescent() == rhs.getDescent() 
+                            && hashCode() == rhs.hashCode()));
   }
 
-  public float getAdvance ()
-    throws NotImplementedException
+  /**
+   * Gets the distance from the origin of its Shape to the right side of the
+   * bounds of its Shape.
+   * 
+   * @return the advance
+   */
+  public float getAdvance()
   {
-    throw new Error ("not implemented");
+    return Math.max(0, (float) bounds.getMaxX());
   }
 
-  public float getAscent ()
-    throws NotImplementedException
+  /**
+   * Gets the positive distance from the origin of its Shape to the top of
+   * bounds.
+   * 
+   * @return the ascent
+   */
+  public float getAscent()
   {
-    throw new Error ("not implemented");
+    return Math.max(0, -(float) bounds.getMinY());
   }
 
-  public Rectangle2D getBounds ()
+  /**
+   * Gets the distance from the origin of its Shape to the bottom of the bounds.
+   * 
+   * @return the descent
+   */
+  public float getDescent()
   {
-    return shape.getBounds2D ();
+    return Math.max(0, (float) bounds.getMaxY());
   }
 
-  public float getDescent ()
-    throws NotImplementedException
+  /**
+   * Returns a Rectangle2D that encloses all of the bits drawn by this shape.
+   * 
+   * @return the bounds of the shape.
+   */
+  public Rectangle2D getBounds()
   {
-    throw new Error ("not implemented");
+    Rectangle2D.Float bounds = new Rectangle2D.Float();
+    bounds.setRect(this.bounds);
+
+    if (stroke == STROKE)
+      {
+        bounds.width++;
+        bounds.height++;
+      }
+    
+    return bounds;
   }
 
-  public int hashCode ()
+  /**
+   * Gets the hash code.
+   * 
+   * @return the hash code.
+   */
+  public int hashCode()
   {
-    // FIXME: Check what SUN does here
-    return shape.hashCode ();
+    return shape.hashCode();
   }
 }

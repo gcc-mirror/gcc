@@ -23,7 +23,11 @@ package gnu.classpath.tools.giop.grmic;
 
 import gnu.classpath.tools.AbstractMethodGenerator;
 
+import java.io.File;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -33,6 +37,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 /**
@@ -104,6 +109,11 @@ public class GiopRmicCompiler
    * Force mode - do not check the exceptions
    */
   protected boolean force = false;
+  
+  /**
+   * The class loader to load the class being compiled.
+   */
+  ClassLoader classLoader;
 
   /**
    * Clear data, preparing for the next compilation.
@@ -115,6 +125,78 @@ public class GiopRmicCompiler
     extraImports.clear();
     methods.clear();
     vars.clear();
+  }
+  
+  /**
+   * Set the class path (handle the -classpath key)
+   * 
+   * @param classPath the class path to set.
+   */
+  public void setClassPath(String classPath)
+  {
+    classLoader = Thread.currentThread().getContextClassLoader();
+    StringTokenizer tok = new StringTokenizer(classPath, File.pathSeparator,
+                                              true);
+    ArrayList urls = new ArrayList(tok.countTokens());
+    String s = null;
+    try
+      {
+        while (tok.hasMoreTokens())
+          {
+            s = tok.nextToken();
+            if (s.equals(File.pathSeparator))
+              urls.add(new File(".").toURL());
+            else
+              {
+                urls.add(new File(s).toURL());
+                if (tok.hasMoreTokens())
+                  {
+                    // Skip the separator.
+                    tok.nextToken();
+                    // If the classpath ended with a separator,
+                    // append the current directory.
+                    if (! tok.hasMoreTokens())
+                      urls.add(new File(".").toURL());
+                  }
+              }
+          }
+      }
+    catch (MalformedURLException ex)
+      {
+        System.err.println("Malformed path '" + s + "' in classpath '"
+                           + classPath + "'");
+        System.exit(1);
+      }
+    URL[] u = new URL[urls.size()];
+    for (int i = 0; i < u.length; i++)
+      {
+        u[i] = (URL) urls.get(i);
+      }
+
+    classLoader = new URLClassLoader(u, classLoader);
+  }    
+  
+  /**
+   * Loads the class with the given name (uses class path, if applicable)
+   * 
+   * @param name the name of the class.
+   */
+  public Class loadClass(String name)
+  {
+    ClassLoader loader = classLoader;
+    if (loader == null)
+      loader = Thread.currentThread().getContextClassLoader();
+    try
+      {
+        return loader.loadClass(name);
+      }
+    catch (ClassNotFoundException e)
+      {
+        System.err.println(name+" not found on "+loader);
+        System.exit(1);
+        // Unreacheable code.
+        return null;
+      }
   }
 
   /**
@@ -193,12 +275,12 @@ public class GiopRmicCompiler
                     remEx = true;
                     break;
                   }
-                if (! remEx && !force)
-                  throw new CompilationError(m[i].getName() + ", defined in "
-                                             + c.getName()
-                                             + ", does not throw "
-                                             + RemoteException.class.getName());
-              }
+	      }
+	    if (! remEx && !force)
+	      throw new CompilationError(m[i].getName() + ", defined in "
+					 + c.getName()
+					 + ", does not throw "
+					 + RemoteException.class.getName());
             AbstractMethodGenerator mm = createMethodGenerator(m[i]);
             methods.add(mm);
           }

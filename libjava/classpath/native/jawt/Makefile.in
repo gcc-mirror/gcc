@@ -58,9 +58,9 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(gcjversionedlibdir)"
-gcjversionedlibLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(gcjversionedlib_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(nativeexeclibdir)"
+nativeexeclibLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(nativeexeclib_LTLIBRARIES)
 libjawt_la_DEPENDENCIES =  \
 	$(top_builddir)/native/jni/gtk-peer/libgtkpeer.la
 am_libjawt_la_OBJECTS = jawt.lo
@@ -91,8 +91,6 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BUILD_CLASS_FILES_FALSE = @BUILD_CLASS_FILES_FALSE@
 BUILD_CLASS_FILES_TRUE = @BUILD_CLASS_FILES_TRUE@
-CAIRO_CFLAGS = @CAIRO_CFLAGS@
-CAIRO_LIBS = @CAIRO_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -119,8 +117,12 @@ CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
 CREATE_JNI_HEADERS_TRUE = @CREATE_JNI_HEADERS_TRUE@
 CREATE_JNI_LIBRARIES_FALSE = @CREATE_JNI_LIBRARIES_FALSE@
 CREATE_JNI_LIBRARIES_TRUE = @CREATE_JNI_LIBRARIES_TRUE@
+CREATE_PLUGIN_FALSE = @CREATE_PLUGIN_FALSE@
+CREATE_PLUGIN_TRUE = @CREATE_PLUGIN_TRUE@
 CREATE_QT_PEER_LIBRARIES_FALSE = @CREATE_QT_PEER_LIBRARIES_FALSE@
 CREATE_QT_PEER_LIBRARIES_TRUE = @CREATE_QT_PEER_LIBRARIES_TRUE@
+CREATE_WRAPPERS_FALSE = @CREATE_WRAPPERS_FALSE@
+CREATE_WRAPPERS_TRUE = @CREATE_WRAPPERS_TRUE@
 CREATE_XMLJ_LIBRARY_FALSE = @CREATE_XMLJ_LIBRARY_FALSE@
 CREATE_XMLJ_LIBRARY_TRUE = @CREATE_XMLJ_LIBRARY_TRUE@
 CXX = @CXX@
@@ -143,6 +145,8 @@ EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
 FASTJAR = @FASTJAR@
 FIND = @FIND@
+FOUND_CACAO_FALSE = @FOUND_CACAO_FALSE@
+FOUND_CACAO_TRUE = @FOUND_CACAO_TRUE@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
 FOUND_GCJX_FALSE = @FOUND_GCJX_FALSE@
@@ -158,9 +162,8 @@ FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
 GJDOC = @GJDOC@
-GTK_CAIRO_ENABLED = @GTK_CAIRO_ENABLED@
-GTK_CAIRO_FALSE = @GTK_CAIRO_FALSE@
-GTK_CAIRO_TRUE = @GTK_CAIRO_TRUE@
+GLIB_CFLAGS = @GLIB_CFLAGS@
+GLIB_LIBS = @GLIB_LIBS@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 INIT_LOAD_LIBRARY = @INIT_LOAD_LIBRARY@
@@ -182,6 +185,7 @@ KJC = @KJC@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
 LIBICONV = @LIBICONV@
+LIBMAGIC = @LIBMAGIC@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -195,6 +199,8 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MKDIR = @MKDIR@
 MOC = @MOC@
+MOZILLA_CFLAGS = @MOZILLA_CFLAGS@
+MOZILLA_LIBS = @MOZILLA_LIBS@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -208,6 +214,7 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
+PLUGIN_DIR = @PLUGIN_DIR@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
@@ -227,11 +234,13 @@ USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
+VM_BINARY = @VM_BINARY@
 WARNING_CFLAGS = @WARNING_CFLAGS@
 XML_CFLAGS = @XML_CFLAGS@
 XML_LIBS = @XML_LIBS@
 XSLT_CFLAGS = @XSLT_CFLAGS@
 XSLT_LIBS = @XSLT_LIBS@
+XTEST_LIBS = @XTEST_LIBS@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
@@ -286,21 +295,16 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 vm_classes = @vm_classes@
-gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
-gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
-gcjversionedlib_LTLIBRARIES = libjawt.la
+nativeexeclib_LTLIBRARIES = libjawt.la
 libjawt_la_SOURCES = jawt.c
 libjawt_la_LIBADD = $(top_builddir)/native/jni/gtk-peer/libgtkpeer.la
-libjawt_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
-	-version-info `grep -v '^\#' $(top_srcdir)/../libtool-version`
-
-AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @CAIRO_LIBS@ @PANGOFT2_LIBS@ @X_LIBS@ -lXtst
+AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @PANGOFT2_LIBS@ @X_LIBS@ @XTEST_LIBS@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 
 # Just the WARNING_CFLAGS. We cannot use the strict flags since the gtk
 # headers contain broken prototypes (by design, see gtkitemfactory.h).
 AM_CFLAGS = @WARNING_CFLAGS@ @ERROR_CFLAGS@ \
-            @GTK_CFLAGS@ @CAIRO_CFLAGS@ @PANGOFT2_CFLAGS@
+            @GTK_CFLAGS@ @PANGOFT2_CFLAGS@
 
 all: all-am
 
@@ -335,35 +339,35 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-gcjversionedlibLTLIBRARIES: $(gcjversionedlib_LTLIBRARIES)
+install-nativeexeclibLTLIBRARIES: $(nativeexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
-	test -z "$(gcjversionedlibdir)" || $(mkdir_p) "$(DESTDIR)$(gcjversionedlibdir)"
-	@list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
+	test -z "$(nativeexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(nativeexeclibdir)"
+	@list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=$(am__strip_dir) \
-	    echo " $(LIBTOOL) --mode=install $(gcjversionedlibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(gcjversionedlibdir)/$$f'"; \
-	    $(LIBTOOL) --mode=install $(gcjversionedlibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(gcjversionedlibdir)/$$f"; \
+	    echo " $(LIBTOOL) --mode=install $(nativeexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(nativeexeclibdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(nativeexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(nativeexeclibdir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-gcjversionedlibLTLIBRARIES:
+uninstall-nativeexeclibLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@set -x; list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
+	@set -x; list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  p=$(am__strip_dir) \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(gcjversionedlibdir)/$$p'"; \
-	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(gcjversionedlibdir)/$$p"; \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(nativeexeclibdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(nativeexeclibdir)/$$p"; \
 	done
 
-clean-gcjversionedlibLTLIBRARIES:
-	-test -z "$(gcjversionedlib_LTLIBRARIES)" || rm -f $(gcjversionedlib_LTLIBRARIES)
-	@list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
+clean-nativeexeclibLTLIBRARIES:
+	-test -z "$(nativeexeclib_LTLIBRARIES)" || rm -f $(nativeexeclib_LTLIBRARIES)
+	@list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
 libjawt.la: $(libjawt_la_OBJECTS) $(libjawt_la_DEPENDENCIES) 
-	$(LINK) -rpath $(gcjversionedlibdir) $(libjawt_la_LDFLAGS) $(libjawt_la_OBJECTS) $(libjawt_la_LIBADD) $(LIBS)
+	$(LINK) -rpath $(nativeexeclibdir) $(libjawt_la_LDFLAGS) $(libjawt_la_OBJECTS) $(libjawt_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -483,7 +487,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(gcjversionedlibdir)"; do \
+	for dir in "$(DESTDIR)$(nativeexeclibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-am
@@ -512,7 +516,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-gcjversionedlibLTLIBRARIES clean-generic clean-libtool \
+clean-am: clean-generic clean-libtool clean-nativeexeclibLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -531,9 +535,9 @@ info: info-am
 
 info-am:
 
-install-data-am: install-gcjversionedlibLTLIBRARIES
+install-data-am:
 
-install-exec-am:
+install-exec-am: install-nativeexeclibLTLIBRARIES
 
 install-info: install-info-am
 
@@ -559,21 +563,20 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-gcjversionedlibLTLIBRARIES uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-nativeexeclibLTLIBRARIES
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean \
-	clean-gcjversionedlibLTLIBRARIES clean-generic clean-libtool \
-	ctags distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am \
-	install-gcjversionedlibLTLIBRARIES install-info \
-	install-info-am install-man install-strip installcheck \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-libtool clean-nativeexeclibLTLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-nativeexeclibLTLIBRARIES install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am \
-	uninstall-gcjversionedlibLTLIBRARIES uninstall-info-am
+	tags uninstall uninstall-am uninstall-info-am \
+	uninstall-nativeexeclibLTLIBRARIES
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

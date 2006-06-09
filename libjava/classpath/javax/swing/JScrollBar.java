@@ -643,14 +643,24 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
   }
 
   /**
-   * A string that describes this JScrollBar. Normally only used
-   * for debugging.
+   * Returns a string describing the attributes for the <code>JScrollBar</code>
+   * component, for use in debugging.  The return value is guaranteed to be 
+   * non-<code>null</code>, but the format of the string may vary between
+   * implementations.
    *
-   * @return A string describing this JScrollBar.
+   * @return A string describing the attributes of the <code>JScrollBar</code>.
    */
   protected String paramString()
   {
-    return "JScrollBar";
+    StringBuffer sb = new StringBuffer(super.paramString());
+    sb.append(",blockIncrement=").append(blockIncrement);
+    sb.append(",orientation=");
+    if (this.orientation == JScrollBar.HORIZONTAL)
+      sb.append("HORIZONTAL");
+    else 
+      sb.append("VERTICAL");
+    sb.append(",unitIncrement=").append(unitIncrement);
+    return sb.toString();
   }
 
   /**

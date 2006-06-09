@@ -220,7 +220,7 @@ public class BasicSpinnerUI extends SpinnerUI
 	      BasicSpinnerUI.this.spinner.getModel().setValue(next);
 	  }
 
-	  volatile boolean mouseDown = false;
+	  volatile boolean mouseDown;
 	  Timer timer = new Timer(50,
 	                          new ActionListener()
 	      {
@@ -260,7 +260,7 @@ public class BasicSpinnerUI extends SpinnerUI
 	      BasicSpinnerUI.this.spinner.getModel().setValue(prev);
 	  }
 
-	  volatile boolean mouseDown = false;
+	  volatile boolean mouseDown;
 	  Timer timer = new Timer(50,
 	                          new ActionListener()
 	      {

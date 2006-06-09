@@ -218,11 +218,12 @@ public class BasicListUI extends ListUI
   
   class ListAction extends AbstractAction
   {
-    public void actionPerformed (ActionEvent e)
+    public void actionPerformed(ActionEvent e)
     {
       int lead = list.getLeadSelectionIndex();
       int max = list.getModel().getSize() - 1;
-      DefaultListSelectionModel selModel = (DefaultListSelectionModel)list.getSelectionModel();
+      DefaultListSelectionModel selModel 
+          = (DefaultListSelectionModel) list.getSelectionModel();
       String command = e.getActionCommand();
       // Do nothing if list is empty
       if (max == -1)
@@ -260,9 +261,8 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getLastVisibleIndex())
             {
-              target = Math.min
-                (max, lead + (list.getLastVisibleIndex() -
-                    list.getFirstVisibleIndex() + 1));
+              target = Math.min(max, lead + (list.getLastVisibleIndex() 
+                  - list.getFirstVisibleIndex() + 1));
             }
           else
             target = list.getLastVisibleIndex();
@@ -273,9 +273,8 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getLastVisibleIndex())
             {
-              target = Math.min
-                (max, lead + (list.getLastVisibleIndex() -
-                    list.getFirstVisibleIndex() + 1));
+              target = Math.min(max, lead + (list.getLastVisibleIndex() 
+                  - list.getFirstVisibleIndex() + 1));
             }
           else
             target = list.getLastVisibleIndex();
@@ -286,9 +285,8 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getFirstVisibleIndex())
             {
-              target = Math.max 
-                (0, lead - (list.getLastVisibleIndex() - 
-                    list.getFirstVisibleIndex() + 1));
+              target = Math.max(0, lead - (list.getLastVisibleIndex() 
+                  - list.getFirstVisibleIndex() + 1));
             }
           else
             target = list.getFirstVisibleIndex();
@@ -299,9 +297,8 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getFirstVisibleIndex())
             {
-              target = Math.max 
-                (0, lead - (list.getLastVisibleIndex() - 
-                    list.getFirstVisibleIndex() + 1));
+              target = Math.max(0, lead - (list.getLastVisibleIndex() 
+                  - list.getFirstVisibleIndex() + 1));
             }
           else
             target = list.getFirstVisibleIndex();
@@ -309,32 +306,31 @@ public class BasicListUI extends ListUI
         }
       else if (command.equals("selectNextRowExtendSelection"))
         {
-          selModel.setLeadSelectionIndex(Math.min(lead + 1,max));
+          selModel.setLeadSelectionIndex(Math.min(lead + 1, max));
         }
       else if (command.equals("selectFirstRow"))
         {
           list.setSelectedIndex(0);
         }
       else if (command.equals("selectFirstRowChangeLead"))
-          {
-            selModel.moveLeadSelectionIndex(0);
-          }
+        {
+          selModel.moveLeadSelectionIndex(0);
+        }
       else if (command.equals("selectFirstRowExtendSelection"))
         {
           selModel.setLeadSelectionIndex(0);
         }
       else if (command.equals("selectPreviousRowExtendSelection"))
         {
-          selModel.setLeadSelectionIndex(Math.max(0,lead - 1));
+          selModel.setLeadSelectionIndex(Math.max(0, lead - 1));
         }
       else if (command.equals("scrollUp"))
         {
           int target;
           if (lead == list.getFirstVisibleIndex())
             {
-              target = Math.max 
-                (0, lead - (list.getLastVisibleIndex() - 
-                    list.getFirstVisibleIndex() + 1));
+              target = Math.max(0, lead - (list.getLastVisibleIndex() 
+                  - list.getFirstVisibleIndex() + 1));
             }
           else
             target = list.getFirstVisibleIndex();
@@ -349,9 +345,8 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getLastVisibleIndex())
             {
-              target = Math.min
-                (max, lead + (list.getLastVisibleIndex() -
-                    list.getFirstVisibleIndex() + 1));
+              target = Math.min(max, lead + (list.getLastVisibleIndex() 
+                  - list.getFirstVisibleIndex() + 1));
             }
           else
             target = list.getLastVisibleIndex();
@@ -451,9 +446,9 @@ public class BasicListUI extends ListUI
           if (list.getSelectionMode() == ListSelectionModel.SINGLE_SELECTION)
             list.setSelectedIndex(index);
           else if (list.isSelectedIndex(index))
-            list.removeSelectionInterval(index,index);
+            list.removeSelectionInterval(index, index);
           else
-            list.addSelectionInterval(index,index);
+            list.addSelectionInterval(index, index);
         }
       else
         list.setSelectedIndex(index);
@@ -1006,14 +1001,14 @@ public class BasicListUI extends ListUI
     // Register key bindings in the UI InputMap-ActionMap pair
     for (int i = 0; i < keys.length; i++)
       {
-        KeyStroke stroke = (KeyStroke)keys[i];
+        KeyStroke stroke = (KeyStroke) keys[i];
         String actionString = (String) focusInputMap.get(stroke);
         parentInputMap.put(KeyStroke.getKeyStroke(stroke.getKeyCode(),
                                                   stroke.getModifiers()),
                            actionString);
 
-        parentActionMap.put (actionString, 
-                             new ActionListenerProxy(action, actionString));
+        parentActionMap.put(actionString, 
+                            new ActionListenerProxy(action, actionString));
       }
     // Register the new InputMap-ActionMap as the parents of the list's
     // InputMap and ActionMap

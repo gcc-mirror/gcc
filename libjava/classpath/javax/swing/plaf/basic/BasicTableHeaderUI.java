@@ -199,10 +199,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
      */
     public void mouseExited(MouseEvent e)
     {
-      if (header.getResizingColumn() != null && header.getResizingAllowed())
-        endResizing();
-      if (header.getDraggedColumn() != null && header.getReorderingAllowed())
-        endDragging(null);
+      // Nothing to do.
     }
 
     /**
@@ -363,25 +360,20 @@ public class BasicTableHeaderUI extends TableHeaderUI
     void endDragging(MouseEvent e)
     {
       header.setDraggedColumn(null);
-
-      // Return if the mouse have left the header area while pressed.
-      if (e == null)
-        {
-          header.repaint(draggingHeaderRect);
-          draggingHeaderRect = null;
-          return;
-        }
-      else
-        draggingHeaderRect = null;
+      draggingHeaderRect = null;
 
       TableColumnModel model = header.getColumnModel();
 
       // Find where have we dragged the column.
       int x = e.getX();
       int p = 0;
-      int col = - 1;
+      
+      int col = model.getColumnCount()-1;
       int n = model.getColumnCount();
 
+      // This loop does not find the column if the mouse if out of the 
+      // right boundary of the table header. Then we make this column the
+      // rightmost column.
       Scan: for (int i = 0; i < n; i++)
         {
           p += model.getColumn(i).getWidth();
@@ -391,8 +383,8 @@ public class BasicTableHeaderUI extends TableHeaderUI
               break Scan;
             }
         }
-      if (col >= 0)
-        header.getTable().moveColumn(draggingColumnNumber, col);
+
+      header.getTable().moveColumn(draggingColumnNumber, col);
     }
   }
  

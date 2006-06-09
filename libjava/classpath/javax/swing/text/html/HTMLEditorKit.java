@@ -548,6 +548,8 @@ public class HTMLEditorKit
                    || tag.equals(HTML.Tag.BLOCKQUOTE)
                    || tag.equals(HTML.Tag.PRE))
             view = new BlockView(element, View.Y_AXIS);
+          else if (tag.equals(HTML.Tag.IMG))
+            view = new ImageView(element);
           
           // FIXME: Uncomment when the views have been implemented
           else if (tag.equals(HTML.Tag.CONTENT))
@@ -558,13 +560,12 @@ public class HTMLEditorKit
             view = new HTMLTableView(element);
           else if (tag.equals(HTML.Tag.TD))
             view = new ParagraphView(element);
+            
 
           /*
           else if (tag.equals(HTML.Tag.MENU) || tag.equals(HTML.Tag.DIR)
                    || tag.equals(HTML.Tag.UL) || tag.equals(HTML.Tag.OL))
             view = new ListView(element);
-          else if (tag.equals(HTML.Tag.IMG))
-            view = new ImageView(element);
           else if (tag.equals(HTML.Tag.HR))
             view = new HRuleView(element);
           else if (tag.equals(HTML.Tag.BR))

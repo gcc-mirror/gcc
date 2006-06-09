@@ -9,25 +9,29 @@ Please report bugs at http://www.gnu.org/software/classpath/bugs.html
 Usage: rmic <options> <class names>
 
  where <options> includes:
-  -nowarn       Show no warnings
-  -nowrite      Do not write any files (check for errors only)
-  -d <folder>   Place generated files into the given folder
+  -nowarn            Show no warnings
+  -nowrite           Do not write any files (check for errors only)
+  -d <folder>        Place generated files into the given folder
+  -classpath <path>  Specifies the path, where to find the classes being 
+                     compiled
   
-  -help         Print this help text
-  -v            Print version
-  -verbose      Verbose output
-  -force        Try to generate code even if the input classes seem not
-                consistent with RMI specification.
+  -help              Print this help text
+  -v                 Print version
+  -verbose           Verbose output
+  -force             Try to generate code even if the input classes seem not
+                     consistent with RMI specification.
   
-  -1.2          Generate v 1.2 stubs (default)*
+  -1.2               Generate v 1.2 stubs (default)*
   
-  -iiop         Generate stubs and ties for the GIOP based RMI package extension,
-                javax.rmi. With this key, the two additional keys are accepted:
-    -poa           Generate the Servant based ties (default)
-    -impl          Generate the obsoleted ObjectImpl based ties
-                   (for backward compatibility)
-    -help       Show more details on the giop stub and tie generator options.                
-  -giop         Same as -iiop*                    
+  -iiop              Generate stubs and ties for the GIOP based RMI package 
+                     extension, javax.rmi. With this key, the two additional 
+                     keys are accepted:
+    -poa               Generate the Servant based ties (default)
+    -impl              Generate the obsoleted ObjectImpl based ties
+                        (for backward compatibility)
+    -help            Show more details on the giop stub and tie generator 
+                      options.                
+  -giop              Same as -iiop*                    
                 
   
  and <class names> can include one or more non abstract classes that implement

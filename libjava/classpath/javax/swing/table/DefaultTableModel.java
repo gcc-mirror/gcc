@@ -1,5 +1,5 @@
 /* DefaultTableModel.java --
-   Copyright (C) 2002, 2004, 2005,  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -249,7 +249,7 @@ public class DefaultTableModel extends AbstractTableModel
   public void setColumnIdentifiers(Vector columnIdentifiers) 
   {
     this.columnIdentifiers = columnIdentifiers;
-    setColumnCount((columnIdentifiers == null ? 0 : columnIdentifiers.size()));
+    setColumnCount(columnIdentifiers == null ? 0 : columnIdentifiers.size());
   }
   
   /**
@@ -289,13 +289,13 @@ public class DefaultTableModel extends AbstractTableModel
     if (rowCount < existingRowCount) 
     {
       dataVector.setSize(rowCount);
-      fireTableRowsDeleted(rowCount,existingRowCount-1);      
+      fireTableRowsDeleted(rowCount, existingRowCount - 1);      
     }
     else 
     {
       int rowsToAdd = rowCount - existingRowCount;
       addExtraRows(rowsToAdd, columnIdentifiers.size());
-      fireTableRowsInserted(existingRowCount,rowCount-1);
+      fireTableRowsInserted(existingRowCount, rowCount - 1);
     }
   }
 
@@ -353,7 +353,8 @@ public class DefaultTableModel extends AbstractTableModel
    * @param columnName the column name (<code>null</code> permitted).
    * @param columnData the column data.
    */
-  public void addColumn(Object columnName, Object[] columnData) {
+  public void addColumn(Object columnName, Object[] columnData) 
+  {
     if (columnData != null)
     {
       // check columnData array for cases where the number of items
@@ -384,7 +385,8 @@ public class DefaultTableModel extends AbstractTableModel
    * 
    * @param rowData the row data (<code>null</code> permitted).
    */
-  public void addRow(Vector rowData) {
+  public void addRow(Vector rowData) 
+  {
     int rowIndex = dataVector.size();
     dataVector.add(rowData);
     newRowsAdded(new TableModelEvent(
@@ -398,7 +400,8 @@ public class DefaultTableModel extends AbstractTableModel
    * 
    * @param rowData the row data (<code>null</code> permitted).
    */
-  public void addRow(Object[] rowData) {
+  public void addRow(Object[] rowData) 
+  {
     addRow(convertToVector(rowData));
   }
 
@@ -408,9 +411,10 @@ public class DefaultTableModel extends AbstractTableModel
    * @param row the row index.
    * @param rowData the row data.
    */
-  public void insertRow(int row, Vector rowData) {
+  public void insertRow(int row, Vector rowData) 
+  {
     dataVector.add(row, rowData);
-    fireTableRowsInserted(row,row);
+    fireTableRowsInserted(row, row);
   }
 
   /**
@@ -419,7 +423,8 @@ public class DefaultTableModel extends AbstractTableModel
    * @param row the row index.
    * @param rowData the row data.
    */
-  public void insertRow(int row, Object[] rowData) {
+  public void insertRow(int row, Object[] rowData) 
+  {
     insertRow(row, convertToVector(rowData));
   }
 
@@ -431,7 +436,8 @@ public class DefaultTableModel extends AbstractTableModel
    * @param endIndex the end row.
    * @param toIndex the row to move to.
    */
-  public void moveRow(int startIndex, int endIndex, int toIndex) {
+  public void moveRow(int startIndex, int endIndex, int toIndex) 
+  {
     Vector removed = new Vector();
     for (int i = endIndex; i >= startIndex; i--)
     {
@@ -452,9 +458,10 @@ public class DefaultTableModel extends AbstractTableModel
    * 
    * @param row the row index.
    */
-  public void removeRow(int row) {
+  public void removeRow(int row) 
+  {
     dataVector.remove(row);
-    fireTableRowsDeleted(row,row);
+    fireTableRowsDeleted(row, row);
   }
 
   /**
@@ -462,7 +469,8 @@ public class DefaultTableModel extends AbstractTableModel
    * 
    * @return The row count.
    */
-  public int getRowCount() {
+  public int getRowCount() 
+  {
     return dataVector.size();
   }
 
@@ -471,8 +479,9 @@ public class DefaultTableModel extends AbstractTableModel
    * 
    * @return The column count.
    */
-  public int getColumnCount() {
-    return (columnIdentifiers == null ? 0 : columnIdentifiers.size());
+  public int getColumnCount() 
+  {
+    return columnIdentifiers == null ? 0 : columnIdentifiers.size();
   }
 
   /**
@@ -485,7 +494,8 @@ public class DefaultTableModel extends AbstractTableModel
    * 
    * @return The column name.
    */
-  public String getColumnName(int column) {
+  public String getColumnName(int column)
+  {
     String result = "";
     if (columnIdentifiers == null) 
       result = super.getColumnName(column);
@@ -516,7 +526,8 @@ public class DefaultTableModel extends AbstractTableModel
    * 
    * @return <code>true</code> in all cases.
    */
-  public boolean isCellEditable(int row, int column) {
+  public boolean isCellEditable(int row, int column) 
+  {
     return true;
   }
 
@@ -529,7 +540,8 @@ public class DefaultTableModel extends AbstractTableModel
    * @return The value (<code>Object</code>, possibly <code>null</code>) at 
    *         the specified cell in the table.
    */
-  public Object getValueAt(int row, int column) {
+  public Object getValueAt(int row, int column) 
+  {
     return ((Vector) dataVector.get(row)).get(column);
   }
 
@@ -541,9 +553,10 @@ public class DefaultTableModel extends AbstractTableModel
    * @param row the row index.
    * @param column the column index.
    */
-  public void setValueAt(Object value, int row, int column) {
+  public void setValueAt(Object value, int row, int column) 
+  {
     ((Vector) dataVector.get(row)).set(column, value);
-    fireTableCellUpdated(row,column);
+    fireTableCellUpdated(row, column);
   }
 
   /**
@@ -554,7 +567,8 @@ public class DefaultTableModel extends AbstractTableModel
    * @return A vector (or <code>null</code> if the data array 
    *         is <code>null</code>).
    */
-  protected static Vector convertToVector(Object[] data) {
+  protected static Vector convertToVector(Object[] data) 
+  {
     if (data == null)
       return null;
     Vector vector = new Vector(data.length);
@@ -571,7 +585,8 @@ public class DefaultTableModel extends AbstractTableModel
    * @return A vector (or <code>null</code> if the data array 
    *         is <code>null</code>.
    */
-  protected static Vector convertToVector(Object[][] data) {
+  protected static Vector convertToVector(Object[][] data) 
+  {
     if (data == null)
       return null;
     Vector vector = new Vector(data.length);

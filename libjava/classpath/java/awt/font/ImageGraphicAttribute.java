@@ -38,82 +38,150 @@ exception statement from your version. */
 
 package java.awt.font;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 
 /**
+ * This is an implementation of GraphicAttribute which draws images in a
+ * TextLayout.
+ * 
+ * @author Lillian Angel
  * @author Michael Koch
  */
-public final class ImageGraphicAttribute extends GraphicAttribute
+public final class ImageGraphicAttribute
+    extends GraphicAttribute
 {
   private Image image;
-  
-  public ImageGraphicAttribute (Image image, int alignment)
+  private float originX;
+  private float originY;
+
+  /**
+   * Constucts an instance from the specified Image. The origin is at (0, 0).
+   * 
+   * @param image - image to construct from.
+   * @param alignment - the alignment
+   */
+  public ImageGraphicAttribute(Image image, int alignment)
   {
-    super (alignment);
+    this(image, alignment, 0, 0);
+  }
+
+  /**
+   * Constucts an instance from the specified Image. The origin is at (originX,
+   * originY).
+   * 
+   * @param image - image to construct from
+   * @param alignment - the alignment
+   * @param originX - x point of origin
+   * @param originY - y point of origin
+   */
+  public ImageGraphicAttribute(Image image, int alignment, float originX,
+                               float originY)
+  {
+    super(alignment);
     this.image = image;
+    this.originX = originX;
+    this.originY = originY;
   }
 
-  public ImageGraphicAttribute (Image image, int alignment, float originX,
-                                float originY)
-    throws NotImplementedException
+  /**
+   * Draws the image at the specified location, relative to the
+   * origin.
+   * 
+   * @param g - the graphics to use to render the image
+   * @param x - the x location
+   * @param y - the y location 
+   */
+  public void draw(Graphics2D g, float x, float y)
   {
-    super (alignment);
-    this.image = image;
-    
-    throw new Error ("not implemented");
+    g.drawImage(image, (int) (x - originX), (int) (y - originY), null);
   }
 
-  public void draw (Graphics2D graphics, float x, float y)
-    throws NotImplementedException
-  {
-    throw new Error ("not implemented");
-  }
-
-  public boolean equals (Object obj)
+  /**
+   * Compares this to the specified Object
+   * 
+   * @param obj - the object to compare
+   * @return true if the obj and this are equivalent
+   */
+  public boolean equals(Object obj)
   {
     if (! (obj instanceof ImageGraphicAttribute))
       return false;
 
-    return equals ((ImageGraphicAttribute) obj);
+    return equals((ImageGraphicAttribute) obj);
   }
 
-  public boolean equals (ImageGraphicAttribute rhs)
-    throws NotImplementedException
+  /**
+   * Compares this to the ImageGraphicAttribute given, by
+   * comparing all fields and values.
+   * 
+   * @param rhs - the ImageGraphicAttribute to compare
+   * @return true if the object given is equivalent to this
+   */
+  public boolean equals(ImageGraphicAttribute rhs)
   {
-    throw new Error ("not implemented");
+    return ((this == rhs) || ((this.getAscent() == rhs.getAscent())
+                              && (this.getAdvance() == rhs.getAdvance())
+                              && (this.getAlignment() == rhs.getAlignment())
+                              && (this.getBounds().equals(rhs.getBounds()))
+                              && (this.getDescent() == rhs.getDescent())
+                              && (this.hashCode() == rhs.hashCode())
+                              && (this.image.equals(rhs.image))
+                              && (this.originX == rhs.originX) 
+                              && (this.originY == rhs.originY)));
   }
 
-  public float getAdvance ()
-    throws NotImplementedException
+  /**
+   * Returns distance from the origin to the right edge of the image of this.
+   * 
+   * @return the advance
+   */
+  public float getAdvance()
   {
-    throw new Error ("not implemented");
+    return Math.max(0, image.getWidth(null) - originX);
   }
 
-  public float getAscent ()
-    throws NotImplementedException
+  /**
+   * Returns the the distance from the top of the image to the origin of this.
+   * 
+   * @return the ascent.
+   */
+  public float getAscent()
   {
-    throw new Error ("not implemented");
+    return Math.max(0, originY);
   }
 
-  public Rectangle2D getBounds ()
-    throws NotImplementedException
+  /**
+   * Gets the bounds of the object rendered, relative to the position.
+   * 
+   * @return the bounds of the object rendered, relative to the position.
+   */
+  public Rectangle2D getBounds()
   {
-    throw new Error ("not implemented");
+    // This is equivalent to what Sun's JDK returns.
+    // I am not entirely sure why the origin is negative.
+    return new Rectangle2D.Float(- originX, - originY, image.getWidth(null),
+                                 image.getHeight(null));
   }
 
-  public float getDescent ()
-    throws NotImplementedException
+  /**
+   * Returns the distance from the origin to the bottom of the image.
+   * 
+   * @return the descent
+   */
+  public float getDescent()
   {
-    throw new Error ("not implemented");
+    return Math.max(0, image.getHeight(null) - originY);
   }
 
-  public int hashCode ()
-    throws NotImplementedException
+  /**
+   * Gets the hash code for this image.
+   * 
+   * @return the hash code
+   */
+  public int hashCode()
   {
-    throw new Error ("not implemented");
+    return image.hashCode();
   }
 }

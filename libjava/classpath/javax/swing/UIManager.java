@@ -145,18 +145,19 @@ public class UIManager implements Serializable
   static
   {
     String defaultlaf = System.getProperty("swing.defaultlaf");
-    try {
-      if (defaultlaf != null)
-        {
-          Class lafClass = Class.forName(defaultlaf);
-          LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
-          setLookAndFeel(laf);
-        }
-      else
-        {
-          setLookAndFeel(new MetalLookAndFeel());
-        }
-    }
+    try 
+      {
+        if (defaultlaf != null)
+          {
+            Class lafClass = Class.forName(defaultlaf);
+            LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
+            setLookAndFeel(laf);
+          }
+        else
+          {
+            setLookAndFeel(new MetalLookAndFeel());
+          }
+      }
     catch (Exception ex)
       {
         System.err.println("cannot initialize Look and Feel: " + defaultlaf);
@@ -455,7 +456,7 @@ public class UIManager implements Serializable
    */
   public static Font getFont(Object key, Locale locale)
   {
-    return (Font) get(key ,locale);
+    return (Font) get(key, locale);
   }
 
   /**

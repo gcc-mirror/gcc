@@ -1,5 +1,5 @@
 /* BasicToggleButtonUI.java
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,21 +44,35 @@ import java.awt.Rectangle;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
+/**
+ * A UI delegate for the {@link JToggleButton} component.
+ */
 public class BasicToggleButtonUI extends BasicButtonUI
 {
-  public static ComponentUI createUI(final JComponent component)
+  
+  /**
+   * Returns a UI delegate for the specified component.
+   * 
+   * @param component  the component (should be an instance of 
+   *     {@link JToggleButton}).
+   *     
+   * @return An instance of <code>BasicToggleButtonUI</code>.
+   */
+  public static ComponentUI createUI(JComponent component)
   {
     return new BasicToggleButtonUI();
   }    
 
   /**
-   * Returns the prefix for the UI defaults property for this UI class.
-   * This is &apos;ToggleButton&apos; for this class.
+   * Returns the prefix for entries in the {@link UIManager} defaults table 
+   * (<code>"ToggleButton."</code> in this case).
    *
-   * @return the prefix for the UI defaults property
+   * @return <code>"ToggleButton."</code>
    */
   protected String getPropertyPrefix()
   {
@@ -89,15 +103,10 @@ public class BasicToggleButtonUI extends BasicButtonUI
     else
       vr = SwingUtilities.getLocalBounds(b);
     String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
-                                                     b.getText(),
-                                                     currentIcon(b),
-                                                     b.getVerticalAlignment(), 
-                                                     b.getHorizontalAlignment(),
-                                                     b.getVerticalTextPosition(), 
-                                                     b.getHorizontalTextPosition(),
-                                                     vr, ir, tr, 
-                                                     b.getIconTextGap() 
-                                                     + defaultTextShiftOffset);
+        b.getText(), currentIcon(b), b.getVerticalAlignment(), 
+        b.getHorizontalAlignment(), b.getVerticalTextPosition(), 
+        b.getHorizontalTextPosition(), vr, ir, tr, b.getIconTextGap() 
+        + defaultTextShiftOffset);
 
     if ((b.getModel().isArmed() && b.getModel().isPressed()) 
         || b.isSelected())

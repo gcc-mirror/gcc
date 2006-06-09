@@ -58,7 +58,7 @@ public class MetalSeparatorUI
 
   // FIXME: maybe replace by a Map of instances when this becomes stateful
   /** The shared UI instance for MetalSeparatorUIs */
-  private static MetalSeparatorUI instance = null;
+  private static MetalSeparatorUI instance;
 
   /**
    * Constructs a new instance of <code>MetalSeparatorUI</code>.

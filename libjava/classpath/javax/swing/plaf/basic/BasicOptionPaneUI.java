@@ -977,7 +977,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
       case JOptionPane.OK_CANCEL_OPTION:
 	return new Object[] { OK_STRING, CANCEL_STRING };
       case JOptionPane.DEFAULT_OPTION:
-        return (optionPane.getWantsInput() ) ?
+        return (optionPane.getWantsInput()) ?
                new Object[] { OK_STRING, CANCEL_STRING } :
                ( optionPane.getMessageType() == JOptionPane.QUESTION_MESSAGE ) ?
                new Object[] { YES_STRING, NO_STRING, CANCEL_STRING } :

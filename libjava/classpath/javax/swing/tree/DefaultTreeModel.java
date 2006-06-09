@@ -1,5 +1,5 @@
 /* DefaultTreeModel.java -- 
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
  
 This file is part of GNU Classpath.
 
@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package javax.swing.tree;
 
-import gnu.classpath.NotImplementedException;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -62,7 +60,7 @@ public class DefaultTreeModel
   /**
    * root
    */
-  protected TreeNode root = null;
+  protected TreeNode root;
 
   /**
    * listenerList

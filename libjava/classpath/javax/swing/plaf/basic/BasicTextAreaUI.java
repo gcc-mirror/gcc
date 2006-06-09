@@ -73,7 +73,7 @@ public class BasicTextAreaUI extends BasicTextUI
    */
   public View create(Element elem)
   {
-    JTextArea comp = (JTextArea)getComponent();
+    JTextArea comp = (JTextArea) getComponent();
     if (comp.getLineWrap())
       {
         if (comp.getWrapStyleWord())
@@ -105,7 +105,7 @@ public class BasicTextAreaUI extends BasicTextUI
    */
   protected void propertyChange(PropertyChangeEvent ev)
   {
-    JTextArea comp = (JTextArea)getComponent();
+    JTextArea comp = (JTextArea) getComponent();
     if (ev.getPropertyName() == "lineWrap"
         || ev.getPropertyName() == "wrapStyleWord")
       {

@@ -1,5 +1,5 @@
 /* BasicCheckBoxUI.java
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,25 +38,32 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
+/**
+ * A UI delegate for the {@link JCheckBox} component.
+ */
 public class BasicCheckBoxUI extends BasicRadioButtonUI
 {  
   
-  public static ComponentUI createUI(final JComponent c)  {
+  /**
+   * Returns a UI delegate (that is, an instance of this class) for the 
+   * specified component.
+   * 
+   * @param c  the component (this should be a {@link JCheckBox}).
+   *     
+   * @return A new instance of <code>BasicCheckBoxUI</code>.
+   */
+  public static ComponentUI createUI(JComponent c)  {
     return new BasicCheckBoxUI();
   }
 
-  public Icon getDefaultIcon()
-  {
-    return UIManager.getIcon("CheckBox.icon");
-  }
-  
   /**
-   * Returns the prefix for entries in the {@link UIManager} defaults table.
+   * Returns the prefix for entries in the {@link UIManager} defaults table 
+   * (<code>"CheckBox."</code> in this case).
    *
    * @return "CheckBox."
    */

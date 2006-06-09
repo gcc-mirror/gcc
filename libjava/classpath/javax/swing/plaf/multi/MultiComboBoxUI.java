@@ -357,7 +357,8 @@ public class MultiComboBoxUI extends ComboBoxUI
    * @param c  the component.
    * @param visible  the visible state.
    */
-  public void setPopupVisible(JComboBox c, boolean visible) {
+  public void setPopupVisible(JComboBox c, boolean visible) 
+  {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
     {
@@ -376,7 +377,8 @@ public class MultiComboBoxUI extends ComboBoxUI
    * 
    * @return The result for the UI delegate from the primary look and feel.  
    */
-  public boolean isPopupVisible(JComboBox c) {
+  public boolean isPopupVisible(JComboBox c) 
+  {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -406,7 +408,8 @@ public class MultiComboBoxUI extends ComboBoxUI
    *         UI delegate in the primary look and feel, and <code>false</code> 
    *         otherwise. 
    */
-  public boolean isFocusTraversable(JComboBox c) {
+  public boolean isFocusTraversable(JComboBox c) 
+  {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value

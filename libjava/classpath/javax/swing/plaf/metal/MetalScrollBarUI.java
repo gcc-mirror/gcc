@@ -90,14 +90,14 @@ public class MetalScrollBarUI extends BasicScrollBarUI
       if (e.getPropertyName().equals(FREE_STANDING_PROP))
         {
           Boolean prop = (Boolean) e.getNewValue();
-          isFreeStanding = (prop == null ? true : prop.booleanValue());
-	  if (increaseButton != null)
-	    increaseButton.setFreeStanding(isFreeStanding);
-	  if (decreaseButton != null)
-	    decreaseButton.setFreeStanding(isFreeStanding);
+          isFreeStanding = prop == null ? true : prop.booleanValue();
+          if (increaseButton != null)
+            increaseButton.setFreeStanding(isFreeStanding);
+          if (decreaseButton != null)
+            decreaseButton.setFreeStanding(isFreeStanding);
         }
       else
-	super.propertyChange(e);
+        super.propertyChange(e);
     }
   }
   
@@ -167,7 +167,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
     // createDecreaseButton() are called (unless there is somewhere earlier
     // that we can do this).
     Boolean prop = (Boolean) scrollbar.getClientProperty(FREE_STANDING_PROP);
-    isFreeStanding = (prop == null ? true : prop.booleanValue());
+    isFreeStanding = prop == null ? true : prop.booleanValue();
     scrollBarShadowColor = UIManager.getColor("ScrollBar.shadow");
     super.installDefaults();
   }
@@ -401,7 +401,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
       {
         g.drawLine(x, y, x + w - 1, y);
         g.drawLine(x, y, x, y + h - 1);
-        g.drawLine(x + w - 1, y, x + w - 1, y + h -1);
+        g.drawLine(x + w - 1, y, x + w - 1, y + h - 1);
       }
     
     // then the highlight

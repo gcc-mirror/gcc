@@ -41,8 +41,10 @@ package javax.swing.plaf.metal;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
 
@@ -161,5 +163,21 @@ public class MetalInternalFrameUI
     super.uninstallListeners();
     frame.removePropertyChangeListener(IS_PALETTE, paletteListener);
     paletteListener = null;
+  }
+
+  /**
+   * Installs keyboard actions. This is overridden to remove the
+   * <code>showSystemMenu</code> Action that is installed by the
+   * <code>BasicInternalFrameUI</code>, since Metal JInternalFrames don't have
+   * a system menu.
+   */
+  protected void installKeyboardActions()
+  {
+    super.installKeyboardActions();
+    ActionMap am = SwingUtilities.getUIActionMap(frame);
+    if (am != null)
+      {
+        am.remove("showSystemMenu");
+      }
   }
 }

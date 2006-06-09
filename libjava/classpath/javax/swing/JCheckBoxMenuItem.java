@@ -1,5 +1,5 @@
 /* JCheckBoxMenuItem.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -204,7 +204,7 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
   /**
     * This method overrides JComponent.requestFocus with an empty
     * implementation, since JCheckBoxMenuItems should not
-    * receve focus in general.
+    * receive focus in general.
     */
   public void requestFocus()
   {
@@ -212,16 +212,28 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
   }
 
   /**
-   * A string that describes this JCheckBoxMenuItem. Normally only used
-   * for debugging.
+   * Returns a string describing the attributes for the 
+   * <code>JCheckBoxMenuItem</code> component, for use in debugging.  The 
+   * return value is guaranteed to be non-<code>null</code>, but the format 
+   * of the string may vary between implementations.
    *
-   * @return A string describing this JCheckBoxMenuItem
+   * @return A string describing the attributes of the 
+   *     <code>JCheckBoxMenuItem</code>.
    */
   protected String paramString()
   {
-    return "JCheckBoxMenuItem";
+    // calling super seems to be sufficient to match the reference 
+    // implementation here...
+    return super.paramString();
   }
 
+  /**
+   * Returns the object that provides accessibility features for this
+   * <code>JCheckBoxMenuItem</code> component.
+   *
+   * @return The accessible context (an instance of 
+   *     {@link AccessibleJCheckBoxMenuItem}).
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -231,20 +243,29 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
   }
 
   /**
-   * Accessibility support for <code>JCheckBoxMenuItem</code>.
+   * Provides the accessibility features for the <code>JCheckBoxMenuItem</code> 
+   * component.
+   * 
+   * @see JCheckBoxMenuItem#getAccessibleContext()
    */
   protected class AccessibleJCheckBoxMenuItem extends AccessibleJMenuItem
   {
     private static final long serialVersionUID = 1079958073579370777L;
 
     /**
-     * Creates a new AccessibleJCheckBoxMenuItem object.
+     * Creates a new <code>AccessibleJCheckBoxMenuItem</code> instance.
      */
     protected AccessibleJCheckBoxMenuItem()
     {
       // Nothing to do here.
     }
 
+    /**
+     * Returns the accessible role for the <code>JCheckBoxMenuItem</code> 
+     * component.
+     *
+     * @return {@link AccessibleRole#CHECK_BOX}.
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.CHECK_BOX;

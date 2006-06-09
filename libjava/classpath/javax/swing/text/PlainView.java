@@ -437,132 +437,92 @@ public class PlainView extends View implements TabExpander
    */
   protected void updateDamage(DocumentEvent changes, Shape a, ViewFactory f)
   {
-    // Return early and do no updates if the allocation area is null
-    // (like the RI).
-    if (a == null)
-      return;
-    
-    float oldMaxLineLength = maxLineLength; 
-    Rectangle alloc = a.getBounds();
-    Element el = getElement();
-    ElementChange ec = changes.getChange(el);
-    
-    // If ec is null then no lines were added or removed, just 
-    // repaint the changed line
-    if (ec == null)
+    // This happens during initialization.
+    if (metrics == null)
       {
-        int line = el.getElementIndex(changes.getOffset());
-        
-        // If characters have been removed from the current longest line
-        // we have to find out which one is the longest now otherwise
-        // the preferred x-axis span will not shrink.
-        if (changes.getType() == DocumentEvent.EventType.REMOVE
-            && el.getElement(line) == longestLine)
-          {
-            maxLineLength = -1;
-            if (determineMaxLineLength() != alloc.width)
-              preferenceChanged(this, true, false);
-          }
-        
-        damageLineRange(line, line, a, getContainer());
-        return;
-      }
-    
-    Element[] removed = ec.getChildrenRemoved();
-    Element[] newElements = ec.getChildrenAdded();
-    
-    // If no Elements were added or removed, we just want to repaint
-    // the area containing the line that was modified
-    if (removed == null && newElements == null)
-      {
-        int line = getElement().getElementIndex(changes.getOffset());
-        
-        damageLineRange(line, line, a, getContainer());
+        updateMetrics();
+        preferenceChanged(null, true, true);
         return;
       }
 
-    // Check to see if we removed the longest line, if so we have to
-    // search through all lines and find the longest one again.
-    if (removed != null)
+    Element element = getElement();
+
+    // Find longest line if it hasn't been initialized yet.
+    if (longestLine == null)
+      findLongestLine(0, element.getElementCount() - 1);
+
+    ElementChange change = changes.getChange(element);
+    if (changes.getType() == DocumentEvent.EventType.INSERT)
       {
-        for (int i = 0; i < removed.length; i++)
-          if (removed[i].equals(longestLine))
-            {
-              // reset maxLineLength and search through all lines for longest one
-              maxLineLength = -1;
-              if (determineMaxLineLength() != alloc.width)
-                preferenceChanged(this, true, removed.length != newElements.length);
-              
-              ((JTextComponent)getContainer()).repaint();
-              
-              return;
+        // Handles character/line insertion.
+
+        // Determine if lines have been added. In this case we repaint
+        // differently.
+        boolean linesAdded = true;
+        if (change == null)
+          linesAdded = false;
+
+        // Determine the start line.
+        int start;
+        if (linesAdded)
+          start = change.getIndex();
+        else
+          start = element.getElementIndex(changes.getOffset());
+
+        // Determine the length of the updated region.
+        int length = 0;
+        if (linesAdded)
+          length = change.getChildrenAdded().length - 1;
+
+        // Update the longest line and length.
+        int oldMaxLength = (int) maxLineLength;
+        if (longestLine.getEndOffset() < changes.getOffset()
+            || longestLine.getStartOffset() > changes.getOffset()
+                                             + changes.getLength())
+          {
+            findLongestLine(start, start + length);
+          }
+        else
+          {
+            findLongestLine(0, element.getElementCount() - 1);
+          }
+
+        // Trigger a preference change so that the layout gets updated
+        // correctly.
+        preferenceChanged(null, maxLineLength != oldMaxLength, linesAdded);
+
+        // Damage the updated line range.
+        int endLine = start;
+        if (linesAdded)
+          endLine = element.getElementCount() - 1;
+        damageLineRange(start, endLine, a, getContainer());
+
+      }
+    else
+      {
+        // Handles character/lines removals.
+
+        // Update the longest line and length and trigger preference changed.
+        int oldMaxLength = (int) maxLineLength;
+        if (change != null)
+          {
+            // Line(s) have been removed.
+            findLongestLine(0, element.getElementCount() - 1);
+            preferenceChanged(null, maxLineLength != oldMaxLength, true);
+          }
+        else
+          {
+            // No line has been removed.
+            int lineNo = getElement().getElementIndex(changes.getOffset());
+            Element line = getElement().getElement(lineNo);
+            if (longestLine == line)
+              {
+                findLongestLine(0, element.getElementCount() - 1);
+                preferenceChanged(null, maxLineLength != oldMaxLength, false);
             }
+            damageLineRange(lineNo, lineNo, a, getContainer());
+        }
       }
-    
-    // If we've reached here, that means we haven't removed the longest line
-    if (newElements == null)
-      {
-        // No lines were added, just repaint the container and exit
-        ((JTextComponent)getContainer()).repaint();
-        
-        return;
-      }
-
-    //  Make sure we have the metrics
-    updateMetrics();
-       
-    // If we've reached here, that means we haven't removed the longest line
-    // and we have added at least one line, so we have to check if added lines
-    // are longer than the previous longest line        
-    Segment seg = getLineBuffer();
-    float longestNewLength = 0;
-    Element longestNewLine = null;    
-
-    // Loop through the added lines to check their length
-    for (int i = 0; i < newElements.length; i++)
-      {
-        Element child = newElements[i];
-        int start = child.getStartOffset();
-        int end = child.getEndOffset() - 1;
-        try
-          {
-            el.getDocument().getText(start, end - start, seg);
-          }
-        catch (BadLocationException ex)
-          {
-            AssertionError ae = new AssertionError("Unexpected bad location");
-	    ae.initCause(ex);
-	    throw ae;
-          }
-                
-        if (seg == null || seg.array == null || seg.count == 0)
-          continue;
-        
-        int width = metrics.charsWidth(seg.array, seg.offset, seg.count);
-        if (width > longestNewLength)
-          {
-            longestNewLine = child;
-            longestNewLength = width;
-          }
-      }
-    
-    // Check if the longest of the new lines is longer than our previous
-    // longest line, and if so update our values
-    if (longestNewLength > maxLineLength)
-      {
-        maxLineLength = longestNewLength;
-        longestLine = longestNewLine;
-      }
-    
-    // Report any changes to the preferred sizes of the view
-    // which may cause the underlying component to be revalidated.
-    boolean widthChanged = oldMaxLineLength != maxLineLength;
-    boolean heightChanged = removed.length != newElements.length; 
-    if (widthChanged || heightChanged)
-      preferenceChanged(this, widthChanged, heightChanged);
-    
-    // Repaint the container
-    ((JTextComponent)getContainer()).repaint();
   }
 
   /**
@@ -647,6 +607,55 @@ public class PlainView extends View implements TabExpander
     if (lineBuffer == null)
       lineBuffer = new Segment();
     return lineBuffer;
+  }
+
+  /**
+   * Finds and updates the longest line in the view inside an interval of
+   * lines.
+   *
+   * @param start the start of the search interval
+   * @param end the end of the search interval
+   */
+  private void findLongestLine(int start, int end)
+  {
+    for (int i = start; i <= end; i++)
+      {
+        int w = getLineLength(i);
+        if (w > maxLineLength)
+          {
+            maxLineLength = w;
+            longestLine = getElement().getElement(i);
+          }
+      }
+  }
+
+  /**
+   * Determines the length of the specified line.
+   *
+   * @param line the number of the line
+   *
+   * @return the length of the line in pixels
+   */
+  private int getLineLength(int line)
+  {
+    Element lineEl = getElement().getElement(line);
+    Segment buffer = getLineBuffer();
+    try
+      {
+        Document doc = getDocument();
+        doc.getText(lineEl.getStartOffset(),
+                    lineEl.getEndOffset() - lineEl.getStartOffset() - 1,
+                    buffer);
+      }
+    catch (BadLocationException ex)
+      {
+        AssertionError err = new AssertionError("Unexpected bad location");
+        err.initCause(ex);
+        throw err;
+      }
+
+    return Utilities.getTabbedTextWidth(buffer, metrics, 0, this,
+                                        lineEl.getStartOffset());
   }
 }
 

@@ -48,7 +48,8 @@ import javax.swing.Icon;
 /**
  * An icon used by the {@link MetalComboBoxUI} class.
  */
-public class MetalComboBoxIcon implements Icon, Serializable {
+public class MetalComboBoxIcon implements Icon, Serializable 
+{
   
   /**
    * Creates a new icon.

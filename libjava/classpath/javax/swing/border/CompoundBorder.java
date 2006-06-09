@@ -178,7 +178,7 @@ public class CompoundBorder extends AbstractBorder
     Insets borderInsets;
 
     if (insets == null)
-      insets = new Insets (0,0,0,0);
+      insets = new Insets(0, 0, 0, 0);
     else
       insets.left = insets.right = insets.top = insets.bottom = 0;
 
@@ -217,7 +217,7 @@ public class CompoundBorder extends AbstractBorder
     // the implementation from AbstractBorder. However, we want
     // to be compatible with the API specification, which overrides
     // the getBorderInsets(Component) method.
-    return getBorderInsets (c, null);
+    return getBorderInsets(c, null);
   }
 
   /**
@@ -239,7 +239,7 @@ public class CompoundBorder extends AbstractBorder
    * 
    * @return The inside border (possibly <code>null</code>).
    */
-  public Border getInsideBorder ()
+  public Border getInsideBorder()
   {
     return insideBorder;
   }

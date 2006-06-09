@@ -104,6 +104,17 @@ public class GRMIC
                 else
                   HelpPrinter.printHelpAndExit(HelpPath);
               }
+            else if (c.equals("-classpath"))
+              {
+                int f = i + 1;
+                if (f < args.length)
+                  {
+                    compiler.setClassPath(args[f]);
+                    i++;
+                  }
+                else
+                  HelpPrinter.printHelpAndExit(HelpPath);
+              }
             else if (c.charAt(0) != '-')
             // No more options - start of class list.
               {
@@ -124,17 +135,7 @@ public class GRMIC
             if (args[i].charAt(0) != '-')
               {
                 compiler.reset();
-                Class c = null;
-                try
-                  {
-                    c = Thread.currentThread().getContextClassLoader().loadClass(
-                                                                                 args[i]);
-                  }
-                catch (ClassNotFoundException e)
-                  {
-                    System.err.println(args[i] + " class not found.");
-                    System.exit(1);
-                  }
+                Class c = compiler.loadClass(args[i]);
 
                 compiler.compile(c);
                 String packag = compiler.getPackageName().replace('.', '/');

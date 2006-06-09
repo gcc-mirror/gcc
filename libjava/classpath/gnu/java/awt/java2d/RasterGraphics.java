@@ -65,8 +65,10 @@ public class RasterGraphics
 
   public RasterGraphics(WritableRaster r, ColorModel cm)
   {
+    super();
     raster = r;
     colorModel = cm;
+    init();
   }
 
   /**

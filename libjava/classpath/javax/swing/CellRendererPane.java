@@ -93,7 +93,7 @@ public class CellRendererPane extends Container implements Accessible
    */
   public CellRendererPane()
   {
-    // Nothing to do here.
+    setVisible(false);
   }
 
   /**

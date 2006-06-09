@@ -43,6 +43,11 @@ package java.awt;
  */
 class EventDispatchThread extends Thread
 {
+  /**
+   * The default priority when no property has been set.
+   */
+  private static final int DEFAULT_PRIORITY = NORM_PRIORITY + 1;
+
   private static int dispatchThreadNum;
 
   private EventQueue queue;
@@ -52,7 +57,22 @@ class EventDispatchThread extends Thread
     super();
     setName("AWT-EventQueue-" + ++dispatchThreadNum);
     this.queue = queue;
-    setPriority(NORM_PRIORITY + 1);
+
+    int priority = DEFAULT_PRIORITY;
+    try
+      {
+        String priorityString =
+          System.getProperty("gnu.awt.dispatchthread.priority");
+        if (priorityString != null)
+          {
+            priority = Integer.parseInt(priorityString); 
+          }      
+      }
+    catch (NumberFormatException ex)
+      {
+        // Ignore and use default.
+      }
+    setPriority(priority);
   }
 
   public void run()

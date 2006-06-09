@@ -185,10 +185,6 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   old_glog_func = g_log_set_default_handler (&glog_func, NULL);
 #endif
 
-#if GTK_CAIRO
-  cp_gtk_graphics2d_init_jni ();
-#endif
-  cp_gtk_graphics_init_jni ();
   cp_gtk_button_init_jni ();
   cp_gtk_checkbox_init_jni ();
   cp_gtk_choice_init_jni ();

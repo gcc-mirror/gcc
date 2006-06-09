@@ -38,6 +38,11 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.getopt.Option;
+import gnu.classpath.tools.getopt.OptionException;
+import gnu.classpath.tools.getopt.OptionGroup;
+import gnu.classpath.tools.getopt.Parser;
 import gnu.java.security.util.Util;
 import gnu.java.security.x509.X500DistinguishedName;
 
@@ -153,7 +158,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      
  *      <dt>-validity DAY_COUNT</dt>
  *      
- *      <dt>-storetype STORE_TYP}</dt>
+ *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
  *      <code>keystore.type</code> in the security properties file, which is
@@ -198,19 +203,20 @@ class GenKeyCmd extends Command
   /** Default key size in bits. */
   private static final int DEFAULT_KEY_SIZE = 1024;
 
-  private String _alias;
-  private String _keyAlgorithm;
-  private String _keySizeStr;
-  private String _sigAlgorithm;
-  private String _dName;
-  private String _password;
-  private String _validityStr;
-  private String _ksType;
-  private String _ksURL;
-  private String _ksPassword;
-  private String _providerClassName;
+  protected String _alias;
+  protected String _keyAlgorithm;
+  protected String _keySizeStr;
+  protected String _sigAlgorithm;
+  protected String _dName;
+  protected String _password;
+  protected String _validityStr;
+  protected String _ksType;
+  protected String _ksURL;
+  protected String _ksPassword;
+  protected String _providerClassName;
   private int keySize;
   private X500DistinguishedName distinguishedName;
+  private Parser cmdOptionsParser;
 
   // default 0-arguments constructor
 
@@ -294,48 +300,6 @@ class GenKeyCmd extends Command
 
   // life-cycle methods -------------------------------------------------------
 
-  int processArgs(String[] args, int i)
-  {
-    int limit = args.length;
-    String opt;
-    while (++i < limit)
-      {
-        opt = args[i];
-        log.finest("args[" + i + "]=" + opt); //$NON-NLS-1$ //$NON-NLS-2$
-        if (opt == null || opt.length() == 0)
-          continue;
-
-        if ("-alias".equals(opt)) // -alias ALIAS //$NON-NLS-1$
-          _alias = args[++i];
-        else if ("-keyalg".equals(opt)) // -keyalg ALGORITHM //$NON-NLS-1$
-          _keyAlgorithm = args[++i];
-        else if ("-keysize".equals(opt)) // -keysize KEY_SIZE //$NON-NLS-1$
-          _keySizeStr = args[++i];
-        else if ("-sigalg".equals(opt)) // -sigalg ALGORITHM //$NON-NLS-1$
-          _sigAlgorithm = args[++i];
-        else if ("-dname".equals(opt)) // -dname NAME //$NON-NLS-1$
-          _dName = args[++i];
-        else if ("-keypass".equals(opt)) // -keypass PASSWORD //$NON-NLS-1$
-          _password = args[++i];
-        else if ("-validity".equals(opt)) // -validity DAY_COUNT //$NON-NLS-1$
-          _validityStr = args[++i];
-        else if ("-storetype".equals(opt)) // -storetype STORE_TYPE //$NON-NLS-1$
-          _ksType = args[++i];
-        else if ("-keystore".equals(opt)) // -keystore URL //$NON-NLS-1$
-          _ksURL = args[++i];
-        else if ("-storepass".equals(opt)) // -storepass PASSWORD //$NON-NLS-1$
-          _ksPassword = args[++i];
-        else if ("-provider".equals(opt)) // -provider PROVIDER_CLASS_NAME //$NON-NLS-1$
-          _providerClassName = args[++i];
-        else if ("-v".equals(opt)) //$NON-NLS-1$
-          verbose = true;
-        else
-          break;
-      }
-
-    return i;
-  }
-
   void setup() throws Exception
   {
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
@@ -352,11 +316,9 @@ class GenKeyCmd extends Command
     log.finer("  -keysize=" + keySize); //$NON-NLS-1$
     log.finer("  -sigalg=" + signatureAlgorithm.getAlgorithm()); //$NON-NLS-1$
     log.finer("  -dname=" + distinguishedName); //$NON-NLS-1$
-    log.finer("  -keypass=" + String.valueOf(keyPasswordChars)); //$NON-NLS-1$
     log.finer("  -validity=" + validityInDays); //$NON-NLS-1$
     log.finer("  -storetype=" + storeType); //$NON-NLS-1$
     log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -storepass=" + String.valueOf(storePasswordChars)); //$NON-NLS-1$
     log.finer("  -provider=" + provider); //$NON-NLS-1$
     log.finer("  -v=" + verbose); //$NON-NLS-1$
   }
@@ -368,14 +330,14 @@ class GenKeyCmd extends Command
     log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
 
     // 1. generate a new key-pair
-    log.fine("About to generate key-pair...");
+    log.finer("About to generate key-pair..."); //$NON-NLS-1$
     keyPairGenerator.initialize(keySize);
     KeyPair kp = keyPairGenerator.generateKeyPair();
     PublicKey publicKey = kp.getPublic();
     PrivateKey privateKey = kp.getPrivate();
 
     // 2. generate a self-signed certificate
-    log.fine("About to generate a self-signed certificate...");
+    log.finer("About to generate a self-signed certificate..."); //$NON-NLS-1$
     byte[] derBytes = getSelfSignedCertificate(distinguishedName,
                                                publicKey,
                                                privateKey);
@@ -397,6 +359,127 @@ class GenKeyCmd extends Command
   }
 
   // own methods --------------------------------------------------------------
+
+  Parser getParser()
+  {
+    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
+
+    Parser result = new ClasspathToolParser(Main.GENKEY_CMD, true);
+    result.setHeader(Messages.getString("GenKeyCmd.57")); //$NON-NLS-1$
+    result.setFooter(Messages.getString("GenKeyCmd.58")); //$NON-NLS-1$
+    OptionGroup options = new OptionGroup(Messages.getString("GenKeyCmd.59")); //$NON-NLS-1$
+    options.add(new Option(Main.ALIAS_OPT,
+                           Messages.getString("GenKeyCmd.60"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.61")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _alias = argument;
+      }
+    });
+    options.add(new Option(Main.KEYALG_OPT,
+                           Messages.getString("GenKeyCmd.62"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.63")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _keyAlgorithm = argument;
+      }
+    });
+    options.add(new Option(Main.KEYSIZE_OPT,
+                           Messages.getString("GenKeyCmd.64"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.65")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _keySizeStr = argument;
+      }
+    });
+    options.add(new Option(Main.SIGALG_OPT,
+                           Messages.getString("GenKeyCmd.66"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.63")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _sigAlgorithm = argument;
+      }
+    });
+    options.add(new Option(Main.DNAME_OPT,
+                           Messages.getString("GenKeyCmd.68"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.69")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _dName = argument;
+      }
+    });
+    options.add(new Option(Main.KEYPASS_OPT,
+                           Messages.getString("GenKeyCmd.70"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.71")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _password = argument;
+      }
+    });
+    options.add(new Option(Main.VALIDITY_OPT,
+                           Messages.getString("GenKeyCmd.72"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.73")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _validityStr = argument;
+      }
+    });
+    options.add(new Option(Main.STORETYPE_OPT,
+                           Messages.getString("GenKeyCmd.74"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.75")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksType = argument;
+      }
+    });
+    options.add(new Option(Main.KEYSTORE_OPT,
+                           Messages.getString("GenKeyCmd.76"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.77")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksURL = argument;
+      }
+    });
+    options.add(new Option(Main.STOREPASS_OPT,
+                           Messages.getString("GenKeyCmd.78"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.71")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksPassword = argument;
+      }
+    });
+    options.add(new Option(Main.PROVIDER_OPT,
+                           Messages.getString("GenKeyCmd.80"), //$NON-NLS-1$
+                           Messages.getString("GenKeyCmd.81")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _providerClassName = argument;
+      }
+    });
+    options.add(new Option(Main.VERBOSE_OPT,
+                           Messages.getString("GenKeyCmd.82")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        verbose = true;
+      }
+    });
+    result.add(options);
+
+    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    return result;
+  }
 
   /**
    * @param size the desired key size as a string.

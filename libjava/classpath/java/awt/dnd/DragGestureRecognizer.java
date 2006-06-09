@@ -1,5 +1,5 @@
 /* DragGestureRecognizer.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -130,7 +130,7 @@ public abstract class DragGestureRecognizer implements Serializable
   public void resetRecognizer()
     throws NotImplementedException
   {
-    throw new Error("not implemented");
+    events = new ArrayList();
   }
 
   /**
@@ -154,10 +154,15 @@ public abstract class DragGestureRecognizer implements Serializable
     dragGestureListener = null;
   }
 
+  /**
+   * Fires a <code>DragGestureEvent</code> to the DragGestureListener
+   * associated with this object, if there is one.
+   */
   protected void fireDragGestureRecognized(int dragAction, Point p)
-    throws NotImplementedException
   {
-    throw new Error("not implemented");
+    if(dragGestureListener != null)
+      dragGestureListener.dragGestureRecognized
+	(new DragGestureEvent(this, dragAction, p, events));
   }
 
   protected void appendEvent(InputEvent e)

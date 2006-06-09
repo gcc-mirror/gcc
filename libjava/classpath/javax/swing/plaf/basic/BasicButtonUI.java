@@ -72,7 +72,7 @@ public class BasicButtonUI extends ButtonUI
    * A constant added to the defaultTextIconGap to adjust the text
    * within this particular button.
    */
-  protected int defaultTextShiftOffset = 0;
+  protected int defaultTextShiftOffset;
 
   private int textShiftOffset;
 
@@ -268,10 +268,9 @@ public class BasicButtonUI extends ButtonUI
    */
   public Dimension getPreferredSize(JComponent c) 
   {
-    AbstractButton b = (AbstractButton)c;
-    Dimension d = 
-      BasicGraphicsUtils.getPreferredButtonSize
-      (b, defaultTextIconGap + defaultTextShiftOffset);
+    AbstractButton b = (AbstractButton) c;
+    Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b, 
+        defaultTextIconGap + defaultTextShiftOffset);
     return d;
   }
 

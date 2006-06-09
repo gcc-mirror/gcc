@@ -1,5 +1,5 @@
 /* BasicLookAndFeel.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1147,14 +1147,16 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "F8",  "startResize",
         "END",  "selectMax",
         "HOME",  "selectMin",
-        "LEFT",  "negativeIncremnent",
+        "LEFT",  "negativeIncrement",
         "KP_UP", "negativeIncrement",
         "KP_DOWN", "positiveIncrement",
         "UP",  "negativeIncrement",
         "RIGHT", "positiveIncrement",
         "KP_LEFT", "negativeIncrement",
         "DOWN",  "positiveIncrement",
-        "KP_RIGHT", "positiveIncrement"
+        "KP_RIGHT", "positiveIncrement",
+        "shift ctrl pressed TAB", "focusOutBackward",
+        "ctrl pressed TAB", "focusOutForward"
       }),
       "SplitPane.background", new ColorUIResource(light),
       "SplitPane.border", new BasicBorders.SplitPaneBorder(null, null),

@@ -174,7 +174,7 @@ public class SwingMenuBarPeer
   /**
    * Adds a help menu to the menu bar.
    *
-   * @param m the menu to add
+   * @param menu the menu to add
    */
   public void addHelpMenu(Menu menu)
   {

@@ -1,5 +1,5 @@
 /* JFrame.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -86,6 +86,8 @@ public class JFrame extends Frame
   /**
    * A flag for {@link #setDefaultCloseOperation(int)}, indicating that the
    * application should be exited, when this <code>JFrame</code> is closed.
+   * Note that in version 1.4, the equivalent constant has been added to
+   * {@link WindowConstants}.
    *
    * @since 1.3
    */
@@ -93,7 +95,7 @@ public class JFrame extends Frame
 
   private static final long serialVersionUID = -3362141868504252139L;
   private static boolean defaultLookAndFeelDecorated;
-  private int close_action = HIDE_ON_CLOSE;
+  private int closeAction = HIDE_ON_CLOSE;
   protected AccessibleContext accessibleContext;
   protected JRootPane rootPane;
   
@@ -102,12 +104,20 @@ public class JFrame extends Frame
    */
   protected boolean rootPaneCheckingEnabled = false;
 
+  /**
+   * Creates a new frame with an empty string for the title.
+   */
   public JFrame()
   {
-    super("JFrame");
+    super("");
     frameInit();
   }
 
+  /**
+   * Creates a new <code>JFrame</code> with the specified title.
+   * 
+   * @param title  the frame title (<code>null</code> permitted).
+   */
   public JFrame(String title)
   {
     super(title);
@@ -147,7 +157,8 @@ public class JFrame extends Frame
 
   protected void frameInit()
   {
-    super.setLayout(new BorderLayout(1, 1));
+    super.setLayout(new BorderLayout());
+    setBackground(UIManager.getDefaults().getColor("control"));
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     getRootPane(); // will do set/create
 
@@ -289,6 +300,12 @@ public class JFrame extends Frame
     return defaultLookAndFeelDecorated;
   }
 
+  /**
+   * Returns the object that provides accessibility features for this 
+   * <code>JFrame</code>.
+   *
+   * @return The accessible context (an instance of {@link AccessibleJFrame}).
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -296,14 +313,39 @@ public class JFrame extends Frame
     return accessibleContext;
   }
 
+  /**
+   * Returns a code for the default operation when the frame is closed.  The
+   * default value is {@link WindowConstants#HIDE_ON_CLOSE}.
+   * 
+   * @return One of: {@link WindowConstants#DO_NOTHING_ON_CLOSE},
+   *     {@link WindowConstants#HIDE_ON_CLOSE}, 
+   *     {@link WindowConstants#DISPOSE_ON_CLOSE}, {@link #EXIT_ON_CLOSE}.
+   * 
+   * @see #setDefaultCloseOperation(int)
+   */
   public int getDefaultCloseOperation()
   {
-    return close_action;
+    return closeAction;
   }
 
+  /**
+   * Returns a string describing the attributes for the <code>JFrame</code>,
+   * for use in debugging.  The return value is guaranteed to be 
+   * non-<code>null</code>, but the format may vary between implementations.
+   * 
+   * @return A string describing the attributes of the <code>JFrame</code>.
+   */
   protected String paramString()
   {
-    return "JFrame";
+    StringBuffer sb = new StringBuffer(super.paramString());
+    sb.append(",defaultCloseOperation=");
+    sb.append(SwingUtilities.convertWindowConstantToString(
+        getDefaultCloseOperation()));
+    sb.append(",rootPane=");
+    if (rootPane != null)
+      sb.append(rootPane);
+    sb.append(",rootPaneCheckingEnabled=").append(rootPaneCheckingEnabled);
+    return sb.toString();
   }
 
   protected void processWindowEvent(WindowEvent e)
@@ -313,7 +355,7 @@ public class JFrame extends Frame
       {
       case WindowEvent.WINDOW_CLOSING:
         {
-	  switch (close_action)
+	  switch (closeAction)
 	    {
 	    case EXIT_ON_CLOSE:
 	      {
@@ -346,17 +388,22 @@ public class JFrame extends Frame
   }
 
   /**
-   * Defines what happens when this frame is closed. Can be one off
-   * <code>EXIT_ON_CLOSE</code>,
-   * <code>DISPOSE_ON_CLOSE</code>,
-   * <code>HIDE_ON_CLOSE</code> or
-   * <code>DO_NOTHING_ON_CLOSE</code>.
-   * The default is <code>HIDE_ON_CLOSE</code>.
-   * When <code>EXIT_ON_CLOSE</code> is specified this method calls
+   * Sets the default operation that is performed when this frame is closed.
+   * The default is <code>HIDE_ON_CLOSE</code>.  When 
+   * <code>EXIT_ON_CLOSE</code> is specified this method calls
    * <code>SecurityManager.checkExit(0)</code> which might throw a
-   * <code>SecurityException</code>. When the specified operation is
-   * not one of the above a <code>IllegalArgumentException</code> is
-   * thrown.
+   * <code>SecurityException</code>.
+   * 
+   * @param operation  a code for the operation (one of: 
+   *     {@link WindowConstants#DO_NOTHING_ON_CLOSE}, 
+   *     {@link WindowConstants#HIDE_ON_CLOSE}, 
+   *     {@link WindowConstants#DISPOSE_ON_CLOSE} and 
+   *     {@link WindowConstants#EXIT_ON_CLOSE}).
+   * 
+   * @throws IllegalArgumentException if <code>operation</code> is not one of
+   *     the specified codes.
+   * 
+   * @see #getDefaultCloseOperation()
    */
   public void setDefaultCloseOperation(int operation)
   {
@@ -366,8 +413,9 @@ public class JFrame extends Frame
 
     if (operation != EXIT_ON_CLOSE && operation != DISPOSE_ON_CLOSE
         && operation != HIDE_ON_CLOSE && operation != DO_NOTHING_ON_CLOSE)
-      throw new IllegalArgumentException("defaultCloseOperation must be EXIT_ON_CLOSE, HIDE_ON_CLOSE, DISPOSE_ON_CLOSE, or DO_NOTHING_ON_CLOSE");
+      throw new IllegalArgumentException("operation must be EXIT_ON_CLOSE, " 
+          + "HIDE_ON_CLOSE, DISPOSE_ON_CLOSE, or DO_NOTHING_ON_CLOSE");
 
-    close_action = operation;
+    closeAction = operation;
   }
 }

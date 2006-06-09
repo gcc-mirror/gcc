@@ -186,10 +186,5 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImage
 
   gtk_window_set_icon (GTK_WINDOW (ptr), pixbuf);
 
-  /* if the GtkImage is offscreen, this is a temporary pixbuf which should 
-   be thrown out. */
-  if(cp_gtk_image_is_offscreen (env, gtkimage) == JNI_TRUE)
-    gdk_pixbuf_unref (pixbuf);
-
   gdk_threads_leave ();
 }

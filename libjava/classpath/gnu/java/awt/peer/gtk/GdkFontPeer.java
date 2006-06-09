@@ -40,19 +40,23 @@ package gnu.java.awt.peer.gtk;
 
 import gnu.classpath.Configuration;
 import gnu.java.awt.peer.ClasspathFontPeer;
+import gnu.java.awt.font.opentype.NameDecoder;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.font.GlyphMetrics;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Point2D;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.nio.ByteBuffer;
 
 public class GdkFontPeer extends ClasspathFontPeer
 {
@@ -76,17 +80,21 @@ public class GdkFontPeer extends ClasspathFontPeer
       }
   }
 
+  private ByteBuffer nameTable = null;
+
   private native void initState ();
   private native void dispose ();
-  private native void setFont (String family, int style, int size, boolean useGraphics2D);
+  private native void setFont (String family, int style, int size);
 
   native void getFontMetrics(double [] metrics);
   native void getTextMetrics(String str, double [] metrics);
 
+  native void releasePeerGraphicsResource();
+
+
   protected void finalize ()
   {
-    if (GtkToolkit.useGraphics2D ())
-      GdkGraphics2D.releasePeerGraphicsResource(this);
+    releasePeerGraphicsResource();
     dispose ();
   }
 
@@ -136,26 +144,84 @@ public class GdkFontPeer extends ClasspathFontPeer
   {  
     super(name, style, size);    
     initState ();
-    setFont (this.familyName, this.style, (int)this.size, 
-             GtkToolkit.useGraphics2D());
+    setFont (this.familyName, this.style, (int)this.size);
   }
 
   public GdkFontPeer (String name, Map attributes)
   {
     super(name, attributes);
     initState ();
-    setFont (this.familyName, this.style, (int)this.size,
-             GtkToolkit.useGraphics2D());
-  }
-  
-  public String getSubFamilyName(Font font, Locale locale)
-  {
-    return null;
+    setFont (this.familyName, this.style, (int)this.size);
   }
 
+  /**
+   * Unneeded, but implemented anyway.
+   */  
+  public String getSubFamilyName(Font font, Locale locale)
+  {
+    String name;
+    
+    if (locale == null)
+      locale = Locale.getDefault();
+    
+    name = getName(NameDecoder.NAME_SUBFAMILY, locale);
+    if (name == null)
+      {
+	name = getName(NameDecoder.NAME_SUBFAMILY, Locale.ENGLISH);
+	if ("Regular".equals(name))
+	  name = null;
+      }
+
+    return name;
+  }
+
+  /**
+   * Returns the bytes belonging to a TrueType/OpenType table,
+   * Parameters n,a,m,e identify the 4-byte ASCII tag of the table.
+   *
+   * Returns null if the font is not TT, the table is nonexistant, 
+   * or if some other unexpected error occured.
+   *
+   */
+  private native byte[] getTrueTypeTable(byte n, byte a, byte m, byte e);
+
+  /**
+   * Returns the PostScript name of the font, defaults to the familyName if 
+   * a PS name could not be retrieved.
+   */
   public String getPostScriptName(Font font)
   {
-    return this.familyName;
+    String name = getName(NameDecoder.NAME_POSTSCRIPT, 
+			  /* any language */ null);
+    if( name == null )
+      return this.familyName;
+
+    return name;
+  }
+
+  /**
+   * Extracts a String from the font&#x2019;s name table.
+   *
+   * @param name the numeric TrueType or OpenType name ID.
+   *
+   * @param locale the locale for which names shall be localized, or
+   * <code>null</code> if the locale does mot matter because the name
+   * is known to be language-independent (for example, because it is
+   * the PostScript name).
+   */
+  private String getName(int name, Locale locale)
+  {
+    if (nameTable == null)
+      {
+	byte[] data = getTrueTypeTable((byte)'n', (byte) 'a', 
+				       (byte) 'm', (byte) 'e');
+	if( data == null )
+	  return null;
+
+	nameTable = ByteBuffer.wrap( data );
+      }
+
+    return NameDecoder.getName(nameTable, name, locale);
   }
 
   public boolean canDisplay (Font font, char c)
@@ -170,23 +236,18 @@ public class GdkFontPeer extends ClasspathFontPeer
     return -1;
   }
   
-  private native GdkGlyphVector getGlyphVector(String txt, 
-                                               Font f, 
-                                               FontRenderContext ctx);
-
   public GlyphVector createGlyphVector (Font font, 
                                         FontRenderContext ctx, 
                                         CharacterIterator i)
   {
-    return getGlyphVector(buildString (i), font, ctx);
+    return new FreetypeGlyphVector(font, buildString (i), ctx);
   }
 
   public GlyphVector createGlyphVector (Font font, 
                                         FontRenderContext ctx, 
                                         int[] glyphCodes)
   {
-    return null;
-    //    return new GdkGlyphVector (font, this, ctx, glyphCodes);
+    return new FreetypeGlyphVector(font, glyphCodes, ctx);
   }
 
   public byte getBaselineFor (Font font, char c)
@@ -262,13 +323,21 @@ public class GdkFontPeer extends ClasspathFontPeer
 
   public int getNumGlyphs (Font font)
   {
-    throw new UnsupportedOperationException ();
+    byte[] data = getTrueTypeTable((byte)'m', (byte) 'a', 
+				   (byte)'x', (byte) 'p');
+    if( data == null )
+      return -1;
+
+    ByteBuffer buf = ByteBuffer.wrap( data );       
+    return buf.getShort(4);
   }
 
   public Rectangle2D getStringBounds (Font font, CharacterIterator ci, 
                                       int begin, int limit, FontRenderContext frc)
   {
-    GdkGlyphVector gv = getGlyphVector(buildString (ci, begin, limit), font, frc);
+    GlyphVector gv = new FreetypeGlyphVector( font, 
+					      buildString(ci, begin, limit),
+					      frc);
     return gv.getVisualBounds();
   }
 
@@ -303,5 +372,4 @@ public class GdkFontPeer extends ClasspathFontPeer
     // the metrics cache.
     return Toolkit.getDefaultToolkit().getFontMetrics (font);
   }
-
 }

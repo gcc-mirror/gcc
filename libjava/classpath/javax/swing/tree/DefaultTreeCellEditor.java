@@ -382,7 +382,6 @@ public class DefaultTreeCellEditor
     editingContainer = createContainer();
     setFont(UIManager.getFont("Tree.font"));
     setBorderSelectionColor(UIManager.getColor("Tree.selectionBorderColor"));
-    editingIcon = renderer.getIcon();
   }
 
   /**

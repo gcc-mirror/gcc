@@ -45,7 +45,8 @@ import java.util.Enumeration;
  * 
  * @author Andrew Selkirk
  */
-public interface TreeNode {
+public interface TreeNode 
+{
 
   /**
    * Returns the parent node for this tree node, or <code>null</code> if this

@@ -1,5 +1,5 @@
 /* GdkScreenGraphicsDevice.java -- information about a screen device
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,44 +38,110 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Dimension;
 import java.awt.DisplayMode;
+import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
-import java.awt.Toolkit;
+import java.awt.Rectangle;
+import java.awt.Window;
+import java.util.ArrayList;
 
-public class GdkScreenGraphicsDevice extends GraphicsDevice
+class GdkScreenGraphicsDevice extends GraphicsDevice
 {
+  private final int native_state = GtkGenericPeer.getUniqueInteger ();
+  
+  private Window fullscreenWindow;
+  
+  private boolean oldWindowDecorationState;
+  
+  private Rectangle oldWindowBounds;
+  
+  private Rectangle bounds;
+  
+  private GdkGraphicsConfiguration[] configurations;
+  
+  /** The <code>GdkGraphicsEnvironment</code> instance that created this
+   * <code>GdkScreenGraphicsDevice</code>. This is only needed for native
+   * methods which need to access the 'native_state' field storing a pointer
+   * to a GdkDisplay object.
+   */ 
   GdkGraphicsEnvironment env;
+  
+  /** An identifier that is created by Gdk
+   */
+  String idString;
+  
+  /** The display modes supported by this <code>GdkScreenGraphicsDevice</code>.
+   * If the array is <code>null</code> <code>nativeGetDisplayModes</code> has
+   * to be called.
+   */
+  X11DisplayMode[] displayModes;
 
-  public GdkScreenGraphicsDevice (GdkGraphicsEnvironment e)
-  {    
-    super ();
+  /** The non-changeable display mode of this <code>GdkScreenGraphicsDevice
+   * </code>. This field gets initialized by the {@link #init()} method. If it
+   * is still <code>null</code> afterwards, the XRandR extension is available
+   * and display mode changes are possible. If it is non-null XRandR is not
+   * available, no display mode changes are possible and no other native
+   * method must be called. 
+   */
+  DisplayMode fixedDisplayMode;
+  
+  static
+  {
+    System.loadLibrary("gtkpeer");
+
+    initStaticState ();
+  }
+  
+  static native void initStaticState();
+  
+  GdkScreenGraphicsDevice (GdkGraphicsEnvironment e)
+  {
+    super();
     env = e;
+    
+    configurations = new GdkGraphicsConfiguration[1];
+    configurations[0] = new GdkGraphicsConfiguration(this);
   }
 
+  /** This method is called from the native side immediately after
+   * the constructor is run.
+   */
+  void init()
+  {
+    fixedDisplayMode = nativeGetFixedDisplayMode(env);
+  }
+  
+  /** Depending on the availability of the XRandR extension the method returns
+   * the screens' non-changeable display mode or null, meaning that XRandR can
+   * handle display mode changes.
+   */
+  native DisplayMode nativeGetFixedDisplayMode(GdkGraphicsEnvironment env);
+  
   public int getType ()
   {
+    // Gdk manages only raster screens.
     return GraphicsDevice.TYPE_RASTER_SCREEN;
   }
 
   public String getIDstring ()
   {
-    // FIXME: query X for this string
-    return "default GDK device ID string";
+    if (idString == null)
+      idString = nativeGetIDString();
+    
+    return idString;
   }
+  
+  private native String nativeGetIDString(); 
 
   public GraphicsConfiguration[] getConfigurations ()
   {
-    // FIXME: query X for the list of possible configurations
-    return new GraphicsConfiguration [] { new GdkGraphicsConfiguration(this) };
+    return (GraphicsConfiguration[]) configurations.clone();
   }
-
+  
   public GraphicsConfiguration getDefaultConfiguration ()
   {
-    
-    // FIXME: query X for default configuration
-    return new GdkGraphicsConfiguration(this);
+    return configurations[0];
   }
 
 
@@ -89,23 +155,193 @@ public class GdkScreenGraphicsDevice extends GraphicsDevice
    */
   public DisplayMode getDisplayMode()
   {
-    // determine display mode
-    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    DisplayMode mode = new DisplayMode(dim.width, dim.height, 0,
-				       DisplayMode.REFRESH_RATE_UNKNOWN);
-    return mode;
+    if (fixedDisplayMode != null)
+      return fixedDisplayMode;
+    
+    synchronized (this)
+      {
+        if (displayModes == null)
+          displayModes = nativeGetDisplayModes(env);
+      }
+
+    int index = nativeGetDisplayModeIndex(env);
+    int rate = nativeGetDisplayModeRate(env);
+    
+    return new DisplayMode(displayModes[index].width,
+                           displayModes[index].height,
+                           DisplayMode.BIT_DEPTH_MULTI,
+                           rate);
   }
+  
+  native int nativeGetDisplayModeIndex(GdkGraphicsEnvironment env);
+  
+  native int nativeGetDisplayModeRate(GdkGraphicsEnvironment env);
+  
+  public DisplayMode[] getDisplayModes()
+  {
+    if (fixedDisplayMode != null)
+      return new DisplayMode[] { fixedDisplayMode };
+    
+    synchronized (this)
+      {
+        if (displayModes == null)
+          displayModes = nativeGetDisplayModes(env);
+      }
+    
+    ArrayList list = new ArrayList();
+    for(int i=0;i<displayModes.length;i++)
+      for(int j=0;j<displayModes[i].rates.length;j++)
+        list.add(new DisplayMode(displayModes[i].width,
+                                 displayModes[i].height,
+                                 DisplayMode.BIT_DEPTH_MULTI,
+                                 displayModes[i].rates[j]));
+    
+    return (DisplayMode[]) list.toArray(new DisplayMode[list.size()]);
+  }
+  
+  native X11DisplayMode[] nativeGetDisplayModes(GdkGraphicsEnvironment env);
 
   /**
-   * This device does not yet support fullscreen exclusive mode, so this
-   * returns <code>false</code>.
+   * Real fullscreen exclusive mode is not supported.
    *
    * @return <code>false</code>
    * @since 1.4
    */
   public boolean isFullScreenSupported()
   {
-    return false;
+    return true;
   }
+  
+  public boolean isDisplayChangeSupported()
+  {
+    return fixedDisplayMode == null;
+  }
+
+  public void setDisplayMode(DisplayMode dm)
+  {
+    if (fixedDisplayMode != null)
+      throw new UnsupportedOperationException("Cannnot change display mode.");
+    
+    if (dm == null)
+      throw new IllegalArgumentException("DisplayMode must not be null.");
+    
+    synchronized (this)
+      {
+        if (displayModes == null)
+          displayModes = nativeGetDisplayModes(env);
+      }
+    
+    for (int i=0; i<displayModes.length; i++)
+      if (displayModes[i].width == dm.getWidth()
+          && displayModes[i].height == dm.getHeight())
+        {
+          synchronized (this)
+          {
+            nativeSetDisplayMode(env,
+                                 i,
+                                 (short) dm.getRefreshRate());
+          
+            bounds = null;
+          }
+          
+          return;
+        }
+    
+    throw new IllegalArgumentException("Mode not supported by this device.");
+  }
+  
+  native void nativeSetDisplayMode(GdkGraphicsEnvironment env,
+                                int index, short rate);
+  
+  /** A class that simply encapsulates the X11 display mode data.
+   */
+  static class X11DisplayMode
+  {
+    short[] rates;
+    int width;
+    int height;
+    
+    X11DisplayMode(int width, int height, short[] rates)
+    {
+      this.width = width;
+      this.height = height;
+      this.rates = rates;
+    }
+    
+  }
+  
+  public void setFullScreenWindow(Window w)
+  {
+    // Bring old fullscreen window back into its original state.
+    if (fullscreenWindow != null && w != fullscreenWindow)
+      {
+        if (fullscreenWindow instanceof Frame)
+          {
+            // Decoration state can only be switched when the peer is
+            // non-existent. That means we have to dispose the 
+            // Frame.
+            Frame f = (Frame) fullscreenWindow;
+            if (oldWindowDecorationState != f.isUndecorated())
+              {
+                f.dispose();
+                f.setUndecorated(oldWindowDecorationState);
+              }
+          }
+        
+        fullscreenWindow.setBounds(oldWindowBounds);
+
+        if (!fullscreenWindow.isVisible())
+          fullscreenWindow.setVisible(true);
+      }
+    
+    // If applicable remove decoration, then maximize the window and
+    // bring it to the foreground.
+    if (w != null)
+      {
+        if (w instanceof Frame)
+          {
+            Frame f = (Frame) w;
+            oldWindowDecorationState = f.isUndecorated();
+            if (!oldWindowDecorationState)
+              {
+                f.dispose();
+                f.setUndecorated(true);
+              }
+          }
+        
+        oldWindowBounds = w.getBounds();
+    
+        DisplayMode dm = getDisplayMode();
+    
+        w.setBounds(0, 0, dm.getWidth(), dm.getHeight());
+        
+        if (!w.isVisible())
+          w.setVisible(true);
+        
+        w.requestFocus();
+        w.toFront();
+        
+      }
+    
+    fullscreenWindow = w;
+  }
+  
+  public Window getFullScreenWindow()
+  {
+   return fullscreenWindow; 
+  }
+
+  Rectangle getBounds()
+  {
+   synchronized(this)
+     {
+       if (bounds == null)
+         bounds = nativeGetBounds();
+     }
+   
+   return bounds;
+  }
+  
+  native Rectangle nativeGetBounds();
 
 }
