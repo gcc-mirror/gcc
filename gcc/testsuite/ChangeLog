@@ -1,3 +1,9 @@
+2006-06-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26998
+	* gcc.dg/torture/pr26998.c: New testcase.
+	* gcc.dg/tree-ssa/vrp29.c: New testcase.
+
 2006-06-08  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/pr27095.c: Account for stubs.
