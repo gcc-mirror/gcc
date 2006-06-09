@@ -88,21 +88,12 @@ public class GdkGraphicsEnvironment extends GraphicsEnvironment
     if (GraphicsEnvironment.isHeadless ())
       throw new HeadlessException ();
     
-    // GCJ LOCAL: workaround a GCJ problem accessing
-    // GdkGraphicsEnvironment.class
-    try
-      {
-    synchronized (Class.forName ("gnu.java.awt.peer.gtk.GdkGraphicsEnvironment"))
+    synchronized (GdkGraphicsEnvironment.class)
       {
         if (defaultDevice == null)
           {
             defaultDevice = nativeGetDefaultScreenDevice();
           }
-      }
-      }
-    catch (Exception e)
-      {
-        e.printStackTrace();
       }
     
     return defaultDevice;

@@ -1,5 +1,14 @@
 2006-06-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
+	(getDefaultScreenDevice): Remove unnecessary GCJ local hack.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (getSystemEventQueueImpl):
+	Likewise.
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java (registerFormat):
+	Likewise.
+
+2006-06-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
 	* java/lang/String.java, classpath/native/jni/classpath/jcl.h,
 	classpath/native/jni/qt-peer/eventmethods.h,
 	classpath/native/jni/qt-peer/qtmenupeer.cpp,
