@@ -3275,6 +3275,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		break;
 
 	      case 'X':
+		force_reload = 0;
 		win = 1;
 		break;
 

@@ -1,3 +1,7 @@
+2006-06-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* reload.c (find_reloads): Unset force_reload for 'X' constraint.
+
 2006-06-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26998
