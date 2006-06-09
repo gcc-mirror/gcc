@@ -2785,6 +2785,12 @@ the name of the "main" class in the case where the @code{gij} front end is
 used, or the program binary name in the case where an application is compiled 
 to a native binary.
 
+@item gnu.gcj.user.realname
+The real name of the user, as taken from the password file.  This may
+not always hold only the user's name (as some sites put extra
+information in this field).  Also, this property is not available on
+all platforms.
+
 @item gnu.gcj.runtime.NameFinder.use_addr2line
 Whether an external process, @command{addr2line}, should be used to determine
 line number information when tracing the stack. Setting this to @code{false} 

@@ -1,3 +1,8 @@
+2006-06-08  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):
+	Set gnu.gcj.user.realname.
+
 2006-06-09  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* scripts/jar.in: Replace hardcoded /bin/sh with @SHELL@.
