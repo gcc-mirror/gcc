@@ -44,6 +44,8 @@
 #include <iosfwd>
 #include <limits>
 #include <tr1/type_traits>
+#include <sstream>
+#include <fstream>
 
 namespace std
 {
@@ -1157,10 +1159,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   /**
    * A standard interface to a platform-specific non-deterministic random number
    * generator (if any are available).
-   *
-   * @todo The underlying interface is system-specific and needs to be factored
-   * into the generated configury mechs.  For example, the use of "/dev/random"
-   * under a Linux OS would be appropriate.
    */
   class random_device
   {
@@ -1169,15 +1167,69 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     typedef unsigned int result_type;
     
     // constructors, destructors and member functions
-    explicit random_device(const std::string& __token = "unimplemented");
-    result_type min() const;
-    result_type max() const;
-    double entropy() const;
-    result_type operator()();
+
+#ifdef _GLIBCXX_USE_RANDOM_TR1
+    explicit
+    random_device(const std::string& __token = "/dev/urandom")
+    {
+      if ((__token != "/dev/urandom" && __token != "/dev/random")
+	  || !_M_filebuf.open(__token.c_str(), std::ios_base::in))
+	std::__throw_runtime_error(__N("random_device::"
+				       "random_device(const std::string&)"));
+    }
+
+    ~random_device()
+    { _M_filebuf.close(); }
+
+#else
+    explicit
+    random_device(const std::string& __token = "rand")
+    {
+      if (__token != "rand")
+	{
+	  std::stringstream __ss(__token);
+	  unsigned int __seed;
+	  __ss >> __seed;
+	  if (__ss.fail())
+	    std::__throw_runtime_error(__N("random_device::random_device"
+					   "(const std::string&)"));
+	  else
+	    std::srand(__seed);
+	}
+    }
+#endif
+
+    result_type
+    min() const
+    { return std::numeric_limits<result_type>::min(); }
+
+    result_type
+    max() const
+    { return std::numeric_limits<result_type>::max(); }
+
+    double
+    entropy() const
+    { return 0.0; }
+
+    result_type
+    operator()()
+    {
+#ifdef _GLIBCXX_USE_RANDOM_TR1
+      result_type __ret;
+      _M_filebuf.sgetn(reinterpret_cast<char*>(&__ret), sizeof(result_type));
+      return __ret;
+#else
+      return max() * (std::rand() / double(RAND_MAX));
+#endif
+    }
 
   private:
     random_device(const random_device&);
     void operator=(const random_device&);
+
+#ifdef _GLIBCXX_USE_RANDOM_TR1
+    std::filebuf _M_filebuf;
+#endif    
   };
 
   /* @} */ // group tr1_random_generators

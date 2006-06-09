@@ -160,6 +160,9 @@ if $GLIBCXX_IS_NATIVE; then
   # For C99 support to TR1.
   GLIBCXX_CHECK_C99_TR1
 
+  # For dev/random and dev/urandom for TR1.
+  GLIBCXX_CHECK_RANDOM_TR1
+
   # For TLS support.
   GCC_CHECK_TLS
 

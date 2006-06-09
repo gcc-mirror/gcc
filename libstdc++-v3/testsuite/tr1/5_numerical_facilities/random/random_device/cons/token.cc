@@ -1,4 +1,4 @@
-// 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
+// 2006-06-09  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -18,19 +18,11 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 5.1.4.2 class template mersenne_twister [tr.rand.eng.mers]
-// 5.1.1 Table 16 line 3 Gen ctor
+// 5.1.6 class random_device [tr.rand.device]
+// 5.1.6, p3
 
-#include <ctime>
 #include <tr1/random>
 #include <testsuite_hooks.h>
-
-// a not untypical initialization function
-unsigned long
-gen()
-{
-  return std::time(0);
-}
 
 void
 test01() 
@@ -38,14 +30,14 @@ test01()
   bool test __attribute__((unused)) = true;
   using namespace std::tr1;
 
-  mersenne_twister<
-    unsigned long, 32, 624, 397, 31,
-    0x9908b0dful, 11, 7,
-    0x9d2c5680ul, 15,
-    0xefc60000ul, 18> x(gen);
+#ifdef _GLIBCXX_USE_RANDOM_TR1
+  random_device x("/dev/random");
+#else
+  random_device x("0");
+#endif
 
-  VERIFY( x.min() == 0 );
-  VERIFY( x.max() == 4294967295ul );
+  VERIFY( x.min() == std::numeric_limits<random_device::result_type>::min() );
+  VERIFY( x.max() == std::numeric_limits<random_device::result_type>::max() );
 }
 
 int main()

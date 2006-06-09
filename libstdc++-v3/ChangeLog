@@ -1,3 +1,22 @@
+2006-06-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* acinclude.m4 ([GLIBCXX_CHECK_RANDOM_TR1]): New, check for
+	the availability of "/dev/random" and "/dev/urandom".
+	* configure.ac: Use it.
+	* include/tr1/random (random_device): Implement, a fall-back for
+	systems not providing "/dev/random" and "/dev/urandom" included.
+	* testsuite/tr1/5_numerical_facilities/random/random_device/
+	cons/default.cc: New.
+	* testsuite/tr1/5_numerical_facilities/random/random_device/
+	cons/token.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/random_device/
+	requirements/typedefs.cc: Likewise.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	cons/gen1.cc: Minor tweak, add bool test.
+
 2006-06-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util: New directory.
