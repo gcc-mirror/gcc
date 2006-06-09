@@ -744,6 +744,10 @@
 /* Define if NLS translations are to be used. */
 #undef _GLIBCXX_USE_NLS
 
+/* Define if dev/random and dev/urandom are available for the random_device of
+   TR1 (Chapter 5.1). */
+#undef _GLIBCXX_USE_RANDOM_TR1
+
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T
 
