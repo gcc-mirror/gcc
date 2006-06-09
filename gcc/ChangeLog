@@ -1,3 +1,7 @@
+2006-06-09  David Daney  <ddaney@avtrex.com>
+
+	* doc/install.texi: Add binutils version recommendation for mips-*-*.
+
 2006-06-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* reload.c (find_reloads): Unset force_reload for 'X' constraint.
